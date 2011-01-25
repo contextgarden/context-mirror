@@ -90,6 +90,8 @@
 % end
 % \stopluacode
 %
+% \unprotect
+%
 % \newbox  \objectbox
 % \newtoks \everyobject
 % \newif   \ifinobject
@@ -101,7 +103,7 @@
 %
 % \def\objectoffset{1cm}
 %
-% \everyobject{\the\everyPDFxform}
+% \everyobject{\the\pdfbackendeveryxform}
 %
 % \let\doresetobjects\relax
 %

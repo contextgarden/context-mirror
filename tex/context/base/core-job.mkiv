@@ -68,8 +68,7 @@
   {\readsysfile{#1.\mksuffix}{\showmessage\m!systems2{#1.\mksuffix}}\donothing}
 
 \def\loadsystemfiles
-  {\reportprotectionstate
-   \doloadsystemfile\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+  {\doloadsystemfile\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
    \doloadsystemfile\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
    \doloadsystemfile\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
    \doloadsystemfile\f!sysfilename} % local settings, but probably not that good an idea to use

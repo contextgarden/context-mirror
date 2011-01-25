@@ -37,7 +37,20 @@
 
 \unprotect
 
-\let\reportprotectionstate\relax
+%D \macros
+%D   {unexpanded}
+%D
+%D Because we use this module only in \MKIV, we have removed the
+%D old protection code.
+%D
+%D \starttyping
+%D \unexpanded\def\somecommand{... ... ...}
+%D \stoptyping
+%D
+%D This overloads the \ETEX\ primitive but as we already had an \MKII\
+%D solution we keep the same name for a similar mechanism.
+
+\let\unexpanded\normalprotected
 
 %D \macros
 %D   {doifolderversionelse}
@@ -452,21 +465,6 @@
 %D system. So:
 
 \def\globallet{\global\let}  \let\glet\globallet
-
-%D \macros
-%D   {unexpanded}
-%D
-%D Because we use this module only in \MKIV, we have removed the
-%D old protection code.
-%D
-%D \starttyping
-%D \unexpanded\def\somecommand{... ... ...}
-%D \stoptyping
-%D
-%D This overloads the \ETEX\ primitive but as we already had an \MKII\
-%D solution we keep the same name for a similar mechanism.
-
-\let\unexpanded\normalprotected
 
 %D \macros
 %D   {doifundefined,doifdefined,

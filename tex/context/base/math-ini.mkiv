@@ -414,12 +414,14 @@
 \egroup
 
 \appendtoks
+    \setfalse\knuthmode
     \catcode\underscoreasciicode\othercatcode
     \catcode\circumflexasciicode\othercatcode
     \catcode\ampersandasciicode \othercatcode
 \to \everynonknuthmode
 
 \appendtoks
+    \settrue\knuthmode
     \catcode\underscoreasciicode\subscriptcatcode
     \catcode\circumflexasciicode\superscriptcatcode
     \catcode\ampersandasciicode \alignmentcatcode
@@ -459,7 +461,7 @@
 
 \unexpanded\def\stopasciimode
   {\popcatcodetable
-   \donknuthmode}
+   \ifconditional\knuthmode\else\donknuthmode\fi}
 
 %D Needed for unicode:
 

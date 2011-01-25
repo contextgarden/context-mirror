@@ -132,11 +132,31 @@
 
 \def\preloadtypescripts{\ifproductionrun\settrue\preloadingtypescripts\fi}
 
+\prependtoks
+    \preloadtypescripts
+\to \everyjob
+
+% \long\def\xxstarttypescript#1\stoptypescript
+%   {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescript#1\stoptypescript}}
+%
+% \long\def\xxstarttypescriptcollection#1\stoptypescriptcollection
+%   {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescriptcollection#1\stoptypescriptcollection}}
+
+\newcount\nofpreloadedtypescripts % it's faster to append references than blobs
+
 \long\def\xxstarttypescript#1\stoptypescript
-  {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescript#1\stoptypescript}}
+  {\global\advance\nofpreloadedtypescripts\plusone
+   \edef\currentpreloadedtypescript{\??ts:\the\nofpreloadedtypescripts}%
+   \setgvalue\currentpreloadedtypescript{\starttypescript#1\stoptypescript}%
+  %\global\loadedtypescripts\@EAEAEA{\@EA\the\@EA\loadedtypescripts\@EA\getvalue\@EA{\currentpreloadedtypescript}}}
+   \normalexpanded{\global\loadedtypescripts{\the\@EA\loadedtypescripts\noexpand\csname\currentpreloadedtypescript\endcsname}}}
 
 \long\def\xxstarttypescriptcollection#1\stoptypescriptcollection
-  {\global\loadedtypescripts\@EA{\the\loadedtypescripts\starttypescriptcollection#1\stoptypescriptcollection}}
+  {\global\advance\nofpreloadedtypescripts\plusone
+   \edef\currentpreloadedtypescript{\??ts:\the\nofpreloadedtypescripts}%
+   \setgvalue\currentpreloadedtypescript{\starttypescriptcollection#1\stoptypescriptcollection}%
+  %\global\loadedtypescripts\@EAEAEA{\@EA\the\@EA\loadedtypescripts\@EA\getvalue\@EA{\currentpreloadedtypescript}}}
+   \normalexpanded{\global\loadedtypescripts{\the\@EA\loadedtypescripts\noexpand\csname\currentpreloadedtypescript\endcsname}}}
 
 \def\dododousetypescriptfile#1%
   {\setfalse\quittingtypescript
@@ -169,17 +189,17 @@
    \egroup
    \expandafter\let\csname\??ts:\c!file:\currenttypefile\endcsname\loadedtypescripts}
 
-% \def\doprocesstypescriptfile
-%   {\ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
-
 \def\doprocesstypescriptfile
-  {\startreadingfile
-   \pushendofline
-   \unprotect
-   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
-   \protect
-   \popendofline
-   \stopreadingfile}
+  {\ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+
+% \def\doprocesstypescriptfile
+%   {\startreadingfile
+%    \pushendofline
+%    \unprotect
+%    \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
+%    \protect
+%    \popendofline
+%    \stopreadingfile}
 
 \def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
@@ -344,14 +364,6 @@
 \def\doloadmapline [#1][#2]{\ctxlua{fonts.map.loadline("#1","#2")}}
 \def\forgetmapfiles        {\ctxlua{fonts.map.reset()}}
 
-\let\loadallfontmapfiles\relax
-\let\allfontmapsfiles   \empty
-\let\preloadmapfile     \loadmapfile
-\let\resetmapfiles      \forgetmapfiles
-\let\disablemapfiles    \forgetmapfiles
-
-\newif\ifautoloadmapfiles
-
 % \appendtoks
 %     \pdfmapfile{}% somehow does not work at the lua end
 % \to \everyjob
@@ -481,14 +493,13 @@
    \fi \fi \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
-% \def\usetypefile[#1]% recurses on path ! % no storage? obsolete?
-%  %{\edef\currenttypefile{\f!typeprefix#1}%
-%   {\edef\currenttypefile{#1}%
-%    \ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+% \def\usetypefile[#1]% recurses on path !
+%   {\edef\currenttypefile{\f!typeprefix#1}%
+%    \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}}
 
-\def\usetypefile[#1]% recurses on path !
-  {\edef\currenttypefile{\f!typeprefix#1}%
-   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}}
+\def\usetypefile[#1]% recurses on path ! % no storage? obsolete?
+  {\edef\currenttypefile{#1}%
+   \ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
 
 %D For Taco:
 %D
