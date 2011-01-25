@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['v-xml'] = {
+if not modules then modules = { } end modules ['buff-imp-xml'] = {
     version   = 1.001,
     comment   = "companion to v-xml.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

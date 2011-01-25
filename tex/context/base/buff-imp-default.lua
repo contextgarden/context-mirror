@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['v-default'] = {
+if not modules then modules = { } end modules ['buff-imp-default'] = {
     version   = 1.001,
-    comment   = "companion to v-default.mkiv",
+    comment   = "companion to buff-imp-default.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

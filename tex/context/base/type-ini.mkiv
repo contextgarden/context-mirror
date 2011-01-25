@@ -169,8 +169,17 @@
    \egroup
    \expandafter\let\csname\??ts:\c!file:\currenttypefile\endcsname\loadedtypescripts}
 
+% \def\doprocesstypescriptfile
+%   {\ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+
 \def\doprocesstypescriptfile
-  {\ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+  {\startreadingfile
+   \pushendofline
+   \unprotect
+   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}%
+   \protect
+   \popendofline
+   \stopreadingfile}
 
 \def\usetypescriptonce
   {\dotripleempty\dousetypescriptonce}
@@ -472,10 +481,14 @@
    \fi \fi \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
-\def\usetypefile[#1]% recurses on path ! % no storage? obsolete?
- %{\edef\currenttypefile{\f!typeprefix#1}%
-  {\edef\currenttypefile{#1}%
-   \ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+% \def\usetypefile[#1]% recurses on path ! % no storage? obsolete?
+%  %{\edef\currenttypefile{\f!typeprefix#1}%
+%   {\edef\currenttypefile{#1}%
+%    \ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+
+\def\usetypefile[#1]% recurses on path !
+  {\edef\currenttypefile{\f!typeprefix#1}%
+   \readfile{\currenttypefile.\mksuffix}\donothing{\readfile\currenttypefile\donothing\donothing}}
 
 %D For Taco:
 %D
