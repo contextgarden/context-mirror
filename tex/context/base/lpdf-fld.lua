@@ -184,25 +184,31 @@ local fontnames = {
 local usedfonts = { }
 
 local function fieldsurrounding(specification)
-    local size        = specification.fontsize or "12pt"
-    local style       = specification.fontstyle or "rm"
-    local alternative = specification.fontalternative or "tf"
-    local s = fontnames[style]
+    local fontsize        = specification.fontsize or "12pt"
+    local fontstyle       = specification.fontstyle or "rm"
+    local fontalternative = specification.fontalternative or "tf"
+    local colorvalue      = specification.colorvalue
+    local s = fontnames[fontstyle]
     if not s then
-        style, s = "rm", fontnames.rm
+        fontstyle, s = "rm", fontnames.rm
     end
-    local a = s[alternative]
+    local a = s[fontalternative]
     if not a then
         alternative, a = "tf", s.tf
     end
-    local tag = style .. alternative
-    size = todimen(size)
+    local tag = fontstyle .. fontalternative
+    fontsize = todimen(fontsize)
+    local fontcode  = format("%0.4f Tf",(fontsize and (bpfactor * fontsize)) or 12)
+    local colorcode = lpdf.color(3,colorvalue) -- we force an rgb color space
+    if trace_fields then
+        report_fields("fontcode : %s %s @ %s => %s => %s",fontstyle,fontalternative,fontsize,tag,fontcode)
+        report_fields("colorcode: %s => %s",colorvalue,colorcode)
+    end
     local stream = pdfstream {
         pdfconstant(tag),
-        format("%0.4f Tf",(size and (bpfactor * size)) or 12),
+        format("%s %s",fontcode,colorcode)
     }
     usedfonts[tag] = a -- the name
-    -- add color to stream: 0 g
     -- move up with "x.y Ts"
     return tostring(stream)
 end
