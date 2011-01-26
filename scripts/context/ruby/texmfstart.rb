@@ -158,7 +158,6 @@ $runners      = Hash.new
 $suffixinputs['pl']  = 'PERLINPUTS'
 $suffixinputs['rb']  = 'RUBYINPUTS'
 $suffixinputs['py']  = 'PYTHONINPUTS'
-$suffixinputs['lua'] = 'LUAINPUTS'
 $suffixinputs['jar'] = 'JAVAINPUTS'
 $suffixinputs['pdf'] = 'PDFINPUTS'
 
@@ -183,7 +182,6 @@ $predefined['pdftools'] = 'pdftools.rb'
 $predefined['mpstools'] = 'mpstools.rb'
 # $predefined['exatools'] = 'exatools.rb'
 $predefined['xmltools'] = 'xmltools.rb'
-# $predefined['luatools'] = 'luatools.lua'
 # $predefined['mtxtools'] = 'mtxtools.rb'
 
 $predefined['newpstopdf']   = 'pstopdf.rb'
@@ -213,12 +211,11 @@ $makelist = [
     'texfind',
     'texshow'
     #
-    # no 'luatools',
     # no 'mtxtools',
     # no, 'texmfstart'
 ]
 
-$scriptlist   = 'rb|pl|py|lua|jar'
+$scriptlist   = 'rb|pl|py|jar'
 $documentlist = 'pdf|ps|eps|htm|html'
 
 $editor       = ENV['TEXMFSTART_EDITOR'] || ENV['EDITOR'] || ENV['editor'] || 'scite'
@@ -230,7 +227,6 @@ def set_applications(page=1)
 
     $applications['unknown']  = ''
     $applications['ruby']     = $applications['rb']  = 'ruby'
-    $applications['lua']      = $applications['lua'] = 'lua'
     $applications['perl']     = $applications['pl']  = 'perl'
     $applications['python']   = $applications['py']  = 'python'
     $applications['java']     = $applications['jar'] = 'java'
@@ -247,8 +243,6 @@ def set_applications(page=1)
 
     $applications['htm']      = $applications['html']
     $applications['eps']      = $applications['ps']
-
-    $runners['lua']           = "texlua"
 
 end
 

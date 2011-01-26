@@ -456,7 +456,7 @@
    \else\ifthirdargument
      \dododefinetypeface[#1][#2]%
      \getparameters[\??tf#1#2][#3]%
-   \else
+   \else % use definitions in lfg file
      \ctxlua{fonts.definetypeface(\!!bs#1\!!es,\!!bs#2\!!es)}%
    \fi\fi\fi}
 

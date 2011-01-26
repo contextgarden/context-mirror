@@ -2093,19 +2093,25 @@
    \ctxlua{fonts.definers.resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\resetnullfont\relax}
 
-% \newconditional\fontsareloaded
-
 % \def\preloaddefaultfonts
 %   {\resetpreloadfonts
-%    \usetypescript[modern]%
-%    \setuptypeface[modern]%
-%   %\setupbodyfont[modern]%
+%    \setupbodyfont[modern,\fontstyle,\fontbody]%
 %    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
 
 \def\preloaddefaultfonts
   {\resetpreloadfonts
    \setupbodyfont[modern,\fontstyle,\fontbody]%
-   \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
+   \showmessage\m!fonts6{fallback modern \fontstyle\normalspace\normalizedbodyfontsize}}
+
+\def\preloaddefaultfontsmm
+  {\writestatus\m!fonts{preloading latin modern fonts (math)}%
+   \definetypeface[\fontclass][\c!mm][\s!math][modern][\s!default]%
+   \showmessage\m!fonts6{fallback modern mm \normalizedbodyfontsize}}
+
+\def\preloaddefaultfontstt
+  {\writestatus\m!fonts{preloading latin modern fonts (mono)}%
+   \definetypeface[\fontclass][\c!tt][\s!mono][modern][\s!default]%
+   \showmessage\m!fonts6{fallback modern tt \normalizedbodyfontsize}}
 
 \def\resetpreloadfonts
   {\global\let\firststagepreloadfonts \relax
@@ -2125,12 +2131,29 @@
   {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
    \preloaddefaultfonts}
 
+% \def\thirdstagepreloadfonts
+%   {\ifx\fontclass\empty
+%      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
+%      \preloaddefaultfonts
+%    \else
+%      \resetpreloadfonts
+%    \fi}
+
 \def\thirdstagepreloadfonts
   {\ifx\fontclass\empty
      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
      \preloaddefaultfonts
    \else
      \resetpreloadfonts
+     \pushmacro\fontstyle
+     \ifcsname\fontclass\c!mm\s!features\endcsname \else
+       \preloaddefaultfontsmm
+     \fi
+     \ifcsname\fontclass\c!tt\s!features\endcsname \else
+       \preloaddefaultfontstt
+     \fi
+     \popmacro\fontstyle
+     \setupbodyfont[\fontstyle]%
    \fi}
 
 \def\fourthstagepreloadfonts
@@ -2149,21 +2172,6 @@
 %D Here comes the main font switching macros. These macros
 %D handle changes in size as well as returning to the global
 %D bodyfont size.
-
-% \def\dosetfont#1#2%  #1 = set/switch state
-%   {\doifelse{#2}\v!global
-%      {\restoreglobalbodyfont}
-%      {\processcommacommand[#2]{\dodosetfont{#1}}% ##1 get also passed
-%       \ifproductionrun
-%         \thirdstagepreloadfonts
-%         \doswitchpoints[\normalizedbodyfontsize]%
-%         \doswitchstyle[\fontstyle]%
-%         \ifx\defaultfontclass\empty
-%           \let\defaultfontclass\fontclass
-%         \fi
-%       \fi}%
-%    \currentxfontsize\zerocount}
-
 
 \def\dosetfont#1#2%  #1 = set/switch state
   {\doifelse{#2}\v!global

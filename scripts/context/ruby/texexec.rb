@@ -587,8 +587,6 @@ job.setvariable('given.backend',job.getvariable('backend'))
 
         if (str = @commandline.option('engine')) && ! str.standard? && ! str.empty? then
             job.setvariable('texengine',str)
-        elsif @commandline.oneof('luatex') then
-            job.setvariable('texengine','luatex')
         elsif @commandline.oneof('pdfetex','pdftex','pdf') then
             job.setvariable('texengine','pdftex')
         elsif @commandline.oneof('xetex','xtx') then
@@ -603,7 +601,7 @@ job.setvariable('given.backend',job.getvariable('backend'))
 
         if (str = @commandline.option('backend')) && ! str.standard? && ! str.empty? then
             job.setvariable('backend',str)
-        elsif @commandline.oneof('pdfetex','pdftex','pdf','luatex') then
+        elsif @commandline.oneof('pdfetex','pdftex','pdf') then
             job.setvariable('backend','pdftex')
         elsif @commandline.oneof('dvipdfmx','dvipdfm','dpx','dpm') then
             job.setvariable('backend','dvipdfmx')
@@ -621,7 +619,6 @@ job.setvariable('given.backend',job.getvariable('backend'))
             case job.getvariable('texengine')
                 when 'pdfetex'  then job.setvariable('backend','pdftex')
                 when 'pdftex'   then job.setvariable('backend','pdftex')
-                when 'luatex'   then job.setvariable('backend','pdftex')
                 when 'xetex'    then job.setvariable('backend','xetex')
                 when 'petex'    then job.setvariable('backend','dvipdfmx')
                 when 'aleph'    then job.setvariable('backend','dvipdfmx')
@@ -761,7 +758,6 @@ end
 commandline.registerflag('pdf')
 commandline.registerflag('pdftex')
 commandline.registerflag('pdfetex')
-commandline.registerflag('luatex')
 
 commandline.registerflag('dvipdfmx')
 commandline.registerflag('dvipdfm')

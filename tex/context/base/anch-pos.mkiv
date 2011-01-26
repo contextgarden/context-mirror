@@ -154,12 +154,6 @@
 
 \setnewconstant\positionanchormode\plusone
 
-%D The core set macros.
-
-\let\pospxy    \gobblefourarguments
-\let\pospxywhd \gobblesevenarguments
-\let\pospxyplus\gobbleeightarguments
-
 %D Sometimes we want to trick the position handler a bit:
 
 \def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{commands.replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
@@ -178,34 +172,26 @@
 %D not applicable when the content floats indeed. In such
 %D situations one can treat positions and graphics local.
 
-\newif\iflocalpositioning
+\newif\iflocalpositioning % todo: conditional
 
 %D Watch out: sometimes a pagebreak occurs inside a float
 %D placement, so there we need to disable local mode.
 
 \appendtoks
-  \localpositioningtrue
+    \localpositioningtrue
 \to \everyinsidefloat
 
 \appendtoks
-  \localpositioningfalse
+    \localpositioningfalse
 \to \everypagebody
-
-%D Since the positional values are to be fully expandable, we
-%D need to preload them as soon as possible, which is why we
-%D load the data when we start a text.
-
-% \appendtoks \checkpositions \to \everystarttext
 
 %D \macros
 %D   {MPp, MPx, MPy, MPw, MPh, MPd,
 %D    MPxy, MPll, MPlr, MPur, MPul, MPpos}
 %D
 %D Access to the positional information is provided by macros
-%D with short names that are clearly meant for \METAPOST.
-
-% \the\dimexpr\noexpand\lastsavedpositionx\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
-% \the\dimexpr\noexpand\lastsavedpositiony\ifnum\positionanchormode=\plusone-\MPx\pageanchor\fi\relax
+%D with short names that are clearly meant for \METAPOST\ but
+%D nowadays also used for other purposes.
 
 \def\MPp  #1{\ctxlua{commands.MPp("#1")}}
 \def\MPx  #1{\ctxlua{commands.MPx("#1")}}
@@ -249,14 +235,6 @@
 %D For readability we define a few synonyms:
 
 \def\MPanchor{\MPpos}
-
-%D \macros
-%D   {POSp, POSx, POSy, POSh, POSd, POSw}
-%D
-%D and:
-
-\def\POSp{\MPp} \def\POSx{\MPx} \def\POSy{\MPy}
-\def\POSh{\MPh} \def\POSd{\MPd} \def\POSw{\MPw}
 
 %D There are two low level positioning macros. Both store the
 %D position as well as execute an action associated with that
@@ -758,7 +736,7 @@
 %D    doifpositionsonthispageelse}
 %D
 %D Instead of letting the user handle fuzzy expansion, we
-%D provide a simple test on positione being on the same page.
+%D provide a simple test on positions being on the same page.
 %D
 %D \starttyping
 %D \doifpositionsonsamepageelse{point a}{point b}
@@ -769,9 +747,11 @@
 %D   {action when not on this page}
 %D \stoptyping
 
+% todo: move to lua when we really use it
+
 \def\dododoifpositionsonsamepageelse#1%
   {\ifcase\scratchcounter
-     \scratchcounter\MPp{##}\donetrue
+     \scratchcounter\MPp{#1}\donetrue
    \else
      \ifnum\scratchcounter=\MPp{#1}\relax\else\donefalse\fi
    \fi}%
@@ -786,8 +766,8 @@
      \endgroup\expandafter\secondoftwoarguments
    \fi}
 
-\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\!!zerocount}
-\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realfolio  }
+\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\zerocount }
+\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realpageno}
 
 %D Plugins:
 
@@ -795,6 +775,11 @@
 \let\MPvv\MPrest
 
 \let\MPanchor\MPpos
+
+%D \macros
+%D   {POSp, POSx, POSy, POSh, POSd, POSw}
+%D
+%D This is obsolete in \MKIV:
 
 \let\POSp\MPp \let\POSx\MPx \let\POSy\MPy
 \let\POSh\MPh \let\POSd\MPd \let\POSw\MPw

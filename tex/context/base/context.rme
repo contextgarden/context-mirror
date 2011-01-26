@@ -1,85 +1,79 @@
 Some Basic information
 ----------------------
 
-There are currently three interfaces available:
+The first public versions of ConTeXt date from around 1996. There
+are currently two versions of ConTeXt:
 
-  cont-en   the english version
-  cont-de   the german version
-  cont-nl   the dutch version
-  cont-cz   the czech version
-  cont-ro   the romanian version
-  cont-it   the italian version
+    MkII: to be used with pdfTeX and XeTeX
+    MkIV: to be used with LuaTeX
 
-One should compile one of these (or all) into a fmt file.
-When one uses the main file,
+In 2008 at the second ConTeXt conference the decision was made to
+freeze MkII. This means that only bugs are fixed and apart from an
+occasional addition no active development takes place. This is no
+real problem as the engines don't change much either.
 
-  context   the undefined version
+Early 2011 the code base between MkII and MkIV got split completely
+and there is no shared code any longer, apart from some styles and
+modules.
 
-TeX ask for an interface language as well as a message
-language. Here one has to specify the full name (english,
-german, dutch, etc.) or use the default (enter). The \
-savest way to update the TeX and MetaPost format files
-is to use TeXExec:
+The main files context.mkii and context.mkiv are normally not used
+directly but instead we use the interface specific formats:
 
-texexec --make --alone en nl metafun
+    cont-cs   czech
+    cont-de   german
+    cont-en   english us
+    cont-fr   french
+    cont-gb   english uk
+    cont-it   italian
+    cont-nl   dutch
+    cont-pe   persian
+    cont-ro   romanian
 
-In the TeXExec manual you can read how to generate a format
-with specific fonts and patterns.
+A MkII format is made with:
 
-By default only the english hyphenation patterns are loaded,
-unless more are enabled in:
+    texexec --make en nl metafun
 
-  cont-usr  the typesetting language specifications
+A MkIV format is made with:
 
-Furthermore, users can preset commands etc in the file
+    context --make en nl
 
-  cont-sys  a system file loaded at runtime
+As MetaPost is part of LuaTeX there is no need for a special MetaFun
+format. Also, when you update ConTeXt, a new format will be generated
+automatically.
 
-For questions and remarks on ConTeXt, one can subscribe to
-the list:
+You can preset commands etc in the file:
 
-  ntg-context@ntg.nl
+    cont-sys.mkii  a system file loaded at runtime
+    cont-sys.mkiv  a system file loaded at runtime
+
+In the case of MkII, there is a fallback on cont-sys.tex (backward
+compatibility). If no file is found the file cont-sys.rme is loaded
+(only for MkII). For MkIV this file is normally not needed.
+
+For questions and remarks on ConTeXt, one can subscribe to the list:
+
+    ntg-context@ntg.nl
 
 by sending the message
 
-  subscribe ntg-context
+    subscribe ntg-context
 
 to the list server:
 
-  majordomo@ntg.nl
+    majordomo@ntg.nl
 
-One can find more info at:
+A good place to get information is the ConTeXt wiki:
 
-  www.pragma-ade.com
+    contextgarden.net
+
+One can also find more info at:
+
+    www.pragma-ade.com
 
 or at the mirror sites mentioned there.
 
-Don't hesitate to ask questions. ConTeXt can do a lot, and
-the manuals are always a bit behind and incomplete. Also take
-a look at the files
-
-  mreadme.pdf
-  minstall.pdf
-  mtexexec.pdf
-  mtexutil.pdf
-
-The teTeX, fpTeX, and 4TeX distributions demonstrate how
-ConTeXt can be integrated in a TeX directory structure.
+Don't hesitate to ask questions. ConTeXt can do a lot, but the manuals
+always lag behind and can be incomplete.
 
 -------------------------
-
-functionality removed from mkiv:
-
-page-log : layers can do teh same and are more flexible
-core-dat : just use lua for database purposes
-core-swd : this was a temporary solution
-
-functionality changed in mkii and mkiv:
-
-xtag-map : no longer preloaded
-xtag-stk : no longer preloaded
-xtag-prs : no longer preloaded
-
--------------------------
-
 Hans Hagen, pragma@wxs.nl

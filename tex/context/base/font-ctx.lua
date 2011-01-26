@@ -957,14 +957,14 @@ function fonts.definetypeface(name,t)
     elseif t then
         if type(t) == "string" then
             -- "abc", "k=v,..."
-            t = utilities.parsers.settings_to_hash(name)
+            t = settings_to_hash(name)
         else
             -- "abc", {k=v,...}
         end
         t.name = t.name or name
     else
         -- "name=abc,k=v,..."
-        t = utilities.parsers.settings_to_hash(name)
+        t = settings_to_hash(name)
     end
     local p = t.preset and fonts.typefaces[t.preset] or { }
     local name         = t.name         or "unknowntypeface"
