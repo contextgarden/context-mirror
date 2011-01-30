@@ -263,10 +263,36 @@
      {\globalpopmacro\crossreferenceobject
       \dododosetobject{#1}{#2}{#3}\egroup}}
 
-\def\dododosetobject#1#2#3%
+% \def\dododosetobject#1#2#3%
+%   {\begingroup
+%    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
+%    \scratchdimen\objectoffset
+%    \@EA\xdef\csname\r!object#2::#3\endcsname
+%      {\noexpand\dohandleobject{#2}{#3}%
+%         {\ifhbox\nextbox\hbox\else\vbox\fi}%
+%         {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}%
+%         {\number\scratchdimen}}%
+%    \expanded % freeze the dimensions since \dostartobject may use \nextbox
+%      {\dostartobject{#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
+%    \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
+%      \setbox\nextbox\vbox spread 2\scratchdimen
+%        {\forgetall \offinterlineskip
+%         \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
+%    \fi \fi
+%    \flushnextbox
+%    \dostopobject
+%    \endgroup}
+
+\def\dododosetobject#1#2#3% this is a hack: luatex adds 1bp around each side
   {\begingroup
    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
-   \scratchdimen\objectoffset
+   \ifcase#1\relax
+      \scratchdimen-\onebasepoint % compensates auto 1 bp
+   \else\ifdim\objectoffset>\zeropoint
+      \scratchdimen \objectoffset
+   \else
+      \scratchdimen-\onebasepoint % compensates auto 1 bp
+   \fi\fi
    \@EA\xdef\csname\r!object#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}%
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
@@ -274,11 +300,9 @@
         {\number\scratchdimen}}%
    \expanded % freeze the dimensions since \dostartobject may use \nextbox
      {\dostartobject{#2}{#3}{\the\nextboxwd}{\the\nextboxht}{\the\nextboxdp}}%
-   \ifcase#1\relax\else \ifdim\objectoffset>\zeropoint
-     \setbox\nextbox\vbox spread 2\scratchdimen
-       {\forgetall \offinterlineskip
-        \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
-   \fi \fi
+   \setbox\nextbox\vbox spread 2\scratchdimen
+     {\forgetall \offinterlineskip
+      \vss\hbox spread 2\scratchdimen{\hss\flushnextbox\hss}\vss}%
    \flushnextbox
    \dostopobject
    \endgroup}
