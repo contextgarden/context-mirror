@@ -1080,7 +1080,7 @@ function scripts.context.metapost()
 end
 
 function scripts.context.version()
-    local name = resolvers.findfile("context.tex")
+    local name = resolvers.findfile("context.mkiv")
     if name ~= "" then
         logs.simple("main context file: %s",name)
         local data = io.loaddata(name)
@@ -1095,7 +1095,7 @@ function scripts.context.version()
             logs.simple("context version: unknown, load error")
         end
     else
-        logs.simple("main context file: unknown, 'context.tex' not found")
+        logs.simple("main context file: unknown, 'context.mkiv' not found")
     end
 end
 
@@ -1215,29 +1215,30 @@ local function touch(name,pattern)
     end
 end
 
-local touchables = { "cont-new.mkii", "cont-new.mkiv" }
+local function touchfiles(suffix)
+    local done, oldversion, newversion, foundname = touch(file.addsuffix("context",suffix),"(\\edef\\contextversion{)(.-)(})")
+    if done then
+        logs.simple("old version : %s", oldversion)
+        logs.simple("new version : %s", newversion)
+        logs.simple("touched file: %s", foundname)
+        local ok, _, _, foundname = touch(file.addsuffix("cont-new",suffix), "(\\newcontextversion{)(.-)(})")
+        if ok then
+            logs.simple("touched file: %s", foundname)
+        end
+    end
+end
 
 function scripts.context.touch()
     if environment.argument("expert") then
-        local done, oldversion, newversion, foundname = touch("context.tex", "(\\edef\\contextversion{)(.-)(})")
-        if done then
-            logs.simple("old version : %s", oldversion)
-            logs.simple("new version : %s", newversion)
-            logs.simple("touched file: %s", foundname)
-            for i=1,#touchables do
-                local ok, _, _, foundname = touch(touchables[i], "(\\newcontextversion{)(.-)(})")
-                if ok then
-                    logs.simple("touched file: %s", foundname)
-                end
-            end
-        end
+        touchfiles("mkii")
+        touchfiles("mkiv")
     end
 end
 
 -- extras
 
 function scripts.context.extras(pattern)
-    local found = resolvers.findfile("context.tex")
+    local found = resolvers.findfile("context.mkiv")
     if found == "" then
         logs.simple("unknown extra: %s", extra)
     else
@@ -1332,12 +1333,12 @@ function scripts.context.update()
     local force = environment.argument("force")
     local socket = require("socket")
     local http   = require("socket.http")
-    local basepath = resolvers.findfile("context.tex") or ""
+    local basepath = resolvers.findfile("context.mkiv") or ""
     if basepath == "" then
-        logs.simple("quiting, no 'context.tex' found")
+        logs.simple("quiting, no 'context.mkiv' found")
         return
     end
-    local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.tex$") or ""
+    local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.mkiv$") or ""
     if basetree == "" then
         logs.simple("quiting, no proper tds structure (%s)",basepath)
         return
@@ -1379,12 +1380,12 @@ function scripts.context.update()
             logs.simple("quiting, unable to open '%s'",zipname)
             return
         end
-        local newfile = zip.loaddata(zipfile,"tex/context/base/context.tex")
+        local newfile = zip.loaddata(zipfile,"tex/context/base/context.mkiv")
         if not newfile then
-            logs.simple("quiting, unable to open '%s'","context.tex")
+            logs.simple("quiting, unable to open '%s'","context.mkiv")
             return
         end
-        local oldfile = io.loaddata(resolvers.findfile("context.tex")) or ""
+        local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
         local function versiontonumber(what,str)
             local version = str:match("\\edef\\contextversion{(.-)}") or ""
             local year, month, day, hour, minute = str:match("\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")

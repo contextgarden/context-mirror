@@ -227,7 +227,7 @@ function codeinjections.attachfile(specification)
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0
-    write_node(pdfannotation_node(width,height,depth,d()))
+    write_node(pdfannotation_node(width,height,depth,d())) -- somehow the dimensions come out wrong
 end
 
 function codeinjections.attachmentid(filename)

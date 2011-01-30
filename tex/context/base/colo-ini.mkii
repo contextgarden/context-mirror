@@ -271,9 +271,11 @@
 \def\dodosetupcolor#1%
   {\makeshortfilename[\truefilename{\f!colorprefix#1}]%
    \startreadingfile
-     \readsysfile\shortfilename
+     \readsysfile{\shortfilename.\mksuffix}
        {\showmessage\m!colors4\colorstyle}
-       {\showmessage\m!colors5\colorstyle}%
+       {\readsysfile{\shortfilename.tex}
+          {\showmessage\m!colors4\colorstyle}
+          {\showmessage\m!colors5\colorstyle}}%
    \stopreadingfile}
 
 \let\usecolors\setupcolor

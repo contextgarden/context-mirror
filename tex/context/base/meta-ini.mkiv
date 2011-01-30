@@ -13,6 +13,8 @@
 
 \writestatus{loading}{MetaPost Graphics / Initializations}
 
+\registerctxluafile{meta-ini}{1.001}
+
 \unprotect
 
 %D Instead of sharing code with \MKII, I decided to copy
@@ -837,16 +839,7 @@
 %D Loading specific \METAPOST\ related definitions is
 %D accomplished by:
 
-\def\douseMPlibrary#1%
-  {\ifcsname\c!file\f!metapostprefix#1\endcsname\else
-     \letvalueempty{\c!file\f!metapostprefix#1}%
-     \startreadingfile
-       \readsysfile{\truefilename{\f!metapostprefix#1}}{\showmessage\m!metapost1{#1}}\donothing
-     \stopreadingfile
-   \fi}
-
-\def\useMPlibrary[#1]%
-  {\processcommalist[#1]\douseMPlibrary}
+\unexpanded\def\useMPlibrary[#1]{\ctxlua{metapost.uselibrary(\!!bs#1\!!es)}}
 
 %D \macros
 %D   {setMPtext, MPtext, MPstring, MPbetex}

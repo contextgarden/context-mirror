@@ -200,35 +200,18 @@
 %D where \type{\f!colorprefix} is \unprotect {\tttf \f!colorprefix}.
 %D Loading such a file is done by \protect
 %D
-%D \showsetup{setupcolor}
+%D \showsetup{usecolors}
 %D
 %D Some default colors are specified in \type{colo-rgb.tex},
 %D which is loaded into the format by:
 %D
 %D \starttyping
-%D \setupcolor[rgb]
+%D \usecolors[rgb]
 %D \stoptyping
 
-\let\colorstyle\empty
+\unexpanded\def\usecolors[#1]{\ctxlua{commands.usecolors(\!!bs#1\!!es)}}
 
-\unexpanded\def\setupcolor
-  {\dosingleargument\dosetupcolor}
-
-\def\dosetupcolor[#1]%
-  {\doifnot{#1}\colorstyle
-     {\def\colorstyle{#1}%
-      \processcommalist[#1]\dodosetupcolor}}
-
-\def\dodosetupcolor#1% todo: mkii / mkiv
-  {\startreadingfile
-     \readsysfile{\truefilename{\f!colorprefix#1}}
-       {\showcolormessage\m!colors4\colorstyle}
-       {\showcolormessage\m!colors5\colorstyle}%
-   \stopreadingfile}
-
-\let\usecolors\setupcolor
-
-% check: \startcolormode
+\let\setupcolor\usecolors
 
 %D \macros
 %D   {definetransparency}
@@ -298,7 +281,7 @@
    \fi\fi
    \doifelse\@@clstate\v!stop
      {\incolorfalse\forcegrayMPcolorstrue}%
-     {\ifincolor\else\showcolormessage\m!colors1\colorstyle\fi\incolortrue\let\@@clstate\v!start}%
+     {\incolortrue\let\@@clstate\v!start}%
    \dosetupcolormodel
    \the\everysetupcolors}
 

@@ -42,7 +42,7 @@
 \def\loadcorefile#1{\normalinput#1.tex \relax}
 \def\loadmarkfile#1{\normalinput#1.mkiv\relax}
 
-\loadcorefile{syst-ini}
+\loadmarkfile{syst-ini}
 
 \ifnum\luatexversion<60 % also change message
     \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
@@ -51,7 +51,7 @@
 
 \newtoks\metatexversiontoks \metatexversiontoks\expandafter{\metatexversion} % at the lua end
 
-\loadcorefile{syst-pln}      % plain tex initializations of internal registers (no further code)
+\loadmarkfile{syst-pln}      % plain tex initializations of internal registers (no further code)
 \loadmarkfile{syst-mes}
 
 \loadmarkfile{luat-cod}      %
@@ -61,10 +61,10 @@
 % needs stripping:
 
 \loadmarkfile{catc-ini}      % catcode table management
-\loadcorefile{catc-act}      % active character definition mechanisms
-\loadcorefile{catc-def}      % some generic catcode tables
-\loadcorefile{catc-ctx}      % a couple of context specific tables but expected by later modules
-\loadcorefile{catc-sym}      % some definitions related to \letter<tokens>
+\loadmarkfile{catc-act}      % active character definition mechanisms
+\loadmarkfile{catc-def}      % some generic catcode tables
+\loadmarkfile{catc-ctx}      % a couple of context specific tables but expected by later modules
+\loadmarkfile{catc-sym}      % some definitions related to \letter<tokens>
 
 % helpers, maybe less
 

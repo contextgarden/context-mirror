@@ -16,13 +16,15 @@
 
 \ifdefined\XMLbanner \endinput \fi
 
+\writestatus{xtag}{this module is obsolete, use the mkiv-xml features or use mkii instead}
+
 \loadmarkfile{catc-xml}
 
-\loadcorefile{xtag-ini}
-\loadcorefile{xtag-ext}
-\loadcorefile{xtag-exp}
-\loadcorefile{xtag-pre} % has old encoding code
-\loadcorefile{xtag-xsd} % will go away (stub anyway)
-\loadcorefile{xtag-rng} % will go away (stub anyway)
+\loadcorefile{xtag-ini.mkii}
+\loadcorefile{xtag-ext.mkii}
+\loadcorefile{xtag-exp.mkii}
+\loadcorefile{xtag-pre.mkii} % has old encoding code
+\loadcorefile{xtag-xsd.mkii} % will go away (stub anyway)
+\loadcorefile{xtag-rng.mkii} % will go away (stub anyway)
 
 \endinput

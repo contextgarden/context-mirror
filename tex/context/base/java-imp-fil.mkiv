@@ -1,0 +1,48 @@
+%D \module
+%D   [       file=java-fil,
+%D        version=1998.06.01,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Filing and Printing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startJSpreamble Auxiliary used now
+
+  function DocumentFileName ()
+    { var Paths = this.path.split("/") ;
+      Paths = Paths[Paths.length-1].split(".") ;
+      return(Paths[0]) }
+
+  function Print_Page_Range(From, To) % gaat mis, nog geen args mogelijk
+    { if ((Number(From)>0)&&(Number(To)>=Number(From)))
+        { var myFrom = Number(From)-1 ;
+          var myTo = Number(To)-1 ;
+          this.print(false,myFrom,myTo,true) } }
+
+  function Print_This_Page ()
+    { this.print(false,this.pageNum,this.pageNum,true) }
+
+\stopJSpreamble
+
+\definereference
+  [PrintSubPaginas]
+  [JS(Print_Page_Range{\firstsubpage,\lastsubpage})]
+
+\definereference
+  [PrintSubPages]
+  [JS(Print_Page_Range{\firstsubpage,\lastsubpage})]
+
+\definereference
+  [PrintDezePagina]
+  [JS(Print_This_Page)]
+
+\definereference
+  [PrintThisPage]
+  [JS(Print_This_Page)]
+
+\endinput
