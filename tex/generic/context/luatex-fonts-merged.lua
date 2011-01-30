@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/14/11 14:44:17
+-- merge date  : 01/18/11 19:34:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -60,9 +60,9 @@ function string.count(str,pattern) -- variant 3
     return n
 end
 
-function string.limit(str,n,sentinel)
+function string.limit(str,n,sentinel) -- not utf proof
     if #str > n then
-        sentinel = sentinel or " ..."
+        sentinel = sentinel or "..."
         return sub(str,1,(n-#sentinel)) .. sentinel
     else
         return str

@@ -414,11 +414,11 @@
 \unexpanded\def\startreadingfile% beter een every en \setnormalcatcodes
   {\global\advance\readingfilelevel\plusone
    \the\everystartreadingfile
-   \beginrestorecatcodes
-   \setcatcodetable\prtcatcodes}
+   \pushcatcodetable % saveguard
+   }% \setcatcodetable\prtcatcodes % no longer in mkiv, has to be done explictly
 
 \unexpanded\def\stopreadingfile
-  {\endrestorecatcodes
+  {\popcatcodetable % saveguard
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
 

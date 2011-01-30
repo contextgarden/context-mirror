@@ -144,7 +144,7 @@ local special     = S("-+/*^%=#") + P("..")
 -- that can be found at http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html.
 
 local equals      = P("=")^0
-local open        = P("[") * Cg(equals, "init") * P("[") * P("\n")^-1
+local open        = P("[") * Cg(equals, "init") * P("[") * P("\n")^-1 -- maybe better: patterns.newline^-1
 local close       = P("]") * C(equals) * P("]")
 local closeeq     = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
 local longstring  = open * Cs((P(1) - closeeq)^0) * close * Carg(1)

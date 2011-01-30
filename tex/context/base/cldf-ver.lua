@@ -15,7 +15,7 @@ local tostring, type = tostring, type
 local context = context
 
 local function flush(...)
-    context(concat{...,"\n"})
+    context(concat{...,"\r"}) -- was \n
 end
 
 local function t_tocontext(...)
@@ -57,7 +57,7 @@ end
 function context.tobuffer(name,str)
     context.startbuffer { name }
     context.pushcatcodes("verbatim")
-    local lines = (type(str) == "string" and find(str,"\n") and splitlines(str)) or str
+    local lines = (type(str) == "string" and find(str,"[\n\r]") and splitlines(str)) or str
     for i=1,#lines do
         context(lines[i] .. " ")
     end

@@ -29,9 +29,7 @@
 %D </rl:library>
 %D \stoptyping
 
-\doifnotmode{\systemmodeprefix\v!first}{\endinput}
-
-\unprotect
+\unprotect \doifnotmode{\systemmodeprefix\v!first}{\protect\endinput}
 
 \def\XMLrlprefix{rl:}
 

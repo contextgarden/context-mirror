@@ -25,7 +25,8 @@ local grammar = { "visualizer",
 
     -- handy
 
-    line               = V("newline") * V("emptyline")^0 * V("beginline"),
+ -- line               = V("newline") * V("emptyline")^0 * V("beginline"),
+    line               = V("newline") * V("emptyline")^0 * V("beginline") + V("emptyline") + V("newline"),
     whitespace         = (V("space") + V("line"))^1,
     optionalwhitespace = (V("space") + V("line"))^0,
 

@@ -38,14 +38,16 @@ my $PassOn = '' ;
     "rawmp"   => \$RawMP, # option is now default, but keep for compat
     "metafun" => \$MetaFun,
     "passon"  => \$PassOn, # option is ignored, but keep for compat
-    "latex"   => \$Latex ) ;
+    "latex"   => \$Latex,
+    "texexec" => \$TeXexec) ;
 
-my $program = "MPtoPDF 1.4.0" ;
-my $pattern = "@ARGV" ; # was $ARGV[0]
-my $miktex  = 0 ;
-my $done    = 0 ;
-my $report  = '' ;
+my $program       = "MPtoPDF 1.4.1" ;
+my $pattern       = "@ARGV" ; # was $ARGV[0]
+my $miktex        = 0 ;
+my $done          = 0 ;
+my $report        = '' ;
 my $mplatexswitch = " --tex=latex " ;
+my $texexecswitch = " --tex=\"texexec --batch --once --nomp --mptex\" " # untested
 
 my $dosish      = ($Config{'osname'} =~/^(ms)?dos|^os\/2|^mswin/i) ;
 my $escapeshell = (($ENV{'SHELL'}) && ($ENV{'SHELL'} =~ m/sh/i ));
@@ -87,6 +89,9 @@ if (($pattern eq '')||($Help)) {
     }
     if ($Latex) {
       $rest .= " $mplatexswitch" ;
+    }
+    if ($TeXexec) {
+      $rest .= " $texexecswitch" ;
     }
     if ($MetaFun) {
       $mpbin = "mpost --progname=mpost --mem=metafun" ;

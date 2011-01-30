@@ -162,6 +162,7 @@ function synonyms.flush(data,options)
      -- context[format("\\start%ssection",kind)](sublist.tag)
         for d=1,#data do
             local entry = data[d].definition
+         -- context[format("\\%sentry",kind)](d,entry.tag,entry.synonym,entry.meaning or "")
             context("\\%sentry{%s}{%s}{%s}{%s}",kind,d,entry.tag,entry.synonym,entry.meaning or "")
         end
      -- context[format("\\stop%ssection",kind)]()

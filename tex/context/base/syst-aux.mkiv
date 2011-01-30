@@ -2791,6 +2791,13 @@
   {}
 
 %D \macros
+%D   {immediatemessage}
+%D
+%D A fully expandable message:
+
+\def\immediatemessage#1{\ctxlua{logs.status("message","#1")}}
+
+%D \macros
 %D   {debuggerinfo}
 %D
 %D For debugging purposes we can enhance macros with the

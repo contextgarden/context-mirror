@@ -13,6 +13,8 @@
 
 % \writestatus{loading}{ConTeXt Lua Macros / Code}
 
+\unprotect
+
 \long\def\lastexpanded{} % todo: elsewhere we use \@@expanded
 
 \long\def\expanded#1{\long\xdef\lastexpanded{\noexpand#1}\lastexpanded}
@@ -65,4 +67,4 @@
 
 % \everydump\expandafter{\the\everydump\ctxlua{lua.finalize()}}
 
-\endinput
+\protect \endinput

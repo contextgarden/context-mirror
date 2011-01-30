@@ -497,9 +497,9 @@
 \ifdefined\setupheadcomponentfont \else
 
     \unexpanded\def\setupheadcomponentfont#1#2%
-      {\dosetstructureheadattributes\c!style\c!color
+      {\dontconvertfont
+       \dosetstructureheadattributes\c!style\c!color
        \dosetstructureheadattributes#1#2%
-       \dontconvertfont
        \setupinterlinespace}
 
 \fi

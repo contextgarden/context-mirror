@@ -30,7 +30,8 @@
    \doif{\structureheadparameter\c!margintext}\v!yes\placemargincontent}
 
 \unexpanded\def\setupheadcomponentfont#1#2%
-  {\ifconditional\structureheadisdisplay
+  {\dontconvertfont
+   \ifconditional\structureheadisdisplay
      \edef\askedstructureheadinterlinespace{\structureheadparameter\c!interlinespace}%
      \ifx\askedstructureheadinterlinespace\empty
        % here the interline space is only set when style sets no space
@@ -68,8 +69,7 @@
      \ifconditional\fontattributeisset
        \setupspacing
      \fi
-   \fi
-   \dontconvertfont}
+   \fi}
 
 \def\doplaceheadtextcomponent#1%
   {\begingroup

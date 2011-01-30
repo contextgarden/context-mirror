@@ -349,7 +349,8 @@ function visualizers.registerescapepattern(name,before,after,normalmethod,escape
             (before / "")
           * ((1 - after)^0 / (escapemethod or texmethod))
           * (after / "")
-          + hack((1 - before)^1) / (normalmethod or defaultmethod)
+       -- + hack((1 - before)^1) / (normalmethod or defaultmethod)
+          + ((1 - before)^1) / (normalmethod or defaultmethod)
         )^0
         escapepatterns[name] = escapepattern
     end
@@ -460,7 +461,8 @@ local emptyline = C(patterns.emptyline)   * CargOne / f_emptyline
 local beginline = C(patterns.beginline)   * CargOne / f_beginline
 local anything  = C(patterns.somecontent) * CargOne / f_default
 
-local verbosed  = (space + newline * (emptyline^0) * beginline + anything)^0
+----- verbosed  = (space + newline * (emptyline^0) * beginline + anything)^0
+local verbosed  = (space + newline * (emptyline^0) * beginline + emptyline + newline + anything)^0
 
 local function write(s,settings) -- bad name
     lpegmatch(verbosed,s,1,settings or false)
@@ -599,7 +601,7 @@ local function filter(lines,settings) -- todo: inline or display in settings
         first, last = getrange(lines,first,last,range)
         first, last = getstrip(lines,first,last)
     end
-    local content = concat(lines,(settings.nature == "inline" and " ") or "\n",first,last)
+    local content = concat(lines,(settings.nature == "inline" and " ") or "\r",first,last) -- was \n
     return content, m
 end
 

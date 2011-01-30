@@ -298,4 +298,16 @@
 \def\crampedrlap{\mathpalette\docrampedrlap}
 \def\crampedclap{\mathpalette\docrampedclap}
 
+% experiment, not yet to be used
+
+% \def\displaybreak
+%   {\ifhmode
+%      \removeunwantedspaces
+%      \ifcase\raggedstatus\hfill\fi
+%      \strut\penalty-9999 % \break fails on case (3)
+%    \fi}
+%
+% \def\startdisplay{\displaybreak\ignorespaces\startpacked}
+% \def\stopdisplay {\stoppacked\displaybreak\ignorespaces}
+
 \protect \endinput

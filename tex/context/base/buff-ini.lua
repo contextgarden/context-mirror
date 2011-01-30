@@ -70,7 +70,7 @@ local function collectcontent(names,separator) -- no print
                 t[n] = c
             end
         end
-        return concat(t,separator or "\r") -- "\n" is safer due to comments and such
+        return concat(t,separator or "\r")
     end
 end
 
@@ -123,7 +123,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
         if dn == "" then
             dn = sub(bufferdata,1,-2)
         else
-            dn = dn .. "\n" .. sub(bufferdata,1,-2)
+            dn = dn .. "\n" .. sub(bufferdata,1,-2) -- no \r, \n is more generic
         end
         local last = sub(dn,-1)
         if last == "\n" or last == "\r" then

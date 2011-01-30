@@ -533,4 +533,16 @@
 
 \let\_\normalunderscore
 
+%D To be sorted out:
+
+\unexpanded\def\textminus
+  {\char  \iffontchar\font"2012 "2012 % figuredash
+     \else\iffontchar\font"2013 "2013 % endash
+     \else\iffontchar\font"2212 "2212 % math minus
+                                "002D % hyphen
+     \fi\fi\fi}
+
+\unexpanded\def\textplus
+  {\char"002B } % plus
+
 \protect \endinput

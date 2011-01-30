@@ -44,7 +44,7 @@
 %D \NC \type{\f!prefix!} \NC  f!         \NC file                \NC\MR
 %D \NC \type{\k!prefix!} \NC  k!         \NC constant (indirect) \NC\MR
 %D \NC \type{\l!prefix!} \NC  l!         \NC language            \NC\MR
-%D \NC \type{\m!prefix!} \NC  m!         \NC message             \NC\MR
+%D \NC \type{\m!prefix!} \NC  m!         \NC age             \NC\MR
 %D \NC \type{\p!prefix!} \NC  p!         \NC procedure           \NC\MR
 %D \NC \type{\r!prefix!} \NC  r!         \NC reference           \NC\MR
 %D \NC \type{\s!prefix!} \NC  s!         \NC system              \NC\MR
@@ -436,69 +436,6 @@
 \def\doresetvalue   #1#2{\dosetvalue{#1}{#2}{}}
 \def\doignorevalue#1#2#3{\dosetvalue{#1}{#2}{}}
 
-% \def\dosetvalue#1#2%
-%   {\let\c!internal!\c!internal!n
-%    \ifcsname\k!prefix!#2\endcsname
-%      \let\c!internal!\c!internal!y
-%      \@EA\def\csname#1\csname\k!prefix!#2\endcsname%\endcsname
-%    \else
-%      \let\c!internal!\c!internal!y
-%      \@EA\def\csname#1#2%\endcsname
-%    \fi\endcsname}
-
-% \def\dosetevalue#1#2%
-%   {\let\c!internal!\c!internal!n
-%    \ifcsname\k!prefix!#2\endcsname
-%      \let\c!internal!\c!internal!y
-%      \@EA\edef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
-%    \else
-%      \let\c!internal!\c!internal!y
-%      \@EA\edef\csname#1#2%\endcsname
-%    \fi\endcsname}
-
-% \def\dosetgvalue#1#2%
-%   {\let\c!internal!\c!internal!n
-%    \ifcsname\k!prefix!#2\endcsname
-%      \let\c!internal!\c!internal!y
-%      \@EA\gdef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
-%    \else
-%      \let\c!internal!\c!internal!y
-%      \@EA\gdef\csname#1#2%\endcsname
-%    \fi\endcsname}
-
-% \def\dosetxvalue#1#2%
-%   {\let\c!internal!\c!internal!n
-%    \ifcsname\k!prefix!#2\endcsname
-%      \let\c!internal!\c!internal!y
-%      \@EA\xdef\csname#1\csname\k!prefix!#2\endcsname%\endcsname
-%    \else
-%      \let\c!internal!\c!internal!y
-%      \@EA\xdef\csname#1#2%\endcsname
-%    \fi\endcsname}
-
-% \def\docopyvalue#1#2#3% real tricky expansion, quite unreadable
-%   {\let\c!internal!\c!internal!n
-%    \ifcsname\k!prefix!#3\endcsname
-%      \let\c!internal!\c!internal!y
-%      \@EA\def\csname#1\csname\k!prefix!#3\endcsname
-%        \@EA\endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
-%    \else
-%      \let\c!internal!\c!internal!y
-%      \@EA\def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}%
-%    \fi}
-
-% \def\dosetvalue #1#2{\@EA \def\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \def\dosetevalue#1#2{\@EA\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \def\dosetgvalue#1#2{\@EA\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \def\dosetxvalue#1#2{\@EA\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-
-% \def\docopyvalue#1#2#3% real tricky expansion, quite unreadable
-%   {\ifcsname\k!prefix!#3\endcsname
-%      \@EA\def\csname#1\csname\k!prefix!#3\endcsname\@EA\endcsname\@EA{\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
-%    \else
-%      \@EA\def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}%
-%    \fi}
-
 \def\doletvalue   #1#2{\@EA \let\csname#1#2\endcsname}
 \def\dosetvalue   #1#2{\@EA \def\csname#1#2\endcsname}
 \def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
@@ -769,18 +706,8 @@
 
 % temporary mkiv hack (we can best just store the whole table in memory)
 
-% \let\c!internal!y \string
-% \def\c!internal!n {-}
-% \let\c!internal!  \c!internal!y
-
-% \def\setinterfaceconstant#1#2%
-%   {\ctxlua{interfaces.setconstant("#1","#2")}%
-%    \setvalue{\c!prefix!#1}{\c!internal!#1}%
-%    \setvalue{\k!prefix!#2}{#1}}
-
 \def\setinterfaceconstant#1#2%
   {\ctxlua{interfaces.setconstant("#1","#2")}%
-  %\setvalue{\k!prefix!#2}{#1}%
    \setvalue{\c!prefix!#1}{#1}}
 
 \def\setinterfacevariable#1#2%
@@ -813,7 +740,8 @@
 %D part is needed, we use a \type{-}:
 
 \def\setinterfaceelement#1#2%
-  {\ifcsname\e!prefix!#1\endcsname
+  {\ctxlua{interfaces.setelement("#1","#2")}%
+   \ifcsname\e!prefix!#1\endcsname
      \doifnotvalue{\e!prefix!#1}{#2}{\setvalue{\e!prefix!#1}{#2}}%
    \else
      \setvalue{\e!prefix!#1}{#2}%
@@ -828,6 +756,13 @@
 \unexpanded\def\startconstants{\gobbleuntil\stopconstants}
 \unexpanded\def\startelements {\gobbleuntil\stopelements}
 \unexpanded\def\startcommands {\gobbleuntil\stopcommands}
+
+%D For at the \LUA\ end (experiment):
+
+\def\do@sicon#1#2{\@EA\gdef\csname\c!prefix!#1\endcsname{#1}}
+\def\do@sivar#1#2{\@EA\gdef\csname\v!prefix!#1\endcsname{#2}}
+\def\do@siele#1#2{\@EA\gdef\csname\e!prefix!#1\endcsname{#2}}
+\def\do@sicom#1#2{\@EA\gdef\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}
 
 %D \macros
 %D   {interfaced}
