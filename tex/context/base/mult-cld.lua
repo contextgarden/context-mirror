@@ -148,17 +148,6 @@ function context.popcatcodes()
     contentcatcodes = currentcatcodes
 end
 
-function context.unprotect()
-    insert(catcodestack,currentcatcodes)
-    currentcatcodes = prtcatcodes
-    contentcatcodes = currentcatcodes
-end
-
-function context.protect()
-    currentcatcodes = remove(catcodestack) or currentcatcodes
-    contentcatcodes = currentcatcodes
-end
-
 function tex.fprint(...) -- goodie
     texsprint(currentcatcodes,format(...))
 end
@@ -396,6 +385,25 @@ end
 local defaultcaller = caller
 
 setmetatable(context, { __index = indexer, __call = caller } )
+
+-- now we tweak unprotect and protect
+
+function context.unprotect()
+    -- at the lua end
+    insert(catcodestack,currentcatcodes)
+    currentcatcodes = prtcatcodes
+    contentcatcodes = currentcatcodes
+    -- at the tex end
+    flush("\\unprotect")
+end
+
+function context.protect()
+    -- at the tex end
+    flush("\\protect")
+    -- at the lua end
+    currentcatcodes = remove(catcodestack) or currentcatcodes
+    contentcatcodes = currentcatcodes
+end
 
 -- logging
 

@@ -247,16 +247,19 @@
 %D what the next macros do. Saving the catcodes can be
 %D disabled by saying \type{\localcatcodestrue}.
 
+% quite likely we will define \unexpanded earlier on so
+% that \normalprotected will go
+
 \let\savedcatcodetable\relax
 
 \newcount\catcoderestorelevel
 
-\def\pushcatcodetable
+\normalprotected\def\pushcatcodetable
   {\advance\catcoderestorelevel\plusone
    \tracepushcatcodetable
    \expandafter\chardef\csname scct:\number\catcoderestorelevel\endcsname\currentcatcodetable}
 
-\def\popcatcodetable
+\normalprotected\def\popcatcodetable
   {\ifcase\catcoderestorelevel
      \showcatcodenestingerror
    \else
@@ -265,22 +268,22 @@
      \advance\catcoderestorelevel\minusone
    \fi}
 
-\def\showcatcodenestingerror % can be overloaded
+\normalprotected\def\showcatcodenestingerror % can be overloaded
   {\immediate\write16{}%
    \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
    \immediate\write16{}}
 
-\def\restorecatcodes % takes previous level
+\normalprotected\def\restorecatcodes % takes previous level
   {\ifnum\catcoderestorelevel>\plusone
      \expandafter\catcodetable\csname scct:\number\numexpr\catcoderestorelevel-1\relax\endcsname
    \fi}
 
 \newtoks\everycatcodetable
 
-\def\setcatcodetable#1%
-   {\catcodetable#1%
-    \the\everycatcodetable
-    \tracesetcatcodetable}
+\normalprotected\def\setcatcodetable#1%
+  {\catcodetable#1%
+   \the\everycatcodetable
+   \tracesetcatcodetable}
 
 \def\dotracecatcodetable#1{\immediate\write16{[#1]}}
 

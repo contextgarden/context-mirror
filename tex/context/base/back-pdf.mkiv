@@ -110,16 +110,6 @@
     \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
 \to \everylastbackendshipout
 
-%D Unfortunately this is still needed (also for  \METAPOST\ to
-%D \PDF\ converter):
-
-% \def\doresetmapfilelist
-%   {\global\let\doresetmapfilelist\relax
-%    \pdfmapfile{original-empty.map}}
-%
-% \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryxform
-% \appendtoksonce \loadallfontmapfiles \to \pdfbackendeveryximage
-
 %D Transformations. Some day we will use primitives (once they're fixed).
 
 \def\dostartrotation#1% grouped
