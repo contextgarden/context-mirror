@@ -51938,7 +51938,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="barleftarrowrightarrowba", -- This is a strange name
+  mathname="barleftarrowrightarrowbar",
   unicodeslot=0x21B9,
  },
  [0x21BA]={

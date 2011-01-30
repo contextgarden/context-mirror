@@ -126,7 +126,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
             dn = dn .. "\n" .. sub(bufferdata,1,-2) -- no \r, \n is more generic
         end
         local last = sub(dn,-1)
-        if last == "\n" or last == "\r" then
+        if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
             dn = sub(dn,1,-2)
         end
     end

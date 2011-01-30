@@ -363,21 +363,21 @@
 
 \setnewconstant\primeasciicode 39 % '
 
-\activatemathcharacter\caretasciicode
+\activatemathcharacter\circumflexasciicode
 \activatemathcharacter\underscoreasciicode
 \activatemathcharacter\ampersandasciicode
 \activatemathcharacter\primeasciicode
 
 % not used:
 %
-% \mathcode`\ =\activemathcharcode
+% \mathcode\spaceasciicode\activemathcharcode
 %
 % not used:
 %
 % \bgroup
-%     \catcode`\_ = 13
+%     \catcode\underscoreasciicode\activecatcode
 %     \doglobal\appendtoks
-%         \mathcode`\_=\activemathcharcode
+%         \mathcode\underscoreasciicode\activemathcharcode
 %         \let_\activemathunderscore
 %     \to \everymathematics
 % \egroup
@@ -387,7 +387,7 @@
 \bgroup
     \catcode\primeasciicode\activecatcode
     \doglobal\appendtoks
-        \let'\activemathquote
+        \let'\domathprime
     \to \everymathematics
 \egroup
 
@@ -402,7 +402,7 @@
 \bgroup
 
     \catcode\underscoreasciicode\activecatcode
-    \catcode\caretasciicode     \activecatcode
+    \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
     \global \everynonknuthmode {\appendtoks
@@ -415,20 +415,20 @@
 
 \appendtoks
     \catcode\underscoreasciicode\othercatcode
-    \catcode\caretasciicode     \othercatcode
+    \catcode\circumflexasciicode\othercatcode
     \catcode\ampersandasciicode \othercatcode
 \to \everynonknuthmode
 
 \appendtoks
     \catcode\underscoreasciicode\subscriptcatcode
-    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\circumflexasciicode\superscriptcatcode
     \catcode\ampersandasciicode \alignmentcatcode
 \to \everydonknuthmode
 
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
         \catcode\underscoreasciicode\othercatcode
-        \catcode\caretasciicode     \othercatcode
+        \catcode\circumflexasciicode\othercatcode
         \catcode\ampersandasciicode \othercatcode
     \stopextendcatcodetable
 \to \everynonknuthmode
@@ -436,14 +436,14 @@
 \appendtoks
     \startextendcatcodetable\ctxcatcodes
         \catcode\underscoreasciicode\subscriptcatcode
-        \catcode\caretasciicode     \superscriptcatcode
+        \catcode\circumflexasciicode\superscriptcatcode
         \catcode\ampersandasciicode \alignmentcatcode
     \stopextendcatcodetable
 \to \everydonknuthmode
 
 % \def\prefermathcatcodes
 %   {\catcode\underscoreasciicode\subscriptcatcode
-%    \catcode\caretasciicode     \superscriptcatcode
+%    \catcode\circumflexasciicode\superscriptcatcode
 %    \catcode\ampersandasciicode \alignmentcatcode}
 
 %D Even more drastic:

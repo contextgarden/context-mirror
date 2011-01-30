@@ -830,10 +830,10 @@
      \the\everytable
    \fi}
 
-\bgroup \catcode`\~=13
+\bgroup \catcode\tildeasciicode\activecatcode
 
     \appendtoks
-        \catcode`\~=\active
+        \catcode\barasciicode\activecatcode
         \def~{\kern.5em}%
         \def\\{\ifhmode\space\else\par\fi}%
     \to \everytable
@@ -1430,7 +1430,7 @@
 
 \unexpanded\def\definetabletemplate % to be redone
   {\bgroup
-   \catcode`\|=\othercatcode
+   \catcode\barasciicode\othercatcode
    \doquadrupleempty\dodefinetabletemplate}
 
 \def\dodefinetabletemplate[#1][#2][#3][#4]%
@@ -1511,7 +1511,7 @@
 %    \stoptablenoalign
    }
 
-\bgroup \catcode`\|=\othercatcode
+\bgroup \catcode\barasciicode\othercatcode
 
 \gdef\secondstagestarttable[#1]% brr nested mess
   {\bgroup
@@ -1880,11 +1880,11 @@
 %D \TABLE\ changes the catcode when needed.}
 
 \bgroup
-    \catcode`\|=\othercatcode  \gdef\@@otherbar     {|}
-    \catcode`\|=\activecatcode \gdef\@@useotherbar  {\let|\@@otherbar}
+    \catcode\barasciicode\othercatcode  \gdef\@@otherbar     {|}
+    \catcode\barasciicode\activecatcode \gdef\@@useotherbar  {\let|\@@otherbar}
 \egroup
 
-\bgroup \catcode`\|=\othercatcode
+\bgroup \catcode\barasciicode\othercatcode
 
 \gdef\dogettablenofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup

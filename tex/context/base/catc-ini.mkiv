@@ -21,21 +21,22 @@
 %D implement a fake method in the \MKII\ file. There is some
 %D overlap in code with \MKII\ but we take that for granted.
 
-\setnewconstant\escapecatcode       0
-\setnewconstant\begingroupcatcode   1
-\setnewconstant\endgroupcatcode     2
-\setnewconstant\mathshiftcatcode    3
-\setnewconstant\alignmentcatcode    4
-\setnewconstant\endoflinecatcode    5
-\setnewconstant\parametercatcode    6
-\setnewconstant\superscriptcatcode  7
-\setnewconstant\subscriptcatcode    8
-\setnewconstant\ignorecatcode       9
-\setnewconstant\spacecatcode       10
-\setnewconstant\lettercatcode      11
-\setnewconstant\othercatcode       12  \let\other \othercatcode
-\setnewconstant\activecatcode      13  \let\active\activecatcode
-\setnewconstant\commentcatcode     14
+\setnewconstant\escapecatcode          0
+\setnewconstant\begingroupcatcode      1
+\setnewconstant\endgroupcatcode        2
+\setnewconstant\mathshiftcatcode       3
+\setnewconstant\alignmentcatcode       4
+\setnewconstant\endoflinecatcode       5
+\setnewconstant\parametercatcode       6
+\setnewconstant\superscriptcatcode     7
+\setnewconstant\subscriptcatcode       8
+\setnewconstant\ignorecatcode          9
+\setnewconstant\spacecatcode          10
+\setnewconstant\lettercatcode         11
+\setnewconstant\othercatcode          12  \let\other \othercatcode
+\setnewconstant\activecatcode         13  \let\active\activecatcode
+\setnewconstant\commentcatcode        14
+\setnewconstant\invalidcatcode        15
 
 \setnewconstant\tabasciicode           9
 \setnewconstant\newlineasciicode      10  % don't confuse this one with \endoflineasciicode
@@ -43,11 +44,36 @@
 \setnewconstant\endoflineasciicode    13  % somewhat messy but this can be the active \par
 \setnewconstant\endoffileasciicode    26
 \setnewconstant\spaceasciicode        32
+\setnewconstant\hashasciicode         35
+\setnewconstant\dollarasciicode       36
+\setnewconstant\commentasciicode      37
 \setnewconstant\ampersandasciicode    38
-\setnewconstant\caretasciicode        94
+\setnewconstant\backslashasciicode    92 % `\\
+\setnewconstant\circumflexasciicode   94
 \setnewconstant\underscoreasciicode   95
-%setnewconstant\barasciicode         124
+\setnewconstant\leftbraceasciicode   123 % `\{
+\setnewconstant\barasciicode         124 % `\|
+\setnewconstant\rightbraceasciicode  125 % `\}
+\setnewconstant\tildeasciicode       126 % `\~
 \setnewconstant\delasciicode         127
+
+\bgroup
+    \catcode \tabasciicode       \activecatcode  \gdef\activetabtoken      {^^I}
+                                                 \gdef\outputnewlinechar   {^^J}
+    \catcode \formfeedasciicode  \activecatcode  \gdef\activeformfeedtoken {^^L}
+    \catcode \endoflineasciicode \activecatcode  \gdef\activeendoflinetoken{^^M}
+\egroup
+
+% \endlinechar = \endoflineasciicode % appended to input lines
+% \newlinechar = \newlineasciicode   % can be used in write
+
+% rather special and used in writing to file: \let\par\outputnewlinechar
+
+\def\initializenewlinechar % operating system dependent
+  {\bgroup
+   \newlinechar\newlineasciicode
+   \xdef\outputnewlinechar{^^J}%
+   \egroup}
 
 \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
 
@@ -71,10 +97,10 @@
 \newtoks \setdefaultcatcodes
 
 \setdefaultcatcodes
-  {\catcode`\\                \othercatcode
+  {\catcode\backslashasciicode\othercatcode
    \catcode\endoflineasciicode\othercatcode
    \catcode\spaceasciicode    \othercatcode
-   \catcode`\%                \othercatcode
+   \catcode\commentasciicode  \othercatcode
    \catcode\delasciicode      \othercatcode}
 
 \long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
@@ -85,8 +111,10 @@
    \savecatcodetable#1\relax
    \egroup}
 
-\def\permitcaretescape % to be used grouped
-  {\catcode`\^ = \superscriptcatcode}
+\def\permitcircumflexescape % to be used grouped
+  {\catcode\circumflexasciicode\superscriptcatcode}
+
+\let\permitcaretescape\permitcircumflexescape
 
 \newcatcodetable\dummycatcodes
 
@@ -121,7 +149,7 @@
 %D mechanism? Future versions of \MKIV\ might only use
 %D active characters for very special cases.
 
-\setnewconstant\activehackcode `\~
+\setnewconstant\activehackcode \tildeasciicode
 
 %D Once a catcode is assigned, the next assignments will happen faster.
 

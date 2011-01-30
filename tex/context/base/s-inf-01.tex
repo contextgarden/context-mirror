@@ -16,18 +16,19 @@
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
 
-    local list, size, comp, used, nope = { }, { }, { }, { mkii = { }, mkiv = { } }, { 0, 0, 0, 0 }
+    local list, size, comp, used, nope = { }, { }, { }, { mkii = { }, mkiv = { }, mkvi = { } }, { 0, 0, 0, 0, 0 }
 
     local omit = {
         "char%-def%.lua",
-        "mult%-def%.lua", "mult%-..%.tex", "mult%-m..%.tex",
+        "mult%-def%.lua", "mult%-..%.mkii", "mult%-m..%.mkii",
     }
     local skip = {
         "prag%-.*%.tex", "docs%-.*.tex", "list%-.*%.tex", "test%-.*%.tex", "demo%-.*%.tex",
-        "opti%-.*%.tex", "chrt%-.*%.tex",
+        "opti%-.*%.tex", "chrt%-.*%.tex", ".*%-old", ".*%-obs", ".*%-tst", "supp%-.*%.tex",
+        "colo%-pan.tex",
     }
     local types = {
-        "tex", "mkii", "mkiv", "lua"
+        "tex", "mkii", "mkiv", "mkvi", "lua"
     }
 
     local function collect(list,suffix,n)
@@ -48,7 +49,7 @@
                 if okay then
                     local lm, sm, cm = list[category], size[category], comp[category]
                     if not lm then
-                        lm, sm, cm = { 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0 }
+                        lm, sm, cm = { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
                         list[category], size[category], comp[category] = lm, sm, cm
                     end
                     lm[n] = lm[n] + 1
@@ -67,7 +68,7 @@
                         data = gsub(data,"%%.-[\n\r]","")
                     end
                     data = gsub(data,"%s","")
-                    sm[n+4] = sm[n+4] + #data
+                    sm[n+5] = sm[n+5] + #data
                     if done then
                         sm[n] = sm[n] + #data
                     else
@@ -89,7 +90,7 @@
                 pattern ="{"..category.."%-"
                 for suffix, t in pairs(used) do
                     local data = io.loaddata(resolvers.find_file("context."..suffix))
-                    if find(data,pattern) then
+                    if data and find(data,pattern) then
                         t[category] = true
                     end
                 end
@@ -97,21 +98,21 @@
         end
         local max, what = 0, (what == "size" and size) or list
         for k, v in table.sortedpairs(what) do
-            for i=1,4 do if v[i] > max then max = v[i] end end
+            for i=1,5 do if v[i] > max then max = v[i] end end
         end
         return max, what, function(n) return n/max end
     end
 
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
-        context.starttabulate { "|Tc|T|T|T|T|]" }
+        context.starttabulate { "|Tc|T|T|T|T|T|" }
         context.NC()
         context(category)
         context.NC()
         for i, t in ipairs(types) do
             local n, m = 0, 0
             for k, v in pairs(list) do
-                local nn, mm = what[k][i], what[k][i+4]
+                local nn, mm = what[k][i], what[k][i+5]
                 n = n + nn
                 m = m + (mm or nn)
             end
@@ -124,7 +125,12 @@
         for k, v in table.sortedpairs(what) do
             local c = (what == size and comp[k]) or nope
             context.NC()
-            context("%s~%s~~%s",(used.mkii[k] and "ii") or "~~",(used.mkiv[k] and "iv") or "~~",k)
+            context("%s~%s~~%s~~%s",
+                (used.mkii[k] and "ii") or "~~",
+                (used.mkiv[k] and "iv") or "~~",
+                (used.mkvi[k] and "vi") or "~~",
+                k
+            )
             context.NC()
             for i, t in ipairs(types) do
                 context.Bar(t,v[i],c[i],norm(v[i]))
@@ -152,12 +158,14 @@
 \definecolor[bar:tex] [middlegreen]
 \definecolor[bar:mkii][middleblue]
 \definecolor[bar:mkiv][middlered]
+\definecolor[bar:mkvi][middleyellow]
 \definecolor[bar:lua] [middlegray]
 
 \def\Top#1#2#3#4%
   {\hbox to 5em{\hss#3}%
    \enspace
-   \hbox to #2\dimexpr 20em\relax{#1\ifnum#3=#4\else~#4\rlap{~+}\fi\hss}}
+%  \hbox to #2\dimexpr 20em\relax{#1\ifnum#3=#4\else~#4\rlap{~+}\fi\hss}}
+   \hbox {#1\ifnum#3=#4\else~#4\rlap{~+}\fi\hss}}
 
 \def\Bar#1#2#3#4%
   {\ifcase#2\else
@@ -201,9 +209,9 @@
         {The size of (core) files used in ConTeXt (- indicates exclusion of large data files; + indicates inclusion of large data files; comment and spaces removed.)}
         {1}{size}
     \Show
-        {The relative number of files used in ConTeXt (tex, mkii, mkiv, lua).}
+        {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, lua).}
         {2}{number}
     \Show
-        {The relative size of files used in ConTeXt (tex, mkii, mkiv, lua).}
+        {The relative size of files used in ConTeXt (tex, mkii, mkiv, mkvi, lua).}
         {2}{size}
 \stoptext

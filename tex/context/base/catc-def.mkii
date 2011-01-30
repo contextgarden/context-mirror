@@ -34,15 +34,15 @@
     \catcode\formfeedasciicode  \endoflinecatcode
     \catcode\spaceasciicode     \spacecatcode
     \catcode\endoffileasciicode \ignorecatcode
-    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\circumflexasciicode\superscriptcatcode
     \catcode\underscoreasciicode\subscriptcatcode
     \catcode\ampersandasciicode \alignmentcatcode
-    \catcode`\\                 \escapecatcode
-    \catcode`\{                 \begingroupcatcode
-    \catcode`\}                 \endgroupcatcode
-    \catcode`\$                 \mathshiftcatcode
-    \catcode`\#                 \parametercatcode
-    \catcode`\%                 \commentcatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\dollarasciicode    \mathshiftcatcode
+    \catcode\hashasciicode      \parametercatcode
+    \catcode\commentasciicode   \commentcatcode
 \stopcatcodetable
 
 \startcatcodetable \luacatcodes
@@ -51,17 +51,17 @@
     \catcode\formfeedasciicode  \othercatcode
     \catcode\spaceasciicode     \othercatcode
     \catcode\endoffileasciicode \ignorecatcode
-    \catcode\caretasciicode     \othercatcode
+    \catcode\circumflexasciicode\othercatcode
     \catcode\underscoreasciicode\othercatcode
     \catcode\ampersandasciicode \othercatcode
-    \catcode`\\                 \escapecatcode
-    \catcode`\%                 \othercatcode
-    \catcode`\#                 \othercatcode
-    \catcode`\|                 \othercatcode
-    \catcode`\{                 \othercatcode
-    \catcode`\}                 \othercatcode
-    \catcode`\~                 \othercatcode
-    \catcode`\$                 \othercatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\commentasciicode   \othercatcode
+    \catcode\hashasciicode      \othercatcode
+    \catcode\barasciicode       \othercatcode
+    \catcode\leftbraceasciicode \othercatcode
+    \catcode\rightbraceasciicode\othercatcode
+    \catcode\tildeasciicode     \othercatcode
+    \catcode\dollarasciicode    \othercatcode
 \stopcatcodetable
 
 \startcatcodetable \notcatcodes % probably less needed
@@ -70,22 +70,22 @@
     \catcode\formfeedasciicode  \endoflinecatcode
     \catcode\spaceasciicode     \spacecatcode
     \catcode\endoffileasciicode \ignorecatcode
-    \catcode\caretasciicode     \othercatcode
+    \catcode\circumflexasciicode\othercatcode
     \catcode\underscoreasciicode\othercatcode
     \catcode\ampersandasciicode \othercatcode
-    \catcode`\~                 \othercatcode
-    \catcode`\#                 \othercatcode
-    \catcode`\$                 \othercatcode
-    \catcode`\%                 \othercatcode
+    \catcode\tildeasciicode     \othercatcode
+    \catcode\hashasciicode      \othercatcode
+    \catcode\dollarasciicode    \othercatcode
+    \catcode\commentasciicode   \othercatcode
     \catcode`\<                 \othercatcode
     \catcode`\>                 \othercatcode
-    \catcode`\{                 \othercatcode
-    \catcode`\}                 \othercatcode
+    \catcode\leftbraceasciicode \othercatcode
+    \catcode\rightbraceasciicode\othercatcode
     \catcode`\"                 \othercatcode
     \catcode`\'                 \othercatcode
     \catcode`\/                 \othercatcode
-    \catcode`\\                 \othercatcode
-    \catcode`\|                 \othercatcode
+    \catcode\backslashasciicode \othercatcode
+    \catcode\barasciicode       \othercatcode
 \stopcatcodetable
 
 \startcatcodetable \vrbcatcodes % probably less needed
@@ -102,34 +102,34 @@
     \catcode\formfeedasciicode  \endoflinecatcode
     \catcode\spaceasciicode     \spacecatcode
     \catcode\endoffileasciicode \ignorecatcode
-    \catcode\caretasciicode     \superscriptcatcode
+    \catcode\circumflexasciicode\superscriptcatcode
     \catcode\underscoreasciicode\subscriptcatcode
     \catcode\ampersandasciicode \alignmentcatcode
-    \catcode`\\                 \escapecatcode
-    \catcode`\{                 \begingroupcatcode
-    \catcode`\}                 \endgroupcatcode
-    \catcode`\$                 \mathshiftcatcode
-    \catcode`\#                 \parametercatcode
-    \catcode`\%                 \commentcatcode
+    \catcode\backslashasciicode \escapecatcode
+    \catcode\leftbraceasciicode \begingroupcatcode
+    \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\dollarasciicode    \mathshiftcatcode
+    \catcode\hashasciicode      \parametercatcode
+    \catcode\commentasciicode   \commentcatcode
     \catcode`\@                 \lettercatcode
     \catcode`\!                 \lettercatcode
     \catcode`\?                 \lettercatcode
-    \catcode`\~                 \activecatcode
-    \catcode`\|                 \activecatcode
+    \catcode\tildeasciicode     \activecatcode
+    \catcode\barasciicode       \activecatcode
 \stopcatcodetable
 
 %D Because some characters have a special meaning, we provide
 %D shortcuts to their character representation.
 
-\chardef\^=\caretasciicode
+\chardef\^=\circumflexasciicode
 \chardef\_=\underscoreasciicode % but way too wide in lm, so ... until that's fixed:
 \chardef\&=\ampersandasciicode
-\chardef\%=`\%
-\chardef\#=`\#
-\chardef\$=`\$
-\chardef\{=`\{
-\chardef\}=`\}
-\chardef\\=`\\
+\chardef\%=\commentasciicode
+\chardef\#=\hashasciicode
+\chardef\$=\dollarasciicode
+\chardef\{=\leftbraceasciicode
+\chardef\}=\rightbraceasciicode
+\chardef\\=\backslashasciicode
 
 %def\_{\leavevmode     \kern.06em \vbox{\hrule width.3em}}
 \def\_{\dontleavehmode \kern.06em \vbox{\hrule width.3em}}
