@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.01.24 23:51}
+\edef\contextversion{2011.01.25 10:40}
 
 %D For those who want to use this:
 
@@ -243,16 +243,13 @@
 \loadmarkfile{buff-ver}
 \loadmarkfile{buff-par}
 
-\loadmarkfile{v-default}    % preloaded as otherwise spurious spaces inline due to loading
-\loadmarkfile{v-nested}     % preloaded as otherwise spurious spaces inline due to loading
-\loadmarkfile{v-escaped}    % for completeness
-\loadmarkfile{v-tex}        % optional as also runtime if not loaded
-\loadmarkfile{v-mp}         % optional as also runtime if not loaded
-\loadmarkfile{v-lua}        % optional as also runtime if not loaded
-\loadmarkfile{v-xml}        % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-tex}        % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-mp}         % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-lua}        % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-xml}        % optional as also runtime if not loaded
 
-\loadmarkfile{v-parsed-xml} % optional
-%loadmarkfile{v-parsed-lua} % optional
+\loadmarkfile{buff-imp-parsed-xml} % optional
+%loadmarkfile{buff-imp-parsed-lua} % optional
 
 \loadmarkfile{strc-blk}
 

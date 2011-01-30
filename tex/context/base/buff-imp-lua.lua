@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['v-lua'] = {
+if not modules then modules = { } end modules ['buff-imp-lua'] = {
     version   = 1.001,
-    comment   = "companion to v-lua.mkiv",
+    comment   = "companion to buff-imp-lua.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

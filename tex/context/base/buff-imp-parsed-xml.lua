@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['v-parsed-xml'] = {
+if not modules then modules = { } end modules ['buff-imp-parsed-xml'] = {
     version   = 1.001,
-    comment   = "companion to v-parsed-xml.mkiv",
+    comment   = "companion to buff-imp-parsed-xml.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

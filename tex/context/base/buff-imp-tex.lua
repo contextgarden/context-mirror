@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['v-tex'] = {
+if not modules then modules = { } end modules ['buff-imp-tex'] = {
     version   = 1.001,
     comment   = "companion to v-tex.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
