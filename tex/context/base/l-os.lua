@@ -212,7 +212,7 @@ elseif os.type == "windows" then
 elseif name == "linux" then
 
     function os.resolvers.platform(t,k)
-        -- we sometims have HOSTTYPE set so let's check that first
+        -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
             platform = "linux-64"
@@ -290,7 +290,7 @@ elseif name == "freebsd" then
 elseif name == "kfreebsd" then
 
     function os.resolvers.platform(t,k)
-        -- we sometims have HOSTTYPE set so let's check that first
+        -- we sometimes have HOSTTYPE set so let's check that first
         local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
         if find(architecture,"x86_64") then
             platform = "kfreebsd-amd64"
