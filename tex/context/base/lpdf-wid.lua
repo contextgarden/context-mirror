@@ -163,6 +163,23 @@ local nofattachments, attachments, filestreams = 0, { }, { }
 
 -- todo: hash and embed once
 
+local function flushembeddedfiles()
+    if next(filestreams) then
+        local e = pdfarray()
+        for name, reference in next, filestreams do
+            if reference then
+                e[#e+1] = pdfstring(name)
+                e[#e+1] = reference -- already a reference
+            else
+                -- we can issue a message
+            end
+        end
+        lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+    end
+end
+
+lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
+
 function codeinjections.embedfile(filename)
     local r = filestreams[filename]
     if r == false then

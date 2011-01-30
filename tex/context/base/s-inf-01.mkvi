@@ -13,6 +13,14 @@
 
 %D Some day I will generalize this table mechanism. This list is only
 %D right when run in the minimals as my machine might have more files.
+%D
+%D Als, the remaining tex code can proably be lua also which is more
+%D consistent.
+%D
+%D \starttyping
+%D context auto:s-inf-01
+%D context auto:s-inf-01 --basepath=t:/texmf/tex/context/base
+%D \stoptyping
 
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
@@ -37,7 +45,7 @@
     }
 
     local function collect(list,suffix,n)
-        local path = file.dirname(resolvers.find_file("context.mkiv"),".")
+        local path = document.arguments.basepath or file.dirname(resolvers.find_file("context.mkiv"),".")
         local pattern = path .. "/*." .. suffix
         local texfiles = dir.glob(pattern)
         for _, name in ipairs(texfiles) do
@@ -107,7 +115,7 @@
         for k, v in table.sortedpairs(what) do
             for i=1,5 do if v[i] > max then max = v[i] end end
         end
-        return max, what, function(n) return n/max end
+        return max, what, function(n) return max == 0 and 0 or n/max end
     end
 
     function document.context_state_1(what)
@@ -168,49 +176,61 @@
 \definecolor[bar:mkvi][middleyellow]
 \definecolor[bar:lua] [middlegray]
 
-\def\Top#1#2#3#4%
-  {\hbox to 5em{\hss#3}%
-   \enspace
-%  \hbox to #2\dimexpr 20em\relax{#1\ifnum#3=#4\else~#4\rlap{~+}\fi\hss}}
-   \hbox {#1\ifnum#3=#4\else~#4\rlap{~+}\fi\hss}}
-
-\def\Bar#1#2#3#4%
-  {\ifcase#2\else
-     \hbox to 5em{\hss\ifcase#3\else\llap{-~}\fi#2}%
-     \enspace
-     \blackrule[color=bar:#1,width=#4\dimexpr 20em\relax,height=.8\strutht]%
-   \fi}
-
 \newcount\UpCounter
 
-\def\StartUp#1%
-  {\dontleavehmode\framed[frame=off,align={middle,low},height=18em]\bgroup
-   \def\StopUp
-     {\par\nointerlineskip\blackrule[height=1pt,width=4em,depth=0pt,color=darkgray]%
-      \par\tttf\strut#1\par
-      \egroup
-      \ifnum\UpCounter=17 \par \UpCounter\zerocount\else \kern1em \advance\UpCounter\plusone \fi}}
+\starttexdefinition Top #what#fraction#total#bigones
+    \hbox to 5em{\hss#total}%
+    \enspace
+    \hbox {#what\ifnum#total=#bigones\else~#bigones\rlap{~+}\fi\hss}%
+\stoptexdefinition
 
-\def\Up#1#2%
-  {\scratchdimen#2\dimexpr 16em\relax
-   \ifdim\scratchdimen=\zeropoint
-     \kern1em
-   \else
-     \ifdim\scratchdimen<\onepoint \scratchdimen\onepoint \fi
-     \blackrule[color=bar:#1,height=\scratchdimen,width=1em]%
-   \fi}
+\starttexdefinition Bar #color#size#nobigones#fraction
+    \ifcase#size\else
+        \hbox to 5em{\hss\ifcase#nobigones\else\llap{-~}\fi#size}%
+        \enspace
+        \blackrule[color=bar:#color,width=#fraction\dimexpr 20em\relax,height=.8\strutht]%
+    \fi
+\stoptexdefinition
 
-\def\Show#1#2#3%
-  {\startTEXpage[offset=1em,width=fit]
-     \hbox{\tttf\strut\currentdate~-~#1}
-     \ctxlua{document.context_state_\number#2("#3")}
-   \stopTEXpage}
+\starttexdefinition StartUp #name
+    \def\UpName{#name}%
+    \dontleavehmode\framed[frame=off,align={middle,low},height=18em]\bgroup
+\stoptexdefinition
+
+\starttexdefinition StopUp
+    \par\nointerlineskip\blackrule[height=1pt,width=4em,depth=0pt,color=darkgray]
+    \par\tttf\strut\UpName\par
+    \egroup
+    \ifnum\UpCounter=17
+        \par \UpCounter\zerocount
+    \else
+        \kern1em \advance\UpCounter\plusone
+    \fi
+\stoptexdefinition
+
+\starttexdefinition Up #color#width
+    \scratchdimen#width\dimexpr 16em\relax
+    \ifdim\scratchdimen=\zeropoint
+        \kern1em
+    \else
+        \ifdim\scratchdimen<\onepoint \scratchdimen\onepoint \fi
+        \blackrule[color=bar:#color,height=\scratchdimen,width=1em]%
+    \fi
+\stoptexdefinition
+
+\starttexdefinition Show #title#how#what
+    \startTEXpage[offset=1em,width=fit]
+        \hbox{\tttf\strut\currentdate~-~#title}
+        \par
+        \ctxlua{document.context_state_\number#how("#what")}
+    \stopTEXpage
+\stoptexdefinition
 
 % \doifnotmode{demo}{\endinput}
 
 \starttext
     \Show
-        {The number of files used in ConTeXt (modules and styles are excluded).}
+        {The number of files used in ConTeXt (base modules and styles).}
         {1}{number}
     \Show
         {The size of (core) files used in ConTeXt (- indicates exclusion of large data files; + indicates inclusion of large data files; comment and spaces removed.)}

@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.01.25 13:17}
+\edef\contextversion{2011.01.26 09:01}
 
 %D For those who want to use this:
 
@@ -44,6 +44,12 @@
 %D machinery.
 
 \loadmarkfile{syst-ini}
+
+%D Some checking (more primitives are now defined):
+
+\ifdefined\defaultinterface   \else \def\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \let\messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \def\defaultlanguagetag{en}              \fi
 
 %D We just quit if new functionality is expected.
 
@@ -394,9 +400,7 @@
 
 \loadmarkfile{back-exp}
 
-\unprotect
-
-\setupcurrentlanguage[\s!en]
+\setupcurrentlanguage[\defaultlanguagetag]
 
 \prependtoks
     \ctxlua{statistics.starttiming(statistics)}%
@@ -410,4 +414,4 @@
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv")}% can become automatic
 \to \everydump
 
-\protect \errorstopmode \dump \endinput
+\errorstopmode \dump \endinput

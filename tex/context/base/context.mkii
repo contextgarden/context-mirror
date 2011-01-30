@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.01.25 13:17}
+\edef\contextversion{2011.01.26 09:01}
 
 %D For those who want to use this:
 
@@ -44,6 +44,15 @@
 %D minimal as possible.
 
 \loadmarkfile{syst-ini}
+
+%D Some checking (more primitives are now defined):
+
+\ifdefined\defaultinterface   \else \def\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \let\messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \def\defaultlanguagetag{en}              \fi
+
+%D More core code.
+
 \loadmarkfile{syst-pln}
 
 \loadmarkfile{norm-tex}
@@ -416,3 +425,13 @@
 %D \item \type{cont-new}: new macro implementations (for testing)
 %D \item \type{cont-fil}: filename and module synonyms
 %D \stopitemize
+
+\setupcurrentlanguage[\defaultlanguagetag]
+
+\setupencoding[default=ec]
+
+\usetypescript[fallback][\defaultencoding]
+
+\setupbodyfont[rm,12pt]
+
+\errorstopmode \dump \endinput

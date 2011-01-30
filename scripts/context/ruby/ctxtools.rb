@@ -1853,8 +1853,6 @@ class Commands
                             ok = data.add_shebang(filename,'perl')
                         when /\.py$/ then
                             ok = data.add_shebang(filename,'python')
-                        when /\.lua$/ then
-                            ok = data.add_shebang(filename,'lua')
                         when /\.tex$/ then
                             ok = data.add_directive(filename,'tex')
                         when /\.mp$/ then
@@ -2697,11 +2695,7 @@ class Commands
 
         def remakeformats
             system("mktexlsr")
-            system("luatools --selfupdate")
-            system("mtxrun --selfupdate")
-            system("luatools --generate")
             system("texmfstart texexec --make --all  --fast --pdftex")
-            system("texmfstart texexec --make --all  --fast --luatex")
             system("texmfstart texexec --make --all  --fast --xetex")
             return true
         end

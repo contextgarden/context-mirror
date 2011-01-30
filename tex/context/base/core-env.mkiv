@@ -240,6 +240,15 @@
      \fi
    \endcsname\empty} % takes one argument
 
+% We can consider:
+%
+% \setvalue{\??su->\v!auto}#1{\ctxlua{commands.autosetup("#1")}}
+%
+% ":\letterpercent" => "->\v!auto" with "\endcsname{#1}"
+%
+% but it won't work out well with multiple setups (intercepted at the
+% lua end) that then get only one argument.
+
 % the next one is meant for \c!setups situations, hence the check for
 % a shortcut
 
@@ -249,13 +258,25 @@
      \dodoprocesslocalsetups
    \fi}
 
+% \def\dodoprocesslocalsetups
+%   {\@EA\processcommalist\@EA[\tobeprocessedsetups]\dosetups}
+
+% setups=S1
+% setups=lua(S2)
+% setups=S3
+% setups={S1,lua(S2),xml(test{123}),S3}
+
 \def\dodoprocesslocalsetups
-  {\@EA\processcommalist\@EA[\tobeprocessedsetups]\dosetups}
+  {\ctxlua{commands.autosetups("\tobeprocessedsetups")}}
+
+\def\autosetups#1%
+  {\ctxlua{commands.autosetups("#1")}}
 
 \edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??su:\noexpand\ifcsname\??su:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}
 
 \let\directsetup\dosetups
+\let\texsetup   \dosetups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
 \def\doifsetupselse#1% to be done: grid
   {\doifdefinedelse{\??su:#1}} % doto: ifcsname

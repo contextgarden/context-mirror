@@ -11,12 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\catcode`\{=1 \catcode`\}=2 \def\defaultinterface{persian} \def\messageinterface{english}
+\catcode`\{=1 \catcode`\}=2
+
+\def\defaultinterface  {persian}
+\def\messageinterface  {english}
+\def\defaultlanguagetag{pe}
 
 \input context.mkiv
 
-\unprotect
-
-\setupcurrentlanguage[\s!pe]
-
-\protect \errorstopmode \dump \endinput
+\endinput

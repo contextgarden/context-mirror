@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['core-env'] = {
 
 local csname_id, texcount, create = token.csname_id, tex.count, token.create
 
+local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.match, lpeg.patterns
+
 local undefined = csname_id("*undefined*crap*")
 local iftrue    = create("iftrue")[2] -- inefficient hack
 
@@ -83,3 +85,21 @@ setmetatable(tex.ifs, {
         return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
     end
 })
+
+----  arg = P("{") * C(patterns.nested) * P("}") + Cc("")
+
+local sep = S("), ")
+local str = C((1-sep)^1)
+local tag = P("(") * C((1-S(")" ))^1) * P(")")
+local arg = P("(") * C((1-S("){"))^1) * P("{") * C((1-P("}"))^0) * P("}") * P(")")
+
+local pattern = (
+     P("lua") * tag        / context.luasetup
+  +  P("xml") * arg        / context.setupwithargument -- or xmlw as xmlsetup has swapped arguments
+  + (P("tex") * tag + str) / context.texsetup
+  +             sep^1
+)^1
+
+function commands.autosetups(str)
+    lpegmatch(pattern,str)
+end
