@@ -89,11 +89,6 @@ return {
 
             ICCPROFILES     = ".;$TEXMF/colors/icc/{context,profiles}//;$OSCOLORDIR",
 
-            -- Sort of obsolete.
-
-            OTPINPUTS       = ".;$TEXMF/omega/otp//",
-            OCPINPUTS       = ".;$TEXMF/omega/ocp//",
-
             -- A few special ones that will change some day.
 
             FONTCONFIG_FILE = "fonts.conf",

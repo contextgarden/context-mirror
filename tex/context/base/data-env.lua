@@ -144,11 +144,6 @@ local relations = allocate { -- todo: handlers also here
             variable = 'OPLFONTS',
             suffixes = { 'opl' },
         },
-        otp = {
-            names    = { "otp" },
-            variable = 'OTPINPUTS',
-            suffixes = { 'otp' },
-        },
         ovp = {
             names    = { "ovp" },
             variable = 'OVPFONTS',

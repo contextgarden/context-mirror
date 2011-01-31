@@ -51,13 +51,13 @@
 \def\externalfigurereplacement#1#2#3%
   {\setupcolors
      [\c!state=\v!local]%
-   \expanded{\localframed
+   \localframed
      [\??ef]
      [\c!width=\figurewidth,
       \c!height=\figureheight,
       \c!background=\v!color,
       \c!backgroundcolor=missingfigurecolor,
-      \c!frame=\@@efframe]}%
+      \c!frame=\@@efframe]
      {\tt\tfxx \nohyphens
         name:  \expanded{\verbatimstring{#1}}\\%
         file:  \expanded{\verbatimstring{#2}}\\%

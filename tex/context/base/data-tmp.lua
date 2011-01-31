@@ -72,6 +72,7 @@ local function identify()
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
+                cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
@@ -106,6 +107,7 @@ local function identify()
             local cachepath = texmfcaches[k]
             cachepath = resolvers.getenv(cachepath)
             if cachepath ~= "" then
+                cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
                 if valid and file.is_readable(cachepath) then
