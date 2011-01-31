@@ -51,15 +51,15 @@ resolvers.luacnfname    = 'texmfcnf.lua'
 resolvers.luacnfstate   = "unknown"
 
 -- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- what a rubish path
--- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
+resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
 
-resolvers.luacnfspec    = {
-    "selfautoparent:/texmf-local",
-    "selfautoparent:/texmf-local/web2c",
-    "selfautoparent:/texmf",
-    "selfautoparent:/texmf/web2c",
-    "selfautoparent:",
-}
+--~ resolvers.luacnfspec    = {
+--~     "selfautoparent:/texmf-local",
+--~     "selfautoparent:/texmf-local/web2c",
+--~     "selfautoparent:/texmf",
+--~     "selfautoparent:/texmf/web2c",
+--~     "selfautoparent:",
+--~ }
 
 local unset_variable = "unset"
 
