@@ -412,7 +412,7 @@
 %D \getbuffer
 %D \stoplines
 
-\def\kenmerkdatumpatroon{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
+\def\referraldatepattern{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
 
 \newsignal\datesignal
 
@@ -422,27 +422,19 @@
      \hskip\datesignal\relax
    \fi}
 
+\def\dodobetweendates
+  {\let\betweendates\dobetweendates}%
+
 \newtoks \everycurrentdate
 
-\def\complexcurrentdate[#1]%
-  {\bgroup
-   \the\everycurrentdate
-   \def\betweendates{\let\betweendates\dobetweendates}%
-   \processcommacommand[\ascii]\docomplexcurrentdate
-   \ifdim\lastskip=\datesignal\relax
-     \unskip
-   \fi
-   \egroup}
-
 \def\docomplexcurrentdate#1%
-  {\lowercase{\edef\!!stringa{#1}}% permits usage in \smallcapped
-   \expanded{\processaction[\!!stringa]}% [#1]
+  {\normalexpanded{\noexpand\processallactionsinset[#1]}
      [    \v!day=>\betweendates\the\normalday,
          \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
         \v!month=>\betweendates\month\normalmonth,
          \v!year=>\betweendates\the\normalyear,
-        \v!space=>\unskip\ \hskip\datesignal,% optimization -)
-              \ =>\unskip\ \hskip\datesignal,% optimization -)
+        \v!space=>\unskip\ \hskip\datesignal,
+              \ =>\unskip\ \hskip\datesignal,
                d=>\convertnumber\v!day\normalday,
               d+=>\convertnumber{\v!day+}\normalday,
                m=>\convertnumber\v!month\normalmonth,
@@ -455,16 +447,22 @@
               jj=>\expandafter\gobbletwoarguments\the\normalyear,
               yy=>\expandafter\gobbletwoarguments\the\normalyear,
       \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-     \v!referral=>\expanded{\complexcurrentdate[\kenmerkdatumpatroon]},
-      \s!unknown=>\unskip
-                  % #1 and not the lowercased \commalistelement, vietnamese has text
-                  % {} because #1 can have comma, like: {\ ,}
-                  {#1}%
-                  \hskip\datesignal
-                  \def\betweendates{\let\betweendates\dobetweendates}]}
+     \v!referral=>\docomplexcurrentdate\referraldatepattern,
+      \s!default=>,
+      \s!unknown=>\unskip\commalistelement\hskip\datesignal\let\betweendates\dodobetweendates]}
+
+\def\complexcurrentdate[#1]%
+  {\bgroup
+   \the\everycurrentdate
+   \let\betweendates\dodobetweendates
+   \docomplexcurrentdate{#1}%
+   \ifdim\lastskip=\datesignal\relax
+     \unskip
+   \fi
+   \egroup}
 
 \def\simplecurrentdate
-  {\expanded{\complexcurrentdate[\currentdatespecification]}}
+  {\complexcurrentdate[\currentdatespecification]}
 
 \definecomplexorsimple\currentdate
 
