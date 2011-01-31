@@ -190,7 +190,7 @@
    \expandafter\let\csname\??ts:\c!file:\currenttypefile\endcsname\loadedtypescripts}
 
 \def\doprocesstypescriptfile
-  {\ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+  {\ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
 
 % \def\doprocesstypescriptfile
 %   {\startreadingfile
@@ -499,7 +499,7 @@
 
 \def\usetypefile[#1]% recurses on path ! % no storage? obsolete?
   {\edef\currenttypefile{#1}%
-   \ctxlua{commands.doprocesstypescriptfile("\currenttypefile")}}
+   \ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
 
 %D For Taco:
 %D

@@ -336,24 +336,12 @@ function scripts.update.synchronize()
                 end
             end
         end
-        --~ for k, v in next, combined do
-        --~     logs.report("update", k)
-        --~     for i=1,#v do
-        --~         logs.report("update", "  <= " .. v[i])
-        --~     end
-        --~ end
         for destination, archive in next, combined do
             local archives, command = concat(archive," "), ""
-        --  local normalflags, deleteflags = states.get("rsync.flags.normal"), states.get("rsync.flags.delete")
-        --    if environment.argument("keep") or destination:find("%.$") then
-        --       command = format("%s %s    %s'%s' '%s'", bin, normalflags,              url, archives, destination)
-        --    else
-        --        command = format("%s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, url, archives, destination)
-        --    end
             local normalflags, deleteflags = states.get("rsync.flags.normal"), ""
-if os.name == "windows" then
-    normalflags = normalflags .. " -L" -- no symlinks
-end
+            if os.name == "windows" then
+                normalflags = normalflags .. " -L" -- no symlinks
+            end
             local dryrunflags = ""
             if not environment.argument("force") then
                 dryrunflags = "--dry-run"

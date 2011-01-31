@@ -15,7 +15,6 @@
 % related code to meta-pos
 
 % shorter tags, ..:achtergrond:.. etc in pos actions
-
 % dubbele text- * pos's eruit
 
 % class pos -> als gelijk aan vorige, dan niet niet definieren
@@ -107,8 +106,6 @@
 %D method is implemented in a special driver. If needed, the
 %D driver can fall back on the following macros.
 
-% are the next 6 still used?
-
 \def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4"}}}}
 \def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
 \def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
@@ -156,7 +153,7 @@
 
 %D Sometimes we want to trick the position handler a bit:
 
-\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxlua{commands.replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
+\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxcommand{replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
 
 %D For postprocessing purposes, we save the number of
 %D positions.
@@ -193,18 +190,18 @@
 %D with short names that are clearly meant for \METAPOST\ but
 %D nowadays also used for other purposes.
 
-\def\MPp  #1{\ctxlua{commands.MPp("#1")}}
-\def\MPx  #1{\ctxlua{commands.MPx("#1")}}
-\def\MPy  #1{\ctxlua{commands.MPy("#1")}}
-\def\MPw  #1{\ctxlua{commands.MPw("#1")}}
-\def\MPh  #1{\ctxlua{commands.MPh("#1")}}
-\def\MPd  #1{\ctxlua{commands.MPd("#1")}}
-\def\MPxy #1{\ctxlua{commands.MPxy("#1")}}
-\def\MPll #1{\ctxlua{commands.MPll("#1")}}
-\def\MPlr #1{\ctxlua{commands.MPlr("#1")}}
-\def\MPur #1{\ctxlua{commands.MPur("#1")}}
-\def\MPul #1{\ctxlua{commands.MPul("#1")}}
-\def\MPpos#1{\ctxlua{commands.MPpos("#1")}}
+\def\MPp  #1{\ctxcommand{MPp("#1")}}
+\def\MPx  #1{\ctxcommand{MPx("#1")}}
+\def\MPy  #1{\ctxcommand{MPy("#1")}}
+\def\MPw  #1{\ctxcommand{MPw("#1")}}
+\def\MPh  #1{\ctxcommand{MPh("#1")}}
+\def\MPd  #1{\ctxcommand{MPd("#1")}}
+\def\MPxy #1{\ctxcommand{MPxy("#1")}}
+\def\MPll #1{\ctxcommand{MPll("#1")}}
+\def\MPlr #1{\ctxcommand{MPlr("#1")}}
+\def\MPur #1{\ctxcommand{MPur("#1")}}
+\def\MPul #1{\ctxcommand{MPul("#1")}}
+\def\MPpos#1{\ctxcommand{MPpos("#1")}}
 
 %D \macros
 %D  {MPplus, MPrest, MPv, MPvv}
@@ -226,8 +223,8 @@
 %D
 %D The extra parameters are not treated.
 
-\def\MPplus#1#2#3{\ctxlua{commands.MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
-\def\MPrest  #1#2{\ctxlua{commands.MPrest("#1","#2")}}     \let\MPvv\MPrest
+\def\MPplus#1#2#3{\ctxcommand{MPplus("#1",#2,"#3")}}  \let\MPv \MPplus
+\def\MPrest  #1#2{\ctxcommand{MPrest("#1","#2")}}     \let\MPvv\MPrest
 
 %D \macros
 %D   {MPanchor}
@@ -243,9 +240,7 @@
 \def\initializenextposition
   {\ifpositioning \else
      \global\positioningtrue
-     \dosetpositionpapersize
-       {\printpaperwidth }%
-       {\printpaperheight}%
+     \dosetpositionpapersize\printpaperwidth\printpaperheight
    \fi
    \global\advance\currentpositions\plusone}
 
@@ -380,7 +375,7 @@
 %D
 %D Again, this is a global action.
 
-\def\copyposition#1#2{\ctxlua{commands.copyposition('#1','#2')}}
+\def\copyposition#1#2{\ctxcommand{copyposition('#1','#2')}}
 
 %D The fact that handling positions is a two pass operation, is
 %D one of the reasons why we need to be able to test for
@@ -390,7 +385,7 @@
 %D \doifpositionelse {identifier} {found action} {not found action}
 %D \stoptyping
 
-\def\doifpositionelse#1{\ctxlua{commands.doifpositionelse('#1')}}
+\def\doifpositionelse#1{\ctxcommand{doifpositionelse('#1')}}
 
 %D We have now arrived at a few macros that would make sense as
 %D support macros, but ended up in the core.
@@ -493,27 +488,12 @@
 
 \let\registerparoptions\relax
 
-% \def\doregisterparoptions
-%   {\ifpositioningpar \ifpositioning \iftrialtypesetting \else
-%      \ifinpagebody \else \ifmmode \else \ifinformula \else
-%       % \ifprocessingverbatim
-%       %   \iflinepar
-%       %     % obsolete: \dodoregisterparoptions
-%       %   \fi
-%       % \else
-%          \dodoregisterparoptions
-%       % \fi
-%      \fi \fi \fi
-%    \fi \fi \fi}
-
 \def\doregisterparoptions
-  {%\ifpositioningpar \ifpositioning  % true anyway
-     \iftrialtypesetting \else
-       \ifinpagebody \else \ifmmode \else \ifinformula \else
-          \dodoregisterparoptions
-       \fi \fi \fi
-     \fi
-   }%\fi \fi}
+  {\iftrialtypesetting \else
+     \ifinpagebody \else \ifmmode \else \ifinformula \else
+       \dodoregisterparoptions
+     \fi \fi \fi
+   \fi}
 
 \def\dodoregisterparoptions
   {\global\advance\parposcounter\plusone
@@ -676,60 +656,7 @@
 %D   {action when not overlapping}
 %D \stoptyping
 
-\def\overlappingmargin{-2\scaledpoint}
-
-\def\overlappingcheckone#1#2%
-  {\ifdim#1<\!!dimena \else \ifdim#1>\!!dimenb \else
-     \ifdim#2<\!!dimenc \else \ifdim#2>\!!dimend \else
-       \donetrue
-     \fi\fi
-   \fi\fi}
-
-\def\overlappingchecktwo#1#2%
-  {\ifdim#1<\!!dimene \else \ifdim#1>\!!dimenf \else
-     \ifdim#2<\!!dimeng \else \ifdim#2>\!!dimenh \else
-       \donetrue
-     \fi\fi
-   \fi\fi}
-
-\def\doifoverlappingelse#1#2% maybe do this in lua
-  {\begingroup
-   \donefalse
-   \edef\!!stringa{#1}\edef\!!stringb{#2}%
-   \ifnum\MPp\!!stringa=\MPp\!!stringb\relax
-     \!!dimena\MPx\!!stringa
-     \!!dimenb\dimexpr\MPx\!!stringa+\MPw\!!stringa\relax
-     \!!dimenc\dimexpr\MPy\!!stringa-\MPd\!!stringa\relax
-     \!!dimend\dimexpr\MPy\!!stringa+\MPh\!!stringa\relax
-     \!!dimene\MPx\!!stringb
-     \!!dimenf\dimexpr\MPx\!!stringb+\MPw\!!stringb\relax
-     \!!dimeng\dimexpr\MPy\!!stringb-\MPd\!!stringb\relax
-     \!!dimenh\dimexpr\MPy\!!stringb+\MPh\!!stringb\relax
-     \ifdim\overlappingmargin=\zeropoint\else
-       \advance\!!dimena-\overlappingmargin
-       \advance\!!dimenb+\overlappingmargin
-       \advance\!!dimenc-\overlappingmargin
-       \advance\!!dimend+\overlappingmargin
-       \advance\!!dimene-\overlappingmargin
-       \advance\!!dimenf+\overlappingmargin
-       \advance\!!dimeng-\overlappingmargin
-       \advance\!!dimenh+\overlappingmargin
-     \fi
-     % more often eh fb eg fg
-     \overlappingcheckone\!!dimene\!!dimeng \ifdone \else
-     \overlappingcheckone\!!dimene\!!dimenh \ifdone \else
-     \overlappingcheckone\!!dimenf\!!dimeng \ifdone \else
-     \overlappingcheckone\!!dimenf\!!dimenh \ifdone \else
-     \overlappingchecktwo\!!dimena\!!dimenc \ifdone \else
-     \overlappingchecktwo\!!dimena\!!dimend \ifdone \else
-     \overlappingchecktwo\!!dimenb\!!dimene \ifdone \else
-     \overlappingchecktwo\!!dimenb\!!dimenc \fi \fi \fi \fi \fi \fi \fi
-   \fi
-   \ifdone
-     \endgroup\expandafter\firstoftwoarguments
-   \else
-     \endgroup\expandafter\secondoftwoarguments
-   \fi}
+\def\doifoverlappingelse#1#2{\ctxcommand{doifoverlappingelse("#1","#2")}}
 
 %D \macros
 %D   {doifpositionsonsamepageelse,
@@ -747,33 +674,13 @@
 %D   {action when not on this page}
 %D \stoptyping
 
-% todo: move to lua when we really use it
-
-\def\dododoifpositionsonsamepageelse#1%
-  {\ifcase\scratchcounter
-     \scratchcounter\MPp{#1}\donetrue
-   \else
-     \ifnum\scratchcounter=\MPp{#1}\relax\else\donefalse\fi
-   \fi}%
-
-\def\dodoifpositionsonsamepageelse#1#2%
-  {\begingroup
-   \scratchcounter#1\donefalse
-   \rawprocesscommalist[#2]\dododoifpositionsonsamepageelse
-   \ifdone
-     \endgroup\expandafter\firstoftwoarguments
-   \else
-     \endgroup\expandafter\secondoftwoarguments
-   \fi}
-
-\def\doifpositionsonsamepageelse{\dodoifpositionsonsamepageelse\zerocount }
-\def\doifpositionsonthispageelse{\dodoifpositionsonsamepageelse\realpageno}
+\def\doifpositionsonsamepageelse#1{\ctxcommand{doifpositionsonsamepageelse("#1")}}
+\def\doifpositionsonthispageelse#1{\ctxcommand{doifpositionsonthispageelse("#1")}}
 
 %D Plugins:
 
-\let\MPv \MPplus
-\let\MPvv\MPrest
-
+\let\MPv     \MPplus
+\let\MPvv    \MPrest
 \let\MPanchor\MPpos
 
 %D \macros

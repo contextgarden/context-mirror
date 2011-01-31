@@ -20,34 +20,37 @@ local report_fields = logs.new("fields")
 
 local backends, lpdf = backends, lpdf
 
-local variables            = interfaces.variables
-local context              = context
+local variables               = interfaces.variables
+local context                 = context
 
-local references           = structures.references
-local settings_to_array    = utilities.parsers.settings_to_array
+local references              = structures.references
+local settings_to_array       = utilities.parsers.settings_to_array
 
-local nodeinjections       = backends.pdf.nodeinjections
-local codeinjections       = backends.pdf.codeinjections
-local registrations        = backends.pdf.registrations
+local nodeinjections          = backends.pdf.nodeinjections
+local codeinjections          = backends.pdf.codeinjections
+local registrations           = backends.pdf.registrations
 
-local registeredsymbol     = codeinjections.registeredsymbol
+local registeredsymbol        = codeinjections.registeredsymbol
 
-local pdfstream            = lpdf.stream
-local pdfdictionary        = lpdf.dictionary
-local pdfarray             = lpdf.array
-local pdfreference         = lpdf.reference
-local pdfunicode           = lpdf.unicode
-local pdfstring            = lpdf.string
-local pdfconstant          = lpdf.constant
-local pdftoeight           = lpdf.toeight
-local pdfflushobject       = lpdf.flushobject
-local pdfshareobjectref    = lpdf.shareobjectreference
-local pdfreserveobject     = lpdf.reserveobject
-local pdfreserveannotation = lpdf.reserveannotation
+local pdfstream               = lpdf.stream
+local pdfdictionary           = lpdf.dictionary
+local pdfarray                = lpdf.array
+local pdfreference            = lpdf.reference
+local pdfunicode              = lpdf.unicode
+local pdfstring               = lpdf.string
+local pdfconstant             = lpdf.constant
+local pdftoeight              = lpdf.toeight
+local pdfflushobject          = lpdf.flushobject
+local pdfimmediateobject      = lpdf.immediateobject
+local pdfshareobjectreference = lpdf.shareobjectreference
+local pdfshareobject          = lpdf.shareobject
+local pdfreserveobject        = lpdf.reserveobject
+local pdfreserveannotation    = lpdf.reserveannotation
+local pdfaction               = lpdf.action
 
-local nodepool             = nodes.pool
+local nodepool                = nodes.pool
 
-local pdfannotation_node   = nodepool.pdfannotation
+local pdfannotation_node      = nodepool.pdfannotation
 
 local submitoutputformat = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet used, needs to be checked
 
@@ -125,24 +128,45 @@ local function fieldplus(specification)
     return n
 end
 
+-- local function checked(what)
+--     local set, bug = references.identify("",what)
+--     return not bug and #set > 0 and lpdf.action(set)
+-- end
+
 local function checked(what)
-    if what and what ~= "" then
-        local set, bug = references.identify("",what)
-        return not bug and #set > 0 and lpdf.action(set)
+    local set, bug = references.identify("",what)
+    if not bug and #set > 0 then
+        local r, n = pdfaction(set)
+        return pdfshareobjectreference(r)
     end
 end
 
+-- a dedicated hash is faster, but maybe overkill
+
+--~ local cache = { }
+--~
+--~ local function checked(what)
+--~     local set, bug = references.identify("",what)
+--~     if not bug and #set > 0 then
+--~         local r = cache[set]
+--~         if not r then
+--~             r = pdfreference(pdfimmediateobject(pdfaction(set)))
+--~             cache[set] = r
+--~         end
+--~         return r
+--~     end
+--~ end
+
 local function fieldactions(specification) -- share actions
---~ print(table.serialize(specification))
     local d, a = { }, nil
     a = specification.mousedown         if a and a ~= "" then d.D  = checked(a) end
     a = specification.mouseup           if a and a ~= "" then d.U  = checked(a) end
     a = specification.regionin          if a and a ~= "" then d.E  = checked(a) end -- Enter
     a = specification.regionout         if a and a ~= "" then d.X  = checked(a) end -- eXit
-    a = specification.afterkeystroke    if a and a ~= "" then d.K  = checked(a) end
-    a = specification.formatresult      if a and a ~= "" then d.F  = checked(a) end
-    a = specification.validateresult    if a and a ~= "" then d.V  = checked(a) end
-    a = specification.calculatewhatever if a and a ~= "" then d.C  = checked(a) end
+    a = specification.afterkey          if a and a ~= "" then d.K  = checked(a) end
+    a = specification.format            if a and a ~= "" then d.F  = checked(a) end
+    a = specification.validate          if a and a ~= "" then d.V  = checked(a) end
+    a = specification.calculate         if a and a ~= "" then d.C  = checked(a) end
     a = specification.focusin           if a and a ~= "" then d.Fo = checked(a) end
     a = specification.focusout          if a and a ~= "" then d.Bl = checked(a) end
  -- a = specification.openpage          if a and a ~= "" then d.PO = checked(a) end
@@ -261,7 +285,7 @@ local function fieldappearances(specification)
     local appearance = pdfdictionary { -- cache this one
         N = registeredsymbol(n), R = registeredsymbol(r), D = registeredsymbol(d),
     }
-    return pdfshareobjectref(appearance)
+    return pdfshareobjectreference(appearance)
 end
 
 local function fieldstates(specification,forceyes,values,default)
@@ -323,7 +347,7 @@ local function fieldstates(specification,forceyes,values,default)
         R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
         D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
     }
-    local appearanceref = pdfshareobjectref(appearance)
+    local appearanceref = pdfshareobjectreference(appearance)
     return appearanceref, default
 end
 

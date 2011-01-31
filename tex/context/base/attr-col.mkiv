@@ -28,29 +28,29 @@
 % % color (layer on top)
 %
 % \def\dosetcolormodel#1% overloaded later
-%   {\ctxlua{commands.setcolormodel('#1')}} % sets attribute
+%   {\ctxcommand{setcolormodel('#1')}} % sets attribute
 %
 % \dosetcolormodel{all}
 %
 % \def\registerrgbcolor#1#2#3#4% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','rgb' ,#2,#3,#4)}}}
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','rgb' ,#2,#3,#4)}}}
 %
 % \def\registercmykcolor#1#2#3#4#5% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','cmyk',#2,#3,#4,#5)}}}
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','cmyk',#2,#3,#4,#5)}}}
 %
 % \def\registergraycolor#1#2% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxlua{commands.registercolor('#1','gray',#2)}}}
+%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','gray',#2)}}}
 
 % % transparency (layer on top)
 %
 % \def\registertransparency#1#2#3%
-%   {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxlua{commands.registertransparency(#2,#3)} }}
+%   {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxcommand{registertransparency(#2,#3)} }}
 %
 % \def\sometransparencyswitch#1%
 %   {\csname(ts:#1)\endcsname}
 %
 % \def\sometransparencyswitch
-%   {\ctxlua{commands.enabletransparency()}%
+%   {\ctxcommand{enabletransparency()}%
 %    \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
 %    \sometransparencyswitch}
 %
@@ -60,10 +60,10 @@
 % overprint
 
 \def\registercolorintent#1#2%
-  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxlua{commands.registercolorintent('#2')} }}
+  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
 
 \def\dotriggercolorintent
-  {\ctxlua{commands.enablecolorintents()}%
+  {\ctxcommand{enablecolorintents()}%
    \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
    \dotriggercolorintent}
 

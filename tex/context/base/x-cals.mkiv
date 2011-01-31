@@ -21,12 +21,12 @@
 %     \xmlsetsetup {\xmldocument} {cals:table} {*}
 % \stopxmlsetups
 % \startxmlsetups cals:table
-%     \ctxlua{lxml.cals.table("#1")}
+%     \ctxlua{moduledata.cals.table("#1")}
 % \stopxmlsetups
 % \xmlregistersetup{xml:cals:process}
 
 \startxmlsetups xml:cals:process
-    \xmlsetfunction {\xmldocument} {cals:table} {lxml.cals.table}
+    \xmlsetfunction {\xmldocument} {cals:table} {moduledata.cals.table}
 \stopxmlsetups
 
 \xmlregistersetup{xml:cals:process}

@@ -62,9 +62,9 @@
 \def\dohyphenatedurlnormal#1{\char#1\relax}%
 \def\dohyphenatedurldisc  #1{\discretionary{}{}{}}
 
-\def\sethyphenatedurlnormal #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
-\def\sethyphenatedurlbefore #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
-\def\sethyphenatedurlafter  #1{\ctxlua{commands.hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
+\def\sethyphenatedurlnormal #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
+\def\sethyphenatedurlbefore #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
+\def\sethyphenatedurlafter  #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
 
 \def\hyphenatedurldiscretionary{}
 
@@ -81,7 +81,7 @@
    \let\b\dohyphenatedurlbefore
    \let\a\dohyphenatedurlafter
    \let\d\dohyphenatedurldisc
-   \normalexpanded{\noexpand\ctxlua{commands.hyphenatedurl.action(
+   \normalexpanded{\noexpand\ctxcommand{hyphenatedurl.action(
         \!!bs\noexpand\detokenize{#1}\!!es,
         \number\hyphenatedurllefthyphenmin,
         \number\hyphenatedurlrighthyphenmin,

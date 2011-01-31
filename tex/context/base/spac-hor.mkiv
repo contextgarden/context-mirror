@@ -917,7 +917,7 @@
   {\futurelet\nexttoken\doautoinsertnextspace}
 
 \def\doautoinsertnextspace
-  {\ctxlua{commands.autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
+  {\ctxcommand{autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
 
 %D Moved from bib module:
 

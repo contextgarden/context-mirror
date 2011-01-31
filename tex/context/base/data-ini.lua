@@ -219,3 +219,10 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 -- if profiler and osgetenv("MTX_PROFILE_RUN") == "YES" then
 --     profiler.start("luatex-profile.log")
 -- end
+
+-- a forward definition
+
+if not resolvers.resolve then
+    function resolvers.resolve  (s) return s end
+    function resolvers.unresolve(s) return s end
+end

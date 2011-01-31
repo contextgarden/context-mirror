@@ -189,7 +189,8 @@ end
 
 local cache = { }
 
-local splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+---- splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+local splitter = Ct(lpeg.splitat(";")) -- as we move towards urls, prefixes and use tables we no longer do :
 
 local backslashswapper = lpeg.replacer("\\","/")
 
@@ -310,15 +311,16 @@ local function scan(files,spec,path,n,m,r)
     return files, n, m, r
 end
 
-function resolvers.scanfiles(path)
+function resolvers.scanfiles(path,branch)
     if trace_locating then
-        report_resolvers("scanning path '%s'",path)
+        report_resolvers("scanning path '%s', branch '%s'",path, branch or path)
     end
-    local files, n, m, r = scan({ },path .. '/',"",0,0,0)
-    files.__path__        = path
-    files.__files__       = n
-    files.__directories__ = m
-    files.__remappings__  = r
+    local realpath = resolvers.resolve(path) -- no shortcut
+    local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
+    files.__path__          = path -- can be selfautoparent:texmf-whatever
+    files.__files__         = n
+    files.__directories__   = m
+    files.__remappings__    = r
     if trace_locating then
         report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end

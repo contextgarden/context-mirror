@@ -15,6 +15,10 @@ local variables = interfaces.variables
 
 -- todo: don't flush scripts if no JS key
 
+local trace_javascript = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
+
+local report_javascript = logs.new("javascript")
+
 interactions.javascripts = interactions.javascripts or { }
 local javascripts        = interactions.javascripts
 
@@ -59,17 +63,25 @@ end
 
 function javascripts.storepreamble(str) -- now later
     local name, used, script = lpegmatch(parsepreamble,str)
-    if name and name ~= "" then
-        preambles[#preambles+1] = { name, used, script }
-        preambled[name] = #preambles
+    if name and name ~= "" and not preambled[name] then
+        local n = #preambles + 1
+        preambles[n] = { name, used, script }
+        preambled[name] = n
+        if trace_javascript then
+            report_javascript("storing preamble '%s', state '%s', order '%s'",name,used,n)
+        end
         lpegmatch(parsefunctions,script)
     end
 end
 
 function javascripts.setpreamble(name,script) -- now later
-    if name and name ~= "" then
-        preambles[#preambles+1] = { name, "now", script }
-        preambled[name] = #preambles
+    if name and name ~= "" and not preambled[name] then
+        local n = #preambles + 1
+        preambles[n] = { name, "now", script }
+        preambled[name] = n
+        if trace_javascript then
+            report_javascript("setting preamble '%s', state 'now', order '%s'",name,n)
+        end
         lpegmatch(parsefunctions,script)
     end
 end
@@ -79,9 +91,16 @@ function javascripts.addtopreamble(name,script) -- now later
         local p = preambled[name]
         if p then
             preambles[p] = { "now", preambles[p] .. " ;\n" .. script }
+            if trace_javascript then
+                report_javascript("extending preamble '%s', state 'now'",name)
+            end
         else
-            preambles[#preambles+1] = { name, "now", script }
-            preambled[name] = #preambles
+            local n = #preambles + 1
+            preambles[n] = { name, "now", script }
+            preambled[name] = n
+            if trace_javascript then
+                report_javascript("storing preamble '%s', state 'now', order '%s'",name,n)
+            end
             lpegmatch(parsefunctions,script)
         end
     end
@@ -94,6 +113,9 @@ function javascripts.usepreamblenow(name) -- now later
             local somename = names[i]
             if not preambled[somename] then
                 preambles[preambled[somename]][2] = "now"
+                if trace_javascript then
+                    report_javascript("using preamble '%s', state 'now'",somename)
+                end
             end
         end
     end
@@ -101,7 +123,7 @@ end
 
 local splitter = lpeg.Ct(lpeg.splitat(lpeg.patterns.commaspacer))
 
-local used = false
+local used, reported = false, { } -- we can cache more
 
 function javascripts.code(name,arguments)
     local c = codes[name]
@@ -110,8 +132,18 @@ function javascripts.code(name,arguments)
         if u ~= "" then
             local p = preambled[u]
             if p then
-                preambles[p][1] = "now"
+                preambles[p][2] = "now"
+                if trace_javascript and not reported[name] then
+                    reported[name] = true
+                    report_javascript("using code '%s', preamble '%s'",name,u)
+                end
+            elseif trace_javascript and not reported[name] then
+                reported[name] = true
+                report_javascript("using code '%s'",name)
             end
+        elseif trace_javascript and not reported[name] then
+            reported[name] = true
+            report_javascript("using code '%s'",name)
         end
         used = true
         return code
@@ -119,6 +151,10 @@ function javascripts.code(name,arguments)
     local f = functions[name]
     if f then
         used = true
+        if trace_javascript and not reported[name] then
+            reported[name] = true
+            report_javascript("using function '%s'",name)
+        end
         if arguments then
             local args = lpegmatch(splitter,arguments)
             for i=1,#args do -- can be a helper
@@ -137,6 +173,9 @@ function javascripts.flushpreambles()
         for i=1,#preambles do
             local preamble = preambles[i]
             if preamble[2] == "now" then
+                if trace_javascript then
+                    report_javascript("flushing preamble '%s'",preamble[1])
+                end
                 t[#t+1] = { preamble[1], preamble[3] }
             end
         end
@@ -149,10 +188,12 @@ local patterns = { "java-imp-%s.mkiv", "java-imp-%s.tex", "java-%s.mkiv", "java-
 function javascripts.usescripts(name)
     if name ~= variables.reset then
         commands.uselibrary(name,patterns,function(name,foundname)
+            context.startnointerference()
             context.startreadingfile()
             context.input(foundname)
             context.showcolormessage("javascript",1,name)
             context.stopreadingfile()
+            context.stopnointerference()
         end)
     end
 end

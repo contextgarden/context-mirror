@@ -15,6 +15,8 @@
 
 \registerctxluafile{x-asciimath}{}
 
+\def\ctxmoduleasciimath#1{\directlua\zerocount{moduledata.asciimath.#1}}
+
 %D The following code is not officially supported and is only meant
 %D for the Math4All project.
 %D
@@ -62,13 +64,13 @@
 
 \writestatus{asciimath}{beware, this is an experimental (m4all only) module}
 
-\unexpanded\def\asciimath#1{\ctxlua{asciimath.convert(\!!bs\detokenize{#1}\!!es,true)}}
+\unexpanded\def\asciimath#1{\ctxmoduleasciimath{convert(\!!bs\detokenize{#1}\!!es,true)}}
 
 \protect
 
 \doifnotmode{demo}{\endinput}
 
-\enabletrackers[asciimath.mapping]
+\enabletrackers[modules.asciimath.mapping]
 
 \starttext
 

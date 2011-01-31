@@ -32,27 +32,13 @@ local converters = converters
 languages        = languages  or { }
 local languages  = languages
 
-function converters.convert(method,n,direct)
-    local method = converters[method]
-    if method then
-        return method(n,direct)
-    else
-        return direct and n or context(n)
-    end
+local function number(n)
+    return tonumber(n)
 end
 
-function converters.numberst(n,direct)
-    return direct and n or context(n)
-end
+converters.number = number
 
---~     ['arabic-digits'] = {
---~         0x0660, 0x0661, 0x0662, 0x0663, 0x0664,
---~         0x0665, 0x0666, 0x0667, 0x0668, 0x0669
---~     },
---~     ['persian-digits'] = {
---~         0x06F0, 0x06F1, 0x06F2, 0x06F3, 0x06F4,
---~         0x06F5, 0x06F6, 0x06F7, 0x06F8, 0x06F9
---~     },
+function commands.number(n) context(n) end
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
@@ -144,38 +130,25 @@ counters['kr-c'] = counters['korean-circle']
 
 local fallback = utf.byte('0')
 
-local function chr(n,m,direct)
-    local s = (n > 0 and n < 27 and utfchar(n+m)) or ""
-    if direct then return s else context(s) end
+local function chr(n,m)
+    return (n > 0 and n < 27 and utfchar(n+m)) or ""
 end
 
---~ local function chrs(n,m,direct)
---~     if n > 26 then
---~         chrs(floor((n-1)/26),m)
---~         n = (n-1)%26 + 1
---~     end
---~     context(utfchar(n+m))
---~ end
-
-local function chrs(n,m,direct,t)
+local function chrs(n,m,t)
     if not t then
         t = { }
     end
     if n > 26 then
-        chrs(floor((n-1)/26),m,direct,t)
+        chrs(floor((n-1)/26),m,t)
         n = (n-1)%26 + 1
     end
     t[#t+1] = utfchar(n+m)
     if n <= 26 then
-        if direct then
-            return concat(t)
-        else
-            context(concat(t))
-        end
+        return concat(t)
     end
 end
 
-local function maxchrs(n,m,cmd,direct,t) -- direct is not ok
+local function maxchrs(n,m,cmd,t)
     if not t then
         t = { }
     end
@@ -185,11 +158,7 @@ local function maxchrs(n,m,cmd,direct,t) -- direct is not ok
     end
     t[#t+1] = format("%s{%s}",cmd,n)
     if n <= m then
-        if direct then
-            return concat(t)
-        else
-            context(concat(t))
-        end
+        return concat(t)
     end
 end
 
@@ -197,47 +166,11 @@ converters.chr     = chr
 converters.chrs    = chrs
 converters.maxchrs = maxchrs
 
---~ more efficient but needs testing
---~
---~ local escapes = utffilters.private.escapes
---~
---~ local function do_alphabetic(n,mapping,chr)
---~     local max = #mapping
---~     if n > max then
---~         do_alphabetic(floor((n-1)/max),max,chr)
---~         n = (n-1)%max+1
---~     end
---~     n = chr(n,mapping)
---~     context(escapes[n] or utfchar(n))
---~ end
-
---~ local lccodes, uccodes = characters.lccode, characters.uccode
-
---~ local function do_alphabetic(n,mapping,chr)
---~     local max = #mapping
---~     if n > max then
---~         do_alphabetic(floor((n-1)/max),mapping,chr)
---~         n = (n-1)%max+1
---~     end
---~     characters.flush(chr(n,mapping))
---~ end
---~
---~ local function lowercased(n,mapping) return characters.lccode(mapping[n] or fallback) end
---~ local function uppercased(n,mapping) return characters.uccode(mapping[n] or fallback) end
---~
---~ function converters.alphabetic(n,code)
---~     do_alphabetic(n,counters[code] or counters['**'],lowercased) -- lccode catches wrong tables
---~ end
---~
---~ function converters.Alphabetic(n,code)
---~     do_alphabetic(n,counters[code] or counters['**'],uppercased)
---~ end
-
 local flushcharacter = characters and characters.flush  or function(s) return utfchar(s) end
 local lowercharacter = characters and characters.lccode or function(s) return s end
 local uppercharacter = characters and characters.uccode or function(s) return s end
 
-local function do_alphabetic(n,mapping,mapper,direct,verbose,t)
+local function do_alphabetic(n,mapping,mapper,verbose,t)
     if not t then
         t = { }
     end
@@ -247,67 +180,114 @@ local function do_alphabetic(n,mapping,mapper,direct,verbose,t)
     end
     local max = #mapping
     if n > max then
-        do_alphabetic(floor((n-1)/max),mapping,mapper,direct,verbose,t)
+        do_alphabetic(floor((n-1)/max),mapping,mapper,verbose,t)
         n = (n-1)%max+1
     end
     if verbose or type(chr) ~= "number" then
         t[#t+1] = chr
     else
-        t[#t+1] = utfchar(chr) -- flushcharacter(chr,true) -- force direct here; can't we just use utfchar(chr) nowadays?
+        t[#t+1] = utfchar(chr)
     end
     if n <= max then
-        if direct then
-            return concat(t)
-        else
-            context(concat(t))
-        end
+        return concat(t)
     end
 end
 
-function converters.alphabetic(n,code,direct)
-    return do_alphabetic(n,counters[code] or counters['**'],lowercharacter,direct)
-end
-function converters.Alphabetic(n,code,direct)
-    return do_alphabetic(n,counters[code] or counters['**'],uppercharacter,direct)
+local function alphabetic(n,code)
+    return do_alphabetic(n,counters[code] or counters['**'],lowercharacter)
 end
 
-function converters.character (n,direct) return chr (n,96,direct) end
-function converters.Character (n,direct) return chr (n,64,direct) end
-function converters.characters(n,direct) return chrs(n,96,direct) end
-function converters.Characters(n,direct) return chrs(n,64,direct) end
-
-function converters.weekday(day,month,year,direct)
-    local s = date("%w",time{year=year,month=month,day=day}) + 1
-    if direct then return s else context(s) end
+local function Alphabetic(n,code)
+    return do_alphabetic(n,counters[code] or counters['**'],uppercharacter)
 end
 
-function converters.isleapyear(year)
-    return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
-end
+local function character (n) return chr (n,96) end
+local function Character (n) return chr (n,64) end
+local function characters(n) return chrs(n,96) end
+local function Characters(n) return chrs(n,64) end
 
-function converters.leapyear(year)
-    local s = converters.isleapyear(year) and 1 or 0
-    if direct then return s else context(s) end
-end
+converters.alphabetic = alphabetic
+converters.Alphabetic = Alphabetic
+converters.character  = character
+converters.Character  = Character
+converters.characters = characters
+converters.Characters = Characters
+
+function commands.alphabetic(n) context(alphabetic(n)) end
+function commands.Alphabetic(n) context(Alphabetic(n)) end
+function commands.character (n) context(character (n)) end
+function commands.Character (n) context(Character (n)) end
+function commands.characters(n) context(characters(n)) end
+function commands.Characters(n) context(Characters(n)) end
 
 local days = {
     [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
     [true]  = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 }
 
-function converters.nofdays(year,month,direct)
-    local s = days[converters.isleapyear(year)][month]
-    if direct then return s else context(s) end
+local function weekday(day,month,year)
+    return date("%w",time{year=year,month=month,day=day}) + 1
 end
 
-function converters.year   (direct) local s = date("%Y") if direct then return s else context(s) end end
-function converters.year   (direct) local s = date("%Y") if direct then return s else context(s) end end
-function converters.month  (direct) local s = date("%m") if direct then return s else context(s) end end
-function converters.hour   (direct) local s = date("%H") if direct then return s else context(s) end end
-function converters.minute (direct) local s = date("%M") if direct then return s else context(s) end end
-function converters.second (direct) local s = date("%S") if direct then return s else context(s) end end
-function converters.textime(direct) local s = tonumber(date("%H")) * 60 + tonumber(date("%M"))
-                                                         if direct then return s else context(s) end end
+local function isleapyear(year)
+    return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
+end
+
+local function leapyear(year)
+    return isleapyear(year) and 1 or 0
+end
+
+local function nofdays(year,month)
+    return days[sleapyear(year)][month]
+end
+
+local function year  () return date("%Y") end
+local function month () return date("%m") end
+local function hour  () return date("%H") end
+local function minute() return date("%M") end
+local function second() return date("%S") end
+
+local function textime()
+    return tonumber(date("%H")) * 60 + tonumber(date("%M"))
+end
+
+converters.weekday    = weekday
+converters.isleapyear = isleapyear
+converters.leapyear   = leapyear
+converters.nofdays    = nofdays
+converters.year       = year
+converters.month      = month
+converters.hour       = hour
+converters.minute     = minute
+converters.second     = second
+converters.textime    = textime
+
+function commands.weekday(day,month,year)
+    context(weekday(day,month,year))
+end
+
+function commands.isleapyear(year)
+    context(isleapyear(year))
+end
+
+function commands.leapyear(year)
+    context(leapyear(year))
+end
+
+function commands.nofdays(year,month)
+    context(nofdays(year,month))
+end
+
+function commands.year   () context(year   ()) end
+function commands.month  () context(month  ()) end
+function commands.hour   () context(hour   ()) end
+function commands.minute () context(minute ()) end
+function commands.second () context(second ()) end
+function commands.textime() context(textime()) end
+
+function commands.doifleapyearelse(year)
+    commands.testcase(leapyear(year))
+end
 
 local roman = {
     { [0] = '', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX' },
@@ -323,10 +303,16 @@ local function toroman(n)
     end
 end
 
-function converters.romannumerals(n,direct) local s = lower(toroman(n)) if direct then return s else context(s) end end
-function converters.Romannumerals(n,direct) local s =       toroman(n)  if direct then return s else context(s) end end
+local Romannumerals = toroman
 
-converters.toroman = toroman
+local function romannumerals(n) return lower(toroman(n)) end
+
+converters.toroman       = toroman
+converters.Romannumerals = toroman
+converters.romannumerals = romannumerals
+
+function commands.romannumerals(n) context(lower(toroman(n))) end
+function commands.Romannumerals(n) context(      toroman(n))  end
 
 --~ local small = {
 --~     0x0627, 0x066E, 0x062D, 0x062F, 0x0647, 0x0648, 0x0631
@@ -357,7 +343,7 @@ local large = {
     { "غ" },
 }
 
-function converters.toabjad(n,what)
+local function toabjad(n,what)
     if n <= 0 or n >= 2000 then
         return tostring(n)
     elseif what == 2 and n <= 7 then
@@ -374,8 +360,16 @@ function converters.toabjad(n,what)
     end
 end
 
-function converters.abjadnumerals     (n,direct) local s = converters.toabjad(n,false) if direct then return s else context(s) end end
-function converters.abjadnodotnumerals(n,direct) local s = converters.toabjad(n,true ) if direct then return s else context(s) end end
+converters.toabjad = toabjad
+
+local function abjadnumerals     (n) return toabjad(n,false) end
+local function abjadnodotnumerals(n) return toabjad(n,true ) end
+
+converters.abjadnumerals      = abjadnumerals
+converters.abjadnodotnumerals = abjadnodotnumerals
+
+function commands.abjadnumerals     (n) context(toabjad(n,false)) end
+function commands.abjadnodotnumerals(n) context(toabjad(n,true )) end
 
 local vector = {
     normal = {
@@ -509,115 +503,25 @@ local function tochinese(n,name) -- normal, caps, all
     return concat(result)
 end
 
---~ local t = { 1,10,15,25,35,45,11,100,111,1111,10000,11111,100000,111111,1111111,11111111,111111111,100000000,1111111111,11111111111,111111111111,1111111111111 }
---~ for k=1,#t do
---~ local v = t[k]
---~     print(v,tochinese(v),tochinese(v,"all"),tochinese(v,"cap"))
---~ end
+-- local t = { 1,10,15,25,35,45,11,100,111,1111,10000,11111,100000,111111,1111111,11111111,111111111,100000000,1111111111,11111111111,111111111111,1111111111111 }
+-- for k=1,#t do
+-- local v = t[k]
+--     print(v,tochinese(v),tochinese(v,"all"),tochinese(v,"cap"))
+-- end
 
-function converters.chinesenumerals   (n) local s = tochinese(n,"normal") if direct then return s else context(s) end end
-function converters.chinesecapnumerals(n) local s = tochinese(n,"cap"   ) if direct then return s else context(s) end end
-function converters.chineseallnumerals(n) local s = tochinese(n,"all"   ) if direct then return s else context(s) end end
+converters.tochinese = tochinese
 
---~ Well, since the one asking for this didn't test it the following code is not
---~ enabled.
---~
---~ -- This Lua version is based on a Javascript by Behdad Esfahbod which in turn
---~ -- is based on GPL'd code by Roozbeh Pournader of the The FarsiWeb Project
---~ -- Group: http://www.farsiweb.info/jalali/jalali.js.
---~ --
---~ -- We start tables at one, I kept it zero based in order to stay close to
---~ -- the original.
---~ --
---~ -- Conversion by Hans Hagen
---~
---~ local g_days_in_month = { [0]=31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
---~ local j_days_in_month = { [0]=31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
---~
---~ local function div(a,b)
---~   return math.floor(a/b)
---~ end
---~
---~ local function remainder(a,b)
---~   return a - div(a,b)*b
---~ end
---~
---~ function gregorian_to_jalali(gy,gm,gd)
---~     local jy, jm, jd, g_day_no, j_day_no, j_np, i
---~     gy, gm, gd = gy - 1600, gm - 1, gd - 1
---~     g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
---~     i = 0
---~     while i < gm do
---~         g_day_no = g_day_no + g_days_in_month[i]
---~         i = i + 1
---~     end
---~     if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
---~         g_day_no = g_day_no + 1
---~     end
---~     g_day_no = g_day_no + gd
---~     j_day_no = g_day_no - 79
---~     j_np = div(j_day_no,12053)
---~     j_day_no = remainder(j_day_no,12053)
---~     jy = 979 + 33*j_np + 4*div(j_day_no,1461)
---~     j_day_no = remainder(j_day_no,1461)
---~     if j_day_no >= 366 then
---~         jy = jy + div((j_day_no-1),365)
---~         j_day_no = remainder((j_day_no-1),365)
---~     end
---~     i = 0
---~     while i < 11 and j_day_no >= j_days_in_month[i] do
---~         j_day_no = j_day_no - j_days_in_month[i]
---~         i = i + 1
---~     end
---~     jm = i + 1
---~     jd = j_day_no + 1
---~     return jy, jm, jd
---~ end
---~
---~ function jalali_to_gregorian(jy,jm,jd)
---~     local gy, gm, gd, g_day_no, j_day_no, leap, i
---~     jy, jm, jd = jy - 979, jm - 1, jd - 1
---~     j_day_no = 365*jy + div(jy,33)*8 + div((remainder(jy,33)+3),4)
---~     i = 0
---~     while i < jm do
---~         j_day_no = j_day_no + j_days_in_month[i]
---~         i = i + 1
---~     end
---~     j_day_no = j_day_no + jd
---~     g_day_no = j_day_no + 79
---~     gy = 1600 + 400*div(g_day_no,146097)
---~     g_day_no = remainder (g_day_no, 146097)
---~     leap = 1
---~     if g_day_no >= 36525 then
---~         g_day_no = g_day_no - 1
---~         gy = gy + 100*div(g_day_no,36524)
---~         g_day_no = remainder (g_day_no, 36524)
---~         if g_day_no >= 365 then
---~             g_day_no = g_day_no + 1
---~         else
---~             leap = 0
---~         end
---~     end
---~     gy = gy  + 4*div(g_day_no,1461)
---~     g_day_no = remainder (g_day_no, 1461)
---~     if g_day_no >= 366 then
---~         leap = 0
---~         g_day_no = g_day_no - 1
---~         gy = gy + div(g_day_no, 365)
---~         g_day_no = remainder(g_day_no, 365)
---~     end
---~     i = 0
---~     while g_day_no >= g_days_in_month[i] + ((i == 1 and leap) or 0) do
---~         g_day_no = g_day_no - g_days_in_month[i] + ((i == 1 and leap) or 0)
---~         i = i + 1
---~     end
---~     gm = i + 1
---~     gd = g_day_no + 1
---~     return gy, gm, gd
---~ end
---~
---~ print(gregorian_to_jalali(2009,02,24))
---~ print(jalali_to_gregorian(1387,12,06))
+local function chinesenumerals   (n) return tochinese(n,"normal") end
+local function chinesecapnumerals(n) return tochinese(n,"cap"   ) end
+local function chineseallnumerals(n) return tochinese(n,"all"   ) end
+
+converters.chinesenumerals    = chinesenumerals
+converters.chinesecapnumerals = chinesecapnumerals
+converters.chineseallnumerals = chineseallnumerals
+
+function commands.chinesenumerals   (n) context(tochinese(n,"normal")) end
+function commands.chinesecapnumerals(n) context(tochinese(n,"cap"   )) end
+function commands.chineseallnumerals(n) context(tochinese(n,"all"   )) end
 
 converters.sequences = converters.sequences or { }
 
@@ -629,20 +533,164 @@ function converters.define(name,set)
     sequences[name] = settings_to_array(set)
 end
 
-function converters.convert(method,n,direct) -- todo: language
+commands.defineconversion = converters.define
+
+local function convert(method,n) -- todo: language
     local converter = converters[method]
     if converter then
-        return converter(n,direct)
+        return converter(n)
     else
         local lowermethod = lower(method)
         local linguistic = counters[lowermethod]
         local sequence = sequences[method]
         if linguistic then
-            return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter,direct,false)
+            return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter,false)
         elseif sequence then
-            return do_alphabetic(n,sequence,false,direct,true)
+            return do_alphabetic(n,sequence,false,true)
         else
-            return direct and n or context(n)
+            return context(n)
         end
     end
 end
+
+converters.convert = convert
+
+function commands.checkedconversion(method,n)
+    context(convert(method,n))
+end
+
+-- Well, since the one asking for this didn't test it the following code is not
+-- enabled.
+--
+-- -- This Lua version is based on a Javascript by Behdad Esfahbod which in turn
+-- -- is based on GPL'd code by Roozbeh Pournader of the The FarsiWeb Project
+-- -- Group: http://www.farsiweb.info/jalali/jalali.js.
+-- --
+-- -- We start tables at one, I kept it zero based in order to stay close to
+-- -- the original.
+-- --
+-- -- Conversion by Hans Hagen
+--
+-- local g_days_in_month = { [0]=31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+-- local j_days_in_month = { [0]=31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
+--
+-- local function div(a,b)
+--   return math.floor(a/b)
+-- end
+--
+-- local function remainder(a,b)
+--   return a - div(a,b)*b
+-- end
+--
+-- function gregorian_to_jalali(gy,gm,gd)
+--     local jy, jm, jd, g_day_no, j_day_no, j_np, i
+--     gy, gm, gd = gy - 1600, gm - 1, gd - 1
+--     g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
+--     i = 0
+--     while i < gm do
+--         g_day_no = g_day_no + g_days_in_month[i]
+--         i = i + 1
+--     end
+--     if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
+--         g_day_no = g_day_no + 1
+--     end
+--     g_day_no = g_day_no + gd
+--     j_day_no = g_day_no - 79
+--     j_np = div(j_day_no,12053)
+--     j_day_no = remainder(j_day_no,12053)
+--     jy = 979 + 33*j_np + 4*div(j_day_no,1461)
+--     j_day_no = remainder(j_day_no,1461)
+--     if j_day_no >= 366 then
+--         jy = jy + div((j_day_no-1),365)
+--         j_day_no = remainder((j_day_no-1),365)
+--     end
+--     i = 0
+--     while i < 11 and j_day_no >= j_days_in_month[i] do
+--         j_day_no = j_day_no - j_days_in_month[i]
+--         i = i + 1
+--     end
+--     jm = i + 1
+--     jd = j_day_no + 1
+--     return jy, jm, jd
+-- end
+--
+-- function jalali_to_gregorian(jy,jm,jd)
+--     local gy, gm, gd, g_day_no, j_day_no, leap, i
+--     jy, jm, jd = jy - 979, jm - 1, jd - 1
+--     j_day_no = 365*jy + div(jy,33)*8 + div((remainder(jy,33)+3),4)
+--     i = 0
+--     while i < jm do
+--         j_day_no = j_day_no + j_days_in_month[i]
+--         i = i + 1
+--     end
+--     j_day_no = j_day_no + jd
+--     g_day_no = j_day_no + 79
+--     gy = 1600 + 400*div(g_day_no,146097)
+--     g_day_no = remainder (g_day_no, 146097)
+--     leap = 1
+--     if g_day_no >= 36525 then
+--         g_day_no = g_day_no - 1
+--         gy = gy + 100*div(g_day_no,36524)
+--         g_day_no = remainder (g_day_no, 36524)
+--         if g_day_no >= 365 then
+--             g_day_no = g_day_no + 1
+--         else
+--             leap = 0
+--         end
+--     end
+--     gy = gy  + 4*div(g_day_no,1461)
+--     g_day_no = remainder (g_day_no, 1461)
+--     if g_day_no >= 366 then
+--         leap = 0
+--         g_day_no = g_day_no - 1
+--         gy = gy + div(g_day_no, 365)
+--         g_day_no = remainder(g_day_no, 365)
+--     end
+--     i = 0
+--     while g_day_no >= g_days_in_month[i] + ((i == 1 and leap) or 0) do
+--         g_day_no = g_day_no - g_days_in_month[i] + ((i == 1 and leap) or 0)
+--         i = i + 1
+--     end
+--     gm = i + 1
+--     gd = g_day_no + 1
+--     return gy, gm, gd
+-- end
+--
+-- print(gregorian_to_jalali(2009,02,24))
+-- print(jalali_to_gregorian(1387,12,06))
+
+-- more efficient but needs testing
+--
+-- local escapes = utffilters.private.escapes
+--
+-- local function do_alphabetic(n,mapping,chr)
+--     local max = #mapping
+--     if n > max then
+--         do_alphabetic(floor((n-1)/max),max,chr)
+--         n = (n-1)%max+1
+--     end
+--     n = chr(n,mapping)
+--     context(escapes[n] or utfchar(n))
+-- end
+--
+-- local lccodes, uccodes = characters.lccode, characters.uccode
+--
+-- local function do_alphabetic(n,mapping,chr)
+--     local max = #mapping
+--     if n > max then
+--         do_alphabetic(floor((n-1)/max),mapping,chr)
+--         n = (n-1)%max+1
+--     end
+--     characters.flush(chr(n,mapping))
+-- end
+--
+-- local function lowercased(n,mapping) return characters.lccode(mapping[n] or fallback) end
+-- local function uppercased(n,mapping) return characters.uccode(mapping[n] or fallback) end
+--
+-- function converters.alphabetic(n,code)
+--     do_alphabetic(n,counters[code] or counters['**'],lowercased) -- lccode catches wrong tables
+-- end
+--
+-- function converters.Alphabetic(n,code)
+--     do_alphabetic(n,counters[code] or counters['**'],uppercased)
+-- end

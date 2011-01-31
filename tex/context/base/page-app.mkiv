@@ -129,7 +129,7 @@
 \unexpanded\def\startTEXstream
   {\dosingleempty\dostartTEXstream}
 
-\def\dostartTEXstream[#1]%
+\def\dostartTEXstream[#1]% old code, to be redone
   {\page
    \defineoutputstream[tex]%
    \enableoutputstream[tex]%
@@ -139,61 +139,18 @@
       \outputstreamunvbox[tex]%
       \stopTEXpage}}
 
-%D Application pages (for an example, see \type {m-pstric}):
+%D Application pages, a quick \MKIV\ hack:
 
-\def\@@texapp{texapp}
-\def\@@texdim{texdim}
+\definetypesetting[TEXapplication]
+\definebuffer[TEXapplication]
 
-\def\saveTEXapplication#1#2%
-  {\immediate\openout\scratchwrite=\bufferprefix\@@texdim.tmp
-   \immediate\write\scratchwrite{\dimen#1=\the\ht\scratchbox}%
-   \immediate\write\scratchwrite{\dimen#2=\the\wd\scratchbox}%
-   \immediate\closeout\scratchwrite}
+% we could use a counter and saves runs on numbering them.
 
-\def\restoreTEXapplication
-  {\readlocfile{\bufferprefix\@@texdim.tmp}\donothing\donothing}
+\def\TEXapplicationfilename{\jobname-texapplication.tex}
 
-\def\startTEXapplication
-  {\dosingleempty\dostartTEXapplication}
-
-\long\def\dostartTEXapplication[#1]#2#3\stopTEXapplication
-  {\bgroup
-   \bgroup
-   \let\f!temporaryextension\c!tex
-   \setbuffer[\@@texapp]%
-     \starttext
-     #2% preamble
-     \startTEXpage[#1]%
-       \topskip\zeropoint
-       \setbox\scratchbox\hbox{#3}%
-       \saveTEXapplication02% dimensions
-       \box\scratchbox
-     \stopTEXpage
-     \stoptext
-   \endbuffer
-   \egroup
-   \doifelse\jobsuffix{dvi}\donetrue\donefalse
-   \executesystemcommand{texexec \bufferprefix\@@texapp.tex --once --batch}%
-   \ifdone % eps
-     \executesystemcommand{dvips -E* -o \@@texapp.eps \@@texapp}%
-   \else % pdf
-     \executesystemcommand{dvips \bufferprefix\@@texapp}%
-     \executesystemcommand{ps2pdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
-%      \executesystemcommand{texmfstart pstopdf \bufferprefix\@@texapp.ps \bufferprefix\@@texapp.pdf}%
-   \fi
-   \restoreTEXapplication % dimensions
-   \doifelse\jobsuffix{dvi}\donetrue\donefalse
-   \setbox\scratchbox\hbox
-     {\expanded{\externalfigure
-        [\bufferprefix\@@texapp.\ifdone eps\else pdf\fi]
-        [\c!object=\v!no]}}%
-   \setbox\scratchbox\hbox
-     {\lower\ht\scratchbox\hbox{\raise\dimen2\box\scratchbox}}%
-   \wd\scratchbox\dimen0
-   \ht\scratchbox\dimen2
-   \dp\scratchbox\zeropoint
-   \box\scratchbox
-   \egroup}
+\def\stopTEXapplication
+  {\savebuffer[\thedefinedbuffer{TEXapplication}][\TEXapplicationfilename]%
+   \typesetfile[TEXapplication][\TEXapplicationfilename]\relax}
 
 %D \macros
 %D   {startpagefigure}

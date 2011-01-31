@@ -93,7 +93,7 @@
 %D can \type {\end} in modules.
 
 \def\dodousemodules#1#2%
-  {\ctxlua{commands.usemodules("#1","#2","\truefilename{#2}")}}
+  {\ctxcommand{usemodules("#1","#2","\truefilename{#2}")}}
 
 \def\usemodules
   {\dotripleempty\dousemodules}
@@ -218,7 +218,7 @@
       \doglobal\setflag{#2}}%
    \ifx#1\undefined
      \writestatus\m!systems{command \string#1 not found in file #2}%
-     \def#1{{\infofont[unknown command \string#1]}}%
+     \gdef#1{{\infofont[unknown command \string#1]}}%
    \fi
    #1}
 

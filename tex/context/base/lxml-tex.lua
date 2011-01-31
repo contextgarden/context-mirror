@@ -288,7 +288,7 @@ function lxml.filterlist(list,pattern)
     end
 end
 
-lxml["function"] = function(id,name)
+function lxml.applyfunction(id,name)
     local f = xml.functions[name]
     return f and f(getid(id))
 end

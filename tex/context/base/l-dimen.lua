@@ -169,7 +169,7 @@ local unit   = P("pt") + P("cm") + P("mm") + P("sp") + P("bp") + P("in")  +
 
 local validdimen = amount * unit
 
-lpeg.patterns.validdimen = pattern
+lpeg.patterns.validdimen = validdimen
 
 --[[ldx--
 <p>This converter accepts calls like:</p>
@@ -329,9 +329,11 @@ function dimensions.texify()  -- todo: %
     if fti and fc then
         dimenfactors["ex"] = function() return fti[fc()].ex_height end
         dimenfactors["em"] = function() return fti[fc()].quad      end
+     -- dimenfactors["%"]  = function() return tex.dimen.hsize/100 end
     else
-        dimenfactors["ex"] = 1/65536* 4 --  4pt
-        dimenfactors["em"] = 1/65536*10 -- 10pt
+        dimenfactors["ex"] = 1/65536* 4 --   4pt
+        dimenfactors["em"] = 1/65536*10 --  10pt
+     -- dimenfactors["%"]  = 1/65536* 4 -- 400pt/100
     end
 end
 
@@ -392,7 +394,7 @@ function dimen(a)
     end
 end
 
-function string.todimen(str)
+function string.todimen(str) -- maybe use tex.sp when available
     if type(str) == "number" then
         return str
     else
@@ -400,7 +402,7 @@ function string.todimen(str)
         if not k then
             local value, unit = lpegmatch(dimenpair,str)
             if value and unit then
-                k = value/unit
+                k = value/unit -- to be considered: round
             else
                 k = 0
             end
@@ -410,6 +412,17 @@ function string.todimen(str)
         return k
     end
 end
+
+--~ local known = { }
+
+--~ function string.todimen(str) -- maybe use tex.sp
+--~     local k = known[str]
+--~     if not k then
+--~         k = tex.sp(str)
+--~         known[str] = k
+--~     end
+--~     return k
+--~ end
 
 stringtodimen = string.todimen -- local variable defined earlier
 

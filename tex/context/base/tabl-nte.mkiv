@@ -84,13 +84,9 @@
      \expandafter\dododoTABLENC
    \fi}
 
-% \long\def\dododoTABLENC#1\NC
-%   {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\parseTR[][]\fi
-%    \parseTD[][]#1\eTD\NC}
-
 \long\def\dododoTABLENC#1\NC
- {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\parseTR[][]\fi
-  \dodoubleempty\parseTD#1\eTD\NC}
+ {\ifconditional\inTABLEnc\else\settrue\inTABLEnc\dobTR[]\fi
+  \dobTD#1\eTD\NC}
 
 %D The related structure commands are also available:
 

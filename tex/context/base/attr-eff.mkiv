@@ -19,10 +19,10 @@
 
 % \def\registereffect#1#2#3% #2=stretch #3=rulethickness
 %   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}% todo: set attribute at lua end
-%      {\attribute\effectattribute\ctxlua{commands.registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
+%      {\attribute\effectattribute\ctxcommand{registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
 %
 % \def\dotriggereffect
-%   {\ctxlua{commands.enableeffect()}% can then move to caller
+%   {\ctxcommand{enableeffect()}% can then move to caller
 %    \gdef\dotriggereffect##1##2##3%
 %      {\ifcsname(es:##1:##2:\number\dimexpr##3\relax)\endcsname\else\registereffect{##1}{##2}{##3}\fi
 %       \csname(es:##1:##2:\number\dimexpr##3\relax)\endcsname}%
@@ -30,10 +30,10 @@
 %
 % \def\registereffect#1#2#3% #2=stretch #3=rulethickness
 %   {\setxvalue{(es:#1:#2:\number\dimexpr#3\relax)}% todo: set attribute at lua end
-%      {\attribute\effectattribute\ctxlua{commands.registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
+%      {\attribute\effectattribute\ctxcommand{registereffect('#1',#2,\number\dimexpr#3\relax)}\relax}}
 
 \gdef\dotriggereffect#1#2#3%
-  {\ctxlua{commands.triggereffect('#1',#2,\number\dimexpr#3\relax)}}
+  {\ctxcommand{triggereffect('#1',#2,\number\dimexpr#3\relax)}}
 
 \unexpanded\def\setupeffect
   {\dodoubleargument\dosetupeffect}

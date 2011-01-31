@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=syst-gen,
+%D   [       file=syst-aux, % merge of syst-gen cum suis
 %D        version=1996.03.20,
 %D          title=\CONTEXT\ System Macros,
 %D       subtitle=General,
@@ -64,6 +64,8 @@
 %D \stoptyping
 %D
 %D The \type {yyyy.mm.dd} syntax is rather strict.
+
+% todo: lua
 
 \def\@@versiontonumber#1.#2.#3#4#5\relax
   {\numexpr#1*\plustenthousand+#2*\plushundred+#3#4\relax}
@@ -174,73 +176,26 @@
 %D commalist or when data stored in macros is fed to index of
 %D list commands. If needed, one should use \type{\noexpand}
 %D inside the argument. Later on we will meet some more clever
-%D alternatives to this command.
+%D alternatives to this command. Beware, only the simple one
+%D has \type {\noexpand} before its argument.
 
-\long\def\@@expanded{} % always long; global (less restores)
+ \long\def\@@expanded{} % always long; global (less restores)
 
 \long\def\expanded#1%
   {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
-
-%D Beware, the next one has no \type {\noexpand} before its
-%D argument.
 
 \long\def\startexpanded#1\stopexpanded % see x-fo for example
   {\long\xdef\@@expanded{#1}\@@expanded}
 
 %D Recent \TEX's have a primitive \expanded
 
-% \long\def\expanded
-%   {\normalexpanded\bgroup\noexpand\gobblenexttoken}
-
-%D \macros
-%D   {safeexpanded,everysafeexpanded}
-%D
-%D In addition we provide:
-
-\newtoks\everysafeexpanded
-
-\long\def\safeexpanded#1% why the \noexpand
-  {\begingroup
-   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#1}%
-   \endgroup
-   \@@expanded}
-
-\def\safeedef#1#2%
-  {\begingroup
-   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
-   \endgroup
-   \let#1\@@expanded}
-
-\def\safexdef#1#2%
-  {\begingroup
-   \the\everysafeexpanded\long\xdef\@@expanded{\noexpand#2}%
-   \endgroup
-   \global\let#1\@@expanded}
-
-%D You can append protective measures to the token register if
-%D needed, as we will do later.
-
-%D \macros
-%D   {expandoneargafter,expandtwoargsafter}
-%D
-%D These two commands make macros more readable by hiding a
-%D lot of \type {\expandafter}'s. They expand the arguments
-%D after the first command.
-%D
-%D \starttyping
-%D \expandoneargafter \command{\abc}
-%D \expandtwoargsafter\command{\abc}{\def}
-%D \stoptyping
-%D
-%D These commands expect the arguments to be macros.
-
-\def\expandoneargafter   #1{\@EA#1\@EA}
-\def\expandtwoargsafter#1#2{\@EA\@EA\@EA#1\@EA\@EA\@EA{\@EA#2\@EA}\@EA}
-
-%D These two do a full expansion:
-
-\def\fullexpandoneargafter   #1#2{\long\xdef\@@expanded{\noexpand#1{#2}}\@@expanded}
-\def\fullexpandtwoargsafter#1#2#3{\long\xdef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
+% not yet as we need to adapt ##'s in calls
+%
+% \long\def\expanded#1%
+%   {\normalexpanded{\noexpand#1}}
+%
+% \long\def\startexpanded#1\stopexpanded
+%   {\normalexpanded{#1}}
 
 %D \macros
 %D   {gobbleoneargument,gobble...arguments}
@@ -310,18 +265,23 @@
 %D test in a run. Of course it also is more convenient to read a
 %D trace then.
 
+\newif\ifnextblankspacetoken
+
 \let\nextoptionalcharactertoken=[
 
 \long\def\doifnextoptionalelse#1#2%
   {\def\nextoptionalcommandyes{#1}%
    \def\nextoptionalcommandnop{#2}%
+   \let\ifnextblankspacetoken\iffalse
    \futurelet\nexttoken\inspectnextoptionalcharacter}
+
 \def\inspectnextoptionalcharacter
   {\ifx\nexttoken\blankspace
      \@EA\reinspectnextoptionalcharacter
    \else
      \@EA\inspectnextoptionalcharacterindeed
    \fi}
+
 \def\inspectnextoptionalcharacterindeed
   {\ifx\nexttoken\nextoptionalcharactertoken
      \@EA\nextoptionalcommandyes
@@ -334,6 +294,7 @@
 \long\def\doifnextbgroupelse#1#2%
   {\def\nextbgroupcommandyes{#1}%
    \def\nextbgroupcommandnop{#2}%
+   \let\ifnextblankspacetoken\iffalse
    \futurelet\nexttoken\inspectnextbgroupcharacter}
 
 \def\inspectnextbgroupcharacter
@@ -355,6 +316,7 @@
 \long\def\doifnextparenthesiselse#1#2%
   {\def\nextparenthesiscommandyes{#1}%
    \def\nextparenthesiscommandnop{#2}%
+   \let\ifnextblankspacetoken\iffalse
    \futurelet\nexttoken\inspectnextparenthesischaracter}
 
 \def\inspectnextparenthesischaracter
@@ -376,6 +338,7 @@
 \long\def\doiffastoptionalcheckelse#1#2%
   {\def\nextoptionalcommandyes{#1}%
    \def\nextoptionalcommandnop{#2}%
+   \let\ifnextblankspacetoken\iffalse % not needed
    \futurelet\nexttoken\dodoiffastoptionalcheckelse}
 
 \def\dodoiffastoptionalcheckelse
@@ -405,13 +368,13 @@
 \def\:{\let\blankspace= }  \:
 
 \def\:{\reinspectnextcharacter}
-\expandafter\def\: {\futurelet\nexttoken\inspectnextcharacter}
+\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextcharacter}
 
 \def\:{\reinspectnextoptionalcharacter}
-\expandafter\def\: {\futurelet\nexttoken\inspectnextoptionalcharacter}
+\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextoptionalcharacter}
 
 \def\:{\reinspectnextbgroupcharacter}
-\expandafter\def\: {\futurelet\nexttoken\inspectnextbgroupcharacter}
+\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextbgroupcharacter}
 
 \let\:\next
 
@@ -499,8 +462,10 @@
 %D \ifundefined\NameB ... \else ... \fi
 %D \stoptyping
 
-\def\ifundefined#1% obsolete
-  {\unless\ifcsname#1\endcsname}
+% \def\ifundefined#1% obsolete
+%   {\unless\ifcsname#1\endcsname}
+%
+% use a real if like \ifcsname#1\endcsname\else instead
 
 \ifdefined\suppressifcsnameerror
 
@@ -864,21 +829,6 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
-% \def\p!doifcommonelse#1#2#3#4%
-%   {\donefalse
-%    \def\p!docommoncheck##1{\doifinset{##1}{#4}\donetrue\ifdone\quitcommalist\fi}%
-%    \processcommalist[#3]\p!docommoncheck
-%    \ifdone\expandafter#1\else\expandafter#2\fi}
-%
-% \def\doifcommonelse
-%   {\p!doifcommonelse\firstoftwoarguments\secondoftwoarguments}
-%
-% \def\doifcommon
-%   {\p!doifcommonelse\firstofoneargument \gobbleoneargument}
-%
-% \def\doifnotcommon
-%   {\p!doifcommonelse\gobbleoneargument  \firstofoneargument}
-
 \long\def\doquitifcommonelse#1],\relax#2],\relax{\firstoftwoarguments}
 
 \long\def\doquitifcommonelsenop{\secondoftwoarguments}
@@ -927,23 +877,6 @@
    \fi\fi
    #1#2}
 
-% \def\p!doifcommonelse#1#2#3%
-%   {\edef\!!stringa{#3}%
-%    \ifx\!!stringa\empty
-%      \expandafter\secondofthreearguments
-%    \else
-%      \expandafter\p!dodoifcommonelse
-%    \fi
-%    #1#2} % #4
-
-% \def\p!dodoifcommonelse#1#2#3%
-%   {\edef\!!stringb{#3}%
-%    \ifx\!!stringb\empty
-%      \expandafter\secondoftwoarguments
-%    \else
-%      \expandafter\pp!doifcommonelse
-%    \fi#1#2}
-
 \def\pp!doifcommonelse
   {\def\p!docommoncheck{\expandafter\docheckifcommonelsetwo\!!stringb,],\relax}%
    \expandafter\docheckifcommonelseone\!!stringa,],\relax}
@@ -988,15 +921,6 @@
 
 \def\dododoprocesscommaitem
   {\csname\s!next\the\commalevel\endcsname}
-
-% \def\dodoprocesscommaitem
-%   {\ifx\nexttoken\blankspace
-%      \@EA\redoprocesscommaitem
-%    \else\ifx\nexttoken]%
-%      \@EAEAEA\gobbleoneargument
-%    \else
-%      \@EAEAEA\dododoprocesscommaitem
-%    \fi\fi}
 
 \def\dodoprocesscommaitem
   {\ifx\nexttoken\blankspace
@@ -1090,20 +1014,8 @@
 %D Commands that are part of the list are expanded, so the
 %D use of this macro has its limits.
 
-% \def\processcommacommand[#1]%
-%   {\expanded{\processcommalist[#1]}}
-
 \unexpanded\def\processcommacommand[#1]%
-  {\expandafter\processcommalist\expandafter[\normalexpanded{#1}]}
-
-% \def\processcommacommand[#1]%
-%   {\edef\expandedcommacommand{#1%
-%    \ifx\expandedcommacommand\empty\else
-%       \doprocesscommacommand
-%    \fi}
-%
-% \def\doprocesscommacommand
-%   {\expandafter\processcommalist\expandafter[\expandedcommacommand]}
+  {\normalexpanded{\processcommalist[#1]}}
 
 %D The argument to \type{\command} is not delimited. Because
 %D we often use \type{[]} as delimiters, we also have:
@@ -1133,7 +1045,7 @@
 
 \long\unexpanded\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
   {\long\def\currentcommalistcommand##1{\def\currentcommalistitem{##1}#2}%
-   \normalexpanded{\noexpand\processcommacommand[#1]}\currentcommalistcommand}
+   \normalexpanded{\processcommalist[#1]}\currentcommalistcommand}
 
 %D \macros
 %D   {processaction,
@@ -1416,24 +1328,9 @@
 
 % replaces prev
 
-% \long\def\p!doifinstringelse#1#2% ##2 can be {abc}
-%   {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war{\unless\if##2@}% expand #1 here
-%    \expanded{\pp!doifinstringelse#2#1}@@\war} % expand #2 here
-
 \long\def\p!doifinstringelse#1#2% ##2 can be {abc}
   {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war{\unless\if##2@}% expand #1 here
    \expandafter\pp!doifinstringelse\normalexpanded{#2#1}@@\war} % expand #2 here
-
-% faster but at some costs
-%
-% \def\setp!doifinstringelse#1#2% ##2 can be {abc}
-%   {\long\expandafter\gdef\csname @diie:#1\@EA\endcsname\@EA##\@EA1#1##2##3\war{\unless\if##2@}}% expand #1 here
-%
-% \long\def\p!doifinstringelse#1#2% ##2 can be {abc}
-%   {\ifcsname @diie:#1\endcsname \else
-%      \setp!doifinstringelse{#1}{#2}%
-%    \fi
-%    \csname @diie:#1\expandafter\endcsname\normalexpanded{#2#1}@@\war} % expand #2 here
 
 %D The next alternative proved to be upto twice as fast on
 %D tasks like checking reserved words in pretty verbatim
@@ -1821,10 +1718,6 @@
 
 \let\p!doassign\p!n!doassign
 
-% \def\doassign  [#1][#2]{\p!doassign\dosetvalue  #1\@relax@#2==\empty\@relax@}
-% \def\doeassign [#1][#2]{\p!doassign\dosetevalue #1\@relax@#2==\empty\@relax@}
-% \def\undoassign[#1][#2]{\p!doassign\doresetvalue#1\@relax@#2==\empty\@relax@}
-
 \def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \p!doassign#1\@relax@#2==\empty\@relax@}
 \def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \p!doassign#1\@relax@#2==\empty\@relax@}
 \def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\p!doassign#1\@relax@#2==\empty\@relax@}
@@ -1843,12 +1736,12 @@
 %D We can optimize this one if needed but it's not a core macro so hardly
 %D worth the trouble and tokens.
 
-\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
+\unexpanded\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
   {\def\doprocessassignmententry##1{#2}% {##2}{##3} % namespace is ignored
    \dogetparameters\doprocessassignmententry[][#1]}
 
-\def\processassignmentcommand[#1]%
-  {\normalexpanded{\noexpand\processassignmentlist[#1]}}
+\unexpanded\def\processassignmentcommand[#1]%
+  {\normalexpanded{\processassignmentlist[#1]}}
 
 \long\unexpanded\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
   {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
@@ -1856,7 +1749,7 @@
 
 \long\unexpanded\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
   {\long\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
-   \normalexpanded{\noexpand\processassignmentlist[#1]}\currentassignmentlistcommand}
+   \normalexpanded{\processassignmentlist[#1]}\currentassignmentlistcommand}
 
 %D \macros{currentvalue}
 %D
@@ -1894,16 +1787,6 @@
 
 \def\xdoget@n@parameters#1]%
   {\xprocesscommaitem#1,],\@relax@}
-
-% \def\xdoget@e@parameters#1]%
-%   {\let\dosetnvalue\dosetvalue
-%    \let\dosetvalue\dosetevalue
-%    \let\p!doassign\p!e!doassign
-%    \xprocesscommaitem#1,],\@relax@
-%    \let\p!doassign\p!n!doassign
-%    \let\dosetvalue\dosetnvalue
-%    \let\xdogetparameters\xdoget@n@parameters
-%    \let\currentvalue\empty}
 
 \def\xdoget@e@parameters#1]%
   {\let\dosetnvalue\setsomevalue
@@ -2036,18 +1919,6 @@
   {\edef\commacommand{#1}%
    \scratchtoks\expandafter{\expandafter[\commacommand]}%
    \expandafter\getcommalistsize\the\scratchtoks }
-
-% to be tested first
-%
-% \def\getcommacommandsize[#1]%
-%   {\expanded{\getcommalistsize[#1]}}
-
-% \def\p!dogetfromcommalist#1%
-%   {\advance\commalistcounter \minusone
-%    \ifcase\commalistcounter
-%      \def\commalistelement{#1}%
-%      \begingroup\def\doprocesscommaitem##1]{\endgroup}%
-%    \fi}
 
 \def\p!dogetfromcommalist#1%
   {\advance\commalistcounter \minusone
@@ -2216,8 +2087,6 @@
 %D use the \type{\if...argument} boolean. For novice: watch
 %D the stepwise doubling of \type{#}'s
 
-% idea: \ignorespaces afterwards
-
 \setnewconstant\noexpectedarguments\zerocount
 \setnewconstant\expectedarguments  \zerocount
 
@@ -2233,163 +2102,668 @@
 \def\noshowargumenterror
   {\let\expectedarguments\noexpectedarguments}
 
-\long\def\dogetargument#1#2#3#4%
-  {\let\charactertoken=#1%
-   \def\!!stringa{\noshowargumenterror#3\dodogetargument}%
-   \def\!!stringb{\doshowargumenterror#4\dodogetargument#1#2}%
-   \futurelet\nexttoken\inspectnextcharacter}
+% \long\def\dogetargument#1#2#3#4%
+%   {\let\charactertoken=#1%
+%    \def\!!stringa{\noshowargumenterror#3\dodogetargument}%
+%    \def\!!stringb{\doshowargumenterror#4\dodogetargument#1#2}%
+%    \futurelet\nexttoken\inspectnextcharacter}
 
-\def\getsingleempty#1#2#3%
-  {\def\dodogetargument%
-     {#3}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getsingleempty#1#2#3%
+%   {\def\dodogetargument%
+%      {#3}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\getdoubleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument%
-        {#3#1{##1}#2}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getdoubleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument%
+%         {#3#1{##1}#2}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\gettripleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument#1####1#2%
-        {\def\dodogetargument%
-           {#3#1{##1}#2%
-              #1{####1}#2}%
-         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\gettripleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument#1####1#2%
+%         {\def\dodogetargument%
+%            {#3#1{##1}#2%
+%               #1{####1}#2}%
+%          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\getquadrupleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument#1####1#2%
-        {\def\dodogetargument#1########1#2%
-           {\def\dodogetargument%
-              {#3#1{##1}#2%
-                 #1{####1}#2%
-                 #1{########1}#2}%
-            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
-         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getquadrupleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument#1####1#2%
+%         {\def\dodogetargument#1########1#2%
+%            {\def\dodogetargument%
+%               {#3#1{##1}#2%
+%                  #1{####1}#2%
+%                  #1{########1}#2}%
+%             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\getquintupleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument#1####1#2%
-        {\def\dodogetargument#1########1#2%
-           {\def\dodogetargument#1################1#2%
-              {\def\dodogetargument%
-                 {#3#1{##1}#2%
-                    #1{####1}#2%
-                    #1{########1}#2%
-                    #1{################1}#2}%
-               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
-            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
-         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getquintupleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument#1####1#2%
+%         {\def\dodogetargument#1########1#2%
+%            {\def\dodogetargument#1################1#2%
+%               {\def\dodogetargument%
+%                  {#3#1{##1}#2%
+%                     #1{####1}#2%
+%                     #1{########1}#2%
+%                     #1{################1}#2}%
+%                \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\getsixtupleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument#1####1#2%
-        {\def\dodogetargument#1########1#2%
-           {\def\dodogetargument#1################1#2%
-              {\def\dodogetargument#1################################1#2%
-                 {\def\dodogetargument%
-                    {#3#1{##1}#2%
-                       #1{####1}#2%
-                       #1{########1}#2%
-                       #1{################1}#2%
-                       #1{################################1}#2}%
-                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
-               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
-            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
-         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getsixtupleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument#1####1#2%
+%         {\def\dodogetargument#1########1#2%
+%            {\def\dodogetargument#1################1#2%
+%               {\def\dodogetargument#1################################1#2%
+%                  {\def\dodogetargument%
+%                     {#3#1{##1}#2%
+%                        #1{####1}#2%
+%                        #1{########1}#2%
+%                        #1{################1}#2%
+%                        #1{################################1}#2}%
+%                  \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+%                \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\getseventupleempty#1#2#3%
-  {\def\dodogetargument#1##1#2%
-     {\def\dodogetargument#1####1#2%
-        {\def\dodogetargument#1########1#2%
-           {\def\dodogetargument#1################1#2%
-              {\def\dodogetargument#1################################1#2%
-                 {\def\dodogetargument#1################################%
-                                        ################################1#2%
-                    {\def\dodogetargument%
-                       {#3#1{##1}#2%
-                          #1{####1}#2%
-                          #1{########1}#2%
-                          #1{################1}#2%
-                          #1{################################1}#2%
-                          #1{################################%
-                             ################################1}#2}%
-                   \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
-                 \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
-               \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
-            \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
-         \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
-      \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
-   \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
+% \def\getseventupleempty#1#2#3%
+%   {\def\dodogetargument#1##1#2%
+%      {\def\dodogetargument#1####1#2%
+%         {\def\dodogetargument#1########1#2%
+%            {\def\dodogetargument#1################1#2%
+%               {\def\dodogetargument#1################################1#2%
+%                  {\def\dodogetargument#1################################%
+%                                         ################################1#2%
+%                     {\def\dodogetargument%
+%                        {#3#1{##1}#2%
+%                           #1{####1}#2%
+%                           #1{########1}#2%
+%                           #1{################1}#2%
+%                           #1{################################1}#2%
+%                           #1{################################%
+%                              ################################1}#2}%
+%                    \dogetargument#1#2\seventhargumenttrue\seventhargumentfalse}%
+%                  \dogetargument#1#2\sixthargumenttrue\sixthargumentfalse}%
+%                \dogetargument#1#2\fifthargumenttrue\fifthargumentfalse}%
+%             \dogetargument#1#2\fourthargumenttrue\fourthargumentfalse}%
+%          \dogetargument#1#2\thirdargumenttrue\thirdargumentfalse}%
+%       \dogetargument#1#2\secondargumenttrue\secondargumentfalse}%
+%    \dogetargument#1#2\firstargumenttrue\firstargumentfalse}
 
-\def\dosingleempty    {\getsingleempty    []}
-\def\dodoubleempty    {\getdoubleempty    []}
-\def\dotripleempty    {\gettripleempty    []}
-\def\doquadrupleempty {\getquadrupleempty []}
-\def\doquintupleempty {\getquintupleempty []}
-\def\dosixtupleempty  {\getsixtupleempty  []}
-\def\doseventupleempty{\getseventupleempty[]}
+% \def\dosingleempty    {\getsingleempty    []}
+% \def\dodoubleempty    {\getdoubleempty    []}
+% \def\dotripleempty    {\gettripleempty    []}
+% \def\doquadrupleempty {\getquadrupleempty []}
+% \def\doquintupleempty {\getquintupleempty []}
+% \def\dosixtupleempty  {\getsixtupleempty  []}
+% \def\doseventupleempty{\getseventupleempty[]}
 
 %D Because some of these are called quite often, we will now
 %D replace the more general version by alternatives tuned for
 %D speed.
 
-\def\dosingleempty#1% we can make dedicated doifnextoptional's
-  {\noshowargumenterror % \relax % prevents lookahead, brr
+% \def\dosingleempty#1% we can make dedicated doifnextoptional's
+%   {\noshowargumenterror % \relax % prevents lookahead, brr
+%    \doifnextoptionalelse
+%      {\firstargumenttrue#1}%
+%      {\dosinglefakeempty#1}}
+%
+% \def\dosinglefakeempty#1%
+%   {\firstargumentfalse#1[]}
+%
+% \def\dodoubleempty#1%
+%   {\noshowargumenterror % \relax % prevents lookahead, brr
+%    \doifnextoptionalelse
+%      {\dodoubletestempty#1}%
+%      {\dodoublefakeempty#1}}
+%
+% \def\dodoublefakeempty#1%
+%   {\firstargumentfalse\secondargumentfalse#1[][]}
+%
+% \long\def\dodoubletestempty#1[#2]%
+%   {\firstargumenttrue
+%    \doifnextoptionalelse
+%      {\secondargumenttrue #1[{#2}]}%
+%      {\secondargumentfalse#1[{#2}][]}}
+%
+% \def\dotripleempty#1%
+%   {\noshowargumenterror % \relax % prevents lookahead, brr
+%    \doifnextoptionalelse
+%      {\dotripletestempty#1}%
+%      {\dotriplefakeempty#1}}
+%
+% \def\dotriplefakeempty#1%
+%   {\firstargumentfalse\secondargumentfalse\thirdargumentfalse#1[][][]}
+%
+% \long\def\dotripletestempty#1[#2]%
+%   {\firstargumenttrue
+%    \doifnextoptionalelse
+%      {\dotripletestemptyx #1[{#2}]}%
+%      {\secondargumentfalse
+%       \thirdargumentfalse #1[{#2}][][]}}
+%
+% \long\def\dotripletestemptyx#1[#2][#3]%
+%   {\secondargumenttrue
+%    \doifnextoptionalelse
+%      {\thirdargumenttrue #1[{#2}][{#3}]}%
+%      {\thirdargumentfalse#1[{#2}][{#3}][]}}
+
+%D We can obey following spaces with a bit more code.
+
+% 0.172 0.187 new (per 10000)
+% 0.156 0.140 old (per 10000)
+%
+% \def\test[#1]{(#1)}
+%
+% \dosingleempty\test[]   xxx\par
+% \dosingleempty\test     xxx\par
+%
+% \def\test[#1][#2]{(#1,#2)}
+%
+% \dodoubleempty\test[][] xxx\par
+% \dodoubleempty\test[]   xxx\par
+% \dodoubleempty\test     xxx\par
+%
+% \def\test[#1][#2][#3]{(#1,#2,#3)}
+%
+% \dotripleempty\test[][][] xxx\par
+% \dotripleempty\test[][]   xxx\par
+% \dotripleempty\test[]     xxx\par
+% \dotripleempty\test       xxx\par
+
+%D Single:
+
+\def\dosingleempty#1%
+  {\noshowargumenterror
    \doifnextoptionalelse
      {\firstargumenttrue#1}%
-     {\dosinglefakeempty#1}}
+     {\dosingleemptyNOPone#1}}
+
+\def\dosingleemptyNOPone#1%
+  {\firstargumentfalse
+   #1[]}
+
+%D Double
 
 \def\dodoubleempty#1%
-  {\noshowargumenterror % \relax % prevents lookahead, brr
+  {\noshowargumenterror
    \doifnextoptionalelse
-     {\dodoubletestempty#1}%
-     {\dodoublefakeempty#1}}
+     {\dodoubleemptyYESone#1}%
+     {\dodoubleemptyNOPone#1}}
+
+\long\def\dodoubleemptyYESone#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\secondargumenttrue#1[{#2}]}%
+     {\dodoubleemptyNOPtwo#1{#2}}}
+
+\def\dodoubleemptyNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   #1[][]}
+
+\def\dodoubleemptyNOPtwo
+  {\secondargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dodoubleemptyonespaced
+   \else
+     \expandafter\dodoubleemptyonenormal
+   \fi}
+
+\def\dodoubleemptyonespaced#1#2{#1[{#2}][] }
+\def\dodoubleemptyonenormal#1#2{#1[{#2}][]}
+
+% Three
 
 \def\dotripleempty#1%
-  {\noshowargumenterror % \relax % prevents lookahead, brr
+  {\noshowargumenterror
    \doifnextoptionalelse
-     {\dotripletestempty#1}%
-     {\dotriplefakeempty#1}}
+     {\dotripleemptyYESone#1}%
+     {\dotripleemptyNOPone#1}}
 
-\def\dosinglefakeempty#1%
-  {\firstargumentfalse#1[]}
-
-\def\dodoublefakeempty#1%
-  {\firstargumentfalse\secondargumentfalse#1[][]}
-
-\def\dotriplefakeempty#1%
-  {\firstargumentfalse\secondargumentfalse\thirdargumentfalse#1[][][]}
-
-\long\def\dodoubletestempty#1[#2]%
+\long\def\dotripleemptyYESone#1[#2]%
   {\firstargumenttrue
    \doifnextoptionalelse
-     {\secondargumenttrue #1[{#2}]}%
-     {\secondargumentfalse#1[{#2}][]}}
+     {\dotripleemptyYEStwo#1{#2}}%
+     {\dotripleemptyNOPtwo#1{#2}}}
 
-\long\def\dotripletestempty#1[#2]%
-  {\firstargumenttrue
-   \doifnextoptionalelse
-     {\dotripletestemptyx #1[{#2}]}%
-     {\secondargumentfalse
-      \thirdargumentfalse #1[{#2}][][]}}
-
-\long\def\dotripletestemptyx#1[#2][#3]%
+\long\def\dotripleemptyYEStwo#1#2[#3]%
   {\secondargumenttrue
    \doifnextoptionalelse
-     {\thirdargumenttrue #1[{#2}][{#3}]}%
-     {\thirdargumentfalse#1[{#2}][{#3}][]}}
+     {\thirdargumenttrue#1[{#2}][{#3}]}%
+     {\dotripleemptyNOPthree#1{#2}{#3}}}
+
+\def\dotripleemptyNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   #1[][][]}
+
+\def\dotripleemptyNOPtwo
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dotripleemptytwospaced
+   \else
+     \expandafter\dotripleemptytwonormal
+   \fi}
+
+\def\dotripleemptyNOPthree
+  {\thirdargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dotripleemptythreespaced
+   \else
+     \expandafter\dotripleemptythreenormal
+   \fi}
+
+\def\dotripleemptytwospaced    #1#2{#1[{#2}][][] }
+\def\dotripleemptytwonormal    #1#2{#1[{#2}][][]}
+\def\dotripleemptythreespaced#1#2#3{#1[{#2}][{#3}][] }
+\def\dotripleemptythreenormal#1#2#3{#1[{#2}][{#3}][]}
+
+%D Four:
+
+\def\doquadrupleempty#1%
+  {\noshowargumenterror
+   \doifnextoptionalelse
+     {\doquadrupleemptyYESone#1}%
+     {\doquadrupleemptyNOPone#1}}
+
+\long\def\doquadrupleemptyYESone#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\doquadrupleemptyYEStwo#1{#2}}%
+     {\doquadrupleemptyNOPtwo#1{#2}}}
+
+\long\def\doquadrupleemptyYEStwo#1#2[#3]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\doquadrupleemptyYESthree#1{#2}{#3}}%
+     {\doquadrupleemptyNOPthree#1{#2}{#3}}}
+
+\long\def\doquadrupleemptyYESthree#1#2#3[#4]%
+  {\thirdargumenttrue
+   \doifnextoptionalelse
+     {\fourthargumenttrue#1[{#2}][{#3}][{#4}]}%
+     {\doquadrupleemptyNOPfour#1{#2}{#3}{#4}}}
+
+\def\doquadrupleemptNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   #1[][][][]}
+
+\def\doquadrupleemptyNOPtwo
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquadrupleemptytwospaced
+   \else
+     \expandafter\doquadrupleemptytwonormal
+   \fi}
+
+\def\doquadrupleemptyNOPthree
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquadrupleemptythreespaced
+   \else
+     \expandafter\doquadrupleemptythreenormal
+   \fi}
+
+\def\doquadrupleemptyNOPfour
+  {\fourthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquadrupleemptyfourspaced
+   \else
+     \expandafter\doquadrupleemptyfournormal
+   \fi}
+
+\def\doquadrupleemptytwospaced      #1#2{#1[{#2}][][][] }
+\def\doquadrupleemptytwonormal      #1#2{#1[{#2}][][][]}
+\def\doquadrupleemptythreespaced  #1#2#3{#1[{#2}][{#3}][][] }
+\def\doquadrupleemptythreenormal  #1#2#3{#1[{#2}][{#3}][][]}
+\def\doquadrupleemptyfourspaced #1#2#3#4{#1[{#2}][{#3}][{#4}][] }
+\def\doquadrupleemptyfournormal #1#2#3#4{#1[{#2}][{#3}][{#4}][]}
+
+%D Five:
+
+\def\doquintupleempty#1%
+  {\noshowargumenterror
+   \doifnextoptionalelse
+     {\doquintupleemptyYESone#1}%
+     {\doquintupleemptyNOPone#1}}
+
+\long\def\doquintupleemptyYESone#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\doquintupleemptyYEStwo#1{#2}}%
+     {\doquintupleemptyNOPtwo#1{#2}}}
+
+\long\def\doquintupleemptyYEStwo#1#2[#3]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\doquintupleemptyYESthree#1{#2}{#3}}%
+     {\doquintupleemptyNOPthree#1{#2}{#3}}}
+
+\long\def\doquintupleemptyYESthree#1#2#3[#4]%
+  {\thirdargumenttrue
+   \doifnextoptionalelse
+     {\doquintupleemptyYESfour#1{#2}{#3}{#4}}%
+     {\doquintupleemptyNOPfour#1{#2}{#3}{#4}}}
+
+\long\def\doquintupleemptyYESfour#1#2#3#4[#5]%
+  {\fourthargumenttrue
+   \doifnextoptionalelse
+     {\fifthargumenttrue#1[{#2}][{#3}][{#4}][{#5}]}%
+     {\doquintupleemptyNOPfive#1{#2}{#3}{#4}{#5}}}
+
+\def\doquintupleemptNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   #1[][][][][]}
+
+\def\doquintupleemptyNOPtwo
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquintupleemptytwospaced
+   \else
+     \expandafter\doquintupleemptytwonormal
+   \fi}
+
+\def\doquintupleemptyNOPthree
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquintupleemptythreespaced
+   \else
+     \expandafter\doquintupleemptythreenormal
+   \fi}
+
+\def\doquintupleemptyNOPfour
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquintupleemptyfourspaced
+   \else
+     \expandafter\doquintupleemptyfournormal
+   \fi}
+
+\def\doquintupleemptyNOPfive
+  {\fifthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\doquintupleemptyfivespaced
+   \else
+     \expandafter\doquintupleemptyfivenormal
+   \fi}
+
+\def\doquintupleemptytwospaced        #1#2{#1[{#2}][][][][] }
+\def\doquintupleemptytwonormal        #1#2{#1[{#2}][][][][]}
+\def\doquintupleemptythreespaced    #1#2#3{#1[{#2}][{#3}][][][] }
+\def\doquintupleemptythreenormal    #1#2#3{#1[{#2}][{#3}][][][]}
+\def\doquintupleemptyfourspaced   #1#2#3#4{#1[{#2}][{#3}][{#4}][][] }
+\def\doquintupleemptyfournormal   #1#2#3#4{#1[{#2}][{#3}][{#4}][][]}
+\def\doquintupleemptyfivespaced #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][] }
+\def\doquintupleemptyfivenormal #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][]}
+
+%D Six
+
+\def\dosixtupleempty#1%
+  {\noshowargumenterror
+   \doifnextoptionalelse
+     {\dosixtupleemptyYESone#1}
+     {\dosixtupleemptyNOPone#1}}
+
+\long\def\dosixtupleemptyYESone#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\dosixtupleemptyYEStwo#1{#2}}%
+     {\dosixtupleemptyNOPtwo#1{#2}}}
+
+\long\def\dosixtupleemptyYEStwo#1#2[#3]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\dosixtupleemptyYESthree#1{#2}{#3}}%
+     {\dosixtupleemptyNOPthree#1{#2}{#3}}}
+
+\long\def\dosixtupleemptyYESthree#1#2#3[#4]%
+  {\thirdargumenttrue
+   \doifnextoptionalelse
+     {\dosixtupleemptyYESfour#1{#2}{#3}{#4}}%
+     {\dosixtupleemptyNOPfour#1{#2}{#3}{#4}}}
+
+\long\def\dosixtupleemptyYESfour#1#2#3#4[#5]%
+  {\fourthargumenttrue
+   \doifnextoptionalelse
+     {\dosixtupleemptyYESfive#1{#2}{#3}{#4}{#5}}%
+     {\dosixtupleemptyNOPfive#1{#2}{#3}{#4}{#5}}}
+
+\long\def\dosixtupleemptyYESfive#1#2#3#4#5[#6]%
+  {\fifthargumenttrue
+   \doifnextoptionalelse
+     {\sixthargumenttrue#1[{#2}][{#3}][{#4}][{#5}][{#6}]}%
+     {\dosixtupleemptyNOPsix#1{#2}{#3}{#4}{#5}{#6}}}
+
+\def\dosixemptNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   #1[][][][][][]}
+
+\def\dosixtupleemptyNOPtwo
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosixemptytwospaced
+   \else
+     \expandafter\dosixemptytwonormal
+   \fi}
+
+\def\dosixtupleemptyNOPthree
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosixemptythreespaced
+   \else
+     \expandafter\dosixemptythreenormal
+   \fi}
+
+\def\dosixtupleemptyNOPfour
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosixemptyfourspaced
+   \else
+     \expandafter\dosixemptyfournormal
+   \fi}
+
+\def\dosixtupleemptyNOPfive
+  {\fifthargumentfalse
+   \sixthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosixemptyfivespaced
+   \else
+     \expandafter\dosixemptyfivenormal
+   \fi}
+
+\def\dosixtupleemptyNOPsix
+  {\sixthargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosixemptysixspaced
+   \else
+     \expandafter\dosixemptysixnormal
+   \fi}
+
+\def\dosixemptytwospaced          #1#2{#1[{#2}][][][][][] }
+\def\dosixemptytwonormal          #1#2{#1[{#2}][][][][][]}
+\def\dosixemptythreespaced      #1#2#3{#1[{#2}][{#3}][][][][] }
+\def\dosixemptythreenormal      #1#2#3{#1[{#2}][{#3}][][][][]}
+\def\dosixemptyfourspaced     #1#2#3#4{#1[{#2}][{#3}][{#4}][][][] }
+\def\dosixemptyfournormal     #1#2#3#4{#1[{#2}][{#3}][{#4}][][][]}
+\def\dosixemptyfivespaced   #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][] }
+\def\dosixemptyfivenormal   #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][]}
+\def\dosixemptysixspaced  #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][] }
+\def\dosixemptysixnormal  #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][]}
+
+%D Seven:
+
+\def\doseventupleempty#1%
+  {\noshowargumenterror
+   \doifnextoptionalelse
+     {\doseventupleemptyYESone#1}
+     {\doseventupleemptyNOPone#1}}
+
+\long\def\doseventupleemptyYESone#1[#2]%
+  {\firstargumenttrue
+   \doifnextoptionalelse
+     {\doseventupleemptyYEStwo#1{#2}}%
+     {\doseventupleemptyNOPtwo#1{#2}}}
+
+\long\def\doseventupleemptyYEStwo#1#2[#3]%
+  {\secondargumenttrue
+   \doifnextoptionalelse
+     {\doseventupleemptyYESthree#1{#2}{#3}}%
+     {\doseventupleemptyNOPthree#1{#2}{#3}}}
+
+\long\def\doseventupleemptyYESthree#1#2#3[#4]%
+  {\thirdargumenttrue
+   \doifnextoptionalelse
+     {\doseventupleemptyYESfour#1{#2}{#3}{#4}}%
+     {\doseventupleemptyNOPfour#1{#2}{#3}{#4}}}
+
+\long\def\doseventupleemptyYESfour#1#2#3#4[#5]%
+  {\fourthargumenttrue
+   \doifnextoptionalelse
+     {\doseventupleemptyYESfive#1{#2}{#3}{#4}{#5}}%
+     {\doseventupleemptyNOPfive#1{#2}{#3}{#4}{#5}}}
+
+\long\def\doseventupleemptyYESfive#1#2#3#4#5[#6]%
+  {\fifthargumenttrue
+   \doifnextoptionalelse
+     {\doseventupleemptyYESsix#1{#2}{#3}{#4}{#5}{#6}}%
+     {\doseventupleemptyNOPsix#1{#2}{#3}{#4}{#5}{#6}}}
+
+\long\def\doseventupleemptyYESsix#1#2#3#4#5#6[#7]%
+  {\sixthargumenttrue
+   \doifnextoptionalelse
+     {\seventhargumenttrue#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}]}%
+     {\doseventupleemptyNOPseven#1{#2}{#3}{#4}{#5}{#6}{#7}}}
+
+\def\dosevenemptNOPone#1%
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   #1[][][][][][][]}
+
+\def\doseventupleemptyNOPtwo
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptytwospaced
+   \else
+     \expandafter\dosevenemptytwonormal
+   \fi}
+
+\def\doseventupleemptyNOPthree
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptythreespaced
+   \else
+     \expandafter\dosevenemptythreenormal
+   \fi}
+
+\def\doseventupleemptyNOPfour
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptyfourspaced
+   \else
+     \expandafter\dosevenemptyfournormal
+   \fi}
+
+\def\doseventupleemptyNOPfive
+  {\fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptyfivespaced
+   \else
+     \expandafter\dosevenemptyfivenormal
+   \fi}
+
+\def\doseventupleemptyNOPsix
+  {\sixthargumentfalse
+   \seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptysixspaced
+   \else
+     \expandafter\dosevenemptysixnormal
+   \fi}
+
+\def\doseventupleemptyNOPseven
+  {\seventhargumentfalse
+   \ifnextblankspacetoken
+     \expandafter\dosevenemptysevenspaced
+   \else
+     \expandafter\dosevenemptysevennormal
+   \fi}
+
+\def\dosevenemptytwospaced            #1#2{#1[{#2}][][][][][][] }
+\def\dosevenemptytwonormal            #1#2{#1[{#2}][][][][][][]}
+\def\dosevenemptythreespaced        #1#2#3{#1[{#2}][{#3}][][][][][] }
+\def\dosevenemptythreenormal        #1#2#3{#1[{#2}][{#3}][][][][][]}
+\def\dosevenemptyfourspaced       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][] }
+\def\dosevenemptyfournormal       #1#2#3#4{#1[{#2}][{#3}][{#4}][][][][]}
+\def\dosevenemptyfivespaced     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][] }
+\def\dosevenemptyfivenormal     #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][][][]}
+\def\dosevenemptysixspaced    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][] }
+\def\dosevenemptysixnormal    #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][][]}
+\def\dosevenemptysevenspaced#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][] }
+\def\dosevenemptysevennormal#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][]}
 
 %D \macros
 %D   {strippedcsname}
@@ -2527,11 +2901,6 @@
 %D potentially being an \type {conditional} token. Okay, these macros
 %D are not called that often but it saves crap when tracing.
 
-% \def\dogetgroupargument#1#2%
-%   {\let\dogroupargumentyes#1%
-%    \let\dogroupargumentnop#2%
-%    \futurelet\nextargument\dodogetgroupargument}
-
 \def\dodogetgroupargument
   {\ifx\nextargument\bgroup
      \expandafter\dodogetgroupargumentA
@@ -2543,20 +2912,6 @@
   {\noshowargumenterror
    \dogroupargumentyes\dodogetargument}
 
-% \def\dodogetgroupargumentB
-%   {\ifcase\@@permitspacesbetweengroups
-%      \expandafter\dodogetgroupargumentC
-%    \else
-%      \expandafter\dodogetgroupargumentD
-%    \fi}
-
-% \def\dodogetgroupargumentC
-%   {\ifx\nextargument\lineending
-%      \expandafter\dodogetgroupargumentE
-%    \else
-%      \expandafter\dodogetgroupargumentF
-%    \fi}
-
 \def\dodogetgroupargumentB
   {\ifcase\@@permitspacesbetweengroups
      \expandafter\dodogetgroupargumentF
@@ -2567,9 +2922,6 @@
 \def\dodogetgroupargumentD
   {\doshowargumenterror
    \dogroupargumentnop\dodogetargument{}}
-
-% \def\dodogetgroupargumentE
-%   {\begingroup\def\\ {\endgroup\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}\\}
 
 \begingroup
   \def\\ {\dogetgroupargument\dogroupargumentyes\dogroupargumentnop}
@@ -2937,14 +3289,14 @@
 
 \long\gdef\dododostarttexdefinition#1#2#3\stoptexdefinition%
   {\egroup%
-   \long\setvalue{#1}#2{#3}}
+   \expandafter\def\csname#1\endcsname#2{#3}}
 
 \long\gdef\nonostarttexdefinition#1
   {\nononostarttexdefinition{#1}{}}
 
 \long\gdef\nononostarttexdefinition#1#2#3\stoptexdefinition%
   {\egroup%
-   \long\setvalue{#1}{#3}}
+   \expandafter\def\csname#1\endcsname{#3}}
 
 \egroup
 
@@ -3065,8 +3417,6 @@
      \advance\maximumsignal 2sp % to be save in rounding
      \edef#1{\the\maximumsignal}%
    \fi}
-
-\let\newskimen\newdimen % it's all etex or later now
 
 %D \macros
 %D   {strippedcsname}
@@ -3239,7 +3589,7 @@
      \else
        \let\nextrecurse\exitstepwiserecurse
      \fi
-   \fi\normalexpanded{\noexpand\nextrecurse{\number#1}{\number#2}{\number#3}}}
+   \fi\normalexpanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
 \long\def\dodostepwiserecurse#1#2#3% from to step
   {\ifnum#1>#2\relax
@@ -3249,21 +3599,13 @@
      \@EAEAEA\redostepwiserecurse\@EA
    \fi\@EA{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
-\def\expandrecursecontent
+\unexpanded\def\expandrecursecontent
   {\csname\@@arecurse\recursedepth\endcsname}
 
-\def\redostepwiserecurse
+\unexpanded\def\redostepwiserecurse
   {\expandrecursecontent\dodostepwiserecurse}
 
-\long\def\dodostepwisereverse#1#2#3% from to step
-  {\ifnum#1<#2\relax
-     \@EA\nodostepwiserecurse
-   \else
-     \def\recurselevel{#1}%
-     \@EAEAEA\redostepwisereverse\@EA
-   \fi\@EA{\the\numexpr\recurselevel#3\relax}{#2}{#3}}
-
-\long\def\dodostepwisereverse#1#2#3% from to step
+\long\unexpanded\def\dodostepwisereverse#1#2#3% from to step
   {\ifnum#1<#2\relax
      \@EA\nodostepwiserecurse
    \else
@@ -3273,21 +3615,21 @@
      \@EAEAEA\redostepwisereverse\@EA
    \fi\@EA{\the\innerrecurse}{#2}{#3}}
 
-\def\redostepwisereverse
+\unexpanded\def\redostepwisereverse
   {\expandrecursecontent\dodostepwisereverse}
 
-\def\exitstepwiserecurse
+\unexpanded\def\exitstepwiserecurse
   {\nodostepwiserecurse\relax}
 
-\def\nodostepwiserecurse#1#2#3#4%
+\unexpanded\def\nodostepwiserecurse#1#2#3#4%
   {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
-\def\nonostepwiserecurse#1#2#3%
+\unexpanded\def\nonostepwiserecurse#1#2#3%
   {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
-\def\dorecurse#1%
+\unexpanded\def\dorecurse#1%
   {\dostepwiserecurse1{#1}1}
 
 %D As we can see here, the simple command \type{\dorecurse} is
@@ -3309,7 +3651,7 @@
 %D Because the simple case is used often, we implement it
 %D more efficiently:
 
-\long\def\dorecurse#1%
+\long\unexpanded\def\dorecurse#1%
   {\ifcase#1\relax
      \expandafter\gobbletwoarguments
    \or
@@ -3318,13 +3660,13 @@
      \expandafter\xdorecurse
    \fi{#1}}
 
-\long\def\xdorecurse#1#2%
+\long\unexpanded\def\xdorecurse#1#2%
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#2}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \@EA\dodorecurse\@EA1\@EA{\number#1}}
 
-\long\def\ydorecurse#1#2%
+\long\unexpanded\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\recurselevel\!!plusone
@@ -3332,7 +3674,7 @@
    \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
-\long\def\dodorecurse#1#2% from to
+\long\unexpanded\def\dodorecurse#1#2% from to
   {\ifnum#1>#2\relax
      \@EA\nodorecurse
    \else
@@ -3340,7 +3682,7 @@
      \@EAEAEA\redorecurse
    \fi\@EA{\the\numexpr\recurselevel+\plusone\relax}{#2}}
 
-\long\def\dodorecurse#1#2% from to
+\long\unexpanded\def\dodorecurse#1#2% from to
   {\ifnum#1>#2\relax
      \@EA\nodorecurse
    \else
@@ -3349,10 +3691,10 @@
      \@EAEAEA\redorecurse
    \fi\@EA{\the\innerrecurse}{#2}}
 
-\def\redorecurse
+\unexpanded\def\redorecurse
   {\expandrecursecontent\dodorecurse}
 
-\def\nodorecurse#1#2#3%
+\unexpanded\def\nodorecurse#1#2#3%
   {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone }
 
@@ -3376,29 +3718,29 @@
 
 \let\endofloop\donothing
 
-\long\def\doloop#1%
+\unexpanded\long\def\doloop#1%
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#1}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
    \dodoloop1} % no \plusone else \recurselevel wrong
 
-\long\def\dodoloop#1%
+\unexpanded\long\def\dodoloop#1%
   {\def\recurselevel{#1}%
    \@EA\redoloop\@EA{\the\numexpr\recurselevel+\plusone\relax}}
 
-\def\redoloop
+\unexpanded\def\redoloop
   {\expandrecursecontent\endofloop}
 
-\def\nodoloop#1%
+\unexpanded\def\nodoloop#1%
   {\let\endofloop\dodoloop % new, permits nested \doloop's
    \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse\minusone}
 
-\def\exitloop                     % \exitloop quits at end
+\unexpanded\def\exitloop                     % \exitloop quits at end
   {\let\endofloop\nodoloop}
 
-\long\def\exitloopnow#1\endofloop % \exitloopnow quits directly
+\long\unexpanded\def\exitloopnow#1\endofloop % \exitloopnow quits directly
   {\nodoloop}
 
 %D The loop is executed at least once, so beware of situations
@@ -3442,13 +3784,13 @@
 \def\expandrecursecontent
   {\csname\@@arecurse\recursedepth\@EA\@EA\@EA\endcsname\@EA\@EA\@EA{\@EA\recurselevel\@EA}\@EA{\recursedepth}}
 
-\long\def\xdorecurse#1#2%
+\long\unexpanded\def\xdorecurse#1#2%
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \@EA\dodorecurse\@EA1\@EA{\number#1}}
 
-\long\def\ydorecurse#1#2%
+\long\unexpanded\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\recurselevel\!!plusone
@@ -3457,7 +3799,7 @@
    \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
-\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+\long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
@@ -3477,9 +3819,9 @@
      \else
        \let\nextrecurse\exitstepwiserecurse
      \fi
-   \fi\normalexpanded{\noexpand\nextrecurse{\number#1}{\number#2}{\number#3}}}
+   \fi\normalexpanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
-\long\def\doloop#1%
+\long\unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
@@ -3490,7 +3832,7 @@
 
 % faster
 
-\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+\long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
@@ -3511,11 +3853,11 @@
        \let\nextrecurse\exitstepwiserecurse
      \fi
    \fi
-   \expandafter\nextrecurse\normalexpanded{{\number#1}{\number#2}{\number#3}}}
+   \normalexpanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
 % slightly faster
 
-\long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+\long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
@@ -3531,13 +3873,38 @@
 \let\@swrd\dodostepwiserecurse
 \let\@swrr\dodostepwisereverse
 
+% quite okay too, but untested
+%
+% \long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+%   {\global\advance\outerrecurse \plusone
+%    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+%    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+%    \normalexpanded
+%      {\ifnum#3>\zerocount
+%         \ifnum#2<#1
+%           \exitstepwiserecurse
+%         \else
+%           \dodostepwiserecurse
+%         \fi
+%       \else
+%         \ifnum#3<\zerocount
+%           \ifnum#1<#2
+%             \exitstepwiserecurse
+%           \else
+%             \dodostepwisereverse
+%           \fi
+%         \else
+%           \exitstepwiserecurse
+%         \fi
+%       \fi{\number#1}{\number#2}{\number#3}}}
+
 %D For special purposes:
 
 \newcount\fastrecursecounter
 \newcount\lastrecursecounter
 \newcount\steprecursecounter
 
-\def\dofastrecurse#1#2#3#4%
+\unexpanded\def\dofastrecurse#1#2#3#4%
   {\def\fastrecursebody{#4}%
    \fastrecursecounter#1\relax
    \lastrecursecounter#2\relax
@@ -3545,9 +3912,9 @@
    \def\recurselevel{\number\fastrecursecounter}%
    \dodofastrecurse}
 
-\def\resetrecurselevel{\let\recurselevel\!!zerocount}
+\unexpanded\def\resetrecurselevel{\let\recurselevel\!!zerocount}
 
-\def\dodofastrecurse
+\unexpanded\def\dodofastrecurse
   {\ifnum\fastrecursecounter>\lastrecursecounter
      % \resetrecurselevel % slows down
    \else
@@ -3578,11 +3945,11 @@
 %D The use of \type{\od} as a dilimiter would have made nested
 %D use more problematic.
 
-%D Don't use this one, it's kind of obsolete.
-
-\def\for#1=#2\to#3\step#4\do#5%
-  {\dostepwiserecurse{#2}{#3}{#4}
-     {\let#1\recurselevel#5\let#1\recurselevel}}
+% obsolete:
+%
+% \def\for#1=#2\to#3\step#4\do#5%
+%   {\dostepwiserecurse{#2}{#3}{#4}
+%      {\let#1\recurselevel#5\let#1\recurselevel}}
 
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
@@ -3838,70 +4205,14 @@
 %D \doifsamestringelse{\jobname}{oeps}{YES}{NO}
 %D \stoptyping
 
-% \def\@@doifsamestringelse#1#2#3#4%
-%   {\edef\!!stringa{#3}\convertcommand\!!stringa\to\!!stringa
-%    \edef\!!stringb{#4}\convertcommand\!!stringb\to\!!stringb
-%    \ifx\!!stringa\!!stringb\expandafter#1\else\expandafter#2\fi}
-
 \def\@@doifsamestringelse#1#2#3#4%
   {\edef\!!stringa{\detokenize\expandafter{\normalexpanded{#3}}}%
    \edef\!!stringb{\detokenize\expandafter{\normalexpanded{#4}}}%
    \ifx\!!stringa\!!stringb\expandafter#1\else\expandafter#2\fi}
 
 \def\doifsamestringelse{\@@doifsamestringelse\firstoftwoarguments\secondoftwoarguments}
-\def\doifsamestring    {\@@doifsamestringelse\firstofoneargument\gobbleoneargument}
-\def\doifnotsamestring {\@@doifsamestringelse\gobbleoneargument\firstofoneargument}
-
-%D \macros
-%D   {ExpandFirstAfter,ExpandSecondAfter,ExpandBothAfter}
-%D
-%D These three commands support expansion of arguments before
-%D executing the commands that uses them. We can best
-%D illustrate this with an example.
-%D
-%D \starttyping
-%D \def\first  {alfa,beta,gamma}
-%D \def\second {alfa,epsilon,zeta}
-%D
-%D \ExpandFirstAfter  \doifcommon {\first} {alfa}    {\message{OK}}
-%D \ExpandSecondAfter \doifcommon {alfa}   {\second} {\message{OK}}
-%D \ExpandBothAfter   \doifcommon {\first} {\second} {\message{OK}}
-%D
-%D \ExpandFirstAfter\processcommalist[\first]\message
-%D
-%D \ExpandAfter       \doifcommon {\first} {alfa}    {\message{OK}}
-%D \stoptyping
-%D
-%D The first three calls result in the threefold message
-%D \type{OK}, the fourth one shows the three elements of
-%D \type{\first}. The command \type{\ExpandFirstAfter} takes
-%D care of (first) arguments that are delimited by \type{[ ]},
-%D but the faster \type{\ExpandAfter} does not.
-
-\def\simpleExpandFirstAfter#1%
-  {\long\xdef\@@expanded{\noexpand\ExpandCommand{#1}}\@@expanded}
-
-\def\complexExpandFirstAfter[#1]%
-  {\long\xdef\@@expanded{\noexpand\ExpandCommand[#1]}\@@expanded}
-
-\def\ExpandFirstAfter#1%
-  {\let\ExpandCommand#1%
-   \doifnextoptionalelse\complexExpandFirstAfter\simpleExpandFirstAfter}
-
-\def\ExpandSecondAfter#1#2#3%
-  {\scratchtoks{#2}%
-   \long\xdef\@@expanded{\noexpand#1{\the\scratchtoks}{#3}}\@@expanded}
-
-\def\ExpandBothAfter#1#2#3%
-  {\long\xdef\@@expanded{\noexpand#1{#2}{#3}}\@@expanded}
-
-\def\ExpandAfter#1#2%
-  {\long\xdef\@@expanded{\noexpand#1{#2}}\@@expanded}
-
-%D Now we can for instance define \type{\ifinstringelse} as:
-
-\def\ifinstringelse
-  {\ExpandBothAfter\p!doifinstringelse}
+\def\doifsamestring    {\@@doifsamestringelse\firstofoneargument \gobbleoneargument   }
+\def\doifnotsamestring {\@@doifsamestringelse\gobbleoneargument  \firstofoneargument  }
 
 %D \macros
 %D   {ConvertToConstant,ConvertConstantAfter}
@@ -4419,7 +4730,7 @@
   {\ifx#2\empty % redundant but gives cleaner extensions
      #4{#1}%
    \else\ifnum#1<\zerocount
-     \normalexpanded{\noexpand\dorecurse{\number-\number#1}}{#4{-#2#3}}%
+     \normalexpanded{\dorecurse{\number-\number#1}}{#4{-#2#3}}%
    \else\ifx#2+%
      \dorecurse{#1}{#4{#3}}%
    \else
@@ -5257,38 +5568,38 @@
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
 
-\def\p!DOIF#1#2%
-  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+\unexpanded\def\DOIF#1#2%
+  {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\def\p!DOIFNOT#1#2%
-  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+\unexpanded\def\DOIFNOT#1#2%
+  {\uppercase{{$#1$}{$#2$}}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\p!DOIFELSE#1#2%
-  {\uppercase{\ifinstringelse{$#1$}{$#2$}}%
+\unexpanded\def\DOIFELSE#1#2%
+  {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\p!DOIFINSTRINGELSE#1#2%
-  {\uppercase{\ifinstringelse{#1}{#2}}%
+\unexpanded\def\DOIFINSTRINGELSE#1#2%
+  {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\DOIF             {\ExpandBothAfter\p!DOIF}
-\def\DOIFNOT          {\ExpandBothAfter\p!DOIFNOT}
-\def\DOIFELSE         {\ExpandBothAfter\p!DOIFELSE}
-\def\DOIFINSTRINGELSE {\ExpandBothAfter\p!DOIFINSTRINGELSE}
+\def\DOIF             #1#2{\normalexpanded{\p!DOIF            {#1}{#2}}}
+\def\DOIFNOT          #1#2{\normalexpanded{\p!DOIFNOT         {#1}{#2}}}
+\def\DOIFELSE         #1#2{\normalexpanded{\p!DOIFELSE        {#1}{#2}}}
+\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\p!DOIFINSTRINGELSE{#1}{#2}}}
 
 %D \macros
 %D   {dosingleargumentwithset,
@@ -6619,8 +6930,8 @@
 % \fi
 % \def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
 
-\def\resettimer    {\ctxlua{commands.resettimer()}}
-\def\elapsedtime   {\ctxlua{commands.elapsedtime()}}
+\def\resettimer    {\ctxcommand{resettimer()}}
+\def\elapsedtime   {\ctxcommand{elapsedtime()}}
 \let\elapsedseconds \elapsedtime
 
 \newcount\featuretest
@@ -6728,14 +7039,6 @@
 \long\def\@@if@@equal@@true #1\@@then#2#3{#2}
 \long\def\@@if@@equal@@false#1\@@then#2#3{#3}
 
-%D new stuff :
-
-\def\partialexpanded#1%
-   {\let\@@notexpanded\noexpand
-    \long\xdef\@@expanded{\noexpand#1}%
-    \let\@@notexpanded\empty
-    \@@expanded}
-
 \def\appended#1#2#3{\@EA#1\@EA#2\@EA{#2#3}}
 \def\appendvalue #1{\@EA\appended\@EA \def\csname#1\endcsname}
 \def\appendgvalue#1{\@EA\appended\@EA\gdef\csname#1\endcsname}
@@ -6753,6 +7056,8 @@
 %D bibliography module. The numbers compressor converts the
 %D list in a list of ranges. The normal compressor remove duplicate
 %D and empty entries.
+%D
+%D This is now obsolete (and more a \LUA\ thing anyway).
 
 \def\compresscommalistnrs[#1]%
   {\let\compressedlist\empty
@@ -6859,18 +7164,6 @@
 %D \test{1,3,4,5,8,10,11}
 %D \test{1,,3,,4,,5,,8,,10,,11,}
 %D \stoplines
-
-%D \macros
-%D   {stripstring}
-%D
-%D Needed in bookmarks:
-%D
-%D \starttyping
-%D {\sanitizePDFdocencoding test \CONTEXT\  test \to\oeps\stripstring\oeps\tttf[\oeps]}
-%D \stoptyping
-
-\def\stripstring#1% #1 is \cs
-  {\edef\cs{\ctxlua{tex.sprint(tex.vrbcatcodes,string.strip(\!!bs\detokenize\expandafter{#1}\!!es))}}}
 
 %D \macros
 %D   {dowithrange}

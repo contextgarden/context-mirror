@@ -15,15 +15,15 @@
 
 \unprotect
 
-\def\expdoifelse#1#2{\ctxlua{commands.doifelse(\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoif    #1#2{\ctxlua{commands.doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
-\def\expdoifnot #1#2{\ctxlua{commands.doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoifelse#1#2{\ctxcommand{doifelse(\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoif    #1#2{\ctxcommand{doif    (\!!bs#1\!!es==\!!bs#2\!!es)}}
+\def\expdoifnot #1#2{\ctxcommand{doifnot (\!!bs#1\!!es==\!!bs#2\!!es)}}
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}         % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
-\def\expdoifcommonelse#1#2{\ctxlua{commands.doifcommonelse("#1","#2")}}
-\def\expdoifinsetelse #1#2{\ctxlua{commands.doifinsetelse("#1","#2")}}
+\def\expdoifcommonelse#1#2{\ctxcommand{doifcommonelse("#1","#2")}}
+\def\expdoifinsetelse #1#2{\ctxcommand{doifinsetelse("#1","#2")}}
 
 % we define these here, just in case ...
 
@@ -32,7 +32,7 @@
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
-\def\writestatus#1#2{\ctxlua{commands.writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
 % a handy helper (we can probably omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the tex end

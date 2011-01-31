@@ -22,7 +22,6 @@
 % todo: fast if
 % todo: avoid halign (just do it manual) and thereby globals
 
-
 % \unexpanded\def\startrow            {\bTR}
 % \unexpanded\def\stoprow             {\eTR}
 % \unexpanded\def\startcell#1\stopcell{\bTD#1\eTD}
@@ -38,7 +37,6 @@
 %         \startrow \startcell a \stopcell \stoprow
 %     \stopcelltable
 % \stoptext
-
 
 % optie=rek beschrijven
 
@@ -488,17 +486,17 @@
                      \newcount\currentcol
 \newcount\tblspn
 
-\def\parseTR[#1][#2]% [#2] is dummy that kills spaces / no #3 argument
+\def\settblref#1#2{\expandafter\xdef\csname\@@tblprefix\number#1:\number#2:x\endcsname}
+\def\gettblref#1#2{\ifcsname\@@tblprefix\number#1:\number#2:x\endcsname\csname\@@tblprefix\number#1:\number#2:x\endcsname\fi}
+
+\def\parseTR[#1]%
   {\currentcol\zerocount
    \advance\maximumrow\plusone
    \iffirstargument
      \setvalue{\@@tblprefix\c!y++\number\maximumrow}{\getparameters[\@@tbl\@@tbl][#1]}% maybe also in mkii
    \fi}
 
-\def\settblref#1#2{\expandafter\xdef\csname\@@tblprefix\number#1:\number#2:x\endcsname}
-\def\gettblref#1#2{\ifcsname\@@tblprefix\number#1:\number#2:x\endcsname\csname\@@tblprefix\number#1:\number#2:x\endcsname\fi}
-
-\long\def\parseTD[#1][#2]#3\eTD % [#2] is dummy that kills spaces
+\long\def\parseTD[#1]#2\eTD
   {\def\tblny{\tblnr}%
    \def\tblnx{\tblnc}%
    \let\tblnc\plusone
@@ -515,7 +513,7 @@
    \else\ifnum\@@tblnindeed=\currentcol\else
       \scratchcounter\numexpr\@@tblnindeed-\currentcol+\minusone-\tblspn\relax
       \ifnum\scratchcounter>\zerocount
-        \normalexpanded{\noexpand\parseTD[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no][]}\eTD
+        \normalexpanded{\noexpand\parseTD[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no]}\eTD
       \fi
       % can also be made faster
       \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1,\c!n=,\c!m=]%
@@ -524,7 +522,7 @@
    \ifx\@@tblmindeed\empty \else
      \ifnum\@@tblmindeed=\currentcol \else
        \scratchcounter\numexpr\@@tblmindeed-\currentcol+\minusone-\tblspn\relax
-       \dorecurse\scratchcounter{\normalexpanded{\noexpand\parseTD[\c!n=,\c!m=][]}\eTD}%
+       \dorecurse\scratchcounter{\normalexpanded{\noexpand\parseTD[\c!n=,\c!m=]}\eTD}%
        % can be sped up
        \getparameters[\@@tbl][\c!ny=\tblnr,\c!nx=\tblnc,nc=1,nr=1,#1,\c!n=,\c!m=]% kind of double, see prev
      \fi
@@ -552,7 +550,7 @@
    \settblref\maximumrow\currentcol{\ifcsname\@@tbl\c!action\endcsname\csname\@@tbl\c!action\endcsname\fi}%
    % save text
    \edef\celltag{{\number\maximumrow}{\number\currentcol}}%
-   \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA{\@EA\handleTBLcell\celltag[#1]{#3}}}
+   \@EA\settbltxt\@EA\maximumrow\@EA\currentcol\@EA{\@EA\handleTBLcell\celltag[#1]{#2}}}
 
 \def\presetTBLcell
   {\row\maximumrow
@@ -610,8 +608,6 @@
 
 \long\def\parseTH[#1]#2\eTH
   {\parseTD[#1,\c!color=\tbltblheadcolor,\c!style=\tbltblheadstyle,\c!aligncharacter=\v!no]#2\eTD}
-
-%D new
 
 \long\def\parseTN[#1]#2\eTN
   {\parseTD[#1]\digits#2\relax\eTD}
@@ -722,7 +718,7 @@
      [\tbltblheader]
      [\v!repeat=>\multipleTBLheadstrue]%
    \presetallTABLEparameters
-   \ExpandFirstAfter\processallactionsinset
+   \processallactionsinset
      [\tbltbloption]
      [\v!stretch=>\autoTBLspreadtrue]%
    \linewidth\tbltblrulethickness % needs to be frozen
@@ -736,10 +732,10 @@
    \let\bTH\dobTH
    \let\bTN\dobTN}
 
-\unexpanded\def\dobTR{\dodoubleempty\parseTR}
-\unexpanded\def\dobTD{\dodoubleempty\parseTD}
-\unexpanded\def\dobTH{\dodoubleempty\parseTH}
-\unexpanded\def\dobTN{\dodoubleempty\parseTN}
+\unexpanded\def\dobTR{\dosingleempty\parseTR}
+\unexpanded\def\dobTD{\dosingleempty\parseTD}
+\unexpanded\def\dobTH{\dosingleempty\parseTH}
+\unexpanded\def\dobTN{\dosingleempty\parseTN}
 
 % permits \expanded{\bTD ... \eTD}
 
@@ -1057,8 +1053,7 @@
    \dotagTABLEcell} % right spot
 
 \def\inTBLcell#1#2% hm, do we need #1 #2 ? we use tblcol anyway
-  {\ExpandBothAfter\doifinsetelse\localwidth{\v!fit,\v!broad} % user set
-     {}
+  {\doifnotinset\localwidth{\v!fit,\v!broad}% user set
      {\scratchdimen\gettblaut\tblcol\relax
       \ifdim\localwidth>\scratchdimen
         \settblaut\tblcol{\the\dimexpr\localwidth\relax}%

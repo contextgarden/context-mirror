@@ -39,9 +39,9 @@ local complete = { } interfaces.complete = complete
 
 setmetatable(complete, { __index = function(t,k)
     report_interfaces("loading interface definitions from 'mult-def.lua'")
-    complete = dofile(resolvers.find_file("mult-def.lua"))
+    complete = dofile(resolvers.findfile("mult-def.lua"))
     report_interfaces("loading interface messages from 'mult-mes.lua'")
-    complete.messages = dofile(resolvers.find_file("mult-mes.lua"))
+    complete.messages = dofile(resolvers.findfile("mult-mes.lua"))
     interfaces.complete = complete
     return complete[k]
 end } )

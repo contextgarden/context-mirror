@@ -269,9 +269,9 @@
         {\startoverlay{\box\commentcollection}{\box\scratchbox}\stopoverlay}}%
    \endgroup}
 
-\setvalue{\e!start\v!comment}{\dotripleempty\dostartcomment}% the dummy triple gobbles trailing spaces
+\setvalue{\e!start\v!comment}{\dodoubleempty\dostartcomment}
 
-\def\dostartcomment[#1][#2][#3]%
+\def\dostartcomment[#1][#2]%
   {\bgroup
    \doifassignmentelse{#1}{\getparameters[\??cc][#1]}{\getparameters[\??cc][\c!title=#1,#2]}%
    \dostartbuffer[\v!comment\v!buffer][\v!comment\v!buffer][\e!start\v!comment][\e!stop\v!comment]}
@@ -489,7 +489,7 @@
 
 \def\checksoundtrack#1% yet untested in mkiv (also move management to lua)
   {\iflocation
-     \ctxlua{nodeinjections.insertsound{
+     \ctxlua{backends.nodeinjections.insertsound{
        label  = "#1",
        repeat = "\@@sdoption", % not entirely ok but works
       }}%

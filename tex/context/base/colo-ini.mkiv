@@ -209,7 +209,7 @@
 %D \usecolors[rgb]
 %D \stoptyping
 
-\unexpanded\def\usecolors[#1]{\ctxlua{commands.usecolors(\!!bs#1\!!es)}}
+\unexpanded\def\usecolors[#1]{\ctxcommand{usecolors(\!!bs#1\!!es)}}
 
 \let\setupcolor\usecolors
 
@@ -702,7 +702,7 @@
 \def\currentcolormodel{\attribute\colormodelattribute}
 
 \def\dosetcolormodel#1% no message
-  {\ctxlua{commands.setcolormodel('#1',\ifweightGRAY true\else false\fi)}} % sets attribute
+  {\ctxcommand{setcolormodel('#1',\ifweightGRAY true\else false\fi)}} % sets attribute
 
 \dosetcolormodel{all}
 
@@ -766,7 +766,7 @@
 
 \def\doactivatecolor
   {\ifproductionrun
-     \ctxlua{commands.enablecolor() commands.enabletransparency()}% not that efficient but at least robust
+     \ctxcommand{enablecolor() commands.enabletransparency()}% not that efficient but at least robust
      \let\doactivatecolor\normaldoactivatecolor
      \expandafter\doactivatecolor
    \else
@@ -786,44 +786,44 @@
 \def\collectcolorinlist#1{\doglobal\addtocommalist{#1}\colorlist}
 
 \def\doregistercolor#1#2%
-  {\ctxlua{commands.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
+  {\ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
 
 \def\dodefinecolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{commands.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefineglobalcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{commands.defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setgvalue{#1}}
 
 \def\dodefinenamedcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{commands.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefinespotcolor[#1][#2][#3]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{commands.definespotcolor("#1","#2","#3",true)}%
+   \ctxcommand{definespotcolor("#1","#2","#3",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinemultitonecolor[#1][#2][#3][#4]%
-  {\ctxlua{commands.definemultitonecolor("#1","#2","#3","#4",true)}%
+  {\ctxcommand{definemultitonecolor("#1","#2","#3","#4",true)}%
    \dodefinecolorcommand\setxvalue{#1}}
 
 \def\dodefinetransparency[#1][#2]%
-  {\ctxlua{commands.definetransparency("#1",#2)}}
+  {\ctxcommand{definetransparency("#1",#2)}}
 
 \def\dosetrastercolor#1% slow, we need a fast one
   {\edef\@@rastervalue{#1}%
    \ifx\@@rastervalue\empty
      \let\@@rastervalue\@@rsscreen
    \fi
-   \ctxlua{commands.setrastercolor("_raster_",\@@rastervalue)}} % sets attribute
+   \ctxcommand{setrastercolor("_raster_",\@@rastervalue)}} % sets attribute
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok
-  {\ctxlua{commands.defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+  {\ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 %D \macros
@@ -857,7 +857,7 @@
 %D A bit like \type {\definedfont}:
 
 \unexpanded\def\colored[#1]%
-  {\ctxlua{commands.defineprocesscolor("@colored@","#1",false,false)}%
+  {\ctxcommand{defineprocesscolor("@colored@","#1",false,false)}%
    \groupedcommand{\doactivatecolor{@colored@}}{}}
 
 %D \macros
@@ -898,7 +898,7 @@
 \to \everybeforeoutput
 
 \def\registermaintextcolor
-  {\ctxlua{commands.registermaintextcolor(\thecolorattribute\maintextcolor)}}
+  {\ctxcommand{registermaintextcolor(\thecolorattribute\maintextcolor)}}
 
 \unexpanded\def\starttextcolor[#1]%
   {\doifsomething{#1}
@@ -983,23 +983,23 @@
 
 \let\colorformatseparator\space
 
-\def\MPcolor                 #1{\ctxlua{commands.mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
+\def\MPcolor                 #1{\ctxcommand{mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
 
 \def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
 \def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
 
-\def\internalspotcolorname   #1{\ctxlua{commands.spotcolorname(\thecolorattribute{#1})}}
-\def\internalspotcolorparent #1{\ctxlua{commands.spotcolorparent(\thecolorattribute{#1})}}
-\def\internalspotcolorsize   #1{\ctxlua{commands.spotcolorvalue(\thecolorattribute{#1})}}
+\def\internalspotcolorname   #1{\ctxcommand{spotcolorname(\thecolorattribute{#1})}}
+\def\internalspotcolorparent #1{\ctxcommand{spotcolorparent(\thecolorattribute{#1})}}
+\def\internalspotcolorsize   #1{\ctxcommand{spotcolorvalue(\thecolorattribute{#1})}}
 
-\def\colorcomponents         #1{\ctxlua{commands.colorcomponents(\thecolorattribute{#1})}}
-\def\transparencycomponents  #1{\ctxlua{commands.transparencycomponents(\thetransparencyattribute{#1})}}
+\def\colorcomponents         #1{\ctxcommand{colorcomponents(\thecolorattribute{#1})}}
+\def\transparencycomponents  #1{\ctxcommand{transparencycomponents(\thetransparencyattribute{#1})}}
 
-\def\colorvalue              #1{\ctxlua{commands.formatcolor(\thecolorattribute{#1},"\colorformatseparator")}}
-\def\grayvalue               #1{\ctxlua{commands.formatgray (\thecolorattribute{#1},"\colorformatseparator")}}
+\def\colorvalue              #1{\ctxcommand{formatcolor(\thecolorattribute{#1},"\colorformatseparator")}}
+\def\grayvalue               #1{\ctxcommand{formatgray (\thecolorattribute{#1},"\colorformatseparator")}}
 
-\def\doifblackelse           #1{\ctxlua{commands.doifblackelse(\thecolorattribute{#1})}}
-\def\doifdrawingblackelse      {\ctxlua{commands.doifdrawingblackelse()}}
+\def\doifblackelse           #1{\ctxcommand{doifblackelse(\thecolorattribute{#1})}}
+\def\doifdrawingblackelse      {\ctxcommand{doifdrawingblackelse()}}
 
 %D \macros
 %D   {forcecolorhack}

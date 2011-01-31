@@ -20,9 +20,11 @@ local find, gsub, match, format, concat = string.find, string.gsub, string.match
 local texcount = tex.count
 local isfile = lfs.isfile
 
-local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
+local trace_modules = false  trackers.register("modules.loading",    function(v) trace_modules = v end)
+local trace_files   = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
 
 local report_modules = logs.new("modules")
+local report_files   = logs.new("resolvers")
 
 commands          = commands or { }
 local commands    = commands
@@ -106,23 +108,44 @@ local function readfilename(specification,backtrack,treetoo)
     local name = specification.filename
     local fnd = found[name]
     if not fnd then
-        if fnd ~= "" and isfile(name) then
+        if isfile(name) then
+            if trace_files then
+                report_files("readfile local, found %s",fname)
+            end
             fnd = name
         end
-        if backtrack and (not fnd or fnd == "") then
+        if backtrack then
             local fname = name
             for i=1,backtrack,1 do
                 fname = "../" .. fname
                 if isfile(fname) then
+                    if trace_files then
+                        report_files("readfile backtracking, found %s",fname)
+                    end
                     fnd = fname
                     break
+                elseif trace_files then
+                    report_files("readfile backtracking, not found %s",fname)
                 end
             end
         end
         if not fnd and treetoo then
-            fnd = resolvers.findtexfile(name)
+            fnd = resolvers.findtexfile(name) or ""
+            if trace_files then
+                if fnd ~= "" then
+                    report_files("readfile tree lookup, found %s",fnd)
+                else
+                    report_files("readfile tree lookup, not found %s",name)
+                end
+            end
         end
         found[name] = fnd
+    elseif trace_files then
+        if fnd ~= "" then
+            report_files("readfile reuse, already found: %s",fnd)
+        else
+            report_files("readfile reuse, already ñot found: %s",name)
+        end
     end
     return fnd or ""
 end
@@ -309,16 +332,19 @@ function commands.uselibrary(name,patterns,action,failure)
             loaded[filename] = true
             for i=1,#patterns do
                 local filename = format(patterns[i],filename)
-             -- local foundname = resolvers.find_file(filename) or ""
+             -- local foundname = resolvers.findfile(filename) or ""
                 local foundname = finders.doreadfile("any",".",filename)
                 if foundname ~= "" then
                     action(name,foundname)
                     done = true
                 end
             end
+            if done then
+                break
+            end
         end
     end
-    if not done then
+    if failure and not done then
         failure(name)
     end
 end

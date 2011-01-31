@@ -346,7 +346,7 @@
 \def\dodotypenormal#1%
   {\secondstageinitializetype
    \dostarttagged\t!verbatim\currenttype
-   \ctxlua{commands.typestring {
+   \ctxcommand{typestring {
      data   = \!!bs\detokenize{#1}\!!es,
      tab    = "\typeparameter\c!tab",
      method = "\typeparameter\c!option",
@@ -359,7 +359,7 @@
 \def\dodotypenested#1%
   {\secondstageinitializetype
    \dostarttagged\t!verbatim\currenttype
-   \ctxlua{commands.typestring {
+   \ctxcommand{typestring {
      data   = \!!bs\detokenize{#1}\!!es,
      tab    = "\typeparameter\c!tab",
      method = "nested", % we force a special visualizer
@@ -468,7 +468,7 @@
   {\secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
-   \ctxlua{commands.typebuffer {
+   \ctxcommand{typebuffer {
      name   = "_typing_",
      strip  = "\typingparameter\c!strip",
      range  = "\typingparameter\c!range",
@@ -580,7 +580,7 @@
    \secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
-   \ctxlua{commands.typefile {
+   \ctxcommand{typefile {
       name   = "#2",
       strip  = "\typingparameter\c!strip",
       range  = "\typingparameter\c!range",
@@ -742,7 +742,7 @@
    \secondstageinitializetyping
    \beginofverbatimlines
    \dostarttagged\t!verbatim{#1}%
-   \ctxlua{commands.typebuffer {
+   \ctxcommand{typebuffer {
      name   = "#2",
      strip  = "\typingparameter\c!strip",
      range  = "\typingparameter\c!range",
@@ -782,7 +782,7 @@
 
 \def\dodoprocessbuffer#1#2%
   {\edef\currenttyping{#1}%
-   \ctxlua{commands.processbuffer {
+   \ctxcommand{processbuffer {
      name   = "#2",
      strip  = "\typingparameter\c!strip",
      tab    = "\typingparameter\c!tab",

@@ -15,9 +15,8 @@
 
 \unprotect
 
-\long\def\lastexpanded{} % todo: elsewhere we use \@@expanded
-
 \long\def\expanded#1{\long\xdef\lastexpanded{\noexpand#1}\lastexpanded}
+%long\def\expanded#1{\normalexpanded{\noexpand#1}} % compatible ## mess
 
 \newif\ifproductionrun
 
@@ -48,6 +47,7 @@
 \def\ctxlatelua  {\latelua  \zerocount}
 \def\ctxsprint #1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
 \def\ctxwrite  #1{\directlua\zerocount{tex.write(#1)}} % saves tokens
+\def\ctxcommand#1{\directlua\zerocount{commands.#1}} % saves tokens
 
 %D Take your choice \unknown
 

@@ -583,42 +583,6 @@
    \globallet\noflinetableparts\!!zerocount
    \egroup}
 
-% \def\checklinecolumnwidth
-%   {\ifundefined{\??lew\number\linetablecolumn}%
-%      \donetrue
-%    \else\ifdim\getvalue{\??lew\number\linetablecolumn}<\wd\linetablecell
-%      \donetrue
-%    \else
-%      \donefalse
-%    \fi\fi
-%    \ifdone
-%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
-%    \fi}
-%
-% \def\checklinecolumnwidth
-%   {\ifcsname\??lew\number\linetablecolumn\endcsname
-%      \ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
-%        \donetrue
-%      \else
-%        \donefalse
-%      \fi
-%    \else
-%      \donetrue
-%    \fi
-%    \ifdone
-%      \setxvalue{\??lew\number\linetablecolumn}{\the\wd\linetablecell}%
-%    \fi}
-
-% \def\checklinecolumnwidth
-%   {\expandafter\xdef\csname\??lew\number\linetablecolumn\endcsname
-%      {\expandafter\ifx\csname\??lew\number\linetablecolumn\endcsname\relax
-%         \the\wd\linetablecell
-%       \else\ifdim\csname\??lew\number\linetablecolumn\endcsname<\wd\linetablecell
-%         \the\wd\linetablecell
-%       \else
-%         \csname\??lew\number\linetablecolumn\endcsname
-%       \fi\fi}}
-
 \def\checklinecolumndimension#1#2#3%
   {\expandafter\xdef\csname#1\number#3\endcsname
      {\expandafter\ifx\csname#1\number#3\endcsname\relax

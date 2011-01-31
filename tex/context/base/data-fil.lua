@@ -19,9 +19,10 @@ local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.c
 
 function locators.file(specification)
     local name = specification.filename
-    if name and name ~= '' and lfs.isdir(name) then
+    local realname = resolvers.resolve(name) -- no shortcut
+    if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_resolvers("file locator '%s' found",name)
+            report_resolvers("file locator '%s' found as '%s'",name,realname)
         end
         resolvers.appendhash('file',name,true) -- cache
     elseif trace_locating then
@@ -36,9 +37,9 @@ function hashers.file(specification)
 end
 
 function generators.file(specification)
-    local name = specification.filename
-    local content = resolvers.scanfiles(name)
-    resolvers.registerfilehash(name,content,true)
+    local path = specification.filename
+    local content = resolvers.scanfiles(path)
+    resolvers.registerfilehash(path,content,true)
 end
 
 concatinators.file = file.join

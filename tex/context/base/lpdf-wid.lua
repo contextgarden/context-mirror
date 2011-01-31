@@ -122,7 +122,8 @@ end
 function codeinjections.registercomment(specification)
     nofcomments = nofcomments + 1
     local text = buffers.collectcontent(specification.buffer)
-    if stripleading then
+    text = string.strip(text)
+    if stripleading then -- maybe just strip all leading and trailing spacing
         text = gsub(text,"[\n\r] *","\n")
     end
     local name, appearance = analyzesymbol(specification.symbol)

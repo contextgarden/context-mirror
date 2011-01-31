@@ -98,8 +98,8 @@
 
 \def\writeln#1{\write#1{}}
 
-\def\doiffileexistselse   #1{\ctxlua{commands.doiffileexistelse([[#1]])}}
-\def\lastfoundexistingfile  {\ctxlua{commands.lastexistingfile()}}
+\def\doiffileexistselse   #1{\ctxcommand{doiffileexistelse([[#1]])}}
+\def\lastfoundexistingfile  {\ctxcommand{lastexistingfile()}}
 
 %D \macros
 %D   {doprocessfile,fileline,fileprocessedtrue,dofinishfile}
@@ -164,13 +164,13 @@
      {\edef#3{#2}}
      {\edef#3{#1\f!pathseparator#2}}}
 
-\def\sanitizefilename#1\to#2{\edef#2{\ctxlua{commands.thesanitizedfilename([[#1]])}}}
+\def\sanitizefilename#1\to#2{\edef#2{\ctxcommand{thesanitizedfilename([[#1]])}}}
 
 %D NEW:
 
 \newconstant\kindoffile % 0=normal 1=full path spec (or http) / set at the lua end
 
-\def\checkfilename#1{\ctxlua{commands.checkfilename([[#1]])}}
+\def\checkfilename#1{\ctxcommand{checkfilename([[#1]])}}
 
 %D \macros
 %D   {input, normalinput}
@@ -240,13 +240,13 @@
 
 \let \everyreadfile \everybeforereadfile
 
-\def\maxreadlevel{\ctxlua{commands.maxreadlevel()}}
+\def\maxreadlevel{\ctxcommand{maxreadlevel()}}
 
 % We need to postpone loading, else we got frozen type-* files and so when
 % a format is generated on a source path.
 
 \def\doreadfile#1#2#3% protocol path filename true false
-  {\edef\readfilename{\ctxlua{commands.doreadfile("#1","#2","#3")}}%
+  {\edef\readfilename{\ctxcommand{doreadfile("#1","#2","#3")}}%
    \ifx\readfilename\empty
      \expandafter\doreadfilenop
    \else
@@ -399,7 +399,7 @@
 
 \ifx\outputfilename\undefined \def\outputfilename{\jobname} \fi
 
-\def\doifparentfileelse#1{\ctxlua{commands.doifparentfileelse([[#1]])}}
+\def\doifparentfileelse#1{\ctxcommand{doifparentfileelse([[#1]])}}
 
 \newcount\readingfilelevel
 
@@ -454,7 +454,7 @@
 \let\splitoffname\empty
 \let\splitofftype\empty
 
-\def\splitfilename#1{\ctxlua{commands.splitfilename([[#1]])}}
-\def\splitfiletype#1{\ctxlua{commands.splitfiletype([[#1]])}}
+\def\splitfilename#1{\ctxcommand{splitfilename([[#1]])}}
+\def\splitfiletype#1{\ctxcommand{splitfiletype([[#1]])}}
 
 \protect \endinput

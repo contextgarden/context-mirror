@@ -211,6 +211,6 @@
 % \doifinelementelse{division:*-structure:chapter} {yes} {no}
 
 \def\doifinelementelse#1%
-  {\ctxlua{commands.testcase(structures.atlocation("#1"))}}
+  {\ctxcommand{testcase(structures.atlocation("#1"))}}
 
 \protect
