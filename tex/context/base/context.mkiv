@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.01.26 11:02}
+\edef\contextversion{2011.01.31 16:59}
 
 %D For those who want to use this:
 
@@ -79,6 +79,8 @@
 \loadmarkfile{catc-ctx}
 \loadmarkfile{catc-sym}
 
+\loadmarkfile{cldf-ini}
+
 % From here on we have \unexpanded being \normalprotected, as we
 % already had \unexpanded long before etex came around.
 
@@ -87,7 +89,6 @@
 \loadmarkfile{syst-con}
 
 \loadmarkfile{syst-fnt}
-\loadmarkfile{syst-str}
 \loadmarkfile{syst-rtp}
 
 \loadmarkfile{supp-fil}
@@ -102,8 +103,9 @@
 \loadmarkfile{mult-sys}
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
-\loadmarkfile{mult-cld}
 \loadmarkfile{mult-aux}
+
+\loadmarkfile{cldf-int} % interface
 
 \loadmarkfile{luat-ini}
 
@@ -368,8 +370,6 @@
 
 \loadmarkfile{lang-spa} % will become obsolete
 
-\loadmarkfile{cldf-ini} % this can come later
-
 \loadmarkfile{bibl-bib}
 \loadmarkfile{bibl-tra}
 
@@ -380,6 +380,9 @@
 \loadmarkfile{cont-log}
 
 \loadmarkfile{task-ini}
+
+\loadmarkfile{cldf-ver} % verbatim, this can come late
+\loadmarkfile{cldf-com} % commands, this can come late
 
 \loadmarkfile{core-ctx}
 

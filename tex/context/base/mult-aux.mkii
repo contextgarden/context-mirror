@@ -1,0 +1,152 @@
+%D \module
+%D   [       file=mult-aux,
+%D        version=2010.08.2,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a subset of the \MKIV\ variant which has more comments). There
+%D is no support for attributes (fonts and color). This code is mostly
+%D meant for usage in modules that are backported from \MKIV.
+
+\writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
+
+\unprotect
+
+%D \starttyping
+%D \unprotect
+%D     \def\????aa{@@@@aa}
+%D
+%D     \installparameterhandler  \????aa {whatever}
+%D     \installsetuphandler      \????aa {whatever}
+%D     \installdefinehandler     \????aa {whatever} \????aa % #3 == defaultroot
+%D
+%D   % \installcommandhandler    \????aa {whatever} \????aa
+%D \protect
+%D
+%D % \whateverparameter \c!test
+%D % \whateverparameterhash \c!test
+%D % \namedwhateverparameter \mycurrentwhatever \c!test
+%D % \everydefinewhatever (sets \currentwhatever)
+%D % \everypresetwhatever (can be used to reset parameters as we can redefine)
+%D % \everysetupwhatever (sets \currentwhatever)
+%D
+%D \starttext
+%D     \definewhatever[first] \definewhatever[second][first]
+%D                                           test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D     \setupwhatever        [method=unset]  test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D     \setupwhatever[first] [method=first]  test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D                                           test: \def\currentwhatever{second} \whateverparameter{method} \par
+%D     \setupwhatever[second][method=second] test: \def\currentwhatever{second} \whateverparameter{method} \par
+%D \stoptext
+%D \stoptyping
+
+\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9%
+  {\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
+   \def#4##1##2{\ifcsname##1##2\endcsname##1##2\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}%
+   \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
+   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}% always root
+   \def#8{\dosetvalue{#1}}% ##1 {##2} (braces are mandate)
+   \def#9{\doletvalue{#1}}}% ##1 ##2
+
+\unexpanded\def\installparameterhandler#1#2%
+  {%\message{\detokenize{#1}/\detokenize{#2}}%
+   \normalexpanded
+     {\doinstallparameterhandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameter\endcsname
+        \expandafter\noexpand\csname do#2parameter\endcsname
+        \expandafter\noexpand\csname do#2parentparameter\endcsname
+        \expandafter\noexpand\csname named#2parameter\endcsname
+        \expandafter\noexpand\csname detokenized#2parameter\endcsname
+        \expandafter\noexpand\csname doset#2parameter\endcsname
+        \expandafter\noexpand\csname dolet#2parameter\endcsname}}
+
+\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5%
+  {\def#3##1{#4{#1#2}{##1}}%
+   \def#4##1##2{\ifcsname##1##2\endcsname##1\else\expandafter#5\csname##1\s!parent\endcsname{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}}
+
+\unexpanded\def\installparameterhashhandler#1#2%
+  {\normalexpanded
+     {\doinstallparameterhashhandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameterhash\endcsname
+        \expandafter\noexpand\csname do#2parameterhash\endcsname
+        \expandafter\noexpand\csname do#2parentparameterhash\endcsname}}
+
+
+\unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
+  {\unexpanded\def#2{\dotripleempty#5}%
+   \newtoks#6%
+   \newtoks#7%
+   \def#5[##1][##2][##3]% [child][parent][settings]
+     {\edef#4{##1}%     % [child]        [settings]
+      \the#6% predefine % [child][parent]
+      \ifthirdargument  % [child]
+        \getparameters[#1#4][\s!parent=#1##2,##3]%
+      \else\ifsecondargument
+        \doifassignmentelse{##2}
+          {\getparameters[#1#4][\s!parent=#3,##2]}
+          {\getparameters[#1#4][\s!parent=#1##2]}%
+      \else
+        \getparameters[#1#4][\s!parent=#3]%
+      \fi\fi
+      \the#7}}
+
+\unexpanded\def\installdefinehandler#1#2#3%
+  {\normalexpanded
+     {\doinstalldefinehandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname define#2\endcsname
+        {\noexpand#3}% root
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname d@define#2\endcsname
+        \expandafter\noexpand\csname everypreset#2\endcsname
+        \expandafter\noexpand\csname everydefine#2\endcsname}}
+
+\unexpanded\def\doinstallsetuphandler#1#2#3#4#5%
+  {\unexpanded\def#2{\dodoubleempty#4}%
+   \newtoks#5%
+   \def#4[##1][##2]% maybe helper
+     {\ifsecondargument
+        \def\docommand####1% we will have a simple one as well
+          {\edef#3{####1}%
+           \getparameters[#1#3][##2]%
+           \the#5}%
+        \processcommalist[##1]\docommand
+      \else
+        \let#3\empty
+        \getparameters[#1][##1]%
+        \the#5%
+      \fi}}
+
+\unexpanded\def\installsetuphandler#1#2%
+  {\normalexpanded
+     {\doinstallsetuphandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname d@setup#2\endcsname
+        \expandafter\noexpand\csname everysetup#2\endcsname}}
+
+\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installparameterhandler    {#1}{#2}%
+   \installparameterhashhandler{#1}{#2}%
+   \installdefinehandler       {#1}{#2}{#3}%
+   \installsetuphandler        {#1}{#2}}
+
+\unexpanded\def\installnamespace#1%
+  {\setvalue{????#1}{@@@@#1}}
+
+\protect
+

@@ -517,7 +517,7 @@
   {\bgroup
    \global\advance\noftypesetbuffers\plusone
    \edef\bufferfilename{\jobname-buffer-\the\noftypesetbuffers}%
-   \ctxlua{commands.runbuffer("\bufferfilename.tmp","#1",true)}%
+   \ctxcommand{runbuffer("\bufferfilename.tmp","#1",true)}%
    \externalfigure[\bufferfilename.pdf][#2]%
    \egroup}
 
@@ -541,10 +541,7 @@
 \definesystemvariable{tz}
 
 \unexpanded\def\definetypesetting{\dotripleempty\dodefinetypesetting}
-\def\typesetfile      {\dotripleempty\dotypesetfile}
-
-\unexpanded\def\definetypesetting{\dotripleempty\dodefinetypesetting}
-\def\typesetfile      {\dotripleempty\dotypesetfile}
+\unexpanded\def\typesetfile      {\dotripleempty\dotypesetfile}
 
 \def\dodefinetypesetting[#1][#2][#3]% <name> options settings-a
   {\doifsomething{#1}{\setvalue{\??tz#1}{\dodotypesetfile{#2}{#3}}}}

@@ -43,7 +43,12 @@ function nodes.striprange(first,last) -- todo: dir
             if id == glyph_code or id == disc_code then -- or id == rule_code
                 break
             else
+local prev = last.prev -- luatex < 0.70 has italic correction kern not prev'd
+if prev then
                 last = last.prev
+else
+    break
+end
             end
         end
         if not last then

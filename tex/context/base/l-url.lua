@@ -52,8 +52,10 @@ local path      = slash *         Cs((escaped+(1-            qmark-hash))^0)    
 local query     = qmark         * Cs((escaped+(1-                  hash))^0)         + nothing
 local fragment  = hash          * Cs((escaped+(1-           endofstring))^0)         + nothing
 
-local parser = Ct(scheme * authority * path * query * fragment)
+local validurl  = scheme * authority * path * query * fragment
+local parser    = Ct(validurl)
 
+lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
 local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end

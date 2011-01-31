@@ -23,6 +23,8 @@
 
 \registerctxluafile{x-mathml}{}
 
+\def\ctxmodulemathml#1{\directlua\zerocount{moduledata.mathml.#1}}
+
 \startxmlsetups xml:mml:define
     \xmlsetsetup{\xmldocument} {(formula|subformula)} {mml:formula}
     \xmlfilter  {\xmldocument} {omt:*/function(remapopenmath)}
@@ -465,7 +467,7 @@
 \stoptexdefinition
 
 \startxmlsetups mml:csymbol
-    \ctxlua{lxml.mml.csymbol("#1")}
+    \ctxmodulemathml{csymbol("#1")}
 \stopxmlsetups
 
 \startxmlsetups mml:csymbol:cdots
@@ -1814,12 +1816,12 @@
 % setups
 
 \startxmlsetups mml:mi % todo: mathvariant mathsize mathcolor mathbackground
-    \ctxlua{lxml.mml.mi("#1")}
+    \ctxmodulemathml{mi("#1")}
 \stopxmlsetups
 
 \startxmlsetups mml:mn % todo: mathvariant mathsize mathcolor mathbackground
     \begingroup
-        \mr \ctxlua{lxml.mml.mn("#1")}% no \hbox, would be ok for . , but spoils rest
+        \mr \ctxmodulemathml{mn("#1")}% no \hbox, would be ok for . , but spoils rest
     \endgroup
 \stopxmlsetups
 
@@ -1830,7 +1832,7 @@
 \startxmlsetups mml:mo
     \doif {\xmlatt{#1}{maxsize}}  {1}     {\settrue\mmlignoredelimiter}
     \doif {\xmlatt{#1}{stretchy}} {false} {\settrue\mmlignoredelimiter}
-    \ctxlua{lxml.mml.mo("#1")}
+    \ctxmodulemathml{mo("#1")}
     \setfalse\mmlignoredelimiter
 \stopxmlsetups
 
@@ -1838,7 +1840,7 @@
     \def\MMLleft  {\left }% weird
     \def\MMLright {\right}
     \def\MMLmiddle{\middle}
-    \ctxlua{lxml.mml.mfenced("#1")}
+    \ctxmodulemathml{mfenced("#1")}
 \stopxmlsetups
 
 \defineoverlay [mml:enclose:box]                [\useMPgraphic{mml:enclose:box}]
@@ -1900,7 +1902,7 @@
 \stopuseMPgraphic
 
 \startxmlsetups mml:menclose
-    \edef\mmlmenclosenotation{\ctxlua{lxml.mml.menclosepattern("#1")}}
+    \edef\mmlmenclosenotation{\ctxmodulemathml{menclosepattern("#1")}}
     \ifx\mmlmenclosenotation\empty
         \xmlflush{#1}
     \else
@@ -1991,7 +1993,7 @@
     \domathtext {
         \applymmlsometext{#1}{
             \doifelse\MMLscriptsalternative\v!a {
-               %\ctxlua{lxml.mml.stripped(\!!bs\xmlflush{#1}\!!es)}
+               %\ctxmodulemathml{stripped(\!!bs\xmlflush{#1}\!!es)}
                 \ignorespaces
                 \xmlflush{#1}
                 \unskip
@@ -2164,11 +2166,11 @@
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)
 
 \startxmlsetups mml:mtable % some more attributes need to be supported
-    \vcenter{\ctxlua{lxml.mml.mtable("#1")}}
+    \vcenter{\ctxmodulemathml{mtable("#1")}}
 \stopxmlsetups
 
 \startxmlsetups mml:mcolumn
-    \ctxlua{lxml.mml.mcolumn("#1")}
+    \ctxmodulemathml{mcolumn("#1")}
 \stopxmlsetups
 
 \def\mmlsetfakewidth#1{\setbox\scratchbox\hbox{#1}\scratchdimen\wd\scratchbox}
@@ -2249,7 +2251,7 @@
 \startxmlsetups mml:mprescripts \stopxmlsetups
 
 \startxmlsetups mml:mmultiscripts
-    \ctxlua{lxml.mml.mmultiscripts("#1")}
+    \ctxmodulemathml{mmultiscripts("#1")}
 \stopxmlsetups
 
 % goodie

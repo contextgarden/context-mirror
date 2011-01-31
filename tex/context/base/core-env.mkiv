@@ -242,7 +242,7 @@
 
 % We can consider:
 %
-% \setvalue{\??su->\v!auto}#1{\ctxlua{commands.autosetup("#1")}}
+% \setvalue{\??su->\v!auto}#1{\ctxcommand{autosetup("#1")}}
 %
 % ":\letterpercent" => "->\v!auto" with "\endcsname{#1}"
 %
@@ -267,10 +267,10 @@
 % setups={S1,lua(S2),xml(test{123}),S3}
 
 \def\dodoprocesslocalsetups
-  {\ctxlua{commands.autosetups("\tobeprocessedsetups")}}
+  {\ctxcommand{autosetups("\tobeprocessedsetups")}}
 
 \def\autosetups#1%
-  {\ctxlua{commands.autosetups("#1")}}
+  {\ctxcommand{autosetups("#1")}}
 
 \edef\setupwithargument#1% saves a few expansions
   {\noexpand\csname\??su:\noexpand\ifcsname\??su:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}

@@ -648,15 +648,6 @@
    % \stopnointerference
    \stopreadingfile}
 
-%D \macros
-%D   {MPrunfile}
-%D
-%D This one is more abstract and does not assume knowledge
-%D of buffer prefixes.
-
-\def\MPrunfile#1%
-  {\bufferprefix mprun.#1}
-
 %D For the moment, the next one is a private macro:
 
 \def\processMPbuffer
@@ -680,7 +671,7 @@
       % we need this trick because tex.sprint does not interprets newlines and the scanner
       % stops at a newline; also, we do need to flush the buffer under a normal catcode
       % regime in order to expand embedded tex macros; #1 can be a list
-      \processMPgraphic{\ctxlua{commands.feedback("\currentMPgraphicname")}}%
+      \processMPgraphic{\ctxcommand{feedback("\currentMPgraphicname")}}%
       \endMPgraphicgroup}}
 
 \def\runMPbuffer

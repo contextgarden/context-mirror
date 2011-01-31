@@ -46,12 +46,20 @@
 \unexpanded\def\setupMPpage
   {\dodoubleargument\getparameters[\??mg]}
 
-\def\startMPpage
-  {\dodoubleempty\dostartMPpage}
+% \def\startMPpage
+%   {\dodoubleempty\dostartMPpage}
+%
+% \long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
+%   {\dostartfittingpage[\??mg][#1]%
+%    \processMPgraphic{#3}%
+%    \dostopfittingpage}
 
-\long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
+\def\startMPpage
+  {\dosingleempty\dostartMPpage}
+
+\long\def\dostartMPpage[#1]#2\stopMPpage
   {\dostartfittingpage[\??mg][#1]%
-   \processMPgraphic{#3}%
+   \processMPgraphic{#2}%
    \dostopfittingpage}
 
 \let\stopMPpage \relax % so that we can use it in \expanded

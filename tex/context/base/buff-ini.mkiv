@@ -25,13 +25,13 @@
 \let\currentbuffer\empty
 
 \def\doifelsebuffer#1%
-  {\ctxlua{commands.doifelsebuffer("#1")}}
+  {\ctxcommand{doifelsebuffer("#1")}}
 
 \def\resetbuffer
   {\dosingleempty\doresetbuffer}
 
 \def\doresetbuffer[#1]%
-  {\ctxlua{commands.erasebuffer("#1")}}
+  {\ctxcommand{erasebuffer("#1")}}
 
 \unexpanded\def\dostartdefinedbuffer
   {\bgroup
@@ -65,13 +65,13 @@
 \unexpanded\long\def\dodowithbuffer#1#2#3#4#5% name, startsequence, stopsequence, before, after
   {#4%
    \bgroup
-   \ctxlua{commands.erasebuffer("#1")}%
+   \ctxcommand{erasebuffer("#1")}%
    \setcatcodetable \vrbcatcodes
    \long\def\nododowithbuffer
      {\egroup
       #5}%
    \long\def\dododowithbuffer##1#3% is detokenize needed? TEST
-     {\ctxlua{commands.grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
+     {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
       \dododowithbuffer
       \nododowithbuffer}%
    \dododowithbuffer}
@@ -82,7 +82,7 @@
 \let\endbuffer\relax
 
 \long\def\dosetbuffer[#1]#2\endbuffer % seldom used so we just pass #2
-  {\ctxlua{commands.assignbuffer("#1", \!!bs\detokenize{#2}\!!es)}}
+  {\ctxcommand{assignbuffer("#1", \!!bs\detokenize{#2}\!!es)}}
 
 \def\namedbufferparameter#1#2{\csname\??bu#1#2\endcsname}
 
@@ -147,7 +147,7 @@
    \namedbufferparameter{#1}\c!after}
 
 \def\dododogetbuffer#1%
-  {\ctxlua{commands.getbuffer("#1")}}
+  {\ctxcommand{getbuffer("#1")}}
 
 \definebuffer[\v!hiding] \setupbuffer[\v!hiding][\c!before=,\c!after=]
 
@@ -167,7 +167,7 @@
 
 \unexpanded\def\savebuffer{\dodoubleempty\dosavebuffer}
 
-\def\dosavebuffer[#1][#2]{\ctxlua{commands.savebuffer("#1","#2")}}
+\def\dosavebuffer[#1][#2]{\ctxcommand{savebuffer("#1","#2")}}
 
 %D Experimental: no expansion of commands in buffer!
 
@@ -184,7 +184,7 @@
 \def\mkvibuffer   {\dosingleempty\domkvibuffer}
 \def\mkvibufferraw{\dosingleempty\domkvibufferraw}
 
-\def\doctxluabuffer [#1]{\ctxlua{commands.getbufferctxlua("#1")}}
-\def\domkvibuffer   [#1]{\ctxlua{commands.getbuffermkvi("#1")}}
+\def\doctxluabuffer [#1]{\ctxcommand{getbufferctxlua("#1")}}
+\def\domkvibuffer   [#1]{\ctxcommand{getbuffermkvi("#1")}}
 
 \protect \endinput

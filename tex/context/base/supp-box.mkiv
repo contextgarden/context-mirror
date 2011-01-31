@@ -967,7 +967,7 @@
 %D \stoptyping
 
 \def\doshowhyphenatednextbox
-  {\ctxlua{commands.showhyphenatedinlist(tex.box[\number\nextbox].list)}}
+  {\ctxcommand{showhyphenatedinlist(tex.box[\number\nextbox].list)}}
 
 \def\showhyphens{\dowithnextbox\doshowhyphenatednextbox\hbox}
 
@@ -980,7 +980,7 @@
 %D \stoptyping
 
 \def\dohyphenatednextbox
-  {\ctxlua{commands.hyphenatedlist(tex.box[\number\nextbox])}%
+  {\ctxcommand{hyphenatedlist(tex.box[\number\nextbox])}%
    \unhbox\nextbox}
 
 \def\hyphenatedword  {\dowithnextbox\dohyphenatednextbox    \hbox}
@@ -1304,14 +1304,14 @@
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\normalhbox{#1}%
-   \ctxlua{commands.applytochars(\number\scratchbox,"\strippedcsname#2",true)}%
+   \ctxcommand{applytochars(\number\scratchbox,"\strippedcsname#2",true)}%
    \endgroup}
 
 \def\processisolatedwords#1#2%
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\normalhbox{#1}%
-   \ctxlua{commands.applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
+   \ctxcommand{applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
    \endgroup}
 
 \unexpanded\def\processwords#1%
@@ -1323,12 +1323,12 @@
 
 \def\applytocharacters#1%
   {\dontleavehmode
-   \dowithnextbox{\ctxlua{commands.applytochars(\number\nextbox,"\strippedcsname#1",true)}}%
+   \dowithnextbox{\ctxcommand{applytochars(\number\nextbox,"\strippedcsname#1",true)}}%
    \normalhbox}
 
 \def\applytowords#1%
   {\dontleavehmode
-   \dowithnextbox{\ctxlua{commands.applytowords(\number\nextbox,"\strippedcsname#1",true)}}%
+   \dowithnextbox{\ctxcommand{applytowords(\number\nextbox,"\strippedcsname#1",true)}}%
    \normalhbox}
 
 %D \macros

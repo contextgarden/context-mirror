@@ -13,6 +13,10 @@
 
 \writestatus{loading}{ConTeXt XML Macros / Chemistry}
 
+\registerctxluafile{x-chemml}{}
+
+\def\ctxmodulechemml#1{\directlua\zerocount{moduledata.chemml.#1}}
+
 \usemodule[pictex,chemic] % someday we will do structural fomulas in mp
 
 %D The following code assumes a load||flush approach to \XML.
@@ -20,7 +24,6 @@
 \unprotect
 
 \startxmlsetups xml:cml:process
-
     \xmlstrip {\xmldocument} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
 
     \xmlgrab {\xmldocument} {cml:*}                                                  {*}
@@ -39,16 +42,6 @@
 
 \setupCMLappearance [ion] [\c!alternative=\v!a]
 
-\startluacode
-    function lxml.cml_do_pi(id)
-        local str = xml.content(lxml.id(id))
-        local _, class, key, value = str:match("^(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*$")
-        if key and value then
-            tex.sprint(tex.ctxcatcodes,string.format("\\setupCMLappearance[%s][%s=%s]",class, key, value))
-        end
-    end
-\stopluacode
-
 \def\doifelseCMLvariable#1#2#3% id key value
   {\doifelse{\xmlatt{#1}{#2}}{#3}
      \firstoftwoarguments
@@ -57,7 +50,7 @@
         \secondoftwoarguments}}
 
 \startxmlsetups cml:pi
-    \ctxlua{lxml.cml_do_pi(#1)}
+    \ctxmodulechemml{pi(#1)}
 \stopxmlsetups
 
 \startxmlsetups cml:chem
@@ -194,38 +187,11 @@
 
 % It makes not much sense to adapt ppchtex to accept different input. Maybe some day.
 
-\startluacode
-    function lxml.cml_do_graphic(id)
-        local t = { }
-        for r, d, k in xml.elements(lxml.id(id),"cml:graphic") do
-            t[#t+1] = xml.tostring(d[k].dt)
-        end
-        tex.sprint(tex.ctxcatcodes,table.concat(t,","))
-    end
-    function lxml.cml_no_graphic(id)
-        local t = { }
-        for r, d, k in xml.elements(lxml.id(id),"cml:text|cml:oxidation|cml:annotation") do
-            local dk = d[k]
-            if dk.tg == "oxidation" then
-                t[#t+1] = string.format("\\chemicaloxidation{%s}{%s}{%s}",r.at.sign or "",r.at.n or 1,xml.tostring(dk.dt))
-            elseif dk.tg == "annotation" then
-                local location = r.at.location or "r"
-                local caption  = xml.content(xml.first(dk,"cml:caption"))
-                local text     = xml.content(xml.first(dk,"cml:text"))
-                t[#t+1] = string.format("\\doCMLannotation{%s}{%s}{%s}",location,caption,text)
-            else
-                t[#t+1] = xml.tostring(dk.dt) or ""
-            end
-        end
-        tex.sprint(tex.ctxcatcodes,table.concat(t,","))
-    end
-\stopluacode
-
 \startxmlsetups cml:component
     \expanded {
         \chemical
-            [\ctxlua{lxml.cml_do_graphic("#1")}]
-            [\ctxlua{lxml.cml_no_graphic("#1")}]
+            [\ctxmodulechemml{do_graphic("#1")}]
+            [\ctxmodulechemml{no_graphic("#1")}]
     }
 \stopxmlsetups
 

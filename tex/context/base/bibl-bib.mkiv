@@ -123,11 +123,11 @@
 \unexpanded\def\setupbibtexsession {\dodoubleargument\dosetupbibtexsession}
 
 \def\dodefinebibtexsession     [#1]{\edef\currentbibtexsession{#1}%
-                                    \ctxlua{commands.definebibtexsession("#1")}%
+                                    \ctxcommand{definebibtexsession("#1")}%
                                     \the\everydefinebibtexsession}
 
 \def\dopreparebibtexsession[#1][#2]{\edef\currentbibtexsession{#1}%
-                                    \ctxlua{commands.preparebibtexsession("#1","bibtex:#1","#2")}%
+                                    \ctxcommand{preparebibtexsession("#1","bibtex:#1","#2")}%
                                     \the\everypreparebibtexsession}
 
 \def\dosetupbibtexsession  [#1][#2]{\edef\currentbibtexsession{#1}%
@@ -138,8 +138,8 @@
 \def\registerbibtexentry           {\dodoubleargument\doregisterbibtexentry}
 \def\applytobibtexsession          {\dodoubleargument\doapplytobibtexsession}
 
-\def\doregisterbibtexfile  [#1][#2]{\ctxlua{commands.registerbibtexfile("#1","#2")}}
-\def\doregisterbibtexentry [#1][#2]{\ctxlua{commands.registerbibtexentry("#1","#2")}}
+\def\doregisterbibtexfile  [#1][#2]{\ctxcommand{registerbibtexfile("#1","#2")}}
+\def\doregisterbibtexentry [#1][#2]{\ctxcommand{registerbibtexentry("#1","#2")}}
 \def\doapplytobibtexsession[#1][#2]{\xmlprocessregistered{bibtex:#1}{#2}{#2}}
 
 \unexpanded\def\bibtexcommand#1%

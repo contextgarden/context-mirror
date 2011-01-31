@@ -80,6 +80,14 @@ function resolvers.findbinfile(name,kind)
     return resolvers.findfile(name,(kind and remapper[kind]) or kind)
 end
 
+function resolvers.resolve(s)
+    return s
+end
+
+function resolvers.unresolve(s)
+    return s
+end
+
 -- Caches ... I will make a real stupid version some day when I'm in the
 -- mood. After all, the generic code does not need the more advanced
 -- ConTeXt features. Cached data is not shared between ConTeXt and other

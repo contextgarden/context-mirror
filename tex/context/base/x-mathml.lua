@@ -16,7 +16,9 @@ local lxmltext, getid = lxml.text, lxml.getid
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local lpegmatch = lpeg.match
 
-lxml.mml = lxml.mml or { }
+local mathml      = { }
+local moduledata  = moduledata = { }
+moduledata.mathml = mathml
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
@@ -445,11 +447,11 @@ function xml.functions.remapopenmath(e)
     e.rn = "mml"
 end
 
-function lxml.mml.checked_operator(str)
+function mathml.checked_operator(str)
     texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
 end
 
-function lxml.mml.stripped(str)
+function mathml.stripped(str)
     tex.sprint(ctxcatcodes,str:strip())
 end
 
@@ -457,7 +459,7 @@ function characters.remapentity(chr,slot) -- brrrrrr
     texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end
 
-function lxml.mml.mn(id,pattern)
+function mathml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
     local str = xmlcontent(getid(id)) or ""
@@ -465,12 +467,12 @@ function lxml.mml.mn(id,pattern)
     texsprint(ctxcatcodes,(gsub(str,".",n_replacements)))
 end
 
-function lxml.mml.mo(id)
+function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
     texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
 end
 
-function lxml.mml.mi(id)
+function mathml.mi(id)
     local str = xmlcontent(getid(id)) or ""
     -- str = gsub(str,"^%s*(.-)%s*$","%1")
     local rep = i_replacements[str]
@@ -481,7 +483,7 @@ function lxml.mml.mi(id)
     end
 end
 
-function lxml.mml.mfenced(id) -- multiple separators
+function mathml.mfenced(id) -- multiple separators
     id = getid(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
@@ -554,7 +556,7 @@ local function flush(e,tag,toggle)
     return not toggle
 end
 
-function lxml.mml.mmultiscripts(id)
+function mathml.mmultiscripts(id)
     local done, toggle = false, false
     for e in lxml.collected(id,"/*") do
         local tag = e.tg
@@ -601,7 +603,7 @@ local frametypes = {
 
 -- crazy element ... should be a proper structure instead of such a mess
 
-function lxml.mml.mcolumn(root)
+function mathml.mcolumn(root)
     root = getid(root)
     local matrix, numbers = { }, 0
     local function collect(m,e)
@@ -697,7 +699,7 @@ end
 
 local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
 
-function lxml.mml.mtable(root)
+function mathml.mtable(root)
     -- todo: align, rowspacing, columnspacing, rowlines, columnlines
     root = getid(root)
     local at           = root.at
@@ -755,7 +757,7 @@ function lxml.mml.mtable(root)
 --~ context.eTABLE()
 end
 
-function lxml.mml.csymbol(root)
+function mathml.csymbol(root)
     root = getid(root)
     local at = root.at
     local encoding = at.encoding or ""
@@ -767,7 +769,7 @@ function lxml.mml.csymbol(root)
     texsprint(ctxcatcodes,"\\mmlapplycsymbol{",full,"}{",base,"}{",encoding,"}{",text,"}")
 end
 
-function lxml.mml.menclosepattern(root)
+function mathml.menclosepattern(root)
     root = getid(root)
     local a = root.at.notation
     if a and a ~= "" then

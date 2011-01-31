@@ -634,16 +634,16 @@
      \global\let\FLOWshape\@@FLOSdefault
    \fi
    \doifnot\FLOWshape{none} % {\v!none}
-     {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
+     {\doifinsetelse\FLOWshape\FLOWshapes
         {\edef\FLOWshapetag{shape_ \FLOWshape}% beter \expanded
          \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
         {\doifnumberelse\FLOWshape
            {\let\FLOWshapetag\FLOWshape}
            {\let\FLOWshapetag\empty}}%
       \ifx\FLOWshapetag\empty \else
-        \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
+        \doifinsetelse\FLOWshape\FLOWlines
           {\chardef\FLOWstate0 }
-          {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
+          {\doifcommonelse{\FLOWcell,\FLOWfocus}\@@FLOWfocus
              {\chardef\FLOWstate1 }
              {\chardef\FLOWstate2 }}%
         \startMPdrawing
@@ -989,7 +989,7 @@
 \def\doFLOWlocationF#1,#2\end%
   {\ifnum#1>\@@FLOWabsx\def\@@FLOWabsx{#1}\fi
    \ifnum#2>\@@FLOWabsy\def\@@FLOWabsy{#2}\fi
-   \ExpandBothAfter\doifinset{\FLOWcell}{\@@FLOWautofocus}
+   \doifinset\FLOWcell\@@FLOWautofocus
      {\dodoFLOWlocationF{#1}<-\@@FLOWminx
       \dodoFLOWlocationF{#1}>+\@@FLOWmaxx
       \dodoFLOWlocationF{#2}<-\@@FLOWminy
@@ -1902,16 +1902,16 @@
      \global\let\FLOWshape\@@FLOSdefault
    \fi
    \doifnot\FLOWshape{none} % {\v!none}
-     {\ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWshapes}
+     {\doifinsetelse\FLOWshape\FLOWshapes
         {\edef\FLOWshapetag{shape_\FLOWshape}% beter \expanded
          \@EA\setFLOWname\@EA\FLOWshapetag\@EA{\FLOWshapetag}}
         {\doifnumberelse\FLOWshape
            {\let\FLOWshapetag\FLOWshape}
            {\let\FLOWshapetag\empty}}%
       \ifx\FLOWshapetag\empty \else
-        \ExpandBothAfter\doifinsetelse{\FLOWshape}{\FLOWlines}
+        \doifinsetelse\FLOWshape\FLOWlines
           {\chardef\FLOWstate0 }
-          {\ExpandBothAfter\doifcommonelse{\FLOWcell,\FLOWfocus}{\@@FLOWfocus}
+          {\doifcommonelse{\FLOWcell,\FLOWfocus}\@@FLOWfocus
              {\chardef\FLOWstate1 }
              {\chardef\FLOWstate2 }}%
         \startMPdrawing
@@ -2257,7 +2257,7 @@
 \def\doFLOWlocationF#1,#2\end%
   {\ifnum#1>\@@FLOWabsx\def\@@FLOWabsx{#1}\fi
    \ifnum#2>\@@FLOWabsy\def\@@FLOWabsy{#2}\fi
-   \ExpandBothAfter\doifinset{\FLOWcell}{\@@FLOWautofocus}
+   \doifinset\FLOWcell\@@FLOWautofocus
      {\dodoFLOWlocationF{#1}<-\@@FLOWminx
       \dodoFLOWlocationF{#1}>+\@@FLOWmaxx
       \dodoFLOWlocationF{#2}<-\@@FLOWminy

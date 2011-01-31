@@ -6,6 +6,13 @@ if not modules then modules = { } end modules ['data-pre'] = {
     license   = "see context related readme files"
 }
 
+-- It could be interesting to hook the resolver in the file
+-- opener so that unresolved prefixes travel around and we
+-- get more abstraction.
+
+-- As we use this beforehand we will move this up in the chain
+-- of loading.
+
 --~ print(resolvers.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
 
 local upper, lower, gsub = string.upper, string.lower, string.gsub
@@ -14,10 +21,10 @@ local resolvers = resolvers
 
 local prefixes = { }
 
-local getenv = resolvers.getenv
+local getenv, cleanpath, findgivenfile = resolvers.getenv, resolvers.cleanpath, resolvers.findgivenfile
 
 prefixes.environment = function(str) -- getenv is case insensitive anyway
-    return resolvers.cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
+    return cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
 end
 
 prefixes.relative = function(str,n)
@@ -36,7 +43,7 @@ prefixes.relative = function(str,n)
             end
         end
     end
-    return resolvers.cleanpath(str)
+    return cleanpath(str)
 end
 
 prefixes.auto = function(str)
@@ -48,19 +55,37 @@ prefixes.auto = function(str)
 end
 
 prefixes.locate = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath((fullname ~= "" and fullname) or str)
+    local fullname = findgivenfile(str) or ""
+    return cleanpath((fullname ~= "" and fullname) or str)
 end
 
 prefixes.filename = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath(file.basename((fullname ~= "" and fullname) or str))
+    local fullname = findgivenfile(str) or ""
+    return cleanpath(file.basename((fullname ~= "" and fullname) or str))
 end
 
 prefixes.pathname = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath(file.dirname((fullname ~= "" and fullname) or str))
+    local fullname = findgivenfile(str) or ""
+    return cleanpath(file.dirname((fullname ~= "" and fullname) or str))
 end
+
+prefixes.selfautoloc = function(str)
+    return cleanpath(file.join(getenv('SELFAUTOLOC'),str))
+end
+
+prefixes.selfautoparent = function(str)
+    return cleanpath(file.join(getenv('SELFAUTOPARENT'),str))
+end
+
+prefixes.selfautodir = function(str)
+    return cleanpath(file.join(getenv('SELFAUTODIR'),str))
+end
+
+prefixes.home = function(str)
+    return cleanpath(file.join(getenv('HOME'),str))
+end
+
+prefixes["~"] = prefixes.home
 
 prefixes.env  = prefixes.environment
 prefixes.rel  = prefixes.relative
@@ -88,19 +113,37 @@ local function _resolve_(method,target)
     end
 end
 
-local function resolve(str)
-    if type(str) == "table" then
-        for k=1,#str do
-            local v = str[k]
-            str[k] = resolve(v) or v
-        end
-    elseif str and str ~= "" then
-        str = gsub(str,"([a-z]+):([^ \"\']*)",_resolve_)
+--~ local function resolve(str) -- use schemes
+--~     if type(str) == "table" then
+--~         for k=1,#str do
+--~             local v = str[k]
+--~             str[k] = resolve(v) or v
+--~         end
+--~     elseif str and str ~= "" then
+--~         str = gsub(str,"([a-z]+):([^ \"\']*)",_resolve_)
+--~     end
+--~     return str
+--~ end
+
+local resolved = { }
+local abstract = { }
+
+local function resolve(str) -- use schemes, this one is then for the commandline only
+    local res = resolved[str]
+    if not res then
+        res = gsub(str,"([a-z][a-z]+):([^ \"\']*)",_resolve_)
+        resolved[str] = res
+        abstract[res] = str
     end
-    return str
+    return res
 end
 
-resolvers.resolve = resolve
+local function unresolve(str)
+    return abstract[str] or str
+end
+
+resolvers.resolve   = resolve
+resolvers.unresolve = unresolve
 
 if os.uname then
 

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2011.01.26 11:02}
+\newcontextversion{2011.01.31 16:59}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -238,7 +238,7 @@
 \stopluacode
 
 \gdef\setpercentdimen#1#2%
-  {#1=\ctxlua{commands.percentageof("#2",\number#1)}\relax}
+  {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
 
 % \scratchdimen=100pt \setpercentdimen\scratchdimen{10\letterpercent} \the\scratchdimen
 % \scratchdimen=100pt \setpercentdimen\scratchdimen{5pt}              \the\scratchdimen

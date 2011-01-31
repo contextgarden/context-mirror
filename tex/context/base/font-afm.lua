@@ -179,7 +179,7 @@ local function get_variables(data,fontmetrics)
 end
 
 local function get_indexes(data,pfbname)
-    data.luatex.filename = pfbname
+    data.luatex.filename = resolvers.unresolve(pfbname) -- no shortcut
     local pfbblob = fontloader.open(pfbname)
     if pfbblob then
         local characters = data.characters
@@ -330,15 +330,19 @@ function afm.load(filename)
     end
 end
 
+local uparser = fonts.map.makenameparser()
+
 unify = function(data, filename)
-    local unicodevector = fonts.enc.load('unicode').hash
+ -- local unicodevector = fonts.enc.load('unicode').hash
+    local unicodevector = fonts.enc.agl.unicodes
     local glyphs, indices, unicodes, names = { }, { }, { }, { }
     local verbose, private = fonts.verbose, fonts.privateoffset
     for name, blob in next, data.characters do
         local code = unicodevector[name] -- or characters.name_to_unicode[name]
         if not code then
-            local u = match(name,"^uni(%x+)$")
-            code = u and tonumber(u,16)
+         -- local u = match(name,"^uni(%x+)$")
+         -- code = u and tonumber(u,16)
+            code = lpegmatch(uparser,name)
             if not code then
                 code = private
                 private = private + 1
@@ -367,7 +371,8 @@ unify = function(data, filename)
     data.glyphs = glyphs
     data.characters = nil
     local luatex = data.luatex
-    luatex.filename = luatex.filename or file.removesuffix(file.basename(filename))
+    local filename = luatex.filename or file.removesuffix(file.basename(filename))
+    luatex.filename = resolvers.unresolve(filename) -- no shortcut
     luatex.unicodes = unicodes -- name to unicode
     luatex.indices = indices -- unicode to index
     luatex.marks = { } -- todo

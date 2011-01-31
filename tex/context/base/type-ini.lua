@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['type-ini'] = {
 -- more code will move here
 
 local format, gsub = string.format, string.gsub
-local find_file = resolvers.find_file
 
 local patterns = { "type-imp-%s.mkiv", "type-imp-%s.tex", "type-%s.mkiv", "type-%s.tex" }
 
@@ -17,7 +16,6 @@ function commands.doprocesstypescriptfile(name)
     name = gsub(name,"^type%-","")
     for i=1,#patterns do
         local filename = format(patterns[i],name)
-     -- local foundname = find_file(filename) or ""
         local foundname = resolvers.finders.doreadfile("any",".",filename)
         if foundname ~= "" then
             context.startreadingfile()

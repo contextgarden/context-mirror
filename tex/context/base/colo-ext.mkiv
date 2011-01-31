@@ -105,7 +105,7 @@
 
 \def\dododefineintermediatecolor[#1][#2,#3,#4][#5]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxlua{commands.defineintermediatecolor("#1","#2",
+   \ctxcommand{defineintermediatecolor("#1","#2",
      \thecolorattribute{#3},\thecolorattribute{#4},
      \thetransparencyattribute{#3},\thetransparencyattribute{#4},
      "#5",false,\iffreezecolors true\else false\fi)}% not global

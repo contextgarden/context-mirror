@@ -146,7 +146,7 @@
 % provide a means to use multiple alignments mixed
 
 \def\pushcharacteralign
-  {\ifundefined{@cac@\alignmentclass}%
+  {\ifcsname @cac@\alignmentclass\endcsname\else
      \doglobal\appendetoks\noexpand\do{\alignmentclass}\to\@@characteralignlst
    \fi
    \setxvalue{@cac@\alignmentclass}{\noexpand\do

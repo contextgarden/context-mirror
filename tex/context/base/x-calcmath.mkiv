@@ -15,12 +15,14 @@
 
 \registerctxluafile{x-calcmath}{}
 
+\def\ctxmodulecalcmath#1{\directlua\zerocount{moduledata.calcmath.#1}}
+
 %D Interface:
 
 \unprotect
 
-\def\inlinecalcmath #1{\mathematics{\ctxlua{moduledata.calcmath.tex("#1",1)}}}
-\def\displaycalcmath#1{\startformula\ctxlua{moduledata.calcmath.tex("#1",2)}\stopformula}
+\unexpanded\def\inlinecalcmath #1{\mathematics{\ctxmodulecalcmath{tex("#1",1)}}}
+\unexpanded\def\displaycalcmath#1{\startformula\ctxmodulecalcmath{tex("#1",2)}\stopformula}
 
 \let\calcmath\inlinecalcmath
 
@@ -37,24 +39,24 @@
 \xmlregistersetup{xml:cam:define}
 
 % tex -> lua -> tex -> lua -> tex
-%   \mathematics{\ctxlua{moduledata.calcmath.xml(\!!bs\xmlflush{#1}\!!es,1)}}
+%   \mathematics{\ctxmodulecalcmath{xml(\!!bs\xmlflush{#1}\!!es,1)}}
 % tex -> lua -> tex
-%   \mathematics{\ctxlua{moduledata.calcmath.xml("#1",1)}}%
+%   \mathematics{\ctxmodulecalcmath{xml("#1",1)}}%
 
 \startxmlsetups cam:i
-    \mathematics{\ctxlua{moduledata.calcmath.xml("#1",1)}}%
+    \mathematics{\ctxmodulecalcmath{xml("#1",1)}}%
 \stopxmlsetups
 
 \startxmlsetups cam:d
-    \startformula\ctxlua{moduledata.calcmath.xml("#1",2)}\stopformula
+    \startformula\ctxmodulecalcmath{xml("#1",2)}\stopformula
 \stopxmlsetups
 
 \startxmlsetups cam:icm
-    \mathematics{\ctxlua{moduledata.calcmath.xml("#1",1)}}
+    \mathematics{\ctxmodulecalcmath{xml("#1",1)}}
 \stopxmlsetups
 
 \startxmlsetups cam:dcm
-    \startformula\ctxlua{moduledata.calcmath.xml("#1",2)}\stopformula
+    \startformula\ctxmodulecalcmath{xml("#1",2)}\stopformula
 \stopxmlsetups
 
 \protect \endinput

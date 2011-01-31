@@ -48,16 +48,17 @@ end
 
 -- end of intermezzo
 
-caches           = caches or { }
-local caches     = caches
+caches          = caches or { }
+local caches    = caches
 
-caches.base      = caches.base or "luatex-cache"
-caches.more      = caches.more or "context"
-caches.direct    = false -- true is faster but may need huge amounts of memory
-caches.tree      = false
-caches.force     = true
-caches.ask       = false
-caches.defaults  = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+caches.base     = caches.base or "luatex-cache"
+caches.more     = caches.more or "context"
+caches.direct   = false -- true is faster but may need huge amounts of memory
+caches.tree     = false
+caches.force    = true
+caches.ask      = false
+caches.relocate = false
+caches.defaults = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
 local writable, readables, usedreadables = nil, { }, { }
 
@@ -177,7 +178,14 @@ function caches.configfiles()
 end
 
 function caches.hashed(tree)
-    return md5.hex(gsub(lower(tree),"[\\\/]+","/"))
+    tree = gsub(tree,"\\$","/")
+    tree = gsub(tree,"/+$","")
+    tree = lower(tree)
+    local hash = md5.hex(tree)
+    if trace_cache or trace_locating then
+        report_cache("hashing tree %s, hash %s",tree,hash)
+    end
+    return hash
 end
 
 function caches.treehash()

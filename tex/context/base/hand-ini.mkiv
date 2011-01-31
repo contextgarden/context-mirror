@@ -42,8 +42,8 @@
 \unexpanded\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
 \unexpanded\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
 
-\def\dosetupfontexpansion [#1][#2]{\ctxlua{commands.setupfontexpansion ("#1","#2")}}
-\def\dosetupfontprotrusion[#1][#2]{\ctxlua{commands.setupfontprotrusion("#1","#2")}}
+\def\dosetupfontexpansion [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
+\def\dosetupfontprotrusion[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
 
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]

@@ -407,7 +407,7 @@ local function check_name(data,result,filename,suffix,subfont)
     fullname   = fullname   or fontname
     familyname = familyname or fontname
     specifications[#specifications + 1] = {
-        filename    = filename,
+        filename    = filename, -- unresolved
         format      = lower(suffix),
         subfont     = subfont,
         rawname     = rawname,
@@ -739,12 +739,15 @@ local function analyzefiles()
         resolvers.dowithfilesintree(".*%." .. suffix .. "$", function(method,root,path,name)
             if method == "file" or method == "tree" then
                 local completename = root .."/" .. path .. "/" .. name
+                completename = resolvers.resolve(completename) -- no shortcut
                 identify(completename,name,suffix,name)
                 return true
             end
         end, function(blobtype,blobpath,pattern)
+            blobpath = resolvers.resolve(blobpath) -- no shortcut
             report_names( "scanning %s for %s files",blobpath,suffix)
         end, function(blobtype,blobpath,pattern,total,checked,done)
+            blobpath = resolvers.resolve(blobpath) -- no shortcut
             report_names( "%s entries found, %s %s files checked, %s okay",total,checked,suffix,done)
         end)
     end)

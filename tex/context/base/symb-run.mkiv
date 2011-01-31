@@ -45,7 +45,7 @@
 \unprotect
 
 \gdef\doshowsymbolset[#1]%
-  {\ctxlua{commands.showsymbolset("#1","\symbolset{#1}")}}
+  {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
 
 \gdef\showsymbolset
   {\dosingleargument\doshowsymbolset}

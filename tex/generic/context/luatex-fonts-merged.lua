@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/26/11 11:02:23
+-- merge date  : 01/31/11 16:59:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -415,6 +415,14 @@ function lpeg.keeper(str)
     else
         return Cs((((1-str)^1)/"" + 1)^0)
     end
+end
+
+function lpeg.frontstripper(str) -- or pattern (yet undocumented)
+    return (P(str) + P(true)) * Cs(P(1)^0)
+end
+
+function lpeg.endstripper(str) -- or pattern (yet undocumented)
+    return Cs((1 - P(str) * P(-1))^0)
 end
 
 -- Just for fun I looked at the used bytecode and
@@ -2443,6 +2451,14 @@ function resolvers.findbinfile(name,kind)
     return resolvers.findfile(name,(kind and remapper[kind]) or kind)
 end
 
+function resolvers.resolve(s)
+    return s
+end
+
+function resolvers.unresolve(s)
+    return s
+end
+
 -- Caches ... I will make a real stupid version some day when I'm in the
 -- mood. After all, the generic code does not need the more advanced
 -- ConTeXt features. Cached data is not shared between ConTeXt and other
@@ -4160,6 +4176,7 @@ function tfm.checkedfilename(metadata,whatever)
     if not foundfilename then
         local askedfilename = metadata.filename or ""
         if askedfilename ~= "" then
+            askedfilename = resolvers.resolve(askedfilename) -- no shortcut
             foundfilename = resolvers.findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
                 report_define("source file '%s' is not found",askedfilename)
@@ -6132,7 +6149,7 @@ end
 
 actions["prepare tables"] = function(data,filename,raw)
     local luatex = {
-        filename = filename,
+        filename = resolvers.unresolve(filename), -- no shortcut
         version  = otf.version,
         creator  = "context mkiv",
     }
@@ -11312,6 +11329,7 @@ if not modules then modules = { } end modules ['font-map'] = {
 
 local allocate = utilities.storage.allocate
 
+fonts     = fonts or { }
 fonts.enc = fonts.enc or { }
 local enc = fonts.enc
 local agl = { }
@@ -11460,7 +11478,7 @@ agl.names = allocate { -- to name
     [0x00AC] = "logicalnot",
     [0x00AD] = "softhyphen",
     [0x00AE] = "registered",
-    [0x00AF] = "overscore",
+    [0x00AF] = "macron",
     [0x00B0] = "degree",
     [0x00B1] = "plusminus",
     [0x00B2] = "twosuperior",
@@ -14998,9 +15016,267 @@ agl.names = allocate { -- to name
     [0xFFE3] = "macronmonospace",
     [0xFFE5] = "yenmonospace",
     [0xFFE6] = "wonmonospace",
+
+    -- extra entries taken from char-def:
+
+    [0x0020] = "space",
+    [0x007C] = "bar",
+    [0x00B5] = "mu",
+    [0x0110] = "Dcroat",
+    [0x0111] = "dcroat",
+    [0x013F] = "Ldot",
+    [0x0140] = "ldot",
+    [0x0149] = "napostrophe",
+    [0x017F] = "longs",
+    [0x01FE] = "Oslashacute",
+    [0x01FF] = "oslashacute",
+    [0x02BC] = "afii57929",
+    [0x02BD] = "afii64937",
+    [0x0309] = "hookabovecomb",
+    [0x03C2] = "sigma1",
+    [0x03D1] = "theta1",
+    [0x03D2] = "Upsilon1",
+    [0x03D5] = "phi1",
+    [0x03D6] = "omega1",
+    [0x0431] = "afii10066",
+    [0x0432] = "afii10067",
+    [0x0433] = "afii10068",
+    [0x0434] = "afii10069",
+    [0x0435] = "afii10070",
+    [0x0436] = "afii10072",
+    [0x0437] = "afii10073",
+    [0x0438] = "afii10074",
+    [0x0439] = "afii10075",
+    [0x043A] = "afii10076",
+    [0x043B] = "afii10077",
+    [0x043C] = "afii10078",
+    [0x043D] = "afii10079",
+    [0x043E] = "afii10080",
+    [0x043F] = "afii10081",
+    [0x0440] = "afii10082",
+    [0x0441] = "afii10083",
+    [0x0442] = "afii10084",
+    [0x0443] = "afii10085",
+    [0x0444] = "afii10086",
+    [0x0445] = "afii10087",
+    [0x0446] = "afii10088",
+    [0x0447] = "afii10089",
+    [0x0448] = "afii10090",
+    [0x0449] = "afii10091",
+    [0x044A] = "afii10092",
+    [0x044B] = "afii10093",
+    [0x044C] = "afii10094",
+    [0x044D] = "afii10095",
+    [0x044E] = "afii10096",
+    [0x044F] = "afii10097",
+    [0x0451] = "afii10071",
+    [0x0452] = "afii10099",
+    [0x0453] = "afii10100",
+    [0x0454] = "afii10101",
+    [0x0455] = "afii10102",
+    [0x0456] = "afii10103",
+    [0x0457] = "afii10104",
+    [0x0458] = "afii10105",
+    [0x0459] = "afii10106",
+    [0x045A] = "afii10107",
+    [0x045B] = "afii10108",
+    [0x045C] = "afii10109",
+    [0x045E] = "afii10110",
+    [0x045F] = "afii10193",
+    [0x0463] = "afii10194",
+    [0x0473] = "afii10195",
+    [0x0475] = "afii10196",
+    [0x0491] = "afii10098",
+    [0x04D9] = "afii10846",
+    [0x05B0] = "afii57799",
+    [0x05B1] = "afii57801",
+    [0x05B2] = "afii57800",
+    [0x05B3] = "afii57802",
+    [0x05B4] = "afii57793",
+    [0x05B5] = "afii57794",
+    [0x05B6] = "afii57795",
+    [0x05B7] = "afii57798",
+    [0x05B8] = "afii57797",
+    [0x05B9] = "afii57806",
+    [0x05BB] = "afii57796",
+    [0x05BC] = "afii57807",
+    [0x05BD] = "afii57839",
+    [0x05BE] = "afii57645",
+    [0x05BF] = "afii57841",
+    [0x05C0] = "afii57842",
+    [0x05C1] = "afii57804",
+    [0x05C2] = "afii57803",
+    [0x05C3] = "afii57658",
+    [0x05D0] = "afii57664",
+    [0x05D1] = "afii57665",
+    [0x05D2] = "afii57666",
+    [0x05D3] = "afii57667",
+    [0x05D4] = "afii57668",
+    [0x05D5] = "afii57669",
+    [0x05D6] = "afii57670",
+    [0x05D7] = "afii57671",
+    [0x05D8] = "afii57672",
+    [0x05D9] = "afii57673",
+    [0x05DA] = "afii57674",
+    [0x05DB] = "afii57675",
+    [0x05DC] = "afii57676",
+    [0x05DD] = "afii57677",
+    [0x05DE] = "afii57678",
+    [0x05DF] = "afii57679",
+    [0x05E0] = "afii57680",
+    [0x05E1] = "afii57681",
+    [0x05E2] = "afii57682",
+    [0x05E3] = "afii57683",
+    [0x05E4] = "afii57684",
+    [0x05E5] = "afii57685",
+    [0x05E6] = "afii57686",
+    [0x05E7] = "afii57687",
+    [0x05E8] = "afii57688",
+    [0x05E9] = "afii57689",
+    [0x05EA] = "afii57690",
+    [0x05F0] = "afii57716",
+    [0x05F1] = "afii57717",
+    [0x05F2] = "afii57718",
+    [0x060C] = "afii57388",
+    [0x061B] = "afii57403",
+    [0x061F] = "afii57407",
+    [0x0621] = "afii57409",
+    [0x0622] = "afii57410",
+    [0x0623] = "afii57411",
+    [0x0624] = "afii57412",
+    [0x0625] = "afii57413",
+    [0x0626] = "afii57414",
+    [0x0627] = "afii57415",
+    [0x0628] = "afii57416",
+    [0x0629] = "afii57417",
+    [0x062A] = "afii57418",
+    [0x062B] = "afii57419",
+    [0x062C] = "afii57420",
+    [0x062D] = "afii57421",
+    [0x062E] = "afii57422",
+    [0x062F] = "afii57423",
+    [0x0630] = "afii57424",
+    [0x0631] = "afii57425",
+    [0x0632] = "afii57426",
+    [0x0633] = "afii57427",
+    [0x0634] = "afii57428",
+    [0x0635] = "afii57429",
+    [0x0636] = "afii57430",
+    [0x0637] = "afii57431",
+    [0x0638] = "afii57432",
+    [0x0639] = "afii57433",
+    [0x063A] = "afii57434",
+    [0x0640] = "afii57440",
+    [0x0641] = "afii57441",
+    [0x0642] = "afii57442",
+    [0x0643] = "afii57443",
+    [0x0644] = "afii57444",
+    [0x0645] = "afii57445",
+    [0x0646] = "afii57446",
+    [0x0647] = "afii57470",
+    [0x0648] = "afii57448",
+    [0x0649] = "afii57449",
+    [0x064A] = "afii57450",
+    [0x064B] = "afii57451",
+    [0x064C] = "afii57452",
+    [0x064D] = "afii57453",
+    [0x064E] = "afii57454",
+    [0x064F] = "afii57455",
+    [0x0650] = "afii57456",
+    [0x0651] = "afii57457",
+    [0x0652] = "afii57458",
+    [0x0660] = "afii57392",
+    [0x0661] = "afii57393",
+    [0x0662] = "afii57394",
+    [0x0663] = "afii57395",
+    [0x0664] = "afii57396",
+    [0x0665] = "afii57397",
+    [0x0666] = "afii57398",
+    [0x0667] = "afii57399",
+    [0x0668] = "afii57400",
+    [0x0669] = "afii57401",
+    [0x066A] = "afii57381",
+    [0x066D] = "afii63167",
+    [0x0679] = "afii57511",
+    [0x067E] = "afii57506",
+    [0x0686] = "afii57507",
+    [0x0688] = "afii57512",
+    [0x0691] = "afii57513",
+    [0x0698] = "afii57508",
+    [0x06A4] = "afii57505",
+    [0x06AF] = "afii57509",
+    [0x06BA] = "afii57514",
+    [0x06D2] = "afii57519",
+    [0x200C] = "afii61664",
+    [0x2015] = "afii208",
+    [0x2025] = "twodotenleader",
+    [0x20A1] = "colonmonetary",
+    [0x20AA] = "afii57636",
+    [0x20AC] = "Euro",
+    [0x2105] = "afii61248",
+    [0x2113] = "afii61289",
+    [0x2116] = "afii61352",
+    [0x21A8] = "arrowupdnbse",
+    [0x21D0] = "arrowdblleft",
+    [0x21D2] = "arrowdblright",
+    [0x21D4] = "arrowdblboth",
+    [0x2203] = "existential",
+    [0x2206] = "Delta",
+    [0x2207] = "gradient",
+    [0x2209] = "notelement",
+    [0x221F] = "orthogonal",
+    [0x223C] = "similar",
+    [0x2282] = "propersubset",
+    [0x2283] = "propersuperset",
+    [0x2286] = "reflexsubset",
+    [0x2287] = "reflexsuperset",
+    [0x2295] = "circleplus",
+    [0x2297] = "circlemultiply",
+    [0x250C] = "SF10000",
+    [0x2510] = "SF30000",
+    [0x2514] = "SF20000",
+    [0x2518] = "SF40000",
+    [0x251C] = "SF80000",
+    [0x2524] = "SF90000",
+    [0x252C] = "SF60000",
+    [0x2534] = "SF70000",
+    [0x253C] = "SF50000",
+    [0x2591] = "ltshade",
+    [0x2592] = "shade",
+    [0x2593] = "dkshade",
+    [0x25A1] = "H22073",
+    [0x25AA] = "H18543",
+    [0x25AB] = "H18551",
+    [0x25CB] = "circle",
+    [0x25CF] = "H18533",
+    [0x25D9] = "invcircle",
+    [0x25E6] = "openbullet",
+    [0x263A] = "smileface",
+    [0x2640] = "female",
+    [0x2642] = "male",
+    [0x2660] = "spade",
+    [0x2663] = "club",
+    [0x2665] = "heart",
+
 }
 
-agl.unicodes = allocate(table.swapped(agl.names)) -- to unicode
+local unicodes = allocate(table.swapped(agl.names)) -- to unicode
+
+agl.unicodes = unicodes
+
+-- dofile("char-def.lua")
+--
+-- for k,v in table.sortedpairs(characters.data) do
+--     if v.adobename then
+--         if unicodes[v.adobename] ~= k then
+--             if not unicodes[k] then
+--                 print(string.format('[0x%04X] = "%s",',k,v.adobename))
+--             else
+--              -- print(string.format('unicodes[%s] = %s,',v.adobename,k))
+--             end
+--         end
+--     end
+-- end
 
 end -- closure
 

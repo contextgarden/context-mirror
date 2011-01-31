@@ -37,7 +37,7 @@
   {\dodoubleargument\dodefineparallel}
 
 \def\dodefineparallel[#1][#2]%
-  {\ctxlua{commands.defineparallel("#1","#2")}%
+  {\ctxcommand{defineparallel("#1","#2")}%
    \processcommalist[#2]\dododefineparallel
    \setuvalue{\e!start#1}{\dostartparallelset{#1}}%
    \setuvalue{\e!stop #1}{\dostopparallelset}}
@@ -48,13 +48,13 @@
 
 \def\dostartparallelset#1%
   {\def\currentparallel{#1}%
-   \ctxlua{commands.nextparallel("\currentparallel")}}
+   \ctxcommand{nextparallel("\currentparallel")}}
 
 \def\dostopparallelset#1%
   {}
 
 \def\dowithparallel#1% defined moet ook aan de lua kant kunnen
-  {\ctxlua{commands.saveparallel("\currentparallel","#1",buffers.raw("\thedefinedbuffer{#1}"))}}
+  {\ctxcommand{saveparallel("\currentparallel","#1",buffers.raw("\thedefinedbuffer{#1}"))}}
 
 \unexpanded\def\placeparallel
   {\dotripleempty\doplaceparallel}
@@ -62,7 +62,7 @@
 \def\doplaceparallel[#1][#2][#3]%
   {\begingroup
    \def\currentparallel{#1}%
-   \ctxlua{commands.placeparallel("\currentparallel","#2","#3")}%
+   \ctxcommand{placeparallel("\currentparallel","#2","#3")}%
    \endgroup}
 
 % was: \parallelparameter\c!command}
@@ -124,7 +124,7 @@
   {\dodoubleempty\doresetparallel}
 
 \def\resetparallel[#1][#2]%
-  {\ctxlua{commands.resetparallel("#1","#2"))}}
+  {\ctxcommand{resetparallel("#1","#2"))}}
 
 % default
 
@@ -148,4 +148,4 @@
 %   {\grabuntil{\e!stop#1}{\dododostartparallel{#1}}}
 %
 % \def\dododostartparallel#1#2%
-%   {\ctxlua{commands.saveparallel("\currentparallel","#1",\!!bs\detokenize{#2}\!!es)}}
+%   {\ctxcommand{saveparallel("\currentparallel","#1",\!!bs\detokenize{#2}\!!es)}}

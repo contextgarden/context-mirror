@@ -501,10 +501,10 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             if ownnumber ~= "" then
                 result[#result+1] = ownnumber
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups) .. inherited!
-                result[#result+1] = converters.convert(conversion,number,true)
+                result[#result+1] = converters.convert(conversion,number)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                result[#result+1] = converters.convert(theconversion,number,true)
+                result[#result+1] = converters.convert(theconversion,number)
             end
         else
             if ownnumber ~= "" then

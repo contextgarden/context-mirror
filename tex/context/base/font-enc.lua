@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-enc'] = {
     license   = "see context related readme files"
 }
 
+-- this module is obsolete
+
 local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 
 --[[ldx--

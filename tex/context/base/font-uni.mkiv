@@ -19,7 +19,7 @@
 
 \unprotect
 
-%def\uchar#1#2{\ctxlua{commands.uchar(,)}}
+%def\uchar#1#2{\ctxcommand{uchar(,)}}
 \def\uchar#1#2{\cldcontext{utf.char(\number\numexpr#1*256+#2\relax)}}
 
 \let\uc\uchar

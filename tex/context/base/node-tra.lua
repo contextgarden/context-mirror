@@ -517,8 +517,6 @@ end
 --~     return table.concat(table.reversed(t)," ")
 --~ end
 
-
-
 local function showsimplelist(h,depth,n)
     while h do
         write_nl(rep(" ",n) .. tostring(h))

@@ -543,7 +543,7 @@ end
 
 actions["prepare tables"] = function(data,filename,raw)
     local luatex = {
-        filename = filename,
+        filename = resolvers.unresolve(filename), -- no shortcut
         version  = otf.version,
         creator  = "context mkiv",
     }

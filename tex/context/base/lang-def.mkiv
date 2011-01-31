@@ -328,8 +328,8 @@
 \defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
 \defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
 
-\def\sloveniancharacters#1{\ctxlua{converters.alphabetic(\number#1,"sl")}}
-\def\slovenianCharacters#1{\ctxlua{converters.Alphabetic(\number#1,"sl")}}
+\def\sloveniancharacters#1{\ctxcommand{alphabetic(\number#1,"sl")}}
+\def\slovenianCharacters#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
 
 % Cyrillic Languages
 

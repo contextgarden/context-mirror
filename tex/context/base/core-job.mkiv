@@ -43,7 +43,7 @@
 \def\dostarttextfile#1%
   {\global\advance\fileprocesslevel\plusone
    \setxvalue{\c!file::\number\fileprocesslevel}{#1}%
-   \@EA\doglobal\@EA\addtocommalist\@EA{#1}\processedfiles}
+   \doglobal\addtocommalist{#1}\processedfiles}
 
 \def\dostoptextfile
   {\global\advance\fileprocesslevel\minusone}
@@ -51,15 +51,15 @@
 \def\processlocalfile#1#2%
   {#1{#2}\donothing{\readfile{#2}\donothing\donothing}}
 
-\def\processfile       #1{\ctxlua{commands.processfile("#1")}}
-\def\doifinputfileelse #1{\ctxlua{commands.doifinputfileelse("#1")}}
-\def\locatefilepath    #1{\edef\locatedfilepath{\ctxlua{commands.locatefilepath("#1")}}}
-\def\usepath         [#1]{\edef\allinputpaths{\ctxlua{commands.usepath("#1")}}}
-\def\usesubpath      [#1]{\edef\allinputpaths{\ctxlua{commands.usesubpath("#1")}}}
+\def\processfile       #1{\ctxcommand{processfile("#1")}}
+\def\doifinputfileelse #1{\ctxcommand{doifinputfileelse("#1")}}
+\def\locatefilepath    #1{\edef\locatedfilepath{\ctxcommand{locatefilepath("#1")}}}
+\def\usepath         [#1]{\edef\allinputpaths{\ctxcommand{usepath("#1")}}}
+\def\usesubpath      [#1]{\edef\allinputpaths{\ctxcommand{usesubpath("#1")}}}
 \def\usezipfile          {\dodoubleempty\dousezipfile}
-\def\dousezipfile[#1][#2]{\ctxlua{commands.usezipfile("#1","#2")}} % [filename] [optional subtree]
+\def\dousezipfile[#1][#2]{\ctxcommand{usezipfile("#1","#2")}} % [filename] [optional subtree]
 \def\loadexamodes        {\dosingleempty\doloadexamodes}
-\def\doloadexamodes  [#1]{\ctxlua{commands.loadexamodes("#1")}}
+\def\doloadexamodes  [#1]{\ctxcommand{loadexamodes("#1")}}
 
 \def\registerfileinfo[#1#2]#3% geen \showmessage ?
   {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}}
@@ -78,7 +78,7 @@
 \def\loadoptionfile % todo : mark document.* tables as storage
   {\readjobfile{\jobname.\f!optionextension}
      {\showmessage\m!systems2{\jobname.\f!optionextension}%
-      \ctxlua{commands.logoptionfile("\jobname.\f!optionextension")}}%
+      \ctxcommand{logoptionfile("\jobname.\f!optionextension")}}%
      {\writestatus\m!systems {no \jobname.\f!optionextension}}}
 
 % Most natural ...
@@ -153,8 +153,8 @@
 
 \def\doexecutefileonce#1%
   {\beforesplitstring#1\at.\to\currentfile
-   \fullexpandtwoargsafter\doifnotinset\currentfile\loadedfiles
-     {\fullexpandoneargafter\addtocommalist\currentfile\loadedfiles
+   \doifnotinset\currentfile\loadedfiles
+     {\addtocommalist\currentfile\loadedfiles
       \doexecutefile{#1}}}
 
 \def\doexecutefile#1%
@@ -224,7 +224,7 @@
      \unexpanded\def\usecomponent  [##1]{#6{##1}}%
    \fi
    \advance\filelevel\plusone
-   \fullexpandoneargafter\addtocommalist{#1}\loadedfiles}
+   \addtocommalist{#1}\loadedfiles}
 
 \def\doprevlevel
   {\popmacro\currentcomponentpath
@@ -285,7 +285,7 @@
   {\let\loadedlocalenvironments\empty
    \def\docommand##1%
      {\beforesplitstring##1\at.\to\someevironment
-      \fullexpandoneargafter\addtocommalist\someevironment\loadedlocalenvironments}%
+      \addtocommalist\someevironment\loadedlocalenvironments}%
    \processcommalist[#1]\docommand
    \expanded{\doifcommonelse{\currentproject,\currentproduct,\currentcomponent,\currentenvironment}{\loadedlocalenvironments}} % \expanded not needed
      {\letvalue{\e!stop\v!localenvironment}\relax}

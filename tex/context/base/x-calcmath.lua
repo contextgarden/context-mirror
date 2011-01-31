@@ -9,12 +9,9 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
 local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
 local lpegmatch = lpeg.match
 
-local texsprint = (tex and tex.sprint) or function(catcodes,str) print(str) end
-
-moduledata          = moduledata or { }
-moduledata.calcmath = moduledata.calcmath or { }
-
-local calcmath = moduledata.calcmath
+local calcmath      = { }
+local moduledata    = moduledata or { }
+moduledata.calcmath = calcmath
 
 local list_1 = {
     "median", "min", "max", "round", "ln", "log",
@@ -78,7 +75,7 @@ local function nsub(str,tag,pre,post)
     end))
 end
 
-function calcmath.totex(str,mode)
+local function totex(str,mode)
     if not frozen then freeze() end
     local n = 0
     -- crap
@@ -163,19 +160,18 @@ function calcmath.totex(str,mode)
     end
     -- csnames
     str = gsub(str,"(\\[A-Z]+)", lower)
-    -- trace
---~     print(str)
     -- report
     return str
 end
 
+calcmath.totex      = totex
+
 function calcmath.tex(str,mode)
-    texsprint(tex.texcatcodes,calcmath.totex(str))
+    context(totex(str))
 end
 
 function calcmath.xml(id,mode)
-    local str = lxml.id(id).dt[1]
-    texsprint(tex.texcatcodes,calcmath.totex(str,mode))
+    context(totex(lxml.id(id).dt[1],mode))
 end
 
 -- work in progress ... lpeg variant

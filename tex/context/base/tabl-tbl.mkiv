@@ -319,7 +319,7 @@
 
 \unexpanded\def\beginreshapedtabulatepar
   {\dowithnextbox
-     {\ctxlua{commands.doreshapeframedbox(\number\nextbox)}\ifvmode\unvbox\else\box\fi\nextbox}
+     {\ctxcommand{doreshapeframedbox(\number\nextbox)}\ifvmode\unvbox\else\box\fi\nextbox}
      \vbox\bgroup}
 
 \let\endreshapedtabulatepar\egroup
@@ -1612,7 +1612,7 @@
      \tabulatepreamble{\aligntab\flushtabulateindent\strut\alignmark\alignmark\aligntab\alignmark\alignmark\tabskip\zeropoint}%
    \fi
    \tabulatewidth\zeropoint
-   \ctxlua{commands.presettabulate(\!!bs\detokenize{#1}\!!es)}%
+   \ctxcommand{presettabulate(\!!bs\detokenize{#1}\!!es)}%
    \edef\totaltabulatecolumns{\the\numexpr3*\tabulatecolumns+4}%
    \tabulatewidth\zeropoint
    \initializetableboxes\tabulatecolumns

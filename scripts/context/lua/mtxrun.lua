@@ -431,6 +431,14 @@ function lpeg.keeper(str)
     end
 end
 
+function lpeg.frontstripper(str) -- or pattern (yet undocumented)
+    return (P(str) + P(true)) * Cs(P(1)^0)
+end
+
+function lpeg.endstripper(str) -- or pattern (yet undocumented)
+    return Cs((1 - P(str) * P(-1))^0)
+end
+
 -- Just for fun I looked at the used bytecode and
 -- p = (p and p + pp) or pp gets one more (testset).
 
@@ -2739,8 +2747,10 @@ local path      = slash *         Cs((escaped+(1-            qmark-hash))^0)    
 local query     = qmark         * Cs((escaped+(1-                  hash))^0)         + nothing
 local fragment  = hash          * Cs((escaped+(1-           endofstring))^0)         + nothing
 
-local parser = Ct(scheme * authority * path * query * fragment)
+local validurl  = scheme * authority * path * query * fragment
+local parser    = Ct(validurl)
 
+lpegpatterns.url         = validurl
 lpegpatterns.urlsplitter = parser
 
 local escapes = { } ; for i=0,255 do escapes[i] = format("%%%02X",i) end
@@ -9420,6 +9430,13 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 --     profiler.start("luatex-profile.log")
 -- end
 
+-- a forward definition
+
+if not resolvers.resolve then
+    function resolvers.resolve  (s) return s end
+    function resolvers.unresolve(s) return s end
+end
+
 
 end -- of closure
 
@@ -9616,7 +9633,8 @@ end
 
 local cache = { }
 
-local splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+---- splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
+local splitter = Ct(lpeg.splitat(";")) -- as we move towards urls, prefixes and use tables we no longer do :
 
 local backslashswapper = lpeg.replacer("\\","/")
 
@@ -9723,15 +9741,16 @@ local function scan(files,spec,path,n,m,r)
     return files, n, m, r
 end
 
-function resolvers.scanfiles(path)
+function resolvers.scanfiles(path,branch)
     if trace_locating then
-        report_resolvers("scanning path '%s'",path)
+        report_resolvers("scanning path '%s', branch '%s'",path, branch or path)
     end
-    local files, n, m, r = scan({ },path .. '/',"",0,0,0)
-    files.__path__        = path
-    files.__files__       = n
-    files.__directories__ = m
-    files.__remappings__  = r
+    local realpath = resolvers.resolve(path) -- no shortcut
+    local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
+    files.__path__          = path -- can be selfautoparent:texmf-whatever
+    files.__files__         = n
+    files.__directories__   = m
+    files.__remappings__    = r
     if trace_locating then
         report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
@@ -10087,16 +10106,17 @@ end
 
 -- end of intermezzo
 
-caches           = caches or { }
-local caches     = caches
+caches          = caches or { }
+local caches    = caches
 
-caches.base      = caches.base or "luatex-cache"
-caches.more      = caches.more or "context"
-caches.direct    = false -- true is faster but may need huge amounts of memory
-caches.tree      = false
-caches.force     = true
-caches.ask       = false
-caches.defaults  = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+caches.base     = caches.base or "luatex-cache"
+caches.more     = caches.more or "context"
+caches.direct   = false -- true is faster but may need huge amounts of memory
+caches.tree     = false
+caches.force    = true
+caches.ask      = false
+caches.relocate = false
+caches.defaults = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
 local writable, readables, usedreadables = nil, { }, { }
 
@@ -10216,7 +10236,14 @@ function caches.configfiles()
 end
 
 function caches.hashed(tree)
-    return md5.hex(gsub(lower(tree),"[\\\/]+","/"))
+    tree = gsub(tree,"\\$","/")
+    tree = gsub(tree,"/+$","")
+    tree = lower(tree)
+    local hash = md5.hex(tree)
+    if trace_cache or trace_locating then
+        report_cache("hashing tree %s, hash %s",tree,hash)
+    end
+    return hash
 end
 
 function caches.treehash()
@@ -10592,15 +10619,25 @@ local initializesetter = utilities.setters.initialize
 
 local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
 
-resolvers.cacheversion = '1.0.1'
-resolvers.configbanner = ''
-resolvers.homedir      = environment.homedir
-resolvers.criticalvars = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
-resolvers.luacnfspec   = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- rubish path
-resolvers.luacnfname   = 'texmfcnf.lua'
-resolvers.luacnfstate  = "unknown"
+resolvers.cacheversion  = '1.0.1'
+resolvers.configbanner  = ''
+resolvers.homedir       = environment.homedir
+resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
+resolvers.luacnfname    = 'texmfcnf.lua'
+resolvers.luacnfstate   = "unknown"
 
-local unset_variable   = "unset"
+-- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- what a rubish path
+-- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
+
+resolvers.luacnfspec    = {
+    "selfautoparent:/texmf-local",
+    "selfautoparent:/texmf-local/web2c",
+    "selfautoparent:/texmf",
+    "selfautoparent:/texmf/web2c",
+    "selfautoparent:",
+}
+
+local unset_variable = "unset"
 
 local formats   = resolvers.formats
 local suffixes  = resolvers.suffixes
@@ -10685,10 +10722,6 @@ end
 resolvers.getenv = getenv
 resolvers.env    = getenv
 
-local function resolve(key)
-    local value = instance.variables[key] or ""
-    return (value ~= "" and value) or getenv(key) or ""
-end
 
 local dollarstripper   = lpeg.stripper("$")
 local inhibitstripper  = P("!")^0 * Cs(P(1)^0)
@@ -10700,15 +10733,6 @@ local somethingelse    = P(";") * ((1-S("!{}/\\"))^1 * P(";") / "")
                        + P(";") * (P(";") / "")
                        + P(1)
 
-local pattern = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
-
-local function expandvars(lst) -- simple vars
-    for k=1,#lst do
-        local lk = lst[k]
-        lst[k] = lpegmatch(pattern,lk) or lk
-    end
-end
-
 
 local slash = P("/")
 
@@ -10719,17 +10743,23 @@ local pattern = Cs (
       + slash^2 / "/.-/"
       + (1-slash) * P(-1) * Cc("/")
       + P(1)
-    )^1 * Cc("$")
+    )^1 * Cc("$") -- yes or no $
 )
+
+local cache = { }
 
 local function makepathexpression(str)
     if str == "." then
         return "^%./$"
     else
-        return lpegmatch(pattern,str)
+        local c = cache[str]
+        if not c then
+            c = lpegmatch(pattern,str)
+            cache[str] = c
+        end
+        return c
     end
 end
-
 
 local function resolve(key)
     local value = instance.variables[key]
@@ -10749,7 +10779,6 @@ local pattern = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
 local function expandedvariable(var) -- simple vars
     return lpegmatch(pattern,var) or var
 end
-
 
 local function entry(entries,name)
     if name and name ~= "" then
@@ -10802,13 +10831,25 @@ local function identify_configuration_files()
         reportcriticalvariables()
         resolvers.expandvariables()
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
-        expandvars(cnfpaths) --- hm
+     -- expandvars(cnfpaths) --- hm
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
             local filename = collapsepath(filejoin(cnfpaths[i],luacnfname))
-            if lfs.isfile(filename) then
-                specification[#specification+1] = filename
+            local realname = resolvers.resolve(filename) -- no shortcut
+         -- if trace_locating then
+         --     report_resolvers("checking configuration file '%s'",filename)
+         -- end
+            if lfs.isfile(realname) then
+                specification[#specification+1] = filename -- or realname?
+                if trace_locating then
+                    report_resolvers("found configuration file '%s'",realname)
+                end
+            elseif trace_locating then
+                report_resolvers("unknown configuration file '%s'",realname)
             end
+        end
+        if trace_locating then
+            report_resolvers()
         end
     end
 end
@@ -10821,7 +10862,8 @@ local function load_configuration_files()
             local filename = specification[i]
             local pathname = filedirname(filename)
             local filename = filejoin(pathname,luacnfname)
-            local blob = loadfile(filename)
+            local realname = resolvers.resolve(filename) -- no shortcut
+            local blob = loadfile(realname)
             if blob then
                 local setups = instance.setups
                 local data = blob()
@@ -10923,6 +10965,8 @@ local function collapse_configuration_data() -- potential optimization: pass sta
     end
 end
 
+-- scheme magic
+
 -- database loading
 
 local function load_file_databases()
@@ -10942,34 +10986,24 @@ local function locate_file_databases()
     local texmfpaths = resolvers.expandedpathlist('TEXMF')
     for i=1,#texmfpaths do
         local path = collapsepath(texmfpaths[i])
-        local stripped = lpegmatch(inhibitstripper,path)
+        local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
         if stripped ~= "" then
             local runtime = stripped == path
             path = resolvers.cleanpath(path)
-            if lfs.isdir(path) then
-                local spec = resolvers.splitmethod(stripped)
-                if spec.scheme == "cache" or spec.scheme == "file" then
-                    stripped = spec.path
-                elseif runtime and (spec.noscheme or spec.scheme == "file") then
-                    stripped = "tree:///" .. stripped
-                end
-                if trace_locating then
-                    if runtime then
-                        report_resolvers("locating list of '%s' (runtime)",path)
-                    else
-                        report_resolvers("locating list of '%s' (cached)",path)
-                    end
-                end
-                methodhandler('locators',stripped) -- nothing done with result
-            else
-                if trace_locating then
-                    if runtime then
-                        report_resolvers("skipping list of '%s' (runtime)",path)
-                    else
-                        report_resolvers("skipping list of '%s' (cached)",path)
-                    end
+            local spec = resolvers.splitmethod(stripped)
+            if spec.scheme == "cache" or spec.scheme == "file" then
+                stripped = spec.path
+            elseif runtime and (spec.noscheme or spec.scheme == "file") then
+                stripped = "tree:///" .. stripped
+            end
+            if trace_locating then
+                if runtime then
+                    report_resolvers("locating list of '%s' (runtime)",path)
+                else
+                    report_resolvers("locating list of '%s' (cached)",path)
                 end
             end
+            methodhandler('locators',stripped)
         end
     end
     if trace_locating then
@@ -11097,16 +11131,16 @@ function resolvers.expandvariables()
     local engine, progname = instance.engine, instance.progname
     if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
     if type(progname) ~= "string" then instance.progname, progname = "", "" end
-    if engine   ~= "" then environment['engine']   = engine   end
-    if progname ~= "" then environment['progname'] = progname end
+    if engine   ~= "" then environment.engine   = engine   end
+    if progname ~= "" then environment.progname = progname end
     for k,v in next, environment do
         expansions[k] = v
     end
-    for k,v in next, environment do -- move environment to expansions (variables are already in there)
-        if not expansions[k] then expansions[k] = v end
-    end
+ -- for k,v in next, environment do -- move environment to expansions (variables are already in there)
+ --     if expansions[k] == nil then expansions[k] = v end
+ -- end
     for k,v in next, variables do -- move variables to expansions
-        if not expansions[k] then expansions[k] = v end
+        if expansions[k] == nil then expansions[k] = v end
     end
     repeat
         local busy = false
@@ -11360,7 +11394,7 @@ local function collect_files(names)
                     if type(blobfile) == 'string' then
                         if not dname or find(blobfile,dname) then
                             local kind   = hash.type
-                            local search = filejoin(blobpath,blobfile,bname)
+local search = filejoin(blobroot,blobfile,bname)
                             local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
                                 report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
@@ -11373,7 +11407,7 @@ local function collect_files(names)
                             local vv = blobfile[kk]
                             if not dname or find(vv,dname) then
                                 local kind   = hash.type
-                                local search = filejoin(blobpath,vv,bname)
+local search = filejoin(blobroot,vv,bname)
                                 local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
                                     report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
@@ -11613,8 +11647,8 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                         local f = fl[2]
                         local d = dirlist[k]
                         if find(d,expression) then
-                            --- todo, test for readable
-                            result[#result+1] = fl[3]
+                            -- todo, test for readable
+                            result[#result+1] = resolvers.resolve(fl[3]) -- no shortcut
                             done = true
                             if allresults then
                                 if trace_detail then
@@ -11980,6 +12014,13 @@ if not modules then modules = { } end modules ['data-pre'] = {
     license   = "see context related readme files"
 }
 
+-- It could be interesting to hook the resolver in the file
+-- opener so that unresolved prefixes travel around and we
+-- get more abstraction.
+
+-- As we use this beforehand we will move this up in the chain
+-- of loading.
+
 
 local upper, lower, gsub = string.upper, string.lower, string.gsub
 
@@ -11987,10 +12028,10 @@ local resolvers = resolvers
 
 local prefixes = { }
 
-local getenv = resolvers.getenv
+local getenv, cleanpath, findgivenfile = resolvers.getenv, resolvers.cleanpath, resolvers.findgivenfile
 
 prefixes.environment = function(str) -- getenv is case insensitive anyway
-    return resolvers.cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
+    return cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
 end
 
 prefixes.relative = function(str,n)
@@ -12009,7 +12050,7 @@ prefixes.relative = function(str,n)
             end
         end
     end
-    return resolvers.cleanpath(str)
+    return cleanpath(str)
 end
 
 prefixes.auto = function(str)
@@ -12021,19 +12062,37 @@ prefixes.auto = function(str)
 end
 
 prefixes.locate = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath((fullname ~= "" and fullname) or str)
+    local fullname = findgivenfile(str) or ""
+    return cleanpath((fullname ~= "" and fullname) or str)
 end
 
 prefixes.filename = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath(file.basename((fullname ~= "" and fullname) or str))
+    local fullname = findgivenfile(str) or ""
+    return cleanpath(file.basename((fullname ~= "" and fullname) or str))
 end
 
 prefixes.pathname = function(str)
-    local fullname = resolvers.findgivenfile(str) or ""
-    return resolvers.cleanpath(file.dirname((fullname ~= "" and fullname) or str))
+    local fullname = findgivenfile(str) or ""
+    return cleanpath(file.dirname((fullname ~= "" and fullname) or str))
 end
+
+prefixes.selfautoloc = function(str)
+    return cleanpath(file.join(getenv('SELFAUTOLOC'),str))
+end
+
+prefixes.selfautoparent = function(str)
+    return cleanpath(file.join(getenv('SELFAUTOPARENT'),str))
+end
+
+prefixes.selfautodir = function(str)
+    return cleanpath(file.join(getenv('SELFAUTODIR'),str))
+end
+
+prefixes.home = function(str)
+    return cleanpath(file.join(getenv('HOME'),str))
+end
+
+prefixes["~"] = prefixes.home
 
 prefixes.env  = prefixes.environment
 prefixes.rel  = prefixes.relative
@@ -12061,19 +12120,26 @@ local function _resolve_(method,target)
     end
 end
 
-local function resolve(str)
-    if type(str) == "table" then
-        for k=1,#str do
-            local v = str[k]
-            str[k] = resolve(v) or v
-        end
-    elseif str and str ~= "" then
-        str = gsub(str,"([a-z]+):([^ \"\']*)",_resolve_)
+
+local resolved = { }
+local abstract = { }
+
+local function resolve(str) -- use schemes, this one is then for the commandline only
+    local res = resolved[str]
+    if not res then
+        res = gsub(str,"([a-z][a-z]+):([^ \"\']*)",_resolve_)
+        resolved[str] = res
+        abstract[res] = str
     end
-    return str
+    return res
 end
 
-resolvers.resolve = resolve
+local function unresolve(str)
+    return abstract[str] or str
+end
+
+resolvers.resolve   = resolve
+resolvers.unresolve = unresolve
 
 if os.uname then
 
@@ -12166,9 +12232,10 @@ local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.c
 
 function locators.file(specification)
     local name = specification.filename
-    if name and name ~= '' and lfs.isdir(name) then
+    local realname = resolvers.resolve(name) -- no shortcut
+    if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_resolvers("file locator '%s' found",name)
+            report_resolvers("file locator '%s' found as '%s'",name,realname)
         end
         resolvers.appendhash('file',name,true) -- cache
     elseif trace_locating then
@@ -12183,9 +12250,9 @@ function hashers.file(specification)
 end
 
 function generators.file(specification)
-    local name = specification.filename
-    local content = resolvers.scanfiles(name)
-    resolvers.registerfilehash(name,content,true)
+    local path = specification.filename
+    local content = resolvers.scanfiles(path)
+    resolvers.registerfilehash(path,content,true)
 end
 
 concatinators.file = file.join

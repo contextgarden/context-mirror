@@ -744,6 +744,7 @@ function tfm.checkedfilename(metadata,whatever)
     if not foundfilename then
         local askedfilename = metadata.filename or ""
         if askedfilename ~= "" then
+            askedfilename = resolvers.resolve(askedfilename) -- no shortcut
             foundfilename = resolvers.findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
                 report_define("source file '%s' is not found",askedfilename)

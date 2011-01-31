@@ -675,39 +675,14 @@
 \unexpanded\def\placeformula
   {\global\settrue\insideplaceformula
    \settrue\incrementformulanumber
-   \dodoubleempty\doplaceformula}
+   \dosingleempty\doplaceformula}
 
 \unexpanded\def\placesubformula
   {\global\settrue\insideplacesubformula
    \setfalse\incrementformulanumber
-   \dodoubleempty\doplaceformula}
+   \dosingleempty\doplaceformula}
 
-% \def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
-%   {\def\currentplaceformulareference{#1}%
-%    \let\currentplaceformulasuffix\empty
-%    \futurelet\next\redoplaceformulaone}
-%
-% \let\mathdollarsign$ % no def
-%
-% \def\redoplaceformulaone % use doifnextcharelse
-%   {\ifx\next\bgroup
-%      \@EA\moreplaceformula % [ref]{}
-%    \else
-%      \@EA\redoplaceformulatwo
-%    \fi}
-%
-% \long\def\moreplaceformula#1#2% #1 dummy #1 gobbles spaces
-%   {\def\currentplaceformulasuffix{#1}%
-%    \futurelet\next\redoplaceformulatwo#2}
-%
-% \def\redoplaceformulatwo
-%   {\ifx\next\mathdollarsign
-%      \@EA\dispplaceformula % [ref]$$
-%    \else
-%      \@EA\dodoplaceformula % [ref]\start
-%    \fi}%
-
-\def\doplaceformula[#1][#2]% #2 = dummy, gobbles spaces
+\def\doplaceformula[#1]%
   {\def\currentplaceformulareference{#1}%
    \let\currentplaceformulasuffix\empty
    \doifnextbgroupelse\moreplaceformula\redoplaceformula} % [ref]{}

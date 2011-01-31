@@ -10,7 +10,11 @@ if not modules then modules = { } end modules ['x-asciimath'] = {
 <p>Some backgrounds are discussed in <t>x-asciimath.mkiv</t>.</p>
 --ldx]]--
 
-local trace_mapping = false  if trackers then trackers.register("asciimath.mapping", function(v) trace_mapping = v end) end
+local trace_mapping = false  if trackers then trackers.register("modules.asciimath.mapping", function(v) trace_mapping = v end) end
+
+local asciimath      = { }
+local moduledata     = moduledata or { }
+moduledata.asciimath = asciimath
 
 local report_asciimath = logs.new("asciimath")
 
@@ -264,6 +268,5 @@ parser = Cs { "main",
 
 }
 
-asciimath = { }
-asciimath.reserved = reserved
-asciimath.convert  = converted
+asciimath.reserved   = reserved
+asciimath.convert    = converted

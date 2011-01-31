@@ -670,7 +670,6 @@ function scripts.context.run(ctxdata,filename)
         -- this catches the command line
         if not formatfile or not scriptfile then
             logs.simple("warning: no format found, forcing remake (commandline driven)")
-            scripts.context.generate()
             scripts.context.make(formatname)
             formatfile, scriptfile = resolvers.locateformat(formatname)
         end
@@ -718,7 +717,6 @@ function scripts.context.run(ctxdata,filename)
                     -- this catches the command line
                     if not formatfile or not scriptfile then
                         logs.simple("warning: no format found, forcing remake (source driven)")
-                        scripts.context.generate()
                         scripts.context.make(formatname)
                         formatfile, scriptfile = resolvers.locateformat(formatname)
                     end
@@ -788,7 +786,6 @@ function scripts.context.run(ctxdata,filename)
                         local okay = statistics.checkfmtstatus(formatfile)
                         if okay ~= true then
                             logs.simple("warning: %s, forcing remake",tostring(okay))
-                            scripts.context.generate()
                             scripts.context.make(formatname)
                         end
                         --
@@ -815,7 +812,6 @@ function scripts.context.run(ctxdata,filename)
                             logs.simple("run %s: %s",i,command)
                             local returncode, errorstring = os.spawn(command)
                         --~ if returncode == 3 then
-                        --~     scripts.context.generate()
                         --~     scripts.context.make(formatname)
                         --~     returncode, errorstring = os.spawn(command)
                         --~     if returncode == 3 then
@@ -936,7 +932,6 @@ function scripts.context.pipe()
     local formatfile, scriptfile = resolvers.locateformat(formatname)
     if not formatfile or not scriptfile then
         logs.simple("warning: no format found, forcing remake (commandline driven)")
-        scripts.context.generate()
         scripts.context.make(formatname)
         formatfile, scriptfile = resolvers.locateformat(formatname)
     end
@@ -944,7 +939,6 @@ function scripts.context.pipe()
         local okay = statistics.checkfmtstatus(formatfile)
         if okay ~= true then
             logs.simple("warning: %s, forcing remake",tostring(okay))
-            scripts.context.generate()
             scripts.context.make(formatname)
         end
         local flags = {
@@ -990,7 +984,16 @@ local function make_mkii_format(name,engine)
     end
 end
 
+function scripts.context.generate()
+    resolvers.instance.renewcache = true
+    trackers.enable("resolvers.locating")
+    resolvers.load()
+end
+
 function scripts.context.make(name)
+    if not environment.argument("fast") then -- as in texexec
+        scripts.context.generate()
+    end
     local list = (name and { name }) or (environment.files[1] and environment.files) or scripts.context.defaultformats
     for i=1,#list do
         local name = list[i]
@@ -1001,12 +1004,6 @@ function scripts.context.make(name)
             make_mkii_format(name,"xetex")
         end
     end
-end
-
-function scripts.context.generate()
-    resolvers.instance.renewcache = true
-    trackers.enable("resolvers.locating")
-    resolvers.load()
 end
 
 function scripts.context.ctx()
@@ -1440,9 +1437,6 @@ function scripts.context.update()
             end
         end
         if force then
-         -- os.execute("context --generate")
-         -- os.execute("context --make")
-            scripts.context.generate()
             scripts.context.make()
         end
     end
@@ -1537,15 +1531,10 @@ end
 if environment.argument("run") then
 --  scripts.context.timed(scripts.context.run)
     scripts.context.timed(scripts.context.autoctx)
-elseif environment.argument("make") or environment.argument("generate") then
-    scripts.context.timed(function()
-        if environment.argument("generate") then
-            scripts.context.generate()
-        end
-        if environment.argument("make") then
-            scripts.context.make()
-        end
-    end)
+elseif environment.argument("make") then
+    scripts.context.timed(function() scripts.context.make() end)
+elseif environment.argument("generate") then
+    scripts.context.timed(function() scripts.context.generate() end)
 elseif environment.argument("ctx") then
     scripts.context.timed(scripts.context.ctx)
 elseif environment.argument("mp") or environment.argument("metapost") then

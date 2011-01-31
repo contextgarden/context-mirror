@@ -46,10 +46,10 @@
 %D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
 %D \stoptyping
 
-\def\lchexnumber #1{\ctxlua{converters.lchexnumber(\number#1)}}
-\def\uchexnumber #1{\ctxlua{converters.uchexnumber(\number#1)}}
-\def\lchexnumbers#1{\ctxlua{converters.lchexnumbers(\number#1)}}
-\def\uchexnumbers#1{\ctxlua{converters.uchexnumbers(\number#1)}}
+\def\lchexnumber #1{\ctxcommand{lchexnumber(\number#1)}}
+\def\uchexnumber #1{\ctxcommand{uchexnumber(\number#1)}}
+\def\lchexnumbers#1{\ctxcommand{lchexnumbers(\number#1)}}
+\def\uchexnumbers#1{\ctxcommand{uchexnumbers(\number#1)}}
 
 \let\hexnumber\uchexnumber
 
@@ -58,7 +58,7 @@
 %D
 %D For unicode remapping purposes, we need octal numbers.
 
-\def\octnumber#1{\ctxlua{converters.octnumber(\number#1)}}
+\def\octnumber#1{\ctxcommand{octnumber(\number#1)}}
 
 %D \macros
 %D   {hexstringtonumber,octstringtonumber}
@@ -67,8 +67,8 @@
 %D a decimal number, thereby taking care of lowercase characters
 %D as well.
 
-\def\hexstringtonumber#1{\ctxlua{converters.hexstringtonumber("#1")}}
-\def\octstringtonumber#1{\ctxlua{converters.octstringtonumber("#1")}}
+\def\hexstringtonumber#1{\ctxcommand{hexstringtonumber("#1")}}
+\def\octstringtonumber#1{\ctxcommand{octstringtonumber("#1")}}
 
 %D \macros
 %D   {rawcharacter}
@@ -76,7 +76,7 @@
 %D This macro can be used to produce proper 8 bit characters
 %D that we sometimes need in backends and round||trips.
 
-\def\rawcharacter#1{\ctxlua{converters.rawcharacter(\number#1)}}
+\def\rawcharacter#1{\ctxcommand{rawcharacter(\number#1)}}
 
 %D \macros
 %D   {twodigits, threedigits}
