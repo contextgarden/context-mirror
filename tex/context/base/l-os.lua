@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 local os = os
 local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
+local concat = table.concat
 local random, ceil = math.random, math.ceil
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
@@ -33,6 +34,9 @@ if not os.__getenv__ then
             end
             local K = upper(k)
             osenv[K] = v
+            if type(v) == "table" then
+                v = concat(v,";") -- path
+            end
             ossetenv(K,v)
         end
 

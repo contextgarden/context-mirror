@@ -1989,6 +1989,7 @@ if not modules then modules = { } end modules ['l-os'] = {
 
 local os = os
 local find, format, gsub, upper = string.find, string.format, string.gsub, string.upper
+local concat = table.concat
 local random, ceil = math.random, math.ceil
 local rawget, rawset, type, getmetatable, setmetatable, tonumber = rawget, rawset, type, getmetatable, setmetatable, tonumber
 
@@ -2012,6 +2013,9 @@ if not os.__getenv__ then
             end
             local K = upper(k)
             osenv[K] = v
+            if type(v) == "table" then
+                v = concat(v,";") -- path
+            end
             ossetenv(K,v)
         end
 
@@ -9909,11 +9913,6 @@ local relations = allocate { -- todo: handlers also here
             variable = 'OPLFONTS',
             suffixes = { 'opl' },
         },
-        otp = {
-            names    = { "otp" },
-            variable = 'OTPINPUTS',
-            suffixes = { 'otp' },
-        },
         ovp = {
             names    = { "ovp" },
             variable = 'OVPFONTS',
@@ -10130,6 +10129,7 @@ local function identify()
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
+                cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
@@ -10164,6 +10164,7 @@ local function identify()
             local cachepath = texmfcaches[k]
             cachepath = resolvers.getenv(cachepath)
             if cachepath ~= "" then
+                cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
                 if valid and file.is_readable(cachepath) then
@@ -11157,6 +11158,8 @@ function resolvers.expandvariables()
         expansions[k] = lpegmatch(cleaner,v)
     end
 end
+
+
 
 function resolvers.variable(name)
     return entry(instance.variables,name)

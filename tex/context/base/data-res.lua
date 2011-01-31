@@ -595,6 +595,30 @@ function resolvers.expandvariables()
     end
 end
 
+--~ -- this can become:
+
+--~ function resolvers.expandvariables()
+--~     local expansions, environment, variables = allocate(), instance.environment, instance.variables
+--~     instance.expansions = expansions
+--~     local engine, progname = instance.engine, instance.progname
+--~     if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
+--~     if type(progname) ~= "string" then instance.progname, progname = "", "" end
+--~     if engine   ~= "" then environment.engine   = engine   end
+--~     if progname ~= "" then environment.progname = progname end
+--~     setmetatable(expansions, { __index = function(t,k)
+--~         local v = environment[k]
+--~         if v == nil then
+--~             v = variables[k]
+--~         end
+--~         if type(v) == "string" then
+--~             v = lpegmatch(variable,v)
+--~             v = lpegmatch(cleaner,v)
+--~         end
+--~         t[k] = v
+--~         return v
+--~     end } )
+--~ end
+
 function resolvers.variable(name)
     return entry(instance.variables,name)
 end

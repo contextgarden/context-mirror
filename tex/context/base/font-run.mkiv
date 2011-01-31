@@ -330,8 +330,7 @@
 \gdef\showcharratio
   {\dowithnextboxcontent
      {\switchtobodyfont[10pt]}%
-     {(\expanded{\withoutpt\the\nextboxht},%
-       \expanded{\withoutpt\the\nextboxdp})}%
+     {(\withoutpt\the\nextboxht,\withoutpt\the\nextboxdp)}%
      \hbox}
 
 \protect \endinput

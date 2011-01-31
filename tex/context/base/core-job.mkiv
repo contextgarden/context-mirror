@@ -287,7 +287,7 @@
      {\beforesplitstring##1\at.\to\someevironment
       \addtocommalist\someevironment\loadedlocalenvironments}%
    \processcommalist[#1]\docommand
-   \expanded{\doifcommonelse{\currentproject,\currentproduct,\currentcomponent,\currentenvironment}{\loadedlocalenvironments}} % \expanded not needed
+   \doifcommonelse{\currentproject,\currentproduct,\currentcomponent,\currentenvironment}\loadedlocalenvironments
      {\letvalue{\e!stop\v!localenvironment}\relax}
      {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}}
 
