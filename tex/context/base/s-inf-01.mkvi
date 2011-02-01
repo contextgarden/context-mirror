@@ -115,7 +115,7 @@
         for k, v in table.sortedpairs(what) do
             for i=1,5 do if v[i] > max then max = v[i] end end
         end
-        return max, what, function(n) return max == 0 and 0 or n/max end
+        return max, what, function(n) return (max == 0 and 0) or (n == 0 and 0) or n/max end
     end
 
     function document.context_state_1(what)

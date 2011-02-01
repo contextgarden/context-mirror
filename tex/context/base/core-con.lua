@@ -548,7 +548,7 @@ local function convert(method,n) -- todo: language
         elseif sequence then
             return do_alphabetic(n,sequence,false,true)
         else
-            return context(n)
+            return n
         end
     end
 end
