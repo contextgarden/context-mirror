@@ -10702,7 +10702,7 @@ end
 function resolvers.setenv(key,value)
     if instance then
         instance.environment[key] = value
-        ossetenv(key,value)
+        ossetenv(key,resolvers.resolve(value)) -- brr, we need info about the var being a path
     end
 end
 
