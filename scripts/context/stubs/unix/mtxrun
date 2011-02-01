@@ -2937,20 +2937,22 @@ end
 
 
 local function globpattern(path,patt,recurse,action)
-    if path == "/" then
-        path = path .. "."
-    elseif not find(path,"/$") then
-        path = path .. '/'
-    end
-    for name in walkdir(path) do
-        local full = path .. name
-        local mode = attributes(full,'mode')
-        if mode == 'file' then
-            if find(full,patt) then
-                action(full)
+    if isdir(path) then
+        if path == "/" then
+            path = path .. "."
+        elseif not find(path,"/$") then
+            path = path .. '/'
+        end
+        for name in walkdir(path) do
+            local full = path .. name
+            local mode = attributes(full,'mode')
+            if mode == 'file' then
+                if find(full,patt) then
+                    action(full)
+                end
+            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                globpattern(full,patt,recurse,action)
             end
-        elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-            globpattern(full,patt,recurse,action)
         end
     end
 end
@@ -10631,6 +10633,7 @@ resolvers.luacnfstate   = "unknown"
 resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
 
 
+
 local unset_variable = "unset"
 
 local formats   = resolvers.formats
@@ -10715,7 +10718,6 @@ end
 
 resolvers.getenv = getenv
 resolvers.env    = getenv
-
 
 local dollarstripper   = lpeg.stripper("$")
 local inhibitstripper  = P("!")^0 * Cs(P(1)^0)
@@ -10907,7 +10909,7 @@ local function load_configuration_files()
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
                             -- also over following definitions
-                            resolvers.setenv('TEXMFCNF',cnfspec)
+                            resolvers.setenv('TEXMFCNF',resolvers.resolve(cnfspec))
                             -- we now identify and load the specified configuration files
                             instance.specification = { }
                             identify_configuration_files()
@@ -11390,7 +11392,8 @@ local function collect_files(names)
                     if type(blobfile) == 'string' then
                         if not dname or find(blobfile,dname) then
                             local kind   = hash.type
-local search = filejoin(blobroot,blobfile,bname)
+                         -- local search = filejoin(blobpath,blobfile,bname)
+                            local search = filejoin(blobroot,blobfile,bname)
                             local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
                                 report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
@@ -11403,7 +11406,8 @@ local search = filejoin(blobroot,blobfile,bname)
                             local vv = blobfile[kk]
                             if not dname or find(vv,dname) then
                                 local kind   = hash.type
-local search = filejoin(blobroot,vv,bname)
+                             -- local search = filejoin(blobpath,vv,bname)
+                                local search = filejoin(blobroot,vv,bname)
                                 local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
                                     report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
@@ -11428,7 +11432,7 @@ function resolvers.registerintrees(name)
     end
 end
 
--- split the next one up for readability (bu this module needs a cleanup anyway)
+-- split the next one up for readability (but this module needs a cleanup anyway)
 
 local function can_be_dir(name) -- can become local
     local fakepaths = instance.fakepaths
@@ -11444,6 +11448,8 @@ end
 
 local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 
+-- this one will be split in smalle functions
+
 local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
     local result = { }
     local stamp  = nil
@@ -11454,7 +11460,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
-                report_resolvers("remembering file '%s'",filename)
+                report_resolvers("remembered file '%s'",filename)
             end
             resolvers.registerintrees(filename) -- for tracing used files
             return instance.found[stamp]
@@ -11517,7 +11523,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                 --
                 if basename ~= filename then
                     local resolved = collect_instance_files(basename,askedformat,allresults)
-                    if #result == 0 then
+                    if #result == 0 then -- shouldn't this be resolved ?
                         local lowered = lower(basename)
                         if filename ~= lowered then
                             resolved = collect_instance_files(lowered,askedformat,allresults)
@@ -11550,16 +11556,12 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         end
     else
         -- search spec
-        local filetype, extra, done, wantedfiles, ext = '', nil, false, { }, fileextname(filename)
+        local filetype, done, wantedfiles, ext = '', false, { }, fileextname(filename)
         -- tricky as filename can be bla.1.2.3
 
 -- to be checked
 
-        if ext == "" then
-            wantedfiles[#wantedfiles+1] = filename
-        else
-            wantedfiles[#wantedfiles+1] = filename
-        end
+        wantedfiles[#wantedfiles+1] = filename
         if askedformat == "" then
             if ext == "" or not suffixmap[ext] then
                 local defaultsuffixes = resolvers.defaultsuffixes
@@ -11865,7 +11867,7 @@ local function report(str)
     end
 end
 
-function resolvers.dowithfilesandreport(command, files, ...)
+function resolvers.dowithfilesandreport(command, files, ...) -- will move
     if files and #files > 0 then
         if trace_locating then
             report('') -- ?
@@ -11947,7 +11949,7 @@ function resolvers.booleanvariable(str,default)
     end
 end
 
-function resolvers.dowithfilesintree(pattern,handle,before,after) -- can be a nice iterator instead
+function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, can be a nice iterator instead
     local instance = resolvers.instance
     local hashes = instance.hashes
     for i=1,#hashes do
