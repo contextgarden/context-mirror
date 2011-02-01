@@ -32,9 +32,11 @@ else
      opencalls['okular'] = 'okular --unique'
 end
 
-pdfview.METHOD = "MTX_PDFVIEW_METHOD"
-pdfview.method = resolvers.getenv(pdfview.METHOD) or 'default'
-pdfview.method = (opencalls[pdfview.method] and pdfview.method) or 'default'
+pdfview.method = false
+
+directives.register("pdfview.method", function(v)
+    pdfview.method = (opencalls[v] and v) or 'default'
+end)
 
 function pdfview.setmethod(method)
     if method and opencalls[method] then
@@ -47,7 +49,7 @@ function pdfview.methods()
 end
 
 function pdfview.status()
-    return format("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,resolvers.getenv(pdfview.METHOD) or "<unset>")
+    return format("pdfview methods: %s, current method: %s (directives_pdfview_method)",pdfview.methods(),pdfview.method)
 end
 
 local openedfiles = { }

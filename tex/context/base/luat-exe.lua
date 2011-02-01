@@ -72,12 +72,10 @@ local execution_mode  directives.register("system.executionmode", function(v) ex
 local execution_list  directives.register("system.executionlist", function(v) execution_list = v end)
 
 function executers.check()
-    local mode = execution_mode or resolvers.variable("command_mode") -- or ... will become obsolete
-    local list = execution_list or resolvers.variable("command_list") -- or ... will become obsolete
-    if mode == "none" then
+    if execution_mode == "none" then
         finalize()
-    elseif mode == "list" and list ~= "" then
-        for s in gmatch("[^%s,]",list) do
+    elseif execution_mode == "list" and execution_list ~= "" then
+        for s in gmatch("[^%s,]",execution_list) do
             register(s)
         end
         finalize()

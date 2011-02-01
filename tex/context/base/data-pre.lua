@@ -15,16 +15,16 @@ if not modules then modules = { } end modules ['data-pre'] = {
 
 --~ print(resolvers.resolve("abc env:tmp file:cont-en.tex path:cont-en.tex full:cont-en.tex rel:zapf/one/p-chars.tex"))
 
-local upper, lower, gsub = string.upper, string.lower, string.gsub
+local resolvers    = resolvers
+local prefixes     = utilities.storage.allocate()
+resolvers.prefixes = prefixes
 
-local resolvers = resolvers
+local gsub = string.gsub
+local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
+local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
 
-local prefixes = { }
-
-local getenv, cleanpath, findgivenfile = resolvers.getenv, resolvers.cleanpath, resolvers.findgivenfile
-
-prefixes.environment = function(str) -- getenv is case insensitive anyway
-    return cleanpath(getenv(str) or getenv(upper(str)) or getenv(lower(str)) or "")
+prefixes.environment = function(str)
+    return cleanpath(expansion(str))
 end
 
 prefixes.relative = function(str,n)
@@ -113,20 +113,11 @@ local function _resolve_(method,target)
     end
 end
 
---~ local function resolve(str) -- use schemes
---~     if type(str) == "table" then
---~         for k=1,#str do
---~             local v = str[k]
---~             str[k] = resolve(v) or v
---~         end
---~     elseif str and str ~= "" then
---~         str = gsub(str,"([a-z]+):([^ \"\']*)",_resolve_)
---~     end
---~     return str
---~ end
+local resolved, abstract = { }, { }
 
-local resolved = { }
-local abstract = { }
+function resolvers.resetresolve(str)
+    resolved, abstract = { }, { }
+end
 
 local function resolve(str) -- use schemes, this one is then for the commandline only
     local res = resolved[str]

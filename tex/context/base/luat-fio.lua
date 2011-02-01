@@ -20,8 +20,6 @@ if not resolvers.instance then
 
     resolvers.reset()
 
-    resolvers.instance.progname   = 'context'
-    resolvers.instance.engine     = 'luatex'
     resolvers.instance.validfile  = resolvers.validctxfile
 
  -- trackers.enable("resolvers.*")
