@@ -50,8 +50,11 @@ names.saved      = false
 names.loaded     = false
 names.be_clever  = true
 names.enabled    = true
-names.autoreload = toboolean(os.getenv('MTX.FONTS.AUTOLOAD') or os.getenv('MTX_FONTS_AUTOLOAD') or "no")
 names.cache      = containers.define("fonts","data",names.version,true)
+
+local autoreload = false
+
+directives.register("fonts.autoreload", function(v) autoreload = toboolean(v) end)
 
 --[[ldx--
 <p>A few helpers.</p>
@@ -256,7 +259,7 @@ function names.getpaths(trace)
         collect(resolvers.expandedpathlist(path),path)
     end
     if xml then
-        local confname = resolvers.getenv("FONTCONFIG_FILE") or ""
+        local confname = resolvers.expansion("FONTCONFIG_FILE") or ""
         if confname == "" then
             confname = names.fontconfigfile or ""
         end
@@ -919,7 +922,7 @@ local reloaded = false
 local function is_reloaded()
     if not reloaded then
         local data = names.data
-        if names.autoreload then
+        if autoreload then
             local c_status = table.serialize(resolvers.datastate())
             local f_status = table.serialize(data.datastate)
             if c_status == f_status then

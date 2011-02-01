@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
-local next, type = next, type
+local next, type, rawget, setmetatable = next, type, rawget, setmetatable
 local os = os
 
 local P, S, R, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
@@ -75,20 +75,89 @@ resolvers.defaultsuffixes = { "tex" } --  "mkiv", "cld" -- too tricky
 resolvers.instance = resolvers.instance or nil -- the current one (slow access)
 local     instance = resolvers.instance or nil -- the current one (fast access)
 
-function resolvers.newinstance()
+-- An instance has an environment (coming from the outside, kept raw), variables
+-- (coming from the configuration file), and expansions (variables with nested
+-- variables replaced). One can push something into the outer environment and
+-- its internal copy, but only the later one will be the raw unprefixed variant.
+
+function resolvers.setenv(key,value)
+    if instance then
+        -- this one will be consulted first when we stay inside
+        -- the current environment
+        instance.environment[key] = value
+        -- we feed back into the environment, and as this is used
+        -- by other applications (via os.execute) we need to make
+        -- sure that prefixes are resolved
+        ossetenv(key,resolvers.resolve(value))
+    end
+end
+
+-- Beware we don't want empty here as this one can be called early on
+-- and therefore we use rawget.
+
+local function getenv(key)
+    local value = rawget(instance.environment,key)
+    if value and value ~= "" then
+        return value
+    else
+        local e = osgetenv(key)
+        return e ~= nil and e ~= "" and checkedvariable(e) or ""
+    end
+end
+
+resolvers.getenv = getenv
+resolvers.env    = getenv
+
+-- We are going to use some metatable trickery where we backtrack from
+-- expansion to variable to environment.
+
+local function resolve(k)
+    return instance.expansions[k]
+end
+
+local dollarstripper   = lpeg.stripper("$")
+local inhibitstripper  = P("!")^0 * Cs(P(1)^0)
+local backslashswapper = lpeg.replacer("\\","/")
+
+local somevariable     = P("$") / ""
+local somekey          = C(R("az","AZ","09","__","--")^1)
+local somethingelse    = P(";") * ((1-S("!{}/\\"))^1 * P(";") / "")
+                       + P(";") * (P(";") / "")
+                       + P(1)
+local variableexpander = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
+
+local cleaner          = P("\\") / "/" + P(";") * S("!{}/\\")^0 * P(";")^1 / ";"
+local variablecleaner  = Cs((cleaner  + P(1))^0)
+
+local somevariable     = R("az","AZ","09","__","--")^1 / resolve
+local variable         = (P("$")/"") * (somevariable + (P("{")/"") * somevariable * (P("}")/""))
+local variableresolver = Cs((variable + P(1))^0)
+
+local function expandedvariable(var)
+    return lpegmatch(variableexpander,var) or var
+end
+
+function resolvers.expandvariables()
+    -- no longer needed
+end
+
+local function collapse_configuration_data()
+    -- no longer needed
+end
+
+function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
+
+    local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
 
     local newinstance = {
-        progname        = 'context',
-        engine          = 'luatex',
-        environment     = allocate(),
-        variables       = allocate(),
-        expansions      = allocate(),
+        environment     = environment,
+        variables       = variables,
+        expansions      = expansions,
+        order           = order,
         files           = allocate(),
         setups          = allocate(),
-        order           = allocate(),
         found           = allocate(),
         foundintrees    = allocate(),
-        origins         = allocate(),
         hashes          = allocate(),
         specification   = allocate(),
         lists           = allocate(),
@@ -103,11 +172,42 @@ function resolvers.newinstance()
         force_suffixes  = true,
     }
 
-    local ne = newinstance.environment
+    setmetatable(variables, { __index = function(t,k)
+        for i=1,#order do
+            v = order[i][k]
+            if v ~= nil then
+                t[k] = v
+                return v
+            end
+        end
+        if v == nil then
+            v = ""
+        end
+        t[k] = v
+        return v
+    end } )
 
-    for k, v in next, osenv do
-        ne[upper(k)] = checkedvariable(v)
-    end
+    setmetatable(environment, { __index = function(t,k)
+        v = osgetenv(k)
+        if v == nil then
+            v = variables[k]
+        end
+        if v ~= nil then
+            v = checkedvariable(v) or ""
+        end
+        t[k] = v
+        return v
+    end } )
+
+    setmetatable(expansions, { __index = function(t,k)
+        local v = environment[k]
+        if type(v) == "string" then
+            v = lpegmatch(variableresolver,v)
+            v = lpegmatch(variablecleaner,v)
+        end
+        t[k] = v
+        return v
+    end } )
 
     return newinstance
 
@@ -128,53 +228,9 @@ local function reset_hashes()
     instance.found = { }
 end
 
-function resolvers.setenv(key,value)
-    if instance then
-        instance.environment[key] = value
-        ossetenv(key,resolvers.resolve(value)) -- brr, we need info about the var being a path
-    end
-end
-
-local function getenv(key)
-    local value = instance.environment[key]
-    if value and value ~= "" then
-        return value
-    else
-        local e = osgetenv(key)
-        return e ~= nil and e ~= "" and checkedvariable(e) or ""
-    end
-end
-
-resolvers.getenv = getenv
-resolvers.env    = getenv
-
-local dollarstripper   = lpeg.stripper("$")
-local inhibitstripper  = P("!")^0 * Cs(P(1)^0)
-local backslashswapper = lpeg.replacer("\\","/")
-
-local somevariable     = P("$") / ""
-local somekey          = C(R("az","AZ","09","__","--")^1)
-local somethingelse    = P(";") * ((1-S("!{}/\\"))^1 * P(";") / "")
-                       + P(";") * (P(";") / "")
-                       + P(1)
-
---~ local function resolve(key)
---~     local value = instance.variables[key] or ""
---~     return (value ~= "" and value) or getenv(key) or ""
---~ end
---~
---~ local pattern = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
---~
---~ local function expandvars(lst) -- simple vars
---~     for k=1,#lst do
---~         local lk = lst[k]
---~         lst[k] = lpegmatch(pattern,lk) or lk
---~     end
---~ end
-
 local slash = P("/")
 
-local pattern = Cs (
+local pathexpressionpattern = Cs (
     Cc("^") * (
         Cc("%") * S(".-")
       + slash^2 * P(-1) / "/.*"
@@ -192,64 +248,19 @@ local function makepathexpression(str)
     else
         local c = cache[str]
         if not c then
-            c = lpegmatch(pattern,str)
+            c = lpegmatch(pathexpressionpattern,str)
             cache[str] = c
         end
         return c
     end
 end
 
-local function resolve(key)
-    local value = instance.variables[key]
-    if value and value ~= "" then
-        return value
-    end
-    local value = instance.environment[key]
-    if value and value ~= "" then
-        return value
-    end
-    local e = osgetenv(key)
-    return e ~= nil and e ~= "" and checkedvariable(e) or ""
-end
-
-local pattern = Cs( (somevariable * (somekey/resolve) + somethingelse)^1 )
-
-local function expandedvariable(var) -- simple vars
-    return lpegmatch(pattern,var) or var
-end
-
-local function entry(entries,name)
-    if name and name ~= "" then
-        name = lpegmatch(dollarstripper,name)
-        local result = entries[instance.progname .. '.' .. name] or entries[name]
-        if result then
-            return result
-        else
-            result = getenv(name)
-            if result then
-                instance.variables[name] = result
-                resolvers.expandvariables()
-                return instance.expansions[name] or ""
-            end
-        end
-    end
-    return ""
-end
-
-local function is_entry(entries,name)
-    if name and name ~= "" then
-        name = lpegmatch(dollarstripper,name)
-        return (entries[instance.progname .. '.' .. name] or entries[name]) ~= nil
-    else
-        return false
-    end
-end
-
 local function reportcriticalvariables()
     if trace_locating then
         for i=1,#resolvers.criticalvars do
-            local v = resolvers.criticalvars[i]
-            report_resolvers("variable '%s' set to '%s'",v,getenv(v) or "unknown")
+            local k = resolvers.criticalvars[i]
+            local v = resolvers.getenv(k) or "unknown" -- this one will not resolve !
+            report_resolvers("variable '%s' set to '%s'",k,v)
         end
         report_resolvers()
     end
@@ -267,18 +278,13 @@ local function identify_configuration_files()
             resolvers.luacnfstate = "environment"
         end
         reportcriticalvariables()
-        resolvers.expandvariables()
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
-     -- expandvars(cnfpaths) --- hm
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
             local filename = collapsepath(filejoin(cnfpaths[i],luacnfname))
-            local realname = resolvers.resolve(filename) -- no shortcut
-         -- if trace_locating then
-         --     report_resolvers("checking configuration file '%s'",filename)
-         -- end
+            local realname = resolvers.resolve(filename)
             if lfs.isfile(realname) then
-                specification[#specification+1] = filename -- or realname?
+                specification[#specification+1] = filename
                 if trace_locating then
                     report_resolvers("found configuration file '%s'",realname)
                 end
@@ -311,42 +317,25 @@ local function load_configuration_files()
                         report_resolvers("loading configuration file '%s'",filename)
                         report_resolvers()
                     end
-                    -- flattening is easier to deal with as we need to collapse
-                    local t = { }
-                    for k, v in next, data do -- k = progname or setter or variables
-                        if v ~= unset_variable then
-                            local kind = type(v)
-                            if kind == "string" then
-                                -- still supported, but preferably use the variables subtable
-                                t[k] = v
-                            elseif kind == "table" then
-                                if initializesetter(filename,k,v) then
-                                    -- directives, experiments, trackers, ...
-                                else
-                                    for kk, vv in next, v do -- vv = variable
-                                        if vv ~= unset_variable then
-                                            if type(vv) == "string" then
-                                             -- t[kk.."."..k] = vv
-                                                if k == "variables" then
-                                                 -- special table, shared variables can be grouped
-                                                    t[kk] = vv
-                                                else
-                                                 -- category.variable (progname)
-                                                    t[k .. "." .. kk] = vv
-                                                end
-                                            end
-                                        end
-                                    end
-                                end
-                            else
-                             -- report_resolvers("strange key '%s' in configuration file '%s'",k,filename)
+                    local variables = data.variables or { }
+                    local warning = false
+                    for k, v in next, data do
+                        local kind = type(v)
+                        if kind == "table" then
+                            initializesetter(filename,k,v)
+                        elseif variables[k] == nil then
+                            if trace_locating and not warning then
+                                report_resolvers("variables like '%s' in configuration file '%s' should move to the 'variables' subtable",
+                                    k,resolvers.resolve(filename))
+                                warning = true
                             end
+                            variables[k] = v
                         end
                     end
-                    setups[pathname] = t
+                    setups[pathname] = variables
                     if resolvers.luacnfstate == "default" then
                         -- the following code is not tested
-                        local cnfspec = t["TEXMFCNF"]
+                        local cnfspec = variables["TEXMFCNF"]
                         if cnfspec then
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
@@ -383,29 +372,7 @@ local function load_configuration_files()
     end
 end
 
-local function collapse_configuration_data() -- potential optimization: pass start index (setup and configuration are shared)
-    local order, variables, environment, origins = instance.order, instance.variables, instance.environment, instance.origins
-    for i=1,#order do
-        local c = order[i]
-        for k,v in next, c do
-            if variables[k] then
-                -- okay
-            else
-                local ek = environment[k]
-                if ek and ek ~= "" then
-                    variables[k], origins[k] = ek, "env"
-                else
-                    local bv = checkedvariable(v)
-                    variables[k], origins[k] = bv, "cnf"
-                end
-            end
-        end
-    end
-end
-
--- scheme magic
-
--- database loading
+-- scheme magic ... database loading
 
 local function load_file_databases()
     instance.loaderror, instance.files = false, allocate()
@@ -422,30 +389,34 @@ end
 local function locate_file_databases()
     -- todo: cache:// and tree:// (runtime)
     local texmfpaths = resolvers.expandedpathlist('TEXMF')
-    for i=1,#texmfpaths do
-        local path = collapsepath(texmfpaths[i])
-        local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
-        if stripped ~= "" then
-            local runtime = stripped == path
-            path = resolvers.cleanpath(path)
-            local spec = resolvers.splitmethod(stripped)
-            if spec.scheme == "cache" or spec.scheme == "file" then
-                stripped = spec.path
-            elseif runtime and (spec.noscheme or spec.scheme == "file") then
-                stripped = "tree:///" .. stripped
-            end
-            if trace_locating then
-                if runtime then
-                    report_resolvers("locating list of '%s' (runtime)",path)
-                else
-                    report_resolvers("locating list of '%s' (cached)",path)
+    if #texmfpaths > 0 then
+        for i=1,#texmfpaths do
+            local path = collapsepath(texmfpaths[i])
+            local stripped = lpegmatch(inhibitstripper,path) -- the !! thing
+            if stripped ~= "" then
+                local runtime = stripped == path
+                path = resolvers.cleanpath(path)
+                local spec = resolvers.splitmethod(stripped)
+                if spec.scheme == "cache" or spec.scheme == "file" then
+                    stripped = spec.path
+                elseif runtime and (spec.noscheme or spec.scheme == "file") then
+                    stripped = "tree:///" .. stripped
                 end
+                if trace_locating then
+                    if runtime then
+                        report_resolvers("locating list of '%s' (runtime)",path)
+                    else
+                        report_resolvers("locating list of '%s' (cached)",path)
+                    end
+                end
+                methodhandler('locators',stripped)
             end
-            methodhandler('locators',stripped)
         end
-    end
-    if trace_locating then
-        report_resolvers()
+        if trace_locating then
+            report_resolvers()
+        end
+    elseif trace_locating then
+        report_resolvers("no texmf paths are defined (using TEXMF)")
     end
 end
 
@@ -518,7 +489,6 @@ function resolvers.extendtexmfvariable(specification) -- crap, we could better p
     else
         -- weird
     end
-    resolvers.expandvariables()
     reset_hashes()
 end
 
@@ -551,89 +521,16 @@ function resolvers.datastate()
     return caches.contentstate()
 end
 
-local function resolve(a)
-    return instance.expansions[a] or getenv(a)
-end
-
-local cleaner  = P("\\") / "/" + P(";") * S("!{}/\\")^0 * P(";")^1 / ";"
-
-local variable = R("az","AZ","09","__","--")^1 / resolve
-      variable = (P("$")/"") * (variable + (P("{")/"") * variable * (P("}")/""))
-
-      cleaner  = Cs((cleaner  + P(1))^0)
-      variable = Cs((variable + P(1))^0)
-
-function resolvers.expandvariables()
-    local expansions, environment, variables = allocate(), instance.environment, instance.variables
-    instance.expansions = expansions
-    local engine, progname = instance.engine, instance.progname
-    if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
-    if type(progname) ~= "string" then instance.progname, progname = "", "" end
-    if engine   ~= "" then environment.engine   = engine   end
-    if progname ~= "" then environment.progname = progname end
-    for k,v in next, environment do
-        expansions[k] = v
-    end
- -- for k,v in next, environment do -- move environment to expansions (variables are already in there)
- --     if expansions[k] == nil then expansions[k] = v end
- -- end
-    for k,v in next, variables do -- move variables to expansions
-        if expansions[k] == nil then expansions[k] = v end
-    end
-    repeat
-        local busy = false
-        for k,v in next, expansions do
-            local s = lpegmatch(variable,v)
-            if s ~= v then
-                busy = true
-                expansions[k] = s
-            end
-        end
-    until not busy
-
-    for k,v in next, expansions do
-        expansions[k] = lpegmatch(cleaner,v)
-    end
-end
-
---~ -- this can become:
-
---~ function resolvers.expandvariables()
---~     local expansions, environment, variables = allocate(), instance.environment, instance.variables
---~     instance.expansions = expansions
---~     local engine, progname = instance.engine, instance.progname
---~     if type(engine)   ~= "string" then instance.engine,   engine   = "", "" end
---~     if type(progname) ~= "string" then instance.progname, progname = "", "" end
---~     if engine   ~= "" then environment.engine   = engine   end
---~     if progname ~= "" then environment.progname = progname end
---~     setmetatable(expansions, { __index = function(t,k)
---~         local v = environment[k]
---~         if v == nil then
---~             v = variables[k]
---~         end
---~         if type(v) == "string" then
---~             v = lpegmatch(variable,v)
---~             v = lpegmatch(cleaner,v)
---~         end
---~         t[k] = v
---~         return v
---~     end } )
---~ end
-
 function resolvers.variable(name)
-    return entry(instance.variables,name)
+    local name = name and lpegmatch(dollarstripper,name)
+    local result = name and instance.variables[name]
+    return result ~= nil and result or ""
 end
 
 function resolvers.expansion(name)
-    return entry(instance.expansions,name)
-end
-
-function resolvers.is_variable(name)
-    return is_entry(instance.variables,name)
-end
-
-function resolvers.is_expansion(name)
-    return is_entry(instance.expansions,name)
+    local name = name and lpegmatch(dollarstripper,name)
+    local result = name and instance.expansions[name]
+    return result ~= nil and result or ""
 end
 
 function resolvers.unexpandedpathlist(str)
@@ -762,9 +659,8 @@ end
 
 function resolvers.expandedpathlist(str)
     if not str then
-        return ep or { } -- ep ?
+        return { }
     elseif instance.savelists then
-        -- engine+progname hash
         str = lpegmatch(dollarstripper,str)
         if not instance.lists[str] then -- cached
             local lst = made_list(instance,resolvers.splitpath(resolvers.expansion(str)))
@@ -921,7 +817,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     filename = collapsepath(filename)
     -- speed up / beware: format problem
     if instance.remember and not allresults then
-        stamp = filename .. "--" .. instance.engine .. "--" .. instance.progname .. "--" .. askedformat
+        stamp = filename .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
                 report_resolvers("remembered file '%s'",filename)
@@ -1315,8 +1211,6 @@ function resolvers.load(option)
     statistics.starttiming(instance)
     identify_configuration_files()
     load_configuration_files()
-    collapse_configuration_data()
-    resolvers.expandvariables()
     if option ~= "nofiles" then
         load_databases()
         resolvers.automount()

@@ -105,7 +105,7 @@ local function identify()
     if texmfcaches then
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
-            cachepath = resolvers.getenv(cachepath)
+            cachepath = resolvers.expansion(cachepath) -- was getenv
             if cachepath ~= "" then
                 cachepath = resolvers.resolve(cachepath)
                 cachepath = resolvers.cleanpath(cachepath)

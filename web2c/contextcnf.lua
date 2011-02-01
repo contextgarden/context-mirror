@@ -9,6 +9,13 @@ return {
 
     content = {
 
+        -- Originally there was support for engines and progname but I don't expect
+        -- other engines to use this file, so first engines were removed. After that
+        -- if made sense also to get rid of progname. At some point specific formats
+        -- will be supported but then as a subtable with fallbacks, which sounds more
+        -- natural. Also, at some point the paths will become tables. For the moment
+        -- I don't care too much about it as extending is easy.
+
         variables = {
 
             -- The following variable is predefined (but can be overloaded) and in
@@ -78,7 +85,7 @@ return {
             PYTHONINPUTS    = ".;$CTXDEVPYPATH;$TEXMF/scripts/context/python",
             RUBYINPUTS      = ".;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby",
             LUAINPUTS       = ".;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua//",
-            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{$progname,$engine,}/lua//",
+            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{context,luatex,}/lua//",
 
             -- Not really used by MkIV so they might go away.
 
@@ -94,18 +101,6 @@ return {
             FONTCONFIG_FILE = "fonts.conf",
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
             FC_CACHEDIR     = "$TEXMFSYSTEM/fonts/cache", -- not needed
-
-            -- The io modes are similar to the traditional ones. Possible values
-            -- are all, paranoid and restricted.
-
-            output_mode  = "restricted",
-            input_mode   = "any",
-
-            -- The following variable is under consideration. We do have protection
-            -- mechanims but it's not enabled by default.
-
-            command_mode = "any", -- any none list
-            command_list = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
 
         },
 
@@ -147,6 +142,14 @@ return {
 
             ["system.commandmode"]       = "any", -- any none list
             ["system.commandlist"]       = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
+
+            -- Fonts.
+
+            ["fonts.autoreload"]         = "no",
+
+            -- Viewer
+
+         -- ["pdfview.method"]           = "okular", -- default (often acrobat) xpdf okular
 
         },
 

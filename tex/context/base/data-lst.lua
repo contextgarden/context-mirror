@@ -27,11 +27,35 @@ local function list(list,report,pattern)
     local instance = resolvers.instance
     local report = report or texio.write_nl
     local sorted = table.sortedkeys(list)
+    local result = { }
     for i=1,#sorted do
         local key = sorted[i]
-        if pattern == "" or find(upper(key),pattern) then
-            report(format('%s  %s=%s',instance.origins[key] or "---",key,tabstr(list[key])))
+        if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
+            local raw = tabstr(rawget(list,key))
+            local val = tabstr(list[key])
+            local res = resolvers.resolve(val)
+            if raw and raw ~= "" then
+                if raw == val then
+                    if val == res then
+                        result[#result+1] = { key, raw }
+                    else
+                        result[#result+1] = { key, format('%s => %s',raw,res) }
+                    end
+                else
+                    if val == res then
+                        result[#result+1] = { key, format('%s => %s',raw,val) }
+                    else
+                        result[#result+1] = { key, format('%s => %s => %s',raw,val,res) }
+                    end
+                end
+            else
+                result[#result+1] = { key, "unset" }
+            end
         end
+    end
+    utilities.formatters.formatcolumns(result)
+    for i=1,#result do
+        report(result[i])
     end
 end
 

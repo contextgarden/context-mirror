@@ -12,8 +12,6 @@ logs.extendbanner("ConTeXt TDS Management Tool 1.35 (aka luatools)")
 
 local instance = resolvers.instance
 
-instance.engine   = environment.arguments["engine"]   or instance.engine   or 'luatex'
-instance.progname = environment.arguments["progname"] or instance.progname or 'context'
 instance.luaname  = environment.arguments["luafile"]  or ""
 instance.lualibs  = environment.arguments["lualibs"]  or nil
 instance.pattern  = environment.arguments["pattern"]  or nil
@@ -35,9 +33,7 @@ runners  = runners  or { }
 messages = messages or { }
 
 messages.no_ini_file = [[
-There is no lua initialization file found. This file can be forced by the
-"--progname" directive, or specified with "--luaname", or it is derived
-automatically from the formatname (aka jobname). It may be that you have
+There is no lua initialization file found. It may be that you have
 to regenerate the file database using "mtxrun --generate".
 ]]
 
@@ -55,15 +51,13 @@ messages.help = [[
 --find-path       report path of file
 --make or --ini   make luatex format
 --run or --fmt=   run luatex format
---luafile=str     lua inifile (default is <progname>.lua)
+--luafile=str     lua inifile (default is texmfcnf.lua)
 --lualibs=list    libraries to assemble (optional when --compile)
 --compile         assemble and compile lua inifile
 --verbose         give a bit more info
 --all             show all found files
 --sort            sort cached data
 --format=str      filter cf format specification (default 'tex', use 'any' for any match)
---engine=str      target engine
---progname=str    format or backend
 --pattern=str     filter variables
 --trackers=list   enable given trackers
 ]]
