@@ -542,11 +542,17 @@ local function convert(method,n) -- todo: language
     else
         local lowermethod = lower(method)
         local linguistic = counters[lowermethod]
-        local sequence = sequences[method]
         if linguistic then
             return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter,false)
-        elseif sequence then
-            return do_alphabetic(n,sequence,false,true)
+        end
+        local sequence = sequences[method]
+        if sequence then
+            local max = #sequence
+            if n > max then
+                return sequence[(n-1) % max + 1]
+            else
+                return sequence[n]
+            end
         else
             return n
         end

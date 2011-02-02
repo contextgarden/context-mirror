@@ -10379,17 +10379,25 @@ function caches.loadcontent(cachename,dataname)
     local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
     if blob then
         local data = blob()
-        if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
-            content_state[#content_state+1] = data.uuid
-            if trace_locating then
-                report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+        if data and data.content then
+            if data.type == dataname then
+                if data.version == resolvers.cacheversion then
+                    content_state[#content_state+1] = data.uuid
+                    if trace_locating then
+                        report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+                    end
+                    return data.content
+                else
+                    report_resolvers("skipping '%s' for '%s' from '%s' (version mismatch)",dataname,cachename,filename)
+                end
+            else
+                report_resolvers("skipping '%s' for '%s' from '%s' (datatype mismatch)",dataname,cachename,filename)
             end
-            return data.content
         elseif trace_locating then
-            report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+            report_resolvers("skipping '%s' for '%s' from '%s' (no content)",dataname,cachename,filename)
         end
     elseif trace_locating then
-        report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+        report_resolvers("skipping '%s' for '%s' from '%s' (invalid file)",dataname,cachename,filename)
     end
 end
 
@@ -10595,7 +10603,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
-local next, type, rawget, setmetatable = next, type, rawget, setmetatable
+local next, type, rawget, setmetatable, getmetatable = next, type, rawget, setmetatable, getmetatable
 local os = os
 
 local P, S, R, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
@@ -10651,15 +10659,15 @@ local     instance = resolvers.instance or nil -- the current one (fast access)
 -- variables replaced). One can push something into the outer environment and
 -- its internal copy, but only the later one will be the raw unprefixed variant.
 
-function resolvers.setenv(key,value)
+function resolvers.setenv(key,value,raw)
     if instance then
         -- this one will be consulted first when we stay inside
         -- the current environment
         instance.environment[key] = value
         -- we feed back into the environment, and as this is used
         -- by other applications (via os.execute) we need to make
-        -- sure that prefixes are resolved
-        ossetenv(key,resolvers.resolve(value))
+        -- sure that prefixes are resolve
+        ossetenv(key,raw and value or resolvers.resolve(value))
     end
 end
 
@@ -10708,15 +10716,11 @@ local function expandedvariable(var)
     return lpegmatch(variableexpander,var) or var
 end
 
-function resolvers.expandvariables()
-    -- no longer needed
-end
-
-local function collapse_configuration_data()
-    -- no longer needed
-end
-
 function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
+
+     if trace_locating then
+        report_resolvers("creating instance")
+     end
 
     local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
 
@@ -10730,6 +10734,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         found           = allocate(),
         foundintrees    = allocate(),
         hashes          = allocate(),
+        hashed          = allocate(),
         specification   = allocate(),
         lists           = allocate(),
         data            = allocate(), -- only for loading
@@ -10866,6 +10871,8 @@ local function identify_configuration_files()
         if trace_locating then
             report_resolvers()
         end
+    elseif trace_locating then
+        report_resolvers("configuration files already identified")
     end
 end
 
@@ -10908,10 +10915,13 @@ local function load_configuration_files()
                         -- the following code is not tested
                         local cnfspec = variables["TEXMFCNF"]
                         if cnfspec then
+                            if trace_locating then
+                                report_resolvers("reloading configuration due to TEXMF redefinition")
+                            end
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
                             -- also over following definitions
-                            resolvers.setenv('TEXMFCNF',resolvers.resolve(cnfspec))
+                            resolvers.setenv('TEXMFCNF',cnfspec) -- resolves prefixes
                             -- we now identify and load the specified configuration files
                             instance.specification = { }
                             identify_configuration_files()
@@ -11036,17 +11046,25 @@ local function load_databases()
 end
 
 function resolvers.appendhash(type,name,cache)
-    if trace_locating then
-        report_resolvers("hash '%s' appended",name)
+    -- safeguard ... tricky as it's actually a bug when seen twice
+    if not instance.hashed[name] then
+        if trace_locating then
+            report_resolvers("hash '%s' appended",name)
+        end
+        insert(instance.hashes, { type = type, name = name, cache = cache } )
+        instance.hashed[name] = cache
     end
-    insert(instance.hashes, { type = type, name = name, cache = cache } )
 end
 
 function resolvers.prependhash(type,name,cache)
-    if trace_locating then
-        report_resolvers("hash '%s' prepended",name)
+    -- safeguard ... tricky as it's actually a bug when seen twice
+    if not instance.hashed[name] then
+        if trace_locating then
+            report_resolvers("hash '%s' prepended",name)
+        end
+        insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
+        instance.hashed[name] = cache
     end
-    insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
 end
 
 function resolvers.extendtexmfvariable(specification) -- crap, we could better prepend the hash
@@ -11379,7 +11397,7 @@ end
 
 local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 
--- this one will be split in smalle functions
+-- this one is split in smaller functions but it needs testing
 
 local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
     local result = { }
@@ -11488,10 +11506,10 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     else
         -- search spec
         local filetype, done, wantedfiles, ext = '', false, { }, fileextname(filename)
-        -- tricky as filename can be bla.1.2.3
-
--- to be checked
-
+        -- -- tricky as filename can be bla.1.2.3
+        -- if not suffixmap[ext] then --- probably needs to be done elsewhere too
+        --     wantedfiles[#wantedfiles+1] = filename
+        -- end
         wantedfiles[#wantedfiles+1] = filename
         if askedformat == "" then
             if ext == "" or not suffixmap[ext] then
@@ -11637,6 +11655,19 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     end
     return result
 end
+
+-- -- -- begin of main file search routing -- -- --
+
+
+
+
+
+
+
+
+
+
+-- -- -- end of main file search routing -- -- --
 
 local function findfiles(filename,filetype,allresults)
     local result = collect_instance_files(filename,filetype or "",allresults)
@@ -13152,7 +13183,7 @@ local resolvers = resolvers
 --  <  +=
 --  >  =+
 
-function resolvers.load_tree(tree)
+function resolvers.load_tree(tree,resolve)
     if type(tree) == "string" and tree ~= "" then
 
         local getenv, setenv = resolvers.getenv, resolvers.setenv
@@ -13181,14 +13212,18 @@ function resolvers.load_tree(tree)
         environment.texos   = texos
         environment.texmfos = texmfos
 
+        -- Beware, we need to obey the relocatable autoparent so we
+        -- set TEXMFCNF to its raw value. This is somewhat tricky when
+        -- we run a mkii job from within. Therefore, in mtxrun, there
+        -- is a resolve applied when we're in mkii/kpse mode.
+
         setenv('SELFAUTOPARENT', newroot)
         setenv('SELFAUTODIR',    newtree)
         setenv('SELFAUTOLOC',    newpath)
         setenv('TEXROOT',        newroot)
         setenv('TEXOS',          texos)
         setenv('TEXMFOS',        texmfos)
-        setenv('TEXROOT',        newroot)
-        setenv('TEXMFCNF',       resolvers.luacnfspec)
+        setenv('TEXMFCNF',       resolvers.luacnfspec, not resolve)
         setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
 
         logs.simple("changing from root '%s' to '%s'",oldroot,newroot)
@@ -14300,6 +14335,8 @@ local is_mkii_stub = runners.registered[file.removesuffix(file.basename(filename
 
 if environment.argument("usekpse") or environment.argument("forcekpse") or is_mkii_stub then
 
+    resolvers.load_tree(environment.argument('tree'),true) -- force resolve of TEXMFCNF
+
     os.setenv("engine","")
     os.setenv("progname","")
 
@@ -14374,9 +14411,10 @@ else
         end
     end
 
+    resolvers.load_tree(environment.argument('tree'))
+
 end
 
-resolvers.load_tree(environment.argument('tree'))
 
 if environment.argument("selfmerge") then
 

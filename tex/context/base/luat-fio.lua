@@ -22,6 +22,9 @@ if not resolvers.instance then
 
     resolvers.instance.validfile  = resolvers.validctxfile
 
+    -- we now load the file database as we might need files other than
+    -- tex and lua file on the given path
+
  -- trackers.enable("resolvers.*")
     resolvers.load()
  -- trackers.disable("resolvers.*")

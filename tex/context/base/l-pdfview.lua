@@ -26,13 +26,13 @@ local allcalls = {
 }
 
 if os.type == "windows" then
---~      opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
-     opencalls['okular'] = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo: get focus
+ -- opencalls['okular'] = 'start "test" "c:/program files/kde/bin/okular.exe" --unique' -- todo: get focus
+    opencalls['okular'] = 'start "test" "c:/data/system/kde/bin/okular.exe" --unique' -- todo: get focus
 else
-     opencalls['okular'] = 'okular --unique'
+    opencalls['okular'] = 'okular --unique'
 end
 
-pdfview.method = false
+pdfview.method = "default"
 
 directives.register("pdfview.method", function(v)
     pdfview.method = (opencalls[v] and v) or 'default'
@@ -49,7 +49,7 @@ function pdfview.methods()
 end
 
 function pdfview.status()
-    return format("pdfview methods: %s, current method: %s (directives_pdfview_method)",pdfview.methods(),pdfview.method)
+    return format("pdfview methods: %s, current method: %s (directives_pdfview_method)",pdfview.methods(),tostring(pdfview.method))
 end
 
 local openedfiles = { }

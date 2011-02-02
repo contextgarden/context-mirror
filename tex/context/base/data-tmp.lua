@@ -320,17 +320,25 @@ function caches.loadcontent(cachename,dataname)
     local blob = loadfile(filename .. ".luc") or loadfile(filename .. ".lua")
     if blob then
         local data = blob()
-        if data and data.content and data.type == dataname and data.version == resolvers.cacheversion then
-            content_state[#content_state+1] = data.uuid
-            if trace_locating then
-                report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+        if data and data.content then
+            if data.type == dataname then
+                if data.version == resolvers.cacheversion then
+                    content_state[#content_state+1] = data.uuid
+                    if trace_locating then
+                        report_resolvers("loading '%s' for '%s' from '%s'",dataname,cachename,filename)
+                    end
+                    return data.content
+                else
+                    report_resolvers("skipping '%s' for '%s' from '%s' (version mismatch)",dataname,cachename,filename)
+                end
+            else
+                report_resolvers("skipping '%s' for '%s' from '%s' (datatype mismatch)",dataname,cachename,filename)
             end
-            return data.content
         elseif trace_locating then
-            report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+            report_resolvers("skipping '%s' for '%s' from '%s' (no content)",dataname,cachename,filename)
         end
     elseif trace_locating then
-        report_resolvers("skipping '%s' for '%s' from '%s'",dataname,cachename,filename)
+        report_resolvers("skipping '%s' for '%s' from '%s' (invalid file)",dataname,cachename,filename)
     end
 end
 

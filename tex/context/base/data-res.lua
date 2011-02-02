@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
-local next, type, rawget, setmetatable = next, type, rawget, setmetatable
+local next, type, rawget, setmetatable, getmetatable = next, type, rawget, setmetatable, getmetatable
 local os = os
 
 local P, S, R, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
@@ -80,15 +80,15 @@ local     instance = resolvers.instance or nil -- the current one (fast access)
 -- variables replaced). One can push something into the outer environment and
 -- its internal copy, but only the later one will be the raw unprefixed variant.
 
-function resolvers.setenv(key,value)
+function resolvers.setenv(key,value,raw)
     if instance then
         -- this one will be consulted first when we stay inside
         -- the current environment
         instance.environment[key] = value
         -- we feed back into the environment, and as this is used
         -- by other applications (via os.execute) we need to make
-        -- sure that prefixes are resolved
-        ossetenv(key,resolvers.resolve(value))
+        -- sure that prefixes are resolve
+        ossetenv(key,raw and value or resolvers.resolve(value))
     end
 end
 
@@ -137,15 +137,11 @@ local function expandedvariable(var)
     return lpegmatch(variableexpander,var) or var
 end
 
-function resolvers.expandvariables()
-    -- no longer needed
-end
-
-local function collapse_configuration_data()
-    -- no longer needed
-end
-
 function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
+
+     if trace_locating then
+        report_resolvers("creating instance")
+     end
 
     local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
 
@@ -159,6 +155,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         found           = allocate(),
         foundintrees    = allocate(),
         hashes          = allocate(),
+        hashed          = allocate(),
         specification   = allocate(),
         lists           = allocate(),
         data            = allocate(), -- only for loading
@@ -295,6 +292,8 @@ local function identify_configuration_files()
         if trace_locating then
             report_resolvers()
         end
+    elseif trace_locating then
+        report_resolvers("configuration files already identified")
     end
 end
 
@@ -337,10 +336,13 @@ local function load_configuration_files()
                         -- the following code is not tested
                         local cnfspec = variables["TEXMFCNF"]
                         if cnfspec then
+                            if trace_locating then
+                                report_resolvers("reloading configuration due to TEXMF redefinition")
+                            end
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
                             -- also over following definitions
-                            resolvers.setenv('TEXMFCNF',resolvers.resolve(cnfspec))
+                            resolvers.setenv('TEXMFCNF',cnfspec) -- resolves prefixes
                             -- we now identify and load the specified configuration files
                             instance.specification = { }
                             identify_configuration_files()
@@ -465,17 +467,25 @@ local function load_databases()
 end
 
 function resolvers.appendhash(type,name,cache)
-    if trace_locating then
-        report_resolvers("hash '%s' appended",name)
+    -- safeguard ... tricky as it's actually a bug when seen twice
+    if not instance.hashed[name] then
+        if trace_locating then
+            report_resolvers("hash '%s' appended",name)
+        end
+        insert(instance.hashes, { type = type, name = name, cache = cache } )
+        instance.hashed[name] = cache
     end
-    insert(instance.hashes, { type = type, name = name, cache = cache } )
 end
 
 function resolvers.prependhash(type,name,cache)
-    if trace_locating then
-        report_resolvers("hash '%s' prepended",name)
+    -- safeguard ... tricky as it's actually a bug when seen twice
+    if not instance.hashed[name] then
+        if trace_locating then
+            report_resolvers("hash '%s' prepended",name)
+        end
+        insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
+        instance.hashed[name] = cache
     end
-    insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
 end
 
 function resolvers.extendtexmfvariable(specification) -- crap, we could better prepend the hash
@@ -808,7 +818,7 @@ end
 
 local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 
--- this one will be split in smalle functions
+-- this one is split in smaller functions but it needs testing
 
 local function collect_instance_files(filename,askedformat,allresults) -- todo : plugin (scanners, checkers etc)
     local result = { }
@@ -917,13 +927,10 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     else
         -- search spec
         local filetype, done, wantedfiles, ext = '', false, { }, fileextname(filename)
-        -- tricky as filename can be bla.1.2.3
---~         if not suffixmap[ext] then --- probably needs to be done elsewhere too
---~             wantedfiles[#wantedfiles+1] = filename
---~         end
-
--- to be checked
-
+        -- -- tricky as filename can be bla.1.2.3
+        -- if not suffixmap[ext] then --- probably needs to be done elsewhere too
+        --     wantedfiles[#wantedfiles+1] = filename
+        -- end
         wantedfiles[#wantedfiles+1] = filename
         if askedformat == "" then
             if ext == "" or not suffixmap[ext] then
@@ -1069,6 +1076,310 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     end
     return result
 end
+
+-- -- -- begin of main file search routing -- -- --
+
+--~ local collect_instance_files
+
+--~ local function find_direct(filename)
+--~     if not dangerous[askedformat] and isreadable(filename) then
+--~         if trace_detail then
+--~             report_resolvers("file '%s' found directly",filename)
+--~         end
+--~         return { filename }
+--~     end
+--~ end
+
+--~ local function find_wildcard(filename)
+--~     if find(filename,'%*') then
+--~         if trace_locating then
+--~             report_resolvers("checking wildcard '%s'", filename)
+--~         end
+--~         return resolvers.findwildcardfiles(filename) -- we can use the local
+--~     end
+--~ end
+
+--~ local function find_qualified(filename) -- this one will be split too
+--~     if not file.is_qualified_path(filename) then
+--~         return
+--~     end
+--~     if trace_locating then
+--~         report_resolvers("checking qualified name '%s'", filename)
+--~     end
+--~     if isreadable(filename) then
+--~         if trace_detail then
+--~             report_resolvers("qualified file '%s' found", filename)
+--~         end
+--~         return { filename }
+--~     else
+--~         if trace_detail then
+--~             report_resolvers("locating qualified file '%s'", filename)
+--~         end
+--~         local forcedname, suffix = "", fileextname(filename)
+--~         if suffix == "" then -- why
+--~             local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
+--~             if format_suffixes then
+--~                 for i=1,#format_suffixes do
+--~                     local s = format_suffixes[i]
+--~                     forcedname = filename .. "." .. s
+--~                     if isreadable(forcedname) then
+--~                         if trace_locating then
+--~                             report_resolvers("no suffix, forcing format filetype '%s'", s)
+--~                         end
+--~                         return { forcedname }
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~         if suffix ~= "" then
+--~             -- try to find in tree (no suffix manipulation), here we search for the
+--~             -- matching last part of the name
+--~             local basename = filebasename(filename)
+--~             local pattern = lpegmatch(preparetreepattern,filename)
+--~             -- messy .. to be sorted out
+--~             local savedformat = askedformat
+--~             local format = savedformat or ""
+--~             if format == "" then
+--~                 askedformat = resolvers.formatofsuffix(suffix)
+--~             end
+--~             if not format then
+--~                 askedformat = "othertextfiles" -- kind of everything, maybe all
+--~             end
+--~             --
+--~             if basename ~= filename then
+--~                 local resolved = collect_instance_files(basename,askedformat,allresults)
+--~                 if #resolved == 0 then
+--~                     local lowered = lower(basename)
+--~                     if filename ~= lowered then
+--~                         resolved = collect_instance_files(lowered,askedformat,allresults)
+--~                     end
+--~                 end
+--~                 resolvers.format = savedformat
+--~                 --
+--~                 if #resolved > 0 then
+--~                     local result = { }
+--~                     for r=1,#resolved do
+--~                         local rr = resolved[r]
+--~                         if find(rr,pattern) then
+--~                             result[#result+1] = rr
+--~                         end
+--~                     end
+--~                     if #result > 0 then
+--~                         return result
+--~                     end
+--~                 end
+--~             end
+--~             -- a real wildcard:
+--~             --
+--~             -- local filelist = collect_files({basename})
+--~             -- result = { }
+--~             -- for f=1,#filelist do
+--~             --     local ff = filelist[f][3] or ""
+--~             --     if find(ff,pattern) then
+--~             --         result[#result+1], ok = ff, true
+--~             --     end
+--~             -- end
+--~             -- if #result > 0 then
+--~             --     return result
+--~             -- end
+--~         end
+--~     end
+--~ end
+
+--~ local function find_analyze(filename,askedformat)
+--~     local filetype, wantedfiles, ext = '', { }, fileextname(filename)
+--~     -- too tricky as filename can be bla.1.2.3:
+--~     --
+--~     -- if not suffixmap[ext] then
+--~     --     wantedfiles[#wantedfiles+1] = filename
+--~     -- end
+--~     wantedfiles[#wantedfiles+1] = filename
+--~     if askedformat == "" then
+--~         if ext == "" or not suffixmap[ext] then
+--~             local defaultsuffixes = resolvers.defaultsuffixes
+--~             for i=1,#defaultsuffixes do
+--~                 local forcedname = filename .. '.' .. defaultsuffixes[i]
+--~                 wantedfiles[#wantedfiles+1] = forcedname
+--~                 filetype = resolvers.formatofsuffix(forcedname)
+--~                 if trace_locating then
+--~                     report_resolvers("forcing filetype '%s'",filetype)
+--~                 end
+--~             end
+--~         else
+--~             filetype = resolvers.formatofsuffix(filename)
+--~             if trace_locating then
+--~                 report_resolvers("using suffix based filetype '%s'",filetype)
+--~             end
+--~         end
+--~     else
+--~         if ext == "" or not suffixmap[ext] then
+--~             local format_suffixes = suffixes[askedformat]
+--~             if format_suffixes then
+--~                 for i=1,#format_suffixes do
+--~                     wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
+--~                 end
+--~             end
+--~         end
+--~         filetype = askedformat
+--~         if trace_locating then
+--~             report_resolvers("using given filetype '%s'",filetype)
+--~         end
+--~     end
+--~     return filetype, wantedfiles
+--~ end
+
+--~ local function find_intree(filename,filetype,wantedfiles)
+--~     local typespec = resolvers.variableofformat(filetype)
+--~     local pathlist = resolvers.expandedpathlist(typespec)
+--~     if pathlist and #pathlist > 0 then
+--~         -- list search
+--~         local filelist = collect_files(wantedfiles)
+--~         local dirlist = { }
+--~         if filelist then
+--~             for i=1,#filelist do
+--~                 dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
+--~             end
+--~         end
+--~         if trace_detail then
+--~             report_resolvers("checking filename '%s'",filename)
+--~         end
+--~         local result = { }
+--~         for k=1,#pathlist do
+--~             local path = pathlist[k]
+--~             local pathname = lpegmatch(inhibitstripper,path)
+--~             local doscan = path == pathname -- no ^!!
+--~             local done = false
+--~             -- using file list
+--~             if filelist then
+--~                 -- compare list entries with permitted pattern -- /xx /xx//
+--~                 local expression = makepathexpression(pathname)
+--~                 if trace_detail then
+--~                     report_resolvers("using pattern '%s' for path '%s'",expression,pathname)
+--~                 end
+--~                 for k=1,#filelist do
+--~                     local fl = filelist[k]
+--~                     local f = fl[2]
+--~                     local d = dirlist[k]
+--~                     if find(d,expression) then
+--~                         -- todo, test for readable
+--~                         result[#result+1] = resolvers.resolve(fl[3]) -- no shortcut
+--~                         done = true
+--~                         if allresults then
+--~                             if trace_detail then
+--~                                 report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+--~                             end
+--~                         else
+--~                             if trace_detail then
+--~                                 report_resolvers("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+--~                             end
+--~                             break
+--~                         end
+--~                     elseif trace_detail then
+--~                         report_resolvers("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+--~                     end
+--~                 end
+--~             end
+--~             if not done and doscan then
+--~                 -- check if on disk / unchecked / does not work at all / also zips
+--~                 local scheme = url.hasscheme(pathname)
+--~                 if not scheme or scheme == "file" then
+--~                     local pname = gsub(pathname,"%.%*$",'')
+--~                     if not find(pname,"%*") then
+--~                         local ppname = gsub(pname,"/+$","")
+--~                         if can_be_dir(ppname) then
+--~                             for k=1,#wantedfiles do
+--~                                 local w = wantedfiles[k]
+--~                                 local fname = filejoin(ppname,w)
+--~                                 if isreadable(fname) then
+--~                                     if trace_detail then
+--~                                         report_resolvers("found '%s' by scanning",fname)
+--~                                     end
+--~                                     result[#result+1] = fname
+--~                                     done = true
+--~                                     if not allresults then break end
+--~                                 end
+--~                             end
+--~                         else
+--~                             -- no access needed for non existing path, speedup (esp in large tree with lots of fake)
+--~                         end
+--~                     end
+--~                 end
+--~             end
+--~             if not done and doscan then
+--~                 -- todo: slow path scanning ... although we now have tree:// supported in $TEXMF
+--~             end
+--~             if done and not allresults then
+--~                 return #result > 0 and result
+--~             end
+--~         end
+--~     end
+--~ end
+
+--~ local function find_onpath(filename,filetype,wantedfiles)
+--~     local done = nil
+--~     if trace_detail then
+--~         report_resolvers("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
+--~     end
+--~     for k=1,#wantedfiles do
+--~         local fname = wantedfiles[k]
+--~         if fname and isreadable(fname) then
+--~             filename, done = fname, true
+--~             result[#result+1] = filejoin('.',fname)
+--~             break
+--~         end
+--~     end
+--~ end
+
+--~ local function find_otherwise(filename,filetype,wantedfiles) -- other text files | any | whatever
+--~     local filelist = collect_files(wantedfiles)
+--~     local fl = filelist and filelist[1]
+--~     if fl then
+--~         return { fl[3] } -- filename
+--~     end
+--~ end
+
+--~ collect_instance_files = function(filename,askedformat,allresults) -- uses nested
+--~     local result, stamp, filetype, wantedfiles
+--~     askedformat = askedformat or ""
+--~     filename = collapsepath(filename)
+--~     if instance.remember and not allresults then
+--~         stamp = format("%s--%s", filename, askedformat)
+--~         result = stamp and instance.found[stamp]
+--~         if result then
+--~             if trace_locating then
+--~                 report_resolvers("remembered file '%s'",filename)
+--~             end
+--~             return result
+--~         end
+--~     end
+--~     result = find_direct   (filename,stamp) or
+--~              find_wildcard (filename)       or
+--~              find_qualified(filename)
+--~     if not result then
+--~         filetype, wantedfiles = find_analyze(filename,askedformat)
+--~         result = find_intree   (filename,filetype,wantedfiles) or
+--~                  find_onpath   (filename,filetype,wantedfiles) or
+--~                  find_otherwise(filename,filetype,wantedfiles)
+--~     end
+--~     if result then
+--~         for k=1,#result do
+--~             local rk = collapsepath(result[k])
+--~             result[k] = rk
+--~             resolvers.registerintrees(rk) -- for tracing used files
+--~         end
+--~     else
+--~         result = { } -- maybe false
+--~     end
+--~     if stamp then
+--~         if trace_locating then
+--~             report_resolvers("remembering file '%s'",filename)
+--~         end
+--~         instance.found[stamp] = result
+--~     end
+--~     return result
+--~ end
+
+-- -- -- end of main file search routing -- -- --
 
 local function findfiles(filename,filetype,allresults)
     local result = collect_instance_files(filename,filetype or "",allresults)

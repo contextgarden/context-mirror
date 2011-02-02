@@ -391,7 +391,7 @@ function scripts.update.synchronize()
     resolvers.load_tree(texroot) -- else we operate in the wrong tree
 
     -- update filename database for pdftex/xetex
-    scripts.update.run("mktexlsr")
+    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
     -- update filename database for luatex
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
@@ -420,7 +420,7 @@ function scripts.update.make()
 
     resolvers.load_tree(texroot)
 
-    scripts.update.run("mktexlsr")
+    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
     local askedformats = formats
@@ -442,19 +442,18 @@ function scripts.update.make()
             if engine == "luatex" then
                 scripts.update.run(format('mtxrun --tree="%s" --script context --autogenerate --make',texroot))
             else
-                -- todo: just handle make here or in mtxrun --script context --make
-                scripts.update.run(format("texexec --make --all --fast --%s %s",engine,formatlist))
+                scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all --%s %s',texroot,engine,formatlist))
             end
         end
     end
     local formatlist = concat(table.fromhash(mpformats), " ")
     if formatlist ~= "" then
-        scripts.update.run(format("texexec --make --all --fast %s",formatlist))
+        scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all %s',texroot,formatlist))
     end
     if not force then
         logs.report("make", "use --force to really make formats")
     end
-    scripts.update.run("mktexlsr")
+    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
     logs.report("make","done")
 end
