@@ -640,7 +640,7 @@ local pdfview -- delayed loading
 function scripts.context.openpdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
-    logs.simple("pdfview methods: %s, current method: %s, MTX_PDFVIEW_METHOD=%s",pdfview.methods(),pdfview.method,os.getenv(pdfview.METHOD) or "<unset>")
+    logs.simple(pdfview.status())
     pdfview.open(file.replacesuffix(name,"pdf"))
 end
 

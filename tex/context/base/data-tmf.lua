@@ -13,7 +13,7 @@ local resolvers = resolvers
 --  <  +=
 --  >  =+
 
-function resolvers.load_tree(tree)
+function resolvers.load_tree(tree,resolve)
     if type(tree) == "string" and tree ~= "" then
 
         local getenv, setenv = resolvers.getenv, resolvers.setenv
@@ -42,14 +42,18 @@ function resolvers.load_tree(tree)
         environment.texos   = texos
         environment.texmfos = texmfos
 
+        -- Beware, we need to obey the relocatable autoparent so we
+        -- set TEXMFCNF to its raw value. This is somewhat tricky when
+        -- we run a mkii job from within. Therefore, in mtxrun, there
+        -- is a resolve applied when we're in mkii/kpse mode.
+
         setenv('SELFAUTOPARENT', newroot)
         setenv('SELFAUTODIR',    newtree)
         setenv('SELFAUTOLOC',    newpath)
         setenv('TEXROOT',        newroot)
         setenv('TEXOS',          texos)
         setenv('TEXMFOS',        texmfos)
-        setenv('TEXROOT',        newroot)
-        setenv('TEXMFCNF',       resolvers.luacnfspec)
+        setenv('TEXMFCNF',       resolvers.luacnfspec, not resolve)
         setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
 
         logs.simple("changing from root '%s' to '%s'",oldroot,newroot)
