@@ -2093,11 +2093,6 @@
    \ctxlua{fonts.definers.resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\resetnullfont\relax}
 
-% \def\preloaddefaultfonts
-%   {\resetpreloadfonts
-%    \setupbodyfont[modern,\fontstyle,\fontbody]%
-%    \showmessage\m!fonts6{\normalizedbodyfontsize\normalspace\fontstyle}}
-
 \def\preloaddefaultfonts
   {\resetpreloadfonts
    \setupbodyfont[modern,\fontstyle,\fontbody]%
@@ -2114,30 +2109,40 @@
    \showmessage\m!fonts6{fallback modern tt \normalizedbodyfontsize}}
 
 \def\resetpreloadfonts
-  {\global\let\firststagepreloadfonts \relax
-   \global\let\secondstagepreloadfonts\relax
-   \global\let\thirdstagepreloadfonts \relax
-   \global\let\fourthstagepreloadfonts\relax
+  {\glet\preloaddefaultfonts    \relax
+   \glet\preloaddefaultfontstt  \relax
+   \glet\preloaddefaultfontsmm  \relax
+   \glet\zerostagepreloadfonts  \relax
+   \glet\firststagepreloadfonts \relax
+   \glet\secondstagepreloadfonts\relax
+   \glet\thirdstagepreloadfonts \relax
+   \glet\fourthstagepreloadfonts\relax
+   \global\everyhbox\emptytoks
+   \global\everyvbox\emptytoks
    \resetnullfont}
+
+\def\dozerostagepreloadfonts
+  {\definedfont[\s!file:lmmono10-regular sa 1]}
+
+\def\zerostagepreloadfonts
+  {\writestatus\m!fonts{beware: no fonts are loaded yet, using 'lm mono' in box}%
+   \glet\zerostagepreloadfonts\dozerostagepreloadfonts
+   \zerostagepreloadfonts}
+
+\appendtoks
+    \everyhbox{\zerostagepreloadfonts}
+    \everyvbox{\zerostagepreloadfonts}
+\to \everydump
 
 \def\firststagepreloadfonts % see core-def.mkiv
   {\doifmodeelse{*nofonts}
-     {%\resetpreloadfonts
-      \writestatus\m!fonts{latin modern fonts are not preloaded}}
+     {\writestatus\m!fonts{latin modern fonts are not preloaded}}
      {\preloaddefaultfonts
       \writestatus\m!fonts{preloading latin modern fonts (first stage)}}}
 
 \def\secondstagepreloadfonts % see core-def.mkiv
   {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
    \preloaddefaultfonts}
-
-% \def\thirdstagepreloadfonts
-%   {\ifx\fontclass\empty
-%      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
-%      \preloaddefaultfonts
-%    \else
-%      \resetpreloadfonts
-%    \fi}
 
 \def\thirdstagepreloadfonts
   {\ifx\fontclass\empty

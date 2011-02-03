@@ -396,8 +396,18 @@
 
 \newconditional \knuthmode
 
-\def\nonknuthmode{\the\everynonknuthmode\let\nonknuthmode\relax}
-\def\donknuthmode{\the\everydonknuthmode}
+\def\nonknuthmode
+  {\pushcatcodes
+   \setcatcodetable\ctxcatcodes
+   \the\everynonknuthmode
+   \let\nonknuthmode\relax
+   \popcatcodes}
+
+\def\donknuthmode
+  {\pushcatcodes
+   \setcatcodetable\ctxcatcodes
+   \the\everydonknuthmode
+   \popcatcodes}
 
 \bgroup
 

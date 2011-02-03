@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-lst'] = {
     license   = "see context related readme files"
 }
 
--- used in mtxrun
+-- used in mtxrun, can be loaded later .. todo
 
 local find, concat, upper, format = string.find, table.concat, string.upper, string.format
 
@@ -22,50 +22,42 @@ local function tabstr(str)
     end
 end
 
-local function list(list,report,pattern)
-    pattern = pattern and pattern ~= "" and upper(pattern) or ""
-    local instance = resolvers.instance
-    local report = report or texio.write_nl
-    local sorted = table.sortedkeys(list)
-    local result = { }
-    for i=1,#sorted do
-        local key = sorted[i]
-        if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
-            local raw = tabstr(rawget(list,key))
-            local val = tabstr(list[key])
-            local res = resolvers.resolve(val)
-            if raw and raw ~= "" then
-                if raw == val then
-                    if val == res then
-                        result[#result+1] = { key, raw }
-                    else
-                        result[#result+1] = { key, format('%s => %s',raw,res) }
-                    end
-                else
-                    if val == res then
-                        result[#result+1] = { key, format('%s => %s',raw,val) }
-                    else
-                        result[#result+1] = { key, format('%s => %s => %s',raw,val,res) }
-                    end
-                end
-            else
-                result[#result+1] = { key, "unset" }
+function resolvers.listers.variables(pattern)
+    local instance    = resolvers.instance
+    local environment = instance.environment
+    local variables   = instance.variables
+    local expansions  = instance.expansions
+    local pattern     = upper(pattern or "")
+    local configured  = { }
+    local order       = instance.order
+    for i=1,#order do
+        for k, v in next, order[i] do
+            if v ~= nil and configured[k] == nil then
+                configured[k] = v
             end
         end
     end
-    utilities.formatters.formatcolumns(result)
-    for i=1,#result do
-        report(result[i])
+    local env = table.fastcopy(environment)
+    local var = table.fastcopy(variables)
+    local exp = table.fastcopy(expansions)
+    for key, value in table.sortedpairs(configured) do
+        if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
+            logs.simple(key)
+            logs.simple("  env: %s",tabstr(rawget(environment,key))    or "unset")
+            logs.simple("  var: %s",tabstr(configured[key])            or "unset")
+            logs.simple("  exp: %s",tabstr(expansions[key])            or "unset")
+            logs.simple("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+        end
     end
+    instance.environment = table.fastcopy(env)
+    instance.variables   = table.fastcopy(var)
+    instance.expansions  = table.fastcopy(exp)
 end
-
-function resolvers.listers.variables (report,pattern) list(resolvers.instance.variables, report,pattern) end
-function resolvers.listers.expansions(report,pattern) list(resolvers.instance.expansions,report,pattern) end
 
 function resolvers.listers.configurations(report)
     local configurations = resolvers.instance.specification
     local report = report or texio.write_nl
     for i=1,#configurations do
-        report(configurations[i])
+        report(resolvers.resolve(configurations[i]))
     end
 end

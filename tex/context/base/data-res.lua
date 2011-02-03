@@ -192,6 +192,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         if v ~= nil then
             v = checkedvariable(v) or ""
         end
+        v = resolvers.repath(v) -- for taco who has a : separated osfontdir
         t[k] = v
         return v
     end } )

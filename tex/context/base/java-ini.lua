@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['java-ini'] = {
 
 local format = string.format
 local concat = table.concat
-local lpegmatch, lpegP, lpegR, lpegS, lpegC = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C
+local lpegmatch, lpegP, lpegR, lpegS, lpegC, lpegCarg = lpeg.match, lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Carg
 
 local allocate  = utilities.storage.allocate
 local variables = interfaces.variables
@@ -30,8 +30,8 @@ local codes, preambles, functions = javascripts.codes, javascripts.preambles, ja
 
 local preambled = { }
 
-local function storefunction(s)
-    functions[s] = true
+local function storefunction(s,preamble)
+    functions[s] = preamble
 end
 
 local uses     = lpegP("uses")
@@ -48,7 +48,7 @@ local script   = lpegC(any^1)
 local funct    = lpegP("function")
 local leftp    = lpegP("(")
 local rightp   = lpegP(")")
-local fname    = spaces * funct * spaces * (((1-space-left)^1)/storefunction) * spaces * leftp
+local fname    = spaces * funct * spaces * (lpegC((1-space-left-leftp)^1) * lpegCarg(1) / storefunction) * spaces * leftp
 
 local parsecode      = name * ((uses * name) + lpeg.Cc("")) * spaces * script
 local parsepreamble  = name * ((used * name) + lpeg.Cc("")) * spaces * script
@@ -70,7 +70,7 @@ function javascripts.storepreamble(str) -- now later
         if trace_javascript then
             report_javascript("storing preamble '%s', state '%s', order '%s'",name,used,n)
         end
-        lpegmatch(parsefunctions,script)
+        lpegmatch(parsefunctions,script,1,n)
     end
 end
 
@@ -82,7 +82,7 @@ function javascripts.setpreamble(name,script) -- now later
         if trace_javascript then
             report_javascript("setting preamble '%s', state 'now', order '%s'",name,n)
         end
-        lpegmatch(parsefunctions,script)
+        lpegmatch(parsefunctions,script,1,n)
     end
 end
 
@@ -101,7 +101,7 @@ function javascripts.addtopreamble(name,script) -- now later
             if trace_javascript then
                 report_javascript("storing preamble '%s', state 'now', order '%s'",name,n)
             end
-            lpegmatch(parsefunctions,script)
+            lpegmatch(parsefunctions,script,1,n)
         end
     end
 end
@@ -155,6 +155,7 @@ function javascripts.code(name,arguments)
             reported[name] = true
             report_javascript("using function '%s'",name)
         end
+preambles[f][2] = "now" -- automatically tag preambles that define the function (as later)
         if arguments then
             local args = lpegmatch(splitter,arguments)
             for i=1,#args do -- can be a helper

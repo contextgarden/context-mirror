@@ -20,45 +20,6 @@
 %D apart from downward compatibility issues, it would make global, class
 %D spanning definitions a pain. Some day we will introduce a default class.
 
-% torture test : proper typefaces (and namespace)
-%
-% \starttext
-%   \usetypescript[modern][default]  default:  \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
-%   \usetypescript[modern][texnansi] texnansi: \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
-%   \usetypescript[modern][ec]       ec:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
-%   \usetypescript[modern][qx]       qx:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
-%   \usetypescript[modern][t5]       t5:       \setupbodyfont[modern] \eacute \eogonek \zcaron \acircumflexgrave
-% \stoptext
-%
-% torture test : no typeface, just definitions
-%
-% \starttext
-%   {\setupbodyfont[reset] \setupbodyfont[cmr] cmr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
-%   {\setupbodyfont[reset] \setupbodyfont[plr] plr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
-%   {\setupbodyfont[reset] \setupbodyfont[csr] csr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
-%   {\setupbodyfont[reset] \setupbodyfont[vnr] vnr: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
-%   {\setupbodyfont[reset] \setupbodyfont[aer] aer: \eacute \eogonek \zcaron \acircumflexgrave \endgraf}
-% \stoptext
-
-% \usetypescript [modern]  [texnansi]
-%
-% normal   : 1450 ms
-% exa quit : 1300 ms (150 ms)
-% preload  :  825 ms (635 ms) (40-50%)
-%
-% \usetypescript [modern]  [texnansi]
-% \usetypescript [palatino][texnansi]
-% \usetypescript [times]   [texnansi]
-%
-% normal   : 3200 ms
-% exa quit : 2700 ms ( 500 ms)
-% preload  : 1300 ms (1900 ms) (60-70%)
-
-% \usetypescript [modern][\defaultencoding]
-% \usetypescript [map]   [latin-modern-os] [\defaultencoding]
-% \setupbodyfont[modern]
-% test 1234 test
-
 \unprotect
 
 \unexpanded\def\starttypescriptcollection
@@ -416,9 +377,7 @@
 
 % #1=main #2=rm #3=serif #4=fontname #5=size #6=settings
 
-% we can use \rawgetparameters or \rawgeteparameters
-
-\def\typefaceencoding{\defaultencoding}
+\let\typefaceencoding\s!default % obsolete
 
 \def\dostarttypefacedefining#1#2#3%
   {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!goodies=,#3]%

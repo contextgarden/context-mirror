@@ -2937,22 +2937,20 @@ end
 
 
 local function globpattern(path,patt,recurse,action)
-    if isdir(path) then
-        if path == "/" then
-            path = path .. "."
-        elseif not find(path,"/$") then
-            path = path .. '/'
-        end
-        for name in walkdir(path) do
-            local full = path .. name
-            local mode = attributes(full,'mode')
-            if mode == 'file' then
-                if find(full,patt) then
-                    action(full)
-                end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                globpattern(full,patt,recurse,action)
+    if path == "/" then
+        path = path .. "."
+    elseif not find(path,"/$") then
+        path = path .. '/'
+    end
+    for name in walkdir(path) do
+        local full = path .. name
+        local mode = attributes(full,'mode')
+        if mode == 'file' then
+            if find(full,patt) then
+                action(full)
             end
+        elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+            globpattern(full,patt,recurse,action)
         end
     end
 end
@@ -9441,6 +9439,7 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 if not resolvers.resolve then
     function resolvers.resolve  (s) return s end
     function resolvers.unresolve(s) return s end
+    function resolvers.repath   (s) return s end
 end
 
 
@@ -10771,6 +10770,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         if v ~= nil then
             v = checkedvariable(v) or ""
         end
+        v = resolvers.repath(v) -- for taco who has a : separated osfontdir
         t[k] = v
         return v
     end } )
@@ -11987,6 +11987,7 @@ resolvers.prefixes = prefixes
 local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
 prefixes.environment = function(str)
     return cleanpath(expansion(str))
@@ -12050,8 +12051,6 @@ prefixes.home = function(str)
     return cleanpath(file.join(getenv('HOME'),str))
 end
 
-prefixes["~"] = prefixes.home
-
 prefixes.env  = prefixes.environment
 prefixes.rel  = prefixes.relative
 prefixes.loc  = prefixes.locate
@@ -12107,6 +12106,42 @@ if os.uname then
         if not prefixes[k] then
             prefixes[k] = function() return v end
         end
+    end
+
+end
+
+if os.type == "unix" then
+
+    local pattern
+
+    local function makepattern(t,k,v)
+        local colon = P(":")
+        local p
+        for k, v in table.sortedpairs(prefixes) do
+            if p then
+                p = P(k) + p
+            else
+                p = P(k)
+            end
+        end
+        pattern = Cs((p * colon + colon/";" + P(1))^0)
+        if t then
+            t[k] = v
+        end
+    end
+
+    makepattern()
+
+    getmetatable(prefixes).__newindex = makepattern
+
+    function resolvers.repath(str)
+        return lpegmatch(pattern,str)
+    end
+
+else -- already the default:
+
+    function resolvers.repath(str)
+        return str
     end
 
 end
@@ -13245,7 +13280,7 @@ if not modules then modules = { } end modules ['data-lst'] = {
     license   = "see context related readme files"
 }
 
--- used in mtxrun
+-- used in mtxrun, can be loaded later .. todo
 
 local find, concat, upper, format = string.find, table.concat, string.upper, string.format
 
@@ -13261,51 +13296,43 @@ local function tabstr(str)
     end
 end
 
-local function list(list,report,pattern)
-    pattern = pattern and pattern ~= "" and upper(pattern) or ""
-    local instance = resolvers.instance
-    local report = report or texio.write_nl
-    local sorted = table.sortedkeys(list)
-    local result = { }
-    for i=1,#sorted do
-        local key = sorted[i]
-        if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
-            local raw = tabstr(rawget(list,key))
-            local val = tabstr(list[key])
-            local res = resolvers.resolve(val)
-            if raw and raw ~= "" then
-                if raw == val then
-                    if val == res then
-                        result[#result+1] = { key, raw }
-                    else
-                        result[#result+1] = { key, format('%s => %s',raw,res) }
-                    end
-                else
-                    if val == res then
-                        result[#result+1] = { key, format('%s => %s',raw,val) }
-                    else
-                        result[#result+1] = { key, format('%s => %s => %s',raw,val,res) }
-                    end
-                end
-            else
-                result[#result+1] = { key, "unset" }
+function resolvers.listers.variables(pattern)
+    local instance    = resolvers.instance
+    local environment = instance.environment
+    local variables   = instance.variables
+    local expansions  = instance.expansions
+    local pattern     = upper(pattern or "")
+    local configured  = { }
+    local order       = instance.order
+    for i=1,#order do
+        for k, v in next, order[i] do
+            if v ~= nil and configured[k] == nil then
+                configured[k] = v
             end
         end
     end
-    utilities.formatters.formatcolumns(result)
-    for i=1,#result do
-        report(result[i])
+    local env = table.fastcopy(environment)
+    local var = table.fastcopy(variables)
+    local exp = table.fastcopy(expansions)
+    for key, value in table.sortedpairs(configured) do
+        if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
+            logs.simple(key)
+            logs.simple("  env: %s",tabstr(rawget(environment,key))    or "unset")
+            logs.simple("  var: %s",tabstr(configured[key])            or "unset")
+            logs.simple("  exp: %s",tabstr(expansions[key])            or "unset")
+            logs.simple("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+        end
     end
+    instance.environment = table.fastcopy(env)
+    instance.variables   = table.fastcopy(var)
+    instance.expansions  = table.fastcopy(exp)
 end
-
-function resolvers.listers.variables (report,pattern) list(resolvers.instance.variables, report,pattern) end
-function resolvers.listers.expansions(report,pattern) list(resolvers.instance.expansions,report,pattern) end
 
 function resolvers.listers.configurations(report)
     local configurations = resolvers.instance.specification
     local report = report or texio.write_nl
     for i=1,#configurations do
-        report(configurations[i])
+        report(resolvers.resolve(configurations[i]))
     end
 end
 
@@ -13776,8 +13803,8 @@ messages.help = [[
 --generate            generate file database
 
 --variables           show configuration variables
---expansions          show expanded variables
 --configurations      show configuration order
+
 --expand-braces       expand complex variable
 --expand-path         expand variable (resolve paths)
 --expand-var          expand variable (resolve references)
@@ -14529,19 +14556,12 @@ elseif environment.argument("timedrun") then
     runners.loadbase()
     runners.timedrun(filename)
 
-elseif environment.argument("variables") or environment.argument("show-variables") then
-
-    -- luatools: runners.execute_ctx_script("mtx-base","--variables",filename)
-
-    resolvers.load("nofiles")
-    resolvers.listers.variables(false,environment.argument("pattern"))
-
-elseif environment.argument("expansions") or environment.argument("show-expansions") then
+elseif environment.argument("variables") or environment.argument("show-variables") or environment.argument("expansions") or environment.argument("show-expansions") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--expansions",filename)
 
     resolvers.load("nofiles")
-    resolvers.listers.expansions(false,environment.argument("pattern"))
+    resolvers.listers.variables(environment.argument("pattern"))
 
 elseif environment.argument("configurations") or environment.argument("show-configurations") then
 

@@ -17,6 +17,8 @@
 
 \writestatus{loading}{ConTeXt Symbol Libraries / Initialization}
 
+\registerctxluafile{symb-ini}{1.001}
+
 \unprotect
 
 %D \macros
@@ -255,17 +257,7 @@
 %D
 %D \showsetup{usesymbols}
 
-\def\dousesymbols#1%
-  {\startreadingfile
-     \readsysfile{\truefilename{\f!symbolprefix#1}.\mksuffix}
-       {\showmessage\m!symbols1{#1}}
-       {\readsysfile{\truefilename{\f!symbolprefix#1}}
-          {\showmessage\m!symbols1{#1}}
-          \donothing}%
-   \stopreadingfile}
-
-\def\usesymbols[#1]%
-  {\processcommalist[#1]\dousesymbols}
+\def\usesymbols[#1]{\ctxcommand{usesymbols("#1")}}
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

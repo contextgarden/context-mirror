@@ -43,7 +43,7 @@ local lpdf = lpdf
 
 local function tosixteen(str)
     if not str or str == "" then
-        return "()"
+        return "<feff>" -- not () as we want an indication that it's unicode
     else
         local r, n = { "<feff" }, 1
         for b in utfvalues(str) do

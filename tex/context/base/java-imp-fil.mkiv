@@ -13,19 +13,23 @@
 
 \startJSpreamble Auxiliary used now
 
-  function DocumentFileName ()
-    { var Paths = this.path.split("/") ;
-      Paths = Paths[Paths.length-1].split(".") ;
-      return(Paths[0]) }
+    function DocumentFileName() {
+        var Paths = this.path.split("/") ;
+        Paths = Paths[Paths.length-1].split(".") ;
+        return(Paths[0])
+    }
 
-  function Print_Page_Range(From, To) % gaat mis, nog geen args mogelijk
-    { if ((Number(From)>0)&&(Number(To)>=Number(From)))
-        { var myFrom = Number(From)-1 ;
-          var myTo = Number(To)-1 ;
-          this.print(false,myFrom,myTo,true) } }
+    function Print_Page_Range(From,To) {
+        if ((Number(From)>0) && (Number(To) >= Number(From))) {
+            var myFrom = Number(From)-1 ;
+            var myTo = Number(To)-1 ;
+            this.print(false,myFrom,myTo,true) ;
+        }
+    }
 
-  function Print_This_Page ()
-    { this.print(false,this.pageNum,this.pageNum,true) }
+    function Print_This_Page() {
+        this.print(false,this.pageNum,this.pageNum,true) ;
+    }
 
 \stopJSpreamble
 

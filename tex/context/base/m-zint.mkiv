@@ -55,10 +55,14 @@ end
 
 function moduledata.zint.generate(code,data,suffix,options)
     local code = cleancode(code)
-    local name = format("zint-%s-%s.%s",code,md5.hex(data),suffix or "eps")
+    local base = format("zint-%s-%s",code,md5.hex(data))
+    local name = file.addsuffix(base,suffix or "eps")
     if not lfs.isfile(name) then
+        local temp = file.addsuffix(base,"tmp")
         local code = numberofcode(code)
-        os.spawn(format('%s --barcode=%s --output="%s" %s --data="%s"',zint,code,name,options or "",data))
+        logs.simple("using 'zint' to generate '%s'",base)
+        io.savedata(temp,data)
+        os.execute(format('%s --barcode=%s --output="%s" --input="%s"',zint,code,name,temp,options or ""))
     end
     return  name
 end
@@ -69,6 +73,8 @@ end
 
 \starttext
 
+    \externalfigure[\cldcontext{moduledata.zint.generate("PDF417",[[Hans Hagen]])}]
+    \blank
     \externalfigure[\cldcontext{moduledata.zint.generate("PDF417","Ton Otten")}]
     \blank
     \externalfigure[\cldcontext{moduledata.zint.generate("ISBN","9789490688011")}]

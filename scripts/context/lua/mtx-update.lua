@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mtx-update'] = {
 -- Together with Arthur Reutenauer she made sure that it worked well on all
 -- platforms that matter.
 
-local format, concat, gmatch = string.format, table.concat, string.gmatch
+local format, concat, gmatch, gsub = string.format, table.concat, string.gmatch, string.gsub
 
 scripts         = scripts         or { }
 scripts.update  = scripts.update  or { }
@@ -189,7 +189,7 @@ function scripts.update.synchronize()
     local goodies      = states.get("goodies")           -- goodies (like editors)
     local force        = environment.argument("force")
 
-    bin = string.gsub(bin,"\\","/")
+    bin = gsub(bin,"\\","/")
 
     if not url:find("::$") then url = url .. "::" end
     local ok = lfs.attributes(texroot,"mode") == "directory"
@@ -215,8 +215,8 @@ function scripts.update.synchronize()
             local archives = {}
             for i=1,#collection do
                 local archive = collection[i][1]
-                archive = archive:gsub("<platform>", platform)
-                archive = archive:gsub("<version>", version)
+                archive = gsub(archive,"<platform>",platform)
+                archive = gsub(archive,"<version>",version)
                 archives[#archives+1] = archive
             end
             return archives
@@ -287,12 +287,12 @@ function scripts.update.synchronize()
                 if platform then
                     for i=1,#collection do
                         local c = collection[i]
-                        local archive = c[1]:gsub("<platform>", platform)
-                        local destination = format("%s/%s", texroot, c[2]:gsub("<platform>", platform))
-                        destination = destination:gsub("\\","/")
-                        archive = archive:gsub("<version>",version)
+                        local archive = gsub(c[1],"<platform>",platform)
+                        local destination = format("%s/%s", texroot, gsub(c[2],"<platform>", platform))
+                        destination = gsub(destination,"\\","/")
+                        archive = gsub(archive,"<version>",version)
                         if osplatform == "windows" or osplatform == "mswin" then
-                            destination = destination:gsub("([a-zA-Z]):/", "/cygdrive/%1/")
+                            destination = gsub(destination,"([a-zA-Z]):/", "/cygdrive/%1/")
                         end
                         individual[#individual+1] = { archive, destination }
                     end
@@ -358,17 +358,17 @@ function scripts.update.synchronize()
         end
 
         local function update_script(script, platform)
-            local bin = bin:gsub("\\","/")
-            local texroot = texroot:gsub("\\","/")
+            local bin = gsub(bin,"\\","/")
+            local texroot = gsub(texroot,"\\","/")
             platform = scripts.update.platforms[platform]
             if platform then
                 local command
                 if platform == 'mswin' then
-                    bin = bin:gsub("([a-zA-Z]):/", "/cygdrive/%1/")
-                    texroot = texroot:gsub("([a-zA-Z]):/", "/cygdrive/%1/")
-                    command = string.format("%s -t %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-mswin/bin/", bin, texroot, script, texroot)
+                    bin = gsub(bin,"([a-zA-Z]):/", "/cygdrive/%1/")
+                    texroot = gsub(texroot,"([a-zA-Z]):/", "/cygdrive/%1/")
+                    command = format("%s -t %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-mswin/bin/", bin, texroot, script, texroot)
                 else
-                    command = string.format("%s -tgo --chmod=a+x %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-%s/bin/%s", bin, texroot, script, texroot, platform, script)
+                    command = format("%s -tgo --chmod=a+x %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-%s/bin/%s", bin, texroot, script, texroot, platform, script)
                 end
                 logs.report("mtx update", format("updating %s for %s: %s", script, platform, command))
                 scripts.update.run(command)
@@ -391,7 +391,7 @@ function scripts.update.synchronize()
     resolvers.load_tree(texroot) -- else we operate in the wrong tree
 
     -- update filename database for pdftex/xetex
-    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
     -- update filename database for luatex
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
@@ -420,7 +420,7 @@ function scripts.update.make()
 
     resolvers.load_tree(texroot)
 
-    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
     local askedformats = formats
@@ -453,7 +453,7 @@ function scripts.update.make()
     if not force then
         logs.report("make", "use --force to really make formats")
     end
-    scripts.update.run(format('mtxrun --tree="%s" bin:mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
     logs.report("make","done")
 end

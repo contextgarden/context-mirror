@@ -22,6 +22,7 @@ resolvers.prefixes = prefixes
 local gsub = string.gsub
 local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findgivenfile, resolvers.expansion
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
 prefixes.environment = function(str)
     return cleanpath(expansion(str))
@@ -85,8 +86,6 @@ prefixes.home = function(str)
     return cleanpath(file.join(getenv('HOME'),str))
 end
 
-prefixes["~"] = prefixes.home
-
 prefixes.env  = prefixes.environment
 prefixes.rel  = prefixes.relative
 prefixes.loc  = prefixes.locate
@@ -142,6 +141,42 @@ if os.uname then
         if not prefixes[k] then
             prefixes[k] = function() return v end
         end
+    end
+
+end
+
+if os.type == "unix" then
+
+    local pattern
+
+    local function makepattern(t,k,v)
+        local colon = P(":")
+        local p
+        for k, v in table.sortedpairs(prefixes) do
+            if p then
+                p = P(k) + p
+            else
+                p = P(k)
+            end
+        end
+        pattern = Cs((p * colon + colon/";" + P(1))^0)
+        if t then
+            t[k] = v
+        end
+    end
+
+    makepattern()
+
+    getmetatable(prefixes).__newindex = makepattern
+
+    function resolvers.repath(str)
+        return lpegmatch(pattern,str)
+    end
+
+else -- already the default:
+
+    function resolvers.repath(str)
+        return str
     end
 
 end
