@@ -109,6 +109,10 @@ return {
         -- like ['foo.bar'] so for convenience we also support 'foo_bar'.
 
         directives = {
+
+            -- There are a few variables that determine the engines
+            -- limits. Most will fade away when we close in on version 1.
+
             ["luatex.expanddepth"]       =  "10000", -- 10000
             ["luatex.hashextra"]         = "100000", --     0
             ["luatex.nestsize"]          =   "1000", --    50
@@ -119,15 +123,11 @@ return {
             ["luatex.savesize"]          =  "50000", --  4000
             ["luatex.stacksize"]         =  "10000", --   300
 
+            -- A few process related variables come next.
+
          -- ["system.checkglobals"]      = "10",
          -- ["system.nostatistics"]      = "yes",
             ["system.errorcontext"]      = "10",
-
-            ["mplib.texerrors"]          = "yes",
-
-         -- ["fonts.otf.loader.method"]  = "table", -- table mixed sparse
-         -- ["fonts.otf.loader.cleanup"] = "0",     -- 0 1 2 3
-
             ["system.compile.cleanup"]   = "no",    -- remove tma files
             ["system.compile.strip"]     = "yes",   -- strip tmc files
 
@@ -143,11 +143,21 @@ return {
             ["system.commandmode"]       = "any", -- any none list
             ["system.commandlist"]       = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
 
-            -- Fonts.
+            -- The mplib library support mechanisms have their own
+            -- configuration. Normally these variables can be left as
+            -- they are.
 
-            ["fonts.autoreload"]         = "no",
+            ["mplib.texerrors"]          = "yes",
 
-            -- Viewer
+            -- Normally you can leave the font related directives untouched
+            -- as they only make sense when testing.
+
+         -- ["fonts.autoreload"]         = "no",
+         -- ["fonts.otf.loader.method"]  = "table", -- table mixed sparse
+         -- ["fonts.otf.loader.cleanup"] = "0",     -- 0 1 2 3
+
+            -- In an edit cycle it can be handy to launch an editor. The
+            -- preferred one can be set here.
 
          -- ["pdfview.method"]           = "okular", -- default (often acrobat) xpdf okular
 

@@ -178,6 +178,163 @@ end
 
 -- fonts and color
 
+
+local pdfdocencodingvector, pdfdocencodingcapsule
+
+local function checkpdfdocencoding()
+    local encoding = pdfdictionary {
+        Type = pdfconstant("Encoding"),
+        Differences = pdfarray {
+            24,
+            pdfconstant("breve"),
+            pdfconstant("caron"),
+            pdfconstant("circumflex"),
+            pdfconstant("dotaccent"),
+            pdfconstant("hungarumlaut"),
+            pdfconstant("ogonek"),
+            pdfconstant("ring"),
+            pdfconstant("tilde"),
+            39,
+            pdfconstant("quotesingle"),
+            96,
+            pdfconstant("grave"),
+            128,
+            pdfconstant("bullet"),
+            pdfconstant("dagger"),
+            pdfconstant("daggerdbl"),
+            pdfconstant("ellipsis"),
+            pdfconstant("emdash"),
+            pdfconstant("endash"),
+            pdfconstant("florin"),
+            pdfconstant("fraction"),
+            pdfconstant("guilsinglleft"),
+            pdfconstant("guilsinglright"),
+            pdfconstant("minus"),
+            pdfconstant("perthousand"),
+            pdfconstant("quotedblbase"),
+            pdfconstant("quotedblleft"),
+            pdfconstant("quotedblright"),
+            pdfconstant("quoteleft"),
+            pdfconstant("quoteright"),
+            pdfconstant("quotesinglbase"),
+            pdfconstant("trademark"),
+            pdfconstant("fi"),
+            pdfconstant("fl"),
+            pdfconstant("Lslash"),
+            pdfconstant("OE"),
+            pdfconstant("Scaron"),
+            pdfconstant("Ydieresis"),
+            pdfconstant("Zcaron"),
+            pdfconstant("dotlessi"),
+            pdfconstant("lslash"),
+            pdfconstant("oe"),
+            pdfconstant("scaron"),
+            pdfconstant("zcaron"),
+            160,
+            pdfconstant("Euro"),
+            164,
+            pdfconstant("currency"),
+            166,
+            pdfconstant("brokenbar"),
+            168,
+            pdfconstant("dieresis"),
+            pdfconstant("copyright"),
+            pdfconstant("ordfeminine"),
+            172,
+            pdfconstant("logicalnot"),
+            pdfconstant(".notdef"),
+            pdfconstant("registered"),
+            pdfconstant("macron"),
+            pdfconstant("degree"),
+            pdfconstant("plusminus"),
+            pdfconstant("twosuperior"),
+            pdfconstant("threesuperior"),
+            pdfconstant("acute"),
+            pdfconstant("mu"),
+            183,
+            pdfconstant("periodcentered"),
+            pdfconstant("cedilla"),
+            pdfconstant("onesuperior"),
+            pdfconstant("ordmasculine"),
+            188,
+            pdfconstant("onequarter"),
+            pdfconstant("onehalf"),
+            pdfconstant("threequarters"),
+            192,
+            pdfconstant("Agrave"),
+            pdfconstant("Aacute"),
+            pdfconstant("Acircumflex"),
+            pdfconstant("Atilde"),
+            pdfconstant("Adieresis"),
+            pdfconstant("Aring"),
+            pdfconstant("AE"),
+            pdfconstant("Ccedilla"),
+            pdfconstant("Egrave"),
+            pdfconstant("Eacute"),
+            pdfconstant("Ecircumflex"),
+            pdfconstant("Edieresis"),
+            pdfconstant("Igrave"),
+            pdfconstant("Iacute"),
+            pdfconstant("Icircumflex"),
+            pdfconstant("Idieresis"),
+            pdfconstant("Eth"),
+            pdfconstant("Ntilde"),
+            pdfconstant("Ograve"),
+            pdfconstant("Oacute"),
+            pdfconstant("Ocircumflex"),
+            pdfconstant("Otilde"),
+            pdfconstant("Odieresis"),
+            pdfconstant("multiply"),
+            pdfconstant("Oslash"),
+            pdfconstant("Ugrave"),
+            pdfconstant("Uacute"),
+            pdfconstant("Ucircumflex"),
+            pdfconstant("Udieresis"),
+            pdfconstant("Yacute"),
+            pdfconstant("Thorn"),
+            pdfconstant("germandbls"),
+            pdfconstant("agrave"),
+            pdfconstant("aacute"),
+            pdfconstant("acircumflex"),
+            pdfconstant("atilde"),
+            pdfconstant("adieresis"),
+            pdfconstant("aring"),
+            pdfconstant("ae"),
+            pdfconstant("ccedilla"),
+            pdfconstant("egrave"),
+            pdfconstant("eacute"),
+            pdfconstant("ecircumflex"),
+            pdfconstant("edieresis"),
+            pdfconstant("igrave"),
+            pdfconstant("iacute"),
+            pdfconstant("icircumflex"),
+            pdfconstant("idieresis"),
+            pdfconstant("eth"),
+            pdfconstant("ntilde"),
+            pdfconstant("ograve"),
+            pdfconstant("oacute"),
+            pdfconstant("ocircumflex"),
+            pdfconstant("otilde"),
+            pdfconstant("odieresis"),
+            pdfconstant("divide"),
+            pdfconstant("oslash"),
+            pdfconstant("ugrave"),
+            pdfconstant("uacute"),
+            pdfconstant("ucircumflex"),
+            pdfconstant("udieresis"),
+            pdfconstant("yacute"),
+            pdfconstant("thorn"),
+            pdfconstant("ydieresis"),
+        },
+    }
+    pdfdocencodingvector = pdfreference(pdfflushobject(encoding))
+    local capsule = pdfdictionary {
+        PDFDocEncoding = pdfdocencodingvector
+    }
+    pdfdocencodingcapsule = pdfreference(pdfflushobject(capsule))
+    checkpdfdocencoding = function() end
+end
+
 local fontnames = {
     rm = {
         tf = "Times-Roman",
@@ -239,13 +396,15 @@ end
 
 local function registerfonts()
     if next(usedfonts) then
+        checkpdfdocencoding()
         local d = pdfdictionary()
         for tag, name in next, usedfonts do
             local f = pdfdictionary {
                 Type     = pdfconstant("Font"),
-                Subtype  = pdfconstant("Type1"), -- todo
+                Subtype  = pdfconstant("Type1"),
                 Name     = pdfconstant(tag),
                 BaseFont = pdfconstant(name),
+                Encoding = pdfdocencodingvector,
             }
             d[tag] = pdfreference(pdfflushobject(f))
         end
@@ -620,11 +779,15 @@ local function finishfields()
         end
     end
     if #collected > 0 then
+        checkpdfdocencoding()
         usedfonts.tttf = fontnames.tt.tf
         local acroform = pdfdictionary {
             NeedAppearances = true,
             Fields = pdfreference(pdfflushobject(collected)),
-            DR     = pdfdictionary { Font = registerfonts() },
+            DR     = pdfdictionary {
+                Font     = registerfonts(),
+                Encoding = pdfdocencodingcapsule,
+            },
             CO     = fieldsetlist(calculationset),
             DA     = "/tttf 12 Tf 0 g",
         }

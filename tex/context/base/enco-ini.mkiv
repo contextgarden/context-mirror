@@ -36,34 +36,18 @@
 
 \unprotect
 
-%D Quite some commands are now obsolete. We keep only a few commands
-%D around, just in case they are used in styles (and in for instance
-%D symb and xtag files).
-
-\unexpanded\def\startencoding [#1]{} % used in symb
-\let\stopencoding  \relax
-\unexpanded\def\setupencoding [#1]{}
-\def\enablemapping [#1]{}
-\def\enableencoding[#1]{}
-
-\def\currentencoding{utf}
-\def\currentmapping {utf}
-\let\defaultencoding\s!default
-
-% todo:
-
-% \def\showaccents         {\f!encodingprefix\s!run}
-% \def\showcharacters      {\f!encodingprefix\s!run}
-% \def\showcharacterbounds {\f!encodingprefix\s!run}
-% \def\showhyphenations    {\f!encodingprefix\s!run}
-% \def\showmapping         {\f!encodingprefix\s!run}
-
 %D \macros
 %D   {defineaccent, definecharacter, definecommand}
 
+\unexpanded\def\dodefineaccentcommand#1%
+  {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}}
+
+\unexpanded\def\dodefineaccent#1#2#3% no spaces, used low level
+  {\setvalue{\??ac\string#1\string#2\empty}{#3}}
+
 \unexpanded\def\defineaccent#1 #2 #3 %
-  {\setevalue{\string#1}{\noexpand\dohandleaccent{\string#1}}%
-   \setvalue{\??ac\string#1\string#2}{#3}}
+  {\dodefineaccentcommand{#1}%
+   \dodefineaccent{#1}{#2}{#3}}
 
 \def\dohandleaccent#1#2%
   {\csname\??ac\string#1\string#2\empty\endcsname}
@@ -71,19 +55,17 @@
 \unexpanded\def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
      {\setevalue{\string#1}{\utfchar{#2}}} % or {\expandafter\chardef\csname#1\endcsname#2\relax}
-     {\setuvalue {\string#1}{#2}}}
+     {\setuvalue{\string#1}{#2}}}
 
 \unexpanded\def\definecommand#1 #2 %
   {\setuvalue{\string#1}{#2}}
 
 %D \macros
-%D   {everyuppercase, EveryUppercase,
-%D    everyuppercase, EveryUppercase,
-%D    everysanitize, EverySanitize}
+%D   {everyuppercase, everylowercase, everysanitize}
 
-\newevery \everyuppercase \EveryUppercase
-\newevery \everylowercase \EveryLowercase
-\newevery \everysanitize  \EverySanitize
+\newtoks \everyuppercase
+\newtoks \everylowercase
+\newtoks \everysanitize
 
 %D Some saved meanings (not really needed):
 
@@ -272,52 +254,6 @@
 \def\leftsubguillemot          {\guilsingleleft}
 \def\rightsubguillemot         {\guilsingleright}
 
-% obsolete:
-
-% \greekleftquot        {[obsolete]}
-% \greekrightquot       {[obsolete]}
-% \greekapostrophos     {[obsolete]}
-% \greekupsilondialytika{[obsolete]}
-% \Ycaron               {[obsolete]}
-% \ycaron               {[obsolete]}
-
-% to be done in char-def:
-
-% \definecharacter cyrillicGUP    {GUP}
-% \definecharacter cyrillicGHCRS  {GHCRS}
-% \definecharacter cyrillicZHDSC  {ZHDSC}
-% \definecharacter cyrillicKDSC   {KDSC}
-% \definecharacter cyrillicKBEAK  {KBEAK}
-% \definecharacter cyrillicKVCRS  {KVCRS}
-% \definecharacter cyrillicNG     {NG}
-% \definecharacter cyrillicOTLD   {OTLD}
-% \definecharacter cyrillicY      {Y}
-% \definecharacter cyrillicYHCRS  {YHCRS}
-% \definecharacter cyrillicHDSC   {HDSC}
-% \definecharacter cyrillicCHVCRS {CHVCRS}
-% \definecharacter cyrillicCHRDSC {CHRDSC}
-% \definecharacter cyrillicQ      {Q}
-% \definecharacter cyrillicW      {W}
-%
-% \definecharacter cyrillicgup    {gup}
-% \definecharacter cyrillicghcrs  {ghcrs}
-% \definecharacter cyrilliczhdsc  {zhdsc}
-% \definecharacter cyrillickdsc   {kdsc}
-% \definecharacter cyrillickbeak  {kbeak}
-% \definecharacter cyrillickvcrs  {kvcrs}
-% \definecharacter cyrillicng     {ng}
-% \definecharacter cyrillicotld   {otld}
-% \definecharacter cyrillicy      {y}
-% \definecharacter cyrillicyhcrs  {yhcrs}
-% \definecharacter cyrillichdsc   {hdsc}
-% \definecharacter cyrillicchvcrs {chvcrs}
-% \definecharacter cyrillicchrdsc {chrdsc}
-% \definecharacter cyrillicq      {q}
-% \definecharacter cyrillicw      {w}
-
-% \definecharacter softhyphen        45
-% \definecharacter compoundwordmark  23
-
 % left-overs (some day in private unicode space, so that we can roundtrip)
 
 \unexpanded\def\textblacksquare   {\dontleavehmode\hbox{\vrule\!!width.3\s!em\!!height.4\s!em\!!depth-.1\s!em}}
@@ -364,119 +300,24 @@
   {\copy\controlspacebox}
 
 % a few defaults (\<whatever>{}), we really need the verbose \empty as it will be
-% stringified
-
-\defineaccent ^ {\empty} {\textcircumflex}
-\defineaccent ` {\empty} {\textgrave}
-\defineaccent ~ {\empty} {\texttilde}
-\defineaccent " {\empty} {\textdiaeresis}
-\defineaccent ' {\empty} {\textacute}
-\defineaccent . {\empty} {\textdotaccent}
-\defineaccent = {\empty} {\textmacron}
-\defineaccent c {\empty} {\textcedilla}
-\defineaccent H {\empty} {\texthungarumlaut}
-\defineaccent k {\empty} {\textogonek}
-\defineaccent r {\empty} {\textring}
-\defineaccent u {\empty} {\textbreve}
-\defineaccent v {\empty} {\textcaron}
-
-% from enco-acc:
+% stringified .. anyhow, we define this at the lua end now but keep it here as a
+% reference
 %
-% we should to this at the lua end and share code ..
+% \defineaccent ^ {\empty} {\textcircumflex}
+% \defineaccent ` {\empty} {\textgrave}
+% \defineaccent ~ {\empty} {\texttilde}
+% \defineaccent " {\empty} {\textdiaeresis}
+% \defineaccent ' {\empty} {\textacute}
+% \defineaccent . {\empty} {\textdotaccent}
+% \defineaccent = {\empty} {\textmacron}
+% \defineaccent c {\empty} {\textcedilla}
+% \defineaccent H {\empty} {\texthungarumlaut}
+% \defineaccent k {\empty} {\textogonek}
+% \defineaccent r {\empty} {\textring}
+% \defineaccent u {\empty} {\textbreve}
+% \defineaccent v {\empty} {\textcaron}
 
-\defineaccent ^ A {\Acircumflex}   \defineaccent ^ a {\acircumflex}
-\defineaccent ^ C {\Ccircumflex}   \defineaccent ^ c {\ccircumflex}
-\defineaccent ^ E {\Ecircumflex}   \defineaccent ^ e {\ecircumflex}
-\defineaccent ^ G {\Gcircumflex}   \defineaccent ^ g {\gcircumflex}
-\defineaccent ^ H {\Hcircumflex}   \defineaccent ^ h {\hcircumflex}
-\defineaccent ^ I {\Icircumflex}   \defineaccent ^ i {\icircumflex}  \defineaccent ^ {\i} {\icircumflex}
-\defineaccent ^ J {\Jcircumflex}   \defineaccent ^ j {\jcircumflex}  \defineaccent ^ {\j} {\jcircumflex}
-\defineaccent ^ O {\Ocircumflex}   \defineaccent ^ o {\ocircumflex}
-\defineaccent ^ S {\Scircumflex}   \defineaccent ^ s {\scircumflex}
-\defineaccent ^ U {\Ucircumflex}   \defineaccent ^ u {\ucircumflex}
-\defineaccent ^ W {\Wcircumflex}   \defineaccent ^ w {\wcircumflex}
-\defineaccent ^ Y {\Ycircumflex}   \defineaccent ^ y {\ycircumflex}
-
-\defineaccent ` A {\Agrave}        \defineaccent ` a {\agrave}
-\defineaccent ` E {\Egrave}        \defineaccent ` e {\egrave}
-\defineaccent ` I {\Igrave}        \defineaccent ` i {\igrave}       \defineaccent ` {\i} {\igrave}
-\defineaccent ` O {\Ograve}        \defineaccent ` o {\ograve}
-\defineaccent ` U {\Ugrave}        \defineaccent ` u {\ugrave}
-\defineaccent ` Y {\Ygrave}        \defineaccent ` y {\ygrave}
-
-\defineaccent ~ A {\Atilde}        \defineaccent ~ a {\atilde}
-\defineaccent ~ I {\Itilde}        \defineaccent ~ i {\itilde}       \defineaccent ~ {\i} {\itilde}
-\defineaccent ~ O {\Otilde}        \defineaccent ~ o {\otilde}
-\defineaccent ~ U {\Utilde}        \defineaccent ~ u {\utilde}
-\defineaccent ~ N {\Ntilde}        \defineaccent ~ n {\ntilde}
-
-\defineaccent " A {\Adiaeresis}    \defineaccent " a {\adiaeresis}
-\defineaccent " E {\Ediaeresis}    \defineaccent " e {\ediaeresis}
-\defineaccent " I {\Idiaeresis}    \defineaccent " i {\idiaeresis}   \defineaccent " {\i} {\idiaeresis}
-\defineaccent " O {\Odiaeresis}    \defineaccent " o {\odiaeresis}
-\defineaccent " U {\Udiaeresis}    \defineaccent " u {\udiaeresis}
-\defineaccent " Y {\Ydiaeresis}    \defineaccent " y {\ydiaeresis}
-
-\defineaccent ' A {\Aacute}        \defineaccent ' a {\aacute}
-\defineaccent ' C {\Cacute}        \defineaccent ' c {\cacute}
-\defineaccent ' E {\Eacute}        \defineaccent ' e {\eacute}
-\defineaccent ' I {\Iacute}        \defineaccent ' i {\iacute}       \defineaccent ' {\i} {\iacute}
-\defineaccent ' L {\Lacute}        \defineaccent ' l {\lacute}
-\defineaccent ' N {\Nacute}        \defineaccent ' n {\nacute}
-\defineaccent ' O {\Oacute}        \defineaccent ' o {\oacute}
-\defineaccent ' R {\Racute}        \defineaccent ' r {\racute}
-\defineaccent ' S {\Sacute}        \defineaccent ' s {\sacute}
-\defineaccent ' U {\Uacute}        \defineaccent ' u {\uacute}
-\defineaccent ' Y {\Yacute}        \defineaccent ' y {\yacute}
-\defineaccent ' Z {\Zacute}        \defineaccent ' z {\zacute}
-
-\defineaccent . C {\Cdotaccent}    \defineaccent . c {\cdotaccent}
-\defineaccent . E {\Edotaccent}    \defineaccent . e {\edotaccent}
-\defineaccent . G {\Gdotaccent}    \defineaccent . g {\gdotaccent}
-\defineaccent . I {\Idotaccent}    \defineaccent . i {\idotaccent}   \defineaccent . {\i} {\idotaccent}
-\defineaccent . Z {\Zdotaccent}    \defineaccent . z {\zdotaccent}
-
-\defineaccent = A {\Amacron}       \defineaccent = a {\amacron}
-\defineaccent = E {\Emacron}       \defineaccent = e {\emacron}
-\defineaccent = I {\Imacron}       \defineaccent = i {\imacron}      \defineaccent = {\i} {\imacron}
-\defineaccent = O {\Omacron}       \defineaccent = o {\omacron}
-\defineaccent = U {\Umacron}       \defineaccent = u {\umacron}
-
-\defineaccent c C {\Ccedilla}      \defineaccent c c {\ccedilla}
-\defineaccent c K {\Kcedilla}      \defineaccent c k {\kcedilla}
-\defineaccent c L {\Lcedilla}      \defineaccent c l {\lcedilla}
-\defineaccent c N {\Ncedilla}      \defineaccent c n {\ncedilla}
-\defineaccent c R {\Rcedilla}      \defineaccent c r {\rcedilla}
-\defineaccent c S {\Scedilla}      \defineaccent c s {\scedilla}
-\defineaccent c T {\Tcedilla}      \defineaccent c t {\tcedilla}
-
-\defineaccent H O {\Ohungarumlaut} \defineaccent H o {\ohungarumlaut}
-\defineaccent H u {\uhungarumlaut} \defineaccent H U {\Uhungarumlaut}
-
-\defineaccent k A {\Aogonek}       \defineaccent k a {\aogonek}
-\defineaccent k E {\Eogonek}       \defineaccent k e {\eogonek}
-\defineaccent k I {\Iogonek}       \defineaccent k i {\iogonek}
-\defineaccent k U {\Uogonek}       \defineaccent k u {\uogonek}
-
-\defineaccent r A {\Aring}         \defineaccent r a {\aring}
-\defineaccent r U {\Uring}         \defineaccent r u {\uring}
-
-\defineaccent u A {\Abreve}        \defineaccent u a {\abreve}
-\defineaccent u E {\Ebreve}        \defineaccent u e {\ebreve}
-\defineaccent u G {\Gbreve}        \defineaccent u g {\gbreve}
-\defineaccent u I {\Ibreve}        \defineaccent u i {\ibreve}       \defineaccent u {\i} {\ibreve}
-\defineaccent u O {\Obreve}        \defineaccent u o {\obreve}
-\defineaccent u U {\Ubreve}        \defineaccent u u {\ubreve}
-
-\defineaccent v C {\Ccaron}        \defineaccent v c {\ccaron}
-\defineaccent v D {\Dcaron}        \defineaccent v d {\dcaron}
-\defineaccent v E {\Ecaron}        \defineaccent v e {\ecaron}
-\defineaccent v L {\Lcaron}        \defineaccent v l {\lcaron}
-\defineaccent v N {\Ncaron}        \defineaccent v n {\ncaron}
-\defineaccent v R {\Rcaron}        \defineaccent v r {\rcaron}
-\defineaccent v S {\Scaron}        \defineaccent v s {\scaron}
-\defineaccent v T {\Tcaron}        \defineaccent v t {\tcaron}
-\defineaccent v Z {\Zcaron}        \defineaccent v z {\zcaron}
+\ctxlua{characters.tex.defineaccents()}
 
 % from enco-mis:
 
@@ -498,21 +339,6 @@
    \egroup}
 
 %D A smaller and bolder variant, more like the math and monospaced ones.
-
-% \def\fakeunderscore
-%   {\dontleavehmode\hbox % was \leavevmode
-%      {\setbox\scratchbox\hbox{(}%
-%       \scratchdimen.2\dp\scratchbox
-%       \setbox\scratchbox\hbox{\space}%
-%       \vrule
-%         \!!depth \scratchdimen
-%         \!!width \wd\scratchbox
-%         \!!height\zeropoint}}
-
-% \startTEXpage
-%     \ruledhbox{\strut$1\fakeunderscore^{1\fakeunderscore}$}
-%     \ruledhbox{\strut$1\xfakeunderscore^{1\xfakeunderscore}$}
-% \stopTEXpage
 
 \def\fakeunderscore
   {\relax\ifmmode

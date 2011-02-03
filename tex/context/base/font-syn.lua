@@ -52,7 +52,7 @@ names.be_clever  = true
 names.enabled    = true
 names.cache      = containers.define("fonts","data",names.version,true)
 
-local autoreload = false
+local autoreload = true
 
 directives.register("fonts.autoreload", function(v) autoreload = toboolean(v) end)
 
@@ -926,11 +926,13 @@ local function is_reloaded()
             local c_status = table.serialize(resolvers.datastate())
             local f_status = table.serialize(data.datastate)
             if c_status == f_status then
-             -- report_names("font database matches configuration and file hashes")
+                report_names("font database has matching configuration and file hashes")
                 return
             else
-                report_names("font database does not match configuration and file hashes")
+                report_names("font database has mismatching configuration and file hashes")
             end
+        else
+            report_names("font database is regenerated (controlled by directive 'fonts.autoreload')")
         end
         names.loaded = false
         reloaded = true

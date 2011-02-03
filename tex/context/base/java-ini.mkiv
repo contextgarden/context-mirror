@@ -106,7 +106,11 @@
 %D \JAVASCRIPT\ preambles.
 
 \unexpanded\def\startJScode
-  {\begingroup\obeylualines\obeyluatokens\dostartJScode}
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \def\u{\letterbackslash u}%
+   \dostartJScode}
 
 \long\def\dostartJScode#1\stopJScode
   {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storecode(\!!bs#1\!!es)}}}
@@ -114,7 +118,11 @@
 \let\stopJScode\relax
 
 \unexpanded\def\startJSpreamble
-  {\begingroup\obeylualines\obeyluatokens\dostartJSpreamble}
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \def\u{\letterbackslash u}%
+   \dostartJSpreamble}
 
 \long\def\dostartJSpreamble#1\stopJSpreamble
   {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storepreamble(\!!bs#1\!!es)}}}

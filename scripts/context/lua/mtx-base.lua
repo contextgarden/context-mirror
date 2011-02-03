@@ -10,23 +10,20 @@ logs.extendbanner("ConTeXt TDS Management Tool 1.35 (aka luatools)")
 
 -- private option --noluc for testing errors in the stub
 
-local instance = resolvers.instance
+local instance   = resolvers.instance
 
-instance.luaname  = environment.arguments["luafile"]  or ""
-instance.lualibs  = environment.arguments["lualibs"]  or nil
-instance.pattern  = environment.arguments["pattern"]  or nil
-instance.sortdata = environment.arguments["sort"]     or false
+local pattern    = environment.arguments["pattern"]  or nil
+local fileformat = environment.arguments["format"]   or "" -- nil ?
+local allresults = environment.arguments["all"]      or false
+local trace      = environment.arguments["trace"]
 
-local my_format   = environment.arguments["format"]   or "" -- nil ?
-local all_results = environment.arguments["all"]      or false
-
-if type(instance.pattern) == 'boolean' then
+if type(pattern) == 'boolean' then
     logs.simple("invalid pattern specification")
-    instance.pattern = nil
+    pattern = nil
 end
 
-if environment.arguments["trace"] then
-    resolvers.settrace(environment.arguments["trace"])  -- move to mtxrun ?
+if trace then
+    resolvers.settrace(trace)  -- move to mtxrun ?
 end
 
 runners  = runners  or { }
@@ -40,7 +37,6 @@ to regenerate the file database using "mtxrun --generate".
 messages.help = [[
 --generate        generate file database
 --variables       show configuration variables
---expansions      show expanded variables
 --configurations  show configuration order
 --expand-braces   expand complex variable
 --expand-path     expand variable (resolve paths)
@@ -51,12 +47,9 @@ messages.help = [[
 --find-path       report path of file
 --make or --ini   make luatex format
 --run or --fmt=   run luatex format
---luafile=str     lua inifile (default is texmfcnf.lua)
---lualibs=list    libraries to assemble (optional when --compile)
 --compile         assemble and compile lua inifile
 --verbose         give a bit more info
 --all             show all found files
---sort            sort cached data
 --format=str      filter cf format specification (default 'tex', use 'any' for any match)
 --pattern=str     filter variables
 --trackers=list   enable given trackers
@@ -64,14 +57,14 @@ messages.help = [[
 
 if environment.arguments["find-file"] then
     resolvers.load()
-    if instance.pattern then
-        resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, my_format, all_results)
+    if pattern then
+        resolvers.dowithfilesandreport(resolvers.findfiles, { pattern }, fileformat, allresults)
     else
-        resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, my_format, all_results)
+        resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, fileformat, allresults)
     end
 elseif environment.arguments["find-path"] then
     resolvers.load()
-    local path = resolvers.findpath(environment.files[1], my_format)
+    local path = resolvers.findpath(environment.files[1], fileformat)
     print(path) -- quite basic, wil become function in logs
 elseif environment.arguments["run"] then
     resolvers.load("nofiles") -- ! no need for loading databases
@@ -99,9 +92,9 @@ elseif environment.arguments["var-value"] or environment.arguments["show-value"]
 elseif environment.arguments["format-path"] then
     resolvers.load()
     logs.simple(caches.getwritablepath("format"))
-elseif instance.pattern then -- brrr
+elseif pattern then -- brrr
     resolvers.load()
-    resolvers.dowithfilesandreport(resolvers.findfiles, { instance.pattern }, my_format, all_results)
+    resolvers.dowithfilesandreport(resolvers.findfiles, { pattern }, fileformat, allresults)
 elseif environment.arguments["generate"] then
     instance.renewcache = true
     trackers.enable("resolvers.locating")
@@ -110,12 +103,9 @@ elseif environment.arguments["make"] or environment.arguments["ini"] or environm
     resolvers.load()
     trackers.enable("resolvers.locating")
     environment.make_format(environment.files[1] or "")
-elseif environment.arguments["variables"] or environment.arguments["show-variables"] then
+elseif environment.arguments["variables"] or environment.arguments["show-variables"] or environment.arguments["expansions"] or environment.arguments["show-expansions"] then
     resolvers.load("nofiles")
-    resolvers.listers.variables(false,instance.pattern)
-elseif environment.arguments["expansions"] or environment.arguments["show-expansions"] then
-    resolvers.load("nofiles")
-    resolvers.listers.expansions(false,instance.pattern)
+    resolvers.listers.variables(pattern)
 elseif environment.arguments["configurations"] or environment.arguments["show-configurations"] then
     resolvers.load("nofiles")
     resolvers.listers.configurations()
@@ -126,5 +116,5 @@ elseif environment.files[1] == 'texmfcnf.lua' then
     resolvers.listers.configurations()
 else
     resolvers.load()
-    resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, my_format, all_results)
+    resolvers.dowithfilesandreport(resolvers.findfiles, environment.files, fileformat, allresults)
 end

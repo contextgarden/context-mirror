@@ -10267,6 +10267,8 @@
     </cd:arguments>
   </cd:command>
 
+  <!-- mkii:
+
   <cd:command name="definefontsynonym" file="font-ini.tex">
     <cd:sequence>
       <cd:string value="definieerfontsynoniem"/>
@@ -10289,6 +10291,33 @@
           <cd:constant type="cd:name"/>
         </cd:parameter>
         <cd:parameter name="mapping">
+          <cd:constant type="cd:name"/>
+        </cd:parameter>
+      </cd:assignments>
+    </cd:arguments>
+  </cd:command>
+
+  -->
+
+  <cd:command name="definefontsynonym" file="font-ini.tex">
+    <cd:sequence>
+      <cd:string value="definieerfontsynoniem"/>
+    </cd:sequence>
+    <cd:arguments>
+      <cd:keywords n="1">
+        <cd:constant type="cd:text"/>
+      </cd:keywords>
+      <cd:keywords n="2">
+        <cd:constant type="cd:name"/>
+      </cd:keywords>
+      <cd:assignments n="3" optional="yes">
+        <cd:parameter name="fallbacks">
+          <cd:constant type="cd:name"/>
+        </cd:parameter>
+        <cd:parameter name="features">
+          <cd:constant type="cd:name"/>
+        </cd:parameter>
+        <cd:parameter name="goodies">
           <cd:constant type="cd:name"/>
         </cd:parameter>
       </cd:assignments>

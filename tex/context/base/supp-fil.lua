@@ -337,6 +337,7 @@ function commands.uselibrary(name,patterns,action,failure)
                 if foundname ~= "" then
                     action(name,foundname)
                     done = true
+                    break
                 end
             end
             if done then

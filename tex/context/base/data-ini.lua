@@ -225,4 +225,5 @@ resolvers.settrace(osgetenv("MTX_INPUT_TRACE"))
 if not resolvers.resolve then
     function resolvers.resolve  (s) return s end
     function resolvers.unresolve(s) return s end
+    function resolvers.repath   (s) return s end
 end

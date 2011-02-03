@@ -59,22 +59,20 @@ end
 --~ end
 
 local function globpattern(path,patt,recurse,action)
-    if isdir(path) then
-        if path == "/" then
-            path = path .. "."
-        elseif not find(path,"/$") then
-            path = path .. '/'
-        end
-        for name in walkdir(path) do
-            local full = path .. name
-            local mode = attributes(full,'mode')
-            if mode == 'file' then
-                if find(full,patt) then
-                    action(full)
-                end
-            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-                globpattern(full,patt,recurse,action)
+    if path == "/" then
+        path = path .. "."
+    elseif not find(path,"/$") then
+        path = path .. '/'
+    end
+    for name in walkdir(path) do
+        local full = path .. name
+        local mode = attributes(full,'mode')
+        if mode == 'file' then
+            if find(full,patt) then
+                action(full)
             end
+        elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+            globpattern(full,patt,recurse,action)
         end
     end
 end
