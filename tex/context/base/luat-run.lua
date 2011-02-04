@@ -127,7 +127,14 @@ directives.register("system.synctex", function(v)
     else
         report_system("synctex functionality is disabled!")
     end
+    -- current this is bugged:
     tex.synctex = synctex and 1 or 0
+    -- so for the moment we need:
+    if synctex then
+        tex.print("\\normalsynctex\\plusone")
+    else
+        tex.print("\\normalsynctex\\zerocount")
+    end
 end)
 
 statistics.register("synctex tracing",function()

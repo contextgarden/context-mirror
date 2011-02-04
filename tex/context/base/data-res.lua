@@ -1408,6 +1408,7 @@ end
 local function findgivenfiles(filename,allresults)
     local bname, result = filebasename(filename), { }
     local hashes = instance.hashes
+    local noffound = 0
     for k=1,#hashes do
         local hash = hashes[k]
         local files = instance.files[hash.name] or { }
@@ -1422,13 +1423,21 @@ local function findgivenfiles(filename,allresults)
         end
         if blist then
             if type(blist) == 'string' then
-                result[#result+1] = methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
-                if not allresults then break end
+                local found = methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
+                if found ~= "" then
+                    noffound = noffound + 1
+                    result[noffound] = resolvers.resolve(found)
+                    if not allresults then break end
+                end
             else
                 for kk=1,#blist do
                     local vv = blist[kk]
-                    result[#result+1] = methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
-                    if not allresults then break end
+                    local found = methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
+                    if found ~= "" then
+                        noffound = noffound + 1
+                        result[noffound] = resolvers.resolve(found)
+                        if not allresults then break end
+                    end
                 end
             end
         end
