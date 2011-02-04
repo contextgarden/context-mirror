@@ -4877,16 +4877,6 @@ local t_enable, t_disable = trackers   .enable, trackers   .disable
 local d_enable, d_disable = directives .enable, directives .disable
 local e_enable, e_disable = experiments.enable, experiments.disable
 
--- experiment
-
-if trackers and environment and environment.engineflags.trackers then
-    t_enable(environment.engineflags.trackers)
-end
-
-if directives and environment and environment.engineflags.directives then
-    d_enable(environment.engineflags.directives)
-end
-
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
 
@@ -4930,11 +4920,15 @@ end)
 
 -- experiment
 
-if trackers and environment and environment.engineflags.trackers then
-    t_enable(environment.engineflags.trackers)
-end
-if directives and environment and environment.engineflags.directives then
-    d_enable(environment.engineflags.directives)
+local flags = environment and environment.engineflags
+
+if flags then
+    if trackers and flags.trackers then
+        t_enable(flags.trackers)
+    end
+    if directives and flags.directives then
+        d_enable(flags.directives)
+    end
 end
 
 -- here
@@ -11695,6 +11689,7 @@ end
 local function findgivenfiles(filename,allresults)
     local bname, result = filebasename(filename), { }
     local hashes = instance.hashes
+    local noffound = 0
     for k=1,#hashes do
         local hash = hashes[k]
         local files = instance.files[hash.name] or { }
@@ -11709,13 +11704,21 @@ local function findgivenfiles(filename,allresults)
         end
         if blist then
             if type(blist) == 'string' then
-                result[#result+1] = methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
-                if not allresults then break end
+                local found = methodhandler('concatinators',hash.type,hash.name,blist,bname) or ""
+                if found ~= "" then
+                    noffound = noffound + 1
+                    result[noffound] = resolvers.resolve(found)
+                    if not allresults then break end
+                end
             else
                 for kk=1,#blist do
                     local vv = blist[kk]
-                    result[#result+1] = methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
-                    if not allresults then break end
+                    local found = methodhandler('concatinators',hash.type,hash.name,vv,bname) or ""
+                    if found ~= "" then
+                        noffound = noffound + 1
+                        result[noffound] = resolvers.resolve(found)
+                        if not allresults then break end
+                    end
                 end
             end
         end
@@ -11993,7 +11996,7 @@ prefixes.environment = function(str)
     return cleanpath(expansion(str))
 end
 
-prefixes.relative = function(str,n)
+prefixes.relative = function(str,n) -- lfs.isfile
     if io.exists(str) then
         -- nothing
     elseif io.exists("./" .. str) then

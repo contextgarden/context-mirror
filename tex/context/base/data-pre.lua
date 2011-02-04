@@ -28,7 +28,7 @@ prefixes.environment = function(str)
     return cleanpath(expansion(str))
 end
 
-prefixes.relative = function(str,n)
+prefixes.relative = function(str,n) -- lfs.isfile
     if io.exists(str) then
         -- nothing
     elseif io.exists("./" .. str) then

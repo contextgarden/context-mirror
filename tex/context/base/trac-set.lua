@@ -239,16 +239,6 @@ local t_enable, t_disable = trackers   .enable, trackers   .disable
 local d_enable, d_disable = directives .enable, directives .disable
 local e_enable, e_disable = experiments.enable, experiments.disable
 
--- experiment
-
-if trackers and environment and environment.engineflags.trackers then
-    t_enable(environment.engineflags.trackers)
-end
-
-if directives and environment and environment.engineflags.directives then
-    d_enable(environment.engineflags.directives)
-end
-
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
 
@@ -292,11 +282,15 @@ end)
 
 -- experiment
 
-if trackers and environment and environment.engineflags.trackers then
-    t_enable(environment.engineflags.trackers)
-end
-if directives and environment and environment.engineflags.directives then
-    d_enable(environment.engineflags.directives)
+local flags = environment and environment.engineflags
+
+if flags then
+    if trackers and flags.trackers then
+        t_enable(flags.trackers)
+    end
+    if directives and flags.directives then
+        d_enable(flags.directives)
+    end
 end
 
 -- here
