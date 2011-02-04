@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['luat-ini'] = {
     license   = "see context related readme files"
 }
 
+-- rather experimental down here ... will change with lua 5.2 --
+
 --~ local ctxcatcodes = tex.ctxcatcodes
 
 local debug = require "debug"

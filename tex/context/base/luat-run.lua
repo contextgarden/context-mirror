@@ -113,3 +113,25 @@ function luatex.cleanuptempfiles()
 end
 
 luatex.registerstopactions(luatex.cleanuptempfiles)
+
+-- for the moment here
+
+local synctex = false
+
+local report_system = logs.new("system")
+
+directives.register("system.synctex", function(v)
+    synctex = v
+    if v then
+        report_system("synctex functionality is enabled!")
+    else
+        report_system("synctex functionality is disabled!")
+    end
+    tex.synctex = synctex and 1 or 0
+end)
+
+statistics.register("synctex tracing",function()
+    if synctex or tex.synctex > 0 then
+        return "syntex has been enabled (extra log file generated)"
+    end
+end)

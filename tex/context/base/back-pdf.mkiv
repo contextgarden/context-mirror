@@ -37,17 +37,19 @@
 %D We will minimize the number of calls to \PDF\ specific primitives
 %D and delegate all management and injection of code to the backend.
 %D
-%D Here we initialize some internal quantities.
+%D Here we initialize some internal quantities. We also protect them.
 
-\pdfoutput              =   1
-\pdfhorigin             =   1 true in
-\pdfvorigin             =   1 true in
-\pdfimageresolution     = 300
-\pdfpkresolution        = 600
-\pdfdecimaldigits       =  10
-\pdfinclusionerrorlevel =   0
-\pdfminorversion        =   6 % maybe even 7
-%pdfuniqueresname       =   1
+\pdfoutput  1         \let\pdfoutput \undefined \newcount\pdfoutput  \pdfoutput  1
+\pdfhorigin 1 true in \let\pdfhorigin\undefined \newdimen\pdfhorigin \pdfhorigin 1 true in
+\pdfvorigin 1 true in \let\pdfvorigin\undefined \newdimen\pdfvorigin \pdfvorigin 1 true in
+
+% most of these will be protected as well
+
+\pdfimageresolution     300
+\pdfpkresolution        600
+\pdfdecimaldigits        10
+\pdfinclusionerrorlevel   0
+\pdfminorversion          6 % use setupbackend for changes
 
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
