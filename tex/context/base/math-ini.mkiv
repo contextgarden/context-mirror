@@ -397,17 +397,17 @@
 \newconditional \knuthmode
 
 \def\nonknuthmode
-  {\pushcatcodes
+  {\pushcatcodetable
    \setcatcodetable\ctxcatcodes
    \the\everynonknuthmode
    \let\nonknuthmode\relax
-   \popcatcodes}
+   \popcatcodetable}
 
 \def\donknuthmode
-  {\pushcatcodes
+  {\pushcatcodetable
    \setcatcodetable\ctxcatcodes
    \the\everydonknuthmode
-   \popcatcodes}
+   \popcatcodetable}
 
 \bgroup
 

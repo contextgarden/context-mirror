@@ -904,6 +904,10 @@
     \edef\texengineversion{0}
 \fi
 
+%D We only can set this one via directives (system.synctex).
+
+\let\synctex\undefined \newcount\synctex
+
 %D While cleaning this code up a bit I was listening to Heather
 %D Nova's \CD\ Redbird. The first song on that \CD\ ends with
 %D a few lines suitable for ending this initialization module:

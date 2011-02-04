@@ -92,16 +92,4 @@
     \synchronizelocallinespecs
 \to \everyswitchtobodyfont
 
-\def\synctexwarning
-  {\ifdefined\synctex \ifnum\synctex=\zerocount \else
-     \writeline
-     \writestatus\m!systems{BEWARE: synctex functionality is enabled!}%
-     \writeline
-     \globallet\synctexwarning\relax
-   \fi \fi}
-
-\prependtoks \synctexwarning \to \everyjob
-\prependtoks \synctexwarning \to \everystarttext
-\appendtoks  \synctexwarning \to \everystoptext
-
 \protect \endinput
