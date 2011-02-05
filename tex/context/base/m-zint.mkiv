@@ -54,6 +54,9 @@ local function numberofcode(code)
 end
 
 function moduledata.zint.generate(code,data,suffix,options)
+    if not data or data == "" then
+        data = "unset"
+    end
     local code = cleancode(code)
     local base = format("zint-%s-%s",code,md5.hex(data))
     local name = file.addsuffix(base,suffix or "eps")
