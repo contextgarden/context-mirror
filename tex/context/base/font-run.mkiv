@@ -203,33 +203,57 @@
    \ifinsidefloat\else\stopbaselinecorrection\fi
    \egroup}
 
-\gdef\showfontstyle
-  {\dotripleempty\doshowfontstyle}
+% \showfontstyle[modern][rm][tf][all] % #2, #3 and #4 can be 'all'
 
-\gdef\doshowfontstyle[#1][#2][#3]%
-  {\ifthirdargument
-     \bgroup
-     \raggedright
-     \switchtobodyfont[#1]
-     \def\dodocommand##1##2%
-       {\starttextrule{\tttf #1 ##1 ##2}
-        \nobreak \getvalue{##2}%
-        \dorecurse{255}
-          {\iffontchar\font\recurselevel\relax
-             \char\recurselevel\relax\space
-           \fi}
-        \par \nobreak
-        \stoptextrule}
-     \def\docommand##1%
-       {\getvalue{##1}\processcommacommand[#3]{\dodocommand{##1}}}
-     \processcommalist[#2]\docommand
-     \egroup
-   \else\ifsecondargument
-     \showfontstyle[#1][#2][\fontalternativelist]% math is gone
-   \else
-     \showfontstyle[#1][\c!rm]\showfontstyle[#1][\c!ss]
-     \showfontstyle[#1][\c!tt]\showfontstyle[#1][\c!mm]
-   \fi\fi}
+\gdef\showfontstyle      {\dodoubleempty   \dodoshowfontstyle}
+\gdef\redoshowfontstyle  {\dotripleempty   \dododoshowfontstyle}
+\gdef\redodoshowfontstyle{\doquadrupleempty\dodododoshowfontstyle}
+
+\gdef\dodoshowfontstyle[#1][#2]%
+  {\doifelse{#2}\v!all
+     {\dodoshowfontstyle[#1][\c!rm,\c!ss,\c!tt,\c!mm]}
+     {\doifelsenothing{#2}
+        {\redoshowfontstyle[#1][\c!rm,\c!ss,\c!tt,\c!mm]}
+        {\redoshowfontstyle[#1][#2]}}}
+
+\gdef\dododoshowfontstyle[#1][#2][#3]%
+  {\doifelse{#3}\v!all
+     {\redodoshowfontstyle[#1][#2][\fontalternativelist]}
+     {\doifelsenothing{#3}
+        {\redodoshowfontstyle[#1][#2][\fontalternativelist]}
+        {\redodoshowfontstyle[#1][#2][#3]}}}
+
+\gdef\dodododoshowfontstyle[#1][#2][#3][#4]%
+  {\doifelsenothing{#4}
+     {\doshowfontstyleindeed[#1][#2][#3][\v!all]}
+     {\doshowfontstyleindeed[#1][#2][#3][#4]}}
+
+\gdef\doshowfontstyleindeed[#1][#2][#3][#4]%
+  {\bgroup
+   \raggedright
+   \switchtobodyfont[#1]
+   \def\dododocommand##1%
+     {\dostepwiserecurse{0}{255}{1}
+        {\scratchcounter\numexpr##1*256+\recurselevel\relax
+         \iffontchar\font\scratchcounter\relax
+           \char\scratchcounter
+           \space
+         \fi}}%
+   \def\dodocommand##1##2%
+     {\starttextrule{\tttf #1 ##1 ##2}
+      \nobreak\getvalue{##2}%
+      \doifelsenothing{#4}
+        {\dododocommand{0}}
+        {\doifelse{#4}\v!all
+           {\dostepwiserecurse{0}{255}{1}{\expanded{\dododocommand{\recurselevel}}}}
+           {\processcommalist[#4]{\dododocommand}}}%
+      \par \nobreak
+      \stoptextrule}
+   \def\docommand##1%
+     {\getvalue{##1}%
+      \processcommacommand[#3]{\dodocommand{##1}}}
+   \processcommalist[#2]\docommand
+   \egroup}
 
 \gdef\showligature#1%
   {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
