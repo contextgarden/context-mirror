@@ -11,6 +11,25 @@ local smallcaps = {
     smcp = yes,
 }
 
+local report_statistics = logs.reporter("fonts","statistics")
+
+local function statistics(tfmdata)
+    for k, v in table.sortedpairs(tfmdata) do
+        if type(v) == "table" then
+            report_statistics("%s: <table>",k)
+        else
+            report_statistics("%s: %s",k,tostring(v))
+        end
+    end
+end
+
+local function squeeze(tfmdata)
+    for k, v in next, tfmdata.characters do
+        v.height = 0.75 * (v.height or 0)
+        v.depth  = 0.75 * (v.depth  or 0)
+    end
+end
+
 return {
     name = "demo",
     version = "1.00",
@@ -33,5 +52,9 @@ return {
                 "two", "four", "six", "eight", "ten",
             },
         }
-    }
+    },
+    postprocessors = {
+        statistics = statistics,
+        squeeze    = squeeze,
+    },
 }

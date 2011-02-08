@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/08/11 17:08:08
+-- merge date  : 02/08/11 18:41:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -3753,8 +3753,11 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
+    -- this will move to some subtable so that it is copied at once
     t.goodies = tfmtable.goodies
     t.colorscheme = tfmtable.colorscheme
+    t.postprocessors = tfmtable.postprocessors
+    --
  -- t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
@@ -15797,6 +15800,14 @@ function tfm.read(specification)
             else
                 tfmtable.embedding = "subset"
             end
+            -- fonts.goodies.postprocessors.apply(tfmdata) -- only here
+            local postprocessors = tfmtable.postprocessors
+            if postprocessors then
+                for i=1,#postprocessors do
+                    postprocessors[i](tfmtable) -- after scaling etc
+                end
+            end
+            --
             tfm.fonts[hash] = tfmtable
             fonts.designsizes[specification.hash] = tfmtable.designsize -- we only know this for sure after loading once
         --~ tfmtable.mode = specification.features.normal.mode or "base"

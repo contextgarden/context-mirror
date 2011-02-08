@@ -322,8 +322,11 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     t.unicodes = tfmtable.unicodes
     t.indices = tfmtable.indices
     t.marks = tfmtable.marks
+    -- this will move to some subtable so that it is copied at once
     t.goodies = tfmtable.goodies
     t.colorscheme = tfmtable.colorscheme
+    t.postprocessors = tfmtable.postprocessors
+    --
  -- t.embedding = tfmtable.embedding
     t.descriptions = descriptions
     if tfmtable.fonts then
