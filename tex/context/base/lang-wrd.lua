@@ -12,7 +12,7 @@ local concat = table.concat
 local lpegmatch = lpeg.match
 local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
 
-local report_languages = logs.new("languages")
+local report_words = logs.new("languages","words")
 
 local nodes, node, languages = nodes, node, languages
 
@@ -60,7 +60,7 @@ local loaded = { } -- we share lists
 function words.load(tag,filename)
     local fullname = resolvers.findfile(filename,'other text file') or ""
     if fullname ~= "" then
-        report_languages("loading word file '%s'",fullname)
+        report_words("loading word file '%s'",fullname)
         statistics.starttiming(languages)
         local list = loaded[fullname]
         if not list then
@@ -72,7 +72,7 @@ function words.load(tag,filename)
         wordsdata[tag] = list
         statistics.stoptiming(languages)
     else
-        report_languages("missing words file '%s'",filename)
+        report_words("missing word file '%s'",filename)
     end
 end
 
@@ -374,7 +374,7 @@ local function dumpusedwords()
     if dumpthem then
         collected.threshold = words.threshold
         dumpname = dumpname or file.addsuffix(tex.jobname,"words")
-        report_languages("saving list of used words in '%s'",dumpname)
+        report_words("saving list of used words in '%s'",dumpname)
         io.savedata(dumpname,table.serialize(collected,true))
      -- table.tofile(dumpname,list,true)
     end

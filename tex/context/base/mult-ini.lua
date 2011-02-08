@@ -12,7 +12,7 @@ local serialize = table.serialize
 
 local texsprint = tex.sprint
 
-local report_interfaces = logs.new("interfaces")
+local report_interface = logs.new("interface","initialization")
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
@@ -20,7 +20,7 @@ interfaces.constants = interfaces.constants or { }
 interfaces.variables = interfaces.variables or { }
 interfaces.elements  = interfaces.elements  or { }
 
-storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messages" )
+storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messages")
 storage.register("interfaces/constants", interfaces.constants, "interfaces.constants")
 storage.register("interfaces/variables", interfaces.variables, "interfaces.variables")
 storage.register("interfaces/elements",  interfaces.elements,  "interfaces.elements")
@@ -38,9 +38,9 @@ local currentresponse  = storage.shared.currentresponse
 local complete = { } interfaces.complete = complete
 
 setmetatable(complete, { __index = function(t,k)
-    report_interfaces("loading interface definitions from 'mult-def.lua'")
+    report_interface("loading interface definitions from 'mult-def.lua'")
     complete = dofile(resolvers.findfile("mult-def.lua"))
-    report_interfaces("loading interface messages from 'mult-mes.lua'")
+    report_interface("loading interface messages from 'mult-mes.lua'")
     complete.messages = dofile(resolvers.findfile("mult-mes.lua"))
     interfaces.complete = complete
     return complete[k]
@@ -50,6 +50,7 @@ local messages  = interfaces.messages
 local constants = interfaces.constants
 local variables = interfaces.variables
 local elements  = interfaces.elements
+local reporters = { } -- just an optimization
 
 local valueiskey = { __index = function(t,k) t[k] = k return k end }
 
@@ -57,8 +58,19 @@ setmetatable(variables,valueiskey)
 setmetatable(constants,valueiskey)
 setmetatable(elements, valueiskey)
 
+setmetatable(messages,  { __index = function(t,k) local v = { }         ; t[k] = v ; return v end })
+setmetatable(reporters, { __index = function(t,k) local v = logs.new(k) ; t[k] = v ; return v end })
+
+for category, m in next, messages do
+    -- We pre-create reporters for already defined messages
+    -- because otherwise listing is incomplete and we want
+    -- to use that for checking so delaying makes not much
+    -- sense there.
+    local r = reporters[m.title or category]
+end
+
 function interfaces.setmessages(category,str)
-    local m = messages[category] or { }
+    local m = messages[category]
     for k, v in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do
         m[k] = gsub(v,"%-%-","%%s")
     end
@@ -67,10 +79,6 @@ end
 
 function interfaces.setmessage(category,tag,message)
     local m = messages[category]
-    if not m then
-        m = { }
-        messages[category] = m
-    end
     m[tag] = gsub(message,"%-%-","%%s")
 end
 
@@ -86,7 +94,7 @@ end
 
 local messagesplitter = lpeg.splitat(",")
 
-function interfaces.makemessage(category,tag,arguments)
+local function makemessage(category,tag,arguments)
     local m = messages[category]
     m = (m and (m[tag] or m[tostring(tag)])) or format("unknown message, category '%s', tag '%s'",category,tag)
     if not m then
@@ -98,9 +106,13 @@ function interfaces.makemessage(category,tag,arguments)
     end
 end
 
+interfaces.makemessage = makemessage
+
 function interfaces.showmessage(category,tag,arguments)
     local m = messages[category]
-    commands.writestatus((m and m.title) or "unknown title",interfaces.makemessage(category,tag,arguments))
+    local t = m and m.title or category
+    local r = reporters[t]
+    r(makemessage(category,tag,arguments))
 end
 
 function interfaces.setvariable(variable,given)
@@ -113,6 +125,13 @@ end
 
 function interfaces.setelement(element,given)
     elements[given] = element
+end
+
+-- status
+
+function commands.showstatus(category,message)
+    local r = reporters[category]
+    r(message)
 end
 
 -- initialization
@@ -153,16 +172,16 @@ function interfaces.setuserinterface(interface,response)
             nofcommands = nofcommands + 1
         end
         local nofmessages = 0
-        local setmessage = interfaces.setmessage
         for category, message in next, complete.messages do
+            local m = messages[category]
             for tag, set in next, message do
-                if tag ~=  "files" then
-                    setmessage(category,tag,set[interface] or set.en)
+                if tag ~= "files" then
+                    m[tag] = set[interface] or set.en -- there are no --'s any longer in the lua file
                 end
             end
             nofmessages = nofmessages + 1
         end
-        report_interfaces("definitions: %s constants, %s variables, %s elements, %s commands, %s message groups",
+        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s message groups",
             nofconstants,nofvariables,nofelements,nofcommands,nofmessages)
     end
 end

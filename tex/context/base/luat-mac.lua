@@ -13,7 +13,7 @@ local insert, remove = table.insert, table.remove
 local rep, sub = string.rep, string.sub
 local setmetatable = setmetatable
 
-local report_macros = logs.new("macros")
+local report_macros = logs.new("interface","macros")
 
 local stack, top, n, hashes = { }, nil, 0, { }
 

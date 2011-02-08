@@ -851,7 +851,7 @@
 \def\eTBL{\tbltoks\@EA\@EA\@EA{\@EA\the\@EA\tbltoks\@EA\begintblrow\the\tblrowtoks\endtblrow}}%
 
 \def\prelocateTBLerror
-  {\writestatus\m!systems{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \number\prelocatedTBLrows)}}
+  {\writestatus\m!system{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \number\prelocatedTBLrows)}}
 
 \def\prelocateTBLrows#1% we start at zero so we have one to much, better play safe anyway
   {\dostepwiserecurse\prelocatedTBLrows{#1}\plusone{\expandafter\newtoks\csname tbl:\recurselevel\endcsname}%

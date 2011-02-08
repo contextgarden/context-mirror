@@ -9,6 +9,20 @@ if not modules then modules = { } end modules ['mtx-modules'] = {
 scripts         = scripts         or { }
 scripts.modules = scripts.modules or { }
 
+local helpinfo = [[
+--convert             convert source files (tex, mkii, mkiv, mp) to 'ted' files
+--process             process source files (tex, mkii, mkiv, mp) to 'pdf' files
+--prep                use original name with suffix 'prep' appended
+]]
+
+local application = logs.application {
+    name     = "mtx-modules",
+    banner   = "ConTeXt Module Documentation Generators 1.00",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 -- Documentation can be woven into a source file. This script can generates
 -- a file with the documentation and source fragments properly tagged. The
 -- documentation is included as comment:
@@ -39,15 +53,15 @@ local find, format, sub, is_empty, strip = string.find, string.format, string.su
 local function source_to_ted(inpname,outname,filetype)
     local inp = io.open(inpname)
     if not inp then
-        logs.simple("unable to open '%s'",inpname)
+        report("unable to open '%s'",inpname)
         return
     end
     local out = io.open(outname,"w")
     if not out then
-        logs.simple("unable to open '%s'",outname)
+        report("unable to open '%s'",outname)
         return
     end
-    logs.simple("converting '%s' to '%s'",inpname,outname)
+    report("converting '%s' to '%s'",inpname,outname)
     local skiplevel, indocument, indefinition = 0, false, false
     out:write(format("\\startmodule[type=%s]\n",filetype or file.suffix(inpname)))
     for line in inp:lines() do
@@ -143,25 +157,16 @@ function scripts.modules.process(runtex)
     end
     for i=1,#processed do
         local name = processed[i]
-        logs.simple("modules","processed: %s",name)
+        report("modules","processed: %s",name)
     end
 end
 
 --  context --ctx=m-modules.ctx xxx.mkiv
-
-
-logs.extendbanner("ConTeXt Module Documentation Generators 1.00")
-
-messages.help = [[
---convert             convert source files (tex, mkii, mkiv, mp) to 'ted' files
---process             process source files (tex, mkii, mkiv, mp) to 'pdf' files
---prep                use original name with suffix 'prep' appended
-]]
 
 if environment.argument("process") then
     scripts.modules.process(true)
 elseif environment.argument("convert") then
     scripts.modules.process(false)
 else
-    logs.help(messages.help)
+    application.help()
 end

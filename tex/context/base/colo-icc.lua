@@ -11,6 +11,8 @@ local readstring, readnumber = io.readstring, io.readnumber
 
 local colors = attributes and attributes.colors or { } -- when used in mtxrun
 
+local report_colors = logs.new("colors","icc")
+
 local R, Cs, lpegmatch = lpeg.R, lpeg.Cs, lpeg.match
 
 local invalid = R(char(0)..char(31))
@@ -97,7 +99,7 @@ function colors.iccprofile(filename,verbose)
                 }
             else
                 if verbose then
-                    logs.simple("ignoring tag '%s' or type '%s' in profile '%s'",tag,kind,fullname)
+                    report_colors("ignoring tag '%s' or type '%s' in profile '%s'",tag,kind,fullname)
                 end
                 tags[tag] = nil
             end

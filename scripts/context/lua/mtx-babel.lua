@@ -8,6 +8,20 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
 
 -- data tables by Thomas A. Schmitz
 
+local helpinfo = [[
+--language=string     conversion language (e.g. greek)
+--structure=string    obey given structure (e.g. 'document', default: 'context')
+--convert             convert babel codes into utf
+]]
+
+local application = logs.application {
+    name     = "mtx-babel",
+    banner   = "Babel Input To UTF Conversion 1.20",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts       = scripts       or { }
 scripts.babel = scripts.babel or { }
 
@@ -387,22 +401,22 @@ do
                         local structure = environment.argument("structure") or "document"
                         converter = converter[structure]
                         if converter then
-                            logs.simple("converting '%s' using language '%s' with structure '%s'", filename, language, structure)
+                            report("converting '%s' using language '%s' with structure '%s'", filename, language, structure)
                             data = converter:match(data)
                             local newfilename = filename .. ".utf"
                             io.savedata(newfilename, data)
-                            logs.simple("converted data saved in '%s'", newfilename)
+                            report("converted data saved in '%s'", newfilename)
                         else
-                            logs.simple("unknown structure '%s' language '%s'", structure, language)
+                            report("unknown structure '%s' language '%s'", structure, language)
                         end
                     else
-                        logs.simple("no converter for language '%s'", language)
+                        report("no converter for language '%s'", language)
                     end
                 else
-                    logs.simple("provide language")
+                    report("provide language")
                 end
             else
-                logs.simple("no data in '%s'",filename)
+                report("no data in '%s'",filename)
             end
         end
     end
@@ -415,16 +429,8 @@ do
 
 end
 
-logs.extendbanner("Babel Input To UTF Conversion 1.20")
-
-messages.help = [[
---language=string     conversion language (e.g. greek)
---structure=string    obey given structure (e.g. 'document', default: 'context')
---convert             convert babel codes into utf
-]]
-
 if environment.argument("convert") then
     scripts.babel.convert(environment.files[1] or "")
 else
-    logs.help(messages.help)
+    application.help()
 end

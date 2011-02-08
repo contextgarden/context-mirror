@@ -137,19 +137,21 @@ function statistics.show(reporter)
     end
 end
 
-
-local template, nn = nil, 0 -- we only calcute it once
+local template, report_statistics, nn = nil, nil, 0 -- we only calcute it once
 
 function statistics.showjobstat(tag,data,n)
-    if type(data) == "table" then
+    if not logs then
+        -- sorry
+    elseif type(data) == "table" then
         for i=1,#data do
             statistics.showjobstat(tag,data[i],n)
         end
     else
         if not template or n > nn then
-            template, n = format("%%-%ss: %%-%ss - %%s",15,n), nn
+            template, n = format("%%-%ss - %%s",n), nn
+            report_statistics = logs.new("mkiv lua stats")
         end
-        write_nl(format(template,"mkiv lua stats",tag,data))
+        report_statistics(format(template,tag,data))
     end
 end
 
@@ -170,7 +172,7 @@ function statistics.runtime()
 end
 
 function statistics.timed(action,report)
-    report = report or logs.simple
+    report = report or logs.new("system")
     starttiming("run")
     action()
     stoptiming("run")

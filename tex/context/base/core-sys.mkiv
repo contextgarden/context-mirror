@@ -142,7 +142,7 @@
          \s!default=>\getnewrandomseed\scratchcounter,
          \s!unknown=>\scratchcounter#1]%
       \expanded{\setrandomseed{\the\scratchcounter}}%
-    % \writestatus\m!systems{randomseed: \the\scratchcounter}%
+    % \writestatus\m!system{randomseed: \the\scratchcounter}%
       \egroup}}
 
 \setupsystem
@@ -294,7 +294,7 @@
 \def\complexdefine[#1]#2#3%
   {\ifx#2\undefined
    \else
-     \showmessage\m!systems4{\string#2}%
+     \showmessage\m!system4{\string#2}%
    \fi
    \ifcase0#1\def#2{#3}%
    \or\def#2##1{#3}%

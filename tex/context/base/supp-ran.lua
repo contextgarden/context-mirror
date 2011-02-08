@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 -- We cannot ask for the current seed, so we need some messy hack
 -- here.
 
-local report_system = logs.new("system")
+local report_system = logs.new("system","randomizer")
 
 commands = commands or { }
 local commands = commands
@@ -19,12 +19,15 @@ local random, randomseed, round, seed, last = math.random, math.randomseed, math
 local texwrite = tex.write
 
 function math.setrandomseedi(n,comment)
+    if not n then
+--~         n = 0.5 -- hack
+    end
     if n <= 1 then
         n = n*1073741823 -- maxcount
     end
     n = round(n)
     if false then
-        report_system("setting random seed to %s (%s)",n,comment or "normal")
+        report_system("setting seed to %s (%s)",n,comment or "normal")
     end
     randomseed(n)
     last = random(0,1073741823) -- we need an initial value

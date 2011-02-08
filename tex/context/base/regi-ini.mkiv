@@ -11,45 +11,39 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\unprotect
-
-%D First some initialization code:
-
 \registerctxluafile{regi-ini}{1.001}
 
-%D \macros
-%D   {currentregime}
-
-\def\currentregime{utf}
+\unprotect
 
 %D \macros
-%D   {defineregimesynonym,trueregimename}
+%D   {enableregime,disableregime,currentregime}
+%D
+%D Beware, the enable and disable commands are global switches, so
+%D best use the start|/|stop commands.
 
-\unexpanded\def\defineregimesynonym % more or less obsolete
-  {\dodoubleargument\dodefineregimesynonym}
+\unexpanded\def\enableregime[#1]{\ctxcommand{enableregime("#1")}}
+\unexpanded\def\disableregime   {\ctxcommand{disableregime()}}
+\unexpanded\def\startregime [#1]{\ctxcommand{startregime("#1")}}
+\unexpanded\def\stopregime      {\ctxcommand{stopregime()}}
+           \def\currentregime   {\ctxcommand{currentregime()}}
 
-\def\dodefineregimesynonym[#1][#2]%
-  {\ctxlua{regimes.setsynonym("#1","#2")}}
+% D \macros
+% D   {defineregimesynonym,trueregimename}
+%
+% \unexpanded\def\defineregimesynonym % more or less obsolete
+%   {\dodoubleargument\dodefineregimesynonym}
+%
+% \def\dodefineregimesynonym[#1][#2]%
+%   {\ctxlua{regimes.setsynonym("#1","#2")}}
+%
+% \def\trueregimename#1%
+%   {\ctxcommand{trueregimename("#1")}}
 
-\def\trueregimename#1%
-  {\ctxlua{regimes.truename("#1")}}
+% D \macros
+% D   {useregime}
+% D
+% D This one is sort of obsolete but we keep them around.
 
-%D \macros
-%D   {useregime}
-
-\def\useregime[#1]%
-  {\processcommalist[#1]\douseregime}
-
-\def\douseregime#1%
-  {\ctxlua{regimes.load("#1")}}
-
-%D \macros
-%D   {enableregime,disableregime}
-
-\def\enableregime[#1]%
-  {\edef\currentregime{\ctxlua{regimes.load("#1") regimes.enable("#1") regimes.truename()}}}
-
-\def\disableregime
-  {\edef\currentregime{\ctxlua{regimes.disable()}}}
+\unexpanded\def\useregime[#1]{}
 
 \protect \endinput

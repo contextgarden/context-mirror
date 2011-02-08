@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['mtxrun'] = {
     license   = "see context related readme files"
 }
 
-
 -- one can make a stub:
 --
 -- #!/bin/sh
@@ -132,11 +131,7 @@ local simple_escapes = {
 }
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return (gsub(str,".",simple_escapes))
-    else
-        return (gsub(str,".",patterns_escapes))
-    end
+    return (gsub(str,".",simple and simple_escapes or patterns_escapes))
 end
 
 function string.topattern(str,lowercase,strict)
@@ -556,11 +551,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return match(s,str)
-    else
-        return match(p,str)
-    end
+    return match(simple and s or p,str)
 end
 
 -- utf extensies
@@ -3826,7 +3817,7 @@ local type, next = type, next
 
 utilities        = utilities or {}
 utilities.merger = utilities.merger or { } -- maybe mergers
-utilities.report = utilities.report or print
+utilities.report = logs and logs.new("system") or print
 
 local merger     = utilities.merger
 
@@ -3964,7 +3955,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 
 utilities        = utilities or {}
 utilities.lua    = utilities.lua or { }
-utilities.report = utilities.report or print
+utilities.report = logs and logs.new("system") or print
 
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
@@ -4577,19 +4568,21 @@ function statistics.show(reporter)
     end
 end
 
-
-local template, nn = nil, 0 -- we only calcute it once
+local template, report_statistics, nn = nil, nil, 0 -- we only calcute it once
 
 function statistics.showjobstat(tag,data,n)
-    if type(data) == "table" then
+    if not logs then
+        -- sorry
+    elseif type(data) == "table" then
         for i=1,#data do
             statistics.showjobstat(tag,data[i],n)
         end
     else
         if not template or n > nn then
-            template, n = format("%%-%ss: %%-%ss - %%s",15,n), nn
+            template, n = format("%%-%ss - %%s",n), nn
+            report_statistics = logs.new("mkiv lua stats")
         end
-        write_nl(format(template,"mkiv lua stats",tag,data))
+        report_statistics(format(template,tag,data))
     end
 end
 
@@ -4610,7 +4603,7 @@ function statistics.runtime()
 end
 
 function statistics.timed(action,report)
-    report = report or logs.simple
+    report = report or logs.new("system")
     starttiming("run")
     action()
     stoptiming("run")
@@ -4664,14 +4657,10 @@ local data = { } -- maybe just local
 
 local trace_initialize = false -- only for testing during development
 
-local function report(a,b,...)
-    texio.write_nl(format("%-16s> %s",a,format(b,...)))
-end
-
 function setters.initialize(filename,name,values) -- filename only for diagnostics
-    local data = data[name]
-    if data then
-        data = data.data
+    local setter = data[name]
+    if setter then
+        local data = data.data
         if data then
             for key, value in next, values do
              -- key = gsub(key,"_",".")
@@ -4680,7 +4669,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                 if functions then
                     if #functions > 0 and not functions.value then
                         if trace_initialize then
-                            report(name,"executing %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("executing %s (%s -> %s)",key,filename,tostring(value))
                         end
                         for i=1,#functions do
                             functions[i](value)
@@ -4688,7 +4677,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                         functions.value = value
                     else
                         if trace_initialize then
-                            report(name,"skipping %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("skipping %s (%s -> %s)",key,filename,tostring(value))
                         end
                     end
                 else
@@ -4697,7 +4686,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     functions = { default = value }
                     data[key] = functions
                     if trace_initialize then
-                        report(name,"storing %s (%s -> %s)",key,filename,tostring(value))
+                        setter.report("storing %s (%s -> %s)",key,filename,tostring(value))
                     end
                 end
             end
@@ -4724,10 +4713,11 @@ local function set(t,what,newvalue)
         else
             value = is_boolean(value,value)
         end
+        w = escapedpattern(w,true)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,escapedpattern(w,true)) then
+            elseif find(name,w) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -4769,7 +4759,7 @@ function setters.register(t,what,...)
         functions = { }
         data[what] = functions
         if trace_initialize then
-            report(t.name,"defining %s",what)
+            t.report("defining %s",what)
         end
     end
     local default = functions.default -- can be set from cnf file
@@ -4777,7 +4767,7 @@ function setters.register(t,what,...)
         local typ = type(fnc)
         if typ == "string" then
             if trace_initialize then
-                report(t.name,"coupling %s to %s",what,fnc)
+                t.report("coupling %s to %s",what,fnc)
             end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
@@ -4831,9 +4821,9 @@ function setters.list(t) -- pattern
 end
 
 function setters.show(t)
-    commands.writestatus("","")
-    local list = setters.list(t)
     local category = t.name
+    local list = setters.list(t)
+    t.report()
     for k=1,#list do
         local name = list[k]
         local functions = t.data[name]
@@ -4841,10 +4831,10 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            commands.writestatus(category,format("%-30s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
+            t.report("%-30s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
         end
     end
-    commands.writestatus("","")
+    t.report()
 end
 
 -- we could have used a bit of oo and the trackers:enable syntax but
@@ -4854,57 +4844,62 @@ end
 
 local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
+local function report(setter,...)
+    local report = logs and logs.report
+    if report then
+        report(setter.name,...)
+    else -- fallback, as this module is loaded before the logger
+        write_nl(format("%-16s: %s\n",setter.name,format(...)))
+    end
+end
+
 function setters.new(name)
-    local t -- we need to access it in t
-    t = {
+    local setter -- we need to access it in setter itself
+    setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        enable   = function(...) enable  (t,...) end,
-        disable  = function(...) disable (t,...) end,
-        register = function(...) register(t,...) end,
-        list     = function(...) list    (t,...) end,
-        show     = function(...) show    (t,...) end,
+        report   = function(...) report  (setter,...) end,
+        enable   = function(...) enable  (setter,...) end,
+        disable  = function(...) disable (setter,...) end,
+        register = function(...) register(setter,...) end,
+        list     = function(...) list    (setter,...) end,
+        show     = function(...) show    (setter,...) end,
     }
-    data[name] = t
-    return t
+    data[name] = setter
+    return setter
 end
 
 trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
-local t_enable, t_disable = trackers   .enable, trackers   .disable
-local d_enable, d_disable = directives .enable, directives .disable
-local e_enable, e_disable = experiments.enable, experiments.disable
+local t_enable, t_disable, t_report = trackers   .enable, trackers   .disable, trackers   .report
+local d_enable, d_disable, d_report = directives .enable, directives .disable, directives .report
+local e_enable, e_disable, e_report = experiments.enable, experiments.disable, experiments.report
 
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
-
-local function report(...) -- messy .. chicken or egg
-    local p = (commands and commands.writestatus) or (logs and logs.report)
-    if p then p(...) end
-end
 
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 function directives.enable(...)
-    report("directives","enabling: %s",concat({...}," "))
+    d_report("enabling: %s",concat({...}," "))
     d_enable(...)
 end
 
 function directives.disable(...)
-    report("directives","disabling: %s",concat({...}," "))
+    d_report("disabling: %s",concat({...}," "))
     d_disable(...)
 end
 
 function experiments.enable(...)
-    report("experiments","enabling: %s",concat({...}," "))
+    e_report("enabling: %s",concat({...}," "))
     e_enable(...)
 end
 
 function experiments.disable(...)
-    report("experiments","disabling: %s",concat({...}," "))
+    e_report("disabling: %s",concat({...}," "))
     e_disable(...)
 end
 
@@ -4967,20 +4962,19 @@ if not modules then modules = { } end modules ['trac-log'] = {
     license   = "see context related readme files"
 }
 
--- xml logging is only usefull in normal runs, not in ini mode
--- it looks like some tex logging (like filenames) is broken (no longer
--- interceoted at the tex end so the xml variant is not that useable now)
+-- todo: less categories, more subcategories (e.g. nodes)
 
 
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, find = string.format, string.gmatch, string.find
+local concat = table.concat
+local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
+local next, type = next, type
 
 --[[ldx--
-<p>This is a prelude to a more extensive logging module. For the sake
-of parsing log files, in addition to the standard logging we will
-provide an <l n='xml'/> structured file. Actually, any logging that
-is hooked into callbacks will be \XML\ by default.</p>
+<p>This is a prelude to a more extensive logging module. We no longer
+provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
 --ldx]]--
 
 logs       = logs or { }
@@ -4998,96 +4992,239 @@ webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
 ]]
 
-local functions = {
-    'report', 'status', 'start', 'stop', 'push', 'pop', 'line', 'direct',
-    'start_run', 'stop_run',
-    'start_page_number', 'stop_page_number',
-    'report_output_pages', 'report_output_log',
-    'report_tex_stat', 'report_job_stat',
-    'show_open', 'show_close', 'show_load',
-    'dummy',
-}
+-- local functions = {
+--     'report', 'status', 'start', 'stop', 'line', 'direct',
+--     'start_run', 'stop_run',
+--     'start_page_number', 'stop_page_number',
+--     'report_output_pages', 'report_output_log',
+--     'report_tex_stat', 'report_job_stat',
+--     'show_open', 'show_close', 'show_load',
+--     'dummy',
+-- }
 
-local method = "nop"
+-- basic loggers
 
-function logs.setmethod(newmethod)
-    method = newmethod
-    -- a direct copy might be faster but let's try this for a while
-    setmetatable(logs, { __index = logs[method] })
+local function ignore() end
+
+setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
+
+-- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
+
+local report, subreport
+
+if tex and tex.jobname or tex.formatname then
+
+    report = function(a,b,c,...)
+        if c then
+            write_nl(format("%-15s > %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s > %s\n",a,b))
+        elseif a then
+            write_nl(format("%-15s >\n",   a))
+        else
+            write_nl("\n")
+        end
+    end
+
+    subreport = function(a,sub,b,c,...)
+        if c then
+            write_nl(format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s > %s > %s\n",a,sub,b))
+        elseif a then
+            write_nl(format("%-15s > %s >\n",   a,sub))
+        else
+            write_nl("\n")
+        end
+    end
+
+else
+
+    report = function(a,b,c,...)
+        if c then
+            write_nl(format("%-15s | %s",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s | %s",a,b))
+        elseif a then
+            write_nl(format("%-15s |",   a))
+        else
+            write_nl("")
+        end
+    end
+
+    subreport = function(a,sub,b,c,...)
+        if c then
+            write_nl(format("%-15s | %s | %s",a,sub,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s | %s | %s",a,sub,b))
+        elseif a then
+            write_nl(format("%-15s | %s |",   a,sub))
+        else
+            write_nl("")
+        end
+    end
+
 end
 
-function logs.getmethod()
-    return method
+function logs.status(a,b,c,...) -- at the tex end
+    if c then
+        write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+    elseif b then
+        write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+    elseif a then
+        write_nl(format("%-15s :\n",   a))
+    else
+        write_nl("\n")
+    end
 end
+
+logs.report    = report
+logs.subreport = subreport
 
 -- installer
 
-local data = { }
+-- todo: renew (un) locks when a new one is added and wildcard
 
-function logs.new(category)
+local data, states = { }, nil
+
+function logs.reporter(category,subcategory)
     local logger = data[category]
     if not logger then
-        logger = function(...)
-            logs.report(category,...)
+        local state = false
+        if states == true then
+            state = true
+        elseif type(states) == "table" then
+            for c, _ in next, states do
+                if find(category,c) then
+                    state = true
+                    break
+                end
+            end
         end
+        logger = {
+            reporters = { },
+            state = state,
+        }
         data[category] = logger
     end
-    return logger
+    local reporter = logger.reporters[subcategory or "default"]
+    if not reporter then
+        if subcategory then
+            reporter = function(...)
+                if not logger.state then
+                    subreport(category,subcategory,...)
+                end
+            end
+            logger.reporters[subcategory] = reporter
+        else
+            local tag = category
+            reporter = function(...)
+                if not logger.state then
+                    report(category,...)
+                end
+            end
+            logger.reporters.default = reporter
+        end
+    end
+    return reporter
 end
 
+logs.new = logs.reporter
 
--- nop logging (maybe use __call instead)
-
-local noplog = { } logs.nop = noplog  setmetatable(logs, { __index = noplog })
-
-for i=1,#functions do
-    noplog[functions[i]] = function() end
-end
-
--- tex logging
-
-local texlog = { }  logs.tex = texlog  setmetatable(texlog, { __index = noplog })
-
-function texlog.report(a,b,c,...)
-    if c then
-        write_nl(format("%-16s> %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-16s> %s\n",a,b))
+local function doset(category,value)
+    if category == true then
+        -- lock all
+        category, value = "*", true
+    elseif category == false then
+        -- unlock all
+        category, value = "*", false
+    elseif value == nil then
+        -- lock selective
+        value = true
+    end
+    if category == "*" then
+        states = value
+        for k, v in next, data do
+            v.state = value
+        end
     else
-        write_nl(format("%-16s>\n",a))
+        states = utilities.parsers.settings_to_hash(category)
+        for c, _ in next, states do
+            if data[c] then
+                v.state = value
+            else
+                c = escapedpattern(c,true)
+                for k, v in next, data do
+                    if find(k,c) then
+                        v.state = value
+                    end
+                end
+            end
+        end
     end
 end
 
-function texlog.status(a,b,c,...)
-    if c then
-        write_nl(format("%-16s: %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-16s: %s\n",a,b)) -- b can have %'s
-    else
-        write_nl(format("%-16s:>\n",a))
-    end
+function logs.disable(category,value)
+    doset(category,value == nil and true or value)
 end
 
-function texlog.line(fmt,...) -- new
-    if fmt then
-        write_nl(format(fmt,...))
-    else
-        write_nl("")
-    end
+function logs.enable(category)
+    doset(category,false)
 end
 
+function logs.categories()
+    return table.sortedkeys(data)
+end
 
+function logs.show()
+    local n, c, s, max = 0, 0, 0, 0
+    for category, v in table.sortedpairs(data) do
+        n = n + 1
+        local state = v.state
+        local reporters = v.reporters
+        local nc = #category
+        if nc > c then
+            c = nc
+        end
+        for subcategory, _ in next, reporters do
+            local ns = #subcategory
+            if ns > c then
+                s = ns
+            end
+            local m = nc + ns
+            if m > max then
+                max = m
+            end
+        end
+        local subcategories = concat(table.sortedkeys(reporters),", ")
+        if state == true then
+            state = "disabled"
+        elseif state == false then
+            state = "enabled"
+        else
+            state = "unknown"
+        end
+        -- no new here
+        report("logging","category: '%s', subcategories: '%s', state: '%s'",category,subcategories,state)
+    end
+    report("logging","categories: %s, max category: %s, max subcategory: %s, max combined: %s",n,c,s,max)
+end
 
+directives.register("logs.blocked", function(v)
+    doset(v,true)
+end)
+
+-- tex specific loggers (might move elsewhere)
+
+local report_pages = logs.reporter("pages") -- not needed but saves checking when we grep for it
 
 local real, user, sub
 
-function texlog.start_page_number()
+function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
 end
 
-local report_pages = logs.new("pages") -- not needed but saves checking when we grep for it
-
-function texlog.stop_page_number()
+function logs.stop_page_number()
     if real > 0 then
         if user > 0 then
             if sub > 0 then
@@ -5104,176 +5241,98 @@ function texlog.stop_page_number()
     io.flush()
 end
 
-texlog.report_job_stat = statistics and statistics.showjobstat
+logs.report_job_stat = statistics and statistics.showjobstat
 
--- xml logging
-
-local xmllog = { }  logs.xml = xmllog  setmetatable(xmllog, { __index = noplog })
-
-function xmllog.report(category,fmt,s,...) -- new
-    if s then
-        write_nl(format("<r category='%s'>%s</r>",category,format(fmt,s,...)))
-    elseif fmt then
-        write_nl(format("<r category='%s'>%s</r>",category,fmt))
-    else
-        write_nl(format("<r category='%s'/>",category))
-    end
-end
-
-function xmllog.status(category,fmt,s,...)
-    if s then
-        write_nl(format("<s category='%s'>%s</r>",category,format(fmt,s,...)))
-    elseif fmt then
-        write_nl(format("<s category='%s'>%s</r>",category,fmt))
-    else
-        write_nl(format("<s category='%s'/>",category))
-    end
-end
-
-function xmllog.line(fmt,...) -- new
-    if fmt then
-        write_nl(format("<r>%s</r>",format(fmt,...)))
-    else
-        write_nl("<r/>")
-    end
-end
-
-function xmllog.start() write_nl("<%s>" ) end
-function xmllog.stop () write_nl("</%s>") end
-function xmllog.push () write_nl("<!-- ") end
-function xmllog.pop  () write_nl(" -->" ) end
-
-function xmllog.start_run()
-    write_nl("<?xml version='1.0' standalone='yes'?>")
-    write_nl("<job>") --  xmlns='www.pragma-ade.com/luatex/schemas/context-job.rng'
-    write_nl("")
-end
-
-function xmllog.stop_run()
-    write_nl("</job>")
-end
-
-function xmllog.start_page_number()
-    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
-end
-
-function xmllog.stop_page_number()
-    write("/>")
-    write_nl("")
-end
-
-function xmllog.report_output_pages(p,b)
-    write_nl(format("<v k='pages' v='%s'/>", p))
-    write_nl(format("<v k='bytes' v='%s'/>", b))
-    write_nl("")
-end
-
-function xmllog.report_output_log()
-    -- nothing
-end
-
-function xmllog.report_tex_stat(k,v)
-    write_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
-end
+local report_files = logs.reporter("files")
 
 local nesting = 0
+local verbose = false
 
-function xmllog.show_open(name)
-    nesting = nesting + 1
-    write_nl(format("<f l='%s' n='%s'>",nesting,name))
-end
-
-function xmllog.show_close(name)
-    write("</f> ")
-    nesting = nesting - 1
-end
-
-function xmllog.show_load(name)
-    write_nl(format("<f l='%s' n='%s'/>",nesting+1,name))
-end
-
--- initialization
-
-if tex and (tex.jobname or tex.formatname) then
-    -- todo: this can be set in mtxrun ... or maybe we should just forget about this alternative format
-    if (os.getenv("mtx.directives.logmethod") or os.getenv("mtx_directives_logmethod")) == "xml" then
-        logs.setmethod('xml')
-    else
-        logs.setmethod('tex')
-    end
-else
-    logs.setmethod('nop')
-end
-
--- logging in runners -> these are actually the nop loggers
-
-local name, banner = 'report', 'context'
-
-function noplog.report(category,fmt,...) -- todo: fmt,s
-    if fmt then
-        write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
-    elseif category then
-        write_nl(format("%s | %s",name,category))
-    else
-        write_nl(format("%s |",name))
+function logs.show_open(name)
+    if verbose then
+        nesting = nesting + 1
+        report_files("level %s, opening %s",nesting,name)
     end
 end
 
-noplog.status = noplog.report -- just to be sure, never used
-
-function noplog.simple(fmt,...) -- todo: fmt,s
-    if fmt then
-        write_nl(format("%s | %s",name,format(fmt,...)))
-    else
-        write_nl(format("%s |",name))
+function logs.show_close(name)
+    if verbose then
+        report_files("level %s, closing %s",nesting,name)
+        nesting = nesting - 1
     end
 end
 
-if utilities then
-    utilities.report = function(...) logs.simple(...) end
-end
-
-function logs.setprogram(newname,newbanner)
-    name, banner = newname, newbanner
-end
-
-function logs.extendbanner(newbanner)
-    banner = banner .. " | ".. newbanner
-end
-
-function logs.reportlines(str) -- todo: <lines></lines>
-    for line in gmatch(str,"(.-)[\n\r]") do
-        logs.report(line)
+function logs.show_load(name)
+    if verbose then
+        report_files("level %s, loading %s",nesting+1,name)
     end
 end
 
-function logs.reportline() -- for scripts too
-    logs.report()
-end
+-- there may be scripts out there using this:
 
-function logs.simpleline()
-    logs.report()
-end
+local simple = logs.reporter("comment")
 
-function logs.simplelines(str) -- todo: <lines></lines>
-    for line in gmatch(str,"(.-)[\n\r]") do
-        logs.simple(line)
+logs.simple     = simple
+logs.simpleline = simple
+
+-- obsolete
+
+function logs.setprogram  () end -- obsolete
+function logs.extendbanner() end -- obsolete
+function logs.reportlines () end -- obsolete
+function logs.reportbanner() end -- obsolete
+function logs.reportline  () end -- obsolete
+function logs.simplelines () end -- obsolete
+function logs.help        () end -- obsolete
+
+-- applications
+
+local function reportlines(t,str)
+    if str then
+        for line in gmatch(str,"(.-)[\n\r]") do
+            t.report(line)
+        end
     end
 end
 
-function logs.reportbanner() -- for scripts too
-    logs.report(banner)
-end
-
-function logs.help(message,option)
-    logs.reportbanner()
-    logs.reportline()
-    logs.reportlines(message)
-    if option ~= "nomoreinfo" then
-        logs.reportline()
-        logs.reportlines(moreinfo)
+local function reportbanner(t)
+    local banner = t.banner
+    if banner then
+        t.report(banner)
+        t.report()
     end
 end
+
+local function reporthelp(t,...)
+    local helpinfo = t.helpinfo
+    if type(helpinfo) == "string" then
+        reportlines(t,helpinfo)
+    elseif type(helpinfo) == "table" then
+        local tags = { ... }
+        for i=1,#tags do
+            reportlines(t,t.helpinfo[tags[i]])
+            if i < #tags then
+                t.report()
+            end
+        end
+    end
+end
+
+local function reportinfo(t)
+    t.report()
+    reportlines(t,moreinfo)
+end
+
+function logs.application(t)
+    t.name     = t.name   or "unknown"
+    t.banner   = t.banner
+    t.report   = logs.reporter(t.name)
+    t.help     = function(...) reportbanner(t) ; reporthelp(t,...) ; reportinfo(t) end
+    t.identify = function() reportbanner(t) end
+    return t
+end
+
+-- somewhat special
 
 -- logging to a file
 
@@ -5281,7 +5340,7 @@ end
 function logs.system(whereto,process,jobname,category,...)
     local message = format("%s %s => %s => %s => %s\r",os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
     for i=1,10 do
-        local f = io.open(whereto,"a")
+        local f = io.open(whereto,"a") -- we can consider keepint the file open
         if f then
             f:write(message)
             f:close()
@@ -5292,30 +5351,24 @@ function logs.system(whereto,process,jobname,category,...)
     end
 end
 
--- bonus
-
-function logs.fatal(where,...)
-    logs.report(where,"fatal error: %s, aborting now",format(...))
-    os.exit()
-end
-
+local report_system = logs.reporter("system","logs")
 
 function logs.obsolete(old,new)
     local o = loadstring("return " .. new)()
     if type(o) == "function" then
         return function(...)
-            logs.report("system","function %s is obsolete, use %s",old,new)
+            report_system("function %s is obsolete, use %s",old,new)
             loadstring(old .. "=" .. new  .. " return ".. old)()(...)
         end
     elseif type(o) == "table" then
         local t, m = { }, { }
         m.__index = function(t,k)
-            logs.report("system","table %s is obsolete, use %s",old,new)
+            report_system("table %s is obsolete, use %s",old,new)
             m.__index, m.__newindex = o, o
             return o[k]
         end
         m.__newindex = function(t,k,v)
-            logs.report("system","table %s is obsolete, use %s",old,new)
+            report_system("table %s is obsolete, use %s",old,new)
             m.__index, m.__newindex = o, o
             o[k] = v
         end
@@ -5325,6 +5378,10 @@ function logs.obsolete(old,new)
         setmetatable(t,m)
         return t
     end
+end
+
+if utilities then
+    utilities.report = report_system
 end
 
 if tex and tex.error then
@@ -5361,7 +5418,7 @@ local getmetatable, setmetatable, rawset, type = getmetatable, setmetatable, raw
 
 local trace_namespaces = false  trackers.register("system.namespaces", function(v) trace_namespaces = v end)
 
-local report_system = logs.new("system")
+local report_system = logs.new("system","protection")
 
 namespaces       = namespaces or { }
 local namespaces = namespaces
@@ -5530,7 +5587,7 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_lua = logs.new("resolvers","lua")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -5754,14 +5811,14 @@ function environment.luafilechunk(filename,silent) -- used for loading lua bytec
     if fullname and fullname ~= "" then
         local data = environment.loadedluacode(fullname)
         if trace_locating then
-            report_resolvers("loading file %s%s", fullname, not data and " failed" or "")
+            report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then
             texio.write("<",data and "+ " or "- ",fullname,">")
         end
         return data
     else
         if trace_locating then
-            report_resolvers("unknown file %s", filename)
+            report_lua("unknown file %s", filename)
         end
         return nil
     end
@@ -5781,7 +5838,7 @@ function environment.loadluafile(filename, version)
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_resolvers("loading %s", fullname)
+            report_lua("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
@@ -5799,7 +5856,7 @@ function environment.loadluafile(filename, version)
                 return true
             else
                 if trace_locating then
-                    report_resolvers("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                    report_lua("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
                 end
                 environment.loadluafile(filename)
             end
@@ -5810,12 +5867,12 @@ function environment.loadluafile(filename, version)
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_resolvers("loading %s", fullname)
+            report_lua("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
             if trace_locating then
-                report_resolvers("unknown file %s", filename)
+                report_lua("unknown file %s", filename)
             end
         else
             assert(chunk)()
@@ -5844,7 +5901,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
-local report_xml = logs.new("xml")
+local report_xml = logs and logs.new("xml","core") or function(...) print(format(...)) end
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
@@ -6518,7 +6575,7 @@ function xml.is_valid(root)
     return root and not root.error
 end
 
-xml.errorhandler = (logs and logs.report) or (input and logs.report) or print
+xml.errorhandler = report
 
 --[[ldx--
 <p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
@@ -7069,7 +7126,7 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
-local report_lpath = logs.new("lpath")
+local report_lpath = logs.new("xml","lpath")
 
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
@@ -7951,9 +8008,9 @@ local function traced_apply(list,parsed,nofparsed,order)
     if trace_lparse then
         lshow(parsed)
     end
-    report_lpath("collecting : %s",parsed.pattern)
-    report_lpath(" root tags : %s",tagstostring(list))
-    report_lpath("     order : %s",order or "unset")
+    report_lpath("collecting: %s",parsed.pattern)
+    report_lpath("root tags : %s",tagstostring(list))
+    report_lpath("order     : %s",order or "unset")
     local collected = list
     for i=1,nofparsed do
         local pi = parsed[i]
@@ -9224,7 +9281,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_initialization = logs.new("resolvers","initialization")
 
 local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
 
@@ -9245,7 +9302,7 @@ kpse = { original = kpse }
 
 setmetatable(kpse, {
     __index = function(kp,name)
-        report_resolvers("fatal error: kpse library is accessed (key: %s)",name)
+        report_initialization("fatal error: kpse library is accessed (key: %s)",name)
         os.exit()
     end
 } )
@@ -9329,13 +9386,13 @@ do
                         if lfs.chdir(p) then
                             local pp = lfs.currentdir()
                             if trace_locating and p ~= pp then
-                                report_resolvers("following symlink '%s' to '%s'",p,pp)
+                                report_initialization("following symlink '%s' to '%s'",p,pp)
                             end
                             ownpath = pp
                             lfs.chdir(olddir)
                         else
                             if trace_locating then
-                                report_resolvers("unable to check path '%s'",p)
+                                report_initialization("unable to check path '%s'",p)
                             end
                             ownpath =  p
                         end
@@ -9346,9 +9403,9 @@ do
         end
         if not ownpath or ownpath == "" then
             ownpath = "."
-            report_resolvers("forcing fallback ownpath .")
+            report_initialization("forcing fallback ownpath .")
         elseif trace_locating then
-            report_resolvers("using ownpath '%s'",ownpath)
+            report_initialization("using ownpath '%s'",ownpath)
         end
     end
 
@@ -9375,7 +9432,7 @@ do
         ossetenv('SELFAUTODIR',    file.collapsepath(ownpath .. "/.."))
         ossetenv('SELFAUTOPARENT', file.collapsepath(ownpath .. "/../.."))
     else
-        report_resolvers("error: unable to locate ownpath")
+        report_initialization("error: unable to locate ownpath")
         os.exit()
     end
 
@@ -9461,7 +9518,7 @@ local collapsepath = file.collapsepath
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_expansions = logs.new("resolvers","expansions")
 
 local resolvers = resolvers
 
@@ -9524,7 +9581,7 @@ local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
 local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
-        report_resolvers("expanding variable '%s'",str)
+        report_expansions("expanding variable '%s'",str)
     end
     local t, ok, done = newlist or { }, false, false
     local n = #t
@@ -9550,7 +9607,7 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
     end
     if trace_expansions then
         for k=1,#t do
-            report_resolvers("% 4i: %s",k,t[k])
+            report_expansions("% 4i: %s",k,t[k])
         end
     end
     return t
@@ -9585,7 +9642,7 @@ function resolvers.cleanpath(str)
         homedir = lpegmatch(cleanup,environment.homedir or "")
         if homedir == string.char(127) or homedir == "" or not lfs.isdir(homedir) then
             if trace_expansions then
-                report_resolvers("no home dir set, ignoring dependent paths")
+                report_expansions("no home dir set, ignoring dependent paths")
             end
             function resolvers.cleanpath(str)
                 if find(str,"~") then
@@ -9655,9 +9712,9 @@ local function splitconfigurationpath(str) -- beware, this can be either a path 
                     end
                 end
                 if trace_expansions then
-                    report_resolvers("splitting path specification '%s'",str)
+                    report_expansions("splitting path specification '%s'",str)
                     for k=1,noffound do
-                        report_resolvers("% 4i: %s",k,found[k])
+                        report_expansions("% 4i: %s",k,found[k])
                     end
                 end
                 cache[str] = found
@@ -9742,7 +9799,7 @@ end
 
 function resolvers.scanfiles(path,branch)
     if trace_locating then
-        report_resolvers("scanning path '%s', branch '%s'",path, branch or path)
+        report_expansions("scanning path '%s', branch '%s'",path, branch or path)
     end
     local realpath = resolvers.resolve(path) -- no shortcut
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
@@ -9751,7 +9808,7 @@ function resolvers.scanfiles(path,branch)
     files.__directories__   = m
     files.__remappings__    = r
     if trace_locating then
-        report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
+        report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
     return files
 end
@@ -10080,8 +10137,8 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_cache     = logs.new("cache")
-local report_resolvers = logs.new("resolvers")
+local report_caches    = logs.new("resolvers","caches")
+local report_resolvers = logs.new("resolvers","caching")
 
 local resolvers = resolvers
 
@@ -10141,7 +10198,7 @@ local function identify()
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
                             if isdir(cachepath) and file.is_writable(cachepath) then
-                                report_cache("created: %s",cachepath)
+                                report_caches("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
                             end
@@ -10175,10 +10232,10 @@ local function identify()
     -- Some extra checking. If we have no writable or readable path then we simply
     -- quit.
     if not writable then
-        report_cache("fatal error: there is no valid writable cache path defined")
+        report_caches("fatal error: there is no valid writable cache path defined")
         os.exit()
     elseif #readables == 0 then
-        report_cache("fatal error: there is no valid readable cache path defined")
+        report_caches("fatal error: there is no valid readable cache path defined")
         os.exit()
     end
     -- why here
@@ -10200,9 +10257,9 @@ local function identify()
     -- end
     if trace_cache then
         for i=1,#readables do
-            report_cache("using readable path '%s' (order %s)",readables[i],i)
+            report_caches("using readable path '%s' (order %s)",readables[i],i)
         end
-        report_cache("using writable path '%s'",writable)
+        report_caches("using writable path '%s'",writable)
     end
     identify = function()
         return writable, readables
@@ -10237,7 +10294,7 @@ function caches.hashed(tree)
     tree = lower(tree)
     local hash = md5.hex(tree)
     if trace_cache or trace_locating then
-        report_cache("hashing tree %s, hash %s",tree,hash)
+        report_caches("hashing tree %s, hash %s",tree,hash)
     end
     return hash
 end
@@ -10463,7 +10520,7 @@ trackers.register("resolvers.locating", function(v) trace_methods = v end)
 trackers.register("resolvers.methods",  function(v) trace_methods = v end)
 
 
-local report_resolvers = logs.new("resolvers")
+local report_methods = logs.new("resolvers","methods")
 
 local allocate = utilities.storage.allocate
 
@@ -10505,41 +10562,41 @@ local function methodhandler(what,first,...) -- filename can be nil or false
             local resolver = namespace and namespace[scheme]
             if resolver then
                 if trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, scheme=%s, argument=%s",what,how,scheme,first)
+                    report_methods("resolver: method=%s, how=%s, scheme=%s, argument=%s",what,how,scheme,first)
                 end
                 return resolver(specification,...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_resolvers("resolver: method=%s, how=%s, default, argument=%s",what,how,first)
+                        report_methods("resolver: method=%s, how=%s, default, argument=%s",what,how,first)
                     end
                     return resolver(specification,...)
                 elseif trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, no handler",what,how)
+                    report_methods("resolver: method=%s, how=%s, no handler",what,how)
                 end
             end
         elseif how == "tag" then
             local resolver = namespace and namespace[first]
             if resolver then
                 if trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, tag=%s",what,how,first)
+                    report_methods("resolver: method=%s, how=%s, tag=%s",what,how,first)
                 end
                 return resolver(...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_resolvers("resolver: method=%s, how=%s, default",what,how)
+                        report_methods("resolver: method=%s, how=%s, default",what,how)
                     end
                     return resolver(...)
                 elseif trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, unknown",what,how)
+                    report_methods("resolver: method=%s, how=%s, unknown",what,how)
                 end
             end
         end
     else
-        report_resolvers("resolver: method=%s, unknown",what)
+        report_methods("resolver: method=%s, unknown",what)
     end
 end
 
@@ -10610,7 +10667,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_resolving = logs.new("resolvers","resolving")
 
 local resolvers = resolvers
 
@@ -10712,7 +10769,7 @@ end
 function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
 
      if trace_locating then
-        report_resolvers("creating instance")
+        report_resolving("creating instance")
      end
 
     local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
@@ -10830,9 +10887,9 @@ local function reportcriticalvariables()
         for i=1,#resolvers.criticalvars do
             local k = resolvers.criticalvars[i]
             local v = resolvers.getenv(k) or "unknown" -- this one will not resolve !
-            report_resolvers("variable '%s' set to '%s'",k,v)
+            report_resolving("variable '%s' set to '%s'",k,v)
         end
-        report_resolvers()
+        report_resolving()
     end
     reportcriticalvariables = function() end
 end
@@ -10856,17 +10913,17 @@ local function identify_configuration_files()
             if lfs.isfile(realname) then
                 specification[#specification+1] = filename
                 if trace_locating then
-                    report_resolvers("found configuration file '%s'",realname)
+                    report_resolving("found configuration file '%s'",realname)
                 end
             elseif trace_locating then
-                report_resolvers("unknown configuration file '%s'",realname)
+                report_resolving("unknown configuration file '%s'",realname)
             end
         end
         if trace_locating then
-            report_resolvers()
+            report_resolving()
         end
     elseif trace_locating then
-        report_resolvers("configuration files already identified")
+        report_resolving("configuration files already identified")
     end
 end
 
@@ -10886,8 +10943,8 @@ local function load_configuration_files()
                 data = data and data.content
                 if data then
                     if trace_locating then
-                        report_resolvers("loading configuration file '%s'",filename)
-                        report_resolvers()
+                        report_resolving("loading configuration file '%s'",filename)
+                        report_resolving()
                     end
                     local variables = data.variables or { }
                     local warning = false
@@ -10897,7 +10954,7 @@ local function load_configuration_files()
                             initializesetter(filename,k,v)
                         elseif variables[k] == nil then
                             if trace_locating and not warning then
-                                report_resolvers("variables like '%s' in configuration file '%s' should move to the 'variables' subtable",
+                                report_resolving("variables like '%s' in configuration file '%s' should move to the 'variables' subtable",
                                     k,resolvers.resolve(filename))
                                 warning = true
                             end
@@ -10910,7 +10967,7 @@ local function load_configuration_files()
                         local cnfspec = variables["TEXMFCNF"]
                         if cnfspec then
                             if trace_locating then
-                                report_resolvers("reloading configuration due to TEXMF redefinition")
+                                report_resolving("reloading configuration due to TEXMF redefinition")
                             end
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
@@ -10929,13 +10986,13 @@ local function load_configuration_files()
 
                 else
                     if trace_locating then
-                        report_resolvers("skipping configuration file '%s' (no content)",filename)
+                        report_resolving("skipping configuration file '%s' (no content)",filename)
                     end
                     setups[pathname] = { }
                     instance.loaderror = true
                 end
             elseif trace_locating then
-                report_resolvers("skipping configuration file '%s' (no file)",filename)
+                report_resolving("skipping configuration file '%s' (no file)",filename)
             end
             instance.order[#instance.order+1] = instance.setups[pathname]
             if instance.loaderror then
@@ -10943,7 +11000,7 @@ local function load_configuration_files()
             end
         end
     elseif trace_locating then
-        report_resolvers("warning: no lua configuration files found")
+        report_resolving("warning: no lua configuration files found")
     end
 end
 
@@ -10979,19 +11036,19 @@ local function locate_file_databases()
                 end
                 if trace_locating then
                     if runtime then
-                        report_resolvers("locating list of '%s' (runtime)",path)
+                        report_resolving("locating list of '%s' (runtime)",path)
                     else
-                        report_resolvers("locating list of '%s' (cached)",path)
+                        report_resolving("locating list of '%s' (cached)",path)
                     end
                 end
                 methodhandler('locators',stripped)
             end
         end
         if trace_locating then
-            report_resolvers()
+            report_resolving()
         end
     elseif trace_locating then
-        report_resolvers("no texmf paths are defined (using TEXMF)")
+        report_resolving("no texmf paths are defined (using TEXMF)")
     end
 end
 
@@ -11002,7 +11059,7 @@ local function generate_file_databases()
         methodhandler('generators',hash.name)
     end
     if trace_locating then
-        report_resolvers()
+        report_resolving()
     end
 end
 
@@ -11014,11 +11071,11 @@ local function save_file_databases() -- will become cachers
             local content = instance.files[cachename]
             caches.collapsecontent(content)
             if trace_locating then
-                report_resolvers("saving tree '%s'",cachename)
+                report_resolving("saving tree '%s'",cachename)
             end
             caches.savecontent(cachename,"files",content)
         elseif trace_locating then
-            report_resolvers("not saving runtime tree '%s'",cachename)
+            report_resolving("not saving runtime tree '%s'",cachename)
         end
     end
 end
@@ -11043,7 +11100,7 @@ function resolvers.appendhash(type,name,cache)
     -- safeguard ... tricky as it's actually a bug when seen twice
     if not instance.hashed[name] then
         if trace_locating then
-            report_resolvers("hash '%s' appended",name)
+            report_resolving("hash '%s' appended",name)
         end
         insert(instance.hashes, { type = type, name = name, cache = cache } )
         instance.hashed[name] = cache
@@ -11054,7 +11111,7 @@ function resolvers.prependhash(type,name,cache)
     -- safeguard ... tricky as it's actually a bug when seen twice
     if not instance.hashed[name] then
         if trace_locating then
-            report_resolvers("hash '%s' prepended",name)
+            report_resolving("hash '%s' prepended",name)
         end
         insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
         instance.hashed[name] = cache
@@ -11287,9 +11344,9 @@ function isreadable(name)
     local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then
-            report_resolvers("file '%s' is readable",name)
+            report_resolving("file '%s' is readable",name)
         else
-            report_resolvers("file '%s' is not readable", name)
+            report_resolving("file '%s' is not readable", name)
         end
     end
     return readable
@@ -11303,7 +11360,7 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            report_resolvers("checking name '%s'",fname)
+            report_resolving("checking name '%s'",fname)
         end
         local bname = filebasename(fname)
         local dname = filedirname(fname)
@@ -11319,7 +11376,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    report_resolvers("deep checking '%s' (%s)",blobpath,bname)
+                    report_resolving("deep checking '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -11339,7 +11396,7 @@ local function collect_files(names)
                             local search = filejoin(blobroot,blobfile,bname)
                             local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
-                                report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
                             end
                             noffiles = noffiles + 1
                             filelist[noffiles] = { kind, search, result }
@@ -11353,7 +11410,7 @@ local function collect_files(names)
                                 local search = filejoin(blobroot,vv,bname)
                                 local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
-                                    report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                    report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
                                 end
                                 noffiles = noffiles + 1
                                 filelist[noffiles] = { kind, search, result }
@@ -11362,7 +11419,7 @@ local function collect_files(names)
                     end
                 end
             elseif trace_locating then
-                report_resolvers("no match in '%s' (%s)",blobpath,bname)
+                report_resolving("no match in '%s' (%s)",blobpath,bname)
             end
         end
     end
@@ -11403,7 +11460,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         stamp = filename .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
-                report_resolvers("remembered file '%s'",filename)
+                report_resolving("remembered file '%s'",filename)
             end
             resolvers.registerintrees(filename) -- for tracing used files
             return instance.found[stamp]
@@ -11412,7 +11469,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     if not dangerous[askedformat] then
         if isreadable(filename) then
             if trace_detail then
-                report_resolvers("file '%s' found directly",filename)
+                report_resolving("file '%s' found directly",filename)
             end
             if stamp then
                 instance.found[stamp] = { filename }
@@ -11422,13 +11479,13 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     end
     if find(filename,'%*') then
         if trace_locating then
-            report_resolvers("checking wildcard '%s'", filename)
+            report_resolving("checking wildcard '%s'", filename)
         end
         result = resolvers.findwildcardfiles(filename) -- we can use th elocal
     elseif file.is_qualified_path(filename) then
         if isreadable(filename) then
             if trace_locating then
-                report_resolvers("qualified name '%s'", filename)
+                report_resolving("qualified name '%s'", filename)
             end
             result = { filename }
         else
@@ -11441,7 +11498,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                         forcedname = filename .. "." .. s
                         if isreadable(forcedname) then
                             if trace_locating then
-                                report_resolvers("no suffix, forcing format filetype '%s'", s)
+                                report_resolving("no suffix, forcing format filetype '%s'", s)
                             end
                             result, ok = { forcedname }, true
                             break
@@ -11494,7 +11551,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                 -- end
             end
             if not ok and trace_locating then
-                report_resolvers("qualified name '%s'", filename)
+                report_resolving("qualified name '%s'", filename)
             end
         end
     else
@@ -11513,13 +11570,13 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                     wantedfiles[#wantedfiles+1] = forcedname
                     filetype = resolvers.formatofsuffix(forcedname)
                     if trace_locating then
-                        report_resolvers("forcing filetype '%s'",filetype)
+                        report_resolving("forcing filetype '%s'",filetype)
                     end
                 end
             else
                 filetype = resolvers.formatofsuffix(filename)
                 if trace_locating then
-                    report_resolvers("using suffix based filetype '%s'",filetype)
+                    report_resolving("using suffix based filetype '%s'",filetype)
                 end
             end
         else
@@ -11533,7 +11590,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
             end
             filetype = askedformat
             if trace_locating then
-                report_resolvers("using given filetype '%s'",filetype)
+                report_resolving("using given filetype '%s'",filetype)
             end
         end
         local typespec = resolvers.variableofformat(filetype)
@@ -11541,7 +11598,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         if not pathlist or #pathlist == 0 then
             -- no pathlist, access check only / todo == wildcard
             if trace_detail then
-                report_resolvers("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
+                report_resolving("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
             end
             for k=1,#wantedfiles do
                 local fname = wantedfiles[k]
@@ -11569,7 +11626,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                 end
             end
             if trace_detail then
-                report_resolvers("checking filename '%s'",filename)
+                report_resolving("checking filename '%s'",filename)
             end
             for k=1,#pathlist do
                 local path = pathlist[k]
@@ -11581,7 +11638,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                     -- compare list entries with permitted pattern -- /xx /xx//
                     local expression = makepathexpression(pathname)
                     if trace_detail then
-                        report_resolvers("using pattern '%s' for path '%s'",expression,pathname)
+                        report_resolving("using pattern '%s' for path '%s'",expression,pathname)
                     end
                     for k=1,#filelist do
                         local fl = filelist[k]
@@ -11593,16 +11650,16 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                             done = true
                             if allresults then
                                 if trace_detail then
-                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+                                    report_resolving("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
                             else
                                 if trace_detail then
-                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+                                    report_resolving("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            report_resolvers("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+                            report_resolving("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
                         end
                     end
                 end
@@ -11619,7 +11676,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                                     local fname = filejoin(ppname,w)
                                     if isreadable(fname) then
                                         if trace_detail then
-                                            report_resolvers("found '%s' by scanning",fname)
+                                            report_resolving("found '%s' by scanning",fname)
                                         end
                                         result[#result+1] = fname
                                         done = true
@@ -11824,7 +11881,7 @@ end
 
 local function report(str)
     if trace_locating then
-        report_resolvers(str) -- has already verbose
+        report_resolving(str) -- has already verbose
     else
         print(str)
     end
@@ -12219,7 +12276,7 @@ if not modules then modules = { } end modules ['data-fil'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_files = logs.new("resolvers","files")
 
 local resolvers = resolvers
 
@@ -12233,11 +12290,11 @@ function locators.file(specification)
     local realname = resolvers.resolve(name) -- no shortcut
     if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_resolvers("file locator '%s' found as '%s'",name,realname)
+            report_files("file locator '%s' found as '%s'",name,realname)
         end
         resolvers.appendhash('file',name,true) -- cache
     elseif trace_locating then
-        report_resolvers("file locator '%s' not found",name)
+        report_files("file locator '%s' not found",name)
     end
 end
 
@@ -12260,12 +12317,12 @@ function finders.file(specification,filetype)
     local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
-            report_resolvers("file finder: '%s' found",filename)
+            report_files("file finder: '%s' found",filename)
         end
         return foundname
     else
         if trace_locating then
-            report_resolvers("file finder: %s' not found",filename)
+            report_files("file finder: %s' not found",filename)
         end
         return finders.notfound()
     end
@@ -12286,13 +12343,13 @@ function openers.file(specification,filetype)
         local f = io.open(filename,"r")
         if f then
             if trace_locating then
-                report_resolvers("file opener, '%s' opened",filename)
+                report_files("file opener, '%s' opened",filename)
             end
             return openers.helpers.textopener("file",filename,f)
         end
     end
     if trace_locating then
-        report_resolvers("file opener, '%s' not found",filename)
+        report_files("file opener, '%s' not found",filename)
     end
     return openers.notfound()
 end
@@ -12304,7 +12361,7 @@ function loaders.file(specification,filetype)
         if f then
             logs.show_load(filename)
             if trace_locating then
-                report_resolvers("file loader, '%s' loaded",filename)
+                report_files("file loader, '%s' loaded",filename)
             end
             local s = f:read("*a")
             if checkgarbage then
@@ -12317,7 +12374,7 @@ function loaders.file(specification,filetype)
         end
     end
     if trace_locating then
-        report_resolvers("file loader, '%s' not found",filename)
+        report_files("file loader, '%s' not found",filename)
     end
     return loaders.notfound()
 end
@@ -12358,11 +12415,11 @@ containers          = containers or { }
 local containers    = containers
 containers.usecache = true
 
-local report_cache = logs.new("cache")
+local report_containers = logs.new("resolvers","containers")
 
 local function report(container,tag,name)
     if trace_cache or trace_containers then
-        report_cache("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
+        report_containers("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
     end
 end
 
@@ -12480,7 +12537,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_mounts = logs.new("resolvers","mounts")
 
 local resolvers = resolvers
 
@@ -12505,7 +12562,7 @@ function resolvers.automount(usecache)
                             -- skip
                         elseif find(line,"^zip://") then
                             if trace_locating then
-                                report_resolvers("mounting %s",line)
+                                report_mounts("mounting %s",line)
                             end
                             table.insert(resolvers.automounted,line)
                             resolvers.usezipfile(line)
@@ -12585,7 +12642,7 @@ local format, find, match = string.format, string.find, string.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_zip = logs.new("resolvers","zip")
 
 -- zip:///oeps.zip?name=bla/bla.tex
 -- zip:///oeps.zip?tree=tex/texmf-local
@@ -12638,9 +12695,9 @@ function resolvers.locators.zip(specification)
     local zipfile = archive and archive ~= "" and zip.openarchive(archive) -- tricky, could be in to be initialized tree
     if trace_locating then
         if zipfile then
-            report_resolvers("zip locator, archive '%s' found",archive)
+            report_zip("locator, archive '%s' found",archive)
         else
-            report_resolvers("zip locator, archive '%s' not found",archive)
+            report_zip("locator, archive '%s' not found",archive)
         end
     end
 end
@@ -12648,7 +12705,7 @@ end
 function resolvers.hashers.zip(specification)
     local archive = specification.filename
     if trace_locating then
-        report_resolvers("loading zip file '%s'",archive)
+        report_zip("loading file '%s'",archive)
     end
     resolvers.usezipfile(specification.original)
 end
@@ -12671,25 +12728,25 @@ function resolvers.finders.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_resolvers("zip finder, archive '%s' found",archive)
+                    report_zip("finder, archive '%s' found",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     dfile = zfile:close()
                     if trace_locating then
-                        report_resolvers("zip finder, file '%s' found",queryname)
+                        report_zip("finder, file '%s' found",queryname)
                     end
                     return specification.original
                 elseif trace_locating then
-                    report_resolvers("zip finder, file '%s' not found",queryname)
+                    report_zip("finder, file '%s' not found",queryname)
                 end
             elseif trace_locating then
-                report_resolvers("zip finder, unknown archive '%s'",archive)
+                report_zip("finder, unknown archive '%s'",archive)
             end
         end
     end
     if trace_locating then
-        report_resolvers("zip finder, '%s' not found",original)
+        report_zip("finder, '%s' not found",original)
     end
     return resolvers.finders.notfound()
 end
@@ -12704,24 +12761,24 @@ function resolvers.openers.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_resolvers("zip opener, archive '%s' opened",archive)
+                    report_zip("opener, archive '%s' opened",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     if trace_locating then
-                        report_resolvers("zip opener, file '%s' found",queryname)
+                        report_zip("opener, file '%s' found",queryname)
                     end
                     return resolvers.openers.helpers.textopener('zip',original,dfile)
                 elseif trace_locating then
-                    report_resolvers("zip opener, file '%s' not found",queryname)
+                    report_zip("opener, file '%s' not found",queryname)
                 end
             elseif trace_locating then
-                report_resolvers("zip opener, unknown archive '%s'",archive)
+                report_zip("opener, unknown archive '%s'",archive)
             end
         end
     end
     if trace_locating then
-        report_resolvers("zip opener, '%s' not found",original)
+        report_zip("opener, '%s' not found",original)
     end
     return resolvers.openers.notfound()
 end
@@ -12736,27 +12793,27 @@ function resolvers.loaders.zip(specification)
             local zfile = zip.openarchive(archive)
             if zfile then
                 if trace_locating then
-                    report_resolvers("zip loader, archive '%s' opened",archive)
+                    report_zip("loader, archive '%s' opened",archive)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
                     logs.show_load(original)
                     if trace_locating then
-                        report_resolvers("zip loader, file '%s' loaded",original)
+                        report_zip("loader, file '%s' loaded",original)
                     end
                     local s = dfile:read("*all")
                     dfile:close()
                     return true, s, #s
                 elseif trace_locating then
-                    report_resolvers("zip loader, file '%s' not found",queryname)
+                    report_zip("loader, file '%s' not found",queryname)
                 end
             elseif trace_locating then
-                report_resolvers("zip loader, unknown archive '%s'",archive)
+                report_zip("loader, unknown archive '%s'",archive)
             end
         end
     end
     if trace_locating then
-        report_resolvers("zip loader, '%s' not found",original)
+        report_zip("loader, '%s' not found",original)
     end
     return resolvers.openers.notfound()
 end
@@ -12772,7 +12829,7 @@ function resolvers.usezipfile(archive)
         if z then
             local tree = url.query(specification.query).tree or ""
             if trace_locating then
-                report_resolvers("zip registering, registering archive '%s'",archive)
+                report_zip("registering, registering archive '%s'",archive)
             end
             statistics.starttiming(resolvers.instance)
             resolvers.prependhash('zip',archive)
@@ -12781,10 +12838,10 @@ function resolvers.usezipfile(archive)
             instance.files[archive] = resolvers.registerzipfile(z,tree)
             statistics.stoptiming(resolvers.instance)
         elseif trace_locating then
-            report_resolvers("zip registering, unknown archive '%s'",archive)
+            report_zip("registering, unknown archive '%s'",archive)
         end
     elseif trace_locating then
-        report_resolvers("zip registering, '%s' not found",archive)
+        report_zip("registering, '%s' not found",archive)
     end
 end
 
@@ -12796,7 +12853,7 @@ function resolvers.registerzipfile(z,tree)
         filter = format("^%s/(.+)/(.-)$",tree)
     end
     if trace_locating then
-        report_resolvers("zip registering, using filter '%s'",filter)
+        report_zip("registering, using filter '%s'",filter)
     end
     local register, n = resolvers.registerfile, 0
     for i in z:files() do
@@ -12813,7 +12870,7 @@ function resolvers.registerzipfile(z,tree)
             n = n + 1
         end
     end
-    report_resolvers("zip registering, %s files registered",n)
+    report_zip("registering, %s files registered",n)
     return files
 end
 
@@ -12836,7 +12893,7 @@ local find, gsub, format = string.find, string.gsub, string.format
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_trees = logs.new("resolvers","trees")
 
 local resolvers = resolvers
 
@@ -12874,18 +12931,18 @@ function resolvers.locators.tree(specification)
     local name = specification.filename
     if name ~= '' and lfs.isdir(name) then
         if trace_locating then
-            report_resolvers("tree locator '%s' found",name)
+            report_trees("locator '%s' found",name)
         end
         resolvers.appendhash('tree',name,false) -- don't cache
     elseif trace_locating then
-        report_resolvers("tree locator '%s' not found",name)
+        report_trees("locator '%s' not found",name)
     end
 end
 
 function resolvers.hashers.tree(specification)
     local name = specification.filename
     if trace_locating then
-        report_resolvers("analysing tree '%s'",name)
+        report_trees("analysing '%s'",name)
     end
     resolvers.methodhandler("hashers",name)
 end
@@ -12981,7 +13038,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_libraries = logs.new("resolvers","libraries")
 
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
@@ -13013,7 +13070,7 @@ local function thepath(...)
     local t = { ... } t[#t+1] = "?.lua"
     local path = file.join(unpack(t))
     if trace_locating then
-        report_resolvers("! appending '%s' to 'package.path'",path)
+        report_libraries("! appending '%s' to 'package.path'",path)
     end
     return path
 end
@@ -13035,11 +13092,11 @@ local function loaded(libpaths,name,simple)
         local libpath = libpaths[i]
         local resolved = gsub(libpath,"%?",simple)
         if trace_locating then -- more detail
-            report_resolvers("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
+            report_libraries("! checking for '%s' on 'package.path': '%s' => '%s'",simple,libpath,resolved)
         end
         if file.is_readable(resolved) then
             if trace_locating then
-                report_resolvers("! lib '%s' located via 'package.path': '%s'",name,resolved)
+                report_libraries("! lib '%s' located via 'package.path': '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -13048,17 +13105,17 @@ end
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
     if trace_locating then -- mode detail
-        report_resolvers("! locating '%s'",name)
+        report_libraries("! locating '%s'",name)
     end
     for i=1,#libformats do
         local format = libformats[i]
         local resolved = resolvers.findfile(name,format) or ""
         if trace_locating then -- mode detail
-            report_resolvers("! checking for '%s' using 'libformat path': '%s'",name,format)
+            report_libraries("! checking for '%s' using 'libformat path': '%s'",name,format)
         end
         if resolved ~= "" then
             if trace_locating then
-                report_resolvers("! lib '%s' located via environment: '%s'",name,resolved)
+                report_libraries("! lib '%s' located via environment: '%s'",name,resolved)
             end
             return loadfile(resolved)
         end
@@ -13081,11 +13138,11 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
             local path = paths[p]
             local resolved = file.join(path,libname)
             if trace_locating then -- mode detail
-                report_resolvers("! checking for '%s' using 'clibformat path': '%s'",libname,path)
+                report_libraries("! checking for '%s' using 'clibformat path': '%s'",libname,path)
             end
             if file.is_readable(resolved) then
                 if trace_locating then
-                    report_resolvers("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
+                    report_libraries("! lib '%s' located via 'clibformat': '%s'",libname,resolved)
                 end
                 return package.loadlib(resolved,name)
             end
@@ -13095,28 +13152,28 @@ package.loaders[2] = function(name) -- was [#package.loaders+1]
         local libpath = clibpaths[i]
         local resolved = gsub(libpath,"?",simple)
         if trace_locating then -- more detail
-            report_resolvers("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
+            report_libraries("! checking for '%s' on 'package.cpath': '%s'",simple,libpath)
         end
         if file.is_readable(resolved) then
             if trace_locating then
-                report_resolvers("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
+                report_libraries("! lib '%s' located via 'package.cpath': '%s'",name,resolved)
             end
             return package.loadlib(resolved,name)
         end
     end
     -- just in case the distribution is messed up
     if trace_loading then -- more detail
-        report_resolvers("! checking for '%s' using 'luatexlibs': '%s'",name)
+        report_libraries("! checking for '%s' using 'luatexlibs': '%s'",name)
     end
     local resolved = resolvers.findfile(file.basename(name),'luatexlibs') or ""
     if resolved ~= "" then
         if trace_locating then
-            report_resolvers("! lib '%s' located by basename via environment: '%s'",name,resolved)
+            report_libraries("! lib '%s' located by basename via environment: '%s'",name,resolved)
         end
         return loadfile(resolved)
     end
     if trace_locating then
-        report_resolvers('? unable to locate lib: %s',name)
+        report_libraries('? unable to locate lib: %s',name)
     end
 --  return "unable to locate " .. name
 end
@@ -13153,48 +13210,48 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local resolvers = resolvers
 
-local report_resolvers = logs.new("resolvers")
+local report_scripts = logs.new("resolvers","scripts")
 
 function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per se a suffix
     local scriptpath = "scripts/context/lua"
     newname = file.addsuffix(newname,"lua")
     local oldscript = resolvers.cleanpath(oldname)
     if trace_locating then
-        report_resolvers("to be replaced old script %s", oldscript)
+        report_scripts("to be replaced old script %s", oldscript)
     end
     local newscripts = resolvers.findfiles(newname) or { }
     if #newscripts == 0 then
         if trace_locating then
-            report_resolvers("unable to locate new script")
+            report_scripts("unable to locate new script")
         end
     else
         for i=1,#newscripts do
             local newscript = resolvers.cleanpath(newscripts[i])
             if trace_locating then
-                report_resolvers("checking new script %s", newscript)
+                report_scripts("checking new script %s", newscript)
             end
             if oldscript == newscript then
                 if trace_locating then
-                    report_resolvers("old and new script are the same")
+                    report_scripts("old and new script are the same")
                 end
             elseif not find(newscript,scriptpath) then
                 if trace_locating then
-                    report_resolvers("new script should come from %s",scriptpath)
+                    report_scripts("new script should come from %s",scriptpath)
                 end
             elseif not (find(oldscript,file.removesuffix(newname).."$") or find(oldscript,newname.."$")) then
                 if trace_locating then
-                    report_resolvers("invalid new script name")
+                    report_scripts("invalid new script name")
                 end
             else
                 local newdata = io.loaddata(newscript)
                 if newdata then
                     if trace_locating then
-                        report_resolvers("old script content replaced by new content")
+                        report_scripts("old script content replaced by new content")
                     end
                     io.savedata(oldscript,newdata)
                     break
                 elseif trace_locating then
-                    report_resolvers("unable to load new script")
+                    report_scripts("unable to load new script")
                 end
             end
         end
@@ -13216,6 +13273,8 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 
 local resolvers = resolvers
 
+local report_tds = logs.new("resolvers","tds")
+
 --  =  <<
 --  ?  ??
 --  <  +=
@@ -13236,11 +13295,11 @@ function resolvers.load_tree(tree,resolve)
         local newpath = file.join(newtree,"bin")
 
         if not lfs.isdir(newtree) then
-            logs.simple("no '%s' under tree %s",texos,tree)
+            report_tds("no '%s' under tree %s",texos,tree)
             os.exit()
         end
         if not lfs.isdir(newpath) then
-            logs.simple("no '%s/bin' under tree %s",texos,tree)
+            report_tds("no '%s/bin' under tree %s",texos,tree)
             os.exit()
         end
 
@@ -13264,9 +13323,9 @@ function resolvers.load_tree(tree,resolve)
         setenv('TEXMFCNF',       resolvers.luacnfspec, not resolve)
         setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
 
-        logs.simple("changing from root '%s' to '%s'",oldroot,newroot)
-        logs.simple("prepending '%s' to binary path",newpath)
-        logs.simple()
+        report_tds("changing from root '%s' to '%s'",oldroot,newroot)
+        report_tds("prepending '%s' to binary path",newpath)
+        report_tds()
     end
 end
 
@@ -13290,6 +13349,8 @@ local find, concat, upper, format = string.find, table.concat, string.upper, str
 resolvers.listers = resolvers.listers or { }
 
 local resolvers = resolvers
+
+local report_lists = logs.new("resolvers","lists")
 
 local function tabstr(str)
     if type(str) == 'table' then
@@ -13319,11 +13380,11 @@ function resolvers.listers.variables(pattern)
     local exp = table.fastcopy(expansions)
     for key, value in table.sortedpairs(configured) do
         if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
-            logs.simple(key)
-            logs.simple("  env: %s",tabstr(rawget(environment,key))    or "unset")
-            logs.simple("  var: %s",tabstr(configured[key])            or "unset")
-            logs.simple("  exp: %s",tabstr(expansions[key])            or "unset")
-            logs.simple("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+            report_lists(key)
+            report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
+            report_lists("  var: %s",tabstr(configured[key])            or "unset")
+            report_lists("  exp: %s",tabstr(expansions[key])            or "unset")
+            report_lists("  res: %s",resolvers.resolve(expansions[key]) or "unset")
         end
     end
     instance.environment = table.fastcopy(env)
@@ -13477,6 +13538,8 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 local format = string.format
 
+local report_format = logs.new("resolvers","formats")
+
 -- helper for mtxrun
 
 local quoted = string.quoted
@@ -13501,7 +13564,7 @@ function environment.make_format(name)
     if path ~= "" then
         lfs.chdir(path)
     end
-    logs.simple("format path: %s",lfs.currentdir())
+    report_format("format path: %s",lfs.currentdir())
     -- check source file
     local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
@@ -13510,11 +13573,11 @@ function environment.make_format(name)
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        logs.simple("no tex source file with name: %s (mkiv or tex)",name)
+        report_format("no tex source file with name: %s (mkiv or tex)",name)
         lfs.chdir(olddir)
         return
     else
-        logs.simple("using tex source file: %s",fulltexsourcename)
+        report_format("using tex source file: %s",fulltexsourcename)
     end
     local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
@@ -13525,7 +13588,7 @@ function environment.make_format(name)
         fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
     end
     if fullspecificationname == "" then
-        logs.simple("unknown stub specification: %s",specificationname)
+        report_format("unknown stub specification: %s",specificationname)
         lfs.chdir(olddir)
         return
     end
@@ -13536,39 +13599,39 @@ function environment.make_format(name)
     if type(usedlualibs) == "string" then
         usedluastub = file.join(file.dirname(fullspecificationname),usedlualibs)
     elseif type(usedlualibs) == "table" then
-        logs.simple("using stub specification: %s",fullspecificationname)
+        report_format("using stub specification: %s",fullspecificationname)
         local texbasename = file.basename(name)
         local luastubname = file.addsuffix(texbasename,"lua")
         local lucstubname = file.addsuffix(texbasename,"luc")
         -- pack libraries in stub
-        logs.simple("creating initialization file: %s",luastubname)
+        report_format("creating initialization file: %s",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.booleanvariable("LUACSTRIP", true)
         if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
-            logs.simple("using compiled initialization file: %s",lucstubname)
+            report_format("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else
-            logs.simple("using uncompiled initialization file: %s",luastubname)
+            report_format("using uncompiled initialization file: %s",luastubname)
             usedluastub = luastubname
         end
     else
-        logs.simple("invalid stub specification: %s",fullspecificationname)
+        report_format("invalid stub specification: %s",fullspecificationname)
         lfs.chdir(olddir)
         return
     end
     -- generate format
     local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
-    logs.simple("running command: %s\n",command)
+    report_format("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
- -- logs.simple("removing related mplib format with pattern '%s'", pattern)
+ -- report_format("removing related mplib format with pattern '%s'", pattern)
     local mp = dir.glob(pattern)
     if mp then
         for i=1,#mp do
             local name = mp[i]
-            logs.simple("removing related mplib format %s", file.basename(name))
+            report_format("removing related mplib format %s", file.basename(name))
             os.remove(name)
         end
     end
@@ -13585,7 +13648,7 @@ function environment.run_format(name,data,more)
         end
         fmtname = resolvers.cleanpath(fmtname)
         if fmtname == "" then
-            logs.simple("no format with name: %s",name)
+            report_format("no format with name: %s",name)
         else
             local barename = file.removesuffix(name) -- expanded name
             local luaname = file.addsuffix(barename,"luc")
@@ -13593,11 +13656,11 @@ function environment.run_format(name,data,more)
                 luaname = file.addsuffix(barename,"lua")
             end
             if not lfs.isfile(luaname) then
-                logs.simple("using format name: %s",fmtname)
-                logs.simple("no luc/lua with name: %s",barename)
+                report_format("using format name: %s",fmtname)
+                report_format("no luc/lua with name: %s",barename)
             else
                 local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
-                logs.simple("running command: %s",command)
+                report_format("running command: %s",command)
                 os.spawn(command)
             end
         end
@@ -13750,8 +13813,6 @@ if not resolvers then
     os.exit()
 end
 
-logs.setprogram('MTXrun',"TDS Runner Tool 1.30")
-
 if environment.arguments["verbose"] then
     trackers.enable("resolvers.locating")
 end
@@ -13764,10 +13825,7 @@ if trackspec then
     trackers.enable(trackspec)
 end
 
-runners  = runners  or { } -- global
-messages = messages or { }
-
-messages.help = [[
+local helpinfo = [[
 --script              run an mtx script (lua prefered method) (--noquotes), no script gives list
 --execute             run a script or program (texmfstart method) (--noquotes)
 --resolve             resolve prefixed arguments
@@ -13819,6 +13877,19 @@ messages.help = [[
 --pattern=str         filter variables
 ]]
 
+local application = logs.application {
+    name     = "mtxrun",
+    banner   = "ConTeXt TDS Runner Tool 1.30",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
+local verbose = environment.argument("verbose")
+
+messages = messages or { } -- for the mo
+
+runners = runners  or { } -- global
 
 runners.applications = {
     ["lua"] = "luatex --luaonly",
@@ -13872,17 +13943,16 @@ end
 
 function runners.prepare()
     local checkname = environment.argument("ifchanged")
-    local verbose = environment.argument("verbose")
     if type(checkname) == "string" and checkname ~= "" then
         local oldchecksum = file.loadchecksum(checkname)
         local newchecksum = file.checksum(checkname)
         if oldchecksum == newchecksum then
             if verbose then
-                logs.simple("file '%s' is unchanged",checkname)
+                report("file '%s' is unchanged",checkname)
             end
             return "skip"
         elseif verbose then
-            logs.simple("file '%s' is changed, processing started",checkname)
+            report("file '%s' is changed, processing started",checkname)
         end
         file.savechecksum(checkname)
     end
@@ -13892,17 +13962,17 @@ function runners.prepare()
         if oldname and newname and oldname ~= "" and newname ~= "" then
             if not file.needs_updating(oldname,newname) then
                 if verbose then
-                    logs.simple("file '%s' and '%s' have same age",oldname,newname)
+                    report("file '%s' and '%s' have same age",oldname,newname)
                 end
                 return "skip"
             elseif verbose then
-                logs.simple("file '%s' is older than '%s'",oldname,newname)
+                report("file '%s' is older than '%s'",oldname,newname)
             end
         end
     end
     local runpath = environment.argument("path")
     if type(runpath) == "string" and not lfs.chdir(runpath) then
-        logs.simple("unable to change to path '%s'",runpath)
+        report("unable to change to path '%s'",runpath)
         return "error"
     end
     runners.prepare = function() end
@@ -13961,11 +14031,11 @@ function runners.execute_script(fullname,internal,nosplit)
                         result = binary .. " " .. result
                     end
                     local command = result .. " " .. environment.reconstructcommandline(environment.arguments_after,noquote)
-                    if logs.verbose then
-                        logs.simpleline()
-                        logs.simple("executing: %s",command)
-                        logs.simpleline()
-                        logs.simpleline()
+                    if verbose then
+                        report()
+                        report("executing: %s",command)
+                        report()
+                        report()
                         io.flush()
                     end
                     -- no os.exec because otherwise we get the wrong return value
@@ -13980,9 +14050,9 @@ function runners.execute_script(fullname,internal,nosplit)
                                     return false
                                 end
                             end
-                            logs.simpleline()
-                            logs.simple("This script needs '%s' which seems not to be installed.",binary)
-                            logs.simpleline()
+                            report()
+                            report("This script needs '%s' which seems not to be installed.",binary)
+                            report()
                         end
                         return false
                     end
@@ -14007,10 +14077,10 @@ function runners.execute_program(fullname)
             environment.initializearguments(after)
             fullname = fullname:gsub("^bin:","")
             local command = fullname .. " " .. (environment.reconstructcommandline(after or "",noquote) or "")
-            logs.simpleline()
-            logs.simple("executing: %s",command)
-            logs.simpleline()
-            logs.simpleline()
+            report()
+            report("executing: %s",command)
+            report()
+            report()
             io.flush()
             local code = os.exec(command) -- (fullname,unpack(after)) does not work / maybe spawn
             return code == 0
@@ -14042,18 +14112,18 @@ function runners.handle_stubs(create)
             if create then
                 if windows then
                     io.savedata(file.join(stubpath,base..".bat"),string.format(windows_stub,name))
-                    logs.simple("windows stub for '%s' created",base)
+                    report("windows stub for '%s' created",base)
                 end
                 if unix then
                     io.savedata(file.join(stubpath,base),string.format(unix_stub,name))
-                    logs.simple("unix stub for '%s' created",base)
+                    report("unix stub for '%s' created",base)
                 end
             else
                 if windows and (os.remove(file.join(stubpath,base..'.bat')) or os.remove(file.join(stubpath,base..'.cmd'))) then
-                    logs.simple("windows stub for '%s' removed", base)
+                    report("windows stub for '%s' removed", base)
                 end
                 if unix and (os.remove(file.join(stubpath,base)) or os.remove(file.join(stubpath,base..'.sh'))) then
-                    logs.simple("unix stub for '%s' removed",base)
+                    report("unix stub for '%s' removed",base)
                 end
             end
         end
@@ -14078,12 +14148,12 @@ function runners.locate_platform()
 end
 
 function runners.report_location(result)
-    if logs.verbose then
-        logs.simpleline()
+    if verbose then
+        reportline()
         if result and result ~= "" then
-            logs.simple(result)
+            report(result)
         else
-            logs.simple("not found")
+            report("not found")
         end
     else
         io.write(result)
@@ -14095,11 +14165,11 @@ function runners.edit_script(filename) -- we assume that gvim is present on most
     local rest = resolvers.resolve(filename)
     if rest ~= "" then
         local command = editor .. " " .. rest
-        if logs.verbose then
-            logs.simpleline()
-            logs.simple("starting editor: %s",command)
-            logs.simple_line()
-            logs.simple_line()
+        if verbose then
+            report()
+            report("starting editor: %s",command)
+            report()
+            report()
         end
         os.launch(command)
     end
@@ -14148,7 +14218,7 @@ function runners.launch_file(filename)
         pattern = filename
     end
     if not pattern or pattern == "" then
-        logs.simple("provide name or --pattern=")
+        report("provide name or --pattern=")
     else
         local t = resolvers.findfiles(pattern)
         if not t or #t == 0 then
@@ -14160,15 +14230,15 @@ function runners.launch_file(filename)
         if t and #t > 0 then
             if environment.arguments["all"] then
                 for _, v in pairs(t) do
-                    logs.simple("launching %s", v)
+                    report("launching %s", v)
                     resolvers.launch(v)
                 end
             else
-                logs.simple("launching %s", t[1])
+                report("launching %s", t[1])
                 resolvers.launch(t[1])
             end
         else
-            logs.simple("no match for %s", pattern)
+            report("no match for %s", pattern)
         end
     end
 end
@@ -14239,7 +14309,7 @@ function runners.execute_ctx_script(filename,...)
     local fullname = runners.find_mtx_script(filename) or ""
     if file.extname(fullname) == "cld" then
         -- handy in editors where we force --autopdf
-        logs.simple("running cld script: %s",filename)
+        report("running cld script: %s",filename)
         table.insert(arguments,1,fullname)
         table.insert(arguments,"--autopdf")
         fullname = runners.find_mtx_script("context") or ""
@@ -14270,8 +14340,8 @@ function runners.execute_ctx_script(filename,...)
                 runners.load_script_session(loadname)
             end
             filename = environment.files[1]
-            if logs.verbose then
-                logs.simple("using script: %s\n",fullname)
+            if verbose then
+                report("using script: %s\n",fullname)
             end
             environment.ownscript = fullname
             dofile(fullname)
@@ -14306,24 +14376,23 @@ function runners.execute_ctx_script(filename,...)
                     end
                 end
                 if #valid > 0 then
-                    logs.reportbanner()
-                    logs.reportline()
-                    logs.simple("no script name given, known scripts:")
-                    logs.simple()
+                    application.identify()
+                    report("no script name given, known scripts:")
+                    report()
                     for k=1,#valid do
                         local v = valid[k]
-                        logs.simple("%-12s  %4s  %s",v[1],v[2],v[3])
+                        report("%-12s  %4s  %s",v[1],v[2],v[3])
                     end
                 end
             else
-                logs.simple("no script name given")
+                report("no script name given")
             end
         else
             filename = file.addsuffix(filename,"lua")
             if file.is_qualified_path(filename) then
-                logs.simple("unknown script '%s'",filename)
+                report("unknown script '%s'",filename)
             else
-                logs.simple("unknown script '%s' or 'mtx-%s'",filename,filename)
+                report("unknown script '%s' or 'mtx-%s'",filename,filename)
             end
         end
         return false
@@ -14331,9 +14400,9 @@ function runners.execute_ctx_script(filename,...)
 end
 
 function runners.prefixes()
-    logs.reportbanner()
-    logs.reportline()
-    logs.simple(table.concat(resolvers.allprefixes(true)," "))
+    application.identify()
+    report()
+    report(table.concat(resolvers.allprefixes(true)," "))
 end
 
 function runners.timedrun(filename) -- just for me
@@ -14385,7 +14454,7 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
         local t = os.clock()
         local k = kpse.original.new("luatex",progname)
         local dummy = k:find_file("mtxrun.lua") -- so that we're initialized
-        logs.simple("kpse fallback with progname '%s' initialized in %s seconds",progname,os.clock()-t)
+        report("kpse fallback with progname '%s' initialized in %s seconds",progname,os.clock()-t)
         kpse_initialized = function() return k end
         return k
     end
@@ -14432,11 +14501,11 @@ else
 
     function runners.loadbase(...)
         if not resolvers.load(...) then
-            logs.simple("forcing cache reload")
+            report("forcing cache reload")
             instance.renewcache = true
             trackers.enable("resolvers.locating")
             if not resolvers.load(...) then
-                logs.simple("the resolver databases are not present or outdated")
+                report("the resolver databases are not present or outdated")
             end
         end
     end
@@ -14595,8 +14664,8 @@ elseif environment.argument("find-path") then
 
     resolvers.load()
     local path = resolvers.findpath(filename, instance.my_format)
-    if logs.verbose then
-        logs.simple(path)
+    if verbose then
+        report(path)
     else
         print(path)
     end
@@ -14651,7 +14720,7 @@ elseif environment.argument("format-path") then
     -- luatools: runners.execute_ctx_script("mtx-base","--format-path",filename)
 
     resolvers.load()
-    logs.simple(caches.getwritablepath("format"))
+    report(caches.getwritablepath("format"))
 
 elseif environment.argument("pattern") then
 
@@ -14695,7 +14764,7 @@ elseif environment.argument("help") and filename=='base' then
 
 elseif environment.argument("help") or filename=='help' or filename == "" then
 
-    logs.help(messages.help)
+    application.help()
 
 elseif filename:find("^bin:") then
 
@@ -14729,9 +14798,9 @@ else
 
 end
 
-if logs.verbose then
-    logs.simpleline()
-    logs.simple("runtime: %0.3f seconds",os.runtime())
+if verbose then
+    report()
+    report("runtime: %0.3f seconds",os.runtime())
 end
 
 if os.type ~= "windows" then

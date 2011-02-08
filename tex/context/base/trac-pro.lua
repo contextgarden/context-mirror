@@ -17,7 +17,7 @@ local getmetatable, setmetatable, rawset, type = getmetatable, setmetatable, raw
 
 local trace_namespaces = false  trackers.register("system.namespaces", function(v) trace_namespaces = v end)
 
-local report_system = logs.new("system")
+local report_system = logs.new("system","protection")
 
 namespaces       = namespaces or { }
 local namespaces = namespaces

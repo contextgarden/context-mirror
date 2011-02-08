@@ -17,7 +17,7 @@ local format, match, gmatch, concat, rep = string.format, string.match, string.g
 local lpegmatch = lpeg.match
 local write_nl = texio.write_nl
 
-local report_nodes = logs.new("nodes")
+local report_nodes = logs.new("nodes","tracing")
 
 fonts = fonts or { }
 nodes = nodes or { }
@@ -361,7 +361,11 @@ function nodes.handlers.checkglyphs(head,message)
         t[#t+1] = format("U+%04X:%s",g.char,g.subtype)
     end
     if #t > 0 then
-        logs.report(message or "nodes","%s glyphs: %s",#t,concat(t," "))
+        if message and message ~= "" then
+            report_nodes("%s, %s glyphs: %s",message,#t,concat(t," "))
+        else
+            report_nodes("%s glyphs: %s",#t,concat(t," "))
+        end
     end
     return false
 end
@@ -565,7 +569,7 @@ local function showboxes(n,symbol,depth)
         local id = n.id
         if id == hlist_code or id == vlist_code then
             local s = n.subtype
-            logs.simple(rep(symbol,depth) .. what[s] or s)
+            report_nodes(rep(symbol,depth) .. what[s] or s)
             showboxes(n.list,symbol,depth+1)
         end
     end

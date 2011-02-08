@@ -8,6 +8,18 @@ if not modules then modules = { } end modules ['mtx-package'] = {
 
 local format, gsub, gmatch = string.format, string.gsub, string.gmatch
 
+local helpinfo = [[
+--merge               merge 'loadmodule' into merge file
+]]
+
+local application = logs.application {
+    name     = "mtx-package",
+    banner   = "Distribution Related Goodies 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts         = scripts         or { }
 messages        = messages        or { }
 scripts.package = scripts.package or { }
@@ -16,14 +28,14 @@ function scripts.package.merge_luatex_files(name,strip)
     local oldname = resolvers.findfile(name) or ""
     oldname = file.replacesuffix(oldname,"lua")
     if oldname == "" then
-        logs.simple("missing '%s'",name)
+        report("missing '%s'",name)
     else
         local newname = file.removesuffix(oldname) .. "-merged.lua"
         local data = io.loaddata(oldname) or ""
         if data == "" then
-            logs.simple("missing '%s'",newname)
+            report("missing '%s'",newname)
         else
-            logs.simple("loading '%s'",oldname)
+            report("loading '%s'",oldname)
             local collected = { }
             collected[#collected+1] = format("-- merged file : %s\n",newname)
             collected[#collected+1] = format("-- parent file : %s\n",oldname)
@@ -33,9 +45,9 @@ function scripts.package.merge_luatex_files(name,strip)
                 if file.basename(lib) ~= file.basename(newname) then
                     local fullname = resolvers.findfile(lib) or ""
                     if fullname == "" then
-                        logs.simple("missing '%s'",lib)
+                        report("missing '%s'",lib)
                     else
-                        logs.simple("fetching '%s'",fullname)
+                        report("fetching '%s'",fullname)
                         local data = io.loaddata(fullname)
                         if strip then
                             data = gsub(data,"%-%-%[%[ldx%-%-.-%-%-%ldx%]%]%-%-[\n\r]*","")
@@ -49,20 +61,14 @@ function scripts.package.merge_luatex_files(name,strip)
                     end
                 end
             end
-            logs.simple("saving '%s'",newname)
+            report("saving '%s'",newname)
             io.savedata(newname,table.concat(collected))
         end
     end
 end
 
-logs.extendbanner("Distribution Related Goodies 0.10")
-
-messages.help = [[
---merge               merge 'loadmodule' into merge file
-]]
-
 if environment.argument("merge") then
     scripts.package.merge_luatex_files(environment.files[1] or "")
 else
-    logs.help(messages.help)
+    application.help()
 end

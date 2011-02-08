@@ -8,6 +8,33 @@ if not modules then modules = { } end modules ['mtx-tools'] = {
 
 local find, format, sub, rep, gsub, lower = string.find, string.format, string.sub, string.rep, string.gsub, string.lower
 
+local helpinfo = [[
+--disarmutfbomb       remove utf bomb if present
+    --force             remove indeed
+
+--dirtoxml              glob directory into xml
+    --pattern           glob pattern (default: *)
+    --url               url attribute (no processing)
+    --root              the root of the globbed path (default: .)
+    --output            output filename (console by default)
+    --recurse           recurse into subdirecories
+    --stripname         take pathpart of given pattern
+    --longname          set name attributes to full path name
+
+--downcase
+    --pattern           glob pattern (default: *)
+    --recurse           recurse into subdirecories
+    --force             downcase indeed
+]]
+
+local application = logs.application {
+    name     = "mtx-tools",
+    banner   = "Some File Related Goodies 1.01",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts       = scripts       or { }
 scripts.tools = scripts.tools or { }
 
@@ -23,24 +50,24 @@ function scripts.tools.disarmutfbomb()
             if not data then
                 -- just skip
             elseif find(data,bomb_1) then
-                logs.simple("file '%s' has a 2 character utf bomb",name)
+                report("file '%s' has a 2 character utf bomb",name)
                 if force then
                     io.savedata(name,(gsub(data,bomb_1,"")))
                 end
                 done = true
             elseif find(data,bomb_2) then
-                logs.simple("file '%s' has a 3 character utf bomb",name)
+                report("file '%s' has a 3 character utf bomb",name)
                 if force then
                     io.savedata(name,(gsub(data,bomb_2,"")))
                 end
                 done = true
             else
-            --  logs.simple("file '%s' has no utf bomb",name)
+            --  report("file '%s' has no utf bomb",name)
             end
         end
     end
     if done and not force then
-        logs.simple("use --force to do a real disarming")
+        report("use --force to do a real disarming")
     end
 end
 
@@ -63,12 +90,12 @@ function scripts.tools.downcase()
     end)
     if n > 0 then
         if force then
-            logs.simple("%s files renamed",n)
+            report("%s files renamed",n)
         else
-            logs.simple("use --force to do a real rename (%s files involved)",n)
+            report("use --force to do a real rename (%s files involved)",n)
         end
     else
-        logs.simple("nothing to do")
+        report("nothing to do")
     end
 end
 
@@ -111,7 +138,7 @@ function scripts.tools.dirtoxml()
     end
 
     if not pattern or pattern == ""  then
-        logs.report('provide --pattern=')
+        report('provide --pattern=')
         return
     end
 
@@ -144,27 +171,6 @@ function scripts.tools.dirtoxml()
 
 end
 
-logs.extendbanner("Some File Related Goodies 1.01")
-
-messages.help = [[
---disarmutfbomb       remove utf bomb if present
-    --force             remove indeed
-
---dirtoxml              glob directory into xml
-    --pattern           glob pattern (default: *)
-    --url               url attribute (no processing)
-    --root              the root of the globbed path (default: .)
-    --output            output filename (console by default)
-    --recurse           recurse into subdirecories
-    --stripname         take pathpart of given pattern
-    --longname          set name attributes to full path name
-
---downcase
-    --pattern           glob pattern (default: *)
-    --recurse           recurse into subdirecories
-    --force             downcase indeed
-]]
-
 if environment.argument("disarmutfbomb") then
     scripts.tools.disarmutfbomb()
 elseif environment.argument("dirtoxml") then
@@ -172,5 +178,5 @@ elseif environment.argument("dirtoxml") then
 elseif environment.argument("downcase") then
     scripts.tools.downcase()
 else
-    logs.help(messages.help)
+    application.help()
 end

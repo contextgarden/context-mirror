@@ -22,7 +22,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
-local report_buffers = logs.new("buffers")
+local report_visualizers = logs.new("buffers","visualizers")
 
 visualizers = visualizers or { }
 
@@ -160,7 +160,7 @@ function visualizers.newgrammar(name,t)
     g = g and g.grammar
     if g then
         if trace_visualize then
-            report_buffers("cloning grammar '%s'",name)
+            report_visualizers("cloning grammar '%s'",name)
         end
         for k,v in next, g do
             if not t[k] then
@@ -179,12 +179,12 @@ local function getvisualizer(method,nature)
     local m = specifications[method] or specifications.default
     if nature then
         if trace_visualize then
-            report_buffers("getting visualizer '%s' with nature '%s'",method,nature)
+            report_visualizers("getting visualizer '%s' with nature '%s'",method,nature)
         end
         return m and (m[nature] or m.parser) or nil
     else
         if trace_visualize then
-            report_buffers("getting visualizer '%s'",method)
+            report_visualizers("getting visualizer '%s'",method)
         end
         return m and m.parser or nil
     end
@@ -194,7 +194,7 @@ local fallback = context.verbatim
 
 local function makepattern(visualizer,kind,pattern)
     if not pattern then
-        logs.simple("error in visualizer: %s",kind)
+        report_visualizers("error in visualizer: %s",kind)
         return patterns.alwaystrue
     else
         if type(visualizer) == "table" and type(kind) == "string" then
@@ -233,11 +233,11 @@ function visualizers.load(name)
         end
         if texname == "" or luaname == "" then
             if trace_visualize then
-                report_buffers("unknown visualizer '%s'",name)
+                report_visualizers("unknown visualizer '%s'",name)
             end
         else
             if trace_visualize then
-                report_buffers("loading visualizer '%s'",name)
+                report_visualizers("loading visualizer '%s'",name)
             end
             lua.registercode(luaname)
             context.input(texname)
@@ -255,7 +255,7 @@ end
 function visualizers.register(name,specification)
     name = lower(name)
     if trace_visualize then
-        report_buffers("registering visualizer '%s'",name)
+        report_visualizers("registering visualizer '%s'",name)
     end
     specifications[name] = specification
     local parser, handler = specification.parser, specification.handler
@@ -345,7 +345,7 @@ function visualizers.registerescapepattern(name,before,after,normalmethod,escape
     local escapepattern = escapepatterns[name]
     if not escapepattern then
         if trace_visualize then
-            report_buffers("registering escape pattern, name: '%s', before: '%s', after: '%s'",name,before,after)
+            report_visualizers("registering escape pattern, name: '%s', before: '%s', after: '%s'",name,before,after)
         end
         before, after = P(before) * space_pattern, space_pattern * P(after)
         escapepattern = (
@@ -363,7 +363,7 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     local escapepattern = escapepatterns[name]
     if not escapepattern then
         if trace_visualize then
-            report_buffers("registering escape token, name: '%s', token: '%s'",name,token)
+            report_visualizers("registering escape token, name: '%s', token: '%s'",name,token)
         end
         token = P(token)
         local notoken = hack((1 - token)^1)
@@ -417,12 +417,12 @@ local function visualize(content,settings) -- maybe also method in settings
         local n = m and m[nature]
         if n then
             if trace_visualize then
-                report_buffers("visualize using method '%s' and nature '%s'",method,nature)
+                report_visualizers("visualize using method '%s' and nature '%s'",method,nature)
             end
             n(content,settings)
         else
             if trace_visualize then
-                report_buffers("visualize using method '%s'",method)
+                report_visualizers("visualize using method '%s'",method)
             end
             fallback(content,1,settings)
         end
@@ -652,7 +652,6 @@ function commands.typefile(settings)
         if str and str ~= "" then
             local regime = settings.regime
             if regime and regime ~= "" then
-                regimes.load(regime)
                 str = regimes.translate(str,regime)
             end
             if str and str~= "" then

@@ -18,7 +18,7 @@ local allocate = utilities.storage.allocate
 
 local trace_defining = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
-local report_math = logs.new("mathematics")
+local report_math = logs.new("mathematics","initializing")
 
 mathematics       = mathematics or { }
 local mathematics = mathematics

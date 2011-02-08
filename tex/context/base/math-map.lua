@@ -28,7 +28,7 @@ local texattribute = tex.attribute
 
 local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 
-local report_math = logs.new("mathematics")
+local report_remapping = logs.new("mathematics","remapping")
 
 mathematics       = mathematics or { }
 local mathematics = mathematics
@@ -406,7 +406,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
                 local alphabet = r and r.alphabet or "regular"
                 local style = r and r.style or "tf"
                 if trace_greek then
-                    report_math("before: char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_remapping("before: char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
                 local s = remapping[islc or isuc][style]
                 if s then
@@ -414,7 +414,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
                     mathalphabet, style = data and data.attribute or mathalphabet, s
                 end
                 if trace_greek then
-                    report_math("after : char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
+                    report_remapping("after : char: %05X, alphabet: %s %s, lcgreek: %s, ucgreek: %s",char,alphabet,style,remapping[lc].what,remapping[uc].what)
                 end
             end
         end

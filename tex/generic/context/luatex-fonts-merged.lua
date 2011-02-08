@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/04/11 19:31:45
+-- merge date  : 02/08/11 10:06:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -99,11 +99,7 @@ local simple_escapes = {
 }
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return (gsub(str,".",simple_escapes))
-    else
-        return (gsub(str,".",patterns_escapes))
-    end
+    return (gsub(str,".",simple and simple_escapes or patterns_escapes))
 end
 
 function string.topattern(str,lowercase,strict)
@@ -556,11 +552,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return match(s,str)
-    else
-        return match(p,str)
-    end
+    return match(simple and s or p,str)
 end
 
 -- utf extensies
@@ -2606,11 +2598,11 @@ containers          = containers or { }
 local containers    = containers
 containers.usecache = true
 
-local report_cache = logs.new("cache")
+local report_containers = logs.new("resolvers","containers")
 
 local function report(container,tag,name)
     if trace_cache or trace_containers then
-        report_cache("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
+        report_containers("container: %s, tag: %s, name: %s",container.subcategory,tag,name or 'invalid')
     end
 end
 
@@ -2879,7 +2871,7 @@ local next = next
 
 local trace_injections = false  trackers.register("nodes.injections", function(v) trace_injections = v end)
 
-local report_injections = logs.new("injections")
+local report_injections = logs.new("nodes","injections")
 
 local attributes, nodes, node = attributes, nodes, node
 
@@ -3332,7 +3324,7 @@ local write_nl = texio.write_nl
 local lower = string.lower
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 fontloader.totable = fontloader.to_table
 
@@ -3421,7 +3413,7 @@ function fonts.fontformat(filename,default)
     if format then
         return format
     else
-        report_define("unable to determine font format for '%s'",filename)
+        report_defining("unable to determine font format for '%s'",filename)
         return default
     end
 end
@@ -3448,7 +3440,7 @@ local allocate = utilities.storage.allocate
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled
@@ -3494,7 +3486,7 @@ function tfm.read_from_tfm(specification)
     local fname, tfmdata = specification.filename or "", nil
     if fname ~= "" then
         if trace_defining then
-            report_define("loading tfm file %s at size %s",fname,specification.size)
+            report_defining("loading tfm file %s at size %s",fname,specification.size)
         end
         tfmdata = font.read_tfm(fname,specification.size) -- not cached, fast enough
         if tfmdata then
@@ -3517,7 +3509,7 @@ function tfm.read_from_tfm(specification)
             tfm.enhance(tfmdata,specification)
         end
     elseif trace_defining then
-        report_define("loading tfm with name %s fails",specification.name)
+        report_defining("loading tfm with name %s fails",specification.name)
     end
     return tfmdata
 end
@@ -3853,7 +3845,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
             end
         end
     --  if trace_scaling then
-    --    report_define("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
+    --    report_defining("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
     --  end
         if tounicode then
             local tu = tounicode[index] -- nb: index!
@@ -3890,7 +3882,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
             if vn then
                 chr.next = vn
             --~ if v.vert_variants or v.horiz_variants then
-            --~     report_define("glyph 0x%05X has combination of next, vert_variants and horiz_variants",index)
+            --~     report_defining("glyph 0x%05X has combination of next, vert_variants and horiz_variants",index)
             --~ end
             else
                 local vv = v.vert_variants
@@ -4062,11 +4054,11 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     -- can have multiple subfonts
     if hasmath then
         if trace_defining then
-            report_define("math enabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
     else
         if trace_defining then
-            report_define("math disabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
         t.nomath, t.MathConstants = true, nil
     end
@@ -4075,8 +4067,8 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.psname = t.fontname or (t.fullname and fonts.names.cleanname(t.fullname))
     end
     if trace_defining then
-        report_define("used for accessing (sub)font: '%s'",t.psname or "nopsname")
-        report_define("used for subsetting: '%s'",t.fontname or "nofontname")
+        report_defining("used for accessing (sub)font: '%s'",t.psname or "nopsname")
+        report_defining("used for subsetting: '%s'",t.fontname or "nofontname")
     end
     -- this will move up (side effect of merging split call)
     t.factor    = delta
@@ -4179,18 +4171,18 @@ function tfm.checkedfilename(metadata,whatever)
             askedfilename = resolvers.resolve(askedfilename) -- no shortcut
             foundfilename = resolvers.findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
-                report_define("source file '%s' is not found",askedfilename)
+                report_defining("source file '%s' is not found",askedfilename)
                 foundfilename = resolvers.findbinfile(file.basename(askedfilename),"") or ""
                 if foundfilename ~= "" then
-                    report_define("using source file '%s' (cache mismatch)",foundfilename)
+                    report_defining("using source file '%s' (cache mismatch)",foundfilename)
                 end
             end
         elseif whatever then
-            report_define("no source file for '%s'",whatever)
+            report_defining("no source file for '%s'",whatever)
             foundfilename = ""
         end
         metadata.foundfilename = foundfilename
-    --  report_define("using source file '%s'",foundfilename)
+    --  report_defining("using source file '%s'",foundfilename)
     end
     return foundfilename
 end
@@ -4219,7 +4211,7 @@ local lpegmatch = lpeg.match
 
 local trace_loading = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 local fonts   = fonts
 
@@ -5341,7 +5333,7 @@ local utfbyte = utf.byte
 local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading    = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -5638,7 +5630,7 @@ local trace_sequences  = false  trackers.register("otf.sequences",  function(v) 
 local trace_math       = false  trackers.register("otf.math",       function(v) trace_math         = v end)
 local trace_defining   = false  trackers.register("fonts.defining", function(v) trace_defining     = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 local starttiming, stoptiming, elapsedtime = statistics.starttiming, statistics.stoptiming, statistics.elapsedtime
 
@@ -5658,6 +5650,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = allocate()
 local enhancers      = otf.enhancers
 enhancers.patches    = { }
+local patches        = enhancers.patches
 
 local definers       = fonts.definers
 
@@ -5870,11 +5863,11 @@ local ordered_enhancers = {
 
 local actions = { }
 
-enhancers.patches.before = allocate()
-enhancers.patches.after  = allocate()
+patches.before = allocate()
+patches.after  = allocate()
 
-local before = enhancers.patches.before
-local after  = enhancers.patches.after
+local before = patches.before
+local after  = patches.after
 
 local function enhance(name,data,filename,raw,verbose)
     local enhancer = actions[name]
@@ -5918,14 +5911,20 @@ function enhancers.apply(data,filename,raw,verbose)
     ioflush() -- we want instant messages
 end
 
--- enhancers.patches.register("before","migrate metadata","cambria",function() end)
+-- patches.register("before","migrate metadata","cambria",function() end)
 
-function enhancers.patches.register(what,where,pattern,action)
+function patches.register(what,where,pattern,action)
     local ww = what[where]
     if ww then
         ww[pattern] = action
     else
         ww = { [pattern] = action}
+    end
+end
+
+function patches.report(fmt,...)
+    if trace_loading then
+        report_otf("patching: " ..fmt,...)
     end
 end
 
@@ -7531,7 +7530,7 @@ if not modules then modules = { } end modules ['font-otd'] = {
 
 local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 local fonts          = fonts
 local otf            = fonts.otf
@@ -7705,7 +7704,7 @@ local trace_ligatures    = false  trackers.register("otf.ligatures",    function
 local trace_kerns        = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
 local trace_preparing    = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
 
-local report_prepare = logs.new("otf prepare")
+local report_prepare = logs.new("fonts","otf prepare")
 
 local wildcard = "*"
 local default  = "dflt"
@@ -8223,11 +8222,11 @@ local trace_steps        = false  trackers.register("otf.steps",        function
 local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
 
-local report_direct   = logs.new("otf direct")
-local report_subchain = logs.new("otf subchain")
-local report_chain    = logs.new("otf chain")
-local report_process  = logs.new("otf process")
-local report_prepare  = logs.new("otf prepare")
+local report_direct   = logs.new("fonts","otf direct")
+local report_subchain = logs.new("fonts","otf subchain")
+local report_chain    = logs.new("fonts","otf chain")
+local report_process  = logs.new("fonts","otf process")
+local report_prepare  = logs.new("fonts","otf prepare")
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -11096,7 +11095,7 @@ local trace_loading = false  trackers.register("otf.loading", function(v) trace_
 local fonts = fonts
 local otf   = fonts.otf
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 -- instead of "script = "DFLT", langs = { 'dflt' }" we now use wildcards (we used to
 -- have always); some day we can write a "force always when true" trick for other
@@ -15303,8 +15302,8 @@ local directive_embedall = false  directives.register("fonts.embedall", function
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
-local report_define = logs.new("define fonts")
-local report_afm    = logs.new("load afm")
+local report_defining = logs.new("fonts","defining")
+local report_afm      = logs.new("fonts","afm loading")
 
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the
@@ -15419,7 +15418,7 @@ end
 function definers.makespecification(specification, lookup, name, sub, method, detail, size)
     size = size or 655360
     if trace_defining then
-        report_define("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
+        report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
             specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
             (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
     end
@@ -15627,14 +15626,14 @@ function tfm.read(specification)
             local reader = readers[lower(forced)]
             tfmtable = reader and reader(specification)
             if not tfmtable then
-                report_define("forced type %s of %s not found",forced,specification.name)
+                report_defining("forced type %s of %s not found",forced,specification.name)
             end
         else
             for s=1,#sequence do -- reader sequence
                 local reader = sequence[s]
                 if readers[reader] then -- not really needed
                     if trace_defining then
-                        report_define("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        report_defining("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
                     end
                     tfmtable = readers[reader](specification)
                     if tfmtable then
@@ -15659,7 +15658,7 @@ function tfm.read(specification)
         end
     end
     if not tfmtable then
-        report_define("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
+        report_defining("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
     end
     return tfmtable
 end
@@ -15877,7 +15876,7 @@ function definers.register(tfmdata,id) -- will be overloaded
         local hash = tfmdata.hash
         if not internalized[hash] then
             if trace_defining then
-                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
+                report_defining("registering font, id: %s, hash: %s",id or "?",hash or "?")
             end
             fonts.identifiers[id] = tfmdata
             internalized[hash] = id
@@ -15945,9 +15944,9 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     end
     lastdefined = tfmdata or id -- todo ! ! ! ! !
     if not tfmdata then -- or id?
-        report_define( "unknown font %s, loading aborted",specification.name)
+        report_defining( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
-        report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
+        report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
             tfmdata.type          or "unknown",
             id                    or "?",
             tfmdata.name          or "?",
@@ -15967,18 +15966,18 @@ function vf.find(name)
         local format = fonts.logger.format(name)
         if format == 'tfm' or format == 'ofm' then
             if trace_defining then
-                report_define("locating vf for %s",name)
+                report_defining("locating vf for %s",name)
             end
             return findbinfile(name,"ovf")
         else
             if trace_defining then
-                report_define("vf for %s is already taken care of",name)
+                report_defining("vf for %s is already taken care of",name)
             end
             return nil -- ""
         end
     else
         if trace_defining then
-            report_define("locating vf for %s",name)
+            report_defining("locating vf for %s",name)
         end
         return findbinfile(name,"ovf")
     end

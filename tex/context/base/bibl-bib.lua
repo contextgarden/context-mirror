@@ -27,7 +27,7 @@ local P, R, S, C, Cc, Cs, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs,
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
-local report_publications = logs.new("publications")
+local report_xml = logs.new("publications","xml")
 
 bibtex       = bibtex or { }
 local bibtex = bibtex
@@ -144,9 +144,9 @@ function bibtex.load(session,filename)
     if filename ~= "" then
         local data = io.loaddata(filename) or ""
         if data == "" then
-            report_publications("empty file '%s', no conversion to xml",filename)
+            report_xml("empty file '%s', no conversion to xml",filename)
         elseif trace_bibxml then
-            report_publications("converting file '%s' to xml",filename)
+            report_xml("converting file '%s' to xml",filename)
         end
         bibtex.convert(session,data)
     end

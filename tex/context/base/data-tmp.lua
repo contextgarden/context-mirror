@@ -28,8 +28,8 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_cache     = logs.new("cache")
-local report_resolvers = logs.new("resolvers")
+local report_caches    = logs.new("resolvers","caches")
+local report_resolvers = logs.new("resolvers","caching")
 
 local resolvers = resolvers
 
@@ -89,7 +89,7 @@ local function identify()
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
                             if isdir(cachepath) and file.is_writable(cachepath) then
-                                report_cache("created: %s",cachepath)
+                                report_caches("created: %s",cachepath)
                                 writable = cachepath
                                 readables[#readables+1] = cachepath
                             end
@@ -123,10 +123,10 @@ local function identify()
     -- Some extra checking. If we have no writable or readable path then we simply
     -- quit.
     if not writable then
-        report_cache("fatal error: there is no valid writable cache path defined")
+        report_caches("fatal error: there is no valid writable cache path defined")
         os.exit()
     elseif #readables == 0 then
-        report_cache("fatal error: there is no valid readable cache path defined")
+        report_caches("fatal error: there is no valid readable cache path defined")
         os.exit()
     end
     -- why here
@@ -148,9 +148,9 @@ local function identify()
     -- end
     if trace_cache then
         for i=1,#readables do
-            report_cache("using readable path '%s' (order %s)",readables[i],i)
+            report_caches("using readable path '%s' (order %s)",readables[i],i)
         end
-        report_cache("using writable path '%s'",writable)
+        report_caches("using writable path '%s'",writable)
     end
     identify = function()
         return writable, readables
@@ -185,7 +185,7 @@ function caches.hashed(tree)
     tree = lower(tree)
     local hash = md5.hex(tree)
     if trace_cache or trace_locating then
-        report_cache("hashing tree %s, hash %s",tree,hash)
+        report_caches("hashing tree %s, hash %s",tree,hash)
     end
     return hash
 end

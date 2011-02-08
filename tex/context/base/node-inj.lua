@@ -17,7 +17,7 @@ local next = next
 
 local trace_injections = false  trackers.register("nodes.injections", function(v) trace_injections = v end)
 
-local report_injections = logs.new("injections")
+local report_injections = logs.new("nodes","injections")
 
 local attributes, nodes, node = attributes, nodes, node
 

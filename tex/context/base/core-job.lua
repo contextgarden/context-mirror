@@ -19,6 +19,8 @@ resolvers.maxreadlevel = 3
 
 directives.register("resolvers.maxreadlevel", function(v) resolvers.maxreadlevel = tonumber(v) or resolvers.maxreadlevel end)
 
+local report_examodes = logs.new("system","examodes") -- maybe another category
+
 local function exists(n)
     if io.exists(n) then
         return n
@@ -121,10 +123,10 @@ function commands.loadexamodes(filename)
     end
     filename = resolvers.findfile(file.addsuffix(filename,'ctm')) or ""
     if filename ~= "" then
-        commands.writestatus("examodes","loading %s",filename) -- todo: message system
+        report_examodes("loading %s",filename) -- todo: message system
         convertexamodes(io.loaddata(filename))
     else
-        commands.writestatus("examodes","no mode file %s",filename) -- todo: message system
+        report_examodes("no mode file %s",filename) -- todo: message system
     end
 end
 

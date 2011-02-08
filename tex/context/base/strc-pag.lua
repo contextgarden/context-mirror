@@ -13,7 +13,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_pages = false  trackers.register("structures.pages", function(v) trace_pages = v end)
 
-local report_pages = logs.new("pages")
+local report_pages = logs.new("structure","pages")
 
 local structures  = structures
 

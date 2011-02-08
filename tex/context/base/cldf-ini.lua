@@ -50,8 +50,8 @@ local xmlcatcodes    = tex.xmlcatcodes
 
 local flush          = texsprint
 
-local report_context = logs.new("context") -- here
-local report_cld     = logs.new("cld")
+local report_context = logs.new("cld","tex")
+local report_cld     = logs.new("cld","stack")
 
 local processlines   = true -- experiments.register("context.processlines", function(v) processlines = v end)
 

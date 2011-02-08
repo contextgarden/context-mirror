@@ -6,6 +6,19 @@ if not modules then modules = { } end modules ['mtx-texworks'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--start [--verbose]   start texworks
+--test                report what will happen
+]]
+
+local application = logs.application {
+    name     = "mtx-texworks",
+    banner   = "TeXworks Startup Script 1.00",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts          = scripts          or { }
 scripts.texworks = scripts.texworks or { }
 
@@ -49,11 +62,11 @@ function scripts.texworks.start(indeed)
         end
     end
     if datapath == "" then
-        logs.simple("invalid datapath, maybe you need to regenerate the file database")
+        report("invalid datapath, maybe you need to regenerate the file database")
         return false
     end
     if not binpaths or #binpaths == 0 then
-        logs.simple("invalid binpath")
+        report("invalid binpath")
         return false
     end
     for i=1,#binpaths do
@@ -64,7 +77,7 @@ function scripts.texworks.start(indeed)
         end
     end
     if not fullname then
-        logs.simple("unable to locate %s",workname)
+        report("unable to locate %s",workname)
         return false
     end
     for i=1,#texworkspaths do
@@ -73,27 +86,20 @@ function scripts.texworks.start(indeed)
     os.setenv("TW_INIPATH",datapath)
     os.setenv("TW_LIBPATH",datapath)
     if not indeed or environment.argument("verbose") then
-        logs.simple("used signal: %s", usedsignal)
-        logs.simple("data path  : %s", datapath)
-        logs.simple("full name  : %s", fullname)
-        logs.simple("set paths  : TW_INIPATH TW_LIBPATH")
+        report("used signal: %s", usedsignal)
+        report("data path  : %s", datapath)
+        report("full name  : %s", fullname)
+        report("set paths  : TW_INIPATH TW_LIBPATH")
     end
     if indeed then
         os.launch(fullname)
     end
 end
 
-logs.extendbanner("TeXworks Startup Script 1.00")
-
-messages.help = [[
---start [--verbose]   start texworks
---test                report what will happen
-]]
-
 if environment.argument("start") then
     scripts.texworks.start(true)
 elseif environment.argument("test") then
     scripts.texworks.start()
 else
-    logs.help(messages.help)
+    application.help()
 end

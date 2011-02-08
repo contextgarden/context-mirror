@@ -6,6 +6,20 @@ if not modules then modules = { } end modules ['mtx-chars'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--stix                convert stix table to math table
+--xtx                 generate xetx-*.tex (used by xetex)
+--pdf                 generate pdfr-def.tex (used by pdftex)
+]]
+
+local application = logs.application {
+    name     = "mtx-chars",
+    banner   = "MkII Character Table Generators 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 local format, concat, utfchar, upper = string.format, table.concat, unicode.utf8.char, string.upper
 
 scripts       = scripts       or { }
@@ -24,13 +38,13 @@ scripts.chars = scripts.chars or { }
 --~
 --~ function scripts.chars.stixtomkiv(inname,outname)
 --~     if inname == "" then
---~         logs.report("aquiring math data","invalid datafilename")
+--~         report("aquiring math data, invalid datafilename")
 --~     end
 --~     local f = io.open(inname)
 --~     if not f then
---~         logs.report("aquiring math data","invalid datafile")
+--~         report("aquiring math data, invalid datafile")
 --~     else
---~         logs.report("aquiring math data","processing " .. inname)
+--~         report("aquiring math data, processing %s",inname)
 --~         if not outname or outname == "" then
 --~             outname = "char-mth.lua"
 --~         end
@@ -72,9 +86,9 @@ scripts.chars = scripts.chars or { }
 --~         end
 --~         if not valid then
 --~             g:write("\t-- The data file is corrupt, invalid or maybe the format has changed.\n")
---~             logs.report("aquiring math data","problems with data table")
+--~             report("aquiring math data, problems with data table")
 --~         else
---~             logs.report("aquiring math data","table saved in " .. outname)
+--~             report("aquiring math data, table saved in %s",outname)
 --~         end
 --~         g:write("}\n")
 --~         g:close()
@@ -83,7 +97,7 @@ scripts.chars = scripts.chars or { }
 --~ end
 
 function scripts.chars.stixtomkiv(inname,outname)
-    logs.report("we no longer use this options but use our own tables instead")
+    report("we no longer use this options but use our own tables instead")
 end
 
 local banner_pdf_1 = [[
@@ -185,7 +199,7 @@ function scripts.chars.makeencoutf()
         local function open(name,banner)
             local f = io.open(name,'w')
             if f then
-                logs.simple("writing '%s'",name)
+                report("writing '%s'",name)
                 f:write(format(banner_utf_module,name))
                 f:write(banner)
                 f:write()
@@ -307,14 +321,6 @@ function scripts.chars.makeencoutf()
     end
 end
 
-logs.extendbanner("MkII Character Table Generators 0.10")
-
-messages.help = [[
---stix                convert stix table to math table
---xtx                 generate xetx-*.tex (used by xetex)
---pdf                 generate pdfr-def.tex (used by pdftex)
-]]
-
 if environment.argument("stix") then
     local inname  = environment.files[1] or ""
     local outname = environment.files[2] or ""
@@ -324,5 +330,5 @@ elseif environment.argument("xtx") then
 elseif environment.argument("pdf") then
     scripts.chars.makepdfr()
 else
-    logs.help(messages.help)
+    application.help()
 end

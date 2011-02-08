@@ -60,9 +60,9 @@ end
 
 -- todo: order and maybe other dimensions
 
-local trace_ruled = false  trackers.register("nodes.ruled", function(v) trace_ruled = v end)
+local trace_ruled = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
 
-local report_ruled   = logs.new("ruled")
+local report_ruled   = logs.new("nodes","rules")
 
 local floor = math.floor
 local n_tostring, n_tosequence = nodes.idstostring, nodes.tosequence
@@ -317,9 +317,9 @@ end
 -- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.handler")
 -- tasks.disableaction("shipouts",                "nodes.rules.handler") -- only kick in when used
 
-local trace_shifted = false  trackers.register("nodes.shifted", function(v) trace_shifted = v end)
+local trace_shifted = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
 
-local report_shifted = logs.new("shifted")
+local report_shifted = logs.new("nodes","shifting")
 
 local a_shifted = attributes.private('shifted')
 

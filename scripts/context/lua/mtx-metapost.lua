@@ -6,6 +6,30 @@ if not modules then modules = { } end modules ['mtx-metapost'] = { -- this was m
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--rawmp               raw metapost run
+--metafun             use metafun instead of plain
+--latex               force --tex=latex
+--texexec             force texexec usage (mkii)
+--split               split single result file into pages
+
+intended usage:
+
+mtxrun --script metapost yourfile.mp
+mtxrun --script metapost --split yourfile.mp
+mtxrun --script metapost yourfile.123 myfile.mps
+
+other usage resembles mptopdf.pl
+]]
+
+local application = logs.application {
+    name     = "mtx-metapost",
+    banner   = "MetaPost to PDF processor 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts             = scripts             or { }
 scripts.mptopdf     = scripts.mptopdf     or { }
 scripts.mptopdf.aux = scripts.mptopdf.aux or { }
@@ -67,23 +91,23 @@ local function do_convert_all(filename)
         end
     end
     if #report > 0 then
-        logs.simple("number of converted files: %i", #report)
-        logs.simple("")
+        report("number of converted files: %i", #report)
+        report()
         for i=1,#report do
             local r = report[i]
-            logs.simple("%s => %s", r[1], r[2])
+            report("%s => %s", r[1], r[2])
         end
     else
-        logs.simple("no files are converted for '%s'",filename)
+        report("no files are converted for '%s'",filename)
     end
 end
 
 local function do_convert_one(filename)
     local resultname = do_convert(filename)
     if resultname then
-        logs.simple("%s => %s", filename,resultname)
+        report("%s => %s", filename,resultname)
     else
-        logs.simple("no result for '%s'",filename)
+        report("no result for '%s'",filename)
     end
 end
 
@@ -121,7 +145,7 @@ function scripts.mptopdf.convertall()
                         command, convert = format("context --result=%s --purge --once %s",file.nameonly(filename),tempname), false
                     end
                 end
-                logs.simple("running: %s\n",command)
+                report("running: %s",command)
                 local done = os.execute(command)
                 if done then
                     if convert then
@@ -131,41 +155,23 @@ function scripts.mptopdf.convertall()
                         -- already pdf, maybe optionally split
                     end
                 else
-                    logs.simple("error while processing mp file '%s'", filename)
+                    report("error while processing mp file '%s'", filename)
                 end
             else
                 do_convert_one(filename)
             end
         end
     else
-        logs.simple("no files match to process")
+        report("no files match to process")
     end
 end
-
-logs.extendbanner("MetaPost to PDF processor 0.10")
-
-messages.help = [[
---rawmp               raw metapost run
---metafun             use metafun instead of plain
---latex               force --tex=latex
---texexec             force texexec usage (mkii)
---split               split single result file into pages
-
-intended usage:
-
-mtxrun --script metapost yourfile.mp
-mtxrun --script metapost --split yourfile.mp
-mtxrun --script metapost yourfile.123 myfile.mps
-
-other usage resembles mptopdf.pl
-]]
 
 if environment.files[1] then
     scripts.mptopdf.convertall()
 else
     if not environment.arguments.help then
-        logs.simple("provide MP output file (or pattern)")
-        logs.simple("")
+        report("provide MP output file (or pattern)")
+        report()
     end
-    logs.help(messages.help)
+    application.help()
 end

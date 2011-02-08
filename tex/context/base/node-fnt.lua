@@ -14,9 +14,9 @@ local concat = table.concat
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
 local trace_fontrun    = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
 
-local report_fontrun = logs.new("font run")
+local report_fonts  = logs.new("fonts","processing")
 
-local nodes, node = nodes, node
+local nodes, node   = nodes, node
 
 fonts               = fonts or { }
 fonts.tfm           = fonts.tfm or { }
@@ -51,16 +51,16 @@ function handlers.characters(head)
     local a, u, prevfont, prevattr = 0, 0, nil, 0
     if trace_fontrun then
         run = run + 1
-        report_fontrun("")
-        report_fontrun("node mode run %s",run)
-        report_fontrun("")
+        report_fonts()
+        report_fonts("checking node list, run %s",run)
+        report_fonts()
         local n = head
         while n do
             if n.id == glyph_code then
                 local font, attr = n.font, has_attribute(n,0) or 0
-                report_run("font %03i dynamic %03i glyph %s",font,attr,utf.char(n.char))
+                report_fonts("font %03i, dynamic %03i, glyph %s",font,attr,utf.char(n.char))
             else
-                report_run("[%s]",nodecodes[n.id])
+                report_fonts("[%s]",nodecodes[n.id])
             end
             n = n.next
         end
@@ -112,10 +112,10 @@ function handlers.characters(head)
         end
     end
     if trace_fontrun then
-        report_fontrun("")
-        report_fontrun("statics : %s",(u > 0 and concat(table.keys(usedfonts)," ")) or "none")
-        report_fontrun("dynamics: %s",(a > 0 and concat(table.keys(attrfonts)," ")) or "none")
-        report_fontrun("")
+        report_fonts()
+        report_fonts("statics : %s",(u > 0 and concat(table.keys(usedfonts)," ")) or "none")
+        report_fonts("dynamics: %s",(a > 0 and concat(table.keys(attrfonts)," ")) or "none")
+        report_fonts()
     end
     -- we could combine these and just make the attribute nil
     if u == 1 then

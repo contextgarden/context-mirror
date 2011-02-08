@@ -32,7 +32,7 @@ local trace_sequences  = false  trackers.register("otf.sequences",  function(v) 
 local trace_math       = false  trackers.register("otf.math",       function(v) trace_math         = v end)
 local trace_defining   = false  trackers.register("fonts.defining", function(v) trace_defining     = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 local starttiming, stoptiming, elapsedtime = statistics.starttiming, statistics.stoptiming, statistics.elapsedtime
 
@@ -52,6 +52,7 @@ otf.features.default = otf.features.default or { }
 otf.enhancers        = allocate()
 local enhancers      = otf.enhancers
 enhancers.patches    = { }
+local patches        = enhancers.patches
 
 local definers       = fonts.definers
 
@@ -264,11 +265,11 @@ local ordered_enhancers = {
 
 local actions = { }
 
-enhancers.patches.before = allocate()
-enhancers.patches.after  = allocate()
+patches.before = allocate()
+patches.after  = allocate()
 
-local before = enhancers.patches.before
-local after  = enhancers.patches.after
+local before = patches.before
+local after  = patches.after
 
 local function enhance(name,data,filename,raw,verbose)
     local enhancer = actions[name]
@@ -312,14 +313,20 @@ function enhancers.apply(data,filename,raw,verbose)
     ioflush() -- we want instant messages
 end
 
--- enhancers.patches.register("before","migrate metadata","cambria",function() end)
+-- patches.register("before","migrate metadata","cambria",function() end)
 
-function enhancers.patches.register(what,where,pattern,action)
+function patches.register(what,where,pattern,action)
     local ww = what[where]
     if ww then
         ww[pattern] = action
     else
         ww = { [pattern] = action}
+    end
+end
+
+function patches.report(fmt,...)
+    if trace_loading then
+        report_otf("patching: " ..fmt,...)
     end
 end
 

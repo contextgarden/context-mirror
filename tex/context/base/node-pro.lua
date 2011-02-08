@@ -12,7 +12,7 @@ local format, concat = string.format, table.concat
 
 local trace_callbacks = false  trackers.register("nodes.callbacks", function(v) trace_callbacks = v end)
 
-local report_nodes = logs.new("nodes")
+local report_nodes = logs.new("nodes","processors")
 
 local nodes, node = nodes, node
 

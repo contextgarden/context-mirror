@@ -412,10 +412,12 @@
   {\global\advance\readingfilelevel\plusone
    \the\everystartreadingfile
    \pushcatcodetable % saveguard
+   \ctxlua{regimes.push()}% temporarily this way
    }% \setcatcodetable\prtcatcodes % no longer in mkiv, has to be done explictly
 
 \unexpanded\def\stopreadingfile
   {\popcatcodetable % saveguard
+   \ctxlua{regimes.pop()}% temporarily this way
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
 

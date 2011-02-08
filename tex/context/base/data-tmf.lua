@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 
 local resolvers = resolvers
 
+local report_tds = logs.new("resolvers","tds")
+
 --  =  <<
 --  ?  ??
 --  <  +=
@@ -28,11 +30,11 @@ function resolvers.load_tree(tree,resolve)
         local newpath = file.join(newtree,"bin")
 
         if not lfs.isdir(newtree) then
-            logs.simple("no '%s' under tree %s",texos,tree)
+            report_tds("no '%s' under tree %s",texos,tree)
             os.exit()
         end
         if not lfs.isdir(newpath) then
-            logs.simple("no '%s/bin' under tree %s",texos,tree)
+            report_tds("no '%s/bin' under tree %s",texos,tree)
             os.exit()
         end
 
@@ -56,8 +58,8 @@ function resolvers.load_tree(tree,resolve)
         setenv('TEXMFCNF',       resolvers.luacnfspec, not resolve)
         setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
 
-        logs.simple("changing from root '%s' to '%s'",oldroot,newroot)
-        logs.simple("prepending '%s' to binary path",newpath)
-        logs.simple()
+        report_tds("changing from root '%s' to '%s'",oldroot,newroot)
+        report_tds("prepending '%s' to binary path",newpath)
+        report_tds()
     end
 end

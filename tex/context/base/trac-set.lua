@@ -26,14 +26,10 @@ local data = { } -- maybe just local
 
 local trace_initialize = false -- only for testing during development
 
-local function report(a,b,...)
-    texio.write_nl(format("%-16s> %s",a,format(b,...)))
-end
-
 function setters.initialize(filename,name,values) -- filename only for diagnostics
-    local data = data[name]
-    if data then
-        data = data.data
+    local setter = data[name]
+    if setter then
+        local data = data.data
         if data then
             for key, value in next, values do
              -- key = gsub(key,"_",".")
@@ -42,7 +38,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                 if functions then
                     if #functions > 0 and not functions.value then
                         if trace_initialize then
-                            report(name,"executing %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("executing %s (%s -> %s)",key,filename,tostring(value))
                         end
                         for i=1,#functions do
                             functions[i](value)
@@ -50,7 +46,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                         functions.value = value
                     else
                         if trace_initialize then
-                            report(name,"skipping %s (%s -> %s)",key,filename,tostring(value))
+                            setter.report("skipping %s (%s -> %s)",key,filename,tostring(value))
                         end
                     end
                 else
@@ -59,7 +55,7 @@ function setters.initialize(filename,name,values) -- filename only for diagnosti
                     functions = { default = value }
                     data[key] = functions
                     if trace_initialize then
-                        report(name,"storing %s (%s -> %s)",key,filename,tostring(value))
+                        setter.report("storing %s (%s -> %s)",key,filename,tostring(value))
                     end
                 end
             end
@@ -86,10 +82,11 @@ local function set(t,what,newvalue)
         else
             value = is_boolean(value,value)
         end
+        w = escapedpattern(w,true)
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
-            elseif find(name,escapedpattern(w,true)) then
+            elseif find(name,w) then
                 done[name] = true
                 for i=1,#functions do
                     functions[i](value)
@@ -131,7 +128,7 @@ function setters.register(t,what,...)
         functions = { }
         data[what] = functions
         if trace_initialize then
-            report(t.name,"defining %s",what)
+            t.report("defining %s",what)
         end
     end
     local default = functions.default -- can be set from cnf file
@@ -139,7 +136,7 @@ function setters.register(t,what,...)
         local typ = type(fnc)
         if typ == "string" then
             if trace_initialize then
-                report(t.name,"coupling %s to %s",what,fnc)
+                t.report("coupling %s to %s",what,fnc)
             end
             local s = fnc -- else wrong reference
             fnc = function(value) set(t,s,value) end
@@ -193,9 +190,9 @@ function setters.list(t) -- pattern
 end
 
 function setters.show(t)
-    commands.writestatus("","")
-    local list = setters.list(t)
     local category = t.name
+    local list = setters.list(t)
+    t.report()
     for k=1,#list do
         local name = list[k]
         local functions = t.data[name]
@@ -203,10 +200,10 @@ function setters.show(t)
             local value, default, modules = functions.value, functions.default, #functions
             value   = value   == nil and "unset" or tostring(value)
             default = default == nil and "unset" or tostring(default)
-            commands.writestatus(category,format("%-30s   modules: %2i   default: %5s   value: %5s",name,modules,default,value))
+            t.report("%-30s   modules: %2i   default: %6s   value: %6s",name,modules,default,value)
         end
     end
-    commands.writestatus("","")
+    t.report()
 end
 
 -- we could have used a bit of oo and the trackers:enable syntax but
@@ -216,57 +213,62 @@ end
 
 local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
+local function report(setter,...)
+    local report = logs and logs.report
+    if report then
+        report(setter.name,...)
+    else -- fallback, as this module is loaded before the logger
+        write_nl(format("%-16s: %s\n",setter.name,format(...)))
+    end
+end
+
 function setters.new(name)
-    local t -- we need to access it in t
-    t = {
+    local setter -- we need to access it in setter itself
+    setter = {
         data     = allocate(), -- indexed, but also default and value fields
         name     = name,
-        enable   = function(...) enable  (t,...) end,
-        disable  = function(...) disable (t,...) end,
-        register = function(...) register(t,...) end,
-        list     = function(...) list    (t,...) end,
-        show     = function(...) show    (t,...) end,
+        report   = function(...) report  (setter,...) end,
+        enable   = function(...) enable  (setter,...) end,
+        disable  = function(...) disable (setter,...) end,
+        register = function(...) register(setter,...) end,
+        list     = function(...) list    (setter,...) end,
+        show     = function(...) show    (setter,...) end,
     }
-    data[name] = t
-    return t
+    data[name] = setter
+    return setter
 end
 
 trackers    = setters.new("trackers")
 directives  = setters.new("directives")
 experiments = setters.new("experiments")
 
-local t_enable, t_disable = trackers   .enable, trackers   .disable
-local d_enable, d_disable = directives .enable, directives .disable
-local e_enable, e_disable = experiments.enable, experiments.disable
+local t_enable, t_disable, t_report = trackers   .enable, trackers   .disable, trackers   .report
+local d_enable, d_disable, d_report = directives .enable, directives .disable, directives .report
+local e_enable, e_disable, e_report = experiments.enable, experiments.disable, experiments.report
 
 -- nice trick: we overload two of the directives related functions with variants that
 -- do tracing (itself using a tracker) .. proof of concept
-
-local function report(...) -- messy .. chicken or egg
-    local p = (commands and commands.writestatus) or (logs and logs.report)
-    if p then p(...) end
-end
 
 local trace_directives  = false local trace_directives  = false  trackers.register("system.directives",  function(v) trace_directives  = v end)
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 function directives.enable(...)
-    report("directives","enabling: %s",concat({...}," "))
+    d_report("enabling: %s",concat({...}," "))
     d_enable(...)
 end
 
 function directives.disable(...)
-    report("directives","disabling: %s",concat({...}," "))
+    d_report("disabling: %s",concat({...}," "))
     d_disable(...)
 end
 
 function experiments.enable(...)
-    report("experiments","enabling: %s",concat({...}," "))
+    e_report("enabling: %s",concat({...}," "))
     e_enable(...)
 end
 
 function experiments.disable(...)
-    report("experiments","disabling: %s",concat({...}," "))
+    e_report("disabling: %s",concat({...}," "))
     e_disable(...)
 end
 

@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code
 
+local report_hyphenation = logs.new("languages","hyphenation")
+
 local nodecodes    = nodes.nodecodes
 
 local disc_code    = nodecodes.disc
@@ -45,7 +47,7 @@ end
 commands.hyphenatedlist = hyphenatedlist
 
 function commands.showhyphenatedinlist(list)
-    commands.writestatus("show hyphens",nodes.listtoutf(list))
+    report_hyphenation("show: %s",nodes.listtoutf(list))
 end
 
 function checkedlist(list)

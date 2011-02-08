@@ -16,7 +16,7 @@ local allocate = utilities.storage.allocate
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled
@@ -62,7 +62,7 @@ function tfm.read_from_tfm(specification)
     local fname, tfmdata = specification.filename or "", nil
     if fname ~= "" then
         if trace_defining then
-            report_define("loading tfm file %s at size %s",fname,specification.size)
+            report_defining("loading tfm file %s at size %s",fname,specification.size)
         end
         tfmdata = font.read_tfm(fname,specification.size) -- not cached, fast enough
         if tfmdata then
@@ -85,7 +85,7 @@ function tfm.read_from_tfm(specification)
             tfm.enhance(tfmdata,specification)
         end
     elseif trace_defining then
-        report_define("loading tfm with name %s fails",specification.name)
+        report_defining("loading tfm with name %s fails",specification.name)
     end
     return tfmdata
 end
@@ -421,7 +421,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
             end
         end
     --  if trace_scaling then
-    --    report_define("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
+    --    report_defining("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
     --  end
         if tounicode then
             local tu = tounicode[index] -- nb: index!
@@ -458,7 +458,7 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
             if vn then
                 chr.next = vn
             --~ if v.vert_variants or v.horiz_variants then
-            --~     report_define("glyph 0x%05X has combination of next, vert_variants and horiz_variants",index)
+            --~     report_defining("glyph 0x%05X has combination of next, vert_variants and horiz_variants",index)
             --~ end
             else
                 local vv = v.vert_variants
@@ -630,11 +630,11 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
     -- can have multiple subfonts
     if hasmath then
         if trace_defining then
-            report_define("math enabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
     else
         if trace_defining then
-            report_define("math disabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
+            report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",t.name or "noname",t.fullname or "nofullname",t.filename or "nofilename")
         end
         t.nomath, t.MathConstants = true, nil
     end
@@ -643,8 +643,8 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
         t.psname = t.fontname or (t.fullname and fonts.names.cleanname(t.fullname))
     end
     if trace_defining then
-        report_define("used for accessing (sub)font: '%s'",t.psname or "nopsname")
-        report_define("used for subsetting: '%s'",t.fontname or "nofontname")
+        report_defining("used for accessing (sub)font: '%s'",t.psname or "nopsname")
+        report_defining("used for subsetting: '%s'",t.fontname or "nofontname")
     end
     -- this will move up (side effect of merging split call)
     t.factor    = delta
@@ -747,18 +747,18 @@ function tfm.checkedfilename(metadata,whatever)
             askedfilename = resolvers.resolve(askedfilename) -- no shortcut
             foundfilename = resolvers.findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
-                report_define("source file '%s' is not found",askedfilename)
+                report_defining("source file '%s' is not found",askedfilename)
                 foundfilename = resolvers.findbinfile(file.basename(askedfilename),"") or ""
                 if foundfilename ~= "" then
-                    report_define("using source file '%s' (cache mismatch)",foundfilename)
+                    report_defining("using source file '%s' (cache mismatch)",foundfilename)
                 end
             end
         elseif whatever then
-            report_define("no source file for '%s'",whatever)
+            report_defining("no source file for '%s'",whatever)
             foundfilename = ""
         end
         metadata.foundfilename = foundfilename
-    --  report_define("using source file '%s'",foundfilename)
+    --  report_defining("using source file '%s'",foundfilename)
     end
     return foundfilename
 end

@@ -16,7 +16,7 @@ local asciimath      = { }
 local moduledata     = moduledata or { }
 moduledata.asciimath = asciimath
 
-local report_asciimath = logs.new("asciimath")
+local report_asciimath = logs.new("mathematics","asciimath")
 
 local format = string.format
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
@@ -170,22 +170,22 @@ local parser
 local function converted(original,totex)
     local ok, result
     if trace_mapping then
-        report_asciimath("original  : %s",original)
+        report_asciimath("original : %s",original)
     end
     local premapped = lpegmatch(premapper,original)
     if premapped then
         if trace_mapping then
-            report_asciimath("prepared  : %s",premapped)
+            report_asciimath("prepared : %s",premapped)
         end
         local parsed = lpegmatch(parser,premapped)
         if parsed then
             if trace_mapping then
-                report_asciimath("parsed    : %s",parsed)
+                report_asciimath("parsed   : %s",parsed)
             end
             local postmapped = lpegmatch(postmapper,parsed)
             if postmapped then
                 if trace_mapping then
-                    report_asciimath("finalized : %s",postmapped)
+                    report_asciimath("finalized: %s",postmapped)
                 end
                 result, ok = postmapped, true
             else

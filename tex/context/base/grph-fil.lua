@@ -8,7 +8,9 @@ if not modules then modules = { } end modules ['grph-fil'] = {
 
 local format, concat = string.format, table.concat
 
-local trace_run = false  trackers.register("files.run",function(v) trace_run = v end)
+local trace_run = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
+
+local report_run = logs.new("graphics","run")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -35,15 +37,15 @@ function jobfiles.run(name,command)
     local newchecksum = file.checksum(name)
     if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then
         if trace_run then
-            commands.writestatus("processing","changes in '%s', processing forced",name)
+            report_run("processing file, changes in '%s', processing forced",name)
         end
         if command and command ~= "" then
             os.execute(command)
         else
-            commands.writestatus("processing","no command given for processing '%s'",name)
+            report_run("processing file, no command given for processing '%s'",name)
         end
     elseif trace_run then
-        commands.writestatus("processing","no changes in '%s', not processed",name)
+        report_run("processing file, no changes in '%s', not processed",name)
     end
     tobesaved[name] = newchecksum
 end

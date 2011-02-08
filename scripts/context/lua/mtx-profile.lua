@@ -11,6 +11,19 @@ if not modules then modules = { } end modules ['mtx-profile'] = {
 
 local match, format, find = string.match, string.format, string.find
 
+local helpinfo = [[
+--analyze             analyze lua calls
+--trace               analyze tex calls
+]]
+
+local application = logs.application {
+    name     = "mtx-cache",
+    banner   = "ConTeXt MkIV LuaTeX Profiler 1.00",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts          = scripts or { }
 scripts.profiler = scripts.profiler or { }
 
@@ -54,7 +67,7 @@ function scripts.profiler.analyze(filename)
         f:close()
         print("")
         local loaded = { }
-        local sortedtable.sortedkeys(times)
+        sortedtable.sortedkeys(times)
         for i=1,#sorted do
             local filename = sorted[i]
             local functions = times[filename]
@@ -154,17 +167,10 @@ end
 --~ scripts.profiler.analyze("t:/manuals/mk/mk-fonts-profile.lua")
 --~ scripts.profiler.analyze("t:/manuals/mk/mk-introduction-profile.lua")
 
-logs.extendbanner("ConTeXt MkIV LuaTeX Profiler 1.00")
-
-messages.help = [[
---analyze             analyze lua calls
---trace               analyze tex calls
-]]
-
 if environment.argument("analyze") then
     scripts.profiler.analyze(environment.files[1] or "luatex-profile.log")
 elseif environment.argument("trace") then
     scripts.profiler.analyze(environment.files[1] or "temp.log")
 else
-    logs.help(messages.help)
+    application.help()
 end

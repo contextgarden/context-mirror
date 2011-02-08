@@ -11,9 +11,30 @@ local byte, char = utf.byte, utf.char
 local addsuffix = file.addsuffix
 local lpegmatch, validutf8 = lpeg.match, lpeg.patterns.validutf8
 
+local helpinfo = [[
+--convert             generate context language files (mnemonic driven, if not given then all)
+--check               check pattern file (or those used by context when no file given)
+--path                source path where hyph-foo.tex files are stored
+--destination         destination path
+
+examples of usage:
+
+mtxrun --script pattern --check hyph-*.tex
+mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
+mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
+mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
+]]
+
+local application = logs.application {
+    name     = "mtx-patterns",
+    banner   = "ConTeXt Pattern File Management 0.20",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts          = scripts          or { }
 scripts.patterns = scripts.patterns or { }
-
 
 local permitted_characters = table.tohash {
     0x0009, -- tab
@@ -138,11 +159,11 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
     local splitpatternsold, splithyphenationsold = { }, { }
     local usedpatterncharacters, usedhyphenationcharacters = { }, { }
     if lfs.isfile(patfile) then
-        logs.simple("using txt files %s.[hyp|pat|lic].txt",name)
+        report("using txt files %s.[hyp|pat|lic].txt",name)
         comment, patterns, hyphenations = io.loaddata(licfile) or "", io.loaddata(patfile) or "", io.loaddata(hypfile) or ""
         hypfile, patfile, licfile = hypfile, patfile, licfile
     elseif lfs.isfile(texfile) then
-        logs.simple("using tex file %s.txt",name)
+        report("using tex file %s.txt",name)
         local data = io.loaddata(texfile) or ""
         if data ~= "" then
             data = gsub(data,"([\n\r])\\input ([^ \n\r]+)", function(previous,subname)
@@ -150,7 +171,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                 local subfull = file.join(file.dirname(texfile),subname)
                 local subdata = io.loaddata(subfull) or ""
                 if subdata == "" then
-                    logs.simple("no subfile %s",subname)
+                    report("no subfile %s",subname)
                 end
                 return previous .. subdata
             end)
@@ -179,7 +200,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     local line = splitdata[i]
                     if find(line,"%%") then
                         splitdata[i] = gsub(line,"%%.*$","")
-                        logs.simple("removing comment: %s",line)
+                        report("removing comment: %s",line)
                     end
                 end
             end
@@ -195,7 +216,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     local line = splitdata[i]
                     if find(line,"\\") then
                         splitdata[i] = ""
-                        logs.simple("removing line with command: %s",line)
+                        report("removing line with command: %s",line)
                     end
                 end
             end
@@ -211,7 +232,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                 local ok = lpegmatch(validutf8,line)
                 if not ok then
                     splitdata[i] = ""
-                    logs.simple("removing line with invalid utf: %s",line)
+                    report("removing line with invalid utf: %s",line)
                 end
             end
             -- check for commands being used in comments
@@ -235,7 +256,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     else
                         local cdb = cd[b]
                         if not cdb then
-                            logs.simple("no entry in chardata for character %s (0x%04X)",char(b),b)
+                            report("no entry in chardata for character %s (0x%04X)",char(b),b)
                         else
                             local ct = cd[b].category
                             if ct == "lu" or ct == "ll" then
@@ -243,7 +264,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                             elseif ct == "nd" then
                                 -- number
                             else
-                                logs.simple("removing line with suspected utf character %s (0x%04X), category %s: %s",char(b),b,ct,line)
+                                report("removing line with suspected utf character %s (0x%04X), category %s: %s",char(b),b,ct,line)
                                 splitdata[i] = ""
                                 break
                             end
@@ -256,7 +277,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
         usedpatterncharacters = check(splitpatternsnew,byte("."))
         usedhyphenationcharacters = check(splithyphenationsnew,byte("-"))
         for k, v in next, stripped do
-            logs.simple("entries that contain character %s (0x%04X) have been omitted",char(k),k)
+            report("entries that contain character %s (0x%04X) have been omitted",char(k),k)
         end
     end
     if okay then
@@ -287,11 +308,11 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
             for i=1,#what do
                 local line = what[i]
                 if p and lpegmatch(p,line) then
-                    logs.simple("discarding conflicting pattern: %s",line)
+                    report("discarding conflicting pattern: %s",line)
                 else -- we can speed this up by testing for replacements in the string
                     local l = lpegmatch(r,line)
                     if l ~= line then
-                        logs.simple("sanitizing pattern: %s -> %s (for old patterns)",line,l)
+                        report("sanitizing pattern: %s -> %s (for old patterns)",line,l)
                     end
                     result[#result+1] = l
                 end
@@ -313,7 +334,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
                     -- discard
                 elseif used[line] then
                     -- discard
-                    logs.simple("discarding duplicate pattern: %s",line)
+                    repo("discarding duplicate pattern: %s",line)
                 else
                     used[line] = true
                     collected[#collected+1] = line
@@ -327,7 +348,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored)
         splithyphenationsold = check(hyphenations,splithyphenationsold,hypfile)
     end
     if not okay then
-        logs.simple("no valid file %s.*",name)
+        report("no valid file %s.*",name)
     end
     return okay, splitpatternsnew, splithyphenationsnew, splitpatternsold, splithyphenationsold, comment, stripset, usedpatterncharacters, usedhyphenationcharacters
 end
@@ -335,7 +356,7 @@ end
 function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenationsnew,patternsold,hyphenationsold,comment,stripped,pused,hused,ignored)
     local nofpatternsnew, nofhyphenationsnew = #patternsnew, #hyphenationsnew
     local nofpatternsold, nofhyphenationsold = #patternsold, #hyphenationsold
-    logs.simple("language %s has %s old and %s new patterns and %s old and %s new exceptions",mnemonic,nofpatternsold,nofpatternsnew,nofhyphenationsold,nofhyphenationsnew)
+    report("language %s has %s old and %s new patterns and %s old and %s new exceptions",mnemonic,nofpatternsold,nofpatternsnew,nofhyphenationsold,nofhyphenationsnew)
     if mnemonic ~= "??" then
         local pu = concat(table.sortedkeys(pused), " ")
         local hu = concat(table.sortedkeys(hused), " ")
@@ -347,7 +368,7 @@ function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenation
 
         local topline = "% generated by mtxrun --script pattern --convert"
         local banner = "% for comment and copyright, see " .. rmefile
-        logs.simple("saving language data for %s",mnemonic)
+        report("saving language data for %s",mnemonic)
         if not comment or comment == "" then comment = "% no comment" end
         if not type(destination) == "string" then destination = "." end
 
@@ -426,12 +447,12 @@ function scripts.patterns.check()
     for k, v in next, scripts.patterns.list do
         local mnemonic, name, ignored = v[1], v[2], v[4]
         if not only or only[mnemonic] then
-            logs.simple("checking language %s, file %s", mnemonic, name)
+            report("checking language %s, file %s", mnemonic, name)
             local okay = scripts.patterns.load(path,name,mnemonic,ignored)
             if not okay then
-                logs.simple("there are errors that need to be fixed")
+                report("there are errors that need to be fixed")
             end
-            logs.simple("")
+            report()
         end
     end
 end
@@ -439,11 +460,11 @@ end
 function scripts.patterns.convert()
     local path = environment.argument("path") or "."
     if path == "" then
-        logs.simple("provide sourcepath using --path ")
+        report("provide sourcepath using --path ")
     else
         local destination = environment.argument("destination") or "."
         if path == destination then
-            logs.simple("source path and destination path should differ (use --path and/or --destination)")
+            resport("source path and destination path should differ (use --path and/or --destination)")
         else
             local files = environment.files
             local only  = false
@@ -453,35 +474,19 @@ function scripts.patterns.convert()
             for k, v in next, scripts.patterns.list do
                 local mnemonic, name, ignored = v[1], v[2], v[4]
                 if not only or only[mnemonic] then
-                    logs.simple("converting language %s, file %s", mnemonic, name)
+                    report("converting language %s, file %s", mnemonic, name)
                     local okay, patternsnew, hyphenationsnew, patternsold, hyphenationsold, comment, stripped, pused, hused = scripts.patterns.load(path,name,mnemonic,ignored)
                     if okay then
                         scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenationsnew,patternsold,hyphenationsold,comment,stripped,pused,hused,ignored)
                     else
-                        logs.simple("convertion aborted due to error(s)")
+                        report("convertion aborted due to error(s)")
                     end
-                    logs.simple("")
+                    report()
                 end
             end
         end
     end
 end
-
-logs.extendbanner("ConTeXt Pattern File Management 0.20")
-
-messages.help = [[
---convert             generate context language files (mnemonic driven, if not given then all)
---check               check pattern file (or those used by context when no file given)
---path                source path where hyph-foo.tex files are stored
---destination         destination path
-
-examples of usage:
-
-mtxrun --script pattern --check hyph-*.tex
-mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
-mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
-mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
-]]
 
 if environment.argument("check") then
     scripts.patterns.prepare()
@@ -490,7 +495,7 @@ elseif environment.argument("convert") then
     scripts.patterns.prepare()
     scripts.patterns.convert()
 else
-    logs.help(messages.help)
+    application.help()
 end
 
 -- mtxrun --script pattern --check hyph-*.tex

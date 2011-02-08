@@ -15,6 +15,8 @@ dofile(resolvers.findfile("font-mis.lua","tex"))
 
 local format, gsub, concat, match, find = string.format, string.gsub, table.concat, string.match, string.find
 
+local report = logs.new("ctx-fonttest")
+
 local sample_line = "This is a sample line!"
 local tempname    = "mtx-server-ctx-fonttest-temp"
 local temppath    = caches.setfirstwritablefile("temp","mtx-server-ctx-fonttest")
@@ -150,20 +152,20 @@ local cache = { }
 
 local function showfeatures(f)
     if f then
-        logs.simple("processing font '%s'",f)
+        report("processing font '%s'",f)
         local features = cache[f]
         if features == nil then
             features = fonts.get_features(resolvers.findfile(f))
             if not features then
-                logs.simple("building cache for '%s'",f)
+                report("building cache for '%s'",f)
                 io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(process_templates.cache,f,f))
                 os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
                 features = fonts.get_features(f)
             end
             cache[f] = features or false
-            logs.simple("caching info of '%s'",f)
+            report("caching info of '%s'",f)
         else
-            logs.simple("using cached info of '%s'",f)
+            report("using cached info of '%s'",f)
         end
         if features then
             local scr, lan, fea, rev = { }, { }, { }, { }
@@ -294,7 +296,7 @@ local function get_specification(name)
 end
 
 local function edit_font(currentfont,detail,tempname)
-    logs.simple("entering edit mode for '%s'",currentfont)
+    report("entering edit mode for '%s'",currentfont)
     local specification = get_specification(currentfont)
     if specification then
         local htmldata = showfeatures(specification.filename)
@@ -374,7 +376,7 @@ local function process_font(currentfont,detail) -- maybe just fontname
     end
     local sample = string.strip(detail.sampletext or "")
     if sample == "" then sample = sample_line end
-    logs.simple("sample text: %s",sample)
+    report("sample text: %s",sample)
     io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(variant,concat(features,","),currentfont,sample))
     os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
     return edit_font(currentfont,detail,tempname)
@@ -497,7 +499,7 @@ local function loadbase()
     if storage == "" then
         storage = { }
     else
-        logs.simple("loading '%s'",datafile)
+        report("loading '%s'",datafile)
         storage = loadstring(storage)
         storage = (storage and storage()) or { }
     end
@@ -527,14 +529,14 @@ end
 
 local function savebase(storage,name)
     local datafile = file.join(basepath,basename)
-    logs.simple("saving '%s' in '%s'",name or "data",datafile)
+    report("saving '%s' in '%s'",name or "data",datafile)
     io.savedata(datafile,table.serialize(storage,true))
 end
 
 local function deletestored(detail,currentfont,name)
     local storage = loadbase()
     if storage and name and storage[name] then
-        logs.simple("deleting '%s' from base",name)
+        report("deleting '%s' from base",name)
         storage[name] = nil
         savebase(storage)
     end
@@ -610,7 +612,7 @@ end
 
 function extras.reload()
     local command = "mtxrun --script font --reload"
-    logs.simple("run command: %s",command)
+    report("run command: %s",command)
     os.execute(command)
     return do_extras()
 end
@@ -679,7 +681,7 @@ function doit(configuration,filename,hashed)
     variables.javascripts    = ""
     variables.javascriptinit = ""
 
-    logs.simple("action: %s",action or "no action")
+    report("action: %s",action or "no action")
 
     local result
 
@@ -722,7 +724,7 @@ function doit(configuration,filename,hashed)
 
     result = { content = lmx.convert('context-fonttest.lmx',false,variables) }
 
-    logs.simple("time spent on page: %0.03f seconds",os.clock()-start)
+    report("time spent on page: %0.03f seconds",os.clock()-start)
 
     return result
 

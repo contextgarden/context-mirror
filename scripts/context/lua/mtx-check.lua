@@ -6,6 +6,18 @@ if not modules then modules = { } end modules ['mtx-check'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--convert             check tex file for errors
+]]
+
+local application = logs.application {
+    name     = "mtx-check",
+    banner   = "Basic ConTeXt Syntax Checking 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts         = scripts         or { }
 scripts.checker = scripts.checker or { }
 
@@ -123,17 +135,13 @@ function scripts.checker.check(filename)
     end
 end
 
-logs.extendbanner("Basic ConTeXt Syntax Checking 0.10")
-
-messages.help = [[
---convert             check tex file for errors
-]]
-
 if environment.argument("check") then
     scripts.checker.check(environment.files[1])
 elseif environment.argument("help") then
-    logs.help(messages.help)
+    application.help()
 elseif environment.files[1] then
     scripts.checker.check(environment.files[1])
+else
+    application.help()
 end
 

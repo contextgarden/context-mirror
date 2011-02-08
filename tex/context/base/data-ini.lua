@@ -16,7 +16,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_initialization = logs.new("resolvers","initialization")
 
 local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
 
@@ -37,7 +37,7 @@ kpse = { original = kpse }
 
 setmetatable(kpse, {
     __index = function(kp,name)
-        report_resolvers("fatal error: kpse library is accessed (key: %s)",name)
+        report_initialization("fatal error: kpse library is accessed (key: %s)",name)
         os.exit()
     end
 } )
@@ -121,13 +121,13 @@ do
                         if lfs.chdir(p) then
                             local pp = lfs.currentdir()
                             if trace_locating and p ~= pp then
-                                report_resolvers("following symlink '%s' to '%s'",p,pp)
+                                report_initialization("following symlink '%s' to '%s'",p,pp)
                             end
                             ownpath = pp
                             lfs.chdir(olddir)
                         else
                             if trace_locating then
-                                report_resolvers("unable to check path '%s'",p)
+                                report_initialization("unable to check path '%s'",p)
                             end
                             ownpath =  p
                         end
@@ -138,9 +138,9 @@ do
         end
         if not ownpath or ownpath == "" then
             ownpath = "."
-            report_resolvers("forcing fallback ownpath .")
+            report_initialization("forcing fallback ownpath .")
         elseif trace_locating then
-            report_resolvers("using ownpath '%s'",ownpath)
+            report_initialization("using ownpath '%s'",ownpath)
         end
     end
 
@@ -167,7 +167,7 @@ do
         ossetenv('SELFAUTODIR',    file.collapsepath(ownpath .. "/.."))
         ossetenv('SELFAUTOPARENT', file.collapsepath(ownpath .. "/../.."))
     else
-        report_resolvers("error: unable to locate ownpath")
+        report_initialization("error: unable to locate ownpath")
         os.exit()
     end
 

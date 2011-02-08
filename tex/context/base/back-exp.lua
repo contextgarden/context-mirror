@@ -50,7 +50,7 @@ local trace_tree   = false  trackers.register  ("structures.export.showtree",   
 local less_state   = false  directives.register("structures.export.lessstate",  function(v) less_state   = v end)
 local page_breaks  = false  directives.register("structures.export.pagebreaks", function(v) page_breaks  = v end)
 
-local report_export = logs.new("export")
+local report_export = logs.new("backend","export")
 
 local nodes           = nodes
 local attributes      = attributes

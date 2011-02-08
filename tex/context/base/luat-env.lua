@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_lua = logs.new("resolvers","lua")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -254,14 +254,14 @@ function environment.luafilechunk(filename,silent) -- used for loading lua bytec
     if fullname and fullname ~= "" then
         local data = environment.loadedluacode(fullname)
         if trace_locating then
-            report_resolvers("loading file %s%s", fullname, not data and " failed" or "")
+            report_lua("loading file %s%s", fullname, not data and " failed" or "")
         elseif not silent then
             texio.write("<",data and "+ " or "- ",fullname,">")
         end
         return data
     else
         if trace_locating then
-            report_resolvers("unknown file %s", filename)
+            report_lua("unknown file %s", filename)
         end
         return nil
     end
@@ -281,7 +281,7 @@ function environment.loadluafile(filename, version)
     local fullname = (lucname and environment.luafile(lucname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_resolvers("loading %s", fullname)
+            report_lua("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
     end
@@ -299,7 +299,7 @@ function environment.loadluafile(filename, version)
                 return true
             else
                 if trace_locating then
-                    report_resolvers("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
+                    report_lua("version mismatch for %s: lua=%s, luc=%s", filename, v, version)
                 end
                 environment.loadluafile(filename)
             end
@@ -310,12 +310,12 @@ function environment.loadluafile(filename, version)
     fullname = (luaname and environment.luafile(luaname)) or ""
     if fullname ~= "" then
         if trace_locating then
-            report_resolvers("loading %s", fullname)
+            report_lua("loading %s", fullname)
         end
         chunk = loadfile(fullname) -- this way we don't need a file exists check
         if not chunk then
             if trace_locating then
-                report_resolvers("unknown file %s", filename)
+                report_lua("unknown file %s", filename)
             end
         else
             assert(chunk)()

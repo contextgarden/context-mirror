@@ -93,11 +93,7 @@ local simple_escapes = {
 }
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return (gsub(str,".",simple_escapes))
-    else
-        return (gsub(str,".",patterns_escapes))
-    end
+    return (gsub(str,".",simple and simple_escapes or patterns_escapes))
 end
 
 function string.topattern(str,lowercase,strict)

@@ -10,6 +10,7 @@ local format, gsub = string.format, string.gsub
 local concat, sort = table.concat, table.sort
 local next, tonumber = next, tonumber
 
+moduledata          = moduledata or { }
 moduledata.progress = moduledata.progress or { }
 local progress      = moduledata.progress
 

@@ -6,6 +6,23 @@ if not modules then modules = { } end modules ['mtx-server'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--start               start server
+--port                port to listen to
+--root                server root
+--scripts             scripts sub path
+--index               index file
+--auto                start on own path
+]]
+
+local application = logs.application {
+    name     = "mtx-server",
+    banner   = "Simple Webserver For Helpers 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
@@ -127,7 +144,7 @@ local handlers = { }
 
 local function errormessage(client,configuration,n)
     local data = format("<head><title>%s %s</title></head><html><h2>%s %s</h2></html>",n,messages[n],n,messages[n])
-    logs.simple("handling error %s: %s",n,messages[n])
+    report("handling error %s: %s",n,messages[n])
     handlers.generic(client,configuration,data,nil,true)
 end
 
@@ -136,7 +153,7 @@ local validpaths, registered = { }, { }
 function scripts.webserver.registerpath(name)
     if not registered[name] then
         local cleanname = string.gsub(name,"%.%.","deleted-parent")
-        logs.simple("registering path '%s'",cleanname)
+        report("registering path '%s'",cleanname)
         validpaths[#validpaths+1] = cleanname
         registered[name] = true
     end
@@ -145,7 +162,7 @@ end
 function handlers.generic(client,configuration,data,suffix,iscontent)
     if not iscontent then
         local name = data
-        logs.simple("requested file '%s'",name)
+        report("requested file '%s'",name)
         local fullname = file.join(configuration.root,name)
         data = io.loaddata(fullname) or ""
         if data == "" then
@@ -153,12 +170,12 @@ function handlers.generic(client,configuration,data,suffix,iscontent)
                 local fullname = file.join(validpaths[n],name)
                 data = io.loaddata(fullname) or ""
                 if data ~= "" then
-                    logs.simple("sending generic file '%s'",fullname)
+                    report("sending generic file '%s'",fullname)
                     break
                 end
             end
         else
-            logs.simple("sending generic file '%s'",fullname)
+            report("sending generic file '%s'",fullname)
         end
     end
     if data and data ~= "" then
@@ -192,18 +209,18 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
     -- todo: split url in components, see l-url; rather trivial
     local result, keep = loaded[filename], false
     if result then
-        logs.simple("reusing script: %s",filename)
+        report("reusing script: %s",filename)
     else
-        logs.simple("locating script: %s",filename)
+        report("locating script: %s",filename)
         if lfs.isfile(filename) then
-            logs.simple("loading script: %s",filename)
+            report("loading script: %s",filename)
             result = loadfile(filename)
-            logs.simple("return type: %s",type(result))
+            report("return type: %s",type(result))
             if result and type(result) == "function" then
              -- result() should return a table { [type=,] [length=,] content= }, function or string
                 result, keep = result()
                 if keep then
-                    logs.simple("saving script: %s",type(result))
+                    report("saving script: %s",type(result))
                     loaded[filename] = result
                 end
             end
@@ -277,11 +294,11 @@ function scripts.webserver.run(configuration)
         configuration.scripts = dir.expandname(file.join(configuration.root or ".",configuration.scripts or "."))
     end
     -- so far for checks
-    logs.simple("running at port: %s",configuration.port)
-    logs.simple("document root: %s",configuration.root or resolvers.ownpath)
-    logs.simple("main index file: %s",configuration.index)
-    logs.simple("scripts subpath: %s",configuration.scripts)
-    logs.simple("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
+    report("running at port: %s",configuration.port)
+    report("document root: %s",configuration.root or resolvers.ownpath)
+    report("main index file: %s",configuration.index)
+    report("scripts subpath: %s",configuration.scripts)
+    report("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
     local server = assert(socket.bind("*", configuration.port))
 --~ local reading = { server }
     while true do -- no multiple clients
@@ -295,7 +312,7 @@ function scripts.webserver.run(configuration)
             errormessage(client,configuration,404)
         else
             local from = client:getpeername()
-            logs.simple("request from: %s",tostring(from))
+            report("request from: %s",tostring(from))
             local fullurl = request:match("GET (.+) HTTP/.*$") -- todo: more clever
             fullurl = socket.url.unescape(fullurl)
             local hashed = url.hashed(fullurl)
@@ -304,18 +321,18 @@ function scripts.webserver.run(configuration)
 --~ table.print(hashed)
             if filename then
                 filename = socket.url.unescape(filename)
-                logs.simple("requested action: %s",filename)
+                report("requested action: %s",filename)
                 if filename:find("%.%.") then
                     filename = nil -- invalid path
                 end
                 if filename == nil or filename == "" or filename == "/" then
                     filename = configuration.index
-                    logs.simple("invalid filename, forcing: %s",filename)
+                    report("invalid filename, forcing: %s",filename)
                 end
                 local suffix = file.extname(filename)
                 local action = handlers[suffix] or handlers.generic
                 if action then
-                    logs.simple("performing action: %s",filename)
+                    report("performing action: %s",filename)
                     action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                 else
                     errormessage(client,configuration,404)
@@ -325,20 +342,9 @@ function scripts.webserver.run(configuration)
             end
         end
         client:close()
-        logs.simple("time spent with client: %0.03f seconds",os.clock()-start)
+        report("time spent with client: %0.03f seconds",os.clock()-start)
     end
 end
-
-logs.extendbanner("Simple Webserver For Helpers 0.10")
-
-messages.help = [[
---start               start server
---port                port to listen to
---root                server root
---scripts             scripts sub path
---index               index file
---auto                start on own path
-]]
 
 if environment.argument("auto") then
     local path = resolvers.findfile("mtx-server.lua") or "."
@@ -355,7 +361,7 @@ elseif environment.argument("start") then
         scripts = environment.argument("scripts"),
     }
 else
-    logs.help(messages.help)
+    application.help()
 end
 
 

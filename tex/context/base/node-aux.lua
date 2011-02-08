@@ -153,7 +153,7 @@ nodes.unsetattributes      = unset_attributes
 --     local u = floor(x / 0x8000) * n + f          -- 0100000
 --     local v = floor(u % d) * 0x8000 + f          -- 0100000
 --     if floor(u / d) >= 0x8000 then               -- 0100000
---         logs.error("parbuilder",'arith_error')
+--         report_parbuilders('arith_error')
 --     else
 --         u = 0x8000 * floor(u / d) + floor(v / d) -- 0100000
 --     end

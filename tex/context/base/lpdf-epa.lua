@@ -14,7 +14,7 @@ local format = string.format
 
 local trace_links = false  trackers.register("figures.links", function(v) trace_links = v end)
 
-local report_link = logs.new("links")
+local report_link = logs.new("backend","merging")
 
 local backends, lpdf = backends, lpdf
 

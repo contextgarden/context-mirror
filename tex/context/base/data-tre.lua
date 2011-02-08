@@ -12,7 +12,7 @@ local find, gsub, format = string.find, string.gsub, string.format
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_trees = logs.new("resolvers","trees")
 
 local resolvers = resolvers
 
@@ -50,18 +50,18 @@ function resolvers.locators.tree(specification)
     local name = specification.filename
     if name ~= '' and lfs.isdir(name) then
         if trace_locating then
-            report_resolvers("tree locator '%s' found",name)
+            report_trees("locator '%s' found",name)
         end
         resolvers.appendhash('tree',name,false) -- don't cache
     elseif trace_locating then
-        report_resolvers("tree locator '%s' not found",name)
+        report_trees("locator '%s' not found",name)
     end
 end
 
 function resolvers.hashers.tree(specification)
     local name = specification.filename
     if trace_locating then
-        report_resolvers("analysing tree '%s'",name)
+        report_trees("analysing '%s'",name)
     end
     resolvers.methodhandler("hashers",name)
 end

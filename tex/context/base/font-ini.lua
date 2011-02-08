@@ -16,7 +16,7 @@ local write_nl = texio.write_nl
 local lower = string.lower
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 fontloader.totable = fontloader.to_table
 
@@ -105,7 +105,7 @@ function fonts.fontformat(filename,default)
     if format then
         return format
     else
-        report_define("unable to determine font format for '%s'",filename)
+        report_defining("unable to determine font format for '%s'",filename)
         return default
     end
 end

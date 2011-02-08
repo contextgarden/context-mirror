@@ -10,20 +10,22 @@ if not modules then modules = { } end modules ['mtx-unzip'] = {
 
 local format = string.format
 
-logs.extendbanner("Simple Unzipper 0.10")
-
-messages.help = [[
+local helpinfo = [[
 --list                list files in archive
 --junk                flatten unzipped directory structure
 --extract             extract files
 ]]
 
+local application = logs.application {
+    name     = "mtx-unzip",
+    banner   = "Simple Unzipper 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts          = scripts          or { }
 scripts.unzipper = scripts.unzipper or { }
-
-function scripts.unzipper.help()
-    logs.help(messages.help)
-end
 
 function scripts.unzipper.opened()
     local filename = environment.files[1]
@@ -34,7 +36,7 @@ function scripts.unzipper.opened()
             return zipfile
         end
     end
-    logs.report("unzip", "no zip file: " .. filename)
+    report("no zip file: %s",filename)
     return false
 end
 
@@ -104,11 +106,11 @@ function scripts.unzipper.extract()
 end
 
 if environment.arguments["h"] or environment.arguments["help"] then
-    scripts.unzipper.help()
+    application.help()
 elseif environment.arguments["l"] or environment.arguments["list"] then
     scripts.unzipper.list(zipfile)
 elseif environment.files[1] then -- implicit --extract
     scripts.unzipper.extract(zipfile)
 else
-    scripts.unzipper.help()
+    application.help()
 end

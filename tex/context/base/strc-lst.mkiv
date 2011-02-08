@@ -211,7 +211,7 @@
 
 \definelistextra
   [\v!page]
-  [\c!before={\showmessage\m!systems{14}{\currentlist/\currentlistindex}\page}]
+  [\c!before={\showmessage\m!system{14}{\currentlist/\currentlistindex}\page}]
 
 \def\processlistextrabefore{\executeifdefined{\??li:\c!extras:\currentlistextra:\c!before}\relax}
 \def\processlistextraafter {\executeifdefined{\??li:\c!extras:\currentlistextra:\c!after }\relax}
@@ -639,7 +639,7 @@
 %    \begingroup
 %    \edef\listelements{\listparameter\c!pageboundaries}%
 %    \normalexpanded{\noexpand\doifinset{#3}{\listelements}}
-%      {\showmessage\m!systems{14}{#3}%
+%      {\showmessage\m!system{14}{#3}%
 %       \page}%
 %    \endgroup
    \dontcomplain

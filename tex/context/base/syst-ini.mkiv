@@ -257,7 +257,9 @@
 %D evolved from code that dealt with older engines but as all engines
 %D now provide many registers we removed all traces.
 
-\def\writestatus#1#2{\immediate\write16{#1: #2}} \def\space { }
+\ifdefined\writestatus \else
+    \def\writestatus#1#2{\immediate\write16{#1: #2}}
+\fi
 
 \def\allocateregisteryes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax

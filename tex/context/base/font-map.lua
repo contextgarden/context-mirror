@@ -14,7 +14,7 @@ local utfbyte = utf.byte
 local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading    = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind

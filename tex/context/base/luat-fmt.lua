@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 local format = string.format
 
+local report_format = logs.new("resolvers","formats")
+
 -- helper for mtxrun
 
 local quoted = string.quoted
@@ -33,7 +35,7 @@ function environment.make_format(name)
     if path ~= "" then
         lfs.chdir(path)
     end
-    logs.simple("format path: %s",lfs.currentdir())
+    report_format("format path: %s",lfs.currentdir())
     -- check source file
     local texsourcename = file.addsuffix(name,"mkiv")
     local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
@@ -42,11 +44,11 @@ function environment.make_format(name)
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        logs.simple("no tex source file with name: %s (mkiv or tex)",name)
+        report_format("no tex source file with name: %s (mkiv or tex)",name)
         lfs.chdir(olddir)
         return
     else
-        logs.simple("using tex source file: %s",fulltexsourcename)
+        report_format("using tex source file: %s",fulltexsourcename)
     end
     local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
     -- check specification
@@ -57,7 +59,7 @@ function environment.make_format(name)
         fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
     end
     if fullspecificationname == "" then
-        logs.simple("unknown stub specification: %s",specificationname)
+        report_format("unknown stub specification: %s",specificationname)
         lfs.chdir(olddir)
         return
     end
@@ -68,39 +70,39 @@ function environment.make_format(name)
     if type(usedlualibs) == "string" then
         usedluastub = file.join(file.dirname(fullspecificationname),usedlualibs)
     elseif type(usedlualibs) == "table" then
-        logs.simple("using stub specification: %s",fullspecificationname)
+        report_format("using stub specification: %s",fullspecificationname)
         local texbasename = file.basename(name)
         local luastubname = file.addsuffix(texbasename,"lua")
         local lucstubname = file.addsuffix(texbasename,"luc")
         -- pack libraries in stub
-        logs.simple("creating initialization file: %s",luastubname)
+        report_format("creating initialization file: %s",luastubname)
         utilities.merger.selfcreate(usedlualibs,specificationpath,luastubname)
         -- compile stub file (does not save that much as we don't use this stub at startup any more)
         local strip = resolvers.booleanvariable("LUACSTRIP", true)
         if utilities.lua.compile(luastubname,lucstubname) and lfs.isfile(lucstubname) then
-            logs.simple("using compiled initialization file: %s",lucstubname)
+            report_format("using compiled initialization file: %s",lucstubname)
             usedluastub = lucstubname
         else
-            logs.simple("using uncompiled initialization file: %s",luastubname)
+            report_format("using uncompiled initialization file: %s",luastubname)
             usedluastub = luastubname
         end
     else
-        logs.simple("invalid stub specification: %s",fullspecificationname)
+        report_format("invalid stub specification: %s",fullspecificationname)
         lfs.chdir(olddir)
         return
     end
     -- generate format
     local command = format("luatex --ini %s --lua=%s %s %sdump",primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),os.platform == "unix" and "\\\\" or "\\")
-    logs.simple("running command: %s\n",command)
+    report_format("running command: %s\n",command)
     os.spawn(command)
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
- -- logs.simple("removing related mplib format with pattern '%s'", pattern)
+ -- report_format("removing related mplib format with pattern '%s'", pattern)
     local mp = dir.glob(pattern)
     if mp then
         for i=1,#mp do
             local name = mp[i]
-            logs.simple("removing related mplib format %s", file.basename(name))
+            report_format("removing related mplib format %s", file.basename(name))
             os.remove(name)
         end
     end
@@ -117,7 +119,7 @@ function environment.run_format(name,data,more)
         end
         fmtname = resolvers.cleanpath(fmtname)
         if fmtname == "" then
-            logs.simple("no format with name: %s",name)
+            report_format("no format with name: %s",name)
         else
             local barename = file.removesuffix(name) -- expanded name
             local luaname = file.addsuffix(barename,"luc")
@@ -125,11 +127,11 @@ function environment.run_format(name,data,more)
                 luaname = file.addsuffix(barename,"lua")
             end
             if not lfs.isfile(luaname) then
-                logs.simple("using format name: %s",fmtname)
-                logs.simple("no luc/lua with name: %s",barename)
+                report_format("using format name: %s",fmtname)
+                report_format("no luc/lua with name: %s",barename)
             else
                 local command = format("luatex %s --fmt=%s --lua=%s %s %s",primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
-                logs.simple("running command: %s",command)
+                report_format("running command: %s",command)
                 os.spawn(command)
             end
         end

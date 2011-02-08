@@ -17,7 +17,7 @@ local variables = interfaces.variables
 
 local trace_javascript = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
 
-local report_javascript = logs.new("javascript")
+local report_javascripts = logs.new("interactions","javascripts")
 
 interactions.javascripts = interactions.javascripts or { }
 local javascripts        = interactions.javascripts
@@ -68,7 +68,7 @@ function javascripts.storepreamble(str) -- now later
         preambles[n] = { name, used, script }
         preambled[name] = n
         if trace_javascript then
-            report_javascript("storing preamble '%s', state '%s', order '%s'",name,used,n)
+            report_javascripts("storing preamble '%s', state '%s', order '%s'",name,used,n)
         end
         lpegmatch(parsefunctions,script,1,n)
     end
@@ -80,7 +80,7 @@ function javascripts.setpreamble(name,script) -- now later
         preambles[n] = { name, "now", script }
         preambled[name] = n
         if trace_javascript then
-            report_javascript("setting preamble '%s', state 'now', order '%s'",name,n)
+            report_javascripts("setting preamble '%s', state 'now', order '%s'",name,n)
         end
         lpegmatch(parsefunctions,script,1,n)
     end
@@ -92,14 +92,14 @@ function javascripts.addtopreamble(name,script) -- now later
         if p then
             preambles[p] = { "now", preambles[p] .. " ;\n" .. script }
             if trace_javascript then
-                report_javascript("extending preamble '%s', state 'now'",name)
+                report_javascripts("extending preamble '%s', state 'now'",name)
             end
         else
             local n = #preambles + 1
             preambles[n] = { name, "now", script }
             preambled[name] = n
             if trace_javascript then
-                report_javascript("storing preamble '%s', state 'now', order '%s'",name,n)
+                report_javascripts("storing preamble '%s', state 'now', order '%s'",name,n)
             end
             lpegmatch(parsefunctions,script,1,n)
         end
@@ -114,7 +114,7 @@ function javascripts.usepreamblenow(name) -- now later
             if not preambled[somename] then
                 preambles[preambled[somename]][2] = "now"
                 if trace_javascript then
-                    report_javascript("using preamble '%s', state 'now'",somename)
+                    report_javascripts("using preamble '%s', state 'now'",somename)
                 end
             end
         end
@@ -135,15 +135,15 @@ function javascripts.code(name,arguments)
                 preambles[p][2] = "now"
                 if trace_javascript and not reported[name] then
                     reported[name] = true
-                    report_javascript("using code '%s', preamble '%s'",name,u)
+                    report_javascripts("using code '%s', preamble '%s'",name,u)
                 end
             elseif trace_javascript and not reported[name] then
                 reported[name] = true
-                report_javascript("using code '%s'",name)
+                report_javascripts("using code '%s'",name)
             end
         elseif trace_javascript and not reported[name] then
             reported[name] = true
-            report_javascript("using code '%s'",name)
+            report_javascripts("using code '%s'",name)
         end
         used = true
         return code
@@ -153,7 +153,7 @@ function javascripts.code(name,arguments)
         used = true
         if trace_javascript and not reported[name] then
             reported[name] = true
-            report_javascript("using function '%s'",name)
+            report_javascripts("using function '%s'",name)
         end
 preambles[f][2] = "now" -- automatically tag preambles that define the function (as later)
         if arguments then
@@ -175,7 +175,7 @@ function javascripts.flushpreambles()
             local preamble = preambles[i]
             if preamble[2] == "now" then
                 if trace_javascript then
-                    report_javascript("flushing preamble '%s'",preamble[1])
+                    report_javascripts("flushing preamble '%s'",preamble[1])
                 end
                 t[#t+1] = { preamble[1], preamble[3] }
             end

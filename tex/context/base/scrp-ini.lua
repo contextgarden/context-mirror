@@ -13,7 +13,7 @@ local texwrite = tex.write
 local trace_analyzing  = false  trackers.register("scripts.analyzing",  function(v) trace_analyzing  = v end)
 local trace_injections = false  trackers.register("scripts.injections", function(v) trace_injections = v end)
 
-local report_preprocessing = logs.new("preprocessing")
+local report_preprocessing = logs.new("scripts","preprocessing")
 
 local allocate = utilities.storage.allocate
 

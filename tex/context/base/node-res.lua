@@ -14,6 +14,8 @@ local tonumber, round = tonumber, math.round
 for debugging <l n='luatex'/> node management.</p>
 --ldx]]--
 
+local report_nodes = logs.new("nodes","housekeeping")
+
 local nodes, node = nodes, node
 
 local copy_node    = node.copy
@@ -201,9 +203,9 @@ end
 function pool.leftmarginkern(glyph,width)
     local n = copy_node(left_margin_kern)
     if not glyph then
-        logs.fatal("nodes","invalid pointer to left margin glyph node")
+        report_nodes("invalid pointer to left margin glyph node")
     elseif glyph.id ~= glyph_code then
-        logs.fatal("nodes","invalid node type %s for left margin glyph node",nodecodes[glyph])
+        report_nodes("invalid node type %s for left margin glyph node",nodecodes[glyph])
     else
         n.glyph = glyph
     end
@@ -216,9 +218,9 @@ end
 function pool.rightmarginkern(glyph,width)
     local n = copy_node(right_margin_kern)
     if not glyph then
-        logs.fatal("nodes","invalid pointer to right margin glyph node")
+        report_nodes("invalid pointer to right margin glyph node")
     elseif glyph.id ~= glyph_code then
-        logs.fatal("nodes","invalid node type %s for right margin glyph node",nodecodes[p])
+        report_nodes("invalid node type %s for right margin glyph node",nodecodes[p])
     else
         n.glyph = glyph
     end

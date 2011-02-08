@@ -13,7 +13,7 @@ local sort, concat = table.sort, table.concat
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 fonts       = fonts     or { }  -- this module is also used in mtxrun
 local fonts = fonts

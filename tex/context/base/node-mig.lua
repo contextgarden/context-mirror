@@ -26,7 +26,7 @@ local migrated      = attributes.private("migrated")
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
-local report_nodes = logs.new("nodes")
+local report_nodes = logs.new("nodes","migrations")
 
 local migrate_inserts, migrate_marks
 

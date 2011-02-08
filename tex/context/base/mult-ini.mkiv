@@ -384,6 +384,12 @@
 \unexpanded\def\getmessagedefault#1#2#3{\ctxsprint{interfaces.getmessage("#1","#2","#3")}}
 \unexpanded\def\makemessage      #1#2#3{\ctxsprint{interfaces.makemessage("#1","#2","#3")}}
 
+\unexpanded\def\writestatus        #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
+
+%unexpanded\def\disablemessages    [#1]{\ctxlua{logs.disable(\!!bs#1\!!es)}} % we have a directive
+
+% todo: intercept message
+
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
 %D
@@ -790,7 +796,8 @@
 %D macro's can be enhanced with more testing facilities, but
 %D for the moment they suffice.
 
-%D Out of convenience we define the banners here.
+%D Out of convenience we define the banners here. This might move
+%D to the Lua end.
 
 \def\contextbanner
   {ConTeXt \space

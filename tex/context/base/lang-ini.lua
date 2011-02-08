@@ -27,7 +27,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
-local report_languages = logs.new("languages")
+local report_initialization = logs.new("languages","initialization")
 
 local prehyphenchar, posthyphenchar = lang.prehyphenchar, lang.posthyphenchar -- global per language
 local lefthyphenmin, righthyphenmin = lang.lefthyphenmin, lang.righthyphenmin
@@ -92,7 +92,7 @@ local function loaddefinitions(tag,specification)
             if definition ~= "" then
                 if definition == "reset" then -- interfaces.variables.reset
                     if trace_patterns then
-                        report_languages("clearing patterns for language '%s'",tag)
+                        report_initialization("clearing patterns for language '%s'",tag)
                     end
                     instance:clear_patterns()
                 elseif not dataused[definition] then
@@ -101,7 +101,7 @@ local function loaddefinitions(tag,specification)
                     local fullname = resolvers.findfile(filename) or ""
                     if fullname ~= "" then
                         if trace_patterns then
-                            report_languages("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
+                            report_initialization("loading definition '%s' for language '%s' from '%s'",definition,tag,fullname)
                         end
                         local defs = dofile(fullname) -- use regular loader instead
                         if defs then -- todo: version test
@@ -109,18 +109,18 @@ local function loaddefinitions(tag,specification)
                             instance:patterns   (defs.patterns   and defs.patterns.data   or "")
                             instance:hyphenation(defs.exceptions and defs.exceptions.data or "")
                         else
-                            report_languages("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                            report_initialization("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
                         end
                     elseif trace_patterns then
-                        report_languages("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
+                        report_initialization("invalid definition '%s' for language '%s' in '%s'",definition,tag,filename)
                     end
                 elseif trace_patterns then
-                    report_languages("definition '%s' for language '%s' already loaded",definition,tag)
+                    report_initialization("definition '%s' for language '%s' already loaded",definition,tag)
                 end
             end
         end
     elseif trace_patterns then
-        report_languages("no definitions for language '%s'",tag)
+        report_initialization("no definitions for language '%s'",tag)
     end
     statistics.stoptiming(languages)
     return ok
@@ -133,7 +133,7 @@ local noflanguages = storage.shared.noflanguages
 function languages.define(tag,parent)
     noflanguages = noflanguages + 1
     if trace_patterns then
-        report_languages("assigning number %s to %s",noflanguages,tag)
+        report_initialization("assigning number %s to %s",noflanguages,tag)
     end
     numbers[noflanguages] = tag
     registered[tag] = {
@@ -213,14 +213,14 @@ else
         if l then
             if l.dirty then
                 if trace_patterns then
-                    report_languages("checking patterns for %s (%s)",tag,default)
+                    report_initialization("checking patterns for %s (%s)",tag,default)
                 end
                 -- patterns is already resolved to parent patterns if applicable
                 if patterns ~= "" then
                     if l.patterns ~= patterns then
                         l.patterns = patterns
                         if trace_patterns then
-                            report_languages("loading patterns for '%s' using specification '%s'",tag,patterns)
+                            report_initialization("loading patterns for '%s' using specification '%s'",tag,patterns)
                         end
                         loaddefinitions(tag,l)
                     else
@@ -229,13 +229,13 @@ else
                 elseif l.patterns == "" then
                     l.patterns = tag
                     if trace_patterns then
-                        report_languages("loading patterns for '%s' using tag",tag)
+                        report_initialization("loading patterns for '%s' using tag",tag)
                     end
                     local ok = loaddefinitions(tag,l)
                     if not ok and tag ~= default then
                         l.patterns = defaukt
                         if trace_patterns then
-                            report_languages("loading patterns for '%s' using default",tag)
+                            report_initialization("loading patterns for '%s' using default",tag)
                         end
                         loaddefinitions(tag,l)
                     end
@@ -366,12 +366,12 @@ end)
 --~     local ok = fullname ~= ""
 --~     if ok then
 --~         if trace_patterns then
---~             report_languages("filtering %s for language '%s' from '%s'",target,tag,fullname)
+--~             report_initialization("filtering %s for language '%s' from '%s'",target,tag,fullname)
 --~         end
 --~         lang[target](data,filter(fullname) or "")
 --~     else
 --~         if trace_patterns then
---~             report_languages("no %s for language '%s' in '%s'",target,tag,filename or "?")
+--~             report_initialization("no %s for language '%s' in '%s'",target,tag,filename or "?")
 --~         end
 --~         lang[target](instance,"")
 --~     end

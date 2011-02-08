@@ -178,7 +178,7 @@
   {\xdef\currentstructureattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\@@iafocus"))}}%
    \xdef\currentstructuresynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
 
-\def\reportcurrentstructure{\ctxlua{structures.sections.writestatus()}}
+\def\reportcurrentstructure{\ctxlua{structures.sections.reportstructure()}}
 
 % Beware: we need to flush the data to the list explicitly. This is because
 % node in inserted and we may want control over when that happens.

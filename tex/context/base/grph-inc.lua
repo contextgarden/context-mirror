@@ -37,8 +37,6 @@ The TeX-Lua mix is suboptimal. This has to do with the fact that we cannot
 run TeX code from within Lua. Some more functionality will move to Lua.
 ]]--
 
--- commands.writestatus -> report
-
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local texbox = tex.box
 local contains = table.contains
@@ -51,13 +49,13 @@ local variables      = interfaces.variables
 local codeinjections = backends.codeinjections
 local nodeinjections = backends.nodeinjections
 
-local trace_figures    = false  trackers.register("figures.locating",   function(v) trace_figures    = v end)
-local trace_bases      = false  trackers.register("figures.bases",      function(v) trace_bases      = v end)
-local trace_programs   = false  trackers.register("figures.programs",   function(v) trace_programs   = v end)
-local trace_conversion = false  trackers.register("figures.conversion", function(v) trace_conversion = v end)
-local trace_inclusion  = false  trackers.register("figures.inclusion",  function(v) trace_inclusion  = v end)
+local trace_figures    = false  trackers.register("graphics.locating",   function(v) trace_figures    = v end)
+local trace_bases      = false  trackers.register("graphics.bases",      function(v) trace_bases      = v end)
+local trace_programs   = false  trackers.register("graphics.programs",   function(v) trace_programs   = v end)
+local trace_conversion = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
+local trace_inclusion  = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
 
-local report_graphics = logs.new("graphics")
+local report_inclusion = logs.new("graphics","inclusion")
 
 local context, img = context, img
 
@@ -239,8 +237,8 @@ function figures.setpaths(locationset,pathlist)
     end
     figures.paths, last_pathlist = t, pathlist
     if trace_figures then
-        commands.writestatus("figures","locations: %s",last_locationset)
-        commands.writestatus("figures","path list: %s",concat(figures.paths, " "))
+        report_inclusion("locations: %s",last_locationset)
+        report_inclusion("path list: %s",concat(figures.paths, " "))
     end
 end
 
@@ -367,12 +365,12 @@ local function forbiddenname(filename)
     local expandedfullname = file.collapsepath(filename,true)
     local expandedinputname = file.collapsepath(file.addsuffix(environment.jobfilename,environment.jobfilesuffix),true)
     if expandedfullname == expandedinputname then
-        report_graphics("skipping graphic with same name as input filename (%s), enforce suffix",expandedinputname)
+        report_inclusion("skipping graphic with same name as input filename (%s), enforce suffix",expandedinputname)
         return true
     end
     local expandedoutputname = file.collapsepath(codeinjections.getoutputfilename(),true)
     if expandedfullname == expandedoutputname then
-        report_graphics("skipping graphic with same name as output filename (%s), enforce suffix",expandedoutputname)
+        report_inclusion("skipping graphic with same name as output filename (%s), enforce suffix",expandedoutputname)
         return true
     end
 end
@@ -397,7 +395,7 @@ local function register(askedname,specification)
                     newformat = defaultformat
                 end
                 if trace_conversion then
-                    report_graphics("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                    report_inclusion("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
                         askedname,format,newformat,conversion or "default",resolution or "default")
                 end
                 local converter = (newformat ~= format) and converters[format]
@@ -414,7 +412,7 @@ local function register(askedname,specification)
                         end
                     end
                 elseif trace_conversion then
-                    report_graphics("no converter for '%s' -> '%s'",format,newformat)
+                    report_inclusion("no converter for '%s' -> '%s'",format,newformat)
                 end
                 if converter then
                  -- local oldname = specification.fullname
@@ -430,7 +428,7 @@ local function register(askedname,specification)
                     end
                     if not file.is_writable(newpath) then
                         if trace_conversion then
-                            report_graphics("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
+                            report_inclusion("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
                         end
                         newpath = "."
                     end
@@ -454,12 +452,12 @@ local function register(askedname,specification)
                     local newtime = lfs.attributes(newname,'modification') or 0
                     if newtime == 0 or oldtime > newtime then
                         if trace_conversion then
-                            report_graphics("converting '%s' from '%s' to '%s'",askedname,format,newformat)
+                            report_inclusion("converting '%s' from '%s' to '%s'",askedname,format,newformat)
                         end
                         converter(oldname,newname,resolution or "")
                     else
                         if trace_conversion then
-                            report_graphics("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
+                            report_inclusion("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
                         end
                     end
                     if io.exists(newname) then
@@ -479,15 +477,15 @@ local function register(askedname,specification)
             if not found then
                 specification.found = false
                 if trace_figures then
-                    commands.writestatus("figures","format not supported: %s",format)
+                    report_inclusion("format not supported: %s",format)
                 end
             else
                 specification.found = true
                 if trace_figures then
                     if validtypes[format] then
-                        commands.writestatus("figures","format natively supported by backend: %s",format)
+                        report_inclusion("format natively supported by backend: %s",format)
                     else
-                        commands.writestatus("figures","format supported by output file format: %s",format)
+                        report_inclusion("format supported by output file format: %s",format)
                     end
                 end
             end
@@ -532,7 +530,7 @@ local function locate(request) -- name, format, cache
     local askedresolution = request.resolution
     if askedformat ~= "" then
         if trace_figures then
-            commands.writestatus("figures","strategy: forced format")
+            report_inclusion("strategy: forced format")
         end
         askedformat = lower(askedformat)
         local format = figures.suffixes[askedformat]
@@ -607,7 +605,7 @@ local function locate(request) -- name, format, cache
         end
     elseif askedpath then
         if trace_figures then
-            commands.writestatus("figures","strategy: rootbased path")
+            report_inclusion("strategy: rootbased path")
         end
         local figureorder = figures.order
         for i=1,#figureorder do
@@ -631,7 +629,7 @@ local function locate(request) -- name, format, cache
     else
         if figures.preferquality then
             if trace_figures then
-                commands.writestatus("figures","strategy: unknown format, prefer quality")
+                report_inclusion("strategy: unknown format, prefer quality")
             end
             local figurepaths = figures.paths
             local figureorder = figures.order
@@ -648,7 +646,7 @@ local function locate(request) -- name, format, cache
                         local isfile = url.hashed(check).scheme == "file"
                         if not isfile then
                             if trace_figures then
-                                commands.writestatus("figures","warning: skipping path %s",path)
+                                report_inclusion("warning: skipping path %s",path)
                             end
                         elseif figures.exists(check,format,true) then
                             return register(askedname, {
@@ -665,7 +663,7 @@ local function locate(request) -- name, format, cache
             end
         else -- 'location'
             if trace_figures then
-                commands.writestatus("figures","strategy: unknown format, prefer path")
+                report_inclusion("strategy: unknown format, prefer path")
             end
             local figurepaths = figures.paths
             local figureorder = figures.order
@@ -693,7 +691,7 @@ local function locate(request) -- name, format, cache
         end
         if figures.defaultsearch then
             if trace_figures then
-                commands.writestatus("figures","strategy: default tex path")
+                report_inclusion("strategy: default tex path")
             end
             local figureorder = figures.order
             for j=1,#figureorder do
@@ -807,9 +805,9 @@ function existers.generic(askedname,resolve)
     end
     if trace_figures then
         if result then
-            commands.writestatus("figures","found: %s -> %s",askedname,result)
+            report_inclusion("found: %s -> %s",askedname,result)
         else
-            commands.writestatus("figures","not found: %s",askedname)
+            report_inclusion("not found: %s",askedname)
         end
     end
     return result
@@ -835,11 +833,11 @@ function checkers.generic(data)
         figure, data = f or figure, d or data
         figures.loaded[hash] = figure
         if trace_conversion then
-            report_graphics("new graphic, hash: %s",hash)
+            report_inclusion("new graphic, hash: %s",hash)
         end
     else
         if trace_conversion then
-            report_graphics("existing graphic, hash: %s",hash)
+            report_inclusion("existing graphic, hash: %s",hash)
         end
     end
     if figure then
@@ -920,7 +918,7 @@ function checkers.mov(data)
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then
-        report_graphics("including movie '%s': width %s, height %s",foundname,width,height)
+        report_inclusion("including movie '%s': width %s, height %s",foundname,width,height)
     end
     -- we need to push the node.write in between ... we could make a shared helper for this
     context.startfoundexternalfigure(width .. "sp",height .. "sp")
@@ -1008,7 +1006,7 @@ end
 local function runprogram(...)
     local command = format(...)
     if trace_conversion or trace_programs then
-        report_graphics("running %s",command)
+        report_inclusion("running %s",command)
     end
     os.spawn(command)
 end
@@ -1126,7 +1124,7 @@ function bases.use(basename)
                 xml.registerns("rlx","http://www.pragma-ade.com/schemas/rlx") -- we should be able to do this per xml file
             end
             if trace_bases then
-                commands.writestatus("figures","registering base '%s'",basename)
+                report_inclusion("registering base '%s'",basename)
             end
         end
     end
@@ -1134,7 +1132,7 @@ end
 
 function bases.find(basename,askedlabel)
     if trace_bases then
-        commands.writestatus("figures","checking for '%s' in base '%s'",askedlabel,basename)
+        report_inclusion("checking for '%s' in base '%s'",askedlabel,basename)
     end
     basename = file.addsuffix(basename,"xml")
     local t = bases.found[askedlabel]
@@ -1151,7 +1149,7 @@ function bases.find(basename,askedlabel)
                     base[2] = xmlfile
                     base[3] = xml.load(xmlfile)
                     if trace_bases then
-                        commands.writestatus("figures","base '%s' loaded",xmlfile)
+                        report_inclusion("base '%s' loaded",xmlfile)
                     end
                     break
                 end
@@ -1170,13 +1168,13 @@ function bases.find(basename,askedlabel)
                     }
                     bases.found[askedlabel] = t
                     if trace_bases then
-                        commands.writestatus("figures","figure '%s' found in base '%s'",askedlabel,base[2])
+                        report_inclusion("figure '%s' found in base '%s'",askedlabel,base[2])
                     end
                     return t
                 end
             end
             if trace_bases and not t then
-                commands.writestatus("figures","figure '%s' not found in base '%s'",askedlabel,base[2])
+                report_inclusion("figure '%s' not found in base '%s'",askedlabel,base[2])
             end
         end
     end

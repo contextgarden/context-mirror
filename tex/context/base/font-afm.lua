@@ -21,7 +21,7 @@ local trace_features = false  trackers.register("afm.features", function(v) trac
 local trace_indexing = false  trackers.register("afm.indexing", function(v) trace_indexing = v end)
 local trace_loading  = false  trackers.register("afm.loading",  function(v) trace_loading  = v end)
 
-local report_afm = logs.new("load afm")
+local report_afm = logs.new("fonts","afm loading")
 
 local next, type = next, type
 local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip

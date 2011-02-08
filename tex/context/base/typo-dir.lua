@@ -14,11 +14,11 @@ local utfchar = utf.char
 
 -- vertical space handler
 
+local nodes, node = nodes, node
+
 local trace_directions = false  trackers.register("typesetters.directions", function(v) trace_directions = v end)
 
-local report_directions = logs.new("directions")
-
-local nodes, node = nodes, node
+local report_directions = logs.new("typesetting","directions")
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute
