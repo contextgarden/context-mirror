@@ -15,7 +15,7 @@ local round, div = math.round, math.div
 
 local trace_digits = false  trackers.register("typesetters.digits", function(v) trace_digits = v end)
 
-local report_digits = logs.new("digits")
+local report_digits = logs.new("typesetting","digits")
 
 local nodes, node = nodes, node
 

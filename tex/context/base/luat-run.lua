@@ -12,8 +12,8 @@ local insert = table.insert
 local trace_lua_dump   = false  trackers.register("system.dump",      function(v) trace_lua_dump   = v end)
 local trace_temp_files = false  trackers.register("system.tempfiles", function(v) trace_temp_files = v end)
 
-local report_lua_dump   = logs.new("lua dump actions")
-local report_temp_files = logs.new("temporary files")
+local report_lua       = logs.new("system","lua")
+local report_tempfiles = logs.new("resolvers","tempfiles")
 
 luatex       = luatex or { }
 local luatex = luatex
@@ -68,7 +68,7 @@ local function report_output_log()
 end
 
 local function pre_dump_actions()
-    lua.finalize(trace_lua_dump and report_lua_dump or nil)
+    lua.finalize(trace_lua_dump and report_lua or nil)
     statistics.reportstorage("log")
  -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
@@ -96,7 +96,7 @@ local tempfiles = { }
 function luatex.registertempfile(name)
     name = name .. ".mkiv-tmp" -- maybe just .tmp
     if trace_temp_files and not tempfiles[name] then
-        report_temp_files("registering: %s",name)
+        report_tempfiles("registering temporary file: %s",name)
     end
     tempfiles[name] = true
     return name
@@ -105,7 +105,7 @@ end
 function luatex.cleanuptempfiles()
     for name, _ in next, tempfiles do
         if trace_temp_files then
-            report_temp_files("removing: %s",name)
+            report_tempfiles("removing temporary file: %s",name)
         end
         os.remove(name)
     end
@@ -139,6 +139,6 @@ end)
 
 statistics.register("synctex tracing",function()
     if synctex or tex.synctex > 0 then
-        return "syntex has been enabled (extra log file generated)"
+        return "synctex has been enabled (extra log file generated)"
     end
 end)

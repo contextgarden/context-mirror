@@ -148,11 +148,11 @@ local trace_steps        = false  trackers.register("otf.steps",        function
 local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
 
-local report_direct   = logs.new("otf direct")
-local report_subchain = logs.new("otf subchain")
-local report_chain    = logs.new("otf chain")
-local report_process  = logs.new("otf process")
-local report_prepare  = logs.new("otf prepare")
+local report_direct   = logs.new("fonts","otf direct")
+local report_subchain = logs.new("fonts","otf subchain")
+local report_chain    = logs.new("fonts","otf chain")
+local report_process  = logs.new("fonts","otf process")
+local report_prepare  = logs.new("fonts","otf prepare")
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)

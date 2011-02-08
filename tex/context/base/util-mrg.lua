@@ -14,7 +14,7 @@ local type, next = type, next
 
 utilities        = utilities or {}
 utilities.merger = utilities.merger or { } -- maybe mergers
-utilities.report = utilities.report or print
+utilities.report = logs and logs.new("system") or print
 
 local merger     = utilities.merger
 

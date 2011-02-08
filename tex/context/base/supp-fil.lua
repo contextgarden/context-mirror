@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['supp-fil'] = {
 -- This module will be redone !
 
 -- context is not defined yet! todo! (we need to load tupp-fil after cld)
+-- todo: move startreadingfile to lua and push regime there
 
 --[[ldx--
 <p>It's more convenient to manipulate filenames (paths) in
@@ -23,8 +24,8 @@ local isfile = lfs.isfile
 local trace_modules = false  trackers.register("modules.loading",    function(v) trace_modules = v end)
 local trace_files   = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
 
-local report_modules = logs.new("modules")
-local report_files   = logs.new("resolvers")
+local report_modules = logs.new("resolvers","modules")
+local report_files   = logs.new("resolvers","files")
 
 commands          = commands or { }
 local commands    = commands
@@ -305,17 +306,17 @@ function commands.usemodules(prefix,askedname,truename)
         if trace_modules then
             report_modules("skipping '%s' (not found)",truename)
         else
-            interfaces.showmessage("systems",6,askedname)
+            interfaces.showmessage("system",6,askedname)
         end
     elseif status == 1 then
         if not trace_modules then
-            interfaces.showmessage("systems",5,askedname)
+            interfaces.showmessage("system",5,askedname)
         end
     else
         if trace_modules then
             report_modules("skipping '%s' (already loaded)",truename)
         else
-            interfaces.showmessage("systems",7,askedname)
+            interfaces.showmessage("system",7,askedname)
         end
     end
     modstatus[hashname] = status

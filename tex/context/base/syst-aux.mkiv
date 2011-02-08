@@ -2091,7 +2091,7 @@
 \setnewconstant\expectedarguments  \zerocount
 
 \def\showargumenterror#1#2%
-  {\writestatus{systems}{\number#1 argument(s) expected in line #2}}
+  {\writestatus{system}{\number#1 argument(s) expected in line #2}}
 
 \def\doshowargumenterror
   {\ifnum\expectedarguments>\noexpectedarguments
@@ -4534,7 +4534,7 @@
 %D \CONTEXT only defines lowcased macros.
 
 \def\showdefinederror#1#2%
-  {\writestatus\m!systems{#1 #2 replaces a macro, use CAPITALS!}}
+  {\writestatus\m!system{#1 #2 replaces a macro, use CAPITALS!}}
 
 \def\checkdefined#1#2#3%
   {\doifdefined{#3}{\showdefinederror{#2}{#3}}}
@@ -6945,10 +6945,10 @@
 \def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
-   \writestatus\m!systems{starting feature test}\wait
+   \writestatus\m!system{starting feature test}\wait
    \resettimer
    \featuretest\zerocount \dotestfeature
-   \writestatus\m!systems{feature test done (\elapsedseconds s)}%
+   \writestatus\m!system{feature test done (\elapsedseconds s)}%
    \wait
    \egroup}
 

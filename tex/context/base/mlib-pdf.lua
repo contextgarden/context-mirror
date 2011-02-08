@@ -11,7 +11,7 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 
 local allocate = utilities.storage.allocate
 
-local report_mplib = logs.new("mplib")
+local report_metapost = logs.new("metapost")
 
 local mplib, context = mplib, context
 
@@ -76,7 +76,7 @@ function metapost.flushliteral(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_li
         literal.data = savedliterals[d]
         write_node(literal)
     else
-        report_mplib("problem flushing literal %s",d)
+        report_metapost("problem flushing literal %s",d)
     end
 end
 

@@ -16,7 +16,7 @@ local max = math.max
 local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
 local trace_timings = false trackers.register("math.timings", function(v) trace_timings = v end)
 
-local report_virtual = logs.new("virtual math")
+local report_virtual = logs.new("fonts","virtual math")
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 

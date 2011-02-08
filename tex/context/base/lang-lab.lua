@@ -69,7 +69,7 @@ languages.data   = languages.data   or { }
 
 local trace_labels = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 
-local report_labels = logs.new("language labels")
+local report_labels = logs.new("languages","labels")
 
 function languages.labels.define()
     local variables = interfaces.variables
@@ -119,7 +119,7 @@ end
 --~         for tag, specification in next, list do
 --~             for language, text in next, specification.labels do
 --~                 if type(text) == "string" and find(text,",") then
---~                     logs.simple("label with comma: category '%s', language '%s', tag '%s', text '%s'",
+--~                     report_labels("label with comma: category '%s', language '%s', tag '%s', text '%s'",
 --~                         category, language, tag, text)
 --~                 end
 --~             end

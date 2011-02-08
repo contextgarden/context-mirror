@@ -1,0 +1,25 @@
+-- This patch code is moved from font-pat.lua to this goodies
+-- files as it does not belomg in the core code.
+
+local patches = fonts.otf.enhancers.patches
+
+local function patch(data,filename,threshold)
+    local m = data.metadata.math
+    if m then
+        local d = m.DisplayOperatorMinHeight or 0
+        if d < threshold then
+            patches.report("DisplayOperatorMinHeight(%s -> %s)",d,threshold)
+            m.DisplayOperatorMinHeight = threshold
+        end
+    end
+end
+
+patches.register("after","check math parameters","asana",function(data,filename) patch(data,filename,1350) end)
+
+return {
+    name = "lm-asana",
+    version = "1.00",
+    comment = "Goodies that complement asana.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+}

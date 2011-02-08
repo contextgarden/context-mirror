@@ -40,7 +40,7 @@ local trace_loading  = false  trackers.register("lxml.loading",  function(v) tra
 local trace_access   = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
 local trace_comments = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
 
-local report_lxml = logs.new("lxml")
+local report_lxml = logs.new("xml","tex")
 
 lxml.loaded  = lxml.loaded or { }
 local loaded = lxml.loaded
@@ -356,7 +356,7 @@ end
 function lxml.load(id,filename,compress,entities)
     filename = commands.preparedfile(filename)
     if trace_loading then
-        commands.writestatus("lxml","loading file '%s' as '%s'",filename,id)
+        report_lxml("loading file '%s' as '%s'",filename,id)
     end
     noffiles, nofconverted = noffiles + 1, nofconverted + 1
  -- local xmltable = xml.load(filename)
@@ -386,7 +386,7 @@ function lxml.include(id,pattern,attribute,recurse)
                 end
             end
             if trace_loading then
-                commands.writestatus("lxml","including file: %s",filename)
+                report_lxml("including file: %s",filename)
             end
             noffiles, nofconverted = noffiles + 1, nofconverted + 1
             return resolvers.loadtexfile(filename) or ""
@@ -688,22 +688,22 @@ function lxml.installsetup(what,document,setup,where)
     end
     if what == 1 then
         if trace_loading then
-            commands.writestatus("lxml","prepending setup %s for %s",setup,document)
+            report_lxml("prepending setup %s for %s",setup,document)
         end
         insert(sd,1,setup)
     elseif what == 2 then
         if trace_loading then
-            commands.writestatus("lxml","appending setup %s for %s",setup,document)
+            report_lxml("appending setup %s for %s",setup,document)
         end
         insert(sd,setup)
     elseif what == 3 then
         if trace_loading then
-            commands.writestatus("lxml","inserting setup %s for %s before %s",setup,document,where)
+            report_lxml("inserting setup %s for %s before %s",setup,document,where)
         end
         insertbeforevalue(sd,setup,where)
     elseif what == 4 then
         if trace_loading then
-            commands.writestatus("lxml","inserting setup %s for %s after %s",setup,document,where)
+            report_lxml("inserting setup %s for %s after %s",setup,document,where)
         end
         insertaftervalue(sd,setup,where)
     end
@@ -719,21 +719,21 @@ function lxml.flushsetups(id,...)
                 local v= sd[k]
                 if not done[v] then
                     if trace_loading then
-                        commands.writestatus("lxml","applying setup %02i = %s to %s",k,v,document)
+                        report_lxml("applying setup %02i = %s to %s",k,v,document)
                     end
                     texsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
                     done[v] = true
                 end
             end
         elseif trace_loading then
-            commands.writestatus("lxml","no setups for %s",document)
+            report_lxml("no setups for %s",document)
         end
     end
 end
 
 function lxml.resetsetups(document)
     if trace_loading then
-        commands.writestatus("lxml","resetting all setups for %s",document)
+        report_lxml("resetting all setups for %s",document)
     end
     setups[document] = { }
 end
@@ -744,7 +744,7 @@ function lxml.removesetup(document,setup)
         for i=1,#s do
             if s[i] == setup then
                 if trace_loading then
-                    commands.writestatus("lxml","removing setup %s for %s",setup,document)
+                    report_lxml("removing setup %s for %s",setup,document)
                 end
                 remove(t,i)
                 break

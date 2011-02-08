@@ -12,7 +12,7 @@ local xmlfillin = xml.fillin
 
 local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
 
-local report_xmp = logs.new("backends")
+local report_xmp = logs.new("backend","xmp")
 
 local lpdf = lpdf
 
@@ -83,7 +83,7 @@ function lpdf.setxmpfile(name)
  --     xmpfile = nil
  -- end
     if xmp then
-        report_xmp("discarding loaded xmp file '%s'",xmpfile)
+        report_xmp("discarding loaded file '%s'",xmpfile)
         xmp = nil
     end
     xmpfile = name ~= "" and name
@@ -99,7 +99,7 @@ local function valid_xmp()
             xmpfile = resolvers.findfile(xmpname) or ""
         end
         if xmpfile ~= "" then
-            report_xmp("using xmp file '%s'",xmpfile)
+            report_xmp("using file '%s'",xmpfile)
         end
         local xmpdata = (xmpfile ~= "" and io.loaddata(xmpfile)) or ""
         xmp = xml.convert(xmpdata)
@@ -143,22 +143,37 @@ local function flushxmpinfo()
 
     local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
     local packetid = concat(t)
-    local time = lpdf.timestamp()
-    addxmpinfo("Producer",format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision))
-    addxmpinfo("DocumentID",format("uuid:%s",os.uuid()))
-    addxmpinfo("InstanceID",format("uuid:%s",os.uuid()))
-    addxmpinfo("CreatorTool","LuaTeX + ConTeXt MkIV")
-    addxmpinfo("CreateDate",time)
-    addxmpinfo("ModifyDate",time)
-    addxmpinfo("MetadataDate",time)
-    addxmpinfo("PTEX.Fullbanner", tex.pdftexbanner)
+
+    local documentid = format("uuid:%s",os.uuid())
+    local instanceid = format("uuid:%s",os.uuid())
+    local producer   = format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision)
+    local creator    = "LuaTeX + ConTeXt MkIV"
+    local time       = lpdf.timestamp()
+    local fullbanner = tex.pdftexbanner
+ -- local fullbanner = gsub(tex.pdftexbanner,"kpse.*","")
+
+    addxmpinfo("DocumentID",      documentid)
+    addxmpinfo("InstanceID",      instanceid)
+    addxmpinfo("Producer",        producer)
+    addxmpinfo("CreatorTool",     creator)
+    addxmpinfo("CreateDate",      time)
+    addxmpinfo("ModifyDate",      time)
+    addxmpinfo("MetadataDate",    time)
+    addxmpinfo("PTEX.Fullbanner", fullbanner)
+
+    addtoinfo("Producer",         producer)
+    addtoinfo("Creator",          creator)
+    addtoinfo("CreationDate",     time)
+    addtoinfo("ModDate",          time)
+--  addtoinfo("PTEX.Fullbanner",  fullbanner) -- no checking done on existence
+
     local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
     local md = pdfdictionary {
         Subtype = pdfconstant("XML"),
         Type    = pdfconstant("Metadata"),
     }
     if trace_xmp then
-        commands.writestatus("system","xmp data flushed (see log file)")
+        report_xmp("data flushed (see log file)")
         texio.write_nl("log","")
         texio.write("log","\n% ",(gsub(blob,"[\r\n]","\n%% ")),"\n")
     end

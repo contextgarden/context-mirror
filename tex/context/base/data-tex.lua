@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-tex'] = {
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_tex = logs.new("resolvers","tex")
 
 local resolvers = resolvers
 
@@ -62,7 +62,7 @@ function helpers.textopener(tag,filename,filehandle)
     if type(lines) == "string" then
         local kind = utffiletype(lines)
         if trace_locating then
-            report_resolvers("%s opener, '%s' opened using method '%s'",tag,filename,kind)
+            report_tex("%s opener, '%s' opened using method '%s'",tag,filename,kind)
         end
         if kind == "utf-16-be" then
             lines = unicode.utf16_to_utf8_be(lines)
@@ -80,7 +80,7 @@ function helpers.textopener(tag,filename,filehandle)
             lines = splitlines(lines)
         end
     elseif trace_locating then
-        report_resolvers("%s opener, '%s' opened",tag,filename)
+        report_tex("%s opener, '%s' opened",tag,filename)
     end
     logs.show_open(filename)
     return {
@@ -89,7 +89,7 @@ function helpers.textopener(tag,filename,filehandle)
         currentline = 0,
         close       = function()
             if trace_locating then
-                report_resolvers("%s closer, '%s' closed",tag,filename)
+                report_tex("%s closer, '%s' closed",tag,filename)
             end
             logs.show_close(filename)
             t = nil
@@ -146,7 +146,7 @@ local function installhandler(namespace,what,where,func)
     if where == "before" or where == "after" then
         sequencers.appendaction(namespace,where,func)
     else
-        report_resolvers("installing input %s handlers in %s is not possible",what,tostring(where))
+        report_tex("installing input %s handlers in %s is not possible",what,tostring(where))
     end
 end
 
@@ -155,8 +155,8 @@ function resolvers.installinputfilehandler(...) installhandler(helpers.textfilea
 
 -- local basename = file.basename
 -- resolvers.installinputlinehandler(function(str,filename,linenumber,noflines)
---     logs.simple("[lc] file: %s, line: %s of %s, length: %s",basename(filename),linenumber,noflines,#str)
+--     report_tex("[lc] file: %s, line: %s of %s, length: %s",basename(filename),linenumber,noflines,#str)
 -- end)
 -- resolvers.installinputfilehandler(function(str,filename)
---     logs.simple("[fc] file: %s, length: %s",basename(filename),#str)
+--     report_tex("[fc] file: %s, length: %s",basename(filename),#str)
 -- end)

@@ -17,7 +17,8 @@ local allocate = utilities.storage.allocate
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
-local report_fonts = logs.new("fonts")
+local report_expansions  = logs.new("fonts","expansions")
+local report_protrusions = logs.new("fonts","protrusions")
 
 commands = commands or { }
 
@@ -171,7 +172,7 @@ function initializers.common.expansion(tfmdata,value)
             if vector then
                 local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
                 if trace_expansion then
-                    report_fonts("set expansion class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",
+                    report_expansions("setting class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",
                         value,class.vector,factor,stretch,shrink,step)
                 end
                 tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
@@ -198,10 +199,10 @@ function initializers.common.expansion(tfmdata,value)
                     end
                 end
             elseif trace_expansion then
-                report_fonts("unknown expansion vector '%s' in class '%s",class.vector,value)
+                report_expansions("unknown vector '%s' in class '%s",class.vector,value)
             end
         elseif trace_expansion then
-            report_fonts("unknown expansion class '%s'",value)
+            report_expansions("unknown class '%s'",value)
         end
     end
 end
@@ -216,7 +217,7 @@ initializers.node.afm.expansion = initializers.common.expansion
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
-local report_opbd = logs.new("otf opbd")
+local report_opbd = logs.new("fonts","otf opbd")
 
 -- -- -- -- -- --
 -- protrusion
@@ -390,7 +391,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = singles[lookup]
                 if data then
                     if trace_protrusion then
-                        report_fonts("set left protrusion using lfbd lookup '%s'",lookup)
+                        report_protrusions("setting left using lfbd lookup '%s'",lookup)
                     end
                     for k, v in next, data do
                     --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
@@ -413,7 +414,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                 local data = singles[lookup]
                 if data then
                     if trace_protrusion then
-                        report_fonts("set right protrusion using rtbd lookup '%s'",lookup)
+                        report_protrusions("setting right using rtbd lookup '%s'",lookup)
                     end
                     for k, v in next, data do
                     --  local p = v[3] / descriptions[k].width -- or 3
@@ -450,7 +451,7 @@ function initializers.common.protrusion(tfmdata,value)
                     local left   = class.left   or 1
                     local right  = class.right  or 1
                     if trace_protrusion then
-                        report_fonts("set protrusion class %s, vector: %s, factor: %s, left: %s, right: %s",
+                        report_protrusions("setting class %s, vector: %s, factor: %s, left: %s, right: %s",
                             value,class.vector,factor,left,right)
                     end
                     local data = characters.data
@@ -486,10 +487,10 @@ function initializers.common.protrusion(tfmdata,value)
                         end
                     end
                 elseif trace_protrusion then
-                    report_fonts("unknown protrusion vector '%s' in class '%s",class.vector,value)
+                    report_protrusions("unknown vector '%s' in class '%s",class.vector,value)
                 end
             elseif trace_protrusion then
-                report_fonts("unknown protrusion class '%s'",value)
+                report_protrusions("unknown class '%s'",value)
             end
         end
     end

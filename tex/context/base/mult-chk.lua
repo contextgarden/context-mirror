@@ -14,6 +14,8 @@ local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_se
 
 local allocate = utilities.storage.allocate
 
+local report_interface = logs.new("interface","checking")
+
 interfaces = interfaces or { }
 
 interfaces.syntax = allocate {
@@ -21,7 +23,7 @@ interfaces.syntax = allocate {
 }
 
 function interfaces.invalidkey(kind,key)
-    commands.writestatus("syntax","invalid key '%s' for '%s' in line %s",key,kind,tex.inputlineno)
+    report_interface("invalid key '%s' for '%s' in line %s",key,kind,tex.inputlineno)
 end
 
 function interfaces.setvalidkeys(kind,list)

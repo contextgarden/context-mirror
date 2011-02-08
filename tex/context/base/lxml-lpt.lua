@@ -43,7 +43,7 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
-local report_lpath = logs.new("lpath")
+local report_lpath = logs.new("xml","lpath")
 
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
@@ -962,9 +962,9 @@ local function traced_apply(list,parsed,nofparsed,order)
     if trace_lparse then
         lshow(parsed)
     end
-    report_lpath("collecting : %s",parsed.pattern)
-    report_lpath(" root tags : %s",tagstostring(list))
-    report_lpath("     order : %s",order or "unset")
+    report_lpath("collecting: %s",parsed.pattern)
+    report_lpath("root tags : %s",tagstostring(list))
+    report_lpath("order     : %s",order or "unset")
     local collected = list
     for i=1,nofparsed do
         local pi = parsed[i]

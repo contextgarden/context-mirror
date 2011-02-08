@@ -14,7 +14,7 @@ local concat, format, gsub, find, byte, gmatch, match = table.concat, string.for
 local lpegmatch = lpeg.match
 local round = math.round
 
-local report_mptopdf = logs.new("mptopdf")
+local report_mptopdf = logs.new("graphics","mptopdf")
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
@@ -544,7 +544,7 @@ function mptopdf.convertmpstopdf(name)
         resetall()
         statistics.stoptiming(mptopdf)
     else
-        commands.writestatus("mptopdf","file '%s' not found",name)
+        report_mptopdf("file '%s' not found",name)
     end
 end
 

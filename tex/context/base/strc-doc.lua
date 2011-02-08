@@ -25,7 +25,7 @@ local variables   = interfaces.variables
 local trace_sectioning = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail     = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
-local report_structure = logs.new("structure")
+local report_structure = logs.new("structure","sectioning")
 
 local structures, context = structures, context
 
@@ -322,7 +322,7 @@ function sections.somelevel(given)
  -- given.numberdata = nil
 end
 
-function sections.writestatus()
+function sections.reportstructure()
     if sections.verbose then
         local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
         local d = status[depth]
@@ -332,11 +332,11 @@ function sections.writestatus()
         local t = (l ~= "" and l) or d.titledata.title or "[no title]"
         local m = d.metadata.name
         if o and not find(o,"^%.*$") then
-            commands.writestatus("structure","%s @ level %i : (%s) %s -> %s",m,depth,n,o,t)
+            report_structure("%s @ level %i : (%s) %s -> %s",m,depth,n,o,t)
         elseif d.directives and d.directives.hidenumber then
-            commands.writestatus("structure","%s @ level %i : (%s) -> %s",m,depth,n,t)
+            report_structure("%s @ level %i : (%s) -> %s",m,depth,n,t)
         else
-            commands.writestatus("structure","%s @ level %i : %s -> %s",m,depth,n,t)
+            report_structure("%s @ level %i : %s -> %s",m,depth,n,t)
         end
     end
 end

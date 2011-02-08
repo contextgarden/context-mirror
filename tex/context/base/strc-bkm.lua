@@ -21,7 +21,7 @@ local codeinjections = backends.codeinjections
 
 local trace_bookmarks = false  trackers.register("references.bookmarks", function(v) trace_bookmarks = v end)
 
-local report_bookmarks = logs.new("bookmarks")
+local report_bookmarks = logs.new("structure","bookmarks")
 
 local structures     = structures
 

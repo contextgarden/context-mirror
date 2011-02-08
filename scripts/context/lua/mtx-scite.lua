@@ -9,6 +9,19 @@ if not modules then modules = { } end modules ['mtx-scite'] = {
 -- todo: append to global properties else order of loading problem
 -- linux problem ... files are under root protection so we need --install
 
+local helpinfo = [[
+--start [--verbose]   start scite
+--test                report what will happen
+]]
+
+local application = logs.application {
+    name     = "mtx-scite",
+    banner   = "Scite Startup Script 1.00",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts       = scripts       or { }
 scripts.scite = scripts.scite or { }
 
@@ -42,11 +55,11 @@ function scripts.scite.start(indeed)
         end
     end
     if not datapath or datapath == "" then
-        logs.simple("invalid datapath, maybe you need to regenerate the file database")
+        report("invalid datapath, maybe you need to regenerate the file database")
         return false
     end
     if not binpaths or #binpaths == 0 then
-        logs.simple("invalid binpath")
+        report("invalid binpath")
         return false
     end
     for i=1,#binpaths do
@@ -57,7 +70,7 @@ function scripts.scite.start(indeed)
         end
     end
     if not fullname then
-        logs.simple("unable to locate %s",workname)
+        report("unable to locate %s",workname)
         return false
     end
     local properties  = dir.glob(file.join(datapath,"*.properties"))
@@ -65,7 +78,7 @@ function scripts.scite.start(indeed)
     local extrafont   = resolvers.findfile(screenfont,"truetype font") or ""
     local pragmafound = dir.glob(file.join(datapath,"pragma.properties"))
     if userpath == "" then
-        logs.simple("unable to figure out userpath")
+        report("unable to figure out userpath")
         return false
     end
     local verbose = environment.argument("verbose")
@@ -120,47 +133,40 @@ function scripts.scite.start(indeed)
         end
     end
     if not indeed or verbose then
-        logs.simple("used signal: %s", usedsignal)
-        logs.simple("data path  : %s", datapath)
-        logs.simple("full name  : %s", fullname)
-        logs.simple("user path  : %s", userpath)
-        logs.simple("extra font : %s", extrafont)
+        report("used signal: %s", usedsignal)
+        report("data path  : %s", datapath)
+        report("full name  : %s", fullname)
+        report("user path  : %s", userpath)
+        report("extra font : %s", extrafont)
     end
     if #logdata > 0 then
-        logs.simple("")
+        report("")
         for k=1,#logdata do
             local v = logdata[k]
-            logs.simple(v[1],v[2])
+            report(v[1],v[2])
         end
     end
     if indeed then
         if #tobecopied > 0 then
-            logs.simple("warning    : copying updated files")
+            report("warning    : copying updated files")
             for i=1,#tobecopied do
                 local what = tobecopied[i]
-                logs.simple("copying    : '%s' => '%s'",what[1],what[2])
+                report("copying    : '%s' => '%s'",what[1],what[2])
                 file.copy(what[1],what[2])
             end
         end
         if propfiledone then
-            logs.simple("saving     : '%s'",userpropfile)
+            report("saving     : '%s'",userpropfile)
             io.savedata(fullpropfile,userpropdata)
         end
         os.launch(fullname)
     end
 end
 
-logs.extendbanner("Scite Startup Script 1.00")
-
-messages.help = [[
---start [--verbose]   start scite
---test                report what will happen
-]]
-
 if environment.argument("start") then
     scripts.scite.start(true)
 elseif environment.argument("test") then
     scripts.scite.start()
 else
-    logs.help(messages.help)
+    application.help()
 end

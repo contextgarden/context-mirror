@@ -22,9 +22,9 @@ local trace_defining = false  trackers.register("fonts.defining", function(v) tr
 local trace_usage    = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
 local trace_mapfiles = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles  = v end)
 
-local report_define   = logs.new("define fonts")
-local report_usage    = logs.new("fonts usage")
-local report_mapfiles = logs.new("mapfiles")
+local report_defining = logs.new("fonts","defining")
+local report_status   = logs.new("fonts","status")
+local report_mapfiles = logs.new("fonts","mapfiles")
 
 local fonts        = fonts
 local tfm          = fonts.tfm
@@ -162,7 +162,7 @@ function definers.register(tfmdata,id)
         if not fonts.internalized[hash] then
             fonts.internalized[hash] = id
             if trace_defining then
-                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
+                report_defining("registering font, id: %s, hash: %s",id or "?",hash or "?")
             end
         --  enhancetfmdata(tfmdata)
             local characters = tfmdata.characters
@@ -492,7 +492,7 @@ function definers.stage_one(str)
     local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = getspecification(fullname)
     if not name then
-        report_define("strange definition '%s'",str)
+        report_defining("strange definition '%s'",str)
         setdefaultfontname()
     elseif name == "unknown" then
         setdefaultfontname()
@@ -527,7 +527,7 @@ local n = 0
 function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
-        report_define("memory usage before: %s",statistics.memused())
+        report_defining("memory usage before: %s",statistics.memused())
     end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = getspecification(str or "")
@@ -567,12 +567,12 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         fonts.csnames[cs] = tfmdata -- new (beware: locals can be forgotten)
     end
     if not tfmdata then
-        report_define("unable to define %s as \\%s",name,cs)
+        report_defining("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
         context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
-            report_define("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
+            report_defining("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
                 name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies)
         end
         tex.definefont(global,cs,tfmdata)
@@ -588,7 +588,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         tex.definefont(global,cs,id)
         tfm.cleanuptable(tfmdata)
         if trace_defining then
-            report_define("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+            report_defining("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
         setsomefontsize((tfmdata.size or 655360) .. "sp")
@@ -598,7 +598,7 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         texsetcount("global","lastfontid",id)
     end
     if trace_defining then
-        report_define("memory usage after: %s",statistics.memused())
+        report_defining("memory usage after: %s",statistics.memused())
     end
     statistics.stoptiming(fonts)
 end
@@ -894,11 +894,11 @@ function fonts.reportdefinedfonts()
             }
         end
         formatcolumns(t,"  ")
-        report_usage()
-        report_usage("defined fonts:")
-        report_usage()
+        report_status()
+        report_status("defined fonts:")
+        report_status()
         for k=1,tn do
-            report_usage(t[k])
+            report_status(t[k])
         end
     end
 end
@@ -918,11 +918,11 @@ function fonts.reportusedfeatures()
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
-        report_usage()
-        report_usage("defined featuresets:")
-        report_usage()
+        report_status()
+        report_status("defined featuresets:")
+        report_status()
         for k=1,n do
-            report_usage(t[k])
+            report_status(t[k])
         end
     end
 end

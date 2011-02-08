@@ -16,7 +16,7 @@ local trace_loading = false  trackers.register("otf.loading", function(v) trace_
 local fonts = fonts
 local otf   = fonts.otf
 
-local report_otf = logs.new("load otf")
+local report_otf = logs.new("fonts","otf loading")
 
 -- instead of "script = "DFLT", langs = { 'dflt' }" we now use wildcards (we used to
 -- have always); some day we can write a "force always when true" trick for other

@@ -62,10 +62,10 @@
 \def\doloadexamodes  [#1]{\ctxcommand{loadexamodes("#1")}}
 
 \def\registerfileinfo[#1#2]#3% geen \showmessage ?
-  {\writestatus\m!systems{#1#2 file #3 at line \the\inputlineno}}
+  {\writestatus\m!system{#1#2 file #3 at line \the\inputlineno}}
 
 \def\doloadsystemfile#1% only mkiv files
-  {\readsysfile{#1.\mksuffix}{\showmessage\m!systems2{#1.\mksuffix}}\donothing}
+  {\readsysfile{#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
 
 \def\loadsystemfiles
   {\doloadsystemfile\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
@@ -77,9 +77,9 @@
 
 \def\loadoptionfile % todo : mark document.* tables as storage
   {\readjobfile{\jobname.\f!optionextension}
-     {\showmessage\m!systems2{\jobname.\f!optionextension}%
+     {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
       \ctxcommand{logoptionfile("\jobname.\f!optionextension")}}%
-     {\writestatus\m!systems {no \jobname.\f!optionextension}}}
+     {\writestatus\m!system{no \jobname.\f!optionextension}}}
 
 % Most natural ...
 %
@@ -119,7 +119,7 @@
    \fi}
 
 \def\forcequitjob#1%
-  {\writestatus\m!systems{forcing quit: #1}%
+  {\writestatus\m!system{forcing quit: #1}%
    \batchmode
    \dorecurse\textlevel{\stoptext}
    \normalend}
@@ -129,7 +129,7 @@
 \def\autostarttext
   {\ifcase\textlevel
      \starttext
-     \writestatus\m!systems{auto \string\starttext..\string\stoptext}%
+     \writestatus\m!system{auto \string\starttext..\string\stoptext}%
      \let\autostoptext\stoptext
    \fi}
 
@@ -146,7 +146,7 @@
 \let\end\finalend
 
 \def\emergencyend
-  {\writestatus\m!systems{invalid \@EA\string\csname\e!start\v!text\endcsname...\@EA\string\csname\e!stop\v!text\endcsname\space structure}%
+  {\writestatus\m!system{invalid \@EA\string\csname\e!start\v!text\endcsname...\@EA\string\csname\e!stop\v!text\endcsname\space structure}%
    \stoptext}
 
 \def\currentfile{\inputfilename}

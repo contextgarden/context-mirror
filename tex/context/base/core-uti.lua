@@ -78,20 +78,22 @@ if not checksums.new then checksums.new = md5.HEX("new") end -- used in experime
 
 job.register('job.variables.checksums', checksums)
 
+local rmethod, rvalue
+
 local function initializer()
     tobesaved = mark(jobvariables.tobesaved)
     collected = mark(jobvariables.collected)
     checksums = mark(jobvariables.checksums)
-    local r = collected.randomseed
-    if not r then
-        r = math.random()
-        math.setrandomseedi(r,"initialize")
-        report_jobcontrol("initializing randomizer with %s",r)
+    rvalue = collected.randomseed
+    if not rvalue then
+        rvalue = math.random()
+        math.setrandomseedi(rvalue,"initialize")
+        rmethod = "initialized"
     else
-        math.setrandomseedi(r,"previous run")
-        report_jobcontrol("resuming randomizer with %s",r)
+        math.setrandomseedi(rvalue,"previous run")
+        rmethod = "resumed"
     end
-    tobesaved.randomseed = r
+    tobesaved.randomseed = rvalue
     for cs, value in next, collected do
         context.setxvalue(cs,value)
     end
@@ -196,6 +198,12 @@ statistics.register("callbacks", function()
         return format("direct: %s, indirect: %s, total: %s (%i per page)", total-indirect, indirect, total, total/pages)
     else
         return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
+    end
+end)
+
+statistics.register("randomizer", function()
+    if rmethod and rvalue then
+        return format("%s with value %s",rmethod,rvalue)
     end
 end)
 

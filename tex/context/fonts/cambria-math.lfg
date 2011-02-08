@@ -1,0 +1,26 @@
+-- This patch code is moved from font-pat.lua to this goodies
+-- files as it does not belomg in the core code.
+
+local patches = fonts.otf.enhancers.patches
+
+local function patch(data,filename,threshold)
+    local m = data.metadata.math
+    if m then
+        local d = m.DisplayOperatorMinHeight or 0
+        if d < threshold then
+            patches.report("DisplayOperatorMinHeight(%s -> %s)",d,threshold)
+            m.DisplayOperatorMinHeight = threshold
+        end
+    end
+end
+
+patches.register("after","check math parameters","cambria", function(data,filename) patch(data,filename,2800) end)
+patches.register("after","check math parameters","cambmath",function(data,filename) patch(data,filename,2800) end)
+
+return {
+    name = "lm-cambria",
+    version = "1.00",
+    comment = "Goodies that complement cambria.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+}

@@ -14,7 +14,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
 
-local report_colors = logs.new("colors")
+local report_colors = logs.new("colors","defining")
 
 local attributes, context, commands = attributes, context, commands
 
@@ -39,12 +39,12 @@ local function definecolor(name, ca, global)
     if ca and ca > 0 then
         if global then
             if trace_define then
-                commands.writestatus("color","define global color '%s' with attribute: %s",name,ca)
+                report_colors("define global color '%s' with attribute: %s",name,ca)
             end
             context.colordefagc(name,ca)
         else
             if trace_define then
-                commands.writestatus("color","define local color '%s' with attribute: %s",name,ca)
+                report_colors("define local color '%s' with attribute: %s",name,ca)
             end
             context.colordefalc(name,ca)
         end
@@ -61,12 +61,12 @@ local function inheritcolor(name, ca, global)
     if ca and ca ~= "" then
         if global then
             if trace_define then
-                commands.writestatus("color","inherit global color '%s' with attribute: %s",name,ca)
+                report_colors("inherit global color '%s' with attribute: %s",name,ca)
             end
             context.colordeffgc(name,ca) -- some day we will set the macro directly
         else
             if trace_define then
-                commands.writestatus("color","inherit local color '%s' with attribute: %s",name,ca)
+                report_colors("inherit local color '%s' with attribute: %s",name,ca)
             end
             context.colordefflc(name,ca)
         end
@@ -83,12 +83,12 @@ local function definetransparent(name, ta, global)
     if ta and ta > 0 then
         if global then
             if trace_define then
-                commands.writestatus("color","define global transparency '%s' with attribute: %s",name,ta)
+                report_colors("define global transparency '%s' with attribute: %s",name,ta)
             end
             context.colordefagt(name,ta)
         else
             if trace_define then
-                commands.writestatus("color","define local transparency '%s' with attribute: %s",name,ta)
+                report_colors("define local transparency '%s' with attribute: %s",name,ta)
             end
             context.colordefalt(name,ta)
         end
@@ -105,12 +105,12 @@ local function inherittransparent(name, ta, global)
     if ta and ta ~= "" then
         if global then
             if trace_define then
-                commands.writestatus("color","inherit global transparency '%s' with attribute: %s",name,ta)
+                report_colors("inherit global transparency '%s' with attribute: %s",name,ta)
             end
             context.colordeffgt(name,ta)
         else
             if trace_define then
-                commands.writestatus("color","inherit local transparency '%s' with attribute: %s",name,ta)
+                report_colors("inherit local transparency '%s' with attribute: %s",name,ta)
             end
             context.colordefflt(name,ta)
         end

@@ -9,8 +9,45 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- The content of this file is derived from the mkii lang-* files and
 -- early 2011 the mkii labels are generated from this file. The
 -- translations have been collected over years by users, using named
--- glyphs. This file uses utf exclusively. For those involved in the
--- translations see the 'lang-*.mkii' files.
+-- glyphs. This file uses utf exclusively.
+--
+-- Many of the initial translations were done by Tobias Burnus but
+-- completed by numerous users. The following list is incomplete so feel
+-- free to send me corrections.
+--
+-- af    Afrikaans      ...
+-- ar    Arabic         Idris Samawi Hamid, Khaled Hosny
+-- ca    Catalan        ...
+-- cn    Chinese        Wang Lei, ...
+-- cs    Czech          Tom Hudec, Petr Sojka, Richard Gabriel
+-- da    Danish         Arne Jorgensen
+-- de    German         Tobias Burnus, ...
+-- en    English        Hans Hagen, ...
+-- es    Spanish        ...
+-- fi    Finish         ...
+-- fr    French         Daniel Flipo, Arthur Reutenauer
+-- gr    Greek          Apostolos Syropoulos, Thomas Schmitz
+-- hr    Croatian       Željko Vrba, Richard Gabriel
+-- hu    Hungarian      ...
+-- it    Italian        Giuseppe Bilotta, Luigi Scarso
+-- ja    Japanese       Richard Gabriel
+-- kr    Korean         Jeong Dalyoung
+-- la    Latin          ...
+-- lt    Lithuanian     Marius Aleknevičius
+-- nb    Norwegian      Hans Fredrik Nordhaug, ...
+-- nn    Norwegian      Hans Fredrik Nordhaug, ...
+-- nl    Dutch          Hans Hagen
+-- pl    Polish         Grzegorz Sapijaszko
+-- pt    Portuguese     Pedro F. M. Mendonça
+-- ro    Romanian       Dan Seracu, ...
+-- ru    Russian        Olga Briginets, Alexander Bokovoy, Victor Figurnov, ...
+-- sk    Slovak         ...
+-- sl    Slovenian      Mojca Miklavec
+-- sv    Swedish        ...
+-- tk    Turkish        Tobias Burnus
+-- tr    Turkmen        Nazar Annagurban
+-- ua    Ukrainian      Olga Briginets, Alexander Bokovoy, Victor Figurnov, ...
+-- vi    Vietnamese     Han The Thanh
 
 -- For the moment we keep this table in memory. In the future we can then
 -- enable labels.
@@ -513,7 +550,7 @@ data.labels={
     hu=",. fejezet:",
     it="",
     ja={"第","章"},
-    kr="장",
+    kr={"제", "장"},
     la="",
     lt="",
     nb="",
@@ -801,7 +838,6 @@ data.labels={
     hu=",. kép:",
     it="Grafico ",
     ja="イラスト",
-    kr="삽화",
     la="Typus ",
     lt="Graphic ",
     nb="Bilde ",
@@ -835,6 +871,7 @@ data.labels={
     gr="",
     hr="vidi gore",
     hu="",
+    kr="그러므로",
     it="come mostrato sopra",
     la="",
     lt="kaip parodyta aukščiau",
@@ -906,7 +943,7 @@ data.labels={
     hu=",. intermezzo:",
     it="Intermezzo ",
     ja="間奏曲",
-    kr="",
+    kr="간주곡",
     la="Intermissum ",
     lt="Intermezzo ",
     nb="Intermesso ",
@@ -945,7 +982,7 @@ data.labels={
     hu="január",
     it="gennaio",
     ja="1",
-    kr="들어가기",
+    kr="1월",
     la="Ianuarius",
     lt="sausio",
     nb="januar",
@@ -1197,6 +1234,7 @@ data.labels={
     hu="sorok",
     it="righe ",
     ja="線",
+    kr="행",
     la="versus ",
     lt="lines ",
     nb="linjer ",
@@ -1555,6 +1593,7 @@ data.labels={
     hr="stranica ",
     hu="",
     it="pagina ",
+    kr="쪽",
     la="",
     lt="puslapis ",
     nb="side ",
@@ -1591,7 +1630,7 @@ data.labels={
     hu=",. rész:",
     it="Parte ",
     ja={"第","パート"},
-    kr="부",
+    kr={"제","부"},
     la="Pars ",
     lt=", dalis",
     nb="Del",
@@ -1666,7 +1705,7 @@ data.labels={
     hu="",
     it="",
     ja={"第","項"},
-    kr="절",
+    kr={"제","절"},
     la="",
     lt="",
     nb="",
@@ -1701,6 +1740,7 @@ data.labels={
     hr="vidi ",
     hu="",
     it="cf. ",
+    kr="",
     la="",
     lt="žiūrėti ",
     nb="se ",
@@ -1810,7 +1850,6 @@ data.labels={
     hu="",
     it="",
     ja="",
-    kr="",
     la="",
     lt="",
     nb="",
@@ -1848,7 +1887,6 @@ data.labels={
     hu="",
     it="",
     ja="",
-    kr="",
     la="",
     lt="",
     nb="",
@@ -1886,7 +1924,6 @@ data.labels={
     hu="",
     it="",
     ja="",
-    kr="",
     la="",
     lt="",
     nb="",
@@ -2295,7 +2332,7 @@ data.labels={
     hu="Intermezzok",
     it="Intermezzi",
     ja="間奏曲",
-    kr="",
+    kr="간주곡",
     la="Intermissa",
     lt="Intermezzos",
     nb="Intermesso",

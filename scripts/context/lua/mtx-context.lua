@@ -6,6 +6,88 @@ if not modules then modules = { } end modules ['mtx-context'] = {
     license   = "see context related readme files"
 }
 
+local basicinfo = [[
+--run                 process (one or more) files (default action)
+--make                create context formats
+
+--ctx=name            use ctx file (process management specification)
+--interface           use specified user interface (default: en)
+
+--autopdf             close pdf file in viewer and start pdf viewer afterwards
+--purge(all)          purge files either or not after a run (--pattern=...)
+
+--usemodule=list      load the given module or style, normally part o fthe distribution
+--environment=list    load the given environment file first (document styles)
+--mode=list           enable given the modes (conditional processing in styles)
+--path=list           also consult the given paths when files are looked for
+--arguments=list      set variables that can be consulted during a run (key/value pairs)
+--randomseed=number   set the randomseed
+--result=name         rename the resulting output to the given name
+--trackers=list       set tracker variables (show list with --showtrackers)
+--directives=list     set directive variables (show list with --showdirectives)
+--silent=list         disable logcatgories (show list with --showlogcategories)
+--purgeresult         purge result file before run
+
+--forcexml            force xml stub (optional flag: --mkii)
+--forcecld            force cld (context lua document) stub
+
+--arrange             run extra imposition pass, given that the style sets up imposition
+--noarrange           ignore imposition specifications in the style
+
+--once                only run once (no multipass data file is produced)
+--batchmode           run without stopping and don't show messages on the console
+--nonstopmode         run without stopping
+
+--generate            generate file database etc. (as luatools does)
+--paranoid            don't descend to .. and ../..
+--version             report installed context version
+
+--expert              expert options
+]]
+
+-- filter=list      is kind of obsolete
+-- color            is obsolete for mkiv, always on
+-- separation       is obsolete for mkiv, no longer available
+-- output           is currently obsolete for mkiv
+-- setuppath=list   must check
+-- modefile=name    must check
+-- input=name   load the given inputfile (must check)
+
+local expertinfo = [[
+expert options:
+
+--touch               update context version number (remake needed afterwards, also provide --expert)
+--nostats             omit runtime statistics at the end of the run
+--update              update context from website (not to be confused with contextgarden)
+--profile             profile job (use: mtxrun --script profile --analyze)
+--timing              generate timing and statistics overview
+--tracefiles          show some extra info when locating files (at the tex end)
+
+--extra=name          process extra (mtx-context-<name> in distribution)
+--extras              show extras
+]]
+
+local specialinfo = [[
+special options:
+
+--pdftex              process file with texexec using pdftex
+--xetex               process file with texexec using xetex
+
+--pipe                don't check for file and enter scroll mode (--dummyfile=whatever.tmp)
+]]
+
+local application = logs.application {
+    name     = "mtx-context",
+    banner   = "ConTeXt Process Management 0.52",
+    helpinfo = {
+        basic  = basicinfo,
+        extra  = extrainfo,
+        expert = expertinfo,
+    }
+}
+
+local report = application.report
+
 scripts         = scripts         or { }
 scripts.context = scripts.context or { }
 
@@ -118,13 +200,13 @@ do
             elseif ctxdata.ctxname then
                 ctlname = file.replacesuffix(ctxdata.ctxname,'ctl')
             else
-                logs.simple("invalid ctl name: %s",ctlname or "?")
+                report("invalid ctl name: %s",ctlname or "?")
                 return
             end
         end
         local prepfiles = ctxdata.prepfiles
         if prepfiles and next(prepfiles) then
-            logs.simple("saving logdata in: %s",ctlname)
+            report("saving logdata in: %s",ctlname)
             f = io.open(ctlname,'w')
             if f then
                 f:write("<?xml version='1.0' standalone='yes'?>\n\n")
@@ -138,7 +220,7 @@ do
                 f:close()
             end
         else
-            logs.simple("nothing prepared, no ctl file saved")
+            report("nothing prepared, no ctl file saved")
             os.remove(ctlname)
         end
     end
@@ -173,8 +255,8 @@ do
         ctxdata.jobname = file.addsuffix(ctxdata.jobname,'tex')
         ctxdata.ctxname = file.addsuffix(ctxdata.ctxname,'ctx')
 
-        logs.simple("jobname: %s",ctxdata.jobname)
-        logs.simple("ctxname: %s",ctxdata.ctxname)
+        report("jobname: %s",ctxdata.jobname)
+        report("ctxname: %s",ctxdata.ctxname)
 
         -- mtxrun should resolve kpse: and file:
 
@@ -225,7 +307,7 @@ do
 
         local messages = ctxdata.messages
         for i=1,#messages do
-            logs.simple("ctx comment: %s", xml.tostring(messages[i]))
+            report("ctx comment: %s", xml.tostring(messages[i]))
         end
 
         for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
@@ -318,11 +400,11 @@ do
                                         -- potential optimization: when mtxrun run internal
                                         command = xml.content(command)
                                         command = ctxrunner.justtext(command)
-                                        logs.simple("command: %s",command)
+                                        report("command: %s",command)
                                         local result = os.spawn(command) or 0
                                         -- somehow we get the wrong return value
                                         if result > 0 then
-                                            logs.simple("error, return code: %s",result)
+                                            report("error, return code: %s",result)
                                         end
                                         if ctxdata.runlocal then
                                             oldfile = file.basename(oldfile)
@@ -333,11 +415,11 @@ do
                                     file.syncmtimes(oldfile,newfile)
                                     ctxdata.prepfiles[oldfile] = true
                                 else
-                                    logs.simple("error, check target location of new file: %s", newfile)
+                                    report("error, check target location of new file: %s", newfile)
                                     ctxdata.prepfiles[oldfile] = false
                                 end
                             else
-                                logs.simple("old file needs no preprocessing")
+                                report("old file needs no preprocessing")
                                 ctxdata.prepfiles[oldfile] = lfs.isfile(newfile)
                             end
                         end
@@ -447,10 +529,15 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         --
         setalways("%% feedback and basic job control")
         if type(environment.argument("trackers")) == "string" then
-            setvalue ("trackers" , "\\enabletrackers[%s]")
+            setvalue("trackers" , "\\enabletrackers[%s]")
         end
         if type(environment.argument("directives")) == "string" then
-            setvalue ("directives", "\\enabledirectives[%s]")
+            setvalue("directives", "\\enabledirectives[%s]")
+        end
+        if type(environment.argument("silent")) == "string" then
+            setvalue("silent", "\\enabledirectives[logs.blocked={%s}]")
+        elseif environment.argument("silent") then
+            setvalue("silent", "\\enabledirectives[logs.blocked=*]") -- maybe \silentmode
         end
         setfixed ("timing"       , "\\usemodule[timing]")
         setfixed ("batchmode"    , "\\batchmode")
@@ -490,7 +577,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways("%% options (not that important)")
         --
         setalways("\\startsetups *runtime:options")
-        setvalue ('output'       , "\\setupoutput[%s]", scripts.context.backends, 'pdftex')
+        setvalue ('output'       , "\\setupoutput[%s]", scripts.context.backends, 'pdf')
         setfixed ("color"        , "\\setupcolors[\\c!state=\\v!start]")
         setvalue ("separation"   , "\\setupcolors[\\c!split=%s]")
         setfixed ("noarrange"    , "\\setuparranging[\\v!disable]")
@@ -640,7 +727,7 @@ local pdfview -- delayed loading
 function scripts.context.openpdf(name,method)
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
-    logs.simple(pdfview.status())
+    report(pdfview.status())
     pdfview.open(file.replacesuffix(name,"pdf"))
 end
 
@@ -669,7 +756,7 @@ function scripts.context.run(ctxdata,filename)
         local formatfile, scriptfile = resolvers.locateformat(formatname)
         -- this catches the command line
         if not formatfile or not scriptfile then
-            logs.simple("warning: no format found, forcing remake (commandline driven)")
+            report("warning: no format found, forcing remake (commandline driven)")
             scripts.context.make(formatname)
             formatfile, scriptfile = resolvers.locateformat(formatname)
         end
@@ -716,7 +803,7 @@ function scripts.context.run(ctxdata,filename)
                     end
                     -- this catches the command line
                     if not formatfile or not scriptfile then
-                        logs.simple("warning: no format found, forcing remake (source driven)")
+                        report("warning: no format found, forcing remake (source driven)")
                         scripts.context.make(formatname)
                         formatfile, scriptfile = resolvers.locateformat(formatname)
                     end
@@ -785,7 +872,7 @@ function scripts.context.run(ctxdata,filename)
                         --
                         local okay = statistics.checkfmtstatus(formatfile)
                         if okay ~= true then
-                            logs.simple("warning: %s, forcing remake",tostring(okay))
+                            report("warning: %s, forcing remake",tostring(okay))
                             scripts.context.make(formatname)
                         end
                         --
@@ -794,7 +881,7 @@ function scripts.context.run(ctxdata,filename)
                             flags[#flags+1] = "--interaction=batchmode"
                         end
                         if environment.argument("synctex") then
-                            logs.simple("warning: syntex is enabled") -- can add upto 5% runtime
+                            report("warning: syntex is enabled") -- can add upto 5% runtime
                             flags[#flags+1] = "--synctex=1"
                         end
                         flags[#flags+1] = "--fmt=" .. string.quote(formatfile)
@@ -809,22 +896,22 @@ function scripts.context.run(ctxdata,filename)
                             -- 1:first run, 2:successive run, 3:once, 4:last of maxruns
                             local kindofrun = (once and 3) or (i==1 and 1) or (i==maxnofruns and 4) or 2
                             scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,false) -- kindofrun, currentrun, final
-                            logs.simple("run %s: %s",i,command)
+                            report("run %s: %s",i,command)
                             local returncode, errorstring = os.spawn(command)
                         --~ if returncode == 3 then
                         --~     scripts.context.make(formatname)
                         --~     returncode, errorstring = os.spawn(command)
                         --~     if returncode == 3 then
-                        --~         logs.simple("ks: return code 3, message: %s",errorstring or "?")
+                        --~         report("ks: return code 3, message: %s",errorstring or "?")
                         --~         os.exit(1)
                         --~     end
                         --~ end
                             if not returncode then
-                                logs.simple("fatal error: no return code, message: %s",errorstring or "?")
+                                report("fatal error: no return code, message: %s",errorstring or "?")
                                 os.exit(1)
                                 break
                             elseif returncode > 0 then
-                                logs.simple("fatal error: return code: %s",returncode or "?")
+                                report("fatal error: return code: %s",returncode or "?")
                                 os.exit(returncode)
                                 break
                             else
@@ -842,13 +929,13 @@ function scripts.context.run(ctxdata,filename)
                         if arrange then
                             local kindofrun = 3
                             scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,true) -- kindofrun, currentrun, final
-                            logs.simple("arrange run: %s",command)
+                            report("arrange run: %s",command)
                             local returncode, errorstring = os.spawn(command)
                             if not returncode then
-                                logs.simple("fatal error: no return code, message: %s",errorstring or "?")
+                                report("fatal error: no return code, message: %s",errorstring or "?")
                                 os.exit(1)
                             elseif returncode > 0 then
-                                logs.simple("fatal error: return code: %s",returncode or "?")
+                                report("fatal error: return code: %s",returncode or "?")
                                 os.exit(returncode)
                             end
                         end
@@ -881,7 +968,7 @@ function scripts.context.run(ctxdata,filename)
                                     os.rename(tmpname,oldname)
                                 end
                             end
-                            logs.simple("result renamed to: %s",newbase)
+                            report("result renamed to: %s",newbase)
                         end
                         --
                         if environment.argument("purge") then
@@ -896,18 +983,18 @@ function scripts.context.run(ctxdata,filename)
                         end
                         --
                         if environment.argument("timing") then
-                            logs.line()
-                            logs.simple("you can process (timing) statistics with:",jobname)
-                            logs.line()
-                            logs.simple("context --extra=timing '%s'",jobname)
-                            logs.simple("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
-                            logs.line()
+                            report()
+                            report("you can process (timing) statistics with:",jobname)
+                            report()
+                            report("context --extra=timing '%s'",jobname)
+                            report("mtxrun --script timing --xhtml [--launch --remove] '%s'",jobname)
+                            report()
                         end
                     else
                         if formatname then
-                            logs.simple("error, no format found with name: %s, skipping",formatname)
+                            report("error, no format found with name: %s, skipping",formatname)
                         else
-                            logs.simple("error, no format found (provide formatname or interface)")
+                            report("error, no format found (provide formatname or interface)")
                         end
                         break
                     end
@@ -915,9 +1002,9 @@ function scripts.context.run(ctxdata,filename)
             end
         else
             if formatname then
-                logs.simple("error, no format found with name: %s, aborting",formatname)
+                report("error, no format found with name: %s, aborting",formatname)
             else
-                logs.simple("error, no format found (provide formatname or interface)")
+                report("error, no format found (provide formatname or interface)")
             end
         end
     end
@@ -931,14 +1018,14 @@ function scripts.context.pipe()
     local formatname = scripts.context.interfaces[interface] or "cont-en"
     local formatfile, scriptfile = resolvers.locateformat(formatname)
     if not formatfile or not scriptfile then
-        logs.simple("warning: no format found, forcing remake (commandline driven)")
+        report("warning: no format found, forcing remake (commandline driven)")
         scripts.context.make(formatname)
         formatfile, scriptfile = resolvers.locateformat(formatname)
     end
     if formatfile and scriptfile then
         local okay = statistics.checkfmtstatus(formatfile)
         if okay ~= true then
-            logs.simple("warning: %s, forcing remake",tostring(okay))
+            report("warning: %s, forcing remake",tostring(okay))
             scripts.context.make(formatname)
         end
         local flags = {
@@ -950,12 +1037,12 @@ function scripts.context.pipe()
         local filename = environment.argument("dummyfile") or ""
         if filename == "" then
             filename = "\\relax"
-            logs.simple("entering scrollmode, end job with \\end")
+            report("entering scrollmode, end job with \\end")
         else
             filename = file.addsuffix(filename,"tmp")
             io.savedata(filename,"\\relax")
             scripts.context.multipass.makeoptionfile(filename,{ flags = flags },3,1,false) -- kindofrun, currentrun, final
-            logs.simple("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
+            report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
         local command = string.format("luatex %s %s", table.concat(flags," "), string.quote(filename))
         os.spawn(command)
@@ -967,9 +1054,9 @@ function scripts.context.pipe()
         end
     else
         if formatname then
-            logs.simple("error, no format found with name: %s, aborting",formatname)
+            report("error, no format found with name: %s, aborting",formatname)
         else
-            logs.simple("error, no format found (provide formatname or interface)")
+            report("error, no format found (provide formatname or interface)")
         end
     end
 end
@@ -979,7 +1066,7 @@ local make_mkiv_format = environment.make_format
 local function make_mkii_format(name,engine)
     if environment.argument(engine) then
         local command = string.format("mtxrun texexec.rb --make --%s %s",name,engine)
-        logs.simple("running command: %s",command)
+        report("running command: %s",command)
         os.spawn(command)
     end
 end
@@ -1051,7 +1138,7 @@ function scripts.context.metapost()
         dofile(resolvers.findfile("mlib-run.lua"))
         loaded = true
         commands = commands or { }
-        commands.writestatus = logs.report
+        commands.writestatus = report -- no longer needed
     end
     local formatname = environment.argument("format") or "metafun"
     if formatname == "" or type(format) == "boolean" then
@@ -1079,20 +1166,20 @@ end
 function scripts.context.version()
     local name = resolvers.findfile("context.mkiv")
     if name ~= "" then
-        logs.simple("main context file: %s",name)
+        report("main context file: %s",name)
         local data = io.loaddata(name)
         if data then
             local version = data:match("\\edef\\contextversion{(.-)}")
             if version then
-                logs.simple("current version: %s",version)
+                report("current version: %s",version)
             else
-                logs.simple("context version: unknown, no timestamp found")
+                report("context version: unknown, no timestamp found")
             end
         else
-            logs.simple("context version: unknown, load error")
+            report("context version: unknown, load error")
         end
     else
-        logs.simple("main context file: unknown, 'context.mkiv' not found")
+        report("main context file: unknown, 'context.mkiv' not found")
     end
 end
 
@@ -1157,7 +1244,7 @@ function scripts.context.purge_job(jobname,all,mkiitoo)
                 end
             end
             if #deleted > 0 then
-                logs.simple("purged files: %s", table.concat(deleted,", "))
+                report("purged files: %s", table.concat(deleted,", "))
             end
         end
     end
@@ -1187,7 +1274,7 @@ function scripts.context.purge(all,pattern,mkiitoo)
         end
     end
     if #deleted > 0 then
-        logs.simple("purged files: %s", table.concat(deleted,", "))
+        report("purged files: %s", table.concat(deleted,", "))
     end
 end
 
@@ -1215,12 +1302,12 @@ end
 local function touchfiles(suffix)
     local done, oldversion, newversion, foundname = touch(file.addsuffix("context",suffix),"(\\edef\\contextversion{)(.-)(})")
     if done then
-        logs.simple("old version : %s", oldversion)
-        logs.simple("new version : %s", newversion)
-        logs.simple("touched file: %s", foundname)
+        report("old version : %s", oldversion)
+        report("new version : %s", newversion)
+        report("touched file: %s", foundname)
         local ok, _, _, foundname = touch(file.addsuffix("cont-new",suffix), "(\\newcontextversion{)(.-)(})")
         if ok then
-            logs.simple("touched file: %s", foundname)
+            report("touched file: %s", foundname)
         end
     end
 end
@@ -1237,26 +1324,21 @@ end
 function scripts.context.extras(pattern)
     local found = resolvers.findfile("context.mkiv")
     if found == "" then
-        logs.simple("unknown extra: %s", extra)
+        report("unknown extra: %s", extra)
     else
         pattern = file.join(dir.expandname(file.dirname(found)),string.format("mtx-context-%s.tex",pattern or "*"))
         local list = dir.glob(pattern)
-        if not extra or extra == "" then
-            logs.extendbanner("extras")
-        else
-            logs.extendbanner(extra)
-        end
         for i=1,#list do
             local v = list[i]
             local data = io.loaddata(v) or ""
             data = string.match(data,"begin help(.-)end help")
             if data then
-                local h = { string.format("extra: %s (%s)",string.gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1"),v) }
+                report()
+                report(string.format("extra: %s (%s)",string.gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1"),v))
                 for s in string.gmatch(data,"%% *(.-)[\n\r]") do
-                    h[#h+1] = s
+                    report(s)
                 end
-                h[#h+1] = ""
-                logs.help(table.concat(h,"\n"),"nomoreinfo")
+                report()
             end
         end
     end
@@ -1277,7 +1359,7 @@ function scripts.context.extra()
                 scripts.context.extras()
                 return
             else
-                logs.simple("processing extra: %s", foundextra)
+                report("processing extra: %s", foundextra)
             end
             environment.setargument("purgeall",true)
             local result = environment.setargument("result") or ""
@@ -1294,17 +1376,24 @@ end
 -- todo: we need to do a dummy run
 
 function scripts.context.trackers()
-    environment.files = { resolvers.findfile("m-trackers.tex") }
+    environment.files = { resolvers.findfile("m-trackers.mkiv") }
     scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
     scripts.context.run()
-    -- maybe filter from log
 end
 
 function scripts.context.directives()
-    environment.files = { resolvers.findfile("m-directives.tex") }
+    environment.files = { resolvers.findfile("m-directives.mkiv") }
     scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
     scripts.context.run()
-    -- maybe filter from log
+end
+
+function scripts.context.logcategories()
+    environment.files = { resolvers.findfile("m-logcategories.mkiv") }
+    scripts.context.multipass.nofruns = 1
+    environment.setargument("purgeall",true)
+    scripts.context.run()
 end
 
 function scripts.context.timed(action)
@@ -1332,12 +1421,12 @@ function scripts.context.update()
     local http   = require("socket.http")
     local basepath = resolvers.findfile("context.mkiv") or ""
     if basepath == "" then
-        logs.simple("quiting, no 'context.mkiv' found")
+        report("quiting, no 'context.mkiv' found")
         return
     end
     local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.mkiv$") or ""
     if basetree == "" then
-        logs.simple("quiting, no proper tds structure (%s)",basepath)
+        report("quiting, no proper tds structure (%s)",basepath)
         return
     end
     local function is_okay(basetree)
@@ -1351,19 +1440,19 @@ function scripts.context.update()
     end
     local okay = is_okay(basetree)
     if not okay then
-        logs.simple("quiting, tree '%s' is protected",okay)
+        report("quiting, tree '%s' is protected",okay)
         return
     else
-        logs.simple("updating tree '%s'",okay)
+        report("updating tree '%s'",okay)
     end
     if not lfs.chdir(basetree) then
-        logs.simple("quiting, unable to change to '%s'",okay)
+        report("quiting, unable to change to '%s'",okay)
         return
     end
-    logs.simple("fetching '%s'",mainzip)
+    report("fetching '%s'",mainzip)
     local latest = http.request(mainzip)
     if not latest then
-        logs.simple("context tree '%s' can be updated, use --force",okay)
+        report("context tree '%s' can be updated, use --force",okay)
         return
     end
     io.savedata("cont-tmf.zip",latest)
@@ -1374,12 +1463,12 @@ function scripts.context.update()
         -- variant 2
         local zipfile = zip.open(zipname)
         if not zipfile then
-            logs.simple("quiting, unable to open '%s'",zipname)
+            report("quiting, unable to open '%s'",zipname)
             return
         end
         local newfile = zip.loaddata(zipfile,"tex/context/base/context.mkiv")
         if not newfile then
-            logs.simple("quiting, unable to open '%s'","context.mkiv")
+            report("quiting, unable to open '%s'","context.mkiv")
             return
         end
         local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
@@ -1388,23 +1477,23 @@ function scripts.context.update()
             local year, month, day, hour, minute = str:match("\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
             if year and minute then
                 local time = os.time { year=year,month=month,day=day,hour=hour,minute=minute}
-                logs.simple("%s version: %s (%s)",what,version,time)
+                report("%s version: %s (%s)",what,version,time)
                 return time
             else
-                logs.simple("%s version: %s (unknown)",what,version)
+                report("%s version: %s (unknown)",what,version)
                 return nil
             end
         end
         local oldversion = versiontonumber("old",oldfile)
         local newversion = versiontonumber("new",newfile)
         if not oldversion or not newversion then
-            logs.simple("quiting, version cannot be determined")
+            report("quiting, version cannot be determined")
             return
         elseif oldversion == newversion then
-            logs.simple("quiting, your current version is up-to-date")
+            report("quiting, your current version is up-to-date")
             return
         elseif oldversion > newversion then
-            logs.simple("quiting, your current version is newer")
+            report("quiting, your current version is newer")
             return
         end
         for k in zipfile:files() do
@@ -1417,7 +1506,7 @@ function scripts.context.update()
                     if force then
                         io.savedata(filename,data)
                     end
-                    logs.simple(filename)
+                    report(filename)
                 end
             end
         end
@@ -1427,13 +1516,13 @@ function scripts.context.update()
                 local newscript = "./scripts/context/lua/" .. scriptname
                 local data = io.loaddata(newscript) or ""
                 if data ~= "" then
-                    logs.simple("replacing script '%s' by '%s'",oldscript,newscript)
+                    report("replacing script '%s' by '%s'",oldscript,newscript)
                     if force then
                         io.savedata(oldscript,data)
                     end
                 end
             else
-                logs.simple("keeping script '%s'",oldscript)
+                report("keeping script '%s'",oldscript)
             end
         end
         if force then
@@ -1441,82 +1530,11 @@ function scripts.context.update()
         end
     end
     if force then
-        logs.simple("context tree '%s' has been updated",okay)
+        report("context tree '%s' has been updated",okay)
     else
-        logs.simple("context tree '%s' can been updated (use --force)",okay)
+        report("context tree '%s' can been updated (use --force)",okay)
     end
 end
-
-logs.extendbanner("ConTeXt Process Management 0.51")
-
-messages.help = [[
---run                 process (one or more) files (default action)
---make                create context formats
-
---ctx=name            use ctx file (process management specification)
---interface           use specified user interface (default: en)
-
---autopdf             close pdf file in viewer and start pdf viewer afterwards
---purge(all)          purge files either or not after a run (--pattern=...)
-
---usemodule=list      load the given module or style, normally part o fthe distribution
---environment=list    load the given environment file first (document styles)
---mode=list           enable given the modes (conditional processing in styles)
---path=list           also consult the given paths when files are looked for
---arguments=list      set variables that can be consulted during a run (key/value pairs)
---randomseed=number   set the randomseed
---result=name         rename the resulting output to the given name
---trackers=list       show/set tracker variables
---directives=list     show/set directive variables
---purgeresult         purge result file before run
-
---forcexml            force xml stub (optional flag: --mkii)
---forcecld            force cld (context lua document) stub
-
---arrange             run extra imposition pass, given that the style sets up imposition
---noarrange           ignore imposition specifications in the style
-
---once                only run once (no multipass data file is produced)
---batchmode           run without stopping and don't show messages on the console
---nonstopmode         run without stopping
-
---generate            generate file database etc. (as luatools does)
---paranoid            don't descend to .. and ../..
---version             report installed context version
-
---expert              expert options
-]]
-
--- filter=list      is kind of obsolete
--- color            is obsolete for mkiv, always on
--- separation       is obsolete for mkiv, no longer available
--- output           is currently obsolete for mkiv
--- setuppath=list   must check
--- modefile=name    must check
--- input=name   load the given inputfile (must check)
-
-messages.expert = [[
-expert options:
-
---touch               update context version number (remake needed afterwards, also provide --expert)
---nostats             omit runtime statistics at the end of the run
---update              update context from website (not to be confused with contextgarden)
---profile             profile job (use: mtxrun --script profile --analyze)
---timing              generate timing and statistics overview
---tracefiles          show some extra info when locating files (at the tex end)
-
---extra=name          process extra (mtx-context-<name> in distribution)
---extras              show extras
-]]
-
-messages.special = [[
-special options:
-
---pdftex              process file with texexec using pdftex
---xetex               process file with texexec using xetex
-
---pipe                don't check for file and enter scroll mode (--dummyfile=whatever.tmp)
-]]
 
 if environment.argument("once") then
     scripts.context.multipass.nofruns = 1
@@ -1546,7 +1564,7 @@ elseif environment.argument("touch") then
 elseif environment.argument("update") then
     scripts.context.update()
 elseif environment.argument("expert") then
-    logs.help(table.concat({ messages.expert, messages.special },"\n"))
+    application.help("expert", "special")
 elseif environment.argument("extras") then
     scripts.context.extras()
 elseif environment.argument("extra") then
@@ -1555,12 +1573,14 @@ elseif environment.argument("help") then
     if environment.files[1] == "extras" then
         scripts.context.extras()
     else
-        logs.help(messages.help)
+        application.help("basic")
     end
-elseif environment.argument("trackers") and type(environment.argument("trackers")) == "boolean" then
+elseif environment.argument("showtrackers") or environment.argument("trackers") == true then
     scripts.context.trackers()
-elseif environment.argument("directives") and type(environment.argument("directives")) == "boolean" then
+elseif environment.argument("showdirectives") or environment.argument("directives") == true then
     scripts.context.directives()
+elseif environment.argument("showlogcategories") then
+    scripts.context.logcategories()
 elseif environment.argument("track") and type(environment.argument("track")) == "boolean" then -- for old times sake, will go
     scripts.context.trackers()
 elseif environment.files[1] then
@@ -1575,7 +1595,7 @@ elseif environment.argument("purgeall") then
     -- only when no filename given, supports --pattern
     scripts.context.purge(true)
 else
-    logs.help(messages.help)
+    application.help("basic")
 end
 
 if environment.argument("profile") then

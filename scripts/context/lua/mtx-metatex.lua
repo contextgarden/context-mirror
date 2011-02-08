@@ -8,6 +8,19 @@ if not modules then modules = { } end modules ['mtx-metatex'] = {
 
 -- future versions will deal with specific variants of metatex
 
+local helpinfo = [[
+--run                 process (one or more) files (default action)
+--make                create metatex format(s)
+]]
+
+local application = logs.application {
+    name     = "mtx-metatex",
+    banner   = "MetaTeX Process Management 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts         = scripts         or { }
 scripts.metatex = scripts.metatex or { }
 
@@ -24,12 +37,12 @@ function scripts.metatex.run(ctxdata,filename)
         if formatfile and scriptfile then
             local command = string.format("luatex --fmt=%s --lua=%s  %s",
                 string.quote(formatfile), string.quote(scriptfile), string.quote(filename))
-            logs.simple("running command: %s",command)
+            report("running command: %s",command)
             os.spawn(command)
         elseif formatname then
-            logs.simple("error, no format found with name: %s",formatname)
+            report("error, no format found with name: %s",formatname)
         else
-            logs.simple("error, no format found (provide formatname or interface)")
+            report("error, no format found (provide formatname or interface)")
         end
     end
 end
@@ -37,13 +50,6 @@ end
 function scripts.metatex.timed(action)
     statistics.timed(action)
 end
-
-logs.extendbanner("MetaTeX Process Management 0.10")
-
-messages.help = [[
---run                 process (one or more) files (default action)
---make                create metatex format(s)
-]]
 
 if environment.argument("run") then
     scripts.metatex.timed(scripts.metatex.run)
@@ -54,5 +60,5 @@ elseif environment.argument("help") then
 elseif environment.files[1] then
     scripts.metatex.timed(scripts.metatex.run)
 else
-    logs.help(messages.help,false)
+    application.help()
 end

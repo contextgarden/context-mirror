@@ -16,7 +16,7 @@ local allocate = utilities.storage.allocate
 
 local trace_referencing = false  trackers.register("structures.referencing", function(v) trace_referencing = v end)
 
-local report_references = logs.new("references")
+local report_references = logs.new("structure","references")
 
 local variables   = interfaces.variables
 local constants   = interfaces.constants

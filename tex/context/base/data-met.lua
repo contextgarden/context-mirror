@@ -17,7 +17,7 @@ trackers.register("resolvers.methods",  function(v) trace_methods = v end)
 
 --~ trace_methods = true
 
-local report_resolvers = logs.new("resolvers")
+local report_methods = logs.new("resolvers","methods")
 
 local allocate = utilities.storage.allocate
 
@@ -59,41 +59,41 @@ local function methodhandler(what,first,...) -- filename can be nil or false
             local resolver = namespace and namespace[scheme]
             if resolver then
                 if trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, scheme=%s, argument=%s",what,how,scheme,first)
+                    report_methods("resolver: method=%s, how=%s, scheme=%s, argument=%s",what,how,scheme,first)
                 end
                 return resolver(specification,...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_resolvers("resolver: method=%s, how=%s, default, argument=%s",what,how,first)
+                        report_methods("resolver: method=%s, how=%s, default, argument=%s",what,how,first)
                     end
                     return resolver(specification,...)
                 elseif trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, no handler",what,how)
+                    report_methods("resolver: method=%s, how=%s, no handler",what,how)
                 end
             end
         elseif how == "tag" then
             local resolver = namespace and namespace[first]
             if resolver then
                 if trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, tag=%s",what,how,first)
+                    report_methods("resolver: method=%s, how=%s, tag=%s",what,how,first)
                 end
                 return resolver(...)
             else
                 resolver = namespace.default or namespace.file
                 if resolver then
                     if trace_methods then
-                        report_resolvers("resolver: method=%s, how=%s, default",what,how)
+                        report_methods("resolver: method=%s, how=%s, default",what,how)
                     end
                     return resolver(...)
                 elseif trace_methods then
-                    report_resolvers("resolver: method=%s, how=%s, unknown",what,how)
+                    report_methods("resolver: method=%s, how=%s, unknown",what,how)
                 end
             end
         end
     else
-        report_resolvers("resolver: method=%s, unknown",what)
+        report_methods("resolver: method=%s, unknown",what)
     end
 end
 

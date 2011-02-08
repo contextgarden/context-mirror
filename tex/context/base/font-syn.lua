@@ -24,7 +24,7 @@ local trace_names          = false  trackers.register("fonts.names",          fu
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
 local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
 
-local report_names = logs.new("fontnames")
+local report_names = logs.new("fonts","names")
 
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved
@@ -642,7 +642,6 @@ local function analyzefiles()
             -- already done (avoid otf afm clash)
             if trace_names then
                 report_names("%s font %s already done",suffix,completename)
-                logs.push()
             end
             nofduplicates = nofduplicates + 1
             nofskipped = nofskipped + 1
@@ -650,14 +649,12 @@ local function analyzefiles()
             -- weird error
             if trace_names then
                 report_names("%s font %s does not really exist",suffix,completename)
-                logs.push()
             end
             nofskipped = nofskipped + 1
         elseif not file.is_qualified_path(completename) and resolvers.findfile(completename,suffix) == "" then
             -- not locateble by backend anyway
             if trace_names then
                 report_names("%s font %s cannot be found by backend",suffix,completename)
-                logs.push()
             end
             nofskipped = nofskipped + 1
         else
@@ -666,7 +663,6 @@ local function analyzefiles()
                     if find(basepath,skip_paths[i]) then
                         if trace_names then
                             report_names("rejecting path of %s font %s",suffix,completename)
-                            logs.push()
                         end
                         nofskipped = nofskipped + 1
                         return
@@ -679,7 +675,6 @@ local function analyzefiles()
                         done[name] = true
                         if trace_names then
                             report_names("rejecting name of %s font %s",suffix,completename)
-                            logs.push()
                         end
                         nofskipped = nofskipped + 1
                         return
@@ -688,12 +683,8 @@ local function analyzefiles()
             end
             if trace_names then
                 report_names("identifying %s font %s",suffix,completename)
-                logs.push()
             end
             local result, message = filters[lower(suffix)](completename)
-            if trace_names then
-                logs.pop()
-            end
             if result then
                 if result[1] then
                     for r=1,#result do

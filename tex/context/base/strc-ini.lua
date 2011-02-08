@@ -31,7 +31,7 @@ local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, 
 
 local trace_processors = false  trackers.register("structures.processors", function(v) trace_processors = v end)
 
-local report_processors = logs.new("processors")
+local report_processors = logs.new("structure","processors")
 
 -- move this
 

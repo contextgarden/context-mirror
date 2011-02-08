@@ -14,6 +14,8 @@ resolvers.listers = resolvers.listers or { }
 
 local resolvers = resolvers
 
+local report_lists = logs.new("resolvers","lists")
+
 local function tabstr(str)
     if type(str) == 'table' then
         return concat(str," | ")
@@ -42,11 +44,11 @@ function resolvers.listers.variables(pattern)
     local exp = table.fastcopy(expansions)
     for key, value in table.sortedpairs(configured) do
         if key ~= "" and (pattern == "" or find(upper(key),pattern)) then
-            logs.simple(key)
-            logs.simple("  env: %s",tabstr(rawget(environment,key))    or "unset")
-            logs.simple("  var: %s",tabstr(configured[key])            or "unset")
-            logs.simple("  exp: %s",tabstr(expansions[key])            or "unset")
-            logs.simple("  res: %s",resolvers.resolve(expansions[key]) or "unset")
+            report_lists(key)
+            report_lists("  env: %s",tabstr(rawget(environment,key))    or "unset")
+            report_lists("  var: %s",tabstr(configured[key])            or "unset")
+            report_lists("  exp: %s",tabstr(expansions[key])            or "unset")
+            report_lists("  res: %s",resolvers.resolve(expansions[key]) or "unset")
         end
     end
     instance.environment = table.fastcopy(env)

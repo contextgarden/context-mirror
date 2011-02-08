@@ -15,9 +15,9 @@ local concat = table.concat
 
 local allocate = utilities.storage.allocate
 
-local report_attributes     = logs.new("attributes")
-local report_colors         = logs.new("colors")
-local report_transparencies = logs.new("transparencies")
+local report_attributes     = logs.new("attributes","colors")
+local report_colors         = logs.new("colors","support")
+local report_transparencies = logs.new("transparencies","support")
 
 local attributes, nodes = attributes, nodes
 

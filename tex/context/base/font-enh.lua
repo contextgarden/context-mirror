@@ -12,7 +12,7 @@ local next, match = next, string.match
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled
@@ -90,7 +90,7 @@ function tfm.setfeatures(tfmdata)
                             local fitfmf = fi.tfm[f] -- brr
                             if fitfmf then
                                 if tfm.trace_features then
-                                    report_define("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
+                                    report_defining("initializing feature %s to %s for mode %s for font %s",f,tostring(value),mode or 'unknown',tfmdata.name or 'unknown')
                                 end
                                 fitfmf(tfmdata,value)
                                 mode = tfmdata.mode or features.mode or "base"
@@ -153,7 +153,7 @@ function tfm.reencode(tfmdata,encoding)
             for k,v in next, data.unicodes do
                 if k ~= v then
                     if trace_defining then
-                        report_define("reencoding U+%04X to U+%04X",k,v)
+                        report_defining("reencoding U+%04X to U+%04X",k,v)
                     end
                     characters[k] = original[v]
                 end
@@ -180,7 +180,7 @@ function tfm.remap(tfmdata,remapping)
         for k,v in next, vector do
             if k ~= v then
                 if trace_defining then
-                    report_define("remapping U+%04X to U+%04X",k,v)
+                    report_defining("remapping U+%04X to U+%04X",k,v)
                 end
                 local c = original[k]
                 characters[v] = c
@@ -217,7 +217,7 @@ initializers.node.tfm.remap = tfm.remap
 --~             for k,v in next, data.unicodes do
 --~                 if k ~= v then
 --~                     if trace_defining then
---~                         report_define("mapping %s onto %s",k,v)
+--~                         report_defining("mapping %s onto %s",k,v)
 --~                     end
 --~                     characters[k] = original[v]
 --~                 end

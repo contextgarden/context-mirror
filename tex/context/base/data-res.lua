@@ -30,7 +30,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_resolving = logs.new("resolvers","resolving")
 
 local resolvers = resolvers
 
@@ -140,7 +140,7 @@ end
 function resolvers.newinstance() -- todo: all vars will become lowercase and alphanum only
 
      if trace_locating then
-        report_resolvers("creating instance")
+        report_resolving("creating instance")
      end
 
     local environment, variables, expansions, order = allocate(), allocate(), allocate(), allocate()
@@ -258,9 +258,9 @@ local function reportcriticalvariables()
         for i=1,#resolvers.criticalvars do
             local k = resolvers.criticalvars[i]
             local v = resolvers.getenv(k) or "unknown" -- this one will not resolve !
-            report_resolvers("variable '%s' set to '%s'",k,v)
+            report_resolving("variable '%s' set to '%s'",k,v)
         end
-        report_resolvers()
+        report_resolving()
     end
     reportcriticalvariables = function() end
 end
@@ -284,17 +284,17 @@ local function identify_configuration_files()
             if lfs.isfile(realname) then
                 specification[#specification+1] = filename
                 if trace_locating then
-                    report_resolvers("found configuration file '%s'",realname)
+                    report_resolving("found configuration file '%s'",realname)
                 end
             elseif trace_locating then
-                report_resolvers("unknown configuration file '%s'",realname)
+                report_resolving("unknown configuration file '%s'",realname)
             end
         end
         if trace_locating then
-            report_resolvers()
+            report_resolving()
         end
     elseif trace_locating then
-        report_resolvers("configuration files already identified")
+        report_resolving("configuration files already identified")
     end
 end
 
@@ -314,8 +314,8 @@ local function load_configuration_files()
                 data = data and data.content
                 if data then
                     if trace_locating then
-                        report_resolvers("loading configuration file '%s'",filename)
-                        report_resolvers()
+                        report_resolving("loading configuration file '%s'",filename)
+                        report_resolving()
                     end
                     local variables = data.variables or { }
                     local warning = false
@@ -325,7 +325,7 @@ local function load_configuration_files()
                             initializesetter(filename,k,v)
                         elseif variables[k] == nil then
                             if trace_locating and not warning then
-                                report_resolvers("variables like '%s' in configuration file '%s' should move to the 'variables' subtable",
+                                report_resolving("variables like '%s' in configuration file '%s' should move to the 'variables' subtable",
                                     k,resolvers.resolve(filename))
                                 warning = true
                             end
@@ -338,7 +338,7 @@ local function load_configuration_files()
                         local cnfspec = variables["TEXMFCNF"]
                         if cnfspec then
                             if trace_locating then
-                                report_resolvers("reloading configuration due to TEXMF redefinition")
+                                report_resolving("reloading configuration due to TEXMF redefinition")
                             end
                             -- we push the value into the main environment (osenv) so
                             -- that it takes precedence over the default one and therefore
@@ -357,13 +357,13 @@ local function load_configuration_files()
 
                 else
                     if trace_locating then
-                        report_resolvers("skipping configuration file '%s' (no content)",filename)
+                        report_resolving("skipping configuration file '%s' (no content)",filename)
                     end
                     setups[pathname] = { }
                     instance.loaderror = true
                 end
             elseif trace_locating then
-                report_resolvers("skipping configuration file '%s' (no file)",filename)
+                report_resolving("skipping configuration file '%s' (no file)",filename)
             end
             instance.order[#instance.order+1] = instance.setups[pathname]
             if instance.loaderror then
@@ -371,7 +371,7 @@ local function load_configuration_files()
             end
         end
     elseif trace_locating then
-        report_resolvers("warning: no lua configuration files found")
+        report_resolving("warning: no lua configuration files found")
     end
 end
 
@@ -407,19 +407,19 @@ local function locate_file_databases()
                 end
                 if trace_locating then
                     if runtime then
-                        report_resolvers("locating list of '%s' (runtime)",path)
+                        report_resolving("locating list of '%s' (runtime)",path)
                     else
-                        report_resolvers("locating list of '%s' (cached)",path)
+                        report_resolving("locating list of '%s' (cached)",path)
                     end
                 end
                 methodhandler('locators',stripped)
             end
         end
         if trace_locating then
-            report_resolvers()
+            report_resolving()
         end
     elseif trace_locating then
-        report_resolvers("no texmf paths are defined (using TEXMF)")
+        report_resolving("no texmf paths are defined (using TEXMF)")
     end
 end
 
@@ -430,7 +430,7 @@ local function generate_file_databases()
         methodhandler('generators',hash.name)
     end
     if trace_locating then
-        report_resolvers()
+        report_resolving()
     end
 end
 
@@ -442,11 +442,11 @@ local function save_file_databases() -- will become cachers
             local content = instance.files[cachename]
             caches.collapsecontent(content)
             if trace_locating then
-                report_resolvers("saving tree '%s'",cachename)
+                report_resolving("saving tree '%s'",cachename)
             end
             caches.savecontent(cachename,"files",content)
         elseif trace_locating then
-            report_resolvers("not saving runtime tree '%s'",cachename)
+            report_resolving("not saving runtime tree '%s'",cachename)
         end
     end
 end
@@ -471,7 +471,7 @@ function resolvers.appendhash(type,name,cache)
     -- safeguard ... tricky as it's actually a bug when seen twice
     if not instance.hashed[name] then
         if trace_locating then
-            report_resolvers("hash '%s' appended",name)
+            report_resolving("hash '%s' appended",name)
         end
         insert(instance.hashes, { type = type, name = name, cache = cache } )
         instance.hashed[name] = cache
@@ -482,7 +482,7 @@ function resolvers.prependhash(type,name,cache)
     -- safeguard ... tricky as it's actually a bug when seen twice
     if not instance.hashed[name] then
         if trace_locating then
-            report_resolvers("hash '%s' prepended",name)
+            report_resolving("hash '%s' prepended",name)
         end
         insert(instance.hashes, 1, { type = type, name = name, cache = cache } )
         instance.hashed[name] = cache
@@ -715,9 +715,9 @@ function isreadable(name)
     local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then
-            report_resolvers("file '%s' is readable",name)
+            report_resolving("file '%s' is readable",name)
         else
-            report_resolvers("file '%s' is not readable", name)
+            report_resolving("file '%s' is not readable", name)
         end
     end
     return readable
@@ -731,7 +731,7 @@ local function collect_files(names)
     for k=1,#names do
         local fname = names[k]
         if trace_detail then
-            report_resolvers("checking name '%s'",fname)
+            report_resolving("checking name '%s'",fname)
         end
         local bname = filebasename(fname)
         local dname = filedirname(fname)
@@ -747,7 +747,7 @@ local function collect_files(names)
             local files = blobpath and instance.files[blobpath]
             if files then
                 if trace_detail then
-                    report_resolvers("deep checking '%s' (%s)",blobpath,bname)
+                    report_resolving("deep checking '%s' (%s)",blobpath,bname)
                 end
                 local blobfile = files[bname]
                 if not blobfile then
@@ -767,7 +767,7 @@ local function collect_files(names)
                             local search = filejoin(blobroot,blobfile,bname)
                             local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
-                                report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
                             end
                             noffiles = noffiles + 1
                             filelist[noffiles] = { kind, search, result }
@@ -781,7 +781,7 @@ local function collect_files(names)
                                 local search = filejoin(blobroot,vv,bname)
                                 local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
-                                    report_resolvers("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                    report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
                                 end
                                 noffiles = noffiles + 1
                                 filelist[noffiles] = { kind, search, result }
@@ -790,7 +790,7 @@ local function collect_files(names)
                     end
                 end
             elseif trace_locating then
-                report_resolvers("no match in '%s' (%s)",blobpath,bname)
+                report_resolving("no match in '%s' (%s)",blobpath,bname)
             end
         end
     end
@@ -831,7 +831,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         stamp = filename .. "--" .. askedformat
         if instance.found[stamp] then
             if trace_locating then
-                report_resolvers("remembered file '%s'",filename)
+                report_resolving("remembered file '%s'",filename)
             end
             resolvers.registerintrees(filename) -- for tracing used files
             return instance.found[stamp]
@@ -840,7 +840,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     if not dangerous[askedformat] then
         if isreadable(filename) then
             if trace_detail then
-                report_resolvers("file '%s' found directly",filename)
+                report_resolving("file '%s' found directly",filename)
             end
             if stamp then
                 instance.found[stamp] = { filename }
@@ -850,13 +850,13 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
     end
     if find(filename,'%*') then
         if trace_locating then
-            report_resolvers("checking wildcard '%s'", filename)
+            report_resolving("checking wildcard '%s'", filename)
         end
         result = resolvers.findwildcardfiles(filename) -- we can use th elocal
     elseif file.is_qualified_path(filename) then
         if isreadable(filename) then
             if trace_locating then
-                report_resolvers("qualified name '%s'", filename)
+                report_resolving("qualified name '%s'", filename)
             end
             result = { filename }
         else
@@ -869,7 +869,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                         forcedname = filename .. "." .. s
                         if isreadable(forcedname) then
                             if trace_locating then
-                                report_resolvers("no suffix, forcing format filetype '%s'", s)
+                                report_resolving("no suffix, forcing format filetype '%s'", s)
                             end
                             result, ok = { forcedname }, true
                             break
@@ -922,7 +922,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                 -- end
             end
             if not ok and trace_locating then
-                report_resolvers("qualified name '%s'", filename)
+                report_resolving("qualified name '%s'", filename)
             end
         end
     else
@@ -941,13 +941,13 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                     wantedfiles[#wantedfiles+1] = forcedname
                     filetype = resolvers.formatofsuffix(forcedname)
                     if trace_locating then
-                        report_resolvers("forcing filetype '%s'",filetype)
+                        report_resolving("forcing filetype '%s'",filetype)
                     end
                 end
             else
                 filetype = resolvers.formatofsuffix(filename)
                 if trace_locating then
-                    report_resolvers("using suffix based filetype '%s'",filetype)
+                    report_resolving("using suffix based filetype '%s'",filetype)
                 end
             end
         else
@@ -961,7 +961,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
             end
             filetype = askedformat
             if trace_locating then
-                report_resolvers("using given filetype '%s'",filetype)
+                report_resolving("using given filetype '%s'",filetype)
             end
         end
         local typespec = resolvers.variableofformat(filetype)
@@ -969,7 +969,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
         if not pathlist or #pathlist == 0 then
             -- no pathlist, access check only / todo == wildcard
             if trace_detail then
-                report_resolvers("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
+                report_resolving("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
             end
             for k=1,#wantedfiles do
                 local fname = wantedfiles[k]
@@ -997,7 +997,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                 end
             end
             if trace_detail then
-                report_resolvers("checking filename '%s'",filename)
+                report_resolving("checking filename '%s'",filename)
             end
             for k=1,#pathlist do
                 local path = pathlist[k]
@@ -1009,7 +1009,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                     -- compare list entries with permitted pattern -- /xx /xx//
                     local expression = makepathexpression(pathname)
                     if trace_detail then
-                        report_resolvers("using pattern '%s' for path '%s'",expression,pathname)
+                        report_resolving("using pattern '%s' for path '%s'",expression,pathname)
                     end
                     for k=1,#filelist do
                         local fl = filelist[k]
@@ -1021,16 +1021,16 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                             done = true
                             if allresults then
                                 if trace_detail then
-                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+                                    report_resolving("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
                                 end
                             else
                                 if trace_detail then
-                                    report_resolvers("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+                                    report_resolving("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
                                 end
                                 break
                             end
                         elseif trace_detail then
-                            report_resolvers("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+                            report_resolving("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
                         end
                     end
                 end
@@ -1047,7 +1047,7 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
                                     local fname = filejoin(ppname,w)
                                     if isreadable(fname) then
                                         if trace_detail then
-                                            report_resolvers("found '%s' by scanning",fname)
+                                            report_resolving("found '%s' by scanning",fname)
                                         end
                                         result[#result+1] = fname
                                         done = true
@@ -1085,7 +1085,7 @@ end
 --~ local function find_direct(filename)
 --~     if not dangerous[askedformat] and isreadable(filename) then
 --~         if trace_detail then
---~             report_resolvers("file '%s' found directly",filename)
+--~             report_resolving("file '%s' found directly",filename)
 --~         end
 --~         return { filename }
 --~     end
@@ -1094,7 +1094,7 @@ end
 --~ local function find_wildcard(filename)
 --~     if find(filename,'%*') then
 --~         if trace_locating then
---~             report_resolvers("checking wildcard '%s'", filename)
+--~             report_resolving("checking wildcard '%s'", filename)
 --~         end
 --~         return resolvers.findwildcardfiles(filename) -- we can use the local
 --~     end
@@ -1105,16 +1105,16 @@ end
 --~         return
 --~     end
 --~     if trace_locating then
---~         report_resolvers("checking qualified name '%s'", filename)
+--~         report_resolving("checking qualified name '%s'", filename)
 --~     end
 --~     if isreadable(filename) then
 --~         if trace_detail then
---~             report_resolvers("qualified file '%s' found", filename)
+--~             report_resolving("qualified file '%s' found", filename)
 --~         end
 --~         return { filename }
 --~     else
 --~         if trace_detail then
---~             report_resolvers("locating qualified file '%s'", filename)
+--~             report_resolving("locating qualified file '%s'", filename)
 --~         end
 --~         local forcedname, suffix = "", fileextname(filename)
 --~         if suffix == "" then -- why
@@ -1125,7 +1125,7 @@ end
 --~                     forcedname = filename .. "." .. s
 --~                     if isreadable(forcedname) then
 --~                         if trace_locating then
---~                             report_resolvers("no suffix, forcing format filetype '%s'", s)
+--~                             report_resolving("no suffix, forcing format filetype '%s'", s)
 --~                         end
 --~                         return { forcedname }
 --~                     end
@@ -1203,13 +1203,13 @@ end
 --~                 wantedfiles[#wantedfiles+1] = forcedname
 --~                 filetype = resolvers.formatofsuffix(forcedname)
 --~                 if trace_locating then
---~                     report_resolvers("forcing filetype '%s'",filetype)
+--~                     report_resolving("forcing filetype '%s'",filetype)
 --~                 end
 --~             end
 --~         else
 --~             filetype = resolvers.formatofsuffix(filename)
 --~             if trace_locating then
---~                 report_resolvers("using suffix based filetype '%s'",filetype)
+--~                 report_resolving("using suffix based filetype '%s'",filetype)
 --~             end
 --~         end
 --~     else
@@ -1223,7 +1223,7 @@ end
 --~         end
 --~         filetype = askedformat
 --~         if trace_locating then
---~             report_resolvers("using given filetype '%s'",filetype)
+--~             report_resolving("using given filetype '%s'",filetype)
 --~         end
 --~     end
 --~     return filetype, wantedfiles
@@ -1242,7 +1242,7 @@ end
 --~             end
 --~         end
 --~         if trace_detail then
---~             report_resolvers("checking filename '%s'",filename)
+--~             report_resolving("checking filename '%s'",filename)
 --~         end
 --~         local result = { }
 --~         for k=1,#pathlist do
@@ -1255,7 +1255,7 @@ end
 --~                 -- compare list entries with permitted pattern -- /xx /xx//
 --~                 local expression = makepathexpression(pathname)
 --~                 if trace_detail then
---~                     report_resolvers("using pattern '%s' for path '%s'",expression,pathname)
+--~                     report_resolving("using pattern '%s' for path '%s'",expression,pathname)
 --~                 end
 --~                 for k=1,#filelist do
 --~                     local fl = filelist[k]
@@ -1267,16 +1267,16 @@ end
 --~                         done = true
 --~                         if allresults then
 --~                             if trace_detail then
---~                                 report_resolvers("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
+--~                                 report_resolving("match to '%s' in hash for file '%s' and path '%s', continue scanning",expression,f,d)
 --~                             end
 --~                         else
 --~                             if trace_detail then
---~                                 report_resolvers("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
+--~                                 report_resolving("match to '%s' in hash for file '%s' and path '%s', quit scanning",expression,f,d)
 --~                             end
 --~                             break
 --~                         end
 --~                     elseif trace_detail then
---~                         report_resolvers("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
+--~                         report_resolving("no match to '%s' in hash for file '%s' and path '%s'",expression,f,d)
 --~                     end
 --~                 end
 --~             end
@@ -1293,7 +1293,7 @@ end
 --~                                 local fname = filejoin(ppname,w)
 --~                                 if isreadable(fname) then
 --~                                     if trace_detail then
---~                                         report_resolvers("found '%s' by scanning",fname)
+--~                                         report_resolving("found '%s' by scanning",fname)
 --~                                     end
 --~                                     result[#result+1] = fname
 --~                                     done = true
@@ -1319,7 +1319,7 @@ end
 --~ local function find_onpath(filename,filetype,wantedfiles)
 --~     local done = nil
 --~     if trace_detail then
---~         report_resolvers("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
+--~         report_resolving("checking filename '%s', filetype '%s', wanted files '%s'",filename, filetype or '?',concat(wantedfiles," | "))
 --~     end
 --~     for k=1,#wantedfiles do
 --~         local fname = wantedfiles[k]
@@ -1348,7 +1348,7 @@ end
 --~         result = stamp and instance.found[stamp]
 --~         if result then
 --~             if trace_locating then
---~                 report_resolvers("remembered file '%s'",filename)
+--~                 report_resolving("remembered file '%s'",filename)
 --~             end
 --~             return result
 --~         end
@@ -1373,7 +1373,7 @@ end
 --~     end
 --~     if stamp then
 --~         if trace_locating then
---~             report_resolvers("remembering file '%s'",filename)
+--~             report_resolving("remembering file '%s'",filename)
 --~         end
 --~         instance.found[stamp] = result
 --~     end
@@ -1543,7 +1543,7 @@ end
 
 local function report(str)
     if trace_locating then
-        report_resolvers(str) -- has already verbose
+        report_resolving(str) -- has already verbose
     else
         print(str)
     end

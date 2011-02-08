@@ -31,9 +31,9 @@ local trace_optimize = false  trackers.register("builders.paragraphs.solutions.s
 local trace_colors   = false  trackers.register("builders.paragraphs.solutions.splitters.colors",    function(v) trace_colors   = v end)
 local trace_goodies  = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
 
-local report_fonts     = logs.new("fonts")
-local report_splitter  = logs.new("splitter")
-local report_optimizer = logs.new("optimizer")
+local report_solutions  = logs.new("fonts","solutions")
+local report_splitters  = logs.new("nodes","splitters")
+local report_optimizers = logs.new("nodes","optimizers")
 
 local nodes, node = nodes, node
 
@@ -129,10 +129,10 @@ local function convert(featuresets,name,set,what)
                 nofnumbers = nofnumbers + 1
                 numbers[nofnumbers] = fn
                 if trace_goodies or trace_optimize then
-                    report_fonts("solution %s of '%s' uses feature '%s' with number %s",i,name,feature,fn)
+                    report_solutions("solution %s of '%s' uses feature '%s' with number %s",i,name,feature,fn)
                 end
             else
-                report_fonts("solution %s has an invalid feature reference '%s'",i,name,tostring(feature))
+                report_solutions("solution %s has an invalid feature reference '%s'",i,name,tostring(feature))
             end
         end
         return nofnumbers > 0 and numbers
@@ -145,7 +145,7 @@ local function initialize(goodies)
         local featuresets = goodies.featuresets
         local goodiesname = goodies.name
         if trace_goodies or trace_optimize then
-            report_fonts("checking solutions in '%s'",goodiesname)
+            report_solutions("checking solutions in '%s'",goodiesname)
         end
         for name, set in next, solutions do
             set.less = convert(featuresets,name,set,"less")
@@ -201,7 +201,7 @@ function splitters.define(name,parameters)
         end
     end
     if trace_optimize then
-        report_fonts("defining solutions '%s', less: '%s', more: '%s'",name,concat(less_set or {}," "),concat(more_set or {}," "))
+        report_solutions("defining solutions '%s', less: '%s', more: '%s'",name,concat(less_set or {}," "),concat(more_set or {}," "))
     end
     local nofsolutions = #solutions + 1
     solutions[nofsolutions] = {
@@ -241,7 +241,7 @@ function splitters.split(head)
             font      = font
         }
         if trace_split then
-            report_splitter( "cached %4i: font: %s, attribute: %s, word: %s, direction: %s", n,
+            report_splitters("cached %4i: font: %s, attribute: %s, word: %s, direction: %s", n,
                 font, attribute, nodes.listtoutf(list,true), rlmode)
         end
         cache[n] = c
@@ -372,7 +372,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 local temp, b = repack_hlist(list,width,'exactly',listdir)
                 if b > badness then
                     if trace_optimize then
-                        report_optimizer("line %s, badness before: %s, after: %s, criterium: %s -> quit",line,badness,b,criterium)
+                        report_optimizers("line %s, badness before: %s, after: %s, criterium: %s -> quit",line,badness,b,criterium)
                     end
                     -- remove last insert
                     prev.next, h.prev = h, prev
@@ -385,7 +385,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     free_nodelist(first)
                 else
                     if trace_optimize then
-                        report_optimizer("line %s, badness before: %s, after: %s, criterium: %s -> continue",line,badness,b,criterium)
+                        report_optimizers("line %s, badness before: %s, after: %s, criterium: %s -> continue",line,badness,b,criterium)
                     end
                     -- free old h->t
                     t.next = nil
@@ -471,7 +471,7 @@ local function show_quality(current,what,line)
     local sign   = current.glue_sign
     local order  = current.glue_order
     local amount = set * ((sign == 2 and -1) or 1)
-    report_optimizer("line %s, %s, amount %s, set %s, sign %s (%s), order %s",line,what,amount,set,sign,how,order)
+    report_optimizers("line %s, %s, amount %s, set %s, sign %s (%s), order %s",line,what,amount,set,sign,how,order)
 end
 
 function splitters.optimize(head)
@@ -487,29 +487,29 @@ function splitters.optimize(head)
         local tex_hbadness, tex_hfuzz = tex.hbadness, tex.hfuzz
         tex.hbadness, tex.hfuzz = 10000, number.maxdimen
         if trace_optimize then
-            report_optimizer("preroll: %s, variant: %s, preroll criterium: %s, cache size: %s",
+            report_optimizers("preroll: %s, variant: %s, preroll criterium: %s, cache size: %s",
                 tostring(preroll),variant,criterium,nc)
         end
         for current in traverse_ids(hlist_code,head) do
-         -- report_splitter("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
+         -- report_splitters("before: [%s] => %s",current.dir,nodes.tosequence(current.list,nil))
             line = line + 1
             local sign, dir, list, width = current.glue_sign, current.dir, current.list, current.width
             local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
             if badness > 0 then
                 if sign == 0 then
                     if trace_optimize then
-                        report_optimizer("line %s, badness %s, okay",line,badness)
+                        report_optimizers("line %s, badness %s, okay",line,badness)
                     end
                 else
                     local set, max
                     if sign == 1 then
                         if trace_optimize then
-                            report_optimizer("line %s, badness %s, underfull, trying more",line,badness)
+                            report_optimizers("line %s, badness %s, underfull, trying more",line,badness)
                         end
                         set, max = "more", max_more
                     else
                         if trace_optimize then
-                            report_optimizer("line %s, badness %s, overfull, trying less",line,badness)
+                            report_optimizers("line %s, badness %s, overfull, trying less",line,badness)
                         end
                         set, max = "less", max_less
                     end
@@ -527,7 +527,7 @@ function splitters.optimize(head)
                                 local temp, done, changes, b = optimize(words,base,j,width,badness,line,set,dir)
                                 base = temp
                                 if trace_optimize then
-                                    report_optimizer("line %s, alternative: %s.%s, changes: %s, badness %s",line,i,j,changes,b)
+                                    report_optimizers("line %s, alternative: %s.%s, changes: %s, badness %s",line,i,j,changes,b)
                                 end
                                 bb = b
                                 if b <= criterium then
@@ -554,7 +554,7 @@ function splitters.optimize(head)
                         local temp, done, changes, b = optimize(words,list,best,width,badness,line,set,dir)
                         current.list = temp
                         if trace_optimize then
-                            report_optimizer("line %s, alternative: %s, changes: %s, badness %s",line,best,changes,b)
+                            report_optimizers("line %s, alternative: %s, changes: %s, badness %s",line,best,changes,b)
                         end
                         if done then
                             if b <= criterium then -- was == 0
@@ -566,12 +566,12 @@ function splitters.optimize(head)
                 end
             else
                 if trace_optimize then
-                    report_optimizer("line %s, not bad enough",line)
+                    report_optimizers("line %s, not bad enough",line)
                 end
             end
             -- we pack inside the outer hpack and that way keep the original wd/ht/dp as bonus
             current.list = hpack_nodes(current.list,width,'exactly',listdir)
-         -- report_splitter("after: [%s] => %s",temp.dir,nodes.tosequence(temp.list,nil))
+         -- report_splitters("after: [%s] => %s",temp.dir,nodes.tosequence(temp.list,nil))
         end
         for i=1,nc do
             local ci = cache[i]

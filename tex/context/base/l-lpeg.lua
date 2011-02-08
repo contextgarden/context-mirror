@@ -423,11 +423,7 @@ local p = Cs((S("-.+*%()[]") / patterns_escapes + anything)^0)
 local s = Cs((S("-.+*%()[]") / simple_escapes   + anything)^0)
 
 function string.escapedpattern(str,simple)
-    if simple then
-        return match(s,str)
-    else
-        return match(p,str)
-    end
+    return match(simple and s or p,str)
 end
 
 -- utf extensies

@@ -25,7 +25,7 @@ local context = context
 
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
-local report_mplib = logs.new("mplib")
+local report_metapost = logs.new("metapost")
 
 local colors = attributes.colors
 
@@ -125,11 +125,11 @@ function specials.register(str) -- only colors
             if cc then
                 cc[n] = data
             else
-                report_mplib("problematic special: %s (no colordata class %s)", str or "?",class)
+                report_metapost("problematic special: %s (no colordata class %s)", str or "?",class)
             end
         else
          -- there is some bug to be solved, so we issue a message
-            report_mplib("problematic special: %s", str or "?")
+            report_metapost("problematic special: %s", str or "?")
         end
     end
 --~     if match(str,"^%%%%MetaPostOption: multipass") then
@@ -393,7 +393,7 @@ local function freeboxes() -- todo: mp direct list ipv box
           -- texbox[scratchbox] = tn
           -- texbox[scratchbox] = nil -- this frees too
             if trace_textexts then
-                report_mplib("freeing textext %s",n)
+                report_metapost("freeing textext %s",n)
             end
         end
     end
@@ -413,7 +413,7 @@ end
 function metapost.gettext(box,slot)
     texbox[box] = copy_list(textexts[slot])
     if trace_textexts then
-        report_mplib("putting textext %s in box %s",slot,box)
+        report_metapost("putting textext %s in box %s",slot,box)
     end
  -- textexts[slot] = nil -- no, pictures can be placed several times
 end
@@ -423,7 +423,7 @@ function specials.tf(specification,object)
     if n and str then
         n = tonumber(n)
         if trace_textexts then
-            report_mplib("setting textext %s (first pass)",n)
+            report_metapost("setting textext %s (first pass)",n)
         end
         context.MPLIBsettext(n,str)
         metapost.multipass = true
@@ -449,7 +449,7 @@ function specials.ts(specification,object,result,flusher)
     if n and str then
         n = tonumber(n)
         if trace_textexts then
-            report_mplib("processing textext %s (second pass)",n)
+            report_metapost("processing textext %s (second pass)",n)
         end
         local op = object.path
         local first, second, fourth = op[1], op[2], op[4]
@@ -647,7 +647,7 @@ end
 local texmess   = (dquote/ditto + (1 - etex))^0
 
 local function ignore(s)
-    report_mplib("ignoring verbatim tex: %s",s)
+    report_metapost("ignoring verbatim tex: %s",s)
     return ""
 end
 
@@ -688,7 +688,7 @@ function metapost.texttextsdata()
         if box then
             local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
             if trace_textexts then
-                report_mplib("passed textext data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
+                report_metapost("passed textext data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
             end
             nt = nt + 1
             t[nt] = format(text_data_template,n,wd,n,ht,n,dp)

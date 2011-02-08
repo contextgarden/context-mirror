@@ -14,8 +14,9 @@ local ctxcatcodes = tex.ctxcatcodes
 
 commands = commands or { } -- cs = commands -- shorter, maybe some day, not used now
 
-function commands.writereport(...) logs.report(...) end -- not that efficient
-function commands.writestatus(...) logs.status(...) end
+function commands.writestatus(...) logs.status(...) end -- overloaded later
+
+-- todo: use shorter names i.e. less tokenization
 
 local function testcase(b)
     if b then -- looks faster with if than with expression

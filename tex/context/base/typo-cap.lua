@@ -12,7 +12,7 @@ local div = math.div
 
 local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)
 
-local report_casing = logs.new("casing")
+local report_casing = logs.new("typesetting","casing")
 
 local nodes, node = nodes, node
 

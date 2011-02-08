@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-fil'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_files = logs.new("resolvers","files")
 
 local resolvers = resolvers
 
@@ -22,11 +22,11 @@ function locators.file(specification)
     local realname = resolvers.resolve(name) -- no shortcut
     if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
-            report_resolvers("file locator '%s' found as '%s'",name,realname)
+            report_files("file locator '%s' found as '%s'",name,realname)
         end
         resolvers.appendhash('file',name,true) -- cache
     elseif trace_locating then
-        report_resolvers("file locator '%s' not found",name)
+        report_files("file locator '%s' not found",name)
     end
 end
 
@@ -49,12 +49,12 @@ function finders.file(specification,filetype)
     local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
-            report_resolvers("file finder: '%s' found",filename)
+            report_files("file finder: '%s' found",filename)
         end
         return foundname
     else
         if trace_locating then
-            report_resolvers("file finder: %s' not found",filename)
+            report_files("file finder: %s' not found",filename)
         end
         return finders.notfound()
     end
@@ -75,13 +75,13 @@ function openers.file(specification,filetype)
         local f = io.open(filename,"r")
         if f then
             if trace_locating then
-                report_resolvers("file opener, '%s' opened",filename)
+                report_files("file opener, '%s' opened",filename)
             end
             return openers.helpers.textopener("file",filename,f)
         end
     end
     if trace_locating then
-        report_resolvers("file opener, '%s' not found",filename)
+        report_files("file opener, '%s' not found",filename)
     end
     return openers.notfound()
 end
@@ -93,7 +93,7 @@ function loaders.file(specification,filetype)
         if f then
             logs.show_load(filename)
             if trace_locating then
-                report_resolvers("file loader, '%s' loaded",filename)
+                report_files("file loader, '%s' loaded",filename)
             end
             local s = f:read("*a")
             if checkgarbage then
@@ -106,7 +106,7 @@ function loaders.file(specification,filetype)
         end
     end
     if trace_locating then
-        report_resolvers("file loader, '%s' not found",filename)
+        report_files("file loader, '%s' not found",filename)
     end
     return loaders.notfound()
 end

@@ -10,7 +10,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_mounts = logs.new("resolvers","mounts")
 
 local resolvers = resolvers
 
@@ -35,7 +35,7 @@ function resolvers.automount(usecache)
                             -- skip
                         elseif find(line,"^zip://") then
                             if trace_locating then
-                                report_resolvers("mounting %s",line)
+                                report_mounts("mounting %s",line)
                             end
                             table.insert(resolvers.automounted,line)
                             resolvers.usezipfile(line)

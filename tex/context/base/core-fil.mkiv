@@ -217,7 +217,7 @@
       \stopreadingfile
       \doglobal\setflag{#2}}%
    \ifx#1\undefined
-     \writestatus\m!systems{command \string#1 not found in file #2}%
+     \writestatus\m!system{command \string#1 not found in file #2}%
      \gdef#1{{\infofont[unknown command \string#1]}}%
    \fi
    #1}

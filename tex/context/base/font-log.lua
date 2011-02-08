@@ -10,7 +10,7 @@ local next, format, lower, concat = next, string.format, string.lower, table.con
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_define = logs.new("define fonts")
+local report_defining = logs.new("fonts","defining")
 
 local fonts  = fonts
 fonts.logger = fonts.logger or { }
@@ -27,7 +27,7 @@ function logger.save(tfmtable,source,specification) -- save file name in spec he
     if tfmtable and specification and specification.specification then
         local name = lower(specification.name)
         if trace_defining and not fonts.used[name] then
-            report_define("registering %s as %s (used: %s)",file.basename(specification.name),source,file.basename(specification.filename))
+            report_defining("registering %s as %s (used: %s)",file.basename(specification.name),source,file.basename(specification.filename))
         end
         specification.source = source
         fonts.loaded[lower(specification.specification)] = specification

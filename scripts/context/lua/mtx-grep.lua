@@ -6,10 +6,24 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--pattern             search for pattern (optional)
+--count               count matches only
+--nocomment           skip lines that start with %% or #
+
+patterns are lua patterns and need to be escaped accordingly
+]]
+
+local application = logs.application {
+    name     = "mtx-grep",
+    banner   = "Simple Grepper 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts      = scripts      or { }
 scripts.grep = scripts.grep or { }
-
-logs.extendbanner("Simple Grepper 0.10")
 
 local find, format = string.find, string.format
 
@@ -94,14 +108,6 @@ function scripts.grep.find(pattern, files, offset)
     end
 end
 
-messages.help = [[
---pattern             search for pattern (optional)
---count               count matches only
---nocomment           skip lines that start with %% or #
-
-patterns are lua patterns and need to be escaped accordingly
-]]
-
 local pattern = environment.argument("pattern")
 local files   = environment.files and #environment.files > 0 and environment.files
 
@@ -110,5 +116,5 @@ if pattern and files then
 elseif files then
     scripts.grep.find(files[1], files, 2)
 else
-    logs.help(messages.help)
+    application.help()
 end

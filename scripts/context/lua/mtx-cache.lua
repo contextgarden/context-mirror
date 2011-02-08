@@ -6,6 +6,22 @@ if not modules then modules = { } end modules ['mtx-cache'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--purge               remove not used files
+--erase               completely remove cache
+--list                show cache
+
+--all                 all (not yet implemented)
+]]
+
+local application = logs.application {
+    name     = "mtx-cache",
+    banner   = "ConTeXt & MetaTeX Cache Management 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts       = scripts       or { }
 scripts.cache = scripts.cache or { }
 
@@ -27,18 +43,18 @@ local function collect(path)
 end
 
 local function list(banner,path,tmas,tmcs,rest)
-    logs.report("cache",string.format("%s: %s",banner,path))
-    logs.report()
-    logs.report("cache",string.format("tma   : %4i",#tmas))
-    logs.report("cache",string.format("tmc   : %4i",#tmcs))
-    logs.report("cache",string.format("rest  : %4i",#rest))
-    logs.report("cache",string.format("total : %4i",#tmas+#tmcs+#rest))
-    logs.report()
+    report("%s: %s",banner,path)
+    report()
+    report("tma   : %4i",#tmas)
+    report("tmc   : %4i",#tmcs)
+    report("rest  : %4i",#rest)
+    report("total : %4i",#tmas+#tmcs+#rest)
+    report()
 end
 
 local function purge(banner,path,list,all)
-    logs.report("cache",string.format("%s: %s",banner,path))
-    logs.report()
+    report("%s: %s",banner,path)
+    report()
     local n = 0
     for i=1,#list do
         local filename = list[i]
@@ -58,8 +74,8 @@ local function purge(banner,path,list,all)
             end
         end
     end
-    logs.report("cache",string.format("removed tma files : %i",n))
-    logs.report()
+    report("removed tma files : %i",n)
+    report()
 end
 
 function scripts.cache.purge()
@@ -92,16 +108,6 @@ function scripts.cache.list()
     end
 end
 
-logs.extendbanner("ConTeXt & MetaTeX Cache Management 0.10")
-
-messages.help = [[
---purge               remove not used files
---erase               completely remove cache
---list                show cache
-
---all                 all (not yet implemented)
-]]
-
 if environment.argument("purge") then
     scripts.cache.purge()
 elseif environment.argument("erase") then
@@ -109,5 +115,5 @@ elseif environment.argument("erase") then
 elseif environment.argument("list") then
     scripts.cache.list()
 else
-    logs.help(messages.help)
+    application.help()
 end

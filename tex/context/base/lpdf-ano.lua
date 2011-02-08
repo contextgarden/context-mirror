@@ -16,9 +16,9 @@ local trace_references   = false  trackers.register("references.references",   f
 local trace_destinations = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks    = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
-local report_references   = logs.new("references")
-local report_destinations = logs.new("destinations")
-local report_bookmarks    = logs.new("bookmarks")
+local report_reference   = logs.new("backend","references")
+local report_destination = logs.new("backend","destinations")
+local report_bookmark    = logs.new("backend","bookmarks")
 
 local variables = interfaces.variables
 local constants = interfaces.constants
@@ -151,7 +151,7 @@ local function link(url,filename,destination,page,actions)
                 }
             }
         else
-            commands.writestatus("references","invalid page reference: %s",page or "?")
+            report_reference("invalid page reference: %s",page or "?")
         end
     end
     return false
@@ -236,7 +236,7 @@ local function use_normal_annotations()
     local function reference(width,height,depth,prerolled) -- keep this one
         if prerolled then
             if trace_references then
-                report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+                report_reference("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
             end
             return pdfannotation_node(width,height,depth,prerolled)
         end
@@ -277,7 +277,7 @@ local function use_shared_annotations()
     local function reference(width,height,depth,prerolled)
         if prerolled then
             if trace_references then
-                report_references("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
+                report_reference("w=%s, h=%s, d=%s, a=%s",width,height,depth,prerolled)
             end
             local luacode = format("_bpnf_(%s,%s,%s,'%s')",width,height,depth,prerolled)
             return latelua_node(luacode)
@@ -321,7 +321,7 @@ end  node.free(lln)
 
 function nodeinjections.destination(width,height,depth,name,view)
     if trace_destinations then
-        report_destinations("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
+        report_destination("w=%s, h=%s, d=%s, n=%s, v=%s",width,height,depth,name,view or "no view")
     end
     return pdfdestination_node(width,height,depth,name,view)
 end
@@ -342,7 +342,7 @@ runners["inner"] = function(var,actions)
 end
 
 runners["inner with arguments"] = function(var,actions)
-    report_references("todo: inner with arguments")
+    report_reference("todo: inner with arguments")
     return false
 end
 
@@ -362,7 +362,7 @@ runners["special outer with operation"] = function(var,actions)
 end
 
 runners["special outer"] = function(var,actions)
-    report_references("todo: special outer")
+    report_reference("todo: special outer")
     return false
 end
 
@@ -372,22 +372,22 @@ runners["special"] = function(var,actions)
 end
 
 runners["outer with inner with arguments"] = function(var,actions)
-    report_references("todo: outer with inner with arguments")
+    report_reference("todo: outer with inner with arguments")
     return false
 end
 
 runners["outer with special and operation and arguments"] = function(var,actions)
-    report_references("todo: outer with special and operation and arguments")
+    report_reference("todo: outer with special and operation and arguments")
     return false
 end
 
 runners["outer with special"] = function(var,actions)
-    report_references("todo: outer with special")
+    report_reference("todo: outer with special")
     return false
 end
 
 runners["outer with special and operation"] = function(var,actions)
-    report_references("todo: outer with special and operation")
+    report_reference("todo: outer with special and operation")
     return false
 end
 
@@ -399,7 +399,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     local v = references.internals[i]
     if not v then
         -- error
-        report_references("no internal reference '%s'",var.operation)
+        report_reference("no internal reference '%s'",var.operation)
     elseif getinnermethod() == "names" then
         -- named
         return link(nil,nil,"aut:"..i,v.references.realpage,actions)
@@ -630,7 +630,7 @@ local function build(levels,start,parent,method)
             return i, n, first, last
         elseif level == startlevel then
             if trace_bookmarks then
-                report_bookmarks("%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
+                report_bookmark("%3i %s%s %s",reference.realpage,rep("  ",level-1),(open and "+") or "-",title)
             end
             local prev = child
             child = pdfreserveobject()

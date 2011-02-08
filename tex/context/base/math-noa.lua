@@ -43,7 +43,8 @@ local trace_remapping  = false  trackers.register("math.remapping",  function(v)
 local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
 local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
-local report_noads = logs.new("mathematics")
+local report_processing = logs.new("mathematics","processing")
+local report_remapping  = logs.new("mathematics","remapping")
 
 local nodecodes     = nodes.nodecodes
 local noadcodes     = nodes.noadcodes
@@ -75,14 +76,14 @@ local function process(start,what,n,parent)
             local margin = rep("  ",n or 0)
             local detail = tostring(start)
             if id == math_noad then
-                report_noads("%s%s (class: %s)",margin,detail,noadcodes[start.subtype] or "?")
+                report_processing("%s%s (class: %s)",margin,detail,noadcodes[start.subtype] or "?")
             elseif id == math_char then
                 local char = start.char
                 local fam = start.fam
                 local font = font_of_family(fam)
-                report_noads("%s%s (family: %s, font: %s, char: %s, shape: %s)",margin,detail,fam,font,char,utfchar(char))
+                report_processing("%s%s (family: %s, font: %s, char: %s, shape: %s)",margin,detail,fam,font,char,utfchar(char))
             else
-                report_noads("%s%s",margin,detail)
+                report_processing("%s%s",margin,detail)
             end
         end
         local proc = what[id]
@@ -142,7 +143,7 @@ local mathgreek    = attributes.private("mathgreek")
 processors.relocate = { }
 
 local function report_remap(tag,id,old,new,extra)
-    report_noads("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
+    report_remapping("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
 end
 
 local remapalphabets = mathematics.remapalphabets

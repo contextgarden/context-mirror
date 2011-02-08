@@ -8,8 +8,10 @@ if not modules then modules = { } end modules ['luat-sto'] = {
 
 local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
+local serialize, concat = table.serialize, table.concat
+local bytecode = lua.bytecode
 
-local report_storage = logs.new("storage")
+local report_storage = logs.new("system","storage")
 
 storage            = storage or { }
 local storage      = storage
@@ -42,64 +44,30 @@ function storage.register(...)
     return t
 end
 
--- evaluators .. messy .. to be redone
-
-function storage.evaluate(name)
-    evaluators[#evaluators+1] = name
-end
-
-local function finalize() -- we can prepend the string with "evaluate:"
-    for i=1,#evaluators do
-        local t = evaluators[i]
-        for i, v in next, t do
-            local tv = type(v)
-            if tv == "string" then
-                t[i] = loadstring(v)()
-            elseif tv == "table" then
-                for _, vv in next, v do
-                    if type(vv) == "string" then
-                        t[i] = loadstring(vv)()
-                    end
-                end
-            elseif tv == "function" then
-                t[i] = v()
-            end
-        end
-    end
-end
-
-lua.registerfinalizer(finalize,"evaluate storage")
-
 local function dump()
+    local max = storage.max
     for i=1,#data do
         local d = data[i]
-        local message, original, target, evaluate = d[1], d[2] ,d[3] ,d[4]
-        local name, initialize, finalize, code = nil, "", "", ""
+        local message, original, target = d[1], d[2] ,d[3]
+        local c, code, name = 0, { }, nil
         for str in gmatch(target,"([^%.]+)") do
             if name then
                 name = name .. "." .. str
             else
                 name = str
             end
-            initialize = format("%s %s = %s or {} ", initialize, name, name)
+            c = c + 1 ; code[c] = format("%s = %s or { }",name,name)
         end
-        if evaluate then
-            finalize = "storage.evaluate(" .. name .. ")"
-        end
-        storage.max = storage.max + 1
+        max = max + 1
         if trace_storage then
-            report_storage('saving %s in slot %s',message,storage.max)
-            code =
-                initialize ..
-                format("report_storage('restoring %s from slot %s') ",message,storage.max) ..
-                table.serialize(original,name) ..
-                finalize
-        else
-            code = initialize .. table.serialize(original,name) .. finalize
+            report_storage('saving %s in slot %s',message,max)
+            c = c + 1 ; code[c] = format("report_storage('restoring %s from slot %s')",message,max)
         end
-        lua.bytecode[storage.max] = loadstring(code)
+        c = c + 1 ; code[c] = serialize(original,name)
+        bytecode[max] = loadstring(concat(code,"\n"))
         collectgarbage("step")
     end
+    storage.max = max
 end
 
 lua.registerfinalizer(dump,"dump storage")

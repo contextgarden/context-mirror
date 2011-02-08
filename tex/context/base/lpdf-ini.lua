@@ -26,7 +26,8 @@ local trace_resources  = false  trackers.register("backend.resources",  function
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
-local report_backends = logs.new("backends")
+local report_objects    = logs.new("backend","objects")
+local report_finalizing = logs.new("backend","finalizing")
 
 local backends, context = backends, context
 
@@ -360,10 +361,10 @@ function lpdf.reserveobject(name)
         if name then
             names[name] = r
             if trace_objects then
-                report_backends("reserving object number %s under name '%s'",r,name)
+                report_objects("reserving number %s under name '%s'",r,name)
             end
         elseif trace_objects then
-            report_backends("reserving object number %s",r)
+            report_objects("reserving number %s",r)
         end
         return r
     end
@@ -392,25 +393,25 @@ function lpdf.flushobject(name,data)
         if name then
             if trace_objects then
                 if trace_detail then
-                    report_backends("flushing object data to reserved object with name '%s' -> %s",name,tostring(data))
+                    report_objects("flushing data to reserved object with name '%s' -> %s",name,tostring(data))
                 else
-                    report_backends("flushing object data to reserved object with name '%s'",name)
+                    report_objects("flushing data to reserved object with name '%s'",name)
                 end
             end
             return pdfimmediateobject(name,tostring(data))
         else
             if trace_objects then
                 if trace_detail then
-                    report_backends("flushing object data to reserved object with number %s -> %s",name,tostring(data))
+                    report_objects("flushing data to reserved object with number %s -> %s",name,tostring(data))
                 else
-                    report_backends("flushing object data to reserved object with number %s",name)
+                    report_objects("flushing data to reserved object with number %s",name)
                 end
             end
             return pdfimmediateobject(tostring(data))
         end
     else
         if trace_objects and trace_detail then
-            report_backends("flushing object data -> %s",tostring(name))
+            report_objects("flushing data -> %s",tostring(name))
         end
         return pdfimmediateobject(tostring(name))
     end
@@ -534,26 +535,26 @@ local function set(where,what,f,when,comment)
     local w = where[when]
     w[#w+1] = { f, comment }
     if trace_finalizers then
-        report_backends("%s set: [%s,%s]",what,when,#w)
+        report_finalizing("%s set: [%s,%s]",what,when,#w)
     end
 end
 
 local function run(where,what)
     if trace_finalizers then
-        report_backends("start backend: category=%s, n=%s",what,#where)
+        report_finalizing("start backend: category=%s, n=%s",what,#where)
     end
     for i=1,#where do
         local w = where[i]
         for j=1,#w do
             local wj = w[j]
             if trace_finalizers then
-                report_backends("%s finalizer: [%s,%s] %s",what,i,j,wj[2] or "")
+                report_finalizing("%s finalizer: [%s,%s] %s",what,i,j,wj[2] or "")
             end
             wj[1]()
         end
     end
     if trace_finalizers then
-        report_backends("stop finalizing")
+        report_finalizing("stop finalizing")
     end
 end
 
@@ -581,7 +582,7 @@ function lpdf.finalizedocument()
     if not environment.initex then
         run(documentfinalizers,"document")
         function lpdf.finalizedocument()
-            report_backends("serious error: the document is finalized multiple times")
+            report_finalizing("serious error: the document is finalized multiple times")
             function lpdf.finalizedocument() end
         end
     end
@@ -596,22 +597,24 @@ callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 local function trace_set(what,key)
     if trace_resources then
-        report_backends("setting key '%s' in '%s'",key,what)
+        report_finalizing("setting key '%s' in '%s'",key,what)
     end
 end
 local function trace_flush(what)
     if trace_resources then
-        report_backends("flushing '%s'",what)
+        report_finalizing("flushing '%s'",what)
     end
 end
 
 lpdf.protectresources = true
 
-local catalog, info, names = pdfdictionary(), pdfdictionary(), pdfdictionary()
+local catalog = pdfdictionary { Type = "Catalog" } -- nicer, but when we assign we nil the Type
+local info    = pdfdictionary { Type = "Info"    } -- nicer, but when we assign we nil the Type
+local names   = pdfdictionary { Type = "Names"   } -- nicer, but when we assign we nil the Type
 
-local function flushcatalog() if not environment.initex then trace_flush("catalog") pdf.catalog = catalog() end end
-local function flushinfo   () if not environment.initex then trace_flush("info")    pdf.info    = info   () end end
-local function flushnames  () if not environment.initex then trace_flush("names")   pdf.names   = names  () end end
+local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Catalog = nil pdf.catalog = catalog() end end
+local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Info    = nil pdf.info    = info   () end end
+local function flushnames  () if not environment.initex then trace_flush("names")   names  .Names   = nil pdf.names   = names  () end end
 
 function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end
@@ -657,7 +660,7 @@ registerdocumentfinalizer(flushshades,3,"shades")
 
 registerdocumentfinalizer(flushcatalog,3,"catalog")
 registerdocumentfinalizer(flushinfo,3,"info")
-registerdocumentfinalizer(flushnames,3,"names")
+registerdocumentfinalizer(flushnames,3,"names") -- before catalog
 
 registerpagefinalizer(checkextgstates,3,"extended graphic states")
 registerpagefinalizer(checkcolorspaces,3,"color spaces")
@@ -756,7 +759,7 @@ if not pdfreferenceobject then
             n = n + 1
         end
         if trace_objects then
-            report_backends("%s objects flushed",n)
+            report_objects("%s objects flushed",n)
         end
         delayed = { }
     end

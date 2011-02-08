@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
-local report_buffers = logs.new("buffers")
+local report_buffers = logs.new("buffers","usage")
 
 local concat = table.concat
 local type, next = type, next
@@ -162,12 +162,12 @@ function commands.runbuffer(name,list,encapsulate)
     local data = io.loaddata(name)
     if data ~= content then
         if trace_run then
-            commands.writestatus("buffers","changes in '%s', processing forced",name)
+            report_buffers("changes in '%s', processing forced",name)
         end
         io.savedata(name,content)
         os.execute(format(command,name))
     elseif trace_run then
-        commands.writestatus("buffers","no changes in '%s', not processed",name)
+        report_buffers("no changes in '%s', not processed",name)
     end
 end
 

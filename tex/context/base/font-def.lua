@@ -19,8 +19,8 @@ local directive_embedall = false  directives.register("fonts.embedall", function
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
-local report_define = logs.new("define fonts")
-local report_afm    = logs.new("load afm")
+local report_defining = logs.new("fonts","defining")
+local report_afm      = logs.new("fonts","afm loading")
 
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the
@@ -135,7 +135,7 @@ end
 function definers.makespecification(specification, lookup, name, sub, method, detail, size)
     size = size or 655360
     if trace_defining then
-        report_define("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
+        report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
             specification, (lookup ~= "" and lookup) or "[file]", (name ~= "" and name) or "-",
             (sub ~= "" and sub) or "-", (method ~= "" and method) or "-", (detail ~= "" and detail) or "-")
     end
@@ -343,14 +343,14 @@ function tfm.read(specification)
             local reader = readers[lower(forced)]
             tfmtable = reader and reader(specification)
             if not tfmtable then
-                report_define("forced type %s of %s not found",forced,specification.name)
+                report_defining("forced type %s of %s not found",forced,specification.name)
             end
         else
             for s=1,#sequence do -- reader sequence
                 local reader = sequence[s]
                 if readers[reader] then -- not really needed
                     if trace_defining then
-                        report_define("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
+                        report_defining("trying (reader sequence driven) type %s for %s with file %s",reader,specification.name,specification.filename or "unknown")
                     end
                     tfmtable = readers[reader](specification)
                     if tfmtable then
@@ -375,7 +375,7 @@ function tfm.read(specification)
         end
     end
     if not tfmtable then
-        report_define("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
+        report_defining("font with asked name '%s' is not found using lookup '%s'",specification.name,specification.lookup)
     end
     return tfmtable
 end
@@ -593,7 +593,7 @@ function definers.register(tfmdata,id) -- will be overloaded
         local hash = tfmdata.hash
         if not internalized[hash] then
             if trace_defining then
-                report_define("registering font, id: %s, hash: %s",id or "?",hash or "?")
+                report_defining("registering font, id: %s, hash: %s",id or "?",hash or "?")
             end
             fonts.identifiers[id] = tfmdata
             internalized[hash] = id
@@ -661,9 +661,9 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     end
     lastdefined = tfmdata or id -- todo ! ! ! ! !
     if not tfmdata then -- or id?
-        report_define( "unknown font %s, loading aborted",specification.name)
+        report_defining( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
-        report_define("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
+        report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
             tfmdata.type          or "unknown",
             id                    or "?",
             tfmdata.name          or "?",
@@ -683,18 +683,18 @@ function vf.find(name)
         local format = fonts.logger.format(name)
         if format == 'tfm' or format == 'ofm' then
             if trace_defining then
-                report_define("locating vf for %s",name)
+                report_defining("locating vf for %s",name)
             end
             return findbinfile(name,"ovf")
         else
             if trace_defining then
-                report_define("vf for %s is already taken care of",name)
+                report_defining("vf for %s is already taken care of",name)
             end
             return nil -- ""
         end
     else
         if trace_defining then
-            report_define("locating vf for %s",name)
+            report_defining("locating vf for %s",name)
         end
         return findbinfile(name,"ovf")
     end

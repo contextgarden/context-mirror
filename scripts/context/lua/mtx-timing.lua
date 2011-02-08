@@ -8,6 +8,20 @@ if not modules then modules = { } end modules ['mtx-timing'] = {
 
 local format, gsub, concat = string.format, string.gsub, table.concat
 
+local helpinfo = [[
+--xhtml               make xhtml file
+--launch              launch after conversion
+--remove              remove after launching
+]]
+
+local application = logs.application {
+    name     = "mtx-timing",
+    banner   = "ConTeXt Timing Tools 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 dofile(resolvers.findfile("trac-tim.lua","tex"))
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
 
@@ -57,6 +71,8 @@ local directrun = true
 
 local what = { "parameters", "nodes" }
 
+plugins = plugins or { } -- brrr, will become moduledata as well
+
 function plugins.progress.make_svg(filename,other)
     local metadata, menudata, c = { }, { }, 0
     metadata[#metadata+1] = 'outputformat := "svg" ;'
@@ -76,7 +92,7 @@ function plugins.progress.make_svg(filename,other)
     if directrun then
         dofile(resolvers.findfile("mlib-run.lua","tex"))
         commands = commands or { }
-        commands.writestatus = logs.report
+        commands.writestatus = report
         local result = metapost.directrun("metafun","timing data","svg",true,metadata)
         return menudata, result
     else
@@ -167,9 +183,9 @@ scripts.timings = scripts.timings or { }
 
 function scripts.timings.xhtml(filename)
     if filename == "" then
-        logs.simple("provide filename")
+        report("provide filename")
     elseif not plugins.progress.valid_file(filename) then
-        logs.simple("first run context again with the --timing option")
+        report("first run context again with the --timing option")
     else
         local basename = file.removesuffix(filename)
         local launch   = environment.argument("launch")
@@ -178,16 +194,8 @@ function scripts.timings.xhtml(filename)
     end
 end
 
-logs.extendbanner("ConTeXt Timing Tools 0.10",true)
-
-messages.help = [[
---xhtml               make xhtml file
---launch              launch after conversion
---remove              remove after launching
-]]
-
 if environment.argument("xhtml") then
     scripts.timings.xhtml(environment.files[1] or "")
 else
-    logs.help(messages.help)
+    application.help()
 end

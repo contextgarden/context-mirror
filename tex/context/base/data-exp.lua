@@ -18,7 +18,7 @@ local collapsepath = file.collapsepath
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolvers = logs.new("resolvers")
+local report_expansions = logs.new("resolvers","expansions")
 
 local resolvers = resolvers
 
@@ -81,7 +81,7 @@ local replacer_1 = lpeg.replacer { { ",}", ",@}" }, { "{,", "{@," }, }
 
 local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpegging it (nice exercise).
     if trace_expansions then
-        report_resolvers("expanding variable '%s'",str)
+        report_expansions("expanding variable '%s'",str)
     end
     local t, ok, done = newlist or { }, false, false
     local n = #t
@@ -107,7 +107,7 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
     end
     if trace_expansions then
         for k=1,#t do
-            report_resolvers("% 4i: %s",k,t[k])
+            report_expansions("% 4i: %s",k,t[k])
         end
     end
     return t
@@ -142,7 +142,7 @@ function resolvers.cleanpath(str)
         homedir = lpegmatch(cleanup,environment.homedir or "")
         if homedir == string.char(127) or homedir == "" or not lfs.isdir(homedir) then
             if trace_expansions then
-                report_resolvers("no home dir set, ignoring dependent paths")
+                report_expansions("no home dir set, ignoring dependent paths")
             end
             function resolvers.cleanpath(str)
                 if find(str,"~") then
@@ -212,9 +212,9 @@ local function splitconfigurationpath(str) -- beware, this can be either a path 
                     end
                 end
                 if trace_expansions then
-                    report_resolvers("splitting path specification '%s'",str)
+                    report_expansions("splitting path specification '%s'",str)
                     for k=1,noffound do
-                        report_resolvers("% 4i: %s",k,found[k])
+                        report_expansions("% 4i: %s",k,found[k])
                     end
                 end
                 cache[str] = found
@@ -313,7 +313,7 @@ end
 
 function resolvers.scanfiles(path,branch)
     if trace_locating then
-        report_resolvers("scanning path '%s', branch '%s'",path, branch or path)
+        report_expansions("scanning path '%s', branch '%s'",path, branch or path)
     end
     local realpath = resolvers.resolve(path) -- no shortcut
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
@@ -322,7 +322,7 @@ function resolvers.scanfiles(path,branch)
     files.__directories__   = m
     files.__remappings__    = r
     if trace_locating then
-        report_resolvers("%s files found on %s directories with %s uppercase remappings",n,m,r)
+        report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
     return files
 end

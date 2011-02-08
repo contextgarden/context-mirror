@@ -8,6 +8,22 @@ if not modules then modules = { } end modules ['mtx-colors'] = {
 
 -- todo: fc-cache -v en check dirs, or better is: fc-cat -v | grep Directory
 
+local helpinfo = [[
+--table               show icc table
+
+example:
+
+mtxrun --script color --table somename
+]]
+
+local application = logs.application {
+    name     = "mtx-cache",
+    banner   = "ConTeXt Color Management 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 if not fontloader then fontloader = fontforge end
 
 dofile(resolvers.findfile("colo-icc.lua","tex"))
@@ -21,25 +37,15 @@ function scripts.colors.table()
         for i=1,#files do
             local profile, okay, message = colors.iccprofile(files[i])
             if not okay then
-                logs.simple(message)
+                report(message)
             else
-                logs.simple(table.serialize(profile,"profile"))
+                report(table.serialize(profile,"profile"))
             end
         end
     else
-        logs.simple("no file(s) given" )
+        report("no file(s) given" )
     end
 end
-
-logs.extendbanner("ConTeXt Color Management 0.1")
-
-messages.help = [[
---table               show icc table
-
-example:
-
-mtxrun --script color --table somename
-]]
 
 --~ local track = environment.argument("track")
 --~ if track then trackers.enable(track) end
@@ -47,5 +53,5 @@ mtxrun --script color --table somename
 if environment.argument("table") then
     scripts.colors.table()
 else
-    logs.help(messages.help)
+    application.help()
 end

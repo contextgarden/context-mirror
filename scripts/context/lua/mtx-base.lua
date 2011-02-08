@@ -6,35 +6,7 @@ if not modules then modules = { } end modules ['mtx-base'] = {
     license   = "see context related readme files"
 }
 
-logs.extendbanner("ConTeXt TDS Management Tool 1.35 (aka luatools)")
-
--- private option --noluc for testing errors in the stub
-
-local instance   = resolvers.instance
-
-local pattern    = environment.arguments["pattern"]  or nil
-local fileformat = environment.arguments["format"]   or "" -- nil ?
-local allresults = environment.arguments["all"]      or false
-local trace      = environment.arguments["trace"]
-
-if type(pattern) == 'boolean' then
-    logs.simple("invalid pattern specification")
-    pattern = nil
-end
-
-if trace then
-    resolvers.settrace(trace)  -- move to mtxrun ?
-end
-
-runners  = runners  or { }
-messages = messages or { }
-
-messages.no_ini_file = [[
-There is no lua initialization file found. It may be that you have
-to regenerate the file database using "mtxrun --generate".
-]]
-
-messages.help = [[
+local helpinfo = [[
 --generate        generate file database
 --variables       show configuration variables
 --configurations  show configuration order
@@ -54,6 +26,32 @@ messages.help = [[
 --pattern=str     filter variables
 --trackers=list   enable given trackers
 ]]
+
+local application = logs.application {
+    name     = "mtx-base",
+    banner   = "ConTeXt TDS Management Tool 1.35 (aka luatools)",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
+-- private option --noluc for testing errors in the stub
+
+local instance   = resolvers.instance
+
+local pattern    = environment.arguments["pattern"]  or nil
+local fileformat = environment.arguments["format"]   or "" -- nil ?
+local allresults = environment.arguments["all"]      or false
+local trace      = environment.arguments["trace"]
+
+if type(pattern) == 'boolean' then
+    report("invalid pattern specification")
+    pattern = nil
+end
+
+if trace then
+    resolvers.settrace(trace)  -- move to mtxrun ?
+end
 
 if environment.arguments["find-file"] then
     resolvers.load()
@@ -91,7 +89,7 @@ elseif environment.arguments["var-value"] or environment.arguments["show-value"]
     resolvers.dowithfilesandreport(resolvers.variable, environment.files)
 elseif environment.arguments["format-path"] then
     resolvers.load()
-    logs.simple(caches.getwritablepath("format"))
+    report(caches.getwritablepath("format"))
 elseif pattern then -- brrr
     resolvers.load()
     resolvers.dowithfilesandreport(resolvers.findfiles, { pattern }, fileformat, allresults)
@@ -110,7 +108,7 @@ elseif environment.arguments["configurations"] or environment.arguments["show-co
     resolvers.load("nofiles")
     resolvers.listers.configurations()
 elseif environment.arguments["help"] or (environment.files[1]=='help') or (#environment.files==0) then
-    logs.help(messages.help)
+    application.help()
 elseif environment.files[1] == 'texmfcnf.lua' then
     resolvers.load("nofiles")
     resolvers.listers.configurations()

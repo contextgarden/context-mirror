@@ -11,9 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\setnewconstant\statuswidth 15
-\setnewconstant\statuswrite 16
-
 \newtoks\everywritestring
 
 \def\writedirect  {\immediate\write\statuswrite}
@@ -21,18 +18,5 @@
 \def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
 \let\writebanner   \writestring
 \let\message       \normalmessage
-
-\ifx\normalwritestatus\undefined \def\normalwritestatus#1#2{\writedirect{#1 : #2}} \fi
-
-% no xml logging in format generation
-
-\everyjob {% we can redefine at the lua end !
-    \doif {\ctxlua{tex.sprint(logs.getmethod())}} {xml} {%
-        \long\def\writebanner  #1{\writestring  {<m t='banner'>#1</m>}}%
-        \long\def\writestatus#1#2{\writestring  {<m t='#1'>#2</m>}}%
-        \long\def\message      #1{\normalmessage{<m t='message'>#1</m>}}%
-        \let\normalwritestatus\writestatus
-    }%
-}
 
 \endinput

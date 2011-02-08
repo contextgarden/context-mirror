@@ -14,7 +14,7 @@ local backends = backends
 
 local trace_backend = false  trackers.register("backend.initializers", function(v) trace_finalizers = v end)
 
-local report_backends = logs.new("backends")
+local report_backend = logs.new("backend","initializing")
 
 local function nothing() return nil end
 
@@ -158,7 +158,7 @@ function backends.install(what)
         local backend = backends[what]
         if backend then
             if trace_backend then
-                report_backends("initializing backend %s (%s)",what,backend.comment or "no comment")
+                report_backend("initializing backend %s (%s)",what,backend.comment or "no comment")
             end
             backends.current = what
             for _, category in next, { "nodeinjections", "codeinjections", "registrations", "tables" } do
@@ -168,28 +168,28 @@ function backends.install(what)
                     for name, meaning in next, whereto do
                         if plugin[name] then
                             whereto[name] = plugin[name]
-                        --  report_backends("installing function %s in category %s of %s",name,category,what)
+                        --  report_backend("installing function %s in category %s of %s",name,category,what)
                         elseif trace_backend then
-                            report_backends("no function %s in category %s of %s",name,category,what)
+                            report_backend("no function %s in category %s of %s",name,category,what)
                         end
                     end
                 elseif trace_backend then
-                    report_backends("no category %s in %s",category,what)
+                    report_backend("no category %s in %s",category,what)
                 end
                 -- extra checks
                 for k, v in next, whereto do
                     if not plugin[k] then
-                        report_backends("entry %s in %s is not set",k,category)
+                        report_backend("entry %s in %s is not set",k,category)
                     end
                 end
                 for k, v in next, plugin do
                     if not whereto[k] then
-                        report_backends("entry %s in %s is not used",k,category)
+                        report_backend("entry %s in %s is not used",k,category)
                     end
                 end
             end
         elseif trace_backend then
-            report_backends("no backend named %s",what)
+            report_backend("no backend named %s",what)
         end
     end
 end

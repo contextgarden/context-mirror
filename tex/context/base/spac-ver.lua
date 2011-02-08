@@ -46,9 +46,9 @@ local trace_vspacing         = false  trackers.register("builders.vspacing",    
 local trace_vsnapping        = false  trackers.register("builders.vsnapping",        function(v) trace_vsnapping        = v end)
 local trace_vpacking         = false  trackers.register("builders.vpacking",         function(v) trace_vpacking         = v end)
 
-local report_vspacing     = logs.new("vspacing")
-local report_collapser    = logs.new("collapser")
-local report_snapper      = logs.new("snapper")
+local report_vspacing     = logs.new("vspacing","spacing")
+local report_collapser    = logs.new("vspacing","collapsing")
+local report_snapper      = logs.new("vspacing","snapping")
 
 local a_skipcategory      = attributes.private('skipcategory')
 local a_skippenalty       = attributes.private('skippenalty')

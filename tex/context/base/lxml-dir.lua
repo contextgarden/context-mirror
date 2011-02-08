@@ -30,6 +30,8 @@ local lxml = lxml
 lxml.directives  = lxml.directives or { }
 local directives = lxml.directives
 
+local report_lxml = logs.new("xml","tex")
+
 local data = {
     setup  = { },
     before = { },
@@ -58,9 +60,9 @@ local function load_setup(filename)
                 valid = valid + 1
             end
         end
-        commands.writestatus("lxml","%s directives found in '%s', %s valid",#collection,filename,valid)
+        report_lxml("%s directives found in '%s', %s valid",#collection,filename,valid)
     else
-        commands.writestatus("lxml","no directives found in '%s'",filename)
+        report_lxml("no directives found in '%s'",filename)
     end
 end
 

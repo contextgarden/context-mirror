@@ -6,147 +6,216 @@ if not modules then modules = { } end modules ['regi-ini'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
-local char, utfchar, gsub = string.char, utf.char, string.gsub
-
 --[[ldx--
 <p>Regimes take care of converting the input characters into
 <l n='utf'/> sequences. The conversion tables are loaded at
 runtime.</p>
 --ldx]]--
 
-regimes          = regimes or { }
-local regimes    = regimes
+local utfchar = utf.char
+local char, gsub, format = string.char, string.gsub, string.format
+local next, setmetatable = next, setmetatable
+local insert, remove = table.insert, table.remove
 
-regimes.data     = regimes.data or { }
-local data       = regimes.data
-
-regimes.utf      = regimes.utf or { }
-
--- regimes.synonyms = regimes.synonyms or { }
--- local synonyms   = regimes.synonyms
---
--- if storage then
---     storage.register("regimes/synonyms", synonyms, "regimes.synonyms")
--- else
---     regimes.synonyms = { }
--- end
-
-local synonyms = {
-
-    ["windows-1250"]  = "cp1250",
-    ["windows-1251"]  = "cp1251",
-    ["windows-1252"]  = "cp1252",
-    ["windows-1253"]  = "cp1253",
-    ["windows-1254"]  = "cp1254",
-    ["windows-1255"]  = "cp1255",
-    ["windows-1256"]  = "cp1256",
-    ["windows-1257"]  = "cp1257",
-    ["windows-1258"]  = "cp1258",
-
-    ["il1"]           = "8859-1",
-    ["il2"]           = "8859-2",
-    ["il3"]           = "8859-3",
-    ["il4"]           = "8859-4",
-    ["il5"]           = "8859-9",
-    ["il6"]           = "8859-10",
-    ["il7"]           = "8859-13",
-    ["il8"]           = "8859-14",
-    ["il9"]           = "8859-15",
-    ["il10"]          = "8859-16",
-
-    ["iso-8859-1"]    = "8859-1",
-    ["iso-8859-2"]    = "8859-2",
-    ["iso-8859-3"]    = "8859-3",
-    ["iso-8859-4"]    = "8859-4",
-    ["iso-8859-9"]    = "8859-9",
-    ["iso-8859-10"]   = "8859-10",
-    ["iso-8859-13"]   = "8859-13",
-    ["iso-8859-14"]   = "8859-14",
-    ["iso-8859-15"]   = "8859-15",
-    ["iso-8859-16"]   = "8859-16",
-
-    ["latin1"]        = "8859-1",
-    ["latin2"]        = "8859-2",
-    ["latin3"]        = "8859-3",
-    ["latin4"]        = "8859-4",
-    ["latin5"]        = "8859-9",
-    ["latin6"]        = "8859-10",
-    ["latin7"]        = "8859-13",
-    ["latin8"]        = "8859-14",
-    ["latin9"]        = "8859-15",
-    ["latin10"]       = "8859-16",
-
-    ["utf-8"]         = "utf",
-    ["utf8"]          = "utf",
-
-    ["windows"]       = "cp1252",
-
-}
-
-regimes.currentregime = "utf"
+local sequencers      = utilities.sequencers
+local textlineactions = resolvers.openers.helpers.textlineactions
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
 --ldx]]--
 
-function regimes.number(n)
-    if type(n) == "string" then return tonumber(n,16) else return n end
-end
+local trace_translating = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
 
-function regimes.setsynonym(synonym,target) -- more or less obsolete
-    synonyms[synonym] = target
-end
+local report_loading     = logs.new("regimes","loading")
+local report_translating = logs.new("regimes","translating")
 
-function regimes.truename(regime)
-    context((regime and synonyms[synonym] or regime) or regimes.currentregime)
-end
+regimes        = regimes or { }
+local regimes  = regimes
 
-function regimes.load(regime)
-    regime = synonyms[regime] or regime
-    if not data[regime] then
-        environment.loadluafile("regi-"..regime, 1.001)
-        if data[regime] then
-            regimes.utf[regime] = { }
-            for k,v in next, data[regime] do
-                regimes.utf[regime][char(k)] = utfchar(v)
-            end
+local mapping  = {
+    utf = false
+}
+
+local synonyms = { -- backward compatibility list
+
+    ["windows-1250"] = "cp1250",
+    ["windows-1251"] = "cp1251",
+    ["windows-1252"] = "cp1252",
+    ["windows-1253"] = "cp1253",
+    ["windows-1254"] = "cp1254",
+    ["windows-1255"] = "cp1255",
+    ["windows-1256"] = "cp1256",
+    ["windows-1257"] = "cp1257",
+    ["windows-1258"] = "cp1258",
+
+    ["il1"]          = "8859-1",
+    ["il2"]          = "8859-2",
+    ["il3"]          = "8859-3",
+    ["il4"]          = "8859-4",
+    ["il5"]          = "8859-9",
+    ["il6"]          = "8859-10",
+    ["il7"]          = "8859-13",
+    ["il8"]          = "8859-14",
+    ["il9"]          = "8859-15",
+    ["il10"]         = "8859-16",
+
+    ["iso-8859-1"]   = "8859-1",
+    ["iso-8859-2"]   = "8859-2",
+    ["iso-8859-3"]   = "8859-3",
+    ["iso-8859-4"]   = "8859-4",
+    ["iso-8859-9"]   = "8859-9",
+    ["iso-8859-10"]  = "8859-10",
+    ["iso-8859-13"]  = "8859-13",
+    ["iso-8859-14"]  = "8859-14",
+    ["iso-8859-15"]  = "8859-15",
+    ["iso-8859-16"]  = "8859-16",
+
+    ["latin1"]       = "8859-1",
+    ["latin2"]       = "8859-2",
+    ["latin3"]       = "8859-3",
+    ["latin4"]       = "8859-4",
+    ["latin5"]       = "8859-9",
+    ["latin6"]       = "8859-10",
+    ["latin7"]       = "8859-13",
+    ["latin8"]       = "8859-14",
+    ["latin9"]       = "8859-15",
+    ["latin10"]      = "8859-16",
+
+    ["utf-8"]        = "utf",
+    ["utf8"]         = "utf",
+    [""]             = "utf",
+
+    ["windows"]      = "cp1252",
+
+}
+
+local currentregime = "utf"
+
+local function loadregime(mapping,regime)
+    local name = resolvers.findfile(format("regi-%s.lua",regime)) or ""
+    local data = name ~= "" and dofile(name)
+    if data then
+        vector = { }
+        for eightbit, unicode in next, data do
+            vector[char(eightbit)] = utfchar(unicode)
         end
+        report_loading("vector '%s' is loaded",regime)
+    else
+        vector = false
+        report_loading("vector '%s' is unknown",regime)
     end
+    mapping[regime] = vector
+    return vector
 end
 
-function regimes.translate(line,regime)
-    regime = synonyms[regime] or regime
-    if regime and line then
-        local rur = regimes.utf[regime]
-        if rur then
-            return (gsub(line,"(.)",rur)) -- () redundant
+setmetatable(mapping, { __index = loadregime })
+
+local function translate(line,regime)
+    if line and #line > 0 then
+        local map = mapping[regime and synonyms[regime] or regime or currentregime]
+        if map then
+            line = gsub(line,".",map)
         end
     end
     return line
 end
 
-local sequencers      = utilities.sequencers
-local textlineactions = resolvers.openers.helpers.textlineactions
-
-function regimes.process(s)
-    return regimes.translate(s,regimes.currentregime)
-end
-
-function regimes.enable(regime)
-    regime = synonyms[regime] or regime
-    if data[regime] then
-        regimes.currentregime = regime
-        sequencers.enableaction(textlineactions,"regimes.process")
-    else
-        sequencers.disableaction(textlineactions,"regimes.process")
-    end
-end
-
-function regimes.disable()
-    regimes.currentregime = "utf"
+local function disable()
+    currentregime = "utf"
     sequencers.disableaction(textlineactions,"regimes.process")
 end
 
-utilities.sequencers.prependaction(textlineactions,"system","regimes.process")
-utilities.sequencers.disableaction(textlineactions,"regimes.process")
+local function enable(regime)
+    regime = synonyms[regime] or regime
+    if mapping[regime] == false then
+        disable()
+    else
+        currentregime = regime
+        sequencers.enableaction(textlineactions,"regimes.process")
+    end
+end
+
+regimes.translate = translate
+regimes.enable    = enable
+regimes.disable   = disable
+
+-- The following function can be used when we want to make sure that
+-- utf gets passed unharmed. This is needed for modules.
+
+local level = 0
+
+function regimes.process(str)
+    if level == 0 then
+        str = translate(str,currentregime)
+        if trace_translating then
+            report_translating("utf: %s",str)
+        end
+    end
+    return str
+end
+
+function regimes.push()
+    level = level + 1
+    if trace_translating then
+        report_translating("pushing level %s",level)
+    end
+end
+
+function regimes.pop()
+    if level > 0 then
+        if trace_translating then
+            report_translating("popping level %s",level)
+        end
+        level = level - 1
+    end
+end
+
+sequencers.prependaction(textlineactions,"system","regimes.process")
+sequencers.disableaction(textlineactions,"regimes.process")
+
+-- interface:
+
+commands.enableregime  = enable
+commands.disableregime = disable
+
+function commands.currentregime()
+    context(currentregime)
+end
+
+local stack = { }
+
+function commands.startregime(regime)
+    insert(stack,currentregime)
+    if trace_translating then
+        report_translating("start '%s'",regime)
+    end
+    enable(regime)
+end
+
+function commands.stopregime()
+    if #stack > 0 then
+        local regime = remove(stack)
+        if trace_translating then
+            report_translating("stop '%s'",regime)
+        end
+        enable(regime)
+    end
+end
+
+-- obsolete:
+--
+-- function regimes.setsynonym(synonym,target)
+--     synonyms[synonym] = target
+-- end
+--
+-- function regimes.truename(regime)
+--     return regime and synonyms[regime] or regime or currentregime
+-- end
+--
+-- function commands.trueregimename(regime)
+--     context(regimes.truename(regime))
+-- end
+--
+-- function regimes.load(regime)
+--     return mapping[synonyms[regime] or regime]
+-- end

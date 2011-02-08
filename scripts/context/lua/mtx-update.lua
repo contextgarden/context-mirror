@@ -11,6 +11,32 @@ if not modules then modules = { } end modules ['mtx-update'] = {
 -- Together with Arthur Reutenauer she made sure that it worked well on all
 -- platforms that matter.
 
+local helpinfo = [[
+--platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
+--server=string       repository url (rsync://contextgarden.net)
+--module=string       repository url (minimals)
+--repository=string   specify version (current, experimental)
+--context=string      specify version (current, latest, beta, yyyy.mm.dd)
+--rsync=string        rsync binary (rsync)
+--texroot=string      installation directory (not guessed for the moment)
+--engine=string       tex engine (luatex, pdftex, xetex)
+--extras=string       extra modules (can be list or 'all')
+--goodies=string      extra binaries (like scite and texworks)
+--force               instead of a dryrun, do the real thing
+--update              update minimal tree
+--make                also make formats and generate file databases
+--keep                don't delete unused or obsolete files
+--state               update tree using saved state
+]]
+
+local application = logs.application {
+    name     = "mtx-update",
+    banner   = "ConTeXt Minimals Updater 0.22",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 local format, concat, gmatch, gsub = string.format, table.concat, string.gmatch, string.gsub
 
 scripts         = scripts         or { }
@@ -159,10 +185,10 @@ function scripts.update.run(str)
     -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
     os.setenv("engine",nil)
     if environment.argument("force") then
-        logs.report("run", str)
+        report("run, %s",str)
         os.execute(str)
     else
-        logs.report("dry run", str)
+        report("dry run, %s",str)
     end
 end
 
@@ -176,7 +202,7 @@ end
 
 function scripts.update.synchronize()
 
-    logs.report("update","start")
+    report("update, start")
 
     local texroot      = scripts.update.fullpath(states.get("paths.root"))
     local engines      = states.get('engines') or { }
@@ -350,7 +376,7 @@ function scripts.update.synchronize()
                 deleteflags = states.get("rsync.flags.delete")
             end
             command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, destination)
-            --logs.report("mtx update", format("running command: %s",command))
+            -- report("running command: %s",command)
             if not fetched[command] then
                 scripts.update.run(command,true)
                 fetched[command] = command
@@ -370,7 +396,7 @@ function scripts.update.synchronize()
                 else
                     command = format("%s -tgo --chmod=a+x %s/texmf-context/scripts/context/lua/%s.lua %s/texmf-%s/bin/%s", bin, texroot, script, texroot, platform, script)
                 end
-                logs.report("mtx update", format("updating %s for %s: %s", script, platform, command))
+                report("updating %s for %s: %s", script, platform, command)
                 scripts.update.run(command)
             end
         end
@@ -382,10 +408,10 @@ function scripts.update.synchronize()
         end
 
     else
-        logs.report("mtx update", format("no valid texroot: %s",texroot))
+        report("no valid texroot: %s",texroot)
     end
     if not force then
-        logs.report("update", "use --force to really update files")
+        report("use --force to really update files")
     end
 
     resolvers.load_tree(texroot) -- else we operate in the wrong tree
@@ -395,7 +421,7 @@ function scripts.update.synchronize()
     -- update filename database for luatex
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
-    logs.report("update","done")
+    report("update, done")
 end
 
 function table.fromhash(t)
@@ -409,7 +435,7 @@ end
 -- make the ConTeXt formats
 function scripts.update.make()
 
-    logs.report("make","start")
+    report("make, start")
 
     local force     = environment.argument("force")
     local texroot   = scripts.update.fullpath(states.get("paths.root"))
@@ -451,32 +477,12 @@ function scripts.update.make()
         scripts.update.run(format('mtxrun --tree="%s" --script texexec --make --all %s',texroot,formatlist))
     end
     if not force then
-        logs.report("make", "use --force to really make formats")
+        report("make, use --force to really make formats")
     end
     scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
-    logs.report("make","done")
+    report("make, done")
 end
-
-logs.extendbanner("ConTeXt Minimals Updater 0.21")
-
-messages.help = [[
---platform=string     platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
---server=string       repository url (rsync://contextgarden.net)
---module=string       repository url (minimals)
---repository=string   specify version (current, experimental)
---context=string      specify version (current, latest, beta, yyyy.mm.dd)
---rsync=string        rsync binary (rsync)
---texroot=string      installation directory (not guessed for the moment)
---engine=string       tex engine (luatex, pdftex, xetex)
---extras=string       extra modules (can be list or 'all')
---goodies=string      extra binaries (like scite and texworks)
---force               instead of a dryrun, do the real thing
---update              update minimal tree
---make                also make formats and generate file databases
---keep                don't delete unused or obsolete files
---state               update tree using saved state
-]]
 
 scripts.savestate = true
 
@@ -544,7 +550,8 @@ if scripts.savestate then
         states.set("goodies." .. r, true)
     end
 
-    logs.report("state","loaded")
+    report("state, loaded")
+    report()
 
 end
 
@@ -562,7 +569,7 @@ if environment.argument("update") then
 elseif environment.argument("make") then
     scripts.update.make()
 else
-    logs.help(messages.help)
+    application.help()
 end
 
 if scripts.savestate then
@@ -570,6 +577,6 @@ if scripts.savestate then
     states.set("info.runtime",tonumber(statistics.elapsedtime(states)))
     if environment.argument("force") then
         states.save()
-        logs.report("state","saved")
+        report("state","saved")
     end
 end

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-chk'] = {
 
 -- possible optimization: delayed initialization of vectors
 
-local report_fonts = logs.new("fonts")
+local report_fonts = logs.new("fonts","checking")
 
 local fonts        = fonts
 

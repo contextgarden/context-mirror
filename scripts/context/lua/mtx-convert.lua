@@ -8,6 +8,23 @@ if not modules then modules = { } end modules ['mtx-convert'] = {
 
 -- todo: eps and svg
 
+local helpinfo = [[
+--convertall          convert all graphics on path
+--inputpath=string    original graphics path
+--outputpath=string   converted graphics path
+--watch               watch folders
+--force               force conversion (even if older)
+--delay               time between sweeps
+]]
+
+local application = logs.application {
+    name     = "mtx-convert",
+    banner   = "ConTeXT Graphic Conversion Helpers 0.10",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 graphics            = graphics            or { }
 graphics.converters = graphics.converters or { }
 
@@ -40,7 +57,7 @@ local function convert(kind,oldname,newname)
     if graphics.converters[kind] then -- extra test
         local tmpname = file.replacesuffix(newname,"tmp")
         local command = graphics.converters[kind](oldname,tmpname)
-        logs.simple("command: %s",command)
+        report("command: %s",command)
         io.flush()
         os.spawn(command)
         os.remove(newname)
@@ -118,22 +135,10 @@ function scripts.convert.convertgiven()
     end
 end
 
-
-logs.extendbanner("ConTeXT Graphic Conversion Helpers 0.10")
-
-messages.help = [[
---convertall          convert all graphics on path
---inputpath=string    original graphics path
---outputpath=string   converted graphics path
---watch               watch folders
---force               force conversion (even if older)
---delay               time between sweeps
-]]
-
 if environment.argument("convertall") then
     scripts.convert.convertall()
 elseif environment.files[1] then
     scripts.convert.convertgiven()
 else
-    logs.help(messages.help)
+    application.help()
 end

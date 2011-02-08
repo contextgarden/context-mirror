@@ -17,6 +17,8 @@ dofile(resolvers.findfile("trac-lmx.lua","tex"))
 local format = string.format
 local concat = table.concat
 
+local report = logs.new("ctx-help")
+
 -- -- -- make this a module: cont-xx.lua
 
 document = document or { }
@@ -591,7 +593,7 @@ local function doit(configuration,filename,hashed)
     lastmode      = tonumber(detail.mode or lastmode) or 1
 
     if lastinterface then
-        logs.simple("checking interface: %s",lastinterface)
+        report("checking interface: %s",lastinterface)
         document.setups.load(format("cont-%s.xml",lastinterface))
     end
 
@@ -657,7 +659,7 @@ local function doit(configuration,filename,hashed)
 
     local content = lmx.convert('context-help.lmx',false,variables)
 
-    logs.simple("time spent on page: %0.03f seconds",os.clock()-start)
+    report("time spent on page: %0.03f seconds",os.clock()-start)
 
     return { content = content }
 end

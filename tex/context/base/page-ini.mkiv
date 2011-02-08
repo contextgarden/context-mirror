@@ -601,7 +601,7 @@
      \vskip\!!sixpoint
      \hbox to \makeupwidth
        {\infofont
-        \getmessage\m!systems{27}:\space\currentdate\space
+        \getmessage\m!system{27}:\space\currentdate\space
         \doplaceversiontext\v!project  \currentproject
         \doplaceversiontext\v!product  \currentproduct
         \doplaceversiontext\v!component\currentcomponent
@@ -1303,7 +1303,7 @@
 % We don't want spurious last pages (due to left over marks):
 
 \def\noshipout
-  {\writestatus\m!systems{ignoring further shipouts}%
+  {\writestatus\m!system{ignoring further shipouts}%
    \global\advance\realpageno\minusone % else no flush of resources
    \dowithnextbox{\deadcycles\zerocount}}
 

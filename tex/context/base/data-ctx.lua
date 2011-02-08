@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-ctx'] = {
 
 local format = string.format
 
-local report_resolvers = logs.new("resolvers")
+local report_dump = logs.new("resolvers","dump")
 
 local resolvers = resolvers
 
@@ -36,7 +36,7 @@ local function saveusedfilesin_trees()
         end
         f:write("</rl:job>\n")
         f:close()
-        report_resolvers("saving used tree files in '%s'",filename)
+        report_dump("saving used tree files in '%s'",filename)
     end
 end
 

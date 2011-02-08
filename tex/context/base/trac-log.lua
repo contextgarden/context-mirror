@@ -6,22 +6,21 @@ if not modules then modules = { } end modules ['trac-log'] = {
     license   = "see context related readme files"
 }
 
--- xml logging is only usefull in normal runs, not in ini mode
--- it looks like some tex logging (like filenames) is broken (no longer
--- interceoted at the tex end so the xml variant is not that useable now)
+-- todo: less categories, more subcategories (e.g. nodes)
 
 --~ io.stdout:setvbuf("no")
 --~ io.stderr:setvbuf("no")
 
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, find = string.format, string.gmatch, string.find
+local concat = table.concat
+local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
+local next, type = next, type
 
 --[[ldx--
-<p>This is a prelude to a more extensive logging module. For the sake
-of parsing log files, in addition to the standard logging we will
-provide an <l n='xml'/> structured file. Actually, any logging that
-is hooked into callbacks will be \XML\ by default.</p>
+<p>This is a prelude to a more extensive logging module. We no longer
+provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
 --ldx]]--
 
 logs       = logs or { }
@@ -39,109 +38,239 @@ webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
 ]]
 
-local functions = {
-    'report', 'status', 'start', 'stop', 'push', 'pop', 'line', 'direct',
-    'start_run', 'stop_run',
-    'start_page_number', 'stop_page_number',
-    'report_output_pages', 'report_output_log',
-    'report_tex_stat', 'report_job_stat',
-    'show_open', 'show_close', 'show_load',
-    'dummy',
-}
+-- local functions = {
+--     'report', 'status', 'start', 'stop', 'line', 'direct',
+--     'start_run', 'stop_run',
+--     'start_page_number', 'stop_page_number',
+--     'report_output_pages', 'report_output_log',
+--     'report_tex_stat', 'report_job_stat',
+--     'show_open', 'show_close', 'show_load',
+--     'dummy',
+-- }
 
-local method = "nop"
+-- basic loggers
 
-function logs.setmethod(newmethod)
-    method = newmethod
-    -- a direct copy might be faster but let's try this for a while
-    setmetatable(logs, { __index = logs[method] })
+local function ignore() end
+
+setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
+
+-- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
+
+local report, subreport
+
+if tex and tex.jobname or tex.formatname then
+
+    report = function(a,b,c,...)
+        if c then
+            write_nl(format("%-15s > %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s > %s\n",a,b))
+        elseif a then
+            write_nl(format("%-15s >\n",   a))
+        else
+            write_nl("\n")
+        end
+    end
+
+    subreport = function(a,sub,b,c,...)
+        if c then
+            write_nl(format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s > %s > %s\n",a,sub,b))
+        elseif a then
+            write_nl(format("%-15s > %s >\n",   a,sub))
+        else
+            write_nl("\n")
+        end
+    end
+
+else
+
+    report = function(a,b,c,...)
+        if c then
+            write_nl(format("%-15s | %s",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s | %s",a,b))
+        elseif a then
+            write_nl(format("%-15s |",   a))
+        else
+            write_nl("")
+        end
+    end
+
+    subreport = function(a,sub,b,c,...)
+        if c then
+            write_nl(format("%-15s | %s | %s",a,sub,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s | %s | %s",a,sub,b))
+        elseif a then
+            write_nl(format("%-15s | %s |",   a,sub))
+        else
+            write_nl("")
+        end
+    end
+
 end
 
-function logs.getmethod()
-    return method
+function logs.status(a,b,c,...) -- at the tex end
+    if c then
+        write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+    elseif b then
+        write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+    elseif a then
+        write_nl(format("%-15s :\n",   a))
+    else
+        write_nl("\n")
+    end
 end
+
+logs.report    = report
+logs.subreport = subreport
 
 -- installer
 
-local data = { }
+-- todo: renew (un) locks when a new one is added and wildcard
 
-function logs.new(category)
+local data, states = { }, nil
+
+function logs.reporter(category,subcategory)
     local logger = data[category]
     if not logger then
-        logger = function(...)
-            logs.report(category,...)
+        local state = false
+        if states == true then
+            state = true
+        elseif type(states) == "table" then
+            for c, _ in next, states do
+                if find(category,c) then
+                    state = true
+                    break
+                end
+            end
         end
+        logger = {
+            reporters = { },
+            state = state,
+        }
         data[category] = logger
     end
-    return logger
+    local reporter = logger.reporters[subcategory or "default"]
+    if not reporter then
+        if subcategory then
+            reporter = function(...)
+                if not logger.state then
+                    subreport(category,subcategory,...)
+                end
+            end
+            logger.reporters[subcategory] = reporter
+        else
+            local tag = category
+            reporter = function(...)
+                if not logger.state then
+                    report(category,...)
+                end
+            end
+            logger.reporters.default = reporter
+        end
+    end
+    return reporter
 end
 
---~ local report = logs.new("fonts")
+logs.new = logs.reporter
 
--- nop logging (maybe use __call instead)
-
-local noplog = { } logs.nop = noplog  setmetatable(logs, { __index = noplog })
-
-for i=1,#functions do
-    noplog[functions[i]] = function() end
-end
-
--- tex logging
-
-local texlog = { }  logs.tex = texlog  setmetatable(texlog, { __index = noplog })
-
-function texlog.report(a,b,c,...)
---~ print(a,b,c,...)
-    if c then
-        write_nl(format("%-16s> %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-16s> %s\n",a,b))
+local function doset(category,value)
+    if category == true then
+        -- lock all
+        category, value = "*", true
+    elseif category == false then
+        -- unlock all
+        category, value = "*", false
+    elseif value == nil then
+        -- lock selective
+        value = true
+    end
+    if category == "*" then
+        states = value
+        for k, v in next, data do
+            v.state = value
+        end
     else
-        write_nl(format("%-16s>\n",a))
+        states = utilities.parsers.settings_to_hash(category)
+        for c, _ in next, states do
+            if data[c] then
+                v.state = value
+            else
+                c = escapedpattern(c,true)
+                for k, v in next, data do
+                    if find(k,c) then
+                        v.state = value
+                    end
+                end
+            end
+        end
     end
 end
 
-function texlog.status(a,b,c,...)
-    if c then
-        write_nl(format("%-16s: %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-16s: %s\n",a,b)) -- b can have %'s
-    else
-        write_nl(format("%-16s:>\n",a))
-    end
+function logs.disable(category,value)
+    doset(category,value == nil and true or value)
 end
 
-function texlog.line(fmt,...) -- new
-    if fmt then
-        write_nl(format(fmt,...))
-    else
-        write_nl("")
-    end
+function logs.enable(category)
+    doset(category,false)
 end
 
---~ local hasscheme = url.hasscheme
+function logs.categories()
+    return table.sortedkeys(data)
+end
 
---~ function texlog.show_open(name)
---~     if hasscheme(name) ~= "virtual" then
---~         write(format("(",name)) -- tex adds a space
---~     end
---~ end
+function logs.show()
+    local n, c, s, max = 0, 0, 0, 0
+    for category, v in table.sortedpairs(data) do
+        n = n + 1
+        local state = v.state
+        local reporters = v.reporters
+        local nc = #category
+        if nc > c then
+            c = nc
+        end
+        for subcategory, _ in next, reporters do
+            local ns = #subcategory
+            if ns > c then
+                s = ns
+            end
+            local m = nc + ns
+            if m > max then
+                max = m
+            end
+        end
+        local subcategories = concat(table.sortedkeys(reporters),", ")
+        if state == true then
+            state = "disabled"
+        elseif state == false then
+            state = "enabled"
+        else
+            state = "unknown"
+        end
+        -- no new here
+        report("logging","category: '%s', subcategories: '%s', state: '%s'",category,subcategories,state)
+    end
+    report("logging","categories: %s, max category: %s, max subcategory: %s, max combined: %s",n,c,s,max)
+end
 
---~ function texlog.show_close(name)
---~     if hasscheme(name) ~= "virtual" then
---~         write(")") -- tex adds a space
---~     end
---~ end
+directives.register("logs.blocked", function(v)
+    doset(v,true)
+end)
+
+-- tex specific loggers (might move elsewhere)
+
+local report_pages = logs.reporter("pages") -- not needed but saves checking when we grep for it
 
 local real, user, sub
 
-function texlog.start_page_number()
+function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
 end
 
-local report_pages = logs.new("pages") -- not needed but saves checking when we grep for it
-
-function texlog.stop_page_number()
+function logs.stop_page_number()
     if real > 0 then
         if user > 0 then
             if sub > 0 then
@@ -158,176 +287,98 @@ function texlog.stop_page_number()
     io.flush()
 end
 
-texlog.report_job_stat = statistics and statistics.showjobstat
+logs.report_job_stat = statistics and statistics.showjobstat
 
--- xml logging
-
-local xmllog = { }  logs.xml = xmllog  setmetatable(xmllog, { __index = noplog })
-
-function xmllog.report(category,fmt,s,...) -- new
-    if s then
-        write_nl(format("<r category='%s'>%s</r>",category,format(fmt,s,...)))
-    elseif fmt then
-        write_nl(format("<r category='%s'>%s</r>",category,fmt))
-    else
-        write_nl(format("<r category='%s'/>",category))
-    end
-end
-
-function xmllog.status(category,fmt,s,...)
-    if s then
-        write_nl(format("<s category='%s'>%s</r>",category,format(fmt,s,...)))
-    elseif fmt then
-        write_nl(format("<s category='%s'>%s</r>",category,fmt))
-    else
-        write_nl(format("<s category='%s'/>",category))
-    end
-end
-
-function xmllog.line(fmt,...) -- new
-    if fmt then
-        write_nl(format("<r>%s</r>",format(fmt,...)))
-    else
-        write_nl("<r/>")
-    end
-end
-
-function xmllog.start() write_nl("<%s>" ) end
-function xmllog.stop () write_nl("</%s>") end
-function xmllog.push () write_nl("<!-- ") end
-function xmllog.pop  () write_nl(" -->" ) end
-
-function xmllog.start_run()
-    write_nl("<?xml version='1.0' standalone='yes'?>")
-    write_nl("<job>") --  xmlns='www.pragma-ade.com/luatex/schemas/context-job.rng'
-    write_nl("")
-end
-
-function xmllog.stop_run()
-    write_nl("</job>")
-end
-
-function xmllog.start_page_number()
-    write_nl(format("<p real='%s' page='%s' sub='%s'", texcount.realpageno, texcount.userpageno, texcount.subpageno))
-end
-
-function xmllog.stop_page_number()
-    write("/>")
-    write_nl("")
-end
-
-function xmllog.report_output_pages(p,b)
-    write_nl(format("<v k='pages' v='%s'/>", p))
-    write_nl(format("<v k='bytes' v='%s'/>", b))
-    write_nl("")
-end
-
-function xmllog.report_output_log()
-    -- nothing
-end
-
-function xmllog.report_tex_stat(k,v)
-    write_nl("log","<v k='"..k.."'>"..tostring(v).."</v>")
-end
+local report_files = logs.reporter("files")
 
 local nesting = 0
+local verbose = false
 
-function xmllog.show_open(name)
-    nesting = nesting + 1
-    write_nl(format("<f l='%s' n='%s'>",nesting,name))
-end
-
-function xmllog.show_close(name)
-    write("</f> ")
-    nesting = nesting - 1
-end
-
-function xmllog.show_load(name)
-    write_nl(format("<f l='%s' n='%s'/>",nesting+1,name))
-end
-
--- initialization
-
-if tex and (tex.jobname or tex.formatname) then
-    -- todo: this can be set in mtxrun ... or maybe we should just forget about this alternative format
-    if (os.getenv("mtx.directives.logmethod") or os.getenv("mtx_directives_logmethod")) == "xml" then
-        logs.setmethod('xml')
-    else
-        logs.setmethod('tex')
-    end
-else
-    logs.setmethod('nop')
-end
-
--- logging in runners -> these are actually the nop loggers
-
-local name, banner = 'report', 'context'
-
-function noplog.report(category,fmt,...) -- todo: fmt,s
-    if fmt then
-        write_nl(format("%s | %s: %s",name,category,format(fmt,...)))
-    elseif category then
-        write_nl(format("%s | %s",name,category))
-    else
-        write_nl(format("%s |",name))
+function logs.show_open(name)
+    if verbose then
+        nesting = nesting + 1
+        report_files("level %s, opening %s",nesting,name)
     end
 end
 
-noplog.status = noplog.report -- just to be sure, never used
-
-function noplog.simple(fmt,...) -- todo: fmt,s
-    if fmt then
-        write_nl(format("%s | %s",name,format(fmt,...)))
-    else
-        write_nl(format("%s |",name))
+function logs.show_close(name)
+    if verbose then
+        report_files("level %s, closing %s",nesting,name)
+        nesting = nesting - 1
     end
 end
 
-if utilities then
-    utilities.report = function(...) logs.simple(...) end
-end
-
-function logs.setprogram(newname,newbanner)
-    name, banner = newname, newbanner
-end
-
-function logs.extendbanner(newbanner)
-    banner = banner .. " | ".. newbanner
-end
-
-function logs.reportlines(str) -- todo: <lines></lines>
-    for line in gmatch(str,"(.-)[\n\r]") do
-        logs.report(line)
+function logs.show_load(name)
+    if verbose then
+        report_files("level %s, loading %s",nesting+1,name)
     end
 end
 
-function logs.reportline() -- for scripts too
-    logs.report()
-end
+-- there may be scripts out there using this:
 
-function logs.simpleline()
-    logs.report()
-end
+local simple = logs.reporter("comment")
 
-function logs.simplelines(str) -- todo: <lines></lines>
-    for line in gmatch(str,"(.-)[\n\r]") do
-        logs.simple(line)
+logs.simple     = simple
+logs.simpleline = simple
+
+-- obsolete
+
+function logs.setprogram  () end -- obsolete
+function logs.extendbanner() end -- obsolete
+function logs.reportlines () end -- obsolete
+function logs.reportbanner() end -- obsolete
+function logs.reportline  () end -- obsolete
+function logs.simplelines () end -- obsolete
+function logs.help        () end -- obsolete
+
+-- applications
+
+local function reportlines(t,str)
+    if str then
+        for line in gmatch(str,"(.-)[\n\r]") do
+            t.report(line)
+        end
     end
 end
 
-function logs.reportbanner() -- for scripts too
-    logs.report(banner)
-end
-
-function logs.help(message,option)
-    logs.reportbanner()
-    logs.reportline()
-    logs.reportlines(message)
-    if option ~= "nomoreinfo" then
-        logs.reportline()
-        logs.reportlines(moreinfo)
+local function reportbanner(t)
+    local banner = t.banner
+    if banner then
+        t.report(banner)
+        t.report()
     end
 end
+
+local function reporthelp(t,...)
+    local helpinfo = t.helpinfo
+    if type(helpinfo) == "string" then
+        reportlines(t,helpinfo)
+    elseif type(helpinfo) == "table" then
+        local tags = { ... }
+        for i=1,#tags do
+            reportlines(t,t.helpinfo[tags[i]])
+            if i < #tags then
+                t.report()
+            end
+        end
+    end
+end
+
+local function reportinfo(t)
+    t.report()
+    reportlines(t,moreinfo)
+end
+
+function logs.application(t)
+    t.name     = t.name   or "unknown"
+    t.banner   = t.banner
+    t.report   = logs.reporter(t.name)
+    t.help     = function(...) reportbanner(t) ; reporthelp(t,...) ; reportinfo(t) end
+    t.identify = function() reportbanner(t) end
+    return t
+end
+
+-- somewhat special
 
 -- logging to a file
 
@@ -340,7 +391,7 @@ end
 function logs.system(whereto,process,jobname,category,...)
     local message = format("%s %s => %s => %s => %s\r",os.date("%d/%m/%y %H:%m:%S"),process,jobname,category,format(...))
     for i=1,10 do
-        local f = io.open(whereto,"a")
+        local f = io.open(whereto,"a") -- we can consider keepint the file open
         if f then
             f:write(message)
             f:close()
@@ -351,52 +402,24 @@ function logs.system(whereto,process,jobname,category,...)
     end
 end
 
--- bonus
-
-function logs.fatal(where,...)
-    logs.report(where,"fatal error: %s, aborting now",format(...))
-    os.exit()
-end
-
---~ the traditional tex page number logging
---~
---~ function logs.tex.start_page_number()
---~     local real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
---~     if real > 0 then
---~         if user > 0 then
---~             if sub > 0 then
---~                 write(format("[%s.%s.%s",real,user,sub))
---~             else
---~                 write(format("[%s.%s",real,user))
---~             end
---~         else
---~             write(format("[%s",real))
---~         end
---~     else
---~         write("[-")
---~     end
---~ end
---~
---~ function logs.tex.stop_page_number()
---~     write("]")
---~ end
+local report_system = logs.reporter("system","logs")
 
 function logs.obsolete(old,new)
     local o = loadstring("return " .. new)()
     if type(o) == "function" then
         return function(...)
-            logs.report("system","function %s is obsolete, use %s",old,new)
+            report_system("function %s is obsolete, use %s",old,new)
             loadstring(old .. "=" .. new  .. " return ".. old)()(...)
         end
     elseif type(o) == "table" then
         local t, m = { }, { }
         m.__index = function(t,k)
-            logs.report("system","table %s is obsolete, use %s",old,new)
+            report_system("table %s is obsolete, use %s",old,new)
             m.__index, m.__newindex = o, o
             return o[k]
         end
         m.__newindex = function(t,k,v)
-            logs.report("system","table %s is obsolete, use %s",old,new)
+            report_system("table %s is obsolete, use %s",old,new)
             m.__index, m.__newindex = o, o
             o[k] = v
         end
@@ -406,6 +429,10 @@ function logs.obsolete(old,new)
         setmetatable(t,m)
         return t
     end
+end
+
+if utilities then
+    utilities.report = report_system
 end
 
 if tex and tex.error then

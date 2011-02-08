@@ -6,6 +6,25 @@ if not modules then modules = { } end modules ['mtx-watch'] = {
     license   = "see context related readme files"
 }
 
+local helpinfo = [[
+--logpath             optional path for log files
+--watch               watch given path [--delay]
+--pipe                use pipe instead of execute
+--delay               delay between sweeps
+--automachine         replace /machine/ in path /<servername>/
+--collect             condense log files
+--cleanup=delay       remove files in given path [--force]
+--showlog             show log data
+]]
+
+local application = logs.application {
+    name     = "mtx-watch",
+    banner   = "ConTeXt Request Watchdog 1.00",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 scripts       = scripts       or { }
 scripts.watch = scripts.watch or { }
 
@@ -92,7 +111,7 @@ function scripts.watch.watch()
             end
         end
         for i=1,#paths do
-            logs.report("watch", "watching path ".. paths[i])
+            report("watching path %s",paths[i])
         end
         local function process()
             local done = false
@@ -107,7 +126,7 @@ function scripts.watch.watch()
                     local ok, joblog = pcall(dofile,name)
                     if ok and joblog then
                         if joblog.status == "processing" then
-                            logs.report("watch",format("aborted job, %s added to queue",name))
+                            report("aborted job, %s added to queue",name)
                             joblog.status = "queued"
                             io.savedata(name, table.serialize(joblog,true))
                         elseif joblog.status == "queued" then
@@ -124,7 +143,7 @@ function scripts.watch.watch()
                                     joblog.status = "processing"
                                     joblog.runtime = clock()
                                     io.savedata(name, table.serialize(joblog,true))
-                                    logs.report("watch",format("running: %s", command))
+                                    report("running: %s", command)
                                     local newpath = file.dirname(name)
                                     io.flush()
                                     local result = ""
@@ -141,7 +160,7 @@ function scripts.watch.watch()
                                         scripts.watch.save_exa_modes(joblog,ctmname)
                                         if pipe then result = os.resultof(command) else result = os.spawn(command) end
                                     end
-                                    logs.report("watch",format("return value: %s", result))
+                                    report("return value: %s", result)
                                     done = true
                                     local path, base = replacements.outputpath, file.basename(replacements.filename)
                                     joblog.runtime = clock() - joblog.runtime
@@ -162,7 +181,7 @@ function scripts.watch.watch()
                             if logpath and logpath ~= "" then
                                 local name = file.join(logpath,os.uuid() .. ".lua")
                                 io.savedata(name, table.serialize(joblog,true))
-                                logs.report("watch", "saving joblog in " .. name)
+                                report("saving joblog in %s",name)
                             end
                         end
                     end
@@ -175,7 +194,7 @@ function scripts.watch.watch()
 --~             if not done then
 --~                 n = n + 1
 --~                 if n >= 10 then
---~                     logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
+--~                     report("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000)
 --~                     n = 0
 --~                 end
 --~                 os.sleep(delay)
@@ -187,7 +206,7 @@ function scripts.watch.watch()
             if not done then
                 n = n + 1
                 if n >= 10 then
-                    logs.report("watch", format("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000))
+                    report("run time: %i seconds, memory usage: %0.3g MB", difftime(time(),start), (status.luastate_bytes/1024)/1000)
                     n = 0
                 end
                 local ttime = 0
@@ -222,7 +241,7 @@ function scripts.watch.watch()
                                 local filetime = lfs.attributes(name,"modification")
                                 local delta = difftime(currenttime,filetime)
                                 if delta > cleanupdelay then
-                                 -- logs.report("watch",format("cleaning up '%s'",name))
+                                 -- report("cleaning up '%s'",name)
                                     os.remove(name)
                                 end
                             end
@@ -248,7 +267,7 @@ function scripts.watch.watch()
             end
         end
     else
-        logs.report("watch", "no paths to watch")
+        report("no paths to watch")
     end
 end
 
@@ -282,7 +301,7 @@ function scripts.watch.save_logs(collection,path) -- play safe
         local check = dofile(filename)
         for k,v in next, check do
             if not collection[k] then
-                logs.error("watch", "error in saving file")
+                report("error in saving file")
                 os.remove(filename)
                 return false
             end
@@ -326,7 +345,7 @@ function scripts.watch.show_logs(path) -- removes duplicates
         local v = sorted[k]
         local c = collection[v]
         local f, s, r, n = c.filename or "?", c.status or "?", c.runtime or 0, c.size or 0
-        logs.report("watch", format("%s  %s  %3i  %8i  %s",string.padd(f,max," "),string.padd(s,10," "),r,n,v))
+        report("%s  %s  %3i  %8i  %s",string.padd(f,max," "),string.padd(s,10," "),r,n,v)
     end
 end
 
@@ -335,11 +354,11 @@ function scripts.watch.cleanup_stale_files() -- removes duplicates
     local delay = tonumber(environment.argument("cleanup"))
     local force = environment.argument("force")
     if not path or path == "." then
-        logs.report("watch","provide qualified path")
+        report("provide qualified path")
     elseif not delay then
-        logs.report("watch","missing --cleanup=delay")
+        report("missing --cleanup=delay")
     else
-        logs.report("watch","dryrun, use --force for real cleanup")
+        report("dryrun, use --force for real cleanup")
         local files = dir.glob(file.join(path,"*"))
         local rtime = time()
         for i=1,#files do
@@ -347,7 +366,7 @@ function scripts.watch.cleanup_stale_files() -- removes duplicates
             local mtime = lfs.attributes(name,"modification")
             local delta = difftime(rtime,mtime)
             if delta > delay then
-                logs.report("watch",format("cleaning up '%s'",name))
+                report("cleaning up '%s'",name)
                 if force then
                     os.remove(name)
                 end
@@ -355,19 +374,6 @@ function scripts.watch.cleanup_stale_files() -- removes duplicates
         end
     end
 end
-
-logs.extendbanner("ConTeXt Request Watchdog 1.00")
-
-messages.help = [[
---logpath             optional path for log files
---watch               watch given path [--delay]
---pipe                use pipe instead of execute
---delay               delay between sweeps
---automachine         replace /machine/ in path /<servername>/
---collect             condense log files
---cleanup=delay       remove files in given path [--force]
---showlog             show log data
-]]
 
 if environment.argument("watch") then
     scripts.watch.watch()
@@ -378,5 +384,5 @@ elseif environment.argument("cleanup") then
 elseif environment.argument("showlog") then
     scripts.watch.show_logs()
 else
-    logs.help(messages.help)
+    application.help()
 end

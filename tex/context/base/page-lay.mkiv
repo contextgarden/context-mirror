@@ -385,11 +385,11 @@
       \fi\fi
       \ifdim\paperheight>\printpaperheight
         \global\printpaperheight\paperheight
-        \writestatus\m!systems{print height forced to paper height}%
+        \writestatus\m!system{print height forced to paper height}%
       \fi
       \ifdim\paperwidth>\printpaperwidth
         \global\printpaperwidth\paperwidth
-        \writestatus\m!systems{print width forced to paper width}%
+        \writestatus\m!system{print width forced to paper width}%
       \fi
       \egroup}}
 
@@ -428,7 +428,7 @@
 %   {\beforesplitstring#1\at em\to\asciia
 %    \doifnot\asciia{#1}
 %      {\aftersplitstring\asciia\at=\to\asciia
-%       \doifsomething\asciia{\showmessage\m!systems{10}{#1}}}}
+%       \doifsomething\asciia{\showmessage\m!system{10}{#1}}}}
 %
 % \def\checkforems[#1]%
 %   {\processcommalist[#1]\docheckforems}
