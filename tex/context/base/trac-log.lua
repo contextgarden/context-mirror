@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['trac-log'] = {
 
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
 local next, type = next, type
@@ -56,31 +56,71 @@ setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end }
 
 -- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
 
-local report, subreport
+local report, subreport, status, settarget
 
 if tex and tex.jobname or tex.formatname then
 
+    local target = "term and log"
+
     report = function(a,b,c,...)
         if c then
-            write_nl(format("%-15s > %s\n",a,format(b,c,...)))
+            write_nl(target,format("%-15s > %s\n",a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s > %s\n",a,b))
+            write_nl(target,format("%-15s > %s\n",a,b))
         elseif a then
-            write_nl(format("%-15s >\n",   a))
+            write_nl(target,format("%-15s >\n",   a))
         else
-            write_nl("\n")
+            write_nl(target,"\n")
         end
     end
 
     subreport = function(a,sub,b,c,...)
         if c then
-            write_nl(format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
+            write_nl(target,format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s > %s > %s\n",a,sub,b))
+            write_nl(target,format("%-15s > %s > %s\n",a,sub,b))
         elseif a then
-            write_nl(format("%-15s > %s >\n",   a,sub))
+            write_nl(target,format("%-15s > %s >\n",   a,sub))
         else
-            write_nl("\n")
+            write_nl(target,"\n")
+        end
+    end
+
+    status = function(a,b,c,...)
+        if c then
+            write_nl(target,format("%-15s : %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(target,format("%-15s : %s\n",a,b)) -- b can have %'s
+        elseif a then
+            write_nl(target,format("%-15s :\n",   a))
+        else
+            write_nl(target,"\n")
+        end
+    end
+
+    local targets = {
+        logfile  = "log",
+        log      = "log",
+        file     = "log",
+        console  = "term",
+        terminal = "term",
+        both     = "term and log",
+    }
+
+    settarget = function(whereto)
+        target = targets[whereto or "both"] or targets.both
+    end
+
+    local stack = { }
+
+    pushtarget = function(newtarget)
+        insert(stack,target)
+        settarget(newtarget)
+    end
+
+    poptarget = function()
+        if #stack > 0 then
+            settarget(remove(stack))
         end
     end
 
@@ -110,22 +150,30 @@ else
         end
     end
 
-end
-
-function logs.status(a,b,c,...) -- at the tex end
-    if c then
-        write_nl(format("%-15s : %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
-    elseif a then
-        write_nl(format("%-15s :\n",   a))
-    else
-        write_nl("\n")
+    status = function(a,b,c,...) -- not to be used in lua anyway
+        if c then
+            write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+        elseif a then
+            write_nl(format("%-15s :\n",   a))
+        else
+            write_nl("\n")
+        end
     end
+
+    settarget  = ignore
+    pushtarget = ignore
+    poptarget  = ignore
+
 end
 
-logs.report    = report
-logs.subreport = subreport
+logs.report     = report
+logs.subreport  = subreport
+logs.status     = status
+logs.settarget  = settarget
+logs.pushtarget = pushtarget
+logs.poptarget  = poptarget
 
 -- installer
 
@@ -137,6 +185,7 @@ function logs.reporter(category,subcategory)
     local logger = data[category]
     if not logger then
         local state = false
+--~ print(category,states)
         if states == true then
             state = true
         elseif type(states) == "table" then

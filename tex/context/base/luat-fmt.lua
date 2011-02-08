@@ -15,7 +15,7 @@ local report_format = logs.new("resolvers","formats")
 
 local quoted = string.quoted
 
-local function primaryflags()
+local function primaryflags() -- not yet ok
     local trackers   = environment.argument("trackers")
     local directives = environment.argument("directives")
     local flags = ""

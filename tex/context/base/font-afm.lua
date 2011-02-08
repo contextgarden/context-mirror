@@ -17,9 +17,10 @@ where we handles font encodings. Eventually font encoding goes
 away.</p>
 --ldx]]--
 
-local trace_features = false  trackers.register("afm.features", function(v) trace_features = v end)
-local trace_indexing = false  trackers.register("afm.indexing", function(v) trace_indexing = v end)
-local trace_loading  = false  trackers.register("afm.loading",  function(v) trace_loading  = v end)
+local trace_features = false  trackers.register("afm.features",   function(v) trace_features = v end)
+local trace_indexing = false  trackers.register("afm.indexing",   function(v) trace_indexing = v end)
+local trace_loading  = false  trackers.register("afm.loading",    function(v) trace_loading  = v end)
+local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
 local report_afm = logs.new("fonts","afm loading")
 
@@ -27,6 +28,8 @@ local next, type = next, type
 local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip
 local lpegmatch = lpeg.match
 local abs = math.abs
+
+local findbinfile = resolvers.findbinfile
 
 local fonts = fonts
 fonts.afm   = fonts.afm or { }
@@ -42,6 +45,7 @@ afm.addkerns        = true  -- best leave this set to true
 afm.cache           = containers.define("fonts", "afm", afm.version, true)
 
 local definers = fonts.definers
+local readers  = fonts.tfm.readers
 
 local afmfeatures = {
     aux     = { },
@@ -494,9 +498,6 @@ local function adddimensions(data) -- we need to normalize afm to otf i.e. index
     end
 end
 
-fonts.formats.afm = "type1"
-fonts.formats.pfb = "type1"
-
 local function copytotfm(data)
     if data then
         local glyphs = data.glyphs
@@ -700,7 +701,7 @@ local function afmtotfm(specification)
             report_afm("forcing afm format for %s",afmname)
         end
     else
-        local tfmname = resolvers.findbinfile(afmname,"ofm") or ""
+        local tfmname = findbinfile(afmname,"ofm") or ""
         if tfmname ~= "" then
             if trace_loading then
                 report_afm("fallback from afm to tfm for %s",afmname)
@@ -764,7 +765,7 @@ need this features.</p>
 --     end
 -- end
 
-function tfm.read_from_afm(specification)
+local function read_from_afm(specification)
     local tfmtable = afmtotfm(specification)
     if tfmtable then
         tfmtable.name = specification.name
@@ -898,3 +899,68 @@ base_initializers.fkcp  = common_initializers.fakecaps
 register_feature('onum',false)
 register_feature('smcp',false)
 register_feature('fkcp',false)
+
+-- readers
+
+local check_tfm   = readers.check_tfm
+
+fonts.formats.afm = "type1"
+fonts.formats.pfb = "type1"
+
+local function check_afm(specification,fullname)
+    local foundname = findbinfile(fullname, 'afm') or "" -- just to be sure
+    if foundname == "" then
+        foundname = fonts.names.getfilename(fullname,"afm")
+    end
+    if foundname == "" and tfm.autoprefixedafm then
+        local encoding, shortname = match(fullname,"^(.-)%-(.*)$") -- context: encoding-name.*
+        if encoding and shortname and fonts.enc.known[encoding] then
+            shortname = findbinfile(shortname,'afm') or "" -- just to be sure
+            if shortname ~= "" then
+                foundname = shortname
+                if trace_defining then
+                    report_afm("stripping encoding prefix from filename %s",afmname)
+                end
+            end
+        end
+    end
+    if foundname ~= "" then
+        specification.filename, specification.format = foundname, "afm"
+        return read_from_afm(specification)
+    end
+end
+
+function readers.afm(specification,method)
+    local fullname, tfmtable = specification.filename or "", nil
+    if fullname == "" then
+        local forced = specification.forced or ""
+        if forced ~= "" then
+            tfmtable = check_afm(specification,specification.name .. "." .. forced)
+        end
+        if not tfmtable then
+            method = method or definers.method or "afm or tfm"
+            if method == "tfm" then
+                tfmtable = check_tfm(specification,specification.name)
+            elseif method == "afm" then
+                tfmtable = check_afm(specification,specification.name)
+            elseif method == "tfm or afm" then
+                tfmtable = check_tfm(specification,specification.name) or check_afm(specification,specification.name)
+            else -- method == "afm or tfm" or method == "" then
+                tfmtable = check_afm(specification,specification.name) or check_tfm(specification,specification.name)
+            end
+        end
+    else
+        tfmtable = check_afm(specification,fullname)
+    end
+    return tfmtable
+end
+
+function readers.pfb(specification,method) -- only called when forced
+    local original = specification.specification
+    if trace_defining then
+        report_afm("using afm reader for '%s'",original)
+    end
+    specification.specification = gsub(original,"%.pfb",".afm")
+    specification.forced = "afm"
+    return readers.afm(specification,method)
+end

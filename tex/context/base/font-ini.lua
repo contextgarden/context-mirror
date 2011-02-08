@@ -109,3 +109,7 @@ function fonts.fontformat(filename,default)
         return default
     end
 end
+
+-- readers
+
+fonts.tfm.readers = fonts.tfm.readers or { }

@@ -29,7 +29,7 @@ local trace_initialize = false -- only for testing during development
 function setters.initialize(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
-        local data = data.data
+        local data = setter.data
         if data then
             for key, value in next, values do
              -- key = gsub(key,"_",".")
@@ -218,7 +218,7 @@ local function report(setter,...)
     if report then
         report(setter.name,...)
     else -- fallback, as this module is loaded before the logger
-        write_nl(format("%-16s: %s\n",setter.name,format(...)))
+        write_nl(format("%-15s : %s\n",setter.name,format(...)))
     end
 end
 
@@ -253,22 +253,30 @@ local trace_directives  = false local trace_directives  = false  trackers.regist
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 function directives.enable(...)
-    d_report("enabling: %s",concat({...}," "))
+    if trace_directives then
+        d_report("enabling: %s",concat({...}," "))
+    end
     d_enable(...)
 end
 
 function directives.disable(...)
-    d_report("disabling: %s",concat({...}," "))
+    if trace_directives then
+        d_report("disabling: %s",concat({...}," "))
+    end
     d_disable(...)
 end
 
 function experiments.enable(...)
-    e_report("enabling: %s",concat({...}," "))
+    if trace_experiments then
+        e_report("enabling: %s",concat({...}," "))
+    end
     e_enable(...)
 end
 
 function experiments.disable(...)
-    e_report("disabling: %s",concat({...}," "))
+    if trace_experiments then
+        e_report("disabling: %s",concat({...}," "))
+    end
     e_disable(...)
 end
 
@@ -288,10 +296,12 @@ local flags = environment and environment.engineflags
 
 if flags then
     if trackers and flags.trackers then
-        t_enable(flags.trackers)
+        setters.initialize("flags","trackers", utilities.parsers.settings_to_hash(flags.trackers))
+     -- t_enable(flags.trackers)
     end
     if directives and flags.directives then
-        d_enable(flags.directives)
+        setters.initialize("flags","directives", utilities.parsers.settings_to_hash(flags.directives))
+     -- d_enable(flags.directives)
     end
 end
 

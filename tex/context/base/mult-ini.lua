@@ -129,7 +129,7 @@ end
 
 -- status
 
-function commands.showstatus(category,message)
+function commands.writestatus(category,message)
     local r = reporters[category]
     r(message)
 end

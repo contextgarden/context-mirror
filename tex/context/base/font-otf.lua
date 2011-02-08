@@ -36,6 +36,8 @@ local report_otf = logs.new("fonts","otf loading")
 
 local starttiming, stoptiming, elapsedtime = statistics.starttiming, statistics.stoptiming, statistics.elapsedtime
 
+local findbinfile = resolvers.findbinfile
+
 local fonts          = fonts
 
 fonts.otf            = fonts.otf or { }
@@ -55,6 +57,7 @@ enhancers.patches    = { }
 local patches        = enhancers.patches
 
 local definers       = fonts.definers
+local readers        = fonts.tfm.readers
 
 otf.glists           = { "gsub", "gpos" }
 
@@ -1611,11 +1614,6 @@ end
 -- we cannot share descriptions as virtual fonts might extend them (ok, we could
 -- use a cache with a hash
 
-fonts.formats.dfont = "truetype"
-fonts.formats.ttc   = "truetype"
-fonts.formats.ttf   = "truetype"
-fonts.formats.otf   = "opentype"
-
 local function copytotfm(data,cache_id) -- we can save a copy when we reorder the tma to unicode (nasty due to one->many)
     if data then
         local glyphs, pfminfo, metadata = data.glyphs or { }, data.pfminfo or { }, data.metadata or { }
@@ -1831,7 +1829,7 @@ end
 
 otf.features.register('mathsize')
 
-function tfm.read_from_otf(specification) -- wrong namespace
+local function read_from_otf(specification) -- wrong namespace
     local tfmtable = otftotfm(specification)
     if tfmtable then
         local otfdata = tfmtable.shared.otfdata
@@ -1917,3 +1915,56 @@ function otf.collectlookups(otfdata,kind,script,language)
     end
     return nil, nil
 end
+
+-- readers
+
+fonts.formats.dfont = "truetype"
+fonts.formats.ttc   = "truetype"
+fonts.formats.ttf   = "truetype"
+fonts.formats.otf   = "opentype"
+
+local function check_otf(forced,specification,suffix,what)
+    local name = specification.name
+    if forced then
+        name = file.addsuffix(name,suffix,true)
+    end
+    local fullname, tfmtable = findbinfile(name,suffix) or "", nil -- one shot
+ -- if false then  -- can be enabled again when needed
+     -- if fullname == "" then
+     --     local fb = fonts.names.old_to_new[name]
+     --     if fb then
+     --         fullname = findbinfile(fb,suffix) or ""
+     --     end
+     -- end
+     -- if fullname == "" then
+     --     local fb = fonts.names.new_to_old[name]
+     --     if fb then
+     --         fullname = findbinfile(fb,suffix) or ""
+     --     end
+     -- end
+ -- end
+    if fullname == "" then
+        fullname = fonts.names.getfilename(name,suffix)
+    end
+    if fullname ~= "" then
+        specification.filename, specification.format = fullname, what -- hm, so we do set the filename, then
+        tfmtable = read_from_otf(specification)                       -- we need to do it for all matches / todo
+    end
+    return tfmtable
+end
+
+function readers.opentype(specification,suffix,what)
+    local forced = specification.forced or ""
+    if forced == "otf" then
+        return check_otf(true,specification,forced,"opentype")
+    elseif forced == "ttf" or forced == "ttc" or forced == "dfont" then
+        return check_otf(true,specification,forced,"truetype")
+    else
+        return check_otf(false,specification,suffix,what)
+    end
+end
+
+function readers.otf  (specification) return readers.opentype(specification,"otf","opentype") end
+function readers.ttf  (specification) return readers.opentype(specification,"ttf","truetype") end
+function readers.ttc  (specification) return readers.opentype(specification,"ttf","truetype") end -- !!
+function readers.dfont(specification) return readers.opentype(specification,"ttf","truetype") end -- !!

@@ -37,7 +37,9 @@ fonts.initializers        = fonts.initializers or { }
 fonts.initializers.common = fonts.initializers.common or { }
 
 local set_attribute = node.set_attribute
+local findbinfile   = resolvers.findbinfile
 
+local readers    = fonts.tfm.readers
 local fontdata   = fonts.identifiers
 local nodecodes  = nodes.nodecodes
 
@@ -56,9 +58,7 @@ tfm.fontnamemode      = "fullpath"
 
 tfm.enhance = tfm.enhance or function() end
 
-fonts.formats.tfm = "type1" -- we need to have at least a value here
-
-function tfm.read_from_tfm(specification)
+local function read_from_tfm(specification)
     local fname, tfmdata = specification.filename or "", nil
     if fname ~= "" then
         if trace_defining then
@@ -69,7 +69,7 @@ function tfm.read_from_tfm(specification)
             tfmdata.descriptions = tfmdata.descriptions or { }
             if tfm.resolvevirtualtoo then
                 fonts.logger.save(tfmdata,file.extname(fname),specification) -- strange, why here
-                fname = resolvers.findbinfile(specification.name, 'ovf')
+                fname = findbinfile(specification.name, 'ovf')
                 if fname and fname ~= "" then
                     local vfdata = font.read_vf(fname,specification.size) -- not cached, fast enough
                     if vfdata then
@@ -745,10 +745,10 @@ function tfm.checkedfilename(metadata,whatever)
         local askedfilename = metadata.filename or ""
         if askedfilename ~= "" then
             askedfilename = resolvers.resolve(askedfilename) -- no shortcut
-            foundfilename = resolvers.findbinfile(askedfilename,"") or ""
+            foundfilename = findbinfile(askedfilename,"") or ""
             if foundfilename == "" then
                 report_defining("source file '%s' is not found",askedfilename)
-                foundfilename = resolvers.findbinfile(file.basename(askedfilename),"") or ""
+                foundfilename = findbinfile(file.basename(askedfilename),"") or ""
                 if foundfilename ~= "" then
                     report_defining("using source file '%s' (cache mismatch)",foundfilename)
                 end
@@ -768,3 +768,41 @@ end
 statistics.register("fonts load time", function()
     return statistics.elapsedseconds(fonts)
 end)
+
+-- readers
+
+fonts.formats.tfm = "type1" -- we need to have at least a value here
+
+local function check_tfm(specification,fullname)
+    -- ofm directive blocks local path search unless set; btw, in context we
+    -- don't support ofm files anyway as this format is obsolete
+    local foundname = findbinfile(fullname, 'tfm') or "" -- just to be sure
+    if foundname == "" then
+        foundname = findbinfile(fullname, 'ofm') or "" -- bonus for usage outside context
+    end
+    if foundname == "" then
+        foundname = fonts.names.getfilename(fullname,"tfm")
+    end
+    if foundname ~= "" then
+        specification.filename, specification.format = foundname, "ofm"
+        return read_from_tfm(specification)
+    end
+end
+
+readers.check_tfm = check_tfm
+
+function readers.tfm(specification)
+    local fullname, tfmtable = specification.filename or "", nil
+    if fullname == "" then
+        local forced = specification.forced or ""
+        if forced ~= "" then
+            tfmtable = check_tfm(specification,specification.name .. "." .. forced)
+        end
+        if not tfmtable then
+            tfmtable = check_tfm(specification,specification.name)
+        end
+    else
+        tfmtable = check_tfm(specification,fullname)
+    end
+    return tfmtable
+end
