@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-ctx'] = {
 
 local format = string.format
 
-local report_dump = logs.new("resolvers","dump")
+local report_dump = logs.reporter("resolvers","dump")
 
 local resolvers = resolvers
 

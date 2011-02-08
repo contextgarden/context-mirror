@@ -312,7 +312,6 @@ if texconfig then
     local function set(k,v)
         v = tonumber(v)
         if v then
---~     print(k,v)
             texconfig[k] = v
         end
     end

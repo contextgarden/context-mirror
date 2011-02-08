@@ -33,7 +33,7 @@ local stoptiming         = statistics.stoptiming
 storage.register("builders/paragraphs/constructors/names",   names,   "builders.paragraphs.constructors.names")
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
 
-local report_parbuilders = logs.new("parbuilders")
+local report_parbuilders = logs.reporter("parbuilders")
 
 local mainconstructor = nil -- not stored in format
 

@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 -- We cannot ask for the current seed, so we need some messy hack
 -- here.
 
-local report_system = logs.new("system","randomizer")
+local report_system = logs.reporter("system","randomizer")
 
 commands = commands or { }
 local commands = commands

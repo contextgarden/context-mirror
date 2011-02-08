@@ -10,7 +10,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_mounts = logs.new("resolvers","mounts")
+local report_mounts = logs.reporter("resolvers","mounts")
 
 local resolvers = resolvers
 

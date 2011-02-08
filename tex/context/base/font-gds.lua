@@ -11,7 +11,7 @@ local gmatch = string.gmatch
 
 local trace_goodies = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
 
-local report_fonts = logs.new("fonts","goodies")
+local report_fonts = logs.reporter("fonts","goodies")
 
 local allocate = utilities.storage.allocate
 

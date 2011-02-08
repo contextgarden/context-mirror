@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
-local report_buffers = logs.new("buffers","usage")
+local report_buffers = logs.reporter("buffers","usage")
 
 local concat = table.concat
 local type, next = type, next

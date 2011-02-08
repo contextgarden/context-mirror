@@ -10,7 +10,7 @@ local format, concat = string.format, table.concat
 
 local trace_run = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
 
-local report_run = logs.new("graphics","run")
+local report_run = logs.reporter("graphics","run")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 

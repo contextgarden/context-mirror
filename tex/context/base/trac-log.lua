@@ -26,10 +26,6 @@ provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
 logs       = logs or { }
 local logs = logs
 
---[[ldx--
-<p>This looks pretty ugly but we need to speed things up a bit.</p>
---ldx]]--
-
 local moreinfo = [[
 More information about ConTeXt and the tools that come with it can be found at:
 
@@ -38,23 +34,11 @@ webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
 ]]
 
--- local functions = {
---     'report', 'status', 'start', 'stop', 'line', 'direct',
---     'start_run', 'stop_run',
---     'start_page_number', 'stop_page_number',
---     'report_output_pages', 'report_output_log',
---     'report_tex_stat', 'report_job_stat',
---     'show_open', 'show_close', 'show_load',
---     'dummy',
--- }
-
 -- basic loggers
 
 local function ignore() end
 
 setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
-
--- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
 
 local report, subreport, status, settarget
 
@@ -185,7 +169,6 @@ function logs.reporter(category,subcategory)
     local logger = data[category]
     if not logger then
         local state = false
---~ print(category,states)
         if states == true then
             state = true
         elseif type(states) == "table" then
@@ -340,27 +323,42 @@ logs.report_job_stat = statistics and statistics.showjobstat
 
 local report_files = logs.reporter("files")
 
-local nesting = 0
-local verbose = false
+local nesting   = 0
+local verbose   = false
+local hasscheme = url.hasscheme
+
+-- we don't have show_open and show_close callbacks yet
 
 function logs.show_open(name)
-    if verbose then
-        nesting = nesting + 1
-        report_files("level %s, opening %s",nesting,name)
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         nesting = nesting + 1
+ --         report_files("level %s, opening %s",nesting,name)
+ --     else
+ --         write(format("(%s",name)) -- tex adds a space
+ --     end
+ -- end
 end
 
 function logs.show_close(name)
-    if verbose then
-        report_files("level %s, closing %s",nesting,name)
-        nesting = nesting - 1
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         report_files("level %s, closing %s",nesting,name)
+ --         nesting = nesting - 1
+ --     else
+ --         write(")") -- tex adds a space
+ --     end
+ -- end
 end
 
 function logs.show_load(name)
-    if verbose then
-        report_files("level %s, loading %s",nesting+1,name)
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         report_files("level %s, loading %s",nesting+1,name)
+ --     else
+ --         write(format("(%s)",name))
+ --     end
+ -- end
 end
 
 -- there may be scripts out there using this:

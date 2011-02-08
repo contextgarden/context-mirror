@@ -16,7 +16,7 @@ local write_nl = texio.write_nl
 local lower = string.lower
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 fontloader.totable = fontloader.to_table
 

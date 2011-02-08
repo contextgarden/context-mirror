@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-tex'] = {
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_tex = logs.new("resolvers","tex")
+local report_tex = logs.reporter("resolvers","tex")
 
 local resolvers = resolvers
 

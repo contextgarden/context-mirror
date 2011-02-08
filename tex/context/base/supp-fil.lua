@@ -24,8 +24,8 @@ local isfile = lfs.isfile
 local trace_modules = false  trackers.register("modules.loading",    function(v) trace_modules = v end)
 local trace_files   = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
 
-local report_modules = logs.new("resolvers","modules")
-local report_files   = logs.new("resolvers","files")
+local report_modules = logs.reporter("resolvers","modules")
+local report_files   = logs.reporter("resolvers","files")
 
 commands          = commands or { }
 local commands    = commands

@@ -19,7 +19,7 @@ local directive_embedall = false  directives.register("fonts.embedall", function
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the

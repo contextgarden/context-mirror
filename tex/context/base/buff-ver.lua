@@ -22,7 +22,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
-local report_visualizers = logs.new("buffers","visualizers")
+local report_visualizers = logs.reporter("buffers","visualizers")
 
 visualizers = visualizers or { }
 

@@ -14,7 +14,7 @@ local concat, format, gsub, find, byte, gmatch, match = table.concat, string.for
 local lpegmatch = lpeg.match
 local round = math.round
 
-local report_mptopdf = logs.new("graphics","mptopdf")
+local report_mptopdf = logs.reporter("graphics","mptopdf")
 
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 

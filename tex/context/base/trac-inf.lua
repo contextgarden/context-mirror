@@ -149,7 +149,7 @@ function statistics.showjobstat(tag,data,n)
     else
         if not template or n > nn then
             template, n = format("%%-%ss - %%s",n), nn
-            report_statistics = logs.new("mkiv lua stats")
+            report_statistics = logs.reporter("mkiv lua stats")
         end
         report_statistics(format(template,tag,data))
     end
@@ -172,7 +172,7 @@ function statistics.runtime()
 end
 
 function statistics.timed(action,report)
-    report = report or logs.new("system")
+    report = report or logs.reporter("system")
     starttiming("run")
     action()
     stoptiming("run")

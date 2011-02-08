@@ -16,7 +16,7 @@ local copy_node_list = node.copy_list
 
 local trace_floats = false  trackers.register("graphics.floats", function(v) trace_floats = v end) -- name might change
 
-local report_floats = logs.new("structure","floats")
+local report_floats = logs.reporter("structure","floats")
 
 local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
 

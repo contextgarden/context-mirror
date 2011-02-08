@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 local format, concat = string.format, table.concat
 local sprint = tex.sprint
 
-local report_metapost = logs.new("metapost")
+local report_metapost = logs.reporter("metapost")
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 

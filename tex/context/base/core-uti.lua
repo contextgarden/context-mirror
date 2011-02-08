@@ -24,7 +24,7 @@ local serialize = table.serialize
 local packers = utilities.packers
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local report_jobcontrol = logs.new("jobcontrol")
+local report_jobcontrol = logs.reporter("jobcontrol")
 
 job         = job or { }
 local job   = job

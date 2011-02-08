@@ -28,8 +28,8 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_caches    = logs.new("resolvers","caches")
-local report_resolvers = logs.new("resolvers","caching")
+local report_caches    = logs.reporter("resolvers","caches")
+local report_resolvers = logs.reporter("resolvers","caching")
 
 local resolvers = resolvers
 

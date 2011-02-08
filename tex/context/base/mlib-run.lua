@@ -31,7 +31,7 @@ nears zero.</p>
 
 local trace_graphics = false  trackers.register("metapost.graphics", function(v) trace_graphics = v end)
 
-local report_metapost = logs.new("metapost")
+local report_metapost = logs.reporter("metapost")
 
 local texerrormessage = logs.texerrormessage
 

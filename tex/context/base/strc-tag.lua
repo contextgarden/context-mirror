@@ -17,7 +17,7 @@ local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
-local report_tags = logs.new("structure","tags")
+local report_tags = logs.reporter("structure","tags")
 
 local attributes, structures = attributes, structures
 

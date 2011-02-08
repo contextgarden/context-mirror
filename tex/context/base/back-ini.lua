@@ -14,7 +14,7 @@ local backends = backends
 
 local trace_backend = false  trackers.register("backend.initializers", function(v) trace_finalizers = v end)
 
-local report_backend = logs.new("backend","initializing")
+local report_backend = logs.reporter("backend","initializing")
 
 local function nothing() return nil end
 

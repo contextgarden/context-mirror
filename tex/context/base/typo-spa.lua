@@ -15,7 +15,7 @@ local utfchar = utf.char
 
 local trace_spacing = false  trackers.register("typesetters.spacing", function(v) trace_spacing = v end)
 
-local report_spacing = logs.new("typesetting","spacing")
+local report_spacing = logs.reporter("typesetting","spacing")
 
 local nodes, fonts, node = nodes, fonts, node
 

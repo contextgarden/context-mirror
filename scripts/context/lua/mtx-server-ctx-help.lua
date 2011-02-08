@@ -17,7 +17,7 @@ dofile(resolvers.findfile("trac-lmx.lua","tex"))
 local format = string.format
 local concat = table.concat
 
-local report = logs.new("ctx-help")
+local report = logs.reporter("ctx-help")
 
 -- -- -- make this a module: cont-xx.lua
 

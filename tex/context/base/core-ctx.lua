@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['core-ctx'] = {
 
 local trace_prepfiles = false  trackers.register("system.prepfiles", function(v) trace_prepfiles = v end)
 
-local report_prepfiles = logs.new("system","prepfiles")
+local report_prepfiles = logs.reporter("system","prepfiles")
 
 commands       = commands or { }
 local commands = commands

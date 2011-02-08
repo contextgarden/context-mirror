@@ -30,7 +30,7 @@ local lxml = lxml
 lxml.directives  = lxml.directives or { }
 local directives = lxml.directives
 
-local report_lxml = logs.new("xml","tex")
+local report_lxml = logs.reporter("xml","tex")
 
 local data = {
     setup  = { },

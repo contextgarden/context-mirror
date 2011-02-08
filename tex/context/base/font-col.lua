@@ -15,7 +15,7 @@ local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_collecting = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
 
-local report_fonts = logs.new("fonts","collections")
+local report_fonts = logs.reporter("fonts","collections")
 
 local fonts, context = fonts, context
 

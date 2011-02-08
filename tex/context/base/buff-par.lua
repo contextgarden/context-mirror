@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 
 local trace_parallel = false  trackers.register("buffers.parallel", function(v) trace_parallel = v end)
 
-local report_parallel = logs.new("buffers","parallel")
+local report_parallel = logs.reporter("buffers","parallel")
 
 local insert, remove, find, gmatch = table.insert, table.remove, string.find, string.gmatch
 local strip, format = string.strip, string.format

@@ -14,7 +14,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local trace_counters = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 
-local report_counters = logs.new("structure","counters")
+local report_counters = logs.reporter("structure","counters")
 
 local structures = structures
 

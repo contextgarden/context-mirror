@@ -17,7 +17,7 @@ local variables = interfaces.variables
 
 local trace_javascript = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
 
-local report_javascripts = logs.new("interactions","javascripts")
+local report_javascripts = logs.reporter("interactions","javascripts")
 
 interactions.javascripts = interactions.javascripts or { }
 local javascripts        = interactions.javascripts
@@ -192,7 +192,7 @@ function javascripts.usescripts(name)
             context.startnointerference()
             context.startreadingfile()
             context.input(foundname)
-            context.showcolormessage("javascript",1,name)
+            context.showmessage("javascripts",1,name)
             context.stopreadingfile()
             context.stopnointerference()
         end)

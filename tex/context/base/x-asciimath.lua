@@ -16,7 +16,7 @@ local asciimath      = { }
 local moduledata     = moduledata or { }
 moduledata.asciimath = asciimath
 
-local report_asciimath = logs.new("mathematics","asciimath")
+local report_asciimath = logs.reporter("mathematics","asciimath")
 
 local format = string.format
 local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes

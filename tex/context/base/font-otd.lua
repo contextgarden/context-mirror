@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-otd'] = {
 
 local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 local fonts          = fonts
 local otf            = fonts.otf

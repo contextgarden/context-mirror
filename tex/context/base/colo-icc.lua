@@ -11,7 +11,7 @@ local readstring, readnumber = io.readstring, io.readnumber
 
 local colors = attributes and attributes.colors or { } -- when used in mtxrun
 
-local report_colors = logs.new("colors","icc")
+local report_colors = logs.reporter("colors","icc")
 
 local R, Cs, lpegmatch = lpeg.R, lpeg.Cs, lpeg.match
 

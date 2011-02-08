@@ -12,8 +12,8 @@ local round = math.round
 
 local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
 
-local report_callbacks = logs.new("system","callbacks")
-local report_memory    = logs.new("system","memory")
+local report_callbacks = logs.reporter("system","callbacks")
+local report_memory    = logs.reporter("system","memory")
 
 --[[ldx--
 <p>Callbacks are the real asset of <l n='luatex'/>. They permit you to hook

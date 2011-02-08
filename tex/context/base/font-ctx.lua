@@ -22,9 +22,9 @@ local trace_defining = false  trackers.register("fonts.defining", function(v) tr
 local trace_usage    = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
 local trace_mapfiles = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles  = v end)
 
-local report_defining = logs.new("fonts","defining")
-local report_status   = logs.new("fonts","status")
-local report_mapfiles = logs.new("fonts","mapfiles")
+local report_defining = logs.reporter("fonts","defining")
+local report_status   = logs.reporter("fonts","status")
+local report_mapfiles = logs.reporter("fonts","mapfiles")
 
 local fonts        = fonts
 local tfm          = fonts.tfm

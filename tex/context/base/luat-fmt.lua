@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 local format = string.format
 
-local report_format = logs.new("resolvers","formats")
+local report_format = logs.reporter("resolvers","formats")
 
 -- helper for mtxrun
 

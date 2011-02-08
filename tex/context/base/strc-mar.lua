@@ -28,7 +28,7 @@ local trace_marks_set    = false  trackers.register("marks.set",    function(v) 
 local trace_marks_get    = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
 local trace_marks_all    = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
 
-local report_marks       = logs.new("structure","marks")
+local report_marks       = logs.reporter("structure","marks")
 
 local variables          = interfaces.variables
 

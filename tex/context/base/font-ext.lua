@@ -17,8 +17,8 @@ local allocate = utilities.storage.allocate
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
-local report_expansions  = logs.new("fonts","expansions")
-local report_protrusions = logs.new("fonts","protrusions")
+local report_expansions  = logs.reporter("fonts","expansions")
+local report_protrusions = logs.reporter("fonts","protrusions")
 
 commands = commands or { }
 
@@ -217,7 +217,7 @@ initializers.node.afm.expansion = initializers.common.expansion
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
-local report_opbd = logs.new("fonts","otf opbd")
+local report_opbd = logs.reporter("fonts","otf opbd")
 
 -- -- -- -- -- --
 -- protrusion

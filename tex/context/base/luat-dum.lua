@@ -35,6 +35,8 @@ storage = { -- probably no longer needed
 }
 logs = {
     new           = function() return dummyfunction end,
+    reporter      = function() return dummyfunction end,
+    messenger     = function() return dummyfunction end,
     report        = dummyfunction,
 }
 callbacks = {

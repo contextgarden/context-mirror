@@ -27,7 +27,7 @@ local P, R, S, C, Cc, Cs, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cs,
 
 local trace_bibxml = false  trackers.register("publications.bibxml", function(v) trace_bibtex = v end)
 
-local report_xml = logs.new("publications","xml")
+local report_xml = logs.reporter("publications","xml")
 
 bibtex       = bibtex or { }
 local bibtex = bibtex

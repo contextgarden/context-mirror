@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
-local report_xml = logs.new("xml")
+local report_xml = logs.reporter("xml")
 
 local xml = xml
 

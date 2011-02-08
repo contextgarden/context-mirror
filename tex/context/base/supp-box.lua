@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['supp-box'] = {
 
 -- this is preliminary code
 
-local report_hyphenation = logs.new("languages","hyphenation")
+local report_hyphenation = logs.reporter("languages","hyphenation")
 
 local nodecodes    = nodes.nodecodes
 

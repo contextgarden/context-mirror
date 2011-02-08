@@ -25,7 +25,7 @@ local variables   = interfaces.variables
 local trace_sectioning = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail     = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
-local report_structure = logs.new("structure","sectioning")
+local report_structure = logs.reporter("structure","sectioning")
 
 local structures, context = structures, context
 

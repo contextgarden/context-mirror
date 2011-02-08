@@ -3817,7 +3817,7 @@ local type, next = type, next
 
 utilities        = utilities or {}
 utilities.merger = utilities.merger or { } -- maybe mergers
-utilities.report = logs and logs.new("system") or print
+utilities.report = logs and logs.reporter("system") or print
 
 local merger     = utilities.merger
 
@@ -3955,7 +3955,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 
 utilities        = utilities or {}
 utilities.lua    = utilities.lua or { }
-utilities.report = logs and logs.new("system") or print
+utilities.report = logs and logs.reporter("system") or print
 
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
@@ -4580,7 +4580,7 @@ function statistics.showjobstat(tag,data,n)
     else
         if not template or n > nn then
             template, n = format("%%-%ss - %%s",n), nn
-            report_statistics = logs.new("mkiv lua stats")
+            report_statistics = logs.reporter("mkiv lua stats")
         end
         report_statistics(format(template,tag,data))
     end
@@ -4603,7 +4603,7 @@ function statistics.runtime()
 end
 
 function statistics.timed(action,report)
-    report = report or logs.new("system")
+    report = report or logs.reporter("system")
     starttiming("run")
     action()
     stoptiming("run")
@@ -4990,10 +4990,6 @@ provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
 logs       = logs or { }
 local logs = logs
 
---[[ldx--
-<p>This looks pretty ugly but we need to speed things up a bit.</p>
---ldx]]--
-
 local moreinfo = [[
 More information about ConTeXt and the tools that come with it can be found at:
 
@@ -5002,23 +4998,11 @@ webpage  : http://www.pragma-ade.nl / http://tex.aanhet.net
 wiki     : http://contextgarden.net
 ]]
 
--- local functions = {
---     'report', 'status', 'start', 'stop', 'line', 'direct',
---     'start_run', 'stop_run',
---     'start_page_number', 'stop_page_number',
---     'report_output_pages', 'report_output_log',
---     'report_tex_stat', 'report_job_stat',
---     'show_open', 'show_close', 'show_load',
---     'dummy',
--- }
-
 -- basic loggers
 
 local function ignore() end
 
 setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
-
--- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
 
 local report, subreport, status, settarget
 
@@ -5303,27 +5287,42 @@ logs.report_job_stat = statistics and statistics.showjobstat
 
 local report_files = logs.reporter("files")
 
-local nesting = 0
-local verbose = false
+local nesting   = 0
+local verbose   = false
+local hasscheme = url.hasscheme
+
+-- we don't have show_open and show_close callbacks yet
 
 function logs.show_open(name)
-    if verbose then
-        nesting = nesting + 1
-        report_files("level %s, opening %s",nesting,name)
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         nesting = nesting + 1
+ --         report_files("level %s, opening %s",nesting,name)
+ --     else
+ --         write(format("(%s",name)) -- tex adds a space
+ --     end
+ -- end
 end
 
 function logs.show_close(name)
-    if verbose then
-        report_files("level %s, closing %s",nesting,name)
-        nesting = nesting - 1
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         report_files("level %s, closing %s",nesting,name)
+ --         nesting = nesting - 1
+ --     else
+ --         write(")") -- tex adds a space
+ --     end
+ -- end
 end
 
 function logs.show_load(name)
-    if verbose then
-        report_files("level %s, loading %s",nesting+1,name)
-    end
+ -- if hasscheme(name) ~= "virtual" then
+ --     if verbose then
+ --         report_files("level %s, loading %s",nesting+1,name)
+ --     else
+ --         write(format("(%s)",name))
+ --     end
+ -- end
 end
 
 -- there may be scripts out there using this:
@@ -5476,7 +5475,7 @@ local getmetatable, setmetatable, rawset, type = getmetatable, setmetatable, raw
 
 local trace_namespaces = false  trackers.register("system.namespaces", function(v) trace_namespaces = v end)
 
-local report_system = logs.new("system","protection")
+local report_system = logs.reporter("system","protection")
 
 namespaces       = namespaces or { }
 local namespaces = namespaces
@@ -5645,7 +5644,7 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_lua = logs.new("resolvers","lua")
+local report_lua = logs.reporter("resolvers","lua")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
@@ -5959,7 +5958,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
-local report_xml = logs and logs.new("xml","core") or function(...) print(format(...)) end
+local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but
@@ -7184,7 +7183,7 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
-local report_lpath = logs.new("xml","lpath")
+local report_lpath = logs.reporter("xml","lpath")
 
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset
@@ -8517,7 +8516,7 @@ if not modules then modules = { } end modules ['lxml-aux'] = {
 
 local trace_manipulations = false  trackers.register("lxml.manipulations", function(v) trace_manipulations = v end)
 
-local report_xml = logs.new("xml")
+local report_xml = logs.reporter("xml")
 
 local xml = xml
 
@@ -9339,7 +9338,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_initialization = logs.new("resolvers","initialization")
+local report_initialization = logs.reporter("resolvers","initialization")
 
 local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
 
@@ -9576,7 +9575,7 @@ local collapsepath = file.collapsepath
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_expansions = logs.new("resolvers","expansions")
+local report_expansions = logs.reporter("resolvers","expansions")
 
 local resolvers = resolvers
 
@@ -10195,8 +10194,8 @@ local mkdirs, isdir = dir.mkdirs, lfs.isdir
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
-local report_caches    = logs.new("resolvers","caches")
-local report_resolvers = logs.new("resolvers","caching")
+local report_caches    = logs.reporter("resolvers","caches")
+local report_resolvers = logs.reporter("resolvers","caching")
 
 local resolvers = resolvers
 
@@ -10578,7 +10577,7 @@ trackers.register("resolvers.locating", function(v) trace_methods = v end)
 trackers.register("resolvers.methods",  function(v) trace_methods = v end)
 
 
-local report_methods = logs.new("resolvers","methods")
+local report_methods = logs.reporter("resolvers","methods")
 
 local allocate = utilities.storage.allocate
 
@@ -10725,7 +10724,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolving = logs.new("resolvers","resolving")
+local report_resolving = logs.reporter("resolvers","resolving")
 
 local resolvers = resolvers
 
@@ -12334,7 +12333,7 @@ if not modules then modules = { } end modules ['data-fil'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_files = logs.new("resolvers","files")
+local report_files = logs.reporter("resolvers","files")
 
 local resolvers = resolvers
 
@@ -12473,7 +12472,7 @@ containers          = containers or { }
 local containers    = containers
 containers.usecache = true
 
-local report_containers = logs.new("resolvers","containers")
+local report_containers = logs.reporter("resolvers","containers")
 
 local function report(container,tag,name)
     if trace_cache or trace_containers then
@@ -12595,7 +12594,7 @@ local format, lower, gsub, find = string.format, string.lower, string.gsub, stri
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_mounts = logs.new("resolvers","mounts")
+local report_mounts = logs.reporter("resolvers","mounts")
 
 local resolvers = resolvers
 
@@ -12700,7 +12699,7 @@ local format, find, match = string.format, string.find, string.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_zip = logs.new("resolvers","zip")
+local report_zip = logs.reporter("resolvers","zip")
 
 -- zip:///oeps.zip?name=bla/bla.tex
 -- zip:///oeps.zip?tree=tex/texmf-local
@@ -12951,7 +12950,7 @@ local find, gsub, format = string.find, string.gsub, string.format
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_trees = logs.new("resolvers","trees")
+local report_trees = logs.reporter("resolvers","trees")
 
 local resolvers = resolvers
 
@@ -13096,7 +13095,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_libraries = logs.new("resolvers","libraries")
+local report_libraries = logs.reporter("resolvers","libraries")
 
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack
@@ -13268,7 +13267,7 @@ local trace_locating = false  trackers.register("resolvers.locating", function(v
 
 local resolvers = resolvers
 
-local report_scripts = logs.new("resolvers","scripts")
+local report_scripts = logs.reporter("resolvers","scripts")
 
 function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per se a suffix
     local scriptpath = "scripts/context/lua"
@@ -13331,7 +13330,7 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 
 local resolvers = resolvers
 
-local report_tds = logs.new("resolvers","tds")
+local report_tds = logs.reporter("resolvers","tds")
 
 --  =  <<
 --  ?  ??
@@ -13408,7 +13407,7 @@ resolvers.listers = resolvers.listers or { }
 
 local resolvers = resolvers
 
-local report_lists = logs.new("resolvers","lists")
+local report_lists = logs.reporter("resolvers","lists")
 
 local function tabstr(str)
     if type(str) == 'table' then
@@ -13596,7 +13595,7 @@ if not modules then modules = { } end modules ['luat-fmt'] = {
 
 local format = string.format
 
-local report_format = logs.new("resolvers","formats")
+local report_format = logs.reporter("resolvers","formats")
 
 -- helper for mtxrun
 

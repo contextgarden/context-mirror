@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['luat-env'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_lua = logs.new("resolvers","lua")
+local report_lua = logs.reporter("resolvers","lua")
 
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 

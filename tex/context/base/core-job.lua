@@ -19,7 +19,7 @@ resolvers.maxreadlevel = 3
 
 directives.register("resolvers.maxreadlevel", function(v) resolvers.maxreadlevel = tonumber(v) or resolvers.maxreadlevel end)
 
-local report_examodes = logs.new("system","examodes") -- maybe another category
+local report_examodes = logs.reporter("system","examodes") -- maybe another category
 
 local function exists(n)
     if io.exists(n) then
@@ -130,7 +130,7 @@ function commands.loadexamodes(filename)
     end
 end
 
-local report_options = logs.new("system","options")
+local report_options = logs.reporter("system","options")
 
 function commands.logoptionfile(name)
     -- todo: xml if xml logmode

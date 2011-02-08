@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['data-vir'] = {
 local format = string.format
 
 local trace_virtual  = false
-local report_virtual = logs.new("resolvers","virtual")
+local report_virtual = logs.reporter("resolvers","virtual")
 
 trackers.register("resolvers.locating", function(v) trace_virtual = v end)
 trackers.register("resolvers.virtual",  function(v) trace_virtual = v end)

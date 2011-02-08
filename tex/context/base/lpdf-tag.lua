@@ -12,7 +12,7 @@ local utfchar = utf.char
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
 
-local report_tags = logs.new("backend","tags")
+local report_tags = logs.reporter("backend","tags")
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 

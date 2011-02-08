@@ -28,7 +28,7 @@ local new_glyph = nodepool.glyph
 local trace_collecting = false  trackers.register("streams.collecting", function(v) trace_collecting = v end)
 local trace_flushing   = false  trackers.register("streams.flushing",   function(v) trace_flushing   = v end)
 
-local report_streams = logs.new("streams")
+local report_streams = logs.reporter("streams")
 
 streams       = streams or { } -- might move to the builders namespace
 local streams = streams

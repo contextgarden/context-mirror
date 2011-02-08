@@ -14,7 +14,7 @@ local texdimen, textoks, texcount = tex.dimen, tex.toks, tex.count
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
-local report_system = logs.new("system","tex")
+local report_system = logs.reporter("system","tex")
 
 tracers         = tracers or { }
 local tracers   = tracers

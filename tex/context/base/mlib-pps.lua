@@ -25,7 +25,7 @@ local context = context
 
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
-local report_metapost = logs.new("metapost")
+local report_metapost = logs.reporter("metapost")
 
 local colors = attributes.colors
 

@@ -16,7 +16,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_initialization = logs.new("resolvers","initialization")
+local report_initialization = logs.reporter("resolvers","initialization")
 
 local ostype, osname, ossetenv, osgetenv = os.type, os.name, os.setenv, os.getenv
 

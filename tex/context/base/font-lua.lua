@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-lua'] = {
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_lua = logs.new("fonts","lua loading")
+local report_lua = logs.reporter("fonts","lua loading")
 
 fonts.formats.lua = "lua"
 

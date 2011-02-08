@@ -50,7 +50,7 @@ local allocate = utilities.storage.allocate
 
 local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
 
-local report_sorters = logs.new("languages","sorters")
+local report_sorters = logs.reporter("languages","sorters")
 
 local comparers         = { }
 local splitters         = { }

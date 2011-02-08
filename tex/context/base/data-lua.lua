@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_libraries = logs.new("resolvers","libraries")
+local report_libraries = logs.reporter("resolvers","libraries")
 
 local gsub, insert = string.gsub, table.insert
 local unpack = unpack or table.unpack

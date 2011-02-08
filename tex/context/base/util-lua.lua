@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-lua'] = {
 
 utilities        = utilities or {}
 utilities.lua    = utilities.lua or { }
-utilities.report = logs and logs.new("system") or print
+utilities.report = logs and logs.reporter("system") or print
 
 function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)

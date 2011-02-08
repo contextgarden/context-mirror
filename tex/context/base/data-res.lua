@@ -30,7 +30,7 @@ local trace_locating   = false  trackers.register("resolvers.locating",   functi
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_resolving = logs.new("resolvers","resolving")
+local report_resolving = logs.reporter("resolvers","resolving")
 
 local resolvers = resolvers
 
