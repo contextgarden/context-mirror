@@ -368,6 +368,14 @@ function tfm.read(specification)
             else
                 tfmtable.embedding = "subset"
             end
+            -- fonts.goodies.postprocessors.apply(tfmdata) -- only here
+            local postprocessors = tfmtable.postprocessors
+            if postprocessors then
+                for i=1,#postprocessors do
+                    postprocessors[i](tfmtable) -- after scaling etc
+                end
+            end
+            --
             tfm.fonts[hash] = tfmtable
             fonts.designsizes[specification.hash] = tfmtable.designsize -- we only know this for sure after loading once
         --~ tfmtable.mode = specification.features.normal.mode or "base"

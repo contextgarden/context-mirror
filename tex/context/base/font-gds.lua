@@ -171,6 +171,52 @@ local function setfeatureset(tfmdata,set)
     end
 end
 
+-- postprocessors (we could hash processor and share code)
+
+local function setpostprocessor(tfmdata,processor)
+    local goodies = tfmdata.goodies
+    if goodies and type(processor) == "string" then
+        local found = { }
+        local asked = utilities.parsers.settings_to_array(processor)
+        for i=1,#goodies do
+            local g = goodies[i]
+            local p = g.postprocessors
+            if p then
+                for i=1,#asked do
+                    local a = asked[i]
+                    local f = p[a]
+                    if type(f) == "function" then
+                        found[a] = f
+                    end
+                end
+            end
+        end
+        local postprocessors = { }
+        for i=1,#asked do
+            local a = asked[i]
+            local f = found[a]
+            if f then
+                postprocessors[#postprocessors+1] = f
+            end
+        end
+        if #postprocessors > 0 then
+            tfmdata.postprocessors = postprocessors
+        end
+    end
+end
+
+-- fontgoodies.postprocessors = fontgoodies.postprocessors or { }
+-- local postprocessors       = fontgoodies.postprocessors
+
+-- function postprocessors.apply(tfmdata)
+--     local postprocessors = tfmdata.postprocessors
+--     if postprocessors then
+--         for i=1,#postprocessors do
+--             postprocessors[i](tfmdata)
+--         end
+--     end
+-- end
+
 -- colorschemes
 
 fontgoodies.colorschemes = fontgoodies.colorschemes or { }
@@ -246,35 +292,44 @@ end
 
 -- installation (collected to keep the overview) -- also for type 1
 
-fonts.otf.tables.features['goodies']     = 'Goodies on top of built in features'
-fonts.otf.tables.features['featureset']  = 'Goodie Feature Set'
-fonts.otf.tables.features['colorscheme'] = 'Goodie Color Scheme'
+fonts.otf.tables.features['goodies']       = 'Goodies on top of built in features'
+fonts.otf.tables.features['featureset']    = 'Goodie Feature Set'
+fonts.otf.tables.features['colorscheme']   = 'Goodie Color Scheme'
+fonts.otf.tables.features['postprocessor'] = 'Goodie Postprocessor'
 
 fonts.otf.features.register('goodies')
 fonts.otf.features.register('featureset')
 fonts.otf.features.register('colorscheme')
+fonts.otf.features.register('postprocessor')
 
 table.insert(fonts.triggers, 1, "goodies")
 table.insert(fonts.triggers, 2, "featureset") -- insert after
 table.insert(fonts.triggers,    "colorscheme")
+table.insert(fonts.triggers,    "postprocessor")
 
 local base_initializers   = fonts.initializers.base.otf
 local node_initializers   = fonts.initializers.node.otf
 
-base_initializers.goodies     = setgoodies
-node_initializers.goodies     = setgoodies
+base_initializers.goodies       = setgoodies
+node_initializers.goodies       = setgoodies
 
-base_initializers.featureset  = setfeatureset
-node_initializers.featureset  = setfeatureset
+base_initializers.featureset    = setfeatureset
+node_initializers.featureset    = setfeatureset
 
-base_initializers.colorscheme = setcolorscheme
-node_initializers.colorscheme = setcolorscheme
+base_initializers.colorscheme   = setcolorscheme
+node_initializers.colorscheme   = setcolorscheme
+
+base_initializers.postprocessor = setpostprocessor
+node_initializers.postprocessor = setpostprocessor
 
 local base_initializers   = fonts.initializers.base.afm
 local node_initializers   = fonts.initializers.node.afm
 
-base_initializers.goodies     = setgoodies
-node_initializers.goodies     = setgoodies
+base_initializers.goodies       = setgoodies
+node_initializers.goodies       = setgoodies
+
+base_initializers.postprocessor = setpostprocessor
+node_initializers.postprocessor = setpostprocessor
 
 -- experiment, we have to load the definitions immediately as they precede
 -- the definition so they need to be initialized in the typescript
