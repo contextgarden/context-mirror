@@ -24,7 +24,7 @@ original entity is returned.</p>
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
-local report_xml = logs.new("xml")
+local report_xml = logs.reporter("xml")
 
 local xml = xml
 

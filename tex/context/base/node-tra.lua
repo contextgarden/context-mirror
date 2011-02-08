@@ -17,7 +17,7 @@ local format, match, gmatch, concat, rep = string.format, string.match, string.g
 local lpegmatch = lpeg.match
 local write_nl = texio.write_nl
 
-local report_nodes = logs.new("nodes","tracing")
+local report_nodes = logs.reporter("nodes","tracing")
 
 fonts = fonts or { }
 nodes = nodes or { }

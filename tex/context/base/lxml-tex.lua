@@ -40,7 +40,7 @@ local trace_loading  = false  trackers.register("lxml.loading",  function(v) tra
 local trace_access   = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
 local trace_comments = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
 
-local report_lxml = logs.new("xml","tex")
+local report_lxml = logs.reporter("xml","tex")
 
 lxml.loaded  = lxml.loaded or { }
 local loaded = lxml.loaded

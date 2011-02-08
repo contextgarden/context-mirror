@@ -14,7 +14,7 @@ local concat = table.concat
 local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
 local trace_fontrun    = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
 
-local report_fonts  = logs.new("fonts","processing")
+local report_fonts  = logs.reporter("fonts","processing")
 
 local nodes, node   = nodes, node
 

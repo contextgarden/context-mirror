@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
-local report_xml = logs and logs.new("xml","core") or function(...) print(format(...)) end
+local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
 
 --[[ldx--
 <p>The parser used here is inspired by the variant discussed in the lua book, but

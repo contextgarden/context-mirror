@@ -14,7 +14,7 @@ local sprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local trace_flush = false  trackers.register("module.database.flush", function(v) trace_flush = v end)
 
-local report_database = logs.new("database")
+local report_database = logs.reporter("database")
 
 buffers.database = buffers.database or { }
 

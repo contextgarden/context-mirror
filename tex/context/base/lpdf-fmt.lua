@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
 local trace_format    = false  trackers.register("backend.format",    function(v) trace_format    = v end)
 local trace_variables = false  trackers.register("backend.variables", function(v) trace_variables = v end)
 
-local report_backend = logs.new("backend","profiles")
+local report_backend = logs.reporter("backend","profiles")
 
 local backends, lpdf = backends, lpdf
 

@@ -19,7 +19,7 @@ local variables = interfaces.variables
 
 moduledata.pstricks = moduledata.pstricks or { }
 
-local report_pstricks = logs.new("pstricks")
+local report_pstricks = logs.reporter("pstricks")
 
 local template = [[
 \starttext

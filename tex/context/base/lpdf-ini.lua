@@ -26,8 +26,8 @@ local trace_resources  = false  trackers.register("backend.resources",  function
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
-local report_objects    = logs.new("backend","objects")
-local report_finalizing = logs.new("backend","finalizing")
+local report_objects    = logs.reporter("backend","objects")
+local report_finalizing = logs.reporter("backend","finalizing")
 
 local backends, context = backends, context
 
@@ -510,9 +510,6 @@ end
 resetpageproperties()
 
 local function setpageproperties()
---~     texset("global", "pdfpageresources", pageresources  ())
---~     texset("global", "pdfpageattr",      pageattributes ())
---~     texset("global", "pdfpagesattr",     pagesattributes())
     pdf.pageresources   = pageresources  ()
     pdf.pageattributes  = pageattributes ()
     pdf.pagesattributes = pagesattributes()

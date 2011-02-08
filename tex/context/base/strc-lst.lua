@@ -21,7 +21,7 @@ local allocate, mark, checked = utilities.storage.allocate, utilities.storage.ma
 
 local trace_lists = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
-local report_lists   = logs.new("structure","lists")
+local report_lists   = logs.reporter("structure","lists")
 
 local ctxcatcodes    = tex.ctxcatcodes
 

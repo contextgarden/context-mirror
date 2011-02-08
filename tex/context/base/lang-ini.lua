@@ -27,7 +27,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
-local report_initialization = logs.new("languages","initialization")
+local report_initialization = logs.reporter("languages","initialization")
 
 local prehyphenchar, posthyphenchar = lang.prehyphenchar, lang.posthyphenchar -- global per language
 local lefthyphenmin, righthyphenmin = lang.lefthyphenmin, lang.righthyphenmin

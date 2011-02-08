@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['data-tmf'] = {
 
 local resolvers = resolvers
 
-local report_tds = logs.new("resolvers","tds")
+local report_tds = logs.reporter("resolvers","tds")
 
 --  =  <<
 --  ?  ??

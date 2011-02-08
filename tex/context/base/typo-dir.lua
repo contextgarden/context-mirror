@@ -18,7 +18,7 @@ local nodes, node = nodes, node
 
 local trace_directions = false  trackers.register("typesetters.directions", function(v) trace_directions = v end)
 
-local report_directions = logs.new("typesetting","directions")
+local report_directions = logs.reporter("typesetting","directions")
 
 local has_attribute      = node.has_attribute
 local unset_attribute    = node.unset_attribute

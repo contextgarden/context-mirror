@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 
 local type = type
 
-local report_blobs = logs.new("blobs")
+local report_blobs = logs.reporter("blobs")
 
 local utfvalues = string.utfvalues
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns

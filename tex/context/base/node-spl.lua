@@ -31,9 +31,9 @@ local trace_optimize = false  trackers.register("builders.paragraphs.solutions.s
 local trace_colors   = false  trackers.register("builders.paragraphs.solutions.splitters.colors",    function(v) trace_colors   = v end)
 local trace_goodies  = false  trackers.register("fonts.goodies",                                     function(v) trace_goodies  = v end)
 
-local report_solutions  = logs.new("fonts","solutions")
-local report_splitters  = logs.new("nodes","splitters")
-local report_optimizers = logs.new("nodes","optimizers")
+local report_solutions  = logs.reporter("fonts","solutions")
+local report_splitters  = logs.reporter("nodes","splitters")
+local report_optimizers = logs.reporter("nodes","optimizers")
 
 local nodes, node = nodes, node
 

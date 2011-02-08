@@ -12,7 +12,7 @@ local next, match = next, string.match
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled

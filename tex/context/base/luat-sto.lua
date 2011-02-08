@@ -11,7 +11,7 @@ local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 local serialize, concat = table.serialize, table.concat
 local bytecode = lua.bytecode
 
-local report_storage = logs.new("system","storage")
+local report_storage = logs.reporter("system","storage")
 
 storage            = storage or { }
 local storage      = storage

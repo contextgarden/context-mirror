@@ -28,7 +28,7 @@ local texattribute = tex.attribute
 
 local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 
-local report_remapping = logs.new("mathematics","remapping")
+local report_remapping = logs.reporter("mathematics","remapping")
 
 mathematics       = mathematics or { }
 local mathematics = mathematics

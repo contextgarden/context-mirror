@@ -14,7 +14,7 @@ resolvers.listers = resolvers.listers or { }
 
 local resolvers = resolvers
 
-local report_lists = logs.new("resolvers","lists")
+local report_lists = logs.reporter("resolvers","lists")
 
 local function tabstr(str)
     if type(str) == 'table' then

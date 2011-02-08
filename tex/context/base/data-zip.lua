@@ -12,7 +12,7 @@ local format, find, match = string.format, string.find, string.match
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_zip = logs.new("resolvers","zip")
+local report_zip = logs.reporter("resolvers","zip")
 
 -- zip:///oeps.zip?name=bla/bla.tex
 -- zip:///oeps.zip?tree=tex/texmf-local

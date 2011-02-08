@@ -17,7 +17,7 @@ trackers.register("resolvers.methods",  function(v) trace_methods = v end)
 
 --~ trace_methods = true
 
-local report_methods = logs.new("resolvers","methods")
+local report_methods = logs.reporter("resolvers","methods")
 
 local allocate = utilities.storage.allocate
 

@@ -18,7 +18,7 @@ local collapsepath = file.collapsepath
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
-local report_expansions = logs.new("resolvers","expansions")
+local report_expansions = logs.reporter("resolvers","expansions")
 
 local resolvers = resolvers
 

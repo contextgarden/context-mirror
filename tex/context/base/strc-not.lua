@@ -12,7 +12,7 @@ local texcount = tex.count
 
 local trace_notes = false  trackers.register("structures.notes", function(v) trace_notes = v end)
 
-local report_notes = logs.new("structure","notes")
+local report_notes = logs.reporter("structure","notes")
 
 local structures = structures
 local helpers    = structures.helpers

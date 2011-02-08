@@ -26,8 +26,8 @@ local textlineactions = resolvers.openers.helpers.textlineactions
 
 local trace_translating = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
 
-local report_loading     = logs.new("regimes","loading")
-local report_translating = logs.new("regimes","translating")
+local report_loading     = logs.reporter("regimes","loading")
+local report_translating = logs.reporter("regimes","translating")
 
 regimes        = regimes or { }
 local regimes  = regimes

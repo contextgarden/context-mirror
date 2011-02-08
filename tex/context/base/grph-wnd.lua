@@ -14,7 +14,7 @@ local converters, suffixes = figures.converters, figures.suffixes
 
 local trace_conversion = false  trackers.register("figures.conversion", function(v) trace_conversion = v end)
 
-local report_wand = logs.new("graphics","wand")
+local report_wand = logs.reporter("graphics","wand")
 
 local function togray(oldname,newname)
     if lfs.isfile(oldname) then

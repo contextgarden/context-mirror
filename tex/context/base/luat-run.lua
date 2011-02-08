@@ -12,8 +12,8 @@ local insert = table.insert
 local trace_lua_dump   = false  trackers.register("system.dump",      function(v) trace_lua_dump   = v end)
 local trace_temp_files = false  trackers.register("system.tempfiles", function(v) trace_temp_files = v end)
 
-local report_lua       = logs.new("system","lua")
-local report_tempfiles = logs.new("resolvers","tempfiles")
+local report_lua       = logs.reporter("system","lua")
+local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
 luatex       = luatex or { }
 local luatex = luatex
@@ -67,6 +67,12 @@ end
 local function report_output_log()
 end
 
+--~ local function show_open()
+--~ end
+
+--~ local function show_close()
+--~ end
+
 local function pre_dump_actions()
     lua.finalize(trace_lua_dump and report_lua or nil)
     statistics.reportstorage("log")
@@ -77,6 +83,9 @@ end
 
 callbacks.register('start_run',             start_run,           "actions performed at the beginning of a run")
 callbacks.register('stop_run',              stop_run,            "actions performed at the end of a run")
+
+--~ callbacks.register('show_open',             show_open,           "actions performed when opening a file")
+--~ callbacks.register('show_close',            show_close,          "actions performed when closing a file")
 
 callbacks.register('report_output_pages',   report_output_pages, "actions performed when reporting pages")
 callbacks.register('report_output_log',     report_output_log,   "actions performed when reporting log file")
@@ -118,7 +127,7 @@ luatex.registerstopactions(luatex.cleanuptempfiles)
 
 local synctex = false
 
-local report_system = logs.new("system")
+local report_system = logs.reporter("system")
 
 directives.register("system.synctex", function(v)
     synctex = v

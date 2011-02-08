@@ -14,7 +14,7 @@ local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_se
 
 local allocate = utilities.storage.allocate
 
-local report_interface = logs.new("interface","checking")
+local report_interface = logs.reporter("interface","checking")
 
 interfaces = interfaces or { }
 

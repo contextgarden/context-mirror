@@ -43,8 +43,8 @@ local trace_remapping  = false  trackers.register("math.remapping",  function(v)
 local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
 local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
-local report_processing = logs.new("mathematics","processing")
-local report_remapping  = logs.new("mathematics","remapping")
+local report_processing = logs.reporter("mathematics","processing")
+local report_remapping  = logs.reporter("mathematics","remapping")
 
 local nodecodes     = nodes.nodecodes
 local noadcodes     = nodes.noadcodes

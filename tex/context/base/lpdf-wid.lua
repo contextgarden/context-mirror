@@ -11,7 +11,7 @@ local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local report_media = logs.new("backend","media")
+local report_media = logs.reporter("backend","media")
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 

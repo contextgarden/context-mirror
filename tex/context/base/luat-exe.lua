@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['luat-exe'] = {
 local match, find, gmatch = string.match, string.find, string.gmatch
 local concat = table.concat
 
-local report_executers = logs.new("system","executers")
+local report_executers = logs.reporter("system","executers")
 
 resolvers.executers = resolvers.executers or { }
 local executers     = resolvers.executers

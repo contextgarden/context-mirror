@@ -14,7 +14,7 @@ local tonumber, round = tonumber, math.round
 for debugging <l n='luatex'/> node management.</p>
 --ldx]]--
 
-local report_nodes = logs.new("nodes","housekeeping")
+local report_nodes = logs.reporter("nodes","housekeeping")
 
 local nodes, node = nodes, node
 

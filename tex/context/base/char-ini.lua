@@ -24,7 +24,7 @@ local texcatcodes = tex.texcatcodes
 
 local trace_defining = false  trackers.register("characters.defining",   function(v) characters_defining = v end)
 
-local report_defining = logs.new("characters")
+local report_defining = logs.reporter("characters")
 
 --[[ldx--
 <p>This module implements some methods and creates additional datastructured

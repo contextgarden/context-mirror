@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/08/11 18:41:10
+-- merge date  : 02/08/11 21:46:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -2398,6 +2398,8 @@ storage = { -- probably no longer needed
 }
 logs = {
     new           = function() return dummyfunction end,
+    reporter      = function() return dummyfunction end,
+    messenger     = function() return dummyfunction end,
     report        = dummyfunction,
 }
 callbacks = {
@@ -2601,7 +2603,7 @@ containers          = containers or { }
 local containers    = containers
 containers.usecache = true
 
-local report_containers = logs.new("resolvers","containers")
+local report_containers = logs.reporter("resolvers","containers")
 
 local function report(container,tag,name)
     if trace_cache or trace_containers then
@@ -2874,7 +2876,7 @@ local next = next
 
 local trace_injections = false  trackers.register("nodes.injections", function(v) trace_injections = v end)
 
-local report_injections = logs.new("nodes","injections")
+local report_injections = logs.reporter("nodes","injections")
 
 local attributes, nodes, node = attributes, nodes, node
 
@@ -3327,7 +3329,7 @@ local write_nl = texio.write_nl
 local lower = string.lower
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 fontloader.totable = fontloader.to_table
 
@@ -3447,7 +3449,7 @@ local allocate = utilities.storage.allocate
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 -- tfmdata has also fast access to indices and unicodes
 -- to be checked: otf -> tfm -> tfmscaled
@@ -4259,7 +4261,7 @@ local lpegmatch = lpeg.match
 
 local trace_loading = false  trackers.register("otf.loading",      function(v) trace_loading      = v end)
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 local fonts   = fonts
 
@@ -5381,7 +5383,7 @@ local utfbyte = utf.byte
 local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading    = v end)
 local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -5654,7 +5656,7 @@ if not modules then modules = { } end modules ['font-lua'] = {
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_lua = logs.new("fonts","lua loading")
+local report_lua = logs.reporter("fonts","lua loading")
 
 fonts.formats.lua = "lua"
 
@@ -5728,7 +5730,7 @@ local trace_sequences  = false  trackers.register("otf.sequences",  function(v) 
 local trace_math       = false  trackers.register("otf.math",       function(v) trace_math         = v end)
 local trace_defining   = false  trackers.register("fonts.defining", function(v) trace_defining     = v end)
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 local starttiming, stoptiming, elapsedtime = statistics.starttiming, statistics.stoptiming, statistics.elapsedtime
 
@@ -7679,7 +7681,7 @@ if not modules then modules = { } end modules ['font-otd'] = {
 
 local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 local fonts          = fonts
 local otf            = fonts.otf
@@ -7853,7 +7855,7 @@ local trace_ligatures    = false  trackers.register("otf.ligatures",    function
 local trace_kerns        = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
 local trace_preparing    = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
 
-local report_prepare = logs.new("fonts","otf prepare")
+local report_prepare = logs.reporter("fonts","otf prepare")
 
 local wildcard = "*"
 local default  = "dflt"
@@ -8371,11 +8373,11 @@ local trace_steps        = false  trackers.register("otf.steps",        function
 local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
 
-local report_direct   = logs.new("fonts","otf direct")
-local report_subchain = logs.new("fonts","otf subchain")
-local report_chain    = logs.new("fonts","otf chain")
-local report_process  = logs.new("fonts","otf process")
-local report_prepare  = logs.new("fonts","otf prepare")
+local report_direct   = logs.reporter("fonts","otf direct")
+local report_subchain = logs.reporter("fonts","otf subchain")
+local report_chain    = logs.reporter("fonts","otf chain")
+local report_process  = logs.reporter("fonts","otf process")
+local report_prepare  = logs.reporter("fonts","otf prepare")
 
 trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
 trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
@@ -11244,7 +11246,7 @@ local trace_loading = false  trackers.register("otf.loading", function(v) trace_
 local fonts = fonts
 local otf   = fonts.otf
 
-local report_otf = logs.new("fonts","otf loading")
+local report_otf = logs.reporter("fonts","otf loading")
 
 -- instead of "script = "DFLT", langs = { 'dflt' }" we now use wildcards (we used to
 -- have always); some day we can write a "force always when true" trick for other
@@ -15451,7 +15453,7 @@ local directive_embedall = false  directives.register("fonts.embedall", function
 trackers.register("fonts.loading", "fonts.defining", "otf.loading", "afm.loading", "tfm.loading")
 trackers.register("fonts.all", "fonts.*", "otf.*", "afm.*", "tfm.*")
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 --[[ldx--
 <p>Here we deal with defining fonts. We do so by intercepting the

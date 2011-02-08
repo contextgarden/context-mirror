@@ -43,7 +43,7 @@ local trace_lpath    = false  if trackers then trackers.register("xml.path",    
 local trace_lparse   = false  if trackers then trackers.register("xml.parse",   function(v) trace_lparse = v end) end
 local trace_lprofile = false  if trackers then trackers.register("xml.profile", function(v) trace_lpath  = v trace_lparse = v trace_lprofile = v end) end
 
-local report_lpath = logs.new("xml","lpath")
+local report_lpath = logs.reporter("xml","lpath")
 
 --[[ldx--
 <p>We've now arrived at an interesting part: accessing the tree using a subset

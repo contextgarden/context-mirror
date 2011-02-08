@@ -15,7 +15,7 @@ dofile(resolvers.findfile("font-mis.lua","tex"))
 
 local format, gsub, concat, match, find = string.format, string.gsub, table.concat, string.match, string.find
 
-local report = logs.new("ctx-fonttest")
+local report = logs.reporter("ctx-fonttest")
 
 local sample_line = "This is a sample line!"
 local tempname    = "mtx-server-ctx-fonttest-temp"

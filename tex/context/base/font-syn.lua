@@ -24,7 +24,7 @@ local trace_names          = false  trackers.register("fonts.names",          fu
 local trace_warnings       = false  trackers.register("fonts.warnings",       function(v) trace_warnings       = v end)
 local trace_specifications = false  trackers.register("fonts.specifications", function(v) trace_specifications = v end)
 
-local report_names = logs.new("fonts","names")
+local report_names = logs.reporter("fonts","names")
 
 --[[ldx--
 <p>This module implements a name to filename resolver. Names are resolved

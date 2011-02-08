@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['node-tsk'] = {
 
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
-local report_tasks = logs.new("tasks")
+local report_tasks = logs.reporter("tasks")
 
 local allocate = utilities.storage.allocate
 

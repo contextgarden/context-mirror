@@ -10,7 +10,7 @@ local next, format, lower, concat = next, string.format, string.lower, table.con
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 
-local report_defining = logs.new("fonts","defining")
+local report_defining = logs.reporter("fonts","defining")
 
 local fonts  = fonts
 fonts.logger = fonts.logger or { }

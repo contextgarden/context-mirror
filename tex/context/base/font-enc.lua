@@ -29,7 +29,7 @@ enc.known = utilities.storage.allocate { -- sort of obsolete
     t2a      = true,
     t2b      = true,
     t2c      = true,
-    unicode  = true
+    unicode  = true,
 }
 
 function enc.is_known(encoding)

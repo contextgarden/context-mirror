@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['grph-u3d'] = {
 
 local trace_inclusion = false  trackers.register("figures.inclusion",  function(v) trace_inclusion = v end)
 
-local report_u3d = logs.new("graphics","u3d")
+local report_u3d = logs.reporter("graphics","u3d")
 
 local figures = figures
 

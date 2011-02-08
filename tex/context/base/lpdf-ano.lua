@@ -16,9 +16,9 @@ local trace_references   = false  trackers.register("references.references",   f
 local trace_destinations = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks    = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
-local report_reference   = logs.new("backend","references")
-local report_destination = logs.new("backend","destinations")
-local report_bookmark    = logs.new("backend","bookmarks")
+local report_reference   = logs.reporter("backend","references")
+local report_destination = logs.reporter("backend","destinations")
+local report_bookmark    = logs.reporter("backend","bookmarks")
 
 local variables = interfaces.variables
 local constants = interfaces.constants

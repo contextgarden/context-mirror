@@ -69,7 +69,7 @@ languages.data   = languages.data   or { }
 
 local trace_labels = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 
-local report_labels = logs.new("languages","labels")
+local report_labels = logs.reporter("languages","labels")
 
 function languages.labels.define()
     local variables = interfaces.variables

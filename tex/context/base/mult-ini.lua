@@ -12,7 +12,7 @@ local serialize = table.serialize
 
 local texsprint = tex.sprint
 
-local report_interface = logs.new("interface","initialization")
+local report_interface = logs.reporter("interface","initialization")
 
 interfaces           = interfaces           or { }
 interfaces.messages  = interfaces.messages  or { }
@@ -59,7 +59,7 @@ setmetatable(constants,valueiskey)
 setmetatable(elements, valueiskey)
 
 setmetatable(messages,  { __index = function(t,k) local v = { }         ; t[k] = v ; return v end })
-setmetatable(reporters, { __index = function(t,k) local v = logs.new(k) ; t[k] = v ; return v end })
+setmetatable(reporters, { __index = function(t,k) local v = logs.reporter(k) ; t[k] = v ; return v end })
 
 for category, m in next, messages do
     -- We pre-create reporters for already defined messages

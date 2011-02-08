@@ -15,7 +15,7 @@ local format = string.format
 
 local trace_breakpoints = false  trackers.register("typesetters.breakpoints", function(v) trace_breakpoints = v end)
 
-local report_breakpoints = logs.new("typesetting","breakpoints")
+local report_breakpoints = logs.reporter("typesetting","breakpoints")
 
 local nodes, node = nodes, node
 

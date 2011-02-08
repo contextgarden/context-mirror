@@ -12,7 +12,7 @@ local concat = table.concat
 local lpegmatch = lpeg.match
 local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
 
-local report_words = logs.new("languages","words")
+local report_words = logs.reporter("languages","words")
 
 local nodes, node, languages = nodes, node, languages
 

@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['typo-rep'] = {
 local trace_stripping = false  trackers.register("nodes.stripping",  function(v) trace_stripping = v end)
                                trackers.register("fonts.stripping",  function(v) trace_stripping = v end)
 
-local report_stripping = logs.new("fonts","stripping")
+local report_stripping = logs.reporter("fonts","stripping")
 
 local nodes, node = nodes, node
 

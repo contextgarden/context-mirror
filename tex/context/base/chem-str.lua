@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['chem-str'] = {
 local trace_structure = false  trackers.register("chemistry.structure",  function(v) trace_structure = v end)
 local trace_textstack = false  trackers.register("chemistry.textstack",  function(v) trace_textstack = v end)
 
-local report_chemistry = logs.new("chemistry")
+local report_chemistry = logs.reporter("chemistry")
 
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove

@@ -29,7 +29,7 @@ containers          = containers or { }
 local containers    = containers
 containers.usecache = true
 
-local report_containers = logs.new("resolvers","containers")
+local report_containers = logs.reporter("resolvers","containers")
 
 local function report(container,tag,name)
     if trace_cache or trace_containers then

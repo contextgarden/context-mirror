@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['page-lin'] = {
 
 local trace_numbers = false  trackers.register("lines.numbers",  function(v) trace_numbers = v end)
 
-local report_lines = logs.new("lines")
+local report_lines = logs.reporter("lines")
 
 local texbox = tex.box
 

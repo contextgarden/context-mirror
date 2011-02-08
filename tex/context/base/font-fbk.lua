@@ -14,7 +14,7 @@ local trace_combining_all = false  trackers.register("fonts.combining.all", func
 
 trackers.register("fonts.composing", "fonts.combining")
 
-local report_combining = logs.new("fonts","combining")
+local report_combining = logs.reporter("fonts","combining")
 
 local allocate = utilities.storage.allocate
 

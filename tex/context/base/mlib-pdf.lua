@@ -11,7 +11,7 @@ local abs, sqrt, round = math.abs, math.sqrt, math.round
 
 local allocate = utilities.storage.allocate
 
-local report_metapost = logs.new("metapost")
+local report_metapost = logs.reporter("metapost")
 
 local mplib, context = mplib, context
 

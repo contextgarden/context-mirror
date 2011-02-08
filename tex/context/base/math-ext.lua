@@ -11,7 +11,7 @@ local trace_virtual = false trackers.register("math.virtual", function(v) trace_
 local mathematics = mathematics
 local characters  = characters
 
-local report_math = logs.new("mathematics")
+local report_math = logs.reporter("mathematics")
 
 mathematics.extras = mathematics.extras or { }
 local extras       = mathematics.extras

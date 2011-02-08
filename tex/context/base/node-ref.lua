@@ -39,9 +39,9 @@ local trace_backend      = false  trackers.register("nodes.backend",      functi
 local trace_references   = false  trackers.register("nodes.references",   function(v) trace_references   = v end)
 local trace_destinations = false  trackers.register("nodes.destinations", function(v) trace_destinations = v end)
 
-local report_reference   = logs.new("backend","references")
-local report_destination = logs.new("backend","destinations")
-local report_area        = logs.new("backend","areas")
+local report_reference   = logs.reporter("backend","references")
+local report_destination = logs.reporter("backend","destinations")
+local report_area        = logs.reporter("backend","areas")
 
 local nodecodes        = nodes.nodecodes
 local skipcodes        = nodes.skipcodes

@@ -14,7 +14,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local trace_define = false  trackers.register("colors.define",function(v) trace_define = v end)
 
-local report_colors = logs.new("colors","defining")
+local report_colors = logs.reporter("colors","defining")
 
 local attributes, context, commands = attributes, context, commands
 

@@ -13,7 +13,7 @@ local P, R, V, Cc, Cs = lpeg.P, lpeg.R, lpeg.V, lpeg.Cc, lpeg.Cs
 
 local trace_molecules = false  trackers.register("chemistry.molecules",  function(v) trace_molecules = v end)
 
-local report_chemistry = logs.new("chemistry")
+local report_chemistry = logs.reporter("chemistry")
 
 local context = context
 

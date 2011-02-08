@@ -14,7 +14,7 @@ local variables       = interfaces.variables
 
 local trace_namespaces = false  trackers.register("interfaces.namespaces", function(v) trace_namespaces = v end)
 
-local report_namespaces = logs.new("interface","namespaces")
+local report_namespaces = logs.reporter("interface","namespaces")
 
 local v_yes, v_list = variables.yes, variables.list
 

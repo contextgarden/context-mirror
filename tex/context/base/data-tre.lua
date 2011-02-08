@@ -12,7 +12,7 @@ local find, gsub, format = string.find, string.gsub, string.format
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
-local report_trees = logs.new("resolvers","trees")
+local report_trees = logs.reporter("resolvers","trees")
 
 local resolvers = resolvers
 

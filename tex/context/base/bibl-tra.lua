@@ -17,7 +17,7 @@ local variables, constants = interfaces.variables, interfaces.constants
 
 local trace_bibtex = false  trackers.register("publications.bibtex", function(v) trace_bibtex = v end)
 
-local report_tex = logs.new("publications","tex")
+local report_tex = logs.reporter("publications","tex")
 
 local context, structures = context, structures
 

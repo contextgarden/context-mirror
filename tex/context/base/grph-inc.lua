@@ -55,7 +55,7 @@ local trace_programs   = false  trackers.register("graphics.programs",   functio
 local trace_conversion = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
 local trace_inclusion  = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
 
-local report_inclusion = logs.new("graphics","inclusion")
+local report_inclusion = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
 

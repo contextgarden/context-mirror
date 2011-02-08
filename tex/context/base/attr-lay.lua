@@ -16,7 +16,7 @@ local insert, remove = table.insert, table.remove
 
 local allocate = utilities.storage.allocate
 
-local report_viewerlayers = logs.new("viewerlayers")
+local report_viewerlayers = logs.reporter("viewerlayers")
 
 -- todo: document this but first reimplement this as it reflects the early
 -- days of luatex / mkiv and we have better ways now

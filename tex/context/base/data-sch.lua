@@ -13,7 +13,7 @@ local finders, openers, loaders = resolvers.finders, resolvers.openers, resolver
 
 local trace_schemes = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
 
-local report_schemes = logs.new("resolvers","schemes")
+local report_schemes = logs.reporter("resolvers","schemes")
 
 local resolvers = resolvers
 
