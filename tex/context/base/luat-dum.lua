@@ -36,7 +36,6 @@ storage = { -- probably no longer needed
 logs = {
     new           = function() return dummyfunction end,
     report        = dummyfunction,
-    simple        = dummyfunction,
 }
 callbacks = {
     register = function(n,f) return callback.register(n,f) end,
@@ -69,8 +68,12 @@ local remapper = {
 
 function resolvers.findfile(name,kind)
     name = string.gsub(name,"\\","\/")
-    kind = string.lower(kind)
-    return kpse.find_file(name,(kind and kind ~= "" and (remapper[kind] or kind)) or file.extname(name,"tex"))
+    kind = kind and string.lower(kind)
+    local found = kpse.find_file(name,(kind and kind ~= "" and (remapper[kind] or kind)) or file.extname(name,"tex"))
+    if not found or found == "" then
+        found = kpse.find_file(name,"other text file")
+    end
+    return found
 end
 
 function resolvers.findbinfile(name,kind)

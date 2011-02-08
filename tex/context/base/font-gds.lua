@@ -247,7 +247,7 @@ end
 -- installation (collected to keep the overview) -- also for type 1
 
 fonts.otf.tables.features['goodies']     = 'Goodies on top of built in features'
-fonts.otf.tables.features['featurset']   = 'Goodie Feature Set'
+fonts.otf.tables.features['featureset']  = 'Goodie Feature Set'
 fonts.otf.tables.features['colorscheme'] = 'Goodie Color Scheme'
 
 fonts.otf.features.register('goodies')

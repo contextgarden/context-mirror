@@ -130,16 +130,22 @@ function commands.loadexamodes(filename)
     end
 end
 
+local report_options = logs.new("system","options")
+
 function commands.logoptionfile(name)
     -- todo: xml if xml logmode
     local f = io.open(name)
     if f then
-        texio.write_nl("log","%\n%\tbegin of optionfile\n%\n")
+        logs.pushtarget("logfile")
+        report_options("begin of optionfile")
+        report_options()
         for line in f:lines() do
-            texio.write("log",format("%%\t%s\n",line))
+            report_options(line)
         end
-        texio.write("log","%\n%\tend of optionfile\n%\n")
+        report_options()
+        report_options("end of optionfile")
         f:close()
+        logs.poptarget()
     end
 end
 

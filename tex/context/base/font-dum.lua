@@ -11,13 +11,13 @@ fonts = fonts or { }
 -- general
 
 fonts.otf.pack              = false -- only makes sense in context
-fonts.tfm.resolvevirtualtoo = false -- context specific (du eto resolver)
+fonts.tfm.resolvevirtualtoo = false -- context specific (due to resolver)
 fonts.tfm.fontnamemode      = "specification" -- somehow latex needs this (changed name!)
 
 -- readers
 
 fonts.tfm.readers          = fonts.tfm.readers or { }
-fonts.tfm.readers.sequence = { 'otf', 'ttf', 'tfm' }
+fonts.tfm.readers.sequence = { 'otf', 'ttf', 'tfm', 'lua' }
 fonts.tfm.readers.afm      = nil
 
 -- define

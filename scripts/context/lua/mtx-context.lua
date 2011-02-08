@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['mtx-context'] = {
     license   = "see context related readme files"
 }
 
+local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
+local quote = string.quote
+local concat = table.concat
+
 local basicinfo = [[
 --run                 process (one or more) files (default action)
 --make                create context formats
@@ -210,11 +214,11 @@ do
             f = io.open(ctlname,'w')
             if f then
                 f:write("<?xml version='1.0' standalone='yes'?>\n\n")
-                f:write(string.format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
+                f:write(format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
                 local sorted = table.sortedkeys(prepfiles)
                 for i=1,#sorted do
                     local name = sorted[i]
-                    f:write(string.format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
+                    f:write(format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
                 end
                 f:write("</ctx:preplist>\n")
                 f:close()
@@ -470,14 +474,6 @@ function scripts.context.multipass.changed(oldhash, newhash)
     return false
 end
 
-scripts.context.backends = {
-    pdftex = 'pdftex',
-    luatex = 'pdftex',
-    pdf    = 'pdftex',
-    dvi    = 'dvipdfmx',
-    dvips  = 'dvips'
-}
-
 function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,currentrun,finalrun)
     -- take jobname from ctx
     jobname = file.removesuffix(jobname)
@@ -486,39 +482,39 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         local function someflag(flag)
             return (ctxdata and ctxdata.flags[flag]) or environment.argument(flag)
         end
-        local function setvalue(flag,format,hash,default)
+        local function setvalue(flag,template,hash,default)
             local a = someflag(flag) or default
             if a and a ~= "" then
                 if hash then
                     if hash[a] then
-                        f:write(format:format(a),"\n")
+                        f:write(format(template,a),"\n")
                     end
                 else
-                    f:write(format:format(a),"\n")
+                    f:write(format(template,a),"\n")
                 end
             end
         end
-        local function setvalues(flag,format,plural)
+        local function setvalues(flag,template,plural)
             if type(flag) == "table"  then
                 for k, v in next, flag do
-                    f:write(format:format(v),"\n")
+                    f:write(format(template,v),"\n")
                 end
             else
                 local a = someflag(flag) or (plural and someflag(flag.."s"))
                 if a and a ~= "" then
                     for v in a:gmatch("%s*([^,]+)") do
-                        f:write(format:format(v),"\n")
+                        f:write(format(template,v),"\n")
                     end
                 end
             end
         end
-        local function setfixed(flag,format,...)
+        local function setfixed(flag,template,...)
             if someflag(flag) then
-                f:write(format:format(...),"\n")
+                f:write(format(template,...),"\n")
             end
         end
-        local function setalways(format,...)
-            f:write(format:format(...),"\n")
+        local function setalways(template,...)
+            f:write(format(template,...),"\n")
         end
         --
         -- This might change ... we can just pass the relevant flags directly.
@@ -528,17 +524,9 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways("\\unprotect")
         --
         setalways("%% feedback and basic job control")
-        if type(environment.argument("trackers")) == "string" then
-            setvalue("trackers" , "\\enabletrackers[%s]")
-        end
-        if type(environment.argument("directives")) == "string" then
-            setvalue("directives", "\\enabledirectives[%s]")
-        end
-        if type(environment.argument("silent")) == "string" then
-            setvalue("silent", "\\enabledirectives[logs.blocked={%s}]")
-        elseif environment.argument("silent") then
-            setvalue("silent", "\\enabledirectives[logs.blocked=*]") -- maybe \silentmode
-        end
+        --
+        -- Option file, we can pass more on the commandline some day soon.
+        --
         setfixed ("timing"       , "\\usemodule[timing]")
         setfixed ("batchmode"    , "\\batchmode")
         setfixed ("batch"        , "\\batchmode")
@@ -558,11 +546,9 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         --
         setalways("%% process info")
         --
-    --  setvalue ("inputfile"    , "\\setupsystem[inputfile=%s]")
         setalways(                 "\\setupsystem[inputfile=%s]",environment.argument("input") or environment.files[1] or "\\jobname")
         setvalue ("result"       , "\\setupsystem[file=%s]")
         setalways(                 "\\setupsystem[\\c!n=%s,\\c!m=%s]", kindofrun or 0, currentrun or 0)
-    --  setalways(                 "\\setupsystem[\\c!type=%s]",os.type) -- windows or unix
         setvalues("path"         , "\\usepath[%s]")
         setvalue ("setuppath"    , "\\setupsystem[\\c!directory={%s}]")
         setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")
@@ -577,7 +563,6 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways("%% options (not that important)")
         --
         setalways("\\startsetups *runtime:options")
-        setvalue ('output'       , "\\setupoutput[%s]", scripts.context.backends, 'pdf')
         setfixed ("color"        , "\\setupcolors[\\c!state=\\v!start]")
         setvalue ("separation"   , "\\setupcolors[\\c!split=%s]")
         setfixed ("noarrange"    , "\\setuparranging[\\v!disable]")
@@ -606,35 +591,12 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
 end
 
 function scripts.context.multipass.copyluafile(jobname)
---  io.savedata(jobname..".tuc",io.loaddata(jobname..".tua") or "")
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if lfs.isfile(tuaname) then
         os.remove(tucname)
         os.rename(tuaname,tucname)
     end
 end
-
--- obsolete:
---
--- function scripts.context.multipass.copytuifile(jobname)
---     local tuiname, tuoname = jobname .. ".tui", jobname .. ".tuo"
---     if lfs.isfile(tuiname) then
---         local f, g = io.open(tuiname), io.open(tuoname,'w')
---         if f and g then
---             g:write("% traditional utility file, only commands written by mtxrun/context\n%\n")
---             for line in f:lines() do
---                 if line:find("^c ") then
---                     g:write((line:gsub("^c ","")),"%\n")
---                 end
---             end
---             g:write("\\endinput\n")
---             f:close()
---             g:close()
---         end
---     else
---     --  os.remove(tuoname)
---     end
--- end
 
 scripts.context.cldsuffixes = table.tohash {
     "cld",
@@ -702,12 +664,12 @@ local function analyze(filename) -- only files on current path
     return nil
 end
 
-local function makestub(format,filename,prepname)
+local function makestub(template,filename,prepname)
     local stubname = file.replacesuffix(file.basename(filename),'run')
     local f = io.open(stubname,'w')
     if f then
         f:write("\\starttext\n")
-        f:write(string.format(format,prepname or filename),"\n")
+        f:write(format(template,prepname or filename),"\n")
         f:write("\\stoptext\n")
         f:close()
         filename = stubname
@@ -716,10 +678,10 @@ local function makestub(format,filename,prepname)
 end
 
 --~ function scripts.context.openpdf(name)
---~     os.spawn(string.format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+--~     os.spawn(format('pdfopen --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
 --~ end
 --~ function scripts.context.closepdf(name)
---~     os.spawn(string.format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
+--~     os.spawn(format('pdfclose --file "%s" 2>&1', file.replacesuffix(name,"pdf")))
 --~ end
 
 local pdfview -- delayed loading
@@ -782,9 +744,9 @@ function scripts.context.run(ctxdata,filename)
                         if texexec ~= "" then
                             os.setenv("RUBYOPT","")
                             local options = environment.reconstructcommandline(environment.arguments_after)
-                            options = string.gsub(options,"--purge","")
-                            options = string.gsub(options,"--purgeall","")
-                            local command = string.format("ruby %s %s",texexec,options)
+                            options = gsub(options,"--purge","")
+                            options = gsub(options,"--purgeall","")
+                            local command = format("ruby %s %s",texexec,options)
                             if environment.argument("purge") then
                                 os.execute(command)
                                 scripts.context.purge_job(filename,false,true)
@@ -884,10 +846,37 @@ function scripts.context.run(ctxdata,filename)
                             report("warning: syntex is enabled") -- can add upto 5% runtime
                             flags[#flags+1] = "--synctex=1"
                         end
-                        flags[#flags+1] = "--fmt=" .. string.quote(formatfile)
-                        flags[#flags+1] = "--lua=" .. string.quote(scriptfile)
+                        flags[#flags+1] = "--fmt=" .. quote(formatfile)
+                        flags[#flags+1] = "--lua=" .. quote(scriptfile)
                         flags[#flags+1] = "--backend=pdf"
-                        local command = string.format("luatex %s %s", table.concat(flags," "), string.quote(filename))
+                        --
+                        -- We pass these directly.
+                        --
+                        local silent     = environment.argument("silent")
+                        local directives = environment.argument("directives")
+                        local trackers   = environment.argument("trackers")
+                        if silent == true then
+                            silent = "*"
+                        end
+                        if type(silent) == "string" then
+                            if type(directives) == "string" then
+                                directives = format("%s,logs.blocked={%s}",directives,silent)
+                            else
+                                directives = format("logs.blocked={%s}",silent)
+                            end
+                        end
+                        --
+                        if type(directives) == "string" then
+                            flags[#flags+1] = format('--directives="%s"',directives)
+                        end
+                        if type(trackers) == "string" then
+                            flags[#flags+1] = format('--trackers="%s"',trackers)
+                        end
+                        if type(backend) == "string" then
+                            flags[#flags+1] = format('--backend="%s"',backend)
+                        end
+                        --
+                        local command = format("luatex %s %s", concat(flags," "), quote(filename))
                         local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }
                         local once = environment.argument("once")
                         local maxnofruns = (once and 1) or scripts.context.multipass.nofruns
@@ -897,6 +886,8 @@ function scripts.context.run(ctxdata,filename)
                             local kindofrun = (once and 3) or (i==1 and 1) or (i==maxnofruns and 4) or 2
                             scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,false) -- kindofrun, currentrun, final
                             report("run %s: %s",i,command)
+--~                             print("\n") -- cleaner, else continuation on same line
+                            print("") -- cleaner, else continuation on same line
                             local returncode, errorstring = os.spawn(command)
                         --~ if returncode == 3 then
                         --~     scripts.context.make(formatname)
@@ -1030,8 +1021,8 @@ function scripts.context.pipe()
         end
         local flags = {
             "--interaction=scrollmode",
-            "--fmt=" .. string.quote(formatfile),
-            "--lua=" .. string.quote(scriptfile),
+            "--fmt=" .. quote(formatfile),
+            "--lua=" .. quote(scriptfile),
             "--backend=pdf",
         }
         local filename = environment.argument("dummyfile") or ""
@@ -1044,7 +1035,7 @@ function scripts.context.pipe()
             scripts.context.multipass.makeoptionfile(filename,{ flags = flags },3,1,false) -- kindofrun, currentrun, final
             report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
-        local command = string.format("luatex %s %s", table.concat(flags," "), string.quote(filename))
+        local command = format("luatex %s %s", concat(flags," "), quote(filename))
         os.spawn(command)
         if environment.argument("purge") then
             scripts.context.purge_job(filename)
@@ -1065,7 +1056,7 @@ local make_mkiv_format = environment.make_format
 
 local function make_mkii_format(name,engine)
     if environment.argument(engine) then
-        local command = string.format("mtxrun texexec.rb --make --%s %s",name,engine)
+        local command = format("mtxrun texexec.rb --make --%s %s",name,engine)
         report("running command: %s",command)
         os.spawn(command)
     end
@@ -1109,7 +1100,7 @@ function scripts.context.autoctx()
         if f then
             local chunk = f:read(512) or ""
             f:close()
-            local ctxname = string.match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
+            local ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
             if ctxname then
                 ctxdata = ctxrunner.new()
                 ctxdata.jobname = firstfile
@@ -1141,7 +1132,7 @@ function scripts.context.metapost()
         commands.writestatus = report -- no longer needed
     end
     local formatname = environment.argument("format") or "metafun"
-    if formatname == "" or type(format) == "boolean" then
+    if formatname == "" or type(formatname) == "boolean" then
         formatname = "metafun"
     end
     if environment.argument("pdf") then
@@ -1149,7 +1140,7 @@ function scripts.context.metapost()
         local resultname = environment.argument("result") or basename
         local jobname = "mtx-context-metapost"
         local tempname = file.addsuffix(jobname,"tex")
-        io.savedata(tempname,string.format(template,"metafun",filename))
+        io.savedata(tempname,format(template,"metafun",filename))
         environment.files[1] = tempname
         environment.setargument("result",resultname)
         environment.setargument("once",true)
@@ -1244,7 +1235,7 @@ function scripts.context.purge_job(jobname,all,mkiitoo)
                 end
             end
             if #deleted > 0 then
-                report("purged files: %s", table.concat(deleted,", "))
+                report("purged files: %s", concat(deleted,", "))
             end
         end
     end
@@ -1267,14 +1258,14 @@ function scripts.context.purge(all,pattern,mkiitoo)
             deleted[#deleted+1] = purge_file(name)
         elseif mkiitoo then
             for i=1,#special_runfiles do
-                if string.find(name,special_runfiles[i]) then
+                if find(name,special_runfiles[i]) then
                     deleted[#deleted+1] = purge_file(name)
                 end
             end
         end
     end
     if #deleted > 0 then
-        report("purged files: %s", table.concat(deleted,", "))
+        report("purged files: %s", concat(deleted,", "))
     end
 end
 
@@ -1326,16 +1317,16 @@ function scripts.context.extras(pattern)
     if found == "" then
         report("unknown extra: %s", extra)
     else
-        pattern = file.join(dir.expandname(file.dirname(found)),string.format("mtx-context-%s.tex",pattern or "*"))
+        pattern = file.join(dir.expandname(file.dirname(found)),format("mtx-context-%s.tex",pattern or "*"))
         local list = dir.glob(pattern)
         for i=1,#list do
             local v = list[i]
             local data = io.loaddata(v) or ""
-            data = string.match(data,"begin help(.-)end help")
+            data = match(data,"begin help(.-)end help")
             if data then
                 report()
-                report(string.format("extra: %s (%s)",string.gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1"),v))
-                for s in string.gmatch(data,"%% *(.-)[\n\r]") do
+                report(format("extra: %s (%s)",gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1"),v))
+                for s in gmatch(data,"%% *(.-)[\n\r]") do
                     report(s)
                 end
                 report()
@@ -1351,7 +1342,7 @@ function scripts.context.extra()
             scripts.context.extras(extra)
         else
             local fullextra = extra
-            if not string.find(fullextra,"mtx%-context%-") then
+            if not find(fullextra,"mtx%-context%-") then
                 fullextra = "mtx-context-" .. extra
             end
             local foundextra = resolvers.findfile(fullextra)
@@ -1431,7 +1422,7 @@ function scripts.context.update()
     end
     local function is_okay(basetree)
         for _, tree in next, validtrees do
-            local pattern = string.gsub(tree,"%-","%%-")
+            local pattern = gsub(tree,"%-","%%-")
             if basetree:find(pattern) then
                 return tree
             end
@@ -1534,6 +1525,17 @@ function scripts.context.update()
     else
         report("context tree '%s' can been updated (use --force)",okay)
     end
+end
+
+do
+
+    local silent = environment.argument("silent")
+    if type(silent) == "string" then
+        directives.enable(format("logs.blocked={%s}",silent))
+    elseif silent then
+        directives.enable("logs.blocked")
+    end
+
 end
 
 if environment.argument("once") then

@@ -4660,7 +4660,7 @@ local trace_initialize = false -- only for testing during development
 function setters.initialize(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
-        local data = data.data
+        local data = setter.data
         if data then
             for key, value in next, values do
              -- key = gsub(key,"_",".")
@@ -4849,7 +4849,7 @@ local function report(setter,...)
     if report then
         report(setter.name,...)
     else -- fallback, as this module is loaded before the logger
-        write_nl(format("%-16s: %s\n",setter.name,format(...)))
+        write_nl(format("%-15s : %s\n",setter.name,format(...)))
     end
 end
 
@@ -4884,22 +4884,30 @@ local trace_directives  = false local trace_directives  = false  trackers.regist
 local trace_experiments = false local trace_experiments = false  trackers.register("system.experiments", function(v) trace_experiments = v end)
 
 function directives.enable(...)
-    d_report("enabling: %s",concat({...}," "))
+    if trace_directives then
+        d_report("enabling: %s",concat({...}," "))
+    end
     d_enable(...)
 end
 
 function directives.disable(...)
-    d_report("disabling: %s",concat({...}," "))
+    if trace_directives then
+        d_report("disabling: %s",concat({...}," "))
+    end
     d_disable(...)
 end
 
 function experiments.enable(...)
-    e_report("enabling: %s",concat({...}," "))
+    if trace_experiments then
+        e_report("enabling: %s",concat({...}," "))
+    end
     e_enable(...)
 end
 
 function experiments.disable(...)
-    e_report("disabling: %s",concat({...}," "))
+    if trace_experiments then
+        e_report("disabling: %s",concat({...}," "))
+    end
     e_disable(...)
 end
 
@@ -4919,10 +4927,12 @@ local flags = environment and environment.engineflags
 
 if flags then
     if trackers and flags.trackers then
-        t_enable(flags.trackers)
+        setters.initialize("flags","trackers", utilities.parsers.settings_to_hash(flags.trackers))
+     -- t_enable(flags.trackers)
     end
     if directives and flags.directives then
-        d_enable(flags.directives)
+        setters.initialize("flags","directives", utilities.parsers.settings_to_hash(flags.directives))
+     -- d_enable(flags.directives)
     end
 end
 
@@ -4967,7 +4977,7 @@ if not modules then modules = { } end modules ['trac-log'] = {
 
 local write_nl, write = texio and texio.write_nl or print, texio and texio.write or io.write
 local format, gmatch, find = string.format, string.gmatch, string.find
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
 local next, type = next, type
@@ -5010,31 +5020,71 @@ setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end }
 
 -- local separator = (tex and (tex.jobname or tex.formatname)) and ">" or "|"
 
-local report, subreport
+local report, subreport, status, settarget
 
 if tex and tex.jobname or tex.formatname then
 
+    local target = "term and log"
+
     report = function(a,b,c,...)
         if c then
-            write_nl(format("%-15s > %s\n",a,format(b,c,...)))
+            write_nl(target,format("%-15s > %s\n",a,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s > %s\n",a,b))
+            write_nl(target,format("%-15s > %s\n",a,b))
         elseif a then
-            write_nl(format("%-15s >\n",   a))
+            write_nl(target,format("%-15s >\n",   a))
         else
-            write_nl("\n")
+            write_nl(target,"\n")
         end
     end
 
     subreport = function(a,sub,b,c,...)
         if c then
-            write_nl(format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
+            write_nl(target,format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
         elseif b then
-            write_nl(format("%-15s > %s > %s\n",a,sub,b))
+            write_nl(target,format("%-15s > %s > %s\n",a,sub,b))
         elseif a then
-            write_nl(format("%-15s > %s >\n",   a,sub))
+            write_nl(target,format("%-15s > %s >\n",   a,sub))
         else
-            write_nl("\n")
+            write_nl(target,"\n")
+        end
+    end
+
+    status = function(a,b,c,...)
+        if c then
+            write_nl(target,format("%-15s : %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(target,format("%-15s : %s\n",a,b)) -- b can have %'s
+        elseif a then
+            write_nl(target,format("%-15s :\n",   a))
+        else
+            write_nl(target,"\n")
+        end
+    end
+
+    local targets = {
+        logfile  = "log",
+        log      = "log",
+        file     = "log",
+        console  = "term",
+        terminal = "term",
+        both     = "term and log",
+    }
+
+    settarget = function(whereto)
+        target = targets[whereto or "both"] or targets.both
+    end
+
+    local stack = { }
+
+    pushtarget = function(newtarget)
+        insert(stack,target)
+        settarget(newtarget)
+    end
+
+    poptarget = function()
+        if #stack > 0 then
+            settarget(remove(stack))
         end
     end
 
@@ -5064,22 +5114,30 @@ else
         end
     end
 
-end
-
-function logs.status(a,b,c,...) -- at the tex end
-    if c then
-        write_nl(format("%-15s : %s\n",a,format(b,c,...)))
-    elseif b then
-        write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
-    elseif a then
-        write_nl(format("%-15s :\n",   a))
-    else
-        write_nl("\n")
+    status = function(a,b,c,...) -- not to be used in lua anyway
+        if c then
+            write_nl(format("%-15s : %s\n",a,format(b,c,...)))
+        elseif b then
+            write_nl(format("%-15s : %s\n",a,b)) -- b can have %'s
+        elseif a then
+            write_nl(format("%-15s :\n",   a))
+        else
+            write_nl("\n")
+        end
     end
+
+    settarget  = ignore
+    pushtarget = ignore
+    poptarget  = ignore
+
 end
 
-logs.report    = report
-logs.subreport = subreport
+logs.report     = report
+logs.subreport  = subreport
+logs.status     = status
+logs.settarget  = settarget
+logs.pushtarget = pushtarget
+logs.poptarget  = poptarget
 
 -- installer
 
@@ -13544,7 +13602,7 @@ local report_format = logs.new("resolvers","formats")
 
 local quoted = string.quoted
 
-local function primaryflags()
+local function primaryflags() -- not yet ok
     local trackers   = environment.argument("trackers")
     local directives = environment.argument("directives")
     local flags = ""

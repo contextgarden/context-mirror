@@ -112,6 +112,7 @@ else
     loadmodule('font-cid.lua')
     loadmodule('font-ott.lua') -- might be split
     loadmodule('font-map.lua') -- for loading lum file (will be stripped)
+    loadmodule('font-lua.lua')
     loadmodule('font-otf.lua')
     loadmodule('font-otd.lua')
     loadmodule('font-oti.lua')
@@ -125,6 +126,8 @@ else
     loadmodule('font-dum.lua')
 
 end
+
+resolvers.loadmodule = loadmodule
 
 -- In order to deal with the fonts we need to initialize some
 -- callbacks. One can overload them later on if needed.
