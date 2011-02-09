@@ -40,43 +40,78 @@ local function ignore() end
 
 setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
 
-local report, subreport, status, settarget
+local report, subreport, status, settarget, setformatter
+
+local direct, subdirect, writer
 
 if tex and tex.jobname or tex.formatname then
 
-    local target = "term and log"
+    local valueiskey   = { __index = function(t,k) t[k] = k return k end } -- will be helper
+
+    local target       = "term and log"
+
+    local formats      = { } setmetatable(formats,     valueiskey)
+    local translations = { } setmetatable(translations,valueiskey)
+
+    writer = function(...)
+        write_nl(target,...)
+    end
 
     report = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s\n",a,format(b,c,...)))
+            write_nl(target,format("%-15s > %s\n",translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s > %s\n",a,b))
+            write_nl(target,format("%-15s > %s\n",translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s >\n",   a))
+            write_nl(target,format("%-15s >\n",   translations[a]))
         else
             write_nl(target,"\n")
         end
     end
 
-    subreport = function(a,sub,b,c,...)
+    direct = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s > %s > %s\n",a,sub,format(b,c,...)))
+            return format("%-15s > %s",translations[a],format(formats[b],c,...))
         elseif b then
-            write_nl(target,format("%-15s > %s > %s\n",a,sub,b))
+            return format("%-15s > %s",translations[a],formats[b])
         elseif a then
-            write_nl(target,format("%-15s > %s >\n",   a,sub))
+            return format("%-15s >",   translations[a])
+        else
+            return ""
+        end
+    end
+
+    subreport = function(a,s,b,c,...)
+        if c then
+            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],format(formats[b],c,...)))
+        elseif b then
+            write_nl(target,format("%-15s > %s > %s\n",translations[a],translations[s],formats[b]))
+        elseif a then
+            write_nl(target,format("%-15s > %s >\n",   translations[a],translations[s]))
         else
             write_nl(target,"\n")
+        end
+    end
+
+    subdirect = function(a,s,b,c,...)
+        if c then
+            return format("%-15s > %s > %s",translations[a],translations[s],format(formats[b],c,...))
+        elseif b then
+            return format("%-15s > %s > %s",translations[a],translations[s],formats[b])
+        elseif a then
+            return format("%-15s > %s >",   translations[a],translations[s])
+        else
+            return ""
         end
     end
 
     status = function(a,b,c,...)
         if c then
-            write_nl(target,format("%-15s : %s\n",a,format(b,c,...)))
+            write_nl(target,format("%-15s : %s\n",translations[a],format(formats[b],c,...)))
         elseif b then
-            write_nl(target,format("%-15s : %s\n",a,b)) -- b can have %'s
+            write_nl(target,format("%-15s : %s\n",translations[a],formats[b]))
         elseif a then
-            write_nl(target,format("%-15s :\n",   a))
+            write_nl(target,format("%-15s :\n",   translations[a]))
         else
             write_nl(target,"\n")
         end
@@ -108,7 +143,17 @@ if tex and tex.jobname or tex.formatname then
         end
     end
 
+    setformats = function(f)
+        formats = f
+    end
+
+    settranslations = function(t)
+        translations = t
+    end
+
 else
+
+    writer = write_nl
 
     report = function(a,b,c,...)
         if c then
@@ -146,18 +191,29 @@ else
         end
     end
 
-    settarget  = ignore
-    pushtarget = ignore
-    poptarget  = ignore
+    direct          = ignore
+    subdirect       = ignore
+
+    settarget       = ignore
+    pushtarget      = ignore
+    poptarget       = ignore
+    setformats      = ignore
+    settranslations = ignore
 
 end
 
-logs.report     = report
-logs.subreport  = subreport
-logs.status     = status
-logs.settarget  = settarget
-logs.pushtarget = pushtarget
-logs.poptarget  = poptarget
+logs.report          = report
+logs.subreport       = subreport
+logs.status          = status
+logs.settarget       = settarget
+logs.pushtarget      = pushtarget
+logs.poptarget       = poptarget
+logs.setformats      = setformats
+logs.settranslations = settranslations
+
+logs.direct          = direct
+logs.subdirect       = subdirect
+logs.writer          = writer
 
 -- installer
 
@@ -207,7 +263,30 @@ function logs.reporter(category,subcategory)
     return reporter
 end
 
-logs.new = logs.reporter
+logs.new = logs.reporter -- for old times sake
+
+-- context specicific: this ends up in the macro stream
+
+local ctxreport = logs.writer
+
+function logs.setmessenger(m)
+    ctxreport = m
+end
+
+function logs.messenger(category,subcategory)
+    -- we need to avoid catcode mess (todo: fast context)
+    if subcategory then
+        return function(...)
+            ctxreport(subdirect(category,subcategory,...))
+        end
+    else
+        return function(...)
+            ctxreport(direct(category,...))
+        end
+    end
+end
+
+-- so far
 
 local function doset(category,value)
     if category == true then

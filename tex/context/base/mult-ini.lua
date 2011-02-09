@@ -14,16 +14,20 @@ local texsprint = tex.sprint
 
 local report_interface = logs.reporter("interface","initialization")
 
-interfaces           = interfaces           or { }
-interfaces.messages  = interfaces.messages  or { }
-interfaces.constants = interfaces.constants or { }
-interfaces.variables = interfaces.variables or { }
-interfaces.elements  = interfaces.elements  or { }
+interfaces              = interfaces              or { }
+interfaces.messages     = interfaces.messages     or { }
+interfaces.constants    = interfaces.constants    or { }
+interfaces.variables    = interfaces.variables    or { }
+interfaces.elements     = interfaces.elements     or { }
+interfaces.formats      = interfaces.formats      or { }
+interfaces.translations = interfaces.translations or { }
 
-storage.register("interfaces/messages",  interfaces.messages,  "interfaces.messages")
-storage.register("interfaces/constants", interfaces.constants, "interfaces.constants")
-storage.register("interfaces/variables", interfaces.variables, "interfaces.variables")
-storage.register("interfaces/elements",  interfaces.elements,  "interfaces.elements")
+storage.register("interfaces/messages",     interfaces.messages,     "interfaces.messages")
+storage.register("interfaces/constants",    interfaces.constants,    "interfaces.constants")
+storage.register("interfaces/variables",    interfaces.variables,    "interfaces.variables")
+storage.register("interfaces/elements",     interfaces.elements,     "interfaces.elements")
+storage.register("interfaces/formats",      interfaces.formats,      "interfaces.formats")
+storage.register("interfaces/translations", interfaces.translations, "interfaces.translations")
 
 interfaces.interfaces = {
     "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
@@ -37,28 +41,32 @@ local currentresponse  = storage.shared.currentresponse
 
 local complete = { } interfaces.complete = complete
 
-setmetatable(complete, { __index = function(t,k)
+setmetatable(complete, { __index = function(t,k) -- one access needed to get loaded
     report_interface("loading interface definitions from 'mult-def.lua'")
     complete = dofile(resolvers.findfile("mult-def.lua"))
     report_interface("loading interface messages from 'mult-mes.lua'")
     complete.messages = dofile(resolvers.findfile("mult-mes.lua"))
     interfaces.complete = complete
-    return complete[k]
+    return rawget(complete,k)
 end } )
 
-local messages  = interfaces.messages
-local constants = interfaces.constants
-local variables = interfaces.variables
-local elements  = interfaces.elements
-local reporters = { } -- just an optimization
+local messages     = interfaces.messages
+local constants    = interfaces.constants
+local variables    = interfaces.variables
+local elements     = interfaces.elements
+local formats      = interfaces.formats
+local translations = interfaces.translations
+local reporters    = { } -- just an optimization
 
-local valueiskey = { __index = function(t,k) t[k] = k return k end }
+local valueiskey = { __index = function(t,k) t[k] = k return k end } -- will be helper
 
-setmetatable(variables,valueiskey)
-setmetatable(constants,valueiskey)
-setmetatable(elements, valueiskey)
+setmetatable(variables,    valueiskey)
+setmetatable(constants,    valueiskey)
+setmetatable(elements,     valueiskey)
+setmetatable(formats,      valueiskey)
+setmetatable(translations, valueiskey)
 
-setmetatable(messages,  { __index = function(t,k) local v = { }         ; t[k] = v ; return v end })
+setmetatable(messages,  { __index = function(t,k) local v = { }              ; t[k] = v ; return v end })
 setmetatable(reporters, { __index = function(t,k) local v = logs.reporter(k) ; t[k] = v ; return v end })
 
 for category, m in next, messages do
@@ -127,6 +135,10 @@ function interfaces.setelement(element,given)
     elements[given] = element
 end
 
+-- the real thing:
+
+logs.setmessenger(context.verbatim.ctxreport)
+
 -- status
 
 function commands.writestatus(category,message)
@@ -172,7 +184,7 @@ function interfaces.setuserinterface(interface,response)
             nofcommands = nofcommands + 1
         end
         local nofmessages = 0
-        for category, message in next, complete.messages do
+        for category, message in next, complete.messages.originals do
             local m = messages[category]
             for tag, set in next, message do
                 if tag ~= "files" then
@@ -181,8 +193,20 @@ function interfaces.setuserinterface(interface,response)
             end
             nofmessages = nofmessages + 1
         end
-        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s message groups",
-            nofconstants,nofvariables,nofelements,nofcommands,nofmessages)
+        -- experimental code:
+        local nofformats = 0
+        for given, format in next, complete.messages.formats do
+            formats[given] = format[interface] or format.en or given
+            nofformats = nofformats + 1
+        end
+        local noftranslations = 0
+        for given, translation in next, complete.messages.translations do
+            translations[given] = translation[interface] or translation.en or given
+            noftranslations = noftranslations + 1
+        end
+        --
+        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s message groups, % formats, %s translations",
+            nofconstants,nofvariables,nofelements,nofcommands,nofmessages,nofformats,noftranslations)
     end
 end
 

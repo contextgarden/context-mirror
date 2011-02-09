@@ -18,5 +18,6 @@
 \normalprotected\def\cldprocessfile#1{\directlua\zerocount{context.runfile("#1")}}
                 \def\cldcontext    #1{\directlua\zerocount{context(#1)}}
                 \def\cldcommand    #1{\directlua\zerocount{context.#1}}
+              % \def\cldverbatim   #1{\directlua\zerocount{context.verbatim.#1}} % maybe make verbatim global
 
 \endinput
