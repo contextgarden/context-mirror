@@ -1313,17 +1313,20 @@ end
 -- modules
 
 local labels = { "title", "comment", "status" }
+local cards  = { "*.mkvi", "*.mkiv", "*.tex" }
 
 function scripts.context.modules(pattern)
     local list = { }
     local found = resolvers.findfile("context.mkiv")
     if not pattern or pattern == "" then
         -- official files in the tree
-        resolvers.findwildcardfiles("*.tex",list)
-        resolvers.findwildcardfiles("*.mkiv",list)
+        for _, card in ipairs(cards) do
+            resolvers.findwildcardfiles(card,list)
+        end
         -- my dev path
-        dir.glob(file.join(file.dirname(found),"*.tex"),list)
-        dir.glob(file.join(file.dirname(found),"*.mkiv"),list)
+        for _, card in ipairs(cards) do
+            dir.glob(file.join(file.dirname(found),card),list)
+        end
     else
         resolvers.findwildcardfiles(pattern,list)
         dir.glob(file.join(file.dirname(found,pattern)),list)
