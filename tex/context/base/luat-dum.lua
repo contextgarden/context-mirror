@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['luat-dum'] = {
 }
 
 local dummyfunction = function() end
+local dummyreporter = function(c) return function(...) texio.write(c .. " : " .. string.format(...)) end end
 
 statistics = {
     register      = dummyfunction,
@@ -34,9 +35,9 @@ storage = { -- probably no longer needed
     shared        = { },
 }
 logs = {
-    new           = function() return dummyfunction end,
-    reporter      = function() return dummyfunction end,
-    messenger     = function() return dummyfunction end,
+    new           = dummyreporter,
+    reporter      = dummyreporter,
+    messenger     = dummyreporter,
     report        = dummyfunction,
 }
 callbacks = {

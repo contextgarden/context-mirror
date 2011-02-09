@@ -12,13 +12,18 @@ metapost = metapost or { }
 
 -- for the moment downward compatible
 
+local report_metapost    = logs.reporter ("metapost")
+local status_metapost = logs.messenger("metapost")
+
 local patterns = { "meta-imp-%s.mkiv", "meta-imp-%s.tex", "meta-%s.mkiv", "meta-%s.tex" } -- we are compatible
 
 function metapost.uselibrary(name)
     commands.uselibrary(name,patterns,function(name,foundname)
         context.startreadingfile()
-        context.showmessage("metapost",1,name)
+        status_metapost("loaded: library '%s'",name)
         context.input(foundname)
         context.stopreadingfile()
+    end, function(name)
+        report_metapost("unknown: library '%s'",name)
     end)
 end

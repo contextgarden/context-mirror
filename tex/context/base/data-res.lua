@@ -1456,17 +1456,20 @@ end
 local function doit(path,blist,bname,tag,kind,result,allresults)
     local done = false
     if blist and kind then
+        local resolve = resolvers.resolve -- added
         if type(blist) == 'string' then
             -- make function and share code
             if find(lower(blist),path) then
-                result[#result+1] = methodhandler('concatinators',kind,tag,blist,bname) or ""
+                local full = methodhandler('concatinators',kind,tag,blist,bname) or ""
+                result[#result+1] = resolve(full)
                 done = true
             end
         else
             for kk=1,#blist do
                 local vv = blist[kk]
                 if find(lower(vv),path) then
-                    result[#result+1] = methodhandler('concatinators',kind,tag,vv,bname) or ""
+                    local full = methodhandler('concatinators',kind,tag,vv,bname) or ""
+                    result[#result+1] = resolve(full)
                     done = true
                     if not allresults then break end
                 end
@@ -1476,15 +1479,28 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
     return done
 end
 
+--~ local makewildcard = Cs(
+--~     (P("^")^0 * P("/") * P(-1) + P(-1)) /".*"
+--~   + (P("^")^0 * P("/") / "") * (P("*")/".*" + P("-")/"%%-" + P("?")/"."+ P("\\")/"/" + P(1))^0
+--~ )
+
 local makewildcard = Cs(
     (P("^")^0 * P("/") * P(-1) + P(-1)) /".*"
-  + (P("^")^0 * P("/") / "") * (P("*")/".*" + P("-")/"%%-" + P("?")/"."+ P("\\")/"/" + P(1))^0
+  + (P("^")^0 * P("/") / "")^0 * (P("*")/".*" + P("-")/"%%-" + P(".")/"%%." + P("?")/"."+ P("\\")/"/" + P(1))^0
 )
 
-local function findwildcardfiles(filename,allresults) -- todo: remap: and lpeg
-    local result = { }
-    local path = lower(lpegmatch(makewildcard,filedirname (filename)))
-    local name = lower(lpegmatch(makewildcard,filebasename(filename)))
+function resolvers.wildcardpattern(pattern)
+    return lpegmatch(makewildcard,pattern) or pattern
+end
+
+local function findwildcardfiles(filename,allresults,result) -- todo: remap: and lpeg
+    result = result or { }
+--~     local path = lower(lpegmatch(makewildcard,filedirname (filename)))
+--~     local name = lower(lpegmatch(makewildcard,filebasename(filename)))
+    local base = filebasename(filename)
+    local dirn = filedirname(filename)
+    local path = lower(lpegmatch(makewildcard,dirn) or dirn)
+    local name = lower(lpegmatch(makewildcard,base) or base)
     local files, done = instance.files, false
     if find(name,"%*") then
         local hashes = instance.hashes
@@ -1514,8 +1530,8 @@ local function findwildcardfiles(filename,allresults) -- todo: remap: and lpeg
     return result
 end
 
-function resolvers.findwildcardfiles(filename)
-    return findwildcardfiles(filename,true)
+function resolvers.findwildcardfiles(filename,result)
+    return findwildcardfiles(filename,true,result)
 end
 
 function resolvers.findwildcardfile(filename)

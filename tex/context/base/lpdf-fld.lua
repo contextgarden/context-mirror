@@ -180,7 +180,10 @@ end
 
 local pdfdocencodingvector, pdfdocencodingcapsule
 
--- we could save some bytes by pasing the vector as string
+-- The pdf doc encoding vector is needed in order to
+-- trigger propper unicode. Interesting is that when
+-- a glyph is not in the vector, it is still visible
+-- as it is taken from some other font. Messy.
 
 local function checkpdfdocencoding()
     report_fields("adding pdfdoc encoding vector")

@@ -157,14 +157,14 @@ end
 function regimes.push()
     level = level + 1
     if trace_translating then
-        report_translating("pushing level %s",level)
+        report_translating("pushing level: %s",level)
     end
 end
 
 function regimes.pop()
     if level > 0 then
         if trace_translating then
-            report_translating("popping level %s",level)
+            report_translating("popping level: %s",level)
         end
         level = level - 1
     end
@@ -187,7 +187,7 @@ local stack = { }
 function commands.startregime(regime)
     insert(stack,currentregime)
     if trace_translating then
-        report_translating("start '%s'",regime)
+        report_translating("start: '%s'",regime)
     end
     enable(regime)
 end
@@ -196,7 +196,7 @@ function commands.stopregime()
     if #stack > 0 then
         local regime = remove(stack)
         if trace_translating then
-            report_translating("stop '%s'",regime)
+            report_translating("stop: '%s'",regime)
         end
         enable(regime)
     end

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/08/11 21:46:05
+-- merge date  : 02/09/11 15:29:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -2370,6 +2370,7 @@ if not modules then modules = { } end modules ['luat-dum'] = {
 }
 
 local dummyfunction = function() end
+local dummyreporter = function(c) return function(...) texio.write(c .. " : " .. string.format(...)) end end
 
 statistics = {
     register      = dummyfunction,
@@ -2397,9 +2398,9 @@ storage = { -- probably no longer needed
     shared        = { },
 }
 logs = {
-    new           = function() return dummyfunction end,
-    reporter      = function() return dummyfunction end,
-    messenger     = function() return dummyfunction end,
+    new           = dummyreporter,
+    reporter      = dummyreporter,
+    messenger     = dummyreporter,
     report        = dummyfunction,
 }
 callbacks = {

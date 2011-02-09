@@ -153,7 +153,7 @@ do
     function ctxrunner.reflag(flags)
         local t = { }
         for _, flag in next, flags do
-            local key, value = flag:match("^(.-)=(.+)$")
+            local key, value = match(flag,"^(.-)=(.+)$")
             if key and value then
                 t[key] = value
             else
@@ -502,7 +502,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
             else
                 local a = someflag(flag) or (plural and someflag(flag.."s"))
                 if a and a ~= "" then
-                    for v in a:gmatch("%s*([^,]+)") do
+                    for v in gmatch(a,"%s*([^,]+)") do
                         f:write(format(template,v),"\n")
                     end
                 end
@@ -643,9 +643,9 @@ local function analyze(filename) -- only files on current path
     if f then
         local t = { }
         local line = f:read("*line") or ""
-        local preamble = line:match("[\254\255]*%%%s+(.+)$") -- there can be an utf bomb in front
+        local preamble = match(line,"[\254\255]*%%%s+(.+)$") -- there can be an utf bomb in front
         if preamble then
-            for key, value in preamble:gmatch("(%S+)=(%S+)") do
+            for key, value in gmatch(preamble,"(%S+)=(%S+)") do
                 t[key] = value
             end
             t.type = "tex"
@@ -1160,7 +1160,7 @@ function scripts.context.version()
         report("main context file: %s",name)
         local data = io.loaddata(name)
         if data then
-            local version = data:match("\\edef\\contextversion{(.-)}")
+            local version = match(data,"\\edef\\contextversion{(.-)}")
             if version then
                 report("current version: %s",version)
             else
@@ -1310,22 +1310,74 @@ function scripts.context.touch()
     end
 end
 
+-- modules
+
+local labels = { "title", "comment", "status" }
+
+function scripts.context.modules(pattern)
+    local list = { }
+    local found = resolvers.findfile("context.mkiv")
+    if not pattern or pattern == "" then
+        -- official files in the tree
+        resolvers.findwildcardfiles("*.tex",list)
+        resolvers.findwildcardfiles("*.mkiv",list)
+        -- my dev path
+        dir.glob(file.join(file.dirname(found),"*.tex"),list)
+        dir.glob(file.join(file.dirname(found),"*.mkiv"),list)
+    else
+        resolvers.findwildcardfiles(pattern,list)
+        dir.glob(file.join(file.dirname(found,pattern)),list)
+    end
+    local done = { } -- todo : sort
+    for i=1,#list do
+        local v = list[i]
+        local base = file.basename(v)
+        if not done[base] then
+            done[base] = true
+            local suffix = file.suffix(base)
+            if suffix == "tex" or suffix == "mkiv" then
+                local prefix = match(base,"^([xmst])%-")
+                if prefix then
+                    v = resolvers.findfile(base) -- so that files on my dev path are seen
+                    local data = io.loaddata(v) or ""
+                    data = match(data,"%% begin info(.-)%% end info")
+                    if data then
+                        local info = { }
+                        for label, text in gmatch(data,"%% +([^ ]+) *: *(.-)[\n\r]") do
+                            info[label] = text
+                        end
+                        report()
+                        report("%-7s : %s","module",base)
+                        report()
+                        for i=1,#labels do
+                            local l = labels[i]
+                            if info[l] then
+                                report("%-7s : %s",l,info[l])
+                            end
+                        end
+                        report()
+                    end
+                end
+            end
+        end
+    end
+end
+
 -- extras
 
 function scripts.context.extras(pattern)
+    -- only in base path, i.e. only official ones
     local found = resolvers.findfile("context.mkiv")
-    if found == "" then
-        report("unknown extra: %s", extra)
-    else
+    if found ~= "" then
         pattern = file.join(dir.expandname(file.dirname(found)),format("mtx-context-%s.tex",pattern or "*"))
         local list = dir.glob(pattern)
         for i=1,#list do
             local v = list[i]
             local data = io.loaddata(v) or ""
-            data = match(data,"begin help(.-)end help")
+            data = match(data,"%% begin help(.-)%% end help")
             if data then
                 report()
-                report(format("extra: %s (%s)",gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1"),v))
+                report("extra: %s (%s)",(gsub(v,"^.*mtx%-context%-(.-)%.tex$","%1")),v)
                 for s in gmatch(data,"%% *(.-)[\n\r]") do
                     report(s)
                 end
@@ -1464,8 +1516,8 @@ function scripts.context.update()
         end
         local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
         local function versiontonumber(what,str)
-            local version = str:match("\\edef\\contextversion{(.-)}") or ""
-            local year, month, day, hour, minute = str:match("\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
+            local version = match(str,"\\edef\\contextversion{(.-)}") or ""
+            local year, month, day, hour, minute = match(str,"\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
             if year and minute then
                 local time = os.time { year=year,month=month,day=day,hour=hour,minute=minute}
                 report("%s version: %s (%s)",what,version,time)
@@ -1567,6 +1619,8 @@ elseif environment.argument("update") then
     scripts.context.update()
 elseif environment.argument("expert") then
     application.help("expert", "special")
+elseif environment.argument("modules") then
+    scripts.context.modules()
 elseif environment.argument("extras") then
     scripts.context.extras()
 elseif environment.argument("extra") then

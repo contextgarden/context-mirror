@@ -35,19 +35,19 @@
                 character = " "
             end
             if accent == '"' then
-                verbatim("    '%s%s' : '\\u%04X',\n",accent,character,utf.byte(mapping))
+                verbatim("    '\\\\%s%s' : '\\u%04X',\n",accent,character,utf.byte(mapping))
             else
-                verbatim('    "%s%s" : "\\u%04X",\n',accent,character,utf.byte(mapping))
+                verbatim('    "\\\\%s%s" : "\\u%04X",\n',accent,character,utf.byte(mapping))
             end
         end
     end
-    verbatim("    'OE' : '\\u0152',\n")
-    verbatim("    'oe' : '\\u0153',\n")
-    verbatim("    'AE' : '\\u00C6',\n")
-    verbatim("    'ae' : '\\u00C7',\n")
-    verbatim("    '<<' : '\\u00AB',\n")
-    verbatim("    '>>' : '\\u00BB',\n")
-    verbatim("    'ss' : '\\u00DF' \n")
+    verbatim("    '\\\\OE' : '\\u0152',\n")
+    verbatim("    '\\\\oe' : '\\u0153',\n")
+    verbatim("    '\\\\AE' : '\\u00C6',\n")
+    verbatim("    '\\\\ae' : '\\u00E6',\n")
+    verbatim("    '\\\\<<' : '\\u00AB',\n")
+    verbatim("    '\\\\>>' : '\\u00BB',\n")
+    verbatim("    '\\\\ss' : '\\u00DF' \n")
     verbatim("}\n")
 \stopluasetups
 
@@ -64,7 +64,7 @@ function TeX_Replacer(original,str) {
 }
 
 function Sanitized_TeX_String(value) {
-    return (value.replace(/\\(..)/g, TeX_Replacer)) ;
+    return (value.replace(/(\\..)/g, TeX_Replacer)) ;
 }
 
 var TeX_Key_Mode = 0 ;

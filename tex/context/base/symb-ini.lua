@@ -11,6 +11,9 @@ local variables = interfaces.variables
 fonts.symbols = fonts.symbols or { }
 local symbols = fonts.symbols
 
+local report_symbols = logs.reporter ("fonts","symbols")
+local status_symbols = logs.messenger("fonts","symbols")
+
 local patterns = { "symb-imp-%s.mkiv", "symb-imp-%s.tex", "symb-%s.mkiv", "symb-%s.tex" }
 
 function symbols.uselibrary(name)
@@ -19,12 +22,13 @@ function symbols.uselibrary(name)
          -- context.startnointerference()
             context.startreadingfile()
             context.input(foundname)
-            context.showmessage("symbols",1,name)
+            status_symbols("loaded: library '%s'",name)
             context.stopreadingfile()
          -- context.stopnointerference()
+        end, function(name)
+            report_symbols("unknown: library '%s'",name)
         end)
     end
 end
 
 commands.usesymbols = symbols.uselibrary
-

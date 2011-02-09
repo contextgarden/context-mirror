@@ -25,7 +25,7 @@ local trace_modules = false  trackers.register("modules.loading",    function(v)
 local trace_files   = false  trackers.register("resolvers.readfile", function(v) trace_files = v end)
 
 local report_modules = logs.reporter("resolvers","modules")
-local report_files   = logs.reporter("resolvers","files")
+local report_files   = logs.reporter("files","readfile")
 
 commands          = commands or { }
 local commands    = commands
@@ -111,7 +111,7 @@ local function readfilename(specification,backtrack,treetoo)
     if not fnd then
         if isfile(name) then
             if trace_files then
-                report_files("readfile local, found %s",fname)
+                report_files("found local: %s",fname)
             end
             fnd = name
         end
@@ -121,12 +121,12 @@ local function readfilename(specification,backtrack,treetoo)
                 fname = "../" .. fname
                 if isfile(fname) then
                     if trace_files then
-                        report_files("readfile backtracking, found %s",fname)
+                        report_files("found by backtracking: %s",fname)
                     end
                     fnd = fname
                     break
                 elseif trace_files then
-                    report_files("readfile backtracking, not found %s",fname)
+                    report_files("not found by backtracking: %s",fname)
                 end
             end
         end
@@ -134,18 +134,18 @@ local function readfilename(specification,backtrack,treetoo)
             fnd = resolvers.findtexfile(name) or ""
             if trace_files then
                 if fnd ~= "" then
-                    report_files("readfile tree lookup, found %s",fnd)
+                    report_files("found by tree lookup: %s",fnd)
                 else
-                    report_files("readfile tree lookup, not found %s",name)
+                    report_files("not found by tree lookup: %s",name)
                 end
             end
         end
         found[name] = fnd
     elseif trace_files then
         if fnd ~= "" then
-            report_files("readfile reuse, already found: %s",fnd)
+            report_files("already found: %s",fnd)
         else
-            report_files("readfile reuse, already ñot found: %s",name)
+            report_files("already not found: %s",name)
         end
     end
     return fnd or ""
@@ -196,58 +196,29 @@ local function usemodule(name,hasscheme)
         -- so we only add one if missing
         local fullname = file.addsuffix(name,"tex")
         if trace_modules then
-            report_modules("checking scheme driven file '%s'",fullname)
+            report_modules("checking url: '%s'",fullname)
         end
         foundname = resolvers.findtexfile(fullname) or ""
     elseif file.extname(name) ~= "" then
         if trace_modules then
-            report_modules("checking suffix driven file '%s'",name)
+            report_modules("checking file: '%s'",name)
         end
         foundname = findbyscheme("any",name) or ""
-    elseif true then
+    else
         for i=1,#suffixes do
             local fullname = file.addsuffix(name,suffixes[i])
             if trace_modules then
-                report_modules("checking suffix driven file '%s'",fullname)
+                report_modules("checking file: '%s'",fullname)
             end
             foundname = findbyscheme("any",fullname) or ""
             if foundname ~= "" then
                 break
             end
         end
-    else
-     -- -- we don't want a tex file for each mkiv file so we do some checking
-     -- local foundtexname  = readfilename(file.addsuffix(name,"tex"), false,true) or ""
-     -- local foundmkivname = readfilename(file.addsuffix(name,"mkiv"),false,true) or ""
-     -- if foundtexfile ~= "" and foundmkivfile ~= "" then
-     --     if file.dirname(foundtexname) == file.dirname(foundmkivname) then
-     --         foundname = foundtexname -- we assume that this (shared) file loads the mkiv file
-     --         if trace_modules then
-     --             report_modules("using tex file for module '%s' (mkiv file on same dir)",name)
-     --         end
-     --     else
-     --         foundname = foundmkivname -- we assume that the tex file is an old one someplace else
-     --         if trace_modules then
-     --             report_modules("using mkiv file for module '%s' (tex file on other dir)",name)
-     --         end
-     --     end
-     -- elseif foundtexfile ~= "" then
-     --     foundname = foundtexname
-     --     if trace_modules then
-     --         report_modules("using tex file for module '%s'",name)
-     --     end
-     -- elseif foundmkivfile ~= "" then
-     --     foundname = foundmkivname
-     --     if trace_modules then
-     --         report_modules("using mkiv file for module '%s'",name)
-     --     end
-     -- else
-     --     -- nothing
-     -- end
     end
     if foundname ~= "" then
         if trace_modules then
-            report_modules("loading '%s'",foundname)
+            report_modules("loading: '%s'",foundname)
         end
         context.startreadingfile()
         context.input(foundname)
@@ -268,7 +239,7 @@ function commands.usemodules(prefix,askedname,truename)
         status = status + 1
     else
         if trace_modules then
-            report_modules("locating '%s'",truename)
+            report_modules("locating: '%s'",truename)
         end
         local hasscheme = url.hasscheme(truename)
         if hasscheme then
@@ -303,21 +274,11 @@ function commands.usemodules(prefix,askedname,truename)
         end
     end
     if status == 0 then
-        if trace_modules then
-            report_modules("skipping '%s' (not found)",truename)
-        else
-            interfaces.showmessage("system",6,askedname)
-        end
+        report_modules("not found: '%s'",askedname)
     elseif status == 1 then
-        if not trace_modules then
-            interfaces.showmessage("system",5,askedname)
-        end
+        report_modules("loaded: '%s'",trace_modules and truename or askedname)
     else
-        if trace_modules then
-            report_modules("skipping '%s' (already loaded)",truename)
-        else
-            interfaces.showmessage("system",7,askedname)
-        end
+        report_modules("already loaded: '%s'",trace_modules and truename or askedname)
     end
     modstatus[hashname] = status
 end
