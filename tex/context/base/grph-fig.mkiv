@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% ex => ef with proper parent
+
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Handling}
 
 \unprotect
@@ -51,13 +53,13 @@
 \def\externalfigurereplacement#1#2#3%
   {\setupcolors
      [\c!state=\v!local]%
-   \localframed
+   \normalexpanded{\localframed
      [\??ef]
      [\c!width=\figurewidth,
       \c!height=\figureheight,
       \c!background=\v!color,
       \c!backgroundcolor=missingfigurecolor,
-      \c!frame=\@@efframe]
+      \c!frame=\@@efframe]}% we need to expand this in order to prevent a loop
      {\tt\tfxx \nohyphens
         name:  \expanded{\verbatimstring{#1}}\\%
         file:  \expanded{\verbatimstring{#2}}\\%

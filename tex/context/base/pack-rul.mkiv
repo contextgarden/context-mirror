@@ -680,14 +680,14 @@
 
 \newif\ifinframed
 
-\def\localframed
+\unexpanded\def\localframed
   {\bgroup
    \dodoubleempty\startlocalframed}
 
 %D The next one is faster on multiple backgrounds per page. No
 %D dimensions can be set, only frames and backgrounds.
 
-\def\fastlocalframed[#1]#2[#3]#4% 3-4
+\unexpanded\def\fastlocalframed[#1]#2[#3]#4% 3-4
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%

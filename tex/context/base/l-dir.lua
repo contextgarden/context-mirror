@@ -58,21 +58,32 @@ end
 --~     end
 --~ end
 
+local lfsisdir = isdir
+
+local function isdir(path)
+    path = gsub(path,"[/\\]+$","")
+    return lfsisdir(path)
+end
+
+lfs.isdir = isdir
+
 local function globpattern(path,patt,recurse,action)
     if path == "/" then
         path = path .. "."
     elseif not find(path,"/$") then
         path = path .. '/'
     end
-    for name in walkdir(path) do
-        local full = path .. name
-        local mode = attributes(full,'mode')
-        if mode == 'file' then
-            if find(full,patt) then
-                action(full)
+    if isdir(path) then -- lfs.isdir does not like trailing /
+        for name in walkdir(path) do -- lfs.dir accepts trailing /
+            local full = path .. name
+            local mode = attributes(full,'mode')
+            if mode == 'file' then
+                if find(full,patt) then
+                    action(full)
+                end
+            elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
+                globpattern(full,patt,recurse,action)
             end
-        elseif recurse and (mode == "directory") and (name ~= '.') and (name ~= "..") then
-            globpattern(full,patt,recurse,action)
         end
     end
 end
