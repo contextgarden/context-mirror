@@ -15,14 +15,12 @@ local texsprint = tex.sprint
 local report_interface = logs.reporter("interface","initialization")
 
 interfaces              = interfaces              or { }
-interfaces.messages     = interfaces.messages     or { }
 interfaces.constants    = interfaces.constants    or { }
 interfaces.variables    = interfaces.variables    or { }
 interfaces.elements     = interfaces.elements     or { }
 interfaces.formats      = interfaces.formats      or { }
 interfaces.translations = interfaces.translations or { }
 
-storage.register("interfaces/messages",     interfaces.messages,     "interfaces.messages")
 storage.register("interfaces/constants",    interfaces.constants,    "interfaces.constants")
 storage.register("interfaces/variables",    interfaces.variables,    "interfaces.variables")
 storage.register("interfaces/elements",     interfaces.elements,     "interfaces.elements")
@@ -50,7 +48,6 @@ setmetatable(complete, { __index = function(t,k) -- one access needed to get loa
     return rawget(complete,k)
 end } )
 
-local messages     = interfaces.messages
 local constants    = interfaces.constants
 local variables    = interfaces.variables
 local elements     = interfaces.elements
@@ -66,62 +63,75 @@ setmetatable(elements,     valueiskey)
 setmetatable(formats,      valueiskey)
 setmetatable(translations, valueiskey)
 
-setmetatable(messages,  { __index = function(t,k) local v = { }              ; t[k] = v ; return v end })
 setmetatable(reporters, { __index = function(t,k) local v = logs.reporter(k) ; t[k] = v ; return v end })
 
-for category, m in next, messages do
+for category, _ in next, translations do
     -- We pre-create reporters for already defined messages
     -- because otherwise listing is incomplete and we want
     -- to use that for checking so delaying makes not much
     -- sense there.
-    local r = reporters[m.title or category]
+    local r = reporters[category]
+end
+
+-- adding messages
+
+local function add(target,tag,values)
+    local t = target[tag]
+    if not f then
+        target[tag] = values
+    else
+        for k, v in next, values do
+            if f[k] then
+                -- error
+            else
+                f[k] = v
+            end
+        end
+    end
+end
+
+function interfaces.settranslation(tag,values)
+    add(translations,tag,values)
+end
+
+function interfaces.setformat(tag,values)
+    add(formats,tag,values)
+end
+
+-- the old method:
+
+local function fulltag(category,tag)
+    tag = gsub(tag,"%-%-","%%s")
+    return format("%s:%s",category,tag)
 end
 
 function interfaces.setmessages(category,str)
-    local m = messages[category]
-    for k, v in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do
-        m[k] = gsub(v,"%-%-","%%s")
+    for tag, message in gmatch(str,"(%S+) *: *(.-) *[\n\r]") do
+        if tag == "title" then
+            translations[tag] = translations[tag] or tag
+        else
+            formats[fulltag(category,tag)] = gsub(message,"%-%-","%%s")
+        end
     end
-    messages[category] = m
 end
 
 function interfaces.setmessage(category,tag,message)
-    local m = messages[category]
-    m[tag] = gsub(message,"%-%-","%%s")
+    formats[fulltag(category,tag)] = gsub(message,"%-%-","%%s")
 end
 
 function interfaces.getmessage(category,tag,default)
-    local m = messages[category]
-    return (m and m[tag]) or default or "unknown message"
+    return formats[fulltag(category,tag)] or default or "unknown message"
 end
 
 function interfaces.doifelsemessage(category,tag)
-    local m = messages[category]
-    return commands.testcase(m and m[tag])
+    return commands.testcase(formats[fulltag(category,tag)])
 end
-
-local messagesplitter = lpeg.splitat(",")
-
-local function makemessage(category,tag,arguments)
-    local m = messages[category]
-    m = (m and (m[tag] or m[tostring(tag)])) or format("unknown message, category '%s', tag '%s'",category,tag)
-    if not m then
-        return m .. " " .. tag
-    elseif not arguments then
-        return m
-    else
-        return format(m,lpegmatch(messagesplitter,arguments))
-    end
-end
-
-interfaces.makemessage = makemessage
 
 function interfaces.showmessage(category,tag,arguments)
-    local m = messages[category]
-    local t = m and m.title or category
-    local r = reporters[t]
-    r(makemessage(category,tag,arguments))
+    reporters[category](formats[fulltag(category,tag)],arguments)
 end
+
+-- till here
 
 function interfaces.setvariable(variable,given)
     variables[given] = variable
@@ -149,8 +159,6 @@ end
 -- initialization
 
 function interfaces.setuserinterface(interface,response)
- -- texsprint(format("\\input{mult-%s}", interface))
- -- texsprint(format("\\input{mult-m%s}", response))
     storage.shared.currentinterface, currentinterface = interface, interface
     storage.shared.currentresponse, currentresponse  = response, response
     if environment.initex then
@@ -183,17 +191,6 @@ function interfaces.setuserinterface(interface,response)
             end
             nofcommands = nofcommands + 1
         end
-        local nofmessages = 0
-        for category, message in next, complete.messages.originals do
-            local m = messages[category]
-            for tag, set in next, message do
-                if tag ~= "files" then
-                    m[tag] = set[interface] or set.en -- there are no --'s any longer in the lua file
-                end
-            end
-            nofmessages = nofmessages + 1
-        end
-        -- experimental code:
         local nofformats = 0
         for given, format in next, complete.messages.formats do
             formats[given] = format[interface] or format.en or given
@@ -204,13 +201,10 @@ function interfaces.setuserinterface(interface,response)
             translations[given] = translation[interface] or translation.en or given
             noftranslations = noftranslations + 1
         end
-        --
-        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s message groups, % formats, %s translations",
-            nofconstants,nofvariables,nofelements,nofcommands,nofmessages,nofformats,noftranslations)
+        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, % formats, %s translations",
+            nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
     end
 end
-
--- it's nicer to have numbers as reference than a hash
 
 interfaces.cachedsetups = interfaces.cachedsetups or { }
 interfaces.hashedsetups = interfaces.hashedsetups or { }

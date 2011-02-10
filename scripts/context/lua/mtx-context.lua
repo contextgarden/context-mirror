@@ -30,6 +30,7 @@ local basicinfo = [[
 --trackers=list       set tracker variables (show list with --showtrackers)
 --directives=list     set directive variables (show list with --showdirectives)
 --silent=list         disable logcatgories (show list with --showlogcategories)
+--noconsole           disable logging to the console (logfile only)
 --purgeresult         purge result file before run
 
 --forcexml            force xml stub (optional flag: --mkii)
@@ -848,23 +849,36 @@ function scripts.context.run(ctxdata,filename)
                         end
                         flags[#flags+1] = "--fmt=" .. quote(formatfile)
                         flags[#flags+1] = "--lua=" .. quote(scriptfile)
-                        flags[#flags+1] = "--backend=pdf"
                         --
                         -- We pass these directly.
                         --
-                        local silent     = environment.argument("silent")
-                        local directives = environment.argument("directives")
-                        local trackers   = environment.argument("trackers")
-                        if silent == true then
-                            silent = "*"
-                        end
-                        if type(silent) == "string" then
-                            if type(directives) == "string" then
-                                directives = format("%s,logs.blocked={%s}",directives,silent)
-                            else
-                                directives = format("logs.blocked={%s}",silent)
-                            end
-                        end
+
+--~                         local silent     = environment.argument("silent")
+--~                         local noconsole  = environment.argument("noconsole")
+--~                         local directives = environment.argument("directives")
+--~                         local trackers   = environment.argument("trackers")
+--~                         if silent == true then
+--~                             silent = "*"
+--~                         end
+--~                         if type(silent) == "string" then
+--~                             if type(directives) == "string" then
+--~                                 directives = format("%s,logs.blocked={%s}",directives,silent)
+--~                             else
+--~                                 directives = format("logs.blocked={%s}",silent)
+--~                             end
+--~                         end
+--~                         if noconsole then
+--~                             if type(directives) == "string" then
+--~                                 directives = format("%s,logs.target=file",directives)
+--~                             else
+--~                                 directives = format("logs.target=file")
+--~                             end
+--~                         end
+
+local directives  = environment.directives
+local trackers    = environment.trackers
+local experiments = environment.experiments
+
                         --
                         if type(directives) == "string" then
                             flags[#flags+1] = format('--directives="%s"',directives)
@@ -872,9 +886,12 @@ function scripts.context.run(ctxdata,filename)
                         if type(trackers) == "string" then
                             flags[#flags+1] = format('--trackers="%s"',trackers)
                         end
-                        if type(backend) == "string" then
-                            flags[#flags+1] = format('--backend="%s"',backend)
+                        --
+                        local backend = environment.argument("backend")
+                        if type(backend) ~= "string" then
+                            backend = "pdf"
                         end
+                        flags[#flags+1] = format('--backend="%s"',backend)
                         --
                         local command = format("luatex %s %s", concat(flags," "), quote(filename))
                         local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }

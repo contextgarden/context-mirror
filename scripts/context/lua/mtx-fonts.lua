@@ -375,10 +375,6 @@ function scripts.fonts.save()
     end
 end
 
-local track = environment.argument("track")
-
-if track then trackers.enable(track) end
-
 if environment.argument("names") then
     environment.setargument("reload",true)
     environment.setargument("simple",true)

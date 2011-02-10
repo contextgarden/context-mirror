@@ -605,13 +605,13 @@ end
 
 lpdf.protectresources = true
 
-local catalog = pdfdictionary { Type = "Catalog" } -- nicer, but when we assign we nil the Type
-local info    = pdfdictionary { Type = "Info"    } -- nicer, but when we assign we nil the Type
-local names   = pdfdictionary { Type = "Names"   } -- nicer, but when we assign we nil the Type
+local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but when we assign we nil the Type
+local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
+local names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
 
-local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Catalog = nil pdf.catalog = catalog() end end
-local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Info    = nil pdf.info    = info   () end end
-local function flushnames  () if not environment.initex then trace_flush("names")   names  .Names   = nil pdf.names   = names  () end end
+local function flushcatalog() if not environment.initex then trace_flush("catalog") catalog.Type = nil pdf.catalog = catalog() end end
+local function flushinfo   () if not environment.initex then trace_flush("info")    info   .Type = nil pdf.info    = info   () end end
+local function flushnames  () if not environment.initex then trace_flush("names")   names  .Type = nil pdf.names   = names  () end end
 
 function lpdf.addtocatalog(k,v) if not (lpdf.protectresources and catalog[k]) then trace_set("catalog",k) catalog[k] = v end end
 function lpdf.addtoinfo   (k,v) if not (lpdf.protectresources and info   [k]) then trace_set("info",   k) info   [k] = v end end

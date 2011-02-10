@@ -1,9 +1,9 @@
 return {
 
     type    = "configuration",
-    version = "1.0.2",
-    date    = "2010-06-07",
-    time    = "14:49:00",
+    version = "1.1.0",
+    date    = "2011-09-02", -- or so
+    time    = "12:12:12",
     comment = "ConTeXt MkIV configuration file",
     author  = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
 
@@ -54,7 +54,9 @@ return {
             TEXMFLOCAL      = "selfautoparent:texmf-local",
             TEXMFFONTS      = "selfautoparent:texmf-fonts",
             TEXMFPROJECT    = "selfautoparent:texmf-project",
+
             TEXMFHOME       = "home:texmf",
+         -- TEXMFHOME       = os.name == "macosx" and "home:Library/texmf" or "home:texmf",
 
             -- We need texmfos for a few rare files but as I have a few more bin trees
             -- a hack is needed. Maybe other users also have texmf-platform-new trees.

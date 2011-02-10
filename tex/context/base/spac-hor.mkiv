@@ -39,35 +39,46 @@
 
 \def\checkeverypar % currently a hack
   {\ifzeropt\parindent\else
-     \doifsometokselse\everypar\donothing{\appendtoks\checkindentation\to\everypar}%
+     \doifsometokselse\everypar\donothing\docheckupcomingindentation
    \fi}
+
+\def\docheckupcomingindentation
+  {\appendtoks\checkindentation\to\everypar}
 
 \definecomplexorsimple\setupindenting
 
 \def\complexsetupindenting[#1]%
   {\edef\currentindenting{#1}%
-   \doifsomething\currentindenting % handy when a parameter is passed
-     {% not here: \indentfirstparagraphtrue
-      % not here: \parindent\ctxparindent
-      % not here: \indentingtogglestate\zerocount
-      % we use commacommand in order to catch #1 being a command (expanded parameter)
-      \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
-      \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
-      \checkeverypar % only when non-empty #1
-      \ifindentfirstparagraph\else\noindentation\fi % added
-      \toggleindentation}}
+   \ifx\currentindenting\empty \else
+     \doapplycurrentindenting
+   \fi}
+
+\def\doapplycurrentindenting
+   {% not here: \indentfirstparagraphtrue
+    % not here: \parindent\ctxparindent
+    % not here: \indentingtogglestate\zerocount
+    % we use commacommand in order to catch #1 being a command (expanded parameter)
+    \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
+    \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
+    \checkeverypar % only when non-empty #1
+    \ifindentfirstparagraph\else\noindentation\fi % added
+    \toggleindentation}
 
 \def\docomplexsetupindentingA#1%
-  {\edefconvertedargument\!!stringa{#1}% can this be done differently now?
-   \ifcsname\??in:\!!stringa\endcsname \else
+  {\ifcsname\??in:#1\endcsname
+     % case b
+   \else
      \edef\currentindentation{#1}%
      \let\normalindentation\currentindentation
      \simplesetupindenting
    \fi}
 
 \def\docomplexsetupindentingB#1%
-  {\edefconvertedargument\!!stringa{#1}% catch #1=\somedimen
-   \executeifdefined{\??in:\!!stringa}\donothing}
+  {\ifcsname\??in:#1\endcsname
+     \csname\??in:#1\endcsname
+   \else
+     % case a
+   \fi}
 
 \def\simplesetupindenting % empty case, a it strange, needed this way?
   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
@@ -579,14 +590,6 @@
 \newskip\leftskipadaption
 \newskip\rightskipadaption
 
-\def\doadaptleftskip#1%
-  {\dosetleftskipadaption{#1}%
-   \advance\leftskip \leftskipadaption}
-
-\def\doadaptrightskip#1%
-  {\dosetrightskipadaption{#1}%
-   \advance\rightskip \rightskipadaption}
-
 \setvalue{@lsa@\v!standard}{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
 \setvalue{@lsa@\v!yes     }{\ifdim\ctxparindent=\zeropoint\@@slleft\else\ctxparindent\fi}
 \letvalue{@lsa@\v!no      }\zeropoint
@@ -596,25 +599,11 @@
 \letvalue{@rsa@\v!no      }\zeropoint
 \letvalue{@rsa@\empty     }\zeropoint
 
-\def\dosetleftskipadaption#1%
-  {\edefconvertedargument\ascii{@lsa@#1}%
-   \leftskipadaption
-     \ifcsname\ascii\endcsname
-       \csname\ascii\endcsname
-     \else
-       #1%
-     \fi
-   \relax}
+\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname @lsa@#1\endcsname\csname @lsa@#1\endcsname\else#1\fi\relax}
+\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname @rsa@#1\endcsname\csname @rsa@#1\endcsname\else#1\fi\relax}
 
-\def\dosetrightskipadaption#1%
-  {\edefconvertedargument\ascii{@rsa@#1}%
-   \rightskipadaption
-     \ifcsname\ascii\endcsname
-       \csname\ascii\endcsname
-     \else
-       #1%
-     \fi
-   \relax}
+\def\doadaptleftskip #1{\dosetleftskipadaption {#1}\advance\leftskip \leftskipadaption }
+\def\doadaptrightskip#1{\dosetrightskipadaption{#1}\advance\rightskip\rightskipadaption}
 
 %D Tolerance:
 
