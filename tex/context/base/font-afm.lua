@@ -37,7 +37,7 @@ fonts.afm   = fonts.afm or { }
 local afm   = fonts.afm
 local tfm   = fonts.tfm
 
-afm.version         = 1.402 -- incrementing this number one up will force a re-cache
+afm.version         = 1.403 -- incrementing this number one up will force a re-cache
 afm.syncspace       = true  -- when true, nicer stretch values
 afm.addligatures    = true  -- best leave this set to true
 afm.addtexligatures = true  -- best leave this set to true
@@ -847,9 +847,8 @@ local function texligatures(tfmdata,value) prepare_ligatures(tfmdata,'texligatur
 local function kerns       (tfmdata,value) prepare_kerns    (tfmdata,'kerns',       value) end
 local function extrakerns  (tfmdata,value) prepare_kerns    (tfmdata,'extrakerns',  value) end
 
-register_feature('liga',true)
-register_feature('kern',true)
---~ register_feature('kerns',true) -- kerns?
+register_feature('liga')       -- was true
+register_feature('kern')       -- was true
 register_feature('extrakerns') -- needed?
 
 base_initializers.ligatures    = ligatures
@@ -868,8 +867,8 @@ node_initializers.tlig         = texligatures
 base_initializers.trep         = tfm.replacements
 node_initializers.trep         = tfm.replacements
 
-register_feature('tlig',true) -- todo: also proper features for afm
-register_feature('trep',true) -- todo: also proper features for afm
+register_feature('tlig') -- was true -- todo: also proper features for afm
+register_feature('trep') -- was true -- todo: also proper features for afm
 
 -- tfm features
 

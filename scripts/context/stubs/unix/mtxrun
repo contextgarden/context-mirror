@@ -5263,7 +5263,7 @@ end
 
 -- so far
 
-local function doset(category,value)
+local function setblocked(category,value)
     if category == true then
         -- lock all
         category, value = "*", true
@@ -5297,11 +5297,11 @@ local function doset(category,value)
 end
 
 function logs.disable(category,value)
-    doset(category,value == nil and true or value)
+    setblocked(category,value == nil and true or value)
 end
 
 function logs.enable(category)
-    doset(category,false)
+    setblocked(category,false)
 end
 
 function logs.categories()
@@ -5343,7 +5343,11 @@ function logs.show()
 end
 
 directives.register("logs.blocked", function(v)
-    doset(v,true)
+    setblocked(v,true)
+end)
+
+directives.register("logs.target", function(v)
+    settarget(v)
 end)
 
 -- tex specific loggers (might move elsewhere)
@@ -13905,8 +13909,11 @@ end
 
 -- End of hack.
 
+local format, gsub, gmatch, match = string.format, string.gsub, string.gmatch, string.match
+local concat = table.concat
+
 own.name = (environment and environment.ownname) or arg[0] or 'mtxrun.lua'
-own.path = string.gsub(string.match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
+own.path = gsub(match(own.name,"^(.+)[\\/].-$") or ".","\\","/")
 
 local ownpath, owntree = own.path, environment and environment.ownpath or own.path
 
@@ -13960,7 +13967,6 @@ if not resolvers then
     load_libs()
 end
 
-
 if not resolvers then
     print("")
     print("Mtxrun is unable to start up due to lack of libraries. You may")
@@ -13970,17 +13976,54 @@ if not resolvers then
     os.exit()
 end
 
-if environment.arguments["verbose"] then
+-- verbosity
+
+local e_verbose = environment.arguments["verbose"]
+
+if e_verbose then
     trackers.enable("resolvers.locating")
 end
 
-local instance = resolvers.reset()
+-- some common flags (also passed through environment)
 
-local trackspec = environment.argument("trackers") or environment.argument("track")
+local e_silent       = environment.argument("silent")
+local e_noconsole    = environment.argument("noconsole")
 
-if trackspec then
-    trackers.enable(trackspec)
+local e_trackers     = environment.argument("trackers")
+local e_directives   = environment.argument("directives")
+local e_experiments  = environment.argument("experiments")
+
+if e_silent == true then
+    e_silent = "*"
 end
+
+if type(e_silent) == "string" then
+    if type(e_directives) == "string" then
+        e_directives = format("%s,logs.blocked={%s}",e_directives,e_silent)
+    else
+        e_directives = format("logs.blocked={%s}",e_silent)
+    end
+end
+
+if e_noconsole then
+    if type(e_directives) == "string" then
+        e_directives = format("%s,logs.target=file",e_directives)
+    else
+        e_directives = format("logs.target=file")
+    end
+end
+
+if e_trackers    then trackers   .enable(e_trackers)    end
+if e_directives  then directives .enable(e_directives)  end
+if e_experiments then experiments.enable(e_experiments) end
+
+if not environment.trackers    then environment.trackers    = e_trackers    end
+if not environment.directives  then environment.directives  = e_directives  end
+if not environment.experiments then environment.experiments = e_experiments end
+
+--
+
+local instance = resolvers.reset()
 
 local helpinfo = [[
 --script              run an mtx script (lua prefered method) (--noquotes), no script gives list
@@ -14042,11 +14085,9 @@ local application = logs.application {
 
 local report = application.report
 
-local verbose = environment.argument("verbose")
+messages = messages or { } -- for the moment
 
-messages = messages or { } -- for the mo
-
-runners = runners  or { } -- global
+runners = runners  or { } -- global (might become local)
 
 runners.applications = {
     ["lua"] = "luatex --luaonly",
@@ -14104,11 +14145,11 @@ function runners.prepare()
         local oldchecksum = file.loadchecksum(checkname)
         local newchecksum = file.checksum(checkname)
         if oldchecksum == newchecksum then
-            if verbose then
+            if e_verbose then
                 report("file '%s' is unchanged",checkname)
             end
             return "skip"
-        elseif verbose then
+        elseif e_verbose then
             report("file '%s' is changed, processing started",checkname)
         end
         file.savechecksum(checkname)
@@ -14118,11 +14159,11 @@ function runners.prepare()
         local oldname, newname = string.split(touchname, ",")
         if oldname and newname and oldname ~= "" and newname ~= "" then
             if not file.needs_updating(oldname,newname) then
-                if verbose then
+                if e_verbose then
                     report("file '%s' and '%s' have same age",oldname,newname)
                 end
                 return "skip"
-            elseif verbose then
+            elseif e_verbose then
                 report("file '%s' is older than '%s'",oldname,newname)
             end
         end
@@ -14188,7 +14229,7 @@ function runners.execute_script(fullname,internal,nosplit)
                         result = binary .. " " .. result
                     end
                     local command = result .. " " .. environment.reconstructcommandline(environment.arguments_after,noquote)
-                    if verbose then
+                    if e_verbose then
                         report()
                         report("executing: %s",command)
                         report()
@@ -14202,7 +14243,7 @@ function runners.execute_script(fullname,internal,nosplit)
                     else
                         if binary then
                             binary = file.addsuffix(binary,os.binsuffix)
-                            for p in string.gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+                            for p in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
                                 if lfs.isfile(file.join(p,binary)) then
                                     return false
                                 end
@@ -14265,14 +14306,14 @@ function runners.handle_stubs(create)
     for _,v in pairs(runners.registered) do
         local name, doit = v[1], v[2]
         if doit then
-            local base = string.gsub(file.basename(name), "%.(.-)$", "")
+            local base = gsub(file.basename(name), "%.(.-)$", "")
             if create then
                 if windows then
-                    io.savedata(file.join(stubpath,base..".bat"),string.format(windows_stub,name))
+                    io.savedata(file.join(stubpath,base..".bat"),format(windows_stub,name))
                     report("windows stub for '%s' created",base)
                 end
                 if unix then
-                    io.savedata(file.join(stubpath,base),string.format(unix_stub,name))
+                    io.savedata(file.join(stubpath,base),format(unix_stub,name))
                     report("unix stub for '%s' created",base)
                 end
             else
@@ -14305,7 +14346,7 @@ function runners.locate_platform()
 end
 
 function runners.report_location(result)
-    if verbose then
+    if e_verbose then
         reportline()
         if result and result ~= "" then
             report(result)
@@ -14322,7 +14363,7 @@ function runners.edit_script(filename) -- we assume that gvim is present on most
     local rest = resolvers.resolve(filename)
     if rest ~= "" then
         local command = editor .. " " .. rest
-        if verbose then
+        if e_verbose then
             report()
             report("starting editor: %s",command)
             report()
@@ -14497,7 +14538,7 @@ function runners.execute_ctx_script(filename,...)
                 runners.load_script_session(loadname)
             end
             filename = environment.files[1]
-            if verbose then
+            if e_verbose then
                 report("using script: %s\n",fullname)
             end
             environment.ownscript = fullname
@@ -14518,15 +14559,15 @@ function runners.execute_ctx_script(filename,...)
             local context = resolvers.findfile("mtx-context.lua")
             trackers.enable("resolvers.locating")
             if context ~= "" then
-                local result = dir.glob((string.gsub(context,"mtx%-context","mtx-*"))) -- () needed
+                local result = dir.glob((gsub(context,"mtx%-context","mtx-*"))) -- () needed
                 local valid = { }
                 table.sort(result)
                 for i=1,#result do
                     local scriptname = result[i]
-                    local scriptbase = string.match(scriptname,".*mtx%-([^%-]-)%.lua")
+                    local scriptbase = match(scriptname,".*mtx%-([^%-]-)%.lua")
                     if scriptbase then
                         local data = io.loaddata(scriptname)
-                        local banner, version = string.match(data,"[\n\r]logs%.extendbanner%s*%(%s*[\"\']([^\n\r]+)%s*(%d+%.%d+)")
+                        local banner, version = match(data,"[\n\r]logs%.extendbanner%s*%(%s*[\"\']([^\n\r]+)%s*(%d+%.%d+)")
                         if banner then
                             valid[#valid+1] = { scriptbase, version, banner }
                         end
@@ -14559,7 +14600,7 @@ end
 function runners.prefixes()
     application.identify()
     report()
-    report(table.concat(resolvers.allprefixes(true)," "))
+    report(concat(resolvers.allprefixes(true)," "))
 end
 
 function runners.timedrun(filename) -- just for me
@@ -14804,15 +14845,15 @@ elseif environment.argument("find-file") then
     -- luatools: runners.execute_ctx_script("mtx-base","--find-file",filename)
 
     resolvers.load()
-    local pattern = environment.argument("pattern")
-    local format = environment.arguments("format")
-    if not pattern then
+    local e_pattern = environment.argument("pattern")
+    local e_format  = environment.arguments("format")
+    if not e_pattern then
         runners.register_arguments(filename)
         environment.initializearguments(environment.arguments_after)
-        resolvers.dowithfilesandreport(resolvers.findfiles,environment.files,format)
-    elseif type(pattern) == "string" then
+        resolvers.dowithfilesandreport(resolvers.findfiles,environment.files,e_format)
+    elseif type(e_pattern) == "string" then
         instance.allresults = true -- brrrr
-        resolvers.dowithfilesandreport(resolvers.findfiles,{ pattern }, format)
+        resolvers.dowithfilesandreport(resolvers.findfiles,{ e_pattern }, e_format)
     end
 
 elseif environment.argument("find-path") then
@@ -14821,7 +14862,7 @@ elseif environment.argument("find-path") then
 
     resolvers.load()
     local path = resolvers.findpath(filename, instance.my_format)
-    if verbose then
+    if e_verbose then
         report(path)
     else
         print(path)
@@ -14955,13 +14996,13 @@ else
 
 end
 
-if verbose then
+if e_verbose then
     report()
     report("runtime: %0.3f seconds",os.runtime())
 end
 
 if os.type ~= "windows" then
-    texio.write("\n")
+    texio.write("\n") -- is this still valid?
 end
 
 if ok == false then ok = 1 elseif ok == true then ok = 0 end

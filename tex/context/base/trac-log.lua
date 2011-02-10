@@ -288,7 +288,7 @@ end
 
 -- so far
 
-local function doset(category,value)
+local function setblocked(category,value)
     if category == true then
         -- lock all
         category, value = "*", true
@@ -322,11 +322,11 @@ local function doset(category,value)
 end
 
 function logs.disable(category,value)
-    doset(category,value == nil and true or value)
+    setblocked(category,value == nil and true or value)
 end
 
 function logs.enable(category)
-    doset(category,false)
+    setblocked(category,false)
 end
 
 function logs.categories()
@@ -368,7 +368,11 @@ function logs.show()
 end
 
 directives.register("logs.blocked", function(v)
-    doset(v,true)
+    setblocked(v,true)
+end)
+
+directives.register("logs.target", function(v)
+    settarget(v)
 end)
 
 -- tex specific loggers (might move elsewhere)

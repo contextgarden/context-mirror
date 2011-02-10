@@ -634,6 +634,7 @@ local function analyzefiles()
     local data = names.data
     local done, totalnofread, totalnofskipped, totalnofduplicates, nofread, nofskipped, nofduplicates = { }, 0, 0, 0, 0, 0, 0
     local skip_paths, skip_names = filters.paths, filters.names
+--~ local trace_warnings = true
     local function identify(completename,name,suffix,storedname)
         local basename = file.basename(completename)
         local basepath = file.dirname(completename)
@@ -708,6 +709,7 @@ local function analyzefiles()
             end
             done[name] = true
         end
+        io.flush() --  a bit overkill for each font, maybe not needed here
     end
     local function traverse(what, method)
         local list = filters.list
@@ -725,6 +727,7 @@ local function analyzefiles()
             local elapsed = os.gettimeofday() - t
             report_names( "%s %s files identified, %s skipped, %s duplicates, %s hash entries added, runtime %0.3f seconds",nofread,what,nofskipped,nofduplicates,nofread-nofskipped,elapsed)
         end
+        io.flush()
     end
     if not trace_warnings then
         report_names( "warnings are disabled (tracker 'fonts.warnings')")

@@ -29,6 +29,8 @@
 %D macro defined in the core modules. Let's say that this is
 %D an upward compatibility issue.
 
+% \registerctxluafile{x-units}{}
+
 \startmessages  dutch  library: units
   title: eenheden
       1: gebruik \string\Degrees\space\string\Celsius\space in plaats van \string\Celsius !
@@ -64,7 +66,11 @@
       1: utilisez \string\Degrees\space\string\Celsius\space A la place de \string\Celsius !
 \stopmessages
 
+\registerctxluafile{x-mathml}{}
+
 \unprotect
+
+\startmodule[units]
 
 %D This runtime loadable module implements a way of defining
 %D units. The core macro is \type {\dimension}, a rather clever
@@ -900,5 +906,7 @@
 
 % \def\Micro{\dimensionprefix{\iftextdimensions\mathematics\mu  \else\mu  \fi}}
 % \def\Times{\dimensionnopfix{\iftextdimensions\mathematics\cdot\else\cdot\fi}}
+
+\stopmodule
 
 \protect \endinput

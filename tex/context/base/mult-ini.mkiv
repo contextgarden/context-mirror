@@ -358,6 +358,8 @@
 %D which puts the message text asked for in \type
 %D {\currentmessagetext}.
 
+%D These will become obsolete:
+
 \unexpanded\def\startmessages #1 library: #2 %
   {\bgroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
@@ -376,19 +378,13 @@
    \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
 
 \unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\ctxsprint{interfaces.getmessage("#1","#2")}}}
+\unexpanded\def\getmessage         #1#2{\ctxsprint{interfaces.getmessage("#1","#2")}}
+
+%D Till here.
 
 \unexpanded\def\doifelsemessage    #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
 \unexpanded\def\showmessage      #1#2#3{\ctxlua{interfaces.showmessage("#1","#2","#3")}}
-
-\unexpanded\def\getmessage         #1#2{\ctxsprint{interfaces.getmessage("#1","#2")}}
-\unexpanded\def\getmessagedefault#1#2#3{\ctxsprint{interfaces.getmessage("#1","#2","#3")}}
-\unexpanded\def\makemessage      #1#2#3{\ctxsprint{interfaces.makemessage("#1","#2","#3")}}
-
 \unexpanded\def\writestatus        #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
-
-%unexpanded\def\disablemessages    [#1]{\ctxlua{logs.disable(\!!bs#1\!!es)}} % we have a directive
-
-% todo: intercept message
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
