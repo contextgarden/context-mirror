@@ -5025,6 +5025,8 @@ if tex and tex.jobname or tex.formatname then
 
     local target       = "term and log"
 
+    logs.flush         = io.flush
+
     local formats      = { } setmetatable(formats,     valueiskey)
     local translations = { } setmetatable(translations,valueiskey)
 
@@ -5103,6 +5105,11 @@ if tex and tex.jobname or tex.formatname then
 
     settarget = function(whereto)
         target = targets[whereto or "both"] or targets.both
+        if target == "term" or target == "term and log" then
+            logs.flush = io.flush
+        else
+            logs.flush = ignore
+        end
     end
 
     local stack = { }
@@ -5127,6 +5134,8 @@ if tex and tex.jobname or tex.formatname then
     end
 
 else
+
+    logs.flush = ignore
 
     writer = write_nl
 
@@ -5374,7 +5383,7 @@ function logs.stop_page_number()
     else
         report_pages("flushing page")
     end
-    io.flush()
+    logs.flush()
 end
 
 logs.report_job_stat = statistics and statistics.showjobstat

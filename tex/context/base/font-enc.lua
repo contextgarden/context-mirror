@@ -18,6 +18,8 @@ them in tables. But we may do so some day, for consistency.</p>
 fonts.enc = fonts.enc or { }
 local enc = fonts.enc
 
+local report_encoding = logs.reporter("fonts","encoding")
+
 enc.version = 1.03
 enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
 
@@ -124,4 +126,20 @@ function enc.make_unicode_vector()
         vector[code], hash[name] = name, code
     end
     return containers.write(enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
+end
+
+if not enc.agl then
+
+    -- We delay delay loading this rather big vector that is only needed when a
+    -- font is loaded for caching. Once we're further along the route we can also
+    -- delay it in the generic version (which doesn't use this file).
+
+    enc.agl = { }
+
+    setmetatable(enc.agl, { __index = function(t,k)
+        report_encoding("loading (extended) adobe glyph list")
+        dofile(resolvers.findfile("font-agl.lua"))
+        return rawget(enc.agl,k)
+    end })
+
 end

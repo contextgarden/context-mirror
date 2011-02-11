@@ -735,10 +735,10 @@ local discard, largest, force, penalty, add, disable, nowhite, goback, together 
 --~ local function free_glue_node(n)
 --~  -- free_node(n.spec)
 --~     print("before",n)
---~     io.flush()
+--~     logs.flush()
 --~     free_node(n)
 --~     print("after")
---~     io.flush()
+--~     logs.flush()
 --~ end
 
 function vspacing.snapbox(n,how)

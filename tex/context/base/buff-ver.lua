@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['buff-ver'] = {
 
 -- The default visualizers have reserved names starting with buff-imp-*. Users are
 -- supposed to use different names for their own variants.
+--
+-- todo: skip=auto
 
 local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawset, rawget, setmetatable, getmetatable
 local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub

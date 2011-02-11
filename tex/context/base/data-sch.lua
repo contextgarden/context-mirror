@@ -73,13 +73,13 @@ local function fetch(specification)
                 if trace_schemes then
                     report_schemes("fetching '%s', protocol '%s', method 'built-in'",original,scheme)
                 end
-                io.flush()
+                logs.flush()
                 handler(specification,cachename)
             else
                 if trace_schemes then
                     report_schemes("fetching '%s', protocol '%s', method 'curl'",original,scheme)
                 end
-                io.flush()
+                logs.flush()
                 runcurl(original,cachename)
             end
         end

@@ -709,7 +709,7 @@ local function analyzefiles()
             end
             done[name] = true
         end
-        io.flush() --  a bit overkill for each font, maybe not needed here
+        logs.flush() --  a bit overkill for each font, maybe not needed here
     end
     local function traverse(what, method)
         local list = filters.list
@@ -727,7 +727,7 @@ local function analyzefiles()
             local elapsed = os.gettimeofday() - t
             report_names( "%s %s files identified, %s skipped, %s duplicates, %s hash entries added, runtime %0.3f seconds",nofread,what,nofskipped,nofduplicates,nofread-nofskipped,elapsed)
         end
-        io.flush()
+        logs.flush()
     end
     if not trace_warnings then
         report_names( "warnings are disabled (tracker 'fonts.warnings')")
@@ -930,7 +930,7 @@ local function is_reloaded()
         end
         names.loaded = false
         reloaded = true
-        io.flush()
+        logs.flush()
         names.load(true)
     end
 end

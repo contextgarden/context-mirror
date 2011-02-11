@@ -383,7 +383,7 @@
 %D Till here.
 
 \unexpanded\def\doifelsemessage    #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
-\unexpanded\def\showmessage      #1#2#3{\ctxlua{interfaces.showmessage("#1","#2","#3")}}
+\unexpanded\def\showmessage      #1#2#3{\ctxlua{interfaces.showmessage("#1","#2",\!!bs#3\!!es)}}
 \unexpanded\def\writestatus        #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
 
 %D \macros

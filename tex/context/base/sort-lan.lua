@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['sort-lan'] = {
 -- Gesang. However this is a quite adapted and reformatted variant
 -- so it needs some checking.
 
-local utfchar           = utf.char
+local utfchar, utfbyte  = utf.char, utf.byte
 local sorters           = sorters
 local definitions       = sorters.definitions
 local replacementoffset = sorters.constants.replacementoffset
@@ -856,4 +856,20 @@ definitions["et"] = {
         "l", "m", "n", "o", "p", "r", "s", "š", "z", "ž",
         "t", "u", "v", "w", "õ", "ä", "ö", "ü", "x", "y",
     }
+}
+
+--- Korean
+
+local first = languages.firstcharacters.korean
+
+function firstofsplit(entries,split)
+    first = first or languages.firstcharacters.korean
+    local entry = split and split[1] or ""
+    local entry = utfchar(first(utfbyte(entry)))
+    local tag = entry
+    return entry, tag
+end
+
+definitions["kr"] = {
+    firstofsplit = firstofsplit,
 }

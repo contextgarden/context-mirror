@@ -337,8 +337,7 @@ end
 local uparser = fonts.map.makenameparser()
 
 unify = function(data, filename)
- -- local unicodevector = fonts.enc.load('unicode').hash
-    local unicodevector = fonts.enc.agl.unicodes
+    local unicodevector = fonts.enc.agl.unicodes -- loaded runtime in context
     local glyphs, indices, unicodes, names = { }, { }, { }, { }
     local verbose, private = fonts.verbose, fonts.privateoffset
     for name, blob in next, data.characters do
