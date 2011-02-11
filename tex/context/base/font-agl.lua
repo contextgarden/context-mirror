@@ -3947,12 +3947,12 @@ for k, v in next, extras do
     end
 end
 
--- can be a return and loaded on demand
+-- can be a return and loaded on demands (although there are no more vectors like this)
 
 fonts.enc.agl = {
-    names    = names,
-    extras   = extras,
-    unicodes = unicodes,
+    names    = names,     -- unicode -> name
+    unicodes = unicodes,  -- name -> unicode
+    extras   = extras,    -- merged into the other two
 }
 
 -- dofile("char-def.lua")

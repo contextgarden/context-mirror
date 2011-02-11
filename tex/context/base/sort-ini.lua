@@ -98,6 +98,7 @@ local constants = sorters.constants
 
 local data, language, method, digits
 local replacements, m_mappings, z_mappings, p_mappings, entries, orders, lower, upper, method, sequence
+local thefirstofsplit
 
 local mte = {
     __index = function(t,k)
@@ -230,6 +231,7 @@ local function preparetables(data)
     setmetatable(data.m_mappings,mtm)
     setmetatable(data.z_mappings,mtm)
     setmetatable(data.p_mappings,mtm)
+    thefirstofsplit = data.firstofsplit
 end
 
 local function update() -- prepare parent chains, needed when new languages are added
@@ -421,9 +423,13 @@ local function firstofsplit(entry)
     else
         split = split.ch
     end
-    local entry = split and split[1] or ""
-    local tag = entries[entry] or "\000"
-    return entry, tag
+    if thefirstofsplit then
+        return thefirstofsplit(entry,split)
+    else
+        local entry = split and split[1] or ""
+        local tag = entries[entry] or "\000"
+        return entry, tag
+    end
 end
 
 sorters.firstofsplit = firstofsplit

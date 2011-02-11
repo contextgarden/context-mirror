@@ -700,3 +700,68 @@ end
 -- function converters.Alphabetic(n,code)
 --     do_alphabetic(n,counters[code] or counters['**'],uppercased)
 -- end
+
+-- korean:
+--
+-- 하 0xD558 => ㅎ 0x314E
+-- 파 0xD30C => ㅍ 0x314D
+-- 타 0xD0C0 => ㅌ 0x314C
+-- 카 0xCE74 => ㅋ 0x314B
+-- 차 0xCC28 => ㅊ 0x314A
+-- 자 0xC790 => ㅈ 0x3148
+-- 아 0xC544 => ㅇ 0x3147
+-- 사 0xC0AC => ㅅ 0x3145
+-- 바 0xBC14 => ㅂ 0x3142
+-- 마 0xB9C8 => ㅁ 0x3141
+-- 라 0xB77C => ㄹ 0x3139
+-- 다 0xB2E4 => ㄷ 0x3137
+-- 나 0xB098 => ㄴ 0x3134
+-- 가 0xAC20 => ㄱ 0x3131
+
+--~ function converters.koreanconsonants(n)
+--~     if     n  < 0xAC00 then return n      -- original
+--~     elseif n  > 0xD7AF then return n      -- original
+--~     elseif n >= 0xD558 then return 0x314E -- 하 => ㅎ
+--~     elseif n >= 0xD30C then return 0x314D -- 파 => ㅍ
+--~     elseif n >= 0xD0C0 then return 0x314C -- 타 => ㅌ
+--~     elseif n >= 0xCE74 then return 0x314B -- 카 => ㅋ
+--~     elseif n >= 0xCC28 then return 0x314A -- 차 => ㅊ
+--~     elseif n >= 0xC790 then return 0x3148 -- 자 => ㅈ
+--~     elseif n >= 0xC544 then return 0x3147 -- 아 => ㅇ
+--~     elseif n >= 0xC0AC then return 0x3145 -- 사 => ㅅ
+--~     elseif n >= 0xBC14 then return 0x3142 -- 바 => ㅂ
+--~     elseif n >= 0xB9C8 then return 0x3141 -- 마 => ㅁ
+--~     elseif n >= 0xB77C then return 0x3139 -- 라 => ㄹ
+--~     elseif n >= 0xB2E4 then return 0x3137 -- 다 => ㄷ
+--~     elseif n >= 0xB098 then return 0x3134 -- 나 => ㄴ
+--~     elseif n >= 0xAC20 then return 0x3131 -- 가 => ㄱ
+--~     else                    return n      -- can't happen
+--~     end
+--~ end
+
+languages.firstcharacters = { }
+local firstcharacters     = languages.firstcharacters
+
+function firstcharacters.korean(chr)
+    local consonant
+    if     chr  < 0xAC00 then consonant = chr    -- original
+    elseif chr  > 0xD7AF then consonant = chr    -- original
+    elseif chr >= 0xD558 then consonant = 0x314E -- 하 => ㅎ
+    elseif chr >= 0xD30C then consonant = 0x314D -- 파 => ㅍ
+    elseif chr >= 0xD0C0 then consonant = 0x314C -- 타 => ㅌ
+    elseif chr >= 0xCE74 then consonant = 0x314B -- 카 => ㅋ
+    elseif chr >= 0xCC28 then consonant = 0x314A -- 차 => ㅊ
+    elseif chr >= 0xC790 then consonant = 0x3148 -- 자 => ㅈ
+    elseif chr >= 0xC544 then consonant = 0x3147 -- 아 => ㅇ
+    elseif chr >= 0xC0AC then consonant = 0x3145 -- 사 => ㅅ
+    elseif chr >= 0xBC14 then consonant = 0x3142 -- 바 => ㅂ
+    elseif chr >= 0xB9C8 then consonant = 0x3141 -- 마 => ㅁ
+    elseif chr >= 0xB77C then consonant = 0x3139 -- 라 => ㄹ
+    elseif chr >= 0xB2E4 then consonant = 0x3137 -- 다 => ㄷ
+    elseif chr >= 0xB098 then consonant = 0x3134 -- 나 => ㄴ
+    elseif chr >= 0xAC00 then consonant = 0x3131 -- 가 => ㄱ
+    else                      consonant = chr    -- can't happen
+    end
+ -- print(format("korean: 0x%04X 0x%04X",chr,consonant))
+    return consonant
+end

@@ -127,8 +127,18 @@ function interfaces.doifelsemessage(category,tag)
     return commands.testcase(formats[fulltag(category,tag)])
 end
 
+local splitter = lpeg.splitat(",")
+
 function interfaces.showmessage(category,tag,arguments)
-    reporters[category](formats[fulltag(category,tag)],arguments)
+    local r = reporters[category]
+    local f = formats[fulltag(category,tag)]
+    if type(arguments) == "string" and #arguments > 0 then
+        r(f,lpegmatch(splitter,arguments))
+    elseif arguments then
+        r(f,arguments)
+    else
+        r(f)
+    end
 end
 
 -- till here

@@ -75,8 +75,15 @@ local factors = kerns.factors
 
 local gluefactor = 4 -- assumes quad = .5 enspace
 
+kerns.keepligature = false -- just for fun (todo: control setting with key/value)
+kerns.keeptogether = false -- just for fun (todo: control setting with key/value)
+
+-- can be optimized .. the prev thing .. but hardly worth the effort
+
 local function do_process(namespace,attribute,head,force)
     local start, done, lastfont = head, false, nil
+local keepligature = kerns.keepligature
+local keeptogether = kerns.keeptogether
     while start do
         -- faster to test for attr first
         local attr = force or has_attribute(start,attribute)
@@ -89,6 +96,9 @@ local function do_process(namespace,attribute,head,force)
                     lastfont = start.font
                     local c = start.components
                     if c then
+if keepligature and keepligature(start) then
+    -- keep 'm
+else
                         c = do_process(namespace,attribute,c,attr)
                         local s = start
                         local p, n = s.prev, s.next
@@ -106,8 +116,9 @@ local function do_process(namespace,attribute,head,force)
                         start = c
                         s.components = nil
                         -- we now leak nodes !
---~                         free_node(s)
+                    --  free_node(s)
                         done = true
+end
                     end
                     local prev = start.prev
                     if prev then
@@ -115,20 +126,30 @@ local function do_process(namespace,attribute,head,force)
                         if not pid then
                             -- nothing
                         elseif pid == kern_code and prev.subtype == kerning_code then
+if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start) then -- we could also pass start
+    -- keep 'm
+else
                             prev.subtype = userkern_code
                             prev.kern = prev.kern + quaddata[lastfont]*krn
                             done = true
+end
                         elseif pid == glyph_code then
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
+if keeptogether and keeptogether(prev,start) then
+    -- keep 'm
+else
                                 local kerns = chardata[lastfont][prevchar].kerns
                                 local kern = kerns and kerns[lastchar] or 0
                                 krn = kern + quaddata[lastfont]*krn
+                                insert_node_before(head,start,new_kern(krn))
+                                done = true
+end
                             else
                                 krn = quaddata[lastfont]*krn
+                                insert_node_before(head,start,new_kern(krn))
+                                done = true
                             end
-                            insert_node_before(head,start,new_kern(krn))
-                            done = true
                         elseif pid == disc_code then
                             -- a bit too complicated, we can best not copy and just calculate
                             -- but we could have multiple glyphs involved so ...
