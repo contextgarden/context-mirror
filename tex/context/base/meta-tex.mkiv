@@ -64,85 +64,82 @@
 % \stopMPcode
 
 % a tex one:
+%
+% \unexpanded\def\definetextext     [#1]#2{\setvalue{@@st@@#1}{#2}}
+%            \def\sometxt              #1#{\dosometxt{#1}}
+%            \def\dosometxt           #1#2{textext.drt("\dodosometxt#1{#2}")}
+%
+% \unexpanded\def\dodosometxt             {\doifnextoptionalelse\dododosometxt\relax}
+%           \def\dododosometxt       [#1]{\dodododosometxt{#1}}
+%           \def\dodododosometxt       #1{\doifnextoptionalelse{\dododododosometxt{#1}}{\getsometxt{#1}}}
+%           \def\dododododosometxt #1[#2]{\switchtobodyfont[#2]\getsometxt{#1}}
+%           \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
+%
+%  or:
+%
+% \unexpanded\def\dodosometxt             {\dodoubleempty\dododosometxt}
+%            \def\dododosometxt           {\ifsecondargument
+%                                            \expandafter\dododosometxtA
+%                                          \else\iffirstargument
+%                                            \expandafter\expandafter\expandafter\dododosometxtB
+%                                          \else
+%                                            \expandafter\expandafter\expandafter\dododosometxtC
+%                                          \fi\fi}
+%            \def\dododosometxtA[#1][#2]#3{\getsometxt{#1}{\switchtobodyfont[#2]#3}}
+%            \def\dododosometxtB[#1][#2]#3{\getsometxt{#1}{#3}}
+%            \def\dododosometxtC[#1][#2]#3{#3}
+%            \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
+%
+% a nicer variant:
 
-\unexpanded\def\definetextext     [#1]#2{\setvalue{@@st@@#1}{#2}}
-           \def\sometxt              #1#{\dosometxt{#1}}
-           \def\dosometxt           #1#2{textext.drt("\dodosometxt#1{#2}")}
+\unexpanded\def\definetextext[#1]%
+  {\def\currenttextext{#1}%
+   \dosingleempty\dodefinetextext}
 
-%unexpanded\def\dodosometxt             {\doifnextoptionalelse\dododosometxt\relax}
-%          \def\dododosometxt       [#1]{\dodododosometxt{#1}}
-%          \def\dodododosometxt       #1{\doifnextoptionalelse{\dododododosometxt{#1}}{\getsometxt{#1}}}
-%          \def\dododododosometxt #1[#2]{\switchtobodyfont[#2]\getsometxt{#1}}
-%          \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
-%
-% or:
+\def\dodefinetextext
+  {\iffirstargument
+     \expandafter\dodefinetextextone
+   \else
+     \expandafter\dodefinetextextzero
+   \fi}
 
-\unexpanded\def\dodosometxt             {\dodoubleempty\dododosometxt}
-           \def\dododosometxt           {\ifsecondargument
-                                           \expandafter\dododosometxtA
-                                         \else\iffirstargument
-                                           \expandafter\expandafter\expandafter\dododosometxtB
-                                         \else
-                                           \expandafter\expandafter\expandafter\dododosometxtC
-                                         \fi\fi}
-           \def\dododosometxtA[#1][#2]#3{\getsometxt{#1}{\switchtobodyfont[#2]#3}}
-           \def\dododosometxtB[#1][#2]#3{\getsometxt{#1}{#3}}
-           \def\dododosometxtC[#1][#2]#3{#3}
-           \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
+\def\dodefinetextextone     {\setvalue{@@st@@one\currenttextext}}
+\def\dodefinetextextzero[#1]{\setvalue{@@st@@zero\currenttextext}}
 
+\def\sometxt#1#%
+  {\dosometxt{#1}}
 
-% a variant ... if m likes it:
-%
-%  \unexpanded\def\definetextext[#1]%
-%    {\def\currenttextext{#1}%
-%     \dosingleempty\dodefinetextext}
-%
-%  \def\dodefinetextext
-%    {\iffirstargument
-%       \expandafter\dodefinetextextone
-%     \else
-%       \expandafter\dodefinetextextzero
-%     \fi}
-%
-%  \def\dodefinetextextone     {\setvalue{@@st@@one\currenttextext}}
-%  \def\dodefinetextextzero[#1]{\setvalue{@@st@@zero\currenttextext}}
-%
-%  \def\sometxt#1#%
-%    {\dosometxt{#1}}
-%
-%  \def\dosometxt#1#2%
-%    {textext.drt("\dodosometxt#1{#2}")}
-%
-%  \unexpanded\def\dodosometxt
-%    {\dosingleempty\dododosometxt}
-%
-%  \def\dododosometxt
-%    {\iffirstargument
-%       \expandafter\dosometxtsome
-%     \else
-%       \expandafter\dosometxtzero
-%     \fi}
-%
-%  \def\dosometxtsome[#1]%
-%    {\def\currenttextext{#1}%
-%     \csname @@st@@%
-%       \ifcsname  @@st@@one#1\endcsname  one\else
-%       \ifcsname @@st@@zero#1\endcsname zero\else
-%                                        none\fi\fi
-%     \endcsname}
-%
-%  \def\dosometxtzero[#1]%
-%    {}
-%
-%  \def\@@st@@one  {\dosingleempty\do@@st@@one}
-%  \def\do@@st@@one{\csname  @@st@@one\currenttextext\endcsname}
-%  \def\@@st@@zero {\csname @@st@@zero\currenttextext\endcsname}
-%  \def\@@st@@none {}
-%
-%  \protect
-%
-%  \definetextext[framed][#1]#2{\framed[width=4cm]{\switchtobodyfont[#1]#2}}
-%  \definetextext[simple]{\framed[width=8cm]}
+\def\dosometxt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
+  {textext.drt("\dodosometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
+
+\unexpanded\def\dodosometxt
+  {\dosingleempty\dododosometxt}
+
+\def\dododosometxt
+  {\iffirstargument
+     \expandafter\dosometxtsome
+   \else
+     \expandafter\dosometxtzero
+   \fi}
+
+\def\dosometxtsome[#1]%
+  {\def\currenttextext{#1}%
+   \csname @@st@@%
+     \ifcsname  @@st@@one#1\endcsname  one\else
+     \ifcsname @@st@@zero#1\endcsname zero\else
+                                      none\fi\fi
+   \endcsname}
+
+\def\dosometxtzero[#1]%
+  {}
+
+\def\@@st@@one  {\dosingleempty\do@@st@@one}
+\def\do@@st@@one{\csname  @@st@@one\currenttextext\endcsname}
+\def\@@st@@zero {\csname @@st@@zero\currenttextext\endcsname}
+\def\@@st@@none {}
+
+% \definetextext[framed][#1]#2{\framed[width=4cm]{\switchtobodyfont[#1]#2}}
+% \definetextext[simple]{\framed[width=8cm]}
 %
 %  \starttext
 %
@@ -150,11 +147,11 @@
 %      draw \sometxt{This is for} rotated 45 ;
 %      draw \sometxt [framed] [ss,16pt] {Mojca's};
 %      draw \sometxt[framed]{eyes only!} rotated -45 ;
-%      draw \sometxt[simple]{Indeed!} rotated 180 ;
+%      draw \sometxt[simple]{Quotes "indeed" work!} rotated 180 ;
 %  \stopMPcode
 %
 % \stoptext
-
+%
 % a lua one:
 %
 % \unexpanded\def\definetextext[#1]#2{\setvalue{@@st@@#1}{#2}}
