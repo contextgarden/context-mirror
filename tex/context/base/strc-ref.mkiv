@@ -640,37 +640,55 @@
 \newconstant\autocrossfilereferences  % not yet supported in mkiv
 \newconstant\referencefilecaseswap    % not yet supported in mkiv
 
+\newtoks \everysetupreferencing
+
 \unexpanded\def\setupreferencing
   {\dosingleargument\dosetupreferencing}
 
 \def\dosetupreferencing[#1]%
-  {\getparameters
-     [\??rf]
-     [\c!prefix=\s!unknown,#1]%
+  {\getparameters[\??rf][\c!prefix=\s!unknown,#1]%
+   \the\everysetupreferencing}
+
+\appendtoks
    \processaction
      [\@@rfstate]
      [  \v!stop=>\referencingfalse,
        \v!start=>\referencingtrue]%
-   \processaction
-     [\@@rfinteraction]
-     [   \v!all=>\let\dowantedreference\docompletereference,
-       \v!label=>\let\dowantedreference\dolabelonlyreference,
-        \v!text=>\let\dowantedreference\dotextonlyreference,
-      \v!symbol=>\let\dowantedreference\dosymbolreference]%
+\to \everysetupreferencing
+
+% \newconstant \referencecontentmode
+%
+% \appendtoks
+%     \processaction
+%       [\@@rfinteraction]
+%       [   \v!all=>\referencecontentmode\zerocount,
+%         \v!label=>\referencecontentmode\plusone,
+%          \v!text=>\referencecontentmode\plustwo,
+%        \v!symbol=>\referencecontentmode\plusthree]%
+% \to \everysetupreferencing
+
+\appendtoks
    \autocrossfilereferences\zerocount
    \processaction
-     [\@@rfautofile]
+     [\@@rfautofile] % not yet in mkiv
      [  \v!yes=>\autocrossfilereferences\plusone,
        \v!page=>\autocrossfilereferences\plustwo]%
-   \referencefilecaseswap\zerocount
-   \processaction[\@@rfconvertfile]
-     [  \v!yes=>\referencefilecaseswap\plusone,
-        \v!big=>\referencefilecaseswap\plusone,
-      \v!small=>\referencefilecaseswap\plustwo]%
+\to \everysetupreferencing
+
+\appendtoks
+    \referencefilecaseswap\zerocount
+    \processaction[\@@rfconvertfile] % not yet in mkiv
+      [  \v!yes=>\referencefilecaseswap\plusone,
+         \v!big=>\referencefilecaseswap\plusone,
+       \v!small=>\referencefilecaseswap\plustwo]%
+\to \everysetupreferencing
+
+\appendtoks
    \setupreferenceprefix[\@@rfprefix]%
    \doifelse\@@rfglobal\v!yes
-     {\settrue \autoglobalfilereferences}
-     {\setfalse\autoglobalfilereferences}}
+     {\settrue \autoglobalfilereferences}%
+     {\setfalse\autoglobalfilereferences}%
+\to \everysetupreferencing
 
 % \appendtoks\ctxlua{structures.references.export("whatever")}\to\everystoptext
 % \starttext
@@ -885,94 +903,96 @@
            \v!next%
          \fi]}}}
 
-\def\dosymbolreference#1#2[#3]%
-  {\removeunwantedspaces
-   \goto{\referencesymbol}[#3]}
-
-\def\symbolreference[#1]%
-  {\removeunwantedspaces
-   \goto{\referencesymbol}[#1]}
-
-
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
 
-\def\dounknownreference#1#2[#3]%
-  {\dotextprefix{#2}{\leftofreference\dummyreference\rightofreference}}
+% \dounknownreference -> \dummyreference
 
-\def\docompletereference #1#2[#3]{\goto{\dotextprefix{#2}#1}[#3]}
-\def\dolabelonlyreference#1#2[#3]{\goto{\dotextprefix{#2}}[#3]}
-\def\dotextonlyreference #1#2[#3]{\dotextprefix{#2}\goto{#1}[#3]}
+\def\symbolreference[#1]% for old times sake
+  {\goto{\referencesymbol}[#1]}
 
-\let\dowantedreference\docompletereference
+% \referencecontentmode 0=all 1=label 2=text 3=symbol
 
-\unexpanded\def\dospecialin{\dontleavehmode\begingroup\doinatreference\currentreferencedefault} % ends in \doinatreference
-\unexpanded\def\dospecialat{\dontleavehmode\begingroup\doinatreference\currentreferencepage   } % ends in \doinatreference
+\newtoks\leftreferencetoks
+\newtoks\rightreferencetoks
+\newtoks\defaultleftreferencetoks
+\newtoks\defaultrightreferencetoks
 
-\newtoks\leftreferencetoks   \newtoks\defaultleftreferencetoks   \glet\leftofreference \relax
-\newtoks\rightreferencetoks  \newtoks\defaultrightreferencetoks  \glet\rightofreference\relax
+\def\leftofreferencecontent {\nobreakspace} % we cannot do \definereferenceformat[at] .. so we need this
+\let\rightofreferencecontent \empty
+\let\leftofreference         \empty
+\let\rightofreference        \empty
 
-\def\doinatreference#1%
-  {\let\currentreferencecontent#1%
-   \futurelet\next\doinatreferenceone}
+\setvalue{\??rf\c!interaction\v!all}%
+  {\leftofreference
+   \the\leftreferencetoks
+   \leftofreferencecontent
+   \currentreferencecontent
+   \rightofreferencecontent
+   \the\rightreferencetoks
+   \rightofreference}
 
-\def\doinatreferenceone
-  {\ifx\next\bgroup
-     \afterassignment\doinatreferenceonetwo
-     \expandafter\leftreferencetoks
-   \else
-     \leftreferencetoks\emptytoks
-     \expandafter\dodoinatreferencenone
-   \fi}
+\setvalue{\??rf\c!interaction\v!label}%
+  {\leftofreference
+   \the\leftreferencetoks
+   \the\rightreferencetoks
+   \rightofreference}
 
-\def\doinatreferenceonetwo
-  {\futurelet\next\doinatreferencetwo}
+\setvalue{\??rf\c!interaction\v!text}%
+  {\leftofreference
+   \currentreferencecontent
+   \rightofreference}
 
-\def\doinatreferencetwo
-  {\ifx\next\bgroup
-     \afterassignment\dodoinatreferenceboth
-     \expandafter\rightreferencetoks
-   \else
-     \rightreferencetoks\emptytoks
-     \expandafter\dodoinatreferenceleft
-   \fi}
+\setvalue{\??rf\c!interaction\v!symbol}%
+  {\referencesymbol}
 
-\def\dodoinatreferencenone
-  {\dodoinatreferenceindeed
-     {\the\defaultleftreferencetoks\leftofreference\currentreferencecontent\rightofreference}
-     {\the\defaultrightreferencetoks}}
-
-\def\dodoinatreferenceleft
-  {\dodoinatreferenceindeed
-     {\leftofreference\currentreferencecontent\rightofreference}
-     {\the\leftreferencetoks}}
-
-\def\dodoinatreferenceboth
-  {\doifnothing{\the\leftreferencetoks}
-     {\leftreferencetoks\defaultleftreferencetoks}%
-   \dodoinatreferenceindeed
-     {\leftofreference\currentreferencecontent\the\rightreferencetoks\rightofreference}
-     {\the\leftreferencetoks}}
-
-% lefttext left <ref> right righttext
+\def\referencesequence
+  {\csname \??rf\c!interaction
+     \ifcsname\??rf\c!interaction\@@rfinteraction\endcsname
+       \@@rfinteraction
+     \else
+       \v!all
+     \fi
+   \endcsname}
 
 \newtoks\everyresetinatreference
-
-\def\dodoinatreferenceindeed#1#2#3[#4]% #3 gobbles space
-  {%\dontleavehmode\begingroup % already done
-   \postponenotes
-   \doifreferencefoundelse{#4}
-     {\doifelsenothing{#1}\dosymbolreference\dowantedreference{#1}{#2}[#4]}%
-     {\dounknownreference{#1}{#2}[#4]}%
-   \the\everyresetinatreference
-   \endgroup}
-
-\let\dosymbolreference\dowantedreference
 
 \appendtoks
     \glet\leftofreference \relax
     \glet\rightofreference\relax
 \to \everyresetinatreference
+
+\def\dostartgotoreference
+  {\dontleavehmode
+   \begingroup}
+
+\def\dostopgotoreference
+  {\the\everyresetinatreference
+   \endgroup}
+
+\def\dopickupgotoreference
+  {\dodoublegroupempty\dodopickupgotoreference}
+
+\def\dodopickupgotoreference#1#2#3[#4]% #3 gobbles spaces (really needed)
+  {\leftreferencetoks
+     \iffirstargument
+       {#1}%
+     \else
+       \defaultleftreferencetoks
+       \let\leftofreferencecontent\empty
+     \fi
+   \rightreferencetoks
+     \ifsecondargument
+       {#2}%
+     \else
+       \defaultrightreferencetoks
+       \let\rightofreferencecontent\empty
+     \fi
+   \goto{\referencesequence}[#4]%
+   \dostopgotoreference}
+
+\unexpanded\def\dospecialin{\dostartgotoreference\let\currentreferencecontent\currentreferencedefault\dopickupgotoreference}
+\unexpanded\def\dospecialat{\dostartgotoreference\let\currentreferencecontent\currentreferencepage   \dopickupgotoreference}
 
 %D \macros
 %D   {definereferenceformat}
@@ -1034,8 +1054,8 @@
      \setuvalue{#1}{\doexecutereferenceformat{#1}}%
    \fi}
 
-\def\doexecutereferenceformat#1%
-  {\dontleavehmode\begingroup % ends in \doinatreference
+\def\doexecutereferenceformat#1% quite slow due to all assignments but we will speed it up
+  {\dostartgotoreference
    \edef\currentreferenceformat{#1}%
    \gdef\leftofreference {\referenceformatparameter\c!left }%
    \gdef\rightofreference{\referenceformatparameter\c!right}%
@@ -1049,12 +1069,28 @@
       \let\@@iacontrastcolor\empty
       \let\@@iacolor        \empty}%
    %
-   \doifsomethingelse{\referenceformatparameter\c!label}
-     {\defaultleftreferencetoks {\leftlabeltext {\referenceformatparameter\c!label}}%
-      \defaultrightreferencetoks{\rightlabeltext{\referenceformatparameter\c!label}}}%
-     {\defaultleftreferencetoks {\referenceformatparameter\c!text}%
-      \defaultrightreferencetoks\emptytoks}%
-   \doinatreference\currentreferencedefault} % we can make \currentreferencedefault configurable
+   \edef\currentreferenceformatlabel{\referenceformatparameter\c!label}%
+   \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
+      \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
+   \fi
+   \ifx\currentreferenceformatlabel\empty
+     \defaultleftreferencetoks {\referenceformatparameter\c!text}%
+     \defaultrightreferencetoks\emptytoks
+   \else
+     \defaultleftreferencetoks {\leftlabeltext \currentreferenceformatlabel}%
+     \defaultrightreferencetoks{\rightlabeltext\currentreferenceformatlabel}%
+   \fi
+   \doifelse{\referenceformatparameter\c!type}\v!page
+     {\let\currentreferencecontent\currentreferencepage}
+     {\let\currentreferencecontent\currentreferencedefault}%
+   \let\leftofreferencecontent \empty
+   \let\rightofreferencecontent\empty
+   \dopickupgotoreference}
+
+\def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
+
+\unexpanded\def\autoreferencelabeltext
+  {\ctxlua{structures.references.getcurrentmetadata("name")}}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]
@@ -1111,13 +1147,13 @@
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty % not here
      \ctxlua{structures.references.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \setlocationattributes\??ia
      \setstrut % can be option
-\global\lastsavedreferenceattribute\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
      \attribute\referenceattribute\lastreferenceattribute
      #1%
      \dostoptagged
@@ -1129,7 +1165,7 @@
 \def\dodirectgotohtdp#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
@@ -1137,7 +1173,7 @@
      \dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
-\global\lastsavedreferenceattribute\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
    \fi
    #1%
    \endgroup}
@@ -1146,7 +1182,7 @@
   {\dontleavehmode
    \begingroup
   %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
@@ -1156,7 +1192,7 @@
         \dostoptagged
         \setlocationattributes\??ia
         \setstrut % can be option
-\global\lastsavedreferenceattribute\lastreferenceattribute
+        \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
        {}%
    \fi
@@ -1167,7 +1203,7 @@
 \def\dogotohtdp#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
@@ -1176,7 +1212,7 @@
         \ctxlua{structures.references.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
         \dostoptagged
         \setlocationattributes\??ia
-\global\lastsavedreferenceattribute\lastreferenceattribute
+        \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute}%
        {}%
    \fi
@@ -1186,14 +1222,14 @@
 \unexpanded\def\directgotobox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
      \dostoptagged
      \setlocationattributes\??ia
-\global\lastsavedreferenceattribute\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1203,14 +1239,14 @@
 \unexpanded\def\directgotospecbox#1#2[#3]% no test for valid references
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
      \dostoptagged
      \setlocationcolorspec{#1}% no consequence for strut
-\global\lastsavedreferenceattribute\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
    \else
      #2%
@@ -1220,13 +1256,13 @@
 \unexpanded\def\directgotodumbbox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
      \dostoptagged
-\global\lastsavedreferenceattribute\lastreferenceattribute
+     \global\lastsavedreferenceattribute\lastreferenceattribute
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
    \else
      #1%
@@ -1236,7 +1272,7 @@
 \unexpanded\def\gotobox#1[#2]% no test for valid references
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
@@ -1245,7 +1281,7 @@
         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
         \dostoptagged
         \setlocationattributes\??ia
-\global\lastsavedreferenceattribute\lastreferenceattribute
+        \global\lastsavedreferenceattribute\lastreferenceattribute
         \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
        {}%
    \else
@@ -1256,12 +1292,12 @@
 \unexpanded\def\gotowdhtbox#1#2[#3]% fast variant for overlays
   {\dontleavehmode
    \begingroup
-\global\lastsavedreferenceattribute\attributeunsetvalue
+   \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
      {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
       \setbox\scratchbox\emptyhbox\wd\scratchbox#1\ht\scratchbox#2%
-\global\lastsavedreferenceattribute\lastreferenceattribute
+      \global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
      {}%
    \endgroup}

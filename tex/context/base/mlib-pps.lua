@@ -644,7 +644,7 @@ local function force()
     forced = true
 end
 
-local texmess   = (dquote/ditto + (1 - etex))^0
+local texmess = (dquote/ditto + (1 - etex))^0
 
 local function ignore(s)
     report_metapost("ignoring verbatim tex: %s",s)
@@ -660,6 +660,10 @@ end
 -- }
 
 -- currently a a one-liner produces less code
+
+-- textext.*(".*") can have "'s but tricky parsing as we can have concatenated strings
+-- so this is something for a boring plain or train trip and we might assume proper mp
+-- input anyway
 
 local parser = Cs((
     (ttex + gtex)/register
