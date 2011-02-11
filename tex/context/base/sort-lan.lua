@@ -860,14 +860,11 @@ definitions["et"] = {
 
 --- Korean
 
-local first = languages.firstcharacters.korean
+local firstcharacter = languages.firstcharacters.korean
 
-function firstofsplit(entries,split)
-    first = first or languages.firstcharacters.korean
-    local entry = split and split[1] or ""
-    local entry = utfchar(first(utfbyte(entry)))
-    local tag = entry
-    return entry, tag
+function firstofsplit(first)
+    first = utfchar(firstcharacter(utfbyte(first)))
+    return first, first -- entry, tag
 end
 
 definitions["kr"] = {

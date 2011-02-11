@@ -423,12 +423,11 @@ local function firstofsplit(entry)
     else
         split = split.ch
     end
+    local first = split and split[1] or ""
     if thefirstofsplit then
-        return thefirstofsplit(entry,split)
+        return thefirstofsplit(first,data,entry) -- normally the first one is needed
     else
-        local entry = split and split[1] or ""
-        local tag = entries[entry] or "\000"
-        return entry, tag
+        return first, entries[first] or "\000" -- tag
     end
 end
 
