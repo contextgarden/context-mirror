@@ -1050,12 +1050,12 @@
 
 \def\dodefinereferenceformat[#1][#2]%
   {\iffirstargument
-     \getparameters[\??rf#1][\c!left=,\c!right=,\c!text=,\c!label=,#2]%
+     \getparameters[\??rf#1][\c!left=,\c!right=,\c!text=,\c!label=,\c!autocase=v!no,#2]%
      \setuvalue{#1}{\doexecutereferenceformat{#1}}%
    \fi}
 
 \def\doexecutereferenceformat#1% quite slow due to all assignments but we will speed it up
-  {\dostartgotoreference
+  {\dostartgotoreference       % once it's stable
    \edef\currentreferenceformat{#1}%
    \gdef\leftofreference {\referenceformatparameter\c!left }%
    \gdef\rightofreference{\referenceformatparameter\c!right}%
@@ -1073,6 +1073,8 @@
    \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
       \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
    \fi
+   \doif{\referenceformatparameter\c!autocase}\v!yes
+     {\setcharactercleaning[1]}%
    \ifx\currentreferenceformatlabel\empty
      \defaultleftreferencetoks {\referenceformatparameter\c!text}%
      \defaultrightreferencetoks\emptytoks

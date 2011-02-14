@@ -51,6 +51,8 @@ backends.nodeinjections = {
     insertmovie  = nothing,
     insertsound  = nothing,
 
+    injectbitmap = nothing,
+
 }
 
 backends.codeinjections = {

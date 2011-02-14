@@ -550,6 +550,7 @@
 		<cd:constant name='authoretallimit' value='authoretallimit'/>
 		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='خودکار'/>
+		<cd:constant name='autocase' value='autocase'/>
 		<cd:constant name='autofile' value='پرونده‌خودکار'/>
 		<cd:constant name='autofocus' value='تمرکز‌خودکار'/>
 		<cd:constant name='autohang' value='آویزان‌خودکار'/>

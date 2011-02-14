@@ -16,6 +16,7 @@ local tasks = nodes.tasks
 tasks.appendaction("processors",   "normalizers", "fonts.collections.process")                         -- todo
 tasks.appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
+tasks.appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
 tasks.appendaction("processors",   "characters",  "typesetters.directions.handler")                    -- disabled
 tasks.appendaction("processors",   "characters",  "typesetters.cases.handler")                         -- disabled
 tasks.appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
@@ -77,6 +78,7 @@ tasks.appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler
 
 tasks.disableaction("processors",  "fonts.checkers.missing")
 tasks.disableaction("processors",  "chars.handle_breakpoints")
+tasks.disableaction("processors",  "typesetters.cleaners.handler")
 tasks.disableaction("processors",  "typesetters.cases.handler")
 tasks.disableaction("processors",  "typesetters.digits.handler")
 tasks.disableaction("processors",  "typesetters.breakpoints.handler")

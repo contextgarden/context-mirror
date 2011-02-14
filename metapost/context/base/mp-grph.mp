@@ -59,21 +59,25 @@ string  graphictextfile    ; graphictextfile    := "dummy.mpo" ;
 def data_mpo_file = job_name & "-mpgraph.mpo" enddef ;
 def data_mpy_file = job_name & "-mpgraph.mpy" enddef ;
 
-def savegraphictext (expr str) =
-  if (graphictextstring<>"") :
-    write graphictextstring to data_mpo_file ;
-    graphictextstring := "" ;
-  fi ;
-  write str to data_mpo_file ;
-  let erasegraphictextfile = relax ;
-enddef ;
+if unknown mplib :
 
-def erasegraphictextfile =
-  write EOF to data_mpo_file ;
-  let erasegraphictextfile = relax ;
-enddef ;
+    def savegraphictext (expr str) =
+      if (graphictextstring<>"") :
+        write graphictextstring to data_mpo_file ;
+        graphictextstring := "" ;
+      fi ;
+      write str to data_mpo_file ;
+      let erasegraphictextfile = relax ;
+    enddef ;
 
-extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
+    def erasegraphictextfile =
+      write EOF to data_mpo_file ;
+      let erasegraphictextfile = relax ;
+    enddef ;
+
+    extra_beginfig := extra_beginfig & " erasegraphictextfile ;" ;
+
+fi ;
 
 def begingraphictextfig (expr n) =
   foundpicture := n ; scratchpicture := nullpicture ;
@@ -138,7 +142,9 @@ def dographictext (expr t) =
     graphictextformat := "" ;
   fi ;
   currentgraphictext := currentgraphictext + 1 ;
-  savegraphictext ("\startTEXpage[scale=10000]" & t & "\stopTEXpage") ;
+  if unknown mplib :
+    savegraphictext ("\startTEXpage[scale=10000]" & t & "\stopTEXpage") ;
+  fi ;
   dofinishgraphictext
 enddef ;
 

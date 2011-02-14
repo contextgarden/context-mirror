@@ -47,6 +47,7 @@
 %D for instance shading. More information can be found in
 %D type {supp-mpe.tex}.
 
+if   known mplib        : endinput         ; fi ;
 if unknown context_tool :    input mp-tool ; fi ;
 if   known context_spec : endinput         ; fi ;
 
@@ -366,18 +367,16 @@ def circular_shade (expr p, n, ca, cb) =
 enddef ;
 
 vardef predefined_linear_shade (expr p, n, ca, cb) =
-  save a, b, sh ; pair a, b ;
-  set_linear_vector(a,b)(p,n) ;
-  set_shade_vector(a,b)(p,n) ;
-  define_linear_shade (a,b,ca,cb)
+    save a, b, sh ; pair a, b ;
+    set_linear_vector(a,b)(p,n) ;
+    define_linear_shade (a,b,ca,cb)
 enddef ;
 
 vardef predefined_circular_shade (expr p, n, ca, cb) =
-  save ab, r ; pair ab ; numeric r ;
-  r := (xpart lrcorner p - xpart llcorner p) ++
-       (ypart urcorner p - ypart lrcorner p) ;
-  set_circular_vector(ab,r)(p,n) ;
-  define_circular_shade(ab,ab,0,r,ca,cb)
+    save ab, r ; pair ab ; numeric r ;
+    r := (xpart lrcorner p - xpart llcorner p) ++ (ypart urcorner p - ypart lrcorner p) ;
+    set_circular_vector(ab,r)(p,n) ;
+    define_circular_shade(ab,ab,0,r,ca,cb)
 enddef ;
 
 %D Since a \type {fill p withshade s} syntax looks better
@@ -638,8 +637,7 @@ vardef transparent(expr n, t, c) =
       flush_special(3, 7, s) ;
     fi ;
     scantokens(ss) := _special_counter_ ;
-    _local_specials_ := _local_specials_ &
-      "scantokens(" & ditto & ss & ditto & ") := -1 ;" ;
+    _local_specials_ := _local_specials_ & "scantokens(" & ditto & ss & ditto & ") := -1 ;" ;
   fi ;
   % go ahead
   if is_spot :
@@ -660,6 +658,18 @@ vardef is_transparent(text t) =
     color _c_ ; _c_ := t ; _b_
   endgroup
 enddef ;
+
+% boolean _b_ ; better namespacing
+% color   _c_ ;
+% vardef _transparent_(expr nn, tt, cc) = _b_ := true ; cc enddef ;
+% vardef is_transparent(text t) =
+%   begingroup ;
+%     save transparent ;
+%     transparent := _transparent_ ;
+%     _b_ := false ;
+%     _c_ := t ; _b_
+%   endgroup
+% enddef ;
 
 %D This function returns the not transparent color.
 

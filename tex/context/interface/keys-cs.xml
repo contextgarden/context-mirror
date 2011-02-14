@@ -550,6 +550,7 @@
 		<cd:constant name='authoretallimit' value='authoretallimit'/>
 		<cd:constant name='authoretaltext' value='authoretaltext'/>
 		<cd:constant name='auto' value='auto'/>
+		<cd:constant name='autocase' value='autocase'/>
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autoostreni'/>
 		<cd:constant name='autohang' value='autohang'/>
