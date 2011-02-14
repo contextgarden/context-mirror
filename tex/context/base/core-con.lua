@@ -166,11 +166,10 @@ converters.chr     = chr
 converters.chrs    = chrs
 converters.maxchrs = maxchrs
 
-local flushcharacter = characters and characters.flush  or function(s) return utfchar(s) end
-local lowercharacter = characters and characters.lccode or function(s) return s end
-local uppercharacter = characters and characters.uccode or function(s) return s end
+local lowercharacter = characters.lcchars
+local uppercharacter = characters.ucchars
 
-local function do_alphabetic(n,mapping,mapper,verbose,t)
+local function do_alphabetic(n,mapping,mapper,t)
     if not t then
         t = { }
     end
@@ -180,14 +179,10 @@ local function do_alphabetic(n,mapping,mapper,verbose,t)
     end
     local max = #mapping
     if n > max then
-        do_alphabetic(floor((n-1)/max),mapping,mapper,verbose,t)
-        n = (n-1)%max+1
+        do_alphabetic(floor((n-1)/max),mapping,mapper,t)
+        n = (n-1) % max + 1
     end
-    if verbose or type(chr) ~= "number" then
-        t[#t+1] = chr
-    else
-        t[#t+1] = utfchar(chr)
-    end
+    t[#t+1] = chr
     if n <= max then
         return concat(t)
     end
@@ -543,7 +538,7 @@ local function convert(method,n) -- todo: language
         local lowermethod = lower(method)
         local linguistic = counters[lowermethod]
         if linguistic then
-            return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter,false)
+            return do_alphabetic(n,linguistic,lowermethod == method and lowercharacter or uppercharacter)
         end
         local sequence = sequences[method]
         if sequence then

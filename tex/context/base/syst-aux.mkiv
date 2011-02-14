@@ -59,23 +59,15 @@
 %D to use development versions of \MKIV\ for real documents.
 %D
 %D \starttyping
-%D \doifolderversionelse\contextversion{2001.02.03}{yes}{no}
-%D \doifolderversionelse\contextversion{3001.02.03}{yes}{no}
+%D \doifolderversionelse\contextversion{1010.10.10} {OLDER} {OKAY} => OLDER
+%D \doifolderversionelse\contextversion{2020.20.20} {OLDER} {OKAY} => OKAY
+%D \doifolderversionelse\contextversion{2020}       {OLDER} {OKAY} => OKAY
 %D \stoptyping
 %D
-%D The \type {yyyy.mm.dd} syntax is rather strict.
+%D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
 
-% todo: lua
-
-\def\@@versiontonumber#1.#2.#3#4#5\relax
-  {\numexpr#1*\plustenthousand+#2*\plushundred+#3#4\relax}
-
-\def\doifolderversionelse#1#2%
-  {\normalexpanded{\noexpand\ifnum\noexpand\@@versiontonumber#1\relax<\noexpand\@@versiontonumber#2\relax}\relax
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\def\doifolderversionelse#1#2{\ctxcommand{doifolderversionelse("#1","#2")}}
+\def\doifoldercontextelse  #1{\ctxcommand{doifolderversionelse("#1")}}
 
 %D \macros
 %D   {normalspace}

@@ -647,6 +647,12 @@ function characters.setcodes()
             if not lc then chr.lccode, lc = code, code end
             if not uc then chr.uccode, uc = code, code end
             texsetcatcode(code,11)   -- letter
+            if type(lc) == "table" then
+                lc = code
+            end
+            if type(uc) == "table" then
+                uc = code
+            end
             texsetlccode(code,lc,uc)
             if cc == "lu" then
                 texsetsfcode(code,999)
@@ -691,38 +697,6 @@ function characters.category(n,verbose)
     end
 end
 
---[[ldx--
-<p>Requesting lower and uppercase codes:</p>
---ldx]]--
-
-function characters.uccode(n) return data[n].uccode or n end
-function characters.lccode(n) return data[n].lccode or n end
-
-function characters.flush(n,direct)
-    local c = data[n]
-    if c and c.contextname then
-        c = "\\" .. c.contextname
-    else
-        c = utfchar(n)
-    end
-    if direct then
-        return c
-    else
-        texsprint(c)
-    end
-end
-
-function characters.shape(n)
-    local shcode = data[n].shcode
-    if not shcode then
-        return n, nil
-    elseif type(shcode) == "table" then
-        return shcode[1], shcode[#shcode]
-    else
-        return shcode, nil
-    end
-end
-
 -- xml support (moved)
 
 function characters.remapentity(chr,slot)
@@ -753,7 +727,7 @@ characters.activeoffset = 0x10000 -- there will be remapped in that byte range
 
 local function utfstring(s)
     if type(s) == "table" then
-        return concat { utfchar( unpack(s) ) }
+        return utfchar(unpack(s)) -- concat { utfchar( unpack(s) ) }
     else
         return utfchar(s)
     end
@@ -777,8 +751,12 @@ characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy tabl
 characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
 characters.shchars = allocate()  local shchars = characters.shchars -- lazy table
 
-setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
-setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+--~ setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+--~ setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+--~ setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+
+setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 
 characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
@@ -864,6 +842,37 @@ function characters.lettered(str,spacing)
         end
     end
     return concat(new)
+end
+--[[ldx--
+<p>Requesting lower and uppercase codes:</p>
+--ldx]]--
+
+function characters.uccode(n) return uccodes[n] end -- obsolete
+function characters.lccode(n) return lccodes[n] end -- obsolete
+
+function characters.flush(n,direct)
+    local c = data[n]
+    if c and c.contextname then
+        c = "\\" .. c.contextname
+    else
+        c = utfchar(n)
+    end
+    if direct then
+        return c
+    else
+        texsprint(c)
+    end
+end
+
+function characters.shape(n)
+    local shcode = shcodes[n]
+    if not shcode then
+        return n, nil
+    elseif type(shcode) == "table" then
+        return shcode[1], shcode[#shcode]
+    else
+        return shcode, nil
+    end
 end
 
 -- -- some day we might go this route, but it does not really save that much

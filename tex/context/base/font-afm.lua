@@ -37,6 +37,8 @@ fonts.afm   = fonts.afm or { }
 local afm   = fonts.afm
 local tfm   = fonts.tfm
 
+-- so far
+
 afm.version         = 1.403 -- incrementing this number one up will force a re-cache
 afm.syncspace       = true  -- when true, nicer stretch values
 afm.addligatures    = true  -- best leave this set to true
@@ -270,7 +272,7 @@ by adding ligatures and kern information to the afm derived data. That
 way we can set them faster when defining a font.</p>
 --ldx]]--
 
-local addkerns, addligatures, unify -- we will implement these later
+local addkerns, addligatures, addtexligatures, unify -- we will implement these later
 
 function afm.load(filename)
     -- hm, for some reasons not resolved yet
@@ -306,15 +308,15 @@ function afm.load(filename)
                 unify(data,filename)
                 if afm.addligatures then
                     report_afm( "add ligatures")
-                    addligatures(data,'ligatures') -- easier this way
+                    addligatures(data)
                 end
                 if afm.addtexligatures then
-                    report_afm( "add tex-ligatures")
-                    addligatures(data,'texligatures') -- easier this way
+                    report_afm( "add tex ligatures")
+                    addtexligatures(data)
                 end
                 if afm.addkerns then
                     report_afm( "add extra kerns")
-                    addkerns(data) -- faster this way
+                    addkerns(data)
                 end
                 report_afm( "add tounicode data")
                 fonts.map.addtounicode(data,filename)
@@ -388,22 +390,77 @@ end
 and extra kerns. This saves quite some lookups later.</p>
 --ldx]]--
 
-addligatures = function(afmdata,ligatures)
+--[[ldx--
+<p>Only characters with a code smaller than 128 make sense,
+anything larger is encoding dependent. An interesting complication
+is that a character can be in an encoding twice but is hashed
+once.</p>
+--ldx]]--
+
+local ligatures = { -- okay, nowadays we could parse the name
+    ['f'] = {
+        { 'f', 'ff' },
+        { 'i', 'fi' },
+        { 'l', 'fl' },
+    },
+    ['ff'] = {
+        { 'i', 'ffi' }
+    },
+    ['fi'] = {
+        { 'i', 'fii' }
+    },
+    ['fl'] = {
+        { 'i', 'fli' }
+    },
+    ['s'] = {
+        { 't', 'st' }
+    },
+    ['i'] = {
+        { 'j', 'ij' }
+    },
+}
+
+local texligatures = {
+ -- ['space'] = {
+ --     { 'L', 'Lslash' },
+ --     { 'l', 'lslash' }
+ -- },
+ -- ['question'] = {
+ --     { 'quoteleft', 'questiondown' }
+ -- },
+ -- ['exclam'] = {
+ --     { 'quoteleft', 'exclamdown' }
+ -- },
+    ['quoteleft'] = {
+        { 'quoteleft', 'quotedblleft' }
+    },
+    ['quoteright'] = {
+        { 'quoteright', 'quotedblright' }
+    },
+    ['hyphen'] = {
+        { 'hyphen', 'endash' }
+    },
+    ['endash'] = {
+        { 'hyphen', 'emdash' }
+    }
+}
+
+local addthem = function(afmdata,ligatures)
     local glyphs, luatex = afmdata.glyphs, afmdata.luatex
     local indices, unicodes, names = luatex.indices, luatex.unicodes, luatex.names
-    for k,v in next, characters[ligatures] do -- main characters table
-        local one = glyphs[names[k]]
+    for ligname, ligdata in next, ligatures do
+        local one = glyphs[names[ligname]]
         if one then
-            for _, b in next, v do
-                two, three = b[1], b[2]
+            for _, pair in next, ligdata do
+                local two, three = pair[1], pair[2]
                 if two and three and names[two] and names[three] then
-                    local ol = one[ligatures]
+                    local ol = one.ligatures
                     if ol then
                         if not ol[two] then -- was one.ligatures ... bug
                             ol[two] = three
                         end
                     else
-                        one[ligatures] = { [two] = three }
+                        one.ligatures = { [two] = three }
                     end
                 end
             end
@@ -411,22 +468,168 @@ addligatures = function(afmdata,ligatures)
     end
 end
 
+addligatures    = function(afmdata) addthem(afmdata,ligatures   ) end
+addtexligatures = function(afmdata) addthem(afmdata,texligatures) end
+
 --[[ldx--
 <p>We keep the extra kerns in separate kerning tables so that we can use
 them selectively.</p>
 --ldx]]--
 
+-- This is rather old code (from the beginning when we had only tfm). If
+-- we unify the afm data (now we have names all over the place) then
+-- we can use shcodes but there will be many more looping then. But we
+-- could get rid of the tables in char-cmp then.
+
+local left = {
+    AEligature = "A",  aeligature = "a",
+    OEligature = "O",  oeligature = "o",
+    IJligature = "I",  ijligature = "i",
+    AE         = "A",  ae         = "a",
+    OE         = "O",  oe         = "o",
+    IJ         = "I",  ij         = "i",
+    Ssharp     = "S",  ssharp     = "s",
+}
+
+local right = {
+    AEligature = "E",  aeligature = "e",
+    OEligature = "E",  oeligature = "e",
+    IJligature = "J",  ijligature = "j",
+    AE         = "E",  ae         = "e",
+    OE         = "E",  oe         = "e",
+    IJ         = "J",  ij         = "j",
+    Ssharp     = "S",  ssharp     = "s",
+}
+
+local both = {
+    Acircumflex = "A",  acircumflex = "a",
+    Ccircumflex = "C",  ccircumflex = "c",
+    Ecircumflex = "E",  ecircumflex = "e",
+    Gcircumflex = "G",  gcircumflex = "g",
+    Hcircumflex = "H",  hcircumflex = "h",
+    Icircumflex = "I",  icircumflex = "i",
+    Jcircumflex = "J",  jcircumflex = "j",
+    Ocircumflex = "O",  ocircumflex = "o",
+    Scircumflex = "S",  scircumflex = "s",
+    Ucircumflex = "U",  ucircumflex = "u",
+    Wcircumflex = "W",  wcircumflex = "w",
+    Ycircumflex = "Y",  ycircumflex = "y",
+
+    Agrave = "A",  agrave = "a",
+    Egrave = "E",  egrave = "e",
+    Igrave = "I",  igrave = "i",
+    Ograve = "O",  ograve = "o",
+    Ugrave = "U",  ugrave = "u",
+    Ygrave = "Y",  ygrave = "y",
+
+    Atilde = "A",  atilde = "a",
+    Itilde = "I",  itilde = "i",
+    Otilde = "O",  otilde = "o",
+    Utilde = "U",  utilde = "u",
+    Ntilde = "N",  ntilde = "n",
+
+    Adiaeresis = "A",  adiaeresis = "a",  Adieresis = "A",  adieresis = "a",
+    Ediaeresis = "E",  ediaeresis = "e",  Edieresis = "E",  edieresis = "e",
+    Idiaeresis = "I",  idiaeresis = "i",  Idieresis = "I",  idieresis = "i",
+    Odiaeresis = "O",  odiaeresis = "o",  Odieresis = "O",  odieresis = "o",
+    Udiaeresis = "U",  udiaeresis = "u",  Udieresis = "U",  udieresis = "u",
+    Ydiaeresis = "Y",  ydiaeresis = "y",  Ydieresis = "Y",  ydieresis = "y",
+
+    Aacute = "A",  aacute = "a",
+    Cacute = "C",  cacute = "c",
+    Eacute = "E",  eacute = "e",
+    Iacute = "I",  iacute = "i",
+    Lacute = "L",  lacute = "l",
+    Nacute = "N",  nacute = "n",
+    Oacute = "O",  oacute = "o",
+    Racute = "R",  racute = "r",
+    Sacute = "S",  sacute = "s",
+    Uacute = "U",  uacute = "u",
+    Yacute = "Y",  yacute = "y",
+    Zacute = "Z",  zacute = "z",
+
+    Dstroke = "D",  dstroke = "d",
+    Hstroke = "H",  hstroke = "h",
+    Tstroke = "T",  tstroke = "t",
+
+    Cdotaccent = "C",  cdotaccent = "c",
+    Edotaccent = "E",  edotaccent = "e",
+    Gdotaccent = "G",  gdotaccent = "g",
+    Idotaccent = "I",  idotaccent = "i",
+    Zdotaccent = "Z",  zdotaccent = "z",
+
+    Amacron = "A",  amacron = "a",
+    Emacron = "E",  emacron = "e",
+    Imacron = "I",  imacron = "i",
+    Omacron = "O",  omacron = "o",
+    Umacron = "U",  umacron = "u",
+
+    Ccedilla = "C",  ccedilla = "c",
+    Kcedilla = "K",  kcedilla = "k",
+    Lcedilla = "L",  lcedilla = "l",
+    Ncedilla = "N",  ncedilla = "n",
+    Rcedilla = "R",  rcedilla = "r",
+    Scedilla = "S",  scedilla = "s",
+    Tcedilla = "T",  tcedilla = "t",
+
+    Ohungarumlaut = "O",  ohungarumlaut = "o",
+    Uhungarumlaut = "U",  uhungarumlaut = "u",
+
+    Aogonek = "A",  aogonek = "a",
+    Eogonek = "E",  eogonek = "e",
+    Iogonek = "I",  iogonek = "i",
+    Uogonek = "U",  uogonek = "u",
+
+    Aring = "A",  aring = "a",
+    Uring = "U",  uring = "u",
+
+    Abreve = "A",  abreve = "a",
+    Ebreve = "E",  ebreve = "e",
+    Gbreve = "G",  gbreve = "g",
+    Ibreve = "I",  ibreve = "i",
+    Obreve = "O",  obreve = "o",
+    Ubreve = "U",  ubreve = "u",
+
+    Ccaron = "C",  ccaron = "c",
+    Dcaron = "D",  dcaron = "d",
+    Ecaron = "E",  ecaron = "e",
+    Lcaron = "L",  lcaron = "l",
+    Ncaron = "N",  ncaron = "n",
+    Rcaron = "R",  rcaron = "r",
+    Scaron = "S",  scaron = "s",
+    Tcaron = "T",  tcaron = "t",
+    Zcaron = "Z",  zcaron = "z",
+
+    dotlessI = "I",  dotlessi = "i",
+    dotlessJ = "J",  dotlessj = "j",
+
+    AEligature = "AE",  aeligature = "ae",  AE         = "AE",  ae         = "ae",
+    OEligature = "OE",  oeligature = "oe",  OE         = "OE",  oe         = "oe",
+    IJligature = "IJ",  ijligature = "ij",  IJ         = "IJ",  ij         = "ij",
+
+    Lstroke    = "L",   lstroke    = "l",   Lslash     = "L",   lslash     = "l",
+    Ostroke    = "O",   ostroke    = "o",   Oslash     = "O",   oslash     = "o",
+
+    Ssharp     = "SS",  ssharp     = "ss",
+
+    Aumlaut = "A",  aumlaut = "a",
+    Eumlaut = "E",  eumlaut = "e",
+    Iumlaut = "I",  iumlaut = "i",
+    Oumlaut = "O",  oumlaut = "o",
+    Uumlaut = "U",  uumlaut = "u",
+
+}
+
 addkerns = function(afmdata) -- using shcodes is not robust here
     local glyphs = afmdata.glyphs
     local names = afmdata.luatex.names
-    local uncomposed = characters.uncomposed
     local function do_it_left(what)
         for index, glyph in next, glyphs do
             local kerns = glyph.kerns
             if kerns then
                 local extrakerns = glyph.extrakerns or { }
-                for complex, simple in next, uncomposed[what] do
-                    if names[compex] then
+                for complex, simple in next, what do
+                    if names[complex] then
                         local ks = kerns[simple]
                         if ks and not kerns[complex] then
                             extrakerns[complex] = ks
@@ -440,7 +643,7 @@ addkerns = function(afmdata) -- using shcodes is not robust here
         end
     end
     local function do_it_copy(what)
-        for complex, simple in next, uncomposed[what] do
+        for complex, simple in next, what do
             local c = glyphs[names[complex]]
             if c then -- optional
                 local s = glyphs[names[simple]]
@@ -462,11 +665,11 @@ addkerns = function(afmdata) -- using shcodes is not robust here
         end
     end
     -- add complex with values of simplified when present
-    do_it_left("left")
-    do_it_left("both")
+    do_it_left(left)
+    do_it_left(both)
     -- copy kerns from simple char to complex char unless set
-    do_it_copy("both")
-    do_it_copy("right")
+    do_it_copy(both)
+    do_it_copy(right)
 end
 
 --[[ldx--

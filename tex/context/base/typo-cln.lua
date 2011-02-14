@@ -32,7 +32,7 @@ local traverse_id     = node.traverse_id
 local glyph_code      = nodecodes.glyph
 local uccodes         = characters.uccodes
 
-local a_cleaner      = attributes.private("cleaner")
+local a_cleaner       = attributes.private("cleaner")
 
 local resetter = { -- this will become an entry in char-def
     [utfbyte(".")] = true
@@ -53,11 +53,15 @@ local function process(namespace,attribute,head)
             local a = has_attribute(n,attribute)
             if a == 1 then -- currently only one cleaner so no need to be fancy
                 local upper = uccodes[char]
-                n.char = upper
-                inline = true
-                done = true
-                if trace_autocase then
-                    report_autocase("")
+                if type(upper) == "table" then
+                    -- some day, not much change that \SS ends up here
+                else
+                    n.char = upper
+                    inline = true
+                    done = true
+                    if trace_autocase then
+                        report_autocase("")
+                    end
                 end
             end
         end

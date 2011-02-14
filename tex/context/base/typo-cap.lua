@@ -63,9 +63,12 @@ local lastfont        = nil
 --
 -- \WORD {far too \Word{many \WORD{more \word{pushed} in between} useless} words}
 
-local function helper(start, code, codes, special, attribute, once)
+local uccodes = characters.uccodes
+local lccodes = characters.lccodes
+
+local function helper(start, codes, special, attribute, once)
     local char = start.char
-    local dc = chardata[char]
+    local dc = codes[char]
     if dc then
         local fnt = start.font
         if special then
@@ -84,16 +87,16 @@ local function helper(start, code, codes, special, attribute, once)
             end
         end
         local ifc = fontchar[fnt]
-        local ucs = dc[codes]
-        if ucs then
+        if type(dc) == "table" then
             local ok = true
-            for i=1,#ucs do
-                ok = ok and ifc[ucs[i]]
+            for i=1,#dc do
+                ok = ok and ifc[dc[i]]
             end
             if ok then
+                -- tood; use generic injector
                 local prev, original = start, start
-                for i=1,#ucs do
-                    local chr = ucs[i]
+                for i=1,#dc do
+                    local chr = dc[i]
                     prev = start
                     if i == 1 then
                         start.char = chr
@@ -115,10 +118,8 @@ local function helper(start, code, codes, special, attribute, once)
             end
             if once then lastfont = nil end
             return start, false
-        end
-        local uc = dc[code]
-        if uc and ifc[uc] then
-            start.char = uc
+        elseif ifc[dc] then
+            start.char = dc
             if once then lastfont = nil end
             return start, true
         end
@@ -129,12 +130,12 @@ end
 
 actions[1] = function(start,attribute)
     lastfont = nil
-    return helper(start,'uccode','uccodes')
+    return helper(start,uccodes)
 end
 
 actions[2] = function(start,attribute)
     lastfont = nil
-    return helper(start,'lccode','lccodes')
+    return helper(start,lccodes)
 end
 
 actions[3] = function(start,attribute,attr)
@@ -154,7 +155,7 @@ actions[3] = function(start,attribute,attr)
         end
         -- we could return the last in the range and save some scanning
         -- but why bother
-        return helper(start,'uccode','uccodes')
+        return helper(start,uccodes)
     else
         return start, false
     end
@@ -167,18 +168,18 @@ actions[4] = function(start,attribute)
         prev = prev.prev
     end
     if not prev or prev.id ~= glyph_code then
-        return helper(start,'uccode','uccodes')
+        return helper(start,uccodes)
     else
         return start, false
     end
 end
 
 actions[5] = function(start,attribute) -- 3
-    return helper(start,'uccode','uccodes',true,attribute,true)
+    return helper(start,uccodes,true,attribute,true)
 end
 
 actions[6] = function(start,attribute) -- 4
-    return helper(start,'uccode','uccodes',true,attribute,false)
+    return helper(start,uccodes,true,attribute,false)
 end
 
 actions[8] = function(start)
@@ -187,23 +188,23 @@ actions[8] = function(start)
     local mr = math.random
  -- local tfm = fontdata[start.font].characters
     local tfm = fontchar[start.font]
-    if chardata[ch].lccode then
+    if lccodes[ch] then
         while true do
             local d = chardata[mr(1,0xFFFF)]
             if d then
-                local uc = d.uccode
-                if uc and tfm[uc] then
+                local uc = uccodes[d]
+                if uc and tfm[uc] then -- this also intercepts tables
                     start.char = uc
                     return start, true
                 end
             end
         end
-    elseif chardata[ch].uccode then
+    elseif uccodes[ch] then
         while true do
             local d = chardata[mr(1,0xFFFF)]
             if d then
-                local lc = d.lccode
-                if lc and tfm[lc] then
+                local lc = lccodes[d]
+                if lc and tfm[lc] then -- this also intercepts tables
                     start.char = lc
                     return start, true
                 end

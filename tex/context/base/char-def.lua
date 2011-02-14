@@ -2245,7 +2245,7 @@ characters.data={
   description="LATIN SMALL LETTER SHARP S",
   direction="l",
   linebreak="al",
-  uccodes={ 0x0053, 0x0053 },
+  uccode={ 0x0053, 0x0053 },
   unicodeslot=0x00DF,
  },
  {
