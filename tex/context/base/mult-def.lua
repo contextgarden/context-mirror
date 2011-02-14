@@ -6729,6 +6729,10 @@ return {
    ["pe"]="خودکار",
    ["ro"]="auto",
   },
+  ["autocase"]={
+   ["en"]="autocase",
+   ["nl"]="autocase",
+  },
   ["autofile"]={
    ["cs"]="autofile",
    ["de"]="autofile",

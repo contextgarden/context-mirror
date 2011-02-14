@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 02/11/11 18:18:29
+-- merge date  : 02/14/11 18:50:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -3713,7 +3713,9 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
  -- tfm.prepare_base_kerns(tfmtable) -- optimalization
     local t = { } -- the new table
     local scaledpoints, delta, units = tfm.calculatescale(tfmtable, scaledpoints, relativeid)
+    -- is just a trigger for the backend
     t.units_per_em = units or 1000
+    --
     local hdelta, vdelta = delta, delta
     -- unicoded unique descriptions shared cidinfo characters changed parameters indices
     for k,v in next, tfmtable do
@@ -5760,7 +5762,7 @@ local readers        = fonts.tfm.readers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.707 -- beware: also sync font-mis.lua
+otf.version          = 2.710 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -6142,6 +6144,7 @@ function otf.load(filename,format,sub,featurefile)
                 end
                 data.size = size
                 data.time = time
+                data.format = format
                 if featurefiles then
                     data.featuredata = featurefiles
                 end
@@ -7404,7 +7407,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
                 spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
+        spaceunits = tonumber(spaceunits) or 500 -- brrr
         -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
         local filename = fonts.tfm.checkedfilename(luatex)
         local fontname = metadata.fontname
@@ -7447,6 +7450,10 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             end
         end
         --
+        local fileformat = data.format or fonts.fontformat(filename,"opentype")
+        if units > 1000  then
+            fileformat = "truetype"
+        end
         return {
             characters         = characters,
             parameters         = parameters,
@@ -7468,7 +7475,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             psname             = fontname or fullname,
             name               = filename or fullname,
             units              = units,
-            format             = fonts.fontformat(filename,"opentype"),
+            format             = fileformat,
             cidinfo            = cidinfo,
             ascender           = abs(metadata.ascent  or 0),
             descender          = abs(metadata.descent or 0),

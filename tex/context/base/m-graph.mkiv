@@ -37,8 +37,44 @@
 
 \unexpanded\long\def\MPgraphformat#1#2{\ctxlua{metapost.format_n("#1","#2")}}
 
+% We could also delegate parsing using lower level plugins.
+
 \startMPinclusions
-    input graph.mp ;
+%     input string ;
+%     input marith ;
+%     input graph.mp ;
+
+%     vardef roundd(expr x, d) =
+%         if abs d > 4 :
+%             if d > 0 :
+%                 x
+%             else :
+%                 0
+%             fi
+%         elseif d > 0 :
+%             save i ; i = floor x ;
+%             i + round(Ten_to[d]*(x-i))/Ten_to[d]
+%         else :
+%             round(x/Ten_to[-d])*Ten_to[-d]
+%         fi
+%     enddef ;
+
+%     Ten_to0 =     1 ;
+%     Ten_to1 =    10 ;
+%     Ten_to2 =   100 ;
+%     Ten_to3 =  1000 ;
+%     Ten_to4 = 10000 ;
+%
+%     def sFe_base =
+%     enddef ;
+%
+%     picture Fe_plus ; Fe_plus := btex + etex ;
+
+%     vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+%     vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
+%     vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+%     vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
+
     vardef escaped_format(expr s) =
         "" for n=1 upto length(s) : &
             if ASCII substring (n,n+1) of s = 37 :
@@ -48,6 +84,7 @@
             fi
         endfor
     enddef ;
+
     vardef dofmt_@\#(expr f, x) =
         textext("\MPgraphformat{"&escaped_format(f)&"}{"&(if string x : x else: decimal x fi)&"}")
     enddef ;
@@ -58,6 +95,7 @@
     % vardef Mformat(expr f, x) =
     %    format(f,x)
     % enddef;
+
 \stopMPinclusions
 
 \doifnotmode {demo} {\endinput}
@@ -68,63 +106,63 @@
 
 \starttext
 
-\startMPpage
-draw begingraph(3in,2in);
-    gdraw "agepop91.d";
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(3in,2in);
+%     gdraw "t:/metapost/grphdata/agepop91.d";
+% endgraph;
+% \stopMPpage
 
-\startMPpage
-draw begingraph(3in,2in);
-    gdraw "agepop91.d" plot btex$\bullet$etex;
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(3in,2in);
+%     gdraw "agepop91.d" plot btex $\bullet$ etex;
+% endgraph;
+% \stopMPpage
 
-\startMPpage
-draw begingraph(3in,2in);
-    glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
-    glabel.bot(btex Age in years etex, OUT);
-    gdraw "agepopm.d";
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(3in,2in);
+%     glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+%     glabel.bot(btex Age in years etex, OUT);
+%     gdraw "agepopm.d";
+% endgraph;
+% \stopMPpage
 
-\startMPpage
-draw begingraph(3in,2in);
-    glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
-    glabel.bot(btex Age in years etex, OUT);
-    setrange(origin, whatever,whatever);
-    gdraw "agepopm.d";
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(3in,2in);
+%     glabel.lft(btex \vbox{\hbox{Population} \hbox{in millions}} etex, OUT);
+%     glabel.bot(btex Age in years etex, OUT);
+%     setrange(origin, whatever,whatever);
+%     gdraw "agepopm.d";
+% endgraph;
+% \stopMPpage
 
-\startMPpage
-draw begingraph(2.3in,2in);
-    setcoords(log,log);
-    glabel.lft(btex Seconds etex,OUT);
-    glabel.bot(btex Matrix size etex,
-    OUT);
-    gdraw "matmul.d" dashed evenly;
-    glabel.ulft(btex Standard etex,8);
-    gdraw "matmul.d";
-    glabel.lrt(btex Strassen etex,7);
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(2.3in,2in);
+%     setcoords(log,log);
+%     glabel.lft(btex Seconds etex,OUT);
+%     glabel.bot(btex Matrix size etex,
+%     OUT);
+%     gdraw "matmul.d" dashed evenly;
+%     glabel.ulft(btex Standard etex,8);
+%     gdraw "matmul.d";
+%     glabel.lrt(btex Strassen etex,7);
+% endgraph;
+% \stopMPpage
 
-\startMPpage
-draw begingraph(6.5cm,4.5cm);
-    setrange(80,0, 90,whatever);
-    glabel.bot(btex Year etex, OUT);
-    glabel.lft(btex \vbox{\hbox{Emissions in} \hbox{thousands of}
-    \hbox{metric tons} \hbox{(heavy line)}}etex, OUT);
-    gdraw "lead.d" withpen pencircle scaled 1.5pt;
-    autogrid(,otick.lft);
-    setcoords(linear,linear);
-    setrange(80,0, 90,whatever);
-    glabel.rt(btex \vbox{\hbox{Micrograms} \hbox{per cubic}
-    \hbox{meter of air} \hbox{(thin line)}}etex, OUT);
-    gdraw "lead.d";
-    autogrid(otick.bot,otick.rt);
-endgraph;
-\stopMPpage
+% \startMPpage
+% draw begingraph(6.5cm,4.5cm);
+%     setrange(80,0, 90,whatever);
+%     glabel.bot(btex Year etex, OUT);
+%     glabel.lft(btex \vbox{\hbox{Emissions in} \hbox{thousands of}
+%     \hbox{metric tons} \hbox{(heavy line)}}etex, OUT);
+%     gdraw "lead.d" withpen pencircle scaled 1.5pt;
+%     autogrid(,otick.lft);
+%     setcoords(linear,linear);
+%     setrange(80,0, 90,whatever);
+%     glabel.rt(btex \vbox{\hbox{Micrograms} \hbox{per cubic}
+%     \hbox{meter of air} \hbox{(thin line)}}etex, OUT);
+%     gdraw "lead.d";
+%     autogrid(otick.bot,otick.rt);
+% endgraph;
+% \stopMPpage
 
 \stoptext

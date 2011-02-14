@@ -105,6 +105,8 @@ local private = {
     description = "PRIVATE SLOT",
 }
 
+local extenders = { }
+
 setmetatablekey(data, "__index", function(t,k)
     if type(k) == "string" then
         k = lpegmatch(pattern,k) or utfbyte(k)
@@ -125,6 +127,10 @@ setmetatablekey(data, "__index", function(t,k)
             local first, last = rr.first, rr.last
             if k >= first and k <= last then
                 local v = t[first]
+                local extender = extenders[v.description]
+                if extender then
+                    v = extender(k,v)
+                end
                 t[k] = v
                 return v
             end
@@ -132,6 +138,45 @@ setmetatablekey(data, "__index", function(t,k)
     end
     return private -- handy for when we loop over characters in fonts and check for a property
 end )
+
+local metatables = { }
+
+extenders["<Hangul Syllable>"] = function(k,v)
+    local shcode = -- for the moment we misuse the shcode .. in fact we should have the components
+       k  < 0xAC00 and k      -- original
+    or k  > 0xD7AF and k      -- original
+    or k >= 0xD558 and 0x314E -- 하 => ㅎ
+    or k >= 0xD30C and 0x314D -- 파 => ㅍ
+    or k >= 0xD0C0 and 0x314C -- 타 => ㅌ
+    or k >= 0xCE74 and 0x314B -- 카 => ㅋ
+    or k >= 0xCC28 and 0x314A -- 차 => ㅊ
+    or k >= 0xC790 and 0x3148 -- 자 => ㅈ
+    or k >= 0xC544 and 0x3147 -- 아 => ㅇ
+    or k >= 0xC0AC and 0x3145 -- 사 => ㅅ
+    or k >= 0xBC14 and 0x3142 -- 바 => ㅂ
+    or k >= 0xB9C8 and 0x3141 -- 마 => ㅁ
+    or k >= 0xB77C and 0x3139 -- 라 => ㄹ
+    or k >= 0xB2E4 and 0x3137 -- 다 => ㄷ
+    or k >= 0xB098 and 0x3134 -- 나 => ㄴ
+    or k >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
+    or k                      -- can't happen
+    local t = {
+     -- category    = "lo",
+     -- cjkwd       = "w",
+     -- description = "<Hangul Syllable>",
+     -- direction   = "l",
+     -- linebreak   = "h2",
+        shcode      = shcode,
+        unicodeslot = k,
+    }
+    local m = metatables[v]
+    if not m then
+        m = { __index = v }
+        metatables[v] = m
+    end
+    setmetatable(t,m)
+    return t
+end
 
 --~ setmetatable(data,{ __index = function(t,k) return "" end }) -- quite old, obsolete
 

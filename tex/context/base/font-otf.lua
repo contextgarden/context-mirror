@@ -61,7 +61,7 @@ local readers        = fonts.tfm.readers
 
 otf.glists           = { "gsub", "gpos" }
 
-otf.version          = 2.707 -- beware: also sync font-mis.lua
+otf.version          = 2.710 -- beware: also sync font-mis.lua
 otf.cache            = containers.define("fonts", "otf", otf.version, true)
 
 local loadmethod     = "table" -- table, mixed, sparse
@@ -443,6 +443,7 @@ function otf.load(filename,format,sub,featurefile)
                 end
                 data.size = size
                 data.time = time
+                data.format = format
                 if featurefiles then
                     data.featuredata = featurefiles
                 end
@@ -1705,7 +1706,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
                 spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or tfm.units/2 -- 500 -- brrr
+        spaceunits = tonumber(spaceunits) or 500 -- brrr
         -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't we use the basename then?)
         local filename = fonts.tfm.checkedfilename(luatex)
         local fontname = metadata.fontname
@@ -1748,6 +1749,10 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             end
         end
         --
+        local fileformat = data.format or fonts.fontformat(filename,"opentype")
+        if units > 1000  then
+            fileformat = "truetype"
+        end
         return {
             characters         = characters,
             parameters         = parameters,
@@ -1769,7 +1774,7 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             psname             = fontname or fullname,
             name               = filename or fullname,
             units              = units,
-            format             = fonts.fontformat(filename,"opentype"),
+            format             = fileformat,
             cidinfo            = cidinfo,
             ascender           = abs(metadata.ascent  or 0),
             descender          = abs(metadata.descent or 0),

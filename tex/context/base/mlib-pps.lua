@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, postscripts and specials
+if not modules then modules = { } end modules ['mlib-pps'] = {
     version   = 1.001,
     comment   = "companion to mlib-ctx.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mlib-pps'] = { -- prescript, pos
     license   = "see context related readme files",
 }
 
+-- pps: prescript, postscripts and specials (although specials are dropped)
+--
 -- current limitation: if we have textext as well as a special color then due to
 -- prescript/postscript overload we can have problems
 --
@@ -17,7 +19,7 @@ local lpegmatch = lpeg.match
 local texbox = tex.box
 local copy_list, free_list = node.copy_list, node.flush_list
 
-local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
+local Cs, Cf, C, Cg, Ct, P, S, V = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -26,33 +28,19 @@ local context = context
 local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
 local report_metapost = logs.reporter("metapost")
+local report_textexts = logs.reporter("metapost","textexts")
 
 local colors = attributes.colors
 
-local rgbtocmyk  = colors.rgbtocmyk   or function() return 0,0,0,1 end
-local cmyktorgb  = colors.cmyktorgb   or function() return 0,0,0   end
-local rgbtogray  = colors.rgbtogray   or function() return 0       end
-local cmyktogray = colors.cmyktogray  or function() return 0       end
+local rgbtocmyk  = colors.rgbtocmyk  or function() return 0,0,0,1 end
+local cmyktorgb  = colors.cmyktorgb  or function() return 0,0,0   end
+local rgbtogray  = colors.rgbtogray  or function() return 0       end
+local cmyktogray = colors.cmyktogray or function() return 0       end
 
-local mplib, lpdf = mplib, lpdf
-
-local metapost     = metapost
-local specials     = metapost.specials
-
-specials.data      = specials.data or { }
-local data         = specials.data
+local mplib, metapost, lpdf = mplib, metapost, lpdf
 
 metapost.makempy = metapost.makempy or { nofconverted = 0 }
 local makempy    = metapost.makempy
-
-local colordata = { {}, {}, {}, {}, {} }
-
---~ (r,g,b) => cmyk             : r=123 g=   1 b=hash
---~         => spot             : r=123 g=   2 b=hash
---~         => transparent rgb  : r=123 g=   3 b=hash
---~         => transparent cmyk : r=123 g=   4 b=hash
---~         => transparent spot : r=123 g=   5 b=hash
---~         => rest             : r=123 g=n>10 b=whatever
 
 local nooutercolor        = "0 g 0 G"
 local nooutertransparency = "/Tr0 gs" -- only when set
@@ -105,160 +93,18 @@ function metapost.colorinitializer()
     return outercolor, outertransparency
 end
 
-function specials.register(str) -- only colors
-    local size, content, n, class = match(str,"^%%%%MetaPostSpecial: (%d+) (.*) (%d+) (%d+)$")
-    if class then
-        -- use lpeg splitter
-        local data , d = { }, 0
-        for s in gmatch(content,"[^ ]+") do
-            d = d + 1
-            data[d] = s
-        end
-        class, n = tonumber(class), tonumber(n)
-        if class == 3 or class == 4 or class == 5 then
-            -- hm, weird
-        else
-            n = tonumber(data[1])
-        end
-        if n then
-            local cc = colordata[class]
-            if cc then
-                cc[n] = data
-            else
-                report_metapost("problematic special: %s (no colordata class %s)", str or "?",class)
-            end
-        else
-         -- there is some bug to be solved, so we issue a message
-            report_metapost("problematic special: %s", str or "?")
-        end
-    end
---~     if match(str,"^%%%%MetaPostOption: multipass") then
---~         metapost.multipass = true
---~     end
-end
-
-local function spotcolorconverter(parent, n, d, p)
-    registerspotcolor(parent)
-    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p))
-end
-
-function metapost.colorhandler(cs, object, result, colorconverter) -- handles specials
-    local cr = outercolor
-    local what = round(cs[2]*10000)
-    local data = colordata[what]
-    if data then
-        data = data[round(cs[3]*10000)]
-    end
-    if not data then
-        --
-    elseif what == 1 then
-        result[#result+1], cr = colorconverter({ data[2], data[3], data[4], data[5] })
-    elseif what == 2 then
-        result[#result+1] = spotcolorconverter(data[2],data[3],data[4],data[5])
-    else
-        if what == 3 then
-            result[#result+1], cr = colorconverter({ data[3], data[4], data[5]})
-        elseif what == 4 then
-            result[#result+1], cr = colorconverter({ data[3], data[4], data[5], data[6]})
-        elseif what == 5 then
-            result[#result+1] = spotcolorconverter(data[3],data[4],data[5],data[6])
-        end
-        object.prescript = "tr"
-        object.postscript = data[1] .. "," .. data[2]
-    end
-    object.color = nil
-    return object, cr
-end
-
-function metapost.colorspec(cs) -- used for shades ... returns table (for checking) or string (spot)
-    local what = round(cs[2]*10000)
-    local data = colordata[what][round(cs[3]*10000)]
-    if not data then
-        return { 0 }
-    elseif what == 1 then
-        return { tonumber(data[2]), tonumber(data[3]), tonumber(data[4]), tonumber(data[5]) }
-    elseif what == 2 then
-        return spotcolorconverter(data[2],data[3],data[4],data[5])
-    elseif what == 3 then
-        return { tonumber(data[3]), tonumber(data[4]), tonumber(data[5]) }
-    elseif what == 4 then
-        return { tonumber(data[3]), tonumber(data[4]), tonumber(data[5]), tonumber(data[6]) }
-    elseif what == 5 then
-        return spotcolorconverter(data[3],data[4],data[5],data[6])
-    end
-end
-
-function specials.tr(specification,object,result)
-    local a, t = match(specification,"^(.+),(.+)$")
-    local before = a and t and function()
-        result[#result+1] = format("/Tr%s gs",registertransparency(nil,a,t,true)) -- maybe nil instead of 'mp'
-        return object, result
-    end
-    local after = before and function()
-        result[#result+1] = outertransparency -- here we could revert to the outer color
-        return object, result
-    end
-    return object, before, nil, after
-end
+--~
 
 local specificationsplitter = lpeg.Ct(lpeg.splitat(" "))
-local colorsplitter         = lpeg.Ct(lpeg.splitat(":"))
-local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber))
-
--- Unfortunately we cannot use cmyk colors natively because there is no
--- generic color allocation primitive ... it's just an rgbcolor color.. This
--- means that we cannot pass colors in either cmyk or rgb form.
---
--- def cmyk(expr c,m,y,k) =
---     1 withprescript "cc" withpostscript ddddecimal (c,m,y,k)
--- enddef ;
---
--- This is also an example of a simple plugin.
-
---~ function specials.cc(specification,object,result)
---~     object.color = lpegmatch(specificationsplitter,specification)
---~     return object, nil, nil, nil
---~ end
---~ function specials.cc(specification,object,result)
---~     local c = lpegmatch(specificationsplitter,specification)
---~     local o = object.color[1]
---~     c[1],c[2],c[3],c[4] = o*c[1],o*c[2],o*c[3],o*c[4]
---~     return object, nil, nil, nil
---~ end
+local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber)) -- no need for :
+local domainsplitter        = lpeg.Ct(lpeg.splitter(" ",tonumber))
+local centersplitter        = domainsplitter
+local coordinatesplitter    = domainsplitter
 
 -- thanks to taco's reading of the postscript manual:
 --
 -- x' = sx * x + ry * y + tx
 -- y' = rx * x + sy * y + ty
-
-function specials.fg(specification,object,result,flusher) -- graphics
-    local op = object.path
-    local first, second, fourth  = op[1], op[2], op[4]
-    local tx, ty = first.x_coord      , first.y_coord
-    local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-    local rx, ry = second.y_coord - ty, fourth.x_coord - tx
-    if sx == 0 then sx = 0.00001 end
-    if sy == 0 then sy = 0.00001 end
-    local before = specification and function()
-        flusher.flushfigure(result)
-        context.MPLIBfigure(sx,rx,ry,sy,tx,ty,specification)
-        object.path = nil
-        return object, { }
-    end
-    return { } , before, nil, nil, true -- replace { } by object for tracing
-end
-
-function specials.ps(specification,object,result) -- positions
-    local op = object.path
-    local first, third  = op[1], op[3]
-    local x, y = first.x_coord, first.y_coord
-    local w, h = third.x_coord - x, third.y_coord - y
-    local label = specification
-    x = x - metapost.llx
-    y = metapost.ury - y
-    context.MPLIBpositionwhd(label,x,y,w,h)
-    return { }, nil, nil, nil, true
-end
 
 local nofshades = 0 -- todo: hash resources, start at 1000 in order not to clash with older
 
@@ -285,8 +131,6 @@ end
 
 local function checkandconvert(ca,cb)
     local name = format("MpSh%s",nofshades)
-    if round(ca[1]*10000) == 123 then ca = metapost.colorspec(ca) end
-    if round(cb[1]*10000) == 123 then cb = metapost.colorspec(cb) end
     if type(ca) == "string" then
         return { 0 }, { 1 }, "DeviceGray", name
     else
@@ -332,52 +176,6 @@ local function checkandconvert(ca,cb)
     end
 end
 
-local function resources(object,name,flusher,result)
-    -- There is no real need for flushing in between, so:
-    --
-    -- flusher.flushfigure(result)
-    -- local result = { }
-    --
-    local before = function()
-        result[#result+1] = "q /Pattern cs"
-        return object, result
-    end
-    local after = function()
-        result[#result+1] = format("W n /%s sh Q", name)
-        return object, result
-    end
-    object.color, object.type = nil, nil
-    return object, before, nil, after, true
-end
-
--- todo: we need a way to move/scale
-
-function specials.cs(specification,object,result,flusher) -- spot colors?
-    nofshades = nofshades + 1
-    local t = lpegmatch(specificationsplitter,specification)
-    local ca = lpegmatch(colorsplitter,t[4])
-    local cb = lpegmatch(colorsplitter,t[8])
-    local domain = { tonumber(t[1]), tonumber(t[2]) }
-    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[7]), tonumber(t[9]), tonumber(t[10]), tonumber(t[11]) }
-    local ca, cb, colorspace, name = checkandconvert(ca,cb)
-    lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
-    return resources(object,name,flusher,result) -- object, before, nil, after, grouped
-end
-
-function specials.ls(specification,object,result,flusher)
-    nofshades = nofshades + 1
-    local t = lpegmatch(specificationsplitter,specification)
-    local ca = lpegmatch(colorsplitter,t[4])
-    local cb = lpegmatch(colorsplitter,t[7])
-    local domain = { tonumber(t[1]), tonumber(t[2]) }
-    local coordinates = { tonumber(t[5]), tonumber(t[6]), tonumber(t[8]), tonumber(t[9]) }
-    local ca, cb, colorspace, name = checkandconvert(ca,cb)
-    lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
-    return resources(object,name,flusher,result) -- object, before, nil, after, grouped
-end
-
--- no need for a before here
-
 local current_format, current_graphic, current_initializations
 
 metapost.multipass = false
@@ -393,7 +191,7 @@ local function freeboxes() -- todo: mp direct list ipv box
           -- texbox[scratchbox] = tn
           -- texbox[scratchbox] = nil -- this frees too
             if trace_textexts then
-                report_metapost("freeing textext %s",n)
+                report_textexts("freeing %s",n)
             end
         end
     end
@@ -413,70 +211,9 @@ end
 function metapost.gettext(box,slot)
     texbox[box] = copy_list(textexts[slot])
     if trace_textexts then
-        report_metapost("putting textext %s in box %s",slot,box)
+        report_textexts("putting %s in box %s",slot,box)
     end
  -- textexts[slot] = nil -- no, pictures can be placed several times
-end
-
-function specials.tf(specification,object)
-    local n, str = match(specification,"^(%d+):(.+)$")
-    if n and str then
-        n = tonumber(n)
-        if trace_textexts then
-            report_metapost("setting textext %s (first pass)",n)
-        end
-        context.MPLIBsettext(n,str)
-        metapost.multipass = true
-    end
-    return { }, nil, nil, nil, true
-end
-
-local factor = 65536*(7227/7200)
-
-function metapost.edefsxsy(wd,ht,dp) -- helper for figure
-    local hd = ht + dp
-    context.setvalue("sx",wd ~= 0 and factor/wd or 0)
-    context.setvalue("sy",hd ~= 0 and factor/hd or 0)
-end
-
-local function sxsy(wd,ht,dp) -- helper for text
-    local hd = ht + dp
-    return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
-end
-
-function specials.ts(specification,object,result,flusher)
-    local n, str = match(specification,"^(%d+):(.+)$")
-    if n and str then
-        n = tonumber(n)
-        if trace_textexts then
-            report_metapost("processing textext %s (second pass)",n)
-        end
-        local op = object.path
-        local first, second, fourth = op[1], op[2], op[4]
-        local tx, ty = first.x_coord      , first.y_coord
-        local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-        local rx, ry = second.y_coord - ty, fourth.x_coord - tx
-        if sx == 0 then sx = 0.00001 end
-        if sy == 0 then sy = 0.00001 end
-        if not trace_textexts then
-            object.path = nil
-        end
-        local before = function() -- no need for before function (just do it directly)
-            result[#result+1] = format("q %f %f %f %f %f %f cm", sx,rx,ry,sy,tx,ty)
-            flusher.flushfigure(result)
-            local box = textexts[n]
-            if box then
-                context.MPLIBgettextscaled(n,sxsy(box.width,box.height,box.depth))
-            else
-                -- error
-            end
-            result = { "Q" }
-            return object, result
-        end
-        return { }, before, nil, nil, true -- replace { } by object for tracing
-    else
-        return { }, nil, nil, nil, true -- replace { } by object for tracing
-    end
 end
 
 -- rather generic pdf, so use this elsewhere too it no longer pays
@@ -615,8 +352,19 @@ function models.gray(cr)
     return checked_color_pair(format("%.3f g %.3f G",s,s))
 end
 
-function metapost.colorconverter()
-    return models[colors.model] or gray
+setmetatable(models, { __index = function(t,k)
+    local v = models.gray
+    t[k] = v
+    return v
+end })
+
+local function colorconverter(cs)
+    return models[colors.model](cs)
+end
+
+local function spotcolorconverter(parent, n, d, p)
+    registerspotcolor(parent)
+    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
 end
 
 local btex      = P("btex")
@@ -679,6 +427,19 @@ end
 
 metapost.checktexts = checktexts
 
+local factor = 65536*(7227/7200)
+
+function metapost.edefsxsy(wd,ht,dp) -- helper for figure
+    local hd = ht + dp
+    context.setvalue("sx",wd ~= 0 and factor/wd or 0)
+    context.setvalue("sy",hd ~= 0 and factor/hd or 0)
+end
+
+local function sxsy(wd,ht,dp) -- helper for text
+    local hd = ht + dp
+    return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
+end
+
 local no_trial_run       = "_trial_run_ := false ;"
 local do_trial_run       = "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;"
 local text_data_template = "_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;"
@@ -692,7 +453,7 @@ function metapost.texttextsdata()
         if box then
             local wd, ht, dp = box.width/factor, box.height/factor, box.depth/factor
             if trace_textexts then
-                report_metapost("passed textext data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
+                report_textexts("passed data %s: (%0.4f,%0.4f,%0.4f)",n,wd,ht,dp)
             end
             nt = nt + 1
             t[nt] = format(text_data_template,n,wd,n,ht,n,dp)
@@ -708,6 +469,8 @@ metapost.intermediate.actions = metapost.intermediate.actions or {}
 metapost.intermediate.needed  = false
 
 metapost.method = 1 -- 1:dumb 2:clever
+
+-- maybe we can latelua the texts some day
 
 function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
     local nofig = (askedfig and "") or false
@@ -802,14 +565,167 @@ function makempy.processgraphics(graphics)
     end
 end
 
-local graphics = { }
+-- -- the new plugin handler -- --
 
-function specials.gt(specification,object) -- number, so that we can reorder
-    graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",specification)
-    metapost.intermediate.needed = true
-    metapost.multipass = true
-    return { }, nil, nil, nil, true
+local sequencers   = utilities.sequencers
+local appendgroup  = sequencers.appendgroup
+local appendaction = sequencers.appendaction
+
+local resetter  = nil
+local analyzer  = nil
+local processor = nil
+
+local resetteractions  = sequencers.reset { arguments = "" }
+local analyzeractions  = sequencers.reset { arguments = "object,prescript" }
+local processoractions = sequencers.reset { arguments = "object,prescript,before,after" }
+
+appendgroup(resetteractions, "system")
+appendgroup(analyzeractions, "system")
+appendgroup(processoractions,"system")
+
+local scriptsplitter = Cf(Ct("") * (
+    Cg(C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0)
+)^0, rawset)
+
+function metapost.pluginactions(what,t,flushfigure) -- to be checked: too many 0 g 0 G
+    for i=1,#what do
+        local wi = what[i]
+        if type(wi) == "function" then
+            -- assume injection
+            flushfigure(t)
+            t = { }
+            wi()
+        else
+            t[#t+1] = wi
+        end
+    end
+    return t
 end
+
+function metapost.resetplugins()
+    resetter()
+end
+
+function metapost.analyzeplugins(object)
+    local prescript = object.prescript   -- specifications
+    if prescript and #prescript > 0 then
+        local prescript = lpegmatch(scriptsplitter,prescript)
+        return analyzer(object,prescript)
+    end
+end
+
+function metapost.processplugins(object) -- maybe environment table
+    local prescript = object.prescript   -- specifications
+    if prescript and #prescript > 0 then
+        local prescript = lpegmatch(scriptsplitter,prescript)
+        local before = { }
+        local after = { }
+        processor(object,prescript,before,after)
+        return #before > 0 and before, #after > 0 and after
+    else
+        local c = object.color
+        if c and #c > 0 then
+            local b, a = colorconverter(c)
+            return { b }, { a }
+        end
+    end
+end
+
+-- helpers
+
+local basepoints = number.dimenfactors["bp"]
+
+local cm = function(object)
+    local op = object.path
+    local first, second, fourth = op[1], op[2], op[4]
+    local tx, ty = first.x_coord      , first.y_coord
+    local sx, sy = second.x_coord - tx, fourth.y_coord - ty
+    local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+    if sx == 0 then sx = 0.00001 end
+    if sy == 0 then sy = 0.00001 end
+    return sx,rx,ry,sy,tx,ty
+end
+
+-- text
+
+local tx_done = { }
+
+local function tx_reset()
+    tx_done = { }
+end
+
+local function tx_analyze(object,prescript) -- todo: hash content and reuse them
+    local tx_stage = prescript.tx_stage
+    if tx_stage then
+        local tx_number = tonumber(prescript.tx_number)
+        if not tx_done[tx_number] then
+            tx_done[tx_number] = true
+            if trace_textexts then
+                report_textexts("setting %s %s (first pass)",tx_stage,tx_number)
+            end
+            local s = object.postscript or ""
+            local c = object.color -- only simple ones, no transparency
+            local a = prescript.tr_alternative
+            local t = prescript.tr_transparency
+            if not c then
+                -- no color
+            elseif #c == 1 then
+                if a and t then
+                    s = format("\\colored[s=%f,a=%f,t=%f]%s",c[1],a,t,s)
+                else
+                    s = format("\\colored[s=%f]%s",c[1],s)
+                end
+            elseif #c == 3 then
+                if a and t then
+                    s = format("\\colored[r=%f,g=%f,b=%f,a=%f,t=%f]%s",c[1],c[2],c[3],a,t,s)
+                else
+                    s = format("\\colored[r=%f,g=%f,b=%f]%s",c[1],c[2],c[3],s)
+                end
+            elseif #c == 4 then
+                if a and t then
+                    s = format("\\colored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s",c[1],c[2],c[3],c[4],a,t,s)
+                else
+                    s = format("\\colored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
+                end
+            end
+            context.MPLIBsettext(tx_number,s)
+            metapost.multipass = true
+        end
+    end
+end
+
+local function tx_process(object,prescript,before,after)
+    local tx_number = prescript.tx_number
+    if tx_number then
+        tx_number = tonumber(tx_number)
+        local tx_stage = prescript.tx_stage
+        if tx_stage == "final" then -- redundant test
+            if trace_textexts then
+                report_textexts("processing %s (second pass)",tx_number)
+            end
+            before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+            before[#before+1] = function()
+                -- flush always happens, we can have a special flush function injected before
+                local box = textexts[tx_number]
+                if box then
+                    context.MPLIBgettextscaled(tx_number,sxsy(box.width,box.height,box.depth))
+                else
+                    report_textexts("unknown %s",tx_number)
+                end
+            end
+            before[#before+1] = "Q"
+            if not trace_textexts then
+                object.path = false -- else: keep it
+            end
+            object.color = false
+            object.grouped = true
+        end
+    end
+end
+
+-- graphics
+
+local graphics = { }
 
 function metapost.intermediate.actions.makempy()
     if #graphics > 0 then
@@ -817,3 +733,152 @@ function metapost.intermediate.actions.makempy()
         graphics = { } -- ?
     end
 end
+
+local function gt_analyze(object,prescript)
+    local gt_stage = prescript.gt_stage
+    if gt_stage == "trial" then
+        graphics[#graphics+1] = format("\\MPLIBgraphictext{%s}",object.postscript or "")
+        metapost.intermediate.needed = true
+        metapost.multipass = true
+    end
+end
+
+-- local function gt_process(object,prescript,before,after)
+--     local gt_stage = prescript.gt_stage
+--     if gt_stage == "final" then
+--     end
+-- end
+
+-- shades
+
+local function sh_process(object,prescript,before,after)
+    local sh_type = prescript.sh_type
+    if sh_type then
+        nofshades = nofshades + 1
+        local domain  = lpegmatch(domainsplitter,prescript.sh_domain)
+        local colora  = lpegmatch(colorsplitter, prescript.sh_color_a)
+        local colorb  = lpegmatch(colorsplitter, prescript.sh_color_b)
+        local centera = lpegmatch(centersplitter,prescript.sh_center_a)
+        local centerb = lpegmatch(centersplitter,prescript.sh_center_b)
+        local ca, cb, colorspace, name = checkandconvert(colora,colorb)
+        if sh_type == "linear" then
+            local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
+            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+        elseif sh_type == "circular" then
+            local radiusa = tonumber(prescript.sh_radius_a)
+            local radiusb = tonumber(prescript.sh_radius_b)
+            local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
+            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+        else
+            -- fatal error
+        end
+        before[#before+1], after[#after+1] = "q /Pattern cs", format("W n /%s sh Q",name)
+        object.color, object.type, object.grouped = false, false, true -- not nil, otherwise mt
+    end
+end
+
+-- bitmaps
+
+local function bm_process(object,prescript,before,after)
+    local bm_xresolution = prescript.bm_xresolution
+    if bm_xresolution then
+        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+        before[#before+1] = function()
+            figures.bitmapimage {
+                xresolution = tonumber(bm_xresolution),
+                yresolution = tonumber(prescript.bm_yresolution),
+                width       = 1/basepoints,
+                height      = 1/basepoints,
+                data        = object.postscript
+            }
+        end
+        before[#before+1] = "Q"
+        object.path = false
+        object.color = false
+        object.grouped = true
+    end
+end
+
+-- positions
+
+local function ps_process(object,prescript,before,after)
+    local ps_label = prescript.ps_label
+    if ps_label then
+        local op = object.path
+        local first, third  = op[1], op[3]
+        local x, y = first.x_coord, first.y_coord
+        local w, h = third.x_coord - x, third.y_coord - y
+        x = x - metapost.llx
+        y = metapost.ury - y
+        before[#before+1] = function()
+            context.MPLIBpositionwhd(ps_label,x,y,w,h)
+        end
+    end
+end
+
+-- figures
+
+local function fg_process(object,prescript,before,after)
+    local fg_name = prescript.fg_name
+    if fg_name then
+        -- now uses textext
+        local op = object.path
+        local first, second, fourth  = op[1], op[2], op[4]
+        local tx, ty = first.x_coord      , first.y_coord
+        local sx, sy = second.x_coord - tx, fourth.y_coord - ty
+        local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+        if sx == 0 then sx = 0.00001 end
+        if sy == 0 then sy = 0.00001 end
+        object.path = nil
+        before[#before+1] = function()
+            context.MPLIBfigure(sx,rx,ry,sy,tx,ty,fg_name)
+        end
+        object.grouped = true
+    end
+end
+
+-- color and transparency
+
+local function tr_process(object,prescript,before,after)
+    local cs = object.color
+    if cs and #cs > 0 then
+        -- before can be shortcut to t
+        local tr_alternative = prescript.tr_alternative
+        if tr_alternative then
+            tr_alternative = tonumber(tr_alternative)
+            local tr_transparency = tonumber(prescript.tr_transparency)
+            before[#before+1], after[#after+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true)), "/Tr0 gs" -- outertransparency
+        end
+        local sp_name = prescript.sp_name
+        if sp_name then
+            local sp_fractions  = prescript.sp_fractions  or 1
+            local sp_components = prescript.sp_components or ""
+            local sp_value      = prescript.sp_value      or 1
+            sp_value = tonumber(sp_value) * cs[1]
+            before[#before+1], after[#after+1] = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
+        else
+            before[#before+1], after[#after+1] = colorconverter(cs)
+        end
+    end
+end
+
+-- definitions
+
+appendaction(resetteractions,"system",tx_reset)
+
+appendaction(analyzeractions,"system",tx_analyze)
+appendaction(analyzeractions,"system",gt_analyze)
+
+appendaction(processoractions,"system",sh_process)
+--          (processoractions,"system",gt_process)
+appendaction(processoractions,"system",bm_process)
+appendaction(processoractions,"system",tx_process)
+appendaction(processoractions,"system",ps_process)
+appendaction(processoractions,"system",fg_process)
+appendaction(processoractions,"system",tr_process) -- last, as color can be reset
+
+-- no auto here
+
+resetter  = sequencers.compile(resetteractions )
+analyzer  = sequencers.compile(analyzeractions )
+processor = sequencers.compile(processoractions)

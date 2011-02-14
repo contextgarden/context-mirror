@@ -193,7 +193,8 @@ sequencers.localize = localize
 
 local function compile(t,compiler,n)
     if not t or type(t) == "string" then
-        t.compiled = t
+        -- weird ... t.compiled = t .. so
+        return false
     elseif compiler then
         t.compiled = compiler(t,n)
     else

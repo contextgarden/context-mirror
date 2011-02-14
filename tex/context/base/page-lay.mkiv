@@ -876,11 +876,23 @@
 \def\mirrorprintbox{\mirrorpagebodybox\printmirror}
 
 \def\scalepagebox#1%
-  {\ifdim\@@lyscale\points=\onepoint \else
-     \setbox#1\vbox{\scale[\c!sx=\@@lyscale,\c!sy=\@@lyscale]{\box#1}}%
-     \paperwidth \@@lyscale\paperwidth
-     \paperheight\@@lyscale\paperheight
+  {\ifdim\@@lyscale\points=\onepoint
+     \ifdim\@@lysx\points=\onepoint
+       \ifdim\@@lysy\points=\onepoint
+       \else
+         \doscalepagebox{#1}\@@lysx\@@lysy
+       \fi
+     \else
+       \doscalepagebox{#1}\@@lysx\@@lysy
+     \fi
+   \else
+     \doscalepagebox{#1}\@@lysscale\@@lyscale
    \fi}
+
+\def\doscalepagebox#1#2#3%
+  {\setbox#1\vbox{\scale[\c!sx=#2,\c!sy=#3]{\box#1}}%
+   \paperwidth #2\paperwidth
+   \paperheight#3\paperheight}
 
 \def\negateprintbox#1%
   {\ifnegateprintbox
@@ -1229,6 +1241,8 @@
                  \c!marking=\v!off,
                 \c!location=, % \v!singlesided, but empty is signal
                    \c!scale=1,
+                      \c!sx=1,
+                      \c!sy=1,
                       \c!nx=1,
                       \c!ny=1,
                       \c!dx=\zeropoint,

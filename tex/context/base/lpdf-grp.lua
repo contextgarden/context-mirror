@@ -10,7 +10,11 @@ local format = string.format
 
 local backends, lpdf = backends, lpdf
 
+local nodeinjections = backends.pdf.nodeinjections
+
 local colors         = attributes.colors
+local basepoints     = number.dimenfactors["bp"]
+local inches         = number.dimenfactors["in"]
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
@@ -69,4 +73,69 @@ function lpdf.colorspec(model,ca,default)
     if default then
         return default
     end
+end
+
+-- inline bitmaps but xform'd
+--
+-- we could derive the colorspace if we strip the data
+-- and divide by x*y
+
+local template = "q BI %s ID %s > EI Q"
+local factor   = 72/300
+
+function nodeinjections.injectbitmap(t)
+    -- encoding is ascii hex, no checking here
+    local xresolution, yresolution = t.xresolution or 0, t.yresolution or 0
+    if xresolution == 0 or yresolution == 0 then
+        return -- fatal error
+    end
+    local colorspace = t.colorspace
+    if colorspace ~= "rgb" and colorspace ~= "cmyk" and colorspace ~= "gray" then
+        -- not that efficient but ok
+        local d = string.gsub(t.data,"[^0-9a-f]","")
+        local b = math.round(#d / (xresolution * yresolution))
+        if b == 2 then
+            colorspace = "gray"
+        elseif b == 6 then
+            colorspace = "rgb"
+        elseif b == 8 then
+            colorspace = "cmyk"
+        end
+    end
+    if colorspace == "gray" then
+        colorspace = pdfconstant("DeviceGray")
+    elseif colorspace == "rgb" then
+        colorspace = pdfconstant("DeviceRGB")
+    elseif colorspace == "cmyk" then
+        colorspace = pdfconstant("DeviceCMYK")
+    else
+        return -- fatal error
+    end
+    local d = pdfdictionary {
+        W   = xresolution,
+        H   = yresolution,
+        CS  = colorspace,
+        BPC = 8,
+        F   = pdfconstant("AHx"),
+    }
+    -- for some reasons it only works well if we take a 1bp boundingbox
+    local urx, ury = 1/basepoints, 1/basepoints
+ -- urx = (xresolution/300)/basepoints
+ -- ury = (yresolution/300)/basepoints
+    local width, height = t.width or 0, t.height or 0
+    if width == 0 and height == 0 then
+        width  = factor * xresolution / basepoints
+        height = factor * yresolution / basepoints
+    elseif width == 0 then
+        width  = height * xresolution / yresolution
+    elseif height == 0 then
+        height = width  * yresolution / xresolution
+    end
+    local image = img.new {
+        stream = format(template,d(),t.data),
+        width  = width,
+        height = height,
+        bbox   = { 0, 0, urx, ury },
+    }
+    return img.node(image)
 end

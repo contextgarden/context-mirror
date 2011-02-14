@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 
 local format, concat, gsub = string.format, table.concat, string.gsub
 local abs, sqrt, round = math.abs, math.sqrt, math.round
+local setmetatable = setmetatable
+local Cf, C, Cg, Ct, P, S, lpegmatch = lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.match
 
 local allocate = utilities.storage.allocate
 
@@ -24,7 +26,6 @@ local metapost     = metapost
 metapost.multipass = false
 metapost.n         = 0
 metapost.optimize  = true -- false
-metapost.specials  = allocate()
 
 --~ Because in MKiV we always have two passes, we save the objects. When an extra
 --~ mp run is done (due to for instance texts identifier in the parse pass), we
@@ -240,18 +241,28 @@ end
 
 metapost.flushnormalpath = flushnormalpath
 
--- we have two extension handlers, one for pre and postscripts, and one for colors
+-- The flusher is pdf based, if another backend is used, we need to overload the
+-- flusher; this is beta code, the organization will change (already upgraded in
+-- sync with mplib)
+--
+-- We can avoid the before table but I like symmetry. There is of course a small
+-- performance penalty, but so is passing extra arguments (result, flusher, after)
+-- and returning stuff.
 
--- the flusher is pdf based, if another backend is used, we need to overload the
--- flusher; this is beta code, the organization will change
+local function ignore() end
 
-function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan concat is sneller, 1 literal
+function metapost.flush(result,flusher,askedfig)
     if result then
         local figures = result.fig
         if figures then
             flusher = flusher or metapost.flushers.pdf
-            local colorconverter = metapost.colorconverter() -- function !
-            local colorhandler   = metapost.colorhandler
+            local resetplugins = metapost.resetplugins or ignore
+            local processplugins = metapost.processplugins or ignore
+            local pluginactions = metapost.pluginactions or ignore
+            local startfigure = flusher.startfigure
+            local stopfigure = flusher.stopfigure
+            local flushfigure = flusher.flushfigure
+            local textfigure = flusher.textfigure
             for f=1, #figures do
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
@@ -267,19 +278,18 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                     metapost.ury = ury
                     if urx < llx then
                         -- invalid
-                        flusher.startfigure(fignum,0,0,0,0,"invalid",figure)
-                        flusher.stopfigure()
+                        startfigure(fignum,0,0,0,0,"invalid",figure)
+                        stopfigure()
                     else
-                        flusher.startfigure(fignum,llx,lly,urx,ury,"begin",figure)
+                        startfigure(fignum,llx,lly,urx,ury,"begin",figure)
                         t[#t+1] = "q"
                         if objects then
+                            resetplugins() -- we should move the colorinitializer here
                             t[#t+1] = metapost.colorinitializer()
-                            -- once we have multiple prescripts we can do more tricky things like
-                            -- text and special colors at the same time
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
-                                if objecttype == "start_bounds" or objecttype == "stop_bounds" then
+                                if objecttype == "start_bounds" or objecttype == "stop_bounds" or objecttype == "special" then
                                     -- skip
                                 elseif objecttype == "start_clip" then
                                     t[#t+1] = "q"
@@ -288,76 +298,44 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                 elseif objecttype == "stop_clip" then
                                     t[#t+1] = "Q"
                                     miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
-                                elseif objecttype == "special" then
-                                    metapost.specials.register(object.prescript)
                                 elseif objecttype == "text" then
                                     t[#t+1] = "q"
                                     local ot = object.transform -- 3,4,5,6,1,2
                                     t[#t+1] = format("%f %f %f %f %f %f cm",ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: format("%f %f m %f %f %f %f 0 0 cm",unpack(ot))
-                                    flusher.flushfigure(t) -- flush accumulated literals
+                                    flushfigure(t) -- flush accumulated literals
                                     t = { }
-                                    flusher.textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                    textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
                                     t[#t+1] = "Q"
                                 else
-                                    -- alternatively we can pass on the stack, could be a helper
-                                    -- can be optimized with locals
-                                    local currentobject = { -- not needed when no extensions
-                                        type = object.type,
-                                        miterlimit = object.miterlimit,
-                                        linejoin = object.linejoin,
-                                        linecap = object.linecap,
-                                        color = object.color,
-                                        dash = object.dash,
-                                        path = object.path,
-                                        htap = object.htap,
-                                        pen = object.pen,
-                                        prescript = object.prescript,
-                                        postscript = object.postscript,
-                                    }
-                                    --
-                                    local before, inbetween, after, grouped = nil, nil, nil, false
-                                    --
-                                    local cs, cr = currentobject.color, nil
-                                    -- todo document why ...
-                                    if cs and colorhandler and #cs > 0 and round(cs[1]*10000) == 123 then -- test in function
-                                        currentobject, cr = colorhandler(cs,currentobject,t,colorconverter)
-                                        objecttype = currentobject.type
-                                    end
-                                    --
-                                    local prescript = currentobject.prescript
-                                    if prescript and prescript ~= "" then
-                                        -- move test to function
-                                        local special = metapost.specials[prescript]
-                                        if special then
-                                            currentobject, before, inbetween, after, grouped = special(currentobject.postscript,currentobject,t,flusher)
-                                            objecttype = currentobject.type
-                                        end
-                                    end
-                                    --
-                                    cs = currentobject.color
-                                    if cs and #cs > 0 then
-                                        t[#t+1], cr = colorconverter(cs)
-                                    end
-                                    --
+                                    -- we use an indirect table as we want to overload
+                                    -- entries but this is not possible in userdata
+                                    local original = object
+                                    local object = { }
+                                    setmetatable(object, {
+                                        __index = original
+                                    })
+                                    -- first we analyze
+                                    local before, after = processplugins(object)
+                                    local objecttype = object.type -- can have changed
                                     if before then
-                                        currentobject, t = before()
+                                        t = pluginactions(before,t,flushfigure)
                                     end
-                                    local ml = currentobject.miterlimit
+                                    local ml = object.miterlimit
                                     if ml and ml ~= miterlimit then
                                         miterlimit = ml
                                         t[#t+1] = format("%f M",ml)
                                     end
-                                    local lj = currentobject.linejoin
+                                    local lj = object.linejoin
                                     if lj and lj ~= linejoin then
                                         linejoin = lj
                                         t[#t+1] = format("%i j",lj)
                                     end
-                                    local lc = currentobject.linecap
+                                    local lc = object.linecap
                                     if lc and lc ~= linecap then
                                         linecap = lc
                                         t[#t+1] = format("%i J",lc)
                                     end
-                                    local dl = currentobject.dash
+                                    local dl = object.dash
                                     if dl then
                                         local d = format("[%s] %i d",concat(dl.dashes or {}," "),dl.offset)
                                         if d ~= dashed then
@@ -368,14 +346,13 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                        t[#t+1] = "[] 0 d"
                                        dashed = false
                                     end
-                                    if inbetween then currentobject, t = inbetween() end
-                                    local path = currentobject.path
+                                    local path = object.path -- newpath
                                     local transformed, penwidth = false, 1
                                     local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                    local pen = currentobject.pen
+                                    local pen = object.pen
                                     if pen then
                                        if pen.type == 'elliptical' then
-                                            transformed, penwidth = pen_characteristics(object) -- boolean, value
+                                            transformed, penwidth = pen_characteristics(original) -- boolean, value
                                             t[#t+1] = format("%f w",penwidth) -- todo: only if changed
                                             if objecttype == 'fill' then
                                                 objecttype = 'both'
@@ -404,7 +381,7 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                     if transformed then
                                         t[#t+1] = "Q"
                                     end
-                                    local path = currentobject.htap
+                                    local path = object.htap
                                     if path then
                                         if transformed then
                                             t[#t+1] = "q"
@@ -425,22 +402,19 @@ function metapost.flush(result,flusher,askedfig) -- pdf flusher, table en dan co
                                             t[#t+1] = "Q"
                                         end
                                     end
-                                    if cr then
-                                        t[#t+1] = cr
-                                    end
                                     if after then
-                                        currentobject, t = after()
+                                        t = pluginactions(after,t,flushfigure)
                                     end
-                                    if grouped then
+                                    if object.grouped then
                                         -- can be qQ'd so changes can end up in groups
                                         miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                                     end
                                 end
-                           end
+                            end
                         end
                         t[#t+1] = "Q"
-                        flusher.flushfigure(t)
-                        flusher.stopfigure("end")
+                        flushfigure(t)
+                        stopfigure("end")
                     end
                     if askedfig then
                         break
@@ -455,6 +429,7 @@ function metapost.parse(result,askedfig)
     if result then
         local figures = result.fig
         if figures then
+            local analyzeplugins = metapost.analyzeplugins
             for f=1, #figures do
                 local figure = figures[f]
                 local fignum = figure:charcode() or 0
@@ -467,17 +442,14 @@ function metapost.parse(result,askedfig)
                     metapost.ury = ury
                     local objects = getobjects(result,figure,f)
                     if objects then
+                     -- for o=1,#objects do
+                     -- local object = objects[o]
+                     -- local prescript = object.prescript
+                     -- if prescript then
+                     --     analyzeplugins(object)
+                     -- end
                         for o=1,#objects do
-                            local object = objects[o]
-                            if object.type == "outline" then
-                                local prescript = object.prescript
-                                if prescript then
-                                    local special = metapost.specials[prescript]
-                                    if special then
-                                        special(object.postscript,object)
-                                    end
-                                end
-                           end
+                            analyzeplugins(objects[o])
                         end
                     end
                     break
@@ -537,23 +509,5 @@ function metapost.totable(result)
         }
     else
         return nil
-    end
-end
-
--- will be overloaded later
-
-function metapost.colorconverter()
-    return function(cr)
-        local n = #cr
-        if n == 4 then
-            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
-            return format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k), "0 g 0 G"
-        elseif n == 3 then
-            local r, g, b = cr[1], cr[2], cr[3]
-            return format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b), "0 g 0 G"
-        else
-            local s = cr[1]
-            return format("%.3f g %.3f G",s,s), "0 g 0 G"
-        end
     end
 end

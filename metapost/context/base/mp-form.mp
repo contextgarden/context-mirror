@@ -15,6 +15,11 @@
 
 boolean mant_font ; mant_font := true ; % signals graph not to load form
 
+if known mplib :
+    boolean fmt_loaded ; fmt_loaded := true ;
+    expandafter endinput
+fi ;
+
 if   known fmt_loaded : expandafter endinput fi ;
    boolean fmt_loaded ; fmt_loaded := true ;
 

@@ -238,7 +238,7 @@ local function leapyear(year)
 end
 
 local function nofdays(year,month)
-    return days[sleapyear(year)][month]
+    return days[isleapyear(year)][month]
 end
 
 local function year  () return date("%Y") end
@@ -700,34 +700,3 @@ end
 -- function converters.Alphabetic(n,code)
 --     do_alphabetic(n,counters[code] or counters['**'],uppercased)
 -- end
-
--- For the moment here:
-
-languages.firstcharacters = { }
-local firstcharacters     = languages.firstcharacters
-
--- korean:
-
-function firstcharacters.korean(chr)
-    local consonant
-    if     chr  < 0xAC00 then consonant = chr    -- original
-    elseif chr  > 0xD7AF then consonant = chr    -- original
-    elseif chr >= 0xD558 then consonant = 0x314E -- 하 => ㅎ
-    elseif chr >= 0xD30C then consonant = 0x314D -- 파 => ㅍ
-    elseif chr >= 0xD0C0 then consonant = 0x314C -- 타 => ㅌ
-    elseif chr >= 0xCE74 then consonant = 0x314B -- 카 => ㅋ
-    elseif chr >= 0xCC28 then consonant = 0x314A -- 차 => ㅊ
-    elseif chr >= 0xC790 then consonant = 0x3148 -- 자 => ㅈ
-    elseif chr >= 0xC544 then consonant = 0x3147 -- 아 => ㅇ
-    elseif chr >= 0xC0AC then consonant = 0x3145 -- 사 => ㅅ
-    elseif chr >= 0xBC14 then consonant = 0x3142 -- 바 => ㅂ
-    elseif chr >= 0xB9C8 then consonant = 0x3141 -- 마 => ㅁ
-    elseif chr >= 0xB77C then consonant = 0x3139 -- 라 => ㄹ
-    elseif chr >= 0xB2E4 then consonant = 0x3137 -- 다 => ㄷ
-    elseif chr >= 0xB098 then consonant = 0x3134 -- 나 => ㄴ
-    elseif chr >= 0xAC00 then consonant = 0x3131 -- 가 => ㄱ -- was 0xAC20
-    else                      consonant = chr    -- can't happen
-    end
- -- print(format("korean: 0x%04X 0x%04X",chr,consonant))
-    return consonant
-end

@@ -279,7 +279,9 @@ function tfm.scale(tfmtable, scaledpoints, relativeid)
  -- tfm.prepare_base_kerns(tfmtable) -- optimalization
     local t = { } -- the new table
     local scaledpoints, delta, units = tfm.calculatescale(tfmtable, scaledpoints, relativeid)
+    -- is just a trigger for the backend
     t.units_per_em = units or 1000
+    --
     local hdelta, vdelta = delta, delta
     -- unicoded unique descriptions shared cidinfo characters changed parameters indices
     for k,v in next, tfmtable do
