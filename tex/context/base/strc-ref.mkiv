@@ -926,9 +926,9 @@
 \setvalue{\??rf\c!interaction\v!all}%
   {\leftofreference
    \the\leftreferencetoks
-   \leftofreferencecontent
+   \doifsometokselse\leftreferencetoks \leftofreferencecontent \donothing
    \currentreferencecontent
-   \rightofreferencecontent
+   \doifsometokselse\rightreferencetoks\rightofreferencecontent\donothing
    \the\rightreferencetoks
    \rightofreference}
 
@@ -988,7 +988,10 @@
        \defaultrightreferencetoks
        \let\rightofreferencecontent\empty
      \fi
-   \goto{\referencesequence}[#4]%
+   \doifreferencefoundelse{#4} % we need to resolve the text
+     {\goto{\referencesequence}[#4]}
+     {\let\currentreferencecontent\dummyreference
+      \goto{\referencesequence}[#4]}%
    \dostopgotoreference}
 
 \unexpanded\def\dospecialin{\dostartgotoreference\let\currentreferencecontent\currentreferencedefault\dopickupgotoreference}

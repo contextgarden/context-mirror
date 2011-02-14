@@ -82,10 +82,14 @@ function helpers.textopener(tag,filename,filehandle)
     elseif trace_locating then
         report_tex("%s opener, '%s' opened",tag,filename)
     end
+    local noflines = #lines
+    if lines[noflines] == "" then -- maybe some special check is needed
+        lines[noflines] = nil
+    end
     logs.show_open(filename)
     return {
         filename    = filename,
-        noflines    = #lines,
+        noflines    = noflines,
         currentline = 0,
         close       = function()
             if trace_locating then
