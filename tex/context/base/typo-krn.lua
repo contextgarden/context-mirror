@@ -80,7 +80,7 @@ kerns.keeptogether = false -- just for fun (todo: control setting with key/value
 
 -- can be optimized .. the prev thing .. but hardly worth the effort
 
-local function do_process(namespace,attribute,head,force)
+local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
 local keepligature = kerns.keepligature
 local keeptogether = kerns.keeptogether
@@ -130,7 +130,7 @@ if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start)
     -- keep 'm
 else
                             prev.subtype = userkern_code
-                            prev.kern = prev.kern + quaddata[lastfont]*krn
+                            prev.kern = prev.kern + quaddata[lastfont]*krn -- here
                             done = true
 end
                         elseif pid == glyph_code then
@@ -141,12 +141,12 @@ if keeptogether and keeptogether(prev,start) then
 else
                                 local kerns = chardata[lastfont][prevchar].kerns
                                 local kern = kerns and kerns[lastchar] or 0
-                                krn = kern + quaddata[lastfont]*krn
+                                krn = kern + quaddata[lastfont]*krn -- here
                                 insert_node_before(head,start,new_kern(krn))
                                 done = true
 end
                             else
-                                krn = quaddata[lastfont]*krn
+                                krn = quaddata[lastfont]*krn -- here
                                 insert_node_before(head,start,new_kern(krn))
                                 done = true
                             end
@@ -201,9 +201,9 @@ end
                                     local prevchar, lastchar = prv.char, start.char
                                     local kerns = chardata[lastfont][prevchar].kerns
                                     local kern = kerns and kerns[lastchar] or 0
-                                    krn = kern + quaddata[lastfont]*krn
+                                    krn = kern + quaddata[lastfont]*krn -- here
                                 else
-                                    krn = quaddata[lastfont]*krn
+                                    krn = quaddata[lastfont]*krn -- here
                                 end
                                 disc.replace = new_kern(krn)
                             end

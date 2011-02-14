@@ -479,6 +479,9 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             local l = lower[sc]
             n = n + 1
             l = l and utfbyte(l) or lccodes[b]
+            if type(l) == "table" then
+                l = l[1] -- there are currently no tables in lccodes but it can be some, day
+            end
             z_case[n] = l
             if l ~= b then
                 m_case[n] = l - 1

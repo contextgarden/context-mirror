@@ -15,7 +15,6 @@
 
 \registerctxluafile{char-def}{1.001} % let's load this one first
 \registerctxluafile{char-ini}{1.001}
-\registerctxluafile{char-cmp}{1.001} % maybe we will load this someplace else
 \registerctxluafile{char-map}{1.001} % maybe we will load this someplace else
 \registerctxluafile{char-tex}{1.001}
 
@@ -49,17 +48,10 @@
 %D them (unless of course we have adapted the table). It is on the agenda
 %D to do this with \type {tex.lccode} cum suis once they're available.
 
-\def\setcclcuc#1#2#3{\global\catcode#1=\lettercatcode\global\lccode#1=#2\global\uccode#1=#3\relax}
-\def\setcclcucself#1{\global\catcode#1=\lettercatcode\global\lccode#1=#1\global\uccode#1=#1\relax }
+% \def\setcclcuc#1#2#3{\global\catcode#1=\lettercatcode\global\lccode#1=#2\global\uccode#1=#3\relax}
+% \def\setcclcucself#1{\global\catcode#1=\lettercatcode\global\lccode#1=#1\global\uccode#1=#1\relax }
 
 \ctxlua{characters.setcodes()}
-
-%D There may be a problem with the turkisch patterns. By now it's taken care of in
-%D ctxtools (thanks to Mojca). There seems to be a bug in the patterns (^^11 refers
-%D to a double quote but it should be ^^19 since the original is in ec encoding).
-
-% \setcclcuc "201C "201C "201C
-% \setcclcuc "201D "201D "201D
 
 % Is setting up vrb tpa and tpb needed?
 
