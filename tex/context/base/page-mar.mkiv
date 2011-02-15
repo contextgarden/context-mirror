@@ -271,8 +271,10 @@
             \v!no=>\let\margincontentalign\v!normal,
          \v!inner=>\let\margincontentalign#1,
          \v!outer=>\let\margincontentalign#2,
+    \v!flushright=>\let\margincontentalign\v!left,
           \v!left=>\let\margincontentalign\v!left,
         \v!middle=>\let\margincontentalign\v!middle,
+     \v!flushleft=>\let\margincontentalign\v!right,
          \v!right=>\let\margincontentalign\v!right]%
    \doifvaluesomething{\??im\margincontenttag\c!align} % watch {} around set
      {\edef\margincontentalign{{\getvalue{\??im\margincontenttag\c!align},\margincontentalign}}}%

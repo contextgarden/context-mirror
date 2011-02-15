@@ -6,12 +6,14 @@ if not modules then modules = { } end modules ['char-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: make two files, one for format generation, one for format use
+
 local tex = tex
 local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
 local concat, unpack = table.concat, table.unpack
-local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
+local next, tonumber, type, rawget, rawset, setmetatable = next, tonumber, type, rawget, rawset, setmetatable
 local texsprint, texprint = tex.sprint, tex.print
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
 local texsetlccode, texsetuccode, texsetsfcode, texsetcatcode  = tex.setlccode, tex.setuccode, tex.setsfcode, tex.setcatcode
@@ -46,21 +48,6 @@ else
     report_defining("fatal error: 'char-def.lua' is not loaded")
     os.exit()
 end
-
-if not characters.ranges then
-    local ranges, r = allocate { }, 0
-    characters.ranges = ranges
-    for k, v in next, data do
-        if v.range then
-            r = r + 1
-            ranges[r] = v
-        end
-    end
-end
-
-storage.register("characters/ranges",characters.ranges,"characters.ranges")
-
-local ranges = characters.ranges
 
 --[[ldx--
 <p>This converts a string (if given) into a number.</p>
@@ -105,43 +92,19 @@ local private = {
     description = "PRIVATE SLOT",
 }
 
-local extenders = { }
+-- Hangul Syllable
 
-setmetatablekey(data, "__index", function(t,k)
-    if type(k) == "string" then
-        k = lpegmatch(pattern,k) or utfbyte(k)
-        if k then
-            local tk = rawget(t,k)
-            if tk then
-                return tk
-            else
-                -- goes to ranges
-            end
-        else
-            return private
-        end
-    end
-    if k < 0xF0000 then
-        for r=1,#ranges do
-            local rr = ranges[r].range
-            local first, last = rr.first, rr.last
-            if k >= first and k <= last then
-                local v = t[first]
-                local extender = extenders[v.description]
-                if extender then
-                    v = extender(k,v)
-                end
-                t[k] = v
-                return v
-            end
-        end
-    end
-    return private -- handy for when we loop over characters in fonts and check for a property
-end )
+local hangul_syllable_metatable = {
+    __index = {
+        category    = "lo",
+        cjkwd       = "w",
+        description = "<Hangul Syllable>",
+        direction   = "l",
+        linebreak   = "h2",
+    }
+}
 
-local metatables = { }
-
-extenders["<Hangul Syllable>"] = function(k,v)
+local hangul_syllable_extender = function(k,v)
     local shcode = -- for the moment we misuse the shcode .. in fact we should have the components
        k  < 0xAC00 and k      -- original
     or k  > 0xD7AF and k      -- original
@@ -161,22 +124,142 @@ extenders["<Hangul Syllable>"] = function(k,v)
     or k >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
     or k                      -- can't happen
     local t = {
-     -- category    = "lo",
-     -- cjkwd       = "w",
-     -- description = "<Hangul Syllable>",
-     -- direction   = "l",
-     -- linebreak   = "h2",
         shcode      = shcode,
         unicodeslot = k,
     }
-    local m = metatables[v]
-    if not m then
-        m = { __index = v }
-        metatables[v] = m
-    end
-    setmetatable(t,m)
+    setmetatable(t,hangul_syllable_metatable)
     return t
 end
+
+local hangul_syllable_range = {
+    first    = 0xAC00,
+    last     = 0xD7A3,
+    extender = hangul_syllable_extender,
+}
+
+setmetatable(hangul_syllable_range, hangul_syllable_metatable)
+
+-- CJK Ideograph
+
+local cjk_ideograph_metatable = {
+    __index = {
+        category    = "lo",
+        cjkwd       = "w",
+        description = "<CJK Ideograph>",
+        direction   = "l",
+        linebreak   = "id",
+    }
+}
+
+local cjk_ideograph_extender = function(k,v)
+    local t = {
+     -- shcode      = shcode,
+        unicodeslot = k,
+    }
+    setmetatable(t,cjk_ideograph_metatable)
+    return t
+end
+
+local cjk_ideograph_range = {
+    first    = 0x4E00,
+    last     = 0x9FBB,
+    extender = cjk_ideograph_extender,
+}
+
+-- CJK Ideograph Extension A
+
+local cjk_ideograph_extension_a_metatable = {
+    __index = {
+        category    = "lo",
+        cjkwd       = "w",
+        description = "<CJK Ideograph Extension A>",
+        direction   = "l",
+        linebreak   = "id",
+    }
+}
+
+local cjk_ideograph_extension_a_extender = function(k,v)
+    local t = {
+     -- shcode      = shcode,
+        unicodeslot = k,
+    }
+    setmetatable(t,cjk_ideograph_extension_a_metatable)
+    return t
+end
+
+local cjk_ideograph_extension_a_range = {
+    first    = 0x3400,
+    last     = 0x4DB5,
+    extender = cjk_ideograph_extension_a_extender,
+}
+
+-- CJK Ideograph Extension B
+
+local cjk_ideograph_extension_b_metatable = {
+    __index = {
+        category    = "lo",
+        cjkwd       = "w",
+        description = "<CJK Ideograph Extension B>",
+        direction   = "l",
+        linebreak   = "id",
+    }
+}
+
+local cjk_ideograph_extension_b_extender = function(k,v)
+    local t = {
+     -- shcode      = shcode,
+        unicodeslot = k,
+    }
+    setmetatable(t,cjk_ideograph_extension_b_metatable)
+    return t
+end
+
+local cjk_ideograph_extension_b_range = {
+    first    = 0x20000,
+    last     = 0x2A6D6,
+    extender = cjk_ideograph_extension_b_extender,
+}
+
+-- Ranges
+
+local ranges = {
+    hangul_syllable_range,
+    cjk_ideograph_range,
+    cjk_ideograph_extension_a_range,
+    cjk_ideograph_extension_b_range,
+}
+
+--
+
+setmetatablekey(data, "__index", function(t,k)
+    if type(k) == "string" then
+        k = lpegmatch(pattern,k) or utfbyte(k)
+        if k then
+            local tk = rawget(t,k)
+            if tk then
+                return tk
+            else
+                -- goes to ranges
+            end
+        else
+            return private
+        end
+    end
+    if k < 0xF0000 then
+        for r=1,#ranges do
+            local rr = ranges[r]
+            if k >= rr.first and k <= rr.last then
+                local extender = rr.extender
+                if extender then
+                    v = extender(k,v)
+                end
+                t[k] = v
+                return v
+            end
+        end
+    end
+    return private -- handy for when we loop over characters in fonts and check for a property
+end )
 
 --~ setmetatable(data,{ __index = function(t,k) return "" end }) -- quite old, obsolete
 
@@ -760,6 +843,7 @@ setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = 
 setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 
 characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
+characters.descriptions = allocate()  local descriptions = characters.descriptions -- lazy table
 
 setmetatable(specialchars, { __index = function(t,u)
     if u then
@@ -787,6 +871,33 @@ setmetatable(specialchars, { __index = function(t,u)
         end
     end
 end } )
+
+setmetatable(descriptions, { __index = function(t,k)
+    -- 0.05 - 0.10 sec
+    for u, c in next, data do
+        local d = c.description
+        if d then
+            d = gsub(d," ","")
+            d = lower(d)
+            t[d] = u
+        end
+    end
+    local d = rawget(t,k)
+    if not d then
+        t[k] = k
+    end
+    return d
+end } )
+
+function characters.unicodechar(asked)
+    local n = tonumber(asked)
+    if n then
+        return n
+    elseif type(asked) == "string" then
+        asked = gsub(asked," ","")
+        return descriptions[asked]
+    end
+end
 
 function characters.lower(str)
     local new, n = { }, 0
