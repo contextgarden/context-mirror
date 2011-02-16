@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 
 -- figures.boxnumber can go as we now can use names
 
+-- avoid push
+
 --[[
 The ConTeXt figure inclusion mechanisms are among the oldest code
 in ConTeXt and evolve dinto a complex whole. One reason is that we
@@ -40,7 +42,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 local format, lower, find, match, gsub, gmatch = string.format, string.lower, string.find, string.match, string.gsub, string.gmatch
 local texbox = tex.box
 local contains = table.contains
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -251,11 +253,10 @@ end
 
 -- interfacing to tex
 
-
 local figuredata = { }
 local callstack  = { }
 
-function figures.new() -- we could use metatables status -> used -> request but it needs testing
+local function new() -- we could use metatables status -> used -> request but it needs testing
     local request = {
         name       = false,
         label      = false,
@@ -267,6 +268,7 @@ function figures.new() -- we could use metatables status -> used -> request but 
         ["repeat"] = false,
         controls   = false,
         display    = false,
+        mask       = false,
         conversion = false,
         resolution = false,
         cache      = false,
@@ -291,30 +293,28 @@ function figures.new() -- we could use metatables status -> used -> request but 
     }
  -- setmetatable(status, { __index = used })
  -- setmetatable(used,   { __index = request })
-    figuredata = {
+    return {
         request = request,
         used    = used,
         status  = status,
     }
-    return figuredata
 end
 
+ -- use table.insert|remove
+
 function figures.push(request)
-    local ncs = #callstack + 1
-    if ncs == 1 then
-        statistics.starttiming(figures)
-    end
-    local figuredata = figures.new()
+    statistics.starttiming(figures)
+    insert(callstack,figuredata)
+    figuredata = new()
     if request then
-    local iv = interfaces.variables
     --  request.width/height are strings and are only used when no natural dimensions
     --  can be determined; at some point the handlers might set them to numbers instead
     --  local w, h = tonumber(request.width), tonumber(request.height)
         request.page       = math.max(tonumber(request.page) or 1,1)
         request.size       = img.checksize(request.size)
-        request.object     = iv[request.object] == variables.yes
-        request["repeat"]  = iv[request["repeat"]] == variables.yes
-        request.preview    = iv[request.preview] == variables.yes
+        request.object     = request.object == variables.yes
+        request["repeat"]  = request["repeat"] == variables.yes
+        request.preview    = request.preview == variables.yes
         request.cache      = request.cache ~= "" and request.cache
         request.prefix     = request.prefix ~= "" and request.prefix
         request.format     = request.format ~= "" and request.format
@@ -322,17 +322,17 @@ function figures.push(request)
     --  request.height     = (h and h > 0) or false
         table.merge(figuredata.request,request)
     end
-    callstack[ncs] = figuredata
     return figuredata
 end
 
 function figures.pop()
-    local ncs = #callstack
-    figuredata = callstack[ncs]
-    callstack[ncs] = nil
-    if ncs == 1 then
-        statistics.stoptiming(figures)
-    end
+    figuredata = remove(callstack) or figuredata
+    statistics.stoptiming(figures)
+    return figuredata
+end
+
+function figures.current()
+    return figuredata -- callstack[#callstack]
 end
 
 function figures.get(category,tag,default)
@@ -347,10 +347,6 @@ end
 
 function figures.tprint(category,tag,default)
     context(figures.get(category,tag,default))
-end
-
-function figures.current()
-    return callstack[#callstack]
 end
 
 local defaultformat = "pdf"
@@ -812,9 +808,11 @@ function existers.generic(askedname,resolve)
     end
     return result
 end
+
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
+    local mask = dr.mask or "none"
     local conversion = dr.conversion
     local resolution = dr.resolution
     if not conversion or conversion == "" then
@@ -824,10 +822,12 @@ function checkers.generic(data)
         resolution = "unknown"
     end
     local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion .. "->" .. resolution
+        .. "->" .. mask
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new { filename = name, page = page, pagebox = dr.size }
         codeinjections.setfigurecolorspace(data,figure)
+        codeinjections.setfiguremask(data,figure)
         figure = (figure and img.scan(figure)) or false
         local f, d = codeinjections.setfigurealternative(data,figure)
         figure, data = f or figure, d or data
@@ -855,6 +855,7 @@ function checkers.generic(data)
     end
     return data
 end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'

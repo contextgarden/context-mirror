@@ -79,7 +79,7 @@
   {\egroup}
 
 \def\doclonefonta#1#2% kind of dododefinefont
-  {\ctxlua{fonts.collections.message("defining #1 (relative scale: #2)")}%
+  {\ctxlua{fonts.collections.message("defining #1 (relative scale: #2)")}% brrr
    \autofontsizefalse
    \let\lastfontidentifier\s!dummy
    \def\localrelativefontsize{#2}%
@@ -99,7 +99,6 @@
 \def\doclonefontstagetwo#1%
   {\ctxlua{fonts.collections.stage_2("#1")}}
 
-
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)
 
@@ -111,16 +110,7 @@
 %
 % \definefontsynonym[SerifPlus][Serif][fallbacks=whatever]
 %
-% \definefont[MySerif][SerifPlus at 10pt]
-%
-% \startcolumns[n=6]
-%     \MySerif
-%     \dostepwiserecurse {0} {65000} {1} {
-%         \iffontchar\font\recurselevel
-%             {\tttf\uchexnumbers\recurselevel:} \char\recurselevel\par
-%         \fi
-%     }
-% \stopcolumns
+% \showfont[SerifPlus][all]
 
 % \definefontfeature[zh][mode=node,script=hang,lang=zhs]
 % \definefontfallback[serifwhatever]          [lmroman10-regular]   [0x0000-0x0400][force=yes]

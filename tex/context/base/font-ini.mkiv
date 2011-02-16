@@ -687,8 +687,8 @@
 
 \let\relativefontid\empty
 
-\def\lowleveldefinefont#1#2% #2 = cs
-  {%
+\unexpanded\def\lowleveldefinefont#1#2% #2 = cs
+  {% we can now set more at the lua end
    \ctxlua{fonts.definers.stage_one("\luaescapestring{#1}")}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\scaledfontmode\relax
@@ -709,6 +709,7 @@
      % scaled, don't use this one as it's unpredictable
      \scaledfontsize-\somefontsize\scaledpoint
    \fi
+   \relax
    \scaledfontsize\localrelativefontsize\scaledfontsize
    \ifautofontsize
      \scaledfontsize\currentfontbodyscale\scaledfontsize
@@ -735,7 +736,8 @@
       "\@@fontclassgoodies", % experiment (not yet used)
       "\@@fontgoodies" % experiment
    )}%
-   \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
+%    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
+   \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
    \the\everydefinefont}
 

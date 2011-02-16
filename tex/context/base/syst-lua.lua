@@ -91,17 +91,17 @@ end
 
 local splitter = lpegsplitat(S(". "))
 
-function commands.doifolderversionelse(one,two) -- no checking done
+function commands.doifolderversionelse(one,two) -- one >= two
     if not two then
         one, two = environment.version, one
     elseif one == "" then
         one = environment.version
     end
-    local y_1, m_1, d_1 = lpeg.match(splitter,one)
-    local y_2, m_2, d_2 = lpeg.match(splitter,two)
-    commands.testcase ( not (
-        (tonumber(y_2) or  0) >= (tonumber(y_1) or 0) and
-        (tonumber(m_2) or 99) >= (tonumber(m_1) or 0) and
-        (tonumber(d_2) or 99) >= (tonumber(d_1) or 0)
-    ) )
+    local y_1, m_1, d_1 = lpegmatch(splitter,one)
+    local y_2, m_2, d_2 = lpegmatch(splitter,two)
+    commands.testcase (
+        (tonumber(y_1) or 0) >= (tonumber(y_2) or 0) and
+        (tonumber(m_1) or 0) >= (tonumber(m_2) or 0) and
+        (tonumber(d_1) or 0) >= (tonumber(d_1) or 0)
+    )
 end

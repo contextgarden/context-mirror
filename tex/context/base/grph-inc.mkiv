@@ -148,6 +148,7 @@
    \let\@@efpage      \!!zerocount
    \let\@@efobject    \@@exobject
    \let\@@efdisplay   \empty
+   \let\@@efmask      \empty
    %
    \let\@@efpreset    \v!yes
    \let\@@efsplit     \empty
@@ -255,6 +256,7 @@
         controls   = "\@@efcontrols",
         preview    = "\@@efpreview",
         display    = "\@@efdisplay",
+        mask       = "\@@efmask",
         conversion = "\@@efconversion",
         resolution = "\@@efresolution",
         color      = "\internalspotcolorparent\@@efcolor", % hack is needed
@@ -372,7 +374,7 @@
 \def\dogetfiguredimensions[#1][#2]%
   {\startnointerference
      \settrue\testexternalfigureonly
-     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
+     \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
 \let\getfiguredimensionsonly\getfiguredimensions
@@ -393,7 +395,7 @@
      \testexternalfigureonly
      \setfalse\externalfigureflush % == test ?
      \externalfigure[#1][#2][#3]% or \doexternalfigure
-     \externalfigure[#1][#2,\c!display=,\c!object=\v!no]%
+     \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
 % helpers (will be replaced when xforms are accessible at the lua end)
