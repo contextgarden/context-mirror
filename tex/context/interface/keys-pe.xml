@@ -275,6 +275,7 @@
 		<cd:variable name='marginedge' value='لبه‌حاشیه'/>
 		<cd:variable name='margintitle' value='عنوان‌حاشیه'/>
 		<cd:variable name='marking' value='نشانه‌گذاری'/>
+		<cd:variable name='mask' value='mask'/>
 		<cd:variable name='mathalignment' value='تنظیم‌ریاضی'/>
 		<cd:variable name='mathcases' value='حالتهای‌ریاضی'/>
 		<cd:variable name='mathmatrix' value='ماتریش‌ریاضی'/>
@@ -987,6 +988,7 @@
 		<cd:constant name='textstate' value='وضعیت‌متن'/>
 		<cd:constant name='textstyle' value='سبک‌متن'/>
 		<cd:constant name='textwidth' value='عرض‌متن'/>
+		<cd:constant name='threshold' value='threshold'/>
 		<cd:constant name='title' value='عنوان'/>
 		<cd:constant name='titlecolor' value='رنگ‌عنوان'/>
 		<cd:constant name='titlecommand' value='فرمان‌عنوان'/>

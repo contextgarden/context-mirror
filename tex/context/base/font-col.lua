@@ -146,6 +146,8 @@ function collections.stage_2(name)
     statistics.stoptiming(fonts)
 end
 
+-- we already have this parser
+
 local P, Cc = lpeg.P, lpeg.Cc
 local spec = (P("sa") + P("at") + P("scaled") + P("at") + P("mo")) * P(" ")^1 * (1-P(" "))^1 * P(" ")^0 * -1
 local okay = ((1-spec)^1 * spec * Cc(true)) + Cc(false)
@@ -190,7 +192,7 @@ function collections.message(message)
     end
 end
 
-function collections.process(head)
+function collections.process(head) -- this way we keep feature processing
     if active then
         local done = false
         for n in traverse_id(glyph,head) do

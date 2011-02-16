@@ -104,6 +104,7 @@ backends.codeinjections = {
 
     setfigurecolorspace    = nothing,
     setfigurealternative   = nothing,
+    setfiguremask          = nothing,
 
     enabletags             = nothing,
 
@@ -155,7 +156,7 @@ backends.tables = {
 
 backends.current = "unknown"
 
-function backends.install(what)
+function backends.install(what) -- these can become metatables
     if type(what) == "string" then
         local backend = backends[what]
         if backend then

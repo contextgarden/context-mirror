@@ -434,11 +434,11 @@ end
 -- graphics
 
 function codeinjections.setfigurealternative(data,figure)
-    local display = data.request.display
+    local request = data.request
+    local display = request.display
     if display and display ~= ""  then
-        local request = data.request
-        figures.push {
-            name   = request.display,
+        local nested = figures.push {
+            name   = display,
             page   = request.page,
             size   = request.size,
             prefix = request.prefix,
@@ -461,8 +461,41 @@ function codeinjections.setfigurealternative(data,figure)
                 Alternates = pdfreference(pdfimmediateobject(tostring(a))),
             }
             displayfigure.attr = d()
-            return displayfigure, figures.current()
+            figures.pop()
+            return displayfigure, nested
+        else
+            figures.pop()
         end
+    end
+end
+
+function codeinjections.setfiguremask(data,figure) -- mark
+    local request = data.request
+    local mask = request.mask
+    if mask and mask ~= ""  then
+        figures.push {
+            name   = mask,
+            page   = request.page,
+            size   = request.size,
+            prefix = request.prefix,
+            cache  = request.cache,
+            width  = request.width,
+            height = request.height,
+        }
+        figures.identify()
+        local maskfigure = figures.check()
+        if maskfigure then
+            local image = maskfigure.status.private
+            if image then
+                img.immediatewrite(image)
+                local d = pdfdictionary {
+                    Interpolate  = false,
+                    SMask        = pdfreference(image.objnum),
+                }
+                figure.attr = d()
+            end
+        end
+        figures.pop()
     end
 end
 

@@ -275,6 +275,7 @@
 		<cd:variable name='marginedge' value='bordmarge'/>
 		<cd:variable name='margintitle' value='titremarge'/>
 		<cd:variable name='marking' value='marquage'/>
+		<cd:variable name='mask' value='mask'/>
 		<cd:variable name='mathalignment' value='mathalignment'/>
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathmatrix' value='mathmatrix'/>
@@ -987,6 +988,7 @@
 		<cd:constant name='textstate' value='etattexte'/>
 		<cd:constant name='textstyle' value='styletexte'/>
 		<cd:constant name='textwidth' value='largeurtexte'/>
+		<cd:constant name='threshold' value='threshold'/>
 		<cd:constant name='title' value='titre'/>
 		<cd:constant name='titlecolor' value='couleurtitre'/>
 		<cd:constant name='titlecommand' value='titlecommand'/>

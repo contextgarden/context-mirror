@@ -57,6 +57,7 @@ also ignore the empty nodes. [This is obsolete!]</p>
 local traverse, traverse_id = node.traverse, node.traverse_id
 local free_node, remove_node = node.free, node.remove
 local insert_node_before, insert_node_after = node.insert_before, node.insert_after
+local slide_nodes = node.slide
 
 local allocate = utilities.storage.allocate
 
@@ -346,16 +347,26 @@ function nodes.reference(n)
     return lpegmatch(reference,tostring(n))
 end
 
+function nodes.link(n,...) -- blobs ?
+    if type(n) ~= "table" then
+        n = { n, ... }
+    end
+    local head = n[1]
+    local tail = slide_nodes(head)
+    for i=2,#n do
+        local ni = n[i]
+        tail.next = ni
+        ni.prev = tail
+        tail = slide_nodes(ni)
+    end
+    return head
+end
+
 --
 
 if not node.next then
 
-    function node.next(n)
-        return n and n.next
-    end
-
-    function node.prev(n)
-        return n and n.prev
-    end
+    function node.next(n) return n and n.next end
+    function node.prev(n) return n and n.prev end
 
 end

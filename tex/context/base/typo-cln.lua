@@ -57,13 +57,13 @@ local function process(namespace,attribute,head)
                     -- some day, not much change that \SS ends up here
                 else
                     n.char = upper
-                    inline = true
                     done = true
                     if trace_autocase then
                         report_autocase("")
                     end
                 end
             end
+            inline = true
         end
     end
     return head, done

@@ -10483,6 +10483,9 @@ return {
    ["pe"]="عرض‌متن",
    ["ro"]="latimetext",
   },
+  ["threshold"]={
+   ["en"]="threshold", -- rather international term
+  },
   ["title"]={
    ["cs"]="titul",
    ["de"]="titel",
@@ -12593,6 +12596,10 @@ return {
    ["nl"]="scherm",
    ["pe"]="نمایش",
    ["ro"]="display",
+  },
+  ["mask"]={
+   ["en"]="mask",
+   ["nl"]="masker",
   },
   ["dot"]={
    ["cs"]="tecka",
