@@ -94,37 +94,83 @@ local private = {
 
 -- Hangul Syllable
 
+--~ local hangul_syllable_metatable = {
+--~     __index = {
+--~         category    = "lo",
+--~         cjkwd       = "w",
+--~         description = "<Hangul Syllable>",
+--~         direction   = "l",
+--~         linebreak   = "h2",
+--~     }
+--~ }
+
+--~ local hangul_syllable_extender = function(k,v)
+--~     local fscode = -- firstsplitcode
+--~        k  < 0xAC00 and k      -- original
+--~     or k  > 0xD7AF and k      -- original
+--~     or k >= 0xD558 and 0x314E -- 하 => ㅎ
+--~     or k >= 0xD30C and 0x314D -- 파 => ㅍ
+--~     or k >= 0xD0C0 and 0x314C -- 타 => ㅌ
+--~     or k >= 0xCE74 and 0x314B -- 카 => ㅋ
+--~     or k >= 0xCC28 and 0x314A -- 차 => ㅊ
+--~     or k >= 0xC790 and 0x3148 -- 자 => ㅈ
+--~     or k >= 0xC544 and 0x3147 -- 아 => ㅇ
+--~     or k >= 0xC0AC and 0x3145 -- 사 => ㅅ
+--~     or k >= 0xBC14 and 0x3142 -- 바 => ㅂ
+--~     or k >= 0xB9C8 and 0x3141 -- 마 => ㅁ
+--~     or k >= 0xB77C and 0x3139 -- 라 => ㄹ
+--~     or k >= 0xB2E4 and 0x3137 -- 다 => ㄷ
+--~     or k >= 0xB098 and 0x3134 -- 나 => ㄴ
+--~     or k >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
+--~     or k                      -- can't happen
+--~     local t = {
+--~         fscode      = fscode,
+--~         unicodeslot = k,
+--~     }
+--~     setmetatable(t,hangul_syllable_metatable)
+--~     return t
+--~ end
+
+local hangul_syllable_basetable = {
+    category    = "lo",
+    cjkwd       = "w",
+    description = "<Hangul Syllable>",
+    direction   = "l",
+    linebreak   = "h2",
+}
+
 local hangul_syllable_metatable = {
-    __index = {
-        category    = "lo",
-        cjkwd       = "w",
-        description = "<Hangul Syllable>",
-        direction   = "l",
-        linebreak   = "h2",
-    }
+    __index = function(t,k)
+        if k == "fscode" then
+            local u = t.unicodeslot
+            local fscode = -- firstsplitcode
+               u  < 0xAC00 and nil    -- original
+            or u  > 0xD7AF and nil    -- original
+            or u >= 0xD558 and 0x314E -- 하 => ㅎ
+            or u >= 0xD30C and 0x314D -- 파 => ㅍ
+            or u >= 0xD0C0 and 0x314C -- 타 => ㅌ
+            or u >= 0xCE74 and 0x314B -- 카 => ㅋ
+            or u >= 0xCC28 and 0x314A -- 차 => ㅊ
+            or u >= 0xC790 and 0x3148 -- 자 => ㅈ
+            or u >= 0xC544 and 0x3147 -- 아 => ㅇ
+            or u >= 0xC0AC and 0x3145 -- 사 => ㅅ
+            or u >= 0xBC14 and 0x3142 -- 바 => ㅂ
+            or u >= 0xB9C8 and 0x3141 -- 마 => ㅁ
+            or u >= 0xB77C and 0x3139 -- 라 => ㄹ
+            or u >= 0xB2E4 and 0x3137 -- 다 => ㄷ
+            or u >= 0xB098 and 0x3134 -- 나 => ㄴ
+            or u >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
+            or                 nil    -- can't happen
+            t[k] = fscode
+            return fscode
+        else
+            return hangul_syllable_basetable[k]-- no store
+        end
+    end
 }
 
 local hangul_syllable_extender = function(k,v)
-    local shcode = -- for the moment we misuse the shcode .. in fact we should have the components
-       k  < 0xAC00 and k      -- original
-    or k  > 0xD7AF and k      -- original
-    or k >= 0xD558 and 0x314E -- 하 => ㅎ
-    or k >= 0xD30C and 0x314D -- 파 => ㅍ
-    or k >= 0xD0C0 and 0x314C -- 타 => ㅌ
-    or k >= 0xCE74 and 0x314B -- 카 => ㅋ
-    or k >= 0xCC28 and 0x314A -- 차 => ㅊ
-    or k >= 0xC790 and 0x3148 -- 자 => ㅈ
-    or k >= 0xC544 and 0x3147 -- 아 => ㅇ
-    or k >= 0xC0AC and 0x3145 -- 사 => ㅅ
-    or k >= 0xBC14 and 0x3142 -- 바 => ㅂ
-    or k >= 0xB9C8 and 0x3141 -- 마 => ㅁ
-    or k >= 0xB77C and 0x3139 -- 라 => ㄹ
-    or k >= 0xB2E4 and 0x3137 -- 다 => ㄷ
-    or k >= 0xB098 and 0x3134 -- 나 => ㄴ
-    or k >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
-    or k                      -- can't happen
     local t = {
-        shcode      = shcode,
         unicodeslot = k,
     }
     setmetatable(t,hangul_syllable_metatable)
@@ -825,22 +871,22 @@ setmetatable(categories, { __index = function(t,u) if u then local c = data[u] c
 characters.lccodes = allocate()  local lccodes = characters.lccodes -- lazy table
 characters.uccodes = allocate()  local uccodes = characters.uccodes -- lazy table
 characters.shcodes = allocate()  local shcodes = characters.shcodes -- lazy table
+characters.fscodes = allocate()  local fscodes = characters.fscodes -- lazy table
 
 setmetatable(lccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
 setmetatable(uccodes, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
 setmetatable(shcodes, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
+setmetatable(fscodes, { __index = function(t,u) if u then local c = data[u] c = c and c.fscode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end } )
 
 characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy table
 characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
 characters.shchars = allocate()  local shchars = characters.shchars -- lazy table
-
---~ setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
---~ setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfchar  (c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
---~ setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+characters.fschars = allocate()  local fschars = characters.fschars -- lazy table
 
 setmetatable(lcchars, { __index = function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 setmetatable(ucchars, { __index = function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 setmetatable(shchars, { __index = function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
+setmetatable(fschars, { __index = function(t,u) if u then local c = data[u] c = c and c.fscode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end } )
 
 characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
 characters.descriptions = allocate()  local descriptions = characters.descriptions -- lazy table
