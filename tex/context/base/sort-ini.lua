@@ -37,7 +37,7 @@ relatively easy to do.</p>
 
 <p>Todo: investigate what standards and conventions there are and see
 how they map onto this mechanism. I've learned that users can come up
-with any demand so nothign here is frozen.</p>
+with any demand so nothing here is frozen.</p>
 ]]--
 
 local utf = unicode.utf8
@@ -48,7 +48,8 @@ local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawse
 
 local allocate = utilities.storage.allocate
 
-local trace_tests = false  trackers.register("sorters.tests", function(v) trace_tests = v end)
+local trace_tests   = false  trackers.register("sorters.tests",   function(v) trace_tests   = v end)
+local trace_methods = false  trackers.register("sorters.methods", function(v) trace_methods = v end)
 
 local report_sorters = logs.reporter("languages","sorters")
 
@@ -64,17 +65,33 @@ local digitsmaximum     = 0xFFFFF -- frozen
 local lccodes           = characters.lccodes
 local lcchars           = characters.lcchars
 local shchars           = characters.shchars
+local fscodes           = characters.fscodes
 
 local variables         = interfaces.variables
-local v_numbers         = variables.numbers
 
-local validmethods      = table.tohash { "mm", "zm", "pm", "mc", "zc", "pc", "uc" }
+local v_numbers         = variables.numbers
+local v_default         = variables.default
+local v_before          = variables.before
+local v_after           = variables.after
+local v_first           = variables.first
+local v_last            = variables.last
+
+local validmethods      = table.tohash {
+ -- "ch", -- raw character
+    "mm", -- minus mapping
+    "zm", -- zero  mapping
+    "pm", -- plus  mapping
+    "mc", -- lower case - 1
+    "zc", -- lower case
+    "pc", -- lower case + 1
+    "uc", -- unicode
+}
 
 local predefinedmethods = {
-    [variables.before] = "mm,mc,uc",
-    [variables.after]  = "pm,mc,uc",
-    [variables.first]  = "pc,mm,uc",
-    [variables.last]   = "mc,mm,uc",
+    [v_before] = "mm,mc,uc",
+    [v_after]  = "pm,mc,uc",
+    [v_first]  = "pc,mm,uc",
+    [v_last]   = "mc,mm,uc",
 }
 
 sorters = {
@@ -87,8 +104,8 @@ sorters = {
         replacementoffset = replacementoffset,
         digitsoffset      = digitsoffset,
         digitsmaximum     = digitsmaximum,
-        defaultlanguage   = variables.default,
-        defaultmethod     = variables.before,
+        defaultlanguage   = v_default,
+        defaultmethod     = v_before,
         defaultdigits     = v_numbers,
     }
 }
@@ -129,6 +146,8 @@ local mte = {
         end
     end
 }
+
+local noorder = false
 
 local function preparetables(data)
     local orders, lower, m_mappings, z_mappings, p_mappings = data.orders, data.lower, { }, { }, { }
@@ -203,16 +222,14 @@ local function preparetables(data)
                         end
                     end
                     if not n then
-                        n = { 0 }
-                     -- nn = 1
+                        n = noorder
                         if trace_tests then
                             report_sorters(" 7 order: 0")
                         end
                     end
                 end
             else
-                n =  { 0 }
-             -- nn = 1
+                n = noorder
                 if trace_tests then
                     report_sorters(" 8 order: 0")
                 end
@@ -248,11 +265,11 @@ local function update() -- prepare parent chains, needed when new languages are 
     end
 end
 
-local function setlanguage(l,m,d)
+local function setlanguage(l,m,d,u)
     language = (l ~= "" and l) or constants.defaultlanguage
     data = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
-    method = (m ~= "" and m) or data.method or constants.defaultmethod
-    digits =  (d ~= "" and d) or data.digits or constants.defaultdigits
+    method    = (m ~= "" and m) or data.method    or constants.defaultmethod
+    digits    = (d ~= "" and d) or data.digits    or constants.defaultdigits
     if trace_tests then
         report_sorters("setting language '%s', method '%s', digits '%s'",language,method,digits)
     end
@@ -301,41 +318,104 @@ function sorters.setlanguage(language,method,numberorder)
     setlanguage(language,method,numberorder) -- new language and method
 end
 
+-- tricky: { 0, 0, 0 } vs { 0, 0, 0, 0 } => longer wins and mm, pm, zm can have them
+
+--~ local function basicsort(sort_a,sort_b) -- todo: local #
+--~     if not sort_a or not sort_b then
+--~         return 0
+--~     elseif #sort_a > #sort_b then
+--~         if #sort_b == 0 then
+--~             return 1
+--~         else
+--~             for i=1,#sort_b do
+--~                 local ai, bi = sort_a[i], sort_b[i]
+--~                 if ai > bi then
+--~                     return  1
+--~                 elseif ai < bi then
+--~                     return -1
+--~                 end
+--~             end
+--~             return 1
+--~         end
+--~     elseif #sort_a < #sort_b then
+--~         if #sort_a == 0 then
+--~             return -1
+--~         else
+--~             for i=1,#sort_a do
+--~                 local ai, bi = sort_a[i], sort_b[i]
+--~                 if ai > bi then
+--~                     return  1
+--~                 elseif ai < bi then
+--~                     return -1
+--~                 end
+--~             end
+--~             return -1
+--~         end
+--~     elseif #sort_a == 0 then
+--~         return 0
+--~     else
+--~         for i=1,#sort_a do
+--~             local ai, bi = sort_a[i], sort_b[i]
+--~             if ai > bi then
+--~                 return  1
+--~             elseif ai < bi then
+--~                 return -1
+--~             end
+--~         end
+--~         return 0
+--~     end
+--~ end
+
+--~ function comparers.basic(a,b) -- trace ea and eb
+--~     local ea, eb = a.split, b.split
+--~     local na, nb = #ea, #eb
+--~     if na == 0 and nb == 0 then
+--~         -- simple variant (single word)
+--~         local result = 0
+--~         for j=1,#sequence do
+--~             local m = sequence[j]
+--~             result = basicsort(ea[m],eb[m])
+--~             if result ~= 0 then
+--~                 return result
+--~             end
+--~         end
+--~         return result
+--~     else
+--~         -- complex variant, used in register (multiple words)
+--~         local result = 0
+--~         for i=1,nb < na and nb or na do
+--~             local eai, ebi = ea[i], eb[i]
+--~             for j=1,#sequence do
+--~                 local m = sequence[j]
+--~                 result = basicsort(eai[m],ebi[m])
+--~                 if result ~= 0 then
+--~                     return result
+--~                 end
+--~             end
+--~             if result ~= 0 then
+--~                 return result
+--~             end
+--~         end
+--~         if result ~= 0 then
+--~             return result
+--~         elseif na > nb then
+--~             return 1
+--~         elseif nb > na then
+--~             return -1
+--~         else
+--~             return 0
+--~         end
+--~     end
+--~ end
+
 local function basicsort(sort_a,sort_b)
-    if not sort_a or not sort_b then
-        return 0
-    elseif #sort_a > #sort_b then
-        if #sort_b == 0 then
-            return 1
-        else
-            for i=1,#sort_b do
-                local ai, bi = sort_a[i], sort_b[i]
-                if ai > bi then
-                    return  1
-                elseif ai < bi then
-                    return -1
-                end
-            end
-            return 1
+    if sort_a and sort_b then
+        local na = #sort_a
+        local nb = #sort_b
+        if na > nb then
+            na = nb
         end
-    elseif #sort_a < #sort_b then
-        if #sort_a == 0 then
-            return -1
-        else
-            for i=1,#sort_a do
-                local ai, bi = sort_a[i], sort_b[i]
-                if ai > bi then
-                    return  1
-                elseif ai < bi then
-                    return -1
-                end
-            end
-            return -1
-        end
-    elseif #sort_a == 0 then
-        return 0
-    else
-        for i=1,#sort_a do
+        for i=1,na do
             local ai, bi = sort_a[i], sort_b[i]
             if ai > bi then
                 return  1
@@ -343,8 +423,8 @@ local function basicsort(sort_a,sort_b)
                 return -1
             end
         end
-        return 0
     end
+    return 0
 end
 
 function comparers.basic(a,b) -- trace ea and eb
@@ -360,7 +440,18 @@ function comparers.basic(a,b) -- trace ea and eb
                 return result
             end
         end
-        return result
+        if result == 0 then
+            local la, lb = #ea.uc, #eb.uc
+            if la > lb then
+                return 1
+            elseif lb > la then
+                return -1
+            else
+                return 0
+            end
+        else
+            return result
+        end
     else
         -- complex variant, used in register (multiple words)
         local result = 0
@@ -373,7 +464,14 @@ function comparers.basic(a,b) -- trace ea and eb
                     return result
                 end
             end
-            if result ~= 0 then
+            if result == 0 then
+                local la, lb = #eai.uc, #ebi.uc
+                if la > lb then
+                    return 1
+                elseif lb > la then
+                    return -1
+                end
+            else
                 return result
             end
         end
@@ -389,12 +487,8 @@ function comparers.basic(a,b) -- trace ea and eb
     end
 end
 
--- local function numify(s)
---     return rep(" ",10-#s) .. s -- or format with padd
--- end
-
 local function numify(s)
-    s = digitsoffset + tonumber(s) -- alternatively we can create a consecutive range
+    s = digitsoffset + tonumber(s) -- alternatively we can create range
     if s > digitsmaximum then
         s = digitsmaximum
     end
@@ -403,7 +497,8 @@ end
 
 function sorters.strip(str) -- todo: only letters and such utf.gsub("([^%w%d])","")
     if str then
-        str = gsub(str,"\\%S*","")
+        str = gsub(str,"\\[\"\'~^`]*","") -- \"e
+        str = gsub(str,"\\%S*","") -- the rest
         str = gsub(str,"%s","\001") -- can be option
         str = gsub(str,"[%s%[%](){}%$\"\']*","")
         if digits == v_numbers then
@@ -444,7 +539,6 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             str = gsub(str,v[1],v[2])
         end
     end
-
     local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
     local nm, nz, np = 0, 0, 0
     for sc in utfcharacters(str) do
@@ -476,8 +570,8 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             z_mapping[nz] = b
             p_mapping[np] = b
         else
-            local l = lower[sc]
             n = n + 1
+            local l = lower[sc]
             l = l and utfbyte(l) or lccodes[b]
             if type(l) == "table" then
                 l = l[1] -- there are currently no tables in lccodes but it can be some, day
@@ -492,20 +586,43 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             end
             char[n], byte[n] = sc, b
             local msc = m_mappings[sc]
-            for i=1,#msc do
-                nm = nm + 1
-                m_mapping[nm] = msc[i]
+            if msc ~= noorder then
+                for i=1,#msc do
+                    nm = nm + 1
+                    m_mapping[nm] = msc[i]
+                end
             end
             local zsc = z_mappings[sc]
-            for i=1,#zsc do
-                nz = nz + 1
-                z_mapping[nz] = zsc[i]
+            if zsc ~= noorder then
+                for i=1,#zsc do
+                    nz = nz + 1
+                    z_mapping[nz] = zsc[i]
+                end
             end
             local psc = p_mappings[sc]
-            for i=1,#psc do
-                np = np + 1
-                p_mapping[np] = psc[i]
+            if psc ~= noorder then
+                for i=1,#psc do
+                    np = np + 1
+                    p_mapping[np] = psc[i]
+                end
             end
+        end
+    end
+
+    -- only those needed that are part of a sequence
+
+    local b = byte[1]
+    if b then
+        -- we set them to the first split code (korean)
+        local fs = fscodes[b] or b
+        if #m_mapping == 0 then
+            m_mapping = { m_mappings[fs][1] }
+        end
+        if #z_mapping == 0 then
+            z_mapping = { z_mappings[fs][1] }
+        end
+        if #p_mapping == 0 then
+            p_mapping = { p_mappings[fs][1] }
         end
     end
 
@@ -520,15 +637,13 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
         pm = p_mapping,
     }
 
- -- table.print(t)
-
     return t
 end
 
-local function pack(entry)
-    local t = { }
+local function packch(entry)
     local split = entry.split
-    if #split > 0 then
+    if #split > 0 then -- useless test
+        local t = { }
         for i=1,#split do
             local tt, li = { }, split[i].ch
             for j=1,#li do
@@ -548,14 +663,32 @@ local function pack(entry)
     end
 end
 
+local function packuc(entry)
+    local split = entry.split
+    if #split > 0 then -- useless test
+        local t = { }
+        for i=1,#split do
+            t[i] = concat(split[i].uc, " ")
+        end
+        return concat(t," + ")
+    else
+        return concat(split.uc," ")
+    end
+end
+
 function sorters.sort(entries,cmp)
-    if trace_tests then
-        for i=1,#entries do
+    if trace_tests or trace_methods then
+        local nofentries = #entries
+        report_sorters("entries: %s, language: %s, method: %s, digits: %s",nofentries,language,method,tostring(digits))
+        for i=1,nofentries do
             report_sorters("entry %s",table.serialize(entries[i].split,i))
         end
+    end
+    if trace_tests then
         sort(entries,function(a,b)
             local r = cmp(a,b)
-            report_sorters("%s %s %s",pack(a),(not r and "?") or (r<0 and "<") or (r>0 and ">") or "=",pack(b))
+            local e = (not r and "?") or (r<0 and "<") or (r>0 and ">") or "="
+            report_sorters("%s %s %s | %s %s %s",packch(a),e,packch(b),packuc(a),e,packuc(b))
             return r == -1
         end)
         local s
@@ -568,7 +701,7 @@ function sorters.sort(entries,cmp)
                 s = first
                 report_sorters(">> %s 0x%05X (%s 0x%05X)",first,utfbyte(first),letter,utfbyte(letter))
             end
-            report_sorters("   %s",pack(entry))
+            report_sorters("   %s | %s",packch(entry),packuc(entry))
         end
     else
         sort(entries,function(a,b)

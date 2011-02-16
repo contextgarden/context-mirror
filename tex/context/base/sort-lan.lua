@@ -860,32 +860,19 @@ definitions["et"] = {
 
 --- Korean
 
-local shchars = characters.shchars
+local fschars = characters.fschars
 
 function firstofsplit(first)
-    first = shchars[first] or first
-    return first, first -- entry, tag
+    local fs = fschars[first] or first
+ -- print(string.format("%04x %04x",utfbyte(first),utfbyte(fs)))
+    return fs, fs -- entry, tag
 end
 
 definitions["kr"] = {
     firstofsplit = firstofsplit,
-    orders = { -- copying utf fails somehow
-        "ㄱ", -- utfchar(0x3131),
-        "ㄴ", -- utfchar(0x3134),
-        "ㄷ", -- utfchar(0x3137),
-        "ㄹ", -- utfchar(0x3139),
-        "ㅁ", -- utfchar(0x3141),
-        "ㅂ", -- utfchar(0x3142),
-        "ㅅ", -- utfchar(0x3145),
-        "ㅇ", -- utfchar(0x3147),
-        "ㅈ", -- utfchar(0x3148),
-        "ㅊ", -- utfchar(0x314a),
-        "ㅋ", -- utfchar(0x314b),
-        "ㅌ", -- utfchar(0x314c),
-        "ㅍ", -- utfchar(0x314d),
-        "ㅎ", -- utfchar(0x314e),
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j",
-        "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-        "u", "v", "w", "x", "y", "z",
+    orders       = {
+        "ㄱ", "ㄴ", "ㄷ", "ㄹ", "ㅁ", "ㅂ", "ㅅ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ",
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
     }
 }
