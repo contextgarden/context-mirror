@@ -2716,6 +2716,26 @@
      \localhsize\hsize
    \fi\fi}
 
+\def\doftstartdepthcorrection
+  {\bgroup
+   \verticalstrut
+   % we need \nowhitespace in case of setups setting whitespace
+   % nb, not safe, text vs \vbox as next
+   \vskip-\struttotal
+   \nowhitespace} % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
+
+\def\doftstopdepthcorrection
+  {\forgetall
+   \vskip-\struttotal
+   \verticalstrut
+   \egroup
+   \forgetall % brrr too often
+   \vskip-\lineheight
+   % will be an option, not default
+   % \setbaselinecorrections
+   % \donegbotbaselinecorrection
+   \verticalstrut}
+
 \def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
   {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
    \setfalse\framedtextlocationnone
@@ -2746,16 +2766,9 @@
        \bgroup
          \let\\=\endgraf
          \framedtextparameter{#1}\c!inner % oud spul
-         \doifvalue{\??kd#1\c!depthcorrection}\v!on % new, inside box
-           {\bgroup
-            \verticalstrut
-            % we need \nowhitespace in case of setups setting whitespace
-            % nb, not safe, text vs \vbox as next
-            \vskip-\struttotal
-            \nowhitespace % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
-            }%
+         \doifvalue{\??kd#1\c!depthcorrection}\v!on\doftstartdepthcorrection
          \doinhibitblank % \blank[\v!disable]% plaatst signal
-\setupindenting[\framedtextparameter{#1}\c!indenting]%
+         \setupindenting[\framedtextparameter{#1}\c!indenting]%
          \doconvertfont{\framedtextparameter{#1}\c!style}\empty
          \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
 
@@ -2766,17 +2779,7 @@
 \def\dodostopframedtext#1#2% % no \baselinecorrection, see faq docs
   {\endgraf
    \removelastskip
-   \doifvalue{\??kd#1\c!depthcorrection}\v!on % local and global
-     {\forgetall
-      \vskip-\struttotal
-      \verticalstrut
-      \egroup
-      \forgetall % brrr too often
-      \vskip-\lineheight
-      % will be an option, not default
-      % \setbaselinecorrections
-      % \donegbotbaselinecorrection
-      \verticalstrut}
+   \doifvalue{\??kd#1\c!depthcorrection}\v!on\doftstopdepthcorrection
    \stopboxedcontent
    \stopcolor
    \ifconditional\framedtextlocationnone

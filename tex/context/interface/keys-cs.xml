@@ -586,6 +586,7 @@
 		<cd:constant name='bottomstate' value='statusspodku'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='pocitat'/>
+		<cd:constant name='category' value='category'/>
 		<cd:constant name='ccommand' value='cprikaz'/>
 		<cd:constant name='click' value='klik'/>
 		<cd:constant name='clickin' value='klikuvnitr'/>

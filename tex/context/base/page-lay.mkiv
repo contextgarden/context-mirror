@@ -115,9 +115,6 @@
 %D is no area, we use a zero distance in case there is no
 %D area.
 
-\def\layoutdistance#1#2%
-  {\ifdim\zeropoint<#1\layoutparameter#2\else\zeropoint\fi}
-
 %D The horizontal distances are:
 
 \newdimen \leftedgedistance
@@ -134,23 +131,53 @@
 
 %D We need to calculate the extra distances:
 
+\newdimen\naturalmarginwidth
+\newdimen\naturaledgewidth
+\newdimen\naturalmargindistance
+\newdimen\naturaledgedistance
+\newdimen\naturalleftedgedistance
+\newdimen\naturalrightedgedistance
+\newdimen\naturalleftmargindistance
+\newdimen\naturalrightmargindistance
+\newdimen\naturaltopdistance
+\newdimen\naturalheaderdistance
+\newdimen\naturalfooterdistance
+\newdimen\naturalbottomdistance
+
+\def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
+
 \def\setlayoutdimensions
-  {\global\marginwidth        \layoutparameter\c!margin
-   \global\edgewidth          \layoutparameter\c!edge
-   \global\margindistance     \layoutparameter\c!margindistance
-   \global\edgedistance       \layoutparameter\c!edgedistance
-   \global\leftedgedistance   \layoutdistance \leftedgewidth    \c!leftedgedistance
-   \global\rightedgedistance  \layoutdistance \rightedgewidth   \c!rightedgedistance
-   \global\leftmargindistance \layoutdistance \leftmarginwidth  \c!leftmargindistance
-   \global\rightmargindistance\layoutdistance \rightmarginwidth \c!rightmargindistance
-   \global\topdistance        \layoutdistance \topheight        \c!topdistance
-   \global\headerdistance     \layoutdistance \headerheight     \c!headerdistance
-   \global\footerdistance     \layoutdistance \footerheight     \c!footerdistance
-   \global\bottomdistance     \layoutdistance \bottomheight     \c!bottomdistance}
+  {\global\naturalmarginwidth        \layoutparameter\c!margin
+   \global\naturaledgewidth          \layoutparameter\c!edge
+   \global\naturalmargindistance     \layoutparameter\c!margindistance
+   \global\naturaledgedistance       \layoutparameter\c!edgedistance
+   \global\naturalleftedgedistance   \layoutparameter\c!leftedgedistance
+   \global\naturalrightedgedistance  \layoutparameter\c!rightedgedistance
+   \global\naturalleftmargindistance \layoutparameter\c!leftmargindistance
+   \global\naturalrightmargindistance\layoutparameter\c!rightmargindistance
+   \global\naturaltopdistance        \layoutparameter\c!topdistance
+   \global\naturalheaderdistance     \layoutparameter\c!headerdistance
+   \global\naturalfooterdistance     \layoutparameter\c!footerdistance
+   \global\naturalbottomdistance     \layoutparameter\c!bottomdistance
+   %
+   \global\marginwidth          \naturalmarginwidth
+   \global\edgewidth            \naturaledgewidth
+   \global\margindistance       \naturalmargindistance
+   \global\edgedistance         \naturaledgedistance
+   %
+   \global\leftedgedistance     \layoutdistance\leftedgewidth   \naturalleftedgedistance
+   \global\rightedgedistance    \layoutdistance\rightedgewidth  \naturalrightedgedistance
+   \global\leftmargindistance   \layoutdistance\leftmarginwidth \naturalleftmargindistance
+   \global\rightmargindistance  \layoutdistance\rightmarginwidth\naturalrightmargindistance
+   \global\topdistance          \layoutdistance\topheight       \naturaltopdistance
+   \global\headerdistance       \layoutdistance\headerheight    \naturalheaderdistance
+   \global\footerdistance       \layoutdistance\footerheight    \naturalfooterdistance
+   \global\bottomdistance       \layoutdistance\bottomheight    \naturalbottomdistance
+  }
 
 \def\setlayoutdistances % local in \setreducedvsize
-  {\headerdistance\layoutdistance\headerheight\c!headerdistance
-   \footerdistance\layoutdistance\footerheight\c!footerdistance}
+  {\headerdistance\layoutdistance\headerheight\naturalheaderdistance
+   \footerdistance\layoutdistance\footerheight\naturalfooterdistance}
 
 % these are wrong in the running text, assumes some swapping, needs a cleanup
 

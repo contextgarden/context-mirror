@@ -54,7 +54,11 @@
    \dodefineaccent{#1}{#2}{#3}}
 
 \def\dohandleaccent#1#2%
-  {\csname\??ac\string#1\string#2\empty\endcsname}
+  {\ifcsname\??ac\string#1#2\empty\endcsname
+     \csname\??ac\string#1#2\empty\endcsname
+   \else\ifcsname\??ac\string#1\string#2\empty\endcsname
+     \csname\??ac\string#1\string#2\empty\endcsname
+   \fi\fi}
 
 \unexpanded\def\definecharacter#1 #2 %
   {\doifnumberelse{\string#2}
@@ -70,11 +74,6 @@
 \newtoks \everyuppercase
 \newtoks \everylowercase
 \newtoks \everysanitize
-
-%D Some saved meanings (not really needed):
-
-\let\textaccent      \accent
-\let\normaltextaccent\accent
 
 %D Accent handling (try to avoid this):
 
@@ -151,83 +150,48 @@
 
 % from enco-com:
 
-\def\AA{\Aring}
-\def\aa{\aring}
-\def\AE{\AEligature}
-\def\ae{\aeligature}
-\def\CC{\Ccedilla}
-\def\cc{\ccedilla}
-\def \L{\Lstroke}
-\def \l{\lstroke}
-\def \O{\Ostroke}
-\def \o{\ostroke}
-\def\OE{\OEligature}
-\def\oe{\oeligature}
-\def\SZ{\Ssharp}
-\def\sz{\ssharp}
-\def\SS{\ssharp}
-\def\IJ{\IJligature}
-\def\ij{\ijligature}
-\def \i{\dotlessi}
-\def \j{\dotlessj}
+\def\AA{Å}  \def\aa{å}
+\def\AE{Æ}  \def\ae{æ}
+\def\CC{Ç}  \def\cc{ç}
+\def \L{Ł}  \def \l{ł}
+\def \O{Ø}  \def \o{ø}
+\def\OE{Œ}  \def\oe{œ}
+\def\SZ{SS} \def\sz{ß} \def\SS{ß}
+\def\IJ{Ĳ}  \def\ij{ĳ}
 
 % from enco-def:
 
-\def\dotlessI  {I}
-\def\dotlessJ  {J}
+\def\i{ı}
+\def\j{ȷ}
 
-\def\Ssharp    {SS}
+\def\S{§} \def\textS {§} % obsolete (surfaced in bibliographic files)
+\def\P{¶} \def\textP {¶} % obsolete (surfaced in bibliographic files)
 
-\def\eszett    {\ssharp}
-\def\Eszett    {\Ssharp}
+\def\eszett  {ß} \def\Eszett  {SS} \def\Ssharp{SS}
+\def\lslash  {ł} \def\Lslash  {Ł}
+\def\dslash  {đ} \def\Dslash  {Đ}
+\def\oslash  {ø} \def\Oslash  {Ø}
+\def\dcroat  {đ} \def\Dcroat  {Đ}
+\def\kcedilla{ķ} \def\Kcedilla{Ķ}
+\def\lcedilla{ļ} \def\Lcedilla{Ļ}
+\def\ncedilla{ņ} \def\Ncedilla{Ņ}
+\def\rcedilla{ŗ} \def\Rcedilla{Ŗ}
+\def\aumlaut {ä} \def\Aumlaut {Ä}
+\def\eumlaut {ë} \def\Eumlaut {Ë}
+\def\iumlaut {ï} \def\Iumlaut {Ï}
+\def\oumlaut {ö} \def\Oumlaut {Ö}
+\def\uumlaut {ü} \def\Uumlaut {Ü}
 
-\def\lslash    {\lstroke}
-\def\Lslash    {\Lstroke}
-\def\dslash    {\dstroke}
-\def\Dslash    {\Dstroke}
-\def\oslash    {\ostroke}
-\def\Oslash    {\Ostroke}
-\def\dcroat    {\dstroke}
-\def\Dcroat    {\Dstroke}
+% for old times sake (obsolete)
 
-\def\Kcedilla  {\Kcommaaccent}
-\def\kcedilla  {\kcommaaccent}
-\def\Lcedilla  {\Lcommaaccent}
-\def\lcedilla  {\lcommaaccent}
-\def\Ncedilla  {\Ncommaaccent}
-\def\ncedilla  {\ncommaaccent}
-\def\Rcedilla  {\Rcommaaccent}
-\def\rcedilla  {\rcommaaccent}
+\def\textflorin{ƒ} \def\florin  {ƒ}
+\def\pound     {£} \def\sterling{£}
+\def\promille  {‰} \def\permille{‰}
 
-\def\S         {\sectionmark}
-\def\P         {\paragraphmark}
+% tex specific (obsolete)
 
-\def\aumlaut   {\adiaeresis}
-\def\eumlaut   {\ediaeresis}
-\def\iumlaut   {\idiaeresis}
-\def\oumlaut   {\odiaeresis}
-\def\uumlaut   {\udiaeresis}
-\def\Aumlaut   {\Adiaeresis}
-\def\Eumlaut   {\Ediaeresis}
-\def\Iumlaut   {\Idiaeresis}
-\def\Oumlaut   {\Odiaeresis}
-\def\Uumlaut   {\Udiaeresis}
-
-% for latex users
-
-\def\textS     {\sectionmark}
-\def\textP     {\paragraphmark}
-
-% for old times sake
-
-\def\textflorin{\fhook}
-\def\florin    {\textflorin}
-\def\dollar    {\textdollar}
-\def\pound     {\textsterling}
-\def\sterling  {\textsterling}
-\def\promille  {\perthousand}
-\def\permille  {\perthousand}
 \def\procent   {\percent}
+\def\dollar    {\textdollar}
 \def\permine   {\fakepermine}
 
 % some more

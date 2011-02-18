@@ -108,22 +108,6 @@
         \expandafter\noexpand\csname doset#2attributes\endcsname
         \expandafter\noexpand\csname #2parameterhash\endcsname}}
 
-% \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
-%   {\unexpanded\def#2{\dotripleempty#5}%
-%    \newtoks#6%
-%    \newtoks#7%
-%    \def#5[##1][##2][##3]% [child][parent][settings]
-%      {\edef#4{##1}%       [child][settings]
-%       \the#6% predefine   [child]
-%       \ifsecondargument
-%         \doifassignmentelse{##2}
-%           {\getparameters[#1#4][\s!parent=#3,##2]}
-%           {\getparameters[#1#4][\s!parent=#1##2,##3]}%
-%       \else
-%         \getparameters[#1#4][\s!parent=#3]%
-%       \fi
-%       \the#7}}
-
 \unexpanded\def\doinstalldefinehandler#1#2#3#4#5#6#7%
   {\unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%

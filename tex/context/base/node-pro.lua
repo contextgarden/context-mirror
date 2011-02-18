@@ -90,28 +90,41 @@ function processors.pre_linebreak_filter(head,groupcode,size,packtype,direction)
     return true
 end
 
+local enabled = true
+
 function processors.hpack_filter(head,groupcode,size,packtype,direction)
-    local first, found = first_glyph(head)
-    if found then
-        if trace_callbacks then
-            local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode,size,packtype,direction)
-            local after = nodes.count(head,true)
-            if done then
-                tracer("hpack","changed",head,groupcode,before,after,true)
+    if enabled then
+        local first, found = first_glyph(head)
+        if found then
+            if trace_callbacks then
+                local before = nodes.count(head,true)
+                local head, done = actions(head,groupcode,size,packtype,direction)
+                local after = nodes.count(head,true)
+                if done then
+                    tracer("hpack","changed",head,groupcode,before,after,true)
+                else
+                    tracer("hpack","unchanged",head,groupcode,before,after,true)
+                end
+                return (done and head) or true
             else
-                tracer("hpack","unchanged",head,groupcode,before,after,true)
+                local head, done = actions(head,groupcode,size,packtype,direction)
+                return (done and head) or true
             end
-            return (done and head) or true
-        else
-            local head, done = actions(head,groupcode,size,packtype,direction)
-            return (done and head) or true
+        elseif trace_callbacks then
+            local n = nodes.count(head,false)
+            tracer("hpack","no chars",head,groupcode,n,n)
         end
-    elseif trace_callbacks then
-        local n = nodes.count(head,false)
-        tracer("hpack","no chars",head,groupcode,n,n)
     end
     return true
+end
+
+local hpack = node.hpack
+
+function nodes.fasthpack(...) -- todo: pass explicit arguments
+    enabled = false
+    local hp = hpack(...)
+    enabled = true
+    return hp
 end
 
 callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")
@@ -123,6 +136,8 @@ local actions = tasks.actions("finalizers") -- head, where
 -- maybe some day a hash with valid groupcodes
 --
 -- beware, much can pass twice, for instance vadjust passes two times
+--
+-- something weird here .. group mvl when making a vbox
 
 function processors.post_linebreak_filter(head,groupcode)
 --~     local first, found = first_glyph(head)
@@ -132,9 +147,9 @@ function processors.post_linebreak_filter(head,groupcode)
             local head, done = actions(head,groupcode)
             local after = nodes.count(head,true)
             if done then
-                tracer("finalizer","changed",head,groupcode,before,after,true)
+                tracer("post_linebreak","changed",head,groupcode,before,after,true)
             else
-                tracer("finalizer","unchanged",head,groupcode,before,after,true)
+                tracer("post_linebreak","unchanged",head,groupcode,before,after,true)
             end
             return (done and head) or true
         else
@@ -143,7 +158,7 @@ function processors.post_linebreak_filter(head,groupcode)
         end
 --~     elseif trace_callbacks then
 --~         local n = nodes.count(head,false)
---~         tracer("finalizer","no chars",head,groupcode,n,n)
+--~         tracer("post_linebreak","no chars",head,groupcode,n,n)
 --~     end
 --~     return true
 end

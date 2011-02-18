@@ -992,20 +992,24 @@
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulate
 
+\setvalue{@strut@\v!yes    }{\setstrut}
+\setvalue{@strut@\v!auto   }{\setautostrut}
+\setvalue{@strut@\v!no     }{\setnostrut}
+\setvalue{@strut@\v!cap    }{\setcapstrut}
+\setvalue{@strut@\v!fit    }{\setfontstrut}
+\setvalue{@strut@\v!line   }{\setstrut}
+\setvalue{@strut@\s!default}{\setstrut}
+\setvalue{@strut@\s!empty  }{\setstrut}
+
 \unexpanded\def\setupstrut
   {\dosingleempty\dosetupstrut}
 
 \def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
-  {\processaction
-     [#1]
-     [    \v!yes=>\setstrut,
-         \v!auto=>\setautostrut,
-           \v!no=>\setnostrut,
-          \v!cap=>\setcapstrut,
-          \v!fit=>\setfontstrut,
-         \v!line=>\setstrut,
-      \s!default=>\setstrut,
-      \s!unknown=>\setcharstrut\commalistelement]}
+  {\ifcsname @strut@#1\endcsname
+     \csname @strut@#1\endcsname
+   \else
+     \setcharstrut{#1}%
+   \fi}
 
 \def\showstruts
   {\setteststrut

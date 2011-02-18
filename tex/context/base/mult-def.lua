@@ -7053,6 +7053,10 @@ return {
    ["pe"]="محاسبه",
    ["ro"]="calculeaza",
   },
+  ["category"]={
+   ["en"]="category",
+   ["nl"]="categorie",
+  },
   ["ccommand"]={
    ["cs"]="cprikaz",
    ["de"]="cbefehl",

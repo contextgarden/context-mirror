@@ -586,6 +586,7 @@
 		<cd:constant name='bottomstate' value='starejos'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='calculeaza'/>
+		<cd:constant name='category' value='category'/>
 		<cd:constant name='ccommand' value='comandac'/>
 		<cd:constant name='click' value='click'/>
 		<cd:constant name='clickin' value='clickintru'/>

@@ -586,6 +586,7 @@
 		<cd:constant name='bottomstate' value='statofondo'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='calcola'/>
+		<cd:constant name='category' value='category'/>
 		<cd:constant name='ccommand' value='ccomando'/>
 		<cd:constant name='click' value='click'/>
 		<cd:constant name='clickin' value='clickdentro'/>

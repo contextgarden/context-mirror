@@ -411,14 +411,6 @@
   %\hbox{\lower\strutdp\box\scratchbox}} % alas, wrong lapping, therefore useless
    \dopositionmarginbox\scratchbox}
 
-% \def\domarginblockskip#1%
-%   {\hskip\margincontenthoffset
-%    \hskip\compensatedinnermakeupmargin\relax
-%    \doifelsenothing\margincontentdistance
-%      {\hskip\getvalue{\??im#1\c!distance}}
-%      {\hskip\margincontentdistance}%
-%    \relax}
-
 \def\domarginblockskip#1%
   {\doifelsenothing\margincontentdistance
      {\hskip\dimexpr
@@ -477,26 +469,6 @@
 
 \edef\inmargintaglist{+,-,\v!low,\v!left,\v!right,\v!inner,\v!outer}
 
-% the old one:
-%
-% \def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-%   {\doifcommonelse{+,-,\v!laag}{#4}
-%      {\dodoinmargin[#1][#2][#3][#4][#5]}
-%      {\dodoinmargin[#1][#2][#3][][#4]}}
-%
-% an alternative:
-%
-% \letvalueempty{\??im\v!laag\c!offset}
-% \letvalueempty{\??im      +\c!offset}
-% \letvalueempty{\??im      -\c!offset}
-%
-% \def\doinmargin[#1][#2][#3][#4][#5]% #6 #7
-%   {\doifnumberelse{#4}
-%      {\dodoinmargin[#1][#2][#3][#4][#5]}
-%      {\doifdefinedelse{\??im#4\c!offset}
-%         {\dodoinmargin[#1][#2][#3][#4][#5]}
-%         {\dodoinmargin[#1][#2][#3][][#4]}}}
-%
 % the problem is that we need to keep downward compatibility
 % with respect to the first argument thing a reference or a
 % directive; the alternative is to force users to pass a

@@ -983,8 +983,8 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
             local filelist = collect_files(wantedfiles)
             local fl = filelist and filelist[1]
             if fl then
-                filename = fl[3]
-                result[#result+1] = filename
+                filename = fl[3]  -- not local?
+                result[#result+1] = resolvers.resolve(filename)
                 done = true
             end
         else
@@ -1335,7 +1335,7 @@ end
 --~     local filelist = collect_files(wantedfiles)
 --~     local fl = filelist and filelist[1]
 --~     if fl then
---~         return { fl[3] } -- filename
+--~         return { resolvers.resolve(fl[3]) } -- filename
 --~     end
 --~ end
 

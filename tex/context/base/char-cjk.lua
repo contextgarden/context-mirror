@@ -17,36 +17,125 @@ local ranges = characters.ranges
 -- Hangul Syllable
 
 -- The following conversion is taken from unicode.org/reports/tr15/tr15-23.html#Hangul
--- but adapted to our needs
+-- but adapted to our needs.
 
-local SBase = 0xAC00
+-- local SBase = 0xAC00
+--
+-- local LBase, LCount = 0x1100, 19
+-- local VBase, VCount = 0x1161, 21
+-- local TBase, TCount = 0x11A7, 28
+--
+-- local NCount = VCount * TCount
+-- local SCount = LCount * NCount
+--
+-- local function decomposed(unicode)
+--     local SIndex = unicode - SBase
+--     if SIndex >= 0 and SIndex < SCount then
+--         local lead_consonant = LBase + floor( SIndex / NCount)
+--         local medial_vowel   = VBase + floor((SIndex % NCount) / TCount)
+--         local tail_consonant = TBase +        SIndex % TCount
+--         if tail_consonant ~= TBase then
+--             return lead_consonant, medial_vowel, tail_consonant
+--         else
+--             return lead_consonant, medial_vowel
+--         end
+--     end
+-- end
+--
+-- Lua will optimize the inline constants so the next variant is
+-- 10% faster. In practice this will go unnoticed, but it's also less
+-- code, so let's do it. Pushing the constant section into the
+-- function body saves 5%.
 
-local LBase, LCount = 0x1100, 19
-local VBase, VCount = 0x1161, 21
-local TBase, TCount = 0x11A7, 28
+local function decomposed(unicode)
+    local index = unicode - 0xAC00
+    if index >= 0 and index < 19 * 21 * 28 then
+        local lead_consonant = 0x1100 + floor( index / (21 * 28))
+        local medial_vowel   = 0x1161 + floor((index % (21 * 28)) / 28)
+        local tail_consonant = 0x11A7 +        index % 28
+        if tail_consonant ~= 0x11A7 then
+            return lead_consonant, medial_vowel, tail_consonant
+        else
+            return lead_consonant, medial_vowel
+        end
+    end
+end
 
-local NCount = VCount * TCount
-local SCount = LCount * NCount
-
-local L_TABLE = { [0] =
+local lead_consonants = { [0] =
     "G", "GG", "N", "D", "DD", "R", "M", "B", "BB",
     "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H"
 }
 
-local V_TABLE = { [0] =
+local medial_vowels = { [0] =
     "A", "AE", "YA", "YAE", "EO", "E", "YEO", "YE", "O",
     "WA", "WAE", "OE", "YO", "U", "WEO", "WE", "WI",
     "YU", "EU", "YI", "I"
 }
 
-local T_TABLE = { [0] =
+local tail_consonants = { [0] =
     "", "G", "GG", "GS", "N", "NJ", "NH", "D", "L", "LG", "LM",
     "LB", "LS", "LT", "LP", "LH", "M", "B", "BS",
     "S", "SS", "NG", "J", "C", "K", "T", "P", "H"
 }
 
+-- local function description(unicode)
+--     local index = unicode - 0xAC00
+--     if index >= 0 and index < 19 * 21 * 28 then
+--         local lead_consonant = floor( index / NCount)
+--         local medial_vowel   = floor((index % NCount) / TCount)
+--         local tail_consonant =        index % TCount
+--         return format(
+--             "HANGUL SYLLABLE %s%s%s",
+--             lead_consonants[lead_consonant],
+--             medial_vowels  [medial_vowel  ],
+--             tail_consonants[tail_consonant]
+--         )
+--     end
+-- end
 
-local remapped = { -- this will be merged into char-def.lua
+local function description(unicode)
+    local index = unicode - 0xAC00
+    if index >= 0 and index < 19 * 21 * 28 then
+        local lead_consonant = floor( index / (21 * 28))
+        local medial_vowel   = floor((index % (21 * 28)) / 28)
+        local tail_consonant =        index % 28
+        return format(
+            "HANGUL SYLLABLE %s%s%s",
+            lead_consonants[lead_consonant],
+            medial_vowels  [medial_vowel  ],
+            tail_consonants[tail_consonant]
+        )
+    end
+end
+
+-- so far
+
+-- We have a [lead consonant,medial vowel,tail consonant] where the last one
+-- is optional. For sort ranges we need the first one but some are collapsed.
+-- Beware, we map to modern so the font should support it.
+
+local function leadconsonant(unicode)
+    return
+ -- unicode  < 0xAC00 and nil       -- original
+ -- unicode  > 0xD7AF and nil    or -- original
+    unicode >= 0xD558 and 0x314E or -- 하 => ㅎ
+    unicode >= 0xD30C and 0x314D or -- 파 => ㅍ
+    unicode >= 0xD0C0 and 0x314C or -- 타 => ㅌ
+    unicode >= 0xCE74 and 0x314B or -- 카 => ㅋ
+    unicode >= 0xCC28 and 0x314A or -- 차 => ㅊ
+    unicode >= 0xC790 and 0x3148 or -- 자 => ㅈ
+    unicode >= 0xC544 and 0x3147 or -- 아 => ㅇ
+    unicode >= 0xC0AC and 0x3145 or -- 사 => ㅅ
+    unicode >= 0xBC14 and 0x3142 or -- 바 => ㅂ
+    unicode >= 0xB9C8 and 0x3141 or -- 마 => ㅁ
+    unicode >= 0xB77C and 0x3139 or -- 라 => ㄹ
+    unicode >= 0xB2E4 and 0x3137 or -- 다 => ㄷ
+    unicode >= 0xB098 and 0x3134 or -- 나 => ㄴ
+    unicode >= 0xAC00 and 0x3131 or -- 가 => ㄱ
+                          nil       -- can't happen
+end
+
+local remapped = { -- this might be merged into char-def.lua
     [0x1100] = 0x3131, -- G
     [0x1101] = 0x3132, -- GG
     [0x1102] = 0x3134, -- N
@@ -120,34 +209,11 @@ local remapped = { -- this will be merged into char-def.lua
     [0x11C1] = 0x314E, -- H
 }
 
-local function decomposed(unicode)
-    local SIndex = unicode - SBase
-    if SIndex >= 0 and SIndex < SCount then
-        local L = LBase + floor(SIndex / NCount)
-        local V = VBase + floor((SIndex % NCount) / TCount)
-        local T = TBase + SIndex % TCount
-        if T ~= TBase then
-            return L, V, T
-        else
-            return L, V
-        end
-    end
-end
-
-local function description(unicode)
-    local SIndex = unicode - SBase
-    if SIndex >= 0 and SIndex < SCount then
-        local LIndex = floor(SIndex / NCount)
-        local VIndex = floor((SIndex % NCount) / TCount)
-        local TIndex = SIndex % TCount
-        return format("HANGUL SYLLABLE %s%s%s",L_TABLE[LIndex],V_TABLE[VIndex],T_TABLE[TIndex])
-    end
-end
-
 characters.hangul = {
-    decomposed  = decomposed,
-    description = description,
-    remapped    = remapped,
+    decomposed    = decomposed,
+    description   = description,
+    leadconsonant = leadconsonant,
+    remapped      = remapped,
 }
 
 -- so far
@@ -164,32 +230,14 @@ local hangul_syllable_metatable = {
     __index = function(t,k)
         local u = t.unicodeslot
         if k == "fscode" then
-            local fscode = -- firstsplitcode
-               u  < 0xAC00 and nil    -- original
-            or u  > 0xD7AF and nil    -- original
-            or u >= 0xD558 and 0x314E -- 하 => ㅎ
-            or u >= 0xD30C and 0x314D -- 파 => ㅍ
-            or u >= 0xD0C0 and 0x314C -- 타 => ㅌ
-            or u >= 0xCE74 and 0x314B -- 카 => ㅋ
-            or u >= 0xCC28 and 0x314A -- 차 => ㅊ
-            or u >= 0xC790 and 0x3148 -- 자 => ㅈ
-            or u >= 0xC544 and 0x3147 -- 아 => ㅇ
-            or u >= 0xC0AC and 0x3145 -- 사 => ㅅ
-            or u >= 0xBC14 and 0x3142 -- 바 => ㅂ
-            or u >= 0xB9C8 and 0x3141 -- 마 => ㅁ
-            or u >= 0xB77C and 0x3139 -- 라 => ㄹ
-            or u >= 0xB2E4 and 0x3137 -- 다 => ㄷ
-            or u >= 0xB098 and 0x3134 -- 나 => ㄴ
-            or u >= 0xAC00 and 0x3131 -- 가 => ㄱ -- was 0xAC20
-            or                 nil    -- can't happen
-            t[k] = fscode
-            return fscode
+            -- no need to cache this as we normally use fscodes
+            return leadconsonant(u)
         elseif k == "specials" then
             return { "char", decomposed(u) }
         elseif k == "description" then
             return description(u)
         else
-            return hangul_syllable_basetable[k]-- no store
+            return hangul_syllable_basetable[k]
         end
     end
 }

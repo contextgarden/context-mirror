@@ -253,8 +253,8 @@
 % States:
 
 \newif\ifrightpage    \rightpagetrue
-\newif\ifdoublesided
-\newif\ifsinglesided
+\newif\ifdoublesided  \newconditional\layoutisdoublesided
+\newif\ifsinglesided  \newconditional\layoutissinglesided
 
 % Realpage and subpage numbers:
 
@@ -304,12 +304,12 @@
   {\getparameters[\??nm][#1]\the\everysetuppagenumbering}
 
 \appendtoks
-   \singlesidedfalse
-   \doublesidedfalse
+   \singlesidedfalse \setfalse\layoutisdoublesided
+   \doublesidedfalse \setfalse\layoutissinglesided
    \normalexpanded{\noexpand\processallactionsinset[\@@nmalternative]}
-     [ \v!singlesided=>\singlesidedtrue,
-       \v!doublesided=>\doublesidedtrue]%
-   \ifx\trackingmarginnotestrue\undefined\else
+     [ \v!singlesided=>\singlesidedtrue\settrue\layoutissinglesided,
+       \v!doublesided=>\doublesidedtrue\settrue\layoutisdoublesided]%
+   \ifdefined\trackingmarginnotestrue
      \ifdoublesided
        \trackingmarginnotestrue
      \else
