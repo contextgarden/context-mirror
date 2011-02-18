@@ -357,3 +357,27 @@ local utftype = lpeg.patterns.utftype
 function unicode.filetype(data)
     return data and lpegmatch(utftype,data) or "unknown"
 end
+
+--~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
+--~
+--~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )
+--~
+--~ collectgarbage("collect")
+--~ local u = collectgarbage("count")*1024
+--~ local t = os.clock()
+--~ for i=1,1000 do
+--~     for i=1,600 do
+--~         local a = utfchr[i]
+--~     end
+--~ end
+--~ print(os.clock()-t,collectgarbage("count")*1024-u)
+
+--~ collectgarbage("collect")
+--~ local t = os.clock()
+--~ for i=1,1000 do
+--~     for i=1,600 do
+--~         local a = utfchar(i)
+--~     end
+--~ end
+--~ print(os.clock()-t,collectgarbage("count")*1024-u)
+

@@ -586,6 +586,7 @@
 		<cd:constant name='bottomstate' value='وضعیت‌پایین'/>
 		<cd:constant name='cache' value='میانگیر'/>
 		<cd:constant name='calculate' value='محاسبه'/>
+		<cd:constant name='category' value='category'/>
 		<cd:constant name='ccommand' value='فرمان'/>
 		<cd:constant name='click' value='فشردن'/>
 		<cd:constant name='clickin' value='فشردن‌داخل'/>

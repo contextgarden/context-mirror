@@ -527,7 +527,7 @@ local function showsimplelist(h,depth,n)
         if not depth or n < depth then
             local id = h.id
             if id == hlist_code or id == vlist_code then
-                show_simple_list(h.list,depth,n+1)
+                showsimplelist(h.list,depth,n+1)
             end
         end
         h = h.next
@@ -542,7 +542,7 @@ end
 --~ callback.register('buildpage_filter',nil)
 --~ \stopluacode
 
-nodes.show_simple_list = function(h,depth) show_simple_list(h,depth,0) end
+nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
 function nodes.listtoutf(h,joiner)
     local joiner = (joiner ==true and utfchar(0x200C)) or joiner -- zwnj

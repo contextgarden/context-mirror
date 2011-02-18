@@ -62,7 +62,7 @@ tasks.appendaction("math",         "normalizers", "noads.handlers.tags",     nil
 
 tasks.appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 
--- quite experimental
+-- quite experimental (nodes.handlers.graphicvadjust might go away)
 
 tasks.appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 tasks.appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental

@@ -525,10 +525,10 @@ local function locate(request) -- name, format, cache
     local askedconversion = request.conversion
     local askedresolution = request.resolution
     if askedformat ~= "" then
-        if trace_figures then
-            report_inclusion("strategy: forced format")
-        end
         askedformat = lower(askedformat)
+        if trace_figures then
+            report_inclusion("strategy: forced format %s",askedformat)
+        end
         local format = figures.suffixes[askedformat]
         if not format then
             local figurepatterns = figures.patterns
@@ -541,7 +541,7 @@ local function locate(request) -- name, format, cache
             end
         end
         if format then
-            local foundname = figures.exists(askedname,format,resolve_too) -- not askedformat
+            local foundname, quitscanning = figures.exists(askedname,format,resolve_too) -- not askedformat
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
@@ -552,7 +552,11 @@ local function locate(request) -- name, format, cache
                     conversion = askedconversion,
                     resolution = askedresolution,
                 })
+            elseif quitscanning then
+                return register(askedname)
             end
+        elseif trace_figures then
+            report_inclusion("strategy: unknown format %s",askedformat)
         end
         if askedpath then
             -- path and type given, todo: strip pieces of path
@@ -742,23 +746,28 @@ function figures.identify(data)
     end
     return data
 end
+
 function figures.exists(askedname,format,resolve)
     return (existers[format] or existers.generic)(askedname,resolve)
 end
+
 function figures.check(data)
     data = data or figures.current()
     local dr, du, ds = data.request, data.used, data.status
     return (checkers[ds.format] or checkers.generic)(data)
 end
+
 function figures.include(data)
     data = data or figures.current()
     local dr, du, ds = data.request, data.used, data.status
     return (includers[ds.format] or includers.generic)(data)
 end
+
 function figures.scale(data) -- will become lua code
     context.doscalefigure()
     return data
 end
+
 function figures.done(data)
     figures.nofprocessed = figures.nofprocessed + 1
     data = data or figures.current()
@@ -960,6 +969,7 @@ function existers.mps(askedname)
         return existers.generic(askedname)
     end
 end
+
 function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
@@ -968,6 +978,7 @@ function checkers.mps(data)
         return checkers.nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
     end
 end
+
 includers.mps = includers.nongeneric
 
 -- -- -- tex -- -- --
@@ -976,25 +987,35 @@ function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
     return (askedname ~= "" and askedname) or false
 end
+
 function checkers.tex(data)
     return checkers.nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
 end
+
 includers.tex = includers.nongeneric
 
 -- -- -- buffer -- -- --
 
-existers.buffer = existers.tex
+function existers.buffer(askedname)
+    local name = file.nameonly(askedname)
+    local okay = buffers.exists(name)
+    return okay and name, true -- always quit scanning
+end
+
 function checkers.buffer(data)
     return checkers.nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
 end
+
 includers.buffers = includers.nongeneric
 
 -- -- -- cld -- -- --
 
 existers.cld = existers.tex
+
 function checkers.cld(data)
     return checkers.nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
 end
+
 includers.cld = includers.nongeneric
 
 -- -- -- converters -- -- --

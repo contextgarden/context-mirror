@@ -3578,6 +3578,9 @@ function unicode.filetype(data)
 end
 
 
+
+
+
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
@@ -3593,35 +3596,28 @@ if not modules then modules = { } end modules ['l-math'] = {
 local floor, sin, cos, tan = math.floor, math.sin, math.cos, math.tan
 
 if not math.round then
-    function math.round(x)
-        return floor(x + 0.5)
-    end
+    function math.round(x) return floor(x + 0.5) end
 end
 
 if not math.div then
-    function math.div(n,m)
-        return floor(n/m)
-    end
+    function math.div(n,m) return floor(n/m) end
 end
 
 if not math.mod then
-    function math.mod(n,m)
-        return n % m
-    end
+    function math.mod(n,m) return n % m end
 end
 
 local pipi = 2*math.pi/360
 
-function math.sind(d)
-    return sin(d*pipi)
+if not math.sind then
+    function math.sind(d) return sin(d*pipi) end
+    function math.cosd(d) return cos(d*pipi) end
+    function math.tand(d) return tan(d*pipi) end
 end
 
-function math.cosd(d)
-    return cos(d*pipi)
-end
-
-function math.tand(d)
-    return tan(d*pipi)
+if not math.odd then
+    function math.odd (n) return n % 2 == 0 end
+    function math.even(n) return n % 2 ~= 0 end
 end
 
 
@@ -4562,7 +4558,7 @@ function statistics.show(reporter)
         end)
         register("callbacks", function()
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
-            return format("direct: %s, indirect: %s, total: %s", total-indirect, indirect, total)
+            return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
         end)
         collectgarbage("collect")
         register("current memory usage", statistics.memused)
@@ -11772,8 +11768,8 @@ local function collect_instance_files(filename,askedformat,allresults) -- todo :
             local filelist = collect_files(wantedfiles)
             local fl = filelist and filelist[1]
             if fl then
-                filename = fl[3]
-                result[#result+1] = filename
+                filename = fl[3]  -- not local?
+                result[#result+1] = resolvers.resolve(filename)
                 done = true
             end
         else

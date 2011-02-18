@@ -126,19 +126,27 @@ function pool.kern(k)
     return n
 end
 
-function pool.gluespec(width,stretch,shrink)
+function pool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
     local s = copy_node(glue_spec)
-    s.width, s.stretch, s.shrink = width, stretch, shrink
+    if width         then s.width         = width         end
+    if stretch       then s.stretch       = stretch       end
+    if shrink        then s.shrink        = shrink        end
+    if stretch_order then s.stretch_order = stretch_order end
+    if shrink_order  then s.shrink_order  = shrink_order  end
     return s
 end
 
-local function someskip(skip,width,stretch,shrink)
+local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
     local n = copy_node(skip)
     if not width then
         -- no spec
-    elseif tonumber(width) then
+    elseif width == false or tonumber(width) then
         local s = copy_node(glue_spec)
-        s.width, s.stretch, s.shrink = width, stretch, shrink
+        if width         then s.width         = width         end
+        if stretch       then s.stretch       = stretch       end
+        if shrink        then s.shrink        = shrink        end
+        if stretch_order then s.stretch_order = stretch_order end
+        if shrink_order  then s.shrink_order  = shrink_order  end
         n.spec = s
     else
         -- shared
@@ -147,20 +155,49 @@ local function someskip(skip,width,stretch,shrink)
     return n
 end
 
-function pool.glue(width,stretch,shrink)
-    return someskip(glue,width,stretch,shrink)
+function pool.stretch(a,b)
+    local n = copy_node(glue)
+    local s = copy_node(glue_spec)
+    if b then
+        s.stretch       = a
+        s.stretch_order = b
+    else
+        s.stretch       = 1
+        s.stretch_order = a or 1
+    end
+    n.spec = s
+    return n
 end
 
-function pool.leftskip(width,stretch,shrink)
-    return someskip(leftskip,width,stretch,shrink)
+function pool.shrink(a,b)
+    local n = copy_node(glue)
+    local s = copy_node(glue_spec)
+    if b then
+        s.shrink       = a
+        s.shrink_order = b
+    else
+        s.shrink       = 1
+        s.shrink_order = a or 1
+    end
+    n.spec = s
+    return n
 end
 
-function pool.rightskip(width,stretch,shrink)
-    return someskip(rightskip,width,stretch,shrink)
+
+function pool.glue(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
 end
 
-function pool.lineskip(width,stretch,shrink)
-    return someskip(lineskip,width,stretch,shrink)
+function pool.leftskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(leftskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function pool.rightskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(rightskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function pool.lineskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(lineskip,width,stretch,shrink,stretch_order,shrink_order)
 end
 
 function pool.baselineskip(width,stretch,shrink)

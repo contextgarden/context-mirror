@@ -108,14 +108,23 @@
    \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
        \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
 
+\newconditional \injectraggedpagesignals \settrue\injectraggedpagesignals
+
 \def\dosetraggedcommand#1%
   {\normalexpanded{\noexpand\dodosetraggedcommand{#1}}}
+
+\def\dosetpureraggedcommand#1%
+  {\setfalse\injectraggedpagesignals
+   \normalexpanded{\dodosetraggedcommand{#1}}%
+   \settrue\injectraggedpagesignals}
 
 \newtoks\everyraggedcommand
 
 \def\raggedcommand{\the\everyraggedcommand}
 
-\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
+% slow, we can do this in lua ... some day
+
+\unexpanded\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
   {\everyraggedcommand\emptytoks
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
@@ -193,17 +202,29 @@
 \setvalue{\@@ragged@@command\v!normal}%
   {\appendtoks\notragged\to\everyraggedcommand}
 
-\setvalue{\@@ragged@@command\v!inner}% not yet perfect
-  {\signalrightpage % may interfere
-   \doifrightpageelse
-     {\getvalue{\@@ragged@@command\v!right}}
-     {\getvalue{\@@ragged@@command\v!left}}}
+\setvalue{\@@ragged@@command\v!inner}%
+  {\ifconditional\injectraggedpagesignals
+     \signalrightpage % may interfere
+     \doifrightpageelse
+       {\getvalue{\@@ragged@@command\v!right}}%
+       {\getvalue{\@@ragged@@command\v!left }}%
+   \else
+     \rightorleftpageaction
+       {\getvalue{\@@ragged@@command\v!left }}%
+       {\getvalue{\@@ragged@@command\v!right}}%
+   \fi}
 
-\setvalue{\@@ragged@@command\v!outer}% not yet perfect
-  {\signalrightpage % may interfere
-   \doifrightpageelse
-     {\getvalue{\@@ragged@@command\v!left}}
-     {\getvalue{\@@ragged@@command\v!right}}}
+\setvalue{\@@ragged@@command\v!outer}%
+  {\ifconditional\injectraggedpagesignals
+     \signalrightpage % may interfere
+     \doifrightpageelse
+       {\getvalue{\@@ragged@@command\v!left }}%
+       {\getvalue{\@@ragged@@command\v!right}}%
+   \else
+     \rightorleftpageaction
+       {\getvalue{\@@ragged@@command\v!right}}%
+       {\getvalue{\@@ragged@@command\v!left }}%
+   \fi}
 
 \setvalue{\@@ragged@@command\v!lesshyphenation}%
   {\appendtoks\lesshyphens\to\everyraggedcommand}
