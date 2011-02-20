@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
     license   = "see context related readme files"
 }
 
+-- we need to rewrite this a bit ... rather old code
+
 local attributes, nodes, node = attributes, nodes, node
 
 local texwrite = tex.write
@@ -22,35 +24,30 @@ local has_attribute   = node.has_attribute
 local first_glyph     = node.first_glyph or node.first_character
 local traverse_id     = node.traverse_id
 
+local texsetattribute = tex.setattribute
+
 local nodecodes       = nodes.nodecodes
 local unsetvalue      = attributes.unsetvalue
 
 local glyph_code      = nodecodes.glyph
 local glue_code       = nodecodes.glue
 
-local state           = attributes.private('state')
-local preproc         = attributes.private('preproc')
-local prestat         = attributes.private('prestat')
+local a_preproc       = attributes.private('preproc')
+local a_prestat       = attributes.private('prestat')
 
 local fontdata        = fonts.identifiers
 
-local fcs             = fonts.colors.set
+local fcs             = fonts.colors.set     -- move this to tracers
 local fcr             = fonts.colors.reset
 
 scripts               = scripts or { }
 local scripts         = scripts
 
-scripts.handlers      = scripts.handlers or { }
-local handlers        = scripts.handlers
-
-scripts.names         = allocate()
-local names           = scripts.names
-
-scripts.numbers       = allocate()
-local numbers         = scripts.numbers
-
 scripts.hash          = scripts.hash or { }
 local hash            = scripts.hash
+
+local handlers        = allocate()
+scripts.handlers      = handlers
 
 storage.register("scripts/hash", hash, "scripts.hash")
 
@@ -181,25 +178,107 @@ if not next(hash) then
 
 end
 
+local numbertodataset = allocate()
+local numbertohandler = allocate()
+
+scripts.numbertodataset = numbertodataset
+
+function scripts.installmethod(handler)
+    local name = handler.name
+    handlers[name] = handler
+    local attributes = { }
+    local datasets = handler.datasets
+    if not datasets or not datasets.default then
+        report_preprocessing("missing (default) dataset in script '%s'",name)
+    end
+    setmetatable(attributes, {
+        __index = function(t,k)
+            local v = datasets[k] or datasets.default
+            local a = unsetvalue
+            if v then
+                v.name = name -- for tracing
+                a = #numbertodataset + 1
+                numbertodataset[a] = v
+                numbertohandler[a] = handler
+            end
+            t[k] = a
+            return a
+        end
+    } )
+    handler.attributes = attributes
+end
+
+function scripts.installdataset(specification) -- global overload
+    local method  = specification.method
+    local name    = specification.name
+    local dataset = specification.dataset
+    if method and name and dataset then
+        local parent  = specification.parent or ""
+        local handler = handlers[method]
+        if handler then
+            local datasets = handler.dataset
+            if datasets then
+                local defaultset = datasets.default
+                if defaultset then
+                    if parent ~= "" then
+                        local p = datasets[parent]
+                        if p then
+                            defaultset = p
+                        else
+                            report_preprocessing("dataset, unknown parent '%s' for method '%s'",parent,method)
+                        end
+                    end
+                    setmetatable(dataset,defaultset)
+                    local existing = datasets[name]
+                    if existing then
+                        for k, v in next, existing do
+                            existing[k] = v
+                        end
+                    else
+                        datasets[name] = dataset
+                    end
+                else
+                    report_preprocessing("dataset, no default for method '%s'",method)
+                end
+            else
+                report_preprocessing("dataset, no datasets for method '%s'",method)
+            end
+        else
+            report_preprocessing("dataset, no method '%s'",method)
+        end
+    else
+        report_preprocessing("dataset, invalid specification") -- maybe report table
+    end
+end
+
+function scripts.set(name,method,preset)
+    local handler = handlers[method]
+    texsetattribute(a_preproc,handler and handler.attributes[preset] or unsetvalue)
+end
+
+function scripts.reset()
+    texsetattribute(handler.attributes[preset])
+end
+
 -- the following tables will become a proper installer
 
-scripts.colors = allocate {  -- todo: just named colors
-    korean           = "font:isol",
-    chinese          = "font:rest",
-    full_width_open  = "font:init",
-    full_width_close = "font:fina",
-    half_width_open  = "font:init",
-    half_width_close = "font:fina",
-    hyphen           = "font:medi",
-    non_starter      = "font:isol",
-    jamo_initial     = "font:init",
-    jamo_medial      = "font:medi",
-    jamo_final       = "font:fina",
+local scriptcolors = allocate {  -- todo: just named colors
+    korean           = "trace:0",
+    chinese          = "trace:0",
+    full_width_open  = "trace:1",
+    full_width_close = "trace:2",
+    half_width_open  = "trace:3",
+    half_width_close = "trace:4",
+    hyphen           = "trace:5",
+    non_starter      = "trace:6",
+    jamo_initial     = "trace:7",
+    jamo_medial      = "trace:8",
+    jamo_final       = "trace:9",
 }
 
-local colors = scripts.colors
+scripts.colors = scriptcolors
 
-local numbertokind = allocate {
+local numbertokind = allocate { -- rather bound to cjk ... will be generalized
     "korean",
     "chinese",
     "full_width_open",
@@ -213,52 +292,18 @@ local numbertokind = allocate {
     "jamo_final",
 }
 
-local kindtonumber = allocate {
-    korean           =  1,
-    chinese          =  2,
-    full_width_open  =  3,
-    full_width_close =  4,
-    half_width_open  =  5,
-    half_width_close =  6,
-    hyphen           =  7,
-    non_starter      =  8,
-    jamo_initial     =  9,
-    jamo_medial      = 10,
-    jamo_final       = 11,
-}
+local kindtonumber = allocate(table.swapped(numbertokind)) -- could be one table
 
 scripts.kindtonumber = kindtonumber
 scripts.numbertokind = numbertokind
-
--- no, this time loading the lua always precedes the definitions
---
--- storage.register("scripts/names",   scripts.names,   "scripts.names")
--- storage.register("scripts/numbers", scripts.numbers, "scripts.numbers")
-
--- maybe also process
-
-function scripts.install(handler)
-    local name = handler.name
-    if not names[name] then
-        local n = #numbers + 1
-        numbers[n] = name
-        names[name] = n
-        handlers[n] = handler
-    end
-    return names[name]
-end
-
-function scripts.define(name)
-    texwrite(names[name] or unsetvalue)
-end
 
 -- some time i will make a fonts.originals[id]
 
 local function colorize(start,stop)
     for n in traverse_id(glyph_code,start) do
-        local kind = numbertokind[has_attribute(n,prestat)]
+        local kind = numbertokind[has_attribute(n,a_prestat)]
         if kind then
-            local ac = colors[kind]
+            local ac = scriptcolors[kind]
             if ac then
                 fcs(n,ac)
             end
@@ -272,9 +317,11 @@ end
 local function traced_process(head,first,last,process,a)
     if start ~= last then
         local f, l = first, last
-        report_preprocessing("before %s: %s",names[a] or "?",nodes.tosequence(f,l))
+        local name = numbertodataset[a]
+        name = name and name.name or "?"
+        report_preprocessing("before %s: %s",name,nodes.tosequence(f,l))
         process(head,first,last)
-        report_preprocessing("after %s: %s", names[a] or "?",nodes.tosequence(f,l))
+        report_preprocessing("after %s: %s", name,nodes.tosequence(f,l))
     end
 end
 
@@ -293,7 +340,7 @@ function scripts.preprocess(head)
         while start do
             local id = start.id
             if id == glyph_code then
-                local a = has_attribute(start,preproc)
+                local a = has_attribute(start,a_preproc)
                 if a then
                     if a ~= last_a then
                         if first then
@@ -311,7 +358,7 @@ function scripts.preprocess(head)
                             first, last = nil, nil
                         end
                         last_a = a
-                        local handler = handlers[a]
+                        local handler = numbertohandler[a]
                         normal_process = handler.process
                     end
                     if normal_process then
@@ -324,7 +371,7 @@ function scripts.preprocess(head)
                         if originals then c = originals[c] or c end
                         local h = hash[c]
                         if h then
-                            set_attribute(start,prestat,kindtonumber[h])
+                            set_attribute(start,a_prestat,kindtonumber[h])
                             if not first then
                                 first, last = start, start
                             else

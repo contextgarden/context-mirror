@@ -300,6 +300,29 @@ function nodes.writable_spec(n) -- not pool
     return spec
 end
 
+-- local num = userids["my id"]
+-- local str = userids[num]
+
+local userids = utilities.storage.allocate()  pool.userids = userids
+local lastid  = 0
+
+setmetatable(userids, {
+    __index = function(t,k)
+        if type(k) == "string" then
+            local n = lastid + 1
+            rawset(userids,n,k)
+            rawset(userids,k,n)
+            return n
+        else
+            rawset(userids,k,k)
+            return k
+        end
+    end,
+    __call = function(t,k)
+        return t[k]
+    end
+} )
+
 function pool.usernumber(id,num) -- if one argument then num
     local n = copy_node(user_n)
     if num then

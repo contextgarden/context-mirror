@@ -96,7 +96,8 @@ local ranges      = allocate()
 characters.ranges = ranges
 
 setmetatablekey(data, "__index", function(t,k)
-    if type(k) == "string" then
+    local tk = type(k)
+    if tk == "string" then
         k = lpegmatch(pattern,k) or utfbyte(k)
         if k then
             local tk = rawget(t,k)
@@ -109,7 +110,7 @@ setmetatablekey(data, "__index", function(t,k)
             return private
         end
     end
-    if k < 0xF0000 then
+    if tk == "number" and k < 0xF0000 then
         for r=1,#ranges do
             local rr = ranges[r]
             if k >= rr.first and k <= rr.last then
@@ -911,3 +912,32 @@ end
 -- end
 
 --~ characters.data, characters.groups = chardata, groupdata
+
+--~  [0xF0000]={
+--~   category="co",
+--~   cjkwd="a",
+--~   description="<Plane 0x000F Private Use, First>",
+--~   direction="l",
+--~   unicodeslot=0xF0000,
+--~  },
+--~  [0xFFFFD]={
+--~   category="co",
+--~   cjkwd="a",
+--~   description="<Plane 0x000F Private Use, Last>",
+--~   direction="l",
+--~   unicodeslot=0xFFFFD,
+--~  },
+--~  [0x100000]={
+--~   category="co",
+--~   cjkwd="a",
+--~   description="<Plane 0x0010 Private Use, First>",
+--~   direction="l",
+--~   unicodeslot=0x100000,
+--~  },
+--~  [0x10FFFD]={
+--~   category="co",
+--~   cjkwd="a",
+--~   description="<Plane 0x0010 Private Use, Last>",
+--~   direction="l",
+--~   unicodeslot=0x10FFFD,
+--~  },

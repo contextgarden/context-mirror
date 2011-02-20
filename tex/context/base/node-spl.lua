@@ -67,6 +67,7 @@ local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
+local usernodeids        = nodepool.userids
 
 local new_textdir        = nodepool.textdir
 local new_usernumber     = nodepool.usernumber
@@ -215,6 +216,9 @@ end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0
 
+local splitter_one = usernodeids["splitters.one"]
+local splitter_two = usernodeids["splitters.two"]
+
 function splitters.split(head)
     -- quite fast
     local current, done, rlmode, start, stop, attribute = head, false, false, nil, nil, 0
@@ -224,8 +228,8 @@ function splitters.split(head)
         local last = stop.next
         local list = last and copy_nodelist(start,last) or copy_nodelist(start)
         local n = #cache + 1
-        local user_one = new_usernumber(1,n)
-        local user_two = new_usernumber(2,n)
+        local user_one = new_usernumber(splitter_one,n)
+        local user_two = new_usernumber(splitter_two,n)
         head, start = insert_node_before(head,start,user_one)
         insert_node_after(head,stop,user_two)
         if rlmode == "TRT" or rlmode == "+TRT" then
@@ -296,11 +300,11 @@ local function collect_words(list)
     for current in traverse_ids(whatsit_code,list) do
         if current.subtype == userdefined_code then
             local user_id = current.user_id
-            if user_id == 1 then
+            if user_id == splitter_one then
                 word = { current.value, current, current }
                 w = w + 1
                 words[w] = word
-            elseif user_id == 2 then
+            elseif user_id == splitter_two then
                 word[3] = current
             end
         end
