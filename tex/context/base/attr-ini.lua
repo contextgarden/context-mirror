@@ -17,6 +17,8 @@ attributes = attributes or { }
 
 local attributes, nodes = attributes, nodes
 
+-- todo: local and then gobals ... first loaded anyway
+
 attributes.names      = attributes.names    or { }
 attributes.numbers    = attributes.numbers  or { }
 attributes.list       = attributes.list     or { }
@@ -44,13 +46,36 @@ happens in <l n='context'/>.</p>
 
 storage.shared.attributes_last_private = storage.shared.attributes_last_private or 127
 
+-- to be considered (so that we can use an array access):
+--
+-- local private = { } attributes.private = private
+--
+-- setmetatable(private, {
+--     __index = function(t,name)
+--         local number = storage.shared.attributes_last_private or 127
+--         if number < 1023 then -- tex.count.minallocatedattribute - 1
+--             number = number + 1
+--             storage.shared.attributes_last_private = number
+--         end
+--         numbers[name], names[number], list[number] = number, name, { }
+--         private[name] = number
+--         return number
+--     end,
+--     __call = function(t,name)
+--         return t[name]
+--     end
+-- } )
+
 function attributes.private(name) -- at the lua end (hidden from user)
     local number = numbers[name]
     if not number then
         local last = storage.shared.attributes_last_private or 127
-        if last < 255 then
+        if last < 1023 then -- tex.count.minallocatedattribute - 1
             last = last + 1
             storage.shared.attributes_last_private = last
+        else
+            report_attribute("no more room for private attributes") -- fatal
+            os.exit()
         end
         number = last
         numbers[name], names[number], list[number] = number, name, { }

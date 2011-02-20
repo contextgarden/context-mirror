@@ -23,18 +23,19 @@ local glyph_code    = nodecodes.glyph
 
 local userskip_code = skipcodes.userskip
 
-local preproc = attributes.private('preproc')
-local prestat = attributes.private('prestat')
+local a_prestat = attributes.private('prestat')
+local a_preproc = attributes.private('preproc')
 
 scripts.cjk = scripts.cjk or { }
 
-local kindtonumber = scripts.kindtonumber
-local numbertokind = scripts.numbertokind
-local hash         = scripts.hash
-local cjk          = scripts.cjk
+local kindtonumber    = scripts.kindtonumber
+local numbertokind    = scripts.numbertokind
+local hash            = scripts.hash
+local cjk             = scripts.cjk
+local numbertodataset = scripts.numbertodataset
 
-local fontdata     = fonts.identifiers
-local quaddata     = fonts.quads
+local fontdata = fonts.identifiers
+local quaddata = fonts.quads
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -58,16 +59,20 @@ end
 local function nobreak(head,current)
     insert_node_before(head,current,new_penalty(10000))
 end
+
 local function stretch_break(head,current)
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
+
 local function shrink_break(head,current)
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
+
 local function nobreak_stretch(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
+
 local function korean_break(head,current)
     insert_node_before(head,current,new_penalty(inter_char_hangul_penalty))
 end
@@ -76,6 +81,7 @@ local function nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
+
 local function nobreak_autoshrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
@@ -89,6 +95,7 @@ local function nobreak_stretch_nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
+
 local function nobreak_stretch_nobreak_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
@@ -104,6 +111,7 @@ local function nobreak_shrink_nobreak_stretch(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
+
 local function nobreak_autoshrink_nobreak_stretch(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
@@ -118,6 +126,7 @@ local function nobreak_shrink_break_stretch(head,current)
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
+
 local function nobreak_autoshrink_break_stretch(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
@@ -133,6 +142,7 @@ local function nobreak_shrink_break_stretch_nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
 end
+
 local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
@@ -144,6 +154,7 @@ local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
         insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
     end
 end
+
 local function nobreak_autoshrink_break_stretch_nobreak_shrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
@@ -153,6 +164,7 @@ local function nobreak_autoshrink_break_stretch_nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
+
 local function nobreak_shrink_break_stretch_nobreak_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
@@ -168,6 +180,7 @@ local function nobreak_stretch_break_shrink(head,current)
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
     insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
 end
+
 local function nobreak_stretch_break_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
     insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
@@ -313,19 +326,13 @@ local injectors = { -- [previous] [current]
     },
 }
 
-local dataset = {
-    inter_char_stretch_factor     = 0.50, -- of quad
-    inter_char_half_shrink_factor = 0.50, -- of quad
-    inter_char_hangul_penalty     =   50,
-}
-
 local function process(head,first,last)
     if first ~= last then
         local lastfont, previous, originals, last = nil, "start", nil, nil
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = has_attribute(first,prestat)
+                local a = has_attribute(first,a_prestat)
                 local current = numbertokind[a]
                 local action = injectors[previous]
                 if action then
@@ -334,7 +341,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,dataset)
+                            set_parameters(font,numbertodataset[has_attribute(first,a_preproc)])
                         end
                         action(head,first)
                     end
@@ -345,7 +352,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
+                        local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
                         local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
@@ -374,9 +381,16 @@ local function process(head,first,last)
     end
 end
 
-scripts.install {
-    name = "hangul",
-    process = process,
+scripts.installmethod {
+    name     = "hangul",
+    process  = process,
+    datasets = {
+        default = {
+            inter_char_stretch_factor     = 0.50, -- of quad
+            inter_char_half_shrink_factor = 0.50, -- of quad
+            inter_char_hangul_penalty     =   50,
+        },
+    },
 }
 
 -- hanzi (chinese)
@@ -516,19 +530,13 @@ local injectors = { -- [previous] [current]
     },
 }
 
-local dataset = {
-    inter_char_stretch_factor     = 0.50, -- of quad
-    inter_char_half_shrink_factor = 0.50, -- of quad
-    inter_char_hangul_penalty     =   50,
-}
-
 local function process(head,first,last)
     if first ~= last then
         local lastfont, previous, originals, last = nil, "start", nil, nil
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
-                local a = has_attribute(first,prestat)
+                local a = has_attribute(first,a_prestat)
                 local current = numbertokind[a]
                 local action = injectors[previous]
                 if action then
@@ -537,7 +545,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,dataset)
+                            set_parameters(font,numbertodataset[get_attribute(first,a_preproc)])
                         end
                         action(head,first)
                     end
@@ -548,7 +556,7 @@ local function process(head,first,last)
                 if p and n then
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
-                        local pa, na = has_attribute(p,prestat), has_attribute(n,prestat)
+                        local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
                         local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
@@ -578,7 +586,14 @@ local function process(head,first,last)
     end
 end
 
-scripts.install {
-    name = "hanzi",
-    process = process,
+scripts.installmethod {
+    name     = "hanzi",
+    process  = process,
+    datasets = {
+        default = {
+            inter_char_stretch_factor     = 0.50, -- of quad
+            inter_char_half_shrink_factor = 0.50, -- of quad
+            inter_char_hangul_penalty     =   50,
+        },
+    },
 }

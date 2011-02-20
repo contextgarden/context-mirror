@@ -45,6 +45,15 @@
 \def\checkedmathchar#1#2{#2}
 \def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
 
+\unexpanded\def\textormathchar#1%
+  {\relax\ifmmode
+     \char#1\relax
+   \else\iffontchar\font#1\relax
+     \char#1\relax
+   \else
+     $\char#1$%
+   \fi\fi}
+
 %D The codes are stored in the format, so we don't need to reinitialize
 %D them (unless of course we have adapted the table). It is on the agenda
 %D to do this with \type {tex.lccode} cum suis once they're available.

@@ -618,7 +618,7 @@
   {\bgroup
    \advance\framednesting\plusone
    \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
-   \dodoubleempty\startlocalframed[\??ol:\the\framednesting]}
+   \dodoubleempty\dolocalframed[\??ol:\the\framednesting]}
 
 \unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
@@ -679,10 +679,6 @@
 %D used to speed up the color stack.
 
 \newif\ifinframed
-
-\unexpanded\def\localframed
-  {\bgroup
-   \dodoubleempty\startlocalframed}
 
 %D The next one is faster on multiple backgrounds per page. No
 %D dimensions can be set, only frames and backgrounds.
@@ -889,14 +885,38 @@
 
 % todo: protect local \framednames
 
-\unexpanded\def\startlocalframed[#1][#2]% it should be possible to set \@@framed before calling this which saves a [] scan
+\unexpanded\def\localframed
+  {\bgroup
+   \dodoubleempty\dolocalframed}
+
+\unexpanded\def\dolocalframed[#1][#2]% assumes a \dodoubleempty (slows down), also should have leading \bgroup
   {\bgroup
    \inframedtrue
    \edef\@@framed{#1}%
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
    \fi
-   \!!framedframeoffset\framedparameter\c!frameoffset
+   \dodolocalframed}
+
+\unexpanded\def\directlocalframed[#1]% no optional
+  {\bgroup
+   \bgroup
+   \inframedtrue
+   \edef\@@framed{#1}%
+   \dodolocalframed}
+
+\unexpanded\def\localframedwithsettings[#1][#2]% no checking (so no spaces between)
+  {\bgroup
+   \bgroup
+   \inframedtrue
+   \edef\@@framed{#1}%
+   \getparameters[\@@framed][#2]% here !
+   \dodolocalframed}
+
+\def\c!fr!analyze{fr:analyze} % private option
+
+\unexpanded\def\dodolocalframed
+  {\!!framedframeoffset\framedparameter\c!frameoffset
    \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
    \ifx\@@framedbackgroundoffset\v!frame
      \!!framedbackgroundoffset\!!framedframeoffset
@@ -927,6 +947,7 @@
    \edef\@@localorientation{\framedparameter\c!orientation}%
    %
    \edef\@@localautowidth  {\framedparameter\c!autowidth}%
+   \edef\@@localfranalyze  {\framedparameter\c!fr!analyze}% experimental option
    %
    \ifx\@@localframing\v!overlay   % no frame, no offset, no framewidth
      \boxhasframefalse
@@ -1118,7 +1139,7 @@
 
 \def\dowithframebox
   {% moved : \let\postprocessframebox\relax
-   \stoplocalframed}
+   \finishlocalframed}
 
 \def\dodowithframebox
   {\aftergroup\dowithframebox}
@@ -1158,31 +1179,59 @@
 %D ...,bottom=\kern0pt,...
 %D \stoptyping
 
-\unexpanded\def\stoplocalframed
+% experiment ... \@@localfranalyze -> we could support 'first' as location key
+% option but then we will always do an analysis and reimplement the location
+% options (btw, beware of location settings of derived functionality that bleed
+% into this
+
+\def\finishlocalframeda
+  {\ifreshapeframebox
+     \doreshapeframedbox
+   \else\ifx\@@localfranalyze\v!yes
+     \doanalyzeframedbox
+   \else
+     \resetshapeframebox
+   \fi\fi
+   \boxhaswidthfalse}
+
+\def\finishlocalframedb
+  {\ifx\@@localfranalyze\v!yes
+     \doanalyzeframedbox
+   \else
+     \resetshapeframebox
+   \fi
+   \boxhaswidthfalse}
+
+\def\finishlocalframedc
+  {\ifx\@@localfranalyze\v!yes
+     \doanalyzeframedbox
+   \else
+     \resetshapeframebox
+   \fi}
+
+\unexpanded\def\finishlocalframed
   {\dontshowcomposition
    \@@stopframedorientation % hm, wrong place ! should rotate the result (after reshape)
    \handleframedlocator\c!before\@@locallocation
    \ifboxhasformat
      \ifx\@@localautowidth\v!force
-       \ifreshapeframebox\doreshapeframedbox\fi
-       \boxhaswidthfalse
-     \else
-       \ifx\localwidth\v!fit
-         \ifx\@@localautowidth\v!yes
-           \ifreshapeframebox\doreshapeframedbox\fi
-         \fi
-         \boxhaswidthfalse
-       \else\ifx\localwidth\v!fixed
-         \boxhaswidthfalse
+       \finishlocalframeda
+     \else\ifx\localwidth\v!fit
+       \ifx\@@localautowidth\v!yes
+         \finishlocalframeda
        \else
-         \resetshapeframebox
-       \fi\fi
+         \finishlocalframedb
+       \fi
+     \else\ifx\localwidth\v!fixed
+       \finishlocalframedb
+     \else
+       \finishlocalframedc
+     \fi\fi\fi
+     \ifconditional\boxcontentneedsprocessing
+       \mkdoprocessboxcontents\framebox
      \fi
-    \ifconditional\boxcontentneedsprocessing
-      \mkdoprocessboxcontents\framebox
-    \fi
-    \else
-     \resetshapeframebox
+   \else
+     \finishlocalframedc
    \fi
    \ifboxhaswidth
      \wd\framebox\!!framedwidth
@@ -1832,21 +1881,20 @@
 %D doing so, we need to reshape the box:
 
 \newcount\framednoflines
-\newdimen\framedlastlength
+\newdimen\framedfirstheight
+\newdimen\framedlastdepth
 
 \def\resetshapeframebox
-  {\framednoflines  \zerocount
-   \framedlastlength\zeropoint}
+  {\framednoflines   \zerocount
+   \framedfirstheight\zeropoint
+   \framedlastdepth  \zeropoint}
 
 \let\framedboxwidth \!!zeropoint
 \let\framedboxheight\!!zeropoint
 \let\framedboxdepth \!!zeropoint
 
 \def\doreshapeframedbox{\ifvbox\framebox\ctxcommand{doreshapeframedbox(\number\framebox)}\fi}
-
-%D The two variables \type {\framednoflines} and \type
-%D {\framedlastlength} can be used in a second pass to
-%D optimized framed material.
+\def\doanalyzeframedbox{\ifvbox\framebox\ctxcommand{doanalyzeframedbox(\number\framebox)}\fi}
 
 % torture test / strange case (much depth) / method 2 needed
 %
@@ -2868,12 +2916,12 @@
    \getparameters[\??ol#1][\s!parent=\??ol,#2]%
    \setuvalue{#1}{\doframed[#1]}}% % \the\everydefineframed
 
-\def\doframed[#1]% we can speed up startlocalframed by using \currentlocalframed
+\def\doframed[#1]%
   {\bgroup
    \expandafter\let\expandafter\tempframedcount\csname\??ol:#1\endcsname
    \advance\tempframedcount\plusone
    \expandafter\def\csname\??ol#1:\the\tempframedcount\s!parent\endcsname{\??ol#1}% \copylocalframed
-   \dodoubleempty\startlocalframed[\??ol#1:\the\tempframedcount]}
+   \dodoubleempty\dolocalframed[\??ol#1:\the\tempframedcount]}
 
 %D We can do:
 %D
@@ -3237,7 +3285,6 @@
 %D declare a boolean.
 
 % 0=no-split, 1=no-split+indent, 2=split, 3=split+indent
-
 
 \setnewconstant\backgroundsplitmode\plusthree
 

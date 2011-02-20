@@ -10,16 +10,23 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 <p>An explanation is given in the history document <t>mk</t>.</p>
 --ldx]]--
 
-local texdimen, texcount, texbox = tex.dimen, tex.count, tex.box
+local texsetdimen, texsetcount, texbox = tex.setdimen, tex.setcount, tex.box
 local hpack, free, copy, traverse_id = node.hpack, node.free, node.copy_list, node.traverse_id
+local texdimen, texcount = tex.dimen, tex.count
+
+-- fastrepack
 
 function commands.doreshapeframedbox(n)
-    local noflines, lastlinelength, box = 0, 0, texbox[n]
+    local box, noflines, firstheight, lastdepth, lastlinelength = texbox[n], 0, nil, nil, 0
     if box.width ~= 0 then
         local list = box.list
         if list then
             local width, done = 0, false
             for h in traverse_id('hlist',list) do -- no dir etc needed
+                if not firstheight then
+                    firstheight = h.height
+                end
+                lastdepth = h.depth
                 local l = h.list
                 if l then
                     done = true
@@ -48,6 +55,28 @@ function commands.doreshapeframedbox(n)
             end
         end
     end
-    texdimen["framedlastlength"] = lastlinelength
-    texcount["framednoflines"]   = noflines
+--~     print("reshape", noflines, firstheight or 0, lastdepth or 0)
+    texsetcount("global","framednoflines",    noflines)
+    texsetdimen("global","framedfirstheight", firstheight or 0)
+    texsetdimen("global","framedlastdepth",   lastdepth or 0)
+end
+
+function commands.doanalyzeframedbox(n)
+    local box, noflines, firstheight, lastdepth = texbox[n], 0, nil, nil
+    if box.width ~= 0 then
+        local list = box.list
+        if list then
+            for h in traverse_id('hlist',list) do
+                if not firstheight then
+                    firstheight = h.height
+                end
+                lastdepth = h.depth
+                noflines = noflines + 1
+            end
+        end
+    end
+--~     print("analyze", noflines, firstheight or 0, lastdepth or 0)
+    texsetcount("global","framednoflines",    noflines)
+    texsetdimen("global","framedfirstheight", firstheight or 0)
+    texsetdimen("global","framedlastdepth",   lastdepth or 0)
 end

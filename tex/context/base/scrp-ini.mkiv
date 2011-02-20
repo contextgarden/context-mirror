@@ -25,62 +25,30 @@
 
 \unprotect
 
-\def\s!attribute{attribute}
+\installcommandhandler\??ls{script}\??ls
 
-\def\namedscriptparameter#1#2%
-  {\csname\doscriptparameter{\??ls#1}#2\endcsname}
+% presets are global and are currently defined in lua
 
-\def\scriptparameter#1%
-  {\csname\doscriptparameter{\??ls\currentscript}#1\endcsname}
+\appendtoks
+    \setuevalue\currentscript{\setscript[\currentscript]}%
+\to \everydefinescript
 
-\def\doscriptparameter#1#2%
-  {\ifcsname#1#2\endcsname#1#2\else\expandafter\doscriptparentparameter\csname#1\s!parent\endcsname#2\fi}
+\unexpanded\def\dosetscript
+  {\ctxlua{scripts.set("\currentscript","\scriptparameter\c!method","\scriptparameter\c!preset")}}
 
-\def\doscriptparentparameter#1#2%
-  {\ifx#1\relax\s!empty\else\doscriptparameter#1#2\fi}
+\unexpanded\def\setscript[#1]%
+  {\edef\currentscript{#1}%
+   \dosetscript}
 
-% \def\scriptparameterhash#1%
-%   {\doscriptparameterhash{\??ls\currentscript}#1}
-%
-% \def\doscriptparameterhash#1#2%
-%   {\ifcsname#1#2\endcsname#1\else\expandafter\doscriptparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-%
-% \def\doscriptparentparameterhash#1#2%
-%   {\ifx#1\relax\else\doscriptparameterhash#1#2\fi}
+\unexpanded\def\resetscript
+  {\ctxlua{scripts.reset()}}
 
-% when #2 == string, then only synonym, no settings
+\unexpanded\def\startscript[#1]%
+  {\begingroup
+   \dosetscript}
 
-\unexpanded\def\definescript
-  {\dodoubleargument\dodefinescript}
-
-\def\dodefinescript[#1][#2]%
-  {\doifassignmentelse{#2}
-     {\getparameters[\??ls#1][\c!method=,\s!parent=,#2]%
-      \doifelsenothing{\namedscriptparameter{#1}\c!method}
-        {\letvalue {\??ls#1\s!attribute}\attributeunsetvalue}%
-        {\setevalue{\??ls#1\s!attribute}{\ctxlua{scripts.define("\namedscriptparameter{#1}\c!method")}}}}%
-     {\getparameters[\??ls#1][\s!parent=#2]}%
-   \setvalue{#1}{\dosetscript{#1}}}
-
-\unexpanded\def\setupscript
-  {\dodoubleargument\dosetupscript}
-
-\def\dosetupscript[#1][#2]%
-  {\getparameters[\??ls#1][#2]}
-
-\def\dosetscript#1%
-  {\def\currentscript{#1}%
-   \edef\currentscriptattribute{\scriptparameter\s!attribute}%
-   \ifx\currentscriptattribute\empty
-     \let\currentscript\empty
-     \attribute\preprocattribute\attributeunsetvalue
-   \else
-     \attribute\preprocattribute\currentscriptattribute\relax % we can speed this up by storing the attribute in ??ls:a:#1
-   \fi}
-
-           \def\setscript  [#1]{\dosetscript{#1}}
-\unexpanded\def\startscript[#1]{\begingroup\dosetscript{#1}}
-\unexpanded\def\stopscript     {\endgroup}
+\unexpanded\def\stopscript
+  {\endgroup}
 
 % \setscript[hangul] \hangul \startscript[hangul]
 

@@ -28,6 +28,27 @@
 \definesymbol [square]      [\mathematics{\square}]
 \definesymbol [diamond]     [\mathematics{\diamond}]
 
+% I'm not sure about this ... I dislike the small bullet. So we provide
+% it as variant: \type {\setupsymbolset[text]}. Also, we want to be
+% backward compatible.
+
+\startsymbolset[text]
+
+    \definesymbol [bullet]        [\textormathchar{"2022}] % • \bullet
+    \definesymbol [dash]          [\textormathchar{"2013}] % –
+    \definesymbol [star]          [\textormathchar{"22C6}] % ✴ \star
+    \definesymbol [triangle]      [\textormathchar{"22B3}] % ⊳ \triangleright
+    \definesymbol [circle]        [\textormathchar{"2218}] % ∘ \circ
+    \definesymbol [square]        [\textormathchar{"25A1}] % □ \square
+    \definesymbol [diamond]       [\textormathchar{"22C4}] % ⋄ \diamond
+    \definesymbol [checkmark]     [\textormathchar{"2713}] % ✓ \checkmark
+
+    \definesymbol [blacktriangle] [\textormathchar{"25B6}] % ▶
+    \definesymbol [blacksquare]   [\textormathchar{"25A0}] % ■
+    \definesymbol [blackdiamond]  [\textormathchar{"25C6}] % ◆
+
+\stopsymbolset
+
 \definesymbol [smallcircle] [\hbox{\raise.1ex\hbox{\mathematics{\scriptscriptstyle\bigcirc}}}]
 \definesymbol [medcircle]   [\hbox{\raise.1ex\hbox{\mathematics{\scriptstyle      \bigcirc}}}]
 \definesymbol [bigcircle]   [\mathematics{\bigcirc}]

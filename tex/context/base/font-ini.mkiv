@@ -938,6 +938,8 @@
 
 % We could use an indirect method ... store in 'array' and refer to
 % slot.
+%
+% or nicer .. use parent chain
 
 \unexpanded\def\definefontsynonym[#1]#2[#3]%
   {\edef\@@fontname{#1}%
@@ -2113,16 +2115,21 @@
 
 \def\resetpreloadfonts
   {\glet\preloaddefaultfonts    \relax
-   \glet\preloaddefaultfontstt  \relax
-   \glet\preloaddefaultfontsmm  \relax
+  %\glet\preloaddefaultfontstt  \relax
+  %\glet\preloaddefaultfontsmm  \relax
    \glet\zerostagepreloadfonts  \relax
    \glet\firststagepreloadfonts \relax
    \glet\secondstagepreloadfonts\relax
-   \glet\thirdstagepreloadfonts \relax
+  %\glet\thirdstagepreloadfonts \relax
    \glet\fourthstagepreloadfonts\relax
    \global\everyhbox\emptytoks
    \global\everyvbox\emptytoks
    \resetnullfont}
+
+\def\resetcheckedfonts
+  {\glet\preloaddefaultfontstt  \relax
+   \glet\preloaddefaultfontsmm  \relax
+   \glet\thirdstagepreloadfonts \relax}
 
 \def\dozerostagepreloadfonts
   {\definedfont[\s!file:lmmono10-regular sa 1]}
@@ -2147,7 +2154,7 @@
   {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
    \preloaddefaultfonts}
 
-\def\thirdstagepreloadfonts
+\def\thirdstagepreloadfonts % always
   {\ifx\fontclass\empty
      \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
      \preloaddefaultfonts
@@ -2161,6 +2168,7 @@
        \preloaddefaultfontstt
      \fi
      \popmacro\fontstyle
+     \resetcheckedfonts % reset third, mm and tt
      \setupbodyfont[\fontstyle]%
    \fi}
 
@@ -2891,6 +2899,17 @@
 \let\afmchar\fontchar % will disappear, for compatibility only
 
 %D: We cannot yet inherit because no colors are predefined.
+
+\definecolor[trace:0][s=.6]
+\definecolor[trace:1][r=.6]
+\definecolor[trace:2][g=.6]
+\definecolor[trace:3][b=.6]
+\definecolor[trace:4][r=.6,g=.6]
+\definecolor[trace:5][r=.6,b=.6]
+\definecolor[trace:6][g=.6,b=.6]
+\definecolor[trace:7][r=.8,g=.4]
+\definecolor[trace:8][r=.8,b=.4]
+\definecolor[trace:9][g=.4,b=.8]
 
 \definecolor[font:init][r=.75]
 \definecolor[font:medi][g=.75]

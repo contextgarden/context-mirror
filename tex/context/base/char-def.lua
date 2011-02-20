@@ -25,6 +25,7 @@ characters.data={
   unicodeslot=0x0000,
  },
  {
+  adobename="controlSTX",
   category="cc",
   description="START OF HEADING",
   direction="bn",
@@ -32,6 +33,7 @@ characters.data={
   unicodeslot=0x0001,
  },
  {
+  adobename="controlSOT",
   category="cc",
   description="START OF TEXT",
   direction="bn",
@@ -39,6 +41,7 @@ characters.data={
   unicodeslot=0x0002,
  },
  {
+  adobename="controlETX",
   category="cc",
   description="END OF TEXT",
   direction="bn",
@@ -46,6 +49,7 @@ characters.data={
   unicodeslot=0x0003,
  },
  {
+  adobename="controlEOT",
   category="cc",
   description="END OF TRANSMISSION",
   direction="bn",
@@ -53,6 +57,7 @@ characters.data={
   unicodeslot=0x0004,
  },
  {
+  adobename="controlENQ",
   category="cc",
   description="ENQUIRY",
   direction="bn",
@@ -60,6 +65,7 @@ characters.data={
   unicodeslot=0x0005,
  },
  {
+  adobename="controlACK",
   category="cc",
   description="ACKNOWLEDGE",
   direction="bn",
@@ -67,6 +73,7 @@ characters.data={
   unicodeslot=0x0006,
  },
  {
+  adobename="controlBEL",
   category="cc",
   description="BELL",
   direction="bn",
@@ -74,6 +81,7 @@ characters.data={
   unicodeslot=0x0007,
  },
  {
+  adobename="controlBS",
   category="cc",
   description="BACKSPACE",
   direction="bn",
@@ -81,6 +89,7 @@ characters.data={
   unicodeslot=0x0008,
  },
  {
+  adobename="controlHT",
   category="cc",
   description="CHARACTER TABULATION",
   direction="s",
@@ -88,6 +97,7 @@ characters.data={
   unicodeslot=0x0009,
  },
  {
+  adobename="controlLF",
   category="cc",
   description="LINE FEED (LF)",
   direction="b",
@@ -95,6 +105,7 @@ characters.data={
   unicodeslot=0x000A,
  },
  {
+  adobename="controlVT",
   category="cc",
   description="LINE TABULATION",
   direction="s",
@@ -102,6 +113,7 @@ characters.data={
   unicodeslot=0x000B,
  },
  {
+  adobename="controlFF",
   category="cc",
   description="FORM FEED (FF)",
   direction="ws",
@@ -109,6 +121,7 @@ characters.data={
   unicodeslot=0x000C,
  },
  {
+  adobename="controlCR",
   category="cc",
   description="CARRIAGE RETURN (CR)",
   direction="b",
@@ -116,6 +129,7 @@ characters.data={
   unicodeslot=0x000D,
  },
  {
+  adobename="controlSO",
   category="cc",
   description="SHIFT OUT",
   direction="bn",
@@ -123,6 +137,7 @@ characters.data={
   unicodeslot=0x000E,
  },
  {
+  adobename="controlSI",
   category="cc",
   description="SHIFT IN",
   direction="bn",
@@ -130,6 +145,7 @@ characters.data={
   unicodeslot=0x000F,
  },
  {
+  adobename="controlDLE",
   category="cc",
   description="DATA LINK ESCAPE",
   direction="bn",
@@ -137,6 +153,7 @@ characters.data={
   unicodeslot=0x0010,
  },
  {
+  adobename="controlDC1",
   category="cc",
   description="DEVICE CONTROL ONE",
   direction="bn",
@@ -144,6 +161,7 @@ characters.data={
   unicodeslot=0x0011,
  },
  {
+  adobename="controlDC2",
   category="cc",
   description="DEVICE CONTROL TWO",
   direction="bn",
@@ -151,6 +169,7 @@ characters.data={
   unicodeslot=0x0012,
  },
  {
+  adobename="controlDC3",
   category="cc",
   description="DEVICE CONTROL THREE",
   direction="bn",
@@ -158,6 +177,7 @@ characters.data={
   unicodeslot=0x0013,
  },
  {
+  adobename="controlDC4",
   category="cc",
   description="DEVICE CONTROL FOUR",
   direction="bn",
@@ -165,6 +185,7 @@ characters.data={
   unicodeslot=0x0014,
  },
  {
+  adobename="controlNAK",
   category="cc",
   description="NEGATIVE ACKNOWLEDGE",
   direction="bn",
@@ -172,6 +193,7 @@ characters.data={
   unicodeslot=0x0015,
  },
  {
+  adobename="controlSYN",
   category="cc",
   description="SYNCHRONOUS IDLE",
   direction="bn",
@@ -179,6 +201,7 @@ characters.data={
   unicodeslot=0x0016,
  },
  {
+  adobename="controlETB",
   category="cc",
   description="END OF TRANSMISSION BLOCK",
   direction="bn",
@@ -186,6 +209,7 @@ characters.data={
   unicodeslot=0x0017,
  },
  {
+  adobename="controlCAN",
   category="cc",
   description="CANCEL",
   direction="bn",
@@ -193,6 +217,7 @@ characters.data={
   unicodeslot=0x0018,
  },
  {
+  adobename="controlEM",
   category="cc",
   description="END OF MEDIUM",
   direction="bn",
@@ -200,6 +225,7 @@ characters.data={
   unicodeslot=0x0019,
  },
  {
+  adobename="controlSUB",
   category="cc",
   description="SUBSTITUTE",
   direction="bn",
@@ -207,6 +233,7 @@ characters.data={
   unicodeslot=0x001A,
  },
  {
+  adobename="controlESC",
   category="cc",
   description="ESCAPE",
   direction="bn",
@@ -214,6 +241,7 @@ characters.data={
   unicodeslot=0x001B,
  },
  {
+  adobename="controlFS",
   category="cc",
   description="INFORMATION SEPARATOR FOUR",
   direction="b",
@@ -221,6 +249,7 @@ characters.data={
   unicodeslot=0x001C,
  },
  {
+  adobename="controlGS",
   category="cc",
   description="INFORMATION SEPARATOR THREE",
   direction="b",
@@ -228,6 +257,7 @@ characters.data={
   unicodeslot=0x001D,
  },
  {
+  adobename="controlRS",
   category="cc",
   description="INFORMATION SEPARATOR TWO",
   direction="b",
@@ -235,6 +265,7 @@ characters.data={
   unicodeslot=0x001E,
  },
  {
+  adobename="controlUS",
   category="cc",
   description="INFORMATION SEPARATOR ONE",
   direction="s",
@@ -267,8 +298,8 @@ characters.data={
   contextname="quotedbl",
   description="QUOTATION MARK",
   direction="on",
-  mathclass="default",
   linebreak="qu",
+  mathclass="default",
   unicodeslot=0x0022,
  },
  {
@@ -374,8 +405,14 @@ characters.data={
   linebreak="is",
   mathclass="punctuation",
   mathspec={
-    { class="punctuation", name="textcomma" },
-    { class="ord", name="mathcomma" },
+   {
+    class="punctuation",
+    name="textcomma",
+   },
+   {
+    class="ord",
+    name="mathcomma",
+   },
   },
   unicodeslot=0x002C,
  },
@@ -398,9 +435,18 @@ characters.data={
   linebreak="is",
   mathclass="ord",
   mathspec={
-    { class="ord", name="mathperiod" },
-    { class="punctuation", name="textperiod" },
-    { class="punctuation", name="ldotp" },
+   {
+    class="ord",
+    name="mathperiod",
+   },
+   {
+    class="punctuation",
+    name="textperiod",
+   },
+   {
+    class="punctuation",
+    name="ldotp",
+   },
   },
   unicodeslot=0x002E,
  },
@@ -519,12 +565,11 @@ characters.data={
   adobename="colon",
   category="po",
   cjkwd="na",
+  comment="mathclass=punctuation,mathname=colon",
   description="COLON",
   direction="cs",
   linebreak="is",
---~   mathclass="punctuation",
   mathclass="relation",
---  mathname="colon",
   unicodeslot=0x003A,
  },
  {
@@ -553,10 +598,10 @@ characters.data={
   adobename="equal",
   category="sm",
   cjkwd="na",
+  comment="mathclass=binary",
   description="EQUALS SIGN",
   direction="on",
   linebreak="al",
---~   mathclass="binary",
   mathclass="relation",
   mathname="eq",
   unicodeslot=0x003D,
@@ -944,10 +989,10 @@ characters.data={
   cjkwd="na",
   contextname="textgrave",
   description="GRAVE ACCENT",
-  mathclass="accent",
-  mathname="grave",
   direction="on",
   linebreak="al",
+  mathclass="accent",
+  mathname="grave",
   unicodeslot=0x0060,
  },
  {
@@ -1246,25 +1291,40 @@ characters.data={
   direction="on",
   linebreak="op",
   mathclass="open",
-  mathname="lbrace", -- was false
+  mathname="lbrace",
   mirror=0x007D,
   unicodeslot=0x007B,
  },
  {
-  adobename="bar",
+  adobename="verticalbar",
   category="sm",
   cjkwd="na",
+  comment="mathclass=binary,mathname=bar",
   contextname="textbar",
   description="VERTICAL LINE",
   direction="on",
   linebreak="ba",
   mathspec={
--- { class="binary", name="bar" },
-   { class="nothing", name="arrowvert" },
-   { class="delimiter", name="vert" },
-   { class="open", name="lvert" },
-   { class="close", name="rvert" },
-   { class="relation", name="mid" },
+   {
+    class="nothing",
+    name="arrowvert",
+   },
+   {
+    class="delimiter",
+    name="vert",
+   },
+   {
+    class="open",
+    name="lvert",
+   },
+   {
+    class="close",
+    name="rvert",
+   },
+   {
+    class="relation",
+    name="mid",
+   },
   },
   unicodeslot=0x007C,
  },
@@ -1277,7 +1337,7 @@ characters.data={
   direction="on",
   linebreak="cl",
   mathclass="close",
-  mathname="rbrace", -- was false
+  mathname="rbrace",
   mirror=0x007B,
   unicodeslot=0x007D,
  },
@@ -1292,6 +1352,7 @@ characters.data={
   unicodeslot=0x007E,
  },
  {
+  adobename="controlDEL",
   category="cc",
   description="DELETE",
   direction="bn",
@@ -1523,6 +1584,7 @@ characters.data={
   unicodeslot=0x009F,
  },
  {
+  adobename="nonbreakingspace",
   category="zs",
   contextname="nobreakspace",
   description="NO-BREAK SPACE",
@@ -1657,12 +1719,19 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="ord", name="lnot" },
-   { class="ord", name="neg" },
+   {
+    class="ord",
+    name="lnot",
+   },
+   {
+    class="ord",
+    name="neg",
+   },
   },
   unicodeslot=0x00AC,
  },
  {
+  adobename="softhyphen",
   category="cf",
   cjkwd="a",
   contextname="softhyphen",
@@ -1717,6 +1786,7 @@ characters.data={
   unicodeslot=0x00B1,
  },
  {
+  adobename="twosuperior",
   category="no",
   cjkwd="a",
   contextname="twosuperior",
@@ -1727,6 +1797,7 @@ characters.data={
   unicodeslot=0x00B2,
  },
  {
+  adobename="threesuperior",
   category="no",
   cjkwd="a",
   contextname="threesuperior",
@@ -1750,7 +1821,7 @@ characters.data={
   unicodeslot=0x00B4,
  },
  {
-  adobename="mu",
+  adobename="mu1",
   category="ll",
   contextname="textmu",
   description="MICRO SIGN",
@@ -1796,6 +1867,7 @@ characters.data={
   unicodeslot=0x00B8,
  },
  {
+  adobename="onesuperior",
   category="no",
   cjkwd="a",
   contextname="onesuperior",
@@ -2453,7 +2525,7 @@ characters.data={
   adobename="eth",
   category="ll",
   cjkwd="a",
-  --~ contextname="eth", -- AM: Should this be defined in text mode?
+  comment="contextname=eth",
   description="LATIN SMALL LETTER ETH",
   direction="l",
   linebreak="al",
@@ -2840,7 +2912,7 @@ characters.data={
   unicodeslot=0x010F,
  },
  {
-  adobename="Dcroat",
+  adobename="Dslash",
   category="lu",
   contextname="Dstroke",
   description="LATIN CAPITAL LETTER D WITH STROKE",
@@ -2851,7 +2923,7 @@ characters.data={
   unicodeslot=0x0110,
  },
  {
-  adobename="dcroat",
+  adobename="dmacron",
   category="ll",
   cjkwd="a",
   contextname="dstroke",
@@ -3407,7 +3479,7 @@ characters.data={
   unicodeslot=0x013E,
  },
  {
-  adobename="Ldot",
+  adobename="Ldotaccent",
   category="lu",
   cjkwd="a",
   contextname="Ldotmiddle",
@@ -3420,7 +3492,7 @@ characters.data={
   unicodeslot=0x013F,
  },
  {
-  adobename="ldot",
+  adobename="ldotaccent",
   category="ll",
   cjkwd="a",
   contextname="ldotmiddle",
@@ -3531,7 +3603,7 @@ characters.data={
   unicodeslot=0x0148,
  },
  {
-  adobename="napostrophe",
+  adobename="quoterightn",
   category="ll",
   cjkwd="a",
   contextname="napostrophe",
@@ -4178,7 +4250,7 @@ characters.data={
   unicodeslot=0x017E,
  },
  {
-  adobename="longs",
+  adobename="slong",
   category="ll",
   contextname="slong",
   description="LATIN SMALL LETTER LONG S",
@@ -4189,6 +4261,7 @@ characters.data={
   unicodeslot=0x017F,
  },
  {
+  adobename="bstroke",
   category="ll",
   contextname="bstroke",
   description="LATIN SMALL LETTER B WITH STROKE",
@@ -4199,6 +4272,7 @@ characters.data={
   unicodeslot=0x0180,
  },
  {
+  adobename="Bhook",
   category="lu",
   contextname="Bhook",
   description="LATIN CAPITAL LETTER B WITH HOOK",
@@ -4209,6 +4283,7 @@ characters.data={
   unicodeslot=0x0181,
  },
  {
+  adobename="Btopbar",
   category="lu",
   description="LATIN CAPITAL LETTER B WITH TOPBAR",
   direction="l",
@@ -4218,6 +4293,7 @@ characters.data={
   unicodeslot=0x0182,
  },
  {
+  adobename="btopbar",
   category="ll",
   description="LATIN SMALL LETTER B WITH TOPBAR",
   direction="l",
@@ -4227,6 +4303,7 @@ characters.data={
   unicodeslot=0x0183,
  },
  {
+  adobename="Tonesix",
   category="lu",
   description="LATIN CAPITAL LETTER TONE SIX",
   direction="l",
@@ -4235,6 +4312,7 @@ characters.data={
   unicodeslot=0x0184,
  },
  {
+  adobename="tonesix",
   category="ll",
   description="LATIN SMALL LETTER TONE SIX",
   direction="l",
@@ -4243,6 +4321,7 @@ characters.data={
   unicodeslot=0x0185,
  },
  {
+  adobename="Oopen",
   category="lu",
   description="LATIN CAPITAL LETTER OPEN O",
   direction="l",
@@ -4251,6 +4330,7 @@ characters.data={
   unicodeslot=0x0186,
  },
  {
+  adobename="Chook",
   category="lu",
   contextname="Chook",
   description="LATIN CAPITAL LETTER C WITH HOOK",
@@ -4261,6 +4341,7 @@ characters.data={
   unicodeslot=0x0187,
  },
  {
+  adobename="chook",
   category="ll",
   contextname="chook",
   description="LATIN SMALL LETTER C WITH HOOK",
@@ -4271,6 +4352,7 @@ characters.data={
   unicodeslot=0x0188,
  },
  {
+  adobename="Dafrican",
   category="lu",
   contextname="Dafrican",
   description="LATIN CAPITAL LETTER AFRICAN D",
@@ -4280,6 +4362,7 @@ characters.data={
   unicodeslot=0x0189,
  },
  {
+  adobename="Dhook",
   category="lu",
   contextname="Dhook",
   description="LATIN CAPITAL LETTER D WITH HOOK",
@@ -4290,6 +4373,7 @@ characters.data={
   unicodeslot=0x018A,
  },
  {
+  adobename="Dtopbar",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH TOPBAR",
   direction="l",
@@ -4299,6 +4383,7 @@ characters.data={
   unicodeslot=0x018B,
  },
  {
+  adobename="dtopbar",
   category="ll",
   description="LATIN SMALL LETTER D WITH TOPBAR",
   direction="l",
@@ -4308,6 +4393,7 @@ characters.data={
   unicodeslot=0x018C,
  },
  {
+  adobename="deltaturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED DELTA",
   direction="l",
@@ -4315,6 +4401,7 @@ characters.data={
   unicodeslot=0x018D,
  },
  {
+  adobename="Ereversed",
   category="lu",
   description="LATIN CAPITAL LETTER REVERSED E",
   direction="l",
@@ -4323,6 +4410,7 @@ characters.data={
   unicodeslot=0x018E,
  },
  {
+  adobename="Schwa",
   category="lu",
   contextname="Schwa",
   description="LATIN CAPITAL LETTER SCHWA",
@@ -4332,6 +4420,7 @@ characters.data={
   unicodeslot=0x018F,
  },
  {
+  adobename="Eopen",
   category="lu",
   description="LATIN CAPITAL LETTER OPEN E",
   direction="l",
@@ -4340,6 +4429,7 @@ characters.data={
   unicodeslot=0x0190,
  },
  {
+  adobename="Fhook",
   category="lu",
   contextname="Fhook",
   description="LATIN CAPITAL LETTER F WITH HOOK",
@@ -4361,6 +4451,7 @@ characters.data={
   unicodeslot=0x0192,
  },
  {
+  adobename="Ghook",
   category="lu",
   contextname="Ghook",
   description="LATIN CAPITAL LETTER G WITH HOOK",
@@ -4371,6 +4462,7 @@ characters.data={
   unicodeslot=0x0193,
  },
  {
+  adobename="Gammaafrican",
   category="lu",
   description="LATIN CAPITAL LETTER GAMMA",
   direction="l",
@@ -4379,6 +4471,7 @@ characters.data={
   unicodeslot=0x0194,
  },
  {
+  adobename="hv",
   category="ll",
   description="LATIN SMALL LETTER HV",
   direction="l",
@@ -4387,6 +4480,7 @@ characters.data={
   unicodeslot=0x0195,
  },
  {
+  adobename="Iotaafrican",
   category="lu",
   description="LATIN CAPITAL LETTER IOTA",
   direction="l",
@@ -4395,6 +4489,7 @@ characters.data={
   unicodeslot=0x0196,
  },
  {
+  adobename="Istroke",
   category="lu",
   contextname="Istroke",
   description="LATIN CAPITAL LETTER I WITH STROKE",
@@ -4405,6 +4500,7 @@ characters.data={
   unicodeslot=0x0197,
  },
  {
+  adobename="Khook",
   category="lu",
   contextname="Khook",
   description="LATIN CAPITAL LETTER K WITH HOOK",
@@ -4415,6 +4511,7 @@ characters.data={
   unicodeslot=0x0198,
  },
  {
+  adobename="khook",
   category="ll",
   contextname="khook",
   description="LATIN SMALL LETTER K WITH HOOK",
@@ -4425,6 +4522,7 @@ characters.data={
   unicodeslot=0x0199,
  },
  {
+  adobename="lbar",
   category="ll",
   contextname="lbar",
   description="LATIN SMALL LETTER L WITH BAR",
@@ -4435,6 +4533,7 @@ characters.data={
   unicodeslot=0x019A,
  },
  {
+  adobename="lambdastroke",
   category="ll",
   description="LATIN SMALL LETTER LAMBDA WITH STROKE",
   direction="l",
@@ -4442,6 +4541,7 @@ characters.data={
   unicodeslot=0x019B,
  },
  {
+  adobename="Mturned",
   category="lu",
   description="LATIN CAPITAL LETTER TURNED M",
   direction="l",
@@ -4450,6 +4550,7 @@ characters.data={
   unicodeslot=0x019C,
  },
  {
+  adobename="Nhookleft",
   category="lu",
   description="LATIN CAPITAL LETTER N WITH LEFT HOOK",
   direction="l",
@@ -4459,6 +4560,7 @@ characters.data={
   unicodeslot=0x019D,
  },
  {
+  adobename="nlegrightlong",
   category="ll",
   description="LATIN SMALL LETTER N WITH LONG RIGHT LEG",
   direction="l",
@@ -4468,6 +4570,7 @@ characters.data={
   unicodeslot=0x019E,
  },
  {
+  adobename="Ocenteredtilde",
   category="lu",
   description="LATIN CAPITAL LETTER O WITH MIDDLE TILDE",
   direction="l",
@@ -4501,6 +4604,7 @@ characters.data={
   unicodeslot=0x01A1,
  },
  {
+  adobename="Oi",
   category="lu",
   description="LATIN CAPITAL LETTER OI",
   direction="l",
@@ -4509,6 +4613,7 @@ characters.data={
   unicodeslot=0x01A2,
  },
  {
+  adobename="oi",
   category="ll",
   description="LATIN SMALL LETTER OI",
   direction="l",
@@ -4517,6 +4622,7 @@ characters.data={
   unicodeslot=0x01A3,
  },
  {
+  adobename="Phook",
   category="lu",
   contextname="Phook",
   description="LATIN CAPITAL LETTER P WITH HOOK",
@@ -4527,6 +4633,7 @@ characters.data={
   unicodeslot=0x01A4,
  },
  {
+  adobename="phook",
   category="ll",
   contextname="phook",
   description="LATIN SMALL LETTER P WITH HOOK",
@@ -4537,6 +4644,7 @@ characters.data={
   unicodeslot=0x01A5,
  },
  {
+  adobename="yr",
   category="lu",
   description="LATIN LETTER YR",
   direction="l",
@@ -4545,6 +4653,7 @@ characters.data={
   unicodeslot=0x01A6,
  },
  {
+  adobename="Tonetwo",
   category="lu",
   description="LATIN CAPITAL LETTER TONE TWO",
   direction="l",
@@ -4553,6 +4662,7 @@ characters.data={
   unicodeslot=0x01A7,
  },
  {
+  adobename="tonetwo",
   category="ll",
   description="LATIN SMALL LETTER TONE TWO",
   direction="l",
@@ -4561,6 +4671,7 @@ characters.data={
   unicodeslot=0x01A8,
  },
  {
+  adobename="Esh",
   category="lu",
   description="LATIN CAPITAL LETTER ESH",
   direction="l",
@@ -4569,6 +4680,7 @@ characters.data={
   unicodeslot=0x01A9,
  },
  {
+  adobename="eshreversedloop",
   category="ll",
   description="LATIN LETTER REVERSED ESH LOOP",
   direction="l",
@@ -4576,6 +4688,7 @@ characters.data={
   unicodeslot=0x01AA,
  },
  {
+  adobename="tpalatalhook",
   category="ll",
   description="LATIN SMALL LETTER T WITH PALATAL HOOK",
   direction="l",
@@ -4584,6 +4697,7 @@ characters.data={
   unicodeslot=0x01AB,
  },
  {
+  adobename="Thook",
   category="lu",
   contextname="Thook",
   description="LATIN CAPITAL LETTER T WITH HOOK",
@@ -4594,6 +4708,7 @@ characters.data={
   unicodeslot=0x01AC,
  },
  {
+  adobename="thook",
   category="ll",
   contextname="thook",
   description="LATIN SMALL LETTER T WITH HOOK",
@@ -4604,6 +4719,7 @@ characters.data={
   unicodeslot=0x01AD,
  },
  {
+  adobename="Tretroflexhook",
   category="lu",
   description="LATIN CAPITAL LETTER T WITH RETROFLEX HOOK",
   direction="l",
@@ -4637,6 +4753,7 @@ characters.data={
   unicodeslot=0x01B0,
  },
  {
+  adobename="Upsilonafrican",
   category="lu",
   description="LATIN CAPITAL LETTER UPSILON",
   direction="l",
@@ -4645,6 +4762,7 @@ characters.data={
   unicodeslot=0x01B1,
  },
  {
+  adobename="Vhook",
   category="lu",
   contextname="Uhook",
   description="LATIN CAPITAL LETTER V WITH HOOK",
@@ -4655,6 +4773,7 @@ characters.data={
   unicodeslot=0x01B2,
  },
  {
+  adobename="Yhook",
   category="lu",
   contextname="Yhook",
   description="LATIN CAPITAL LETTER Y WITH HOOK",
@@ -4665,6 +4784,7 @@ characters.data={
   unicodeslot=0x01B3,
  },
  {
+  adobename="yhook",
   category="ll",
   contextname="yhook",
   description="LATIN SMALL LETTER Y WITH HOOK",
@@ -4675,6 +4795,7 @@ characters.data={
   unicodeslot=0x01B4,
  },
  {
+  adobename="Zstroke",
   category="lu",
   contextname="Zstroke",
   description="LATIN CAPITAL LETTER Z WITH STROKE",
@@ -4685,6 +4806,7 @@ characters.data={
   unicodeslot=0x01B5,
  },
  {
+  adobename="zstroke",
   category="ll",
   contextname="zstroke",
   description="LATIN SMALL LETTER Z WITH STROKE",
@@ -4695,6 +4817,7 @@ characters.data={
   unicodeslot=0x01B6,
  },
  {
+  adobename="Ezh",
   category="lu",
   description="LATIN CAPITAL LETTER EZH",
   direction="l",
@@ -4703,6 +4826,7 @@ characters.data={
   unicodeslot=0x01B7,
  },
  {
+  adobename="Ezhreversed",
   category="lu",
   description="LATIN CAPITAL LETTER EZH REVERSED",
   direction="l",
@@ -4711,6 +4835,7 @@ characters.data={
   unicodeslot=0x01B8,
  },
  {
+  adobename="ezhreversed",
   category="ll",
   description="LATIN SMALL LETTER EZH REVERSED",
   direction="l",
@@ -4719,6 +4844,7 @@ characters.data={
   unicodeslot=0x01B9,
  },
  {
+  adobename="ezhtail",
   category="ll",
   description="LATIN SMALL LETTER EZH WITH TAIL",
   direction="l",
@@ -4727,6 +4853,7 @@ characters.data={
   unicodeslot=0x01BA,
  },
  {
+  adobename="twostroke",
   category="lo",
   description="LATIN LETTER TWO WITH STROKE",
   direction="l",
@@ -4734,6 +4861,7 @@ characters.data={
   unicodeslot=0x01BB,
  },
  {
+  adobename="Tonefive",
   category="lu",
   description="LATIN CAPITAL LETTER TONE FIVE",
   direction="l",
@@ -4742,6 +4870,7 @@ characters.data={
   unicodeslot=0x01BC,
  },
  {
+  adobename="tonefive",
   category="ll",
   description="LATIN SMALL LETTER TONE FIVE",
   direction="l",
@@ -4750,6 +4879,7 @@ characters.data={
   unicodeslot=0x01BD,
  },
  {
+  adobename="glottalinvertedstroke",
   category="ll",
   description="LATIN LETTER INVERTED GLOTTAL STOP WITH STROKE",
   direction="l",
@@ -4757,6 +4887,7 @@ characters.data={
   unicodeslot=0x01BE,
  },
  {
+  adobename="wynn",
   category="ll",
   description="LATIN LETTER WYNN",
   direction="l",
@@ -4765,6 +4896,7 @@ characters.data={
   unicodeslot=0x01BF,
  },
  {
+  adobename="clickdental",
   category="lo",
   description="LATIN LETTER DENTAL CLICK",
   direction="l",
@@ -4772,6 +4904,7 @@ characters.data={
   unicodeslot=0x01C0,
  },
  {
+  adobename="clicklateral",
   category="lo",
   description="LATIN LETTER LATERAL CLICK",
   direction="l",
@@ -4779,6 +4912,7 @@ characters.data={
   unicodeslot=0x01C1,
  },
  {
+  adobename="clickalveolar",
   category="lo",
   description="LATIN LETTER ALVEOLAR CLICK",
   direction="l",
@@ -4786,6 +4920,7 @@ characters.data={
   unicodeslot=0x01C2,
  },
  {
+  adobename="clickretroflex",
   category="lo",
   description="LATIN LETTER RETROFLEX CLICK",
   direction="l",
@@ -4793,6 +4928,7 @@ characters.data={
   unicodeslot=0x01C3,
  },
  {
+  adobename="DZcaron",
   category="lu",
   contextname="DZcaronligature",
   description="LATIN CAPITAL LETTER DZ WITH CARON",
@@ -4805,6 +4941,7 @@ characters.data={
   unicodeslot=0x01C4,
  },
  {
+  adobename="Dzcaron",
   category="lt",
   contextname="Dzcaronligature",
   description="LATIN CAPITAL LETTER D WITH SMALL LETTER Z WITH CARON",
@@ -4817,6 +4954,7 @@ characters.data={
   unicodeslot=0x01C5,
  },
  {
+  adobename="dzcaron",
   category="ll",
   contextname="dzcaronligature",
   description="LATIN SMALL LETTER DZ WITH CARON",
@@ -4828,6 +4966,7 @@ characters.data={
   unicodeslot=0x01C6,
  },
  {
+  adobename="LJ",
   category="lu",
   contextname="LJligature",
   description="LATIN CAPITAL LETTER LJ",
@@ -4840,6 +4979,7 @@ characters.data={
   unicodeslot=0x01C7,
  },
  {
+  adobename="Lj",
   category="lt",
   contextname="Ljligature",
   description="LATIN CAPITAL LETTER L WITH SMALL LETTER J",
@@ -4852,6 +4992,7 @@ characters.data={
   unicodeslot=0x01C8,
  },
  {
+  adobename="lj",
   category="ll",
   contextname="ljligature",
   description="LATIN SMALL LETTER LJ",
@@ -4863,6 +5004,7 @@ characters.data={
   unicodeslot=0x01C9,
  },
  {
+  adobename="NJ",
   category="lu",
   contextname="NJligature",
   description="LATIN CAPITAL LETTER NJ",
@@ -4875,6 +5017,7 @@ characters.data={
   unicodeslot=0x01CA,
  },
  {
+  adobename="Nj",
   category="lt",
   contextname="Njligature",
   description="LATIN CAPITAL LETTER N WITH SMALL LETTER J",
@@ -4887,6 +5030,7 @@ characters.data={
   unicodeslot=0x01CB,
  },
  {
+  adobename="nj",
   category="ll",
   contextname="njligature",
   description="LATIN SMALL LETTER NJ",
@@ -4898,6 +5042,7 @@ characters.data={
   unicodeslot=0x01CC,
  },
  {
+  adobename="Acaron",
   category="lu",
   contextname="Acaron",
   description="LATIN CAPITAL LETTER A WITH CARON",
@@ -4909,6 +5054,7 @@ characters.data={
   unicodeslot=0x01CD,
  },
  {
+  adobename="acaron",
   category="ll",
   cjkwd="a",
   contextname="acaron",
@@ -4921,6 +5067,7 @@ characters.data={
   unicodeslot=0x01CE,
  },
  {
+  adobename="Icaron",
   category="lu",
   contextname="Icaron",
   description="LATIN CAPITAL LETTER I WITH CARON",
@@ -4932,6 +5079,7 @@ characters.data={
   unicodeslot=0x01CF,
  },
  {
+  adobename="icaron",
   category="ll",
   cjkwd="a",
   contextname="icaron",
@@ -4944,6 +5092,7 @@ characters.data={
   unicodeslot=0x01D0,
  },
  {
+  adobename="Ocaron",
   category="lu",
   contextname="Ocaron",
   description="LATIN CAPITAL LETTER O WITH CARON",
@@ -4955,6 +5104,7 @@ characters.data={
   unicodeslot=0x01D1,
  },
  {
+  adobename="ocaron",
   category="ll",
   cjkwd="a",
   contextname="ocaron",
@@ -4967,6 +5117,7 @@ characters.data={
   unicodeslot=0x01D2,
  },
  {
+  adobename="Ucaron",
   category="lu",
   contextname="Ucaron",
   description="LATIN CAPITAL LETTER U WITH CARON",
@@ -4978,6 +5129,7 @@ characters.data={
   unicodeslot=0x01D3,
  },
  {
+  adobename="ucaron",
   category="ll",
   cjkwd="a",
   contextname="ucaron",
@@ -4990,6 +5142,7 @@ characters.data={
   unicodeslot=0x01D4,
  },
  {
+  adobename="Udieresismacron",
   category="lu",
   contextname="Udiaeresismacron",
   description="LATIN CAPITAL LETTER U WITH DIAERESIS AND MACRON",
@@ -5001,6 +5154,7 @@ characters.data={
   unicodeslot=0x01D5,
  },
  {
+  adobename="udieresismacron",
   category="ll",
   cjkwd="a",
   contextname="udiaeresismacron",
@@ -5013,6 +5167,7 @@ characters.data={
   unicodeslot=0x01D6,
  },
  {
+  adobename="Udieresisacute",
   category="lu",
   contextname="Udiaeresisacute",
   description="LATIN CAPITAL LETTER U WITH DIAERESIS AND ACUTE",
@@ -5024,6 +5179,7 @@ characters.data={
   unicodeslot=0x01D7,
  },
  {
+  adobename="udieresisacute",
   category="ll",
   cjkwd="a",
   contextname="udiaeresisacute",
@@ -5036,6 +5192,7 @@ characters.data={
   unicodeslot=0x01D8,
  },
  {
+  adobename="Udieresiscaron",
   category="lu",
   contextname="Udiaeresiscaron",
   description="LATIN CAPITAL LETTER U WITH DIAERESIS AND CARON",
@@ -5047,6 +5204,7 @@ characters.data={
   unicodeslot=0x01D9,
  },
  {
+  adobename="udieresiscaron",
   category="ll",
   cjkwd="a",
   contextname="udiaeresiscaron",
@@ -5059,6 +5217,7 @@ characters.data={
   unicodeslot=0x01DA,
  },
  {
+  adobename="Udieresisgrave",
   category="lu",
   contextname="Udiaeresisgrave",
   description="LATIN CAPITAL LETTER U WITH DIAERESIS AND GRAVE",
@@ -5070,6 +5229,7 @@ characters.data={
   unicodeslot=0x01DB,
  },
  {
+  adobename="udieresisgrave",
   category="ll",
   cjkwd="a",
   contextname="udiaeresisgrave",
@@ -5082,6 +5242,7 @@ characters.data={
   unicodeslot=0x01DC,
  },
  {
+  adobename="eturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED E",
   direction="l",
@@ -5090,6 +5251,7 @@ characters.data={
   unicodeslot=0x01DD,
  },
  {
+  adobename="Adieresismacron",
   category="lu",
   contextname="Adiaeresismacron",
   description="LATIN CAPITAL LETTER A WITH DIAERESIS AND MACRON",
@@ -5101,6 +5263,7 @@ characters.data={
   unicodeslot=0x01DE,
  },
  {
+  adobename="adieresismacron",
   category="ll",
   contextname="adiaeresismacron",
   description="LATIN SMALL LETTER A WITH DIAERESIS AND MACRON",
@@ -5112,6 +5275,7 @@ characters.data={
   unicodeslot=0x01DF,
  },
  {
+  adobename="Adotmacron",
   category="lu",
   contextname="Adotaccentmacron",
   description="LATIN CAPITAL LETTER A WITH DOT ABOVE AND MACRON",
@@ -5123,6 +5287,7 @@ characters.data={
   unicodeslot=0x01E0,
  },
  {
+  adobename="adotmacron",
   category="ll",
   contextname="adotaccentmacron",
   description="LATIN SMALL LETTER A WITH DOT ABOVE AND MACRON",
@@ -5134,6 +5299,7 @@ characters.data={
   unicodeslot=0x01E1,
  },
  {
+  adobename="AEmacron",
   category="lu",
   contextname="AEmacron",
   description="LATIN CAPITAL LETTER AE WITH MACRON",
@@ -5145,6 +5311,7 @@ characters.data={
   unicodeslot=0x01E2,
  },
  {
+  adobename="aemacron",
   category="ll",
   contextname="aemacron",
   description="LATIN SMALL LETTER AE WITH MACRON",
@@ -5156,6 +5323,7 @@ characters.data={
   unicodeslot=0x01E3,
  },
  {
+  adobename="Gstroke",
   category="lu",
   contextname="Gstroke",
   description="LATIN CAPITAL LETTER G WITH STROKE",
@@ -5166,6 +5334,7 @@ characters.data={
   unicodeslot=0x01E4,
  },
  {
+  adobename="gstroke",
   category="ll",
   contextname="gstroke",
   description="LATIN SMALL LETTER G WITH STROKE",
@@ -5200,6 +5369,7 @@ characters.data={
   unicodeslot=0x01E7,
  },
  {
+  adobename="Kcaron",
   category="lu",
   contextname="Kcaron",
   description="LATIN CAPITAL LETTER K WITH CARON",
@@ -5211,6 +5381,7 @@ characters.data={
   unicodeslot=0x01E8,
  },
  {
+  adobename="kcaron",
   category="ll",
   contextname="kcaron",
   description="LATIN SMALL LETTER K WITH CARON",
@@ -5222,6 +5393,7 @@ characters.data={
   unicodeslot=0x01E9,
  },
  {
+  adobename="Oogonek",
   category="lu",
   contextname="Oogonek",
   description="LATIN CAPITAL LETTER O WITH OGONEK",
@@ -5233,6 +5405,7 @@ characters.data={
   unicodeslot=0x01EA,
  },
  {
+  adobename="oogonek",
   category="ll",
   contextname="oogonek",
   description="LATIN SMALL LETTER O WITH OGONEK",
@@ -5244,6 +5417,7 @@ characters.data={
   unicodeslot=0x01EB,
  },
  {
+  adobename="Oogonekmacron",
   category="lu",
   contextname="Oogonekmacron",
   description="LATIN CAPITAL LETTER O WITH OGONEK AND MACRON",
@@ -5255,6 +5429,7 @@ characters.data={
   unicodeslot=0x01EC,
  },
  {
+  adobename="oogonekmacron",
   category="ll",
   contextname="oogonekmacron",
   description="LATIN SMALL LETTER O WITH OGONEK AND MACRON",
@@ -5266,6 +5441,7 @@ characters.data={
   unicodeslot=0x01ED,
  },
  {
+  adobename="Ezhcaron",
   category="lu",
   description="LATIN CAPITAL LETTER EZH WITH CARON",
   direction="l",
@@ -5276,6 +5452,7 @@ characters.data={
   unicodeslot=0x01EE,
  },
  {
+  adobename="ezhcaron",
   category="ll",
   description="LATIN SMALL LETTER EZH WITH CARON",
   direction="l",
@@ -5286,6 +5463,7 @@ characters.data={
   unicodeslot=0x01EF,
  },
  {
+  adobename="jcaron",
   category="ll",
   contextname="jcaron",
   description="LATIN SMALL LETTER J WITH CARON",
@@ -5296,6 +5474,7 @@ characters.data={
   unicodeslot=0x01F0,
  },
  {
+  adobename="DZ",
   category="lu",
   contextname="DZligature",
   description="LATIN CAPITAL LETTER DZ",
@@ -5307,6 +5486,7 @@ characters.data={
   unicodeslot=0x01F1,
  },
  {
+  adobename="Dz",
   category="lt",
   contextname="Dzligature",
   description="LATIN CAPITAL LETTER D WITH SMALL LETTER Z",
@@ -5319,6 +5499,7 @@ characters.data={
   unicodeslot=0x01F2,
  },
  {
+  adobename="dz",
   category="ll",
   contextname="dzligature",
   description="LATIN SMALL LETTER DZ",
@@ -5329,6 +5510,7 @@ characters.data={
   unicodeslot=0x01F3,
  },
  {
+  adobename="Gacute",
   category="lu",
   contextname="Gacute",
   description="LATIN CAPITAL LETTER G WITH ACUTE",
@@ -5340,6 +5522,7 @@ characters.data={
   unicodeslot=0x01F4,
  },
  {
+  adobename="gacute",
   category="ll",
   contextname="gacute",
   description="LATIN SMALL LETTER G WITH ACUTE",
@@ -5437,7 +5620,7 @@ characters.data={
   unicodeslot=0x01FD,
  },
  {
-  adobename="Oslashacute",
+  adobename="Ostrokeacute",
   category="lu",
   contextname="Ostrokeacute",
   description="LATIN CAPITAL LETTER O WITH STROKE AND ACUTE",
@@ -5449,7 +5632,7 @@ characters.data={
   unicodeslot=0x01FE,
  },
  {
-  adobename="oslashacute",
+  adobename="ostrokeacute",
   category="ll",
   contextname="ostrokeacute",
   description="LATIN SMALL LETTER O WITH STROKE AND ACUTE",
@@ -5461,6 +5644,7 @@ characters.data={
   unicodeslot=0x01FF,
  },
  {
+  adobename="Adblgrave",
   category="lu",
   contextname="Adoublegrave",
   description="LATIN CAPITAL LETTER A WITH DOUBLE GRAVE",
@@ -5472,6 +5656,7 @@ characters.data={
   unicodeslot=0x0200,
  },
  {
+  adobename="adblgrave",
   category="ll",
   contextname="adoublegrave",
   description="LATIN SMALL LETTER A WITH DOUBLE GRAVE",
@@ -5483,6 +5668,7 @@ characters.data={
   unicodeslot=0x0201,
  },
  {
+  adobename="Ainvertedbreve",
   category="lu",
   contextname="Ainvertedbreve",
   description="LATIN CAPITAL LETTER A WITH INVERTED BREVE",
@@ -5494,6 +5680,7 @@ characters.data={
   unicodeslot=0x0202,
  },
  {
+  adobename="ainvertedbreve",
   category="ll",
   contextname="ainvertedbreve",
   description="LATIN SMALL LETTER A WITH INVERTED BREVE",
@@ -5505,6 +5692,7 @@ characters.data={
   unicodeslot=0x0203,
  },
  {
+  adobename="Edblgrave",
   category="lu",
   contextname="Edoublegrave",
   description="LATIN CAPITAL LETTER E WITH DOUBLE GRAVE",
@@ -5516,6 +5704,7 @@ characters.data={
   unicodeslot=0x0204,
  },
  {
+  adobename="edblgrave",
   category="ll",
   contextname="edoublegrave",
   description="LATIN SMALL LETTER E WITH DOUBLE GRAVE",
@@ -5527,6 +5716,7 @@ characters.data={
   unicodeslot=0x0205,
  },
  {
+  adobename="Einvertedbreve",
   category="lu",
   contextname="Einvertedbreve",
   description="LATIN CAPITAL LETTER E WITH INVERTED BREVE",
@@ -5538,6 +5728,7 @@ characters.data={
   unicodeslot=0x0206,
  },
  {
+  adobename="einvertedbreve",
   category="ll",
   contextname="einvertedbreve",
   description="LATIN SMALL LETTER E WITH INVERTED BREVE",
@@ -5549,6 +5740,7 @@ characters.data={
   unicodeslot=0x0207,
  },
  {
+  adobename="Idblgrave",
   category="lu",
   contextname="Idoublegrave",
   description="LATIN CAPITAL LETTER I WITH DOUBLE GRAVE",
@@ -5560,6 +5752,7 @@ characters.data={
   unicodeslot=0x0208,
  },
  {
+  adobename="idblgrave",
   category="ll",
   contextname="idoublegrave",
   description="LATIN SMALL LETTER I WITH DOUBLE GRAVE",
@@ -5571,6 +5764,7 @@ characters.data={
   unicodeslot=0x0209,
  },
  {
+  adobename="Iinvertedbreve",
   category="lu",
   contextname="Iinvertedbreve",
   description="LATIN CAPITAL LETTER I WITH INVERTED BREVE",
@@ -5582,6 +5776,7 @@ characters.data={
   unicodeslot=0x020A,
  },
  {
+  adobename="iinvertedbreve",
   category="ll",
   contextname="iinvertedbreve",
   description="LATIN SMALL LETTER I WITH INVERTED BREVE",
@@ -5593,6 +5788,7 @@ characters.data={
   unicodeslot=0x020B,
  },
  {
+  adobename="Odblgrave",
   category="lu",
   contextname="Odoublegrave",
   description="LATIN CAPITAL LETTER O WITH DOUBLE GRAVE",
@@ -5604,6 +5800,7 @@ characters.data={
   unicodeslot=0x020C,
  },
  {
+  adobename="odblgrave",
   category="ll",
   contextname="odoublegrave",
   description="LATIN SMALL LETTER O WITH DOUBLE GRAVE",
@@ -5615,6 +5812,7 @@ characters.data={
   unicodeslot=0x020D,
  },
  {
+  adobename="Oinvertedbreve",
   category="lu",
   contextname="Oinvertedbreve",
   description="LATIN CAPITAL LETTER O WITH INVERTED BREVE",
@@ -5626,6 +5824,7 @@ characters.data={
   unicodeslot=0x020E,
  },
  {
+  adobename="oinvertedbreve",
   category="ll",
   contextname="oinvertedbreve",
   description="LATIN SMALL LETTER O WITH INVERTED BREVE",
@@ -5637,6 +5836,7 @@ characters.data={
   unicodeslot=0x020F,
  },
  {
+  adobename="Rdblgrave",
   category="lu",
   contextname="Rdoublegrave",
   description="LATIN CAPITAL LETTER R WITH DOUBLE GRAVE",
@@ -5648,6 +5848,7 @@ characters.data={
   unicodeslot=0x0210,
  },
  {
+  adobename="rdblgrave",
   category="ll",
   contextname="rdoublegrave",
   description="LATIN SMALL LETTER R WITH DOUBLE GRAVE",
@@ -5659,6 +5860,7 @@ characters.data={
   unicodeslot=0x0211,
  },
  {
+  adobename="Rinvertedbreve",
   category="lu",
   contextname="Rinvertedbreve",
   description="LATIN CAPITAL LETTER R WITH INVERTED BREVE",
@@ -5670,6 +5872,7 @@ characters.data={
   unicodeslot=0x0212,
  },
  {
+  adobename="rinvertedbreve",
   category="ll",
   contextname="rinvertedbreve",
   description="LATIN SMALL LETTER R WITH INVERTED BREVE",
@@ -5681,6 +5884,7 @@ characters.data={
   unicodeslot=0x0213,
  },
  {
+  adobename="Udblgrave",
   category="lu",
   contextname="Udoublegrave",
   description="LATIN CAPITAL LETTER U WITH DOUBLE GRAVE",
@@ -5692,6 +5896,7 @@ characters.data={
   unicodeslot=0x0214,
  },
  {
+  adobename="udblgrave",
   category="ll",
   contextname="udoublegrave",
   description="LATIN SMALL LETTER U WITH DOUBLE GRAVE",
@@ -5703,6 +5908,7 @@ characters.data={
   unicodeslot=0x0215,
  },
  {
+  adobename="Uinvertedbreve",
   category="lu",
   contextname="Uinvertedbreve",
   description="LATIN CAPITAL LETTER U WITH INVERTED BREVE",
@@ -5714,6 +5920,7 @@ characters.data={
   unicodeslot=0x0216,
  },
  {
+  adobename="uinvertedbreve",
   category="ll",
   contextname="uinvertedbreve",
   description="LATIN SMALL LETTER U WITH INVERTED BREVE",
@@ -6261,6 +6468,7 @@ characters.data={
   unicodeslot=0x024F,
  },
  {
+  adobename="aturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED A",
   direction="l",
@@ -6268,6 +6476,7 @@ characters.data={
   unicodeslot=0x0250,
  },
  {
+  adobename="ascript",
   category="ll",
   cjkwd="a",
   description="LATIN SMALL LETTER ALPHA",
@@ -6276,6 +6485,7 @@ characters.data={
   unicodeslot=0x0251,
  },
  {
+  adobename="ascriptturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED ALPHA",
   direction="l",
@@ -6283,6 +6493,7 @@ characters.data={
   unicodeslot=0x0252,
  },
  {
+  adobename="bhook",
   category="ll",
   contextname="bhook",
   description="LATIN SMALL LETTER B WITH HOOK",
@@ -6293,6 +6504,7 @@ characters.data={
   unicodeslot=0x0253,
  },
  {
+  adobename="oopen",
   category="ll",
   description="LATIN SMALL LETTER OPEN O",
   direction="l",
@@ -6301,6 +6513,7 @@ characters.data={
   unicodeslot=0x0254,
  },
  {
+  adobename="ccurl",
   category="ll",
   contextname="ccurl",
   description="LATIN SMALL LETTER C WITH CURL",
@@ -6310,6 +6523,7 @@ characters.data={
   unicodeslot=0x0255,
  },
  {
+  adobename="dtail",
   category="ll",
   contextname="dtail",
   description="LATIN SMALL LETTER D WITH TAIL",
@@ -6320,6 +6534,7 @@ characters.data={
   unicodeslot=0x0256,
  },
  {
+  adobename="dhook",
   category="ll",
   contextname="dhook",
   description="LATIN SMALL LETTER D WITH HOOK",
@@ -6330,6 +6545,7 @@ characters.data={
   unicodeslot=0x0257,
  },
  {
+  adobename="ereversed",
   category="ll",
   description="LATIN SMALL LETTER REVERSED E",
   direction="l",
@@ -6337,6 +6553,7 @@ characters.data={
   unicodeslot=0x0258,
  },
  {
+  adobename="schwa",
   category="ll",
   contextname="schwa",
   description="LATIN SMALL LETTER SCHWA",
@@ -6346,6 +6563,7 @@ characters.data={
   unicodeslot=0x0259,
  },
  {
+  adobename="schwahook",
   category="ll",
   contextname="schwahook",
   description="LATIN SMALL LETTER SCHWA WITH HOOK",
@@ -6355,6 +6573,7 @@ characters.data={
   unicodeslot=0x025A,
  },
  {
+  adobename="eopen",
   category="ll",
   description="LATIN SMALL LETTER OPEN E",
   direction="l",
@@ -6363,6 +6582,7 @@ characters.data={
   unicodeslot=0x025B,
  },
  {
+  adobename="eopenreversed",
   category="ll",
   description="LATIN SMALL LETTER REVERSED OPEN E",
   direction="l",
@@ -6370,6 +6590,7 @@ characters.data={
   unicodeslot=0x025C,
  },
  {
+  adobename="eopenreversedhook",
   category="ll",
   description="LATIN SMALL LETTER REVERSED OPEN E WITH HOOK",
   direction="l",
@@ -6377,6 +6598,7 @@ characters.data={
   unicodeslot=0x025D,
  },
  {
+  adobename="eopenreversedclosed",
   category="ll",
   description="LATIN SMALL LETTER CLOSED REVERSED OPEN E",
   direction="l",
@@ -6384,6 +6606,7 @@ characters.data={
   unicodeslot=0x025E,
  },
  {
+  adobename="jdotlessstroke",
   category="ll",
   contextname="dotlessjstroke",
   description="LATIN SMALL LETTER DOTLESS J WITH STROKE",
@@ -6392,6 +6615,7 @@ characters.data={
   unicodeslot=0x025F,
  },
  {
+  adobename="ghook",
   category="ll",
   description="LATIN SMALL LETTER G WITH HOOK",
   direction="l",
@@ -6401,6 +6625,7 @@ characters.data={
   unicodeslot=0x0260,
  },
  {
+  adobename="gscript",
   category="ll",
   cjkwd="a",
   description="LATIN SMALL LETTER SCRIPT G",
@@ -6416,6 +6641,7 @@ characters.data={
   unicodeslot=0x0262,
  },
  {
+  adobename="gammalatinsmall",
   category="ll",
   description="LATIN SMALL LETTER GAMMA",
   direction="l",
@@ -6424,6 +6650,7 @@ characters.data={
   unicodeslot=0x0263,
  },
  {
+  adobename="ramshorn",
   category="ll",
   description="LATIN SMALL LETTER RAMS HORN",
   direction="l",
@@ -6431,6 +6658,7 @@ characters.data={
   unicodeslot=0x0264,
  },
  {
+  adobename="hturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED H",
   direction="l",
@@ -6438,6 +6666,7 @@ characters.data={
   unicodeslot=0x0265,
  },
  {
+  adobename="hhook",
   category="ll",
   description="LATIN SMALL LETTER H WITH HOOK",
   direction="l",
@@ -6446,6 +6675,7 @@ characters.data={
   unicodeslot=0x0266,
  },
  {
+  adobename="henghook",
   category="ll",
   description="LATIN SMALL LETTER HENG WITH HOOK",
   direction="l",
@@ -6453,6 +6683,7 @@ characters.data={
   unicodeslot=0x0267,
  },
  {
+  adobename="istroke",
   category="ll",
   description="LATIN SMALL LETTER I WITH STROKE",
   direction="l",
@@ -6462,6 +6693,7 @@ characters.data={
   unicodeslot=0x0268,
  },
  {
+  adobename="iotalatin",
   category="ll",
   description="LATIN SMALL LETTER IOTA",
   direction="l",
@@ -6477,6 +6709,7 @@ characters.data={
   unicodeslot=0x026A,
  },
  {
+  adobename="lmiddletilde",
   category="ll",
   description="LATIN SMALL LETTER L WITH MIDDLE TILDE",
   direction="l",
@@ -6486,6 +6719,7 @@ characters.data={
   unicodeslot=0x026B,
  },
  {
+  adobename="lbelt",
   category="ll",
   description="LATIN SMALL LETTER L WITH BELT",
   direction="l",
@@ -6494,6 +6728,7 @@ characters.data={
   unicodeslot=0x026C,
  },
  {
+  adobename="lhookretroflex",
   category="ll",
   description="LATIN SMALL LETTER L WITH RETROFLEX HOOK",
   direction="l",
@@ -6502,6 +6737,7 @@ characters.data={
   unicodeslot=0x026D,
  },
  {
+  adobename="lezh",
   category="ll",
   description="LATIN SMALL LETTER LEZH",
   direction="l",
@@ -6509,6 +6745,7 @@ characters.data={
   unicodeslot=0x026E,
  },
  {
+  adobename="mturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED M",
   direction="l",
@@ -6517,6 +6754,7 @@ characters.data={
   unicodeslot=0x026F,
  },
  {
+  adobename="mlonglegturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED M WITH LONG LEG",
   direction="l",
@@ -6524,6 +6762,7 @@ characters.data={
   unicodeslot=0x0270,
  },
  {
+  adobename="mhook",
   category="ll",
   description="LATIN SMALL LETTER M WITH HOOK",
   direction="l",
@@ -6532,6 +6771,7 @@ characters.data={
   unicodeslot=0x0271,
  },
  {
+  adobename="nhookleft",
   category="ll",
   description="LATIN SMALL LETTER N WITH LEFT HOOK",
   direction="l",
@@ -6541,6 +6781,7 @@ characters.data={
   unicodeslot=0x0272,
  },
  {
+  adobename="nhookretroflex",
   category="ll",
   description="LATIN SMALL LETTER N WITH RETROFLEX HOOK",
   direction="l",
@@ -6556,6 +6797,7 @@ characters.data={
   unicodeslot=0x0274,
  },
  {
+  adobename="obarred",
   category="ll",
   description="LATIN SMALL LETTER BARRED O",
   direction="l",
@@ -6571,6 +6813,7 @@ characters.data={
   unicodeslot=0x0276,
  },
  {
+  adobename="omegalatinclosed",
   category="ll",
   description="LATIN SMALL LETTER CLOSED OMEGA",
   direction="l",
@@ -6578,6 +6821,7 @@ characters.data={
   unicodeslot=0x0277,
  },
  {
+  adobename="philatin",
   category="ll",
   description="LATIN SMALL LETTER PHI",
   direction="l",
@@ -6585,6 +6829,7 @@ characters.data={
   unicodeslot=0x0278,
  },
  {
+  adobename="rturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED R",
   direction="l",
@@ -6592,6 +6837,7 @@ characters.data={
   unicodeslot=0x0279,
  },
  {
+  adobename="rlonglegturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED R WITH LONG LEG",
   direction="l",
@@ -6599,6 +6845,7 @@ characters.data={
   unicodeslot=0x027A,
  },
  {
+  adobename="rhookturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED R WITH HOOK",
   direction="l",
@@ -6606,6 +6853,7 @@ characters.data={
   unicodeslot=0x027B,
  },
  {
+  adobename="rlongleg",
   category="ll",
   description="LATIN SMALL LETTER R WITH LONG LEG",
   direction="l",
@@ -6614,6 +6862,7 @@ characters.data={
   unicodeslot=0x027C,
  },
  {
+  adobename="rhook",
   category="ll",
   description="LATIN SMALL LETTER R WITH TAIL",
   direction="l",
@@ -6623,6 +6872,7 @@ characters.data={
   unicodeslot=0x027D,
  },
  {
+  adobename="rfishhook",
   category="ll",
   description="LATIN SMALL LETTER R WITH FISHHOOK",
   direction="l",
@@ -6631,6 +6881,7 @@ characters.data={
   unicodeslot=0x027E,
  },
  {
+  adobename="rfishhookreversed",
   category="ll",
   description="LATIN SMALL LETTER REVERSED R WITH FISHHOOK",
   direction="l",
@@ -6646,6 +6897,7 @@ characters.data={
   unicodeslot=0x0280,
  },
  {
+  adobename="Rsmallinverted",
   category="ll",
   description="LATIN LETTER SMALL CAPITAL INVERTED R",
   direction="l",
@@ -6653,6 +6905,7 @@ characters.data={
   unicodeslot=0x0281,
  },
  {
+  adobename="shook",
   category="ll",
   description="LATIN SMALL LETTER S WITH HOOK",
   direction="l",
@@ -6661,6 +6914,7 @@ characters.data={
   unicodeslot=0x0282,
  },
  {
+  adobename="esh",
   category="ll",
   description="LATIN SMALL LETTER ESH",
   direction="l",
@@ -6669,6 +6923,7 @@ characters.data={
   unicodeslot=0x0283,
  },
  {
+  adobename="dotlessjstrokehook",
   category="ll",
   description="LATIN SMALL LETTER DOTLESS J WITH STROKE AND HOOK",
   direction="l",
@@ -6676,6 +6931,7 @@ characters.data={
   unicodeslot=0x0284,
  },
  {
+  adobename="eshsquatreversed",
   category="ll",
   description="LATIN SMALL LETTER SQUAT REVERSED ESH",
   direction="l",
@@ -6683,6 +6939,7 @@ characters.data={
   unicodeslot=0x0285,
  },
  {
+  adobename="eshcurl",
   category="ll",
   description="LATIN SMALL LETTER ESH WITH CURL",
   direction="l",
@@ -6691,6 +6948,7 @@ characters.data={
   unicodeslot=0x0286,
  },
  {
+  adobename="tturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED T",
   direction="l",
@@ -6698,6 +6956,7 @@ characters.data={
   unicodeslot=0x0287,
  },
  {
+  adobename="tretroflexhook",
   category="ll",
   description="LATIN SMALL LETTER T WITH RETROFLEX HOOK",
   direction="l",
@@ -6707,6 +6966,7 @@ characters.data={
   unicodeslot=0x0288,
  },
  {
+  adobename="ubar",
   category="ll",
   description="LATIN SMALL LETTER U BAR",
   direction="l",
@@ -6715,6 +6975,7 @@ characters.data={
   unicodeslot=0x0289,
  },
  {
+  adobename="upsilonlatin",
   category="ll",
   description="LATIN SMALL LETTER UPSILON",
   direction="l",
@@ -6723,6 +6984,7 @@ characters.data={
   unicodeslot=0x028A,
  },
  {
+  adobename="vhook",
   category="ll",
   description="LATIN SMALL LETTER V WITH HOOK",
   direction="l",
@@ -6732,6 +6994,7 @@ characters.data={
   unicodeslot=0x028B,
  },
  {
+  adobename="vturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED V",
   direction="l",
@@ -6740,6 +7003,7 @@ characters.data={
   unicodeslot=0x028C,
  },
  {
+  adobename="wturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED W",
   direction="l",
@@ -6747,6 +7011,7 @@ characters.data={
   unicodeslot=0x028D,
  },
  {
+  adobename="yturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED Y",
   direction="l",
@@ -6761,6 +7026,7 @@ characters.data={
   unicodeslot=0x028F,
  },
  {
+  adobename="zretroflexhook",
   category="ll",
   description="LATIN SMALL LETTER Z WITH RETROFLEX HOOK",
   direction="l",
@@ -6769,6 +7035,7 @@ characters.data={
   unicodeslot=0x0290,
  },
  {
+  adobename="zcurl",
   category="ll",
   description="LATIN SMALL LETTER Z WITH CURL",
   direction="l",
@@ -6777,6 +7044,7 @@ characters.data={
   unicodeslot=0x0291,
  },
  {
+  adobename="ezh",
   category="ll",
   description="LATIN SMALL LETTER EZH",
   direction="l",
@@ -6785,6 +7053,7 @@ characters.data={
   unicodeslot=0x0292,
  },
  {
+  adobename="ezhcurl",
   category="ll",
   description="LATIN SMALL LETTER EZH WITH CURL",
   direction="l",
@@ -6793,6 +7062,7 @@ characters.data={
   unicodeslot=0x0293,
  },
  {
+  adobename="glottalstop",
   category="lo",
   description="LATIN LETTER GLOTTAL STOP",
   direction="l",
@@ -6800,6 +7070,7 @@ characters.data={
   unicodeslot=0x0294,
  },
  {
+  adobename="glottalstopreversed",
   category="ll",
   description="LATIN LETTER PHARYNGEAL VOICED FRICATIVE",
   direction="l",
@@ -6807,6 +7078,7 @@ characters.data={
   unicodeslot=0x0295,
  },
  {
+  adobename="glottalstopinverted",
   category="ll",
   description="LATIN LETTER INVERTED GLOTTAL STOP",
   direction="l",
@@ -6814,6 +7086,7 @@ characters.data={
   unicodeslot=0x0296,
  },
  {
+  adobename="cstretched",
   category="ll",
   description="LATIN LETTER STRETCHED C",
   direction="l",
@@ -6821,6 +7094,7 @@ characters.data={
   unicodeslot=0x0297,
  },
  {
+  adobename="bilabialclick",
   category="ll",
   description="LATIN LETTER BILABIAL CLICK",
   direction="l",
@@ -6835,6 +7109,7 @@ characters.data={
   unicodeslot=0x0299,
  },
  {
+  adobename="eopenclosed",
   category="ll",
   description="LATIN SMALL LETTER CLOSED OPEN E",
   direction="l",
@@ -6842,6 +7117,7 @@ characters.data={
   unicodeslot=0x029A,
  },
  {
+  adobename="Gsmallhook",
   category="ll",
   description="LATIN LETTER SMALL CAPITAL G WITH HOOK",
   direction="l",
@@ -6856,6 +7132,7 @@ characters.data={
   unicodeslot=0x029C,
  },
  {
+  adobename="jcrossedtail",
   category="ll",
   description="LATIN SMALL LETTER J WITH CROSSED-TAIL",
   direction="l",
@@ -6864,6 +7141,7 @@ characters.data={
   unicodeslot=0x029D,
  },
  {
+  adobename="kturned",
   category="ll",
   description="LATIN SMALL LETTER TURNED K",
   direction="l",
@@ -6878,6 +7156,7 @@ characters.data={
   unicodeslot=0x029F,
  },
  {
+  adobename="qhook",
   category="ll",
   description="LATIN SMALL LETTER Q WITH HOOK",
   direction="l",
@@ -6886,6 +7165,7 @@ characters.data={
   unicodeslot=0x02A0,
  },
  {
+  adobename="glottalstopstroke",
   category="ll",
   description="LATIN LETTER GLOTTAL STOP WITH STROKE",
   direction="l",
@@ -6893,6 +7173,7 @@ characters.data={
   unicodeslot=0x02A1,
  },
  {
+  adobename="glottalstopstrokereversed",
   category="ll",
   description="LATIN LETTER REVERSED GLOTTAL STOP WITH STROKE",
   direction="l",
@@ -6900,6 +7181,7 @@ characters.data={
   unicodeslot=0x02A2,
  },
  {
+  adobename="dzaltone",
   category="ll",
   description="LATIN SMALL LETTER DZ DIGRAPH",
   direction="l",
@@ -6907,6 +7189,7 @@ characters.data={
   unicodeslot=0x02A3,
  },
  {
+  adobename="dezh",
   category="ll",
   description="LATIN SMALL LETTER DEZH DIGRAPH",
   direction="l",
@@ -6914,6 +7197,7 @@ characters.data={
   unicodeslot=0x02A4,
  },
  {
+  adobename="dzcurl",
   category="ll",
   description="LATIN SMALL LETTER DZ DIGRAPH WITH CURL",
   direction="l",
@@ -6921,6 +7205,7 @@ characters.data={
   unicodeslot=0x02A5,
  },
  {
+  adobename="ts",
   category="ll",
   description="LATIN SMALL LETTER TS DIGRAPH",
   direction="l",
@@ -6928,6 +7213,7 @@ characters.data={
   unicodeslot=0x02A6,
  },
  {
+  adobename="tesh",
   category="ll",
   description="LATIN SMALL LETTER TESH DIGRAPH",
   direction="l",
@@ -6935,6 +7221,7 @@ characters.data={
   unicodeslot=0x02A7,
  },
  {
+  adobename="tccurl",
   category="ll",
   description="LATIN SMALL LETTER TC DIGRAPH WITH CURL",
   direction="l",
@@ -6991,6 +7278,7 @@ characters.data={
   unicodeslot=0x02AF,
  },
  {
+  adobename="hsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL H",
   direction="l",
@@ -6999,6 +7287,7 @@ characters.data={
   unicodeslot=0x02B0,
  },
  {
+  adobename="hhooksuperior",
   category="lm",
   description="MODIFIER LETTER SMALL H WITH HOOK",
   direction="l",
@@ -7007,6 +7296,7 @@ characters.data={
   unicodeslot=0x02B1,
  },
  {
+  adobename="jsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL J",
   direction="l",
@@ -7023,6 +7313,7 @@ characters.data={
   unicodeslot=0x02B3,
  },
  {
+  adobename="rturnedsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL TURNED R",
   direction="l",
@@ -7031,6 +7322,7 @@ characters.data={
   unicodeslot=0x02B4,
  },
  {
+  adobename="rhookturnedsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL TURNED R WITH HOOK",
   direction="l",
@@ -7039,6 +7331,7 @@ characters.data={
   unicodeslot=0x02B5,
  },
  {
+  adobename="Rsmallinvertedsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL CAPITAL INVERTED R",
   direction="l",
@@ -7047,6 +7340,7 @@ characters.data={
   unicodeslot=0x02B6,
  },
  {
+  adobename="wsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL W",
   direction="l",
@@ -7055,6 +7349,7 @@ characters.data={
   unicodeslot=0x02B7,
  },
  {
+  adobename="ysuperior",
   category="lm",
   description="MODIFIER LETTER SMALL Y",
   direction="l",
@@ -7063,6 +7358,7 @@ characters.data={
   unicodeslot=0x02B8,
  },
  {
+  adobename="primemod",
   category="lm",
   description="MODIFIER LETTER PRIME",
   direction="on",
@@ -7070,6 +7366,7 @@ characters.data={
   unicodeslot=0x02B9,
  },
  {
+  adobename="dblprimemod",
   category="lm",
   description="MODIFIER LETTER DOUBLE PRIME",
   direction="on",
@@ -7077,6 +7374,7 @@ characters.data={
   unicodeslot=0x02BA,
  },
  {
+  adobename="commaturnedmod",
   category="lm",
   description="MODIFIER LETTER TURNED COMMA",
   direction="l",
@@ -7084,7 +7382,7 @@ characters.data={
   unicodeslot=0x02BB,
  },
  {
-  adobename="afii57929",
+  adobename="apostrophemod",
   category="lm",
   description="MODIFIER LETTER APOSTROPHE",
   direction="l",
@@ -7092,7 +7390,7 @@ characters.data={
   unicodeslot=0x02BC,
  },
  {
-  adobename="afii64937",
+  adobename="commareversedmod",
   category="lm",
   description="MODIFIER LETTER REVERSED COMMA",
   direction="l",
@@ -7100,6 +7398,7 @@ characters.data={
   unicodeslot=0x02BD,
  },
  {
+  adobename="ringhalfright",
   category="lm",
   description="MODIFIER LETTER RIGHT HALF RING",
   direction="l",
@@ -7107,6 +7406,7 @@ characters.data={
   unicodeslot=0x02BE,
  },
  {
+  adobename="ringhalfleft",
   category="lm",
   description="MODIFIER LETTER LEFT HALF RING",
   direction="l",
@@ -7114,6 +7414,7 @@ characters.data={
   unicodeslot=0x02BF,
  },
  {
+  adobename="glottalstopmod",
   category="lm",
   description="MODIFIER LETTER GLOTTAL STOP",
   direction="l",
@@ -7121,6 +7422,7 @@ characters.data={
   unicodeslot=0x02C0,
  },
  {
+  adobename="glottalstopreversedmod",
   category="lm",
   description="MODIFIER LETTER REVERSED GLOTTAL STOP",
   direction="l",
@@ -7128,6 +7430,7 @@ characters.data={
   unicodeslot=0x02C1,
  },
  {
+  adobename="arrowheadleftmod",
   category="sk",
   description="MODIFIER LETTER LEFT ARROWHEAD",
   direction="on",
@@ -7135,6 +7438,7 @@ characters.data={
   unicodeslot=0x02C2,
  },
  {
+  adobename="arrowheadrightmod",
   category="sk",
   description="MODIFIER LETTER RIGHT ARROWHEAD",
   direction="on",
@@ -7142,6 +7446,7 @@ characters.data={
   unicodeslot=0x02C3,
  },
  {
+  adobename="arrowheadupmod",
   category="sk",
   cjkwd="a",
   description="MODIFIER LETTER UP ARROWHEAD",
@@ -7150,6 +7455,7 @@ characters.data={
   unicodeslot=0x02C4,
  },
  {
+  adobename="arrowheaddownmod",
   category="sk",
   description="MODIFIER LETTER DOWN ARROWHEAD",
   direction="on",
@@ -7182,6 +7488,7 @@ characters.data={
   unicodeslot=0x02C7,
  },
  {
+  adobename="verticallinemod",
   category="lm",
   description="MODIFIER LETTER VERTICAL LINE",
   direction="on",
@@ -7189,6 +7496,7 @@ characters.data={
   unicodeslot=0x02C8,
  },
  {
+  adobename="firsttonechinese",
   category="lm",
   cjkwd="a",
   description="MODIFIER LETTER MACRON",
@@ -7197,6 +7505,7 @@ characters.data={
   unicodeslot=0x02C9,
  },
  {
+  adobename="secondtonechinese",
   category="lm",
   cjkwd="a",
   description="MODIFIER LETTER ACUTE ACCENT",
@@ -7205,6 +7514,7 @@ characters.data={
   unicodeslot=0x02CA,
  },
  {
+  adobename="fourthtonechinese",
   category="lm",
   cjkwd="a",
   description="MODIFIER LETTER GRAVE ACCENT",
@@ -7213,6 +7523,7 @@ characters.data={
   unicodeslot=0x02CB,
  },
  {
+  adobename="verticallinelowmod",
   category="lm",
   description="MODIFIER LETTER LOW VERTICAL LINE",
   direction="on",
@@ -7220,6 +7531,7 @@ characters.data={
   unicodeslot=0x02CC,
  },
  {
+  adobename="macronlowmod",
   category="lm",
   cjkwd="a",
   description="MODIFIER LETTER LOW MACRON",
@@ -7228,6 +7540,7 @@ characters.data={
   unicodeslot=0x02CD,
  },
  {
+  adobename="gravelowmod",
   category="lm",
   description="MODIFIER LETTER LOW GRAVE ACCENT",
   direction="on",
@@ -7235,6 +7548,7 @@ characters.data={
   unicodeslot=0x02CE,
  },
  {
+  adobename="acutelowmod",
   category="lm",
   description="MODIFIER LETTER LOW ACUTE ACCENT",
   direction="on",
@@ -7242,6 +7556,7 @@ characters.data={
   unicodeslot=0x02CF,
  },
  {
+  adobename="colontriangularmod",
   category="lm",
   cjkwd="a",
   description="MODIFIER LETTER TRIANGULAR COLON",
@@ -7250,6 +7565,7 @@ characters.data={
   unicodeslot=0x02D0,
  },
  {
+  adobename="colontriangularhalfmod",
   category="lm",
   description="MODIFIER LETTER HALF TRIANGULAR COLON",
   direction="l",
@@ -7257,6 +7573,7 @@ characters.data={
   unicodeslot=0x02D1,
  },
  {
+  adobename="ringhalfrightcentered",
   category="sk",
   description="MODIFIER LETTER CENTRED RIGHT HALF RING",
   direction="on",
@@ -7264,6 +7581,7 @@ characters.data={
   unicodeslot=0x02D2,
  },
  {
+  adobename="ringhalfleftcentered",
   category="sk",
   description="MODIFIER LETTER CENTRED LEFT HALF RING",
   direction="on",
@@ -7271,6 +7589,7 @@ characters.data={
   unicodeslot=0x02D3,
  },
  {
+  adobename="uptackmod",
   category="sk",
   description="MODIFIER LETTER UP TACK",
   direction="on",
@@ -7278,6 +7597,7 @@ characters.data={
   unicodeslot=0x02D4,
  },
  {
+  adobename="downtackmod",
   category="sk",
   description="MODIFIER LETTER DOWN TACK",
   direction="on",
@@ -7285,6 +7605,7 @@ characters.data={
   unicodeslot=0x02D5,
  },
  {
+  adobename="plusmod",
   category="sk",
   description="MODIFIER LETTER PLUS SIGN",
   direction="on",
@@ -7292,6 +7613,7 @@ characters.data={
   unicodeslot=0x02D6,
  },
  {
+  adobename="minusmod",
   category="sk",
   description="MODIFIER LETTER MINUS SIGN",
   direction="on",
@@ -7372,6 +7694,7 @@ characters.data={
   unicodeslot=0x02DD,
  },
  {
+  adobename="rhotichookmod",
   category="sk",
   description="MODIFIER LETTER RHOTIC HOOK",
   direction="on",
@@ -7387,6 +7710,7 @@ characters.data={
   unicodeslot=0x02DF,
  },
  {
+  adobename="gammasuperior",
   category="lm",
   description="MODIFIER LETTER SMALL GAMMA",
   direction="l",
@@ -7411,6 +7735,7 @@ characters.data={
   unicodeslot=0x02E2,
  },
  {
+  adobename="xsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL X",
   direction="l",
@@ -7419,6 +7744,7 @@ characters.data={
   unicodeslot=0x02E3,
  },
  {
+  adobename="glottalstopreversedsuperior",
   category="lm",
   description="MODIFIER LETTER SMALL REVERSED GLOTTAL STOP",
   direction="l",
@@ -7427,6 +7753,7 @@ characters.data={
   unicodeslot=0x02E4,
  },
  {
+  adobename="tonebarextrahighmod",
   category="sk",
   description="MODIFIER LETTER EXTRA-HIGH TONE BAR",
   direction="on",
@@ -7434,6 +7761,7 @@ characters.data={
   unicodeslot=0x02E5,
  },
  {
+  adobename="tonebarhighmod",
   category="sk",
   description="MODIFIER LETTER HIGH TONE BAR",
   direction="on",
@@ -7441,6 +7769,7 @@ characters.data={
   unicodeslot=0x02E6,
  },
  {
+  adobename="tonebarmidmod",
   category="sk",
   description="MODIFIER LETTER MID TONE BAR",
   direction="on",
@@ -7448,6 +7777,7 @@ characters.data={
   unicodeslot=0x02E7,
  },
  {
+  adobename="tonebarlowmod",
   category="sk",
   description="MODIFIER LETTER LOW TONE BAR",
   direction="on",
@@ -7455,6 +7785,7 @@ characters.data={
   unicodeslot=0x02E8,
  },
  {
+  adobename="tonebarextralowmod",
   category="sk",
   description="MODIFIER LETTER EXTRA-LOW TONE BAR",
   direction="on",
@@ -7634,6 +7965,7 @@ characters.data={
   unicodeslot=0x0301,
  },
  {
+  adobename="circumflexcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CIRCUMFLEX ACCENT",
@@ -7653,6 +7985,7 @@ characters.data={
   unicodeslot=0x0303,
  },
  {
+  adobename="macroncmb",
   category="mn",
   cjkwd="a",
   description="COMBINING MACRON",
@@ -7661,6 +7994,7 @@ characters.data={
   unicodeslot=0x0304,
  },
  {
+  adobename="overlinecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING OVERLINE",
@@ -7669,6 +8003,7 @@ characters.data={
   unicodeslot=0x0305,
  },
  {
+  adobename="brevecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING BREVE",
@@ -7677,6 +8012,7 @@ characters.data={
   unicodeslot=0x0306,
  },
  {
+  adobename="dotaccentcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOT ABOVE",
@@ -7685,6 +8021,7 @@ characters.data={
   unicodeslot=0x0307,
  },
  {
+  adobename="dieresiscmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DIAERESIS",
@@ -7693,7 +8030,7 @@ characters.data={
   unicodeslot=0x0308,
  },
  {
-  adobename="hookabovecomb",
+  adobename="hookcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING HOOK ABOVE",
@@ -7702,6 +8039,7 @@ characters.data={
   unicodeslot=0x0309,
  },
  {
+  adobename="ringcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING RING ABOVE",
@@ -7710,6 +8048,7 @@ characters.data={
   unicodeslot=0x030A,
  },
  {
+  adobename="hungarumlautcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE ACUTE ACCENT",
@@ -7718,6 +8057,7 @@ characters.data={
   unicodeslot=0x030B,
  },
  {
+  adobename="caroncmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CARON",
@@ -7726,6 +8066,7 @@ characters.data={
   unicodeslot=0x030C,
  },
  {
+  adobename="verticallineabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING VERTICAL LINE ABOVE",
@@ -7734,6 +8075,7 @@ characters.data={
   unicodeslot=0x030D,
  },
  {
+  adobename="dblverticallineabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE VERTICAL LINE ABOVE",
@@ -7742,6 +8084,7 @@ characters.data={
   unicodeslot=0x030E,
  },
  {
+  adobename="dblgravecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE GRAVE ACCENT",
@@ -7750,6 +8093,7 @@ characters.data={
   unicodeslot=0x030F,
  },
  {
+  adobename="candrabinducmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CANDRABINDU",
@@ -7758,6 +8102,7 @@ characters.data={
   unicodeslot=0x0310,
  },
  {
+  adobename="breveinvertedcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING INVERTED BREVE",
@@ -7766,6 +8111,7 @@ characters.data={
   unicodeslot=0x0311,
  },
  {
+  adobename="commaturnedabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING TURNED COMMA ABOVE",
@@ -7774,6 +8120,7 @@ characters.data={
   unicodeslot=0x0312,
  },
  {
+  adobename="commaabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING COMMA ABOVE",
@@ -7782,6 +8129,7 @@ characters.data={
   unicodeslot=0x0313,
  },
  {
+  adobename="commareversedabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING REVERSED COMMA ABOVE",
@@ -7790,6 +8138,7 @@ characters.data={
   unicodeslot=0x0314,
  },
  {
+  adobename="commaaboverightcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING COMMA ABOVE RIGHT",
@@ -7798,6 +8147,7 @@ characters.data={
   unicodeslot=0x0315,
  },
  {
+  adobename="gravebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GRAVE ACCENT BELOW",
@@ -7806,6 +8156,7 @@ characters.data={
   unicodeslot=0x0316,
  },
  {
+  adobename="acutebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING ACUTE ACCENT BELOW",
@@ -7814,6 +8165,7 @@ characters.data={
   unicodeslot=0x0317,
  },
  {
+  adobename="lefttackbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LEFT TACK BELOW",
@@ -7822,6 +8174,7 @@ characters.data={
   unicodeslot=0x0318,
  },
  {
+  adobename="righttackbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING RIGHT TACK BELOW",
@@ -7830,6 +8183,7 @@ characters.data={
   unicodeslot=0x0319,
  },
  {
+  adobename="leftangleabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LEFT ANGLE ABOVE",
@@ -7838,6 +8192,7 @@ characters.data={
   unicodeslot=0x031A,
  },
  {
+  adobename="horncmb",
   category="mn",
   cjkwd="a",
   description="COMBINING HORN",
@@ -7846,6 +8201,7 @@ characters.data={
   unicodeslot=0x031B,
  },
  {
+  adobename="ringhalfleftbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LEFT HALF RING BELOW",
@@ -7854,6 +8210,7 @@ characters.data={
   unicodeslot=0x031C,
  },
  {
+  adobename="uptackbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING UP TACK BELOW",
@@ -7862,6 +8219,7 @@ characters.data={
   unicodeslot=0x031D,
  },
  {
+  adobename="downtackbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOWN TACK BELOW",
@@ -7870,6 +8228,7 @@ characters.data={
   unicodeslot=0x031E,
  },
  {
+  adobename="plusbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING PLUS SIGN BELOW",
@@ -7878,6 +8237,7 @@ characters.data={
   unicodeslot=0x031F,
  },
  {
+  adobename="minusbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING MINUS SIGN BELOW",
@@ -7886,6 +8246,7 @@ characters.data={
   unicodeslot=0x0320,
  },
  {
+  adobename="hookpalatalizedbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING PALATALIZED HOOK BELOW",
@@ -7894,6 +8255,7 @@ characters.data={
   unicodeslot=0x0321,
  },
  {
+  adobename="hookretroflexbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING RETROFLEX HOOK BELOW",
@@ -7912,6 +8274,7 @@ characters.data={
   unicodeslot=0x0323,
  },
  {
+  adobename="dieresisbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DIAERESIS BELOW",
@@ -7920,6 +8283,7 @@ characters.data={
   unicodeslot=0x0324,
  },
  {
+  adobename="ringbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING RING BELOW",
@@ -7937,6 +8301,7 @@ characters.data={
   unicodeslot=0x0326,
  },
  {
+  adobename="cedillacmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CEDILLA",
@@ -7945,6 +8310,7 @@ characters.data={
   unicodeslot=0x0327,
  },
  {
+  adobename="ogonekcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING OGONEK",
@@ -7953,6 +8319,7 @@ characters.data={
   unicodeslot=0x0328,
  },
  {
+  adobename="verticallinebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING VERTICAL LINE BELOW",
@@ -7961,6 +8328,7 @@ characters.data={
   unicodeslot=0x0329,
  },
  {
+  adobename="bridgebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING BRIDGE BELOW",
@@ -7969,6 +8337,7 @@ characters.data={
   unicodeslot=0x032A,
  },
  {
+  adobename="dblarchinvertedbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING INVERTED DOUBLE ARCH BELOW",
@@ -7977,6 +8346,7 @@ characters.data={
   unicodeslot=0x032B,
  },
  {
+  adobename="caronbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CARON BELOW",
@@ -7985,6 +8355,7 @@ characters.data={
   unicodeslot=0x032C,
  },
  {
+  adobename="circumflexbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING CIRCUMFLEX ACCENT BELOW",
@@ -7993,6 +8364,7 @@ characters.data={
   unicodeslot=0x032D,
  },
  {
+  adobename="brevebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING BREVE BELOW",
@@ -8001,6 +8373,7 @@ characters.data={
   unicodeslot=0x032E,
  },
  {
+  adobename="breveinvertedbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING INVERTED BREVE BELOW",
@@ -8009,6 +8382,7 @@ characters.data={
   unicodeslot=0x032F,
  },
  {
+  adobename="tildebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING TILDE BELOW",
@@ -8017,6 +8391,7 @@ characters.data={
   unicodeslot=0x0330,
  },
  {
+  adobename="macronbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING MACRON BELOW",
@@ -8025,6 +8400,7 @@ characters.data={
   unicodeslot=0x0331,
  },
  {
+  adobename="lowlinecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LOW LINE",
@@ -8033,6 +8409,7 @@ characters.data={
   unicodeslot=0x0332,
  },
  {
+  adobename="dbllowlinecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE LOW LINE",
@@ -8041,6 +8418,7 @@ characters.data={
   unicodeslot=0x0333,
  },
  {
+  adobename="tildeoverlaycmb",
   category="mn",
   cjkwd="a",
   description="COMBINING TILDE OVERLAY",
@@ -8049,6 +8427,7 @@ characters.data={
   unicodeslot=0x0334,
  },
  {
+  adobename="strokeshortoverlaycmb",
   category="mn",
   cjkwd="a",
   description="COMBINING SHORT STROKE OVERLAY",
@@ -8057,6 +8436,7 @@ characters.data={
   unicodeslot=0x0335,
  },
  {
+  adobename="strokelongoverlaycmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LONG STROKE OVERLAY",
@@ -8065,6 +8445,7 @@ characters.data={
   unicodeslot=0x0336,
  },
  {
+  adobename="solidusshortoverlaycmb",
   category="mn",
   cjkwd="a",
   description="COMBINING SHORT SOLIDUS OVERLAY",
@@ -8073,6 +8454,7 @@ characters.data={
   unicodeslot=0x0337,
  },
  {
+  adobename="soliduslongoverlaycmb",
   category="mn",
   cjkwd="a",
   description="COMBINING LONG SOLIDUS OVERLAY",
@@ -8083,6 +8465,7 @@ characters.data={
   unicodeslot=0x0338,
  },
  {
+  adobename="ringhalfrightbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING RIGHT HALF RING BELOW",
@@ -8091,6 +8474,7 @@ characters.data={
   unicodeslot=0x0339,
  },
  {
+  adobename="bridgeinvertedbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING INVERTED BRIDGE BELOW",
@@ -8099,6 +8483,7 @@ characters.data={
   unicodeslot=0x033A,
  },
  {
+  adobename="squarebelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING SQUARE BELOW",
@@ -8107,6 +8492,7 @@ characters.data={
   unicodeslot=0x033B,
  },
  {
+  adobename="seagullbelowcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING SEAGULL BELOW",
@@ -8115,6 +8501,7 @@ characters.data={
   unicodeslot=0x033C,
  },
  {
+  adobename="xabovecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING X ABOVE",
@@ -8123,6 +8510,7 @@ characters.data={
   unicodeslot=0x033D,
  },
  {
+  adobename="tildeverticalcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING VERTICAL TILDE",
@@ -8131,6 +8519,7 @@ characters.data={
   unicodeslot=0x033E,
  },
  {
+  adobename="dbloverlinecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE OVERLINE",
@@ -8139,6 +8528,7 @@ characters.data={
   unicodeslot=0x033F,
  },
  {
+  adobename="gravetonecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GRAVE TONE MARK",
@@ -8148,6 +8538,7 @@ characters.data={
   unicodeslot=0x0340,
  },
  {
+  adobename="acutetonecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING ACUTE TONE MARK",
@@ -8157,6 +8548,7 @@ characters.data={
   unicodeslot=0x0341,
  },
  {
+  adobename="perispomenigreekcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GREEK PERISPOMENI",
@@ -8165,6 +8557,7 @@ characters.data={
   unicodeslot=0x0342,
  },
  {
+  adobename="koroniscmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GREEK KORONIS",
@@ -8174,6 +8567,7 @@ characters.data={
   unicodeslot=0x0343,
  },
  {
+  adobename="dialytikatonoscmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GREEK DIALYTIKA TONOS",
@@ -8183,6 +8577,7 @@ characters.data={
   unicodeslot=0x0344,
  },
  {
+  adobename="ypogegrammenigreekcmb",
   category="mn",
   cjkwd="a",
   description="COMBINING GREEK YPOGEGRAMMENI",
@@ -8400,6 +8795,7 @@ characters.data={
   unicodeslot=0x035F,
  },
  {
+  adobename="tildedoublecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE TILDE",
@@ -8408,6 +8804,7 @@ characters.data={
   unicodeslot=0x0360,
  },
  {
+  adobename="breveinverteddoublecmb",
   category="mn",
   cjkwd="a",
   description="COMBINING DOUBLE INVERTED BREVE",
@@ -8528,6 +8925,7 @@ characters.data={
   unicodeslot=0x036F,
  },
  [0x0374]={
+  adobename="numeralsigngreek",
   category="sk",
   description="GREEK NUMERAL SIGN",
   direction="on",
@@ -8536,6 +8934,7 @@ characters.data={
   unicodeslot=0x0374,
  },
  [0x0375]={
+  adobename="numeralsignlowergreek",
   category="sk",
   description="GREEK LOWER NUMERAL SIGN",
   direction="on",
@@ -8543,6 +8942,7 @@ characters.data={
   unicodeslot=0x0375,
  },
  [0x037A]={
+  adobename="ypogegrammeni",
   category="lm",
   description="GREEK YPOGEGRAMMENI",
   direction="l",
@@ -8575,6 +8975,7 @@ characters.data={
   unicodeslot=0x037D,
  },
  [0x037E]={
+  adobename="questiongreek",
   category="po",
   description="GREEK QUESTION MARK",
   direction="on",
@@ -8698,7 +9099,7 @@ characters.data={
  [0x0390]={
   adobename="iotadieresistonos",
   category="ll",
-  contextname="greekiotadialytikatonos", -- double
+  contextname="greekiotadialytikatonos",
   description="GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS",
   direction="l",
   linebreak="al",
@@ -8714,9 +9115,9 @@ characters.data={
   description="GREEK CAPITAL LETTER ALPHA",
   direction="l",
   lccode=0x03B1,
+  linebreak="al",
   mathclass="variable",
   mathname="Alpha",
-  linebreak="al",
   unicodeslot=0x0391,
  },
  [0x0392]={
@@ -8727,9 +9128,9 @@ characters.data={
   description="GREEK CAPITAL LETTER BETA",
   direction="l",
   lccode=0x03B2,
+  linebreak="al",
   mathclass="variable",
   mathname="Beta",
-  linebreak="al",
   unicodeslot=0x0392,
  },
  [0x0393]={
@@ -8739,22 +9140,23 @@ characters.data={
   contextname="greekGamma",
   description="GREEK CAPITAL LETTER GAMMA",
   direction="l",
-  mathclass="variable",
-  mathname="Gamma",
   lccode=0x03B3,
   linebreak="al",
+  mathclass="variable",
+  mathname="Gamma",
   unicodeslot=0x0393,
  },
  [0x0394]={
+  adobename="Deltagreek",
   category="lu",
   cjkwd="a",
   contextname="greekDelta",
   description="GREEK CAPITAL LETTER DELTA",
   direction="l",
-  mathclass="variable",
-  mathname="Delta",
   lccode=0x03B4,
   linebreak="al",
+  mathclass="variable",
+  mathname="Delta",
   unicodeslot=0x0394,
  },
  [0x0395]={
@@ -8764,10 +9166,10 @@ characters.data={
   contextname="greekEpsilon",
   description="GREEK CAPITAL LETTER EPSILON",
   direction="l",
-  mathclass="variable",
-  mathname="Epsilon",
   lccode=0x03B5,
   linebreak="al",
+  mathclass="variable",
+  mathname="Epsilon",
   unicodeslot=0x0395,
  },
  [0x0396]={
@@ -8777,10 +9179,10 @@ characters.data={
   contextname="greekZeta",
   description="GREEK CAPITAL LETTER ZETA",
   direction="l",
-  mathclass="variable",
-  mathname="Zeta",
   lccode=0x03B6,
   linebreak="al",
+  mathclass="variable",
+  mathname="Zeta",
   unicodeslot=0x0396,
  },
  [0x0397]={
@@ -8790,10 +9192,10 @@ characters.data={
   contextname="greekEta",
   description="GREEK CAPITAL LETTER ETA",
   direction="l",
-  mathclass="variable",
-  mathname="Eta",
   lccode=0x03B7,
   linebreak="al",
+  mathclass="variable",
+  mathname="Eta",
   unicodeslot=0x0397,
  },
  [0x0398]={
@@ -8803,10 +9205,10 @@ characters.data={
   contextname="greekTheta",
   description="GREEK CAPITAL LETTER THETA",
   direction="l",
-  mathclass="variable",
-  mathname="Theta",
   lccode=0x03B8,
   linebreak="al",
+  mathclass="variable",
+  mathname="Theta",
   unicodeslot=0x0398,
  },
  [0x0399]={
@@ -8816,10 +9218,10 @@ characters.data={
   contextname="greekIota",
   description="GREEK CAPITAL LETTER IOTA",
   direction="l",
-  mathclass="variable",
-  mathname="Iota",
   lccode=0x03B9,
   linebreak="al",
+  mathclass="variable",
+  mathname="Iota",
   unicodeslot=0x0399,
  },
  [0x039A]={
@@ -8829,10 +9231,10 @@ characters.data={
   contextname="greekKappa",
   description="GREEK CAPITAL LETTER KAPPA",
   direction="l",
-  mathclass="variable",
-  mathname="Kappa",
   lccode=0x03BA,
   linebreak="al",
+  mathclass="variable",
+  mathname="Kappa",
   unicodeslot=0x039A,
  },
  [0x039B]={
@@ -8842,10 +9244,10 @@ characters.data={
   contextname="greekLambda",
   description="GREEK CAPITAL LETTER LAMDA",
   direction="l",
-  mathclass="variable",
-  mathname="Lambda",
   lccode=0x03BB,
   linebreak="al",
+  mathclass="variable",
+  mathname="Lambda",
   unicodeslot=0x039B,
  },
  [0x039C]={
@@ -8855,10 +9257,10 @@ characters.data={
   contextname="greekMu",
   description="GREEK CAPITAL LETTER MU",
   direction="l",
-  mathclass="variable",
-  mathname="Mu",
   lccode=0x03BC,
   linebreak="al",
+  mathclass="variable",
+  mathname="Mu",
   unicodeslot=0x039C,
  },
  [0x039D]={
@@ -8868,10 +9270,10 @@ characters.data={
   contextname="greekNu",
   description="GREEK CAPITAL LETTER NU",
   direction="l",
-  mathclass="variable",
-  mathname="Nu",
   lccode=0x03BD,
   linebreak="al",
+  mathclass="variable",
+  mathname="Nu",
   unicodeslot=0x039D,
  },
  [0x039E]={
@@ -8881,10 +9283,10 @@ characters.data={
   contextname="greekXi",
   description="GREEK CAPITAL LETTER XI",
   direction="l",
-  mathclass="variable",
-  mathname="Xi",
   lccode=0x03BE,
   linebreak="al",
+  mathclass="variable",
+  mathname="Xi",
   unicodeslot=0x039E,
  },
  [0x039F]={
@@ -8894,10 +9296,10 @@ characters.data={
   contextname="greekOmicron",
   description="GREEK CAPITAL LETTER OMICRON",
   direction="l",
-  mathclass="variable",
-  mathname="Omicron",
   lccode=0x03BF,
   linebreak="al",
+  mathclass="variable",
+  mathname="Omicron",
   unicodeslot=0x039F,
  },
  [0x03A0]={
@@ -8907,10 +9309,10 @@ characters.data={
   contextname="greekPi",
   description="GREEK CAPITAL LETTER PI",
   direction="l",
-  mathclass="variable",
-  mathname="Pi",
   lccode=0x03C0,
   linebreak="al",
+  mathclass="variable",
+  mathname="Pi",
   unicodeslot=0x03A0,
  },
  [0x03A1]={
@@ -8920,10 +9322,10 @@ characters.data={
   contextname="greekRho",
   description="GREEK CAPITAL LETTER RHO",
   direction="l",
-  mathclass="variable",
-  mathname="Rho",
   lccode=0x03C1,
   linebreak="al",
+  mathclass="variable",
+  mathname="Rho",
   unicodeslot=0x03A1,
  },
  [0x03A3]={
@@ -8933,10 +9335,10 @@ characters.data={
   contextname="greekSigma",
   description="GREEK CAPITAL LETTER SIGMA",
   direction="l",
-  mathclass="variable",
-  mathname="Sigma",
   lccode=0x03C3,
   linebreak="al",
+  mathclass="variable",
+  mathname="Sigma",
   unicodeslot=0x03A3,
  },
  [0x03A4]={
@@ -8946,10 +9348,10 @@ characters.data={
   contextname="greekTau",
   description="GREEK CAPITAL LETTER TAU",
   direction="l",
-  mathclass="variable",
-  mathname="Tau",
   lccode=0x03C4,
   linebreak="al",
+  mathclass="variable",
+  mathname="Tau",
   unicodeslot=0x03A4,
  },
  [0x03A5]={
@@ -8959,10 +9361,10 @@ characters.data={
   contextname="greekUpsilon",
   description="GREEK CAPITAL LETTER UPSILON",
   direction="l",
-  mathclass="variable",
-  mathname="Upsilon",
   lccode=0x03C5,
   linebreak="al",
+  mathclass="variable",
+  mathname="Upsilon",
   unicodeslot=0x03A5,
  },
  [0x03A6]={
@@ -8972,10 +9374,10 @@ characters.data={
   contextname="greekPhi",
   description="GREEK CAPITAL LETTER PHI",
   direction="l",
-  mathclass="variable",
-  mathname="Phi",
   lccode=0x03C6,
   linebreak="al",
+  mathclass="variable",
+  mathname="Phi",
   unicodeslot=0x03A6,
  },
  [0x03A7]={
@@ -8985,10 +9387,10 @@ characters.data={
   contextname="greekChi",
   description="GREEK CAPITAL LETTER CHI",
   direction="l",
-  mathclass="variable",
-  mathname="Chi",
   lccode=0x03C7,
   linebreak="al",
+  mathclass="variable",
+  mathname="Chi",
   unicodeslot=0x03A7,
  },
  [0x03A8]={
@@ -8998,22 +9400,23 @@ characters.data={
   contextname="greekPsi",
   description="GREEK CAPITAL LETTER PSI",
   direction="l",
-  mathclass="variable",
-  mathname="Psi",
   lccode=0x03C8,
   linebreak="al",
+  mathclass="variable",
+  mathname="Psi",
   unicodeslot=0x03A8,
  },
  [0x03A9]={
+  adobename="Omegagreek",
   category="lu",
   cjkwd="a",
   contextname="greekOmega",
   description="GREEK CAPITAL LETTER OMEGA",
   direction="l",
-  mathclass="variable",
-  mathname="Omega",
   lccode=0x03C9,
   linebreak="al",
+  mathclass="variable",
+  mathname="Omega",
   unicodeslot=0x03A9,
  },
  [0x03AA]={
@@ -9243,6 +9646,7 @@ characters.data={
   unicodeslot=0x03BB,
  },
  [0x03BC]={
+  adobename="mugreek",
   category="ll",
   cjkwd="a",
   contextname="greekmu",
@@ -9320,7 +9724,7 @@ characters.data={
   unicodeslot=0x03C1,
  },
  [0x03C2]={
-  adobename="sigma1",
+  adobename="sigmafinal",
   category="ll",
   contextname="greekfinalsigma",
   description="GREEK SMALL LETTER FINAL SIGMA",
@@ -9483,6 +9887,7 @@ characters.data={
   unicodeslot=0x03CE,
  },
  [0x03D0]={
+  adobename="betasymbolgreek",
   category="ll",
   description="GREEK BETA SYMBOL",
   direction="l",
@@ -9492,7 +9897,7 @@ characters.data={
   unicodeslot=0x03D0,
  },
  [0x03D1]={
-  adobename="theta1",
+  adobename="thetasymbolgreek",
   category="ll",
   contextname="greekthetaalt",
   description="GREEK THETA SYMBOL",
@@ -9505,7 +9910,7 @@ characters.data={
   unicodeslot=0x03D1,
  },
  [0x03D2]={
-  adobename="Upsilon1",
+  adobename="Upsilonhooksymbol",
   category="lu",
   description="GREEK UPSILON WITH HOOK SYMBOL",
   direction="l",
@@ -9514,6 +9919,7 @@ characters.data={
   unicodeslot=0x03D2,
  },
  [0x03D3]={
+  adobename="Upsilonacutehooksymbolgreek",
   category="lu",
   description="GREEK UPSILON WITH ACUTE AND HOOK SYMBOL",
   direction="l",
@@ -9522,6 +9928,7 @@ characters.data={
   unicodeslot=0x03D3,
  },
  [0x03D4]={
+  adobename="Upsilondieresishooksymbolgreek",
   category="lu",
   description="GREEK UPSILON WITH DIAERESIS AND HOOK SYMBOL",
   direction="l",
@@ -9530,20 +9937,20 @@ characters.data={
   unicodeslot=0x03D4,
  },
  [0x03D5]={
-  adobename="phi1",
+  adobename="phisymbolgreek",
   category="ll",
   contextname="greekphialt",
   description="GREEK PHI SYMBOL",
   direction="l",
   linebreak="al",
-  specials={ "compat", 0x03C6 },
   mathclass="variable",
   mathname="phi",
+  specials={ "compat", 0x03C6 },
   uccode=0x03A6,
   unicodeslot=0x03D5,
  },
  [0x03D6]={
-  adobename="omega1",
+  adobename="pisymbolgreek",
   category="ll",
   contextname="greekpialt",
   description="GREEK PI SYMBOL",
@@ -9580,6 +9987,7 @@ characters.data={
   unicodeslot=0x03D9,
  },
  [0x03DA]={
+  adobename="Stigmagreek",
   category="lu",
   description="GREEK LETTER STIGMA",
   direction="l",
@@ -9597,6 +10005,7 @@ characters.data={
   unicodeslot=0x03DB,
  },
  [0x03DC]={
+  adobename="Digammagreek",
   category="lu",
   description="GREEK LETTER DIGAMMA",
   direction="l",
@@ -9616,6 +10025,7 @@ characters.data={
   unicodeslot=0x03DD,
  },
  [0x03DE]={
+  adobename="Koppagreek",
   category="lu",
   description="GREEK LETTER KOPPA",
   direction="l",
@@ -9633,6 +10043,7 @@ characters.data={
   unicodeslot=0x03DF,
  },
  [0x03E0]={
+  adobename="Sampigreek",
   category="lu",
   description="GREEK LETTER SAMPI",
   direction="l",
@@ -9650,6 +10061,7 @@ characters.data={
   unicodeslot=0x03E1,
  },
  [0x03E2]={
+  adobename="Sheicoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER SHEI",
   direction="l",
@@ -9658,6 +10070,7 @@ characters.data={
   unicodeslot=0x03E2,
  },
  [0x03E3]={
+  adobename="sheicoptic",
   category="ll",
   description="COPTIC SMALL LETTER SHEI",
   direction="l",
@@ -9666,6 +10079,7 @@ characters.data={
   unicodeslot=0x03E3,
  },
  [0x03E4]={
+  adobename="Feicoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER FEI",
   direction="l",
@@ -9674,6 +10088,7 @@ characters.data={
   unicodeslot=0x03E4,
  },
  [0x03E5]={
+  adobename="feicoptic",
   category="ll",
   description="COPTIC SMALL LETTER FEI",
   direction="l",
@@ -9682,6 +10097,7 @@ characters.data={
   unicodeslot=0x03E5,
  },
  [0x03E6]={
+  adobename="Kheicoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER KHEI",
   direction="l",
@@ -9690,6 +10106,7 @@ characters.data={
   unicodeslot=0x03E6,
  },
  [0x03E7]={
+  adobename="kheicoptic",
   category="ll",
   description="COPTIC SMALL LETTER KHEI",
   direction="l",
@@ -9698,6 +10115,7 @@ characters.data={
   unicodeslot=0x03E7,
  },
  [0x03E8]={
+  adobename="Horicoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER HORI",
   direction="l",
@@ -9706,6 +10124,7 @@ characters.data={
   unicodeslot=0x03E8,
  },
  [0x03E9]={
+  adobename="horicoptic",
   category="ll",
   description="COPTIC SMALL LETTER HORI",
   direction="l",
@@ -9714,6 +10133,7 @@ characters.data={
   unicodeslot=0x03E9,
  },
  [0x03EA]={
+  adobename="Gangiacoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER GANGIA",
   direction="l",
@@ -9722,6 +10142,7 @@ characters.data={
   unicodeslot=0x03EA,
  },
  [0x03EB]={
+  adobename="gangiacoptic",
   category="ll",
   description="COPTIC SMALL LETTER GANGIA",
   direction="l",
@@ -9730,6 +10151,7 @@ characters.data={
   unicodeslot=0x03EB,
  },
  [0x03EC]={
+  adobename="Shimacoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER SHIMA",
   direction="l",
@@ -9738,6 +10160,7 @@ characters.data={
   unicodeslot=0x03EC,
  },
  [0x03ED]={
+  adobename="shimacoptic",
   category="ll",
   description="COPTIC SMALL LETTER SHIMA",
   direction="l",
@@ -9746,6 +10169,7 @@ characters.data={
   unicodeslot=0x03ED,
  },
  [0x03EE]={
+  adobename="Deicoptic",
   category="lu",
   description="COPTIC CAPITAL LETTER DEI",
   direction="l",
@@ -9754,6 +10178,7 @@ characters.data={
   unicodeslot=0x03EE,
  },
  [0x03EF]={
+  adobename="deicoptic",
   category="ll",
   description="COPTIC SMALL LETTER DEI",
   direction="l",
@@ -9762,17 +10187,19 @@ characters.data={
   unicodeslot=0x03EF,
  },
  [0x03F0]={
+  adobename="kappasymbolgreek",
   category="ll",
   description="GREEK KAPPA SYMBOL",
   direction="l",
   linebreak="al",
-  specials={ "compat", 0x03BA },
   mathclass="ord",
   mathname="varkappa",
+  specials={ "compat", 0x03BA },
   uccode=0x039A,
   unicodeslot=0x03F0,
  },
  [0x03F1]={
+  adobename="rhosymbolgreek",
   category="ll",
   contextname="greekrhoalt",
   description="GREEK RHO SYMBOL",
@@ -9783,6 +10210,7 @@ characters.data={
   unicodeslot=0x03F1,
  },
  [0x03F2]={
+  adobename="sigmalunatesymbolgreek",
   category="ll",
   contextname="greeksigmalunate",
   description="GREEK LUNATE SIGMA SYMBOL",
@@ -9793,6 +10221,7 @@ characters.data={
   unicodeslot=0x03F2,
  },
  [0x03F3]={
+  adobename="yotgreek",
   category="ll",
   description="GREEK LETTER YOT",
   direction="l",
@@ -10435,7 +10864,7 @@ characters.data={
   unicodeslot=0x0430,
  },
  [0x0431]={
-  adobename="afii10066",
+  adobename="becyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicb",
@@ -10446,7 +10875,7 @@ characters.data={
   unicodeslot=0x0431,
  },
  [0x0432]={
-  adobename="afii10067",
+  adobename="vecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicv",
@@ -10457,7 +10886,7 @@ characters.data={
   unicodeslot=0x0432,
  },
  [0x0433]={
-  adobename="afii10068",
+  adobename="gecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicg",
@@ -10468,7 +10897,7 @@ characters.data={
   unicodeslot=0x0433,
  },
  [0x0434]={
-  adobename="afii10069",
+  adobename="decyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicd",
@@ -10479,7 +10908,7 @@ characters.data={
   unicodeslot=0x0434,
  },
  [0x0435]={
-  adobename="afii10070",
+  adobename="iecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillice",
@@ -10490,7 +10919,7 @@ characters.data={
   unicodeslot=0x0435,
  },
  [0x0436]={
-  adobename="afii10072",
+  adobename="zhecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrilliczh",
@@ -10501,7 +10930,7 @@ characters.data={
   unicodeslot=0x0436,
  },
  [0x0437]={
-  adobename="afii10073",
+  adobename="zecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicz",
@@ -10512,7 +10941,7 @@ characters.data={
   unicodeslot=0x0437,
  },
  [0x0438]={
-  adobename="afii10074",
+  adobename="iicyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillici",
@@ -10523,7 +10952,7 @@ characters.data={
   unicodeslot=0x0438,
  },
  [0x0439]={
-  adobename="afii10075",
+  adobename="iishortcyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicishrt",
@@ -10535,7 +10964,7 @@ characters.data={
   unicodeslot=0x0439,
  },
  [0x043A]={
-  adobename="afii10076",
+  adobename="kacyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillick",
@@ -10546,7 +10975,7 @@ characters.data={
   unicodeslot=0x043A,
  },
  [0x043B]={
-  adobename="afii10077",
+  adobename="elcyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicl",
@@ -10557,7 +10986,7 @@ characters.data={
   unicodeslot=0x043B,
  },
  [0x043C]={
-  adobename="afii10078",
+  adobename="emcyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicm",
@@ -10568,7 +10997,7 @@ characters.data={
   unicodeslot=0x043C,
  },
  [0x043D]={
-  adobename="afii10079",
+  adobename="encyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicn",
@@ -10579,7 +11008,7 @@ characters.data={
   unicodeslot=0x043D,
  },
  [0x043E]={
-  adobename="afii10080",
+  adobename="ocyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillico",
@@ -10590,7 +11019,7 @@ characters.data={
   unicodeslot=0x043E,
  },
  [0x043F]={
-  adobename="afii10081",
+  adobename="pecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicp",
@@ -10601,7 +11030,7 @@ characters.data={
   unicodeslot=0x043F,
  },
  [0x0440]={
-  adobename="afii10082",
+  adobename="ercyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicr",
@@ -10612,7 +11041,7 @@ characters.data={
   unicodeslot=0x0440,
  },
  [0x0441]={
-  adobename="afii10083",
+  adobename="escyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillics",
@@ -10623,7 +11052,7 @@ characters.data={
   unicodeslot=0x0441,
  },
  [0x0442]={
-  adobename="afii10084",
+  adobename="tecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillict",
@@ -10634,7 +11063,7 @@ characters.data={
   unicodeslot=0x0442,
  },
  [0x0443]={
-  adobename="afii10085",
+  adobename="ucyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicu",
@@ -10645,7 +11074,7 @@ characters.data={
   unicodeslot=0x0443,
  },
  [0x0444]={
-  adobename="afii10086",
+  adobename="efcyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicf",
@@ -10656,7 +11085,7 @@ characters.data={
   unicodeslot=0x0444,
  },
  [0x0445]={
-  adobename="afii10087",
+  adobename="khacyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillich",
@@ -10667,7 +11096,7 @@ characters.data={
   unicodeslot=0x0445,
  },
  [0x0446]={
-  adobename="afii10088",
+  adobename="tsecyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicc",
@@ -10678,7 +11107,7 @@ characters.data={
   unicodeslot=0x0446,
  },
  [0x0447]={
-  adobename="afii10089",
+  adobename="checyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicch",
@@ -10689,7 +11118,7 @@ characters.data={
   unicodeslot=0x0447,
  },
  [0x0448]={
-  adobename="afii10090",
+  adobename="shacyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicsh",
@@ -10700,7 +11129,7 @@ characters.data={
   unicodeslot=0x0448,
  },
  [0x0449]={
-  adobename="afii10091",
+  adobename="shchacyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicshch",
@@ -10711,7 +11140,7 @@ characters.data={
   unicodeslot=0x0449,
  },
  [0x044A]={
-  adobename="afii10092",
+  adobename="hardsigncyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillichrdsn",
@@ -10722,7 +11151,7 @@ characters.data={
   unicodeslot=0x044A,
  },
  [0x044B]={
-  adobename="afii10093",
+  adobename="yericyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicery",
@@ -10733,7 +11162,7 @@ characters.data={
   unicodeslot=0x044B,
  },
  [0x044C]={
-  adobename="afii10094",
+  adobename="softsigncyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicsftsn",
@@ -10744,7 +11173,7 @@ characters.data={
   unicodeslot=0x044C,
  },
  [0x044D]={
-  adobename="afii10095",
+  adobename="ereversedcyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicerev",
@@ -10755,7 +11184,7 @@ characters.data={
   unicodeslot=0x044D,
  },
  [0x044E]={
-  adobename="afii10096",
+  adobename="iucyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicyu",
@@ -10766,7 +11195,7 @@ characters.data={
   unicodeslot=0x044E,
  },
  [0x044F]={
-  adobename="afii10097",
+  adobename="iacyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicya",
@@ -10788,7 +11217,7 @@ characters.data={
   unicodeslot=0x0450,
  },
  [0x0451]={
-  adobename="afii10071",
+  adobename="iocyrillic",
   category="ll",
   cjkwd="a",
   contextname="cyrillicyo",
@@ -10800,7 +11229,7 @@ characters.data={
   unicodeslot=0x0451,
  },
  [0x0452]={
-  adobename="afii10099",
+  adobename="djecyrillic",
   category="ll",
   contextname="cyrillicdje",
   description="CYRILLIC SMALL LETTER DJE",
@@ -10810,7 +11239,7 @@ characters.data={
   unicodeslot=0x0452,
  },
  [0x0453]={
-  adobename="afii10100",
+  adobename="gjecyrillic",
   category="ll",
   contextname="cyrillicgje",
   description="CYRILLIC SMALL LETTER GJE",
@@ -10821,7 +11250,7 @@ characters.data={
   unicodeslot=0x0453,
  },
  [0x0454]={
-  adobename="afii10101",
+  adobename="ecyrillic",
   category="ll",
   contextname="cyrillicie",
   description="CYRILLIC SMALL LETTER UKRAINIAN IE",
@@ -10831,7 +11260,7 @@ characters.data={
   unicodeslot=0x0454,
  },
  [0x0455]={
-  adobename="afii10102",
+  adobename="dzecyrillic",
   category="ll",
   contextname="cyrillicdze",
   description="CYRILLIC SMALL LETTER DZE",
@@ -10841,7 +11270,7 @@ characters.data={
   unicodeslot=0x0455,
  },
  [0x0456]={
-  adobename="afii10103",
+  adobename="icyrillic",
   category="ll",
   contextname="cyrillicii",
   description="CYRILLIC SMALL LETTER BYELORUSSIAN-UKRAINIAN I",
@@ -10851,7 +11280,7 @@ characters.data={
   unicodeslot=0x0456,
  },
  [0x0457]={
-  adobename="afii10104",
+  adobename="yicyrillic",
   category="ll",
   contextname="cyrillicyi",
   description="CYRILLIC SMALL LETTER YI",
@@ -10862,7 +11291,7 @@ characters.data={
   unicodeslot=0x0457,
  },
  [0x0458]={
-  adobename="afii10105",
+  adobename="jecyrillic",
   category="ll",
   contextname="cyrillicje",
   description="CYRILLIC SMALL LETTER JE",
@@ -10872,7 +11301,7 @@ characters.data={
   unicodeslot=0x0458,
  },
  [0x0459]={
-  adobename="afii10106",
+  adobename="ljecyrillic",
   category="ll",
   contextname="cyrilliclje",
   description="CYRILLIC SMALL LETTER LJE",
@@ -10882,7 +11311,7 @@ characters.data={
   unicodeslot=0x0459,
  },
  [0x045A]={
-  adobename="afii10107",
+  adobename="njecyrillic",
   category="ll",
   contextname="cyrillicnje",
   description="CYRILLIC SMALL LETTER NJE",
@@ -10892,7 +11321,7 @@ characters.data={
   unicodeslot=0x045A,
  },
  [0x045B]={
-  adobename="afii10108",
+  adobename="tshecyrillic",
   category="ll",
   contextname="cyrillictshe",
   description="CYRILLIC SMALL LETTER TSHE",
@@ -10902,7 +11331,7 @@ characters.data={
   unicodeslot=0x045B,
  },
  [0x045C]={
-  adobename="afii10109",
+  adobename="kjecyrillic",
   category="ll",
   contextname="cyrillickje",
   description="CYRILLIC SMALL LETTER KJE",
@@ -10924,7 +11353,7 @@ characters.data={
   unicodeslot=0x045D,
  },
  [0x045E]={
-  adobename="afii10110",
+  adobename="ushortcyrillic",
   category="ll",
   contextname="cyrillicushrt",
   description="CYRILLIC SMALL LETTER SHORT U",
@@ -10935,7 +11364,7 @@ characters.data={
   unicodeslot=0x045E,
  },
  [0x045F]={
-  adobename="afii10193",
+  adobename="dzhecyrillic",
   category="ll",
   contextname="cyrillicdzhe",
   description="CYRILLIC SMALL LETTER DZHE",
@@ -10945,6 +11374,7 @@ characters.data={
   unicodeslot=0x045F,
  },
  [0x0460]={
+  adobename="Omegacyrillic",
   category="lu",
   contextname="cyrillicOMEGA",
   description="CYRILLIC CAPITAL LETTER OMEGA",
@@ -10954,6 +11384,7 @@ characters.data={
   unicodeslot=0x0460,
  },
  [0x0461]={
+  adobename="omegacyrillic",
   category="ll",
   contextname="cyrillicomega",
   description="CYRILLIC SMALL LETTER OMEGA",
@@ -10973,7 +11404,7 @@ characters.data={
   unicodeslot=0x0462,
  },
  [0x0463]={
-  adobename="afii10194",
+  adobename="yatcyrillic",
   category="ll",
   contextname="cyrillicyat",
   description="CYRILLIC SMALL LETTER YAT",
@@ -10983,6 +11414,7 @@ characters.data={
   unicodeslot=0x0463,
  },
  [0x0464]={
+  adobename="Eiotifiedcyrillic",
   category="lu",
   contextname="cyrillicEiotified",
   description="CYRILLIC CAPITAL LETTER IOTIFIED E",
@@ -10992,6 +11424,7 @@ characters.data={
   unicodeslot=0x0464,
  },
  [0x0465]={
+  adobename="eiotifiedcyrillic",
   category="ll",
   contextname="cyrilliceiotified",
   description="CYRILLIC SMALL LETTER IOTIFIED E",
@@ -11001,6 +11434,7 @@ characters.data={
   unicodeslot=0x0465,
  },
  [0x0466]={
+  adobename="Yuslittlecyrillic",
   category="lu",
   contextname="cyrillicLITTLEYUS",
   description="CYRILLIC CAPITAL LETTER LITTLE YUS",
@@ -11010,6 +11444,7 @@ characters.data={
   unicodeslot=0x0466,
  },
  [0x0467]={
+  adobename="yuslittlecyrillic",
   category="ll",
   contextname="cyrilliclittleyus",
   description="CYRILLIC SMALL LETTER LITTLE YUS",
@@ -11019,6 +11454,7 @@ characters.data={
   unicodeslot=0x0467,
  },
  [0x0468]={
+  adobename="Yuslittleiotifiedcyrillic",
   category="lu",
   contextname="cyrillicLITTLEYUSiotified",
   description="CYRILLIC CAPITAL LETTER IOTIFIED LITTLE YUS",
@@ -11028,6 +11464,7 @@ characters.data={
   unicodeslot=0x0468,
  },
  [0x0469]={
+  adobename="yuslittleiotifiedcyrillic",
   category="ll",
   contextname="cyrilliclittleyusiotified",
   description="CYRILLIC SMALL LETTER IOTIFIED LITTLE YUS",
@@ -11037,6 +11474,7 @@ characters.data={
   unicodeslot=0x0469,
  },
  [0x046A]={
+  adobename="Yusbigcyrillic",
   category="lu",
   contextname="cyrillicBIGYUS",
   description="CYRILLIC CAPITAL LETTER BIG YUS",
@@ -11046,6 +11484,7 @@ characters.data={
   unicodeslot=0x046A,
  },
  [0x046B]={
+  adobename="yusbigcyrillic",
   category="ll",
   contextname="cyrillicbigyus",
   description="CYRILLIC SMALL LETTER BIG YUS",
@@ -11055,6 +11494,7 @@ characters.data={
   unicodeslot=0x046B,
  },
  [0x046C]={
+  adobename="Yusbigiotifiedcyrillic",
   category="lu",
   contextname="cyrillicBIGYUSiotified",
   description="CYRILLIC CAPITAL LETTER IOTIFIED BIG YUS",
@@ -11064,6 +11504,7 @@ characters.data={
   unicodeslot=0x046C,
  },
  [0x046D]={
+  adobename="yusbigiotifiedcyrillic",
   category="ll",
   contextname="cyrillicbigyusiotified",
   description="CYRILLIC SMALL LETTER IOTIFIED BIG YUS",
@@ -11073,6 +11514,7 @@ characters.data={
   unicodeslot=0x046D,
  },
  [0x046E]={
+  adobename="Ksicyrillic",
   category="lu",
   contextname="cyrillicKSI",
   description="CYRILLIC CAPITAL LETTER KSI",
@@ -11082,6 +11524,7 @@ characters.data={
   unicodeslot=0x046E,
  },
  [0x046F]={
+  adobename="ksicyrillic",
   category="ll",
   contextname="cyrillicksi",
   description="CYRILLIC SMALL LETTER KSI",
@@ -11091,6 +11534,7 @@ characters.data={
   unicodeslot=0x046F,
  },
  [0x0470]={
+  adobename="Psicyrillic",
   category="lu",
   contextname="cyrillicPSI",
   description="CYRILLIC CAPITAL LETTER PSI",
@@ -11100,6 +11544,7 @@ characters.data={
   unicodeslot=0x0470,
  },
  [0x0471]={
+  adobename="psicyrillic",
   category="ll",
   contextname="cyrillicpsi",
   description="CYRILLIC SMALL LETTER PSI",
@@ -11119,7 +11564,7 @@ characters.data={
   unicodeslot=0x0472,
  },
  [0x0473]={
-  adobename="afii10195",
+  adobename="fitacyrillic",
   category="ll",
   contextname="cyrillicfita",
   description="CYRILLIC SMALL LETTER FITA",
@@ -11139,7 +11584,7 @@ characters.data={
   unicodeslot=0x0474,
  },
  [0x0475]={
-  adobename="afii10196",
+  adobename="izhitsacyrillic",
   category="ll",
   contextname="cyrillicizhitsa",
   description="CYRILLIC SMALL LETTER IZHITSA",
@@ -11149,6 +11594,7 @@ characters.data={
   unicodeslot=0x0475,
  },
  [0x0476]={
+  adobename="Izhitsadblgravecyrillic",
   category="lu",
   contextname="cyrillicIZHITSAdoublegrave",
   description="CYRILLIC CAPITAL LETTER IZHITSA WITH DOUBLE GRAVE ACCENT",
@@ -11160,6 +11606,7 @@ characters.data={
   unicodeslot=0x0476,
  },
  [0x0477]={
+  adobename="izhitsadblgravecyrillic",
   category="ll",
   contextname="cyrillicizhitsadoublegrave",
   description="CYRILLIC SMALL LETTER IZHITSA WITH DOUBLE GRAVE ACCENT",
@@ -11171,6 +11618,7 @@ characters.data={
   unicodeslot=0x0477,
  },
  [0x0478]={
+  adobename="Ukcyrillic",
   category="lu",
   contextname="cyrillicUK",
   description="CYRILLIC CAPITAL LETTER UK",
@@ -11180,6 +11628,7 @@ characters.data={
   unicodeslot=0x0478,
  },
  [0x0479]={
+  adobename="ukcyrillic",
   category="ll",
   contextname="cyrillicuk",
   description="CYRILLIC SMALL LETTER UK",
@@ -11189,6 +11638,7 @@ characters.data={
   unicodeslot=0x0479,
  },
  [0x047A]={
+  adobename="Omegaroundcyrillic",
   category="lu",
   contextname="cyrillicOMEGAround",
   description="CYRILLIC CAPITAL LETTER ROUND OMEGA",
@@ -11198,6 +11648,7 @@ characters.data={
   unicodeslot=0x047A,
  },
  [0x047B]={
+  adobename="omegaroundcyrillic",
   category="ll",
   contextname="cyrillicomegaround",
   description="CYRILLIC SMALL LETTER ROUND OMEGA",
@@ -11207,6 +11658,7 @@ characters.data={
   unicodeslot=0x047B,
  },
  [0x047C]={
+  adobename="Omegatitlocyrillic",
   category="lu",
   contextname="cyrillicOMEGAtitlo",
   description="CYRILLIC CAPITAL LETTER OMEGA WITH TITLO",
@@ -11217,6 +11669,7 @@ characters.data={
   unicodeslot=0x047C,
  },
  [0x047D]={
+  adobename="omegatitlocyrillic",
   category="ll",
   contextname="cyrillicomegatitlo",
   description="CYRILLIC SMALL LETTER OMEGA WITH TITLO",
@@ -11227,6 +11680,7 @@ characters.data={
   unicodeslot=0x047D,
  },
  [0x047E]={
+  adobename="Otcyrillic",
   category="lu",
   contextname="cyrillicOT",
   description="CYRILLIC CAPITAL LETTER OT",
@@ -11236,6 +11690,7 @@ characters.data={
   unicodeslot=0x047E,
  },
  [0x047F]={
+  adobename="otcyrillic",
   category="ll",
   contextname="cyrillicot",
   description="CYRILLIC SMALL LETTER OT",
@@ -11245,6 +11700,7 @@ characters.data={
   unicodeslot=0x047F,
  },
  [0x0480]={
+  adobename="Koppacyrillic",
   category="lu",
   contextname="cyrillicKOPPA",
   description="CYRILLIC CAPITAL LETTER KOPPA",
@@ -11254,6 +11710,7 @@ characters.data={
   unicodeslot=0x0480,
  },
  [0x0481]={
+  adobename="koppacyrillic",
   category="ll",
   contextname="cyrillickoppa",
   description="CYRILLIC SMALL LETTER KOPPA",
@@ -11263,6 +11720,7 @@ characters.data={
   unicodeslot=0x0481,
  },
  [0x0482]={
+  adobename="thousandcyrillic",
   category="so",
   description="CYRILLIC THOUSANDS SIGN",
   direction="l",
@@ -11270,6 +11728,7 @@ characters.data={
   unicodeslot=0x0482,
  },
  [0x0483]={
+  adobename="titlocyrilliccmb",
   category="mn",
   contextname="cyrillicTITLO",
   description="COMBINING CYRILLIC TITLO",
@@ -11278,6 +11737,7 @@ characters.data={
   unicodeslot=0x0483,
  },
  [0x0484]={
+  adobename="palatalizationcyrilliccmb",
   category="mn",
   contextname="cyrillicPALATALIZATION",
   description="COMBINING CYRILLIC PALATALIZATION",
@@ -11286,6 +11746,7 @@ characters.data={
   unicodeslot=0x0484,
  },
  [0x0485]={
+  adobename="dasiapneumatacyrilliccmb",
   category="mn",
   contextname="cyrillicDASIAPNEUMATA",
   description="COMBINING CYRILLIC DASIA PNEUMATA",
@@ -11294,6 +11755,7 @@ characters.data={
   unicodeslot=0x0485,
  },
  [0x0486]={
+  adobename="psilipneumatacyrilliccmb",
   category="mn",
   contextname="cyrillicPSILIPNEUMATA",
   description="COMBINING CYRILLIC PSILI PNEUMATA",
@@ -11383,7 +11845,7 @@ characters.data={
   unicodeslot=0x0490,
  },
  [0x0491]={
-  adobename="afii10098",
+  adobename="gheupturncyrillic",
   category="ll",
   contextname="cyrillicgheupturn",
   description="CYRILLIC SMALL LETTER GHE WITH UPTURN",
@@ -11394,6 +11856,7 @@ characters.data={
   unicodeslot=0x0491,
  },
  [0x0492]={
+  adobename="Ghestrokecyrillic",
   category="lu",
   contextname="cyrillicGHEstroke",
   description="CYRILLIC CAPITAL LETTER GHE WITH STROKE",
@@ -11404,6 +11867,7 @@ characters.data={
   unicodeslot=0x0492,
  },
  [0x0493]={
+  adobename="ghestrokecyrillic",
   category="ll",
   contextname="cyrillicghestroke",
   description="CYRILLIC SMALL LETTER GHE WITH STROKE",
@@ -11414,6 +11878,7 @@ characters.data={
   unicodeslot=0x0493,
  },
  [0x0494]={
+  adobename="Ghemiddlehookcyrillic",
   category="lu",
   contextname="cyrillicGHEmidhook",
   description="CYRILLIC CAPITAL LETTER GHE WITH MIDDLE HOOK",
@@ -11424,6 +11889,7 @@ characters.data={
   unicodeslot=0x0494,
  },
  [0x0495]={
+  adobename="ghemiddlehookcyrillic",
   category="ll",
   contextname="cyrillicghemidhook",
   description="CYRILLIC SMALL LETTER GHE WITH MIDDLE HOOK",
@@ -11434,6 +11900,7 @@ characters.data={
   unicodeslot=0x0495,
  },
  [0x0496]={
+  adobename="Zhedescendercyrillic",
   category="lu",
   contextname="cyrillicZHEdescender",
   description="CYRILLIC CAPITAL LETTER ZHE WITH DESCENDER",
@@ -11444,6 +11911,7 @@ characters.data={
   unicodeslot=0x0496,
  },
  [0x0497]={
+  adobename="zhedescendercyrillic",
   category="ll",
   contextname="cyrilliczhedescender",
   description="CYRILLIC SMALL LETTER ZHE WITH DESCENDER",
@@ -11454,6 +11922,7 @@ characters.data={
   unicodeslot=0x0497,
  },
  [0x0498]={
+  adobename="Zedescendercyrillic",
   category="lu",
   contextname="cyrillicZDSC",
   description="CYRILLIC CAPITAL LETTER ZE WITH DESCENDER",
@@ -11464,6 +11933,7 @@ characters.data={
   unicodeslot=0x0498,
  },
  [0x0499]={
+  adobename="zedescendercyrillic",
   category="ll",
   contextname="cyrilliczdsc",
   description="CYRILLIC SMALL LETTER ZE WITH DESCENDER",
@@ -11474,6 +11944,7 @@ characters.data={
   unicodeslot=0x0499,
  },
  [0x049A]={
+  adobename="Kadescendercyrillic",
   category="lu",
   contextname="cyrillicKADC",
   description="CYRILLIC CAPITAL LETTER KA WITH DESCENDER",
@@ -11484,6 +11955,7 @@ characters.data={
   unicodeslot=0x049A,
  },
  [0x049B]={
+  adobename="kadescendercyrillic",
   category="ll",
   contextname="cyrillickadc",
   description="CYRILLIC SMALL LETTER KA WITH DESCENDER",
@@ -11494,6 +11966,7 @@ characters.data={
   unicodeslot=0x049B,
  },
  [0x049C]={
+  adobename="Kaverticalstrokecyrillic",
   category="lu",
   contextname="cyrillicKAvertstroke",
   description="CYRILLIC CAPITAL LETTER KA WITH VERTICAL STROKE",
@@ -11504,6 +11977,7 @@ characters.data={
   unicodeslot=0x049C,
  },
  [0x049D]={
+  adobename="kaverticalstrokecyrillic",
   category="ll",
   contextname="cyrillickavertstroke",
   description="CYRILLIC SMALL LETTER KA WITH VERTICAL STROKE",
@@ -11514,6 +11988,7 @@ characters.data={
   unicodeslot=0x049D,
  },
  [0x049E]={
+  adobename="Kastrokecyrillic",
   category="lu",
   contextname="cyrillicKAstroke",
   description="CYRILLIC CAPITAL LETTER KA WITH STROKE",
@@ -11524,6 +11999,7 @@ characters.data={
   unicodeslot=0x049E,
  },
  [0x049F]={
+  adobename="kastrokecyrillic",
   category="ll",
   contextname="cyrillickastroke",
   description="CYRILLIC SMALL LETTER KA WITH STROKE",
@@ -11534,6 +12010,7 @@ characters.data={
   unicodeslot=0x049F,
  },
  [0x04A0]={
+  adobename="Kabashkircyrillic",
   category="lu",
   contextname="cyrillicKAbashkir",
   description="CYRILLIC CAPITAL LETTER BASHKIR KA",
@@ -11543,6 +12020,7 @@ characters.data={
   unicodeslot=0x04A0,
  },
  [0x04A1]={
+  adobename="kabashkircyrillic",
   category="ll",
   contextname="cyrillickabashkir",
   description="CYRILLIC SMALL LETTER BASHKIR KA",
@@ -11552,6 +12030,7 @@ characters.data={
   unicodeslot=0x04A1,
  },
  [0x04A2]={
+  adobename="Endescendercyrillic",
   category="lu",
   contextname="cyrillicENDC",
   description="CYRILLIC CAPITAL LETTER EN WITH DESCENDER",
@@ -11562,6 +12041,7 @@ characters.data={
   unicodeslot=0x04A2,
  },
  [0x04A3]={
+  adobename="endescendercyrillic",
   category="ll",
   contextname="cyrillicendc",
   description="CYRILLIC SMALL LETTER EN WITH DESCENDER",
@@ -11572,6 +12052,7 @@ characters.data={
   unicodeslot=0x04A3,
  },
  [0x04A4]={
+  adobename="Enghecyrillic",
   category="lu",
   contextname="cyrillicENGHE",
   description="CYRILLIC CAPITAL LIGATURE EN GHE",
@@ -11581,6 +12062,7 @@ characters.data={
   unicodeslot=0x04A4,
  },
  [0x04A5]={
+  adobename="enghecyrillic",
   category="ll",
   contextname="cyrillicenghe",
   description="CYRILLIC SMALL LIGATURE EN GHE",
@@ -11590,6 +12072,7 @@ characters.data={
   unicodeslot=0x04A5,
  },
  [0x04A6]={
+  adobename="Pemiddlehookcyrillic",
   category="lu",
   contextname="cyrillicPEmidhook",
   description="CYRILLIC CAPITAL LETTER PE WITH MIDDLE HOOK",
@@ -11600,6 +12083,7 @@ characters.data={
   unicodeslot=0x04A6,
  },
  [0x04A7]={
+  adobename="pemiddlehookcyrillic",
   category="ll",
   contextname="cyrillicpemidhook",
   description="CYRILLIC SMALL LETTER PE WITH MIDDLE HOOK",
@@ -11610,6 +12094,7 @@ characters.data={
   unicodeslot=0x04A7,
  },
  [0x04A8]={
+  adobename="Haabkhasiancyrillic",
   category="lu",
   contextname="cyrillicHA",
   description="CYRILLIC CAPITAL LETTER ABKHASIAN HA",
@@ -11619,6 +12104,7 @@ characters.data={
   unicodeslot=0x04A8,
  },
  [0x04A9]={
+  adobename="haabkhasiancyrillic",
   category="ll",
   contextname="cyrillicha",
   description="CYRILLIC SMALL LETTER ABKHASIAN HA",
@@ -11628,6 +12114,7 @@ characters.data={
   unicodeslot=0x04A9,
  },
  [0x04AA]={
+  adobename="Esdescendercyrillic",
   category="lu",
   contextname="cyrillicSDSC",
   description="CYRILLIC CAPITAL LETTER ES WITH DESCENDER",
@@ -11638,6 +12125,7 @@ characters.data={
   unicodeslot=0x04AA,
  },
  [0x04AB]={
+  adobename="esdescendercyrillic",
   category="ll",
   contextname="cyrillicsdsc",
   description="CYRILLIC SMALL LETTER ES WITH DESCENDER",
@@ -11648,6 +12136,7 @@ characters.data={
   unicodeslot=0x04AB,
  },
  [0x04AC]={
+  adobename="Tedescendercyrillic",
   category="lu",
   contextname="cyrillicTEDC",
   description="CYRILLIC CAPITAL LETTER TE WITH DESCENDER",
@@ -11658,6 +12147,7 @@ characters.data={
   unicodeslot=0x04AC,
  },
  [0x04AD]={
+  adobename="tedescendercyrillic",
   category="ll",
   contextname="cyrillictedc",
   description="CYRILLIC SMALL LETTER TE WITH DESCENDER",
@@ -11668,6 +12158,7 @@ characters.data={
   unicodeslot=0x04AD,
  },
  [0x04AE]={
+  adobename="Ustraightcyrillic",
   category="lu",
   contextname="cyrillicYstr",
   description="CYRILLIC CAPITAL LETTER STRAIGHT U",
@@ -11677,6 +12168,7 @@ characters.data={
   unicodeslot=0x04AE,
  },
  [0x04AF]={
+  adobename="ustraightcyrillic",
   category="ll",
   contextname="cyrillicystr",
   description="CYRILLIC SMALL LETTER STRAIGHT U",
@@ -11686,6 +12178,7 @@ characters.data={
   unicodeslot=0x04AF,
  },
  [0x04B0]={
+  adobename="Ustraightstrokecyrillic",
   category="lu",
   contextname="cyrillicYstrstroke",
   description="CYRILLIC CAPITAL LETTER STRAIGHT U WITH STROKE",
@@ -11695,6 +12188,7 @@ characters.data={
   unicodeslot=0x04B0,
  },
  [0x04B1]={
+  adobename="ustraightstrokecyrillic",
   category="ll",
   contextname="cyrillicystrstroke",
   description="CYRILLIC SMALL LETTER STRAIGHT U WITH STROKE",
@@ -11704,6 +12198,7 @@ characters.data={
   unicodeslot=0x04B1,
  },
  [0x04B2]={
+  adobename="Hadescendercyrillic",
   category="lu",
   contextname="cyrillicHADC",
   description="CYRILLIC CAPITAL LETTER HA WITH DESCENDER",
@@ -11714,6 +12209,7 @@ characters.data={
   unicodeslot=0x04B2,
  },
  [0x04B3]={
+  adobename="hadescendercyrillic",
   category="ll",
   contextname="cyrillichadc",
   description="CYRILLIC SMALL LETTER HA WITH DESCENDER",
@@ -11724,6 +12220,7 @@ characters.data={
   unicodeslot=0x04B3,
  },
  [0x04B4]={
+  adobename="Tetsecyrillic",
   category="lu",
   contextname="cyrillicTETSE",
   description="CYRILLIC CAPITAL LIGATURE TE TSE",
@@ -11733,6 +12230,7 @@ characters.data={
   unicodeslot=0x04B4,
  },
  [0x04B5]={
+  adobename="tetsecyrillic",
   category="ll",
   contextname="cyrillictetse",
   description="CYRILLIC SMALL LIGATURE TE TSE",
@@ -11742,6 +12240,7 @@ characters.data={
   unicodeslot=0x04B5,
  },
  [0x04B6]={
+  adobename="Chedescendercyrillic",
   category="lu",
   contextname="cyrillicCHEDC",
   description="CYRILLIC CAPITAL LETTER CHE WITH DESCENDER",
@@ -11752,6 +12251,7 @@ characters.data={
   unicodeslot=0x04B6,
  },
  [0x04B7]={
+  adobename="chedescendercyrillic",
   category="ll",
   contextname="cyrillicchedc",
   description="CYRILLIC SMALL LETTER CHE WITH DESCENDER",
@@ -11762,6 +12262,7 @@ characters.data={
   unicodeslot=0x04B7,
  },
  [0x04B8]={
+  adobename="Cheverticalstrokecyrillic",
   category="lu",
   contextname="cyrillicCHEvertstroke",
   description="CYRILLIC CAPITAL LETTER CHE WITH VERTICAL STROKE",
@@ -11772,6 +12273,7 @@ characters.data={
   unicodeslot=0x04B8,
  },
  [0x04B9]={
+  adobename="cheverticalstrokecyrillic",
   category="ll",
   contextname="cyrillicchevertstroke",
   description="CYRILLIC SMALL LETTER CHE WITH VERTICAL STROKE",
@@ -11782,6 +12284,7 @@ characters.data={
   unicodeslot=0x04B9,
  },
  [0x04BA]={
+  adobename="Shhacyrillic",
   category="lu",
   contextname="cyrillicSHHA",
   description="CYRILLIC CAPITAL LETTER SHHA",
@@ -11791,6 +12294,7 @@ characters.data={
   unicodeslot=0x04BA,
  },
  [0x04BB]={
+  adobename="shhacyrillic",
   category="ll",
   contextname="cyrillicshha",
   description="CYRILLIC SMALL LETTER SHHA",
@@ -11800,6 +12304,7 @@ characters.data={
   unicodeslot=0x04BB,
  },
  [0x04BC]={
+  adobename="Cheabkhasiancyrillic",
   category="lu",
   contextname="cyrillicCHEabkhasian",
   description="CYRILLIC CAPITAL LETTER ABKHASIAN CHE",
@@ -11809,6 +12314,7 @@ characters.data={
   unicodeslot=0x04BC,
  },
  [0x04BD]={
+  adobename="cheabkhasiancyrillic",
   category="ll",
   contextname="cyrilliccheabkhasian",
   description="CYRILLIC SMALL LETTER ABKHASIAN CHE",
@@ -11818,6 +12324,7 @@ characters.data={
   unicodeslot=0x04BD,
  },
  [0x04BE]={
+  adobename="Chedescenderabkhasiancyrillic",
   category="lu",
   contextname="cyrillicCHEDCabkhasian",
   description="CYRILLIC CAPITAL LETTER ABKHASIAN CHE WITH DESCENDER",
@@ -11827,6 +12334,7 @@ characters.data={
   unicodeslot=0x04BE,
  },
  [0x04BF]={
+  adobename="chedescenderabkhasiancyrillic",
   category="ll",
   contextname="cyrillicchedcabkhasian",
   description="CYRILLIC SMALL LETTER ABKHASIAN CHE WITH DESCENDER",
@@ -11836,6 +12344,7 @@ characters.data={
   unicodeslot=0x04BF,
  },
  [0x04C0]={
+  adobename="palochkacyrillic",
   category="lu",
   contextname="cyrillicPALOCHKA",
   description="CYRILLIC LETTER PALOCHKA",
@@ -11845,6 +12354,7 @@ characters.data={
   unicodeslot=0x04C0,
  },
  [0x04C1]={
+  adobename="Zhebrevecyrillic",
   category="lu",
   contextname="cyrillicZHEbreve",
   description="CYRILLIC CAPITAL LETTER ZHE WITH BREVE",
@@ -11856,6 +12366,7 @@ characters.data={
   unicodeslot=0x04C1,
  },
  [0x04C2]={
+  adobename="zhebrevecyrillic",
   category="ll",
   contextname="cyrilliczhebreve",
   description="CYRILLIC SMALL LETTER ZHE WITH BREVE",
@@ -11867,6 +12378,7 @@ characters.data={
   unicodeslot=0x04C2,
  },
  [0x04C3]={
+  adobename="Kahookcyrillic",
   category="lu",
   contextname="cyrillicKAhook",
   description="CYRILLIC CAPITAL LETTER KA WITH HOOK",
@@ -11877,6 +12389,7 @@ characters.data={
   unicodeslot=0x04C3,
  },
  [0x04C4]={
+  adobename="kahookcyrillic",
   category="ll",
   contextname="cyrillickahook",
   description="CYRILLIC SMALL LETTER KA WITH HOOK",
@@ -11907,6 +12420,7 @@ characters.data={
   unicodeslot=0x04C6,
  },
  [0x04C7]={
+  adobename="Enhookcyrillic",
   category="lu",
   contextname="cyrillicENhook",
   description="CYRILLIC CAPITAL LETTER EN WITH HOOK",
@@ -11917,6 +12431,7 @@ characters.data={
   unicodeslot=0x04C7,
  },
  [0x04C8]={
+  adobename="enhookcyrillic",
   category="ll",
   contextname="cyrillicenhook",
   description="CYRILLIC SMALL LETTER EN WITH HOOK",
@@ -11947,6 +12462,7 @@ characters.data={
   unicodeslot=0x04CA,
  },
  [0x04CB]={
+  adobename="Chekhakassiancyrillic",
   category="lu",
   contextname="cyrillicCHEkhakassian",
   description="CYRILLIC CAPITAL LETTER KHAKASSIAN CHE",
@@ -11956,6 +12472,7 @@ characters.data={
   unicodeslot=0x04CB,
  },
  [0x04CC]={
+  adobename="chekhakassiancyrillic",
   category="ll",
   contextname="cyrillicchekhakassian",
   description="CYRILLIC SMALL LETTER KHAKASSIAN CHE",
@@ -11993,6 +12510,7 @@ characters.data={
   unicodeslot=0x04CF,
  },
  [0x04D0]={
+  adobename="Abrevecyrillic",
   category="lu",
   contextname="cyrillicAbreve",
   description="CYRILLIC CAPITAL LETTER A WITH BREVE",
@@ -12004,6 +12522,7 @@ characters.data={
   unicodeslot=0x04D0,
  },
  [0x04D1]={
+  adobename="abrevecyrillic",
   category="ll",
   contextname="cyrillicabreve",
   description="CYRILLIC SMALL LETTER A WITH BREVE",
@@ -12015,6 +12534,7 @@ characters.data={
   unicodeslot=0x04D1,
  },
  [0x04D2]={
+  adobename="Adieresiscyrillic",
   category="lu",
   contextname="cyrillicAdiaeresis",
   description="CYRILLIC CAPITAL LETTER A WITH DIAERESIS",
@@ -12026,6 +12546,7 @@ characters.data={
   unicodeslot=0x04D2,
  },
  [0x04D3]={
+  adobename="adieresiscyrillic",
   category="ll",
   contextname="cyrillicadiaeresis",
   description="CYRILLIC SMALL LETTER A WITH DIAERESIS",
@@ -12037,6 +12558,7 @@ characters.data={
   unicodeslot=0x04D3,
  },
  [0x04D4]={
+  adobename="Aiecyrillic",
   category="lu",
   contextname="cyrillicAE",
   description="CYRILLIC CAPITAL LIGATURE A IE",
@@ -12046,6 +12568,7 @@ characters.data={
   unicodeslot=0x04D4,
  },
  [0x04D5]={
+  adobename="aiecyrillic",
   category="ll",
   contextname="cyrillicae",
   description="CYRILLIC SMALL LIGATURE A IE",
@@ -12055,6 +12578,7 @@ characters.data={
   unicodeslot=0x04D5,
  },
  [0x04D6]={
+  adobename="Iebrevecyrillic",
   category="lu",
   contextname="cyrillicEbreve",
   description="CYRILLIC CAPITAL LETTER IE WITH BREVE",
@@ -12066,6 +12590,7 @@ characters.data={
   unicodeslot=0x04D6,
  },
  [0x04D7]={
+  adobename="iebrevecyrillic",
   category="ll",
   contextname="cyrillicebreve",
   description="CYRILLIC SMALL LETTER IE WITH BREVE",
@@ -12077,6 +12602,7 @@ characters.data={
   unicodeslot=0x04D7,
  },
  [0x04D8]={
+  adobename="Schwacyrillic",
   category="lu",
   contextname="cyrillicSCHWA",
   description="CYRILLIC CAPITAL LETTER SCHWA",
@@ -12086,7 +12612,7 @@ characters.data={
   unicodeslot=0x04D8,
  },
  [0x04D9]={
-  adobename="afii10846",
+  adobename="schwacyrillic",
   category="ll",
   contextname="cyrillicschwa",
   description="CYRILLIC SMALL LETTER SCHWA",
@@ -12096,6 +12622,7 @@ characters.data={
   unicodeslot=0x04D9,
  },
  [0x04DA]={
+  adobename="Schwadieresiscyrillic",
   category="lu",
   contextname="cyrillicSCHWAdiaeresis",
   description="CYRILLIC CAPITAL LETTER SCHWA WITH DIAERESIS",
@@ -12107,6 +12634,7 @@ characters.data={
   unicodeslot=0x04DA,
  },
  [0x04DB]={
+  adobename="schwadieresiscyrillic",
   category="ll",
   contextname="cyrillicschwadiaeresis",
   description="CYRILLIC SMALL LETTER SCHWA WITH DIAERESIS",
@@ -12118,6 +12646,7 @@ characters.data={
   unicodeslot=0x04DB,
  },
  [0x04DC]={
+  adobename="Zhedieresiscyrillic",
   category="lu",
   contextname="cyrillicZHEdiaeresis",
   description="CYRILLIC CAPITAL LETTER ZHE WITH DIAERESIS",
@@ -12129,6 +12658,7 @@ characters.data={
   unicodeslot=0x04DC,
  },
  [0x04DD]={
+  adobename="zhedieresiscyrillic",
   category="ll",
   contextname="cyrilliczhediaeresis",
   description="CYRILLIC SMALL LETTER ZHE WITH DIAERESIS",
@@ -12140,6 +12670,7 @@ characters.data={
   unicodeslot=0x04DD,
  },
  [0x04DE]={
+  adobename="Zedieresiscyrillic",
   category="lu",
   contextname="cyrillicZEdiaeresis",
   description="CYRILLIC CAPITAL LETTER ZE WITH DIAERESIS",
@@ -12151,6 +12682,7 @@ characters.data={
   unicodeslot=0x04DE,
  },
  [0x04DF]={
+  adobename="zedieresiscyrillic",
   category="ll",
   contextname="cyrilliczediaeresis",
   description="CYRILLIC SMALL LETTER ZE WITH DIAERESIS",
@@ -12162,6 +12694,7 @@ characters.data={
   unicodeslot=0x04DF,
  },
  [0x04E0]={
+  adobename="Dzeabkhasiancyrillic",
   category="lu",
   contextname="cyrillicDZEabkhasian",
   description="CYRILLIC CAPITAL LETTER ABKHASIAN DZE",
@@ -12171,6 +12704,7 @@ characters.data={
   unicodeslot=0x04E0,
  },
  [0x04E1]={
+  adobename="dzeabkhasiancyrillic",
   category="ll",
   contextname="cyrillicdzeabkhasian",
   description="CYRILLIC SMALL LETTER ABKHASIAN DZE",
@@ -12180,6 +12714,7 @@ characters.data={
   unicodeslot=0x04E1,
  },
  [0x04E2]={
+  adobename="Imacroncyrillic",
   category="lu",
   contextname="cyrillicImacron",
   description="CYRILLIC CAPITAL LETTER I WITH MACRON",
@@ -12191,6 +12726,7 @@ characters.data={
   unicodeslot=0x04E2,
  },
  [0x04E3]={
+  adobename="imacroncyrillic",
   category="ll",
   contextname="cyrillicimacron",
   description="CYRILLIC SMALL LETTER I WITH MACRON",
@@ -12202,6 +12738,7 @@ characters.data={
   unicodeslot=0x04E3,
  },
  [0x04E4]={
+  adobename="Idieresiscyrillic",
   category="lu",
   contextname="cyrillicIdiaeresis",
   description="CYRILLIC CAPITAL LETTER I WITH DIAERESIS",
@@ -12213,6 +12750,7 @@ characters.data={
   unicodeslot=0x04E4,
  },
  [0x04E5]={
+  adobename="idieresiscyrillic",
   category="ll",
   contextname="cyrillicidiaeresis",
   description="CYRILLIC SMALL LETTER I WITH DIAERESIS",
@@ -12224,6 +12762,7 @@ characters.data={
   unicodeslot=0x04E5,
  },
  [0x04E6]={
+  adobename="Odieresiscyrillic",
   category="lu",
   contextname="cyrillicOdiaeresis",
   description="CYRILLIC CAPITAL LETTER O WITH DIAERESIS",
@@ -12235,6 +12774,7 @@ characters.data={
   unicodeslot=0x04E6,
  },
  [0x04E7]={
+  adobename="odieresiscyrillic",
   category="ll",
   contextname="cyrillicodiaeresis",
   description="CYRILLIC SMALL LETTER O WITH DIAERESIS",
@@ -12246,6 +12786,7 @@ characters.data={
   unicodeslot=0x04E7,
  },
  [0x04E8]={
+  adobename="Obarredcyrillic",
   category="lu",
   contextname="cyrillicObarred",
   description="CYRILLIC CAPITAL LETTER BARRED O",
@@ -12255,6 +12796,7 @@ characters.data={
   unicodeslot=0x04E8,
  },
  [0x04E9]={
+  adobename="obarredcyrillic",
   category="ll",
   contextname="cyrillicobarred",
   description="CYRILLIC SMALL LETTER BARRED O",
@@ -12264,6 +12806,7 @@ characters.data={
   unicodeslot=0x04E9,
  },
  [0x04EA]={
+  adobename="Obarreddieresiscyrillic",
   category="lu",
   contextname="cyrillicObarreddiaeresis",
   description="CYRILLIC CAPITAL LETTER BARRED O WITH DIAERESIS",
@@ -12274,6 +12817,7 @@ characters.data={
   unicodeslot=0x04EA,
  },
  [0x04EB]={
+  adobename="obarreddieresiscyrillic",
   category="ll",
   contextname="cyrillicobarreddiaeresis",
   description="CYRILLIC SMALL LETTER BARRED O WITH DIAERESIS",
@@ -12306,6 +12850,7 @@ characters.data={
   unicodeslot=0x04ED,
  },
  [0x04EE]={
+  adobename="Umacroncyrillic",
   category="lu",
   contextname="cyrillicUmacron",
   description="CYRILLIC CAPITAL LETTER U WITH MACRON",
@@ -12317,6 +12862,7 @@ characters.data={
   unicodeslot=0x04EE,
  },
  [0x04EF]={
+  adobename="umacroncyrillic",
   category="ll",
   contextname="cyrillicumacron",
   description="CYRILLIC SMALL LETTER U WITH MACRON",
@@ -12328,6 +12874,7 @@ characters.data={
   unicodeslot=0x04EF,
  },
  [0x04F0]={
+  adobename="Udieresiscyrillic",
   category="lu",
   contextname="cyrillicUdiaeresis",
   description="CYRILLIC CAPITAL LETTER U WITH DIAERESIS",
@@ -12339,6 +12886,7 @@ characters.data={
   unicodeslot=0x04F0,
  },
  [0x04F1]={
+  adobename="udieresiscyrillic",
   category="ll",
   contextname="cyrillicudiaeresis",
   description="CYRILLIC SMALL LETTER U WITH DIAERESIS",
@@ -12350,6 +12898,7 @@ characters.data={
   unicodeslot=0x04F1,
  },
  [0x04F2]={
+  adobename="Uhungarumlautcyrillic",
   category="lu",
   contextname="cyrillicUdoubleacute",
   description="CYRILLIC CAPITAL LETTER U WITH DOUBLE ACUTE",
@@ -12361,6 +12910,7 @@ characters.data={
   unicodeslot=0x04F2,
  },
  [0x04F3]={
+  adobename="uhungarumlautcyrillic",
   category="ll",
   contextname="cyrillicudoubleacute",
   description="CYRILLIC SMALL LETTER U WITH DOUBLE ACUTE",
@@ -12372,6 +12922,7 @@ characters.data={
   unicodeslot=0x04F3,
  },
  [0x04F4]={
+  adobename="Chedieresiscyrillic",
   category="lu",
   contextname="cyrillicCHEdiaeresis",
   description="CYRILLIC CAPITAL LETTER CHE WITH DIAERESIS",
@@ -12383,6 +12934,7 @@ characters.data={
   unicodeslot=0x04F4,
  },
  [0x04F5]={
+  adobename="chedieresiscyrillic",
   category="ll",
   contextname="cyrillicchediaeresis",
   description="CYRILLIC SMALL LETTER CHE WITH DIAERESIS",
@@ -12412,6 +12964,7 @@ characters.data={
   unicodeslot=0x04F7,
  },
  [0x04F8]={
+  adobename="Yerudieresiscyrillic",
   category="lu",
   contextname="cyrillicYERUdiaeresis",
   description="CYRILLIC CAPITAL LETTER YERU WITH DIAERESIS",
@@ -12423,6 +12976,7 @@ characters.data={
   unicodeslot=0x04F8,
  },
  [0x04F9]={
+  adobename="yerudieresiscyrillic",
   category="ll",
   contextname="cyrillicyerudiaeresis",
   description="CYRILLIC SMALL LETTER YERU WITH DIAERESIS",
@@ -12650,6 +13204,7 @@ characters.data={
   unicodeslot=0x0513,
  },
  [0x0531]={
+  adobename="Aybarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER AYB",
   direction="l",
@@ -12658,6 +13213,7 @@ characters.data={
   unicodeslot=0x0531,
  },
  [0x0532]={
+  adobename="Benarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER BEN",
   direction="l",
@@ -12666,6 +13222,7 @@ characters.data={
   unicodeslot=0x0532,
  },
  [0x0533]={
+  adobename="Gimarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER GIM",
   direction="l",
@@ -12674,6 +13231,7 @@ characters.data={
   unicodeslot=0x0533,
  },
  [0x0534]={
+  adobename="Daarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER DA",
   direction="l",
@@ -12682,6 +13240,7 @@ characters.data={
   unicodeslot=0x0534,
  },
  [0x0535]={
+  adobename="Echarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER ECH",
   direction="l",
@@ -12690,6 +13249,7 @@ characters.data={
   unicodeslot=0x0535,
  },
  [0x0536]={
+  adobename="Zaarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER ZA",
   direction="l",
@@ -12698,6 +13258,7 @@ characters.data={
   unicodeslot=0x0536,
  },
  [0x0537]={
+  adobename="Eharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER EH",
   direction="l",
@@ -12706,6 +13267,7 @@ characters.data={
   unicodeslot=0x0537,
  },
  [0x0538]={
+  adobename="Etarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER ET",
   direction="l",
@@ -12714,6 +13276,7 @@ characters.data={
   unicodeslot=0x0538,
  },
  [0x0539]={
+  adobename="Toarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER TO",
   direction="l",
@@ -12722,6 +13285,7 @@ characters.data={
   unicodeslot=0x0539,
  },
  [0x053A]={
+  adobename="Zhearmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER ZHE",
   direction="l",
@@ -12730,6 +13294,7 @@ characters.data={
   unicodeslot=0x053A,
  },
  [0x053B]={
+  adobename="Iniarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER INI",
   direction="l",
@@ -12738,6 +13303,7 @@ characters.data={
   unicodeslot=0x053B,
  },
  [0x053C]={
+  adobename="Liwnarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER LIWN",
   direction="l",
@@ -12746,6 +13312,7 @@ characters.data={
   unicodeslot=0x053C,
  },
  [0x053D]={
+  adobename="Xeharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER XEH",
   direction="l",
@@ -12754,6 +13321,7 @@ characters.data={
   unicodeslot=0x053D,
  },
  [0x053E]={
+  adobename="Caarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER CA",
   direction="l",
@@ -12762,6 +13330,7 @@ characters.data={
   unicodeslot=0x053E,
  },
  [0x053F]={
+  adobename="Kenarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER KEN",
   direction="l",
@@ -12770,6 +13339,7 @@ characters.data={
   unicodeslot=0x053F,
  },
  [0x0540]={
+  adobename="Hoarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER HO",
   direction="l",
@@ -12778,6 +13348,7 @@ characters.data={
   unicodeslot=0x0540,
  },
  [0x0541]={
+  adobename="Jaarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER JA",
   direction="l",
@@ -12786,6 +13357,7 @@ characters.data={
   unicodeslot=0x0541,
  },
  [0x0542]={
+  adobename="Ghadarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER GHAD",
   direction="l",
@@ -12794,6 +13366,7 @@ characters.data={
   unicodeslot=0x0542,
  },
  [0x0543]={
+  adobename="Cheharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER CHEH",
   direction="l",
@@ -12802,6 +13375,7 @@ characters.data={
   unicodeslot=0x0543,
  },
  [0x0544]={
+  adobename="Menarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER MEN",
   direction="l",
@@ -12810,6 +13384,7 @@ characters.data={
   unicodeslot=0x0544,
  },
  [0x0545]={
+  adobename="Yiarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER YI",
   direction="l",
@@ -12818,6 +13393,7 @@ characters.data={
   unicodeslot=0x0545,
  },
  [0x0546]={
+  adobename="Nowarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER NOW",
   direction="l",
@@ -12826,6 +13402,7 @@ characters.data={
   unicodeslot=0x0546,
  },
  [0x0547]={
+  adobename="Shaarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER SHA",
   direction="l",
@@ -12834,6 +13411,7 @@ characters.data={
   unicodeslot=0x0547,
  },
  [0x0548]={
+  adobename="Voarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER VO",
   direction="l",
@@ -12842,6 +13420,7 @@ characters.data={
   unicodeslot=0x0548,
  },
  [0x0549]={
+  adobename="Chaarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER CHA",
   direction="l",
@@ -12850,6 +13429,7 @@ characters.data={
   unicodeslot=0x0549,
  },
  [0x054A]={
+  adobename="Peharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER PEH",
   direction="l",
@@ -12858,6 +13438,7 @@ characters.data={
   unicodeslot=0x054A,
  },
  [0x054B]={
+  adobename="Jheharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER JHEH",
   direction="l",
@@ -12866,6 +13447,7 @@ characters.data={
   unicodeslot=0x054B,
  },
  [0x054C]={
+  adobename="Raarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER RA",
   direction="l",
@@ -12874,6 +13456,7 @@ characters.data={
   unicodeslot=0x054C,
  },
  [0x054D]={
+  adobename="Seharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER SEH",
   direction="l",
@@ -12882,6 +13465,7 @@ characters.data={
   unicodeslot=0x054D,
  },
  [0x054E]={
+  adobename="Vewarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER VEW",
   direction="l",
@@ -12890,6 +13474,7 @@ characters.data={
   unicodeslot=0x054E,
  },
  [0x054F]={
+  adobename="Tiwnarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER TIWN",
   direction="l",
@@ -12898,6 +13483,7 @@ characters.data={
   unicodeslot=0x054F,
  },
  [0x0550]={
+  adobename="Reharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER REH",
   direction="l",
@@ -12906,6 +13492,7 @@ characters.data={
   unicodeslot=0x0550,
  },
  [0x0551]={
+  adobename="Coarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER CO",
   direction="l",
@@ -12914,6 +13501,7 @@ characters.data={
   unicodeslot=0x0551,
  },
  [0x0552]={
+  adobename="Yiwnarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER YIWN",
   direction="l",
@@ -12922,6 +13510,7 @@ characters.data={
   unicodeslot=0x0552,
  },
  [0x0553]={
+  adobename="Piwrarmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER PIWR",
   direction="l",
@@ -12930,6 +13519,7 @@ characters.data={
   unicodeslot=0x0553,
  },
  [0x0554]={
+  adobename="Keharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER KEH",
   direction="l",
@@ -12938,6 +13528,7 @@ characters.data={
   unicodeslot=0x0554,
  },
  [0x0555]={
+  adobename="Oharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER OH",
   direction="l",
@@ -12946,6 +13537,7 @@ characters.data={
   unicodeslot=0x0555,
  },
  [0x0556]={
+  adobename="Feharmenian",
   category="lu",
   description="ARMENIAN CAPITAL LETTER FEH",
   direction="l",
@@ -12954,6 +13546,7 @@ characters.data={
   unicodeslot=0x0556,
  },
  [0x0559]={
+  adobename="ringhalfleftarmenian",
   category="lm",
   description="ARMENIAN MODIFIER LETTER LEFT HALF RING",
   direction="l",
@@ -12961,6 +13554,7 @@ characters.data={
   unicodeslot=0x0559,
  },
  [0x055A]={
+  adobename="apostrophearmenian",
   category="po",
   description="ARMENIAN APOSTROPHE",
   direction="l",
@@ -12968,6 +13562,7 @@ characters.data={
   unicodeslot=0x055A,
  },
  [0x055B]={
+  adobename="emphasismarkarmenian",
   category="po",
   description="ARMENIAN EMPHASIS MARK",
   direction="l",
@@ -12975,6 +13570,7 @@ characters.data={
   unicodeslot=0x055B,
  },
  [0x055C]={
+  adobename="exclamarmenian",
   category="po",
   description="ARMENIAN EXCLAMATION MARK",
   direction="l",
@@ -12982,6 +13578,7 @@ characters.data={
   unicodeslot=0x055C,
  },
  [0x055D]={
+  adobename="commaarmenian",
   category="po",
   description="ARMENIAN COMMA",
   direction="l",
@@ -12989,6 +13586,7 @@ characters.data={
   unicodeslot=0x055D,
  },
  [0x055E]={
+  adobename="questionarmenian",
   category="po",
   description="ARMENIAN QUESTION MARK",
   direction="l",
@@ -12996,6 +13594,7 @@ characters.data={
   unicodeslot=0x055E,
  },
  [0x055F]={
+  adobename="abbreviationmarkarmenian",
   category="po",
   description="ARMENIAN ABBREVIATION MARK",
   direction="l",
@@ -13003,6 +13602,7 @@ characters.data={
   unicodeslot=0x055F,
  },
  [0x0561]={
+  adobename="aybarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER AYB",
   direction="l",
@@ -13011,6 +13611,7 @@ characters.data={
   unicodeslot=0x0561,
  },
  [0x0562]={
+  adobename="benarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER BEN",
   direction="l",
@@ -13019,6 +13620,7 @@ characters.data={
   unicodeslot=0x0562,
  },
  [0x0563]={
+  adobename="gimarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER GIM",
   direction="l",
@@ -13027,6 +13629,7 @@ characters.data={
   unicodeslot=0x0563,
  },
  [0x0564]={
+  adobename="daarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER DA",
   direction="l",
@@ -13035,6 +13638,7 @@ characters.data={
   unicodeslot=0x0564,
  },
  [0x0565]={
+  adobename="echarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER ECH",
   direction="l",
@@ -13043,6 +13647,7 @@ characters.data={
   unicodeslot=0x0565,
  },
  [0x0566]={
+  adobename="zaarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER ZA",
   direction="l",
@@ -13051,6 +13656,7 @@ characters.data={
   unicodeslot=0x0566,
  },
  [0x0567]={
+  adobename="eharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER EH",
   direction="l",
@@ -13059,6 +13665,7 @@ characters.data={
   unicodeslot=0x0567,
  },
  [0x0568]={
+  adobename="etarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER ET",
   direction="l",
@@ -13067,6 +13674,7 @@ characters.data={
   unicodeslot=0x0568,
  },
  [0x0569]={
+  adobename="toarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER TO",
   direction="l",
@@ -13075,6 +13683,7 @@ characters.data={
   unicodeslot=0x0569,
  },
  [0x056A]={
+  adobename="zhearmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER ZHE",
   direction="l",
@@ -13083,6 +13692,7 @@ characters.data={
   unicodeslot=0x056A,
  },
  [0x056B]={
+  adobename="iniarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER INI",
   direction="l",
@@ -13091,6 +13701,7 @@ characters.data={
   unicodeslot=0x056B,
  },
  [0x056C]={
+  adobename="liwnarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER LIWN",
   direction="l",
@@ -13099,6 +13710,7 @@ characters.data={
   unicodeslot=0x056C,
  },
  [0x056D]={
+  adobename="xeharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER XEH",
   direction="l",
@@ -13107,6 +13719,7 @@ characters.data={
   unicodeslot=0x056D,
  },
  [0x056E]={
+  adobename="caarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER CA",
   direction="l",
@@ -13115,6 +13728,7 @@ characters.data={
   unicodeslot=0x056E,
  },
  [0x056F]={
+  adobename="kenarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER KEN",
   direction="l",
@@ -13123,6 +13737,7 @@ characters.data={
   unicodeslot=0x056F,
  },
  [0x0570]={
+  adobename="hoarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER HO",
   direction="l",
@@ -13131,6 +13746,7 @@ characters.data={
   unicodeslot=0x0570,
  },
  [0x0571]={
+  adobename="jaarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER JA",
   direction="l",
@@ -13139,6 +13755,7 @@ characters.data={
   unicodeslot=0x0571,
  },
  [0x0572]={
+  adobename="ghadarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER GHAD",
   direction="l",
@@ -13147,6 +13764,7 @@ characters.data={
   unicodeslot=0x0572,
  },
  [0x0573]={
+  adobename="cheharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER CHEH",
   direction="l",
@@ -13155,6 +13773,7 @@ characters.data={
   unicodeslot=0x0573,
  },
  [0x0574]={
+  adobename="menarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER MEN",
   direction="l",
@@ -13163,6 +13782,7 @@ characters.data={
   unicodeslot=0x0574,
  },
  [0x0575]={
+  adobename="yiarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER YI",
   direction="l",
@@ -13171,6 +13791,7 @@ characters.data={
   unicodeslot=0x0575,
  },
  [0x0576]={
+  adobename="nowarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER NOW",
   direction="l",
@@ -13179,6 +13800,7 @@ characters.data={
   unicodeslot=0x0576,
  },
  [0x0577]={
+  adobename="shaarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER SHA",
   direction="l",
@@ -13187,6 +13809,7 @@ characters.data={
   unicodeslot=0x0577,
  },
  [0x0578]={
+  adobename="voarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER VO",
   direction="l",
@@ -13195,6 +13818,7 @@ characters.data={
   unicodeslot=0x0578,
  },
  [0x0579]={
+  adobename="chaarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER CHA",
   direction="l",
@@ -13203,6 +13827,7 @@ characters.data={
   unicodeslot=0x0579,
  },
  [0x057A]={
+  adobename="peharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER PEH",
   direction="l",
@@ -13211,6 +13836,7 @@ characters.data={
   unicodeslot=0x057A,
  },
  [0x057B]={
+  adobename="jheharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER JHEH",
   direction="l",
@@ -13219,6 +13845,7 @@ characters.data={
   unicodeslot=0x057B,
  },
  [0x057C]={
+  adobename="raarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER RA",
   direction="l",
@@ -13227,6 +13854,7 @@ characters.data={
   unicodeslot=0x057C,
  },
  [0x057D]={
+  adobename="seharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER SEH",
   direction="l",
@@ -13235,6 +13863,7 @@ characters.data={
   unicodeslot=0x057D,
  },
  [0x057E]={
+  adobename="vewarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER VEW",
   direction="l",
@@ -13243,6 +13872,7 @@ characters.data={
   unicodeslot=0x057E,
  },
  [0x057F]={
+  adobename="tiwnarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER TIWN",
   direction="l",
@@ -13251,6 +13881,7 @@ characters.data={
   unicodeslot=0x057F,
  },
  [0x0580]={
+  adobename="reharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER REH",
   direction="l",
@@ -13259,6 +13890,7 @@ characters.data={
   unicodeslot=0x0580,
  },
  [0x0581]={
+  adobename="coarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER CO",
   direction="l",
@@ -13267,6 +13899,7 @@ characters.data={
   unicodeslot=0x0581,
  },
  [0x0582]={
+  adobename="yiwnarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER YIWN",
   direction="l",
@@ -13275,6 +13908,7 @@ characters.data={
   unicodeslot=0x0582,
  },
  [0x0583]={
+  adobename="piwrarmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER PIWR",
   direction="l",
@@ -13283,6 +13917,7 @@ characters.data={
   unicodeslot=0x0583,
  },
  [0x0584]={
+  adobename="keharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER KEH",
   direction="l",
@@ -13291,6 +13926,7 @@ characters.data={
   unicodeslot=0x0584,
  },
  [0x0585]={
+  adobename="oharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER OH",
   direction="l",
@@ -13299,6 +13935,7 @@ characters.data={
   unicodeslot=0x0585,
  },
  [0x0586]={
+  adobename="feharmenian",
   category="ll",
   description="ARMENIAN SMALL LETTER FEH",
   direction="l",
@@ -13307,6 +13944,7 @@ characters.data={
   unicodeslot=0x0586,
  },
  [0x0587]={
+  adobename="echyiwnarmenian",
   category="ll",
   description="ARMENIAN SMALL LIGATURE ECH YIWN",
   direction="l",
@@ -13315,6 +13953,7 @@ characters.data={
   unicodeslot=0x0587,
  },
  [0x0589]={
+  adobename="periodarmenian",
   category="po",
   description="ARMENIAN FULL STOP",
   direction="l",
@@ -13329,6 +13968,7 @@ characters.data={
   unicodeslot=0x058A,
  },
  [0x0591]={
+  adobename="etnahtalefthebrew",
   category="mn",
   description="HEBREW ACCENT ETNAHTA",
   direction="nsm",
@@ -13336,6 +13976,7 @@ characters.data={
   unicodeslot=0x0591,
  },
  [0x0592]={
+  adobename="segoltahebrew",
   category="mn",
   description="HEBREW ACCENT SEGOL",
   direction="nsm",
@@ -13343,6 +13984,7 @@ characters.data={
   unicodeslot=0x0592,
  },
  [0x0593]={
+  adobename="shalshelethebrew",
   category="mn",
   description="HEBREW ACCENT SHALSHELET",
   direction="nsm",
@@ -13350,6 +13992,7 @@ characters.data={
   unicodeslot=0x0593,
  },
  [0x0594]={
+  adobename="zaqefqatanhebrew",
   category="mn",
   description="HEBREW ACCENT ZAQEF QATAN",
   direction="nsm",
@@ -13357,6 +14000,7 @@ characters.data={
   unicodeslot=0x0594,
  },
  [0x0595]={
+  adobename="zaqefgadolhebrew",
   category="mn",
   description="HEBREW ACCENT ZAQEF GADOL",
   direction="nsm",
@@ -13364,6 +14008,7 @@ characters.data={
   unicodeslot=0x0595,
  },
  [0x0596]={
+  adobename="tipehalefthebrew",
   category="mn",
   description="HEBREW ACCENT TIPEHA",
   direction="nsm",
@@ -13371,6 +14016,7 @@ characters.data={
   unicodeslot=0x0596,
  },
  [0x0597]={
+  adobename="reviamugrashhebrew",
   category="mn",
   description="HEBREW ACCENT REVIA",
   direction="nsm",
@@ -13378,6 +14024,7 @@ characters.data={
   unicodeslot=0x0597,
  },
  [0x0598]={
+  adobename="zarqahebrew",
   category="mn",
   description="HEBREW ACCENT ZARQA",
   direction="nsm",
@@ -13385,6 +14032,7 @@ characters.data={
   unicodeslot=0x0598,
  },
  [0x0599]={
+  adobename="pashtahebrew",
   category="mn",
   description="HEBREW ACCENT PASHTA",
   direction="nsm",
@@ -13392,6 +14040,7 @@ characters.data={
   unicodeslot=0x0599,
  },
  [0x059A]={
+  adobename="yetivhebrew",
   category="mn",
   description="HEBREW ACCENT YETIV",
   direction="nsm",
@@ -13399,6 +14048,7 @@ characters.data={
   unicodeslot=0x059A,
  },
  [0x059B]={
+  adobename="tevirlefthebrew",
   category="mn",
   description="HEBREW ACCENT TEVIR",
   direction="nsm",
@@ -13406,6 +14056,7 @@ characters.data={
   unicodeslot=0x059B,
  },
  [0x059C]={
+  adobename="gereshaccenthebrew",
   category="mn",
   description="HEBREW ACCENT GERESH",
   direction="nsm",
@@ -13413,6 +14064,7 @@ characters.data={
   unicodeslot=0x059C,
  },
  [0x059D]={
+  adobename="gereshmuqdamhebrew",
   category="mn",
   description="HEBREW ACCENT GERESH MUQDAM",
   direction="nsm",
@@ -13420,6 +14072,7 @@ characters.data={
   unicodeslot=0x059D,
  },
  [0x059E]={
+  adobename="gershayimaccenthebrew",
   category="mn",
   description="HEBREW ACCENT GERSHAYIM",
   direction="nsm",
@@ -13427,6 +14080,7 @@ characters.data={
   unicodeslot=0x059E,
  },
  [0x059F]={
+  adobename="qarneyparahebrew",
   category="mn",
   description="HEBREW ACCENT QARNEY PARA",
   direction="nsm",
@@ -13434,6 +14088,7 @@ characters.data={
   unicodeslot=0x059F,
  },
  [0x05A0]={
+  adobename="telishagedolahebrew",
   category="mn",
   description="HEBREW ACCENT TELISHA GEDOLA",
   direction="nsm",
@@ -13441,6 +14096,7 @@ characters.data={
   unicodeslot=0x05A0,
  },
  [0x05A1]={
+  adobename="pazerhebrew",
   category="mn",
   description="HEBREW ACCENT PAZER",
   direction="nsm",
@@ -13455,6 +14111,7 @@ characters.data={
   unicodeslot=0x05A2,
  },
  [0x05A3]={
+  adobename="munahlefthebrew",
   category="mn",
   description="HEBREW ACCENT MUNAH",
   direction="nsm",
@@ -13462,6 +14119,7 @@ characters.data={
   unicodeslot=0x05A3,
  },
  [0x05A4]={
+  adobename="mahapakhlefthebrew",
   category="mn",
   description="HEBREW ACCENT MAHAPAKH",
   direction="nsm",
@@ -13469,6 +14127,7 @@ characters.data={
   unicodeslot=0x05A4,
  },
  [0x05A5]={
+  adobename="merkhalefthebrew",
   category="mn",
   description="HEBREW ACCENT MERKHA",
   direction="nsm",
@@ -13476,6 +14135,7 @@ characters.data={
   unicodeslot=0x05A5,
  },
  [0x05A6]={
+  adobename="merkhakefulalefthebrew",
   category="mn",
   description="HEBREW ACCENT MERKHA KEFULA",
   direction="nsm",
@@ -13483,6 +14143,7 @@ characters.data={
   unicodeslot=0x05A6,
  },
  [0x05A7]={
+  adobename="dargalefthebrew",
   category="mn",
   description="HEBREW ACCENT DARGA",
   direction="nsm",
@@ -13490,6 +14151,7 @@ characters.data={
   unicodeslot=0x05A7,
  },
  [0x05A8]={
+  adobename="qadmahebrew",
   category="mn",
   description="HEBREW ACCENT QADMA",
   direction="nsm",
@@ -13497,6 +14159,7 @@ characters.data={
   unicodeslot=0x05A8,
  },
  [0x05A9]={
+  adobename="telishaqetanahebrew",
   category="mn",
   description="HEBREW ACCENT TELISHA QETANA",
   direction="nsm",
@@ -13504,6 +14167,7 @@ characters.data={
   unicodeslot=0x05A9,
  },
  [0x05AA]={
+  adobename="yerahbenyomolefthebrew",
   category="mn",
   description="HEBREW ACCENT YERAH BEN YOMO",
   direction="nsm",
@@ -13511,6 +14175,7 @@ characters.data={
   unicodeslot=0x05AA,
  },
  [0x05AB]={
+  adobename="olehebrew",
   category="mn",
   description="HEBREW ACCENT OLE",
   direction="nsm",
@@ -13518,6 +14183,7 @@ characters.data={
   unicodeslot=0x05AB,
  },
  [0x05AC]={
+  adobename="iluyhebrew",
   category="mn",
   description="HEBREW ACCENT ILUY",
   direction="nsm",
@@ -13525,6 +14191,7 @@ characters.data={
   unicodeslot=0x05AC,
  },
  [0x05AD]={
+  adobename="dehihebrew",
   category="mn",
   description="HEBREW ACCENT DEHI",
   direction="nsm",
@@ -13532,6 +14199,7 @@ characters.data={
   unicodeslot=0x05AD,
  },
  [0x05AE]={
+  adobename="zinorhebrew",
   category="mn",
   description="HEBREW ACCENT ZINOR",
   direction="nsm",
@@ -13539,6 +14207,7 @@ characters.data={
   unicodeslot=0x05AE,
  },
  [0x05AF]={
+  adobename="masoracirclehebrew",
   category="mn",
   description="HEBREW MARK MASORA CIRCLE",
   direction="nsm",
@@ -13546,7 +14215,7 @@ characters.data={
   unicodeslot=0x05AF,
  },
  [0x05B0]={
-  adobename="afii57799",
+  adobename="shevawidehebrew",
   category="mn",
   description="HEBREW POINT SHEVA",
   direction="nsm",
@@ -13554,7 +14223,7 @@ characters.data={
   unicodeslot=0x05B0,
  },
  [0x05B1]={
-  adobename="afii57801",
+  adobename="hatafsegolwidehebrew",
   category="mn",
   description="HEBREW POINT HATAF SEGOL",
   direction="nsm",
@@ -13562,7 +14231,7 @@ characters.data={
   unicodeslot=0x05B1,
  },
  [0x05B2]={
-  adobename="afii57800",
+  adobename="hatafpatahwidehebrew",
   category="mn",
   description="HEBREW POINT HATAF PATAH",
   direction="nsm",
@@ -13570,7 +14239,7 @@ characters.data={
   unicodeslot=0x05B2,
  },
  [0x05B3]={
-  adobename="afii57802",
+  adobename="hatafqamatswidehebrew",
   category="mn",
   description="HEBREW POINT HATAF QAMATS",
   direction="nsm",
@@ -13578,7 +14247,7 @@ characters.data={
   unicodeslot=0x05B3,
  },
  [0x05B4]={
-  adobename="afii57793",
+  adobename="hiriqwidehebrew",
   category="mn",
   description="HEBREW POINT HIRIQ",
   direction="nsm",
@@ -13586,7 +14255,7 @@ characters.data={
   unicodeslot=0x05B4,
  },
  [0x05B5]={
-  adobename="afii57794",
+  adobename="tserewidehebrew",
   category="mn",
   description="HEBREW POINT TSERE",
   direction="nsm",
@@ -13594,7 +14263,7 @@ characters.data={
   unicodeslot=0x05B5,
  },
  [0x05B6]={
-  adobename="afii57795",
+  adobename="segolwidehebrew",
   category="mn",
   description="HEBREW POINT SEGOL",
   direction="nsm",
@@ -13602,7 +14271,7 @@ characters.data={
   unicodeslot=0x05B6,
  },
  [0x05B7]={
-  adobename="afii57798",
+  adobename="patahwidehebrew",
   category="mn",
   description="HEBREW POINT PATAH",
   direction="nsm",
@@ -13610,7 +14279,7 @@ characters.data={
   unicodeslot=0x05B7,
  },
  [0x05B8]={
-  adobename="afii57797",
+  adobename="qamatswidehebrew",
   category="mn",
   description="HEBREW POINT QAMATS",
   direction="nsm",
@@ -13618,7 +14287,7 @@ characters.data={
   unicodeslot=0x05B8,
  },
  [0x05B9]={
-  adobename="afii57806",
+  adobename="holamwidehebrew",
   category="mn",
   description="HEBREW POINT HOLAM",
   direction="nsm",
@@ -13633,7 +14302,7 @@ characters.data={
   unicodeslot=0x05BA,
  },
  [0x05BB]={
-  adobename="afii57796",
+  adobename="qubutswidehebrew",
   category="mn",
   description="HEBREW POINT QUBUTS",
   direction="nsm",
@@ -13641,7 +14310,7 @@ characters.data={
   unicodeslot=0x05BB,
  },
  [0x05BC]={
-  adobename="afii57807",
+  adobename="dageshhebrew",
   category="mn",
   description="HEBREW POINT DAGESH OR MAPIQ",
   direction="nsm",
@@ -13649,7 +14318,7 @@ characters.data={
   unicodeslot=0x05BC,
  },
  [0x05BD]={
-  adobename="afii57839",
+  adobename="siluqlefthebrew",
   category="mn",
   description="HEBREW POINT METEG",
   direction="nsm",
@@ -13657,7 +14326,7 @@ characters.data={
   unicodeslot=0x05BD,
  },
  [0x05BE]={
-  adobename="afii57645",
+  adobename="maqafhebrew",
   category="po",
   description="HEBREW PUNCTUATION MAQAF",
   direction="r",
@@ -13665,7 +14334,7 @@ characters.data={
   unicodeslot=0x05BE,
  },
  [0x05BF]={
-  adobename="afii57841",
+  adobename="rafehebrew",
   category="mn",
   description="HEBREW POINT RAFE",
   direction="nsm",
@@ -13673,7 +14342,7 @@ characters.data={
   unicodeslot=0x05BF,
  },
  [0x05C0]={
-  adobename="afii57842",
+  adobename="paseqhebrew",
   category="po",
   description="HEBREW PUNCTUATION PASEQ",
   direction="r",
@@ -13681,7 +14350,7 @@ characters.data={
   unicodeslot=0x05C0,
  },
  [0x05C1]={
-  adobename="afii57804",
+  adobename="shindothebrew",
   category="mn",
   description="HEBREW POINT SHIN DOT",
   direction="nsm",
@@ -13689,7 +14358,7 @@ characters.data={
   unicodeslot=0x05C1,
  },
  [0x05C2]={
-  adobename="afii57803",
+  adobename="sindothebrew",
   category="mn",
   description="HEBREW POINT SIN DOT",
   direction="nsm",
@@ -13697,7 +14366,7 @@ characters.data={
   unicodeslot=0x05C2,
  },
  [0x05C3]={
-  adobename="afii57658",
+  adobename="sofpasuqhebrew",
   category="po",
   description="HEBREW PUNCTUATION SOF PASUQ",
   direction="r",
@@ -13705,6 +14374,7 @@ characters.data={
   unicodeslot=0x05C3,
  },
  [0x05C4]={
+  adobename="upperdothebrew",
   category="mn",
   description="HEBREW MARK UPPER DOT",
   direction="nsm",
@@ -13733,7 +14403,7 @@ characters.data={
   unicodeslot=0x05C7,
  },
  [0x05D0]={
-  adobename="afii57664",
+  adobename="alefhebrew",
   category="lo",
   contextname="hebrewAlef",
   description="HEBREW LETTER ALEF",
@@ -13742,7 +14412,7 @@ characters.data={
   unicodeslot=0x05D0,
  },
  [0x05D1]={
-  adobename="afii57665",
+  adobename="bethebrew",
   category="lo",
   contextname="hebrewBet",
   description="HEBREW LETTER BET",
@@ -13751,7 +14421,7 @@ characters.data={
   unicodeslot=0x05D1,
  },
  [0x05D2]={
-  adobename="afii57666",
+  adobename="gimelhebrew",
   category="lo",
   contextname="hebrewGimel",
   description="HEBREW LETTER GIMEL",
@@ -13760,7 +14430,7 @@ characters.data={
   unicodeslot=0x05D2,
  },
  [0x05D3]={
-  adobename="afii57667",
+  adobename="dalettserehebrew",
   category="lo",
   contextname="hebrewDalet",
   description="HEBREW LETTER DALET",
@@ -13769,7 +14439,7 @@ characters.data={
   unicodeslot=0x05D3,
  },
  [0x05D4]={
-  adobename="afii57668",
+  adobename="hehebrew",
   category="lo",
   contextname="hebrewHe",
   description="HEBREW LETTER HE",
@@ -13778,7 +14448,7 @@ characters.data={
   unicodeslot=0x05D4,
  },
  [0x05D5]={
-  adobename="afii57669",
+  adobename="vavhebrew",
   category="lo",
   contextname="hebrewVav",
   description="HEBREW LETTER VAV",
@@ -13787,7 +14457,7 @@ characters.data={
   unicodeslot=0x05D5,
  },
  [0x05D6]={
-  adobename="afii57670",
+  adobename="zayinhebrew",
   category="lo",
   contextname="hebrewZayin",
   description="HEBREW LETTER ZAYIN",
@@ -13796,7 +14466,7 @@ characters.data={
   unicodeslot=0x05D6,
  },
  [0x05D7]={
-  adobename="afii57671",
+  adobename="hethebrew",
   category="lo",
   contextname="hebrewHet",
   description="HEBREW LETTER HET",
@@ -13805,7 +14475,7 @@ characters.data={
   unicodeslot=0x05D7,
  },
  [0x05D8]={
-  adobename="afii57672",
+  adobename="tethebrew",
   category="lo",
   contextname="hebrewTet",
   description="HEBREW LETTER TET",
@@ -13814,7 +14484,7 @@ characters.data={
   unicodeslot=0x05D8,
  },
  [0x05D9]={
-  adobename="afii57673",
+  adobename="yodhebrew",
   category="lo",
   contextname="hebrewYod",
   description="HEBREW LETTER YOD",
@@ -13823,7 +14493,7 @@ characters.data={
   unicodeslot=0x05D9,
  },
  [0x05DA]={
-  adobename="afii57674",
+  adobename="finalkafshevahebrew",
   category="lo",
   contextname="hebrewKaffinal",
   description="HEBREW LETTER FINAL KAF",
@@ -13832,7 +14502,7 @@ characters.data={
   unicodeslot=0x05DA,
  },
  [0x05DB]={
-  adobename="afii57675",
+  adobename="kafhebrew",
   category="lo",
   contextname="hebrewKaf",
   description="HEBREW LETTER KAF",
@@ -13841,7 +14511,7 @@ characters.data={
   unicodeslot=0x05DB,
  },
  [0x05DC]={
-  adobename="afii57676",
+  adobename="lamedholamhebrew",
   category="lo",
   contextname="hebrewLamed",
   description="HEBREW LETTER LAMED",
@@ -13850,7 +14520,7 @@ characters.data={
   unicodeslot=0x05DC,
  },
  [0x05DD]={
-  adobename="afii57677",
+  adobename="finalmemhebrew",
   category="lo",
   contextname="hebrewMemfinal",
   description="HEBREW LETTER FINAL MEM",
@@ -13859,7 +14529,7 @@ characters.data={
   unicodeslot=0x05DD,
  },
  [0x05DE]={
-  adobename="afii57678",
+  adobename="memhebrew",
   category="lo",
   contextname="hebrewMem",
   description="HEBREW LETTER MEM",
@@ -13868,7 +14538,7 @@ characters.data={
   unicodeslot=0x05DE,
  },
  [0x05DF]={
-  adobename="afii57679",
+  adobename="finalnunhebrew",
   category="lo",
   contextname="hebrewNunfinal",
   description="HEBREW LETTER FINAL NUN",
@@ -13877,7 +14547,7 @@ characters.data={
   unicodeslot=0x05DF,
  },
  [0x05E0]={
-  adobename="afii57680",
+  adobename="nunhebrew",
   category="lo",
   contextname="hebrewNun",
   description="HEBREW LETTER NUN",
@@ -13886,7 +14556,7 @@ characters.data={
   unicodeslot=0x05E0,
  },
  [0x05E1]={
-  adobename="afii57681",
+  adobename="samekhhebrew",
   category="lo",
   contextname="hebrewSamekh",
   description="HEBREW LETTER SAMEKH",
@@ -13895,7 +14565,7 @@ characters.data={
   unicodeslot=0x05E1,
  },
  [0x05E2]={
-  adobename="afii57682",
+  adobename="ayinhebrew",
   category="lo",
   contextname="hebrewAyin",
   description="HEBREW LETTER AYIN",
@@ -13904,7 +14574,7 @@ characters.data={
   unicodeslot=0x05E2,
  },
  [0x05E3]={
-  adobename="afii57683",
+  adobename="finalpehebrew",
   category="lo",
   contextname="hebrewPefinal",
   description="HEBREW LETTER FINAL PE",
@@ -13913,7 +14583,7 @@ characters.data={
   unicodeslot=0x05E3,
  },
  [0x05E4]={
-  adobename="afii57684",
+  adobename="pehebrew",
   category="lo",
   contextname="hebrewPe",
   description="HEBREW LETTER PE",
@@ -13922,7 +14592,7 @@ characters.data={
   unicodeslot=0x05E4,
  },
  [0x05E5]={
-  adobename="afii57685",
+  adobename="finaltsadihebrew",
   category="lo",
   contextname="hebrewTsadifinal",
   description="HEBREW LETTER FINAL TSADI",
@@ -13931,7 +14601,7 @@ characters.data={
   unicodeslot=0x05E5,
  },
  [0x05E6]={
-  adobename="afii57686",
+  adobename="tsadihebrew",
   category="lo",
   contextname="hebrewTsadi",
   description="HEBREW LETTER TSADI",
@@ -13940,7 +14610,7 @@ characters.data={
   unicodeslot=0x05E6,
  },
  [0x05E7]={
-  adobename="afii57687",
+  adobename="qoftserehebrew",
   category="lo",
   contextname="hebrewQof",
   description="HEBREW LETTER QOF",
@@ -13949,7 +14619,7 @@ characters.data={
   unicodeslot=0x05E7,
  },
  [0x05E8]={
-  adobename="afii57688",
+  adobename="reshtserehebrew",
   category="lo",
   contextname="hebrewResh",
   description="HEBREW LETTER RESH",
@@ -13958,7 +14628,7 @@ characters.data={
   unicodeslot=0x05E8,
  },
  [0x05E9]={
-  adobename="afii57689",
+  adobename="shinhebrew",
   category="lo",
   contextname="hebrewShin",
   description="HEBREW LETTER SHIN",
@@ -13967,7 +14637,7 @@ characters.data={
   unicodeslot=0x05E9,
  },
  [0x05EA]={
-  adobename="afii57690",
+  adobename="tavhebrew",
   category="lo",
   contextname="hebrewTav",
   description="HEBREW LETTER TAV",
@@ -13976,7 +14646,7 @@ characters.data={
   unicodeslot=0x05EA,
  },
  [0x05F0]={
-  adobename="afii57716",
+  adobename="vavvavhebrew",
   category="lo",
   description="HEBREW LIGATURE YIDDISH DOUBLE VAV",
   direction="r",
@@ -13984,7 +14654,7 @@ characters.data={
   unicodeslot=0x05F0,
  },
  [0x05F1]={
-  adobename="afii57717",
+  adobename="vavyodhebrew",
   category="lo",
   description="HEBREW LIGATURE YIDDISH VAV YOD",
   direction="r",
@@ -13992,7 +14662,7 @@ characters.data={
   unicodeslot=0x05F1,
  },
  [0x05F2]={
-  adobename="afii57718",
+  adobename="yodyodhebrew",
   category="lo",
   description="HEBREW LIGATURE YIDDISH DOUBLE YOD",
   direction="r",
@@ -14000,6 +14670,7 @@ characters.data={
   unicodeslot=0x05F2,
  },
  [0x05F3]={
+  adobename="gereshhebrew",
   category="po",
   description="HEBREW PUNCTUATION GERESH",
   direction="r",
@@ -14007,6 +14678,7 @@ characters.data={
   unicodeslot=0x05F3,
  },
  [0x05F4]={
+  adobename="gershayimhebrew",
   category="po",
   description="HEBREW PUNCTUATION GERSHAYIM",
   direction="r",
@@ -14017,33 +14689,33 @@ characters.data={
   category="cf",
   description="ARABIC NUMBER SIGN",
   direction="an",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x0600,
+  visible="yes",
  },
  [0x0601]={
   category="cf",
   description="ARABIC SIGN SANAH",
   direction="an",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x0601,
+  visible="yes",
  },
  [0x0602]={
   category="cf",
   description="ARABIC FOOTNOTE MARKER",
   direction="an",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x0602,
+  visible="yes",
  },
  [0x0603]={
   category="cf",
   description="ARABIC SIGN SAFHA",
   direction="an",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x0603,
+  visible="yes",
  },
  [0x060B]={
   category="sc",
@@ -14053,7 +14725,7 @@ characters.data={
   unicodeslot=0x060B,
  },
  [0x060C]={
-  adobename="afii57388",
+  adobename="commaarabic",
   category="po",
   description="ARABIC COMMA",
   direction="cs",
@@ -14124,7 +14796,7 @@ characters.data={
   unicodeslot=0x0615,
  },
  [0x061B]={
-  adobename="afii57403",
+  adobename="semicolonarabic",
   category="po",
   description="ARABIC SEMICOLON",
   direction="al",
@@ -14139,7 +14811,7 @@ characters.data={
   unicodeslot=0x061E,
  },
  [0x061F]={
-  adobename="afii57407",
+  adobename="questionarabic",
   category="po",
   description="ARABIC QUESTION MARK",
   direction="al",
@@ -14147,7 +14819,7 @@ characters.data={
   unicodeslot=0x061F,
  },
  [0x0621]={
-  adobename="afii57409",
+  adobename="hamzasukunarabic",
   category="lo",
   description="ARABIC LETTER HAMZA",
   direction="al",
@@ -14155,7 +14827,7 @@ characters.data={
   unicodeslot=0x0621,
  },
  [0x0622]={
-  adobename="afii57410",
+  adobename="alefmaddaabovearabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH MADDA ABOVE",
   direction="al",
@@ -14165,7 +14837,7 @@ characters.data={
   unicodeslot=0x0622,
  },
  [0x0623]={
-  adobename="afii57411",
+  adobename="alefhamzaabovearabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH HAMZA ABOVE",
   direction="al",
@@ -14175,7 +14847,7 @@ characters.data={
   unicodeslot=0x0623,
  },
  [0x0624]={
-  adobename="afii57412",
+  adobename="wawhamzaabovearabic",
   category="lo",
   description="ARABIC LETTER WAW WITH HAMZA ABOVE",
   direction="al",
@@ -14185,7 +14857,7 @@ characters.data={
   unicodeslot=0x0624,
  },
  [0x0625]={
-  adobename="afii57413",
+  adobename="alefhamzabelowarabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH HAMZA BELOW",
   direction="al",
@@ -14195,7 +14867,7 @@ characters.data={
   unicodeslot=0x0625,
  },
  [0x0626]={
-  adobename="afii57414",
+  adobename="yehhamzaabovearabic",
   category="lo",
   description="ARABIC LETTER YEH WITH HAMZA ABOVE",
   direction="al",
@@ -14205,7 +14877,7 @@ characters.data={
   unicodeslot=0x0626,
  },
  [0x0627]={
-  adobename="afii57415",
+  adobename="alefarabic",
   category="lo",
   description="ARABIC LETTER ALEF",
   direction="al",
@@ -14213,7 +14885,7 @@ characters.data={
   unicodeslot=0x0627,
  },
  [0x0628]={
-  adobename="afii57416",
+  adobename="beharabic",
   category="lo",
   description="ARABIC LETTER BEH",
   direction="al",
@@ -14221,7 +14893,7 @@ characters.data={
   unicodeslot=0x0628,
  },
  [0x0629]={
-  adobename="afii57417",
+  adobename="tehmarbutaarabic",
   category="lo",
   description="ARABIC LETTER TEH MARBUTA",
   direction="al",
@@ -14229,7 +14901,7 @@ characters.data={
   unicodeslot=0x0629,
  },
  [0x062A]={
-  adobename="afii57418",
+  adobename="teharabic",
   category="lo",
   description="ARABIC LETTER TEH",
   direction="al",
@@ -14237,7 +14909,7 @@ characters.data={
   unicodeslot=0x062A,
  },
  [0x062B]={
-  adobename="afii57419",
+  adobename="theharabic",
   category="lo",
   description="ARABIC LETTER THEH",
   direction="al",
@@ -14245,7 +14917,7 @@ characters.data={
   unicodeslot=0x062B,
  },
  [0x062C]={
-  adobename="afii57420",
+  adobename="jeemarabic",
   category="lo",
   description="ARABIC LETTER JEEM",
   direction="al",
@@ -14253,7 +14925,7 @@ characters.data={
   unicodeslot=0x062C,
  },
  [0x062D]={
-  adobename="afii57421",
+  adobename="haharabic",
   category="lo",
   description="ARABIC LETTER HAH",
   direction="al",
@@ -14261,7 +14933,7 @@ characters.data={
   unicodeslot=0x062D,
  },
  [0x062E]={
-  adobename="afii57422",
+  adobename="khaharabic",
   category="lo",
   description="ARABIC LETTER KHAH",
   direction="al",
@@ -14269,7 +14941,7 @@ characters.data={
   unicodeslot=0x062E,
  },
  [0x062F]={
-  adobename="afii57423",
+  adobename="dalarabic",
   category="lo",
   description="ARABIC LETTER DAL",
   direction="al",
@@ -14277,7 +14949,7 @@ characters.data={
   unicodeslot=0x062F,
  },
  [0x0630]={
-  adobename="afii57424",
+  adobename="thalarabic",
   category="lo",
   description="ARABIC LETTER THAL",
   direction="al",
@@ -14285,7 +14957,7 @@ characters.data={
   unicodeslot=0x0630,
  },
  [0x0631]={
-  adobename="afii57425",
+  adobename="rehyehaleflamarabic",
   category="lo",
   description="ARABIC LETTER REH",
   direction="al",
@@ -14293,7 +14965,7 @@ characters.data={
   unicodeslot=0x0631,
  },
  [0x0632]={
-  adobename="afii57426",
+  adobename="zainarabic",
   category="lo",
   description="ARABIC LETTER ZAIN",
   direction="al",
@@ -14301,7 +14973,7 @@ characters.data={
   unicodeslot=0x0632,
  },
  [0x0633]={
-  adobename="afii57427",
+  adobename="seenarabic",
   category="lo",
   description="ARABIC LETTER SEEN",
   direction="al",
@@ -14309,7 +14981,7 @@ characters.data={
   unicodeslot=0x0633,
  },
  [0x0634]={
-  adobename="afii57428",
+  adobename="sheenarabic",
   category="lo",
   description="ARABIC LETTER SHEEN",
   direction="al",
@@ -14317,7 +14989,7 @@ characters.data={
   unicodeslot=0x0634,
  },
  [0x0635]={
-  adobename="afii57429",
+  adobename="sadarabic",
   category="lo",
   description="ARABIC LETTER SAD",
   direction="al",
@@ -14325,7 +14997,7 @@ characters.data={
   unicodeslot=0x0635,
  },
  [0x0636]={
-  adobename="afii57430",
+  adobename="dadarabic",
   category="lo",
   description="ARABIC LETTER DAD",
   direction="al",
@@ -14333,7 +15005,7 @@ characters.data={
   unicodeslot=0x0636,
  },
  [0x0637]={
-  adobename="afii57431",
+  adobename="taharabic",
   category="lo",
   description="ARABIC LETTER TAH",
   direction="al",
@@ -14341,7 +15013,7 @@ characters.data={
   unicodeslot=0x0637,
  },
  [0x0638]={
-  adobename="afii57432",
+  adobename="zaharabic",
   category="lo",
   description="ARABIC LETTER ZAH",
   direction="al",
@@ -14349,7 +15021,7 @@ characters.data={
   unicodeslot=0x0638,
  },
  [0x0639]={
-  adobename="afii57433",
+  adobename="ainarabic",
   category="lo",
   description="ARABIC LETTER AIN",
   direction="al",
@@ -14357,7 +15029,7 @@ characters.data={
   unicodeslot=0x0639,
  },
  [0x063A]={
-  adobename="afii57434",
+  adobename="ghainarabic",
   category="lo",
   description="ARABIC LETTER GHAIN",
   direction="al",
@@ -14365,7 +15037,7 @@ characters.data={
   unicodeslot=0x063A,
  },
  [0x0640]={
-  adobename="afii57440",
+  adobename="tatweelarabic",
   category="lm",
   description="ARABIC TATWEEL",
   direction="al",
@@ -14373,7 +15045,7 @@ characters.data={
   unicodeslot=0x0640,
  },
  [0x0641]={
-  adobename="afii57441",
+  adobename="feharabic",
   category="lo",
   description="ARABIC LETTER FEH",
   direction="al",
@@ -14381,7 +15053,7 @@ characters.data={
   unicodeslot=0x0641,
  },
  [0x0642]={
-  adobename="afii57442",
+  adobename="qafarabic",
   category="lo",
   description="ARABIC LETTER QAF",
   direction="al",
@@ -14389,7 +15061,7 @@ characters.data={
   unicodeslot=0x0642,
  },
  [0x0643]={
-  adobename="afii57443",
+  adobename="kafarabic",
   category="lo",
   description="ARABIC LETTER KAF",
   direction="al",
@@ -14397,7 +15069,7 @@ characters.data={
   unicodeslot=0x0643,
  },
  [0x0644]={
-  adobename="afii57444",
+  adobename="lamarabic",
   category="lo",
   description="ARABIC LETTER LAM",
   direction="al",
@@ -14405,7 +15077,7 @@ characters.data={
   unicodeslot=0x0644,
  },
  [0x0645]={
-  adobename="afii57445",
+  adobename="meemarabic",
   category="lo",
   description="ARABIC LETTER MEEM",
   direction="al",
@@ -14413,7 +15085,7 @@ characters.data={
   unicodeslot=0x0645,
  },
  [0x0646]={
-  adobename="afii57446",
+  adobename="noonarabic",
   category="lo",
   description="ARABIC LETTER NOON",
   direction="al",
@@ -14421,7 +15093,7 @@ characters.data={
   unicodeslot=0x0646,
  },
  [0x0647]={
-  adobename="afii57470",
+  adobename="heharabic",
   category="lo",
   description="ARABIC LETTER HEH",
   direction="al",
@@ -14429,7 +15101,7 @@ characters.data={
   unicodeslot=0x0647,
  },
  [0x0648]={
-  adobename="afii57448",
+  adobename="wawarabic",
   category="lo",
   description="ARABIC LETTER WAW",
   direction="al",
@@ -14437,7 +15109,7 @@ characters.data={
   unicodeslot=0x0648,
  },
  [0x0649]={
-  adobename="afii57449",
+  adobename="alefmaksuraarabic",
   category="lo",
   description="ARABIC LETTER ALEF MAKSURA",
   direction="al",
@@ -14445,7 +15117,7 @@ characters.data={
   unicodeslot=0x0649,
  },
  [0x064A]={
-  adobename="afii57450",
+  adobename="yeharabic",
   category="lo",
   description="ARABIC LETTER YEH",
   direction="al",
@@ -14453,7 +15125,7 @@ characters.data={
   unicodeslot=0x064A,
  },
  [0x064B]={
-  adobename="afii57451",
+  adobename="fathatanarabic",
   category="mn",
   description="ARABIC FATHATAN",
   direction="nsm",
@@ -14461,7 +15133,7 @@ characters.data={
   unicodeslot=0x064B,
  },
  [0x064C]={
-  adobename="afii57452",
+  adobename="dammatanarabic",
   category="mn",
   description="ARABIC DAMMATAN",
   direction="nsm",
@@ -14469,7 +15141,7 @@ characters.data={
   unicodeslot=0x064C,
  },
  [0x064D]={
-  adobename="afii57453",
+  adobename="kasratanarabic",
   category="mn",
   description="ARABIC KASRATAN",
   direction="nsm",
@@ -14477,7 +15149,7 @@ characters.data={
   unicodeslot=0x064D,
  },
  [0x064E]={
-  adobename="afii57454",
+  adobename="fathalowarabic",
   category="mn",
   description="ARABIC FATHA",
   direction="nsm",
@@ -14485,7 +15157,7 @@ characters.data={
   unicodeslot=0x064E,
  },
  [0x064F]={
-  adobename="afii57455",
+  adobename="dammalowarabic",
   category="mn",
   description="ARABIC DAMMA",
   direction="nsm",
@@ -14493,7 +15165,7 @@ characters.data={
   unicodeslot=0x064F,
  },
  [0x0650]={
-  adobename="afii57456",
+  adobename="kasraarabic",
   category="mn",
   description="ARABIC KASRA",
   direction="nsm",
@@ -14501,7 +15173,7 @@ characters.data={
   unicodeslot=0x0650,
  },
  [0x0651]={
-  adobename="afii57457",
+  adobename="shaddafathatanarabic",
   category="mn",
   description="ARABIC SHADDA",
   direction="nsm",
@@ -14509,7 +15181,7 @@ characters.data={
   unicodeslot=0x0651,
  },
  [0x0652]={
-  adobename="afii57458",
+  adobename="sukunarabic",
   category="mn",
   description="ARABIC SUKUN",
   direction="nsm",
@@ -14601,7 +15273,7 @@ characters.data={
   unicodeslot=0x065E,
  },
  [0x0660]={
-  adobename="afii57392",
+  adobename="zerohackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT ZERO",
   direction="an",
@@ -14609,7 +15281,7 @@ characters.data={
   unicodeslot=0x0660,
  },
  [0x0661]={
-  adobename="afii57393",
+  adobename="onehackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT ONE",
   direction="an",
@@ -14617,7 +15289,7 @@ characters.data={
   unicodeslot=0x0661,
  },
  [0x0662]={
-  adobename="afii57394",
+  adobename="twohackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT TWO",
   direction="an",
@@ -14625,7 +15297,7 @@ characters.data={
   unicodeslot=0x0662,
  },
  [0x0663]={
-  adobename="afii57395",
+  adobename="threehackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT THREE",
   direction="an",
@@ -14633,7 +15305,7 @@ characters.data={
   unicodeslot=0x0663,
  },
  [0x0664]={
-  adobename="afii57396",
+  adobename="fourhackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT FOUR",
   direction="an",
@@ -14641,7 +15313,7 @@ characters.data={
   unicodeslot=0x0664,
  },
  [0x0665]={
-  adobename="afii57397",
+  adobename="fivehackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT FIVE",
   direction="an",
@@ -14649,7 +15321,7 @@ characters.data={
   unicodeslot=0x0665,
  },
  [0x0666]={
-  adobename="afii57398",
+  adobename="sixhackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT SIX",
   direction="an",
@@ -14657,7 +15329,7 @@ characters.data={
   unicodeslot=0x0666,
  },
  [0x0667]={
-  adobename="afii57399",
+  adobename="sevenhackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT SEVEN",
   direction="an",
@@ -14665,7 +15337,7 @@ characters.data={
   unicodeslot=0x0667,
  },
  [0x0668]={
-  adobename="afii57400",
+  adobename="eighthackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT EIGHT",
   direction="an",
@@ -14673,7 +15345,7 @@ characters.data={
   unicodeslot=0x0668,
  },
  [0x0669]={
-  adobename="afii57401",
+  adobename="ninehackarabic",
   category="nd",
   description="ARABIC-INDIC DIGIT NINE",
   direction="an",
@@ -14681,7 +15353,7 @@ characters.data={
   unicodeslot=0x0669,
  },
  [0x066A]={
-  adobename="afii57381",
+  adobename="percentarabic",
   category="po",
   description="ARABIC PERCENT SIGN",
   direction="et",
@@ -14689,6 +15361,7 @@ characters.data={
   unicodeslot=0x066A,
  },
  [0x066B]={
+  adobename="decimalseparatorpersian",
   category="po",
   description="ARABIC DECIMAL SEPARATOR",
   direction="an",
@@ -14696,6 +15369,7 @@ characters.data={
   unicodeslot=0x066B,
  },
  [0x066C]={
+  adobename="thousandsseparatorpersian",
   category="po",
   description="ARABIC THOUSANDS SEPARATOR",
   direction="an",
@@ -14703,7 +15377,7 @@ characters.data={
   unicodeslot=0x066C,
  },
  [0x066D]={
-  adobename="afii63167",
+  adobename="asteriskarabic",
   category="po",
   description="ARABIC FIVE POINTED STAR",
   direction="al",
@@ -14795,7 +15469,7 @@ characters.data={
   unicodeslot=0x0678,
  },
  [0x0679]={
-  adobename="afii57511",
+  adobename="tteharabic",
   category="lo",
   description="ARABIC LETTER TTEH",
   direction="al",
@@ -14833,7 +15507,7 @@ characters.data={
   unicodeslot=0x067D,
  },
  [0x067E]={
-  adobename="afii57506",
+  adobename="peharabic",
   category="lo",
   description="ARABIC LETTER PEH",
   direction="al",
@@ -14893,7 +15567,7 @@ characters.data={
   unicodeslot=0x0685,
  },
  [0x0686]={
-  adobename="afii57507",
+  adobename="tcheharabic",
   category="lo",
   description="ARABIC LETTER TCHEH",
   direction="al",
@@ -14908,7 +15582,7 @@ characters.data={
   unicodeslot=0x0687,
  },
  [0x0688]={
-  adobename="afii57512",
+  adobename="ddalarabic",
   category="lo",
   description="ARABIC LETTER DDAL",
   direction="al",
@@ -14977,7 +15651,7 @@ characters.data={
   unicodeslot=0x0690,
  },
  [0x0691]={
-  adobename="afii57513",
+  adobename="rreharabic",
   category="lo",
   description="ARABIC LETTER RREH",
   direction="al",
@@ -15033,7 +15707,7 @@ characters.data={
   unicodeslot=0x0697,
  },
  [0x0698]={
-  adobename="afii57508",
+  adobename="jeharabic",
   category="lo",
   description="ARABIC LETTER JEH",
   direction="al",
@@ -15128,7 +15802,7 @@ characters.data={
   unicodeslot=0x06A3,
  },
  [0x06A4]={
-  adobename="afii57505",
+  adobename="veharabic",
   category="lo",
   description="ARABIC LETTER VEH",
   direction="al",
@@ -15212,7 +15886,7 @@ characters.data={
   unicodeslot=0x06AE,
  },
  [0x06AF]={
-  adobename="afii57509",
+  adobename="gafarabic",
   category="lo",
   description="ARABIC LETTER GAF",
   direction="al",
@@ -15298,7 +15972,7 @@ characters.data={
   unicodeslot=0x06B9,
  },
  [0x06BA]={
-  adobename="afii57514",
+  adobename="noonghunnaarabic",
   category="lo",
   description="ARABIC LETTER NOON GHUNNA",
   direction="al",
@@ -15353,6 +16027,7 @@ characters.data={
   unicodeslot=0x06C0,
  },
  [0x06C1]={
+  adobename="hehaltonearabic",
   category="lo",
   description="ARABIC LETTER HEH GOAL",
   direction="al",
@@ -15471,6 +16146,7 @@ characters.data={
   unicodeslot=0x06D0,
  },
  [0x06D1]={
+  adobename="yehthreedotsbelowarabic",
   category="lo",
   description="ARABIC LETTER YEH WITH THREE DOTS BELOW",
   direction="al",
@@ -15479,7 +16155,7 @@ characters.data={
   unicodeslot=0x06D1,
  },
  [0x06D2]={
-  adobename="afii57519",
+  adobename="yehbarreearabic",
   category="lo",
   description="ARABIC LETTER YEH BARREE",
   direction="al",
@@ -15562,9 +16238,9 @@ characters.data={
   category="cf",
   description="ARABIC END OF AYAH",
   direction="an",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x06DD,
+  visible="yes",
  },
  [0x06DE]={
   category="me",
@@ -15695,6 +16371,7 @@ characters.data={
   unicodeslot=0x06EF,
  },
  [0x06F0]={
+  adobename="zeropersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT ZERO",
   direction="en",
@@ -15702,6 +16379,7 @@ characters.data={
   unicodeslot=0x06F0,
  },
  [0x06F1]={
+  adobename="onepersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT ONE",
   direction="en",
@@ -15709,6 +16387,7 @@ characters.data={
   unicodeslot=0x06F1,
  },
  [0x06F2]={
+  adobename="twopersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT TWO",
   direction="en",
@@ -15716,6 +16395,7 @@ characters.data={
   unicodeslot=0x06F2,
  },
  [0x06F3]={
+  adobename="threepersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT THREE",
   direction="en",
@@ -15723,6 +16403,7 @@ characters.data={
   unicodeslot=0x06F3,
  },
  [0x06F4]={
+  adobename="fourpersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT FOUR",
   direction="en",
@@ -15730,6 +16411,7 @@ characters.data={
   unicodeslot=0x06F4,
  },
  [0x06F5]={
+  adobename="fivepersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT FIVE",
   direction="en",
@@ -15737,6 +16419,7 @@ characters.data={
   unicodeslot=0x06F5,
  },
  [0x06F6]={
+  adobename="sixpersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT SIX",
   direction="en",
@@ -15744,6 +16427,7 @@ characters.data={
   unicodeslot=0x06F6,
  },
  [0x06F7]={
+  adobename="sevenpersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT SEVEN",
   direction="en",
@@ -15751,6 +16435,7 @@ characters.data={
   unicodeslot=0x06F7,
  },
  [0x06F8]={
+  adobename="eightpersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT EIGHT",
   direction="en",
@@ -15758,6 +16443,7 @@ characters.data={
   unicodeslot=0x06F8,
  },
  [0x06F9]={
+  adobename="ninepersian",
   category="nd",
   description="EXTENDED ARABIC-INDIC DIGIT NINE",
   direction="en",
@@ -15912,9 +16598,9 @@ characters.data={
   category="cf",
   description="SYRIAC ABBREVIATION MARK",
   direction="bn",
-  visible="yes",
   linebreak="al",
   unicodeslot=0x070F,
+  visible="yes",
  },
  [0x0710]={
   category="lo",
@@ -17354,6 +18040,7 @@ characters.data={
   unicodeslot=0x07FA,
  },
  [0x0901]={
+  adobename="candrabindudeva",
   category="mn",
   description="DEVANAGARI SIGN CANDRABINDU",
   direction="nsm",
@@ -17361,6 +18048,7 @@ characters.data={
   unicodeslot=0x0901,
  },
  [0x0902]={
+  adobename="anusvaradeva",
   category="mn",
   description="DEVANAGARI SIGN ANUSVARA",
   direction="nsm",
@@ -17368,6 +18056,7 @@ characters.data={
   unicodeslot=0x0902,
  },
  [0x0903]={
+  adobename="visargadeva",
   category="mc",
   description="DEVANAGARI SIGN VISARGA",
   direction="l",
@@ -17382,6 +18071,7 @@ characters.data={
   unicodeslot=0x0904,
  },
  [0x0905]={
+  adobename="adeva",
   category="lo",
   description="DEVANAGARI LETTER A",
   direction="l",
@@ -17389,6 +18079,7 @@ characters.data={
   unicodeslot=0x0905,
  },
  [0x0906]={
+  adobename="aadeva",
   category="lo",
   description="DEVANAGARI LETTER AA",
   direction="l",
@@ -17396,6 +18087,7 @@ characters.data={
   unicodeslot=0x0906,
  },
  [0x0907]={
+  adobename="ideva",
   category="lo",
   description="DEVANAGARI LETTER I",
   direction="l",
@@ -17403,6 +18095,7 @@ characters.data={
   unicodeslot=0x0907,
  },
  [0x0908]={
+  adobename="iideva",
   category="lo",
   description="DEVANAGARI LETTER II",
   direction="l",
@@ -17410,6 +18103,7 @@ characters.data={
   unicodeslot=0x0908,
  },
  [0x0909]={
+  adobename="udeva",
   category="lo",
   description="DEVANAGARI LETTER U",
   direction="l",
@@ -17417,6 +18111,7 @@ characters.data={
   unicodeslot=0x0909,
  },
  [0x090A]={
+  adobename="uudeva",
   category="lo",
   description="DEVANAGARI LETTER UU",
   direction="l",
@@ -17424,6 +18119,7 @@ characters.data={
   unicodeslot=0x090A,
  },
  [0x090B]={
+  adobename="rvocalicdeva",
   category="lo",
   description="DEVANAGARI LETTER VOCALIC R",
   direction="l",
@@ -17431,6 +18127,7 @@ characters.data={
   unicodeslot=0x090B,
  },
  [0x090C]={
+  adobename="lvocalicdeva",
   category="lo",
   description="DEVANAGARI LETTER VOCALIC L",
   direction="l",
@@ -17438,6 +18135,7 @@ characters.data={
   unicodeslot=0x090C,
  },
  [0x090D]={
+  adobename="ecandradeva",
   category="lo",
   description="DEVANAGARI LETTER CANDRA E",
   direction="l",
@@ -17445,6 +18143,7 @@ characters.data={
   unicodeslot=0x090D,
  },
  [0x090E]={
+  adobename="eshortdeva",
   category="lo",
   description="DEVANAGARI LETTER SHORT E",
   direction="l",
@@ -17452,6 +18151,7 @@ characters.data={
   unicodeslot=0x090E,
  },
  [0x090F]={
+  adobename="edeva",
   category="lo",
   description="DEVANAGARI LETTER E",
   direction="l",
@@ -17459,6 +18159,7 @@ characters.data={
   unicodeslot=0x090F,
  },
  [0x0910]={
+  adobename="aideva",
   category="lo",
   description="DEVANAGARI LETTER AI",
   direction="l",
@@ -17466,6 +18167,7 @@ characters.data={
   unicodeslot=0x0910,
  },
  [0x0911]={
+  adobename="ocandradeva",
   category="lo",
   description="DEVANAGARI LETTER CANDRA O",
   direction="l",
@@ -17473,6 +18175,7 @@ characters.data={
   unicodeslot=0x0911,
  },
  [0x0912]={
+  adobename="oshortdeva",
   category="lo",
   description="DEVANAGARI LETTER SHORT O",
   direction="l",
@@ -17480,6 +18183,7 @@ characters.data={
   unicodeslot=0x0912,
  },
  [0x0913]={
+  adobename="odeva",
   category="lo",
   description="DEVANAGARI LETTER O",
   direction="l",
@@ -17487,6 +18191,7 @@ characters.data={
   unicodeslot=0x0913,
  },
  [0x0914]={
+  adobename="audeva",
   category="lo",
   description="DEVANAGARI LETTER AU",
   direction="l",
@@ -17494,6 +18199,7 @@ characters.data={
   unicodeslot=0x0914,
  },
  [0x0915]={
+  adobename="kadeva",
   category="lo",
   description="DEVANAGARI LETTER KA",
   direction="l",
@@ -17501,6 +18207,7 @@ characters.data={
   unicodeslot=0x0915,
  },
  [0x0916]={
+  adobename="khadeva",
   category="lo",
   description="DEVANAGARI LETTER KHA",
   direction="l",
@@ -17508,6 +18215,7 @@ characters.data={
   unicodeslot=0x0916,
  },
  [0x0917]={
+  adobename="gadeva",
   category="lo",
   description="DEVANAGARI LETTER GA",
   direction="l",
@@ -17515,6 +18223,7 @@ characters.data={
   unicodeslot=0x0917,
  },
  [0x0918]={
+  adobename="ghadeva",
   category="lo",
   description="DEVANAGARI LETTER GHA",
   direction="l",
@@ -17522,6 +18231,7 @@ characters.data={
   unicodeslot=0x0918,
  },
  [0x0919]={
+  adobename="ngadeva",
   category="lo",
   description="DEVANAGARI LETTER NGA",
   direction="l",
@@ -17529,6 +18239,7 @@ characters.data={
   unicodeslot=0x0919,
  },
  [0x091A]={
+  adobename="cadeva",
   category="lo",
   description="DEVANAGARI LETTER CA",
   direction="l",
@@ -17536,6 +18247,7 @@ characters.data={
   unicodeslot=0x091A,
  },
  [0x091B]={
+  adobename="chadeva",
   category="lo",
   description="DEVANAGARI LETTER CHA",
   direction="l",
@@ -17543,6 +18255,7 @@ characters.data={
   unicodeslot=0x091B,
  },
  [0x091C]={
+  adobename="jadeva",
   category="lo",
   description="DEVANAGARI LETTER JA",
   direction="l",
@@ -17550,6 +18263,7 @@ characters.data={
   unicodeslot=0x091C,
  },
  [0x091D]={
+  adobename="jhadeva",
   category="lo",
   description="DEVANAGARI LETTER JHA",
   direction="l",
@@ -17557,6 +18271,7 @@ characters.data={
   unicodeslot=0x091D,
  },
  [0x091E]={
+  adobename="nyadeva",
   category="lo",
   description="DEVANAGARI LETTER NYA",
   direction="l",
@@ -17564,6 +18279,7 @@ characters.data={
   unicodeslot=0x091E,
  },
  [0x091F]={
+  adobename="ttadeva",
   category="lo",
   description="DEVANAGARI LETTER TTA",
   direction="l",
@@ -17571,6 +18287,7 @@ characters.data={
   unicodeslot=0x091F,
  },
  [0x0920]={
+  adobename="tthadeva",
   category="lo",
   description="DEVANAGARI LETTER TTHA",
   direction="l",
@@ -17578,6 +18295,7 @@ characters.data={
   unicodeslot=0x0920,
  },
  [0x0921]={
+  adobename="ddadeva",
   category="lo",
   description="DEVANAGARI LETTER DDA",
   direction="l",
@@ -17585,6 +18303,7 @@ characters.data={
   unicodeslot=0x0921,
  },
  [0x0922]={
+  adobename="ddhadeva",
   category="lo",
   description="DEVANAGARI LETTER DDHA",
   direction="l",
@@ -17592,6 +18311,7 @@ characters.data={
   unicodeslot=0x0922,
  },
  [0x0923]={
+  adobename="nnadeva",
   category="lo",
   description="DEVANAGARI LETTER NNA",
   direction="l",
@@ -17599,6 +18319,7 @@ characters.data={
   unicodeslot=0x0923,
  },
  [0x0924]={
+  adobename="tadeva",
   category="lo",
   description="DEVANAGARI LETTER TA",
   direction="l",
@@ -17606,6 +18327,7 @@ characters.data={
   unicodeslot=0x0924,
  },
  [0x0925]={
+  adobename="thadeva",
   category="lo",
   description="DEVANAGARI LETTER THA",
   direction="l",
@@ -17613,6 +18335,7 @@ characters.data={
   unicodeslot=0x0925,
  },
  [0x0926]={
+  adobename="dadeva",
   category="lo",
   description="DEVANAGARI LETTER DA",
   direction="l",
@@ -17620,6 +18343,7 @@ characters.data={
   unicodeslot=0x0926,
  },
  [0x0927]={
+  adobename="dhadeva",
   category="lo",
   description="DEVANAGARI LETTER DHA",
   direction="l",
@@ -17627,6 +18351,7 @@ characters.data={
   unicodeslot=0x0927,
  },
  [0x0928]={
+  adobename="nadeva",
   category="lo",
   description="DEVANAGARI LETTER NA",
   direction="l",
@@ -17634,6 +18359,7 @@ characters.data={
   unicodeslot=0x0928,
  },
  [0x0929]={
+  adobename="nnnadeva",
   category="lo",
   description="DEVANAGARI LETTER NNNA",
   direction="l",
@@ -17642,6 +18368,7 @@ characters.data={
   unicodeslot=0x0929,
  },
  [0x092A]={
+  adobename="padeva",
   category="lo",
   description="DEVANAGARI LETTER PA",
   direction="l",
@@ -17649,6 +18376,7 @@ characters.data={
   unicodeslot=0x092A,
  },
  [0x092B]={
+  adobename="phadeva",
   category="lo",
   description="DEVANAGARI LETTER PHA",
   direction="l",
@@ -17656,6 +18384,7 @@ characters.data={
   unicodeslot=0x092B,
  },
  [0x092C]={
+  adobename="badeva",
   category="lo",
   description="DEVANAGARI LETTER BA",
   direction="l",
@@ -17663,6 +18392,7 @@ characters.data={
   unicodeslot=0x092C,
  },
  [0x092D]={
+  adobename="bhadeva",
   category="lo",
   description="DEVANAGARI LETTER BHA",
   direction="l",
@@ -17670,6 +18400,7 @@ characters.data={
   unicodeslot=0x092D,
  },
  [0x092E]={
+  adobename="madeva",
   category="lo",
   description="DEVANAGARI LETTER MA",
   direction="l",
@@ -17677,6 +18408,7 @@ characters.data={
   unicodeslot=0x092E,
  },
  [0x092F]={
+  adobename="yadeva",
   category="lo",
   description="DEVANAGARI LETTER YA",
   direction="l",
@@ -17684,6 +18416,7 @@ characters.data={
   unicodeslot=0x092F,
  },
  [0x0930]={
+  adobename="radeva",
   category="lo",
   description="DEVANAGARI LETTER RA",
   direction="l",
@@ -17691,6 +18424,7 @@ characters.data={
   unicodeslot=0x0930,
  },
  [0x0931]={
+  adobename="rradeva",
   category="lo",
   description="DEVANAGARI LETTER RRA",
   direction="l",
@@ -17699,6 +18433,7 @@ characters.data={
   unicodeslot=0x0931,
  },
  [0x0932]={
+  adobename="ladeva",
   category="lo",
   description="DEVANAGARI LETTER LA",
   direction="l",
@@ -17706,6 +18441,7 @@ characters.data={
   unicodeslot=0x0932,
  },
  [0x0933]={
+  adobename="lladeva",
   category="lo",
   description="DEVANAGARI LETTER LLA",
   direction="l",
@@ -17713,6 +18449,7 @@ characters.data={
   unicodeslot=0x0933,
  },
  [0x0934]={
+  adobename="llladeva",
   category="lo",
   description="DEVANAGARI LETTER LLLA",
   direction="l",
@@ -17721,6 +18458,7 @@ characters.data={
   unicodeslot=0x0934,
  },
  [0x0935]={
+  adobename="vadeva",
   category="lo",
   description="DEVANAGARI LETTER VA",
   direction="l",
@@ -17728,6 +18466,7 @@ characters.data={
   unicodeslot=0x0935,
  },
  [0x0936]={
+  adobename="shadeva",
   category="lo",
   description="DEVANAGARI LETTER SHA",
   direction="l",
@@ -17735,6 +18474,7 @@ characters.data={
   unicodeslot=0x0936,
  },
  [0x0937]={
+  adobename="ssadeva",
   category="lo",
   description="DEVANAGARI LETTER SSA",
   direction="l",
@@ -17742,6 +18482,7 @@ characters.data={
   unicodeslot=0x0937,
  },
  [0x0938]={
+  adobename="sadeva",
   category="lo",
   description="DEVANAGARI LETTER SA",
   direction="l",
@@ -17749,6 +18490,7 @@ characters.data={
   unicodeslot=0x0938,
  },
  [0x0939]={
+  adobename="hadeva",
   category="lo",
   description="DEVANAGARI LETTER HA",
   direction="l",
@@ -17756,6 +18498,7 @@ characters.data={
   unicodeslot=0x0939,
  },
  [0x093C]={
+  adobename="nuktadeva",
   category="mn",
   description="DEVANAGARI SIGN NUKTA",
   direction="nsm",
@@ -17763,6 +18506,7 @@ characters.data={
   unicodeslot=0x093C,
  },
  [0x093D]={
+  adobename="avagrahadeva",
   category="lo",
   description="DEVANAGARI SIGN AVAGRAHA",
   direction="l",
@@ -17770,6 +18514,7 @@ characters.data={
   unicodeslot=0x093D,
  },
  [0x093E]={
+  adobename="aavowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN AA",
   direction="l",
@@ -17777,6 +18522,7 @@ characters.data={
   unicodeslot=0x093E,
  },
  [0x093F]={
+  adobename="ivowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN I",
   direction="l",
@@ -17784,6 +18530,7 @@ characters.data={
   unicodeslot=0x093F,
  },
  [0x0940]={
+  adobename="iivowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN II",
   direction="l",
@@ -17791,6 +18538,7 @@ characters.data={
   unicodeslot=0x0940,
  },
  [0x0941]={
+  adobename="uvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN U",
   direction="nsm",
@@ -17798,6 +18546,7 @@ characters.data={
   unicodeslot=0x0941,
  },
  [0x0942]={
+  adobename="uuvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN UU",
   direction="nsm",
@@ -17805,6 +18554,7 @@ characters.data={
   unicodeslot=0x0942,
  },
  [0x0943]={
+  adobename="rvocalicvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN VOCALIC R",
   direction="nsm",
@@ -17812,6 +18562,7 @@ characters.data={
   unicodeslot=0x0943,
  },
  [0x0944]={
+  adobename="rrvocalicvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN VOCALIC RR",
   direction="nsm",
@@ -17819,6 +18570,7 @@ characters.data={
   unicodeslot=0x0944,
  },
  [0x0945]={
+  adobename="ecandravowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN CANDRA E",
   direction="nsm",
@@ -17826,6 +18578,7 @@ characters.data={
   unicodeslot=0x0945,
  },
  [0x0946]={
+  adobename="eshortvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN SHORT E",
   direction="nsm",
@@ -17833,6 +18586,7 @@ characters.data={
   unicodeslot=0x0946,
  },
  [0x0947]={
+  adobename="evowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN E",
   direction="nsm",
@@ -17840,6 +18594,7 @@ characters.data={
   unicodeslot=0x0947,
  },
  [0x0948]={
+  adobename="aivowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN AI",
   direction="nsm",
@@ -17847,6 +18602,7 @@ characters.data={
   unicodeslot=0x0948,
  },
  [0x0949]={
+  adobename="ocandravowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN CANDRA O",
   direction="l",
@@ -17854,6 +18610,7 @@ characters.data={
   unicodeslot=0x0949,
  },
  [0x094A]={
+  adobename="oshortvowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN SHORT O",
   direction="l",
@@ -17861,6 +18618,7 @@ characters.data={
   unicodeslot=0x094A,
  },
  [0x094B]={
+  adobename="ovowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN O",
   direction="l",
@@ -17868,6 +18626,7 @@ characters.data={
   unicodeslot=0x094B,
  },
  [0x094C]={
+  adobename="auvowelsigndeva",
   category="mc",
   description="DEVANAGARI VOWEL SIGN AU",
   direction="l",
@@ -17875,6 +18634,7 @@ characters.data={
   unicodeslot=0x094C,
  },
  [0x094D]={
+  adobename="viramadeva",
   category="mn",
   description="DEVANAGARI SIGN VIRAMA",
   direction="nsm",
@@ -17882,6 +18642,7 @@ characters.data={
   unicodeslot=0x094D,
  },
  [0x0950]={
+  adobename="omdeva",
   category="lo",
   description="DEVANAGARI OM",
   direction="l",
@@ -17889,6 +18650,7 @@ characters.data={
   unicodeslot=0x0950,
  },
  [0x0951]={
+  adobename="udattadeva",
   category="mn",
   description="DEVANAGARI STRESS SIGN UDATTA",
   direction="nsm",
@@ -17896,6 +18658,7 @@ characters.data={
   unicodeslot=0x0951,
  },
  [0x0952]={
+  adobename="anudattadeva",
   category="mn",
   description="DEVANAGARI STRESS SIGN ANUDATTA",
   direction="nsm",
@@ -17903,6 +18666,7 @@ characters.data={
   unicodeslot=0x0952,
  },
  [0x0953]={
+  adobename="gravedeva",
   category="mn",
   description="DEVANAGARI GRAVE ACCENT",
   direction="nsm",
@@ -17910,6 +18674,7 @@ characters.data={
   unicodeslot=0x0953,
  },
  [0x0954]={
+  adobename="acutedeva",
   category="mn",
   description="DEVANAGARI ACUTE ACCENT",
   direction="nsm",
@@ -17917,6 +18682,7 @@ characters.data={
   unicodeslot=0x0954,
  },
  [0x0958]={
+  adobename="qadeva",
   category="lo",
   description="DEVANAGARI LETTER QA",
   direction="l",
@@ -17925,6 +18691,7 @@ characters.data={
   unicodeslot=0x0958,
  },
  [0x0959]={
+  adobename="khhadeva",
   category="lo",
   description="DEVANAGARI LETTER KHHA",
   direction="l",
@@ -17933,6 +18700,7 @@ characters.data={
   unicodeslot=0x0959,
  },
  [0x095A]={
+  adobename="ghhadeva",
   category="lo",
   description="DEVANAGARI LETTER GHHA",
   direction="l",
@@ -17941,6 +18709,7 @@ characters.data={
   unicodeslot=0x095A,
  },
  [0x095B]={
+  adobename="zadeva",
   category="lo",
   description="DEVANAGARI LETTER ZA",
   direction="l",
@@ -17949,6 +18718,7 @@ characters.data={
   unicodeslot=0x095B,
  },
  [0x095C]={
+  adobename="dddhadeva",
   category="lo",
   description="DEVANAGARI LETTER DDDHA",
   direction="l",
@@ -17957,6 +18727,7 @@ characters.data={
   unicodeslot=0x095C,
  },
  [0x095D]={
+  adobename="rhadeva",
   category="lo",
   description="DEVANAGARI LETTER RHA",
   direction="l",
@@ -17965,6 +18736,7 @@ characters.data={
   unicodeslot=0x095D,
  },
  [0x095E]={
+  adobename="fadeva",
   category="lo",
   description="DEVANAGARI LETTER FA",
   direction="l",
@@ -17973,6 +18745,7 @@ characters.data={
   unicodeslot=0x095E,
  },
  [0x095F]={
+  adobename="yyadeva",
   category="lo",
   description="DEVANAGARI LETTER YYA",
   direction="l",
@@ -17981,6 +18754,7 @@ characters.data={
   unicodeslot=0x095F,
  },
  [0x0960]={
+  adobename="rrvocalicdeva",
   category="lo",
   description="DEVANAGARI LETTER VOCALIC RR",
   direction="l",
@@ -17988,6 +18762,7 @@ characters.data={
   unicodeslot=0x0960,
  },
  [0x0961]={
+  adobename="llvocalicdeva",
   category="lo",
   description="DEVANAGARI LETTER VOCALIC LL",
   direction="l",
@@ -17995,6 +18770,7 @@ characters.data={
   unicodeslot=0x0961,
  },
  [0x0962]={
+  adobename="lvocalicvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN VOCALIC L",
   direction="nsm",
@@ -18002,6 +18778,7 @@ characters.data={
   unicodeslot=0x0962,
  },
  [0x0963]={
+  adobename="llvocalicvowelsigndeva",
   category="mn",
   description="DEVANAGARI VOWEL SIGN VOCALIC LL",
   direction="nsm",
@@ -18009,6 +18786,7 @@ characters.data={
   unicodeslot=0x0963,
  },
  [0x0964]={
+  adobename="danda",
   category="po",
   description="DEVANAGARI DANDA",
   direction="l",
@@ -18016,6 +18794,7 @@ characters.data={
   unicodeslot=0x0964,
  },
  [0x0965]={
+  adobename="dbldanda",
   category="po",
   description="DEVANAGARI DOUBLE DANDA",
   direction="l",
@@ -18023,6 +18802,7 @@ characters.data={
   unicodeslot=0x0965,
  },
  [0x0966]={
+  adobename="zerodeva",
   category="nd",
   description="DEVANAGARI DIGIT ZERO",
   direction="l",
@@ -18030,6 +18810,7 @@ characters.data={
   unicodeslot=0x0966,
  },
  [0x0967]={
+  adobename="onedeva",
   category="nd",
   description="DEVANAGARI DIGIT ONE",
   direction="l",
@@ -18037,6 +18818,7 @@ characters.data={
   unicodeslot=0x0967,
  },
  [0x0968]={
+  adobename="twodeva",
   category="nd",
   description="DEVANAGARI DIGIT TWO",
   direction="l",
@@ -18044,6 +18826,7 @@ characters.data={
   unicodeslot=0x0968,
  },
  [0x0969]={
+  adobename="threedeva",
   category="nd",
   description="DEVANAGARI DIGIT THREE",
   direction="l",
@@ -18051,6 +18834,7 @@ characters.data={
   unicodeslot=0x0969,
  },
  [0x096A]={
+  adobename="fourdeva",
   category="nd",
   description="DEVANAGARI DIGIT FOUR",
   direction="l",
@@ -18058,6 +18842,7 @@ characters.data={
   unicodeslot=0x096A,
  },
  [0x096B]={
+  adobename="fivedeva",
   category="nd",
   description="DEVANAGARI DIGIT FIVE",
   direction="l",
@@ -18065,6 +18850,7 @@ characters.data={
   unicodeslot=0x096B,
  },
  [0x096C]={
+  adobename="sixdeva",
   category="nd",
   description="DEVANAGARI DIGIT SIX",
   direction="l",
@@ -18072,6 +18858,7 @@ characters.data={
   unicodeslot=0x096C,
  },
  [0x096D]={
+  adobename="sevendeva",
   category="nd",
   description="DEVANAGARI DIGIT SEVEN",
   direction="l",
@@ -18079,6 +18866,7 @@ characters.data={
   unicodeslot=0x096D,
  },
  [0x096E]={
+  adobename="eightdeva",
   category="nd",
   description="DEVANAGARI DIGIT EIGHT",
   direction="l",
@@ -18086,6 +18874,7 @@ characters.data={
   unicodeslot=0x096E,
  },
  [0x096F]={
+  adobename="ninedeva",
   category="nd",
   description="DEVANAGARI DIGIT NINE",
   direction="l",
@@ -18093,6 +18882,7 @@ characters.data={
   unicodeslot=0x096F,
  },
  [0x0970]={
+  adobename="abbreviationsigndeva",
   category="po",
   description="DEVANAGARI ABBREVIATION SIGN",
   direction="l",
@@ -18135,6 +18925,7 @@ characters.data={
   unicodeslot=0x097F,
  },
  [0x0981]={
+  adobename="candrabindubengali",
   category="mn",
   description="BENGALI SIGN CANDRABINDU",
   direction="nsm",
@@ -18142,6 +18933,7 @@ characters.data={
   unicodeslot=0x0981,
  },
  [0x0982]={
+  adobename="anusvarabengali",
   category="mc",
   description="BENGALI SIGN ANUSVARA",
   direction="l",
@@ -18149,6 +18941,7 @@ characters.data={
   unicodeslot=0x0982,
  },
  [0x0983]={
+  adobename="visargabengali",
   category="mc",
   description="BENGALI SIGN VISARGA",
   direction="l",
@@ -18156,6 +18949,7 @@ characters.data={
   unicodeslot=0x0983,
  },
  [0x0985]={
+  adobename="abengali",
   category="lo",
   description="BENGALI LETTER A",
   direction="l",
@@ -18163,6 +18957,7 @@ characters.data={
   unicodeslot=0x0985,
  },
  [0x0986]={
+  adobename="aabengali",
   category="lo",
   description="BENGALI LETTER AA",
   direction="l",
@@ -18170,6 +18965,7 @@ characters.data={
   unicodeslot=0x0986,
  },
  [0x0987]={
+  adobename="ibengali",
   category="lo",
   description="BENGALI LETTER I",
   direction="l",
@@ -18177,6 +18973,7 @@ characters.data={
   unicodeslot=0x0987,
  },
  [0x0988]={
+  adobename="iibengali",
   category="lo",
   description="BENGALI LETTER II",
   direction="l",
@@ -18184,6 +18981,7 @@ characters.data={
   unicodeslot=0x0988,
  },
  [0x0989]={
+  adobename="ubengali",
   category="lo",
   description="BENGALI LETTER U",
   direction="l",
@@ -18191,6 +18989,7 @@ characters.data={
   unicodeslot=0x0989,
  },
  [0x098A]={
+  adobename="uubengali",
   category="lo",
   description="BENGALI LETTER UU",
   direction="l",
@@ -18198,6 +18997,7 @@ characters.data={
   unicodeslot=0x098A,
  },
  [0x098B]={
+  adobename="rvocalicbengali",
   category="lo",
   description="BENGALI LETTER VOCALIC R",
   direction="l",
@@ -18205,6 +19005,7 @@ characters.data={
   unicodeslot=0x098B,
  },
  [0x098C]={
+  adobename="lvocalicbengali",
   category="lo",
   description="BENGALI LETTER VOCALIC L",
   direction="l",
@@ -18212,6 +19013,7 @@ characters.data={
   unicodeslot=0x098C,
  },
  [0x098F]={
+  adobename="ebengali",
   category="lo",
   description="BENGALI LETTER E",
   direction="l",
@@ -18219,6 +19021,7 @@ characters.data={
   unicodeslot=0x098F,
  },
  [0x0990]={
+  adobename="aibengali",
   category="lo",
   description="BENGALI LETTER AI",
   direction="l",
@@ -18226,6 +19029,7 @@ characters.data={
   unicodeslot=0x0990,
  },
  [0x0993]={
+  adobename="obengali",
   category="lo",
   description="BENGALI LETTER O",
   direction="l",
@@ -18233,6 +19037,7 @@ characters.data={
   unicodeslot=0x0993,
  },
  [0x0994]={
+  adobename="aubengali",
   category="lo",
   description="BENGALI LETTER AU",
   direction="l",
@@ -18240,6 +19045,7 @@ characters.data={
   unicodeslot=0x0994,
  },
  [0x0995]={
+  adobename="kabengali",
   category="lo",
   description="BENGALI LETTER KA",
   direction="l",
@@ -18247,6 +19053,7 @@ characters.data={
   unicodeslot=0x0995,
  },
  [0x0996]={
+  adobename="khabengali",
   category="lo",
   description="BENGALI LETTER KHA",
   direction="l",
@@ -18254,6 +19061,7 @@ characters.data={
   unicodeslot=0x0996,
  },
  [0x0997]={
+  adobename="gabengali",
   category="lo",
   description="BENGALI LETTER GA",
   direction="l",
@@ -18261,6 +19069,7 @@ characters.data={
   unicodeslot=0x0997,
  },
  [0x0998]={
+  adobename="ghabengali",
   category="lo",
   description="BENGALI LETTER GHA",
   direction="l",
@@ -18268,6 +19077,7 @@ characters.data={
   unicodeslot=0x0998,
  },
  [0x0999]={
+  adobename="ngabengali",
   category="lo",
   description="BENGALI LETTER NGA",
   direction="l",
@@ -18275,6 +19085,7 @@ characters.data={
   unicodeslot=0x0999,
  },
  [0x099A]={
+  adobename="cabengali",
   category="lo",
   description="BENGALI LETTER CA",
   direction="l",
@@ -18282,6 +19093,7 @@ characters.data={
   unicodeslot=0x099A,
  },
  [0x099B]={
+  adobename="chabengali",
   category="lo",
   description="BENGALI LETTER CHA",
   direction="l",
@@ -18289,6 +19101,7 @@ characters.data={
   unicodeslot=0x099B,
  },
  [0x099C]={
+  adobename="jabengali",
   category="lo",
   description="BENGALI LETTER JA",
   direction="l",
@@ -18296,6 +19109,7 @@ characters.data={
   unicodeslot=0x099C,
  },
  [0x099D]={
+  adobename="jhabengali",
   category="lo",
   description="BENGALI LETTER JHA",
   direction="l",
@@ -18303,6 +19117,7 @@ characters.data={
   unicodeslot=0x099D,
  },
  [0x099E]={
+  adobename="nyabengali",
   category="lo",
   description="BENGALI LETTER NYA",
   direction="l",
@@ -18310,6 +19125,7 @@ characters.data={
   unicodeslot=0x099E,
  },
  [0x099F]={
+  adobename="ttabengali",
   category="lo",
   description="BENGALI LETTER TTA",
   direction="l",
@@ -18317,6 +19133,7 @@ characters.data={
   unicodeslot=0x099F,
  },
  [0x09A0]={
+  adobename="tthabengali",
   category="lo",
   description="BENGALI LETTER TTHA",
   direction="l",
@@ -18324,6 +19141,7 @@ characters.data={
   unicodeslot=0x09A0,
  },
  [0x09A1]={
+  adobename="ddabengali",
   category="lo",
   description="BENGALI LETTER DDA",
   direction="l",
@@ -18331,6 +19149,7 @@ characters.data={
   unicodeslot=0x09A1,
  },
  [0x09A2]={
+  adobename="ddhabengali",
   category="lo",
   description="BENGALI LETTER DDHA",
   direction="l",
@@ -18338,6 +19157,7 @@ characters.data={
   unicodeslot=0x09A2,
  },
  [0x09A3]={
+  adobename="nnabengali",
   category="lo",
   description="BENGALI LETTER NNA",
   direction="l",
@@ -18345,6 +19165,7 @@ characters.data={
   unicodeslot=0x09A3,
  },
  [0x09A4]={
+  adobename="tabengali",
   category="lo",
   description="BENGALI LETTER TA",
   direction="l",
@@ -18352,6 +19173,7 @@ characters.data={
   unicodeslot=0x09A4,
  },
  [0x09A5]={
+  adobename="thabengali",
   category="lo",
   description="BENGALI LETTER THA",
   direction="l",
@@ -18359,6 +19181,7 @@ characters.data={
   unicodeslot=0x09A5,
  },
  [0x09A6]={
+  adobename="dabengali",
   category="lo",
   description="BENGALI LETTER DA",
   direction="l",
@@ -18366,6 +19189,7 @@ characters.data={
   unicodeslot=0x09A6,
  },
  [0x09A7]={
+  adobename="dhabengali",
   category="lo",
   description="BENGALI LETTER DHA",
   direction="l",
@@ -18373,6 +19197,7 @@ characters.data={
   unicodeslot=0x09A7,
  },
  [0x09A8]={
+  adobename="nabengali",
   category="lo",
   description="BENGALI LETTER NA",
   direction="l",
@@ -18380,6 +19205,7 @@ characters.data={
   unicodeslot=0x09A8,
  },
  [0x09AA]={
+  adobename="pabengali",
   category="lo",
   description="BENGALI LETTER PA",
   direction="l",
@@ -18387,6 +19213,7 @@ characters.data={
   unicodeslot=0x09AA,
  },
  [0x09AB]={
+  adobename="phabengali",
   category="lo",
   description="BENGALI LETTER PHA",
   direction="l",
@@ -18394,6 +19221,7 @@ characters.data={
   unicodeslot=0x09AB,
  },
  [0x09AC]={
+  adobename="babengali",
   category="lo",
   description="BENGALI LETTER BA",
   direction="l",
@@ -18401,6 +19229,7 @@ characters.data={
   unicodeslot=0x09AC,
  },
  [0x09AD]={
+  adobename="bhabengali",
   category="lo",
   description="BENGALI LETTER BHA",
   direction="l",
@@ -18408,6 +19237,7 @@ characters.data={
   unicodeslot=0x09AD,
  },
  [0x09AE]={
+  adobename="mabengali",
   category="lo",
   description="BENGALI LETTER MA",
   direction="l",
@@ -18415,6 +19245,7 @@ characters.data={
   unicodeslot=0x09AE,
  },
  [0x09AF]={
+  adobename="yabengali",
   category="lo",
   description="BENGALI LETTER YA",
   direction="l",
@@ -18422,6 +19253,7 @@ characters.data={
   unicodeslot=0x09AF,
  },
  [0x09B0]={
+  adobename="rabengali",
   category="lo",
   description="BENGALI LETTER RA",
   direction="l",
@@ -18429,6 +19261,7 @@ characters.data={
   unicodeslot=0x09B0,
  },
  [0x09B2]={
+  adobename="labengali",
   category="lo",
   description="BENGALI LETTER LA",
   direction="l",
@@ -18436,6 +19269,7 @@ characters.data={
   unicodeslot=0x09B2,
  },
  [0x09B6]={
+  adobename="shabengali",
   category="lo",
   description="BENGALI LETTER SHA",
   direction="l",
@@ -18443,6 +19277,7 @@ characters.data={
   unicodeslot=0x09B6,
  },
  [0x09B7]={
+  adobename="ssabengali",
   category="lo",
   description="BENGALI LETTER SSA",
   direction="l",
@@ -18450,6 +19285,7 @@ characters.data={
   unicodeslot=0x09B7,
  },
  [0x09B8]={
+  adobename="sabengali",
   category="lo",
   description="BENGALI LETTER SA",
   direction="l",
@@ -18457,6 +19293,7 @@ characters.data={
   unicodeslot=0x09B8,
  },
  [0x09B9]={
+  adobename="habengali",
   category="lo",
   description="BENGALI LETTER HA",
   direction="l",
@@ -18464,6 +19301,7 @@ characters.data={
   unicodeslot=0x09B9,
  },
  [0x09BC]={
+  adobename="nuktabengali",
   category="mn",
   description="BENGALI SIGN NUKTA",
   direction="nsm",
@@ -18478,6 +19316,7 @@ characters.data={
   unicodeslot=0x09BD,
  },
  [0x09BE]={
+  adobename="aavowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN AA",
   direction="l",
@@ -18485,6 +19324,7 @@ characters.data={
   unicodeslot=0x09BE,
  },
  [0x09BF]={
+  adobename="ivowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN I",
   direction="l",
@@ -18492,6 +19332,7 @@ characters.data={
   unicodeslot=0x09BF,
  },
  [0x09C0]={
+  adobename="iivowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN II",
   direction="l",
@@ -18499,6 +19340,7 @@ characters.data={
   unicodeslot=0x09C0,
  },
  [0x09C1]={
+  adobename="uvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN U",
   direction="nsm",
@@ -18506,6 +19348,7 @@ characters.data={
   unicodeslot=0x09C1,
  },
  [0x09C2]={
+  adobename="uuvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN UU",
   direction="nsm",
@@ -18513,6 +19356,7 @@ characters.data={
   unicodeslot=0x09C2,
  },
  [0x09C3]={
+  adobename="rvocalicvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN VOCALIC R",
   direction="nsm",
@@ -18520,6 +19364,7 @@ characters.data={
   unicodeslot=0x09C3,
  },
  [0x09C4]={
+  adobename="rrvocalicvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN VOCALIC RR",
   direction="nsm",
@@ -18527,6 +19372,7 @@ characters.data={
   unicodeslot=0x09C4,
  },
  [0x09C7]={
+  adobename="evowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN E",
   direction="l",
@@ -18534,6 +19380,7 @@ characters.data={
   unicodeslot=0x09C7,
  },
  [0x09C8]={
+  adobename="aivowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN AI",
   direction="l",
@@ -18541,6 +19388,7 @@ characters.data={
   unicodeslot=0x09C8,
  },
  [0x09CB]={
+  adobename="ovowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN O",
   direction="l",
@@ -18549,6 +19397,7 @@ characters.data={
   unicodeslot=0x09CB,
  },
  [0x09CC]={
+  adobename="auvowelsignbengali",
   category="mc",
   description="BENGALI VOWEL SIGN AU",
   direction="l",
@@ -18557,6 +19406,7 @@ characters.data={
   unicodeslot=0x09CC,
  },
  [0x09CD]={
+  adobename="viramabengali",
   category="mn",
   description="BENGALI SIGN VIRAMA",
   direction="nsm",
@@ -18571,6 +19421,7 @@ characters.data={
   unicodeslot=0x09CE,
  },
  [0x09D7]={
+  adobename="aulengthmarkbengali",
   category="mc",
   description="BENGALI AU LENGTH MARK",
   direction="l",
@@ -18578,6 +19429,7 @@ characters.data={
   unicodeslot=0x09D7,
  },
  [0x09DC]={
+  adobename="rrabengali",
   category="lo",
   description="BENGALI LETTER RRA",
   direction="l",
@@ -18586,6 +19438,7 @@ characters.data={
   unicodeslot=0x09DC,
  },
  [0x09DD]={
+  adobename="rhabengali",
   category="lo",
   description="BENGALI LETTER RHA",
   direction="l",
@@ -18594,6 +19447,7 @@ characters.data={
   unicodeslot=0x09DD,
  },
  [0x09DF]={
+  adobename="yyabengali",
   category="lo",
   description="BENGALI LETTER YYA",
   direction="l",
@@ -18602,6 +19456,7 @@ characters.data={
   unicodeslot=0x09DF,
  },
  [0x09E0]={
+  adobename="rrvocalicbengali",
   category="lo",
   description="BENGALI LETTER VOCALIC RR",
   direction="l",
@@ -18609,6 +19464,7 @@ characters.data={
   unicodeslot=0x09E0,
  },
  [0x09E1]={
+  adobename="llvocalicbengali",
   category="lo",
   description="BENGALI LETTER VOCALIC LL",
   direction="l",
@@ -18616,6 +19472,7 @@ characters.data={
   unicodeslot=0x09E1,
  },
  [0x09E2]={
+  adobename="lvocalicvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN VOCALIC L",
   direction="nsm",
@@ -18623,6 +19480,7 @@ characters.data={
   unicodeslot=0x09E2,
  },
  [0x09E3]={
+  adobename="llvocalicvowelsignbengali",
   category="mn",
   description="BENGALI VOWEL SIGN VOCALIC LL",
   direction="nsm",
@@ -18630,6 +19488,7 @@ characters.data={
   unicodeslot=0x09E3,
  },
  [0x09E6]={
+  adobename="zerobengali",
   category="nd",
   description="BENGALI DIGIT ZERO",
   direction="l",
@@ -18637,6 +19496,7 @@ characters.data={
   unicodeslot=0x09E6,
  },
  [0x09E7]={
+  adobename="onebengali",
   category="nd",
   description="BENGALI DIGIT ONE",
   direction="l",
@@ -18644,6 +19504,7 @@ characters.data={
   unicodeslot=0x09E7,
  },
  [0x09E8]={
+  adobename="twobengali",
   category="nd",
   description="BENGALI DIGIT TWO",
   direction="l",
@@ -18651,6 +19512,7 @@ characters.data={
   unicodeslot=0x09E8,
  },
  [0x09E9]={
+  adobename="threebengali",
   category="nd",
   description="BENGALI DIGIT THREE",
   direction="l",
@@ -18658,6 +19520,7 @@ characters.data={
   unicodeslot=0x09E9,
  },
  [0x09EA]={
+  adobename="fourbengali",
   category="nd",
   description="BENGALI DIGIT FOUR",
   direction="l",
@@ -18665,6 +19528,7 @@ characters.data={
   unicodeslot=0x09EA,
  },
  [0x09EB]={
+  adobename="fivebengali",
   category="nd",
   description="BENGALI DIGIT FIVE",
   direction="l",
@@ -18672,6 +19536,7 @@ characters.data={
   unicodeslot=0x09EB,
  },
  [0x09EC]={
+  adobename="sixbengali",
   category="nd",
   description="BENGALI DIGIT SIX",
   direction="l",
@@ -18679,6 +19544,7 @@ characters.data={
   unicodeslot=0x09EC,
  },
  [0x09ED]={
+  adobename="sevenbengali",
   category="nd",
   description="BENGALI DIGIT SEVEN",
   direction="l",
@@ -18686,6 +19552,7 @@ characters.data={
   unicodeslot=0x09ED,
  },
  [0x09EE]={
+  adobename="eightbengali",
   category="nd",
   description="BENGALI DIGIT EIGHT",
   direction="l",
@@ -18693,6 +19560,7 @@ characters.data={
   unicodeslot=0x09EE,
  },
  [0x09EF]={
+  adobename="ninebengali",
   category="nd",
   description="BENGALI DIGIT NINE",
   direction="l",
@@ -18700,6 +19568,7 @@ characters.data={
   unicodeslot=0x09EF,
  },
  [0x09F0]={
+  adobename="ramiddlediagonalbengali",
   category="lo",
   description="BENGALI LETTER RA WITH MIDDLE DIAGONAL",
   direction="l",
@@ -18708,6 +19577,7 @@ characters.data={
   unicodeslot=0x09F0,
  },
  [0x09F1]={
+  adobename="ralowerdiagonalbengali",
   category="lo",
   description="BENGALI LETTER RA WITH LOWER DIAGONAL",
   direction="l",
@@ -18716,6 +19586,7 @@ characters.data={
   unicodeslot=0x09F1,
  },
  [0x09F2]={
+  adobename="rupeemarkbengali",
   category="sc",
   description="BENGALI RUPEE MARK",
   direction="et",
@@ -18723,6 +19594,7 @@ characters.data={
   unicodeslot=0x09F2,
  },
  [0x09F3]={
+  adobename="rupeesignbengali",
   category="sc",
   description="BENGALI RUPEE SIGN",
   direction="et",
@@ -18730,6 +19602,7 @@ characters.data={
   unicodeslot=0x09F3,
  },
  [0x09F4]={
+  adobename="onenumeratorbengali",
   category="no",
   description="BENGALI CURRENCY NUMERATOR ONE",
   direction="l",
@@ -18737,6 +19610,7 @@ characters.data={
   unicodeslot=0x09F4,
  },
  [0x09F5]={
+  adobename="twonumeratorbengali",
   category="no",
   description="BENGALI CURRENCY NUMERATOR TWO",
   direction="l",
@@ -18744,6 +19618,7 @@ characters.data={
   unicodeslot=0x09F5,
  },
  [0x09F6]={
+  adobename="threenumeratorbengali",
   category="no",
   description="BENGALI CURRENCY NUMERATOR THREE",
   direction="l",
@@ -18751,6 +19626,7 @@ characters.data={
   unicodeslot=0x09F6,
  },
  [0x09F7]={
+  adobename="fournumeratorbengali",
   category="no",
   description="BENGALI CURRENCY NUMERATOR FOUR",
   direction="l",
@@ -18758,6 +19634,7 @@ characters.data={
   unicodeslot=0x09F7,
  },
  [0x09F8]={
+  adobename="denominatorminusonenumeratorbengali",
   category="no",
   description="BENGALI CURRENCY NUMERATOR ONE LESS THAN THE DENOMINATOR",
   direction="l",
@@ -18765,6 +19642,7 @@ characters.data={
   unicodeslot=0x09F8,
  },
  [0x09F9]={
+  adobename="sixteencurrencydenominatorbengali",
   category="no",
   description="BENGALI CURRENCY DENOMINATOR SIXTEEN",
   direction="l",
@@ -18772,6 +19650,7 @@ characters.data={
   unicodeslot=0x09F9,
  },
  [0x09FA]={
+  adobename="issharbengali",
   category="so",
   description="BENGALI ISSHAR",
   direction="l",
@@ -18786,6 +19665,7 @@ characters.data={
   unicodeslot=0x0A01,
  },
  [0x0A02]={
+  adobename="bindigurmukhi",
   category="mn",
   description="GURMUKHI SIGN BINDI",
   direction="nsm",
@@ -18800,6 +19680,7 @@ characters.data={
   unicodeslot=0x0A03,
  },
  [0x0A05]={
+  adobename="agurmukhi",
   category="lo",
   description="GURMUKHI LETTER A",
   direction="l",
@@ -18807,6 +19688,7 @@ characters.data={
   unicodeslot=0x0A05,
  },
  [0x0A06]={
+  adobename="aagurmukhi",
   category="lo",
   description="GURMUKHI LETTER AA",
   direction="l",
@@ -18814,6 +19696,7 @@ characters.data={
   unicodeslot=0x0A06,
  },
  [0x0A07]={
+  adobename="igurmukhi",
   category="lo",
   description="GURMUKHI LETTER I",
   direction="l",
@@ -18821,6 +19704,7 @@ characters.data={
   unicodeslot=0x0A07,
  },
  [0x0A08]={
+  adobename="iigurmukhi",
   category="lo",
   description="GURMUKHI LETTER II",
   direction="l",
@@ -18828,6 +19712,7 @@ characters.data={
   unicodeslot=0x0A08,
  },
  [0x0A09]={
+  adobename="ugurmukhi",
   category="lo",
   description="GURMUKHI LETTER U",
   direction="l",
@@ -18835,6 +19720,7 @@ characters.data={
   unicodeslot=0x0A09,
  },
  [0x0A0A]={
+  adobename="uugurmukhi",
   category="lo",
   description="GURMUKHI LETTER UU",
   direction="l",
@@ -18842,6 +19728,7 @@ characters.data={
   unicodeslot=0x0A0A,
  },
  [0x0A0F]={
+  adobename="eegurmukhi",
   category="lo",
   description="GURMUKHI LETTER EE",
   direction="l",
@@ -18849,6 +19736,7 @@ characters.data={
   unicodeslot=0x0A0F,
  },
  [0x0A10]={
+  adobename="aigurmukhi",
   category="lo",
   description="GURMUKHI LETTER AI",
   direction="l",
@@ -18856,6 +19744,7 @@ characters.data={
   unicodeslot=0x0A10,
  },
  [0x0A13]={
+  adobename="oogurmukhi",
   category="lo",
   description="GURMUKHI LETTER OO",
   direction="l",
@@ -18863,6 +19752,7 @@ characters.data={
   unicodeslot=0x0A13,
  },
  [0x0A14]={
+  adobename="augurmukhi",
   category="lo",
   description="GURMUKHI LETTER AU",
   direction="l",
@@ -18870,6 +19760,7 @@ characters.data={
   unicodeslot=0x0A14,
  },
  [0x0A15]={
+  adobename="kagurmukhi",
   category="lo",
   description="GURMUKHI LETTER KA",
   direction="l",
@@ -18877,6 +19768,7 @@ characters.data={
   unicodeslot=0x0A15,
  },
  [0x0A16]={
+  adobename="khagurmukhi",
   category="lo",
   description="GURMUKHI LETTER KHA",
   direction="l",
@@ -18884,6 +19776,7 @@ characters.data={
   unicodeslot=0x0A16,
  },
  [0x0A17]={
+  adobename="gagurmukhi",
   category="lo",
   description="GURMUKHI LETTER GA",
   direction="l",
@@ -18891,6 +19784,7 @@ characters.data={
   unicodeslot=0x0A17,
  },
  [0x0A18]={
+  adobename="ghagurmukhi",
   category="lo",
   description="GURMUKHI LETTER GHA",
   direction="l",
@@ -18898,6 +19792,7 @@ characters.data={
   unicodeslot=0x0A18,
  },
  [0x0A19]={
+  adobename="ngagurmukhi",
   category="lo",
   description="GURMUKHI LETTER NGA",
   direction="l",
@@ -18905,6 +19800,7 @@ characters.data={
   unicodeslot=0x0A19,
  },
  [0x0A1A]={
+  adobename="cagurmukhi",
   category="lo",
   description="GURMUKHI LETTER CA",
   direction="l",
@@ -18912,6 +19808,7 @@ characters.data={
   unicodeslot=0x0A1A,
  },
  [0x0A1B]={
+  adobename="chagurmukhi",
   category="lo",
   description="GURMUKHI LETTER CHA",
   direction="l",
@@ -18919,6 +19816,7 @@ characters.data={
   unicodeslot=0x0A1B,
  },
  [0x0A1C]={
+  adobename="jagurmukhi",
   category="lo",
   description="GURMUKHI LETTER JA",
   direction="l",
@@ -18926,6 +19824,7 @@ characters.data={
   unicodeslot=0x0A1C,
  },
  [0x0A1D]={
+  adobename="jhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER JHA",
   direction="l",
@@ -18933,6 +19832,7 @@ characters.data={
   unicodeslot=0x0A1D,
  },
  [0x0A1E]={
+  adobename="nyagurmukhi",
   category="lo",
   description="GURMUKHI LETTER NYA",
   direction="l",
@@ -18940,6 +19840,7 @@ characters.data={
   unicodeslot=0x0A1E,
  },
  [0x0A1F]={
+  adobename="ttagurmukhi",
   category="lo",
   description="GURMUKHI LETTER TTA",
   direction="l",
@@ -18947,6 +19848,7 @@ characters.data={
   unicodeslot=0x0A1F,
  },
  [0x0A20]={
+  adobename="tthagurmukhi",
   category="lo",
   description="GURMUKHI LETTER TTHA",
   direction="l",
@@ -18954,6 +19856,7 @@ characters.data={
   unicodeslot=0x0A20,
  },
  [0x0A21]={
+  adobename="ddagurmukhi",
   category="lo",
   description="GURMUKHI LETTER DDA",
   direction="l",
@@ -18961,6 +19864,7 @@ characters.data={
   unicodeslot=0x0A21,
  },
  [0x0A22]={
+  adobename="ddhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER DDHA",
   direction="l",
@@ -18968,6 +19872,7 @@ characters.data={
   unicodeslot=0x0A22,
  },
  [0x0A23]={
+  adobename="nnagurmukhi",
   category="lo",
   description="GURMUKHI LETTER NNA",
   direction="l",
@@ -18975,6 +19880,7 @@ characters.data={
   unicodeslot=0x0A23,
  },
  [0x0A24]={
+  adobename="tagurmukhi",
   category="lo",
   description="GURMUKHI LETTER TA",
   direction="l",
@@ -18982,6 +19888,7 @@ characters.data={
   unicodeslot=0x0A24,
  },
  [0x0A25]={
+  adobename="thagurmukhi",
   category="lo",
   description="GURMUKHI LETTER THA",
   direction="l",
@@ -18989,6 +19896,7 @@ characters.data={
   unicodeslot=0x0A25,
  },
  [0x0A26]={
+  adobename="dagurmukhi",
   category="lo",
   description="GURMUKHI LETTER DA",
   direction="l",
@@ -18996,6 +19904,7 @@ characters.data={
   unicodeslot=0x0A26,
  },
  [0x0A27]={
+  adobename="dhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER DHA",
   direction="l",
@@ -19003,6 +19912,7 @@ characters.data={
   unicodeslot=0x0A27,
  },
  [0x0A28]={
+  adobename="nagurmukhi",
   category="lo",
   description="GURMUKHI LETTER NA",
   direction="l",
@@ -19010,6 +19920,7 @@ characters.data={
   unicodeslot=0x0A28,
  },
  [0x0A2A]={
+  adobename="pagurmukhi",
   category="lo",
   description="GURMUKHI LETTER PA",
   direction="l",
@@ -19017,6 +19928,7 @@ characters.data={
   unicodeslot=0x0A2A,
  },
  [0x0A2B]={
+  adobename="phagurmukhi",
   category="lo",
   description="GURMUKHI LETTER PHA",
   direction="l",
@@ -19024,6 +19936,7 @@ characters.data={
   unicodeslot=0x0A2B,
  },
  [0x0A2C]={
+  adobename="bagurmukhi",
   category="lo",
   description="GURMUKHI LETTER BA",
   direction="l",
@@ -19031,6 +19944,7 @@ characters.data={
   unicodeslot=0x0A2C,
  },
  [0x0A2D]={
+  adobename="bhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER BHA",
   direction="l",
@@ -19038,6 +19952,7 @@ characters.data={
   unicodeslot=0x0A2D,
  },
  [0x0A2E]={
+  adobename="magurmukhi",
   category="lo",
   description="GURMUKHI LETTER MA",
   direction="l",
@@ -19045,6 +19960,7 @@ characters.data={
   unicodeslot=0x0A2E,
  },
  [0x0A2F]={
+  adobename="yagurmukhi",
   category="lo",
   description="GURMUKHI LETTER YA",
   direction="l",
@@ -19052,6 +19968,7 @@ characters.data={
   unicodeslot=0x0A2F,
  },
  [0x0A30]={
+  adobename="ragurmukhi",
   category="lo",
   description="GURMUKHI LETTER RA",
   direction="l",
@@ -19059,6 +19976,7 @@ characters.data={
   unicodeslot=0x0A30,
  },
  [0x0A32]={
+  adobename="lagurmukhi",
   category="lo",
   description="GURMUKHI LETTER LA",
   direction="l",
@@ -19074,6 +19992,7 @@ characters.data={
   unicodeslot=0x0A33,
  },
  [0x0A35]={
+  adobename="vagurmukhi",
   category="lo",
   description="GURMUKHI LETTER VA",
   direction="l",
@@ -19081,6 +20000,7 @@ characters.data={
   unicodeslot=0x0A35,
  },
  [0x0A36]={
+  adobename="shagurmukhi",
   category="lo",
   description="GURMUKHI LETTER SHA",
   direction="l",
@@ -19089,6 +20009,7 @@ characters.data={
   unicodeslot=0x0A36,
  },
  [0x0A38]={
+  adobename="sagurmukhi",
   category="lo",
   description="GURMUKHI LETTER SA",
   direction="l",
@@ -19096,6 +20017,7 @@ characters.data={
   unicodeslot=0x0A38,
  },
  [0x0A39]={
+  adobename="hagurmukhi",
   category="lo",
   description="GURMUKHI LETTER HA",
   direction="l",
@@ -19103,6 +20025,7 @@ characters.data={
   unicodeslot=0x0A39,
  },
  [0x0A3C]={
+  adobename="nuktagurmukhi",
   category="mn",
   description="GURMUKHI SIGN NUKTA",
   direction="nsm",
@@ -19110,6 +20033,7 @@ characters.data={
   unicodeslot=0x0A3C,
  },
  [0x0A3E]={
+  adobename="aamatragurmukhi",
   category="mc",
   description="GURMUKHI VOWEL SIGN AA",
   direction="l",
@@ -19117,6 +20041,7 @@ characters.data={
   unicodeslot=0x0A3E,
  },
  [0x0A3F]={
+  adobename="imatragurmukhi",
   category="mc",
   description="GURMUKHI VOWEL SIGN I",
   direction="l",
@@ -19124,6 +20049,7 @@ characters.data={
   unicodeslot=0x0A3F,
  },
  [0x0A40]={
+  adobename="iimatragurmukhi",
   category="mc",
   description="GURMUKHI VOWEL SIGN II",
   direction="l",
@@ -19131,6 +20057,7 @@ characters.data={
   unicodeslot=0x0A40,
  },
  [0x0A41]={
+  adobename="umatragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN U",
   direction="nsm",
@@ -19138,6 +20065,7 @@ characters.data={
   unicodeslot=0x0A41,
  },
  [0x0A42]={
+  adobename="uumatragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN UU",
   direction="nsm",
@@ -19145,6 +20073,7 @@ characters.data={
   unicodeslot=0x0A42,
  },
  [0x0A47]={
+  adobename="eematragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN EE",
   direction="nsm",
@@ -19152,6 +20081,7 @@ characters.data={
   unicodeslot=0x0A47,
  },
  [0x0A48]={
+  adobename="aimatragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN AI",
   direction="nsm",
@@ -19159,6 +20089,7 @@ characters.data={
   unicodeslot=0x0A48,
  },
  [0x0A4B]={
+  adobename="oomatragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN OO",
   direction="nsm",
@@ -19166,6 +20097,7 @@ characters.data={
   unicodeslot=0x0A4B,
  },
  [0x0A4C]={
+  adobename="aumatragurmukhi",
   category="mn",
   description="GURMUKHI VOWEL SIGN AU",
   direction="nsm",
@@ -19173,6 +20105,7 @@ characters.data={
   unicodeslot=0x0A4C,
  },
  [0x0A4D]={
+  adobename="halantgurmukhi",
   category="mn",
   description="GURMUKHI SIGN VIRAMA",
   direction="nsm",
@@ -19180,6 +20113,7 @@ characters.data={
   unicodeslot=0x0A4D,
  },
  [0x0A59]={
+  adobename="khhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER KHHA",
   direction="l",
@@ -19188,6 +20122,7 @@ characters.data={
   unicodeslot=0x0A59,
  },
  [0x0A5A]={
+  adobename="ghhagurmukhi",
   category="lo",
   description="GURMUKHI LETTER GHHA",
   direction="l",
@@ -19196,6 +20131,7 @@ characters.data={
   unicodeslot=0x0A5A,
  },
  [0x0A5B]={
+  adobename="zagurmukhi",
   category="lo",
   description="GURMUKHI LETTER ZA",
   direction="l",
@@ -19204,6 +20140,7 @@ characters.data={
   unicodeslot=0x0A5B,
  },
  [0x0A5C]={
+  adobename="rragurmukhi",
   category="lo",
   description="GURMUKHI LETTER RRA",
   direction="l",
@@ -19211,6 +20148,7 @@ characters.data={
   unicodeslot=0x0A5C,
  },
  [0x0A5E]={
+  adobename="fagurmukhi",
   category="lo",
   description="GURMUKHI LETTER FA",
   direction="l",
@@ -19219,6 +20157,7 @@ characters.data={
   unicodeslot=0x0A5E,
  },
  [0x0A66]={
+  adobename="zerogurmukhi",
   category="nd",
   description="GURMUKHI DIGIT ZERO",
   direction="l",
@@ -19226,6 +20165,7 @@ characters.data={
   unicodeslot=0x0A66,
  },
  [0x0A67]={
+  adobename="onegurmukhi",
   category="nd",
   description="GURMUKHI DIGIT ONE",
   direction="l",
@@ -19233,6 +20173,7 @@ characters.data={
   unicodeslot=0x0A67,
  },
  [0x0A68]={
+  adobename="twogurmukhi",
   category="nd",
   description="GURMUKHI DIGIT TWO",
   direction="l",
@@ -19240,6 +20181,7 @@ characters.data={
   unicodeslot=0x0A68,
  },
  [0x0A69]={
+  adobename="threegurmukhi",
   category="nd",
   description="GURMUKHI DIGIT THREE",
   direction="l",
@@ -19247,6 +20189,7 @@ characters.data={
   unicodeslot=0x0A69,
  },
  [0x0A6A]={
+  adobename="fourgurmukhi",
   category="nd",
   description="GURMUKHI DIGIT FOUR",
   direction="l",
@@ -19254,6 +20197,7 @@ characters.data={
   unicodeslot=0x0A6A,
  },
  [0x0A6B]={
+  adobename="fivegurmukhi",
   category="nd",
   description="GURMUKHI DIGIT FIVE",
   direction="l",
@@ -19261,6 +20205,7 @@ characters.data={
   unicodeslot=0x0A6B,
  },
  [0x0A6C]={
+  adobename="sixgurmukhi",
   category="nd",
   description="GURMUKHI DIGIT SIX",
   direction="l",
@@ -19268,6 +20213,7 @@ characters.data={
   unicodeslot=0x0A6C,
  },
  [0x0A6D]={
+  adobename="sevengurmukhi",
   category="nd",
   description="GURMUKHI DIGIT SEVEN",
   direction="l",
@@ -19275,6 +20221,7 @@ characters.data={
   unicodeslot=0x0A6D,
  },
  [0x0A6E]={
+  adobename="eightgurmukhi",
   category="nd",
   description="GURMUKHI DIGIT EIGHT",
   direction="l",
@@ -19282,6 +20229,7 @@ characters.data={
   unicodeslot=0x0A6E,
  },
  [0x0A6F]={
+  adobename="ninegurmukhi",
   category="nd",
   description="GURMUKHI DIGIT NINE",
   direction="l",
@@ -19289,6 +20237,7 @@ characters.data={
   unicodeslot=0x0A6F,
  },
  [0x0A70]={
+  adobename="tippigurmukhi",
   category="mn",
   description="GURMUKHI TIPPI",
   direction="nsm",
@@ -19296,6 +20245,7 @@ characters.data={
   unicodeslot=0x0A70,
  },
  [0x0A71]={
+  adobename="addakgurmukhi",
   category="mn",
   description="GURMUKHI ADDAK",
   direction="nsm",
@@ -19303,6 +20253,7 @@ characters.data={
   unicodeslot=0x0A71,
  },
  [0x0A72]={
+  adobename="irigurmukhi",
   category="lo",
   description="GURMUKHI IRI",
   direction="l",
@@ -19310,6 +20261,7 @@ characters.data={
   unicodeslot=0x0A72,
  },
  [0x0A73]={
+  adobename="uragurmukhi",
   category="lo",
   description="GURMUKHI URA",
   direction="l",
@@ -19317,6 +20269,7 @@ characters.data={
   unicodeslot=0x0A73,
  },
  [0x0A74]={
+  adobename="ekonkargurmukhi",
   category="lo",
   description="GURMUKHI EK ONKAR",
   direction="l",
@@ -19324,6 +20277,7 @@ characters.data={
   unicodeslot=0x0A74,
  },
  [0x0A81]={
+  adobename="candrabindugujarati",
   category="mn",
   description="GUJARATI SIGN CANDRABINDU",
   direction="nsm",
@@ -19331,6 +20285,7 @@ characters.data={
   unicodeslot=0x0A81,
  },
  [0x0A82]={
+  adobename="anusvaragujarati",
   category="mn",
   description="GUJARATI SIGN ANUSVARA",
   direction="nsm",
@@ -19338,6 +20293,7 @@ characters.data={
   unicodeslot=0x0A82,
  },
  [0x0A83]={
+  adobename="visargagujarati",
   category="mc",
   description="GUJARATI SIGN VISARGA",
   direction="l",
@@ -19345,6 +20301,7 @@ characters.data={
   unicodeslot=0x0A83,
  },
  [0x0A85]={
+  adobename="agujarati",
   category="lo",
   description="GUJARATI LETTER A",
   direction="l",
@@ -19352,6 +20309,7 @@ characters.data={
   unicodeslot=0x0A85,
  },
  [0x0A86]={
+  adobename="aagujarati",
   category="lo",
   description="GUJARATI LETTER AA",
   direction="l",
@@ -19359,6 +20317,7 @@ characters.data={
   unicodeslot=0x0A86,
  },
  [0x0A87]={
+  adobename="igujarati",
   category="lo",
   description="GUJARATI LETTER I",
   direction="l",
@@ -19366,6 +20325,7 @@ characters.data={
   unicodeslot=0x0A87,
  },
  [0x0A88]={
+  adobename="iigujarati",
   category="lo",
   description="GUJARATI LETTER II",
   direction="l",
@@ -19373,6 +20333,7 @@ characters.data={
   unicodeslot=0x0A88,
  },
  [0x0A89]={
+  adobename="ugujarati",
   category="lo",
   description="GUJARATI LETTER U",
   direction="l",
@@ -19380,6 +20341,7 @@ characters.data={
   unicodeslot=0x0A89,
  },
  [0x0A8A]={
+  adobename="uugujarati",
   category="lo",
   description="GUJARATI LETTER UU",
   direction="l",
@@ -19387,6 +20349,7 @@ characters.data={
   unicodeslot=0x0A8A,
  },
  [0x0A8B]={
+  adobename="rvocalicgujarati",
   category="lo",
   description="GUJARATI LETTER VOCALIC R",
   direction="l",
@@ -19401,6 +20364,7 @@ characters.data={
   unicodeslot=0x0A8C,
  },
  [0x0A8D]={
+  adobename="ecandragujarati",
   category="lo",
   description="GUJARATI VOWEL CANDRA E",
   direction="l",
@@ -19408,6 +20372,7 @@ characters.data={
   unicodeslot=0x0A8D,
  },
  [0x0A8F]={
+  adobename="egujarati",
   category="lo",
   description="GUJARATI LETTER E",
   direction="l",
@@ -19415,6 +20380,7 @@ characters.data={
   unicodeslot=0x0A8F,
  },
  [0x0A90]={
+  adobename="aigujarati",
   category="lo",
   description="GUJARATI LETTER AI",
   direction="l",
@@ -19422,6 +20388,7 @@ characters.data={
   unicodeslot=0x0A90,
  },
  [0x0A91]={
+  adobename="ocandragujarati",
   category="lo",
   description="GUJARATI VOWEL CANDRA O",
   direction="l",
@@ -19429,6 +20396,7 @@ characters.data={
   unicodeslot=0x0A91,
  },
  [0x0A93]={
+  adobename="ogujarati",
   category="lo",
   description="GUJARATI LETTER O",
   direction="l",
@@ -19436,6 +20404,7 @@ characters.data={
   unicodeslot=0x0A93,
  },
  [0x0A94]={
+  adobename="augujarati",
   category="lo",
   description="GUJARATI LETTER AU",
   direction="l",
@@ -19443,6 +20412,7 @@ characters.data={
   unicodeslot=0x0A94,
  },
  [0x0A95]={
+  adobename="kagujarati",
   category="lo",
   description="GUJARATI LETTER KA",
   direction="l",
@@ -19450,6 +20420,7 @@ characters.data={
   unicodeslot=0x0A95,
  },
  [0x0A96]={
+  adobename="khagujarati",
   category="lo",
   description="GUJARATI LETTER KHA",
   direction="l",
@@ -19457,6 +20428,7 @@ characters.data={
   unicodeslot=0x0A96,
  },
  [0x0A97]={
+  adobename="gagujarati",
   category="lo",
   description="GUJARATI LETTER GA",
   direction="l",
@@ -19464,6 +20436,7 @@ characters.data={
   unicodeslot=0x0A97,
  },
  [0x0A98]={
+  adobename="ghagujarati",
   category="lo",
   description="GUJARATI LETTER GHA",
   direction="l",
@@ -19471,6 +20444,7 @@ characters.data={
   unicodeslot=0x0A98,
  },
  [0x0A99]={
+  adobename="ngagujarati",
   category="lo",
   description="GUJARATI LETTER NGA",
   direction="l",
@@ -19478,6 +20452,7 @@ characters.data={
   unicodeslot=0x0A99,
  },
  [0x0A9A]={
+  adobename="cagujarati",
   category="lo",
   description="GUJARATI LETTER CA",
   direction="l",
@@ -19485,6 +20460,7 @@ characters.data={
   unicodeslot=0x0A9A,
  },
  [0x0A9B]={
+  adobename="chagujarati",
   category="lo",
   description="GUJARATI LETTER CHA",
   direction="l",
@@ -19492,6 +20468,7 @@ characters.data={
   unicodeslot=0x0A9B,
  },
  [0x0A9C]={
+  adobename="jagujarati",
   category="lo",
   description="GUJARATI LETTER JA",
   direction="l",
@@ -19499,6 +20476,7 @@ characters.data={
   unicodeslot=0x0A9C,
  },
  [0x0A9D]={
+  adobename="jhagujarati",
   category="lo",
   description="GUJARATI LETTER JHA",
   direction="l",
@@ -19506,6 +20484,7 @@ characters.data={
   unicodeslot=0x0A9D,
  },
  [0x0A9E]={
+  adobename="nyagujarati",
   category="lo",
   description="GUJARATI LETTER NYA",
   direction="l",
@@ -19513,6 +20492,7 @@ characters.data={
   unicodeslot=0x0A9E,
  },
  [0x0A9F]={
+  adobename="ttagujarati",
   category="lo",
   description="GUJARATI LETTER TTA",
   direction="l",
@@ -19520,6 +20500,7 @@ characters.data={
   unicodeslot=0x0A9F,
  },
  [0x0AA0]={
+  adobename="tthagujarati",
   category="lo",
   description="GUJARATI LETTER TTHA",
   direction="l",
@@ -19527,6 +20508,7 @@ characters.data={
   unicodeslot=0x0AA0,
  },
  [0x0AA1]={
+  adobename="ddagujarati",
   category="lo",
   description="GUJARATI LETTER DDA",
   direction="l",
@@ -19534,6 +20516,7 @@ characters.data={
   unicodeslot=0x0AA1,
  },
  [0x0AA2]={
+  adobename="ddhagujarati",
   category="lo",
   description="GUJARATI LETTER DDHA",
   direction="l",
@@ -19541,6 +20524,7 @@ characters.data={
   unicodeslot=0x0AA2,
  },
  [0x0AA3]={
+  adobename="nnagujarati",
   category="lo",
   description="GUJARATI LETTER NNA",
   direction="l",
@@ -19548,6 +20532,7 @@ characters.data={
   unicodeslot=0x0AA3,
  },
  [0x0AA4]={
+  adobename="tagujarati",
   category="lo",
   description="GUJARATI LETTER TA",
   direction="l",
@@ -19555,6 +20540,7 @@ characters.data={
   unicodeslot=0x0AA4,
  },
  [0x0AA5]={
+  adobename="thagujarati",
   category="lo",
   description="GUJARATI LETTER THA",
   direction="l",
@@ -19562,6 +20548,7 @@ characters.data={
   unicodeslot=0x0AA5,
  },
  [0x0AA6]={
+  adobename="dagujarati",
   category="lo",
   description="GUJARATI LETTER DA",
   direction="l",
@@ -19569,6 +20556,7 @@ characters.data={
   unicodeslot=0x0AA6,
  },
  [0x0AA7]={
+  adobename="dhagujarati",
   category="lo",
   description="GUJARATI LETTER DHA",
   direction="l",
@@ -19576,6 +20564,7 @@ characters.data={
   unicodeslot=0x0AA7,
  },
  [0x0AA8]={
+  adobename="nagujarati",
   category="lo",
   description="GUJARATI LETTER NA",
   direction="l",
@@ -19583,6 +20572,7 @@ characters.data={
   unicodeslot=0x0AA8,
  },
  [0x0AAA]={
+  adobename="pagujarati",
   category="lo",
   description="GUJARATI LETTER PA",
   direction="l",
@@ -19590,6 +20580,7 @@ characters.data={
   unicodeslot=0x0AAA,
  },
  [0x0AAB]={
+  adobename="phagujarati",
   category="lo",
   description="GUJARATI LETTER PHA",
   direction="l",
@@ -19597,6 +20588,7 @@ characters.data={
   unicodeslot=0x0AAB,
  },
  [0x0AAC]={
+  adobename="bagujarati",
   category="lo",
   description="GUJARATI LETTER BA",
   direction="l",
@@ -19604,6 +20596,7 @@ characters.data={
   unicodeslot=0x0AAC,
  },
  [0x0AAD]={
+  adobename="bhagujarati",
   category="lo",
   description="GUJARATI LETTER BHA",
   direction="l",
@@ -19611,6 +20604,7 @@ characters.data={
   unicodeslot=0x0AAD,
  },
  [0x0AAE]={
+  adobename="magujarati",
   category="lo",
   description="GUJARATI LETTER MA",
   direction="l",
@@ -19618,6 +20612,7 @@ characters.data={
   unicodeslot=0x0AAE,
  },
  [0x0AAF]={
+  adobename="yagujarati",
   category="lo",
   description="GUJARATI LETTER YA",
   direction="l",
@@ -19625,6 +20620,7 @@ characters.data={
   unicodeslot=0x0AAF,
  },
  [0x0AB0]={
+  adobename="ragujarati",
   category="lo",
   description="GUJARATI LETTER RA",
   direction="l",
@@ -19632,6 +20628,7 @@ characters.data={
   unicodeslot=0x0AB0,
  },
  [0x0AB2]={
+  adobename="lagujarati",
   category="lo",
   description="GUJARATI LETTER LA",
   direction="l",
@@ -19639,6 +20636,7 @@ characters.data={
   unicodeslot=0x0AB2,
  },
  [0x0AB3]={
+  adobename="llagujarati",
   category="lo",
   description="GUJARATI LETTER LLA",
   direction="l",
@@ -19646,6 +20644,7 @@ characters.data={
   unicodeslot=0x0AB3,
  },
  [0x0AB5]={
+  adobename="vagujarati",
   category="lo",
   description="GUJARATI LETTER VA",
   direction="l",
@@ -19653,6 +20652,7 @@ characters.data={
   unicodeslot=0x0AB5,
  },
  [0x0AB6]={
+  adobename="shagujarati",
   category="lo",
   description="GUJARATI LETTER SHA",
   direction="l",
@@ -19660,6 +20660,7 @@ characters.data={
   unicodeslot=0x0AB6,
  },
  [0x0AB7]={
+  adobename="ssagujarati",
   category="lo",
   description="GUJARATI LETTER SSA",
   direction="l",
@@ -19667,6 +20668,7 @@ characters.data={
   unicodeslot=0x0AB7,
  },
  [0x0AB8]={
+  adobename="sagujarati",
   category="lo",
   description="GUJARATI LETTER SA",
   direction="l",
@@ -19674,6 +20676,7 @@ characters.data={
   unicodeslot=0x0AB8,
  },
  [0x0AB9]={
+  adobename="hagujarati",
   category="lo",
   description="GUJARATI LETTER HA",
   direction="l",
@@ -19681,6 +20684,7 @@ characters.data={
   unicodeslot=0x0AB9,
  },
  [0x0ABC]={
+  adobename="nuktagujarati",
   category="mn",
   description="GUJARATI SIGN NUKTA",
   direction="nsm",
@@ -19695,6 +20699,7 @@ characters.data={
   unicodeslot=0x0ABD,
  },
  [0x0ABE]={
+  adobename="aavowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN AA",
   direction="l",
@@ -19702,6 +20707,7 @@ characters.data={
   unicodeslot=0x0ABE,
  },
  [0x0ABF]={
+  adobename="ivowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN I",
   direction="l",
@@ -19709,6 +20715,7 @@ characters.data={
   unicodeslot=0x0ABF,
  },
  [0x0AC0]={
+  adobename="iivowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN II",
   direction="l",
@@ -19716,6 +20723,7 @@ characters.data={
   unicodeslot=0x0AC0,
  },
  [0x0AC1]={
+  adobename="uvowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN U",
   direction="nsm",
@@ -19723,6 +20731,7 @@ characters.data={
   unicodeslot=0x0AC1,
  },
  [0x0AC2]={
+  adobename="uuvowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN UU",
   direction="nsm",
@@ -19730,6 +20739,7 @@ characters.data={
   unicodeslot=0x0AC2,
  },
  [0x0AC3]={
+  adobename="rvocalicvowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN VOCALIC R",
   direction="nsm",
@@ -19737,6 +20747,7 @@ characters.data={
   unicodeslot=0x0AC3,
  },
  [0x0AC4]={
+  adobename="rrvocalicvowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN VOCALIC RR",
   direction="nsm",
@@ -19744,6 +20755,7 @@ characters.data={
   unicodeslot=0x0AC4,
  },
  [0x0AC5]={
+  adobename="ecandravowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN CANDRA E",
   direction="nsm",
@@ -19751,6 +20763,7 @@ characters.data={
   unicodeslot=0x0AC5,
  },
  [0x0AC7]={
+  adobename="evowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN E",
   direction="nsm",
@@ -19758,6 +20771,7 @@ characters.data={
   unicodeslot=0x0AC7,
  },
  [0x0AC8]={
+  adobename="aivowelsigngujarati",
   category="mn",
   description="GUJARATI VOWEL SIGN AI",
   direction="nsm",
@@ -19765,6 +20779,7 @@ characters.data={
   unicodeslot=0x0AC8,
  },
  [0x0AC9]={
+  adobename="ocandravowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN CANDRA O",
   direction="l",
@@ -19772,6 +20787,7 @@ characters.data={
   unicodeslot=0x0AC9,
  },
  [0x0ACB]={
+  adobename="ovowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN O",
   direction="l",
@@ -19779,6 +20795,7 @@ characters.data={
   unicodeslot=0x0ACB,
  },
  [0x0ACC]={
+  adobename="auvowelsigngujarati",
   category="mc",
   description="GUJARATI VOWEL SIGN AU",
   direction="l",
@@ -19786,6 +20803,7 @@ characters.data={
   unicodeslot=0x0ACC,
  },
  [0x0ACD]={
+  adobename="viramagujarati",
   category="mn",
   description="GUJARATI SIGN VIRAMA",
   direction="nsm",
@@ -19793,6 +20811,7 @@ characters.data={
   unicodeslot=0x0ACD,
  },
  [0x0AD0]={
+  adobename="omgujarati",
   category="lo",
   description="GUJARATI OM",
   direction="l",
@@ -19800,6 +20819,7 @@ characters.data={
   unicodeslot=0x0AD0,
  },
  [0x0AE0]={
+  adobename="rrvocalicgujarati",
   category="lo",
   description="GUJARATI LETTER VOCALIC RR",
   direction="l",
@@ -19828,6 +20848,7 @@ characters.data={
   unicodeslot=0x0AE3,
  },
  [0x0AE6]={
+  adobename="zerogujarati",
   category="nd",
   description="GUJARATI DIGIT ZERO",
   direction="l",
@@ -19835,6 +20856,7 @@ characters.data={
   unicodeslot=0x0AE6,
  },
  [0x0AE7]={
+  adobename="onegujarati",
   category="nd",
   description="GUJARATI DIGIT ONE",
   direction="l",
@@ -19842,6 +20864,7 @@ characters.data={
   unicodeslot=0x0AE7,
  },
  [0x0AE8]={
+  adobename="twogujarati",
   category="nd",
   description="GUJARATI DIGIT TWO",
   direction="l",
@@ -19849,6 +20872,7 @@ characters.data={
   unicodeslot=0x0AE8,
  },
  [0x0AE9]={
+  adobename="threegujarati",
   category="nd",
   description="GUJARATI DIGIT THREE",
   direction="l",
@@ -19856,6 +20880,7 @@ characters.data={
   unicodeslot=0x0AE9,
  },
  [0x0AEA]={
+  adobename="fourgujarati",
   category="nd",
   description="GUJARATI DIGIT FOUR",
   direction="l",
@@ -19863,6 +20888,7 @@ characters.data={
   unicodeslot=0x0AEA,
  },
  [0x0AEB]={
+  adobename="fivegujarati",
   category="nd",
   description="GUJARATI DIGIT FIVE",
   direction="l",
@@ -19870,6 +20896,7 @@ characters.data={
   unicodeslot=0x0AEB,
  },
  [0x0AEC]={
+  adobename="sixgujarati",
   category="nd",
   description="GUJARATI DIGIT SIX",
   direction="l",
@@ -19877,6 +20904,7 @@ characters.data={
   unicodeslot=0x0AEC,
  },
  [0x0AED]={
+  adobename="sevengujarati",
   category="nd",
   description="GUJARATI DIGIT SEVEN",
   direction="l",
@@ -19884,6 +20912,7 @@ characters.data={
   unicodeslot=0x0AED,
  },
  [0x0AEE]={
+  adobename="eightgujarati",
   category="nd",
   description="GUJARATI DIGIT EIGHT",
   direction="l",
@@ -19891,6 +20920,7 @@ characters.data={
   unicodeslot=0x0AEE,
  },
  [0x0AEF]={
+  adobename="ninegujarati",
   category="nd",
   description="GUJARATI DIGIT NINE",
   direction="l",
@@ -23259,6 +24289,7 @@ characters.data={
   unicodeslot=0x0DF4,
  },
  [0x0E01]={
+  adobename="kokaithai",
   category="lo",
   description="THAI CHARACTER KO KAI",
   direction="l",
@@ -23266,6 +24297,7 @@ characters.data={
   unicodeslot=0x0E01,
  },
  [0x0E02]={
+  adobename="khokhaithai",
   category="lo",
   description="THAI CHARACTER KHO KHAI",
   direction="l",
@@ -23273,6 +24305,7 @@ characters.data={
   unicodeslot=0x0E02,
  },
  [0x0E03]={
+  adobename="khokhuatthai",
   category="lo",
   description="THAI CHARACTER KHO KHUAT",
   direction="l",
@@ -23280,6 +24313,7 @@ characters.data={
   unicodeslot=0x0E03,
  },
  [0x0E04]={
+  adobename="khokhwaithai",
   category="lo",
   description="THAI CHARACTER KHO KHWAI",
   direction="l",
@@ -23287,6 +24321,7 @@ characters.data={
   unicodeslot=0x0E04,
  },
  [0x0E05]={
+  adobename="khokhonthai",
   category="lo",
   description="THAI CHARACTER KHO KHON",
   direction="l",
@@ -23294,6 +24329,7 @@ characters.data={
   unicodeslot=0x0E05,
  },
  [0x0E06]={
+  adobename="khorakhangthai",
   category="lo",
   description="THAI CHARACTER KHO RAKHANG",
   direction="l",
@@ -23301,6 +24337,7 @@ characters.data={
   unicodeslot=0x0E06,
  },
  [0x0E07]={
+  adobename="ngonguthai",
   category="lo",
   description="THAI CHARACTER NGO NGU",
   direction="l",
@@ -23308,6 +24345,7 @@ characters.data={
   unicodeslot=0x0E07,
  },
  [0x0E08]={
+  adobename="chochanthai",
   category="lo",
   description="THAI CHARACTER CHO CHAN",
   direction="l",
@@ -23315,6 +24353,7 @@ characters.data={
   unicodeslot=0x0E08,
  },
  [0x0E09]={
+  adobename="chochingthai",
   category="lo",
   description="THAI CHARACTER CHO CHING",
   direction="l",
@@ -23322,6 +24361,7 @@ characters.data={
   unicodeslot=0x0E09,
  },
  [0x0E0A]={
+  adobename="chochangthai",
   category="lo",
   description="THAI CHARACTER CHO CHANG",
   direction="l",
@@ -23329,6 +24369,7 @@ characters.data={
   unicodeslot=0x0E0A,
  },
  [0x0E0B]={
+  adobename="sosothai",
   category="lo",
   description="THAI CHARACTER SO SO",
   direction="l",
@@ -23336,6 +24377,7 @@ characters.data={
   unicodeslot=0x0E0B,
  },
  [0x0E0C]={
+  adobename="chochoethai",
   category="lo",
   description="THAI CHARACTER CHO CHOE",
   direction="l",
@@ -23343,6 +24385,7 @@ characters.data={
   unicodeslot=0x0E0C,
  },
  [0x0E0D]={
+  adobename="yoyingthai",
   category="lo",
   description="THAI CHARACTER YO YING",
   direction="l",
@@ -23350,6 +24393,7 @@ characters.data={
   unicodeslot=0x0E0D,
  },
  [0x0E0E]={
+  adobename="dochadathai",
   category="lo",
   description="THAI CHARACTER DO CHADA",
   direction="l",
@@ -23357,6 +24401,7 @@ characters.data={
   unicodeslot=0x0E0E,
  },
  [0x0E0F]={
+  adobename="topatakthai",
   category="lo",
   description="THAI CHARACTER TO PATAK",
   direction="l",
@@ -23364,6 +24409,7 @@ characters.data={
   unicodeslot=0x0E0F,
  },
  [0x0E10]={
+  adobename="thothanthai",
   category="lo",
   description="THAI CHARACTER THO THAN",
   direction="l",
@@ -23371,6 +24417,7 @@ characters.data={
   unicodeslot=0x0E10,
  },
  [0x0E11]={
+  adobename="thonangmonthothai",
   category="lo",
   description="THAI CHARACTER THO NANGMONTHO",
   direction="l",
@@ -23378,6 +24425,7 @@ characters.data={
   unicodeslot=0x0E11,
  },
  [0x0E12]={
+  adobename="thophuthaothai",
   category="lo",
   description="THAI CHARACTER THO PHUTHAO",
   direction="l",
@@ -23385,6 +24433,7 @@ characters.data={
   unicodeslot=0x0E12,
  },
  [0x0E13]={
+  adobename="nonenthai",
   category="lo",
   description="THAI CHARACTER NO NEN",
   direction="l",
@@ -23392,6 +24441,7 @@ characters.data={
   unicodeslot=0x0E13,
  },
  [0x0E14]={
+  adobename="dodekthai",
   category="lo",
   description="THAI CHARACTER DO DEK",
   direction="l",
@@ -23399,6 +24449,7 @@ characters.data={
   unicodeslot=0x0E14,
  },
  [0x0E15]={
+  adobename="totaothai",
   category="lo",
   description="THAI CHARACTER TO TAO",
   direction="l",
@@ -23406,6 +24457,7 @@ characters.data={
   unicodeslot=0x0E15,
  },
  [0x0E16]={
+  adobename="thothungthai",
   category="lo",
   description="THAI CHARACTER THO THUNG",
   direction="l",
@@ -23413,6 +24465,7 @@ characters.data={
   unicodeslot=0x0E16,
  },
  [0x0E17]={
+  adobename="thothahanthai",
   category="lo",
   description="THAI CHARACTER THO THAHAN",
   direction="l",
@@ -23420,6 +24473,7 @@ characters.data={
   unicodeslot=0x0E17,
  },
  [0x0E18]={
+  adobename="thothongthai",
   category="lo",
   description="THAI CHARACTER THO THONG",
   direction="l",
@@ -23427,6 +24481,7 @@ characters.data={
   unicodeslot=0x0E18,
  },
  [0x0E19]={
+  adobename="nonuthai",
   category="lo",
   description="THAI CHARACTER NO NU",
   direction="l",
@@ -23434,6 +24489,7 @@ characters.data={
   unicodeslot=0x0E19,
  },
  [0x0E1A]={
+  adobename="bobaimaithai",
   category="lo",
   description="THAI CHARACTER BO BAIMAI",
   direction="l",
@@ -23441,6 +24497,7 @@ characters.data={
   unicodeslot=0x0E1A,
  },
  [0x0E1B]={
+  adobename="poplathai",
   category="lo",
   description="THAI CHARACTER PO PLA",
   direction="l",
@@ -23448,6 +24505,7 @@ characters.data={
   unicodeslot=0x0E1B,
  },
  [0x0E1C]={
+  adobename="phophungthai",
   category="lo",
   description="THAI CHARACTER PHO PHUNG",
   direction="l",
@@ -23455,6 +24513,7 @@ characters.data={
   unicodeslot=0x0E1C,
  },
  [0x0E1D]={
+  adobename="fofathai",
   category="lo",
   description="THAI CHARACTER FO FA",
   direction="l",
@@ -23462,6 +24521,7 @@ characters.data={
   unicodeslot=0x0E1D,
  },
  [0x0E1E]={
+  adobename="phophanthai",
   category="lo",
   description="THAI CHARACTER PHO PHAN",
   direction="l",
@@ -23469,6 +24529,7 @@ characters.data={
   unicodeslot=0x0E1E,
  },
  [0x0E1F]={
+  adobename="fofanthai",
   category="lo",
   description="THAI CHARACTER FO FAN",
   direction="l",
@@ -23476,6 +24537,7 @@ characters.data={
   unicodeslot=0x0E1F,
  },
  [0x0E20]={
+  adobename="phosamphaothai",
   category="lo",
   description="THAI CHARACTER PHO SAMPHAO",
   direction="l",
@@ -23483,6 +24545,7 @@ characters.data={
   unicodeslot=0x0E20,
  },
  [0x0E21]={
+  adobename="momathai",
   category="lo",
   description="THAI CHARACTER MO MA",
   direction="l",
@@ -23490,6 +24553,7 @@ characters.data={
   unicodeslot=0x0E21,
  },
  [0x0E22]={
+  adobename="yoyakthai",
   category="lo",
   description="THAI CHARACTER YO YAK",
   direction="l",
@@ -23497,6 +24561,7 @@ characters.data={
   unicodeslot=0x0E22,
  },
  [0x0E23]={
+  adobename="roruathai",
   category="lo",
   description="THAI CHARACTER RO RUA",
   direction="l",
@@ -23504,6 +24569,7 @@ characters.data={
   unicodeslot=0x0E23,
  },
  [0x0E24]={
+  adobename="ruthai",
   category="lo",
   description="THAI CHARACTER RU",
   direction="l",
@@ -23511,6 +24577,7 @@ characters.data={
   unicodeslot=0x0E24,
  },
  [0x0E25]={
+  adobename="lolingthai",
   category="lo",
   description="THAI CHARACTER LO LING",
   direction="l",
@@ -23518,6 +24585,7 @@ characters.data={
   unicodeslot=0x0E25,
  },
  [0x0E26]={
+  adobename="luthai",
   category="lo",
   description="THAI CHARACTER LU",
   direction="l",
@@ -23525,6 +24593,7 @@ characters.data={
   unicodeslot=0x0E26,
  },
  [0x0E27]={
+  adobename="wowaenthai",
   category="lo",
   description="THAI CHARACTER WO WAEN",
   direction="l",
@@ -23532,6 +24601,7 @@ characters.data={
   unicodeslot=0x0E27,
  },
  [0x0E28]={
+  adobename="sosalathai",
   category="lo",
   description="THAI CHARACTER SO SALA",
   direction="l",
@@ -23539,6 +24609,7 @@ characters.data={
   unicodeslot=0x0E28,
  },
  [0x0E29]={
+  adobename="sorusithai",
   category="lo",
   description="THAI CHARACTER SO RUSI",
   direction="l",
@@ -23546,6 +24617,7 @@ characters.data={
   unicodeslot=0x0E29,
  },
  [0x0E2A]={
+  adobename="sosuathai",
   category="lo",
   description="THAI CHARACTER SO SUA",
   direction="l",
@@ -23553,6 +24625,7 @@ characters.data={
   unicodeslot=0x0E2A,
  },
  [0x0E2B]={
+  adobename="hohipthai",
   category="lo",
   description="THAI CHARACTER HO HIP",
   direction="l",
@@ -23560,6 +24633,7 @@ characters.data={
   unicodeslot=0x0E2B,
  },
  [0x0E2C]={
+  adobename="lochulathai",
   category="lo",
   description="THAI CHARACTER LO CHULA",
   direction="l",
@@ -23567,6 +24641,7 @@ characters.data={
   unicodeslot=0x0E2C,
  },
  [0x0E2D]={
+  adobename="oangthai",
   category="lo",
   description="THAI CHARACTER O ANG",
   direction="l",
@@ -23574,6 +24649,7 @@ characters.data={
   unicodeslot=0x0E2D,
  },
  [0x0E2E]={
+  adobename="honokhukthai",
   category="lo",
   description="THAI CHARACTER HO NOKHUK",
   direction="l",
@@ -23581,6 +24657,7 @@ characters.data={
   unicodeslot=0x0E2E,
  },
  [0x0E2F]={
+  adobename="paiyannoithai",
   category="lo",
   description="THAI CHARACTER PAIYANNOI",
   direction="l",
@@ -23588,6 +24665,7 @@ characters.data={
   unicodeslot=0x0E2F,
  },
  [0x0E30]={
+  adobename="saraathai",
   category="lo",
   description="THAI CHARACTER SARA A",
   direction="l",
@@ -23595,6 +24673,7 @@ characters.data={
   unicodeslot=0x0E30,
  },
  [0x0E31]={
+  adobename="maihanakatthai",
   category="mn",
   description="THAI CHARACTER MAI HAN-AKAT",
   direction="nsm",
@@ -23602,6 +24681,7 @@ characters.data={
   unicodeslot=0x0E31,
  },
  [0x0E32]={
+  adobename="saraaathai",
   category="lo",
   description="THAI CHARACTER SARA AA",
   direction="l",
@@ -23609,6 +24689,7 @@ characters.data={
   unicodeslot=0x0E32,
  },
  [0x0E33]={
+  adobename="saraamthai",
   category="lo",
   description="THAI CHARACTER SARA AM",
   direction="l",
@@ -23617,6 +24698,7 @@ characters.data={
   unicodeslot=0x0E33,
  },
  [0x0E34]={
+  adobename="saraithai",
   category="mn",
   description="THAI CHARACTER SARA I",
   direction="nsm",
@@ -23624,6 +24706,7 @@ characters.data={
   unicodeslot=0x0E34,
  },
  [0x0E35]={
+  adobename="saraiithai",
   category="mn",
   description="THAI CHARACTER SARA II",
   direction="nsm",
@@ -23631,6 +24714,7 @@ characters.data={
   unicodeslot=0x0E35,
  },
  [0x0E36]={
+  adobename="sarauethai",
   category="mn",
   description="THAI CHARACTER SARA UE",
   direction="nsm",
@@ -23638,6 +24722,7 @@ characters.data={
   unicodeslot=0x0E36,
  },
  [0x0E37]={
+  adobename="saraueethai",
   category="mn",
   description="THAI CHARACTER SARA UEE",
   direction="nsm",
@@ -23645,6 +24730,7 @@ characters.data={
   unicodeslot=0x0E37,
  },
  [0x0E38]={
+  adobename="sarauthai",
   category="mn",
   description="THAI CHARACTER SARA U",
   direction="nsm",
@@ -23652,6 +24738,7 @@ characters.data={
   unicodeslot=0x0E38,
  },
  [0x0E39]={
+  adobename="sarauuthai",
   category="mn",
   description="THAI CHARACTER SARA UU",
   direction="nsm",
@@ -23659,6 +24746,7 @@ characters.data={
   unicodeslot=0x0E39,
  },
  [0x0E3A]={
+  adobename="phinthuthai",
   category="mn",
   description="THAI CHARACTER PHINTHU",
   direction="nsm",
@@ -23666,6 +24754,7 @@ characters.data={
   unicodeslot=0x0E3A,
  },
  [0x0E3F]={
+  adobename="bahtthai",
   category="sc",
   description="THAI CURRENCY SYMBOL BAHT",
   direction="et",
@@ -23673,6 +24762,7 @@ characters.data={
   unicodeslot=0x0E3F,
  },
  [0x0E40]={
+  adobename="saraethai",
   category="lo",
   description="THAI CHARACTER SARA E",
   direction="l",
@@ -23680,6 +24770,7 @@ characters.data={
   unicodeslot=0x0E40,
  },
  [0x0E41]={
+  adobename="saraaethai",
   category="lo",
   description="THAI CHARACTER SARA AE",
   direction="l",
@@ -23687,6 +24778,7 @@ characters.data={
   unicodeslot=0x0E41,
  },
  [0x0E42]={
+  adobename="saraothai",
   category="lo",
   description="THAI CHARACTER SARA O",
   direction="l",
@@ -23694,6 +24786,7 @@ characters.data={
   unicodeslot=0x0E42,
  },
  [0x0E43]={
+  adobename="saraaimaimuanthai",
   category="lo",
   description="THAI CHARACTER SARA AI MAIMUAN",
   direction="l",
@@ -23701,6 +24794,7 @@ characters.data={
   unicodeslot=0x0E43,
  },
  [0x0E44]={
+  adobename="saraaimaimalaithai",
   category="lo",
   description="THAI CHARACTER SARA AI MAIMALAI",
   direction="l",
@@ -23708,6 +24802,7 @@ characters.data={
   unicodeslot=0x0E44,
  },
  [0x0E45]={
+  adobename="lakkhangyaothai",
   category="lo",
   description="THAI CHARACTER LAKKHANGYAO",
   direction="l",
@@ -23715,6 +24810,7 @@ characters.data={
   unicodeslot=0x0E45,
  },
  [0x0E46]={
+  adobename="maiyamokthai",
   category="lm",
   description="THAI CHARACTER MAIYAMOK",
   direction="l",
@@ -23722,6 +24818,7 @@ characters.data={
   unicodeslot=0x0E46,
  },
  [0x0E47]={
+  adobename="maitaikhuthai",
   category="mn",
   description="THAI CHARACTER MAITAIKHU",
   direction="nsm",
@@ -23729,6 +24826,7 @@ characters.data={
   unicodeslot=0x0E47,
  },
  [0x0E48]={
+  adobename="maiekthai",
   category="mn",
   description="THAI CHARACTER MAI EK",
   direction="nsm",
@@ -23736,6 +24834,7 @@ characters.data={
   unicodeslot=0x0E48,
  },
  [0x0E49]={
+  adobename="maithothai",
   category="mn",
   description="THAI CHARACTER MAI THO",
   direction="nsm",
@@ -23743,6 +24842,7 @@ characters.data={
   unicodeslot=0x0E49,
  },
  [0x0E4A]={
+  adobename="maitrithai",
   category="mn",
   description="THAI CHARACTER MAI TRI",
   direction="nsm",
@@ -23750,6 +24850,7 @@ characters.data={
   unicodeslot=0x0E4A,
  },
  [0x0E4B]={
+  adobename="maichattawathai",
   category="mn",
   description="THAI CHARACTER MAI CHATTAWA",
   direction="nsm",
@@ -23757,6 +24858,7 @@ characters.data={
   unicodeslot=0x0E4B,
  },
  [0x0E4C]={
+  adobename="thanthakhatthai",
   category="mn",
   description="THAI CHARACTER THANTHAKHAT",
   direction="nsm",
@@ -23764,6 +24866,7 @@ characters.data={
   unicodeslot=0x0E4C,
  },
  [0x0E4D]={
+  adobename="nikhahitthai",
   category="mn",
   description="THAI CHARACTER NIKHAHIT",
   direction="nsm",
@@ -23771,6 +24874,7 @@ characters.data={
   unicodeslot=0x0E4D,
  },
  [0x0E4E]={
+  adobename="yamakkanthai",
   category="mn",
   description="THAI CHARACTER YAMAKKAN",
   direction="nsm",
@@ -23778,6 +24882,7 @@ characters.data={
   unicodeslot=0x0E4E,
  },
  [0x0E4F]={
+  adobename="fongmanthai",
   category="po",
   description="THAI CHARACTER FONGMAN",
   direction="l",
@@ -23785,6 +24890,7 @@ characters.data={
   unicodeslot=0x0E4F,
  },
  [0x0E50]={
+  adobename="zerothai",
   category="nd",
   description="THAI DIGIT ZERO",
   direction="l",
@@ -23792,6 +24898,7 @@ characters.data={
   unicodeslot=0x0E50,
  },
  [0x0E51]={
+  adobename="onethai",
   category="nd",
   description="THAI DIGIT ONE",
   direction="l",
@@ -23799,6 +24906,7 @@ characters.data={
   unicodeslot=0x0E51,
  },
  [0x0E52]={
+  adobename="twothai",
   category="nd",
   description="THAI DIGIT TWO",
   direction="l",
@@ -23806,6 +24914,7 @@ characters.data={
   unicodeslot=0x0E52,
  },
  [0x0E53]={
+  adobename="threethai",
   category="nd",
   description="THAI DIGIT THREE",
   direction="l",
@@ -23813,6 +24922,7 @@ characters.data={
   unicodeslot=0x0E53,
  },
  [0x0E54]={
+  adobename="fourthai",
   category="nd",
   description="THAI DIGIT FOUR",
   direction="l",
@@ -23820,6 +24930,7 @@ characters.data={
   unicodeslot=0x0E54,
  },
  [0x0E55]={
+  adobename="fivethai",
   category="nd",
   description="THAI DIGIT FIVE",
   direction="l",
@@ -23827,6 +24938,7 @@ characters.data={
   unicodeslot=0x0E55,
  },
  [0x0E56]={
+  adobename="sixthai",
   category="nd",
   description="THAI DIGIT SIX",
   direction="l",
@@ -23834,6 +24946,7 @@ characters.data={
   unicodeslot=0x0E56,
  },
  [0x0E57]={
+  adobename="seventhai",
   category="nd",
   description="THAI DIGIT SEVEN",
   direction="l",
@@ -23841,6 +24954,7 @@ characters.data={
   unicodeslot=0x0E57,
  },
  [0x0E58]={
+  adobename="eightthai",
   category="nd",
   description="THAI DIGIT EIGHT",
   direction="l",
@@ -23848,6 +24962,7 @@ characters.data={
   unicodeslot=0x0E58,
  },
  [0x0E59]={
+  adobename="ninethai",
   category="nd",
   description="THAI DIGIT NINE",
   direction="l",
@@ -23855,6 +24970,7 @@ characters.data={
   unicodeslot=0x0E59,
  },
  [0x0E5A]={
+  adobename="angkhankhuthai",
   category="po",
   description="THAI CHARACTER ANGKHANKHU",
   direction="l",
@@ -23862,6 +24978,7 @@ characters.data={
   unicodeslot=0x0E5A,
  },
  [0x0E5B]={
+  adobename="khomutthai",
   category="po",
   description="THAI CHARACTER KHOMUT",
   direction="l",
@@ -43686,6 +44803,7 @@ characters.data={
   unicodeslot=0x1DFF,
  },
  [0x1E00]={
+  adobename="Aringbelow",
   category="lu",
   description="LATIN CAPITAL LETTER A WITH RING BELOW",
   direction="l",
@@ -43696,6 +44814,7 @@ characters.data={
   unicodeslot=0x1E00,
  },
  [0x1E01]={
+  adobename="aringbelow",
   category="ll",
   description="LATIN SMALL LETTER A WITH RING BELOW",
   direction="l",
@@ -43706,6 +44825,7 @@ characters.data={
   unicodeslot=0x1E01,
  },
  [0x1E02]={
+  adobename="Bdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER B WITH DOT ABOVE",
   direction="l",
@@ -43716,6 +44836,7 @@ characters.data={
   unicodeslot=0x1E02,
  },
  [0x1E03]={
+  adobename="bdotaccent",
   category="ll",
   description="LATIN SMALL LETTER B WITH DOT ABOVE",
   direction="l",
@@ -43726,6 +44847,7 @@ characters.data={
   unicodeslot=0x1E03,
  },
  [0x1E04]={
+  adobename="Bdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER B WITH DOT BELOW",
   direction="l",
@@ -43736,6 +44858,7 @@ characters.data={
   unicodeslot=0x1E04,
  },
  [0x1E05]={
+  adobename="bdotbelow",
   category="ll",
   description="LATIN SMALL LETTER B WITH DOT BELOW",
   direction="l",
@@ -43746,6 +44869,7 @@ characters.data={
   unicodeslot=0x1E05,
  },
  [0x1E06]={
+  adobename="Blinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER B WITH LINE BELOW",
   direction="l",
@@ -43756,6 +44880,7 @@ characters.data={
   unicodeslot=0x1E06,
  },
  [0x1E07]={
+  adobename="blinebelow",
   category="ll",
   description="LATIN SMALL LETTER B WITH LINE BELOW",
   direction="l",
@@ -43766,6 +44891,7 @@ characters.data={
   unicodeslot=0x1E07,
  },
  [0x1E08]={
+  adobename="Ccedillaacute",
   category="lu",
   description="LATIN CAPITAL LETTER C WITH CEDILLA AND ACUTE",
   direction="l",
@@ -43776,6 +44902,7 @@ characters.data={
   unicodeslot=0x1E08,
  },
  [0x1E09]={
+  adobename="ccedillaacute",
   category="ll",
   description="LATIN SMALL LETTER C WITH CEDILLA AND ACUTE",
   direction="l",
@@ -43786,6 +44913,7 @@ characters.data={
   unicodeslot=0x1E09,
  },
  [0x1E0A]={
+  adobename="Ddotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH DOT ABOVE",
   direction="l",
@@ -43796,6 +44924,7 @@ characters.data={
   unicodeslot=0x1E0A,
  },
  [0x1E0B]={
+  adobename="ddotaccent",
   category="ll",
   description="LATIN SMALL LETTER D WITH DOT ABOVE",
   direction="l",
@@ -43806,6 +44935,7 @@ characters.data={
   unicodeslot=0x1E0B,
  },
  [0x1E0C]={
+  adobename="Ddotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH DOT BELOW",
   direction="l",
@@ -43816,6 +44946,7 @@ characters.data={
   unicodeslot=0x1E0C,
  },
  [0x1E0D]={
+  adobename="ddotbelow",
   category="ll",
   description="LATIN SMALL LETTER D WITH DOT BELOW",
   direction="l",
@@ -43826,6 +44957,7 @@ characters.data={
   unicodeslot=0x1E0D,
  },
  [0x1E0E]={
+  adobename="Dlinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH LINE BELOW",
   direction="l",
@@ -43836,6 +44968,7 @@ characters.data={
   unicodeslot=0x1E0E,
  },
  [0x1E0F]={
+  adobename="dlinebelow",
   category="ll",
   description="LATIN SMALL LETTER D WITH LINE BELOW",
   direction="l",
@@ -43846,6 +44979,7 @@ characters.data={
   unicodeslot=0x1E0F,
  },
  [0x1E10]={
+  adobename="Dcedilla",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH CEDILLA",
   direction="l",
@@ -43856,6 +44990,7 @@ characters.data={
   unicodeslot=0x1E10,
  },
  [0x1E11]={
+  adobename="dcedilla",
   category="ll",
   description="LATIN SMALL LETTER D WITH CEDILLA",
   direction="l",
@@ -43866,6 +45001,7 @@ characters.data={
   unicodeslot=0x1E11,
  },
  [0x1E12]={
+  adobename="Dcircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER D WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -43876,6 +45012,7 @@ characters.data={
   unicodeslot=0x1E12,
  },
  [0x1E13]={
+  adobename="dcircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER D WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -43886,6 +45023,7 @@ characters.data={
   unicodeslot=0x1E13,
  },
  [0x1E14]={
+  adobename="Emacrongrave",
   category="lu",
   description="LATIN CAPITAL LETTER E WITH MACRON AND GRAVE",
   direction="l",
@@ -43896,6 +45034,7 @@ characters.data={
   unicodeslot=0x1E14,
  },
  [0x1E15]={
+  adobename="emacrongrave",
   category="ll",
   description="LATIN SMALL LETTER E WITH MACRON AND GRAVE",
   direction="l",
@@ -43906,6 +45045,7 @@ characters.data={
   unicodeslot=0x1E15,
  },
  [0x1E16]={
+  adobename="Emacronacute",
   category="lu",
   description="LATIN CAPITAL LETTER E WITH MACRON AND ACUTE",
   direction="l",
@@ -43916,6 +45056,7 @@ characters.data={
   unicodeslot=0x1E16,
  },
  [0x1E17]={
+  adobename="emacronacute",
   category="ll",
   description="LATIN SMALL LETTER E WITH MACRON AND ACUTE",
   direction="l",
@@ -43926,6 +45067,7 @@ characters.data={
   unicodeslot=0x1E17,
  },
  [0x1E18]={
+  adobename="Ecircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -43936,6 +45078,7 @@ characters.data={
   unicodeslot=0x1E18,
  },
  [0x1E19]={
+  adobename="ecircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -43946,6 +45089,7 @@ characters.data={
   unicodeslot=0x1E19,
  },
  [0x1E1A]={
+  adobename="Etildebelow",
   category="lu",
   description="LATIN CAPITAL LETTER E WITH TILDE BELOW",
   direction="l",
@@ -43956,6 +45100,7 @@ characters.data={
   unicodeslot=0x1E1A,
  },
  [0x1E1B]={
+  adobename="etildebelow",
   category="ll",
   description="LATIN SMALL LETTER E WITH TILDE BELOW",
   direction="l",
@@ -43966,6 +45111,7 @@ characters.data={
   unicodeslot=0x1E1B,
  },
  [0x1E1C]={
+  adobename="Ecedillabreve",
   category="lu",
   description="LATIN CAPITAL LETTER E WITH CEDILLA AND BREVE",
   direction="l",
@@ -43976,6 +45122,7 @@ characters.data={
   unicodeslot=0x1E1C,
  },
  [0x1E1D]={
+  adobename="ecedillabreve",
   category="ll",
   description="LATIN SMALL LETTER E WITH CEDILLA AND BREVE",
   direction="l",
@@ -43986,6 +45133,7 @@ characters.data={
   unicodeslot=0x1E1D,
  },
  [0x1E1E]={
+  adobename="Fdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER F WITH DOT ABOVE",
   direction="l",
@@ -43996,6 +45144,7 @@ characters.data={
   unicodeslot=0x1E1E,
  },
  [0x1E1F]={
+  adobename="fdotaccent",
   category="ll",
   description="LATIN SMALL LETTER F WITH DOT ABOVE",
   direction="l",
@@ -44006,6 +45155,7 @@ characters.data={
   unicodeslot=0x1E1F,
  },
  [0x1E20]={
+  adobename="Gmacron",
   category="lu",
   description="LATIN CAPITAL LETTER G WITH MACRON",
   direction="l",
@@ -44016,6 +45166,7 @@ characters.data={
   unicodeslot=0x1E20,
  },
  [0x1E21]={
+  adobename="gmacron",
   category="ll",
   description="LATIN SMALL LETTER G WITH MACRON",
   direction="l",
@@ -44026,6 +45177,7 @@ characters.data={
   unicodeslot=0x1E21,
  },
  [0x1E22]={
+  adobename="Hdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER H WITH DOT ABOVE",
   direction="l",
@@ -44036,6 +45188,7 @@ characters.data={
   unicodeslot=0x1E22,
  },
  [0x1E23]={
+  adobename="hdotaccent",
   category="ll",
   description="LATIN SMALL LETTER H WITH DOT ABOVE",
   direction="l",
@@ -44046,6 +45199,7 @@ characters.data={
   unicodeslot=0x1E23,
  },
  [0x1E24]={
+  adobename="Hdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER H WITH DOT BELOW",
   direction="l",
@@ -44056,6 +45210,7 @@ characters.data={
   unicodeslot=0x1E24,
  },
  [0x1E25]={
+  adobename="hdotbelow",
   category="ll",
   description="LATIN SMALL LETTER H WITH DOT BELOW",
   direction="l",
@@ -44066,6 +45221,7 @@ characters.data={
   unicodeslot=0x1E25,
  },
  [0x1E26]={
+  adobename="Hdieresis",
   category="lu",
   description="LATIN CAPITAL LETTER H WITH DIAERESIS",
   direction="l",
@@ -44076,6 +45232,7 @@ characters.data={
   unicodeslot=0x1E26,
  },
  [0x1E27]={
+  adobename="hdieresis",
   category="ll",
   description="LATIN SMALL LETTER H WITH DIAERESIS",
   direction="l",
@@ -44086,6 +45243,7 @@ characters.data={
   unicodeslot=0x1E27,
  },
  [0x1E28]={
+  adobename="Hcedilla",
   category="lu",
   description="LATIN CAPITAL LETTER H WITH CEDILLA",
   direction="l",
@@ -44096,6 +45254,7 @@ characters.data={
   unicodeslot=0x1E28,
  },
  [0x1E29]={
+  adobename="hcedilla",
   category="ll",
   description="LATIN SMALL LETTER H WITH CEDILLA",
   direction="l",
@@ -44106,6 +45265,7 @@ characters.data={
   unicodeslot=0x1E29,
  },
  [0x1E2A]={
+  adobename="Hbrevebelow",
   category="lu",
   description="LATIN CAPITAL LETTER H WITH BREVE BELOW",
   direction="l",
@@ -44116,6 +45276,7 @@ characters.data={
   unicodeslot=0x1E2A,
  },
  [0x1E2B]={
+  adobename="hbrevebelow",
   category="ll",
   description="LATIN SMALL LETTER H WITH BREVE BELOW",
   direction="l",
@@ -44126,6 +45287,7 @@ characters.data={
   unicodeslot=0x1E2B,
  },
  [0x1E2C]={
+  adobename="Itildebelow",
   category="lu",
   description="LATIN CAPITAL LETTER I WITH TILDE BELOW",
   direction="l",
@@ -44136,6 +45298,7 @@ characters.data={
   unicodeslot=0x1E2C,
  },
  [0x1E2D]={
+  adobename="itildebelow",
   category="ll",
   description="LATIN SMALL LETTER I WITH TILDE BELOW",
   direction="l",
@@ -44146,6 +45309,7 @@ characters.data={
   unicodeslot=0x1E2D,
  },
  [0x1E2E]={
+  adobename="Idieresisacute",
   category="lu",
   description="LATIN CAPITAL LETTER I WITH DIAERESIS AND ACUTE",
   direction="l",
@@ -44156,6 +45320,7 @@ characters.data={
   unicodeslot=0x1E2E,
  },
  [0x1E2F]={
+  adobename="idieresisacute",
   category="ll",
   description="LATIN SMALL LETTER I WITH DIAERESIS AND ACUTE",
   direction="l",
@@ -44166,6 +45331,7 @@ characters.data={
   unicodeslot=0x1E2F,
  },
  [0x1E30]={
+  adobename="Kacute",
   category="lu",
   description="LATIN CAPITAL LETTER K WITH ACUTE",
   direction="l",
@@ -44176,6 +45342,7 @@ characters.data={
   unicodeslot=0x1E30,
  },
  [0x1E31]={
+  adobename="kacute",
   category="ll",
   description="LATIN SMALL LETTER K WITH ACUTE",
   direction="l",
@@ -44186,6 +45353,7 @@ characters.data={
   unicodeslot=0x1E31,
  },
  [0x1E32]={
+  adobename="Kdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER K WITH DOT BELOW",
   direction="l",
@@ -44196,6 +45364,7 @@ characters.data={
   unicodeslot=0x1E32,
  },
  [0x1E33]={
+  adobename="kdotbelow",
   category="ll",
   description="LATIN SMALL LETTER K WITH DOT BELOW",
   direction="l",
@@ -44206,6 +45375,7 @@ characters.data={
   unicodeslot=0x1E33,
  },
  [0x1E34]={
+  adobename="Klinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER K WITH LINE BELOW",
   direction="l",
@@ -44216,6 +45386,7 @@ characters.data={
   unicodeslot=0x1E34,
  },
  [0x1E35]={
+  adobename="klinebelow",
   category="ll",
   description="LATIN SMALL LETTER K WITH LINE BELOW",
   direction="l",
@@ -44226,6 +45397,7 @@ characters.data={
   unicodeslot=0x1E35,
  },
  [0x1E36]={
+  adobename="Ldotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER L WITH DOT BELOW",
   direction="l",
@@ -44236,6 +45408,7 @@ characters.data={
   unicodeslot=0x1E36,
  },
  [0x1E37]={
+  adobename="ldotbelow",
   category="ll",
   description="LATIN SMALL LETTER L WITH DOT BELOW",
   direction="l",
@@ -44246,6 +45419,7 @@ characters.data={
   unicodeslot=0x1E37,
  },
  [0x1E38]={
+  adobename="Ldotbelowmacron",
   category="lu",
   description="LATIN CAPITAL LETTER L WITH DOT BELOW AND MACRON",
   direction="l",
@@ -44256,6 +45430,7 @@ characters.data={
   unicodeslot=0x1E38,
  },
  [0x1E39]={
+  adobename="ldotbelowmacron",
   category="ll",
   description="LATIN SMALL LETTER L WITH DOT BELOW AND MACRON",
   direction="l",
@@ -44266,6 +45441,7 @@ characters.data={
   unicodeslot=0x1E39,
  },
  [0x1E3A]={
+  adobename="Llinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER L WITH LINE BELOW",
   direction="l",
@@ -44276,6 +45452,7 @@ characters.data={
   unicodeslot=0x1E3A,
  },
  [0x1E3B]={
+  adobename="llinebelow",
   category="ll",
   description="LATIN SMALL LETTER L WITH LINE BELOW",
   direction="l",
@@ -44286,6 +45463,7 @@ characters.data={
   unicodeslot=0x1E3B,
  },
  [0x1E3C]={
+  adobename="Lcircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER L WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44296,6 +45474,7 @@ characters.data={
   unicodeslot=0x1E3C,
  },
  [0x1E3D]={
+  adobename="lcircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER L WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44306,6 +45485,7 @@ characters.data={
   unicodeslot=0x1E3D,
  },
  [0x1E3E]={
+  adobename="Macute",
   category="lu",
   description="LATIN CAPITAL LETTER M WITH ACUTE",
   direction="l",
@@ -44316,6 +45496,7 @@ characters.data={
   unicodeslot=0x1E3E,
  },
  [0x1E3F]={
+  adobename="macute",
   category="ll",
   description="LATIN SMALL LETTER M WITH ACUTE",
   direction="l",
@@ -44326,6 +45507,7 @@ characters.data={
   unicodeslot=0x1E3F,
  },
  [0x1E40]={
+  adobename="Mdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER M WITH DOT ABOVE",
   direction="l",
@@ -44336,6 +45518,7 @@ characters.data={
   unicodeslot=0x1E40,
  },
  [0x1E41]={
+  adobename="mdotaccent",
   category="ll",
   description="LATIN SMALL LETTER M WITH DOT ABOVE",
   direction="l",
@@ -44346,6 +45529,7 @@ characters.data={
   unicodeslot=0x1E41,
  },
  [0x1E42]={
+  adobename="Mdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER M WITH DOT BELOW",
   direction="l",
@@ -44356,6 +45540,7 @@ characters.data={
   unicodeslot=0x1E42,
  },
  [0x1E43]={
+  adobename="mdotbelow",
   category="ll",
   description="LATIN SMALL LETTER M WITH DOT BELOW",
   direction="l",
@@ -44366,6 +45551,7 @@ characters.data={
   unicodeslot=0x1E43,
  },
  [0x1E44]={
+  adobename="Ndotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER N WITH DOT ABOVE",
   direction="l",
@@ -44376,6 +45562,7 @@ characters.data={
   unicodeslot=0x1E44,
  },
  [0x1E45]={
+  adobename="ndotaccent",
   category="ll",
   description="LATIN SMALL LETTER N WITH DOT ABOVE",
   direction="l",
@@ -44386,6 +45573,7 @@ characters.data={
   unicodeslot=0x1E45,
  },
  [0x1E46]={
+  adobename="Ndotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER N WITH DOT BELOW",
   direction="l",
@@ -44396,6 +45584,7 @@ characters.data={
   unicodeslot=0x1E46,
  },
  [0x1E47]={
+  adobename="ndotbelow",
   category="ll",
   description="LATIN SMALL LETTER N WITH DOT BELOW",
   direction="l",
@@ -44406,6 +45595,7 @@ characters.data={
   unicodeslot=0x1E47,
  },
  [0x1E48]={
+  adobename="Nlinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER N WITH LINE BELOW",
   direction="l",
@@ -44416,6 +45606,7 @@ characters.data={
   unicodeslot=0x1E48,
  },
  [0x1E49]={
+  adobename="nlinebelow",
   category="ll",
   description="LATIN SMALL LETTER N WITH LINE BELOW",
   direction="l",
@@ -44426,6 +45617,7 @@ characters.data={
   unicodeslot=0x1E49,
  },
  [0x1E4A]={
+  adobename="Ncircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER N WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44436,6 +45628,7 @@ characters.data={
   unicodeslot=0x1E4A,
  },
  [0x1E4B]={
+  adobename="ncircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER N WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44446,6 +45639,7 @@ characters.data={
   unicodeslot=0x1E4B,
  },
  [0x1E4C]={
+  adobename="Otildeacute",
   category="lu",
   description="LATIN CAPITAL LETTER O WITH TILDE AND ACUTE",
   direction="l",
@@ -44456,6 +45650,7 @@ characters.data={
   unicodeslot=0x1E4C,
  },
  [0x1E4D]={
+  adobename="otildeacute",
   category="ll",
   description="LATIN SMALL LETTER O WITH TILDE AND ACUTE",
   direction="l",
@@ -44466,6 +45661,7 @@ characters.data={
   unicodeslot=0x1E4D,
  },
  [0x1E4E]={
+  adobename="Otildedieresis",
   category="lu",
   description="LATIN CAPITAL LETTER O WITH TILDE AND DIAERESIS",
   direction="l",
@@ -44476,6 +45672,7 @@ characters.data={
   unicodeslot=0x1E4E,
  },
  [0x1E4F]={
+  adobename="otildedieresis",
   category="ll",
   description="LATIN SMALL LETTER O WITH TILDE AND DIAERESIS",
   direction="l",
@@ -44486,6 +45683,7 @@ characters.data={
   unicodeslot=0x1E4F,
  },
  [0x1E50]={
+  adobename="Omacrongrave",
   category="lu",
   description="LATIN CAPITAL LETTER O WITH MACRON AND GRAVE",
   direction="l",
@@ -44496,6 +45694,7 @@ characters.data={
   unicodeslot=0x1E50,
  },
  [0x1E51]={
+  adobename="omacrongrave",
   category="ll",
   description="LATIN SMALL LETTER O WITH MACRON AND GRAVE",
   direction="l",
@@ -44506,6 +45705,7 @@ characters.data={
   unicodeslot=0x1E51,
  },
  [0x1E52]={
+  adobename="Omacronacute",
   category="lu",
   description="LATIN CAPITAL LETTER O WITH MACRON AND ACUTE",
   direction="l",
@@ -44516,6 +45716,7 @@ characters.data={
   unicodeslot=0x1E52,
  },
  [0x1E53]={
+  adobename="omacronacute",
   category="ll",
   description="LATIN SMALL LETTER O WITH MACRON AND ACUTE",
   direction="l",
@@ -44526,6 +45727,7 @@ characters.data={
   unicodeslot=0x1E53,
  },
  [0x1E54]={
+  adobename="Pacute",
   category="lu",
   description="LATIN CAPITAL LETTER P WITH ACUTE",
   direction="l",
@@ -44536,6 +45738,7 @@ characters.data={
   unicodeslot=0x1E54,
  },
  [0x1E55]={
+  adobename="pacute",
   category="ll",
   description="LATIN SMALL LETTER P WITH ACUTE",
   direction="l",
@@ -44546,6 +45749,7 @@ characters.data={
   unicodeslot=0x1E55,
  },
  [0x1E56]={
+  adobename="Pdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER P WITH DOT ABOVE",
   direction="l",
@@ -44556,6 +45760,7 @@ characters.data={
   unicodeslot=0x1E56,
  },
  [0x1E57]={
+  adobename="pdotaccent",
   category="ll",
   description="LATIN SMALL LETTER P WITH DOT ABOVE",
   direction="l",
@@ -44566,6 +45771,7 @@ characters.data={
   unicodeslot=0x1E57,
  },
  [0x1E58]={
+  adobename="Rdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER R WITH DOT ABOVE",
   direction="l",
@@ -44576,6 +45782,7 @@ characters.data={
   unicodeslot=0x1E58,
  },
  [0x1E59]={
+  adobename="rdotaccent",
   category="ll",
   description="LATIN SMALL LETTER R WITH DOT ABOVE",
   direction="l",
@@ -44586,6 +45793,7 @@ characters.data={
   unicodeslot=0x1E59,
  },
  [0x1E5A]={
+  adobename="Rdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER R WITH DOT BELOW",
   direction="l",
@@ -44596,6 +45804,7 @@ characters.data={
   unicodeslot=0x1E5A,
  },
  [0x1E5B]={
+  adobename="rdotbelow",
   category="ll",
   description="LATIN SMALL LETTER R WITH DOT BELOW",
   direction="l",
@@ -44606,6 +45815,7 @@ characters.data={
   unicodeslot=0x1E5B,
  },
  [0x1E5C]={
+  adobename="Rdotbelowmacron",
   category="lu",
   description="LATIN CAPITAL LETTER R WITH DOT BELOW AND MACRON",
   direction="l",
@@ -44616,6 +45826,7 @@ characters.data={
   unicodeslot=0x1E5C,
  },
  [0x1E5D]={
+  adobename="rdotbelowmacron",
   category="ll",
   description="LATIN SMALL LETTER R WITH DOT BELOW AND MACRON",
   direction="l",
@@ -44626,6 +45837,7 @@ characters.data={
   unicodeslot=0x1E5D,
  },
  [0x1E5E]={
+  adobename="Rlinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER R WITH LINE BELOW",
   direction="l",
@@ -44636,6 +45848,7 @@ characters.data={
   unicodeslot=0x1E5E,
  },
  [0x1E5F]={
+  adobename="rlinebelow",
   category="ll",
   description="LATIN SMALL LETTER R WITH LINE BELOW",
   direction="l",
@@ -44646,6 +45859,7 @@ characters.data={
   unicodeslot=0x1E5F,
  },
  [0x1E60]={
+  adobename="Sdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER S WITH DOT ABOVE",
   direction="l",
@@ -44656,6 +45870,7 @@ characters.data={
   unicodeslot=0x1E60,
  },
  [0x1E61]={
+  adobename="sdotaccent",
   category="ll",
   description="LATIN SMALL LETTER S WITH DOT ABOVE",
   direction="l",
@@ -44666,6 +45881,7 @@ characters.data={
   unicodeslot=0x1E61,
  },
  [0x1E62]={
+  adobename="Sdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER S WITH DOT BELOW",
   direction="l",
@@ -44676,6 +45892,7 @@ characters.data={
   unicodeslot=0x1E62,
  },
  [0x1E63]={
+  adobename="sdotbelow",
   category="ll",
   description="LATIN SMALL LETTER S WITH DOT BELOW",
   direction="l",
@@ -44686,6 +45903,7 @@ characters.data={
   unicodeslot=0x1E63,
  },
  [0x1E64]={
+  adobename="Sacutedotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER S WITH ACUTE AND DOT ABOVE",
   direction="l",
@@ -44696,6 +45914,7 @@ characters.data={
   unicodeslot=0x1E64,
  },
  [0x1E65]={
+  adobename="sacutedotaccent",
   category="ll",
   description="LATIN SMALL LETTER S WITH ACUTE AND DOT ABOVE",
   direction="l",
@@ -44706,6 +45925,7 @@ characters.data={
   unicodeslot=0x1E65,
  },
  [0x1E66]={
+  adobename="Scarondotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER S WITH CARON AND DOT ABOVE",
   direction="l",
@@ -44716,6 +45936,7 @@ characters.data={
   unicodeslot=0x1E66,
  },
  [0x1E67]={
+  adobename="scarondotaccent",
   category="ll",
   description="LATIN SMALL LETTER S WITH CARON AND DOT ABOVE",
   direction="l",
@@ -44726,6 +45947,7 @@ characters.data={
   unicodeslot=0x1E67,
  },
  [0x1E68]={
+  adobename="Sdotbelowdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER S WITH DOT BELOW AND DOT ABOVE",
   direction="l",
@@ -44736,6 +45958,7 @@ characters.data={
   unicodeslot=0x1E68,
  },
  [0x1E69]={
+  adobename="sdotbelowdotaccent",
   category="ll",
   description="LATIN SMALL LETTER S WITH DOT BELOW AND DOT ABOVE",
   direction="l",
@@ -44746,6 +45969,7 @@ characters.data={
   unicodeslot=0x1E69,
  },
  [0x1E6A]={
+  adobename="Tdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER T WITH DOT ABOVE",
   direction="l",
@@ -44756,6 +45980,7 @@ characters.data={
   unicodeslot=0x1E6A,
  },
  [0x1E6B]={
+  adobename="tdotaccent",
   category="ll",
   description="LATIN SMALL LETTER T WITH DOT ABOVE",
   direction="l",
@@ -44766,6 +45991,7 @@ characters.data={
   unicodeslot=0x1E6B,
  },
  [0x1E6C]={
+  adobename="Tdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER T WITH DOT BELOW",
   direction="l",
@@ -44776,6 +46002,7 @@ characters.data={
   unicodeslot=0x1E6C,
  },
  [0x1E6D]={
+  adobename="tdotbelow",
   category="ll",
   description="LATIN SMALL LETTER T WITH DOT BELOW",
   direction="l",
@@ -44786,6 +46013,7 @@ characters.data={
   unicodeslot=0x1E6D,
  },
  [0x1E6E]={
+  adobename="Tlinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER T WITH LINE BELOW",
   direction="l",
@@ -44796,6 +46024,7 @@ characters.data={
   unicodeslot=0x1E6E,
  },
  [0x1E6F]={
+  adobename="tlinebelow",
   category="ll",
   description="LATIN SMALL LETTER T WITH LINE BELOW",
   direction="l",
@@ -44806,6 +46035,7 @@ characters.data={
   unicodeslot=0x1E6F,
  },
  [0x1E70]={
+  adobename="Tcircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER T WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44816,6 +46046,7 @@ characters.data={
   unicodeslot=0x1E70,
  },
  [0x1E71]={
+  adobename="tcircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER T WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44826,6 +46057,7 @@ characters.data={
   unicodeslot=0x1E71,
  },
  [0x1E72]={
+  adobename="Udieresisbelow",
   category="lu",
   description="LATIN CAPITAL LETTER U WITH DIAERESIS BELOW",
   direction="l",
@@ -44836,6 +46068,7 @@ characters.data={
   unicodeslot=0x1E72,
  },
  [0x1E73]={
+  adobename="udieresisbelow",
   category="ll",
   description="LATIN SMALL LETTER U WITH DIAERESIS BELOW",
   direction="l",
@@ -44846,6 +46079,7 @@ characters.data={
   unicodeslot=0x1E73,
  },
  [0x1E74]={
+  adobename="Utildebelow",
   category="lu",
   description="LATIN CAPITAL LETTER U WITH TILDE BELOW",
   direction="l",
@@ -44856,6 +46090,7 @@ characters.data={
   unicodeslot=0x1E74,
  },
  [0x1E75]={
+  adobename="utildebelow",
   category="ll",
   description="LATIN SMALL LETTER U WITH TILDE BELOW",
   direction="l",
@@ -44866,6 +46101,7 @@ characters.data={
   unicodeslot=0x1E75,
  },
  [0x1E76]={
+  adobename="Ucircumflexbelow",
   category="lu",
   description="LATIN CAPITAL LETTER U WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44876,6 +46112,7 @@ characters.data={
   unicodeslot=0x1E76,
  },
  [0x1E77]={
+  adobename="ucircumflexbelow",
   category="ll",
   description="LATIN SMALL LETTER U WITH CIRCUMFLEX BELOW",
   direction="l",
@@ -44886,6 +46123,7 @@ characters.data={
   unicodeslot=0x1E77,
  },
  [0x1E78]={
+  adobename="Utildeacute",
   category="lu",
   description="LATIN CAPITAL LETTER U WITH TILDE AND ACUTE",
   direction="l",
@@ -44896,6 +46134,7 @@ characters.data={
   unicodeslot=0x1E78,
  },
  [0x1E79]={
+  adobename="utildeacute",
   category="ll",
   description="LATIN SMALL LETTER U WITH TILDE AND ACUTE",
   direction="l",
@@ -44906,6 +46145,7 @@ characters.data={
   unicodeslot=0x1E79,
  },
  [0x1E7A]={
+  adobename="Umacrondieresis",
   category="lu",
   description="LATIN CAPITAL LETTER U WITH MACRON AND DIAERESIS",
   direction="l",
@@ -44916,6 +46156,7 @@ characters.data={
   unicodeslot=0x1E7A,
  },
  [0x1E7B]={
+  adobename="umacrondieresis",
   category="ll",
   description="LATIN SMALL LETTER U WITH MACRON AND DIAERESIS",
   direction="l",
@@ -44926,6 +46167,7 @@ characters.data={
   unicodeslot=0x1E7B,
  },
  [0x1E7C]={
+  adobename="Vtilde",
   category="lu",
   description="LATIN CAPITAL LETTER V WITH TILDE",
   direction="l",
@@ -44936,6 +46178,7 @@ characters.data={
   unicodeslot=0x1E7C,
  },
  [0x1E7D]={
+  adobename="vtilde",
   category="ll",
   description="LATIN SMALL LETTER V WITH TILDE",
   direction="l",
@@ -44946,6 +46189,7 @@ characters.data={
   unicodeslot=0x1E7D,
  },
  [0x1E7E]={
+  adobename="Vdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER V WITH DOT BELOW",
   direction="l",
@@ -44956,6 +46200,7 @@ characters.data={
   unicodeslot=0x1E7E,
  },
  [0x1E7F]={
+  adobename="vdotbelow",
   category="ll",
   description="LATIN SMALL LETTER V WITH DOT BELOW",
   direction="l",
@@ -45032,6 +46277,7 @@ characters.data={
   unicodeslot=0x1E85,
  },
  [0x1E86]={
+  adobename="Wdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER W WITH DOT ABOVE",
   direction="l",
@@ -45042,6 +46288,7 @@ characters.data={
   unicodeslot=0x1E86,
  },
  [0x1E87]={
+  adobename="wdotaccent",
   category="ll",
   description="LATIN SMALL LETTER W WITH DOT ABOVE",
   direction="l",
@@ -45052,6 +46299,7 @@ characters.data={
   unicodeslot=0x1E87,
  },
  [0x1E88]={
+  adobename="Wdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER W WITH DOT BELOW",
   direction="l",
@@ -45062,6 +46310,7 @@ characters.data={
   unicodeslot=0x1E88,
  },
  [0x1E89]={
+  adobename="wdotbelow",
   category="ll",
   description="LATIN SMALL LETTER W WITH DOT BELOW",
   direction="l",
@@ -45072,6 +46321,7 @@ characters.data={
   unicodeslot=0x1E89,
  },
  [0x1E8A]={
+  adobename="Xdotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER X WITH DOT ABOVE",
   direction="l",
@@ -45082,6 +46332,7 @@ characters.data={
   unicodeslot=0x1E8A,
  },
  [0x1E8B]={
+  adobename="xdotaccent",
   category="ll",
   description="LATIN SMALL LETTER X WITH DOT ABOVE",
   direction="l",
@@ -45092,6 +46343,7 @@ characters.data={
   unicodeslot=0x1E8B,
  },
  [0x1E8C]={
+  adobename="Xdieresis",
   category="lu",
   description="LATIN CAPITAL LETTER X WITH DIAERESIS",
   direction="l",
@@ -45102,6 +46354,7 @@ characters.data={
   unicodeslot=0x1E8C,
  },
  [0x1E8D]={
+  adobename="xdieresis",
   category="ll",
   description="LATIN SMALL LETTER X WITH DIAERESIS",
   direction="l",
@@ -45112,6 +46365,7 @@ characters.data={
   unicodeslot=0x1E8D,
  },
  [0x1E8E]={
+  adobename="Ydotaccent",
   category="lu",
   description="LATIN CAPITAL LETTER Y WITH DOT ABOVE",
   direction="l",
@@ -45122,6 +46376,7 @@ characters.data={
   unicodeslot=0x1E8E,
  },
  [0x1E8F]={
+  adobename="ydotaccent",
   category="ll",
   description="LATIN SMALL LETTER Y WITH DOT ABOVE",
   direction="l",
@@ -45132,6 +46387,7 @@ characters.data={
   unicodeslot=0x1E8F,
  },
  [0x1E90]={
+  adobename="Zcircumflex",
   category="lu",
   description="LATIN CAPITAL LETTER Z WITH CIRCUMFLEX",
   direction="l",
@@ -45142,6 +46398,7 @@ characters.data={
   unicodeslot=0x1E90,
  },
  [0x1E91]={
+  adobename="zcircumflex",
   category="ll",
   description="LATIN SMALL LETTER Z WITH CIRCUMFLEX",
   direction="l",
@@ -45152,6 +46409,7 @@ characters.data={
   unicodeslot=0x1E91,
  },
  [0x1E92]={
+  adobename="Zdotbelow",
   category="lu",
   description="LATIN CAPITAL LETTER Z WITH DOT BELOW",
   direction="l",
@@ -45162,6 +46420,7 @@ characters.data={
   unicodeslot=0x1E92,
  },
  [0x1E93]={
+  adobename="zdotbelow",
   category="ll",
   description="LATIN SMALL LETTER Z WITH DOT BELOW",
   direction="l",
@@ -45172,6 +46431,7 @@ characters.data={
   unicodeslot=0x1E93,
  },
  [0x1E94]={
+  adobename="Zlinebelow",
   category="lu",
   description="LATIN CAPITAL LETTER Z WITH LINE BELOW",
   direction="l",
@@ -45182,6 +46442,7 @@ characters.data={
   unicodeslot=0x1E94,
  },
  [0x1E95]={
+  adobename="zlinebelow",
   category="ll",
   description="LATIN SMALL LETTER Z WITH LINE BELOW",
   direction="l",
@@ -45192,6 +46453,7 @@ characters.data={
   unicodeslot=0x1E95,
  },
  [0x1E96]={
+  adobename="hlinebelow",
   category="ll",
   description="LATIN SMALL LETTER H WITH LINE BELOW",
   direction="l",
@@ -45201,6 +46463,7 @@ characters.data={
   unicodeslot=0x1E96,
  },
  [0x1E97]={
+  adobename="tdieresis",
   category="ll",
   description="LATIN SMALL LETTER T WITH DIAERESIS",
   direction="l",
@@ -45210,6 +46473,7 @@ characters.data={
   unicodeslot=0x1E97,
  },
  [0x1E98]={
+  adobename="wring",
   category="ll",
   description="LATIN SMALL LETTER W WITH RING ABOVE",
   direction="l",
@@ -45219,6 +46483,7 @@ characters.data={
   unicodeslot=0x1E98,
  },
  [0x1E99]={
+  adobename="yring",
   category="ll",
   description="LATIN SMALL LETTER Y WITH RING ABOVE",
   direction="l",
@@ -45228,6 +46493,7 @@ characters.data={
   unicodeslot=0x1E99,
  },
  [0x1E9A]={
+  adobename="arighthalfring",
   category="ll",
   description="LATIN SMALL LETTER A WITH RIGHT HALF RING",
   direction="l",
@@ -45237,6 +46503,7 @@ characters.data={
   unicodeslot=0x1E9A,
  },
  [0x1E9B]={
+  adobename="slongdotaccent",
   category="ll",
   description="LATIN SMALL LETTER LONG S WITH DOT ABOVE",
   direction="l",
@@ -45246,6 +46513,7 @@ characters.data={
   unicodeslot=0x1E9B,
  },
  [0x1EA0]={
+  adobename="Adotbelow",
   category="lu",
   contextname="Adotbelow",
   description="LATIN CAPITAL LETTER A WITH DOT BELOW",
@@ -45257,6 +46525,7 @@ characters.data={
   unicodeslot=0x1EA0,
  },
  [0x1EA1]={
+  adobename="adotbelow",
   category="ll",
   contextname="adotbelow",
   description="LATIN SMALL LETTER A WITH DOT BELOW",
@@ -45268,6 +46537,7 @@ characters.data={
   unicodeslot=0x1EA1,
  },
  [0x1EA2]={
+  adobename="Ahookabove",
   category="lu",
   contextname="Ahook",
   description="LATIN CAPITAL LETTER A WITH HOOK ABOVE",
@@ -45279,6 +46549,7 @@ characters.data={
   unicodeslot=0x1EA2,
  },
  [0x1EA3]={
+  adobename="ahookabove",
   category="ll",
   contextname="ahook",
   description="LATIN SMALL LETTER A WITH HOOK ABOVE",
@@ -45290,6 +46561,7 @@ characters.data={
   unicodeslot=0x1EA3,
  },
  [0x1EA4]={
+  adobename="Acircumflexacute",
   category="lu",
   contextname="Acircumflexacute",
   description="LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND ACUTE",
@@ -45301,6 +46573,7 @@ characters.data={
   unicodeslot=0x1EA4,
  },
  [0x1EA5]={
+  adobename="acircumflexacute",
   category="ll",
   contextname="acircumflexacute",
   description="LATIN SMALL LETTER A WITH CIRCUMFLEX AND ACUTE",
@@ -45312,6 +46585,7 @@ characters.data={
   unicodeslot=0x1EA5,
  },
  [0x1EA6]={
+  adobename="Acircumflexgrave",
   category="lu",
   contextname="Acircumflexgrave",
   description="LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND GRAVE",
@@ -45323,6 +46597,7 @@ characters.data={
   unicodeslot=0x1EA6,
  },
  [0x1EA7]={
+  adobename="acircumflexgrave",
   category="ll",
   contextname="acircumflexgrave",
   description="LATIN SMALL LETTER A WITH CIRCUMFLEX AND GRAVE",
@@ -45334,6 +46609,7 @@ characters.data={
   unicodeslot=0x1EA7,
  },
  [0x1EA8]={
+  adobename="Acircumflexhookabove",
   category="lu",
   contextname="Acircumflexhook",
   description="LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45345,6 +46621,7 @@ characters.data={
   unicodeslot=0x1EA8,
  },
  [0x1EA9]={
+  adobename="acircumflexhookabove",
   category="ll",
   contextname="acircumflexhook",
   description="LATIN SMALL LETTER A WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45356,6 +46633,7 @@ characters.data={
   unicodeslot=0x1EA9,
  },
  [0x1EAA]={
+  adobename="Acircumflextilde",
   category="lu",
   contextname="Acircumflextilde",
   description="LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND TILDE",
@@ -45367,6 +46645,7 @@ characters.data={
   unicodeslot=0x1EAA,
  },
  [0x1EAB]={
+  adobename="acircumflextilde",
   category="ll",
   contextname="acircumflextilde",
   description="LATIN SMALL LETTER A WITH CIRCUMFLEX AND TILDE",
@@ -45378,6 +46657,7 @@ characters.data={
   unicodeslot=0x1EAB,
  },
  [0x1EAC]={
+  adobename="Acircumflexdotbelow",
   category="lu",
   contextname="Acircumflexdotbelow",
   description="LATIN CAPITAL LETTER A WITH CIRCUMFLEX AND DOT BELOW",
@@ -45389,6 +46669,7 @@ characters.data={
   unicodeslot=0x1EAC,
  },
  [0x1EAD]={
+  adobename="acircumflexdotbelow",
   category="ll",
   contextname="acircumflexdotbelow",
   description="LATIN SMALL LETTER A WITH CIRCUMFLEX AND DOT BELOW",
@@ -45400,6 +46681,7 @@ characters.data={
   unicodeslot=0x1EAD,
  },
  [0x1EAE]={
+  adobename="Abreveacute",
   category="lu",
   contextname="Abreveacute",
   description="LATIN CAPITAL LETTER A WITH BREVE AND ACUTE",
@@ -45411,6 +46693,7 @@ characters.data={
   unicodeslot=0x1EAE,
  },
  [0x1EAF]={
+  adobename="abreveacute",
   category="ll",
   contextname="abreveacute",
   description="LATIN SMALL LETTER A WITH BREVE AND ACUTE",
@@ -45422,6 +46705,7 @@ characters.data={
   unicodeslot=0x1EAF,
  },
  [0x1EB0]={
+  adobename="Abrevegrave",
   category="lu",
   contextname="Abrevegrave",
   description="LATIN CAPITAL LETTER A WITH BREVE AND GRAVE",
@@ -45433,6 +46717,7 @@ characters.data={
   unicodeslot=0x1EB0,
  },
  [0x1EB1]={
+  adobename="abrevegrave",
   category="ll",
   contextname="abrevegrave",
   description="LATIN SMALL LETTER A WITH BREVE AND GRAVE",
@@ -45444,6 +46729,7 @@ characters.data={
   unicodeslot=0x1EB1,
  },
  [0x1EB2]={
+  adobename="Abrevehookabove",
   category="lu",
   contextname="Abrevehook",
   description="LATIN CAPITAL LETTER A WITH BREVE AND HOOK ABOVE",
@@ -45455,6 +46741,7 @@ characters.data={
   unicodeslot=0x1EB2,
  },
  [0x1EB3]={
+  adobename="abrevehookabove",
   category="ll",
   contextname="abrevehook",
   description="LATIN SMALL LETTER A WITH BREVE AND HOOK ABOVE",
@@ -45466,6 +46753,7 @@ characters.data={
   unicodeslot=0x1EB3,
  },
  [0x1EB4]={
+  adobename="Abrevetilde",
   category="lu",
   contextname="Abrevetilde",
   description="LATIN CAPITAL LETTER A WITH BREVE AND TILDE",
@@ -45477,6 +46765,7 @@ characters.data={
   unicodeslot=0x1EB4,
  },
  [0x1EB5]={
+  adobename="abrevetilde",
   category="ll",
   contextname="abrevetilde",
   description="LATIN SMALL LETTER A WITH BREVE AND TILDE",
@@ -45488,6 +46777,7 @@ characters.data={
   unicodeslot=0x1EB5,
  },
  [0x1EB6]={
+  adobename="Abrevedotbelow",
   category="lu",
   contextname="Abrevedotbelow",
   description="LATIN CAPITAL LETTER A WITH BREVE AND DOT BELOW",
@@ -45499,6 +46789,7 @@ characters.data={
   unicodeslot=0x1EB6,
  },
  [0x1EB7]={
+  adobename="abrevedotbelow",
   category="ll",
   contextname="abrevedotbelow",
   description="LATIN SMALL LETTER A WITH BREVE AND DOT BELOW",
@@ -45510,6 +46801,7 @@ characters.data={
   unicodeslot=0x1EB7,
  },
  [0x1EB8]={
+  adobename="Edotbelow",
   category="lu",
   contextname="Edotbelow",
   description="LATIN CAPITAL LETTER E WITH DOT BELOW",
@@ -45521,6 +46813,7 @@ characters.data={
   unicodeslot=0x1EB8,
  },
  [0x1EB9]={
+  adobename="edotbelow",
   category="ll",
   contextname="edotbelow",
   description="LATIN SMALL LETTER E WITH DOT BELOW",
@@ -45532,6 +46825,7 @@ characters.data={
   unicodeslot=0x1EB9,
  },
  [0x1EBA]={
+  adobename="Ehookabove",
   category="lu",
   contextname="Ehook",
   description="LATIN CAPITAL LETTER E WITH HOOK ABOVE",
@@ -45543,6 +46837,7 @@ characters.data={
   unicodeslot=0x1EBA,
  },
  [0x1EBB]={
+  adobename="ehookabove",
   category="ll",
   contextname="ehook",
   description="LATIN SMALL LETTER E WITH HOOK ABOVE",
@@ -45554,6 +46849,7 @@ characters.data={
   unicodeslot=0x1EBB,
  },
  [0x1EBC]={
+  adobename="Etilde",
   category="lu",
   contextname="Etilde",
   description="LATIN CAPITAL LETTER E WITH TILDE",
@@ -45565,6 +46861,7 @@ characters.data={
   unicodeslot=0x1EBC,
  },
  [0x1EBD]={
+  adobename="etilde",
   category="ll",
   contextname="etilde",
   description="LATIN SMALL LETTER E WITH TILDE",
@@ -45576,6 +46873,7 @@ characters.data={
   unicodeslot=0x1EBD,
  },
  [0x1EBE]={
+  adobename="Ecircumflexacute",
   category="lu",
   contextname="Ecircumflexacute",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX AND ACUTE",
@@ -45587,6 +46885,7 @@ characters.data={
   unicodeslot=0x1EBE,
  },
  [0x1EBF]={
+  adobename="ecircumflexacute",
   category="ll",
   contextname="ecircumflexacute",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE",
@@ -45598,6 +46897,7 @@ characters.data={
   unicodeslot=0x1EBF,
  },
  [0x1EC0]={
+  adobename="Ecircumflexgrave",
   category="lu",
   contextname="Ecircumflexgrave",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX AND GRAVE",
@@ -45609,6 +46909,7 @@ characters.data={
   unicodeslot=0x1EC0,
  },
  [0x1EC1]={
+  adobename="ecircumflexgrave",
   category="ll",
   contextname="ecircumflexgrave",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX AND GRAVE",
@@ -45620,6 +46921,7 @@ characters.data={
   unicodeslot=0x1EC1,
  },
  [0x1EC2]={
+  adobename="Ecircumflexhookabove",
   category="lu",
   contextname="Ecircumflexhook",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45631,6 +46933,7 @@ characters.data={
   unicodeslot=0x1EC2,
  },
  [0x1EC3]={
+  adobename="ecircumflexhookabove",
   category="ll",
   contextname="ecircumflexhook",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45642,6 +46945,7 @@ characters.data={
   unicodeslot=0x1EC3,
  },
  [0x1EC4]={
+  adobename="Ecircumflextilde",
   category="lu",
   contextname="Ecircumflextilde",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX AND TILDE",
@@ -45653,6 +46957,7 @@ characters.data={
   unicodeslot=0x1EC4,
  },
  [0x1EC5]={
+  adobename="ecircumflextilde",
   category="ll",
   contextname="ecircumflextilde",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX AND TILDE",
@@ -45664,6 +46969,7 @@ characters.data={
   unicodeslot=0x1EC5,
  },
  [0x1EC6]={
+  adobename="Ecircumflexdotbelow",
   category="lu",
   contextname="Ecircumflexdotbelow",
   description="LATIN CAPITAL LETTER E WITH CIRCUMFLEX AND DOT BELOW",
@@ -45675,6 +46981,7 @@ characters.data={
   unicodeslot=0x1EC6,
  },
  [0x1EC7]={
+  adobename="ecircumflexdotbelow",
   category="ll",
   contextname="ecircumflexdotbelow",
   description="LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW",
@@ -45686,6 +46993,7 @@ characters.data={
   unicodeslot=0x1EC7,
  },
  [0x1EC8]={
+  adobename="Ihookabove",
   category="lu",
   contextname="Ihook",
   description="LATIN CAPITAL LETTER I WITH HOOK ABOVE",
@@ -45697,6 +47005,7 @@ characters.data={
   unicodeslot=0x1EC8,
  },
  [0x1EC9]={
+  adobename="ihookabove",
   category="ll",
   contextname="ihook",
   description="LATIN SMALL LETTER I WITH HOOK ABOVE",
@@ -45708,6 +47017,7 @@ characters.data={
   unicodeslot=0x1EC9,
  },
  [0x1ECA]={
+  adobename="Idotbelow",
   category="lu",
   contextname="Idotbelow",
   description="LATIN CAPITAL LETTER I WITH DOT BELOW",
@@ -45719,6 +47029,7 @@ characters.data={
   unicodeslot=0x1ECA,
  },
  [0x1ECB]={
+  adobename="idotbelow",
   category="ll",
   contextname="idotbelow",
   description="LATIN SMALL LETTER I WITH DOT BELOW",
@@ -45730,6 +47041,7 @@ characters.data={
   unicodeslot=0x1ECB,
  },
  [0x1ECC]={
+  adobename="Odotbelow",
   category="lu",
   contextname="Odotbelow",
   description="LATIN CAPITAL LETTER O WITH DOT BELOW",
@@ -45741,6 +47053,7 @@ characters.data={
   unicodeslot=0x1ECC,
  },
  [0x1ECD]={
+  adobename="odotbelow",
   category="ll",
   contextname="odotbelow",
   description="LATIN SMALL LETTER O WITH DOT BELOW",
@@ -45752,6 +47065,7 @@ characters.data={
   unicodeslot=0x1ECD,
  },
  [0x1ECE]={
+  adobename="Ohookabove",
   category="lu",
   contextname="Ohook",
   description="LATIN CAPITAL LETTER O WITH HOOK ABOVE",
@@ -45763,6 +47077,7 @@ characters.data={
   unicodeslot=0x1ECE,
  },
  [0x1ECF]={
+  adobename="ohookabove",
   category="ll",
   contextname="ohook",
   description="LATIN SMALL LETTER O WITH HOOK ABOVE",
@@ -45774,6 +47089,7 @@ characters.data={
   unicodeslot=0x1ECF,
  },
  [0x1ED0]={
+  adobename="Ocircumflexacute",
   category="lu",
   contextname="Ocircumflexacute",
   description="LATIN CAPITAL LETTER O WITH CIRCUMFLEX AND ACUTE",
@@ -45785,6 +47101,7 @@ characters.data={
   unicodeslot=0x1ED0,
  },
  [0x1ED1]={
+  adobename="ocircumflexacute",
   category="ll",
   contextname="ocircumflexacute",
   description="LATIN SMALL LETTER O WITH CIRCUMFLEX AND ACUTE",
@@ -45796,6 +47113,7 @@ characters.data={
   unicodeslot=0x1ED1,
  },
  [0x1ED2]={
+  adobename="Ocircumflexgrave",
   category="lu",
   contextname="Ocircumflexgrave",
   description="LATIN CAPITAL LETTER O WITH CIRCUMFLEX AND GRAVE",
@@ -45807,6 +47125,7 @@ characters.data={
   unicodeslot=0x1ED2,
  },
  [0x1ED3]={
+  adobename="ocircumflexgrave",
   category="ll",
   contextname="ocircumflexgrave",
   description="LATIN SMALL LETTER O WITH CIRCUMFLEX AND GRAVE",
@@ -45818,6 +47137,7 @@ characters.data={
   unicodeslot=0x1ED3,
  },
  [0x1ED4]={
+  adobename="Ocircumflexhookabove",
   category="lu",
   contextname="Ocircumflexhook",
   description="LATIN CAPITAL LETTER O WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45829,6 +47149,7 @@ characters.data={
   unicodeslot=0x1ED4,
  },
  [0x1ED5]={
+  adobename="ocircumflexhookabove",
   category="ll",
   contextname="ocircumflexhook",
   description="LATIN SMALL LETTER O WITH CIRCUMFLEX AND HOOK ABOVE",
@@ -45840,6 +47161,7 @@ characters.data={
   unicodeslot=0x1ED5,
  },
  [0x1ED6]={
+  adobename="Ocircumflextilde",
   category="lu",
   contextname="Ocircumflextilde",
   description="LATIN CAPITAL LETTER O WITH CIRCUMFLEX AND TILDE",
@@ -45851,6 +47173,7 @@ characters.data={
   unicodeslot=0x1ED6,
  },
  [0x1ED7]={
+  adobename="ocircumflextilde",
   category="ll",
   contextname="ocircumflextilde",
   description="LATIN SMALL LETTER O WITH CIRCUMFLEX AND TILDE",
@@ -45862,6 +47185,7 @@ characters.data={
   unicodeslot=0x1ED7,
  },
  [0x1ED8]={
+  adobename="Ocircumflexdotbelow",
   category="lu",
   contextname="Ocircumflexdotbelow",
   description="LATIN CAPITAL LETTER O WITH CIRCUMFLEX AND DOT BELOW",
@@ -45873,6 +47197,7 @@ characters.data={
   unicodeslot=0x1ED8,
  },
  [0x1ED9]={
+  adobename="ocircumflexdotbelow",
   category="ll",
   contextname="ocircumflexdotbelow",
   description="LATIN SMALL LETTER O WITH CIRCUMFLEX AND DOT BELOW",
@@ -45884,6 +47209,7 @@ characters.data={
   unicodeslot=0x1ED9,
  },
  [0x1EDA]={
+  adobename="Ohornacute",
   category="lu",
   contextname="Ohornacute",
   description="LATIN CAPITAL LETTER O WITH HORN AND ACUTE",
@@ -45895,6 +47221,7 @@ characters.data={
   unicodeslot=0x1EDA,
  },
  [0x1EDB]={
+  adobename="ohornacute",
   category="ll",
   contextname="ohornacute",
   description="LATIN SMALL LETTER O WITH HORN AND ACUTE",
@@ -45906,6 +47233,7 @@ characters.data={
   unicodeslot=0x1EDB,
  },
  [0x1EDC]={
+  adobename="Ohorngrave",
   category="lu",
   contextname="Ohorngrave",
   description="LATIN CAPITAL LETTER O WITH HORN AND GRAVE",
@@ -45917,6 +47245,7 @@ characters.data={
   unicodeslot=0x1EDC,
  },
  [0x1EDD]={
+  adobename="ohorngrave",
   category="ll",
   contextname="ohorngrave",
   description="LATIN SMALL LETTER O WITH HORN AND GRAVE",
@@ -45928,6 +47257,7 @@ characters.data={
   unicodeslot=0x1EDD,
  },
  [0x1EDE]={
+  adobename="Ohornhookabove",
   category="lu",
   contextname="Ohornhook",
   description="LATIN CAPITAL LETTER O WITH HORN AND HOOK ABOVE",
@@ -45939,6 +47269,7 @@ characters.data={
   unicodeslot=0x1EDE,
  },
  [0x1EDF]={
+  adobename="ohornhookabove",
   category="ll",
   contextname="ohornhook",
   description="LATIN SMALL LETTER O WITH HORN AND HOOK ABOVE",
@@ -45950,6 +47281,7 @@ characters.data={
   unicodeslot=0x1EDF,
  },
  [0x1EE0]={
+  adobename="Ohorntilde",
   category="lu",
   contextname="Ohorntilde",
   description="LATIN CAPITAL LETTER O WITH HORN AND TILDE",
@@ -45961,6 +47293,7 @@ characters.data={
   unicodeslot=0x1EE0,
  },
  [0x1EE1]={
+  adobename="ohorntilde",
   category="ll",
   contextname="ohorntilde",
   description="LATIN SMALL LETTER O WITH HORN AND TILDE",
@@ -45972,6 +47305,7 @@ characters.data={
   unicodeslot=0x1EE1,
  },
  [0x1EE2]={
+  adobename="Ohorndotbelow",
   category="lu",
   contextname="Ohorndotbelow",
   description="LATIN CAPITAL LETTER O WITH HORN AND DOT BELOW",
@@ -45983,6 +47317,7 @@ characters.data={
   unicodeslot=0x1EE2,
  },
  [0x1EE3]={
+  adobename="ohorndotbelow",
   category="ll",
   contextname="ohorndotbelow",
   description="LATIN SMALL LETTER O WITH HORN AND DOT BELOW",
@@ -45994,6 +47329,7 @@ characters.data={
   unicodeslot=0x1EE3,
  },
  [0x1EE4]={
+  adobename="Udotbelow",
   category="lu",
   contextname="Udotbelow",
   description="LATIN CAPITAL LETTER U WITH DOT BELOW",
@@ -46005,6 +47341,7 @@ characters.data={
   unicodeslot=0x1EE4,
  },
  [0x1EE5]={
+  adobename="udotbelow",
   category="ll",
   contextname="udotbelow",
   description="LATIN SMALL LETTER U WITH DOT BELOW",
@@ -46016,6 +47353,7 @@ characters.data={
   unicodeslot=0x1EE5,
  },
  [0x1EE6]={
+  adobename="Uhookabove",
   category="lu",
   contextname="Uhook",
   description="LATIN CAPITAL LETTER U WITH HOOK ABOVE",
@@ -46027,6 +47365,7 @@ characters.data={
   unicodeslot=0x1EE6,
  },
  [0x1EE7]={
+  adobename="uhookabove",
   category="ll",
   contextname="uhook",
   description="LATIN SMALL LETTER U WITH HOOK ABOVE",
@@ -46038,6 +47377,7 @@ characters.data={
   unicodeslot=0x1EE7,
  },
  [0x1EE8]={
+  adobename="Uhornacute",
   category="lu",
   contextname="Uhornacute",
   description="LATIN CAPITAL LETTER U WITH HORN AND ACUTE",
@@ -46049,6 +47389,7 @@ characters.data={
   unicodeslot=0x1EE8,
  },
  [0x1EE9]={
+  adobename="uhornacute",
   category="ll",
   contextname="uhornacute",
   description="LATIN SMALL LETTER U WITH HORN AND ACUTE",
@@ -46060,6 +47401,7 @@ characters.data={
   unicodeslot=0x1EE9,
  },
  [0x1EEA]={
+  adobename="Uhorngrave",
   category="lu",
   contextname="Uhorngrave",
   description="LATIN CAPITAL LETTER U WITH HORN AND GRAVE",
@@ -46071,6 +47413,7 @@ characters.data={
   unicodeslot=0x1EEA,
  },
  [0x1EEB]={
+  adobename="uhorngrave",
   category="ll",
   contextname="uhorngrave",
   description="LATIN SMALL LETTER U WITH HORN AND GRAVE",
@@ -46082,6 +47425,7 @@ characters.data={
   unicodeslot=0x1EEB,
  },
  [0x1EEC]={
+  adobename="Uhornhookabove",
   category="lu",
   contextname="Uhornhook",
   description="LATIN CAPITAL LETTER U WITH HORN AND HOOK ABOVE",
@@ -46093,6 +47437,7 @@ characters.data={
   unicodeslot=0x1EEC,
  },
  [0x1EED]={
+  adobename="uhornhookabove",
   category="ll",
   contextname="uhornhook",
   description="LATIN SMALL LETTER U WITH HORN AND HOOK ABOVE",
@@ -46104,6 +47449,7 @@ characters.data={
   unicodeslot=0x1EED,
  },
  [0x1EEE]={
+  adobename="Uhorntilde",
   category="lu",
   contextname="Uhorntilde",
   description="LATIN CAPITAL LETTER U WITH HORN AND TILDE",
@@ -46115,6 +47461,7 @@ characters.data={
   unicodeslot=0x1EEE,
  },
  [0x1EEF]={
+  adobename="uhorntilde",
   category="ll",
   contextname="uhorntilde",
   description="LATIN SMALL LETTER U WITH HORN AND TILDE",
@@ -46126,6 +47473,7 @@ characters.data={
   unicodeslot=0x1EEF,
  },
  [0x1EF0]={
+  adobename="Uhorndotbelow",
   category="lu",
   contextname="Uhorndotbelow",
   description="LATIN CAPITAL LETTER U WITH HORN AND DOT BELOW",
@@ -46137,6 +47485,7 @@ characters.data={
   unicodeslot=0x1EF0,
  },
  [0x1EF1]={
+  adobename="uhorndotbelow",
   category="ll",
   contextname="uhorndotbelow",
   description="LATIN SMALL LETTER U WITH HORN AND DOT BELOW",
@@ -46172,6 +47521,7 @@ characters.data={
   unicodeslot=0x1EF3,
  },
  [0x1EF4]={
+  adobename="Ydotbelow",
   category="lu",
   contextname="Ydotbelow",
   description="LATIN CAPITAL LETTER Y WITH DOT BELOW",
@@ -46183,6 +47533,7 @@ characters.data={
   unicodeslot=0x1EF4,
  },
  [0x1EF5]={
+  adobename="ydotbelow",
   category="ll",
   contextname="ydotbelow",
   description="LATIN SMALL LETTER Y WITH DOT BELOW",
@@ -46194,6 +47545,7 @@ characters.data={
   unicodeslot=0x1EF5,
  },
  [0x1EF6]={
+  adobename="Yhookabove",
   category="lu",
   contextname="Yhook",
   description="LATIN CAPITAL LETTER Y WITH HOOK ABOVE",
@@ -46205,6 +47557,7 @@ characters.data={
   unicodeslot=0x1EF6,
  },
  [0x1EF7]={
+  adobename="yhookabove",
   category="ll",
   contextname="yhook",
   description="LATIN SMALL LETTER Y WITH HOOK ABOVE",
@@ -46216,6 +47569,7 @@ characters.data={
   unicodeslot=0x1EF7,
  },
  [0x1EF8]={
+  adobename="Ytilde",
   category="lu",
   contextname="Ytilde",
   description="LATIN CAPITAL LETTER Y WITH TILDE",
@@ -46227,6 +47581,7 @@ characters.data={
   unicodeslot=0x1EF8,
  },
  [0x1EF9]={
+  adobename="ytilde",
   category="ll",
   contextname="ytilde",
   description="LATIN SMALL LETTER Y WITH TILDE",
@@ -48761,6 +50116,7 @@ characters.data={
   unicodeslot=0x2001,
  },
  [0x2002]={
+  adobename="enspace",
   category="zs",
   contextname="enspace",
   description="EN SPACE",
@@ -48842,6 +50198,7 @@ characters.data={
   unicodeslot=0x200A,
  },
  [0x200B]={
+  adobename="zerowidthspace",
   category="cf",
   contextname="zerowidthspace",
   description="ZERO WIDTH SPACE",
@@ -48850,7 +50207,7 @@ characters.data={
   unicodeslot=0x200B,
  },
  [0x200C]={
-  adobename="afii61664",
+  adobename="zerowidthnonjoiner",
   category="cf",
   contextname="zwnj",
   description="ZERO WIDTH NON-JOINER",
@@ -48884,6 +50241,7 @@ characters.data={
   unicodeslot=0x200F,
  },
  [0x2010]={
+  adobename="hyphentwo",
   category="pd",
   cjkwd="a",
   description="HYPHEN",
@@ -48929,7 +50287,7 @@ characters.data={
   unicodeslot=0x2014,
  },
  [0x2015]={
-  adobename="afii208",
+  adobename="horizontalbar",
   category="pd",
   cjkwd="a",
   contextname="texthorizontalbar",
@@ -48939,16 +50297,29 @@ characters.data={
   unicodeslot=0x2015,
  },
  [0x2016]={
+  adobename="dblverticalbar",
   category="po",
   cjkwd="a",
   description="DOUBLE VERTICAL LINE",
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="delimiter", name="Vert" },
-   { class="nothing", name="Arrowvert" },
-   { class="open", name="lVert" },
-   { class="close", name="rVert" },
+   {
+    class="delimiter",
+    name="Vert",
+   },
+   {
+    class="nothing",
+    name="Arrowvert",
+   },
+   {
+    class="open",
+    name="lVert",
+   },
+   {
+    class="close",
+    name="rVert",
+   },
   },
   unicodeslot=0x2016,
  },
@@ -49043,8 +50414,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="binary", name="dagger" },
-   { class="box", name="dag" },
+   {
+    class="binary",
+    name="dagger",
+   },
+   {
+    class="box",
+    name="dag",
+   },
   },
   unicodeslot=0x2020,
  },
@@ -49057,8 +50434,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="binary", name="ddagger" },
-   { class="box", name="ddag" },
+   {
+    class="binary",
+    name="ddagger",
+   },
+   {
+    class="box",
+    name="ddag",
+   },
   },
   unicodeslot=0x2021,
  },
@@ -49092,7 +50475,7 @@ characters.data={
   unicodeslot=0x2024,
  },
  [0x2025]={
-  adobename="twodotenleader",
+  adobename="twodotleader",
   category="po",
   cjkwd="a",
   description="TWO DOT LEADER",
@@ -49230,6 +50613,7 @@ characters.data={
   unicodeslot=0x2034,
  },
  [0x2035]={
+  adobename="primereversed",
   category="po",
   cjkwd="a",
   description="REVERSED PRIME",
@@ -49281,6 +50665,7 @@ characters.data={
   unicodeslot=0x203A,
  },
  [0x203B]={
+  adobename="referencemark",
   category="po",
   cjkwd="a",
   description="REFERENCE MARK",
@@ -49305,6 +50690,7 @@ characters.data={
   unicodeslot=0x203D,
  },
  [0x203E]={
+  adobename="overline",
   category="po",
   cjkwd="a",
   description="OVERLINE",
@@ -49335,6 +50721,7 @@ characters.data={
   unicodeslot=0x2041,
  },
  [0x2042]={
+  adobename="asterism",
   category="po",
   description="ASTERISM",
   direction="on",
@@ -49356,8 +50743,14 @@ characters.data={
   direction="cs",
   linebreak="is",
   mathspec={
-   { class="binary", name="slash" },
-   { class="close", name="solidus" },
+   {
+    class="binary",
+    name="slash",
+   },
+   {
+    class="close",
+    name="solidus",
+   },
   },
   unicodeslot=0x2044,
  },
@@ -49631,6 +51024,7 @@ characters.data={
   unicodeslot=0x206F,
  },
  [0x2070]={
+  adobename="zerosuperior",
   category="no",
   description="SUPERSCRIPT ZERO",
   direction="en",
@@ -49647,6 +51041,7 @@ characters.data={
   unicodeslot=0x2071,
  },
  [0x2074]={
+  adobename="foursuperior",
   category="no",
   cjkwd="a",
   description="SUPERSCRIPT FOUR",
@@ -49656,6 +51051,7 @@ characters.data={
   unicodeslot=0x2074,
  },
  [0x2075]={
+  adobename="fivesuperior",
   category="no",
   description="SUPERSCRIPT FIVE",
   direction="en",
@@ -49664,6 +51060,7 @@ characters.data={
   unicodeslot=0x2075,
  },
  [0x2076]={
+  adobename="sixsuperior",
   category="no",
   description="SUPERSCRIPT SIX",
   direction="en",
@@ -49672,6 +51069,7 @@ characters.data={
   unicodeslot=0x2076,
  },
  [0x2077]={
+  adobename="sevensuperior",
   category="no",
   description="SUPERSCRIPT SEVEN",
   direction="en",
@@ -49680,6 +51078,7 @@ characters.data={
   unicodeslot=0x2077,
  },
  [0x2078]={
+  adobename="eightsuperior",
   category="no",
   description="SUPERSCRIPT EIGHT",
   direction="en",
@@ -49688,6 +51087,7 @@ characters.data={
   unicodeslot=0x2078,
  },
  [0x2079]={
+  adobename="ninesuperior",
   category="no",
   description="SUPERSCRIPT NINE",
   direction="en",
@@ -49696,6 +51096,7 @@ characters.data={
   unicodeslot=0x2079,
  },
  [0x207A]={
+  adobename="plussuperior",
   category="sm",
   description="SUPERSCRIPT PLUS SIGN",
   direction="es",
@@ -49712,6 +51113,7 @@ characters.data={
   unicodeslot=0x207B,
  },
  [0x207C]={
+  adobename="equalsuperior",
   category="sm",
   description="SUPERSCRIPT EQUALS SIGN",
   direction="on",
@@ -49720,6 +51122,7 @@ characters.data={
   unicodeslot=0x207C,
  },
  [0x207D]={
+  adobename="parenleftsuperior",
   category="ps",
   description="SUPERSCRIPT LEFT PARENTHESIS",
   direction="on",
@@ -49729,6 +51132,7 @@ characters.data={
   unicodeslot=0x207D,
  },
  [0x207E]={
+  adobename="parenrightsuperior",
   category="pe",
   description="SUPERSCRIPT RIGHT PARENTHESIS",
   direction="on",
@@ -49738,6 +51142,7 @@ characters.data={
   unicodeslot=0x207E,
  },
  [0x207F]={
+  adobename="nsuperior",
   category="ll",
   cjkwd="a",
   description="SUPERSCRIPT LATIN SMALL LETTER N",
@@ -49747,6 +51152,7 @@ characters.data={
   unicodeslot=0x207F,
  },
  [0x2080]={
+  adobename="zeroinferior",
   category="no",
   description="SUBSCRIPT ZERO",
   direction="en",
@@ -49755,6 +51161,7 @@ characters.data={
   unicodeslot=0x2080,
  },
  [0x2081]={
+  adobename="oneinferior",
   category="no",
   cjkwd="a",
   description="SUBSCRIPT ONE",
@@ -49764,6 +51171,7 @@ characters.data={
   unicodeslot=0x2081,
  },
  [0x2082]={
+  adobename="twoinferior",
   category="no",
   cjkwd="a",
   description="SUBSCRIPT TWO",
@@ -49773,6 +51181,7 @@ characters.data={
   unicodeslot=0x2082,
  },
  [0x2083]={
+  adobename="threeinferior",
   category="no",
   cjkwd="a",
   description="SUBSCRIPT THREE",
@@ -49782,6 +51191,7 @@ characters.data={
   unicodeslot=0x2083,
  },
  [0x2084]={
+  adobename="fourinferior",
   category="no",
   cjkwd="a",
   description="SUBSCRIPT FOUR",
@@ -49791,6 +51201,7 @@ characters.data={
   unicodeslot=0x2084,
  },
  [0x2085]={
+  adobename="fiveinferior",
   category="no",
   description="SUBSCRIPT FIVE",
   direction="en",
@@ -49799,6 +51210,7 @@ characters.data={
   unicodeslot=0x2085,
  },
  [0x2086]={
+  adobename="sixinferior",
   category="no",
   description="SUBSCRIPT SIX",
   direction="en",
@@ -49807,6 +51219,7 @@ characters.data={
   unicodeslot=0x2086,
  },
  [0x2087]={
+  adobename="seveninferior",
   category="no",
   description="SUBSCRIPT SEVEN",
   direction="en",
@@ -49815,6 +51228,7 @@ characters.data={
   unicodeslot=0x2087,
  },
  [0x2088]={
+  adobename="eightinferior",
   category="no",
   description="SUBSCRIPT EIGHT",
   direction="en",
@@ -49823,6 +51237,7 @@ characters.data={
   unicodeslot=0x2088,
  },
  [0x2089]={
+  adobename="nineinferior",
   category="no",
   description="SUBSCRIPT NINE",
   direction="en",
@@ -49855,6 +51270,7 @@ characters.data={
   unicodeslot=0x208C,
  },
  [0x208D]={
+  adobename="parenleftinferior",
   category="ps",
   description="SUBSCRIPT LEFT PARENTHESIS",
   direction="on",
@@ -49864,6 +51280,7 @@ characters.data={
   unicodeslot=0x208D,
  },
  [0x208E]={
+  adobename="parenrightinferior",
   category="pe",
   description="SUBSCRIPT RIGHT PARENTHESIS",
   direction="on",
@@ -49920,7 +51337,7 @@ characters.data={
   unicodeslot=0x20A0,
  },
  [0x20A1]={
-  adobename="colonmonetary",
+  adobename="colonsign",
   category="sc",
   description="COLON SIGN",
   direction="et",
@@ -49928,6 +51345,7 @@ characters.data={
   unicodeslot=0x20A1,
  },
  [0x20A2]={
+  adobename="cruzeiro",
   category="sc",
   description="CRUZEIRO SIGN",
   direction="et",
@@ -49981,6 +51399,7 @@ characters.data={
   unicodeslot=0x20A8,
  },
  [0x20A9]={
+  adobename="won",
   category="sc",
   cjkwd="h",
   description="WON SIGN",
@@ -49989,7 +51408,7 @@ characters.data={
   unicodeslot=0x20A9,
  },
  [0x20AA]={
-  adobename="afii57636",
+  adobename="sheqelhebrew",
   category="sc",
   description="NEW SHEQEL SIGN",
   direction="et",
@@ -50006,7 +51425,7 @@ characters.data={
   unicodeslot=0x20AB,
  },
  [0x20AC]={
-  adobename="Euro",
+  adobename="euro",
   category="sc",
   cjkwd="a",
   contextname="texteuro",
@@ -50179,8 +51598,14 @@ characters.data={
   direction="nsm",
   linebreak="cm",
   mathspec={
-    { class="default",name="bigcircle" },
-    { class="binary",name="bigcircle" },
+   {
+    class="default",
+    name="bigcircle",
+   },
+   {
+    class="binary",
+    name="bigcircle",
+   },
   },
   unicodeslot=0x20DD,
  },
@@ -50342,10 +51767,11 @@ characters.data={
   unicodeslot=0x2102,
  },
  [0x2103]={
+  adobename="centigrade",
   category="so",
   cjkwd="a",
-  description="DEGREE CELSIUS",
   contextname="textcelsius",
+  description="DEGREE CELSIUS",
   direction="on",
   linebreak="po",
   specials={ "compat", 0x00B0, 0x0043 },
@@ -50359,7 +51785,7 @@ characters.data={
   unicodeslot=0x2104,
  },
  [0x2105]={
-  adobename="afii61248",
+  adobename="careof",
   category="so",
   cjkwd="a",
   description="CARE OF",
@@ -50394,6 +51820,7 @@ characters.data={
   unicodeslot=0x2108,
  },
  [0x2109]={
+  adobename="fahrenheit",
   category="so",
   cjkwd="a",
   description="DEGREE FAHRENHEIT",
@@ -50482,7 +51909,7 @@ characters.data={
   unicodeslot=0x2112,
  },
  [0x2113]={
-  adobename="afii61289",
+  adobename="lsquare",
   category="ll",
   cjkwd="a",
   description="SCRIPT SMALL L",
@@ -50511,7 +51938,7 @@ characters.data={
   unicodeslot=0x2115,
  },
  [0x2116]={
-  adobename="afii61352",
+  adobename="numero",
   category="so",
   cjkwd="a",
   contextname="textnumero",
@@ -50612,6 +52039,7 @@ characters.data={
   unicodeslot=0x2120,
  },
  [0x2121]={
+  adobename="telephone",
   category="so",
   cjkwd="a",
   description="TELEPHONE SIGN",
@@ -50660,20 +52088,20 @@ characters.data={
   adobename="Omega",
   category="lu",
   cjkwd="a",
-  description="OHM SIGN",
   contextname="textohm",
+  description="OHM SIGN",
   direction="l",
-  lccode=0x03C9, --AM: Not sure?
+  lccode=0x03C9,
   linebreak="al",
   mathclass="variable",
-  mathname="ohm", --AM: Should we do this or does specials take care of it
+  mathname="ohm",
   specials={ "char", 0x03A9 },
   unicodeslot=0x2126,
  },
  [0x2127]={
   category="so",
-  description="INVERTED OHM SIGN",
   contextname="textmho",
+  description="INVERTED OHM SIGN",
   direction="on",
   linebreak="al",
   mathclass="variable",
@@ -50699,20 +52127,21 @@ characters.data={
  },
  [0x212A]={
   category="lu",
+  contextname="textkelvin",
   description="KELVIN SIGN",
   direction="l",
-  contextname="textkelvin",
   lccode=0x006B,
   linebreak="al",
   specials={ "char", 0x004B },
   unicodeslot=0x212A,
  },
  [0x212B]={
+  adobename="angstrom",
   category="lu",
   cjkwd="a",
+  contextname="textAngstrom",
   description="ANGSTROM SIGN",
   direction="l",
-  contextname="textAngstrom",
   lccode=0x00E5,
   linebreak="ai",
   mathclass="variable",
@@ -50909,29 +52338,29 @@ characters.data={
  },
  [0x2142]={
   category="sm",
+  comment="mathname=sansLturned",
   description="TURNED SANS-SERIF CAPITAL L",
   direction="on",
   linebreak="al",
   mathclass="ord",
---mathname="sansLturned",-- We need a proper name
   unicodeslot=0x2142,
  },
  [0x2143]={
   category="sm",
+  comment="mathname=sansLmirrored",
   description="REVERSED SANS-SERIF CAPITAL L",
   direction="on",
   linebreak="al",
   mathclass="ord",
---mathname="sansLmirrored",-- We need a proper name
   unicodeslot=0x2143,
  },
  [0x2144]={
   category="sm",
+  comment="mathname=Yup",
   description="TURNED SANS-SERIF CAPITAL Y",
   direction="on",
   linebreak="al",
   mathclass="ord",
---mathname="Yup",-- We need a proper name
   unicodeslot=0x2144,
  },
  [0x2145]={
@@ -51153,6 +52582,7 @@ characters.data={
   unicodeslot=0x215F,
  },
  [0x2160]={
+  adobename="Oneroman",
   category="nl",
   cjkwd="a",
   contextname="romanI",
@@ -51164,6 +52594,7 @@ characters.data={
   unicodeslot=0x2160,
  },
  [0x2161]={
+  adobename="Tworoman",
   category="nl",
   cjkwd="a",
   contextname="romanII",
@@ -51175,6 +52606,7 @@ characters.data={
   unicodeslot=0x2161,
  },
  [0x2162]={
+  adobename="Threeroman",
   category="nl",
   cjkwd="a",
   contextname="romanIII",
@@ -51186,6 +52618,7 @@ characters.data={
   unicodeslot=0x2162,
  },
  [0x2163]={
+  adobename="Fourroman",
   category="nl",
   cjkwd="a",
   contextname="romanIV",
@@ -51197,6 +52630,7 @@ characters.data={
   unicodeslot=0x2163,
  },
  [0x2164]={
+  adobename="Fiveroman",
   category="nl",
   cjkwd="a",
   contextname="romanV",
@@ -51208,6 +52642,7 @@ characters.data={
   unicodeslot=0x2164,
  },
  [0x2165]={
+  adobename="Sixroman",
   category="nl",
   cjkwd="a",
   contextname="romanVI",
@@ -51219,6 +52654,7 @@ characters.data={
   unicodeslot=0x2165,
  },
  [0x2166]={
+  adobename="Sevenroman",
   category="nl",
   cjkwd="a",
   contextname="romanVII",
@@ -51230,6 +52666,7 @@ characters.data={
   unicodeslot=0x2166,
  },
  [0x2167]={
+  adobename="Eightroman",
   category="nl",
   cjkwd="a",
   contextname="romanVIII",
@@ -51241,6 +52678,7 @@ characters.data={
   unicodeslot=0x2167,
  },
  [0x2168]={
+  adobename="Nineroman",
   category="nl",
   cjkwd="a",
   contextname="romanIX",
@@ -51252,6 +52690,7 @@ characters.data={
   unicodeslot=0x2168,
  },
  [0x2169]={
+  adobename="Tenroman",
   category="nl",
   cjkwd="a",
   contextname="romanX",
@@ -51263,6 +52702,7 @@ characters.data={
   unicodeslot=0x2169,
  },
  [0x216A]={
+  adobename="Elevenroman",
   category="nl",
   cjkwd="a",
   contextname="romanXI",
@@ -51274,6 +52714,7 @@ characters.data={
   unicodeslot=0x216A,
  },
  [0x216B]={
+  adobename="Twelveroman",
   category="nl",
   cjkwd="a",
   contextname="romanXII",
@@ -51325,6 +52766,7 @@ characters.data={
   unicodeslot=0x216F,
  },
  [0x2170]={
+  adobename="oneroman",
   category="nl",
   cjkwd="a",
   contextname="romani",
@@ -51336,6 +52778,7 @@ characters.data={
   unicodeslot=0x2170,
  },
  [0x2171]={
+  adobename="tworoman",
   category="nl",
   cjkwd="a",
   contextname="romanii",
@@ -51347,6 +52790,7 @@ characters.data={
   unicodeslot=0x2171,
  },
  [0x2172]={
+  adobename="threeroman",
   category="nl",
   cjkwd="a",
   contextname="romaniii",
@@ -51358,6 +52802,7 @@ characters.data={
   unicodeslot=0x2172,
  },
  [0x2173]={
+  adobename="fourroman",
   category="nl",
   cjkwd="a",
   contextname="romaniv",
@@ -51369,6 +52814,7 @@ characters.data={
   unicodeslot=0x2173,
  },
  [0x2174]={
+  adobename="fiveroman",
   category="nl",
   cjkwd="a",
   contextname="romanv",
@@ -51380,6 +52826,7 @@ characters.data={
   unicodeslot=0x2174,
  },
  [0x2175]={
+  adobename="sixroman",
   category="nl",
   cjkwd="a",
   contextname="romanvi",
@@ -51391,6 +52838,7 @@ characters.data={
   unicodeslot=0x2175,
  },
  [0x2176]={
+  adobename="sevenroman",
   category="nl",
   cjkwd="a",
   contextname="romanvii",
@@ -51402,6 +52850,7 @@ characters.data={
   unicodeslot=0x2176,
  },
  [0x2177]={
+  adobename="eightroman",
   category="nl",
   cjkwd="a",
   contextname="romanviii",
@@ -51413,6 +52862,7 @@ characters.data={
   unicodeslot=0x2177,
  },
  [0x2178]={
+  adobename="nineroman",
   category="nl",
   cjkwd="a",
   contextname="romanix",
@@ -51424,6 +52874,7 @@ characters.data={
   unicodeslot=0x2178,
  },
  [0x2179]={
+  adobename="tenroman",
   category="nl",
   cjkwd="a",
   contextname="romanx",
@@ -51435,6 +52886,7 @@ characters.data={
   unicodeslot=0x2179,
  },
  [0x217A]={
+  adobename="elevenroman",
   category="nl",
   contextname="romanxi",
   description="SMALL ROMAN NUMERAL ELEVEN",
@@ -51445,6 +52897,7 @@ characters.data={
   unicodeslot=0x217A,
  },
  [0x217B]={
+  adobename="twelveroman",
   category="nl",
   contextname="romanxii",
   description="SMALL ROMAN NUMERAL TWELVE",
@@ -51539,10 +52992,22 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="relation", name="leftarrow" },
-   { class="relation", name="gets" },
-   { class="under", name="underleftarrow" },
-   { class="over", name="overleftarrow" },
+   {
+    class="relation",
+    name="leftarrow",
+   },
+   {
+    class="relation",
+    name="gets",
+   },
+   {
+    class="under",
+    name="underleftarrow",
+   },
+   {
+    class="over",
+    name="overleftarrow",
+   },
   },
   mathstretch="h",
   unicodeslot=0x2190,
@@ -51566,10 +53031,22 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="relation",name="rightarrow" },
-   { class="relation",name="to" },
-   { class="under", name="underrightarrow" },
-   { class="over", name="overrightarrow" },
+   {
+    class="relation",
+    name="rightarrow",
+   },
+   {
+    class="relation",
+    name="to",
+   },
+   {
+    class="under",
+    name="underrightarrow",
+   },
+   {
+    class="over",
+    name="overrightarrow",
+   },
   },
   mathstretch="h",
   unicodeslot=0x2192,
@@ -51608,6 +53085,7 @@ characters.data={
   unicodeslot=0x2195,
  },
  [0x2196]={
+  adobename="arrowupleft",
   category="so",
   cjkwd="a",
   description="NORTH WEST ARROW",
@@ -51618,6 +53096,7 @@ characters.data={
   unicodeslot=0x2196,
  },
  [0x2197]={
+  adobename="arrowupright",
   category="so",
   cjkwd="a",
   description="NORTH EAST ARROW",
@@ -51628,6 +53107,7 @@ characters.data={
   unicodeslot=0x2197,
  },
  [0x2198]={
+  adobename="arrowdownright",
   category="so",
   cjkwd="a",
   description="SOUTH EAST ARROW",
@@ -51638,6 +53118,7 @@ characters.data={
   unicodeslot=0x2198,
  },
  [0x2199]={
+  adobename="arrowdownleft",
   category="so",
   cjkwd="a",
   description="SOUTH WEST ARROW",
@@ -51776,7 +53257,7 @@ characters.data={
   unicodeslot=0x21A7,
  },
  [0x21A8]={
-  adobename="arrowupdnbse",
+  adobename="arrowupdownbase",
   category="so",
   description="UP DOWN ARROW WITH BASE",
   direction="on",
@@ -51896,8 +53377,8 @@ characters.data={
  },
  [0x21B5]={
   adobename="carriagereturn",
-  contextname="carriagereturn",
   category="so",
+  contextname="carriagereturn",
   description="DOWNWARDS ARROW WITH CORNER LEFTWARDS",
   direction="on",
   linebreak="al",
@@ -51948,9 +53429,15 @@ characters.data={
   description="ANTICLOCKWISE OPEN CIRCLE ARROW",
   direction="on",
   linebreak="al",
-  mathspec = {
-    {class="relation", name="circlearrowright"},
-    {class="relation", name="acwopencirclearrow"},
+  mathspec={
+   {
+    class="relation",
+    name="circlearrowright",
+   },
+   {
+    class="relation",
+    name="acwopencirclearrow",
+   },
   },
   unicodeslot=0x21BA,
  },
@@ -51959,13 +53446,20 @@ characters.data={
   description="CLOCKWISE OPEN CIRCLE ARROW",
   direction="on",
   linebreak="al",
-  mathspec = {
-    {class="relation", name="circlearrowleft"},
-    {class="relation", name="cwopencirclearrow"},
+  mathspec={
+   {
+    class="relation",
+    name="circlearrowleft",
+   },
+   {
+    class="relation",
+    name="cwopencirclearrow",
+   },
   },
   unicodeslot=0x21BB,
  },
  [0x21BC]={
+  adobename="harpoonleftbarbup",
   category="so",
   description="LEFTWARDS HARPOON WITH BARB UPWARDS",
   direction="on",
@@ -51989,8 +53483,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="upharpoonright" },
-    { class="relation", name="restriction" },
+   {
+    class="relation",
+    name="upharpoonright",
+   },
+   {
+    class="relation",
+    name="restriction",
+   },
   },
   unicodeslot=0x21BE,
  },
@@ -52004,6 +53504,7 @@ characters.data={
   unicodeslot=0x21BF,
  },
  [0x21C0]={
+  adobename="harpoonrightbarbup",
   category="so",
   description="RIGHTWARDS HARPOON WITH BARB UPWARDS",
   direction="on",
@@ -52040,6 +53541,7 @@ characters.data={
   unicodeslot=0x21C3,
  },
  [0x21C4]={
+  adobename="arrowrightoverleft",
   category="so",
   description="RIGHTWARDS ARROW OVER LEFTWARDS ARROW",
   direction="on",
@@ -52049,6 +53551,7 @@ characters.data={
   unicodeslot=0x21C4,
  },
  [0x21C5]={
+  adobename="arrowupleftofdown",
   category="so",
   description="UPWARDS ARROW LEFTWARDS OF DOWNWARDS ARROW",
   direction="on",
@@ -52058,6 +53561,7 @@ characters.data={
   unicodeslot=0x21C5,
  },
  [0x21C6]={
+  adobename="arrowleftoverright",
   category="so",
   description="LEFTWARDS ARROW OVER RIGHTWARDS ARROW",
   direction="on",
@@ -52121,6 +53625,7 @@ characters.data={
   unicodeslot=0x21CC,
  },
  [0x21CD]={
+  adobename="arrowleftdblstroke",
   category="so",
   description="LEFTWARDS DOUBLE ARROW WITH STROKE",
   direction="on",
@@ -52141,6 +53646,7 @@ characters.data={
   unicodeslot=0x21CE,
  },
  [0x21CF]={
+  adobename="arrowrightdblstroke",
   category="sm",
   description="RIGHTWARDS DOUBLE ARROW WITH STROKE",
   direction="on",
@@ -52151,7 +53657,7 @@ characters.data={
   unicodeslot=0x21CF,
  },
  [0x21D0]={
-  adobename="arrowdblleft",
+  adobename="arrowleftdbl",
   category="so",
   description="LEFTWARDS DOUBLE ARROW",
   direction="on",
@@ -52171,7 +53677,7 @@ characters.data={
   unicodeslot=0x21D1,
  },
  [0x21D2]={
-  adobename="arrowdblright",
+  adobename="dblarrowright",
   category="sm",
   cjkwd="a",
   description="RIGHTWARDS DOUBLE ARROW",
@@ -52192,7 +53698,7 @@ characters.data={
   unicodeslot=0x21D3,
  },
  [0x21D4]={
-  adobename="arrowdblboth",
+  adobename="dblarrowleft",
   category="sm",
   cjkwd="a",
   description="LEFT RIGHT DOUBLE ARROW",
@@ -52280,30 +53786,39 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation",name="rightsquigarrow" },
-    { class="relation",name="leadsto" },
+   {
+    class="relation",
+    name="rightsquigarrow",
+   },
+   {
+    class="relation",
+    name="leadsto",
+   },
   },
   unicodeslot=0x21DD,
  },
  [0x21DE]={
+  adobename="pageup",
   category="so",
   description="UPWARDS ARROW WITH DOUBLE STROKE",
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="nHuparrow", -- strange name
+  mathname="nHuparrow",
   unicodeslot=0x21DE,
  },
  [0x21DF]={
+  adobename="pagedown",
   category="so",
   description="DOWNWARDS ARROW WITH DOUBLE STROKE",
   direction="on",
   linebreak="al",
   mathclass="relation",
-  mathname="nHdownarrow", -- strange name
+  mathname="nHdownarrow",
   unicodeslot=0x21DF,
  },
  [0x21E0]={
+  adobename="arrowdashleft",
   category="so",
   description="LEFTWARDS DASHED ARROW",
   direction="on",
@@ -52313,6 +53828,7 @@ characters.data={
   unicodeslot=0x21E0,
  },
  [0x21E1]={
+  adobename="arrowdashup",
   category="so",
   description="UPWARDS DASHED ARROW",
   direction="on",
@@ -52322,17 +53838,25 @@ characters.data={
   unicodeslot=0x21E1,
  },
  [0x21E2]={
+  adobename="arrowdashright",
   category="so",
   description="RIGHTWARDS DASHED ARROW",
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="rightdasharrow" } ,
-    { class="relation", name="dasharrow" } ,
+   {
+    class="relation",
+    name="rightdasharrow",
+   },
+   {
+    class="relation",
+    name="dasharrow",
+   },
   },
   unicodeslot=0x21E2,
  },
  [0x21E3]={
+  adobename="arrowdashdown",
   category="so",
   description="DOWNWARDS DASHED ARROW",
   direction="on",
@@ -52342,6 +53866,7 @@ characters.data={
   unicodeslot=0x21E3,
  },
  [0x21E4]={
+  adobename="arrowtableft",
   category="so",
   description="LEFTWARDS ARROW TO BAR",
   direction="on",
@@ -52351,6 +53876,7 @@ characters.data={
   unicodeslot=0x21E4,
  },
  [0x21E5]={
+  adobename="arrowtabright",
   category="so",
   description="RIGHTWARDS ARROW TO BAR",
   direction="on",
@@ -52360,6 +53886,7 @@ characters.data={
   unicodeslot=0x21E5,
  },
  [0x21E6]={
+  adobename="arrowleftwhite",
   category="so",
   description="LEFTWARDS WHITE ARROW",
   direction="on",
@@ -52369,6 +53896,7 @@ characters.data={
   unicodeslot=0x21E6,
  },
  [0x21E7]={
+  adobename="arrowupwhite",
   category="so",
   cjkwd="a",
   description="UPWARDS WHITE ARROW",
@@ -52379,6 +53907,7 @@ characters.data={
   unicodeslot=0x21E7,
  },
  [0x21E8]={
+  adobename="arrowrightwhite",
   category="so",
   description="RIGHTWARDS WHITE ARROW",
   direction="on",
@@ -52388,6 +53917,7 @@ characters.data={
   unicodeslot=0x21E8,
  },
  [0x21E9]={
+  adobename="arrowdownwhite",
   category="so",
   description="DOWNWARDS WHITE ARROW",
   direction="on",
@@ -52397,6 +53927,7 @@ characters.data={
   unicodeslot=0x21E9,
  },
  [0x21EA]={
+  adobename="capslock",
   category="so",
   description="UPWARDS WHITE ARROW FROM BAR",
   direction="on",
@@ -52608,7 +54139,7 @@ characters.data={
   unicodeslot=0x2202,
  },
  [0x2203]={
-  adobename="existential",
+  adobename="thereexists",
   category="sm",
   cjkwd="a",
   description="THERE EXISTS",
@@ -52639,7 +54170,7 @@ characters.data={
   unicodeslot=0x2205,
  },
  [0x2206]={
-  adobename="Delta",
+  adobename="increment",
   category="sm",
   description="INCREMENT",
   direction="on",
@@ -52647,7 +54178,7 @@ characters.data={
   unicodeslot=0x2206,
  },
  [0x2207]={
-  adobename="gradient",
+  adobename="nabla",
   category="sm",
   cjkwd="a",
   description="NABLA",
@@ -52668,14 +54199,14 @@ characters.data={
   unicodeslot=0x2208,
  },
  [0x2209]={
-  adobename="notelement",
+  adobename="notelementof",
   category="sm",
   description="NOT AN ELEMENT OF",
   direction="on",
   linebreak="al",
-  mirror=0x220C,
   mathclass="relation",
   mathname="nin",
+  mirror=0x220C,
   specials={ "char", 0x2208, 0x0338 },
   unicodeslot=0x2209,
  },
@@ -52695,23 +54226,36 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="relation", name="ni" },
-   { class="relation", name="owns" },
+   {
+    class="relation",
+    name="ni",
+   },
+   {
+    class="relation",
+    name="owns",
+   },
   },
   mirror=0x2208,
   unicodeslot=0x220B,
  },
  [0x220C]={
+  adobename="notcontains",
   category="sm",
   description="DOES NOT CONTAIN AS MEMBER",
   direction="on",
   linebreak="al",
+  mathspec={
+   {
+    class="relation",
+    name="nni",
+   },
+   {
+    class="relation",
+    name="nowns",
+   },
+  },
   mirror=0x2209,
   specials={ "char", 0x220B, 0x0338 },
-  mathspec={
-   { class="relation", name="nni" },
-   { class="relation", name="nowns" },
-  },
   unicodeslot=0x220C,
  },
  [0x220D]={
@@ -52740,7 +54284,7 @@ characters.data={
   mathname="prod",
   unicodeslot=0x220F,
  },
-[0x2210]={
+ [0x2210]={
   category="sm",
   description="N-ARY COPRODUCT",
   direction="on",
@@ -52770,6 +54314,7 @@ characters.data={
   unicodeslot=0x2212,
  },
  [0x2213]={
+  adobename="minusplus",
   category="sm",
   description="MINUS-OR-PLUS SIGN",
   direction="et",
@@ -52788,26 +54333,27 @@ characters.data={
   unicodeslot=0x2214,
  },
  [0x2215]={
+  adobename="divisionslash",
   category="sm",
   cjkwd="a",
+  comment="mathclass=ord,mathname=diagup",
   description="DIVISION SLASH",
   direction="on",
   linebreak="ai",
-  --~ mathclass="ord",
-  --~ mathname="diagup",
   mirror=0x29F5,
   unicodeslot=0x2215,
  },
- -- AM: diagup and diagdown are mapped to 2215 and 2216 by Tralics,
- -- but ams uses different symbols for setminus and diagdown.
  [0x2216]={
   category="sm",
+  comment="mathclass=ord,mathname=diagdown",
   description="SET MINUS",
   direction="on",
   linebreak="al",
   mathspec={
-    { class="binary", name="setminus" },
-    --~ { class="ord",    name="diagdown" },
+   {
+    class="binary",
+    name="setminus",
+   },
   },
   unicodeslot=0x2216,
  },
@@ -52831,6 +54377,7 @@ characters.data={
   unicodeslot=0x2218,
  },
  [0x2219]={
+  adobename="bulletoperator",
   category="sm",
   description="BULLET OPERATOR",
   direction="on",
@@ -52887,14 +54434,14 @@ characters.data={
   unicodeslot=0x221E,
  },
  [0x221F]={
-  adobename="orthogonal",
+  adobename="rightangle",
   category="sm",
   cjkwd="a",
   description="RIGHT ANGLE",
   direction="on",
+  linebreak="ai",
   mathclass="ord",
   mathname="rightangle",
-  linebreak="ai",
   unicodeslot=0x221F,
  },
  [0x2220]={
@@ -52927,6 +54474,7 @@ characters.data={
   unicodeslot=0x2222,
  },
  [0x2223]={
+  adobename="divides",
   category="sm",
   cjkwd="a",
   description="DIVIDES",
@@ -52941,25 +54489,36 @@ characters.data={
   description="DOES NOT DIVIDE",
   direction="on",
   linebreak="al",
-  specials={ "char", 0x2223, 0x0338 },
   mathspec={
-    { class="binary",   name="ndivides", },
-    { class="relation", name="nmid",     },
+   {
+    class="binary",
+    name="ndivides",
+   },
+   {
+    class="relation",
+    name="nmid",
+   },
   },
+  specials={ "char", 0x2223, 0x0338 },
   unicodeslot=0x2224,
  },
  [0x2225]={
+  adobename="parallel",
   category="sm",
   cjkwd="a",
   description="PARALLEL TO",
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="relation", name="parallel" },
+   {
+    class="relation",
+    name="parallel",
+   },
   },
   unicodeslot=0x2225,
  },
  [0x2226]={
+  adobename="notparallel",
   category="sm",
   description="NOT PARALLEL TO",
   direction="on",
@@ -52977,8 +54536,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-    { class="binary", name="wedge" },
-    { class="binary", name="land" },
+   {
+    class="binary",
+    name="wedge",
+   },
+   {
+    class="binary",
+    name="land",
+   },
   },
   unicodeslot=0x2227,
  },
@@ -52990,8 +54555,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="bin",name="vee" },
-   { class="bin",name="lor" },
+   {
+    class="bin",
+    name="vee",
+   },
+   {
+    class="bin",
+    name="lor",
+   },
   },
   unicodeslot=0x2228,
  },
@@ -53025,22 +54596,35 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-    { class="nothing", name="intop" },
-    { class="limop"  , name="int"   },
+   {
+    class="nothing",
+    name="intop",
+   },
+   {
+    class="limop",
+    name="int",
+   },
   },
   unicodeslot=0x222B,
  },
  [0x222C]={
+  adobename="dblintegral",
   category="sm",
   cjkwd="a",
   description="DOUBLE INTEGRAL",
   direction="on",
   linebreak="ai",
-  specials={ "compat", 0x222B, 0x222B },
   mathspec={
-    { class="nothing", name="iintop" },
-    { class="limop"  , name="iint"   },
+   {
+    class="nothing",
+    name="iintop",
+   },
+   {
+    class="limop",
+    name="iint",
+   },
   },
+  specials={ "compat", 0x222B, 0x222B },
   unicodeslot=0x222C,
  },
  [0x222D]={
@@ -53048,14 +54632,21 @@ characters.data={
   description="TRIPLE INTEGRAL",
   direction="on",
   linebreak="al",
-  specials={ "compat", 0x222B, 0x222B, 0x222B },
   mathspec={
-    { class="nothing", name="iiintop" },
-    { class="limop"  , name="iiint"   },
+   {
+    class="nothing",
+    name="iiintop",
+   },
+   {
+    class="limop",
+    name="iiint",
+   },
   },
+  specials={ "compat", 0x222B, 0x222B, 0x222B },
   unicodeslot=0x222D,
  },
  [0x222E]={
+  adobename="contourintegral",
   category="sm",
   cjkwd="a",
   description="CONTOUR INTEGRAL",
@@ -53124,6 +54715,7 @@ characters.data={
   unicodeslot=0x2234,
  },
  [0x2235]={
+  adobename="because",
   category="sm",
   cjkwd="a",
   description="BECAUSE",
@@ -53134,6 +54726,7 @@ characters.data={
   unicodeslot=0x2235,
  },
  [0x2236]={
+  adobename="ratio",
   category="sm",
   cjkwd="a",
   description="RATIO",
@@ -53144,6 +54737,7 @@ characters.data={
   unicodeslot=0x2236,
  },
  [0x2237]={
+  adobename="proportion",
   category="sm",
   cjkwd="a",
   description="PROPORTION",
@@ -53186,7 +54780,7 @@ characters.data={
   unicodeslot=0x223B,
  },
  [0x223C]={
-  adobename="similar",
+  adobename="tildeoperator",
   category="sm",
   cjkwd="a",
   description="TILDE OPERATOR",
@@ -53198,6 +54792,7 @@ characters.data={
   unicodeslot=0x223C,
  },
  [0x223D]={
+  adobename="reversedtilde",
   category="sm",
   cjkwd="a",
   description="REVERSED TILDE",
@@ -53251,6 +54846,7 @@ characters.data={
   unicodeslot=0x2242,
  },
  [0x2243]={
+  adobename="asymptoticallyequal",
   category="sm",
   description="ASYMPTOTICALLY EQUAL TO",
   direction="on",
@@ -53265,9 +54861,9 @@ characters.data={
   description="NOT ASYMPTOTICALLY EQUAL TO",
   direction="on",
   linebreak="al",
-  specials={ "char", 0x2243, 0x0338 },
   mathclass="relation",
   mathname="nsimeq",
+  specials={ "char", 0x2243, 0x0338 },
   unicodeslot=0x2244,
  },
  [0x2245]={
@@ -53277,8 +54873,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="approxEq"},
-    { class="relation", name="cong"},
+   {
+    class="relation",
+    name="approxEq",
+   },
+   {
+    class="relation",
+    name="cong",
+   },
   },
   unicodeslot=0x2245,
  },
@@ -53288,8 +54890,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="napproxEq"},
-    { class="relation", name="ncong"},
+   {
+    class="relation",
+    name="napproxEq",
+   },
+   {
+    class="relation",
+    name="ncong",
+   },
   },
   unicodeslot=0x2246,
  },
@@ -53328,9 +54936,9 @@ characters.data={
   category="sm",
   description="ALMOST EQUAL OR EQUAL TO",
   direction="on",
+  linebreak="al",
   mathclass="relation",
   mathname="approxeq",
-  linebreak="al",
   unicodeslot=0x224A,
  },
  [0x224B]={
@@ -53341,6 +54949,7 @@ characters.data={
   unicodeslot=0x224B,
  },
  [0x224C]={
+  adobename="allequal",
   category="sm",
   cjkwd="a",
   description="ALL EQUAL TO",
@@ -53375,6 +54984,7 @@ characters.data={
   unicodeslot=0x224F,
  },
  [0x2250]={
+  adobename="approaches",
   category="sm",
   description="APPROACHES THE LIMIT",
   direction="on",
@@ -53382,35 +54992,44 @@ characters.data={
   unicodeslot=0x2250,
  },
  [0x2251]={
+  adobename="geometricallyequal",
   category="sm",
   description="GEOMETRICALLY EQUAL TO",
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="doteqdot" },
-    { class="relation", name="Doteq" },
+   {
+    class="relation",
+    name="doteqdot",
+   },
+   {
+    class="relation",
+    name="Doteq",
+   },
   },
   unicodeslot=0x2251,
  },
  [0x2252]={
+  adobename="approxequalorimage",
   category="sm",
   cjkwd="a",
   description="APPROXIMATELY EQUAL TO OR THE IMAGE OF",
   direction="on",
   linebreak="ai",
-  mirror=0x2253,
   mathclass="relation",
   mathname="fallingdotseq",
+  mirror=0x2253,
   unicodeslot=0x2252,
  },
  [0x2253]={
+  adobename="imageorapproximatelyequal",
   category="sm",
   description="IMAGE OF OR APPROXIMATELY EQUAL TO",
   direction="on",
   linebreak="al",
-  mirror=0x2252,
   mathclass="relation",
   mathname="risingdotseq",
+  mirror=0x2252,
   unicodeslot=0x2253,
  },
  [0x2254]={
@@ -53418,9 +55037,9 @@ characters.data={
   description="COLON EQUALS",
   direction="on",
   linebreak="al",
-  mirror=0x2255,
   mathclass="relation",
   mathname="colonequals",
+  mirror=0x2255,
   unicodeslot=0x2254,
  },
  [0x2255]={
@@ -53428,9 +55047,9 @@ characters.data={
   description="EQUALS COLON",
   direction="on",
   linebreak="al",
-  mirror=0x2254,
   mathclass="relation",
   mathname="equalscolon",
+  mirror=0x2254,
   unicodeslot=0x2255,
  },
  [0x2256]={
@@ -53463,9 +55082,9 @@ characters.data={
   description="ESTIMATES",
   direction="on",
   linebreak="al",
-  unicodeslot=0x2259,
   mathclass="relation",
   mathname="wedgeeq",
+  unicodeslot=0x2259,
  },
  [0x225A]={
   category="sm",
@@ -53529,8 +55148,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-    { class="relation", name="neq" },
-    { class="relation", name="ne" },
+   {
+    class="relation",
+    name="neq",
+   },
+   {
+    class="relation",
+    name="ne",
+   },
   },
   specials={ "char", 0x003D, 0x0338 },
   unicodeslot=0x2260,
@@ -53547,6 +55172,7 @@ characters.data={
   unicodeslot=0x2261,
  },
  [0x2262]={
+  adobename="notidentical",
   category="sm",
   description="NOT IDENTICAL TO",
   direction="on",
@@ -53571,8 +55197,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-    { class="relation", name="leq" },
-    { class="relation", name="le" },
+   {
+    class="relation",
+    name="leq",
+   },
+   {
+    class="relation",
+    name="le",
+   },
   },
   mirror=0x2265,
   unicodeslot=0x2264,
@@ -53585,13 +55217,20 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-    { class="relation", name="geq" },
-    { class="relation", name="ge" },
+   {
+    class="relation",
+    name="geq",
+   },
+   {
+    class="relation",
+    name="ge",
+   },
   },
   mirror=0x2264,
   unicodeslot=0x2265,
  },
  [0x2266]={
+  adobename="lessoverequal",
   category="sm",
   cjkwd="a",
   description="LESS-THAN OVER EQUAL TO",
@@ -53603,6 +55242,7 @@ characters.data={
   unicodeslot=0x2266,
  },
  [0x2267]={
+  adobename="greateroverequal",
   category="sm",
   cjkwd="a",
   description="GREATER-THAN OVER EQUAL TO",
@@ -53634,6 +55274,7 @@ characters.data={
   unicodeslot=0x2269,
  },
  [0x226A]={
+  adobename="muchless",
   category="sm",
   cjkwd="a",
   description="MUCH LESS-THAN",
@@ -53645,6 +55286,7 @@ characters.data={
   unicodeslot=0x226A,
  },
  [0x226B]={
+  adobename="muchgreater",
   category="sm",
   cjkwd="a",
   description="MUCH GREATER-THAN",
@@ -53675,6 +55317,7 @@ characters.data={
   unicodeslot=0x226D,
  },
  [0x226E]={
+  adobename="notless",
   category="sm",
   cjkwd="a",
   description="NOT LESS-THAN",
@@ -53687,6 +55330,7 @@ characters.data={
   unicodeslot=0x226E,
  },
  [0x226F]={
+  adobename="notgreater",
   category="sm",
   cjkwd="a",
   description="NOT GREATER-THAN",
@@ -53699,6 +55343,7 @@ characters.data={
   unicodeslot=0x226F,
  },
  [0x2270]={
+  adobename="notlessnorequal",
   category="sm",
   description="NEITHER LESS-THAN NOR EQUAL TO",
   direction="on",
@@ -53710,6 +55355,7 @@ characters.data={
   unicodeslot=0x2270,
  },
  [0x2271]={
+  adobename="notgreaternorequal",
   category="sm",
   description="NEITHER GREATER-THAN NOR EQUAL TO",
   direction="on",
@@ -53721,6 +55367,7 @@ characters.data={
   unicodeslot=0x2271,
  },
  [0x2272]={
+  adobename="lessorequivalent",
   category="sm",
   description="LESS-THAN OR EQUIVALENT TO",
   direction="on",
@@ -53731,6 +55378,7 @@ characters.data={
   unicodeslot=0x2272,
  },
  [0x2273]={
+  adobename="greaterorequivalent",
   category="sm",
   description="GREATER-THAN OR EQUIVALENT TO",
   direction="on",
@@ -53763,6 +55411,7 @@ characters.data={
   unicodeslot=0x2275,
  },
  [0x2276]={
+  adobename="lessorgreater",
   category="sm",
   description="LESS-THAN OR GREATER-THAN",
   direction="on",
@@ -53773,6 +55422,7 @@ characters.data={
   unicodeslot=0x2276,
  },
  [0x2277]={
+  adobename="greaterorless",
   category="sm",
   description="GREATER-THAN OR LESS-THAN",
   direction="on",
@@ -53794,6 +55444,7 @@ characters.data={
   unicodeslot=0x2278,
  },
  [0x2279]={
+  adobename="notgreaternorless",
   category="sm",
   description="NEITHER GREATER-THAN NOR LESS-THAN",
   direction="on",
@@ -53805,6 +55456,7 @@ characters.data={
   unicodeslot=0x2279,
  },
  [0x227A]={
+  adobename="precedes",
   category="sm",
   description="PRECEDES",
   direction="on",
@@ -53815,6 +55467,7 @@ characters.data={
   unicodeslot=0x227A,
  },
  [0x227B]={
+  adobename="succeeds",
   category="sm",
   description="SUCCEEDS",
   direction="on",
@@ -53865,6 +55518,7 @@ characters.data={
   unicodeslot=0x227F,
  },
  [0x2280]={
+  adobename="notprecedes",
   category="sm",
   description="DOES NOT PRECEDE",
   direction="on",
@@ -53876,6 +55530,7 @@ characters.data={
   unicodeslot=0x2280,
  },
  [0x2281]={
+  adobename="notsucceeds",
   category="sm",
   description="DOES NOT SUCCEED",
   direction="on",
@@ -53887,19 +55542,19 @@ characters.data={
   unicodeslot=0x2281,
  },
  [0x2282]={
-  adobename="propersubset",
+  adobename="subset",
   category="sm",
   cjkwd="a",
   description="SUBSET OF",
   direction="on",
   linebreak="ai",
   mathclass="relation",
-  mathname="subset", -- Subset
+  mathname="subset",
   mirror=0x2283,
   unicodeslot=0x2282,
  },
  [0x2283]={
-  adobename="propersuperset",
+  adobename="superset",
   category="sm",
   cjkwd="a",
   description="SUPERSET OF",
@@ -53915,14 +55570,15 @@ characters.data={
   category="sm",
   description="NOT A SUBSET OF",
   direction="on",
+  linebreak="al",
   mathclass="relation",
   mathname="nsubset",
-  linebreak="al",
   mirror=0x2285,
   specials={ "char", 0x2282, 0x0338 },
   unicodeslot=0x2284,
  },
  [0x2285]={
+  adobename="notsuperset",
   category="sm",
   description="NOT A SUPERSET OF",
   direction="on",
@@ -53934,7 +55590,7 @@ characters.data={
   unicodeslot=0x2285,
  },
  [0x2286]={
-  adobename="reflexsubset",
+  adobename="subsetorequal",
   category="sm",
   cjkwd="a",
   description="SUBSET OF OR EQUAL TO",
@@ -53946,7 +55602,7 @@ characters.data={
   unicodeslot=0x2286,
  },
  [0x2287]={
-  adobename="reflexsuperset",
+  adobename="supersetorequal",
   category="sm",
   cjkwd="a",
   description="SUPERSET OF OR EQUAL TO",
@@ -53980,6 +55636,7 @@ characters.data={
   unicodeslot=0x2289,
  },
  [0x228A]={
+  adobename="subsetnotequal",
   category="sm",
   description="SUBSET OF WITH NOT EQUAL TO",
   direction="on",
@@ -53990,6 +55647,7 @@ characters.data={
   unicodeslot=0x228A,
  },
  [0x228B]={
+  adobename="supersetnotequal",
   category="sm",
   description="SUPERSET OF WITH NOT EQUAL TO",
   direction="on",
@@ -54081,7 +55739,7 @@ characters.data={
   unicodeslot=0x2294,
  },
  [0x2295]={
-  adobename="circleplus",
+  adobename="pluscircle",
   category="sm",
   cjkwd="a",
   description="CIRCLED PLUS",
@@ -54092,6 +55750,7 @@ characters.data={
   unicodeslot=0x2295,
  },
  [0x2296]={
+  adobename="minuscircle",
   category="sm",
   description="CIRCLED MINUS",
   direction="on",
@@ -54101,7 +55760,7 @@ characters.data={
   unicodeslot=0x2296,
  },
  [0x2297]={
-  adobename="circlemultiply",
+  adobename="timescircle",
   category="sm",
   description="CIRCLED TIMES",
   direction="on",
@@ -54121,6 +55780,7 @@ characters.data={
   unicodeslot=0x2298,
  },
  [0x2299]={
+  adobename="circleot",
   category="sm",
   cjkwd="a",
   description="CIRCLED DOT OPERATOR",
@@ -54213,6 +55873,7 @@ characters.data={
   unicodeslot=0x22A2,
  },
  [0x22A3]={
+  adobename="tackleft",
   category="sm",
   description="LEFT TACK",
   direction="on",
@@ -54223,6 +55884,7 @@ characters.data={
   unicodeslot=0x22A3,
  },
  [0x22A4]={
+  adobename="tackdown",
   category="sm",
   description="DOWN TACK",
   direction="on",
@@ -54239,8 +55901,14 @@ characters.data={
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="default", name="bot" },
-   { class="relation", name="perp" },
+   {
+    class="default",
+    name="bot",
+   },
+   {
+    class="relation",
+    name="perp",
+   },
   },
   unicodeslot=0x22A5,
  },
@@ -54266,9 +55934,9 @@ characters.data={
   description="TRUE",
   direction="on",
   linebreak="al",
-  mirror=0x2AE4,
   mathclass="relation",
   mathname="vDash",
+  mirror=0x2AE4,
   unicodeslot=0x22A8,
  },
  [0x22A9]={
@@ -54276,9 +55944,9 @@ characters.data={
   description="FORCES",
   direction="on",
   linebreak="al",
-  mirror=0x2AE3,
   mathclass="relation",
   mathname="Vdash",
+  mirror=0x2AE3,
   unicodeslot=0x22A9,
  },
  [0x22AA]={
@@ -54295,9 +55963,9 @@ characters.data={
   description="DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE",
   direction="on",
   linebreak="al",
-  mirror=0x2AE5,
   mathclass="relation",
   mathname="VDash",
+  mirror=0x2AE5,
   unicodeslot=0x22AB,
  },
  [0x22AC]={
@@ -54466,6 +56134,7 @@ characters.data={
   unicodeslot=0x22BE,
  },
  [0x22BF]={
+  adobename="righttriangle",
   category="sm",
   cjkwd="a",
   description="RIGHT TRIANGLE",
@@ -54525,8 +56194,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="binary", name="cdot" },
-    { class="punctuation", name="cdotp" },
+   {
+    class="binary",
+    name="cdot",
+   },
+   {
+    class="punctuation",
+    name="cdotp",
+   },
   },
   unicodeslot=0x22C5,
  },
@@ -54554,8 +56229,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-    { class="relation", name="bowtie" },
-    { class="relation", name="Join"   }, -- AM: Maybe wrong
+   {
+    class="relation",
+    name="bowtie",
+   },
+   {
+    class="relation",
+    name="Join",
+   },
   },
   unicodeslot=0x22C8,
  },
@@ -54608,6 +56289,7 @@ characters.data={
   unicodeslot=0x22CD,
  },
  [0x22CE]={
+  adobename="curlyor",
   category="sm",
   description="CURLY LOGICAL OR",
   direction="on",
@@ -54617,6 +56299,7 @@ characters.data={
   unicodeslot=0x22CE,
  },
  [0x22CF]={
+  adobename="curlyand",
   category="sm",
   description="CURLY LOGICAL AND",
   direction="on",
@@ -54651,8 +56334,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="binary", name="Cap" },
-   { class="binary", name="doublecap"},
+   {
+    class="binary",
+    name="Cap",
+   },
+   {
+    class="binary",
+    name="doublecap",
+   },
   },
   unicodeslot=0x22D2,
  },
@@ -54662,8 +56351,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="binary", name="Cup" },
-   { class="binary", name="doublecup"},
+   {
+    class="binary",
+    name="Cup",
+   },
+   {
+    class="binary",
+    name="doublecup",
+   },
   },
   unicodeslot=0x22D3,
  },
@@ -54709,8 +56404,14 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="relation", name="lll"},
-   { class="relation", name="llless"},
+   {
+    class="relation",
+    name="lll",
+   },
+   {
+    class="relation",
+    name="llless",
+   },
   },
   mirror=0x22D9,
   unicodeslot=0x22D8,
@@ -54721,30 +56422,38 @@ characters.data={
   direction="on",
   linebreak="al",
   mathspec={
-   { class="relation", name="ggg"},
-   { class="relation", name="gggtr"},
+   {
+    class="relation",
+    name="ggg",
+   },
+   {
+    class="relation",
+    name="gggtr",
+   },
   },
   mirror=0x22D8,
   unicodeslot=0x22D9,
  },
  [0x22DA]={
+  adobename="lessequalorgreater",
   category="sm",
   description="LESS-THAN EQUAL TO OR GREATER-THAN",
   direction="on",
   linebreak="al",
-  mirror=0x22DB,
   mathclass="relation",
   mathname="lesseqgtr",
+  mirror=0x22DB,
   unicodeslot=0x22DA,
  },
  [0x22DB]={
+  adobename="greaterequalorless",
   category="sm",
   description="GREATER-THAN EQUAL TO OR LESS-THAN",
   direction="on",
   linebreak="al",
-  mirror=0x22DA,
   mathclass="relation",
   mathname="gtreqless",
+  mirror=0x22DA,
   unicodeslot=0x22DB,
  },
  [0x22DC]={
@@ -54772,9 +56481,9 @@ characters.data={
   description="EQUAL TO OR PRECEDES",
   direction="on",
   linebreak="al",
-  mirror=0x22DF,
   mathclass="relation",
   mathname="curlyeqprec",
+  mirror=0x22DF,
   unicodeslot=0x22DE,
  },
  [0x22DF]={
@@ -54782,9 +56491,9 @@ characters.data={
   description="EQUAL TO OR SUCCEEDS",
   direction="on",
   linebreak="al",
-  mirror=0x22DE,
   mathclass="relation",
   mathname="curlyeqsucc",
+  mirror=0x22DE,
   unicodeslot=0x22DF,
  },
  [0x22E0]={
@@ -54792,9 +56501,9 @@ characters.data={
   description="DOES NOT PRECEDE OR EQUAL",
   direction="on",
   linebreak="al",
-  mirror=0x22E1,
   mathclass="relation",
   mathname="npreccurlyeq",
+  mirror=0x22E1,
   specials={ "char", 0x227C, 0x0338 },
   unicodeslot=0x22E0,
  },
@@ -54803,9 +56512,9 @@ characters.data={
   description="DOES NOT SUCCEED OR EQUAL",
   direction="on",
   linebreak="al",
-  mirror=0x22E0,
   mathclass="relation",
   mathname="nsucccurlyeq",
+  mirror=0x22E0,
   specials={ "char", 0x227D, 0x0338 },
   unicodeslot=0x22E1,
  },
@@ -54936,6 +56645,7 @@ characters.data={
   unicodeslot=0x22ED,
  },
  [0x22EE]={
+  adobename="ellipsisvertical",
   category="sm",
   description="VERTICAL ELLIPSIS",
   direction="on",
@@ -55106,6 +56816,7 @@ characters.data={
   unicodeslot=0x2302,
  },
  [0x2303]={
+  adobename="control",
   category="so",
   description="UP ARROWHEAD",
   direction="on",
@@ -55120,6 +56831,7 @@ characters.data={
   unicodeslot=0x2304,
  },
  [0x2305]={
+  adobename="projective",
   category="so",
   description="PROJECTIVE",
   direction="on",
@@ -55224,6 +56936,7 @@ characters.data={
   unicodeslot=0x2311,
  },
  [0x2312]={
+  adobename="arc",
   category="so",
   cjkwd="a",
   description="ARC",
@@ -55267,6 +56980,7 @@ characters.data={
   unicodeslot=0x2317,
  },
  [0x2318]={
+  adobename="propellor",
   category="so",
   description="PLACE OF INTEREST SIGN",
   direction="on",
@@ -55372,6 +57086,7 @@ characters.data={
   unicodeslot=0x2324,
  },
  [0x2325]={
+  adobename="option",
   category="so",
   description="OPTION KEY",
   direction="on",
@@ -55379,6 +57094,7 @@ characters.data={
   unicodeslot=0x2325,
  },
  [0x2326]={
+  adobename="deleteright",
   category="so",
   description="ERASE TO THE RIGHT",
   direction="on",
@@ -55386,6 +57102,7 @@ characters.data={
   unicodeslot=0x2326,
  },
  [0x2327]={
+  adobename="clear",
   category="so",
   description="X IN A RECTANGLE BOX",
   direction="on",
@@ -55422,6 +57139,7 @@ characters.data={
   unicodeslot=0x232A,
  },
  [0x232B]={
+  adobename="deleteleft",
   category="so",
   description="ERASE TO THE LEFT",
   direction="on",
@@ -57004,6 +58722,7 @@ characters.data={
   unicodeslot=0x2422,
  },
  [0x2423]={
+  adobename="blank",
   category="so",
   description="OPEN BOX",
   direction="on",
@@ -57109,6 +58828,7 @@ characters.data={
   unicodeslot=0x244A,
  },
  [0x2460]={
+  adobename="onecircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT ONE",
@@ -57118,6 +58838,7 @@ characters.data={
   unicodeslot=0x2460,
  },
  [0x2461]={
+  adobename="twocircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT TWO",
@@ -57127,6 +58848,7 @@ characters.data={
   unicodeslot=0x2461,
  },
  [0x2462]={
+  adobename="threecircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT THREE",
@@ -57136,6 +58858,7 @@ characters.data={
   unicodeslot=0x2462,
  },
  [0x2463]={
+  adobename="fourcircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT FOUR",
@@ -57145,6 +58868,7 @@ characters.data={
   unicodeslot=0x2463,
  },
  [0x2464]={
+  adobename="fivecircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT FIVE",
@@ -57154,6 +58878,7 @@ characters.data={
   unicodeslot=0x2464,
  },
  [0x2465]={
+  adobename="sixcircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT SIX",
@@ -57163,6 +58888,7 @@ characters.data={
   unicodeslot=0x2465,
  },
  [0x2466]={
+  adobename="sevencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT SEVEN",
@@ -57172,6 +58898,7 @@ characters.data={
   unicodeslot=0x2466,
  },
  [0x2467]={
+  adobename="eightcircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT EIGHT",
@@ -57181,6 +58908,7 @@ characters.data={
   unicodeslot=0x2467,
  },
  [0x2468]={
+  adobename="ninecircle",
   category="no",
   cjkwd="a",
   description="CIRCLED DIGIT NINE",
@@ -57190,6 +58918,7 @@ characters.data={
   unicodeslot=0x2468,
  },
  [0x2469]={
+  adobename="tencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER TEN",
@@ -57199,6 +58928,7 @@ characters.data={
   unicodeslot=0x2469,
  },
  [0x246A]={
+  adobename="elevencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER ELEVEN",
@@ -57208,6 +58938,7 @@ characters.data={
   unicodeslot=0x246A,
  },
  [0x246B]={
+  adobename="twelvecircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER TWELVE",
@@ -57217,6 +58948,7 @@ characters.data={
   unicodeslot=0x246B,
  },
  [0x246C]={
+  adobename="thirteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER THIRTEEN",
@@ -57226,6 +58958,7 @@ characters.data={
   unicodeslot=0x246C,
  },
  [0x246D]={
+  adobename="fourteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER FOURTEEN",
@@ -57235,6 +58968,7 @@ characters.data={
   unicodeslot=0x246D,
  },
  [0x246E]={
+  adobename="fifteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER FIFTEEN",
@@ -57244,6 +58978,7 @@ characters.data={
   unicodeslot=0x246E,
  },
  [0x246F]={
+  adobename="sixteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER SIXTEEN",
@@ -57253,6 +58988,7 @@ characters.data={
   unicodeslot=0x246F,
  },
  [0x2470]={
+  adobename="seventeencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER SEVENTEEN",
@@ -57262,6 +58998,7 @@ characters.data={
   unicodeslot=0x2470,
  },
  [0x2471]={
+  adobename="eighteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER EIGHTEEN",
@@ -57271,6 +59008,7 @@ characters.data={
   unicodeslot=0x2471,
  },
  [0x2472]={
+  adobename="nineteencircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER NINETEEN",
@@ -57280,6 +59018,7 @@ characters.data={
   unicodeslot=0x2472,
  },
  [0x2473]={
+  adobename="twentycircle",
   category="no",
   cjkwd="a",
   description="CIRCLED NUMBER TWENTY",
@@ -57289,6 +59028,7 @@ characters.data={
   unicodeslot=0x2473,
  },
  [0x2474]={
+  adobename="oneparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT ONE",
@@ -57298,6 +59038,7 @@ characters.data={
   unicodeslot=0x2474,
  },
  [0x2475]={
+  adobename="twoparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT TWO",
@@ -57307,6 +59048,7 @@ characters.data={
   unicodeslot=0x2475,
  },
  [0x2476]={
+  adobename="threeparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT THREE",
@@ -57316,6 +59058,7 @@ characters.data={
   unicodeslot=0x2476,
  },
  [0x2477]={
+  adobename="fourparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT FOUR",
@@ -57325,6 +59068,7 @@ characters.data={
   unicodeslot=0x2477,
  },
  [0x2478]={
+  adobename="fiveparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT FIVE",
@@ -57334,6 +59078,7 @@ characters.data={
   unicodeslot=0x2478,
  },
  [0x2479]={
+  adobename="sixparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT SIX",
@@ -57343,6 +59088,7 @@ characters.data={
   unicodeslot=0x2479,
  },
  [0x247A]={
+  adobename="sevenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT SEVEN",
@@ -57352,6 +59098,7 @@ characters.data={
   unicodeslot=0x247A,
  },
  [0x247B]={
+  adobename="eightparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT EIGHT",
@@ -57361,6 +59108,7 @@ characters.data={
   unicodeslot=0x247B,
  },
  [0x247C]={
+  adobename="nineparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED DIGIT NINE",
@@ -57370,6 +59118,7 @@ characters.data={
   unicodeslot=0x247C,
  },
  [0x247D]={
+  adobename="tenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER TEN",
@@ -57379,6 +59128,7 @@ characters.data={
   unicodeslot=0x247D,
  },
  [0x247E]={
+  adobename="elevenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER ELEVEN",
@@ -57388,6 +59138,7 @@ characters.data={
   unicodeslot=0x247E,
  },
  [0x247F]={
+  adobename="twelveparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER TWELVE",
@@ -57397,6 +59148,7 @@ characters.data={
   unicodeslot=0x247F,
  },
  [0x2480]={
+  adobename="thirteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER THIRTEEN",
@@ -57406,6 +59158,7 @@ characters.data={
   unicodeslot=0x2480,
  },
  [0x2481]={
+  adobename="fourteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER FOURTEEN",
@@ -57415,6 +59168,7 @@ characters.data={
   unicodeslot=0x2481,
  },
  [0x2482]={
+  adobename="fifteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER FIFTEEN",
@@ -57424,6 +59178,7 @@ characters.data={
   unicodeslot=0x2482,
  },
  [0x2483]={
+  adobename="sixteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER SIXTEEN",
@@ -57433,6 +59188,7 @@ characters.data={
   unicodeslot=0x2483,
  },
  [0x2484]={
+  adobename="seventeenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER SEVENTEEN",
@@ -57442,6 +59198,7 @@ characters.data={
   unicodeslot=0x2484,
  },
  [0x2485]={
+  adobename="eighteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER EIGHTEEN",
@@ -57451,6 +59208,7 @@ characters.data={
   unicodeslot=0x2485,
  },
  [0x2486]={
+  adobename="nineteenparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER NINETEEN",
@@ -57460,6 +59218,7 @@ characters.data={
   unicodeslot=0x2486,
  },
  [0x2487]={
+  adobename="twentyparen",
   category="no",
   cjkwd="a",
   description="PARENTHESIZED NUMBER TWENTY",
@@ -57469,6 +59228,7 @@ characters.data={
   unicodeslot=0x2487,
  },
  [0x2488]={
+  adobename="oneperiod",
   category="no",
   cjkwd="a",
   description="DIGIT ONE FULL STOP",
@@ -57478,6 +59238,7 @@ characters.data={
   unicodeslot=0x2488,
  },
  [0x2489]={
+  adobename="twoperiod",
   category="no",
   cjkwd="a",
   description="DIGIT TWO FULL STOP",
@@ -57487,6 +59248,7 @@ characters.data={
   unicodeslot=0x2489,
  },
  [0x248A]={
+  adobename="threeperiod",
   category="no",
   cjkwd="a",
   description="DIGIT THREE FULL STOP",
@@ -57496,6 +59258,7 @@ characters.data={
   unicodeslot=0x248A,
  },
  [0x248B]={
+  adobename="fourperiod",
   category="no",
   cjkwd="a",
   description="DIGIT FOUR FULL STOP",
@@ -57505,6 +59268,7 @@ characters.data={
   unicodeslot=0x248B,
  },
  [0x248C]={
+  adobename="fiveperiod",
   category="no",
   cjkwd="a",
   description="DIGIT FIVE FULL STOP",
@@ -57514,6 +59278,7 @@ characters.data={
   unicodeslot=0x248C,
  },
  [0x248D]={
+  adobename="sixperiod",
   category="no",
   cjkwd="a",
   description="DIGIT SIX FULL STOP",
@@ -57523,6 +59288,7 @@ characters.data={
   unicodeslot=0x248D,
  },
  [0x248E]={
+  adobename="sevenperiod",
   category="no",
   cjkwd="a",
   description="DIGIT SEVEN FULL STOP",
@@ -57532,6 +59298,7 @@ characters.data={
   unicodeslot=0x248E,
  },
  [0x248F]={
+  adobename="eightperiod",
   category="no",
   cjkwd="a",
   description="DIGIT EIGHT FULL STOP",
@@ -57541,6 +59308,7 @@ characters.data={
   unicodeslot=0x248F,
  },
  [0x2490]={
+  adobename="nineperiod",
   category="no",
   cjkwd="a",
   description="DIGIT NINE FULL STOP",
@@ -57550,6 +59318,7 @@ characters.data={
   unicodeslot=0x2490,
  },
  [0x2491]={
+  adobename="tenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER TEN FULL STOP",
@@ -57559,6 +59328,7 @@ characters.data={
   unicodeslot=0x2491,
  },
  [0x2492]={
+  adobename="elevenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER ELEVEN FULL STOP",
@@ -57568,6 +59338,7 @@ characters.data={
   unicodeslot=0x2492,
  },
  [0x2493]={
+  adobename="twelveperiod",
   category="no",
   cjkwd="a",
   description="NUMBER TWELVE FULL STOP",
@@ -57577,6 +59348,7 @@ characters.data={
   unicodeslot=0x2493,
  },
  [0x2494]={
+  adobename="thirteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER THIRTEEN FULL STOP",
@@ -57586,6 +59358,7 @@ characters.data={
   unicodeslot=0x2494,
  },
  [0x2495]={
+  adobename="fourteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER FOURTEEN FULL STOP",
@@ -57595,6 +59368,7 @@ characters.data={
   unicodeslot=0x2495,
  },
  [0x2496]={
+  adobename="fifteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER FIFTEEN FULL STOP",
@@ -57604,6 +59378,7 @@ characters.data={
   unicodeslot=0x2496,
  },
  [0x2497]={
+  adobename="sixteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER SIXTEEN FULL STOP",
@@ -57613,6 +59388,7 @@ characters.data={
   unicodeslot=0x2497,
  },
  [0x2498]={
+  adobename="seventeenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER SEVENTEEN FULL STOP",
@@ -57622,6 +59398,7 @@ characters.data={
   unicodeslot=0x2498,
  },
  [0x2499]={
+  adobename="eighteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER EIGHTEEN FULL STOP",
@@ -57631,6 +59408,7 @@ characters.data={
   unicodeslot=0x2499,
  },
  [0x249A]={
+  adobename="nineteenperiod",
   category="no",
   cjkwd="a",
   description="NUMBER NINETEEN FULL STOP",
@@ -57640,6 +59418,7 @@ characters.data={
   unicodeslot=0x249A,
  },
  [0x249B]={
+  adobename="twentyperiod",
   category="no",
   cjkwd="a",
   description="NUMBER TWENTY FULL STOP",
@@ -57649,6 +59428,7 @@ characters.data={
   unicodeslot=0x249B,
  },
  [0x249C]={
+  adobename="aparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER A",
@@ -57658,6 +59438,7 @@ characters.data={
   unicodeslot=0x249C,
  },
  [0x249D]={
+  adobename="bparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER B",
@@ -57667,6 +59448,7 @@ characters.data={
   unicodeslot=0x249D,
  },
  [0x249E]={
+  adobename="cparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER C",
@@ -57676,6 +59458,7 @@ characters.data={
   unicodeslot=0x249E,
  },
  [0x249F]={
+  adobename="dparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER D",
@@ -57685,6 +59468,7 @@ characters.data={
   unicodeslot=0x249F,
  },
  [0x24A0]={
+  adobename="eparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER E",
@@ -57694,6 +59478,7 @@ characters.data={
   unicodeslot=0x24A0,
  },
  [0x24A1]={
+  adobename="fparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER F",
@@ -57703,6 +59488,7 @@ characters.data={
   unicodeslot=0x24A1,
  },
  [0x24A2]={
+  adobename="gparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER G",
@@ -57712,6 +59498,7 @@ characters.data={
   unicodeslot=0x24A2,
  },
  [0x24A3]={
+  adobename="hparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER H",
@@ -57721,6 +59508,7 @@ characters.data={
   unicodeslot=0x24A3,
  },
  [0x24A4]={
+  adobename="iparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER I",
@@ -57730,6 +59518,7 @@ characters.data={
   unicodeslot=0x24A4,
  },
  [0x24A5]={
+  adobename="jparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER J",
@@ -57739,6 +59528,7 @@ characters.data={
   unicodeslot=0x24A5,
  },
  [0x24A6]={
+  adobename="kparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER K",
@@ -57748,6 +59538,7 @@ characters.data={
   unicodeslot=0x24A6,
  },
  [0x24A7]={
+  adobename="lparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER L",
@@ -57757,6 +59548,7 @@ characters.data={
   unicodeslot=0x24A7,
  },
  [0x24A8]={
+  adobename="mparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER M",
@@ -57766,6 +59558,7 @@ characters.data={
   unicodeslot=0x24A8,
  },
  [0x24A9]={
+  adobename="nparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER N",
@@ -57775,6 +59568,7 @@ characters.data={
   unicodeslot=0x24A9,
  },
  [0x24AA]={
+  adobename="oparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER O",
@@ -57784,6 +59578,7 @@ characters.data={
   unicodeslot=0x24AA,
  },
  [0x24AB]={
+  adobename="pparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER P",
@@ -57793,6 +59588,7 @@ characters.data={
   unicodeslot=0x24AB,
  },
  [0x24AC]={
+  adobename="qparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER Q",
@@ -57802,6 +59598,7 @@ characters.data={
   unicodeslot=0x24AC,
  },
  [0x24AD]={
+  adobename="rparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER R",
@@ -57811,6 +59608,7 @@ characters.data={
   unicodeslot=0x24AD,
  },
  [0x24AE]={
+  adobename="sparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER S",
@@ -57820,6 +59618,7 @@ characters.data={
   unicodeslot=0x24AE,
  },
  [0x24AF]={
+  adobename="tparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER T",
@@ -57829,6 +59628,7 @@ characters.data={
   unicodeslot=0x24AF,
  },
  [0x24B0]={
+  adobename="uparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER U",
@@ -57838,6 +59638,7 @@ characters.data={
   unicodeslot=0x24B0,
  },
  [0x24B1]={
+  adobename="vparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER V",
@@ -57847,6 +59648,7 @@ characters.data={
   unicodeslot=0x24B1,
  },
  [0x24B2]={
+  adobename="wparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER W",
@@ -57856,6 +59658,7 @@ characters.data={
   unicodeslot=0x24B2,
  },
  [0x24B3]={
+  adobename="xparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER X",
@@ -57865,6 +59668,7 @@ characters.data={
   unicodeslot=0x24B3,
  },
  [0x24B4]={
+  adobename="yparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER Y",
@@ -57874,6 +59678,7 @@ characters.data={
   unicodeslot=0x24B4,
  },
  [0x24B5]={
+  adobename="zparen",
   category="so",
   cjkwd="a",
   description="PARENTHESIZED LATIN SMALL LETTER Z",
@@ -57883,6 +59688,7 @@ characters.data={
   unicodeslot=0x24B5,
  },
  [0x24B6]={
+  adobename="Acircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER A",
@@ -57893,6 +59699,7 @@ characters.data={
   unicodeslot=0x24B6,
  },
  [0x24B7]={
+  adobename="Bcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER B",
@@ -57903,6 +59710,7 @@ characters.data={
   unicodeslot=0x24B7,
  },
  [0x24B8]={
+  adobename="Ccircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER C",
@@ -57913,6 +59721,7 @@ characters.data={
   unicodeslot=0x24B8,
  },
  [0x24B9]={
+  adobename="Dcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER D",
@@ -57923,6 +59732,7 @@ characters.data={
   unicodeslot=0x24B9,
  },
  [0x24BA]={
+  adobename="Ecircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER E",
@@ -57933,6 +59743,7 @@ characters.data={
   unicodeslot=0x24BA,
  },
  [0x24BB]={
+  adobename="Fcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER F",
@@ -57943,6 +59754,7 @@ characters.data={
   unicodeslot=0x24BB,
  },
  [0x24BC]={
+  adobename="Gcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER G",
@@ -57953,6 +59765,7 @@ characters.data={
   unicodeslot=0x24BC,
  },
  [0x24BD]={
+  adobename="Hcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER H",
@@ -57963,6 +59776,7 @@ characters.data={
   unicodeslot=0x24BD,
  },
  [0x24BE]={
+  adobename="Icircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER I",
@@ -57973,6 +59787,7 @@ characters.data={
   unicodeslot=0x24BE,
  },
  [0x24BF]={
+  adobename="Jcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER J",
@@ -57983,6 +59798,7 @@ characters.data={
   unicodeslot=0x24BF,
  },
  [0x24C0]={
+  adobename="Kcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER K",
@@ -57993,6 +59809,7 @@ characters.data={
   unicodeslot=0x24C0,
  },
  [0x24C1]={
+  adobename="Lcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER L",
@@ -58003,6 +59820,7 @@ characters.data={
   unicodeslot=0x24C1,
  },
  [0x24C2]={
+  adobename="Mcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER M",
@@ -58013,6 +59831,7 @@ characters.data={
   unicodeslot=0x24C2,
  },
  [0x24C3]={
+  adobename="Ncircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER N",
@@ -58023,6 +59842,7 @@ characters.data={
   unicodeslot=0x24C3,
  },
  [0x24C4]={
+  adobename="Ocircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER O",
@@ -58033,6 +59853,7 @@ characters.data={
   unicodeslot=0x24C4,
  },
  [0x24C5]={
+  adobename="Pcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER P",
@@ -58043,6 +59864,7 @@ characters.data={
   unicodeslot=0x24C5,
  },
  [0x24C6]={
+  adobename="Qcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER Q",
@@ -58053,6 +59875,7 @@ characters.data={
   unicodeslot=0x24C6,
  },
  [0x24C7]={
+  adobename="Rcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER R",
@@ -58065,6 +59888,7 @@ characters.data={
   unicodeslot=0x24C7,
  },
  [0x24C8]={
+  adobename="Scircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER S",
@@ -58077,6 +59901,7 @@ characters.data={
   unicodeslot=0x24C8,
  },
  [0x24C9]={
+  adobename="Tcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER T",
@@ -58087,6 +59912,7 @@ characters.data={
   unicodeslot=0x24C9,
  },
  [0x24CA]={
+  adobename="Ucircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER U",
@@ -58097,6 +59923,7 @@ characters.data={
   unicodeslot=0x24CA,
  },
  [0x24CB]={
+  adobename="Vcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER V",
@@ -58107,6 +59934,7 @@ characters.data={
   unicodeslot=0x24CB,
  },
  [0x24CC]={
+  adobename="Wcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER W",
@@ -58117,6 +59945,7 @@ characters.data={
   unicodeslot=0x24CC,
  },
  [0x24CD]={
+  adobename="Xcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER X",
@@ -58127,6 +59956,7 @@ characters.data={
   unicodeslot=0x24CD,
  },
  [0x24CE]={
+  adobename="Ycircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER Y",
@@ -58137,6 +59967,7 @@ characters.data={
   unicodeslot=0x24CE,
  },
  [0x24CF]={
+  adobename="Zcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN CAPITAL LETTER Z",
@@ -58147,6 +59978,7 @@ characters.data={
   unicodeslot=0x24CF,
  },
  [0x24D0]={
+  adobename="acircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER A",
@@ -58157,6 +59989,7 @@ characters.data={
   unicodeslot=0x24D0,
  },
  [0x24D1]={
+  adobename="bcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER B",
@@ -58167,6 +60000,7 @@ characters.data={
   unicodeslot=0x24D1,
  },
  [0x24D2]={
+  adobename="ccircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER C",
@@ -58177,6 +60011,7 @@ characters.data={
   unicodeslot=0x24D2,
  },
  [0x24D3]={
+  adobename="dcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER D",
@@ -58187,6 +60022,7 @@ characters.data={
   unicodeslot=0x24D3,
  },
  [0x24D4]={
+  adobename="ecircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER E",
@@ -58197,6 +60033,7 @@ characters.data={
   unicodeslot=0x24D4,
  },
  [0x24D5]={
+  adobename="fcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER F",
@@ -58207,6 +60044,7 @@ characters.data={
   unicodeslot=0x24D5,
  },
  [0x24D6]={
+  adobename="gcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER G",
@@ -58217,6 +60055,7 @@ characters.data={
   unicodeslot=0x24D6,
  },
  [0x24D7]={
+  adobename="hcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER H",
@@ -58227,6 +60066,7 @@ characters.data={
   unicodeslot=0x24D7,
  },
  [0x24D8]={
+  adobename="icircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER I",
@@ -58237,6 +60077,7 @@ characters.data={
   unicodeslot=0x24D8,
  },
  [0x24D9]={
+  adobename="jcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER J",
@@ -58247,6 +60088,7 @@ characters.data={
   unicodeslot=0x24D9,
  },
  [0x24DA]={
+  adobename="kcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER K",
@@ -58257,6 +60099,7 @@ characters.data={
   unicodeslot=0x24DA,
  },
  [0x24DB]={
+  adobename="lcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER L",
@@ -58267,6 +60110,7 @@ characters.data={
   unicodeslot=0x24DB,
  },
  [0x24DC]={
+  adobename="mcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER M",
@@ -58277,6 +60121,7 @@ characters.data={
   unicodeslot=0x24DC,
  },
  [0x24DD]={
+  adobename="ncircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER N",
@@ -58287,6 +60132,7 @@ characters.data={
   unicodeslot=0x24DD,
  },
  [0x24DE]={
+  adobename="ocircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER O",
@@ -58297,6 +60143,7 @@ characters.data={
   unicodeslot=0x24DE,
  },
  [0x24DF]={
+  adobename="pcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER P",
@@ -58307,6 +60154,7 @@ characters.data={
   unicodeslot=0x24DF,
  },
  [0x24E0]={
+  adobename="qcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER Q",
@@ -58317,6 +60165,7 @@ characters.data={
   unicodeslot=0x24E0,
  },
  [0x24E1]={
+  adobename="rcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER R",
@@ -58327,6 +60176,7 @@ characters.data={
   unicodeslot=0x24E1,
  },
  [0x24E2]={
+  adobename="scircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER S",
@@ -58337,6 +60187,7 @@ characters.data={
   unicodeslot=0x24E2,
  },
  [0x24E3]={
+  adobename="tcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER T",
@@ -58347,6 +60198,7 @@ characters.data={
   unicodeslot=0x24E3,
  },
  [0x24E4]={
+  adobename="ucircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER U",
@@ -58357,6 +60209,7 @@ characters.data={
   unicodeslot=0x24E4,
  },
  [0x24E5]={
+  adobename="vcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER V",
@@ -58367,6 +60220,7 @@ characters.data={
   unicodeslot=0x24E5,
  },
  [0x24E6]={
+  adobename="wcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER W",
@@ -58377,6 +60231,7 @@ characters.data={
   unicodeslot=0x24E6,
  },
  [0x24E7]={
+  adobename="xcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER X",
@@ -58387,6 +60242,7 @@ characters.data={
   unicodeslot=0x24E7,
  },
  [0x24E8]={
+  adobename="ycircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER Y",
@@ -58397,6 +60253,7 @@ characters.data={
   unicodeslot=0x24E8,
  },
  [0x24E9]={
+  adobename="zcircle",
   category="so",
   cjkwd="a",
   description="CIRCLED LATIN SMALL LETTER Z",
@@ -58681,7 +60538,7 @@ characters.data={
   unicodeslot=0x250B,
  },
  [0x250C]={
-  adobename="SF10000",
+  adobename="SF010000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT DOWN AND RIGHT",
@@ -58714,7 +60571,7 @@ characters.data={
   unicodeslot=0x250F,
  },
  [0x2510]={
-  adobename="SF30000",
+  adobename="SF030000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT DOWN AND LEFT",
@@ -58747,7 +60604,7 @@ characters.data={
   unicodeslot=0x2513,
  },
  [0x2514]={
-  adobename="SF20000",
+  adobename="SF020000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT UP AND RIGHT",
@@ -58780,7 +60637,7 @@ characters.data={
   unicodeslot=0x2517,
  },
  [0x2518]={
-  adobename="SF40000",
+  adobename="SF040000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT UP AND LEFT",
@@ -58813,7 +60670,7 @@ characters.data={
   unicodeslot=0x251B,
  },
  [0x251C]={
-  adobename="SF80000",
+  adobename="SF080000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT VERTICAL AND RIGHT",
@@ -58878,7 +60735,7 @@ characters.data={
   unicodeslot=0x2523,
  },
  [0x2524]={
-  adobename="SF90000",
+  adobename="SF090000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT VERTICAL AND LEFT",
@@ -58943,7 +60800,7 @@ characters.data={
   unicodeslot=0x252B,
  },
  [0x252C]={
-  adobename="SF60000",
+  adobename="SF060000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT DOWN AND HORIZONTAL",
@@ -59008,7 +60865,7 @@ characters.data={
   unicodeslot=0x2533,
  },
  [0x2534]={
-  adobename="SF70000",
+  adobename="SF070000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT UP AND HORIZONTAL",
@@ -59073,7 +60930,7 @@ characters.data={
   unicodeslot=0x253B,
  },
  [0x253C]={
-  adobename="SF50000",
+  adobename="SF050000",
   category="so",
   cjkwd="a",
   description="BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL",
@@ -59771,7 +61628,7 @@ characters.data={
   unicodeslot=0x2590,
  },
  [0x2591]={
-  adobename="ltshade",
+  adobename="shadelight",
   category="so",
   description="LIGHT SHADE",
   direction="on",
@@ -59779,7 +61636,7 @@ characters.data={
   unicodeslot=0x2591,
  },
  [0x2592]={
-  adobename="shade",
+  adobename="shademedium",
   category="so",
   cjkwd="a",
   description="MEDIUM SHADE",
@@ -59788,7 +61645,7 @@ characters.data={
   unicodeslot=0x2592,
  },
  [0x2593]={
-  adobename="dkshade",
+  adobename="shadedark",
   category="so",
   cjkwd="a",
   description="DARK SHADE",
@@ -59892,15 +61749,21 @@ characters.data={
   unicodeslot=0x25A0,
  },
  [0x25A1]={
-  adobename="H22073",
+  adobename="whitesquare",
   category="so",
   cjkwd="a",
   description="WHITE SQUARE",
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="ord", name="square" },
-   { class="ord", name="Box" },
+   {
+    class="ord",
+    name="square",
+   },
+   {
+    class="ord",
+    name="Box",
+   },
   },
   unicodeslot=0x25A1,
  },
@@ -59914,6 +61777,7 @@ characters.data={
   unicodeslot=0x25A2,
  },
  [0x25A3]={
+  adobename="squarewhitewithsmallblack",
   category="so",
   cjkwd="a",
   description="WHITE SQUARE CONTAINING BLACK SMALL SQUARE",
@@ -59922,6 +61786,7 @@ characters.data={
   unicodeslot=0x25A3,
  },
  [0x25A4]={
+  adobename="squarehorizontalfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH HORIZONTAL FILL",
@@ -59930,6 +61795,7 @@ characters.data={
   unicodeslot=0x25A4,
  },
  [0x25A5]={
+  adobename="squareverticalfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH VERTICAL FILL",
@@ -59938,6 +61804,7 @@ characters.data={
   unicodeslot=0x25A5,
  },
  [0x25A6]={
+  adobename="squareorthogonalcrosshatchfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH ORTHOGONAL CROSSHATCH FILL",
@@ -59946,6 +61813,7 @@ characters.data={
   unicodeslot=0x25A6,
  },
  [0x25A7]={
+  adobename="squareupperlefttolowerrightfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH UPPER LEFT TO LOWER RIGHT FILL",
@@ -59954,6 +61822,7 @@ characters.data={
   unicodeslot=0x25A7,
  },
  [0x25A8]={
+  adobename="squareupperrighttolowerleftfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH UPPER RIGHT TO LOWER LEFT FILL",
@@ -59962,6 +61831,7 @@ characters.data={
   unicodeslot=0x25A8,
  },
  [0x25A9]={
+  adobename="squarediagonalcrosshatchfill",
   category="so",
   cjkwd="a",
   description="SQUARE WITH DIAGONAL CROSSHATCH FILL",
@@ -59970,7 +61840,7 @@ characters.data={
   unicodeslot=0x25A9,
  },
  [0x25AA]={
-  adobename="H18543",
+  adobename="blacksmallsquare",
   category="so",
   description="BLACK SMALL SQUARE",
   direction="on",
@@ -59978,7 +61848,7 @@ characters.data={
   unicodeslot=0x25AA,
  },
  [0x25AB]={
-  adobename="H18551",
+  adobename="whitesmallsquare",
   category="so",
   description="WHITE SMALL SQUARE",
   direction="on",
@@ -60038,18 +61908,26 @@ characters.data={
   unicodeslot=0x25B2,
  },
  [0x25B3]={
+  adobename="whiteuppointingtriangle",
   category="so",
   cjkwd="a",
   description="WHITE UP-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
   mathspec={
-   { class="ord", name="triangle" },
-   { class="binary", name="bigtriangleup" },
+   {
+    class="ord",
+    name="triangle",
+   },
+   {
+    class="binary",
+    name="bigtriangleup",
+   },
   },
   unicodeslot=0x25B3,
  },
  [0x25B4]={
+  adobename="blackuppointingsmalltriangle",
   category="so",
   description="BLACK UP-POINTING SMALL TRIANGLE",
   direction="on",
@@ -60057,6 +61935,7 @@ characters.data={
   unicodeslot=0x25B4,
  },
  [0x25B5]={
+  adobename="whiteuppointingsmalltriangle",
   category="so",
   description="WHITE UP-POINTING SMALL TRIANGLE",
   direction="on",
@@ -60064,6 +61943,7 @@ characters.data={
   unicodeslot=0x25B5,
  },
  [0x25B6]={
+  adobename="blackrightpointingtriangle",
   category="so",
   cjkwd="a",
   description="BLACK RIGHT-POINTING TRIANGLE",
@@ -60074,6 +61954,7 @@ characters.data={
   unicodeslot=0x25B6,
  },
  [0x25B7]={
+  adobename="whiterightpointingtriangle",
   category="sm",
   cjkwd="a",
   description="WHITE RIGHT-POINTING TRIANGLE",
@@ -60091,6 +61972,7 @@ characters.data={
   unicodeslot=0x25B8,
  },
  [0x25B9]={
+  adobename="whiterightpointingsmalltriangle",
   category="so",
   description="WHITE RIGHT-POINTING SMALL TRIANGLE",
   direction="on",
@@ -60122,6 +62004,7 @@ characters.data={
   unicodeslot=0x25BC,
  },
  [0x25BD]={
+  adobename="whitedownpointingtriangle",
   category="so",
   cjkwd="a",
   description="WHITE DOWN-POINTING TRIANGLE",
@@ -60139,6 +62022,7 @@ characters.data={
   unicodeslot=0x25BE,
  },
  [0x25BF]={
+  adobename="whitedownpointingsmalltriangle",
   category="so",
   description="WHITE DOWN-POINTING SMALL TRIANGLE",
   direction="on",
@@ -60146,6 +62030,7 @@ characters.data={
   unicodeslot=0x25BF,
  },
  [0x25C0]={
+  adobename="blackleftpointingtriangle",
   category="so",
   cjkwd="a",
   description="BLACK LEFT-POINTING TRIANGLE",
@@ -60154,6 +62039,7 @@ characters.data={
   unicodeslot=0x25C0,
  },
  [0x25C1]={
+  adobename="whiteleftpointingtriangle",
   category="sm",
   cjkwd="a",
   description="WHITE LEFT-POINTING TRIANGLE",
@@ -60169,6 +62055,7 @@ characters.data={
   unicodeslot=0x25C2,
  },
  [0x25C3]={
+  adobename="whiteleftpointingsmalltriangle",
   category="so",
   description="WHITE LEFT-POINTING SMALL TRIANGLE",
   direction="on",
@@ -60191,6 +62078,7 @@ characters.data={
   unicodeslot=0x25C5,
  },
  [0x25C6]={
+  adobename="blackdiamond",
   category="so",
   cjkwd="a",
   description="BLACK DIAMOND",
@@ -60199,6 +62087,7 @@ characters.data={
   unicodeslot=0x25C6,
  },
  [0x25C7]={
+  adobename="whitediamond",
   category="so",
   cjkwd="a",
   description="WHITE DIAMOND",
@@ -60207,6 +62096,7 @@ characters.data={
   unicodeslot=0x25C7,
  },
  [0x25C8]={
+  adobename="whitediamondcontainingblacksmalldiamond",
   category="so",
   cjkwd="a",
   description="WHITE DIAMOND CONTAINING BLACK SMALL DIAMOND",
@@ -60215,6 +62105,7 @@ characters.data={
   unicodeslot=0x25C8,
  },
  [0x25C9]={
+  adobename="fisheye",
   category="so",
   description="FISHEYE",
   direction="on",
@@ -60232,7 +62123,7 @@ characters.data={
   unicodeslot=0x25CA,
  },
  [0x25CB]={
-  adobename="circle",
+  adobename="whitecircle",
   category="so",
   cjkwd="a",
   description="WHITE CIRCLE",
@@ -60241,6 +62132,7 @@ characters.data={
   unicodeslot=0x25CB,
  },
  [0x25CC]={
+  adobename="dottedcircle",
   category="so",
   description="DOTTED CIRCLE",
   direction="on",
@@ -60255,6 +62147,7 @@ characters.data={
   unicodeslot=0x25CD,
  },
  [0x25CE]={
+  adobename="bullseye",
   category="so",
   cjkwd="a",
   description="BULLSEYE",
@@ -60263,7 +62156,7 @@ characters.data={
   unicodeslot=0x25CE,
  },
  [0x25CF]={
-  adobename="H18533",
+  adobename="blackcircle",
   category="so",
   cjkwd="a",
   description="BLACK CIRCLE",
@@ -60272,6 +62165,7 @@ characters.data={
   unicodeslot=0x25CF,
  },
  [0x25D0]={
+  adobename="circlewithlefthalfblack",
   category="so",
   cjkwd="a",
   description="CIRCLE WITH LEFT HALF BLACK",
@@ -60280,6 +62174,7 @@ characters.data={
   unicodeslot=0x25D0,
  },
  [0x25D1]={
+  adobename="circlewithrighthalfblack",
   category="so",
   cjkwd="a",
   description="CIRCLE WITH RIGHT HALF BLACK",
@@ -60338,7 +62233,7 @@ characters.data={
   unicodeslot=0x25D8,
  },
  [0x25D9]={
-  adobename="invcircle",
+  adobename="whitecircleinverse",
   category="so",
   description="INVERSE WHITE CIRCLE",
   direction="on",
@@ -60402,6 +62297,7 @@ characters.data={
   unicodeslot=0x25E1,
  },
  [0x25E2]={
+  adobename="blacklowerrighttriangle",
   category="so",
   cjkwd="a",
   description="BLACK LOWER RIGHT TRIANGLE",
@@ -60410,6 +62306,7 @@ characters.data={
   unicodeslot=0x25E2,
  },
  [0x25E3]={
+  adobename="blacklowerlefttriangle",
   category="so",
   cjkwd="a",
   description="BLACK LOWER LEFT TRIANGLE",
@@ -60418,6 +62315,7 @@ characters.data={
   unicodeslot=0x25E3,
  },
  [0x25E4]={
+  adobename="blackupperlefttriangle",
   category="so",
   cjkwd="a",
   description="BLACK UPPER LEFT TRIANGLE",
@@ -60426,6 +62324,7 @@ characters.data={
   unicodeslot=0x25E4,
  },
  [0x25E5]={
+  adobename="blackupperrighttriangle",
   category="so",
   cjkwd="a",
   description="BLACK UPPER RIGHT TRIANGLE",
@@ -60434,7 +62333,7 @@ characters.data={
   unicodeslot=0x25E5,
  },
  [0x25E6]={
-  adobename="openbullet",
+  adobename="whitebullet",
   category="so",
   description="WHITE BULLET",
   direction="on",
@@ -60498,6 +62397,7 @@ characters.data={
   unicodeslot=0x25EE,
  },
  [0x25EF]={
+  adobename="largecircle",
   category="so",
   cjkwd="a",
   description="LARGE CIRCLE",
@@ -60655,6 +62555,7 @@ characters.data={
   unicodeslot=0x2604,
  },
  [0x2605]={
+  adobename="blackstar",
   category="so",
   cjkwd="a",
   description="BLACK STAR",
@@ -60665,6 +62566,7 @@ characters.data={
   unicodeslot=0x2605,
  },
  [0x2606]={
+  adobename="whitestar",
   category="so",
   cjkwd="a",
   description="WHITE STAR",
@@ -60723,6 +62625,7 @@ characters.data={
   unicodeslot=0x260D,
  },
  [0x260E]={
+  adobename="telephoneblack",
   category="so",
   cjkwd="a",
   description="BLACK TELEPHONE",
@@ -60731,6 +62634,7 @@ characters.data={
   unicodeslot=0x260E,
  },
  [0x260F]={
+  adobename="whitetelephone",
   category="so",
   cjkwd="a",
   description="WHITE TELEPHONE",
@@ -60825,6 +62729,7 @@ characters.data={
   unicodeslot=0x261B,
  },
  [0x261C]={
+  adobename="pointingindexleftwhite",
   category="so",
   cjkwd="a",
   description="WHITE LEFT POINTING INDEX",
@@ -60833,6 +62738,7 @@ characters.data={
   unicodeslot=0x261C,
  },
  [0x261D]={
+  adobename="pointingindexupwhite",
   category="so",
   description="WHITE UP POINTING INDEX",
   direction="on",
@@ -60840,6 +62746,7 @@ characters.data={
   unicodeslot=0x261D,
  },
  [0x261E]={
+  adobename="pointingindexrightwhite",
   category="so",
   cjkwd="a",
   description="WHITE RIGHT POINTING INDEX",
@@ -60848,6 +62755,7 @@ characters.data={
   unicodeslot=0x261E,
  },
  [0x261F]={
+  adobename="pointingindexdownwhite",
   category="so",
   description="WHITE DOWN POINTING INDEX",
   direction="on",
@@ -60960,6 +62868,7 @@ characters.data={
   unicodeslot=0x262E,
  },
  [0x262F]={
+  adobename="yinyang",
   category="so",
   description="YIN YANG",
   direction="on",
@@ -61037,7 +62946,7 @@ characters.data={
   unicodeslot=0x2639,
  },
  [0x263A]={
-  adobename="smileface",
+  adobename="whitesmilingface",
   category="so",
   description="WHITE SMILING FACE",
   direction="on",
@@ -61082,7 +62991,7 @@ characters.data={
   unicodeslot=0x263F,
  },
  [0x2640]={
-  adobename="female",
+  adobename="venus",
   category="so",
   cjkwd="a",
   description="FEMALE SIGN",
@@ -61091,6 +63000,7 @@ characters.data={
   unicodeslot=0x2640,
  },
  [0x2641]={
+  adobename="earth",
   category="so",
   description="EARTH",
   direction="on",
@@ -61098,7 +63008,7 @@ characters.data={
   unicodeslot=0x2641,
  },
  [0x2642]={
-  adobename="male",
+  adobename="mars",
   category="so",
   cjkwd="a",
   description="MALE SIGN",
@@ -61310,7 +63220,7 @@ characters.data={
   unicodeslot=0x265F,
  },
  [0x2660]={
-  adobename="spade",
+  adobename="spadesuitblack",
   category="so",
   cjkwd="a",
   description="BLACK SPADE SUIT",
@@ -61321,6 +63231,7 @@ characters.data={
   unicodeslot=0x2660,
  },
  [0x2661]={
+  adobename="heartsuitwhite",
   category="so",
   cjkwd="a",
   description="WHITE HEART SUIT",
@@ -61331,6 +63242,7 @@ characters.data={
   unicodeslot=0x2661,
  },
  [0x2662]={
+  adobename="diamondsuitwhite",
   category="so",
   description="WHITE DIAMOND SUIT",
   direction="on",
@@ -61340,7 +63252,7 @@ characters.data={
   unicodeslot=0x2662,
  },
  [0x2663]={
-  adobename="club",
+  adobename="clubsuitblack",
   category="so",
   cjkwd="a",
   description="BLACK CLUB SUIT",
@@ -61351,6 +63263,7 @@ characters.data={
   unicodeslot=0x2663,
  },
  [0x2664]={
+  adobename="spadesuitwhite",
   category="so",
   cjkwd="a",
   description="WHITE SPADE SUIT",
@@ -61359,7 +63272,7 @@ characters.data={
   unicodeslot=0x2664,
  },
  [0x2665]={
-  adobename="heart",
+  adobename="heartsuitblack",
   category="so",
   cjkwd="a",
   description="BLACK HEART SUIT",
@@ -61376,6 +63289,7 @@ characters.data={
   unicodeslot=0x2666,
  },
  [0x2667]={
+  adobename="clubsuitwhite",
   category="so",
   cjkwd="a",
   description="WHITE CLUB SUIT",
@@ -61384,6 +63298,7 @@ characters.data={
   unicodeslot=0x2667,
  },
  [0x2668]={
+  adobename="hotsprings",
   category="so",
   cjkwd="a",
   description="HOT SPRINGS",
@@ -61392,6 +63307,7 @@ characters.data={
   unicodeslot=0x2668,
  },
  [0x2669]={
+  adobename="quarternote",
   category="so",
   cjkwd="a",
   description="QUARTER NOTE",
@@ -61417,6 +63333,7 @@ characters.data={
   unicodeslot=0x266B,
  },
  [0x266C]={
+  adobename="beamedsixteenthnotes",
   category="so",
   cjkwd="a",
   description="BEAMED SIXTEENTH NOTES",
@@ -61425,6 +63342,7 @@ characters.data={
   unicodeslot=0x266C,
  },
  [0x266D]={
+  adobename="musicflatsign",
   category="so",
   cjkwd="a",
   description="MUSIC FLAT SIGN",
@@ -61444,6 +63362,7 @@ characters.data={
   unicodeslot=0x266E,
  },
  [0x266F]={
+  adobename="musicsharpsign",
   category="sm",
   cjkwd="a",
   description="MUSIC SHARP SIGN",
@@ -62007,6 +63926,7 @@ characters.data={
   unicodeslot=0x2712,
  },
  [0x2713]={
+  adobename="checkmark",
   category="so",
   description="CHECK MARK",
   direction="on",
@@ -62806,6 +64726,7 @@ characters.data={
   unicodeslot=0x2789,
  },
  [0x278A]={
+  adobename="onecircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT ONE",
   direction="on",
@@ -62813,6 +64734,7 @@ characters.data={
   unicodeslot=0x278A,
  },
  [0x278B]={
+  adobename="twocircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT TWO",
   direction="on",
@@ -62820,6 +64742,7 @@ characters.data={
   unicodeslot=0x278B,
  },
  [0x278C]={
+  adobename="threecircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT THREE",
   direction="on",
@@ -62827,6 +64750,7 @@ characters.data={
   unicodeslot=0x278C,
  },
  [0x278D]={
+  adobename="fourcircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FOUR",
   direction="on",
@@ -62834,6 +64758,7 @@ characters.data={
   unicodeslot=0x278D,
  },
  [0x278E]={
+  adobename="fivecircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT FIVE",
   direction="on",
@@ -62841,6 +64766,7 @@ characters.data={
   unicodeslot=0x278E,
  },
  [0x278F]={
+  adobename="sixcircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SIX",
   direction="on",
@@ -62848,6 +64774,7 @@ characters.data={
   unicodeslot=0x278F,
  },
  [0x2790]={
+  adobename="sevencircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT SEVEN",
   direction="on",
@@ -62855,6 +64782,7 @@ characters.data={
   unicodeslot=0x2790,
  },
  [0x2791]={
+  adobename="eightcircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT EIGHT",
   direction="on",
@@ -62862,6 +64790,7 @@ characters.data={
   unicodeslot=0x2791,
  },
  [0x2792]={
+  adobename="ninecircleinversesansserif",
   category="no",
   description="DINGBAT NEGATIVE CIRCLED SANS-SERIF DIGIT NINE",
   direction="on",
@@ -62925,6 +64854,7 @@ characters.data={
   unicodeslot=0x279D,
  },
  [0x279E]={
+  adobename="arrowrightheavy",
   category="so",
   description="HEAVY TRIANGLE-HEADED RIGHTWARDS ARROW",
   direction="on",
@@ -68849,18 +70779,18 @@ characters.data={
   category="sm",
   description="SUBSET OF ABOVE NOT EQUAL TO",
   direction="on",
+  linebreak="al",
   mathclass="relation",
   mathname="subsetneqq",
-  linebreak="al",
   unicodeslot=0x2ACB,
  },
  [0x2ACC]={
   category="sm",
   description="SUPERSET OF ABOVE NOT EQUAL TO",
   direction="on",
+  linebreak="al",
   mathclass="relation",
   mathname="supsetneqq",
-  linebreak="al",
   unicodeslot=0x2ACC,
  },
  [0x2ACD]={
@@ -75636,6 +77566,7 @@ characters.data={
   unicodeslot=0x2FFB,
  },
  [0x3000]={
+  adobename="ideographicspace",
   category="zs",
   cjkwd="f",
   contextname="ideographicspace",
@@ -75646,6 +77577,7 @@ characters.data={
   unicodeslot=0x3000,
  },
  [0x3001]={
+  adobename="ideographiccomma",
   category="po",
   cjkwd="w",
   description="IDEOGRAPHIC COMMA",
@@ -75654,6 +77586,7 @@ characters.data={
   unicodeslot=0x3001,
  },
  [0x3002]={
+  adobename="ideographicperiod",
   category="po",
   cjkwd="w",
   description="IDEOGRAPHIC FULL STOP",
@@ -75662,6 +77595,7 @@ characters.data={
   unicodeslot=0x3002,
  },
  [0x3003]={
+  adobename="dittomark",
   category="po",
   cjkwd="w",
   description="DITTO MARK",
@@ -75670,6 +77604,7 @@ characters.data={
   unicodeslot=0x3003,
  },
  [0x3004]={
+  adobename="jis",
   category="so",
   cjkwd="w",
   description="JAPANESE INDUSTRIAL STANDARD SYMBOL",
@@ -75678,6 +77613,7 @@ characters.data={
   unicodeslot=0x3004,
  },
  [0x3005]={
+  adobename="ideographiciterationmark",
   category="lm",
   cjkwd="w",
   description="IDEOGRAPHIC ITERATION MARK",
@@ -75686,6 +77622,7 @@ characters.data={
   unicodeslot=0x3005,
  },
  [0x3006]={
+  adobename="ideographicclose",
   category="lo",
   cjkwd="w",
   description="IDEOGRAPHIC CLOSING MARK",
@@ -75694,6 +77631,7 @@ characters.data={
   unicodeslot=0x3006,
  },
  [0x3007]={
+  adobename="ideographiczero",
   category="nl",
   cjkwd="w",
   description="IDEOGRAPHIC NUMBER ZERO",
@@ -75702,6 +77640,7 @@ characters.data={
   unicodeslot=0x3007,
  },
  [0x3008]={
+  adobename="anglebracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT ANGLE BRACKET",
@@ -75711,6 +77650,7 @@ characters.data={
   unicodeslot=0x3008,
  },
  [0x3009]={
+  adobename="anglebracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT ANGLE BRACKET",
@@ -75720,6 +77660,7 @@ characters.data={
   unicodeslot=0x3009,
  },
  [0x300A]={
+  adobename="dblanglebracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT DOUBLE ANGLE BRACKET",
@@ -75729,6 +77670,7 @@ characters.data={
   unicodeslot=0x300A,
  },
  [0x300B]={
+  adobename="dblanglebracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT DOUBLE ANGLE BRACKET",
@@ -75738,6 +77680,7 @@ characters.data={
   unicodeslot=0x300B,
  },
  [0x300C]={
+  adobename="cornerbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT CORNER BRACKET",
@@ -75747,6 +77690,7 @@ characters.data={
   unicodeslot=0x300C,
  },
  [0x300D]={
+  adobename="cornerbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT CORNER BRACKET",
@@ -75756,6 +77700,7 @@ characters.data={
   unicodeslot=0x300D,
  },
  [0x300E]={
+  adobename="whitecornerbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT WHITE CORNER BRACKET",
@@ -75765,6 +77710,7 @@ characters.data={
   unicodeslot=0x300E,
  },
  [0x300F]={
+  adobename="whitecornerbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT WHITE CORNER BRACKET",
@@ -75774,6 +77720,7 @@ characters.data={
   unicodeslot=0x300F,
  },
  [0x3010]={
+  adobename="blacklenticularbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT BLACK LENTICULAR BRACKET",
@@ -75783,6 +77730,7 @@ characters.data={
   unicodeslot=0x3010,
  },
  [0x3011]={
+  adobename="blacklenticularbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT BLACK LENTICULAR BRACKET",
@@ -75792,6 +77740,7 @@ characters.data={
   unicodeslot=0x3011,
  },
  [0x3012]={
+  adobename="postalmark",
   category="so",
   cjkwd="w",
   description="POSTAL MARK",
@@ -75800,6 +77749,7 @@ characters.data={
   unicodeslot=0x3012,
  },
  [0x3013]={
+  adobename="getamark",
   category="so",
   cjkwd="w",
   description="GETA MARK",
@@ -75808,6 +77758,7 @@ characters.data={
   unicodeslot=0x3013,
  },
  [0x3014]={
+  adobename="tortoiseshellbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT TORTOISE SHELL BRACKET",
@@ -75817,6 +77768,7 @@ characters.data={
   unicodeslot=0x3014,
  },
  [0x3015]={
+  adobename="tortoiseshellbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT TORTOISE SHELL BRACKET",
@@ -75826,6 +77778,7 @@ characters.data={
   unicodeslot=0x3015,
  },
  [0x3016]={
+  adobename="whitelenticularbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT WHITE LENTICULAR BRACKET",
@@ -75835,6 +77788,7 @@ characters.data={
   unicodeslot=0x3016,
  },
  [0x3017]={
+  adobename="whitelenticularbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT WHITE LENTICULAR BRACKET",
@@ -75844,6 +77798,7 @@ characters.data={
   unicodeslot=0x3017,
  },
  [0x3018]={
+  adobename="whitetortoiseshellbracketleft",
   category="ps",
   cjkwd="w",
   description="LEFT WHITE TORTOISE SHELL BRACKET",
@@ -75853,6 +77808,7 @@ characters.data={
   unicodeslot=0x3018,
  },
  [0x3019]={
+  adobename="whitetortoiseshellbracketright",
   category="pe",
   cjkwd="w",
   description="RIGHT WHITE TORTOISE SHELL BRACKET",
@@ -75880,6 +77836,7 @@ characters.data={
   unicodeslot=0x301B,
  },
  [0x301C]={
+  adobename="wavedash",
   category="pd",
   cjkwd="w",
   description="WAVE DASH",
@@ -75888,6 +77845,7 @@ characters.data={
   unicodeslot=0x301C,
  },
  [0x301D]={
+  adobename="quotedblprimereversed",
   category="ps",
   cjkwd="w",
   description="REVERSED DOUBLE PRIME QUOTATION MARK",
@@ -75896,6 +77854,7 @@ characters.data={
   unicodeslot=0x301D,
  },
  [0x301E]={
+  adobename="quotedblprime",
   category="pe",
   cjkwd="w",
   description="DOUBLE PRIME QUOTATION MARK",
@@ -75912,6 +77871,7 @@ characters.data={
   unicodeslot=0x301F,
  },
  [0x3020]={
+  adobename="postalmarkface",
   category="so",
   cjkwd="w",
   description="POSTAL MARK FACE",
@@ -75920,6 +77880,7 @@ characters.data={
   unicodeslot=0x3020,
  },
  [0x3021]={
+  adobename="onehangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL ONE",
@@ -75928,6 +77889,7 @@ characters.data={
   unicodeslot=0x3021,
  },
  [0x3022]={
+  adobename="twohangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL TWO",
@@ -75936,6 +77898,7 @@ characters.data={
   unicodeslot=0x3022,
  },
  [0x3023]={
+  adobename="threehangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL THREE",
@@ -75944,6 +77907,7 @@ characters.data={
   unicodeslot=0x3023,
  },
  [0x3024]={
+  adobename="fourhangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL FOUR",
@@ -75952,6 +77916,7 @@ characters.data={
   unicodeslot=0x3024,
  },
  [0x3025]={
+  adobename="fivehangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL FIVE",
@@ -75960,6 +77925,7 @@ characters.data={
   unicodeslot=0x3025,
  },
  [0x3026]={
+  adobename="sixhangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL SIX",
@@ -75968,6 +77934,7 @@ characters.data={
   unicodeslot=0x3026,
  },
  [0x3027]={
+  adobename="sevenhangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL SEVEN",
@@ -75976,6 +77943,7 @@ characters.data={
   unicodeslot=0x3027,
  },
  [0x3028]={
+  adobename="eighthangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL EIGHT",
@@ -75984,6 +77952,7 @@ characters.data={
   unicodeslot=0x3028,
  },
  [0x3029]={
+  adobename="ninehangzhou",
   category="nl",
   cjkwd="w",
   description="HANGZHOU NUMERAL NINE",
@@ -76088,6 +78057,7 @@ characters.data={
   unicodeslot=0x3035,
  },
  [0x3036]={
+  adobename="circlepostalmark",
   category="so",
   cjkwd="w",
   description="CIRCLED POSTAL MARK",
@@ -76172,6 +78142,7 @@ characters.data={
   unicodeslot=0x303F,
  },
  [0x3041]={
+  adobename="asmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL A",
@@ -76180,6 +78151,7 @@ characters.data={
   unicodeslot=0x3041,
  },
  [0x3042]={
+  adobename="ahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER A",
@@ -76188,6 +78160,7 @@ characters.data={
   unicodeslot=0x3042,
  },
  [0x3043]={
+  adobename="ismallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL I",
@@ -76196,6 +78169,7 @@ characters.data={
   unicodeslot=0x3043,
  },
  [0x3044]={
+  adobename="ihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER I",
@@ -76204,6 +78178,7 @@ characters.data={
   unicodeslot=0x3044,
  },
  [0x3045]={
+  adobename="usmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL U",
@@ -76212,6 +78187,7 @@ characters.data={
   unicodeslot=0x3045,
  },
  [0x3046]={
+  adobename="uhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER U",
@@ -76220,6 +78196,7 @@ characters.data={
   unicodeslot=0x3046,
  },
  [0x3047]={
+  adobename="esmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL E",
@@ -76228,6 +78205,7 @@ characters.data={
   unicodeslot=0x3047,
  },
  [0x3048]={
+  adobename="ehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER E",
@@ -76236,6 +78214,7 @@ characters.data={
   unicodeslot=0x3048,
  },
  [0x3049]={
+  adobename="osmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL O",
@@ -76244,6 +78223,7 @@ characters.data={
   unicodeslot=0x3049,
  },
  [0x304A]={
+  adobename="ohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER O",
@@ -76252,6 +78232,7 @@ characters.data={
   unicodeslot=0x304A,
  },
  [0x304B]={
+  adobename="kahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER KA",
@@ -76260,6 +78241,7 @@ characters.data={
   unicodeslot=0x304B,
  },
  [0x304C]={
+  adobename="gahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER GA",
@@ -76269,6 +78251,7 @@ characters.data={
   unicodeslot=0x304C,
  },
  [0x304D]={
+  adobename="kihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER KI",
@@ -76277,6 +78260,7 @@ characters.data={
   unicodeslot=0x304D,
  },
  [0x304E]={
+  adobename="gihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER GI",
@@ -76286,6 +78270,7 @@ characters.data={
   unicodeslot=0x304E,
  },
  [0x304F]={
+  adobename="kuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER KU",
@@ -76294,6 +78279,7 @@ characters.data={
   unicodeslot=0x304F,
  },
  [0x3050]={
+  adobename="guhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER GU",
@@ -76303,6 +78289,7 @@ characters.data={
   unicodeslot=0x3050,
  },
  [0x3051]={
+  adobename="kehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER KE",
@@ -76311,6 +78298,7 @@ characters.data={
   unicodeslot=0x3051,
  },
  [0x3052]={
+  adobename="gehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER GE",
@@ -76320,6 +78308,7 @@ characters.data={
   unicodeslot=0x3052,
  },
  [0x3053]={
+  adobename="kohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER KO",
@@ -76328,6 +78317,7 @@ characters.data={
   unicodeslot=0x3053,
  },
  [0x3054]={
+  adobename="gohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER GO",
@@ -76337,6 +78327,7 @@ characters.data={
   unicodeslot=0x3054,
  },
  [0x3055]={
+  adobename="sahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SA",
@@ -76345,6 +78336,7 @@ characters.data={
   unicodeslot=0x3055,
  },
  [0x3056]={
+  adobename="zahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ZA",
@@ -76354,6 +78346,7 @@ characters.data={
   unicodeslot=0x3056,
  },
  [0x3057]={
+  adobename="sihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SI",
@@ -76362,6 +78355,7 @@ characters.data={
   unicodeslot=0x3057,
  },
  [0x3058]={
+  adobename="zihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ZI",
@@ -76371,6 +78365,7 @@ characters.data={
   unicodeslot=0x3058,
  },
  [0x3059]={
+  adobename="suhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SU",
@@ -76379,6 +78374,7 @@ characters.data={
   unicodeslot=0x3059,
  },
  [0x305A]={
+  adobename="zuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ZU",
@@ -76388,6 +78384,7 @@ characters.data={
   unicodeslot=0x305A,
  },
  [0x305B]={
+  adobename="sehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SE",
@@ -76396,6 +78393,7 @@ characters.data={
   unicodeslot=0x305B,
  },
  [0x305C]={
+  adobename="zehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ZE",
@@ -76405,6 +78403,7 @@ characters.data={
   unicodeslot=0x305C,
  },
  [0x305D]={
+  adobename="sohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SO",
@@ -76413,6 +78412,7 @@ characters.data={
   unicodeslot=0x305D,
  },
  [0x305E]={
+  adobename="zohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ZO",
@@ -76422,6 +78422,7 @@ characters.data={
   unicodeslot=0x305E,
  },
  [0x305F]={
+  adobename="tahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER TA",
@@ -76430,6 +78431,7 @@ characters.data={
   unicodeslot=0x305F,
  },
  [0x3060]={
+  adobename="dahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER DA",
@@ -76439,6 +78441,7 @@ characters.data={
   unicodeslot=0x3060,
  },
  [0x3061]={
+  adobename="tihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER TI",
@@ -76447,6 +78450,7 @@ characters.data={
   unicodeslot=0x3061,
  },
  [0x3062]={
+  adobename="dihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER DI",
@@ -76456,6 +78460,7 @@ characters.data={
   unicodeslot=0x3062,
  },
  [0x3063]={
+  adobename="tusmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL TU",
@@ -76464,6 +78469,7 @@ characters.data={
   unicodeslot=0x3063,
  },
  [0x3064]={
+  adobename="tuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER TU",
@@ -76472,6 +78478,7 @@ characters.data={
   unicodeslot=0x3064,
  },
  [0x3065]={
+  adobename="duhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER DU",
@@ -76481,6 +78488,7 @@ characters.data={
   unicodeslot=0x3065,
  },
  [0x3066]={
+  adobename="tehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER TE",
@@ -76489,6 +78497,7 @@ characters.data={
   unicodeslot=0x3066,
  },
  [0x3067]={
+  adobename="dehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER DE",
@@ -76498,6 +78507,7 @@ characters.data={
   unicodeslot=0x3067,
  },
  [0x3068]={
+  adobename="tohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER TO",
@@ -76506,6 +78516,7 @@ characters.data={
   unicodeslot=0x3068,
  },
  [0x3069]={
+  adobename="dohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER DO",
@@ -76515,6 +78526,7 @@ characters.data={
   unicodeslot=0x3069,
  },
  [0x306A]={
+  adobename="nahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER NA",
@@ -76523,6 +78535,7 @@ characters.data={
   unicodeslot=0x306A,
  },
  [0x306B]={
+  adobename="nihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER NI",
@@ -76531,6 +78544,7 @@ characters.data={
   unicodeslot=0x306B,
  },
  [0x306C]={
+  adobename="nuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER NU",
@@ -76539,6 +78553,7 @@ characters.data={
   unicodeslot=0x306C,
  },
  [0x306D]={
+  adobename="nehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER NE",
@@ -76547,6 +78562,7 @@ characters.data={
   unicodeslot=0x306D,
  },
  [0x306E]={
+  adobename="nohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER NO",
@@ -76555,6 +78571,7 @@ characters.data={
   unicodeslot=0x306E,
  },
  [0x306F]={
+  adobename="hahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER HA",
@@ -76563,6 +78580,7 @@ characters.data={
   unicodeslot=0x306F,
  },
  [0x3070]={
+  adobename="bahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER BA",
@@ -76572,6 +78590,7 @@ characters.data={
   unicodeslot=0x3070,
  },
  [0x3071]={
+  adobename="pahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER PA",
@@ -76581,6 +78600,7 @@ characters.data={
   unicodeslot=0x3071,
  },
  [0x3072]={
+  adobename="hihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER HI",
@@ -76589,6 +78609,7 @@ characters.data={
   unicodeslot=0x3072,
  },
  [0x3073]={
+  adobename="bihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER BI",
@@ -76598,6 +78619,7 @@ characters.data={
   unicodeslot=0x3073,
  },
  [0x3074]={
+  adobename="pihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER PI",
@@ -76607,6 +78629,7 @@ characters.data={
   unicodeslot=0x3074,
  },
  [0x3075]={
+  adobename="huhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER HU",
@@ -76615,6 +78638,7 @@ characters.data={
   unicodeslot=0x3075,
  },
  [0x3076]={
+  adobename="buhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER BU",
@@ -76624,6 +78648,7 @@ characters.data={
   unicodeslot=0x3076,
  },
  [0x3077]={
+  adobename="puhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER PU",
@@ -76633,6 +78658,7 @@ characters.data={
   unicodeslot=0x3077,
  },
  [0x3078]={
+  adobename="hehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER HE",
@@ -76641,6 +78667,7 @@ characters.data={
   unicodeslot=0x3078,
  },
  [0x3079]={
+  adobename="behiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER BE",
@@ -76650,6 +78677,7 @@ characters.data={
   unicodeslot=0x3079,
  },
  [0x307A]={
+  adobename="pehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER PE",
@@ -76659,6 +78687,7 @@ characters.data={
   unicodeslot=0x307A,
  },
  [0x307B]={
+  adobename="hohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER HO",
@@ -76667,6 +78696,7 @@ characters.data={
   unicodeslot=0x307B,
  },
  [0x307C]={
+  adobename="bohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER BO",
@@ -76676,6 +78706,7 @@ characters.data={
   unicodeslot=0x307C,
  },
  [0x307D]={
+  adobename="pohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER PO",
@@ -76685,6 +78716,7 @@ characters.data={
   unicodeslot=0x307D,
  },
  [0x307E]={
+  adobename="mahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER MA",
@@ -76693,6 +78725,7 @@ characters.data={
   unicodeslot=0x307E,
  },
  [0x307F]={
+  adobename="mihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER MI",
@@ -76701,6 +78734,7 @@ characters.data={
   unicodeslot=0x307F,
  },
  [0x3080]={
+  adobename="muhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER MU",
@@ -76709,6 +78743,7 @@ characters.data={
   unicodeslot=0x3080,
  },
  [0x3081]={
+  adobename="mehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER ME",
@@ -76717,6 +78752,7 @@ characters.data={
   unicodeslot=0x3081,
  },
  [0x3082]={
+  adobename="mohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER MO",
@@ -76725,6 +78761,7 @@ characters.data={
   unicodeslot=0x3082,
  },
  [0x3083]={
+  adobename="yasmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL YA",
@@ -76733,6 +78770,7 @@ characters.data={
   unicodeslot=0x3083,
  },
  [0x3084]={
+  adobename="yahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER YA",
@@ -76741,6 +78779,7 @@ characters.data={
   unicodeslot=0x3084,
  },
  [0x3085]={
+  adobename="yusmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL YU",
@@ -76749,6 +78788,7 @@ characters.data={
   unicodeslot=0x3085,
  },
  [0x3086]={
+  adobename="yuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER YU",
@@ -76757,6 +78797,7 @@ characters.data={
   unicodeslot=0x3086,
  },
  [0x3087]={
+  adobename="yosmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL YO",
@@ -76765,6 +78806,7 @@ characters.data={
   unicodeslot=0x3087,
  },
  [0x3088]={
+  adobename="yohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER YO",
@@ -76773,6 +78815,7 @@ characters.data={
   unicodeslot=0x3088,
  },
  [0x3089]={
+  adobename="rahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER RA",
@@ -76781,6 +78824,7 @@ characters.data={
   unicodeslot=0x3089,
  },
  [0x308A]={
+  adobename="rihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER RI",
@@ -76789,6 +78833,7 @@ characters.data={
   unicodeslot=0x308A,
  },
  [0x308B]={
+  adobename="ruhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER RU",
@@ -76797,6 +78842,7 @@ characters.data={
   unicodeslot=0x308B,
  },
  [0x308C]={
+  adobename="rehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER RE",
@@ -76805,6 +78851,7 @@ characters.data={
   unicodeslot=0x308C,
  },
  [0x308D]={
+  adobename="rohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER RO",
@@ -76813,6 +78860,7 @@ characters.data={
   unicodeslot=0x308D,
  },
  [0x308E]={
+  adobename="wasmallhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER SMALL WA",
@@ -76821,6 +78869,7 @@ characters.data={
   unicodeslot=0x308E,
  },
  [0x308F]={
+  adobename="wahiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER WA",
@@ -76829,6 +78878,7 @@ characters.data={
   unicodeslot=0x308F,
  },
  [0x3090]={
+  adobename="wihiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER WI",
@@ -76837,6 +78887,7 @@ characters.data={
   unicodeslot=0x3090,
  },
  [0x3091]={
+  adobename="wehiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER WE",
@@ -76845,6 +78896,7 @@ characters.data={
   unicodeslot=0x3091,
  },
  [0x3092]={
+  adobename="wohiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER WO",
@@ -76853,6 +78905,7 @@ characters.data={
   unicodeslot=0x3092,
  },
  [0x3093]={
+  adobename="nhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER N",
@@ -76861,6 +78914,7 @@ characters.data={
   unicodeslot=0x3093,
  },
  [0x3094]={
+  adobename="vuhiragana",
   category="lo",
   cjkwd="w",
   description="HIRAGANA LETTER VU",
@@ -76902,6 +78956,7 @@ characters.data={
   unicodeslot=0x309A,
  },
  [0x309B]={
+  adobename="voicedmarkkana",
   category="sk",
   cjkwd="w",
   description="KATAKANA-HIRAGANA VOICED SOUND MARK",
@@ -76911,6 +78966,7 @@ characters.data={
   unicodeslot=0x309B,
  },
  [0x309C]={
+  adobename="semivoicedmarkkana",
   category="sk",
   cjkwd="w",
   description="KATAKANA-HIRAGANA SEMI-VOICED SOUND MARK",
@@ -76920,6 +78976,7 @@ characters.data={
   unicodeslot=0x309C,
  },
  [0x309D]={
+  adobename="iterationhiragana",
   category="lm",
   cjkwd="w",
   description="HIRAGANA ITERATION MARK",
@@ -76928,6 +78985,7 @@ characters.data={
   unicodeslot=0x309D,
  },
  [0x309E]={
+  adobename="voicediterationhiragana",
   category="lm",
   cjkwd="w",
   description="HIRAGANA VOICED ITERATION MARK",
@@ -76954,6 +79012,7 @@ characters.data={
   unicodeslot=0x30A0,
  },
  [0x30A1]={
+  adobename="asmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL A",
@@ -76962,6 +79021,7 @@ characters.data={
   unicodeslot=0x30A1,
  },
  [0x30A2]={
+  adobename="akatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER A",
@@ -76970,6 +79030,7 @@ characters.data={
   unicodeslot=0x30A2,
  },
  [0x30A3]={
+  adobename="ismallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL I",
@@ -76978,6 +79039,7 @@ characters.data={
   unicodeslot=0x30A3,
  },
  [0x30A4]={
+  adobename="ikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER I",
@@ -76986,6 +79048,7 @@ characters.data={
   unicodeslot=0x30A4,
  },
  [0x30A5]={
+  adobename="usmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL U",
@@ -76994,6 +79057,7 @@ characters.data={
   unicodeslot=0x30A5,
  },
  [0x30A6]={
+  adobename="ukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER U",
@@ -77002,6 +79066,7 @@ characters.data={
   unicodeslot=0x30A6,
  },
  [0x30A7]={
+  adobename="esmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL E",
@@ -77010,6 +79075,7 @@ characters.data={
   unicodeslot=0x30A7,
  },
  [0x30A8]={
+  adobename="ekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER E",
@@ -77018,6 +79084,7 @@ characters.data={
   unicodeslot=0x30A8,
  },
  [0x30A9]={
+  adobename="osmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL O",
@@ -77026,6 +79093,7 @@ characters.data={
   unicodeslot=0x30A9,
  },
  [0x30AA]={
+  adobename="okatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER O",
@@ -77034,6 +79102,7 @@ characters.data={
   unicodeslot=0x30AA,
  },
  [0x30AB]={
+  adobename="kakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER KA",
@@ -77042,6 +79111,7 @@ characters.data={
   unicodeslot=0x30AB,
  },
  [0x30AC]={
+  adobename="gakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER GA",
@@ -77051,6 +79121,7 @@ characters.data={
   unicodeslot=0x30AC,
  },
  [0x30AD]={
+  adobename="kikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER KI",
@@ -77059,6 +79130,7 @@ characters.data={
   unicodeslot=0x30AD,
  },
  [0x30AE]={
+  adobename="gikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER GI",
@@ -77068,6 +79140,7 @@ characters.data={
   unicodeslot=0x30AE,
  },
  [0x30AF]={
+  adobename="kukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER KU",
@@ -77076,6 +79149,7 @@ characters.data={
   unicodeslot=0x30AF,
  },
  [0x30B0]={
+  adobename="gukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER GU",
@@ -77085,6 +79159,7 @@ characters.data={
   unicodeslot=0x30B0,
  },
  [0x30B1]={
+  adobename="kekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER KE",
@@ -77093,6 +79168,7 @@ characters.data={
   unicodeslot=0x30B1,
  },
  [0x30B2]={
+  adobename="gekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER GE",
@@ -77102,6 +79178,7 @@ characters.data={
   unicodeslot=0x30B2,
  },
  [0x30B3]={
+  adobename="kokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER KO",
@@ -77110,6 +79187,7 @@ characters.data={
   unicodeslot=0x30B3,
  },
  [0x30B4]={
+  adobename="gokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER GO",
@@ -77119,6 +79197,7 @@ characters.data={
   unicodeslot=0x30B4,
  },
  [0x30B5]={
+  adobename="sakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SA",
@@ -77127,6 +79206,7 @@ characters.data={
   unicodeslot=0x30B5,
  },
  [0x30B6]={
+  adobename="zakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ZA",
@@ -77136,6 +79216,7 @@ characters.data={
   unicodeslot=0x30B6,
  },
  [0x30B7]={
+  adobename="sikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SI",
@@ -77144,6 +79225,7 @@ characters.data={
   unicodeslot=0x30B7,
  },
  [0x30B8]={
+  adobename="zikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ZI",
@@ -77153,6 +79235,7 @@ characters.data={
   unicodeslot=0x30B8,
  },
  [0x30B9]={
+  adobename="sukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SU",
@@ -77161,6 +79244,7 @@ characters.data={
   unicodeslot=0x30B9,
  },
  [0x30BA]={
+  adobename="zukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ZU",
@@ -77170,6 +79254,7 @@ characters.data={
   unicodeslot=0x30BA,
  },
  [0x30BB]={
+  adobename="sekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SE",
@@ -77178,6 +79263,7 @@ characters.data={
   unicodeslot=0x30BB,
  },
  [0x30BC]={
+  adobename="zekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ZE",
@@ -77187,6 +79273,7 @@ characters.data={
   unicodeslot=0x30BC,
  },
  [0x30BD]={
+  adobename="sokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SO",
@@ -77195,6 +79282,7 @@ characters.data={
   unicodeslot=0x30BD,
  },
  [0x30BE]={
+  adobename="zokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ZO",
@@ -77204,6 +79292,7 @@ characters.data={
   unicodeslot=0x30BE,
  },
  [0x30BF]={
+  adobename="takatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER TA",
@@ -77212,6 +79301,7 @@ characters.data={
   unicodeslot=0x30BF,
  },
  [0x30C0]={
+  adobename="dakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER DA",
@@ -77221,6 +79311,7 @@ characters.data={
   unicodeslot=0x30C0,
  },
  [0x30C1]={
+  adobename="tikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER TI",
@@ -77229,6 +79320,7 @@ characters.data={
   unicodeslot=0x30C1,
  },
  [0x30C2]={
+  adobename="dikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER DI",
@@ -77238,6 +79330,7 @@ characters.data={
   unicodeslot=0x30C2,
  },
  [0x30C3]={
+  adobename="tusmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL TU",
@@ -77246,6 +79339,7 @@ characters.data={
   unicodeslot=0x30C3,
  },
  [0x30C4]={
+  adobename="tukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER TU",
@@ -77254,6 +79348,7 @@ characters.data={
   unicodeslot=0x30C4,
  },
  [0x30C5]={
+  adobename="dukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER DU",
@@ -77263,6 +79358,7 @@ characters.data={
   unicodeslot=0x30C5,
  },
  [0x30C6]={
+  adobename="tekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER TE",
@@ -77271,6 +79367,7 @@ characters.data={
   unicodeslot=0x30C6,
  },
  [0x30C7]={
+  adobename="dekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER DE",
@@ -77280,6 +79377,7 @@ characters.data={
   unicodeslot=0x30C7,
  },
  [0x30C8]={
+  adobename="tokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER TO",
@@ -77288,6 +79386,7 @@ characters.data={
   unicodeslot=0x30C8,
  },
  [0x30C9]={
+  adobename="dokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER DO",
@@ -77297,6 +79396,7 @@ characters.data={
   unicodeslot=0x30C9,
  },
  [0x30CA]={
+  adobename="nakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER NA",
@@ -77305,6 +79405,7 @@ characters.data={
   unicodeslot=0x30CA,
  },
  [0x30CB]={
+  adobename="nikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER NI",
@@ -77313,6 +79414,7 @@ characters.data={
   unicodeslot=0x30CB,
  },
  [0x30CC]={
+  adobename="nukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER NU",
@@ -77321,6 +79423,7 @@ characters.data={
   unicodeslot=0x30CC,
  },
  [0x30CD]={
+  adobename="nekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER NE",
@@ -77329,6 +79432,7 @@ characters.data={
   unicodeslot=0x30CD,
  },
  [0x30CE]={
+  adobename="nokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER NO",
@@ -77337,6 +79441,7 @@ characters.data={
   unicodeslot=0x30CE,
  },
  [0x30CF]={
+  adobename="hakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER HA",
@@ -77345,6 +79450,7 @@ characters.data={
   unicodeslot=0x30CF,
  },
  [0x30D0]={
+  adobename="bakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER BA",
@@ -77354,6 +79460,7 @@ characters.data={
   unicodeslot=0x30D0,
  },
  [0x30D1]={
+  adobename="pakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER PA",
@@ -77363,6 +79470,7 @@ characters.data={
   unicodeslot=0x30D1,
  },
  [0x30D2]={
+  adobename="hikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER HI",
@@ -77371,6 +79479,7 @@ characters.data={
   unicodeslot=0x30D2,
  },
  [0x30D3]={
+  adobename="bikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER BI",
@@ -77380,6 +79489,7 @@ characters.data={
   unicodeslot=0x30D3,
  },
  [0x30D4]={
+  adobename="pikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER PI",
@@ -77389,6 +79499,7 @@ characters.data={
   unicodeslot=0x30D4,
  },
  [0x30D5]={
+  adobename="hukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER HU",
@@ -77397,6 +79508,7 @@ characters.data={
   unicodeslot=0x30D5,
  },
  [0x30D6]={
+  adobename="bukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER BU",
@@ -77406,6 +79518,7 @@ characters.data={
   unicodeslot=0x30D6,
  },
  [0x30D7]={
+  adobename="pukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER PU",
@@ -77415,6 +79528,7 @@ characters.data={
   unicodeslot=0x30D7,
  },
  [0x30D8]={
+  adobename="hekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER HE",
@@ -77423,6 +79537,7 @@ characters.data={
   unicodeslot=0x30D8,
  },
  [0x30D9]={
+  adobename="bekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER BE",
@@ -77432,6 +79547,7 @@ characters.data={
   unicodeslot=0x30D9,
  },
  [0x30DA]={
+  adobename="pekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER PE",
@@ -77441,6 +79557,7 @@ characters.data={
   unicodeslot=0x30DA,
  },
  [0x30DB]={
+  adobename="hokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER HO",
@@ -77449,6 +79566,7 @@ characters.data={
   unicodeslot=0x30DB,
  },
  [0x30DC]={
+  adobename="bokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER BO",
@@ -77458,6 +79576,7 @@ characters.data={
   unicodeslot=0x30DC,
  },
  [0x30DD]={
+  adobename="pokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER PO",
@@ -77467,6 +79586,7 @@ characters.data={
   unicodeslot=0x30DD,
  },
  [0x30DE]={
+  adobename="makatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER MA",
@@ -77475,6 +79595,7 @@ characters.data={
   unicodeslot=0x30DE,
  },
  [0x30DF]={
+  adobename="mikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER MI",
@@ -77483,6 +79604,7 @@ characters.data={
   unicodeslot=0x30DF,
  },
  [0x30E0]={
+  adobename="mukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER MU",
@@ -77491,6 +79613,7 @@ characters.data={
   unicodeslot=0x30E0,
  },
  [0x30E1]={
+  adobename="mekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER ME",
@@ -77499,6 +79622,7 @@ characters.data={
   unicodeslot=0x30E1,
  },
  [0x30E2]={
+  adobename="mokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER MO",
@@ -77507,6 +79631,7 @@ characters.data={
   unicodeslot=0x30E2,
  },
  [0x30E3]={
+  adobename="yasmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL YA",
@@ -77515,6 +79640,7 @@ characters.data={
   unicodeslot=0x30E3,
  },
  [0x30E4]={
+  adobename="yakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER YA",
@@ -77523,6 +79649,7 @@ characters.data={
   unicodeslot=0x30E4,
  },
  [0x30E5]={
+  adobename="yusmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL YU",
@@ -77531,6 +79658,7 @@ characters.data={
   unicodeslot=0x30E5,
  },
  [0x30E6]={
+  adobename="yukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER YU",
@@ -77539,6 +79667,7 @@ characters.data={
   unicodeslot=0x30E6,
  },
  [0x30E7]={
+  adobename="yosmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL YO",
@@ -77547,6 +79676,7 @@ characters.data={
   unicodeslot=0x30E7,
  },
  [0x30E8]={
+  adobename="yokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER YO",
@@ -77555,6 +79685,7 @@ characters.data={
   unicodeslot=0x30E8,
  },
  [0x30E9]={
+  adobename="rakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER RA",
@@ -77563,6 +79694,7 @@ characters.data={
   unicodeslot=0x30E9,
  },
  [0x30EA]={
+  adobename="rikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER RI",
@@ -77571,6 +79703,7 @@ characters.data={
   unicodeslot=0x30EA,
  },
  [0x30EB]={
+  adobename="rukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER RU",
@@ -77579,6 +79712,7 @@ characters.data={
   unicodeslot=0x30EB,
  },
  [0x30EC]={
+  adobename="rekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER RE",
@@ -77587,6 +79721,7 @@ characters.data={
   unicodeslot=0x30EC,
  },
  [0x30ED]={
+  adobename="rokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER RO",
@@ -77595,6 +79730,7 @@ characters.data={
   unicodeslot=0x30ED,
  },
  [0x30EE]={
+  adobename="wasmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL WA",
@@ -77603,6 +79739,7 @@ characters.data={
   unicodeslot=0x30EE,
  },
  [0x30EF]={
+  adobename="wakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER WA",
@@ -77611,6 +79748,7 @@ characters.data={
   unicodeslot=0x30EF,
  },
  [0x30F0]={
+  adobename="wikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER WI",
@@ -77619,6 +79757,7 @@ characters.data={
   unicodeslot=0x30F0,
  },
  [0x30F1]={
+  adobename="wekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER WE",
@@ -77627,6 +79766,7 @@ characters.data={
   unicodeslot=0x30F1,
  },
  [0x30F2]={
+  adobename="wokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER WO",
@@ -77635,6 +79775,7 @@ characters.data={
   unicodeslot=0x30F2,
  },
  [0x30F3]={
+  adobename="nkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER N",
@@ -77643,6 +79784,7 @@ characters.data={
   unicodeslot=0x30F3,
  },
  [0x30F4]={
+  adobename="vukatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER VU",
@@ -77652,6 +79794,7 @@ characters.data={
   unicodeslot=0x30F4,
  },
  [0x30F5]={
+  adobename="kasmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL KA",
@@ -77660,6 +79803,7 @@ characters.data={
   unicodeslot=0x30F5,
  },
  [0x30F6]={
+  adobename="kesmallkatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER SMALL KE",
@@ -77668,6 +79812,7 @@ characters.data={
   unicodeslot=0x30F6,
  },
  [0x30F7]={
+  adobename="vakatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER VA",
@@ -77677,6 +79822,7 @@ characters.data={
   unicodeslot=0x30F7,
  },
  [0x30F8]={
+  adobename="vikatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER VI",
@@ -77686,6 +79832,7 @@ characters.data={
   unicodeslot=0x30F8,
  },
  [0x30F9]={
+  adobename="vekatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER VE",
@@ -77695,6 +79842,7 @@ characters.data={
   unicodeslot=0x30F9,
  },
  [0x30FA]={
+  adobename="vokatakana",
   category="lo",
   cjkwd="w",
   description="KATAKANA LETTER VO",
@@ -77704,6 +79852,7 @@ characters.data={
   unicodeslot=0x30FA,
  },
  [0x30FB]={
+  adobename="dotkatakana",
   category="po",
   cjkwd="w",
   description="KATAKANA MIDDLE DOT",
@@ -77712,6 +79861,7 @@ characters.data={
   unicodeslot=0x30FB,
  },
  [0x30FC]={
+  adobename="prolongedkana",
   category="lm",
   cjkwd="w",
   description="KATAKANA-HIRAGANA PROLONGED SOUND MARK",
@@ -77720,6 +79870,7 @@ characters.data={
   unicodeslot=0x30FC,
  },
  [0x30FD]={
+  adobename="iterationkatakana",
   category="lm",
   cjkwd="w",
   description="KATAKANA ITERATION MARK",
@@ -77728,6 +79879,7 @@ characters.data={
   unicodeslot=0x30FD,
  },
  [0x30FE]={
+  adobename="voicediterationkatakana",
   category="lm",
   cjkwd="w",
   description="KATAKANA VOICED ITERATION MARK",
@@ -77746,6 +79898,7 @@ characters.data={
   unicodeslot=0x30FF,
  },
  [0x3105]={
+  adobename="bbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER B",
@@ -77754,6 +79907,7 @@ characters.data={
   unicodeslot=0x3105,
  },
  [0x3106]={
+  adobename="pbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER P",
@@ -77762,6 +79916,7 @@ characters.data={
   unicodeslot=0x3106,
  },
  [0x3107]={
+  adobename="mbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER M",
@@ -77770,6 +79925,7 @@ characters.data={
   unicodeslot=0x3107,
  },
  [0x3108]={
+  adobename="fbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER F",
@@ -77778,6 +79934,7 @@ characters.data={
   unicodeslot=0x3108,
  },
  [0x3109]={
+  adobename="dbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER D",
@@ -77786,6 +79943,7 @@ characters.data={
   unicodeslot=0x3109,
  },
  [0x310A]={
+  adobename="tbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER T",
@@ -77794,6 +79952,7 @@ characters.data={
   unicodeslot=0x310A,
  },
  [0x310B]={
+  adobename="nbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER N",
@@ -77802,6 +79961,7 @@ characters.data={
   unicodeslot=0x310B,
  },
  [0x310C]={
+  adobename="lbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER L",
@@ -77810,6 +79970,7 @@ characters.data={
   unicodeslot=0x310C,
  },
  [0x310D]={
+  adobename="gbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER G",
@@ -77818,6 +79979,7 @@ characters.data={
   unicodeslot=0x310D,
  },
  [0x310E]={
+  adobename="kbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER K",
@@ -77826,6 +79988,7 @@ characters.data={
   unicodeslot=0x310E,
  },
  [0x310F]={
+  adobename="hbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER H",
@@ -77834,6 +79997,7 @@ characters.data={
   unicodeslot=0x310F,
  },
  [0x3110]={
+  adobename="jbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER J",
@@ -77842,6 +80006,7 @@ characters.data={
   unicodeslot=0x3110,
  },
  [0x3111]={
+  adobename="qbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER Q",
@@ -77850,6 +80015,7 @@ characters.data={
   unicodeslot=0x3111,
  },
  [0x3112]={
+  adobename="xbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER X",
@@ -77858,6 +80024,7 @@ characters.data={
   unicodeslot=0x3112,
  },
  [0x3113]={
+  adobename="zhbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER ZH",
@@ -77866,6 +80033,7 @@ characters.data={
   unicodeslot=0x3113,
  },
  [0x3114]={
+  adobename="chbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER CH",
@@ -77874,6 +80042,7 @@ characters.data={
   unicodeslot=0x3114,
  },
  [0x3115]={
+  adobename="shbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER SH",
@@ -77882,6 +80051,7 @@ characters.data={
   unicodeslot=0x3115,
  },
  [0x3116]={
+  adobename="rbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER R",
@@ -77890,6 +80060,7 @@ characters.data={
   unicodeslot=0x3116,
  },
  [0x3117]={
+  adobename="zbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER Z",
@@ -77898,6 +80069,7 @@ characters.data={
   unicodeslot=0x3117,
  },
  [0x3118]={
+  adobename="cbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER C",
@@ -77906,6 +80078,7 @@ characters.data={
   unicodeslot=0x3118,
  },
  [0x3119]={
+  adobename="sbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER S",
@@ -77914,6 +80087,7 @@ characters.data={
   unicodeslot=0x3119,
  },
  [0x311A]={
+  adobename="abopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER A",
@@ -77922,6 +80096,7 @@ characters.data={
   unicodeslot=0x311A,
  },
  [0x311B]={
+  adobename="obopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER O",
@@ -77930,6 +80105,7 @@ characters.data={
   unicodeslot=0x311B,
  },
  [0x311C]={
+  adobename="ebopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER E",
@@ -77938,6 +80114,7 @@ characters.data={
   unicodeslot=0x311C,
  },
  [0x311D]={
+  adobename="ehbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER EH",
@@ -77946,6 +80123,7 @@ characters.data={
   unicodeslot=0x311D,
  },
  [0x311E]={
+  adobename="aibopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER AI",
@@ -77954,6 +80132,7 @@ characters.data={
   unicodeslot=0x311E,
  },
  [0x311F]={
+  adobename="eibopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER EI",
@@ -77962,6 +80141,7 @@ characters.data={
   unicodeslot=0x311F,
  },
  [0x3120]={
+  adobename="aubopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER AU",
@@ -77970,6 +80150,7 @@ characters.data={
   unicodeslot=0x3120,
  },
  [0x3121]={
+  adobename="oubopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER OU",
@@ -77978,6 +80159,7 @@ characters.data={
   unicodeslot=0x3121,
  },
  [0x3122]={
+  adobename="anbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER AN",
@@ -77986,6 +80168,7 @@ characters.data={
   unicodeslot=0x3122,
  },
  [0x3123]={
+  adobename="enbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER EN",
@@ -77994,6 +80177,7 @@ characters.data={
   unicodeslot=0x3123,
  },
  [0x3124]={
+  adobename="angbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER ANG",
@@ -78002,6 +80186,7 @@ characters.data={
   unicodeslot=0x3124,
  },
  [0x3125]={
+  adobename="engbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER ENG",
@@ -78010,6 +80195,7 @@ characters.data={
   unicodeslot=0x3125,
  },
  [0x3126]={
+  adobename="erbopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER ER",
@@ -78018,6 +80204,7 @@ characters.data={
   unicodeslot=0x3126,
  },
  [0x3127]={
+  adobename="ibopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER I",
@@ -78026,6 +80213,7 @@ characters.data={
   unicodeslot=0x3127,
  },
  [0x3128]={
+  adobename="ubopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER U",
@@ -78034,6 +80222,7 @@ characters.data={
   unicodeslot=0x3128,
  },
  [0x3129]={
+  adobename="iubopomofo",
   category="lo",
   cjkwd="w",
   description="BOPOMOFO LETTER IU",
@@ -78066,6 +80255,7 @@ characters.data={
   unicodeslot=0x312C,
  },
  [0x3131]={
+  adobename="kiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KIYEOK",
@@ -78075,6 +80265,7 @@ characters.data={
   unicodeslot=0x3131,
  },
  [0x3132]={
+  adobename="ssangkiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGKIYEOK",
@@ -78084,6 +80275,7 @@ characters.data={
   unicodeslot=0x3132,
  },
  [0x3133]={
+  adobename="kiyeoksioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KIYEOK-SIOS",
@@ -78093,6 +80285,7 @@ characters.data={
   unicodeslot=0x3133,
  },
  [0x3134]={
+  adobename="nieunkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN",
@@ -78102,6 +80295,7 @@ characters.data={
   unicodeslot=0x3134,
  },
  [0x3135]={
+  adobename="nieuncieuckorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN-CIEUC",
@@ -78111,6 +80305,7 @@ characters.data={
   unicodeslot=0x3135,
  },
  [0x3136]={
+  adobename="nieunhieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN-HIEUH",
@@ -78120,6 +80315,7 @@ characters.data={
   unicodeslot=0x3136,
  },
  [0x3137]={
+  adobename="tikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER TIKEUT",
@@ -78129,6 +80325,7 @@ characters.data={
   unicodeslot=0x3137,
  },
  [0x3138]={
+  adobename="ssangtikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGTIKEUT",
@@ -78138,6 +80335,7 @@ characters.data={
   unicodeslot=0x3138,
  },
  [0x3139]={
+  adobename="rieulkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL",
@@ -78147,6 +80345,7 @@ characters.data={
   unicodeslot=0x3139,
  },
  [0x313A]={
+  adobename="rieulkiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-KIYEOK",
@@ -78156,6 +80355,7 @@ characters.data={
   unicodeslot=0x313A,
  },
  [0x313B]={
+  adobename="rieulmieumkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-MIEUM",
@@ -78165,6 +80365,7 @@ characters.data={
   unicodeslot=0x313B,
  },
  [0x313C]={
+  adobename="rieulpieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-PIEUP",
@@ -78174,6 +80375,7 @@ characters.data={
   unicodeslot=0x313C,
  },
  [0x313D]={
+  adobename="rieulsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-SIOS",
@@ -78183,6 +80385,7 @@ characters.data={
   unicodeslot=0x313D,
  },
  [0x313E]={
+  adobename="rieulthieuthkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-THIEUTH",
@@ -78192,6 +80395,7 @@ characters.data={
   unicodeslot=0x313E,
  },
  [0x313F]={
+  adobename="rieulphieuphkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-PHIEUPH",
@@ -78201,6 +80405,7 @@ characters.data={
   unicodeslot=0x313F,
  },
  [0x3140]={
+  adobename="rieulhieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-HIEUH",
@@ -78210,6 +80415,7 @@ characters.data={
   unicodeslot=0x3140,
  },
  [0x3141]={
+  adobename="mieumkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER MIEUM",
@@ -78219,6 +80425,7 @@ characters.data={
   unicodeslot=0x3141,
  },
  [0x3142]={
+  adobename="pieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP",
@@ -78228,6 +80435,7 @@ characters.data={
   unicodeslot=0x3142,
  },
  [0x3143]={
+  adobename="ssangpieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGPIEUP",
@@ -78237,6 +80445,7 @@ characters.data={
   unicodeslot=0x3143,
  },
  [0x3144]={
+  adobename="pieupsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-SIOS",
@@ -78246,6 +80455,7 @@ characters.data={
   unicodeslot=0x3144,
  },
  [0x3145]={
+  adobename="sioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS",
@@ -78255,6 +80465,7 @@ characters.data={
   unicodeslot=0x3145,
  },
  [0x3146]={
+  adobename="ssangsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGSIOS",
@@ -78264,6 +80475,7 @@ characters.data={
   unicodeslot=0x3146,
  },
  [0x3147]={
+  adobename="ieungkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER IEUNG",
@@ -78273,6 +80485,7 @@ characters.data={
   unicodeslot=0x3147,
  },
  [0x3148]={
+  adobename="cieuckorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER CIEUC",
@@ -78282,6 +80495,7 @@ characters.data={
   unicodeslot=0x3148,
  },
  [0x3149]={
+  adobename="ssangcieuckorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGCIEUC",
@@ -78291,6 +80505,7 @@ characters.data={
   unicodeslot=0x3149,
  },
  [0x314A]={
+  adobename="chieuchkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER CHIEUCH",
@@ -78300,6 +80515,7 @@ characters.data={
   unicodeslot=0x314A,
  },
  [0x314B]={
+  adobename="khieukhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KHIEUKH",
@@ -78309,6 +80525,7 @@ characters.data={
   unicodeslot=0x314B,
  },
  [0x314C]={
+  adobename="thieuthkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER THIEUTH",
@@ -78318,6 +80535,7 @@ characters.data={
   unicodeslot=0x314C,
  },
  [0x314D]={
+  adobename="phieuphkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PHIEUPH",
@@ -78327,6 +80545,7 @@ characters.data={
   unicodeslot=0x314D,
  },
  [0x314E]={
+  adobename="hieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER HIEUH",
@@ -78336,6 +80555,7 @@ characters.data={
   unicodeslot=0x314E,
  },
  [0x314F]={
+  adobename="akorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER A",
@@ -78345,6 +80565,7 @@ characters.data={
   unicodeslot=0x314F,
  },
  [0x3150]={
+  adobename="aekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER AE",
@@ -78354,6 +80575,7 @@ characters.data={
   unicodeslot=0x3150,
  },
  [0x3151]={
+  adobename="yakorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YA",
@@ -78363,6 +80585,7 @@ characters.data={
   unicodeslot=0x3151,
  },
  [0x3152]={
+  adobename="yaekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YAE",
@@ -78372,6 +80595,7 @@ characters.data={
   unicodeslot=0x3152,
  },
  [0x3153]={
+  adobename="eokorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER EO",
@@ -78381,6 +80605,7 @@ characters.data={
   unicodeslot=0x3153,
  },
  [0x3154]={
+  adobename="ekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER E",
@@ -78390,6 +80615,7 @@ characters.data={
   unicodeslot=0x3154,
  },
  [0x3155]={
+  adobename="yeokorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YEO",
@@ -78399,6 +80625,7 @@ characters.data={
   unicodeslot=0x3155,
  },
  [0x3156]={
+  adobename="yekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YE",
@@ -78408,6 +80635,7 @@ characters.data={
   unicodeslot=0x3156,
  },
  [0x3157]={
+  adobename="okorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER O",
@@ -78417,6 +80645,7 @@ characters.data={
   unicodeslot=0x3157,
  },
  [0x3158]={
+  adobename="wakorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER WA",
@@ -78426,6 +80655,7 @@ characters.data={
   unicodeslot=0x3158,
  },
  [0x3159]={
+  adobename="waekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER WAE",
@@ -78435,6 +80665,7 @@ characters.data={
   unicodeslot=0x3159,
  },
  [0x315A]={
+  adobename="oekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER OE",
@@ -78444,6 +80675,7 @@ characters.data={
   unicodeslot=0x315A,
  },
  [0x315B]={
+  adobename="yokorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YO",
@@ -78453,6 +80685,7 @@ characters.data={
   unicodeslot=0x315B,
  },
  [0x315C]={
+  adobename="ukorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER U",
@@ -78462,6 +80695,7 @@ characters.data={
   unicodeslot=0x315C,
  },
  [0x315D]={
+  adobename="weokorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER WEO",
@@ -78471,6 +80705,7 @@ characters.data={
   unicodeslot=0x315D,
  },
  [0x315E]={
+  adobename="wekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER WE",
@@ -78480,6 +80715,7 @@ characters.data={
   unicodeslot=0x315E,
  },
  [0x315F]={
+  adobename="wikorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER WI",
@@ -78489,6 +80725,7 @@ characters.data={
   unicodeslot=0x315F,
  },
  [0x3160]={
+  adobename="yukorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YU",
@@ -78498,6 +80735,7 @@ characters.data={
   unicodeslot=0x3160,
  },
  [0x3161]={
+  adobename="eukorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER EU",
@@ -78507,6 +80745,7 @@ characters.data={
   unicodeslot=0x3161,
  },
  [0x3162]={
+  adobename="yikorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YI",
@@ -78516,6 +80755,7 @@ characters.data={
   unicodeslot=0x3162,
  },
  [0x3163]={
+  adobename="ikorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER I",
@@ -78525,6 +80765,7 @@ characters.data={
   unicodeslot=0x3163,
  },
  [0x3164]={
+  adobename="hangulfiller",
   category="lo",
   cjkwd="w",
   description="HANGUL FILLER",
@@ -78534,6 +80775,7 @@ characters.data={
   unicodeslot=0x3164,
  },
  [0x3165]={
+  adobename="ssangnieunkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGNIEUN",
@@ -78543,6 +80785,7 @@ characters.data={
   unicodeslot=0x3165,
  },
  [0x3166]={
+  adobename="nieuntikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN-TIKEUT",
@@ -78552,6 +80795,7 @@ characters.data={
   unicodeslot=0x3166,
  },
  [0x3167]={
+  adobename="nieunsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN-SIOS",
@@ -78561,6 +80805,7 @@ characters.data={
   unicodeslot=0x3167,
  },
  [0x3168]={
+  adobename="nieunpansioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER NIEUN-PANSIOS",
@@ -78570,6 +80815,7 @@ characters.data={
   unicodeslot=0x3168,
  },
  [0x3169]={
+  adobename="rieulkiyeoksioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-KIYEOK-SIOS",
@@ -78579,6 +80825,7 @@ characters.data={
   unicodeslot=0x3169,
  },
  [0x316A]={
+  adobename="rieultikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-TIKEUT",
@@ -78588,6 +80835,7 @@ characters.data={
   unicodeslot=0x316A,
  },
  [0x316B]={
+  adobename="rieulpieupsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-PIEUP-SIOS",
@@ -78597,6 +80845,7 @@ characters.data={
   unicodeslot=0x316B,
  },
  [0x316C]={
+  adobename="rieulpansioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-PANSIOS",
@@ -78606,6 +80855,7 @@ characters.data={
   unicodeslot=0x316C,
  },
  [0x316D]={
+  adobename="rieulyeorinhieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER RIEUL-YEORINHIEUH",
@@ -78615,6 +80865,7 @@ characters.data={
   unicodeslot=0x316D,
  },
  [0x316E]={
+  adobename="mieumpieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER MIEUM-PIEUP",
@@ -78624,6 +80875,7 @@ characters.data={
   unicodeslot=0x316E,
  },
  [0x316F]={
+  adobename="mieumsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER MIEUM-SIOS",
@@ -78633,6 +80885,7 @@ characters.data={
   unicodeslot=0x316F,
  },
  [0x3170]={
+  adobename="mieumpansioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER MIEUM-PANSIOS",
@@ -78642,6 +80895,7 @@ characters.data={
   unicodeslot=0x3170,
  },
  [0x3171]={
+  adobename="kapyeounmieumkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KAPYEOUNMIEUM",
@@ -78651,6 +80905,7 @@ characters.data={
   unicodeslot=0x3171,
  },
  [0x3172]={
+  adobename="pieupkiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-KIYEOK",
@@ -78660,6 +80915,7 @@ characters.data={
   unicodeslot=0x3172,
  },
  [0x3173]={
+  adobename="pieuptikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-TIKEUT",
@@ -78669,6 +80925,7 @@ characters.data={
   unicodeslot=0x3173,
  },
  [0x3174]={
+  adobename="pieupsioskiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-SIOS-KIYEOK",
@@ -78678,6 +80935,7 @@ characters.data={
   unicodeslot=0x3174,
  },
  [0x3175]={
+  adobename="pieupsiostikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-SIOS-TIKEUT",
@@ -78687,6 +80945,7 @@ characters.data={
   unicodeslot=0x3175,
  },
  [0x3176]={
+  adobename="pieupcieuckorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-CIEUC",
@@ -78696,6 +80955,7 @@ characters.data={
   unicodeslot=0x3176,
  },
  [0x3177]={
+  adobename="pieupthieuthkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PIEUP-THIEUTH",
@@ -78705,6 +80965,7 @@ characters.data={
   unicodeslot=0x3177,
  },
  [0x3178]={
+  adobename="kapyeounpieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KAPYEOUNPIEUP",
@@ -78714,6 +80975,7 @@ characters.data={
   unicodeslot=0x3178,
  },
  [0x3179]={
+  adobename="kapyeounssangpieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KAPYEOUNSSANGPIEUP",
@@ -78723,6 +80985,7 @@ characters.data={
   unicodeslot=0x3179,
  },
  [0x317A]={
+  adobename="sioskiyeokkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS-KIYEOK",
@@ -78732,6 +80995,7 @@ characters.data={
   unicodeslot=0x317A,
  },
  [0x317B]={
+  adobename="siosnieunkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS-NIEUN",
@@ -78741,6 +81005,7 @@ characters.data={
   unicodeslot=0x317B,
  },
  [0x317C]={
+  adobename="siostikeutkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS-TIKEUT",
@@ -78750,6 +81015,7 @@ characters.data={
   unicodeslot=0x317C,
  },
  [0x317D]={
+  adobename="siospieupkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS-PIEUP",
@@ -78759,6 +81025,7 @@ characters.data={
   unicodeslot=0x317D,
  },
  [0x317E]={
+  adobename="sioscieuckorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SIOS-CIEUC",
@@ -78768,6 +81035,7 @@ characters.data={
   unicodeslot=0x317E,
  },
  [0x317F]={
+  adobename="pansioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER PANSIOS",
@@ -78777,6 +81045,7 @@ characters.data={
   unicodeslot=0x317F,
  },
  [0x3180]={
+  adobename="ssangieungkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGIEUNG",
@@ -78786,6 +81055,7 @@ characters.data={
   unicodeslot=0x3180,
  },
  [0x3181]={
+  adobename="yesieungkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YESIEUNG",
@@ -78795,6 +81065,7 @@ characters.data={
   unicodeslot=0x3181,
  },
  [0x3182]={
+  adobename="yesieungsioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YESIEUNG-SIOS",
@@ -78804,6 +81075,7 @@ characters.data={
   unicodeslot=0x3182,
  },
  [0x3183]={
+  adobename="yesieungpansioskorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YESIEUNG-PANSIOS",
@@ -78813,6 +81085,7 @@ characters.data={
   unicodeslot=0x3183,
  },
  [0x3184]={
+  adobename="kapyeounphieuphkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER KAPYEOUNPHIEUPH",
@@ -78822,6 +81095,7 @@ characters.data={
   unicodeslot=0x3184,
  },
  [0x3185]={
+  adobename="ssanghieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER SSANGHIEUH",
@@ -78831,6 +81105,7 @@ characters.data={
   unicodeslot=0x3185,
  },
  [0x3186]={
+  adobename="yeorinhieuhkorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YEORINHIEUH",
@@ -78840,6 +81115,7 @@ characters.data={
   unicodeslot=0x3186,
  },
  [0x3187]={
+  adobename="yoyakorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YO-YA",
@@ -78849,6 +81125,7 @@ characters.data={
   unicodeslot=0x3187,
  },
  [0x3188]={
+  adobename="yoyaekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YO-YAE",
@@ -78858,6 +81135,7 @@ characters.data={
   unicodeslot=0x3188,
  },
  [0x3189]={
+  adobename="yoikorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YO-I",
@@ -78867,6 +81145,7 @@ characters.data={
   unicodeslot=0x3189,
  },
  [0x318A]={
+  adobename="yuyeokorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YU-YEO",
@@ -78876,6 +81155,7 @@ characters.data={
   unicodeslot=0x318A,
  },
  [0x318B]={
+  adobename="yuyekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YU-YE",
@@ -78885,6 +81165,7 @@ characters.data={
   unicodeslot=0x318B,
  },
  [0x318C]={
+  adobename="yuikorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER YU-I",
@@ -78894,6 +81175,7 @@ characters.data={
   unicodeslot=0x318C,
  },
  [0x318D]={
+  adobename="araeakorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER ARAEA",
@@ -78903,6 +81185,7 @@ characters.data={
   unicodeslot=0x318D,
  },
  [0x318E]={
+  adobename="araeaekorean",
   category="lo",
   cjkwd="w",
   description="HANGUL LETTER ARAEAE",
@@ -79502,6 +81785,7 @@ characters.data={
   unicodeslot=0x31FF,
  },
  [0x3200]={
+  adobename="kiyeokparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL KIYEOK",
@@ -79511,6 +81795,7 @@ characters.data={
   unicodeslot=0x3200,
  },
  [0x3201]={
+  adobename="nieunparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL NIEUN",
@@ -79520,6 +81805,7 @@ characters.data={
   unicodeslot=0x3201,
  },
  [0x3202]={
+  adobename="tikeutparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL TIKEUT",
@@ -79529,6 +81815,7 @@ characters.data={
   unicodeslot=0x3202,
  },
  [0x3203]={
+  adobename="rieulparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL RIEUL",
@@ -79538,6 +81825,7 @@ characters.data={
   unicodeslot=0x3203,
  },
  [0x3204]={
+  adobename="mieumparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL MIEUM",
@@ -79547,6 +81835,7 @@ characters.data={
   unicodeslot=0x3204,
  },
  [0x3205]={
+  adobename="pieupparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL PIEUP",
@@ -79556,6 +81845,7 @@ characters.data={
   unicodeslot=0x3205,
  },
  [0x3206]={
+  adobename="siosparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL SIOS",
@@ -79565,6 +81855,7 @@ characters.data={
   unicodeslot=0x3206,
  },
  [0x3207]={
+  adobename="ieungparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL IEUNG",
@@ -79574,6 +81865,7 @@ characters.data={
   unicodeslot=0x3207,
  },
  [0x3208]={
+  adobename="cieucparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL CIEUC",
@@ -79583,6 +81875,7 @@ characters.data={
   unicodeslot=0x3208,
  },
  [0x3209]={
+  adobename="chieuchparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL CHIEUCH",
@@ -79592,6 +81885,7 @@ characters.data={
   unicodeslot=0x3209,
  },
  [0x320A]={
+  adobename="khieukhparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL KHIEUKH",
@@ -79601,6 +81895,7 @@ characters.data={
   unicodeslot=0x320A,
  },
  [0x320B]={
+  adobename="thieuthparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL THIEUTH",
@@ -79610,6 +81905,7 @@ characters.data={
   unicodeslot=0x320B,
  },
  [0x320C]={
+  adobename="phieuphparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL PHIEUPH",
@@ -79619,6 +81915,7 @@ characters.data={
   unicodeslot=0x320C,
  },
  [0x320D]={
+  adobename="hieuhparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL HIEUH",
@@ -79628,6 +81925,7 @@ characters.data={
   unicodeslot=0x320D,
  },
  [0x320E]={
+  adobename="kiyeokaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL KIYEOK A",
@@ -79637,6 +81935,7 @@ characters.data={
   unicodeslot=0x320E,
  },
  [0x320F]={
+  adobename="nieunaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL NIEUN A",
@@ -79646,6 +81945,7 @@ characters.data={
   unicodeslot=0x320F,
  },
  [0x3210]={
+  adobename="tikeutaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL TIKEUT A",
@@ -79655,6 +81955,7 @@ characters.data={
   unicodeslot=0x3210,
  },
  [0x3211]={
+  adobename="rieulaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL RIEUL A",
@@ -79664,6 +81965,7 @@ characters.data={
   unicodeslot=0x3211,
  },
  [0x3212]={
+  adobename="mieumaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL MIEUM A",
@@ -79673,6 +81975,7 @@ characters.data={
   unicodeslot=0x3212,
  },
  [0x3213]={
+  adobename="pieupaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL PIEUP A",
@@ -79682,6 +81985,7 @@ characters.data={
   unicodeslot=0x3213,
  },
  [0x3214]={
+  adobename="siosaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL SIOS A",
@@ -79691,6 +81995,7 @@ characters.data={
   unicodeslot=0x3214,
  },
  [0x3215]={
+  adobename="ieungaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL IEUNG A",
@@ -79700,6 +82005,7 @@ characters.data={
   unicodeslot=0x3215,
  },
  [0x3216]={
+  adobename="cieucaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL CIEUC A",
@@ -79709,6 +82015,7 @@ characters.data={
   unicodeslot=0x3216,
  },
  [0x3217]={
+  adobename="chieuchaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL CHIEUCH A",
@@ -79718,6 +82025,7 @@ characters.data={
   unicodeslot=0x3217,
  },
  [0x3218]={
+  adobename="khieukhaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL KHIEUKH A",
@@ -79727,6 +82035,7 @@ characters.data={
   unicodeslot=0x3218,
  },
  [0x3219]={
+  adobename="thieuthaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL THIEUTH A",
@@ -79736,6 +82045,7 @@ characters.data={
   unicodeslot=0x3219,
  },
  [0x321A]={
+  adobename="phieuphaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL PHIEUPH A",
@@ -79745,6 +82055,7 @@ characters.data={
   unicodeslot=0x321A,
  },
  [0x321B]={
+  adobename="hieuhaparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL HIEUH A",
@@ -79754,6 +82065,7 @@ characters.data={
   unicodeslot=0x321B,
  },
  [0x321C]={
+  adobename="cieucuparenkorean",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED HANGUL CIEUC U",
@@ -79781,6 +82093,7 @@ characters.data={
   unicodeslot=0x321E,
  },
  [0x3220]={
+  adobename="oneideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH ONE",
@@ -79790,6 +82103,7 @@ characters.data={
   unicodeslot=0x3220,
  },
  [0x3221]={
+  adobename="twoideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH TWO",
@@ -79799,6 +82113,7 @@ characters.data={
   unicodeslot=0x3221,
  },
  [0x3222]={
+  adobename="threeideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH THREE",
@@ -79808,6 +82123,7 @@ characters.data={
   unicodeslot=0x3222,
  },
  [0x3223]={
+  adobename="fourideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH FOUR",
@@ -79817,6 +82133,7 @@ characters.data={
   unicodeslot=0x3223,
  },
  [0x3224]={
+  adobename="fiveideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH FIVE",
@@ -79826,6 +82143,7 @@ characters.data={
   unicodeslot=0x3224,
  },
  [0x3225]={
+  adobename="sixideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SIX",
@@ -79835,6 +82153,7 @@ characters.data={
   unicodeslot=0x3225,
  },
  [0x3226]={
+  adobename="sevenideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SEVEN",
@@ -79844,6 +82163,7 @@ characters.data={
   unicodeslot=0x3226,
  },
  [0x3227]={
+  adobename="eightideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH EIGHT",
@@ -79853,6 +82173,7 @@ characters.data={
   unicodeslot=0x3227,
  },
  [0x3228]={
+  adobename="nineideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH NINE",
@@ -79862,6 +82183,7 @@ characters.data={
   unicodeslot=0x3228,
  },
  [0x3229]={
+  adobename="tenideographicparen",
   category="no",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH TEN",
@@ -79871,6 +82193,7 @@ characters.data={
   unicodeslot=0x3229,
  },
  [0x322A]={
+  adobename="ideographicmoonparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH MOON",
@@ -79880,6 +82203,7 @@ characters.data={
   unicodeslot=0x322A,
  },
  [0x322B]={
+  adobename="ideographicfireparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH FIRE",
@@ -79889,6 +82213,7 @@ characters.data={
   unicodeslot=0x322B,
  },
  [0x322C]={
+  adobename="ideographicwaterparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH WATER",
@@ -79898,6 +82223,7 @@ characters.data={
   unicodeslot=0x322C,
  },
  [0x322D]={
+  adobename="ideographicwoodparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH WOOD",
@@ -79907,6 +82233,7 @@ characters.data={
   unicodeslot=0x322D,
  },
  [0x322E]={
+  adobename="ideographicmetalparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH METAL",
@@ -79916,6 +82243,7 @@ characters.data={
   unicodeslot=0x322E,
  },
  [0x322F]={
+  adobename="ideographicearthparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH EARTH",
@@ -79925,6 +82253,7 @@ characters.data={
   unicodeslot=0x322F,
  },
  [0x3230]={
+  adobename="ideographicsunparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SUN",
@@ -79934,6 +82263,7 @@ characters.data={
   unicodeslot=0x3230,
  },
  [0x3231]={
+  adobename="ideographicstockparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH STOCK",
@@ -79943,6 +82273,7 @@ characters.data={
   unicodeslot=0x3231,
  },
  [0x3232]={
+  adobename="ideographichaveparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH HAVE",
@@ -79952,6 +82283,7 @@ characters.data={
   unicodeslot=0x3232,
  },
  [0x3233]={
+  adobename="ideographicsocietyparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SOCIETY",
@@ -79961,6 +82293,7 @@ characters.data={
   unicodeslot=0x3233,
  },
  [0x3234]={
+  adobename="ideographicnameparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH NAME",
@@ -79970,6 +82303,7 @@ characters.data={
   unicodeslot=0x3234,
  },
  [0x3235]={
+  adobename="ideographicspecialparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SPECIAL",
@@ -79979,6 +82313,7 @@ characters.data={
   unicodeslot=0x3235,
  },
  [0x3236]={
+  adobename="ideographicfinancialparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH FINANCIAL",
@@ -79988,6 +82323,7 @@ characters.data={
   unicodeslot=0x3236,
  },
  [0x3237]={
+  adobename="ideographiccongratulationparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH CONGRATULATION",
@@ -79997,6 +82333,7 @@ characters.data={
   unicodeslot=0x3237,
  },
  [0x3238]={
+  adobename="ideographiclaborparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH LABOR",
@@ -80006,6 +82343,7 @@ characters.data={
   unicodeslot=0x3238,
  },
  [0x3239]={
+  adobename="ideographicrepresentparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH REPRESENT",
@@ -80015,6 +82353,7 @@ characters.data={
   unicodeslot=0x3239,
  },
  [0x323A]={
+  adobename="ideographiccallparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH CALL",
@@ -80024,6 +82363,7 @@ characters.data={
   unicodeslot=0x323A,
  },
  [0x323B]={
+  adobename="ideographicstudyparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH STUDY",
@@ -80033,6 +82373,7 @@ characters.data={
   unicodeslot=0x323B,
  },
  [0x323C]={
+  adobename="ideographicsuperviseparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SUPERVISE",
@@ -80042,6 +82383,7 @@ characters.data={
   unicodeslot=0x323C,
  },
  [0x323D]={
+  adobename="ideographicenterpriseparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH ENTERPRISE",
@@ -80051,6 +82393,7 @@ characters.data={
   unicodeslot=0x323D,
  },
  [0x323E]={
+  adobename="ideographicresourceparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH RESOURCE",
@@ -80060,6 +82403,7 @@ characters.data={
   unicodeslot=0x323E,
  },
  [0x323F]={
+  adobename="ideographicallianceparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH ALLIANCE",
@@ -80069,6 +82413,7 @@ characters.data={
   unicodeslot=0x323F,
  },
  [0x3240]={
+  adobename="ideographicfestivalparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH FESTIVAL",
@@ -80087,6 +82432,7 @@ characters.data={
   unicodeslot=0x3241,
  },
  [0x3242]={
+  adobename="ideographicselfparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH SELF",
@@ -80096,6 +82442,7 @@ characters.data={
   unicodeslot=0x3242,
  },
  [0x3243]={
+  adobename="ideographicreachparen",
   category="so",
   cjkwd="w",
   description="PARENTHESIZED IDEOGRAPH REACH",
@@ -80249,6 +82596,7 @@ characters.data={
   unicodeslot=0x325F,
  },
  [0x3260]={
+  adobename="kiyeokcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL KIYEOK",
@@ -80258,6 +82606,7 @@ characters.data={
   unicodeslot=0x3260,
  },
  [0x3261]={
+  adobename="nieuncirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL NIEUN",
@@ -80267,6 +82616,7 @@ characters.data={
   unicodeslot=0x3261,
  },
  [0x3262]={
+  adobename="tikeutcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL TIKEUT",
@@ -80276,6 +82626,7 @@ characters.data={
   unicodeslot=0x3262,
  },
  [0x3263]={
+  adobename="rieulcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL RIEUL",
@@ -80285,6 +82636,7 @@ characters.data={
   unicodeslot=0x3263,
  },
  [0x3264]={
+  adobename="mieumcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL MIEUM",
@@ -80294,6 +82646,7 @@ characters.data={
   unicodeslot=0x3264,
  },
  [0x3265]={
+  adobename="pieupcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL PIEUP",
@@ -80303,6 +82656,7 @@ characters.data={
   unicodeslot=0x3265,
  },
  [0x3266]={
+  adobename="sioscirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL SIOS",
@@ -80312,6 +82666,7 @@ characters.data={
   unicodeslot=0x3266,
  },
  [0x3267]={
+  adobename="ieungcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL IEUNG",
@@ -80321,6 +82676,7 @@ characters.data={
   unicodeslot=0x3267,
  },
  [0x3268]={
+  adobename="cieuccirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL CIEUC",
@@ -80330,6 +82686,7 @@ characters.data={
   unicodeslot=0x3268,
  },
  [0x3269]={
+  adobename="chieuchcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL CHIEUCH",
@@ -80339,6 +82696,7 @@ characters.data={
   unicodeslot=0x3269,
  },
  [0x326A]={
+  adobename="khieukhcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL KHIEUKH",
@@ -80348,6 +82706,7 @@ characters.data={
   unicodeslot=0x326A,
  },
  [0x326B]={
+  adobename="thieuthcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL THIEUTH",
@@ -80357,6 +82716,7 @@ characters.data={
   unicodeslot=0x326B,
  },
  [0x326C]={
+  adobename="phieuphcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL PHIEUPH",
@@ -80366,6 +82726,7 @@ characters.data={
   unicodeslot=0x326C,
  },
  [0x326D]={
+  adobename="hieuhcirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL HIEUH",
@@ -80375,6 +82736,7 @@ characters.data={
   unicodeslot=0x326D,
  },
  [0x326E]={
+  adobename="kiyeokacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL KIYEOK A",
@@ -80384,6 +82746,7 @@ characters.data={
   unicodeslot=0x326E,
  },
  [0x326F]={
+  adobename="nieunacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL NIEUN A",
@@ -80393,6 +82756,7 @@ characters.data={
   unicodeslot=0x326F,
  },
  [0x3270]={
+  adobename="tikeutacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL TIKEUT A",
@@ -80402,6 +82766,7 @@ characters.data={
   unicodeslot=0x3270,
  },
  [0x3271]={
+  adobename="rieulacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL RIEUL A",
@@ -80411,6 +82776,7 @@ characters.data={
   unicodeslot=0x3271,
  },
  [0x3272]={
+  adobename="mieumacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL MIEUM A",
@@ -80420,6 +82786,7 @@ characters.data={
   unicodeslot=0x3272,
  },
  [0x3273]={
+  adobename="pieupacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL PIEUP A",
@@ -80429,6 +82796,7 @@ characters.data={
   unicodeslot=0x3273,
  },
  [0x3274]={
+  adobename="siosacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL SIOS A",
@@ -80438,6 +82806,7 @@ characters.data={
   unicodeslot=0x3274,
  },
  [0x3275]={
+  adobename="ieungacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL IEUNG A",
@@ -80447,6 +82816,7 @@ characters.data={
   unicodeslot=0x3275,
  },
  [0x3276]={
+  adobename="cieucacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL CIEUC A",
@@ -80456,6 +82826,7 @@ characters.data={
   unicodeslot=0x3276,
  },
  [0x3277]={
+  adobename="chieuchacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL CHIEUCH A",
@@ -80465,6 +82836,7 @@ characters.data={
   unicodeslot=0x3277,
  },
  [0x3278]={
+  adobename="khieukhacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL KHIEUKH A",
@@ -80474,6 +82846,7 @@ characters.data={
   unicodeslot=0x3278,
  },
  [0x3279]={
+  adobename="thieuthacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL THIEUTH A",
@@ -80483,6 +82856,7 @@ characters.data={
   unicodeslot=0x3279,
  },
  [0x327A]={
+  adobename="phieuphacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL PHIEUPH A",
@@ -80492,6 +82866,7 @@ characters.data={
   unicodeslot=0x327A,
  },
  [0x327B]={
+  adobename="hieuhacirclekorean",
   category="so",
   cjkwd="w",
   description="CIRCLED HANGUL HIEUH A",
@@ -80528,6 +82903,7 @@ characters.data={
   unicodeslot=0x327E,
  },
  [0x327F]={
+  adobename="koreanstandardsymbol",
   category="so",
   cjkwd="w",
   description="KOREAN STANDARD SYMBOL",
@@ -80626,6 +83002,7 @@ characters.data={
   unicodeslot=0x3289,
  },
  [0x328A]={
+  adobename="ideographmooncircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH MOON",
@@ -80635,6 +83012,7 @@ characters.data={
   unicodeslot=0x328A,
  },
  [0x328B]={
+  adobename="ideographfirecircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH FIRE",
@@ -80644,6 +83022,7 @@ characters.data={
   unicodeslot=0x328B,
  },
  [0x328C]={
+  adobename="ideographwatercircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH WATER",
@@ -80653,6 +83032,7 @@ characters.data={
   unicodeslot=0x328C,
  },
  [0x328D]={
+  adobename="ideographwoodcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH WOOD",
@@ -80662,6 +83042,7 @@ characters.data={
   unicodeslot=0x328D,
  },
  [0x328E]={
+  adobename="ideographmetalcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH METAL",
@@ -80671,6 +83052,7 @@ characters.data={
   unicodeslot=0x328E,
  },
  [0x328F]={
+  adobename="ideographearthcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH EARTH",
@@ -80680,6 +83062,7 @@ characters.data={
   unicodeslot=0x328F,
  },
  [0x3290]={
+  adobename="ideographsuncircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH SUN",
@@ -80716,6 +83099,7 @@ characters.data={
   unicodeslot=0x3293,
  },
  [0x3294]={
+  adobename="ideographnamecircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH NAME",
@@ -80734,6 +83118,7 @@ characters.data={
   unicodeslot=0x3295,
  },
  [0x3296]={
+  adobename="ideographicfinancialcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH FINANCIAL",
@@ -80752,6 +83137,7 @@ characters.data={
   unicodeslot=0x3297,
  },
  [0x3298]={
+  adobename="ideographiclaborcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH LABOR",
@@ -80761,6 +83147,7 @@ characters.data={
   unicodeslot=0x3298,
  },
  [0x3299]={
+  adobename="ideographicsecretcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH SECRET",
@@ -80797,6 +83184,7 @@ characters.data={
   unicodeslot=0x329C,
  },
  [0x329D]={
+  adobename="ideographicexcellentcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH EXCELLENT",
@@ -80806,6 +83194,7 @@ characters.data={
   unicodeslot=0x329D,
  },
  [0x329E]={
+  adobename="ideographicprintcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH PRINT",
@@ -80851,6 +83240,7 @@ characters.data={
   unicodeslot=0x32A2,
  },
  [0x32A3]={
+  adobename="ideographiccorrectcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH CORRECT",
@@ -80860,6 +83250,7 @@ characters.data={
   unicodeslot=0x32A3,
  },
  [0x32A4]={
+  adobename="ideographichighcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH HIGH",
@@ -80869,6 +83260,7 @@ characters.data={
   unicodeslot=0x32A4,
  },
  [0x32A5]={
+  adobename="ideographiccentrecircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH CENTRE",
@@ -80878,6 +83270,7 @@ characters.data={
   unicodeslot=0x32A5,
  },
  [0x32A6]={
+  adobename="ideographiclowcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH LOW",
@@ -80887,6 +83280,7 @@ characters.data={
   unicodeslot=0x32A6,
  },
  [0x32A7]={
+  adobename="ideographicleftcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH LEFT",
@@ -80896,6 +83290,7 @@ characters.data={
   unicodeslot=0x32A7,
  },
  [0x32A8]={
+  adobename="ideographicrightcircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH RIGHT",
@@ -80905,6 +83300,7 @@ characters.data={
   unicodeslot=0x32A8,
  },
  [0x32A9]={
+  adobename="ideographicmedicinecircle",
   category="so",
   cjkwd="w",
   description="CIRCLED IDEOGRAPH MEDICINE",
@@ -81679,6 +84075,7 @@ characters.data={
   unicodeslot=0x32FE,
  },
  [0x3300]={
+  adobename="apaatosquare",
   category="so",
   cjkwd="w",
   description="SQUARE APAATO",
@@ -81706,6 +84103,7 @@ characters.data={
   unicodeslot=0x3302,
  },
  [0x3303]={
+  adobename="aarusquare",
   category="so",
   cjkwd="w",
   description="SQUARE AARU",
@@ -81724,6 +84122,7 @@ characters.data={
   unicodeslot=0x3304,
  },
  [0x3305]={
+  adobename="intisquare",
   category="so",
   cjkwd="w",
   description="SQUARE INTI",
@@ -81796,6 +84195,7 @@ characters.data={
   unicodeslot=0x330C,
  },
  [0x330D]={
+  adobename="karoriisquare",
   category="so",
   cjkwd="w",
   description="SQUARE KARORII",
@@ -81859,6 +84259,7 @@ characters.data={
   unicodeslot=0x3313,
  },
  [0x3314]={
+  adobename="kirosquare",
   category="so",
   cjkwd="w",
   description="SQUARE KIRO",
@@ -81868,6 +84269,7 @@ characters.data={
   unicodeslot=0x3314,
  },
  [0x3315]={
+  adobename="kiroguramusquare",
   category="so",
   cjkwd="w",
   description="SQUARE KIROGURAMU",
@@ -81877,6 +84279,7 @@ characters.data={
   unicodeslot=0x3315,
  },
  [0x3316]={
+  adobename="kiromeetorusquare",
   category="so",
   cjkwd="w",
   description="SQUARE KIROMEETORU",
@@ -81895,6 +84298,7 @@ characters.data={
   unicodeslot=0x3317,
  },
  [0x3318]={
+  adobename="guramusquare",
   category="so",
   cjkwd="w",
   description="SQUARE GURAMU",
@@ -81949,6 +84353,7 @@ characters.data={
   unicodeslot=0x331D,
  },
  [0x331E]={
+  adobename="kooposquare",
   category="so",
   cjkwd="w",
   description="SQUARE KOOPO",
@@ -81985,6 +84390,7 @@ characters.data={
   unicodeslot=0x3321,
  },
  [0x3322]={
+  adobename="sentisquare",
   category="so",
   cjkwd="w",
   description="SQUARE SENTI",
@@ -81994,6 +84400,7 @@ characters.data={
   unicodeslot=0x3322,
  },
  [0x3323]={
+  adobename="sentosquare",
   category="so",
   cjkwd="w",
   description="SQUARE SENTO",
@@ -82021,6 +84428,7 @@ characters.data={
   unicodeslot=0x3325,
  },
  [0x3326]={
+  adobename="dorusquare",
   category="so",
   cjkwd="w",
   description="SQUARE DORU",
@@ -82030,6 +84438,7 @@ characters.data={
   unicodeslot=0x3326,
  },
  [0x3327]={
+  adobename="tonsquare",
   category="so",
   cjkwd="w",
   description="SQUARE TON",
@@ -82057,6 +84466,7 @@ characters.data={
   unicodeslot=0x3329,
  },
  [0x332A]={
+  adobename="haitusquare",
   category="so",
   cjkwd="w",
   description="SQUARE HAITU",
@@ -82066,6 +84476,7 @@ characters.data={
   unicodeslot=0x332A,
  },
  [0x332B]={
+  adobename="paasentosquare",
   category="so",
   cjkwd="w",
   description="SQUARE PAASENTO",
@@ -82120,6 +84531,7 @@ characters.data={
   unicodeslot=0x3330,
  },
  [0x3331]={
+  adobename="birusquare",
   category="so",
   cjkwd="w",
   description="SQUARE BIRU",
@@ -82138,6 +84550,7 @@ characters.data={
   unicodeslot=0x3332,
  },
  [0x3333]={
+  adobename="huiitosquare",
   category="so",
   cjkwd="w",
   description="SQUARE HUIITO",
@@ -82165,6 +84578,7 @@ characters.data={
   unicodeslot=0x3335,
  },
  [0x3336]={
+  adobename="hekutaarusquare",
   category="so",
   cjkwd="w",
   description="SQUARE HEKUTAARU",
@@ -82192,6 +84606,7 @@ characters.data={
   unicodeslot=0x3338,
  },
  [0x3339]={
+  adobename="herutusquare",
   category="so",
   cjkwd="w",
   description="SQUARE HERUTU",
@@ -82210,6 +84625,7 @@ characters.data={
   unicodeslot=0x333A,
  },
  [0x333B]={
+  adobename="peezisquare",
   category="so",
   cjkwd="w",
   description="SQUARE PEEZI",
@@ -82273,6 +84689,7 @@ characters.data={
   unicodeslot=0x3341,
  },
  [0x3342]={
+  adobename="hoonsquare",
   category="so",
   cjkwd="w",
   description="SQUARE HOON",
@@ -82318,6 +84735,7 @@ characters.data={
   unicodeslot=0x3346,
  },
  [0x3347]={
+  adobename="mansyonsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MANSYON",
@@ -82336,6 +84754,7 @@ characters.data={
   unicodeslot=0x3348,
  },
  [0x3349]={
+  adobename="mirisquare",
   category="so",
   cjkwd="w",
   description="SQUARE MIRI",
@@ -82345,6 +84764,7 @@ characters.data={
   unicodeslot=0x3349,
  },
  [0x334A]={
+  adobename="miribaarusquare",
   category="so",
   cjkwd="w",
   description="SQUARE MIRIBAARU",
@@ -82372,6 +84792,7 @@ characters.data={
   unicodeslot=0x334C,
  },
  [0x334D]={
+  adobename="meetorusquare",
   category="so",
   cjkwd="w",
   description="SQUARE MEETORU",
@@ -82381,6 +84802,7 @@ characters.data={
   unicodeslot=0x334D,
  },
  [0x334E]={
+  adobename="yaadosquare",
   category="so",
   cjkwd="w",
   description="SQUARE YAADO",
@@ -82408,6 +84830,7 @@ characters.data={
   unicodeslot=0x3350,
  },
  [0x3351]={
+  adobename="rittorusquare",
   category="so",
   cjkwd="w",
   description="SQUARE RITTORU",
@@ -82462,6 +84885,7 @@ characters.data={
   unicodeslot=0x3356,
  },
  [0x3357]={
+  adobename="wattosquare",
   category="so",
   cjkwd="w",
   description="SQUARE WATTO",
@@ -82786,6 +85210,7 @@ characters.data={
   unicodeslot=0x337A,
  },
  [0x337B]={
+  adobename="heiseierasquare",
   category="so",
   cjkwd="w",
   description="SQUARE ERA NAME HEISEI",
@@ -82795,6 +85220,7 @@ characters.data={
   unicodeslot=0x337B,
  },
  [0x337C]={
+  adobename="syouwaerasquare",
   category="so",
   cjkwd="w",
   description="SQUARE ERA NAME SYOUWA",
@@ -82804,6 +85230,7 @@ characters.data={
   unicodeslot=0x337C,
  },
  [0x337D]={
+  adobename="taisyouerasquare",
   category="so",
   cjkwd="w",
   description="SQUARE ERA NAME TAISYOU",
@@ -82813,6 +85240,7 @@ characters.data={
   unicodeslot=0x337D,
  },
  [0x337E]={
+  adobename="meizierasquare",
   category="so",
   cjkwd="w",
   description="SQUARE ERA NAME MEIZI",
@@ -82822,6 +85250,7 @@ characters.data={
   unicodeslot=0x337E,
  },
  [0x337F]={
+  adobename="corporationsquare",
   category="so",
   cjkwd="w",
   description="SQUARE CORPORATION",
@@ -82831,6 +85260,7 @@ characters.data={
   unicodeslot=0x337F,
  },
  [0x3380]={
+  adobename="paampssquare",
   category="so",
   cjkwd="w",
   description="SQUARE PA AMPS",
@@ -82840,6 +85270,7 @@ characters.data={
   unicodeslot=0x3380,
  },
  [0x3381]={
+  adobename="nasquare",
   category="so",
   cjkwd="w",
   description="SQUARE NA",
@@ -82849,6 +85280,7 @@ characters.data={
   unicodeslot=0x3381,
  },
  [0x3382]={
+  adobename="muasquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU A",
@@ -82858,6 +85290,7 @@ characters.data={
   unicodeslot=0x3382,
  },
  [0x3383]={
+  adobename="masquare",
   category="so",
   cjkwd="w",
   description="SQUARE MA",
@@ -82867,6 +85300,7 @@ characters.data={
   unicodeslot=0x3383,
  },
  [0x3384]={
+  adobename="kasquare",
   category="so",
   cjkwd="w",
   description="SQUARE KA",
@@ -82876,6 +85310,7 @@ characters.data={
   unicodeslot=0x3384,
  },
  [0x3385]={
+  adobename="KBsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KB",
@@ -82885,6 +85320,7 @@ characters.data={
   unicodeslot=0x3385,
  },
  [0x3386]={
+  adobename="MBsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MB",
@@ -82894,6 +85330,7 @@ characters.data={
   unicodeslot=0x3386,
  },
  [0x3387]={
+  adobename="GBsquare",
   category="so",
   cjkwd="w",
   description="SQUARE GB",
@@ -82903,6 +85340,7 @@ characters.data={
   unicodeslot=0x3387,
  },
  [0x3388]={
+  adobename="calsquare",
   category="so",
   cjkwd="w",
   description="SQUARE CAL",
@@ -82912,6 +85350,7 @@ characters.data={
   unicodeslot=0x3388,
  },
  [0x3389]={
+  adobename="kcalsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KCAL",
@@ -82921,6 +85360,7 @@ characters.data={
   unicodeslot=0x3389,
  },
  [0x338A]={
+  adobename="pfsquare",
   category="so",
   cjkwd="w",
   description="SQUARE PF",
@@ -82930,6 +85370,7 @@ characters.data={
   unicodeslot=0x338A,
  },
  [0x338B]={
+  adobename="nfsquare",
   category="so",
   cjkwd="w",
   description="SQUARE NF",
@@ -82939,6 +85380,7 @@ characters.data={
   unicodeslot=0x338B,
  },
  [0x338C]={
+  adobename="mufsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU F",
@@ -82948,6 +85390,7 @@ characters.data={
   unicodeslot=0x338C,
  },
  [0x338D]={
+  adobename="mugsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU G",
@@ -82957,6 +85400,7 @@ characters.data={
   unicodeslot=0x338D,
  },
  [0x338E]={
+  adobename="squaremg",
   category="so",
   cjkwd="w",
   description="SQUARE MG",
@@ -82966,6 +85410,7 @@ characters.data={
   unicodeslot=0x338E,
  },
  [0x338F]={
+  adobename="squarekg",
   category="so",
   cjkwd="w",
   description="SQUARE KG",
@@ -82975,6 +85420,7 @@ characters.data={
   unicodeslot=0x338F,
  },
  [0x3390]={
+  adobename="Hzsquare",
   category="so",
   cjkwd="w",
   description="SQUARE HZ",
@@ -82984,6 +85430,7 @@ characters.data={
   unicodeslot=0x3390,
  },
  [0x3391]={
+  adobename="khzsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KHZ",
@@ -82993,6 +85440,7 @@ characters.data={
   unicodeslot=0x3391,
  },
  [0x3392]={
+  adobename="mhzsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MHZ",
@@ -83002,6 +85450,7 @@ characters.data={
   unicodeslot=0x3392,
  },
  [0x3393]={
+  adobename="ghzsquare",
   category="so",
   cjkwd="w",
   description="SQUARE GHZ",
@@ -83011,6 +85460,7 @@ characters.data={
   unicodeslot=0x3393,
  },
  [0x3394]={
+  adobename="thzsquare",
   category="so",
   cjkwd="w",
   description="SQUARE THZ",
@@ -83020,6 +85470,7 @@ characters.data={
   unicodeslot=0x3394,
  },
  [0x3395]={
+  adobename="mulsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU L",
@@ -83029,6 +85480,7 @@ characters.data={
   unicodeslot=0x3395,
  },
  [0x3396]={
+  adobename="mlsquare",
   category="so",
   cjkwd="w",
   description="SQUARE ML",
@@ -83038,6 +85490,7 @@ characters.data={
   unicodeslot=0x3396,
  },
  [0x3397]={
+  adobename="dlsquare",
   category="so",
   cjkwd="w",
   description="SQUARE DL",
@@ -83047,6 +85500,7 @@ characters.data={
   unicodeslot=0x3397,
  },
  [0x3398]={
+  adobename="klsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KL",
@@ -83056,6 +85510,7 @@ characters.data={
   unicodeslot=0x3398,
  },
  [0x3399]={
+  adobename="fmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE FM",
@@ -83065,6 +85520,7 @@ characters.data={
   unicodeslot=0x3399,
  },
  [0x339A]={
+  adobename="nmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE NM",
@@ -83074,6 +85530,7 @@ characters.data={
   unicodeslot=0x339A,
  },
  [0x339B]={
+  adobename="mumsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU M",
@@ -83083,6 +85540,7 @@ characters.data={
   unicodeslot=0x339B,
  },
  [0x339C]={
+  adobename="squaremm",
   category="so",
   cjkwd="w",
   description="SQUARE MM",
@@ -83092,6 +85550,7 @@ characters.data={
   unicodeslot=0x339C,
  },
  [0x339D]={
+  adobename="squarecm",
   category="so",
   cjkwd="w",
   description="SQUARE CM",
@@ -83101,6 +85560,7 @@ characters.data={
   unicodeslot=0x339D,
  },
  [0x339E]={
+  adobename="squarekm",
   category="so",
   cjkwd="w",
   description="SQUARE KM",
@@ -83110,6 +85570,7 @@ characters.data={
   unicodeslot=0x339E,
  },
  [0x339F]={
+  adobename="mmsquaredsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MM SQUARED",
@@ -83119,6 +85580,7 @@ characters.data={
   unicodeslot=0x339F,
  },
  [0x33A0]={
+  adobename="cmsquaredsquare",
   category="so",
   cjkwd="w",
   description="SQUARE CM SQUARED",
@@ -83128,6 +85590,7 @@ characters.data={
   unicodeslot=0x33A0,
  },
  [0x33A1]={
+  adobename="squaremsquared",
   category="so",
   cjkwd="w",
   description="SQUARE M SQUARED",
@@ -83137,6 +85600,7 @@ characters.data={
   unicodeslot=0x33A1,
  },
  [0x33A2]={
+  adobename="kmsquaredsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KM SQUARED",
@@ -83146,6 +85610,7 @@ characters.data={
   unicodeslot=0x33A2,
  },
  [0x33A3]={
+  adobename="mmcubedsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MM CUBED",
@@ -83155,6 +85620,7 @@ characters.data={
   unicodeslot=0x33A3,
  },
  [0x33A4]={
+  adobename="cmcubedsquare",
   category="so",
   cjkwd="w",
   description="SQUARE CM CUBED",
@@ -83164,6 +85630,7 @@ characters.data={
   unicodeslot=0x33A4,
  },
  [0x33A5]={
+  adobename="mcubedsquare",
   category="so",
   cjkwd="w",
   description="SQUARE M CUBED",
@@ -83173,6 +85640,7 @@ characters.data={
   unicodeslot=0x33A5,
  },
  [0x33A6]={
+  adobename="kmcubedsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KM CUBED",
@@ -83182,6 +85650,7 @@ characters.data={
   unicodeslot=0x33A6,
  },
  [0x33A7]={
+  adobename="moverssquare",
   category="so",
   cjkwd="w",
   description="SQUARE M OVER S",
@@ -83191,6 +85660,7 @@ characters.data={
   unicodeslot=0x33A7,
  },
  [0x33A8]={
+  adobename="moverssquaredsquare",
   category="so",
   cjkwd="w",
   description="SQUARE M OVER S SQUARED",
@@ -83200,6 +85670,7 @@ characters.data={
   unicodeslot=0x33A8,
  },
  [0x33A9]={
+  adobename="pasquare",
   category="so",
   cjkwd="w",
   description="SQUARE PA",
@@ -83209,6 +85680,7 @@ characters.data={
   unicodeslot=0x33A9,
  },
  [0x33AA]={
+  adobename="kpasquare",
   category="so",
   cjkwd="w",
   description="SQUARE KPA",
@@ -83218,6 +85690,7 @@ characters.data={
   unicodeslot=0x33AA,
  },
  [0x33AB]={
+  adobename="mpasquare",
   category="so",
   cjkwd="w",
   description="SQUARE MPA",
@@ -83227,6 +85700,7 @@ characters.data={
   unicodeslot=0x33AB,
  },
  [0x33AC]={
+  adobename="gpasquare",
   category="so",
   cjkwd="w",
   description="SQUARE GPA",
@@ -83236,6 +85710,7 @@ characters.data={
   unicodeslot=0x33AC,
  },
  [0x33AD]={
+  adobename="radsquare",
   category="so",
   cjkwd="w",
   description="SQUARE RAD",
@@ -83245,6 +85720,7 @@ characters.data={
   unicodeslot=0x33AD,
  },
  [0x33AE]={
+  adobename="radoverssquare",
   category="so",
   cjkwd="w",
   description="SQUARE RAD OVER S",
@@ -83254,6 +85730,7 @@ characters.data={
   unicodeslot=0x33AE,
  },
  [0x33AF]={
+  adobename="radoverssquaredsquare",
   category="so",
   cjkwd="w",
   description="SQUARE RAD OVER S SQUARED",
@@ -83263,6 +85740,7 @@ characters.data={
   unicodeslot=0x33AF,
  },
  [0x33B0]={
+  adobename="pssquare",
   category="so",
   cjkwd="w",
   description="SQUARE PS",
@@ -83272,6 +85750,7 @@ characters.data={
   unicodeslot=0x33B0,
  },
  [0x33B1]={
+  adobename="nssquare",
   category="so",
   cjkwd="w",
   description="SQUARE NS",
@@ -83281,6 +85760,7 @@ characters.data={
   unicodeslot=0x33B1,
  },
  [0x33B2]={
+  adobename="mussquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU S",
@@ -83290,6 +85770,7 @@ characters.data={
   unicodeslot=0x33B2,
  },
  [0x33B3]={
+  adobename="mssquare",
   category="so",
   cjkwd="w",
   description="SQUARE MS",
@@ -83299,6 +85780,7 @@ characters.data={
   unicodeslot=0x33B3,
  },
  [0x33B4]={
+  adobename="pvsquare",
   category="so",
   cjkwd="w",
   description="SQUARE PV",
@@ -83308,6 +85790,7 @@ characters.data={
   unicodeslot=0x33B4,
  },
  [0x33B5]={
+  adobename="nvsquare",
   category="so",
   cjkwd="w",
   description="SQUARE NV",
@@ -83317,6 +85800,7 @@ characters.data={
   unicodeslot=0x33B5,
  },
  [0x33B6]={
+  adobename="muvsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU V",
@@ -83326,6 +85810,7 @@ characters.data={
   unicodeslot=0x33B6,
  },
  [0x33B7]={
+  adobename="mvsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MV",
@@ -83335,6 +85820,7 @@ characters.data={
   unicodeslot=0x33B7,
  },
  [0x33B8]={
+  adobename="kvsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KV",
@@ -83344,6 +85830,7 @@ characters.data={
   unicodeslot=0x33B8,
  },
  [0x33B9]={
+  adobename="mvmegasquare",
   category="so",
   cjkwd="w",
   description="SQUARE MV MEGA",
@@ -83353,6 +85840,7 @@ characters.data={
   unicodeslot=0x33B9,
  },
  [0x33BA]={
+  adobename="pwsquare",
   category="so",
   cjkwd="w",
   description="SQUARE PW",
@@ -83362,6 +85850,7 @@ characters.data={
   unicodeslot=0x33BA,
  },
  [0x33BB]={
+  adobename="nwsquare",
   category="so",
   cjkwd="w",
   description="SQUARE NW",
@@ -83371,6 +85860,7 @@ characters.data={
   unicodeslot=0x33BB,
  },
  [0x33BC]={
+  adobename="muwsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MU W",
@@ -83380,6 +85870,7 @@ characters.data={
   unicodeslot=0x33BC,
  },
  [0x33BD]={
+  adobename="mwsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MW",
@@ -83389,6 +85880,7 @@ characters.data={
   unicodeslot=0x33BD,
  },
  [0x33BE]={
+  adobename="kwsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KW",
@@ -83398,6 +85890,7 @@ characters.data={
   unicodeslot=0x33BE,
  },
  [0x33BF]={
+  adobename="mwmegasquare",
   category="so",
   cjkwd="w",
   description="SQUARE MW MEGA",
@@ -83407,6 +85900,7 @@ characters.data={
   unicodeslot=0x33BF,
  },
  [0x33C0]={
+  adobename="kohmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE K OHM",
@@ -83416,6 +85910,7 @@ characters.data={
   unicodeslot=0x33C0,
  },
  [0x33C1]={
+  adobename="mohmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE M OHM",
@@ -83425,6 +85920,7 @@ characters.data={
   unicodeslot=0x33C1,
  },
  [0x33C2]={
+  adobename="amsquare",
   category="so",
   cjkwd="w",
   description="SQUARE AM",
@@ -83434,6 +85930,7 @@ characters.data={
   unicodeslot=0x33C2,
  },
  [0x33C3]={
+  adobename="bqsquare",
   category="so",
   cjkwd="w",
   description="SQUARE BQ",
@@ -83443,6 +85940,7 @@ characters.data={
   unicodeslot=0x33C3,
  },
  [0x33C4]={
+  adobename="squarecc",
   category="so",
   cjkwd="w",
   description="SQUARE CC",
@@ -83452,6 +85950,7 @@ characters.data={
   unicodeslot=0x33C4,
  },
  [0x33C5]={
+  adobename="cdsquare",
   category="so",
   cjkwd="w",
   description="SQUARE CD",
@@ -83461,6 +85960,7 @@ characters.data={
   unicodeslot=0x33C5,
  },
  [0x33C6]={
+  adobename="coverkgsquare",
   category="so",
   cjkwd="w",
   description="SQUARE C OVER KG",
@@ -83470,6 +85970,7 @@ characters.data={
   unicodeslot=0x33C6,
  },
  [0x33C7]={
+  adobename="cosquare",
   category="so",
   cjkwd="w",
   description="SQUARE CO",
@@ -83479,6 +85980,7 @@ characters.data={
   unicodeslot=0x33C7,
  },
  [0x33C8]={
+  adobename="dbsquare",
   category="so",
   cjkwd="w",
   description="SQUARE DB",
@@ -83488,6 +85990,7 @@ characters.data={
   unicodeslot=0x33C8,
  },
  [0x33C9]={
+  adobename="gysquare",
   category="so",
   cjkwd="w",
   description="SQUARE GY",
@@ -83497,6 +86000,7 @@ characters.data={
   unicodeslot=0x33C9,
  },
  [0x33CA]={
+  adobename="hasquare",
   category="so",
   cjkwd="w",
   description="SQUARE HA",
@@ -83506,6 +86010,7 @@ characters.data={
   unicodeslot=0x33CA,
  },
  [0x33CB]={
+  adobename="HPsquare",
   category="so",
   cjkwd="w",
   description="SQUARE HP",
@@ -83524,6 +86029,7 @@ characters.data={
   unicodeslot=0x33CC,
  },
  [0x33CD]={
+  adobename="KKsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KK",
@@ -83533,6 +86039,7 @@ characters.data={
   unicodeslot=0x33CD,
  },
  [0x33CE]={
+  adobename="squarekmcapital",
   category="so",
   cjkwd="w",
   description="SQUARE KM CAPITAL",
@@ -83542,6 +86049,7 @@ characters.data={
   unicodeslot=0x33CE,
  },
  [0x33CF]={
+  adobename="ktsquare",
   category="so",
   cjkwd="w",
   description="SQUARE KT",
@@ -83551,6 +86059,7 @@ characters.data={
   unicodeslot=0x33CF,
  },
  [0x33D0]={
+  adobename="lmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE LM",
@@ -83560,6 +86069,7 @@ characters.data={
   unicodeslot=0x33D0,
  },
  [0x33D1]={
+  adobename="squareln",
   category="so",
   cjkwd="w",
   description="SQUARE LN",
@@ -83569,6 +86079,7 @@ characters.data={
   unicodeslot=0x33D1,
  },
  [0x33D2]={
+  adobename="squarelog",
   category="so",
   cjkwd="w",
   description="SQUARE LOG",
@@ -83578,6 +86089,7 @@ characters.data={
   unicodeslot=0x33D2,
  },
  [0x33D3]={
+  adobename="lxsquare",
   category="so",
   cjkwd="w",
   description="SQUARE LX",
@@ -83587,6 +86099,7 @@ characters.data={
   unicodeslot=0x33D3,
  },
  [0x33D4]={
+  adobename="mbsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MB SMALL",
@@ -83596,6 +86109,7 @@ characters.data={
   unicodeslot=0x33D4,
  },
  [0x33D5]={
+  adobename="squaremil",
   category="so",
   cjkwd="w",
   description="SQUARE MIL",
@@ -83605,6 +86119,7 @@ characters.data={
   unicodeslot=0x33D5,
  },
  [0x33D6]={
+  adobename="molsquare",
   category="so",
   cjkwd="w",
   description="SQUARE MOL",
@@ -83623,6 +86138,7 @@ characters.data={
   unicodeslot=0x33D7,
  },
  [0x33D8]={
+  adobename="pmsquare",
   category="so",
   cjkwd="w",
   description="SQUARE PM",
@@ -83650,6 +86166,7 @@ characters.data={
   unicodeslot=0x33DA,
  },
  [0x33DB]={
+  adobename="srsquare",
   category="so",
   cjkwd="w",
   description="SQUARE SR",
@@ -83659,6 +86176,7 @@ characters.data={
   unicodeslot=0x33DB,
  },
  [0x33DC]={
+  adobename="svsquare",
   category="so",
   cjkwd="w",
   description="SQUARE SV",
@@ -83668,6 +86186,7 @@ characters.data={
   unicodeslot=0x33DC,
  },
  [0x33DD]={
+  adobename="wbsquare",
   category="so",
   cjkwd="w",
   description="SQUARE WB",
@@ -83982,14 +86501,6 @@ characters.data={
   specials={ "square", 0x0067, 0x0061, 0x006C },
   unicodeslot=0x33FF,
  },
---~  [0x3400]={
---~   category="lo",
---~   cjkwd="w",
---~   description="<CJK Ideograph Extension A>",
---~   direction="l",
---~   linebreak="id",
---~   range={ first=0x3400, last=0x4DB5 },
---~  },
  [0x4DC0]={
   category="so",
   description="HEXAGRAM FOR THE CREATIVE HEAVEN",
@@ -84438,14 +86949,6 @@ characters.data={
   linebreak="al",
   unicodeslot=0x4DFF,
  },
---~  [0x4E00]={
---~   category="lo",
---~   cjkwd="w",
---~   description="<CJK Ideograph>",
---~   direction="l",
---~   linebreak="id",
---~   range={ first=0x4E00, last=0x9FBB },
---~  },
  [0xA000]={
   category="lo",
   cjkwd="w",
@@ -95109,14 +97612,6 @@ characters.data={
   linebreak="ex",
   unicodeslot=0xA877,
  },
---~  [0xAC00]={
---~   category="lo",
---~   cjkwd="w",
---~   description="<Hangul Syllable>",
---~   direction="l",
---~   linebreak="h2",
---~   range={ first=0xAC00, last=0xD7A3 },
---~  },
  [0xD800]={
   category="cs",
   description="<Non Private Use High Surrogate, First>",
@@ -95167,6 +97662,7 @@ characters.data={
   unicodeslot=0xE000,
  },
  [0xF8FF]={
+  adobename="apple",
   category="co",
   cjkwd="a",
   description="<Private Use, Last>",
@@ -99365,6 +101861,7 @@ characters.data={
   unicodeslot=0xFAD9,
  },
  [0xFB00]={
+  adobename="ff",
   category="ll",
   contextname="ffligature",
   description="LATIN SMALL LIGATURE FF",
@@ -99374,6 +101871,7 @@ characters.data={
   unicodeslot=0xFB00,
  },
  [0xFB01]={
+  adobename="fi",
   category="ll",
   contextname="filigature",
   description="LATIN SMALL LIGATURE FI",
@@ -99384,6 +101882,7 @@ characters.data={
   unicodeslot=0xFB01,
  },
  [0xFB02]={
+  adobename="fl",
   category="ll",
   contextname="flligature",
   description="LATIN SMALL LIGATURE FL",
@@ -99394,6 +101893,7 @@ characters.data={
   unicodeslot=0xFB02,
  },
  [0xFB03]={
+  adobename="ffi",
   category="ll",
   contextname="ffiligature",
   description="LATIN SMALL LIGATURE FFI",
@@ -99404,6 +101904,7 @@ characters.data={
   unicodeslot=0xFB03,
  },
  [0xFB04]={
+  adobename="ffl",
   category="ll",
   contextname="fflligature",
   description="LATIN SMALL LIGATURE FFL",
@@ -99488,6 +101989,7 @@ characters.data={
   unicodeslot=0xFB1E,
  },
  [0xFB1F]={
+  adobename="yodyodpatahhebrew",
   category="lo",
   description="HEBREW LIGATURE YIDDISH YOD YOD PATAH",
   direction="r",
@@ -99496,6 +101998,7 @@ characters.data={
   unicodeslot=0xFB1F,
  },
  [0xFB20]={
+  adobename="ayinaltonehebrew",
   category="lo",
   description="HEBREW LETTER ALTERNATIVE AYIN",
   direction="r",
@@ -99576,6 +102079,7 @@ characters.data={
   unicodeslot=0xFB29,
  },
  [0xFB2A]={
+  adobename="shinshindothebrew",
   category="lo",
   description="HEBREW LETTER SHIN WITH SHIN DOT",
   direction="r",
@@ -99585,6 +102089,7 @@ characters.data={
   unicodeslot=0xFB2A,
  },
  [0xFB2B]={
+  adobename="shinsindothebrew",
   category="lo",
   description="HEBREW LETTER SHIN WITH SIN DOT",
   direction="r",
@@ -99594,6 +102099,7 @@ characters.data={
   unicodeslot=0xFB2B,
  },
  [0xFB2C]={
+  adobename="shindageshshindothebrew",
   category="lo",
   description="HEBREW LETTER SHIN WITH DAGESH AND SHIN DOT",
   direction="r",
@@ -99603,6 +102109,7 @@ characters.data={
   unicodeslot=0xFB2C,
  },
  [0xFB2D]={
+  adobename="shindageshsindothebrew",
   category="lo",
   description="HEBREW LETTER SHIN WITH DAGESH AND SIN DOT",
   direction="r",
@@ -99612,6 +102119,7 @@ characters.data={
   unicodeslot=0xFB2D,
  },
  [0xFB2E]={
+  adobename="alefpatahhebrew",
   category="lo",
   description="HEBREW LETTER ALEF WITH PATAH",
   direction="r",
@@ -99621,6 +102129,7 @@ characters.data={
   unicodeslot=0xFB2E,
  },
  [0xFB2F]={
+  adobename="alefqamatshebrew",
   category="lo",
   description="HEBREW LETTER ALEF WITH QAMATS",
   direction="r",
@@ -99630,6 +102139,7 @@ characters.data={
   unicodeslot=0xFB2F,
  },
  [0xFB30]={
+  adobename="alefdageshhebrew",
   category="lo",
   description="HEBREW LETTER ALEF WITH MAPIQ",
   direction="r",
@@ -99639,6 +102149,7 @@ characters.data={
   unicodeslot=0xFB30,
  },
  [0xFB31]={
+  adobename="betdageshhebrew",
   category="lo",
   description="HEBREW LETTER BET WITH DAGESH",
   direction="r",
@@ -99648,6 +102159,7 @@ characters.data={
   unicodeslot=0xFB31,
  },
  [0xFB32]={
+  adobename="gimeldageshhebrew",
   category="lo",
   description="HEBREW LETTER GIMEL WITH DAGESH",
   direction="r",
@@ -99657,6 +102169,7 @@ characters.data={
   unicodeslot=0xFB32,
  },
  [0xFB33]={
+  adobename="daletdageshhebrew",
   category="lo",
   description="HEBREW LETTER DALET WITH DAGESH",
   direction="r",
@@ -99666,6 +102179,7 @@ characters.data={
   unicodeslot=0xFB33,
  },
  [0xFB34]={
+  adobename="hedageshhebrew",
   category="lo",
   description="HEBREW LETTER HE WITH MAPIQ",
   direction="r",
@@ -99675,6 +102189,7 @@ characters.data={
   unicodeslot=0xFB34,
  },
  [0xFB35]={
+  adobename="vavdageshhebrew",
   category="lo",
   description="HEBREW LETTER VAV WITH DAGESH",
   direction="r",
@@ -99684,6 +102199,7 @@ characters.data={
   unicodeslot=0xFB35,
  },
  [0xFB36]={
+  adobename="zayindageshhebrew",
   category="lo",
   description="HEBREW LETTER ZAYIN WITH DAGESH",
   direction="r",
@@ -99693,6 +102209,7 @@ characters.data={
   unicodeslot=0xFB36,
  },
  [0xFB38]={
+  adobename="tetdageshhebrew",
   category="lo",
   description="HEBREW LETTER TET WITH DAGESH",
   direction="r",
@@ -99702,6 +102219,7 @@ characters.data={
   unicodeslot=0xFB38,
  },
  [0xFB39]={
+  adobename="yoddageshhebrew",
   category="lo",
   description="HEBREW LETTER YOD WITH DAGESH",
   direction="r",
@@ -99711,6 +102229,7 @@ characters.data={
   unicodeslot=0xFB39,
  },
  [0xFB3A]={
+  adobename="finalkafdageshhebrew",
   category="lo",
   description="HEBREW LETTER FINAL KAF WITH DAGESH",
   direction="r",
@@ -99719,6 +102238,7 @@ characters.data={
   unicodeslot=0xFB3A,
  },
  [0xFB3B]={
+  adobename="kafdageshhebrew",
   category="lo",
   description="HEBREW LETTER KAF WITH DAGESH",
   direction="r",
@@ -99728,6 +102248,7 @@ characters.data={
   unicodeslot=0xFB3B,
  },
  [0xFB3C]={
+  adobename="lameddageshhebrew",
   category="lo",
   description="HEBREW LETTER LAMED WITH DAGESH",
   direction="r",
@@ -99737,6 +102258,7 @@ characters.data={
   unicodeslot=0xFB3C,
  },
  [0xFB3E]={
+  adobename="memdageshhebrew",
   category="lo",
   description="HEBREW LETTER MEM WITH DAGESH",
   direction="r",
@@ -99746,6 +102268,7 @@ characters.data={
   unicodeslot=0xFB3E,
  },
  [0xFB40]={
+  adobename="nundageshhebrew",
   category="lo",
   description="HEBREW LETTER NUN WITH DAGESH",
   direction="r",
@@ -99755,6 +102278,7 @@ characters.data={
   unicodeslot=0xFB40,
  },
  [0xFB41]={
+  adobename="samekhdageshhebrew",
   category="lo",
   description="HEBREW LETTER SAMEKH WITH DAGESH",
   direction="r",
@@ -99764,6 +102288,7 @@ characters.data={
   unicodeslot=0xFB41,
  },
  [0xFB43]={
+  adobename="pefinaldageshhebrew",
   category="lo",
   description="HEBREW LETTER FINAL PE WITH DAGESH",
   direction="r",
@@ -99772,6 +102297,7 @@ characters.data={
   unicodeslot=0xFB43,
  },
  [0xFB44]={
+  adobename="pedageshhebrew",
   category="lo",
   description="HEBREW LETTER PE WITH DAGESH",
   direction="r",
@@ -99781,6 +102307,7 @@ characters.data={
   unicodeslot=0xFB44,
  },
  [0xFB46]={
+  adobename="tsadidageshhebrew",
   category="lo",
   description="HEBREW LETTER TSADI WITH DAGESH",
   direction="r",
@@ -99790,6 +102317,7 @@ characters.data={
   unicodeslot=0xFB46,
  },
  [0xFB47]={
+  adobename="qofdageshhebrew",
   category="lo",
   description="HEBREW LETTER QOF WITH DAGESH",
   direction="r",
@@ -99799,6 +102327,7 @@ characters.data={
   unicodeslot=0xFB47,
  },
  [0xFB48]={
+  adobename="reshdageshhebrew",
   category="lo",
   description="HEBREW LETTER RESH WITH DAGESH",
   direction="r",
@@ -99808,6 +102337,7 @@ characters.data={
   unicodeslot=0xFB48,
  },
  [0xFB49]={
+  adobename="shindageshhebrew",
   category="lo",
   description="HEBREW LETTER SHIN WITH DAGESH",
   direction="r",
@@ -99817,6 +102347,7 @@ characters.data={
   unicodeslot=0xFB49,
  },
  [0xFB4A]={
+  adobename="tavdageshhebrew",
   category="lo",
   description="HEBREW LETTER TAV WITH DAGESH",
   direction="r",
@@ -99826,6 +102357,7 @@ characters.data={
   unicodeslot=0xFB4A,
  },
  [0xFB4B]={
+  adobename="vavholamhebrew",
   category="lo",
   description="HEBREW LETTER VAV WITH HOLAM",
   direction="r",
@@ -99835,6 +102367,7 @@ characters.data={
   unicodeslot=0xFB4B,
  },
  [0xFB4C]={
+  adobename="betrafehebrew",
   category="lo",
   description="HEBREW LETTER BET WITH RAFE",
   direction="r",
@@ -99844,6 +102377,7 @@ characters.data={
   unicodeslot=0xFB4C,
  },
  [0xFB4D]={
+  adobename="kafrafehebrew",
   category="lo",
   description="HEBREW LETTER KAF WITH RAFE",
   direction="r",
@@ -99853,6 +102387,7 @@ characters.data={
   unicodeslot=0xFB4D,
  },
  [0xFB4E]={
+  adobename="perafehebrew",
   category="lo",
   description="HEBREW LETTER PE WITH RAFE",
   direction="r",
@@ -99862,6 +102397,7 @@ characters.data={
   unicodeslot=0xFB4E,
  },
  [0xFB4F]={
+  adobename="aleflamedhebrew",
   category="lo",
   description="HEBREW LIGATURE ALEF LAMED",
   direction="r",
@@ -99926,6 +102462,7 @@ characters.data={
   unicodeslot=0xFB56,
  },
  [0xFB57]={
+  adobename="pehfinalarabic",
   category="lo",
   description="ARABIC LETTER PEH FINAL FORM",
   direction="al",
@@ -99934,6 +102471,7 @@ characters.data={
   unicodeslot=0xFB57,
  },
  [0xFB58]={
+  adobename="pehinitialarabic",
   category="lo",
   description="ARABIC LETTER PEH INITIAL FORM",
   direction="al",
@@ -99942,6 +102480,7 @@ characters.data={
   unicodeslot=0xFB58,
  },
  [0xFB59]={
+  adobename="pehmedialarabic",
   category="lo",
   description="ARABIC LETTER PEH MEDIAL FORM",
   direction="al",
@@ -100054,6 +102593,7 @@ characters.data={
   unicodeslot=0xFB66,
  },
  [0xFB67]={
+  adobename="ttehfinalarabic",
   category="lo",
   description="ARABIC LETTER TTEH FINAL FORM",
   direction="al",
@@ -100062,6 +102602,7 @@ characters.data={
   unicodeslot=0xFB67,
  },
  [0xFB68]={
+  adobename="ttehinitialarabic",
   category="lo",
   description="ARABIC LETTER TTEH INITIAL FORM",
   direction="al",
@@ -100070,6 +102611,7 @@ characters.data={
   unicodeslot=0xFB68,
  },
  [0xFB69]={
+  adobename="ttehmedialarabic",
   category="lo",
   description="ARABIC LETTER TTEH MEDIAL FORM",
   direction="al",
@@ -100086,6 +102628,7 @@ characters.data={
   unicodeslot=0xFB6A,
  },
  [0xFB6B]={
+  adobename="vehfinalarabic",
   category="lo",
   description="ARABIC LETTER VEH FINAL FORM",
   direction="al",
@@ -100094,6 +102637,7 @@ characters.data={
   unicodeslot=0xFB6B,
  },
  [0xFB6C]={
+  adobename="vehinitialarabic",
   category="lo",
   description="ARABIC LETTER VEH INITIAL FORM",
   direction="al",
@@ -100102,6 +102646,7 @@ characters.data={
   unicodeslot=0xFB6C,
  },
  [0xFB6D]={
+  adobename="vehmedialarabic",
   category="lo",
   description="ARABIC LETTER VEH MEDIAL FORM",
   direction="al",
@@ -100214,6 +102759,7 @@ characters.data={
   unicodeslot=0xFB7A,
  },
  [0xFB7B]={
+  adobename="tchehfinalarabic",
   category="lo",
   description="ARABIC LETTER TCHEH FINAL FORM",
   direction="al",
@@ -100222,6 +102768,7 @@ characters.data={
   unicodeslot=0xFB7B,
  },
  [0xFB7C]={
+  adobename="tchehmeeminitialarabic",
   category="lo",
   description="ARABIC LETTER TCHEH INITIAL FORM",
   direction="al",
@@ -100230,6 +102777,7 @@ characters.data={
   unicodeslot=0xFB7C,
  },
  [0xFB7D]={
+  adobename="tchehmedialarabic",
   category="lo",
   description="ARABIC LETTER TCHEH MEDIAL FORM",
   direction="al",
@@ -100326,6 +102874,7 @@ characters.data={
   unicodeslot=0xFB88,
  },
  [0xFB89]={
+  adobename="ddalfinalarabic",
   category="lo",
   description="ARABIC LETTER DDAL FINAL FORM",
   direction="al",
@@ -100342,6 +102891,7 @@ characters.data={
   unicodeslot=0xFB8A,
  },
  [0xFB8B]={
+  adobename="jehfinalarabic",
   category="lo",
   description="ARABIC LETTER JEH FINAL FORM",
   direction="al",
@@ -100358,6 +102908,7 @@ characters.data={
   unicodeslot=0xFB8C,
  },
  [0xFB8D]={
+  adobename="rrehfinalarabic",
   category="lo",
   description="ARABIC LETTER RREH FINAL FORM",
   direction="al",
@@ -100406,6 +102957,7 @@ characters.data={
   unicodeslot=0xFB92,
  },
  [0xFB93]={
+  adobename="gaffinalarabic",
   category="lo",
   description="ARABIC LETTER GAF FINAL FORM",
   direction="al",
@@ -100414,6 +102966,7 @@ characters.data={
   unicodeslot=0xFB93,
  },
  [0xFB94]={
+  adobename="gafinitialarabic",
   category="lo",
   description="ARABIC LETTER GAF INITIAL FORM",
   direction="al",
@@ -100422,6 +102975,7 @@ characters.data={
   unicodeslot=0xFB94,
  },
  [0xFB95]={
+  adobename="gafmedialarabic",
   category="lo",
   description="ARABIC LETTER GAF MEDIAL FORM",
   direction="al",
@@ -100502,6 +103056,7 @@ characters.data={
   unicodeslot=0xFB9E,
  },
  [0xFB9F]={
+  adobename="noonghunnafinalarabic",
   category="lo",
   description="ARABIC LETTER NOON GHUNNA FINAL FORM",
   direction="al",
@@ -100542,6 +103097,7 @@ characters.data={
   unicodeslot=0xFBA3,
  },
  [0xFBA4]={
+  adobename="hehhamzaaboveisolatedarabic",
   category="lo",
   description="ARABIC LETTER HEH WITH YEH ABOVE ISOLATED FORM",
   direction="al",
@@ -100551,6 +103107,7 @@ characters.data={
   unicodeslot=0xFBA4,
  },
  [0xFBA5]={
+  adobename="hehhamzaabovefinalarabic",
   category="lo",
   description="ARABIC LETTER HEH WITH YEH ABOVE FINAL FORM",
   direction="al",
@@ -100568,6 +103125,7 @@ characters.data={
   unicodeslot=0xFBA6,
  },
  [0xFBA7]={
+  adobename="hehfinalaltonearabic",
   category="lo",
   description="ARABIC LETTER HEH GOAL FINAL FORM",
   direction="al",
@@ -100576,6 +103134,7 @@ characters.data={
   unicodeslot=0xFBA7,
  },
  [0xFBA8]={
+  adobename="hehinitialaltonearabic",
   category="lo",
   description="ARABIC LETTER HEH GOAL INITIAL FORM",
   direction="al",
@@ -100584,6 +103143,7 @@ characters.data={
   unicodeslot=0xFBA8,
  },
  [0xFBA9]={
+  adobename="hehmedialaltonearabic",
   category="lo",
   description="ARABIC LETTER HEH GOAL MEDIAL FORM",
   direction="al",
@@ -100632,6 +103192,7 @@ characters.data={
   unicodeslot=0xFBAE,
  },
  [0xFBAF]={
+  adobename="yehbarreefinalarabic",
   category="lo",
   description="ARABIC LETTER YEH BARREE FINAL FORM",
   direction="al",
@@ -101081,6 +103642,7 @@ characters.data={
   unicodeslot=0xFC07,
  },
  [0xFC08]={
+  adobename="behmeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE BEH WITH MEEM ISOLATED FORM",
   direction="al",
@@ -101105,6 +103667,7 @@ characters.data={
   unicodeslot=0xFC0A,
  },
  [0xFC0B]={
+  adobename="tehjeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH JEEM ISOLATED FORM",
   direction="al",
@@ -101113,6 +103676,7 @@ characters.data={
   unicodeslot=0xFC0B,
  },
  [0xFC0C]={
+  adobename="tehhahisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH HAH ISOLATED FORM",
   direction="al",
@@ -101129,6 +103693,7 @@ characters.data={
   unicodeslot=0xFC0D,
  },
  [0xFC0E]={
+  adobename="tehmeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH MEEM ISOLATED FORM",
   direction="al",
@@ -101593,6 +104158,7 @@ characters.data={
   unicodeslot=0xFC47,
  },
  [0xFC48]={
+  adobename="meemmeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE MEEM WITH MEEM ISOLATED FORM",
   direction="al",
@@ -101617,6 +104183,7 @@ characters.data={
   unicodeslot=0xFC4A,
  },
  [0xFC4B]={
+  adobename="noonjeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE NOON WITH JEEM ISOLATED FORM",
   direction="al",
@@ -101641,6 +104208,7 @@ characters.data={
   unicodeslot=0xFC4D,
  },
  [0xFC4E]={
+  adobename="noonmeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE NOON WITH MEEM ISOLATED FORM",
   direction="al",
@@ -101721,6 +104289,7 @@ characters.data={
   unicodeslot=0xFC57,
  },
  [0xFC58]={
+  adobename="yehmeemisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE YEH WITH MEEM ISOLATED FORM",
   direction="al",
@@ -101769,6 +104338,7 @@ characters.data={
   unicodeslot=0xFC5D,
  },
  [0xFC5E]={
+  adobename="shaddadammatanarabic",
   category="lo",
   description="ARABIC LIGATURE SHADDA WITH DAMMATAN ISOLATED FORM",
   direction="al",
@@ -101777,6 +104347,7 @@ characters.data={
   unicodeslot=0xFC5E,
  },
  [0xFC5F]={
+  adobename="shaddakasratanarabic",
   category="lo",
   description="ARABIC LIGATURE SHADDA WITH KASRATAN ISOLATED FORM",
   direction="al",
@@ -101785,6 +104356,7 @@ characters.data={
   unicodeslot=0xFC5F,
  },
  [0xFC60]={
+  adobename="shaddafathaarabic",
   category="lo",
   description="ARABIC LIGATURE SHADDA WITH FATHA ISOLATED FORM",
   direction="al",
@@ -101793,6 +104365,7 @@ characters.data={
   unicodeslot=0xFC60,
  },
  [0xFC61]={
+  adobename="shaddadammaarabic",
   category="lo",
   description="ARABIC LIGATURE SHADDA WITH DAMMA ISOLATED FORM",
   direction="al",
@@ -101801,6 +104374,7 @@ characters.data={
   unicodeslot=0xFC61,
  },
  [0xFC62]={
+  adobename="shaddakasraarabic",
   category="lo",
   description="ARABIC LIGATURE SHADDA WITH KASRA ISOLATED FORM",
   direction="al",
@@ -101889,6 +104463,7 @@ characters.data={
   unicodeslot=0xFC6C,
  },
  [0xFC6D]={
+  adobename="behnoonfinalarabic",
   category="lo",
   description="ARABIC LIGATURE BEH WITH NOON FINAL FORM",
   direction="al",
@@ -101937,6 +104512,7 @@ characters.data={
   unicodeslot=0xFC72,
  },
  [0xFC73]={
+  adobename="tehnoonfinalarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH NOON FINAL FORM",
   direction="al",
@@ -102145,6 +104721,7 @@ characters.data={
   unicodeslot=0xFC8C,
  },
  [0xFC8D]={
+  adobename="noonnoonfinalarabic",
   category="lo",
   description="ARABIC LIGATURE NOON WITH NOON FINAL FORM",
   direction="al",
@@ -102201,6 +104778,7 @@ characters.data={
   unicodeslot=0xFC93,
  },
  [0xFC94]={
+  adobename="yehnoonfinalarabic",
   category="lo",
   description="ARABIC LIGATURE YEH WITH NOON FINAL FORM",
   direction="al",
@@ -102289,6 +104867,7 @@ characters.data={
   unicodeslot=0xFC9E,
  },
  [0xFC9F]={
+  adobename="behmeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE BEH WITH MEEM INITIAL FORM",
   direction="al",
@@ -102305,6 +104884,7 @@ characters.data={
   unicodeslot=0xFCA0,
  },
  [0xFCA1]={
+  adobename="tehjeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH JEEM INITIAL FORM",
   direction="al",
@@ -102313,6 +104893,7 @@ characters.data={
   unicodeslot=0xFCA1,
  },
  [0xFCA2]={
+  adobename="tehhahinitialarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH HAH INITIAL FORM",
   direction="al",
@@ -102329,6 +104910,7 @@ characters.data={
   unicodeslot=0xFCA3,
  },
  [0xFCA4]={
+  adobename="tehmeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE TEH WITH MEEM INITIAL FORM",
   direction="al",
@@ -102625,6 +105207,7 @@ characters.data={
   unicodeslot=0xFCC8,
  },
  [0xFCC9]={
+  adobename="lamjeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH JEEM INITIAL FORM",
   direction="al",
@@ -102633,6 +105216,7 @@ characters.data={
   unicodeslot=0xFCC9,
  },
  [0xFCCA]={
+  adobename="lamhahinitialarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH HAH INITIAL FORM",
   direction="al",
@@ -102641,6 +105225,7 @@ characters.data={
   unicodeslot=0xFCCA,
  },
  [0xFCCB]={
+  adobename="lamkhahinitialarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH KHAH INITIAL FORM",
   direction="al",
@@ -102649,6 +105234,7 @@ characters.data={
   unicodeslot=0xFCCB,
  },
  [0xFCCC]={
+  adobename="lammeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH MEEM INITIAL FORM",
   direction="al",
@@ -102689,6 +105275,7 @@ characters.data={
   unicodeslot=0xFCD0,
  },
  [0xFCD1]={
+  adobename="meemmeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE MEEM WITH MEEM INITIAL FORM",
   direction="al",
@@ -102697,6 +105284,7 @@ characters.data={
   unicodeslot=0xFCD1,
  },
  [0xFCD2]={
+  adobename="noonjeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE NOON WITH JEEM INITIAL FORM",
   direction="al",
@@ -102721,6 +105309,7 @@ characters.data={
   unicodeslot=0xFCD4,
  },
  [0xFCD5]={
+  adobename="noonmeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE NOON WITH MEEM INITIAL FORM",
   direction="al",
@@ -102785,6 +105374,7 @@ characters.data={
   unicodeslot=0xFCDC,
  },
  [0xFCDD]={
+  adobename="yehmeeminitialarabic",
   category="lo",
   description="ARABIC LIGATURE YEH WITH MEEM INITIAL FORM",
   direction="al",
@@ -103561,6 +106151,7 @@ characters.data={
   unicodeslot=0xFD3D,
  },
  [0xFD3E]={
+  adobename="parenleftaltonearabic",
   category="ps",
   description="ORNATE LEFT PARENTHESIS",
   direction="on",
@@ -103568,6 +106159,7 @@ characters.data={
   unicodeslot=0xFD3E,
  },
  [0xFD3F]={
+  adobename="parenrightaltonearabic",
   category="pe",
   description="ORNATE RIGHT PARENTHESIS",
   direction="on",
@@ -104023,6 +106615,7 @@ characters.data={
   unicodeslot=0xFD87,
  },
  [0xFD88]={
+  adobename="lammeemhahinitialarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH MEEM WITH HAH INITIAL FORM",
   direction="al",
@@ -104535,6 +107128,7 @@ characters.data={
   unicodeslot=0xFDF1,
  },
  [0xFDF2]={
+  adobename="lamlamhehisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE ALLAH ISOLATED FORM",
   direction="al",
@@ -104599,6 +107193,7 @@ characters.data={
   unicodeslot=0xFDF9,
  },
  [0xFDFA]={
+  adobename="sallallahoualayhewasallamarabic",
   category="lo",
   description="ARABIC LIGATURE SALLALLAHOU ALAYHE WASALLAM",
   direction="al",
@@ -104876,6 +107471,7 @@ characters.data={
   unicodeslot=0xFE23,
  },
  [0xFE30]={
+  adobename="twodotleadervertical",
   category="po",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL TWO DOT LEADER",
@@ -104885,6 +107481,7 @@ characters.data={
   unicodeslot=0xFE30,
  },
  [0xFE31]={
+  adobename="emdashvertical",
   category="pd",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL EM DASH",
@@ -104894,6 +107491,7 @@ characters.data={
   unicodeslot=0xFE31,
  },
  [0xFE32]={
+  adobename="endashvertical",
   category="pd",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL EN DASH",
@@ -104903,6 +107501,7 @@ characters.data={
   unicodeslot=0xFE32,
  },
  [0xFE33]={
+  adobename="underscorevertical",
   category="pc",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LOW LINE",
@@ -104912,6 +107511,7 @@ characters.data={
   unicodeslot=0xFE33,
  },
  [0xFE34]={
+  adobename="wavyunderscorevertical",
   category="pc",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL WAVY LOW LINE",
@@ -104921,6 +107521,7 @@ characters.data={
   unicodeslot=0xFE34,
  },
  [0xFE35]={
+  adobename="parenleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT PARENTHESIS",
@@ -104930,6 +107531,7 @@ characters.data={
   unicodeslot=0xFE35,
  },
  [0xFE36]={
+  adobename="parenrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT PARENTHESIS",
@@ -104939,26 +107541,31 @@ characters.data={
   unicodeslot=0xFE36,
  },
  [0xFE37]={
+  adobename="braceleftvertical",
   category="ps",
   cjkwd="w",
+  comment="weird math needed for mathml",
   description="PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET",
   direction="on",
   linebreak="op",
-  mathfiller="downbracefill", -- funny, chinese, no math, wrong but for the moment we need it for buggy mathml
+  mathfiller="downbracefill",
   specials={ "vertical", 0x007B },
   unicodeslot=0xFE37,
  },
  [0xFE38]={
+  adobename="bracerightvertical",
   category="pe",
   cjkwd="w",
+  comment="weird math needed for mathml",
   description="PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET",
   direction="on",
   linebreak="cl",
-  mathfiller="upbracefill", -- funny, chinese, no math, wrong but for the moment we need it for buggy mathml
+  mathfiller="upbracefill",
   specials={ "vertical", 0x007D },
   unicodeslot=0xFE38,
  },
  [0xFE39]={
+  adobename="tortoiseshellbracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT TORTOISE SHELL BRACKET",
@@ -104968,6 +107575,7 @@ characters.data={
   unicodeslot=0xFE39,
  },
  [0xFE3A]={
+  adobename="tortoiseshellbracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT TORTOISE SHELL BRACKET",
@@ -104977,6 +107585,7 @@ characters.data={
   unicodeslot=0xFE3A,
  },
  [0xFE3B]={
+  adobename="blacklenticularbracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT BLACK LENTICULAR BRACKET",
@@ -104986,6 +107595,7 @@ characters.data={
   unicodeslot=0xFE3B,
  },
  [0xFE3C]={
+  adobename="blacklenticularbracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT BLACK LENTICULAR BRACKET",
@@ -104995,6 +107605,7 @@ characters.data={
   unicodeslot=0xFE3C,
  },
  [0xFE3D]={
+  adobename="dblanglebracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT DOUBLE ANGLE BRACKET",
@@ -105004,6 +107615,7 @@ characters.data={
   unicodeslot=0xFE3D,
  },
  [0xFE3E]={
+  adobename="dblanglebracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT DOUBLE ANGLE BRACKET",
@@ -105013,6 +107625,7 @@ characters.data={
   unicodeslot=0xFE3E,
  },
  [0xFE3F]={
+  adobename="anglebracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT ANGLE BRACKET",
@@ -105022,6 +107635,7 @@ characters.data={
   unicodeslot=0xFE3F,
  },
  [0xFE40]={
+  adobename="anglebracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT ANGLE BRACKET",
@@ -105031,6 +107645,7 @@ characters.data={
   unicodeslot=0xFE40,
  },
  [0xFE41]={
+  adobename="cornerbracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT CORNER BRACKET",
@@ -105040,6 +107655,7 @@ characters.data={
   unicodeslot=0xFE41,
  },
  [0xFE42]={
+  adobename="cornerbracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT CORNER BRACKET",
@@ -105049,6 +107665,7 @@ characters.data={
   unicodeslot=0xFE42,
  },
  [0xFE43]={
+  adobename="whitecornerbracketleftvertical",
   category="ps",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL LEFT WHITE CORNER BRACKET",
@@ -105058,6 +107675,7 @@ characters.data={
   unicodeslot=0xFE43,
  },
  [0xFE44]={
+  adobename="whitecornerbracketrightvertical",
   category="pe",
   cjkwd="w",
   description="PRESENTATION FORM FOR VERTICAL RIGHT WHITE CORNER BRACKET",
@@ -105101,6 +107719,7 @@ characters.data={
   unicodeslot=0xFE48,
  },
  [0xFE49]={
+  adobename="overlinedashed",
   category="po",
   cjkwd="w",
   description="DASHED OVERLINE",
@@ -105110,6 +107729,7 @@ characters.data={
   unicodeslot=0xFE49,
  },
  [0xFE4A]={
+  adobename="overlinecenterline",
   category="po",
   cjkwd="w",
   description="CENTRELINE OVERLINE",
@@ -105119,6 +107739,7 @@ characters.data={
   unicodeslot=0xFE4A,
  },
  [0xFE4B]={
+  adobename="overlinewavy",
   category="po",
   cjkwd="w",
   description="WAVY OVERLINE",
@@ -105128,6 +107749,7 @@ characters.data={
   unicodeslot=0xFE4B,
  },
  [0xFE4C]={
+  adobename="overlinedblwavy",
   category="po",
   cjkwd="w",
   description="DOUBLE WAVY OVERLINE",
@@ -105137,6 +107759,7 @@ characters.data={
   unicodeslot=0xFE4C,
  },
  [0xFE4D]={
+  adobename="lowlinedashed",
   category="pc",
   cjkwd="w",
   description="DASHED LOW LINE",
@@ -105146,6 +107769,7 @@ characters.data={
   unicodeslot=0xFE4D,
  },
  [0xFE4E]={
+  adobename="lowlinecenterline",
   category="pc",
   cjkwd="w",
   description="CENTRELINE LOW LINE",
@@ -105155,6 +107779,7 @@ characters.data={
   unicodeslot=0xFE4E,
  },
  [0xFE4F]={
+  adobename="underscorewavy",
   category="pc",
   cjkwd="w",
   description="WAVY LOW LINE",
@@ -105164,6 +107789,7 @@ characters.data={
   unicodeslot=0xFE4F,
  },
  [0xFE50]={
+  adobename="commasmall",
   category="po",
   cjkwd="w",
   description="SMALL COMMA",
@@ -105182,6 +107808,7 @@ characters.data={
   unicodeslot=0xFE51,
  },
  [0xFE52]={
+  adobename="periodsmall",
   category="po",
   cjkwd="w",
   description="SMALL FULL STOP",
@@ -105191,6 +107818,7 @@ characters.data={
   unicodeslot=0xFE52,
  },
  [0xFE54]={
+  adobename="semicolonsmall",
   category="po",
   cjkwd="w",
   description="SMALL SEMICOLON",
@@ -105200,6 +107828,7 @@ characters.data={
   unicodeslot=0xFE54,
  },
  [0xFE55]={
+  adobename="colonsmall",
   category="po",
   cjkwd="w",
   description="SMALL COLON",
@@ -105236,6 +107865,7 @@ characters.data={
   unicodeslot=0xFE58,
  },
  [0xFE59]={
+  adobename="parenleftsmall",
   category="ps",
   cjkwd="w",
   description="SMALL LEFT PARENTHESIS",
@@ -105246,6 +107876,7 @@ characters.data={
   unicodeslot=0xFE59,
  },
  [0xFE5A]={
+  adobename="parenrightsmall",
   category="pe",
   cjkwd="w",
   description="SMALL RIGHT PARENTHESIS",
@@ -105256,6 +107887,7 @@ characters.data={
   unicodeslot=0xFE5A,
  },
  [0xFE5B]={
+  adobename="braceleftsmall",
   category="ps",
   cjkwd="w",
   description="SMALL LEFT CURLY BRACKET",
@@ -105266,6 +107898,7 @@ characters.data={
   unicodeslot=0xFE5B,
  },
  [0xFE5C]={
+  adobename="bracerightsmall",
   category="pe",
   cjkwd="w",
   description="SMALL RIGHT CURLY BRACKET",
@@ -105276,6 +107909,7 @@ characters.data={
   unicodeslot=0xFE5C,
  },
  [0xFE5D]={
+  adobename="tortoiseshellbracketleftsmall",
   category="ps",
   cjkwd="w",
   description="SMALL LEFT TORTOISE SHELL BRACKET",
@@ -105286,6 +107920,7 @@ characters.data={
   unicodeslot=0xFE5D,
  },
  [0xFE5E]={
+  adobename="tortoiseshellbracketrightsmall",
   category="pe",
   cjkwd="w",
   description="SMALL RIGHT TORTOISE SHELL BRACKET",
@@ -105296,6 +107931,7 @@ characters.data={
   unicodeslot=0xFE5E,
  },
  [0xFE5F]={
+  adobename="numbersignsmall",
   category="po",
   cjkwd="w",
   description="SMALL NUMBER SIGN",
@@ -105314,6 +107950,7 @@ characters.data={
   unicodeslot=0xFE60,
  },
  [0xFE61]={
+  adobename="asterisksmall",
   category="po",
   cjkwd="w",
   description="SMALL ASTERISK",
@@ -105323,6 +107960,7 @@ characters.data={
   unicodeslot=0xFE61,
  },
  [0xFE62]={
+  adobename="plussmall",
   category="sm",
   cjkwd="w",
   description="SMALL PLUS SIGN",
@@ -105332,6 +107970,7 @@ characters.data={
   unicodeslot=0xFE62,
  },
  [0xFE63]={
+  adobename="hyphensmall",
   category="pd",
   cjkwd="w",
   description="SMALL HYPHEN-MINUS",
@@ -105341,6 +107980,7 @@ characters.data={
   unicodeslot=0xFE63,
  },
  [0xFE64]={
+  adobename="lesssmall",
   category="sm",
   cjkwd="w",
   description="SMALL LESS-THAN SIGN",
@@ -105351,6 +107991,7 @@ characters.data={
   unicodeslot=0xFE64,
  },
  [0xFE65]={
+  adobename="greatersmall",
   category="sm",
   cjkwd="w",
   description="SMALL GREATER-THAN SIGN",
@@ -105361,6 +108002,7 @@ characters.data={
   unicodeslot=0xFE65,
  },
  [0xFE66]={
+  adobename="equalsmall",
   category="sm",
   cjkwd="w",
   description="SMALL EQUALS SIGN",
@@ -105379,6 +108021,7 @@ characters.data={
   unicodeslot=0xFE68,
  },
  [0xFE69]={
+  adobename="dollarsmall",
   category="sc",
   cjkwd="w",
   description="SMALL DOLLAR SIGN",
@@ -105388,6 +108031,7 @@ characters.data={
   unicodeslot=0xFE69,
  },
  [0xFE6A]={
+  adobename="percentsmall",
   category="po",
   cjkwd="w",
   description="SMALL PERCENT SIGN",
@@ -105397,6 +108041,7 @@ characters.data={
   unicodeslot=0xFE6A,
  },
  [0xFE6B]={
+  adobename="atsmall",
   category="po",
   cjkwd="w",
   description="SMALL COMMERCIAL AT",
@@ -105542,6 +108187,7 @@ characters.data={
   unicodeslot=0xFE81,
  },
  [0xFE82]={
+  adobename="alefmaddaabovefinalarabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH MADDA ABOVE FINAL FORM",
   direction="al",
@@ -105560,6 +108206,7 @@ characters.data={
   unicodeslot=0xFE83,
  },
  [0xFE84]={
+  adobename="alefhamzaabovefinalarabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH HAMZA ABOVE FINAL FORM",
   direction="al",
@@ -105578,6 +108225,7 @@ characters.data={
   unicodeslot=0xFE85,
  },
  [0xFE86]={
+  adobename="wawhamzaabovefinalarabic",
   category="lo",
   description="ARABIC LETTER WAW WITH HAMZA ABOVE FINAL FORM",
   direction="al",
@@ -105596,6 +108244,7 @@ characters.data={
   unicodeslot=0xFE87,
  },
  [0xFE88]={
+  adobename="alefhamzabelowfinalarabic",
   category="lo",
   description="ARABIC LETTER ALEF WITH HAMZA BELOW FINAL FORM",
   direction="al",
@@ -105614,6 +108263,7 @@ characters.data={
   unicodeslot=0xFE89,
  },
  [0xFE8A]={
+  adobename="yehhamzaabovefinalarabic",
   category="lo",
   description="ARABIC LETTER YEH WITH HAMZA ABOVE FINAL FORM",
   direction="al",
@@ -105623,6 +108273,7 @@ characters.data={
   unicodeslot=0xFE8A,
  },
  [0xFE8B]={
+  adobename="yehhamzaaboveinitialarabic",
   category="lo",
   description="ARABIC LETTER YEH WITH HAMZA ABOVE INITIAL FORM",
   direction="al",
@@ -105632,6 +108283,7 @@ characters.data={
   unicodeslot=0xFE8B,
  },
  [0xFE8C]={
+  adobename="yehhamzaabovemedialarabic",
   category="lo",
   description="ARABIC LETTER YEH WITH HAMZA ABOVE MEDIAL FORM",
   direction="al",
@@ -105649,6 +108301,7 @@ characters.data={
   unicodeslot=0xFE8D,
  },
  [0xFE8E]={
+  adobename="aleffinalarabic",
   category="lo",
   description="ARABIC LETTER ALEF FINAL FORM",
   direction="al",
@@ -105665,6 +108318,7 @@ characters.data={
   unicodeslot=0xFE8F,
  },
  [0xFE90]={
+  adobename="behfinalarabic",
   category="lo",
   description="ARABIC LETTER BEH FINAL FORM",
   direction="al",
@@ -105673,6 +108327,7 @@ characters.data={
   unicodeslot=0xFE90,
  },
  [0xFE91]={
+  adobename="behinitialarabic",
   category="lo",
   description="ARABIC LETTER BEH INITIAL FORM",
   direction="al",
@@ -105681,6 +108336,7 @@ characters.data={
   unicodeslot=0xFE91,
  },
  [0xFE92]={
+  adobename="behmedialarabic",
   category="lo",
   description="ARABIC LETTER BEH MEDIAL FORM",
   direction="al",
@@ -105697,6 +108353,7 @@ characters.data={
   unicodeslot=0xFE93,
  },
  [0xFE94]={
+  adobename="tehmarbutafinalarabic",
   category="lo",
   description="ARABIC LETTER TEH MARBUTA FINAL FORM",
   direction="al",
@@ -105713,6 +108370,7 @@ characters.data={
   unicodeslot=0xFE95,
  },
  [0xFE96]={
+  adobename="tehfinalarabic",
   category="lo",
   description="ARABIC LETTER TEH FINAL FORM",
   direction="al",
@@ -105721,6 +108379,7 @@ characters.data={
   unicodeslot=0xFE96,
  },
  [0xFE97]={
+  adobename="tehinitialarabic",
   category="lo",
   description="ARABIC LETTER TEH INITIAL FORM",
   direction="al",
@@ -105729,6 +108388,7 @@ characters.data={
   unicodeslot=0xFE97,
  },
  [0xFE98]={
+  adobename="tehmedialarabic",
   category="lo",
   description="ARABIC LETTER TEH MEDIAL FORM",
   direction="al",
@@ -105745,6 +108405,7 @@ characters.data={
   unicodeslot=0xFE99,
  },
  [0xFE9A]={
+  adobename="thehfinalarabic",
   category="lo",
   description="ARABIC LETTER THEH FINAL FORM",
   direction="al",
@@ -105753,6 +108414,7 @@ characters.data={
   unicodeslot=0xFE9A,
  },
  [0xFE9B]={
+  adobename="thehinitialarabic",
   category="lo",
   description="ARABIC LETTER THEH INITIAL FORM",
   direction="al",
@@ -105761,6 +108423,7 @@ characters.data={
   unicodeslot=0xFE9B,
  },
  [0xFE9C]={
+  adobename="thehmedialarabic",
   category="lo",
   description="ARABIC LETTER THEH MEDIAL FORM",
   direction="al",
@@ -105777,6 +108440,7 @@ characters.data={
   unicodeslot=0xFE9D,
  },
  [0xFE9E]={
+  adobename="jeemfinalarabic",
   category="lo",
   description="ARABIC LETTER JEEM FINAL FORM",
   direction="al",
@@ -105785,6 +108449,7 @@ characters.data={
   unicodeslot=0xFE9E,
  },
  [0xFE9F]={
+  adobename="jeeminitialarabic",
   category="lo",
   description="ARABIC LETTER JEEM INITIAL FORM",
   direction="al",
@@ -105793,6 +108458,7 @@ characters.data={
   unicodeslot=0xFE9F,
  },
  [0xFEA0]={
+  adobename="jeemmedialarabic",
   category="lo",
   description="ARABIC LETTER JEEM MEDIAL FORM",
   direction="al",
@@ -105809,6 +108475,7 @@ characters.data={
   unicodeslot=0xFEA1,
  },
  [0xFEA2]={
+  adobename="hahfinalarabic",
   category="lo",
   description="ARABIC LETTER HAH FINAL FORM",
   direction="al",
@@ -105817,6 +108484,7 @@ characters.data={
   unicodeslot=0xFEA2,
  },
  [0xFEA3]={
+  adobename="hahinitialarabic",
   category="lo",
   description="ARABIC LETTER HAH INITIAL FORM",
   direction="al",
@@ -105825,6 +108493,7 @@ characters.data={
   unicodeslot=0xFEA3,
  },
  [0xFEA4]={
+  adobename="hahmedialarabic",
   category="lo",
   description="ARABIC LETTER HAH MEDIAL FORM",
   direction="al",
@@ -105841,6 +108510,7 @@ characters.data={
   unicodeslot=0xFEA5,
  },
  [0xFEA6]={
+  adobename="khahfinalarabic",
   category="lo",
   description="ARABIC LETTER KHAH FINAL FORM",
   direction="al",
@@ -105849,6 +108519,7 @@ characters.data={
   unicodeslot=0xFEA6,
  },
  [0xFEA7]={
+  adobename="khahinitialarabic",
   category="lo",
   description="ARABIC LETTER KHAH INITIAL FORM",
   direction="al",
@@ -105857,6 +108528,7 @@ characters.data={
   unicodeslot=0xFEA7,
  },
  [0xFEA8]={
+  adobename="khahmedialarabic",
   category="lo",
   description="ARABIC LETTER KHAH MEDIAL FORM",
   direction="al",
@@ -105873,6 +108545,7 @@ characters.data={
   unicodeslot=0xFEA9,
  },
  [0xFEAA]={
+  adobename="dalfinalarabic",
   category="lo",
   description="ARABIC LETTER DAL FINAL FORM",
   direction="al",
@@ -105889,6 +108562,7 @@ characters.data={
   unicodeslot=0xFEAB,
  },
  [0xFEAC]={
+  adobename="thalfinalarabic",
   category="lo",
   description="ARABIC LETTER THAL FINAL FORM",
   direction="al",
@@ -105905,6 +108579,7 @@ characters.data={
   unicodeslot=0xFEAD,
  },
  [0xFEAE]={
+  adobename="rehfinalarabic",
   category="lo",
   description="ARABIC LETTER REH FINAL FORM",
   direction="al",
@@ -105921,6 +108596,7 @@ characters.data={
   unicodeslot=0xFEAF,
  },
  [0xFEB0]={
+  adobename="zainfinalarabic",
   category="lo",
   description="ARABIC LETTER ZAIN FINAL FORM",
   direction="al",
@@ -105937,6 +108613,7 @@ characters.data={
   unicodeslot=0xFEB1,
  },
  [0xFEB2]={
+  adobename="seenfinalarabic",
   category="lo",
   description="ARABIC LETTER SEEN FINAL FORM",
   direction="al",
@@ -105945,6 +108622,7 @@ characters.data={
   unicodeslot=0xFEB2,
  },
  [0xFEB3]={
+  adobename="seeninitialarabic",
   category="lo",
   description="ARABIC LETTER SEEN INITIAL FORM",
   direction="al",
@@ -105953,6 +108631,7 @@ characters.data={
   unicodeslot=0xFEB3,
  },
  [0xFEB4]={
+  adobename="seenmedialarabic",
   category="lo",
   description="ARABIC LETTER SEEN MEDIAL FORM",
   direction="al",
@@ -105969,6 +108648,7 @@ characters.data={
   unicodeslot=0xFEB5,
  },
  [0xFEB6]={
+  adobename="sheenfinalarabic",
   category="lo",
   description="ARABIC LETTER SHEEN FINAL FORM",
   direction="al",
@@ -105977,6 +108657,7 @@ characters.data={
   unicodeslot=0xFEB6,
  },
  [0xFEB7]={
+  adobename="sheeninitialarabic",
   category="lo",
   description="ARABIC LETTER SHEEN INITIAL FORM",
   direction="al",
@@ -105985,6 +108666,7 @@ characters.data={
   unicodeslot=0xFEB7,
  },
  [0xFEB8]={
+  adobename="sheenmedialarabic",
   category="lo",
   description="ARABIC LETTER SHEEN MEDIAL FORM",
   direction="al",
@@ -106001,6 +108683,7 @@ characters.data={
   unicodeslot=0xFEB9,
  },
  [0xFEBA]={
+  adobename="sadfinalarabic",
   category="lo",
   description="ARABIC LETTER SAD FINAL FORM",
   direction="al",
@@ -106009,6 +108692,7 @@ characters.data={
   unicodeslot=0xFEBA,
  },
  [0xFEBB]={
+  adobename="sadinitialarabic",
   category="lo",
   description="ARABIC LETTER SAD INITIAL FORM",
   direction="al",
@@ -106017,6 +108701,7 @@ characters.data={
   unicodeslot=0xFEBB,
  },
  [0xFEBC]={
+  adobename="sadmedialarabic",
   category="lo",
   description="ARABIC LETTER SAD MEDIAL FORM",
   direction="al",
@@ -106033,6 +108718,7 @@ characters.data={
   unicodeslot=0xFEBD,
  },
  [0xFEBE]={
+  adobename="dadfinalarabic",
   category="lo",
   description="ARABIC LETTER DAD FINAL FORM",
   direction="al",
@@ -106041,6 +108727,7 @@ characters.data={
   unicodeslot=0xFEBE,
  },
  [0xFEBF]={
+  adobename="dadinitialarabic",
   category="lo",
   description="ARABIC LETTER DAD INITIAL FORM",
   direction="al",
@@ -106049,6 +108736,7 @@ characters.data={
   unicodeslot=0xFEBF,
  },
  [0xFEC0]={
+  adobename="dadmedialarabic",
   category="lo",
   description="ARABIC LETTER DAD MEDIAL FORM",
   direction="al",
@@ -106065,6 +108753,7 @@ characters.data={
   unicodeslot=0xFEC1,
  },
  [0xFEC2]={
+  adobename="tahfinalarabic",
   category="lo",
   description="ARABIC LETTER TAH FINAL FORM",
   direction="al",
@@ -106073,6 +108762,7 @@ characters.data={
   unicodeslot=0xFEC2,
  },
  [0xFEC3]={
+  adobename="tahinitialarabic",
   category="lo",
   description="ARABIC LETTER TAH INITIAL FORM",
   direction="al",
@@ -106081,6 +108771,7 @@ characters.data={
   unicodeslot=0xFEC3,
  },
  [0xFEC4]={
+  adobename="tahmedialarabic",
   category="lo",
   description="ARABIC LETTER TAH MEDIAL FORM",
   direction="al",
@@ -106097,6 +108788,7 @@ characters.data={
   unicodeslot=0xFEC5,
  },
  [0xFEC6]={
+  adobename="zahfinalarabic",
   category="lo",
   description="ARABIC LETTER ZAH FINAL FORM",
   direction="al",
@@ -106105,6 +108797,7 @@ characters.data={
   unicodeslot=0xFEC6,
  },
  [0xFEC7]={
+  adobename="zahinitialarabic",
   category="lo",
   description="ARABIC LETTER ZAH INITIAL FORM",
   direction="al",
@@ -106113,6 +108806,7 @@ characters.data={
   unicodeslot=0xFEC7,
  },
  [0xFEC8]={
+  adobename="zahmedialarabic",
   category="lo",
   description="ARABIC LETTER ZAH MEDIAL FORM",
   direction="al",
@@ -106129,6 +108823,7 @@ characters.data={
   unicodeslot=0xFEC9,
  },
  [0xFECA]={
+  adobename="ainfinalarabic",
   category="lo",
   description="ARABIC LETTER AIN FINAL FORM",
   direction="al",
@@ -106137,6 +108832,7 @@ characters.data={
   unicodeslot=0xFECA,
  },
  [0xFECB]={
+  adobename="aininitialarabic",
   category="lo",
   description="ARABIC LETTER AIN INITIAL FORM",
   direction="al",
@@ -106145,6 +108841,7 @@ characters.data={
   unicodeslot=0xFECB,
  },
  [0xFECC]={
+  adobename="ainmedialarabic",
   category="lo",
   description="ARABIC LETTER AIN MEDIAL FORM",
   direction="al",
@@ -106161,6 +108858,7 @@ characters.data={
   unicodeslot=0xFECD,
  },
  [0xFECE]={
+  adobename="ghainfinalarabic",
   category="lo",
   description="ARABIC LETTER GHAIN FINAL FORM",
   direction="al",
@@ -106169,6 +108867,7 @@ characters.data={
   unicodeslot=0xFECE,
  },
  [0xFECF]={
+  adobename="ghaininitialarabic",
   category="lo",
   description="ARABIC LETTER GHAIN INITIAL FORM",
   direction="al",
@@ -106177,6 +108876,7 @@ characters.data={
   unicodeslot=0xFECF,
  },
  [0xFED0]={
+  adobename="ghainmedialarabic",
   category="lo",
   description="ARABIC LETTER GHAIN MEDIAL FORM",
   direction="al",
@@ -106193,6 +108893,7 @@ characters.data={
   unicodeslot=0xFED1,
  },
  [0xFED2]={
+  adobename="fehfinalarabic",
   category="lo",
   description="ARABIC LETTER FEH FINAL FORM",
   direction="al",
@@ -106201,6 +108902,7 @@ characters.data={
   unicodeslot=0xFED2,
  },
  [0xFED3]={
+  adobename="fehinitialarabic",
   category="lo",
   description="ARABIC LETTER FEH INITIAL FORM",
   direction="al",
@@ -106209,6 +108911,7 @@ characters.data={
   unicodeslot=0xFED3,
  },
  [0xFED4]={
+  adobename="fehmedialarabic",
   category="lo",
   description="ARABIC LETTER FEH MEDIAL FORM",
   direction="al",
@@ -106225,6 +108928,7 @@ characters.data={
   unicodeslot=0xFED5,
  },
  [0xFED6]={
+  adobename="qaffinalarabic",
   category="lo",
   description="ARABIC LETTER QAF FINAL FORM",
   direction="al",
@@ -106233,6 +108937,7 @@ characters.data={
   unicodeslot=0xFED6,
  },
  [0xFED7]={
+  adobename="qafinitialarabic",
   category="lo",
   description="ARABIC LETTER QAF INITIAL FORM",
   direction="al",
@@ -106241,6 +108946,7 @@ characters.data={
   unicodeslot=0xFED7,
  },
  [0xFED8]={
+  adobename="qafmedialarabic",
   category="lo",
   description="ARABIC LETTER QAF MEDIAL FORM",
   direction="al",
@@ -106257,6 +108963,7 @@ characters.data={
   unicodeslot=0xFED9,
  },
  [0xFEDA]={
+  adobename="kaffinalarabic",
   category="lo",
   description="ARABIC LETTER KAF FINAL FORM",
   direction="al",
@@ -106265,6 +108972,7 @@ characters.data={
   unicodeslot=0xFEDA,
  },
  [0xFEDB]={
+  adobename="kafinitialarabic",
   category="lo",
   description="ARABIC LETTER KAF INITIAL FORM",
   direction="al",
@@ -106273,6 +108981,7 @@ characters.data={
   unicodeslot=0xFEDB,
  },
  [0xFEDC]={
+  adobename="kafmedialarabic",
   category="lo",
   description="ARABIC LETTER KAF MEDIAL FORM",
   direction="al",
@@ -106289,6 +108998,7 @@ characters.data={
   unicodeslot=0xFEDD,
  },
  [0xFEDE]={
+  adobename="lamfinalarabic",
   category="lo",
   description="ARABIC LETTER LAM FINAL FORM",
   direction="al",
@@ -106297,6 +109007,7 @@ characters.data={
   unicodeslot=0xFEDE,
  },
  [0xFEDF]={
+  adobename="lammeemkhahinitialarabic",
   category="lo",
   description="ARABIC LETTER LAM INITIAL FORM",
   direction="al",
@@ -106305,6 +109016,7 @@ characters.data={
   unicodeslot=0xFEDF,
  },
  [0xFEE0]={
+  adobename="lammedialarabic",
   category="lo",
   description="ARABIC LETTER LAM MEDIAL FORM",
   direction="al",
@@ -106321,6 +109033,7 @@ characters.data={
   unicodeslot=0xFEE1,
  },
  [0xFEE2]={
+  adobename="meemfinalarabic",
   category="lo",
   description="ARABIC LETTER MEEM FINAL FORM",
   direction="al",
@@ -106329,6 +109042,7 @@ characters.data={
   unicodeslot=0xFEE2,
  },
  [0xFEE3]={
+  adobename="meeminitialarabic",
   category="lo",
   description="ARABIC LETTER MEEM INITIAL FORM",
   direction="al",
@@ -106337,6 +109051,7 @@ characters.data={
   unicodeslot=0xFEE3,
  },
  [0xFEE4]={
+  adobename="meemmedialarabic",
   category="lo",
   description="ARABIC LETTER MEEM MEDIAL FORM",
   direction="al",
@@ -106353,6 +109068,7 @@ characters.data={
   unicodeslot=0xFEE5,
  },
  [0xFEE6]={
+  adobename="noonfinalarabic",
   category="lo",
   description="ARABIC LETTER NOON FINAL FORM",
   direction="al",
@@ -106361,6 +109077,7 @@ characters.data={
   unicodeslot=0xFEE6,
  },
  [0xFEE7]={
+  adobename="nooninitialarabic",
   category="lo",
   description="ARABIC LETTER NOON INITIAL FORM",
   direction="al",
@@ -106369,6 +109086,7 @@ characters.data={
   unicodeslot=0xFEE7,
  },
  [0xFEE8]={
+  adobename="noonmedialarabic",
   category="lo",
   description="ARABIC LETTER NOON MEDIAL FORM",
   direction="al",
@@ -106385,6 +109103,7 @@ characters.data={
   unicodeslot=0xFEE9,
  },
  [0xFEEA]={
+  adobename="hehfinalarabic",
   category="lo",
   description="ARABIC LETTER HEH FINAL FORM",
   direction="al",
@@ -106393,6 +109112,7 @@ characters.data={
   unicodeslot=0xFEEA,
  },
  [0xFEEB]={
+  adobename="hehinitialarabic",
   category="lo",
   description="ARABIC LETTER HEH INITIAL FORM",
   direction="al",
@@ -106401,6 +109121,7 @@ characters.data={
   unicodeslot=0xFEEB,
  },
  [0xFEEC]={
+  adobename="hehmedialarabic",
   category="lo",
   description="ARABIC LETTER HEH MEDIAL FORM",
   direction="al",
@@ -106417,6 +109138,7 @@ characters.data={
   unicodeslot=0xFEED,
  },
  [0xFEEE]={
+  adobename="wawfinalarabic",
   category="lo",
   description="ARABIC LETTER WAW FINAL FORM",
   direction="al",
@@ -106433,6 +109155,7 @@ characters.data={
   unicodeslot=0xFEEF,
  },
  [0xFEF0]={
+  adobename="alefmaksurafinalarabic",
   category="lo",
   description="ARABIC LETTER ALEF MAKSURA FINAL FORM",
   direction="al",
@@ -106449,6 +109172,7 @@ characters.data={
   unicodeslot=0xFEF1,
  },
  [0xFEF2]={
+  adobename="yehfinalarabic",
   category="lo",
   description="ARABIC LETTER YEH FINAL FORM",
   direction="al",
@@ -106457,6 +109181,7 @@ characters.data={
   unicodeslot=0xFEF2,
  },
  [0xFEF3]={
+  adobename="yehinitialarabic",
   category="lo",
   description="ARABIC LETTER YEH INITIAL FORM",
   direction="al",
@@ -106465,6 +109190,7 @@ characters.data={
   unicodeslot=0xFEF3,
  },
  [0xFEF4]={
+  adobename="yehmedialarabic",
   category="lo",
   description="ARABIC LETTER YEH MEDIAL FORM",
   direction="al",
@@ -106473,6 +109199,7 @@ characters.data={
   unicodeslot=0xFEF4,
  },
  [0xFEF5]={
+  adobename="lamalefmaddaaboveisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM",
   direction="al",
@@ -106481,6 +109208,7 @@ characters.data={
   unicodeslot=0xFEF5,
  },
  [0xFEF6]={
+  adobename="lamalefmaddaabovefinalarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM",
   direction="al",
@@ -106489,6 +109217,7 @@ characters.data={
   unicodeslot=0xFEF6,
  },
  [0xFEF7]={
+  adobename="lamalefhamzaaboveisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM",
   direction="al",
@@ -106497,6 +109226,7 @@ characters.data={
   unicodeslot=0xFEF7,
  },
  [0xFEF8]={
+  adobename="lamalefhamzaabovefinalarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM",
   direction="al",
@@ -106505,6 +109235,7 @@ characters.data={
   unicodeslot=0xFEF8,
  },
  [0xFEF9]={
+  adobename="lamalefhamzabelowisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW ISOLATED FORM",
   direction="al",
@@ -106513,6 +109244,7 @@ characters.data={
   unicodeslot=0xFEF9,
  },
  [0xFEFA]={
+  adobename="lamalefhamzabelowfinalarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW FINAL FORM",
   direction="al",
@@ -106521,6 +109253,7 @@ characters.data={
   unicodeslot=0xFEFA,
  },
  [0xFEFB]={
+  adobename="lamalefisolatedarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM",
   direction="al",
@@ -106529,6 +109262,7 @@ characters.data={
   unicodeslot=0xFEFB,
  },
  [0xFEFC]={
+  adobename="lamaleffinalarabic",
   category="lo",
   description="ARABIC LIGATURE LAM WITH ALEF FINAL FORM",
   direction="al",
@@ -106537,6 +109271,7 @@ characters.data={
   unicodeslot=0xFEFC,
  },
  [0xFEFF]={
+  adobename="zerowidthjoiner",
   category="cf",
   contextname="zerowidthnobreakspace",
   description="ZERO WIDTH NO-BREAK SPACE",
@@ -106545,6 +109280,7 @@ characters.data={
   unicodeslot=0xFEFF,
  },
  [0xFF01]={
+  adobename="exclammonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH EXCLAMATION MARK",
@@ -106554,6 +109290,7 @@ characters.data={
   unicodeslot=0xFF01,
  },
  [0xFF02]={
+  adobename="quotedblmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH QUOTATION MARK",
@@ -106563,6 +109300,7 @@ characters.data={
   unicodeslot=0xFF02,
  },
  [0xFF03]={
+  adobename="numbersignmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH NUMBER SIGN",
@@ -106572,6 +109310,7 @@ characters.data={
   unicodeslot=0xFF03,
  },
  [0xFF04]={
+  adobename="dollarmonospace",
   category="sc",
   cjkwd="f",
   description="FULLWIDTH DOLLAR SIGN",
@@ -106581,6 +109320,7 @@ characters.data={
   unicodeslot=0xFF04,
  },
  [0xFF05]={
+  adobename="percentmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH PERCENT SIGN",
@@ -106590,6 +109330,7 @@ characters.data={
   unicodeslot=0xFF05,
  },
  [0xFF06]={
+  adobename="ampersandmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH AMPERSAND",
@@ -106599,6 +109340,7 @@ characters.data={
   unicodeslot=0xFF06,
  },
  [0xFF07]={
+  adobename="quotesinglemonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH APOSTROPHE",
@@ -106608,6 +109350,7 @@ characters.data={
   unicodeslot=0xFF07,
  },
  [0xFF08]={
+  adobename="parenleftmonospace",
   category="ps",
   cjkwd="f",
   description="FULLWIDTH LEFT PARENTHESIS",
@@ -106618,6 +109361,7 @@ characters.data={
   unicodeslot=0xFF08,
  },
  [0xFF09]={
+  adobename="parenrightmonospace",
   category="pe",
   cjkwd="f",
   description="FULLWIDTH RIGHT PARENTHESIS",
@@ -106628,6 +109372,7 @@ characters.data={
   unicodeslot=0xFF09,
  },
  [0xFF0A]={
+  adobename="asteriskmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH ASTERISK",
@@ -106637,6 +109382,7 @@ characters.data={
   unicodeslot=0xFF0A,
  },
  [0xFF0B]={
+  adobename="plusmonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH PLUS SIGN",
@@ -106646,6 +109392,7 @@ characters.data={
   unicodeslot=0xFF0B,
  },
  [0xFF0C]={
+  adobename="commamonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH COMMA",
@@ -106655,6 +109402,7 @@ characters.data={
   unicodeslot=0xFF0C,
  },
  [0xFF0D]={
+  adobename="hyphenmonospace",
   category="pd",
   cjkwd="f",
   description="FULLWIDTH HYPHEN-MINUS",
@@ -106664,6 +109412,7 @@ characters.data={
   unicodeslot=0xFF0D,
  },
  [0xFF0E]={
+  adobename="periodmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH FULL STOP",
@@ -106673,6 +109422,7 @@ characters.data={
   unicodeslot=0xFF0E,
  },
  [0xFF0F]={
+  adobename="slashmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH SOLIDUS",
@@ -106682,6 +109432,7 @@ characters.data={
   unicodeslot=0xFF0F,
  },
  [0xFF10]={
+  adobename="zeromonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT ZERO",
@@ -106691,6 +109442,7 @@ characters.data={
   unicodeslot=0xFF10,
  },
  [0xFF11]={
+  adobename="onemonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT ONE",
@@ -106700,6 +109452,7 @@ characters.data={
   unicodeslot=0xFF11,
  },
  [0xFF12]={
+  adobename="twomonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT TWO",
@@ -106709,6 +109462,7 @@ characters.data={
   unicodeslot=0xFF12,
  },
  [0xFF13]={
+  adobename="threemonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT THREE",
@@ -106718,6 +109472,7 @@ characters.data={
   unicodeslot=0xFF13,
  },
  [0xFF14]={
+  adobename="fourmonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT FOUR",
@@ -106727,6 +109482,7 @@ characters.data={
   unicodeslot=0xFF14,
  },
  [0xFF15]={
+  adobename="fivemonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT FIVE",
@@ -106736,6 +109492,7 @@ characters.data={
   unicodeslot=0xFF15,
  },
  [0xFF16]={
+  adobename="sixmonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT SIX",
@@ -106745,6 +109502,7 @@ characters.data={
   unicodeslot=0xFF16,
  },
  [0xFF17]={
+  adobename="sevenmonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT SEVEN",
@@ -106754,6 +109512,7 @@ characters.data={
   unicodeslot=0xFF17,
  },
  [0xFF18]={
+  adobename="eightmonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT EIGHT",
@@ -106763,6 +109522,7 @@ characters.data={
   unicodeslot=0xFF18,
  },
  [0xFF19]={
+  adobename="ninemonospace",
   category="nd",
   cjkwd="f",
   description="FULLWIDTH DIGIT NINE",
@@ -106772,6 +109532,7 @@ characters.data={
   unicodeslot=0xFF19,
  },
  [0xFF1A]={
+  adobename="colonmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH COLON",
@@ -106781,6 +109542,7 @@ characters.data={
   unicodeslot=0xFF1A,
  },
  [0xFF1B]={
+  adobename="semicolonmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH SEMICOLON",
@@ -106790,6 +109552,7 @@ characters.data={
   unicodeslot=0xFF1B,
  },
  [0xFF1C]={
+  adobename="lessmonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH LESS-THAN SIGN",
@@ -106800,6 +109563,7 @@ characters.data={
   unicodeslot=0xFF1C,
  },
  [0xFF1D]={
+  adobename="equalmonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH EQUALS SIGN",
@@ -106809,6 +109573,7 @@ characters.data={
   unicodeslot=0xFF1D,
  },
  [0xFF1E]={
+  adobename="greatermonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH GREATER-THAN SIGN",
@@ -106819,6 +109584,7 @@ characters.data={
   unicodeslot=0xFF1E,
  },
  [0xFF1F]={
+  adobename="questionmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH QUESTION MARK",
@@ -106828,6 +109594,7 @@ characters.data={
   unicodeslot=0xFF1F,
  },
  [0xFF20]={
+  adobename="atmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH COMMERCIAL AT",
@@ -106837,6 +109604,7 @@ characters.data={
   unicodeslot=0xFF20,
  },
  [0xFF21]={
+  adobename="Amonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER A",
@@ -106847,6 +109615,7 @@ characters.data={
   unicodeslot=0xFF21,
  },
  [0xFF22]={
+  adobename="Bmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER B",
@@ -106857,6 +109626,7 @@ characters.data={
   unicodeslot=0xFF22,
  },
  [0xFF23]={
+  adobename="Cmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER C",
@@ -106867,6 +109637,7 @@ characters.data={
   unicodeslot=0xFF23,
  },
  [0xFF24]={
+  adobename="Dmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER D",
@@ -106877,6 +109648,7 @@ characters.data={
   unicodeslot=0xFF24,
  },
  [0xFF25]={
+  adobename="Emonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER E",
@@ -106887,6 +109659,7 @@ characters.data={
   unicodeslot=0xFF25,
  },
  [0xFF26]={
+  adobename="Fmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER F",
@@ -106897,6 +109670,7 @@ characters.data={
   unicodeslot=0xFF26,
  },
  [0xFF27]={
+  adobename="Gmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER G",
@@ -106907,6 +109681,7 @@ characters.data={
   unicodeslot=0xFF27,
  },
  [0xFF28]={
+  adobename="Hmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER H",
@@ -106917,6 +109692,7 @@ characters.data={
   unicodeslot=0xFF28,
  },
  [0xFF29]={
+  adobename="Imonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER I",
@@ -106927,6 +109703,7 @@ characters.data={
   unicodeslot=0xFF29,
  },
  [0xFF2A]={
+  adobename="Jmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER J",
@@ -106937,6 +109714,7 @@ characters.data={
   unicodeslot=0xFF2A,
  },
  [0xFF2B]={
+  adobename="Kmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER K",
@@ -106947,6 +109725,7 @@ characters.data={
   unicodeslot=0xFF2B,
  },
  [0xFF2C]={
+  adobename="Lmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER L",
@@ -106957,6 +109736,7 @@ characters.data={
   unicodeslot=0xFF2C,
  },
  [0xFF2D]={
+  adobename="Mmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER M",
@@ -106967,6 +109747,7 @@ characters.data={
   unicodeslot=0xFF2D,
  },
  [0xFF2E]={
+  adobename="Nmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER N",
@@ -106977,6 +109758,7 @@ characters.data={
   unicodeslot=0xFF2E,
  },
  [0xFF2F]={
+  adobename="Omonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER O",
@@ -106987,6 +109769,7 @@ characters.data={
   unicodeslot=0xFF2F,
  },
  [0xFF30]={
+  adobename="Pmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER P",
@@ -106997,6 +109780,7 @@ characters.data={
   unicodeslot=0xFF30,
  },
  [0xFF31]={
+  adobename="Qmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER Q",
@@ -107007,6 +109791,7 @@ characters.data={
   unicodeslot=0xFF31,
  },
  [0xFF32]={
+  adobename="Rmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER R",
@@ -107017,6 +109802,7 @@ characters.data={
   unicodeslot=0xFF32,
  },
  [0xFF33]={
+  adobename="Smonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER S",
@@ -107027,6 +109813,7 @@ characters.data={
   unicodeslot=0xFF33,
  },
  [0xFF34]={
+  adobename="Tmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER T",
@@ -107037,6 +109824,7 @@ characters.data={
   unicodeslot=0xFF34,
  },
  [0xFF35]={
+  adobename="Umonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER U",
@@ -107047,6 +109835,7 @@ characters.data={
   unicodeslot=0xFF35,
  },
  [0xFF36]={
+  adobename="Vmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER V",
@@ -107057,6 +109846,7 @@ characters.data={
   unicodeslot=0xFF36,
  },
  [0xFF37]={
+  adobename="Wmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER W",
@@ -107067,6 +109857,7 @@ characters.data={
   unicodeslot=0xFF37,
  },
  [0xFF38]={
+  adobename="Xmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER X",
@@ -107077,6 +109868,7 @@ characters.data={
   unicodeslot=0xFF38,
  },
  [0xFF39]={
+  adobename="Ymonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER Y",
@@ -107087,6 +109879,7 @@ characters.data={
   unicodeslot=0xFF39,
  },
  [0xFF3A]={
+  adobename="Zmonospace",
   category="lu",
   cjkwd="f",
   description="FULLWIDTH LATIN CAPITAL LETTER Z",
@@ -107097,6 +109890,7 @@ characters.data={
   unicodeslot=0xFF3A,
  },
  [0xFF3B]={
+  adobename="bracketleftmonospace",
   category="ps",
   cjkwd="f",
   description="FULLWIDTH LEFT SQUARE BRACKET",
@@ -107107,6 +109901,7 @@ characters.data={
   unicodeslot=0xFF3B,
  },
  [0xFF3C]={
+  adobename="backslashmonospace",
   category="po",
   cjkwd="f",
   description="FULLWIDTH REVERSE SOLIDUS",
@@ -107116,6 +109911,7 @@ characters.data={
   unicodeslot=0xFF3C,
  },
  [0xFF3D]={
+  adobename="bracketrightmonospace",
   category="pe",
   cjkwd="f",
   description="FULLWIDTH RIGHT SQUARE BRACKET",
@@ -107126,6 +109922,7 @@ characters.data={
   unicodeslot=0xFF3D,
  },
  [0xFF3E]={
+  adobename="asciicircummonospace",
   category="sk",
   cjkwd="f",
   description="FULLWIDTH CIRCUMFLEX ACCENT",
@@ -107135,6 +109932,7 @@ characters.data={
   unicodeslot=0xFF3E,
  },
  [0xFF3F]={
+  adobename="underscoremonospace",
   category="pc",
   cjkwd="f",
   description="FULLWIDTH LOW LINE",
@@ -107144,6 +109942,7 @@ characters.data={
   unicodeslot=0xFF3F,
  },
  [0xFF40]={
+  adobename="gravemonospace",
   category="sk",
   cjkwd="f",
   description="FULLWIDTH GRAVE ACCENT",
@@ -107153,6 +109952,7 @@ characters.data={
   unicodeslot=0xFF40,
  },
  [0xFF41]={
+  adobename="amonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER A",
@@ -107163,6 +109963,7 @@ characters.data={
   unicodeslot=0xFF41,
  },
  [0xFF42]={
+  adobename="bmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER B",
@@ -107173,6 +109974,7 @@ characters.data={
   unicodeslot=0xFF42,
  },
  [0xFF43]={
+  adobename="cmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER C",
@@ -107183,6 +109985,7 @@ characters.data={
   unicodeslot=0xFF43,
  },
  [0xFF44]={
+  adobename="dmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER D",
@@ -107193,6 +109996,7 @@ characters.data={
   unicodeslot=0xFF44,
  },
  [0xFF45]={
+  adobename="emonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER E",
@@ -107203,6 +110007,7 @@ characters.data={
   unicodeslot=0xFF45,
  },
  [0xFF46]={
+  adobename="fmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER F",
@@ -107213,6 +110018,7 @@ characters.data={
   unicodeslot=0xFF46,
  },
  [0xFF47]={
+  adobename="gmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER G",
@@ -107223,6 +110029,7 @@ characters.data={
   unicodeslot=0xFF47,
  },
  [0xFF48]={
+  adobename="hmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER H",
@@ -107233,6 +110040,7 @@ characters.data={
   unicodeslot=0xFF48,
  },
  [0xFF49]={
+  adobename="imonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER I",
@@ -107243,6 +110051,7 @@ characters.data={
   unicodeslot=0xFF49,
  },
  [0xFF4A]={
+  adobename="jmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER J",
@@ -107253,6 +110062,7 @@ characters.data={
   unicodeslot=0xFF4A,
  },
  [0xFF4B]={
+  adobename="kmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER K",
@@ -107263,6 +110073,7 @@ characters.data={
   unicodeslot=0xFF4B,
  },
  [0xFF4C]={
+  adobename="lmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER L",
@@ -107273,6 +110084,7 @@ characters.data={
   unicodeslot=0xFF4C,
  },
  [0xFF4D]={
+  adobename="mmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER M",
@@ -107283,6 +110095,7 @@ characters.data={
   unicodeslot=0xFF4D,
  },
  [0xFF4E]={
+  adobename="nmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER N",
@@ -107293,6 +110106,7 @@ characters.data={
   unicodeslot=0xFF4E,
  },
  [0xFF4F]={
+  adobename="omonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER O",
@@ -107303,6 +110117,7 @@ characters.data={
   unicodeslot=0xFF4F,
  },
  [0xFF50]={
+  adobename="pmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER P",
@@ -107313,6 +110128,7 @@ characters.data={
   unicodeslot=0xFF50,
  },
  [0xFF51]={
+  adobename="qmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER Q",
@@ -107323,6 +110139,7 @@ characters.data={
   unicodeslot=0xFF51,
  },
  [0xFF52]={
+  adobename="rmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER R",
@@ -107333,6 +110150,7 @@ characters.data={
   unicodeslot=0xFF52,
  },
  [0xFF53]={
+  adobename="smonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER S",
@@ -107343,6 +110161,7 @@ characters.data={
   unicodeslot=0xFF53,
  },
  [0xFF54]={
+  adobename="tmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER T",
@@ -107353,6 +110172,7 @@ characters.data={
   unicodeslot=0xFF54,
  },
  [0xFF55]={
+  adobename="umonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER U",
@@ -107363,6 +110183,7 @@ characters.data={
   unicodeslot=0xFF55,
  },
  [0xFF56]={
+  adobename="vmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER V",
@@ -107373,6 +110194,7 @@ characters.data={
   unicodeslot=0xFF56,
  },
  [0xFF57]={
+  adobename="wmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER W",
@@ -107383,6 +110205,7 @@ characters.data={
   unicodeslot=0xFF57,
  },
  [0xFF58]={
+  adobename="xmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER X",
@@ -107393,6 +110216,7 @@ characters.data={
   unicodeslot=0xFF58,
  },
  [0xFF59]={
+  adobename="ymonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER Y",
@@ -107403,6 +110227,7 @@ characters.data={
   unicodeslot=0xFF59,
  },
  [0xFF5A]={
+  adobename="zmonospace",
   category="ll",
   cjkwd="f",
   description="FULLWIDTH LATIN SMALL LETTER Z",
@@ -107413,6 +110238,7 @@ characters.data={
   unicodeslot=0xFF5A,
  },
  [0xFF5B]={
+  adobename="braceleftmonospace",
   category="ps",
   cjkwd="f",
   description="FULLWIDTH LEFT CURLY BRACKET",
@@ -107423,6 +110249,7 @@ characters.data={
   unicodeslot=0xFF5B,
  },
  [0xFF5C]={
+  adobename="barmonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH VERTICAL LINE",
@@ -107432,6 +110259,7 @@ characters.data={
   unicodeslot=0xFF5C,
  },
  [0xFF5D]={
+  adobename="bracerightmonospace",
   category="pe",
   cjkwd="f",
   description="FULLWIDTH RIGHT CURLY BRACKET",
@@ -107442,6 +110270,7 @@ characters.data={
   unicodeslot=0xFF5D,
  },
  [0xFF5E]={
+  adobename="asciitildemonospace",
   category="sm",
   cjkwd="f",
   description="FULLWIDTH TILDE",
@@ -107471,6 +110300,7 @@ characters.data={
   unicodeslot=0xFF60,
  },
  [0xFF61]={
+  adobename="periodhalfwidth",
   category="po",
   cjkwd="h",
   description="HALFWIDTH IDEOGRAPHIC FULL STOP",
@@ -107480,6 +110310,7 @@ characters.data={
   unicodeslot=0xFF61,
  },
  [0xFF62]={
+  adobename="cornerbracketlefthalfwidth",
   category="ps",
   cjkwd="h",
   description="HALFWIDTH LEFT CORNER BRACKET",
@@ -107490,6 +110321,7 @@ characters.data={
   unicodeslot=0xFF62,
  },
  [0xFF63]={
+  adobename="cornerbracketrighthalfwidth",
   category="pe",
   cjkwd="h",
   description="HALFWIDTH RIGHT CORNER BRACKET",
@@ -107500,6 +110332,7 @@ characters.data={
   unicodeslot=0xFF63,
  },
  [0xFF64]={
+  adobename="ideographiccommaleft",
   category="po",
   cjkwd="h",
   description="HALFWIDTH IDEOGRAPHIC COMMA",
@@ -107509,6 +110342,7 @@ characters.data={
   unicodeslot=0xFF64,
  },
  [0xFF65]={
+  adobename="middledotkatakanahalfwidth",
   category="po",
   cjkwd="h",
   description="HALFWIDTH KATAKANA MIDDLE DOT",
@@ -107518,6 +110352,7 @@ characters.data={
   unicodeslot=0xFF65,
  },
  [0xFF66]={
+  adobename="wokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER WO",
@@ -107527,6 +110362,7 @@ characters.data={
   unicodeslot=0xFF66,
  },
  [0xFF67]={
+  adobename="asmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL A",
@@ -107536,6 +110372,7 @@ characters.data={
   unicodeslot=0xFF67,
  },
  [0xFF68]={
+  adobename="ismallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL I",
@@ -107545,6 +110382,7 @@ characters.data={
   unicodeslot=0xFF68,
  },
  [0xFF69]={
+  adobename="usmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL U",
@@ -107554,6 +110392,7 @@ characters.data={
   unicodeslot=0xFF69,
  },
  [0xFF6A]={
+  adobename="esmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL E",
@@ -107563,6 +110402,7 @@ characters.data={
   unicodeslot=0xFF6A,
  },
  [0xFF6B]={
+  adobename="osmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL O",
@@ -107572,6 +110412,7 @@ characters.data={
   unicodeslot=0xFF6B,
  },
  [0xFF6C]={
+  adobename="yasmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL YA",
@@ -107581,6 +110422,7 @@ characters.data={
   unicodeslot=0xFF6C,
  },
  [0xFF6D]={
+  adobename="yusmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL YU",
@@ -107590,6 +110432,7 @@ characters.data={
   unicodeslot=0xFF6D,
  },
  [0xFF6E]={
+  adobename="yosmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL YO",
@@ -107599,6 +110442,7 @@ characters.data={
   unicodeslot=0xFF6E,
  },
  [0xFF6F]={
+  adobename="tusmallkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SMALL TU",
@@ -107608,6 +110452,7 @@ characters.data={
   unicodeslot=0xFF6F,
  },
  [0xFF70]={
+  adobename="katahiraprolongmarkhalfwidth",
   category="lm",
   cjkwd="h",
   description="HALFWIDTH KATAKANA-HIRAGANA PROLONGED SOUND MARK",
@@ -107617,6 +110462,7 @@ characters.data={
   unicodeslot=0xFF70,
  },
  [0xFF71]={
+  adobename="akatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER A",
@@ -107626,6 +110472,7 @@ characters.data={
   unicodeslot=0xFF71,
  },
  [0xFF72]={
+  adobename="ikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER I",
@@ -107635,6 +110482,7 @@ characters.data={
   unicodeslot=0xFF72,
  },
  [0xFF73]={
+  adobename="ukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER U",
@@ -107644,6 +110492,7 @@ characters.data={
   unicodeslot=0xFF73,
  },
  [0xFF74]={
+  adobename="ekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER E",
@@ -107653,6 +110502,7 @@ characters.data={
   unicodeslot=0xFF74,
  },
  [0xFF75]={
+  adobename="okatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER O",
@@ -107662,6 +110512,7 @@ characters.data={
   unicodeslot=0xFF75,
  },
  [0xFF76]={
+  adobename="kakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER KA",
@@ -107671,6 +110522,7 @@ characters.data={
   unicodeslot=0xFF76,
  },
  [0xFF77]={
+  adobename="kikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER KI",
@@ -107680,6 +110532,7 @@ characters.data={
   unicodeslot=0xFF77,
  },
  [0xFF78]={
+  adobename="kukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER KU",
@@ -107689,6 +110542,7 @@ characters.data={
   unicodeslot=0xFF78,
  },
  [0xFF79]={
+  adobename="kekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER KE",
@@ -107698,6 +110552,7 @@ characters.data={
   unicodeslot=0xFF79,
  },
  [0xFF7A]={
+  adobename="kokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER KO",
@@ -107707,6 +110562,7 @@ characters.data={
   unicodeslot=0xFF7A,
  },
  [0xFF7B]={
+  adobename="sakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SA",
@@ -107716,6 +110572,7 @@ characters.data={
   unicodeslot=0xFF7B,
  },
  [0xFF7C]={
+  adobename="sikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SI",
@@ -107725,6 +110582,7 @@ characters.data={
   unicodeslot=0xFF7C,
  },
  [0xFF7D]={
+  adobename="sukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SU",
@@ -107734,6 +110592,7 @@ characters.data={
   unicodeslot=0xFF7D,
  },
  [0xFF7E]={
+  adobename="sekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SE",
@@ -107743,6 +110602,7 @@ characters.data={
   unicodeslot=0xFF7E,
  },
  [0xFF7F]={
+  adobename="sokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER SO",
@@ -107752,6 +110612,7 @@ characters.data={
   unicodeslot=0xFF7F,
  },
  [0xFF80]={
+  adobename="takatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER TA",
@@ -107761,6 +110622,7 @@ characters.data={
   unicodeslot=0xFF80,
  },
  [0xFF81]={
+  adobename="tikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER TI",
@@ -107770,6 +110632,7 @@ characters.data={
   unicodeslot=0xFF81,
  },
  [0xFF82]={
+  adobename="tukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER TU",
@@ -107779,6 +110642,7 @@ characters.data={
   unicodeslot=0xFF82,
  },
  [0xFF83]={
+  adobename="tekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER TE",
@@ -107788,6 +110652,7 @@ characters.data={
   unicodeslot=0xFF83,
  },
  [0xFF84]={
+  adobename="tokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER TO",
@@ -107797,6 +110662,7 @@ characters.data={
   unicodeslot=0xFF84,
  },
  [0xFF85]={
+  adobename="nakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER NA",
@@ -107806,6 +110672,7 @@ characters.data={
   unicodeslot=0xFF85,
  },
  [0xFF86]={
+  adobename="nikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER NI",
@@ -107815,6 +110682,7 @@ characters.data={
   unicodeslot=0xFF86,
  },
  [0xFF87]={
+  adobename="nukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER NU",
@@ -107824,6 +110692,7 @@ characters.data={
   unicodeslot=0xFF87,
  },
  [0xFF88]={
+  adobename="nekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER NE",
@@ -107833,6 +110702,7 @@ characters.data={
   unicodeslot=0xFF88,
  },
  [0xFF89]={
+  adobename="nokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER NO",
@@ -107842,6 +110712,7 @@ characters.data={
   unicodeslot=0xFF89,
  },
  [0xFF8A]={
+  adobename="hakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER HA",
@@ -107851,6 +110722,7 @@ characters.data={
   unicodeslot=0xFF8A,
  },
  [0xFF8B]={
+  adobename="hikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER HI",
@@ -107860,6 +110732,7 @@ characters.data={
   unicodeslot=0xFF8B,
  },
  [0xFF8C]={
+  adobename="hukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER HU",
@@ -107869,6 +110742,7 @@ characters.data={
   unicodeslot=0xFF8C,
  },
  [0xFF8D]={
+  adobename="hekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER HE",
@@ -107878,6 +110752,7 @@ characters.data={
   unicodeslot=0xFF8D,
  },
  [0xFF8E]={
+  adobename="hokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER HO",
@@ -107887,6 +110762,7 @@ characters.data={
   unicodeslot=0xFF8E,
  },
  [0xFF8F]={
+  adobename="makatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER MA",
@@ -107896,6 +110772,7 @@ characters.data={
   unicodeslot=0xFF8F,
  },
  [0xFF90]={
+  adobename="mikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER MI",
@@ -107905,6 +110782,7 @@ characters.data={
   unicodeslot=0xFF90,
  },
  [0xFF91]={
+  adobename="mukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER MU",
@@ -107914,6 +110792,7 @@ characters.data={
   unicodeslot=0xFF91,
  },
  [0xFF92]={
+  adobename="mekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER ME",
@@ -107923,6 +110802,7 @@ characters.data={
   unicodeslot=0xFF92,
  },
  [0xFF93]={
+  adobename="mokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER MO",
@@ -107932,6 +110812,7 @@ characters.data={
   unicodeslot=0xFF93,
  },
  [0xFF94]={
+  adobename="yakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER YA",
@@ -107941,6 +110822,7 @@ characters.data={
   unicodeslot=0xFF94,
  },
  [0xFF95]={
+  adobename="yukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER YU",
@@ -107950,6 +110832,7 @@ characters.data={
   unicodeslot=0xFF95,
  },
  [0xFF96]={
+  adobename="yokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER YO",
@@ -107959,6 +110842,7 @@ characters.data={
   unicodeslot=0xFF96,
  },
  [0xFF97]={
+  adobename="rakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER RA",
@@ -107968,6 +110852,7 @@ characters.data={
   unicodeslot=0xFF97,
  },
  [0xFF98]={
+  adobename="rikatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER RI",
@@ -107977,6 +110862,7 @@ characters.data={
   unicodeslot=0xFF98,
  },
  [0xFF99]={
+  adobename="rukatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER RU",
@@ -107986,6 +110872,7 @@ characters.data={
   unicodeslot=0xFF99,
  },
  [0xFF9A]={
+  adobename="rekatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER RE",
@@ -107995,6 +110882,7 @@ characters.data={
   unicodeslot=0xFF9A,
  },
  [0xFF9B]={
+  adobename="rokatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER RO",
@@ -108004,6 +110892,7 @@ characters.data={
   unicodeslot=0xFF9B,
  },
  [0xFF9C]={
+  adobename="wakatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER WA",
@@ -108013,6 +110902,7 @@ characters.data={
   unicodeslot=0xFF9C,
  },
  [0xFF9D]={
+  adobename="nkatakanahalfwidth",
   category="lo",
   cjkwd="h",
   description="HALFWIDTH KATAKANA LETTER N",
@@ -108022,6 +110912,7 @@ characters.data={
   unicodeslot=0xFF9D,
  },
  [0xFF9E]={
+  adobename="voicedmarkkanahalfwidth",
   category="lm",
   cjkwd="h",
   description="HALFWIDTH KATAKANA VOICED SOUND MARK",
@@ -108031,6 +110922,7 @@ characters.data={
   unicodeslot=0xFF9E,
  },
  [0xFF9F]={
+  adobename="semivoicedmarkkanahalfwidth",
   category="lm",
   cjkwd="h",
   description="HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK",
@@ -108508,6 +111400,7 @@ characters.data={
   unicodeslot=0xFFDC,
  },
  [0xFFE0]={
+  adobename="centmonospace",
   category="sc",
   cjkwd="f",
   description="FULLWIDTH CENT SIGN",
@@ -108517,6 +111410,7 @@ characters.data={
   unicodeslot=0xFFE0,
  },
  [0xFFE1]={
+  adobename="sterlingmonospace",
   category="sc",
   cjkwd="f",
   description="FULLWIDTH POUND SIGN",
@@ -108535,6 +111429,7 @@ characters.data={
   unicodeslot=0xFFE2,
  },
  [0xFFE3]={
+  adobename="macronmonospace",
   category="sk",
   cjkwd="f",
   description="FULLWIDTH MACRON",
@@ -108553,6 +111448,7 @@ characters.data={
   unicodeslot=0xFFE4,
  },
  [0xFFE5]={
+  adobename="yenmonospace",
   category="sc",
   cjkwd="f",
   description="FULLWIDTH YEN SIGN",
@@ -108562,6 +111458,7 @@ characters.data={
   unicodeslot=0xFFE5,
  },
  [0xFFE6]={
+  adobename="wonmonospace",
   category="sc",
   cjkwd="f",
   description="FULLWIDTH WON SIGN",
@@ -108637,25 +111534,25 @@ characters.data={
   category="cf",
   description="INTERLINEAR ANNOTATION ANCHOR",
   direction="on",
-  visible="yes",
   linebreak="cm",
   unicodeslot=0xFFF9,
+  visible="yes",
  },
  [0xFFFA]={
   category="cf",
   description="INTERLINEAR ANNOTATION SEPARATOR",
   direction="on",
-  visible="yes",
   linebreak="cm",
   unicodeslot=0xFFFA,
+  visible="yes",
  },
  [0xFFFB]={
   category="cf",
   description="INTERLINEAR ANNOTATION TERMINATOR",
   direction="on",
-  visible="yes",
   linebreak="cm",
   unicodeslot=0xFFFB,
+  visible="yes",
  },
  [0xFFFC]={
   category="so",
@@ -126317,7 +129214,6 @@ characters.data={
   description="MATHEMATICAL ITALIC CAPITAL V",
   direction="l",
   linebreak="al",
---mathclass="variable",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D449,
  },
@@ -133709,14 +136605,6 @@ characters.data={
   specials={ "font", 0x0039 },
   unicodeslot=0x1D7FF,
  },
---~  [0x20000]={
---~   category="lo",
---~   cjkwd="w",
---~   description="<CJK Ideograph Extension B>",
---~   direction="l",
---~   linebreak="id",
---~   range={ first=0x20000, last=0x2A6D6 },
---~  },
  [0x2F800]={
   category="lo",
   cjkwd="w",
@@ -141194,32 +144082,4 @@ characters.data={
   linebreak="cm",
   unicodeslot=0xE01EF,
  },
---~  [0xF0000]={
---~   category="co",
---~   cjkwd="a",
---~   description="<Plane 0x000F Private Use, First>",
---~   direction="l",
---~   unicodeslot=0xF0000,
---~  },
---~  [0xFFFFD]={
---~   category="co",
---~   cjkwd="a",
---~   description="<Plane 0x000F Private Use, Last>",
---~   direction="l",
---~   unicodeslot=0xFFFFD,
---~  },
---~  [0x100000]={
---~   category="co",
---~   cjkwd="a",
---~   description="<Plane 0x0010 Private Use, First>",
---~   direction="l",
---~   unicodeslot=0x100000,
---~  },
---~  [0x10FFFD]={
---~   category="co",
---~   cjkwd="a",
---~   description="<Plane 0x0010 Private Use, Last>",
---~   direction="l",
---~   unicodeslot=0x10FFFD,
---~  },
 }

@@ -163,7 +163,7 @@
 % 255       : page
 % 256 -     : user
 
-\countdef   \minallocatedregister   =    52 \minallocatedregister   =   256
+\countdef   \minallocatedregister   =    52 \minallocatedregister   =   256 % can change
 \countdef   \maxallocatedregister   =    53 \maxallocatedregister   = 32767
 \countdef   \minallocatediochannel  =    54 \minallocatediochannel  =    -1
 \countdef   \maxallocatediochannel  =    55 \maxallocatediochannel  =    16
@@ -173,6 +173,7 @@
 \countdef   \minallocatedinsert     =    59 \minallocatedinsert     =   128
 \countdef   \minallocatedfamily     =    60 \minallocatedfamily     =   128
 \countdef   \maxallocatedfamily     =    61 \maxallocatedfamily     =   255
+\countdef   \minallocatedattribute  =    62 \minallocatedattribute  =  1024 % 127-1023 : private
 
 \countdef   \lastallocatedcount     =    32 \lastallocatedcount     = \minallocatedregister
 \countdef   \lastallocateddimen     =    33 \lastallocateddimen     = \minallocatedregister
@@ -186,7 +187,7 @@
 \countdef   \lastallocatedlanguage  =    41 \lastallocatedlanguage  = \minallocatedlanguage    % not used in context
 \countdef   \lastallocatedinsertion =    42 \lastallocatedinsertion = \minallocatedinsert
 \countdef   \lastallocatedfamily    =    43 \lastallocatedfamily    = \minallocatedfamily      % not used in context
-\countdef   \lastallocatedattribute =    44 \lastallocatedattribute = \minallocatedregister
+\countdef   \lastallocatedattribute =    44 \lastallocatedattribute = \minallocatedattribute
 
 \countdef   \mincountervalue        =   125 \mincountervalue        = -"7FFFFFFF % beware, we use index 125 at the lua end
 \countdef   \maxcountervalue        =   126 \maxcountervalue        =  "7FFFFFFF % beware, we use index 126 at the lua end
@@ -293,11 +294,12 @@
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not
 %D supposed to use the attributes directly but always allocate then
 %D first. For instance attribute~0 is reserved for special purposes
-%D (this might change).
+%D (this might change). Attributes in the range 128-1023 are private
+%D and should not be touched.
 
 \ifnum\texengine=\luatexengine
     \let\attributeunsetvalue\mincountervalue % used to be \minusone
-    \def\newattribute{\allocateregister\lastallocatedattribute\attribute\attributedef\maxallocatedregister}
+    \def\newattribute{\allocateregister\minallocatedattribute\attribute\attributedef\maxallocatedregister}
 \fi
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a

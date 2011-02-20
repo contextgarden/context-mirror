@@ -348,18 +348,22 @@ function nodes.reference(n)
 end
 
 function nodes.link(n,...) -- blobs ?
-    if type(n) ~= "table" then
-        n = { n, ... }
+    if n then
+        if type(n) ~= "table" then
+            n = { n, ... }
+        end
+        local head = n[1]
+        local tail = slide_nodes(head)
+        for i=2,#n do
+            local ni = n[i]
+            tail.next = ni
+            ni.prev = tail
+            tail = slide_nodes(ni)
+        end
+        return head
+    else
+        -- sort of fatal error
     end
-    local head = n[1]
-    local tail = slide_nodes(head)
-    for i=2,#n do
-        local ni = n[i]
-        tail.next = ni
-        ni.prev = tail
-        tail = slide_nodes(ni)
-    end
-    return head
 end
 
 --

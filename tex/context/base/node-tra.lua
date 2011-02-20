@@ -648,3 +648,11 @@ local points = function(n)
 end
 
 number.points = points
+
+--~ function nodes.thespec(s)
+--~     local stretch_order = s.stretch_order
+--~     local shrink_order = s.shrink_order
+--~     local stretch_unit = (stretch_order ~= 0) and ("fi".. string.rep("l",stretch_order)) or "sp"
+--~     local shrink_unit = (shrink_order ~= 0) and ("fi".. string.rep("l",shrink_order)) or "sp"
+--~     return string.format("%ssp+ %ssp - %ssp",s.width,s.stretch,stretch_unit,s.shrink,shrink_unit)
+--~ end
