@@ -42,7 +42,7 @@ function commands.number(n) context(n) end
 
 -- to be reconsidered ... languages namespace here, might become local plus a register command
 
-languages.counters = allocate {
+local counters = allocate {
     ['**'] = {
         0x0061, 0x0062, 0x0063, 0x0064, 0x0065,
         0x0066, 0x0067, 0x0068, 0x0069, 0x006A,
@@ -118,7 +118,7 @@ languages.counters = allocate {
     },
 }
 
-local counters = languages.counters
+languages.counters = counters
 
 counters['ar']   = counters['arabic']
 counters['gr']   = counters['greek']
@@ -175,7 +175,7 @@ local function do_alphabetic(n,mapping,mapper,t)
     end
     local chr = mapping[n] or fallback
     if mapper then
-        chr = mapper(chr)
+        chr = mapper[chr]
     end
     local max = #mapping
     if n > max then
@@ -208,12 +208,12 @@ converters.Character  = Character
 converters.characters = characters
 converters.Characters = Characters
 
-function commands.alphabetic(n) context(alphabetic(n)) end
-function commands.Alphabetic(n) context(Alphabetic(n)) end
-function commands.character (n) context(character (n)) end
-function commands.Character (n) context(Character (n)) end
-function commands.characters(n) context(characters(n)) end
-function commands.Characters(n) context(Characters(n)) end
+function commands.alphabetic(n,c) context(alphabetic(n,c)) end
+function commands.Alphabetic(n,c) context(Alphabetic(n,c)) end
+function commands.character (n)   context(character (n))   end
+function commands.Character (n)   context(Character (n))   end
+function commands.characters(n)   context(characters(n))   end
+function commands.Characters(n)   context(Characters(n))   end
 
 local days = {
     [false] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },

@@ -6,27 +6,41 @@ if not modules then modules = { } end modules ['node-aux'] = {
     license   = "see context related readme files"
 }
 
+local type, tostring = type, tostring
+
 local nodes, node = nodes, node
 
-local nodecodes       = nodes.nodecodes
+local utfvalues          = string.utfvalues
 
-local glyph_code      = nodecodes.glyph
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
+local nodecodes          = nodes.nodecodes
 
-local traverse_nodes  = node.traverse
-local traverse_id     = node.traverse_id
-local free_node       = node.free
-local hpack_nodes     = node.hpack
-local has_attribute   = node.has_attribute
-local set_attribute   = node.set_attribute
-local get_attribute   = node.get_attribute
-local unset_attribute = node.unset_attribute
-local first_glyph     = node.first_glyph or node.first_character
+local glyph_code         = nodecodes.glyph
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
 
-local texbox          = tex.box
+local nodepool           = nodes.pool
+
+local new_glue           = nodepool.glue
+local new_glyph          = nodepool.glyph
+
+local traverse_nodes     = node.traverse
+local traverse_id        = node.traverse_id
+local free_node          = node.free
+local hpack_nodes        = node.hpack
+local has_attribute      = node.has_attribute
+local set_attribute      = node.set_attribute
+local get_attribute      = node.get_attribute
+local unset_attribute    = node.unset_attribute
+local first_glyph        = node.first_glyph or node.first_character
+local copy_node          = node.copy
+local slide_nodes        = node.slide
+local insert_node_after  = node.insert_after
+local isnode             = node.is_node
+
+local texbox             = tex.box
 
 function nodes.repack_hlist(list,...)
+--~ nodes.showsimplelist(list)
     local temp, b = hpack_nodes(list,...)
     list = temp.list
     temp.list = nil
@@ -205,3 +219,107 @@ end
 --~ end
 
 --~ nodes.firstline = firstline
+
+-- this depends on fonts, so we have a funny dependency ... will be
+-- sorted out .. we could make tonodes a plugin into this
+
+local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-ini
+    if not str or str == "" then
+        return
+    end
+    local head, tail, space, fnt, template = nil, nil, nil, nil, nil
+    if not fnt then
+        fnt = current_font()
+    elseif type(fnt) ~= "number" and fnt.id == "glyph" then
+        fnt, template = nil, fnt
+ -- else
+     -- already a number
+    end
+    for s in utfvalues(str) do
+        local n
+        if s == 32 then
+            if space then
+                n = copy_node(space)
+            elseif fonts then -- depedency
+                local parameters = fonts.identifiers[fnt].parameters
+                space = new_glue(parameters.space,parameters.space_stretch,parameters.space_shrink)
+                n = space
+            end
+        elseif template then
+            n = copy_node(template)
+            n.char = s
+        else
+            n = new_glyph(fnt,s)
+        end
+        if attr then -- normally false when template
+            n.attr = copy_node_list(attr)
+        end
+        if head then
+            insert_node_after(head,tail,n)
+        else
+            head = n
+        end
+        tail = n
+    end
+    return head, tail
+end
+
+nodes.tonodes = tonodes
+
+local function link(head,tail,list,currentfont,currentattr)
+    for i=1,#list do
+        local n = list[i]
+        if n then
+            local tn = isnode(n)
+            if not tn then
+                local tn = type(n)
+                if tn == "number" then
+                    local h, t = tonodes(tostring(n),currentfont,currentattr)
+                    if not h then
+                        -- skip
+                    elseif not head then
+                        head, tail = h, t
+                    else
+                        tail.next, h.prev, tail = h, t, t
+                    end
+                elseif tn == "string" then
+                    if #tn > 0 then
+                        local h, t = tonodes(n,font.current(),currentattr)
+                        if not h then
+                            -- skip
+                        elseif not head then
+                            head, tail = h, t
+                        else
+                            tail.next, h.prev, tail = h, t, t
+                        end
+                    end
+                elseif tn == "table" then
+                    if #tn > 0 then
+                        head, tail = link(head,tail,n,currentfont,currentattr)
+                    end
+                end
+            elseif not head then
+                head = n
+                if n.next then
+                    tail = slide_nodes(n)
+                else
+                    tail = n
+                end
+            else
+                tail.next = n
+                n.prev = tail
+                if n.next then
+                    tail = slide_nodes(n)
+                else
+                    tail = n
+                end
+            end
+        end
+    end
+    return head, tail
+end
+
+function nodes.link(...)
+    local currentfont = font.current
+    return link(nil,nil,{...},currentfont,currentattr)
+end

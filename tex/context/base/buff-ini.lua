@@ -177,7 +177,10 @@ function commands.savebuffer(list,name) -- name is optional
 end
 
 function commands.getbuffer(name)
-    context.viafile(data[name])
+    local str = data[name]
+    if str and str ~= "" then
+        context.viafile(str)
+    end
 end
 
 function commands.getbuffermkvi(name)

@@ -154,6 +154,7 @@ function setters.register(t,what,...)
             end
         end
     end
+    return false -- so we can use it in an assignment
 end
 
 function setters.enable(t,what)

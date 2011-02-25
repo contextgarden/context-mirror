@@ -120,7 +120,7 @@ else
     loadmodule('font-otn.lua')
     loadmodule('font-ota.lua')
     loadmodule('font-otc.lua')
-    loadmodule('font-agl.lua')
+    loadmodule('font-age.lua') -- special for this variant
     loadmodule('font-def.lua')
     loadmodule('font-xtx.lua')
     loadmodule('font-dum.lua')

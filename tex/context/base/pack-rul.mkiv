@@ -915,6 +915,8 @@
 
 \def\c!fr!analyze{fr:analyze} % private option
 
+% we can make macros for the offset, width, and height branches or do an \csname
+
 \unexpanded\def\dodolocalframed
   {\!!framedframeoffset\framedparameter\c!frameoffset
    \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
@@ -999,7 +1001,14 @@
    \fi\fi
    \!!framedheight\zeropoint
    \!!framedwidth \zeropoint
-   \ifx\localwidth\v!fit
+   \ifx\localwidth\empty % fallback to fit
+     \ifboxhasformat
+       \boxhaswidthtrue
+       \!!framedwidth\hsize
+     \else
+       \boxhaswidthfalse
+     \fi
+   \else\ifx\localwidth\v!fit
      \ifboxhasformat
        \boxhaswidthtrue
        \!!framedwidth\hsize
@@ -1023,15 +1032,17 @@
    \else
      \boxhaswidthtrue
      \!!framedwidth\localwidth
-   \fi\fi\fi\fi
-   \ifx\localheight\v!fit
+   \fi\fi\fi\fi\fi
+   \ifx\localheight\empty  % fallback to fit
+     \boxhasheightfalse
+   \else\ifx\localheight\v!fit
      \boxhasheightfalse % no longer: \boxhasstrutfalse
    \else\ifx\localheight\v!broad
      \boxhasheightfalse
    \else
      \boxhasheighttrue
      \!!framedheight\localheight
-   \fi\fi
+   \fi\fi\fi
    \ifboxhasheight
      % obey user set height, also downward compatible
    \else
@@ -2343,20 +2354,18 @@
 
 \def\dovlwdhtdp#1#2#3%
   {\bgroup
-   \!!dimena#2\strutht
-   \!!dimenb#3\strutdp
    \setbox\scratchbox\hbox
      {\vrule
         \!!width #1\linewidth
-        \!!height\!!dimena
-        \!!depth \!!dimenb}%
+        \!!height#2\strutht
+        \!!depth #3\strutdp}%
    \dp\scratchbox\strutdp
    \ht\scratchbox\strutht
    \box\scratchbox
    \egroup}
 
 \def\complexvl[#1]%
-  {\dovlwdhtdp{1}{#1}{#1}}
+  {\dovlwdhtdp\plusone{#1}{#1}}
 
 \def\complexhl[#1]%
   {\hbox

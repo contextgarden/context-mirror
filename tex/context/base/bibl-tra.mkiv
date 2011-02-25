@@ -185,6 +185,7 @@
 \setuplist
   [pubs]
   [\c!state=\v!start,
+   \c!criterium=\@@pbcriterium,
    \c!width=]
 
 \installstructurelistprocessor{pubs:userdata}%
@@ -307,16 +308,6 @@
 
 \newif\ifbibcitecompress\bibcitecompresstrue
 
-% \appendtoks
-%   \processaction
-%     [\@@pbnumbering]
-%     [    \v!yes=>\let\@@pbinumbercommand\firstofoneargument,
-%           \v!no=>\let\@@pbinumbercommand\gobbleoneargument,
-%        \v!short=>\def\@@pbinumbercommand##1{\bibgetvars\currentpublicationkey},
-%          \v!bib=>\def\@@pbinumbercommand##1{\bibgetvarn\currentpublicationkey},
-%      \s!unknown=>\let\@@pbinumbercommand\firstofoneargument]%
-% \to \everysetuppublications
-
 \def\@@pbinumbercommand{\executeifdefined{\??pb:\c!numbercommand:\@@pbnumbering}\firstofoneargument}
 
 \letvalue{\??pb:\c!numbercommand:\v!yes  }\firstofoneargument
@@ -348,16 +339,10 @@
 \def\usepublications[#1]%
   {\processcommalist[#1]\dousepublications}
 
-% \def\dousepublications#1%
-%   {\doonlyonce{#1.\f!bibextension}
-%      {\readfile{#1.\f!bibextension}
-%         {\showmessage\m!publications{4}{#1.\f!bibextension}}
-%         {\showmessage\m!publications{2}{#1.\f!bibextension}}}}
-
 \def\dousepublications#1%
   {\doonlyonce{#1.\f!bibextension}{\dodousepublications{#1}}}
 
-\def\dodousepublications#1%
+\def\dodousepublications#1% brr, this par stuff
   {\let\@@savedpar\par
    \let\par\ignorespaces
    \ifhmode\kern\zeropoint\fi
@@ -394,7 +379,10 @@
 
 \let\normalsetuppublicationlayout\setuppublicationlayout
 
-\setuppublicationlist[\c!title=,\c!command=\dospecialbibinsert,\c!maybeyear=\v!on]
+\setuppublicationlist
+  [\c!title=,
+   \c!command=\dospecialbibinsert,
+   \c!maybeyear=\v!on]
 
 %D \macros{bibalternative}
 %D
@@ -441,20 +429,6 @@
    title, volume, yearfiled}
 
 \processcommacommand[\bibcommandlist]\simplebibdef
-
-% \def\bibinsertdoi#1#2#3%
-%   {\begingroup
-%    \bibdoifelse{\@@pb@doi}%
-%      {\edef\ascii{\detokenize\expandafter{\@@pb@doi}}% probably not ok, to less expansion
-%       #1\expanded{\bibgotoDOI{\@@pb@thekey}{\ascii}}#2}{#3}%
-%    \endgroup}
-%
-% \def\bibinsertbiburl#1#2#3%
-%   {\begingroup
-%    \bibdoifelse{\@@pb@biburl}%
-%      {\edef\ascii{\detokenize\expandafter{\@@pb@biburl}}% probably not ok, to less expansion
-%       #1\expanded{\bibgotoURL{\@@pb@thekey}{\ascii}}#2}{#3}%
-%    \endgroup}
 
 \def\bibinsertdoi#1#2#3% let's see how this fails
   {\bibdoifelse{\@@pb@doi}{#1\expanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}}
@@ -505,19 +479,6 @@
 %D \starttyping
 %D \specialbibinsert{author}{\author@num}{<before>}{<after>}{<not>}
 %D \stoptyping
-
-% \def\docomplexbibdef#1%
-%    {\def\currentype{#1}%
-%     \dosingleempty\dodocomplexbibdef}
-
-% \def\dodocomplexbibdef[#1]#2%
-%    {\def\firstarg{#1}\def\secondarg{#2}%
-%     \dosingleempty\dododocomplexbibdef}
-
-% \def\dododocomplexbibdef[#1]#2#3%
-%   {\@EA\increment\csname\currentype @num\endcsname
-%    \setevalue{\??pb @\currentype\csname \currentype @num\endcsname}%
-%      {{\secondarg}{#2}{#3}{#1}{\firstarg}}\ignorespaces}
 
 \def\docomplexbibdef#1%
   {\dodoubleempty\dodocomplexbibdef[#1]}
@@ -582,29 +543,6 @@
 %D \#1 = type
 %D \#2 = number of items to be typeset
 %D \#3 = commacommand containing authors
-
-% \def\dospecialbibinsert#1#2#3%
-%   {\getcommacommandsize[#3]%
-%    \scratchcounter\zerocount
-%    \def\processauthoritem##1%
-%      {\advance\scratchcounter\plusone
-%       \ifnum\numexpr\scratchcounter-\plusone\relax<#2\relax
-%         \publicationlistparameter{#1}##1%
-%         \ifnum\scratchcounter=#2\relax
-%           \ifnum\etallimitcounter<\commalistsize\relax
-%             \bibalternative{#1etaltext}%
-%           \fi
-%         \else\ifnum\numexpr\scratchcounter+\plusone\relax=#2\relax
-%            \ifnum\commalistsize>\plustwo
-%              \bibalternative\c!finalnamesep
-%            \else
-%              \bibalternative\c!lastnamesep
-%            \fi
-%         \else
-%           \bibalternative\c!namesep
-%         \fi\fi
-%       \fi}%
-%      \processcommacommand[#3]\processauthoritem}
 
 \def\doprocessauthoritem#1#2#3%
   {\advance\scratchcounter\plusone
@@ -677,22 +615,6 @@
 %D initializations and cleanups.
 
 \def\clearbibitem#1{\setvalue{\??pb @#1}{}}%
-
-% \def\clearbibitemtwo#1%
-%   {\letvalue{#1@num}\!!zerocount
-%    \doloop
-%      {\doifdefinedelse{\??pb @#1\recurselevel}
-%         {\letvalueempty{\??pb @#1\recurselevel}} % why not undefined?
-%         {\exitloop}}}
-
-% \def\clearbibitemtwo#1%
-%   {\letvalue{#1@num}\!!zerocount
-%    \doloop
-%      {\ifcsname\??pb @#1\recurselevel\endcsname
-%         \expandafter\let\csname\??pb @#1\recurselevel\undefined
-%       \else
-%         \exitloop
-%       \fi}}
 
 \def\clearbibitemtwo#1% is this reset really needed? after all we reset the counter and we are local
   {%\dofastrecurse\plusone{\csname#1@num\endcsname}\plusone{\expandafter\let\csname\??pb @#1\recurselevel\undefined}%
@@ -786,7 +708,7 @@
   {\preloadbiblist
    \doifdefinedelse{pbd:#1}
      \firstoftwoarguments
-     {\showmessage\m!publications{5}{#1 is unknown}\secondoftwoarguments}}
+     {\showmessage\m!publications{5}{#1}\secondoftwoarguments}}
 
 %D \macros{bib@crossref}
 %D
@@ -822,7 +744,8 @@
    \edef\currentlist{pubs}%
    \ctxlua{bibtex.hacks.reset(\number\bibtexoncemode)}%
    \doifelse{\listparameter\c!criterium}\v!all
-     {\ctxlua{bibtex.hacks.filterall()}}
+     {\showmessage\m!publications{7}{}%
+      \ctxlua{bibtex.hacks.filterall()}}
      {\doif{\listparameter\c!criterium}\v!cite
         {\setuplist[pubs][\c!criterium=\v!here]}%
       \doplacestructurelist
@@ -836,6 +759,7 @@
 
 \newif\ifinpublist
 
+
 \def\initializepubslist
   {\def\currentlist{pubs}%
    \edef\@@pbnumbering{\@@pbnumbering}%
@@ -843,7 +767,10 @@
      {\ifx\@@pbnumbering\v!short
         \setbox\scratchbox\hbox{\@@pbnumbercommand{\listparameter\c!samplesize}}%
       \else
-        \setbox\scratchbox\hbox{\@@pbnumbercommand{\ctxlua{tex.write(structures.lists.size())}}}%
+        \doifelse{\listparameter\c!criterium}\v!all
+          {\setbox\scratchbox\hbox{\@@pbnumbercommand{\ctxlua{tex.write{bibtex.hacks.nofregistered()}}}}}
+          {\determinelistcharacteristics[pubs]%
+           \setbox\scratchbox\hbox{\@@pbnumbercommand{\structurelistsize}}}%
       \fi
       \edef\publistnumberbox{\hbox to \the\wd\scratchbox}%
       \expanded{\setuplist[pubs][\c!width=\the\wd\scratchbox,\c!distance=\zeropoint]}%
@@ -882,7 +809,8 @@
 
 \def\docompletepublications[#1]%
   {\begingroup
-   \setuplist[pubs][\c!criterium=\v!previous,#1]
+%    \setuplist[pubs][\c!criterium=\v!previous,#1]
+   \setuplist[pubs][#1]
    \doifelsenothing{\publicationlistparameter\c!title}
      {\systemsuppliedchapter[pubs]{\headtext{pubs}}}
      {\normalexpanded{\systemsuppliedchapter[pubs]{\publicationlistparameter\c!title}}}%
@@ -897,7 +825,8 @@
 
 \def\doplacepublications[#1]%
   {\begingroup
-   \setuplist[pubs][\c!criterium=\v!previous,#1]%
+%    \setuplist[pubs][\c!criterium=\v!previous,#1]%
+   \setuplist[pubs][#1]%
    \dodoplacepublications}
 
 \def\dodoplacepublications
@@ -912,6 +841,9 @@
    \global\advance\bibtexblock\plusone}
 
 %D \subsubject{What's in a publication}
+%D
+%D Watch out: here all means all publications in database, so use
+%D text when you want text only.
 
 \unexpanded\def\typesetapublication#1%
   {\doifsomething{#1}
@@ -980,17 +912,6 @@
 %D The indirection with \type{\dobibref} allows \LATEX\ style
 %D \type{\cite} commands with a braced argument (these might appear
 %D in included data from the \type{.bib} file).
-
-% \unexpanded\def\cite
-%   {\doifnextoptionalelse\dodocite\dobibref}
-% \def\dobibref#1%
-%   {\docite[#1][]}
-% \def\dodocite[#1]%
-%   {\startstrictinspectnextcharacter
-%    \dodoubleempty\dododocite[#1]}
-% \def\dododocite % [#1][#2]
-%   {\stopstrictinspectnextcharacter
-%    \docite}
 
 \unexpanded\def\cite
   {\strictdoifnextoptionalelse\dodocite\dobibref}
@@ -1550,6 +1471,7 @@
   [\c!monthconversion=,
    \c!alternative=apa,
    \c!method=\v!global,
+   \c!criterium=\v!previous,
    \c!refcommand=num,
    \c!numbercommand=\bibleftnumber]
 

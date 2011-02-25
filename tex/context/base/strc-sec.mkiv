@@ -86,21 +86,49 @@
 \def\resetcurrentstructuremarks        {\resetmarking[\laststructuresectionname]} % will become option
 %def\resetcurrentstructuremarkswithpage{\resetmarking[\laststructuresectionname]} % will become option
 
-\unexpanded\def\definestructuresection[#1]%
-  {\ifcsname\??nh#1\endcsname
-     % rather fatal error
-   \else
-     \global\advance\maxstructuredepth\plusone
-     \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
-     \setstructurelevel{#1}{\the\maxstructuredepth}%
-     \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
-     % this is a rather practical default that we don't want to be part of the parent chain
-     % lookup mechanism; it's also mkii compativle; this might become \everystructureheaddefine
-     \getparameters[\??nh#1]
+% \c!before=,
+% \c!after=,
+% \c!distance=\zeropoint,
+% \c!page=,
+% \c!header=,
+% \c!text=,
+% \c!footer=,
+% \c!numbercommand=,
+% \c!textcommand=,
+% \c!ownnumber=\v!no,
+% \c!number=\v!yes,
+% \c!file=,
+% \c!expansion=,
+% \c!grid=,
+% \c!margintext=,
+%
+% \c!xmlsetup=,
+% \s!catcodes=,
+
+\newtoks\everydefinestructuresection
+
+\appendtoks
+     % This is a rather practical default that we don't want to
+     % be part of the parent chain lookup mechanism; it's also
+     % mkii compatible. Somewhat weird that it's part of the
+     % top level structure but it will be flattened anyway.
+    \getparameters[\??nh\currentstructuresection]
        [  \c!textstyle=\structureheadparameterstrict\c!style,
           \c!textcolor=\structureheadparameterstrict\c!color,
         \c!numberstyle=\structureheadparameterstrict\c!style,
         \c!numbercolor=\structureheadparameterstrict\c!color]%
+\to \everydefinestructuresection
+
+\unexpanded\def\definestructuresection[#1]%
+  {\ifcsname\??nh#1\endcsname
+     % redefinition is a rather fatal error
+   \else
+     \edef\currentstructuresection{#1}%
+     \global\advance\maxstructuredepth\plusone
+     \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
+     \setstructurelevel{#1}{\the\maxstructuredepth}%
+     \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\laststructuresectionname]}%
+     \the\everydefinestructuresection
      % so far for these default inheritances
      \definemarking[#1]%
      \ifnum\maxstructuredepth>\plusone
@@ -190,15 +218,6 @@
       \fi\fi}%
    \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\currentstructureheadparent]}%
    % or just \setevalue{\??nh#1\s!parent}{\??nh\currentstructureheadparent}%
-%    \ifx\currentstructureheadsection\empty
-%      \definemarking[#1]%
-%      \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
-%    \else
-%      \definemarking[#1][\currentstructureheadsection]%
-%      \definemarking[#1\v!number][#1]%
-%      \setupmarking[#1][\c!filtercommand=\sectionheadmarkingtitle{#1}]%
-%      \setupmarking[#1\c!number][\c!filtercommand=\sectionheadmarkingnumber{#1}]%
-%    \fi
    \definemarking[#1]         [\currentstructureheadsection]%
    \definemarking[#1\v!number][\currentstructureheadsection]%
    \setupmarking [#1]         [\c!filtercommand=\sectionheadmarkingtitle {#1}]%
@@ -216,15 +235,12 @@
      {\getparameters[\??nh#1][\c!label=#1]%
       \doifundefined{\??li#1}{\definelist[#1][\c!prefix=\v!no]}}%  definestructurelist ?
      {\getparameters[\??nh#1][\s!parent=\??nh#2,\c!label=#1,\c!coupling=#2]%
-%       \definemarking[#1]         [#2]%
-%       \definemarking[#1\v!number][#2\c!number]%
       \definemarking[#1]         [#2]%
       \definemarking[#1\v!number][#2\c!number]%
       \doifundefined{\??li#1}{\definelist[#1][#2][\c!prefix=\v!no]}}% definestructurelist ?
    \the\everystructureheadsetup}
 
 \appendtoks
-%    \setstructurelevel\currentstructurehead{\structuresectionheadsection{\structuresectionheadcoupling\currentstructurehead}}%
    \setstructurelevel\currentstructurehead{\thenamedstructureheadlevel\currentstructurehead}%
    \doifelse{\structureheadparameter\c!ownnumber}\v!yes
      {\setevalue\currentstructurehead{\dohandlestructureheadown[\currentstructurehead]}}

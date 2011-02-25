@@ -309,10 +309,10 @@ local lastid  = 0
 setmetatable(userids, {
     __index = function(t,k)
         if type(k) == "string" then
-            local n = lastid + 1
-            rawset(userids,n,k)
-            rawset(userids,k,n)
-            return n
+            lastid = lastid + 1
+            rawset(userids,lastid,k)
+            rawset(userids,k,lastid)
+            return lastid
         else
             rawset(userids,k,k)
             return k
@@ -323,7 +323,7 @@ setmetatable(userids, {
     end
 } )
 
-function pool.usernumber(id,num) -- if one argument then num
+function pool.usernumber(id,num)
     local n = copy_node(user_n)
     if num then
         n.user_id, n.value = id, num

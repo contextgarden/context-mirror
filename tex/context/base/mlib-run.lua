@@ -73,7 +73,7 @@ local function finder(name, mode, ftype) -- we use the finder to intercept btex/
         if not (find(name,"/metapost/context/base/") or find(name,"/metapost/context/") or find(name,"/metapost/base/")) then
             local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
             if found then
-                local temp = luatex.registertempfile(name)
+                local temp = luatex.registertempfile(name,true)
                 io.savedata(temp,data)
                 name = temp
             end

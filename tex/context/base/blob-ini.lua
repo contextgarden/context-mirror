@@ -6,8 +6,11 @@ if not modules then modules = { } end modules ['blob-ini'] = {
     license   = "see context related readme files"
 }
 
--- later we will consider an OO variant.
-
+-- Experimental ... names and functionality will change ... just a
+-- place to collect code, so:
+--
+-- DON'T USE THESE FUNCTIONS AS THEY WILL CHANGE!
+--
 -- This module is just a playground. Occasionally we need to typeset
 -- at the lua and and this is one method. In principle we can construct
 -- pages this way too which sometimes makes sense in dumb cases. Actually,
@@ -20,13 +23,10 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 -- collapse or new pars
 -- interline spacing etc
 
--- DON'T USE THESE FUNCTIONS AS THEY WILL CHANGE!
-
 local type = type
 
 local report_blobs = logs.reporter("blobs")
 
-local utfvalues = string.utfvalues
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local fontdata = fonts.identifiers
@@ -61,56 +61,13 @@ local ctxtextcapture = lpeg.Ct ( (
     )
 )^0)
 
-local function tonodes(str,fnt,attr) -- (str,template_glyph)
-    if not str or str == "" then
-        return
-    end
-    local head, tail, space, fnt, template = nil, nil, nil, nil, nil
-    if not fnt then
-        fnt = current_font()
-    elseif type(fnt) ~= "number" and fnt.id == "glyph" then
-        fnt, template = nil, fnt
- -- else
-     -- already a number
-    end
-    for s in utfvalues(str) do
-        local n
-        if s == 32 then
-            if not space then
-                local parameters = fontdata[fnt].parameters
-                space = new_glue(parameters.space,parameters.space_stretch,parameters.space_shrink)
-                n = space
-            else
-                n = copy_node(space)
-            end
-        elseif template then
-            n = copy_node(template)
-            n.char = s
-        else
-            n = new_glyph(fnt,s)
-        end
-        if attr then -- normally false when template
-            n.attr = copy_node_list(attr)
-        end
-        if head then
-            insert_node_after(head,tail,n)
-        else
-            head = n
-        end
-        tail = n
-    end
-    return head, tail
-end
-
-blobs.tonodes = tonodes
-
 function blobs.new()
     return {
         list = { },
     }
 end
 
-function blobs.append(t,str)
+function blobs.append(t,str) -- will be link nodes.link
     local kind = type(str)
     local dummy = nil
     if kind == "number" then

@@ -122,9 +122,9 @@ local hpack = node.hpack
 
 function nodes.fasthpack(...) -- todo: pass explicit arguments
     enabled = false
-    local hp = hpack(...)
+    local hp, b = hpack(...)
     enabled = true
-    return hp
+    return hp, b
 end
 
 callbacks.register('pre_linebreak_filter', processors.pre_linebreak_filter,"all kind of horizontal manipulations (before par break)")

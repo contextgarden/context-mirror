@@ -39,7 +39,7 @@ local texcount       = tex.count
 
 local isnode         = node.is_node -- after 0.65 just node.type
 local writenode      = node.write
-local copynodelist   = node.copylist
+local copynodelist   = node.copy_list
 
 local ctxcatcodes    = tex.ctxcatcodes
 local prtcatcodes    = tex.prtcatcodes
@@ -219,8 +219,10 @@ local methodhandler = resolvers.methodhandler
 function context.viafile(data)
     -- this is the only way to deal with nested buffers
     -- and other catcode sensitive data
-    local filename = resolvers.savers.byscheme("virtual","viafile",data)
-    context.input(filename)
+    if data and data ~= "" then
+        local filename = resolvers.savers.byscheme("virtual","viafile",data)
+        context.input(filename)
+    end
 end
 
 -- -- --

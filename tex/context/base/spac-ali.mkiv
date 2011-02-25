@@ -15,6 +15,18 @@
 
 \unprotect
 
+\registerctxluafile{spac-ali}{1.001}
+
+\definesystemattribute[realign][public]
+
+\unexpanded\def\resetrealignsignal{\attribute\realignattribute\attributeunsetvalue}
+\unexpanded\def\signalinnerrealign{\ctxcommand{setrealign(2)}}
+\unexpanded\def\signalouterrealign{\ctxcommand{setrealign(1)}}
+
+\appendtoks
+    \resetrealignsignal
+\to \everyforgetall
+
 % We will not use bodydir and pagedir so we disable them. That way we get
 % normal hyperlink support.
 
@@ -69,54 +81,107 @@
 \unexpanded\def\definehbox
   {\dodoubleargument\dodefinehbox}
 
-\def\iobox#1#2#3#% here #3# is not really needed
-  {\vbox\bgroup  % we want to return a vbox like the others
-     \hbox\bgroup% we need to pack the signal with the box
-       \signalrightpage
-       \dowithnextboxcontent
-         {\let\\=\endgraf\forgetall\doifrightpageelse#1#2}
-         {\box\nextbox\egroup\egroup}
-       \vbox#3}
+% To be redone:
 
-\def\obox{\iobox\raggedleft \raggedright} % outerbox
-\def\ibox{\iobox\raggedright\raggedleft}  % innerbox
+% \def\iobox#1#2#3#% here #3# is not really needed
+%   {\vbox\bgroup  % we want to return a vbox like the others
+%      \hbox\bgroup% we need to pack the signal with the box
+%        \signalrightpage
+%        \dowithnextboxcontent
+%          {\let\\=\endgraf\forgetall\doifrightpageelse#1#2}
+%          {\box\nextbox\egroup\egroup}
+%        \vbox#3}
+% \def\obox{\iobox\raggedleft \raggedright} % outerbox
+% \def\ibox{\iobox\raggedright\raggedleft}  % innerbox
+
+\def\ibox#1#2#3%
+  {\vbox\bgroup
+     \forgetall
+     \let\\=\endgraf
+     \ifdoublesided\signalinnerrealign\fi
+     \doifrightpageelse\raggedright\raggedleft
+     \let\next}
+
+\def\obox#1#2#3%
+  {\vbox\bgroup
+     \forgetall
+     \let\\=\endgraf
+     \ifdoublesided\signalouterrealign\fi
+     \doifrightpageelse\raggedleft\raggedright
+     \let\next}
+
+% \def\dosetraggedvbox#1% can be more keys
+%   {\let\raggedbox\vbox
+%    \processfirstactioninset
+%      [#1]
+%      [   \v!left=>\let\raggedbox\lbox,
+%         \v!right=>\let\raggedbox\rbox,
+%        \v!middle=>\let\raggedbox\cbox,
+%         \v!inner=>\let\raggedbox\ibox,
+%         \v!outer=>\let\raggedbox\obox,
+%     \v!flushleft=>\let\raggedbox\rbox,
+%    \v!flushright=>\let\raggedbox\lbox,
+%        \v!center=>\let\raggedbox\cbox,
+%            \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
+
+% \def\dosetraggedhbox#1% can be more keys
+%   {\let\raggedbox\hbox
+%    \processaction % slow
+%      [#1]
+%      [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
+%         \v!right=>\def\raggedbox{\doalignedline\v!right },
+%        \v!middle=>\def\raggedbox{\doalignedline\v!middle},
+%         \v!inner=>\def\raggedbox{\doalignedline\v!inner },
+%         \v!outer=>\def\raggedbox{\doalignedline\v!outer },
+%     \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
+%    \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
+%        \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
+
+\def\@@ragged@@command{@@ragged@@c}
+\def\@@ragged@@hbox   {@@ragged@@h}
+\def\@@ragged@@vbox   {@@ragged@@v}
+
+\def\dosetraggedvbox#1% can be more keys
+  {\let\raggedbox\vbox
+   \processcommacommand[#1]\dodosetraggedvbox}
+
+\def\dosetraggedhbox#1% can be more keys
+  {\let\raggedbox\hbox
+   \processcommacommand[#1]\dodosetraggedhbox}
 
 \def\dosetraggedvbox#1%
-  {\let\raggedbox\vbox
-   \processfirstactioninset
-     [#1]
-     [   \v!left=>\let\raggedbox\lbox,
-        \v!right=>\let\raggedbox\rbox,
-       \v!middle=>\let\raggedbox\cbox,
-        \v!inner=>\let\raggedbox\ibox,
-        \v!outer=>\let\raggedbox\obox,
-    \v!flushleft=>\let\raggedbox\rbox,
-   \v!flushright=>\let\raggedbox\lbox,
-       \v!center=>\let\raggedbox\cbox,
-           \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
+  {\ifcsname\@@ragged@@vbox#1\endcsname
+     \csname\@@ragged@@vbox#1\endcsname
+     \quitcommalist
+   \fi}
 
 \def\dosetraggedhbox#1%
-  {\let\raggedbox\hbox
-   \processaction % slow
-     [#1]
-     [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
-        \v!right=>\def\raggedbox{\doalignedline\v!right },
-       \v!middle=>\def\raggedbox{\doalignedline\v!middle},
-        \v!inner=>\def\raggedbox{\doalignedline\v!inner },
-        \v!outer=>\def\raggedbox{\doalignedline\v!outer },
-    \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
-   \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
-       \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
+  {\ifcsname\@@ragged@@hbox#1\endcsname
+     \csname\@@ragged@@hbox#1\endcsname
+     \quitcommalist
+   \fi}
 
-\newconditional \injectraggedpagesignals \settrue\injectraggedpagesignals
+\setvalue{\@@ragged@@vbox\v!left      }{\let\raggedbox\lbox}
+\setvalue{\@@ragged@@vbox\v!right     }{\let\raggedbox\rbox}
+\setvalue{\@@ragged@@vbox\v!middle    }{\let\raggedbox\cbox}
+\setvalue{\@@ragged@@vbox\v!inner     }{\let\raggedbox\ibox}
+\setvalue{\@@ragged@@vbox\v!outer     }{\let\raggedbox\obox}
+\setvalue{\@@ragged@@vbox\v!flushleft }{\let\raggedbox\rbox}
+\setvalue{\@@ragged@@vbox\v!flushright}{\let\raggedbox\lbox}
+\setvalue{\@@ragged@@vbox\v!center    }{\let\raggedbox\cbox}
+\setvalue{\@@ragged@@vbox\v!no        }{\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
+
+\setvalue{\@@ragged@@hbox\v!left      }{\def\raggedbox{\doalignedline\v!left  }}
+\setvalue{\@@ragged@@hbox\v!right     }{\def\raggedbox{\doalignedline\v!right }}
+\setvalue{\@@ragged@@hbox\v!middle    }{\def\raggedbox{\doalignedline\v!middle}}
+\setvalue{\@@ragged@@hbox\v!inner     }{\def\raggedbox{\doalignedline\v!inner }}
+\setvalue{\@@ragged@@hbox\v!outer     }{\def\raggedbox{\doalignedline\v!outer }}
+\setvalue{\@@ragged@@hbox\v!flushleft }{\def\raggedbox{\doalignedline\v!right }}
+\setvalue{\@@ragged@@hbox\v!flushright}{\def\raggedbox{\doalignedline\v!left  }}
+\setvalue{\@@ragged@@hbox\v!center    }{\def\raggedbox{\doalignedline\v!middle}}
 
 \def\dosetraggedcommand#1%
   {\normalexpanded{\noexpand\dodosetraggedcommand{#1}}}
-
-\def\dosetpureraggedcommand#1%
-  {\setfalse\injectraggedpagesignals
-   \normalexpanded{\dodosetraggedcommand{#1}}%
-   \settrue\injectraggedpagesignals}
 
 \newtoks\everyraggedcommand
 
@@ -125,11 +190,11 @@
 % slow, we can do this in lua ... some day
 
 \unexpanded\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
-  {\everyraggedcommand\emptytoks
+  {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \setfalse\raggedonelinerstate
-   \doifsomething{#1}
+   \doifsomething{#1}%
      {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
       \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
       \!!donectrue
@@ -137,8 +202,6 @@
 
 \def\dododosetraggedcommand#1%
   {\executeifdefined{\@@ragged@@command\string#1}\relax}
-
-\def\@@ragged@@command{@@raggedcommand}
 
 \setvalue{\@@ragged@@command\v!hanging      }{\appendtoks\enableprotruding    \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nothanging   }{\appendtoks\disableprotruding   \to\everyraggedcommand}
@@ -203,28 +266,20 @@
   {\appendtoks\notragged\to\everyraggedcommand}
 
 \setvalue{\@@ragged@@command\v!inner}%
-  {\ifconditional\injectraggedpagesignals
-     \signalrightpage % may interfere
-     \doifrightpageelse
-       {\getvalue{\@@ragged@@command\v!right}}%
-       {\getvalue{\@@ragged@@command\v!left }}%
-   \else
-     \rightorleftpageaction
-       {\getvalue{\@@ragged@@command\v!left }}%
-       {\getvalue{\@@ragged@@command\v!right}}%
-   \fi}
+  {\ifdoublesided
+     \appendtoks\signalinnerrealign\to\everyraggedcommand
+   \fi
+   \rightorleftpageaction
+     {\getvalue{\@@ragged@@command\v!right}}%
+     {\getvalue{\@@ragged@@command\v!left }}}
 
 \setvalue{\@@ragged@@command\v!outer}%
-  {\ifconditional\injectraggedpagesignals
-     \signalrightpage % may interfere
-     \doifrightpageelse
-       {\getvalue{\@@ragged@@command\v!left }}%
-       {\getvalue{\@@ragged@@command\v!right}}%
-   \else
-     \rightorleftpageaction
-       {\getvalue{\@@ragged@@command\v!right}}%
-       {\getvalue{\@@ragged@@command\v!left }}%
-   \fi}
+  {\ifdoublesided
+     \appendtoks\signalouterrealign\to\everyraggedcommand
+   \fi
+   \rightorleftpageaction
+     {\getvalue{\@@ragged@@command\v!left }}%
+     {\getvalue{\@@ragged@@command\v!right}}}
 
 \setvalue{\@@ragged@@command\v!lesshyphenation}%
   {\appendtoks\lesshyphens\to\everyraggedcommand}
@@ -346,7 +401,7 @@
    \begingroup
    \dontshowcomposition
    \inleftmargin{\vsmash
-     {\switchtobodyfont[7pt,tt]%
+     {\infofont
       \framed[\c!align=\v!right]{\thepardata}}}%
    \endgroup}
 
@@ -454,6 +509,11 @@
 \setvalue{@@ngila@@\v!broad    }{\!!doneatrue}
 \setvalue{@@ngila@@\v!wide     }{\!!donebtrue}
 
+\def\setraggedparagraphmode
+  {\doifrightpageelse
+     {\ifdoublesided\signalinnerrealign\firstoftwoarguments \fi}
+     {\ifdoublesided\signalouterrealign\secondoftwoarguments\fi}}
+
 \def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
 
 \installalign \v!new           {\@@asraggedfalse}
@@ -526,6 +586,7 @@
   {\!!doneafalse
    \!!donebfalse
    \raggedstatus\zerocount
+   \resetrealignsignal
    \processcommacommand[#1]\dodosetupngila
    \processcommacommand[#1]\dodosetupalign}
 
@@ -601,9 +662,10 @@
 \letvalue{\s!do\v!line\v!flushright}\leftaligned
 \letvalue{\s!do\v!line\v!center    }\midaligned
 
-\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
+\def\doalignedline#1{\resetrealignsignal\csname\s!do\v!line#1\endcsname}
 
-%D Experimental:
+%D Experimental (will be redone when floats are redone as it's real messy
+%D now):
 
 \def\doxalignline#1#2#3#4#5#6%
   {\noindentation  % was \noindent
@@ -624,7 +686,13 @@
         \endgroup}
      \hbox}
 
-\def\doxcheckline
+% \def\doxcheckline % no vbox so no
+%   {\doifrightpageelse\donetrue\donefalse
+%    \ifdoublesided
+%      \ifdone\signalinnerrealign\else\signalouterrealign\fi
+%    \fi}
+
+\def\doxcheckline % used for floats so multipass anyway
   {\signalrightpage\doifrightpageelse\donetrue\donefalse}
 
 \setvalue{\s!do\v!line\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }

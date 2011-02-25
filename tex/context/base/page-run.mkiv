@@ -22,28 +22,28 @@
      {\forgetall
       \dontcomplain
       \globaldefs\minusone
-      \dimen0\pagegoal
+      \dimen\zerocount\pagegoal
       \definepapersize[X][\c!width=4em, \c!height=6em]%
       \definepapersize[Y][\c!width=12em,\c!height=14em]%
       \setuppapersize[#1,X][#2,Y]%
       \setuplayout[#3]%
-      \setbox0\vbox
+      \setbox\zerocount\vbox
         {\framed
           [\c!offset=\v!overlay,\c!strut=\v!no,
            \c!width=\paperwidth,\c!height=\paperheight]
           {\ss ABC\par DEF}}%
       \doublesidedfalse
       \def\cutmarklength{.5em}%
-      \addpagecutmarks0%
-      \replicatepagebox0%
-      \scalepagebox0%
-      \mirrorpaperbox0%
-      \orientpaperbox0%
-      \centerpagebox0%
-      \mirrorprintbox0%
-      \orientprintbox0%
-      \offsetprintbox0%
-      \pagegoal\dimen0
+      \addpagecutmarks \zerocount
+      \replicatepagebox\zerocount
+      \scalepagebox    \zerocount
+      \mirrorpaperbox  \zerocount
+      \orientpaperbox  \zerocount
+      \centerpagebox   \zerocount
+      \mirrorprintbox  \zerocount
+      \orientprintbox  \zerocount
+      \offsetprintbox  \zerocount
+      \pagegoal\dimen\zerocount
       \box0}}
 
 \gdef\showprint

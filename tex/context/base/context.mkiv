@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.02.20 20:34}
+\edef\contextversion{2011.02.25 22:03}
 
 %D For those who want to use this:
 
@@ -113,14 +113,16 @@
 
 \loadmarkfile{attr-ini}
 
+\loadmarkfile{core-var}
+\loadmarkfile{core-env}
+
+\loadmarkfile{layo-ini}
+
 \loadmarkfile{node-ini}
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
 \loadmarkfile{node-par}
 %loadmarkfile{node-pag}
-
-\loadmarkfile{core-var}
-\loadmarkfile{core-env}
 
 \loadmarkfile{back-ini}
 
@@ -243,7 +245,8 @@
 
 \loadmarkfile{page-lin}
 \loadmarkfile{page-par}
-\loadmarkfile{page-mar}
+%loadmarkfile{page-mar} % also commented code in anch-pgr.mkiv
+\loadmarkfile{typo-mar}
 
 \loadmarkfile{core-job} % why so late?
 

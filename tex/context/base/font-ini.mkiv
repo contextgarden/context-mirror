@@ -2085,13 +2085,23 @@
 %D sequence of a session. After the loading job is done, the
 %D macro relaxes itself and reset the signal.
 
-\fontdimen1\nullfont      0\scaledpoint
-\fontdimen2\nullfont 256377\scaledpoint
-\fontdimen3\nullfont 128188\scaledpoint
-\fontdimen4\nullfont  85459\scaledpoint
-\fontdimen5\nullfont 338952\scaledpoint
-\fontdimen6\nullfont 786432\scaledpoint
-\fontdimen7\nullfont  85459\scaledpoint
+% \fontdimen1\nullfont      0\scaledpoint
+% \fontdimen2\nullfont 256377\scaledpoint
+% \fontdimen3\nullfont 128188\scaledpoint
+% \fontdimen4\nullfont  85459\scaledpoint
+% \fontdimen5\nullfont 338952\scaledpoint
+% \fontdimen6\nullfont 786432\scaledpoint
+% \fontdimen7\nullfont  85459\scaledpoint
+
+\fontslantperpoint   \nullfont      0\scaledpoint
+\fontinterwordspace  \nullfont 256377\scaledpoint
+\fontinterwordstretch\nullfont 128188\scaledpoint
+\fontinterwordshrink \nullfont  85459\scaledpoint
+\fontexheight        \nullfont 338952\scaledpoint
+\fontemwidth         \nullfont 786432\scaledpoint
+\fontextraspace      \nullfont  85459\scaledpoint
+
+\fetchruntimecommand \showfontparameters  {\f!fontprefix\s!run}
 
 \def\resetnullfont % this is needed because some macro packages (tikz) misuse \nullfont
   {\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}%

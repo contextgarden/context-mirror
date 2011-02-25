@@ -22,7 +22,7 @@
 % We operate in a \type {@@ns} namespace. All data is passed through
 % variables. Of course we can built another interface on top of this
 % that accepts multiple arguments. We might change this approach and
-% remove this layer.
+% remove this layer but it was needed for the transition.
 
 \def\currentstructurecounter{0}
 
@@ -36,10 +36,23 @@
 
 \getparameters % initialization, used not grouped anyway
   [\??ns]
-  [\c!number=,\c!level=,\c!name=,\c!title=,\c!bookmark=,\c!marking=,\c!list=,\c!label=,\c!coupling=,\c!ownnumber=,
-   \c!sectionseparatorset=\s!default,\c!sectionconversionset=\s!default,
-   \c!sectionstopper=,\c!sectionstarter=,\c!sectionsegments=,
-   \c!sectionresetset=,\c!reference=,
+  [\c!number=,
+   \c!level=,
+   \c!name=,
+   \c!title=,
+   \c!bookmark=,
+   \c!marking=,
+   \c!list=,
+   \c!label=,
+   \c!coupling=,
+   \c!ownnumber=,
+   \c!sectionseparatorset=\s!default,
+   \c!sectionconversionset=\s!default,
+   \c!sectionstopper=,
+   \c!sectionstarter=,
+   \c!sectionsegments=,
+   \c!sectionresetset=,
+   \c!reference=,
    \c!expansion=\v!no,
    \c!xmlsetup=,
    \s!catcodes=,

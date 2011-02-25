@@ -545,7 +545,7 @@ local function process(head,first,last)
                         local font = first.font
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[get_attribute(first,a_preproc)])
+                            set_parameters(font,numbertodataset[has_attribute(first,a_preproc)])
                         end
                         action(head,first)
                     end

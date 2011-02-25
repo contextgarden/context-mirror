@@ -56,6 +56,10 @@ function hacks.register(str)
     ordered[str] = #registered
 end
 
+function hacks.nofregistered()
+    return #registered
+end
+
 function hacks.reset(m)
     mode, list, done = m, { }, { }
 end

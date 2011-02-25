@@ -100,15 +100,21 @@ vardef rawtextext(expr str) =
                 withpostscript str
         )
     else :
-        image (
-            _tt_n_ := _tt_n_ + 1 ;
-            addto currentpicture doublepath unitsquare
-                xscaled _tt_w_[_tt_n_]
-                yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
-                withprescript "tx_number=" & decimal _tt_n_
-                withprescript "tx_stage=final"
-                ; % withpostscript str ;
-        ) shifted (0,-_tt_d_[_tt_n_])
+        _tt_n_ := _tt_n_ + 1 ;
+        if known _tt_d_[_tt_n_] :
+            image (
+                addto currentpicture doublepath unitsquare
+                    xscaled _tt_w_[_tt_n_]
+                    yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
+                    withprescript "tx_number=" & decimal _tt_n_
+                    withprescript "tx_stage=final"
+                    ; % withpostscript str ;
+            ) shifted (0,-_tt_d_[_tt_n_])
+        else :
+            image (
+                addto currentpicture doublepath unitsquare ;
+            )
+        fi
     fi
 enddef ;
 

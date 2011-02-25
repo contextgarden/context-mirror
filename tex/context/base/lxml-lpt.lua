@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 }
 
 -- e.ni is only valid after a filter run
+-- todo: B/C/[get first match]
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring

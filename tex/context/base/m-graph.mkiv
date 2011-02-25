@@ -40,40 +40,40 @@
 % We could also delegate parsing using lower level plugins.
 
 \startMPinclusions
-%     input string ;
-%     input marith ;
-%     input graph.mp ;
+  % input string ;
+  % input marith ;
+    input graph.mp ;
 
-%     vardef roundd(expr x, d) =
-%         if abs d > 4 :
-%             if d > 0 :
-%                 x
-%             else :
-%                 0
-%             fi
-%         elseif d > 0 :
-%             save i ; i = floor x ;
-%             i + round(Ten_to[d]*(x-i))/Ten_to[d]
-%         else :
-%             round(x/Ten_to[-d])*Ten_to[-d]
-%         fi
-%     enddef ;
+    vardef roundd(expr x, d) =
+        if abs d > 4 :
+            if d > 0 :
+                x
+            else :
+                0
+            fi
+        elseif d > 0 :
+            save i ; i = floor x ;
+            i + round(Ten_to[d]*(x-i))/Ten_to[d]
+        else :
+            round(x/Ten_to[-d])*Ten_to[-d]
+        fi
+    enddef ;
 
-%     Ten_to0 =     1 ;
-%     Ten_to1 =    10 ;
-%     Ten_to2 =   100 ;
-%     Ten_to3 =  1000 ;
-%     Ten_to4 = 10000 ;
-%
-%     def sFe_base =
-%     enddef ;
-%
-%     picture Fe_plus ; Fe_plus := btex + etex ;
+    Ten_to0 =     1 ;
+    Ten_to1 =    10 ;
+    Ten_to2 =   100 ;
+    Ten_to3 =  1000 ;
+    Ten_to4 = 10000 ;
 
-%     vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-%     vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
-%     vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
-%     vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
+    def sFe_base =
+    enddef ;
+
+    picture Fe_plus ; Fe_plus := btex + etex ;
+
+    vardef format    (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+    vardef Mformat   (expr f,x) = dofmt_.Meform (f,x) enddef ;
+    vardef formatstr (expr f,x) = dofmt_.Feform_(f,x) enddef ;
+    vardef Mformatstr(expr f,x) = dofmt_.Meform(f,x) enddef ;
 
     vardef escaped_format(expr s) =
         "" for n=1 upto length(s) : &
@@ -86,7 +86,7 @@
     enddef ;
 
     vardef dofmt_@\#(expr f, x) =
-        textext("\MPgraphformat{"&escaped_format(f)&"}{"&(if string x : x else: decimal x fi)&"}")
+        textext("\MPgraphformat{" & escaped_format(f) & "}{" & (if string x : x else: decimal x fi) & "}")
     enddef ;
 
     % vardef format(expr f, x) =

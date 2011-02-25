@@ -372,7 +372,12 @@ function tfm.read(specification)
             local postprocessors = tfmtable.postprocessors
             if postprocessors then
                 for i=1,#postprocessors do
-                    postprocessors[i](tfmtable) -- after scaling etc
+                    local extrahash = postprocessors[i](tfmtable) -- after scaling etc
+                    if type(extrahash) == "string" and extrahash ~= "" then
+                        -- e.g. a reencoding needs this
+                        extrahash = gsub(lower(extrahash),"[^a-z]","-")
+                        tfmtable.fullname = format("%s-%s",tfmtable.fullname,extrahash)
+                    end
                 end
             end
             --

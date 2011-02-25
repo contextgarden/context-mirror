@@ -241,10 +241,10 @@
    \nobreak
    \@@dodescription}
 
-\def\do@@description#1%
+\def\do@@description#1% temp hack, the scope
   {\def\\{\crlf}%
    \noindent
-   #1{\ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
+   #1[\c!scope=\v!local]{\ifhbox\descriptionheadbox\unhcopy\else\copy\fi\descriptionheadbox}%
    \@@dodescription}
 
 \setvalue{@@description\v!inmargin    }{\do@@description\inmargin}

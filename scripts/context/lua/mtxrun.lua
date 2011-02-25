@@ -1282,7 +1282,8 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
         -- using a metatable.
-        local dummy = root.whatever
+        local dummy = root._w_h_a_t_e_v_e_r_
+        root._w_h_a_t_e_v_e_r_ = nil
         -- Let's forget about empty tables.
         if next(root) then
             do_serialize(root,name,"",0)
@@ -4792,6 +4793,7 @@ function setters.register(t,what,...)
             end
         end
     end
+    return false -- so we can use it in an assignment
 end
 
 function setters.enable(t,what)
@@ -7246,6 +7248,7 @@ if not modules then modules = { } end modules ['lxml-pth'] = {
 }
 
 -- e.ni is only valid after a filter run
+-- todo: B/C/[get first match]
 
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, tonumber, tostring, setmetatable, loadstring = type, next, tonumber, tostring, setmetatable, loadstring

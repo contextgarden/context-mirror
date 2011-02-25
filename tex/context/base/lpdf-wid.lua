@@ -160,17 +160,24 @@ end
 
 --
 
-local nofattachments, attachments, filestreams = 0, { }, { }
+local nofattachments, attachments, filestreams, referenced = 0, { }, { }, { }
 
 -- todo: hash and embed once
+
+local ignorereferenced = true -- fuzzy pdf spec .. twice in attachment list, can become an option
 
 local function flushembeddedfiles()
     if next(filestreams) then
         local e = pdfarray()
         for name, reference in next, filestreams do
             if reference then
-                e[#e+1] = pdfstring(name)
-                e[#e+1] = reference -- already a reference
+                if ignorereferenced and referenced[name] then
+                    reference = nil
+                end
+                if reference then
+                    e[#e+1] = pdfstring(name)
+                    e[#e+1] = reference -- already a reference
+                end
             else
                 -- we can issue a message
             end
@@ -218,6 +225,7 @@ function codeinjections.attachfile(specification)
         -- todo: message
         return
     end
+    referenced[filename] = true
     nofattachments = nofattachments + 1
     local label   = attachment.label   or ""
     local title   = attachment.title   or ""
