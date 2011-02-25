@@ -156,10 +156,19 @@
 % Very nasty but needed for margin stuff inside colored
 % paragraphs.
 
+\registerctxluafile{spac-par}{1.001}
+
+\definesystemattribute [graphicvadjust]  [public]
+
 \let\normalvadjust\vadjust
 
-\def\graphicvadjust % nasty bidi handling
-  {\dowithnextboxcontent
+\def\enablegraphicvadjust
+  {\ctxlua{nodes.tasks.enableaction("finalizers","nodes.handlers.graphicvadjust")}%
+   \glet\enablegraphicvadjust\relax}
+
+\def\graphicvadjust % currently not enabled; nasty bidi handling
+  {\enablegraphicvadjust
+   \dowithnextboxcontent
      {\forgetall}
      {\vadjust{\vbox attr \graphicvadjustattribute \plusone
         {\unvbox\nextbox

@@ -981,7 +981,13 @@
    \tblpass\zerocount
    \tbltoks\emptytoks}
 
-\def\flushtbltoks{\begintbl\the\tbltoks\endtbl}
+\newtoks\everyTABLEpass
+
+\def\flushtbltoks
+  {\the\everyTABLEpass
+   \begintbl
+   \the\tbltoks
+   \endtbl}
 
 \def\domakeTBLone#1 #2 %
   {\gettbltxt{#1}{#2}}%

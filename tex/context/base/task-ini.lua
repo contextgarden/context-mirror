@@ -11,130 +11,138 @@ if not modules then modules = { } end modules ['task-ini'] = {
 --
 -- we can disable more handlers and enable then when really used (*)
 
-local tasks = nodes.tasks
+local tasks           = nodes.tasks
+local appendaction    = tasks.appendaction
+local disableaction   = tasks.disableaction
+local freezegroup     = tasks.freezegroup
+local freezecallbacks = callbacks.freeze
 
-tasks.appendaction("processors",   "normalizers", "fonts.collections.process")                         -- todo
-tasks.appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
+appendaction("processors",   "normalizers", "fonts.collections.process")                         -- todo
+appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
-tasks.appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
-tasks.appendaction("processors",   "characters",  "typesetters.directions.handler")                    -- disabled
-tasks.appendaction("processors",   "characters",  "typesetters.cases.handler")                         -- disabled
-tasks.appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
-tasks.appendaction("processors",   "characters",  "scripts.preprocess")
+appendaction("processors",   "characters",  "typesetters.cleaners.handler")                      -- disabled
+appendaction("processors",   "characters",  "typesetters.directions.handler")                    -- disabled
+appendaction("processors",   "characters",  "typesetters.cases.handler")                         -- disabled
+appendaction("processors",   "characters",  "typesetters.breakpoints.handler")                   -- disabled
+appendaction("processors",   "characters",  "scripts.preprocess")
 
-tasks.appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
-tasks.appendaction("processors",   "words",       "languages.words.check")                             -- disabled
+appendaction("processors",   "words",       "builders.kernel.hyphenation")                       -- always on
+appendaction("processors",   "words",       "languages.words.check")                             -- disabled
 
-tasks.appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
-tasks.appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
-tasks.appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
-tasks.appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
-tasks.appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on
-tasks.appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on
-tasks.appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
+appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
+appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
+appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
+appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
+appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on
+appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on
+appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 
-tasks.appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
-tasks.appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
-tasks.appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
+appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
+appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
+appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 
-tasks.appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.rules.handler")                               -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.shifts.handler")                              -- disabled
-tasks.appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
-tasks.appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
+appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
+appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
+appendaction("shipouts",     "normalizers", "nodes.destinations.handler")                        -- disabled
+appendaction("shipouts",     "normalizers", "nodes.rules.handler")                               -- disabled
+appendaction("shipouts",     "normalizers", "nodes.shifts.handler")                              -- disabled
+appendaction("shipouts",     "normalizers", "structures.tags.handler")                           -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
+appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 
-tasks.appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
-tasks.appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
-tasks.appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
-tasks.appendaction("shipouts",     "finishers",   "attributes.negatives.handler")                      -- disabled
-tasks.appendaction("shipouts",     "finishers",   "attributes.effects.handler")                        -- disabled
-tasks.appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")                   -- disabled
+appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
+appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
+appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
+appendaction("shipouts",     "finishers",   "attributes.negatives.handler")                      -- disabled
+appendaction("shipouts",     "finishers",   "attributes.effects.handler")                        -- disabled
+appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")                   -- disabled
 
-tasks.appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
-tasks.appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
-tasks.appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
-tasks.appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
-tasks.appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
-tasks.appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
 
-tasks.appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
+appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 
 -- quite experimental (nodes.handlers.graphicvadjust might go away)
 
-tasks.appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
-tasks.appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
+appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
+appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 
 -- rather new
 
-tasks.appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
-tasks.appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
+appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
+appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !
 
-tasks.appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                     --
+appendaction("vboxbuilders", "normalizers", "builders.vspacing.vboxhandler")                     --
 
 -- speedup: only kick in when used
 
-tasks.disableaction("processors",  "fonts.checkers.missing")
-tasks.disableaction("processors",  "chars.handle_breakpoints")
-tasks.disableaction("processors",  "typesetters.cleaners.handler")
-tasks.disableaction("processors",  "typesetters.cases.handler")
-tasks.disableaction("processors",  "typesetters.digits.handler")
-tasks.disableaction("processors",  "typesetters.breakpoints.handler")
-tasks.disableaction("processors",  "typesetters.directions.handler")
-tasks.disableaction("processors",  "languages.words.check")
-tasks.disableaction("processors",  "typesetters.spacings.handler")
-tasks.disableaction("processors",  "typesetters.kerns.handler")
-tasks.disableaction("processors",  "nodes.handlers.stripping")
+disableaction("processors",  "fonts.checkers.missing")
+disableaction("processors",  "chars.handle_breakpoints")
+disableaction("processors",  "typesetters.cleaners.handler")
+disableaction("processors",  "typesetters.cases.handler")
+disableaction("processors",  "typesetters.digits.handler")
+disableaction("processors",  "typesetters.breakpoints.handler")
+disableaction("processors",  "typesetters.directions.handler")
+disableaction("processors",  "languages.words.check")
+disableaction("processors",  "typesetters.spacings.handler")
+disableaction("processors",  "typesetters.kerns.handler")
+disableaction("processors",  "nodes.handlers.stripping")
 
-tasks.disableaction("shipouts",    "nodes.rules.handler")
-tasks.disableaction("shipouts",    "nodes.shifts.handler")
-tasks.disableaction("shipouts",    "attributes.colors.handler")
-tasks.disableaction("shipouts",    "attributes.transparencies.handler")
-tasks.disableaction("shipouts",    "attributes.colorintents.handler")
-tasks.disableaction("shipouts",    "attributes.effects.handler")
-tasks.disableaction("shipouts",    "attributes.negatives.handler")
-tasks.disableaction("shipouts",    "attributes.viewerlayers.handler")
-tasks.disableaction("shipouts",    "structures.tags.handler")
-tasks.disableaction("shipouts",    "nodes.handlers.accessibility")
-tasks.disableaction("shipouts",    "nodes.handlers.backgrounds")
-tasks.disableaction("shipouts",    "nodes.handlers.cleanuppage")
+disableaction("shipouts",    "typesetters.alignments.handler")
+disableaction("shipouts",    "nodes.rules.handler")
+disableaction("shipouts",    "nodes.shifts.handler")
+disableaction("shipouts",    "attributes.colors.handler")
+disableaction("shipouts",    "attributes.transparencies.handler")
+disableaction("shipouts",    "attributes.colorintents.handler")
+disableaction("shipouts",    "attributes.effects.handler")
+disableaction("shipouts",    "attributes.negatives.handler")
+disableaction("shipouts",    "attributes.viewerlayers.handler")
+disableaction("shipouts",    "structures.tags.handler")
+disableaction("shipouts",    "nodes.handlers.accessibility")
+disableaction("shipouts",    "nodes.handlers.backgrounds")
+disableaction("shipouts",    "nodes.handlers.cleanuppage")
 
-tasks.disableaction("shipouts",    "nodes.references.handler")
-tasks.disableaction("shipouts",    "nodes.destinations.handler")
+disableaction("shipouts",    "nodes.references.handler")
+disableaction("shipouts",    "nodes.destinations.handler")
 
-tasks.disableaction("mvlbuilders", "nodes.handlers.migrate")
+disableaction("mvlbuilders", "nodes.handlers.migrate")
 
-tasks.disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
-tasks.disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
+disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
-tasks.disableaction("math",        "noads.handlers.tags")
+disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
+disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 
-callbacks.freeze("find_.*_file", "find file using resolver")
-callbacks.freeze("read_.*_file", "read file at once")
-callbacks.freeze("open_.*_file", "open file for reading")
+disableaction("math",        "noads.handlers.tags")
+
+freezecallbacks("find_.*_file", "find file using resolver")
+freezecallbacks("read_.*_file", "read file at once")
+freezecallbacks("open_.*_file", "open file for reading")
 
 -- experimental:
 
-tasks.freezegroup("processors",   "normalizers")
-tasks.freezegroup("processors",   "characters")
-tasks.freezegroup("processors",   "words")
-tasks.freezegroup("processors",   "fonts")
-tasks.freezegroup("processors",   "lists")
+freezegroup("processors",   "normalizers")
+freezegroup("processors",   "characters")
+freezegroup("processors",   "words")
+freezegroup("processors",   "fonts")
+freezegroup("processors",   "lists")
 
-tasks.freezegroup("finalizers",   "normalizers")
-tasks.freezegroup("finalizers",   "fonts")
-tasks.freezegroup("finalizers",   "lists")
+freezegroup("finalizers",   "normalizers")
+freezegroup("finalizers",   "fonts")
+freezegroup("finalizers",   "lists")
 
-tasks.freezegroup("shipouts",     "normalizers")
-tasks.freezegroup("shipouts",     "finishers")
+freezegroup("shipouts",     "normalizers")
+freezegroup("shipouts",     "finishers")
 
-tasks.freezegroup("mvlbuilders",  "normalizers")
-tasks.freezegroup("vboxbuilders", "normalizers")
+freezegroup("mvlbuilders",  "normalizers")
+freezegroup("vboxbuilders", "normalizers")
 
---~ tasks.freezegroup("parbuilders",  "lists")
---~ tasks.freezegroup("pagebuilders", "lists")
+--~ freezegroup("parbuilders",  "lists")
+--~ freezegroup("pagebuilders", "lists")
 
-tasks.freezegroup("math",         "normalizers")
-tasks.freezegroup("math",         "builders")
+freezegroup("math",         "normalizers")
+freezegroup("math",         "builders")

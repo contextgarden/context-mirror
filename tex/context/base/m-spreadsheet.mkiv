@@ -1,0 +1,265 @@
+%D \module
+%D   [       file=m-spreadsheet,
+%D        version=2011.02.21,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Spreadsheets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an experimental follow up on discussion on the mailing list.
+
+\startluacode
+local byte, format = string.byte, string.format
+local R, P, C, Cs, Cc, Carg, lpegmatch = lpeg.R, lpeg.P, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.match
+
+local spreadsheets      = { }
+moduledata.spreadsheets = spreadsheets
+
+local data        = { }
+spreadsheets.data = data
+
+local stack, current = { }, "default"
+
+local mt ; mt = {
+    __index = function(t,k)
+        local v = { }
+        setmetatable(v,mt)
+        t[k] = v
+        return v
+    end,
+}
+
+function spreadsheets.reset(name)
+    if not name or name == "" then name = "default" end
+    local d = { }
+    setmetatable(d,mt)
+    data[name] = d
+end
+
+function spreadsheets.start(name)
+    if not name or name == "" then name = "default" end
+    table.insert(stack,current)
+    current = name
+    if not data[current] then
+        local d = { }
+        setmetatable(d,mt)
+        data[current] = d
+    end
+end
+
+function spreadsheets.stop()
+    current = table.remove(stack)
+end
+
+spreadsheets.reset()
+
+local offset = byte("A") - 1
+
+local function assign(s,n)
+    return format("moduledata.spreadsheets.data['%s'][%s]",n,byte(s)-offset)
+end
+
+-------- datacell(name,a,b,...)
+function datacell(a,b,...)
+    local n = 0
+    if b then
+        local t = { a, b, ... }
+        for i=1,#t do
+            n = n * (i-1) * 26 + byte(t[i]) - offset
+        end
+    else
+        n = byte(a) - offset
+    end
+ -- return format("dat['%s'][%s]",name,n)
+    return format("dat[%s]",n)
+end
+
+----- cell    = (Carg(1) * C(R("AZ"))^1) / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
+local cell    = C(R("AZ"))^1 / datacell * (Cc("[") * (R("09")^1) * Cc("]") + #P(1))
+local pattern = Cs(Cc("return ") * (cell + P(1))^0)
+
+local functions        = { }
+spreadsheets.functions = functions
+
+function functions.sum(c,f,t)
+    if f and t then
+        local r = 0
+        for i=f,t do
+            r = r + c[i]
+        end
+        return r
+    else
+        return 0
+    end
+end
+
+function functions.fmt(pattern,n)
+    return format("%"..pattern,n)
+end
+
+local template = [[
+    local spr = moduledata.spreadsheets.functions
+    local dat = moduledata.spreadsheets.data['%s']
+    local sum = spr.sum
+    local fmt = spr.fmt
+    %s
+]]
+
+local function execute(name,r,c,str)
+    if name == "" then name = current if name == "" then name = "default" end end
+    str = lpegmatch(pattern,str,1,name)
+    str = format(template,name,str)
+ -- print(str)
+    local result = loadstring(str)
+    result = result and result() or 0
+    data[name][c][r] = result
+    return result
+end
+
+function spreadsheets.set(name,r,c,str)
+    if name == "" then name = current if name == "" then name = "default" end end
+    execute(name,r,c,str)
+end
+
+function spreadsheets.get(name,r,c,str)
+    if name == "" then name = current if name == "" then name = "default" end end
+    if not str or str == "" then
+        context(data[name][c][r] or 0)
+    else
+        local result = execute(name,r,c,str)
+        if result then
+            if type(result) == "number" then
+                data[name][c][r] = result
+            end
+            context(result)
+        end
+    end
+end
+
+function spreadsheets.doifelsecell(name,r,c)
+    if name == "" then name = current if name == "" then name = "default" end end
+    local d = data[name]
+    commands.testcase(d and d[c][r])
+end
+
+function spreadsheets.show(name)
+    if name == "" then name = current if name == "" then name = "default" end end
+    table.print(data[name],name)
+end
+\stopluacode
+
+\unprotect
+
+% todo: get(...) set(..) ctx(...)
+
+\unexpanded\def\resetspreadsheet                 {\dosingleempty\doresetspreadsheet}
+\unexpanded\def\doresetspreadsheet           [#1]{\ctxlua{moduledata.spreadsheets.reset("#1")}}
+\unexpanded\def\startspreadsheet                 {\dosingleempty\dostartspreadsheet}
+\unexpanded\def\dostartspreadsheet           [#1]{\ctxlua{moduledata.spreadsheets.start("#1")}}
+\unexpanded\def\stopspreadsheet                  {\ctxlua{moduledata.spreadsheets.stop()}}
+\unexpanded\def\showspreadsheet                  {\dosingleempty\doshowspreadsheet}
+\unexpanded\def\doshowspreadsheet            [#1]{\ctxlua{moduledata.spreadsheets.show("#1")}}
+\unexpanded\def\getspreadsheet                   {\dosingleempty\dogetspreadsheet}
+\unexpanded\def\dosetspreadsheet       [#1]#2#3#4{\ctxlua{moduledata.spreadsheets.set ("#1",\number#2,\number#3,"#4")}}
+\unexpanded\def\setspreadsheet                   {\dosingleempty\dosetspreadsheet}
+\unexpanded\def\dogetspreadsheet       [#1]#2#3#4{\ctxlua{moduledata.spreadsheets.get ("#1",\number#2,\number#3,"#4")}}
+\unexpanded\def\doifelsespreadsheetcell          {\dosingleempty\dodoifelsespreadsheetcell}
+\unexpanded\def\dodoifelsespreadsheetcell[#1]#2#3{\ctxlua{moduledata.spreadsheets.doifelsecell("#1","#2","#3")}}
+
+\def\TABLEsetspreadsheet#1{\ctxlua{moduledata.spreadsheets.set("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+\def\TABLEgetspreadsheet#1{\ctxlua{moduledata.spreadsheets.get("",\number\tblrow+1,\number\tblcol,\!!bs#1\!!es)}}
+
+\appendtoks
+    \resetspreadsheet
+    \let\setspr\TABLEsetspreadsheet
+    \let\getspr\TABLEgetspreadsheet
+\to \everyTABLEpass
+
+\unexpanded\def\startspreadsheettable % quick and dirty
+  {\dosingleempty\dostartspreadsheettable}
+
+\unexpanded\def\dostartspreadsheettable[#1]%
+  {\bgroup
+   \startspreadsheet[#1]%%
+   \def\startrow{\bTR}%
+   \def\stoprow {\eTR}%
+   \def\startcell##1\stopcell{\bTD\getspr{##1}\eTD}%
+   \bTABLE[\c!align=flushright]}
+
+\unexpanded\def\stopspreadsheettable
+   {\eTABLE
+    \stopspreadsheet
+    \egroup}
+
+\protect
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\bTABLE[align=middle]
+   \bTR
+     \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{20} \eTD \bTD \getspr{4+3} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{A[1] + A[2]} \eTD
+     \bTD \getspr{B1 + B2} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{(A[3] + B[3]) /100} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{string.format("\letterpercent0.3f",(A[3] + B[3]) /100)} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{fmt("0.3f",(sum(A,1,2)) / 10)} \eTD
+   \eTR
+\eTABLE
+
+\startspreadsheet[mysheet]
+
+\bTABLE[align=middle]
+   \bTR
+     \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{20} \eTD \bTD \getspr{4+3} \eTD
+   \eTR
+   \bTR
+     \bTD \getspr{A[1] + A[2]} \eTD
+     \bTD \getspr{B[1] + B[2]} \eTD
+   \eTR
+   \bTR
+     \bTD[nx=2] \bf \getspr{A[3] + B[3]} \eTD
+   \eTR
+\eTABLE
+
+\stopspreadsheet
+
+\startspreadsheettable
+   \startrow
+     \startcell 3 \stopcell
+     \startcell 9 \stopcell
+     \startcell A[1] + B[1] \stopcell
+   \stoprow
+\stopspreadsheettable
+
+bla bla \getspreadsheet[mysheet]{2}{2}{}
+
+bla bla \getspreadsheet[mysheet]{4}{1}{}
+
+% \showspreadsheet
+% \showspreadsheet[mysheet]
+
+\doifelsespreadsheetcell[mysheet]{1}{2}{YES}{NOP}
+\doifelsespreadsheetcell[myshoot]{1}{2}{YES}{NOP}
+
+\stoptext

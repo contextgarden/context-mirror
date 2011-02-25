@@ -275,7 +275,6 @@
 		<cd:variable name='marginedge' value='kantlijn'/>
 		<cd:variable name='margintitle' value='margetitel'/>
 		<cd:variable name='marking' value='markering'/>
-		<cd:variable name='mask' value='masker'/>
 		<cd:variable name='mathalignment' value='wiskundeuitlijnen'/>
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
@@ -764,6 +763,7 @@
 		<cd:constant name='margintext' value='margetekst'/>
 		<cd:constant name='marking' value='markering'/>
 		<cd:constant name='marstyle' value='marletter'/>
+		<cd:constant name='mask' value='masker'/>
 		<cd:constant name='max' value='max'/>
 		<cd:constant name='maxdepth' value='maxdepth'/>
 		<cd:constant name='maxheight' value='maxhoogte'/>

@@ -49,19 +49,21 @@ local otf = fonts.otf
 <p>This feature will remove inter-digit kerns.</p>
 --ldx]]--
 
-table.insert(triggers,"equaldigits")
-
-function initializers.common.equaldigits(tfmdata,value)
-    if value then
-        local chr = tfmdata.characters
-        for i = utfbyte('0'), utfbyte('9') do
-            local c = chr[i]
-            if c then
-                c.kerns = nil
-            end
-        end
-    end
-end
+-- old code, no kerns set at this point, so this has to be done afterwards
+--
+-- table.insert(triggers,"equaldigits")
+--
+-- function initializers.common.equaldigits(tfmdata,value)
+--     if value then
+--         local chr = tfmdata.characters
+--         for i = utfbyte('0'), utfbyte('9') do
+--             local c = chr[i]
+--             if c then
+--                 c.kerns = nil
+--             end
+--         end
+--     end
+-- end
 
 --[[ldx--
 <p>This feature will give all glyphs an equal height and/or depth. Valid
@@ -69,42 +71,44 @@ values are <type>none</type>, <type>height</type>, <type>depth</type> and
 <type>both</type>.</p>
 --ldx]]--
 
-table.insert(triggers,"lineheight")
-
-function initializers.common.lineheight(tfmdata,value)
-    if value and type(value) == "string" then
-        if value == "none" then
-            for _,v in next, tfmdata.characters do
-                v.height, v.depth = 0, 0
-            end
-        else
-            local ascender, descender = tfmdata.ascender, tfmdata.descender
-            if ascender and descender then
-                local ht, dp = ascender or 0, descender or 0
-                if value == "height" then
-                    dp = 0
-                elseif value == "depth" then
-                    ht = 0
-                end
-                if ht > 0 then
-                    if dp > 0 then
-                        for _,v in next, tfmdata.characters do
-                            v.height, v.depth = ht, dp
-                        end
-                    else
-                        for _,v in next, tfmdata.characters do
-                            v.height = ht
-                        end
-                    end
-                elseif dp > 0 then
-                    for _,v in next, tfmdata.characters do
-                        v.depth  = dp
-                    end
-                end
-            end
-        end
-    end
-end
+-- old code, no dimensions set at this point, so this has to be done afterwards
+--
+-- table.insert(triggers,"lineheight")
+--
+-- function initializers.common.lineheight(tfmdata,value)
+--     if value and type(value) == "string" then
+--         if value == "none" then
+--             for _,v in next, tfmdata.characters do
+--                 v.height, v.depth = 0, 0
+--             end
+--         else
+--             local ascender, descender = tfmdata.ascender, tfmdata.descender
+--             if ascender and descender then
+--                 local ht, dp = ascender or 0, descender or 0
+--                 if value == "height" then
+--                     dp = 0
+--                 elseif value == "depth" then
+--                     ht = 0
+--                 end
+--                 if ht > 0 then
+--                     if dp > 0 then
+--                         for _,v in next, tfmdata.characters do
+--                             v.height, v.depth = ht, dp
+--                         end
+--                     else
+--                         for _,v in next, tfmdata.characters do
+--                             v.height = ht
+--                         end
+--                     end
+--                 elseif dp > 0 then
+--                     for _,v in next, tfmdata.characters do
+--                         v.depth  = dp
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 -- -- -- -- -- --
 -- shared

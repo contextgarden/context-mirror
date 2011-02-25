@@ -987,10 +987,13 @@ return {
             en = "loading database from %s",
         },
         ["publications:5"] = {
-            en = "warning: cite argument %s on line \\the\\inputlineno",
+            en = "warning: unknown cite argument %s on line \\the\\inputlineno",
         },
         ["publications:6"] = {
             en = "loading formatting style from %s",
+        },
+        ["publications:7"] = {
+            en = "placing all entries, use 'text' to be more selective",
         },
         ["pushing level: %s"] = {
             nl = "niveau omhoog: %s",

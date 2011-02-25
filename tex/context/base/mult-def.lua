@@ -7493,6 +7493,10 @@ return {
    ["pe"]="نمایش",
    ["ro"]="display",
   },
+  ["mask"]={
+   ["en"]="mask",
+   ["nl"]="masker",
+  },
   ["distance"]={
    ["cs"]="vzdalenost",
    ["de"]="abstand",
@@ -12600,10 +12604,6 @@ return {
    ["nl"]="scherm",
    ["pe"]="نمایش",
    ["ro"]="display",
-  },
-  ["mask"]={
-   ["en"]="mask",
-   ["nl"]="masker",
   },
   ["dot"]={
    ["cs"]="tecka",

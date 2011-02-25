@@ -1084,22 +1084,20 @@ node_initializers.lineheight  = common_initializers.lineheight
 base_initializers.compose = common_initializers.compose
 node_initializers.compose = common_initializers.compose
 
--- afm specific, encodings ...kind of obsolete
-
-register_feature('encoding')
-
-base_initializers.encoding = common_initializers.encoding
-node_initializers.encoding = common_initializers.encoding
-
--- todo: oldstyle smallcaps as features for afm files (use with care)
-
-base_initializers.onum  = common_initializers.oldstyle
-base_initializers.smcp  = common_initializers.smallcaps
-base_initializers.fkcp  = common_initializers.fakecaps
-
-register_feature('onum',false)
-register_feature('smcp',false)
-register_feature('fkcp',false)
+-- afm specific, obsolete
+--
+-- register_feature('encoding')
+--
+-- base_initializers.encoding = common_initializers.encoding
+-- node_initializers.encoding = common_initializers.encoding
+--
+-- base_initializers.onum     = common_initializers.oldstyle
+-- base_initializers.smcp     = common_initializers.smallcaps
+-- base_initializers.fkcp     = common_initializers.fakecaps
+--
+-- register_feature('onum',false)
+-- register_feature('smcp',false)
+-- register_feature('fkcp',false)
 
 -- readers
 

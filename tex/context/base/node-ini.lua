@@ -54,10 +54,12 @@ into the <l n='tex'/> engine, but this is a not so natural extension.</p>
 also ignore the empty nodes. [This is obsolete!]</p>
 --ldx]]--
 
-local traverse, traverse_id = node.traverse, node.traverse_id
-local free_node, remove_node = node.free, node.remove
-local insert_node_before, insert_node_after = node.insert_before, node.insert_after
-local slide_nodes = node.slide
+local traverse           = node.traverse
+local traverse_id        = node.traverse_id
+local free_node          = node.free
+local remove_node        = node.remove
+local insert_node_before = node.insert_before
+local insert_node_after  = node.insert_after
 
 local allocate = utilities.storage.allocate
 
@@ -69,25 +71,25 @@ nodes.handlers = nodes.handlers or { }
 -- there will be more of this:
 
 local skipcodes = allocate {
-   [ 0] = "userskip",
-   [ 1] = "lineskip",
-   [ 2] = "baselineskip",
-   [ 3] = "parskip",
-   [ 4] = "abovedisplayskip",
-   [ 5] = "belowdisplayskip",
-   [ 6] = "abovedisplayshortskip",
-   [ 7] = "belowdisplayshortskip",
-   [ 8] = "leftskip",
-   [ 9] = "rightskip",
-   [10] = "topskip",
-   [11] = "splittopskip",
-   [12] = "tabskip",
-   [13] = "spaceskip",
-   [14] = "xspaceskip",
-   [15] = "parfillskip",
-   [16] = "thinmuskip",
-   [17] = "medmuskip",
-   [18] = "thickmuskip",
+    [ 0] = "userskip",
+    [ 1] = "lineskip",
+    [ 2] = "baselineskip",
+    [ 3] = "parskip",
+    [ 4] = "abovedisplayskip",
+    [ 5] = "belowdisplayskip",
+    [ 6] = "abovedisplayshortskip",
+    [ 7] = "belowdisplayshortskip",
+    [ 8] = "leftskip",
+    [ 9] = "rightskip",
+    [10] = "topskip",
+    [11] = "splittopskip",
+    [12] = "tabskip",
+    [13] = "spaceskip",
+    [14] = "xspaceskip",
+    [15] = "parfillskip",
+    [16] = "thinmuskip",
+    [17] = "medmuskip",
+    [18] = "thickmuskip",
 }
 
 local noadcodes = allocate {
@@ -346,27 +348,6 @@ local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
 function nodes.reference(n)
     return lpegmatch(reference,tostring(n))
 end
-
-function nodes.link(n,...) -- blobs ?
-    if n then
-        if type(n) ~= "table" then
-            n = { n, ... }
-        end
-        local head = n[1]
-        local tail = slide_nodes(head)
-        for i=2,#n do
-            local ni = n[i]
-            tail.next = ni
-            ni.prev = tail
-            tail = slide_nodes(ni)
-        end
-        return head
-    else
-        -- sort of fatal error
-    end
-end
-
---
 
 if not node.next then
 

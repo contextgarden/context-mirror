@@ -188,7 +188,7 @@ function tfm.remap(tfmdata,remapping)
             end
         end
         tfmdata.encodingbytes = 2
-        tfmdata.format = 'type1'
+        tfmdata.format = tfmdata.format or 'type1'
     end
 end
 

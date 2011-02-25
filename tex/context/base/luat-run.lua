@@ -102,8 +102,10 @@ callbacks.register("pre_dump",              pre_dump_actions,    "lua related fi
 
 local tempfiles = { }
 
-function luatex.registertempfile(name)
-    name = name .. ".mkiv-tmp" -- maybe just .tmp
+function luatex.registertempfile(name,extrasuffix)
+    if extrasuffix then
+        name = name .. ".mkiv-tmp" -- maybe just .tmp
+    end
     if trace_temp_files and not tempfiles[name] then
         report_tempfiles("registering temporary file: %s",name)
     end

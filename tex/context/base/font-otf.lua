@@ -38,42 +38,47 @@ local starttiming, stoptiming, elapsedtime = statistics.starttiming, statistics.
 
 local findbinfile = resolvers.findbinfile
 
-local fonts          = fonts
+local fonts            = fonts
 
-fonts.otf            = fonts.otf or { }
-local otf            = fonts.otf
-local tfm            = fonts.tfm
+fonts.otf              = fonts.otf or { }
+local otf              = fonts.otf
+local tfm              = fonts.tfm
 
-local fontdata       = fonts.identifiers
-local chardata       = characters and characters.data -- not used
+local fontdata         = fonts.identifiers
+local chardata         = characters and characters.data -- not used
 
-otf.features         = otf.features         or { }
-otf.features.list    = otf.features.list    or { }
-otf.features.default = otf.features.default or { }
+-- todo: probably first time so local first
 
-otf.enhancers        = allocate()
-local enhancers      = otf.enhancers
-enhancers.patches    = { }
-local patches        = enhancers.patches
+otf.features           = otf.features     or { }
+local features         = otf.features
+features.list          = features.list    or { }
+local featurelist      = features.list
+features.default       = features.default or { }
+local defaultfeatures  = features.default
 
-local definers       = fonts.definers
-local readers        = fonts.tfm.readers
+otf.enhancers          = allocate()
+local enhancers        = otf.enhancers
+enhancers.patches      = { }
+local patches          = enhancers.patches
 
-otf.glists           = { "gsub", "gpos" }
+local definers         = fonts.definers
+local readers          = fonts.tfm.readers
 
-otf.version          = 2.710 -- beware: also sync font-mis.lua
-otf.cache            = containers.define("fonts", "otf", otf.version, true)
+otf.glists             = { "gsub", "gpos" }
 
-local loadmethod     = "table" -- table, mixed, sparse
-local forceload      = false
-local cleanup        = 0
-local usemetatables  = false -- .4 slower on mk but 30 M less mem so we might change the default -- will be directive
-local packdata       = true
-local syncspace      = true
-local forcenotdef    = false
+otf.version            = 2.710 -- beware: also sync font-mis.lua
+otf.cache              = containers.define("fonts", "otf", otf.version, true)
 
-local wildcard       = "*"
-local default        = "dflt"
+local loadmethod       = "table" -- table, mixed, sparse
+local forceload        = false
+local cleanup          = 0
+local usemetatables    = false -- .4 slower on mk but 30 M less mem so we might change the default -- will be directive
+local packdata         = true
+local syncspace        = true
+local forcenotdef      = false
+
+local wildcard         = "*"
+local default          = "dflt"
 
 local fontloaderfields = fontloader.fields
 local mainfields       = nil
@@ -1534,9 +1539,12 @@ end
 -- -- -- -- -- --
 -- -- -- -- -- --
 
-function otf.features.register(name,default)
-    otf.features.list[#otf.features.list+1] = name
-    otf.features.default[name] = default
+function features.register(name,default,description)
+    featurelist[#featurelist+1] = name
+    defaultfeatures[name] = default
+    if description and description ~= "" then
+        fonts.otf.tables.features[name] = description
+    end
 end
 
 -- for context this will become a task handler
@@ -1629,6 +1637,8 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
         end
         local spaceunits, spacer = 500, "space"
         -- indices maps from unicodes to indices
+        -- this wil stay as we can manipulate indices
+        -- beforehand
         for u, i in next, indices do
             characters[u] = { } -- we need this because for instance we add protruding info and loop over characters
             descriptions[u] = glyphs[i]
@@ -1684,10 +1694,10 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             end
         end
         -- end math
-        local endash, emdash, space = 0x20, 0x2014, "space" -- unicodes['space'], unicodes['emdash']
+        local space, emdash = 0x20, 0x2014 -- unicodes['space'], unicodes['emdash']
         if metadata.isfixedpitch then
-            if descriptions[endash] then
-                spaceunits, spacer = descriptions[endash].width, "space"
+            if descriptions[space] then
+                spaceunits, spacer = descriptions[space].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
                 spaceunits, spacer = descriptions[emdash].width, "emdash"
@@ -1696,8 +1706,8 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
                 spaceunits, spacer = metadata.charwidth, "charwidth"
             end
         else
-            if descriptions[endash] then
-                spaceunits, spacer = descriptions[endash].width, "space"
+            if descriptions[space] then
+                spaceunits, spacer = descriptions[space].width, "space"
             end
             if not spaceunits and descriptions[emdash] then
                 spaceunits, spacer = descriptions[emdash].width/2, "emdash/2"
@@ -1765,7 +1775,6 @@ local function copytotfm(data,cache_id) -- we can save a copy when we reorder th
             boundarychar_label = 0,
             boundarychar       = 65536,
             designsize         = (designsize/10)*65536,
-            spacer             = "500 units",
             encodingbytes      = 2,
             mode               = mode,
             filename           = filename,
@@ -1824,7 +1833,8 @@ local function otftotfm(specification)
                 tfmdata.has_italic = otfdata.metadata.has_italic
                 if not tfmdata.language then tfmdata.language = 'dflt' end
                 if not tfmdata.script   then tfmdata.script   = 'dflt' end
-                shared.processes, shared.features = otf.setfeatures(tfmdata,definers.check(features,otf.features.default))
+                -- at this moment no characters are assinged yet, only empty slots
+                shared.processes, shared.features = otf.setfeatures(tfmdata,definers.check(features,defaultfeatures))
             end
         end
         containers.write(tfm.cache,cache_id,tfmdata)
@@ -1832,7 +1842,7 @@ local function otftotfm(specification)
     return tfmdata
 end
 
-otf.features.register('mathsize')
+features.register('mathsize')
 
 local function read_from_otf(specification) -- wrong namespace
     local tfmtable = otftotfm(specification)

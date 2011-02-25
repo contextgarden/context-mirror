@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['font-ini'] = {
     license   = "see context related readme files"
 }
 
+-- The font code will be upgraded and reorganized so that we have a
+-- leaner generic code base and can do more tuning for context.
+
 --[[ldx--
 <p>Not much is happening here.</p>
 --ldx]]--

@@ -357,4 +357,15 @@
      {(\withoutpt\the\nextboxht,\withoutpt\the\nextboxdp)}%
      \hbox}
 
+\gdef\showfontparameters
+  {\starttabulate[|tl|l|]
+   \NC slantperpoint   \NC \the\fontslantperpoint   \font \NC\NR
+   \NC interwordspace  \NC \the\fontinterwordspace  \font \NC\NR
+   \NC interwordstretch\NC \the\fontinterwordstretch\font \NC\NR
+   \NC interwordshrink \NC \the\fontinterwordshrink \font \NC\NR
+   \NC exheight        \NC \the\fontexheight        \font \NC\NR
+   \NC emwidth         \NC \the\fontemwidth         \font \NC\NR
+   \NC extraspace      \NC \the\fontextraspace      \font \NC\NR
+   \stoptabulate}
+
 \protect \endinput

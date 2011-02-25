@@ -29,7 +29,7 @@ local free_node          = node.free
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
-local tonodes            = blobs.tonodes
+local link_nodes         = nodes.link
 
 local texattribute       = tex.attribute
 
@@ -152,7 +152,9 @@ methods[5] = function(head,start,settings) -- x => p q r
         head, start = insert_node_before(head,start,new_disc())
         local attr = tmp.attr
         start.attr = copy_nodelist(attr) -- todo: critical only
-        start.pre, start.post, start.replace = tonodes(settings.right,tmp,attr), tonodes(settings.left,tmp,attr), tonodes(settings.middle,tmp,attr)
+        start.pre = link_nodes(settings.right,tmp,attr)
+        start.post = link_nodes(settings.left,tmp,attr)
+        start.replace = link_nodes(settings.middle,tmp,attr)
         free_node(tmp)
         insert_break(head,start,10000,10000)
     end

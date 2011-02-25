@@ -3,7 +3,7 @@ if not modules then modules = { } end modules ['font-map'] = {
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "derived from http://www.adobe.com/devnet/opentype/archives/glyphlist.txt",
-    comment   = "Adobe Glyph List, version 2.0, September 20, 2002",
+    original  = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
 local allocate = utilities.storage.allocate
@@ -15,7 +15,7 @@ local unicodes = allocate {
     -- filled from char-def.lua
 }
 
-local extras   = allocate {
+local extras   = allocate { -- private extensions
     Dcroat          = 0x0110,
     Delta           = 0x2206,
     Euro            = 0x20AC,
@@ -273,6 +273,8 @@ end
 
 -- We load this table only when needed. We coul duse a loading mechanism
 -- return the table but there are no more vectors like this so why bother.
+
+fonts.enc = fonts.enc or { }
 
 fonts.enc.agl = {
     names    = names,     -- unicode -> name

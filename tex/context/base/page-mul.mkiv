@@ -1256,9 +1256,17 @@
 \def\OTRMULdotopinsertions   {\ifconditional\onlylocalcolumnfloats\relax              \else\OTRONEdotopinsertions \fi}
 \def\OTRMULdoflushfloats     {\ifconditional\onlylocalcolumnfloats\doflushcolumnfloats\else\OTRONEdoflushfloats   \fi}
 
+\newtoks\everylocalcolumnfloatspar
+
+\everylocalcolumnfloatspar
+  {\flushnotes
+   \flushcolumnfloat
+ % \flushmargincontents
+   \checkindentation}
+
 \def\setlocalcolumnfloats
   {\settrue\onlylocalcolumnfloats
-   \everypar{\flushnotes\flushcolumnfloat\flushmargincontents\checkindentation}%
+   \everypar\everylocalcolumnfloatspar
    \let\flushcolumnfloat\doflushcolumnfloat
    \let\flushcolumnfloats\doflushcolumnfloats}
 

@@ -66,6 +66,7 @@ local lccodes           = characters.lccodes
 local lcchars           = characters.lcchars
 local shchars           = characters.shchars
 local fscodes           = characters.fscodes
+local fschars           = characters.fschars
 
 local variables         = interfaces.variables
 
@@ -161,7 +162,7 @@ local function preparetables(data)
             local n, nn
             if k then
                 if trace_tests then
-                    report_sorters("simplifing character 0x%04x %s",utfbyte(k),k)
+                    report_sorters("simplifing character 0x%04X %s",utfbyte(k),k)
                 end
                 local l = lower[k] or lcchars[k]
                 if l then
@@ -182,8 +183,8 @@ local function preparetables(data)
                     end
                 end
                 if not n then
-                    local s = shchars[k]
-                    if s and s ~= k then -- weird test
+                    local s = shchars[k] -- maybe all components?
+                    if s and s ~= k then
                         if trace_tests then
                             report_sorters(" 3 shape: %s",s)
                         end
@@ -217,21 +218,39 @@ local function preparetables(data)
                                 end
                             end
                         end
-                        if trace_tests then
-                            report_sorters(" 6 order: %s",concat(n," "))
+                    else
+                        -- fschars returns a single char
+                        s = fschars[k]
+                        if s and s ~= k then
+                            if trace_tests then
+                                report_sorters(" 6 split: %s",s)
+                            end
+                            local ml = rawget(t,s)
+                            if ml then
+                                n = { }
+                                nn = 0
+                                for i=1,#ml do
+                                    nn = nn + 1
+                                    n[nn] = ml[i]
+                                end
+                            end
                         end
                     end
-                    if not n then
+                    if n then
+                        if trace_tests then
+                            report_sorters(" 7 order: %s",concat(n," "))
+                        end
+                    else
                         n = noorder
                         if trace_tests then
-                            report_sorters(" 7 order: 0")
+                            report_sorters(" 8 order: 0")
                         end
                     end
                 end
             else
                 n = noorder
                 if trace_tests then
-                    report_sorters(" 8 order: 0")
+                    report_sorters(" 9 order: 0")
                 end
             end
             rawset(t,k,n)
@@ -585,8 +604,12 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
                 p_case[n] = l
             end
             char[n], byte[n] = sc, b
+local fs = fscodes[b] or b
             local msc = m_mappings[sc]
             if msc ~= noorder then
+if not msc then
+    msc = m_mappings[fs]
+end
                 for i=1,#msc do
                     nm = nm + 1
                     m_mapping[nm] = msc[i]
@@ -594,6 +617,9 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             end
             local zsc = z_mappings[sc]
             if zsc ~= noorder then
+if not zsc then
+    zsc = z_mappings[fs]
+end
                 for i=1,#zsc do
                     nz = nz + 1
                     z_mapping[nz] = zsc[i]
@@ -601,6 +627,9 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
             end
             local psc = p_mappings[sc]
             if psc ~= noorder then
+if not psc then
+    psc = p_mappings[fs]
+end
                 for i=1,#psc do
                     np = np + 1
                     p_mapping[np] = psc[i]
@@ -611,20 +640,20 @@ function splitters.utf(str) -- we could append m and u but this is cleaner, s is
 
     -- only those needed that are part of a sequence
 
-    local b = byte[1]
-    if b then
-        -- we set them to the first split code (korean)
-        local fs = fscodes[b] or b
-        if #m_mapping == 0 then
-            m_mapping = { m_mappings[fs][1] }
-        end
-        if #z_mapping == 0 then
-            z_mapping = { z_mappings[fs][1] }
-        end
-        if #p_mapping == 0 then
-            p_mapping = { p_mappings[fs][1] }
-        end
-    end
+--~     local b = byte[1]
+--~     if b then
+--~         -- we set them to the first split code (korean)
+--~         local fs = fscodes[b] or b
+--~         if #m_mapping == 0 then
+--~             m_mapping = { m_mappings[fs][1] }
+--~         end
+--~         if #z_mapping == 0 then
+--~             z_mapping = { z_mappings[fs][1] }
+--~         end
+--~         if #p_mapping == 0 then
+--~             p_mapping = { p_mappings[fs][1] }
+--~         end
+--~     end
 
     local t = {
         ch = char,
@@ -681,7 +710,7 @@ function sorters.sort(entries,cmp)
         local nofentries = #entries
         report_sorters("entries: %s, language: %s, method: %s, digits: %s",nofentries,language,method,tostring(digits))
         for i=1,nofentries do
-            report_sorters("entry %s",table.serialize(entries[i].split,i))
+            report_sorters("entry %s",table.serialize(entries[i].split,i,true,true,true))
         end
     end
     if trace_tests then
