@@ -13,11 +13,13 @@
 
 \startluacode
 
+    local fontdata = fonts.hashes.identifiers
+
     function fonts.tracers.shapes() -- todo: ranges
         local NC, NR = context.NC, context.NR
         local char = context.char
-        local chrs = fonts.identifiers[font.current()].characters
-     -- local desc = fonts.identifiers[font.current()].descriptions
+        local chrs = fontdata[font.current()].characters
+     -- local desc = fontdata[font.current()].descriptions
         context.starttabulate { "|l|c|c|c|c|l|" }
             context.FL()
                 NC() context("unicode")

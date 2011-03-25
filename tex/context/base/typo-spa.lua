@@ -25,8 +25,9 @@ local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove
 
-local fontdata           = fonts.identifiers
-local quaddata           = fonts.quads
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local quaddata           = fonthashes.quads
 
 local texattribute       = tex.attribute
 

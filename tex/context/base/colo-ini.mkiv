@@ -140,15 +140,15 @@
 %D \showsetup{color}
 %D \showsetup{graycolor}
 
-           \def\switchtocolor      [#1]{\csname#1\endcsname}
+\unexpanded\def\switchtocolor      [#1]{\csname#1\endcsname}
 \unexpanded\def\color              [#1]{\groupedcommand{\doactivatecolor{#1}}{}}
 \unexpanded\def\startcolor         [#1]{\begingroup\doactivatecolor{#1}}
 \unexpanded\def\stopcolor              {\endgroup}
 \unexpanded\def\graycolor          [#1]{\groupedcommand{\dosetcolormodel{gray}\getvalue{#1}}{}}
 \unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
 \unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
-           \def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
-           \def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
+\unexpanded\def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
+\unexpanded\def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
 
 % some of this will go away
 
@@ -156,10 +156,16 @@
 \unexpanded\def\stopcolorpage          {\stopcolor}
 \unexpanded\def\startraster        [#1]{\dosetrastercolor{#1}}
 \unexpanded\def\stopraster             {}
-           \def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
-           \def\faststartcolor     [#1]{\doactivatecolor{#1}}
-           \def\faststopcolor          {}
+\unexpanded\def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
+\unexpanded\def\faststartcolor     [#1]{\doactivatecolor{#1}}
+\unexpanded\def\faststopcolor          {}
 \unexpanded\def\dosetcolorattribute#1#2{\ifcsname#1#2\endcsname\doactivatecolor{\csname#1#2\endcsname}\fi}
+
+\def\getcolorattributevalue#1#2% color macro (obsolete again, we have a better method)
+  {\begingroup
+   \doactivatecolor{#1}%
+   \normalexpanded{\endgroup\edef\noexpand#2%
+     {\ifnum\attribute\colorattribute=\attributeunsetvalue\else\number\attribute\colorattribute\fi}}}
 
 \let\grey\graycolor
 
@@ -749,7 +755,7 @@
 \letvalueempty{(cs:-}
 \letvalueempty{(ts:-}
 
-\def\doactivatecolor#1% : in currentpalet, maybe not, ugly
+\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
   {\def\currentcolorname{#1}%
    \ifcsname(cs:\currentpalet#1)\endcsname
      \csname(cs:\currentpalet#1)\endcsname

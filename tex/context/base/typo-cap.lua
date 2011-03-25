@@ -36,8 +36,10 @@ local userskip_code   = skipcodes.userskip
 
 local tasks           = nodes.tasks
 
-local fontdata        = fonts.identifiers
-local fontchar        = fonts.characters
+local fonthashes      = fonts.hashes
+local fontdata        = fonthashes.identifiers
+local fontchar        = fonthashes.characters
+
 local chardata        = characters.data
 
 typesetters           = typesetters or { }

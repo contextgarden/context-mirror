@@ -50,7 +50,7 @@
      \begingroup
      \getparameters[\??bp][\c!type=1,\c!nleft=3,\c!nright=3,\s!language=,\c!left=,\c!right=,\c!middle=,#3]%
      \ctxlua{typesetters.breakpoints.setreplacement(\csname\??bp:#1\endcsname, "#2", "\reallanguagetag\@@bplanguage", {
-            kind =  \@@bptype,
+            type =  \@@bptype,
            nleft = "\@@bpnleft",
           nright = "\@@bpnright",
            right = "\@@bpright",

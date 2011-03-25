@@ -60,31 +60,39 @@ end
 
 -- todo: order and maybe other dimensions
 
-local trace_ruled = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
+local floor = math.floor
+
+local trace_ruled    = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
 
 local report_ruled   = logs.reporter("nodes","rules")
 
-local floor = math.floor
-local n_tostring, n_tosequence = nodes.idstostring, nodes.tosequence
+local n_tostring      = nodes.idstostring
+local n_tosequence    = nodes.tosequence
 
-local a_ruled        = attributes.private('ruled')
-local a_color        = attributes.private('color')
-local a_transparency = attributes.private('transparency')
-local a_colorspace   = attributes.private('colormodel')
+local a_ruled         = attributes.private('ruled')
+local a_color         = attributes.private('color')
+local a_transparency  = attributes.private('transparency')
+local a_colorspace    = attributes.private('colormodel')
 
-local insert_before, insert_after, striprange = node.insert_before, node.insert_after, nodes.striprange
-local list_dimensions, has_attribute, set_attribute = node.dimensions, node.has_attribute, node.set_attribute
-local hpack_nodes = node.hpack
-local dimenfactor = fonts.dimenfactor
-local texwrite = tex.write
+local texwrite        = tex.write
 
-local fontdata  = fonts.identifiers
-local variables = interfaces.variables
+local insert_before   = node.insert_before
+local insert_after    = node.insert_after
+local striprange      = nodes.striprange
+local list_dimensions = node.dimensions
+local has_attribute   = node.has_attribute
+local set_attribute   = node.set_attribute
 
-local nodecodes = nodes.nodecodes
-local skipcodes = nodes.skipcodes
-local whatcodes = nodes.whatcodes
-local kerncodes = nodes.kerncodes
+local hpack_nodes     = node.hpack
+
+local fontdata        = fonts.hashes.identifiers
+local variables       = interfaces.variables
+local dimenfactor     = fonts.helpers.dimenfactor
+
+local nodecodes       = nodes.nodecodes
+local skipcodes       = nodes.skipcodes
+local whatcodes       = nodes.whatcodes
+local kerncodes       = nodes.kerncodes
 
 local glyph_code      = nodecodes.glyph
 local disc_code       = nodecodes.disc

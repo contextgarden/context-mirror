@@ -269,17 +269,17 @@ local function reviver(data,n)
             d = { gray, gray, gray, gray }
             report_attributes("unable to revive color %s",n or "?")
         else
-            local kind = colors.forcedmodel(v[1])
-            if kind == 2 then
+            local model = colors.forcedmodel(v[1])
+            if model == 2 then
                 local gray= graycolor(v[2])
                 d = { gray, gray, gray, gray }
-            elseif kind == 3 then
+            elseif model == 3 then
                 local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
                 d = { rgb, gray, rgb, cmyk }
-            elseif kind == 4 then
+            elseif model == 4 then
                 local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
                 d = { cmyk, gray, rgb, cmyk }
-            elseif kind == 5 then
+            elseif model == 5 then
                 local spot = spotcolor(v[10],v[11],v[12],v[13])
             --  d = { spot, gray, rgb, cmyk }
                 d = { spot, spot, spot, spot }

@@ -19,7 +19,7 @@ local lpegmatch = lpeg.match
 local texbox = tex.box
 local copy_list, free_list = node.copy_list, node.flush_list
 
-local Cs, Cf, C, Cg, Ct, P, S, V = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V
+local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -95,9 +95,9 @@ end
 
 --~
 
-local specificationsplitter = lpeg.Ct(lpeg.splitat(" "))
-local colorsplitter         = lpeg.Ct(lpeg.splitter(":",tonumber)) -- no need for :
-local domainsplitter        = lpeg.Ct(lpeg.splitter(" ",tonumber))
+local specificationsplitter = Ct(lpeg.splitat(" "))
+local colorsplitter         = Ct(lpeg.splitter(":",tonumber)) -- no need for :
+local domainsplitter        = Ct(lpeg.splitter(" ",tonumber))
 local centersplitter        = domainsplitter
 local coordinatesplitter    = domainsplitter
 
@@ -821,23 +821,22 @@ end
 local function fg_process(object,prescript,before,after)
     local fg_name = prescript.fg_name
     if fg_name then
-        -- now uses textext
-        local op = object.path
-        local first, second, fourth  = op[1], op[2], op[4]
-        local tx, ty = first.x_coord      , first.y_coord
-        local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-        local rx, ry = second.y_coord - ty, fourth.x_coord - tx
-        if sx == 0 then sx = 0.00001 end
-        if sy == 0 then sy = 0.00001 end
-        object.path = nil
+        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
         before[#before+1] = function()
-            context.MPLIBfigure(sx,rx,ry,sy,tx,ty,fg_name)
+            context.MPLIBfigure(fg_name,prescript.fg_mask or "")
         end
+        before[#before+1] = "Q"
+        object.path = false
         object.grouped = true
     end
 end
 
 -- color and transparency
+
+local value = Cs ( (
+    (Carg(1) * C((1-P(","))^1)) / function(a,b) return format("%0.3f",a * tonumber(b)) end
+  + P(","))^1
+)
 
 local function tr_process(object,prescript,before,after)
     local cs = object.color
@@ -853,8 +852,12 @@ local function tr_process(object,prescript,before,after)
         if sp_name then
             local sp_fractions  = prescript.sp_fractions  or 1
             local sp_components = prescript.sp_components or ""
-            local sp_value      = prescript.sp_value      or 1
-            sp_value = tonumber(sp_value) * cs[1]
+            local sp_value      = prescript.sp_value      or "1"
+            local cf = cs[1]
+            if cf ~= 1 then
+                -- beware, we do scale the spotcolors but not the alternative representation
+                sp_value = lpeg.match(value,sp_value,1,cf) or sp_value
+            end
             before[#before+1], after[#after+1] = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
         else
             before[#before+1], after[#after+1] = colorconverter(cs)

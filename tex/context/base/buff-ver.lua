@@ -194,17 +194,17 @@ end
 
 local fallback = context.verbatim
 
-local function makepattern(visualizer,kind,pattern)
+local function makepattern(visualizer,replacement,pattern)
     if not pattern then
-        report_visualizers("error in visualizer: %s",kind)
+        report_visualizers("error in visualizer: %s",replacement)
         return patterns.alwaystrue
     else
-        if type(visualizer) == "table" and type(kind) == "string" then
-            kind = visualizer[kind] or fallback
+        if type(visualizer) == "table" and type(replacement) == "string" then
+            replacement = visualizer[replacement] or fallback
         else
-            kind = fallback
+            replacement = fallback
         end
-        return (C(pattern) * CargOne) / kind
+        return (C(pattern) * CargOne) / replacement
     end
 end
 

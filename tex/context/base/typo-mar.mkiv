@@ -286,7 +286,7 @@
 \definemargindata [inmargin]   [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
 \definemargindata [inother]    [\v!right]    [\c!margin=\c!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
 
-\definemargindata [margintext] [\v!left] % keep it a bit separated from inleft and inmargin
+\definemargindata [margintext] [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
 
 \setupmarginframed [\v!left ] [\c!method=\v!first,\c!align=\v!flushright,\s!parent=\??mf] % we could autoparent when no define yet
 \setupmarginframed [\v!right] [\c!method=\v!first,\c!align=\v!flushleft, \s!parent=\??mf]
@@ -328,9 +328,9 @@
 % \def\dodefineinmargin[#name][#location][#align][#settings]% not completely compatible
 %   {\definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
 %    \definemarginframed[#name][#location][\c!align=#align,#settings]}
-%
-% \let\setupinmargin\setupmargindata
-%
+
+\let\setupinmargin\setupmargindata
+
 % The following is too dangerous:
 %
 % \unexpanded\def\setupinmargin

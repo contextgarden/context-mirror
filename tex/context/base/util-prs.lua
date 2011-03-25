@@ -178,7 +178,8 @@ end
 
 function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
     t = t or { }
-    for s in gmatch(str,"%s*([^, ]+)") do -- space added
+--  for s in gmatch(str,"%s*([^, ]+)") do -- space added
+    for s in gmatch(str,"[^, ]+") do -- space added
         t[s] = true
     end
     return t
@@ -219,4 +220,8 @@ function parsers.getparameters(self,class,parentclass,settings)
         end
     end
     parsers.settings_to_hash(settings,sc)
+end
+
+function parsers.listitem(str)
+    return gmatch(str,"[^, ]+")
 end

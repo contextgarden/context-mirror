@@ -1,0 +1,178 @@
+%D \module
+%D   [       file=scrn-ini,
+%D        version=2011.02.27,
+%D          title=\CONTEXT\ Interaction Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Interaction Macros / Initialization}
+
+\unprotect
+
+\registerctxluafile{scrn-ini}{1.001}
+
+%D There is no interaction at all unless enabled by saying:
+%D
+%D \starttyping
+%D \setupinteraction[state=start]
+%D \stoptyping
+%D
+%D The other settings are:
+%D
+%D \showsetup{setupinteraction}
+
+\installcommandhandler\??ia{interaction}\??ia
+
+\let\currentinteraction\empty
+
+\appendtoks
+  \doifelse{\interactionparameter\c!state}\v!start
+    {\locationtrue  \setsystemmode  \v!interaction}%
+    {\locationfalse \resetsystemmode\v!interaction}%
+\to \everysetupinteraction
+
+\def\doifelselocation
+  {\iflocation
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\setupinteraction
+  [\c!state=\v!stop]
+
+\appendtoks
+    \setupinteraction % todo: remember info at the lua end (already possible)
+\to \everyjob
+
+% it makes no sense to create an environment as we will seldom have structured
+% interactionso a general start-stop will do
+%
+% \appendtoks
+%     \setuevalue         \currentinteraction {\scrn_interaction_direct{\currentinteraction}}%
+%     \setuevalue{\e!start\currentinteraction}{\scrn_interaction_start {\currentinteraction}}%
+%     \setuevalue{\e!stop \currentinteraction}{\scrn_interaction_stop                       }%
+% \to \everydefineinteraction
+%
+% \unexpanded\def\scrn_interaction_direct#1%
+%   {\edef\currentinteraction{#1}}
+%
+% \unexpanded\def\scrn_interaction_start#1%
+%   {\pushmacro\currentinteraction
+%    \edef\currentinteraction{#1}}
+%
+% \unexpanded\def\scrn_interaction_stop
+%   {\popmacro\currentinteraction}
+%
+% \unexpanded\def\setinteraction[#1]%
+%   {\def\currentinteraction{#1}}
+%
+% \defineinteraction[\v!interaction]
+
+\unexpanded\def\startinteraction[#1]%
+  {\pushmacro\currentinteraction
+   \edef\currentinteraction{#1}}
+
+\unexpanded\def\stopinteraction
+  {\popmacro\currentinteraction}
+
+\unexpanded\def\setinteraction[#1]%
+  {\def\currentinteraction{#1}}
+
+%D As long as there a natural feeling of what can be considered
+%D hyper active or not, we have to tell users where they can
+%D possibly click. We've already seen a few macros that deal
+%D with this visualization, something we definitely do not let
+%D up to the viewer. One way of telling is using a distinctive
+%D typeface, another way is using color.
+%D
+%D There are two colors involved: one for normal hyperlinks,
+%D and one for those that point to the currentpage, the
+%D contrast color.
+
+\definecolor [interactioncolor]         [r=0,  g=.6, b=0]
+\definecolor [interactioncontrastcolor] [r=.8, g=0,  b=0]
+
+%D The next few macros are responsible for highlighting hyper
+%D links. The first one, \type{\showlocation}, is used in those
+%D situations where the typeface is handled by the calling
+%D macro.
+
+%D When we're dealing with pure page references, contrast
+%D colors are used when we are already at the page mentioned.
+
+\def\setlocationcolor#1% not grouped !
+  {\ifnum\referencepagestate=\plusone
+     \edef\askedcontrastcolor{\csname#1\c!contrastcolor\endcsname}%
+     \ifx\askedcontrastcolor\empty
+       \dosetcolorattribute{#1}\c!color
+     \else
+       \dosetcolorattribute{#1}\c!contrastcolor
+     \fi
+   \else % we could just set and if > 0 set again
+     \dosetcolorattribute{#1}\c!color
+   \fi}
+
+\def\setlocationfont#1%
+  {\dosetfontattribute{#1}\c!style}
+
+\def\setlocationattributes#1%
+  {\ifnum\referencepagestate=\plusone
+     \edef\askedcontrastcolor{\csname#1\c!contrastcolor\endcsname}%
+     \ifx\askedcontrastcolor\empty
+       \dosetcolorattribute{#1}\c!color
+     \else
+       \dosetcolorattribute{#1}\c!contrastcolor
+     \fi
+   \else % we could just set and if > 0 set again
+     \dosetcolorattribute{#1}\c!color
+   \fi
+   \dosetfontattribute{#1}\c!style}
+
+\def\setlocationcolorspec#1% \resolver
+  {\ifnum\referencepagestate=\plusone
+     \edef\askedcontrastcolor{#1\c!contrastcolor}%
+     \ifx\askedcontrastcolor\empty
+       \doactivatecolor{#1\c!color}%
+     \else
+       \doactivatecolor\askedcontrastcolor
+     \fi
+   \else
+     \doactivatecolor{#1\c!color}%
+   \fi}
+
+\setupinteraction
+  [\c!style=\v!bold,
+   \c!color=interactioncolor,
+   \c!contrastcolor=interactioncontrastcolor]
+
+%D Identity
+
+\def\scrn_identity_synchronize
+  {\ctxcommand{setupidentity{
+       title    = \!!bs\interactionparameter\c!title\!!es,
+       subtitle = \!!bs\interactionparameter\c!subtitle\!!es,
+       author   = \!!bs\interactionparameter\c!author\!!es,
+       creator  = \!!bs ConTeXt - \contextversion\!!es,
+       date     = \!!bs\interactionparameter\c!date\!!es,
+       keywords = \!!bs\interactionparameter\c!keyword\!!es,
+  }}}
+
+\appendtoks
+    \scrn_identity_synchronize
+\to \everysetupinteraction
+
+\setupinteraction
+  [\c!title=,
+   \c!subtitle=,
+   \c!author=,
+   \c!keyword=,
+   \c!date=]
+
+\protect \endinput

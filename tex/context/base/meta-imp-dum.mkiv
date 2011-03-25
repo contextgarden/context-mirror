@@ -34,26 +34,50 @@
 % fractions like reduction
 
 % June 22, 2003, this definition was patched to adapt itself
-% to transparent colors
+% to transparent colors, but ... in 2011 we no longer have
+% is_transparent so we revert.
+%
+% \startuseMPgraphic{placeholder}{width,height,reduction,color}
+%     numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
+%     t := is_transparent(\MPvar{color}) ;
+%     c := not_transparent(\MPvar{color}) ;
+%     b := not_transparent(white) ;
+%     w := \MPvar{width} ;
+%     h := \MPvar{height} ;
+%     r := \MPvar{reduction} ;
+%     d := max(w,h) ;
+%     p := unitsquare xyscaled (w,h) ;
+%     cc := r[.5c,b] ;
+%     fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
+%     for i := 1 upto 60 :
+%         cc := r[c randomized(.3,.9),b] ;
+%         fill fullcircle
+%             scaled (d/5 randomized (d/5))
+%             shifted (center p randomized (d))
+%             withcolor if t : transparent(1,.5,cc) else : cc fi ;
+%     endfor ;
+%     clip currentpicture to p ;
+% \stopuseMPgraphic
 
 \startuseMPgraphic{placeholder}{width,height,reduction,color}
-    numeric w, h, d, r ; color c, b, cc ; path p ; boolean t ;
-    t := is_transparent(\MPvar{color}) ;
-    c := not_transparent(\MPvar{color}) ;
-    b := not_transparent(white) ;
+    numeric w, h, d, r ; path p ;
+    if cmykcolor \MPvar{color} :
+        cmykcolor c, b ; b := (0,0,0,0)
+    else :
+        color c, b ;  ; b := (1,1,1)
+    fi ;
+    c := \MPvar{color} ;
     w := \MPvar{width} ;
     h := \MPvar{height} ;
     r := \MPvar{reduction} ;
     d := max(w,h) ;
     p := unitsquare xyscaled (w,h) ;
-    cc := r[.5c,b] ;
-    fill p withcolor if t : transparent(1,.5,cc) else : cc fi ;
+    fill p withcolor r[.5c,b] ;
     for i := 1 upto 60 :
-        cc := r[c randomized(.3,.9),b] ;
         fill fullcircle
             scaled (d/5 randomized (d/5))
             shifted (center p randomized (d))
-            withcolor if t : transparent(1,.5,cc) else : cc fi ;
+            withcolor r[c randomized(.3,.9),b] ;
     endfor ;
     clip currentpicture to p ;
 \stopuseMPgraphic

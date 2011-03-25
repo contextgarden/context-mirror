@@ -389,25 +389,23 @@ end
 
 function lpdf.flushobject(name,data)
     if data then
-        name = names[name] or name
-        if name then
-            if trace_objects then
-                if trace_detail then
-                    report_objects("flushing data to reserved object with name '%s' -> %s",name,tostring(data))
-                else
-                    report_objects("flushing data to reserved object with name '%s'",name)
-                end
+        local named = names[name]
+        if named then
+            if not trace_objects then
+            elseif trace_detail then
+                report_objects("flushing data to reserved object with name '%s' -> %s",name,tostring(data))
+            else
+                report_objects("flushing data to reserved object with name '%s'",name)
+            end
+            return pdfimmediateobject(named,tostring(data))
+        else
+            if not trace_objects then
+            elseif trace_detail then
+                report_objects("flushing data to reserved object with number %s -> %s",name,tostring(data))
+            else
+                report_objects("flushing data to reserved object with number %s",name)
             end
             return pdfimmediateobject(name,tostring(data))
-        else
-            if trace_objects then
-                if trace_detail then
-                    report_objects("flushing data to reserved object with number %s -> %s",name,tostring(data))
-                else
-                    report_objects("flushing data to reserved object with number %s",name)
-                end
-            end
-            return pdfimmediateobject(tostring(data))
         end
     else
         if trace_objects and trace_detail then
@@ -688,36 +686,36 @@ function lpdf.id()
     return format("%s.%s",tex.jobname,timestamp)
 end
 
-function lpdf.checkedkey(t,key,kind)
+function lpdf.checkedkey(t,key,variant)
     local pn = t[key]
     if pn then
         local tn = type(pn)
-        if tn == kind then
-            if kind == "string" then
+        if tn == variant then
+            if variant == "string" then
                 return pn ~= "" and pn
-            elseif kind == "table" then
+            elseif variant == "table" then
                 return next(pn) and pn
             else
                 return pn
             end
-        elseif tn == "string" and kind == "number" then
+        elseif tn == "string" and variant == "number" then
             return tonumber(pn)
         end
     end
 end
 
-function lpdf.checkedvalue(value,kind) -- code not shared
+function lpdf.checkedvalue(value,variant) -- code not shared
     if value then
         local tv = type(value)
-        if tv == kind then
-            if kind == "string" then
+        if tv == variant then
+            if variant == "string" then
                 return value ~= "" and value
-            elseif kind == "table" then
+            elseif variant == "table" then
                 return next(value) and value
             else
                 return value
             end
-        elseif tv == "string" and kind == "number" then
+        elseif tv == "string" and variant == "number" then
             return tonumber(value)
         end
     end

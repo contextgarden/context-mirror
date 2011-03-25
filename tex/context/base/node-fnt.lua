@@ -16,18 +16,18 @@ local trace_fontrun    = false  trackers.register("nodes.fontrun",    function(v
 
 local report_fonts  = logs.reporter("fonts","processing")
 
-local nodes, node   = nodes, node
+local nodes, node, fonts = nodes, node, fonts
 
-fonts               = fonts or { }
-fonts.tfm           = fonts.tfm or { }
-fonts.identifiers   = fonts.identifiers or { }
+local fonthashes    = fonts.hashes
+local fontdata      = fonthashes.identifiers
+
+local otf           = fonts.handlers.otf
 
 local traverse_id   = node.traverse_id
 local has_attribute = node.has_attribute
 local starttiming   = statistics.starttiming
 local stoptiming    = statistics.stoptiming
 local nodecodes     = nodes.nodecodes
-local fontdata      = fonts.identifiers
 local handlers      = nodes.handlers
 
 local glyph_code    = nodecodes.glyph
@@ -44,6 +44,37 @@ local glyph_code    = nodecodes.glyph
 
 local run = 0
 
+local setfontdynamics = { }
+local fontprocesses   = { }
+
+setmetatable(setfontdynamics, { __index =
+    function(t,font)
+        local tfmdata = fontdata[font]
+        local shared = tfmdata.shared
+        local v = shared and shared.dynamics and otf.setdynamics or false
+        t[font] = v
+        return v
+    end
+})
+
+setmetatable(fontprocesses, { __index =
+    function(t,font)
+        local tfmdata = fontdata[font]
+        local shared = tfmdata.shared -- we need to check shared, only when same features
+        local processes = shared and shared.processes
+        if processes and #processes > 0 then
+            t[font] = processes
+            return processes
+        else
+            t[font] = false
+            return false
+        end
+    end
+})
+
+fonts.hashes.setdynamics = setfontdynamics
+fonts.hashes.processes   = fontprocesses
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
@@ -57,7 +88,8 @@ function handlers.characters(head)
         local n = head
         while n do
             if n.id == glyph_code then
-                local font, attr = n.font, has_attribute(n,0) or 0
+                local font = n.font
+                local attr = has_attribute(n,0) or 0
                 report_fonts("font %03i, dynamic %03i, glyph %s",font,attr,utf.char(n.char))
             else
                 report_fonts("[%s]",nodecodes[n.id])
@@ -75,35 +107,22 @@ function handlers.characters(head)
                     attrfonts[font] = used
                 end
                 if not used[attr] then
-                    -- we do some testing outside the function
-                    local tfmdata = fontdata[font]
-                    local shared = tfmdata.shared
-                    if shared then
-                        local dynamics = shared.dynamics
-                        if dynamics then
-                            local d = shared.setdynamics(font,dynamics,attr)
-                            if d then
-                                used[attr] = d
-                                a = a + 1
-                            end
+                    local sd = setfontdynamics[font]
+                    if sd then -- always true ?
+                        local d = sd(font,attr) -- can we cache this one?
+                        if d then
+                            used[attr] = d
+                            a = a + 1
                         end
                     end
                 end
             else
                 local used = usedfonts[font]
                 if not used then
-                    local tfmdata = fontdata[font]
-                    if tfmdata then
-                        local shared = tfmdata.shared -- we need to check shared, only when same features
-                        if shared then
-                            local processors = shared.processes
-                            if processors and #processors > 0 then
-                                usedfonts[font] = processors
-                                u = u + 1
-                            end
-                        end
-                    else
-                        -- probably nullfont
+                    local fp = fontprocesses[font]
+                    if fp then
+                        usedfonts[font] = fp
+                        u = u + 1
                     end
                 end
             end

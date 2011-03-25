@@ -1,7 +1,7 @@
 -- This patch code is moved from font-pat.lua to this goodies
--- files as it does not belomg in the core code.
+-- files as it does not belong in the core code.
 
-local patches = fonts.otf.enhancers.patches
+local patches = fonts.handlers.otf.enhancers.patches
 
 local function patch(data,filename,threshold)
     local m = data.metadata.math
@@ -16,10 +16,37 @@ end
 
 patches.register("after","check math parameters","asana",function(data,filename) patch(data,filename,1350) end)
 
+local function less(value,target,original) return 0.25 * value end
+
 return {
-    name = "lm-asana",
+    name = "asana-math",
     version = "1.00",
     comment = "Goodies that complement asana.",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+         -- StackBottomDisplayStyleShiftDown = 0,
+         -- StackBottomShiftDown             = 0,
+         -- StackDisplayStyleGapMin          = 0,
+         -- StackGapMin                      = 0,
+         -- StackTopDisplayStyleShiftUp      = 0,
+         -- StackTopShiftUp                  = 0,
+         -- StretchStackBottomShiftDown      = 0,
+         -- StretchStackGapAboveMin          = 0,
+         -- StretchStackGapBelowMin          = 0,
+         -- StretchStackTopShiftUp           = 0,
+            StackBottomDisplayStyleShiftDown = less,
+            StackBottomShiftDown             = less,
+            StackDisplayStyleGapMin          = less,
+            StackGapMin                      = less,
+            StackTopDisplayStyleShiftUp      = less,
+            StackTopShiftUp                  = less,
+            StretchStackBottomShiftDown      = less,
+            StretchStackGapAboveMin          = less,
+            StretchStackGapBelowMin          = less,
+            StretchStackTopShiftUp           = less,
+        }
+    }
 }
+

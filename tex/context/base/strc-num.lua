@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['strc-num'] = {
     license   = "see context related readme files"
 }
 
+-- this will be reimplemented
+
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
@@ -117,7 +119,7 @@ local function enhance()
     enhance = nil
 end
 
-local function allocate(name,i)
+local function allocate(name,i) -- can be metatable
     local cd = counterdata[name]
     if not cd then
         cd = {

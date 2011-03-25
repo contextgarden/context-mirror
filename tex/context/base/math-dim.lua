@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['math-dim'] = {
     license   = "see context related readme files"
 }
 
--- Beware: only Taco really understands in depth what these dimensions do so
--- if you run into problems ...
+-- Beware: only Taco and Ulrik really understands in depth what these dimensions
+-- do so if you run into problems ask on the context list.
 
 -- The radical_rule value is also used as a trigger. In luatex the accent
 -- placement happens either the opentype way (using top_accent cum suis) or the

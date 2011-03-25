@@ -37,11 +37,13 @@ local tasks           = nodes.tasks
 
 local new_glue        = nodepool.glue
 
-local fontdata        = fonts.identifiers
-local chardata        = fonts.characters
-local quaddata        = fonts.quads
+local fonthashes      = fonts.hashes
+local fontdata        = fonthashes.identifiers
+local chardata        = fonthashes.characters
+local quaddata        = fonthashes.quads
+
 local charbase        = characters.data
-local getdigitwidth   = fonts.getdigitwidth
+local getdigitwidth   = fonts.helpers.getdigitwidth
 
 typesetters           = typesetters or { }
 local typesetters     = typesetters

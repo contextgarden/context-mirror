@@ -312,9 +312,9 @@
 \def\loadmapfile{\dosingleempty\doloadmapfile}
 \def\loadmapline{\dodoubleempty\doloadmapline}
 
-\def\doloadmapfile     [#1]{\ctxlua{fonts.map.loadfile("#1")}}
-\def\doloadmapline [#1][#2]{\ctxlua{fonts.map.loadline("#1","#2")}}
-\def\forgetmapfiles        {\ctxlua{fonts.map.reset()}}
+\def\doloadmapfile     [#1]{\ctxlua{fonts.mappings.loadfile("#1")}}
+\def\doloadmapline [#1][#2]{\ctxlua{fonts.mappings.loadline("#1","#2")}}
+\def\forgetmapfiles        {\ctxlua{fonts.mappings.reset()}}
 
 % \appendtoks
 %     \pdfmapfile{}% somehow does not work at the lua end

@@ -15,15 +15,14 @@ local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 them in tables. But we may do so some day, for consistency.</p>
 --ldx]]--
 
-fonts.enc = fonts.enc or { }
-local enc = fonts.enc
-
 local report_encoding = logs.reporter("fonts","encoding")
 
-enc.version = 1.03
-enc.cache   = containers.define("fonts", "enc", fonts.enc.version, true)
+local encodings = { }
+fonts.encodings = encodings
 
-enc.known = utilities.storage.allocate { -- sort of obsolete
+encodings.version = 1.03
+encodings.cache   = containers.define("fonts", "enc", fonts.encodings.version, true)
+encodings.known   = utilities.storage.allocate { -- sort of obsolete
     texnansi = true,
     ec       = true,
     qx       = true,
@@ -34,8 +33,8 @@ enc.known = utilities.storage.allocate { -- sort of obsolete
     unicode  = true,
 }
 
-function enc.is_known(encoding)
-    return containers.is_valid(enc.cache,encoding)
+function encodings.is_known(encoding)
+    return containers.is_valid(encodings.cache,encoding)
 end
 
 --[[ldx--
@@ -57,16 +56,16 @@ Latin Modern or <l n='tex'> Gyre) come in OpenType variants too, so these
 will be used.</p>
 --ldx]]--
 
-local enccodes = characters.enccodes
+local enccodes = characters.enccodes or { }
 
-function enc.load(filename)
+function encodings.load(filename)
     local name = file.removesuffix(filename)
-    local data = containers.read(enc.cache,name)
+    local data = containers.read(encodings.cache,name)
     if data then
         return data
     end
     if name == "unicode" then
-        data = enc.make_unicode_vector() -- special case, no tex file for this
+        data = encodings.make_unicode_vector() -- special case, no tex file for this
     end
     if data then
         return data
@@ -102,7 +101,7 @@ function enc.load(filename)
         hash     = hash,
         unicodes = unicodes
     }
-    return containers.write(enc.cache, name, data)
+    return containers.write(encodings.cache, name, data)
 end
 
 --[[ldx--
@@ -112,12 +111,13 @@ one.</p>
 
 -- maybe make this a function:
 
-function enc.make_unicode_vector()
+function encodings.make_unicode_vector()
     local vector, hash = { }, { }
     for code, v in next, characters.data do
         local name = v.adobename
         if name then
-            vector[code], hash[name] = name, code
+            vector[code] = name
+            hash[name]   = code
         else
             vector[code] = '.notdef'
         end
@@ -125,21 +125,21 @@ function enc.make_unicode_vector()
     for name, code in next, characters.synonyms do
         vector[code], hash[name] = name, code
     end
-    return containers.write(enc.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
+    return containers.write(encodings.cache, 'unicode', { name='unicode', tag='unicode', vector=vector, hash=hash })
 end
 
-if not enc.agl then
+if not encodings.agl then
 
     -- We delay delay loading this rather big vector that is only needed when a
     -- font is loaded for caching. Once we're further along the route we can also
     -- delay it in the generic version (which doesn't use this file).
 
-    enc.agl = { }
+    encodings.agl = { }
 
-    setmetatable(enc.agl, { __index = function(t,k)
+    setmetatable(encodings.agl, { __index = function(t,k)
         report_encoding("loading (extended) adobe glyph list")
-        dofile(resolvers.findfile("font-agl.lua"))
-        return rawget(enc.agl,k)
+        dofile(resolvers.findfile("font-age.lua"))
+        return rawget(encodings.agl,k)
     end })
 
 end

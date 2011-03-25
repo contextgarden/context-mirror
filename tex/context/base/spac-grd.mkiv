@@ -228,7 +228,7 @@
   {\ifvmode
      \bgroup
      \setbaselinecorrections
-     \whitespace
+     \whitespace % no longer ok
      \nointerlineskip
      \dotopbaselinecorrection
      \egroup
@@ -245,6 +245,23 @@
    \fi}
 
 \let\forcedbotbaselinecorrection\botbaselinecorrection
+
+% experiment, todo: proper mkiv mechanism
+
+\def\dotopbaselinecorrection   {\blank[\thetopbaselinecorrection   ]}
+\def\dobotbaselinecorrection   {\blank[\thebotbaselinecorrection   ]}
+\def\donegtopbaselinecorrection{\blank[\thenegtopbaselinecorrection]}
+\def\donegbotbaselinecorrection{\blank[\thenegbotbaselinecorrection]}
+
+\def\forcedtopbaselinecorrection
+  {\ifvmode
+     \bgroup
+     \setbaselinecorrections
+  %  \vspacing[white]
+     \nointerlineskip
+     \dotopbaselinecorrection
+     \egroup
+\fi}
 
 \let\normalstartbaselinecorrection\startbaselinecorrection
 

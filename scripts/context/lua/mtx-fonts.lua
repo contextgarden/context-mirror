@@ -173,7 +173,7 @@ local function showfeatures(tag,specification)
     report("subfont : %s",subfont(specification.subfont))
     report("fweight : %s",fontweight(specification.fontweight))
     -- maybe more
-    local features = fonts.get_features(specification.filename,specification.format)
+    local features = fonts.helpers.getfeatures(specification.filename,specification.format)
     if features then
         for what, v in table.sortedhash(features) do
             local data = features[what]

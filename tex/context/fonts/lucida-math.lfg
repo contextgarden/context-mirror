@@ -1,4 +1,4 @@
-local mathencodings = fonts.enc.math
+local mathencodings = fonts.encodings.math
 
 mathencodings["lbr-ma"] = {
     [0x025CB] = 0x00, -- circle
@@ -305,7 +305,7 @@ mathencodings["lbr-sy"] = table.merged(mathencodings["tex-sy"],mathencodings["lb
 
 mathencodings["lbr-fraktur"] = { }
 
-fonts.vf.math.setletters(mathencodings, "lbr-fraktur",  0x1D504, 0x1D51E)
+fonts.handlers.vf.math.setletters(mathencodings, "lbr-fraktur",  0x1D504, 0x1D51E)
 
 return {
     name = "lucida-math",

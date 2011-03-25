@@ -1,0 +1,180 @@
+%D \module
+%D   [       file=scrn-pag,
+%D        version=1998.01.15,
+%D          title=\CONTEXT\ Screen Macros,
+%D       subtitle=Pages, % moved code
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% pagecomments will be done differently
+
+\writestatus{loading}{ConTeXt Screen Macros / Pages}
+
+\registerctxluafile{scrn-pag}{1.001}
+
+\unprotect
+
+\installparameterhandler \??sc {interactionscreen}
+\installsetuphandler     \??sc {interactionscreen}
+
+\def\scrn_canvas_synchronize_simple % this will be done differently (or disappear)
+  {\begingroup
+   \ifx\@@ppleft   \empty
+   \ifx\@@ppright  \empty
+   \ifx\@@pptop    \empty
+   \ifx\@@ppbottom \empty
+   \ifx\@@pcstate\v!start
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi\else
+     \locationfalse\fi
+   \iflocation % without screen settings
+      \ctxcommand{setupcanvas{
+        paperwidth  = \number\paperwidth,
+        paperheight = \number\paperheight
+      }}%
+   \else
+      \ctxcommand{setupcanvas{
+        paperwidth  = \number\printpaperwidth,
+        paperheight = \number\printpaperheight
+      }}%
+   \fi
+   \endgroup}
+
+\def\scrn_canvas_synchronize_complex
+  {\begingroup
+   \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
+   \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
+   \ifx\currentinteractionscreenwidth\v!fit
+     \!!widtha\leftcombitotal
+     \ifdim\backspace>\!!widtha
+       \ifdim\backspace>\zeropoint\relax
+         \advance\backspace -\!!widtha
+       \fi
+     \fi
+     \advance\!!widtha\dimexpr
+       \rightcombitotal
+     + 2\dimexpr
+          \interactionscreenparameter\c!backspace
+        + \interactionscreenparameter\c!horoffset
+        \relax
+     \relax
+   \else\ifx\currentinteractionscreenwidth\v!max
+     \!!widtha\printpaperwidth
+   \else
+     \!!widtha\currentinteractionscreenwidth
+   \fi\fi
+   \ifdim\!!widtha>\paperwidth\ifdim\!!widtha>\zeropoint
+     \global\paperwidth\!!widtha
+   \fi\fi
+   \ifx\currentinteractionscreenheight\v!fit
+     \!!heighta\dimexpr\topheight+\topdistance\relax
+     \ifdim\topspace>\!!heighta
+       \ifdim\topspace>\zeropoint\relax
+         \advance\topspace -\!!heighta
+       \fi
+     \fi
+     \advance\!!heighta\dimexpr
+       \makeupheight
+     + \bottomdistance
+     + \bottomheight
+     + 2\dimexpr
+          \interactionscreenparameter\c!topspace
+        + \interactionscreenparameter\c!veroffset
+        \relax
+     \relax
+   \else\ifx\currentinteractionscreenheight\v!max
+     \!!heighta\printpaperheight
+   \else
+     \!!heighta\currentinteractionscreenheight
+   \fi\fi
+   \ifdim\!!heighta>\paperheight\ifdim\!!heighta>\zeropoint
+     \global\paperheight\!!heighta
+   \fi\fi
+   \ctxcommand{setupcanvas{
+      mode        = "\interactionscreenparameter\c!option",
+      singlesided = \ifsinglesided true\else false\fi,
+      doublesided = \ifdoublesided true\else false\fi,
+      leftoffset  = \number\dimexpr\backoffset\relax,
+      topoffset   = \number\dimexpr\topoffset \relax,
+      width       = \number\dimexpr\!!widtha  \relax,
+      height      = \number\dimexpr\!!heighta \relax,
+      paperwidth  = \number\paperwidth,
+      paperheight = \number\paperheight
+   }}%
+   \endgroup}
+
+\let\scrn_canvas_synchronize\scrn_canvas_synchronize_complex
+
+\appendtoks
+    \ifproductionrun
+      \doifelse\@@pcstate\v!start
+        {\let\scrn_canvas_synchronize\scrn_canvas_synchronize_simple }
+        {\let\scrn_canvas_synchronize\scrn_canvas_synchronize_complex}%
+    \fi
+\to \everysetupinteractionscreen
+
+\appendtoks
+    \scrn_canvas_synchronize
+\to \everyshipout
+
+\setupinteractionscreen
+  [\c!width=\printpaperwidth,
+   \c!height=\printpaperheight,
+   \c!horoffset=\zeropoint,
+   \c!veroffset=\zeropoint,
+   \c!backspace=\backspace,
+   \c!topspace=\topspace,
+   \c!option=\v!auto]
+
+%D Conditional page breaks:
+
+\unexpanded\def\screen
+  {\dosingleempty\scrn_screen}
+
+\def\scrn_screen[#list]%
+  {\iflocation
+     \page[#list]%
+   \fi}
+
+%D Page transitions:
+
+\let\scrn_transitions_list\empty
+
+\unexpanded\def\setuppagetransitions
+  {\dosingleempty\scrn_transitions_setup}
+
+\def\scrn_transitions_setup[#list]%
+  {\edef\scrn_transitions_list{#list}}
+
+\def\scrn_transitions_set
+  {\iflocation \ifx\scrn_transitions_list\empty \else
+     \scrn_transitions_set_indeed
+   \fi \fi}
+
+\def\scrn_transitions_set_indeed
+  {\begingroup
+   \edef\currentinteractionscreendelay{\interactionscreenparameter\c!delay}%
+   \ctxcommand{setpagetransition{
+      n     = "\scrn_transitions_list",
+      delay = "\ifx\currentinteractionscreendelay\v!none 0\else\currentinteractionscreendelay\v!none\fi"
+   }}%
+   \endgroup}
+
+\prependtoks
+    \scrn_transitions_set
+\to \everyshipout
+
+\setupinteractionscreen
+  [\c!delay=\v!none]
+
+\setuppagetransitions
+  [\v!reset]
+
+\protect \endinput

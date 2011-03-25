@@ -56,11 +56,19 @@
 
 \setjobsuffix{pdf}
 
-%D PDF/X:
+%D PDF/X (matbe combine the two lua calls)
+
+\setupbackend
+  [xmpfile=]
+
+\appendtoks
+    \doifsomething{\backendparameter{xmpfile}}
+      {\ctxcommand{setxmpfile("\backendparameter{xmpfile}")}}%
+\to \everysetupbackend
 
 \appendtoks
     \doifsomething{\backendparameter\c!format}
-      {\ctxlua{backends.codeinjections.setformat {
+      {\ctxcommand{setformat {
          format  = "\backendparameter\c!format",
          level   = "\backendparameter\c!level",
          option  = "\backendparameter\c!option",

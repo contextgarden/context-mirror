@@ -6,6 +6,13 @@ if not modules then modules = { } end modules ['typo-mar'] = {
     license   = "see context related readme files"
 }
 
+-- todo:
+--
+-- * autoleft/right depending on available space (or distance to margin)
+-- * stack across paragraphs, but that is messy and one should reconsider
+--   using margin data then as also vertical spacing kicks in
+-- * floating margin data, with close-to-call anchoring
+
 local format = string.format
 local insert, remove = table.insert, table.remove
 local setmetatable, next = setmetatable, next
@@ -372,7 +379,7 @@ local function inject(parent,head,candidate)
     if line ~= 0 then
         local delta = line * candidate.lineheight
         shift = shift + delta
-offset = offset + delta
+        offset = offset + delta
     end
     box.shift = shift
     box.width = 0
@@ -408,7 +415,8 @@ local function flushinline(parent,head,done)
                 end
             end
         elseif id == hlist_code or id == vlist_code then
-            -- optional
+            -- optional (but sometimes needed)
+            current.list, done = flushinline(current,current.list,done)
         end
         current = current.next
     end
@@ -471,6 +479,9 @@ local function handler(scope,head,group)
             end
             current = current.next
         end
+     -- if done then
+     --     resetstacked()
+     -- end
         return head, done
     else
         return head, false

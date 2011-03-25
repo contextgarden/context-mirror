@@ -13,13 +13,6 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Layout Specification}
 
-%D This module is now etex dependent.
-
-% to be translated into english
-
-% hoofdhoogte wordt bij status=hoog niet aangepast op outer
-% level, wel binnen bepaalde berekeningen
-
 %D Before you start wondering why some of the page related
 %D modules skip upward or left in order to place elements, you
 %D must realize that the reference point is the top left
@@ -323,7 +316,7 @@
      {\doifelsenothing{#2}
         {\expanded{\dodosetuppapersize
            [\executeifdefined{\??pp:1:#1}{#1}]%
-           [\executeifdefined{\??pp:2:#1}{}]}}
+           [\executeifdefined{\??pp:2:#1}{\v!default}]}}
         {\doifassignmentelse{#2}
            {\getparameters[\??pp\executeifdefined{\??pp:1:#1}{#1}][#2]}
            {\expanded{\dodosetuppapersize
@@ -1231,6 +1224,24 @@
 %D since they could change while going to a new page,
 %D depending on the current font setting.
 
+\setuppaper % (size) % only used in XY imposition
+  [\c!width=\zeropoint,
+   \c!height=\zeropoint,
+   \c!topspace=\zeropoint,
+   \c!backspace=\zeropoint,
+   \c!dx=\zeropoint,
+   \c!dy=\zeropoint,
+   \c!nx=1,
+   \c!ny=1,
+   \c!method=\v!normal]
+
+\setuppapersize
+  [\c!option=\v!max,
+   \c!top=,
+   \c!bottom=\vss,
+   \c!left=,
+   \c!right=\hss]
+
 \setuplayout
   [             \c!topspace=.08417508418\paperheight,  %  2.5cm
                      \c!top=\zeropoint,
@@ -1266,7 +1277,7 @@
                    \c!style=,
                    \c!color=,
                  \c!marking=\v!off,
-                \c!location=, % \v!singlesided, but empty is signal
+                \c!location=\v!middle, % \v!singlesided, but unset is signal
                    \c!scale=1,
                       \c!sx=1,
                       \c!sy=1,
@@ -1286,27 +1297,6 @@
 
 %D First we define a whole range of (DIN) papersizes,
 %D of which the A-series makes most sense. We enable checking.
-
-%D We also set some of the parameters that will be used when
-%D positioning the typeset paper onto the print paper.
-
-\setuppaper % (size) % only used in XY imposition
-  [\c!width=\zeropoint,
-   \c!height=\zeropoint,
-   \c!topspace=\zeropoint,
-   \c!backspace=\zeropoint,
-   \c!dx=\zeropoint,
-   \c!dy=\zeropoint,
-   \c!nx=1,
-   \c!ny=1,
-   \c!method=\v!normal]
-
-\setuppapersize
-  [\c!option=\v!max,
-   \c!top=,
-   \c!bottom=\vss,
-   \c!left=,
-   \c!right=\hss]
 
 \definepapersize [A0]  [\c!width=841mm,\c!height=1189mm]
 \definepapersize [A1]  [\c!width=594mm,\c!height=841mm]
@@ -1434,6 +1424,11 @@
 %D We can now default to a reasonable size. We match the print
 %D paper size with the typeset paper size. This setting should
 %D come after the first layout specification (already done).
+
+\definepapersize
+  [\v!default]
+  [ \c!width=\paperwidth,
+   \c!height=\paperheight]
 
 \definepapersize
   [samesized]

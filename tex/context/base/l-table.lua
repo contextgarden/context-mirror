@@ -93,24 +93,24 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, kind, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
         s = s + 1
         srt[s] = key
-        if kind == 3 then
+        if category == 3 then
             -- no further check
         else
             local tkey = type(key)
             if tkey == "string" then
-                kind = (kind == 2 and 3) or 1
+                category = (category == 2 and 3) or 1
             elseif tkey == "number" then
-                kind = (kind == 1 and 3) or 2
+                category = (category == 1 and 3) or 2
             else
-                kind = 3
+                category = 3
             end
         end
     end
-    if kind == 0 or kind == 3 then
+    if category == 0 or category == 3 then
         sort(srt,compare)
     else
         sort(srt)
@@ -276,6 +276,13 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
+function table.derive(parent)
+    local child = { }
+    if parent then
+        setmetatable(child,{ __index = parent })
+    end
+    return child
+end
 
 function table.tohash(t,value)
     local h = { }

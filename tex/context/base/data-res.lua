@@ -320,8 +320,8 @@ local function load_configuration_files()
                     local variables = data.variables or { }
                     local warning = false
                     for k, v in next, data do
-                        local kind = type(v)
-                        if kind == "table" then
+                        local variant = type(v)
+                        if variant == "table" then
                             initializesetter(filename,k,v)
                         elseif variables[k] == nil then
                             if trace_locating and not warning then
@@ -593,7 +593,7 @@ function resolvers.registerextrapath(paths,subpaths)
             end
         end
     elseif subpaths and subpaths ~= "" then
-        for i=1,n do
+        for i=1,oldn do
             -- we gmatch each step again, not that fast, but used seldom
             for s in gmatch(subpaths,"[^,]+") do
                 local ps = ep[i] .. "/" .. s
@@ -762,29 +762,29 @@ local function collect_files(names)
                     local blobroot = files.__path__ or blobpath
                     if type(blobfile) == 'string' then
                         if not dname or find(blobfile,dname) then
-                            local kind   = hash.type
-                         -- local search = filejoin(blobpath,blobfile,bname)
-                            local search = filejoin(blobroot,blobfile,bname)
-                            local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
+                            local variant = hash.type
+                         -- local search  = filejoin(blobpath,blobfile,bname)
+                            local search  = filejoin(blobroot,blobfile,bname)
+                            local result  = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
-                                report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                report_resolving("match: variant '%s', search '%s', result '%s'",variant,search,result)
                             end
                             noffiles = noffiles + 1
-                            filelist[noffiles] = { kind, search, result }
+                            filelist[noffiles] = { variant, search, result }
                         end
                     else
                         for kk=1,#blobfile do
                             local vv = blobfile[kk]
                             if not dname or find(vv,dname) then
-                                local kind   = hash.type
-                             -- local search = filejoin(blobpath,vv,bname)
-                                local search = filejoin(blobroot,vv,bname)
-                                local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
+                                local variant = hash.type
+                             -- local search  = filejoin(blobpath,vv,bname)
+                                local search  = filejoin(blobroot,vv,bname)
+                                local result  = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
-                                    report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                    report_resolving("match: variant '%s', search '%s', result '%s'",variant,search,result)
                                 end
                                 noffiles = noffiles + 1
-                                filelist[noffiles] = { kind, search, result }
+                                filelist[noffiles] = { variant, search, result }
                             end
                         end
                     end
@@ -1453,14 +1453,14 @@ function resolvers.findgivenfile(filename)
     return findgivenfiles(filename,false)[1] or ""
 end
 
-local function doit(path,blist,bname,tag,kind,result,allresults)
+local function doit(path,blist,bname,tag,variant,result,allresults)
     local done = false
-    if blist and kind then
+    if blist and variant then
         local resolve = resolvers.resolve -- added
         if type(blist) == 'string' then
             -- make function and share code
             if find(lower(blist),path) then
-                local full = methodhandler('concatinators',kind,tag,blist,bname) or ""
+                local full = methodhandler('concatinators',variant,tag,blist,bname) or ""
                 result[#result+1] = resolve(full)
                 done = true
             end
@@ -1468,7 +1468,7 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
             for kk=1,#blist do
                 local vv = blist[kk]
                 if find(lower(vv),path) then
-                    local full = methodhandler('concatinators',kind,tag,vv,bname) or ""
+                    local full = methodhandler('concatinators',variant,tag,vv,bname) or ""
                     result[#result+1] = resolve(full)
                     done = true
                     if not allresults then break end

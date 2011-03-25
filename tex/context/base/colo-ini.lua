@@ -209,16 +209,16 @@ local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
     if not registered[parentnumber] then
         local v = colors.values[parentnumber]
         if v then
-            local kind = colors.default -- else problems with shading etc
-            if kind == 1 then kind = v[1] end
+            local model = colors.default -- else problems with shading etc
+            if model == 1 then model = v[1] end
             if e and e ~= "" then
                 registrations.spotcolorname(parent,e) -- before registration of the color
             end
-            if     kind == 2 then -- name noffractions names p's r g b
+            if     model == 2 then -- name noffractions names p's r g b
                 registrations.grayspotcolor(parent,f,d,p,v[2])
-            elseif kind == 3 then
+            elseif model == 3 then
                 registrations.rgbspotcolor (parent,f,d,p,v[3],v[4],v[5])
-            elseif kind == 4 then
+            elseif model == 4 then
                 registrations.cmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
@@ -230,13 +230,13 @@ local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- sa
     if not registered[parentnumber] then
         local v = colors.values[parentnumber]
         if v then
-            local kind = colors.default -- else problems with shading etc
-            if kind == 1 then kind = v[1] end
-            if     kind == 2 then
+            local model = colors.default -- else problems with shading etc
+            if model == 1 then model = v[1] end
+            if     model == 2 then
                 registrations.grayindexcolor(parent,f,d,p,v[2])
-            elseif kind == 3 then
+            elseif model == 3 then
                 registrations.rgbindexcolor (parent,f,d,p,v[3],v[4],v[5])
-            elseif kind == 4 then
+            elseif model == 4 then
                 registrations.cmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
@@ -551,7 +551,7 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     if one then
         if two then
             local csone, cstwo = one[1], two[1]
-            if csone == cstwo then
+         -- if csone == cstwo then
                 -- actually we can set all 8 values at once here but this is cleaner as we avoid
                 -- problems with weighted gray conversions and work with original values
                 local ca
@@ -565,7 +565,7 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
                     ca = register_color(name,'gray',f(one,two,2,fraction))
                 end
                 definecolor(name,ca,global,freeze)
-            end
+         -- end
         else
             local csone = one[1]
             local ca
@@ -627,13 +627,13 @@ commands.definemultitonecolor    = colors.definemultitonecolor
 commands.definetransparency      = colors.definetransparency
 commands.defineintermediatecolor = colors.defineintermediatecolor
 
-function commands.spotcolorname         (a) context(colors.spotcolorname         (a)) end
-function commands.spotcolorparent       (a) context(colors.spotcolorparent       (a)) end
-function commands.spotcolorvalue        (a) context(colors.spotcolorvalue        (a)) end
-function commands.colorcomponents       (a) context(colors.colorcomponents       (a)) end
-function commands.transparencycomponents(a) context(colors.transparencycomponents(a)) end
-function commands.formatcolor           (a) context(colors.formatcolor           (a)) end
-function commands.formatgray            (a) context(colors.formatgray            (a)) end
+function commands.spotcolorname         (a)   context(colors.spotcolorname         (a))   end
+function commands.spotcolorparent       (a)   context(colors.spotcolorparent       (a))   end
+function commands.spotcolorvalue        (a)   context(colors.spotcolorvalue        (a))   end
+function commands.colorcomponents       (a)   context(colors.colorcomponents       (a))   end
+function commands.transparencycomponents(a)   context(colors.transparencycomponents(a))   end
+function commands.formatcolor           (...) context(colors.formatcolor           (...)) end
+function commands.formatgray            (...) context(colors.formatgray            (...)) end
 
 function commands.mpcolor(model,ca,ta,default)
     context(colors.mpcolor(model,ca,ta,default))

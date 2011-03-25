@@ -78,6 +78,7 @@
 		<cd:variable name='april' value='آوریل'/>
 		<cd:variable name='atmargin' value='درحاشیه'/>
 		<cd:variable name='atpage' value='درصفحه'/>
+		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='آگوست'/>
 		<cd:variable name='author' value='author'/>
 		<cd:variable name='auto' value='خودکار'/>
@@ -531,6 +532,7 @@
 		<cd:constant name='after' value='بعداز'/>
 		<cd:constant name='afterhead' value='بعدازسر'/>
 		<cd:constant name='afterkey' value='بعدازکلید'/>
+		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='تنظیم'/>
 		<cd:constant name='aligncharacter' value='حرف‌تنظیم'/>
 		<cd:constant name='alignmentcharacter' value='حرف‌تنظیم‌کردن'/>
@@ -569,6 +571,7 @@
 		<cd:constant name='balance' value='تعادل'/>
 		<cd:constant name='before' value='قبل‌از'/>
 		<cd:constant name='beforehead' value='قبل‌ازسر'/>
+		<cd:constant name='beforesection' value='beforesection'/>
 		<cd:constant name='bet' value='bet'/>
 		<cd:constant name='big' value='بزرگ'/>
 		<cd:constant name='blank' value='خالی'/>
@@ -583,6 +586,7 @@
 		<cd:constant name='bottomoffset' value='آفست‌پایین'/>
 		<cd:constant name='bottomspace' value='فضای‌پایین'/>
 		<cd:constant name='bottomstate' value='وضعیت‌پایین'/>
+		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='میانگیر'/>
 		<cd:constant name='calculate' value='محاسبه'/>
 		<cd:constant name='category' value='category'/>
@@ -593,6 +597,7 @@
 		<cd:constant name='clipoffset' value='آفست‌کلیپ'/>
 		<cd:constant name='closeaction' value='بستن‌کنش'/>
 		<cd:constant name='closecommand' value='بستن‌فرمان'/>
+		<cd:constant name='closepage' value='closepage'/>
 		<cd:constant name='closepageaction' value='بستن‌عمل‌صفحه'/>
 		<cd:constant name='closesymbol' value='بستن‌نماد'/>
 		<cd:constant name='color' value='رنگ'/>
@@ -817,6 +822,7 @@
 		<cd:constant name='oddmargin' value='حاشیه‌فرد'/>
 		<cd:constant name='offset' value='آفست'/>
 		<cd:constant name='openaction' value='عمل‌باز'/>
+		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='عمل‌صفحه‌باز'/>
 		<cd:constant name='option' value='گزینه'/>
 		<cd:constant name='order' value='order'/>
@@ -1012,6 +1018,7 @@
 		<cd:constant name='urlalternative' value='urlalternative'/>
 		<cd:constant name='urlspace' value='urlspace'/>
 		<cd:constant name='validate' value='تاییداعتبار'/>
+		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vcommand'/>
 		<cd:constant name='veroffset' value='آفست‌عم'/>
 		<cd:constant name='vfil' value='vfil'/>
@@ -1110,7 +1117,6 @@
 		<cd:command name='colorbar' value='میله‌رنگ'/>
 		<cd:command name='colorvalue' value='مقداررنگ'/>
 		<cd:command name='column' value='ستون'/>
-		<cd:command name='comment' value='توضیح'/>
 		<cd:command name='comparecolorgroup' value='مقایسه‌گروه‌رنگ'/>
 		<cd:command name='comparepalet' value='لوح‌مقایسه'/>
 		<cd:command name='completepagenumber' value='شماره‌صفحه‌کامل'/>

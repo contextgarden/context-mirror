@@ -12,7 +12,7 @@ local tables     = utilities.tables
 
 local format, gmatch = string.format, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
-local setmetatable = setmetatable
+local setmetatable, tonumber, tostring = setmetatable, tonumber, tostring
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -81,4 +81,26 @@ local _empty_table_ = { __index = function(t,k) return "" end }
 
 function table.setemptymetatable(t)
     setmetatable(t,_empty_table_)
+end
+
+-- experimental
+
+local function toxml(t,d,result)
+    for k, v in table.sortedpairs(t) do
+        if type(v) == "table" then
+            result[#result+1] = format("%s<%s>",d,k)
+            toxml(v,d.." ",result)
+            result[#result+1] = format("%s</%s>",d,k)
+        elseif tonumber(k) then
+            result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
+        else
+            result[#result+1] = format("%s<%s>%s</%s>",d,k,tostring(v),k)
+        end
+    end
+end
+
+function table.toxml(t,name)
+    local result = { "<?xml version='1.0' standalone='yes' ?>" }
+    toxml( { [name or "root"] = t }, "", result)
+    return concat(result,"\n")
 end

@@ -482,17 +482,16 @@ end
 
 local pihandlers = { }  xml.pihandlers = pihandlers
 
-local kind   = P("context-") * C((1-P("-"))^1) * P("-directive")
-local space  = S(" \n\r")
-local spaces = space^0
-local class  = C((1-space)^0)
-local key    = class
-local value  = C(P(1-(space * -1))^0)
+local category = P("context-") * C((1-P("-"))^1) * P("-directive")
+local space    = S(" \n\r")
+local spaces   = space^0
+local class    = C((1-space)^0)
+local key      = class
+local value    = C(P(1-(space * -1))^0)
 
-local parser = kind * spaces * class * spaces * key * spaces * value
+local parser = category * spaces * class * spaces * key * spaces * value
 
 pihandlers[#pihandlers+1] = function(str)
---  local kind, class, key, value = lpegmatch(parser,str)
     if str then
         local a, b, c, d = lpegmatch(parser,str)
         if d then

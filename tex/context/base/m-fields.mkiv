@@ -1,0 +1,70 @@
+%D \module
+%D   [       file=m-fields,
+%D        version=2010.03.14,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Fields,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright=PRAGMA]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D A rather old example of field usage is the following. It
+%D makes no sense to have this in the core.
+%D
+%D \starttyping
+%D before \fillinfield[oeps]{whatever} after
+%D \stoptyping
+
+\startJSpreamble{FillInField} used later
+    function CheckFillInField(right) {
+        if (event.value.toLowerCase() == right.toLowerCase()) {
+            event.target.hidden = true ;
+        }
+        event.value = ""
+    }
+\stopJSpreamble
+
+\newcount\noffillinfields
+
+\definefieldcategory
+  [fillinfield]
+  [\c!n=1024,
+   \c!height=\strutht,
+   \c!depth=\strutdp,
+   \c!align=\v!middle,
+   \c!color=red,
+   \c!fieldframecolor=blue,
+   \c!fieldbackgroundcolor=\s!white,
+   \c!validate=JS(CheckFillInField{\therightanswer})]
+
+\def\fillinfield
+  {\dosingleempty\dofillinfield}
+
+\def\dofillinfield[#1]#2%
+  {\dontleavehmode
+   \hbox
+     {\forgetall
+      \global\advance\noffillinfields\plusone
+      \edef\currentfillinfieldname{fillinfield:\number\noffillinfields}%
+      \useJSscripts[ans]%
+      \definefieldbody
+        [\currentfillinfieldname]
+        [\c!type=\v!line,
+         \c!category=fillinfield]%
+      \doifelsenothing{#1}
+        {\def\therightanswer{#2}}
+        {\def\therightanswer{#1}}%
+      \setbox0\hbox{\strut#2}%
+      \setbox2\hbox{\strut\therightanswer}%
+      \dimen0=\dimexpr\ifdim\wd0>\wd2 \wd0 \else \wd2 \fi + .2em\relax
+      \hbox to \wd0
+        {\wd0\zeropoint
+         \box0
+         \hss\fieldbody[\currentfillinfieldname][\c!width=\dimen0]\hss}}}
+
+\protect \endinput

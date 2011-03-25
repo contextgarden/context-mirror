@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['page-flt'] = {
 
 local insert, remove = table.insert, table.remove
 local find = string.find
-local setdimen, setbox, setcount, texbox = tex.setdimen, tex.setbox, tex.setcount, tex.box
+local setdimen, setcount, texbox = tex.setdimen, tex.setcount, tex.box
 
 local copy_node_list = node.copy_list
 

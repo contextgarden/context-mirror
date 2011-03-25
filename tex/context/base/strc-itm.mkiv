@@ -46,7 +46,7 @@
 \newcount\noflistelements
 \newcount\itemcolumndepth
 \newcount\itemdepth
-\newcount\maxitemdepth \maxitemdepth=6
+% \newcount\maxitemdepth \maxitemdepth=6
 
 \newdimen\itemgrouplistwidth
 \newdimen\itemgroupaskedwidth
@@ -202,10 +202,11 @@
 % so we have:
 
 \def\initializeitemgrouplevel#1%
-  {\ifcsname\??op\currentitemgroup#1\s!parent\endcsname
+  {\ifcsname\??op\currentitemgroup\number#1\s!parent\endcsname
      % ok
    \else
-     \setevalue{\??op\currentitemgroup#1\s!parent}{\??op\currentitemgroup}%
+     \setxvalue{\??op\currentitemgroup         \c!levels}{\number#1}%
+     \setxvalue{\??op\currentitemgroup\number#1\s!parent}{\??op\currentitemgroup}%
    \fi}
 
 \unexpanded\def\defineitemgroup
@@ -215,15 +216,15 @@
   {\doifsomething{#1}
      {\pushmacro\currentitemgroup
       \def\currentitemgroup{#1}%
-      \setvalue{\e!start#1}{\startitemgroup[#1]}%
-      \setvalue{\e!stop#1}{\stopitemgroup}%
-      \setvalue{\e!setup#1\e!endsetup}{\setupitemgroup[#1]}% for old times sake
+      \setuvalue{\e!start#1}{\startitemgroup[#1]}%
+      \setuvalue{\e!stop#1}{\stopitemgroup}%
+      \setuvalue{\e!setup#1\e!endsetup}{\setupitemgroup[#1]}% for old times sake
       \doifelsenothing{#2}
         {\getparameters[\??op#1][\s!parent=\??oo,#3]}%
         {\doifassignmentelse{#2}
            {\getparameters[\??op#1][\s!parent=\??oo,#2]}%
            {\getparameters[\??op#1][\s!parent=\??op#2,#3]}}%
-      \dorecurse\maxitemdepth{\initializeitemgrouplevel\recurselevel}%
+      \dorecurse{\itemparameter\empty\c!levels}{\initializeitemgrouplevel\recurselevel}%
       \definestructurecounter[itemgroup:#1]%
       \popmacro\currentitemgroup}}
 
@@ -359,7 +360,7 @@
      \getitemparameter\currentitemlevel\c!afterhead
    \fi\fi}
 
-\def\dododododosetupitemgroup[#1][#2]%
+\unexpanded\def\dododododosetupitemgroup[#1][#2]% prevent expansion below
   {\doifassignmentelse{#2}%
      {\dosetupitemgroupvariable[#1][#2]}%
      {\setitemparameter{#1}\c!option{#2}}}%
@@ -367,19 +368,8 @@
 \def\dodododosetupitemgroup[#1][#2]%
   {\doifsomething{#2}
      {\doifelse{#1}\v!each
-        {\dorecurse\maxitemdepth{\normalexpanded{\noexpand\dododododosetupitemgroup[\recurselevel]}[#2]}}
-        {\normalexpanded{\noexpand\dododododosetupitemgroup[#1]}[#2]}}}
-
-% \def\dododosetupitemgroup[#1][#2]%
-%   {\doifelsenothing{#2}
-%      {\doifelsenothing{#1}
-%         {\dodododosetupitemgroup[\currentitemlevel][#2]}
-%         {\dodododosetupitemgroup[#1][#2]}}
-%      {\ifcase\currentitemlevel\relax
-%         \dodododosetupitemgroup[\v!each][#1]%
-%       \else
-%         \dodododosetupitemgroup[\currentitemlevel][#1]%
-%       \fi}}
+        {\dorecurse{\itemparameter\empty\c!levels}{\normalexpanded{\dododododosetupitemgroup[\recurselevel]}[#2]}}
+        {\normalexpanded{\dododododosetupitemgroup[#1]}[#2]}}}
 
 \def\dododosetupitemgroup[#1][#2]%
   {\doifelsenothing{#2}
@@ -538,13 +528,8 @@
 
 \def\dodostartitemgroup[#1]% [#2]%
   {\relax % prevents lookahead
-   \ifnum\currentitemlevel=\maxitemdepth\relax
-     \showmessage\m!layouts9{\number\maxitemdepth}%
-     \let\itemincrement\zerocount
-   \else
-     \let\itemincrement\plusone
-   \fi
-   \global\advance\itemdepth\itemincrement
+   \global\advance\itemdepth\plusone
+   \initializeitemgrouplevel\itemdepth
    \xdef\currentitemlevel{\number\itemdepth}%
    \edef\itemgroupoptions{\getitemparameter\currentitemlevel\c!option}%
    \ifx\itemgroupoptions\empty
@@ -818,12 +803,12 @@
 \fi
    \ifconditional\textlistitem % else forgotten
      \endgroup
-     \global\advance\itemdepth-\itemincrement
+     \global\advance\itemdepth-\plusone
      \xdef\currentitemlevel{\number\itemdepth}%
      \egroup
    \else
      \endgroup
-     \global\advance\itemdepth-\itemincrement
+     \global\advance\itemdepth-\plusone
      \xdef\currentitemlevel{\number\itemdepth}%
      \egroup
      \par
@@ -1385,6 +1370,7 @@
   %\c!inner=,
    \c!n=2,
    \c!items=4,
+   \c!levels=10,
    \c!lefttext=(,
    \c!righttext=),
    \c!start=1,

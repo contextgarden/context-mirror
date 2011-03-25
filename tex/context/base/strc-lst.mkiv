@@ -635,13 +635,7 @@
   {\edef\currentlist{#1}%
    \edef\currentlistnumber{#3}%
    \docurrentlistalternative
-   \let\@@iawidth\!!zeropoint % todo: constant or so
-%    \begingroup
-%    \edef\listelements{\listparameter\c!pageboundaries}%
-%    \normalexpanded{\noexpand\doifinset{#3}{\listelements}}
-%      {\showmessage\m!system{14}{#3}%
-%       \page}%
-%    \endgroup
+   \letinteractionparameter\c!width\zeropoint
    \dontcomplain
    \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}}
 

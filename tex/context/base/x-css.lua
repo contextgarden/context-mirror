@@ -73,14 +73,16 @@ css.padding = padding
 -- print(padding("10pt 20pt 30pt",pixel,hsize,exheight,emwidth))
 -- print(padding("10pt 20pt 30pt 40pt",pixel,hsize,exheight,emwidth))
 
-local fontidentifiers = fonts.identifiers
 local currentfont = font.current
-local texdimen = tex.dimen
+local texdimen    = tex.dimen
+local hashes      = fonts.hashes
+local quads       = hashes.quads
+local xheights    = hashes.xheights
 
 local function padding(str)
-    local fnt = fontidentifiers[currentfont()]
-    local exheight = fnt.ex_height
-    local emwidth  = fnt.quad
+    local font     = currentfont()
+    local exheight = xheights[font]
+    local emwidth  = quads[font]
     local hsize    = texdimen.hsize/100
     local pixel    = emwidth/100
     return padding(str,pixel,hsize,exheight,emwidth)

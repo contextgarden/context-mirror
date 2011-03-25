@@ -241,7 +241,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             if space then
                 n = copy_node(space)
             elseif fonts then -- depedency
-                local parameters = fonts.identifiers[fnt].parameters
+                local parameters = fonts.hashes.identifiers[fnt].parameters
                 space = new_glue(parameters.space,parameters.space_stretch,parameters.space_shrink)
                 n = space
             end

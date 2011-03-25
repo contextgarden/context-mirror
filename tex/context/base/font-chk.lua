@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-chk'] = {
 }
 
 -- possible optimization: delayed initialization of vectors
+-- move to the nodes namespace
 
 local report_fonts = logs.reporter("fonts","checking")
 
@@ -15,7 +16,7 @@ local fonts        = fonts
 fonts.checkers     = fonts.checkers or { }
 local checkers     = fonts.checkers
 
-local fontdata     = fonts.identifiers
+local fontdata     = fonts.hashes.identifiers
 local is_character = characters.is_character
 local chardata     = characters.data
 local tasks        = nodes.tasks
@@ -30,7 +31,9 @@ local remove_node  = nodes.remove
 checkers.enabled = false
 checkers.delete  = false
 
-local function registermessage(font,char,message)
+-- to tfmdata.properties ?
+
+local function onetimemessage(font,char,message)
     local tfmdata = fontdata[font]
     local shared = tfmdata.shared
     local messages = shared.messages
@@ -44,12 +47,12 @@ local function registermessage(font,char,message)
         messages[message] = category
     end
     if not category[char] then
-        report_fonts("char U+%04X in font '%s' with id %s: %s",char,tfmdata.fullname,font,message)
+        report_fonts("char U+%04X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
 end
 
-fonts.registermessage = registermessage
+fonts.loggers.onetimemessage = onetimemessage
 
 function checkers.missing(head)
     if checkers.enabled then
@@ -61,9 +64,9 @@ function checkers.missing(head)
             end
             if not characters[char] and is_character[chardata[char].category] then
                 if checkers.delete then
-                    registermessage(font,char,"missing (will be deleted)")
+                    onetimemessage(font,char,"missing (will be deleted)")
                 else
-                    registermessage(font,char,"missing")
+                    onetimemessage(font,char,"missing")
                 end
                 if not found then
                     found = { n }

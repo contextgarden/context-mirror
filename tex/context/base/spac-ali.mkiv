@@ -83,17 +83,6 @@
 
 % To be redone:
 
-% \def\iobox#1#2#3#% here #3# is not really needed
-%   {\vbox\bgroup  % we want to return a vbox like the others
-%      \hbox\bgroup% we need to pack the signal with the box
-%        \signalrightpage
-%        \dowithnextboxcontent
-%          {\let\\=\endgraf\forgetall\doifrightpageelse#1#2}
-%          {\box\nextbox\egroup\egroup}
-%        \vbox#3}
-% \def\obox{\iobox\raggedleft \raggedright} % outerbox
-% \def\ibox{\iobox\raggedright\raggedleft}  % innerbox
-
 \def\ibox#1#2#3%
   {\vbox\bgroup
      \forgetall
@@ -109,33 +98,6 @@
      \ifdoublesided\signalouterrealign\fi
      \doifrightpageelse\raggedleft\raggedright
      \let\next}
-
-% \def\dosetraggedvbox#1% can be more keys
-%   {\let\raggedbox\vbox
-%    \processfirstactioninset
-%      [#1]
-%      [   \v!left=>\let\raggedbox\lbox,
-%         \v!right=>\let\raggedbox\rbox,
-%        \v!middle=>\let\raggedbox\cbox,
-%         \v!inner=>\let\raggedbox\ibox,
-%         \v!outer=>\let\raggedbox\obox,
-%     \v!flushleft=>\let\raggedbox\rbox,
-%    \v!flushright=>\let\raggedbox\lbox,
-%        \v!center=>\let\raggedbox\cbox,
-%            \v!no=>\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
-
-% \def\dosetraggedhbox#1% can be more keys
-%   {\let\raggedbox\hbox
-%    \processaction % slow
-%      [#1]
-%      [   \v!left=>\def\raggedbox{\doalignedline\v!left  },
-%         \v!right=>\def\raggedbox{\doalignedline\v!right },
-%        \v!middle=>\def\raggedbox{\doalignedline\v!middle},
-%         \v!inner=>\def\raggedbox{\doalignedline\v!inner },
-%         \v!outer=>\def\raggedbox{\doalignedline\v!outer },
-%     \v!flushleft=>\def\raggedbox{\doalignedline\v!right },
-%    \v!flushright=>\def\raggedbox{\doalignedline\v!left  },
-%        \v!center=>\def\raggedbox{\doalignedline\v!middle}]}
 
 \def\@@ragged@@command{@@ragged@@c}
 \def\@@ragged@@hbox   {@@ragged@@h}
@@ -651,7 +613,7 @@
 
 \let\centeraligned\midaligned
 
-\def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}} % to be translated
+% \def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}} % to be translated
 
 % indirecte commando's
 
@@ -686,12 +648,6 @@
         \endgroup}
      \hbox}
 
-% \def\doxcheckline % no vbox so no
-%   {\doifrightpageelse\donetrue\donefalse
-%    \ifdoublesided
-%      \ifdone\signalinnerrealign\else\signalouterrealign\fi
-%    \fi}
-
 \def\doxcheckline % used for floats so multipass anyway
   {\signalrightpage\doifrightpageelse\donetrue\donefalse}
 
@@ -719,9 +675,6 @@
 
 \def\alignedline#1#2% setting default
   {\csname\s!do\v!line\ifcsname\s!do\v!line#1\endcsname#1\else#2\fi\endcsname}
-
-% \def\woordrechts
-%   {\groupedcommand{\hfill\hbox}{\parfillskip\zeropoint}}
 
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
@@ -756,12 +709,35 @@
 
 % \simplealignedbox{2cm}{right}{x}
 
-\setvalue{\s!simple\c!align\v!right      }#1#2{\hbox to #1{#2\hss}}
-\setvalue{\s!simple\c!align\v!left       }#1#2{\hbox to #1{\hss#2}}
-\setvalue{\s!simple\c!align\v!flushright }#1#2{\hbox to #1{\hss#2}}
-\setvalue{\s!simple\c!align\v!flushleft  }#1#2{\hbox to #1{#2\hss}}
-\setvalue{\s!simple\c!align\v!middle     }#1#2{\hbox to #1{\hss#2\hss}}
+% \setvalue{\s!simple\c!align\v!right      }#1#2{\hbox to #1{#2\hss}}
+% \setvalue{\s!simple\c!align\v!left       }#1#2{\hbox to #1{\hss#2}}
+% \setvalue{\s!simple\c!align\v!flushright }#1#2{\hbox to #1{\hss#2}}
+% \setvalue{\s!simple\c!align\v!flushleft  }#1#2{\hbox to #1{#2\hss}}
+% \setvalue{\s!simple\c!align\v!middle     }#1#2{\hbox to #1{\hss#2\hss}}
 
-\unexpanded\def\simplealignedbox#1{\executeifdefined{\s!simple\c!align#1}{\getvalue{\s!simple\c!align\v!right}}}
+% \unexpanded\def\simplealignedbox#1%
+%   {\csname\s!simple\c!align\ifcsname\s!simple\c!align#1\endcsname#1\else\v!right\fi\endcsname}
+
+\setvalue{\s!simple:\c!align:\v!right      }#1{{#1\hss}}
+\setvalue{\s!simple:\c!align:\v!left       }#1{{\hss#1}}
+\setvalue{\s!simple:\c!align:\v!flushright }#1{{\hss#1}}
+\setvalue{\s!simple:\c!align:\v!flushleft  }#1{{#1\hss}}
+\setvalue{\s!simple:\c!align:\v!middle     }#1{{\hss#1\hss}}
+
+\unexpanded\def\simplealignedbox#1#2%
+  {\hbox to #1\csname\s!simple:\c!align:\ifcsname\s!simple:\c!align:#2\endcsname#2\else\v!right\fi\endcsname}
+
+% \setvalue{spac_align_set_ss_\v!right     }#1#2{\let#1\relax\let#2\hss  }
+% \setvalue{spac_align_set_ss_\v!left      }#1#2{\let#1\hss  \let#2\relax}
+% \setvalue{spac_align_set_ss_\v!flushright}#1#2{\let#1\hss  \let#2\relax}
+% \setvalue{spac_align_set_ss_\v!flushleft }#1#2{\let#1\relax\let#2\hss  }
+% \setvalue{spac_align_set_ss_\v!middle    }#1#2{\let#1\hss  \let#2\hss  }
+% \setvalue{spac_align_set_ss_\v!low       }#1#2{\let#1\vss  \let#2\relax}
+% \setvalue{spac_align_set_ss_\v!high      }#1#2{\let#1\relax\let#2\vss  }
+% \setvalue{spac_align_set_ss_\v!lohi      }#1#2{\let#1\vss  \let#2\vss  }
+% \setvalue{spac_align_set_ss_\s!unknown   }#1#2{\let#1\relax\let#2\relax}
+
+% \unexpanded\def\spac_align_set_ss#1%
+%   {\csname spac_align_set_ss_\ifcsname spac_align_set_ss_#1\endcsname#1\else\s!unknown\fi\endcsname}
 
 \protect \endinput

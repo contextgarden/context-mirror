@@ -333,7 +333,7 @@ end
 
 function scripts.interface.preprocess()
     require("luat-mac.lua")
-    local newsuffix = environment.argument("suffix") or "tex"
+    local newsuffix = environment.argument("suffix") or "log"
     local force = environment.argument("force")
     for i=1,#environment.files do
         local oldname = environment.files[i]

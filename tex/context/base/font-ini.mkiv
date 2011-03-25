@@ -58,37 +58,49 @@
 \writestatus{loading}{ConTeXt Font Macros / Initialization}
 
 \registerctxluafile{font-ini}{1.001}
-\registerctxluafile{font-clr}{1.001}
-\registerctxluafile{node-fnt}{1.001} % here
+\registerctxluafile{font-log}{1.001}
+\registerctxluafile{font-con}{1.001}
 \registerctxluafile{font-enc}{1.001}
 %registerctxluafile{font-agl}{1.001} % loaded when needed, saves 100K in format
+\registerctxluafile{font-cid}{1.001} % cid maps
 \registerctxluafile{font-map}{1.001}
 \registerctxluafile{font-syn}{1.001}
-\registerctxluafile{font-log}{1.001}
+
 \registerctxluafile{font-tfm}{1.001}
-\registerctxluafile{font-enh}{1.001}
+
 \registerctxluafile{font-afm}{1.001}
-\registerctxluafile{font-lua}{1.001}
-\registerctxluafile{font-cid}{1.001} % cid maps
-\registerctxluafile{font-ott}{1.001} % otf tables
-\registerctxluafile{font-otf}{1.001} % otf main
-\registerctxluafile{font-otd}{1.001} % otf dynamics
+
 \registerctxluafile{font-oti}{1.001} % otf initialization
+\registerctxluafile{font-ott}{1.001} % otf tables (first)
+\registerctxluafile{font-otf}{1.001} % otf main
 \registerctxluafile{font-otb}{1.001} % otf main base
+\registerctxluafile{node-inj}{1.001} % we might split it off
 \registerctxluafile{font-otn}{1.001} % otf main node
+\registerctxluafile{font-otd}{1.001} % otf dynamics (does an overload)
 \registerctxluafile{font-ota}{1.001} % otf analyzers (needs dynamics)
 \registerctxluafile{font-otp}{1.001} % otf pack
 \registerctxluafile{font-otc}{1.001} % otf context
 \registerctxluafile{font-oth}{1.001} % otf helpers
+
+\registerctxluafile{font-pat}{1.001} % patchers
+
+\registerctxluafile{node-fnt}{1.001} % here
+
+\registerctxluafile{font-lua}{1.001}
+
 \registerctxluafile{font-vf} {1.001}
+\registerctxluafile{font-enh}{1.001}
+
+\registerctxluafile{font-gds}{1.001} % currently only otf
+
 \registerctxluafile{font-def}{1.001}
 \registerctxluafile{font-ctx}{1.001} % after def as it overloads
-\registerctxluafile{font-xtx}{1.001}
-\registerctxluafile{font-gds}{1.001}
-\registerctxluafile{font-fbk}{1.001}
+
 \registerctxluafile{font-ext}{1.001}
-\registerctxluafile{font-pat}{1.001}
+\registerctxluafile{font-fbk}{1.001}
 \registerctxluafile{font-chk}{1.001}
+
+\registerctxluafile{font-aux}{1.001}
 
 \unprotect
 
@@ -169,9 +181,11 @@
 \let\thedefinedfont\relax
 
 \def\dodefinedfont[#1]%
-  {\iffirstargument\definefont[thedefinedfont][#1]\fi % we can speed this one up
+  {\setfalse\inheritfromfontclass
+   \iffirstargument\definefont[thedefinedfont][#1]\fi % we can speed this one up
    \thedefinedfont
-   \the\everydefinedfont}
+   \the\everydefinedfont
+   \settrue\inheritfromfontclass}
 
 \unexpanded\def\definedfont
   {\dosingleempty\dodefinedfont}
@@ -687,6 +701,8 @@
 
 \let\relativefontid\empty
 
+\newconditional\inheritfromfontclass % used in \definefont and \definedfont
+
 \unexpanded\def\lowleveldefinefont#1#2% #2 = cs
   {% we can now set more at the lua end
    \ctxlua{fonts.definers.stage_one("\luaescapestring{#1}")}% the escapestring catches at \somedimen
@@ -726,14 +742,14 @@
       "#2", % cs, trailing % is gone
       "\somefontfile",
       \number\scaledfontsize,
-      "\@@fontclassfeatures",
+      "\ifconditional\inheritfromfontclass\@@fontclassfeatures\fi",
       "\@@fontfeatures",
-      "\@@fontclassfallbacks",
+      "\ifconditional\inheritfromfontclass\@@fontclassfallbacks\fi",
       "\@@fontfallbacks",
       0\currentmathsize,
       \number\dimexpr\textface\relax,
       "\relativefontid", % experiment
-      "\@@fontclassgoodies", % experiment (not yet used)
+      "\ifconditional\inheritfromfontclass\@@fontclassgoodies\fi", % experiment (not yet used)
       "\@@fontgoodies" % experiment
    )}%
 %    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
@@ -1167,7 +1183,8 @@
 \def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*}
 
 \def\dododefinefont#1#2%
-  {\edef\lastfontidentifier{#1}%
+  {\setfalse\inheritfromfontclass
+   \edef\lastfontidentifier{#1}%
    \let\localrelativefontsize\defaultrelativefontsize
    \let\localabsolutefontsize\fontbody
    \lowleveldefinefont{#2}\rawfontidentifier
@@ -1175,7 +1192,8 @@
    \autofontsizefalse
    \setfontcharacteristics
    \the\everyfontswitch
-   \let\rawfontidentifier\oldrawfontidentifier}
+   \let\rawfontidentifier\oldrawfontidentifier
+   \settrue\inheritfromfontclass}
 
 \def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
   {\edef\lastfontidentifier{#3}%
@@ -1969,10 +1987,10 @@
 %       \s!pt}}
 
 \def\normalizebodyfontsize#1\to#2%
-  {\edef#2{\ctxlua{fonts.nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}}
+  {\edef#2{\ctxcommand{nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}}
 
 \def\thenormalizedbodyfontsize#1%
-  {\ctxlua{fonts.nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}
+  {\ctxcommand{nbfs(\number\dimexpr#1\relax,\number\fontdigits)}}
 
 \edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
 \edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
@@ -2825,10 +2843,6 @@
 % \installfontfeature[otf][tlig]
 % \installfontfeature[otf][trep]
 
-%D tricky but ok:
-
-\appendtoks\ctxlua{fonts.tfm.cleanup()}\to\everyshipout
-
 %D Todo:
 
 % \def\os{\groupedcommand{\setfontfeature{oldstyle}}{}}
@@ -2840,54 +2854,79 @@
 
 \def\dodefinefontfeature[#1][#2][#3]%
   {\global\expandafter\chardef\csname\??fq=#1\endcsname % beware () needed as we get two values returned
-     \ctxlua{tex.write((fonts.definers.specifiers.presetcontext("#1","#2","#3")))}\relax}
+     \ctxsprint{((fonts.specifiers.presetcontext("#1","#2","#3")))}\relax}
 
 \definefontfeature
   [default]
-  [%mode=node,
-   liga=yes,kern=yes,tlig=yes,trep=yes] % texligatures=yes,texquotes=yes
+  [mode=auto, % was nothing
+   liga=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature
   [smallcaps]
-  [%mode=node,liga=yes,
-   smcp=yes,kern=yes,tlig=yes,trep=yes] % texligatures=yes,texquotes=yes
+  [mode=auto, % was nothing
+   smcp=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature
   [oldstyle]
-  [%mode=node,
-   onum=yes,liga=yes,kern=yes,tlig=yes,trep=yes] % texligatures=yes,texquotes=yes
+  [mode=auto, % was nothing
+   onum=yes,
+   liga=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature % == default unless redefined
   [ligatures]
-  [%mode=node,
-   liga=yes,kern=yes,tlig=yes,trep=yes]
+  [mode=auto, % was nothing
+   liga=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes]
 
 \definefontfeature % can be used for type1 fonts
   [complete]
-  [liga=yes,kern=yes,compose=yes,tlig=yes,trep=yes]
+  [mode=auto, % was nothing
+   liga=yes,
+   kern=yes,
+   compose=yes,
+   tlig=yes,
+   trep=yes]
 
 \definefontfeature
-  [arabic] % this will become obsolete
+  [none]
+  [mode=none,
+   features=no]
+
+\definefontfeature % might move
+  [arabic]
   [mode=node,language=dflt,script=arab,ccmp=yes,
    init=yes,medi=yes,fina=yes,isol=yes,
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes]
 
-\definefontfeature
+\definefontfeature % might move
   [simplearabic]
   [mode=node,language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,calt=yes,
    rlig=yes,curs=yes,mark=yes,mkmk=yes]
 
-\definefontfeature
-  [none]
-  [mode=none,features=no]
+% math:
 
 \definefontfeature
   [virtualmath]
-  [mode=base,liga=yes,kern=yes,tlig=yes,trep=yes,language=dflt,script=math]
-
-% for the moment here, this will change but we need it for mk.tex
+  [mode=base,
+   liga=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes,
+   language=dflt,
+   script=math]
 
 \definefontfeature[math-text]        [virtualmath][mathalternates=yes,ssty=no]
 \definefontfeature[math-script]      [virtualmath][mathalternates=yes,ssty=1,mathsize=yes]
@@ -2903,10 +2942,7 @@
 
 %D Also new, handy for manuals:
 
-\unexpanded\def\fontchar#1{\ctxlua{fonts.char("#1")}}
-
-\let\otfchar\fontchar % will disappear, for compatibility only
-\let\afmchar\fontchar % will disappear, for compatibility only
+\unexpanded\def\fontchar#1{\ctxcommand{fontchar("#1")}}
 
 %D: We cannot yet inherit because no colors are predefined.
 
@@ -2942,7 +2978,7 @@
   {\dodoubleargument\dofontfeatureslist}
 
 \def\dofontfeatureslist[#1][#2]% todo: arg voor type
-  {\ctxsprint{fonts.definers.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"})}}
+  {\ctxsprint{fonts.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"})}}
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
@@ -2963,14 +2999,24 @@
 %
 % \typebuffer \getbuffer
 
-\def\featureattribute#1{\ctxlua{tex.sprint(fonts.definers.specifiers.contextnumber("#1"))}}
-\def\setfontfeature  #1{\edef\currentfeature{#1}\attribute\zerocount\featureattribute{#1}\relax}
-\def\resetfontfeature#1{\let\currentfeature\empty\attribute\zerocount\zerocount} % initial value
+% \unexpanded\def\featureattribute#1{\ctxsprint{fonts.specifiers.contextnumber("#1"))}}
+% \unexpanded\def\setfontfeature  #1{\edef\currentfeature{#1}\attribute\zerocount\featureattribute{#1}\relax}
+% \unexpanded\def\resetfontfeature#1{\let\currentfeature\empty\attribute\zerocount\zerocount} % initial value
 
-\def\addfontfeaturetoset        #1{\ctxlua{fonts.withset("#1", 1)}} % merge
-\def\subtractfontfeaturefromset #1{\ctxlua{fonts.withset("#1",-1)}} % merge
-\def\addfontfeaturetofont       #1{\ctxlua{fonts.withfnt("#1", 2)}} % overload
-\def\subtractfontfeaturefromfont#1{\ctxlua{fonts.withfnt("#1",-2)}} % overload
+% \def\addfontfeaturetoset        #1{\ctxlua{fonts.withset("#1", 1)}} % merge
+% \def\subtractfontfeaturefromset #1{\ctxlua{fonts.withset("#1",-1)}} % merge
+% \def\addfontfeaturetofont       #1{\ctxlua{fonts.withfnt("#1", 2)}} % overload
+% \def\subtractfontfeaturefromfont#1{\ctxlua{fonts.withfnt("#1",-2)}} % overload
+
+\unexpanded\def\featureattribute#1{\ctxcommand{featureattribute("#1")}}
+\unexpanded\def\setfontfeature  #1{\ctxcommand{setfontfeature("#1")}\edef\currentfeature{#1}}
+\unexpanded\def\resetfontfeature#1{\ctxcommand{resetfontfeature()}\let\currentfeature\empty} % initial value
+\unexpanded\def\resetfontfeature#1{\attribute\zerocount\zerocount\let\currentfeature\empty} % initial value
+
+\unexpanded\def\addfontfeaturetoset        #1{\ctxcommand{addfs("#1")}} % merge
+\unexpanded\def\subtractfontfeaturefromset #1{\ctxcommand{subfs("#1")}} % merge
+\unexpanded\def\addfontfeaturetofont       #1{\ctxcommand{addff("#1")}} % overload
+\unexpanded\def\subtractfontfeaturefromfont#1{\ctxcommand{subff("#1")}} % overload
 
 \let\setff\setfontfeature
 \let\addfs\addfontfeaturetoset
@@ -4303,8 +4349,8 @@
 
 %D goodies:
 
-\def\showchardata#1{\ctxlua{fonts.showchardata("#1")}}
-\def\showfontdata  {\ctxlua{fonts.showfontparameters()}}
+\unexpanded\def\showchardata#1{\ctxcommand{showchardata("#1")}}
+\unexpanded\def\showfontdata  {\ctxcommand{showfontparameters()}}
 
 %D some low level helpers
 %D
@@ -4325,11 +4371,11 @@
 
 % we can also move the lookups to the fonts.namespace (of commands)
 
-\def\dolookupfontbyspec     #1{\ctxlua{fonts.names.lookup("#1")}}
-\def\dolookupnoffound         {\ctxlua{tex.write(fonts.names.noflookups())}}
-\def\dolookupgetkeyofindex#1#2{\ctxlua{tex.write(fonts.names.getlookupkey("#1",#2))}}
-\def\dolookupgetkey         #1{\ctxlua{tex.write(fonts.names.getlookupkey("#1"))}}
-\def\cleanfontname          #1{\ctxlua{fonts.cleanname("#1")}}
+\def\dolookupfontbyspec     #1{\ctxcommand{fontlookupinitialize("#1")}}
+\def\dolookupnoffound         {\ctxcommand{fontlookupnoffound()}}
+\def\dolookupgetkeyofindex#1#2{\ctxcommand{fontlookupgetkeyofindex("#1",#2))}}
+\def\dolookupgetkey         #1{\ctxcommand{fontlookupgetkey("#1")}}
+\def\cleanfontname          #1{\ctxcommand{cleanfontname("#1")}}
 
 % \doifelsecurrentfonthasfeature{smcp}{YES}{NO}
 % \doifelsecurrentfonthasfeature{crap}{YES}{NO}

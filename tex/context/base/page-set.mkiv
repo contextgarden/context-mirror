@@ -2412,7 +2412,7 @@
 
 \def\dodefinecolumnsetspan[#1][#2]%
   {%\ifsecondargument
-     \defineframedtext
+     \defineframedtext % we can have a parent
        [cs:#1]
        [\c!frame=\v!off,
         \c!before=,
@@ -2466,7 +2466,7 @@
       \c!depthcorrection=\v!off,
       #2]%
    % determine widths
-   \!!countc\framedtextparameter{cs:#1}\c!n
+   \!!countc\namedframedtextparameter{cs:#1}\c!n
     % \!!countd\numexpr(\nofcolumns-\mofcolumns+\plusone)%
    \!!countd\nofcolumns
    % n <= n of columns
@@ -2474,7 +2474,7 @@
    \advance\!!countd -\mofcolumns
    \advance\!!countd \plusone
    % n <= n of available columns (alternative a)
-   \doif{\framedtextparameter{cs:#1}\c!alternative}\v!a
+   \doif{\namedframedtextparameter{cs:#1}\c!alternative}\v!a
      {\ifnum\!!countc>\!!countd \!!countc\!!countd \fi}%
    % here it all starts
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
@@ -2483,7 +2483,7 @@
      \dostartframedtext[cs:#1][\v!none]% geen nils placement
      % spoils spacing : \vskip-\struttotal\par\verticalstrut\par
      \ifnum\columnsetlevel>\zerocount
-       \framedtextparameter{cs:#1}\c!before
+       \namedframedtextparameter{cs:#1}\c!before
      \fi
      \unexpanded\def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
 
@@ -2493,8 +2493,8 @@
    \kern-2\struttotal
    \verticalstrut
    \ifnum\columnsetlevel>\zerocount
-     \doifsomething{\framedtextparameter{cs:#1}\c!after}
-       {\framedtextparameter{cs:#1}\c!after
+     \doifsomething{\namedframedtextparameter{cs:#1}\c!after}
+       {\namedframedtextparameter{cs:#1}\c!after
         \kern\zeropoint}% otherwise blanks disappear, better be a switch
    \else
      \endgraf
@@ -2503,8 +2503,7 @@
    \egroup
    \setbox\scratchbox\frozenhbox to \hsize
      {\dontcomplain
-      \alignedline{\framedtextparameter{cs:#1}\c!location}\v!middle
-        {\lower\strutdepth\box\scratchbox}}%
+      \alignedline{\namedframedtextparameter{cs:#1}\c!location}\v!middle{\lower\strutdepth\box\scratchbox}}%
    \dp\scratchbox\zeropoint % else wrong snap insidefloat
 %
 % to be tested first (strange in grid mode)
@@ -2512,7 +2511,7 @@
 % \setbox\scratchbox\frozenhbox to \hsize
 %   {\dontcomplain
 %    \alignstrutmode\zerocount
-%    \alignedline{\framedtextparameter{cs:#1}\c!plaats}\v!midden
+%    \alignedline{\namedframedtextparameter{cs:#1}\c!plaats}\v!midden
 %      {\box\scratchbox}}%
 %
    \ifinsidefloat
@@ -2520,24 +2519,24 @@
    \else\ifnum\columnsetlevel>\zerocount
      % we only set \columnsetspacing when asked for, else bottom problems
      % don't change this any more (test naw)
-     \columnslotspacing\framedtextparameter{cs:#1}\c!nlines\relax
+     \columnslotspacing\namedframedtextparameter{cs:#1}\c!nlines\relax
      % todo: nboven/onder
      %\OTRSETstoreincolumnslotHERE\scratchbox
-     \edef\floatmethod{\framedtextparameter{cs:#1}\c!default}%
+     \edef\floatmethod{\namedframedtextparameter{cs:#1}\c!default}%
      \@EA\uppercasestring\floatmethod\to\floatmethod
      % todo : \v!here -> here enzovoorts
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
      % watch out: no \dochecknextindentation{tag}
-     \checknextindentation[\framedtextparameter{cs:#1}\c!indentnext]%
+     \checknextindentation[\namedframedtextparameter{cs:#1}\c!indentnext]%
    \else
      % of course we needed a one-column fall back for tm; brrr, the box has now too
      % much height (try \ruledvbox); don't change this without testing techniek
      \scratchdimen\ht\scratchbox
      \advance\scratchdimen-\strutdp
      \ht\scratchbox\scratchdimen
-     \framedtextparameter{cs:#1}\c!before
+     \namedframedtextparameter{cs:#1}\c!before
      \snaptogrid\vbox{\box\scratchbox}%
-     \framedtextparameter{cs:#1}\c!after
+     \namedframedtextparameter{cs:#1}\c!after
    \fi\fi
    \egroup
    \endgraf}

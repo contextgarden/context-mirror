@@ -78,13 +78,13 @@ function breakpoints.setreplacement(id,char,language,settings)
     end
     local left, right, middle = settings.left, settings.right, settings.middle
     cmap[language or ""] = {
-        kind   = tonumber(settings.kind)   or 1,
+        type   = tonumber(settings.type)   or 1,
         nleft  = tonumber(settings.nleft)  or 1,
         nright = tonumber(settings.nright) or 1,
         left   = left   ~= "" and left     or nil,
         right  = right  ~= "" and right    or nil,
         middle = middle ~= "" and middle   or nil,
-    } -- was { kind or 1, before or 1, after or 1 }
+    } -- was { type or 1, before or 1, after or 1 }
 end
 
 local function insert_break(head,start,before,after)
@@ -188,7 +188,7 @@ local function process(namespace,attribute,head)
                                         if map[next.char] then
                                             break
                                         elseif m == 1 then
-                                            local method = methods[smap.kind]
+                                            local method = methods[smap.type]
                                             if method then
                                                 head, start = method(head,start,smap)
                                                 done = true

@@ -12,7 +12,7 @@
 %C details.
 
 \def\enableshowmathfontvirtual
-  {\ctxlua{fonts.tfm.auto_cleanup=false}}
+  {\ctxlua{fonts.constructors.autocleanup=false}}
 
 \def\showmathfontcharacters
   {\dodoubleempty\doshowmathfontcharacters}
@@ -78,16 +78,19 @@
 local concat = table.concat
 local format, lower = string.format, string.lower
 
+local fontdata = fonts.hashes.identifiers
+
 function document.showmathfont(id,slot)
     local data = characters.data
-    local tfmdata = fonts.identifiers[id]
+    local tfmdata = fontdata[id]
     local characters = tfmdata.characters
     local sorted = (slot and { slot }) or table.sortedkeys(characters)
-    local virtual, names = tfmdata.type == "virtual", { }
+    local virtual, names = tfmdata.properties.type == "virtual", { }
     if virtual then
         for k, v in ipairs(tfmdata.fonts) do
-            local name = fonts.identifiers[v.id].name
-            names[k] = (name and file.basename(name)) or v.id
+            local id = v.properties.id
+            local name = fontdata[id].properties.name
+            names[k] = (name and file.basename(name)) or id
         end
     end
     local round = math.round

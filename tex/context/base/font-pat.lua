@@ -12,7 +12,9 @@ local match, lower = string.match, string.lower
 -- so for them we get it from the name
 -- reporter moved to elsewhere
 
-local patches  = fonts.otf.enhancers.patches
+local fonts    = fonts
+local otf      = fonts.handlers.otf
+local patches  = otf.enhancers.patches
 local register = patches.register
 local report   = patches.report
 

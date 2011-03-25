@@ -8,21 +8,17 @@ if not modules then modules = { } end modules ['font-otc'] = {
 
 local format, insert = string.format, table.insert
 local type, next = type, next
+local lpegmatch = lpeg.match
 
 -- we assume that the other otf stuff is loaded already
 
-local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
+local trace_loading       = false  trackers.register("otf.loading", function(v) trace_loading = v end)
+local report_otf          = logs.reporter("fonts","otf loading")
 
-local fonts = fonts
-local otf   = fonts.otf
-
-local report_otf = logs.reporter("fonts","otf loading")
-
--- instead of "script = "DFLT", langs = { 'dflt' }" we now use wildcards (we used to
--- have always); some day we can write a "force always when true" trick for other
--- features as well
---
--- we could have a tnum variant as well
+local fonts               = fonts
+local otf                 = fonts.handlers.otf
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 
 -- In the userdata interface we can not longer tweak the loaded font as
 -- conveniently as before. For instance, instead of pushing extra data in
@@ -115,76 +111,81 @@ local extra_features = { -- maybe just 1..n so that we prescribe order
 }
 
 local function enhancedata(data,filename,raw)
-    local luatex = data.luatex
-    local lookups = luatex.lookups
-    local sequences = luatex.sequences
-    local glyphs = data.glyphs
-    local indices = luatex.indices
-    local gsubfeatures = luatex.features.gsub
-    for kind, specifications in next, extra_features do
-        if gsub and gsub[kind] then
+    local descriptions = data.descriptions
+    local resources    = data.resources
+    local lookups      = resources.lookups
+    local gsubfeatures = resources.features.gsub
+    local sequences    = resources.sequences
+    local fontfeatures = resources.features
+    local unicodes     = resources.unicodes
+    local lookuptypes  = resources.lookuptypes
+    local splitter     = lpeg.splitter(" ",unicodes)
+    for feature, specifications in next, extra_features do
+        if gsub and gsub[feature] then
             -- already present
         else
             local done = 0
             for s=1,#specifications do
-                local added = false
                 local specification = specifications[s]
-                local features, subtables = specification.features, specification.subtables
-                local name, type, flags = specification.name, specification.type, specification.flags
-                local full = subtables[1]
-                local list = extra_lists[kind][s]
-                if type == "gsub_ligature" then
-                    -- inefficient loop
-                    for unicode, index in next, indices do
-                        local glyph = glyphs[index]
-                        local ligature = list[glyph.name]
-                        if ligature then
-                            if glyph.slookups then
-                                glyph.slookups     [full] = { "ligature", ligature, glyph.name }
+                local askedfeatures = specification.features
+                local subtables     = specification.subtables
+                local featurename   = specification.name
+                local featuretype   = specification.type
+                local featureflags  = specification.flags
+                local full          = subtables[1]
+                local list          = extra_lists[feature][s]
+                local added         = false
+                if featuretype == "gsub_ligature" then
+                    lookuptypes[full] = "ligature"
+                    for name, ligature in next, list do
+                        local unicode = unicodes[name]
+                        local description = descriptions[unicode]
+                        if description then
+                            local slookups = description.slookups
+                            if slookups then
+                                slookups[full] = { lpegmatch(splitter,ligature) }
                             else
-                                glyph.slookups = { [full] = { "ligature", ligature, glyph.name } }
+                                description.slookups = { [full] = { lpegmatch(splitter,ligature) } }
                             end
-                            done, added = done+1, true
+                            done, added = done + 1, true
                         end
                     end
-                elseif type == "gsub_single" then
-                    -- inefficient loop
-                    for unicode, index in next, indices do
-                        local glyph = glyphs[index]
-                        local r = list[unicode]
-                        if r then
-                            local replacement = indices[r]
-                            if replacement and glyphs[replacement] then
-                                if glyph.slookups then
-                                    glyph.slookups     [full] = { "substitution", glyphs[replacement].name }
-                                else
-                                    glyph.slookups = { [full] = { "substitution", glyphs[replacement].name } }
-                                end
-                                done, added = done+1, true
+                elseif featuretype == "gsub_single" then
+                    lookuptypes[full] = "substitution"
+                    for name, replacement in next, list do
+                        local unicode = unicodes[name]
+                        local description = descriptions[unicode]
+                        if description then
+                            local slookups = description.slookups
+                            if slookups then
+                                slookups[full] = unicodes[replacement]
+                            else
+                                description.slookups = { [full] = unicodes[replacement] }
                             end
+                            done, added = done + 1, true
                         end
                     end
                 end
                 if added then
                     sequences[#sequences+1] = {
                         chain     = 0,
-                        features  = { [kind] = features },
-                        flags     = flags,
-                        name      = name,
+                        features  = { [feature] = askedfeatures },
+                        flags     = featureflags,
+                        name      = featurename,
                         subtables = subtables,
-                        type      = type,
+                        type      = featuretype,
                     }
                     -- register in metadata (merge as there can be a few)
                     if not gsubfeatures then
-                        gsubfeatures = { }
-                        luatex.features.gsub = gsubfeatures
+                        gsubfeatures  = { }
+                        fontfeatures.gsub = gsubfeatures
                     end
-                    local k = gsubfeatures[kind]
+                    local k = gsubfeatures[feature]
                     if not k then
                         k = { }
-                        gsubfeatures[kind] = k
+                        gsubfeatures[feature] = k
                     end
-                    for script, languages in next, features do
+                    for script, languages in next, askedfeatures do
                         local kk = k[script]
                         if not kk then
                             kk = { }
@@ -196,10 +197,8 @@ local function enhancedata(data,filename,raw)
                     end
                 end
             end
-            if done > 0 then
-                if trace_loading then
-                    report_otf("enhance: registering %s feature (%s glyphs affected)",kind,done)
-                end
+            if done > 0 and trace_loading then
+                report_otf("enhance: registering %s feature (%s glyphs affected)",feature,done)
             end
         end
     end
@@ -207,30 +206,18 @@ end
 
 otf.enhancers.register("check extra features",enhancedata)
 
-local features = otf.tables.features
+registerotffeature {
+    name        = 'tlig',
+    description = 'tex ligatures',
+}
 
-features['tlig'] = 'TeX Ligatures'
-features['trep'] = 'TeX Replacements'
-features['anum'] = 'Arabic Digits'
+registerotffeature {
+    name        = 'trep',
+    description = 'tex replacements',
+}
 
-local registerbasesubstitution = otf.features.registerbasesubstitution
+registerotffeature {
+    name        = 'anum',
+    description = 'arabic digits',
+}
 
-registerbasesubstitution('tlig')
-registerbasesubstitution('trep')
-registerbasesubstitution('anum')
-
--- the functionality is defined elsewhere
-
-local initializers        = fonts.initializers
-local common_initializers = initializers.common
-local base_initializers   = initializers.base.otf
-local node_initializers   = initializers.node.otf
-
-base_initializers.equaldigits = common_initializers.equaldigits
-node_initializers.equaldigits = common_initializers.equaldigits
-
-base_initializers.lineheight  = common_initializers.lineheight
-node_initializers.lineheight  = common_initializers.lineheight
-
-base_initializers.compose     = common_initializers.compose
-node_initializers.compose     = common_initializers.compose

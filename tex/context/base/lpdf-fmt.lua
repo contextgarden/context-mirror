@@ -17,7 +17,8 @@ local report_backend = logs.reporter("backend","profiles")
 
 local backends, lpdf = backends, lpdf
 
-local codeinjections = backends.pdf.codeinjections -- normally it is registered
+local codeinjections = backends.pdf.codeinjections
+
 local variables      = interfaces.variables
 local viewerlayers   = attributes.viewerlayers
 local colors         = attributes.colors
@@ -626,10 +627,6 @@ end
 
 lpdf.registerdocumentfinalizer(flushoutputintents,2,"output intents")
 
-directives.register("backend.format", function(v)
-    codeinjections.setformat(v)
-end)
-
 function codeinjections.setformat(s)
     local format, level, profile, intent, option, filename =
         s.format or "", s.level or "", s.profile or "", s.intent or "", s.option or "", s.file or ""
@@ -711,6 +708,19 @@ function codeinjections.setformat(s)
             report_backend("error, format '%s' is not supported",format)
         end
     end
+end
+
+directives.register("backend.format", function(v) -- table !
+    local tv = type(v)
+    if tv == "table" then
+        codeinjections.setformat(v)
+    elseif tv == "string" then
+        codeinjections.setformat { format = v }
+    end
+end)
+
+function commands.setformat(s)
+    codeinjections.setformat(s)
 end
 
 function codeinjections.getformatoption(key)

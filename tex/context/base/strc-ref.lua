@@ -137,20 +137,6 @@ function references.referredpage(n)
     return referred[n] or referred[n] or texcount.realpageno
 end
 
-function references.checkedpage(n,page)
-    local r, p = referred[n] or texcount.realpageno, tonumber(page)
-    if not p then
-        -- sorry
-    elseif p > r then
-        texcount.referencepagestate = 3
-    elseif p < r then
-        texcount.referencepagestate = 2
-    else
-        texcount.referencepagestate = 1
-    end
-    return p
-end
-
 function references.registerpage(n)
     if not tobereferred[n] then
         if n > maxreferred then
@@ -319,7 +305,7 @@ local function register_from_lists(collected,derived)
                 if kind and realpage then
                     local d = derived[prefix] if not d then d = { } derived[prefix] = d end
                     local t = { kind, i }
-                    for s in gmatch(reference,"%s*([^,]+)") do
+                    for s in gmatch(reference,"[^, ]+") do
                         if trace_referencing then
                             report_references("list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
@@ -784,38 +770,66 @@ end
 
 references.currentset = nil
 
-local b, e = "\\ctxlua{local jc = structures.references.currentset;", "}"
-local o, a = 'jc[%s].operation=[[%s]];', 'jc[%s].arguments=[[%s]];'
+--~ local b, e = "\\ctxlua{local jc = structures.references.currentset;", "}"
+--~ local o, a = 'jc[%s].operation=[[%s]];', 'jc[%s].arguments=[[%s]];'
+--~
+--~ function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
+--~     local currentset = references.currentset
+--~     if currentset and currentset.has_tex then
+--~         local done = false
+--~         for i=1,#currentset do
+--~             local ci = currentset[i]
+--~             local operation = ci.operation
+--~             if operation then
+--~                 if find(operation,"\\") then -- if o_has_tex then
+--~                     if not done then
+--~                         context(b)
+--~                         done = true
+--~                     end
+--~                     context(o,i,operation)
+--~                 end
+--~             end
+--~             local arguments = ci.arguments
+--~             if arguments then
+--~                 if find(arguments,"\\") then -- if a_has_tex then
+--~                     if not done then
+--~                         context(b)
+--~                         done = true
+--~                     end
+--~                     context(a,i,arguments)
+--~                 end
+--~             end
+--~         end
+--~         if done then
+--~             context(e)
+--~         end
+--~     end
+--~ end
+
+function commands.setreferenceoperation(k,v)
+    references.currentset.operation[k] = v
+end
+
+function commands.setreferencearguments(k,v)
+    references.currentset.arguments[k] = v
+end
+
+local expandreferenceoperation = context.expandreferenceoperation
+local expandreferencearguments = context.expandreferencearguments
 
 function references.expandcurrent() -- todo: two booleans: o_has_tex& a_has_tex
     local currentset = references.currentset
     if currentset and currentset.has_tex then
-        local done = false
         for i=1,#currentset do
             local ci = currentset[i]
             local operation = ci.operation
-            if operation then
-                if find(operation,"\\") then -- if o_has_tex then
-                    if not done then
-                        context(b)
-                        done = true
-                    end
-                    context(o,i,operation)
-                end
+            if operation and find(operation,"\\") then -- if o_has_tex then
+                expandreferenceoperation(i,operation)
             end
             local arguments = ci.arguments
-            if arguments then
-                if find(arguments,"\\") then -- if a_has_tex then
-                    if not done then
-                        context(b)
-                        done = true
-                    end
-                    context(a,i,arguments)
-                end
+            if arguments and find(arguments,"\\") then -- if a_has_tex then
+                expandreferencearguments(i,arguments)
             end
-        end
-        if done then
-            context(e)
         end
     end
 end
@@ -1377,17 +1391,31 @@ references.testspecials = references.testspecials or { }
 local runners  = references.testrunners
 local specials = references.testspecials
 
+local function checkedpagestate(n,page)
+    local r, p = referred[n] or texcount.realpageno, tonumber(page)
+    if not p then
+        return 0
+    elseif p > r then
+        return 3
+    elseif p < r then
+        return 2
+    else
+        return 1
+    end
+end
+
 function references.analyze(actions)
     actions = actions or references.currentset
     if not actions then
         actions = { realpage = 0 }
+        texcount.referencepagestate = 0
     elseif actions.realpage then
         -- already analyzed
+        texcount.referencepagestate = checkedpagestate(actions.n,actions.realpage)
     else
         -- we store some analysis data alongside the indexed array
         -- at this moment only the real reference page is analyzed
         -- normally such an analysis happens in the backend code
-        texcount.referencepagestate = 0
         local nofactions = #actions
         if nofactions > 0 then
             for i=1,nofactions do
@@ -1397,7 +1425,9 @@ function references.analyze(actions)
                     what = what(a,actions)
                 end
             end
-            references.checkedpage(actions.n,actions.realpage)
+            texcount.referencepagestate = checkedpagestate(actions.n,actions.realpage)
+        else
+            texcount.referencepagestate = 0
         end
     end
     return actions
@@ -1425,7 +1455,7 @@ references.realpageofpage = realpageofpage
 
 --
 
-references.pages = allocate {
+local pages = allocate {
     [variables.firstpage]       = function() return counters.record("realpage")["first"]    end,
     [variables.previouspage]    = function() return counters.record("realpage")["previous"] end,
     [variables.nextpage]        = function() return counters.record("realpage")["next"]     end,
@@ -1439,6 +1469,8 @@ references.pages = allocate {
     [variables.forward]         = function() return counters.record("realpage")["forward"]  end,
     [variables.backward]        = function() return counters.record("realpage")["backward"] end,
 }
+
+references.pages = pages
 
 -- maybe some day i will merge this in the backend code with a testmode (so each
 -- runner then implements a branch)
@@ -1458,6 +1490,8 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
+-- weird, why is this code here and in lpdf-ano
+
 function specials.internal(var,actions)
     local v = references.internals[tonumber(var.operation)]
     local r = v and v.references.realpage
@@ -1468,25 +1502,32 @@ end
 
 specials.i = specials.internal
 
--- weird, why is this code here and in lpdf-ano
-
-local pages = references.pages
-
-function specials.page(var,actions) -- is this ok?
-    local p = pages[var.operation]
+function specials.page(var,actions)
+    local o = var.operation
+    local p = pages[o]
     if type(p) == "function" then
         p = p()
+    else
+        p = tonumber(realpageofpage(tonumber(o)))
     end
     if p then
-        actions.realpage = p
+        var.r = p
+        actions.realpage = actions.realpage or p -- first wins
     end
 end
 
-function specials.realpage(var,actions) -- is this ok?
-    actions.realpage = tonumber(var.operation)
+function specials.realpage(var,actions)
+    local p = tonumber(var.operation)
+    if p then
+        var.r = p
+        actions.realpage = actions.realpage or p -- first wins
+    end
 end
 
-
-function specials.userpage(var,actions) -- is this ok?
-    actions.realpage = tonumber(realpageofpage(var.operation))
+function specials.userpage(var,actions)
+    local p = tonumber(realpageofpage(var.operation))
+    if p then
+        var.r = p
+        actions.realpage = actions.realpage or p -- first wins
+    end
 end

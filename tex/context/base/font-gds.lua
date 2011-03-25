@@ -6,30 +6,32 @@ if not modules then modules = { } end modules ['font-gds'] = {
     license   = "see context related readme files"
 }
 
+-- depends on ctx
+
 local type, next = type, next
 local gmatch = string.gmatch
 
-local trace_goodies = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
+local fonts, nodes, attributes, node = fonts, nodes, attributes, node
 
-local report_fonts = logs.reporter("fonts","goodies")
+local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
+local report_fonts       = logs.reporter("fonts","goodies")
 
-local allocate = utilities.storage.allocate
+local allocate           = utilities.storage.allocate
 
--- goodies=name,colorscheme=,featureset=
---
--- goodies=auto
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
 
-local fonts, nodes, attributes = fonts, nodes, attributes
-local node = node
+local fontgoodies        = { }
+fonts.goodies            = fontgoodies
 
-fonts.goodies     = fonts.goodies or { }
-local fontgoodies = fonts.goodies
+local typefaces          = allocate()
+fonts.typefaces          = typefaces
 
-fontgoodies.data  = allocate() -- fontgoodies.data or { }
-local data        = fontgoodies.data
+local data               = allocate()
+fontgoodies.data         = fontgoodies.data
 
-fontgoodies.list  = fontgoodies.list or { } -- no allocate as we want to see what is there
-local list        = fontgoodies.list
+local list               = { }
+fontgoodies.list         = list -- no allocate as we want to see what is there
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -71,7 +73,7 @@ local function getgoodies(filename) -- maybe a merge is better
     return goodies
 end
 
-function fontgoodies.register(name,fnc)
+function fontgoodies.register(name,fnc) -- will be a proper sequencer
     list[name] = fnc
 end
 
@@ -79,10 +81,12 @@ fontgoodies.get = getgoodies
 
 -- register goodies file
 
-local presetcontext = fonts.definers.specifiers.presetcontext
-
 local function setgoodies(tfmdata,value)
-    local goodies = tfmdata.goodies or { } -- future versions might store goodies in the cached instance
+    local goodies = tfmdata.goodies
+    if not goodies then -- actually an error
+        goodies = { }
+        tfmdata.goodies = goodies
+    end
     for filename in gmatch(value,"[^, ]+") do
         -- we need to check for duplicates
         local ok = getgoodies(filename)
@@ -90,7 +94,6 @@ local function setgoodies(tfmdata,value)
             goodies[#goodies+1] = ok
         end
     end
-    tfmdata.goodies = goodies -- shared ?
 end
 
 -- this will be split into good-* files and this file might become good-ini.lua
@@ -120,13 +123,13 @@ local function flattenedfeatures(t,tt)
     return tt
 end
 
-fonts.flattenedfeatures = flattenedfeatures
+-- fonts.features.flattened = flattenedfeatures
 
 function fontgoodies.prepare_features(goodies,name,set)
     if set then
         local ff = flattenedfeatures(set)
         local fullname = goodies.name .. "::" .. name
-        local n, s = presetcontext(fullname,"",ff)
+        local n, s = fonts.specifiers.presetcontext(fullname,"",ff)
         goodies.featuresets[name] = s -- set
         if trace_goodies then
             report_fonts("feature set '%s' gets number %s and name '%s'",name,n,fullname)
@@ -154,6 +157,7 @@ local function setfeatureset(tfmdata,set)
     local goodies = tfmdata.goodies -- shared ?
     if goodies then
         local features = tfmdata.shared.features
+        local properties = tfmdata.properties
         local what
         for i=1,#goodies do
             -- last one counts
@@ -166,7 +170,7 @@ local function setfeatureset(tfmdata,set)
                     features[feature] = value
                 end
             end
-            tfmdata.mode = features.mode or tfmdata.mode
+            properties.mode = features.mode or properties.mode
         end
     end
 end
@@ -207,7 +211,7 @@ end
 
 -- fontgoodies.postprocessors = fontgoodies.postprocessors or { }
 -- local postprocessors       = fontgoodies.postprocessors
-
+--
 -- function postprocessors.apply(tfmdata)
 --     local postprocessors = tfmdata.postprocessors
 --     if postprocessors then
@@ -216,12 +220,17 @@ end
 --         end
 --     end
 -- end
+--
+-- function definers.applypostprocessors(tfmdata)
+--     fonts.goodies.postprocessors.apply(tfmdata) -- only here
+--     return tfmdata
+-- end
 
 -- colorschemes
 
-fontgoodies.colorschemes = fontgoodies.colorschemes or { }
-local colorschemes       = fontgoodies.colorschemes
-colorschemes.data        = colorschemes.data or { }
+local colorschemes       = { }
+fontgoodies.colorschemes = colorschemes
+colorschemes.data        = { }
 
 local function setcolorscheme(tfmdata,scheme)
     if type(scheme) == "string" then
@@ -237,7 +246,7 @@ local function setcolorscheme(tfmdata,scheme)
             if what then
                 -- this is font bound but we can share them if needed
                 -- just as we could hash the conversions (per font)
-                local hash, reverse = tfmdata.luatex.unicodes, { }
+                local hash, reverse = tfmdata.resources.unicodes, { }
                 for i=1,#what do
                     local w = what[i]
                     for j=1,#w do
@@ -248,16 +257,16 @@ local function setcolorscheme(tfmdata,scheme)
                         end
                     end
                 end
-                tfmdata.colorscheme = reverse
+                tfmdata.properties.colorscheme = reverse
                 return
             end
         end
     end
-    tfmdata.colorscheme = false
+    tfmdata.properties.colorscheme = false
 end
 
-local fontdata      = fonts.identifiers
-local fcs           = fonts.colors.set
+local fontdata      = fonts.hashes.identifiers
+local setnodecolor  = nodes.tracers.colors.set
 local has_attribute = node.has_attribute
 local traverse_id   = node.traverse_id
 local a_colorscheme = attributes.private('colorscheme')
@@ -271,13 +280,13 @@ function colorschemes.coloring(head)
         if a then
             local f = n.font
             if f ~= lastfont then
-                lastscheme, lastfont = fontdata[f].colorscheme, f
+                lastscheme, lastfont = fontdata[f].properties.colorscheme, f
             end
             if lastscheme then
                 local sc = lastscheme[n.char]
                 if sc then
                     done = true
-                    fcs(n,"colorscheme:"..a..":"..sc) -- slow
+                    setnodecolor(n,"colorscheme:"..a..":"..sc) -- slow
                 end
             end
         end
@@ -292,44 +301,43 @@ end
 
 -- installation (collected to keep the overview) -- also for type 1
 
-fonts.otf.tables.features['goodies']       = 'Goodies on top of built in features'
-fonts.otf.tables.features['featureset']    = 'Goodie Feature Set'
-fonts.otf.tables.features['colorscheme']   = 'Goodie Color Scheme'
-fonts.otf.tables.features['postprocessor'] = 'Goodie Postprocessor'
+registerotffeature {
+    name         = "goodies",
+    description  = "goodies on top of built in features",
+    initializers = {
+        position = 1,
+        base     = setgoodies,
+        node     = setgoodies,
+    }
+}
 
-fonts.otf.features.register('goodies')
-fonts.otf.features.register('featureset')
-fonts.otf.features.register('colorscheme')
-fonts.otf.features.register('postprocessor')
+registerotffeature {
+    name        = "featureset",
+    description = "goodie feature set",
+    initializers = {
+        position = 2,
+        base     = setfeatureset,
+        node     = setfeatureset,
+    }
+}
 
-table.insert(fonts.triggers, 1, "goodies")
-table.insert(fonts.triggers, 2, "featureset") -- insert after
-table.insert(fonts.triggers,    "colorscheme")
-table.insert(fonts.triggers,    "postprocessor")
+registerotffeature {
+    name        = "colorscheme",
+    description = "goodie color scheme",
+    initializers = {
+        base = setcolorscheme,
+        node = setcolorscheme,
+    }
+}
 
-local base_initializers   = fonts.initializers.base.otf
-local node_initializers   = fonts.initializers.node.otf
-
-base_initializers.goodies       = setgoodies
-node_initializers.goodies       = setgoodies
-
-base_initializers.featureset    = setfeatureset
-node_initializers.featureset    = setfeatureset
-
-base_initializers.colorscheme   = setcolorscheme
-node_initializers.colorscheme   = setcolorscheme
-
-base_initializers.postprocessor = setpostprocessor
-node_initializers.postprocessor = setpostprocessor
-
-local base_initializers   = fonts.initializers.base.afm
-local node_initializers   = fonts.initializers.node.afm
-
-base_initializers.goodies       = setgoodies
-node_initializers.goodies       = setgoodies
-
-base_initializers.postprocessor = setpostprocessor
-node_initializers.postprocessor = setpostprocessor
+registerotffeature {
+    name        = "postprocessor",
+    description = "goodie postprocessor",
+    initializers = {
+        base = setpostprocessor,
+        node = setpostprocessor,
+    }
+}
 
 -- experiment, we have to load the definitions immediately as they precede
 -- the definition so they need to be initialized in the typescript
@@ -337,23 +345,23 @@ node_initializers.postprocessor = setpostprocessor
 local function initialize(goodies)
     local mathgoodies = goodies.mathematics
     if mathgoodies then
-        local virtuals  = mathgoodies.virtuals
-        local mapfiles  = mathgoodies.mapfiles
-        local maplines  = mathgoodies.maplines
-        local variables = mathgoodies.variables
+        local virtuals   = mathgoodies.virtuals
+        local mapfiles   = mathgoodies.mapfiles
+        local maplines   = mathgoodies.maplines
         if virtuals then
             for name, specification in next, virtuals do
-                mathematics.makefont(name,specification,variables)
+                -- beware, they are all constructed
+                mathematics.makefont(name,specification,goodies)
             end
         end
         if mapfiles then
             for i=1,#mapfiles do
-                fonts.map.loadfile(mapfiles[i]) -- todo: backend function
+                fonts.mappings.loadfile(mapfiles[i]) -- todo: backend function
             end
         end
         if maplines then
             for i=1,#maplines do
-                fonts.map.loadline(maplines[i]) -- todo: backend function
+                fonts.mappings.loadline(maplines[i]) -- todo: backend function
             end
         end
     end
@@ -382,7 +390,7 @@ local function initialize(goodies)
     end
 end
 
-fonts.goodies.register("files", initialize)
+fontgoodies.register("files", initialize)
 
 -- some day we will have a define command and then we can also do some
 -- proper tracing
@@ -408,7 +416,7 @@ local function initialize(goodies)
     end
 end
 
-fonts.goodies.register("typefaces", initialize)
+fontgoodies.register("typefaces", initialize)
 
 local function initialize(goodies)
     local typefaces = goodies.typefaces
@@ -420,12 +428,12 @@ local function initialize(goodies)
     end
 end
 
-fonts.goodies.register("typefaces", initialize)
+fontgoodies.register("typefaces", initialize)
 
 local compositions = { }
 
-function fonts.goodies.getcompositions(tfmdata)
-    return compositions[file.nameonly(tfmdata.filename or "")]
+function fontgoodies.getcompositions(tfmdata)
+    return compositions[file.nameonly(tfmdata.properties.filename or "")]
 end
 
 local function initialize(goodies)
@@ -437,7 +445,7 @@ local function initialize(goodies)
     end
 end
 
-fonts.goodies.register("compositions", initialize)
+fontgoodies.register("compositions", initialize)
 
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite

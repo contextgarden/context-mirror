@@ -1,7 +1,7 @@
 -- This patch code is moved from font-pat.lua to this goodies
 -- files as it does not belomg in the core code.
 
-local patches = fonts.otf.enhancers.patches
+local patches = fonts.handlers.otf.enhancers.patches
 
 local function patch(data,filename)
     local uni_to_ind = data.map.map
@@ -268,6 +268,12 @@ return {
         },
         variables = {
             joinrelfactor = 3, -- default anyway
-        }
+        },
+        parameters = { -- test values
+         -- FactorA = 123.456,
+         -- FactorB = false,
+         -- FactorC = function(value,target,original) return 7.89 * target.factor end,
+         -- FactorD = "Hi There!",
+        },
     }
 }

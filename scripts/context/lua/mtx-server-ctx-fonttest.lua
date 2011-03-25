@@ -155,12 +155,12 @@ local function showfeatures(f)
         report("processing font '%s'",f)
         local features = cache[f]
         if features == nil then
-            features = fonts.get_features(resolvers.findfile(f))
+            features = fonts.helpers.getfeatures(resolvers.findfile(f))
             if not features then
                 report("building cache for '%s'",f)
                 io.savedata(file.join(temppath,file.addsuffix(tempname,"tex")),format(process_templates.cache,f,f))
                 os.execute(format("mtxrun --path=%s --script context --once --batchmode %s",temppath,tempname))
-                features = fonts.get_features(f)
+                features = fonts.helpers.getfeatures(f)
             end
             cache[f] = features or false
             report("caching info of '%s'",f)
@@ -305,7 +305,7 @@ local function edit_font(currentfont,detail,tempname)
             local sorted = table.sortedkeys(htmldata.scripts)
             for k=1,#sorted do
                 local v = sorted[k]
-                local s = fonts.otf.tables.scripts[v] or v
+                local s = fonts.handlers.otf.tables.scripts[v] or v
                 if detail and v == detail.script then
                     scripts[#scripts+1] = format("<input title='%s' id='s-%s' type='radio' name='script' value='%s' onclick='check_script()' checked='checked'/>&nbsp;<span id='t-s-%s'>%s</span>",s,v,v,v,v)
                 else
@@ -315,7 +315,7 @@ local function edit_font(currentfont,detail,tempname)
             local sorted = table.sortedkeys(htmldata.languages)
             for k=1,#sorted do
                 local v = sorted[k]
-                local l = fonts.otf.tables.languages[v] or v
+                local l = fonts.handlers.otf.tables.languages[v] or v
                 if detail and v == detail.language then
                     languages[#languages+1] = format("<input title='%s' id='l-%s' type='radio' name='language' value='%s' onclick='check_language()' checked='checked'/>&nbsp;<span id='t-l-%s'>%s</span>",l,v,v,v,v)
                 else
@@ -325,7 +325,7 @@ local function edit_font(currentfont,detail,tempname)
             local sorted = table.sortedkeys(htmldata.features)
             for k=1,#sorted do
                 local v = sorted[k]
-                local f = fonts.otf.tables.features[v] or v
+                local f = fonts.handlers.otf.tables.features[v] or v
                 if detail and detail["f-"..v] then
                     features[#features+1] = format("<input title='%s' id='f-%s' type='checkbox' name='f-%s' onclick='check_feature()' checked='checked'/>&nbsp;<span id='t-f-%s'>%s</span>",f,v,v,v,v)
                 else
@@ -408,7 +408,7 @@ end
 
 local function show_font(currentfont,detail)
     local specification = get_specification(currentfont)
-    local features = fonts.get_features(specification.filename)
+    local features = fonts.helpers.getfeatures(specification.filename)
     local result = { }
     result[#result+1] = format("<h1>names</h1>",what)
     result[#result+1] = "<table>"
@@ -446,7 +446,7 @@ local function show_font(currentfont,detail)
                         else
                             done = true
                         end
-                        local title = fonts.otf.tables.features[f] or ""
+                        local title = fonts.handlers.otf.tables.features[f] or ""
                         result[#result+1] = format("<tr><td width='50%%'>%s&nbsp;&nbsp;</td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td></tr>",title,f,s,concat(table.sortedkeys(ss)," "))
                     end
                 end

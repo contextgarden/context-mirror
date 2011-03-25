@@ -29,51 +29,48 @@ function extras.add(unicode,t)
     end
 end
 
-function extras.copy(tfmdata)
-    local mathparameters = tfmdata.mathparameters
-    local MathConstants = tfmdata.MathConstants
-    if (mathparameters and next(mathparameters)) or (MathConstants and next(MathConstants)) then
-        local characters = tfmdata.characters
-        for unicode, extradesc in next, mathdata do
-            -- always, because in an intermediate step we can have a non math font
-            local extrachar = characters[unicode]
-            local nextinsize = extradesc.nextinsize
-            if nextinsize then
-                for i=1,#nextinsize do
-                    local nextslot = nextinsize[i]
-                    local nextbase = characters[nextslot]
-                    if nextbase then
-                        local nextnext = nextbase and nextbase.next
-                        if nextnext then
-                            local nextchar = characters[nextnext]
-                            if nextchar then
-                                if trace_virtual then
-                                    report_math("extra U+%04X in %s at %s maps on U+%04X (class: %s, name: %s)",unicode,file.basename(tfmdata.fullname),tfmdata.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
-                                end
-                                characters[unicode] = nextchar
-                                break
+function extras.copy(target,original)
+    local characters = target.characters
+    local properties = target.properties
+    local parameters = target.parameters
+    for unicode, extradesc in next, mathdata do
+        -- always, because in an intermediate step we can have a non math font
+        local extrachar = characters[unicode]
+        local nextinsize = extradesc.nextinsize
+        if nextinsize then
+            for i=1,#nextinsize do
+                local nextslot = nextinsize[i]
+                local nextbase = characters[nextslot]
+                if nextbase then
+                    local nextnext = nextbase and nextbase.next
+                    if nextnext then
+                        local nextchar = characters[nextnext]
+                        if nextchar then
+                            if trace_virtual then
+                                report_math("extra U+%04X in %s at %s maps on U+%04X (class: %s, name: %s)",unicode,
+                                    file.basename(properties.fullname),parameters.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
                             end
-                        end
-                    end
-                end
-                if not characters[unicode] then -- can be set in previous loop
-                    for i=1,#nextinsize do
-                        local nextslot = nextinsize[i]
-                        local nextbase = characters[nextslot]
-                        if nextbase then
-                            characters[unicode] = nextbase -- still ok?
+                            characters[unicode] = nextchar
                             break
                         end
                     end
                 end
             end
+            if not characters[unicode] then -- can be set in previous loop
+                for i=1,#nextinsize do
+                    local nextslot = nextinsize[i]
+                    local nextbase = characters[nextslot]
+                    if nextbase then
+                        characters[unicode] = nextbase -- still ok?
+                        break
+                    end
+                end
+            end
         end
-    else
-        -- let's not waste time on non-math
     end
 end
 
-table.insert(fonts.tfm.mathactions,extras.copy)
+utilities.sequencers.appendaction(mathactions,"system","mathematics.extras.copy")
 
 -- 0xFE302 -- 0xFE320 for accents
 

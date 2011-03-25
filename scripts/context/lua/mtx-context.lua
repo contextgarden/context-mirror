@@ -117,334 +117,334 @@ function io.copydata(fromfile,tofile)
     io.savedata(tofile,io.loaddata(fromfile) or "")
 end
 
--- ctx
+-- ctx (will become util-ctx)
 
-ctxrunner = { }
+local ctxrunner = { }
 
-do
+function ctxrunner.filtered(str,method)
+    str = tostring(str)
+    if     method == 'name'     then str = file.removesuffix(file.basename(str))
+    elseif method == 'path'     then str = file.dirname(str)
+    elseif method == 'suffix'   then str = file.extname(str)
+    elseif method == 'nosuffix' then str = file.removesuffix(str)
+    elseif method == 'nopath'   then str = file.basename(str)
+    elseif method == 'base'     then str = file.basename(str)
+--  elseif method == 'full'     then
+--  elseif method == 'complete' then
+--  elseif method == 'expand'   then -- str = file.expandpath(str)
+    end
+    return str:gsub("\\","/")
+end
 
-    function ctxrunner.filtered(str,method)
-        str = tostring(str)
-        if     method == 'name'     then str = file.removesuffix(file.basename(str))
-        elseif method == 'path'     then str = file.dirname(str)
-        elseif method == 'suffix'   then str = file.extname(str)
-        elseif method == 'nosuffix' then str = file.removesuffix(str)
-        elseif method == 'nopath'   then str = file.basename(str)
-        elseif method == 'base'     then str = file.basename(str)
-    --  elseif method == 'full'     then
-    --  elseif method == 'complete' then
-    --  elseif method == 'expand'   then -- str = file.expandpath(str)
+function ctxrunner.substitute(e,str)
+    local attributes = e.at
+    if str and attributes then
+        if attributes['method'] then
+            str = ctxrunner.filtered(str,attributes['method'])
         end
-        return str:gsub("\\","/")
-    end
-
-    function ctxrunner.substitute(e,str)
-        local attributes = e.at
-        if str and attributes then
-            if attributes['method'] then
-                str = ctxrunner.filtered(str,attributes['method'])
-            end
-            if str == "" and attributes['default'] then
-                str = attributes['default']
-            end
+        if str == "" and attributes['default'] then
+            str = attributes['default']
         end
-        return str
     end
+    return str
+end
 
-    function ctxrunner.reflag(flags)
-        local t = { }
-        for _, flag in next, flags do
-            local key, value = match(flag,"^(.-)=(.+)$")
-            if key and value then
-                t[key] = value
-            else
-                t[flag] = true
-            end
-        end
-        return t
-    end
-
-    function ctxrunner.substitute(str)
-        return str
-    end
-
-    function ctxrunner.justtext(str)
-        str = xml.unescaped(tostring(str))
-        str = xml.cleansed(str)
-        str = str:gsub("\\+",'/')
-        str = str:gsub("%s+",' ')
-        return str
-    end
-
-    function ctxrunner.new()
-        return {
-            ctxname      = "",
-            jobname      = "",
-            xmldata      = nil,
-            suffix       = "prep",
-            locations    = { '..', '../..' },
-            variables    = { },
-            messages     = { },
-            environments = { },
-            modules      = { },
-            filters      = { },
-            flags        = { },
-            modes        = { },
-            prepfiles    = { },
-            paths        = { },
-        }
-    end
-
-    function ctxrunner.savelog(ctxdata,ctlname)
-        local function yn(b)
-            if b then return 'yes' else return 'no' end
-        end
-        if not ctlname or ctlname == "" or ctlname == ctxdata.jobname then
-            if ctxdata.jobname then
-                ctlname = file.replacesuffix(ctxdata.jobname,'ctl')
-            elseif ctxdata.ctxname then
-                ctlname = file.replacesuffix(ctxdata.ctxname,'ctl')
-            else
-                report("invalid ctl name: %s",ctlname or "?")
-                return
-            end
-        end
-        local prepfiles = ctxdata.prepfiles
-        if prepfiles and next(prepfiles) then
-            report("saving logdata in: %s",ctlname)
-            f = io.open(ctlname,'w')
-            if f then
-                f:write("<?xml version='1.0' standalone='yes'?>\n\n")
-                f:write(format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
-                local sorted = table.sortedkeys(prepfiles)
-                for i=1,#sorted do
-                    local name = sorted[i]
-                    f:write(format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
-                end
-                f:write("</ctx:preplist>\n")
-                f:close()
-            end
+function ctxrunner.reflag(flags)
+    local t = { }
+    for _, flag in next, flags do
+        local key, value = match(flag,"^(.-)=(.+)$")
+        if key and value then
+            t[key] = value
         else
-            report("nothing prepared, no ctl file saved")
-            os.remove(ctlname)
+            t[flag] = true
         end
     end
+    return t
+end
 
-    function ctxrunner.register_path(ctxdata,path)
-        -- test if exists
-        ctxdata.paths[ctxdata.paths+1] = path
+function ctxrunner.substitute(str)
+    return str
+end
+
+function ctxrunner.justtext(str)
+    str = xml.unescaped(tostring(str))
+    str = xml.cleansed(str)
+    str = str:gsub("\\+",'/')
+    str = str:gsub("%s+",' ')
+    return str
+end
+
+function ctxrunner.new()
+    return {
+        ctxname      = "",
+        jobname      = "",
+        xmldata      = nil,
+        suffix       = "prep",
+        locations    = { '..', '../..' },
+        variables    = { },
+        messages     = { },
+        environments = { },
+        modules      = { },
+        filters      = { },
+        flags        = { },
+        modes        = { },
+        prepfiles    = { },
+        paths        = { },
+    }
+end
+
+function ctxrunner.savelog(ctxdata,ctlname)
+    local function yn(b)
+        if b then return 'yes' else return 'no' end
     end
-
-    function ctxrunner.trace(ctxdata)
-        print(table.serialize(ctxdata.messages))
-        print(table.serialize(ctxdata.flags))
-        print(table.serialize(ctxdata.environments))
-        print(table.serialize(ctxdata.modules))
-        print(table.serialize(ctxdata.filters))
-        print(table.serialize(ctxdata.modes))
-        print(xml.tostring(ctxdata.xmldata))
-    end
-
-    function ctxrunner.manipulate(ctxdata,ctxname,defaultname)
-
-        if not ctxdata.jobname or ctxdata.jobname == "" then
+    if not ctlname or ctlname == "" or ctlname == ctxdata.jobname then
+        if ctxdata.jobname then
+            ctlname = file.replacesuffix(ctxdata.jobname,'ctl')
+        elseif ctxdata.ctxname then
+            ctlname = file.replacesuffix(ctxdata.ctxname,'ctl')
+        else
+            report("invalid ctl name: %s",ctlname or "?")
             return
         end
-
-        ctxdata.ctxname = ctxname or file.removesuffix(ctxdata.jobname) or ""
-
-        if ctxdata.ctxname == "" then
-            return
+    end
+    local prepfiles = ctxdata.prepfiles
+    if prepfiles and next(prepfiles) then
+        report("saving logdata in: %s",ctlname)
+        f = io.open(ctlname,'w')
+        if f then
+            f:write("<?xml version='1.0' standalone='yes'?>\n\n")
+            f:write(format("<ctx:preplist local='%s'>\n",yn(ctxdata.runlocal)))
+            local sorted = table.sortedkeys(prepfiles)
+            for i=1,#sorted do
+                local name = sorted[i]
+                f:write(format("\t<ctx:prepfile done='%s'>%s</ctx:prepfile>\n",yn(prepfiles[name]),name))
+            end
+            f:write("</ctx:preplist>\n")
+            f:close()
         end
+    else
+        report("nothing prepared, no ctl file saved")
+        os.remove(ctlname)
+    end
+end
 
-        ctxdata.jobname = file.addsuffix(ctxdata.jobname,'tex')
-        ctxdata.ctxname = file.addsuffix(ctxdata.ctxname,'ctx')
+function ctxrunner.register_path(ctxdata,path)
+    -- test if exists
+    ctxdata.paths[ctxdata.paths+1] = path
+end
 
-        report("jobname: %s",ctxdata.jobname)
-        report("ctxname: %s",ctxdata.ctxname)
+function ctxrunner.trace(ctxdata)
+    print(table.serialize(ctxdata.messages))
+    print(table.serialize(ctxdata.flags))
+    print(table.serialize(ctxdata.environments))
+    print(table.serialize(ctxdata.modules))
+    print(table.serialize(ctxdata.filters))
+    print(table.serialize(ctxdata.modes))
+    print(xml.tostring(ctxdata.xmldata))
+end
 
-        -- mtxrun should resolve kpse: and file:
+function ctxrunner.manipulate(ctxdata,ctxname,defaultname)
 
-        local usedname = ctxdata.ctxname
-        local found    = lfs.isfile(usedname)
+    if not ctxdata.jobname or ctxdata.jobname == "" then
+        return
+    end
 
-        if not found then
-            for _, path in next, ctxdata.locations do
-                local fullname = file.join(path,ctxdata.ctxname)
-                if lfs.isfile(fullname) then
-                    usedname, found = fullname, true
-                    break
-                end
+    ctxdata.ctxname = ctxname or file.removesuffix(ctxdata.jobname) or ""
+
+    if ctxdata.ctxname == "" then
+        return
+    end
+
+    ctxdata.jobname = file.addsuffix(ctxdata.jobname,'tex')
+    ctxdata.ctxname = file.addsuffix(ctxdata.ctxname,'ctx')
+
+    report("jobname: %s",ctxdata.jobname)
+    report("ctxname: %s",ctxdata.ctxname)
+
+    -- mtxrun should resolve kpse: and file:
+
+    local usedname = ctxdata.ctxname
+    local found    = lfs.isfile(usedname)
+
+    -- no futher test if qualified path
+
+    if not found then
+        for _, path in next, ctxdata.locations do
+            local fullname = file.join(path,ctxdata.ctxname)
+            if lfs.isfile(fullname) then
+                usedname, found = fullname, true
+                break
             end
         end
+    end
 
+    if not found then
         usedname = resolvers.findfile(ctxdata.ctxname,"tex")
         found = usedname ~= ""
+    end
 
-        if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
-            usedname, found = defaultname, true
-        end
+    if not found and defaultname and defaultname ~= "" and lfs.isfile(defaultname) then
+        usedname, found = defaultname, true
+    end
 
-        if not found then
-            return
-        end
+    if not found then
+        return
+    end
 
-        ctxdata.xmldata = xml.load(usedname)
+    ctxdata.xmldata = xml.load(usedname)
 
-        if not ctxdata.xmldata then
-            return
-        else
-            -- test for valid, can be text file
-        end
+    if not ctxdata.xmldata then
+        return
+    else
+        -- test for valid, can be text file
+    end
 
-        xml.include(ctxdata.xmldata,'ctx:include','name', table.append({'.', file.dirname(ctxdata.ctxname)},ctxdata.locations))
+    xml.include(ctxdata.xmldata,'ctx:include','name', table.append({'.', file.dirname(ctxdata.ctxname)},ctxdata.locations))
 
-        ctxdata.variables['job'] = ctxdata.jobname
+    ctxdata.variables['job'] = ctxdata.jobname
 
-        ctxdata.flags        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:flags/ctx:flag",true)
-        ctxdata.environments = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment",true)
-        ctxdata.modules      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module",true)
-        ctxdata.filters      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:filter",true)
-        ctxdata.modes        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode",true)
-        ctxdata.messages     = xml.collect_texts(ctxdata.xmldata,"ctx:message",true)
+    ctxdata.flags        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:flags/ctx:flag",true)
+    ctxdata.environments = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:environment",true)
+    ctxdata.modules      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:module",true)
+    ctxdata.filters      = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:filter",true)
+    ctxdata.modes        = xml.collect_texts(ctxdata.xmldata,"/ctx:job/ctx:process/ctx:resources/ctx:mode",true)
+    ctxdata.messages     = xml.collect_texts(ctxdata.xmldata,"ctx:message",true)
 
-        ctxdata.flags = ctxrunner.reflag(ctxdata.flags)
+    ctxdata.flags = ctxrunner.reflag(ctxdata.flags)
 
-        local messages = ctxdata.messages
-        for i=1,#messages do
-            report("ctx comment: %s", xml.tostring(messages[i]))
-        end
+    local messages = ctxdata.messages
+    for i=1,#messages do
+        report("ctx comment: %s", xml.tostring(messages[i]))
+    end
 
-        for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
-            d[k] = ctxdata.variables['job'] or ""
-        end
+    for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value[@name='job']") do
+        d[k] = ctxdata.variables['job'] or ""
+    end
 
-        local commands = { }
-        for e in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do
-            commands[e.at and e.at['name'] or "unknown"] = e
-        end
+    local commands = { }
+    for e in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/ctx:processor") do
+        commands[e.at and e.at['name'] or "unknown"] = e
+    end
 
-        local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute('suffix')") or ctxdata.suffix
-        local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute('local')")
+    local suffix   = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/attribute('suffix')") or ctxdata.suffix
+    local runlocal = xml.filter(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:processors/attribute('local')")
 
-        runlocal = toboolean(runlocal)
+    runlocal = toboolean(runlocal)
 
-        for files in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
-            for pattern in xml.collected(files,"ctx:file") do
+    for files in xml.collected(ctxdata.xmldata,"/ctx:job/ctx:preprocess/ctx:files") do
+        for pattern in xml.collected(files,"ctx:file") do
 
-                preprocessor = pattern.at['processor'] or ""
+            preprocessor = pattern.at['processor'] or ""
 
-                if preprocessor ~= "" then
+            if preprocessor ~= "" then
 
-                    ctxdata.variables['old'] = ctxdata.jobname
-                    for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value") do
-                        local ek = d[k]
-                        local ekat = ek.at['name']
-                        if ekat == 'old' then
-                            d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
+                ctxdata.variables['old'] = ctxdata.jobname
+                for r, d, k in xml.elements(ctxdata.xmldata,"ctx:value") do
+                    local ek = d[k]
+                    local ekat = ek.at['name']
+                    if ekat == 'old' then
+                        d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
+                    end
+                end
+
+                pattern = ctxrunner.justtext(xml.tostring(pattern))
+
+                local oldfiles = dir.glob(pattern)
+
+                local pluspath = false
+                if #oldfiles == 0 then
+                    -- message: no files match pattern
+                    local paths = ctxdata.paths
+                    for i=1,#paths do
+                        local p = paths[i]
+                        local oldfiles = dir.glob(path.join(p,pattern))
+                        if #oldfiles > 0 then
+                            pluspath = true
+                            break
                         end
                     end
-
-                    pattern = ctxrunner.justtext(xml.tostring(pattern))
-
-                    local oldfiles = dir.glob(pattern)
-
-                    local pluspath = false
-                    if #oldfiles == 0 then
-                        -- message: no files match pattern
-                        local paths = ctxdata.paths
-                        for i=1,#paths do
-                            local p = paths[i]
-                            local oldfiles = dir.glob(path.join(p,pattern))
-                            if #oldfiles > 0 then
-                                pluspath = true
-                                break
-                            end
+                end
+                if #oldfiles == 0 then
+                    -- message: no old files
+                else
+                    for i=1,#oldfiles do
+                        local oldfile = oldfiles[i]
+                        local newfile = oldfile .. "." .. suffix -- addsuffix will add one only
+                        if ctxdata.runlocal then
+                            newfile = file.basename(newfile)
                         end
-                    end
-                    if #oldfiles == 0 then
-                        -- message: no old files
-                    else
-                        for i=1,#oldfiles do
-                            local oldfile = oldfiles[i]
-                            local newfile = oldfile .. "." .. suffix -- addsuffix will add one only
-                            if ctxdata.runlocal then
-                                newfile = file.basename(newfile)
-                            end
-                            if oldfile ~= newfile and file.needsupdate(oldfile,newfile) then
-                            --  message: oldfile needs preprocessing
-                            --  os.remove(newfile)
-                                local splitted = preprocessor:split(',')
-                                for i=1,#splitted do
-                                    local pp = splitted[i]
-                                    local command = commands[pp]
-                                    if command then
-                                        command = xml.copy(command)
-                                        local suf = (command.at and command.at['suffix']) or ctxdata.suffix
-                                        if suf then
-                                            newfile = oldfile .. "." .. suf
-                                        end
-                                        if ctxdata.runlocal then
-                                            newfile = file.basename(newfile)
-                                        end
-                                        for r, d, k in xml.elements(command,"ctx:old") do
-                                            d[k] = ctxrunner.substitute(oldfile)
-                                        end
-                                        for r, d, k in xml.elements(command,"ctx:new") do
-                                            d[k] = ctxrunner.substitute(newfile)
-                                        end
-                                        ctxdata.variables['old'] = oldfile
-                                        ctxdata.variables['new'] = newfile
-                                        for r, d, k in xml.elements(command,"ctx:value") do
-                                            local ek = d[k]
-                                            local ekat = ek.at and ek.at['name']
-                                            if ekat then
-                                                d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
-                                            end
-                                        end
-                                        -- potential optimization: when mtxrun run internal
-                                        command = xml.content(command)
-                                        command = ctxrunner.justtext(command)
-                                        report("command: %s",command)
-                                        local result = os.spawn(command) or 0
-                                        -- somehow we get the wrong return value
-                                        if result > 0 then
-                                            report("error, return code: %s",result)
-                                        end
-                                        if ctxdata.runlocal then
-                                            oldfile = file.basename(oldfile)
+                        if oldfile ~= newfile and file.needsupdate(oldfile,newfile) then
+                        --  message: oldfile needs preprocessing
+                        --  os.remove(newfile)
+                            local splitted = preprocessor:split(',')
+                            for i=1,#splitted do
+                                local pp = splitted[i]
+                                local command = commands[pp]
+                                if command then
+                                    command = xml.copy(command)
+                                    local suf = (command.at and command.at['suffix']) or ctxdata.suffix
+                                    if suf then
+                                        newfile = oldfile .. "." .. suf
+                                    end
+                                    if ctxdata.runlocal then
+                                        newfile = file.basename(newfile)
+                                    end
+                                    for r, d, k in xml.elements(command,"ctx:old") do
+                                        d[k] = ctxrunner.substitute(oldfile)
+                                    end
+                                    for r, d, k in xml.elements(command,"ctx:new") do
+                                        d[k] = ctxrunner.substitute(newfile)
+                                    end
+                                    ctxdata.variables['old'] = oldfile
+                                    ctxdata.variables['new'] = newfile
+                                    for r, d, k in xml.elements(command,"ctx:value") do
+                                        local ek = d[k]
+                                        local ekat = ek.at and ek.at['name']
+                                        if ekat then
+                                            d[k] = ctxrunner.substitute(ctxdata.variables[ekat] or "")
                                         end
                                     end
+                                    -- potential optimization: when mtxrun run internal
+                                    command = xml.content(command)
+                                    command = ctxrunner.justtext(command)
+                                    report("command: %s",command)
+                                    local result = os.spawn(command) or 0
+                                    -- somehow we get the wrong return value
+                                    if result > 0 then
+                                        report("error, return code: %s",result)
+                                    end
+                                    if ctxdata.runlocal then
+                                        oldfile = file.basename(oldfile)
+                                    end
                                 end
-                                if lfs.isfile(newfile) then
-                                    file.syncmtimes(oldfile,newfile)
-                                    ctxdata.prepfiles[oldfile] = true
-                                else
-                                    report("error, check target location of new file: %s", newfile)
-                                    ctxdata.prepfiles[oldfile] = false
-                                end
-                            else
-                                report("old file needs no preprocessing")
-                                ctxdata.prepfiles[oldfile] = lfs.isfile(newfile)
                             end
+                            if lfs.isfile(newfile) then
+                                file.syncmtimes(oldfile,newfile)
+                                ctxdata.prepfiles[oldfile] = true
+                            else
+                                report("error, check target location of new file: %s", newfile)
+                                ctxdata.prepfiles[oldfile] = false
+                            end
+                        else
+                            report("old file needs no preprocessing")
+                            ctxdata.prepfiles[oldfile] = lfs.isfile(newfile)
                         end
                     end
                 end
             end
         end
-
-        ctxrunner.savelog(ctxdata)
-
     end
 
-    function ctxrunner.preppedfile(ctxdata,filename)
-        if ctxdata.prepfiles[file.basename(filename)] then
-            return filename .. ".prep"
-        else
-            return filename
-        end
-    end
+    ctxrunner.savelog(ctxdata)
 
+end
+
+function ctxrunner.preppedfile(ctxdata,filename)
+    if ctxdata.prepfiles[file.basename(filename)] then
+        return filename .. ".prep"
+    else
+        return filename
+    end
 end
 
 -- rest
@@ -575,7 +575,6 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setalways("%% styles and modules")
         --
         setalways("\\startsetups *runtime:modules")
-        setvalues("filter"       , "\\useXMLfilter[%s]", true)
         setvalues("usemodule"    , "\\usemodule[%s]", true)
         setvalues("environment"  , "\\environment %s ", true)
         if ctxdata then
@@ -875,9 +874,9 @@ function scripts.context.run(ctxdata,filename)
 --~                             end
 --~                         end
 
-local directives  = environment.directives
-local trackers    = environment.trackers
-local experiments = environment.experiments
+                        local directives  = environment.directives
+                        local trackers    = environment.trackers
+                        local experiments = environment.experiments
 
                         --
                         if type(directives) == "string" then
@@ -1214,7 +1213,7 @@ local persistent_runfiles = {
 }
 
 local special_runfiles = {
-    "-mpgraph*", "-mprun*"
+    "-mpgraph*", "-mprun*", "-temp-*"
 }
 
 local function purge_file(dfile,cfile)
@@ -1324,6 +1323,7 @@ function scripts.context.touch()
     if environment.argument("expert") then
         touchfiles("mkii")
         touchfiles("mkiv")
+        touchfiles("mkvi")
     end
 end
 
@@ -1355,7 +1355,7 @@ function scripts.context.modules(pattern)
         if not done[base] then
             done[base] = true
             local suffix = file.suffix(base)
-            if suffix == "tex" or suffix == "mkiv" then
+            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" then
                 local prefix = match(base,"^([xmst])%-")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen

@@ -1,0 +1,84 @@
+%D \module
+%D   [       file=pack-mis, % moved from e.g. core-mis
+%D        version=1998.01.29,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Miscelaneous,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packing Macros / Misc Commands}
+
+\unprotect
+
+% a quite old mechanism already (but inheritance added)
+%
+% \defineplacement[name][settings]
+% \setupplacement [name][settings]
+% \placement      [name][settings]
+% \place<name>          [settings]
+
+\installcommandhandler \??pl {placement} \??pl
+
+\appendtoks
+   \setuevalue{\e!place\currentplacement}{\pack_placement{\currentplacement}}%
+\to \everydefineplacement
+
+\setupplacement
+  [\c!left=\hss,
+   \c!right=\hss,
+   \c!linecorrection=\v!off,
+   \c!depthcorrection=\v!off,
+   \c!grid=\v!middle,
+  %\c!before=,
+  %\c!after=,
+   \c!margin=\v!standard]
+
+\unexpanded\def\placement[#tag]%
+  {\pack_placement{#tag}}
+
+\unexpanded\def\pack_placement#tag%
+  {\bgroup
+   \edef\currentplacement{#tag}%
+   \dosingleempty\pack_placement_indeed}
+
+\def\pack_placement_indeed[#settings]% set test can be sped up but non critical
+  {\iffirstargument
+     \setupcurrentplacement[#settings]%
+   \fi
+   \dowithnextboxcontent{\forgetall}{\pack_placement_flush\egroup}\vbox}
+
+\def\pack_placement_flush
+  {\setlocalhsize
+   \placementparameter\c!before
+   \begingroup
+   \disableparpositions
+   \setbox\nextbox\hbox to \localhsize
+     {\placementparameter\c!left
+      \flushnextbox
+      \placementparameter\c!right}%
+   \ifinsidefloat \else
+     \addlocalbackgroundtobox\nextbox
+   \fi
+   \ifgridsnapping
+     \doifinset{\placementparameter\c!margin}{\v!standard,\v!yes}\noindent % unchecked
+     \doifelsenothing{\placementparameter\c!grid}
+       {\snaptogrid[\v!middle]}
+       {\snaptogrid[\placementparameter\c!grid]}%
+       \hbox{\flushnextbox}%
+   \else
+     \doif{\placementparameter\c!linecorrection}\v!on \startbaselinecorrection
+     \doifinset{\placementparameter\c!margin}{\v!standard,\v!yes}\noindent
+     \flushnextbox
+     \doif{\placementparameter\c!depthcorrection}\v!on\baselinecorrection
+     \doif{\placementparameter\c!linecorrection }\v!on\stopbaselinecorrection
+   \fi
+   \endgroup
+   \placementparameter\c!after}
+
+\protect \endinput
+

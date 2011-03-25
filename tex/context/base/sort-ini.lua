@@ -38,7 +38,11 @@ relatively easy to do.</p>
 <p>Todo: investigate what standards and conventions there are and see
 how they map onto this mechanism. I've learned that users can come up
 with any demand so nothing here is frozen.</p>
+
+<p>In the future index entries will become more clever, i.e. they will
+have language etc properties that then can be used.</p>
 ]]--
+
 
 local utf = unicode.utf8
 local gsub, rep, sub, sort, concat = string.gsub, string.rep, string.sub, table.sort, table.concat

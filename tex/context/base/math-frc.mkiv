@@ -160,7 +160,8 @@
 
 % to be checked:
 
-\def\exmthfont#1{\symbolicsizedfont#1\plusone{MathExtension}}
+\unexpanded\def\exmthfont#1%
+  {\symbolicsizedfont#1\plusone{MathExtension}}
 
 \def\domthfrac#1#2#3#4#5#6#7%
   {\begingroup
@@ -194,18 +195,204 @@
                            \rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
    \endgroup}
 
-\def\mthfrac#1#2#3#4#5{\mathchoice
+\unexpanded\def\mthfrac#1#2#3#4#5{\mathchoice
   {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}
   {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}
   {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}
   {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
 
-\def\mthsqrt#1#2#3{\mathchoice
+\unexpanded\def\mthsqrt#1#2#3{\mathchoice
   {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}
   {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}
   {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}
   {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
 
-% temp here
+%D Moved from math-new.tex (not that new anyway):
+
+%D \macros
+%D   {genfrac}
+%D
+%D [TH] The definition of \type {\genfrac} \& co. is not
+%D trivial, because it allows some flexibility. This is
+%D supposed to be a user||level command, but will fail quite
+%D desparately if called outside math mode (\CONTEXT\ redefines
+%D \type {\over})
+%D
+%D [HH] We clean up this macro a bit and (try) to make it
+%D understandable. The expansion is needed for generating
+%D the second argument to \type {\dogenfrac}, which is to
+%D be a control sequence like \type {\over}.
+
+\unexpanded\def\genfrac#1#2#3#4%
+  {\edef\!!stringa
+     {#1#2}%
+   \expanded
+     {\dogenfrac{#4}%
+      \csname
+        \ifx @#3@%
+          \ifx\!!stringa\empty
+            \strippedcsname\normalover
+          \else
+            \strippedcsname\normaloverwithdelims
+          \fi
+        \else
+          \ifx\!!stringa\empty
+            \strippedcsname\normalabove
+          \else
+            \strippedcsname\normalabovewithdelims
+          \fi
+        \fi
+      \endcsname}%
+     {#1#2#3}}
+
+\def\dogenfrac#1#2#3#4#5%
+  {{#1{\begingroup#4\endgroup#2#3\relax#5}}}
+
+%D \macros
+%D   {dfrac, tfrac, frac, dbinom, tbinom, binom}
+%D
+%D \startbuffer
+%D $\dfrac {1}{2} \tfrac {1}{2} \frac {1}{2}$
+%D $\dbinom{1}{2} \tbinom{1}{2} \binom{1}{2}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+\unexpanded\def\dfrac {\genfrac\empty\empty{}\displaystyle}
+\unexpanded\def\tfrac {\genfrac\empty\empty{}\textstyle}
+\unexpanded\def\frac  {\genfrac\empty\empty{}\donothing}
+
+\unexpanded\def\dbinom{\genfrac()\zeropoint\displaystyle}
+\unexpanded\def\tbinom{\genfrac()\zeropoint\textstyle}
+\unexpanded\def\binom {\genfrac()\zeropoint\donothing}
+
+\unexpanded\def\xfrac {\genfrac\empty\empty{}\scriptstyle}
+\unexpanded\def\xxfrac{\genfrac\empty\empty{}\scriptscriptstyle}
+
+\unexpanded\def\frac#1#2{\mathematics{\genfrac\empty\empty{}\donothing{#1}{#2}}}
+
+%D \macros
+%D   {cfrac}
+%D
+%D \startbuffer
+%D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
+%D $\cfrac{1}{23} \cfrac[l]{1}{23} \cfrac[c]{1}{23} \cfrac[r]{1}{23}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+%D
+%D Now we can align every combination we want:
+%D
+%D \startbuffer
+%D $\cfrac{12}{3} \cfrac[l]{12}{3} \cfrac[c]{12}{3} \cfrac[r]{12}{3}$
+%D $\cfrac{1}{23} \cfrac[l]{1}{23} \cfrac[c]{1}{23} \cfrac[r]{1}{23}$
+%D $\cfrac[cl]{12}{3} \cfrac[cc]{12}{3} \cfrac[cr]{12}{3}$
+%D $\cfrac[lc]{1}{23} \cfrac[cc]{1}{23} \cfrac[rc]{1}{23}$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \getbuffer
+
+\definecomplexorsimple\cfrac
+
+\def\simplecfrac     {\docfrac[cc]}
+\def\complexcfrac[#1]{\docfrac[#1cc]}
+
+\def\docfrac[#1#2#3]#4#5%
+  {{\displaystyle
+    \frac
+      {\strut
+       \ifx r#1\hfill\fi#4\ifx l#1\hfill\fi}%
+      {\ifx r#2\hfill\fi#5\ifx l#2\hfill\fi}%
+    \kern-\nulldelimiterspace}}
+
+%D \macros
+%D   {splitfrac, splitdfrac}
+%D
+%D Occasionally one needs to typeset multi||line fractions.
+%D These commands use \tex{genfrac} to create such fractions.
+%D
+%D \startbuffer
+%D \startformula
+%D      a=\frac{
+%D          \splitfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D      =\frac{
+%D          \splitdfrac{xy + xy + xy + xy + xy}
+%D                    {+ xy + xy + xy + xy}
+%D        }
+%D        {z}
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D These macros are based on Michael J.~Downes posting on
+%D comp.text.tex on 2001/12/06
+
+\unexpanded\def\splitfrac#1#2%
+  {\genfrac\empty\empty\zeropoint\textstyle%
+     {\textstyle#1\quad\hfill}%
+     {\textstyle\hfill\quad\mathstrut#2}}
+
+\unexpanded\def\splitdfrac#1#2%
+  {\genfrac\empty\empty\zeropoint\displaystyle%
+     {#1\quad\hfill}
+     {\hfill\quad\mathstrut #2}}
+
+%D For thee moment here, but it might move:
+
+%D \macros
+%D   {qedsymbol}
+%D
+%D [HH] The general Quod Erat Domonstrandum symbol is defined
+%D in such a way that we can configure it. Because this symbol
+%D is also used in text mode, we make it a normal text symbol
+%D with special behavior.
+
+\unexpanded\def\qedsymbol#1%
+  {\ifhmode
+     \unskip~\hfill#1\par
+   \else\ifmmode
+     \eqno#1\relax % Do we really need the \eqno here?
+   \else
+     \leavevmode\hbox{}\hfill#1\par
+   \fi\fi}
+
+\definesymbol [qed] [\qedsymbol{\mathematics{\square}}]
+
+%D \macros
+%D   {QED}
+%D
+%D [HH] For compatbility reasons we also provide the \type
+%D {\QED} command. In case this command is overloaded, we still
+%D have the symbol available. \symbol[qed]
+
+\unexpanded\def\QED{\symbol[qed]}
+
+%D \macros
+%D  {mathhexbox}
+%D
+%D [TH] \type {\mathhexbox} is also user||level (already
+%D defined in Plain \TEX). It allows to get a math character
+%D inserted as if it was a text character.
+
+\unexpanded\def\mathhexbox#1#2#3%
+  {\mathtext{$\mathsurround\zeropoint\mathchar"#1#2#3$}}
+
+%D \macros
+%D   {boxed}
+%D
+%D [HH] Another macro that users expect (slightly adapted):
+
+\unexpanded\def\boxed
+  {\ifmmode\expandafter\mframed\else\expandafter\framed\fi}
 
 \protect \endinput

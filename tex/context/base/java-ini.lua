@@ -87,7 +87,7 @@ function javascripts.setpreamble(name,script) -- now later
     end
 end
 
-function javascripts.addtopreamble(name,script) -- now later
+function javascripts.addtopreamble(name,script)
     if name and name ~= "" then
         local p = preambled[name]
         if p then

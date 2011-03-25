@@ -658,6 +658,7 @@ function lpeg.is_lpeg(p)
 end
 
 
+
 end -- of closure
 
 do -- create closure to overcome 200 locals limit
@@ -757,24 +758,24 @@ local function compare(a,b)
 end
 
 local function sortedkeys(tab)
-    local srt, kind, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
+    local srt, category, s = { }, 0, 0 -- 0=unknown 1=string, 2=number 3=mixed
     for key,_ in next, tab do
         s = s + 1
         srt[s] = key
-        if kind == 3 then
+        if category == 3 then
             -- no further check
         else
             local tkey = type(key)
             if tkey == "string" then
-                kind = (kind == 2 and 3) or 1
+                category = (category == 2 and 3) or 1
             elseif tkey == "number" then
-                kind = (kind == 1 and 3) or 2
+                category = (category == 1 and 3) or 2
             else
-                kind = 3
+                category = 3
             end
         end
     end
-    if kind == 0 or kind == 3 then
+    if category == 0 or category == 3 then
         sort(srt,compare)
     else
         sort(srt)
@@ -940,6 +941,13 @@ end
 table.fastcopy = fastcopy
 table.copy     = copy
 
+function table.derive(parent)
+    local child = { }
+    if parent then
+        setmetatable(child,{ __index = parent })
+    end
+    return child
+end
 
 function table.tohash(t,value)
     local h = { }
@@ -3640,7 +3648,7 @@ local tables     = utilities.tables
 
 local format, gmatch = string.format, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
-local setmetatable = setmetatable
+local setmetatable, tonumber, tostring = setmetatable, tonumber, tostring
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -3709,6 +3717,28 @@ local _empty_table_ = { __index = function(t,k) return "" end }
 
 function table.setemptymetatable(t)
     setmetatable(t,_empty_table_)
+end
+
+-- experimental
+
+local function toxml(t,d,result)
+    for k, v in table.sortedpairs(t) do
+        if type(v) == "table" then
+            result[#result+1] = format("%s<%s>",d,k)
+            toxml(v,d.." ",result)
+            result[#result+1] = format("%s</%s>",d,k)
+        elseif tonumber(k) then
+            result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
+        else
+            result[#result+1] = format("%s<%s>%s</%s>",d,k,tostring(v),k)
+        end
+    end
+end
+
+function table.toxml(t,name)
+    local result = { "<?xml version='1.0' standalone='yes' ?>" }
+    toxml( { [name or "root"] = t }, "", result)
+    return concat(result,"\n")
 end
 
 
@@ -3823,13 +3853,13 @@ local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
-utilities        = utilities or {}
-utilities.merger = utilities.merger or { } -- maybe mergers
-utilities.report = logs and logs.reporter("system") or print
+utilities             = utilities or {}
+utilities.merger      = utilities.merger or { } -- maybe mergers
+utilities.report      = logs and logs.reporter("system") or print
 
-local merger     = utilities.merger
+local merger          = utilities.merger
 
-merger.strip_comment = true
+merger.strip_comment  = true
 
 local m_begin_merge   = "begin library merge"
 local m_end_merge     = "end library merge"
@@ -4171,7 +4201,8 @@ end
 
 function parsers.settings_to_set(str,t) -- tohash? -- todo: lpeg -- duplicate anyway
     t = t or { }
-    for s in gmatch(str,"%s*([^, ]+)") do -- space added
+--  for s in gmatch(str,"%s*([^, ]+)") do -- space added
+    for s in gmatch(str,"[^, ]+") do -- space added
         t[s] = true
     end
     return t
@@ -4212,6 +4243,10 @@ function parsers.getparameters(self,class,parentclass,settings)
         end
     end
     parsers.settings_to_hash(settings,sc)
+end
+
+function parsers.listitem(str)
+    return gmatch(str,"[^, ]+")
 end
 
 
@@ -11108,8 +11143,8 @@ local function load_configuration_files()
                     local variables = data.variables or { }
                     local warning = false
                     for k, v in next, data do
-                        local kind = type(v)
-                        if kind == "table" then
+                        local variant = type(v)
+                        if variant == "table" then
                             initializesetter(filename,k,v)
                         elseif variables[k] == nil then
                             if trace_locating and not warning then
@@ -11381,7 +11416,7 @@ function resolvers.registerextrapath(paths,subpaths)
             end
         end
     elseif subpaths and subpaths ~= "" then
-        for i=1,n do
+        for i=1,oldn do
             -- we gmatch each step again, not that fast, but used seldom
             for s in gmatch(subpaths,"[^,]+") do
                 local ps = ep[i] .. "/" .. s
@@ -11550,29 +11585,29 @@ local function collect_files(names)
                     local blobroot = files.__path__ or blobpath
                     if type(blobfile) == 'string' then
                         if not dname or find(blobfile,dname) then
-                            local kind   = hash.type
-                         -- local search = filejoin(blobpath,blobfile,bname)
-                            local search = filejoin(blobroot,blobfile,bname)
-                            local result = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
+                            local variant = hash.type
+                         -- local search  = filejoin(blobpath,blobfile,bname)
+                            local search  = filejoin(blobroot,blobfile,bname)
+                            local result  = methodhandler('concatinators',hash.type,blobroot,blobfile,bname)
                             if trace_detail then
-                                report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                report_resolving("match: variant '%s', search '%s', result '%s'",variant,search,result)
                             end
                             noffiles = noffiles + 1
-                            filelist[noffiles] = { kind, search, result }
+                            filelist[noffiles] = { variant, search, result }
                         end
                     else
                         for kk=1,#blobfile do
                             local vv = blobfile[kk]
                             if not dname or find(vv,dname) then
-                                local kind   = hash.type
-                             -- local search = filejoin(blobpath,vv,bname)
-                                local search = filejoin(blobroot,vv,bname)
-                                local result = methodhandler('concatinators',hash.type,blobroot,vv,bname)
+                                local variant = hash.type
+                             -- local search  = filejoin(blobpath,vv,bname)
+                                local search  = filejoin(blobroot,vv,bname)
+                                local result  = methodhandler('concatinators',hash.type,blobroot,vv,bname)
                                 if trace_detail then
-                                    report_resolving("match: kind '%s', search '%s', result '%s'",kind,search,result)
+                                    report_resolving("match: variant '%s', search '%s', result '%s'",variant,search,result)
                                 end
                                 noffiles = noffiles + 1
-                                filelist[noffiles] = { kind, search, result }
+                                filelist[noffiles] = { variant, search, result }
                             end
                         end
                     end
@@ -11950,14 +11985,14 @@ function resolvers.findgivenfile(filename)
     return findgivenfiles(filename,false)[1] or ""
 end
 
-local function doit(path,blist,bname,tag,kind,result,allresults)
+local function doit(path,blist,bname,tag,variant,result,allresults)
     local done = false
-    if blist and kind then
+    if blist and variant then
         local resolve = resolvers.resolve -- added
         if type(blist) == 'string' then
             -- make function and share code
             if find(lower(blist),path) then
-                local full = methodhandler('concatinators',kind,tag,blist,bname) or ""
+                local full = methodhandler('concatinators',variant,tag,blist,bname) or ""
                 result[#result+1] = resolve(full)
                 done = true
             end
@@ -11965,7 +12000,7 @@ local function doit(path,blist,bname,tag,kind,result,allresults)
             for kk=1,#blist do
                 local vv = blist[kk]
                 if find(lower(vv),path) then
-                    local full = methodhandler('concatinators',kind,tag,vv,bname) or ""
+                    local full = methodhandler('concatinators',variant,tag,vv,bname) or ""
                     result[#result+1] = resolve(full)
                     done = true
                     if not allresults then break end

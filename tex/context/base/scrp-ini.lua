@@ -35,10 +35,9 @@ local glue_code       = nodecodes.glue
 local a_preproc       = attributes.private('preproc')
 local a_prestat       = attributes.private('prestat')
 
-local fontdata        = fonts.identifiers
+local fontdata        = fonts.hashes.identifiers
 
-local fcs             = fonts.colors.set     -- move this to tracers
-local fcr             = fonts.colors.reset
+local setnodecolor    = nodes.tracers.colors.set
 
 scripts               = scripts or { }
 local scripts         = scripts
@@ -278,7 +277,7 @@ local scriptcolors = allocate {  -- todo: just named colors
 
 scripts.colors = scriptcolors
 
-local numbertokind = allocate { -- rather bound to cjk ... will be generalized
+local numbertocategory = allocate { -- rather bound to cjk ... will be generalized
     "korean",
     "chinese",
     "full_width_open",
@@ -292,20 +291,18 @@ local numbertokind = allocate { -- rather bound to cjk ... will be generalized
     "jamo_final",
 }
 
-local kindtonumber = allocate(table.swapped(numbertokind)) -- could be one table
+local categorytonumber = allocate(table.swapped(numbertocategory)) -- could be one table
 
-scripts.kindtonumber = kindtonumber
-scripts.numbertokind = numbertokind
-
--- some time i will make a fonts.originals[id]
+scripts.categorytonumber = categorytonumber
+scripts.numbertocategory = numbertocategory
 
 local function colorize(start,stop)
     for n in traverse_id(glyph_code,start) do
-        local kind = numbertokind[has_attribute(n,a_prestat)]
+        local kind = numbertocategory[has_attribute(n,a_prestat)]
         if kind then
             local ac = scriptcolors[kind]
             if ac then
-                fcs(n,ac)
+                setnodecolor(n,ac)
             end
         end
         if n == stop then
@@ -364,14 +361,14 @@ function scripts.preprocess(head)
                     if normal_process then
                         local f = start.font
                         if f ~= lastfont then
-                            originals = fontdata[f].originals
+                            originals = fontdata[f].resources.originals
                             lastfont = f
                         end
                         local c = start.char
                         if originals then c = originals[c] or c end
                         local h = hash[c]
                         if h then
-                            set_attribute(start,a_prestat,kindtonumber[h])
+                            set_attribute(start,a_prestat,categorytonumber[h])
                             if not first then
                                 first, last = start, start
                             else

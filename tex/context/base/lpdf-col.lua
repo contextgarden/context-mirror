@@ -100,7 +100,28 @@ function lpdf.colorvalue(model,ca,default)
     end
 end
 
-function lpdf.fdfcolor(model,ca,default)
+--~ function lpdf.fdfcolor(model,ca,default)
+--~     local cv = colorsvalue(ca)
+--~     if cv then
+--~         if model == 1 then
+--~             model = cv[1]
+--~         end
+--~         model = forcedmodel(model)
+--~         if model == 2 then
+--~             return format("[%s]",cv[2])
+--~         elseif model == 3 then
+--~             return format("[%s %s %s]",cv[3],cv[4],cv[5])
+--~         elseif model == 4 then
+--~             return format("[%s %s %s %s]",cv[6],cv[7],cv[8],cv[9])
+--~         elseif model == 4 then
+--~             return format("[%s]",cv[13])
+--~         end
+--~     else
+--~         return format("[%s]",default or 0)
+--~     end
+--~ end
+
+function lpdf.colorvalues(model,ca,default)
     local cv = colorsvalue(ca)
     if cv then
         if model == 1 then
@@ -108,16 +129,25 @@ function lpdf.fdfcolor(model,ca,default)
         end
         model = forcedmodel(model)
         if model == 2 then
-            return format("[%s]",cv[2])
+            return cv[2]
         elseif model == 3 then
-            return format("[%s %s %s]",cv[3],cv[4],cv[5])
+            return cv[3], cv[4], cv[5]
         elseif model == 4 then
-            return format("[%s %s %s %s]",cv[6],cv[7],cv[8],cv[9])
+            return cv[6], cv[7], cv[8], cv[9]
         elseif model == 4 then
-            return format("[%s]",cv[13])
+            return cv[13]
         end
     else
-        return format("[%s]",default or 0)
+        return default or 0
+    end
+end
+
+function lpdf.transparencyvalue(ta,default)
+    local tv = transparenciesvalue(ta)
+    if tv then
+        return tv[2]
+    else
+        return default or 1
     end
 end
 

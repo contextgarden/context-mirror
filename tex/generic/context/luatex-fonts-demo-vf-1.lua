@@ -1,7 +1,9 @@
+local identifiers = fonts.hashes.identifiers
+
 return function(specification)
-    local f1, id1 = fonts.tfm.readanddefine('lmroman10-regular',     specification.size)
-    local f2, id2 = fonts.tfm.readanddefine('lmsans10-regular',      specification.size)
-    local f3, id3 = fonts.tfm.readanddefine('lmtypewriter10-regular',specification.size)
+    local f1, id1 = fonts.constructors.readanddefine('lmroman10-regular',     specification.size)
+    local f2, id2 = fonts.constructors.readanddefine('lmsans10-regular',      specification.size)
+    local f3, id3 = fonts.constructors.readanddefine('lmtypewriter10-regular',specification.size)
     if f1 and f2 and f3 then
         f1.name = specification.name
         f1.virtualized = true
@@ -17,9 +19,9 @@ return function(specification)
             { "special", "pdf:0 0 1 rg" },
         }
         local chars = {
-            fonts.identifiers[id1].characters,
-            fonts.identifiers[id2].characters,
-            fonts.identifiers[id3].characters,
+            identifiers[id1].characters,
+            identifiers[id2].characters,
+            identifiers[id3].characters,
         }
         for u, v in next, f1.characters do
             local n = math.floor(math.random(1,3)+0.5)

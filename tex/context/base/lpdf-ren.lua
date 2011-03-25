@@ -26,6 +26,14 @@ local executers        = references.executers
 
 local variables        = interfaces.variables
 
+local v_no             = variables.no
+local v_yes            = variables.yes
+local v_start          = variables.start
+local v_stop           = variables.stop
+local v_reset          = variables.reset
+local v_auto           = variables.auto
+local v_random         = variables.random
+
 local pdfconstant      = lpdf.constant
 local pdfdictionary    = lpdf.dictionary
 local pdfarray         = lpdf.array
@@ -73,8 +81,8 @@ local function useviewerlayer(name)
         local nd = pdfdictionary {
             Type   = pdf_ocg,
             Name   = specification.title or "unknown",
-            Intent = ((specification.kind > 0) and pdf_design) or nil, -- disable layer hiding by user
-            Usage  = ((specification.printable == variables.no) and lpdf_usage) or nil , -- printable or not
+            Intent = ((specification.editable  ~= v_no) and pdf_design) or nil,  -- disable layer hiding by user
+            Usage  = ((specification.printable == v_no) and lpdf_usage) or nil, -- printable or not
         }
         cache[#cache+1] = { nn, nd }
         pdfln[tag] = nr -- was n
@@ -87,7 +95,7 @@ local function useviewerlayer(name)
         cache[#cache+1] = { dn, dd }
         pdfld[tag] = dr
         textlayers[#textlayers+1] = nr
-        if specification.visible == variables.start then
+        if specification.visible == v_start then
             videlayers[#videlayers+1] = nr
         else
             hidelayers[#hidelayers+1] = nr
@@ -212,17 +220,19 @@ local last = 0
 
 function codeinjections.setpagetransition(specification)
     local n, delay = specification.n, specification.delay
-    if n == variables.auto then
+    if not n or n == "" then
+        return -- let's forget about it
+    elseif n == v_auto then
         if last >= #pagetransitions then
             last = 0
         end
         n = last + 1
-    elseif n == variables.stop then
+    elseif n == v_stop then
         return
-    elseif n == variables.reset then
+    elseif n == v_reset then
         last = 0
         return
-    elseif n == variables.random then
+    elseif n == v_random then
         n = math.random(1,#pagetransitions)
     else
         n = tonumber(n)

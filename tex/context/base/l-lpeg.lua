@@ -537,3 +537,5 @@ end
 function lpeg.is_lpeg(p)
     return p and lpegtype(p) == "pattern"
 end
+
+--~ Cf(Ct("") * (Cg(C(...) * "=" * Cs(...)))^0, rawset)

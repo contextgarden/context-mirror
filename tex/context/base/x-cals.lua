@@ -13,9 +13,9 @@ local n_todimen, s_todimen = number.todimen, string.todimen
 
 -- there is room for speedups as well as cleanup (using context functions)
 
-local cals       = { }
-local moduledata = moduledata or { }
-moduledata.cals  = cals
+local cals      = { }
+moduledata.cals = cals
+lxml.mathml     = cals -- for the moment
 
 cals.ignore_widths  = false
 cals.shrink_widths  = false

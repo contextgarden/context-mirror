@@ -46,9 +46,10 @@ local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
 
-local fontdata           = fonts.identifiers
-local chardata           = fonts.characters
-local quaddata           = fonts.quads
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local chardata           = fonthashes.characters
+local quaddata           = fonthashes.quads
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters

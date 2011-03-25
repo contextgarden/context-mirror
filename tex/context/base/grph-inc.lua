@@ -228,7 +228,6 @@ function figures.setpaths(locationset,pathlist)
         last_locationset = locationset
     end
     if h[iv["global"]] then
-     -- for s in gmatch(pathlist,",* *([^,]+)") do
         local list = settings_to_array(pathlist)
         for i=1,#list do
             local s = list[i]

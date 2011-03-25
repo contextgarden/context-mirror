@@ -60,17 +60,17 @@ function helpers.textopener(tag,filename,filehandle)
         filehandle:close()
     end
     if type(lines) == "string" then
-        local kind = utffiletype(lines)
+        local coding = utffiletype(lines)
         if trace_locating then
-            report_tex("%s opener, '%s' opened using method '%s'",tag,filename,kind)
+            report_tex("%s opener, '%s' opened using method '%s'",tag,filename,coding)
         end
-        if kind == "utf-16-be" then
+        if coding == "utf-16-be" then
             lines = unicode.utf16_to_utf8_be(lines)
-        elseif kind == "utf-16-le" then
+        elseif coding == "utf-16-le" then
             lines = unicode.utf16_to_utf8_le(lines)
-        elseif kind == "utf-32-be" then
+        elseif coding == "utf-32-be" then
             lines = unicode.utf32_to_utf8_be(lines)
-        elseif kind == "utf-32-le" then
+        elseif coding == "utf-32-le" then
             lines = unicode.utf32_to_utf8_le(lines)
         else -- utf8 or unknown
             if textfileactions.dirty then -- maybe use autocompile

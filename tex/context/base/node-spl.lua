@@ -22,9 +22,6 @@ local gmatch, concat, format, remove = string.gmatch, table.concat, string.forma
 local next, tostring, tonumber = next, tostring, tonumber
 local utfchar = utf.char
 local random = math.random
-local variables = interfaces.variables
-local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
-local fcs = fonts.colors.set
 
 local trace_split    = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)
 local trace_optimize = false  trackers.register("builders.paragraphs.solutions.splitters.optimizer", function(v) trace_optimize = v end)
@@ -36,6 +33,11 @@ local report_splitters  = logs.reporter("nodes","splitters")
 local report_optimizers = logs.reporter("nodes","optimizers")
 
 local nodes, node = nodes, node
+
+local variables          = interfaces.variables
+
+local settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_hash   = utilities.parsers.settings_to_hash
 
 local find_node_tail     = node.tail or node.slide
 local free_node          = node.free
@@ -52,6 +54,8 @@ local hpack_nodes        = node.hpack
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 local repack_hlist       = nodes.repack_hlist
+
+local setnodecolor       = nodes.tracers.colors.set
 
 local nodecodes          = nodes.nodecodes
 local whatsitcodes       = nodes.whatsitcodes
@@ -76,7 +80,9 @@ local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 local process_characters = nodes.handlers.characters
 local inject_kerns       = nodes.injections.handler
-local fontdata           = fonts.identifiers
+local fontdata           = fonts.hashes.identifiers
+local setfontdynamics    = fonts.hashes.setdynamics
+local fontprocesses      = fonts.hashes.processes
 
 local parbuilders               = builders.paragraphs
 parbuilders.solutions           = parbuilders.solutions           or { }
@@ -112,7 +118,7 @@ function splitters.setup(setups)
     criterium = tonumber(setups.criterium) or criterium
 end
 
-local contextsetups = fonts.definers.specifiers.contextsetups
+local contextsetups = fonts.specifiers.contextsetups
 
 local function convert(featuresets,name,set,what)
     local list, numbers, nofnumbers = set[what], { }, 0
@@ -333,29 +339,35 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                     end
                 elseif set == "less" then
                     for n in traverse_nodes(first) do
-                        fcs(n,"font:isol")
+                        setnodecolor(n,"font:isol")
                         set_attribute(n,0,featurenumber)
                     end
                 else
                     for n in traverse_nodes(first) do
-                        fcs(n,"font:medi")
+                        setnodecolor(n,"font:medi")
                         set_attribute(n,0,featurenumber)
                     end
                 end
                 local font = found.font
-                local dynamics = found.dynamics
-                local shared = fontdata[font].shared
-                if not dynamics then -- we cache this
-                    dynamics = shared.dynamics
-                    found.dynamics = dynamics
-                end
-                local processors = found[featurenumber]
-                if not processors then -- we cache this too
-                    processors = shared.setdynamics(font,dynamics,featurenumber)
-                    found[featurenumber] = processors
-                end
-                for i=1,#processors do -- often more than 1
-                    first = processors[i](first,font,featurenumber) -- we can make a special one that already passes the dynamics
+             -- local dynamics = found.dynamics
+             -- local shared = fontdata[font].shared
+             -- if not dynamics then -- we cache this
+             --     dynamics = shared.dynamics
+             --     found.dynamics = dynamics
+             -- end
+             -- local processors = found[featurenumber]
+             -- if not processors then -- we cache this too
+             --     processors = fonts.handlers.otf.setdynamics(font,featurenumber)
+             --     found[featurenumber] = processors
+             -- end
+                local setdynamics = setfontdynamics[font]
+                if setdynamics then
+                    local processes = setdynamics(font,featurenumber)
+                    for i=1,#processes do -- often more than 1
+                        first = processes[i](first,font,featurenumber)
+                    end
+                else
+                    report_solutions("fatal error, no dynamics for font %s",font)
                 end
                 first = inject_kerns(first)
                 local h = word[2].next -- head of current word

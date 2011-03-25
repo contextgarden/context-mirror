@@ -17,8 +17,8 @@ local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local lpegmatch = lpeg.match
 
 local mathml      = { }
-local moduledata  = moduledata = { }
 moduledata.mathml = mathml
+lxml.mathml       = mathml -- for the moment
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
