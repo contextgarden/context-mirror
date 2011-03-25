@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/25/11 18:03:32
+-- merge date  : 03/25/11 19:31:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -4821,7 +4821,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.710 -- beware: also sync font-mis.lua
+otf.version              = 2.720 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers

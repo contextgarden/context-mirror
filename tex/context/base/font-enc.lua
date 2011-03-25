@@ -138,7 +138,7 @@ if not encodings.agl then
 
     setmetatable(encodings.agl, { __index = function(t,k)
         report_encoding("loading (extended) adobe glyph list")
-        dofile(resolvers.findfile("font-age.lua"))
+        dofile(resolvers.findfile("font-agl.lua"))
         return rawget(encodings.agl,k)
     end })
 
