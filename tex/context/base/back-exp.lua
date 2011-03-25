@@ -57,7 +57,7 @@ local attributes      = attributes
 local variables       = interfaces.variables
 
 local tasks           = nodes.tasks
-local fontchar        = fonts.characters
+local fontchar        = fonts.hashes.characters
 local languagenames   = languages.numbers
 
 local nodecodes       = nodes.nodecodes

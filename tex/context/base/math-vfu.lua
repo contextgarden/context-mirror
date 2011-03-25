@@ -20,16 +20,16 @@ local report_virtual = logs.reporter("fonts","virtual math")
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
-local mathencodings = utilities.storage.allocate { }
+local allocate = utilities.storage.allocate
 
-fonts.enc.math = mathencodings -- better is then: fonts.enc.vectors
+local mathencodings    = allocate()
+fonts.encodings.math   = mathencodings -- better is then: fonts.encodings.vectors
+local vfmath           = allocate()
+fonts.handlers.vf.math = vfmath
 
-local shared = { }
+vfmath.optional        = false
 
-fonts.vf.math          = fonts.vf.math or { }
-local vfmath           = fonts.vf.math
-
-vfmath.optional = false
+local shared           = { }
 
 --~ local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
 
@@ -293,9 +293,10 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     end
 end
 
-function vfmath.alas(main,id,size,variables)
+function vfmath.alas(main,id,size)
     local characters = main.characters
     local shared = main.shared
+    local variables = main.goodies.mathematics and main.goodies.mathematics.variables or { }
     local joinrelfactor = variables.joinrelfactor or 3
     for i=0x7A,0x7D do
         make(main,characters,id,size,i,1)
@@ -342,36 +343,6 @@ end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage
 
-function fonts.basecopy(tfmtable,name)
-    local characters, parameters, fullname = tfmtable.characters, tfmtable.parameters, tfmtable.fullname
-    local t, c, p = { }, { }, { }
-    for k, v in next, tfmtable do
-        t[k] = v
-    end
-    if characters then
-        for k, v in next, characters do
-            c[k] = v
-        end
-        t.characters = c
-    else
-        report_virtual("font %s has no characters",name)
-    end
-    if parameters then
-        for k, v in next, parameters do
-            p[k] = v
-        end
-        t.parameters = p
-    else
-        report_virtual("font %s has no parameters",name)
-    end
-    -- tricky ... what if fullname does not exist
-    if fullname then
-        unique = unique + 1
-        t.fullname = fullname .. "-" .. unique
-    end
-    return t
-end
-
 local reported = { }
 local reverse  = { } -- index -> unicode
 
@@ -387,11 +358,14 @@ setmetatable ( reverse, { __index = function(t,name)
     return r
 end } )
 
-function vfmath.define(specification,set,variables)
-    variables = variables or { }
+local mathdirectives = {
+    disablescaling = true
+}
+
+function vfmath.define(specification,set,goodies)
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
-    local fnt, lst, main = { }, { }, nil
+    local loaded, fontlist, main = { }, { }, nil
     local start = (trace_virtual or trace_timings) and os.clock()
     local okset, n = { }, 0
     for s=1,#set do
@@ -402,16 +376,20 @@ function vfmath.define(specification,set,variables)
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
             end
         else
-            if ss.features then ssname = ssname .. "*" .. ss.features end
-            if ss.main then main = s end
-            local f, id = fonts.tfm.readanddefine(ssname,size)
+            if ss.features then
+                ssname = ssname .. "*" .. ss.features
+            end
+            if ss.main then
+                main = s
+            end
+            local f, id = fonts.constructors.readanddefine(ssname,size)
             if not f then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
             else
                 n = n + 1
                 okset[n] = ss
-                fnt[n] = f
-                lst[n] = { id = id, size = size }
+                loaded[n] = f
+                fontlist[n] = { id = id, size = size }
                 if not shared[s] then shared[n] = { } end
                 if trace_virtual then
                     report_virtual("loading font %s subfont %s with name %s at %s as id %s using encoding %s",name,s,ssname,size,id,ss.vector or "none")
@@ -442,55 +420,117 @@ function vfmath.define(specification,set,variables)
             end
         end
     end
-    -- beware, fnt[1] is already passed to tex (we need to make a simple copy then .. todo)
-    main = fonts.basecopy(fnt[1],name)
-    main.name, main.fonts, main.virtualized, main.mathparameters = name, lst, true, { }
-    local characters, descriptions = main.characters, main.descriptions
-    local mp = main.parameters
-    if mp then
-        mp.x_height = mp.x_height or 0
+    -- beware, loaded[1] is already passed to tex (we need to make a simple copy then .. todo)
+    local parent         = loaded[1] -- a text font
+    local characters     = { }
+    local parameters     = { }
+    local mathparameters = { }
+    local descriptions   = { }
+    local metadata       = { }
+    local properties     = { }
+    local goodies        = { }
+    local main           = {
+        metadata         = metadata,
+        properties       = properties,
+        characters       = characters,
+        descriptions     = descriptions,
+        parameters       = parameters,
+        mathparameters   = mathparameters,
+        fonts            = fontlist,
+        goodies          = goodies,
+    }
+    --
+    --
+    for key, value in next, parent do
+        if type(value) ~= "table" then
+            main[key] = value
+        end
     end
+    --
+    if parent.characters then
+        for unicode, character in next, parent.characters do
+            characters[unicode] = character
+        end
+    else
+        report_virtual("font %s has no characters",name)
+    end
+    --
+    if parent.parameters then
+        for key, value in next, parent.parameters do
+            parameters[key] = value
+        end
+    else
+        report_virtual("font %s has no parameters",name)
+    end
+    --
+    local description = { name = "<unset>" }
+    setmetatable(descriptions, { __index = function() return description end })
+    --
+    if parent.properties then
+        setmetatable(properties, { __index = parent.properties })
+    end
+    --
+    if parent.goodies then
+        setmetatable(goodies, { __index = parent.goodies })
+    end
+    --
+    properties.virtualized       = true
+    properties.italic_correction = true
+    properties.has_math          = true
+    --
+    local fullname = properties.fullname -- parent via mt
+    if fullname then
+        unique = unique + 1
+        properties.fullname = fullname .. "-" .. unique
+    end
+    --
+    -- we need to set some values in main as well (still?)
+    --
+    main.fullname = properties.fullname
+    main.type     = "virtual"
+    main.nomath   = false
+    --
+    parameters.x_height = parameters.x_height or 0
+    --
     local already_reported = false
     for s=1,n do
-        local ss, fs = okset[s], fnt[s]
+        local ss, fs = okset[s], loaded[s]
         if not fs then
             -- skip, error
         elseif ss.optional and vfmath.optional then
             -- skip, redundant
         else
-            local mm, fp = main.mathparameters, fs.parameters
-            if mm and fp and mp then
-                if ss.extension then
-                    mm.math_x_height          = fp.x_height or 0 -- math_x_height           height of x
-                    mm.default_rule_thickness = fp[ 8]      or 0 -- default_rule_thickness  thickness of \over bars
-                    mm.big_op_spacing1        = fp[ 9]      or 0 -- big_op_spacing1         minimum clearance above a displayed op
-                    mm.big_op_spacing2        = fp[10]      or 0 -- big_op_spacing2         minimum clearance below a displayed op
-                    mm.big_op_spacing3        = fp[11]      or 0 -- big_op_spacing3         minimum baselineskip above displayed op
-                    mm.big_op_spacing4        = fp[12]      or 0 -- big_op_spacing4         minimum baselineskip below displayed op
-                    mm.big_op_spacing5        = fp[13]      or 0 -- big_op_spacing5         padding above and below displayed limits
-                --  report_virtual("loading and virtualizing font %s at size %s, setting ex parameters",name,size)
-                elseif ss.parameters then
-                    mp.x_height      = fp.x_height or mp.x_height
-                    mm.x_height      = mm.x_height or fp.x_height or 0 -- x_height                height of x
-                    mm.num1          = fp[ 8] or 0 -- num1                    numerator shift-up in display styles
-                    mm.num2          = fp[ 9] or 0 -- num2                    numerator shift-up in non-display, non-\atop
-                    mm.num3          = fp[10] or 0 -- num3                    numerator shift-up in non-display \atop
-                    mm.denom1        = fp[11] or 0 -- denom1                  denominator shift-down in display styles
-                    mm.denom2        = fp[12] or 0 -- denom2                  denominator shift-down in non-display styles
-                    mm.sup1          = fp[13] or 0 -- sup1                    superscript shift-up in uncramped display style
-                    mm.sup2          = fp[14] or 0 -- sup2                    superscript shift-up in uncramped non-display
-                    mm.sup3          = fp[15] or 0 -- sup3                    superscript shift-up in cramped styles
-                    mm.sub1          = fp[16] or 0 -- sub1                    subscript shift-down if superscript is absent
-                    mm.sub2          = fp[17] or 0 -- sub2                    subscript shift-down if superscript is present
-                    mm.sup_drop      = fp[18] or 0 -- sup_drop                superscript baseline below top of large box
-                    mm.sub_drop      = fp[19] or 0 -- sub_drop                subscript baseline below bottom of large box
-                    mm.delim1        = fp[20] or 0 -- delim1                  size of \atopwithdelims delimiters in display styles
-                    mm.delim2        = fp[21] or 0 -- delim2                  size of \atopwithdelims delimiters in non-displays
-                    mm.axis_height   = fp[22] or 0 -- axis_height             height of fraction lines above the baseline
-                --  report_virtual("loading and virtualizing font %s at size %s, setting sy parameters",name,size)
-                end
-            else
+            local newparameters = fs.parameters
+            if not newparameters then
                 report_virtual("font %s, no parameters set",name)
+            elseif ss.extension then
+                mathparameters.math_x_height          = newparameters.x_height or 0        -- math_x_height          : height of x
+                mathparameters.default_rule_thickness = newparameters[ 8]      or 0        -- default_rule_thickness : thickness of \over bars
+                mathparameters.big_op_spacing1        = newparameters[ 9]      or 0        -- big_op_spacing1        : minimum clearance above a displayed op
+                mathparameters.big_op_spacing2        = newparameters[10]      or 0        -- big_op_spacing2        : minimum clearance below a displayed op
+                mathparameters.big_op_spacing3        = newparameters[11]      or 0        -- big_op_spacing3        : minimum baselineskip above displayed op
+                mathparameters.big_op_spacing4        = newparameters[12]      or 0        -- big_op_spacing4        : minimum baselineskip below displayed op
+                mathparameters.big_op_spacing5        = newparameters[13]      or 0        -- big_op_spacing5        : padding above and below displayed limits
+            --  report_virtual("loading and virtualizing font %s at size %s, setting ex parameters",name,size)
+            elseif ss.parameters then
+                mathparameters.x_height      = newparameters.x_height or mathparameters.x_height
+                mathparameters.x_height      = mathparameters.x_height or fp.x_height or 0 -- x_height               : height of x
+                mathparameters.num1          = newparameters[ 8] or 0                      -- num1                   : numerator shift-up in display styles
+                mathparameters.num2          = newparameters[ 9] or 0                      -- num2                   : numerator shift-up in non-display, non-\atop
+                mathparameters.num3          = newparameters[10] or 0                      -- num3                   : numerator shift-up in non-display \atop
+                mathparameters.denom1        = newparameters[11] or 0                      -- denom1                 : denominator shift-down in display styles
+                mathparameters.denom2        = newparameters[12] or 0                      -- denom2                 : denominator shift-down in non-display styles
+                mathparameters.sup1          = newparameters[13] or 0                      -- sup1                   : superscript shift-up in uncramped display style
+                mathparameters.sup2          = newparameters[14] or 0                      -- sup2                   : superscript shift-up in uncramped non-display
+                mathparameters.sup3          = newparameters[15] or 0                      -- sup3                   : superscript shift-up in cramped styles
+                mathparameters.sub1          = newparameters[16] or 0                      -- sub1                   : subscript shift-down if superscript is absent
+                mathparameters.sub2          = newparameters[17] or 0                      -- sub2                   : subscript shift-down if superscript is present
+                mathparameters.sup_drop      = newparameters[18] or 0                      -- sup_drop               : superscript baseline below top of large box
+                mathparameters.sub_drop      = newparameters[19] or 0                      -- sub_drop               : subscript baseline below bottom of large box
+                mathparameters.delim1        = newparameters[20] or 0                      -- delim1                 : size of \atopwithdelims delimiters in display styles
+                mathparameters.delim2        = newparameters[21] or 0                      -- delim2                 : size of \atopwithdelims delimiters in non-displays
+                mathparameters.axis_height   = newparameters[22] or 0                      -- axis_height            : height of fraction lines above the baseline
+            --  report_virtual("loading and virtualizing font %s at size %s, setting sy parameters",name,size)
             end
             local vectorname = ss.vector
             if vectorname then
@@ -503,7 +543,7 @@ function vfmath.define(specification,set,variables)
                     for unicode, index in next, vector do
                         local fci = fc[index]
                         if not fci then
-                            local fontname = fs.name or "unknown"
+                            local fontname = fs.properties.name or "unknown"
                             local rf = reported[fontname]
                             if not rf then rf = { } reported[fontname] = rf end
                             local rv = rf[vectorname]
@@ -672,26 +712,30 @@ function vfmath.define(specification,set,variables)
             mathematics.extras.copy(main) --not needed here (yet)
         end
     end
-    lst[#lst+1] = { id = font.nextid(), size = size }
-    if mp then -- weak catch
-        vfmath.alas(main,#lst,size,variables)
+    --
+    fontlist[#fontlist+1] = {
+        id   = font.nextid(),
+        size = size,
+    }
+    --
+    if mathparameters then -- weak catch ? ? ?
+        vfmath.alas(main,#fontlist,size)
     end
+    --
     mathematics.addfallbacks(main)
+    --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
     end
-    main.has_italic = true
-    main.type = "virtual" -- not needed
-    mathematics.scaleparameters(main,main,1)
-    main.nomath = false
- -- table.print(characters[0x222B])
- -- table.print(main.MathConstants)
+    --
+    fonts.constructors.mathactions(main,main,mathdirectives)
+    --
     return main
 end
 
-function mathematics.makefont(name, set, variables)
+function mathematics.makefont(name,set,goodies)
     fonts.definers.methods.variants[name] = function(specification)
-        return vfmath.define(specification,set,variables)
+        return vfmath.define(specification,set,goodies)
     end
 end
 

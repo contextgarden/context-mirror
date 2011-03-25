@@ -90,8 +90,8 @@ function colors.iccprofile(filename,verbose)
     for tag, spec in next, tags do
         if tag then
             local offset, length = spec.offset, spec.length
-            local kind = readstring(f,offset,4)
-            if kind == "text" or kind == "desc" then
+            local variant = readstring(f,offset,4)
+            if variant == "text" or variant == "desc" then
                 local str = readstring(f,length-4)
                 tags[tag] = {
                     data    = str,
@@ -99,7 +99,7 @@ function colors.iccprofile(filename,verbose)
                 }
             else
                 if verbose then
-                    report_colors("ignoring tag '%s' or type '%s' in profile '%s'",tag,kind,fullname)
+                    report_colors("ignoring tag '%s' or type '%s' in profile '%s'",tag,variant,fullname)
                 end
                 tags[tag] = nil
             end

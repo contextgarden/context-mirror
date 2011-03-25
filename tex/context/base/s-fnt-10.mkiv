@@ -14,31 +14,25 @@
 \startluacode
 local format, sprint = string.format, tex.sprint
 
-function fonts.otf.show_all()
-    local tfmdata = fonts.identifiers[font.current()]
+local fontdata = fonts.hashes.identifiers
+
+function fonts.handlers.otf.show_all()
+    local tfmdata = fontdata[font.current()]
     if tfmdata and tfmdata.shared then
         local NC, NR, char = context.NC, context.NR, context.char
-        local otfdata = tfmdata.shared.otfdata
-        if otfdata and otfdata.luatex then
-            local unicodes = otfdata.luatex.unicodes
-            context.starttabulate { "|l|r|c|" }
-            for i, name in ipairs(table.sortedkeys(unicodes)) do
-                local unicode = unicodes[name]
-                if unicode >= 0 then
-                    NC() context(name) NC() context(unicode) NC() char(unicode) NC() NR()
-                end
-            end
-            context.stoptabulate()
+        context.starttabulate { "|l|r|c|" }
+        for unicode, description in fonts.iterators.characters(tfmdata) do
+            NC() context(description.name) NC() context(unicode) NC() char(unicode) NC() NR()
         end
+        context.stoptabulate()
     end
 end
 
 function fonts.show_all()
-    local tfmdata = fonts.identifiers[font.current()]
+    local tfmdata = fontdata[font.current()]
     if tfmdata then
         local NC, NR, HL, char, bold, tttf = context.NC, context.NR, context.HL, context.char, context.bold, context.tttf
-        local chars = tfmdata.characters
-        local descs = tfmdata.descriptions or { }
+        local descriptions = tfmdata.descriptions or { }
         local data = characters.data
      -- context.setuptabulate { header = "repeat" }
         context.starttabulatehead()
@@ -51,47 +45,44 @@ function fonts.show_all()
             NC() NR()
         context.stoptabulatehead()
         context.starttabulate { "|l|c|l|p|p|p|" }
-        for k, unicode in ipairs(table.sortedkeys(chars)) do
---      for unicode, _  in table.sortedpairs(chars) do
-            if unicode >= 0 then
-                local chr, des, dat = chars[unicode], descs[unicode], data[unicode]
-                local index = chr.index or 0
-                local cname = (dat and dat.contextname) or ""
-                local aname = (dat and dat.adobename) or ""
-                local gname = (des and des.name) or ""
-                local mname = dat and dat.mathname
-                if type(mname) ~= "string" then
-                    mname = ""
-                end
-                local mspec = dat and dat.mathspec
-                if mspec then
-                    for m=1,#mspec do
-                        local n = mspec[m].name
-                        if n then
-                            if mname == "" then
-                                mname = n
-                            else
-                                mname = mname .. " " .. n
-                            end
+        for unicode, chr in fonts.iterators.characters(tfmdata) do
+            local des, dat = descriptions[unicode], data[unicode]
+            local index = chr.index or 0
+            local cname = (dat and dat.contextname) or ""
+            local aname = (dat and dat.adobename) or ""
+            local gname = (des and des.name) or ""
+            local mname = dat and dat.mathname
+            if type(mname) ~= "string" then
+                mname = ""
+            end
+            local mspec = dat and dat.mathspec
+            if mspec then
+                for m=1,#mspec do
+                    local n = mspec[m].name
+                    if n then
+                        if mname == "" then
+                            mname = n
+                        else
+                            mname = mname .. " " .. n
                         end
                     end
                 end
-                if mname ~= "" then
-                    mname = "m: " .. mname
-                    if cname ~= "" then
-                        cname = cname .. " " .. mname
-                    else
-                        cname = mname
-                    end
-                end
-                NC() tttf() context("U+%05X",unicode)
-                NC()        char(unicode)
-                NC() tttf() context("%05X",index)
-                NC() tttf() context(gname)
-                NC() tttf() context(aname)
-                NC() tttf() context(cname)
-                NC() NR()
             end
+            if mname ~= "" then
+                mname = "m: " .. mname
+                if cname ~= "" then
+                    cname = cname .. " " .. mname
+                else
+                    cname = mname
+                end
+            end
+            NC() tttf() context("U+%05X",unicode)
+            NC()        char(unicode)
+            NC() tttf() context("%05X",index)
+            NC() tttf() context(gname)
+            NC() tttf() context(aname)
+            NC() tttf() context(cname)
+            NC() NR()
         end
         context.stoptabulate()
     else
@@ -100,7 +91,7 @@ function fonts.show_all()
 end
 
 function fonts.show_glyphs()
-    local tfmdata = fonts.identifiers[font.current()]
+    local tfmdata = fontdata[font.current()]
     if tfmdata then
         for k, v in ipairs(table.sortedkeys(tfmdata.characters)) do
             if v >=0 then
@@ -148,11 +139,11 @@ end
    \page
    \egroup}
 
-\doifnotmode{demo} {\endinput}
+% \doifnotmode{demo} {\endinput}
 
 \starttext
 
-% \ShowCompleteFont{name:dejavusansmono}{10pt}{1}
+\ShowCompleteFont{name:dejavusansmono}{10pt}{1}
 % \ShowCompleteFont{name:dejavuserif}{10pt}{2}
 % \ShowCompleteFont{name:officinasansbookitcregular}{10pt}{2}
 % \ShowCompleteFont{name:officinaserifbookitcregular}{10pt}{2}
@@ -171,6 +162,6 @@ end
 
 % \ShowCompleteFont{name:palatinosansinformalcombold}{20pt}{2}
 % \ShowCompleteFont{name:palatinonovaregular}{11pt}{2}
-\ShowCompleteFont{pirat.ttf}{12pt}{1}
+% \ShowCompleteFont{pirat.ttf}{12pt}{1}
 
 \stoptext

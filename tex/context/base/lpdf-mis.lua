@@ -109,12 +109,20 @@ end
 
 local openpage, closepage, opendocument, closedocument
 
-function codeinjections.flushdocumentactions(open,close)
-    opendocument, closedocument = open, close
+function codeinjections.registerdocumentopenaction(open)
+    opendocument = open
 end
 
-function codeinjections.flushpageactions(open,close)
-    openpage, closepage = open, close
+function codeinjections.registerdocumentcloseaction(close)
+    closedocument = close
+end
+
+function codeinjections.flushpageopenaction(open)
+    openpage = open
+end
+
+function codeinjections.flushpagecloseaction(close)
+    closepage = close
 end
 
 local function flushdocumentactions()
@@ -139,30 +147,41 @@ local function flushpageactions()
     end
 end
 
-lpdf.registerpagefinalizer(flushpageactions,"page actions")
+lpdf.registerpagefinalizer    (flushpageactions,    "page actions")
 lpdf.registerdocumentfinalizer(flushdocumentactions,"document actions")
 
---- info
+--- info : this can change and move elsewhere
+
+local identity = { }
 
 function codeinjections.setupidentity(specification)
-    local title = specification.title or ""
-    if title ~= "" then
-        lpdf.addtoinfo("Title", pdfunicode(title), title)
+    for k, v in next, specification do
+        if v ~= "" then
+            identity[k] = v
+        end
     end
-    local subject = specification.subject or ""
-    if subject ~= "" then
-        lpdf.addtoinfo("Subject", pdfunicode(subject), subject)
+end
+
+local function setupidentity()
+    local title = identity.title
+    if not title or title == "" then
+        title = tex.jobname
     end
-    local author = specification.author or ""
+    lpdf.addtoinfo("Title", pdfunicode(title), title)
+    local subtitle = identity.subtitle or ""
+    if subtitle ~= "" then
+        lpdf.addtoinfo("Subject", pdfunicode(subtitle), subtitle)
+    end
+    local author = identity.author or ""
     if author ~= "" then
         lpdf.addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
     end
-    local creator = specification.creator or ""
+    local creator = identity.creator or ""
     if creator ~= "" then
         lpdf.addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
     end
     lpdf.addtoinfo("CreationDate", pdfstring(lpdf.pdftimestamp(lpdf.timestamp())))
-    local date = specification.date or ""
+    local date = identity.date or ""
     local pdfdate = lpdf.pdftimestamp(date)
     if pdfdate then
         lpdf.addtoinfo("ModDate", pdfstring(pdfdate), date)
@@ -172,14 +191,17 @@ function codeinjections.setupidentity(specification)
         date = lpdf.timestamp()
         lpdf.addtoinfo("ModDate", pdfstring(lpdf.pdftimestamp(date)), date)
     end
-    local keywords = specification.keywords or ""
+    local keywords = identity.keywords or ""
     if keywords ~= "" then
         keywords = string.gsub(keywords, "[%s,]+", " ")
         lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
     end
     local id = lpdf.id()
     lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
+    setupidentity = function() end
 end
+
+lpdf.registerpagefinalizer(setupidentity,"identity")
 
 local function flushjavascripts()
     local t = interactions.javascripts.flushpreambles()
@@ -279,7 +301,7 @@ local function pagespecification()
     local pageheight = tex.pdfpageheight
     local box = pdfarray { -- can be cached
         boxvalue(leftoffset),
-        boxvalue(pageheight-topoffset-height),
+        boxvalue(pageheight+topoffset-height),
         boxvalue(width-leftoffset),
         boxvalue(pageheight-topoffset),
     }

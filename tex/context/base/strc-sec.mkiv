@@ -295,13 +295,15 @@
   {\setfalse\currentstructureown
   %\globalpushmacro\currentstructurehead
    \xdef\currentstructurehead{#1}%
+   \structureheadparameter\c!beforesection
    \the\everybeforestructurehead
-   \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata
+   \dohandlestructurehead{#1}{#2}{#3}} % name -- -- -- userdata (we might move the tagged to here)
 
 \unexpanded\def\dostopstructurehead[#1]%
-  {%\globalpopmacro\currentstructurehead
+  {\dostoptagged\dostoptagged
+  %\globalpopmacro\currentstructurehead
    \xdef\currentstructurehead{#1}% recover
-   \dostoptagged\dostoptagged
+   \structureheadparameter\c!aftersection
    \the\everyafterstructurehead}
 
 \unexpanded\def\donextstructurehead[#1][#2][#3]%

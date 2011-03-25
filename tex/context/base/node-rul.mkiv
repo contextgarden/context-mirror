@@ -55,6 +55,9 @@
 %D
 %D \showsetup{setupunderbar}
 
+%D todo: mkvi this file ... no redefine, just pass all parameters, too messy now
+%D (due to grouping) so better hash settings at the lua end
+
 \unprotect
 
 %definesystemattribute[ruled]
@@ -62,41 +65,39 @@
 
 \registerctxluafile{node-rul}{1.001}
 
+\installcommandhandler \??on {bar} \??on
+
 \newtoks\checkalldefinedbars
 
-\def\barparameter          #1{\csname\dobarparameter\currentbar#1\endcsname}
-\def\dobarparameter      #1#2{\ifcsname\??on#1#2\endcsname\??on#1#2\else\expandafter\dobarparentparameter\csname\??on#1\s!parent\endcsname#2\fi}
-\def\dobarparentparameter#1#2{\ifx#1\relax\s!empty\else\dobarparameter#1#2\fi}
+\let\setupbars\setupbar
 
-\unexpanded\def\definebar
-  {\dotripleempty\dodefinebar}
-
-\def\dodefinebar[#1][#2][#3]%
-  {\ifthirdargument
-     \getparameters[\??on#1][\s!parent=#2,#3]%
+\appendtoks
+   \ifsecondargument
+     \dodefinebarindeed\currentbar
    \else
-     \getparameters[\??on#1][\s!parent=,#2]%
+     \the\checkalldefinedbars
    \fi
-   %
-   %\setvalue{\??on:#1}{0}%
-   %
-   \ifcsname\??on:#1:c\endcsname
-     \csname\??on:#1:c\endcsname\zerocount
-   \else
-     \expandafter\newcount\csname\??on:#1:c\endcsname
-   \fi
-   \normalexpanded{\checkalldefinedbars{\noexpand\doredefinebar{#1}\the\checkalldefinedbars}}%
-   \dodefinebarindeed{#1}%
-   \setuvalue{#1}{\doruled{#1}}}
+\to \everysetupbar
 
-\def\dodefinebarindeed#1%
-  {\bgroup
-   \def\currentbar{#1}%
+\appendtoks
+   \ifcsname\??on:\currentbar:c\endcsname
+     \csname\??on:\currentbar:c\endcsname\zerocount
+   \else
+     \expandafter\newcount\csname\??on:\currentbar:c\endcsname
+   \fi
+   \normalexpanded{\checkalldefinedbars{\doredefinebar{\currentbar}\the\checkalldefinedbars}}%
+   \dodefinebarindeed\currentbar
+   \setuevalue\currentbar{\doruled{\currentbar}}%
+\to \everydefinebar
+
+\unexpanded\def\dodefinebarindeed#1%
+  {\begingroup
+   \edef\currentbar{#1}%
    \doifsomethingelse{\barparameter\c!color}
      {\donetrue\colored[\barparameter\c!color]}
      {\donefalse}%
    \normalexpanded
-     {\egroup
+     {\endgroup
       \scratchcounter\ctxlua{nodes.rules.define {
         method        = \barparameter\c!method,
         offset        = \barparameter\c!offset,
@@ -114,7 +115,7 @@
 
 \let\doredefinebar\dodefinebarindeed
 
-\def\doruled#1%
+\unexpanded\def\doruled#1%
   {\groupedcommand{\dodoruled{#1}}\relax}
 
 \def\dodoruled
@@ -123,7 +124,7 @@
    \dodoruled}
 
 \def\dodoruledindeed#1% maybe reverse the 1000
-  {\advance\csname\??on:#1:c\endcsname\plusone
+  {\advance\csname\??on:#1:c\endcsname\plusone % local ?
    \scratchcounter\csname\??on:#1:c\endcsname
    \attribute\ruledattribute\numexpr
      1000*\scratchcounter
@@ -150,18 +151,6 @@
 \unexpanded\def\popbar
   {\csname\??on:s:\number\currentbarnesting\endcsname
    \global\advance\currentbarnesting\minusone}
-
-\unexpanded\def\setupbars
-  {\dodoubleempty\dosetupbars}
-
-\def\dosetupbars[#1][#2]% not that efficient
-  {\ifsecondargument
-     \getparameters[\??on#1][#2]%
-     \dodefinebarindeed{#1}%
-   \else
-     \getparameters[\??on][#1]%
-     \the\checkalldefinedbars
-   \fi}
 
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
@@ -199,49 +188,36 @@
 
 %D This will move: (a bit duplicated)
 
+\installcommandhandler \??ra {shift} \??ra
+
 \newtoks\checkalldefinedshifts
 
-\def\shiftparameter    #1{\csname\doshiftparameter\currentshift#1\endcsname}
-\def\shiftparameterhash#1{\doshiftparameterhash{\??ra\currentshift}#1}
+\let\setupshifts\setupshift
 
-\def\doshiftparameter    #1#2{\ifcsname\??ra#1#2\endcsname\??ra#1#2\else\expandafter\doshiftparentparameter\csname\??ra#1\s!parent\endcsname#2\fi}
-\def\doshiftparameterhash#1#2{\ifcsname#1#2\endcsname#1\else\expandafter\doshiftparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\doshiftparentparameter    #1#2{\ifx#1\relax\s!empty\else\doshiftparameter    #1#2\fi}
-\def\doshiftparentparameterhash#1#2{\ifx#1\relax        \else\doshiftparameterhash#1#2\fi}
-
-\def\dosetshiftattributes#1#2% style color
-  {\edef\fontattributehash {\shiftparameterhash#1}%
-   \edef\colorattributehash{\shiftparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\unexpanded\def\defineshift
-  {\dotripleempty\dodefineshift}
-
-\def\dodefineshift[#1][#2][#3]%
-  {\ifthirdargument
-     \getparameters[\??ra#1][\s!parent=#2,#3]%
+\appendtoks
+  \ifsecondargument
+     \dodefineshiftindeed\currentshift
    \else
-     \getparameters[\??ra#1][\s!parent=,#2]%
+     \the\checkalldefinedshifts
    \fi
-   %
-   %\setvalue{\??ra:#1}{0}%
-   %
-   \ifcsname\??ra:#1:c\endcsname
-     \csname\??ra:#1:c\endcsname\zerocount
-   \else
-     \expandafter\newcount\csname\??ra:#1:c\endcsname
-   \fi
-   \normalexpanded{\checkalldefinedshifts{\noexpand\doredefineshift{#1}\the\checkalldefinedshifts}}%
-   \dodefineshiftindeed{#1}%
-   \setuvalue{#1}{\doshifted{#1}}}
+\to \everysetupshift
 
-\def\dodefineshiftindeed#1%
-  {\bgroup
-   \def\currentshift{#1}%
+\appendtoks
+   \ifcsname\??ra:\currentshift:c\endcsname
+     \csname\??ra:\currentshift:c\endcsname\zerocount
+   \else
+     \expandafter\newcount\csname\??ra:\currentshift:c\endcsname
+   \fi
+   \normalexpanded{\checkalldefinedshifts{\doredefineshift{\currentshift}\the\checkalldefinedshifts}}%
+   \dodefineshiftindeed{\currentshift}%
+   \setuevalue\currentshift{\doshifted{\currentshift}}%
+\to \everydefineshift
+
+\unexpanded\def\dodefineshiftindeed#1%
+  {\begingroup
+   \edef\currentshift{#1}%
    \normalexpanded
-     {\egroup
+     {\endgroup
       \scratchcounter\ctxlua{nodes.shifts.define {
         method   = \shiftparameter\c!method,
         continue = "\shiftparameter\c!continue",
@@ -252,22 +228,13 @@
 
 \let\doredefineshift\dodefineshiftindeed
 
-\def\doshifted#1%
-  {\groupedcommand{\dodoshifted{#1}}\relax}
+% \unexpanded\def\doshifted#1%
+%   {\groupedcommand{\dodoshifted{#1}}\relax}
 
 \def\dodoshifted
   {\ctxlua{nodes.shifts.enable()}%
    \glet\dodoshifted\dodoshiftedindeed
    \dodoshifted}
-
-% \def\dodoshiftedindeed#1%
-%   {\def\currentshift{#1}%
-%    \advance\csname\??ra:#1:c\endcsname\plusone
-%    \scratchcounter\csname\??ra:#1:c\endcsname
-%    \attribute\shiftedattribute\numexpr1000*\scratchcounter
-%      +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
-%    \setupalign[\shiftparameter\c!align]%
-%    \dosetshiftattributes\c!style\c!color}
 
 \def\dostartisolation{\char0 }
 \def\dostopisolation {\char0 }
@@ -291,7 +258,7 @@
    \dosetshiftattributes\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}}
 
-\def\doshifted#1%
+\unexpanded\def\doshifted#1%
   {\doisolatedgroupedalign{\dodoshifted{#1}}{}}
 
 \unexpanded\def\startshift[#1]%
@@ -300,18 +267,6 @@
 
 \unexpanded\def\stopshift
   {\endgroup}
-
-\unexpanded\def\setupshifts
-  {\dodoubleempty\dosetupshifts}
-
-\def\dosetupshifts[#1][#2]% not that efficient
-  {\ifsecondargument
-     \getparameters[\??ra#1][#2]%
-     \dodefineshiftindeed{#1}%
-   \else
-     \getparameters[\??ra][#1]%
-     \the\checkalldefinedshifts
-   \fi}
 
 \setupshifts
   [\c!method=0,

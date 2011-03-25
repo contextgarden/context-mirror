@@ -175,3 +175,5 @@ function viewerlayers.define(settings)
         codeinjections.defineviewerlayer(settings)
     end
 end
+
+commands.defineviewerlayer = viewerlayers.define

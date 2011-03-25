@@ -1,7 +1,13 @@
+-- \setupbodyfont[xits]
+--
+-- \starttext
+--     $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$
+-- \stoptext
+
 return {
     name = "xits-math",
     version = "1.00",
-    comment = "Goodies that complement xits.",
+    comment = "Goodies that complement xits (by Khaled Hosny).",
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {

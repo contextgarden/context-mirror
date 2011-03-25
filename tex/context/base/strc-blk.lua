@@ -35,7 +35,8 @@ end
 
 job.register('structures.blocks.collected', tobesaved, initializer)
 
-local printer = (lpeg.patterns.textline/tex.print)^0 -- can be shared
+local printer  = (lpeg.patterns.textline/tex.print)^0 -- can be shared
+local listitem = utilities.parsers.listitem
 
 function blocks.print(name,data,hide)
     if hide then
@@ -58,7 +59,7 @@ end
 function blocks.setstate(state,name,tag)
     local all = tag == ""
     local tags = not all and settings_to_array(tag)
-    for n in gmatch(name,"%s*([^,]+)") do
+    for n in listitem(name) do
         local sn = states[n]
         if not sn then
             -- error

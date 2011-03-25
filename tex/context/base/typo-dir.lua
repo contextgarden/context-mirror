@@ -51,8 +51,10 @@ local new_textdir        = nodepool.textdir
 local beginmath_code     = mathcodes.beginmath
 local endmath_code       = mathcodes.endmath
 
-local fontdata           = fonts.identifiers
-local fontchar           = fonts.characters
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local chardata           = fonthashes.characters
+
 local chardata           = characters.data
 local chardirs           = characters.directions -- maybe make a special mirror table
 

@@ -78,6 +78,7 @@
 		<cd:variable name='april' value='duben'/>
 		<cd:variable name='atmargin' value='naokraji'/>
 		<cd:variable name='atpage' value='nastrance'/>
+		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='srpen'/>
 		<cd:variable name='author' value='autor'/>
 		<cd:variable name='auto' value='auto'/>
@@ -531,6 +532,7 @@
 		<cd:constant name='after' value='po'/>
 		<cd:constant name='afterhead' value='pohlavicce'/>
 		<cd:constant name='afterkey' value='klavesapo'/>
+		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='zarovnani'/>
 		<cd:constant name='aligncharacter' value='aligncharacter'/>
 		<cd:constant name='alignmentcharacter' value='alignmentcharacter'/>
@@ -569,6 +571,7 @@
 		<cd:constant name='balance' value='rovnovaha'/>
 		<cd:constant name='before' value='pred'/>
 		<cd:constant name='beforehead' value='predhlavickou'/>
+		<cd:constant name='beforesection' value='beforesection'/>
 		<cd:constant name='bet' value='bet'/>
 		<cd:constant name='big' value='velky'/>
 		<cd:constant name='blank' value='prazdny'/>
@@ -583,6 +586,7 @@
 		<cd:constant name='bottomoffset' value='offsetspodku'/>
 		<cd:constant name='bottomspace' value='bottomspace'/>
 		<cd:constant name='bottomstate' value='statusspodku'/>
+		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='pocitat'/>
 		<cd:constant name='category' value='category'/>
@@ -593,6 +597,7 @@
 		<cd:constant name='clipoffset' value='clipoffset'/>
 		<cd:constant name='closeaction' value='zavriakci'/>
 		<cd:constant name='closecommand' value='closecommand'/>
+		<cd:constant name='closepage' value='closepage'/>
 		<cd:constant name='closepageaction' value='akcezavrenistranky'/>
 		<cd:constant name='closesymbol' value='closesymbol'/>
 		<cd:constant name='color' value='barva'/>
@@ -817,6 +822,7 @@
 		<cd:constant name='oddmargin' value='lichyokraj'/>
 		<cd:constant name='offset' value='offset'/>
 		<cd:constant name='openaction' value='otevriakci'/>
+		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='akceotevrenistranky'/>
 		<cd:constant name='option' value='volba'/>
 		<cd:constant name='order' value='order'/>
@@ -1012,6 +1018,7 @@
 		<cd:constant name='urlalternative' value='urlalternativa'/>
 		<cd:constant name='urlspace' value='prostorurl'/>
 		<cd:constant name='validate' value='validovat'/>
+		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vprikaz'/>
 		<cd:constant name='veroffset' value='offsethlavicky'/>
 		<cd:constant name='vfil' value='vfil'/>
@@ -1110,7 +1117,6 @@
 		<cd:command name='colorbar' value='barevnalista'/>
 		<cd:command name='colorvalue' value='hodnotabarvy'/>
 		<cd:command name='column' value='sloupec'/>
-		<cd:command name='comment' value='komentar'/>
 		<cd:command name='comparecolorgroup' value='porovnejskupinubarev'/>
 		<cd:command name='comparepalet' value='porovnejpaletu'/>
 		<cd:command name='completepagenumber' value='completepagenumber'/>

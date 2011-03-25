@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['font-mis'] = {
     version   = 1.001,
-    comment   = "companion to luatex-fonts.tex",
+    comment   = "companion to mtx-fonts",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9,12 +9,23 @@ if not modules then modules = { } end modules ['font-mis'] = {
 local next = next
 local lower, strip = string.lower, string.strip
 
-fonts.otf = fonts.otf or { }
+-- also used in other scripts so we need to check some tables:
 
-fonts.otf.version = fonts.otf.version or 2.710
-fonts.otf.cache   = containers.define("fonts", "otf", fonts.otf.version, true)
+fonts          = fonts or { }
 
-function fonts.otf.loadcached(filename,format,sub)
+fonts.helpers  = fonts.helpers or { }
+local helpers  = fonts.helpers
+
+fonts.handlers = fonts.handlers or { }
+local handlers = fonts.handlers
+
+handlers.otf   = handlers.otf or { }
+local otf      = handlers.otf
+
+otf.version    = otf.version or 2.710
+otf.cache      = otf.cache   or containers.define("fonts", "otf", otf.version, true)
+
+function otf.loadcached(filename,format,sub)
     -- no recache when version mismatch
     local name = file.basename(file.removesuffix(filename))
     if sub == "" then sub = false end
@@ -23,9 +34,9 @@ function fonts.otf.loadcached(filename,format,sub)
         hash = hash .. "-" .. sub
     end
     hash = containers.cleanname(hash)
-    local data = containers.read(fonts.otf.cache, hash)
+    local data = containers.read(otf.cache, hash)
     if data and not data.verbose then
-        fonts.otf.enhancers.unpack(data)
+        otf.enhancers.unpack(data)
         return data
     else
         return nil
@@ -34,14 +45,14 @@ end
 
 local featuregroups = { "gsub", "gpos" }
 
-function fonts.get_features(name,t,script,language)
+function fonts.helpers.getfeatures(name,t,script,language) -- maybe per font type
     local t = lower(t or (name and file.extname(name)) or "")
     if t == "otf" or t == "ttf" or t == "ttc" or t == "dfont" then
         local filename = resolvers.findfile(name,t) or ""
         if filename ~= "" then
-            local data = fonts.otf.loadcached(filename)
-            if data and data.luatex and data.luatex.features then
-                return  data.luatex.features
+            local data = otf.loadcached(filename)
+            if data and data.resources and data.resources.features then
+                return  data.resources.features
             else
                 local ff = fontloader.open(filename)
                 if ff then

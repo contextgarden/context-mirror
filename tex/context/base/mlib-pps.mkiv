@@ -33,12 +33,10 @@
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext
 
-\def\MPLIBfigure#1#2#3#4#5#6#7% todo: move Q q to lua
-  {\setbox\scratchbox\hbox{\externalfigure[#7]}%
+\def\MPLIBfigure#1#2%
+  {\setbox\scratchbox\hbox{\externalfigure[#1][\c!mask=#2]}%
    \ctxlua{metapost.edefsxsy(\number\wd\scratchbox,\number\ht\scratchbox,0)}%
-   \pdfliteral direct{q #1 #2 #3 #4 #5 #6 cm}% no direct
-   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[sx=\sx,sy=\sy]{\box\scratchbox}\hss}}%
-   \pdfliteral direct{Q}}
+   \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=\sx,\c!sy=\sy]{\box\scratchbox}\hss}}}
 
 \def\MPLIBsettext#1% #2%
   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}

@@ -1,0 +1,984 @@
+%D \module
+%D   [       file=scrn-but, % moved code
+%D        version=1995.01.01,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Interaction,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \restorestandardblank
+% better namespace for pos
+
+\writestatus{loading}{ConTeXt Screen Macros / Buttons}
+
+\registerctxluafile{scrn-but}{1.001}
+
+\unprotect
+
+%D Buttons are just what their names says: things that can be
+%D clicked (pushed) on. They are similar to \type{\goto},
+%D except that the text argument is not interpreted.
+%D Furthermore one can apply anything to them that can be done
+%D with \type{\framed}.
+%D
+%D \startbuffer
+%D \button[width=3cm,height=1.5cm]{Exit}[ExitViewer]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D gives
+%D
+%D \getbuffer
+%D
+%D This command is formally specified as:
+%D
+%D \showsetup{button}
+%D
+%D The characteristics can be set with:
+%D
+%D \showsetup{setupbuttons}
+
+\installcommandhandler \??bt {button} \??bt
+
+\let\setupbuttons\setupbutton
+
+\presetlocalframed[\??bt]
+
+\appendtoks
+    \setuevalue\currentbutton{\scrn_button_direct{\currentbutton}}%
+    \setevalue{\??bt:\currentbutton\s!parent}{\??bt\currentbutton}% framed
+\to \everydefinebutton
+
+\unexpanded\def\scrn_button_direct#tag%
+  {\begingroup
+   \edef\currentbutton{#tag}%
+   \doifelselocation
+     {\dosingleempty\scrn_button_direct_status}%
+     {\dosingleempty\scrn_button_direct_ignore}}
+
+\def\scrn_button_direct_status
+  {\doifelse{\buttonparameter\c!state}\v!start
+     \scrn_button_direct_indeed
+     \scrn_button_direct_ignore}
+
+%\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
+
+% empty=yes
+%
+% \button[settings]{}[action] % normally used at the tex end
+
+\def\scrn_button_direct_indeed[#settings]#text[#action]%
+  {\iffirstargument
+     \setupbuttons[\currentbutton][#settings]%
+   \fi
+   \scrn_button_make\??bt\currentbutton\buttonparameter{#text}{#action}%
+   \endgroup}
+
+\def\scrn_button_direct_ignore[#settings]#text[#destination]%
+  {\endgroup}
+
+\definebutton[button] % english
+
+\setupbuttons
+  [\c!state=\v!start,
+   \c!width=\v!fit,
+   \c!height=\v!broad,
+   \c!offset=0.25em,
+   \c!frame=\v!on,
+   \c!background=,
+   \c!backgroundcolor=,
+   \c!foregroundstyle=\buttonparameter\c!style,
+   \c!foregroundcolor=\buttonparameter\c!color,
+   \c!style=\interactionparameter\c!style,
+   \c!color=\interactionparameter\c!color,
+   \c!contrastcolor=\interactionparameter\c!contrastcolor,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!yes,
+   \c!distance=\zeropoint] % for menubuttons
+
+%D \macros
+%D   {overlaybutton}
+%D
+%D For converience we provide:
+%D
+%D \starttyping
+%D \overlaybutton[reference]
+%D \stoptyping
+%D
+%D This command can be used to define overlays an/or can be
+%D used in the whatevertext areas, like:
+%D
+%D \starttyping
+%D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
+%D \setupbackgrounds[page][background=PrevPage]
+%D \setuptexttexts[\overlaybutton{NextPage}]
+%D \stoptyping
+%D
+%D For practical reasons, this macro accepts square brackets
+%D as well as braces.
+
+\unexpanded\def\overlaybutton
+  {\dosingleempty\scrn_button_overlay}
+
+\def\scrn_button_overlay[#1]%
+  {\iffirstargument
+     \scrn_button_overlay_indeed{#1}%
+   \else
+     \expandafter\scrn_button_overlay_indeed
+   \fi}
+
+\def\scrn_button_overlay_indeed#1%
+  {\iflocation
+     \gotobox{\overlayfakebox}[#1]%
+   \fi}
+
+%D The renderers:
+
+\expandafter\let\csname\??bt:\c!location:\v!yes    \endcsname\zerocount
+\expandafter\let\csname\??bt:\c!location:\v!empty  \endcsname\plusone
+\expandafter\let\csname\??bt:\c!location:\v!no     \endcsname\plustwo
+\expandafter\let\csname\??bt:\c!location:\v!none   \endcsname\plusthree
+\expandafter\let\csname\??bt:\c!location:\v!normal \endcsname\plusone % default
+\expandafter\let\csname\??bt:\c!location:\s!default\endcsname\plusone % default
+\expandafter\let\csname\??bt:\c!location:\s!empty  \endcsname\plusone % default
+
+\newconditional\scrn_button_skipped
+
+\def\scrn_button_make#namespace#current#currentparameter#text#action%
+  {\begingroup
+   \attribute\referenceattribute\attributeunsetvalue
+   \global\setfalse\scrn_button_skipped
+   \chardef\locationboxpagestate\csname\??bt:\c!location:#currentparameter\c!samepage\endcsname
+   \doifreferencefoundelse{#action}\scrn_button_make_yes\scrn_button_make_nop
+     {#namespace}{#current}{#currentparameter}{#text}%
+   \endgroup}
+
+\def\scrn_button_make_yes
+  {\analyzecurrentreference                                           % needed as we act on the state
+   \ifcase\referencepagestate
+     \expandafter\scrn_button_make_normal                             % no state :  something else than a page reference
+   \or
+     \ifcase\locationboxpagestate\relax
+       \expandafter\expandafter\expandafter\scrn_button_make_contrast % same page:  yes: same page or not ... todo
+     \or
+       \expandafter\expandafter\expandafter\scrn_button_make_empty    % same page:  empty but frame: no click
+     \or
+       \expandafter\expandafter\expandafter\scrn_button_make_nothing  % same page:  empty no frame: no
+     \else
+       \expandafter\expandafter\expandafter\scrn_button_make_skipped  % same page:  nothing at all
+     \fi
+   \else
+     \ifcase\locationboxpagestate\relax
+       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: yes: same page or not ... todo
+     \or
+       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: empty but frame: no click
+     \or
+       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: empty no frame: no
+     \else
+       \expandafter\expandafter\expandafter\scrn_button_make_skipped  % other page: nothing at all
+     \fi%
+   \fi}
+
+\def\scrn_button_make_nop
+  {\ifcase\locationboxpagestate\relax
+     \expandafter\scrn_button_make_framed
+   \or
+     \expandafter\scrn_button_make_empty
+   \or
+     \expandafter\scrn_button_make_nothing
+   \or
+     \expandafter\scrn_button_make_skipped
+   \fi}
+
+\def\scrn_button_make_framed#namespace#current#currentparameter#text%
+  {\directlocalframed[#namespace:#current]{\ignorespaces#text\removeunwantedspaces}}
+
+\def\scrn_button_make_skipped#namespace#current#currentparameter#text%
+  {\global\settrue\scrn_button_skipped}
+
+\def\scrn_button_make_normal#namespace#current#currentparameter#text%
+  {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
+   \hbox attr \referenceattribute \lastreferenceattribute
+     {\directlocalframed
+        [#namespace:#current]%
+        {\ignorespaces#text\removeunwantedspaces}}}
+
+\def\scrn_button_make_contrast#namespace#current#currentparameter#text%
+  {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
+   \hbox attr \referenceattribute \lastreferenceattribute
+     {\localframedwithsettings
+        [#namespace:#current]%
+        [\c!foregroundcolor=#currentparameter\c!contrastcolor]%
+        {\ignorespaces#text\removeunwantedspaces}}}
+
+\def\scrn_button_make_empty#namespace#current#currentparameter#text%
+  {\localframedwithsettings
+     [#namespace:#current]%
+     [\c!empty=\v!yes]%
+     {\ignorespaces#text\removeunwantedspaces}}
+
+\def\scrn_button_make_nothing#namespace#current#currentparameter#text%
+  {\localframedwithsettings
+     [#namespace:#current]%
+     [\c!empty=\v!yes,\c!frame=,\c!background=]%
+     {\ignorespaces#text\removeunwantedspaces}}
+
+%D Menus:
+%D
+%D \starttyping
+%D \setuppapersize
+%D   [S6][S6]
+%D
+%D \setuplayout
+%D   [backspace=6cm,      cutspace=6cm,
+%D    leftedge=3cm,       rightedge=3cm,
+%D    leftmargin=1cm,     rightmargin=1cm,
+%D    margindistance=5mm, edgedistance=5mm,
+%D    topspace=4cm,       bottomspace=4cm,
+%D    header=0pt,         footer=0pt,
+%D    top=1cm,            bottom=1cm,
+%D    topdistance=5mm,    bottomdistance=5mm,
+%D    width=middle,       height=middle]
+%D
+%D \setupinteraction
+%D   [state=start,
+%D    menu=on]
+%D
+%D \setupinteractionmenu
+%D   [right]
+%D   [state=start,background=color,frame=off,backgroundcolor=red,color=white,contrastcolor=blue]
+%D \setupinteractionmenu
+%D   [left]
+%D   [state=start,background=color,frame=off,backgroundcolor=green,color=white]
+%D \setupinteractionmenu
+%D   [top]
+%D   [state=start,background=color,frame=off,backgroundcolor=blue,color=white]
+%D \setupinteractionmenu
+%D   [bottom]
+%D   [state=start,background=color,frame=off,backgroundcolor=yellow,color=white]
+%D
+%D \setupinteractionmenu
+%D   [left]
+%D   [state=local]
+%D \setupinteractionmenu
+%D   [bottom]
+%D   [state=local]
+%D
+%D \startinteractionmenu[right]
+%D     \startbut [page(2)] Page 2 \stopbut
+%D     \startbut [page(1)] Page 1 \stopbut
+%D     \includemenu[left]
+%D     \includemenu[bottom]
+%D \stopinteractionmenu
+%D
+%D \startinteractionmenu[left]
+%D     \startbut [page(1)] Page 1 \stopbut
+%D     \startbut [page(2)] Page 2 \stopbut
+%D \stopinteractionmenu
+%D
+%D \startinteractionmenu[top]
+%D     \startbut [page(1)] Page 1 \stopbut
+%D     \startbut [page(2)] Page 2 \stopbut
+%D \stopinteractionmenu
+%D
+%D \startinteractionmenu[bottom]
+%D     \startbut [page(2)] Page 2 \stopbut
+%D     \startbut [page(1)] Page 1 \stopbut
+%D \stopinteractionmenu
+%D \stoptyping
+%D
+%D \starttyping
+%D \startinteractionmenu[rechts]
+%D   \startbut [eerste]  eerste  \stopbut
+%D   \starttxt hello world       \stoptxt
+%D   \startbut [tweede]  tweede  \stopbut
+%D   \startnop                   \stopnop
+%D   \startbut [tweede]  tweede  \stopbut
+%D   \startrul whow              \stoprul
+%D   \startbut [tweede]  tweede  \stopbut
+%D   \startraw hello world       \stopraw
+%D   \startbut [tweede]  tweede  \stopbut
+%D   \startcom \vfill            \stopcom
+%D   \startbut [derde]   derde   \stopbut
+%D \stopinteractionmenu
+%D \stoptyping
+%D
+%D \starttyping
+%D \setupinteractionmenu[right][samepage=yes,  unknownreference=yes]
+%D \setupinteractionmenu[right][samepage=empty,unknownreference=empty]
+%D \setupinteractionmenu[right][samepage=no,   unknownreference=no]
+%D \setupinteractionmenu[right][samepage=none, unknownreference=none]
+%D \stoptyping
+
+\installcommandhandler \??am {interactionmenu} \??am
+
+\let\setupinteractionmenus\setupinteractionmenu
+
+\presetlocalframed[\??am]
+
+\let\scrn_menu_action\relax
+
+\let\scrn_menu_define_original\defineinteractionmenu
+
+\unexpanded\def\defineinteractionmenu
+  {\dotripleempty\scrn_menu_define}
+
+\def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
+  {\ifthirdargument
+     \doifassignmentelse{#settings}%
+       {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
+       {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
+     \scrn_menu_register{#tag}{#category}%
+     \setevalue{\??am:#tag\s!parent}{\??am#tag}% framed
+   \else\ifsecondargument
+     \doifassignmentelse{#category}%
+       {\scrn_menu_define_original[#tag][#category]%                                 % root definition
+        \setevalue{\??am:#tag\s!parent}{\??am}}% framed
+       {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
+        \scrn_menu_register{#tag}{#category}%
+        \setevalue{\??am:#tag\s!parent}{\??am#tag}}% framed
+   \else
+     \scrn_menu_define_original[#tag]%                                               % root definition
+     \setevalue{\??am:#tag\s!parent}{\??am}% framed
+   \fi\fi}
+
+\def\scrn_menu_register#tag#category%
+  {\ifcsname\??am:t:#category\endcsname \else
+     \expandafter\newtoks \csname\??am:t:#category\endcsname
+     \expandafter\setfalse\csname\??am:c:#category\endcsname
+   \fi
+   \normalexpanded{\csname\??am:t:#category\endcsname{\the\csname\??am:t:#category\endcsname\scrn_menu_action{#tag}}}}
+
+\def\scrn_menu_actions#category%
+  {\the\csname\??am:t:#category\endcsname}
+
+%D Fill menus:
+
+\normalexpanded{\long\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
+  {\def\currentinteractionmenu{#tag}%
+   \expandafter\settrue\csname\??am:c:\interactionmenuparameter\c!category\endcsname
+   \setinteractionmenuparameter\c!menu{#content}}
+
+\def\resetinteractionmenu[#tag]%
+  {\def\currentinteractionmenu{#tag}%
+   \resetinteractionmenuparameter\c!menu}
+
+%D Placement of menus:
+%D
+%D The offset mechanism is not the same as in in \MKII. There we
+%D adapted automatically to offsets in the text backgrounds. Here we
+%D have a bit more (but manual) control.
+%D
+%D \starttyping
+%D \setupbackgrounds
+%D   [text][text]
+%D   [background=color,backgroundcolor=gray,backgroundoffset=2mm]
+%D
+%D \setupbackgrounds
+%D   [text]
+%D   [rightedge,leftedge]
+%D   [background=color,backgroundcolor=gray]
+%D
+%D \setupbackgrounds
+%D   [top,bottom]
+%D   [text]
+%D   [background=color,backgroundcolor=gray]
+%D
+%D \setupinteractionmenu
+%D   [right]
+%D   [topoffset=0mm,bottomoffset=0mm]
+%D
+%D \setupinteractionmenu
+%D   [top]
+%D   [topoffset=2mm,bottomoffset=2mm,rightoffset=2mm,leftoffset=2mm]
+%D \stoptyping
+%D
+%D The no longer hard coded text areas offset compensation makes tuning
+%D easier. After all, menus need some setup anyway.
+
+\newbox  \scrn_menu_box
+
+\newdimen\scrn_menu_next_distance
+\newdimen\scrn_menu_final_width
+\newdimen\scrn_menu_final_height
+\newdimen\scrn_menu_used_width
+\newdimen\scrn_menu_used_height
+\newdimen\scrn_menu_asked_width
+\newdimen\scrn_menu_asked_height
+\newdimen\scrn_menu_offset_top
+\newdimen\scrn_menu_offset_bottom
+\newdimen\scrn_menu_offset_left
+\newdimen\scrn_menu_offset_right
+
+\def\scrn_menu_set_used
+  {\scrn_menu_offset_left  \interactionmenuparameter\c!leftoffset
+   \scrn_menu_offset_right \interactionmenuparameter\c!rightoffset
+   \scrn_menu_offset_top   \interactionmenuparameter\c!topoffset
+   \scrn_menu_offset_bottom\interactionmenuparameter\c!bottomoffset
+   \scrn_menu_asked_width  \interactionmenuparameter\c!maxwidth
+   \scrn_menu_asked_height \interactionmenuparameter\c!maxheight
+   \scrn_menu_used_width\dimexpr
+     \scrn_menu_asked_width  + \scrn_menu_offset_left + \scrn_menu_offset_right
+   \relax
+   \scrn_menu_used_height\dimexpr
+     \scrn_menu_asked_height + \scrn_menu_offset_top  + \scrn_menu_offset_bottom
+   \relax}
+
+\def\scrn_menu_set_final
+  {\scrn_menu_final_width \namedinteractionmenuparameter\askedinteractionmenulocation\c!maxwidth
+   \scrn_menu_final_height\namedinteractionmenuparameter\askedinteractionmenulocation\c!maxheight}
+
+\def\scrn_menu_apply_final
+  {\wd\scrn_menu_box\scrn_menu_final_width
+   \ht\scrn_menu_box\scrn_menu_final_height
+   \dp\scrn_menu_box\zeropoint}
+
+\def\scrn_menu_apply_used
+  {\ifdim\scrn_menu_offset_left=\zeropoint \else
+     \setbox\scrn_menu_box\hbox{\hskip-\scrn_menu_offset_left   \box\scrn_menu_box}%
+   \fi
+   \ifdim\scrn_menu_offset_bottom=\zeropoint \else
+     \setbox\scrn_menu_box\hbox{\lower \scrn_menu_offset_bottom \box\scrn_menu_box}%
+   \fi
+   \wd\scrn_menu_box\scrn_menu_asked_width
+   \ht\scrn_menu_box\scrn_menu_asked_height
+   \dp\scrn_menu_box\zeropoint}
+
+\setvalue{scrn_menu_align_\v!right     }{\let\scrn_menu_left_align\raggedright}
+\setvalue{scrn_menu_align_\v!left      }{\let\scrn_menu_left_align\raggedleft}
+\setvalue{scrn_menu_align_\v!flushright}{\let\scrn_menu_left_align\raggedleft}
+\setvalue{scrn_menu_align_\v!flushleft }{\let\scrn_menu_left_align\raggedright}
+\setvalue{scrn_menu_align_\v!middle    }{\let\scrn_menu_left_align\raggedcenter}
+\setvalue{scrn_menu_align_\v!low       }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\relax}
+\setvalue{scrn_menu_align_\v!high      }{\let\scrn_menu_top_align\relax\let\scrn_menu_bottom_align\vss}
+\setvalue{scrn_menu_align_\v!lohi      }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\vss}
+
+\let\scrn_menu_left_align  \relax
+\let\scrn_menu_right_align \relax
+\let\scrn_menu_top_align   \relax
+\let\scrn_menu_bottom_align\relax
+
+\def\scrn_menu_set_align
+  {\csname scrn_menu_align_\interactionmenuparameter\c!itemalign\endcsname}
+
+%D Hook into the pagebuilder (as less testing as possible):
+
+\def\scrn_menu_insert
+  {\iflocation
+     \expandafter\scrn_menu_insert_checked
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\def\scrn_menu_insert_checked#location%
+  {\ifconditional\csname\??am:c:#location\endcsname
+     \scrn_menu_insert_indeed{#location}%
+   \fi}
+
+\def\scrn_menu_insert_indeed#location%
+  {\begingroup
+   \edef\askedinteractionmenulocation{#location}%
+   \scrn_menu_set_final
+   \ifcase\scrn_menu_final_width \else \ifcase\scrn_menu_final_height \else
+     \forgetall
+     \global\scrn_menu_next_distance\zeropoint
+     \let\scrn_menu_action\scrn_menu_package_indeed
+     \the\everysetmenucommands
+     \csname\??am:\c!menu:\namedinteractionmenuparameter\askedinteractionmenulocation\c!alternative\endcsname
+   \fi \fi
+   \endgroup}
+
+%D This calls: % can be \c!command for vertical/horizontal
+
+\setvalue{\??am:\c!menu:\v!vertical}% all menus
+  {\let\scrn_menu_packager\scrn_menu_packager_vertical
+   \setbox\scrn_menu_box\hbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \scrn_menu_apply_final
+   \box\scrn_menu_box}
+
+\setvalue{\??am:\c!menu:\v!horizontal}% all menus
+  {\let\scrn_menu_packager\scrn_menu_packager_horizontal
+   \setbox\scrn_menu_box\vbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \scrn_menu_apply_final
+   \box\scrn_menu_box}
+
+% stop : skipped
+% start: processed
+% local: skipped but can be included
+% empty: processed but invisible
+
+\unexpanded\def\scrn_menu_package_indeed#tag% one menu
+  {\begingroup
+   \edef\currentinteractionmenu{#tag}%
+   \edef\currentinteractionmenustate{\interactionmenuparameter\c!state}%
+   \ifx\currentinteractionmenustate\v!start
+     \scrn_menu_packager
+   \else\ifx\currentinteractionmenustate\v!empty
+     \scrn_menu_packager
+   \fi\fi
+   \endgroup}
+
+%D With the packager being one of:
+
+\def\scrn_menu_packager_vertical
+  {\scrn_menu_set_used
+   \hskip\scrn_menu_next_distance
+   \setbox\scrn_menu_box\hbox to \scrn_menu_used_width
+     {\ifx\currentinteractionmenustate\v!empty \else
+        \interactionmenuparameter\c!left
+        \scrn_menu_package_vertical{\interactionmenuparameter\c!menu}%
+        \interactionmenuparameter\c!right
+      \fi}%
+   \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
+   \ifx\currentinteractionmenudistance\v!overlay
+     \global\scrn_menu_next_distance\zeropoint
+     \wd\scrn_menu_box\zeropoint
+   \else
+     \global\scrn_menu_next_distance\currentinteractionmenudistance
+     \scrn_menu_apply_used
+   \fi
+   \box\scrn_menu_box}
+
+\def\scrn_menu_packager_horizontal
+  {\scrn_menu_set_used
+   \vskip\scrn_menu_next_distance
+   \scrn_menu_set_align
+   \setbox\scrn_menu_box\vbox to \scrn_menu_used_height
+     {\ifx\currentinteractionmenustate\v!none \else
+        \scrn_menu_top_align
+        \interactionmenuparameter\c!before
+        \scrn_menu_package_horizontal{\interactionmenuparameter\c!menu}%
+        \interactionmenuparameter\c!after
+        \scrn_menu_bottom_align
+      \fi}%
+   \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
+   \ifx\currentinteractionmenudistance\v!overlay
+     \global\scrn_menu_next_distance\zeropoint
+     \offinterlineskip
+     \dp\scrn_menu_box\zeropoint
+     \ht\scrn_menu_box\zeropoint
+   \else
+     \global\scrn_menu_next_distance\currentinteractionmenudistance
+     \scrn_menu_apply_used
+   \fi
+   \box\scrn_menu_box}
+
+%D For a right menu, a sequence of calls to \type
+%D {right_menu_button} is generated.
+%D
+%D \starttyping
+%D right_menu_button (n, p, s=0/1/2, x, y, w, h, d) ;
+%D \stoptyping
+%D
+%D Here, n is the number of the button, s a status variable,
+%D while the rest is positional info. The status variable is
+%D 0, 1 or~2: not found, found and found but current page.
+
+\newcount      \scrn_menu_position
+\newconstant   \scrn_menu_page_mode % 0=notfound  1=found  2=currentpage
+\newconditional\scrn_menu_positioning
+\newtoks       \scrn_menu_mp_data
+
+\def\scrn_menu_button_mp_template
+  {\askedinteractionmenulocation_menu_button(%
+     \number\scrn_menu_position,%
+     \number\scrn_menu_page_mode,%
+     \MPpos{\askedinteractionmenulocation:\number\scrn_menu_position}%
+   );}
+
+\def\MPmenubuttons#1{\the\scrn_menu_mp_data}
+
+\appendtoks
+    \global\scrn_menu_mp_data\emptytoks
+\to \everyshipout
+
+\def\scrn_menu_whole_position % cannot happen in previous due to align
+  {\setbox\scrn_menu_box\hbox \bgroup
+     \hpos{menu:\askedinteractionmenulocation:\the\realpageno}{\box\scrn_menu_box}%
+   \egroup}
+
+% removed: \restorestandardblank (vspacing) ... should happen elsewhere
+
+\def\scrn_menu_package_vertical#content%
+  {\begingroup
+   \global\scrn_menu_position\zerocount
+   \def\scrn_menu_between_action_indeed{\interactionmenuparameter\c!inbetween}%
+   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\scrn_menu_positioning
+   \scrn_menu_set_align
+   \setbox\scrn_menu_box\vbox to \scrn_menu_used_height \bgroup
+     \hsize\scrn_menu_used_width
+     \scrn_menu_left_align
+     \interactionmenuparameter\c!before\relax
+     \ignorespaces#content\unskip
+     \interactionmenuparameter\c!after
+     \scrn_menu_right_align
+   \egroup
+   \ifconditional\scrn_menu_positioning
+     \scrn_menu_whole_position
+   \fi
+   \box\scrn_menu_box
+   \endgroup}
+
+\def\scrn_menu_package_horizontal#content%
+  {\begingroup
+   \global\scrn_menu_position\zerocount
+   \def\scrn_menu_between_action_indeed{\interactionmenuparameter\c!middle}%
+   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\scrn_menu_positioning
+   \setbox\scrn_menu_box\hbox to \scrn_menu_used_width \bgroup
+     \interactionmenuparameter\c!left\relax
+     \ignorespaces#content\unskip
+     \interactionmenuparameter\c!right
+   \egroup
+   \ifconditional\scrn_menu_positioning
+     \scrn_menu_whole_position
+   \fi
+   \box\scrn_menu_box
+   \endgroup}
+
+\def\scrn_menu_action_start
+  {\dontleavehmode
+   \begingroup}
+
+\def\scrn_menu_action_stop
+  {\ifconditional\scrn_button_skipped \else
+     \scrn_menu_between_action_indeed
+   \fi
+   \endgroup
+   \ignorespaces}
+
+\unexpanded\def\scrn_menu_raw_start[#action]#text\stopraw
+  {\scrn_menu_action_start
+   \gotobox{\ignorespaces#text\unskip}[#action]%
+   \scrn_menu_action_stop}
+
+\unexpanded\def\scrn_menu_but_start[#action]#text\stopbut
+  {\scrn_menu_action_start
+   \ifconditional\scrn_menu_positioning
+     \expandafter\scrn_button_make_position
+   \else
+     \expandafter\scrn_button_make
+   \fi\??am\currentinteractionmenu\interactionmenuparameter{#text}{#action}%
+   \scrn_menu_action_stop}
+
+\def\scrn_button_make_position#namespace#current#currentparameter#text#action%
+  {\global\advance\scrn_menu_position\plusone
+   \doifreferencefoundelse{#action}% 0=not found, 1=same page, >1=elsewhere
+     {\scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
+     {\scrn_menu_page_mode\plustwo}%
+   \doglobal\appendetoks
+     \scrn_menu_button_mp_template
+   \to \scrn_menu_mp_data
+   \hpos
+     {\askedinteractionmenulocation:\number\scrn_menu_position}%
+     {\scrn_button_make{#namespace}{#current}{#currentparameter}{#text}{#action}}}
+
+\unexpanded\def\scrn_menu_got_start[#action]#text\stopgot
+  {\scrn_menu_action_start
+   \setupbuttons[\currentinteractionmenu][\c!frame=\v!off,\c!background=]%
+   \scrn_button_make\??am\currentinteractionmenu\interactionmenuparameter{#text}{#action}%
+   \scrn_menu_action_stop}
+
+\unexpanded\def\scrn_menu_nop_start#text\stopnop
+  {\scrn_menu_action_start
+   \localframedwithsettings
+     [\??am:\currentinteractionmenu]%
+     [\c!frame=\v!off,\c!background=,\c!empty=\v!yes]%
+     {\ignorespaces#text\removeunwantedspaces}%
+   \scrn_menu_action_stop}
+
+\unexpanded\def\scrn_menu_txt_start#text\stoptxt
+  {\scrn_menu_action_start
+   \localframedwithsettings
+     [\??am:\currentinteractionmenu]%
+     [\c!frame=\v!off,\c!background=]%
+     {\ignorespaces#text\removeunwantedspaces}%
+   \scrn_menu_action_stop}
+
+\unexpanded\def\scrn_menu_rul_start#text\stoprul
+  {\scrn_menu_action_start
+   \directlocalframed
+     [\??am:\currentinteractionmenu]%
+     {\ignorespaces#text\removeunwantedspaces}%
+   \scrn_menu_action_stop}
+
+\unexpanded\def\scrn_menu_com_start#text\stopcom
+  {\ignorespaces#text\removeunwantedspaces
+   \ignorespaces}
+
+\unexpanded\def\scrn_menu_raw#content\\{\scrn_menu_raw_start#content\stopraw} \let\stopraw\relax
+\unexpanded\def\scrn_menu_but#content\\{\scrn_menu_but_start#content\stopbut} \let\stopbut\relax
+\unexpanded\def\scrn_menu_got#content\\{\scrn_menu_got_start#content\stopgot} \let\stopgot\relax
+\unexpanded\def\scrn_menu_nop#content\\{\scrn_menu_nop_start#content\stopnop} \let\stopnop\relax
+\unexpanded\def\scrn_menu_txt#content\\{\scrn_menu_nop_start#content\stoptxt} \let\stoptxt\relax
+\unexpanded\def\scrn_menu_rul#content\\{\scrn_menu_rul_start#content\stoprul} \let\stoprul\relax
+\unexpanded\def\scrn_menu_com#content\\{\scrn_menu_com_start#content\stopcom} \let\stopcom\relax
+
+\newtoks\everysetmenucommands % public
+
+\appendtoks
+    \let\raw\scrn_menu_raw \let\startraw\scrn_menu_raw_start
+    \let\but\scrn_menu_but \let\startbut\scrn_menu_but_start
+    \let\got\scrn_menu_got \let\startgot\scrn_menu_got_start
+    \let\nop\scrn_menu_nop \let\startnop\scrn_menu_nop_start
+    \let\txt\scrn_menu_txt \let\starttxt\scrn_menu_txt_start
+    \let\rul\scrn_menu_rul \let\startrul\scrn_menu_rul_start
+    \let\com\scrn_menu_com \let\startcom\scrn_menu_com_start
+\to \everysetmenucommands
+
+%D Sometimes handy:
+%D
+%D \starttyping
+%D \setupinteractionmenu
+%D   [left]
+%D   [state=local]
+%D
+%D \startinteractionmenu[right]
+%D     ...
+%D     \includemenu[left]
+%D     ...
+%D \stopinteractionmenu
+%D \stoptyping
+
+\unexpanded\def\includemenu[#tag]%
+  {\begingroup
+   \edef\currentinteractionmenu{#tag}%
+   \doif{\interactionmenuparameter\c!state}\v!local
+     {\letinteractionmenuparameter\c!state\v!start
+      \setinteractionmenuparameter\s!parent{\??am\askedinteractionmenulocation}% nice hack
+      \interactionmenuparameter\c!menu}%
+   \endgroup}
+
+%D Direct call (todo):
+
+\unexpanded\def\interactionmenu
+  {\dodoubleempty\scrn_menu_interaction_menu}
+
+\def\scrn_menu_interaction_menu[#tag][#settings]%
+  {\begingroup
+   \setupinteractionmenu[#tag][#settings]%
+%    \edef\currentinteractionmenu         {#tag}%
+%    \edef\askedinteractionmenulocation   {\interactionmenuparameter\c!category}%
+%    \edef\askedinteractionmenualternative{\interactionmenuparameter\c!alternative}%
+%    \def\scrn_menu_actions#dummy{\scrn_menu_package_indeed\currentinteractionmenu}%
+%    \csname\??am:\c!menu:\askedinteractionmenualternative\endcsname
+     \scrn_menu_insert{#tag}%
+   \endgroup}
+
+%D Plugin handler:
+
+\unexpanded\def\scrn_menu_insert_content_indeed
+  {\iflocation % here as we can have a fast turn-off
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\let\scrn_menu_insert_content_ignore\gobbleoneargument
+
+\appendtoks
+    \doifelse{\interactionparameter\c!menu}\v!on
+      {\let\scrn_menu_insert_content\scrn_menu_insert_content_indeed}%
+      {\let\scrn_menu_insert_content\scrn_menu_insert_content_ignore}%
+\to \everysetupinteraction
+
+%D Plugs into the page builder:
+
+\unexpanded\def\scrn_menu_leftedge
+  {\hbox to \leftedgewidth \bgroup
+     \hsize\leftedgewidth
+    %\csname\??tk\v!leftedge\c!left\endcsname
+     \scrn_menu_insert\v!left
+    %\csname\??tk\v!leftedge\c!right\endcsname
+   \egroup
+   \hskip-\leftedgewidth}
+
+\unexpanded\def\scrn_menu_rightedge
+  {\hbox to \rightedgewidth \bgroup
+     \hsize\rightedgewidth
+    %\csname\??tk\v!rightedge\c!left\endcsname
+     \scrn_menu_insert\v!right
+    %\csname\??tk\v!rightedge\c!right\endcsname
+   \egroup
+   \hskip-\rightedgewidth}
+
+\unexpanded\def\scrn_menu_top % uses \??tk
+  {\vbox to \topheight \bgroup
+     \vsize\topheight
+    %\csname\??tk\v!top\c!before\endcsname
+     \scrn_menu_insert\v!top
+    %\csname\??tk\v!top\c!after\endcsname
+     \kern\zeropoint
+   \egroup
+   \vskip-\topheight}
+
+\unexpanded\def\scrn_menu_bottom % uses \??tk
+  {\vbox to \bottomheight \bgroup
+     \vsize\bottomheight
+    %\csname\??tk\v!bottom\c!before\endcsname
+     \scrn_menu_insert\v!bottom
+    %\csname\??tk\v!bottom\c!after\endcsname
+     \kern\zeropoint
+   \egroup
+   \vskip-\bottomheight}
+
+\appendtoks \scrn_menu_insert_content\scrn_menu_leftedge  \to \leftedgetextcontent
+\appendtoks \scrn_menu_insert_content\scrn_menu_rightedge \to \rightedgetextcontent
+\appendtoks \scrn_menu_insert_content\scrn_menu_top       \to \toptextcontent
+\appendtoks \scrn_menu_insert_content\scrn_menu_bottom    \to \bottomtextcontent
+
+%D Initialization (root definitions, main builders):
+
+\defineinteractionmenu [\v!vertical]   [\c!alternative=\v!vertical]
+\defineinteractionmenu [\v!horizontal] [\c!alternative=\v!horizontal]
+
+%D Initialization (parent definitions, 4 area builders):
+
+\defineinteractionmenu [\v!right ] [\v!right ] [\v!vertical  ]
+\defineinteractionmenu [\v!left  ] [\v!left  ] [\v!vertical  ]
+\defineinteractionmenu [\v!top   ] [\v!top   ] [\v!horizontal]
+\defineinteractionmenu [\v!bottom] [\v!bottom] [\v!horizontal]
+
+\setupinteraction
+  [\c!menu=\v!off]
+
+\setupinteractionmenu
+  [\c!offset=.25em,
+   \c!position=\v!no,
+   \c!frame=\v!on,
+   \c!maxwidth=\hsize,
+   \c!maxheight=\vsize,
+   \c!background=,
+   \c!backgroundcolor=,
+   \c!foregroundstyle=\interactionmenuparameter\c!style,
+   \c!foregroundcolor=\interactionmenuparameter\c!color,
+   \c!style=\interactionparameter\c!style,
+   \c!color=\interactionparameter\c!color,
+   \c!contrastcolor=\interactionparameter\c!contrastcolor,
+   \c!state=\v!start,
+   \c!samepage=\v!yes,
+   \c!unknownreference=\v!empty,
+   \c!distance=\bodyfontsize,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
+   \c!leftoffset=\zeropoint,
+   \c!rightoffset=\zeropoint]
+
+\setupinteractionmenu
+  [\v!vertical] % not really a menu
+  [\c!inbetween=\blank,
+   \c!before=,
+   \c!after=\vfil,
+  %\c!width=\v!fit,
+   \c!height=\v!broad]
+
+\setupinteractionmenu
+  [\v!horizontal] % not really a menu
+  [\c!middle=\hfil,
+  %\c!left=\hss,
+  %\c!right=\hss,
+   \c!width=\v!fit,
+   \c!height=\v!broad]
+
+\setupinteractionmenu
+  [\v!left]
+  [\c!itemalign=\v!flushright,
+   \c!maxwidth=\leftedgewidth,
+   \c!maxheight=\makeupheight]
+
+\setupinteractionmenu
+  [\v!right]
+  [\c!itemalign=\v!flushleft,
+   \c!maxwidth=\rightedgewidth,
+   \c!maxheight=\makeupheight]
+
+\setupinteractionmenu
+  [\v!top]
+  [\c!itemalign=\v!high,
+   \c!maxwidth=\makeupwidth,
+   \c!maxheight=\topheight]
+
+\setupinteractionmenu
+  [\v!bottom]
+  [\c!itemalign=\v!low,
+   \c!maxwidth=\makeupwidth,
+   \c!maxheight=\bottomheight]
+
+%D Lists:
+
+\setvalue{\@@dodolistelement\v!left  }{\def\dosomelistelement{\scrn_menu_list_element\v!left  }}
+\setvalue{\@@dodolistelement\v!right }{\def\dosomelistelement{\scrn_menu_list_element\v!right }}
+\setvalue{\@@dodolistelement\v!top   }{\def\dosomelistelement{\scrn_menu_list_element\v!top   }}
+\setvalue{\@@dodolistelement\v!bottom}{\def\dosomelistelement{\scrn_menu_list_element\v!bottom}}
+
+\def\scrn_menu_list_element#1#2#3#4#5#6#7%
+  {\startbut[internal(#3)]
+     \limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}\unknown%
+   \stopbut}
+
+%D Sometimes handy:
+
+\unexpanded\def\menubutton % tag settings text action
+  {\dodoubleempty\scrn_menu_menu_button}
+
+\def\scrn_button_direct_status
+  {\doifelse{\buttonparameter\c!state}\v!start
+     {\dosingleempty\scrn_button_direct_indeed}%
+     {\dosingleempty\scrn_button_direct_ignore}}
+
+\def\scrn_menu_menu_button
+  {\iflocation
+     \expandafter\scrn_menu_menu_button_indeed
+   \else
+     \expandafter\scrn_menu_menu_button_ignore
+   \fi}
+
+\def\scrn_menu_menu_button_indeed[#menutag][#settings]#text[#action]%
+  {\ifsecondargument
+     \scrn_menu_menu_button_a
+       {#menutag}{#settings}{#text}{#action}%
+   \else
+     \doifassignmentelse{#menutag}\scrn_menu_menu_button_b\scrn_menu_menu_button_c{#menutag}{#text}{#action}%
+   \fi}
+
+\def\scrn_menu_menu_button_ignore[#menutag][#settings]#text[#action]%
+  {}
+
+\def\scrn_menu_menu_button_a#tag#settings#text#action%
+  {\doif{\interactionmenuparameter\c!state}\v!start
+     {\dontleavehmode \begingroup
+        \setupinteractionmenu[#tag][#settings]%
+        \scrn_button_make\??am{#tag}\menuparameter{#text}{#action}%
+      \endgroup}}
+
+\def\scrn_menu_menu_button_b#settings#text#action%
+  {\doif{\buttonparameter\c!state}\v!start
+     {\dontleavehmode \begingroup
+        \setupbuttons[#settings]%
+        \scrn_button_make\??bt\empty\buttonparameter{#text}{#action}%
+      \endgroup}}
+
+\def\scrn_menu_menu_button_c#tag#text#action%
+  {\doif{\interactionmenuparameter\c!state}\v!start
+     {\dontleavehmode \begingroup
+        \scrn_button_make\??am{#tag}\menuparameter{#text}{#action}%
+      \endgroup}}
+
+%D Untested:
+
+\unexpanded\def\registermenubuttons
+  {\dodoubleempty\scrn_menu_register_menu_buttons}
+
+\def\scrn_menu_register_menu_buttons[#menu][#register]%
+  {\ifsecondargument
+     \ctxcommand{registerbuttons("menu","#register","\currentlanguage")}
+   \else
+     \ctxcommand{registerbuttons("","#menu","\currentlanguage")}
+   \fi}
+
+\protect \endinput

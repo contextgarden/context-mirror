@@ -220,7 +220,11 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
                 --
             elseif id == hlist_code or id == vlist_code then
-                if not reference and r and (not skip or r > skip) then
+-- somehow reference is true so teh following fails (second one not done) in
+--    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
+-- so let's wait till this fails again
+-- if not reference and r and (not skip or r > skip) then -- > or ~=
+                if r and (not skip or r > skip) then -- > or ~=
                     inject_list(id,current,r,make,stack,pardir,txtdir)
                 end
                 if r then
@@ -241,7 +245,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             elseif r == reference then
                 last = current
             elseif (done[reference] or 0) == 0 then -- or id == glue_code and current.subtype == right_skip_code
-                if not skip or r > skip then
+                if not skip or r > skip then -- maybe no > test
                     head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
                     reference, first, last, firstdir = nil, nil, nil, nil
                 end
@@ -550,33 +554,6 @@ local function checkboth(open,close)
         close = not bug and #set > 0 and set
     end
     return open, close
-end
-
--- expansion is temp hack
-
-local opendocument, closedocument, openpage, closepage
-
-local function check(what)
-    if what and what ~= "" then
-        local set, bug = references.identify("",what)
-        return not bug and #set > 0 and set
-    end
-end
-
-function references.checkopendocumentactions (open)  opendocument  = check(open)  end
-function references.checkclosedocumentactions(close) closedocument = check(close) end
-function references.checkopenpageactions     (open)  openpage      = check(open)  end
-function references.checkclosepageactions    (close) closepage     = check(close) end
-
-function references.flushdocumentactions()
-    if opendocument or closedocument then
-        codeinjections.flushdocumentactions(opendocument,closedocument) -- backend
-    end
-end
-function references.flushpageactions()
-    if openpage or closepage then
-        codeinjections.flushpageactions(openpage,closepage) -- backend
-    end
 end
 
 -- end temp hack

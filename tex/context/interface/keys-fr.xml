@@ -78,6 +78,7 @@
 		<cd:variable name='april' value='avril'/>
 		<cd:variable name='atmargin' value='alamarge'/>
 		<cd:variable name='atpage' value='alapage'/>
+		<cd:variable name='attachment' value='attachment'/>
 		<cd:variable name='august' value='aout'/>
 		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
@@ -531,6 +532,7 @@
 		<cd:constant name='after' value='apres'/>
 		<cd:constant name='afterhead' value='aprestete'/>
 		<cd:constant name='afterkey' value='aprescle'/>
+		<cd:constant name='aftersection' value='aftersection'/>
 		<cd:constant name='align' value='alignement'/>
 		<cd:constant name='aligncharacter' value='caracterealigne'/>
 		<cd:constant name='alignmentcharacter' value='alignementcaractere'/>
@@ -569,6 +571,7 @@
 		<cd:constant name='balance' value='equilibre'/>
 		<cd:constant name='before' value='avant'/>
 		<cd:constant name='beforehead' value='avanttete'/>
+		<cd:constant name='beforesection' value='beforesection'/>
 		<cd:constant name='bet' value='bet'/>
 		<cd:constant name='big' value='grand'/>
 		<cd:constant name='blank' value='vide'/>
@@ -583,6 +586,7 @@
 		<cd:constant name='bottomoffset' value='decalageinf'/>
 		<cd:constant name='bottomspace' value='espaceinf'/>
 		<cd:constant name='bottomstate' value='etatinf'/>
+		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='calculer'/>
 		<cd:constant name='category' value='category'/>
@@ -593,6 +597,7 @@
 		<cd:constant name='clipoffset' value='clipoffset'/>
 		<cd:constant name='closeaction' value='actionfermeture'/>
 		<cd:constant name='closecommand' value='closecommand'/>
+		<cd:constant name='closepage' value='closepage'/>
 		<cd:constant name='closepageaction' value='actionfermeturepage'/>
 		<cd:constant name='closesymbol' value='closesymbol'/>
 		<cd:constant name='color' value='couleur'/>
@@ -817,6 +822,7 @@
 		<cd:constant name='oddmargin' value='margepaire'/>
 		<cd:constant name='offset' value='offset'/>
 		<cd:constant name='openaction' value='actionouverture'/>
+		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='actionouverturepage'/>
 		<cd:constant name='option' value='option'/>
 		<cd:constant name='order' value='order'/>
@@ -1012,6 +1018,7 @@
 		<cd:constant name='urlalternative' value='alternativeurl'/>
 		<cd:constant name='urlspace' value='espaceurl'/>
 		<cd:constant name='validate' value='valider'/>
+		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vcommande'/>
 		<cd:constant name='veroffset' value='veroffset'/>
 		<cd:constant name='vfil' value='vfil'/>
@@ -1110,7 +1117,6 @@
 		<cd:command name='colorbar' value='barrecouleur'/>
 		<cd:command name='colorvalue' value='valeurcouleur'/>
 		<cd:command name='column' value='colonne'/>
-		<cd:command name='comment' value='commentaire'/>
 		<cd:command name='comparecolorgroup' value='comparegroupecouleur'/>
 		<cd:command name='comparepalet' value='comparepalette'/>
 		<cd:command name='completepagenumber' value='completenumeropage'/>

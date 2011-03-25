@@ -20,95 +20,21 @@ local trace_expansion  = false  trackers.register("fonts.expansion",  function(v
 local report_expansions  = logs.reporter("fonts","expansions")
 local report_protrusions = logs.reporter("fonts","protrusions")
 
-commands = commands or { }
-
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
 will depend of the font format. Here we define the few that are kind
 of neutral.</p>
 --ldx]]--
 
-local fonts = fonts
+local fonts              = fonts
+local handlers           = fonts.handlers
+local otf                = handlers.otf
 
-fonts.triggers      = fonts.triggers or { }
-local triggers      = fonts.triggers
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
 
-fonts.methods       = fonts.methods or { }
-local methods       = fonts.methods
-
-fonts.manipulators  = fonts.manipulators or { }
-local manipulators  = fonts.manipulators
-
-fonts.initializers  = fonts.initializers or { }
-local initializers  = fonts.initializers
-initializers.common = initializers.common or { }
-
-local otf = fonts.otf
-
---[[ldx--
-<p>This feature will remove inter-digit kerns.</p>
---ldx]]--
-
--- old code, no kerns set at this point, so this has to be done afterwards
---
--- table.insert(triggers,"equaldigits")
---
--- function initializers.common.equaldigits(tfmdata,value)
---     if value then
---         local chr = tfmdata.characters
---         for i = utfbyte('0'), utfbyte('9') do
---             local c = chr[i]
---             if c then
---                 c.kerns = nil
---             end
---         end
---     end
--- end
-
---[[ldx--
-<p>This feature will give all glyphs an equal height and/or depth. Valid
-values are <type>none</type>, <type>height</type>, <type>depth</type> and
-<type>both</type>.</p>
---ldx]]--
-
--- old code, no dimensions set at this point, so this has to be done afterwards
---
--- table.insert(triggers,"lineheight")
---
--- function initializers.common.lineheight(tfmdata,value)
---     if value and type(value) == "string" then
---         if value == "none" then
---             for _,v in next, tfmdata.characters do
---                 v.height, v.depth = 0, 0
---             end
---         else
---             local ascender, descender = tfmdata.ascender, tfmdata.descender
---             if ascender and descender then
---                 local ht, dp = ascender or 0, descender or 0
---                 if value == "height" then
---                     dp = 0
---                 elseif value == "depth" then
---                     ht = 0
---                 end
---                 if ht > 0 then
---                     if dp > 0 then
---                         for _,v in next, tfmdata.characters do
---                             v.height, v.depth = ht, dp
---                         end
---                     else
---                         for _,v in next, tfmdata.characters do
---                             v.height = ht
---                         end
---                     end
---                 elseif dp > 0 then
---                     for _,v in next, tfmdata.characters do
---                         v.depth  = dp
---                     end
---                 end
---             end
---         end
---     end
--- end
+local afmfeatures        = fonts.constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
 -- -- -- -- -- --
 -- shared
@@ -116,11 +42,10 @@ values are <type>none</type>, <type>height</type>, <type>depth</type> and
 
 local function get_class_and_vector(tfmdata,value,where) -- "expansions"
     local g_where = tfmdata.goodies and tfmdata.goodies[where]
-    local f_where = fonts[where]
+    local f_where = handlers[where]
     local g_classes = g_where and g_where.classes
     local f_classes = f_where and f_where.classes
     local class = (g_classes and g_classes[value]) or (f_classes and f_classes[value])
---~ print(value,class,f_where,f_classes)
     if class then
         local class_vector = class.vector
         local g_vectors = g_where and g_where.vectors
@@ -169,17 +94,26 @@ vectors['default'] = {
 
 vectors['quality'] = vectors['default'] -- metatable ?
 
-function initializers.common.expansion(tfmdata,value)
+local function initializeexpansion(tfmdata,value)
     if value then
         local class, vector = get_class_and_vector(tfmdata,value,"expansions")
         if class then
             if vector then
-                local stretch, shrink, step, factor = class.stretch or 0, class.shrink or 0, class.step or 0, class.factor or 1
+                local stretch = class.stretch or 0
+                local shrink  = class.shrink  or 0
+                local step    = class.step    or 0
+                local factor  = class.factor  or 1
                 if trace_expansion then
                     report_expansions("setting class %s, vector: %s, factor: %s, stretch: %s, shrink: %s, step: %s",
                         value,class.vector,factor,stretch,shrink,step)
                 end
-                tfmdata.stretch, tfmdata.shrink, tfmdata.step, tfmdata.auto_expand = stretch * 10, shrink * 10, step * 10, true
+                tfmdata.parameters.expansion = {
+                    stretch = 10 * stretch,
+                    shrink  = 10 * shrink,
+                    step    = 10 * step,
+                    factor  = factor,
+                    auto    = true,
+                }
                 local data = characters and characters.data
                 for i, chr in next, tfmdata.characters do
                     local v = vector[i]
@@ -211,13 +145,23 @@ function initializers.common.expansion(tfmdata,value)
     end
 end
 
-table.insert(manipulators,"expansion")
+registerotffeature {
+    name        = "expansion",
+    description = "apply hz optimization",
+    initializers = {
+        base = initializeexpansion,
+        node = initializeexpansion,
+    }
+}
 
-initializers.base.otf.expansion = initializers.common.expansion
-initializers.node.otf.expansion = initializers.common.expansion
-
-initializers.base.afm.expansion = initializers.common.expansion
-initializers.node.afm.expansion = initializers.common.expansion
+registerafmfeature {
+    name        = "expansion",
+    description = "apply hz optimization",
+    initializers = {
+        base = initializeexpansion,
+        node = initializeexpansion,
+    }
+}
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
@@ -374,10 +318,13 @@ classes['double'] = { -- for testing opbd
 }
 
 local function map_opbd_onto_protrusion(tfmdata,value,opbd)
-    local characters, descriptions = tfmdata.characters, tfmdata.descriptions
-    local otfdata = tfmdata.shared.otfdata
-    local singles = otfdata.shared.featuredata.gpos_single
-    local script, language = tfmdata.script, tfmdata.language
+    local characters   = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    local properties   = tfmdata.properties
+    local rawdata      = tfmdata.shared.rawdata
+    local lookuphash   = rawdata.lookuphash
+    local script       = properties.script
+    local language     = properties.language
     local done, factor, left, right = false, 1, 1, 1
     local class = classes[value]
     if class then
@@ -388,11 +335,11 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         factor = tonumber(value) or 1
     end
     if opbd ~= "right" then
-        local validlookups, lookuplist = otf.collectlookups(otfdata,"lfbd",script,language)
+        local validlookups, lookuplist = otf.collectlookups(rawdata,"lfbd",script,language)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = singles[lookup]
+                local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
                         report_protrusions("setting left using lfbd lookup '%s'",lookup)
@@ -411,11 +358,11 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         end
     end
     if opbd ~= "left" then
-        local validlookups, lookuplist = otf.collectlookups(otfdata,"rtbd",script,language)
+        local validlookups, lookuplist = otf.collectlookups(rawdata,"rtbd",script,language)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = singles[lookup]
+                local data = lookuphash[lookup]
                 if data then
                     if trace_protrusion then
                         report_protrusions("setting right using rtbd lookup '%s'",lookup)
@@ -441,7 +388,7 @@ end
 -- only has some kerns for digits. So, consider this feature not
 -- supported till we have a proper test font.
 
-function initializers.common.protrusion(tfmdata,value)
+local function initializeprotrusion(tfmdata,value)
     if value then
         local opbd = tfmdata.shared.features.opbd
         if opbd then
@@ -460,7 +407,12 @@ function initializers.common.protrusion(tfmdata,value)
                     end
                     local data = characters.data
                     local emwidth = tfmdata.parameters.quad
-                    tfmdata.auto_protrude = true
+                    tfmdata.parameters.protrusion = {
+                        factor = factor,
+                        left   = left,
+                        right  = right,
+                        auto   = true,
+                    }
                     for i, chr in next, tfmdata.characters do
                         local v, pl, pr = vector[i], nil, nil
                         if v then
@@ -500,61 +452,80 @@ function initializers.common.protrusion(tfmdata,value)
     end
 end
 
-table.insert(manipulators,"protrusion")
+registerotffeature {
+    name        = "protrusion",
+    description = "shift characters into the left and or right margin",
+    initializers = {
+        base = initializeprotrusion,
+        node = initializeprotrusion,
+    }
+}
 
-initializers.base.otf.protrusion = initializers.common.protrusion
-initializers.node.otf.protrusion = initializers.common.protrusion
-
-initializers.base.afm.protrusion = initializers.common.protrusion
-initializers.node.afm.protrusion = initializers.common.protrusion
+registerafmfeature {
+    name        = "protrusion",
+    description = "shift characters into the left and or right margin",
+    initializers = {
+        base = initializeprotrusion,
+        node = initializeprotrusion,
+    }
+}
 
 fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
 
 -- -- --
 
-function initializers.common.nostackmath(tfmdata,value)
-    tfmdata.ignore_stack_math = value
+local function initializenostackmath(tfmdata,value)
+    tfmdata.properties.no_stackmath = value and true
 end
 
-table.insert(manipulators,"nostackmath")
+registerotffeature {
+    name        = "nostackmath",
+    description = "disable math stacking mechanism",
+    initializers = {
+        base = initializenostackmath,
+        node = initializenostackmath,
+    }
+}
 
-initializers.base.otf.nostackmath = initializers.common.nostackmath
-initializers.node.otf.nostackmath = initializers.common.nostackmath
-
-table.insert(triggers,"itlc")
-
-function initializers.common.itlc(tfmdata,value)
+local function initializeitlc(tfmdata,value)
     if value then
         -- the magic 40 and it formula come from Dohyun Kim
-        local fontdata = tfmdata.shared.otfdata or tfmdata.shared.afmdata
-        local metadata = fontdata and fontdata.metadata
-        if metadata then
-            local italicangle = metadata.italicangle
-            if italicangle and italicangle ~= 0 then
-                local uwidth = (metadata.uwidth or 40)/2
-                for unicode, d in next, tfmdata.descriptions do
-                    local it = d.boundingbox[3] - d.width + uwidth
-                    if it ~= 0 then
-                        d.italic = it
-                    end
+        local parameters = tfmdata.parameters
+        local italicangle = parameters.italicangle
+        if italicangle and italicangle ~= 0 then
+            local uwidth = (parameters.uwidth or 40)/2
+            for unicode, d in next, tfmdata.descriptions do
+                local it = d.boundingbox[3] - d.width + uwidth
+                if it ~= 0 then
+                    d.italic = it
                 end
-                tfmdata.has_italic = true
             end
+            tfmdata.properties.italic_correction = true
         end
     end
 end
 
-initializers.base.otf.itlc = initializers.common.itlc
-initializers.node.otf.itlc = initializers.common.itlc
+registerotffeature {
+    name        = "itlc",
+    description = "italic correction",
+    initializers = {
+        base = initializeitlc,
+        node = initializeitlc,
+    }
+}
 
-initializers.base.afm.itlc = initializers.common.itlc
-initializers.node.afm.itlc = initializers.common.itlc
+registerafmfeature {
+    name        = "itlc",
+    description = "italic correction",
+    initializers = {
+        base = initializeitlc,
+        node = initializeitlc,
+    }
+}
 
 -- slanting
 
-table.insert(triggers,"slant")
-
-function initializers.common.slant(tfmdata,value)
+local function initializeslant(tfmdata,value)
     value = tonumber(value)
     if not value then
         value =  0
@@ -563,18 +534,28 @@ function initializers.common.slant(tfmdata,value)
     elseif value < -1 then
         value = -1
     end
-    tfmdata.slant_factor = value
+    tfmdata.parameters.slant_factor = value
 end
 
-initializers.base.otf.slant = initializers.common.slant
-initializers.node.otf.slant = initializers.common.slant
+registerotffeature {
+    name        = "slant",
+    description = "slant glyphs",
+    initializers = {
+        base = initializeslant,
+        node = initializeslant,
+    }
+}
 
-initializers.base.afm.slant = initializers.common.slant
-initializers.node.afm.slant = initializers.common.slant
+registerafmfeature {
+    name        = "slant",
+    description = "slant glyphs",
+    initializers = {
+        base = initializeslant,
+        node = initializeslant,
+    }
+}
 
-table.insert(triggers,"extend")
-
-function initializers.common.extend(tfmdata,value)
+local function initializeextend(tfmdata,value)
     value = tonumber(value)
     if not value then
         value =  0
@@ -583,58 +564,90 @@ function initializers.common.extend(tfmdata,value)
     elseif value < -10 then
         value = -10
     end
-    tfmdata.extend_factor = value
+    tfmdata.parameters.extend_factor = value
 end
 
-initializers.base.otf.extend = initializers.common.extend
-initializers.node.otf.extend = initializers.common.extend
-
-initializers.base.afm.extend = initializers.common.extend
-initializers.node.afm.extend = initializers.common.extend
-
--- historic stuff, move from font-ota
-
-local delete_node = nodes.delete
-local fontdata    = fonts.identifiers
-
-local nodecodes  = nodes.nodecodes
-local glyph_code = nodecodes.glyph
-
-fonts.strippables = fonts.strippables or { -- just a placeholder
-    [0x200C] = true, -- zwnj
-    [0x200D] = true, -- zwj
+registerotffeature {
+    name        = "extend",
+    description = "scale glyphs horizontally",
+    initializers = {
+        base = initializeextend,
+        node = initializeextend,
+    }
 }
 
-local strippables = fonts.strippables
+registerafmfeature {
+    name        = "extend",
+    description = "scale glyphs horizontally",
+    initializers = {
+        base = initializeextend,
+        node = initializeextend,
+    }
+}
 
-local function processformatters(head,font)
-    local how = fontdata[font].shared.features.formatters
-    if how == nil or how == "strip" then -- nil when forced
-        local current, done = head, false
-        while current do
-            if current.id == glyph_code and current.subtype<256 and current.font == font then
-                local char = current.char
-                if strippables[char] then
-                    head, current = delete_node(head,current)
-                    done = true
-                else
-                    current = current.next
-                end
-            else
-                current = current.next
-            end
-        end
-        return head, done
-    else
-        return head, false
-    end
-end
-
-methods.node.otf.formatters = processformatters
-methods.base.otf.formatters = processformatters
-
-otf.tables.features['formatters'] = 'Hide Formatting Characters'
-
-otf.features.register("formatters")
-
-table.insert(manipulators,"formatters") -- at end
+-- -- historic stuff, move from font-ota (handled differently, typo-rep)
+--
+-- local delete_node = nodes.delete
+-- local fontdata    = fonts.hashes.identifiers
+--
+-- local nodecodes  = nodes.nodecodes
+-- local glyph_code = nodecodes.glyph
+--
+-- local strippables = allocate()
+-- fonts.strippables = strippables
+--
+-- strippables.joiners = table.tohash {
+--     0x200C, -- zwnj
+--     0x200D, -- zwj
+-- }
+--
+-- strippables.all = table.tohash {
+--     0x000AD, 0x017B4, 0x017B5, 0x0200B, 0x0200C, 0x0200D, 0x0200E, 0x0200F, 0x0202A, 0x0202B,
+--     0x0202C, 0x0202D, 0x0202E, 0x02060, 0x02061, 0x02062, 0x02063, 0x0206A, 0x0206B, 0x0206C,
+--     0x0206D, 0x0206E, 0x0206F, 0x0FEFF, 0x1D173, 0x1D174, 0x1D175, 0x1D176, 0x1D177, 0x1D178,
+--     0x1D179, 0x1D17A, 0xE0001, 0xE0020, 0xE0021, 0xE0022, 0xE0023, 0xE0024, 0xE0025, 0xE0026,
+--     0xE0027, 0xE0028, 0xE0029, 0xE002A, 0xE002B, 0xE002C, 0xE002D, 0xE002E, 0xE002F, 0xE0030,
+--     0xE0031, 0xE0032, 0xE0033, 0xE0034, 0xE0035, 0xE0036, 0xE0037, 0xE0038, 0xE0039, 0xE003A,
+--     0xE003B, 0xE003C, 0xE003D, 0xE003E, 0xE003F, 0xE0040, 0xE0041, 0xE0042, 0xE0043, 0xE0044,
+--     0xE0045, 0xE0046, 0xE0047, 0xE0048, 0xE0049, 0xE004A, 0xE004B, 0xE004C, 0xE004D, 0xE004E,
+--     0xE004F, 0xE0050, 0xE0051, 0xE0052, 0xE0053, 0xE0054, 0xE0055, 0xE0056, 0xE0057, 0xE0058,
+--     0xE0059, 0xE005A, 0xE005B, 0xE005C, 0xE005D, 0xE005E, 0xE005F, 0xE0060, 0xE0061, 0xE0062,
+--     0xE0063, 0xE0064, 0xE0065, 0xE0066, 0xE0067, 0xE0068, 0xE0069, 0xE006A, 0xE006B, 0xE006C,
+--     0xE006D, 0xE006E, 0xE006F, 0xE0070, 0xE0071, 0xE0072, 0xE0073, 0xE0074, 0xE0075, 0xE0076,
+--     0xE0077, 0xE0078, 0xE0079, 0xE007A, 0xE007B, 0xE007C, 0xE007D, 0xE007E, 0xE007F,
+-- }
+--
+-- strippables[true] = strippables.joiners
+--
+-- local function processformatters(head,font)
+--     local subset = fontdata[font].shared.features.formatters
+--     local vector = subset and strippables[subset]
+--     if vector then
+--         local current, done = head, false
+--         while current do
+--             if current.id == glyph_code and current.subtype<256 and current.font == font then
+--                 local char = current.char
+--                 if vector[char] then
+--                     head, current = delete_node(head,current)
+--                     done = true
+--                 else
+--                     current = current.next
+--                 end
+--             else
+--                 current = current.next
+--             end
+--         end
+--         return head, done
+--     else
+--         return head, false
+--     end
+-- end
+--
+-- registerotffeature {
+--     name        = "formatters",
+--     description = "hide formatting characters",
+--     methods = {
+--         base = processformatters,
+--         node = processformatters,
+--     }
+-- }

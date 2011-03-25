@@ -6,32 +6,49 @@ if not modules then modules = { } end modules ['font-otd'] = {
     license   = "see context related readme files"
 }
 
-local trace_dynamics = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
+local match = string.match
 
-local report_otf = logs.reporter("fonts","otf loading")
+local trace_dynamics     = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
+local trace_applied      = false  trackers.register("otf.applied",  function(v) trace_applied      = v end)
 
-local fonts          = fonts
-local otf            = fonts.otf
-local fontdata       = fonts.identifiers
+local report_otf         = logs.reporter("fonts","otf loading")
+local report_process     = logs.reporter("fonts","otf process")
 
-otf.features         = otf.features         or { }
-otf.features.default = otf.features.default or { }
+local fonts              = fonts
+local otf                = fonts.handlers.otf
+local fontdata           = fonts.hashes.identifiers
+local definers           = fonts.definers
+local constructors       = fonts.constructors
+local specifiers         = fonts.specifiers
 
-local definers       = fonts.definers
-local contextsetups  = definers.specifiers.contextsetups
-local contextnumbers = definers.specifiers.contextnumbers
+local contextsetups      = specifiers.contextsetups
+local contextnumbers     = specifiers.contextnumbers
+local contextmerged      = specifiers.contextmerged
 
--- todo: dynamics namespace
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
 
-local a_to_script   = { }
-local a_to_language = { }
+local fontdynamics       = { }
+fonts.hashes.dynamics    = fontdynamics
 
-function otf.setdynamics(font,dynamics,attribute)
+local a_to_script        = { }
+local a_to_language      = { }
+
+setmetatable(fontdynamics, { __index =
+    function(t,font)
+        local d = fontdata[font].shared.dynamics or false
+        t[font] = d
+        return d
+    end
+})
+
+function otf.setdynamics(font,attribute)
     local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
     if features then
+        local dynamics = fontdynamics[font]
         local script   = features.script   or 'dflt'
         local language = features.language or 'dflt'
-        local ds = dynamics[script]
+        local ds = dynamics[script] -- can be metatable magic (less testing)
         if not ds then
             ds = { }
             dynamics[script] = ds
@@ -42,50 +59,160 @@ function otf.setdynamics(font,dynamics,attribute)
             ds[language] = dsl
         end
         local dsla = dsl[attribute]
-        if dsla then
-        --  if trace_dynamics then
-        --      report_otf("using dynamics %s: attribute %s, script %s, language %s",contextnumbers[attribute],attribute,script,language)
-        --  end
-            return dsla
-        else
+        if not dsla then
             local tfmdata = fontdata[font]
             a_to_script  [attribute] = script
             a_to_language[attribute] = language
             -- we need to save some values
-            local saved = {
-                script    = tfmdata.script,
-                language  = tfmdata.language,
-                mode      = tfmdata.mode,
-                features  = tfmdata.shared.features
-            }
-            tfmdata.mode     = "node"
-            tfmdata.dynamics = true -- handy for tracing
-            tfmdata.language = language
-            tfmdata.script   = script
-            tfmdata.shared.features = { }
+            local properties = tfmdata.properties
+            local shared     = tfmdata.shared
+            local s_script   = properties.script
+            local s_language = properties.language
+            local s_mode     = properties.mode
+            local s_features = shared.features
+            properties.mode     = "node"
+            properties.language = language
+            properties.script   = script
+            properties.dynamics = true -- handy for tracing
+            shared.features     = { }
             -- end of save
-            local set = definers.check(features,otf.features.default)
+            local set = constructors.checkedfeatures("otf",features)
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
                 report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,table.sequenced(set))
             end
             -- we need to restore some values
-            tfmdata.script          = saved.script
-            tfmdata.language        = saved.language
-            tfmdata.mode            = saved.mode
-            tfmdata.shared.features = saved.features
+            properties.script   = s_script
+            properties.language = s_language
+            properties.mode     = s_mode
+            shared.features     = s_features
             -- end of restore
             dynamics[script][language][attribute] = dsla -- cache
-            return dsla
+        elseif trace_dynamics then
+         -- report_otf("using dynamics %s: attribute %s, script %s, language %s",contextnumbers[attribute],attribute,script,language)
         end
+        return dsla
     end
-    return nil -- { }
 end
 
 function otf.scriptandlanguage(tfmdata,attr)
+    local properties = tfmdata.properties
     if attr and attr > 0 then
-        return a_to_script[attr] or tfmdata.script, a_to_language[attr] or tfmdata.language
+        return a_to_script[attr] or properties.script or "dflt", a_to_language[attr] or properties.language or "dflt"
     else
-        return tfmdata.script, tfmdata.language
+        return properties.script or "dflt", properties.language or "dflt"
     end
+end
+
+-- we reimplement the dataset resolver
+
+local special_attributes = {
+    init = 1,
+    medi = 2,
+    fina = 3,
+    isol = 4
+}
+
+local resolved = { } -- we only resolve a font,script,language,attribute pair once
+local wildcard = "*"
+local default  = "dflt"
+
+local function initialize(sequence,script,language,s_enabled,a_enabled,attr,dynamic)
+    local features = sequence.features
+    if features then
+        for kind, scripts in next, features do
+            local s_e = s_enabled and s_enabled[kind]
+            local a_e = a_enabled and a_enabled[kind]
+            local e_e = s_e or a_e
+            if e_e then
+                local languages = scripts[script] or scripts[wildcard]
+                if languages then
+                    local valid, what = false
+                    -- not languages[language] or languages[default] or languages[wildcard] because we want tracing
+                    -- only first attribute match check, so we assume simple fina's
+                    -- default can become a font feature itself
+                    if languages[language] then
+                        valid = true
+                        what  = language
+                 -- elseif languages[default] then
+                 --     valid = true
+                 --     what  = default
+                    elseif languages[wildcard] then
+                        valid = true
+                        what  = wildcard
+                    end
+                    if valid then
+                        local attribute = special_attributes[kind] or false
+                        if a_e and dynamic < 0 then
+                            valid = false
+                        end
+                        if trace_applied then
+                            local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
+                            report_process(
+                                "%s font: %03i, dynamic: %03i, kind: %s, lookup: %3i, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
+                                (valid and "+") or "-",font,attr or 0,kind,s,script,language,what,typ,action,sequence.name)
+                        end
+                        return { valid, attribute, sequence.chain or 0, kind }
+                    end
+                end
+            end
+        end
+        return false -- { valid, attribute, chain, "generic" } -- false anyway, could be flag instead of table
+    else
+        return false -- { false, false, chain } -- indirect lookup, part of chain (todo: make this a separate table)
+    end
+end
+
+function otf.dataset(tfmdata,sequences,font,attr)
+
+    local shared     = tfmdata.shared
+    local properties = tfmdata.properties
+
+    local script, language, s_enabled, a_enabled, dynamic
+
+    if attr and attr ~= 0 then
+        local features = contextsetups[contextnumbers[attr]] -- could be a direct list
+        language  = features.language or "dflt"
+        script    = features.script   or "dflt"
+        a_enabled = features
+        dynamic   = contextmerged[attr] or 0
+        if dynamic == 2 or dynamic == -2 then
+            -- font based
+            s_enabled = shared.features
+        end
+    else
+        language  = properties.language or "dflt"
+        script    = properties.script   or "dflt"
+        s_enabled = shared.features -- can be made local to the resolver
+        dynamic   = 0
+    end
+
+    local res = resolved[font]
+    if not res then
+        res = { }
+        resolved[font] = res
+    end
+    local rs = res[script]
+    if not rs then
+        rs = { }
+        res[script] = rs
+    end
+    local rl = rs[language]
+    if not rl then
+        rl = { }
+        rs[language] = rl
+    end
+    local ra = rl[attr]
+    if ra == nil then -- attr can be false
+        ra = { }
+        rl[attr] = ra
+        setmetatable(ra, { __index = function(t,k)
+            local v = initialize(sequences[k],script,language,s_enabled,a_enabled,attr,dynamic)
+            t[k] = v
+            return v
+        end})
+    end
+
+    return ra
+
 end

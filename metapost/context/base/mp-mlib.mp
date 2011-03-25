@@ -406,14 +406,21 @@ enddef ;
 %     fi ;
 % enddef ;
 
+def withmask primary filename =
+    withprescript "fg_mask=" & filename
+enddef ;
+
 def externalfigure primary filename =
-    if true :
-        draw rawtextext("\externalfigure[" & filename & "]")
+    if false :
+        rawtextext("\externalfigure[" & filename & "]")
     else :
         image (
             addto currentpicture doublepath unitsquare
                 withprescript "fg_name=" & filename ;
         )
+%             unitsquare
+%                 withpen pencircle scaled 0
+%                 withprescript "fg_name=" & filename
     fi
 enddef ;
 

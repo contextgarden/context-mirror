@@ -28,14 +28,15 @@ local a_preproc = attributes.private('preproc')
 
 scripts.cjk = scripts.cjk or { }
 
-local kindtonumber    = scripts.kindtonumber
-local numbertokind    = scripts.numbertokind
-local hash            = scripts.hash
-local cjk             = scripts.cjk
-local numbertodataset = scripts.numbertodataset
+local categorytonumber = scripts.categorytonumber
+local numbertocategory = scripts.numbertocategory
+local hash             = scripts.hash
+local cjk              = scripts.cjk
+local numbertodataset  = scripts.numbertodataset
 
-local fontdata = fonts.identifiers
-local quaddata = fonts.quads
+local fonthashes = fonts.hashes
+local fontdata   = fonthashes.identifiers
+local quaddata   = fonthashes.quads
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -328,12 +329,12 @@ local injectors = { -- [previous] [current]
 
 local function process(head,first,last)
     if first ~= last then
-        local lastfont, previous, originals, last = nil, "start", nil, nil
+        local lastfont, previous, last = nil, "start", nil
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
                 local a = has_attribute(first,a_prestat)
-                local current = numbertokind[a]
+                local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
@@ -353,7 +354,7 @@ local function process(head,first,last)
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
-                        local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
+                        local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"
@@ -532,12 +533,12 @@ local injectors = { -- [previous] [current]
 
 local function process(head,first,last)
     if first ~= last then
-        local lastfont, previous, originals, last = nil, "start", nil, nil
+        local lastfont, previous, last = nil, "start", nil
         while true do
             local upcoming, id = first.next, first.id
             if id == glyph_code then
                 local a = has_attribute(first,a_prestat)
-                local current = numbertokind[a]
+                local current = numbertocategory[a]
                 local action = injectors[previous]
                 if action then
                     action = action[current]
@@ -557,7 +558,7 @@ local function process(head,first,last)
                     local pid, nid = p.id, n.id
                     if pid == glyph_code and nid == glyph_code then
                         local pa, na = has_attribute(p,a_prestat), has_attribute(n,a_prestat)
-                        local pcjk, ncjk = pa and numbertokind[pa], na and numbertokind[na]
+                        local pcjk, ncjk = pa and numbertocategory[pa], na and numbertocategory[na]
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"

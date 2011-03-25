@@ -25,6 +25,9 @@
 %D
 %D Probably a \UNICODE\ issue. Beware, in \MKIV\ we have a
 %D different escaping of \type {\\}.
+%D
+%D Watch out: cf. the latest pdf specification we've changed
+%D On into Yes.
 
 \startluasetups javascript:pdfencoding
     local verbatim = context.verbatim
@@ -161,7 +164,7 @@ function Do_Vide_Field(Name, Closable) {
         v.hidden = false ;
         if (Closable) {
             v.readonly = false ;
-            v.value = "On" ;
+            v.value = "Yes" ;
         }
         this.dirty = false ;
     }
@@ -203,7 +206,7 @@ function Toggle_Hide(Name) {
 function Field_On(Name) {
     v = this.getField(Name) ;
     if (v) {
-        v.value = "On" ;
+        v.value = "Yes" ;
         this.dirty = false ;
     }
 }
@@ -219,10 +222,10 @@ function Field_Off(Name) {
 function Toggle_Value(Name) {
     var v = this.getField(Name) ;
     if (v) {
-        if (v.value == "On") {
+        if (v.value == "Yes") {
             v.value = "Off" ;
         } else {
-            v.value = "On" ;
+            v.value = "Yes" ;
         }
     }
     this.dirty = false ;
@@ -241,7 +244,7 @@ function Flip_Fields(Name) {
         v = this.getField(Names[i]) ;
         if (v) {
             v.hidden = !v.hidden ;
-            v.value = "On" ;
+            v.value = "Yes" ;
         }
     }
 }
@@ -282,7 +285,7 @@ function Set_Fields(FieldSet) {
         if (!v) {
             break ;
         } else {
-            v.value = "On" ;
+            v.value = "Yes" ;
         }
         i++ ;
     }
@@ -292,7 +295,7 @@ function Set_Field(FieldSet, FieldName) {
     Reset_Fields(FieldSet) ;
     v = this.getField(FieldSet+":"+FieldName) ;
     if (v) {
-        v.value = "On" ;
+        v.value = "Yes" ;
     }
 }
 
@@ -309,7 +312,7 @@ function Walk_Field(FieldSet) {
     while (true) {
         v = this.getField(FieldSet+":"+i) ;
         if (v) {
-            if (v.value=="On") {
+            if (v.value=="Yes") {
                 v.value = "Off" ;
                 var ii = i ;
                 ii++ ;
@@ -318,7 +321,7 @@ function Walk_Field(FieldSet) {
                     v = this.getField(FieldSet+":"+1) ;
                 }
                 if (v) {
-                    v.value = "On" ;
+                    v.value = "Yes" ;
                 }
                 break ;
             }
@@ -351,7 +354,7 @@ function Do_Next_Auto_Walk_Field(FieldSet) {
     if (fieldset) {
         var v = this.getField(FieldSet + ":" + fieldset.number) ;
         if (v) {
-            if (v.value == "On") {
+            if (v.value == "Yes") {
                 v.value = "Off" ;
             }
         }
@@ -362,7 +365,7 @@ function Do_Next_Auto_Walk_Field(FieldSet) {
             v = this.getField(FieldSet + ":" + fieldset.number) ;
         }
         if (v) {
-            v.value = "On" ;
+            v.value = "Yes" ;
         }
     }
 }
@@ -444,14 +447,14 @@ function Previous_Walk_Field(FieldSet) {
         if (fieldset.number>0) {
             var v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                if (v.value == "On") {
+                if (v.value == "Yes") {
                     v.value = "Off" ;
                 }
             }
             fieldset.number-- ;
             v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                v.value = "On" ;
+                v.value = "Yes" ;
             }
         }
     }
@@ -468,14 +471,14 @@ function Next_Walk_Field(FieldSet) {
         if (v) {
             var v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                if (v.value == "On") {
+                if (v.value == "Yes") {
                     v.value = "Off" ;
                 }
             }
             fieldset.number++ ;
             v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                v.value = "On" ;
+                v.value = "Yes" ;
             }
         }
     }

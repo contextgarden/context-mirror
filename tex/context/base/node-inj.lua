@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['node-inj'] = {
     license   = "see context related readme files"
 }
 
--- tricky ... fonts.identifiers is not yet defined .. to be solved (maybe general tex ini)
-
 -- This is very experimental (this will change when we have luatex > .50 and
 -- a few pending thingies are available. Also, Idris needs to make a few more
 -- test fonts. Btw, future versions of luatex will have extended glyph properties
@@ -21,14 +19,12 @@ local report_injections = logs.reporter("nodes","injections")
 
 local attributes, nodes, node = attributes, nodes, node
 
-fonts                    = fonts or { }
-fonts.tfm                = fonts.tfm or { }
-fonts.identifiers        = fonts.identifiers or { }
+fonts                    = fonts
+local fontdata           = fonts.hashes.identifiers
 
 nodes.injections         = nodes.injections or { }
 local injections         = nodes.injections
 
-local fontdata           = fonts.identifiers
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local nodepool           = nodes.pool
@@ -180,10 +176,11 @@ end
 -- todo: reuse tables (i.e. no collection), but will be extra fields anyway
 -- todo: check for attribute
 
+-- we can have a fast test on a font being processed, so we can check faster for marks etc
+
 function injections.handler(head,where,keep)
     local has_marks, has_cursives, has_kerns = next(marks), next(cursives), next(kerns)
     if has_marks or has_cursives then
---~     if has_marks or has_cursives or has_kerns then
         if trace_injections then
             trace(head)
         end
@@ -191,18 +188,19 @@ function injections.handler(head,where,keep)
         local done, ky, rl, valid, cx, wx, mk, nofvalid = false, { }, { }, { }, { }, { }, { }, 0
         if has_kerns then -- move outside loop
             local nf, tm = nil, nil
-            for n in traverse_id(glyph_code,head) do
+            for n in traverse_id(glyph_code,head) do -- only needed for relevant fonts
                 if n.subtype < 256 then
                     nofvalid = nofvalid + 1
                     valid[nofvalid] = n
                     if n.font ~= nf then
                         nf = n.font
-                        tm = fontdata[nf].marks
+                        tm = fontdata[nf].resources.marks
                     end
-                    mk[n] = tm[n.char]
+                    if tm then
+                        mk[n] = tm[n.char]
+                    end
                     local k = has_attribute(n,kernpair)
                     if k then
---~ unset_attribute(k,kernpair)
                         local kk = kerns[k]
                         if kk then
                             local x, y, w, h = kk[2] or 0, kk[3] or 0, kk[4] or 0, kk[5] or 0
@@ -226,9 +224,11 @@ function injections.handler(head,where,keep)
                     valid[nofvalid] = n
                     if n.font ~= nf then
                         nf = n.font
-                        tm = fontdata[nf].marks
+                        tm = fontdata[nf].resources.marks
                     end
-                    mk[n] = tm[n.char]
+                    if tm then
+                        mk[n] = tm[n.char]
+                    end
                 end
             end
         end
@@ -322,12 +322,18 @@ function injections.handler(head,where,keep)
                                 if d then
                                     local rlmode = d[3]
                                     if rlmode and rlmode > 0 then
-                                        -- new per 2010-10-06
+                                        -- new per 2010-10-06, width adapted per 2010-02-03
+                                        -- we used to negate the width of marks because in tfm
+                                        -- that makes sense but we no longer do that so as a
+                                        -- consequence the sign of p.width was changed (we need
+                                        -- to keep an eye on it as we don't have that many fonts
+                                        -- that enter this branch .. i'm still not sure if this
+                                        -- one is right
                                         local k = wx[p]
-                                        if k then -- maybe (d[1] - p.width) and/or + k[2]
-                                            n.xoffset = p.xoffset - (p.width - d[1]) - k[2]
+                                        if k then
+                                            n.xoffset = p.xoffset + p.width + d[1] - k[2]
                                         else
-                                            n.xoffset = p.xoffset - (p.width - d[1])
+                                            n.xoffset = p.xoffset + p.width + d[1]
                                         end
                                     else
                                         local k = wx[p]

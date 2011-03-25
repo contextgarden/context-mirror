@@ -285,22 +285,10 @@
 % regels iets verder uit elkaar gezet. Jammer. Italic fonts
 % hebben grotere cijfers en vallen min of meer uit de boot.
 
-\newif\ifloweredsubscripts
-
-% Due to some upward incompatibality of LaTeX to LaTeX2.09
-% and/or LaTeX2e we had to force \@@dochemicalstyle. Otherwise
-% some weird \nullfont error comes up.
-
-\def\beginlatexmathmodehack
-  {\ifmmode
-     \let\endlatexmathmodehack=\relax
-   \else
-     \def\endlatexmathmodehack{$}$\@@dochemicalstyle\empty
-   \fi}
+\newif\ifloweredsubscripts % this will be redone in the mkiv ways
 
 \def\setsubscripts
-  {\beginlatexmathmodehack
-   \def\dosetsubscript##1##2##3%
+  {\def\dosetsubscript##1##2##3%
      {\dimen0=##3\fontexheight##2%
       \setxvalue{@@\string##1\string##2}{\the##1##2\relax}%
       ##1##2=\dimen0\relax}%
@@ -311,12 +299,10 @@
    %dodosetsubscript\mathsupnormal  {?}%
    \dodosetsubscript\mathsubnormal  {.7}%
    \dodosetsubscript\mathsubcombined{.7}%
-   \global\loweredsubscriptstrue
-   \endlatexmathmodehack}
+   \global\loweredsubscriptstrue}
 
 \def\resetsubscripts
   {\ifloweredsubscripts
-     \beginlatexmathmodehack
      \def\doresetsubscript##1##2%
        {\dimen0=\getvalue{@@\string##1\string##2}\relax
         ##1##2=\dimen0}%
@@ -328,7 +314,6 @@
      \dodoresetsubscript\mathsubnormal
      \dodoresetsubscript\mathsubcombined
      \global\loweredsubscriptsfalse
-     \endlatexmathmodehack
    \fi}
 
 \ifx\Umathchar\undefined \else
@@ -392,11 +377,8 @@
 \def\dowithchemical%
   {}
 
-\doifdefinedelse{@@iastate}
-  {\def\localgotochemical#1#2{\naarbox{#2}[#1]}%
-   \def\localthisischemical#1{\pagereference[#1]}}
-  {\def\localgotochemical#1{}%
-   \def\localthisischemical#1{}}
+\def\localgotochemical#1#2{\gotobox{#2}[#1]}
+\def\localthisischemical#1{\pagereference[#1]}
 
 % eind van experiment
 

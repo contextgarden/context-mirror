@@ -28,7 +28,7 @@ local definitions       = collections.definitions
 collections.vectors     = collections.vectors or { }
 local vectors           = collections.vectors
 
-local fontdata          = fonts.identifiers
+local fontdata          = fonts.hashes.identifiers
 
 local glyph = node.id('glyph')
 
@@ -67,7 +67,7 @@ function collections.define(name,font,ranges,details)
     end
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
-    for s in gmatch(ranges,"([^, ]+)") do
+    for s in gmatch(ranges,"[^, ]+") do
         local start, stop, description = characters.getrange(s)
         if start and stop then
             if trace_collecting then
@@ -162,7 +162,7 @@ function collections.prepare(name)
     local d = definitions[name]
     if d then
         if trace_collecting then
-            local filename = file.basename(fontdata[current].filename or "?")
+            local filename = file.basename(fontdata[current].properties.filename or "?")
             report_fonts("def: applying collection %s to %s (file: %s)",name,current,filename)
         end
         list = { }
@@ -181,7 +181,7 @@ function collections.prepare(name)
         context.doclonefontstagetwo(name) -- preparing clone vectors
         context.dostopcloningfonts()
     elseif trace_collecting then
-        local filename = file.basename(fontdata[current].filename or "?")
+        local filename = file.basename(fontdata[current].properties.filename or "?")
         report_fonts("def: error in applying collection %s to %s (file: %s)",name,current,filename)
     end
 end

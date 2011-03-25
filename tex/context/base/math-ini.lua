@@ -367,30 +367,135 @@ function mathematics.big(tfmdata,unicode,n)
     return unicode
 end
 
--- plugins
+-- plugins (will be proper handler, once we have separated generic from context)
 
-local hvars = table.tohash {
-    --~ "RadicalKernBeforeDegree",
-    --~ "RadicalKernAfterDegree",
+local sequencers    = utilities.sequencers
+local appendgroup   = sequencers.appendgroup
+local appendaction  = sequencers.appendaction
+local mathprocessor = nil
+
+local mathactions = sequencers.reset {
+    arguments = "target,original,directives",
 }
 
-function mathematics.scaleparameters(t,tfmtable,delta,hdelta,vdelta)
-    local mathparameters = tfmtable.mathparameters
+function fonts.constructors.mathactions(original,target,directives)
+    if mathactions.dirty then -- maybe use autocompile
+        mathprocessor = sequencers.compile(mathactions)
+    end
+    mathprocessor(original,target,directives or {})
+end
+
+appendgroup(mathactions,"before") -- user
+appendgroup(mathactions,"system") -- private
+appendgroup(mathactions,"after" ) -- user
+
+function mathematics.initializeparameters(target,original,directives)
+    local mathparameters = original.mathparameters
     if mathparameters and next(mathparameters) then
-        delta = delta or 1
-        hdelta, vdelta = hdelta or delta, vdelta or delta
         local _, mp = mathematics.dimensions(mathparameters)
-        for name, value in next, mp do
-            if name == "RadicalDegreeBottomRaisePercent" then
-                mp[name] = value
-            elseif hvars[name] then
-                mp[name] = hdelta * value
-            else
-                mp[name] = vdelta * value
-            end
-        end
-        t.MathConstants = mp
+        target.mathparameters = mp -- for ourselves
+        target.MathConstants = mp -- for luatex
     end
 end
 
-table.insert(fonts.tfm.mathactions,mathematics.scaleparameters)
+sequencers.appendaction(mathactions,"system","mathematics.initializeparameters")
+
+local how = {
+ -- RadicalKernBeforeDegree         = "horizontal",
+ -- RadicalKernAfterDegree          = "horizontal",
+    RadicalDegreeBottomRaisePercent = "unscaled"
+}
+
+function mathematics.scaleparameters(target,original,directives)
+    if not directives.disablescaling then
+        local mathparameters = target.mathparameters
+        if mathparameters and next(mathparameters) then
+            local parameters = target.parameters
+            local factor  = parameters.factor
+            local hfactor = parameters.hfactor
+            local vfactor = parameters.vfactor
+            for name, value in next, mathparameters do
+                local h = how[name]
+                if h == "unscaled" then
+                    mathparameters[name] = value
+                elseif h == "horizontal" then
+                    mathparameters[name] = value * hfactor
+                elseif h == "vertical"then
+                    mathparameters[name] = value * vfactor
+                else
+                    mathparameters[name] = value * factor
+                end
+            end
+        end
+    end
+end
+
+sequencers.appendaction(mathactions,"system","mathematics.scaleparameters")
+
+function mathematics.checkaccentbaseheight(target,original,directives)
+    local MathConstants = target.MathConstants
+    if MathConstants then
+        MathConstants.AccentBaseHeight = nil -- safeguard
+    end
+end
+
+sequencers.appendaction(mathactions,"system","mathematics.checkaccentbaseheight")
+
+function mathematics.checkprivateparameters(target,original,directives)
+    local MathConstants = target.MathConstants
+    if MathConstants then
+        if not MathConstants.FractionDelimiterSize then
+            MathConstants.FractionDelimiterSize = 0
+        end
+        if not MathConstants.FractionDelimiterDisplayStyleSize then
+            MathConstants.FractionDelimiterDisplayStyleSize = 0
+        end
+    end
+end
+
+sequencers.appendaction(mathactions,"system","mathematics.checkprivateparameters")
+
+function mathematics.overloadparameters(target,original,directives)
+    local mathparameters = target.mathparameters
+    if mathparameters and next(mathparameters) then
+        local goodies = target.goodies
+        if goodies then
+            for i=1,#goodies do
+                local goodie = goodies[i]
+                local mathematics = goodie.mathematics
+                local parameters  = mathematics and mathematics.parameters
+                if parameters then
+                    if trace_defining then
+                        report_math("overloading math parameters in '%s' @ %s",target.properties.fullname,target.parameters.size)
+                    end
+                    for name, value in next, parameters do
+                        local tvalue = type(value)
+                        if tvalue == "string" then
+                            report_math("comment for math parameter '%s': %s",name,value)
+                        else
+                            local oldvalue = mathparameters[name]
+                            local newvalue = oldvalue
+                            if oldvalue then
+                                if tvalue == "number" then
+                                    newvalue = value
+                                elseif tvalue == "function" then
+                                    newvalue = value(oldvalue,target,original)
+                                elseif not tvalue then
+                                    newvalue = nil
+                                end
+                                if trace_defining and oldvalue ~= newvalue then
+                                    report_math("overloading math parameter '%s': %s => %s",name,tostring(oldvalue),tostring(newvalue))
+                                end
+                            else
+                                report_math("invalid math parameter '%s'",name)
+                            end
+                            mathparameters[name] = newvalue
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+sequencers.appendaction(mathactions,"system","mathematics.overloadparameters")

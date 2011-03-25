@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.02.25 22:03}
+\edef\contextversion{2011.03.25 18:03}
 
 %D For those who want to use this:
 
@@ -37,7 +37,8 @@
 \def\loadcorefile#1{\normalinput#1\relax}
 \def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
 \def\loadmkiifile#1{}
-\def\loadmkivfile#1{\normalinput#1\relax}
+\def\loadmkivfile#1{\normalinput#1.mkiv\relax}
+\def\loadmkvifile#1{\normalinput#1.mkvi\relax}
 
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. We start with setting up some basic \TEX\
@@ -134,7 +135,7 @@
 \loadmarkfile{trac-tex}
 \loadmarkfile{trac-deb}
 
-\loadmarkfile{blob-ini} % not to be used, we only use a helper
+%loadmarkfile{blob-ini} % not to be used, we only use a helper
 
 \loadmarkfile{supp-box}
 
@@ -183,6 +184,7 @@
 
 \loadmarkfile{sort-ini}
 
+\loadmkvifile{pack-mis}
 \loadmarkfile{pack-rul}
 
 \loadmarkfile{lxml-ini}
@@ -216,7 +218,9 @@
 
 \loadmarkfile{anch-pos}
 
-\loadmarkfile{scrn-nav}
+\loadmkvifile{scrn-ini}
+\loadmkvifile{scrn-ref}
+
 \loadmarkfile{pack-obj}
 
 \loadmarkfile{strc-itm}
@@ -268,10 +272,11 @@
 \loadmarkfile{page-sel} % optional
 \loadmarkfile{page-com} % optional
 
-\loadmarkfile{scrn-int}
-\loadmarkfile{scrn-men}
-\loadmarkfile{scrn-but}
-\loadmarkfile{scrn-bar}
+\loadmkvifile{scrn-pag}
+\loadmkvifile{scrn-wid}
+\loadmkvifile{scrn-but}
+\loadmkvifile{scrn-bar}
+
 \loadmarkfile{strc-bkm} % bookmarks
 
 \loadmarkfile{tabl-com}
@@ -287,8 +292,8 @@
 
 \loadmarkfile{java-ini}
 
-\loadmarkfile{scrn-fld}
-\loadmarkfile{scrn-hlp}
+\loadmkvifile{scrn-fld}
+\loadmkvifile{scrn-hlp}
 
 \loadmarkfile{char-enc}
 \loadmarkfile{font-ini}
@@ -297,6 +302,8 @@
 \loadmarkfile{font-uni}
 \loadmarkfile{font-col}
 \loadmarkfile{font-gds}
+
+\loadmarkfile{blob-ini} % not to be used, we only use a helper
 
 \loadmarkfile{typo-cln}
 \loadmarkfile{typo-spa}
@@ -315,9 +322,6 @@
 \loadmarkfile{scrp-ini}
 
 \loadmarkfile{prop-ini} % only for downward compatibility
-%loadmarkfile{prop-lay}
-%loadmarkfile{prop-neg}
-%loadmarkfile{prop-eff}
 
 \loadmarkfile{mlib-ctx}
 

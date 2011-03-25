@@ -1243,47 +1243,6 @@
 %  % \setnewconstant\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
 %  % \setnewconstant\marginpagecheckmethod \plusone   % splitmethod
 
-%D For a right menu, a sequence of calls to \type
-%D {right_menu_button} is generated.
-%D
-%D \starttyping
-%D right_menu_button (n, p, s=0/1/2, x, y, w, h, d) ;
-%D \stoptyping
-%D
-%D Here, n is the number of the button, s a status variable,
-%D while the rest is positional info. The status variable is
-%D 0, 1 or~2: not found, found and found but current page.
-
-% 0=not found 1=found 2=current page
-
-% geen leeg
-
-\newtoks\MPmenutoks
-
-\def\MPmenubuttons#1{\the\MPmenutoks}
-
-\appendtoks \global\MPmenutoks\emptytoks \to \everyshipout
-
-\newconstant\currentamrealpagemode % 0=notfound  1=found  2=currentpage
-
-\def\domenuitemposition#1#2#3%
-  {\doifelsevalue{\??am#1\c!position}\v!yes
-     {\doglobal\increment\currentamposition
-      \doifreferencefoundelse{#2}% 0=not found, 1=same page, >1=elsewhere
-        {\currentamrealpagemode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
-        {\currentamrealpagemode\plustwo}%
-      \expanded % \doglobal\appendetoks
-        {\doglobal\noexpand\appendtoks
-           #1_menu_button(\number\currentamposition,\the\currentamrealpagemode,\MPpos{#1:\currentamposition}) ;
-         \to \MPmenutoks}%
-      \hpos{#1:\currentamposition}{#3}}
-     {#3}}
-
-\def\dowholemenuposition#1%
-  {\ifnum\currentamposition>0
-     \dowithnextbox{\hpos{menu:#1:\the\realpageno}{\flushnextbox}}\hbox
-   \fi}
-
 %D \macros
 %D   {GFC, GTC, GSC}
 %D

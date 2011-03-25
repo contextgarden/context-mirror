@@ -328,6 +328,16 @@
    \box\scratchbox
    \egroup}
 
+%D \macros
+%D   {overlayfakebox}
+
+\def\overlayfakebox
+  {\hbox
+     {\setbox\scratchbox\emptyhbox
+      \wd\scratchbox\overlaywidth
+      \ht\scratchbox\overlayheight
+      \box\scratchbox}}
+
 %D The empty case is:
 
 \let\executeoverlay\gobblesevenarguments
@@ -2146,10 +2156,12 @@
 %D
 %D \showsetup{blackrule}
 
-\def\complexblackrule[#1]%
+\definecomplexorsimple\blackrule
+
+\unexpanded\def\complexblackrule[#1]%
   {\hbox\bgroup\getparameters[\??bj][#1]\domakeblackrule\egroup}
 
-\def\simpleblackrule
+\unexpanded\def\simpleblackrule
   {\hbox\bgroup\domakeblackrule\egroup}
 
 \def\domakeblackrule
@@ -2162,8 +2174,6 @@
        \!!height\@@bjheight
        \!!depth \@@bjdepth
    \stopcolor}
-
-\definecomplexorsimple\blackrule
 
 %D \macros
 %D   {blackrules}
@@ -2686,77 +2696,124 @@
 %D
 %D The next definition shows the defaults.
 
-\def\dodefineframedtext[#1][#2]%
-  {\presetlocalframed[\??kd#1]%
-   \getparameters[\??kd#1]
-     [\c!width=0.75\hsize,
-      \c!height=\v!fit,
-      \c!align=\v!yes,
-      \c!top=,
-      \c!bottom=\vfill,
-      \c!offset=1em,
-      \c!bodyfont=,
-      \c!style=,
-      \c!color=,
-      \c!left=,
-      \c!right=\hfill,
-      \c!before=\blank,
-      \c!after=\blank,
-      \c!inner=,
-      \c!frame=\v!on,
-      \c!topframe=,
-      \c!bottomframe=,
-      \c!leftframe=,
-      \c!rightframe=,
-      \c!radius=.5\bodyfontsize,
-      \c!corner=\v!rectangular,
-      \c!foregroundcolor=,
-      \c!foregroundstyle=,
-      \c!background=,
-      \c!backgroundcolor=,
-      \c!backgroundscreen=\@@rsscreen,
-      \c!linecorrection=\v!on,
-      \c!depthcorrection=\v!on,
-      \c!margin=\v!standard,
-      \c!orientation=,
-      \c!indenting=,
-      #2]%
-   \setuvalue{\e!start#1}{\dostartframedtext[#1]}%
-   \setuvalue{\e!stop #1}{\dostopframedtext     }%
-   \setuvalue        {#1}{\doframedtext     [#1]}}
+\installcommandhandler \??kd {framedtext} \??kd
 
-\unexpanded\def\defineframedtext
-  {\dodoubleempty\dodefineframedtext}
+\let\setupframedtexts\setupframedtext
+
+\presetlocalframed[\??kd]
+
+\setupframedtext
+  [\c!width=0.75\hsize,
+   \c!height=\v!fit,
+   \c!align=\v!yes,
+  %\c!top=,
+   \c!bottom=\vfill,
+   \c!offset=1em,
+  %\c!bodyfont=,
+  %\c!style=,
+  %\c!color=,
+  %\c!left=,
+   \c!right=\hfill,
+   \c!before=\blank,
+   \c!after=\blank,
+  %\c!inner=,
+   \c!frame=\v!on,
+  %\c!topframe=,
+  %\c!bottomframe=,
+  %\c!leftframe=,
+  %\c!rightframe=,
+   \c!radius=.5\bodyfontsize,
+   \c!corner=\v!rectangular,
+  %\c!orientation=,
+  %\c!indenting=,
+  %\c!foregroundcolor=,
+  %\c!foregroundstyle=,
+  %\c!background=,
+  %\c!backgroundcolor=,
+   \c!backgroundscreen=\@@rsscreen,
+   \c!linecorrection=\v!on,
+   \c!depthcorrection=\v!on,
+   \c!margin=\v!standard]
+
+\appendtoks
+    \setuevalue{\e!start\currentframedtext}{\dostartframedtext{\currentframedtext}}%
+    \setuevalue{\e!stop \currentframedtext}{\dostopframedtext                     }%
+    \setuevalue        {\currentframedtext}{\doframedtext     {\currentframedtext}}%
+\to \everydefineframedtext
+
+\unexpanded\def\dostartframedtext#1%
+  {\bgroup
+   \edef\currentframedtext{#1}%
+   \dodoubleempty\dodostartframedtext}
+
+\def\dodostartframedtext[#1][#2]%
+  {\doifassignmentelse{#1}
+     {\dododostartframedtext[][#1]}
+     {\dododostartframedtext[#1][#2]}}
+
+\def\dododostartframedtext[#1][#2]% #2 only passed to framed, not to framedtext
+  {\setupframedtexts[\currentframedtext][#2]%
+   \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
+   \setfalse\framedtextlocationnone
+   % somewhat messy ... needs to be redone
+   \processaction % \v!low en \v!depth are already taken !
+     [\framedtextparameter\c!location]
+     [   \v!left=>\letframedtextparameter\c!left \relax
+                  \letframedtextparameter\c!right\hfill,
+        \v!right=>\letframedtextparameter\c!left \hfill
+                  \letframedtextparameter\c!right\relax,
+       \v!middle=>\letframedtextparameter\c!left \hfill
+                  \letframedtextparameter\c!right\hfill,
+         \v!none=>\letframedtextparameter\c!left \relax % new
+                  \letframedtextparameter\c!right\relax % new
+                  \settrue\framedtextlocationnone]%
+   \resetframedtextparameter\c!location
+   % removed 06/2001
+   % \forgetparindent
+   % added 06/2001 [see demo-bbv]
+   \localhsize\hsize \checkframedtext
+   % so far
+   \setbox\framebox\vbox
+     \startboxedcontent
+       \hsize\localhsize
+    %  \insidefloattrue % ? better
+       \normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
+       \startcolor[\framedtextparameter\c!color]%
+       \localframed[\??kd\currentframedtext][\c!strut=\v!no]% todo: use delayedstrut
+       \bgroup
+         \let\\=\endgraf
+         \framedtextparameter\c!inner % oud spul
+         \doif{\framedtextparameter\c!depthcorrection}\v!on\doftstartdepthcorrection
+         \doinhibitblank % \blank[\v!disable]% plaatst signal
+         \setupindenting[\framedtextparameter\c!indenting]%
+        %\doconvertfont{\framedtextparameter\c!style}\empty} %%%%% todo: attr setter
+         \dosetframedtextattributes\c!style\c!color}
+
+%D The \type {none} option is handy for nested usage, as
+%D in the presentation styles, where we don't want
+%D interference.
+
+\defineplacement[\??kd][\s!parent=\??kd\currentframedtext]
+
+\unexpanded\def\dostopframedtext % no \baselinecorrection, see faq docs
+  {\endgraf
+   \removelastskip
+   \doif{\framedtextparameter\c!depthcorrection}\v!on\doftstopdepthcorrection
+   \stopboxedcontent
+   \stopcolor
+   \ifconditional\framedtextlocationnone
+     \egroup
+     \box\framebox
+   \else\ifinsidefloat
+     \egroup
+     \box\framebox
+   \else
+     \egroup
+     \placement[\??kd][\c!depthcorrection=\v!off]{\box\framebox}%
+   \fi\fi
+   \egroup}
 
 %D We define the general (and original) case by just saying:
-
-\defineframedtext[\v!framedtext]
-
-%D We need several steps before the actual job is done,
-%D because we have to handle an optional identifier (and
-%D because these commands evolved out of a single case).
-
-\def\framedtextparameter#1#2% todo: currentframedtext
-  {\csname\??kd#1#2\endcsname}
-
-\def\dosetupframedtexts[#1][#2]%
-  {\ifsecondargument
-     \def\docommand##1{\getparameters[\??kd##1][#2]}%
-     \processcommacommand[#1]\docommand % new, #1 may be macro
-   \else
-     \getparameters[\??kd\v!framedtext][#1]%
-   \fi}
-
-\unexpanded\def\setupframedtexts
-  {\dodoubleempty\dosetupframedtexts}
-
-\def\dostartframedtext
-  {\bgroup\dotripleempty\dodostartframedtext}
-
-\def\dodostartframedtext[#1][#2][#3]%
-  {\doifassignmentelse{#2}
-     {\dododostartframedtext[#1][][#2]}
-     {\dododostartframedtext[#1][#2][#3]}}
 
 \setfalse\framedtextlocationnone
 
@@ -2793,64 +2850,6 @@
    % \donegbotbaselinecorrection
    \verticalstrut}
 
-\def\dododostartframedtext[#1][#2][#3]% #3 only passed to framed, not to framedtext
-  {\doifsomething{#2}{\setvalue{\??kd#1\c!location}{#2}}% does not listen to #3
-   \setfalse\framedtextlocationnone
-   \processaction % \v!low en \v!depth are already taken !
-     [\framedtextparameter{#1}\c!location]
-     [   \v!left=>\letvalue{\??kd#1\c!left }\relax
-                  \letvalue{\??kd#1\c!right}\hfill,
-        \v!right=>\letvalue{\??kd#1\c!left }\hfill
-                  \letvalue{\??kd#1\c!right}\relax,
-       \v!middle=>\letvalue{\??kd#1\c!left }\hfill
-                  \letvalue{\??kd#1\c!right}\hfill,
-         \v!none=>\letvalue{\??kd#1\c!left }\relax % new
-                  \letvalue{\??kd#1\c!right}\relax % new
-                  \settrue\framedtextlocationnone]%
-   \letvalueempty{\??kd#1\c!location}%
-   % removed 06/2001
-   % \forgetparindent
-   % added 06/2001 [see demo-bbv]
-   \localhsize\hsize \checkframedtext
-   % so far
-   \setbox\framebox\vbox
-     \startboxedcontent
-       \hsize\localhsize
-    %  \insidefloattrue % ? better
-       \normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter{#1}\c!bodyfont]}%
-       \startcolor[\framedtextparameter{#1}\c!color]%
-       \localframed[\??kd#1][\c!strut=\v!no,#3]% todo: use delayedstrut
-       \bgroup
-         \let\\=\endgraf
-         \framedtextparameter{#1}\c!inner % oud spul
-         \doifvalue{\??kd#1\c!depthcorrection}\v!on\doftstartdepthcorrection
-         \doinhibitblank % \blank[\v!disable]% plaatst signal
-         \setupindenting[\framedtextparameter{#1}\c!indenting]%
-         \doconvertfont{\framedtextparameter{#1}\c!style}\empty
-         \def\dostopframedtext{\dodostopframedtext{#1}{#2}}}
-
-%D The \type {none} option is handy for nested usage, as
-%D in the presentation styles, where we don't want
-%D interference.
-
-\def\dodostopframedtext#1#2% % no \baselinecorrection, see faq docs
-  {\endgraf
-   \removelastskip
-   \doifvalue{\??kd#1\c!depthcorrection}\v!on\doftstopdepthcorrection
-   \stopboxedcontent
-   \stopcolor
-   \ifconditional\framedtextlocationnone
-     \egroup
-     \box\framebox
-   \else\ifinsidefloat
-     \egroup
-     \box\framebox
-   \else
-     \egroup
-     \doplacement[\??kd#1][\c!depthcorrection=\v!off]{\box\framebox}%
-   \fi\fi
-   \egroup}
-
 %D Placement can be ignored:
 %D
 %D \starttyping
@@ -2869,17 +2868,19 @@
 %D The simple brace (or group) delimited case is typeset
 %D slightly different and is not aligned.
 
-\def\doframedtext
-  {\bgroup\dodoubleempty\dodoframedtext}
+\unexpanded\def\doframedtext#1%
+  {\bgroup
+   \edef\currentframedtext{#1}%
+   \dosingleempty\dodoframedtext}
 
-\def\dodoframedtext[#1][#2]% beware!
-  {\normalexpanded{\noexpand\switchtobodyfont[\getvalue{\??kd#1\c!bodyfont}]}%
-   \localframed[\??kd#1][\c!strut=\v!no,#2]%
+\def\dodoframedtext[#1]% beware!
+  {\normalexpanded{\noexpand\switchtobodyfont[\\framedtextparameter\c!bodyfont]}%
+   \localframed[\??kd\currentframedtext][\c!strut=\v!no,#1]%
      \bgroup
        \blank[\v!disable]%
        \let\\=\endgraf
-       \getvalue{\??kd#1\c!inner}%   % kleur naar outer level
-       \dostartattributes{\??kd#1}\c!style\c!color\empty
+       \framedtextparameter\c!inner
+       \dosetframedtextattributes\c!style\c!color
        \bgroup
        \aftergroup\docloseframedtext
        \let\next=}
@@ -2889,6 +2890,8 @@
    \dostopattributes
    \egroup
    \egroup}
+
+\defineframedtext[\v!framedtext]
 
 %D \macros
 %D   {defineframed}
@@ -2901,17 +2904,6 @@
 %D model instead of passing a combination of arguments. This also
 %D also simplified the \type {\setupframed} command. There are
 %D certainly more places where such improvements can be made.
-
-% \unexpanded\def\defineframed
-%   {\dodoubleempty\dodefineframed}
-%
-% \def\dodefineframed[#1][#2]%
-%   {\iffirstargument
-%      \setuvalue{#1}{\dodoubleempty\doframed[#2]}%
-%    \fi}
-%
-% \def\doframed[#1][#2]%
-%   {\framed[#1,#2]}
 
 \def\defineframed
   {\dodoubleempty\dodefineframed}

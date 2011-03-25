@@ -27,7 +27,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- fi    Finish         ...
 -- fr    French         Daniel Flipo, Arthur Reutenauer
 -- gr    Greek          Apostolos Syropoulos, Thomas Schmitz
--- hr    Croatian       Željko Vrba, Richard Gabriel
+-- hr    Croatian       Željko Vrba, Richard Gabriel, Vedran Miletić
 -- hu    Hungarian      ...
 -- it    Italian        Giuseppe Bilotta, Luigi Scarso
 -- ja    Japanese       Richard Gabriel
@@ -71,30 +71,35 @@ data.labels={
   arccos={
    labels={
     en="arccos",
+    hr="arc\\sixperemspace cos",
     pl="arc\\sixperemspace cos",
    },
   },
   arcctg={
    labels={
     en="arccot",
+    hr="arc\\sixperemspace ctg",
     pl="arc\\sixperemspace ctg",
    },
   },
   arcsin={
    labels={
     en="arcsin",
+    hr="arc\\sixperemspace sin",
     pl="arc\\sixperemspace sin",
    },
   },
   arctan={
    labels={
     en="arctan",
+    hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
    },
   },
   arctg={
    labels={
     en="arctan",
+    hr="arc\\sixperemspace tg",
     pl="arc\\sixperemspace tg",
    },
   },
@@ -116,6 +121,7 @@ data.labels={
   cot={
    labels={
     en="cot",
+    hr="ctg",
     pl="ctg",
    },
   },
@@ -132,6 +138,7 @@ data.labels={
   ctg={
    labels={
     en="cot",
+    hr="ctg",
     pl="ctg",
    },
   },
@@ -158,6 +165,7 @@ data.labels={
   gcd={
    labels={
     en="gcd",
+    hr="nzd",
     nl="ggd",
    },
   },
@@ -184,6 +192,7 @@ data.labels={
   lcm={
    labels={
     en="lcm",
+    hr="nzv",
     nl="kgv",
    },
   },
@@ -265,6 +274,7 @@ data.labels={
   tan={
    labels={
     en="tan",
+    hr="tg",
     pl="tg",
    },
   },
@@ -276,6 +286,7 @@ data.labels={
   tg={
    labels={
     en="tan",
+    hr="tg",
     pl="tg",
    },
   },
@@ -293,7 +304,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="i",
     hu="",
     it="",
     la="",
@@ -403,7 +414,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="tra",
     hu="",
     it="",
     la="",
@@ -510,7 +521,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="kol",
     hu="",
     it="",
     la="",
@@ -550,7 +561,7 @@ data.labels={
     hu=",. fejezet:",
     it="",
     ja={"第","章"},
-    kr={"제", "장"},
+    kr={"제","장"},
     la="",
     lt="",
     nb="",
@@ -581,7 +592,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr=" (nastavak)",
     hu="",
     it="",
     la="",
@@ -653,7 +664,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="pro",
     hu="",
     it="",
     la="",
@@ -725,7 +736,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="velj",
     hu="",
     it="",
     la="",
@@ -1013,7 +1024,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="sij",
     hu="",
     it="",
     la="",
@@ -1086,7 +1097,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="srp",
     hu="",
     it="",
     la="",
@@ -1158,7 +1169,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="lip",
     hu="",
     it="",
     la="",
@@ -1303,7 +1314,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="ožu",
     hu="",
     it="",
     la="",
@@ -1376,7 +1387,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="svi",
     hu="",
     it="",
     la="",
@@ -1485,7 +1496,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="stu",
     hu="",
     it="",
     la="",
@@ -1556,7 +1567,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="lis",
     hu="",
     it="",
     la="",
@@ -1810,7 +1821,7 @@ data.labels={
     fi="",
     fr="",
     gr="",
-    hr="",
+    hr="ruj",
     hu="",
     it="",
     la="",
@@ -2365,7 +2376,7 @@ data.labels={
     fi="Vertauskuva",
     fr="Logos",
     gr="Λογότυπα",
-    hr="Znakovi",
+    hr="Logotipi",
     hu="Fejlécek",
     it="Logotipi",
     ja="理性",

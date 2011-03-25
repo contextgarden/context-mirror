@@ -142,7 +142,9 @@ local function chrs(n,m,t)
         chrs(floor((n-1)/26),m,t)
         n = (n-1)%26 + 1
     end
-    t[#t+1] = utfchar(n+m)
+    if n ~= 0 then
+        t[#t+1] = utfchar(n+m)
+    end
     if n <= 26 then
         return concat(t)
     end

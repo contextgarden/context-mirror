@@ -23,13 +23,17 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 -- collapse or new pars
 -- interline spacing etc
 
+-- blob.char
+-- blob.line
+-- blob.paragraph
+-- blob.page
+
 local type = type
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local report_blobs = logs.reporter("blobs")
 
-local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-
-local fontdata = fonts.identifiers
+local fontdata          = fonts.hashes.identifiers
 
 local nodepool          = nodes.pool
 
@@ -68,14 +72,14 @@ function blobs.new()
 end
 
 function blobs.append(t,str) -- will be link nodes.link
-    local kind = type(str)
+    local typ = type(str)
     local dummy = nil
-    if kind == "number" then
+    if typ == "number" then
         str = tostring(str)
-        kind = "string"
+        typ = "string"
     end
     local list = t.list
-    if kind == "string" then
+    if typ == "string" then
         local pars = lpegmatch(ctxtextcapture,str)
         local noflist = #list
         for p=1,#pars do
@@ -131,3 +135,25 @@ function blobs.write(t)
         end
     end
 end
+
+
+-- blob.char
+-- blob.line: head, tail
+-- blob.paragraph
+-- blob.page
+
+--~ local lineblob = {
+--~     type = "line",
+--~     head = false,
+--~     tail = false,
+--~     pack = false,
+--~     properties = { },
+--~ end
+
+--~ local parblob = {
+--~     type = "line",
+--~     head = false,
+--~     tail = false,
+--~     pack = false,
+--~     properties = { },
+--~ end

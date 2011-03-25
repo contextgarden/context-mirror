@@ -14,7 +14,9 @@ local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp 
 
 local report_xmp = logs.reporter("backend","xmp")
 
-local lpdf = lpdf
+local backends, lpdf = backends, lpdf
+
+local codeinjections = backends.pdf.codeinjections -- normally it is registered
 
 local pdfdictionary = lpdf.dictionary
 local pdfconstant   = lpdf.constant
@@ -77,17 +79,16 @@ local mapping = {
 
 local xmp, xmpfile, xmpname = nil, nil, "lpdf-pdx.xml"
 
-function lpdf.setxmpfile(name)
- -- xmpfile = resolvers.findctxfile(name) or ""
- -- if xmpfile == "" then
- --     xmpfile = nil
- -- end
+local function setxmpfile(name)
     if xmp then
         report_xmp("discarding loaded file '%s'",xmpfile)
         xmp = nil
     end
     xmpfile = name ~= "" and name
 end
+
+codeinjections.setxmpfile = setxmpfile
+commands.setxmpfile       = setxmpfile
 
 local function valid_xmp()
     if not xmp then

@@ -343,9 +343,9 @@
 % maybe just 'commandset' and then combine
 
 \unexpanded\def\placelistofsorts
-  {\dodoubleempty\placelistofsorts}
+  {\dodoubleempty\doplacelistofsorts}
 
-\unexpanded\def\placelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
+\def\doplacelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
   {\begingroup
    \def\currentsorting{#1}%
    \getparameters[\??so#1][#2]%
@@ -358,7 +358,7 @@
    \stoppacked
    \endgroup}
 
-\def\completelistofsorts
+\unexpanded\def\completelistofsorts
   {\dodoubleempty\docompletelistofsorts}
 
 \def\docompletelistofsorts[#1][#2]%

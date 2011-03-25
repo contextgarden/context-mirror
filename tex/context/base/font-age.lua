@@ -1,16 +1,17 @@
-if not modules then modules = { } end modules ['font-map'] = {
+if not modules then modules = { } end modules ['font-age'] = {
     version   = 1.001,
-    comment   = "companion to font-ini.mkiv",
+    comment   = "companion to font-gee.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "derived from http://www.adobe.com/devnet/opentype/archives/glyphlist.txt",
     original  = "Adobe Glyph List, version 2.0, September 20, 2002",
 }
 
-fonts         = fonts or { }
-fonts.enc     = fonts.enc or { }
-fonts.enc.agl = fonts.enc.agl or { }
+if context then
+    texio.write_nl("fatal error: this module is not for context")
+    os.exit()
+end
 
-fonts.enc.agl.unicodes = { -- generated
+return { -- generated
     ["A"]=65,
     ["AE"]=198,
     ["AEacute"]=508,

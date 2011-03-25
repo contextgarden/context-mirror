@@ -902,7 +902,7 @@
         userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
        }
      }}%
-    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\@@iafocus"))}}%
+    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
     \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(\currentdescriptionnumberentry)}}%
    \fi
    \endgroup}

@@ -70,6 +70,8 @@ local pdf_t          = pdfconstant("T")
 local pdf_fit        = pdfconstant("Fit")
 local pdf_named      = pdfconstant("Named")
 
+-- todo: 3dview
+
 local pdf_border     = pdfarray { 0, 0, 0 }
 
 local getinnermethod = references.getinnermethod
@@ -130,19 +132,13 @@ local function link(url,filename,destination,page,actions)
             NewWindow = (actions.newwindow and true) or nil,
         }
     elseif destination and destination ~= "" then
-        local p = references.checkedpage(actions.n,page)
         return pdfdictionary { -- can be cached
             S = pdf_goto,
             D = destination,
         }
-    elseif page and page ~= "" then
-        local p = references.checkedpage(actions.n,page)
+    else
+        local p = tonumber(page)
         if p and p > 0 then
-            --~ return gotopagedestination(p)
-            --~ return pdfdictionary { -- can be cached
-            --~     S = pdf_goto,
-            --~     D = pagedestination(p),
-            --~ }
             return pdfdictionary { -- can be cached
                 S = pdf_goto,
                 D = pdfarray {
@@ -151,7 +147,7 @@ local function link(url,filename,destination,page,actions)
                 }
             }
         else
-            report_reference("invalid page reference: %s",page or "?")
+            report_reference("invalid page reference: %s",tostring(page))
         end
     end
     return false
@@ -302,9 +298,9 @@ local lln = latelua_node()  if node.has_field(lln,'string') then
 
     directives.register("refences.sharelinks", function(v)
         if v then
-            backends.nodeinjections.reference, backends.codeinjections.finishreference = use_shared_annotations()
+            nodeinjections.reference, codeinjections.finishreference = use_shared_annotations()
         else
-            backends.nodeinjections.reference, backends.codeinjections.finishreference = use_normal_annotations()
+            nodeinjections.reference, codeinjections.finishreference = use_normal_annotations()
         end
     end)
 
@@ -409,26 +405,32 @@ function specials.internal(var,actions) -- better resolve in strc-ref
     end
 end
 
+-- realpage already resolved
+
 specials.i = specials.internal
 
 local pages = references.pages
 
-function specials.page(var,actions) -- better resolve in strc-ref
+function specials.page(var,actions)
     local file = var.f
---~ table.print(var)
     if file then
         file = references.checkedfile(file)
         return link(nil,file,nil,var.operation,actions)
     else
-        local p = references.pages[var.operation]
-        if type(p) == "function" then -- double
-            p = p()
+        local p = var.r
+        if not p then -- todo: call special from reference code
+            p = pages[var.operation]
+            if type(p) == "function" then -- double
+                p = p()
+            else
+                p = tonumber(references.realpageofpage(tonumber(o)))
+            end
         end
         return link(nil,nil,nil,p or var.operation,actions)
     end
 end
 
-function specials.realpage(var,actions) -- better resolve in strc-ref
+function specials.realpage(var,actions)
     local file = var.f
     if file then
         file = references.checkedfile(file)
@@ -439,15 +441,16 @@ function specials.realpage(var,actions) -- better resolve in strc-ref
 end
 
 function specials.userpage(var,actions)
-    local p = references.realpageofpage(tonumber(var.operation or 0))
-    if p then
-        local file = var.f
-        if file then
-         -- file = references.checkedfile(file)
-         -- return link(nil,file,nil,p,actions)
-        else
-            return link(nil,nil,nil,p,actions)
+    local file = var.f
+    if file then
+        file = references.checkedfile(file)
+        return link(nil,file,nil,var.operation,actions)
+    else
+        local p = var.r
+        if not p then -- todo: call special from reference code
+            p = tonumber(references.realpageofpage(var.operation))
         end
+        return link(nil,nil,nil,p,actions)
     end
 end
 

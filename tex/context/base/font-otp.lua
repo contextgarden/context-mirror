@@ -8,31 +8,39 @@ if not modules then modules = { } end modules ['font-otp'] = {
 
 -- todo: pack math (but not that much to share)
 
-local next, type, tostring = next, type, tostring
+local next, type = next, type
 local sort, concat = table.sort, table.concat
 
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)
+local report_otf    = logs.reporter("fonts","otf loading")
 
-local report_otf = logs.reporter("fonts","otf loading")
+-- also used in other scripts so we need to check some tables:
 
-fonts       = fonts     or { }  -- this module is also used in mtxrun
-local fonts = fonts
-fonts.otf   = fonts.otf or { }  -- this module is also used in mtxrun
-local otf   = fonts.otf
+fonts               = fonts or { }
+fonts.handlers      = fonts.handlers or { }
+local handlers      = fonts.handlers
+handlers.otf        = handlers.otf or { }
+local otf           = handlers.otf
+otf.enhancers       = otf.enhancers or { }
+local enhancers     = otf.enhancers
+otf.glists          = otf.glists or { "gsub", "gpos" }
+local glists        = otf.glists
 
-otf.enhancers   = otf.enhancers or { }
-local enhancers = otf.enhancers
-otf.glists      = otf.glists or { "gsub", "gpos" } -- these can be extended so no local here
+local criterium     = 1
+local threshold     = 0
 
-local criterium, threshold, tabstr = 1, 0, table.serialize
-
-local function tabstr(t) -- hashed from core-uti / experiment
-    local s = { }
+local function tabstr(t)
+    local s, n = { }, 0
     for k, v in next, t do
+        n = n + 1
         if type(v) == "table" then
-            s[#s+1] = k .. "={" .. tabstr(v) .. "}"
+            s[n] = k .. "={" .. tabstr(v) .. "}"
+        elseif v == true then
+            s[n] = k .. "=true"
+        elseif v then
+            s[n] = k .. "=" .. v
         else
-            s[#s+1] = k .. "=" .. tostring(v)
+            s[n] = k .. "=false"
         end
     end
     sort(s)
@@ -43,12 +51,14 @@ local function packdata(data)
     if data then
         local h, t, c = { }, { }, { }
         local hh, tt, cc = { }, { }, { }
-        local function pack_1(v)
+        local nt, ntt = 0, 0
+        local function pack_1(v,indexed)
             -- v == table
-            local tag = tabstr(v)
+            local tag = indexed and concat(v," ") or tabstr(v)
             local ht = h[tag]
             if not ht then
-                ht = #t+1
+                nt = nt + 1
+                ht = nt
                 t[ht] = v
                 h[tag] = ht
                 c[ht] = 1
@@ -57,7 +67,7 @@ local function packdata(data)
             end
             return ht
         end
-        local function pack_2(v)
+        local function pack_2(v,indexed)
             -- v == number
             if c[v] <= criterium then
                 return t[v]
@@ -65,7 +75,8 @@ local function packdata(data)
                 -- compact hash
                 local hv = hh[v]
                 if not hv then
-                    hv = #tt+1
+                    ntt = ntt + 1
+                    hv = ntt
                     tt[hv] = t[v]
                     hh[v] = hv
                     cc[hv] = c[v]
@@ -74,12 +85,12 @@ local function packdata(data)
             end
         end
         local function success(stage,pass)
-            if #t == 0 then
+            if nt == 0 then
                 if trace_loading then
                     report_otf("pack quality: nothing to pack")
                 end
                 return false
-            elseif #t >= threshold then
+            elseif nt >= threshold then
                 local one, two, rest = 0, 0, 0
                 if pass == 1 then
                     for k,v in next, c do
@@ -93,9 +104,9 @@ local function packdata(data)
                     end
                 else
                     for k,v in next, cc do
-                        if v >20 then
+                        if v > 20 then
                             rest = rest + 1
-                        elseif v >10 then
+                        elseif v > 10 then
                             two = two + 1
                         else
                             one = one + 1
@@ -109,152 +120,151 @@ local function packdata(data)
                 return true
             else
                 if trace_loading then
-                    report_otf("pack quality: stage %s, pass %s, %s packed, aborting pack (threshold: %s)", stage, pass, #t, threshold)
+                    report_otf("pack quality: stage %s, pass %s, %s packed, aborting pack (threshold: %s)", stage, pass, nt, threshold)
                 end
                 return false
             end
         end
+        local resources = data.resources
+        local lookuptypes = resources.lookuptypes
         for pass=1,2 do
             local pack = (pass == 1 and pack_1) or pack_2
-            for k, v in next, data.glyphs do
-                v.boundingbox = pack(v.boundingbox)
-                local l = v.slookups
-                if l then
-                    for k,v in next, l do
-                        l[k] = pack(v)
+            for unicode, description in next, data.descriptions do
+                local boundingbox = description.boundingbox
+                if boundingbox then
+                    description.boundingbox = pack(boundingbox,true)
+                end
+                local slookups = description.slookups
+                if slookups then
+                    for tag, slookup in next, slookups do
+                        local what = lookuptypes[tag]
+                        if what == "pair" then
+                            local t = slookup[2] if t then slookup[2] = pack(t,true) end
+                            local t = slookup[3] if t then slookup[3] = pack(t,true) end
+                        elseif what ~= "substitution" then
+                            slookups[tag] = pack(slookup)
+                        end
                     end
                 end
-                local l = v.mlookups
-                if l then
-                    for k,v in next, l do
-                        for kk=1,#v do
-                            local vkk = v[kk]
-                            local what = vkk[1]
-                            if what == "pair" then
-                                local t = vkk[3] if t then vkk[3] = pack(t) end
-                                local t = vkk[4] if t then vkk[4] = pack(t) end
-                            elseif what == "position" then
-                                local t = vkk[2] if t then vkk[2] = pack(t) end
+                local mlookups = description.mlookups
+                if mlookups then
+                    for tag, mlookup in next, mlookups do
+                        local what = lookuptypes[tag]
+                        if what == "pair" then
+                            for i=1,#mlookup do
+                                local lookup = mlookup[i]
+                                local t = lookup[2] if t then lookup[2] = pack(t,true) end
+                                local t = lookup[3] if t then lookup[3] = pack(t,true) end
                             end
-                        --  v[kk] = pack(vkk)
+                        elseif what ~= "substitution" then
+                            for i=1,#mlookup do
+                                mlookup[i] = pack(mlookup[i]) -- true
+                            end
                         end
                     end
                 end
-                local m = v.kerns
-                if m then
-                    for k,v in next, m do
-                        m[k] = pack(v)
+                local kerns = description.kerns
+                if kerns then
+                    for tag, kern in next, kerns do
+                        kerns[tag] = pack(kern)
                     end
                 end
-                local m = v.math
-                if m then
-                    local mk = m.kerns
-                    if mk then
-                        for k,v in next, mk do
-                            mk[k] = pack(v)
+                local math = description.math
+                if math then
+                    local kerns = math.kerns
+                    if kerns then
+                        for tag, kern in next, kerns do
+                            kerns[tag] = pack(kern)
                         end
                     end
                 end
-                local a = v.anchors
-                if a then
-                    for k,v in next, a do
-                        if k == "baselig" then
-                            for kk, vv in next, v do
-                                for kkk=1,#vv do
-                                    vv[kkk] = pack(vv[kkk])
+                local anchors = description.anchors
+                if anchors then
+                    for what, anchor in next, anchors do
+                        if what == "baselig" then
+                            for _, a in next, anchor do
+                                for k=1,#a do
+                                    a[k] = pack(a[k])
                                 end
                             end
                         else
-                            for kk, vv in next, v do
-                                v[kk] = pack(vv)
+                            for k, v in next, anchor do
+                                anchor[k] = pack(v)
                             end
                         end
                     end
                 end
             end
-            if data.lookups then
-                for k, v in next, data.lookups do
-                    if v.rules then
-                        for kk, vv in next, v.rules do
-                            local l = vv.lookups
-                            if l then
-                                vv.lookups = pack(l)
-                            end
-                            local c = vv.coverage
-                            if c then
-                                local cc = c.before  if cc then c.before  = pack(cc) end
-                                local cc = c.after   if cc then c.after   = pack(cc) end
-                                local cc = c.current if cc then c.current = pack(cc) end
-                            end
-                            local c = vv.reversecoverage
-                            if c then
-                                local cc = c.before  if cc then c.before  = pack(cc) end
-                                local cc = c.after   if cc then c.after   = pack(cc) end
-                                local cc = c.current if cc then c.current = pack(cc) end
-                            end
-                            -- no need to pack vv.glyphs
-                            local c = vv.glyphs
-                            if c then
-                                if c.fore == "" then c.fore = nil end
-                                if c.back == "" then c.back = nil end
-                            end
+            local lookups = data.lookups
+            if lookups then
+                for _, lookup in next, lookups do
+                    local rules = lookup.rules
+                    if rules then
+                        for i=1,#rules do -- was next loop
+                            local rule = rules[i]
+                            local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i],true) end end
+                            local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i],true) end end
+                            local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i],true) end end
+                            local r = rule.replacements if r then rule.replacements  = pack(r,   true)     end
+                            local r = rule.fore         if r then rule.fore          = pack(r,   true)     end
+                            local r = rule.back         if r then rule.back          = pack(r,   true)     end
+                            local r = rule.names        if r then rule.names         = pack(r,   true)     end
+                            local r = rule.lookups      if r then rule.lookups       = pack(r)             end
                         end
                     end
                 end
             end
-            if data.luatex then
-                local la = data.luatex.anchor_to_lookup
-                if la then
-                    for lookup, ldata in next, la do
-                        la[lookup] = pack(ldata)
-                    end
+            local anchor_to_lookup = resources.anchor_to_lookup
+            if anchor_to_lookup then
+                for anchor, lookup in next, anchor_to_lookup do
+                    anchor_to_lookup[anchor] = pack(lookup)
                 end
-                local la = data.luatex.lookup_to_anchor
-                if la then
-                    for lookup, ldata in next, la do
-                        la[lookup] = pack(ldata)
-                    end
+            end
+            local lookup_to_anchor = resources.lookup_to_anchor
+            if lookup_to_anchor then
+                for lookup, anchor in next, lookup_to_anchor do
+                    lookup_to_anchor[lookup] = pack(anchor)
                 end
-                local ls = data.luatex.sequences
-                if ls then
-                    for feature, fdata in next, ls do
-                        local flags = fdata.flags
-                        if flags then
-                            fdata.flags = pack(flags)
-                        end
-                        local subtables = fdata.subtables
-                        if subtables then
-                            fdata.subtables = pack(subtables)
-                        end
-                        local features = fdata.features
-                        if features then
-                            for script, sdata in next, features do
-                                features[script] = pack(sdata)
-                            end
-                        end
+            end
+            local sequences = resources.sequences
+            if sequences then
+                for feature, sequence in next, sequences do
+                    local flags = sequence.flags
+                    if flags then
+                        sequence.flags = pack(flags)
                     end
-                end
-                local ls = data.luatex.lookups
-                if ls then
-                    for lookup, fdata in next, ls do
-                        local flags = fdata.flags
-                        if flags then
-                            fdata.flags = pack(flags)
-                        end
-                        local subtables = fdata.subtables
-                        if subtables then
-                            fdata.subtables = pack(subtables)
+                    local subtables = sequence.subtables
+                    if subtables then
+                        sequence.subtables = pack(subtables)
+                    end
+                    local features = sequence.features
+                    if features then
+                        for script, feature in next, features do
+                            features[script] = pack(feature)
                         end
                     end
                 end
-                local lf = data.luatex.features
-                if lf then
-                    for _, g in next, otf.glists do
-                        local gl = lf[g]
-                        if gl then
-                            for feature, spec in next, gl do
-                                gl[feature] = pack(spec)
-                            end
+            end
+            local lookups = resources.lookups
+            if lookups then
+                for name, lookup in next, lookups do
+                    local flags = lookup.flags
+                    if flags then
+                        lookup.flags = pack(flags)
+                    end
+                    local subtables = lookup.subtables
+                    if subtables then
+                        lookup.subtables = pack(subtables)
+                    end
+                end
+            end
+            local features = resources.features
+            if features then
+                for _, what in next, glists do
+                    local list = features[what]
+                    if list then
+                        for feature, spec in next, list do
+                            list[feature] = pack(spec)
                         end
                     end
                 end
@@ -263,242 +273,404 @@ local function packdata(data)
                 return
             end
         end
-        if #t > 0 then
+        if nt > 0 then
             for pass=1,2 do
                 local pack = (pass == 1 and pack_1) or pack_2
-                for k, v in next, data.glyphs do
-                    local m = v.kerns
-                    if m then
-                        v.kerns = pack(m)
+                for unicode, description in next, data.descriptions do
+                    local kerns = description.kerns
+                    if kerns then
+                        description.kerns = pack(kerns)
                     end
-                    local m = v.math
-                    if m then
-                        local mk = m.kerns
-                        if mk then
-                            m.kerns = pack(mk)
+                    local math = description.math
+                    if math then
+                        local kerns = math.kerns
+                        if kerns then
+                            math.kerns = pack(kerns)
                         end
                     end
-                    local a = v.anchors
-                    if a then
-                        v.anchors = pack(a)
+                    local anchors = description.anchors
+                    if anchors then
+                        description.anchors = pack(anchors)
                     end
-                    local l = v.mlookups
-                    if l then
-                        for k,v in next, l do
-                            for kk=1,#v do
-                                v[kk] = pack(v[kk])
+                    local mlookups = description.mlookups
+                    if mlookups then
+                        for tag, mlookup in next, mlookups do
+                            mlookups[tag] = pack(mlookup)
+                        end
+                    end
+                end
+                local lookups = data.lookups
+                if lookups then
+                    for _, lookup in next, lookups do
+                        local rules = lookup.rules
+                        if rules then
+                            for i=1,#rules do -- was next loop
+                                local rule = rules[i]
+                                local r = rule.before  if r then rule.before  = pack(r) end
+                                local r = rule.after   if r then rule.after   = pack(r) end
+                                local r = rule.current if r then rule.current = pack(r) end
                             end
                         end
                     end
                 end
-                local ls = data.luatex.sequences
-                if ls then
-                    for feature, fdata in next, ls do
-                        fdata.features = pack(fdata.features)
+                local sequences = resources.sequences
+                if sequences then
+                    for feature, sequence in next, sequences do
+                        sequence.features = pack(sequence.features)
                     end
                 end
                 if not success(2,pass) then
---~                     return
+                 -- return
                 end
             end
+
+            for pass=1,2 do
+                local pack = (pass == 1 and pack_1) or pack_2
+                for unicode, description in next, data.descriptions do
+                    local slookups = description.slookups
+                    if slookups then
+                        description.slookups = pack(slookups)
+                    end
+                    local mlookups = description.mlookups
+                    if mlookups then
+                        description.mlookups = pack(mlookups)
+                    end
+                end
+            end
+
         end
     end
 end
 
+local unpacked_mt = {
+    __index =
+        function(t,k)
+            t[k] = false
+            return k -- next time true
+        end
+}
+
 local function unpackdata(data)
     if data then
-        local t = data.tables
-        if t then
+        local tables = data.tables
+        if tables then
+            local resources = data.resources
+            local lookuptypes = resources.lookuptypes
             local unpacked = { }
-            for k, v in next, data.glyphs do
-                local tv = t[v.boundingbox] if tv then v.boundingbox = tv end
-                local l = v.slookups
-                if l then
-                    for k,v in next, l do
-                        local tv = t[v] if tv then l[k] = tv end
+            setmetatable(unpacked,unpacked_mt)
+            for unicode, description in next, data.descriptions do
+                local tv = tables[description.boundingbox]
+                if tv then
+                    description.boundingbox = tv
+                end
+                local slookups = description.slookups
+                if slookups then
+                    local tv = tables[slookups]
+                    if tv then
+                        description.slookups = tv
+                        slookups = unpacked[tv]
+                    end
+                    if slookups then
+                        for tag, lookup in next, slookups do
+                            local what = lookuptypes[tag]
+                            if what == "pair" then
+                                local tv = tables[lookup[2]]
+                                if tv then
+                                    lookup[2] = tv
+                                end
+                                local tv = tables[lookup[3]]
+                                if tv then
+                                    lookup[3] = tv
+                                end
+                            elseif what ~= "substitution" then
+                                local tv = tables[lookup]
+                                if tv then
+                                    slookups[tag] = tv
+                                end
+                            end
+                        end
                     end
                 end
-                local l = v.mlookups
-                if l then
-                    for k,v in next, l do
-                        for i=1,#v do
-                            local vi = v[i]
-                            local tv = t[vi]
+                local mlookups = description.mlookups
+                if mlookups then
+                    local tv = tables[mlookups]
+                    if tv then
+                        description.mlookups = tv
+                        mlookups = unpacked[tv]
+                    end
+                    if mlookups then
+                        for tag, list in next, mlookups do
+                            local tv = tables[list]
                             if tv then
-                                v[i] = tv
-                                if unpacked[tv] then
-                                    vi = false
-                                else
-                                    unpacked[tv], vi = true, tv
-                                end
+                                mlookups[tag] = tv
+                                list = unpacked[tv]
                             end
-                            if vi then
-                                local what = vi[1]
+                            if list then
+                                local what = lookuptypes[tag]
                                 if what == "pair" then
-                                    local tv = t[vi[3]] if tv then vi[3] = tv end
-                                    local tv = t[vi[4]] if tv then vi[4] = tv end
-                                elseif what == "position" then
-                                    local tv = t[vi[2]] if tv then vi[2] = tv end
+                                    for i=1,#list do
+                                        local lookup = list[i]
+                                        local tv = tables[lookup[2]]
+                                        if tv then
+                                            lookup[2] = tv
+                                        end
+                                        local tv = tables[lookup[3]]
+                                        if tv then
+                                            lookup[3] = tv
+                                        end
+                                    end
+                                elseif what ~= "substitution" then
+                                    for i=1,#list do
+                                        local tv = tables[list[i]]
+                                        if tv then
+                                            list[i] = tv
+                                        end
+                                    end
                                 end
                             end
                         end
                     end
                 end
-                local m = v.kerns
-                if m then
-                    local tm = t[m]
+                local kerns = description.kerns
+                if kerns then
+                    local tm = tables[kerns]
                     if tm then
-                        v.kerns = tm
-                        if unpacked[tm] then
-                            m = false
-                        else
-                            unpacked[tm], m = true, tm
-                        end
+                        description.kerns = tm
+                        kerns = unpacked[tm]
                     end
-                    if m then
-                        for k,v in next, m do
-                            local tv = t[v] if tv then m[k] = tv end
+                    if kerns then
+                        for k, kern in next, kerns do
+                            local tv = tables[kern]
+                            if tv then
+                                kerns[k] = tv
+                            end
                         end
                     end
                 end
-                local m = v.math
-                if m then
-                    local mk = m.kerns
-                    if mk then
-                        local tm = t[mk]
+                local math = description.math
+                if math then
+                    local kerns = math.kerns
+                    if kerns then
+                        local tm = tables[kerns]
                         if tm then
-                            m.kerns = tm
-                            if unpacked[tm] then
-                                mk = false
-                            else
-                                unpacked[tm], mk = true, tm
-                            end
+                            math.kerns = tm
+                            kerns = unpacked[tm]
                         end
-                        if mk then
-                            for k,v in next, mk do
-                                local tv = t[v] if tv then mk[k] = tv end
+                        if kerns then
+                            for k, kern in next, kerns do
+                                local tv = tables[kern]
+                                if tv then
+                                    kerns[k] = tv
+                                end
                             end
                         end
                     end
                 end
-                local a = v.anchors
-                if a then
-                    local ta = t[a]
+                local anchors = description.anchors
+                if anchors then
+                    local ta = tables[anchors]
                     if ta then
-                        v.anchors = ta
-                        if not unpacked[ta] then
-                            unpacked[ta], a = true, ta
-                        else
-                            a = false
-                        end
+                        description.anchors = ta
+                        anchors = unpacked[ta]
                     end
-                    if a then
-                        for k,v in next, a do
-                            if k == "baselig" then
-                                for kk, vv in next, v do
-                                    for kkk=1,#vv do
-                                        local tv = t[vv[kkk]] if tv then vv[kkk] = tv end
+                    if anchors then
+                        for tag, anchor in next, anchors do
+                            if tag == "baselig" then
+                                for _, list in next, anchor do
+                                    for i=1,#list do
+                                        local tv = tables[list[i]]
+                                        if tv then
+                                            list[i] = tv
+                                        end
                                     end
                                 end
                             else
-                                for kk, vv in next, v do
-                                    local tv = t[vv] if tv then v[kk] = tv end
+                                for a, data in next, anchor do
+                                    local tv = tables[data]
+                                    if tv then
+                                        anchor[a] = tv
+                                    end
                                 end
                             end
                         end
                     end
                 end
             end
-            if data.lookups then
-                for k, v in next, data.lookups do
-                    local r = v.rules
-                    if r then
-                        for kk, vv in next, r do
-                            local l = vv.lookups
-                            if l then
-                                local tv = t[l] if tv then vv.lookups = tv end
+            local lookups = data.lookups
+            if lookups then
+                for _, lookup in next, lookups do
+                    local rules = lookup.rules
+                    if rules then
+                        for i=1,#rules do -- was next loop
+                            local rule = rules[i]
+                            local before = rule.before
+                            if before then
+                                local tv = tables[before]
+                                if tv then
+                                    rule.before = tv
+                                    before = unpacked[tv]
+                                end
+                                if before then
+                                    for i=1,#before do
+                                        local tv = tables[before[i]]
+                                        if tv then
+                                            before[i] = tv
+                                        end
+                                    end
+                                end
                             end
-                            local c = vv.coverage
-                            if c then
-                                local cc = c.before  if cc then local tv = t[cc] if tv then c.before  = tv end end
-                                      cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
-                                      cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
+                            local after = rule.after
+                            if after then
+                                local tv = tables[after]
+                                if tv then
+                                    rule.after = tv
+                                    after = unpacked[tv]
+                                end
+                                if after then
+                                    for i=1,#after do
+                                        local tv = tables[after[i]]
+                                        if tv then
+                                            after[i] = tv
+                                        end
+                                    end
+                                end
                             end
-                            local c = vv.reversecoverage
-                            if c then
-                                local cc = c.before  if cc then local tv = t[cc] if tv then c.before  = tv end end
-                                      cc = c.after   if cc then local tv = t[cc] if tv then c.after   = tv end end
-                                      cc = c.current if cc then local tv = t[cc] if tv then c.current = tv end end
+                            local current = rule.current
+                            if current then
+                                local tv = tables[current]
+                                if tv then
+                                    rule.current = tv
+                                    current = unpacked[tv]
+                                end
+                                if current then
+                                    for i=1,#current do
+                                        local tv = tables[current[i]]
+                                        if tv then
+                                            current[i] = tv
+                                        end
+                                    end
+                                end
                             end
-                            -- no need to unpack vv.glyphs
+                            local replacements = rule.replacements
+                            if replacements then
+                                local tv = tables[replacements]
+                                if tv then
+                                    rule.replacements = tv
+                                end
+                            end
+                            local fore = rule.fore
+                            if fore then
+                                local tv = tables[fore]
+                                if tv then
+                                    rule.fore = tv
+                                end
+                            end
+                            local back = rule.back
+                            if back then
+                                local tv = tables[back]
+                                if tv then
+                                    rule.back = tv
+                                end
+                            end
+                            local names = rule.names
+                            if names then
+                                local tv = tables[names]
+                                if tv then
+                                    rule.names = tv
+                                end
+                            end
+                            local lookups = rule.lookups
+                            if lookups then
+                                local tv = tables[lookups]
+                                if tv then
+                                    rule.lookups = tv
+                                end
+                            end
                         end
                     end
                 end
             end
-            local luatex = data.luatex
-            if luatex then
-                local la = luatex.anchor_to_lookup
-                if la then
-                    for lookup, ldata in next, la do
-                        local tv = t[ldata] if tv then la[lookup] = tv end
+            local anchor_to_lookup = resources.anchor_to_lookup
+            if anchor_to_lookup then
+                for anchor, lookup in next, anchor_to_lookup do
+                    local tv = tables[lookup]
+                    if tv then
+                        anchor_to_lookup[anchor] = tv
                     end
                 end
-                local la = luatex.lookup_to_anchor
-                if la then
-                    for lookup, ldata in next, la do
-                        local tv = t[ldata] if tv then la[lookup] = tv end
+            end
+            local lookup_to_anchor = resources.lookup_to_anchor
+            if lookup_to_anchor then
+                for lookup, anchor in next, lookup_to_anchor do
+                    local tv = tables[anchor]
+                    if tv then
+                        lookup_to_anchor[lookup] = tv
                     end
                 end
-                local ls = luatex.sequences
-                if ls then
-                    for feature, fdata in next, ls do
-                        local flags = fdata.flags
-                        if flags then
-                            local tv = t[flags] if tv then fdata.flags = tv end
+            end
+            local ls = resources.sequences
+            if ls then
+                for _, feature in next, ls do
+                    local flags = feature.flags
+                    if flags then
+                        local tv = tables[flags]
+                        if tv then
+                            feature.flags = tv
                         end
-                        local subtables = fdata.subtables
-                        if subtables then
-                            local tv = t[subtables] if tv then fdata.subtables = tv end
+                    end
+                    local subtables = feature.subtables
+                    if subtables then
+                        local tv = tables[subtables]
+                        if tv then
+                            feature.subtables = tv
                         end
-                        local features = fdata.features
+                    end
+                    local features = feature.features
+                    if features then
+                        local tv = tables[features]
+                        if tv then
+                            feature.features = tv
+                            features = unpacked[tv]
+                        end
                         if features then
-                            local tv = t[features]
+                            for script, data in next, features do
+                                local tv = tables[data]
+                                if tv then
+                                    features[script] = tv
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            local lookups = resources.lookups
+            if lookups then
+                for _, lookup in next, lookups do
+                    local flags = lookup.flags
+                    if flags then
+                        local tv = tables[flags]
+                        if tv then
+                            lookup.flags = tv
+                        end
+                    end
+                    local subtables = lookup.subtables
+                    if subtables then
+                        local tv = tables[subtables]
+                        if tv then
+                            lookup.subtables = tv
+                        end
+                    end
+                end
+            end
+            local features = resources.features
+            if features then
+                for _, what in next, glists do
+                    local feature = features[what]
+                    if feature then
+                        for tag, spec in next, feature do
+                            local tv = tables[spec]
                             if tv then
-                                fdata.features = tv
-                                if not unpacked[tv] then
-                                    unpacked[tv], features = true, tv
-                                else
-                                    features = false
-                                end
-                            end
-                            if features then
-                                for script, sdata in next, features do
-                                    local tv = t[sdata] if tv then features[script] = tv end
-                                end
-                            end
-                        end
-                    end
-                end
-                local ls = luatex.lookups
-                if ls then
-                    for lookups, fdata in next, ls do
-                        local flags = fdata.flags
-                        if flags then
-                            local tv = t[flags] if tv then fdata.flags = tv end
-                        end
-                        local subtables = fdata.subtables
-                        if subtables then
-                            local tv = t[subtables] if tv then fdata.subtables = tv end
-                        end
-                    end
-                end
-                local lf = luatex.features
-                if lf then
-                    for _, g in next, otf.glists do
-                        local gl = lf[g]
-                        if gl then
-                            for feature, spec in next, gl do
-                                local tv = t[spec] if tv then gl[feature] = tv end
+                                feature[tag] = tv
                             end
                         end
                     end
@@ -513,6 +685,8 @@ if otf.enhancers.register then
 
     otf.enhancers.register(  "pack",  packdata)
     otf.enhancers.register("unpack",unpackdata)
+
+-- todo: directive
 
 end
 

@@ -33,11 +33,10 @@ using a table that has keys filtered from the font related files.</p>
 
 local texsprint = (tex and tex.sprint) or print
 
-fonts            = fonts or { }  -- this module is also used in mtxrun
-local fonts      = fonts
+fonts            = fonts or { } -- also used elsewhere
 
-fonts.names      = fonts.names or { }
-local names      = fonts.names
+local names      = { }
+fonts.names      = names
 
 names.filters    = names.filters or { }
 local filters    = names.filters

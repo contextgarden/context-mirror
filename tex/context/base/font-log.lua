@@ -8,13 +8,16 @@ if not modules then modules = { } end modules ['font-log'] = {
 
 local next, format, lower, concat = next, string.format, string.lower, table.concat
 
-local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
-
+local trace_defining  = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local report_defining = logs.reporter("fonts","defining")
 
-local fonts  = fonts
-fonts.logger = fonts.logger or { }
-local logger = fonts.logger
+local basename = file.basename
+
+local fonts       = fonts
+local loggers     = { }
+fonts.loggers     = loggers
+local usedfonts   = utilities.storage.allocate()
+----- loadedfonts = utilities.storage.allocate()
 
 --[[ldx--
 <p>The following functions are used for reporting about the fonts
@@ -23,41 +26,55 @@ we now have several readers it may be handy to know what reader is
 used for which font.</p>
 --ldx]]--
 
-function logger.save(tfmtable,source,specification) -- save file name in spec here ! ! ! ! ! !
-    if tfmtable and specification and specification.specification then
+function loggers.onetimemessage(font,char,message,reporter)
+    local tfmdata = fonts.hashes.identifiers[font]
+    local shared = tfmdata.shared
+    local messages = shared.messages
+    if not messages then
+        messages = { }
+        shared.messages = messages
+    end
+    local category = messages[message]
+    if not category then
+        category = { }
+        messages[message] = category
+    end
+    if not category[char] then
+        if not reporter then
+            reporter = report_defining
+        end
+        reporter("char U+%04X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
+        category[char] = true
+    end
+end
+
+function loggers.register(tfmdata,source,specification) -- save file name in spec here ! ! ! ! ! !
+    if tfmdata and specification and specification.specification then
         local name = lower(specification.name)
         if trace_defining and not fonts.used[name] then
             report_defining("registering %s as %s (used: %s)",file.basename(specification.name),source,file.basename(specification.filename))
         end
         specification.source = source
-        fonts.loaded[lower(specification.specification)] = specification
-     -- fonts.used[name] = source
-        fonts.used[lower(specification.filename or specification.name)] = source
+     -- loadedfonts[lower(specification.specification)] = specification
+        usedfonts[lower(specification.filename or specification.name)] = source
     end
 end
 
-function logger.report(complete)
-    local t, n = { }, 0
-    for name, used in table.sortedhash(fonts.used) do
-        n = n + 1
-        if complete then
-            t[n] = used .. "->" .. file.basename(name)
-        else
-            t[n] = file.basename(name)
-        end
-    end
-    return t
-end
-
-function logger.format(name)
-    return fonts.used[name] or "unknown"
+function loggers.format(name) -- should be avoided
+    return usedfonts[name] or "unknown"
 end
 
 statistics.register("loaded fonts", function()
-    if next(fonts.used) then
-        local t = logger.report()
-        return (#t > 0 and format("%s files: %s",#t,concat(t," "))) or "none"
-    else
-        return nil
+    if next(usedfonts) then
+        local t, n = { }, 0
+        for name, used in table.sortedhash(usedfonts) do
+            n = n + 1
+            if complete then
+                t[n] = used .. "->" .. basename(name)
+            else
+                t[n] = basename(name)
+            end
+        end
+        return (n > 0 and format("%s files: %s",n,concat(t," "))) or "none"
     end
 end)

@@ -324,25 +324,9 @@ is loaded, the relevant tables that hold the functions needed may not
 yet be available.</p>
 --ldx]]--
 
-function dimensions.texify()  -- todo: %
-    local fti, fc = fonts and fonts.identifiers, font and font.current
-    if fti and fc then
-        dimenfactors["ex"] = function() return fti[fc()].ex_height end
-        dimenfactors["em"] = function() return fti[fc()].quad      end
-     -- dimenfactors["%"]  = function() return tex.dimen.hsize/100 end
-    else
-        dimenfactors["ex"] = 1/65536* 4 --   4pt
-        dimenfactors["em"] = 1/65536*10 --  10pt
-     -- dimenfactors["%"]  = 1/65536* 4 -- 400pt/100
-    end
-end
-
---[[ldx--
-<p>In order to set the defaults we call this function now. At some point
-the macro package needs to make sure the function is called again.</p>
---ldx]]--
-
-dimensions.texify()
+   dimenfactors["ex"] =  4 * 1/65536 --   4pt
+   dimenfactors["em"] = 10 * 1/65536 --  10pt
+-- dimenfactors["%"]  =  4 * 1/65536 -- 400pt/100
 
 --[[ldx--
 <p>The previous code is rather efficient (also thanks to <l n='lpeg'/>) but we

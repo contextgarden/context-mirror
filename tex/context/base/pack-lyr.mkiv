@@ -140,15 +140,6 @@
 \def\setlayer
   {\dotripleempty\dosetlayer}
 
-% \def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
-%   {\doifelsevalue{\??ll#1\c!state}\v!stop
-%      {\dowithnextbox\donothing\hbox}
-%      {\ifthirdargument
-%         \dodosetlayer[#1][#2][#3]%
-%       \else
-%         \dodosetlayer[#1][][#2]%
-%       \fi}}
-
 \def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
   {\doifelsevalue{\??ll#1\c!state}\v!stop
      {\dowithnextbox\donothing\hbox}
@@ -423,20 +414,6 @@
 %D macro does not takes hash space.
 
 % todo: setups before flush, handy hook
-
-% \unexpanded\def\flushlayer[#1]%
-%   {\doifelsevalue{\??ll#1\c!state}\v!next
-%      {\letgvalue{\??ll#1\c!state}\v!start} % dangerous, stack-built-up
-%      {\doifelsevalue{\??ll#1\c!state}\v!continue
-%         {\letgvalue{\??ll#1\c!state}\v!repeat} % dangerous, stack-built-up
-%         {\doifelsevalue{\??ll#1\c!doublesided}\v!yes
-%            {\doifundefinedelse{\@@layerbox#1}%
-%               {\dodoflushlayerA[#1]}
-%               {\doifbothsidesoverruled
-%                  {\dodoflushlayerB\v!left [#1]}%  left
-%                  {\dodoflushlayerB\v!right[#1]}% right
-%                  {\dodoflushlayerB\v!left [#1]}}}%  left
-%            {\dodoflushlayerA[#1]}}}}
 
 \unexpanded\def\flushlayer[#1]% quite core, so optimized
   {\begingroup

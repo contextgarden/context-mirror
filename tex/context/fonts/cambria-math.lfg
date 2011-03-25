@@ -1,7 +1,7 @@
 -- This patch code is moved from font-pat.lua to this goodies
--- files as it does not belomg in the core code.
+-- files as it does not belong in the core code.
 
-local patches = fonts.otf.enhancers.patches
+local patches = fonts.handlers.otf.enhancers.patches
 
 local function patch(data,filename,threshold)
     local m = data.metadata.math
@@ -18,7 +18,7 @@ patches.register("after","check math parameters","cambria", function(data,filena
 patches.register("after","check math parameters","cambmath",function(data,filename) patch(data,filename,2800) end)
 
 return {
-    name = "lm-cambria",
+    name = "cambria-math",
     version = "1.00",
     comment = "Goodies that complement cambria.",
     author = "Hans Hagen",

@@ -22,51 +22,57 @@ local utfchar, utfbyte = utf.char, utf.byte
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
 
-local set_attribute  = node.set_attribute
-local has_attribute  = node.has_attribute
-local mlist_to_hlist = node.mlist_to_hlist
-local font_of_family = node.family_font
-local fontdata       = fonts.identifiers
+local otf                 = fonts.handlers.otf
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 
-noads                = noads or { }
-local noads          = noads
+local trace_remapping     = false  trackers.register("math.remapping",  function(v) trace_remapping  = v end)
+local trace_processing    = false  trackers.register("math.processing", function(v) trace_processing = v end)
+local trace_analyzing     = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
 
-noads.processors     = noads.processors or { }
-local processors     = noads.processors
+local report_processing   = logs.reporter("mathematics","processing")
+local report_remapping    = logs.reporter("mathematics","remapping")
 
-noads.handlers       = noads.handlers   or { }
-local handlers       = noads.handlers
+local set_attribute       = node.set_attribute
+local has_attribute       = node.has_attribute
+local mlist_to_hlist      = node.mlist_to_hlist
+local font_of_family      = node.family_font
 
-local tasks          = nodes.tasks
+local fonthashes          = fonts.hashes
+local fontdata            = fonthashes.identifiers
 
-local trace_remapping  = false  trackers.register("math.remapping",  function(v) trace_remapping  = v end)
-local trace_processing = false  trackers.register("math.processing", function(v) trace_processing = v end)
-local trace_analyzing  = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
+noads                     = noads or { }  -- todo: only here
+local noads               = noads
 
-local report_processing = logs.reporter("mathematics","processing")
-local report_remapping  = logs.reporter("mathematics","remapping")
+noads.processors          = noads.processors or { }
+local processors          = noads.processors
 
-local nodecodes     = nodes.nodecodes
-local noadcodes     = nodes.noadcodes
+noads.handlers            = noads.handlers   or { }
+local handlers            = noads.handlers
 
-local noad_ord      = noadcodes.ord
-local noad_rel      = noadcodes.rel
-local noad_punct    = noadcodes.punct
+local tasks               = nodes.tasks
 
-local math_noad     = nodecodes.noad           -- attr nucleus sub sup
-local math_accent   = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical  = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_box      = nodecodes.subbox         -- attr list
-local math_sub      = nodecodes.submlist       -- attr list
-local math_char     = nodecodes.mathchar       -- attr fam char
-local math_textchar = nodecodes.mathtextchar   -- attr fam char
-local math_delim    = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style    = nodecodes.style          -- attr style
-local math_choice   = nodecodes.choice         -- attr display text script scriptscript
-local math_fence    = nodecodes.fence          -- attr subtype
+local nodecodes           = nodes.nodecodes
+local noadcodes           = nodes.noadcodes
 
-local left_fence_code = 1
+local noad_ord            = noadcodes.ord
+local noad_rel            = noadcodes.rel
+local noad_punct          = noadcodes.punct
+
+local math_noad           = nodecodes.noad           -- attr nucleus sub sup
+local math_accent         = nodecodes.accent         -- attr nucleus sub sup accent
+local math_radical        = nodecodes.radical        -- attr nucleus sub sup left degree
+local math_fraction       = nodecodes.fraction       -- attr nucleus sub sup left right
+local math_box            = nodecodes.subbox         -- attr list
+local math_sub            = nodecodes.submlist       -- attr list
+local math_char           = nodecodes.mathchar       -- attr fam char
+local math_textchar       = nodecodes.mathtextchar   -- attr fam char
+local math_delim          = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local math_style          = nodecodes.style          -- attr style
+local math_choice         = nodecodes.choice         -- attr display text script scriptscript
+local math_fence          = nodecodes.fence          -- attr subtype
+
+local left_fence_code     = 1
 
 local function process(start,what,n,parent)
     if n then n = n + 1 else n = 0 end
@@ -147,7 +153,7 @@ local function report_remap(tag,id,old,new,extra)
 end
 
 local remapalphabets = mathematics.remapalphabets
-local fcs = fonts.colors.set
+local setnodecolor   = nodes.tracers.colors.set
 
 -- we can have a global famdata == fonts.famdata
 
@@ -168,7 +174,7 @@ local fcs = fonts.colors.set
 --~                 report_remap("fallback",id,char,newchar)
 --~             end
 --~             if trace_analyzing then
---~                 fcs(pointer,"font:isol")
+--~                 setnodecolor(pointer,"font:isol")
 --~             end
 --~             pointer.char = newchar
 --~             return true
@@ -206,7 +212,7 @@ processors.relocate[math_char] = function(pointer)
                     report_remap("char",id,char,newchar)
                 end
                 if trace_analyzing then
-                    fcs(pointer,"font:isol")
+                    setnodecolor(pointer,"font:isol")
                 end
                 pointer.char = newchar
                 return true
@@ -220,19 +226,19 @@ processors.relocate[math_char] = function(pointer)
         -- return checked(pointer)
     end
     if trace_analyzing then
-        fcs(pointer,"font:medi")
+        setnodecolor(pointer,"font:medi")
     end
 end
 
 processors.relocate[math_textchar] = function(pointer)
     if trace_analyzing then
-        fcs(pointer,"font:init")
+        setnodecolor(pointer,"font:init")
     end
 end
 
 processors.relocate[math_delim] = function(pointer)
     if trace_analyzing then
-        fcs(pointer,"font:fina")
+        setnodecolor(pointer,"font:fina")
     end
 end
 
@@ -390,11 +396,12 @@ function noads.handlers.collapse(head,style,penalties)
     return true
 end
 
--- math alternates
+-- math alternates: (in xits lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
 
-function fonts.initializers.common.mathalternates(tfmdata)
+local function initializemathalternates(tfmdata)
     local goodies = tfmdata.goodies
     if goodies then
+        local shared = tfmdata.shared
         for i=1,#goodies do
             -- first one counts
             -- we can consider sharing the attributes ... todo (only once scan)
@@ -407,23 +414,24 @@ function fonts.initializers.common.mathalternates(tfmdata)
                     v.attribute = lastattribute
                     attributes[lastattribute] = v
                 end
-                tfmdata.shared.mathalternates           = alternates -- to be checked if shared is ok here
-                tfmdata.shared.mathalternatesattributes = attributes -- to be checked if shared is ok here
+                shared.mathalternates           = alternates -- to be checked if shared is ok here
+                shared.mathalternatesattributes = attributes -- to be checked if shared is ok here
                 return
             end
         end
     end
 end
 
-fonts.otf.tables.features['mathalternates'] = 'Additional math alternative shapes'
+registerotffeature {
+    name        = "mathalternates",
+    description = "additional math alternative shapes",
+    initializers = {
+        base = initializemathalternates,
+        node = initializemathalternates,
+    }
+}
 
-fonts.otf.features.register('mathalternates') -- true
-table.insert(fonts.triggers,"mathalternates")
-
-fonts.initializers.base.otf.mathalternates = fonts.initializers.common.mathalternates
-fonts.initializers.node.otf.mathalternates = fonts.initializers.common.mathalternates
-
-local getalternate = fonts.otf.getalternate
+local getalternate = otf.getalternate
 
 local mathalternate = attributes.private("mathalternate")
 

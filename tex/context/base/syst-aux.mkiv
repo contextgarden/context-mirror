@@ -195,16 +195,22 @@
 %D The next set of macros just do nothing, except that they
 %D get rid of a number of arguments.
 
-\long\def\gobbleoneargument    #1{}
-\long\def\gobbletwoarguments   #1#2{}
-\long\def\gobblethreearguments #1#2#3{}
-\long\def\gobblefourarguments  #1#2#3#4{}
-\long\def\gobblefivearguments  #1#2#3#4#5{}
-\long\def\gobblesixarguments   #1#2#3#4#5#6{}
-\long\def\gobblesevenarguments #1#2#3#4#5#6#7{}
-\long\def\gobbleeightarguments #1#2#3#4#5#6#7#8{}
-\long\def\gobbleninearguments  #1#2#3#4#5#6#7#8#9{}
-\long\def\gobbletenarguments   #1{\gobbleninearguments}
+\long\def\gobbleoneargument   #1{}
+\long\def\gobbletwoarguments  #1#2{}
+\long\def\gobblethreearguments#1#2#3{}
+\long\def\gobblefourarguments #1#2#3#4{}
+\long\def\gobblefivearguments #1#2#3#4#5{}
+\long\def\gobblesixarguments  #1#2#3#4#5#6{}
+\long\def\gobblesevenarguments#1#2#3#4#5#6#7{}
+\long\def\gobbleeightarguments#1#2#3#4#5#6#7#8{}
+\long\def\gobbleninearguments #1#2#3#4#5#6#7#8#9{}
+\long\def\gobbletenarguments  #1{\gobbleninearguments}
+
+\def\gobbleoneoptional   [#1]{}
+\def\gobbletwooptionals  [#1][#2]{}
+\def\gobblethreeoptionals[#1][#2][#3]{}
+\def\gobblefouroptionals [#1][#2][#3][#4]{}
+\def\gobblefiveoptionals [#1][#2][#3][#4][#5]{}
 
 %D \macros
 %D   {doifnextcharelse}
@@ -1130,7 +1136,7 @@
      \fi
    \fi}
 
-\def\processfirstactioninset[#1]%
+\unexpanded\def\processfirstactioninset[#1]%
   {\expandedaction\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\processaction
@@ -1139,7 +1145,7 @@
    \fi
    [#1]}
 
-\def\processfirstactionsinsetindeed[#1]#2[#3]%
+\unexpanded\def\processfirstactionsinsetindeed[#1]#2[#3]%
   {\def\p!doprocessaction##1%
      {\def\p!dodoprocessaction####1%
         {\p!compareprocessactionC[####1][##1]}%
@@ -1165,7 +1171,7 @@
 \def\doprocessallactionsinset
   {\csname\s!do\the\processlevel\endcsname}
 
-\def\processallactionsinset[#1]%
+\unexpanded\def\processallactionsinset[#1]%
   {\expandedaction\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\processaction
@@ -1174,7 +1180,7 @@
    \fi
    [#1]}
 
-\def\processallactionsinsetindeed[#1]#2[#3]%
+\unexpanded\def\processallactionsinsetindeed[#1]#2[#3]%
   {\advance\processlevel \plusone
    \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
      {\def\p!dodoprocessaction####1%
@@ -7282,7 +7288,14 @@
 
 %D A variant for \type {\executeifdefined}:
 
-\def\expandcheckedcsname#1#2#3%
+% \def\expandcheckedcsname#1#2#3%
+%   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+
+\def\expandcheckedcsname#1#2% #2 is often a \xxxparameter  so let's expand it once
+  {\normalexpanded{\noexpand\doexpandcheckedcsname{#1}{#2}}}
+
+\def\doexpandcheckedcsname#1#2#3%
   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+
 
 \protect \endinput

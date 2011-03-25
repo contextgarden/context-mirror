@@ -173,7 +173,7 @@
                 \ifx\currentreferenceuserdata\empty\else
                     userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
                 \fi
-            },"\@@iafocus")
+            },"\interactionparameter\c!focus")
        }%
        % todo: optional
        \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
@@ -197,7 +197,7 @@
             metadata = { % we could assume page to have no metadata
                 kind = "\s!page",
             },
-        },"\@@iafocus")
+        },"\interactionparameter\c!focus")
      }%
      \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
    \else
@@ -453,6 +453,9 @@
 
 \def\expandtexincurrentreference % will happen in lua some time
   {\ifcase\referencehastexstate\else\ctxlua{structures.references.expandcurrent()}\fi}
+
+\def\expandreferenceoperation#1#2{\ctxcommand{setreferenceoperation(#1,\!!bs#2\!!es)}}
+\def\expandreferencearguments#1#2{\ctxcommand{setreferencearguments(#1,\!!bs#2\!!es)}}
 
 \def\doifreferencefoundelse#1#2#3%
   {\ctxlua{structures.references.doifelse("\referenceprefix","#1",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
@@ -891,7 +894,7 @@
 
 \unexpanded\def\referencesymbol
   {\hbox{\strut\high
-     {\setupsymbolset[\@@iasymbolset]%
+     {\setupsymbolset[\interactionparameter\c!symbolset]%
       \symbol
         [\ifcase\referencepagestate
            \v!somewhere
@@ -1066,11 +1069,11 @@
    % but at least aditya can play with it now
    \doifsomething{\referenceformatparameter\c!style}
      {\dosetfontattribute{\??rf\currentreferenceformat}\c!style
-      \let\@@iastyle\empty}%
+      \resetinteractionparameter\c!style}%
    \doifsomething{\referenceformatparameter\c!color}
      {\dosetcolorattribute{\??rf\currentreferenceformat}\c!color
-      \let\@@iacontrastcolor\empty
-      \let\@@iacolor        \empty}%
+      \resetinteractionparameter\c!contrastcolor
+      \resetinteractionparameter\c!color}%
    %
    \edef\currentreferenceformatlabel{\referenceformatparameter\c!label}%
    \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
@@ -1174,7 +1177,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \dostarttagged\t!link\empty
-     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
      \dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
@@ -1214,7 +1217,7 @@
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \dostarttagged\t!link\empty
-        \ctxlua{structures.references.injectcurrentset(\number\dimexpr\@@iaheight\relax,\number\dimexpr\@@iadepth\relax)}%
+        \ctxlua{structures.references.injectcurrentset(\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax)}%
         \dostoptagged
         \setlocationattributes\??ia
         \global\lastsavedreferenceattribute\lastreferenceattribute
@@ -1591,184 +1594,6 @@
   {\ifthirdargument
      % this will be done differently (when it's needed)
    \fi}
-
-%D Buttons are just what their names says: things that can be
-%D clicked (pushed) on. They are similar to \type{\goto},
-%D except that the text argument is not interpreted.
-%D Furthermore one can apply anything to them that can be done
-%D with \type{\framed}.
-%D
-%D \startbuffer
-%D \button[width=3cm,height=1.5cm]{Exit}[ExitViewer]
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D gives
-%D
-%D \getbuffer
-%D
-%D This command is formally specified as:
-%D
-%D \showsetup{button}
-%D
-%D The characteristics can be set with:
-%D
-%D \showsetup{setupbuttons}
-
-\unexpanded\def\setupbuttons
-  {\dodoubleargument\getparameters[\??bt]}
-
-\definecomplexorsimpleempty\button
-
-\def\complexbutton
-  {\docomplexbutton\??bt}
-
-\presetlocalframed[\??bt]
-
-\long\def\docomplexbutton#1[#2]#3#4% get rid of possible space before [#4]
-  {\dodocomplexbutton#1[#2]{#3}#4} % #4 == [
-
-\def\buttonframed{\dodoubleempty\localframed[\??bt]} % goodie
-
-\long\def\dodocomplexbutton#1[#2]#3[#4]% #3 can contain [] -> {#3} later
-  {\begingroup
-   \doifvalue{#1\c!state}\v!stop\locationfalse
-   \iflocation
-     \ConvertConstantAfter\doifelse{#3}\v!none\hphantom\hbox
-       {\doifelsenothing{#4}
-          {\setlocationboxnop#1[#2]{#3}[#4]}
-          {\doifreferencefoundelse{#4} % INEFFICIENT
-             {\setlocationboxyes#1[#2]{#3}[#4]}
-             {\setlocationboxnop#1[#2]{#3}[#4]}}}%
-   \fi
-   \endgroup}
-
-\setupbuttons
-  [\c!state=\v!start]
-
-%D Interaction buttons, in fact a row of tiny buttons, are
-%D typically only used for navigational purposed. The next
-%D macro builds such a row based on a specification list.
-%D
-%D \startbuffer
-%D \interactionbuttons
-%D   [width=\hsize][page,PreviousJump,ExitViewer]
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D gives
-%D
-%D \getbuffer
-%D
-%D Apart from individual entries, one can use \type{page} and
-%D \type {subpage} as shortcuts to their four associated buttons.
-%D The symbols are derived from the symbols linked to the
-%D entries.
-
-% does not work well with for instance SomeRef{whatever}
-
-\def\interactionbuttons
-  {\dodoubleempty\dointeractionbuttons}
-
-\def\dointeractionbuttons[#1][#2]% er is een verdeel macro \horizontalfractions
-  {\iflocation
-     % BUG: fails when frame=off; best is to rewrite this macro
-     \bgroup
-     \doif\@@ibstate\v!stop\locationfalse
-     \iflocation
-       \ifsecondargument
-         \setupinteractionbar[#1]%
-         \checkinteractionbar{1.5em}\v!broad\!!zeropoint % brrrrr
-         \setbox2\hbox{\localframed[\??ib][\c!background=]{\symbol[\@@iasymbolset][\v!previouspage]}}%
-         \!!heighta\ht2 % needed because we default to nothing
-         \setupinteractionbar[\c!strut=\v!no]%
-         \setinteractionparameter\c!width\!!zeropoint
-         \!!counta\zerocount % new, was 1
-         \processallactionsinset
-           [#2]
-           [   \v!page=>\advance\!!counta 4,
-            \v!subpage=>\advance\!!counta 4,
-            \s!unknown=>\advance\!!counta 1]%
-         \ifdim\@@ibwidth=\zeropoint
-           \!!widtha2em
-           \advance\!!widtha \@@ibdistance  % new
-           \!!widthb\!!counta\!!widtha
-           \advance\!!widthb -\@@ibdistance % new
-         \else
-           \!!widtha\@@ibwidth
-           \!!widthb\@@ibdistance           % new
-           \multiply\!!widthb \!!counta     % new
-           \advance\!!widthb -\@@ibdistance % new
-           \advance\!!widtha -\!!widthb     % new
-           \divide\!!widtha \!!counta
-           \!!widthb\@@ibwidth
-         \fi
-         \def\xgoto##1% clash ?
-           {\setnostrut
-            \edef\localreference{##1}%
-            \normalexpanded{\noexpand\dodocomplexbutton\??ib[\c!height=\the\!!heighta,\c!width=\the\!!widtha]}%
-              {\dontleavehmode\symbol[\@@iasymbolset][\localreference]}%
-              [\localreference]%
-            \hss}%
-         \hbox to \!!widthb
-           {\processallactionsinset
-              [#2]
-              [      \v!page=>\xgoto\v!firstpage
-                              \xgoto\v!nextpage
-                              \xgoto\v!previouspage
-                              \xgoto\v!lastpage,
-                  \v!subpage=>\xgoto\v!firstsubpage
-                              \xgoto\v!nextsubpage
-                              \xgoto\v!previoussubpage
-                              \xgoto\v!lastsubpage,
-                  \s!unknown=>\xgoto\commalistelement]%
-            \unskip}%
-       \else
-         \interactionbuttons[][#1]%
-       \fi
-     \fi
-     \egroup
-   \fi}
-
-%D \macros
-%D   {overlaybutton}
-%D
-%D For converience we provide:
-%D
-%D \starttyping
-%D \overlaybutton[reference]
-%D \stoptyping
-%D
-%D This command can be used to define overlays an/or can be
-%D used in the whatevertext areas, like:
-%D
-%D \starttyping
-%D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
-%D \setupbackgrounds[page][background=PrevPage]
-%D \setuptexttexts[\overlaybutton{NextPage}]
-%D \stoptyping
-%D
-%D For practical reasons, this macro accepts square brackets
-%D as well as braces.
-
-\definecomplexorsimple\overlaybutton
-
-\def\simpleoverlaybutton#1%
-  {\complexoverlaybutton[#1]}
-
-\def\complexoverlaybutton[#1]%
-  {\iflocation
-     \gotobox{\overlayfakebox}[#1]%
-   \fi}
-
-\def\overlayfakebox
-  {\hbox
-     {\setbox\scratchbox\emptyhbox
-      \wd\scratchbox\overlaywidth
-      \ht\scratchbox\overlayheight
-      \box\scratchbox}}
 
 %D \macros
 %D   {dotextprefix}

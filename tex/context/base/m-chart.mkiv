@@ -1051,17 +1051,20 @@
 
 %D A hook into the help system.
 
+% \def\showFLOWhelp#1%
+%   {\doifhelpinfo\FLOWhelp
+%      {\setbox#1=\hbox
+%         {\setbox\scratchbox=\hbox{\lower\@@FLOWdy\hbox
+%            {\helpbutton
+%               [\c!width=\wd0,\c!color=,\c!height=\@@FLOWdy,\c!frame=\v!no]%
+%               [\FLOWhelp]}}%
+%          \smashbox\scratchbox
+%          \setbox#1=\vbox
+%            {\forgetall\offinterlineskip\box#1\box\scratchbox}%
+%          \box#1}}}
+
 \def\showFLOWhelp#1%
-  {\doifhelpinfo\FLOWhelp
-     {\setbox#1=\hbox
-        {\setbox\scratchbox=\hbox{\lower\@@FLOWdy\hbox
-           {\helpbutton
-              [\c!width=\wd0,\c!color=,\c!height=\@@FLOWdy,\c!frame=\v!no]%
-              [\FLOWhelp]}}%
-         \smashbox\scratchbox
-         \setbox#1=\vbox
-           {\forgetall\offinterlineskip\box#1\box\scratchbox}%
-         \box#1}}}
+  {}
 
 %D The next section is dedicated to splitting up charts.
 
@@ -2316,20 +2319,6 @@
 
 \def\FLOWchart%
   {\dodoubleempty\doFLOWchart}
-
-%D A hook into the help system.
-
-\def\showFLOWhelp#1%
-  {\doifhelpinfo\FLOWhelp
-     {\setbox#1=\hbox
-        {\setbox\scratchbox=\hbox{\lower\@@FLOWdy\hbox
-           {\helpbutton
-              [\c!width=\wd0,\c!color=,\c!height=\@@FLOWdy,\c!frame=\v!no]%
-              [\FLOWhelp]}}%
-         \smashbox\scratchbox
-         \setbox#1=\vbox
-           {\forgetall\offinterlineskip\box#1\box\scratchbox}%
-         \box#1}}}
 
 %D The next section is dedicated to splitting up charts.
 

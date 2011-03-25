@@ -25,7 +25,7 @@ local has_attribute = node.has_attribute
 local chardata      = characters.data
 local collected     = false
 local attribute     = attributes.private("stripping")
-local fontdata      = fonts.identifiers
+local fontdata      = fonts.hashes.identifiers
 local tasks         = nodes.tasks
 
 local nodecodes    = nodes.nodecodes
@@ -102,41 +102,3 @@ function nodes.stripping.enable()
     tasks.enableaction("processors","nodes.handlers.stripping")
     function nodes.stripping.enable() end
 end
-
--- bonus:
-
-local initializers, methods = fonts.initializers, fonts.methods
-
-local function processformatters(head,font)
-    local how = fontdata[font].shared.features.formatters -- slow
-    if how == nil or how == "strip" then -- nil when forced
-        local current, done = head, false
-        while current do
-            if current.id == glyph_code and current.subtype<256 and current.font == font then
-                local char = current.char
-                local what = glyphs[char]
-                if what then
-                    head, current = process(what,head,current,char)
-                    done = true
-                else -- handling of spacing etc has to be done elsewhere
-                    current = current.next
-                end
-            else
-                current = current.next
-            end
-        end
-        return head, done
-    else
-        return head, false
-    end
-end
-
-function initializers.common.formatters(tfmdata,value)
-    if initialize then initialize() end
-end
-
-initializers.base.otf.formatters = initializers.common.formatters
-initializers.node.otf.formatters = initializers.common.formatters
-
-methods.node.otf.formatters = processformatters
-methods.base.otf.formatters = processformatters

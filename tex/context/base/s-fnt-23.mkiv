@@ -14,10 +14,15 @@
 % last_data was written wrong so it needs checking
 
 \startluacode
+    local fontdata   = fonts.hashes.identifiers
+    local otfhandler = fonts.handlers.otf --- will be moduledata
+
     local last_data = nil
+
     local format = string.format
-    function fonts.otf.show_shape(n)
-        local tfmdata = fonts.identifiers[font.current()]
+
+    function otfhandler.show_shape(n)
+        local tfmdata = fontdata[font.current()]
         last_data = tfmdata
         local charnum = tonumber(n)
         if not charnum then
@@ -25,8 +30,9 @@
         end
         local c = tfmdata.characters[charnum]
         local d = tfmdata.descriptions[charnum]
+        local parameters = tfmdata.parameters
         if d then
-            local factor = (tfmdata.size/tfmdata.units)*((7200/7227)/65536)
+            local factor = (parameters.size/parameters.units)*((7200/7227)/65536)
             local llx, lly, urx, ury = unpack(d.boundingbox)
             llx, lly, urx, ury = llx*factor, lly*factor, urx*factor, ury*factor
             local width, italic = (d.width or 0)*factor, (d.italic or 0)*factor
@@ -193,22 +199,21 @@
             context("no such shape: %s",n)
         end
     end
-    function fonts.otf.show_all_shapes(start,stop)
-        local tfmdata = fonts.identifiers[font.current()]
+    function otfhandler.show_all_shapes(start,stop)
+        local tfmdata = fontdata[font.current()]
         last_data = tfmdata
         start, stop = start or "\\startTEXpage\\gobbleoneargument", stop or "\\stopTEXpage"
-        local unicodes, indices, descriptions = tfmdata.unicodes, tfmdata.indices, tfmdata.descriptions
-        for _, unicode in next, table.sortedkeys(descriptions) do
-            local d = descriptions[unicode]
-            local name = d.name
+        local unicodes, descriptions = tfmdata.unicodes, tfmdata.descriptions
+        for unicode, description in fonts.iterators.descriptions(tfmdata) do
+            local name = description.name
             context("%s{%s}%%",start,unicode)
             context("\\writestatus{glyph}{U+%04X -> %s}%%",unicode,name)
-            fonts.otf.show_shape(unicode)
+            otfhandler.show_shape(unicode)
             context(stop)
         end
     end
-    function fonts.otf.show_shape_field(unicode,name)
-        local tfmdata = last_data or fonts.identifiers[font.current()]
+    function otfhandler.show_shape_field(unicode,name)
+        local tfmdata = last_data or fontdata[font.current()]
         local d = tfmdata.descriptions[unicode]
         if d then
             if name == "unicode" then
@@ -227,7 +232,7 @@
   [state=start]
 
 \def\GetGlyphField#1#2%
-  {\ctxlua{fonts.otf.show_shape_field(#1,"#2")}}
+  {\ctxlua{fonts.handlers.otf.show_shape_field(#1,"#2")}}
 
 \def\StartShowGlyphShape#1%
   {\startTEXpage
@@ -243,14 +248,14 @@
   {\begingroup
    \definedfont[#1 at #2]%
    \obeyMPboxdepth
-   \ctxlua{fonts.otf.show_shape("#3")}%
+   \ctxlua{fonts.handlers.otf.show_shape("#3")}%
    \endgroup}
 
 \def\ShowAllGlyphShapes#1#2% name size
   {\begingroup
    \nonknuthmode
    \definedfont[#1 at #2]%
-   \ctxlua{fonts.otf.show_all_shapes("\\StartShowGlyphShape","\\StopShowGlyphShape")}%
+   \ctxlua{fonts.handlers.otf.show_all_shapes("\\StartShowGlyphShape","\\StopShowGlyphShape")}%
    \endgroup}
 
 \setupcolors

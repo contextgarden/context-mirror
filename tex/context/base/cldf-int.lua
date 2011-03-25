@@ -75,8 +75,8 @@ function mkiv.define(name,specification) -- name is optional
             texsprint(ctxcatcodes,"\\def",mkivdo)
             for i=1,na do
                 local a = arguments[i]
-                local kind = a[1]
-                if kind == "option" then
+                local variant = a[1]
+                if variant == "option" then
                     texsprint(ctxcatcodes,"[#",i,"]")
                     if not done then
                         opt = opt + 1
@@ -93,12 +93,12 @@ function mkiv.define(name,specification) -- name is optional
             end
             for i=1,na do
                 local a = arguments[i]
-                local kind = a[2]
-                if kind == "list" then
+                local variant = a[2]
+                if variant == "list" then
                     texsprint(ctxcatcodes,",mkiv.a([[#",i,"]])")
-                elseif kind == "hash" then
+                elseif variant == "hash" then
                     texsprint(ctxcatcodes,",mkiv.h([[#",i,"]])")
-                elseif kind == "number" then
+                elseif variant == "number" then
                     texsprint(ctxcatcodes,",mkiv.n([[#",i,"]])")
                 else
                     texsprint(ctxcatcodes,",[[#",i,"]]")

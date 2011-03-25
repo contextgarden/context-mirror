@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['trac-hsh'] = {
 
 -- moved from trac-deb.lua
 
+local format = string.format
+
 local texhashtokens = tex.hashtokens
 
 local trackers = trackers
@@ -23,12 +25,12 @@ function trackers.dumphashtofile(filename,delta)
     for name, token in next, hash do
         if not delta or not saved[name] then
             -- token: cmd, chr, csid -- combination cmd,chr determines name
-            local kind = command_name(token)
-            local dk = list[kind]
+            local category = command_name(token)
+            local dk = list[category]
             if not dk then
                 -- a bit funny names but this sorts better (easier to study)
                 dk = { names = { }, found = 0, code = token[1] }
-                list[kind] = dk
+                list[category] = dk
             end
             dk.names[name] = { token[2], token[3] }
             dk.found = dk.found + 1
@@ -49,3 +51,24 @@ end
 
 directives.register("system.dumphash",  function() dump_hash(false) end)
 directives.register("system.dumpdelta", function() dump_hash(true ) end)
+
+local report_dump = logs.reporter("resolvers","dump")
+
+local function saveusedfilesintrees(format)
+    local data = {
+        jobname = environment.jobname or "?",
+        version = environment.version or "?",
+        files   = table.sortedkeys(resolvers.instance.foundintrees)
+    }
+    local filename = file.replacesuffix(environment.jobname or "context-job",'jlg')
+    if format == "lua" then
+        io.savedata(filename,table.serialize(data,true))
+    else
+        io.savedata(filename,table.toxml(data,"job"))
+    end
+end
+
+directives.register("system.dumpfiles", function(v)
+    luatex.registerstopactions(function() saveusedfilesintrees(v) end)
+end)
+

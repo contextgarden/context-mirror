@@ -24,13 +24,6 @@ nodes = nodes or { }
 
 local fonts, nodes, node, context = fonts, nodes, node, context
 
-fonts.tfm             = fonts.tfm         or { }
-fonts.identifiers     = fonts.identifiers or { }
-fonts.characters      = fonts.characters  or { }
-
-local fontdata        = fonts.identifiers
-local fontchar        = fonts.characters
-
 nodes.tracers         = nodes.tracers or { }
 local tracers         = nodes.tracers
 
@@ -77,6 +70,7 @@ local nodepool        = nodes.pool
 local new_glyph       = nodepool.glyph
 
 function char_tracers.collect(head,list,tag,n)
+    local fontdata = fonts.hashes.identifiers
     n = n or 0
     local ok, fn = false, nil
     while head do
@@ -236,6 +230,7 @@ end
 
 function step_tracers.features()
     -- we cannot use first_glyph here as it only finds characters with subtype < 256
+    local fontdata = fonts.hashes.identifiers
     local f = collection[1]
     while f do
         if f.id == glyph_code then
@@ -265,12 +260,14 @@ function step_tracers.features()
 end
 
 function tracers.fontchar(font,char)
+    local fontchar = fonts.hashes.characters
     local n = new_glyph()
     n.font, n.char, n.subtype = font, char, 256
     context(n)
 end
 
 function step_tracers.codes(i,command)
+    local fontdata = fonts.hashes.identifiers
     local c = collection[i]
     while c do
         local id = c.id
@@ -581,6 +578,7 @@ local threshold = 65536
 
 local function toutf(list,result,nofresult,stopcriterium)
     if list then
+        local fontchar = fonts.hashes.characters
         for n in traverse_nodes(list) do
             local id = n.id
             if id == glyph_code then
@@ -656,3 +654,25 @@ number.points = points
 --~     local shrink_unit = (shrink_order ~= 0) and ("fi".. string.rep("l",shrink_order)) or "sp"
 --~     return string.format("%ssp+ %ssp - %ssp",s.width,s.stretch,stretch_unit,s.shrink,shrink_unit)
 --~ end
+
+local colors   = { }
+tracers.colors = colors
+
+local set_attribute   = node.set_attribute
+local unset_attribute = node.unset_attribute
+
+local attribute = attributes.private('color')
+local mapping   = attributes.list[attribute] or { }
+
+function colors.set(n,c)
+    local mc = mapping[c]
+    if not mc then
+        unset_attribute(n,attribute)
+    else
+        set_attribute(n,attribute,mc)
+    end
+end
+
+function colors.reset(n)
+    unset_attribute(n,attribute)
+end

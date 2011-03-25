@@ -45,7 +45,7 @@ end
 local testcase = commands.testcase
 
 function commands.splitfilename(fullname)
-    local path, name, base, suffix, kind = '', fullname, fullname, '', 0
+    local path, name, base, suffix = '', fullname, fullname, ''
     local p, n = match(fullname,"^(.+)/(.-)$")
     if p and n then
         path, name, base = p, n, n

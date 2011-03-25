@@ -6,112 +6,152 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
     license   = "see context related readme files"
 }
 
-local gmatch, gsub, find = string.gmatch, string.gsub, string.find
+local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
 local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
 
-local report_media = logs.reporter("backend","media")
+local report_media      = logs.reporter("backend","media")
+local report_attachment = logs.reporter("backend","attachment")
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local nodeinjections          = backends.pdf.nodeinjections
+local codeinjections          = backends.pdf.codeinjections
+local registrations           = backends.pdf.registrations
 
-local executers = structures.references.executers
-local variables = interfaces.variables
+local executers               = structures.references.executers
+local variables               = interfaces.variables
 
-local pdfconstant          = lpdf.constant
-local pdfdictionary        = lpdf.dictionary
-local pdfarray             = lpdf.array
-local pdfreference         = lpdf.reference
-local pdfunicode           = lpdf.unicode
-local pdfstring            = lpdf.string
-local pdfcolorspec         = lpdf.colorspec
-local pdfflushobject       = lpdf.flushobject
-local pdfreserveannotation = lpdf.reserveannotation
-local pdfreserveobject     = lpdf.reserveobject
-local pdfimmediateobject   = lpdf.immediateobject
-local pdfpagereference     = lpdf.pagereference
+local v_hidden                = variables.hidden
+local v_normal                = variables.normal
+local v_auto                  = variables.auto
+local v_embed                 = variables.embed
+local v_unknown               = variables.unknown
 
-local nodepool             = nodes.pool
+local pdfconstant             = lpdf.constant
+local pdfdictionary           = lpdf.dictionary
+local pdfarray                = lpdf.array
+local pdfreference            = lpdf.reference
+local pdfunicode              = lpdf.unicode
+local pdfstring               = lpdf.string
+local pdfcolorspec            = lpdf.colorspec
+local pdfflushobject          = lpdf.flushobject
+local pdfreserveannotation    = lpdf.reserveannotation
+local pdfreserveobject        = lpdf.reserveobject
+local pdfimmediateobject      = lpdf.immediateobject
+local pdfpagereference        = lpdf.pagereference
+local pdfshareobjectreference = lpdf.shareobjectreference
 
-local pdfannotation_node   = nodepool.pdfannotation
+local nodepool                = nodes.pool
 
-local hpack_node, write_node = node.hpack, node.write
+local pdfannotation_node      = nodepool.pdfannotation
 
-local pdf_border = pdfarray { 0, 0, 0 } -- can be shared
+local hpack_node              = node.hpack
+local write_node              = node.write
+
+local pdf_border              = pdfarray { 0, 0, 0 } -- can be shared
 
 -- symbols
 
 local presets = { } -- xforms
 
-function codeinjections.registersymbol(name,n)
+local function registersymbol(name,n)
     presets[name] = pdfreference(n)
 end
 
-function codeinjections.registeredsymbol(name)
+local function registeredsymbol(name)
     return presets[name]
 end
 
-function codeinjections.presetsymbol(symbol)
+local function presetsymbol(symbol)
     if not presets[symbol] then
         context.predefinesymbol { symbol }
     end
 end
 
-function codeinjections.presetsymbollist(list)
+local function presetsymbollist(list)
     if list then
         for symbol in gmatch(list,"[^, ]+") do
-            codeinjections.presetsymbol(symbol)
+            presetsymbol(symbol)
         end
     end
 end
 
+codeinjections.registersymbol   = registersymbol
+codeinjections.registeredsymbol = registeredsymbol
+codeinjections.presetsymbol     = presetsymbol
+codeinjections.presetsymbollist = presetsymbollist
+
 -- comments
 
-local symbols = {
-    New          = pdfconstant("Insert"),
-    Insert       = pdfconstant("Insert"),
-    Balloon      = pdfconstant("Comment"),
-    Comment      = pdfconstant("Comment"),
-    Text         = pdfconstant("Note"),
-    Addition     = pdfconstant("NewParagraph"),
-    NewParagraph = pdfconstant("NewParagraph"),
-    Help         = pdfconstant("Help"),
-    Paragraph    = pdfconstant("Paragraph"),
-    Key          = pdfconstant("Key"),
-    Graph        = pdfconstant("Graph"),
-    Paperclip    = pdfconstant("Paperclip"),
-    Attachment   = pdfconstant("Attachment"),
-    Tag          = pdfconstant("Tag"),
+-- local symbols = {
+--     Addition     = pdfconstant("NewParagraph"),
+--     Attachment   = pdfconstant("Attachment"),
+--     Balloon      = pdfconstant("Comment"),
+--     Check        = pdfconstant("Check Mark"),
+--     CheckMark    = pdfconstant("Check Mark"),
+--     Circle       = pdfconstant("Circle"),
+--     Cross        = pdfconstant("Cross"),
+--     CrossHairs   = pdfconstant("Cross Hairs"),
+--     Graph        = pdfconstant("Graph"),
+--     InsertText   = pdfconstant("Insert Text"),
+--     New          = pdfconstant("Insert"),
+--     Paperclip    = pdfconstant("Paperclip"),
+--     RightArrow   = pdfconstant("Right Arrow"),
+--     RightPointer = pdfconstant("Right Pointer"),
+--     Star         = pdfconstant("Star"),
+--     Tag          = pdfconstant("Tag"),
+--     Text         = pdfconstant("Note"),
+--     TextNote     = pdfconstant("Text Note"),
+--     UpArrow      = pdfconstant("Up Arrow"),
+--     UpLeftArrow  = pdfconstant("Up-Left Arrow"),
+-- }
+
+local attachment_symbols = {
+    Graph     = pdfconstant("GraphPushPin"),
+    Paperclip = pdfconstant("PaperclipTag"),
+    Pushpin   = pdfconstant("PushPin"),
 }
 
-symbols[variables.normal] = pdfconstant("Note")
+attachment_symbols.PushPin = attachment_symbols.Pushpin
+attachment_symbols.Default = attachment_symbols.Pushpin
 
-local nofcomments, usepopupcomments, stripleading = 0, true, true
+local comment_symbols = {
+    Comment      = pdfconstant("Comment"),
+    Help         = pdfconstant("Help"),
+    Insert       = pdfconstant("Insert"),
+    Key          = pdfconstant("Key"),
+    Newparagraph = pdfconstant("NewParagraph"),
+    Note         = pdfconstant("Note"),
+    Paragraph    = pdfconstant("Paragraph"),
+}
 
-local function analyzesymbol(symbol)
+comment_symbols.NewParagraph = Newparagraph
+comment_symbols.Default      = Note
+
+local function analyzesymbol(symbol,collection)
     if not symbol or symbol == "" then
-        return symbols.normal, nil
-    elseif symbols[symbol] then
-        return symbols[symbol], nil
+        return collection.Default, nil
+    elseif collection[symbol] then
+        return collection[symbol], nil
     else
+        local setn, setr, setd
         local set = settings_to_array(symbol)
-        local normal, down = set[1], set[2]
-        if normal then
-            normal = codeinjections.registeredsymbol(down or normal)
+        if #set == 1 then
+            setn, setr, setd = set[1], set[1], set[1]
+        elseif #set == 2 then
+            setn, setr, setd = set[1], set[1], set[2]
+        else
+            setn, setr, setd = set[1], set[2], set[3]
         end
-        if down then
-            down = codeinjections.registeredsymbol(normal)
-        end
-        if down or normal then
-            return nil, pdfdictionary {
-                N = normal,
-                D = down,
-            }
-        end
+        local appearance = pdfdictionary {
+            N = setn and registeredsymbol(setn),
+            R = setr and registeredsymbol(setr),
+            D = setd and registeredsymbol(setd),
+        }
+        local appearanceref = pdfshareobjectreference(appearance)
+        return nil, appearanceref
     end
 end
 
@@ -119,67 +159,34 @@ local function analyzelayer(layer)
     -- todo:  (specification.layer ~= "" and pdfreference(specification.layer)) or nil, -- todo: ref to layer
 end
 
-function codeinjections.registercomment(specification)
-    nofcomments = nofcomments + 1
-    local text = buffers.collectcontent(specification.buffer)
-    text = string.strip(text)
-    if stripleading then -- maybe just strip all leading and trailing spacing
-        text = gsub(text,"[\n\r] *","\n")
-    end
-    local name, appearance = analyzesymbol(specification.symbol)
-    local d = pdfdictionary {
-        Subtype   = pdfconstant("Text"),
-        Open      = specification.open,
-        Contents  = pdfunicode(text),
-        T         = (specification.title ~= "" and pdfunicode(specification.title)) or nil,
-        C         = pdfcolorspec(specification.colormodel,specification.colorvalue),
-        OC        = analyzelayer(specification.layer),
-        Name      = name,
-        AP        = appearance,
-    }
-    --
-    -- watch the nice feed back to tex hack
-    --
-    -- we can consider replacing nodes by user nodes that do a latelua
-    -- so that we get rid of all annotation whatsits
-    if usepopupcomments then
-        local nd = pdfreserveannotation()
-        local nc = pdfreserveannotation()
-        local c = pdfdictionary {
-            Subtype = pdfconstant("Popup"),
-            Parent  = pdfreference(nd),
-        }
-        d.Popup = pdfreference(nc)
-        texbox["commentboxone"] = hpack_node(pdfannotation_node(0,0,0,d(),nd)) -- current dir
-        texbox["commentboxtwo"] = hpack_node(pdfannotation_node(specification.width,specification.height,0,c(),nc)) -- current dir
-    else
-        texbox["commentboxone"] = hpack_node(pdfannotation_node(0,0,0,d())) -- current dir
-        texbox["commentboxtwo"] = nil
-    end
+local function analyzecolor(colorvalue,colormodel)
+    local cvalue = colorvalue and tonumber(colorvalue)
+    local cmodel = colormodel and tonumber(colormodel) or 3
+    return cvalue and pdfarray { lpdf.colorvalues(cmodel,cvalue) } or nil
 end
 
---
+local function analyzetransparency(transparencyvalue)
+    local tvalue = transparencyvalue and tonumber(transparencyvalue)
+    return tvalue and lpdf.transparencyvalue(tvalue) or nil
+end
+
+-- Attachments
 
 local nofattachments, attachments, filestreams, referenced = 0, { }, { }, { }
-
--- todo: hash and embed once
 
 local ignorereferenced = true -- fuzzy pdf spec .. twice in attachment list, can become an option
 
 local function flushembeddedfiles()
     if next(filestreams) then
         local e = pdfarray()
-        for name, reference in next, filestreams do
-            if reference then
-                if ignorereferenced and referenced[name] then
-                    reference = nil
-                end
-                if reference then
-                    e[#e+1] = pdfstring(name)
-                    e[#e+1] = reference -- already a reference
-                end
+        for tag, reference in next, filestreams do
+            if not reference then
+                report_attachment("unreferenced file: tag '%s'",tag)
+            elseif referenced[name] == "hidden" then
+                e[#e+1] = pdfstring(tag)
+                e[#e+1] = reference -- already a reference
             else
-                -- we can issue a message
+                -- messy spec ... when annot not in named else twice in menu list acrobat
             end
         end
         lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
@@ -188,76 +195,199 @@ end
 
 lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
-function codeinjections.embedfile(filename)
-    local r = filestreams[filename]
-    if r == false then
-        return nil
-    elseif r then
-        return r
-    elseif not lfs.isfile(filename) then
-        interfaces.showmessage("interactions",5,filename)
-        filestreams[filename] = false
-        return nil
+function codeinjections.embedfile(specification)
+    local data       = specification.data
+    local filename   = specification.file
+    local name       = specification.name or ""
+    local title      = specification.title or ""
+    local hash       = specification.hash or filename
+    if filename == "" then
+        filename = nil
+    end
+    if data then
+        local r = filestreams[hash]
+        if r == false then
+            return nil
+        elseif r then
+            return r
+        elseif not filename then
+            filename = specification.tag
+            if not filename or filename == "" then
+                filename = specification.registered
+            end
+            if not filename or filename == "" then
+                filename = hash
+            end
+        end
     else
-        local basename = file.basename(filename)
-        local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
-        local f = pdfimmediateobject("streamfile",filename,a())
-        local d = pdfdictionary {
-            Type = pdfconstant("Filespec"),
-            F    = pdfstring(newname or basename),
-            UF   = pdfstring(newname or basename),
-            EF   = pdfdictionary { F = pdfreference(f) },
-        }
-        local r = pdfreference(pdfflushobject(d))
-        filestreams[filename] = r
-        return r
+        if not filename then
+            return nil
+        end
+        local r = filestreams[hash]
+        if r == false then
+            return nil
+        elseif r then
+            return r
+        elseif not lfs.isfile(filename) then
+            filestreams[filename] = false
+            return nil
+        end
     end
-end
-
-function codeinjections.attachfile(specification)
-    local attachment = interactions.attachments.attachment(specification.label)
-    if not attachment then
-        -- todo: message
-        return
+    local basename = file.basename(filename)
+    local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
+    local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
+    local f
+    if data then
+        f = pdfimmediateobject("stream",data,a())
+        specification.data = true -- signal that still data but already flushed
+    else
+        f = pdfimmediateobject("streamfile",filename,a())
     end
-    local filename = attachment.filename
-    if not filename or filename == "" then
-        -- todo: message
-        return
-    end
-    referenced[filename] = true
-    nofattachments = nofattachments + 1
-    local label   = attachment.label   or ""
-    local title   = attachment.title   or ""
-    local newname = attachment.newname or ""
-    if label   == "" then label   = filename end
-    if title   == "" then title   = label    end
-    if newname == "" then newname = filename end
-    local aref = attachments[label]
-    if not aref then
-        aref = codeinjections.embedfile(filename,newname)
-        attachments[label] = aref
-    end
-    local name, appearance = analyzesymbol(specification.symbol)
     local d = pdfdictionary {
-        Subtype  = pdfconstant("FileAttachment"),
-        FS       = aref,
-        Contents = pdfunicode(title),
-        Name     = name,
-        AP       = appearance,
-        OC       = analyzelayer(specification.layer),
-        C        = pdfcolorspec(specification.colormodel,specification.colorvalue),
+        Type = pdfconstant("Filespec"),
+        F    = pdfstring(savename),
+        UF   = pdfstring(savename),
+        EF   = pdfdictionary { F = pdfreference(f) },
+        Desc = title ~= "" and pdfunicode(title) or nil,
     }
-    -- as soon as we can ask for the dimensions of an xform we can
-    -- use them here
-    local width  = specification.width  or 0
-    local height = specification.height or 0
-    local depth  = specification.depth  or 0
-    write_node(pdfannotation_node(width,height,depth,d())) -- somehow the dimensions come out wrong
+    local r = pdfreference(pdfflushobject(d))
+    filestreams[hash] = r
+    return r
 end
 
-function codeinjections.attachmentid(filename)
+function nodeinjections.attachfile(specification)
+    local registered = specification.registered or "<unset>"
+    local data = specification.data
+    local hash
+    if data then
+        hash = md5.HEX(data)
+    else
+        local filename = specification.file
+        if not filename or filename == "" then
+            report_attachment("missing file specification: registered '%s', using registered instead",registered)
+            filename = registered
+            specification.file = registered
+        end
+        if not lfs.isfile(filename) then
+            report_attachment("invalid file specification: registered '%s', filename '%s'",registered,filename)
+            return
+        end
+        hash = filename
+    end
+    specification.hash = hash
+    nofattachments = nofattachments + 1
+    local registered = specification.registered or ""
+    local title      = specification.title      or ""
+    local subtitle   = specification.subtitle   or ""
+    local author     = specification.author     or ""
+    if registered == "" then
+        registered = filename
+    end
+    if author == "" then
+        author = title
+        title = ""
+    end
+    if author == "" then
+        author = v_unknown
+    end
+    if title == "" then
+        title = registered
+    end
+    local aref = attachments[registered]
+    if not aref then
+        aref = codeinjections.embedfile(specification)
+        attachments[registered] = aref
+    end
+    if not aref then
+        report_attachment("skipping: registered '%s'",registered)
+        -- already reported
+    elseif specification.method == v_hidden then
+        referenced[hash] = "hidden"
+    else
+        referenced[hash] = "annotation"
+        local name, appearance = analyzesymbol(specification.symbol,attachment_symbols)
+        local d = pdfdictionary {
+            Subtype  = pdfconstant("FileAttachment"),
+            FS       = aref,
+            Contents = pdfunicode(title),
+            Name     = name,
+            NM       = pdfstring(format("attachment:%s",nofattachments)),
+            T        = author ~= "" and pdfunicode(author) or nil,
+            Subj     = subtitle ~= "" and pdfunicode(subtitle) or nil,
+            C        = analyzecolor(specification.colorvalue,specification.colormodel),
+            CA       = analyzetransparency(specification.transparencyvalue),
+            AP       = appearance,
+            OC       = analyzelayer(specification.layer),
+        }
+        local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
+        local box = hpack_node(pdfannotation_node(width,height,depth,d()))
+        box.width, box.height, box.depth = width, height, depth
+        return box
+    end
+end
+
+function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
+end
+
+local nofcomments, usepopupcomments, stripleading = 0, false, true
+
+function nodeinjections.comment(specification)
+    nofcomments = nofcomments + 1
+    local text = string.strip(specification.data or "")
+    if stripleading then
+        text = gsub(text,"[\n\r] *","\n")
+    end
+    local name, appearance = analyzesymbol(specification.symbol,comment_symbols)
+    local tag      = specification.tag      or "" -- this is somewhat messy as recent
+    local title    = specification.title    or "" -- versions of acrobat see the title
+    local subtitle = specification.subtitle or "" -- as author
+    local author   = specification.author   or ""
+    if author == "" then
+        if title == "" then
+            title = tag
+        end
+    else
+        if subtitle == "" then
+            subtitle = title
+        elseif title ~= "" then
+            subtitle = subtitle .. ", " .. title
+        end
+        title = author
+    end
+    local d = pdfdictionary {
+        Subtype   = pdfconstant("Text"),
+     -- Open      = specification.open, -- now options
+        Contents  = pdfunicode(text),
+        T         = title ~= "" and pdfunicode(title) or nil,
+        Subj      = subtitle ~= "" and pdfunicode(subtitle) or nil,
+        C         = analyzecolor(specification.colorvalue,specification.colormodel),
+        CA        = analyzetransparency(specification.transparencyvalue),
+        OC        = analyzelayer(specification.layer),
+        Name      = name,
+        NM        = pdfstring(format("comment:%s",nofcomments)),
+        AP        = appearance,
+    }
+    local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
+    local box
+    if usepopupcomments then
+        -- rather useless as we can hide/vide
+        local nd = pdfreserveannotation()
+        local nc = pdfreserveannotation()
+        local c = pdfdictionary {
+            Subtype = pdfconstant("Popup"),
+            Parent  = pdfreference(nd),
+        }
+        d.Popup = pdfreference(nc)
+        box = hpack_node(
+            pdfannotation_node(0,0,0,d(),nd),
+            pdfannotation_node(width,height,depth,c(),nc)
+        )
+    else
+        box = hpack_node(pdfannotation_node(width,height,depth,d()))
+    end
+    box.width, box.height, box.depth = width, height, depth -- redundant
+    return box
 end
 
 -- rendering stuff
@@ -308,7 +438,7 @@ local function insertrenderingwindow(specification)
     local label = specification.label
 --~     local openpage = specification.openpage
 --~     local closepage = specification.closepage
-    if specification.options == variables.auto then
+    if specification.options == v_auto then
         if openpageaction then
             -- \handlereferenceactions{\v!StartRendering{#2}}
         end
@@ -384,7 +514,7 @@ local function insertrendering(specification)
         }
         if isurl then
             descriptor.FS = pdfconstant("URL")
-        elseif options[variables.embed] then
+        elseif options[v_embed] then
             descriptor.EF = codeinjections.embedfile(filename)
         end
         local clip = pdfdictionary {
@@ -430,7 +560,7 @@ function codeinjections.processrendering(label)
     local specification = interactions.renderings.rendering(label)
     if not specification then
         -- error
-    elseif specification.kind == "external" then
+    elseif specification.type == "external" then
         insertrendering(specification)
     else
         insertrenderingobject(specification)

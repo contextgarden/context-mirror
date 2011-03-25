@@ -161,7 +161,7 @@ function chemicals.define(name,spec,text)
     }
 end
 
-local metacode, kind, keys, bonds, max, txt, textsize, rot, pstack
+local metacode, variant, keys, bonds, max, txt, textsize, rot, pstack
 local molecule = chemicals.molecule -- or use lpegmatch(chemicals.moleculeparser,...)
 
 local function fetch(txt)
@@ -226,7 +226,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
         else
             local rep, operation, special, index, upto, set, text = lpegmatch(pattern,s)
             if operation == "pb" then
-                insert(pstack,kind)
+                insert(pstack,variant)
                 m = m + 1 ; metacode[m] = syntax.pb.direct
                 if keys[special] == "text" and index then
                     if keys["c"..special] == "text" then -- can be option: auto ...
@@ -236,19 +236,19 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                     end
                 end
             elseif operation == "save" then
-                insert(pstack,kind)
+                insert(pstack,variant)
                 m = m + 1 ; metacode[m] = syntax.save.direct
             elseif operation == "pe" or operation == "restore" then
-                kind = remove(pstack)
-                local ss = syntax[kind]
+                variant = remove(pstack)
+                local ss = syntax[variant]
                 local prev = bonds or 6
                 keys, bonds, max, rot = ss.keys, ss.n, ss.max, 1
                 m = m + 1 ; metacode[m] = syntax[operation].direct
                 m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
             elseif operation == "front" then
-                if syntax[kind .. "_front"] then
-                    kind = kind .. "_front"
-                    local ss = syntax[kind]
+                if syntax[variant .. "_front"] then
+                    variant = variant .. "_front"
+                    local ss = syntax[variant]
                     local prev = bonds or 6
                     keys, bonds, max, rot = ss.keys, ss.n, ss.max, 1
                     m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
@@ -271,7 +271,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                         end
                     elseif ss.keys then
                         local prev = bonds or 6
-                        kind, keys, bonds, max, rot = s, ss.keys, ss.n, ss.max, 1
+                        variant, keys, bonds, max, rot = s, ss.keys, ss.n, ss.max, 1
                         m = m + 1 ; metacode[m] = format("chem_set(%s,%s) ;",prev,bonds)
                     end
                 else
@@ -308,7 +308,7 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                             end
                         end
                     elseif what == "text" then
-                        local align = syntax[kind].align
+                        local align = syntax[variant].align
                         align = align and align[operation]
                         align = align and align[rot]
                         if set then
@@ -440,7 +440,7 @@ function chemicals.start(settings)
         l/25, r/25, t/25, b/25, scale,
         tostring(settings.axis == variables.on), tostring(width), tostring(height), tostring(offset)
     ) }
-    kind, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
+    variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
 end
 
 function chemicals.stop()

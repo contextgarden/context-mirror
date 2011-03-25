@@ -12,13 +12,13 @@ local gsub, format = string.gsub, string.format
 local concat = table.concat
 local type, next = type, next
 
-utilities        = utilities or {}
-utilities.merger = utilities.merger or { } -- maybe mergers
-utilities.report = logs and logs.reporter("system") or print
+utilities             = utilities or {}
+utilities.merger      = utilities.merger or { } -- maybe mergers
+utilities.report      = logs and logs.reporter("system") or print
 
-local merger     = utilities.merger
+local merger          = utilities.merger
 
-merger.strip_comment = true
+merger.strip_comment  = true
 
 local m_begin_merge   = "begin library merge"
 local m_end_merge     = "end library merge"

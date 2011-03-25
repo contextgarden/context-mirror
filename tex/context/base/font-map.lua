@@ -6,15 +6,18 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local utf = unicode.utf8
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
-local lpegmatch = lpeg.match
+local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local utfbyte = utf.byte
 
-local trace_loading    = false  trackers.register("otf.loading",    function(v) trace_loading    = v end)
-local trace_unimapping = false  trackers.register("otf.unimapping", function(v) trace_unimapping = v end)
+local trace_loading = false  trackers.register("fonts.loading",    function(v) trace_loading    = v end)
+local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_unimapping = v end)
 
-local report_otf = logs.reporter("fonts","otf loading")
+local report_fonts  = logs.reporter("fonts","loading") -- not otf only
+
+local fonts    = fonts
+local mappings = { }
+fonts.mappings = mappings
 
 --[[ldx--
 <p>Eventually this code will disappear because map files are kind
@@ -22,22 +25,17 @@ of obsolete. Some code may move to runtime or auxiliary modules.</p>
 <p>The name to unciode related code will stay of course.</p>
 --ldx]]--
 
-local fonts = fonts
-fonts.map   = fonts.map or { }
-
 local function loadlumtable(filename) -- will move to font goodies
     local lumname = file.replacesuffix(file.basename(filename),"lum")
     local lumfile = resolvers.findfile(lumname,"map") or ""
     if lumfile ~= "" and lfs.isfile(lumfile) then
-        if trace_loading or trace_unimapping then
-            report_otf("enhance: loading %s ",lumfile)
+        if trace_loading or trace_mapping then
+            report_fonts("enhance: loading %s ",lumfile)
         end
         lumunic = dofile(lumfile)
         return lumunic, lumfile
     end
 end
-
-local P, R, S, C, Ct, Cc = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc
 
 local hex     = R("AF","09")
 local hexfour = (hex*hex*hex*hex) / function(s) return tonumber(s,16) end
@@ -65,8 +63,8 @@ local function makenameparser(str)
     end
 end
 
---~ local parser = fonts.map.makenameparser("Japan1")
---~ local parser = fonts.map.makenameparser()
+--~ local parser = mappings.makenameparser("Japan1")
+--~ local parser = mappings.makenameparser()
 --~ local function test(str)
 --~     local b, a = lpegmatch(parser,str)
 --~     print((a and table.serialize(b)) or b)
@@ -107,7 +105,7 @@ end
 --~
 --~ local cache = { }
 --~
---~ function fonts.map.tounicode16(unicode)
+--~ function mappings.tounicode16(unicode)
 --~     local s = cache[unicode]
 --~     if not s then
 --~         if unicode < 0x10000 then
@@ -120,10 +118,10 @@ end
 --~     return s
 --~ end
 
-fonts.map.loadlumtable        = loadlumtable
-fonts.map.makenameparser      = makenameparser
-fonts.map.tounicode16         = tounicode16
-fonts.map.tounicode16sequence = tounicode16sequence
+mappings.loadlumtable        = loadlumtable
+mappings.makenameparser      = makenameparser
+mappings.tounicode16         = tounicode16
+mappings.tounicode16sequence = tounicode16sequence
 
 local separator   = S("_.")
 local other       = C((1 - separator)^1)
@@ -135,8 +133,11 @@ local ligsplitter = Ct(other * (separator * other)^0)
 --~ print(table.serialize(lpegmatch(ligsplitter,"such_so_more")))
 --~ print(table.serialize(lpegmatch(ligsplitter,"such_so_more.that")))
 
-fonts.map.addtounicode = function(data,filename)
-    local unicodes = data.luatex and data.luatex.unicodes
+function mappings.addtounicode(data,filename)
+    local resources    = data.resources
+    local properties   = data.properties
+    local descriptions = data.descriptions
+    local unicodes     = resources.unicodes
     if not unicodes then
         return
     end
@@ -146,28 +147,35 @@ fonts.map.addtounicode = function(data,filename)
     unicodes['zwj']    = unicodes['zwj']    or 0x200D
     unicodes['zwnj']   = unicodes['zwnj']   or 0x200C
     -- the tounicode mapping is sparse and only needed for alternatives
-    local tounicode, originals, ns, nl, private, unknown = { }, { }, 0, 0, fonts.privateoffset, format("%04X",utfbyte("?"))
-    data.luatex.tounicode, data.luatex.originals = tounicode, originals
+    local private       = fonts.constructors.privateoffset
+    local unknown       = format("%04X",utfbyte("?"))
+    local unicodevector = fonts.encodings.agl.unicodes -- loaded runtime in context
+    local tounicode     = { }
+    local originals     = { }
+    resources.tounicode = tounicode
+    resources.originals = originals
     local lumunic, uparser, oparser
+    local cidinfo, cidnames, cidcodes, usedmap
     if false then -- will become an option
         lumunic = loadlumtable(filename)
         lumunic = lumunic and lumunic.tounicode
     end
-    local cidinfo, cidnames, cidcodes = data.cidinfo
-    local usedmap = cidinfo and cidinfo.usedname
-    usedmap = usedmap and lower(usedmap)
-    usedmap = usedmap and fonts.cid.map[usedmap]
+    --
+    cidinfo = properties.cidinfo
+    usedmap = cidinfo and fonts.cid.getmap(cidinfo)
+    --
     if usedmap then
-        oparser = usedmap and makenameparser(cidinfo.ordering)
+        oparser  = usedmap and makenameparser(cidinfo.ordering)
         cidnames = usedmap.names
         cidcodes = usedmap.unicodes
     end
     uparser = makenameparser()
-    local unicodevector = fonts.enc.agl.unicodes -- loaded runtime in context
-    for index, glyph in next, data.glyphs do
-        local name, unic = glyph.name, glyph.unicode or -1 -- play safe
+    local ns, nl = 0, 0
+    for unic, glyph in next, descriptions do
+        local index = glyph.index
+        local name  = glyph.name
         if unic == -1 or unic >= private or (unic >= 0xE000 and unic <= 0xF8FF) or unic == 0xFFFE or unic == 0xFFFF then
-            local unicode = (lumunic and lumunic[name]) or unicodevector[name]
+            local unicode = lumunic and lumunic[name] or unicodevector[name]
             if unicode then
                 originals[index], tounicode[index], ns = unicode, tounicode16(unicode), ns + 1
             end
@@ -258,17 +266,19 @@ fonts.map.addtounicode = function(data,filename)
             end
         end
     end
-    if trace_unimapping then
-        for index, glyph in table.sortedhash(data.glyphs) do
-            local toun, name, unic = tounicode[index], glyph.name, glyph.unicode or -1 -- play safe
+    if trace_mapping then
+        for unic, glyph in table.sortedhash(descriptions) do
+            local name  = glyph.name
+            local index = glyph.index
+            local toun  = tounicode[index]
             if toun then
-                report_otf("internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
+                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
             else
-                report_otf("internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
+                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
             end
         end
     end
     if trace_loading and (ns > 0 or nl > 0) then
-        report_otf("enhance: %s tounicode entries added (%s ligatures)",nl+ns, ns)
+        report_fonts("enhance: %s tounicode entries added (%s ligatures)",nl+ns, ns)
     end
 end

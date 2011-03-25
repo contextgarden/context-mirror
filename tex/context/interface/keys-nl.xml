@@ -78,6 +78,7 @@
 		<cd:variable name='april' value='april'/>
 		<cd:variable name='atmargin' value='opmarge'/>
 		<cd:variable name='atpage' value='oppagina'/>
+		<cd:variable name='attachment' value='aanhangsel'/>
 		<cd:variable name='august' value='augustus'/>
 		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
@@ -531,6 +532,7 @@
 		<cd:constant name='after' value='na'/>
 		<cd:constant name='afterhead' value='kopna'/>
 		<cd:constant name='afterkey' value='natoets'/>
+		<cd:constant name='aftersection' value='nasectie'/>
 		<cd:constant name='align' value='uitlijnen'/>
 		<cd:constant name='aligncharacter' value='karakteruitlijnen'/>
 		<cd:constant name='alignmentcharacter' value='uitlijnkarakter'/>
@@ -569,6 +571,7 @@
 		<cd:constant name='balance' value='balanceren'/>
 		<cd:constant name='before' value='voor'/>
 		<cd:constant name='beforehead' value='kopvoor'/>
+		<cd:constant name='beforesection' value='voorsectie'/>
 		<cd:constant name='bet' value='bet'/>
 		<cd:constant name='big' value='groot'/>
 		<cd:constant name='blank' value='blanko'/>
@@ -583,6 +586,7 @@
 		<cd:constant name='bottomoffset' value='onderoffset'/>
 		<cd:constant name='bottomspace' value='bodemwit'/>
 		<cd:constant name='bottomstate' value='onderstatus'/>
+		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
 		<cd:constant name='calculate' value='bereken'/>
 		<cd:constant name='category' value='categorie'/>
@@ -593,6 +597,7 @@
 		<cd:constant name='clipoffset' value='clipoffset'/>
 		<cd:constant name='closeaction' value='sluitactie'/>
 		<cd:constant name='closecommand' value='sluitcommando'/>
+		<cd:constant name='closepage' value='sluitpagina'/>
 		<cd:constant name='closepageaction' value='sluitpaginaactie'/>
 		<cd:constant name='closesymbol' value='sluitsymbool'/>
 		<cd:constant name='color' value='kleur'/>
@@ -817,6 +822,7 @@
 		<cd:constant name='oddmargin' value='onevenmarge'/>
 		<cd:constant name='offset' value='offset'/>
 		<cd:constant name='openaction' value='openactie'/>
+		<cd:constant name='openpage' value='openpagina'/>
 		<cd:constant name='openpageaction' value='openpaginaactie'/>
 		<cd:constant name='option' value='optie'/>
 		<cd:constant name='order' value='order'/>
@@ -1012,6 +1018,7 @@
 		<cd:constant name='urlalternative' value='urlvariant'/>
 		<cd:constant name='urlspace' value='urlspatie'/>
 		<cd:constant name='validate' value='valideer'/>
+		<cd:constant name='values' value='waarden'/>
 		<cd:constant name='vcommand' value='vcommando'/>
 		<cd:constant name='veroffset' value='kopoffset'/>
 		<cd:constant name='vfil' value='vfil'/>
@@ -1110,7 +1117,6 @@
 		<cd:command name='colorbar' value='kleurenbalk'/>
 		<cd:command name='colorvalue' value='kleurwaarde'/>
 		<cd:command name='column' value='kolom'/>
-		<cd:command name='comment' value='commentaar'/>
 		<cd:command name='comparecolorgroup' value='vergelijkkleurgroep'/>
 		<cd:command name='comparepalet' value='vergelijkpalet'/>
 		<cd:command name='completepagenumber' value='volledigepaginanummer'/>

@@ -3,7 +3,7 @@
 %D        version=1998.01.15,
 %D          title=\CONTEXT\ Page Macros,
 %D       subtitle=Pagebody Building (Imposition),
-%D         author=Hans Hagen,
+%D         author=Hans Hagen & Willi Egger,
 %D           date=\currentdate,
 %D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
 %C
@@ -806,6 +806,364 @@
 \setuppaper
   [\c!width =\dimexpr\printpaperwidth -2\dimexpr\@@ppbackspace\relax\relax,
    \c!height=\dimexpr\printpaperheight-2\dimexpr\@@pptopspace \relax\relax]
+
+%D Might be used if a printer is printing from a rol or creating mini-books from A4:
+%D This section has 16 pages. The folding scheme is first a Z-fold and at the end
+%D a final fold in the spine.
+%D Coding: [2*8*Z]
+
+\installpagearrangement 2*8*Z
+   {\dosetuparrangement{2}{4}{8}{3}{5}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageSIXTEENZ\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageSIXTEENZ#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}101\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}111\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}012\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}002\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}103\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}113\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}103\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}113\arrangedpageB % 10
+   \or \handlearrangedpageXandY{#1}012\arrangedpageB % 11
+   \or \handlearrangedpageXandY{#1}002\arrangedpageA % 12
+   \or \handlearrangedpageXandY{#1}101\arrangedpageA % 13
+   \or \handlearrangedpageXandY{#1}111\arrangedpageB % 14
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB % 15
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA % 16
+     \poparrangedpages
+   \fi}
+
+%D Another Z-folded section with 12 pages
+%D Coding: [2*6*Z]
+
+\installpagearrangement 2*6*Z
+   {\dosetuparrangement{2}{3}{6}{3}{4}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageTWELVEZ\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageTWELVEZ#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1: rotation (0=upright),x (0=first column),y (0=first row)
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}101\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}111\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}012\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}002\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}012\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}002\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}101\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}111\arrangedpageB % 10
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB % 11
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA % 12
+     \poparrangedpages
+   \fi}
+
+%D For Heinz' special greeting cards folding. This scheme is also used for the PocketDiary (module):
+%D Coding: [1*8]
+
+\installpagearrangement 1*8
+   {\dosetuparrangement{4}{2}{8}{5}{3} % X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageEIGHTSINGLESIDEDFOLDED\poparrangedpagesTWO\relax}
+
+\def\pusharrangedpageEIGHTSINGLESIDEDFOLDED#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1 rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  2
+   \or \handlearrangedpageXandY{#1}030\arrangedpageA %  3
+   \or \handlearrangedpageXandY{#1}131\arrangedpageA %  4
+   \or \handlearrangedpageXandY{#1}121\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}111\arrangedpageA %  6
+   \or \handlearrangedpageXandY{#1}101\arrangedpageA %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  8
+     \poparrangedpages
+   \fi}
+
+%D This is not a section. \CONTEXT\ places 4 pages on a sheet of paper, singlesided
+%D Coding: [1*4]
+
+\installpagearrangement 1*4
+   {\dosetuparrangement{2}{2}{4}{3}{3} % X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageFOURSINGLESIDEDFOLDED\poparrangedpagesTWO\relax}
+
+\def\pusharrangedpageFOURSINGLESIDEDFOLDED#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  1 rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  2
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA %  3
+   \or \handlearrangedpageXandY{#1}110\arrangedpageA %  4
+     \poparrangedpages
+   \fi}
+
+%D This imposition scheme was requested by Hraban Ramm, by Willi Egger 21-07-2003
+%D Coding: [3SIDE]
+
+\installpagearrangement 3SIDE
+   {\dosetuparrangement{3}{1}{3}{4}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageTHREESIDE\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageTHREESIDE#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  2
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  3
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  6
+       \poparrangedpages
+   \fi}
+
+%D FLYER in three parts and 6 pages 22-10-2010
+%D Coding: [TRYPTICHON]
+
+\installpagearrangement TRYPTICHON
+   {\dosetuparrangement{3}{1}{3}{4}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageFOLDERSIX\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageFOLDERSIX#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  5
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  6
+       \poparrangedpages
+   \fi}
+
+%D FLYER in Z-fold with 8 pages 22-01-2010
+%D Coding: [ZFLYER-8]
+
+\installpagearrangement ZFLYER-8
+   {\dosetuparrangement{4}{1}{4}{5}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageZFOLDEREIGHT\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageZFOLDEREIGHT#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}030\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}030\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  6
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  7
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  8
+       \poparrangedpages
+   \fi}
+
+%D FLYER in Z-fold with 10 pages 04-08-2010
+%D Coding: [ZFLYER-10]
+
+\installpagearrangement ZFLYER-10
+   {\dosetuparrangement{5}{1}{5}{6}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageZFLYERTEN\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageZFLYERTEN#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}040\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}030\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}040\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  7
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}030\arrangedpageA %  10
+       \poparrangedpages
+   \fi}
+
+
+%D FLYER in Z-fold with 12 pages 04-08-2010
+%D Coding: [ZFLYER-12]
+
+\installpagearrangement ZFLYER-12
+   {\dosetuparrangement{6}{1}{6}{7}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageZFLYERTWELVE\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageZFLYERTWELVE#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}050\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}030\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}040\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}050\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  10
+   \or \handlearrangedpageXandY{#1}030\arrangedpageA %  11
+   \or \handlearrangedpageXandY{#1}040\arrangedpageA %  12
+       \poparrangedpages
+   \fi}
+
+%D FLYER folded as a map with 6 pages per side.
+%D Coding: [MAPFLYER-12]
+
+\installpagearrangement MAPFLYER-12
+   {\dosetuparrangement{3}{2}{6}{4}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageMFOLDERTWELVE\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageMFOLDERTWELVE#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}001\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}021\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  8
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  9
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  10
+   \or \handlearrangedpageXandY{#1}011\arrangedpageA %  11
+   \or \handlearrangedpageXandY{#1}021\arrangedpageA %  12
+       \poparrangedpages
+   \fi}
+
+%D FLYER folded as double window with 4 pages per side.
+%D Coding: [DOUBLEWINDOW]
+
+\installpagearrangement DOUBLEWINDOW
+   {\dosetuparrangement{4}{1}{4}{5}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageDOUBLEWINDOWEIGHT\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageDOUBLEWINDOWEIGHT#1% Willi's approach
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}020\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}030\arrangedpageA %  2
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  4
+   \or \handlearrangedpageXandY{#1}020\arrangedpageB %  5
+   \or \handlearrangedpageXandY{#1}030\arrangedpageB %  6
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  7
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  8
+       \poparrangedpages
+   \fi}
+
+%D Imposition as requested by Jan Pohanka 26-08-2010, 4 pages, two verso, two recto,
+%D uneven pages upright and down, even pages top and rotated 180.
+%D Implementation with 2 pages for conference-name-display
+%D Coding: [1*2-Conference]
+
+\installpagearrangement 1*2-Conference
+   {\dosetuparrangement{1}{2}{4}{3}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageCONFERENCE2\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageCONFERENCE2#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  2
+       \poparrangedpages
+   \fi}
+
+%D Implementation with 4 pages for conference-name-display
+%D Coding: [1*4-Conference]
+
+\installpagearrangement 1*4-Conference
+   {\dosetuparrangement{1}{2}{4}{3}{2}% X,Y,Total,hcutmarks,vcutmarks
+        \pusharrangedpageCONFERENCE4\poparrangedpagesAB\relax}
+
+\def\pusharrangedpageCONFERENCE4#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}001\arrangedpageA %  1  rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}100\arrangedpageA %  2
+   \or \handlearrangedpageXandY{#1}011\arrangedpageB %  3
+   \or \handlearrangedpageXandY{#1}110\arrangedpageB %  4
+       \poparrangedpages
+   \fi}
+
+% There should be arrangements for section made of heavy and thick paper. i.e. the heavier the paper
+% the fewer pages per section:
+% Section with 8 pages put on to sheets of paper. Each sheet carries recto 2 and verso 2 pages.
+% Coding: [2*2*2]
+
+\installpagearrangement 2*2*2
+  {\dosetuparrangement{2}{1}{2}{3}{2}% X,Y,Total,hcutmarks,vcutmarks
+     \pusharrangedpageEIGHTTWO\poparrangedpagesAtoD\relax}
+
+\def\pusharrangedpageEIGHTWO#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1 rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageC %  3
+   \or \handlearrangedpageXandY{#1}000\arrangedpageD %  4
+   \or \handlearrangedpageXandY{#1}010\arrangedpageD %  5
+   \or \handlearrangedpageXandY{#1}000\arrangedpageC %  6
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA %  8
+       \poparrangedpages
+   \fi}
+
+% Section with 12 pages, built from three sheets of paper.
+% Each sheet carries 2 pages recto and verso.
+% Coding: [2*2*3]
+
+\def\poparrangedpagesAtoF
+  {\ifnum\arrangedpageN>\zerocount
+     \paperwidth \arrangedpageX\paperwidth
+     \paperheight\arrangedpageY\paperheight
+     \outputarrangedbox\arrangedpageA
+     \outputarrangedbox\arrangedpageB
+     \outputarrangedbox\arrangedpageC
+     \outputarrangedbox\arrangedpageD
+     \outputarrangedbox\arrangedpageE
+     \outputarrangedbox\arrangedpageF
+     \global\arrangedpageN\zerocount
+   \fi}
+\installpagearrangement 2*2*3
+  {\dosetuparrangement{2}{1}{2}{3}{2}% X,Y,Total,hcutmarks,vcutmarks
+     \pusharrangedpageTWELVETWO\poparrangedpagesAtoD\relax}
+
+\def\pusharrangedpageTWELVETWO#1%
+  {\doglobal\increment\arrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifcase\arrangedpageN
+   \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1 rot,hskip,vskip
+   \or \handlearrangedpageXandY{#1}000\arrangedpageB %  2
+   \or \handlearrangedpageXandY{#1}010\arrangedpageC %  3
+   \or \handlearrangedpageXandY{#1}000\arrangedpageD %  4
+   \or \handlearrangedpageXandY{#1}010\arrangedpageE %  5
+   \or \handlearrangedpageXandY{#1}000\arrangedpageF %  6
+   \or \handlearrangedpageXandY{#1}010\arrangedpageF %  7
+   \or \handlearrangedpageXandY{#1}000\arrangedpageE %  8
+   \or \handlearrangedpageXandY{#1}010\arrangedpageD %  9
+   \or \handlearrangedpageXandY{#1}000\arrangedpageC % 10
+   \or \handlearrangedpageXandY{#1}010\arrangedpageB % 11
+   \or \handlearrangedpageXandY{#1}000\arrangedpageA % 12
+       \poparrangedpages
+   \fi}
 
 % \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
 % \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]

@@ -19,7 +19,7 @@
 \startluacode
 local concat   = table.concat
 local chardata = characters.data
-local fontdata = fonts.identifiers
+local fontdata = fonts.hashes.identifiers
 
 fonts.mp = fonts.mp or { }
 
@@ -53,11 +53,11 @@ local flusher = {
         local cd = chardata[n]
         if inline then
             descriptions[n] = {
-            --  unicode = n,
-                name = cd and cd.adobename,
-                width = w*100,
-                height = h*100,
-                depth = d*100,
+            --  unicode     = n,
+                name        = cd and cd.adobename,
+                width       = w*100,
+                height      = h*100,
+                depth       = d*100,
                 boundingbox = { 0, -d, w, h },
             }
             characters[n] = {
@@ -100,7 +100,8 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
         metapost.setoutercolor(2) -- no outer color and no reset either
         lists = { }
         for i=1,instances do
-            characters, descriptions = { }, { }
+            characters   = { }
+            descriptions = { }
             metapost.process(
                 mpxformat,
                 {
@@ -112,26 +113,23 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
                 flusher
             )
             lists[i] = {
-                designsize = 655360,
-                name = string.format("%s-%03i",hash,i),
-                parameters = {
-                    slant         =   0,
-                    space         = 333   * scalefactor,
-                    space_stretch = 166.5 * scalefactor,
-                    space_shrink  = 111   * scalefactor,
-                    x_height      = 431   * scalefactor,
-                    quad          =1000   * scalefactor,
-                    extra_space   =   0
-                },
-                ["type"] = "virtual",
-                characters = characters,
+                characters   = characters,
                 descriptions = descriptions,
-            --  embedding = "subset",
-            --  mkiv:
-                spacer = "space",
-                unit = 1000,
-                shared = { },
-                unique = { },
+                parameters   = {
+                    designsize    = 655360,
+                    slant         =      0,
+                    space         =    333   * scalefactor,
+                    space_stretch =    166.5 * scalefactor,
+                    space_shrink  =    111   * scalefactor,
+                    x_height      =    431   * scalefactor,
+                    quad          =   1000   * scalefactor,
+                    extra_space   =      0,
+                },
+                properties  = {
+                    name          = string.format("%s-%03i",hash,i),
+                    virtualized   = true,
+                    spacer        = "space",
+                }
             }
         end
         metapost.reset(mpxformat) -- saves memory
@@ -143,23 +141,23 @@ function metapost.characters.process(mpxformat, name, instances, scalefactor)
     return lists
 end
 
-function fonts.vf.aux.combine.commands.metafont(g,v)
+function fonts.handlers.vf.combiner.commands.metafont(g,v)
     local size = g.specification.size
     local data = metapost.characters.process(v[2],v[3],v[4],size/655360)
     local list, t = { }, { }
     for d=1,#data do
         t = data[d]
-        t = fonts.tfm.scale(t, -1000)
+        t = fonts.constructors.scale(t, -1000)
         local id = font.nextid()
         t.fonts = { { id = id } }
         fontdata[id] = t
-        fonts.vf.aux.compose_characters(t)
+        fonts.handlers.vf.helpers.composecharacters(t)
         list[d] = font.define(t)
     end
     for k, v in next, t do
         g[k] = v -- kind of replace, when not present, make nil
     end
-    g.virtualized = true
+    g.properties.virtualized = true
     g.variants = list
 end
 

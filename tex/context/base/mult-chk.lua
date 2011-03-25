@@ -22,14 +22,14 @@ interfaces.syntax = allocate {
     test = { keys = table.tohash { "a","b","c","d","e","f","g" } }
 }
 
-function interfaces.invalidkey(kind,key)
-    report_interface("invalid key '%s' for '%s' in line %s",key,kind,tex.inputlineno)
+function interfaces.invalidkey(category,key)
+    report_interface("invalid key '%s' for '%s' in line %s",key,category,tex.inputlineno)
 end
 
-function interfaces.setvalidkeys(kind,list)
-    local s = interfaces.syntax[kind]
+function interfaces.setvalidkeys(category,list)
+    local s = interfaces.syntax[category]
     if not s then
-        interfaces.syntax[kind] = {
+        interfaces.syntax[category] = {
             keys = settings_to_set(list)
         }
     else
@@ -37,10 +37,10 @@ function interfaces.setvalidkeys(kind,list)
     end
 end
 
-function interfaces.addvalidkeys(kind,list)
-    local s = interfaces.syntax[kind]
+function interfaces.addvalidkeys(category,list)
+    local s = interfaces.syntax[category]
     if not s then
-        interfaces.syntax[kind] = {
+        interfaces.syntax[category] = {
             keys = settings_to_set(list)
         }
     else
@@ -50,11 +50,11 @@ end
 
 -- weird code, looks incomplete ... probbably an experiment
 
-local prefix, kind, keys
+local prefix, category, keys
 
 local function set(key,value)
     if keys and not keys[key] then
-        interfaces.invalidkey(kind,key)
+        interfaces.invalidkey(category,key)
     else
         context.setsomevalue(prefix,key,value)
     end
@@ -64,7 +64,7 @@ local pattern = make_settings_to_hash_pattern(set,"tolerant")
 
 function interfaces.getcheckedparameters(k,p,s)
     if s and s ~= "" then
-        prefix, kind = p, k
+        prefix, category = p, k
         keys = k and k ~= "" and interfaces.syntax[k].keys
         lpegmatch(pattern,s)
     end

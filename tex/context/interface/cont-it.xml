@@ -9634,7 +9634,7 @@
 
   <cd:command name="comment" type="environment">
     <cd:sequence>
-      <cd:string value="commento"/>
+      <cd:string value="comment"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1" optional="yes">
@@ -9648,7 +9648,7 @@
 
   <cd:command name="comment">
     <cd:sequence>
-      <cd:string value="commento"/>
+      <cd:string value="comment"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1" optional="yes">
