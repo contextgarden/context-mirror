@@ -171,21 +171,9 @@ function handlers.characters(head)
         local font, dynamics = next(attrfonts)
         for attribute, processors in next, dynamics do -- attr can switch in between
             local n = #processors
-            local h, d = processors[1](head,font,attribute)
-            head = h or head
-            done = done or d
-            if n > 1 then
-                for i=2,n do
-                    local h, d = processors[i](head,font,attribute)
-                    head = h or head
-                    done = done or d
-                end
-            end
-        end
-    elseif a > 0 then
-        for font, dynamics in next, attrfonts do
-            for attribute, processors in next, dynamics do -- attr can switch in between
-                local n = #processors
+            if n == 0 then
+                report_fonts("no processors associated with dynamic %s",attribute)
+            else
                 local h, d = processors[1](head,font,attribute)
                 head = h or head
                 done = done or d
@@ -194,6 +182,26 @@ function handlers.characters(head)
                         local h, d = processors[i](head,font,attribute)
                         head = h or head
                         done = done or d
+                    end
+                end
+            end
+        end
+    elseif a > 0 then
+        for font, dynamics in next, attrfonts do
+            for attribute, processors in next, dynamics do -- attr can switch in between
+                local n = #processors
+                if n == 0 then
+                    report_fonts("no processors associated with dynamic %s",attribute)
+                else
+                    local h, d = processors[1](head,font,attribute)
+                    head = h or head
+                    done = done or d
+                    if n > 1 then
+                        for i=2,n do
+                            local h, d = processors[i](head,font,attribute)
+                            head = h or head
+                            done = done or d
+                        end
                     end
                 end
             end
