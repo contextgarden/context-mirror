@@ -1046,16 +1046,14 @@ a helper function.</p>
 
 function constructors.checkedfeatures(what,features)
     if features and next(features) then
-        local done = false
         for key, value in next, handlers[what].features.defaults do
             if features[key] == nil then
                 features[key] = value
-                done          = true
             end
         end
-        return features, done -- done signals a change
+        return features
     else
-        return fastcopy(defaults), true
+        return fastcopy(defaults)
     end
 end
 
@@ -1068,9 +1066,11 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
         local whatfeatures     = whathandler.features
         local whatinitializers = whatfeatures.initializers
         local whatmodechecker  = whatfeatures.modechecker
-        local mode = properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features)) or features.mode or "base"
-        properties.mode = mode -- also status
-        local done = { }
+        -- properties.mode can be enforces (for instance in font-otd)
+        local mode             = properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features,features.mode)) or features.mode or "base"
+        properties.mode        = mode -- also status
+        --
+        local done             = { }
         while true do
             local redo = false
             local initializers = whatfeatures.initializers[mode]
@@ -1091,8 +1091,13 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                         end
                         action(tfmdata,value,features) -- can set mode (e.g. goodies) so it can trigger a restart
                         if mode ~= properties.mode then
-                            mode = properties.mode
-                            redo = true
+                            if whatmodechecker then
+                                properties.mode = whatmodechecker(tfmdata,features,properties.mode) -- force checking
+                            end
+                            if mode ~= properties.mode then
+                                mode = properties.mode
+                                redo = true
+                            end
                         end
                         done[feature] = true
                     end

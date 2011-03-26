@@ -130,8 +130,7 @@ end)
 -- this cannot be a feature initializer as there is no auto namespace
 -- so we never enter the loop then
 
-local function modechecker(tfmdata,features) -- we cannot adapt features as they are shared!
-    local mode = features.mode
+local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if mode == "auto" then
         local script    = features.script
         local language  = features.language

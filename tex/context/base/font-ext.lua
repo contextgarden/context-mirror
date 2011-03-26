@@ -27,8 +27,6 @@ of neutral.</p>
 --ldx]]--
 
 local fonts              = fonts
-local handlers           = fonts.handlers
-local otf                = handlers.otf
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
@@ -42,7 +40,7 @@ local registerafmfeature = afmfeatures.register
 
 local function get_class_and_vector(tfmdata,value,where) -- "expansions"
     local g_where = tfmdata.goodies and tfmdata.goodies[where]
-    local f_where = handlers[where]
+    local f_where = fonts[where]
     local g_classes = g_where and g_where.classes
     local f_classes = f_where and f_where.classes
     local class = (g_classes and g_classes[value]) or (f_classes and f_classes[value])
@@ -380,7 +378,9 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
             end
         end
     end
-    tfmdata.auto_protrude = done
+    tfmdata.parameters.protrusion {
+        auto = true
+    }
 end
 
 -- The opbd test is just there because it was discussed on the
@@ -453,8 +453,8 @@ local function initializeprotrusion(tfmdata,value)
 end
 
 registerotffeature {
-    name        = "protrusion",
-    description = "shift characters into the left and or right margin",
+    name         = "protrusion",
+    description  = "shift characters into the left and or right margin",
     initializers = {
         base = initializeprotrusion,
         node = initializeprotrusion,
@@ -462,8 +462,8 @@ registerotffeature {
 }
 
 registerafmfeature {
-    name        = "protrusion",
-    description = "shift characters into the left and or right margin",
+    name         = "protrusion",
+    description  = "shift characters into the left and or right margin",
     initializers = {
         base = initializeprotrusion,
         node = initializeprotrusion,
