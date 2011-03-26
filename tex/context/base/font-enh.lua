@@ -17,76 +17,117 @@ local constructors       = fonts.constructors
 local tfmfeatures        = constructors.newfeatures("tfm")
 local registertfmfeature = tfmfeatures.register
 
-local fontencodings      = fonts.encodings
-fontencodings.remappings = fontencodings.remappings or { }
+local afmfeatures        = fonts.constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
 
-local function reencode(tfmdata,encoding)
-    if encoding and fontencodings.known[encoding] then
-        local data = fontencodings.load(encoding)
-        if data then
-            tfmdata.properties.encoding = encoding
-            local characters = tfmdata.characters
-            local original   = { }
-            local vector     = data.vector
-            for unicode, character in next, characters do
-                character.name    = vector[unicode]
-                character.index   = unicode, character
-                original[unicode] = character
-            end
-            for newcode, oldcode in next, data.unicodes do
-                if newcode ~= oldcode then
-                    if trace_defining then
-                        report_defining("reencoding U+%04X to U+%04X",newcode,oldcode)
-                    end
-                    characters[newcode] = original[oldcode]
-                end
-            end
+-- -- these will become goodies (when needed at all)
+--
+-- local fontencodings      = fonts.encodings
+-- fontencodings.remappings = fontencodings.remappings or { }
+--
+-- local function reencode(tfmdata,encoding)
+--     if encoding and fontencodings.known[encoding] then
+--         local data = fontencodings.load(encoding)
+--         if data then
+--             tfmdata.properties.encoding = encoding
+--             local characters = tfmdata.characters
+--             local original   = { }
+--             local vector     = data.vector
+--             for unicode, character in next, characters do
+--                 character.name    = vector[unicode]
+--                 character.index   = unicode, character
+--                 original[unicode] = character
+--             end
+--             for newcode, oldcode in next, data.unicodes do
+--                 if newcode ~= oldcode then
+--                     if trace_defining then
+--                         report_defining("reencoding U+%04X to U+%04X",newcode,oldcode)
+--                     end
+--                     characters[newcode] = original[oldcode]
+--                 end
+--             end
+--         end
+--     end
+-- end
+--
+-- registertfmfeature {
+--     name         = "reencode",
+--     description  = "reencode",
+--     manipulators = {
+--         base = reencode,
+--         node = reencode,
+--     }
+-- }
+--
+-- local function remap(tfmdata,remapping)
+--     local vector = remapping and fontencodings.remappings[remapping]
+--     if vector then
+--         local characters, original = tfmdata.characters, { }
+--         for k, v in next, characters do
+--             original[k], characters[k] = v, nil
+--         end
+--         for k,v in next, vector do
+--             if k ~= v then
+--                 if trace_defining then
+--                     report_defining("remapping U+%04X to U+%04X",k,v)
+--                 end
+--                 local c = original[k]
+--                 characters[v] = c
+--                 c.index = k
+--             end
+--         end
+--         local properties = tfmdata.properties
+--         if not properties then
+--             properties = { }
+--             tfmdata.properties = properties
+--         else
+--             properties.encodingbytes = 2
+--             properties.format        = properties.format or 'type1'
+--         end
+--     end
+-- end
+--
+-- registertfmfeature {
+--     name         = "remap",
+--     description  = "remap",
+--     manipulators = {
+--         base = remap,
+--         node = remap,
+--     }
+-- }
+
+-- \definefontfeature[dingbats][goodies=dingbats,unicoding=yes]
+
+-- we only add and don't replace
+-- we could also add kerns but we asssume symbols
+
+local function initializeunicoding(tfmdata)
+    local goodies   = tfmdata.goodies
+    local newcoding = nil
+    for i=1,#goodies do
+        local remapping = goodies[i].remapping
+        if remapping and remapping.unicodes then
+            newcoding = remapping.unicodes -- names to unicodes
+        end
+    end
+    if newcoding then
+        local characters   = tfmdata.characters
+        local descriptions = tfmdata.descriptions
+        local oldcoding    = tfmdata.resources.unicodes
+        for name, newcode in next, newcoding do
+            local oldcode = oldcoding[name]
+            characters  [newcode] = characters  [oldcode]
+            descriptions[newcode] = descriptions[oldcode]
         end
     end
 end
 
-registertfmfeature {
-    name         = "reencode",
-    description  = "reencode",
-    manipulators = {
-        base = reencode,
-        node = reencode,
+registerafmfeature {
+    name        = "unicoding",
+    description = "adapt unicode table",
+    initializers = {
+        base = initializeunicoding,
+        node = initializeunicoding,
     }
 }
 
-local function remap(tfmdata,remapping)
-    local vector = remapping and fontencodings.remappings[remapping]
-    if vector then
-        local characters, original = tfmdata.characters, { }
-        for k, v in next, characters do
-            original[k], characters[k] = v, nil
-        end
-        for k,v in next, vector do
-            if k ~= v then
-                if trace_defining then
-                    report_defining("remapping U+%04X to U+%04X",k,v)
-                end
-                local c = original[k]
-                characters[v] = c
-                c.index = k
-            end
-        end
-        local properties = tfmdata.properties
-        if not properties then
-            properties = { }
-            tfmdata.properties = properties
-        else
-            properties.encodingbytes = 2
-            properties.format        = properties.format or 'type1'
-        end
-    end
-end
-
-registertfmfeature {
-    name         = "remap",
-    description  = "remap",
-    manipulators = {
-        base = remap,
-        node = remap,
-    }
-}

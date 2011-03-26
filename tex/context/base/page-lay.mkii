@@ -295,7 +295,7 @@
      {\doifelsenothing{#2}
         {\expanded{\dodosetuppapersize
            [\executeifdefined{\??pp:1:#1}{#1}]%
-           [\executeifdefined{\??pp:2:#1}{}]}}
+           [\executeifdefined{\??pp:2:#1}{\v!default}]}}
         {\doifassignmentelse{#2}
            {\getparameters[\??pp\executeifdefined{\??pp:1:#1}{#1}][#2]}
            {\expanded{\dodosetuppapersize
@@ -1390,9 +1390,14 @@
    \c!height=\dimexpr2\paperwidth +1.5cm\relax]
 
 \definepapersize
- [samesized]
- [ \c!width=\paperwidth,
-  \c!height=\paperheight]
+  [\v!default]
+  [ \c!width=\paperwidth,
+   \c!height=\paperheight]
+
+\definepapersize
+  [samesized]
+  [ \c!width=\paperwidth,
+   \c!height=\paperheight]
 
 \setuppapersize
  [A4][samesized]
