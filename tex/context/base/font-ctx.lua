@@ -529,7 +529,7 @@ local somevalue  =                   sometext * spaces                  * Cc(tru
 local pattern    = Cf(Ct("") * (space + separator + Cg(keyvalue + falsevalue + truevalue + somevalue))^0, rawset)
 
 local function colonized(specification)
-    specification.features.normal = normalize_features(lpegmatch(pattern,specification.specification))
+    specification.features.normal = normalize_features(lpegmatch(pattern,specification.detail))
     return specification
 end
 

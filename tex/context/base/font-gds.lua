@@ -21,6 +21,12 @@ local allocate           = utilities.storage.allocate
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
+local afmfeatures        = fonts.constructors.newfeatures("afm")
+local registerafmfeature = afmfeatures.register
+
+local tfmfeatures        = fonts.constructors.newfeatures("tfm")
+local registertfmfeature = tfmfeatures.register
+
 local fontgoodies        = { }
 fonts.goodies            = fontgoodies
 
@@ -311,6 +317,26 @@ registerotffeature {
     }
 }
 
+registerafmfeature {
+    name         = "goodies",
+    description  = "goodies on top of built in features",
+    initializers = {
+        position = 1,
+        base     = setgoodies,
+        node     = setgoodies,
+    }
+}
+
+registertfmfeature {
+    name         = "goodies",
+    description  = "goodies on top of built in features",
+    initializers = {
+        position = 1,
+        base     = setgoodies,
+        node     = setgoodies,
+    }
+}
+
 registerotffeature {
     name        = "featureset",
     description = "goodie feature set",
@@ -345,9 +371,9 @@ registerotffeature {
 local function initialize(goodies)
     local mathgoodies = goodies.mathematics
     if mathgoodies then
-        local virtuals   = mathgoodies.virtuals
-        local mapfiles   = mathgoodies.mapfiles
-        local maplines   = mathgoodies.maplines
+        local virtuals = mathgoodies.virtuals
+        local mapfiles = mathgoodies.mapfiles
+        local maplines = mathgoodies.maplines
         if virtuals then
             for name, specification in next, virtuals do
                 -- beware, they are all constructed
@@ -405,18 +431,6 @@ fontgoodies.register("files", initialize)
 --     size         = "default",
 --     features     = "default",
 -- }
-
-local function initialize(goodies)
-    local typefaces = goodies.typefaces
-    if typefaces then
-        local ft = fonts.typefaces
-        for k, v in next, typefaces do
-            ft[k] = v
-        end
-    end
-end
-
-fontgoodies.register("typefaces", initialize)
 
 local function initialize(goodies)
     local typefaces = goodies.typefaces
