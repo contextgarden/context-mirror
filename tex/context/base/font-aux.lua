@@ -12,7 +12,7 @@ local wrap, yield = coroutine.wrap, coroutine.yield
 local fonts, font = fonts, font
 
 local iterators   = { }
-fonts.interators  = iterators
+fonts.iterators   = iterators
 
 local currentfont = font.current
 local identifiers = fonts.hashes.identifiers
@@ -21,7 +21,6 @@ local sortedkeys  = table.sortedkeys
 -- for unicode, character   in fonts.iterators.characters  () do print(k,v) end
 -- for unicode, description in fonts.iterators.descriptions() do print(k,v) end
 -- for index,   glyph       in fonts.iterators.glyphs      () do print(k,v) end
-
 
 local function checkeddata(data) -- beware, nullfont is the fallback in identifiers
     local t = type(data)

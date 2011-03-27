@@ -12,23 +12,21 @@
 %C details.
 
 \startluacode
-local format, sprint = string.format, tex.sprint
-
 local fontdata = fonts.hashes.identifiers
 
-function fonts.handlers.otf.show_all()
-    local tfmdata = fontdata[font.current()]
-    if tfmdata and tfmdata.shared then
-        local NC, NR, char = context.NC, context.NR, context.char
-        context.starttabulate { "|l|r|c|" }
-        for unicode, description in fonts.iterators.characters(tfmdata) do
-            NC() context(description.name) NC() context(unicode) NC() char(unicode) NC() NR()
-        end
-        context.stoptabulate()
-    end
-end
+-- function fonts.tracers.show_all()
+--     local tfmdata = fontdata[font.current()]
+--     if tfmdata and tfmdata.shared then
+--         local NC, NR, char = context.NC, context.NR, context.char
+--         context.starttabulate { "|l|r|c|" }
+--         for unicode, description in fonts.iterators.characters(tfmdata) do
+--             NC() context(description.name) NC() context(unicode) NC() char(unicode) NC() NR()
+--         end
+--         context.stoptabulate()
+--     end
+-- end
 
-function fonts.show_all()
+function fonts.tracers.show_all()
     local tfmdata = fontdata[font.current()]
     if tfmdata then
         local NC, NR, HL, char, bold, tttf = context.NC, context.NR, context.HL, context.char, context.bold, context.tttf
@@ -90,13 +88,11 @@ function fonts.show_all()
     end
 end
 
-function fonts.show_glyphs()
+function fonts.tracers.show_glyphs()
     local tfmdata = fontdata[font.current()]
     if tfmdata then
-        for k, v in ipairs(table.sortedkeys(tfmdata.characters)) do
-            if v >=0 then
-                context.showglyph(v) -- local macro
-            end
+        for unicode, chr in fonts.iterators.characters(tfmdata) do
+            context.showglyph(unicode)
         end
     end
 end
@@ -115,7 +111,7 @@ end
    \nonknuthmode
    \startcolumns[n=#3]
    \TestFont
-   \ctxlua { fonts.show_all() }
+   \ctxlua { fonts.tracers.show_all() }
    \stopcolumns
    \page
    \egroup}
@@ -134,12 +130,12 @@ end
    \nonknuthmode
    \startcolumns[n=#3]
    \TestFontB
-   \ctxlua { fonts.show_glyphs() }
+   \ctxlua { fonts.tracers.show_glyphs() }
    \stopcolumns
    \page
    \egroup}
 
-% \doifnotmode{demo} {\endinput}
+\doifnotmode{demo} {\endinput}
 
 \starttext
 

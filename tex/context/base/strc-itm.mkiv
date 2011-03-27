@@ -1072,15 +1072,15 @@
      \fi
      \ifdim\currentitemmaxwidth>\zeropoint
        \setbox\itemgroupitembox\simplealignedbox
-         {\getitemparameter\currentitemlevel\c!itemalign}
          {\dimexpr\currentitemmaxwidth+\getitemparameter\currentitemlevel\c!distance\relax}
+         {\getitemparameter\currentitemlevel\c!itemalign}
          {\box\itemgroupitembox\hskip\getitemparameter\currentitemlevel\c!distance}%
      \fi
    \else\ifdim\itemgroupaskedwidth>\zeropoint
      \doifsomething{\getitemparameter\currentitemlevel\c!itemalign}
        {\setbox\itemgroupitembox\simplealignedbox
-          {\getitemparameter\currentitemlevel\c!itemalign}
           {\dimexpr\itemgroupaskedwidth+\getitemparameter\currentitemlevel\c!distance\relax}
+          {\getitemparameter\currentitemlevel\c!itemalign}
           {\box\itemgroupitembox\hskip\getitemparameter\currentitemlevel\c!distance}}%
    \fi\fi
    \globallet\doitemdestination\empty
