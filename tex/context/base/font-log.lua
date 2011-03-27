@@ -43,7 +43,7 @@ function loggers.onetimemessage(font,char,message,reporter)
         if not reporter then
             reporter = report_defining
         end
-        reporter("char U+%04X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
+        reporter("char U+%05X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
 end

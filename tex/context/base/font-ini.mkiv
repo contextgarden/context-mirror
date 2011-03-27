@@ -181,11 +181,10 @@
 \let\thedefinedfont\relax
 
 \def\dodefinedfont[#1]%
-  {\setfalse\inheritfromfontclass
+  {\featureinheritancemode\featureinheritancefontonly
    \iffirstargument\definefont[thedefinedfont][#1]\fi % we can speed this one up
    \thedefinedfont
-   \the\everydefinedfont
-   \settrue\inheritfromfontclass}
+   \the\everydefinedfont}
 
 \unexpanded\def\definedfont
   {\dosingleempty\dodefinedfont}
@@ -701,7 +700,20 @@
 
 \let\relativefontid\empty
 
-\newconditional\inheritfromfontclass % used in \definefont and \definedfont
+% 0 = none
+% 1 = fontonly
+% 2 = classonly
+% 3 = fontfirst
+% 4 = classfirst
+
+\setnewconstant\featureinheritancefontnone  \zerocount
+\setnewconstant\featureinheritancefontonly  \plusone
+\setnewconstant\featureinheritanceclassonly \plustwo
+\setnewconstant\featureinheritancefontfirst \plusthree
+\setnewconstant\featureinheritanceclassfirst\plusfour
+
+\setnewconstant\featureinheritancedefault   \featureinheritancefontfirst
+\setnewconstant\featureinheritancemode      \featureinheritancedefault
 
 \unexpanded\def\lowleveldefinefont#1#2% #2 = cs
   {% we can now set more at the lua end
@@ -742,20 +754,22 @@
       "#2", % cs, trailing % is gone
       "\somefontfile",
       \number\scaledfontsize,
-      "\ifconditional\inheritfromfontclass\@@fontclassfeatures\fi",
+      \number\featureinheritancemode,
+      "\@@fontclassfeatures",
       "\@@fontfeatures",
-      "\ifconditional\inheritfromfontclass\@@fontclassfallbacks\fi",
+      "\@@fontclassfallbacks",
       "\@@fontfallbacks",
       0\currentmathsize,
       \number\dimexpr\textface\relax,
       "\relativefontid", % experiment
-      "\ifconditional\inheritfromfontclass\@@fontclassgoodies\fi", % experiment (not yet used)
+      "\@@fontclassgoodies", % experiment (not yet used)
       "\@@fontgoodies" % experiment
    )}%
 %    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
    \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
-   \the\everydefinefont}
+   \the\everydefinefont
+   \setnewconstant\featureinheritancemode\featureinheritancedefault}
 
 \def\updatefontclassparameters
   {\edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%
@@ -1183,7 +1197,7 @@
 \def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*}
 
 \def\dododefinefont#1#2%
-  {\setfalse\inheritfromfontclass
+  {\featureinheritancemode\featureinheritancefontonly
    \edef\lastfontidentifier{#1}%
    \let\localrelativefontsize\defaultrelativefontsize
    \let\localabsolutefontsize\fontbody
@@ -1192,8 +1206,7 @@
    \autofontsizefalse
    \setfontcharacteristics
    \the\everyfontswitch
-   \let\rawfontidentifier\oldrawfontidentifier
-   \settrue\inheritfromfontclass}
+   \let\rawfontidentifier\oldrawfontidentifier}
 
 \def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
   {\edef\lastfontidentifier{#3}%

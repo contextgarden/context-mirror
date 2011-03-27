@@ -380,7 +380,7 @@ unify = function(data, filename)
             if not code then
                 code = private
                 private = private + 1
-                report_afm("assigning private slot U+%04X for unknown glyph name %s", code, name)
+                report_afm("assigning private slot U+%05X for unknown glyph name %s", code, name)
             end
         end
         local index = blob.index

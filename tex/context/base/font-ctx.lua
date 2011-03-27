@@ -600,8 +600,9 @@ end
 local n = 0
 
 -- we can also move rscale to here (more consistent)
+-- the argument list will become a table
 
-function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
         report_defining("memory usage before: %s",statistics.memused())
@@ -616,27 +617,67 @@ function definers.stage_two(global,cs,str,size,classfeatures,fontfeatures,classf
         local id = tonumber(relativeid) or 0
         specification.relativeid = id > 0 and id
     end
-    specification.name = name
-    specification.size = size
-    specification.sub = (sub and sub ~= "" and sub) or specification.sub
+    specification.name     = name
+    specification.size     = size
+    specification.sub      = (sub and sub ~= "" and sub) or specification.sub
     specification.mathsize = mathsize
     specification.textsize = textsize
-    specification.goodies = goodies
-    specification.cs = cs
-    specification.global = global
+    specification.goodies  = goodies
+    specification.cs       = cs
+    specification.global   = global
     if detail and detail ~= "" then
-        specification.method, specification.detail = method or "*", detail
+        specification.method = method or "*"
+        specification.detail = detail
     elseif specification.detail and specification.detail ~= "" then
         -- already set
-    elseif fontfeatures and fontfeatures ~= "" then
-        specification.method, specification.detail = "*", fontfeatures
-    elseif classfeatures and classfeatures ~= "" then
-        specification.method, specification.detail = "*", classfeatures
-    end
-    if fontfallbacks and fontfallbacks ~= "" then
-        specification.fallbacks = fontfallbacks
-    elseif classfallbacks and classfallbacks ~= "" then
-        specification.fallbacks = classfallbacks
+    elseif inheritancemode == 0 then
+        -- nothing
+    elseif inheritancemode == 1 then
+        -- fontonly
+        if fontfeatures and fontfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = fontfeatures
+        end
+        if fontfallbacks and fontfallbacks ~= "" then
+            specification.fallbacks = fontfallbacks
+        end
+    elseif inheritancemode == 2 then
+        -- classonly
+        if classfeatures and classfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = classfeatures
+        end
+        if classfallbacks and classfallbacks ~= "" then
+            specification.fallbacks = classfallbacks
+        end
+    elseif inheritancemode == 3 then
+        -- fontfirst
+        if fontfeatures and fontfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = fontfeatures
+        elseif classfeatures and classfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = classfeatures
+        end
+        if fontfallbacks and fontfallbacks ~= "" then
+            specification.fallbacks = fontfallbacks
+        elseif classfallbacks and classfallbacks ~= "" then
+            specification.fallbacks = classfallbacks
+        end
+    elseif inheritancemode == 4 then
+        -- classfirst
+        if classfeatures and classfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = classfeatures
+        elseif fontfeatures and fontfeatures ~= "" then
+            specification.method = "*"
+            specification.detail = fontfeatures
+        end
+        if classfallbacks and classfallbacks ~= "" then
+            specification.fallbacks = classfallbacks
+        elseif fontfallbacks and fontfallbacks ~= "" then
+            specification.fallbacks = fontfallbacks
+        end
     end
     local tfmdata = definers.read(specification,size) -- id not yet known
     local cs = specification.cs
@@ -1025,7 +1066,7 @@ function commands.showchardata(n)
         end
         local chr = tfmdata.characters[n]
         if chr then
-            report_status("%s @ %s => U%04X => %s => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,utfchar(n),serialize(chr,false))
+            report_status("%s @ %s => U%05X => %s => %s",tfmdata.properties.fullname,tfmdata.parameters.size,n,utfchar(n),serialize(chr,false))
         end
     end
 end
@@ -1033,19 +1074,19 @@ end
 function commands.showfontparameters()
     local tfmdata = fontdata[currentfont()]
     if tfmdata then
-        local parameters       = tfmdata.parameters
-        local mathconstants    = tfmdata.MathConstants
-        local properties       = tfmdata.properties
-        local hasparameters    = parameters    and next(parameters)
-        local hasmathconstants = mathconstants and next(mathconstants)
+        local parameters        = tfmdata.parameters
+        local mathparameters    = tfmdata.mathparameters
+        local properties        = tfmdata.properties
+        local hasparameters     = parameters     and next(parameters)
+        local hasmathparameters = mathparameters and next(mathparameters)
         if hasparameters then
-            report_status("%s @ %s => parameters => %s",properties.fullname,parameters.size,serialize(parameters,false))
+            report_status("%s @ %s => text parameters => %s",properties.fullname,parameters.size,serialize(parameters,false))
         end
-        if hasmathconstants then
-            report_status("%s @ %s => math constants => %s",properties.fullname,parameters.size,serialize(mathconstants,false))
+        if hasmathparameters then
+            report_status("%s @ %s => math parameters => %s",properties.fullname,parameters.size,serialize(mathparameters,false))
         end
-        if not hasparameters and not hasmathconstants then
-            report_status("%s @ %s => no parameters and/or mathconstants",properties.fullname,parameters.size)
+        if not hasparameters and not hasmathparameters then
+            report_status("%s @ %s => no text parameters and/or math parameters",properties.fullname,parameters.size)
         end
     end
 end

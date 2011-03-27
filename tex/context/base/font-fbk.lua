@@ -107,7 +107,7 @@ local function composecharacters(tfmdata)
                             end
                             if charsacc then
                                 if trace_combining_all then
-                                    report_combining("%s (0x%05X) = %s (0x%05X) + %s (0x%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
+                                    report_combining("%s (U+%05X) = %s (U+%05X) + %s (U+%05X)",utfchar(i),i,utfchar(chr),chr,utfchar(acc),acc)
                                 end
                                 local acc_t = cache[acc]
                                 if not acc_t then
@@ -176,7 +176,7 @@ local function composecharacters(tfmdata)
                                 end
                             else
                                 if trace_combining_all then
-                                    report_combining("%s (0x%05X) = %s (0x%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
+                                    report_combining("%s (U+%05X) = %s (U+%05X) (simplified)",utfchar(i),i,utfchar(chr),chr)
                                 end
                                 t.commands = { chr_t } -- else index mess
                             end

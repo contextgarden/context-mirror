@@ -272,9 +272,9 @@ function mappings.addtounicode(data,filename)
             local index = glyph.index
             local toun  = tounicode[index]
             if toun then
-                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
+                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X, tounicode: %s",index,name,unic,toun)
             else
-                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
+                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X",index,name,unic)
             end
         end
     end

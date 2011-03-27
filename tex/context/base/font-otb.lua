@@ -34,15 +34,15 @@ local function gref(descriptions,n)
     if type(n) == "number" then
         local name = descriptions[n].name
         if name then
-            return format("U+%04X (%s)",n,name)
+            return format("U+%05X (%s)",n,name)
         else
-            return format("U+%04X")
+            return format("U+%05X")
         end
     elseif n then
         local num, nam = { }, { }
         for i=2,#n do -- first is likely a key
             local ni = n[i]
-            num[i] = format("U+%04X",ni)
+            num[i] = format("U+%05X",ni)
             nam[i] = descriptions[ni].name or "?"
         end
         return format("%s (%s)",concat(num," "), concat(nam," "))
@@ -374,7 +374,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
             local character = characters[preceding]
             if not character then
                 if trace_baseinit then
-                    report_prepare("weird ligature in lookup %s: 0x%04X (%s), preceding 0x%04X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
+                    report_prepare("weird ligature in lookup %s: U+%05X (%s), preceding U+%05X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
                 end
                 character = makefake(tfmdata,name,present)
             end

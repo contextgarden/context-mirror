@@ -216,10 +216,10 @@ end
 --     return t.default or t.text_style or 0
 -- end
 
-function mathematics.dimensions(dimens)
+function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
     if dimens.SpaceAfterScript then
         dimens.SubscriptShiftDownWithSuperscript = dimens.SubscriptShiftDown * 1.5
-        return { }, table.fastcopy(dimens)
+        return table.fastcopy(dimens), { }
     elseif dimens.AxisHeight or dimens.axis_height then
         local t = { }
         local math_x_height = dimens.x_height or 10*65526
@@ -259,8 +259,11 @@ function mathematics.dimensions(dimens)
             t[variable] = tt
         end
         local d = {
-            AxisHeight                                  = t . axis                  . text_style,
             AccentBaseHeight                            = t . accent_base_height    . text_style,
+            AxisHeight                                  = t . axis                  . text_style,
+         -- DelimitedSubFormulaMinHeight
+         -- DisplayOperatorMinHeight
+         -- FlattenedAccentBaseHeight
             FractionDenominatorDisplayStyleGapMin       = t . fraction_denom_vgap   . display_style,
             FractionDenominatorDisplayStyleShiftDown    = t . fraction_denom_down   . display_style,
             FractionDenominatorGapMin                   = t . fraction_denom_vgap   . text_style,
@@ -274,6 +277,8 @@ function mathematics.dimensions(dimens)
             FractionDelimiterDisplayStyleSize           = t . fraction_del_size     . display_style,
             LowerLimitBaselineDropMin                   = t . limit_below_bgap      . text_style,
             LowerLimitGapMin                            = t . limit_below_vgap      . text_style,
+         -- MathLeading
+            MinConnectorOverlap                         = t . connector_overlap_min . text_style,
             OverbarExtraAscender                        = t . overbar_kern          . text_style,
             OverbarRuleThickness                        = t . overbar_rule          . text_style,
             OverbarVerticalGap                          = t . overbar_vgap          . text_style,
@@ -284,6 +289,10 @@ function mathematics.dimensions(dimens)
             RadicalKernBeforeDegree                     = t . radical_degree_before . display_style,
             RadicalKernAfterDegree                      = t . radical_degree_after  . display_style,
             RadicalDegreeBottomRaisePercent             = t . radical_degree_raise  . display_style,
+         -- ScriptPercentScaleDown
+         -- ScriptScriptPercentScaleDown
+         -- SkewedFractionHorizontalGap
+         -- SkewedFractionVerticalGap
             SpaceAfterScript                            = t . space_after_script    . text_style,
             StackBottomDisplayStyleShiftDown            = t . stack_denom_down      . display_style,
             StackBottomShiftDown                        = t . stack_denom_down      . text_style,
@@ -291,11 +300,15 @@ function mathematics.dimensions(dimens)
             StackGapMin                                 = t . stack_vgap            . text_style,
             StackTopDisplayStyleShiftUp                 = t . stack_num_up          . display_style,
             StackTopShiftUp                             = t . stack_num_up          . text_style,
+            StretchStackGapBelowMin                     = t . over_delimiter_vgap   . text_style,
+            StretchStackTopShiftUp                      = t . over_delimiter_bgap   . text_style,
+            StretchStackGapAboveMin                     = t . under_delimiter_vgap  . text_style,
+            StretchStackBottomShiftDown                 = t . under_delimiter_bgap  . text_style,
+            SubSuperscriptGapMin                        = t . subsup_vgap           . text_style,
             SubscriptBaselineDropMin                    = t . sub_shift_drop        . text_style,
             SubscriptShiftDown                          = t . sub_shift_down        . text_style,
             SubscriptShiftDownWithSuperscript           = t . sub_sup_shift_down    . text_style,
             SubscriptTopMax                             = t . sub_top_max           . text_style,
-            SubSuperscriptGapMin                        = t . subsup_vgap           . text_style,
             SuperscriptBaselineDropMax                  = t . sup_shift_drop        . text_style,
             SuperscriptBottomMaxWithSubscript           = t . sup_sub_bottom_max    . text_style,
             SuperscriptBottomMin                        = t . sup_bottom_min        . text_style,
@@ -306,14 +319,9 @@ function mathematics.dimensions(dimens)
             UnderbarVerticalGap                         = t . underbar_vgap         . text_style,
             UpperLimitBaselineRiseMin                   = t . limit_above_bgap      . text_style,
             UpperLimitGapMin                            = t . limit_above_vgap      . text_style,
-            MinConnectorOverlap                         = t . connector_overlap_min . text_style,
-            StretchStackGapBelowMin                     = t . over_delimiter_vgap   . text_style,
-            StretchStackTopShiftUp                      = t . over_delimiter_bgap   . text_style,
-            StretchStackGapAboveMin                     = t . under_delimiter_vgap  . text_style,
-            StretchStackBottomShiftDown                 = t . under_delimiter_bgap  . text_style,
         }
-        d.AccentBaseHeight = 0
-        return t, d -- this might change
+        d.AccentBaseHeight = 0 -- here? still?
+        return d, t -- t only for diagnostics
     else
         return { }, { }
     end

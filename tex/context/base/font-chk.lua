@@ -47,7 +47,7 @@ local function onetimemessage(font,char,message)
         messages[message] = category
     end
     if not category[char] then
-        report_fonts("char U+%04X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
+        report_fonts("char U+%05X in font '%s' with id %s: %s",char,tfmdata.properties.fullname,font,message)
         category[char] = true
     end
 end

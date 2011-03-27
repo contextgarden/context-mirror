@@ -149,7 +149,7 @@ local mathgreek    = attributes.private("mathgreek")
 processors.relocate = { }
 
 local function report_remap(tag,id,old,new,extra)
-    report_remapping("remapping %s in font %s from U+%04X (%s) to U+%04X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
+    report_remapping("remapping %s in font %s from U+%05X (%s) to U+%05X (%s)%s",tag,id,old,utfchar(old),new,utfchar(new),extra or "")
 end
 
 local remapalphabets = mathematics.remapalphabets

@@ -25,7 +25,7 @@ function extras.add(unicode,t)
     if unicode >= min and unicode <= max then
         mathdata[unicode], chardata[unicode] = t, t
     else
-        report_math("extra U+%04X should be in range U+%04X - U+%04X",unicode,min,max)
+        report_math("extra U+%05X should be in range U+%05X - U+%05X",unicode,min,max)
     end
 end
 
@@ -47,7 +47,7 @@ function extras.copy(target,original)
                         local nextchar = characters[nextnext]
                         if nextchar then
                             if trace_virtual then
-                                report_math("extra U+%04X in %s at %s maps on U+%04X (class: %s, name: %s)",unicode,
+                                report_math("extra U+%05X in %s at %s maps on U+%05X (class: %s, name: %s)",unicode,
                                     file.basename(properties.fullname),parameters.size,nextslot,extradesc.mathclass or "?",extradesc.mathname or "?")
                             end
                             characters[unicode] = nextchar

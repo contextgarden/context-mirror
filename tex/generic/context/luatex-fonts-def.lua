@@ -81,7 +81,7 @@ end
 fonts.definers.registersplit(":",colonized,"cryptic")
 fonts.definers.registersplit("", colonized,"more cryptic") -- catches \font\text=[names]
 
-function definers.applypostprocessors(tfmdata)
+function fonts.definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors
     if postprocessors then
         for i=1,#postprocessors do

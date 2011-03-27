@@ -20,6 +20,9 @@ local registertfmfeature = tfmfeatures.register
 local afmfeatures        = fonts.constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register
 
+local otffeatures        = fonts.constructors.newfeatures("otf")
+local registerotffeature = otffeatures.register
+
 -- -- these will become goodies (when needed at all)
 --
 -- local fontencodings      = fonts.encodings
@@ -41,7 +44,7 @@ local registerafmfeature = afmfeatures.register
 --             for newcode, oldcode in next, data.unicodes do
 --                 if newcode ~= oldcode then
 --                     if trace_defining then
---                         report_defining("reencoding U+%04X to U+%04X",newcode,oldcode)
+--                         report_defining("reencoding U+%05X to U+%05X",oldcode,newcode)
 --                     end
 --                     characters[newcode] = original[oldcode]
 --                 end
@@ -69,7 +72,7 @@ local registerafmfeature = afmfeatures.register
 --         for k,v in next, vector do
 --             if k ~= v then
 --                 if trace_defining then
---                     report_defining("remapping U+%04X to U+%04X",k,v)
+--                     report_defining("remapping U+%05X to U+%05X",k,v)
 --                 end
 --                 local c = original[k]
 --                 characters[v] = c
@@ -100,6 +103,7 @@ local registerafmfeature = afmfeatures.register
 
 -- we only add and don't replace
 -- we could also add kerns but we asssume symbols
+-- todo: complain if not basemode
 
 local function initializeunicoding(tfmdata)
     local goodies   = tfmdata.goodies
@@ -114,10 +118,26 @@ local function initializeunicoding(tfmdata)
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         local oldcoding    = tfmdata.resources.unicodes
+        local originals    = { }
         for name, newcode in next, newcoding do
             local oldcode = oldcoding[name]
-            characters  [newcode] = characters  [oldcode]
-            descriptions[newcode] = descriptions[oldcode]
+            if characters[newcode] and not originals[newcode] then
+                originals[newcode] = {
+                    character   = characters  [newcode],
+                    description = descriptions[newcode],
+                }
+            end
+            local original = originals[oldcode]
+            if original then
+                characters  [newcode] = original.character
+                descriptions[newcode] = original.description
+            else
+                characters  [newcode] = characters  [oldcode]
+                descriptions[newcode] = descriptions[oldcode]
+            end
+            if trace_defining then
+                report_defining("aliasing glyph '%s' from U+%05X to U+%05X",name,oldcode,newcode)
+            end
         end
     end
 end
@@ -131,3 +151,11 @@ registerafmfeature {
     }
 }
 
+registerotffeature {
+    name        = "unicoding",
+    description = "adapt unicode table",
+    initializers = {
+        base = initializeunicoding,
+        node = initializeunicoding,
+    }
+}

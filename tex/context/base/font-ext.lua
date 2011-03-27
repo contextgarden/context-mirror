@@ -347,7 +347,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                         local p = - (v[1] / 1000) * factor * left
                         characters[k].left_protruding = p
                         if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("lfbd -> %s -> U+%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
                         end
                     end
                     done = true
@@ -370,7 +370,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                         local p = (v[1] / 1000) * factor * right
                         characters[k].right_protruding = p
                         if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> 0x%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
+                            report_protrusions("rtbd -> %s -> U+%05X (%s) -> %0.03f (%s)",lookup,k,utfchar(k),p,concat(v," "))
                         end
                     end
                 end

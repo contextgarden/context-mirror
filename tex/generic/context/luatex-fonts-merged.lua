@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/26/11 12:41:29
+-- merge date  : 03/27/11 14:17:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -2913,7 +2913,6 @@ local contextnumbers        = specifiers.contextnumbers
 
 -- will be directives
 
-constructors.sharebasekerns = false -- true (.5 sec slower on mk but brings down mem from 410M to 310M, beware: then script/lang share too)
 constructors.dontembed      = allocate()
 constructors.mathactions    = { }
 constructors.autocleanup    = true
@@ -2971,47 +2970,6 @@ in the process; numbers are of course copies. Here 65536 equals 1pt. (Due to
 excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 --ldx]]--
 
--- the following hack costs a bit of runtime but safes memory
---
--- basekerns are scaled and will be hashed by table id
--- sharedkerns are unscaled and are be hashed by concatenated indexes
-
---~ function constructors.check_base_kerns(tfmdata)
---~     if constructors.sharebasekerns then
---~         local sharedkerns = tfmdata.sharedkerns
---~         if sharedkerns then
---~             local basekerns = { }
---~             tfmdata.basekerns = basekerns
---~             return sharedkerns, basekerns
---~         end
---~     end
---~     return nil, nil
---~ end
-
---~ function constructors.prepare_base_kerns(tfmdata)
---~     if constructors.sharebasekerns and not tfmdata.sharedkerns then
---~         local sharedkerns = { }
---~         tfmdata.sharedkerns = sharedkerns
---~         for u, chr in next, tfmdata.characters do
---~             local kerns = chr.kerns
---~             if kerns then
---~                 local hash = concat(sortedkeys(kerns), " ")
---~                 local base = sharedkerns[hash]
---~                 if not base then
---~                     sharedkerns[hash] = kerns
---~                 else
---~                     chr.kerns = base
---~                 end
---~             end
---~         end
---~     end
---~ end
-
--- we can cache scaled characters when we are in node mode and don't have
--- protruding and expansion: hash == fullname @ size @ protruding @ expansion
--- but in practice (except from mk) the otf hash will be enough already so it
--- makes no sense to mess up the code now
-
 -- The scaler is only used for otf and afm and virtual fonts. If
 -- a virtual font has italic correction make sure to set the
 -- italic_correction flag. Some more flags will be added in
@@ -3060,6 +3018,34 @@ function constructors.calculatescale(tfmdata,scaledpoints)
     return scaledpoints, scaledpoints / (parameters.units or 1000) -- delta
 end
 
+function constructors.assignmathparameters(target,tfmdata)
+    -- when a tfm file is loaded, it has already been scaled
+    -- and it never enters the scaled so this is otf only
+    local mathparameters = original.mathparameters
+    if mathparameters and next(mathparameters) then
+        local targetparameters     = target.parameters
+        local targetmathparameters = { }
+        local factor               = targetparameters.factor
+        for name, value in next, mathparameters do
+            if name == "RadicalDegreeBottomRaisePercent" then
+                targetmathparameters[name] = value
+            else
+                targetmathparameters[name] = value * factor
+            end
+        end
+        if not targetmathparameters.AccentBaseHeight then
+            targetmathparameters.AccentBaseHeight = nil -- safeguard, still needed?
+        end
+        if not targetmathparameters.FractionDelimiterSize then
+            targetmathparameters.FractionDelimiterSize = 0
+        end
+        if not mathparameters.FractionDelimiterDisplayStyleSize then
+            targetmathparameters.FractionDelimiterDisplayStyleSize = 0
+        end
+        target.mathparameters = targetmathparameters
+    end
+end
+
 function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table
     --
@@ -3079,23 +3065,22 @@ function constructors.scale(tfmdata,specification)
     local shared         = tfmdata.shared         or { }
     local parameters     = tfmdata.parameters     or { }
     local mathparameters = tfmdata.mathparameters or { }
-    local MathConstants  = tfmdata.mathconstants  or { }
     --
     local targetcharacters     = { }
     local targetdescriptions   = table.derive(descriptions)
     local targetparameters     = table.derive(parameters)
-    local targetmathparameters = table.derive(mathparameters)
+ -- local targetmathparameters = table.fastcopy(mathparameters) -- happens elsewhere
     local targetproperties     = table.derive(properties)
-    local targetgoodies        = table.derive(goodies)
+    local targetgoodies        = goodies                        -- we need to loop so no metatable
     target.characters          = targetcharacters
     target.descriptions        = targetdescriptions
     target.parameters          = targetparameters
-    target.mathparameters      = targetmathparameters
+ -- target.mathparameters      = targetmathparameters           -- happens elsewhere
     target.properties          = targetproperties
     target.goodies             = targetgoodies
     target.shared              = shared
     target.resources           = resources
-    target.unscaled            = tfmdata -- the original unscaled one (temp)
+    target.unscaled            = tfmdata                        -- the original unscaled one
     --
     -- specification.mathsize : 1=text 2=script 3=scriptscript
     -- specification.textsize : natural (text)size
@@ -3205,9 +3190,9 @@ function constructors.scale(tfmdata,specification)
         target.slant = 0
     end
     --
+    targetparameters.factor       = delta
     targetparameters.hfactor      = hdelta
     targetparameters.vfactor      = vdelta
-    targetparameters.factor       = delta
     targetparameters.size         = scaledpoints
     targetparameters.units        = units
     targetparameters.scaledpoints = askedscaledpoints
@@ -3224,18 +3209,6 @@ function constructors.scale(tfmdata,specification)
     end
     --
     target.type = isvirtual and "virtual" or "real"
-    -- more extensive test
-    local hasmath = (properties.math or next(mathparameters) or next(MathConstants)) and true
-    if hasmath then
-        properties.has_math   = true
-        target.nomath         = false
-        target.MathConstants  = MathConstants
-        target.mathconstants  = MathConstants
-    else
-        properties.has_math   = false
-        target.nomath         = true
-        target.mathparameters = nil -- nop
-    end
     -- this will move to some subtable so that it is copied at once
     target.postprocessors = tfmdata.postprocessors
     --
@@ -3263,35 +3236,7 @@ function constructors.scale(tfmdata,specification)
     if descender then
         targetparameters.descender = delta * descender
     end
-    --
-    if hasmath then
-        local ma = constructors.mathactions
-        local ta = type(ma)
-        if ta == "function" then -- context
-            ma(target,tfmdata)
-        elseif ta == "table" then -- generic (we keep the deltas)
-            for i=1,#ma do
-                ma[i](target,tfmdata,delta,hdelta,vdelta)
-            end
-        end
-        if not targetparameters[13] then targetparameters[13] = .86*targetx_height end  -- mathsupdisplay
-        if not targetparameters[14] then targetparameters[14] = .86*targetx_height end  -- mathsupnormal
-        if not targetparameters[15] then targetparameters[15] = .86*targetx_height end  -- mathsupcramped
-        if not targetparameters[16] then targetparameters[16] = .48*targetx_height end  -- mathsubnormal
-        if not targetparameters[17] then targetparameters[17] = .48*targetx_height end  -- mathsubcombined
-        if not targetparameters[22] then targetparameters[22] =   0                end  -- mathaxisheight
-        if target.MathConstants     then target.MathConstants.AccentBaseHeight = nil end -- safeguard
-        if trace_defining then
-            report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",
-                name or "noname",fullname or "nofullname",filename or "nofilename")
-        end
-    else
-        if trace_defining then
-            report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",
-                name or "noname",fullname or "nofullname",filename or "nofilename")
-        end
-    end
-    --
+    -- copies, might disappear
     targetparameters.xheight      = targetparameters.xheight      or parameters.x_height
     targetparameters.extraspace   = targetparameters.extraspace   or parameters.extra_space
     targetparameters.spacestretch = targetparameters.spacestretch or parameters.space_stretch
@@ -3301,6 +3246,26 @@ function constructors.scale(tfmdata,specification)
     local scaledwidth      = defaultwidth  * hdelta
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
+    --
+    local hasmath = (properties.has_math or next(mathparameters)) and true
+    if hasmath then
+        if trace_defining then
+            report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",
+                name or "noname",fullname or "nofullname",filename or "nofilename")
+        end
+        constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
+        properties.has_math   = true
+        target.nomath         = false
+        target.MathConstants  = target.mathparameters
+    else
+        if trace_defining then
+            report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",
+                name or "noname",fullname or "nofullname",filename or "nofilename")
+        end
+        properties.has_math   = false
+        target.nomath         = true
+        target.mathparameters = nil -- nop
+    end
     --
     local sharedkerns   = { }
     --
@@ -3400,7 +3365,7 @@ function constructors.scale(tfmdata,specification)
             if vn then
                 chr.next = vn
              -- if character.vert_variants or character.horiz_variants then
-             --     report_defining("glyph 0x%05X has combination of next, vert_variants and horiz_variants",index)
+             --     report_defining("glyph U+%05X has combination of next, vert_variants and horiz_variants",index)
              -- end
             else
                 local vv = character.vert_variants
@@ -3462,19 +3427,6 @@ function constructors.scale(tfmdata,specification)
         if not nodemode then
             local vk = character.kerns
             if vk then
-             -- if sharedkerns then
-             --     local base = basekerns[vk] -- hashed by table id, not content
-             --     if not base then
-             --         base = {}
-             --         for k,v in next, vk do base[k] = v*hdelta end
-             --         basekerns[vk] = base
-             --     end
-             --     chr.kerns = base
-             -- else
-             --     local tt = {}
-             --     for k,v in next, vk do tt[k] = v*hdelta end
-             --     chr.kerns = tt
-             -- end
                 local s = sharedkerns[vk]
                 if not s then
                     s = { }
@@ -3631,7 +3583,6 @@ function constructors.finalize(tfmdata)
     --
     -- tfmdata.fonts
     -- tfmdata.unscaled
-    -- tfmdata.mathconstants
     --
     if not properties.has_math then
         properties.has_math  = not tfmdata.nomath
@@ -4534,9 +4485,9 @@ function mappings.addtounicode(data,filename)
             local index = glyph.index
             local toun  = tounicode[index]
             if toun then
-                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X, tounicode: %s",index,name,unic,toun)
+                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X, tounicode: %s",index,name,unic,toun)
             else
-                report_fonts("internal: 0x%05X, name: %s, unicode: 0x%05X",index,name,unic)
+                report_fonts("internal: 0x%05X, name: %s, unicode: U+%05X",index,name,unic)
             end
         end
     end
@@ -5404,7 +5355,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 unicode = private
                                 unicodes[name] = private
                                 if trace_private then
-                                    report_otf("enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
+                                    report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
                                 end
                                 private = private + 1
                                 nofnames = nofnames + 1
@@ -5451,7 +5402,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     unicode = private
                     unicodes[name] = private
                     if trace_private then
-                        report_otf("enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
+                        report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
                     end
                     private = private + 1
                 else
@@ -5509,7 +5460,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
                 local description = descriptions[parent]
                 if description then
                     local c = fastcopy(description)
-                    c.comment = format("copy of 0x%04X", parent)
+                    c.comment = format("copy of U+%05X", parent)
                     descriptions[unicode] = c
                     local name = c.name
                     if not unicodes[name] then
@@ -5519,7 +5470,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
                     multiples[nofmultiples] = name -- we can save duplicates if needed
                 else
                     -- make it a notdef
-                    report_otf("weird unicode 0x%04X at index 0x%04X",unicode,index)
+                    report_otf("weird unicode U+%05X at index 0x%04X",unicode,index)
                 end
             end
         end
@@ -6073,7 +6024,7 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
                             end
                         end
                     elseif trace_loading then
-                        report_otf("problems with unicode %s of kern %s of glyph 0x%04X",name,k,unicode)
+                        report_otf("problems with unicode %s of kern %s of glyph U+%05X",name,k,unicode)
                     end
                 end
             end
@@ -6158,7 +6109,7 @@ actions["merge kern classes"] = function(data,filename,raw)
                                                     lookupkerns[second_unicode] = kern
                                                 end
                                             elseif trace_loading then
-                                                report_otf("no glyph data for U+%04X", first_unicode)
+                                                report_otf("no glyph data for U+%05X", first_unicode)
                                             end
                                         end
                                     end
@@ -6719,15 +6670,15 @@ local function gref(descriptions,n)
     if type(n) == "number" then
         local name = descriptions[n].name
         if name then
-            return format("U+%04X (%s)",n,name)
+            return format("U+%05X (%s)",n,name)
         else
-            return format("U+%04X")
+            return format("U+%05X")
         end
     elseif n then
         local num, nam = { }, { }
         for i=2,#n do -- first is likely a key
             local ni = n[i]
-            num[i] = format("U+%04X",ni)
+            num[i] = format("U+%05X",ni)
             nam[i] = descriptions[ni].name or "?"
         end
         return format("%s (%s)",concat(num," "), concat(nam," "))
@@ -7059,7 +7010,7 @@ local function make_2(present,tfmdata,characters,tree,name,preceding,unicode,don
             local character = characters[preceding]
             if not character then
                 if trace_baseinit then
-                    report_prepare("weird ligature in lookup %s: 0x%04X (%s), preceding 0x%04X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
+                    report_prepare("weird ligature in lookup %s: U+%05X (%s), preceding U+%05X (%s)",lookupname,v,utfchar(v),preceding,utfchar(preceding))
                 end
                 character = makefake(tfmdata,name,present)
             end
@@ -7380,7 +7331,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index) --ba=baseancho
             set_attribute(start,markdone,index)
             return dx, dy, bound
         else
-            report_injections("possible problem, U+%04X is base mark without data (id: %s)",base.char,bound)
+            report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
         end
     end
     index = index or 1
@@ -10468,7 +10419,7 @@ local arab_warned = { }
 local function warning(current,what)
     local char = current.char
     if not arab_warned[char] then
-        log.report("analyze","arab: character %s (U+%04X) has no %s class", char, char, what)
+        log.report("analyze","arab: character %s (U+%05X) has no %s class", char, char, what)
         arab_warned[char] = true
     end
 end
@@ -11141,7 +11092,7 @@ end
 fonts.definers.registersplit(":",colonized,"cryptic")
 fonts.definers.registersplit("", colonized,"more cryptic") -- catches \font\text=[names]
 
-function definers.applypostprocessors(tfmdata)
+function fonts.definers.applypostprocessors(tfmdata)
     local postprocessors = tfmdata.postprocessors
     if postprocessors then
         for i=1,#postprocessors do
