@@ -435,6 +435,9 @@
 \def\reportarrangedpage#1%
   {\showmessage\m!system{23}{\the\realpageno.\the\pageno\ifnum\subpageno>0 .\the\subpageno\fi,\number#1}}
 
+\def\advancearrangedpageN
+  {\global\advance\arrangedpageN\plusone}
+
 % TOP
 
 % 32/16/8/4/SIDE
@@ -449,7 +452,7 @@
    \fi}
 
 \def\pusharrangedpageTHIRTYTWO#1% taco's challenge
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}033\arrangedpageA %  1
@@ -488,7 +491,7 @@
    \fi}
 
 \def\pusharrangedpageSIXTEEN#1% changed to match the official way of doing
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}031\arrangedpageA %  1
@@ -511,7 +514,7 @@
    \fi}
 
 \def\pusharrangedpageEIGHT#1% changed to match the official way of doing
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
@@ -529,7 +532,7 @@
 \def\pusharrangedpageFOURB{\pusharrangedpageFOURdo10}
 
 \def\pusharrangedpageFOURdo#1#2#3%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#3}010\arrangedpageA    %  1
@@ -540,7 +543,7 @@
    \fi}
 
 \def\pusharrangedpageSIDETOP#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
@@ -625,7 +628,7 @@
    \fi}
 
 \def\pusharrangedpageTWO#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \global\setbox\arrangedpageB\vbox
      {\offinterlineskip
@@ -649,7 +652,7 @@
   \fi}
 
 \def\pusharrangedpageTWOTOPSIDE#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}000\arrangedpageA %  1
@@ -692,7 +695,7 @@
 % to arrange 16 pages on 4 sheets to form one booklet
 
 \def\pusharrangedpageSIXTEENFOUR#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}010\arrangedpageA %  1
@@ -717,7 +720,7 @@
 % to arrange 16 pages on 2 sheets to form one booklet
 
 \def\pusharrangedpageSIXTEENTWO#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
    \ifcase\arrangedpageN
    \or \handlearrangedpageXandY{#1}011\arrangedpageA %  1
@@ -1111,7 +1114,7 @@
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
 \def\pusharrangedpageXY#1%
-  {\global\advance\arrangedpageN\plusone
+  {\advancearrangedpageN
    \global\advance\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
    \global\setbox\arrangedpageB\hbox \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi

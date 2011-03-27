@@ -3885,8 +3885,8 @@
    \currentsymbolfont
    \global\expandafter\let\csname\??ss->\askedsymbolfont\endcsname\lastrawfontcall}
 
-\unexpanded\def\getnamedglyphstyled#1#2{{\setstyledsymbolicfont{#1}\ctxlua{fonts.char("#2")}}}
-\unexpanded\def\getnamedglyphdirect#1#2{{\setdirectsymbolicfont{#1}\ctxlua{fonts.char("#2")}}}
+\unexpanded\def\getnamedglyphstyled#1#2{{\setstyledsymbolicfont{#1}\ctxcommand{fontchar("#2")}}}
+\unexpanded\def\getnamedglyphdirect#1#2{{\setdirectsymbolicfont{#1}\ctxcommand{fontchar("#2")}}}
 \unexpanded\def\getglyphstyled     #1#2{{\setstyledsymbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
 \unexpanded\def\getglyphdirect     #1#2{{\setdirectsymbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
 \unexpanded\def\getscaledglyph   #1#2#3{{\setscaledstyledsymbolicfont{#1}{#2}\doifnumberelse{#3}\char\donothing#3}}

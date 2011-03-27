@@ -110,6 +110,9 @@ local extra_features = { -- maybe just 1..n so that we prescribe order
     },
 }
 
+otf.extrafeatures = extra_features
+otf.extralists    = extra_lists
+
 local function enhancedata(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
@@ -137,30 +140,34 @@ local function enhancedata(data,filename,raw)
                 local added         = false
                 if featuretype == "gsub_ligature" then
                     lookuptypes[full] = "ligature"
-                    for name, ligature in next, list do
-                        local unicode = unicodes[name]
+                    for code, ligature in next, list do
+                        local unicode = tonumber(code) or unicodes[code]
                         local description = descriptions[unicode]
                         if description then
                             local slookups = description.slookups
+                            if type(ligature) == "string" then
+                                ligature = { lpegmatch(splitter,ligature) }
+                            end
                             if slookups then
-                                slookups[full] = { lpegmatch(splitter,ligature) }
+                                slookups[full] = ligature
                             else
-                                description.slookups = { [full] = { lpegmatch(splitter,ligature) } }
+                                description.slookups = { [full] = ligature }
                             end
                             done, added = done + 1, true
                         end
                     end
                 elseif featuretype == "gsub_single" then
                     lookuptypes[full] = "substitution"
-                    for name, replacement in next, list do
-                        local unicode = unicodes[name]
+                    for code, replacement in next, list do
+                        local unicode = tonumber(code) or unicodes[code]
                         local description = descriptions[unicode]
                         if description then
                             local slookups = description.slookups
+                            replacement = tonumber(replacement) or unicodes[replacement]
                             if slookups then
-                                slookups[full] = unicodes[replacement]
+                                slookups[full] = replacement
                             else
-                                description.slookups = { [full] = unicodes[replacement] }
+                                description.slookups = { [full] = replacement }
                             end
                             done, added = done + 1, true
                         end
