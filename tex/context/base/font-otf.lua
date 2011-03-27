@@ -665,9 +665,12 @@ actions["prepare glyphs"] = function(data,filename,raw)
 
         for index=0,raw.glyphmax-1 do
             local glyph = rawglyphs[index]
+--~ report_otf("1: 0x%04X: %s",index,tostring(glyph)) io.flush()
             if glyph then
                 local unicode = glyph.unicode
+--~ report_otf("2: 0x%04X: %s",index,tostring(unicode)) io.flush()
                 local name    = glyph.name
+--~ report_otf("3: 0x%04X: %s",index,tostring(name)) io.flush()
                 if not unicode or unicode == -1 or unicode >= criterium then
                     unicode = private
                     unicodes[name] = private
@@ -1757,7 +1760,7 @@ local function otftotfm(specification)
         local filename = specification.filename
         local format   = specification.format
         local features = specification.features.normal
-        local rawdata = otf.load(filename,format,sub,features and features.featurefile)
+        local rawdata  = otf.load(filename,format,sub,features and features.featurefile)
         if rawdata and next(rawdata) then
             rawdata.lookuphash = { }
             tfmdata = copytotfm(rawdata,cache_id)
