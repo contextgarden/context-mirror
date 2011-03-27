@@ -72,12 +72,12 @@ function collections.define(name,font,ranges,details)
         if start and stop then
             if trace_collecting then
                 if description then
-                    report_fonts("def: using range %s (U+%04x-U+%04X, %s)",s,start,stop,description)
+                    report_fonts("def: using range %s (U+%05x-U+%05X, %s)",s,start,stop,description)
                 end
                 for i=1,#d do
                     local di = d[i]
                     if (start >= di.start and start <= di.stop) or (stop >= di.start and stop <= di.stop) then
-                        report_fonts("def: overlapping ranges U+%04x-U+%04X and U+%04x-U+%04X",start,stop,di.start,di.stop)
+                        report_fonts("def: overlapping ranges U+%05x-U+%05X and U+%05x-U+%05X",start,stop,di.start,di.stop)
                     end
                 end
             end
@@ -107,7 +107,7 @@ function collections.stage_2(name)
         local id = list[i]
         local start, stop = f.start, f.stop
         if trace_collecting then
-            report_fonts("def: remapping font %s to %s for range U+%04X - U+%04X",current,id,start,stop)
+            report_fonts("def: remapping font %s to %s for range U+%05X - U+%05X",current,id,start,stop)
         end
         local check = toboolean(f.check or "false",true)
         local force = toboolean(f.force or "true",true)

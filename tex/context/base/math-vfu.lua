@@ -293,7 +293,7 @@ local function stack(main,characters,id,size,unicode,u1,d12,u2)
     end
 end
 
-function vfmath.alas(main,id,size)
+function vfmath.addmissing(main,id,size)
     local characters = main.characters
     local shared = main.shared
     local variables = main.goodies.mathematics and main.goodies.mathematics.variables or { }
@@ -357,10 +357,6 @@ setmetatable ( reverse, { __index = function(t,name)
     reverse[name] = r
     return r
 end } )
-
-local mathdirectives = {
-    disablescaling = true
-}
 
 function vfmath.define(specification,set,goodies)
     local name = specification.name -- symbolic name
@@ -486,9 +482,9 @@ function vfmath.define(specification,set,goodies)
     --
     -- we need to set some values in main as well (still?)
     --
-    main.fullname = properties.fullname
-    main.type     = "virtual"
-    main.nomath   = false
+    main.fullname      = properties.fullname
+    main.type          = "virtual"
+    main.nomath        = false
     --
     parameters.x_height = parameters.x_height or 0
     --
@@ -718,17 +714,18 @@ function vfmath.define(specification,set,goodies)
         size = size,
     }
     --
-    if mathparameters then -- weak catch ? ? ?
-        vfmath.alas(main,#fontlist,size)
-    end
-    --
+    main.mathparameters = mathparameters -- still traditional ones
+    vfmath.addmissing(main,#fontlist,size)
     mathematics.addfallbacks(main)
+    --
+    main.properties.math_is_scaled = true -- signal
+    fonts.constructors.assignmathparameters(main,main)
+    --
+    main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)
     end
-    --
-    fonts.constructors.mathactions(main,main,mathdirectives)
     --
     return main
 end

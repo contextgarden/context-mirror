@@ -109,7 +109,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,index) --ba=baseancho
             set_attribute(start,markdone,index)
             return dx, dy, bound
         else
-            report_injections("possible problem, U+%04X is base mark without data (id: %s)",base.char,bound)
+            report_injections("possible problem, U+%05X is base mark without data (id: %s)",base.char,bound)
         end
     end
     index = index or 1

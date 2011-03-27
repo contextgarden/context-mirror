@@ -625,7 +625,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 unicode = private
                                 unicodes[name] = private
                                 if trace_private then
-                                    report_otf("enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
+                                    report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
                                 end
                                 private = private + 1
                                 nofnames = nofnames + 1
@@ -672,7 +672,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     unicode = private
                     unicodes[name] = private
                     if trace_private then
-                        report_otf("enhance: glyph %s at index U+%04X is moved to private unicode slot U+%04X",name,index,private)
+                        report_otf("enhance: glyph %s at index 0x%04X is moved to private unicode slot U+%05X",name,index,private)
                     end
                     private = private + 1
                 else
@@ -730,7 +730,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
                 local description = descriptions[parent]
                 if description then
                     local c = fastcopy(description)
-                    c.comment = format("copy of 0x%04X", parent)
+                    c.comment = format("copy of U+%05X", parent)
                     descriptions[unicode] = c
                     local name = c.name
                     if not unicodes[name] then
@@ -740,7 +740,7 @@ actions["prepare unicodes"] = function(data,filename,raw)
                     multiples[nofmultiples] = name -- we can save duplicates if needed
                 else
                     -- make it a notdef
-                    report_otf("weird unicode 0x%04X at index 0x%04X",unicode,index)
+                    report_otf("weird unicode U+%05X at index 0x%04X",unicode,index)
                 end
             end
         end
@@ -1294,7 +1294,7 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
                             end
                         end
                     elseif trace_loading then
-                        report_otf("problems with unicode %s of kern %s of glyph 0x%04X",name,k,unicode)
+                        report_otf("problems with unicode %s of kern %s of glyph U+%05X",name,k,unicode)
                     end
                 end
             end
@@ -1379,7 +1379,7 @@ actions["merge kern classes"] = function(data,filename,raw)
                                                     lookupkerns[second_unicode] = kern
                                                 end
                                             elseif trace_loading then
-                                                report_otf("no glyph data for U+%04X", first_unicode)
+                                                report_otf("no glyph data for U+%05X", first_unicode)
                                             end
                                         end
                                     end

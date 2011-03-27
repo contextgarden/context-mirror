@@ -219,7 +219,7 @@
 % \ifx\fontalternative\c!bi -\else
 % \ifx\fontalternative\c!bs -\fi\fi\fi\fi
 
-\def\LuaTeX
+\unexpanded\def\LuaTeX
   {\dontleavehmode
    \begingroup
      Lua%
@@ -245,5 +245,9 @@
 
 \let\luaTeX \LuaTeX
 \let\LUATEX \LuaTeX
+
+\unexpanded\def\MKII{MkII}
+\unexpanded\def\MKIV{MkIV}
+\unexpanded\def\MKVI{MkVI}
 
 \protect \endinput
