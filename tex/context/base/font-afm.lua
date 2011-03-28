@@ -27,7 +27,7 @@ local report_afm = logs.reporter("fonts","afm loading")
 local next, type, tonumber = next, type, tonumber
 local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip
 local abs = math.abs
-local P, S, C, R, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.match
+local P, S, C, R, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.match, lpeg.patterns
 
 local fonts              = fonts
 local afm                = { }
@@ -90,8 +90,8 @@ built in <l n='tfm'/> and <l n='otf'/> reader.</p>
 --~ Comment AXISHEIGHT 250
 
 local comment = P("Comment")
-local spacing = S(" \t")^1
-local lineend = S("\n\r")
+local spacing = patterns.spacer  -- S(" \t")^1
+local lineend = patterns.newline -- S("\n\r")
 local words   = C((1 - lineend)^1)
 local number  = C((R("09") + S("."))^1) / tonumber * spacing^0
 local data    = lpeg.Carg(1)

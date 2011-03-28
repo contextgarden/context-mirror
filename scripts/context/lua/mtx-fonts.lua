@@ -341,6 +341,7 @@ function scripts.fonts.save()
         if fontblob then
             savename = savename:lower() .. ".lua"
             report("fontsave, saving data in %s",savename)
+-- fontloader.apply_featurefile(fontblob, "./ts/test.fea")
             table.tofile(savename,fontloader.to_table(fontblob),"return")
             fontloader.close(fontblob)
         end

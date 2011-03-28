@@ -47,7 +47,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.720 -- beware: also sync font-mis.lua
+otf.version              = 2.721 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -610,7 +610,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     local subfont   = rawsubfonts[cidindex]
                     local cidglyphs = subfont.glyphs
                     metadata.subfonts[cidindex] = somecopy(subfont)
-                    for index=0,subfont.glyphmax - 1 do
+                    for index=0,subfont.glyphcnt-1 do -- we could take the previous glyphcnt instead of 0
                         local glyph = cidglyphs[index]
                         if glyph then
                             local unicode = glyph.unicode
@@ -648,6 +648,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                             }
 
                             descriptions[unicode] = description
+                        else
+                         -- report_otf("potential problem: glyph 0x%04X is used but empty",index)
                         end
                     end
                 end
@@ -663,14 +665,11 @@ actions["prepare glyphs"] = function(data,filename,raw)
 
     else
 
-        for index=0,raw.glyphmax-1 do
+        for index=0,raw.glyphcnt-1 do -- not raw.glyphmax-1 (as that will crash)
             local glyph = rawglyphs[index]
---~ report_otf("1: 0x%04X: %s",index,tostring(glyph)) io.flush()
             if glyph then
                 local unicode = glyph.unicode
---~ report_otf("2: 0x%04X: %s",index,tostring(unicode)) io.flush()
                 local name    = glyph.name
---~ report_otf("3: 0x%04X: %s",index,tostring(name)) io.flush()
                 if not unicode or unicode == -1 or unicode >= criterium then
                     unicode = private
                     unicodes[name] = private
@@ -693,6 +692,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     index       = index,
                     glyph       = glyph,
                 }
+            else
+                report_otf("potential problem: glyph 0x%04X is used but empty",index)
             end
         end
 

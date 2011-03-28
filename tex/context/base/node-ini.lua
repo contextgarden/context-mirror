@@ -60,6 +60,7 @@ local free_node          = node.free
 local remove_node        = node.remove
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
+local node_fields        = node.fields
 
 local allocate = utilities.storage.allocate
 
@@ -207,6 +208,35 @@ function nodes.showcodes()
     formatcolumns(t)
     for k=1,#t do
         texio.write_nl(t[k])
+    end
+end
+
+-- pseudoline and shape crash on node.new
+
+local whatsit_node = nodecodes.whatsit
+
+local messyhack    = table.tohash { -- temporary solution
+    nodecodes.attributelist,
+    nodecodes.attribute,
+    nodecodes.gluespec,
+    nodecodes.action,
+}
+
+function nodes.fields(n)
+    local id = n.id
+    if id == whatsit_node then
+        return node_fields(id,n.subtype)
+    else
+        local t = node_fields(id)
+        if messyhack[id] then
+            for i=1,#t do
+                if t[i] == "subtype" then
+                    table.remove(t,i)
+                    break
+                end
+            end
+        end
+        return t
     end
 end
 

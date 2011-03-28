@@ -642,7 +642,7 @@ function codeinjections.setformat(s)
             if xmp_file == "" then
                 -- weird error
             else
-                lpdf.setxmpfile(xmp_file)
+                codeinjections.setxmpfile(xmp_file)
             end
             local pdf_version, inject_metadata = spec.pdf_version * 10, spec.inject_metadata
             local majorversion, minorversion = math.div(pdf_version,10), math.mod(pdf_version,10)

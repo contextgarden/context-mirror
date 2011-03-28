@@ -214,9 +214,11 @@ function definers.resolve(specification)
     -- for the moment here (goodies set outside features)
     local goodies = specification.goodies
     if goodies and goodies ~= "" then
-        local normalgoodies = specification.features.normal.goodies
-        if not normalgoodies or normalgoodies == "" then
-            specification.features.normal.goodies = goodies
+        local normal = specification.features.normal
+        if not normal then
+            specification.features.normal = { goodies = goodies }
+        elseif not normal.goodies then
+            normal.goodies = goodies
         end
     end
     --

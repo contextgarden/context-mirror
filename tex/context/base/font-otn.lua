@@ -778,7 +778,6 @@ end
 
 function handlers.gpos_single(start,kind,lookupname,kerns,sequence)
     local startchar = start.char
-    local kerns = kerns[start.char]
     local dx, dy, w, h = setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
     if trace_kerns then
         logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
@@ -1420,7 +1419,7 @@ function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,lookuph
     local lookupname = subtables[1]
     local kerns = lookuphash[lookupname]
     if kerns then
-        kerns = kerns[startchar]
+        kerns = kerns[startchar] -- needed ?
         if kerns then
             local dx, dy, w, h = setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
             if trace_kerns then
