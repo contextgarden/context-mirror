@@ -769,7 +769,7 @@
    \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
    \the\everydefinefont
-   \setnewconstant\featureinheritancemode\featureinheritancedefault}
+   \featureinheritancemode\featureinheritancedefault}
 
 \def\updatefontclassparameters
   {\edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%

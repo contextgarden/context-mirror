@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 03/28/11 01:03:40
+-- merge date  : 03/28/11 18:59:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -4777,7 +4777,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.720 -- beware: also sync font-mis.lua
+otf.version              = 2.721 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -5340,7 +5340,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     local subfont   = rawsubfonts[cidindex]
                     local cidglyphs = subfont.glyphs
                     metadata.subfonts[cidindex] = somecopy(subfont)
-                    for index=0,subfont.glyphmax - 1 do
+                    for index=0,subfont.glyphcnt-1 do -- we could take the previous glyphcnt instead of 0
                         local glyph = cidglyphs[index]
                         if glyph then
                             local unicode = glyph.unicode
@@ -5378,6 +5378,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                             }
 
                             descriptions[unicode] = description
+                        else
+                         -- report_otf("potential problem: glyph 0x%04X is used but empty",index)
                         end
                     end
                 end
@@ -5393,14 +5395,11 @@ actions["prepare glyphs"] = function(data,filename,raw)
 
     else
 
-        for index=0,raw.glyphmax-1 do
+        for index=0,raw.glyphcnt-1 do -- not raw.glyphmax-1 (as that will crash)
             local glyph = rawglyphs[index]
---~ report_otf("1: 0x%04X: %s",index,tostring(glyph)) io.flush()
             if glyph then
                 local unicode = glyph.unicode
---~ report_otf("2: 0x%04X: %s",index,tostring(unicode)) io.flush()
                 local name    = glyph.name
---~ report_otf("3: 0x%04X: %s",index,tostring(name)) io.flush()
                 if not unicode or unicode == -1 or unicode >= criterium then
                     unicode = private
                     unicodes[name] = private
@@ -5423,6 +5422,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     index       = index,
                     glyph       = glyph,
                 }
+            else
+                report_otf("potential problem: glyph 0x%04X is used but empty",index)
             end
         end
 
@@ -8463,7 +8464,6 @@ end
 
 function handlers.gpos_single(start,kind,lookupname,kerns,sequence)
     local startchar = start.char
-    local kerns = kerns[start.char]
     local dx, dy, w, h = setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
     if trace_kerns then
         logprocess("%s: shifting single %s by (%s,%s) and correction (%s,%s)",pref(kind,lookupname),gref(startchar),dx,dy,w,h)
@@ -9105,7 +9105,7 @@ function chainprocs.gpos_single(start,stop,kind,chainname,currentcontext,lookuph
     local lookupname = subtables[1]
     local kerns = lookuphash[lookupname]
     if kerns then
-        kerns = kerns[startchar]
+        kerns = kerns[startchar] -- needed ?
         if kerns then
             local dx, dy, w, h = setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,characters[startchar])
             if trace_kerns then
@@ -10792,9 +10792,11 @@ function definers.resolve(specification)
     -- for the moment here (goodies set outside features)
     local goodies = specification.goodies
     if goodies and goodies ~= "" then
-        local normalgoodies = specification.features.normal.goodies
-        if not normalgoodies or normalgoodies == "" then
-            specification.features.normal.goodies = goodies
+        local normal = specification.features.normal
+        if not normal then
+            specification.features.normal = { goodies = goodies }
+        elseif not normal.goodies then
+            normal.goodies = goodies
         end
     end
     --

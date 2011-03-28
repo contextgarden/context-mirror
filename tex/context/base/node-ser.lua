@@ -16,9 +16,9 @@ local allocate = utilities.storage.allocate
 local nodes, node = nodes, node
 
 local traverse    = node.traverse
-local node_fields = node.fields
 
 local nodecodes   = nodes.nodecodes
+local nodefields  = nodes.fields
 
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
@@ -69,7 +69,7 @@ nodes.ignorablefields = ignore
 -- not ok yet:
 
 function nodes.astable(n,sparse) -- not yet ok
-    local f, t = node_fields(n.id,n.subtype), { }
+    local f, t = nodefields(n), { }
     for i=1,#f do
         local v = f[i]
         local d = n[v]
@@ -96,7 +96,7 @@ end
 local function totable(n,flat,verbose)
     -- todo: no local function
     local function to_table(n,flat,verbose)
-        local f = node_fields(n.id,n.subtype)
+        local f = nodefields(n)
         local tt = { }
         for k=1,#f do
             local v = f[k]
@@ -174,7 +174,7 @@ local function serialize(root,name,handle,depth,m)
     if root then
         local fld
         if root.id then
-            fld = node_fields(root.id,root.subtype) -- we can cache these (todo)
+            fld = nodefields(root) -- we can cache these (todo)
         else
             fld = table.sortedkeys(root)
         end
