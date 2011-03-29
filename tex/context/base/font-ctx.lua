@@ -99,11 +99,13 @@ setmetatablekey(fontdata, "__index", function(t,k)
 end)
 
 local chardata      = allocate() -- chardata
+local parameters    = allocate()
 local csnames       = allocate() -- namedata
 local quaddata      = allocate() -- quaddata
 local xheightdata   = allocate() -- xheightdata
 
 hashes.characters   = chardata
+hashes.parameters   = parameters
 hashes.quads        = quaddata
 hashes.xheights     = xheightdata
 
@@ -113,15 +115,21 @@ setmetatablekey(chardata, "__index", function(t,k)
     return characters
 end)
 
-setmetatablekey(quaddata, "__index", function(t,k)
+setmetatablekey(parameters, "__index", function(t,k)
     local parameters = fontdata[k].parameters
+    t[k] = parameters
+    return parameters
+end)
+
+setmetatablekey(quaddata, "__index", function(t,k)
+    local parameters = parameters[k]
     local quad = parameters and parameters.quad or 0
     t[k] = quad
     return quad
 end)
 
 setmetatablekey(xheightdata, "__index", function(t,k)
-    local parameters = fontdata[k].parameters
+    local parameters = parameters[k]
     local xheight = parameters and parameters.xheight or 0
     t[k] = xheight
     return quad

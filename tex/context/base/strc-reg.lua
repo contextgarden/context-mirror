@@ -671,7 +671,13 @@ function registers.flush(data,options,prefixspec,pagespec)
             local entry = data[d]
             if entry.metadata.kind == "see" then
                 local list = entry.list
-                list[#list] = nil
+                if #list > 1 then
+                    list[#list] = nil
+                else
+                    -- we have an \seeindex{Foo}{Bar} without Foo being defined anywhere
+                    report_registers("invalid see entry in register '%s', reference '%s'",
+                        entry.metadata.name or "?",list[1][1] or "?")
+                end
             end
         end
         while d < #data do

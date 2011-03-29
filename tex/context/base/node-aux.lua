@@ -97,9 +97,7 @@ nodes.setattributes        = set_attributes
 nodes.setunsetattributes   = set_unset_attributes
 nodes.unsetattributes      = unset_attributes
 
--- history:
---
--- local function cp_skipable(a,id)  -- skipable nodes at the margins during character protrusion
+-- function nodes.is_skipable(a,id)  -- skipable nodes at the margins during character protrusion
 --     return (
 --             id ~= glyph_node
 --         or  id == ins_node
@@ -114,6 +112,9 @@ nodes.unsetattributes      = unset_attributes
 --         or (id == whatsit_node and a.subtype ~= pdf_refximage_node and a.subtype ~= pdf_refxform_node)
 --     )
 -- end
+
+-- history:
+--
 --
 -- local function glyph_width(a)
 --     local ch = chardata[a.font][a.char]

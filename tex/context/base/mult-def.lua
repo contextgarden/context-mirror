@@ -6471,6 +6471,14 @@ return {
   },
  },
  ["constants"]={
+  ["keys"]={
+   ["en"]="keys",
+   ["nl"]="sleutels", -- brrr
+  },
+  ["entries"]={
+   ["en"]="entries",
+   ["nl"]="ingangen",
+  },
   ["strip"]={
    ["en"]="strip",
   },

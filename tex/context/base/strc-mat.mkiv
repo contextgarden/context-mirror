@@ -480,6 +480,15 @@
    \forgetdisplayskips
    \getvalue{\e!start\formulaparameter\c!alternative\v!formula}}
 
+% experiment:
+
+\appendtoks
+   \edef\currentformulagrid{\formulaparameter\c!grid}%
+   \ifx\currentformulagrid\empty \else
+        \autosetsnapvalue\currentformulagrid
+   \fi
+\to \everybeforedisplayformula
+
 \def\switchtoformulabodyfont{\switchtobodyfont}
 
 \setvalue{\v!formula}{\dosingleempty\doformula}

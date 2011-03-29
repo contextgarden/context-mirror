@@ -638,14 +638,20 @@ end
 
 -- might move elsewhere
 
-local factor   = number.dimenfactors.pt
+local ptfactor = number.dimenfactors.pt
+local bpfactor = number.dimenfactors.bp
 local stripper = lpeg.patterns.stripzeros
 
 local points = function(n)
-    return lpegmatch(stripper,format("%.5fpt",n*factor))
+    return lpegmatch(stripper,format("%.5fpt",n*ptfactor))
 end
 
-number.points = points
+local basepoints = function(n)
+    return lpegmatch(stripper,format("%.5fbp",n*bpfactor))
+end
+
+number.points     = points
+number.basepoints = basepoints
 
 --~ function nodes.thespec(s)
 --~     local stretch_order = s.stretch_order

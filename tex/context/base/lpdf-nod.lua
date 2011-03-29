@@ -35,6 +35,13 @@ function nodepool.pdfliteral(str)
     return t
 end
 
+function nodepool.pdfdirect(str)
+    local t = copy_node(pdfliteral)
+    t.data = str
+    t.mode = 1
+    return t
+end
+
 function nodepool.pdfannotation(w,h,d,data,n)
     local t = copy_node(pdfannot)
     if w and w ~= 0 then t.width  = w end
