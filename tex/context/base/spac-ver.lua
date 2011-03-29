@@ -246,6 +246,25 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     return false
 end
 
+
+-- quite tricky: ceil(-something) => -0
+
+local function ceiled(n)
+    if n < 0 or n < 0.01 then
+        return 0
+    else
+        return ceil(n)
+    end
+end
+
+local function lower(n)
+    if n < 0 or n < 0.01 then
+        return 0
+    else
+        return floored(n)
+    end
+end
+
 local function snap_hlist(where,current,method,height,depth) -- method.strut is default
     local list = current.list
 --~ print(table.serialize(method))
@@ -384,12 +403,14 @@ h, d = ch, cd
 --~         -- first or last
 --~     else
     if method.minheight then
-        ch = max(floor((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+     -- ch = max(floor((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+        ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
             t[#t+1] = format("minheight: %s",points(ch))
         end
     elseif method.maxheight then
-        ch = max(ceil((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+     -- ch = max(ceil((h-hr*snapht)/snaphtdp),0)*snaphtdp + plusht
+        ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
             t[#t+1] = format("maxheight: %s",points(ch))
         end
@@ -403,12 +424,14 @@ h, d = ch, cd
 --~         -- first or last
 --~     else
     if method.mindepth then
-        cd = max(floor((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+     -- cd = max(floor((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+        cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
             t[#t+1] = format("mindepth: %s",points(cd))
         end
     elseif method.maxdepth then
-        cd = max(ceil((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+     -- cd = max(ceil((d-dr*snapdp)/snaphtdp),0)*snaphtdp + plusdp
+        cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
             t[#t+1] = format("maxdepth: %s",points(cd))
         end

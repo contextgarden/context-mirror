@@ -633,6 +633,41 @@
 
 \stoptypescriptcollection
 
+\starttypescriptcollection[dejavu]
+
+    \starttypescript [serif] [dejavu] [name]
+        \setups[font:fallback:serif]
+        \definefontsynonym [Serif]           [name:dejavuserif]           [features=default]
+        \definefontsynonym [SerifBold]       [name:dejavuserifbold]       [features=default]
+        \definefontsynonym [SerifItalic]     [name:dejavuserifitalic]     [features=default]
+        \definefontsynonym [SerifBoldItalic] [name:dejavuserifbolditalic] [features=default]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [name:dejavusans]            [features=default]
+        \definefontsynonym [SansBold]       [name:dejavusansbold]        [features=default]
+        \definefontsynonym [SansItalic]     [name:dejavusansoblique]     [features=default]
+        \definefontsynonym [SansBoldItalic] [name:dejavusansboldoblique] [features=default]
+    \stoptypescript
+
+    \starttypescript [mono] [dejavu] [name]
+        \setups[font:fallback:mono]
+        \definefontsynonym [Mono]           [name:dejavusansmono]            [features=none]
+        \definefontsynonym [MonoBold]       [name:dejavusansmonobold]        [features=none]
+        \definefontsynonym [MonoItalic]     [name:dejavusansmonooblique]     [features=none]
+        \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldoblique] [features=none]
+    \stoptypescript
+
+    \starttypescript[dejavu]
+        \definetypeface [dejavu] [rm] [serif] [dejavu] [default]
+        \definetypeface [dejavu] [ss] [sans]  [dejavu] [default]
+        \definetypeface [dejavu] [tt] [mono]  [dejavu] [default]
+        \definetypeface [dejavu] [mm] [math]  [xits]   [default] [rscale=auto]
+    \stoptypescript
+
+\stoptypescriptcollection
+
 \starttypescriptcollection[antykwa]
 
     % Antykwa Torunska (GUST)

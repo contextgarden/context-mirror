@@ -649,6 +649,7 @@
 		<cd:constant name='editoretallimit' value='editoretallimit'/>
 		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='empty'/>
+		<cd:constant name='entries' value='entries'/>
 		<cd:constant name='equalheight' value='equalheight'/>
 		<cd:constant name='equalwidth' value='equalwidth'/>
 		<cd:constant name='escape' value='escape'/>
@@ -726,6 +727,7 @@
 		<cd:constant name='juniorsep' value='juniorsep'/>
 		<cd:constant name='ken' value='ken'/>
 		<cd:constant name='keyexpansion' value='keyexpansion'/>
+		<cd:constant name='keys' value='keys'/>
 		<cd:constant name='keyword' value='keyword'/>
 		<cd:constant name='label' value='label'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
