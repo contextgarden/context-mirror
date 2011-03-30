@@ -23,7 +23,7 @@
 \def\getrandomnumber#1#2#3{\edef#1{\ctxcommand{getrandomcounta(\number#2,\number#3)}}}
 \def\getrandomfloat #1#2#3{\edef#1{\ctxcommand{getrandomcountb(\number\dimexpr#2\points,\number\dimexpr#3\points)}}}
 \def\setrandomseed      #1{\ctxcommand{setrandomseed(\number#1)}}
-\def\getrandomseed        {\ctxcommand{getrandomseed()}}
+\def\getrandomseed      #1{\edef#1{\ctxcommand{getrandomseed()}}}
 \def\freezerandomseed     {\ctxcommand{freezerandomseed()}}
 \def\defrostrandomseed    {\ctxcommand{defrostrandomseed()}}
 

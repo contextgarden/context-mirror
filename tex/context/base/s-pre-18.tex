@@ -11,28 +11,24 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-
-
-% output=pdftex interface=en 
-
-% todo: met pos en dan iedere titel 
+% todo: met pos en dan iedere titel
 
 \setuppapersize
   [S6][S6]
 
 \setupbodyfont
-  [loc,ppl] 
+  [loc,ppl]
 
 \setupcolors
   [state=start]
 
-\definecolor [shade-1] [s=.7] 
-\definecolor [shade-2] [s=.1]  
+\definecolor [shade-1] [s=.7]
+\definecolor [shade-2] [s=.1]
 
-\definecolor [shade-3] [s=.8]  
-\definecolor [shade-4] [b=.8]  
+\definecolor [shade-3] [s=.8]
+\definecolor [shade-4] [b=.8]
 
-\definecolor [shade-5] [g=.6] 
+\definecolor [shade-5] [g=.6]
 
 \setuplayout
   [topspace=1cm,
@@ -52,58 +48,58 @@
 \defineoverlay [text] [\useMPgraphic{text}]
 
 \startuseMPgraphic{page}
-  StartPage ; 
-    path p ; numeric s ; pair cp ; cp := center Page ; 
+  StartPage ;
+    path p ; numeric s ; pair cp ; cp := center Page ;
     s := define_circular_shade(cp,cp,0,TextWidth,
-      \MPcolor{shade-1},\MPcolor{shade-2}) ; 
-    fill Page withshade s ; 
+      \MPcolor{shade-1},\MPcolor{shade-2}) ;
+    fill Page withshade s ;
     p := fullcircle xyscaled (TextWidth+1cm, TextHeight+1cm) shifted cp ;
     s := define_circular_shade(cp,cp,0,TextWidth,\MPcolor{shade-3},
-      \MPcolor{shade-4}) ; 
-    fill p withshade s ; 
+      \MPcolor{shade-4}) ;
+    fill p withshade s ;
   StopPage
 \stopuseMPgraphic
 
 \startuseMPgraphic{text}
-  StartPage ; 
-    path p ; numeric s, t ; pair cp ; cp := center Page ; 
+  StartPage ;
+    path p ; numeric s, t ; pair cp ; cp := center Page ;
     s := define_circular_shade(cp,cp,0,TextWidth,
-      \MPcolor{shade-1},\MPcolor{shade-2}) ; 
-    fill Page withshade s ; 
-    p := llcorner Field[Text][Bottom] -- 
-         lrcorner Field[Text][Bottom] -- 
-         urcorner Field[Text][Text]   -- 
-         ulcorner Field[Text][Text]   -- cycle ; 
-    p := p enlarged .5cm randomized .5cm ; 
-    t := define_circular_shade(cp,cp,0,TextWidth,\MPcolor{shade-3}, 
-      \MPcolor{shade-4}) ; 
-    fill p withshade t ; 
+      \MPcolor{shade-1},\MPcolor{shade-2}) ;
+    fill Page withshade s ;
+    p := llcorner Field[Text][Bottom] --
+         lrcorner Field[Text][Bottom] --
+         urcorner Field[Text][Text]   --
+         ulcorner Field[Text][Text]   -- cycle ;
+    p := p enlarged .5cm randomized .5cm ;
+    t := define_circular_shade(cp,cp,0,TextWidth,\MPcolor{shade-3},
+      \MPcolor{shade-4}) ;
+    fill p withshade t ;
 
-    def bottom_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =  
-      if (pp>0) and (rr>0) : 
-        if     nn = 1 : 
-          p := (0,0)--(ww,hh/2)--(0,hh)--cycle ; 
-        elseif nn = 2 : 
-          p := (0,hh/2)--(ww,hh)--(ww,0)--cycle ; 
+    def bottom_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      if (pp>0) and (rr>0) :
+        if     nn = 1 :
+          p := (0,0)--(ww,hh/2)--(0,hh)--cycle ;
+        elseif nn = 2 :
+          p := (0,hh/2)--(ww,hh)--(ww,0)--cycle ;
         else :
-          p := origin--cycle ; 
-        fi ; 
-        fill p randomized 2.5mm shifted (xx,yy) withshade s ; 
-      fi ; 
-    enddef ; 
+          p := origin--cycle ;
+        fi ;
+        fill p randomized 2.5mm shifted (xx,yy) withshade s ;
+      fi ;
+    enddef ;
 
-    \MPmenubuttons{bottom} 
+    \MPmenubuttons{bottom}
 
-    if length \MPstring{topic} > 0 : 
+    if length \MPstring{topic} > 0 :
       graphictext
-        \MPstring{topic} 
+        \MPstring{topic}
         scaled 3
-        shifted ulcorner Field[Text][Text] 
-        shifted (0,-1.5cm) 
+        shifted ulcorner Field[Text][Text]
+        shifted (0,-1.5cm)
         withshade s ;
     fi ;
 
-  StopPage ; 
+  StopPage ;
 \stopuseMPgraphic
 
 \setupinteractionmenu
@@ -116,8 +112,8 @@
    position=yes]
 
 \startinteractionmenu[bottom]
-  \but [previouspage] \\ 
-  \but [nextpage]     \\ 
+  \but [previouspage] \\
+  \but [nextpage]     \\
 \stopinteractionmenu
 
 \setupinteraction
@@ -148,20 +144,20 @@
    \setupbackgrounds[page][background=text]}
 
 \def\TitleString#1#2%
-  {\indent 
+  {\indent
    \startMPcode
      graphictext
-       "#2" 
+       "#2"
        scaled #1
        withdrawcolor .4white
        withfillcolor .7white
        withpen pencircle scaled 2pt ;
    \stopMPcode
-   \vfill} 
+   \vfill}
 
-\doifnotmode{demo}{\endinput} 
+\doifnotmode{demo}{\endinput}
 
-\starttext 
+\starttext
 
 \StartTitlePage
   \TitleString{8}{Welcome}
@@ -169,9 +165,9 @@
   \TitleString{8}{Quotes}
 \StopTitlePage
 
-\Topic {Douglas R. Hofstadter} \input douglas \page 
-\Topic {Donald  E. Knuth}      \input knuth   \page 
-\Topic {Edward  R. Tufte}      \input tufte   \page 
-\Topic {Hermann    Zapf}       \input zapf    \page 
+\Topic {Douglas R. Hofstadter} \input douglas \page
+\Topic {Donald  E. Knuth}      \input knuth   \page
+\Topic {Edward  R. Tufte}      \input tufte   \page
+\Topic {Hermann    Zapf}       \input zapf    \page
 
-\stoptext 
+\stoptext

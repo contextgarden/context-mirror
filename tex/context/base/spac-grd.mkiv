@@ -247,6 +247,20 @@
 \let\forcedbotbaselinecorrection\botbaselinecorrection
 
 % experiment, todo: proper mkiv mechanism
+%
+% \input ward \par
+% \startframedtext test  \stopframedtext
+% \input ward \par
+% \startlinecorrection \framed{xxx} \stoplinecorrection
+% \input ward \par
+%
+% \setupwhitespace[big]
+%
+% \input ward \par
+% \startframedtext test  \stopframedtext
+% \input ward \par
+% \startlinecorrection \framed{xxx} \stoplinecorrection
+% \input ward \par
 
 \def\dotopbaselinecorrection   {\blank[\thetopbaselinecorrection   ]}
 \def\dobotbaselinecorrection   {\blank[\thebotbaselinecorrection   ]}
@@ -257,11 +271,19 @@
   {\ifvmode
      \bgroup
      \setbaselinecorrections
-  %  \vspacing[white]
+     \vspacing[white]
      \nointerlineskip
      \dotopbaselinecorrection
      \egroup
 \fi}
+
+\def\dobaselinecorrection
+  {\ifdim\prevdepth>\zeropoint
+     \vspacing[\the\dimexpr-\prevdepth+\strutdp\relax]%
+   \else
+     \vspacing[\the\dimexpr\strutdp\relax]%
+   \fi
+   \prevdepth\strutdp}
 
 \let\normalstartbaselinecorrection\startbaselinecorrection
 

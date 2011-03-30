@@ -483,7 +483,7 @@
 
 \def\scrn_menu_insert_indeed#location%
   {\begingroup
-   \edef\askedinteractionmenulocation{#location}%
+   \xdef\askedinteractionmenulocation{#location}%
    \scrn_menu_set_final
    \ifcase\scrn_menu_final_width \else \ifcase\scrn_menu_final_height \else
      \forgetall
@@ -586,7 +586,7 @@
 \newtoks       \scrn_menu_mp_data
 
 \def\scrn_menu_button_mp_template
-  {\askedinteractionmenulocation_menu_button(%
+  {\askedinteractionmenulocation _menu_button(%
      \number\scrn_menu_position,%
      \number\scrn_menu_page_mode,%
      \MPpos{\askedinteractionmenulocation:\number\scrn_menu_position}%

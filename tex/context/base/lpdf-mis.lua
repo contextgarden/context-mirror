@@ -117,11 +117,11 @@ function codeinjections.registerdocumentcloseaction(close)
     closedocument = close
 end
 
-function codeinjections.flushpageopenaction(open)
+function codeinjections.registerpageopenaction(open)
     openpage = open
 end
 
-function codeinjections.flushpagecloseaction(close)
+function codeinjections.registerpagecloseaction(close)
     closepage = close
 end
 

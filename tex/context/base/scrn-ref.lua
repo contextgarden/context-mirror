@@ -49,7 +49,7 @@ end
 local function setclosepageaction(close)
     local closepage = check(close)
     if closepage then
-        codeinjections.registerpagecloseaction(openpage)
+        codeinjections.registerpagecloseaction(closepage)
         expandcurrent()
     end
 end
