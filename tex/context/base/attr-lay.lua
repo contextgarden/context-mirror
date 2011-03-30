@@ -23,11 +23,16 @@ local report_viewerlayers = logs.reporter("viewerlayers")
 
 -- nb: attributes: color etc is much slower than normal (marks + literals) but ...
 -- nb. too many "0 g"s
+-- nb: more local tables
 
 local attributes, nodes = attributes, nodes
 
 attributes.viewerlayers = attributes.viewerlayers or { }
 local viewerlayers      = attributes.viewerlayers
+
+local variables         = interfaces.variables
+local v_local           = variables["local"]
+local v_global          = variables["global"]
 
 local a_viewerlayer     = attributes.private("viewerlayer")
 
@@ -35,6 +40,7 @@ viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = allocate()
 viewerlayers.registered = viewerlayers.registered or { }
 viewerlayers.values     = viewerlayers.values     or { }
+viewerlayers.scopes     = viewerlayers.scopes     or { }
 viewerlayers.listwise   = allocate()
 viewerlayers.attribute  = a_viewerlayer
 viewerlayers.supported  = true
@@ -52,11 +58,13 @@ local unsetvalue        = attributes.unsetvalue
 
 storage.register("attributes/viewerlayers/registered", viewerlayers.registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     viewerlayers.values,     "attributes.viewerlayers.values")
+storage.register("attributes/viewerlayers/scopes",     viewerlayers.scopes,     "attributes.viewerlayers.scopes")
 
 local data       = viewerlayers.data
 local values     = viewerlayers.values
 local listwise   = viewerlayers.listwise
 local registered = viewerlayers.registered
+local scopes     = viewerlayers.scopes
 local template   = "%s"
 
 -- stacked
@@ -136,10 +144,12 @@ function viewerlayers.start(name)
         viewerlayers.enable(true)
     end
     insert(stack,texgetattribute(a_viewerlayer))
-    if global then
-        texsetattribute("global",a_viewerlayer,register(name) or unsetvalue)
+    local a = register(name) or unsetvalue
+    if global or scopes[name] == v_global then
+        scopes[a] = v_global -- messy but we don't know the attributes yet
+        texsetattribute("global",a_viewerlayer,a)
     else
-        texsetattribute(a_viewerlayer,register(name) or unsetvalue)
+        texsetattribute(a_viewerlayer,a)
     end
     texsettokenlist("currentviewerlayertoks",name)
 end
@@ -147,14 +157,14 @@ end
 function viewerlayers.stop()
     local a = remove(stack)
     if a >= 0 then
-        if global then
+        if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,a)
         else
             texsetattribute(a_viewerlayer,a)
         end
         texsettokenlist("currentviewerlayertoks",values[a])
     else
-        if global then
+        if global or scopes[a] == v_global then
             texsetattribute("global",a_viewerlayer,unsetvalue)
         else
             texsetattribute(a_viewerlayer,unsetvalue)
@@ -172,6 +182,7 @@ function viewerlayers.define(settings)
         if not title or title == "" then
             settings.title = tag
         end
+        scopes[tag] = settings.scope or v_local
         codeinjections.defineviewerlayer(settings)
     end
 end

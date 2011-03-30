@@ -14,27 +14,27 @@
 %D This style was made on behalf of the \PDFTEX\ presentation
 %D at \TUG\ 2000. It cycled a summary of each talk, with name
 %D and title. When documenting this style, I changed
-%D reprocessing into pushing on layers. 
-%D 
+%D reprocessing into pushing on layers.
+%D
 %D A \quote {problem} like this can be solved in several ways:
-%D 
+%D
 %D \startitemize
-%D \item writing a lot of semi||complex \TEX\ code as shown 
-%D \item keeping track of positions and draw everything on the 
+%D \item writing a lot of semi||complex \TEX\ code as shown
+%D \item keeping track of positions and draw everything on the
 %D      page layer
-%D \item defining an overlay for each summary and changing the 
-%D      order when flushing 
+%D \item defining an overlay for each summary and changing the
+%D      order when flushing
 %D \item maintaining a so called field stack
 %D \stopitemize
-%D 
-%D We go for the first method. We assume that summaries are 
-%D simple text snippets. 
+%D
+%D We go for the first method. We assume that summaries are
+%D simple text snippets.
 
 \startmode[asintended] \setupbodyfont[lbr] \stopmode
 
 \setupbodyfont[14.4pt]
 
-%D We use the whole page area. 
+%D We use the whole page area.
 
 \setuppapersize
   [S6][S6]
@@ -47,8 +47,8 @@
    width=middle,
    height=middle]
 
-%D We define a couple of matching colors and gray scales. 
-%D Watch out, some are really meant to look dim. 
+%D We define a couple of matching colors and gray scales.
+%D Watch out, some are really meant to look dim.
 
 \setupcolors
   [state=start]
@@ -63,14 +63,14 @@
 
 %D We will use foreground colors. Because these can interfere
 %D with the colors they overload, we can bets make sure that
-%D we don't have local colors. 
+%D we don't have local colors.
 
 \setupinteraction
   [state=start,
    color=,
    contrastcolor=]
 
-%D The presentation is supposed to cycle automatically. 
+%D The presentation is supposed to cycle automatically.
 
 \setupinteractionscreen
   [option=max,
@@ -78,13 +78,13 @@
 
 \setuppagetransitions
 
-%D We will use random positioning of objects. 
+%D We will use random positioning of objects.
 
 \setupsystem
-  [random=medium] 
+  [random=medium]
 
 %D We have two kind of graphics: the page background and
-%D the shape around the textual elements. 
+%D the shape around the textual elements.
 
 \defineoverlay [shape] [\uniqueMPgraphic{shape}]
 \defineoverlay [page]  [\reuseMPgraphic{page}]
@@ -106,30 +106,30 @@
   draw p withpen pencircle scaled .50cm withcolor \MPcolor{PageColor} ;
   fill p                                withcolor OverlayColor ;
   draw p withpen pencircle scaled .25cm withcolor OverlayLineColor ;
-  currentpicture := currentpicture xysized(OverlayWidth,OverlayHeight) ; 
+  currentpicture := currentpicture xysized(OverlayWidth,OverlayHeight) ;
 \stopuniqueMPgraphic
 
-%D The resizing at the end is needed to get a nice inverted 
-%D hyperlink when we click on it in a browser. 
+%D The resizing at the end is needed to get a nice inverted
+%D hyperlink when we click on it in a browser.
 
-%D Behind the page we put a forward button: 
+%D Behind the page we put a forward button:
 
 \defineoverlay [forward] [\overlaybutton{forward}]
 
-%D The content will be managed by means of two layers. 
+%D The content will be managed by means of two layers.
 
 \definelayer [main] \defineoverlay [main] [\composedlayer{main}]
 \definelayer [temp] \defineoverlay [temp] [\composedlayer{temp}]
 
 %D The first layer will hold everything to be shown, while
-%D the second one gets the data we currently focus on. 
-%D Therefore the first layer will not be flushed each page. 
+%D the second one gets the data we currently focus on.
+%D Therefore the first layer will not be flushed each page.
 
 \setuplayer
   [main]
   [state=repeat]
 
-%D All the overlays go onto the page area. 
+%D All the overlays go onto the page area.
 
 \setupbackgrounds
   [page]
@@ -138,16 +138,16 @@
 %D We have to collect all data before we typeset it. Each
 %D element will be typeset dim and bright. The dim
 %D alternatives will be collected on the main layer, but each
-%D bring one goes onto a box stack. 
+%D bring one goes onto a box stack.
 
 \initializeboxstack{Summary}
 \initializeboxstack{Subtext}
 
-%D The macros that take care of all this manipulations look 
-%D more complicated than they actually are. We use a 
-%D scratchbox to collect and inspect data. Also, because we 
-%D typeset each element twice, we need to make sure that we use 
-%D the same random seed for both. 
+%D The macros that take care of all this manipulations look
+%D more complicated than they actually are. We use a
+%D scratchbox to collect and inspect data. Also, because we
+%D typeset each element twice, we need to make sure that we use
+%D the same random seed for both.
 
 \doglobal\newcounter\CurrentSummary
 
@@ -158,12 +158,12 @@
   {\doglobal\increment\CurrentSummary
    \setbox\scratchbox=\hbox{\strut#1}
    \getrandomseed\RandomSeed
-   \setlayer[main]               
+   \setlayer[main]
      {\RandomSubtextBox{DoneColor}{BotColor}{BotColor}}
    \setrandomseed\RandomSeed
    \savebox{Subtext}{\CurrentSummary}
      {\RandomSubtextBox{TextColor}{BotColor}{black}}
-   \setbox\scratchbox=\hbox \bgroup 
+   \setbox\scratchbox=\hbox \bgroup
      \setbox\scratchbox=\hbox{\bfb\setstrut\strut\quad#2\quad}%
      \SetAcceptableWidth
      \framed [offset=0pt,width=fit,frame=off,align=middle,strut=no]
@@ -171,9 +171,9 @@
          \doifsomething{#2}{\noindent\box\scratchbox\blank}}
 
 \def\StopSummary
-  {\egroup \egroup 
+  {\egroup \egroup
    \getrandomseed\RandomSeed
-   \setlayer[main]               
+   \setlayer[main]
      {\RandomSummaryBox{DoneColor}{TopColor}{TopColor}}
    \setrandomseed\RandomSeed
    \savebox{Summary}{\CurrentSummary}
@@ -182,11 +182,11 @@
 %D A \type {\doStartSummary#1#2#3\StopSummary} could have been
 %D used too but this one is less sensitive for catcode changes
 %D (not that we expect problems like this in this kind of
-%D application). 
+%D application).
 
-%D The width is either derived from the width ot the title or 
+%D The width is either derived from the width ot the title or
 %D at random. The final width of the box is detemined by the
-%D content. 
+%D content.
 
 \def\SetAcceptableWidth
   {\scratchdimen=.5\makeupwidth
@@ -196,15 +196,15 @@
      \getrandomdimen\hsize{.5\makeupwidth}{.7\makeupwidth}%
    \fi}
 
-%D The subtext box goes at the bottom, somewhere in the right 
-%D corner. 
+%D The subtext box goes at the bottom, somewhere in the right
+%D corner.
 
 \def\RandomSubtextBox#1#2#3%
   {\vbox to \makeupheight
      {\vfill
       \hbox to \makeupwidth
         {\hfill
-         \button 
+         \button
            [offset=2ex,frame=off,background=shape,strut=no,
             backgroundcolor=#1,framecolor=#2,foregroundcolor=#3]
            {\copy\scratchbox}%
@@ -214,8 +214,8 @@
       \getrandomdimen\scratchdimen{.5cm}{1.5cm}
       \vskip \scratchdimen}}
 
-%D The main text goes in the top half of the page, not to 
-%D far from the center. The last \type {\vskip} makes sure 
+%D The main text goes in the top half of the page, not to
+%D far from the center. The last \type {\vskip} makes sure
 %D that we don't clash with the subtexts.
 
 \definereference[thispage][page(\CurrentSummary)]
@@ -227,7 +227,7 @@
       \hbox to \makeupwidth
         {\getrandomdimen\scratchdimen{.5cm}\makeupwidth
          \hskip 0pt plus \scratchdimen
-         \button 
+         \button
            [offset=3ex,frame=off,background=shape,strut=no,
             backgroundcolor=#1,framecolor=#2,foregroundcolor=#3]
            {\copy\scratchbox}%
@@ -239,8 +239,8 @@
       \vskip.2\makeupheight}}
 
 %D Because we conly collect data, we hav eto make sure that at
-%D some moment it is processed and flushed. The following loop 
-%D does this. 
+%D some moment it is processed and flushed. The following loop
+%D does this.
 
 \def\BuildPage
   {\dorecurse{\CurrentSummary}
@@ -249,11 +249,11 @@
         \setlayer[temp]{\foundbox{Subtext}\recurselevel}
       \stopstandardmakeup}}
 
-%D We hook this macro into the \type {\stoptext} macro. 
+%D We hook this macro into the \type {\stoptext} macro.
 
 \appendtoks \BuildPage \to \everystoptext
 
-%D We still need a title page. 
+%D We still need a title page.
 
 \def\TitlePage%
   {\dodoublegroupempty\doTitlePage}
@@ -270,13 +270,13 @@
 \def\MakeTitlePage#1#2%
   {\StartSummary{#1}{#2}\StopSummary}
 
-%D For old times sake: 
+%D For old times sake:
 
 \long\def\StartTopic#1\StopTopic{\StartSummary#1\StopSummary}
 
 \doifnotmode{demo}{\endinput}
 
-%D The demo text. 
+%D The demo text.
 
 \starttext
 

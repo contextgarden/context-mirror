@@ -24,6 +24,10 @@
 
 \unprotect
 
+%D In \MKIV\ we have independent color, colorspace and transparency
+%D but I'm still not sure if I keep it that way as it's probably more
+%D efficient to combine them (less attributes and finalizing).
+%D
 %D We use a couple of local registers. That way we don't have
 %D to group when converting colors. By the way, this is not
 %D really faster. We can sqeeze half a second runtime for 50K
@@ -234,6 +238,9 @@
 
 \newtoks\everysetupcolors
 
+\let\dosetcolorvalue \setvalue
+\def\colorfreezestate{false}
+
 \def\dosetupcolors[#1]% some no longer make sense in MkIV
   {\getparameters[\??cl][#1]%
    \doifelse\@@clspot\v!yes
@@ -245,6 +252,13 @@
    \doifelse\@@clexpansion\v!yes
      \freezecolorstrue
      \freezecolorsfalse
+   \iffreezecolors
+     \let\dosetcolorvalue\setevalue
+     \def\colorfreezestate{true}%
+   \else
+     \let\dosetcolorvalue\setvalue
+     \def\colorfreezestate{false}%
+   \fi
    \doifelse\@@clfactor\v!no
      \weightGRAYfalse
      \weightGRAYtrue
@@ -769,6 +783,8 @@
 
 % if it becomes a bottleneck we can set up a more complex system with one shared
 % attribute for colorspace, color and transparency
+%
+% maybe always on
 
 \def\doactivatecolor
   {\ifproductionrun
@@ -792,21 +808,21 @@
 \def\collectcolorinlist#1{\doglobal\addtocommalist{#1}\colorlist}
 
 \def\doregistercolor#1#2%
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}}
+  {\ctxcommand{defineprocesscolor("#1","#2",false,\colorfreezestate)}}
 
 \def\dodefinecolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",false,\colorfreezestate)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefineglobalcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxcommand{defineprocesscolor("#1","#2",true,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",true,\colorfreezestate)}%
    \dodefinecolorcommand\setgvalue{#1}}
 
 \def\dodefinenamedcolor[#1][#2]%
   {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+   \ctxcommand{defineprocesscolor("#1","#2",false,\colorfreezestate)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 \def\dodefinespotcolor[#1][#2][#3]%
@@ -829,7 +845,7 @@
    \ctxcommand{setrastercolor("_raster_",\@@rastervalue)}} % sets attribute
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok
-  {\ctxcommand{defineprocesscolor("#1","#2",false,\iffreezecolors true\else false\fi)}%
+  {\ctxcommand{defineprocesscolor("#1","#2",false,\colorfreezestate)}%
    \dodefinecolorcommand\setvalue{#1}}
 
 %D \macros
@@ -926,18 +942,48 @@
 \appendtoks \initializemaintextcolor \to \everyjob
 \appendtoks \initializemaintextcolor \to \everysetupcolors
 
+% \def\dodefinepaletcolor#1#2#3%
+%   {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]
+%      {\definecolor[\??pa#1:#2][#3]%
+%       \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(cs:#1:#2)}{\csname(cs:\??pa#1:#2)\endcsname}%
+%       \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(ca:#1:#2)}{\csname(ca:\??pa#1:#2)\endcsname}}
+%      {\ifcsname(cs:#3)\endcsname % \definepalet[test][xx=green]
+%         \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(cs:#1:#2)}{\csname(cs:#3)\endcsname}%
+%         \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(ca:#1:#2)}{\csname(ca:#3)\endcsname}%
+%       \else
+%         % not entered when making format
+%         \localundefine{(cs:#1:#2)}% \letvalue{(cs:#1:#2)}\undefined
+%         \localundefine{(ca:#1:#2)}% \letvalue{(ca:#1:#2)}\undefined
+%       \fi}}
+
+\def\doinheritdirectcs#1{\csname(cs:\ifcsname(cs:#1)\endcsname#1\fi)\endcsname}
+\def\doinheritdirectca#1{\csname(ca:\ifcsname(ca:#1)\endcsname#1\fi)\endcsname}
+\def\doinheritdirectts#1{\csname(ts:\ifcsname(ts:#1)\endcsname#1\fi)\endcsname}
+\def\doinheritdirectta#1{\csname(ta:\ifcsname(ta:#1)\endcsname#1\fi)\endcsname}
+
+\def\doinheritpaletca#1#2{\csname(ca:\ifcsname(ca:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
+\def\doinheritpaletcs#1#2{\csname(cs:\ifcsname(cs:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
+\def\doinheritpaletta#1#2{\csname(ta:\ifcsname(ta:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
+\def\doinheritpaletts#1#2{\csname(ts:\ifcsname(ts:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
+
 \def\dodefinepaletcolor#1#2#3%
   {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]
      {\definecolor[\??pa#1:#2][#3]%
-      \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(cs:#1:#2)}{\csname(cs:\??pa#1:#2)\endcsname}%
-      \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(ca:#1:#2)}{\csname(ca:\??pa#1:#2)\endcsname}}
+      \dosetcolorvalue{(cs:#1:#2)}{\doinheritpaletca{#1}{#2}}%
+      \dosetcolorvalue{(ca:#1:#2)}{\doinheritpaletcs{#1}{#2}}%
+      \dosetcolorvalue{(ts:#1:#2)}{\doinheritpaletta{#1}{#2}}%
+      \dosetcolorvalue{(ta:#1:#2)}{\doinheritpaletts{#1}{#2}}}
      {\ifcsname(cs:#3)\endcsname % \definepalet[test][xx=green]
-        \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(cs:#1:#2)}{\csname(cs:#3)\endcsname}%
-        \iffreezecolors\@EA\setevalue\else\@EA\setvalue\fi{(ca:#1:#2)}{\csname(ca:#3)\endcsname}%
+        \dosetcolorvalue{(cs:#1:#2)}{\doinheritdirectcs{#3}}%
+        \dosetcolorvalue{(ca:#1:#2)}{\doinheritdirectca{#3}}%
+        \dosetcolorvalue{(ts:#1:#2)}{\doinheritdirectts{#3}}%
+        \dosetcolorvalue{(ta:#1:#2)}{\doinheritdirectta{#3}}%
       \else
         % not entered when making format
         \localundefine{(cs:#1:#2)}% \letvalue{(cs:#1:#2)}\undefined
         \localundefine{(ca:#1:#2)}% \letvalue{(ca:#1:#2)}\undefined
+        \localundefine{(ts:#1:#2)}% \letvalue{(cs:#1:#2)}\undefined
+        \localundefine{(ta:#1:#2)}% \letvalue{(ca:#1:#2)}\undefined
       \fi}}
 
 \setvalue{(cs:)}{} \setvalue{(ca:)}{0}

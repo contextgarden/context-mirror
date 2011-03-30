@@ -36,6 +36,7 @@
   [\c!state=\v!start,
    \c!title=,
    \c!printable=\v!yes,
+   \c!scope=\v!local, % maybe global but needs checking with layout
    \c!method=\v!none]
 
 \def\defineviewerlayer
@@ -50,6 +51,7 @@
         visible   = "\@@lrstate",
         editable  = "\v!yes",
         printable = "\@@lrprintable",
+        scope     = "\@@lrscope"
    }}%
    \doif\@@lrmethod\v!command
      {\setugvalue{\e!start#1}{\startviewerlayer[#1]}%

@@ -807,11 +807,11 @@ references.currentset = nil
 --~ end
 
 function commands.setreferenceoperation(k,v)
-    references.currentset.operation[k] = v
+    references.currentset[k].operation = v
 end
 
 function commands.setreferencearguments(k,v)
-    references.currentset.arguments[k] = v
+    references.currentset[k].arguments = v
 end
 
 local expandreferenceoperation = context.expandreferenceoperation

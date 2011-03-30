@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% use lua instead of global mess
+
 \startmode[paper,print]
     \let\StartSteps\relax
     \let\StopSteps \relax
@@ -32,7 +34,7 @@
 
         \dostepwiserecurse {\numexpr\StepMaximum+1\relax} {\getvariable{stepper}{nofsteps}} {1} {
             \doifnotmode{nosteps,nostep} {
-                \expanded{\defineviewerlayer[step:\recurselevel][state=stop]}
+                \expanded{\defineviewerlayer[step:\recurselevel][state=stop,scope=global]}
             }
         }
 

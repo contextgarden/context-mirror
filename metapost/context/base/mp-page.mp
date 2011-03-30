@@ -211,6 +211,10 @@ vardef TextAreaWH (expr x, y) =
   _TextAreaWH_
 enddef ;
 
+string CurrentLayout ;
+
+CurrentLayout       := "default" ;
+
 PageNumber          := 0 ;
 PaperHeight         := 845.04684pt  ;
 PaperWidth          := 597.50787pt  ;
