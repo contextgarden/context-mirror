@@ -257,11 +257,11 @@ local function ceiled(n)
     end
 end
 
-local function lower(n)
+local function floored(n)
     if n < 0 or n < 0.01 then
         return 0
     else
-        return floored(n)
+        return floor(n)
     end
 end
 

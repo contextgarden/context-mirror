@@ -96,6 +96,18 @@ function namespaces.define(namespace,settings)
             report_namespaces("installing setup command for '%s' (multiple)",name)
         end
     end
+    local set = ns.set
+    if set == v_yes then
+        context.installparametersethandler(self,name)
+        if trace_namespaces then
+            report_namespaces("installing set/let/reset command for '%s' (single)",name)
+        end
+    elseif set == v_list then
+        context.installparametersethandler(self,name)
+        if trace_namespaces then
+            report_namespaces("installing set/let/reset command for '%s' (multiple)",name)
+        end
+    end
     context.protect()
 end
 

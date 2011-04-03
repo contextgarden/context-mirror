@@ -110,7 +110,7 @@
    }}%
    \endgroup}
 
-\let\scrn_canvas_synchronize\scrn_canvas_synchronize_complex
+\let\scrn_canvas_synchronize\scrn_canvas_synchronize_simple
 
 \appendtoks
     \ifproductionrun
@@ -163,7 +163,7 @@
    \edef\currentinteractionscreendelay{\interactionscreenparameter\c!delay}%
    \ctxcommand{setpagetransition{
       n     = "\scrn_transitions_list",
-      delay = "\ifx\currentinteractionscreendelay\v!none 0\else\currentinteractionscreendelay\v!none\fi"
+      delay = "\ifx\currentinteractionscreendelay\v!none 0\else\currentinteractionscreendelay\fi"
    }}%
    \endgroup}
 
