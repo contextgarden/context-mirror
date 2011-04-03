@@ -85,7 +85,7 @@ function document.showmathfont(id,slot)
     local tfmdata = fontdata[id]
     local characters = tfmdata.characters
     local sorted = (slot and { slot }) or table.sortedkeys(characters)
-    local virtual, names = tfmdata.properties.type == "virtual", { }
+    local virtual, names = tfmdata.properties.virtualized, { }
     if virtual then
         for k, v in ipairs(tfmdata.fonts) do
             local id = v.properties.id

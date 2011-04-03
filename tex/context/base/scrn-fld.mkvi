@@ -432,31 +432,38 @@
      \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
      \setupfieldcontentframed[#tag][\s!parent=\??wc,#totalsettings]%
    \else\ifsecondargument
-    \definefieldcategory[#tag][\s!parent=\??wc#tag,#variant]
+     \definefieldcategory[#tag][\s!parent=\??wc#tag,#variant]
      \setupfieldtotalframed  [#tag][\s!parent=\??wt]%
      \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
      \setupfieldcontentframed[#tag][\s!parent=\??wc,#variant]%
    \fi\fi\fi\fi}
 
-\def\scrn_field_setup_fields[#tag][#totalsettings][#labelsettings][#fieldsettings]
+\def\scrn_field_setup_fields[#variant][#totalsettings][#labelsettings][#fieldsettings]
   {\iffourthargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#fieldsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt,#totalsettings]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl,#labelsettings]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#fieldsettings]%
+     \setupfieldtotalframed  [\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#labelsettings]%
+     \setupfieldcontentframed[#fieldsettings]%
    \else\ifthirdargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#fieldsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt,#totalsettings]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#labelsettings]%
+     \setupfieldtotalframed  [#variant]%
+     \setupfieldlabelframed  [#totalsettings]%
+     \setupfieldcontentframed[#labelsettings]%
    \else\ifsecondargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#fieldsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#totalsettings]%
+     \setupfieldtotalframed  [#variant]%
+     \setupfieldcontentframed[#totalsettings]%
+   \else
+     \setupfieldtotalframed  [#variant]%
    \fi\fi\fi}
 
-\let\resetfields\relax % no longer supported
+% just to get the chain right for no category:
+
+\definefieldcategory    [][\s!parent=\??wc]
+\setupfieldtotalframed  [][\s!parent=\??wt]
+\setupfieldlabelframed  [][\s!parent=\??wl]
+\setupfieldcontentframed[][\s!parent=\??wc]
+
+% no longer supported:
+
+\let\resetfields\relax
 
 \def\scrn_field_load_scripts{\useJSscripts[fld]\globallet\scrn_field_load_scripts\relax}
 

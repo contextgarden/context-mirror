@@ -226,11 +226,11 @@ end
 \def\MorseBetweenCharacters {\kern\MorseWidth}
 \def\MorseBetweenWords      {\hskip3\dimexpr\MorseWidth\relax}
 \def\MorseSpace             {\hskip7\dimexpr\MorseWidth\relax}
-\def\MorseUnknown         #1{[\detokenize{#1}]}
+\def\MorseUnknown      #text{[\detokenize{#text}]}
 
-\def\MorseCode            #1{\ctxlua{moduledata.morse.tomorse(\!!bs#1\!!es,true)}}
-\def\MorseString          #1{\ctxlua{moduledata.morse.tomorse(\!!bs#1\!!es)}}
-\def\MorseFile            #1{\ctxlua{moduledata.morse.filetomorse("#1")}}
+\def\MorseCode         #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es,true)}}
+\def\MorseString       #text{\ctxlua{moduledata.morse.tomorse(\!!bs#text\!!es)}}
+\def\MorseFile         #text{\ctxlua{moduledata.morse.filetomorse("#text")}}
 \def\MorseTable             {\ctxlua{moduledata.morse.showtable()}}
 
 \let\Morse                   \MorseString

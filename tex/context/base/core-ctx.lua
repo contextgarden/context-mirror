@@ -23,9 +23,9 @@ function commands.loadctxpreplist()
             islocal = xml.found(x,"ctx:preplist[@local=='yes']")
 --~             if trace_prepfiles then
                 if islocal then
-                    report_prepfiles("loading ctx log file (local)") -- todo: m!systems
+                    report_prepfiles("loading ctx log file (local)") -- todo: m!system
                 else
-                    report_prepfiles("loading ctx log file (specified)") -- todo: m!systems
+                    report_prepfiles("loading ctx log file (specified)") -- todo: m!system
                 end
 --~             end
             for e in xml.collected(x,"ctx:prepfile") do

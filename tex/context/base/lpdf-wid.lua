@@ -228,9 +228,14 @@ function codeinjections.embedfile(specification)
             return nil
         elseif r then
             return r
-        elseif not lfs.isfile(filename) then
-            filestreams[filename] = false
-            return nil
+        else
+            local foundname = resolvers.findbinfile(filename) or ""
+            if foundname == "" or not lfs.isfile(foundname) then
+                filestreams[filename] = false
+                return nil
+            else
+                specification.foundname = foundname
+            end
         end
     end
     local basename = file.basename(filename)
@@ -241,7 +246,8 @@ function codeinjections.embedfile(specification)
         f = pdfimmediateobject("stream",data,a())
         specification.data = true -- signal that still data but already flushed
     else
-        f = pdfimmediateobject("streamfile",filename,a())
+        local foundname = specification.foundname or filename
+        f = pdfimmediateobject("streamfile",foundname,a())
     end
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
@@ -268,9 +274,12 @@ function nodeinjections.attachfile(specification)
             filename = registered
             specification.file = registered
         end
-        if not lfs.isfile(filename) then
+        local foundname = resolvers.findbinfile(filename) or ""
+        if foundname == "" or not lfs.isfile(foundname) then
             report_attachment("invalid file specification: registered '%s', filename '%s'",registered,filename)
-            return
+            return nil
+        else
+            specification.foundname = foundname
         end
         hash = filename
     end
