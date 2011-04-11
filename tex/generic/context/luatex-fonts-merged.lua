@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/11/11 16:45:23
+-- merge date  : 04/11/11 18:55:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -1364,18 +1364,16 @@ end
 -- replacing handle by a direct t[#t+1] = ... (plus test) is not much
 -- faster (0.03 on 1.00 for zapfino.tma)
 
-local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might drop the _'s some day.
+local function serialize(_handle,root,name,specification) -- handle wins
     local tname = type(name)
-    if tname == "table" then
-        noquotes  = name.noquotes
-        hexify    = name.hexify
-        handle    = name.handle or print
-        reduce    = name.reduce or false
-        functions = name.functions
-        compact   = name.compact
-        inline    = name.inline and compact
-        name      = name.name
-        tname     = type(name)
+    if type(specification) == "table" then
+        noquotes  = specification.noquotes
+        hexify    = specification.hexify
+        handle    = _handle or specification.handle or print
+        reduce    = specification.reduce or false
+        functions = specification.functions
+        compact   = specification.compact
+        inline    = specification.inline and compact
         if functions == nil then
             functions = true
         end
@@ -1386,10 +1384,10 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might
             inline = compact
         end
     else
-        noquotes  = _noquotes
-        hexify    = _hexify
+        noquotes  = false
+        hexify    = false
         handle    = _handle or print
-        reduce    = _reduce or false
+        reduce    = false
         compact   = true
         inline    = true
         functions = true
@@ -1437,19 +1435,17 @@ end
 --~ 'return' : return     { }
 --~ number   : [number] = { }
 
-function table.serialize(root,name,reduce,noquotes,hexify) -- can be faster if flush == false and t as argument
+function table.serialize(root,name,specification)
     local t, n = { }, 0
     local function flush(s)
         n = n + 1
         t[n] = s
     end
-    serialize(root,name,flush,reduce,noquotes,hexify)
+    serialize(flush,root,name,specification)
     return concat(t,"\n")
 end
 
-function table.tohandle(handle,root,name,reduce,noquotes,hexify)
-    serialize(root,name,handle,reduce,noquotes,hexify)
-end
+table.tohandle = serialize
 
 -- sometimes tables are real use (zapfino extra pro is some 85M) in which
 -- case a stepwise serialization is nice; actually, we could consider:
@@ -1462,7 +1458,7 @@ end
 
 local maxtab = 2*1024
 
-function table.tofile(filename,root,name,reduce,noquotes,hexify)
+function table.tofile(filename,root,name,specification)
     local f = io.open(filename,'w')
     if f then
         if maxtab > 1 then
@@ -1475,13 +1471,13 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
                     t, n = { }, 0 -- we could recycle t if needed
                 end
             end
-            serialize(root,name,flush,reduce,noquotes,hexify)
+            serialize(flush,root,name,specification)
             f:write(concat(t,"\n"),"\n")
         else
             local function flush(s)
                 f:write(s,"\n")
             end
-            serialize(root,name,flush,reduce,noquotes,hexify)
+            serialize(flush,root,name,specification)
         end
         f:close()
         io.flush()
@@ -1546,14 +1542,6 @@ end
 function table.unnest(t) -- bad name
     return unnest(t)
 end
-
---~ function table.unnest(t) -- for old times sake, undocumented (only in mk)
---~     return flattened(t,1)
---~ end
-
---~ function table.are_equal(a,b)
---~     return table.serialize(a) == table.serialize(b)
---~ end
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -2599,7 +2587,7 @@ function caches.savedata(path,name,data)
     local fullname = makefullname(path,name)
     if fullname then
         texio.write(string.format("(save: %s)",fullname))
-        table.tofile(fullname,data,'return',false,true,false)
+        table.tofile(fullname,data,true,{ reduce = true })
     end
 end
 

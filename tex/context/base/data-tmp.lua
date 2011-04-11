@@ -290,7 +290,7 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-local saveoptions = { name = "return", reduce = true }
+local saveoptions = { reduce = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
@@ -300,9 +300,9 @@ function caches.savedata(filepath,filename,data,raw)
     end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname,table.serialize(data,saveoptions))
+        file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
-        table.tofile(tmaname,data,saveoptions)
+        table.tofile(tmaname,data,true,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
