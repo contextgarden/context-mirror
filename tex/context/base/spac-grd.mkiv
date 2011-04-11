@@ -267,12 +267,19 @@
 \def\donegtopbaselinecorrection{\blank[\thenegtopbaselinecorrection]}
 \def\donegbotbaselinecorrection{\blank[\thenegbotbaselinecorrection]}
 
+% nointerlineskip
+%
+% startpacked
+%     \startlinecorrection \framed{test} \stoplinecorrection
+%     \startlinecorrection \framed{test} \stoplinecorrection
+% \stoppacked
+
 \def\forcedtopbaselinecorrection
   {\ifvmode
      \bgroup
      \setbaselinecorrections
      \vspacing[white]
-     \nointerlineskip
+%      \nointerlineskip %
      \dotopbaselinecorrection
      \egroup
 \fi}

@@ -12,9 +12,10 @@ reusable components.</p>
 --ldx]]--
 
 local texsprint, texcount = tex.sprint, tex.count
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
-local collected, tobesaved = allocate(), allocate()
+local collected = allocate()
+local tobesaved = allocate()
 
 local jobobjects = {
     collected = collected,
@@ -24,8 +25,8 @@ local jobobjects = {
 job.objects = jobobjects
 
 local function initializer()
-    collected = mark(jobobjects.collected)
-    tobesaved = mark(jobobjects.tobesaved)
+    collected = jobobjects.collected
+    tobesaved = jobobjects.tobesaved
 end
 
 job.register('job.objects.collected', tobesaved, initializer, nil)

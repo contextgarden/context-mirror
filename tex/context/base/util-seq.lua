@@ -22,10 +22,12 @@ local type, loadstring = type, loadstring
 
 utilities            = utilities or { }
 local tables         = utilities.tables
+local allocate       = utilities.storage.allocate
 
 local sequencers     = { }
 utilities.sequencers = sequencers
-local functions      = { }
+
+local functions      = allocate()
 sequencers.functions = functions
 
 local removevalue, insertaftervalue, insertbeforevalue = tables.removevalue, tables.insertaftervalue, tables.insertbeforevalue

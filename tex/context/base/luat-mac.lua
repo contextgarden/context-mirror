@@ -258,4 +258,14 @@ end
 --~ %    \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#namespace:#current]{#text}}}
 --~    \hbox attr \referenceattribute \lastreferenceattribute {\directlocalframed[#namespace:#current]{#text}}}
 --~ ]]))
-
+--~
+--~ print(macros.preprocessed([[
+--~ \def\definefoo[#name]%
+--~  {\setvalue{start#name}{\dostartfoo{#name}}}
+--~ \def\dostartfoo#name%
+--~   {\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname{#name : #content}%
+--~   \next}
+--~ \def\dostartfoo#name%
+--~  {\normalexpanded{\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname}{#name : #content}%
+--~   \next}
+--~ ]]))

@@ -47,7 +47,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.721 -- beware: also sync font-mis.lua
+otf.version              = 2.722 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -1172,13 +1172,55 @@ end
 
 -- to be checked italic_correction
 
+local function check_variants(unicode,the_variants,splitter,unicodes)
+    local variants = the_variants.variants
+    if variants then -- use splitter
+        local glyphs = lpegmatch(splitter,variants)
+        local done   = { [unicode] = true }
+        local n      = 0
+        for i=1,#glyphs do
+            local g = glyphs[i]
+            if done[g] then
+                report_otf("skipping cyclic reference U+%05X in math variant U+%05X",g,unicode)
+            elseif n == 0 then
+                n = 1
+                variants = { g }
+            else
+                n = n + 1
+                variants[n] = g
+            end
+        end
+        if n == 0 then
+            variants = nil
+        end
+    end
+    local parts = the_variants.parts
+    if parts then
+        local p = #parts
+        if p > 0 then
+            for i=1,p do
+                local pi = parts[i]
+                pi.glyph = unicodes[pi.component] or 0
+                pi.component = nil
+            end
+        else
+            parts = nil
+        end
+    end
+    local italic_correction = the_variants.italic_correction
+    if italic_correction and italic_correction == 0 then
+        italic_correction = nil
+    end
+    return variants, parts, italic_correction
+end
+
 actions["analyze math"] = function(data,filename,raw)
     if raw.math then
         data.metadata.math = raw.math
         local unicodes = data.resources.unicodes
         local splitter = data.helpers.tounicodetable
         for unicode, description in next, data.descriptions do
-            local glyph = description.glyph
+            local glyph          = description.glyph
             local mathkerns      = glyph.mathkern -- singular
             local horiz_variants = glyph.horiz_variants
             local vert_variants  = glyph.vert_variants
@@ -1203,56 +1245,10 @@ actions["analyze math"] = function(data,filename,raw)
                     math.kerns = mathkerns
                 end
                 if horiz_variants then
-                    local variants = horiz_variants.variants
-                    if variants then -- use splitter
-                        local glyphs = lpegmatch(splitter,variants)
-                        for i=1,#glyphs do
-                            if glyphs[i] == u then
-                                remove(glyphs,i)
-                                break
-                            end
-                        end
-                        math.horiz_variants = glyphs
-                    end
-                    local parts = horiz_variants.parts
-                    if parts and #parts > 0 then
-                        for i=1,#parts do
-                            local pi = parts[i]
-                            pi.glyph = unicodes[pi.component] or 0
-                            pi.component = nil
-                        end
-                        math.horiz_parts = parts
-                    end
-                    local italic_correction = horiz_variants.italic_correction
-                    if italic_correction and italic_correction ~= 0 then
-                        math.horiz_italic_correction = italic_correction
-                    end
+                    math.horiz_variants, math.horiz_parts, math.horiz_italic_correction = check_variants(unicode,horiz_variants,splitter,unicodes)
                 end
                 if vert_variants then
-                    local variants = vert_variants.variants
-                    if variants then
-                        local glyphs = lpegmatch(splitter,variants)
-                        for i=1,#glyphs do
-                            if glyphs[i] == u then
-                                remove(glyphs,i)
-                                break
-                            end
-                        end
-                        math.vert_variants = glyphs
-                    end
-                    local p = vert_variants.parts
-                    if parts and #parts > 0 then
-                        for i=1,#parts do
-                            local pi = parts[i]
-                            pi.glyph = unicodes[pi.component] or 0
-                            pi.component = nil
-                        end
-                        math.vert_parts = parts
-                    end
-                    local italic_correction = vert_variants.italic_correction
-                    if italic_correction and italic_correction ~= 0 then
-                        math.vert_italic_correction = italic_correction
-                    end
+                    math.vert_variants, math.vert_parts, math.vert_italic_correction = check_variants(unicode,vert_variants,splitter,unicodes)
                 end
                 local italic_correction = description.italic
                 if italic_correction and italic_correction ~= 0 then
@@ -1610,25 +1606,39 @@ local function copytotfm(data,cache_id)
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
-                    local variants, parts = m.horiz_variants, m.horiz_parts
+                    local variants = m.horiz_variants
+                    local parts    = m.horiz_parts
+                 -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
-                            c.next = un
-                            c = characters[un]
+                         -- if done[un] then
+                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         -- else
+                                c.next = un
+                                c = characters[un]
+                         --     done[un] = true
+                         -- end
                         end -- c is now last in chain
                         c.horiz_variants = parts
                     elseif parts then
                         character.horiz_variants = parts
                     end
-                    local variants, parts = m.vert_variants, m.vert_parts
+                    local variants = m.vert_variants
+                    local parts    = m.vert_parts
+                 -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
-                            c.next = un
-                            c = characters[un]
+                         -- if done[un] then
+                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         -- else
+                                c.next = un
+                                c = characters[un]
+                         --     done[un] = true
+                         -- end
                         end -- c is now last in chain
                         c.vert_variants = parts
                     elseif parts then

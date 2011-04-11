@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['font-enc'] = {
 
 local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 
+local setmetatableindex = table.setmetatableindex
+
 --[[ldx--
 <p>Because encodings are going to disappear, we don't bother defining
 them in tables. But we may do so some day, for consistency.</p>
@@ -136,10 +138,10 @@ if not encodings.agl then
 
     encodings.agl = { }
 
-    setmetatable(encodings.agl, { __index = function(t,k)
+    setmetatableindex(encodings.agl, function(t,k)
         report_encoding("loading (extended) adobe glyph list")
         dofile(resolvers.findfile("font-agl.lua"))
         return rawget(encodings.agl,k)
-    end })
+    end)
 
 end

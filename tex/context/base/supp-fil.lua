@@ -111,11 +111,11 @@ local function readfilename(specification,backtrack,treetoo)
     if not fnd then
         if isfile(name) then
             if trace_files then
-                report_files("found local: %s",fname)
+                report_files("found local: %s",name)
             end
             fnd = name
         end
-        if backtrack then
+        if not fnd and backtrack then
             local fname = name
             for i=1,backtrack,1 do
                 fname = "../" .. fname

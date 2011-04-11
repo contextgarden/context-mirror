@@ -14,14 +14,15 @@ if not trackers then trackers = { register = function() end } end
 
 local trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
 
-local fonts, nodes = fonts, nodes
-local node = node
+local fonts, nodes, node = fonts, nodes, node
+
+local allocate            = utilities.storage.allocate
 
 local otf                 = fonts.handlers.otf
 
 local analyzers           = fonts.analyzers
-local initializers        = { }
-local methods             = { }
+local initializers        = allocate()
+local methods             = allocate()
 
 analyzers.initializers    = initializers
 analyzers.methods         = methods

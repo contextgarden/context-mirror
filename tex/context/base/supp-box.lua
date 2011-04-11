@@ -24,7 +24,7 @@ local copynodelist = node.copy_list
 local copynode     = node.copy
 local texbox       = tex.box
 
-function hyphenatedlist(list)
+local function hyphenatedlist(list)
     while list do
         local id, next, prev = list.id, list.next, list.prev
         if id == disc_code then
@@ -50,7 +50,7 @@ function commands.showhyphenatedinlist(list)
     report_hyphenation("show: %s",nodes.listtoutf(list))
 end
 
-function checkedlist(list)
+local function checkedlist(list)
     if type(list) == "number" then
         return texbox[list].list
     else

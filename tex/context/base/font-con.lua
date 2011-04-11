@@ -9,12 +9,10 @@ if not modules then modules = { } end modules ['font-con'] = {
 
 local utf = unicode.utf8
 
-local next, tostring, setmetatable, rawget = next, tostring, setmetatable, rawget
+local next, tostring, rawget = next, tostring, rawget
 local format, match, lower, gsub = string.format, string.match, string.lower, string.gsub
 local utfbyte = utf.byte
 local sort, insert, concat, sortedkeys, serialize, fastcopy = table.sort, table.insert, table.concat, table.sortedkeys, table.serialize, table.fastcopy
-
-local allocate = utilities.storage.allocate
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
@@ -36,6 +34,9 @@ fonts.handlers              = handlers
 local specifiers            = fonts.specifiers
 local contextsetups         = specifiers.contextsetups
 local contextnumbers        = specifiers.contextnumbers
+
+local allocate              = utilities.storage.allocate
+local setmetatableindex     = table.setmetatableindex
 
 -- will be directives
 
@@ -670,7 +671,7 @@ function constructors.finalize(tfmdata)
     --
     if not tfmdata.descriptions then
         local descriptions = { } -- yes or no
-        setmetatable(descriptions, { __index = function(t,k) local v = { } t[k] = v return v end })
+        setmetatableindex(descriptions, function(t,k) local v = { } t[k] = v return v end)
         tfmdata.descriptions = descriptions
     end
     --
@@ -868,16 +869,14 @@ end
 local formats = allocate()
 fonts.formats = formats
 
-setmetatable(formats, {
-    __index = function(t,k)
-        local l = lower(k)
-        if rawget(t,k) then
-            t[k] = l
-            return l
-        end
-        return rawget(t,file.extname(l))
+setmetatableindex(formats, function(t,k)
+    local l = lower(k)
+    if rawget(t,k) then
+        t[k] = l
+        return l
     end
-} )
+    return rawget(t,file.extname(l))
+end)
 
 local locations = { }
 
@@ -977,7 +976,7 @@ function constructors.newfeatures(what)
     local features = handlers[what].features
     if not features then
         local tables = handlers[what].tables -- can be preloaded
-        features = {
+        features = allocate {
             defaults     = { },
             descriptions = tables and tables.features or { },
             initializers = { base = { }, node = { } },

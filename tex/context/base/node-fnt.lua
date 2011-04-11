@@ -11,26 +11,28 @@ if not context then os.exit() end -- generic function in node-dum
 local next, type = next, type
 local concat = table.concat
 
-local trace_characters = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
-local trace_fontrun    = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
-
-local report_fonts  = logs.reporter("fonts","processing")
-
 local nodes, node, fonts = nodes, node, fonts
 
-local fonthashes    = fonts.hashes
-local fontdata      = fonthashes.identifiers
+local trace_characters  = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
+local trace_fontrun     = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
 
-local otf           = fonts.handlers.otf
+local report_fonts      = logs.reporter("fonts","processing")
 
-local traverse_id   = node.traverse_id
-local has_attribute = node.has_attribute
-local starttiming   = statistics.starttiming
-local stoptiming    = statistics.stoptiming
-local nodecodes     = nodes.nodecodes
-local handlers      = nodes.handlers
+local fonthashes        = fonts.hashes
+local fontdata          = fonthashes.identifiers
 
-local glyph_code    = nodecodes.glyph
+local otf               = fonts.handlers.otf
+
+local traverse_id       = node.traverse_id
+local has_attribute     = node.has_attribute
+local starttiming       = statistics.starttiming
+local stoptiming        = statistics.stoptiming
+local nodecodes         = nodes.nodecodes
+local handlers          = nodes.handlers
+
+local glyph_code        = nodecodes.glyph
+
+local setmetatableindex = table.setmetatableindex
 
 -- some tests with using an array of dynamics[id] and processes[id] demonstrated
 -- that there was nothing to gain (unless we also optimize other parts)
@@ -47,30 +49,26 @@ local run = 0
 local setfontdynamics = { }
 local fontprocesses   = { }
 
-setmetatable(setfontdynamics, { __index =
-    function(t,font)
-        local tfmdata = fontdata[font]
-        local shared = tfmdata.shared
-        local v = shared and shared.dynamics and otf.setdynamics or false
-        t[font] = v
-        return v
-    end
-})
+setmetatableindex(setfontdynamics, function(t,font)
+    local tfmdata = fontdata[font]
+    local shared = tfmdata.shared
+    local v = shared and shared.dynamics and otf.setdynamics or false
+    t[font] = v
+    return v
+end)
 
-setmetatable(fontprocesses, { __index =
-    function(t,font)
-        local tfmdata = fontdata[font]
-        local shared = tfmdata.shared -- we need to check shared, only when same features
-        local processes = shared and shared.processes
-        if processes and #processes > 0 then
-            t[font] = processes
-            return processes
-        else
-            t[font] = false
-            return false
-        end
+setmetatableindex(fontprocesses, function(t,font)
+    local tfmdata = fontdata[font]
+    local shared = tfmdata.shared -- we need to check shared, only when same features
+    local processes = shared and shared.processes
+    if processes and #processes > 0 then
+        t[font] = processes
+        return processes
+    else
+        t[font] = false
+        return false
     end
-})
+end)
 
 fonts.hashes.setdynamics = setfontdynamics
 fonts.hashes.processes   = fontprocesses

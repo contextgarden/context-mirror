@@ -53,7 +53,7 @@ local protect_glyphs     = nodes.handlers.protectglyphs or node.protect_glyphs
 local hpack_nodes        = node.hpack
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
-local repack_hlist       = nodes.repack_hlist
+local repack_hlist       = nodes.repackhlist
 
 local setnodecolor       = nodes.tracers.colors.set
 

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/03/11 22:32:45
+-- merge date  : 04/11/11 16:45:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -1079,10 +1079,6 @@ function table.fromhash(t)
     return hsh
 end
 
-table.serialize_functions = true
-table.serialize_compact   = true
-table.serialize_inline    = true
-
 local noquotes, hexify, handle, reduce, compact, inline, functions
 
 local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
@@ -1368,15 +1364,36 @@ end
 -- replacing handle by a direct t[#t+1] = ... (plus test) is not much
 -- faster (0.03 on 1.00 for zapfino.tma)
 
-local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
-    noquotes = _noquotes
-    hexify = _hexify
-    handle = _handle or print
-    reduce = _reduce or false
-    compact = table.serialize_compact
-    inline  = compact and table.serialize_inline
-    functions = table.serialize_functions
+local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might drop the _'s some day.
     local tname = type(name)
+    if tname == "table" then
+        noquotes  = name.noquotes
+        hexify    = name.hexify
+        handle    = name.handle or print
+        reduce    = name.reduce or false
+        functions = name.functions
+        compact   = name.compact
+        inline    = name.inline and compact
+        name      = name.name
+        tname     = type(name)
+        if functions == nil then
+            functions = true
+        end
+        if compact == nil then
+            compact = true
+        end
+        if inline == nil then
+            inline = compact
+        end
+    else
+        noquotes  = _noquotes
+        hexify    = _hexify
+        handle    = _handle or print
+        reduce    = _reduce or false
+        compact   = true
+        inline    = true
+        functions = true
+    end
     if tname == "string" then
         if name == "return" then
             handle("return {")
@@ -1443,12 +1460,11 @@ end
 --
 -- so this is on the todo list
 
-table.tofile_maxtab = 2*1024
+local maxtab = 2*1024
 
 function table.tofile(filename,root,name,reduce,noquotes,hexify)
     local f = io.open(filename,'w')
     if f then
-        local maxtab = table.tofile_maxtab
         if maxtab > 1 then
             local t, n = { }, 0
             local function flush(s)
@@ -1666,8 +1682,12 @@ function table.sequenced(t,sep,simple) -- hash only
     return concat(s, sep or " | ")
 end
 
-function table.print(...)
-    table.tohandle(print,...)
+function table.print(t,...)
+    if type(t) ~= "table" then
+        print(tostring(t))
+    else
+        table.tohandle(print,t,...)
+    end
 end
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
@@ -1946,8 +1966,6 @@ function file.collapsepath(str,anchor)
         return concat(newelements, '/')
     end
 end
-
-file.collapse_path = file.collapsepath
 
 --~ local function test(str)
 --~    print(string.format("%-20s %-15s %-15s",str,file.collapsepath(str),file.collapsepath(str,true)))
@@ -2585,6 +2603,12 @@ function caches.savedata(path,name,data)
     end
 end
 
+--
+
+local table.setmetatableindex(t,f)
+    setmetatable(t,{ __index = f })
+end
+
 end -- closure
 
 do -- begin closure to overcome local limits and interference
@@ -2883,12 +2907,10 @@ if not modules then modules = { } end modules ['font-con'] = {
 
 local utf = unicode.utf8
 
-local next, tostring, setmetatable, rawget = next, tostring, setmetatable, rawget
+local next, tostring, rawget = next, tostring, rawget
 local format, match, lower, gsub = string.format, string.match, string.lower, string.gsub
 local utfbyte = utf.byte
 local sort, insert, concat, sortedkeys, serialize, fastcopy = table.sort, table.insert, table.concat, table.sortedkeys, table.serialize, table.fastcopy
-
-local allocate = utilities.storage.allocate
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
@@ -2910,6 +2932,9 @@ fonts.handlers              = handlers
 local specifiers            = fonts.specifiers
 local contextsetups         = specifiers.contextsetups
 local contextnumbers        = specifiers.contextnumbers
+
+local allocate              = utilities.storage.allocate
+local setmetatableindex     = table.setmetatableindex
 
 -- will be directives
 
@@ -3544,7 +3569,7 @@ function constructors.finalize(tfmdata)
     --
     if not tfmdata.descriptions then
         local descriptions = { } -- yes or no
-        setmetatable(descriptions, { __index = function(t,k) local v = { } t[k] = v return v end })
+        setmetatableindex(descriptions, function(t,k) local v = { } t[k] = v return v end)
         tfmdata.descriptions = descriptions
     end
     --
@@ -3742,16 +3767,14 @@ end
 local formats = allocate()
 fonts.formats = formats
 
-setmetatable(formats, {
-    __index = function(t,k)
-        local l = lower(k)
-        if rawget(t,k) then
-            t[k] = l
-            return l
-        end
-        return rawget(t,file.extname(l))
+setmetatableindex(formats, function(t,k)
+    local l = lower(k)
+    if rawget(t,k) then
+        t[k] = l
+        return l
     end
-} )
+    return rawget(t,file.extname(l))
+end)
 
 local locations = { }
 
@@ -3851,7 +3874,7 @@ function constructors.newfeatures(what)
     local features = handlers[what].features
     if not features then
         local tables = handlers[what].tables -- can be preloaded
-        features = {
+        features = allocate {
             defaults     = { },
             descriptions = tables and tables.features or { },
             initializers = { base = { }, node = { } },
@@ -4777,7 +4800,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.721 -- beware: also sync font-mis.lua
+otf.version              = 2.722 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -5902,13 +5925,55 @@ end
 
 -- to be checked italic_correction
 
+local function check_variants(unicode,the_variants,splitter,unicodes)
+    local variants = the_variants.variants
+    if variants then -- use splitter
+        local glyphs = lpegmatch(splitter,variants)
+        local done   = { [unicode] = true }
+        local n      = 0
+        for i=1,#glyphs do
+            local g = glyphs[i]
+            if done[g] then
+                report_otf("skipping cyclic reference U+%05X in math variant U+%05X",g,unicode)
+            elseif n == 0 then
+                n = 1
+                variants = { g }
+            else
+                n = n + 1
+                variants[n] = g
+            end
+        end
+        if n == 0 then
+            variants = nil
+        end
+    end
+    local parts = the_variants.parts
+    if parts then
+        local p = #parts
+        if p > 0 then
+            for i=1,p do
+                local pi = parts[i]
+                pi.glyph = unicodes[pi.component] or 0
+                pi.component = nil
+            end
+        else
+            parts = nil
+        end
+    end
+    local italic_correction = the_variants.italic_correction
+    if italic_correction and italic_correction == 0 then
+        italic_correction = nil
+    end
+    return variants, parts, italic_correction
+end
+
 actions["analyze math"] = function(data,filename,raw)
     if raw.math then
         data.metadata.math = raw.math
         local unicodes = data.resources.unicodes
         local splitter = data.helpers.tounicodetable
         for unicode, description in next, data.descriptions do
-            local glyph = description.glyph
+            local glyph          = description.glyph
             local mathkerns      = glyph.mathkern -- singular
             local horiz_variants = glyph.horiz_variants
             local vert_variants  = glyph.vert_variants
@@ -5933,56 +5998,10 @@ actions["analyze math"] = function(data,filename,raw)
                     math.kerns = mathkerns
                 end
                 if horiz_variants then
-                    local variants = horiz_variants.variants
-                    if variants then -- use splitter
-                        local glyphs = lpegmatch(splitter,variants)
-                        for i=1,#glyphs do
-                            if glyphs[i] == u then
-                                remove(glyphs,i)
-                                break
-                            end
-                        end
-                        math.horiz_variants = glyphs
-                    end
-                    local parts = horiz_variants.parts
-                    if parts and #parts > 0 then
-                        for i=1,#parts do
-                            local pi = parts[i]
-                            pi.glyph = unicodes[pi.component] or 0
-                            pi.component = nil
-                        end
-                        math.horiz_parts = parts
-                    end
-                    local italic_correction = horiz_variants.italic_correction
-                    if italic_correction and italic_correction ~= 0 then
-                        math.horiz_italic_correction = italic_correction
-                    end
+                    math.horiz_variants, math.horiz_parts, math.horiz_italic_correction = check_variants(unicode,horiz_variants,splitter,unicodes)
                 end
                 if vert_variants then
-                    local variants = vert_variants.variants
-                    if variants then
-                        local glyphs = lpegmatch(splitter,variants)
-                        for i=1,#glyphs do
-                            if glyphs[i] == u then
-                                remove(glyphs,i)
-                                break
-                            end
-                        end
-                        math.vert_variants = glyphs
-                    end
-                    local p = vert_variants.parts
-                    if parts and #parts > 0 then
-                        for i=1,#parts do
-                            local pi = parts[i]
-                            pi.glyph = unicodes[pi.component] or 0
-                            pi.component = nil
-                        end
-                        math.vert_parts = parts
-                    end
-                    local italic_correction = vert_variants.italic_correction
-                    if italic_correction and italic_correction ~= 0 then
-                        math.vert_italic_correction = italic_correction
-                    end
+                    math.vert_variants, math.vert_parts, math.vert_italic_correction = check_variants(unicode,vert_variants,splitter,unicodes)
                 end
                 local italic_correction = description.italic
                 if italic_correction and italic_correction ~= 0 then
@@ -6340,25 +6359,39 @@ local function copytotfm(data,cache_id)
                 local m = d.math
                 if m then
                     -- watch out: luatex uses horiz_variants for the parts
-                    local variants, parts = m.horiz_variants, m.horiz_parts
+                    local variants = m.horiz_variants
+                    local parts    = m.horiz_parts
+                 -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
-                            c.next = un
-                            c = characters[un]
+                         -- if done[un] then
+                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         -- else
+                                c.next = un
+                                c = characters[un]
+                         --     done[un] = true
+                         -- end
                         end -- c is now last in chain
                         c.horiz_variants = parts
                     elseif parts then
                         character.horiz_variants = parts
                     end
-                    local variants, parts = m.vert_variants, m.vert_parts
+                    local variants = m.vert_variants
+                    local parts    = m.vert_parts
+                 -- local done     = { [unicode] = true }
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
-                            c.next = un
-                            c = characters[un]
+                         -- if done[un] then
+                         --  -- report_otf("skipping cyclic reference U+%05X in math variant U+%05X",un,unicode)
+                         -- else
+                                c.next = un
+                                c = characters[un]
+                         --     done[un] = true
+                         -- end
                         end -- c is now last in chain
                         c.vert_variants = parts
                     elseif parts then
@@ -7852,6 +7885,8 @@ local find_node_tail     = node.tail or node.slide
 local set_attribute      = node.set_attribute
 local has_attribute      = node.has_attribute
 
+local setmetatableindex  = table.setmetatableindex
+
 local zwnj               = 0x200C
 local zwj                = 0x200D
 local wildcard           = "*"
@@ -8148,7 +8183,7 @@ function handlers.gsub_multiple(start,kind,lookupname,multiple)
     return multiple_glyphs(start,multiple)
 end
 
-function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or maybe pass lookup ref
+function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence)
     local s, stop, discfound = start.next, nil, false
     local startchar = start.char
     if marks[startchar] then
@@ -8169,14 +8204,18 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop then
             local lig = ligature.ligature
-            if trace_ligatures then
-                local stopchar = stop.char
-                start = markstoligature(kind,lookupname,start,stop,lig)
-                logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+            if lig then
+                if trace_ligatures then
+                    local stopchar = stop.char
+                    start = markstoligature(kind,lookupname,start,stop,lig)
+                    logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+                else
+                    start = markstoligature(kind,lookupname,start,stop,lig)
+                end
+                return start, true
             else
-                start = markstoligature(kind,lookupname,start,stop,lig)
+                -- ok, goto next lookup
             end
-            return start, true
         end
     else
         local skipmark = sequence.flags[1]
@@ -8209,14 +8248,18 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop then
             local lig = ligature.ligature
-            if trace_ligatures then
-                local stopchar = stop.char
-                start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
-                logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+            if lig then
+                if trace_ligatures then
+                    local stopchar = stop.char
+                    start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                    logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+                else
+                    start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                end
+                return start, true
             else
-                start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                -- ok, goto next lookup
             end
-            return start, true
         end
     end
     return start, false
@@ -9529,16 +9572,14 @@ local resolved = { } -- we only resolve a font,script,language pair once
 
 local lookuphashes = { }
 
-setmetatable(lookuphashes, { __index =
-    function(t,font)
-        local lookuphash = fontdata[font].resources.lookuphash
-        if not lookuphash or not next(lookuphash) then
-            lookuphash = false
-        end
-        t[font] = lookuphash
-        return lookuphash
+setmetatableindex(lookuphashes, function(t,font)
+    local lookuphash = fontdata[font].resources.lookuphash
+    if not lookuphash or not next(lookuphash) then
+        lookuphash = false
     end
-})
+    t[font] = lookuphash
+    return lookuphash
+end)
 
 -- fonts.hashes.lookups = lookuphashes
 
@@ -9585,11 +9626,11 @@ function otf.dataset(ftfmdata,sequences,font) -- generic variant, overloaded in 
     if not rl then
         rl = { }
         rs[language] = rl
-        setmetatable(rl, { __index = function(t,k)
+        setmetatableindex(rl, function(t,k)
             local v = enabled and initialize(sequences[k],script,language,enabled)
             t[k] = v
             return v
-        end})
+        end)
     end
     return rl
 end
@@ -10197,14 +10238,15 @@ if not trackers then trackers = { register = function() end } end
 
 local trace_analyzing = false  trackers.register("otf.analyzing",  function(v) trace_analyzing = v end)
 
-local fonts, nodes = fonts, nodes
-local node = node
+local fonts, nodes, node = fonts, nodes, node
+
+local allocate            = utilities.storage.allocate
 
 local otf                 = fonts.handlers.otf
 
 local analyzers           = fonts.analyzers
-local initializers        = { }
-local methods             = { }
+local initializers        = allocate()
+local methods             = allocate()
 
 analyzers.initializers    = initializers
 analyzers.methods         = methods
@@ -10987,18 +11029,17 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     if not tfmdata then -- or id?
         report_defining( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
-        constructors.finalize(tfmdata)
-     -- local properties = tfmdata.properties or { }
-     -- local parameters = tfmdata.parameters or { }
+        local properties = tfmdata.properties or { }
+        local parameters = tfmdata.parameters or { }
         report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-               properties.type          or "unknown",
-               id                       or "?",
-               properties.name          or "?",
-               parameters.size          or "default",
-               properties.encodingbytes or "?",
-               properties.encodingname  or "unicode",
-               properties.fullname      or "?",
- file.basename(properties.filename      or "?"))
+                       properties.type          or "unknown",
+                       id                       or "?",
+                       properties.name          or "?",
+                       parameters.size          or "default",
+                       properties.encodingbytes or "?",
+                       properties.encodingname  or "unicode",
+                       properties.fullname      or "?",
+         file.basename(properties.filename      or "?"))
     end
     statistics.stoptiming(fonts)
     return tfmdata
@@ -11008,7 +11049,7 @@ end
 <p>We overload the <l n='tfm'/> reader.</p>
 --ldx]]--
 
-callbacks.register('define_font' , definers.read, "definition of fonts (tfmdata preparation)")
+callbacks.register('define_font', definers.read, "definition of fonts (tfmdata preparation)")
 
 end -- closure
 

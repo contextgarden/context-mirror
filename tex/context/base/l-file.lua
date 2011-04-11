@@ -253,8 +253,6 @@ function file.collapsepath(str,anchor)
     end
 end
 
-file.collapse_path = file.collapsepath
-
 --~ local function test(str)
 --~    print(string.format("%-20s %-15s %-15s",str,file.collapsepath(str),file.collapsepath(str,true)))
 --~ end

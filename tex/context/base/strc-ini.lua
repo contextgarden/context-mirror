@@ -25,7 +25,7 @@ local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, te
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
 
@@ -81,14 +81,15 @@ structures.synonyms     = structures.synonyms     or { }
 
 local specials = structures.specials
 
-local collected, tobesaved = allocate(), allocate()
+local collected    = allocate()
+local tobesaved    = allocate()
 
 specials.collected = collected
 specials.tobesaved = tobesaved
 
 local function initializer()
-    collected = mark(specials.collected)
-    tobesaved = mark(specials.tobesaved)
+    collected = specials.collected
+    tobesaved = specials.tobesaved
 end
 
 if job then

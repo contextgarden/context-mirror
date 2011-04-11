@@ -141,7 +141,7 @@
   {\ctxlua{structures.lists.realpage("\currentlist",\currentlistindex)}}
 
 \def\structurelistfirst
-  {\dostarttagged\t!listdata{first} % ot always ok
+  {\dostarttagged\t!listdata{first}% not always ok
    \ctxlua{structures.lists.userdata("\currentlist",\currentlistindex,"first")}%
    \dostoptagged}
 
@@ -499,7 +499,7 @@
 \unexpanded\def\listsymbol[#1]#2%
   {\begingroup
    \edef\currentlist{#1}%
-   \edef\currentlistnumber{#2}%
+   \def\currentlistnumber{#2}% no edef else tag problems
    \currentlistsymbol
    \endgroup}
 
@@ -633,7 +633,7 @@
 
 \def\dodolistelement#1#2#3#4#5#6%
   {\edef\currentlist{#1}%
-   \edef\currentlistnumber{#3}%
+   \def\currentlistnumber{#3}% no edef else tag problem
    \docurrentlistalternative
    \letinteractionparameter\c!width\zeropoint
    \dontcomplain
@@ -999,7 +999,7 @@
    \ctxlua{structures.lists.title("\currentlist",\currentlistindex)}%
    \dostoptagged}
 
-\def\structurelistgenericnumber
+\def\structurelistgenericnumber % tricky, we need to delay tagging as we have nested lua calls
   {\dostarttagged\t!listtag\empty
    \ctxlua{structures.lists.prefixednumber("\currentlist",\currentlistindex, {
         prefix        = "\listparameter\c!prefix",

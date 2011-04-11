@@ -306,10 +306,6 @@ function table.fromhash(t)
     return hsh
 end
 
-table.serialize_functions = true
-table.serialize_compact   = true
-table.serialize_inline    = true
-
 local noquotes, hexify, handle, reduce, compact, inline, functions
 
 local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
@@ -595,15 +591,36 @@ end
 -- replacing handle by a direct t[#t+1] = ... (plus test) is not much
 -- faster (0.03 on 1.00 for zapfino.tma)
 
-local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
-    noquotes = _noquotes
-    hexify = _hexify
-    handle = _handle or print
-    reduce = _reduce or false
-    compact = table.serialize_compact
-    inline  = compact and table.serialize_inline
-    functions = table.serialize_functions
+local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might drop the _'s some day.
     local tname = type(name)
+    if tname == "table" then
+        noquotes  = name.noquotes
+        hexify    = name.hexify
+        handle    = name.handle or print
+        reduce    = name.reduce or false
+        functions = name.functions
+        compact   = name.compact
+        inline    = name.inline and compact
+        name      = name.name
+        tname     = type(name)
+        if functions == nil then
+            functions = true
+        end
+        if compact == nil then
+            compact = true
+        end
+        if inline == nil then
+            inline = compact
+        end
+    else
+        noquotes  = _noquotes
+        hexify    = _hexify
+        handle    = _handle or print
+        reduce    = _reduce or false
+        compact   = true
+        inline    = true
+        functions = true
+    end
     if tname == "string" then
         if name == "return" then
             handle("return {")
@@ -670,12 +687,11 @@ end
 --
 -- so this is on the todo list
 
-table.tofile_maxtab = 2*1024
+local maxtab = 2*1024
 
 function table.tofile(filename,root,name,reduce,noquotes,hexify)
     local f = io.open(filename,'w')
     if f then
-        local maxtab = table.tofile_maxtab
         if maxtab > 1 then
             local t, n = { }, 0
             local function flush(s)
@@ -893,8 +909,12 @@ function table.sequenced(t,sep,simple) -- hash only
     return concat(s, sep or " | ")
 end
 
-function table.print(...)
-    table.tohandle(print,...)
+function table.print(t,...)
+    if type(t) ~= "table" then
+        print(tostring(t))
+    else
+        table.tohandle(print,t,...)
+    end
 end
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --

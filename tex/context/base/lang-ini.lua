@@ -23,16 +23,19 @@ local format, gsub = string.format, string.gsub
 local concat = table.concat
 local lpegmatch = lpeg.match
 local texwrite = tex.write
+
 local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
 local report_initialization = logs.reporter("languages","initialization")
 
-local prehyphenchar, posthyphenchar = lang.prehyphenchar, lang.posthyphenchar -- global per language
-local lefthyphenmin, righthyphenmin = lang.lefthyphenmin, lang.righthyphenmin
+local prehyphenchar  = lang.prehyphenchar -- global per language
+local posthyphenchar = lang.posthyphenchar -- global per language
+local lefthyphenmin  = lang.lefthyphenmin
+local righthyphenmin = lang.righthyphenmin
 
-lang.exceptions = lang.hyphenation
+lang.exceptions      = lang.hyphenation
 
 languages            = languages or {}
 local languages      = languages
@@ -48,9 +51,13 @@ local associated     = languages.associated
 languages.numbers    = languages.numbers    or { }
 local numbers        = languages.numbers
 
+languages.data       = languages.data       or { }
+local data           = languages.data
+
 storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/registered",registered,"languages.registered")
 storage.register("languages/associated",associated,"languages.associated")
+storage.register("languages/data",      data,      "languages.data")
 
 local nofloaded  = 0
 

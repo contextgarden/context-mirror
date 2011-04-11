@@ -87,34 +87,32 @@
   [\hbox to \paperwidth{\reuseMPgraphic{cover+back}\hss}]
 
 \startreusableMPgraphic{cover+back}
-  numeric h, w ; path p, q, r ; color f, d ; pair s ;
-  h := OverlayHeight ; w := 2*OverlayWidth ;
-  r := unitsquare xyscaled (w,h) ;
-  fill r withcolor \MPcolor{lightgray} ;
-  set_grid(w,h,w/8,w/16) ;
-  forever :
-    s := center r randomized (w,h) ;
-    if new_on_grid(xpart s, ypart s) :
-      s := (dx,dy) ;
-      p := fullsquare xyscaled(w/4,w/8) ;
-      q := (-4w,ypart ulcorner p) --
-           .5[ulcorner p, urcorner p] --
-           (4w,ypart urcorner p) ;
-      q := q shifted (0,-w/24) ;
-      p := p randomized (w/40,w/40) ;
-      q := q randomized (0,w/100) ;
-      q := q cutafter  (p cutafter  point 3 of p) ;
-      q := q cutbefore (p cutbefore point 3 of p) ;
-      d := .5[\MPcolor{LocalColor},\MPcolor{lightgray}] randomized (.5,.9) ;
-      f := \MPcolor{lightgray} randomized (.5,.9) ;
-      pickup pencircle scaled (w/100) ;
-      fill p shifted s withcolor f ;
-      draw p shifted s withcolor d ;
-      draw q shifted s withcolor d ;
-    fi ;
-    exitif grid_full ;
-  endfor ;
-  setbounds currentpicture to r ;
+    numeric h, w ; path p, q, r ; color f, d ; pair s ;
+    h := OverlayHeight ; w := 2*OverlayWidth ;
+    r := unitsquare xyscaled (w,h) ;
+    fill r withcolor \MPcolor{lightgray} ;
+    set_grid(w,h,w/8,w/16) ;
+    forever :
+        s := center r randomized (w,h) ;
+        if new_on_grid(xpart s, ypart s) :
+            s := (dx,dy) ;
+            p := fullsquare xyscaled(w/4,w/8) ;
+            q := (-4w,ypart ulcorner p) -- .5[ulcorner p, urcorner p] -- (4w,ypart urcorner p) ;
+            q := q shifted (0,-w/24) ;
+            p := p randomized (w/40,w/40) ;
+            q := q randomized (0,w/100) ;
+            q := q cutafter  (p cutafter  point 3 of p) ;
+            q := q cutbefore (p cutbefore point 3 of p) ;
+            d := .5[\MPcolor{LocalColor},\MPcolor{lightgray}] randomized (.5,.9) ;
+            f := \MPcolor{lightgray} randomized (.5,.9) ;
+            pickup pencircle scaled (w/100) ;
+            fill p shifted s withcolor f ;
+            draw p shifted s withcolor d ;
+            draw q shifted s withcolor d ;
+        fi ;
+        exitif grid_full ;
+    endfor ;
+    setbounds currentpicture to r ;
 \stopreusableMPgraphic
 
 \definelayout
@@ -143,7 +141,9 @@
 
 \setupframedtexts
   [setuptext]
-  [\c!frame=\v!on,
+  [\c!before=\blank,
+   \c!after=\blank,
+   \c!frame=\v!on,
    \c!rulethickness=1pt,
    \c!framecolor=TitleColor]
 
@@ -161,47 +161,47 @@
   [titlepage]
 
 \startsetups text:commands
-  \startinterface dutch    \strut commando's   \par \stopinterface
-  \startinterface english  \strut commands     \par \stopinterface
-  \startinterface german   \strut befehle      \par \stopinterface
-  \startinterface french   \strut commandes    \par \stopinterface
-  \startinterface czech    \strut p\v{r}ikazy  \par \stopinterface
-  \startinterface italian  \strut comandi      \par \stopinterface
-  \startinterface romanian \strut comenzile    \par \stopinterface
+    \startinterface dutch    \strut commando's   \par \stopinterface
+    \startinterface english  \strut commands     \par \stopinterface
+    \startinterface german   \strut befehle      \par \stopinterface
+    \startinterface french   \strut commandes    \par \stopinterface
+    \startinterface czech    \strut p\v{r}ikazy  \par \stopinterface
+    \startinterface italian  \strut comandi      \par \stopinterface
+    \startinterface romanian \strut comenzile    \par \stopinterface
 \stopsetups
 
 \startsetups text:uppercase
-  \startinterface dutch    NL\stopinterface
-  \startinterface english  EN\stopinterface
-  \startinterface german   DE\stopinterface
-  \startinterface french   FR\stopinterface
-  \startinterface czech    CS\stopinterface
-  \startinterface italian  IT\stopinterface
-  \startinterface romanian RO\stopinterface
+    \startinterface dutch    NL\stopinterface
+    \startinterface english  EN\stopinterface
+    \startinterface german   DE\stopinterface
+    \startinterface french   FR\stopinterface
+    \startinterface czech    CS\stopinterface
+    \startinterface italian  IT\stopinterface
+    \startinterface romanian RO\stopinterface
 \stopsetups
 
 \startsetups text:lowercase
-  \startinterface dutch    \strut nl / nederlands     \par \stopinterface
-  \startinterface english  \strut en / english        \par \stopinterface
-  \startinterface german   \strut de / deutsch        \par \stopinterface
-  \startinterface french   \strut fr / fran\c{c}ais   \par \stopinterface
-  \startinterface czech    \strut cs / \v{c}esk\'y    \par \stopinterface
-  \startinterface italian  \strut it / italiano       \par \stopinterface
-  \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
+    \startinterface dutch    \strut nl / nederlands     \par \stopinterface
+    \startinterface english  \strut en / english        \par \stopinterface
+    \startinterface german   \strut de / deutsch        \par \stopinterface
+    \startinterface french   \strut fr / fran\c{c}ais   \par \stopinterface
+    \startinterface czech    \strut cs / \v{c}esk\'y    \par \stopinterface
+    \startinterface italian  \strut it / italiano       \par \stopinterface
+    \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
 \stopsetups
 
 \startmakeup[\v!standard]
-  \dontcomplain
-  \setupalign[\v!left]
-  \startcolor[TitleColor]
-  \definedfont[RegularBold at 100pt]\setstrut
-  \strut Con\TeX t \par
-  \definedfont[RegularBold at 50pt]\setstrut
-  \setups[text:commands]
-  \vfill
-  \definedfont[RegularBold at 150pt]\setstrut
-  \setups[text:uppercase]
-  \stopcolor
+    \dontcomplain
+    \setupalign[\v!left]
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 100pt]\setstrut
+    \strut Con\TeX t \par
+    \definedfont[RegularBold at 50pt]\setstrut
+    \setups[text:commands]
+    \vfill
+    \definedfont[RegularBold at 150pt]\setstrut
+    \setups[text:uppercase]
+    \stopcolor
 \stopmakeup
 
 \setuplayout % needed ?
@@ -211,18 +211,18 @@
   [\c!background=]
 
 \startmakeup[\v!standard]
-  \dontcomplain
-  \startcolor[TitleColor]
-  \definedfont[RegularBold at 100pt]\setstrut
-  \setupalign[\v!left]
-  \strut Con\TeX t \par
-  \definedfont[RegularBold at 50pt]\setstrut
-  \setups[text:commands]
-  \vfill
-  \definedfont[RegularBold at 24pt]\setupinterlinespace
-  \setups[text:lowercase]
-  \par \strut \currentdate \par
-  \stopcolor
+    \dontcomplain
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 100pt]\setstrut
+    \setupalign[\v!left]
+    \strut Con\TeX t \par
+    \definedfont[RegularBold at 50pt]\setstrut
+    \setups[text:commands]
+    \vfill
+    \definedfont[RegularBold at 24pt]\setupinterlinespace
+    \setups[text:lowercase]
+    \par \strut \currentdate \par
+    \stopcolor
 \stopmakeup
 
 \protect
@@ -241,16 +241,16 @@
   [\c!background=back]
 
 \startmakeup[\v!standard][\c!page=]
-  \dontcomplain
-  \startcolor[TitleColor]
-  \definedfont[RegularBold at 24pt]\setupinterlinespace
-  \setupalign[\v!left]
-  \vfill
-  PRAGMA ADE \par
-  Ridderstraat 27 \par
-  8061GH Hasselt NL \par
-  www.pragma-ade.com \par
-  \stopcolor
+    \dontcomplain
+    \startcolor[TitleColor]
+    \definedfont[RegularBold at 24pt]\setupinterlinespace
+    \setupalign[\v!left]
+    \vfill
+    PRAGMA ADE \par
+    Ridderstraat 27 \par
+    8061GH Hasselt NL \par
+    www.pragma-ade.com \par
+    \stopcolor
 \stopmakeup
 
 \protect

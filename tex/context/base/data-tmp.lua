@@ -290,6 +290,8 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
+local saveoptions = { name = "return", reduce = true }
+
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true
@@ -298,9 +300,9 @@ function caches.savedata(filepath,filename,data,raw)
     end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
+        file.savedata(tmaname,table.serialize(data,saveoptions))
     else
-        table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
+        table.tofile(tmaname,data,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end

@@ -50,12 +50,13 @@ local utfbyte, utfchar = utf.byte, utf.char
 local utfcharacters = string.utfcharacters
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 
-local allocate = utilities.storage.allocate
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
-local trace_tests   = false  trackers.register("sorters.tests",   function(v) trace_tests   = v end)
-local trace_methods = false  trackers.register("sorters.methods", function(v) trace_methods = v end)
+local trace_tests       = false  trackers.register("sorters.tests",   function(v) trace_tests   = v end)
+local trace_methods     = false  trackers.register("sorters.methods", function(v) trace_methods = v end)
 
-local report_sorters = logs.reporter("languages","sorters")
+local report_sorters    = logs.reporter("languages","sorters")
 
 local comparers         = { }
 local splitters         = { }
@@ -278,7 +279,7 @@ local function update() -- prepare parent chains, needed when new languages are 
     for language, data in next, definitions do
         local parent = data.parent or "default"
         if language ~= "default" then
-            setmetatable(data,{ __index = definitions[parent] or definitions.default })
+            setmetatableindex(data,definitions[parent] or definitions.default)
         end
         data.language   = language
         data.parent     = parent

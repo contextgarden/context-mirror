@@ -19,8 +19,8 @@ local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 
-local type = type
-local insert, remove = table.insert, table.remove
+local type, setmetatable, getmetatable = type, setmetatable, getmetatable
+local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
 local gmatch, gsub = string.gmatch, string.gsub
 
 local function report(what,pattern,c,e)
@@ -234,6 +234,41 @@ function xml.replace(root,pattern,whatever)
     end
 end
 
+local function wrap(e,wrapper)
+    local t = {
+        rn = e.rn,
+        tg = e.tg,
+        ns = e.ns,
+        at = e.at,
+        dt = e.dt,
+        __p__ = e,
+    }
+    setmetatable(t,getmetatable(e))
+    e.rn = wrapper.rn or e.rn or ""
+    e.tg = wrapper.tg or e.tg or ""
+    e.ns = wrapper.ns or e.ns or ""
+    e.at = fastcopy(wrapper.at)
+    e.dt = { t }
+end
+
+function xml.wrap(root,pattern,whatever)
+    if whatever then
+        local wrapper = xmltoelement(whatever,root)
+        local collected = xmlapplylpath(root,pattern)
+        if collected then
+            for c=1,#collected do
+                local e = collected[c]
+                if trace_manipulations then
+                    report('wrapping',pattern,c,e)
+                end
+                wrap(e,wrapper)
+            end
+        end
+    else
+        wrap(root,xmltoelement(pattern))
+    end
+end
+
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
@@ -304,7 +339,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
             local ekat = ek.at
             local epdt = ek.__p__.dt
             if not attribute or attribute == "" then
-                name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- ckeck, probably always tab or str
+                name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- check, probably always tab or str
             end
             if not name then
                 for a in gmatch(attribute or "href","([^|]+)") do

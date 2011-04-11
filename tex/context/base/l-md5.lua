@@ -31,14 +31,12 @@ if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 --~     function md5.dec(str) return (gsub(md5.sum(str),".",remap)) end
 --~ end
 
-file.needs_updating_threshold = 1
-
-function file.needs_updating(oldname,newname) -- size modification access change
+function file.needs_updating(oldname,newname,threshold) -- size modification access change
     local oldtime = lfs.attributes(oldname, modification)
     local newtime = lfs.attributes(newname, modification)
     if newtime >= oldtime then
         return false
-    elseif oldtime - newtime < file.needs_updating_threshold then
+    elseif oldtime - newtime < (threshold or 1) then
         return false
     else
         return true

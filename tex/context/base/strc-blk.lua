@@ -18,19 +18,21 @@ local structures, context = structures, context
 
 structures.blocks = structures.blocks or { }
 
-local blocks   = structures.blocks
-local sections = structures.sections
-local lists    = structures.lists
+local blocks      = structures.blocks
+local sections    = structures.sections
+local lists       = structures.lists
 
-local collected, tobesaved, states = allocate(), allocate(), allocate()
+local collected   = allocate()
+local tobesaved   = allocate()
+local states      = allocate()
 
-blocks.collected = collected
-blocks.tobesaved = tobesaved
-blocks.states    = states
+blocks.collected  = collected
+blocks.tobesaved  = tobesaved
+blocks.states     = states
 
 local function initializer()
-    collected = mark(blocks.collected)
-    tobesaved = mark(blocks.tobesaved)
+    collected = blocks.collected
+    tobesaved = blocks.tobesaved
 end
 
 job.register('structures.blocks.collected', tobesaved, initializer)

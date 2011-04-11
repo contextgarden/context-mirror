@@ -8,9 +8,9 @@ if not modules then modules = { } end modules ['math-tag'] = {
 
 local attributes, nodes = attributes, nodes
 
-local has_attribute       = nodes.has_attribute
-local set_attribute       = nodes.set_attribute
-local set_attributes      = nodes.set_attributes
+local get_attribute       = nodes.getattribute
+local set_attribute       = nodes.setattribute
+local set_attributes      = nodes.setattributes
 local traverse_nodes      = node.traverse
 
 local nodecodes           = nodes.nodecodes
@@ -101,7 +101,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             processsubsup(start)
         elseif id == math_box_code or id == hlist_code or id == vlist_code then
             -- keep an eye on math_box_code and see what ends up in there
-            local attr = has_attribute(start,a_tagged)
+            local attr = get_attribute(start,a_tagged)
             local text = start_tagged("mtext")
             set_attribute(start,a_tagged,text)
             local list = start.list
@@ -124,7 +124,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         if id == hlist_code or id == vlist_code then
                             runner(n.list)
                         elseif id == glyph_code then
-                            local aa = has_attribute(n,a_tagged) -- only glyph needed
+                            local aa = get_attribute(n,a_tagged) -- only glyph needed
                             if aa then
                                 local ac = cache[aa]
                                 if not ac then

@@ -12,9 +12,10 @@ local trace_run = false  trackers.register("graphic.runfile",function(v) trace_r
 
 local report_run = logs.reporter("graphics","run")
 
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
-local collected, tobesaved = allocate(), allocate()
+local collected = allocate()
+local tobesaved = allocate()
 
 local jobfiles = {
     collected = collected,
@@ -24,8 +25,8 @@ local jobfiles = {
 job.files = jobfiles
 
 local function initializer()
-    tobesaved = mark(jobfiles.tobesaved)
-    collected = mark(jobfiles.collected)
+    tobesaved = jobfiles.tobesaved
+    collected = jobfiles.collected
 end
 
 job.register('job.files.collected', tobesaved, initializer)

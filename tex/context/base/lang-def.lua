@@ -8,11 +8,12 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local lower = string.lower
 
-languages       = languages or { }
-local languages = languages
+languages               = languages or { }
+local languages         = languages
+local data              = languages.data
 
-languages.data  = languages.data or utilities.storage.allocate { }
-local data      = languages.data
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
 -- The specifications are based on an analysis done by Arthur. The
 -- names of tags were changed by Hans. The data is not yet used but
@@ -62,7 +63,7 @@ local data      = languages.data
 --
 -- todo: add default features
 
-local specifications = {
+local specifications = allocate {
     {
         ["description"] = "Basque",
         ["script"] = "latn",
@@ -360,16 +361,13 @@ local specifications = {
 
 data.specifications = specifications
 
-storage.mark(specifications)
-
 local variants  = { }   data.variants  = variants
 local opentypes = { }   data.opentypes = opentypes
 local contexts  = { }   data.contexts  = contexts
 local records   = { }   data.records   = records
 
-
 for k=1,#specifications do
-    local v = languagedata[k]
+    local v = specifications[k]
     if v.variant then
         variants[v.variant] = v
     end
@@ -388,31 +386,31 @@ for k=1,#specifications do
     end
 end
 
-setmetatable(variants, { __index = function(t,k)
+setmetatableindex(variants, function(t,k)
     str = lower(str)
     local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant.en).language
     t[k] = v
     return v
-end } )
+end)
 
-setmetatable(opentypes, { __index = function(t,k)
+setmetatableindex(opentypes, function(t,k)
     str = lower(str)
     local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant.en).opentype
     t[k] = v
     return v
-end
+end)
 
-setmetatable(contexts, { __index = function(t,k)
+setmetatableindex(contexts, function(t,k)
     str = lower(str)
     local v = (l_variant[str] or l_opentype[str] or l_context[str] or l_variant[languages.default]).context
     v = (type(v) == "table" and v[1]) or v
     t[k] = v
     return v
-end
+end)
 
-setmetatable(records, { __index = function(t,k) -- how useful is this one?
+setmetatableindex(records, function(t,k) -- how useful is this one?
     str = lower(str)
     local v = variants[str] or opentypes[str] or contexts[str] or variants.en
     t[k] = v
     return v
-end
+end)

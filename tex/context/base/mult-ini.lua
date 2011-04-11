@@ -10,16 +10,19 @@ local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local lpegmatch = lpeg.match
 local serialize = table.serialize
 
-local texsprint = tex.sprint
+local allocate          = utilities.storage.allocate
+local mark              = utilities.storage.mark
+local texsprint         = tex.sprint
+local setmetatableindex = table.setmetatableindex
 
-local report_interface = logs.reporter("interface","initialization")
+local report_interface  = logs.reporter("interface","initialization")
 
-interfaces              = interfaces              or { }
-interfaces.constants    = interfaces.constants    or { }
-interfaces.variables    = interfaces.variables    or { }
-interfaces.elements     = interfaces.elements     or { }
-interfaces.formats      = interfaces.formats      or { }
-interfaces.translations = interfaces.translations or { }
+interfaces              = interfaces                   or { }
+interfaces.constants    = mark(interfaces.constants    or { })
+interfaces.variables    = mark(interfaces.variables    or { })
+interfaces.elements     = mark(interfaces.elements     or { })
+interfaces.formats      = mark(interfaces.formats      or { })
+interfaces.translations = mark(interfaces.translations or { })
 
 storage.register("interfaces/constants",    interfaces.constants,    "interfaces.constants")
 storage.register("interfaces/variables",    interfaces.variables,    "interfaces.variables")
@@ -37,16 +40,19 @@ storage.shared.currentresponse  = storage.shared.currentresponse  or "en"
 local currentinterface = storage.shared.currentinterface
 local currentresponse  = storage.shared.currentresponse
 
-local complete = { } interfaces.complete = complete
+local complete      = allocate()
+interfaces.complete = complete
 
-setmetatable(complete, { __index = function(t,k) -- one access needed to get loaded
+local function resolve(t,k) -- one access needed to get loaded
     report_interface("loading interface definitions from 'mult-def.lua'")
     complete = dofile(resolvers.findfile("mult-def.lua"))
     report_interface("loading interface messages from 'mult-mes.lua'")
     complete.messages = dofile(resolvers.findfile("mult-mes.lua"))
     interfaces.complete = complete
     return rawget(complete,k)
-end } )
+end
+
+setmetatableindex(complete, resolve)
 
 local constants    = interfaces.constants
 local variables    = interfaces.variables
@@ -55,15 +61,24 @@ local formats      = interfaces.formats
 local translations = interfaces.translations
 local reporters    = { } -- just an optimization
 
-local valueiskey = { __index = function(t,k) t[k] = k return k end } -- will be helper
+local function valueiskey(t,k) -- will be helper
+    t[k] = k
+    return k
+end
 
-setmetatable(variables,    valueiskey)
-setmetatable(constants,    valueiskey)
-setmetatable(elements,     valueiskey)
-setmetatable(formats,      valueiskey)
-setmetatable(translations, valueiskey)
+setmetatableindex(variables,    valueiskey)
+setmetatableindex(constants,    valueiskey)
+setmetatableindex(elements,     valueiskey)
+setmetatableindex(formats,      valueiskey)
+setmetatableindex(translations, valueiskey)
 
-setmetatable(reporters, { __index = function(t,k) local v = logs.reporter(k) ; t[k] = v ; return v end })
+local function resolve(t,k)
+    local v = logs.reporter(k)
+    t[k] = v
+    return v
+end
+
+setmetatableindex(reporters, resolve)
 
 for category, _ in next, translations do
     -- We pre-create reporters for already defined messages

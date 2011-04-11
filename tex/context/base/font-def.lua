@@ -409,18 +409,17 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     if not tfmdata then -- or id?
         report_defining( "unknown font %s, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
-        constructors.finalize(tfmdata)
-     -- local properties = tfmdata.properties or { }
-     -- local parameters = tfmdata.parameters or { }
+        local properties = tfmdata.properties or { }
+        local parameters = tfmdata.parameters or { }
         report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-               properties.type          or "unknown",
-               id                       or "?",
-               properties.name          or "?",
-               parameters.size          or "default",
-               properties.encodingbytes or "?",
-               properties.encodingname  or "unicode",
-               properties.fullname      or "?",
- file.basename(properties.filename      or "?"))
+                       properties.type          or "unknown",
+                       id                       or "?",
+                       properties.name          or "?",
+                       parameters.size          or "default",
+                       properties.encodingbytes or "?",
+                       properties.encodingname  or "unicode",
+                       properties.fullname      or "?",
+         file.basename(properties.filename      or "?"))
     end
     statistics.stoptiming(fonts)
     return tfmdata
@@ -430,4 +429,4 @@ end
 <p>We overload the <l n='tfm'/> reader.</p>
 --ldx]]--
 
-callbacks.register('define_font' , definers.read, "definition of fonts (tfmdata preparation)")
+callbacks.register('define_font', definers.read, "definition of fonts (tfmdata preparation)")

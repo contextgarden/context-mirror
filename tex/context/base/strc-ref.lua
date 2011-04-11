@@ -9,10 +9,11 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local lpegmatch, lpegP, lpegCs = lpeg.match, lpeg.P, lpeg.Cs
 local texcount, texsetcount = tex.count, tex.setcount
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-local setmetatable, rawget = setmetatable, rawget
+local rawget = rawget
 
-local allocate = utilities.storage.allocate
+local allocate          = utilities.storage.allocate
+local mark              = utilities.storage.mark
+local setmetatableindex = table.setmetatableindex
 
 local trace_referencing = false  trackers.register("structures.referencing", function(v) trace_referencing = v end)
 
@@ -44,8 +45,8 @@ references.defined   = references.defined or allocate()
 
 local defined        = references.defined
 local derived        = allocate()
-local specials       = { } -- allocate()
-local runners        = { } -- allocate()
+local specials       = allocate()
+local runners        = allocate()
 local internals      = allocate()
 local exporters      = allocate()
 local imported       = allocate()
@@ -86,15 +87,14 @@ function references.registerfinalizer(func) -- we could use a token register ins
 end
 
 local function initializer() -- can we use a tobesaved as metatable for collected?
-    tobesaved = mark(references.tobesaved)
-    collected = mark(references.collected)
+    tobesaved = references.tobesaved
+    collected = references.collected
     for i=1,#initializers do
         initializers[i](tobesaved,collected)
     end
 end
 
 local function finalizer()
- -- tobesaved = mark(references.tobesaved)
     for i=1,#finalizers do
         finalizers[i](tobesaved)
     end
@@ -105,10 +105,9 @@ job.register('structures.references.collected', tobesaved, initializer, finalize
 local maxreferred = 1
 
 local function initializer() -- can we use a tobesaved as metatable for collected?
-    tobereferred = mark(references.tobereferred)
-    referred     = mark(references.referred)
-
-    function get(t,n)    -- catch sparse, a bit slow but who cares
+    tobereferred = references.tobereferred
+    referred     = references.referred
+    local function get(t,n)    -- catch sparse, a bit slow but who cares
         for i=n,1,-1 do  -- we could make a tree ... too much work
             local p = rawget(t,i)
             if p then
@@ -116,7 +115,7 @@ local function initializer() -- can we use a tobesaved as metatable for collecte
             end
         end
     end
-    setmetatable(referred, { __index = get })
+    setmetatableindex(referred, get)
 end
 
 local function finalizer() -- make sparse
@@ -133,6 +132,8 @@ local function finalizer() -- make sparse
     end
 end
 
+job.register('structures.references.referred', tobereferred, initializer, finalizer)
+
 function references.referredpage(n)
     return referred[n] or referred[n] or texcount.realpageno
 end
@@ -145,8 +146,6 @@ function references.registerpage(n)
         tobereferred[n] = texcount.realpageno
     end
 end
-
-job.register('structures.references.referred', tobereferred, initializer, finalizer)
 
 -- todo: delay split till later as in destinations we split anyway
 
@@ -305,7 +304,7 @@ local function register_from_lists(collected,derived)
                 if kind and realpage then
                     local d = derived[prefix] if not d then d = { } derived[prefix] = d end
                     local t = { kind, i }
-                    for s in gmatch(reference,"[^, ]+") do
+                    for s in gmatch(reference,"%s*([^,]+)") do
                         if trace_referencing then
                             report_references("list entry %s provides %s reference '%s' on realpage %s",i,kind,s,realpage)
                         end
@@ -1109,7 +1108,7 @@ set.n = n
         bug = bug or var.error
         set[i] = var
     end
-    references.currentset = set
+    references.currentset = mark(set) -- mark, else in api doc
 --~ table.print(set,tostring(bug))
     return set, bug
 end
@@ -1440,7 +1439,7 @@ end
 
 local plist
 
-function realpageofpage(p)
+local function realpageofpage(p)
     if not plist then
         local pages = structures.pages.collected
         plist = { }

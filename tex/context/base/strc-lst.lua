@@ -17,7 +17,7 @@ local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
-local allocate, mark, checked = utilities.storage.allocate, utilities.storage.mark, utilities.storage.checked
+local allocate, checked = utilities.storage.allocate, utilities.storage.checked
 
 local trace_lists = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
@@ -75,7 +75,7 @@ end
 local function initializer()
     -- create a cross reference between internal references
     -- and list entries
-    local collected = mark(lists.collected)
+    local collected = lists.collected
     local internals = checked(references.internals)
     local ordered   = lists.ordered
     for i=1,#collected do
@@ -110,14 +110,12 @@ end
 job.register('structures.lists.collected', tobesaved, initializer)
 
 function lists.push(t)
+    local m = t.metadata
     local r = t.references
     local i = (r and r.internal) or 0 -- brrr
     local p = pushed[i]
     if not p then
         p = #cached + 1
-        if r.tag == nil then
-            r.tag = tags.last and tags.last(t.metadata.kind) -- maybe kind but then also check elsewhere
-        end
         cached[p] = helpers.simplify(t)
         pushed[i] = p
     end
@@ -134,14 +132,21 @@ function lists.enhance(n)
  -- todo: symbolic names for counters
     local l = cached[n]
     if l then
+        local metadata   = l.metadata
+        local references = l.references
         --
         l.directives = nil -- might change
         -- save in the right order (happens at shipout)
         lists.tobesaved[#lists.tobesaved+1] = l
         -- default enhancer (cross referencing)
-        l.references.realpage = texcount.realpageno
+        references.realpage = texcount.realpageno
+        -- tags
+        local kind = metadata.kind
+        local name = metadata.name
+        if references then
+            references.tag = tags.getid(kind,name)
+        end
         -- specific enhancer (kind of obsolete)
-        local kind = l.metadata.kind
         local enhancer = kind and lists.enhancers[kind]
         if enhancer then
             enhancer(l)

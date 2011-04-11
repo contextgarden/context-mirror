@@ -37,8 +37,8 @@ pages.collected = collected
 pages.tobesaved = tobesaved
 
 local function initializer()
-    collected = mark(pages.collected)
-    tobesaved = mark(pages.tobesaved)
+    collected = pages.collected
+    tobesaved = pages.tobesaved
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)

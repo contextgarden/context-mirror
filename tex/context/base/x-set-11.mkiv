@@ -29,7 +29,7 @@
 % \setup{setupinterlinespace:1}
 % \setup{setupinterlinespace:2}
 %
-% cd:include -> @file
+% cd:include -> filename
 % cd:choice
 %
 % register, interaction
@@ -304,13 +304,13 @@
 
 % general
 
-\unexpanded\def\setupnumfont  {}
-\unexpanded\def\setuptxtfont  {}
-\unexpanded\def\setupintfont  {\WORD}
-\unexpanded\def\setupvarfont  {\sl}
-\unexpanded\def\setupoptfont  {\sl}
-\unexpanded\def\setupalwcolor {}
-\unexpanded\def\setupoptcolor {darkgray}
+\unexpanded\def\setupnumfont {}
+\unexpanded\def\setuptxtfont {}
+\unexpanded\def\setupintfont {\WORD}
+\unexpanded\def\setupvarfont {\sl}
+\unexpanded\def\setupoptfont {\sl}
+\unexpanded\def\setupalwcolor{}
+\unexpanded\def\setupoptcolor{darkgray}
 
 \def\c!setup!definereserved#1#2%
   {\setvalue{c!setup!:r:#1}{#2}}
@@ -394,6 +394,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:basics
+    \xmlinclude{#1}{include}{filename}%
     \xmlsetsetup {#1} {
         sequence|string|variable|assignments|keywords|content|displaymath|index|math|
         nothing|file|position|reference|csname|destination|triplet|word|
@@ -415,7 +416,7 @@
      {\doonlyonce{setups:#1}
         {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
          \xmlloadonly{setups:#1}{#1}{setups}%
-         \xmlfilter{setups:#1}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
+         \xmlfilter{setups:#1}{interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
 
 \newif\ifshortsetup
 
@@ -444,10 +445,10 @@
    \showsetupindeed{#1}}
 
 % \def\showsetupindeed#1%
-%   {\xmlfilterlist{\loadedsetups}{/interface/command[@name='#1']/command(xml:setups:typeset)}}
+%   {\xmlfilterlist{\loadedsetups}{interface/command[@name='#1']/command(xml:setups:typeset)}}
 
 \def\showsetupindeed#1%
-  {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
+  {\xmlfilterlist{\loadedsetups}{interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
@@ -475,6 +476,7 @@
         \doglobal\newcounter\currentSETUPargument
         \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
         \bgroup
+            \enablemode[setups-pass-one]%
             \doif {\xmlatt{#1}{generated}} {yes} {
                 \ttsl
             }
@@ -496,6 +498,7 @@
         }
         \doif {\xmlatt{#1}{type}} {environment} {
             \bgroup
+                \enablemode[setups-pass-one]%
                 \hskip.5em\unknown\hskip.5em
                 \doif {\xmlatt{#1}{generated}} {yes} {
                     \ttsl
@@ -526,7 +529,7 @@
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
-    \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
+    \xmlfilterlist{\loadedsetups}{interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.

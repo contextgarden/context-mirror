@@ -473,8 +473,8 @@
 
 \def\setraggedparagraphmode
   {\doifrightpageelse
-     {\ifdoublesided\signalinnerrealign\firstoftwoarguments \fi}
-     {\ifdoublesided\signalouterrealign\secondoftwoarguments\fi}}
+     {\ifdoublesided\signalinnerrealign\expandafter\firstoftwoarguments \fi}
+     {\ifdoublesided\signalouterrealign\expandafter\secondoftwoarguments\fi}}
 
 \def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
 

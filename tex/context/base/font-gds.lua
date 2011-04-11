@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-gds'] = {
 -- depends on ctx
 
 local type, next = type, next
-local gmatch = string.gmatch
+local gmatch, format = string.gmatch, string.format
 
 local fonts, nodes, attributes, node = fonts, nodes, attributes, node
 
@@ -17,6 +17,9 @@ local trace_goodies      = false  trackers.register("fonts.goodies", function(v)
 local report_fonts       = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
+
+local otf                = fonts.handlers.otf
+local addotffeature      = otf.enhancers.addfeature
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
@@ -305,6 +308,25 @@ function colorschemes.enable()
     function colorschemes.enable() end
 end
 
+local function setextrafeatures(tfmdata)
+    local goodies = tfmdata.goodies
+    if goodies then
+        for i=1,#goodies do
+            local g = goodies[i]
+            local f = g.features
+            if f then
+                for feature, specification in next, f do
+                    addotffeature(tfmdata.shared.rawdata,feature,specification)
+                    registerotffeature {
+                        name        = feature,
+                        description = format("extra: %s",feature)
+                    }
+                end
+            end
+        end
+    end
+end
+
 -- installation (collected to keep the overview) -- also for type 1
 
 registerotffeature {
@@ -317,23 +339,14 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name         = "goodies",
-    description  = "goodies on top of built in features",
+registerotffeature {
+    name        = "extrafeatures",
+    description = "extra features",
+    default     = true,
     initializers = {
-        position = 1,
-        base     = setgoodies,
-        node     = setgoodies,
-    }
-}
-
-registertfmfeature {
-    name         = "goodies",
-    description  = "goodies on top of built in features",
-    initializers = {
-        position = 1,
-        base     = setgoodies,
-        node     = setgoodies,
+        position = 2,
+        base     = setextrafeatures,
+        node     = setextrafeatures,
     }
 }
 
@@ -341,7 +354,7 @@ registerotffeature {
     name        = "featureset",
     description = "goodie feature set",
     initializers = {
-        position = 2,
+        position = 3,
         base     = setfeatureset,
         node     = setfeatureset,
     }
@@ -362,6 +375,30 @@ registerotffeature {
     initializers = {
         base = setpostprocessor,
         node = setpostprocessor,
+    }
+}
+
+-- afm
+
+registerafmfeature {
+    name         = "goodies",
+    description  = "goodies on top of built in features",
+    initializers = {
+        position = 1,
+        base     = setgoodies,
+        node     = setgoodies,
+    }
+}
+
+-- tfm
+
+registertfmfeature {
+    name         = "goodies",
+    description  = "goodies on top of built in features",
+    initializers = {
+        position = 1,
+        base     = setgoodies,
+        node     = setgoodies,
     }
 }
 

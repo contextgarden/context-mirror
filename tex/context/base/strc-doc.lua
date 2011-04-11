@@ -41,6 +41,8 @@ local processors = structures.processors
 local sprintprocessor = processors.sprint
 local ignoreprocessor = processors.ignore
 
+local a_internal      = attributes.private('internal')
+
 -- -- -- document -- -- --
 
 local data
@@ -73,14 +75,15 @@ documents.initialize()
 -- -- -- sections -- -- --
 
 
-local collected, tobesaved = allocate(), allocate()
+local collected = allocate()
+local tobesaved = allocate()
 
 sections.collected = collected
 sections.tobesaved = tobesaved
 
 --~ local function initializer()
---~     collected = mark(sections.collected)
---~     tobesaved = mark(sections.tobesaved)
+--~     collected = sections.collected
+--~     tobesaved = sections.tobesaved
 --~ end
 
 --~ job.register('structures.sections.collected', tobesaved, initializer)
@@ -316,9 +319,12 @@ function sections.somelevel(given)
         report_structure("name '%s', numbers '%s', own numbers '%s'",givenname,concat(numberdata.numbers, " "),concat(numberdata.ownnumbers, " "))
     end
 
-    given.references.tag = tags.last and tags.last("section") -- (metadata.kind) sort of forward usage (section -> structure)
+    local metadata   = given.metadata
+    local references = given.references
 
-    given.references.section = sections.save(given)
+    references.tag = references.tag or tags.getid(metadata.kind,metadata.name)
+
+    references.section = sections.save(given)
  -- given.numberdata = nil
 end
 

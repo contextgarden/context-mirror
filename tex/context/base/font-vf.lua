@@ -12,14 +12,15 @@ changes. This will change.</p>
 --ldx]]--
 
 local next = next
-local fastcopy = table.fastcopy
 
-local allocate     = utilities.storage.allocate
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+local fastcopy          = table.fastcopy
 
-local fonts        = fonts
-local constructors = fonts.constructors
-local vf           = { }
-fonts.handlers.vf  = vf
+local fonts             = fonts
+local constructors      = fonts.constructors
+local vf                = { }
+fonts.handlers.vf       = vf
 
 -- general code
 
@@ -60,9 +61,13 @@ local methods      = definers.methods
 local variants     = allocate()
 local combinations = { }
 local combiner     = { }
-local whatever     = allocate() -- can be used to store data
-local predefined   = allocate() -- can be used to store data
-local helpers      = allocate() -- can be used to store data
+local whatever     = allocate()
+local helpers      = allocate()
+local predefined   = allocate {
+    dummy   = { "comment" },
+    push    = { "push" },
+    pop     = { "pop" },
+}
 
 methods.variants   = variants -- todo .. wrong namespace
 vf.combinations    = combinations
@@ -71,11 +76,7 @@ vf.whatever        = whatever
 vf.helpers         = helpers
 vf.predefined      = predefined
 
-setmetatable(whatever, { __index = function(t,k) local v = { } t[k] = v return v end })
-
-predefined.dummy   = { "comment" }
-predefined.push    = { "push" }
-predefined.pop     = { "pop" }
+setmetatableindex(whatever, function(t,k) local v = { } t[k] = v return v end)
 
 local function checkparameters(g,f)
     if f and g and not g.parameters and #g.fonts > 0 then

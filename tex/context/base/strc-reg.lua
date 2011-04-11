@@ -12,7 +12,7 @@ local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local utfchar = utf.char
 local lpegmatch = lpeg.match
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 local trace_registers = false  trackers.register("structures.registers", function(v) trace_registers = v end)
 
@@ -177,11 +177,11 @@ local function filtercollected(names,criterium,number,collected,prevmode)
     return result
 end
 
-local tobesaved, collected = allocate(), allocate()
+local tobesaved           = allocate()
+local collected           = allocate()
 
-registers.collected = collected
-registers.tobesaved = tobesaved
-
+registers.collected       = collected
+registers.tobesaved       = tobesaved
 registers.filtercollected = filtercollected
 
 -- we follow a different strategy than by lists, where we have a global
@@ -189,8 +189,8 @@ registers.filtercollected = filtercollected
 -- older we delay that decision
 
 local function initializer()
-    tobesaved = mark(registers.tobesaved)
-    collected = mark(registers.collected)
+    tobesaved = registers.tobesaved
+    collected = registers.collected
     local internals = references.internals
     for name, list in next, collected do
         local entries = list.entries
@@ -650,7 +650,7 @@ local function collapsedpage(pages)
     return false
 end
 
-function collapsepages(pages)
+local function collapsepages(pages)
     while collapsedpage(pages) do end
     return #pages
 end

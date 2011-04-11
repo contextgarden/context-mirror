@@ -29,6 +29,8 @@ local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
 
+local setmetatableindex   = table.setmetatableindex
+
 local fonts               = fonts
 local handlers            = fonts.handlers
 local otf                 = handlers.otf -- brrr
@@ -94,9 +96,7 @@ function definers.resetnullfont()
     definers.resetnullfont = function() end
 end
 
-setmetatablekey(fontdata, "__index", function(t,k)
-    return nulldata
-end)
+setmetatableindex(fontdata, function(t,k) return nulldata end)
 
 local chardata      = allocate() -- chardata
 local parameters    = allocate()
@@ -109,26 +109,26 @@ hashes.parameters   = parameters
 hashes.quads        = quaddata
 hashes.xheights     = xheightdata
 
-setmetatablekey(chardata, "__index", function(t,k)
+setmetatableindex(chardata,  function(t,k)
     local characters = fontdata[k].characters
     t[k] = characters
     return characters
 end)
 
-setmetatablekey(parameters, "__index", function(t,k)
+setmetatableindex(parameters, function(t,k)
     local parameters = fontdata[k].parameters
     t[k] = parameters
     return parameters
 end)
 
-setmetatablekey(quaddata, "__index", function(t,k)
+setmetatableindex(quaddata, function(t,k)
     local parameters = parameters[k]
     local quad = parameters and parameters.quad or 0
     t[k] = quad
     return quad
 end)
 
-setmetatablekey(xheightdata, "__index", function(t,k)
+setmetatableindex(xheightdata, function(t,k)
     local parameters = parameters[k]
     local xheight = parameters and parameters.xheight or 0
     t[k] = xheight
@@ -865,7 +865,7 @@ mappings.reset() -- resets the default file
 
 -- => commands
 
-function nametoslot(name)
+local function nametoslot(name)
     local t = type(name)
     if t == "string" then
         local tfmdata = fonts.hashes.identifiers[currentfont()]
@@ -1202,20 +1202,18 @@ local xheights    = hashes.xheights
 local currentfont = font.current
 local texdimen    = tex.dimen
 
-setmetatable(number.dimenfactors, {
-    __index = function(t,k)
-        if k == "ex" then
-            return xheigths[currentfont()]
-        elseif k == "em" then
-            return quads[currentfont()]
-        elseif k == "%" then
-            return dimen.hsize/100
-        else
-         -- error("wrong dimension: " .. (s or "?")) -- better a message
-            return false
-        end
+setmetatableindex(number.dimenfactors, function(t,k)
+    if k == "ex" then
+        return xheigths[currentfont()]
+    elseif k == "em" then
+        return quads[currentfont()]
+    elseif k == "%" then
+        return dimen.hsize/100
+    else
+     -- error("wrong dimension: " .. (s or "?")) -- better a message
+        return false
     end
-} )
+end)
 
 --[[ldx--
 <p>Before a font is passed to <l n='tex'/> we scale it. Here we also need

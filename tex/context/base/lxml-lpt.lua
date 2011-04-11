@@ -14,6 +14,8 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
+local setmetatableindex = table.setmetatableindex
+
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
 
@@ -86,8 +88,8 @@ local function fallback (t, name)
     return fn
 end
 
-setmetatable(finalizers.xml, { __index = fallback })
-setmetatable(finalizers.tex, { __index = fallback })
+setmetatableindex(finalizers.xml, fallback)
+setmetatableindex(finalizers.tex, fallback)
 
 xml.defaultprotocol = "xml"
 
@@ -821,14 +823,13 @@ xml.nodesettostring = nodesettostring
 
 local lpath -- we have a harmless kind of circular reference
 
+local lshowoptions = { name = false, functions = false }
+
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = lpath(parsed)
     end
-    local s = table.serialize_functions -- ugly
-    table.serialize_functions = false -- ugly
-    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
-    table.serialize_functions = s -- ugly
+    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,lshowoptions))
 end
 
 xml.lshow = lshow

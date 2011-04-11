@@ -11,30 +11,34 @@ if not modules then modules = { } end modules ['attr-neg'] = {
 
 local format = string.format
 
+
 local attributes, nodes = attributes, nodes
 
-local states          = attributes.states
-local tasks           = nodes.tasks
-local nodeinjections  = backends.nodeinjections
-local settexattribute = tex.setattribute
-local variables       = interfaces.variables
+local states            = attributes.states
+local tasks             = nodes.tasks
+local nodeinjections    = backends.nodeinjections
+local settexattribute   = tex.setattribute
+local variables         = interfaces.variables
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
 --- negative / positive
 
-attributes.negatives  = attributes.negatives or { }
-local negatives       = attributes.negatives
+attributes.negatives    = attributes.negatives or { }
+local negatives         = attributes.negatives
 
-local a_negative      = attributes.private("negative")
+local a_negative        = attributes.private("negative")
 
-negatives.data        = negatives.data or { }
-negatives.attribute   = a_negative
+negatives.data          = allocate()
+negatives.attribute     = a_negative
 
-negatives.registered = {
+negatives.registered = allocate {
     [variables.positive] = 1,
     [variables.negative] = 2,
 }
 
-local data, registered = negatives.data, negatives.registered
+local data       = negatives.data
+local registered = negatives.registered
 
 local function extender(negatives,key)
     if key == "none" then
@@ -56,8 +60,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(negatives,      { __index = extender })
-setmetatable(negatives.data, { __index = reviver  })
+setmetatableindex(negatives,      extender)
+setmetatableindex(negatives.data, reviver)
 
 negatives.handler = nodes.installattributehandler {
     name        = "negative",

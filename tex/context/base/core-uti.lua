@@ -19,17 +19,20 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
-local definetable, accesstable = utilities.tables.definetable, utilities.tables.accesstable
-local serialize = table.serialize
-local packers = utilities.packers
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local definetable       = utilities.tables.definetable
+local accesstable       = utilities.tables.accesstable
+local serialize         = table.serialize
+local packers           = utilities.packers
+local allocate          = utilities.storage.allocate
+local mark              = utilities.storage.mark
 
 local report_jobcontrol = logs.reporter("jobcontrol")
 
-job         = job or { }
-local job   = job
+job                     = job or { }
+local job               = job
 
-job.version = 1.14
+job.version             = 1.14
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -57,8 +60,8 @@ function job.initialize(loadname,savename)
     end)
 end
 
-function job.register(...) -- collected, tobesaved, initializer, finalizer
-    savelist[#savelist+1] = { ... }
+function job.register(collected, tobesaved, initializer, finalizer)
+    savelist[#savelist+1] = { collected, tobesaved, initializer, finalizer }
 end
 
 -- as an example we implement variables
@@ -81,9 +84,9 @@ job.register('job.variables.checksums', checksums)
 local rmethod, rvalue
 
 local function initializer()
-    tobesaved = mark(jobvariables.tobesaved)
-    collected = mark(jobvariables.collected)
-    checksums = mark(jobvariables.checksums)
+    tobesaved = jobvariables.tobesaved
+    collected = jobvariables.collected
+    checksums = jobvariables.checksums
     rvalue = collected.randomseed
     if not rvalue then
         rvalue = math.random()
@@ -168,9 +171,10 @@ function job.load(filename)
             for l=1,#savelist do
                 local list = savelist[l]
                 local target, initializer = list[1], list[3]
-                packers.unpack(accesstable(target),job.packed,true)
+                local result = mark(accesstable(target))
+                packers.unpack(result,job.packed,true)
                 if type(initializer) == "function" then
-                    initializer(accesstable(target))
+                    initializer(result)
                 end
             end
             job.packed = nil

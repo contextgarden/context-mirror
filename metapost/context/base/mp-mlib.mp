@@ -31,6 +31,20 @@ newinternal lightentransparent    ; lightentransparent    := 10 ;
 newinternal differencetransparent ; differencetransparent := 11 ;
 newinternal exclusiontransparent  ; exclusiontransparent  := 12 ;
 
+vardef transparency_alternative_to_number(expr name) =
+    if string name :
+        if expandafter known scantokens(name & "transparent") :
+            scantokens(name & "transparent")
+        else :
+            0
+        fi
+    elseif name < 13 :
+        name
+    else :
+        0
+    fi
+enddef ;
+
 def spotcolor(expr n, v) =
     1
     withprescript "sp_name="  & n
@@ -47,12 +61,12 @@ enddef ;
 
 def transparent(expr alternative, transparency)(text c) =
      c
-     withprescript "tr_alternative="  & decimal alternative
+     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
      withprescript "tr_transparency=" & decimal transparency
 enddef ;
 
 def withtransparency(expr alternative, transparency) =
-     withprescript "tr_alternative="  & decimal alternative
+     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
      withprescript "tr_transparency=" & decimal transparency
 enddef ;
 

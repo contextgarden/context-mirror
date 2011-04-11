@@ -18,25 +18,25 @@ local concat = table.concat
 local C, P, R, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
-local tabtospace = utilities.strings.tabtospace
-local variables = interfaces.variables
-local settings_to_array = utilities.parsers.settings_to_array
+local trace_visualize      = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
+local report_visualizers   = logs.reporter("buffers","visualizers")
 
-local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
+local allocate             = utilities.storage.allocate
 
-local report_visualizers = logs.reporter("buffers","visualizers")
+visualizers                = visualizers or { }
+local specifications       = allocate()
+visualizers.specifications = specifications
 
-visualizers = visualizers or { }
+local tabtospace           = utilities.strings.tabtospace
+local variables            = interfaces.variables
+local settings_to_array    = utilities.parsers.settings_to_array
+local verbatim             = context.verbatim
+local variables            = interfaces.variables
+local findfile             = resolvers.findfile
+local addsuffix            = file.addsuffix
 
-local specifications = { }  visualizers.specifications = specifications
-
-local verbatim = context.verbatim
-local variables = interfaces.variables
-local findfile = resolvers.findfile
-local addsuffix = file.addsuffix
-
-local v_auto = variables.auto
-local v_yes  = variables.yes
+local v_auto               = variables.auto
+local v_yes                = variables.yes
 
 -- beware, these all get an argument (like newline)
 
@@ -315,7 +315,8 @@ function visualizers.register(name,specification)
     return specification
 end
 
-local escapepatterns = { } visualizers.escapepatterns = escapepatterns
+local escapepatterns       = allocate()
+visualizers.escapepatterns = escapepatterns
 
 local function texmethod(s)
     context.bgroup()

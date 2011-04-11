@@ -5,8 +5,8 @@ return function(specification)
     local f2, id2 = fonts.constructors.readanddefine('lmsans10-regular',      specification.size)
     local f3, id3 = fonts.constructors.readanddefine('lmtypewriter10-regular',specification.size)
     if f1 and f2 and f3 then
-        f1.name = specification.name
-        f1.virtualized = true
+        f1.properties.name = specification.name
+        f1.properties.virtualized = true
         f1.fonts = {
             { id = id1 },
             { id = id2 },

@@ -6,18 +6,20 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
+local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
+local lpegmatch = lpeg.match
+local concat, format, gmatch = table.concat, string.format, string.gmatch
+local tostring, type, next = tostring, type, next
+
 utilities         = utilities or {}
 utilities.parsers = utilities.parsers or { }
 local parsers     = utilities.parsers
 parsers.patterns  = parsers.patterns or { }
 
--- we could use a Cf Cg construct
+local setmetatableindex = table.setmetatableindex
+local sortedhash        = table.sortedhash
 
-local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
-local lpegmatch = lpeg.match
-local concat, format, gmatch = table.concat, string.format, string.gmatch
-local tostring, type, next, setmetatable = tostring, type, next, setmetatable
-local sortedhash = table.sortedhash
+-- we could use a Cf Cg construct
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
@@ -216,7 +218,7 @@ function parsers.getparameters(self,class,parentclass,settings)
                 sp = { }
                 self[parentclass] = sp
             end
-            setmetatable(sc, { __index = sp })
+            setmetatableindex(sc,sp)
         end
     end
     parsers.settings_to_hash(settings,sc)

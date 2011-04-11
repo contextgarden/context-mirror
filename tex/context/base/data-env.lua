@@ -6,17 +6,23 @@ if not modules then modules = { } end modules ['data-env'] = {
     license   = "see context related readme files",
 }
 
-local allocate = utilities.storage.allocate
 local lower, gsub = string.lower, string.gsub
-
-local fileextname = file.extname
 
 local resolvers = resolvers
 
-local formats   = allocate()  resolvers.formats   = formats
-local suffixes  = allocate()  resolvers.suffixes  = suffixes
-local dangerous = allocate()  resolvers.dangerous = dangerous
-local suffixmap = allocate()  resolvers.suffixmap = suffixmap
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+local fileextname       = file.extname
+
+local formats           = allocate()
+local suffixes          = allocate()
+local dangerous         = allocate()
+local suffixmap         = allocate()
+
+resolvers.formats       = formats
+resolvers.suffixes      = suffixes
+resolvers.dangerous     = dangerous
+resolvers.suffixmap     = suffixmap
 
 local relations = allocate { -- todo: handlers also here
     core = {
@@ -228,9 +234,9 @@ local function simplified(t,k)
     return rawget(t,lower(gsub(k," ","")))
 end
 
-setmetatablekey(formats,   "__index", simplified)
-setmetatablekey(suffixes,  "__index", simplified)
-setmetatablekey(suffixmap, "__index", simplified)
+setmetatableindex(formats,   simplified)
+setmetatableindex(suffixes,  simplified)
+setmetatableindex(suffixmap, simplified)
 
 -- A few accessors, mostly for command line tool.
 

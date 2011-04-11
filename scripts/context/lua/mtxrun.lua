@@ -971,10 +971,6 @@ function table.fromhash(t)
     return hsh
 end
 
-table.serialize_functions = true
-table.serialize_compact   = true
-table.serialize_inline    = true
-
 local noquotes, hexify, handle, reduce, compact, inline, functions
 
 local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
@@ -1257,15 +1253,36 @@ end
 -- replacing handle by a direct t[#t+1] = ... (plus test) is not much
 -- faster (0.03 on 1.00 for zapfino.tma)
 
-local function serialize(root,name,_handle,_reduce,_noquotes,_hexify)
-    noquotes = _noquotes
-    hexify = _hexify
-    handle = _handle or print
-    reduce = _reduce or false
-    compact = table.serialize_compact
-    inline  = compact and table.serialize_inline
-    functions = table.serialize_functions
+local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might drop the _'s some day.
     local tname = type(name)
+    if tname == "table" then
+        noquotes  = name.noquotes
+        hexify    = name.hexify
+        handle    = name.handle or print
+        reduce    = name.reduce or false
+        functions = name.functions
+        compact   = name.compact
+        inline    = name.inline and compact
+        name      = name.name
+        tname     = type(name)
+        if functions == nil then
+            functions = true
+        end
+        if compact == nil then
+            compact = true
+        end
+        if inline == nil then
+            inline = compact
+        end
+    else
+        noquotes  = _noquotes
+        hexify    = _hexify
+        handle    = _handle or print
+        reduce    = _reduce or false
+        compact   = true
+        inline    = true
+        functions = true
+    end
     if tname == "string" then
         if name == "return" then
             handle("return {")
@@ -1324,12 +1341,11 @@ end
 --
 -- so this is on the todo list
 
-table.tofile_maxtab = 2*1024
+local maxtab = 2*1024
 
 function table.tofile(filename,root,name,reduce,noquotes,hexify)
     local f = io.open(filename,'w')
     if f then
-        local maxtab = table.tofile_maxtab
         if maxtab > 1 then
             local t, n = { }, 0
             local function flush(s)
@@ -1532,8 +1548,12 @@ function table.sequenced(t,sep,simple) -- hash only
     return concat(s, sep or " | ")
 end
 
-function table.print(...)
-    table.tohandle(print,...)
+function table.print(t,...)
+    if type(t) ~= "table" then
+        print(tostring(t))
+    else
+        table.tohandle(print,t,...)
+    end
 end
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
@@ -2535,8 +2555,6 @@ function file.collapsepath(str,anchor)
     end
 end
 
-file.collapse_path = file.collapsepath
-
 
 function file.robustname(str,strict)
     str = gsub(str,"[^%a%d%/%-%.\\]+","-")
@@ -2651,14 +2669,12 @@ if not md5.hex then function md5.hex(str) return convert(str,"%02x") end end
 if not md5.dec then function md5.dec(str) return convert(str,"%03i") end end
 
 
-file.needs_updating_threshold = 1
-
-function file.needs_updating(oldname,newname) -- size modification access change
+function file.needs_updating(oldname,newname,threshold) -- size modification access change
     local oldtime = lfs.attributes(oldname, modification)
     local newtime = lfs.attributes(newname, modification)
     if newtime >= oldtime then
         return false
-    elseif oldtime - newtime < file.needs_updating_threshold then
+    elseif oldtime - newtime < (threshold or 1) then
         return false
     else
         return true
@@ -3666,7 +3682,7 @@ local tables     = utilities.tables
 
 local format, gmatch = string.format, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
-local setmetatable, tonumber, tostring = setmetatable, tonumber, tostring
+local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -3731,12 +3747,6 @@ function tables.insertaftervalue(t,value,extra)
     insert(t,#t+1,extra)
 end
 
-local _empty_table_ = { __index = function(t,k) return "" end }
-
-function table.setemptymetatable(t)
-    setmetatable(t,_empty_table_)
-end
-
 -- experimental
 
 local function toxml(t,d,result)
@@ -3753,9 +3763,14 @@ local function toxml(t,d,result)
     end
 end
 
-function table.toxml(t,name)
-    local result = { "<?xml version='1.0' standalone='yes' ?>" }
-    toxml( { [name or "root"] = t }, "", result)
+function table.toxml(t,name,nobanner)
+    local noroot = name == false
+    local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+    if noroot then
+        toxml( t, "", result)
+    else
+        toxml( { [name or "root"] = t }, "", result)
+    end
     return concat(result,"\n")
 end
 
@@ -3816,20 +3831,6 @@ function storage.checked(t)
     return t
 end
 
-function setmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m[key] = value
-end
-
-function getmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    return m and m[key]
-end
-
 
 function storage.setinitializer(data,initialize)
     local m = getmetatable(data) or { }
@@ -3850,6 +3851,77 @@ function storage.sparse(t)
     t = t or { }
     setmetatable(t,keyisvalue)
     return t
+end
+
+-- table namespace ?
+
+local function f_empty () return "" end -- t,k
+local function f_self  (t,k) t[k] = k return k end
+local function f_ignore() end -- t,k,v
+
+local t_empty  = { __index = empty }
+local t_self   = { __index = self }
+local t_ignore = { __newindex = ignore }
+
+function table.setmetatableindex(t,f)
+    local m = getmetatable(t)
+    if m then
+        if f == "empty" then
+            m.__index = f_empty
+        elseif f == "key" then
+            m.__index = f_self
+        else
+            m.__index = f
+        end
+    else
+        if f == "empty" then
+            setmetatable(t, t_empty)
+        elseif f == "key" then
+            setmetatable(t, t_self)
+        else
+            setmetatable(t,{ __index = f })
+        end
+    end
+end
+
+function table.setmetatablenewindex(t,f)
+    local m = getmetatable(t)
+    if m then
+        if f == "ignore" then
+            m.__newindex = f_ignore
+        else
+            m.__newindex = f
+        end
+    else
+        if f == "ignore" then
+            setmetatable(t, t_ignore)
+        else
+            setmetatable(t,{ __newindex = f })
+        end
+    end
+end
+
+function table.setmetatablecall(t,f)
+    local m = getmetatable(t)
+    if m then
+        m.__call = f
+    else
+        setmetatable(t,{ __call = f })
+    end
+end
+
+function table.setmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    if not m then
+        m = { }
+        setmetatable(t,m)
+    end
+    m[key] = value
+end
+
+function table.getmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    return m and m[key]
 end
 
 
@@ -4047,18 +4119,20 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
+local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
+local lpegmatch = lpeg.match
+local concat, format, gmatch = table.concat, string.format, string.gmatch
+local tostring, type, next = tostring, type, next
+
 utilities         = utilities or {}
 utilities.parsers = utilities.parsers or { }
 local parsers     = utilities.parsers
 parsers.patterns  = parsers.patterns or { }
 
--- we could use a Cf Cg construct
+local setmetatableindex = table.setmetatableindex
+local sortedhash        = table.sortedhash
 
-local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
-local lpegmatch = lpeg.match
-local concat, format, gmatch = table.concat, string.format, string.gmatch
-local tostring, type, next, setmetatable = tostring, type, next, setmetatable
-local sortedhash = table.sortedhash
+-- we could use a Cf Cg construct
 
 local escape, left, right = P("\\"), P('{'), P('}')
 
@@ -4257,7 +4331,7 @@ function parsers.getparameters(self,class,parentclass,settings)
                 sp = { }
                 self[parentclass] = sp
             end
-            setmetatable(sc, { __index = sp })
+            setmetatableindex(sc,sp)
         end
     end
     parsers.settings_to_hash(settings,sc)
@@ -4474,7 +4548,7 @@ end
 
 local is_node = node and node.is_node
 
-function inspect(i)
+function inspect(i) -- global function
     local ti = type(i)
     if ti == "table" then
         table.print(i,"table")
@@ -5044,6 +5118,8 @@ local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
 local next, type = next, type
 
+local setmetatableindex = table.setmetatableindex
+
 --[[ldx--
 <p>This is a prelude to a more extensive logging module. We no longer
 provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
@@ -5064,11 +5140,11 @@ wiki     : http://contextgarden.net
 
 local function ignore() end
 
-setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
+setmetatableindex(logs, function(t,k) t[k] = ignore ; return ignore end)
 
-local report, subreport, status, settarget, setformatter
+local report, subreport, status, settarget, setformats, settranslations
 
-local direct, subdirect, writer
+local direct, subdirect, writer, pushtarget, poptarget
 
 if tex and tex.jobname or tex.formatname then
 
@@ -7308,6 +7384,8 @@ local type, next, tonumber, tostring, setmetatable, loadstring = type, next, ton
 local format, upper, lower, gmatch, gsub, find, rep = string.format, string.upper, string.lower, string.gmatch, string.gsub, string.find, string.rep
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
+local setmetatableindex = table.setmetatableindex
+
 -- beware, this is not xpath ... e.g. position is different (currently) and
 -- we have reverse-sibling as reversed preceding sibling
 
@@ -7380,8 +7458,8 @@ local function fallback (t, name)
     return fn
 end
 
-setmetatable(finalizers.xml, { __index = fallback })
-setmetatable(finalizers.tex, { __index = fallback })
+setmetatableindex(finalizers.xml, fallback)
+setmetatableindex(finalizers.tex, fallback)
 
 xml.defaultprotocol = "xml"
 
@@ -8078,14 +8156,13 @@ xml.nodesettostring = nodesettostring
 
 local lpath -- we have a harmless kind of circular reference
 
+local lshowoptions = { name = false, functions = false }
+
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = lpath(parsed)
     end
-    local s = table.serialize_functions -- ugly
-    table.serialize_functions = false -- ugly
-    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,false))
-    table.serialize_functions = s -- ugly
+    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,lshowoptions))
 end
 
 xml.lshow = lshow
@@ -8679,8 +8756,8 @@ local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 
-local type = type
-local insert, remove = table.insert, table.remove
+local type, setmetatable, getmetatable = type, setmetatable, getmetatable
+local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
 local gmatch, gsub = string.gmatch, string.gsub
 
 local function report(what,pattern,c,e)
@@ -8889,6 +8966,41 @@ function xml.replace(root,pattern,whatever)
     end
 end
 
+local function wrap(e,wrapper)
+    local t = {
+        rn = e.rn,
+        tg = e.tg,
+        ns = e.ns,
+        at = e.at,
+        dt = e.dt,
+        __p__ = e,
+    }
+    setmetatable(t,getmetatable(e))
+    e.rn = wrapper.rn or e.rn or ""
+    e.tg = wrapper.tg or e.tg or ""
+    e.ns = wrapper.ns or e.ns or ""
+    e.at = fastcopy(wrapper.at)
+    e.dt = { t }
+end
+
+function xml.wrap(root,pattern,whatever)
+    if whatever then
+        local wrapper = xmltoelement(whatever,root)
+        local collected = xmlapplylpath(root,pattern)
+        if collected then
+            for c=1,#collected do
+                local e = collected[c]
+                if trace_manipulations then
+                    report('wrapping',pattern,c,e)
+                end
+                wrap(e,wrapper)
+            end
+        end
+    else
+        wrap(root,xmltoelement(pattern))
+    end
+end
+
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
@@ -8959,7 +9071,7 @@ local function include(xmldata,pattern,attribute,recursive,loaddata)
             local ekat = ek.at
             local epdt = ek.__p__.dt
             if not attribute or attribute == "" then
-                name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- ckeck, probably always tab or str
+                name = (type(ekdt) == "table" and ekdt[1]) or ekdt -- check, probably always tab or str
             end
             if not name then
                 for a in gmatch(attribute or "href","([^|]+)") do
@@ -10039,17 +10151,23 @@ if not modules then modules = { } end modules ['data-env'] = {
     license   = "see context related readme files",
 }
 
-local allocate = utilities.storage.allocate
 local lower, gsub = string.lower, string.gsub
-
-local fileextname = file.extname
 
 local resolvers = resolvers
 
-local formats   = allocate()  resolvers.formats   = formats
-local suffixes  = allocate()  resolvers.suffixes  = suffixes
-local dangerous = allocate()  resolvers.dangerous = dangerous
-local suffixmap = allocate()  resolvers.suffixmap = suffixmap
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+local fileextname       = file.extname
+
+local formats           = allocate()
+local suffixes          = allocate()
+local dangerous         = allocate()
+local suffixmap         = allocate()
+
+resolvers.formats       = formats
+resolvers.suffixes      = suffixes
+resolvers.dangerous     = dangerous
+resolvers.suffixmap     = suffixmap
 
 local relations = allocate { -- todo: handlers also here
     core = {
@@ -10261,9 +10379,9 @@ local function simplified(t,k)
     return rawget(t,lower(gsub(k," ","")))
 end
 
-setmetatablekey(formats,   "__index", simplified)
-setmetatablekey(suffixes,  "__index", simplified)
-setmetatablekey(suffixmap, "__index", simplified)
+setmetatableindex(formats,   simplified)
+setmetatableindex(suffixes,  simplified)
+setmetatableindex(suffixmap, simplified)
 
 -- A few accessors, mostly for command line tool.
 
@@ -10611,6 +10729,8 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
+local saveoptions = { name = "return", reduce = true }
+
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     local reduce, simplify = true, true
@@ -10619,9 +10739,9 @@ function caches.savedata(filepath,filename,data,raw)
     end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname, table.serialize(data,'return',false,true,false)) -- no hex
+        file.savedata(tmaname,table.serialize(data,saveoptions))
     else
-        table.tofile(tmaname, data,'return',false,true,false) -- maybe not the last true
+        table.tofile(tmaname,data,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
@@ -10865,15 +10985,20 @@ if not modules then modules = { } end modules ['data-res'] = {
 
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
-local next, type, rawget, setmetatable, getmetatable = next, type, rawget, setmetatable, getmetatable
+local next, type, rawget = next, type, rawget
 local os = os
 
 local P, S, R, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
-local collapsepath, joinpath = file.collapsepath, file.joinpath
-local allocate = utilities.storage.allocate
+local filedirname       = file.dirname
+local filebasename      = file.basename
+local fileextname       = file.extname
+local filejoin          = file.join
+local collapsepath      = file.collapsepath
+local joinpath          = file.joinpath
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -11010,7 +11135,8 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         force_suffixes  = true,
     }
 
-    setmetatable(variables, { __index = function(t,k)
+    setmetatableindex(variables,function(t,k)
+        local v
         for i=1,#order do
             v = order[i][k]
             if v ~= nil then
@@ -11023,10 +11149,10 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         end
         t[k] = v
         return v
-    end } )
+    end)
 
-    setmetatable(environment, { __index = function(t,k)
-        v = osgetenv(k)
+    setmetatableindex(environment, function(t,k)
+        local v = osgetenv(k)
         if v == nil then
             v = variables[k]
         end
@@ -11036,9 +11162,9 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         v = resolvers.repath(v) -- for taco who has a : separated osfontdir
         t[k] = v
         return v
-    end } )
+    end)
 
-    setmetatable(expansions, { __index = function(t,k)
+    setmetatableindex(expansions, function(t,k)
         local v = environment[k]
         if type(v) == "string" then
             v = lpegmatch(variableresolver,v)
@@ -11046,7 +11172,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         end
         t[k] = v
         return v
-    end } )
+    end)
 
     return newinstance
 
@@ -11552,7 +11678,7 @@ function resolvers.registerfilehash(name,content,someerror)
     end
 end
 
-function isreadable(name)
+local function isreadable(name)
     local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then

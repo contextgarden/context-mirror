@@ -68,7 +68,7 @@ hyphenatedurl.discretionary  = nil
 
 local chars = hyphenatedurl.characters
 
-function hyphenatedurl.action(str, left, right, disc)
+local function action(hyphenatedurl, str, left, right, disc)
     local n = 0
     local b = math.max(      left  or hyphenatedurl.lefthyphenmin,    2)
     local e = math.min(#str-(right or hyphenatedurl.righthyphenmin)+2,#str)
@@ -89,6 +89,10 @@ function hyphenatedurl.action(str, left, right, disc)
         end
     end
 end
+
+-- hyphenatedurl.action = function(_,...) action(...) end -- sort of obsolete
+
+table.setmetatablecall(hyphenatedurl,action)
 
 -- todo, no interface in mkiv yet
 

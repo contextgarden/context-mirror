@@ -17,14 +17,8 @@
 
 \unprotect
 
-\unexpanded\def\mkivdefstart  #1{\unexpanded\expandafter\def\csname\e!start#1\endcsname}
-\unexpanded\def\mkivdefstop   #1{\unexpanded\expandafter\def\csname\e!stop #1\endcsname}
-\unexpanded\def\mkivdef       #1{\unexpanded\expandafter\def\csname        #1\endcsname}
-
-           \def\cldff         #1{\directlua\zerocount{cldff(#1)}} % global (functions)
-           \def\cldfn         #1{\directlua\zerocount{cldfn(#1)}} % global (nodes)
-
-          %\def\mkivflush     #1{\directlua\zerocount{context._flush_f_(#1)}} % obsolete
-           \let\mkivflush        \cldff
+\unexpanded\def\clmb#1{\unexpanded\expandafter\def\csname\e!start#1\endcsname}
+\unexpanded\def\clme#1{\unexpanded\expandafter\def\csname\e!stop #1\endcsname}
+\unexpanded\def\clmm#1{\unexpanded\expandafter\def\csname        #1\endcsname}
 
 \protect \endinput

@@ -50,20 +50,6 @@ function storage.checked(t)
     return t
 end
 
-function setmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m[key] = value
-end
-
-function getmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    return m and m[key]
-end
-
 --~ function utilities.storage.delay(parent,name,filename)
 --~     local m = getmetatable(parent)
 --~     m.__list[name] = filename
@@ -108,4 +94,75 @@ function storage.sparse(t)
     t = t or { }
     setmetatable(t,keyisvalue)
     return t
+end
+
+-- table namespace ?
+
+local function f_empty () return "" end -- t,k
+local function f_self  (t,k) t[k] = k return k end
+local function f_ignore() end -- t,k,v
+
+local t_empty  = { __index = empty }
+local t_self   = { __index = self }
+local t_ignore = { __newindex = ignore }
+
+function table.setmetatableindex(t,f)
+    local m = getmetatable(t)
+    if m then
+        if f == "empty" then
+            m.__index = f_empty
+        elseif f == "key" then
+            m.__index = f_self
+        else
+            m.__index = f
+        end
+    else
+        if f == "empty" then
+            setmetatable(t, t_empty)
+        elseif f == "key" then
+            setmetatable(t, t_self)
+        else
+            setmetatable(t,{ __index = f })
+        end
+    end
+end
+
+function table.setmetatablenewindex(t,f)
+    local m = getmetatable(t)
+    if m then
+        if f == "ignore" then
+            m.__newindex = f_ignore
+        else
+            m.__newindex = f
+        end
+    else
+        if f == "ignore" then
+            setmetatable(t, t_ignore)
+        else
+            setmetatable(t,{ __newindex = f })
+        end
+    end
+end
+
+function table.setmetatablecall(t,f)
+    local m = getmetatable(t)
+    if m then
+        m.__call = f
+    else
+        setmetatable(t,{ __call = f })
+    end
+end
+
+function table.setmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    if not m then
+        m = { }
+        setmetatable(t,m)
+    end
+    m[key] = value
+end
+
+function table.getmetatablekey(t,key,value)
+    local m = getmetatable(t)
+    return m and m[key]
 end

@@ -436,7 +436,7 @@ function nodes.references.handler(head)
     end
 end
 
--- destinations (we can clean up once set!)
+-- destinations (we can clean up once set, unless tagging!)
 
 local stack           = { }
 local done            = { }

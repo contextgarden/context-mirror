@@ -13,23 +13,24 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 local type, next = type, next
 local max = math.max
 
+local fonts, nodes, mathematics = fonts, nodes, mathematics
+
 local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
 local trace_timings = false trackers.register("math.timings", function(v) trace_timings = v end)
 
-local report_virtual = logs.reporter("fonts","virtual math")
+local report_virtual    = logs.reporter("fonts","virtual math")
 
-local fonts, nodes, mathematics = fonts, nodes, mathematics
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
-local allocate = utilities.storage.allocate
+local mathencodings     = allocate()
+fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vectors
+local vfmath            = allocate()
+fonts.handlers.vf.math  = vfmath
 
-local mathencodings    = allocate()
-fonts.encodings.math   = mathencodings -- better is then: fonts.encodings.vectors
-local vfmath           = allocate()
-fonts.handlers.vf.math = vfmath
+vfmath.optional         = false
 
-vfmath.optional        = false
-
-local shared           = { }
+local shared            = { }
 
 --~ local push, pop, back = { "push" }, { "pop" }, { "slot", 1, 0x2215 }
 
@@ -346,7 +347,7 @@ local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \st
 local reported = { }
 local reverse  = { } -- index -> unicode
 
-setmetatable ( reverse, { __index = function(t,name)
+setmetatableindex(reverse, function(t,name)
     if trace_virtual then
         report_virtual("initializing math vector '%s'",name)
     end
@@ -356,7 +357,7 @@ setmetatable ( reverse, { __index = function(t,name)
     end
     reverse[name] = r
     return r
-end } )
+end)
 
 function vfmath.define(specification,set,goodies)
     local name = specification.name -- symbolic name
@@ -460,14 +461,14 @@ function vfmath.define(specification,set,goodies)
     end
     --
     local description = { name = "<unset>" }
-    setmetatable(descriptions, { __index = function() return description end })
+    setmetatableindex(descriptions,function() return description end)
     --
     if parent.properties then
-        setmetatable(properties, { __index = parent.properties })
+        setmetatableindex(properties,parent.properties)
     end
     --
     if parent.goodies then
-        setmetatable(goodies, { __index = parent.goodies })
+        setmetatableindex(goodies,parent.goodies)
     end
     --
     properties.virtualized       = true

@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['l-dimen'] = {
+if not modules then modules = { } end modules ['util-dim'] = {
     version   = 1.001,
     comment   = "support for dimensions",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -18,13 +18,18 @@ table.</p>
 local format, match, gsub, type, setmetatable = string.format, string.match, string.gsub, type, setmetatable
 local P, S, R, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.match
 
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+
+--this might become another namespace
+
 number = number or { }
 local number = number
 
 number.tonumberf = function(n) return match(format("%.20f",n),"(.-0?)0*$") end -- one zero too much but alas
 number.tonumberg = function(n) return       format("%.20g",n)              end
 
-local dimenfactors = {
+local dimenfactors = allocate {
     ["pt"] =             1/65536,
     ["in"] = (  100/ 7227)/65536,
     ["cm"] = (  254/ 7227)/65536,
@@ -137,13 +142,10 @@ the table with factors, the metatable will be consulted for an
 alternative index function.</p>
 --ldx]]--
 
-local mt = { }  setmetatable(dimenfactors,mt)
-
-mt.__index = function(t,s)
+setmetatableindex(dimenfactors, function(t,s)
  -- error("wrong dimension: " .. (s or "?")) -- better a message
     return false
-end
-
+end)
 
 --[[ldx--
 <p>We redefine the following function later on, so we comment it

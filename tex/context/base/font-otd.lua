@@ -25,6 +25,8 @@ local contextsetups      = specifiers.contextsetups
 local contextnumbers     = specifiers.contextnumbers
 local contextmerged      = specifiers.contextmerged
 
+local setmetatableindex  = table.setmetatableindex
+
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
@@ -34,13 +36,11 @@ fonts.hashes.dynamics    = fontdynamics
 local a_to_script        = { }
 local a_to_language      = { }
 
-setmetatable(fontdynamics, { __index =
-    function(t,font)
-        local d = fontdata[font].shared.dynamics or false
-        t[font] = d
-        return d
-    end
-})
+setmetatableindex(fontdynamics, function(t,font)
+    local d = fontdata[font].shared.dynamics or false
+    t[font] = d
+    return d
+end)
 
 function otf.setdynamics(font,attribute)
     local features = contextsetups[contextnumbers[attribute]] -- can be moved to caller
@@ -206,11 +206,11 @@ function otf.dataset(tfmdata,sequences,font,attr)
     if ra == nil then -- attr can be false
         ra = { }
         rl[attr] = ra
-        setmetatable(ra, { __index = function(t,k)
+        setmetatableindex(ra, function(t,k)
             local v = initialize(sequences[k],script,language,s_enabled,a_enabled,attr,dynamic)
             t[k] = v
             return v
-        end})
+        end)
     end
 
     return ra

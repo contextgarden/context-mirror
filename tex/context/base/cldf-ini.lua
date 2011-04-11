@@ -21,6 +21,8 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 
 -- __flushlines is an experiment and rather ugly so it will go away
 
+local tex = tex
+
 context       = context or { }
 local context = context
 
@@ -29,31 +31,29 @@ local next, type, tostring, setmetatable = next, type, tostring, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch = lpeg.match
 
-local tex = tex
+local texsprint         = tex.sprint
+local textprint         = tex.tprint
+local texprint          = tex.print
+local texiowrite        = texio.write
+local texcount          = tex.count
 
-local texsprint      = tex.sprint
-local textprint      = tex.tprint
-local texprint       = tex.print
-local texiowrite     = texio.write
-local texcount       = tex.count
+local isnode            = node.is_node -- after 0.65 just node.type
+local writenode         = node.write
+local copynodelist      = node.copy_list
 
-local isnode         = node.is_node -- after 0.65 just node.type
-local writenode      = node.write
-local copynodelist   = node.copy_list
+local ctxcatcodes       = tex.ctxcatcodes
+local prtcatcodes       = tex.prtcatcodes
+local texcatcodes       = tex.texcatcodes
+local txtcatcodes       = tex.txtcatcodes
+local vrbcatcodes       = tex.vrbcatcodes
+local xmlcatcodes       = tex.xmlcatcodes
 
-local ctxcatcodes    = tex.ctxcatcodes
-local prtcatcodes    = tex.prtcatcodes
-local texcatcodes    = tex.texcatcodes
-local txtcatcodes    = tex.txtcatcodes
-local vrbcatcodes    = tex.vrbcatcodes
-local xmlcatcodes    = tex.xmlcatcodes
+local flush             = texsprint
 
-local flush          = texsprint
+local report_context    = logs.reporter("cld","tex")
+local report_cld        = logs.reporter("cld","stack")
 
-local report_context = logs.reporter("cld","tex")
-local report_cld     = logs.reporter("cld","stack")
-
-local processlines   = true -- experiments.register("context.processlines", function(v) processlines = v end)
+local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
 -- for tracing it's easier to have two stacks
 
@@ -116,11 +116,11 @@ end
 
 context._stack_f_ = _stack_f_
 context._store_f_ = _store_f_
-context._flush_f_ = _flush_f_  cldff = _flush_f_
+context._flush_f_ = _flush_f_  _cldf_ = _flush_f_
 
 context._stack_n_ = _stack_n_
 context._store_n_ = _store_n_
-context._flush_n_ = _flush_n_  cldfn = _flush_n_
+context._flush_n_ = _flush_n_  _cldn_ = _flush_n_
 
 -- Should we keep the catcodes with the function?
 
@@ -285,7 +285,7 @@ local function writer(parent,command,first,...)
             elseif tn == 1 then -- some 20% faster than the next loop
                 local tj = ti[1]
                 if type(tj) == "function" then
-                    flush(currentcatcodes,"[\\cldff{",_store_f_(tj),"}]")
+                    flush(currentcatcodes,"[\\cldf{",_store_f_(tj),"}]")
                 else
                     flush(currentcatcodes,"[",tj,"]")
                 end
@@ -293,13 +293,13 @@ local function writer(parent,command,first,...)
                 for j=1,tn do
                     local tj = ti[j]
                     if type(tj) == "function" then
-                        ti[j] = "\\cldff{" .. _store_f_(tj) .. "}"
+                        ti[j] = "\\cldf{" .. _store_f_(tj) .. "}"
                     end
                 end
                 flush(currentcatcodes,"[",concat(ti,","),"]")
             end
         elseif typ == "function" then
-            flush(currentcatcodes,"{\\cldff{",_store_f_(ti),"}}") -- todo: ctx|prt|texcatcodes
+            flush(currentcatcodes,"{\\cldf{",_store_f_(ti),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if ti then
              -- flush(currentcatcodes,"^^M")
@@ -310,7 +310,7 @@ local function writer(parent,command,first,...)
         elseif typ == "thread" then
             report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(ti) then -- slow
-            flush(currentcatcodes,"{\\cldfn{",_store_n_(ti),"}}")
+            flush(currentcatcodes,"{\\cldn{",_store_n_(ti),"}}")
         else
             report_context("error: '%s' gets a weird argument '%s'",command,tostring(ti))
         end
@@ -354,7 +354,7 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,"{\\cldff{",_store_f_(f),"}}") -- todo: ctx|prt|texcatcodes
+            flush(currentcatcodes,"{\\cldf{",_store_f_(f),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if f then
                 if a ~= nil then
@@ -377,7 +377,7 @@ local function caller(parent,f,a,...)
             report_context("coroutines not supported as we cannot yield across boundaries")
         elseif isnode(f) then -- slow
          -- writenode(f)
-            flush(currentcatcodes,"\\cldfn{",_store_n_(f),"}")
+            flush(currentcatcodes,"\\cldn{",_store_n_(f),"}")
         else
             report_context("error: 'context' gets a weird argument '%s'",tostring(f))
         end
@@ -625,7 +625,7 @@ local function caller(parent,f,a,...)
             end
         elseif typ == "function" then
             -- ignored: a ...
-            flush(currentcatcodes,mpdrawing,"{\\cldff{",store_(f),"}}")
+            flush(currentcatcodes,mpdrawing,"{\\cldf{",store_(f),"}}")
         elseif typ == "boolean" then
             -- ignored: a ...
             if f then
