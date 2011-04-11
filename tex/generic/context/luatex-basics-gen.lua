@@ -215,7 +215,7 @@ function caches.savedata(path,name,data)
     local fullname = makefullname(path,name)
     if fullname then
         texio.write(string.format("(save: %s)",fullname))
-        table.tofile(fullname,data,'return',false,true,false)
+        table.tofile(fullname,data,true,{ reduce = true })
     end
 end
 

@@ -1253,18 +1253,16 @@ end
 -- replacing handle by a direct t[#t+1] = ... (plus test) is not much
 -- faster (0.03 on 1.00 for zapfino.tma)
 
-local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might drop the _'s some day.
+local function serialize(_handle,root,name,specification) -- handle wins
     local tname = type(name)
-    if tname == "table" then
-        noquotes  = name.noquotes
-        hexify    = name.hexify
-        handle    = name.handle or print
-        reduce    = name.reduce or false
-        functions = name.functions
-        compact   = name.compact
-        inline    = name.inline and compact
-        name      = name.name
-        tname     = type(name)
+    if type(specification) == "table" then
+        noquotes  = specification.noquotes
+        hexify    = specification.hexify
+        handle    = _handle or specification.handle or print
+        reduce    = specification.reduce or false
+        functions = specification.functions
+        compact   = specification.compact
+        inline    = specification.inline and compact
         if functions == nil then
             functions = true
         end
@@ -1275,10 +1273,10 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might
             inline = compact
         end
     else
-        noquotes  = _noquotes
-        hexify    = _hexify
+        noquotes  = false
+        hexify    = false
         handle    = _handle or print
-        reduce    = _reduce or false
+        reduce    = false
         compact   = true
         inline    = true
         functions = true
@@ -1318,19 +1316,17 @@ local function serialize(root,name,_handle,_reduce,_noquotes,_hexify) -- I might
 end
 
 
-function table.serialize(root,name,reduce,noquotes,hexify) -- can be faster if flush == false and t as argument
+function table.serialize(root,name,specification)
     local t, n = { }, 0
     local function flush(s)
         n = n + 1
         t[n] = s
     end
-    serialize(root,name,flush,reduce,noquotes,hexify)
+    serialize(flush,root,name,specification)
     return concat(t,"\n")
 end
 
-function table.tohandle(handle,root,name,reduce,noquotes,hexify)
-    serialize(root,name,handle,reduce,noquotes,hexify)
-end
+table.tohandle = serialize
 
 -- sometimes tables are real use (zapfino extra pro is some 85M) in which
 -- case a stepwise serialization is nice; actually, we could consider:
@@ -1343,7 +1339,7 @@ end
 
 local maxtab = 2*1024
 
-function table.tofile(filename,root,name,reduce,noquotes,hexify)
+function table.tofile(filename,root,name,specification)
     local f = io.open(filename,'w')
     if f then
         if maxtab > 1 then
@@ -1356,13 +1352,13 @@ function table.tofile(filename,root,name,reduce,noquotes,hexify)
                     t, n = { }, 0 -- we could recycle t if needed
                 end
             end
-            serialize(root,name,flush,reduce,noquotes,hexify)
+            serialize(flush,root,name,specification)
             f:write(concat(t,"\n"),"\n")
         else
             local function flush(s)
                 f:write(s,"\n")
             end
-            serialize(root,name,flush,reduce,noquotes,hexify)
+            serialize(flush,root,name,specification)
         end
         f:close()
         io.flush()
@@ -1427,8 +1423,6 @@ end
 function table.unnest(t) -- bad name
     return unnest(t)
 end
-
-
 
 local function are_equal(a,b,n,m) -- indexed
     if a and b and #a == #b then
@@ -8156,13 +8150,14 @@ xml.nodesettostring = nodesettostring
 
 local lpath -- we have a harmless kind of circular reference
 
-local lshowoptions = { name = false, functions = false }
+local lshowoptions = { functions = false }
 
 local function lshow(parsed)
     if type(parsed) == "string" then
         parsed = lpath(parsed)
     end
-    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,table.serialize(parsed,lshowoptions))
+    report_lpath("%s://%s => %s",parsed.protocol or xml.defaultprotocol,parsed.pattern,
+        table.serialize(parsed,false,lshowoptions))
 end
 
 xml.lshow = lshow
@@ -10729,7 +10724,7 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-local saveoptions = { name = "return", reduce = true }
+local saveoptions = { reduce = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
@@ -10739,9 +10734,9 @@ function caches.savedata(filepath,filename,data,raw)
     end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname,table.serialize(data,saveoptions))
+        file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
-        table.tofile(tmaname,data,saveoptions)
+        table.tofile(tmaname,data,true,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
