@@ -9,15 +9,18 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 -- todo: cleanup stack (structures.marks.reset(v_all) also does the job)
 
 local insert, concat = table.insert, table.concat
-local tostring, next, setmetatable, rawget = tostring, next, setmetatable, rawget
+local tostring, next, rawget = tostring, next, rawget
 local lpegmatch = lpeg.match
+
+local allocate           = utilities.storage.allocate
+local setmetatableindex  = table.setmetatableindex
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local hasattribute       = nodes.hasattribute
+local getattribute       = nodes.getattribute
 local traversenodes      = node.traverse
 local texsetattribute    = tex.setattribute
 local texbox             = tex.box
@@ -58,7 +61,7 @@ local lists              = structures.lists
 
 local settings_to_array  = utilities.parsers.settings_to_array
 
-marks.data               = marks.data or { }
+marks.data               = marks.data or allocate()
 
 storage.register("structures/marks/data", marks.data, "structures.marks.data")
 
@@ -85,7 +88,7 @@ local function resolve(t,k)
     end
 end
 
-setmetatable(data, { __index = resolve} )
+setmetatableindex(data, resolve)
 
 function marks.exists(name)
     return rawget(data,name) ~= nil
@@ -97,7 +100,7 @@ local function sweep(head,first,last)
     for n in traversenodes(head) do
         local id = n.id
         if id == glyph_code then
-            local a = hasattribute(n,a_marks)
+            local a = getattribute(n,a_marks)
             if not a then
                 -- next
             elseif first == 0 then
@@ -106,7 +109,7 @@ local function sweep(head,first,last)
                 last = a
             end
         elseif id == hlist_code or id == vlist_code then
-            local a = hasattribute(n,a_marks)
+            local a = getattribute(n,a_marks)
             if not a then
                 -- next
             elseif first == 0 then
@@ -125,7 +128,7 @@ end
 
 local classes = { }
 
-setmetatable(classes, { __index = function(t,k) local s = settings_to_array(k) t[k] = s return s end } )
+setmetatableindex(classes, function(t,k) local s = settings_to_array(k) t[k] = s return s end)
 
 function marks.synchronize(class,n)
     local box = texbox[n]
@@ -187,11 +190,11 @@ function marks.define(name,settings)
             settings.parent = dp.parent
         end
     end
-    setmetatable(settings, { __index = resolve } )
+    setmetatableindex(settings, resolve)
 end
 
 for k, v in next, data do
-    setmetatable(v, { __index = resolve } ) -- runtime loaded table
+    setmetatableindex(v,resolve) -- runtime loaded table
 end
 
 local function parentname(name)

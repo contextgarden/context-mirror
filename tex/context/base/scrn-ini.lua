@@ -12,8 +12,17 @@ local general        = interactions.general
 
 local codeinjections = backends.codeinjections
 
+local identitydata   = { }
+
 local function setupidentity(specification)
+    for k, v in next, specification do
+        identitydata[k] = v
+    end
     codeinjections.setupidentity(specification)
+end
+
+function general.getidentity()
+    return identitydata
 end
 
 general.setupidentity  = setupidentity

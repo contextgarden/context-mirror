@@ -8,31 +8,33 @@ if not modules then modules = { } end modules ['attr-eff'] = {
 
 local format = string.format
 
-local allocate = utilities.storage.allocate
-
 local attributes, nodes = attributes, nodes
 
-local states          = attributes.states
-local tasks           = nodes.tasks
-local nodeinjections  = backends.nodeinjections
-local settexattribute = tex.setattribute
+local states            = attributes.states
+local tasks             = nodes.tasks
+local nodeinjections    = backends.nodeinjections
+local settexattribute   = tex.setattribute
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
-attributes.effects = attributes.effects or { }
-local effects      = attributes.effects
+attributes.effects      = attributes.effects or { }
+local effects           = attributes.effects
 
-local a_effect     = attributes.private('effect')
+local a_effect          = attributes.private('effect')
 
-effects.data       = allocate()
-effects.values     = effects.values     or { }
-effects.registered = effects.registered or { }
-effects.attribute  = a_effect
+effects.data            = allocate()
+effects.values          = effects.values     or { }
+effects.registered      = effects.registered or { }
+effects.attribute       = a_effect
 
 storage.register("attributes/effects/registered", effects.registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     effects.values,     "attributes.effects.values")
 
-local template = "%s:%s:%s"
+local template    = "%s:%s:%s"
 
-local data, registered, values = effects.data, effects.registered, effects.values
+local data        = effects.data
+local registered  = effects.registered
+local values      = effects.values
 
 -- valid effects: normal inner outer both hidden (stretch,rulethickness,effect)
 
@@ -53,8 +55,8 @@ local function reviver(data,n)
     return d
 end
 
-setmetatable(effects,      { __index = extender })
-setmetatable(effects.data, { __index = reviver  })
+setmetatableindex(effects,      extender)
+setmetatableindex(effects.data, reviver)
 
 effects.handler = nodes.installattributehandler {
     name        = "effect",

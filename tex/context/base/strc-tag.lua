@@ -33,10 +33,12 @@ local stack      = { }
 local chain      = { }
 local ids        = { }
 local enabled    = false
+local tagdata    = { } -- used in export
 
 local tags       = structures.tags
 tags.taglist     = taglist -- can best be hidden
 tags.labels      = labels
+tags.data        = tagdata
 
 local properties = allocate {
 
@@ -62,8 +64,12 @@ local properties = allocate {
     descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
 
     verbatimblock      = { pdf = "Code",       nature = "display" },
-    verbatimline       = { pdf = "Code",       nature = "display" },
+    verbatimlines      = { pdf = "Code",       nature = "display"   },
+    verbatimline       = { pdf = "Code",       nature = "mixed"   },
     verbatim           = { pdf = "Code",       nature = "inline"  },
+
+    synonym            = { pdf = "Span",       nature = "inline"  },
+    sort               = { pdf = "Span",       nature = "inline"  },
 
     register           = { pdf = "Div",        nature = "display" },
     registersection    = { pdf = "Div",        nature = "display" },
@@ -175,7 +181,7 @@ function tags.start(tag,specification)
     stack[#stack+1] = t -- insert(stack,t)
     taglist[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
     if user and user ~= "" then
-        -- maybe we should merge this into taglistor or whatever ... anyway there is room to optimize
+        -- maybe we should merge this into taglist or whatever ... anyway there is room to optimize
         -- taglist.userdata = settings_to_hash(user)
         userdata[completetag] = settings_to_hash(user)
     end
@@ -197,8 +203,27 @@ function tags.stop()
     return t
 end
 
+function tags.getid(tag,detail)
+    if detail and detail ~= "" then
+        return ids[tag .. ":" .. detail] or "?"
+    else
+        return ids[tag] or "?"
+    end
+end
+
 function tags.last(tag)
     return lasttags[tag] -- or false
+end
+
+function tags.lastinchain()
+    return chain[#chain]
+end
+
+function tags.registerdata(data)
+    local fulltag = chain[#chain]
+    if fulltag then
+        tagdata[fulltag] = data
+    end
 end
 
 function structures.atlocation(str)

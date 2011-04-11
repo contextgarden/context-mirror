@@ -12,25 +12,25 @@ local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
 local texsprint, texcount = tex.sprint, tex.count
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local trace_counters = false  trackers.register("structures.counters", function(v) trace_counters = v end)
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
-local report_counters = logs.reporter("structure","counters")
+local trace_counters    = false  trackers.register("structures.counters", function(v) trace_counters = v end)
+local report_counters   = logs.reporter("structure","counters")
 
-local structures = structures
+local structures        = structures
+local helpers           = structures.helpers
+local sections          = structures.sections
+local counters          = structures.counters
+local documents         = structures.documents
 
-local helpers    = structures.helpers
-local sections   = structures.sections
-local counters   = structures.counters
-local documents  = structures.documents
-
-local variables  = interfaces.variables
+local variables         = interfaces.variables
 
 -- state: start stop none reset
 
-counters.specials     = counters.specials or { }
-local counterspecials = counters.specials
+counters.specials       = counters.specials or { }
+local counterspecials   = counters.specials
 
 local counterranges, tbs = { }, 0
 
@@ -113,7 +113,7 @@ local function enhance()
         local data = cd.data
         for i=1,#data do
             local ci = data[i]
-            setmetatable(ci, { __index = function(t,s) return constructor(t,s,name,i) end })
+            setmetatableindex(ci, function(t,s) return constructor(t,s,name,i) end)
         end
     end
     enhance = nil
@@ -145,7 +145,7 @@ local function allocate(name,i) -- can be metatable
             offset = false,
             stop   = 0, -- via metatable: last, first, stop only for tracing
         }
-        setmetatable(ci, { __index = function(t,s) return constructor(t,s,name,i) end })
+        setmetatableindex(ci, function(t,s) return constructor(t,s,name,i) end)
         cd[i] = ci
         tobesaved[name][i] = { }
     else

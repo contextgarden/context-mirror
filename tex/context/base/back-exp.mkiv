@@ -33,6 +33,7 @@
 \definesystemattribute[taggedpacked] [public]
 \definesystemattribute[taggedsymbol] [public]
 \definesystemattribute[taggedinsert] [public]
+\definesystemattribute[taggedtag]    [public]
 
 \def\setelementexporttag
   {\dotripleargument\dosetelementexporttag}
@@ -75,6 +76,14 @@
 \to \everyenableelements
 
 \appendtoks
+    \def\dotagsynonym{\ctxlua{structures.tags.setsynonym("\currentsynonym","\currentsynonymtag")}}%
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagsorting{\ctxlua{structures.tags.setsorting("\currentsorting","\currentsortingtag")}}%
+\to \everyenableelements
+
+\appendtoks
     \def\dotagsetparcounter{\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
 \to \everyenableelements
 
@@ -90,14 +99,24 @@
     \def\dotagsetnotesymbol{\ctxlua{structures.tags.setdescriptionid("\currentnote",\currentnotenumber)}}%
 \to \everyenableelements
 
-% The action: \setubackend[export=yes] % or filename
+\appendtoks
+    \unexpanded\def\doverbatimspace{\char32\relax}% will be done permanently
+\to \everyenableelements
 
-\def\c!export{export}
+% The action: \setupbackend[export=yes] % or filename
+
+\def\c!export  {export}   % maybe: options={css,xhtml}
+\def\c!css     {css}
+\def\c!xhtml   {xhtml}
 
 \appendtoks
     \doifsomething{\backendparameter\c!export}
-      {\setupstructure[\c!state=\v!start]%
-       \enabledirectives[backend.export=\backendparameter\c!export]}%
+      {\setupstructure
+         [\c!state=\v!start]%
+       \enabledirectives
+         [backend.export=\backendparameter\c!export,%
+          backend.export.xhtml=\backendparameter\c!xhtml,%
+          backend.export.css=\backendparameter\c!css]}%
 \to \everysetupbackend
 
 \protect \endinput

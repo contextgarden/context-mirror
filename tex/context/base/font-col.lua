@@ -87,7 +87,7 @@ function collections.define(name,font,ranges,details)
     end
 end
 
-function collections.stage_1(name)
+function collections.stage_one(name)
     local last = font.current()
     if trace_collecting then
         report_fonts("def: registering font %s with name %s",last,name)
@@ -95,7 +95,7 @@ function collections.stage_1(name)
     list[#list+1] = last
 end
 
-function collections.stage_2(name)
+function collections.stage_two(name)
     statistics.starttiming(fonts)
     local d = definitions[name]
     local t = { }

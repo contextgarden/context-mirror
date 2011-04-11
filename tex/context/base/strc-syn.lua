@@ -8,21 +8,23 @@ if not modules then modules = { } end modules ['str-syn'] = {
 
 local next, type = next, type
 local texwrite, format = tex.write,  string.format
-local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+local allocate = utilities.storage.allocate
 
 -- interface to tex end
 
-local structures    = structures
-local synonyms      = structures.synonyms
+local structures   = structures
+local synonyms     = structures.synonyms
+local tags         = structures.tags
 
-local collected, tobesaved = allocate(), allocate()
+local collected    = allocate()
+local tobesaved    = allocate()
 
 synonyms.collected = collected
 synonyms.tobesaved = tobesaved
 
 local function initializer()
-    collected = mark(synonyms.collected)
-    tobesaved = mark(synonyms.tobesaved)
+    collected = synonyms.collected
+    tobesaved = synonyms.tobesaved
 end
 
 local function finalizer()
@@ -32,6 +34,8 @@ local function finalizer()
 end
 
 job.register('structures.synonyms.collected', tobesaved, initializer, finalizer)
+
+-- todo: allocate becomes metatable
 
 local function allocate(class)
     local d = tobesaved[class]

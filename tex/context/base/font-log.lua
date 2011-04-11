@@ -51,7 +51,7 @@ end
 function loggers.register(tfmdata,source,specification) -- save file name in spec here ! ! ! ! ! !
     if tfmdata and specification and specification.specification then
         local name = lower(specification.name)
-        if trace_defining and not fonts.used[name] then
+        if trace_defining and not usedfonts[name] then
             report_defining("registering %s as %s (used: %s)",file.basename(specification.name),source,file.basename(specification.filename))
         end
         specification.source = source

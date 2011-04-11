@@ -120,12 +120,14 @@
   {\iflocation
      attr \destinationattribute \currentstructureattribute
      attr \referenceattribute   \currentstructurereferenceattribute
-  \fi}
+   % attr \internalattribute    \nextinternalreference
+   \fi}
 
 \def\setinlinestructureheadreferenceattributes
   {\ifconditional\structureheadisdisplay \else \iflocation
-      \attribute\destinationattribute\currentstructureattribute
-      \attribute\referenceattribute  \currentstructurereferenceattribute
+     \attribute\destinationattribute\currentstructureattribute
+     \attribute\referenceattribute  \currentstructurereferenceattribute
+   % \attribute\internalattribute   \nextinternalreference
    \fi \fi}
 
 \def\docheckstructureheadreference

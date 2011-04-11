@@ -6,20 +6,21 @@ if not modules then modules = { } end modules ['font-otf'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tonumber, tostring, rawget, setmetatable = type, next, tonumber, tostring, rawget, setmetatable
+local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
 local gsub, lower, format, match = string.gsub, string.lower, string.format, string.match
 local is_boolean = string.is_boolean
 
-local allocate = utilities.storage.allocate
+local setmetatableindex    = table.setmetatableindex
+local setmetatablenewindex = table.setmetatablenewindex
+local allocate             = utilities.storage.allocate
 
-local fonts    = fonts
-local otf      = fonts.handlers.otf
+local fonts                = fonts
+local otf                  = fonts.handlers.otf
+local tables               = { }
+otf.tables                 = tables
 
-local tables   = { }
-otf.tables     = tables
-
-local otffeatures        = fonts.constructors.newfeatures("otf")
-local registerotffeature = otffeatures.register
+local otffeatures          = fonts.constructors.newfeatures("otf")
+local registerotffeature   = otffeatures.register
 
 local scripts = allocate {
     ['arab'] = 'arabic',
@@ -672,10 +673,10 @@ local function resolve(t,k)
     return "dflt"
 end
 
-setmetatable(verbosescripts,   { __index = resolve })
-setmetatable(verboselanguages, { __index = resolve })
-setmetatable(verbosefeatures,  { __index = resolve })
-setmetatable(verbosebaselines, { __index = resolve })
+setmetatableindex(verbosescripts,   resolve)
+setmetatableindex(verboselanguages, resolve)
+setmetatableindex(verbosefeatures,  resolve)
+setmetatableindex(verbosebaselines, resolve)
 
 local function resolve(t,k)
     if k then
@@ -688,13 +689,13 @@ local function resolve(t,k)
     return "dflt"
 end
 
-local function assign(t,k,v)
-    -- forget about it
-end
+setmetatableindex(scripts,   resolve)
+setmetatableindex(scripts,   resolve)
+setmetatableindex(languages, resolve)
 
-setmetatable(scripts,   { __index = resolve, __newindex = assign })
-setmetatable(languages, { __index = resolve, __newindex = assign })
-setmetatable(baselines, { __index = resolve, __newindex = assign })
+setmetatablenewindex(languages, "ignore")
+setmetatablenewindex(baselines, "ignore")
+setmetatablenewindex(baselines, "ignore")
 
 local function resolve(t,k)
     if k then
@@ -719,6 +720,8 @@ local function resolve(t,k)
     return "dflt"
 end
 
+setmetatableindex(features, resolve)
+
 local function assign(t,k,v)
     if k then
         v = lower(v)
@@ -727,7 +730,7 @@ local function assign(t,k,v)
     end
 end
 
-setmetatable(features, { __index = resolve, __newindex = assign })
+setmetatablenewindex(features, assign)
 
 local checkers = {
     rand = function(v)

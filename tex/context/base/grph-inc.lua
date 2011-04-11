@@ -44,20 +44,23 @@ local texbox = tex.box
 local contains = table.contains
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
-local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
-local allocate = utilities.storage.allocate
 
-local variables      = interfaces.variables
-local codeinjections = backends.codeinjections
-local nodeinjections = backends.nodeinjections
+local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash  = utilities.parsers.settings_to_hash
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
-local trace_figures    = false  trackers.register("graphics.locating",   function(v) trace_figures    = v end)
-local trace_bases      = false  trackers.register("graphics.bases",      function(v) trace_bases      = v end)
-local trace_programs   = false  trackers.register("graphics.programs",   function(v) trace_programs   = v end)
-local trace_conversion = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
-local trace_inclusion  = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
+local variables         = interfaces.variables
+local codeinjections    = backends.codeinjections
+local nodeinjections    = backends.nodeinjections
 
-local report_inclusion = logs.reporter("graphics","inclusion")
+local trace_figures     = false  trackers.register("graphics.locating",   function(v) trace_figures    = v end)
+local trace_bases       = false  trackers.register("graphics.bases",      function(v) trace_bases      = v end)
+local trace_programs    = false  trackers.register("graphics.programs",   function(v) trace_programs   = v end)
+local trace_conversion  = false  trackers.register("graphics.conversion", function(v) trace_conversion = v end)
+local trace_inclusion   = false  trackers.register("graphics.inclusion",  function(v) trace_inclusion  = v end)
+
+local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local context, img = context, img
 
@@ -290,8 +293,8 @@ local function new() -- we could use metatables status -> used -> request but it
         fullname   = false,
         format     = false,
     }
- -- setmetatable(status, { __index = used })
- -- setmetatable(used,   { __index = request })
+ -- setmetatableindex(status, used)
+ -- setmetatableindex(used, request)
     return {
         request = request,
         used    = used,

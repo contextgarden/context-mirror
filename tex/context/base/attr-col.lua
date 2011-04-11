@@ -13,13 +13,14 @@ local type = type
 local format = string.format
 local concat = table.concat
 
-local allocate = utilities.storage.allocate
+local attributes, nodes = attributes, nodes
+
+local allocate              = utilities.storage.allocate
+local setmetatableindex     = table.setmetatableindex
 
 local report_attributes     = logs.reporter("attributes","colors")
 local report_colors         = logs.reporter("colors","support")
 local report_transparencies = logs.reporter("transparencies","support")
-
-local attributes, nodes = attributes, nodes
 
 -- todo: document this but first reimplement this as it reflects the early
 -- days of luatex / mkiv and we have better ways now
@@ -290,8 +291,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(colors,      { __index = extender })
-setmetatable(colors.data, { __index = reviver  })
+setmetatableindex(colors, extender)
+setmetatableindex(colors.data, reviver)
 
 function colors.filter(n)
     return concat(data[n],":",5)
@@ -420,8 +421,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(transparencies,      { __index = extender })
-setmetatable(transparencies.data, { __index = reviver  }) -- register if used
+setmetatableindex(transparencies, extender)
+setmetatableindex(transparencies.data, reviver) -- register if used
 
 -- check if there is an identity
 
@@ -485,8 +486,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(colorintents,      { __index = extender })
-setmetatable(colorintents.data, { __index = reviver  })
+setmetatableindex(colorintents, extender)
+setmetatableindex(colorintents.data, reviver)
 
 function colorintents.register(stamp)
     return registered[stamp] or registered.overprint

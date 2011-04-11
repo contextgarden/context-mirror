@@ -18,6 +18,8 @@ local escapedpattern = string.escapedpattern
 local texcount = tex and tex.count
 local next, type = next, type
 
+local setmetatableindex = table.setmetatableindex
+
 --[[ldx--
 <p>This is a prelude to a more extensive logging module. We no longer
 provide <l n='xml'/> based logging a sparsing is relatively easy anyway.</p>
@@ -38,11 +40,11 @@ wiki     : http://contextgarden.net
 
 local function ignore() end
 
-setmetatable(logs, { __index = function(t,k) t[k] = ignore ; return ignore end })
+setmetatableindex(logs, function(t,k) t[k] = ignore ; return ignore end)
 
-local report, subreport, status, settarget, setformatter
+local report, subreport, status, settarget, setformats, settranslations
 
-local direct, subdirect, writer
+local direct, subdirect, writer, pushtarget, poptarget
 
 if tex and tex.jobname or tex.formatname then
 

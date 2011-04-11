@@ -251,6 +251,7 @@ def newtransform text v = forsuffixes i=v : save i ; transform i ; endfor ; endd
 def newpath      text v = forsuffixes i=v : save i ; path      i ; endfor ; enddef ;
 def newpicture   text v = forsuffixes i=v : save i ; picture   i ; endfor ; enddef ;
 def newstring    text v = forsuffixes i=v : save i ; string    i ; endfor ; enddef ;
+def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; enddef ;
 
 %D Sometimes we don't want parts of the graphics add to the
 %D bounding box. One way of doing this is to save the bounding

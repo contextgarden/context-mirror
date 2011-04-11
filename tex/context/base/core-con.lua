@@ -17,14 +17,16 @@ slower but look nicer this way.</p>
 local utf = unicode.utf8
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
-local lower, format, rep = string.lower, string.format, string.rep
+local lower, format, rep, match = string.lower, string.format, string.rep, string.match
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 
 local settings_to_array = utilities.parsers.settings_to_array
 local allocate = utilities.storage.allocate
 
-local context = context
+local context    = context
+
+local variables  = interfaces.variables
 
 converters       = converters or { }
 local converters = converters
@@ -697,3 +699,170 @@ end
 -- function converters.Alphabetic(n,code)
 --     do_alphabetic(n,counters[code] or counters['**'],uppercased)
 -- end
+
+-- --
+
+local ordinals = {
+    english = function(n)
+        local two = n % 100
+        if two == 11 or two == 12 or to == 13 then
+            return "th"
+        else
+            local one = n % 10
+            if one == 1 then
+                return "st"
+            elseif one == 2 then
+                return "nd"
+            elseif one == 3 then
+                return "rd"
+            else
+                return "th"
+            end
+        end
+    end,
+    dutch = function(n)
+        return "e"
+    end,
+    french = function(n)
+        if n == 1 then
+            return "er"
+        end
+    end,
+}
+
+ordinals.en = ordinals.english
+ordinals.nl = ordinals.dutch
+ordinals.fr = ordinals.french
+
+function converters.ordinal(n,language)
+    local t = language and ordinals[language]
+    return t and t(n)
+end
+
+function commands.ordinal(n,language)
+    local t = language and ordinals[language]
+    local o = t and t(n)
+    if o then
+        context.highordinalstr(o)
+    end
+end
+
+-- --
+
+local v_day      = variables.day
+local v_year     = variables.year
+local v_month    = variables.month
+local v_weekday  = variables.weekday
+local v_referral = variables.referral
+
+local convert = converters.convert
+
+local days = {
+    variables.sunday,
+    variables.monday,
+    variables.tuesday,
+    variables.wednesday,
+    variables.thursday,
+    variables.friday,
+    variables.saturday,
+}
+
+local months = {
+     variables.january,
+     variables.february,
+     variables.march,
+     variables.april,
+     variables.may,
+     variables.june,
+     variables.july,
+     variables.august,
+     variables.september,
+     variables.october,
+     variables.november,
+     variables.december,
+}
+
+function commands.dayname(n)
+    context.labeltext(days[n] or "unknown")
+end
+
+function commands.weekdayname(day,month,year)
+    context.labeltext(days[weekday(day,month,year)] or "unknown")
+end
+
+function commands.monthname(n)
+    context.labeltext(months[n] or "unknown")
+end
+
+function commands.monthmnem(n)
+    local m = months[n]
+    context.labeltext(m and (m ..":mnem") or "unknown")
+end
+
+-- a prelude to a function that we can use at the lua end
+
+-- historic    : day+    month:mnem
+-- maybe better: day:ord month:mmem
+
+function commands.currentdate(str,currentlanguage) -- j and jj obsolete
+    local list = utilities.parsers.settings_to_array(str)
+    local year, month, day = tex.year, tex.month, tex.day
+    local auto = true
+    for i=1,#list do
+        local entry = list[i]
+        local tag, plus = match(entry,"^([^%+:]+)(.*)$")
+        local ordinal, mnemonic, whatordinal = false, false, nil
+        if not tag then
+            tag = entry
+        elseif plus == "+" or plus == "ord" then
+            ordinal = true
+        elseif plus == "mnem" then
+            mnemonic = true
+        end
+        if not auto and (tag == v_year or tag == v_month or tag == v_day or tag == v_weekday) then
+            context.space()
+        end
+        auto = false
+        if tag == v_year or tag == "y" then
+            context.convertnumber(v_year,year)
+        elseif tag == "yy" then
+            context("%02i",year % 100)
+        elseif tag == "Y" then
+            context(year)
+        elseif tag == v_month or tag == "m" then
+            if mnemonic then
+                commands.monthmnem(month)
+            else
+                commands.monthname(month)
+            end
+        elseif tag == "mm" then
+            context("%02i",month)
+        elseif tag == "M" then
+            context(month)
+        elseif tag == v_day or tag == "d" then
+            context.convertnumber(v_day,day)
+            whatordinal = day
+        elseif tag == "dd" then
+            context("%02i",day)
+            whatordinal = day
+        elseif tag == "D" then
+            context(day)
+            whatordinal = day
+        elseif tag == v_weekday or tag == "w" then
+            commands.dayname(weekday(day,month,year))
+        elseif tag == "W" then
+            context(weekday(day,month,year))
+        elseif tag == v_referral then
+            context("%04i%02i%02i",year,month,day)
+        elseif tag == v_space or tag == "\\ " then
+            context.space()
+            auto = true
+        elseif tag ~= "" then
+            context(tag)
+            auto = true
+        end
+        if ordinal and whatordinal then
+            commands.ordinal(whatordinal,currentlanguage)
+        end
+    end
+end

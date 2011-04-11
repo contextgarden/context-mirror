@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['back-ini'] = {
     license   = "see context related readme files"
 }
 
-local setmetatable = setmetatable
 
 backends       = backends or { }
 local backends = backends
@@ -15,21 +14,26 @@ local trace_backend = false  trackers.register("backend.initializers", function(
 
 local report_backend = logs.reporter("backend","initializing")
 
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
+
 local function nothing() return nil end
 
 backends.nothing = nothing
 
-local mt = {
-    __index = function(t,k)
-        t[k] = nothing
-        return nothing
-    end
-}
+local nodeinjections = { }
+local codeinjections = { }
+local registrations  = { }
+local tables         = allocate()
 
-local nodeinjections = { }  setmetatable(nodeinjections, mt)
-local codeinjections = { }  setmetatable(codeinjections, mt)
-local registrations  = { }  setmetatable(registrations,  mt)
-local tables         = { }
+local function donothing(t,k)
+    t[k] = nothing
+    return nothing
+end
+
+setmetatableindex(nodeinjections, donothing)
+setmetatableindex(codeinjections, donothing)
+setmetatableindex(registrations,  donothing)
 
 local defaults = {
     nodeinjections = nodeinjections,
@@ -40,10 +44,10 @@ local defaults = {
 
 backends.defaults = defaults
 
-backends.nodeinjections = { }  setmetatable(backends.nodeinjections, { __index = nodeinjections })
-backends.codeinjections = { }  setmetatable(backends.codeinjections, { __index = codeinjections })
-backends.registrations  = { }  setmetatable(backends.registrations,  { __index = registrations  })
-backends.tables         = { }  setmetatable(backends.tables,         { __index = tables         })
+backends.nodeinjections = { }  setmetatableindex(backends.nodeinjections, nodeinjections)
+backends.codeinjections = { }  setmetatableindex(backends.codeinjections, codeinjections)
+backends.registrations  = { }  setmetatableindex(backends.registrations,  registrations)
+backends.tables         = { }  setmetatableindex(backends.tables,         tables)
 
 backends.current = "unknown"
 
@@ -57,8 +61,8 @@ function backends.install(what)
             backends.current = what
             for category, default in next, defaults do
                 local target, plugin = backends[category], backend[category]
-                setmetatable(plugin, { __index = default })
-                setmetatable(target, { __index = plugin  })
+                setmetatableindex(plugin, default)
+                setmetatableindex(target, plugin)
             end
         elseif trace_backend then
             report_backend("no backend named %s",what)
@@ -77,7 +81,7 @@ end)
 
 local comment = { "comment", "" }
 
-tables.vfspecials = {
+tables.vfspecials = allocate {
     red        = comment,
     green      = comment,
     blue       = comment,

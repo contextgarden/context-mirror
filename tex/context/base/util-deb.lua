@@ -145,7 +145,7 @@ end
 
 local is_node = node and node.is_node
 
-function inspect(i)
+function inspect(i) -- global function
     local ti = type(i)
     if ti == "table" then
         table.print(i,"table")

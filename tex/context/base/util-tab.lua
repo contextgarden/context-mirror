@@ -12,7 +12,7 @@ local tables     = utilities.tables
 
 local format, gmatch = string.format, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
-local setmetatable, tonumber, tostring = setmetatable, tonumber, tostring
+local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -77,12 +77,6 @@ function tables.insertaftervalue(t,value,extra)
     insert(t,#t+1,extra)
 end
 
-local _empty_table_ = { __index = function(t,k) return "" end }
-
-function table.setemptymetatable(t)
-    setmetatable(t,_empty_table_)
-end
-
 -- experimental
 
 local function toxml(t,d,result)
@@ -99,8 +93,13 @@ local function toxml(t,d,result)
     end
 end
 
-function table.toxml(t,name)
-    local result = { "<?xml version='1.0' standalone='yes' ?>" }
-    toxml( { [name or "root"] = t }, "", result)
+function table.toxml(t,name,nobanner)
+    local noroot = name == false
+    local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+    if noroot then
+        toxml( t, "", result)
+    else
+        toxml( { [name or "root"] = t }, "", result)
+    end
     return concat(result,"\n")
 end

@@ -190,34 +190,6 @@
 \installlanguage [swedish]     [\s!sv]
 \installlanguage [afrikaans]   [\s!af]
 
-%D Next we implement couple of ordinal mumber converters:
-
-\def\enordinaldaynumber#1%
-  {#1\ifnum\lasttwodigits{#1}=11
-     \highordinalstr{th}%
-   \else\ifnum\lasttwodigits{#1}=12
-     \highordinalstr{th}%
-   \else\ifnum\lasttwodigits{#1}=13
-     \highordinalstr{th}%
-   \else\ifcase\lastdigit{#1}%
-     \highordinalstr{th}%
-   \or % 1
-     \highordinalstr{st}%
-   \or % 2
-     \highordinalstr{nd}%
-   \or % 3
-     \highordinalstr{rd}%
-   \else
-     \highordinalstr{th}%
-   \fi\fi\fi\fi}
-
-% \def\enordinaldaynumber#1%
-%   {#1\ordinalstr{\ifnum\lasttwodigits{#1}=11 th\else\ifcase\lastdigit{#1}
-%          th\or st\or nd\or rd\else th\fi\fi}}
-
-\def\nlordinaldaynumber#1%
-  {#1\highordinalstr{e}}
-
 % Slavic Languages: Belarussian, Russian, Ukrainian, Bulgarian,
 % Macedonian, Serbian, Croatian, Slovenian, Czech, Kushubian,
 % Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian, Illyrian,
@@ -698,13 +670,6 @@
 \installlanguage [latin]       [\s!la]
 \installlanguage [portuguese]  [\s!pt]
 \installlanguage [romanian]    [\s!ro]
-
-%D Ordinal converters:
-
-\def\frordinaldaynumber#1% date is masculine
-  {\number#1\ifcase#1\or
-     \highordinalstr{er}%
-   \fi}
 
 \defineconversion [\s!fr] [\v!day+] [\frordinaldaynumber]
 

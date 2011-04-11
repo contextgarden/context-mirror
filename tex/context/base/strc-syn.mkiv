@@ -20,6 +20,9 @@
 
 \unprotect
 
+\let\dotagsynonym\relax
+\let\dotagsorting\relax
+
 % general help, can be shared
 
 % simplifiedcommands -> flag in lua
@@ -171,8 +174,12 @@
 \unexpanded\def\doinsertsynonym#1#2% name tag
   {\begingroup
    \def\currentsynonym{#1}%
+   \def\currentsynonymtag{#2}%
+   \dotagsynonym
+   \dostarttagged\t!synonym\currentsynonym
    \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
    \synonymparameter\c!synonymcommand{\ctxlua{structures.synonyms.synonym("#1","#2")}}%
+   \dostoptagged
    \normalexpanded{\endgroup\synonymparameter\c!next}}
 
 \unexpanded\def\placelistofsynonyms
@@ -328,8 +335,12 @@
   {\begingroup
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
+   \def\currentsortingtag{#2}%
+   \dotagsorting
+   \dostarttagged\t!sorting\currentsorting
    \dosetsortingattributes\c!style\c!color
    \ctxlua{structures.synonyms.synonym("#1","#2")}%
+   \dostoptagged
    \normalexpanded{\endgroup\sortingparameter\c!next}}
 
 \def\registersort

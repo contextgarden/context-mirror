@@ -218,3 +218,9 @@ function caches.savedata(path,name,data)
         table.tofile(fullname,data,'return',false,true,false)
     end
 end
+
+--
+
+local table.setmetatableindex(t,f)
+    setmetatable(t,{ __index = f })
+end

@@ -1157,12 +1157,12 @@
    \attribute\referenceattribute\attributeunsetvalue
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
-     \dostarttagged\t!link\empty % not here
      \ctxlua{structures.references.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \setlocationattributes\??ia
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \attribute\referenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty % not here
      #1%
      \dostoptagged
    \else
@@ -1176,14 +1176,16 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
-     \dostoptagged
      \setlocationattributes\??ia
      \attribute\referenceattribute\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
+     #1%
+     \dostoptagged
+   \else
+     #1%
    \fi
-   #1%
    \endgroup}
 
 \def\dogoto#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
@@ -1195,16 +1197,18 @@
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
-        \dostarttagged\t!link\empty
         \ctxlua{structures.references.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
-        \dostoptagged
         \setlocationattributes\??ia
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \attribute\referenceattribute\lastreferenceattribute}%
-       {}%
+        \attribute\referenceattribute\lastreferenceattribute
+        \dostarttagged\t!link\empty
+        #1%
+        \dostoptagged}%
+       {#1}%
+   \else
+     #1%
    \fi
-   #1%
   %\egroup\unhbox\referencebox}
    \endgroup}
 
@@ -1216,15 +1220,17 @@
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
-        \dostarttagged\t!link\empty
         \ctxlua{structures.references.injectcurrentset(\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax)}%
-        \dostoptagged
         \setlocationattributes\??ia
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \attribute\referenceattribute\lastreferenceattribute}%
-       {}%
+        \attribute\referenceattribute\lastreferenceattribute
+        \dostarttagged\t!link\empty
+        #1%
+        \dostoptagged}%
+       {#1}%
+   \else
+     #1%
    \fi
-   #1%
    \endgroup}
 
 \unexpanded\def\directgotobox#1[#2]% no test for valid references
@@ -1233,12 +1239,12 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
-     \dostoptagged
      \setlocationattributes\??ia
      \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+     \dostoptagged
    \else
      #1%
    \fi
@@ -1250,12 +1256,12 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
-     \dostoptagged
      \setlocationcolorspec{#1}% no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
+     \dostoptagged
    \else
      #2%
    \fi
@@ -1267,11 +1273,11 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \dostarttagged\t!link\empty
      \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
-     \dostoptagged
      \global\lastsavedreferenceattribute\lastreferenceattribute
+     \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+     \dostoptagged
    \else
      #1%
    \fi
@@ -1285,13 +1291,13 @@
    \iflocation
      \ctxlua{structures.references.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
        {\expandtexincurrentreference
-        \dostarttagged\t!link\empty
         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
-        \dostoptagged
         \setlocationattributes\??ia
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \hbox attr \referenceattribute \lastreferenceattribute {#1}}%
-       {}%
+        \dostarttagged\t!link\empty
+        \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+        \dostoptagged}%
+       {#1}%
    \else
      #1%
    \fi
@@ -1300,14 +1306,14 @@
 \unexpanded\def\gotowdhtbox#1#2[#3]% fast variant for overlays
   {\dontleavehmode
    \begingroup
+   \setbox\scratchbox\emptyhbox\wd\scratchbox#1\ht\scratchbox#2%
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
      {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
-      \setbox\scratchbox\emptyhbox\wd\scratchbox#1\ht\scratchbox#2%
       \global\lastsavedreferenceattribute\lastreferenceattribute
-      \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}%
-     {}%
+      \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
+     {\box\scratchbox}%
    \endgroup}
 
 %D An reference to another document can be specified as a file

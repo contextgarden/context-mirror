@@ -427,6 +427,8 @@ function registrations.transparency(n,a,t)
     end
 end
 
+-- overloaded in lpdf-xmp:
+
 function codeinjections.adddocumentinfo(key,value)
     lpdf.addtoinfo(key,lpdf.tosixteen(value))
 end

@@ -17,7 +17,7 @@
 
 \unprotect
 
-\ifx\currentlanguage\undefined \let\currentlanguage\empty \fi
+\ifx\currentlanguage\undefined \let\currentlanguage\empty        \fi
 \ifx\labeltext      \undefined \let\labeltext\firstofoneargument \fi
 
 %D This module deals with all kind of conversions from numbers
@@ -202,17 +202,8 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\def\domonthtag#1%
-  {\ifcase#1%
-     \or \v!january   \or \v!february \or \v!march    \or \v!april
-     \or \v!may       \or \v!june     \or \v!july     \or \v!august
-     \or \v!september \or \v!october  \or \v!november \or \v!december
-   \else
-     \v!unknown
-   \fi}
-
-\def\doconvertmonthlong #1{\labeltext{\domonthtag{#1}}}
-\def\doconvertmonthshort#1{\labeltext{\domonthtag{#1}:\s!mnem}}
+\def\doconvertmonthlong #1{\ctxcommand{month(#1)}}
+\def\doconvertmonthshort#1{\ctxcommand{monthmnem(#1)}}
 
 \let\doconvertmonth\doconvertmonthlong
 
@@ -245,25 +236,18 @@
 %D 2000 into leap years, right? Well, converting to string
 %D looks familiar:
 
-\def\doconvertday#1%
-  {\labeltext
-     {\ifcase#1
-      \or \v!sunday   \or \v!monday \or \v!tuesday  \or \v!wednesday
-      \or \v!thursday \or \v!friday \or \v!saturday \fi}}
+\def\doconvertday#1{\ctxcommand{day(#1)}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}
-%D
-%D The conversion algoritm is an old one and a translation from
-%D a procedure written in MODULA~2 back in the 80's. I finaly
-%D found the 4--100-400 rules in some enclopedia. Look at this
-%D messy low level routine that takes the day, month and year
-%D as arguments:
 
 \newcount\normalweekday
 
-\def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}}
-\def\dayoftheweek   #1#2#3{\doconvertday{\ctxcommand{weekday(\number#1,\number#2,\number#3)}}}
+% \def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}}
+% \def\dayoftheweek   #1#2#3{\doconvertday{\ctxcommand{weekday(\number#1,\number#2,\number#3)}}}
+
+\def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}\relax} % number
+\def\dayoftheweek   #1#2#3{\ctxcommand{weekdayname(\number#1,\number#2,\number#3)}}                 % name
 
 %D Using this macro in
 %D
@@ -412,79 +396,131 @@
 %D \getbuffer
 %D \stoplines
 
-\def\referraldatepattern{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
+% \newtoks \everycurrentdate
+%
+% \newsignal\datesignal
+%
+% \def\dobetweendates
+%   {\ifdim\lastskip=\datesignal\relax\else
+%      \unskip\space
+%      \hskip\datesignal\relax
+%    \fi}
+%
+% \def\referraldatepattern{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
+%
+% \def\dodobetweendates
+%   {\let\betweendates\dobetweendates}%
+%
+% \def\dodocurrentdate#1%
+%   {\processallactionsinset[#1]
+%      [   \v!year=>\betweendates
+%                   \convertnumber\v!year\normalyear,
+%               yy=>\lasttwodigits\normalyear,
+%                y=>\convertnumber\v!year\normalyear,
+%                Y=>\number\normalyear,
+%         \v!month=>\betweendates
+%                   \month\normalmonth,
+%               mm=>\twodigits\normalmonth,
+%                m=>\month\normalmonth,
+%                M=>\number\normalmonth,
+%           \v!day=>\betweendates
+%                   \convertnumber\v!day\normalday,
+%          \v!day+=>\betweendates
+%                   \convertnumber\v!day\normalday
+%                   \ordinal\normalday,
+%               dd=>\twodigits\normalday,
+%              dd+=>\convertnumber\v!day{\twodigits\normalday}%
+%                   \ordinal\normalday,
+%                d=>\convertnumber\v!day\normalday,
+%               d+=>\convertnumber\v!day\normalday
+%                   \ordinal\normalday,
+%                d=>\number\normalday,
+%       \v!weekday=>\betweendates
+%                   \convertnumber\v!day{\dayoftheweek\normalday\normalmonth\normalyear},
+%                w=>\convertnumber\v!day{\dayoftheweek\normalday\normalmonth\normalyear},
+%                W=>\dayoftheweek\normalday\normalmonth\normalyear,
+%      \v!referral=>\docomplexcurrentdate\referraldatepattern,
+%         \v!space=>\unskip\ \hskip\datesignal,
+%               \ =>\unskip\ \hskip\datesignal,
+%       \s!default=>,
+%       \s!unknown=>\unskip\commalistelement
+%                   \hskip\datesignal
+%                   \let\betweendates\dodobetweendates]}
+%
+% \def\docurrentdate[#1]%
+%   {\begingroup
+%    \the\everycurrentdate
+%    \let\betweendates\dodobetweendates
+%    \doifsomething{#1}{\edef\currentdatespecification{#1}}%
+%    \normalexpanded{\dodocurrentdate{\currentdatespecification}}%
+%    \ifdim\lastskip=\datesignal\relax
+%      \unskip
+%    \fi
+%    \endgroup}
 
-\newsignal\datesignal
-
-\def\dobetweendates
-  {\ifdim\lastskip=\datesignal\relax\else
-     \unskip\space
-     \hskip\datesignal\relax
-   \fi}
-
-\def\dodobetweendates
-  {\let\betweendates\dobetweendates}%
+%D \starttabulate[|l|l|]
+%D \HL
+%D \NC year     \NC (\currentdate[year])     \NC\NR
+%D \NC yy       \NC (\currentdate[yy])       \NC\NR
+%D \NC y        \NC (\currentdate[y])        \NC\NR
+%D \NC Y        \NC (\currentdate[Y])        \NC\NR
+%D \HL
+%D \NC month    \NC (\currentdate[month])    \NC\NR
+%D \NC mm       \NC (\currentdate[mm])       \NC\NR
+%D \NC m        \NC (\currentdate[m])        \NC\NR
+%D \NC M        \NC (\currentdate[M])        \NC\NR
+%D \HL
+%D \NC day      \NC (\currentdate[day])      \NC\NR
+%D \NC dd       \NC (\currentdate[dd])       \NC\NR
+%D \NC d        \NC (\currentdate[d])        \NC\NR
+%D \NC D        \NC (\currentdate[D])        \NC\NR
+%D \HL
+%D \NC weekday  \NC (\currentdate[weekday])  \NC\NR
+%D \NC w        \NC (\currentdate[w])        \NC\NR
+%D \NC W        \NC (\currentdate[W])        \NC\NR
+%D \HL
+%D \NC referral \NC (\currentdate[referral]) \NC\NR
+%D \HL
+%D \NC day+     \NC (\currentdate[day+])     \NC\NR
+%D \NC dd+      \NC (\currentdate[dd+])      \NC\NR
+%D \NC d+       \NC (\currentdate[d+])       \NC\NR
+%D \NC D+       \NC (\currentdate[D+])       \NC\NR
+%D \HL
+%D \stoptabulate
+%D
+%D \startbuffer
+%D (\currentdate[D,.,M,.,Y])
+%D (\currentdate[day,month,year])
+%D (\currentdate[day,+,month,+,year])
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \newtoks \everycurrentdate
 
-\def\docomplexcurrentdate#1%
-  {\normalexpanded{\noexpand\processallactionsinset[#1]}
-     [    \v!day=>\betweendates\the\normalday,
-         \v!day+=>\betweendates\convertnumber{\v!day+}\normalday,
-        \v!month=>\betweendates\month\normalmonth,
-         \v!year=>\betweendates\the\normalyear,
-        \v!space=>\unskip\ \hskip\datesignal,
-              \ =>\unskip\ \hskip\datesignal,
-               d=>\convertnumber\v!day\normalday,
-              d+=>\convertnumber{\v!day+}\normalday,
-               m=>\convertnumber\v!month\normalmonth,
-               j=>\convertnumber\v!year\normalyear,
-               y=>\convertnumber\v!year\normalyear,
-               w=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-              dd=>\ifnum\normalday  >9 \else0\fi\the\normalday,
-             dd+=>\convertnumber{\v!day+}{\ifnum\normalday >9 \else0\fi\the\normalday},
-              mm=>\ifnum\normalmonth>9 \else0\fi\the\normalmonth,
-              jj=>\expandafter\gobbletwoarguments\the\normalyear,
-              yy=>\expandafter\gobbletwoarguments\the\normalyear,
-      \v!weekday=>\betweendates\dayoftheweek\normalday\normalmonth\normalyear,
-     \v!referral=>\docomplexcurrentdate\referraldatepattern,
-      \s!default=>,
-      \s!unknown=>\unskip\commalistelement\hskip\datesignal\let\betweendates\dodobetweendates]}
+\unexpanded\def\currentdate
+  {\dosingleempty\docurrentdate}
 
-\def\complexcurrentdate[#1]%
-  {\bgroup
+\def\docurrentdate[#1]%
+  {\begingroup
    \the\everycurrentdate
-   \let\betweendates\dodobetweendates
-   \docomplexcurrentdate{#1}%
-   \ifdim\lastskip=\datesignal\relax
-     \unskip
-   \fi
-   \egroup}
+   \doifsomething{#1}{\edef\currentdatespecification{#1}}%
+   \ctxcommand{currentdate(\!!bs\currentdatespecification\!!es,"\labellanguage")}%
+   \endgroup}
 
-\def\simplecurrentdate
-  {\complexcurrentdate[\currentdatespecification]}
-
-\definecomplexorsimple\currentdate
+\unexpanded\def\date
+  {\dodoubleempty\dodate}
 
 \def\dodate[#1][#2]%
-  {\bgroup
+  {\begingroup
    \iffirstargument
      \getparameters[\??da][d=\normalday,m=\normalmonth,y=\normalyear,#1]%
      \normalday  \@@dad\relax
      \normalmonth\@@dam\relax
      \normalyear \@@day\relax
-     \ifsecondargument
-       \currentdate[#2]%
-     \else
-       \currentdate
-     \fi
-   \else
-     \currentdate
    \fi
-   \egroup}
-
-\def\date
-  {\dodoubleempty\dodate}
+   \docurrentdate{#2}%
+   \endgroup}
 
 %D \macros
 %D   {currenttime}
@@ -493,7 +529,7 @@
 %D a pattern similar to the previous date macro using the
 %D keys \type {h}, \type {m} and a separator.
 
-\def\calculatecurrenttime
+\unexpanded\def\calculatecurrenttime
   {\edef\currenthour  {\ctxcommand{hour  ()}}%
    \edef\currentminute{\ctxcommand{minute()}}%
    \edef\currentsecond{\ctxcommand{second()}}}
@@ -505,8 +541,7 @@
 
 \def\complexcurrenttime[#1]%
   {\calculatecurrenttime
-   \processallactionsinset[#1]
-     [h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
+   \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
 
 \def\simplecurrenttime
   {\expanded{\complexcurrenttime[\currenttimespecification]}}
@@ -592,19 +627,16 @@
 %D need to handle the second argument.
 
 \def\convertnumber#1#2%
-  {\csname\??cv % we want a fully expandable (no if interference)
-     \ifcsname\??cv\currentlanguage#1\endcsname
-       \currentlanguage#1%
-       \@EA\firstoftwoarguments % dirty, gobble {#1}
-     \else\ifcsname\??cv#1\endcsname
-       #1%
-       \@EAEAEA\firstoftwoarguments % dirty, gobble {#1}
-     \else
-       ->\s!default
-     \fi\fi
+  {\csname
+     \??cv=>% we want a fully expandable (no if interference)
+     \ifcsname\??cv\currentlanguage#1\endcsname1\else
+     \ifcsname\??cv                #1\endcsname2\else
+                                               3\fi\fi
    \endcsname{#1}{\number#2}}
 
-\letvalue{\??cv->\s!default}\docheckedconversion
+\setvalue{\??cv=>1}#1{\csname\??cv\currentlanguage#1\endcsname}
+\setvalue{\??cv=>2}#1{\csname\??cv                #1\endcsname}
+\letvalue{\??cv=>3}\checkedconversion
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??cv\currentlanguage#1\endcsname
@@ -639,14 +671,9 @@
 %D difficult to implement. Fortunately dates never exceed the
 %D number~31.
 
-\ifx\high          \undefined \let\high          \firstofoneargument \fi
-\ifx\notsmallcapped\undefined \let\notsmallcapped\firstofoneargument \fi
-
-\def\highordinalstr#1{\high{\notsmallcapped{#1}}}
-\def\ordinalstr    #1{\notsmallcapped{#1}}
-
-\def\ordinaldaynumber#1% \strippedcsname\ordinaldaynumber
-  {\expanded{\executeifdefined{\currentlanguage ordinaldaynumber}\noexpand\firstofoneargument{\number#1}}}
+\def\highordinalstr     #1{\high{\notsmallcapped{#1}}}
+\def\ordinalstr         #1{\notsmallcapped{#1}}
+\def\ordinaldaynumber   #1{\ctxcommand{ordinal(#1,"\currentlanguage"}}
 
 %D As longs as symbols are linked to levels or numbers, we can
 %D also use the conversion mechanism, but in for instance the

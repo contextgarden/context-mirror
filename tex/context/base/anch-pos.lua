@@ -22,7 +22,8 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local texsp = tex.sp
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
 
-local collected, tobesaved = allocate(), allocate()
+local collected = allocate()
+local tobesaved = allocate()
 
 local jobpositions = {
     collected = collected,
@@ -36,14 +37,15 @@ _ptbs_, _pcol_ = tobesaved, collected -- global
 local dx, dy, nx, ny = "0pt", "0pt", 0, 0
 
 local function initializer()
-    tobesaved = mark(jobpositions.tobesaved)
-    collected = mark(jobpositions.collected)
-    _ptbs_, _pcol_ = tobesaved, collected -- global
-    local p = collected["page:0"] -- page:1
-    if p then
- -- dx, nx = p[2] or "0pt", 0
- -- dy, ny = p[3] or "0pt", 0
-    end
+    tobesaved = jobpositions.tobesaved
+    collected = jobpositions.collected
+    _ptbs_    = tobesaved -- global
+    _pcol_    = collected -- global
+ -- local p   = collected["page:0"] -- page:1
+ -- if p then
+ --    dx, nx = p[2] or "0pt", 0
+ --    dy, ny = p[3] or "0pt", 0
+ -- end
 end
 
 job.register('job.positions.collected', tobesaved, initializer)

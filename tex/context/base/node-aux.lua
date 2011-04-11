@@ -39,7 +39,7 @@ local isnode             = node.is_node
 
 local texbox             = tex.box
 
-function nodes.repack_hlist(list,...)
+function nodes.repackhlist(list,...)
 --~ nodes.showsimplelist(list)
     local temp, b = hpack_nodes(list,...)
     list = temp.list
@@ -80,22 +80,15 @@ local function unset_attributes(head,attr)
     end
 end
 
-nodes.set_attribute        = set_attribute
-nodes.unset_attribute      = unset_attribute
-nodes.has_attribute        = has_attribute
-nodes.first_glyph          = first_glyph
+nodes.firstglyph         = first_glyph
+nodes.setattribute       = set_attribute
+nodes.getattribute       = has_attribute
+nodes.unsetattribute     = unset_attribute
+nodes.setattributes      = set_attributes
+nodes.setunsetattributes = set_unset_attributes
+nodes.unsetattributes    = unset_attributes
 
-nodes.set_attributes       = set_attributes
-nodes.set_unset_attributes = set_unset_attributes
-nodes.unset_attributes     = unset_attributes
-
-nodes.setattribute         = set_attribute
-nodes.unsetattribute       = unset_attribute
-nodes.hasattribute         = has_attribute
-
-nodes.setattributes        = set_attributes
-nodes.setunsetattributes   = set_unset_attributes
-nodes.unsetattributes      = unset_attributes
+nodes.has_attribute      = has_attribute
 
 -- function nodes.is_skipable(a,id)  -- skipable nodes at the margins during character protrusion
 --     return (

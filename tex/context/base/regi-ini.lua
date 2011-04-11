@@ -14,11 +14,12 @@ runtime.</p>
 
 local utfchar = utf.char
 local char, gsub, format = string.char, string.gsub, string.format
-local next, setmetatable = next, setmetatable
+local next = next
 local insert, remove = table.insert, table.remove
 
-local sequencers      = utilities.sequencers
-local textlineactions = resolvers.openers.helpers.textlineactions
+local sequencers        = utilities.sequencers
+local textlineactions   = resolvers.openers.helpers.textlineactions
+local setmetatableindex = table.setmetatableindex
 
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
@@ -108,7 +109,7 @@ local function loadregime(mapping,regime)
     return vector
 end
 
-setmetatable(mapping, { __index = loadregime })
+setmetatableindex(mapping, loadregime)
 
 local function translate(line,regime)
     if line and #line > 0 then

@@ -466,8 +466,9 @@
 
 \def\dodotypeblockverbatim#1#2%
   {\secondstageinitializetyping
-   \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typebuffer {
      name   = "_typing_",
      strip  = "\typingparameter\c!strip",
@@ -479,6 +480,7 @@
    }}%
    \dostoptagged
    \endofverbatimlines
+   \dostoptagged
    \csname#2\endcsname}
 
 \def\dostoptyping#1% hm, currenttyping
@@ -578,8 +580,9 @@
    \dosetuptypelinenumbering
    \firststageinitializetyping
    \secondstageinitializetyping
-   \beginofverbatimlines
    \dostarttagged\t!verbatimblock\currenttyping
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
    \ctxcommand{typefile {
       name   = "#2",
       strip  = "\typingparameter\c!strip",
@@ -591,6 +594,7 @@
     }}%
    \dostoptagged
    \endofverbatimlines
+   \dostoptagged
    \stoppacked
    \typingparameter\c!after}
 
@@ -741,7 +745,7 @@
    \firststageinitializetyping
    \secondstageinitializetyping
    \beginofverbatimlines
-   \dostarttagged\t!verbatim{#1}%
+   \dostarttagged\t!verbatimblock{#1}%
    \ctxcommand{typebuffer {
      name   = "#2",
      strip  = "\typingparameter\c!strip",
@@ -813,11 +817,13 @@
    \fi}
 
 \def\doverbatimemptyline
-  {\ifconditional\verbatimnumberinglines
+  {\dostoptagged
+   \ifconditional\verbatimnumberinglines
      \par\strut\par % this will be an option where we use a signal instead of a strut
    \else
      \blank[\typingparameter\c!blank]%
-   \fi}
+   \fi
+    \dostarttagged\t!verbatimlines\empty}
 
 % hooks:
 

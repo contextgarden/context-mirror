@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['mult-clm'] = {
 }
 
 -- another experiment
+-- needs upgrading
+-- needs checking
 -- todo: multilingual
 
 local texsprint, ctxcatcodes, vrbcatcodes = tex.sprint, tex.ctxcatcodes, tex.vrbcatcodes
@@ -15,9 +17,10 @@ local unpack = unpack or table.unpack
 
 local trace_define = false  trackers.register("context.define", function(v) trace_define = v end)
 
-mkiv = mkiv or { }
+interfaces = interfaces or { }
 
-mkiv.h, mkiv.a = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
+_clmh_ = utilities.parsers.settings_to_array
+_clma_ = utilities.parsers.settings_to_array
 
 local starters, stoppers, macros, stack = { }, { }, { }, { }
 
@@ -30,17 +33,17 @@ local checkers = {
     "\\dosixtupleempty",
 }
 
-function mkiv.m(name,...)
+function _clmm_(name,...)
     macros[name](...)
 end
 
-function mkiv.b(name,...)
+function _clmb_(name,...)
     local sn = stack[name]
     insert(sn,{...})
     starters[name](...)
 end
 
-function mkiv.e(name)
+function _clme_(name)
     local sn = stack[name]
     local sv = remove(sn)
     if sv then
@@ -50,9 +53,9 @@ function mkiv.e(name)
     end
 end
 
-mkiv.n = tonumber
+_clmn_ = tonumber
 
-function mkiv.define(name,specification) -- name is optional
+function interfaces.definecommand(name,specification) -- name is optional
     if type(name) == "table" then
         specification = name
         name = specification.name
@@ -63,15 +66,15 @@ function mkiv.define(name,specification) -- name is optional
         local environment = specification.environment
         if na == 0 then
             if environment then
-                texsprint(ctxcatcodes,"\\mkdefstart{",name,"}{\\ctxlua{mkiv.b('",name,"')}}")
-                texsprint(ctxcatcodes,"\\mkdefstop{", name,"}{\\ctxlua{mkiv.b('",name,"')}}")
+                texsprint(ctxcatcodes,"\\clmb{",name,"}{\\ctxlua{_clmb_('",name,"')}}")
+                texsprint(ctxcatcodes,"\\clme{",name,"}{\\ctxlua{_clme_('",name,"')}}")
             else
-                texsprint(ctxcatcodes,"\\mkivdef{",   name,"}{\\ctxlua{mkiv.m('",name,"')}}")
+                texsprint(ctxcatcodes,"\\clmm{",name,"}{\\ctxlua{_clmm_('",name,"')}}")
             end
         else
             stack[name] = { }
             local opt, done = 0, false
-            local mkivdo = "\\mkivdo" .. name
+            local mkivdo = "\\mkivdo" .. name -- maybe clddo
             texsprint(ctxcatcodes,"\\def",mkivdo)
             for i=1,na do
                 local a = arguments[i]
@@ -87,29 +90,29 @@ function mkiv.define(name,specification) -- name is optional
                 end
             end
             if environment then
-                texsprint(ctxcatcodes,"{\\ctxlua{mkiv.b('",name,"'")
+                texsprint(ctxcatcodes,"{\\ctxlua{_clmb_('",name,"'")
             else
-                texsprint(ctxcatcodes,"{\\ctxlua{mkiv.m('",name,"'")
+                texsprint(ctxcatcodes,"{\\ctxlua{_clmm_('",name,"'")
             end
             for i=1,na do
                 local a = arguments[i]
                 local variant = a[2]
                 if variant == "list" then
-                    texsprint(ctxcatcodes,",mkiv.a([[#",i,"]])")
+                    texsprint(ctxcatcodes,",_clma_([[#",i,"]])")
                 elseif variant == "hash" then
-                    texsprint(ctxcatcodes,",mkiv.h([[#",i,"]])")
+                    texsprint(ctxcatcodes,",_clmh_([[#",i,"]])")
                 elseif variant == "number" then
-                    texsprint(ctxcatcodes,",mkiv.n([[#",i,"]])")
+                    texsprint(ctxcatcodes,",_clmn_([[#",i,"]])")
                 else
                     texsprint(ctxcatcodes,",[[#",i,"]]")
                 end
             end
             texsprint(ctxcatcodes,")}}")
             if environment then
-                texsprint(ctxcatcodes,"\\mkivdefstop{" ,name,"}{\\ctxlua{mkiv.e('",name,"')}}")
-                texsprint(ctxcatcodes,"\\mkivdefstart{",name,"}{",checkers[opt],mkivdo,"}")
+                texsprint(ctxcatcodes,"\\clme{",name,"}{\\ctxlua{_clme_('",name,"')}}")
+                texsprint(ctxcatcodes,"\\clmb{",name,"}{",checkers[opt],mkivdo,"}")
             else
-                texsprint(ctxcatcodes,"\\mkivdef{",     name,"}{",checkers[opt],mkivdo,"}")
+                texsprint(ctxcatcodes,"\\clmm{",name,"}{",checkers[opt],mkivdo,"}")
             end
         end
         if environment then
@@ -121,7 +124,7 @@ function mkiv.define(name,specification) -- name is optional
     end
 end
 
-function mkiv.tolist(t)
+function interfaces.tolist(t)
     local r = { }
     for i=1,#t do
         r[i] = t[i]
@@ -139,15 +142,15 @@ end
 --~ \startluacode
 --~ function test(opt_1, opt_2, arg_1)
 --~     context.startnarrower()
---~     context("options 1: %s",mkiv.tolist(opt_1))
+--~     context("options 1: %s",interfaces.tolist(opt_1))
 --~     context.par()
---~     context("options 2: %s",mkiv.tolist(opt_2))
+--~     context("options 2: %s",interfaces.tolist(opt_2))
 --~     context.par()
 --~     context("argument 1: %s",arg_1)
 --~     context.stopnarrower()
 --~ end
 
---~ mkiv.define {
+--~ interfaces.definecommand {
 --~     name = "test",
 --~     arguments = {
 --~         { "option", "list" },
@@ -163,17 +166,17 @@ end
 --~ \startluacode
 --~ local function startmore(opt_1)
 --~     context.startnarrower()
---~     context("start more, options: %s",mkiv.tolist(opt_1))
+--~     context("start more, options: %s",interfaces.tolist(opt_1))
 --~     context.startnarrower()
 --~ end
 
 --~ local function stopmore(opt_1)
 --~     context.stopnarrower()
---~     context("stop more, options: %s",mkiv.tolist(opt_1))
+--~     context("stop more, options: %s",interfaces.tolist(opt_1))
 --~     context.stopnarrower()
 --~ end
 
---~ mkiv.define ( "more", {
+--~ interfaces.definecommand ( "more", {
 --~     environment = true,
 --~     arguments = {
 --~         { "option", "list" },

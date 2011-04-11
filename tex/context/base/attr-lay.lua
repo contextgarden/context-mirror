@@ -14,7 +14,8 @@ local type = type
 local format = string.format
 local insert, remove = table.insert, table.remove
 
-local allocate = utilities.storage.allocate
+local allocate            = utilities.storage.allocate
+local setmetatableindex   = table.setmetatableindex
 
 local report_viewerlayers = logs.reporter("viewerlayers")
 
@@ -90,8 +91,8 @@ local function reviver(data,n)
     end
 end
 
-setmetatable(viewerlayers,      { __index = extender })
-setmetatable(viewerlayers.data, { __index = reviver  })
+setmetatableindex(viewerlayers, extender)
+setmetatableindex(viewerlayers.data, reviver)
 
 local function initializer(...)
     return states.initialize(...)

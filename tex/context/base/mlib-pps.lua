@@ -15,43 +15,47 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 
 local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
 local tonumber, type = tonumber, type
-local lpegmatch = lpeg.match
-local texbox = tex.box
-local copy_list, free_list = node.copy_list, node.flush_list
-
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
+local lpegmatch = lpeg.match
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
+local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
-local context = context
+local texbox               = tex.box
+local copy_list            = node.copy_list
+local free_list            = node.flush_list
+local setmetatableindex    = table.setmetatableindex
+local sortedhash           = table.sortedhash
 
-local trace_textexts = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
+local starttiming          = statistics.starttiming
+local stoptiming           = statistics.stoptiming
 
-local report_metapost = logs.reporter("metapost")
-local report_textexts = logs.reporter("metapost","textexts")
+local trace_textexts       = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 
-local colors = attributes.colors
+local report_metapost      = logs.reporter("metapost")
+local report_textexts      = logs.reporter("metapost","textexts")
 
-local rgbtocmyk  = colors.rgbtocmyk  or function() return 0,0,0,1 end
-local cmyktorgb  = colors.cmyktorgb  or function() return 0,0,0   end
-local rgbtogray  = colors.rgbtogray  or function() return 0       end
-local cmyktogray = colors.cmyktogray or function() return 0       end
+local colors               = attributes.colors
 
-local mplib, metapost, lpdf = mplib, metapost, lpdf
+local rgbtocmyk            = colors.rgbtocmyk  or function() return 0,0,0,1 end
+local cmyktorgb            = colors.cmyktorgb  or function() return 0,0,0   end
+local rgbtogray            = colors.rgbtogray  or function() return 0       end
+local cmyktogray           = colors.cmyktogray or function() return 0       end
 
-metapost.makempy = metapost.makempy or { nofconverted = 0 }
-local makempy    = metapost.makempy
+metapost.makempy           = metapost.makempy or { nofconverted = 0 }
+local makempy              = metapost.makempy
 
-local nooutercolor        = "0 g 0 G"
-local nooutertransparency = "/Tr0 gs" -- only when set
-local outercolormode      = 0
-local outercolor          = nooutercolor
-local outertransparency   = nooutertransparency
-local innercolor          = nooutercolor
-local innertransparency   = nooutertransparency
+local nooutercolor         = "0 g 0 G"
+local nooutertransparency  = "/Tr0 gs" -- only when set
+local outercolormode       = 0
+local outercolor           = nooutercolor
+local outertransparency    = nooutertransparency
+local innercolor           = nooutercolor
+local innertransparency    = nooutertransparency
 
-local pdfcolor, pdftransparency = lpdf.color, lpdf.transparency
-local registercolor, registerspotcolor = colors.register, colors.registerspotcolor
+local pdfcolor             = lpdf.color
+local pdftransparency      = lpdf.transparency
+local registercolor        = colors.register
+local registerspotcolor    = colors.registerspotcolor
 
 local transparencies       = attributes.transparencies
 local registertransparency = transparencies.register
@@ -352,11 +356,11 @@ function models.gray(cr)
     return checked_color_pair(format("%.3f g %.3f G",s,s))
 end
 
-setmetatable(models, { __index = function(t,k)
+setmetatableindex(models, function(t,k)
     local v = models.gray
     t[k] = v
     return v
-end })
+end)
 
 local function colorconverter(cs)
     return models[colors.model](cs)
@@ -839,15 +843,15 @@ local value = Cs ( (
 )
 
 local function tr_process(object,prescript,before,after)
+    -- before can be shortcut to t
+    local tr_alternative = prescript.tr_alternative
+    if tr_alternative then
+        tr_alternative = tonumber(tr_alternative)
+        local tr_transparency = tonumber(prescript.tr_transparency)
+        before[#before+1], after[#after+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true)), "/Tr0 gs" -- outertransparency
+    end
     local cs = object.color
     if cs and #cs > 0 then
-        -- before can be shortcut to t
-        local tr_alternative = prescript.tr_alternative
-        if tr_alternative then
-            tr_alternative = tonumber(tr_alternative)
-            local tr_transparency = tonumber(prescript.tr_transparency)
-            before[#before+1], after[#after+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true)), "/Tr0 gs" -- outertransparency
-        end
         local sp_name = prescript.sp_name
         if sp_name then
             local sp_fractions  = prescript.sp_fractions  or 1

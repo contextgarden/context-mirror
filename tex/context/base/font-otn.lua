@@ -166,6 +166,8 @@ local find_node_tail     = node.tail or node.slide
 local set_attribute      = node.set_attribute
 local has_attribute      = node.has_attribute
 
+local setmetatableindex  = table.setmetatableindex
+
 local zwnj               = 0x200C
 local zwj                = 0x200D
 local wildcard           = "*"
@@ -462,7 +464,7 @@ function handlers.gsub_multiple(start,kind,lookupname,multiple)
     return multiple_glyphs(start,multiple)
 end
 
-function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or maybe pass lookup ref
+function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence)
     local s, stop, discfound = start.next, nil, false
     local startchar = start.char
     if marks[startchar] then
@@ -483,14 +485,18 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop then
             local lig = ligature.ligature
-            if trace_ligatures then
-                local stopchar = stop.char
-                start = markstoligature(kind,lookupname,start,stop,lig)
-                logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+            if lig then
+                if trace_ligatures then
+                    local stopchar = stop.char
+                    start = markstoligature(kind,lookupname,start,stop,lig)
+                    logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+                else
+                    start = markstoligature(kind,lookupname,start,stop,lig)
+                end
+                return start, true
             else
-                start = markstoligature(kind,lookupname,start,stop,lig)
+                -- ok, goto next lookup
             end
-            return start, true
         end
     else
         local skipmark = sequence.flags[1]
@@ -523,14 +529,18 @@ function handlers.gsub_ligature(start,kind,lookupname,ligature,sequence) --or ma
         end
         if stop then
             local lig = ligature.ligature
-            if trace_ligatures then
-                local stopchar = stop.char
-                start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
-                logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+            if lig then
+                if trace_ligatures then
+                    local stopchar = stop.char
+                    start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                    logprocess("%s: replacing %s upto %s by ligature %s",pref(kind,lookupname),gref(startchar),gref(stopchar),gref(start.char))
+                else
+                    start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                end
+                return start, true
             else
-                start = toligature(kind,lookupname,start,stop,lig,skipmark,discfound)
+                -- ok, goto next lookup
             end
-            return start, true
         end
     end
     return start, false
@@ -1843,16 +1853,14 @@ local resolved = { } -- we only resolve a font,script,language pair once
 
 local lookuphashes = { }
 
-setmetatable(lookuphashes, { __index =
-    function(t,font)
-        local lookuphash = fontdata[font].resources.lookuphash
-        if not lookuphash or not next(lookuphash) then
-            lookuphash = false
-        end
-        t[font] = lookuphash
-        return lookuphash
+setmetatableindex(lookuphashes, function(t,font)
+    local lookuphash = fontdata[font].resources.lookuphash
+    if not lookuphash or not next(lookuphash) then
+        lookuphash = false
     end
-})
+    t[font] = lookuphash
+    return lookuphash
+end)
 
 -- fonts.hashes.lookups = lookuphashes
 
@@ -1899,11 +1907,11 @@ function otf.dataset(ftfmdata,sequences,font) -- generic variant, overloaded in 
     if not rl then
         rl = { }
         rs[language] = rl
-        setmetatable(rl, { __index = function(t,k)
+        setmetatableindex(rl, function(t,k)
             local v = enabled and initialize(sequences[k],script,language,enabled)
             t[k] = v
             return v
-        end})
+        end)
     end
     return rl
 end

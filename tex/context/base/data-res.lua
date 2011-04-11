@@ -16,15 +16,20 @@ if not modules then modules = { } end modules ['data-res'] = {
 
 local format, gsub, find, lower, upper, match, gmatch = string.format, string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
 local concat, insert, sortedkeys = table.concat, table.insert, table.sortedkeys
-local next, type, rawget, setmetatable, getmetatable = next, type, rawget, setmetatable, getmetatable
+local next, type, rawget = next, type, rawget
 local os = os
 
 local P, S, R, C, Cc, Cs, Ct, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local filedirname, filebasename, fileextname, filejoin = file.dirname, file.basename, file.extname, file.join
-local collapsepath, joinpath = file.collapsepath, file.joinpath
-local allocate = utilities.storage.allocate
+local filedirname       = file.dirname
+local filebasename      = file.basename
+local fileextname       = file.extname
+local filejoin          = file.join
+local collapsepath      = file.collapsepath
+local joinpath          = file.joinpath
+local allocate          = utilities.storage.allocate
+local setmetatableindex = table.setmetatableindex
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
 local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
@@ -169,7 +174,8 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         force_suffixes  = true,
     }
 
-    setmetatable(variables, { __index = function(t,k)
+    setmetatableindex(variables,function(t,k)
+        local v
         for i=1,#order do
             v = order[i][k]
             if v ~= nil then
@@ -182,10 +188,10 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         end
         t[k] = v
         return v
-    end } )
+    end)
 
-    setmetatable(environment, { __index = function(t,k)
-        v = osgetenv(k)
+    setmetatableindex(environment, function(t,k)
+        local v = osgetenv(k)
         if v == nil then
             v = variables[k]
         end
@@ -195,9 +201,9 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         v = resolvers.repath(v) -- for taco who has a : separated osfontdir
         t[k] = v
         return v
-    end } )
+    end)
 
-    setmetatable(expansions, { __index = function(t,k)
+    setmetatableindex(expansions, function(t,k)
         local v = environment[k]
         if type(v) == "string" then
             v = lpegmatch(variableresolver,v)
@@ -205,7 +211,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         end
         t[k] = v
         return v
-    end } )
+    end)
 
     return newinstance
 
@@ -711,7 +717,7 @@ function resolvers.registerfilehash(name,content,someerror)
     end
 end
 
-function isreadable(name)
+local function isreadable(name)
     local readable = lfs.isfile(name) -- not file.is_readable(name) asit can be a dir
     if trace_detail then
         if readable then

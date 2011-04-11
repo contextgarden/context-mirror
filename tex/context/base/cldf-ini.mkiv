@@ -15,6 +15,9 @@
 
 \registerctxluafile{cldf-ini}{1.001}
 
+\def\cldf#1{\directlua\zerocount{_cldf_(#1)}} % global (functions)
+\def\cldn#1{\directlua\zerocount{_cldn_(#1)}} % global (nodes)
+
 \normalprotected\def\cldprocessfile#1{\directlua\zerocount{context.runfile("#1")}}
                 \def\cldcontext    #1{\directlua\zerocount{context(#1)}}
                 \def\cldcommand    #1{\directlua\zerocount{context.#1}}

@@ -65,7 +65,6 @@ local texsprint = tex.sprint
 local prtcatcodes = tex.prtcatcodes
 
 languages.labels = languages.labels or { }
-languages.data   = languages.data   or { }
 
 local trace_labels = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 
