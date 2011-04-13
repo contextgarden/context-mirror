@@ -18,6 +18,8 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- todo: less attributes e.g. internal only first node
 -- todo: build xml tree in mem (handy for cleaning)
 
+-- delimited: left/right string (needs marking)
+
 local nodecodes       = nodes.nodecodes
 local traverse_nodes  = node.traverse
 local hlist_code      = nodecodes.hlist
@@ -58,6 +60,8 @@ local report_export     = logs.reporter("backend","export")
 local nodes             = nodes
 local attributes        = attributes
 local variables         = interfaces.variables
+
+local settings_to_array = utilities.parsers.settings_to_array
 
 local setmetatableindex = table.setmetatableindex
 local tasks             = nodes.tasks
@@ -136,22 +140,59 @@ local extras        = { }
 local nofbreaks     = 0
 local used          = { }
 local exporting     = false
-
-setmetatableindex(used, function(t,k) if k then local v = { } t[k] = v return v end end)
-
 local last          = nil
 local lastpar       = nil
 
-local joiner_1      = " "
-local joiner_2      = " " -- todo: test if this one can always be ""
-local joiner_3      = " "
-local joiner_4      = " "
-local joiner_5      = " "
-local joiner_6      = " "
-local joiner_7      = "\n"
-local joiner_8      = " "
-local joiner_9      = " "
-local joiner_0      = " "
+setmetatableindex(used, function(t,k)
+    if k then
+        local v = { }
+        t[k] = v
+        return v
+    end
+end)
+
+local joiner_1   = " "
+local joiner_2   = " " -- todo: test if this one can always be ""
+local joiner_3   = " "
+local joiner_4   = " "
+local joiner_5   = " "
+local joiner_6   = " "
+local joiner_7   = "\n"
+local joiner_8   = " "
+local joiner_9   = " "
+local joiner_0   = " "
+
+local namespaced = {
+    -- filled on
+}
+
+local namespaces = {
+    msubsup    = "m",
+    msub       = "m",
+    msup       = "m",
+    mn         = "m",
+    mi         = "m",
+    ms         = "m",
+    mo         = "m",
+    mtext      = "m",
+    mrow       = "m",
+    mfrac      = "m",
+    mroot      = "m",
+    msqrt      = "m",
+    munderover = "m",
+    munder     = "m",
+    mover      = "m",
+    merror     = "m",
+    math       = "m",
+    mrow       = "m",
+}
+
+setmetatableindex(namespaced, function(t,k)
+    local namespace = namespaces[k]
+    local v = namespace and namespace .. ":" .. k or k
+    t[k] = v
+    return v
+end)
 
 -- local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
 --
@@ -218,6 +259,7 @@ function extras.document(handle,element,detail,n,fulltag,hash)
         handle:write(format(" date=%q",os.date()))
         handle:write(format(" context=%q",environment.version))
         handle:write(format(" version=%q",version))
+        handle:write(format(" xmlns:m=%q","http://www.w3.org/1998/Math/MathML"))
         local identity = interactions.general.getidentity()
         for i=1,#fields do
             local key   = fields[i]
@@ -588,7 +630,7 @@ function extras.tabulatecell(handle,element,detail,n,fulltag,di)
 end
 
 local function emptytag(handle,element,nature,depth)
-    handle:write("\n",spaces[depth],"<",element,"/>\n")
+    handle:write("\n",spaces[depth],"<",namespaced[element],"/>\n")
 end
 
 local function begintag(handle,element,nature,depth,di,empty)
@@ -614,7 +656,7 @@ local function begintag(handle,element,nature,depth,di,empty)
             linedone = false
         end
     end
-    handle:write("<",element)
+    handle:write("<",namespaced[element])
     if detail then
         handle:write(" detail='",detail,"'")
     end
@@ -651,14 +693,14 @@ local function endtag(handle,element,nature,depth,empty)
                 if not linedone then
                     handle:write("\n")
                 end
-                handle:write(spaces[depth],"</",element,">\n")
+                handle:write(spaces[depth],"</",namespaced[element],">\n")
             end
             linedone = true
         else
             if empty then
                 handle:write("/>")
             else
-                handle:write("</",element,">")
+                handle:write("</",namespaced[element],">")
             end
         end
     else
@@ -666,7 +708,7 @@ local function endtag(handle,element,nature,depth,empty)
         if empty then
             handle:write("/>")
         else
-            handle:write("</",element,">")
+            handle:write("</",namespaced[element],">")
         end
         linedone = false
     end
@@ -1025,13 +1067,17 @@ local function stopexport(v)
         report_export("saving xml data in '%s",xmlfile)
         handle:write(format(xmlpreamble,tex.jobname,os.date(),environment.version,version))
         if cssfile then
-            if type(v) ~= "string" or cssfile == variables.yes or cssfile == "" or cssfile == xmlfile then
-                cssfile = file.replacesuffix(xmlfile,"css")
-            else
-                cssfile = file.addsuffix(cssfile,"css")
+            local cssfiles = settings_to_array(cssfile)
+            for i=1,#cssfiles do
+                local cssfile = cssfiles[i]
+                if type(cssfile) ~= "string" or cssfile == variables.yes or cssfile == "" or cssfile == xmlfile then
+                    cssfile = file.replacesuffix(xmlfile,"css")
+                else
+                    cssfile = file.addsuffix(cssfile,"css")
+                end
+                report_export("adding css reference '%s",cssfile)
+                handle:write(format(csspreamble,cssfile))
             end
-            report_export("adding css reference '%s",cssfile)
-            handle:write(format(csspreamble,cssfile))
         end
         flushtree(handle,tree.data)
         handle:close()
@@ -1104,7 +1150,7 @@ local function startexport(v)
     end
 end
 
-directives.register("backend.export",startexport)
+directives.register("backend.export",startexport) -- maybe .name
 
 local function injectbreak()
     flushresult(entry)

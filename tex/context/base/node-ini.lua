@@ -211,8 +211,6 @@ function nodes.showcodes()
     end
 end
 
--- pseudoline and shape crash on node.new
-
 local whatsit_node = nodecodes.whatsit
 
 local messyhack    = table.tohash { -- temporary solution

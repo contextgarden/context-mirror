@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/11/11 18:55:38
+-- merge date  : 04/13/11 09:23:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -4763,7 +4763,7 @@ local getn = table.getn
 local lpegmatch = lpeg.match
 local reversed, concat, remove = table.reversed, table.concat, table.remove
 local ioflush = io.flush
-local fastcopy = table.fastcopy
+local fastcopy, tohash = table.fastcopy, table.tohash
 
 local allocate           = utilities.storage.allocate
 local registertracker    = trackers.register
@@ -4788,7 +4788,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.722 -- beware: also sync font-mis.lua
+otf.version              = 2.727 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -5758,6 +5758,11 @@ actions["prepare lookups"] = function(data,filename,raw)
     end
 end
 
+-- The reverse handler does a bit redundant splitting but it's seldom
+-- seen so we don' tbother too much. We could store the replacement
+-- in the current list (value instead of true) but it makes other code
+-- uglier. Maybe some day.
+
 local function t_uncover(splitter,cache,covers)
     local result = { }
     for n=1,#covers do
@@ -5772,6 +5777,26 @@ local function t_uncover(splitter,cache,covers)
     return result
 end
 
+local function t_hashed(t,cache)
+    if t then
+        local h = { }
+        for i=1,#t do
+            local ti = t[i]
+            local h = cache[ti]
+            if not h then
+                h = { }
+                for i=1,#ti do
+                    h[ti] = true
+                end
+            end
+            cache[ti] = h
+        end
+        return h
+    else
+        return nil
+    end
+end
+
 local function s_uncover(splitter,cache,cover)
     if cover == "" then
         return nil
@@ -5779,9 +5804,36 @@ local function s_uncover(splitter,cache,cover)
         local uncovered = cache[cover]
         if not uncovered then
             uncovered = lpegmatch(splitter,cover)
+            for i=1,#uncovered do
+                uncovered[i] = { [uncovered[i]] = true }
+            end
             cache[cover] = uncovered
         end
         return uncovered
+    end
+end
+
+local s_hashed = t_hashed
+
+local function r_uncover(splitter,cache,cover,replacements)
+    if cover == "" then
+        return nil
+    else
+        -- we always have current as { } even in the case of one
+        local uncovered = cover[1]
+        local replaced = cache[replacements]
+        if not replaced then
+            replaced = lpegmatch(splitter,replacements)
+            cache[replacements] = replaced
+        end
+        local nu, nr = #uncovered, #replaced
+        local r = { }
+        if nu == nr then
+            for i=1,nu do
+                r[uncovered[i]] = replaced[i]
+            end
+        end
+        return r
     end
 end
 
@@ -5789,7 +5841,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
     -- we prefer the before lookups in a normal order
     if data.lookups then
         local splitter = data.helpers.tounicodetable
-        local cache = { }
+        local cache, h_cache = { }, { }
         for _, lookup in next, data.lookups do
             local rules = lookup.rules
             if rules then
@@ -5815,7 +5867,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
                             for i=1,#before do
                                 before[i] = before_class[before[i]] or { }
                             end
-                            rule.before = before
+                            rule.before = t_hashed(before,h_cache)
                         end
                         local current = class.current
                         local lookups = rule.lookups
@@ -5826,14 +5878,14 @@ actions["reorganize lookups"] = function(data,filename,raw)
                                     lookups[i] = false
                                 end
                             end
-                            rule.current = current
+                            rule.current = t_hashed(current,h_cache)
                         end
                         local after = class.after
                         if after then
                             for i=1,#after do
                                 after[i] = after_class[after[i]] or { }
                             end
-                            rule.after = after
+                            rule.after = t_hashed(after,h_cache)
                         end
                         rule.class = nil
                     end
@@ -5848,39 +5900,45 @@ actions["reorganize lookups"] = function(data,filename,raw)
                         if coverage then
                             local before = coverage.before
                             if before then
-                                rule.before = t_uncover(splitter,cache,reversed(before))
+                                before = t_uncover(splitter,cache,reversed(before))
+                                rule.before = t_hashed(before,h_cache)
                             end
                             local current = coverage.current
                             if current then
-                                rule.current = t_uncover(splitter,cache,current)
+                                current = t_uncover(splitter,cache,current)
+                                rule.current = t_hashed(current,h_cache)
                             end
                             local after = coverage.after
                             if after then
-                                rule.after = t_uncover(splitter,cache,after)
+                                after = t_uncover(splitter,cache,after)
+                                rule.after = t_hashed(after,h_cache)
                             end
                             rule.coverage = nil
                         end
                     end
-                elseif format == "reversecoverage" then
+                elseif format == "reversecoverage" then -- special case, single substitution only
                     for i=1,#rules do
                         local rule = rules[i]
                         local reversecoverage = rule.reversecoverage
                         if reversecoverage then
                             local before = reversecoverage.before
                             if before then
-                                rule.before = t_uncover(splitter,cache,reversed(before))
+                                before = t_uncover(splitter,cache,reversed(before))
+                                rule.before = t_hashed(before,h_cache)
                             end
                             local current = reversecoverage.current
                             if current then
-                                rule.current = t_uncover(splitter,cache,current)
+                                current = t_uncover(splitter,cache,current)
+                                rule.current = t_hashed(current,h_cache)
                             end
                             local after = reversecoverage.after
                             if after then
-                                rule.after = t_uncover(splitter,cache,after)
+                                after = t_uncover(splitter,cache,after)
+                                rule.after = t_hashed(after,h_cache)
                             end
                             local replacements = reversecoverage.replacements
                             if replacements then
-                                rule.replacements = s_uncover(splitter,cache,replacements)
+                                rule.replacements = r_uncover(splitter,cache,current,replacements)
                             end
                             rule.reversecoverage = nil
                         end
@@ -5892,15 +5950,18 @@ actions["reorganize lookups"] = function(data,filename,raw)
                         if glyphs then
                             local fore = glyphs.fore
                             if fore then
-                                rule.fore = s_uncover(splitter,cache,fore)
+                                fore = s_uncover(splitter,cache,fore)
+                                rule.before = s_hashed(fore,h_cache)
                             end
                             local back = glyphs.back
                             if back then
-                                rule.back = s_uncover(splitter,cache,back)
+                                back = s_uncover(splitter,cache,back)
+                                rule.after = s_hashed(back,h_cache)
                             end
                             local names = glyphs.names
                             if names then
-                                rule.names = s_uncover(splitter,cache,names)
+                                names = s_uncover(splitter,cache,names)
+                                rule.current = s_hashed(names,h_cache)
                             end
                             rule.glyphs = nil
                         end
@@ -7966,9 +8027,9 @@ local function gref(n)
         local description = descriptions[n]
         local name = description and description.name
         if name then
-            return format("U+%04X (%s)",n,name)
+            return format("U+%05X (%s)",n,name)
         else
-            return format("U+%04X",n)
+            return format("U+%05X",n)
         end
     elseif not n then
         return "<error in tracing>"
@@ -7976,9 +8037,9 @@ local function gref(n)
         local num, nam = { }, { }
         for i=1,#n do
             local ni = n[i]
-            if tonumber(di) then -- later we will start at 2
+            if tonumber(ni) then -- later we will start at 2
                 local di = descriptions[ni]
-                num[i] = format("U+%04X",ni)
+                num[i] = format("U+%05X",ni)
                 nam[i] = di and di.name or "?"
             end
         end
@@ -8151,6 +8212,9 @@ local function multiple_glyphs(start,multiple)
         end
         return start, true
     else
+        if trace_multiples then
+            logprocess("no multiple for %s",gref(start.char))
+        end
         return start, false
     end
 end
@@ -8665,11 +8729,10 @@ as less as needed but that would also mke the code even more messy.</p>
 local function delete_till_stop(start,stop,ignoremarks)
     if start ~= stop then
         -- todo keep marks
-        local done = false
-        while not done do
-            done = start == stop
-            delete_node(start,start.next)
-        end
+        repeat
+            local next = start.next
+            delete_node(start,next)
+        until next == stop
     end
 end
 
@@ -8680,18 +8743,19 @@ match.</p>
 
 function chainprocs.gsub_single(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,chainindex)
     -- todo: marks ?
-    if not chainindex then
-        delete_till_stop(start,stop) -- ,currentlookup.flags[1]
-    end
+--~     if not chainindex then
+--~         delete_till_stop(start,stop) -- ,currentlookup.flags[1]
+--~         stop = start
+--~     end
     local current = start
     local subtables = currentlookup.subtables
-if #subtables > 1 then
-    log_warning("todo: check if we need to loop over the replacements: %s",concat(subtables," "))
-end
+    if #subtables > 1 then
+        logwarning("todo: check if we need to loop over the replacements: %s",concat(subtables," "))
+    end
     while current do
         if current.id == glyph_code then
             local currentchar = current.char
-            local lookupname = subtables[1]
+            local lookupname = subtables[1] -- only 1
             local replacement = lookuphash[lookupname]
             if not replacement then
                 if trace_bugs then
@@ -9255,7 +9319,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
         else
             -- todo: better space check (maybe check for glue)
             local f, l = ck[4], ck[5]
-            if f == l then
+            -- current match
+            if f == 1 and f == l then
                 -- already a hit
                 match = true
             else
@@ -9307,8 +9372,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     end
                 -- end
             end
+            -- before
             if match and f > 1 then
-                -- before
                 local prev = start.prev
                 if prev then
                     local n = f-1
@@ -9345,7 +9410,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 match = false break
                             end
                             prev = prev.prev
-                        elseif seq[n][32] then
+                        elseif seq[n][32] then -- somehat special, as zapfino can have many preceding spaces
                             n = n -1
                         else
                             match = false break
@@ -9361,9 +9426,9 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     end
                 end
             end
+            -- after
             if match and s > l then
-                -- after
-                local current = last.next
+                local current = last and last.next
                 if current then
                     -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
@@ -9423,9 +9488,11 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 local rule, lookuptype, f, l = ck[1], ck[2], ck[4], ck[5]
                 local char = start.char
                 if ck[9] then
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",
+                        cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
                 else
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",
+                        cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
                 end
             end
             local chainlookups = ck[6]
@@ -9480,7 +9547,6 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         end
                         start = start.next
                     until i > nofchainlookups
-
                 end
             else
                 local replacements = ck[7]
@@ -9659,6 +9725,8 @@ local function featuresprocessor(head,font,attr)
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
+--~ print(typ)
+--~ table.print(table.keys(sequence))
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
                 local handler = handlers[typ]
@@ -10035,13 +10103,177 @@ local function split(replacement,original)
     return result
 end
 
-local function uncover(covers,result) -- will change (we can store this in the raw table)
-    local nofresults = #result
-    for n=1,#covers do
-        nofresults = nofresults + 1
-        result[nofresults] = covers[n]
-    end
-end
+-- not shared as we hook into lookups now
+
+--~ local function uncover_1(covers,result) -- multiple covers
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         local u = { }
+--~         local c = covers[n]
+--~         for i=1,#c do
+--~             u[c[i]] = true
+--~         end
+--~         result[nofresults] = u
+--~     end
+--~ end
+
+--~ local function uncover_2(covers,result) -- single covers (turned into multiple with n=1)
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         result[nofresults] = { [covers[n]] = true }
+--~     end
+--~ end
+
+--~ local function uncover_1(covers,result) -- multiple covers
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         result[nofresults] = covers[n]
+--~     end
+--~ end
+
+--~ local function prepare_contextchains(tfmdata)
+--~     local rawdata    = tfmdata.shared.rawdata
+--~     local resources  = rawdata.resources
+--~     local lookuphash = resources.lookuphash
+--~     local lookups    = rawdata.lookups
+--~     if lookups then
+--~         for lookupname, lookupdata in next, rawdata.lookups do
+--~             local lookuptype = lookupdata.type
+--~             if not lookuptype then
+--~                 report_prepare("missing lookuptype for %s",lookupname)
+--~             else -- => lookuphash[lookupname][unicode]
+--~                 local rules = lookupdata.rules
+--~                 if rules then
+--~                     local fmt = lookupdata.format
+--~                  -- if fmt == "coverage" then
+--~                     if fmt == "coverage" or fmt == "glyphs" then
+--~                         if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
+--~                             -- todo: dejavu-serif has one (but i need to see what use it has)
+--~                             report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
+--~                         else
+--~                             local contexts = lookuphash[lookupname]
+--~                             if not contexts then
+--~                                 contexts = { }
+--~                                 lookuphash[lookupname] = contexts
+--~                             end
+--~                             local t, nt = { }, 0
+--~                             for nofrules=1,#rules do -- does #rules>1 happen often?
+--~                                 local rule     = rules[nofrules]
+--~                                 local current  = rule.current
+--~                                 local before   = rule.before
+--~                                 local after    = rule.after
+--~                                 local sequence = { }
+--~                                 if before then
+--~                                     uncover_1(before,sequence)
+--~                                 end
+--~                                 local start = #sequence + 1
+--~                                 uncover_1(current,sequence)
+--~                                 local stop = #sequence
+--~                                 if after then
+--~                                     uncover_1(after,sequence)
+--~                                 end
+--~                                 if sequence[1] then
+--~                                     nt = nt + 1
+--~                                     t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+--~                                     for unic, _ in next, sequence[start] do
+--~                                         local cu = contexts[unic]
+--~                                         if not cu then
+--~                                             contexts[unic] = t
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                     elseif fmt == "reversecoverage" then -- we could combine both branches (only dufference is replacements)
+--~                         if lookuptype ~= "reversesub" then
+--~                             report_prepare("unsupported reverse coverage %s for %s",lookuptype,lookupname)
+--~                         else
+--~                             local contexts = lookuphash[lookupname]
+--~                             if not contexts then
+--~                                 contexts = { }
+--~                                 lookuphash[lookupname] = contexts
+--~                             end
+--~                             local t, nt = { }, 0
+--~                             for nofrules=1,#rules do
+--~                                 local rule         = rules[nofrules]
+--~                                 local current      = rule.current
+--~                                 local before       = rule.before
+--~                                 local after        = rule.after
+--~                                 local replacements = rule.replacements
+--~                                 local sequence     = { }
+--~                                 if before then
+--~                                     uncover_1(before,sequence)
+--~                                 end
+--~                                 local start = #sequence + 1
+--~                                 uncover_1(current,sequence)
+--~                                 local stop = #sequence
+--~                                 if after then
+--~                                     uncover_1(after,sequence)
+--~                                 end
+--~                                 if sequence[1] then
+--~                                     nt = nt + 1
+--~                                     t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+--~                                     for unic, _  in next, sequence[start] do
+--~                                         local cu = contexts[unic]
+--~                                         if not cu then
+--~                                             contexts[unic] = t
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                  -- elseif fmt == "glyphs" then --maybe just make then before = { fore } and share with coverage
+--~                  --     if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
+--~                  --         report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
+--~                  --     else
+--~                  --         local contexts = lookuphash[lookupname]
+--~                  --         if not contexts then
+--~                  --             contexts = { }
+--~                  --             lookuphash[lookupname] = contexts
+--~                  --         end
+--~                  --         local t, nt = { }, 0
+--~                  --         for nofrules=1,#rules do -- we can make glyphs a special case (less tables)
+--~                  --             local rule     = rules[nofrules]
+--~                  --             local current  = rule.names
+--~                  --             local before   = rule.fore
+--~                  --             local after    = rule.back
+--~                  --             local sequence = { }
+--~                  --             if before then
+--~                  --                 uncover_1(before,sequence)
+--~                  --             end
+--~                  --             local start = #sequence + 1
+--~                  --             uncover_1(current,sequence)
+--~                  --             local stop = #sequence
+--~                  --             if after then
+--~                  --                 uncover_1(after,sequence)
+--~                  --             end
+--~                  --             if sequence then
+--~                  --                 nt = nt + 1
+--~                  --                 t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+--~                  --                 for unic, _ in next, sequence[start] do
+--~                  --                     local cu = contexts[unic]
+--~                  --                     if not cu then
+--~                  --                         contexts[unic] = t
+--~                  --                     end
+--~                  --                 end
+--~                  --             end
+--~                  --         end
+--~                  --     end
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
+local valid = {
+    coverage        = { chainsub = true, chainpos = true },
+    reversecoverage = { reversesub = true },
+    glyphs          = { chainsub = true, chainpos = true },
+}
 
 local function prepare_contextchains(tfmdata)
     local rawdata    = tfmdata.shared.rawdata
@@ -10051,122 +10283,72 @@ local function prepare_contextchains(tfmdata)
     if lookups then
         for lookupname, lookupdata in next, rawdata.lookups do
             local lookuptype = lookupdata.type
-            if not lookuptype then
-                report_prepare("missing lookuptype for %s",lookupname)
-            else
+            if lookuptype then
                 local rules = lookupdata.rules
                 if rules then
-                    local fmt = lookupdata.format
-                    -- lookuphash[lookupname][unicode]
-                    if fmt == "coverage" then -- or fmt == "class" (converted into "coverage")
-                        if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            -- todo: dejavu-serif has one (but i need to see what use it has)
-                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
-                            end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do -- does #rules>1 happen often?
-                                local rule = rules[nofrules]
-                                local current, before, after, sequence = rule.current, rule.before, rule.after, { }
-                                if before then
-                                    uncover(before,sequence)
-                                end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if sequence[1] then
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
-                                    end
-                                end
-                            end
+                    local format = lookupdata.format
+                    local validformat = valid[format]
+                    if not validformat then
+                        report_prepare("unsupported format %s",format)
+                    elseif not validformat[lookuptype] then
+                        -- todo: dejavu-serif has one (but i need to see what use it has)
+                        report_prepare("unsupported %s %s for %s",format,lookuptype,lookupname)
+                    else
+                        local contexts = lookuphash[lookupname]
+                        if not contexts then
+                            contexts = { }
+                            lookuphash[lookupname] = contexts
                         end
-                    elseif fmt == "reversecoverage" then
-                        if lookuptype ~= "reversesub" then
-                            report_prepare("unsupported reverse coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
-                            end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do
-                                local rule = rules[nofrules]
-                                local current, before, after, replacements, sequence = rule.current, rule.before, rule.after, rule.replacements, { }
-                                if before then
-                                    uncover(before,sequence)
-                                end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if replacements then
-                                    replacements = split(replacements,current[1])
-                                end
-                                if sequence[1] then
-                                    -- this is different from normal coverage, we assume only replacements
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
-                                    end
+                        local t, nt = { }, 0
+                        for nofrules=1,#rules do
+                            local rule         = rules[nofrules]
+                            local current      = rule.current
+                            local before       = rule.before
+                            local after        = rule.after
+                            local replacements = rule.replacements
+                            local sequence     = { }
+                            local nofsequences = 0
+                            -- Wventually we can store start, stop and sequence in the cached file
+                            -- but then less sharing takes place so best not do that without a lot
+                            -- of profiling so let's forget about it.
+                            if before then
+                                for n=1,#before do
+                                    nofsequences = nofsequences + 1
+                                    sequence[nofsequences] = before[n]
                                 end
                             end
-                        end
-                    elseif fmt == "glyphs" then --maybe just make then before = { fore } and share with coverage
-                        if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
+                            local start = nofsequences + 1
+                            for n=1,#current do
+                                nofsequences = nofsequences + 1
+                                sequence[nofsequences] = current[n]
                             end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do
-                                local rule = rules[nofrules]
-                                local current, before, after, sequence = rule.names, rule.fore, rule.back, { }
-                                if before then
-                                    uncover(before,sequence)
+                            local stop = nofsequences
+                            if after then
+                                for n=1,#after do
+                                    nofsequences = nofsequences + 1
+                                    sequence[nofsequences] = after[n]
                                 end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if sequence[1] then
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
+                            end
+                            if sequence[1] then
+                                -- Replacements only happen with reverse lookups as they are single only. We
+                                -- could pack them into current (replacement value instead of true) and then
+                                -- use sequence[start] instead but it's somewhat ugly.
+                                nt = nt + 1
+                                t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+                                for unic, _  in next, sequence[start] do
+                                    local cu = contexts[unic]
+                                    if not cu then
+                                        contexts[unic] = t
                                     end
                                 end
                             end
                         end
                     end
+                else
+                    -- no rules
                 end
+            else
+                report_prepare("missing lookuptype for %s",lookupname)
             end
         end
     end
@@ -10204,6 +10386,629 @@ registerotffeature {
     processors   = {
         node     = featuresprocessor,
     }
+}
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules = { } end modules ['luatex-fonts-chr'] = {
+    version   = 1.001,
+    comment   = "companion to luatex-fonts.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if context then
+    texio.write_nl("fatal error: this module is not for context")
+    os.exit()
+end
+
+characters            = characters or { }
+characters.categories = {
+ [0x0300]="mn",
+ [0x0301]="mn",
+ [0x0302]="mn",
+ [0x0303]="mn",
+ [0x0304]="mn",
+ [0x0305]="mn",
+ [0x0306]="mn",
+ [0x0307]="mn",
+ [0x0308]="mn",
+ [0x0309]="mn",
+ [0x030A]="mn",
+ [0x030B]="mn",
+ [0x030C]="mn",
+ [0x030D]="mn",
+ [0x030E]="mn",
+ [0x030F]="mn",
+ [0x0310]="mn",
+ [0x0311]="mn",
+ [0x0312]="mn",
+ [0x0313]="mn",
+ [0x0314]="mn",
+ [0x0315]="mn",
+ [0x0316]="mn",
+ [0x0317]="mn",
+ [0x0318]="mn",
+ [0x0319]="mn",
+ [0x031A]="mn",
+ [0x031B]="mn",
+ [0x031C]="mn",
+ [0x031D]="mn",
+ [0x031E]="mn",
+ [0x031F]="mn",
+ [0x0320]="mn",
+ [0x0321]="mn",
+ [0x0322]="mn",
+ [0x0323]="mn",
+ [0x0324]="mn",
+ [0x0325]="mn",
+ [0x0326]="mn",
+ [0x0327]="mn",
+ [0x0328]="mn",
+ [0x0329]="mn",
+ [0x032A]="mn",
+ [0x032B]="mn",
+ [0x032C]="mn",
+ [0x032D]="mn",
+ [0x032E]="mn",
+ [0x032F]="mn",
+ [0x0330]="mn",
+ [0x0331]="mn",
+ [0x0332]="mn",
+ [0x0333]="mn",
+ [0x0334]="mn",
+ [0x0335]="mn",
+ [0x0336]="mn",
+ [0x0337]="mn",
+ [0x0338]="mn",
+ [0x0339]="mn",
+ [0x033A]="mn",
+ [0x033B]="mn",
+ [0x033C]="mn",
+ [0x033D]="mn",
+ [0x033E]="mn",
+ [0x033F]="mn",
+ [0x0340]="mn",
+ [0x0341]="mn",
+ [0x0342]="mn",
+ [0x0343]="mn",
+ [0x0344]="mn",
+ [0x0345]="mn",
+ [0x0346]="mn",
+ [0x0347]="mn",
+ [0x0348]="mn",
+ [0x0349]="mn",
+ [0x034A]="mn",
+ [0x034B]="mn",
+ [0x034C]="mn",
+ [0x034D]="mn",
+ [0x034E]="mn",
+ [0x034F]="mn",
+ [0x0350]="mn",
+ [0x0351]="mn",
+ [0x0352]="mn",
+ [0x0353]="mn",
+ [0x0354]="mn",
+ [0x0355]="mn",
+ [0x0356]="mn",
+ [0x0357]="mn",
+ [0x0358]="mn",
+ [0x0359]="mn",
+ [0x035A]="mn",
+ [0x035B]="mn",
+ [0x035C]="mn",
+ [0x035D]="mn",
+ [0x035E]="mn",
+ [0x035F]="mn",
+ [0x0360]="mn",
+ [0x0361]="mn",
+ [0x0362]="mn",
+ [0x0363]="mn",
+ [0x0364]="mn",
+ [0x0365]="mn",
+ [0x0366]="mn",
+ [0x0367]="mn",
+ [0x0368]="mn",
+ [0x0369]="mn",
+ [0x036A]="mn",
+ [0x036B]="mn",
+ [0x036C]="mn",
+ [0x036D]="mn",
+ [0x036E]="mn",
+ [0x036F]="mn",
+ [0x0483]="mn",
+ [0x0484]="mn",
+ [0x0485]="mn",
+ [0x0486]="mn",
+ [0x0591]="mn",
+ [0x0592]="mn",
+ [0x0593]="mn",
+ [0x0594]="mn",
+ [0x0595]="mn",
+ [0x0596]="mn",
+ [0x0597]="mn",
+ [0x0598]="mn",
+ [0x0599]="mn",
+ [0x059A]="mn",
+ [0x059B]="mn",
+ [0x059C]="mn",
+ [0x059D]="mn",
+ [0x059E]="mn",
+ [0x059F]="mn",
+ [0x05A0]="mn",
+ [0x05A1]="mn",
+ [0x05A2]="mn",
+ [0x05A3]="mn",
+ [0x05A4]="mn",
+ [0x05A5]="mn",
+ [0x05A6]="mn",
+ [0x05A7]="mn",
+ [0x05A8]="mn",
+ [0x05A9]="mn",
+ [0x05AA]="mn",
+ [0x05AB]="mn",
+ [0x05AC]="mn",
+ [0x05AD]="mn",
+ [0x05AE]="mn",
+ [0x05AF]="mn",
+ [0x05B0]="mn",
+ [0x05B1]="mn",
+ [0x05B2]="mn",
+ [0x05B3]="mn",
+ [0x05B4]="mn",
+ [0x05B5]="mn",
+ [0x05B6]="mn",
+ [0x05B7]="mn",
+ [0x05B8]="mn",
+ [0x05B9]="mn",
+ [0x05BA]="mn",
+ [0x05BB]="mn",
+ [0x05BC]="mn",
+ [0x05BD]="mn",
+ [0x05BF]="mn",
+ [0x05C1]="mn",
+ [0x05C2]="mn",
+ [0x05C4]="mn",
+ [0x05C5]="mn",
+ [0x05C7]="mn",
+ [0x0610]="mn",
+ [0x0611]="mn",
+ [0x0612]="mn",
+ [0x0613]="mn",
+ [0x0614]="mn",
+ [0x0615]="mn",
+ [0x064B]="mn",
+ [0x064C]="mn",
+ [0x064D]="mn",
+ [0x064E]="mn",
+ [0x064F]="mn",
+ [0x0650]="mn",
+ [0x0651]="mn",
+ [0x0652]="mn",
+ [0x0653]="mn",
+ [0x0654]="mn",
+ [0x0655]="mn",
+ [0x0656]="mn",
+ [0x0657]="mn",
+ [0x0658]="mn",
+ [0x0659]="mn",
+ [0x065A]="mn",
+ [0x065B]="mn",
+ [0x065C]="mn",
+ [0x065D]="mn",
+ [0x065E]="mn",
+ [0x0670]="mn",
+ [0x06D6]="mn",
+ [0x06D7]="mn",
+ [0x06D8]="mn",
+ [0x06D9]="mn",
+ [0x06DA]="mn",
+ [0x06DB]="mn",
+ [0x06DC]="mn",
+ [0x06DF]="mn",
+ [0x06E0]="mn",
+ [0x06E1]="mn",
+ [0x06E2]="mn",
+ [0x06E3]="mn",
+ [0x06E4]="mn",
+ [0x06E7]="mn",
+ [0x06E8]="mn",
+ [0x06EA]="mn",
+ [0x06EB]="mn",
+ [0x06EC]="mn",
+ [0x06ED]="mn",
+ [0x0711]="mn",
+ [0x0730]="mn",
+ [0x0731]="mn",
+ [0x0732]="mn",
+ [0x0733]="mn",
+ [0x0734]="mn",
+ [0x0735]="mn",
+ [0x0736]="mn",
+ [0x0737]="mn",
+ [0x0738]="mn",
+ [0x0739]="mn",
+ [0x073A]="mn",
+ [0x073B]="mn",
+ [0x073C]="mn",
+ [0x073D]="mn",
+ [0x073E]="mn",
+ [0x073F]="mn",
+ [0x0740]="mn",
+ [0x0741]="mn",
+ [0x0742]="mn",
+ [0x0743]="mn",
+ [0x0744]="mn",
+ [0x0745]="mn",
+ [0x0746]="mn",
+ [0x0747]="mn",
+ [0x0748]="mn",
+ [0x0749]="mn",
+ [0x074A]="mn",
+ [0x07A6]="mn",
+ [0x07A7]="mn",
+ [0x07A8]="mn",
+ [0x07A9]="mn",
+ [0x07AA]="mn",
+ [0x07AB]="mn",
+ [0x07AC]="mn",
+ [0x07AD]="mn",
+ [0x07AE]="mn",
+ [0x07AF]="mn",
+ [0x07B0]="mn",
+ [0x07EB]="mn",
+ [0x07EC]="mn",
+ [0x07ED]="mn",
+ [0x07EE]="mn",
+ [0x07EF]="mn",
+ [0x07F0]="mn",
+ [0x07F1]="mn",
+ [0x07F2]="mn",
+ [0x07F3]="mn",
+ [0x0901]="mn",
+ [0x0902]="mn",
+ [0x093C]="mn",
+ [0x0941]="mn",
+ [0x0942]="mn",
+ [0x0943]="mn",
+ [0x0944]="mn",
+ [0x0945]="mn",
+ [0x0946]="mn",
+ [0x0947]="mn",
+ [0x0948]="mn",
+ [0x094D]="mn",
+ [0x0951]="mn",
+ [0x0952]="mn",
+ [0x0953]="mn",
+ [0x0954]="mn",
+ [0x0962]="mn",
+ [0x0963]="mn",
+ [0x0981]="mn",
+ [0x09BC]="mn",
+ [0x09C1]="mn",
+ [0x09C2]="mn",
+ [0x09C3]="mn",
+ [0x09C4]="mn",
+ [0x09CD]="mn",
+ [0x09E2]="mn",
+ [0x09E3]="mn",
+ [0x0A01]="mn",
+ [0x0A02]="mn",
+ [0x0A3C]="mn",
+ [0x0A41]="mn",
+ [0x0A42]="mn",
+ [0x0A47]="mn",
+ [0x0A48]="mn",
+ [0x0A4B]="mn",
+ [0x0A4C]="mn",
+ [0x0A4D]="mn",
+ [0x0A70]="mn",
+ [0x0A71]="mn",
+ [0x0A81]="mn",
+ [0x0A82]="mn",
+ [0x0ABC]="mn",
+ [0x0AC1]="mn",
+ [0x0AC2]="mn",
+ [0x0AC3]="mn",
+ [0x0AC4]="mn",
+ [0x0AC5]="mn",
+ [0x0AC7]="mn",
+ [0x0AC8]="mn",
+ [0x0ACD]="mn",
+ [0x0AE2]="mn",
+ [0x0AE3]="mn",
+ [0x0B01]="mn",
+ [0x0B3C]="mn",
+ [0x0B3F]="mn",
+ [0x0B41]="mn",
+ [0x0B42]="mn",
+ [0x0B43]="mn",
+ [0x0B4D]="mn",
+ [0x0B56]="mn",
+ [0x0B82]="mn",
+ [0x0BC0]="mn",
+ [0x0BCD]="mn",
+ [0x0C3E]="mn",
+ [0x0C3F]="mn",
+ [0x0C40]="mn",
+ [0x0C46]="mn",
+ [0x0C47]="mn",
+ [0x0C48]="mn",
+ [0x0C4A]="mn",
+ [0x0C4B]="mn",
+ [0x0C4C]="mn",
+ [0x0C4D]="mn",
+ [0x0C55]="mn",
+ [0x0C56]="mn",
+ [0x0CBC]="mn",
+ [0x0CBF]="mn",
+ [0x0CC6]="mn",
+ [0x0CCC]="mn",
+ [0x0CCD]="mn",
+ [0x0CE2]="mn",
+ [0x0CE3]="mn",
+ [0x0D41]="mn",
+ [0x0D42]="mn",
+ [0x0D43]="mn",
+ [0x0D4D]="mn",
+ [0x0DCA]="mn",
+ [0x0DD2]="mn",
+ [0x0DD3]="mn",
+ [0x0DD4]="mn",
+ [0x0DD6]="mn",
+ [0x0E31]="mn",
+ [0x0E34]="mn",
+ [0x0E35]="mn",
+ [0x0E36]="mn",
+ [0x0E37]="mn",
+ [0x0E38]="mn",
+ [0x0E39]="mn",
+ [0x0E3A]="mn",
+ [0x0E47]="mn",
+ [0x0E48]="mn",
+ [0x0E49]="mn",
+ [0x0E4A]="mn",
+ [0x0E4B]="mn",
+ [0x0E4C]="mn",
+ [0x0E4D]="mn",
+ [0x0E4E]="mn",
+ [0x0EB1]="mn",
+ [0x0EB4]="mn",
+ [0x0EB5]="mn",
+ [0x0EB6]="mn",
+ [0x0EB7]="mn",
+ [0x0EB8]="mn",
+ [0x0EB9]="mn",
+ [0x0EBB]="mn",
+ [0x0EBC]="mn",
+ [0x0EC8]="mn",
+ [0x0EC9]="mn",
+ [0x0ECA]="mn",
+ [0x0ECB]="mn",
+ [0x0ECC]="mn",
+ [0x0ECD]="mn",
+ [0x0F18]="mn",
+ [0x0F19]="mn",
+ [0x0F35]="mn",
+ [0x0F37]="mn",
+ [0x0F39]="mn",
+ [0x0F71]="mn",
+ [0x0F72]="mn",
+ [0x0F73]="mn",
+ [0x0F74]="mn",
+ [0x0F75]="mn",
+ [0x0F76]="mn",
+ [0x0F77]="mn",
+ [0x0F78]="mn",
+ [0x0F79]="mn",
+ [0x0F7A]="mn",
+ [0x0F7B]="mn",
+ [0x0F7C]="mn",
+ [0x0F7D]="mn",
+ [0x0F7E]="mn",
+ [0x0F80]="mn",
+ [0x0F81]="mn",
+ [0x0F82]="mn",
+ [0x0F83]="mn",
+ [0x0F84]="mn",
+ [0x0F86]="mn",
+ [0x0F87]="mn",
+ [0x0F90]="mn",
+ [0x0F91]="mn",
+ [0x0F92]="mn",
+ [0x0F93]="mn",
+ [0x0F94]="mn",
+ [0x0F95]="mn",
+ [0x0F96]="mn",
+ [0x0F97]="mn",
+ [0x0F99]="mn",
+ [0x0F9A]="mn",
+ [0x0F9B]="mn",
+ [0x0F9C]="mn",
+ [0x0F9D]="mn",
+ [0x0F9E]="mn",
+ [0x0F9F]="mn",
+ [0x0FA0]="mn",
+ [0x0FA1]="mn",
+ [0x0FA2]="mn",
+ [0x0FA3]="mn",
+ [0x0FA4]="mn",
+ [0x0FA5]="mn",
+ [0x0FA6]="mn",
+ [0x0FA7]="mn",
+ [0x0FA8]="mn",
+ [0x0FA9]="mn",
+ [0x0FAA]="mn",
+ [0x0FAB]="mn",
+ [0x0FAC]="mn",
+ [0x0FAD]="mn",
+ [0x0FAE]="mn",
+ [0x0FAF]="mn",
+ [0x0FB0]="mn",
+ [0x0FB1]="mn",
+ [0x0FB2]="mn",
+ [0x0FB3]="mn",
+ [0x0FB4]="mn",
+ [0x0FB5]="mn",
+ [0x0FB6]="mn",
+ [0x0FB7]="mn",
+ [0x0FB8]="mn",
+ [0x0FB9]="mn",
+ [0x0FBA]="mn",
+ [0x0FBB]="mn",
+ [0x0FBC]="mn",
+ [0x0FC6]="mn",
+ [0x102D]="mn",
+ [0x102E]="mn",
+ [0x102F]="mn",
+ [0x1030]="mn",
+ [0x1032]="mn",
+ [0x1036]="mn",
+ [0x1037]="mn",
+ [0x1039]="mn",
+ [0x1058]="mn",
+ [0x1059]="mn",
+ [0x135F]="mn",
+ [0x1712]="mn",
+ [0x1713]="mn",
+ [0x1714]="mn",
+ [0x1732]="mn",
+ [0x1733]="mn",
+ [0x1734]="mn",
+ [0x1752]="mn",
+ [0x1753]="mn",
+ [0x1772]="mn",
+ [0x1773]="mn",
+ [0x17B7]="mn",
+ [0x17B8]="mn",
+ [0x17B9]="mn",
+ [0x17BA]="mn",
+ [0x17BB]="mn",
+ [0x17BC]="mn",
+ [0x17BD]="mn",
+ [0x17C6]="mn",
+ [0x17C9]="mn",
+ [0x17CA]="mn",
+ [0x17CB]="mn",
+ [0x17CC]="mn",
+ [0x17CD]="mn",
+ [0x17CE]="mn",
+ [0x17CF]="mn",
+ [0x17D0]="mn",
+ [0x17D1]="mn",
+ [0x17D2]="mn",
+ [0x17D3]="mn",
+ [0x17DD]="mn",
+ [0x180B]="mn",
+ [0x180C]="mn",
+ [0x180D]="mn",
+ [0x18A9]="mn",
+ [0x1920]="mn",
+ [0x1921]="mn",
+ [0x1922]="mn",
+ [0x1927]="mn",
+ [0x1928]="mn",
+ [0x1932]="mn",
+ [0x1939]="mn",
+ [0x193A]="mn",
+ [0x193B]="mn",
+ [0x1A17]="mn",
+ [0x1A18]="mn",
+ [0x1B00]="mn",
+ [0x1B01]="mn",
+ [0x1B02]="mn",
+ [0x1B03]="mn",
+ [0x1B34]="mn",
+ [0x1B36]="mn",
+ [0x1B37]="mn",
+ [0x1B38]="mn",
+ [0x1B39]="mn",
+ [0x1B3A]="mn",
+ [0x1B3C]="mn",
+ [0x1B42]="mn",
+ [0x1B6B]="mn",
+ [0x1B6C]="mn",
+ [0x1B6D]="mn",
+ [0x1B6E]="mn",
+ [0x1B6F]="mn",
+ [0x1B70]="mn",
+ [0x1B71]="mn",
+ [0x1B72]="mn",
+ [0x1B73]="mn",
+ [0x1DC0]="mn",
+ [0x1DC1]="mn",
+ [0x1DC2]="mn",
+ [0x1DC3]="mn",
+ [0x1DC4]="mn",
+ [0x1DC5]="mn",
+ [0x1DC6]="mn",
+ [0x1DC7]="mn",
+ [0x1DC8]="mn",
+ [0x1DC9]="mn",
+ [0x1DCA]="mn",
+ [0x1DFE]="mn",
+ [0x1DFF]="mn",
+ [0x20D0]="mn",
+ [0x20D1]="mn",
+ [0x20D2]="mn",
+ [0x20D3]="mn",
+ [0x20D4]="mn",
+ [0x20D5]="mn",
+ [0x20D6]="mn",
+ [0x20D7]="mn",
+ [0x20D8]="mn",
+ [0x20D9]="mn",
+ [0x20DA]="mn",
+ [0x20DB]="mn",
+ [0x20DC]="mn",
+ [0x20E1]="mn",
+ [0x20E5]="mn",
+ [0x20E6]="mn",
+ [0x20E7]="mn",
+ [0x20E8]="mn",
+ [0x20E9]="mn",
+ [0x20EA]="mn",
+ [0x20EB]="mn",
+ [0x20EC]="mn",
+ [0x20ED]="mn",
+ [0x20EE]="mn",
+ [0x20EF]="mn",
+ [0x302A]="mn",
+ [0x302B]="mn",
+ [0x302C]="mn",
+ [0x302D]="mn",
+ [0x302E]="mn",
+ [0x302F]="mn",
+ [0x3099]="mn",
+ [0x309A]="mn",
+ [0xA806]="mn",
+ [0xA80B]="mn",
+ [0xA825]="mn",
+ [0xA826]="mn",
+ [0xFB1E]="mn",
+ [0xFE00]="mn",
+ [0xFE01]="mn",
+ [0xFE02]="mn",
+ [0xFE03]="mn",
+ [0xFE04]="mn",
+ [0xFE05]="mn",
+ [0xFE06]="mn",
+ [0xFE07]="mn",
+ [0xFE08]="mn",
+ [0xFE09]="mn",
+ [0xFE0A]="mn",
+ [0xFE0B]="mn",
+ [0xFE0C]="mn",
+ [0xFE0D]="mn",
+ [0xFE0E]="mn",
+ [0xFE0F]="mn",
+ [0xFE20]="mn",
+ [0xFE21]="mn",
+ [0xFE22]="mn",
+ [0xFE23]="mn",
 }
 
 end -- closure
@@ -10267,8 +11072,6 @@ process features right.</p>
 
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
-
--- an example analyzer (should move to font-ota.lua)
 
 local state = attributes.private('state')
 
@@ -10377,7 +11180,8 @@ registerotffeature {
 
 methods.latn = analyzers.setstate
 
--- this info eventually will go into char-def
+-- this info eventually will go into char-def adn we will have a state
+-- table for generic then
 
 local zwnj = 0x200C
 local zwj  = 0x200D
@@ -10563,6 +11367,10 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     first, last = finish(first,last)
     return head, done
 end
+
+directives.register("otf.analyze.useunicodemarks",function(v)
+    analyzers.useunicodemarks = v
+end)
 
 end -- closure
 

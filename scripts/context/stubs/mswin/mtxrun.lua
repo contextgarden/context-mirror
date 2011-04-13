@@ -4547,7 +4547,7 @@ function inspect(i) -- global function
     if ti == "table" then
         table.print(i,"table")
     elseif is_node and is_node(i) then
-        print(node.sequenced(i))
+        table.print(nodes.astable(i),tostring(i))
     else
         print(tostring(i))
     end
@@ -4842,7 +4842,7 @@ local function set(t,what,newvalue)
         else
             value = is_boolean(value,value)
         end
-        w = escapedpattern(w,true)
+        w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
@@ -5057,11 +5057,11 @@ local flags = environment and environment.engineflags
 
 if flags then
     if trackers and flags.trackers then
-        setters.initialize("flags","trackers", utilities.parsers.settings_to_hash(flags.trackers))
+        setters.initialize("flags","trackers", settings_to_hash(flags.trackers))
      -- t_enable(flags.trackers)
     end
     if directives and flags.directives then
-        setters.initialize("flags","directives", utilities.parsers.settings_to_hash(flags.directives))
+        setters.initialize("flags","directives", settings_to_hash(flags.directives))
      -- d_enable(flags.directives)
     end
 end
@@ -10724,7 +10724,7 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-local saveoptions = { reduce = true }
+local saveoptions = { compact = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)

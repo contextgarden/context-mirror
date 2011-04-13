@@ -22,6 +22,81 @@
 \installparameterhandler \??sc {interactionscreen}
 \installsetuphandler     \??sc {interactionscreen}
 
+\newdimen\canvaswidth
+\newdimen\canvasheight
+\newdimen\canvasbackoffset
+\newdimen\canvastopoffset
+
+\def\scrn_canvas_calculate
+  {\begingroup
+   \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
+   \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
+   \canvasbackoffset\backspace
+   \canvastopoffset\topoffset
+   \ifx\currentinteractionscreenwidth\v!fit
+     \global\canvaswidth\leftcombitotal
+     \ifdim\backspace>\canvaswidth
+       \ifdim\backspace>\zeropoint\relax
+         \global\advance\canvasbackspace -\canvaswidth
+       \fi
+     \fi
+     \global\advance\canvaswidth\dimexpr
+       \rightcombitotal
+     + 2\dimexpr
+          \interactionscreenparameter\c!backspace
+        + \interactionscreenparameter\c!horoffset
+        \relax
+     \relax
+     \donetrue
+   \else\ifx\currentinteractionscreenwidth\v!max
+     \global\canvaswidth\printpaperwidth
+     \donetrue
+   \else
+     \global\canvaswidth\currentinteractionscreenwidth
+     \donefalse
+   \fi\fi
+   \ifdone
+     \ifdim\canvaswidth>\paperwidth\ifdim\canvaswidth>\zeropoint
+       \global\paperwidth\canvaswidth % kills location=middle
+     \fi\fi
+   \fi
+   \ifx\currentinteractionscreenheight\v!fit
+     \global\canvasheight\dimexpr\topheight+\topdistance\relax
+     \ifdim\topspace>\canvasheight
+       \ifdim\topspace>\zeropoint\relax
+         \global\advance\canvastopspace -\canvasheight
+       \fi
+     \fi
+     \global\advance\canvasheight\dimexpr
+       \makeupheight
+     + \bottomdistance
+     + \bottomheight
+     + 2\dimexpr
+          \interactionscreenparameter\c!topspace
+        + \interactionscreenparameter\c!veroffset
+        \relax
+     \relax
+     \donetrue
+   \else\ifx\currentinteractionscreenheight\v!max
+     \global\canvasheight\printpaperheight
+     \donetrue
+   \else
+     \global\canvasheight\currentinteractionscreenheight
+     \donefalse
+   \fi\fi
+   \ifdone
+     \ifdim\canvasheight>\paperheight\ifdim\canvasheight>\zeropoint
+       \global\paperheight\canvasheight % kills location=middle
+     \fi\fi
+   \fi
+   \endgroup}
+
+\appendtoks
+    \ifproductionrun
+      \scrn_canvas_calculate
+    \fi
+\to \everysetupinteractionscreen
+
 \def\scrn_canvas_synchronize_simple % this will be done differently (or disappear)
   {\begingroup
    \ifx\@@ppleft   \empty
@@ -48,67 +123,17 @@
    \endgroup}
 
 \def\scrn_canvas_synchronize_complex
-  {\begingroup
-   \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
-   \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
-   \ifx\currentinteractionscreenwidth\v!fit
-     \!!widtha\leftcombitotal
-     \ifdim\backspace>\!!widtha
-       \ifdim\backspace>\zeropoint\relax
-         \advance\backspace -\!!widtha
-       \fi
-     \fi
-     \advance\!!widtha\dimexpr
-       \rightcombitotal
-     + 2\dimexpr
-          \interactionscreenparameter\c!backspace
-        + \interactionscreenparameter\c!horoffset
-        \relax
-     \relax
-   \else\ifx\currentinteractionscreenwidth\v!max
-     \!!widtha\printpaperwidth
-   \else
-     \!!widtha\currentinteractionscreenwidth
-   \fi\fi
-   \ifdim\!!widtha>\paperwidth\ifdim\!!widtha>\zeropoint
-     \global\paperwidth\!!widtha
-   \fi\fi
-   \ifx\currentinteractionscreenheight\v!fit
-     \!!heighta\dimexpr\topheight+\topdistance\relax
-     \ifdim\topspace>\!!heighta
-       \ifdim\topspace>\zeropoint\relax
-         \advance\topspace -\!!heighta
-       \fi
-     \fi
-     \advance\!!heighta\dimexpr
-       \makeupheight
-     + \bottomdistance
-     + \bottomheight
-     + 2\dimexpr
-          \interactionscreenparameter\c!topspace
-        + \interactionscreenparameter\c!veroffset
-        \relax
-     \relax
-   \else\ifx\currentinteractionscreenheight\v!max
-     \!!heighta\printpaperheight
-   \else
-     \!!heighta\currentinteractionscreenheight
-   \fi\fi
-   \ifdim\!!heighta>\paperheight\ifdim\!!heighta>\zeropoint
-     \global\paperheight\!!heighta
-   \fi\fi
-   \ctxcommand{setupcanvas{
+  {\ctxcommand{setupcanvas{
       mode        = "\interactionscreenparameter\c!option",
       singlesided = \ifsinglesided true\else false\fi,
       doublesided = \ifdoublesided true\else false\fi,
-      leftoffset  = \number\dimexpr\backoffset\relax,
-      topoffset   = \number\dimexpr\topoffset \relax,
-      width       = \number\dimexpr\!!widtha  \relax,
-      height      = \number\dimexpr\!!heighta \relax,
+      leftoffset  = \number\dimexpr\canvasbackoffset\relax,
+      topoffset   = \number\dimexpr\canvastopoffset\relax,
+      width       = \number\dimexpr\canvaswidth\relax,
+      height      = \number\dimexpr\canvasheight\relax,
       paperwidth  = \number\paperwidth,
       paperheight = \number\paperheight
-   }}%
-   \endgroup}
+   }}}
 
 \let\scrn_canvas_synchronize\scrn_canvas_synchronize_simple
 

@@ -150,7 +150,7 @@ function inspect(i) -- global function
     if ti == "table" then
         table.print(i,"table")
     elseif is_node and is_node(i) then
-        print(node.sequenced(i))
+        table.print(nodes.astable(i),tostring(i))
     else
         print(tostring(i))
     end
