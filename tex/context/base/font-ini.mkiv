@@ -991,11 +991,13 @@
 \def\dododefinefontsynonymnop[#1]%
   {\let\@@ff@@features \undefined
    \let\@@ff@@fallbacks\undefined
+   \let\@@ff@@goodies  \undefined
    \expandafter\dogetfontparameternop#1,]=,}
 
 \def\dododefinefontsynonymyes[#1]%
   {\let\@@ff@@features \undefined
    \let\@@ff@@fallbacks\undefined
+   \let\@@ff@@goodies  \undefined
    \expandafter\dogetfontparameteryes#1,]=,}
 
 \def\dogetfontparameternop#1=#2,%

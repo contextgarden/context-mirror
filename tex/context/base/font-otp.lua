@@ -202,14 +202,22 @@ local function packdata(data)
                     if rules then
                         for i=1,#rules do -- was next loop
                             local rule = rules[i]
-                            local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i],true) end end
-                            local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i],true) end end
-                            local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i],true) end end
-                            local r = rule.replacements if r then rule.replacements  = pack(r,   true)     end
-                            local r = rule.fore         if r then rule.fore          = pack(r,   true)     end
-                            local r = rule.back         if r then rule.back          = pack(r,   true)     end
-                            local r = rule.names        if r then rule.names         = pack(r,   true)     end
-                            local r = rule.lookups      if r then rule.lookups       = pack(r)             end
+--~                             local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i],true) end end
+--~                             local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i],true) end end
+--~                             local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i],true) end end
+--~                             local r = rule.replacements if r then rule.replacements  = pack(r,   true)     end
+--~                             local r = rule.fore         if r then rule.fore          = pack(r,   true)     end
+--~                             local r = rule.back         if r then rule.back          = pack(r,   true)     end
+--~                             local r = rule.names        if r then rule.names         = pack(r,   true)     end
+--~                             local r = rule.lookups      if r then rule.lookups       = pack(r)             end
+                            local r = rule.before       if r then for i=1,#r do r[i] = pack(r[i]) end end
+                            local r = rule.after        if r then for i=1,#r do r[i] = pack(r[i]) end end
+                            local r = rule.current      if r then for i=1,#r do r[i] = pack(r[i]) end end
+                            local r = rule.replacements if r then rule.replacements  = pack(r)        end
+                         -- local r = rule.fore         if r then rule.fore          = pack(r)        end
+                         -- local r = rule.back         if r then rule.back          = pack(r)        end
+                         -- local r = rule.names        if r then rule.names         = pack(r)        end
+                            local r = rule.lookups      if r then rule.lookups       = pack(r)        end
                         end
                     end
                 end

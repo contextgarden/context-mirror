@@ -82,7 +82,7 @@ local function set(t,what,newvalue)
         else
             value = is_boolean(value,value)
         end
-        w = escapedpattern(w,true)
+        w = "^" .. escapedpattern(w,true) .. "$" -- new: anchored
         for name, functions in next, data do
             if done[name] then
                 -- prevent recursion due to wildcards
@@ -297,11 +297,11 @@ local flags = environment and environment.engineflags
 
 if flags then
     if trackers and flags.trackers then
-        setters.initialize("flags","trackers", utilities.parsers.settings_to_hash(flags.trackers))
+        setters.initialize("flags","trackers", settings_to_hash(flags.trackers))
      -- t_enable(flags.trackers)
     end
     if directives and flags.directives then
-        setters.initialize("flags","directives", utilities.parsers.settings_to_hash(flags.directives))
+        setters.initialize("flags","directives", settings_to_hash(flags.directives))
      -- d_enable(flags.directives)
     end
 end

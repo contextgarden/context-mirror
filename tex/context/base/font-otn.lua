@@ -259,9 +259,9 @@ local function gref(n)
         local description = descriptions[n]
         local name = description and description.name
         if name then
-            return format("U+%04X (%s)",n,name)
+            return format("U+%05X (%s)",n,name)
         else
-            return format("U+%04X",n)
+            return format("U+%05X",n)
         end
     elseif not n then
         return "<error in tracing>"
@@ -269,9 +269,9 @@ local function gref(n)
         local num, nam = { }, { }
         for i=1,#n do
             local ni = n[i]
-            if tonumber(di) then -- later we will start at 2
+            if tonumber(ni) then -- later we will start at 2
                 local di = descriptions[ni]
-                num[i] = format("U+%04X",ni)
+                num[i] = format("U+%05X",ni)
                 nam[i] = di and di.name or "?"
             end
         end
@@ -444,6 +444,9 @@ local function multiple_glyphs(start,multiple)
         end
         return start, true
     else
+        if trace_multiples then
+            logprocess("no multiple for %s",gref(start.char))
+        end
         return start, false
     end
 end
@@ -958,11 +961,10 @@ as less as needed but that would also mke the code even more messy.</p>
 local function delete_till_stop(start,stop,ignoremarks)
     if start ~= stop then
         -- todo keep marks
-        local done = false
-        while not done do
-            done = start == stop
-            delete_node(start,start.next)
-        end
+        repeat
+            local next = start.next
+            delete_node(start,next)
+        until next == stop
     end
 end
 
@@ -973,18 +975,19 @@ match.</p>
 
 function chainprocs.gsub_single(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,chainindex)
     -- todo: marks ?
-    if not chainindex then
-        delete_till_stop(start,stop) -- ,currentlookup.flags[1]
-    end
+--~     if not chainindex then
+--~         delete_till_stop(start,stop) -- ,currentlookup.flags[1]
+--~         stop = start
+--~     end
     local current = start
     local subtables = currentlookup.subtables
-if #subtables > 1 then
-    log_warning("todo: check if we need to loop over the replacements: %s",concat(subtables," "))
-end
+    if #subtables > 1 then
+        logwarning("todo: check if we need to loop over the replacements: %s",concat(subtables," "))
+    end
     while current do
         if current.id == glyph_code then
             local currentchar = current.char
-            local lookupname = subtables[1]
+            local lookupname = subtables[1] -- only 1
             local replacement = lookuphash[lookupname]
             if not replacement then
                 if trace_bugs then
@@ -1548,7 +1551,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
         else
             -- todo: better space check (maybe check for glue)
             local f, l = ck[4], ck[5]
-            if f == l then
+            -- current match
+            if f == 1 and f == l then
                 -- already a hit
                 match = true
             else
@@ -1600,8 +1604,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     end
                 -- end
             end
+            -- before
             if match and f > 1 then
-                -- before
                 local prev = start.prev
                 if prev then
                     local n = f-1
@@ -1638,7 +1642,7 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 match = false break
                             end
                             prev = prev.prev
-                        elseif seq[n][32] then
+                        elseif seq[n][32] then -- somehat special, as zapfino can have many preceding spaces
                             n = n -1
                         else
                             match = false break
@@ -1654,9 +1658,9 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                     end
                 end
             end
+            -- after
             if match and s > l then
-                -- after
-                local current = last.next
+                local current = last and last.next
                 if current then
                     -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
@@ -1716,9 +1720,11 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 local rule, lookuptype, f, l = ck[1], ck[2], ck[4], ck[5]
                 local char = start.char
                 if ck[9] then
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s (%s=>%s)",
+                        cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype,ck[9],ck[10])
                 else
-                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
+                    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %s",
+                        cref(kind,chainname),rule,gref(char),f-1,l-f+1,s-l,lookuptype)
                 end
             end
             local chainlookups = ck[6]
@@ -1773,7 +1779,6 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                         end
                         start = start.next
                     until i > nofchainlookups
-
                 end
             else
                 local replacements = ck[7]
@@ -1952,6 +1957,8 @@ local function featuresprocessor(head,font,attr)
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
+--~ print(typ)
+--~ table.print(table.keys(sequence))
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
                 local handler = handlers[typ]
@@ -2328,13 +2335,177 @@ local function split(replacement,original)
     return result
 end
 
-local function uncover(covers,result) -- will change (we can store this in the raw table)
-    local nofresults = #result
-    for n=1,#covers do
-        nofresults = nofresults + 1
-        result[nofresults] = covers[n]
-    end
-end
+-- not shared as we hook into lookups now
+
+--~ local function uncover_1(covers,result) -- multiple covers
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         local u = { }
+--~         local c = covers[n]
+--~         for i=1,#c do
+--~             u[c[i]] = true
+--~         end
+--~         result[nofresults] = u
+--~     end
+--~ end
+
+--~ local function uncover_2(covers,result) -- single covers (turned into multiple with n=1)
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         result[nofresults] = { [covers[n]] = true }
+--~     end
+--~ end
+
+--~ local function uncover_1(covers,result) -- multiple covers
+--~     local nofresults = #result
+--~     for n=1,#covers do
+--~         nofresults = nofresults + 1
+--~         result[nofresults] = covers[n]
+--~     end
+--~ end
+
+--~ local function prepare_contextchains(tfmdata)
+--~     local rawdata    = tfmdata.shared.rawdata
+--~     local resources  = rawdata.resources
+--~     local lookuphash = resources.lookuphash
+--~     local lookups    = rawdata.lookups
+--~     if lookups then
+--~         for lookupname, lookupdata in next, rawdata.lookups do
+--~             local lookuptype = lookupdata.type
+--~             if not lookuptype then
+--~                 report_prepare("missing lookuptype for %s",lookupname)
+--~             else -- => lookuphash[lookupname][unicode]
+--~                 local rules = lookupdata.rules
+--~                 if rules then
+--~                     local fmt = lookupdata.format
+--~                  -- if fmt == "coverage" then
+--~                     if fmt == "coverage" or fmt == "glyphs" then
+--~                         if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
+--~                             -- todo: dejavu-serif has one (but i need to see what use it has)
+--~                             report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
+--~                         else
+--~                             local contexts = lookuphash[lookupname]
+--~                             if not contexts then
+--~                                 contexts = { }
+--~                                 lookuphash[lookupname] = contexts
+--~                             end
+--~                             local t, nt = { }, 0
+--~                             for nofrules=1,#rules do -- does #rules>1 happen often?
+--~                                 local rule     = rules[nofrules]
+--~                                 local current  = rule.current
+--~                                 local before   = rule.before
+--~                                 local after    = rule.after
+--~                                 local sequence = { }
+--~                                 if before then
+--~                                     uncover_1(before,sequence)
+--~                                 end
+--~                                 local start = #sequence + 1
+--~                                 uncover_1(current,sequence)
+--~                                 local stop = #sequence
+--~                                 if after then
+--~                                     uncover_1(after,sequence)
+--~                                 end
+--~                                 if sequence[1] then
+--~                                     nt = nt + 1
+--~                                     t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+--~                                     for unic, _ in next, sequence[start] do
+--~                                         local cu = contexts[unic]
+--~                                         if not cu then
+--~                                             contexts[unic] = t
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                     elseif fmt == "reversecoverage" then -- we could combine both branches (only dufference is replacements)
+--~                         if lookuptype ~= "reversesub" then
+--~                             report_prepare("unsupported reverse coverage %s for %s",lookuptype,lookupname)
+--~                         else
+--~                             local contexts = lookuphash[lookupname]
+--~                             if not contexts then
+--~                                 contexts = { }
+--~                                 lookuphash[lookupname] = contexts
+--~                             end
+--~                             local t, nt = { }, 0
+--~                             for nofrules=1,#rules do
+--~                                 local rule         = rules[nofrules]
+--~                                 local current      = rule.current
+--~                                 local before       = rule.before
+--~                                 local after        = rule.after
+--~                                 local replacements = rule.replacements
+--~                                 local sequence     = { }
+--~                                 if before then
+--~                                     uncover_1(before,sequence)
+--~                                 end
+--~                                 local start = #sequence + 1
+--~                                 uncover_1(current,sequence)
+--~                                 local stop = #sequence
+--~                                 if after then
+--~                                     uncover_1(after,sequence)
+--~                                 end
+--~                                 if sequence[1] then
+--~                                     nt = nt + 1
+--~                                     t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+--~                                     for unic, _  in next, sequence[start] do
+--~                                         local cu = contexts[unic]
+--~                                         if not cu then
+--~                                             contexts[unic] = t
+--~                                         end
+--~                                     end
+--~                                 end
+--~                             end
+--~                         end
+--~                  -- elseif fmt == "glyphs" then --maybe just make then before = { fore } and share with coverage
+--~                  --     if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
+--~                  --         report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
+--~                  --     else
+--~                  --         local contexts = lookuphash[lookupname]
+--~                  --         if not contexts then
+--~                  --             contexts = { }
+--~                  --             lookuphash[lookupname] = contexts
+--~                  --         end
+--~                  --         local t, nt = { }, 0
+--~                  --         for nofrules=1,#rules do -- we can make glyphs a special case (less tables)
+--~                  --             local rule     = rules[nofrules]
+--~                  --             local current  = rule.names
+--~                  --             local before   = rule.fore
+--~                  --             local after    = rule.back
+--~                  --             local sequence = { }
+--~                  --             if before then
+--~                  --                 uncover_1(before,sequence)
+--~                  --             end
+--~                  --             local start = #sequence + 1
+--~                  --             uncover_1(current,sequence)
+--~                  --             local stop = #sequence
+--~                  --             if after then
+--~                  --                 uncover_1(after,sequence)
+--~                  --             end
+--~                  --             if sequence then
+--~                  --                 nt = nt + 1
+--~                  --                 t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
+--~                  --                 for unic, _ in next, sequence[start] do
+--~                  --                     local cu = contexts[unic]
+--~                  --                     if not cu then
+--~                  --                         contexts[unic] = t
+--~                  --                     end
+--~                  --                 end
+--~                  --             end
+--~                  --         end
+--~                  --     end
+--~                     end
+--~                 end
+--~             end
+--~         end
+--~     end
+--~ end
+
+local valid = {
+    coverage        = { chainsub = true, chainpos = true },
+    reversecoverage = { reversesub = true },
+    glyphs          = { chainsub = true, chainpos = true },
+}
 
 local function prepare_contextchains(tfmdata)
     local rawdata    = tfmdata.shared.rawdata
@@ -2344,122 +2515,72 @@ local function prepare_contextchains(tfmdata)
     if lookups then
         for lookupname, lookupdata in next, rawdata.lookups do
             local lookuptype = lookupdata.type
-            if not lookuptype then
-                report_prepare("missing lookuptype for %s",lookupname)
-            else
+            if lookuptype then
                 local rules = lookupdata.rules
                 if rules then
-                    local fmt = lookupdata.format
-                    -- lookuphash[lookupname][unicode]
-                    if fmt == "coverage" then -- or fmt == "class" (converted into "coverage")
-                        if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            -- todo: dejavu-serif has one (but i need to see what use it has)
-                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
-                            end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do -- does #rules>1 happen often?
-                                local rule = rules[nofrules]
-                                local current, before, after, sequence = rule.current, rule.before, rule.after, { }
-                                if before then
-                                    uncover(before,sequence)
-                                end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if sequence[1] then
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
-                                    end
-                                end
-                            end
+                    local format = lookupdata.format
+                    local validformat = valid[format]
+                    if not validformat then
+                        report_prepare("unsupported format %s",format)
+                    elseif not validformat[lookuptype] then
+                        -- todo: dejavu-serif has one (but i need to see what use it has)
+                        report_prepare("unsupported %s %s for %s",format,lookuptype,lookupname)
+                    else
+                        local contexts = lookuphash[lookupname]
+                        if not contexts then
+                            contexts = { }
+                            lookuphash[lookupname] = contexts
                         end
-                    elseif fmt == "reversecoverage" then
-                        if lookuptype ~= "reversesub" then
-                            report_prepare("unsupported reverse coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
-                            end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do
-                                local rule = rules[nofrules]
-                                local current, before, after, replacements, sequence = rule.current, rule.before, rule.after, rule.replacements, { }
-                                if before then
-                                    uncover(before,sequence)
-                                end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if replacements then
-                                    replacements = split(replacements,current[1])
-                                end
-                                if sequence[1] then
-                                    -- this is different from normal coverage, we assume only replacements
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
-                                    end
+                        local t, nt = { }, 0
+                        for nofrules=1,#rules do
+                            local rule         = rules[nofrules]
+                            local current      = rule.current
+                            local before       = rule.before
+                            local after        = rule.after
+                            local replacements = rule.replacements
+                            local sequence     = { }
+                            local nofsequences = 0
+                            -- Wventually we can store start, stop and sequence in the cached file
+                            -- but then less sharing takes place so best not do that without a lot
+                            -- of profiling so let's forget about it.
+                            if before then
+                                for n=1,#before do
+                                    nofsequences = nofsequences + 1
+                                    sequence[nofsequences] = before[n]
                                 end
                             end
-                        end
-                    elseif fmt == "glyphs" then --maybe just make then before = { fore } and share with coverage
-                        if lookuptype ~= "chainsub" and lookuptype ~= "chainpos" then
-                            report_prepare("unsupported coverage %s for %s",lookuptype,lookupname)
-                        else
-                            local contexts = lookuphash[lookupname]
-                            if not contexts then
-                                contexts = { }
-                                lookuphash[lookupname] = contexts
+                            local start = nofsequences + 1
+                            for n=1,#current do
+                                nofsequences = nofsequences + 1
+                                sequence[nofsequences] = current[n]
                             end
-                            local t, nt = { }, 0
-                            for nofrules=1,#rules do
-                                local rule = rules[nofrules]
-                                local current, before, after, sequence = rule.names, rule.fore, rule.back, { }
-                                if before then
-                                    uncover(before,sequence)
+                            local stop = nofsequences
+                            if after then
+                                for n=1,#after do
+                                    nofsequences = nofsequences + 1
+                                    sequence[nofsequences] = after[n]
                                 end
-                                local start = #sequence + 1
-                                uncover(current,sequence)
-                                local stop = #sequence
-                                if after then
-                                    uncover(after,sequence)
-                                end
-                                if sequence[1] then
-                                    nt = nt + 1
-                                    t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups }
-                                    for unic, _ in next, sequence[start] do
-                                        local cu = contexts[unic]
-                                        if not cu then
-                                            contexts[unic] = t
-                                        end
+                            end
+                            if sequence[1] then
+                                -- Replacements only happen with reverse lookups as they are single only. We
+                                -- could pack them into current (replacement value instead of true) and then
+                                -- use sequence[start] instead but it's somewhat ugly.
+                                nt = nt + 1
+                                t[nt] = { nofrules, lookuptype, sequence, start, stop, rule.lookups, replacements }
+                                for unic, _  in next, sequence[start] do
+                                    local cu = contexts[unic]
+                                    if not cu then
+                                        contexts[unic] = t
                                     end
                                 end
                             end
                         end
                     end
+                else
+                    -- no rules
                 end
+            else
+                report_prepare("missing lookuptype for %s",lookupname)
             end
         end
     end

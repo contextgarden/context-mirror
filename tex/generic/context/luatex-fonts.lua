@@ -166,6 +166,7 @@ else
     loadmodule('font-otb.lua')
     loadmodule('node-inj.lua')         -- will be replaced (luatex >= .70)
     loadmodule('font-otn.lua')
+ -- loadmodule('luatex-fonts-chr.lua')
     loadmodule('font-ota.lua')
     loadmodule('luatex-fonts-lua.lua')
     loadmodule('font-def.lua')

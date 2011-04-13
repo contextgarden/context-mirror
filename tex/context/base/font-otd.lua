@@ -77,6 +77,7 @@ function otf.setdynamics(font,attribute)
             shared.features     = { }
             -- end of save
             local set = constructors.checkedfeatures("otf",features)
+set.mode = "node" -- really needed
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
                 report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,table.sequenced(set))
@@ -117,7 +118,7 @@ local resolved = { } -- we only resolve a font,script,language,attribute pair on
 local wildcard = "*"
 local default  = "dflt"
 
-local function initialize(sequence,script,language,s_enabled,a_enabled,attr,dynamic)
+local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic)
     local features = sequence.features
     if features then
         for kind, scripts in next, features do
@@ -149,8 +150,8 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,attr,dyna
                         if trace_applied then
                             local typ, action = match(sequence.type,"(.*)_(.*)") -- brrr
                             report_process(
-                                "%s font: %03i, dynamic: %03i, kind: %s, lookup: %3i, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
-                                (valid and "+") or "-",font,attr or 0,kind,s,script,language,what,typ,action,sequence.name)
+                                "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
+                                (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
                         end
                         return { valid, attribute, sequence.chain or 0, kind }
                     end
@@ -207,7 +208,7 @@ function otf.dataset(tfmdata,sequences,font,attr)
         ra = { }
         rl[attr] = ra
         setmetatableindex(ra, function(t,k)
-            local v = initialize(sequences[k],script,language,s_enabled,a_enabled,attr,dynamic)
+            local v = initialize(sequences[k],script,language,s_enabled,a_enabled,font,attr,dynamic)
             t[k] = v
             return v
         end)

@@ -290,7 +290,7 @@ function caches.is_writable(filepath,filename)
     return file.is_writable(tmaname)
 end
 
-local saveoptions = { reduce = true }
+local saveoptions = { compact = true }
 
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)

@@ -56,8 +56,6 @@ process features right.</p>
 -- todo: analyzers per script/lang, cross font, so we need an font id hash -> script
 -- e.g. latin -> hyphenate, arab -> 1/2/3 analyze -- its own namespace
 
--- an example analyzer (should move to font-ota.lua)
-
 local state = attributes.private('state')
 
 function analyzers.setstate(head,font)
@@ -165,7 +163,8 @@ registerotffeature {
 
 methods.latn = analyzers.setstate
 
--- this info eventually will go into char-def
+-- this info eventually will go into char-def adn we will have a state
+-- table for generic then
 
 local zwnj = 0x200C
 local zwj  = 0x200D
@@ -351,3 +350,7 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     first, last = finish(first,last)
     return head, done
 end
+
+directives.register("otf.analyze.useunicodemarks",function(v)
+    analyzers.useunicodemarks = v
+end)
