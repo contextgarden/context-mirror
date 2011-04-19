@@ -754,6 +754,7 @@ local v_year     = variables.year
 local v_month    = variables.month
 local v_weekday  = variables.weekday
 local v_referral = variables.referral
+local v_space    = variables.space
 
 local convert = converters.convert
 

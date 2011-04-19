@@ -134,7 +134,7 @@ plus.auto        = plus.AutoView
 -- some day .. lpeg with function or table
 
 local function fieldflag(specification)
-    local o, n = specification.options, 0
+    local o, n = specification.option, 0
     if o and o ~= "" then
         for f in gmatch(o,"[^, ]+") do
             n = n + (flag[f] or 0)
@@ -144,7 +144,7 @@ local function fieldflag(specification)
 end
 
 local function fieldplus(specification)
-    local o, n = specification.options, 0
+    local o, n = specification.option, 0
     if o and o ~= "" then
         for p in gmatch(o,"[^, ]+") do
             n = n + (plus[p] or 0)
@@ -638,11 +638,11 @@ local function fieldalignment(specification)
 end
 
 local function enhance(specification,option)
-    local so = specification.options
+    local so = specification.option
     if so and so ~= "" then
-        specification.options = so .. "," .. option
+        specification.option = so .. "," .. option
     else
-        specification.options = option
+        specification.option = option
     end
     return specification
 end

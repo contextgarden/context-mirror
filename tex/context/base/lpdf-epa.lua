@@ -25,6 +25,10 @@ local layerspec = { -- predefining saves time
     "epdflinks"
 }
 
+local function makenamespace(filename)
+    return format("lpdf-epa-%s-",file.removesuffix(file.basename(filename)))
+end
+
 local function add_link(x,y,w,h,destination,what)
     if trace_links then
         report_link("dx: % 4i, dy: % 4i, wd: % 4i, ht: % 4i, destination: %s, type: %s",x,y,w,h,destination,what)
@@ -48,25 +52,21 @@ local function add_link(x,y,w,h,destination,what)
     )
 end
 
-local function link_goto(x,y,w,h,document,annotation,pagesdata,pagedata,namespace)
- -- print("border",table.unpack(annotation.Border.all))
- -- print("flags",annotation.F)
- -- print("pagenumbers",pagedata.reference.num,destination[1].num)
- -- print("pagerefs",pagedata.number,pagesdata.references[destination[1].num])
+local function link_goto(x,y,w,h,document,annotation,pagedata,namespace)
     local destination = annotation.A.D -- [ 18 0 R /Fit ]
     local what = "page"
     if type(destination) == "string" then
-        local destinations = document.Catalog.Destinations
+        local destinations = document.destinations
         local wanted = destinations[destination]
         destination = wanted and wanted.D
         if destination then what = "named" end
     end
-    local whereto = destination and destination[1] -- array
-    if whereto and whereto.num then
-        local currentpage = pagedata.number
-        local destinationpage = pagesdata.references[whereto.num]
-        add_link(x,y,w,h,namespace .. destinationpage,what)
-        return
+    local pagedata = destination and destination[1]
+    if pagedata then
+        local destinationpage = pagedata.number
+        if destinationpage then
+            add_link(x,y,w,h,namespace .. destinationpage,what)
+        end
     end
 end
 
@@ -103,31 +103,32 @@ function codeinjections.mergereferences(specification)
     end
     if specification then
         local fullname = specification.fullname
-        local document = lpdf.load(fullname)
+        local document = lpdf.epdf.load(fullname)
         if document then
             local pagenumber  = specification.page    or 1
             local xscale      = specification.yscale  or 1
             local yscale      = specification.yscale  or 1
             local size        = specification.size    or "crop" -- todo
-            local pagesdata   = document.Catalog.Pages
-            local pagedata    = pagesdata[pagenumber]
+            local pagedata    = document.pages[pagenumber]
             local annotations = pagedata.Annots
             local namespace   = format("lpdf-epa-%s-",file.removesuffix(file.basename(fullname)))
             local reference   = namespace .. pagenumber
-            if annotations.size > 0 then
-                local llx, lly, urx, ury = table.unpack(pagedata.MediaBox.all)
+            if annotations.n > 0 then
+                local mediabox = pagedata.MediaBox
+                local llx, lly, urx, ury = mediabox[1], mediabox[2], mediabox[3], mediabox[4]
                 local width, height = xscale * (urx - llx), yscale * (ury - lly) -- \\overlaywidth, \\overlayheight
                 context.definelayer( { "epdflinks" }, { height = height.."bp" , width = width.."bp" })
-                for i=1,annotations.size do
+                for i=1,annotations.n do
                     local annotation = annotations[i]
                     local subtype = annotation.Subtype
-                    local a_llx, a_lly, a_urx, a_ury = table.unpack(annotation.Rect.all)
+                    local rectangle = annotation.Rect
+                    local a_llx, a_lly, a_urx, a_ury = rectangle[1], rectangle[2], rectangle[3], rectangle[4]
                     local x, y = xscale * (a_llx -   llx), yscale * (a_lly -   lly)
                     local w, h = xscale * (a_urx - a_llx), yscale * (a_ury - a_lly)
                     if subtype  == "Link" then
                         local linktype = annotation.A.S
                         if linktype == "GoTo" then
-                            link_goto(x,y,w,h,document,annotation,pagesdata,pagedata,namespace)
+                            link_goto(x,y,w,h,document,annotation,pagedata,namespace)
                         elseif linktype == "GoToR" then
                             link_file(x,y,w,h,document,annotation)
                         elseif linktype == "URI" then
@@ -154,20 +155,39 @@ function codeinjections.mergereferences(specification)
 end
 
 function codeinjections.mergeviewerlayers(specification)
+    -- todo: parse included page for layers
+    if true then
+        return
+    end
     if not specification then
         specification = figures and figures.current()
         specification = specification and specification.status
     end
     if specification then
         local fullname = specification.fullname
-        local document = lpdf.load(fullname)
+        local document = lpdf.epdf.load(fullname)
         if document then
-            local pagenumber = specification.page or 1
-            local pagesdata  = document.Catalog.Pages
-            local pagedata   = pagesdata[pagenumber]
-            local resources  = pagedata.Resources
---~             table.print(resources)
---~             local properties = resources.Properties
+            local namespace = format("lpdf:epa:%s:",file.removesuffix(file.basename(fullname)))
+            local layers = document.layers
+            if layers then
+                for i=1,layers.n do
+                    local tag = layers[i]
+tag = namespace .. string.gsub(tag," ",":")
+local title = tag
+if trace_links then
+    report_link("using layer '%s'",tag)
+end
+                    attributes.viewerlayers.define { -- also does some cleaning
+                        tag       = tag, -- todo: #3A or so
+                        title     = title,
+                        visible   = variables.start,
+                        editable  = variables.yes,
+                        printable = variables.yes,
+                    }
+                    codeinjections.useviewerlayer(tag)
+                end
+            end
         end
     end
 end
+

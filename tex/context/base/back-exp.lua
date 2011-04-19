@@ -1018,12 +1018,12 @@ local displaymapping = {
 
 local e_template = [[
 %s {
-    display: %s
+    display: %s ;
 }]]
 
 local d_template = [[
 %s[detail=%s] {
-    display: %s
+    display: %s ;
 }]]
 
 -- encoding='utf-8'

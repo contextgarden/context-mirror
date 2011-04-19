@@ -88,7 +88,7 @@ function document.showmathfont(id,slot)
     local virtual, names = tfmdata.properties.virtualized, { }
     if virtual then
         for k, v in ipairs(tfmdata.fonts) do
-            local id = v.properties.id
+            local id = v.id
             local name = fontdata[id].properties.name
             names[k] = (name and file.basename(name)) or id
         end

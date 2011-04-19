@@ -15,6 +15,8 @@
 
 \registerctxluafile{scrn-wid}{1.001}
 
+% todo: expansion in comments (default is expanded)
+
 \unprotect
 
 %D Attachments (mkiv upgraded):
@@ -389,7 +391,7 @@
   {\doifassignmentelse{#title}
      {\setupcomment[\currentcomment][#title]}
      {\setupcomment[\currentcomment][\c!title=#title,#settings]}%
-   \ctxlua{buffers.assign("\v!comment",\!!bs\detokenize{#text}\!!es)}%
+   \ctxlua{buffers.assign("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
    \scrn_comment_inject
    \ignorespaces}
 
@@ -556,16 +558,16 @@
 \def\useexternalrendering{\doquadrupleempty\scrn_rendering_use}
 \def\setinternalrendering{\dodoubleempty   \scrn_rendering_set}
 
-\def\scrn_rendering_use[#tag][#mime][#file][#options]%
+\def\scrn_rendering_use[#tag][#mime][#file][#option]%
   {\ctxlua{interactions.renderings.register {
       type     = "external",
       label    = "#tag",
       mime     = "#mime",
       filename = "#file",
-      options  = "#options",
+      option   = "#option",
   }}}
 
-\def\scrn_rendering_set[#tag][#options]% {content}
+\def\scrn_rendering_set[#tag][#option]% {content}
   {\bgroup
    \dowithnextbox
      {\ctxlua{interactions.renderings.register {
@@ -573,15 +575,15 @@
          label    = "#tag",
          mime     = "IRO", % brrr
          filename = "#tag",
-         options  = "#options",
+         option   = "#option",
       }}%
       \let\objectoffset\zeropoint
       \setobject{IRO}{#tag}\hbox{\box\nextbox}%
       \egroup}%
      \hbox}
 
-\def\renderingtype   #tag{\ctxlua{interactions.renderings.var("#tag","type")}}
-\def\renderingoptions#tag{\ctxlua{interactions.renderings.var("#tag","options")}}
+\def\renderingtype  #tag{\ctxlua{interactions.renderings.var("#tag","type")}}
+\def\renderingoption#tag{\ctxlua{interactions.renderings.var("#tag","option")}}
 
 \def\renderingwidth    {8cm} % will become private
 \def\renderingheight   {6cm} % will become private
@@ -631,11 +633,11 @@
      [\??rw\currentrenderingwindow][\c!offset=\v!overlay]%
      {\vfill
       \ctxcommand{insertrenderingwindow {
-        label   = "\currentrendering",
-        width   = \number\dimexpr\renderingwidth\relax,
-        height  = \number\dimexpr\renderingheight\relax,
-        options = "\renderingoptions\currentrendering",
-        page    = \number\renderingpage,
+        label  = "\currentrendering",
+        width  = \number\dimexpr\renderingwidth\relax,
+        height = \number\dimexpr\renderingheight\relax,
+        option = "\renderingoption\currentrendering",
+        page   = \number\renderingpage,
       }}\hfill}%
    \egroup}
 

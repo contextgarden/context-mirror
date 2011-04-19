@@ -642,9 +642,11 @@ local function serialize(_handle,root,name,specification) -- handle wins
     end
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable.
-        local dummy = root._w_h_a_t_e_v_e_r_
-        root._w_h_a_t_e_v_e_r_ = nil
+        -- using a metatable. (maybe explicitly test for metatable)
+        if getmetatable(root) then -- todo: make this an option, maybe even per subtable
+            local dummy = root._w_h_a_t_e_v_e_r_
+            root._w_h_a_t_e_v_e_r_ = nil
+        end
         -- Let's forget about empty tables.
         if next(root) then
             do_serialize(root,name,"",0)

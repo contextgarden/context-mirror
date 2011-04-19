@@ -59,17 +59,22 @@ local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()
 local pagelayers, pagelayersreference, cache = nil, nil, { }
 
 local specifications = { }
+local initialized    = { }
 
 function codeinjections.defineviewerlayer(specification)
     if viewerlayers.supported and textlayers then
-        specifications[specification.tag] = specification
+        local tag = specification.tag
+        if not specifications[tag] then
+            specifications[tag] = specification
+        end
     end
 end
 
 local function useviewerlayer(name)
     local specification = specifications[name]
-    if specification then
+    if not environment.initex and specification and not initialized[name] then
         specifications[name] = nil -- or not
+        initialized   [name] = true
         if not pagelayers then
             pagelayers = pdfdictionary()
             pagelayersreference = pdfreserveobject()

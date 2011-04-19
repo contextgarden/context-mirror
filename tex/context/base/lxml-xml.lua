@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
+local concat = string.concat
+
 local xml = xml
 
 local finalizers   = xml.finalizers.xml
@@ -130,7 +132,7 @@ local function texts(collected)
     if collected then
         local t, n = { }, 0
         for c=1,#collected do
-            local e = collection[c]
+            local e = collected[c]
             if e and e.dt then
                 n = n + 1
                 t[n] = e.dt
@@ -307,3 +309,24 @@ end
 
 xml.table        = totable
 finalizers.table = totable
+
+local function textonly(e,t)
+    if e then
+        local edt = e.dt
+        if edt then
+            for i=1,#edt do
+                local e = edt[i]
+                if type(e) == "table" then
+                    textonly(e,t)
+                else
+                    t[#t+1] = e
+                end
+            end
+        end
+    end
+    return t
+end
+
+function xml.textonly(e) -- no pattern
+    return concat(textonly(e,{}))
+end
