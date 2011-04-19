@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-swf'] = {
 -- The following code is based on tests by Luigi Scarso. His prototype
 -- was using tex code. This is the official implementation.
 
-local format = string.format
+local format, gsub = string.format, string.gsub
 
 local backends, lpdf = backends, lpdf
 
@@ -30,9 +30,11 @@ local pdfannotation_node = nodes.pool.pdfannotation
 
 local function insertswf(spec)
 
-    local width, height, filename = spec.width, spec.height, spec.foundname
+    local width, height, filename, resources = spec.width, spec.height, spec.foundname, spec.resources
 
-    local eref = codeinjections.embedfile(filename)
+    local resources = resources and parametersets[resources]
+
+    local eref = codeinjections.embedfile { file = filename }
 
     local flash = pdfdictionary {
         Subtype   = pdfconstant("Flash"),
@@ -57,6 +59,31 @@ local function insertswf(spec)
             }
         },
     }
+
+    if resources then
+        local names = configuration.Assets.Names
+        local function add(filename)
+            local filename = gsub(filename,"%./","")
+            local eref = codeinjections.embedfile { file = filename, keepdir = true }
+            names[#names+1] = pdfstring(filename)
+            names[#names+1] = eref
+        end
+        local paths = resources.paths
+        if paths then
+            for i=1,#paths do
+                local files = dir.glob(paths[i] .. "/**")
+                for i=1,#files do
+                    add(files[i])
+                end
+            end
+        end
+        local files = resources.files
+        if files then
+            for i=1,#files do
+                add(files[i])
+            end
+        end
+    end
 
     local cref = pdfreference(pdfimmediateobject(tostring(configuration)))
 
@@ -125,6 +152,7 @@ function backends.pdf.nodeinjections.insertswf(spec)
     --  display   = spec.display,
     --  controls  = spec.controls,
     --  label     = spec.label,
+        resources = spec.resources,
     }
     node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
 end

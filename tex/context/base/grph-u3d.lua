@@ -23,7 +23,7 @@ function figures.checkers.u3d(data)
     local dr, du, ds = data.request, data.used, data.status
     local width = todimen(dr.width or figures.defaultwidth)
     local height = todimen(dr.height or figures.defaultheight)
-    local foundname = du.report_u3ds(
+    local foundname = du.fullname
     dr.width, dr.height = width, height
     du.width, du.height, du.foundname = width, height, foundname
     if trace_inclusion then

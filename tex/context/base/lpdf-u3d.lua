@@ -479,7 +479,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
 end
 
 function nodeinjections.insertu3d(spec)
-    local annotation, preview, ref = insert3d {
+    local annotation, preview, ref = insert3d { -- just spec
         foundname = spec.foundname,
         width     = spec.width,
         height    = spec.height,

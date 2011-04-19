@@ -29,6 +29,7 @@ function figures.checkers.swf(data)
     --  display   = dr.display,
     --  controls  = dr.controls,
     --  label     = dr.label,
+        resources = dr.resources,
     }
     context.stopfoundexternalfigure()
     return data
