@@ -203,6 +203,7 @@ function codeinjections.embedfile(specification)
     local name       = specification.name or ""
     local title      = specification.title or ""
     local hash       = specification.hash or filename
+    local keepdir    = specification.keepdir -- can change
     if filename == "" then
         filename = nil
     end
@@ -240,7 +241,8 @@ function codeinjections.embedfile(specification)
             end
         end
     end
-    local basename = file.basename(filename)
+    local basename = keepdir == true and filename or file.basename(filename)
+local basename = string.gsub(basename,"%./","")
     local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
     local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
     local f
@@ -559,7 +561,7 @@ local function insertrendering(specification)
         if isurl then
             descriptor.FS = pdfconstant("URL")
         elseif option[v_embed] then
-            descriptor.EF = codeinjections.embedfile(filename)
+            descriptor.EF = codeinjections.embedfile { file = filename }
         end
         local clip = pdfdictionary {
             Type = pdfconstant("MediaClip"),

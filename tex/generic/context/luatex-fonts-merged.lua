@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/19/11 16:38:06
+-- merge date  : 04/19/11 22:49:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -2352,6 +2352,12 @@ local function readnumber(f,n,m)
     elseif n == 12 then
         local a, b, c = readnumber(f,4), readnumber(f,4), readnumber(f,4)
         return 256*256 * a + 256 * b + c
+    elseif n == -2 then
+        local b, a = byte(f:read(2),1,2)
+        return 256*a + b
+    elseif n == -4 then
+        local d, c, b, a = byte(f:read(4),1,4)
+        return 256*256*256 * a + 256*256 * b + 256*c + d
     else
         return 0
     end
