@@ -93,12 +93,12 @@ end
 
 lpdf.toeight = toeight
 
---~ local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/"#" + lpeg.P(1))^0)
---~
+--~ local escaped = lpeg.Cs((lpeg.S("\0\t\n\r\f ()[]{}/%")/function(s) return format("#%02X",byte(s)) end + lpeg.P(1))^0)
+
 --~ local function cleaned(str)
 --~     return (str and str ~= "" and lpegmatch(escaped,str)) or ""
 --~ end
---~
+
 --~ lpdf.cleaned = cleaned -- not public yet
 
 local function merge_t(a,b)

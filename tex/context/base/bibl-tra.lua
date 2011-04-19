@@ -154,7 +154,7 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
                 found = subset[tag]
             end
             if found then
-                local current = found.entries and found.entries.text
+                local current = tonumber(found.entries and found.entries.text) -- tonumber needed
                 if current and not done[current] then
                     nofresult = nofresult + 1
                     result[nofresult] = { blk, rest, current }
@@ -188,7 +188,7 @@ function hacks.resolve(prefix,block,reference) -- maybe already feed it split
                 first, last, firsti, lasti, firstr, lastr = current, current, i, i, r, r
             end
         end
-        if first then
+        if first and last then
             if last > first + 1 then
                 nofcollected = nofcollected + 1
                 collected[nofcollected] = { firstr[1], firstr[2], lastr[1], lastr[2] }

@@ -6,252 +6,303 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
     license   = "see context related readme files"
 }
 
--- This is an experimental layer around the epdf library. Because that
--- library is not yet finished and will get a clear api (independent of
--- the underlying pdf library which has an instable api) it will take
--- a while before this module is completed. Also, some integration with
--- other lpdf code might happen (i.e. we might generate lpdf objects).
+-- This is an experimental layer around the epdf library. The reason for
+-- this layer is that I want to be independent of the library (which
+-- implements a selection of what a file provides) and also because I
+-- want an interface closer to Lua's table model while the API stays
+-- close to the original xpdf library. Of course, after prototyping a
+-- solution, we can optimize it using the low level epdf accessors.
 
-local setmetatable, rawset = setmetatable, rawset
+-- It will be handy when we have a __length and __next that can trigger
+-- the resolve till then we will provide .n as #.
 
--- used:
---
--- arrayGet arrayGetNF dictLookup getTypeName arrayGetLength
--- getNum getString getBool getName getRef
--- getResourceDict getMediaBox getCropBox getBleedBox getTrimBox getArtBox
--- getPageRef getKindName findDestgetNumPages getDests getPage getCatalog getAnnots
---
--- needed:
---
--- add accessor methods to the resource dict
--- a function to mark objects as to be included
+-- As there can be references to the parent we cannot expand a tree. I
+-- played with some expansion variants but it does to pay off.
+
+-- Maybe we need a close().
+-- We cannot access all destinations in one run.
+
+local setmetatable, rawset, rawget, tostring, tonumber = setmetatable, rawset, rawget, tostring, tonumber
+local lower, match, char = string.lower, string.match, string.char
+local concat = table.concat
+
+function epdf.type(o)
+    local t = lower(match(tostring(o),"[^ :]+"))
+    return t or "?"
+end
 
 lpdf = lpdf or { }
-
 local lpdf = lpdf
 
--- -- -- helpers -- -- --
-
-local cache_lookups = false
+lpdf.epdf  = { }
 
 local checked_access
 
-local array_access = {
-    __index = function(t,k)
-        local d = t.__data__
-        if tonumber(k) then
-            return checked_access(t,k,d:arrayGetNF(k))
-        elseif k == "all" then
-            local result = { }
-            for i=1,t.size do
-                result[i] = checked_access(t,k,d:arrayGetNF(i))
+local function prepare(document,d,t,n,k)
+    for i=1,n do
+        local v = d:getVal(i)
+        local r = d:getValNF(i)
+        if r:getTypeName() ~= "ref" then
+            t[d:getKey(i)] = checked_access[v:getTypeName()](v,document)
+        else
+            r = r:getRef().num
+            local c = document.cache[r]
+            if c then
+                --
+            else
+                c = checked_access[v:getTypeName()](v,document,r)
+                document.cache[r] = c
+                document.xrefs[c] = r
             end
-            return result
-        elseif k == "width" then
-            return checked_access(t,k,d:arrayGetNF(3)) - checked_access(t,k,d:arrayGetNF(1))
-        elseif k == "height" then
-            return checked_access(t,k,d:arrayGetNF(4)) - checked_access(t,k,d:arrayGetNF(2))
+            t[d:getKey(i)] = c
         end
+    end
+    getmetatable(t).__index = nil
+    return t[k]
+end
+
+local function some_dictionary(d,document,r)
+    local n = d and d:getLength() or 0
+    if n > 0 then
+        local t = { }
+        setmetatable(t, { __index = function(t,k) return prepare(document,d,t,n,k) end } )
+        return t
+    end
+end
+
+local done = { }
+
+local function prepare(document,a,t,n,k)
+    for i=1,n do
+        local v = a:get(i)
+        local r = a:getNF(i)
+        if r:getTypeName() ~= "ref" then
+            t[i] = checked_access[v:getTypeName()](v,document)
+        else
+            r = r:getRef().num
+            local c = document.cache[r]
+            if c then
+                --
+            else
+                c = checked_access[v:getTypeName()](v,document,r)
+                document.cache[r] = c
+                document.xrefs[c] = r
+            end
+            t[i] = c
+        end
+    end
+    getmetatable(t).__index = nil
+    return t[k]
+end
+
+local function some_array(a,document,r)
+    local n = a and a:getLength() or 0
+    if n > 0 then
+        local t = { n = n }
+        setmetatable(t, { __index = function(t,k) return prepare(document,a,t,n,k) end } )
+        return t
+    end
+end
+
+local function streamaccess(s,_,what)
+    if not what or what == "all" or what == "*all" then
+        local t, n = { }, 0
+        s:streamReset()
+        while true do
+            local c = s:streamGetChar()
+            if c < 0 then
+                break
+            else
+                n = n + 1
+                t[n] = char(c)
+            end
+        end
+        return concat(t)
+    end
+end
+
+local function some_stream(d,document,r)
+    if d then
+        d:streamReset()
+        local s = some_dictionary(d:streamGetDict(),document,r)
+        getmetatable(s).__call = function(...) return streamaccess(d,...) end
+        return s
+    end
+end
+
+-- we need epdf.getBool
+
+checked_access = {
+    dictionary = function(d,document,r)
+        return some_dictionary(d:getDict(),document,r)
+    end,
+    array = function(a,document,r)
+        return some_array(a:getArray(),document,r)
+    end,
+    stream = function(v,document,r)
+        return some_stream(v,document,r)
+    end,
+    real = function(v)
+        return v:getReal()
+    end,
+    integer = function(v)
+        return v:getNum()
+    end,
+    string = function(v)
+        return v:getString()
+    end,
+    boolean = function(v)
+        return v:getBool()
+    end,
+    name = function(v)
+        return v:getName()
+    end,
+    ref = function(v)
+        return v:getRef()
     end,
 }
 
-local dictionary_access = {
-    __index = function(t,k)
-        return checked_access(t,k,t.__data__:dictLookup(k))
-    end
-}
+--~ checked_access.real    = epdf.real
+--~ checked_access.integer = epdf.integer
+--~ checked_access.string  = epdf.string
+--~ checked_access.boolean = epdf.boolean
+--~ checked_access.name    = epdf.name
+--~ checked_access.ref     = epdf.ref
 
-checked_access = function(tab,key,v)
-    local n = v:getTypeName()
-    if n == "array" then
-        local t = { __data__ = v, size = v:arrayGetLength() or 0 }
-        setmetatable(t,array_access)
-        if cache_lookups then rawset(tab,key,t) end
-        return t
-    elseif n == "dictionary" then
-        local t = { __data__ = v, }
-        setmetatable(t,dictionary_access)
-        if cache_lookups then rawset(tab,key,t) end
-        return t
-    elseif n == "real" or n == "integer" then
-        return v:getNum()
-    elseif n == "string" then
-        return v:getString()
-    elseif n == "boolean" then
-        return v:getBool()
-    elseif n == "name" then
-        return v:getName()
-    elseif n == "ref" then
-        return v:getRef(v.num,v.gen)
-    else
-        return v
+local function getnames(document,n,target) -- direct
+    if n then
+        local Names = n.Names
+        if Names then
+            if not target then
+                target = { }
+            end
+            for i=1,Names.n,2 do
+                target[Names[i]] = Names[i+1]
+            end
+        else
+            local Kids = n.Kids
+            if Kids then
+                for i=1,Kids.n do
+                    target = getnames(document,Kids[i],target)
+                end
+            end
+        end
+        return target
     end
 end
 
-local basic_annots_access = {
-    __index = function(t,k)
-        local a = {
-            __data__ = t.__data__:arrayGet(k),
-        }
-        setmetatable(a,dictionary_access)
-        if cache_lookups then rawset(t,k,a) end
-        return a
-    end
-}
-
-local basic_resources_access = { -- == dictionary_access
-    __index = function(t,k)
---~ local d = t.__data__
---~ print(d)
---~ print(d:getTypeName())
-        return checked_access(t,k,t.__data__:dictLookup(k))
-    end
-}
-
-local basic_box_access = { -- here it makes sense to do the rawset
-    __index = function(t,k)
-        local d = t.__data__
-        if     k == "all"           then return { d.x1, d.y1, d.x2, d.y2 }
-        elseif k == "width"         then return d.x2 - d.x1
-        elseif k == "height"        then return d.y2 - d.y1
-        elseif k == 1 or k == "llx" then return d.x1
-        elseif k == 2 or k == "lly" then return d.y1
-        elseif k == 3 or k == "urx" then return d.x2
-        elseif k == 4 or k == "lly" then return d.y2
-        else                        return 0 end
-    end
-}
-
--- -- -- pages -- -- --
-
-local page_access = {
-    __index = function(t,k)
-        local d = t.__data__
-        if k == "Annots" then
-            local annots = d:getAnnots()
-            local a = {
-                __data__ = annots,
-                size = annots:arrayGetLength() or 0
-            }
-            setmetatable(a,basic_annots_access)
-            rawset(t,k,a)
-            return a
-        elseif k == "Resources" then
-            local r = {
-                __data__ = d:getResourceDict(),
-            }
-            setmetatable(r,basic_resources_access)
-            rawset(t,k,r)
-            return r
-        elseif k == "MediaBox" or k == "TrimBox" or k == "CropBox" or k == "ArtBox" or k == "BleedBox" then
-            local b = {
-             -- __data__ = d:getMediaBox(),
-                __data__ = d["get"..k](d),
-            }
-            setmetatable(b,basic_box_access)
-            rawset(t,k,b)
-            return b
-        end
-    end
-}
-
--- -- -- catalog -- -- --
-
-local destination_access = {
-    __index = function(t,k)
-        if k == "D" then
-            local d = t.__data__
-            local p = {
-                d:getPageRef(k), d:getKindName(k)
-            }
-            if cache_lookups then rawset(t,k,p) end -- not needed
-            return p
-        end
-    end
-}
-
-local destinations_access = {
-    __index = function(t,k)
-        local d = t.__catalog__
-        local p = {
-            __data__  = d:findDest(k),
-        }
-        setmetatable(p,destination_access)
-        if cache_lookups then rawset(t,k,p) end
-        return p
-    end
-}
-
-local catalog_access = {
-    __index = function(t,k)
-        local c = t.__catalog__
-        if k == "Pages" then
-            local s = c:getNumPages()
-            local r = {
-            }
-            local p = {
-                __catalog__ = c,
-                size        = s,
-                references  = r,
-            }
-         -- we load all pages as we need to resolve refs
-            for i=1,s do
-                local di, ri = c:getPage(i), c:getPageRef(i)
-                local pi = {
-                    __data__  = di,
-                    reference = ri,
-                    number    = i,
-                }
-                setmetatable(pi,page_access)
-                p[i], r[ri.num] = pi, i
+local function getkids(document,n,target) -- direct
+    if n then
+        local Kids = n.Kids
+        if Kids then
+            for i=1,Kids.n do
+                target = getkids(document,Kids[i],target)
             end
-         -- setmetatable(p,pages_access)
-            rawset(t,k,p)
-            return p
-        elseif k == "Destinations" or k == "Dest" then
-            local d = c:getDests()
-            local p = {
-                __catalog__ = c,
-            }
-            setmetatable(p,destinations_access)
-            rawset(t,k,p)
-            return p
-        elseif k == "Metadata" then
-            local m = c:readMetadata()
-            local p = { -- we fake a stream dictionary
-                __catalog__ = c,
-                stream      = m,
-                Type        = "Metadata",
-                Subtype     = "XML",
-                Length      = #m,
-            }
-         -- rawset(t,k,p)
-            return p
+        elseif target then
+            target[#target+1] = n
         else
-            print(c:dictLookup(k))
---~             return checked_access(t,k,t:dictLookup(k))
+            target = { n }
+        end
+        return target
+    end
+end
+
+-- /OCProperties <<
+--     /OCGs [ 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R ]
+--     /D <<
+--         /Order [ 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R ]
+--         /ON    [ 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R ]
+--         /OFF   [ ]
+--     >>
+-- >>
+
+local function getlayers(document)
+    local properties = document.Catalog.OCProperties
+    if properties then
+        local layers = properties.OCGs
+        if layers then
+            local t = { }
+            local n = layers.n
+            for i=1,n do
+                local layer = layers[i]
+--~ print(document.xrefs[layer])
+                t[i] = layer.Name
+            end
+            t.n = n
+            return t
         end
     end
-}
+end
 
-local document_access = {
-    __index = function(t,k)
-        if k == "Catalog" then
-            local c = {
-                __catalog__ = t.__root__:getCatalog(),
+local function getpages(document)
+    local data  = document.data
+    local xrefs = document.xrefs
+    local cache = document.cache
+    local cata  = data:getCatalog()
+    local xref  = data:getXRef()
+    local pages = { }
+    for pagenumber=1,cata:getNumPages() do
+        local pagereference = cata:getPageRef(pagenumber).num
+        local pagedata = some_dictionary(xref:fetch(pagereference,0):getDict(),document,pagereference)
+        pagedata.number = pagenumber
+        pages[pagenumber] = pagedata
+        xrefs[pagedata] = pagereference
+        cache[pagereference] = pagedata
+    end
+    return pages
+end
+
+-- loader
+
+local function delayed(document,tag,f)
+    local t = { }
+    setmetatable(t, { __index = function(t,k)
+        local result = f()
+        if result then
+            document[tag] = result
+            return result[k]
+        end
+    end } )
+    return t
+end
+
+local loaded = { }
+
+function lpdf.epdf.load(filename)
+    local document = loaded[filename]
+    if not document then
+        statistics.starttiming(lpdf.epdf)
+        local data = epdf.open(filename) -- maybe resolvers.find_file
+        if data then
+            document = {
+                filename = filename,
+                cache    = { },
+                xrefs    = { },
+                data     = data,
             }
-            setmetatable(c,catalog_access)
-            rawset(t,k,c)
-            return c
+            local Catalog    = some_dictionary(data:getXRef():getCatalog():getDict(),document)
+            document.Catalog = Catalog
+         -- document.catalog = Catalog
+            -- a few handy helper tables
+            document.pages         = delayed(document,"pages",        function() return getpages(document) end)
+            document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names.Dests) end)
+            document.javascripts   = delayed(document,"javascripts",  function() return getnames(document,Catalog.Names.JS) end)
+            document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names.AcroForm) end)
+            document.embeddedfiles = delayed(document,"embeddedfiles",function() return getnames(document,Catalog.Names.EmbeddedFiles) end)
+            document.layers        = delayed(document,"layers",       function() return getlayers(document) end)
+        else
+            document = false
         end
+        loaded[filename] = document
+        statistics.stoptiming(lpdf.epdf)
+     -- print(statistics.elapsedtime(lpdf.epdf))
     end
-}
-
-function lpdf.load(filename)
-    local document = {
-        __root__ = epdf.open(filename),
-        filename = filename,
-    }
-    setmetatable(document,document_access)
     return document
 end
+
+-- helpers
+
+-- function lpdf.epdf.getdestinationpage(document,name)
+--     local destination = document.data:findDest(name)
+--     return destination and destination.number
+-- end

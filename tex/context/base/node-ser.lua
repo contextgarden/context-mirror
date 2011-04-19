@@ -100,7 +100,7 @@ local function totable(n,flat,verbose)
         local tt = { }
         for k=1,#f do
             local v = f[k]
-            local nv = n[v]
+            local nv = v and n[v]
             if nv then
                 if ignore[v] then
                     -- skip

@@ -28,6 +28,7 @@ local v_normal                = variables.normal
 local v_auto                  = variables.auto
 local v_embed                 = variables.embed
 local v_unknown               = variables.unknown
+local v_max                   = variables.max
 
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
@@ -35,6 +36,7 @@ local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference
 local pdfunicode              = lpdf.unicode
 local pdfstring               = lpdf.string
+local pdfboolean              = lpdf.boolean
 local pdfcolorspec            = lpdf.colorspec
 local pdfflushobject          = lpdf.flushobject
 local pdfreserveannotation    = lpdf.reserveannotation
@@ -341,7 +343,37 @@ end
 
 local nofcomments, usepopupcomments, stripleading = 0, false, true
 
-function nodeinjections.comment(specification)
+local defaultattributes = {
+    ["xmlns"]           = "http://www.w3.org/1999/xhtml",
+    ["xmlns:xfa"]       = "http://www.xfa.org/schema/xfa-data/1.0/",
+    ["xfa:contentType"] = "text/html",
+    ["xfa:APIVersion"]  = "Acrobat:8.0.0",
+    ["xfa:spec"]        = "2.4",
+}
+
+local function checkcontent(text,option)
+    if option and option.xml then
+        local root = xml.convert(text)
+        if root and not root.er then
+            xml.checkbom(root)
+            local body = xml.first(root,"/body")
+            if body then
+                local at = body.at
+                for k, v in next, defaultattributes do
+                    if not at[k] then
+                        at[k] = v
+                    end
+                end
+             -- local content = xml.textonly(root)
+                local richcontent = xml.tostring(root)
+                return nil, pdfunicode(richcontent)
+            end
+        end
+    end
+    return pdfunicode(text)
+end
+
+function nodeinjections.comment(specification) -- brrr: seems to be done twice
     nofcomments = nofcomments + 1
     local text = string.strip(specification.data or "")
     if stripleading then
@@ -352,6 +384,7 @@ function nodeinjections.comment(specification)
     local title    = specification.title    or "" -- versions of acrobat see the title
     local subtitle = specification.subtitle or "" -- as author
     local author   = specification.author   or ""
+    local option   = settings_to_hash(specification.option or "")
     if author == "" then
         if title == "" then
             title = tag
@@ -364,10 +397,12 @@ function nodeinjections.comment(specification)
         end
         title = author
     end
+    local content, richcontent = checkcontent(text,option)
     local d = pdfdictionary {
         Subtype   = pdfconstant("Text"),
-     -- Open      = specification.open, -- now options
-        Contents  = pdfunicode(text),
+        Open      = option[v_max] and pdfboolean(true) or nil,
+        Contents  = content,
+        RC        = richcontent,
         T         = title ~= "" and pdfunicode(title) or nil,
         Subj      = subtitle ~= "" and pdfunicode(subtitle) or nil,
         C         = analyzecolor(specification.colorvalue,specification.colormodel),
@@ -447,7 +482,7 @@ local function insertrenderingwindow(specification)
     local label = specification.label
 --~     local openpage = specification.openpage
 --~     local closepage = specification.closepage
-    if specification.options == v_auto then
+    if specification.option == v_auto then
         if openpageaction then
             -- \handlereferenceactions{\v!StartRendering{#2}}
         end
@@ -485,7 +520,7 @@ end
 
 local function insertrendering(specification)
     local label = specification.label
-    local options = utilities.parsers.settings_to_hash(specification.options)
+    local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
         local isurl = find(filename,"://")
@@ -523,7 +558,7 @@ local function insertrendering(specification)
         }
         if isurl then
             descriptor.FS = pdfconstant("URL")
-        elseif options[v_embed] then
+        elseif option[v_embed] then
             descriptor.EF = codeinjections.embedfile(filename)
         end
         local clip = pdfdictionary {

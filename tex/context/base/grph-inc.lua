@@ -836,7 +836,11 @@ function checkers.generic(data)
         .. "->" .. mask
     local figure = figures.loaded[hash]
     if figure == nil then
-        figure = img.new { filename = name, page = page, pagebox = dr.size }
+        figure = img.new {
+            filename = name,
+            page     = page,
+            pagebox  = dr.size,
+        }
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         figure = (figure and img.scan(figure)) or false

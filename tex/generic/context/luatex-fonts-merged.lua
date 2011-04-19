@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/13/11 09:23:15
+-- merge date  : 04/19/11 16:38:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -1415,9 +1415,11 @@ local function serialize(_handle,root,name,specification) -- handle wins
     end
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable.
-        local dummy = root._w_h_a_t_e_v_e_r_
-        root._w_h_a_t_e_v_e_r_ = nil
+        -- using a metatable. (maybe explicitly test for metatable)
+        if getmetatable(root) then -- todo: make this an option, maybe even per subtable
+            local dummy = root._w_h_a_t_e_v_e_r_
+            root._w_h_a_t_e_v_e_r_ = nil
+        end
         -- Let's forget about empty tables.
         if next(root) then
             do_serialize(root,name,"",0)
@@ -4788,7 +4790,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.727 -- beware: also sync font-mis.lua
+otf.version              = 2.728 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -4942,7 +4944,6 @@ local valid_fields = table.tohash {
 local ordered_enhancers = {
     "prepare tables",
     "prepare glyphs",
-    "prepare unicodes",
     "prepare lookups",
 
     "analyze glyphs",
@@ -4966,6 +4967,9 @@ local ordered_enhancers = {
     "check glyphs",
     "check metadata",
     "check extra features", -- after metadata
+
+    "add duplicates",
+    "check encoding",
 
     "cleanup tables",
 }
@@ -5154,7 +5158,10 @@ function otf.load(filename,format,sub,featurefile)
                     creator  = "context mkiv",
                     unicodes = unicodes,
                     indices  = {
-                        -- unicodes to names
+                        -- index to unicodes
+                    },
+                    duplicates = {
+                        -- alternative unicodes
                     },
                     lookuptypes = {
                     },
@@ -5335,6 +5342,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
     local descriptions = data.descriptions
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicode
+    local duplicates   = resources.duplicates
 
     if rawsubfonts then
 
@@ -5377,7 +5385,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                                 unicodes[name] = unicode
                                 nofunicodes = nofunicodes + 1
                             end
-                            indices[unicode] = index -- each index in unique (at least now)
+                            indices[index] = unicode -- each index is unique (at least now)
 
                             local description = {
                              -- width       = glyph.width,
@@ -5419,13 +5427,12 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     end
                     private = private + 1
                 else
-                    unicodes[name]   = unicode
+                    unicodes[name] = unicode
                 end
-                indices[unicode] = index
+                indices[index] = unicode
                 if not name then
                     name = format("u%06X",unicode)
                 end
-
                 descriptions[unicode] = {
                  -- width       = glyph.width,
                     boundingbox = glyph.boundingbox,
@@ -5433,6 +5440,14 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     index       = index,
                     glyph       = glyph,
                 }
+                local altuni = glyph.altuni
+                if altuni then
+                    local d = { }
+                    for i=1,#altuni do
+                        d[#d+1] = altuni[i].unicode
+                    end
+                    duplicates[unicode] = d
+                end
             else
                 report_otf("potential problem: glyph 0x%04X is used but empty",index)
             end
@@ -5447,12 +5462,13 @@ end
 -- the next one is still messy but will get better when we have
 -- flattened map/enc tables in the font loader
 
-actions["prepare unicodes"] = function(data,filename,raw)
+actions["check encoding"] = function(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
     local properties   = data.properties
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicodes
+    local duplicates   = resources.duplicates
 
     -- begin of messy (not needed whwn cidmap)
 
@@ -5466,34 +5482,16 @@ actions["prepare unicodes"] = function(data,filename,raw)
 
     if find(encname,"unicode") then -- unicodebmp, unicodefull, ...
         if trace_loading then
-            report_otf("using embedded unicode map '%s'",encname)
+            report_otf("checking embedded unicode map '%s'",encname)
         end
-        local multiples, nofmultiples = { }, 0
-        for unicode, index in next, unicodetoindex do
+        for unicode, index in next, unicodetoindex do -- altuni already covers this
             if unicode <= criterium and not descriptions[unicode] then
-                local parent = indices[index]
-                local description = descriptions[parent]
-                if description then
-                    local c = fastcopy(description)
-                    c.comment = format("copy of U+%05X", parent)
-                    descriptions[unicode] = c
-                    local name = c.name
-                    if not unicodes[name] then
-                        unicodes[name] = unicode
-                    end
-                    nofmultiples = nofmultiples + 1
-                    multiples[nofmultiples] = name -- we can save duplicates if needed
+                local parent = indices[index] -- why nil?
+                if parent then
+                    report_otf("weird, unicode U+%05X points to U+%05X with index 0x%04X",unicode,parent,index)
                 else
-                    -- make it a notdef
-                    report_otf("weird unicode U+%05X at index 0x%04X",unicode,index)
+                    report_otf("weird, unicode U+%05X points to nowhere with index 0x%04X",unicode,index)
                 end
-            end
-        end
-        if trace_loading then
-            if nofmultiples > 0 then
-                report_otf("%s glyphs are reused: %s",nofmultiples,concat(multiples," "))
-            else
-                report_otf("no glyphs are reused")
             end
         end
     elseif properties.cidinfo then
@@ -5505,6 +5503,48 @@ actions["prepare unicodes"] = function(data,filename,raw)
     if mapdata then
         mapdata.map = { } -- clear some memory
     end
+end
+
+-- for the moment we assume that a fotn with lookups will not use
+-- altuni so we stick to kerns only
+
+actions["add duplicates"] = function(data,filename,raw)
+    local descriptions = data.descriptions
+    local resources    = data.resources
+    local properties   = data.properties
+    local unicodes     = resources.unicodes -- name to unicode
+    local indices      = resources.indices  -- index to unicodes
+    local duplicates   = resources.duplicates
+
+    for unicode, d in next, duplicates do
+        for i=1,#d do
+            local u = d[i]
+            if not descriptions[u] then
+                local description = descriptions[unicode]
+                local duplicate = table.copy(description) -- else packing problem
+                duplicate.comment = format("copy of U+%05X", unicode)
+                descriptions[u] = duplicate
+                local n = 0
+                for _, description in next, descriptions do
+                    if kerns then
+                        local kerns = description.kerns
+                        for _, k in next, kerns do
+                            local ku = k[unicode]
+                            if ku then
+                                k[u] = ku
+                                n = n + 1
+                            end
+                        end
+                    end
+                    -- todo: lookups etc
+                end
+                if trace_loading then
+                    report_otf("duplicating U+%05X to U+%05X with index 0x%04X (%s kerns)",unicode,u,description.index,n)
+                end
+            end
+        end
+    end
+
 end
 
 -- class      : nil base mark ligature component (maybe we don't need it in description)

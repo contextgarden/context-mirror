@@ -70,7 +70,7 @@ local function collectcontent(names,separator) -- no print
                 t[n] = c
             end
         end
-        return concat(t,separator or "\r")
+        return concat(t,separator or "\n") -- was \r
     end
 end
 

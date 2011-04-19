@@ -178,7 +178,7 @@ function viewerlayers.define(settings)
     local tag = settings.tag
     if not tag or tag == "" then
         -- error
-    else
+    elseif not scopes[tag] then -- prevent duplicates
         local title = settings.title
         if not title or title == "" then
             settings.title = tag

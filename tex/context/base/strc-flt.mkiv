@@ -768,9 +768,9 @@
 \let\currentfloatattribute\empty % to be checked
 
 \def\floatcaptionattribute
-  {\iflocation \ifnofloatnumber \else \ifnofloatcaption \else
+  {\iflocation \ifnofloatnumber \else \ifnofloatcaption \else \ifinsidesplitfloat \else
      attr \destinationattribute \currentfloatattribute
-   \fi \fi \fi}
+   \fi \fi \fi \fi}
 
 \newconditional\usesamefloatnumber
 

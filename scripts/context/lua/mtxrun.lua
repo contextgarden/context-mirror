@@ -1304,9 +1304,11 @@ local function serialize(_handle,root,name,specification) -- handle wins
     end
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable.
-        local dummy = root._w_h_a_t_e_v_e_r_
-        root._w_h_a_t_e_v_e_r_ = nil
+        -- using a metatable. (maybe explicitly test for metatable)
+        if getmetatable(root) then -- todo: make this an option, maybe even per subtable
+            local dummy = root._w_h_a_t_e_v_e_r_
+            root._w_h_a_t_e_v_e_r_ = nil
+        end
         -- Let's forget about empty tables.
         if next(root) then
             do_serialize(root,name,"",0)
@@ -9285,6 +9287,8 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
+local concat = string.concat
+
 local xml = xml
 
 local finalizers   = xml.finalizers.xml
@@ -9399,7 +9403,7 @@ local function texts(collected)
     if collected then
         local t, n = { }, 0
         for c=1,#collected do
-            local e = collection[c]
+            local e = collected[c]
             if e and e.dt then
                 n = n + 1
                 t[n] = e.dt
@@ -9576,6 +9580,27 @@ end
 
 xml.table        = totable
 finalizers.table = totable
+
+local function textonly(e,t)
+    if e then
+        local edt = e.dt
+        if edt then
+            for i=1,#edt do
+                local e = edt[i]
+                if type(e) == "table" then
+                    textonly(e,t)
+                else
+                    t[#t+1] = e
+                end
+            end
+        end
+    end
+    return t
+end
+
+function xml.textonly(e) -- no pattern
+    return concat(textonly(e,{}))
+end
 
 
 end -- of closure
