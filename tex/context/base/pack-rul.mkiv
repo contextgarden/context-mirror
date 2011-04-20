@@ -1175,6 +1175,23 @@
 %D future extensions.
 
 %D \macros
+%D   {\doassigncheckedframeoffset}
+%D
+%D Offset helper (see menus):
+
+\def\doassigncheckedframeoffset#1#2%
+  {\edef\checkedframeoffset{#2}%
+   #1%
+     \ifx\checkedframeoffset\empty    \zeropoint\else
+     \ifx\checkedframeoffset\v!overlay\zeropoint\else
+     \ifx\checkedframeoffset\v!none   \zeropoint\else
+     \ifx\checkedframeoffset\v!frame  \zeropoint\else
+     \ifx\checkedframeoffset\v!default\zeropoint\else
+       #2%
+     \fi\fi\fi\fi\fi
+   \relax}
+
+%D \macros
 %D   {ifreshapeframebox}
 %D
 %D The last few lines tell what to do after the content of the

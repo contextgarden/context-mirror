@@ -54,6 +54,8 @@
 \appendtoks                           \def\MetaFun{MetaFun}\to\simplifiedcommands
 %appendtoks                                       \def||{-}\to\simplifiedcommands
 \appendtoks         \def|#1|{\ifx#1\empty\empty-\else#1\fi}\to\simplifiedcommands
+\appendtoks                                 \let\crlf\space\to\simplifiedcommands
+\appendtoks                                    \let\\\space\to\simplifiedcommands
 
 \appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
 

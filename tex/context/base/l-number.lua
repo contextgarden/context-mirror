@@ -79,15 +79,35 @@ function number.clearbit(x, p)
     return hasbit(x, p) and x - p or x
 end
 
+--~ function number.tobitstring(n)
+--~     if n == 0 then
+--~         return "0"
+--~     else
+--~         local t = { }
+--~         while n > 0 do
+--~             insert(t,1,n % 2 > 0 and 1 or 0)
+--~             n = floor(n/2)
+--~         end
+--~         return concat(t)
+--~     end
+--~ end
+
 function number.tobitstring(n)
     if n == 0 then
-        return "0"
+        return "00000000"
     else
-        local t = { }
+       tc = 0
+       t = {}
         while n > 0 do
-            insert(t,1,n % 2 > 0 and 1 or 0)
-            n = floor(n/2)
+            table.insert(t,1,n % 2 > 0 and 1 or 0)
+            n = math.floor(n/2)
+            tc = tc + 1
+         end
+        while tc % 8 > 0 do
+            table.insert(t,1,0)
+            tc = tc + 1
         end
-        return concat(t)
+        n = table.concat(t)
+        return n
     end
 end

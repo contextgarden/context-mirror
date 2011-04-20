@@ -1255,3 +1255,31 @@ statistics.register("graphics processing time", function()
         return nil
     end
 end)
+
+-- helper
+
+function figures.applyratio(width,height,w,h) -- width and height are strings and w and h are numbers
+    if not width or width == "" then
+        if not height or height == "" then
+            return figures.defaultwidth, figures.defaultheight
+        else
+            height = string.todimen(height)
+            if w and h then
+                return height * w/h, height
+            else
+                return figures.defaultwidth, height
+            end
+        end
+    else
+        width = string.todimen(width)
+        if not height or height == "" then
+            if w and h then
+                return width, width * h/w
+            else
+                return width, figures.defaultheight
+            end
+        else
+            return width, string.todimen(height)
+        end
+    end
+end

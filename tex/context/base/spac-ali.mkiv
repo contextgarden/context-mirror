@@ -105,11 +105,11 @@
 
 \def\dosetraggedvbox#1% can be more keys
   {\let\raggedbox\vbox
-   \processcommacommand[#1]\dodosetraggedvbox}
+   \processcommacommand[#1]\dosetraggedvbox}
 
 \def\dosetraggedhbox#1% can be more keys
   {\let\raggedbox\hbox
-   \processcommacommand[#1]\dodosetraggedhbox}
+   \processcommacommand[#1]\dosetraggedhbox}
 
 \def\dosetraggedvbox#1%
   {\ifcsname\@@ragged@@vbox#1\endcsname
@@ -151,10 +151,13 @@
 
 % slow, we can do this in lua ... some day
 
+\let\raggedbox\relax
+
 \unexpanded\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
+   \let\raggedbox\relax
    \setfalse\raggedonelinerstate
    \doifsomething{#1}%
      {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
