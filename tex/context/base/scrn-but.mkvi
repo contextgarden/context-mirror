@@ -417,10 +417,10 @@
 \newdimen\scrn_menu_offset_right
 
 \def\scrn_menu_set_used
-  {\scrn_menu_offset_left  \interactionmenuparameter\c!leftoffset
-   \scrn_menu_offset_right \interactionmenuparameter\c!rightoffset
-   \scrn_menu_offset_top   \interactionmenuparameter\c!topoffset
-   \scrn_menu_offset_bottom\interactionmenuparameter\c!bottomoffset
+  {\doassigncheckedframeoffset\scrn_menu_offset_left  {\interactionmenuparameter\c!leftoffset  }%
+   \doassigncheckedframeoffset\scrn_menu_offset_right {\interactionmenuparameter\c!rightoffset }%
+   \doassigncheckedframeoffset\scrn_menu_offset_top   {\interactionmenuparameter\c!topoffset   }%
+   \doassigncheckedframeoffset\scrn_menu_offset_bottom{\interactionmenuparameter\c!bottomoffset}%
    \scrn_menu_asked_width  \interactionmenuparameter\c!maxwidth
    \scrn_menu_asked_height \interactionmenuparameter\c!maxheight
    \scrn_menu_used_width\dimexpr
