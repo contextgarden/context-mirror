@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/20/11 16:23:12
+-- merge date  : 04/22/11 18:17:39
 
 do -- begin closure to overcome local limits and interference
 
@@ -2243,8 +2243,6 @@ local nextchar = {
 function io.characters(f,n)
     if f then
         return nextchar[n or 1], f
-    else
-        return nil, nil
     end
 end
 
@@ -2253,40 +2251,42 @@ local nextbyte = {
         local a, b, c, d = f:read(1,1,1,1)
         if d then
             return byte(a), byte(b), byte(c), byte(d)
-        else
-            return nil, nil, nil, nil
+        end
+    end,
+    [3] = function(f)
+        local a, b, c = f:read(1,1,1)
+        if b then
+            return byte(a), byte(b), byte(c)
         end
     end,
     [2] = function(f)
         local a, b = f:read(1,1)
         if b then
             return byte(a), byte(b)
-        else
-            return nil, nil
         end
     end,
     [1] = function (f)
         local a = f:read(1)
         if a then
             return byte(a)
-        else
-            return nil
         end
     end,
     [-2] = function (f)
         local a, b = f:read(1,1)
         if b then
             return byte(b), byte(a)
-        else
-            return nil, nil
+        end
+    end,
+    [-3] = function(f)
+        local a, b, c = f:read(1,1,1)
+        if b then
+            return byte(c), byte(b), byte(a)
         end
     end,
     [-4] = function(f)
         local a, b, c, d = f:read(1,1,1,1)
         if d then
             return byte(d), byte(c), byte(b), byte(a)
-        else
-            return nil, nil, nil, nil
         end
     end
 }
@@ -2342,10 +2342,13 @@ local function readnumber(f,n,m)
         return byte(f:read(1))
     elseif n == 2 then
         local a, b = byte(f:read(2),1,2)
-        return 256*a + b
+        return 256 * a + b
+    elseif n == 3 then
+        local a, b, c = byte(f:read(3),1,3)
+        return 256*256 * a + 256 * b + c
     elseif n == 4 then
         local a, b, c, d = byte(f:read(4),1,4)
-        return 256*256*256 * a + 256*256 * b + 256*c + d
+        return 256*256*256 * a + 256*256 * b + 256 * c + d
     elseif n == 8 then
         local a, b = readnumber(f,4), readnumber(f,4)
         return 256 * a + b
@@ -2355,9 +2358,22 @@ local function readnumber(f,n,m)
     elseif n == -2 then
         local b, a = byte(f:read(2),1,2)
         return 256*a + b
+    elseif n == -3 then
+        local c, b, a = byte(f:read(3),1,3)
+        return 256*256 * a + 256 * b + c
     elseif n == -4 then
         local d, c, b, a = byte(f:read(4),1,4)
         return 256*256*256 * a + 256*256 * b + 256*c + d
+    elseif n == -8 then
+        local h, g, f, e, d, c, b, a = byte(f:read(8),1,8)
+        return 256*256*256*256*256*256*256 * a +
+                   256*256*256*256*256*256 * b +
+                       256*256*256*256*256 * c +
+                           256*256*256*256 * d +
+                               256*256*256 * e +
+                                   256*256 * f +
+                                       256 * g +
+                                             h
     else
         return 0
     end

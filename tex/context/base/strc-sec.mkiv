@@ -54,15 +54,15 @@
 
 % interface
 
-\def\structureheadparameter       #1{\csname\dostructureheadparameter{\??nh\currentstructurehead}#1\endcsname}
-\def\structureheadparameterhash   #1{\dostructureheadparameterhash   {\??nh\currentstructurehead}#1}
-\def\namedstructureheadparameter#1#2{\csname\dostructureheadparameter{\??nh#1}#2\endcsname}
+\def\structureheadparameter       #1{\csname\dostructureheadparameter{\??nh\currentstructurehead}{#1}\endcsname}
+\def\structureheadparameterhash   #1{\dostructureheadparameterhash   {\??nh\currentstructurehead}{#1}}
+\def\namedstructureheadparameter#1#2{\csname\dostructureheadparameter{\??nh#1}{#2}\endcsname}
 
-\def\dostructureheadparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructureheadparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dostructureheadparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dostructureheadparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+\def\dostructureheadparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dostructureheadparentparameter    \csname#1\s!parent\endcsname{#2}\fi}
+\def\dostructureheadparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dostructureheadparentparameterhash\csname#1\s!parent\endcsname{#2}\fi}
 
-\def\dostructureheadparentparameter    #1#2{\ifx#1\relax\s!empty\else\dostructureheadparameter    #1#2\fi}
-\def\dostructureheadparentparameterhash#1#2{\ifx#1\relax        \else\dostructureheadparameterhash#1#2\fi}
+\def\dostructureheadparentparameter    #1#2{\ifx#1\relax\s!empty\else\dostructureheadparameter    #1{#2}\fi}
+\def\dostructureheadparentparameterhash#1#2{\ifx#1\relax        \else\dostructureheadparameterhash#1{#2}\fi}
 
 \def\structureheadparameterstrict#1{\csname\ifcsname\??nh\currentstructurehead#1\endcsname\??nh\currentstructurehead#1\else\s!empty\fi\endcsname}
 
@@ -481,7 +481,8 @@
 
 \def\doregisterstructurehead#1#2#3% name data userdata
   {\structurecomponent
-     [\c!label={\structureheadparameter\c!label}, % why { }
+    %[\c!label={\structureheadparameter\c!label}, % why { }
+     [\c!label={\structureheadparameter{\currentstructureblock\c!label}},
       \c!incrementnumber=\ifconditional\structureheaddoincrement\v!yes\else\v!no\fi, % not that needed
       \c!saveinlist=\ifconditional\structureheadtolist\v!yes\else\v!no\fi,
       \c!level=\currentstructureheadlevel,

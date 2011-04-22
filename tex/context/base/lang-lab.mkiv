@@ -77,24 +77,44 @@
         \expandafter\noexpand\csname             #1texts\endcsname
         \expandafter\noexpand\csname              #1text\endcsname}}
 
+\let\currentlabelcategory\empty
+
 \def\dododefinelabelclass#1#2#3#4#5#6#7#8#9%
   {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
    \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo
      \def#3{#5#4}%
+%      \def#5##1##2% ##1=language
+%        {\ifcsname\??ml:#1:##1:##2\endcsname
+%           \csname\??ml:#1:##1:##2\endcsname
+%         \else\ifcsname\??la#4\s!default\endcsname
+%           \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+%         \else\ifcsname\??ml:#1:##2\endcsname
+%           \csname\??ml:#1:##2\endcsname
+%         \else\ifcsname\??ml:#1:\s!en:##2\endcsname
+%           \csname\??ml:#1:\s!en:##2\endcsname
+%         \else
+%           ##2%
+%         \fi\fi\fi\fi}%
      \def#5##1##2% ##1=language
-       {\ifcsname\??ml:#1:##1:##2\endcsname
+       {\ifcsname\??ml:\currentlabelcategory#1:##1:##2\endcsname
+          \csname\??ml:\currentlabelcategory#1:##1:##2\endcsname
+        \else\ifcsname\??ml:#1:##1:##2\endcsname
           \csname\??ml:#1:##1:##2\endcsname
         \else\ifcsname\??la#4\s!default\endcsname
           \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+        \else\ifcsname\??ml:\currentlabelcategory#1:##2\endcsname
+          \csname\??ml:\currentlabelcategory#1:##2\endcsname
         \else\ifcsname\??ml:#1:##2\endcsname
           \csname\??ml:#1:##2\endcsname
+        \else\ifcsname\??ml:\currentlabelcategory#1:\s!en:##2\endcsname
+          \csname\??ml:\currentlabelcategory#1:\s!en:##2\endcsname
         \else\ifcsname\??ml:#1:\s!en:##2\endcsname
           \csname\??ml:#1:\s!en:##2\endcsname
         \else
           ##2%
-        \fi\fi\fi\fi}%
+        \fi\fi\fi\fi\fi\fi\fi}%
      \let#6\gobbleoneargument
      \let#7\gobbleoneargument
      \let#8\gobbletwoarguments

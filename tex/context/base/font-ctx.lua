@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
     license   = "see context related readme files"
 }
 
--- split in definition and specifiers (as these need to come before goodies)
+-- At some point I will clean up the code here so that at the tex end
+-- the table interface is used.
 
 local texcount, texsetcount = tex.count, tex.setcount
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte

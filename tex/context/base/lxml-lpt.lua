@@ -1327,3 +1327,12 @@ function xml.collected(root,pattern,reverse) -- e
     end
     return wrap(function() end)
 end
+
+-- handy
+
+function xml.inspect(collection,pattern)
+    pattern = pattern or "."
+    for e in xml.collected(collection,pattern or ".") do
+        report_lpath("pattern %q\n\n%s\n",pattern,xml.tostring(e))
+    end
+end

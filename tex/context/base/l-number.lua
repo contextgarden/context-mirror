@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['l-number'] = {
 -- this module will be replaced when we have the bit library
 
 local tostring = tostring
-local format, floor, insert, match = string.format, math.floor, string.match
+local format, floor, match, rep = string.format, math.floor, string.match, string.rep
 local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
 
@@ -92,22 +92,39 @@ end
 --~     end
 --~ end
 
-function number.tobitstring(n)
+function number.tobitstring(n,m)
     if n == 0 then
-        return "00000000"
-    else
-       tc = 0
-       t = {}
-        while n > 0 do
-            table.insert(t,1,n % 2 > 0 and 1 or 0)
-            n = math.floor(n/2)
-            tc = tc + 1
-         end
-        while tc % 8 > 0 do
-            table.insert(t,1,0)
-            tc = tc + 1
+        if m then
+            rep("00000000",m)
+        else
+            return "00000000"
         end
-        n = table.concat(t)
-        return n
+    else
+        local t = { }
+        while n > 0 do
+            insert(t,1,n % 2 > 0 and 1 or 0)
+            n = floor(n/2)
+        end
+        local nn = 8 - #t % 8
+        if nn > 0 and nn < 8 then
+            for i=1,nn do
+                insert(t,1,0)
+            end
+        end
+        if m then
+            m = m * 8 - #t
+            if m > 0 then
+                insert(t,1,rep("0",m))
+            end
+        end
+        return concat(t)
     end
 end
+
+--~ print(number.tobitstring(8))
+--~ print(number.tobitstring(14))
+--~ print(number.tobitstring(66))
+--~ print(number.tobitstring(0x00))
+--~ print(number.tobitstring(0xFF))
+--~ print(number.tobitstring(46260767936,8))
+--~ print(#number.tobitstring(46260767936,6))
