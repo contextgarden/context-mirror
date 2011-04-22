@@ -249,9 +249,10 @@ local function fieldsurrounding(specification)
     end
     local tag = fontstyle .. fontalternative
     fontsize = todimen(fontsize)
-    fontsize = (fontsize and (bpfactor * fontsize)) or 12
+    fontsize = fontsize and (bpfactor * fontsize) or 12
     fontraise = 0.1 * fontsize -- todo: figure out what the natural one is and compensate for strutdp
     local fontcode  = format("%0.4f Tf %0.4f Ts",fontsize,fontraise)
+    -- we could test for colorvalue being 1 (black) and omit it then
     local colorcode = lpdf.color(3,colorvalue) -- we force an rgb color space
     if trace_fields then
         report_fields("fontcode : %s %s @ %s => %s => %s",fontstyle,fontalternative,fontsize,tag,fontcode)
@@ -426,7 +427,7 @@ local function fieldrendering(specification)
     local bvalue = tonumber(specification.backgroundcolorvalue)
     local fvalue = tonumber(specification.framecolorvalue)
     local svalue = specification.fontsymbol
-    if bvalue or fvalue or svalue then
+    if bvalue or fvalue or (svalue and svalue ~= "") then
         return pdfdictionary {
             BG = bvalue and pdfarray { lpdf.colorvalues(3,bvalue) } or nil,
             BC = fvalue and pdfarray { lpdf.colorvalues(3,fvalue) } or nil,

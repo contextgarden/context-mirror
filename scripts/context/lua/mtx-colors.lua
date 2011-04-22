@@ -17,7 +17,7 @@ mtxrun --script color --table somename
 ]]
 
 local application = logs.application {
-    name     = "mtx-cache",
+    name     = "mtx-colors",
     banner   = "ConTeXt Color Management 0.10",
     helpinfo = helpinfo,
 }

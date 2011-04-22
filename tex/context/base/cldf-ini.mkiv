@@ -15,6 +15,20 @@
 
 \registerctxluafile{cldf-ini}{1.001}
 
+%D With each new update of \MKIV\ we can join Within Temptation in
+%D singing:
+%D
+%D \startbuffer
+%D \startluacode
+%D     context("I go faster%s",string.rep(" and faster",6))
+%D \stopluacode
+%D
+%D \cldcontext{"I go faster\letterpercent s",
+%D     string.rep(" and faster",6)}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
 \def\cldf#1{\directlua\zerocount{_cldf_(#1)}} % global (functions)
 \def\cldn#1{\directlua\zerocount{_cldn_(#1)}} % global (nodes)
 

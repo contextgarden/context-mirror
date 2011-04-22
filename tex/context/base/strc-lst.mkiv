@@ -550,28 +550,34 @@
    \endgroup}
 
 \def\listsymbol@default
-  {% prefix = no, none, yes
-    \strut
-    \doif{\listparameter\c!label}\v!yes{\leftlabeltext\currentlist}% we can use the new command that does left and right
-    \listparameter\c!starter
-    \currentlistnumber
-    \listparameter\c!stopper
-    \doif{\listparameter\c!label}\v!yes{\rightlabeltext\currentlist}}
-
-\def\listsymbol@default
-  {% todo:
-   % prefix=no (first gone)|none (all gone)|yes
-   % number=no|yes
-   \strut
-   \doifelse{\listparameter\c!label}\v!yes
-     {\leftlabeltext\currentlist
-      \listparameter\c!starter
-      \currentlistnumber
-      \listparameter\c!stopper
-      \rightlabeltext\currentlist}
-     {\listparameter\c!starter
-      \currentlistnumber
-      \listparameter\c!stopper}}
+  {\strut
+   \begingroup
+   \edef\currentlistlabel{\listparameter\c!label}%
+   \ifx\currentlistlabel\empty % default
+     \listparameter\c!starter
+     \currentlistnumber
+     \listparameter\c!stopper
+   \else\ifx\currentlistlabel\v!no % also default
+     \listparameter\c!starter
+     \currentlistnumber
+     \listparameter\c!stopper
+   \else\ifx\currentlistlabel\v!none % real minimal (as suggested by WS)
+     \currentlistnumber
+   \else\ifx\currentlistlabel\v!yes % auto (use value stored in tuc file)
+     \edef\currentlistlabel{\ctxlua{structures.lists.label(\currentlistindex)}}%
+     \leftlabeltext\currentlistlabel
+     \listparameter\c!starter
+     \currentlistnumber
+     \listparameter\c!stopper
+     \rightlabeltext\currentlistlabel
+   \else % use whatever is set
+     \leftlabeltext\currentlistlabel
+     \listparameter\c!starter
+     \currentlistnumber
+     \listparameter\c!stopper
+     \rightlabeltext\currentlistlabel
+   \fi\fi\fi\fi
+   \endgroup}
 
 \def\listsymbol@unknown
   {\listparameter\c!symbol}

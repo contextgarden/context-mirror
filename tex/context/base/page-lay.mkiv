@@ -316,7 +316,8 @@
      {\doifelsenothing{#2}
         {\expanded{\dodosetuppapersize
            [\executeifdefined{\??pp:1:#1}{#1}]%
-           [\executeifdefined{\??pp:2:#1}{\v!default}]}}
+%            [\executeifdefined{\??pp:2:#1}{\v!default}]}}
+           [\executeifdefined{\??pp:2:#1}{#1}]}}
         {\doifassignmentelse{#2}
            {\getparameters[\??pp\executeifdefined{\??pp:1:#1}{#1}][#2]}
            {\expanded{\dodosetuppapersize
@@ -1425,15 +1426,15 @@
 %D paper size with the typeset paper size. This setting should
 %D come after the first layout specification (already done).
 
-\definepapersize
-  [\v!default]
-  [ \c!width=\paperwidth,
-   \c!height=\paperheight]
+% \definepapersize
+%   [\v!default]
+%   [ \c!width=\paperwidth,
+%    \c!height=\paperheight]
 
-\definepapersize
-  [samesized]
-  [ \c!width=\paperwidth,
-   \c!height=\paperheight]
+% \definepapersize
+%   [samesized]
+%   [ \c!width=\paperwidth,
+%    \c!height=\paperheight]
 
 \definepapersize
   [oversized]
