@@ -664,13 +664,17 @@ local function analyze(filename) -- only files on current path
     return nil
 end
 
-local function makestub(template,filename,prepname)
+local function makestub(wrap,template,filename,prepname)
     local stubname = file.replacesuffix(file.basename(filename),'run')
     local f = io.open(stubname,'w')
     if f then
-        f:write("\\starttext\n")
+        if wrap then
+            f:write("\\starttext\n")
+        end
         f:write(format(template,prepname or filename),"\n")
-        f:write("\\stoptext\n")
+        if wrap then
+            f:write("\\stoptext\n")
+        end
         f:close()
         filename = stubname
     end
@@ -775,17 +779,18 @@ function scripts.context.run(ctxdata,filename)
                         local suffix = file.extname(filename) or "?"
                         if scripts.context.xmlsuffixes[suffix] or environment.argument("forcexml") then
                             if environment.argument("mkii") then
-                                filename = makestub("\\processXMLfilegrouped{%s}",filename)
+                                filename = makestub(true,"\\processXMLfilegrouped{%s}",filename)
                             else
-                                filename = makestub("\\xmlprocess{\\xmldocument}{%s}{}",filename)
+                                filename = makestub(true,"\\xmlprocess{\\xmldocument}{%s}{}",filename)
                             end
                         elseif scripts.context.cldsuffixes[suffix] or environment.argument("forcecld") then
-                            filename = makestub("\\ctxlua{context.runfile('%s')}",filename)
+                            -- self contained cld files need to have a starttext/stoptext (less fontloading)
+                            filename = makestub(false,"\\ctxlua{context.runfile('%s')}",filename)
                         elseif scripts.context.luasuffixes[suffix] or environment.argument("forcelua") then
-                            filename = makestub("\\ctxlua{dofile('%s')}",filename)
+                            filename = makestub(true,"\\ctxlua{dofile('%s')}",filename)
                         elseif environment.argument("prep") then
                             -- we need to keep the original jobname
-                            filename = makestub("\\readfile{%s}{}{}",filename,ctxrunner.preppedfile(ctxdata,filename))
+                            filename = makestub(true,"\\readfile{%s}{}{}",filename,ctxrunner.preppedfile(ctxdata,filename))
                         end
                         --
                         -- todo: also other stubs

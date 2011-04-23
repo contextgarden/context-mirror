@@ -489,11 +489,11 @@ function lists.location(n)
     texsprint(l.references.internal or n)
 end
 
-function lists.label(n)
+function lists.label(n,default)
     local l = lists.result[n]
     local t = l.titledata
     if t then
-        texsprint(t.label)
+        texsprint(t.label or default or "")
     end
 end
 
