@@ -133,29 +133,29 @@ function flac.savecollection(pattern,filename)
             nofartists = nofartists + 1
             f:write("\t<artist>\n")
             f:write("\t\t<name>" .. artist .. "</name>\n")
-            f:write("\t\t\t<albums>\n")
+            f:write("\t\t<albums>\n")
             for album, data in table.sortedpairs(albums) do
                 nofalbums = nofalbums + 1
-                f:write("\t\t\t\t<album year='" .. (data.year or 0) .. "'>\n")
-                f:write("\t\t\t\t\t<name>" .. album .. "</name>\n")
-                f:write("\t\t\t\t\t<tracks>\n")
+                f:write("\t\t\t<album year='" .. (data.year or 0) .. "'>\n")
+                f:write("\t\t\t\t<name>" .. album .. "</name>\n")
+                f:write("\t\t\t\t<tracks>\n")
                 local tracks = data.tracks
                 for i=1,#tracks do
                     local track = tracks[i]
                     if track then
                         noftracks = noftracks + 1
-                        f:write("\t\t\t\t\t\t<track length='" .. track.length .. "'>" .. track.title .. "</track>\n")
+                        f:write("\t\t\t\t\t<track length='" .. track.length .. "'>" .. track.title .. "</track>\n")
                     else
                         noferrors = noferrors + 1
                         flac.report("error in album: %q of artist",album,artist)
-                        f:write("\t\t\t\t\t\t<error track='" .. i .. "'/>\n")
+                        f:write("\t\t\t\t\t<error track='" .. i .. "'/>\n")
                     end
                 end
-                f:write("\t\t\t\t\t</tracks>\n")
-                f:write("\t\t\t\t</album>\n")
+                f:write("\t\t\t\t</tracks>\n")
+                f:write("\t\t\t</album>\n")
             end
-            f:write("\t\t\t</albums>\n")
-            f:write("\t\t</artist>\n")
+            f:write("\t\t</albums>\n")
+            f:write("\t</artist>\n")
         end
         f:write("</collection>\n")
     end

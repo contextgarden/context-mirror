@@ -564,7 +564,7 @@
    \else\ifx\currentlistlabel\v!none % real minimal (as suggested by WS)
      \currentlistnumber
    \else\ifx\currentlistlabel\v!yes % auto (use value stored in tuc file)
-     \edef\currentlistlabel{\ctxlua{structures.lists.label(\currentlistindex)}}%
+     \edef\currentlistlabel{\ctxlua{structures.lists.label(\currentlistindex,"\currentlistlabel")}}%
      \leftlabeltext\currentlistlabel
      \listparameter\c!starter
      \currentlistnumber
