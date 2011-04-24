@@ -47,7 +47,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.728 -- beware: also sync font-mis.lua
+otf.version              = 2.730 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -817,6 +817,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
     local marks             = { }
     for unicode, description in next, descriptions do
         local glyph = description.glyph
+        local italic = glyph.italic_correction
         if not italic then
             -- skip
         elseif italic == 0 then
