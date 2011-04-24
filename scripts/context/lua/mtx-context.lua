@@ -848,7 +848,8 @@ function scripts.context.run(ctxdata,filename)
                             flags[#flags+1] = "--interaction=batchmode"
                         end
                         if environment.argument("synctex") then
-                            report("warning: syntex is enabled") -- can add upto 5% runtime
+                            -- this should become a directive
+                            report("warning: synctex is enabled") -- can add upto 5% runtime
                             flags[#flags+1] = "--synctex=1"
                         end
                         flags[#flags+1] = "--fmt=" .. quote(formatfile)
