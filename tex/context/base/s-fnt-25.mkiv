@@ -182,7 +182,7 @@ function document.showmathfont(id,slot)
 end
 \stopluacode
 
-\endinput
+\doifnotmode{demo}{\endinput}
 
 \starttext
     \setupbodyfont[cambria,  12pt] \showmathfontcharacters

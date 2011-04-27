@@ -43,6 +43,7 @@
 \setvalue{\??tp:\c!space:\v!on        }{\let\obeyedspace\specialcontrolspace}
 \setvalue{\??tp:\c!space:\v!stretch   }{\let\obeyedspace\specialstretchedspace}
 \setvalue{\??tp:\c!space:\v!normal    }{}
+\setvalue{\??tp:\c!space:\v!fixed     }{\let\obeyedspace\specialfixedspace}
 
 \setvalue{\??tp:\c!blank:\v!standard  }{\ctxparskip}
 \setvalue{\??tp:\c!blank:\v!small     }{\smallskipamount}
@@ -381,6 +382,7 @@
 %D works all right, but a decent hyphenation support of
 %D \type{\tt} text will be implemented soon.
 
+\def\specialfixedspace    {\kern\interwordspace\relax}
 \def\specialobeyedspace   {\hskip\interwordspace\relax} % better than spaceskip
 \def\specialstretchedspace{\hskip.5\interwordspace\!!plus.125\interwordstretch\relax} % more but not less
 \def\specialcontrolspace  {\hskip\zeropoint\hbox{\normalcontrolspace}\hskip\zeropoint\relax}
@@ -753,6 +755,7 @@
      regime = "\currentregime",
      tab    = "\typingparameter\c!tab",
      method = "\typingparameter\c!option",
+     escape = \!!bs\typingparameter\c!escape\!!es,
      nature = "display",
    }}%
    \dostoptagged

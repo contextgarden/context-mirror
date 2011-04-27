@@ -13,8 +13,10 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 --
 -- todo: report max textexts
 
-local format, gmatch, concat, round, match = string.format, string.gmatch, table.concat, math.round, string.match
+local format, gmatch, match = string.format, string.gmatch, string.match
 local tonumber, type = tonumber, type
+local round = math.round
+local insert, concat = table.insert, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch = lpeg.match
 
@@ -853,6 +855,7 @@ local function tr_process(object,prescript,before,after)
     local cs = object.color
     if cs and #cs > 0 then
         local sp_name = prescript.sp_name
+        local b, a
         if sp_name then
             local sp_fractions  = prescript.sp_fractions  or 1
             local sp_components = prescript.sp_components or ""
@@ -862,10 +865,24 @@ local function tr_process(object,prescript,before,after)
                 -- beware, we do scale the spotcolors but not the alternative representation
                 sp_value = lpeg.match(value,sp_value,1,cf) or sp_value
             end
-            before[#before+1], after[#after+1] = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
+            -- should be codeinjections
+            b, a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
         else
-            before[#before+1], after[#after+1] = colorconverter(cs)
+            -- should be codeinjections
+            b, a = colorconverter(cs)
         end
+        before[#before+1] = b
+        after[#after+1] = a
+    end
+end
+
+-- layers (nasty: we need to keep the 'grouping' right
+
+local function la_process(object,prescript,before,after)
+    local la_name = prescript.la_name
+    if la_name then
+        before[#before+1] = backends.codeinjections.startlayer(la_name)
+        insert(after,1,backends.codeinjections.stoplayer())
     end
 end
 
@@ -883,6 +900,8 @@ appendaction(processoractions,"system",tx_process)
 appendaction(processoractions,"system",ps_process)
 appendaction(processoractions,"system",fg_process)
 appendaction(processoractions,"system",tr_process) -- last, as color can be reset
+
+appendaction(processoractions,"system",la_process)
 
 -- no auto here
 

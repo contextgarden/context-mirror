@@ -18,10 +18,21 @@
 \usetypescriptfile
   [type-ghz]
 
-\definetypeface[mainface][rm][serif][melior]  [default][encoding=texnansi]
-\definetypeface[mainface][tt][mono] [modern]  [default][encoding=texnansi,rscale=1.05]
-\definetypeface[mainface][ss][serif][melior]  [default][encoding=texnansi]
-\definetypeface[mainface][mm][math] [palatino][default][encoding=texnansi,rscale=0.95]
+\doifmodeelse {mkiv} {
+
+    \definetypeface[mainface][rm][serif][melior]  [default]
+    \definetypeface[mainface][tt][mono] [modern]  [default][rscale=1.05]
+    \definetypeface[mainface][ss][serif][melior]  [default]
+    \definetypeface[mainface][mm][math] [palatino][default][rscale=0.95]
+
+} {
+
+    \definetypeface[mainface][rm][serif][melior]  [default][encoding=texnansi]
+    \definetypeface[mainface][tt][mono] [modern]  [default][encoding=texnansi,rscale=1.05]
+    \definetypeface[mainface][ss][serif][melior]  [default][encoding=texnansi]
+    \definetypeface[mainface][mm][math] [palatino][default][encoding=texnansi,rscale=0.95]
+
+}
 
 \setupbodyfont
   [mainface,14.4pt]

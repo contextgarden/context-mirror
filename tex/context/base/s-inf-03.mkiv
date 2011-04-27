@@ -113,10 +113,11 @@ end
 
 \startstandardmakeup
     \vfill
+    \pagereference[global]
     \startnarrower[5mm]
         \raggedcenter
         \TitlePageFont \setupinterlinespace
-        \getbuffer
+        \getbuffer % luabuffer
         \par
     \stopnarrower
     \vfill

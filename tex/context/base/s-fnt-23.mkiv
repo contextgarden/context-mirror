@@ -26,7 +26,8 @@
         last_data = tfmdata
         local charnum = tonumber(n)
         if not charnum then
-            charnum = tfmdata.unicodes[n]
+         -- charnum = tfmdata.unicodes[n]
+            charnum = fonts.helpers.nametoslot(n)
         end
         local c = tfmdata.characters[charnum]
         local d = tfmdata.descriptions[charnum]
@@ -265,12 +266,25 @@
 
 \starttext
 
-\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x62A}       \stopTEXpage
-\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x2004}      \stopTEXpage
-\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0xF0299}     \stopTEXpage
-\startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
+% \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x62A}       \stopTEXpage
+% \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0x2004}      \stopTEXpage
+% \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{0xF0299}     \stopTEXpage
+% \startTEXpage \ShowGlyphShape{simplenaskhi}{100bp}{NameMe.1190} \stopTEXpage
 
-\ShowAllGlyphShapes{simplenaskhi}{100bp}
+% \ShowAllGlyphShapes{simplenaskhi}{100bp}
 % \ShowAllGlyphShapes{xits}{100bp}
+
+\switchtobodyfont[cambria,10pt]
+
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x00066} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x1D453} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x1D43F} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D444} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D447} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x02112} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D432} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D43D} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D44A} \stopTEXpage
+\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D45D} \stopTEXpage
 
 \stoptext
