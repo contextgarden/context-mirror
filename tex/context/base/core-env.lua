@@ -74,6 +74,14 @@ setmetatableindex(tex.ifs, function(t,k)
     return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
 end)
 
+function tex.settrue(name)
+    texcount[name] = 0
+end
+
+function tex.setfalse(name)
+    texcount[name] = 1
+end
+
 ----  arg = P("{") * C(patterns.nested) * P("}") + Cc("")
 
 local sep = S("), ")

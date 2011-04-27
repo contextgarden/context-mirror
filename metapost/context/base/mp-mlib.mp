@@ -397,7 +397,7 @@ def dographictext (expr t) =
 enddef ;
 
 def nographictext (expr t) text rest =
-    draw unitsquare withprescript "gt_stage=trial" withpostscript t ;
+    draw unitsquare withprescript "gt_stage=trial" withpostscript t
 enddef ;
 
 % def savegraphictext (expr str) =
@@ -405,6 +405,13 @@ enddef ;
 
 % def erasegraphictextfile =
 % enddef ;
+
+% Layers
+
+def onlayer primary name =
+    withprescript "la_name=" & name
+enddef ;
+
 
 % Figures
 

@@ -87,6 +87,15 @@ end
 
 local cache = { }
 
+function codeinjections.startlayer(name)
+    codeinjections.useviewerlayer(name)
+    return format("/OC /%s BDC",name)
+end
+
+function codeinjections.stoplayer(name)
+    return "EMC"
+end
+
 function nodeinjections.startlayer(name)
     local c = cache[name]
     if not c then

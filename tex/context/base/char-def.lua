@@ -403,7 +403,7 @@ characters.data={
   description="COMMA",
   direction="cs",
   linebreak="is",
-  mathclass="punctuation",
+  mathclass="punctuation", -- redundant
   mathspec={
    {
     class="punctuation",

@@ -394,10 +394,18 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         nn[max] = format("%s_%1.3g",k,tonumber(v) or 0) -- 0 can't happen
     end
     if max > 0 then
-        dd, pp, nn = concat(dd,','), concat(pp,','), concat(nn,'_')
+        nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
-        colors.defineprocesscolor(parent,colorspec..","..selfspec,true,true)
+        if max == 2 and (not colorspec or colorspec == "") then
+            colors.defineduocolor(parent,pp[1],l_color[dd[1]],pp[2],l_color[dd[2]],true,true)
+        else
+            if selfspec ~= "" then
+                colorspec = colorspec .. "," .. selfspec
+            end
+            colors.defineprocesscolor(parent,colorspec,true,true)
+        end
         local cp = attributes_list[a_color][parent]
+        dd, pp = concat(dd,','), concat(pp,',')
         if cp then
             do_registerspotcolor(parent, name, cp, "", max, dd, pp)
             do_registermultitonecolor(parent, name, cp, "", max, dd, pp)
@@ -587,6 +595,35 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     local tt = tonumber((t and t.t) or (one and two and f(one,two,2,fraction)))
     if ta and tt then
         definetransparent(name,transparencies.register(name,ta,tt),global)
+    end
+end
+
+local function f(one,two,i,fraction_one,fraction_two)
+    local o, t = one[i], two[i]
+    local otf = fraction_one * o + fraction_two * t
+    if otf > 1 then
+        otf = 1
+    end
+    return otf
+end
+
+function colors.defineduocolor(name,fraction_one,c_one,fraction_two,c_two,global,freeze)
+    local one, two = colors.value(c_one), colors.value(c_two)
+    if one and two then
+        fraction_one = tonumber(fraction_one) or 1
+        fraction_two = tonumber(fraction_two) or 1
+        local csone, cstwo = one[1], two[1]
+        local ca
+        if csone == 2 then
+            ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+        elseif csone == 3 then
+            ca = register_color(name,'rgb', f(one,two,3,fraction_one,fraction_two),f(one,two,4,fraction_one,fraction_two),f(one,two,5,fraction_one,fraction_two))
+        elseif csone == 4 then
+            ca = register_color(name,'cmyk',f(one,two,6,fraction_one,fraction_two),f(one,two,7,fraction_one,fraction_two),f(one,two,8,fraction_one,fraction_two),f(one,two,9,fraction_one,fraction_two))
+        else
+            ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+        end
+        definecolor(name,ca,global,freeze)
     end
 end
 

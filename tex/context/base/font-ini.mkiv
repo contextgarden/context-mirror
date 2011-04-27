@@ -4262,7 +4262,7 @@
   {\ifcsname\??cf:#1\c!style\endcsname
      \getparameters[\??cf:#1][#2]%
    \else
-     \getparameters[\??cf:#1][\c!style,\c!color=,#2]% so we define but without commands (todo for all define related things)
+     \getparameters[\??cf:#1][\c!style=,\c!color=,#2]% so we define but without commands (todo for all define related things)
    \fi}
 
 % commands
@@ -4276,7 +4276,7 @@
 
 \def\dostyleassignment#1%
   {\groupedcommand
-     {\getparameters[\??cf][\c!style,\c!color=,#1]%
+     {\getparameters[\??cf][\c!style=,\c!color=,#1]%
       \dostartattributes\??cf\c!style\c!color}
      {\dostopattributes}}
 
