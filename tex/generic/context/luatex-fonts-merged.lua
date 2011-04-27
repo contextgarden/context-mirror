@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/27/11 21:17:43
+-- merge date  : 04/27/11 21:50:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -7351,7 +7351,7 @@ registerotffeature {
     description  = "features",
     default      = true,
     initializers = {
-        position = 1,
+--~         position = 1, -- after setscript (temp hack ... we need to force script / language to 1
         base     = featuresinitializer,
     }
 }
