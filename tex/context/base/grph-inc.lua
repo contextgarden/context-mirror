@@ -255,7 +255,7 @@ end
 
 -- interfacing to tex
 
-local figuredata = { }
+local figuredata = nil -- will be topofstack or last so no { } (else problems with getfiguredimensions)
 local callstack  = { }
 
 local function new() -- we could use metatables status -> used -> request but it needs testing
@@ -293,6 +293,8 @@ local function new() -- we could use metatables status -> used -> request but it
         fullname   = false,
         format     = false,
     }
+    -- this needs checking because we might check for nil, the test case
+    -- is getfiguredimensions which then should return ~= 0
  -- setmetatableindex(status, used)
  -- setmetatableindex(used, request)
     return {
@@ -338,7 +340,7 @@ function figures.current()
 end
 
 function figures.get(category,tag,default)
-    local value = figuredata[category]
+    local value = figuredata and figuredata[category]
     value = value and value[tag]
     if not value or value == "" or value == true then
         return default or ""
@@ -755,14 +757,12 @@ end
 
 function figures.check(data)
     data = data or figures.current()
-    local dr, du, ds = data.request, data.used, data.status
-    return (checkers[ds.format] or checkers.generic)(data)
+    return (checkers[data.status.format] or checkers.generic)(data)
 end
 
 function figures.include(data)
     data = data or figures.current()
-    local dr, du, ds = data.request, data.used, data.status
-    return (includers[ds.format] or includers.generic)(data)
+    return (includers[data.status.format] or includers.generic)(data)
 end
 
 function figures.scale(data) -- will become lua code
@@ -787,7 +787,7 @@ end
 
 function figures.dummy(data)
     data = data or figures.current()
-    local dr, du, ds, nr = data.request, data.used, data.status, figures.boxnumber
+    local dr, du, nr = data.request, data.used, figures.boxnumber
     local box = node.hpack(node.new("hlist")) -- we need to set the dir (luatex 0.60 buglet)
     du.width  = du.width  or figures.defaultwidth
     du.height = du.height or figures.defaultheight
