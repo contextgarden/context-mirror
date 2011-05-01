@@ -347,7 +347,7 @@
 \newtoks \everylanguage
 
 \def\docomplexlanguage% assumes that \currentlanguage is set                   % % % use different name as complex
-  {\normallanguage\ctxlua{languages.getnumber(%
+  {\normallanguage\ctxlua{commands.languagenumber(%
      "\currentlanguage",%
      "\defaultlanguage\currentlanguage",%
      "\languageparameter\s!patterns"%

@@ -290,7 +290,7 @@
 %D More hyphenation control, will be combined with align
 %D setup.
 
-\def\nohyphens
+\def\nohyphens % % % % % not clever, we still hyphenate but supress application
   {\ifx\dohyphens\relax
      \edef\dohyphens
        {\hyphenpenalty\the\hyphenpenalty

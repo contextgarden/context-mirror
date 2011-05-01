@@ -664,17 +664,22 @@ number.basepoints = basepoints
 local colors   = { }
 tracers.colors = colors
 
+local get_attribute   = node.has_attribute
 local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
 
-local attribute = attributes.private('color')
-local mapping   = attributes.list[attribute] or { }
+local attribute  = attributes.private('color')
+local colormodel = attributes.private('colormodel')
+local mapping    = attributes.list[attribute] or { }
 
-function colors.set(n,c)
+function colors.set(n,c,s)
     local mc = mapping[c]
     if not mc then
         unset_attribute(n,attribute)
     else
+        if not get_attribute(n,colormodel) then
+            set_attribute(n,colormodel,s or 1)
+        end
         set_attribute(n,attribute,mc)
     end
 end
