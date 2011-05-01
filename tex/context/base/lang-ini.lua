@@ -209,13 +209,17 @@ end
 
 if environment.initex then
 
-    function languages.getnumber(current,default)
+    function languages.getnumber()
+        return 0
+    end
+
+    function commands.languagenumber()
         texwrite(0)
     end
 
 else
 
-    function languages.getnumber(tag,default,patterns)
+    local function getnumber(tag,default,patterns)
         local l = registered[tag]
         if l then
             if l.dirty then
@@ -223,7 +227,7 @@ else
                     report_initialization("checking patterns for %s (%s)",tag,default)
                 end
                 -- patterns is already resolved to parent patterns if applicable
-                if patterns ~= "" then
+                if patterns and patterns ~= "" then
                     if l.patterns ~= patterns then
                         l.patterns = patterns
                         if trace_patterns then
@@ -240,7 +244,7 @@ else
                     end
                     local ok = loaddefinitions(tag,l)
                     if not ok and tag ~= default then
-                        l.patterns = defaukt
+                        l.patterns = default
                         if trace_patterns then
                             report_initialization("loading patterns for '%s' using default",tag)
                         end
@@ -250,10 +254,16 @@ else
                 l.loaded = true
                 l.dirty = false
             end
-            texwrite(l.number)
+            return l.number
         else
-            texwrite(0)
+            return 0
         end
+    end
+
+    languages.getnumber = getnumber
+
+    function commands.languagenumber(tag,default,patterns)
+        texwrite(getnumber(tag,default,patterns))
     end
 
 end

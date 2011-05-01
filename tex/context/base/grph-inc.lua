@@ -255,9 +255,6 @@ end
 
 -- interfacing to tex
 
-local figuredata = nil -- will be topofstack or last so no { } (else problems with getfiguredimensions)
-local callstack  = { }
-
 local function new() -- we could use metatables status -> used -> request but it needs testing
     local request = {
         name       = false,
@@ -306,10 +303,12 @@ end
 
  -- use table.insert|remove
 
+local lastfiguredata = nil -- will be topofstack or last so no { } (else problems with getfiguredimensions)
+local callstack      = { }
+
 function figures.push(request)
     statistics.starttiming(figures)
-    insert(callstack,figuredata)
-    figuredata = new()
+    local figuredata = new()
     if request then
     --  request.width/height are strings and are only used when no natural dimensions
     --  can be determined; at some point the handlers might set them to numbers instead
@@ -326,21 +325,22 @@ function figures.push(request)
     --  request.height     = (h and h > 0) or false
         table.merge(figuredata.request,request)
     end
+    insert(callstack,figuredata)
+    lastfiguredata = figuredata
     return figuredata
 end
 
 function figures.pop()
-    figuredata = remove(callstack) or figuredata
+    lastfiguredata = remove(callstack) or lastfiguredata
     statistics.stoptiming(figures)
-    return figuredata
 end
 
 function figures.current()
-    return figuredata -- callstack[#callstack]
+    return callstack[#callstack] or lastfiguredata
 end
 
 function figures.get(category,tag,default)
-    local value = figuredata and figuredata[category]
+    local value = lastfiguredata and lastfiguredata[category]
     value = value and value[tag]
     if not value or value == "" or value == true then
         return default or ""
@@ -348,6 +348,8 @@ function figures.get(category,tag,default)
         return value
     end
 end
+
+--
 
 function figures.tprint(category,tag,default)
     context(figures.get(category,tag,default))
