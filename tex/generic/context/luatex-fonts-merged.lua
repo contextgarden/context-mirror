@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 04/30/11 17:02:19
+-- merge date  : 05/04/11 16:06:03
 
 do -- begin closure to overcome local limits and interference
 
@@ -7692,6 +7692,7 @@ function injections.handler(head,where,keep)
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
+                                    -- maybe better swap and "rlmode and rlmode < 0" as lr (1) is default
                                     if rlmode and rlmode > 0 then
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
@@ -7704,7 +7705,9 @@ function injections.handler(head,where,keep)
                                         if k then
                                             n.xoffset = p.xoffset + p.width + d[1] - k[2]
                                         else
-                                            n.xoffset = p.xoffset + p.width + d[1]
+                                         -- n.xoffset = p.xoffset + p.width + d[1]
+                                            -- lucida U\char"032F (default+mark)
+                                            n.xoffset = p.xoffset - p.width + d[1] -- 01-05-2011
                                         end
                                     else
                                         local k = wx[p]
