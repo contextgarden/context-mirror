@@ -608,7 +608,7 @@ function characters.setcodes()
         report_defining("defining lc and uc codes")
     end
     for code, chr in next, data do
-        local cc = chr.category
+        local cc = chr.category  -- mn lo
         if cc == 'll' or cc == 'lu' or cc == 'lt' then
             local lc, uc = chr.lccode, chr.uccode
             if not lc then chr.lccode, lc = code, code end
@@ -631,7 +631,12 @@ function characters.setcodes()
                     texsetcatcode(i,11) -- letter
                     texsetlccode(i,i,i) -- self self
                 end
+            else -- letter
+                texsetcatcode(code,11)
+                texsetlccode(code,code,code)
             end
+        elseif cc == "mn" then -- mark
+            texsetlccode(code,code,code)
         end
     end
 end

@@ -48,7 +48,7 @@ local pdf_on           = pdfconstant("ON")
 local pdf_toggle       = pdfconstant("Toggle")
 local pdf_setocgstate  = pdfconstant("SetOCGState")
 
-local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdfconstant("OFF") } }
+local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
 
 -- We can have references to layers before they are places, for instance from
 -- hide and vide actions. This is why we need to be able to force usage of layers
@@ -140,7 +140,7 @@ local function flushtextlayers()
                     Order     = (viewerlayers.hasorder and textlayers) or nil,
                     ON        = videlayers,
                     OFF       = hidelayers,
-                    BaseState = pdfconstant("On"),
+                    BaseState = pdf_on,
                 },
             }
             lpdf.addtocatalog("OCProperties",d)

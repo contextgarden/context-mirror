@@ -617,6 +617,8 @@ function lpdf.addtonames  (k,v) if not (lpdf.protectresources and names  [k]) th
 
 local dummy = pdfreserveobject() -- else bug in hvmd due so some internal luatex conflict
 
+-- Some day I will implement a proper minimalized resource management.
+
 local r_extgstates,  d_extgstates  = pdfreserveobject(), pdfdictionary()  local p_extgstates  = pdfreference(r_extgstates)
 local r_colorspaces, d_colorspaces = pdfreserveobject(), pdfdictionary()  local p_colorspaces = pdfreference(r_colorspaces)
 local r_patterns,    d_patterns    = pdfreserveobject(), pdfdictionary()  local p_patterns    = pdfreference(r_patterns)
@@ -632,15 +634,32 @@ local function flushcolorspaces() if next(d_colorspaces) then trace_flush("color
 local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
 local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
-local collected = pdfdictionary {
-    ExtGState  = p_extgstates,
-    ColorSpace = p_colorspaces,
-    Pattern    = p_patterns,
-    Shading    = p_shades,
-} ; collected = collected()
+--~ local collected = pdfdictionary {
+--~     ExtGState  = p_extgstates,
+--~     ColorSpace = p_colorspaces,
+--~     Pattern    = p_patterns,
+--~     Shading    = p_shades,
+--~ } ; collected = collected()
+
+--~ function lpdf.collectedresources()
+--~     context(collected)
+--~ end
 
 function lpdf.collectedresources()
-    context(collected)
+    local ExtGState  = next(d_extgstates ) and p_extgstates
+    local ColorSpace = next(d_colorspaces) and p_colorspaces
+    local Pattern    = next(d_patterns   ) and p_patterns
+    local Shading    = next(d_shades     ) and p_shades
+    if ExtGState or ColorSpace or Pattern or Shading then
+        local collected = pdfdictionary {
+            ExtGState  = ExtGState,
+            ColorSpace = ColorSpace,
+            Pattern    = Pattern,
+            Shading    = Shading,
+         -- ProcSet    = pdfarray { pdfconstant("PDF") },
+        }
+        context(collected())
+    end
 end
 
 function lpdf.adddocumentextgstate (k,v) d_extgstates [k] = v end
