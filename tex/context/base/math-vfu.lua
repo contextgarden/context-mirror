@@ -380,7 +380,7 @@ function vfmath.define(specification,set,goodies)
                 main = s
             end
             local f, id = fonts.constructors.readanddefine(ssname,size)
-            if not f then
+            if not f or id == 0 then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
             else
                 n = n + 1
