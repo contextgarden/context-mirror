@@ -857,8 +857,13 @@
 %D Preliminary feature:
 %D
 %D {\em example code}
+%D
+%D The intertext commands have to be expandable (in aligment lookahead) so
+%D we cannot use \type {\unexpanded}.
 
-\unexpanded\def\startintertext#1\stopintertext
+\let\stopintertext\relax
+
+\def\startintertext#1\stopintertext
   {\noalign{\dointertext{#1}}}
 
 \def\intertext#1%
