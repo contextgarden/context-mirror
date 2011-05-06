@@ -20,7 +20,7 @@ over a string.</p>
 --ldx]]--
 
 local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
-local concat, gmatch, gsub = table.concat, string.gmatch, string.gsub
+local concat, gmatch, gsub, find = table.concat, string.gmatch, string.gsub, string.find
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local allocate = utilities.storage.allocate
 
@@ -33,6 +33,9 @@ local characters      = characters
 
 characters.graphemes  = allocate()
 local graphemes       = characters.graphemes
+
+characters.decomposed = allocate()
+local decomposed      = characters.decomposed
 
 characters.mathpairs  = allocate()
 local mathpairs       = characters.mathpairs
@@ -48,13 +51,34 @@ local utffilters      = characters.filters.utf
 source code to depend on collapsing.</p>
 --ldx]]--
 
+-- for the moment, will be entries in char-def.lua
+
+local decomposed = allocate {
+    ["Ĳ"] = "IJ",
+    ["ĳ"] = "ij",
+    ["և"] = "եւ",
+    ["ﬀ"] = "ff",
+    ["ﬁ"] = "fi",
+    ["ﬂ"] = "fl",
+    ["ﬃ"] = "ffi",
+    ["ﬄ"] = "ffl",
+    ["ﬅ"] = "ſt",
+    ["ﬆ"] = "st",
+    ["ﬓ"] = "մն",
+    ["ﬔ"] = "մե",
+    ["ﬕ"] = "մի",
+    ["ﬖ"] = "վն",
+    ["ﬗ"] = "մխ",
+}
+characters.decomposed = decomposed
+
 local function initialize()
-    for k,v in next, characters.data do
+    for unicode, v in next, characters.data do
         -- using vs and first testing for length is faster (.02->.01 s)
         local vs = v.specials
         if vs and #vs == 3 and vs[1] == 'char' then
             local one, two = vs[2], vs[3]
-            local first, second, combined = utfchar(one), utfchar(two), utfchar(k)
+            local first, second, combined = utfchar(one), utfchar(two), utfchar(unicode)
             local cgf = graphemes[first]
             if not cgf then
                 cgf = { }
@@ -67,7 +91,7 @@ local function initialize()
                     mps = { }
                     mathpairs[two] = mps
                 end
-                mps[one] = k
+                mps[one] = unicode -- here unicode
                 local mps = mathpairs[second]
                 if not mps then
                     mps = { }
@@ -75,6 +99,26 @@ local function initialize()
                 end
                 mps[first] = combined
             end
+     -- else
+     --     local description = v.description
+     --     if find(description,"LIGATURE") then
+     --         if vs then
+     --             local t = { }
+     --             for i=2,#vs do
+     --                 t[#t+1] = utfchar(vs[i])
+     --             end
+     --             decomposed[utfchar(unicode)] = concat(t)
+     --         else
+     --             local vs = v.shcode
+     --             if vs then
+     --                 local t = { }
+     --                 for i=1,#vs do
+     --                     t[i] = utfchar(vs[i])
+     --                 end
+     --                 decomposed[utfchar(unicode)] = concat(t)
+     --             end
+     --         end
+     --     end
         end
     end
     initialize = false
@@ -164,6 +208,113 @@ not collecting tokens is not only faster but also saves garbage collecting.
 --ldx]]--
 
 -- lpeg variant is not faster
+--
+-- I might use the combined loop at some point for the filter
+-- some day.
+
+--~ function utffilters.collapse(str) -- not really tested (we could preallocate a table)
+--~     if str and str ~= "" then
+--~         local nstr = #str
+--~         if nstr > 1 then
+--~             if initialize then -- saves a call
+--~                 initialize()
+--~             end
+--~             local tokens, t, first, done, n = { }, 0, false, false, 0
+--~             for second in utfcharacters(str) do
+--~                 local dec = decomposed[second]
+--~                 if dec then
+--~                     if not done then
+--~                         if n > 0 then
+--~                             for s in utfcharacters(str) do
+--~                                 if n == 1 then
+--~                                     break
+--~                                 else
+--~                                     t = t + 1
+--~                                     tokens[t] = s
+--~                                     n = n - 1
+--~                                 end
+--~                             end
+--~                         end
+--~                         done = true
+--~                     elseif first then
+--~                         t = t + 1
+--~                         tokens[t] = first
+--~                     end
+--~                     t = t + 1
+--~                     tokens[t] = dec
+--~                     first = false
+--~                 elseif done then
+--~                     local crs = high[second]
+--~                     if crs then
+--~                         if first then
+--~                             t = t + 1
+--~                             tokens[t] = first
+--~                         end
+--~                         first = crs
+--~                     else
+--~                         local cgf = graphemes[first]
+--~                         if cgf and cgf[second] then
+--~                             first = cgf[second]
+--~                         elseif first then
+--~                             t = t + 1
+--~                             tokens[t] = first
+--~                             first = second
+--~                         else
+--~                             first = second
+--~                         end
+--~                     end
+--~                 else
+--~                     local crs = high[second]
+--~                     if crs then
+--~                         for s in utfcharacters(str) do
+--~                             if n == 1 then
+--~                                 break
+--~                             else
+--~                                 t = t + 1
+--~                                 tokens[t] = s
+--~                                 n = n - 1
+--~                             end
+--~                         end
+--~                         if first then
+--~                             t = t + 1
+--~                             tokens[t] = first
+--~                         end
+--~                         first = crs
+--~                         done = true
+--~                     else
+--~                         local cgf = graphemes[first]
+--~                         if cgf and cgf[second] then
+--~                             for s in utfcharacters(str) do
+--~                                 if n == 1 then
+--~                                     break
+--~                                 else
+--~                                     t = t + 1
+--~                                     tokens[t] = s
+--~                                     n = n - 1
+--~                                 end
+--~                             end
+--~                             first = cgf[second]
+--~                             done = true
+--~                         else
+--~                             first = second
+--~                             n = n + 1
+--~                         end
+--~                     end
+--~                 end
+--~             end
+--~             if done then
+--~                 if first then
+--~                     t = t + 1
+--~                     tokens[t] = first
+--~                 end
+--~                 return concat(tokens) -- seldom called
+--~             end
+--~         elseif nstr > 0 then
+--~             return high[str] or str
+--~         end
+--~     end
+--~     return str
+--~ end
 
 function utffilters.collapse(str) -- not really tested (we could preallocate a table)
     if str and str ~= "" then
@@ -203,7 +354,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                             else
                                 t = t + 1
                                 tokens[t] = s
-                                n = n -1
+                                n = n - 1
                             end
                         end
                         if first then
@@ -221,7 +372,7 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                                 else
                                     t = t + 1
                                     tokens[t] = s
-                                    n = n -1
+                                    n = n - 1
                                 end
                             end
                             first = cgf[second]
@@ -234,8 +385,10 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
                 end
             end
             if done then
-                t = t + 1
-                tokens[t] = first
+                if first then
+                    t = t + 1
+                    tokens[t] = first
+                end
                 return concat(tokens) -- seldom called
             end
         elseif nstr > 0 then
@@ -245,10 +398,60 @@ function utffilters.collapse(str) -- not really tested (we could preallocate a t
     return str
 end
 
+function utffilters.decompose(str)
+    if str and str ~= "" then
+        local nstr = #str
+        if nstr > 1 then
+         -- if initialize then -- saves a call
+         --     initialize()
+         -- end
+            local tokens, t, done, n = { }, 0, false, 0
+            for s in utfcharacters(str) do
+                local dec = decomposed[s]
+                if dec then
+                    if not done then
+                        if n > 0 then
+                            for s in utfcharacters(str) do
+                                if n == 1 then
+                                    break
+                                else
+                                    t = t + 1
+                                    tokens[t] = s
+                                    n = n - 1
+                                end
+                            end
+                        end
+                        done = true
+                    end
+                    t = t + 1
+                    tokens[t] = dec
+                elseif done then
+                    t = t + 1
+                    tokens[t] = s
+                else
+                    n = n + 1
+                end
+            end
+            if done then
+                return concat(tokens) -- seldom called
+            end
+        end
+    end
+    return str
+end
+
 local textfileactions = resolvers.openers.helpers.textfileactions
 
 utilities.sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
 utilities.sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+
+utilities.sequencers.appendaction (textfileactions,"system","characters.filters.utf.decompose")
+utilities.sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+
+function characters.filters.utf.enable()
+    utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
+    utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
+end
 
 --[[ldx--
 <p>Next we implement some commands that are used in the user interface.</p>

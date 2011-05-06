@@ -110,13 +110,18 @@
 \def\c!xhtml   {xhtml}
 
 \appendtoks
+    \doifsomething{\backendparameter\c!xhtml}
+      {\enabledirectives[backend.export.xhtml=\backendparameter\c!xhtml]}%
+    \doifsomething{\backendparameter\c!css}
+      {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
+\to \everysetupbackend
+
+\appendtoks
     \doifsomething{\backendparameter\c!export}
       {\setupstructure
          [\c!state=\v!start]%
        \enabledirectives
-         [backend.export=\backendparameter\c!export,%
-          backend.export.xhtml=\backendparameter\c!xhtml,%
-          backend.export.css={\backendparameter\c!css}]}%
+         [backend.export=\backendparameter\c!export]}%
 \to \everysetupbackend
 
 \protect \endinput

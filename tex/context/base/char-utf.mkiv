@@ -30,9 +30,16 @@
 
 % resolvers.filters.install('utf',characters.filters.utf.collapse)
 
+% \appendtoks
+%     \ctxlua{
+%         local textfileactions = resolvers.openers.helpers.textfileactions
+%         utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
+%         utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
+%     }%
+% \to \everyjob
+
 \appendtoks
-    \ctxlua{utilities.sequencers.enableaction
-        (resolvers.openers.textfileactions,"characters.filters.utf.collapse")}%
+    \ctxlua{characters.filters.utf.enable()}%
 \to \everyjob
 
 %D The next one influences input parsing.
