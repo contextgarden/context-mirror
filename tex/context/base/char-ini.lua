@@ -386,10 +386,15 @@ local is_spacing = allocate ( table.tohash {
     "zs", "zl","zp",
 } )
 
+local is_mark = allocate ( table.tohash {
+    "mn", "ms",
+} )
+
 characters.is_character = is_character
 characters.is_letter    = is_letter
 characters.is_command   = is_command
 characters.is_spacing   = is_spacing
+characters.is_mark      = is_mark
 
 local mt = { -- yes or no ?
     __index = function(t,k)
@@ -511,17 +516,6 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
             local contextname = chr.contextname
             if contextname then
                 local category = chr.category
---~                 if is_character[category] then
---~                     if chr.unicodeslot < 128 then
---~                         texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
---~                     else
---~                         texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
---~                     end
---~                 elseif is_command[category] then
---~                     texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
---~                     a = a + 1
---~                     activated[a] = u
---~                 end
                 if is_character[category] then
                     if chr.unicodeslot < 128 then
                         if is_letter[category] then
@@ -608,35 +602,32 @@ function characters.setcodes()
         report_defining("defining lc and uc codes")
     end
     for code, chr in next, data do
-        local cc = chr.category  -- mn lo
-        if cc == 'll' or cc == 'lu' or cc == 'lt' then
-            local lc, uc = chr.lccode, chr.uccode
-            if not lc then chr.lccode, lc = code, code end
-            if not uc then chr.uccode, uc = code, code end
-            texsetcatcode(code,11)   -- letter
-            if type(lc) == "table" then
-                lc = code
-            end
-            if type(uc) == "table" then
-                uc = code
-            end
-            texsetlccode(code,lc,uc)
-            if cc == "lu" then
-                texsetsfcode(code,999)
-            end
-        elseif cc == "lo" then
+        local cc = chr.category
+        if is_letter[cc] then
             local range = chr.range
             if range then
                 for i=range.first,range.last do
                     texsetcatcode(i,11) -- letter
                     texsetlccode(i,i,i) -- self self
                 end
-            else -- letter
-                texsetcatcode(code,11)
-                texsetlccode(code,code,code)
+            else
+                local lc, uc = chr.lccode, chr.uccode
+                if not lc then chr.lccode, lc = code, code end
+                if not uc then chr.uccode, uc = code, code end
+                texsetcatcode(code,11)   -- letter
+                if type(lc) == "table" then
+                    lc = code
+                end
+                if type(uc) == "table" then
+                    uc = code
+                end
+                texsetlccode(code,lc,uc)
+                if cc == "lu" then
+                    texsetsfcode(code,999)
+                end
             end
-        elseif cc == "mn" then -- mark
-            texsetlccode(code,code,code)
+        elseif is_mark[cc] then
+            texsetlccode(code,code,code) -- for hyphenation
         end
     end
 end

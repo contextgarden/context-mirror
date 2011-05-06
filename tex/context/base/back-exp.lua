@@ -1066,7 +1066,7 @@ local function stopexport(v)
     if handle then
         report_export("saving xml data in '%s",xmlfile)
         handle:write(format(xmlpreamble,tex.jobname,os.date(),environment.version,version))
-        if cssfile then
+        if type(cssfile) == "string"  then
             local cssfiles = settings_to_array(cssfile)
             for i=1,#cssfiles do
                 local cssfile = cssfiles[i]
@@ -1099,7 +1099,8 @@ local function stopexport(v)
         io.savedata(cssfile,concat(templates,"\n\n"))
         -- xhtml references
         if xhtmlfile then
-            if type(v) ~= "string" or xhtmlfile == variables.yes or xhtmlfile == "" or xhtmlfile == xmlfile then
+            -- messy
+            if type(v) ~= "string" or xhtmlfile == true or xhtmlfile == variables.yes or xhtmlfile == "" or xhtmlfile == xmlfile then
                 xhtmlfile = file.replacesuffix(xmlfile,"xhtml")
             else
                 xhtmlfile = file.addsuffix(xhtmlfile,"xhtml")
