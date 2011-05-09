@@ -173,12 +173,19 @@ if not next(hash) then
     for i=0x01160,0x011A7 do if not hash[i] then hash[i] = "jamo_medial"  end end
     for i=0x011A8,0x011FF do if not hash[i] then hash[i] = "jamo_final"   end end
 
+    for i=0x01200,0x0139F do hash[i] = "ethiopic_syllable" end
+
+    hash[0x01361] = "ethiopic_word"
+    hash[0x01362] = "ethiopic_sentence"
+
     scripts.hash = hash
 
 end
 
 local numbertodataset = allocate()
 local numbertohandler = allocate()
+
+--~ storage.register("scripts/hash", hash, "scripts.hash")
 
 scripts.numbertodataset = numbertodataset
 
@@ -215,7 +222,7 @@ function scripts.installdataset(specification) -- global overload
         local parent  = specification.parent or ""
         local handler = handlers[method]
         if handler then
-            local datasets = handler.dataset
+            local datasets = handler.datasets
             if datasets then
                 local defaultset = datasets.default
                 if defaultset then
@@ -231,7 +238,7 @@ function scripts.installdataset(specification) -- global overload
                     local existing = datasets[name]
                     if existing then
                         for k, v in next, existing do
-                            existing[k] = v
+                            existing[k] = dataset
                         end
                     else
                         datasets[name] = dataset
@@ -259,20 +266,23 @@ function scripts.reset()
     texsetattribute(handler.attributes[preset])
 end
 
--- the following tables will become a proper installer
+-- the following tables will become a proper installer (move to cjk/eth)
 
 local scriptcolors = allocate {  -- todo: just named colors
-    korean           = "trace:0",
-    chinese          = "trace:0",
-    full_width_open  = "trace:1",
-    full_width_close = "trace:2",
-    half_width_open  = "trace:3",
-    half_width_close = "trace:4",
-    hyphen           = "trace:5",
-    non_starter      = "trace:6",
-    jamo_initial     = "trace:7",
-    jamo_medial      = "trace:8",
-    jamo_final       = "trace:9",
+    korean            = "trace:0",
+    chinese           = "trace:0",
+    full_width_open   = "trace:1",
+    full_width_close  = "trace:2",
+    half_width_open   = "trace:3",
+    half_width_close  = "trace:4",
+    hyphen            = "trace:5",
+    non_starter       = "trace:6",
+    jamo_initial      = "trace:7",
+    jamo_medial       = "trace:8",
+    jamo_final        = "trace:9",
+    ethiopic_syllable = "trace:1",
+    ethiopic_word     = "trace:2",
+    ethiopic_sentence = "trace:3",
 }
 
 scripts.colors = scriptcolors
@@ -289,6 +299,9 @@ local numbertocategory = allocate { -- rather bound to cjk ... will be generaliz
     "jamo_initial",
     "jamo_medial",
     "jamo_final",
+    "ethiopic_syllable",
+    "ethiopic_word",
+    "ethiopic_sentence",
 }
 
 local categorytonumber = allocate(table.swapped(numbertocategory)) -- could be one table

@@ -44,7 +44,7 @@ end
 nodes.locate =  locate
 
 local next, type = next, type
-local format, match, concat, rep, sub, gsub = string.format, string.match, table.concat, string.rep, string.sub, string.gsub
+local format, match, concat, rep, sub, gsub, gmatch = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch
 local lpegmatch = lpeg.match
 local utfchar, utfsub = utf.char, utf.sub
 local insert, remove = table.insert, table.remove
@@ -448,7 +448,7 @@ end
 function specials.fileorurl(handle,var)
     local file, url = references.checkedfileorurl(var.operation,var.operation)
     if url then
-        handle:write(" url='",file,"'")
+        handle:write(" url='",url,"'")
     elseif file then
         handle:write(" file='",file,"'")
     end
@@ -865,10 +865,15 @@ local function checkinserts(data)
         local di = data[i]
         if type(di) == "table" then -- id ~= false
             if di.element == "descriptionsymbol" then
-                local i = attributehash[di.fulltag].insert
-                if i then
-                    nofinserts = nofinserts + 1
-                    insertids[i] = nofinserts
+                local hash = attributehash[di.fulltag]
+                if hash then
+                    local i = hash.insert
+                    if i then
+                        nofinserts = nofinserts + 1
+                        insertids[i] = nofinserts
+                    end
+                else
+                    -- something is wrong
                 end
             end
             if di.data then
@@ -1029,7 +1034,7 @@ local d_template = [[
 -- encoding='utf-8'
 
 local xmlpreamble = [[
-<?xml version='1.0' standalone='yes' ?>
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 
 <!-- input filename   : %- 17s -->
 <!-- processing date  : %- 17s -->
@@ -1064,12 +1069,19 @@ local function stopexport(v)
     local xmlfile = file.addsuffix(v,"export")
     local handle = io.open(xmlfile,"wb")
     if handle then
+        local files = { }
+        local specification = {
+            name = file.removesuffix(v),
+            identifier = os.uuid(),
+            files = files,
+        }
         report_export("saving xml data in '%s",xmlfile)
         handle:write(format(xmlpreamble,tex.jobname,os.date(),environment.version,version))
         if type(cssfile) == "string"  then
             local cssfiles = settings_to_array(cssfile)
             for i=1,#cssfiles do
                 local cssfile = cssfiles[i]
+                files[#files+1] = cssfile
                 if type(cssfile) ~= "string" or cssfile == variables.yes or cssfile == "" or cssfile == xmlfile then
                     cssfile = file.replacesuffix(xmlfile,"css")
                 else
@@ -1131,6 +1143,11 @@ local function stopexport(v)
                 end
                 xml.save(xmltree,xhtmlfile)
             end
+            files[#files+1] = xhtmlfile
+            specification.root = xhtmlfile
+            local specfile = file.replacesuffix(xmlfile,"specification")
+            report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specfile,specfile)
+            io.savedata(specfile,table.serialize(specification,true))
         end
     else
         report_export("unable to saving xml in '%s",xmlfile)

@@ -105,19 +105,29 @@ local registerotffeature = otffeatures.register
 -- we could also add kerns but we asssume symbols
 -- todo: complain if not basemode
 
+--  remapping = {
+--      tounicode = true,
+--      unicodes = {
+--         a1   = 0x2701,
+
+local tosixteen = fonts.mappings.tounicode16
+
 local function initializeunicoding(tfmdata)
     local goodies   = tfmdata.goodies
     local newcoding = nil
+    local tounicode = false
     for i=1,#goodies do
         local remapping = goodies[i].remapping
         if remapping and remapping.unicodes then
             newcoding = remapping.unicodes -- names to unicodes
+            tounicode = remapping.tounicode
         end
     end
     if newcoding then
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         local oldcoding    = tfmdata.resources.unicodes
+        local tounicodes   = tfmdata.resources.tounicode -- index to unicode
         local originals    = { }
         for name, newcode in next, newcoding do
             local oldcode = oldcoding[name]
@@ -134,6 +144,12 @@ local function initializeunicoding(tfmdata)
             else
                 characters  [newcode] = characters  [oldcode]
                 descriptions[newcode] = descriptions[oldcode]
+            end
+            if tounicode then
+                local index = descriptions[newcode].index
+                if not tounicodes[index] then
+                    tounicodes[index] = tosixteen(newcode) -- shared (we could have a metatable)
+                end
             end
             if trace_defining then
                 report_defining("aliasing glyph '%s' from U+%05X to U+%05X",name,oldcode,newcode)

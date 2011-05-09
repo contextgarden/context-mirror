@@ -15,6 +15,7 @@
 
 \registerctxluafile{scrp-ini}{1.001}
 \registerctxluafile{scrp-cjk}{1.001}
+\registerctxluafile{scrp-eth}{1.001}
 
 \definesystemattribute[preproc][public]
 \definesystemattribute[prestat][public]
@@ -45,6 +46,7 @@
 
 \unexpanded\def\startscript[#1]%
   {\begingroup
+   \edef\currentscript{#1}%
    \dosetscript}
 
 \unexpanded\def\stopscript
@@ -52,8 +54,11 @@
 
 % \setscript[hangul] \hangul \startscript[hangul]
 
-\definescript[latin] [\c!method=]        %  resets the attribute
-\definescript[hangul][\c!method=hangul]
-\definescript[hanzi] [\c!method=hanzi]
+\definescript[hangul]   [\c!method=hangul]
+\definescript[hanzi]    [\c!method=hanzi]
+
+\definescript[ethiopic] [\c!method=ethiopic]
+
+\definescript[latin]    [\c!method=]        %  resets the attribute (also currentscript)
 
 \protect \endinput

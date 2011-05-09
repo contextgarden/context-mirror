@@ -11,32 +11,24 @@ local insert_node_after  = node.insert_after
 local insert_node_before = node.insert_before
 local remove_node        = nodes.remove
 
-local nodepool      = nodes.pool
+local nodepool           = nodes.pool
+local new_glue           = nodepool.glue
+local new_penalty        = nodepool.penalty
 
-local new_glue      = nodepool.glue
-local new_penalty   = nodepool.penalty
+local nodecodes          = nodes.nodecodes
+local glyph_code         = nodecodes.glyph
 
-local nodecodes     = nodes.nodecodes
-local skipcodes     = nodes.skipcodes
+local a_prestat          = attributes.private('prestat')
+local a_preproc          = attributes.private('preproc')
 
-local glyph_code    = nodecodes.glyph
+local categorytonumber   = scripts.categorytonumber
+local numbertocategory   = scripts.numbertocategory
+local hash               = scripts.hash
+local numbertodataset    = scripts.numbertodataset
 
-local userskip_code = skipcodes.userskip
-
-local a_prestat = attributes.private('prestat')
-local a_preproc = attributes.private('preproc')
-
-scripts.cjk = scripts.cjk or { }
-
-local categorytonumber = scripts.categorytonumber
-local numbertocategory = scripts.numbertocategory
-local hash             = scripts.hash
-local cjk              = scripts.cjk
-local numbertodataset  = scripts.numbertodataset
-
-local fonthashes = fonts.hashes
-local fontdata   = fonthashes.identifiers
-local quaddata   = fonthashes.quads
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local quaddata           = fonthashes.quads
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -62,16 +54,16 @@ local function nobreak(head,current)
 end
 
 local function stretch_break(head,current)
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function shrink_break(head,current)
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
 end
 
 local function nobreak_stretch(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function korean_break(head,current)
@@ -80,113 +72,113 @@ end
 
 local function nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
 end
 
 local function nobreak_autoshrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
 end
 
 local function nobreak_stretch_nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
 end
 
 local function nobreak_stretch_nobreak_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
 end
 
 local function nobreak_shrink_nobreak_stretch(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function nobreak_autoshrink_nobreak_stretch(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function nobreak_shrink_break_stretch(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function nobreak_autoshrink_break_stretch(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function nobreak_shrink_break_stretch_nobreak_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
 end
 
 local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
 end
 
 local function nobreak_autoshrink_break_stretch_nobreak_shrink(head,current)
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
 end
 
 local function nobreak_shrink_break_stretch_nobreak_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     if true then
         insert_node_before(head,current,new_penalty(10000))
-        insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+        insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     end
 end
 
 local function nobreak_stretch_break_shrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
-    insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
 end
 
 local function nobreak_stretch_break_autoshrink(head,current)
     insert_node_before(head,current,new_penalty(10000))
-    insert_node_before(head,current,new_glue(userskip_code,inter_char_stretch,0))
+    insert_node_before(head,current,new_glue(0,inter_char_stretch,0))
     if true then
-        insert_node_before(head,current,new_glue(userskip_code,0,inter_char_half_shrink))
+        insert_node_before(head,current,new_glue(0,0,inter_char_half_shrink))
     end
 end
 
