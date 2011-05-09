@@ -5,6 +5,7 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     remapping = {
+        tounicode = true,
         unicodes = {
            a1   = 0x2701,
            a10  = 0x2721,

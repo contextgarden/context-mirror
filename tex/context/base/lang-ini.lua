@@ -88,11 +88,16 @@ end
 
 -- languages.tolang = tolang
 
+-- todo: en+de => merge
+
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
     local definitions = settings_to_array(specification.patterns or "")
     if #definitions > 0 then
+        if trace_patterns then
+            report_initialization("pattern specification for language '%s': %s",tag,specification.patterns)
+        end
         local dataused, ok = data.used, false
         for i=1,#definitions do
             local definition = definitions[i]
@@ -126,11 +131,11 @@ local function loaddefinitions(tag,specification)
                 end
             end
         end
+        return ok
     elseif trace_patterns then
         report_initialization("no definitions for language '%s'",tag)
     end
     statistics.stoptiming(languages)
-    return ok
 end
 
 storage.shared.noflanguages = storage.shared.noflanguages or 0

@@ -564,9 +564,9 @@ function vfmath.define(specification,set,goodies)
                             local kerns = fci.kerns
                             local width = fci.width
                             local italic = fci.italic
-                            if italic then
-                                width = width + italic
-                            end
+                         -- if italic then
+                         --     width = width + italic -- old interpretation of otf math specs
+                         -- end
                             if kerns then
                                 local krn = { }
                                 for k, v in next, kerns do -- kerns is sparse

@@ -170,8 +170,8 @@ local helpinfo = [[
 
 example:
 
-mtxrun --collect somename.flac
-mtxrun --collect --pattern="m:/music/**")
+mtxrun --script flac --collect somename.flac
+mtxrun --script flac --collect --pattern="m:/music/**")
 ]]
 
 local application = logs.application {

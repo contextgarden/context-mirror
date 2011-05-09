@@ -253,6 +253,8 @@ mathencodings["lbr-mb"] = {
 
 mathencodings["lbr-sy"] = {
 
+    [0x022C5] = 0x01, -- cdot,
+
     [0x0002B] = 0x82, -- plus
     [0x0003D] = 0x83, -- equal
 
