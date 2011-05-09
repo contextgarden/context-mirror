@@ -89,7 +89,7 @@ function scripts.epub.make()
         local specfile = file.replacesuffix(filename,"specification")
         local specification = lfs.isfile(specfile) and dofile(specfile) or { }
 
-        inspect(specification)
+     -- inspect(specification)
 
         local name       = specification.name       or file.removesuffix(filename)
         local identifier = specification.identifier or os.uuid()
@@ -100,6 +100,10 @@ function scripts.epub.make()
         local epubpath   = file.replacesuffix(name,"tree")
         local epubfile   = file.replacesuffix(name,"epub")
         local epubroot   = file.replacesuffix(name,"opf")
+
+        lfs.mkdir(epubpath)
+        lfs.mkdir(file.join(epubpath,"META-INF"))
+        lfs.mkdir(file.join(epubpath,"OPS"))
 
         local used  = { }
 
@@ -115,10 +119,6 @@ function scripts.epub.make()
 
         container = format(container,epubroot)
         package   = format(package,identifier,identifier,concat(used,"\n"),root)
-
-        lfs.mkdir(epubpath)
-        lfs.mkdir(file.join(epubpath,"META-INF"))
-        lfs.mkdir(file.join(epubpath,"OPS"))
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)

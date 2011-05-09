@@ -403,7 +403,7 @@ end
 evaluators.outer = function(handle,var)
     local file, url = references.checkedfileorurl(var.outer,var.outer)
     if url then
-        handle:write(" url='",file,"'")
+        handle:write(" url='",url,"'")
     elseif file then
         handle:write(" file='",file,"'")
     end
