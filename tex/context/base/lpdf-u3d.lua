@@ -13,6 +13,10 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 -- an overhaul. There are some messy leftovers that will be
 -- removed in future versions.
 
+-- For some reason no one really tested this code so at some
+-- point we will end up with a reimplementation. For instance
+-- it makes sense to add the same activation code as with swf.
+
 local format, find = string.format, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 

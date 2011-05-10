@@ -711,9 +711,9 @@ function lpdf.checkedkey(t,key,variant)
         local tn = type(pn)
         if tn == variant then
             if variant == "string" then
-                return pn ~= "" and pn
+                return pn ~= "" and pn or nil
             elseif variant == "table" then
-                return next(pn) and pn
+                return next(pn) and pn or nil
             else
                 return pn
             end
