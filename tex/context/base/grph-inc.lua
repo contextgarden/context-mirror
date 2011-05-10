@@ -306,8 +306,7 @@ end
 local lastfiguredata = nil -- will be topofstack or last so no { } (else problems with getfiguredimensions)
 local callstack      = { }
 
-function figures.push(request)
-    statistics.starttiming(figures)
+function figures.initialize(request)
     local figuredata = new()
     if request then
     --  request.width/height are strings and are only used when no natural dimensions
@@ -325,6 +324,12 @@ function figures.push(request)
     --  request.height     = (h and h > 0) or false
         table.merge(figuredata.request,request)
     end
+    return figuredata
+end
+
+function figures.push(request)
+    statistics.starttiming(figures)
+    local figuredata = figures.initialize(request)
     insert(callstack,figuredata)
     lastfiguredata = figuredata
     return figuredata

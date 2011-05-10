@@ -79,8 +79,8 @@ function figures.checkers.swf(data)
         width     = width,
         height    = height,
     --  factor    = number.dimenfactors.bp,
-    --  display   = dr.display,
-    --  controls  = dr.controls,
+        display   = dr.display,
+        controls  = dr.controls,
     --  label     = dr.label,
         resources = dr.resources,
     }

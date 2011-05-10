@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 -- we will move code to lpdf-* files (second cleanup stage)
 
+-- the push/pop is a mess (only needed for calculate ...) .. will be done differently
+
 --[[ldx--
 <p>This module implements a couple of cleanup methods. We need these
 in order to meet the <l n='pdf'/> specification. Watch the double
@@ -478,6 +480,26 @@ function codeinjections.setfigurealternative(data,figure)
             figures.pop()
         end
     end
+end
+
+function codeinjections.getdisplayfigure(request)
+    local figure = figures.initialize(request)
+    if not figure then
+        return
+    end
+    figure = figures.identify(figure)
+    if not figure then
+        return
+    end
+    figure = figures.check(figure)
+    if not figure then
+        return
+    end
+    local image = figure.status.private
+    if image then
+        img.immediatewrite(image)
+    end
+    return figure
 end
 
 function codeinjections.setfiguremask(data,figure) -- mark

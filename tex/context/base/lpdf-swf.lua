@@ -23,39 +23,98 @@ local pdfnull            = lpdf.null
 local pdfreference       = lpdf.reference
 local pdfimmediateobject = lpdf.immediateobject
 
+local variables          = interfaces.variables
+
 local codeinjections     = backends.pdf.codeinjections
 local nodeinjections     = backends.pdf.nodeinjections
 
 local pdfannotation_node = nodes.pool.pdfannotation
 
+local activations = {
+    click = "XA",
+    page  = "PO",
+    focus = "PV",
+}
+
+local deactivations = {
+    click = "XD",
+    page  = "PI",
+    focus = "PC",
+}
+
+table.setmetatableindex(activations,  function() return activations  .click end)
+table.setmetatableindex(deactivations,function() return deactivations.focus end)
+
+local factor = number.dimenfactors.bp
+
+function img.package(image)
+    local boundingbox = image.bbox
+    local imagetag    = "Im" .. image.index
+    local resources   = pdfdictionary {
+        ProcSet = pdfarray {
+            pdfconstant("PDF"),
+            pdfconstant("ImageC")
+        },
+        Resources = pdfdictionary {
+            XObject = pdfdictionary {
+                [imagetag] = pdfreference(image.objnum)
+            }
+        }
+    }
+    local width = boundingbox[3]
+    local height = boundingbox[4]
+    local xform = img.scan {
+        attr   = resources(),
+        stream = format("%s 0 0 %s 0 0 cm /%s Do",width,height,imagetag),
+        bbox   = { 0, 0, width/factor, height/factor },
+    }
+    img.immediatewrite(xform)
+    return xform
+end
+
+
 local function insertswf(spec)
 
-    local width, height, filename, resources = spec.width, spec.height, spec.foundname, spec.resources
+    local width     = spec.width
+    local height    = spec.height
+    local filename  = spec.foundname
+    local resources = spec.resources
+    local display   = spec.display
+    local controls  = spec.controls
 
     local resources = resources and parametersets[resources]
 
-    local eref = codeinjections.embedfile { file = filename }
+    if display == nil or display == "" then
+        display = resources.display
+    end
+    if controls == nil or controls == "" then
+        controls = resources.controls
+    end
+
+    controls = toboolean(variables[controls] or controls,true)
+
+    local embeddedreference = codeinjections.embedfile { file = filename }
 
     local flash = pdfdictionary {
         Subtype   = pdfconstant("Flash"),
         Instances = pdfarray {
             pdfdictionary {
-                Asset  = eref,
+                Asset  = embeddedreference,
                 Params = pdfdictionary {
-                    Binding = pdfconstant("Foreground")
+                    Binding = pdfconstant("Background") -- Foreground makes swf behave erratic
                 }
             },
         },
     }
 
-    local fref = pdfreference(pdfimmediateobject(tostring(flash)))
+    local flashreference = pdfreference(pdfimmediateobject(tostring(flash)))
 
     local configuration = pdfdictionary {
-        Configurations = pdfarray { fref },
+        Configurations = pdfarray { flashreference },
         Assets         = pdfdictionary {
             Names = pdfarray {
                 pdfstring(filename),
-                eref,
+                embeddedreference,
             }
         },
     }
@@ -64,9 +123,9 @@ local function insertswf(spec)
         local names = configuration.Assets.Names
         local function add(filename)
             local filename = gsub(filename,"%./","")
-            local eref = codeinjections.embedfile { file = filename, keepdir = true }
+            local embeddedreference = codeinjections.embedfile { file = filename, keepdir = true }
             names[#names+1] = pdfstring(filename)
-            names[#names+1] = eref
+            names[#names+1] = embeddedreference
         end
         local paths = resources.paths
         if paths then
@@ -85,58 +144,77 @@ local function insertswf(spec)
         end
     end
 
-    local cref = pdfreference(pdfimmediateobject(tostring(configuration)))
+    local configurationreference = pdfreference(pdfimmediateobject(tostring(configuration)))
 
     local activation = pdfdictionary {
-        Activation = pdfdictionary {
-            Type          = pdfconstant("RichMediaActivation"),
-            Condition     = pdfconstant("PO"),
-            Configuration = fref,
-            Animation     = pdfdictionary {
-                Subtype   = pdfconstant("Linear"),
-                Speed     = 1,
-                Playcount = 1,
-            },
-            Deactivation  = pdfdictionary {
-                Type      = pdfconstant("RichMediaDeactivation"),
-                Condition = pdfconstant("XD"),
-            },
-            Presentation  = pdfdictionary {
-                PassContextClick = false,
-                Style            = pdfconstant("Embedded"),
-                Toolbar          = false,
-                NavigationPane   = false,
-                Transparent      = true,
-                Window           = pdfdictionary {
-                    Type     = pdfconstant("RichMediaWindow"),
-                    Width    = pdfdictionary {
-                        Default = 100,
-                        Min     = 100,
-                        Max     = 100,
-                    },
-                    Height   = pdfdictionary {
-                        Default = 100,
-                        Min     = 100,
-                        Max     = 100,
-                    },
-                    Position = pdfdictionary {
-                        Type    = pdfconstant("RichMediaPosition"),
-                        HAlign  = pdfconstant("Near"),
-                        VAlign  = pdfconstant("Near"),
-                        HOffset = 0,
-                        VOffset = 0,
-                    }
+        Type          = pdfconstant("RichMediaActivation"),
+        Condition     = pdfconstant(activations[resources.open]),
+        Configuration = flashreference,
+        Animation     = pdfdictionary {
+            Subtype   = pdfconstant("Linear"),
+            Speed     = 1,
+            Playcount = 1,
+        },
+        Presentation  = pdfdictionary {
+            PassContextClick = false,
+            Style            = pdfconstant("Embedded"),
+            Toolbar          = controls or false,
+            NavigationPane   = false,
+            Transparent      = true,
+            Window           = pdfdictionary {
+                Type     = pdfconstant("RichMediaWindow"),
+                Width    = pdfdictionary {
+                    Default = 100,
+                    Min     = 100,
+                    Max     = 100,
+                },
+                Height   = pdfdictionary {
+                    Default = 100,
+                    Min     = 100,
+                    Max     = 100,
+                },
+                Position = pdfdictionary {
+                    Type    = pdfconstant("RichMediaPosition"),
+                    HAlign  = pdfconstant("Near"),
+                    VAlign  = pdfconstant("Near"),
+                    HOffset = 0,
+                    VOffset = 0,
                 }
             }
-        }
+        },
+     -- View
+     -- Scripts
     }
 
-    local aref = pdfreference(pdfimmediateobject(tostring(activation)))
+    local deactivation = pdfdictionary {
+        Type      = pdfconstant("RichMediaDeactivation"),
+        Condition = pdfconstant(deactivations[resources.close]),
+    }
+
+    local richmediasettings = pdfdictionary {
+        Type         = pdfconstant("RichMediaSettings"),
+        Activation   = activation,
+        Deactivation = deactivation,
+    }
+
+    local settingsreference = pdfreference(pdfimmediateobject(tostring(richmediasettings)))
+
+    local appearance
+
+    if display and display ~= "" then
+        local figure = codeinjections.getdisplayfigure { name = display, width = width, height = height }
+        if figure then
+            local image = img.package(figure.status.private)
+            local reference = image.objnum
+            appearance = reference and pdfdictionary { N = pdfreference(reference) } or nil
+        end
+    end
 
     local annotation = pdfdictionary {
-       Subtype           = pdfconstant("RichMedia"),
-       RichMediaContent  = cref,
-       RichMediaSettings = aref,
+        Subtype           = pdfconstant("RichMedia"),
+        RichMediaContent  = configurationreference,
+        RichMediaSettings = settingsreference,
+        AP                = appearance,
     }
 
     return annotation, nil, nil
@@ -149,8 +227,8 @@ function backends.pdf.nodeinjections.insertswf(spec)
         width     = spec.width,
         height    = spec.height,
     --  factor    = spec.factor,
-    --  display   = spec.display,
-    --  controls  = spec.controls,
+        display   = spec.display,
+        controls  = spec.controls,
     --  label     = spec.label,
         resources = spec.resources,
     }
