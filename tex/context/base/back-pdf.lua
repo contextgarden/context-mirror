@@ -482,7 +482,7 @@ function codeinjections.setfigurealternative(data,figure)
     end
 end
 
-function codeinjections.getdisplayfigure(request)
+function codeinjections.getpreviewfigure(request)
     local figure = figures.initialize(request)
     if not figure then
         return
@@ -540,5 +540,36 @@ function codeinjections.getoutputfilename()
     end
     return outputfilename
 end
+
+-- temp hack
+
+local factor = number.dimenfactors.bp
+
+function img.package(image)
+    local boundingbox = image.bbox
+    local imagetag    = "Im" .. image.index
+    local resources   = pdfdictionary {
+        ProcSet = pdfarray {
+            pdfconstant("PDF"),
+            pdfconstant("ImageC")
+        },
+        Resources = pdfdictionary {
+            XObject = pdfdictionary {
+                [imagetag] = pdfreference(image.objnum)
+            }
+        }
+    }
+    local width = boundingbox[3]
+    local height = boundingbox[4]
+    local xform = img.scan {
+        attr   = resources(),
+        stream = format("%s 0 0 %s 0 0 cm /%s Do",width,height,imagetag),
+        bbox   = { 0, 0, width/factor, height/factor },
+    }
+    img.immediatewrite(xform)
+    return xform
+end
+
+-- till here
 
 backends.install("pdf")

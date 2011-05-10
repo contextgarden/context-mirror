@@ -124,28 +124,31 @@
     toolbar = true,
     preview = 'cloudq.png'
 \stopluaparameterset
+
 \startluaparameterset[u3d:myset:display:3]
     toolbar = true,
-    tree = false,
+    tree    = false,
     preview = 'area.png'
 \stopluaparameterset
+
 \startluaparameterset[u3d:myset:display:4]
     toolbar = true,
-    tree = false,
-    view = {
-        name = 'view',
-        bg = {0.1,0.1,0.1},
-        c2c = {-1,-1,0},
-        roo = 50,
-        aac = 2.5,
-        roll = 45,
+    tree    = false,
+    view    = {
+        name   = 'view',
+        bg     = {0.1,0.1,0.1},
+        c2c    = {-1,-1,0},
+        roo    = 50,
+        aac    = 2.5,
+        roll   = 45,
         lights = 'Red'
     }
 \stopluaparameterset
+
 \startluaparameterset[u3d:myset:display:5]
     toolbar = true,
-    tree = false,
-    view = 'ortho'
+    tree    = false,
+    view    = 'ortho'
 \stopluaparameterset
 
 \placefigure[here]{none}{\externalfigure[cloudq][display=u3d:myset:display:2]}

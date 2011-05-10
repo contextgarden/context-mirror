@@ -23,7 +23,7 @@ local pdfnull            = lpdf.null
 local pdfreference       = lpdf.reference
 local pdfimmediateobject = lpdf.immediateobject
 
-local variables          = interfaces.variables
+local checkedkey         = lpdf.checkedkey
 
 local codeinjections     = backends.pdf.codeinjections
 local nodeinjections     = backends.pdf.nodeinjections
@@ -45,34 +45,6 @@ local deactivations = {
 table.setmetatableindex(activations,  function() return activations  .click end)
 table.setmetatableindex(deactivations,function() return deactivations.focus end)
 
-local factor = number.dimenfactors.bp
-
-function img.package(image)
-    local boundingbox = image.bbox
-    local imagetag    = "Im" .. image.index
-    local resources   = pdfdictionary {
-        ProcSet = pdfarray {
-            pdfconstant("PDF"),
-            pdfconstant("ImageC")
-        },
-        Resources = pdfdictionary {
-            XObject = pdfdictionary {
-                [imagetag] = pdfreference(image.objnum)
-            }
-        }
-    }
-    local width = boundingbox[3]
-    local height = boundingbox[4]
-    local xform = img.scan {
-        attr   = resources(),
-        stream = format("%s 0 0 %s 0 0 cm /%s Do",width,height,imagetag),
-        bbox   = { 0, 0, width/factor, height/factor },
-    }
-    img.immediatewrite(xform)
-    return xform
-end
-
-
 local function insertswf(spec)
 
     local width     = spec.width
@@ -83,15 +55,11 @@ local function insertswf(spec)
     local controls  = spec.controls
 
     local resources = resources and parametersets[resources]
+    local display   = display   and parametersets[display]
+    local controls  = controls  and parametersets[controls]     -- not yet used
 
-    if display == nil or display == "" then
-        display = resources.display
-    end
-    if controls == nil or controls == "" then
-        controls = resources.controls
-    end
-
-    controls = toboolean(variables[controls] or controls,true)
+    local preview   = checkedkey(display,"preview","string")
+    local toolbar   = checkedkey(display,"toolbar","boolean")
 
     local embeddedreference = codeinjections.embedfile { file = filename }
 
@@ -148,7 +116,7 @@ local function insertswf(spec)
 
     local activation = pdfdictionary {
         Type          = pdfconstant("RichMediaActivation"),
-        Condition     = pdfconstant(activations[resources.open]),
+        Condition     = pdfconstant(activations[display.open]),
         Configuration = flashreference,
         Animation     = pdfdictionary {
             Subtype   = pdfconstant("Linear"),
@@ -158,7 +126,7 @@ local function insertswf(spec)
         Presentation  = pdfdictionary {
             PassContextClick = false,
             Style            = pdfconstant("Embedded"),
-            Toolbar          = controls or false,
+            Toolbar          = toolbar,
             NavigationPane   = false,
             Transparent      = true,
             Window           = pdfdictionary {
@@ -188,7 +156,7 @@ local function insertswf(spec)
 
     local deactivation = pdfdictionary {
         Type      = pdfconstant("RichMediaDeactivation"),
-        Condition = pdfconstant(deactivations[resources.close]),
+        Condition = pdfconstant(deactivations[display.close]),
     }
 
     local richmediasettings = pdfdictionary {
@@ -201,12 +169,11 @@ local function insertswf(spec)
 
     local appearance
 
-    if display and display ~= "" then
-        local figure = codeinjections.getdisplayfigure { name = display, width = width, height = height }
+    if preview then
+        local figure = codeinjections.getpreviewfigure { name = preview, width = width, height = height }
         if figure then
             local image = img.package(figure.status.private)
-            local reference = image.objnum
-            appearance = reference and pdfdictionary { N = pdfreference(reference) } or nil
+            appearance = pdfdictionary { N = pdfreference(image.objnum) }
         end
     end
 
@@ -226,11 +193,11 @@ function backends.pdf.nodeinjections.insertswf(spec)
         foundname = spec.foundname,
         width     = spec.width,
         height    = spec.height,
-    --  factor    = spec.factor,
         display   = spec.display,
         controls  = spec.controls,
-    --  label     = spec.label,
         resources = spec.resources,
+     -- factor    = spec.factor,
+     -- label     = spec.label,
     }
     node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
 end
