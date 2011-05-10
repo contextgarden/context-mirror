@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['l-pdfview'] = {
     license   = "see context related readme files"
 }
 
+-- Todo: figure out pdfopen/pdfclose on linux. Calling e.g. okular directly
+-- doesn't work in linux when issued from scite as it blocks the editor (no
+-- & possible or so).
+
 local format, concat = string.format, table.concat
 
 pdfview = pdfview or { }
