@@ -232,6 +232,8 @@ local hangul_syllable_metatable = {
         if k == "fscode" then
             -- no need to cache this as we normally use fscodes
             return leadconsonant(u)
+        elseif k == "shcode" then
+            return { decomposed(u) }
         elseif k == "specials" then
             return { "char", decomposed(u) }
         elseif k == "description" then

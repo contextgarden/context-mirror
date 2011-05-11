@@ -184,7 +184,7 @@ local function flushembeddedfiles()
         for tag, reference in next, filestreams do
             if not reference then
                 report_attachment("unreferenced file: tag '%s'",tag)
-            elseif referenced[name] == "hidden" then
+            elseif referenced[tag] == "hidden" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
             else
