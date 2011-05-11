@@ -223,7 +223,7 @@ local function preparetables(data)
                                 end
                             end
                         end
-                    else
+                    else -- we probably never enter this branch
                         -- fschars returns a single char
                         s = fschars[k]
                         if s and s ~= k then

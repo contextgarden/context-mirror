@@ -698,32 +698,32 @@ end
 
 utf.string = utf.string or utfstring
 
-characters.categories = allocate()  local categories = characters.categories -- lazy table
+local categories = allocate()  characters.categories = categories -- lazy table
 
 setmetatableindex(categories, function(t,u) if u then local c = data[u] c = c and c.category or u t[u] = c return c end end)
 
-characters.lccodes = allocate()  local lccodes = characters.lccodes -- lazy table
-characters.uccodes = allocate()  local uccodes = characters.uccodes -- lazy table
-characters.shcodes = allocate()  local shcodes = characters.shcodes -- lazy table
-characters.fscodes = allocate()  local fscodes = characters.fscodes -- lazy table
+local lccodes = allocate()  characters.lccodes = lccodes -- lazy table
+local uccodes = allocate()  characters.uccodes = uccodes -- lazy table
+local shcodes = allocate()  characters.shcodes = shcodes -- lazy table
+local fscodes = allocate()  characters.fscodes = fscodes -- lazy table
 
 setmetatableindex(lccodes, function(t,u) if u then local c = data[u] c = c and c.lccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end)
 setmetatableindex(uccodes, function(t,u) if u then local c = data[u] c = c and c.uccode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end)
 setmetatableindex(shcodes, function(t,u) if u then local c = data[u] c = c and c.shcode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end)
 setmetatableindex(fscodes, function(t,u) if u then local c = data[u] c = c and c.fscode or (type(u) == "string" and utfbyte(u)) or u t[u] = c return c end end)
 
-characters.lcchars = allocate()  local lcchars = characters.lcchars -- lazy table
-characters.ucchars = allocate()  local ucchars = characters.ucchars -- lazy table
-characters.shchars = allocate()  local shchars = characters.shchars -- lazy table
-characters.fschars = allocate()  local fschars = characters.fschars -- lazy table
+local lcchars = allocate()  characters.lcchars = lcchars -- lazy table
+local ucchars = allocate()  characters.ucchars = ucchars -- lazy table
+local shchars = allocate()  characters.shchars = shchars -- lazy table
+local fschars = allocate()  characters.fschars = fschars -- lazy table
 
 setmetatableindex(lcchars, function(t,u) if u then local c = data[u] c = c and c.lccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 setmetatableindex(ucchars, function(t,u) if u then local c = data[u] c = c and c.uccode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 setmetatableindex(shchars, function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 setmetatableindex(fschars, function(t,u) if u then local c = data[u] c = c and c.fscode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 
-characters.specialchars = allocate()  local specialchars = characters.specialchars -- lazy table
-characters.descriptions = allocate()  local descriptions = characters.descriptions -- lazy table
+local specialchars = allocate()  characters.specialchars = specialchars -- lazy table
+local descriptions = allocate()  characters.descriptions = descriptions -- lazy table
 
 setmetatableindex(specialchars, function(t,u)
     if u then
