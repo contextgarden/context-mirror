@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/10/11 19:20:23
+-- merge date  : 05/12/11 15:19:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -3905,15 +3905,17 @@ a helper function.</p>
 --ldx]]--
 
 function constructors.checkedfeatures(what,features)
+    local defaults = handlers[what].features.defaults
     if features and next(features) then
-        for key, value in next, handlers[what].features.defaults do
+        features = fastcopy(features) -- can be inherited
+        for key, value in next, defaults do
             if features[key] == nil then
                 features[key] = value
             end
         end
         return features
     else
-        return fastcopy(defaults)
+        return fastcopy(defaults) -- we can change features in place
     end
 end
 
@@ -3929,6 +3931,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
         -- properties.mode can be enforces (for instance in font-otd)
         local mode             = properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features,features.mode)) or features.mode or "base"
         properties.mode        = mode -- also status
+        features.mode          = mode -- both properties.mode or features.mode can be changed
         --
         local done             = { }
         while true do
@@ -3938,6 +3941,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                 for i=1,#initializers do
                     local step = initializers[i]
                     local feature = step.name
+-- we could intercept mode here .. needs a rewrite of this whole loop then btu it's cleaner that way
                     local value = features[feature]
                     if not value then
                         -- disabled
@@ -3950,9 +3954,10 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                                 tostring(value),mode or 'unknown', tfmdata.properties.fullname or 'unknown')
                         end
                         action(tfmdata,value,features) -- can set mode (e.g. goodies) so it can trigger a restart
-                        if mode ~= properties.mode then
+                        if mode ~= properties.mode or mode ~= features.mode then
                             if whatmodechecker then
                                 properties.mode = whatmodechecker(tfmdata,features,properties.mode) -- force checking
+                                features.mode   = properties.mode
                             end
                             if mode ~= properties.mode then
                                 mode = properties.mode
@@ -7692,8 +7697,7 @@ function injections.handler(head,where,keep)
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
-                                    -- maybe better swap and "rlmode and rlmode < 0" as lr (1) is default
-                                    if rlmode and rlmode > 0 then
+                                    if rlmode and rlmode >= 0 then
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
                                         -- that makes sense but we no longer do that so as a

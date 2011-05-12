@@ -48,6 +48,8 @@ local texattribute        = tex.attribute
 
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
+local baseprocessors      = otffeatures.processors.base
+local baseinitializers    = otffeatures.initializers.base
 
 specifiers.contextsetups  = specifiers.contextsetups  or { }
 specifiers.contextnumbers = specifiers.contextnumbers or { }
@@ -137,32 +139,49 @@ setmetatableindex(xheightdata, function(t,k)
 end)
 
 -- this cannot be a feature initializer as there is no auto namespace
--- so we never enter the loop then
+-- so we never enter the loop then; we can store the defaults in the tma
+-- file (features.gpos.mkmk = 1 etc)
+
+local needsnodemode = {
+    gpos_mark2mark     = true,
+    gpos_mark2base     = true,
+    gpos_mark2ligature = true,
+}
 
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if mode == "auto" then
-        local script    = features.script
-        local language  = features.language
         local rawdata   = tfmdata.shared.rawdata
-        local sequences = rawdata and rawdata.resources.sequences
-        if script and language and sequences and #sequences > 0 then
+        local resources = rawdata and rawdata.resources
+        local sequences = resources.sequences
+        if sequences and #sequences > 0 then
+            local script    = features.script   or "dflt"
+            local language  = features.language or "dflt"
             for feature, value in next, features do
                 if value then
                     local found = false
                     for i=1,#sequences do
-                        local features = sequences[i].features
+                        local sequence = sequences[i]
+                        local features = sequence.features
                         if features then
                             local scripts = features[feature]
                             if scripts then
                                 local languages = scripts[script]
                                 if languages and languages[language] then
                                     if found then
-                                        features.mode = "node"
+                                        -- more than one lookup
                                         if trace_automode then
-                                            report_defining("forcing node mode due to features %s, script %s, language %s",feature,script,language)
+                                            report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
                                         end
+                                        features.mode = "node"
+                                        return "node"
+                                    elseif needsnodemode[sequence.type] then
+                                        if trace_automode then
+                                            report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
+                                        end
+                                        features.mode = "node"
                                         return "node"
                                     else
+                                        -- at least one lookup
                                         found = true
                                     end
                                 end

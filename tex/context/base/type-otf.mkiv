@@ -20,10 +20,10 @@
 %
 %     \starttypescript [serif] [myserif] [name]
 %         \setups[font:fallback:serif]
-%         \definefontsynonym [Serif]           [file:myserif.ttf]           [features=default]
-%         \definefontsynonym [SerifBold]       [file:myserifbold.ttf]       [features=default]
-%         \definefontsynonym [SerifItalic]     [file:myserifitalic.ttf]     [features=default]
-%         \definefontsynonym [SerifBoldItalic] [file:myserifbolditalic.ttf] [features=default]
+%         \definefontsynonym [Serif]           [\s!file:myserif.ttf]           [features=default]
+%         \definefontsynonym [SerifBold]       [\s!file:myserifbold.ttf]       [features=default]
+%         \definefontsynonym [SerifItalic]     [\s!file:myserifitalic.ttf]     [features=default]
+%         \definefontsynonym [SerifBoldItalic] [\s!file:myserifbolditalic.ttf] [features=default]
 %     \stoptypescript
 %
 %     \starttypescript[myfont]
@@ -223,6 +223,7 @@
 
     \starttypescript [math] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [MathRoman]        [LMMathRoman-Regular]
+        \definefontsynonym [MathRomanBold]    [LMMathRoman-Bold]
         %definefontsynonym [MathExtension]    [LMMathExtension-Regular]
         %definefontsynonym [MathItalic]       [LMMathItalic-Italic]
         %definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
@@ -373,14 +374,14 @@
     \stoptypescript
 
     \starttypescript [math] [modern,latin-modern,default]
-        % isn't this obsolete now?
-        \definefontsynonym [LMMathRoman-Regular]       [LMMathRoman10-Regular]
-        \definefontsynonym [LMMathRoman-Bold]          [LMMathRoman10-Bold]
-        %definefontsynonym [LMMathSymbols-BoldItalic]  [LMMathSymbols10-BoldItalic]
-        %definefontsynonym [LMMathSymbols-Italic]      [LMMathSymbols10-Italic]
-        %definefontsynonym [LMMathExtension-Regular]   [LMMathExtension10-Regular]
-        %definefontsynonym [LMMathItalic-Italic]       [LMMathItalic10-Italic]
-        %definefontsynonym [LMMathItalic-BoldItalic]   [LMMathItalic10-BoldItalic]
+        \definefontsynonym [LMMathRoman-Regular] [LMMathRoman10-Regular]
+        \definefontsynonym [LMMathRoman-Bold]    [LMMathRoman10-Bold]
+    \stoptypescript
+
+    \starttypescript [math] [modern,latin-modern,default]
+      % \loadfontgoodies[lm-math]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath.otf]     [\s!features=\s!math]
+      % \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmathbold.otf] [\s!features=\s!math]
     \stoptypescript
 
     \starttypescript [modern,default]
@@ -1847,7 +1848,7 @@
     % use with LaTeX, will follow in 2011. So, we are on our own anyway.
 
     \starttypescript [math] [xits] [name]
-        \definefontsynonym[MathRoman][file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
+        \definefontsynonym[MathRoman][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
     \stoptypescript
 
     \starttypescript [serif] [xits] [name]

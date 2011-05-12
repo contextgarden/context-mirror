@@ -321,8 +321,7 @@ function injections.handler(head,where,keep)
                                 local d = mrks[index]
                                 if d then
                                     local rlmode = d[3]
-                                    -- maybe better swap and "rlmode and rlmode < 0" as lr (1) is default
-                                    if rlmode and rlmode > 0 then
+                                    if rlmode and rlmode >= 0 then
                                         -- new per 2010-10-06, width adapted per 2010-02-03
                                         -- we used to negate the width of marks because in tfm
                                         -- that makes sense but we no longer do that so as a
