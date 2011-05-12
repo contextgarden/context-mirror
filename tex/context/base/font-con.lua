@@ -995,15 +995,17 @@ a helper function.</p>
 --ldx]]--
 
 function constructors.checkedfeatures(what,features)
+    local defaults = handlers[what].features.defaults
     if features and next(features) then
-        for key, value in next, handlers[what].features.defaults do
+        features = fastcopy(features) -- can be inherited
+        for key, value in next, defaults do
             if features[key] == nil then
                 features[key] = value
             end
         end
         return features
     else
-        return fastcopy(defaults)
+        return fastcopy(defaults) -- we can change features in place
     end
 end
 
@@ -1019,6 +1021,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
         -- properties.mode can be enforces (for instance in font-otd)
         local mode             = properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features,features.mode)) or features.mode or "base"
         properties.mode        = mode -- also status
+        features.mode          = mode -- both properties.mode or features.mode can be changed
         --
         local done             = { }
         while true do
@@ -1028,6 +1031,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                 for i=1,#initializers do
                     local step = initializers[i]
                     local feature = step.name
+-- we could intercept mode here .. needs a rewrite of this whole loop then btu it's cleaner that way
                     local value = features[feature]
                     if not value then
                         -- disabled
@@ -1040,9 +1044,10 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                                 tostring(value),mode or 'unknown', tfmdata.properties.fullname or 'unknown')
                         end
                         action(tfmdata,value,features) -- can set mode (e.g. goodies) so it can trigger a restart
-                        if mode ~= properties.mode then
+                        if mode ~= properties.mode or mode ~= features.mode then
                             if whatmodechecker then
                                 properties.mode = whatmodechecker(tfmdata,features,properties.mode) -- force checking
+                                features.mode   = properties.mode
                             end
                             if mode ~= properties.mode then
                                 mode = properties.mode
