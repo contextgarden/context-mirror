@@ -58,6 +58,7 @@ appendaction("shipouts",     "finishers",   "attributes.negatives.handler")     
 appendaction("shipouts",     "finishers",   "attributes.effects.handler")                        -- disabled
 appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")                   -- disabled
 
+appendaction("math",         "normalizers", "noads.handlers.unscript", nil, "nohead")            -- always on (maybe disabled)
 appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on

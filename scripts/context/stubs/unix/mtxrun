@@ -3435,8 +3435,10 @@ local unicode = unicode
 
 utf = utf or unicode.utf8
 
-local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
+local concat = table.concat
+local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local type = type
 
 local utfsplitlines = string.utfsplitlines
 
@@ -3648,6 +3650,14 @@ function unicode.utfcodes(str)
     return concat(t,separator or " ")
 end
 
+function unicode.ustring(s)
+    return format("U+%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+function unicode.xstring(s)
+    return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+end
+
 
 local lpegmatch = lpeg.match
 local utftype = lpeg.patterns.utftype
@@ -3655,7 +3665,6 @@ local utftype = lpeg.patterns.utftype
 function unicode.filetype(data)
     return data and lpegmatch(utftype,data) or "unknown"
 end
-
 
 
 
