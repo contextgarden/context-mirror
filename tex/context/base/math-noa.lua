@@ -414,7 +414,7 @@ local function replace(pointer)
     local mode = "unset"
     while next and next.id == math_noad do
         local nextnucleus = next.nucleus
-        if nextnucleus and not next.sub and not next.sup then
+        if nextnucleus and nextnucleus.id == math_char and not next.sub and not next.sup then
             local char = nextnucleus.char
             local s = superscripts[char]
             if s then
