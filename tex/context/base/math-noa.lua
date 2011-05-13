@@ -18,6 +18,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 local utf = unicode.utf8
 
 local format, rep  = string.format, string.rep
+local concat = table.concat
 local utfchar, utfbyte = utf.char, utf.byte
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
@@ -26,12 +27,14 @@ local otf                 = fonts.handlers.otf
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
 
-local trace_remapping     = false  trackers.register("math.remapping",  function(v) trace_remapping  = v end)
-local trace_processing    = false  trackers.register("math.processing", function(v) trace_processing = v end)
-local trace_analyzing     = false  trackers.register("math.analyzing",  function(v) trace_analyzing  = v end)
+local trace_remapping     = false  trackers.register("math.remapping",   function(v) trace_remapping   = v end)
+local trace_processing    = false  trackers.register("math.processing",  function(v) trace_processing  = v end)
+local trace_analyzing     = false  trackers.register("math.analyzing",   function(v) trace_analyzing   = v end)
+local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
 
 local report_processing   = logs.reporter("mathematics","processing")
 local report_remapping    = logs.reporter("mathematics","remapping")
+local report_normalizing  = logs.reporter("mathematics","normalizing")
 
 local set_attribute       = node.set_attribute
 local has_attribute       = node.has_attribute
@@ -395,6 +398,111 @@ function noads.handlers.collapse(head,style,penalties)
     process(head,collapse)
     return true
 end
+
+-- normalize scripts
+
+local unscript = { }  noads.processors.unscript = unscript
+
+local superscripts = characters.superscripts
+local subscripts   = characters.subscripts
+
+local replaced = { }
+
+local function replace(pointer)
+    local next = pointer.next
+    local start_super, stop_super, start_sub, stop_sub
+    local mode = "unset"
+    while next and next.id == math_noad do
+        local nextnucleus = next.nucleus
+        if nextnucleus and not next.sub and not next.sup then
+            local char = nextnucleus.char
+            local s = superscripts[char]
+            if s then
+                if not start_super then
+                    start_super = next
+                    mode = "super"
+                elseif mode == "sub" then
+                    break
+                end
+                stop_super = next
+                next = next.next
+                nextnucleus.char = s
+                replaced[char] = (replaced[char] or 0) + 1
+                if trace_normalizing then
+                    report_normalizing("superscript: U+05X (%s) => U+05X (%s)",char,utfchar(char),s,utfchar(s))
+                end
+            else
+                local s = subscripts[char]
+                if s then
+                    if not start_sub then
+                        start_sub = next
+                        mode = "sub"
+                    elseif mode == "super" then
+                        break
+                    end
+                    stop_sub = next
+                    next = next.next
+                    nextnucleus.char = s
+                    replaced[char] = (replaced[char] or 0) + 1
+                    if trace_normalizing then
+                        report_normalizing("subscript: U+05X (%s) => U+05X (%s)",char,utfchar(char),s,utfchar(s))
+                    end
+                else
+                    break
+                end
+            end
+        else
+            break
+        end
+    end
+    if start_super then
+        if start_super == stop_super then
+            pointer.sup = start_super.nucleus
+        else
+            local list = node.new(math_sub) -- todo attr
+            list.head = start_super
+            pointer.sup = list
+        end
+        if mode == "super" then
+            pointer.next = stop_super.next
+        end
+        stop_super.next = nil
+    end
+    if start_sub then
+        if start_sub == stop_sub then
+            pointer.sub = start_sub.nucleus
+        else
+            local list = node.new(math_sub) -- todo attr
+            list.head = start_sub
+            pointer.sub = list
+        end
+        if mode == "sub" then
+            pointer.next = stop_sub.next
+        end
+        stop_sub.next = nil
+    end
+end
+
+   unscript[math_noad]     = replace
+-- unscript[math_accent]   = replace
+-- unscript[math_radical]  = replace
+-- unscript[math_fraction] = replace
+
+function handlers.unscript(head,style,penalties)
+    process(head,unscript)
+    return true
+end
+
+statistics.register("math script replacements", function()
+    if next(replaced) then
+        local n, t = 0, { }
+        for k, v in table.sortedpairs(replaced) do
+            n = n + v
+            t[#t+1] = format("U+%05X:%s",k,utfchar(k))
+        end
+        return format("%s (n=%s)",concat(t," "),n)
+    end
+end)
 
 -- math alternates: (in xits lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
 

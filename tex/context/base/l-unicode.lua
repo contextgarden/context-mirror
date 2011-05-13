@@ -51,8 +51,10 @@ local unicode = unicode
 
 utf = utf or unicode.utf8
 
-local concat, utfchar, utfgsub = table.concat, utf.char, utf.gsub
+local concat = table.concat
+local utfchar, utfbyte, utfgsub = utf.char, utf.byte, utf.gsub
 local char, byte, find, bytepairs, utfvalues, format = string.char, string.byte, string.find, string.bytepairs, string.utfvalues, string.format
+local type = type
 
 local utfsplitlines = string.utfsplitlines
 
@@ -367,6 +369,14 @@ function unicode.utfcodes(str)
     return concat(t,separator or " ")
 end
 
+function unicode.ustring(s)
+    return format("U+%05X",type(s) == "number" and s or utfbyte(s))
+end
+
+function unicode.xstring(s)
+    return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+end
+
 --~ print(unicode.utfcodes(str))
 
 local lpegmatch = lpeg.match
@@ -398,4 +408,3 @@ end
 --~     end
 --~ end
 --~ print(os.clock()-t,collectgarbage("count")*1024-u)
-

@@ -12,6 +12,7 @@ local tex = tex
 local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
+local ustring = unicode.ustring
 local concat, unpack = table.concat, table.unpack
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local texsprint, texprint = tex.sprint, tex.print
@@ -939,3 +940,38 @@ end
 --~   direction="l",
 --~   unicodeslot=0x10FFFD,
 --~  },
+
+if not characters.superscripts then
+
+    local superscripts = allocate()   characters.superscripts = superscripts
+    local subscripts   = allocate()   characters.subscripts   = subscripts
+
+    -- skipping U+02120 (service mark) U+02122 (trademark)
+
+    for k, v in next, data do
+        local specials = v.specials
+        if specials then
+            local what = specials[1]
+            if what == "super" then
+                if #specials == 2 then
+                    superscripts[k] = specials[2]
+                else
+                    report_defining("ignoring superscript %s %s: %s",ustring(k),utfchar(k),v.description)
+                end
+            elseif what == "sub" then
+                if #specials == 2 then
+                    subscripts[k] = specials[2]
+                else
+                    report_defining("ignoring subscript %s %s: %s",ustring(k),utfchar(k),v.description)
+                end
+            end
+        end
+    end
+
+ -- print(table.serialize(superscripts, "superscripts", { hexify = true }))
+ -- print(table.serialize(subscripts,   "subscripts",   { hexify = true }))
+
+    storage.register("characters/superscripts", superscripts, "characters.superscripts")
+    storage.register("characters/subscripts",   subscripts,   "characters.subscripts")
+
+end

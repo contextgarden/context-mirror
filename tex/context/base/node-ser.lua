@@ -151,6 +151,8 @@ end
 
 -- not ok yet; this will become a module
 
+-- todo: adapt to nodecodes etc
+
 local function serialize(root,name,handle,depth,m)
     handle = handle or print
     if depth then
