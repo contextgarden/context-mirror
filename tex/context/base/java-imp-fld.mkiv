@@ -27,7 +27,8 @@
 %D different escaping of \type {\\}.
 %D
 %D Watch out: cf. the latest pdf specification we've changed
-%D On into Yes.
+%D On into Yes. Also, we've changed the test for the on value
+%D into !Off as we dón't know what value it gets in the reader.
 
 \startluasetups javascript:pdfencoding
     local verbatim = context.verbatim
@@ -222,7 +223,7 @@ function Field_Off(Name) {
 function Toggle_Value(Name) {
     var v = this.getField(Name) ;
     if (v) {
-        if (v.value == "Yes") {
+        if (v.value != "Off") {
             v.value = "Off" ;
         } else {
             v.value = "Yes" ;
@@ -310,15 +311,15 @@ function Reset_Field(FieldSet, FieldName) {
 function Walk_Field(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = this.getField(FieldSet+":"+i) ;
+        v = this.getField(FieldSet + ":" + i) ;
         if (v) {
-            if (v.value=="Yes") {
+            if (v.value != "Off") {
                 v.value = "Off" ;
                 var ii = i ;
                 ii++ ;
-                v = this.getField(FieldSet+":"+ii) ;
-                if (!v) {
-                    v = this.getField(FieldSet+":"+1) ;
+                v = this.getField(FieldSet + ":" + ii) ;
+                if (! v) {
+                    v = this.getField(FieldSet + ":" + 1) ;
                 }
                 if (v) {
                     v.value = "Yes" ;
@@ -354,7 +355,7 @@ function Do_Next_Auto_Walk_Field(FieldSet) {
     if (fieldset) {
         var v = this.getField(FieldSet + ":" + fieldset.number) ;
         if (v) {
-            if (v.value == "Yes") {
+            if (v.value != "Off") {
                 v.value = "Off" ;
             }
         }
@@ -447,7 +448,7 @@ function Previous_Walk_Field(FieldSet) {
         if (fieldset.number>0) {
             var v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                if (v.value == "Yes") {
+                if (v.value != "Off") {
                     v.value = "Off" ;
                 }
             }
@@ -471,7 +472,7 @@ function Next_Walk_Field(FieldSet) {
         if (v) {
             var v = this.getField(FieldSet + ":" + fieldset.number) ;
             if (v) {
-                if (v.value == "Yes") {
+                if (v.value != "Off") {
                     v.value = "Off" ;
                 }
             }
