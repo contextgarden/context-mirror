@@ -19,7 +19,7 @@ mtxrun --script epub --make mydocument
 
 local application = logs.application {
     name     = "mtx-epub",
-    banner   = "ConTeXt EPUB Helpers 0.10",
+    banner   = "ConTeXt EPUB Helpers 0.11",
     helpinfo = helpinfo,
 }
 
@@ -64,8 +64,15 @@ local package = [[
 ]]
 
 local mimetypes = {
-    xhtml = "application/xhtml+xml",
-    css   = "text/css",
+    xhtml   = "application/xhtml+xml",
+    css     = "text/css",
+ -- default = "text/plain",
+}
+
+local idmakers = {
+    ncx     = function(filename) return "ncx"                   end,
+    css     = function(filename) return "stylesheet"            end,
+    default = function(filename) return file.nameonly(filename) end,
 }
 
 -- specification = {
@@ -112,13 +119,14 @@ function scripts.epub.make()
             local suffix = file.suffix(filename)
             local mime = mimetypes[suffix]
             if mime then
+                local idmaker = idmakers[suffix] or idmakers.default
                 file.copy(filename,file.join(epubpath,"OPS",filename))
-                used[#used+1] = format("<item id='%s' href='%s' media-type='%s'/>",i,filename,mime)
+                used[#used+1] = format("<item id='%s' href='%s' media-type='%s'/>",idmaker(filename),filename,mime)
             end
         end
 
         container = format(container,epubroot)
-        package   = format(package,identifier,identifier,concat(used,"\n"),root)
+        package   = format(package,identifier,identifier,concat(used,"\n"),file.removesuffix(root))
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
