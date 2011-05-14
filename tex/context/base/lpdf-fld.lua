@@ -191,6 +191,8 @@ local pdfdocencodingvector, pdfdocencodingcapsule
 -- a glyph is not in the vector, it is still visible
 -- as it is taken from some other font. Messy.
 
+-- To be checked: only when text/line fields.
+
 local function checkpdfdocencoding()
     report_fields("adding pdfdoc encoding vector")
     local encoding = dofile(resolvers.findfile("lpdf-enc.lua")) -- no checking, fatal if not present
@@ -269,7 +271,7 @@ end
 
 local function registerfonts()
     if next(usedfonts) then
-        checkpdfdocencoding()
+        checkpdfdocencoding() -- already done
         local d = pdfdictionary()
         local pdffonttype, pdffontsubtype = pdfconstant("Font"), pdfconstant("Type1")
         for tag, name in next, usedfonts do
@@ -650,9 +652,11 @@ end
 
 -- finish
 
-local collected = pdfarray()
+local collected     = pdfarray()
+local forceencoding = false
 
 local function finishfields()
+    local sometext = forceencoding
     for name, field in next, fields do
         local kids = field.kids
         if kids then
@@ -661,6 +665,10 @@ local function finishfields()
         local opt = field.opt
         if opt then
             pdfflushobject(field.optnum,opt)
+        end
+        local type = field.type
+        if not sometext and (type == "text" or type == "line") then
+            sometext = true
         end
     end
     for name, field in next, radios do
@@ -674,18 +682,20 @@ local function finishfields()
         end
     end
     if #collected > 0 then
-        checkpdfdocencoding()
-        usedfonts.tttf = fontnames.tt.tf
         local acroform = pdfdictionary {
             NeedAppearances = true,
-            Fields = pdfreference(pdfflushobject(collected)),
-            DR     = pdfdictionary {
+            Fields          = pdfreference(pdfflushobject(collected)),
+            CO              = fieldsetlist(calculationset),
+        }
+        if sometext then
+            checkpdfdocencoding()
+            usedfonts.tttf = fontnames.tt.tf
+            acroform.DA = "/tttf 12 Tf 0 g"
+            acroform.DR = pdfdictionary {
                 Font     = registerfonts(),
                 Encoding = pdfdocencodingcapsule,
-            },
-            CO     = fieldsetlist(calculationset),
-            DA     = "/tttf 12 Tf 0 g",
-        }
+            }
+        end
         lpdf.addtocatalog("AcroForm",pdfreference(pdfflushobject(acroform)))
     end
 end
