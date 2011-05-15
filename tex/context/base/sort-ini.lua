@@ -47,7 +47,7 @@ have language etc properties that then can be used.</p>
 local utf = unicode.utf8
 local gsub, rep, sub, sort, concat = string.gsub, string.rep, string.sub, table.sort, table.concat
 local utfbyte, utfchar = utf.byte, utf.char
-local utfcharacters = string.utfcharacters
+local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 
 local allocate          = utilities.storage.allocate
@@ -72,6 +72,8 @@ local lcchars           = characters.lcchars
 local shchars           = characters.shchars
 local fscodes           = characters.fscodes
 local fschars           = characters.fschars
+
+local decomposed        = characters.decomposed
 
 local variables         = interfaces.variables
 
@@ -225,20 +227,25 @@ local function preparetables(data)
                         end
                     else -- we probably never enter this branch
                         -- fschars returns a single char
-                        s = fschars[k]
-                        if s and s ~= k then
-                            if trace_tests then
-                                report_sorters(" 6 split: %s",s)
-                            end
-                            local ml = rawget(t,s)
-                            if ml then
-                                n = { }
-                                nn = 0
-                                for i=1,#ml do
-                                    nn = nn + 1
-                                    n[nn] = ml[i]
-                                end
-                            end
+--~                         s = fschars[k]
+--~                         if s and s ~= k then
+--~                             if trace_tests then
+--~                                 report_sorters(" 6 split: %s",s)
+--~                             end
+--~                             local ml = rawget(t,s)
+--~                             if ml then
+--~                                 n = { }
+--~                                 nn = 0
+--~                                 for i=1,#ml do
+--~                                     nn = nn + 1
+--~                                     n[nn] = ml[i]
+--~                                 end
+--~                             end
+--~                         end
+                        local b = utfbyte(k)
+                        n = decomposed[b] or { b }
+                        if trace_tests then
+                            report_sorters(" 6 split: %s",utf.string(b))
                         end
                     end
                     if n then
