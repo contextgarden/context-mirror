@@ -723,6 +723,17 @@ setmetatableindex(ucchars, function(t,u) if u then local c = data[u] c = c and c
 setmetatableindex(shchars, function(t,u) if u then local c = data[u] c = c and c.shcode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 setmetatableindex(fschars, function(t,u) if u then local c = data[u] c = c and c.fscode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 
+local decomposed = allocate()  characters.decomposed = decomposed   -- lazy table
+
+setmetatableindex(decomposed, function(t,u) -- either a table or false
+    if u then
+        local c = data[u]
+        local s = c and c.decomposed or false
+        t[u] = s
+        return s
+    end
+end)
+
 local specialchars = allocate()  characters.specialchars = specialchars -- lazy table
 local descriptions = allocate()  characters.descriptions = descriptions -- lazy table
 
