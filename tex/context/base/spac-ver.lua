@@ -80,6 +80,7 @@ local nodepool            = nodes.pool
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
+local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
@@ -914,7 +915,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         elseif id ~= glue_code then
             flush("something else")
             current = current.next
-        elseif subtype == userskip_code then -- todo, other subtypes, like math
+        elseif subtype == userskip_code then
             local sc = has_attribute(current,a_skipcategory)      -- has no default, no unset (yet)
             local so = has_attribute(current,a_skiporder   ) or 1 -- has  1 default, no unset (yet)
             local sp = has_attribute(current,a_skippenalty )      -- has no default, no unset (yet)
@@ -931,7 +932,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             elseif not sc then  -- if not sc then
                 if glue_data then
                     if trace then trace_done("flush",glue_data) end
-                    head, current = nodes.before(head,current,glue_data)
+                    head = insert_node_before(head,current,glue_data)
                     if trace then trace_natural("natural",current) end
                     current = current.next
                 else
@@ -944,8 +945,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             if cs.writable and ps.stretch_order == 0 and ps.shrink_order == 0 and cs.stretch_order == 0 and cs.shrink_order == 0 then
                                 local pw, pp, pm = ps.width, ps.stretch, ps.shrink
                                 local cw, cp, cm = cs.width, cs.stretch, cs.shrink
-                                ps = writable_spec(previous) -- no writable needed here
-                                ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
+--~                                 ps = writable_spec(previous) -- no writable needed here
+--~                                 ps.width, ps.stretch, ps.shrink = pw + cw, pp + cp, pm + cm
+previous.spec = new_gluespec(pw + cw, pp + cp, pm + cm) -- else topskip can disappear
                                 if trace then trace_natural("removed",current) end
                                 head, current = remove_node(head, current, true)
                             --  current = previous
