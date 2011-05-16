@@ -419,6 +419,30 @@ function Pause_Walk_Field(FieldSet) {
     }
 }
 
+function Start_Pause_Walk_Field(FieldSet, Delay) {
+    var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
+    if (fieldset) {
+        if (fieldset.running) {
+            if (fieldset.paused) {
+                Do_Start_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = false ;
+            } else {
+                Do_Stop_Auto_Walk_Field(FieldSet) ;
+                fieldset.paused = true ;
+            }
+        } else {
+            fieldset.number = 0 ;
+            if (Delay) {
+                fieldset.delay = Delay ;
+            }
+            Reset_Fields(FieldSet) ;
+            Do_Start_Auto_Walk_Field(FieldSet) ;
+            fieldset.running = true ;
+            fieldset.paused = false ;
+        }
+    }
+}
+
 function Stop_Walk_Field(FieldSet) {
     var fieldset = Do_Get_Check_Walk_Field(FieldSet) ;
     if (fieldset) {

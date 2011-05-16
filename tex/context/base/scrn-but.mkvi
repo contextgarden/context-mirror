@@ -416,6 +416,8 @@
 \newdimen\scrn_menu_offset_left
 \newdimen\scrn_menu_offset_right
 
+\newconditional\scrn_menu_zerodimensions
+
 \def\scrn_menu_set_used
   {\doassigncheckedframeoffset\scrn_menu_offset_left  {\interactionmenuparameter\c!leftoffset  }%
    \doassigncheckedframeoffset\scrn_menu_offset_right {\interactionmenuparameter\c!rightoffset }%
@@ -435,8 +437,13 @@
    \scrn_menu_final_height\namedinteractionmenuparameter\askedinteractionmenulocation\c!maxheight}
 
 \def\scrn_menu_apply_final
-  {\wd\scrn_menu_box\scrn_menu_final_width
-   \ht\scrn_menu_box\scrn_menu_final_height
+  {\ifconditional\scrn_menu_zerodimensions
+     \wd\scrn_menu_box\zeropoint
+     \ht\scrn_menu_box\zeropoint
+   \else
+     \wd\scrn_menu_box\scrn_menu_final_width
+     \ht\scrn_menu_box\scrn_menu_final_height
+   \fi
    \dp\scrn_menu_box\zeropoint}
 
 \def\scrn_menu_apply_used
@@ -793,6 +800,7 @@
   {\hbox to \leftedgewidth \bgroup
      \hsize\leftedgewidth
     %\csname\??tk\v!leftedge\c!left\endcsname
+     \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!left
     %\csname\??tk\v!leftedge\c!right\endcsname
    \egroup
@@ -802,6 +810,7 @@
   {\hbox to \rightedgewidth \bgroup
      \hsize\rightedgewidth
     %\csname\??tk\v!rightedge\c!left\endcsname
+     \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!right
     %\csname\??tk\v!rightedge\c!right\endcsname
    \egroup
@@ -811,6 +820,7 @@
   {\vbox to \topheight \bgroup
      \vsize\topheight
     %\csname\??tk\v!top\c!before\endcsname
+     \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!top
     %\csname\??tk\v!top\c!after\endcsname
      \kern\zeropoint
@@ -821,6 +831,7 @@
   {\vbox to \bottomheight \bgroup
      \vsize\bottomheight
     %\csname\??tk\v!bottom\c!before\endcsname
+     \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!bottom
     %\csname\??tk\v!bottom\c!after\endcsname
      \kern\zeropoint

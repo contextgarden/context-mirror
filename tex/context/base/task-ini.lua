@@ -73,7 +73,7 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 
--- rather new
+-- still experimental
 
 appendaction("mvlbuilders",  "normalizers", "nodes.handlers.migrate")                            --
 appendaction("mvlbuilders",  "normalizers", "builders.vspacing.pagehandler")                     -- last !

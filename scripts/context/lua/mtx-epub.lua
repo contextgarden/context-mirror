@@ -6,6 +6,18 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
     license   = "see context related readme files"
 }
 
+-- The epub specification is far from beautiful. Especially the id related
+-- part is messy and devices/programs react differently on them (so an id is not
+-- really an id but has some special property). Then there is this ncx suffix
+-- thing. Somehow it give the impression of a reversed engineered application
+-- format so it will probably take a few cycles to let it become a real
+-- clean standard. Thanks to Adam Reviczky for helping to figure out all these
+-- puzzling details.
+
+-- This is preliminary code. At some point we will deal with images as well but
+-- first we need a decent strategy to export them. More information will be
+-- available on the wiki.
+
 local format = string.format
 local concat = table.concat
 
@@ -63,6 +75,14 @@ local package = [[
 </package>
 ]]
 
+-- We need to figure out what is permitted; numbers only seem to give
+-- problems is some applications as do names with dashes.
+
+local function dumbid(filename)
+ -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
+    return file.nameonly(filename)
+end
+
 local mimetypes = {
     xhtml   = "application/xhtml+xml",
     css     = "text/css",
@@ -70,9 +90,9 @@ local mimetypes = {
 }
 
 local idmakers = {
-    ncx     = function(filename) return "ncx"                   end,
-    css     = function(filename) return "stylesheet"            end,
-    default = function(filename) return file.nameonly(filename) end,
+    ncx     = function(filename) return "ncx"            end,
+ -- css     = function(filename) return "stylesheet"     end,
+    default = function(filename) return dubmid(filename) end,
 }
 
 -- specification = {
