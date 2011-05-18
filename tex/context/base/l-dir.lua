@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
@@ -413,3 +413,17 @@ else
 end
 
 file.expandname = dir.expandname -- for convenience
+
+local stack = { }
+
+function dir.push(newdir)
+    insert(stack,lfs.currentdir())
+end
+
+function dir.pop()
+    local d = remove(stack)
+    if d then
+        lfs.chdir(d)
+    end
+    return d
+end

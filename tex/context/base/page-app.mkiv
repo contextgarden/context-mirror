@@ -72,7 +72,7 @@
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
      [\getvalue{\currentfittingpage\c!paper}]
-     [   \v!auto=>\let\fittingpapersize\printpapersize,
+     [   \v!auto=>\def\fittingpapersize{\printpapersize},
       \s!unknown=>\let\fittingpapersize\commalistelement,
       \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
    \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%

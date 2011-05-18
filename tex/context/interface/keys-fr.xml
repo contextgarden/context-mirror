@@ -79,7 +79,7 @@
 		<cd:variable name='atmargin' value='alamarge'/>
 		<cd:variable name='atpage' value='alapage'/>
 		<cd:variable name='attachment' value='attachment'/>
-		<cd:variable name='august' value='aout'/>
+		<cd:variable name='august' value='août'/>
 		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>

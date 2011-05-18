@@ -206,7 +206,8 @@ end
 local registered = { }
 
 local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
-    if not registered[parentnumber] then
+    if not registered[parent] then
+--~ print("!!!1",parent)
         local v = colors.values[parentnumber]
         if v then
             local model = colors.default -- else problems with shading etc
@@ -222,12 +223,13 @@ local function do_registerspotcolor(parent,name,parentnumber,e,f,d,p)
                 registrations.cmykspotcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
-        registered[parentnumber] = true
+        registered[parent] = true
     end
 end
 
 local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- same as spot but different template
-    if not registered[parentnumber] then
+    if not registered[parent] then
+--~ print("!!!2",parent)
         local v = colors.values[parentnumber]
         if v then
             local model = colors.default -- else problems with shading etc
@@ -240,7 +242,7 @@ local function do_registermultitonecolor(parent,name,parentnumber,e,f,d,p) -- sa
                 registrations.cmykindexcolor(parent,f,d,p,v[6],v[7],v[8],v[9])
             end
         end
-        registered[parentnumber] = true
+        registered[parent] = true
     end
 end
 
@@ -387,7 +389,7 @@ end
 
 function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     local dd, pp, nn, max = { }, { }, { }, 0
-    for k,v in gmatch(multispec,"(%a+)=([^%,]*)") do
+    for k,v in gmatch(multispec,"(%a+)=([^%,]*)") do -- use settings_to_array
         max = max + 1
         dd[max] = k
         pp[max] = v
@@ -396,8 +398,12 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     if max > 0 then
         nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
-        if max == 2 and (not colorspec or colorspec == "") then
-            colors.defineduocolor(parent,pp[1],l_color[dd[1]],pp[2],l_color[dd[2]],true,true)
+--~         if max == 2 and (not colorspec or colorspec == "") then
+--~             colors.defineduocolor(parent,pp[1],l_color[dd[1]],pp[2],l_color[dd[2]],true,true)
+--~         elseif (not colorspec or colorspec == "") then
+        if not colorspec or colorspec == "" then
+            local cc = { } for i=1,max do cc[i] = l_color[dd[i]] end
+            colors.definemixcolor(parent,pp,cc,global,freeze) -- can become local
         else
             if selfspec ~= "" then
                 colorspec = colorspec .. "," .. selfspec
@@ -406,9 +412,11 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
         end
         local cp = attributes_list[a_color][parent]
         dd, pp = concat(dd,','), concat(pp,',')
+--~ print(name,multispec,colorspec,selfspec)
+--~ print(parent,max,cp)
         if cp then
             do_registerspotcolor(parent, name, cp, "", max, dd, pp)
-            do_registermultitonecolor(parent, name, cp, "", max, dd, pp)
+--~             do_registermultitonecolor(parent, name, cp, "", max, dd, pp) -- done in previous ... check it
             definecolor(name, register_color(name, 'spot', parent, max, dd, pp), true)
             local t = settings_to_hash_strict(selfspec)
             if t and t.a and t.t then
@@ -566,9 +574,14 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
                 if csone == 2 then
                     ca = register_color(name,'gray',f(one,two,2,fraction))
                 elseif csone == 3 then
-                    ca = register_color(name,'rgb', f(one,two,3,fraction),f(one,two,4,fraction),f(one,two,5,fraction))
+                    ca = register_color(name,'rgb', f(one,two,3,fraction),
+                                                    f(one,two,4,fraction),
+                                                    f(one,two,5,fraction))
                 elseif csone == 4 then
-                    ca = register_color(name,'cmyk',f(one,two,6,fraction),f(one,two,7,fraction),f(one,two,8,fraction),f(one,two,9,fraction))
+                    ca = register_color(name,'cmyk',f(one,two,6,fraction),
+                                                    f(one,two,7,fraction),
+                                                    f(one,two,8,fraction),
+                                                    f(one,two,9,fraction))
                 else
                     ca = register_color(name,'gray',f(one,two,2,fraction))
                 end
@@ -580,9 +593,14 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
             if csone == 2 then
                 ca = register_color(name,'gray',fraction*one[2])
             elseif csone == 3 then
-                ca = register_color(name,'rgb', fraction*one[3],fraction*one[4],fraction*one[5])
+                ca = register_color(name,'rgb', fraction*one[3],
+                                                fraction*one[4],
+                                                fraction*one[5])
             elseif csone == 4 then
-                ca = register_color(name,'cmyk',fraction*one[6],fraction*one[7],fraction*one[8],fraction*one[9])
+                ca = register_color(name,'cmyk',fraction*one[6],
+                                                fraction*one[7],
+                                                fraction*one[8],
+                                                fraction*one[9])
             else
                 ca = register_color(name,'gray',fraction*one[2])
             end
@@ -598,34 +616,77 @@ function colors.defineintermediatecolor(name,fraction,c_one,c_two,a_one,a_two,sp
     end
 end
 
-local function f(one,two,i,fraction_one,fraction_two)
-    local o, t = one[i], two[i]
-    local otf = fraction_one * o + fraction_two * t
-    if otf > 1 then
-        otf = 1
-    end
-    return otf
-end
+--~ local function f(one,two,i,fraction_one,fraction_two)
+--~     local otf = fraction_one * one[i] + fraction_two * two[i]
+--~     if otf > 1 then
+--~         otf = 1
+--~     end
+--~     return otf
+--~ end
 
-function colors.defineduocolor(name,fraction_one,c_one,fraction_two,c_two,global,freeze)
-    local one, two = colors.value(c_one), colors.value(c_two)
-    if one and two then
-        fraction_one = tonumber(fraction_one) or 1
-        fraction_two = tonumber(fraction_two) or 1
-        local csone, cstwo = one[1], two[1]
+--~ function colors.defineduocolor(name,fraction_one,c_one,fraction_two,c_two,global,freeze)
+--~     local one, two = colors.value(c_one), colors.value(c_two)
+--~     if one and two then
+--~         fraction_one = tonumber(fraction_one) or 1
+--~         fraction_two = tonumber(fraction_two) or 1
+--~         local csone, cstwo = one[1], two[1]
+--~         local ca
+--~         if csone == 2 then
+--~             ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+--~         elseif csone == 3 then
+--~             ca = register_color(name,'rgb', f(one,two,3,fraction_one,fraction_two),
+--~                                             f(one,two,4,fraction_one,fraction_two),
+--~                                             f(one,two,5,fraction_one,fraction_two))
+--~         elseif csone == 4 then
+--~             ca = register_color(name,'cmyk',f(one,two,6,fraction_one,fraction_two),
+--~                                             f(one,two,7,fraction_one,fraction_two),
+--~                                             f(one,two,8,fraction_one,fraction_two),
+--~                                             f(one,two,9,fraction_one,fraction_two))
+--~         else
+--~             ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+--~         end
+--~         definecolor(name,ca,global,freeze)
+--~     end
+--~ end
+
+    local function f(i,colors,fraction)
+        local otf = 0
+        for c=1,#colors do
+            otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+        end
+        if otf > 1 then
+            otf = 1
+        end
+        return otf
+    end
+
+    function colors.definemixcolor(name,fractions,cs,global,freeze)
+        local values = { }
+        for i=1,#cs do -- do fraction in here
+            local v = colors.value(cs[i])
+            if not v then
+                return
+            end
+            values[i] = v
+        end
+        local csone = values[1][1]
         local ca
         if csone == 2 then
-            ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+            ca = register_color(name,'gray',f(2,values,fractions))
         elseif csone == 3 then
-            ca = register_color(name,'rgb', f(one,two,3,fraction_one,fraction_two),f(one,two,4,fraction_one,fraction_two),f(one,two,5,fraction_one,fraction_two))
+            ca = register_color(name,'rgb', f(3,values,fractions),
+                                            f(4,values,fractions),
+                                            f(5,values,fractions))
         elseif csone == 4 then
-            ca = register_color(name,'cmyk',f(one,two,6,fraction_one,fraction_two),f(one,two,7,fraction_one,fraction_two),f(one,two,8,fraction_one,fraction_two),f(one,two,9,fraction_one,fraction_two))
+            ca = register_color(name,'cmyk',f(6,values,fractions),
+                                            f(7,values,fractions),
+                                            f(8,values,fractions),
+                                            f(9,values,fractions))
         else
-            ca = register_color(name,'gray',f(one,two,2,fraction_one,fraction_two))
+            ca = register_color(name,'gray',f(2,values,fractions))
         end
         definecolor(name,ca,global,freeze)
     end
-end
 
 -- for the moment downward compatible
 

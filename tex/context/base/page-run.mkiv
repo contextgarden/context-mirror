@@ -92,17 +92,21 @@
 % maybe we will have page-run.lua
 
 \startluacode
+local function todimen(name,unit,fmt)
+    return number.todimen(tex.dimen[name],unit,fmt)
+end
+
 local function showdimension(name)
     context.NC()
     context.tex(interfaces.interfacedcommand(name))
     context.NC()
-    context(number.todimen(tex.dimen[name],"pt","%0.4fpt"))
+    context(todimen(name,"pt","%0.4fpt"))
     context.NC()
-    context(number.todimen(tex.dimen[name],"cm","%0.4fcm"))
+    context(todimen(name,"cm","%0.4fcm"))
     context.NC()
-    context(number.todimen(tex.dimen[name],"bp","%0.4fbp"))
+    context(todimen(name,"bp","%0.4fbp"))
     context.NC()
-    context(number.todimen(tex.dimen[name],"dd","%0.4fdd"))
+    context(todimen(name,"dd","%0.4fdd"))
     context.NC()
     context.NR()
 end
@@ -116,46 +120,115 @@ local function showmacro(name)
     context.NR()
 end
 
+local function reportdimension(name)
+    commands.writestatus("layout",string.format("%-24s %12s %12s %12s %12s",
+        interfaces.interfacedcommand(name),
+        todimen(name,"pt","%0.4fpt"),
+        todimen(name,"cm","%0.4fcm"),
+        todimen(name,"bp","%0.4fbp"),
+        todimen(name,"dd","%0.4fdd")
+    ))
+end
+
 function commands.showlayoutvariables()
 
-    context.starttabulate { "|l|Tr|Tr|Tr|Tr|" }
+    if tex.count.textlevel == 0 then
 
-        showdimension("paperheight")
-        showdimension("paperwidth")
-        showdimension("printpaperheight")
-        showdimension("printpaperwidth")
-        showdimension("topspace")
-        showdimension("backspace")
-        showdimension("makeupheight")
-        showdimension("makeupwidth")
-        showdimension("topheight")
-        showdimension("topdistance")
-        showdimension("headerheight")
-        showdimension("headerdistance")
-        showdimension("textheight")
-        showdimension("footerdistance")
-        showdimension("footerheight")
-        showdimension("bottomdistance")
-        showdimension("bottomheight")
-        showdimension("leftedgewidth")
-        showdimension("leftedgedistance")
-        showdimension("leftmarginwidth")
-        showdimension("leftmargindistance")
-        showdimension("textwidth")
-        showdimension("rightmargindistance")
-        showdimension("rightmarginwidth")
-        showdimension("rightedgedistance")
-        showdimension("rightedgewidth")
-        context.NR()
-        showdimension("bodyfontsize")
-        showdimension("lineheight")
-        context.NR()
-        showmacro("strutheightfactor")
-        showmacro("strutdepthfactor")
-        showmacro("topskipfactor")
-        showmacro("maxdepthfactor")
+        -- especially for Luigi:
 
-    context.stoptabulate()
+        reportdimension("paperheight")
+        reportdimension("paperwidth")
+        reportdimension("printpaperheight")
+        reportdimension("printpaperwidth")
+        reportdimension("topspace")
+        reportdimension("backspace")
+        reportdimension("makeupheight")
+        reportdimension("makeupwidth")
+        reportdimension("topheight")
+        reportdimension("topdistance")
+        reportdimension("headerheight")
+        reportdimension("headerdistance")
+        reportdimension("textheight")
+        reportdimension("footerdistance")
+        reportdimension("footerheight")
+        reportdimension("bottomdistance")
+        reportdimension("bottomheight")
+        reportdimension("leftedgewidth")
+        reportdimension("leftedgedistance")
+        reportdimension("leftmarginwidth")
+        reportdimension("leftmargindistance")
+        reportdimension("textwidth")
+        reportdimension("rightmargindistance")
+        reportdimension("rightmarginwidth")
+        reportdimension("rightedgedistance")
+        reportdimension("rightedgewidth")
+        reportdimension("bodyfontsize")
+        reportdimension("lineheight")
+
+    else
+
+        context.starttabulate { "|l|Tr|Tr|Tr|Tr|" }
+
+            showdimension("paperheight")
+            showdimension("paperwidth")
+            showdimension("printpaperheight")
+            showdimension("printpaperwidth")
+            showdimension("topspace")
+            showdimension("backspace")
+            showdimension("makeupheight")
+            showdimension("makeupwidth")
+            showdimension("topheight")
+            showdimension("topdistance")
+            showdimension("headerheight")
+            showdimension("headerdistance")
+            showdimension("textheight")
+            showdimension("footerdistance")
+            showdimension("footerheight")
+            showdimension("bottomdistance")
+            showdimension("bottomheight")
+            showdimension("leftedgewidth")
+            showdimension("leftedgedistance")
+            showdimension("leftmarginwidth")
+            showdimension("leftmargindistance")
+            showdimension("textwidth")
+            showdimension("rightmargindistance")
+            showdimension("rightmarginwidth")
+            showdimension("rightedgedistance")
+            showdimension("rightedgewidth")
+            context.NR()
+            showdimension("bodyfontsize")
+            showdimension("lineheight")
+            context.NR()
+            showmacro("strutheightfactor")
+            showmacro("strutdepthfactor")
+            showmacro("topskipfactor")
+            showmacro("maxdepthfactor")
+
+        context.stoptabulate()
+
+    end
+
+end
+
+function commands.showlayout()
+
+    if tex.count.textlevel == 0 then
+
+        commands.showlayoutvariables()
+
+    else
+
+        context.page()
+        context.bgroup()
+        context.showframe()
+        context.setuplayout { marking = interfaces.variables.on }
+        for i=1,4 do
+            commands.showlayoutvariables()
+            context.page()
+        end
+        context.egroup()
+
+    end
 
 end
 \stopluacode
@@ -200,12 +273,7 @@ end
   {\ctxcommand{showlayoutvariables()}}
 
 \gdef\showlayout % interfereert lelijk met een \typefile er na
-  {\bgroup
-   \page
-   \showframe
-   \setuplayout[\c!marking=\v!on]
-   \dorecurse{4}{\showsetups\page}
-   \egroup}
+  {\ctxcommand{showlayout()}}
 
 \gdef\showmargins
   {\starttabulate

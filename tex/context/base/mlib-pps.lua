@@ -32,9 +32,11 @@ local starttiming          = statistics.starttiming
 local stoptiming           = statistics.stoptiming
 
 local trace_textexts       = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
+local trace_scripts        = false  trackers.register("metapost.scripts",  function(v) trace_scripts  = v end)
 
 local report_metapost      = logs.reporter("metapost")
 local report_textexts      = logs.reporter("metapost","textexts")
+local report_scripts       = logs.reporter("metapost","scripts")
 
 local colors               = attributes.colors
 
@@ -135,9 +137,29 @@ end
 --
 -- normalize(ca,cb) fails for spotcolors
 
+local function spotcolorconverter(parent, n, d, p)
+    registerspotcolor(parent)
+    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
+end
+
+local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
+    -- must be the same but we don't check
+    local name = format("MpSh%s",nofshades)
+    local ca = string.split(v_a,",")
+    local cb = string.split(v_b,",")
+    if #ca == 0 or #cb == 0 then
+        return { 0 }, { 1 }, "DeviceGray", name
+    else
+        for i=1,#ca do ca[i] = tonumber(ca[i]) or 0 end
+        for i=1,#cb do cb[i] = tonumber(cb[i]) or 1 end
+    --~ spotcolorconverter(n_a,f_a,c_a,v_a) -- not really needed
+        return ca, cb, n_a or n_b, name
+    end
+end
+
 local function checkandconvert(ca,cb)
     local name = format("MpSh%s",nofshades)
-    if type(ca) == "string" then
+    if not ca or not cb or type(ca) == "string" then
         return { 0 }, { 1 }, "DeviceGray", name
     else
         if #ca > #cb then
@@ -368,11 +390,6 @@ local function colorconverter(cs)
     return models[colors.model](cs)
 end
 
-local function spotcolorconverter(parent, n, d, p)
-    registerspotcolor(parent)
-    return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
-end
-
 local btex      = P("btex")
 local etex      = P(" etex")
 local vtex      = P("verbatimtex")
@@ -589,9 +606,27 @@ appendgroup(resetteractions, "system")
 appendgroup(analyzeractions, "system")
 appendgroup(processoractions,"system")
 
-local scriptsplitter = Cf(Ct("") * (
-    Cg(C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0)
-)^0, rawset)
+-- later entries come first
+
+--~ local scriptsplitter = Cf(Ct("") * (
+--~     Cg(C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0)
+--~ )^0, rawset)
+
+local scriptsplitter = Ct ( Ct (
+    C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0
+)^0 )
+
+local function splitscript(script)
+    local hash = lpegmatch(scriptsplitter,script)
+    for i=#hash,1,-1 do
+        local h = hash[i]
+        hash[h[1]] = h[2]
+    end
+    if trace_scripts then
+        report_scripts(table.serialize(hash,"prescript"))
+    end
+    return hash
+end
 
 function metapost.pluginactions(what,t,flushfigure) -- to be checked: too many 0 g 0 G
     for i=1,#what do
@@ -615,18 +650,16 @@ end
 function metapost.analyzeplugins(object)
     local prescript = object.prescript   -- specifications
     if prescript and #prescript > 0 then
-        local prescript = lpegmatch(scriptsplitter,prescript)
-        return analyzer(object,prescript)
+        return analyzer(object,splitscript(prescript))
     end
 end
 
 function metapost.processplugins(object) -- maybe environment table
     local prescript = object.prescript   -- specifications
     if prescript and #prescript > 0 then
-        local prescript = lpegmatch(scriptsplitter,prescript)
         local before = { }
         local after = { }
-        processor(object,prescript,before,after)
+        processor(object,splitscript(prescript),before,after)
         return #before > 0 and before, #after > 0 and after
     else
         local c = object.color
@@ -762,19 +795,53 @@ local function sh_process(object,prescript,before,after)
     if sh_type then
         nofshades = nofshades + 1
         local domain  = lpegmatch(domainsplitter,prescript.sh_domain)
-        local colora  = lpegmatch(colorsplitter, prescript.sh_color_a)
-        local colorb  = lpegmatch(colorsplitter, prescript.sh_color_b)
         local centera = lpegmatch(centersplitter,prescript.sh_center_a)
         local centerb = lpegmatch(centersplitter,prescript.sh_center_b)
-        local ca, cb, colorspace, name = checkandconvert(colora,colorb)
+        --
+        local sh_color_a = prescript.sh_color_a or "1"
+        local sh_color_b = prescript.sh_color_b or "1"
+        local ca, cb, colorspace, name, separation
+        if prescript.sh_color == "into" and prescript.sp_name then
+            -- some spotcolor
+            local value_a, components_a, fractions_a, name_a
+            local value_b, components_b, fractions_b, name_b
+            for i=1,#prescript do
+                local tag = prescript[i][1]
+                if not name_a and tag == "sh_color_a" then
+                    value_a      = prescript[i-4][2]
+                    components_a = prescript[i-3][2]
+                    fractions_a  = prescript[i-2][2]
+                    name_a       = prescript[i-1][2]
+                elseif not name_b and tag == "sh_color_b" then
+                    value_b      = prescript[i-4][2]
+                    components_b = prescript[i-3][2]
+                    fractions_b  = prescript[i-2][2]
+                    name_b       = prescript[i-1][2]
+                end
+                if name_a and name_b then
+                    break
+                end
+            end
+            ca, cb, separation, name = checkandconvertspot(
+                name_a,fractions_a,components_a,value_a,
+                name_b,fractions_b,components_b,value_b
+            )
+        else
+            local colora = lpegmatch(colorsplitter,sh_color_a)
+            local colorb = lpegmatch(colorsplitter,sh_color_b)
+            ca, cb, colorspace, name = checkandconvert(colora,colorb)
+        end
+        if not ca or not cb then
+            ca, cb, colorspace, name = checkandconvert()
+        end
         if sh_type == "linear" then
             local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
-            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
             local radiusa = tonumber(prescript.sh_radius_a)
             local radiusb = tonumber(prescript.sh_radius_b)
             local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
-            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates) -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation) -- backend specific (will be renamed)
         else
             -- fatal error
         end

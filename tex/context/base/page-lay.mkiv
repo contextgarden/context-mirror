@@ -672,16 +672,43 @@
 
 \newif\ifdoublesidedprint
 
-\def\presetcenterpagebox % in \setuplayout !!!!!!!!!!!!!!!!
+\newconditional\page_location_is_set
+
+\def\page_location_reset
+  {\setfalse\page_location_is_set
+   \let\page_location_left_fill  \relax
+   \let\page_location_right_fill \relax
+   \let\page_location_top_fill   \relax
+   \let\page_location_bottom_fill\relax}
+
+\page_location_reset
+
+\setvalue{\??ly:\c!location:\v!right      }{\settrue\page_location_is_set
+                                            \let\page_location_left_fill  \hss}
+\setvalue{\??ly:\c!location:\v!left       }{\settrue\page_location_is_set
+                                            \let\page_location_right_fill \hss}
+\setvalue{\??ly:\c!location:\v!bottom     }{\settrue\page_location_is_set
+                                            \let\page_location_top_fill   \vss}
+\setvalue{\??ly:\c!location:\v!top        }{\settrue\page_location_is_set
+                                            \let\page_location_bottom_fill\vss}
+\setvalue{\??ly:\c!location:\v!middle     }{\settrue\page_location_is_set
+                                            \let\page_location_left_fill  \hss
+                                            \let\page_location_right_fill \hss
+                                            \let\page_location_top_fill   \vss
+                                            \let\page_location_bottom_fill\vss}
+\setvalue{\??ly:\c!location:\empty        }{\setfalse\page_location_is_set % default also signal to scrn_
+                                            \let\page_location_right_fill \hss
+                                            \let\page_location_bottom_fill\hss}
+\setvalue{\??ly:\c!location:\v!doublesided}{\doublesidedprinttrue}
+\setvalue{\??ly:\c!location:\v!singlesided}{\doublesidedprintfalse}
+
+\def\dopresetcenterpagebox#1%
+  {\ifcsname\??ly:\c!location:#1\endcsname\csname\??ly:\c!location:#1\endcsname\fi}
+
+\def\presetcenterpagebox
   {\doublesidedprintfalse
-   \normalexpanded{\noexpand\processallactionsinset[\@@lylocation]}
-     [     \v!middle=>{\setuppapersize[\c!left=\hss,\c!right=\hss,\c!top=\vss,\c!bottom=\vss]},
-             \v!left=>{\setuppapersize[\c!left=,\c!right=\hss]},
-            \v!right=>{\setuppapersize[\c!left=\hss,\c!right=]},
-           \v!bottom=>{\setuppapersize[\c!top=\vss,\c!bottom=]},
-              \v!top=>{\setuppapersize[\c!top=,\c!bottom=\vss]},%
-      \v!doublesided=>\doublesidedprinttrue,
-      \v!singlesided=>\doublesidedprintfalse]}
+   \page_location_reset
+   \processcommacommand[\@@lylocation]\dopresetcenterpagebox}
 
 \unexpanded\def\definelayout
   {\dodoubleargument\dodefinelayout}
@@ -696,19 +723,6 @@
 
 \unexpanded\def\setuplayout
   {\dodoubleempty\dosetuplayout}
-
-% \def\dosetuplayout[#1][#2]%
-%   {\globallet\currentlayout\empty % new, global
-%    \ifsecondargument
-%      \dodosetuplayout[#1][#2]%
-%    \else\iffirstargument
-%      \doifassignmentelse{#1}
-%        {\dodosetuplayout[][#1]}
-%        {\doifnot{#1}\v!reset{\xdef\currentlayout{#1}}}% new, global
-%    \fi\fi
-%    \recalculatelayout
-%    \checkcurrentlayout % here ?
-%    \presetcenterpagebox}
 
 \def\dosetuplayout[#1][#2]%
   {\globallet\currentlayout\empty
@@ -824,22 +838,33 @@
 %D by the \type {top}, \type {bottom}, \type {left} and \type
 %D {right} parameters.
 
-\def\centerpagebox#1%
+\def\centerpagebox#1% we could test for a difference (saves packing)
   {\printpaperwidth \paperscale\printpaperwidth
    \printpaperheight\paperscale\printpaperheight
-   \setbox#1\vbox to \printpaperheight
-     {\@@pptop
-      \hbox to \printpaperwidth
-        {\ifdoublesidedprint
-           \doifbothsides
-             {\@@ppleft \box#1\@@ppright}
-             {\@@ppleft \box#1\@@ppright}
-             {\@@ppright\box#1\@@ppleft }%
-         \else
-              \@@ppleft \box#1\@@ppright
-         \fi}%
-      \par
-      \@@ppbottom}}
+   \ifdim\printpaperheight>\ht#1\relax
+     \donetrue
+   \else\ifdim\printpaperwidth>\wd#1\relax
+     \donetrue
+   \else
+     \donefalse
+   \fi\fi
+   \ifdone
+     \setbox#1\vbox to \printpaperheight
+       {\@@pptop
+        \page_location_top_fill
+        \hbox to \printpaperwidth
+          {\ifdoublesidedprint
+             \doifbothsides
+               {\@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright}%
+               {\@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright}%
+               {\@@ppright\page_location_right_fill\box#1\page_location_left_fill \@@ppleft }%
+           \else
+                \@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright
+           \fi}%
+        \par
+        \page_location_bottom_fill
+        \@@ppbottom}%
+   \fi}
 
 \def\offsetprintbox#1%
   {\ifdim\topoffset=\zeropoint % \relax
@@ -1239,9 +1264,10 @@
 \setuppapersize
   [\c!option=\v!max,
    \c!top=,
-   \c!bottom=\vss,
+   \c!bottom=,
    \c!left=,
-   \c!right=\hss]
+   \c!right=,
+   \c!location=]
 
 \setuplayout
   [             \c!topspace=.08417508418\paperheight,  %  2.5cm

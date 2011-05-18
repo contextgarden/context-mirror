@@ -23,10 +23,17 @@ local registrations  = backends.pdf.registrations
 local pdfdictionary  = lpdf.dictionary
 local pdfarray       = lpdf.array
 local pdfconstant    = lpdf.constant
+local pdfboolean     = lpdf.boolean
 local pdfreference   = lpdf.reference
 local pdfflushobject = lpdf.flushobject
 
-local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates)
+-- can also be done indirectly:
+--
+-- 12 : << /AntiAlias false /ColorSpace  8 0 R /Coords [ 0.0 0.0 1.0 0.0 ] /Domain [ 0.0 1.0 ] /Extend [ true true ] /Function 22 0 R /ShadingType 2 >>
+-- 22 : << /Bounds [ ] /Domain [ 0.0 1.0 ] /Encode [ 0.0 1.0 ] /FunctionType 3 /Functions [ 31 0 R ] >>
+-- 31 : << /C0 [ 1.0 0.0 ] /C1 [ 0.0 1.0 ] /Domain [ 0.0 1.0 ] /FunctionType 2 /N 1.0 >>
+
+local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
     local f = pdfdictionary {
         FunctionType = 2,
         Domain       = pdfarray(domain), -- domain is actually a string
@@ -34,22 +41,24 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates)
         C1           = pdfarray(color_b),
         N            = tonumber(n),
     }
+    separation = separation and registrations.getspotcolorreference(separation)
     local s = pdfdictionary {
         ShadingType = stype,
-        ColorSpace  = pdfconstant(colorspace),
+        ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
         Function    = pdfreference(pdfflushobject(f)),
         Coords      = pdfarray(coordinates),
         Extend      = pdfarray { true, true },
+        AntiAlias   = pdfboolean(true),
     }
     lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
 end
 
-function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates)
-    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates)
+function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation)
+    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
 end
 
-function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates)
-    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates)
+function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation)
+    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
 end
 
 function lpdf.colorspec(model,ca,default)

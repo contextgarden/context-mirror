@@ -359,8 +359,7 @@ vardef define_linear_shade (expr a, b, ca, cb) =
 enddef ;
 
 primarydef p withshade sc =
-    p
-        withprescript _defined_cs_pre_[sc]
+    p withprescript _defined_cs_pre_[sc]
 enddef ;
 
 % vardef predefined_linear_shade (expr p, n, ca, cb) =
@@ -375,6 +374,55 @@ enddef ;
 %     set_circular_vector(ab,r)(p,n) ;
 %     define_circular_shade(ab,ab,0,r,ca,cb)
 % enddef ;
+
+% NEW EXPERIMENTAL CODE
+
+def withlinearshading (expr a, b) =
+    withprescript "sh_type=linear"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor="   & decimal shadefactor
+    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+enddef ;
+
+def withcircularshading (expr a, b, ra, rb) =
+    withprescript "sh_type=circular"
+    withprescript "sh_domain=0 1"
+    withprescript "sh_factor="   & decimal shadefactor
+    withprescript "sh_center_a=" & ddecimal (a shifted shadeoffset)
+    withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    withprescript "sh_radius_a=" & decimal ra
+    withprescript "sh_radius_b=" & decimal rb
+enddef ;
+
+def withfromshadecolor expr t =
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals t
+enddef ;
+
+def withtoshadecolor expr t =
+    withprescript "sh_color=into"
+    withprescript "sh_color_b=" & colordecimals t
+enddef ;
+
+def withshading (expr how)(text rest) =
+    if how = "linear" :
+        withlinearshading(rest)
+    elseif how = "circular" :
+        withcircularshading(rest)
+    else :
+        % nothing
+    fi
+enddef ;
+
+primarydef a shadedinto b =
+    1
+    withprescript "sh_color=into"
+    withprescript "sh_color_a=" & colordecimals a
+    withprescript "sh_color_b=" & colordecimals b
+enddef ;
+
+% END OF NEW
 
 % Graphic text (we will move code here)
 

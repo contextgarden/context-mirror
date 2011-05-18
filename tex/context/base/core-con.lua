@@ -825,7 +825,7 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
         end
         auto = false
         if tag == v_year or tag == "y" then
-            context.convertnumber(v_year,year)
+            context(year)
         elseif tag == "yy" then
             context("%02i",year % 100)
         elseif tag == "Y" then

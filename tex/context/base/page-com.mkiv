@@ -38,26 +38,26 @@
    \doifelse\@@pcstate\v!start
      {\doifinsetelse\@@pclocation{\v!bottom,\v!top}
         {\setuppapersize[\c!left=\hskip\@@pcoffset]%
-         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcheight\relax}%
-         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset\relax}%
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcheight}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth +\@@pcoffset+\@@pcoffset}%
          \defineoverlay[\v!pagecomment][\placepagecommentTB]}
         {\setuppapersize[\c!top=\vskip\@@pcoffset]%
-         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset\relax}%
-         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth+\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcwidth\relax}%
+         \edef\@@pcpaperheight{\the\dimexpr\paperheight+\@@pcoffset+\@@pcoffset}%
+         \edef\@@pcpaperwidth {\the\dimexpr\paperwidth +\@@pcoffset+\@@pcoffset+\@@pcdistance+\@@pcwidth}%
          \defineoverlay[\v!pagecomment][\placepagecommentLR]}%
       \processaction
         [\@@pclocation]
-        [ \v!bottom=>{\setuppapersize[\c!bottom =\vss,\c!top =\vskip\@@pcoffset]},
-             \v!top=>{\setuppapersize[\c!top =\vss,\c!bottom =\vskip\@@pcoffset]},
-            \v!left=>{\setuppapersize[\c!left =\hss,\c!right=\hskip\@@pcoffset]},
-           \v!right=>{\setuppapersize[\c!right=\hss,\c!left =\hskip\@@pcoffset]}]%
+        [ \v!bottom=>{\setuplayout[\c!location=]\setuppapersize[\c!bottom=\vss,\c!top   =\vskip\@@pcoffset]},
+             \v!top=>{\setuplayout[\c!location=]\setuppapersize[\c!top   =\vss,\c!bottom=\vskip\@@pcoffset]},
+            \v!left=>{\setuplayout[\c!location=]\setuppapersize[\c!left  =\hss,\c!right =\hskip\@@pcoffset]},
+           \v!right=>{\setuplayout[\c!location=]\setuppapersize[\c!right =\hss,\c!left  =\hskip\@@pcoffset]}]%
       \definepapersize
         [\v!pagecomment]
         [\c!height=\@@pcpaperheight,
           \c!width=\@@pcpaperwidth]%
       \let\@@pcprintpapersize\printpapersize
       \setuppapersize[\papersize][\v!pagecomment]%
-      \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]}
+      \setupbackgrounds[\v!paper][\c!background=\v!pagecomment]}% todo append if already set
     {\doif\@@pcstate\v!stop % else initialization  invokes backgrounds
        {% this should be tested first
         % \normalexpanded{\noexpand\setuppapersize[\papersize][\@@pcprintpapersize]}%

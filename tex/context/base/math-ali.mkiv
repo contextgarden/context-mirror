@@ -611,7 +611,7 @@
 
 \def\dodefinemathmatrix[#1]% [#2]%
   {\setuvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
-   \setuvalue{\e!stop #1}{\dostopmathmatrix}%
+   \setvalue {\e!stop #1}{\dostopmathmatrix}% no u else lookahead problem
    \setupmathmatrix[#1]}% [#2]
 
 \definemathmatrix[matrix]
