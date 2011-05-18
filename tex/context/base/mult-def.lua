@@ -12065,7 +12065,7 @@ return {
    ["cs"]="srpen",
    ["de"]="August",
    ["en"]="August",
-   ["fr"]="aout",
+   ["fr"]="août",
    ["it"]="agosto",
    ["nl"]="augustus",
    ["pe"]="آگوست",

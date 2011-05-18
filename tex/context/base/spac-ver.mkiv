@@ -1369,15 +1369,27 @@
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}%
    \egroup}
 
+\def\docheckgridsnappingnop
+  {\gridsnappingfalse
+   \resetsystemmode\v!grid
+   \resetsnapvalue}
+
+\def\docheckgridsnappinyes
+  {\gridsnappingtrue
+   \setsystemmode\v!grid
+   \autosetsnapvalue\askedgridmode}
+
 \def\docheckgridsnapping
-  {\edef\askedgridmode{\layoutparameter\c!grid}% needs checking by WS
-   \doifelse\askedgridmode\v!no
-     {\gridsnappingfalse
-      \resetsystemmode\v!grid
-      \resetsnapvalue}
-     {\gridsnappingtrue
-      \setsystemmode\v!grid
-      \autosetsnapvalue\askedgridmode}}
+  {\edef\askedgridmode{\layoutparameter\c!grid}%
+   \ifx\askedgridmode\v!no       % official
+     \docheckgridsnappingnop
+   \else\ifx\askedgridmode\v!off % for taco and luigi
+     \docheckgridsnappingnop
+   \else\ifx\askedgridmode\empty % to be sure
+     \docheckgridsnappingnop
+   \else
+     \docheckgridsnappingyes
+   \fi\fi\fi}
 
 %D Visualization:
 

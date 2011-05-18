@@ -82,30 +82,23 @@
 
 \definebodyfontenvironment [14pt][%
    interlinespace=14pt,
-   big=24pt,
+   big=18pt,
    small=11pt,
+   x=10pt%
+]
+
+\definebodyfontenvironment [18pt][%
+   interlinespace=18pt,
+   big=24pt,
+   small=14pt,
    x=10pt%
 ]
 
 \definebodyfontenvironment [24pt][%
    interlinespace=24pt,
    big=24pt,
-   small=14pt,
+   small=18pt,
    x=11pt%
-]
-
-\definebodyfontenvironment [22pt][%
-   interlinespace=24pt,
-   big=22pt,
-   small=14pt,
-   x=14pt%
-]
-
-\definebodyfontenvironment [30pt][%
-   interlinespace=30pt,
-   big=30pt,
-   small=26pt,
-   x=26pt%
 ]
 
 %%% font families
@@ -433,23 +426,24 @@
   \bgroup
     \hsize = 457pt
     \let\\\crlf
-    \blank[29pt,force]
-    \switchtobodyfont[ss,30pt]
+    \blank[35pt,force]
+    \switchtobodyfont[24pt]
     \setupalign[right]
-    {\noindent\MapsTitle\par\blank[6pt]}
-    \ifx\MapsSubTitle\empty \else
-      { \switchtobodyfont[ss,22pt]\noindent
-        \advance \rightskip 0pt plus 2em
-        \MapsSubTitle\par}
+    {\noindent\bf\MapsTitle\par}
+    \ifx\MapsSubTitle\empty 
+      \blank[30pt]
+    \else
+      \bgroup
+      \blank[12pt]
+      \switchtobodyfont[18pt]\noindent \it
+      \advance \rightskip 0pt plus 2em
+      \MapsSubTitle\par
+      \egroup
+      \blank[30pt]
     \fi
-	\doifmodeelse{newstyle}
-         {\blank[22pt]}
-         {\blank[30pt]}
   \egroup
   \setupalign[width]
   \switchtobodyfont[rm,10pt]
-  \doifmode{newstyle}
-         {\noindent\MapsAuthor\blank[line]}
   \stopbaselinecorrection
   \ifMapsInColumns
     \startcolumns\hyphenpenalty1000

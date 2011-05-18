@@ -131,9 +131,9 @@
 
 % we use char0 as placeholder for the larger font
 
-\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing[\plusone ]\char\zerocount\tx}{}} % all upper
-\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing[\plusfive]\char\zerocount\tx}{}} % one upper + font
-\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing[\plussix ]\char\zerocount\tx}{}} % some upper + font
+\unexpanded\def\pseudosmallcapped{\groupedcommand{\setcharactercasing[\plusone ]\signalcharacter\tx}{}} % all upper
+\unexpanded\def\pseudoSmallcapped{\groupedcommand{\setcharactercasing[\plusfive]\signalcharacter\tx}{}} % one upper + font
+\unexpanded\def\pseudoSmallCapped{\groupedcommand{\setcharactercasing[\plussix ]\signalcharacter\tx}{}} % some upper + font
 
 \unexpanded\def\realsmallcapped  {\groupedcommand{\sc\setcharactercasing[\plusone  ]}{}} % all lower
 \unexpanded\def\realSmallcapped  {\groupedcommand{\sc\setcharactercasing[\plusthree]}{}} % one upper + font
@@ -166,7 +166,7 @@
 
 %D As suggested by WS:
 
-\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[\plustwo]\char\zerocount}{}}
+\unexpanded\def\notsmallcapped{\groupedcommand{\setcharactercasing[\plustwo]\signalcharacter}{}}
 
 %D \macros
 %D   {setupcapitals}

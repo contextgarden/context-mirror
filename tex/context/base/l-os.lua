@@ -6,6 +6,22 @@ if not modules then modules = { } end modules ['l-os'] = {
     license   = "see context related readme files"
 }
 
+-- This file deals with some operating system issues. Please don't bother me
+-- with the pros and cons of operating systems as they all have their flaws
+-- and benefits. Bashing one of them won't help solving problems and fixing
+-- bugs faster and is a waste of time and energy.
+--
+-- path separators: / or \ ... we can use / everywhere
+-- suffixes       : dll so exe <none> ... no big deal
+-- quotes         : we can use "" in most cases
+-- expansion      : unless "" are used * might give side effects
+-- piping/threads : somewhat different for each os
+-- locations      : specific user file locations and settings can change over time
+--
+-- os.type     : windows | unix (new, we already guessed os.platform)
+-- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
+-- os.platform : extended os.name with architecture
+
 -- maybe build io.flush in os.execute
 
 local os = os
@@ -102,10 +118,6 @@ function os.resultof(command)
     local handle = io.popen(command,"r")
     return handle and handle:read("*all") or ""
 end
-
---~ os.type     : windows | unix (new, we already guessed os.platform)
---~ os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
---~ os.platform : extended os.name with architecture
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";") then

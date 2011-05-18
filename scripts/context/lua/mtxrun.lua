@@ -1225,7 +1225,8 @@ local function do_serialize(root,name,depth,level,indexed)
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
                     else
-                        handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
+                     -- handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
+                        handle(format("%s [%q]=loadstring(%q),",depth,k,debug.getinfo(v).what == "C" and "C code" or dump(v)))
                     end
                 end
             else
@@ -2041,6 +2042,22 @@ if not modules then modules = { } end modules ['l-os'] = {
     license   = "see context related readme files"
 }
 
+-- This file deals with some operating system issues. Please don't bother me
+-- with the pros and cons of operating systems as they all have their flaws
+-- and benefits. Bashing one of them won't help solving problems and fixing
+-- bugs faster and is a waste of time and energy.
+--
+-- path separators: / or \ ... we can use / everywhere
+-- suffixes       : dll so exe <none> ... no big deal
+-- quotes         : we can use "" in most cases
+-- expansion      : unless "" are used * might give side effects
+-- piping/threads : somewhat different for each os
+-- locations      : specific user file locations and settings can change over time
+--
+-- os.type     : windows | unix (new, we already guessed os.platform)
+-- os.name     : windows | msdos | linux | macosx | solaris | .. | generic (new)
+-- os.platform : extended os.name with architecture
+
 -- maybe build io.flush in os.execute
 
 local os = os
@@ -2137,7 +2154,6 @@ function os.resultof(command)
     local handle = io.popen(command,"r")
     return handle and handle:read("*all") or ""
 end
-
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";") then
@@ -2962,7 +2978,7 @@ if not modules then modules = { } end modules ['l-dir'] = {
 
 local type = type
 local find, gmatch, match, gsub = string.find, string.gmatch, string.match, string.gsub
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 
 local P, S, R, C, Cc, Cs, Ct, Cv, V = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Ct, lpeg.Cv, lpeg.V
@@ -3316,6 +3332,20 @@ else
 end
 
 file.expandname = dir.expandname -- for convenience
+
+local stack = { }
+
+function dir.push(newdir)
+    insert(stack,lfs.currentdir())
+end
+
+function dir.pop()
+    local d = remove(stack)
+    if d then
+        lfs.chdir(d)
+    end
+    return d
+end
 
 
 end -- of closure

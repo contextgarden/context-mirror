@@ -11,16 +11,8 @@ local smallcaps = {
     smcp = yes,
 }
 
-local report_statistics = logs.reporter("fonts","statistics")
-
 local function statistics(tfmdata)
-    for k, v in table.sortedpairs(tfmdata) do
-        if type(v) == "table" then
-            report_statistics("%s: <table>",k)
-        else
-            report_statistics("%s: %s",k,tostring(v))
-        end
-    end
+    commands.showfontparameters
 end
 
 local function squeeze(tfmdata)

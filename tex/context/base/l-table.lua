@@ -562,7 +562,8 @@ local function do_serialize(root,name,depth,level,indexed)
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
                         handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
                     else
-                        handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
+                     -- handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
+                        handle(format("%s [%q]=loadstring(%q),",depth,k,debug.getinfo(v).what == "C" and "C code" or dump(v)))
                     end
                 end
             else

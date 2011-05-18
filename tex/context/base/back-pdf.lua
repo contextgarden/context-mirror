@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['back-pdf'] = {
     license   = "see context related readme files"
 }
 
--- we will move code to lpdf-* files (second cleanup stage)
+-- we will move code to lpdf-* files (second cleanup stage in 2011/2012)
 
 -- the push/pop is a mess (only needed for calculate ...) .. will be done differently
 
@@ -193,13 +193,21 @@ local gray_function = "%s mul"
 local documentcolorspaces = pdfdictionary()
 
 local spotcolorhash      = { } -- not needed
-local spotcolornames     = { }
-local indexcolorhash     = { }
-local delayedindexcolors = { }
+local spotcolornames      = { }
+local indexcolorhash      = { }
+local delayedindexcolors  = { }
 
 function registrations.spotcolorname(name,e)
     spotcolornames[name] = e or name
 end
+
+function registrations.getspotcolorreference(name)
+    return spotcolorhash[name]
+end
+
+-- beware: xpdf/okular/evince cannot handle the spot->process shade
+
+local processcolors
 
 local function registersomespotcolor(name,noffractions,names,p,colorspace,range,funct)
     noffractions = tonumber(noffractions) or 1 -- to be checked
@@ -211,20 +219,18 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             Domain       = { 0, 1 },
             Range        = range,
         }
-        local n = pdfimmediateobject("stream",format("{ %s }",funct),dictionary())
-
---~         local n = pdfobject {
---~             type      = "stream",
---~             immediate = true,
---~             string    = format("{ %s }",funct),
---~             attr      = dictionary(),
---~         }
-
+        local calculations = pdfimmediateobject("stream",format("{ %s }",funct),dictionary()) -- todo: lpdf.stream
+      -- local calculations = pdfobject {
+      --     type      = "stream",
+      --     immediate = true,
+      --     string    = format("{ %s }",funct),
+      --     attr      = dictionary(),
+      -- }
         local array = pdfarray {
             pdf_separation,
             pdfconstant(spotcolornames[name] or name),
             colorspace,
-            pdfreference(n),
+            pdfreference(calculations),
         }
         local m = pdfimmediateobject(tostring(array))
         local mr = pdfreference(m)
@@ -234,22 +240,53 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
     else
         local cnames = pdfarray()
         local domain = pdfarray()
+        local colorants = pdfdictionary()
         for n in gmatch(names,"[^,]+") do
-            cnames[#cnames+1] = pdfconstant(spotcolornames[n] or n)
+            local name = spotcolornames[n] or n
+            if n == "cyan" then
+                name = "Cyan"
+            elseif n == "magenta" then
+                name = "Magenta"
+            elseif n == "yellow" then
+                name = "Yellow"
+            elseif n == "black" then
+                name = "Black"
+            else
+                colorants[name]   = pdfreference(spotcolorhash[name] or spotcolorhash[n])
+            end
+            cnames[#cnames+1] = pdfconstant(name)
             domain[#domain+1] = 0
             domain[#domain+1] = 1
+        end
+        if not processcolors then
+            local specification = pdfdictionary {
+                ColorSpace = pdfconstant("DeviceCMYK"),
+                Components = pdfarray {
+                    pdfconstant("Cyan"),
+                    pdfconstant("Magenta"),
+                    pdfconstant("Yellow"),
+                    pdfconstant("Black")
+                }
+            }
+            processcolors = pdfreference(pdfimmediateobject(tostring(specification)))
         end
         local dictionary = pdfdictionary {
             FunctionType = 4,
             Domain       = domain,
             Range        = range,
         }
-        local n = pdfimmediateobject("stream",format("{ %s %s }",rep("pop ",noffractions),funct),dictionary())
+        local calculation = pdfimmediateobject("stream",format("{ %s %s }",rep("pop ",noffractions),funct),dictionary())
+        local channels = pdfdictionary {
+            Subtype   = pdfconstant("NChannel"),
+            Colorants = colorants,
+            Process   = processcolors,
+        }
         local array = pdfarray {
             pdf_device_n,
             cnames,
             colorspace,
-            pdfreference(n),
+            pdfreference(calculation),
+            lpdf.shareobjectreference(tostring(channels)), -- optional but needed for shades
         }
         local m = pdfimmediateobject(tostring(array))
         local mr = pdfreference(m)
@@ -258,6 +295,8 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
         lpdf.adddocumentcolorspace(name,mr)
     end
 end
+
+-- wrong name
 
 local function registersomeindexcolor(name,noffractions,names,p,colorspace,range,funct)
     noffractions = tonumber(noffractions) or 1 -- to be checked

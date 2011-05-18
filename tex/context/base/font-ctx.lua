@@ -726,6 +726,7 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
         setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
         texsetcount("global","lastfontid",tfmdata)
     else
+tfmdata.characters[0] = nil -- we use char0 as signal
     --  local t = os.clock(t)
         local id = font.define(tfmdata)
     --  print(name,os.clock()-t)
@@ -1099,8 +1100,9 @@ function commands.showchardata(n)
     end
 end
 
-function commands.showfontparameters()
-    local tfmdata = fontdata[currentfont()]
+function commands.showfontparameters(tfmdata)
+    -- this will become more clever
+    local tfmdata = tfmdata or fontdata[currentfont()]
     if tfmdata then
         local parameters        = tfmdata.parameters
         local mathparameters    = tfmdata.mathparameters

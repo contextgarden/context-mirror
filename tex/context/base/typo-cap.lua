@@ -82,6 +82,7 @@ local function helper(start, codes, special, attribute, once)
                 if next then
                     next.prev = prev
                 end
+--~ node.free(start)
                 return prev, true
             elseif lastfont and start.prev.id ~= glyph_code then
                 fnt = lastfont
