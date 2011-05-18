@@ -207,6 +207,11 @@ end
 
 -- beware: xpdf/okular/evince cannot handle the spot->process shade
 
+-- This should become delayed i.e. only flush when used; in that case we need
+-- need to store the specification and then flush them when accesssomespotcolor
+-- is called. At this moment we assume that splotcolors that get defined are
+-- also used which keeps the overhad small anyway.
+
 local processcolors
 
 local function registersomespotcolor(name,noffractions,names,p,colorspace,range,funct)
@@ -365,7 +370,6 @@ local function indexcolorref(name) -- actually, names (parent) is the hash
 end
 
 function registrations.rgbspotcolor(name,noffractions,names,p,r,g,b)
---~ print(name,noffractions,names,p,r,g,b)
     if noffractions == 1 then
         registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rbg_range,format(rgb_function,r,g,b))
     else

@@ -675,6 +675,7 @@ local type, next, tostring, tonumber, ipairs, table, string = type, next, tostri
 local concat, sort, insert, remove = table.concat, table.sort, table.insert, table.remove
 local format, find, gsub, lower, dump, match = string.format, string.find, string.gsub, string.lower, string.dump, string.match
 local getmetatable, setmetatable = getmetatable, setmetatable
+local getinfo = debug.getinfo
 
 -- Starting with version 5.2 Lua no longer provide ipairs, which makes
 -- sense. As we already used the for loop and # in most places the
@@ -1022,6 +1023,8 @@ end
 
 -- problem: there no good number_to_string converter with the best resolution
 
+local function dummy() end
+
 local function do_serialize(root,name,depth,level,indexed)
     if level > 0 then
         depth = depth .. " "
@@ -1214,19 +1217,20 @@ local function do_serialize(root,name,depth,level,indexed)
                 end
             elseif t == "function" then
                 if functions then
+                    local f = getinfo(v).what == "C" and dump(dummy) or dump(v)
+                 -- local f = getinfo(v).what == "C" and dump(function(...) return v(...) end) or dump(v)
                     if tk == "number" then -- or find(k,"^%d+$") then
                         if hexify then
-                            handle(format("%s [0x%04X]=loadstring(%q),",depth,k,dump(v)))
+                            handle(format("%s [0x%04X]=loadstring(%q),",depth,k,f))
                         else
-                            handle(format("%s [%s]=loadstring(%q),",depth,k,dump(v)))
+                            handle(format("%s [%s]=loadstring(%q),",depth,k,f))
                         end
                     elseif tk == "boolean" then
-                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),dump(v)))
+                        handle(format("%s [%s]=loadstring(%q),",depth,tostring(k),f))
                     elseif noquotes and not reserved[k] and find(k,"^%a[%w%_]*$") then
-                        handle(format("%s %s=loadstring(%q),",depth,k,dump(v)))
+                        handle(format("%s %s=loadstring(%q),",depth,k,f))
                     else
-                     -- handle(format("%s [%q]=loadstring(%q),",depth,k,dump(v)))
-                        handle(format("%s [%q]=loadstring(%q),",depth,k,debug.getinfo(v).what == "C" and "C code" or dump(v)))
+                        handle(format("%s [%q]=loadstring(%q),",depth,k,f))
                     end
                 end
             else

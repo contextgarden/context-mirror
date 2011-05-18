@@ -445,7 +445,7 @@ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
             elseif model == 4 then
                 return format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
             else
-                return format("transparent(%s,%s,multitonecolor(\"%s\",%s,\"%s\",\"%s\"))",tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+                return format('transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))',tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
             end
         else
             if model == 2 then
@@ -455,7 +455,7 @@ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
             elseif model == 4 then
                 return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
             else
-                return format("multitonecolor(\"%s\",%s,\"%s\",\"%s\")",cv[10],cv[11],cv[12],cv[13])
+                return format('multitonecolor("%s",%s,"%s","%s")',cv[10],cv[11],cv[12],cv[13])
             end
         end
     else
@@ -463,6 +463,41 @@ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
         return format("(%s,%s,%s)",default,default,default)
     end
 end
+
+--~ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
+--~     local cv = colors.supported and colors.value(ca) -- faster when direct colors.values[ca]
+--~     if cv then
+--~         local tv = transparencies.supported and transparencies.value(ta)
+--~         if model == 1 then
+--~             model = cv[1]
+--~         end
+--~         model = forcedmodel(model)
+--~         if tv then
+--~             if model == 2 then
+--~                 return format("(%s,%s,%s) withtransparency (%s,%s)",tv[1],tv[2],cv[3],cv[4],cv[5])
+--~             elseif model == 3 then
+--~                 return format("(%s,%s,%s) withtransparency (%s,%s)",tv[1],tv[2],cv[3],cv[4],cv[5])
+--~             elseif model == 4 then
+--~                 return format("(%s,%s,%s,%s) withtransparency(%s,%s)",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
+--~             else
+--~                 return format('multitonecolor("%s",%s,"%s","%s") withtransparency (%s,%s)',tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+--~             end
+--~         else
+--~             if model == 2 then
+--~                 return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+--~             elseif model == 3 then
+--~                 return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+--~             elseif model == 4 then
+--~                 return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
+--~             else
+--~                 return format('multitonecolor("%s",%s,"%s","%s")',cv[10],cv[11],cv[12],cv[13])
+--~             end
+--~         end
+--~     else
+--~         default = default or 0 -- rgb !
+--~         return format("(%s,%s,%s)",default,default,default)
+--~     end
+--~ end
 
 function colors.formatcolor(ca,separator)
     local cv = colors.value(ca)

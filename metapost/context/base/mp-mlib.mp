@@ -60,14 +60,15 @@ def multitonecolor(expr name, fractions, components, value) =
 enddef ;
 
 def transparent(expr alternative, transparency)(text c) =
-     c
-     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
-     withprescript "tr_transparency=" & decimal transparency
+    1 % this permits withcolor x intoshade y
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
+    withprescript "tr_transparency=" & decimal transparency
+    withcolor c
 enddef ;
 
 def withtransparency(expr alternative, transparency) =
-     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
-     withprescript "tr_transparency=" & decimal transparency
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(alternative)
+    withprescript "tr_transparency=" & decimal transparency
 enddef ;
 
 def cmyk(expr c, m, y, k) =
@@ -416,7 +417,7 @@ def withshading (expr how)(text rest) =
 enddef ;
 
 primarydef a shadedinto b =
-    1
+    1 % does not work with transparency
     withprescript "sh_color=into"
     withprescript "sh_color_a=" & colordecimals a
     withprescript "sh_color_b=" & colordecimals b
