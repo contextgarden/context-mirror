@@ -92,7 +92,7 @@ local mimetypes = {
 local idmakers = {
     ncx     = function(filename) return "ncx"            end,
  -- css     = function(filename) return "stylesheet"     end,
-    default = function(filename) return dubmid(filename) end,
+    default = function(filename) return dumbid(filename) end,
 }
 
 -- specification = {

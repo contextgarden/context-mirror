@@ -132,18 +132,6 @@ cmykcolormodel := 7 ;
 
 let grayscale = numeric ;
 
-% def colorlike(expr c) text v = % colorlike(a) b, c, d ;
-%     forsuffixes i=v : % save i ;
-%         if cmykcolor c :
-%             cmykcolor i ;
-%         elseif rgbcolor c :
-%             rgbcolor i ;
-%         else :
-%             grayscale i ;
-%         fi ;
-%     endfor ;
-% enddef ;
-
 vardef colorlike(text c) text v = % colorlike(a) b, c, d ;
     save _p_ ; picture _p_ ;
     forsuffixes i=v :
