@@ -5,7 +5,7 @@
 %D       subtitle=Multi Column Output,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -609,11 +609,11 @@
    \postprocesscolumns
    \dohandleallcolumns % \hbox i.v.m. \showcomposition
      {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth
-        {\box\currentcolumnbox
-         \global\wd\currentcolumnbox\localcolumnwidth
-         \ifheightencolumns
-           \global\ht\currentcolumnbox\fixedcolumnheight
-         \fi}}%
+        {\box\currentcolumnbox}%
+      \wd\currentcolumnbox\localcolumnwidth
+      \ifheightencolumns
+        \ht\currentcolumnbox\fixedcolumnheight
+      \fi}%
    \setmaxcolumndimensions
    \overlaycolumnfootnotes
    \setbox\columnpagebox\vbox
@@ -1002,7 +1002,7 @@
              \vfill
            \fi}}%
      \dohandleallcolumns
-       {\global\ht\currentcolumnbox\dimen0}%
+       {\ht\currentcolumnbox\dimen0}% redundant
    \fi
    \setbox\precolumnbox\vbox{\flushcolumnedpage\zerocount}%
    \finaloutput\box\precolumnbox

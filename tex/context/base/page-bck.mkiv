@@ -5,7 +5,7 @@
 %D       subtitle=Backgrounds,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -206,12 +206,14 @@
 \newbox\rightbackground
 
 \def\addmainbackground#1% todo: dimension spec
-  {\ifsomebackground
-     \ifnewbackground \setbackgroundboxes \fi
-     \setbox#1\vbox
-       {\offinterlineskip
-        \doifmarginswapelse{\copy\leftbackground}{\copy\rightbackground}%
-        \box#1}%
+  {\ifcase\pageornamentstate
+     \ifsomebackground
+       \ifnewbackground \setbackgroundboxes \fi
+       \setbox#1\vbox
+         {\offinterlineskip
+          \doifmarginswapelse{\copy\leftbackground}{\copy\rightbackground}%
+          \box#1}%
+     \fi
    \fi}
 
 %D Finaly there is an aditional {\em text} background, again

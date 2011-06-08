@@ -5,7 +5,7 @@
 %D       subtitle=XML export,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=\PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -38,12 +38,15 @@
 \def\setelementexporttag
   {\dotripleargument\dosetelementexporttag}
 
-\def\dosetelementexporttag[#1][#2][#3]%
+\def\dosetelementexporttag
   {\ifthirdargument
-     \ctxlua{structures.tags.settagproperty("#1","#2", "#3")}%
+     \expandafter\dosetelementexporttaga
    \else\ifsecondargument
-     \ctxlua{structures.tags.settagproperty("#1","export", "#2")}%
+     \expandafter\expandafter\expandafter\dosetelementexporttagb
    \fi\fi}
+
+\def\dosetelementexporttaga[#1][#2][#3]{\ctxcommand{settagproperty("#1","#2","#3")}}
+\def\dosetelementexporttagb[#1][#2][#3]{\ctxcommand{settagproperty("#1","export","#2")}}
 
 \newcount\tagparcounter
 
@@ -62,13 +65,17 @@
 \to \everytabulatepar % tricky, maybe this should be neverypar
 
 \appendtoks
-    \def\dotagnoftablecolumns{\attribute\taggedcolumnsattribute\!!counta}%
-    \def\dotagnoftablerows   {\attribute\taggedrowsattribute   \!!countb}%
+    \def\dotagnofTABLEcolumns{\attribute\taggedcolumnsattribute\!!counta}%
+    \def\dotagnofTABLErows   {\attribute\taggedrowsattribute   \!!countb}%
 \to \everyenableelements
 
 \appendtoks
     \def\dotagTABLEalign{\attribute\taggedalignattribute\raggedstatus}%
-    \def\dotagTABLEcell {\char\zerocount}%
+    \def\dotagTABLEcell {\char\zerocount}% brrr, we need to tag empty cells (unless we start numbering)
+\to \everyenableelements
+
+\appendtoks
+    \def\dotagtabulatesignal{\dontleavehmode\char\zerocount\ignorespaces}%
 \to \everyenableelements
 
 \appendtoks
@@ -76,11 +83,11 @@
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsynonym{\ctxlua{structures.tags.setsynonym("\currentsynonym","\currentsynonymtag")}}%
+    \def\dotagsynonym{\ctxcommand{settagsynonym("\currentsynonym","\currentsynonymtag")}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsorting{\ctxlua{structures.tags.setsorting("\currentsorting","\currentsortingtag")}}%
+    \def\dotagsorting{\ctxcommand{settagsorting("\currentsorting","\currentsortingtag")}}%
 \to \everyenableelements
 
 \appendtoks
@@ -88,15 +95,15 @@
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetitemize{\ctxlua{structures.tags.setitemgroup(\ifconditional\packlistitem true\else false\fi,"\currentitemsymbol")}}%
+    \def\dotagsetitemize{\ctxcommand{settagitemgroup(\ifconditional\packlistitem true\else false\fi,"\currentitemsymbol")}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetdescriptiontag{\ctxlua{structures.tags.setdescriptionid("\currentdescription",\currentdescriptionnumberentry)}}%
+    \def\dotagsetdescriptiontag{\ctxcommand{settagdescriptionid("\currentdescription",\currentdescriptionnumberentry)}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetnotesymbol{\ctxlua{structures.tags.setdescriptionid("\currentnote",\currentnotenumber)}}%
+    \def\dotagsetnotesymbol{\ctxcommand{settagdescriptionid("\currentnote",\currentnotenumber)}}%
 \to \everyenableelements
 
 \appendtoks

@@ -5,7 +5,7 @@
 %D       subtitle=Pagebody Building (Imposition),
 %D         author=Hans Hagen & Willi Egger,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -138,24 +138,14 @@
 
 \newbox\postponedcontent
 
-% \def\flushatshipout
-%   {\dowithnextbox
-%      {\global\setbox\postponedcontent\hbox to \zeropoint
-%         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
-%          \box\postponedcontent\flushnextbox}%
-%       \global\ht\postponedcontent\zeropoint
-%       \global\dp\postponedcontent\zeropoint
-%       \global\wd\postponedcontent\zeropoint}%
-%    \hbox}
-
 \def\flushatshipout
   {\dowithnextbox
      {\global\setbox\postponedcontent\hbox to \zeropoint
         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
          \unhbox\postponedcontent\unhbox\nextbox}%
-      \global\ht\postponedcontent\zeropoint
-      \global\dp\postponedcontent\zeropoint
-      \global\wd\postponedcontent\zeropoint}%
+      \ht\postponedcontent\zeropoint
+      \dp\postponedcontent\zeropoint
+      \wd\postponedcontent\zeropoint}%
    \hbox}
 
 % \starttypen
@@ -548,15 +538,15 @@
    \fi}
 
 \def\handlearrangedpageSIDE
-  {\global\wd\arrangedpageA\paperwidth
-   \global\wd\arrangedpageB\paperwidth
+  {\wd\arrangedpageA\paperwidth
+   \wd\arrangedpageB\paperwidth
    \global\setbox\arrangedpageA\hbox
      {\box\arrangedpageA\box\arrangedpageB}%
-   \global\ht\arrangedpageA\paperheight}
+   \ht\arrangedpageA\paperheight}
 
 \def\handlearrangedpageTOP
-  {\global\ht\arrangedpageA\paperheight
-   \global\ht\arrangedpageB\paperheight
+  {\ht\arrangedpageA\paperheight
+   \ht\arrangedpageB\paperheight
    \global\setbox\arrangedpageA\vbox
      {\forgetall\offinterlineskip\vskip\paperheight
       \box\arrangedpageA\box\arrangedpageB}%
@@ -585,13 +575,13 @@
         \clippedprintbox1\arrangedpageA}%
      \swaparrangedtrue
    \fi
-   \global\ht\arrangedpageA\paperheight
+   \ht\arrangedpageA\paperheight
    \global\setbox\arrangedpageB\box\scratchbox}
 
 \def\handlearrangedpageTWODOWN
   {\splitoffarrangedpagesTWO
-   \global\ht\arrangedpageA\paperheight
-   \global\ht\arrangedpageB\paperheight
+   \ht\arrangedpageA\paperheight
+   \ht\arrangedpageB\paperheight
    \ifswaparranged
      \global\setbox\arrangedpageA\vbox
        {\forgetall\offinterlineskip\vskip\paperheight

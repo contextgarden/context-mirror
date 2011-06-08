@@ -10,7 +10,7 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, rep = string.format, string.gmatch, string.rep
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 
@@ -79,11 +79,11 @@ end
 
 -- experimental
 
-local function toxml(t,d,result)
+local function toxml(t,d,result,step)
     for k, v in table.sortedpairs(t) do
         if type(v) == "table" then
             result[#result+1] = format("%s<%s>",d,k)
-            toxml(v,d.." ",result)
+            toxml(v,d..step,result)
             result[#result+1] = format("%s</%s>",d,k)
         elseif tonumber(k) then
             result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
@@ -93,13 +93,15 @@ local function toxml(t,d,result)
     end
 end
 
-function table.toxml(t,name,nobanner)
+function table.toxml(t,name,nobanner,indent,spaces)
     local noroot = name == false
     local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+    local indent = rep(" ",indent or 0)
+    local spaces = rep(" ",spaces or 1)
     if noroot then
-        toxml( t, "", result)
+        toxml( t, inndent, result, spaces)
     else
-        toxml( { [name or "root"] = t }, "", result)
+        toxml( { [name or "root"] = t }, indent, result, spaces)
     end
     return concat(result,"\n")
 end

@@ -10,6 +10,9 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
 
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
+local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
+local concat, serialize = table.concat, table.serialize
+
 local trace_format    = false  trackers.register("backend.format",    function(v) trace_format    = v end)
 local trace_variables = false  trackers.register("backend.variables", function(v) trace_variables = v end)
 
@@ -17,27 +20,28 @@ local report_backend = logs.reporter("backend","profiles")
 
 local backends, lpdf = backends, lpdf
 
-local codeinjections = backends.pdf.codeinjections
+local codeinjections           = backends.pdf.codeinjections
 
-local variables      = interfaces.variables
-local viewerlayers   = attributes.viewerlayers
-local colors         = attributes.colors
-local transparencies = attributes.transparencies
+local variables                = interfaces.variables
+local viewerlayers             = attributes.viewerlayers
+local colors                   = attributes.colors
+local transparencies           = attributes.transparencies
 
-local pdfdictionary  = lpdf.dictionary
-local pdfarray       = lpdf.array
-local pdfconstant    = lpdf.constant
-local pdfreference   = lpdf.reference
-local pdfflushobject = lpdf.flushobject
-local pdfstring      = lpdf.string
-local pdfverbose     = lpdf.verbose
-local pdfobject      = lpdf.object
+local pdfdictionary            = lpdf.dictionary
+local pdfarray                 = lpdf.array
+local pdfconstant              = lpdf.constant
+local pdfreference             = lpdf.reference
+local pdfflushobject           = lpdf.flushobject
+local pdfstring                = lpdf.string
+local pdfverbose               = lpdf.verbose
+local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local addtoinfo, injectxmpinfo, insertxmpinfo = lpdf.addtoinfo, lpdf.injectxmpinfo, lpdf.insertxmpinfo
+local addtoinfo                = lpdf.addtoinfo
+local injectxmpinfo            = lpdf.injectxmpinfo
+local insertxmpinfo            = lpdf.insertxmpinfo
 
-local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
-local concat, serialize = table.concat, table.serialize
-local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array,  utilities.parsers.settings_to_hash
+local settings_to_array        = utilities.parsers.settings_to_array
+local settings_to_hash         = utilities.parsers.settings_to_hash
 
 --[[
     Comments by Peter:
@@ -434,14 +438,7 @@ local function handleinternalprofile(s,include)
                 elseif not channel then
                     report_backend("error, couldn't resolve channel entry for colorspace '%s'",colorspace)
                 else
-                    local a = pdfdictionary { N = channel }
-                    profile = pdfobject { -- does a flush too
-                        compresslevel = 0,
-                        immediate     = true, -- !
-                        type          = "stream",
-                        file          = fullname,
-                        attr          = a(),
-                    }
+                    profile = pdfflushstreamfileobject(fullname,{ N = channel },false) -- uncompressed
                     internalprofiles[tag] = profile
                     if trace_format then
                         report_backend("including '%s' color profile from '%s'",colorspace,fullname)

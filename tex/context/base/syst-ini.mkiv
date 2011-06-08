@@ -5,7 +5,7 @@
 %D       subtitle=Bootstrapping \TEX,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -330,6 +330,15 @@
 \newbox   \scratchmuskipone  \newbox   \scratchmuskiptwo  \newbox   \scratchmuskipthree
 \newtoks    \scratchtoksone  \newtoks    \scratchtokstwo  \newtoks    \scratchtoksthree
 \newbox      \scratchboxone  \newbox      \scratchboxtwo  \newbox      \scratchboxthree
+
+%D \macros
+%D   {scratchwidth, scratchheight, scratchdepth}
+%D
+%D A few more scratch dimensions:
+
+\newdimen\scratchwidth
+\newdimen\scratchheight
+\newdimen\scratchdepth
 
 %D More allocations:
 
@@ -908,9 +917,19 @@
     \edef\texengineversion{0}
 \fi
 
+%D We have no reason not to enable this:
+
+\savingvdiscards\plusone
+
 %D We only can set this one via directives (system.synctex).
 
 \let\synctex\undefined \newcount\synctex
+
+%D We get rid of the funny \TEX\ offset defaults of one
+%D inch by setting them to zero.
+
+\voffset \zeropoint \newdimen\voffset % prevent messing up
+\hoffset \zeropoint \newdimen\hoffset % prevent messing up
 
 %D While cleaning this code up a bit I was listening to Heather
 %D Nova's \CD\ Redbird. The first song on that \CD\ ends with

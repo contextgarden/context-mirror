@@ -5,7 +5,7 @@
 %D       subtitle=Labels,
 %D         author=Hans Hagen / Tobias Burnus,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -85,18 +85,6 @@
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo
      \def#3{#5#4}%
-%      \def#5##1##2% ##1=language
-%        {\ifcsname\??ml:#1:##1:##2\endcsname
-%           \csname\??ml:#1:##1:##2\endcsname
-%         \else\ifcsname\??la#4\s!default\endcsname
-%           \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
-%         \else\ifcsname\??ml:#1:##2\endcsname
-%           \csname\??ml:#1:##2\endcsname
-%         \else\ifcsname\??ml:#1:\s!en:##2\endcsname
-%           \csname\??ml:#1:\s!en:##2\endcsname
-%         \else
-%           ##2%
-%         \fi\fi\fi\fi}%
      \def#5##1##2% ##1=language
        {\ifcsname\??ml:\currentlabelcategory#1:##1:##2\endcsname
           \csname\??ml:\currentlabelcategory#1:##1:##2\endcsname

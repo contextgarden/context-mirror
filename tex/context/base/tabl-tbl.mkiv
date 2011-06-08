@@ -5,7 +5,7 @@
 %D       subtitle=Text Flow Tabulation,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -378,6 +378,8 @@
      \fi
    \fi\fi}
 
+\let\dotagtabulatesignal\relax
+
 \def\dodosettabulatepreamble#1#2% only makes sense for many tabulates
   {\normalexpanded{\tabulatepreamble{\the\tabulatepreamble
         \dochecklocaltabulatevrulecolor{\currenttabulatevrulecolor}{\the\tabulatevrulethickness}%
@@ -415,8 +417,9 @@
                 \ifcase\tabulatereshape\else
                     \beginreshapedtabulatepar
                 \fi
+                \dotagtabulatesignal  % empty cells .. todo (can be removed as soon as build)
                 \noexpand\ifnum\noexpand\tabulatetype=\plusone\noexpand\else
-                    \the\tabulatebmath % maybe later?
+                    \the\tabulatebmath % maybe later? can interfere with char 0
                     \the\tabulatefont
                     \the\tabulatesettings
                     \the\tabulatebefore
@@ -436,10 +439,11 @@
                     \endreshapedtabulatepar
                 \fi
                 \noexpand#2%
-                \noexpand\dostoptagged
+%                 \noexpand\dostoptagged
             \egroup
         \egroup
         \aligntab
+\noexpand\dostoptagged
         \dotabulatepostskip{\the\tabulateposskip}%
         \alignmark\alignmark
    }}%
@@ -680,12 +684,31 @@
 \def\flushtabulatesplitbox
   {\box\tabulatebox}
 
-\def\splitofftabulatebox % overloads in anch-pgr
+\newconditional\splitofftabulatewhitespace
+\newdimen\splitofftabulatebetweenskip
+
+\def\flushtabulatewhitespace
+  {\ifdim\splitofftabulatebetweenskip>\zeropoint
+     \vskip\splitofftabulatebetweenskip
+     \global\splitofftabulatebetweenskip\zeropoint
+   \fi}
+
+\def\checktabulatewhitespace
+  {\setbox\scratchbox\vbox
+     {\splitdiscards
+      \unskip
+      \ifdim\lastskip>\splitofftabulatebetweenskip
+        \global\splitofftabulatebetweenskip\lastskip
+      \fi}}
+
+\def\splitofftabulatebox
   {\dontcomplain
-   \global\setbox\tabulatebox % % % global ? % % %
-     \vsplit\tablebox\tabulatecolumn to \lineheight
-   \setbox\tabulatebox\normalvbox
+   \global\setbox\tabulatebox\vsplit\tablebox\tabulatecolumn to \lineheight % % % global ? % % %
+   \setbox\tabulatebox\vbox
      {\unvbox\tabulatebox}%
+   \ifconditional\splitofftabulatewhitespace
+     \checktabulatewhitespace
+   \fi
    \setbox\tabulatebox\hbox to \wd\tabulatebox
      {\iftrialtypesetting\else\ifconditional\tabulatehascolors\repeatsettabulatecolor\fi\fi
       \hss\dotabulatehook{\box\tabulatebox}\hss}%
@@ -726,8 +749,13 @@
      \fi \fi
    \fi}
 
-\def\handletabulatepbreak
-  {\tabulatenoalign{\dohandletabulatepbreak}}
+\def\handletabulatepbreak % overloads previous
+  {\starttabulatenoalign
+     \dohandletabulatepbreak
+     \ifconditional\splitofftabulatewhitespace
+       \flushtabulatewhitespace
+     \fi
+   \stoptabulatenoalign}
 
 %D \startbuffer
 %D \starttabulate[|c|p|p|]
@@ -1802,6 +1830,53 @@
 %    \stoptabulatenoalign}
 
 \appendtoks\let\TB\TabulateTB\to\everytabulate
+
+%D Some new trickery:
+%D
+%D \startbuffer
+%D \settrue\splitofftabulatewhitespace
+%D
+%D \starttabulate[|p(2cm)|p(2cm)|p(2cm)|]
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \par
+%D                                 test 3b          \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[line]
+%D                                 test 3b          \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[halfline]
+%D                                 test 3b
+%D                                 \blank[halfline]
+%D                                 test 3c          \NC \NR
+%D     \NC \blank  \NC \blank  \NC \blank           \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[halfline]
+%D                                 test 3b
+%D                                 \blank[halfline]
+%D                                 test 3c          \NC \NR
+%D     \NC \blank  \NC \blank  \NC                  \NC \NR
+%D     \NC test 1a
+%D         \par
+%D         test 1b
+%D         \par
+%D         test 1b \NC test 2a
+%D                     \par
+%D                     test 2b
+%D                     \par
+%D                     test 2b \NC test 3a          \NC \NR
+%D     \NC test 1a
+%D         \blank
+%D         test 1b
+%D         \par
+%D         test 1b \NC test 2a
+%D                     \par
+%D                     test 2b
+%D                     \blank
+%D                     test 2b \NC test 3a          \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
 
 % \starttabulatie[|mc|]
 % \NC \digits{100.000,00} \NC\NR

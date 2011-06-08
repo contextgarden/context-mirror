@@ -359,6 +359,7 @@
 		<cd:variable name='previousoddpage' value='vorigeonevenpagina'/>
 		<cd:variable name='previouspage' value='vorigepagina'/>
 		<cd:variable name='previoussubpage' value='vorigesubpagina'/>
+		<cd:variable name='print' value='print'/>
 		<cd:variable name='printable' value='printbaar'/>
 		<cd:variable name='process' value='proces'/>
 		<cd:variable name='product' value='produkt'/>

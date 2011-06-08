@@ -5,7 +5,7 @@
 %D       subtitle=Natural Tables,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -923,19 +923,6 @@
         \fi
       \egroup}}
 
-% \def\begintbl
-%   {\global\tblspn\zerocount
-%    \global\tblcol\zerocount
-%    \global\tblrow\zerocount
-%    \global\advance\tblrow\minusone
-%    \tabskip\zeropoint
-%    \halign\bgroup
-%    \registerparoptions %  new
-%    \ignorespaces##\unskip&&\ignorespaces##\unskip\cr}
-
-% \def\endtbl
-%   {\egroup}
-
 \let\dotagTABLEcell\relax
 
 \def\begintbl
@@ -950,7 +937,8 @@
    \halign\bgroup
    \registerparoptions
    % watch out: tagging the cell happens at the outer level (faster)
-   \ignorespaces##\unskip&&\dostarttagged\t!tablecell\empty\ignorespaces##\unskip\dostoptagged\cr} % one too many
+%  \ignorespaces##\unskip&&\dostarttagged\t!tablecell\empty\ignorespaces##\unskip\dostoptagged\cr} % one too many
+   \ignorespaces##\unskip&&\ignorespaces##\unskip\cr} % one too many
 
 \def\endtbl
   {\dostoptagged\egroup
@@ -1009,16 +997,17 @@
      \settblhei{#1}{\the\ht\scratchbox}%
    \fi}%
 
-\let\dotagnoftablecolumns\relax
-\let\dotagnoftablerows   \relax
+\let\dotagnofTABLEcolumns\relax
+\let\dotagnofTABLErows   \relax
 
 \def\domakeTBLthree#1 #2 %
   {% height
+\dostarttagged\t!tablecell\empty
    \!!counta \gettblcol{#1}{#2}\relax
    \!!countb \gettblrow{#1}{#2}\relax
    \!!heighta\gettblht {#1}{#2}\relax
-\dotagnoftablecolumns
-\dotagnoftablerows
+\dotagnofTABLEcolumns
+\dotagnofTABLErows
    \scratchdimen\zeropoint
    \ifnum\!!counta=\maximumcol\relax
      % case: nc=maxcolumns
@@ -1041,7 +1030,10 @@
       \advance\scratchcounter\plusone}%
    \edef\widthTBL{\the\dimexpr\scratchdimen-\tbltblcolumndistance\relax}%
    % cell
-   \setbox\scratchbox\hbox{\gettbltxt{#1}{#2}}%
+   \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute \bgroup
+%    \dotagTABLEcell
+      \gettbltxt{#1}{#2}%
+   \egroup
    \ifnum\!!counta=\maximumcol\relax
      % case: nc=maxcolumns
    \else
@@ -1057,7 +1049,7 @@
    \else
      \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
    \fi
-   \dotagTABLEcell} % right spot
+   \dostoptagged} % right spot
 
 \def\inTBLcell#1#2% hm, do we need #1 #2 ? we use tblcol anyway
   {\doifnotinset\localwidth{\v!fit,\v!broad}% user set

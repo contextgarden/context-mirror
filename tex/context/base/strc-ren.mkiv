@@ -5,7 +5,7 @@
 %D       subtitle=Section Rendering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -27,45 +27,45 @@
 
 \unexpanded\def\placeheadmargintexts
   {\the\everyheadstart
-   \doif{\structureheadparameter\c!margintext}\v!yes\placemargincontent}
+   \doif{\headparameter\c!margintext}\v!yes\placemargincontent}
 
 \unexpanded\def\setupheadcomponentfont#1#2%
   {\dontconvertfont
-   \ifconditional\structureheadisdisplay
-     \edef\askedstructureheadinterlinespace{\structureheadparameter\c!interlinespace}%
-     \ifx\askedstructureheadinterlinespace\empty
+   \ifconditional\headisdisplay
+     \edef\askedheadinterlinespace{\headparameter\c!interlinespace}%
+     \ifx\askedheadinterlinespace\empty
        % here the interline space is only set when style sets no space
        \setfalse\fontattributeisset
        \setfalse\interlinespaceisset
-       \dosetstructureheadattributes\c!style\c!color
+       \dosetheadattributes\c!style\c!color
        \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
          \setupinterlinespace
        \fi \fi
-       \setfalse\fontattributeisset \dosetstructureheadattributes#1#2%
+       \setfalse\fontattributeisset \dosetheadattributes#1#2%
        \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
          \setupinterlinespace
        \fi \fi
      \else
        % here the set interline space overloads any other set space in the style
        \setfalse\fontattributeisset
-       \dosetstructureheadattributes\c!style\c!color
+       \dosetheadattributes\c!style\c!color
        \ifconditional\fontattributeisset
-         \dosetupcheckedinterlinespace\askedstructureheadinterlinespace
+         \dosetupcheckedinterlinespace\askedheadinterlinespace
        \fi
        \setfalse\fontattributeisset
-       \dosetstructureheadattributes#1#2%
+       \dosetheadattributes#1#2%
        \ifconditional\fontattributeisset
-         \dosetupcheckedinterlinespace\askedstructureheadinterlinespace
+         \dosetupcheckedinterlinespace\askedheadinterlinespace
        \fi
      \fi
    \else
      \setfalse\fontattributeisset
-     \dosetstructureheadattributes\c!style\c!color
+     \dosetheadattributes\c!style\c!color
      \ifconditional\fontattributeisset
        \setupspacing
      \fi
      \setfalse\fontattributeisset
-     \dosetstructureheadattributes#1#2%
+     \dosetheadattributes#1#2%
      \ifconditional\fontattributeisset
        \setupspacing
      \fi
@@ -74,23 +74,23 @@
 \def\doplaceheadtextcomponent#1%
   {\begingroup
      \setupheadcomponentfont\c!textstyle\c!textcolor
-     \structureheadparameter\c!commandbefore
+     \headparameter\c!commandbefore
      \placeheadmargintexts
-     \ifcsname\??nh\currentstructurehead\c!deeptextcommand\endcsname
-       \expandafter\let\expandafter\deepstructuretitlecommand\csname\??nh\currentstructurehead\c!deeptextcommand\endcsname
+     \ifcsname\??nh\currenthead\c!deeptextcommand\endcsname
+       \expandafter\let\expandafter\deepstructuretitlecommand\csname\??nh\currenthead\c!deeptextcommand\endcsname
      \fi
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \ifconditional\headisdisplay % \ifdisplaysectionhead
        % struts can be nilled with \setnostrut
-       \structureheadparameter\c!textcommand{\setstrut\begstrut#1\endstrut}%
+       \headparameter\c!textcommand{\setstrut\begstrut#1\endstrut}%
        \xdef\localheadheight    {\the\strutht}%
        \xdef\localheaddepth     {\the\strutdp}%
        \xdef\localheadlineheight{\the\lineheight}%
        % == \globallet\localheaddepth\strutdepth
      \else
-       \structureheadparameter\c!textcommand{#1}%
+       \headparameter\c!textcommand{#1}%
      \fi
-     \structureheadparameter\c!commandafter
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \headparameter\c!commandafter
+     \ifconditional\headisdisplay % \ifdisplaysectionhead
        \endgraf
      \fi
    \endgroup}
@@ -99,14 +99,14 @@
   {\begingroup
      \setupheadcomponentfont\c!numberstyle\c!numbercolor
      \placeheadmargintexts
-     \ifcsname\??nh\currentstructurehead\c!deepnumbercommand\endcsname
-       \expandafter\let\expandafter\deepstructurenumbercommand\csname\??nh\currentstructurehead\c!deeptextcommand\endcsname
+     \ifcsname\??nh\currenthead\c!deepnumbercommand\endcsname
+       \expandafter\let\expandafter\deepstructurenumbercommand\csname\??nh\currenthead\c!deeptextcommand\endcsname
      \fi
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \ifconditional\headisdisplay % \ifdisplaysectionhead
        % can be nilled with \setnostrut
-       \structureheadparameter\c!numbercommand{\setstrut\begstrut#1\endstrut}%
+       \headparameter\c!numbercommand{\setstrut\begstrut#1\endstrut}%
      \else
-       \structureheadparameter\c!numbercommand{#1}%
+       \headparameter\c!numbercommand{#1}%
      \fi
    \endgroup}
 
@@ -116,74 +116,74 @@
 
 \let\currentstructurereferenceattribute\attributeunsetvalue
 
-\def\structureheadreferenceattributes
+\def\headreferenceattributes
   {\iflocation
      attr \destinationattribute \currentstructureattribute
      attr \referenceattribute   \currentstructurereferenceattribute
    % attr \internalattribute    \nextinternalreference
    \fi}
 
-\def\setinlinestructureheadreferenceattributes
-  {\ifconditional\structureheadisdisplay \else \iflocation
+\def\setinlineheadreferenceattributes
+  {\ifconditional\headisdisplay \else \iflocation
      \attribute\destinationattribute\currentstructureattribute
      \attribute\referenceattribute  \currentstructurereferenceattribute
    % \attribute\internalattribute   \nextinternalreference
    \fi \fi}
 
-\def\docheckstructureheadreference
-  {\edef\currentstructureheadinteraction{\structureheadparameter\c!interaction}%
-   \ifx\currentstructureheadinteraction\v!list
+\def\docheckheadreference
+  {\edef\currentheadinteraction{\headparameter\c!interaction}%
+   \ifx\currentheadinteraction\v!list
      % setuphead[<section>][interaction=list,...]
      \dogetsimplepagereference{bck:\nextinternalreference}%
      \let\currentstructurereferenceattribute\currentreferenceattribute
-   \else\ifx\currentstructureheadinteraction\v!reference
+   \else\ifx\currentheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
-     \edef\currentstructureheadbackreference{\structurevariable{references.backreference}}%
-     \ifx\currentstructureheadbackreference\empty \else
-       \dogetsimplepagereference\currentstructureheadbackreference
+     \edef\currentheadbackreference{\structurevariable{references.backreference}}%
+     \ifx\currentheadbackreference\empty \else
+       \dogetsimplepagereference\currentheadbackreference
        \let\currentstructurereferenceattribute\currentreferenceattribute
      \fi
    \else
       % maybe auto: backreference when given, else list
    \fi\fi}
 
-\unexpanded\def\placestructureheadtext
+\unexpanded\def\placeheadtext
   {\beginheadplacement
-   \setstructureheadmarking
+   \setheadmarking
    \doresettructureheadnumbercontent
-   \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes to \zeropoint{}%
+   \ifconditional\headleaveempty
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else
-     \docheckstructureheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes
-       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
+     \docheckheadreference
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
+       {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
-        \dosetfontattribute{\??nh\currentstructurehead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
-        \setinlinestructureheadreferenceattributes
-        \structureheadparameter\c!command{}{\doplaceheadtextcomponent\getstructureheadtitle}}%
+        \dosetfontattribute{\??nh\currenthead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
+        \setinlineheadreferenceattributes
+        \headparameter\c!command{}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
-   \endheadplacement{\getstructureheadsyncs}}
+   \endheadplacement{\getheadsyncs}}
 
-\unexpanded\def\placestructureheadnumbertext
+\unexpanded\def\placeheadnumbertext
   {\beginheadplacement
-   \setstructureheadmarking
-   \doiftextelse{\getstructureheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
-   \ifconditional\structureheadleaveempty
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes to \zeropoint{}%
+   \setheadmarking
+   \doiftextelse{\getheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
+   \ifconditional\headleaveempty
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes to \zeropoint{}%
      \makestrutofbox\sectionheadbox
    \else % = needed
-     \docheckstructureheadreference
-     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \structureheadreferenceattributes
-       {\dosetlocalgridsnapping{\structureheadparameter\c!internalgrid}%
-        \dosetfontattribute{\??nh\currentstructurehead}\c!style
-        \setinlinestructureheadreferenceattributes
-        \structureheadparameter\c!command{\doplaceheadnumbercomponent\getstructureheadnumber}{\doplaceheadtextcomponent\getstructureheadtitle}}%
+     \docheckheadreference
+     \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
+       {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
+        \dosetfontattribute{\??nh\currenthead}\c!style
+        \setinlineheadreferenceattributes
+        \headparameter\c!command{\doplaceheadnumbercomponent\getheadnumber}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
-   \endheadplacement{\getstructureheadsyncs}}
+   \endheadplacement{\getheadsyncs}}
 
-\unexpanded\def\placestructureheadempty
-  {\hbox \structureheadreferenceattributes {\getstructureheadsyncs}}
+\unexpanded\def\placeheadempty
+  {\hbox \headreferenceattributes {\getheadsyncs}}
 
 %D \starttyping
 %D \def\StretchedBox#1%
@@ -205,14 +205,14 @@
 
 \def\dolocalheadsetup  %  koppeling met standaard kopcommando / engels
   {\forgetall          %  traag dus ...
-   \doifsomething{\structureheadparameter\c!align    }     {\normalexpanded{\noexpand\setupalign    [\structureheadparameter\c!align    ]}}%
-   \doifsomething{\structureheadparameter\c!tolerance}     {\normalexpanded{\noexpand\setuptolerance[\structureheadparameter\c!tolerance]}}%
-   \doif         {\structureheadparameter\c!strut    }\v!no{\setnostrut}% new
+   \doifsomething{\headparameter\c!align    }     {\normalexpanded{\noexpand\setupalign    [\headparameter\c!align    ]}}%
+   \doifsomething{\headparameter\c!tolerance}     {\normalexpanded{\noexpand\setuptolerance[\headparameter\c!tolerance]}}%
+   \doif         {\headparameter\c!strut    }\v!no{\setnostrut}% new
    \def\\{\crlf\strut\ignorespaces}}
 
 \def\beginheadplacement
   {\bgroup
-   \setsystemmode\currentstructurehead
+   \setsystemmode\currenthead
    \xdef\localheadheight    {\the\strutht}%
    \xdef\localheaddepth     {\the\strutdp}%
    \xdef\localheadlineheight{\the\lineheight}%
@@ -220,7 +220,7 @@
    \everypar\emptytoks % needed indeed
    \noindent           % ipv \whitespace elders, na \forgetall !
    \bgroup
-   \doifinsetelse{\structureheadparameter\c!aligntitle}{\v!yes,\v!float}% new
+   \doifinsetelse{\headparameter\c!aligntitle}{\v!yes,\v!float}% new
      {\skip0 1\leftskip
       \skip2 1\rightskip
       \xdef\localheadskip{\the\skip0}%
@@ -234,7 +234,7 @@
    \dontcomplain
    \postponenotes
    \iflocation
-     \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+     \ifconditional\headisdisplay % \ifdisplaysectionhead
      \else
        % obsolete: \noninterferingmarks
      \fi
@@ -282,10 +282,10 @@
 
 \def\endheadplacement#1%
   {\noflines\zerocount
-   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+   \ifconditional\headisdisplay % \ifdisplaysectionhead
      % new (todo tight == one following line up)
      \processaction
-       [\structureheadparameter\c!hang]
+       [\headparameter\c!hang]
        [    \v!line=>\hangheadplacement\noflines\zerocount,
            \v!broad=>\hangheadplacement\getnoflines\scratchdimen,
              \v!fit=>\hangheadplacement\getrawnoflines\scratchdimen,
@@ -297,21 +297,21 @@
      % kind of special, we want to snap heads also according to local specs local
      \ifgridsnapping
        \begingroup
-       \edef\currentstructureheadgridsnapping{\structureheadparameter\c!grid}%
-       \ifconditional\structureheadisdisplay
-         \ifx\currentstructureheadgridsnapping\empty\else
-           \dosetstructureheadattributes\c!style\c!color
+       \edef\currentheadgridsnapping{\headparameter\c!grid}%
+       \ifconditional\headisdisplay
+         \ifx\currentheadgridsnapping\empty\else
+           \dosetheadattributes\c!style\c!color
            \setupinterlinespace
-           \dosetstructureheadattributes\c!textstyle\c!textcolor
+           \dosetheadattributes\c!textstyle\c!textcolor
            \setupinterlinespace
          \fi
        \fi
-       \snaptogrid[\currentstructureheadgridsnapping]\hbox
-         {\hskip\localheadskip\hskip\structureheadparameter\c!margin\box\sectionheadbox}%
+       \snaptogrid[\currentheadgridsnapping]\hbox
+         {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
        \endgroup
      \else
        \hbox
-         {\hskip\localheadskip\hskip\structureheadparameter\c!margin\box\sectionheadbox}%
+         {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
      \fi
      \flushnotes % new, not really needed
      \endgraf
@@ -330,9 +330,9 @@
      \globallet\headlastlinewidth\!!zeropoint
      #1%
      \hskip\numberheaddistance\!!plus\numberheaddistance\!!minus.25\dimexpr\numberheaddistance\relax
-     \hskip\continuousstructureheadsignal\ignorespaces
+     \hskip\continuousheadsignal\ignorespaces
    \fi
-   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
+   \ifconditional\headisdisplay % \ifdisplaysectionhead
      \ifvmode
        \ifgridsnapping % important, font related depth, see comment
          \prevdepth\strutdp
@@ -343,8 +343,8 @@
    \fi
    \egroup
    \egroup
-   \ifconditional\structureheadisdisplay % \ifdisplaysectionhead
-     \checknextindentation[\structureheadparameter\c!indentnext]%
+   \ifconditional\headisdisplay % \ifdisplaysectionhead
+     \checknextindentation[\headparameter\c!indentnext]%
    \else
      \nonoindentation % recently added, was a bug
    \fi}
@@ -373,7 +373,7 @@
    \setvalue{\??ns::#1}}
 
 \def\presetnumberheadalternative
-  {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\structureheadisdisplay}
+  {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\headisdisplay}
 
 \def\normalplacehead
   {\csname\??ns::\ifcsname\??ns::\numberheadalternative\endcsname\numberheadalternative\else\v!normal\fi\endcsname}
@@ -382,7 +382,7 @@
   {\vbox
      {\localheadsetup
       \begstrut
-      \ifconditional\structureheadshownumber % \ifheadnumbercontent
+      \ifconditional\headshownumber % \ifheadnumbercontent
         #1\hskip\numberheaddistance
       \fi
       #2}}
@@ -397,10 +397,10 @@
 \defineheadplacement[\v!normal][\v!vertical]#1#2%
   {\vbox
      {\localheadsetup
-      \edef\headwidth      {\structureheadparameter\c!width      }%
-      \edef\headnumberwidth{\structureheadparameter\c!numberwidth}%
-      \edef\headtextwidth  {\structureheadparameter\c!textwidth  }%
-      \ifconditional\structureheadshownumber
+      \edef\headwidth      {\headparameter\c!width      }%
+      \edef\headnumberwidth{\headparameter\c!numberwidth}%
+      \edef\headtextwidth  {\headparameter\c!textwidth  }%
+      \ifconditional\headshownumber
         \ifx\headwidth\empty
         \else
           \ifx\headnumberwidth\empty
@@ -444,7 +444,7 @@
      {\localheadsetup
       \begstrut % use one \strut here!
       \dontleavehmode % in case there is no strut, else side effects with llap
-      \ifconditional\structureheadshownumber
+      \ifconditional\headshownumber
         \llap{\hbox{\hfill{#1}\hskip\localheadskip\hskip\leftmargindistance}}% introduces whitespace
         % maybe better:
         % \inleftmargin{\hbox{\hss{#1}\hskip\localheadskip}}%
@@ -460,7 +460,7 @@
       \veryraggedcenter
       \let\\\endgraf
       \let\crlf\endgraf
-      \ifconditional\structureheadshownumber
+      \ifconditional\headshownumber
         \strut#1\par
       \fi
       \begstrut#2}}
@@ -468,14 +468,14 @@
 \defineheadplacement[\v!text][\v!horizontal]#1#2%
   {\bgroup
    \localheadsetup % no stretch in distance
-   \ifconditional\structureheadshownumber
+   \ifconditional\headshownumber
      {#1}\kern\numberheaddistance
    \fi
    {\begstrut#2}%
    \egroup}
 
 \unexpanded\def\placeheadlohi#1#2#3%
-  {\ifconditional\structureheadshownumber
+  {\ifconditional\headshownumber
      \setbox0\hbox{#2}
      \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
      \hbox{\box0\hskip\numberheaddistance\box2}%
@@ -495,7 +495,7 @@
 %
 % \defineheadplacement[MyTest][horizontal]#1#2%
 %   {\startlocalheadsetup
-%   %\ChapterInMargin{\structureheadhbox{\strut#2}}% proper destination, ref okay
+%   %\ChapterInMargin{\headhbox{\strut#2}}% proper destination, ref okay
 %    \ChapterInMargin{\strut#2}% zero destination, ref okay
 %    \stoplocalheadsetup}
 %
@@ -503,8 +503,8 @@
 %   [chapter]
 %   [alternative=MyTest]
 
-\unexpanded\def\structureheadhbox{\hbox\structureheadreferenceattributes}
-\unexpanded\def\structureheadvbox{\vbox\structureheadreferenceattributes}
+\unexpanded\def\headhbox{\hbox\headreferenceattributes}
+\unexpanded\def\headvbox{\vbox\headreferenceattributes}
 
 \unexpanded\def\startlocalheadsetup{\bgroup\localheadsetup}
 \unexpanded\def\stoplocalheadsetup {\egroup}

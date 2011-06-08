@@ -2527,9 +2527,39 @@ function file.join(...)
 end
 
 
+-- We should be able to use:
+--
+-- function file.is_writable(name)
+--     local a = attributes(name) or attributes(dirname(name,"."))
+--     return a and sub(a.permissions,2,2) == "w"
+-- end
+--
+-- But after some testing Taco and I came up with:
+
 function file.is_writable(name)
-    local a = attributes(name) or attributes(dirname(name,"."))
-    return a and sub(a.permissions,2,2) == "w"
+    if lfs.isdir(name) then
+        name = name .. "/m_t_x_t_e_s_t.tmp"
+        local f = io.open(name,"wb")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
+        end
+    elseif lfs.isfile(name) then
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            return true
+        end
+    else
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
+        end
+    end
+    return false
 end
 
 function file.is_readable(name)
@@ -3694,12 +3724,29 @@ end
 
 
 local lpegmatch = lpeg.match
-local utftype = lpeg.patterns.utftype
+local patterns = lpeg.patterns
+local utftype = patterns.utftype
 
 function unicode.filetype(data)
     return data and lpegmatch(utftype,data) or "unknown"
 end
 
+local toentities = lpeg.Cs (
+    (
+        patterns.utf8one
+            + (
+                patterns.utf8two
+              + patterns.utf8three
+              + patterns.utf8four
+            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+    )^0
+)
+
+patterns.toentities = toentities
+
+function utf.toentities(str)
+    return lpegmatch(toentities,str)
+end
 
 
 
@@ -3759,7 +3806,7 @@ utilities        = utilities or {}
 utilities.tables = utilities.tables or { }
 local tables     = utilities.tables
 
-local format, gmatch = string.format, string.gmatch
+local format, gmatch, rep = string.format, string.gmatch, string.rep
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
 
@@ -3828,11 +3875,11 @@ end
 
 -- experimental
 
-local function toxml(t,d,result)
+local function toxml(t,d,result,step)
     for k, v in table.sortedpairs(t) do
         if type(v) == "table" then
             result[#result+1] = format("%s<%s>",d,k)
-            toxml(v,d.." ",result)
+            toxml(v,d..step,result)
             result[#result+1] = format("%s</%s>",d,k)
         elseif tonumber(k) then
             result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
@@ -3842,13 +3889,15 @@ local function toxml(t,d,result)
     end
 end
 
-function table.toxml(t,name,nobanner)
+function table.toxml(t,name,nobanner,indent,spaces)
     local noroot = name == false
     local result = (nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
+    local indent = rep(" ",indent or 0)
+    local spaces = rep(" ",spaces or 1)
     if noroot then
-        toxml( t, "", result)
+        toxml( t, inndent, result, spaces)
     else
-        toxml( { [name or "root"] = t }, "", result)
+        toxml( { [name or "root"] = t }, indent, result, spaces)
     end
     return concat(result,"\n")
 end
@@ -6653,6 +6702,10 @@ local function handle_any_entity(str)
                 a = entities[str]
             end
             if a then
+if type(a) == "function" then
+    report_xml("expanding entity &%s; (function)",str)
+    a = a(str) or ""
+end
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end
@@ -6784,6 +6837,8 @@ local function normalentity(k,v  ) entities[k] = v end
 local function systementity(k,v,n) entities[k] = v end
 local function publicentity(k,v,n) entities[k] = v end
 
+-- todo: separate dtd parser
+
 local begindoctype     = open * P("!DOCTYPE")
 local enddoctype       = close
 local beginset         = P("[")
@@ -6791,12 +6846,16 @@ local endset           = P("]")
 local doctypename      = C((1-somespace-close)^0)
 local elementdoctype   = optionalspace * P("<!ELEMENT") * (1-close)^0 * close
 
+local basiccomment     = begincomment * ((1 - endcomment)^0) * endcomment
+
 local normalentitytype = (doctypename * somespace * value)/normalentity
 local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
 local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
 local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype) * optionalspace * close
 
-local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + space)^0 * optionalspace * endset
+-- we accept comments in doctypes
+
+local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + basiccomment + space)^0 * optionalspace * endset
 local definitiondoctype= doctypename * somespace * doctypeset
 local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
 local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
@@ -11136,8 +11195,56 @@ resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARE
 resolvers.luacnfname    = 'texmfcnf.lua'
 resolvers.luacnfstate   = "unknown"
 
--- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- what a rubish path
-resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
+-- The web2c tex binaries as well as kpse have built in paths for the configuration
+-- files and there can be a depressing truckload of them. This is actually the weak
+-- spot of a distribution. So we don't want:
+--
+-- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}'
+--
+-- but instead use:
+--
+-- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c}}'
+--
+-- which does not make texlive happy as there is a texmf-local tree one level up
+-- (sigh), so we need this. (We can assume web2c as mkiv does not run on older
+-- texlives anyway.
+--
+-- texlive:
+--
+-- selfautodir:
+-- selfautoparent:
+-- selfautodir:share/texmf-local/web2c
+-- selfautodir:share/texmf/web2c
+-- selfautodir:texmf-local/web2c
+-- selfautodir:texmf/web2c
+-- selfautoparent:share/texmf-local/web2c
+-- selfautoparent:share/texmf/web2c
+-- selfautoparent:texmf-local/web2c
+-- selfautoparent:texmf/web2c
+--
+-- minimals:
+--
+-- home:texmf/web2c
+-- selfautoparent:texmf-local/web2c
+-- selfautoparent:texmf-context/web2c
+-- selfautoparent:texmf/web2c
+
+if this_is_texlive then
+ -- resolvers.luacnfspec = '{selfautodir:,selfautoparent:}{,{/share,}/texmf{-local,}/web2c}'
+ -- resolvers.luacnfspec = '{selfautodir:{/share,}/texmf-local/web2c,selfautoparent:{/share,}/texmf{-local,}/web2c}'
+ -- resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c;selfautoparent:/texmf{-local,}/web2c'
+    resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
+else
+    resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
+end
+
+-- which (as we want users to use the web2c path) be can be simplified to this:
+--
+-- if environment and environment.ownpath and string.find(environment.ownpath,"[\\/]texlive[\\/]") then
+--     resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c,selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
+-- else
+--     resolvers.luacnfspec = 'selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
+-- end
 
 
 
@@ -11332,12 +11439,20 @@ local function makepathexpression(str)
     end
 end
 
-local function reportcriticalvariables()
+local function reportcriticalvariables(cnfspec)
     if trace_locating then
         for i=1,#resolvers.criticalvars do
             local k = resolvers.criticalvars[i]
             local v = resolvers.getenv(k) or "unknown" -- this one will not resolve !
             report_resolving("variable '%s' set to '%s'",k,v)
+        end
+        report_resolving()
+        if cnfspec then
+            if type(cnfspec) == "table" then
+                report_resolving("using configuration specification '%s'",concat(cnfspec,","))
+            else
+                report_resolving("using configuration specification '%s'",cnfspec)
+            end
         end
         report_resolving()
     end
@@ -11354,7 +11469,7 @@ local function identify_configuration_files()
         else
             resolvers.luacnfstate = "environment"
         end
-        reportcriticalvariables()
+        reportcriticalvariables(cnfspec)
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
@@ -11390,6 +11505,19 @@ local function load_configuration_files()
             if blob then
                 local setups = instance.setups
                 local data = blob()
+local parent = data and data.parent
+if parent then
+    local filename = filejoin(pathname,parent)
+    local realname = resolvers.resolve(filename) -- no shortcut
+    local blob = loadfile(realname)
+    if blob then
+        local parentdata = blob()
+        if parentdata then
+            report_resolving("loading configuration file '%s'",filename)
+            data = table.merged(parentdata,data)
+        end
+    end
+end
                 data = data and data.content
                 if data then
                     if trace_locating then

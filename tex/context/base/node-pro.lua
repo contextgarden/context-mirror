@@ -16,15 +16,16 @@ local report_nodes = logs.reporter("nodes","processors")
 
 local nodes, node = nodes, node
 
-local nodecodes   = nodes.nodecodes
-local glyph_code  = nodecodes.glyph
-local tasks       = nodes.tasks
+local nodecodes     = nodes.nodecodes
+local glyph_code    = nodecodes.glyph
+local tasks         = nodes.tasks
 
-local free_node   = node.free
-local first_glyph = node.first_glyph or node.first_character
+local free_node     = node.free
+local first_glyph   = node.first_glyph or node.first_character
+local has_attribute = node.has_attribute
 
-nodes.processors  = nodes.processors or { }
-local processors  = nodes.processors
+nodes.processors    = nodes.processors or { }
+local processors    = nodes.processors
 
 -- vbox: grouptype: vbox vtop output split_off split_keep  | box_type: exactly|aditional
 -- hbox: grouptype: hbox adjusted_hbox(=hbox_in_vmode)     | box_type: exactly|aditional

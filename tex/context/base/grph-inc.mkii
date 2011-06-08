@@ -5,7 +5,7 @@
 %D       subtitle=Figure Inclusion,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -660,8 +660,8 @@
        \xdef\noffigurepages{\number\nofinsertpages}%
      \fi
    \fi
-   \global\wd\foundexternalfigure\finalscaleboxwidth
-   \global\ht\foundexternalfigure\finalscaleboxheight
+   \wd\foundexternalfigure\finalscaleboxwidth
+   \ht\foundexternalfigure\finalscaleboxheight
    \global\let\lastfigureobjectname\externalfigurestamp
    \doresetobjects} % clean up driver left overs
 

@@ -6,17 +6,17 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
     license   = "see context related readme files"
 }
 
-local copy_node, new_node = node.copy, node.new
+local copy_node  = node.copy
+local new_node   = node.new
 
-local nodepool = nodes.pool
-
-local register = nodepool.register
+local nodepool   = nodes.pool
+local register   = nodepool.register
 
 local pdfliteral = register(new_node("whatsit", 8))    pdfliteral.mode  = 1
 local pdfdest    = register(new_node("whatsit",19))    pdfdest.named_id = 1 -- xyz_zoom untouched
 local pdfannot   = register(new_node("whatsit",15))
 
-local variables = interfaces.variables
+local variables  = interfaces.variables
 
 local views = { -- beware, we do support the pdf keys but this is *not* official
     xyz   = 0, [variables.standard]  = 0,

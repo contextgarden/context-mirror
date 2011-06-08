@@ -26,21 +26,23 @@ local a_tagged       = attributes.private('tagged')
 local unsetvalue     = attributes.unsetvalue
 local codeinjections = backends.codeinjections
 
-local taglist    = allocate()
-local properties = allocate()
-local labels     = allocate()
-local stack      = { }
-local chain      = { }
-local ids        = { }
-local enabled    = false
-local tagdata    = { } -- used in export
+local taglist     = allocate()
+local properties  = allocate()
+local labels      = allocate()
+local stack       = { }
+local chain       = { }
+local ids         = { }
+local enabled     = false
+local tagdata     = { } -- used in export
+local tagmetadata = { } -- used in export
 
-local tags       = structures.tags
-tags.taglist     = taglist -- can best be hidden
-tags.labels      = labels
-tags.data        = tagdata
+local tags        = structures.tags
+tags.taglist      = taglist -- can best be hidden
+tags.labels       = labels
+tags.data         = tagdata
+tags.metadata     = tagmetadata
 
-local properties = allocate {
+local properties  = allocate {
 
     document           = { pdf = "Div",        nature = "display" },
 
@@ -84,6 +86,7 @@ local properties = allocate {
     table              = { pdf = "Table",      nature = "display" },
     tablerow           = { pdf = "TR",         nature = "display" },
     tablecell          = { pdf = "TD",         nature = "mixed"   },
+
     tabulate           = { pdf = "Table",      nature = "display" },
     tabulaterow        = { pdf = "TR",         nature = "display" },
     tabulatecell       = { pdf = "TD",         nature = "mixed"   },
@@ -99,9 +102,13 @@ local properties = allocate {
     delimited          = { pdf = "Quote",      nature = "inline"  },
     subsentence        = { pdf = "Span",       nature = "inline"  },
 
+    label              = { pdf = "Span",       nature = "mixed"   },
+    number             = { pdf = "Span",       nature = "mixed"   },
+
     float              = { pdf = "Div",        nature = "display" }, -- Figure
-    floatcaption       = { pdf = "Caption",    nature = "display" },
-    floattag           = { pdf = "Span",       nature = "mixed"   },
+    floatcaption       = { pdf = "Caption",    nature = "mixed"   },
+    floatlabel         = { pdf = "Span",       nature = "inline"  },
+    floatnumber        = { pdf = "Span",       nature = "inline"  },
     floattext          = { pdf = "Span",       nature = "mixed"   },
     floatcontent       = { pdf = "P",          nature = "mixed"   },
 
@@ -110,7 +117,9 @@ local properties = allocate {
 
     formulaset         = { pdf = "Div",        nature = "display" },
     formula            = { pdf = "Div",        nature = "display" }, -- Formula
-    formulatag         = { pdf = "Span",       nature = "mixed"   },
+    formulacaption     = { pdf = "Span",       nature = "mixed"   },
+    formulalabel       = { pdf = "Span",       nature = "mixed"   },
+    formulanumber      = { pdf = "Span",       nature = "mixed"   },
     formulacontent     = { pdf = "P",          nature = "display" },
     subformula         = { pdf = "Div",        nature = "display" },
 
@@ -136,12 +145,25 @@ local properties = allocate {
     mfrac              = { pdf = "Span",       nature = "display" },
     mroot              = { pdf = "Span",       nature = "display" },
     msqrt              = { pdf = "Span",       nature = "display" },
+    mfenced            = { pdf = "Span",       nature = "display" },
+
+    mtable             = { pdf = "Table",      nature = "display" }, -- might change
+    mtr                = { pdf = "TR",         nature = "display" }, -- might change
+    mtd                = { pdf = "TD",         nature = "display" }, -- might change
+
+    ignore             = { pdf = "Span",       nature = "mixed"   },
+    metadata           = { pdf = "Div",        nature = "display" },
 
 }
 
 tags.properties = properties
 
-function tags.settagproperty(tag,key,value)
+local lasttags = { }
+local userdata = { }
+
+tags.userdata = userdata
+
+function tags.setproperty(tag,key,value)
     local p = properties[tag]
     if p then
         p[key] = value
@@ -150,10 +172,25 @@ function tags.settagproperty(tag,key,value)
     end
 end
 
-local lasttags = { }
-local userdata = { }
+function tags.registerdata(data)
+    local fulltag = chain[nstack]
+    if fulltag then
+        tagdata[fulltag] = data
+    end
+end
 
-tags.userdata = userdata
+local metadata
+
+function tags.registermetadata(data)
+    local d = settings_to_hash(data)
+    if metadata then
+        table.merge(metadata,d)
+    else
+        metadata = d
+    end
+end
+
+local nstack = 0
 
 function tags.start(tag,specification)
     local label, detail, user
@@ -175,29 +212,36 @@ function tags.start(tag,specification)
     local n = (ids[fulltag] or 0) + 1
     ids[fulltag] = n
     lasttags[tag] = n
---~ print("SETTING",tag,n)
     local completetag = fulltag .. "-" .. n
-    chain[#chain+1] = completetag -- insert(chain,tag .. ":" .. n)
-    stack[#stack+1] = t -- insert(stack,t)
-    taglist[t] = { unpack(chain) } -- we can add key values for alt and actualtext if needed
+    nstack = nstack + 1
+    chain[nstack] = completetag
+    stack[nstack] = t
+    -- a copy as we can add key values for alt and actualtext if needed:
+    taglist[t] = { unpack(chain,1,nstack) }
+    --
     if user and user ~= "" then
         -- maybe we should merge this into taglist or whatever ... anyway there is room to optimize
         -- taglist.userdata = settings_to_hash(user)
         userdata[completetag] = settings_to_hash(user)
+    end
+    if metadata then
+        tagmetadata[completetag] = metadata
+        metadata = nil
     end
     texattribute[a_tagged] = t
     return t
 end
 
 function tags.stop()
-    local t = stack[#stack] stack[#stack] = nil -- local t = remove(stack)
+    if nstack > 0 then
+        nstack = nstack -1
+    end
+    local t = stack[nstack]
     if not t then
         if trace_tags then
-            report_tags("ignoring end tag, previous chain: %s",#chain > 0 and concat(chain[#chain]) or "none")
+            report_tags("ignoring end tag, previous chain: %s",nstack > 0 and concat(chain[nstack],"",1,nstack) or "none")
         end
         t = unsetvalue
-    else
-        chain[#chain] = nil -- remove(chain)
     end
     texattribute[a_tagged] = t
     return t
@@ -216,14 +260,7 @@ function tags.last(tag)
 end
 
 function tags.lastinchain()
-    return chain[#chain]
-end
-
-function tags.registerdata(data)
-    local fulltag = chain[#chain]
-    if fulltag then
-        tagdata[fulltag] = data
-    end
+    return chain[nstack]
 end
 
 function structures.atlocation(str)
@@ -237,9 +274,11 @@ end
 
 statistics.register("structure elements", function()
     if enabled then
-        return format("%s element chains identified",#taglist)
-    else
-        return nil
+        if nstack > 0 then
+            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,nstack))
+        else
+            return format("%s element chains identified",#taglist)
+        end
     end
 end)
 
@@ -249,3 +288,7 @@ directives.register("backend.addtags", function(v)
         enabled = true
     end
 end)
+
+commands.starttag       = tags.start
+commands.stoptag        = tags.stop
+commands.settagproperty = tags.setproperty

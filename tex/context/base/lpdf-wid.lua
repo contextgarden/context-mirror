@@ -16,43 +16,44 @@ local report_attachment = logs.reporter("backend","attachment")
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
-local nodeinjections          = backends.pdf.nodeinjections
-local codeinjections          = backends.pdf.codeinjections
-local registrations           = backends.pdf.registrations
+local nodeinjections           = backends.pdf.nodeinjections
+local codeinjections           = backends.pdf.codeinjections
+local registrations            = backends.pdf.registrations
 
-local executers               = structures.references.executers
-local variables               = interfaces.variables
+local executers                = structures.references.executers
+local variables                = interfaces.variables
 
-local v_hidden                = variables.hidden
-local v_normal                = variables.normal
-local v_auto                  = variables.auto
-local v_embed                 = variables.embed
-local v_unknown               = variables.unknown
-local v_max                   = variables.max
+local v_hidden                 = variables.hidden
+local v_normal                 = variables.normal
+local v_auto                   = variables.auto
+local v_embed                  = variables.embed
+local v_unknown                = variables.unknown
+local v_max                    = variables.max
 
-local pdfconstant             = lpdf.constant
-local pdfdictionary           = lpdf.dictionary
-local pdfarray                = lpdf.array
-local pdfreference            = lpdf.reference
-local pdfunicode              = lpdf.unicode
-local pdfstring               = lpdf.string
-local pdfboolean              = lpdf.boolean
-local pdfcolorspec            = lpdf.colorspec
-local pdfflushobject          = lpdf.flushobject
-local pdfreserveannotation    = lpdf.reserveannotation
-local pdfreserveobject        = lpdf.reserveobject
-local pdfimmediateobject      = lpdf.immediateobject
-local pdfpagereference        = lpdf.pagereference
-local pdfshareobjectreference = lpdf.shareobjectreference
+local pdfconstant              = lpdf.constant
+local pdfdictionary            = lpdf.dictionary
+local pdfarray                 = lpdf.array
+local pdfreference             = lpdf.reference
+local pdfunicode               = lpdf.unicode
+local pdfstring                = lpdf.string
+local pdfboolean               = lpdf.boolean
+local pdfcolorspec             = lpdf.colorspec
+local pdfflushobject           = lpdf.flushobject
+local pdfflushstreamobject     = lpdf.flushstreamobject
+local pdfflushstreamfileobject = lpdf.flushstreamfileobject
+local pdfreserveannotation     = lpdf.reserveannotation
+local pdfreserveobject         = lpdf.reserveobject
+local pdfpagereference         = lpdf.pagereference
+local pdfshareobjectreference  = lpdf.shareobjectreference
 
-local nodepool                = nodes.pool
+local nodepool                 = nodes.pool
 
-local pdfannotation_node      = nodepool.pdfannotation
+local pdfannotation_node       = nodepool.pdfannotation
 
-local hpack_node              = node.hpack
-local write_node              = node.write
+local hpack_node               = node.hpack
+local write_node               = node.write
 
-local pdf_border              = pdfarray { 0, 0, 0 } -- can be shared
+local pdf_border               = pdfarray { 0, 0, 0 } -- can be shared
 
 -- symbols
 
@@ -247,11 +248,11 @@ local basename = string.gsub(basename,"%./","")
     local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
     local f
     if data then
-        f = pdfimmediateobject("stream",data,a())
+        f = pdfflushstreamobject(data,a)
         specification.data = true -- signal that still data but already flushed
     else
         local foundname = specification.foundname or filename
-        f = pdfimmediateobject("streamfile",foundname,a())
+        f = pdfflushstreamfileobject(foundname,a)
     end
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
@@ -269,10 +270,11 @@ function nodeinjections.attachfile(specification)
     local registered = specification.registered or "<unset>"
     local data = specification.data
     local hash
+    local filename
     if data then
         hash = md5.HEX(data)
     else
-        local filename = specification.file
+        filename = specification.file
         if not filename or filename == "" then
             report_attachment("missing file specification: registered '%s', using registered instead",registered)
             filename = registered
@@ -301,7 +303,7 @@ function nodeinjections.attachfile(specification)
         title = ""
     end
     if author == "" then
-        author = v_unknown
+        author = filename or "<unknown>"
     end
     if title == "" then
         title = registered

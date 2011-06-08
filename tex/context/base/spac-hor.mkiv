@@ -5,7 +5,7 @@
 %D       subtitle=Horizontal,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -816,23 +816,20 @@
 
 % needed for unicode:
 
-\unexpanded\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip 1}
-
-\unexpanded\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
-\unexpanded\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
-\unexpanded\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
-\unexpanded\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
-\unexpanded\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
-\unexpanded\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
-\unexpanded\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
-\unexpanded\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
-\unexpanded\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
-%unexpanded\def\nobreakspace            {\penalty\plustenthousand\space}
-\unexpanded\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
-\unexpanded\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
-%unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\hskip\zeropoint}
-\unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
-\unexpanded\def\zerowidthspace          {\hskip\zeropoint}
+%unexpanded\def\breakablethinspace      {\breakabletextormathspace+\thinmuskip1}
+%unexpanded\def\twoperemspace           {\hskip\dimexpr\emwidth/2\relax} % == \enspace
+%unexpanded\def\threeperemspace         {\hskip\dimexpr\emwidth/3\relax}
+%unexpanded\def\fourperemspace          {\hskip\dimexpr\emwidth/4\relax}
+%unexpanded\def\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax} % goodie
+%unexpanded\def\sixperemspace           {\hskip\dimexpr\emwidth/6\relax}
+%unexpanded\def\figurespace             {\begingroup\setbox\scratchbox\hbox{0}\hskip\wd\scratchbox\endgroup} % there is a command for this
+%unexpanded\def\punctuationspace        {\begingroup\setbox\scratchbox\hbox{.}\hskip\wd\scratchbox\endgroup}
+%unexpanded\def\ideographicspace        {\hskip\dimexpr\emwidth/1\relax}
+%unexpanded\def\ideographichalffillspace{\hskip\dimexpr\emwidth/2\relax}
+%unexpanded\def\nobreakspace            {\penalty\plustenthousand\kern\interwordspace}
+%unexpanded\def\narrownobreakspace      {\penalty\plustenthousand\thinspace}
+%unexpanded\def\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
+%unexpanded\def\zerowidthspace          {\hskip\zeropoint}
 
 \definehspace[.5][.1250\emspaceamount] % could also be [.1250\spaceamount]
 \definehspace[1] [.1667\emspaceamount]

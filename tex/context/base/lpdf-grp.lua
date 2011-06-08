@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local format, gsub = string.format, string.gsub
+local concat = table.concat
+local round = math.round
 
 local backends, lpdf = backends, lpdf
 
@@ -61,29 +63,6 @@ function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,s
     shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation)
 end
 
-function lpdf.colorspec(model,ca,default)
-    if ca and ca > 0 then
-        local cv = colors.value(ca)
-        if cv then
-            if model == 1 then
-                model = cv[1]
-            end
-            if model == 2 then
-                return pdfarray { cv[2] }
-            elseif model == 3 then
-                return pdfarray { cv[3],cv[4],cv[5] }
-            elseif model == 4 then
-                return pdfarray { cv[6],cv[7],cv[8],cv[9] }
-            elseif model == 5 then
-                return pdfarray { cv[13] }
-            end
-        end
-    end
-    if default then
-        return default
-    end
-end
-
 -- inline bitmaps but xform'd
 --
 -- we could derive the colorspace if we strip the data
@@ -101,7 +80,7 @@ function nodeinjections.injectbitmap(t)
     local colorspace = t.colorspace
     if colorspace ~= "rgb" and colorspace ~= "cmyk" and colorspace ~= "gray" then
         -- not that efficient but ok
-        local d = string.gsub(t.data,"[^0-9a-f]","")
+        local d = gsub(t.data,"[^0-9a-f]","")
         local b = math.round(#d / (xresolution * yresolution))
         if b == 2 then
             colorspace = "gray"
@@ -147,4 +126,121 @@ function nodeinjections.injectbitmap(t)
         bbox   = { 0, 0, urx, ury },
     }
     return img.node(image)
+end
+
+-- general graphic helpers
+
+function codeinjections.setfigurealternative(data,figure)
+    local request = data.request
+    local display = request.display
+    if display and display ~= ""  then
+        local nested = figures.push {
+            name   = display,
+            page   = request.page,
+            size   = request.size,
+            prefix = request.prefix,
+            cache  = request.cache,
+            width  = request.width,
+            height = request.height,
+        }
+        figures.identify()
+        local displayfigure = figures.check()
+        if displayfigure then
+        --  figure.aform = true
+            img.immediatewrite(figure)
+            local a = pdfarray {
+                pdfdictionary {
+                    Image              = pdfreference(figure.objnum),
+                    DefaultForPrinting = true,
+                }
+            }
+            local d = pdfdictionary {
+                Alternates = pdfreference(pdfflushobject(a)),
+            }
+            displayfigure.attr = d()
+            figures.pop()
+            return displayfigure, nested
+        else
+            figures.pop()
+        end
+    end
+end
+
+function codeinjections.getpreviewfigure(request)
+    local figure = figures.initialize(request)
+    if not figure then
+        return
+    end
+    figure = figures.identify(figure)
+    if not figure then
+        return
+    end
+    figure = figures.check(figure)
+    if not figure then
+        return
+    end
+    local image = figure.status.private
+    if image then
+        img.immediatewrite(image)
+    end
+    return figure
+end
+
+function codeinjections.setfiguremask(data,figure) -- mark
+    local request = data.request
+    local mask = request.mask
+    if mask and mask ~= ""  then
+        figures.push {
+            name   = mask,
+            page   = request.page,
+            size   = request.size,
+            prefix = request.prefix,
+            cache  = request.cache,
+            width  = request.width,
+            height = request.height,
+        }
+        figures.identify()
+        local maskfigure = figures.check()
+        if maskfigure then
+            local image = maskfigure.status.private
+            if image then
+                img.immediatewrite(image)
+                local d = pdfdictionary {
+                    Interpolate  = false,
+                    SMask        = pdfreference(image.objnum),
+                }
+                figure.attr = d()
+            end
+        end
+        figures.pop()
+    end
+end
+
+-- temp hack
+
+local factor = number.dimenfactors.bp
+
+function img.package(image) -- see lpdf-u3d **
+    local boundingbox = image.bbox
+    local imagetag    = "Im" .. image.index
+    local resources   = pdfdictionary {
+        ProcSet = pdfarray {
+            pdfconstant("PDF"),
+            pdfconstant("ImageC")
+        },
+        Resources = pdfdictionary {
+            XObject = pdfdictionary {
+                [imagetag] = pdfreference(image.objnum)
+            }
+        }
+    }
+    local width = boundingbox[3]
+    local height = boundingbox[4]
+    local xform = img.scan {
+        attr   = resources(),
+        stream = format("%s 0 0 %s 0 0 cm /%s Do",width,height,imagetag),
+        bbox   = { 0, 0, width/factor, height/factor },
+    }
+    img.immediatewrite(xform)
+    return xform
 end

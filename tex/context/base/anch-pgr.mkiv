@@ -5,7 +5,7 @@
 %D       subtitle=Positioning Graphics,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -238,7 +238,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
+    \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
 \to \everyinsertpositionaction
 
 \def\docleanpositionboxes#1#2#3% pos tag setups
@@ -247,7 +247,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandlepositionboxes\docleanpositionboxes
+    \let\dohandlepositionboxes\docleanpositionboxes
 \to \everycleanpositionaction
 
 %D A position graphic is a normal (non||reused) \METAPOST\
@@ -352,7 +352,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandleMPpositiongraphic\doinsertMPpositiongraphic
+    \let\dohandleMPpositiongraphic\doinsertMPpositiongraphic
 \to \everyinsertpositionaction
 
 \def\docleanMPpositiongraphic#1#2#3% pos tag setups
@@ -361,7 +361,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandleMPpositiongraphic\docleanMPpositiongraphic
+    \let\dohandleMPpositiongraphic\docleanMPpositiongraphic
 \to \everycleanpositionaction
 
 %D Graphics that span two positions (beware, does not cross pages).
@@ -399,7 +399,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandleMPpositiongraphicrange\doinsertMPpositiongraphicrange
+    \let\dohandleMPpositiongraphicrange\doinsertMPpositiongraphicrange
 \to \everyinsertpositionaction
 
 \def\docleanMPpositiongraphicrange#1#2#3#4% pos tag setups
@@ -408,7 +408,7 @@
    \fi}
 
 \appendtoks
-  \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
+    \let\dohandleMPpositiongraphicrange\docleanMPpositiongraphicrange
 \to \everycleanpositionaction
 
 % will be overloaded, and/or code below moved to core-box
@@ -609,15 +609,15 @@
 \ifx\totalnofparbackgrounds\undefined \newcounter\totalnofparbackgrounds \fi
 
 \appendtoks
-  \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
+    \expanded{\savecurrentvalue\noexpand\totalnofparbackgrounds{\number\nofparbackgrounds}}%
 \to \everybye
 
 % actually we can just ask lua to give us the nofpositions (or a least n<>0)
 
 \appendtoks
-  % a position can be mid paragraph in which case we're behind
-  % this will change when we move positions to lua
-  \initializeparbackgrounds
+    % a position can be mid paragraph in which case we're behind
+    % this will change when we move positions to lua
+    \initializeparbackgrounds
 \to \everystarttext
 
 \def\initializeparbackgrounds
@@ -1362,8 +1362,8 @@
    \box\scratchbox}
 
 \appendtoks
-  \global\advance\noftabpositions\plusone
-  \global\setfalse\tablehaspositions
+    \global\advance\noftabpositions\plusone
+    \global\setfalse\tablehaspositions
 \to \everytabulate
 
 % We need to handle paragraphs as well.
@@ -1386,16 +1386,19 @@
    \iftrialtypesetting\else\ifconditional\tablehaspositions\doflushtabulateepos\fi\fi}
 
 \appendtoks
-  \let\dotablebpos\dotabulatebpos
-  \let\dotableepos\dotabulateepos
-  \glet\doflushtabulateepos\relax
+    \let\dotablebpos\dotabulatebpos
+    \let\dotableepos\dotabulateepos
+    \glet\doflushtabulateepos\relax
 \to \everytabulate
 
 %D In order to prevent potential clashes with abbreviations,
 %D postpone the mapping.
 
 \appendtoks
-  \let\GSC\tbGSC \let\GFC\tbGFC \let\GTC\tbGTC \let\XC\tbXC
+    \let\GSC\tbGSC
+    \let\GFC\tbGFC
+    \let\GTC\tbGTC
+    \let\XC \tbXC
 \to \everytabulate
 
 %D \macros
@@ -1435,14 +1438,17 @@
 \def\normalTABLEquote     {\unskip\!ttRightGlue&\omit\tablepos&}                  % "
 
 \appendtoks
-  \global\advance\noftabpositions\plusone
-  \global\setfalse\tablehaspositions
+    \global\advance\noftabpositions\plusone
+    \global\setfalse\tablehaspositions
 \to \everytable
 
 %D Since we don't want nameclashes:
 
 \appendtoks
-  \let\GSC\tbGSC \let\GFC\tbGFC \let\GTC\tbGTC \let\XC\tbXC
+    \let\GSC\tbGSC
+    \let\GFC\tbGFC
+    \let\GTC\tbGTC
+    \let\XC \tbXC
 \to \everytable
 
 %D In the previous example, we could have provided an overlay to

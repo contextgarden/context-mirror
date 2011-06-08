@@ -1,0 +1,89 @@
+%D \module
+%D   [       file=type-lucidanova,
+%D        version=2011.05.18,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Lucida Nova Opentype,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% NOTA BENE: class feattures and goodies get expanded!
+
+\starttypescriptcollection[lucidanova]
+
+    \starttypescript [\s!math] [lucidanova]
+        \definefontsynonym [MathRoman]           [\s!file:LucidaMath.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [lucidanova]
+        \definefontsynonym [\s!Serif]            [\s!file:LucidaBright.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:LucidaBright-Demi.otf]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:LucidaBright-Italic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:LucidaBright-DemiItalic.otf]
+        \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
+        \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [lucidanova]
+        \definefontsynonym [\s!Sans]             [\s!file:LucidaSans.otf]
+        \definefontsynonym [\s!SansBold]         [\s!file:LucidaSans-Bold.otf]
+        \definefontsynonym [\s!SansItalic]       [\s!file:LucidaSans-Oblique.otf]
+        \definefontsynonym [\s!SansBoldItalic]   [\s!file:LucidaSans-BoldOblique.otf]
+        \definefontsynonym [\s!SansSlanted]      [\s!MonoItalic]
+        \definefontsynonym [\s!SansBoldSlanted]  [\s!MonoBoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [lucidanova]
+        \definefontsynonym [\s!Mono]             [\s!file:LucidaSans-Typewriter.otf]
+        \definefontsynonym [\s!MonoBold]         [\s!file:LucidaSans-TypewriterBold.otf]
+        \definefontsynonym [\s!MonoItalic]       [\s!file:LucidaSans-TypewriterOblique.otf]
+        \definefontsynonym [\s!MonoBoldItalic]   [\s!file:LucidaSans-TypewriterBoldOblique.otf]
+        \definefontsynonym [\s!MonoSlanted]      [\s!MonoItalic]
+        \definefontsynonym [\s!MonoBoldSlanted]  [\s!MonoBoldItalic]
+    \stoptypescript
+
+    \starttypescript [handwriting] [lucidanova]
+        \definefontsynonym [LucidaHandwriting] [\s!name:LucidaHandwriting-Italic]
+        \definefontsynonym [Handwriting]       [LucidaHandwriting]
+    \stoptypescript
+
+    \starttypescript [lucidanova]
+       %\loadfontgoodies[lucidanova-math]
+        \definetypeface [lucidanova] [rm] [\s!serif] [lucidanova] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucidanova] [ss] [\s!sans]  [lucidanova] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucidanova] [tt] [\s!mono]  [lucidanova] [\s!default] [\s!features=\s!none]
+        \definetypeface [lucidanova] [mm] [\s!math]  [lucidanova] [\s!default]
+    \stoptypescript
+
+    % for the moment here:
+
+    \setupmathrendering
+        [lucidanova]
+        [it=italic]
+
+\stoptypescriptcollection
+
+\endinput
+
+\starttext
+
+    \setupbodyfont[lucidanova]
+
+%   \showfont[Serif][all]
+%   \showfont[MathRoman][all]
+
+    \usemodule[fnt-31]
+
+    \startluacode
+        fonts.tracers.coverage {
+            "LucidaMath.otf",
+            "LucidaBright.otf",
+            "LucidaSans-Typewriter.otf",
+        }
+    \stopluacode
+
+\stoptext

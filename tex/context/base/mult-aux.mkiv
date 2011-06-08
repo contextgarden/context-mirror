@@ -5,7 +5,7 @@
 %D       subtitle=helpers,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -113,8 +113,8 @@
 
 \unexpanded\def\doinstallattributehandler#1#2#3% #1 not used here
   {\def#2##1##2% style color
-     {\edef\fontattributehash {#3{##1}}%
-      \edef\colorattributehash{#3{##2}}%
+     {\edef\fontattributehash {#3{##1}}% this name is public
+      \edef\colorattributehash{#3{##2}}% this name is public
       \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi
       \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##2}\fi}}
 
@@ -194,12 +194,56 @@
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
+\unexpanded\def\doinstallswitchsetuphandler#1#2#3#4#5#6%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#2{\dodoubleempty#4}%
+   \unexpanded\def#6{\getparameters[#1#3]}%
+   \newtoks#5%
+   \def#4[##1][##2]% maybe helper
+     {\ifsecondargument % no commalist here
+        \let\savedsetupwhatever#3%
+        \edef#3{##1}%
+        \getparameters[#1#3][##2]%
+        \the#5%
+        \let#3\savedsetupwhatever
+      \else\iffirstargument
+        \doifassignmentelse{##1}
+          {\let\savedsetupwhatever#3%
+           \let#3\empty
+           \getparameters[#1][##1]%
+           \the#5%
+           \let#3\savedsetupwhatever}
+          {\edef#3{##1}% this will catch reset
+           \the#5}%
+      \else
+        \let#3\empty
+        \the#5%
+      \fi\fi}}
+
+\unexpanded\def\installswitchsetuphandler#1#2%
+  {\normalexpanded
+     {\doinstallswitchsetuphandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname d@setup#2\endcsname
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname}}
+
 \unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
    \installdefinehandler       {#1}{#2}{#3}%
    \installsetuphandler        {#1}{#2}%
+   \installattributehandler    {#1}{#2}}
+
+\unexpanded\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installparameterhandler    {#1}{#2}%
+   \installparameterhashhandler{#1}{#2}%
+   \installparametersethandler {#1}{#2}%
+   \installdefinehandler       {#1}{#2}{#3}%
+   \installswitchsetuphandler  {#1}{#2}%
    \installattributehandler    {#1}{#2}}
 
 \unexpanded\def\installnamespace#1%

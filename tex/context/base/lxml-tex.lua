@@ -336,12 +336,13 @@ end
 local entities = xml.entities
 
 local function entityconverter(id,str)
-    return entities[str] and "&"..str..";" -- feed back into tex end later
+    return entities[str] or "" -- -and "&"..str..";" -- feed back into tex end later
 end
 
 function lxml.convert(id,data,entities,compress)
     local settings = {
         unify_predefined_entities = true,
+--~ resolve_predefined_entities = true,
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
@@ -407,12 +408,12 @@ function xml.getbuffer(name,compress,entities) -- we need to make sure that comm
 end
 
 function lxml.loadbuffer(id,name,compress,entities)
-    if not name or name == "" then
-        name = tex.jobname
-    end
+--~     if not name or name == "" then
+--~         name = tex.jobname
+--~     end
     starttiming(xml)
     nofconverted = nofconverted + 1
-    local data = buffers.getcontent(name or id)
+    local data = buffers.collectcontent(name or id) -- name can be list
     local xmltable = lxml.convert(id,data,compress,entities)
     lxml.store(id,xmltable)
     stoptiming(xml)
@@ -495,7 +496,7 @@ pihandlers[#pihandlers+1] = function(str)
     if str then
         local a, b, c, d = lpegmatch(parser,str)
         if d then
-            texsprint(ctxcatcodes,"\\xmlcontextdirective{",a",}{",b,"}{",c,"}{",d,"}")
+            texsprint(ctxcatcodes,"\\xmlcontextdirective{",a,"}{",b,"}{",c,"}{",d,"}")
         end
     end
 end
@@ -925,7 +926,7 @@ local function index(collected,n)
     if collected then
         n = tonumber(n) or 0
         if n < 0 then
-            n = #collected + n + 1
+            n = #collected + n + 1 -- brrr
         end
         if n > 0 then
             texwrite(collected[n].ni or 0)

@@ -380,12 +380,29 @@ end
 --~ print(unicode.utfcodes(str))
 
 local lpegmatch = lpeg.match
-local utftype = lpeg.patterns.utftype
+local patterns = lpeg.patterns
+local utftype = patterns.utftype
 
 function unicode.filetype(data)
     return data and lpegmatch(utftype,data) or "unknown"
 end
 
+local toentities = lpeg.Cs (
+    (
+        patterns.utf8one
+            + (
+                patterns.utf8two
+              + patterns.utf8three
+              + patterns.utf8four
+            ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+    )^0
+)
+
+patterns.toentities = toentities
+
+function utf.toentities(str)
+    return lpegmatch(toentities,str)
+end
 --~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
 --~
 --~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )

@@ -309,6 +309,21 @@ alphabets.monospaced.it         = alphabets.sansserif.tf
 alphabets.monospaced.bf         = alphabets.sansserif.tf
 alphabets.monospaced.bi         = alphabets.sansserif.bf
 
+alphabets.regular.normal        = alphabets.regular.tf
+alphabets.regular.italic        = alphabets.regular.it
+alphabets.regular.bold          = alphabets.regular.bf
+alphabets.regular.bolditalic    = alphabets.regular.bi
+
+alphabets.sansserif.normal      = alphabets.sansserif.tf
+alphabets.sansserif.italic      = alphabets.sansserif.it
+alphabets.sansserif.bold        = alphabets.sansserif.bf
+alphabets.sansserif.bolditalic  = alphabets.sansserif.bi
+
+alphabets.monospaced.normal     = alphabets.monospaced.tf
+alphabets.monospaced.italic     = alphabets.monospaced.it
+alphabets.monospaced.bold       = alphabets.monospaced.bf
+alphabets.monospaced.bolditalic = alphabets.monospaced.bi
+
 alphabets.blackboard.tf.symbols = table.merged(alphabets.regular.tf.symbols, alphabets.blackboard.tf.symbols)
 alphabets.blackboard.tf.lcgreek = table.merged(alphabets.regular.tf.lcgreek, alphabets.blackboard.tf.lcgreek)
 alphabets.blackboard.tf.ucgreek = table.merged(alphabets.regular.tf.ucgreek, alphabets.blackboard.tf.ucgreek)
@@ -364,6 +379,19 @@ end
 
 local mathalphabet = attributes.private("mathalphabet")
 
+function mathematics.getboth(alphabet,style)
+    local data = alphabets[alphabet or "regular"] or alphabets.regular
+    data = data[style or "tf"] or data.tf
+    return data and data.attribute
+end
+
+function mathematics.getstyle(style)
+    local r = mathremap[texattribute[mathalphabet]]
+    local alphabet = r and r.alphabet or "regular"
+    local data = alphabets[alphabet][style]
+    return data and data.attribute
+end
+
 function mathematics.syncboth(alphabet,style)
     local data = alphabets[alphabet or "regular"] or alphabets.regular
     data = data[style or "tf"] or data.tf
@@ -371,7 +399,6 @@ function mathematics.syncboth(alphabet,style)
 end
 
 function mathematics.syncstyle(style)
---~ local r = mathremap[mathalphabet]
     local r = mathremap[texattribute[mathalphabet]]
     local alphabet = r and r.alphabet or "regular"
     local data = alphabets[alphabet][style]
@@ -397,7 +424,7 @@ local remapping = {
 }
 
 function mathematics.remapalphabets(char,mathalphabet,mathgreek)
-    if mathgreek > 0 then
+    if mathgreek and mathgreek > 0 then
         local lc, uc = floor(mathgreek/10), mathgreek % 10 -- 2 == upright 3 == italic
         if lc > 1 or uc > 1 then
             local islc, isuc = islcgreek[char] and lc, isucgreek[char] and uc
@@ -419,7 +446,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
             end
         end
     end
-    if mathalphabet > 0 then
+    if mathalphabet and mathalphabet > 0 then
         local newchar
         local offset = mathremap[mathalphabet]
         if not offset then

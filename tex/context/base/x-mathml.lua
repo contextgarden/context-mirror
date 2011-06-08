@@ -6,9 +6,11 @@ if not modules then modules = { } end modules ['x-mathml'] = {
     license   = "see context related readme files"
 }
 
+-- This needs an upgrade to the latest greatest mechanisms.
+
 local type, next = type, next
 local utf = unicode.utf8
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+local texsprint, ctxcatcodes, txtcatcodes = tex.sprint, tex.ctxcatcodes, tex.txtcatcodes
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
@@ -22,9 +24,11 @@ lxml.mathml       = mathml -- for the moment
 
 -- an alternative is to remap to private codes, where we can have
 -- different properties .. to be done; this will move and become
--- generic
+-- generic; we can then make the private ones active in math mode
 
 -- todo: handle opening/closing mo's here ... presentation mml is such a mess ...
+
+characters.registerentities()
 
 local doublebar = utfchar(0x2016)
 
@@ -80,6 +84,8 @@ local o_replacements = { -- in main table
  -- [utfchar(0xF103E)] = "\\mmlleftdelimiter>",
 
 }
+
+--~ languages.data.labels.functions
 
 local i_replacements = {
     ["sin"]         = "\\mathopnolimits{sin}",
@@ -234,6 +240,7 @@ local csymbols = {
         divergence          = "divergence",
         grad                = "grad",
         curl                = "curl",
+        laplacian           = "laplacian",
         Laplacian           = "laplacian",
     },
     calculus1 = {
@@ -463,23 +470,35 @@ function mathml.mn(id,pattern)
     -- maybe at some point we need to interpret the number, but
     -- currently we assume an upright font
     local str = xmlcontent(getid(id)) or ""
-    str = gsub(str,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
-    texsprint(ctxcatcodes,(gsub(str,".",n_replacements)))
+    local rep = gsub(str,"&.-;","")
+    local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
+    local rep = gsub(rep,".",n_replacements)
+ -- texsprint(ctxcatcodes,rep)
+    context.mn(rep)
 end
 
 function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
-    texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
+    local rep = gsub(str,"&.-;","")
+    local rep = utfgsub(rep,".",o_replacements)
+    texsprint(ctxcatcodes,rep)
+ -- context.mo(rep) -- fails with \left etc
 end
 
 function mathml.mi(id)
-    local str = xmlcontent(getid(id)) or ""
-    -- str = gsub(str,"^%s*(.-)%s*$","%1")
-    local rep = i_replacements[str]
-    if rep then
+    local e = getid(id)
+    local str = e.dt
+    if type(str) == "string" then -- we need a helper for this in the xml namespace ... xml.type(e)
+     -- local str = xmlcontent(e) or ""
+        local str = gsub(str,"&.-;","") -- needed?
+        local rep = i_replacements[str]
+        if not rep then
+            rep = gsub(str,".",i_replacements)
+        end
         texsprint(ctxcatcodes,rep)
+     -- context.mi(rep)
     else
-        texsprint(ctxcatcodes,(gsub(str,".",i_replacements)))
+        context.xmlflush(id)
     end
 end
 
@@ -610,6 +629,7 @@ function mathml.mcolumn(root)
         local tag = e.tg
         if tag == "mi" or tag == "mn" or tag == "mo" or tag == "mtext" then
             local str = xmltext(e)
+str = gsub(str,"&.-;","")
             for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
@@ -624,8 +644,8 @@ function mathml.mcolumn(root)
             for s in utfcharacters(str) do -- utf.gmatch(str,".") btw, the gmatch was bugged
                 m[#m+1] = { tag, s }
             end
-        elseif tag == "mline" then
-            m[#m+1] = { tag, e }
+     -- elseif tag == "mline" then
+     --     m[#m+1] = { tag, e }
         end
     end
     for e in lxml.collected(root,"/*") do
@@ -640,7 +660,7 @@ function mathml.mcolumn(root)
             collect(m,e)
         end
     end
-    tex.sprint(ctxcatcodes,"\\halign\\bgroup\\hss$#$&$#$\\cr")
+    tex.sprint(ctxcatcodes,[[\halign\bgroup\hss\startimath\alignmark\stopimath\aligntab\startimath\alignmark\stopimath\cr]])
     for i=1,#matrix do
         local m = matrix[i]
         local mline = true
@@ -651,12 +671,14 @@ function mathml.mcolumn(root)
             end
         end
         if mline then
-            tex.sprint(ctxcatcodes,"\\noalign{\\obeydepth\\nointerlineskip}")
+            tex.sprint(ctxcatcodes,[[\noalign{\obeydepth\nointerlineskip}]])
         end
         for j=1,#m do
             local mm = m[j]
             local tag, chr = mm[1], mm[2]
             if tag == "mline" then
+                -- This code is under construction ... I need some real motivation
+                -- to deal with this kind of crap.
 --~                 local n, p = true, true
 --~                 for c=1,#matrix do
 --~                     local mc = matrix[c][j]
@@ -764,15 +786,34 @@ function mathml.csymbol(root)
     local hash = url.hashed(lower(at.definitionUrl or ""))
     local full = hash.original or ""
     local base = hash.path or ""
-    local text = string.strip(lxmltext(root))
---~     texsprint(ctxcatcodes,format("\\mmlapplycsymbol{%s}{%s}{%s}{%s}",full,base,encoding,text))
-    texsprint(ctxcatcodes,"\\mmlapplycsymbol{",full,"}{",base,"}{",encoding,"}{",text,"}")
+    local text = string.strip(xmltext(root) or "")
+    context.mmlapplycsymbol(full,base,encoding,text)
 end
 
 function mathml.menclosepattern(root)
     root = getid(root)
     local a = root.at.notation
     if a and a ~= "" then
-        texsprint("mml:enclose:",gsub(a," +",",mml:enclose:"))
+        texsprint("mml:enclose:",(gsub(a," +",",mml:enclose:")))
     end
+end
+
+function xml.is_element(e,name)
+    return type(e) == "table" and (not name or e.tg == name)
+end
+
+function mathml.cpolar_a(root)
+    root = getid(root)
+    local dt = root.dt
+    context.mathopnolimits("Polar")
+    context.left(false,"(")
+    for k=1,#dt do
+        local dk = dt[k]
+        if xml.is_element(dk,"sep") then
+            context(",")
+        else
+            xmlsprint(dk)
+        end
+    end
+    context.right(false,")")
 end

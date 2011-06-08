@@ -5,7 +5,7 @@
 %D       subtitle=Visualization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -261,15 +261,17 @@
 \newdimen\tractempheight
 \newdimen\tractempdepth
 
-\def     \cutmarklength        {2\bodyfontsize}
+\def     \cutmarklength      {2\bodyfontsize}
 
 \newcount\horizontalcutmarks \horizontalcutmarks = 2
 \newcount\verticalcutmarks   \verticalcutmarks   = 2
 \newcount\cutmarkoffset      \cutmarkoffset      = 1
 
-\let\cutmarksymbol          = \relax
-\let\cutmarktoptext         = \empty
-\let\cutmarkbottomtext      = \empty
+\let     \cutmarksymbol      \relax
+\let     \cutmarktoptext     \empty
+\let     \cutmarkbottomtext  \empty
+\let     \cutmarkhoffset     \empty
+\let     \cutmarkvoffset     \empty
 
 \def\horizontalcuts
   {\normalhbox to \tractempwidth
@@ -298,11 +300,12 @@
       \normalhss
       \normalvbox to \cutmarklength
         {\scratchdimen\dimexpr\cutmarklength/2\relax
+         \scratchskip \ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
          \normalvss
          \hbox to \tractempwidth
-           {\llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
+           {\llap{\copy\scratchbox\normalhskip\scratchskip}%
             \normalhskip\scratchdimen\hss\infofont#1\hss\normalhskip\scratchdimen
-            \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
+            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
          \normalvss}%
       \normalhss}}
 
@@ -319,21 +322,29 @@
       \hsize\tractempwidth
       \setbox\scratchbox\normalvbox
         {\setbox\scratchbox\normalhbox{\horizontalcuts}%
-         \normalvskip\dimexpr-\cutmarkoffset\scratchdimen-2\scratchdimen\relax
-         \copy\scratchbox
-         \normalvskip\cutmarkoffset\scratchdimen
+         \scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+%          \normalvskip\dimexpr-\scratchskip-2\scratchdimen\relax
+%          \copy\scratchbox
+%          \normalvskip\scratchskip
+         \tlap{\copy\scratchbox\normalvskip\scratchskip}%
          \hbox to \tractempwidth
-           {\setbox\scratchbox\normalhbox{\verticalcuts}%
-            \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
-            \bgroup
-            \setbox\scratchbox\normalhbox{\baselinecuts}%
-            \llap{\copy\scratchbox\normalhskip\cutmarkoffset\scratchdimen}%
-            \normalhfill
-            \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}%
-            \egroup
-            \rlap{\normalhskip\cutmarkoffset\scratchdimen\copy\scratchbox}}%
-         \normalvskip\cutmarkoffset\scratchdimen
-         \copy\scratchbox}%
+           {\scratchskip\ifx\cutmarkhoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
+            \setbox\scratchbox\normalhbox{\verticalcuts}%
+            \llap{\copy\scratchbox\normalhskip\scratchskip}%
+            \ifdim\tractempdepth=\zeropoint
+              \normalhfill
+            \else
+              \bgroup
+              \setbox\scratchbox\normalhbox{\baselinecuts}%
+              \llap{\copy\scratchbox\normalhskip\scratchskip}%
+              \normalhfill
+              \rlap{\normalhskip\scratchskip\copy\scratchbox}%
+              \egroup
+            \fi
+            \rlap{\normalhskip\scratchskip\copy\scratchbox}}%
+%          \normalvskip\scratchskip
+%          \copy\scratchbox}%
+         \blap{\normalvskip\scratchskip\copy\scratchbox}}%
       \ht\scratchbox\tractempheight
       \dp\scratchbox\tractempdepth
       \wd\scratchbox\zeropoint
@@ -341,13 +352,14 @@
       \box\scratchbox
       \ifx\cutmarksymbol\relax \else
         \setbox\scratchbox\normalvbox
-          {\vskip-\cutmarkoffset\scratchdimen
+          {\scratchskip\ifx\cutmarkvoffset\empty\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
+           \vskip-\scratchskip
            \vskip-\cutmarklength
            \normalhbox{\cutmarksymbols\cutmarktoptext}%
-           \vskip\cutmarkoffset\scratchdimen
+           \vskip\scratchskip
            \vskip\tractempheight
            \vskip\tractempdepth
-           \vskip\cutmarkoffset\scratchdimen
+           \vskip\scratchskip
            \normalhbox{\cutmarksymbols\cutmarkbottomtext}}%
         \ht\scratchbox\tractempheight
         \dp\scratchbox\tractempdepth

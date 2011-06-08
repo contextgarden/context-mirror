@@ -59,11 +59,14 @@ local function collectcontent(names,separator) -- no print
     if type(names) == "string" then
         names = settings_to_array(names)
     end
-    if #names == 1 then
+    local nnames = #names
+    if nnames == 0 then
+        return data[""] or "" -- default buffer
+    elseif nnames == 1 then
         return getcontent(names[1])
     else
         local t, n = { }, 0
-        for i=1,#names do
+        for i=1,nnames do
             local c = getcontent(names[i])
             if c ~= "" then
                 n = n + 1

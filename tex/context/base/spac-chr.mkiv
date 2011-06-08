@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=spac-chr,
+%D        version=2011.05.24, % code moved from core-spa.mkiv
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Characters,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Characters}
+
+\unprotect
+
+\registerctxluafile{spac-chr}{1.001}
+
+\definesystemattribute[characters][public]
+
+\edef\nobreakspace            {\utfchar{"00A0}}
+
+\edef\ideographicspace        {\utfchar{"2000}}
+\edef\ideographichalffillspace{\utfchar{"2001}}
+\edef\twoperemspace           {\utfchar{"2002}}
+\edef\threeperemspace         {\utfchar{"2004}}
+\edef\fourperemspace          {\utfchar{"2005}}
+\edef\sixperemspace           {\utfchar{"2006}}
+\edef\figurespace             {\utfchar{"2007}}
+\edef\punctuationspace        {\utfchar{"2008}}
+\edef\breakablethinspace      {\utfchar{"2009}}
+\edef\hairspace               {\utfchar{"200A}}
+\edef\zerowidthspace          {\utfchar{"200B}}
+
+\edef\narrownobreakspace      {\utfchar{"202F}}
+
+%edef\zerowidthnobreakspace   {\utfchar{"FEFF}}
+
+\unexpanded\def\zerowidthnobreakspace{\penalty\plustenthousand\kern\zeropoint}
+
+% Shortcuts:
+
+\let~\nobreakspace
+
+% Goodies:
+
+\unexpanded\def\fiveperemspace{\hskip\dimexpr\emwidth/5\relax}
+
+\protect \endinput
+

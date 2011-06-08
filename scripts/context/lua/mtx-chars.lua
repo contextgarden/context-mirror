@@ -6,10 +6,12 @@ if not modules then modules = { } end modules ['mtx-chars'] = {
     license   = "see context related readme files"
 }
 
+-- obsolete: --stix                convert stix table to math table
+
 local helpinfo = [[
---stix                convert stix table to math table
 --xtx                 generate xetx-*.tex (used by xetex)
 --pdf                 generate pdfr-def.tex (used by pdftex)
+--entities            generate entities table
 ]]
 
 local application = logs.application {
@@ -20,7 +22,10 @@ local application = logs.application {
 
 local report = application.report
 
-local format, concat, utfchar, upper = string.format, table.concat, unicode.utf8.char, string.upper
+local format, gmatch, upper, lower = string.format, string.gmatch, string.upper, string.lower
+local tonumber = tonumber
+local concat = table.concat
+local utfchar = utf.char
 
 scripts       = scripts       or { }
 scripts.chars = scripts.chars or { }
@@ -321,10 +326,63 @@ function scripts.chars.makeencoutf()
     end
 end
 
+local entityfiles = {
+    "http://www.w3.org/2003/entities/2007/w3centities-f.ent",
+    "http://www.w3.org/2003/entities/2007/htmlmathml-f.ent",
+}
+
+function scripts.chars.xmlentities()
+    local done = { }
+    local entities = { "local entities = utilities.storage.allocate {" }
+    for i=1,#entityfiles do
+        local f = entityfiles[i]
+        local s = url.hashed(f)
+        local b = file.basename(s.path)
+        local n = resolvers.findfile(b)
+        local data = io.loaddata(n)
+        for name, value in gmatch(data,'<!ENTITY +(%S+) +"(.-)" *>') do
+            if not done[name] then
+                done[name] = true
+                local str, hex
+                local low = lower(name)
+                if name == "newline" then
+                    -- let's forget about that one
+                elseif name == "lt" then
+                    str, hex = "<", format("%s %05X",hex,c)
+                elseif name == "gt" then
+                    str, hex = ">", format("%s %05X",hex,c)
+                elseif name == "amp" then
+                    str, hex = "&", format("%s %05X",hex,c)
+                else
+                    for t, c in gmatch(value,"&#([x]*)([^;]+);") do
+                        if t == "x" then
+                            c = tonumber(c,16)
+                        else
+                            c = tonumber(c)
+                        end
+                        if str then
+                            str, hex = str .. utfchar(c), format("%s %05X",hex,c)
+                        else
+                            str, hex = utfchar(c), format("U+%05X",c)
+                        end
+                    end
+                end
+                if str and hex then
+                    entities[#entities+1] = format('    ["%s"] = %q, -- %s',name,str,hex)
+                end
+            end
+        end
+    end
+    entities[#entities+1] = "}"
+    io.savedata("xmlentities.tmp",concat(entities,"\n"))
+end
+
 if environment.argument("stix") then
     local inname  = environment.files[1] or ""
     local outname = environment.files[2] or ""
     scripts.chars.stixtomkiv(inname,outname)
+elseif environment.argument("entities") then
+    scripts.chars.xmlentities()
 elseif environment.argument("xtx") then
     scripts.chars.makeencoutf()
 elseif environment.argument("pdf") then
@@ -332,3 +390,28 @@ elseif environment.argument("pdf") then
 else
     application.help()
 end
+
+-- local http  = require("socket.http")
+-- local ltn12 = require("ltn12")
+--
+-- local t = { }
+-- local status, message = http.request {
+--     url = f,
+--     sink = ltn12.sink.table(t)
+-- }
+--
+-- local template = [[
+-- <?xml version='1.0' ?>
+--
+-- <!DOCTYPE dummy [
+--
+-- %s
+--
+-- ]>
+--
+-- <dummy>This is just a placeholder.</dummy>
+-- ]]
+--
+-- local e = string.format(template,io.loaddata(n))
+-- local x = xml.convert(e, { utfize_entities = true } )
+-- local entities = x.entities

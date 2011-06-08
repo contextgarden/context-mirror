@@ -5,7 +5,7 @@
 %D       subtitle=Initializations,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -126,11 +126,9 @@
 %
 % tricky in balancing mode, a la huidige multi columns
 
-\ifx\dosetuplayout\undefined % overloaded in page-lay !
-
-  \unexpanded\def\setuplayout{\dodoubleempty\getparameters[\??ly]}
-
-\fi
+% \ifx\dosetuplayout\undefined % overloaded in page-lay !
+%   \unexpanded\def\setuplayout{\dodoubleempty\getparameters[\??ly]}
+% \fi
 
 \ifx\mkprocesscolumncontents\undefined\let\mkprocesscolumncontents\gobbleoneargument\fi
 \ifx\mkprocesspagecontents  \undefined\let\mkprocesspagecontents  \gobbleoneargument\fi
@@ -154,17 +152,6 @@
 
 \def\installotr#1% andere naam, beter \connectotr of zo
   {\def\OTRidentifier{#1}}
-
-% \def\OTRcommand#1%
-%   {\csname\@@OTR
-%      \ifcsname\@@OTR\OTRidentifier\strippedcsname#1\endcsname
-%        \OTRidentifier
-%      \else\ifcsname\@@OTR\OTRdefault\strippedcsname#1\endcsname % fallback
-%        \OTRdefault
-%      \fi\fi
-%    \strippedcsname#1\endcsname}
-%
-% maybe faster but at least less tracing:
 
 \def\OTRcommand#1%
   {\csname\@@OTR
@@ -806,10 +793,6 @@
 
 \newif\ifsavepagebody \newbox\savedpagebody
 
-% beware, \??ly is used before defined, i.e. bad module design
-
-\setuplayout[\c!method=\v!normal]
-
 \def\docolumnpagebodymarks#1#2#3#4% first last column box
   {\ifnum#3=#1\relax
      \dosynchronizemarking[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4]%
@@ -822,15 +805,15 @@
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi
    \vbox
-     {%\pushcatcodetable
-      %\forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
+     {%\forgetall  % igv problemen, check: \boxmaxdepth\maxdimen
       \boxmaxdepth\maxdimen % new
       \dontcomplain
       % marks get done here
-      \dosynchronizemarking[\v!page][#2]%
+      \dosynchronizemarking[\v!page][#2]% #2 box
       % the following plugin uses and sets pagebox; beware: this
-      % will change and is for my (hh) personal experiments
-      \executeifdefined{\??ly\c!method\@@lymethod}{\getvalue{\??ly\c!method\v!normal}}#1#2%
+      % will change and is for my (hh) personal experiments .. takes two
+      % arguments
+      \constructpagecontent#1#2%
       % the finishing touch
       \ifcase\pageornamentstate
         \addpagebackground \pagebox
@@ -839,55 +822,69 @@
       \ifarrangingpages
         \shiftpaperpagebox \pagebox % \v!paper
       \else
-        \clippagebox       \pagebox
-        \doifelse\@@lymarking\v!page
-          {\replicatepagebox  \pagebox
-           \addpagecutmarks   \pagebox}
-          {\addpagecutmarks   \pagebox
-           \replicatepagebox  \pagebox}%
-        \scalepagebox      \pagebox
-        \mirrorpaperbox    \pagebox
-        \orientpaperbox    \pagebox
-        \addpagecolormarks \pagebox
-        \centerpagebox     \pagebox
-        \addprintbackground\pagebox
-        \mirrorprintbox    \pagebox
-        \orientprintbox    \pagebox
-        \shiftprintpagebox \pagebox % \v!page
-        \offsetprintbox    \pagebox
-        \negateprintbox    \pagebox
+        \clippagebox         \pagebox
+        \page_marks_add_page \pagebox
+        \replicatepagebox    \pagebox
+        \scalepagebox        \pagebox
+        \mirrorpaperbox      \pagebox
+        \orientpaperbox      \pagebox
+        \page_marks_add_more \pagebox
+        \centerpagebox       \pagebox
+        \addprintbackground  \pagebox
+        \mirrorprintbox      \pagebox
+        \orientprintbox      \pagebox
+        \shiftprintpagebox   \pagebox % \v!page
+        \offsetprintbox      \pagebox
+        \negateprintbox      \pagebox
       \fi
-      \box\pagebox
-      }% \popcatcodetable
+      \box\pagebox}%
    \ifsavepagebody\copy\savedpagebody\fi}
 
-\setvalue{\??ly\c!method\v!normal}#1#2%
-  {\setbox\pagebox\vbox
-     {\offinterlineskip
-      \ifcase\pageornamentstate
-        \bgroup % else footnotes get inconsistent font/baseline
-          \dostartattributes\??ly\c!style\c!color\empty
-            \offinterlineskip
-            \gettextboxes
-          \dostopattributes
-        \egroup
-      \fi
-      \getmainbox#1#2}% including footnotes
-   \ifcase\pageornamentstate
-     \addmainbackground \pagebox
-   \fi
-   \buildpagebox  \pagebox
-   \addstatusinfo \pagebox}
+\ifx\page_marks_add_page\undefined \let\page_marks_add_page\gobbleoneargument \fi
+\ifx\page_marks_add_more\undefined \let\page_marks_add_more\gobbleoneargument \fi
+
+% \setvalue{\??ly\c!method\v!normal}#1#2%
+%   {\setbox\pagebox\vbox
+%      {\offinterlineskip
+%       \ifcase\pageornamentstate
+%         \bgroup % else footnotes get inconsistent font/baseline
+%           % color/style attributes
+%           \offinterlineskip
+%           \gettextboxes
+%         \egroup
+%       \fi
+%       \getmainbox#1#2}% including footnotes
+%    \ifcase\pageornamentstate
+%      \addmainbackground \pagebox
+%    \fi
+%    \buildpagebox  \pagebox
+%    \addstatusinfo \pagebox}
+
+\ifx\constructnormalpagecontent\undefined
+
+    \def\constructnormalpagecontent#1#2%
+      {\setbox\pagebox\vbox
+         {\offinterlineskip
+          \gettextboxes
+          \getmainbox#1#2}% including footnotes
+       \addmainbackground\pagebox
+       \buildpagebox\pagebox
+       \addstatusinfo\pagebox}
+
+\fi
+
+\ifx\constructpagecontent\undefined
+    \let\constructpagecontent\constructnormalpagecontent % will be overloaded
+\fi
 
 \def\finishpagebox#1%
   {\ifarrangingpages
-     \addpagecutmarks  #1%
-     \addpagecolormarks#1%
-     \centerpagebox    #1%
-     \mirrorprintbox   #1%
-     \orientprintbox   #1%
-     \offsetprintbox   #1%
-     \negateprintbox   #1%
+     \page_marks_add_more#1%
+     \centerpagebox       #1%
+     \mirrorprintbox      #1%
+     \orientprintbox      #1%
+     \offsetprintbox      #1%
+     \negateprintbox      #1%
    \fi}
 
 \appendtoks \restoreouterspacing   \to \everybeforepagebody

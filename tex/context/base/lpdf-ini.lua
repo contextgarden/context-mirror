@@ -13,13 +13,12 @@ local texset = tex.set
 local sind, cosd = math.sind, math.cosd
 local lpegmatch = lpeg.match
 
---~ local pdfreserveobject   = pdf and pdf.reserveobj   or function() return 1 end -- for testing
---~ local pdfimmediateobject = pdf and pdf.immediateobj or function() return 2 end -- for testing
-
 local pdfreserveobject   = pdf.reserveobj
 local pdfimmediateobject = pdf.immediateobj
 local pdfdeferredobject  = pdf.obj
 local pdfreferenceobject = pdf.refobj
+
+local pdfobject          = pdf.obj
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -374,14 +373,15 @@ function lpdf.reserveannotation()
     return pdfreserveobject("annot")
 end
 
-lpdf.immediateobject    = pdfimmediateobject
-lpdf.object             = pdfdeferredobject          -- the table interface, todo: auto attr() and so
-lpdf.deferredobject     = pdfdeferredobject
-lpdf.referenceobject    = pdfreferenceobject
+-- lpdf.immediateobject = pdfimmediateobject
+-- lpdf.deferredobject  = pdfdeferredobject
+-- lpdf.object          = pdfdeferredobject
+-- lpdf.referenceobject    = pdfreferenceobject
+
 lpdf.pagereference      = pdf.pageref or tex.pdfpageref
 lpdf.registerannotation = pdf.registerannot
 
-function lpdf.delayedobject(data)
+function lpdf.delayedobject(data) -- we will get rid of this one
     local n = pdfdeferredobject(data)
     pdfreferenceobject(n)
     return n
@@ -413,6 +413,35 @@ function lpdf.flushobject(name,data)
         end
         return pdfimmediateobject(tostring(name))
     end
+end
+
+
+function lpdf.flushstreamobject(data,dict,compressed) -- default compressed
+    if trace_objects then
+        report_objects("flushing stream object of %s bytes",#data)
+    end
+    local dtype = type(dict)
+    return pdfobject {
+        immediate     = true,
+        compresslevel = compressed == false and 0 or nil,
+        type          = "stream",
+        string        = data,
+        attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
+    }
+end
+
+function lpdf.flushstreamfileobject(filename,dict,compressed) -- default compressed
+    if trace_objects then
+        report_objects("flushing stream file object '%s'",filename)
+    end
+    local dtype = type(dict)
+    return pdfobject {
+        immediate     = true,
+        compresslevel = compressed == false and 0 or nil,
+        type          = "stream",
+        file          = filename,
+        attr          = (dtype == "string" and dict) or (dtype == "table" and dict()) or nil,
+    }
 end
 
 local shareobjectcache, shareobjectreferencecache = { }, { }

@@ -359,6 +359,7 @@
 		<cd:variable name='previousoddpage' value='صفحه‌فردقبلی'/>
 		<cd:variable name='previouspage' value='صفحه‌قبلی'/>
 		<cd:variable name='previoussubpage' value='زیرصفحه‌قبلی'/>
+		<cd:variable name='print' value='print'/>
 		<cd:variable name='printable' value='قابل‌چاپ'/>
 		<cd:variable name='process' value='پردازش'/>
 		<cd:variable name='product' value='محصول'/>

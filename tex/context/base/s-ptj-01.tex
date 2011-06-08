@@ -6,7 +6,7 @@
 %D         author=Aditya Mahajan,
 %D          email=adityam at umich dot edu,
 %D           date=\currentdate,
-%D      copyright=2009 Aditya Mahajan]
+%D      copyright={Aditya Mahajan}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -72,7 +72,7 @@
 %D uses latin modern for sans serif and monotype. For the main face, 12pt is
 %D used with a 15.5pt baseline skip. Font protrusion is enabled, but font
 %D expansion is not. We follow these conventions. \CONTEXT\ uses Pagella fonts
-%D from \TEX{gyre} project, so we use them instead. 
+%D from \TEX{gyre} project, so we use them instead.
 
 \usetypescript  [serif,sans,mono] [hanging] [pure]
 \setupalign     [hanging]
@@ -148,7 +148,7 @@
    after={\blank[big]}]
 
 %D Next we define internal frames to take care of the layout of the extra
-%D material in the title. 
+%D material in the title.
 
 \defineframed
   [pracjourninfotitle]
@@ -223,7 +223,7 @@
     author={\getvariable{pracjourn}{author}},
   subtitle={The PracTeX Journal Article}]
 \stopsetups
-  
+
 % If revision number is present, write it to \filename{_rev.tex}
 % FIXME: Do we need to ensure that the dates and month are two digits?
 \startrawsetups [pracjourndate]
@@ -266,8 +266,8 @@
 \definetext [pracjourntitleheader] [header]  [\setups{pracjourntitleheader}][]
 \definetext [pracjourntitlefooter] [footer]  [\setups{pracjourntitlefooter}]
 
-\setuphead  
-  [title]           
+\setuphead
+  [title]
   [header=pracjourntitleheader,
    footer=pracjourntitlefooter]
 

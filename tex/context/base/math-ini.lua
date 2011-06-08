@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['math-ext'] = {
 
 local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
+local texattribute = tex.attribute
+local floor = math.floor
 
 local allocate = utilities.storage.allocate
 
@@ -53,8 +55,20 @@ local classes = allocate {
     nolop     =  1,  -- mathnolopcomm   @@mathnolopcomm
 }
 
+local codes = allocate {
+    ordinary       = 0, [0] = "ordinary",
+    largeoperator  = 1, [1] = "largeoperator",
+    binaryoperator = 2, [2] = "binaryoperator",
+    relation       = 3, [3] = "relation",
+    openingsymbol  = 4, [4] = "openingsymbol",
+    closingsymbol  = 5, [5] = "closingsymbol",
+    punctuation    = 6, [6] = "punctuation",
+    variable       = 7, [7] = "variable",
+}
+
 mathematics.families = families
 mathematics.classes  = classes
+mathematics.codes    = codes
 
 classes.alphabetic  = classes.alpha
 classes.unknown     = classes.nothing
@@ -98,14 +112,8 @@ end
 local function mathtopaccent(class,family,slot)
     return format('\\Umathaccent "%X "%X "%X ',0,family,slot) -- no class
 end
-if tex.luatexversion > 65 then -- this will disappear at 0.70
-    local function mathbotaccent(class,family,slot)
-        return format('\\Umathaccent bottom "%X "%X "%X ',0,family,slot) -- no class
-    end
-else
-    local function mathbotaccent(class,family,slot)
-        return format('\\Umathbotaccent "%X "%X "%X ',0,family,slot) -- no class
-    end
+local function mathbotaccent(class,family,slot)
+    return format('\\Umathaccent bottom "%X "%X "%X ',0,family,slot) -- no class
 end
 local function mathtopdelimiter(class,family,slot)
     return format('\\Udelimiterover "%X "%X ',family,slot) -- no class
@@ -307,32 +315,22 @@ function mathematics.utfmathclass(chr, default)
     local cd = characters.data[utfbyte(chr)]
     return (cd and cd.mathclass) or default or "unknown"
 end
+
 function mathematics.utfmathstretch(chr, default) -- "h", "v", "b", ""
     local cd = characters.data[utfbyte(chr)]
     return (cd and cd.mathstretch) or default or ""
 end
+
 function mathematics.utfmathcommand(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and cd.mathname
     return cmd or default or ""
 end
+
 function mathematics.utfmathfiller(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and (cd.mathfiller or cd.mathname)
     return cmd or default or ""
-end
-
--- xml
-
-mathematics.xml = { entities = { } }
-
-function mathematics.xml.registerentities()
-    local entities = xml.entities
-    for name, unicode in next, mathematics.xml.entities do
-        if not entities[name] then
-            entities[name] = utfchar(unicode)
-        end
-    end
 end
 
 -- helpers
@@ -365,3 +363,70 @@ function mathematics.big(tfmdata,unicode,n)
     return unicode
 end
 
+-- experimental
+
+-- local categories = { } -- indexed + hashed
+--
+-- local a_mathcategory = attributes.private("mathcategory")
+--
+-- local function registercategory(category,tag,data) -- always same data for tag
+--     local c = categories[category]
+--     if not c then
+--         c = { }
+--         categories[category] = c
+--     end
+--     local n = c[tag]
+--     if not n then
+--         n = #c + 1
+--         c[n] = data
+--         n = n * 1000 + category
+--         c[tag] = n
+--     end
+--     return n
+-- end
+--
+-- function mathematics.getcategory(n)
+--     local category = n % 1000
+--     return category, categories[category][floor(n/1000)]
+-- end
+--
+-- mathematics.registercategory = registercategory
+--
+-- function commands.taggedmathfunction(tag,label)
+--     if label then
+--         texattribute[a_mathcategory] = registercategory(1,tag,tag)
+--         context.mathlabeltext(tag)
+--     else
+--         texattribute[a_mathcategory] = 1
+--         context(tag)
+--     end
+-- end
+
+local categories       = { }
+mathematics.categories = categories
+
+local a_mathcategory = attributes.private("mathcategory")
+
+local functions    = storage.allocate()
+local noffunctions = 1000 -- offset
+
+categories.functions = functions
+
+function commands.taggedmathfunction(tag,label,apply)
+    local delta = apply and 1000 or 0
+    if label then
+        local n = functions[tag]
+        if not n then
+            noffunctions = noffunctions + 1
+            functions[noffunctions] = tag
+            functions[tag] = noffunctions
+            texattribute[a_mathcategory] = noffunctions + delta
+        else
+            texattribute[a_mathcategory] = n + delta
+        end
+        context.mathlabeltext(tag)
+    else
+        texattribute[a_mathcategory] = 1000 + delta
+        context(tag)
+    end
+end

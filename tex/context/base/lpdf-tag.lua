@@ -297,11 +297,14 @@ function nodeinjections.addtags(head)
     return head, true
 end
 
+-- this belongs elsewhere (export is not pdf related)
+
 function codeinjections.enabletags(tg,lb)
     structures.tags.handler = nodeinjections.addtags
     tasks.enableaction("shipouts","structures.tags.handler")
     tasks.enableaction("shipouts","nodes.handlers.accessibility")
     tasks.enableaction("math","noads.handlers.tags")
+    -- maybe also textblock
     if trace_tags then
         report_tags("enabling structure tags")
     end

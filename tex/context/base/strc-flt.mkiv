@@ -5,7 +5,7 @@
 %D       subtitle=Float Numbering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -302,15 +302,6 @@
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
 
-% \def\thecurrentfloatnumber
-%   {\ifnofloatcaption \else \ifnofloatnumber \else
-%      \ifx\currentfloatnumber\relax\else
-%        \dostarttagged\t!floattag\empty
-%        \labeltexts\currentfloat{\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}}%
-%        \dostoptagged
-%      \fi
-%    \fi \fi}
-
 \unexpanded\def\thecurrentfloatnumbersuffix
   {\doifsomething{\floatcaptionparameter\c!suffix}
      {\floatcaptionparameter\c!suffixseparator
@@ -319,11 +310,23 @@
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
-       \dostarttagged\t!floattag\empty
-       \labeltexts\currentfloat
-          {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
-           \thecurrentfloatnumbersuffix}%
-       \dostoptagged
+%        \dostarttagged\t!floatlabel\empty
+%        \labeltexts\currentfloat
+%           {\dostoptagged
+%            \dostarttagged\t!floatnumber\empty
+%            \ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
+%            \thecurrentfloatnumbersuffix
+%            \dostoptagged
+%            \dostarttagged\t!floatlabel\empty}%
+%        \dostoptagged
+%        \taggedlabeltexts\currentfloat\currentfloat
+%          {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
+%           \thecurrentfloatnumbersuffix}%
+       \namedtaggedlabeltexts
+         \t!floatlabel \currentfloat
+         \t!floatnumber\currentfloat
+         {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
+          \thecurrentfloatnumbersuffix}%
      \fi
    \fi \fi}
 

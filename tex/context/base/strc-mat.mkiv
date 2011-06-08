@@ -5,7 +5,7 @@
 %D       subtitle=Math Numbering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -131,7 +131,24 @@
      {\dosetformulaattributes\c!numberstyle\c!numbercolor
       \strut
       \formulaparameter\c!left
-      \labeltexts\v!formula{\ignorespaces\doplacecurrentformulanumber\unskip}%
+%       \bgroup % somehow needed for tags
+%       \dostarttagged\t!formulalabel\empty
+%       \labeltexts\v!formula
+%         {\ignorespaces
+%          \dostoptagged
+%          \dostarttagged\t!formulanumber\empty
+%          \doplacecurrentformulanumber
+%          \dostoptagged
+%          \dostarttagged\t!formulalabel\empty
+%          \unskip}%
+%       \dostoptagged
+%       \egroup
+%       \taggedlabeltexts\v!formula\v!formula
+%         {\ignorespaces\doplacecurrentformulanumber\removeunwantedspaces}%
+      \namedtaggedlabeltexts
+        \t!formulalabel \v!formula
+        \t!formulanumber\v!formula
+        {\ignorespaces\doplacecurrentformulanumber\removeunwantedspaces}%
       \formulaparameter\c!right}%
    \doif{\formulaparameter\c!location}\v!left{\hskip\formulaparameter\c!distance}}
 
@@ -480,28 +497,10 @@
    \forgetdisplayskips
    \getvalue{\e!start\formulaparameter\c!alternative\v!formula}}
 
-% experiment:
-
-\appendtoks
-   \edef\currentformulagrid{\formulaparameter\c!grid}%
-   \ifx\currentformulagrid\empty \else
-        \autosetsnapvalue\currentformulagrid
-   \fi
-\to \everybeforedisplayformula
-
-\def\switchtoformulabodyfont{\switchtobodyfont}
-
-\setvalue{\v!formula}{\dosingleempty\doformula}
-
-\def\doformula[#1]#2%
-  {\begingroup
-   \doifsomething{#1}{\switchtoformulabodyfont[#1]}%
-   % not : \def\doformula[##1]##2{\mathematics{##2}}%
-   \mathematics{#2}%
-   \endgroup}
+% tagging of formulanumbers is not ok (we get two display maths blobs)
 
 \def\dostopformula
-  {\dostarttagged\t!formulatag\empty
+  {\dostarttagged\t!formulacaption\empty
    \doplaceformulanumber
    \dostoptagged
    \dostarttagged\t!formulacontent\empty
@@ -516,6 +515,26 @@
    \setfalse\handleformulanumber
    \the\everyresetformulas
    \dorechecknextindentation} % here ?
+
+% experiment:
+
+\appendtoks
+   \edef\currentformulagrid{\formulaparameter\c!grid}%
+   \ifx\currentformulagrid\empty \else
+        \autosetsnapvalue\currentformulagrid
+   \fi
+\to \everybeforedisplayformula
+
+\def\switchtoformulabodyfont{\switchtobodyfont}
+
+\setvalue{\v!formula}{\dosingleempty\doformula}
+
+\def\doformula[#1]#2% todo: tagged
+  {\begingroup
+   \doifsomething{#1}{\switchtoformulabodyfont[#1]}%
+   % not : \def\doformula[##1]##2{\mathematics{##2}}%
+   \mathematics{#2}%
+   \endgroup}
 
 %D \starttyping
 %D % test \par       % no preceding hlist

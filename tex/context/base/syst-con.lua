@@ -14,7 +14,8 @@ the top of <l n='luatex'/>'s char range but outside the unicode range.</p>
 --ldx]]--
 
 local tonumber = tonumber
-local char, texsprint, format = unicode.utf8.char, tex.sprint, string.format
+local char, texsprint = unicode.utf8.char, tex.sprint
+local gsub, format = string.gsub, string.format
 
 function converters.hexstringtonumber(n) tonumber(n,16)   end
 function converters.octstringtonumber(n) tonumber(n, 8)   end
@@ -33,3 +34,8 @@ function commands.uchexnumber      (n) context(format("%X"  ,n)) end
 function commands.lchexnumbers     (n) context(format("%02x",n)) end
 function commands.uchexnumbers     (n) context(format("%02X",n)) end
 function commands.octnumber        (n) context(format("%03o",n)) end
+
+function commands.format(fmt,...)
+    fmt = gsub(fmt,"@","%%")
+    context(fmt,...)
+end

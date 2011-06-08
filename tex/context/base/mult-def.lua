@@ -14678,13 +14678,17 @@ return {
    ["pe"]="زیرصفحه‌قبلی",
    ["ro"]="subpaginaanterioara",
   },
+  ["print"]={
+   ["en"]="print",
+   ["nl"]="print", -- afdruk
+  },
   ["printable"]={
    ["cs"]="tisknutelne",
    ["de"]="druckbar",
    ["en"]="printable",
    ["fr"]="editable",
    ["it"]="stampabile",
-   ["nl"]="printbaar",
+   ["nl"]="printbaar", -- afdrukbaar
    ["pe"]="قابل‌چاپ",
    ["ro"]="tiparibil",
   },

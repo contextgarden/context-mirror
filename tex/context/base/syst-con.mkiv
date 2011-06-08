@@ -5,7 +5,7 @@
 %D       subtitle=Conversions,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -147,5 +147,8 @@
 \def\setcalculatedsin#1#2{\edef#1{\cldcontext{math.sind(#2)}}}
 \def\setcalculatedcos#1#2{\edef#1{\cldcontext{math.cosd(#2)}}}
 \def\setcalculatedtan#1#2{\edef#1{\cldcontext{math.tand(#2)}}}
+
+           \def\formatted#1{\ctxcommand{format(#1)}}
+\unexpanded\def\format   #1{\ctxcommand{format(#1)}}
 
 \protect \endinput

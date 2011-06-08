@@ -53,7 +53,6 @@ local pdfstring               = lpdf.string
 local pdfconstant             = lpdf.constant
 local pdftoeight              = lpdf.toeight
 local pdfflushobject          = lpdf.flushobject
-local pdfimmediateobject      = lpdf.immediateobject
 local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject
 local pdfreserveobject        = lpdf.reserveobject
@@ -369,11 +368,19 @@ local function fieldstates(specification,forceyes,values,default)
     else
         default = pdf_off
     end
-    local appearance = pdfdictionary { -- maybe also cache components
-        N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
-        R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
-        D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
-    }
+    if false then -- needs testing
+        local appearance = pdfdictionary { -- maybe also cache components
+            N = pdfshareobjectreference(pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
+            R = pdfshareobjectreference(pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
+            D = pdfshareobjectreference(pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
+        }
+    else
+        local appearance = pdfdictionary { -- maybe also cache components
+            N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
+            R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
+            D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
+        }
+    end
     local appearanceref = pdfshareobjectreference(appearance)
     return appearanceref, default, yesvalue
 end
