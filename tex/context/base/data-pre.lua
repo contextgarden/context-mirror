@@ -105,8 +105,9 @@ function resolvers.allprefixes(separator)
 end
 
 local function _resolve_(method,target)
-    if prefixes[method] then
-        return prefixes[method](target)
+    local action = prefixes[method]
+    if action then
+        return action(target)
     else
         return method .. ":" .. target
     end
@@ -121,7 +122,7 @@ end
 local function resolve(str) -- use schemes, this one is then for the commandline only
     local res = resolved[str]
     if not res then
-        res = gsub(str,"([a-z][a-z]+):([^ \"\']*)",_resolve_)
+        res = gsub(str,"([a-z][a-z]+):([^ \"\';]*)",_resolve_) -- home:xx;selfautoparent:xx; etc
         resolved[str] = res
         abstract[res] = str
     end

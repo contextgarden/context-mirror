@@ -73,6 +73,24 @@ function context.egroup()
     context("}")
 end
 
+-- -- speedtest needed:
+--
+-- local ctxcatcodes = tex.ctxcatcodes
+--
+-- local flush, writer = context.getlogger()
+--
+-- trackers.register("context.trace",function(v)
+--     flush, writer = context.getlogger()
+-- end)
+--
+-- function context.bgroup()
+--     flush(ctxcatcodes,"{")
+-- end
+--
+-- function context.egroup()
+--     flush(ctxcatcodes,"}")
+-- end
+
 local rule = nodes.pool.rule
 
 function context.hrule(w,h,d,dir)
