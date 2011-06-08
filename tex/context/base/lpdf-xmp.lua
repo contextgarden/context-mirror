@@ -16,14 +16,14 @@ local report_xmp = logs.reporter("backend","xmp")
 
 local backends, lpdf = backends, lpdf
 
-local codeinjections = backends.pdf.codeinjections -- normally it is registered
+local codeinjections       = backends.pdf.codeinjections -- normally it is registered
 
-local pdfdictionary = lpdf.dictionary
-local pdfconstant   = lpdf.constant
-local pdfreference  = lpdf.reference
-local pdfobject     = lpdf.object
+local pdfdictionary        = lpdf.dictionary
+local pdfconstant          = lpdf.constant
+local pdfreference         = lpdf.reference
+local pdfflushstreamobject = lpdf.flushstreamobject
 
--- i wonder why this begin end is empty / w (no time now to look into it)
+-- I wonder why this begin end is empty / w (no time now to look into it)
 
 local xpacket = [[
 <?xpacket begin="﻿" id="%s"?>
@@ -182,13 +182,7 @@ local function flushxmpinfo()
     if not verbose and tex.pdfcompresslevel > 0 then
         blob = gsub(blob,">%s+<","><")
     end
-    local r = pdfobject {
-        immediate = true,
-        compresslevel = 0,
-        type = "stream",
-        string = blob,
-        attr = md(),
-    }
+    local r = pdfflushstreamobject(blob,md,false) -- uncompressed
     lpdf.addtocatalog("Metadata",pdfreference(r))
 
     commands.defrostrandomseed() -- hack

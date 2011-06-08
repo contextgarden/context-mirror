@@ -399,6 +399,10 @@ local function handle_any_entity(str)
                 a = entities[str]
             end
             if a then
+if type(a) == "function" then
+    report_xml("expanding entity &%s; (function)",str)
+    a = a(str) or ""
+end
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end
@@ -530,6 +534,8 @@ local function normalentity(k,v  ) entities[k] = v end
 local function systementity(k,v,n) entities[k] = v end
 local function publicentity(k,v,n) entities[k] = v end
 
+-- todo: separate dtd parser
+
 local begindoctype     = open * P("!DOCTYPE")
 local enddoctype       = close
 local beginset         = P("[")
@@ -537,12 +543,16 @@ local endset           = P("]")
 local doctypename      = C((1-somespace-close)^0)
 local elementdoctype   = optionalspace * P("<!ELEMENT") * (1-close)^0 * close
 
+local basiccomment     = begincomment * ((1 - endcomment)^0) * endcomment
+
 local normalentitytype = (doctypename * somespace * value)/normalentity
 local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
 local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
 local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype) * optionalspace * close
 
-local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + space)^0 * optionalspace * endset
+-- we accept comments in doctypes
+
+local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + basiccomment + space)^0 * optionalspace * endset
 local definitiondoctype= doctypename * somespace * doctypeset
 local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
 local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset

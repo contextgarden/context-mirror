@@ -5,7 +5,7 @@
 %D       subtitle=Cross Referencing,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -15,7 +15,7 @@
 %
 % \definestructureconversionset[default][Character,number,Romannumerals,Character][number]
 % \definestructureseparatorset [default][.,.,--][.]
-% \setupstructurehead[subsection][sectionstopper=),sectionsegments=4:4]
+% \setuphead[subsection][sectionstopper=),sectionsegments=4:4]
 % \setupreferencestructureprefix[default][prefixsegments=2:4]
 % \setupreferencestructureprefix[figure][default][prefixsegments=3:4]
 % \chapter {One}
@@ -155,7 +155,7 @@
             {
                 references = {
                 %   internal = \nextinternalreference, % no need for an internal as we have an explicit
-                    block    = "\currentstructureblock",
+                    block    = "\currentsectionblock",
                     section  = structures.sections.currentid(),
                 },
                 metadata = { % we could assume page to have no metadata
@@ -191,7 +191,7 @@
      \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#1",
         {
             references = {
-            %   block    = "\currentstructureblock",
+            %   block    = "\currentsectionblock",
             %   section  = structures.sections.currentid(),
             },
             metadata = { % we could assume page to have no metadata
@@ -926,14 +926,23 @@
 \let\leftofreference         \empty
 \let\rightofreference        \empty
 
+% \setvalue{\??rf\c!interaction\v!all}%
+%   {\leftofreference
+%    \the\leftreferencetoks
+%    \doifsometokselse\leftreferencetoks \leftofreferencecontent \donothing
+%    \currentreferencecontent
+%    \doifsometokselse\rightreferencetoks\rightofreferencecontent\donothing
+%    \the\rightreferencetoks
+%    \rightofreference}
+
 \setvalue{\??rf\c!interaction\v!all}%
-  {\leftofreference
-   \the\leftreferencetoks
+  {\the\leftreferencetoks
    \doifsometokselse\leftreferencetoks \leftofreferencecontent \donothing
+   \leftofreference
    \currentreferencecontent
+   \rightofreference
    \doifsometokselse\rightreferencetoks\rightofreferencecontent\donothing
-   \the\rightreferencetoks
-   \rightofreference}
+   \the\rightreferencetoks}
 
 \setvalue{\??rf\c!interaction\v!label}%
   {\leftofreference

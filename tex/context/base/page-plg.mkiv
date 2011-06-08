@@ -5,7 +5,7 @@
 %D       subtitle=Page Setup,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -110,7 +110,7 @@
 
 \unprotect
 
-\setvalue{\??ly\c!method\v!makeup}#1#2%
+\def\constructmakeuppagecontent#1#2%
   {\setbox\pagebox\hbox
      {\vbox to \textheight
         {\offinterlineskip
@@ -136,6 +136,9 @@
    \wd\pagebox\paperwidth
    \ht\pagebox\paperheight
    \dp\pagebox\zeropoint}
+
+\installlayoutalternative\v!makeup
+  {\constructmakeuppagecontent}
 
 \newbox\pageareabox
 
@@ -183,11 +186,10 @@
      \box\pageareabox
    \fi}
 
+% to be done nicely (proper namespacing)
+
 \setvalue{\??ly\c!method:\v!leftpage }{\getvalue{\??ly\c!method:\v!page}}
 \setvalue{\??ly\c!method:\v!rightpage}{\getvalue{\??ly\c!method:\v!page}}
-
-% \long\unexpanded\def\startpagelayout[#1]#2\stoppagelayout
-%   {\long\setvalue{\??ly\c!method:#1}{#2}}
 
 \long\unexpanded\def\startpagelayout
   {\bgroup\catcode\endoflineasciicode\ignorecatcode\dostartpagelayout}

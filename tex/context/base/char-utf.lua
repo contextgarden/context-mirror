@@ -27,6 +27,7 @@ local allocate = utilities.storage.allocate
 local charfromnumber = characters.fromnumber
 
 -- todo: trackers
+-- graphemes: basic symbols
 
 characters            = characters or { }
 local characters      = characters

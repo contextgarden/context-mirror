@@ -5,7 +5,7 @@
 %D       subtitle=Layout Specification,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -25,17 +25,18 @@
 \unprotect
 
 %D First we get rid of the funny \TEX\ offset defaults of one
-%D inch by setting them to zero.
+%D inch by setting them to zero (actually this is already done
+%D elsewhere but it's good to notice).
 
-\voffset = 0pt % setting this to -1in let's go metapost crazy
-\hoffset = 0pt % setting this to -1in let's go metapost crazy
+\voffset \zeropoint
+\hoffset \zeropoint
 
 %D The dimensions related to layout areas are represented by
 %D real dimensions.
 
 \newdimen\paperheight          \paperheight          = 297mm
 \newdimen\paperwidth           \paperwidth           = 210mm
-\newdimen\paperoffset          \paperoffset          =   0mm
+\newdimen\paperoffset          \paperoffset          = \zeropoint
 
 \newdimen\printpaperheight     \printpaperheight     = \paperheight
 \newdimen\printpaperwidth      \printpaperwidth      = \paperwidth
@@ -48,13 +49,13 @@
 
 \newdimen\topspace             \topspace             = 2cm
 \newdimen\backspace            \backspace            = \topspace
-\newdimen\cutspace             \cutspace             = 0pt
-\newdimen\bottomspace          \bottomspace          = 0pt
+\newdimen\cutspace             \cutspace             = \zeropoint
+\newdimen\bottomspace          \bottomspace          = \zeropoint
 
 \newdimen\headerheight         \headerheight         = 2cm
 \newdimen\footerheight         \footerheight         = \headerheight
 
-\newdimen\topoffset            \topoffset            = 0pt
+\newdimen\topoffset            \topoffset            = \zeropoint
 \newdimen\backoffset           \backoffset           = \topoffset
 
 \newdimen\leftmarginwidth      \leftmarginwidth      = 3cm
@@ -63,38 +64,13 @@
 \newdimen\leftedgewidth        \leftedgewidth        = 3cm
 \newdimen\rightedgewidth       \rightedgewidth       = \leftedgewidth
 
-\newdimen\topheight            \topheight            = 0cm
+\newdimen\topheight            \topheight            = \zeropoint
 \newdimen\bottomheight         \bottomheight         = \topheight
 
-\newcount\layoutlines          \layoutlines          = 0
-\newcount\layoutcolumns        \layoutcolumns        = 0
-\newdimen\layoutcolumndistance \layoutcolumndistance = 0pt
-\newdimen\layoutcolumnwidth    \layoutcolumnwidth    = 0pt
-
-%D We can save some tokens and fuzzy parameters by using a
-%D symbolic name for the current set of layout parameters.
-
-\let\currentlayout\empty
-
-\def\layoutparameter#1%
-  {\csname\??ly\ifcsname
-     \??ly\currentlayout#1\endcsname\currentlayout
-   \fi#1\endcsname}
-
-\def\namedlayoutparameter#1#2%
-  {\csname\??ly\ifcsname\??ly            #1#2\endcsname#1\else
-               \ifcsname\??ly\currentlayout#2\endcsname\currentlayout
-   \fi\fi#2\endcsname}
-
-%D Beause normal \TEX\ has at most 256 dimensions (of which a
-%D substantial part is already in use), we provide a way to
-%D generate a format with macro based alternatives. For a long
-%D time, this used to be the default case. Beware: only fixed
-%D dimensions can be used in calculations! By the way, the
-%D gain in speed can hardly be called impressive and is roughly
-%D 1 second on a 35 second run of 850 empty pages with a
-%D couple of backgrounds only (which is far less than one
-%D percent on a normal document).
+\newcount\layoutlines          \layoutlines          = \zerocount
+\newcount\layoutcolumns        \layoutcolumns        = \zerocount
+\newdimen\layoutcolumndistance \layoutcolumndistance = \zeropoint
+\newdimen\layoutcolumnwidth    \layoutcolumnwidth    = \zeropoint
 
 %D The next series of dimensions are complemented by left
 %D and rights ones.
@@ -137,6 +113,28 @@
 \newdimen\naturalfooterdistance
 \newdimen\naturalbottomdistance
 
+%D Now we've come to the setup and definition commands.
+
+\installswitchcommandhandler \??ly {layout} \??ly
+
+\appendtoks
+    \letlayoutparameter\c!state\v!start
+\to \everydefinelayout
+
+\appendtoks
+    \ifx\currentlayout\v!reset
+      \let\currentlayout\empty
+      \letlayoutparameter\v!normal % global ?
+    \fi
+    \globallet\currentlayout\currentlayout
+\to \everysetuplayout
+
+\appendtoks
+   \recalculatelayout
+   \dochecknextlayout
+   \presetcenterpagebox
+\to \everysetuplayout
+
 \def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
 
 \def\setlayoutdimensions
@@ -153,19 +151,19 @@
    \global\naturalfooterdistance     \layoutparameter\c!footerdistance
    \global\naturalbottomdistance     \layoutparameter\c!bottomdistance
    %
-   \global\marginwidth          \naturalmarginwidth
-   \global\edgewidth            \naturaledgewidth
-   \global\margindistance       \naturalmargindistance
-   \global\edgedistance         \naturaledgedistance
+   \global\marginwidth               \naturalmarginwidth
+   \global\edgewidth                 \naturaledgewidth
+   \global\margindistance            \naturalmargindistance
+   \global\edgedistance              \naturaledgedistance
    %
-   \global\leftedgedistance     \layoutdistance\leftedgewidth   \naturalleftedgedistance
-   \global\rightedgedistance    \layoutdistance\rightedgewidth  \naturalrightedgedistance
-   \global\leftmargindistance   \layoutdistance\leftmarginwidth \naturalleftmargindistance
-   \global\rightmargindistance  \layoutdistance\rightmarginwidth\naturalrightmargindistance
-   \global\topdistance          \layoutdistance\topheight       \naturaltopdistance
-   \global\headerdistance       \layoutdistance\headerheight    \naturalheaderdistance
-   \global\footerdistance       \layoutdistance\footerheight    \naturalfooterdistance
-   \global\bottomdistance       \layoutdistance\bottomheight    \naturalbottomdistance
+   \global\leftedgedistance          \layoutdistance\leftedgewidth   \naturalleftedgedistance
+   \global\rightedgedistance         \layoutdistance\rightedgewidth  \naturalrightedgedistance
+   \global\leftmargindistance        \layoutdistance\leftmarginwidth \naturalleftmargindistance
+   \global\rightmargindistance       \layoutdistance\rightmarginwidth\naturalrightmargindistance
+   \global\topdistance               \layoutdistance\topheight       \naturaltopdistance
+   \global\headerdistance            \layoutdistance\headerheight    \naturalheaderdistance
+   \global\footerdistance            \layoutdistance\footerheight    \naturalfooterdistance
+   \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance
   }
 
 \def\setlayoutdistances % local in \setreducedvsize
@@ -189,28 +187,22 @@
 
 \newtoks\extralayoutcalculations \def\calculatelayoutextras{\the\extralayoutcalculations}
 
-% \appendtoks
-%   non etex calculations used to go here
-% \to \extralayoutcalculations
-
 \newtoks\everyswapmargins % watch the order !
 
 \appendtoks
-   \swapdimens\leftmargindistance\rightmargindistance
-   \swapdimens\leftedgedistance  \rightedgedistance
-   \swapdimens\leftmarginwidth   \rightmarginwidth
-   \swapdimens\leftedgewidth     \rightedgewidth
-\to \everyswapmargins
-
-\appendtoks
-  \swapmacros\leftmargintotal \rightmargintotal
-  \swapmacros\leftedgetotal   \rightedgetotal
-  \swapmacros\leftsidetotal   \rightsidetotal
-  \swapmacros\leftcombitotal  \rightcombitotal
-  \swapmacros\innermargintotal\outermargintotal
-  \swapmacros\inneredgetotal  \outeredgetotal
-  \swapmacros\innercombitotal \outercombitotal
-  \swapmacros\innersidetotal  \outersidetotal
+    \swapdimens\leftmargindistance\rightmargindistance
+    \swapdimens\leftedgedistance  \rightedgedistance
+    \swapdimens\leftmarginwidth   \rightmarginwidth
+    \swapdimens\leftedgewidth     \rightedgewidth
+    %
+    \swapmacros\leftmargintotal   \rightmargintotal
+    \swapmacros\leftedgetotal     \rightedgetotal
+    \swapmacros\leftsidetotal     \rightsidetotal
+    \swapmacros\leftcombitotal    \rightcombitotal
+    \swapmacros\innermargintotal  \outermargintotal
+    \swapmacros\inneredgetotal    \outeredgetotal
+    \swapmacros\innercombitotal   \outercombitotal
+    \swapmacros\innersidetotal    \outersidetotal
 \to \everyswapmargins
 
 %D \macros
@@ -234,7 +226,7 @@
      \doifsomething{#1} % to be sure
        {\doifassignmentelse{#2}
           {\getparameters
-             [\??pp#1] % geen \c!scale, scheelt hash ruimte
+             [\??pp#1]% geen \c!scale, scheelt hash ruimte
              [\c!width=\@@ppwidth,\c!height=\@@ppheight,\c!offset=\@@ppoffset,#2]}
           {\setvalue{\??pp:1:#1}{#2}%
            \setvalue{\??pp:2:#1}{#3}}}%
@@ -246,14 +238,16 @@
 %D For the moment we need to fake this macro.
 
 \ifx\setuppapersize\undefined
-  \let\setuppapersize\relax
+    \let\setuppapersize\relax
 \fi
 
 %D We set the defaults to the dimensions of an A4 sheet of
 %D paper.
 
 \definepapersize
-  [\c!width=210mm,\c!height=297mm,\c!offset=\zeropoint]
+  [\c!width=210mm,
+   \c!height=297mm,
+   \c!offset=\zeropoint]
 
 %D Yet undocumented, let's see if it gets noticed.
 %D
@@ -291,10 +285,12 @@
 \newconstant   \paperorientation \newconstant   \printorientation
 \newconstant   \paperreverse     \newconstant   \printreverse
 \newconditional\paperlandscape   \newconditional\printlandscape
+                                 \newconditional\printnegatecolors
+                                 \newconditional\printdoublesided
 
 \let\papersize\empty \let\printpapersize\empty
 
-\def\paperscale{1} \newif\ifnegateprintbox
+\def\paperscale{1}
 
 \unexpanded\def\setuppaper[#1]%
   {\getparameters[\??pp][\c!paper=,\c!page=,#1]%
@@ -316,7 +312,6 @@
      {\doifelsenothing{#2}
         {\expanded{\dodosetuppapersize
            [\executeifdefined{\??pp:1:#1}{#1}]%
-%            [\executeifdefined{\??pp:2:#1}{\v!default}]}}
            [\executeifdefined{\??pp:2:#1}{#1}]}}
         {\doifassignmentelse{#2}
            {\getparameters[\??pp\executeifdefined{\??pp:1:#1}{#1}][#2]}
@@ -419,14 +414,14 @@
    \global\setfalse#5%
    \global#3\uprotationangle
    \global#4\uprotationangle
-   \global\negateprintboxfalse
+   \global\setfalse\printnegatecolors
    \processallactionsinset
      [#1]
      [ \v!landscape=>\global\settrue#2,
         \v!mirrored=>\global\settrue#5,
          \v!rotated=>\global#3\rightrotatioangle
                      \global#4\leftrotatioangle,
-        \v!negative=>\global\negateprintboxtrue,
+        \v!negative=>\global\settrue\printnegatecolors,
                  90=>\global#3\rightrotatioangle
                      \global#4\leftrotatioangle,
                 180=>\global#3\downrotatioangle
@@ -444,15 +439,6 @@
 \fi
 
 \let\restorepapersize\relax
-
-% \def\docheckforems#1%
-%   {\beforesplitstring#1\at em\to\asciia
-%    \doifnot\asciia{#1}
-%      {\aftersplitstring\asciia\at=\to\asciia
-%       \doifsomething\asciia{\showmessage\m!system{10}{#1}}}}
-%
-% \def\checkforems[#1]%
-%   {\processcommalist[#1]\docheckforems}
 
 \ifx\setups\undefined \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi
 
@@ -584,7 +570,9 @@
 \def\checklayout
   {\ifdim\makeupheight=\layoutlines\lineheight \else \recalculatelayout \fi}
 
-\appendtoks \checklayout \to \everystarttext
+\appendtoks
+    \checklayout
+\to \everystarttext
 
 % document:
 %
@@ -594,7 +582,8 @@
 
 \def\changetolayout#1%
   {%\writestatus\m!layouts{changing to layout #1}%
-   \xdef\currentlayout{#1}\recalculatelayout}
+   \xdef\currentlayout{#1}%
+   \recalculatelayout}
 
 \def\checkcurrentoddlayout
   {\ifcsname\??ly\v!odd\c!state\endcsname
@@ -606,7 +595,9 @@
      \doifvalue{\??ly\v!even\c!state}\v!start{\changetolayout\v!even}%
    \fi}
 
-\ifx\lastpage\undefined \def\lastpage{1} \fi
+\ifx\lastpage\undefined
+    \def\lastpage{1}
+\fi
 
 \def\reverserealfolio
   {\ifnum\lastpage>\plusone
@@ -632,6 +623,18 @@
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout
    \fi\fi\fi}
 
+% inheritance
+%
+% \definelayout
+%   [test]
+%   [width=12cm,
+%    height=10cm]
+%
+% \definelayout
+%   [more]
+%   [test]
+%   [height=12cm]
+%
 % testcase
 %
 % \setuppagenumbering[alternative=doublesided]
@@ -654,7 +657,7 @@
 \appendtoks \checkcurrentlayout \to \everystarttext
 
 \appendtoks
-  \dochecknextlayout
+    \dochecknextlayout
 \to \everyaftershipout
 
 % \def\dochecknextlayout
@@ -670,87 +673,83 @@
 
 \def\dochecknextlayout{\checkcurrentlayout}
 
-\newif\ifdoublesidedprint
+\newconditional\c_page_layouts_location_is_set
 
-\newconditional\page_location_is_set
+\def\page_layouts_location_reset
+  {\setfalse\c_page_layouts_location_is_set
+   \let\v_page_layouts_location_left_fill  \relax
+   \let\v_page_layouts_location_right_fill \relax
+   \let\v_page_layouts_location_top_fill   \relax
+   \let\v_page_layouts_location_bottom_fill\relax}
 
-\def\page_location_reset
-  {\setfalse\page_location_is_set
-   \let\page_location_left_fill  \relax
-   \let\page_location_right_fill \relax
-   \let\page_location_top_fill   \relax
-   \let\page_location_bottom_fill\relax}
+\page_layouts_location_reset
 
-\page_location_reset
-
-\setvalue{\??ly:\c!location:\v!right      }{\settrue\page_location_is_set
-                                            \let\page_location_left_fill  \hss}
-\setvalue{\??ly:\c!location:\v!left       }{\settrue\page_location_is_set
-                                            \let\page_location_right_fill \hss}
-\setvalue{\??ly:\c!location:\v!bottom     }{\settrue\page_location_is_set
-                                            \let\page_location_top_fill   \vss}
-\setvalue{\??ly:\c!location:\v!top        }{\settrue\page_location_is_set
-                                            \let\page_location_bottom_fill\vss}
-\setvalue{\??ly:\c!location:\v!middle     }{\settrue\page_location_is_set
-                                            \let\page_location_left_fill  \hss
-                                            \let\page_location_right_fill \hss
-                                            \let\page_location_top_fill   \vss
-                                            \let\page_location_bottom_fill\vss}
-\setvalue{\??ly:\c!location:\empty        }{\setfalse\page_location_is_set % default also signal to scrn_
-                                            \let\page_location_right_fill \hss
-                                            \let\page_location_bottom_fill\hss}
-\setvalue{\??ly:\c!location:\v!doublesided}{\doublesidedprinttrue}
-\setvalue{\??ly:\c!location:\v!singlesided}{\doublesidedprintfalse}
+\setvalue{\??ly:\c!location:\v!right      }{\settrue\c_page_layouts_location_is_set
+                                            \let\v_page_layouts_location_left_fill  \hss}
+\setvalue{\??ly:\c!location:\v!left       }{\settrue\c_page_layouts_location_is_set
+                                            \let\v_page_layouts_location_right_fill \hss}
+\setvalue{\??ly:\c!location:\v!bottom     }{\settrue\c_page_layouts_location_is_set
+                                            \let\v_page_layouts_location_top_fill   \vss}
+\setvalue{\??ly:\c!location:\v!top        }{\settrue\c_page_layouts_location_is_set
+                                            \let\v_page_layouts_location_bottom_fill\vss}
+\setvalue{\??ly:\c!location:\v!middle     }{\settrue\c_page_layouts_location_is_set
+                                            \let\v_page_layouts_location_left_fill  \hss
+                                            \let\v_page_layouts_location_right_fill \hss
+                                            \let\v_page_layouts_location_top_fill   \vss
+                                            \let\v_page_layouts_location_bottom_fill\vss}
+\setvalue{\??ly:\c!location:\empty        }{\setfalse\c_page_layouts_location_is_set % default also signal to scrn_
+                                            \let\v_page_layouts_location_right_fill \hss
+                                            \let\v_page_layouts_location_bottom_fill\hss}
+\setvalue{\??ly:\c!location:\v!doublesided}{\settrue\printdoublesided}
+\setvalue{\??ly:\c!location:\v!singlesided}{\setfalse\printdoublesided}
 
 \def\dopresetcenterpagebox#1%
   {\ifcsname\??ly:\c!location:#1\endcsname\csname\??ly:\c!location:#1\endcsname\fi}
 
 \def\presetcenterpagebox
-  {\doublesidedprintfalse
-   \page_location_reset
-   \processcommacommand[\@@lylocation]\dopresetcenterpagebox}
+  {\setfalse\printdoublesided
+   \page_layouts_location_reset
+   \processcommacommand[\layoutparameter\c!location]\dopresetcenterpagebox}
 
-\unexpanded\def\definelayout
-  {\dodoubleargument\dodefinelayout}
+% installers
 
-\def\dodefinelayout[#1][#2]%
-  {\getparameters[\??ly#1][\c!state=\v!start,#2]}
-
-\def\dodosetuplayout[#1][#2]%
-  {\doifnot{#2}\v!reset{\getparameters[\??ly#1][#2]}}
-
-% global needed for non-doublesided standardmakeup
-
-\unexpanded\def\setuplayout
-  {\dodoubleempty\dosetuplayout}
-
-\def\dosetuplayout[#1][#2]%
-  {\globallet\currentlayout\empty
-   \ifsecondargument
-     \dodosetuplayout[#1][#2]%
-   \else\iffirstargument
-     \doifassignmentelse{#1}
-       {\dodosetuplayout[][#1]}
-       {\doifelse{#1}\v!reset
-          {\let\@@lymethod\v!normal}% hardcodes, assumes a definition
-          {\xdef\currentlayout{#1}}}%
-   \fi\fi
-   \recalculatelayout
-  %\checkcurrentlayout % here?
-   \dochecknextlayout  % here?
-   \presetcenterpagebox}
-
-\def\installlayouthandler#1#2%
+\def\installlayoutmethod#1#2%
   {\setgvalue{\??ly:\c!method:#1}{#2}}
 
-\installlayouthandler\v!default
+\installlayoutmethod\v!default
   {\checkcurrentlayout}
 
-\installlayouthandler\v!normal
+\installlayoutmethod\v!normal
   {\checkcurrentlayout}
 
 \def\dochecknextlayout
-  {\executeifdefined{\??ly:\c!method:\@@lymethod}\checkcurrentlayout}
+  {\executeifdefined
+     {\??ly:\c!method:\layoutparameter\c!method}
+     {\getvalue{\??ly:\c!method:\v!normal}}}
+
+\def\installlayoutalternative#1#2%
+  {\setgvalue{\??ly:\c!alternative:#1}{#2}}
+
+\def\constructnormalpagecontent#1#2% redefined
+  {\setbox\pagebox\vbox
+     {\offinterlineskip
+      \begingroup
+      \dosetlayoutattributes\c!style\c!color
+      \offinterlineskip
+      \gettextboxes
+      \endgroup
+      \getmainbox#1#2}% including footnotes
+   \addmainbackground\pagebox
+   \buildpagebox\pagebox
+   \addstatusinfo\pagebox}
+
+\installlayoutalternative\v!normal
+  {\constructnormalpagecontent}
+
+\def\constructpagecontent % overload
+  {\executeifdefined
+     {\??ly:\c!alternative:\layoutparameter\c!alternative}%
+     {\getvalue{\??ly:\c!alternative:\v!normal}}}
 
 \let\@@zaheight\!!zeropoint
 
@@ -851,18 +850,18 @@
    \ifdone
      \setbox#1\vbox to \printpaperheight
        {\@@pptop
-        \page_location_top_fill
+        \v_page_layouts_location_top_fill
         \hbox to \printpaperwidth
-          {\ifdoublesidedprint
+          {\ifconditional\printdoublesided
              \doifbothsides
-               {\@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright}%
-               {\@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright}%
-               {\@@ppright\page_location_right_fill\box#1\page_location_left_fill \@@ppleft }%
+               {\@@ppleft \v_page_layouts_location_left_fill \box#1\v_page_layouts_location_right_fill\@@ppright}%
+               {\@@ppleft \v_page_layouts_location_left_fill \box#1\v_page_layouts_location_right_fill\@@ppright}%
+               {\@@ppright\v_page_layouts_location_right_fill\box#1\v_page_layouts_location_left_fill \@@ppleft }%
            \else
-                \@@ppleft \page_location_left_fill \box#1\page_location_right_fill\@@ppright
+                \@@ppleft \v_page_layouts_location_left_fill \box#1\v_page_layouts_location_right_fill\@@ppright
            \fi}%
         \par
-        \page_location_bottom_fill
+        \v_page_layouts_location_bottom_fill
         \@@ppbottom}%
    \fi}
 
@@ -887,9 +886,9 @@
    \fi}
 
 \def\replicatepagebox#1%
-  {\ifnum\@@lynx>\plusone
+  {\ifnum\layoutparameter\c!nx>\plusone
      \donetrue
-   \else\ifnum\@@lyny>\plusone
+   \else\ifnum\layoutparameter\c!ny>\plusone
      \donetrue
    \else
      \donefalse
@@ -897,9 +896,9 @@
    \ifdone
      \setbox#1\vbox
        {\offinterlineskip
-        \dorecurse\@@lyny
-          {\hbox{\dorecurse\@@lynx{\copy#1\hskip\@@lydx}\unskip}%
-           \vskip\@@lydy}
+        \dorecurse{\layoutparameter\c!ny}
+          {\hbox{\dorecurse{\layoutparameter\c!nx}{\copy#1\hskip\layoutparameter\c!dx}\unskip}%
+           \vskip\layoutparameter\c!dy}
         \unskip}%
    \fi}
 
@@ -922,17 +921,21 @@
 \def\mirrorprintbox{\mirrorpagebodybox\printmirror}
 
 \def\scalepagebox#1%
-  {\ifdim\@@lyscale\points=\onepoint
-     \ifdim\@@lysx\points=\onepoint
-       \ifdim\@@lysy\points=\onepoint
+  {\edef\tmp_currentlayout_scale{\layoutparameter\c!scale}%
+   \ifdim\tmp_currentlayout_scale\points=\onepoint
+     \edef\tmp_currentlayout_sx{\layoutparameter\c!sx}%
+     \edef\tmp_currentlayout_sy{\layoutparameter\c!sy}%
+     \ifdim\tmp_currentlayout_sx\points=\onepoint
+       \ifdim\layoutparameter\c!sy\points=\onepoint
+         % no scaling done (and no copying either)
        \else
-         \doscalepagebox{#1}\@@lysx\@@lysy
+         \doscalepagebox{#1}\tmp_currentlayout_sx\tmp_currentlayout_sy
        \fi
      \else
-       \doscalepagebox{#1}\@@lysx\@@lysy
+       \doscalepagebox{#1}\tmp_currentlayout_sx\tmp_currentlayout_sy
      \fi
    \else
-     \doscalepagebox{#1}\@@lyscale\@@lyscale
+     \doscalepagebox{#1}\tmp_currentlayout_scale\tmp_currentlayout_scale
    \fi}
 
 \def\doscalepagebox#1#2#3%
@@ -941,63 +944,10 @@
    \paperheight#3\paperheight}
 
 \def\negateprintbox#1%
-  {\ifnegateprintbox
+  {\ifconditional\printnegatecolors
      \negatecolorbox{#1}%
    \fi}
 
-\def\pagecutmarksymbol    {\the\realpageno}
-\def\pagecutmarklength    {.5cm}
-\let\pagecutmarktoptext    \empty
-\let\pagecutmarkbottomtext \empty
-
-\def\extrapagecutmarkbottomtext
-  {\rlap{\jobname}\hfill\currentdate\space-\space\currenttime\hfill\llap{\realfolio}}
-
-\def\makepagecutbox % #1
-  {\let\cutmarksymbol    \pagecutmarksymbol
-   \let\cutmarklength    \pagecutmarklength
-   \let\cutmarktoptext   \pagecutmarktoptext
-   \let\cutmarkbottomtext\pagecutmarkbottomtext
-   \makecutbox}
-
-\setvalue{\??ly:n:\c!marking:\v!on}%
-  {\makepagecutbox}
-
-\setvalue{\??ly:n:\c!marking:\v!page}% only at outer when nx/ny > 0
-  {\makepagecutbox}
-
-\setvalue{\??ly:n:\c!marking:\v!empty}%
-  {\let\pagecutmarksymbol\empty
-   \let\pagecutmarktoptext\empty
-   \let\pagecutmarkbottomtext\empty
-   \makepagecutbox}
-
-\setvalue{\??ly:n:\c!marking:\v!text}%
-  {\let\pagecutmarksymbol\empty
-   \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
-   \makepagecutbox}
-
-\setvalue{\??ly:c:\c!marking:\v!color}%
-  {\doaddpagecolormarks\colormarkbox}
-
-\setvalue{\??ly:c:\c!marking:\v!screen}%
-  {\doaddpagecolormarks\rastermarkbox}
-
-\letvalue{\??ly:c:\c!marking:\v!unknown}\gobbleoneargument
-\letvalue{\??ly:n:\c!marking:\v!unknown}\gobbleoneargument
-
-% \def\addpagecutmarks  {\executeifdefined{\??ly:n:\c!marking:\@@lymarking}\gobbleoneargument}
-% \def\addpagecolormarks{\executeifdefined{\??ly:c:\c!marking:\@@lymarking}\gobbleoneargument}
-
-\def\addpagecutmarks  {\expandcheckedcsname{\??ly:n:\c!marking:}\@@lymarking\s!unknown}
-\def\addpagecolormarks{\expandcheckedcsname{\??ly:c:\c!marking:}\@@lymarking\s!unknown}
-
-\def\doaddpagecolormarks#1#2%
-  {\makepagecutbox{#2}%
-   \ifnum\horizontalcutmarks>\plustwo \def\colormarkoffset{\plusfour}\fi
-   \ifnum\verticalcutmarks  >\plustwo \def\colormarkoffset{\plusfour}\fi
-   #1{#2}}
-
 % NOG EENS NAGAAN WANNEER NU GLOBAL EN WANNEER NIET
 
 \ifx\doifelselayoutsomeline\undefined % defined in page-txt
@@ -1137,7 +1087,7 @@
 % \prependtoks
 %     \freezepagestatechecks
 % \to \everybeforeshipout
-
+
 \def\goleftonpage
   {\hskip-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}
 
@@ -1151,7 +1101,7 @@
   {\let\swapmargins  \relax % to prevent local swapping
    \let\doswapmargins\relax % to prevent local swapping
    \the\everyswapmargins}
-
+
 \def\rightorleftpageaction
   {\ifdoublesided
      \expandafter\rightorleftpageactionindeed
@@ -1259,6 +1209,7 @@
    \c!dy=\zeropoint,
    \c!nx=1,
    \c!ny=1,
+   \c!alternative=\v!normal,
    \c!method=\v!normal]
 
 \setuppapersize
@@ -1305,6 +1256,7 @@
                    \c!color=,
                  \c!marking=\v!off,
                 \c!location=,% \v!singlesided, but unset is signal (no other default, spoils arrange)
+                   \c!state=\v!start,
                    \c!scale=1,
                       \c!sx=1,
                       \c!sy=1,
@@ -1468,6 +1420,11 @@
    \c!height=\dimexpr\paperheight+1.5cm\relax]
 
 \definepapersize
+  [undersized]
+  [ \c!width=\dimexpr\paperwidth -1.5cm\relax,
+   \c!height=\dimexpr\paperheight-1.5cm\relax]
+
+\definepapersize
   [doublesized]
   [ \c!width=\dimexpr \paperwidth \relax,
    \c!height=\dimexpr2\paperheight\relax]
@@ -1481,16 +1438,9 @@
 %   [A4][A4]
 
 \setuppapersize
-  [A4][samesized]
+  [A4] % [samesized]
 
 %D A few goodies:
-
-%D For orthogonality:
-
-\definepapersize
-  [undersized]
-  [ \c!width=\dimexpr\paperwidth -1.5cm\relax,
-   \c!height=\dimexpr\paperheight-1.5cm\relax]
 
 \definelayout
   [\v!page]

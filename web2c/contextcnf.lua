@@ -1,9 +1,9 @@
 return {
 
     type    = "configuration",
-    version = "1.1.0",
-    date    = "2011-09-02", -- or so
-    time    = "12:12:12",
+    version = "1.1.1",
+    date    = "2011-06-02",
+    time    = "14:59:00",
     comment = "ConTeXt MkIV configuration file",
     author  = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
 
@@ -19,23 +19,30 @@ return {
         variables = {
 
             -- The following variable is predefined (but can be overloaded) and in
-            -- most cases you can leve this one untouched. The built-in definition
+            -- most cases you can leave this one untouched. The built-in definition
             -- permits relocation of the tree.
             --
-            -- TEXMFCNF     = "{selfautodir:,selfautoparent:}{,{/share,}/texmf{-local,}/web2c}"
+            --  if this_is_texlive then
+            --      resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
+            --  else
+            --      resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
+            --  end
             --
-            -- more readable than "selfautoparent:{/texmf{-local,}{,/web2c},}}" is:
+            -- more readable is:
             --
             -- TEXMFCNF     = {
-            --     "selfautoparent:/texmf-local",
-            --     "selfautoparent:/texmf-local/web2c",
-            --     "selfautoparent:/texmf",
-            --     "selfautoparent:/texmf/web2c",
-            --     "selfautoparent:",
+            --     "home:texmf/web2c,
+            --     "selfautoparent:texmf-local/web2c",
+            --     "selfautoparent:texmf-context/web2c",
+            --     "selfautoparent:texmf/web2c",
             -- }
 
             -- We have only one cache path but there can be more. The first writable one
             -- will be chose but there can be more readable paths.
+            --
+            -- Keep in mind that MkIV does not run at all on older texlives so when using
+            -- that you don't need to worry about ancient and obsolete configuration paths,
+            -- simply because no configuration will be found there.
 
             TEXMFCACHE      = "$SELFAUTOPARENT/texmf-cache",
 
@@ -67,32 +74,31 @@ return {
             ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
             VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
             TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
-            T1FONTS         = ".;$TEXMF/fonts/{data,type1,pfb}//;$OSFONTDIR",
+            T1FONTS         = ".;$TEXMF/fonts/{data,type1}//;$OSFONTDIR",
             AFMFONTS        = ".;$TEXMF/fonts/{data,afm}//;$OSFONTDIR",
-            TTFONTS         = ".;$TEXMF/fonts/{data,truetype,ttf}//;$OSFONTDIR",
+            TTFONTS         = ".;$TEXMF/fonts/{data,truetype}//;$OSFONTDIR",
             OPENTYPEFONTS   = ".;$TEXMF/fonts/{data,opentype}//;$OSFONTDIR",
-            CMAPFONTS       = ".;$TEXMF/fonts/cmap//",
             FONTFEATURES    = ".;$TEXMF/fonts/{data,fea}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
-            FONTCIDMAPS     = ".;$TEXMF/fonts/{data,cid}//;$OPENTYPEFONTS;$TTFONTS;$T1FONTS;$AFMFONTS",
+            FONTCIDMAPS     = ".;$TEXMF/fonts/{data,cid}//",
             OFMFONTS        = ".;$TEXMF/fonts/{data,ofm,tfm}//",
             OVFFONTS        = ".;$TEXMF/fonts/{data,ovf,vf}//",
 
-            TEXINPUTS       = ".;{$CTXDEVTXPATH};$TEXMF/tex/{context,plain/base,generic}//",
-            MPINPUTS        = ".;{$CTXDEVMPPATH};$TEXMF/metapost/{context,base,}//",
+            TEXINPUTS       = ".;$TEXMF/tex/{context,plain/base,generic}//",
+            MPINPUTS        = ".;$TEXMF/metapost/{context,base,}//",
 
             -- In the next variable the inputs path will go away.
 
-            TEXMFSCRIPTS    = ".;$CTXDEVLUPATH;$CTXDEVRBPATH;$CTXDEVPLPATH;$TEXMF/scripts/context/{lua,ruby,python,perl}//;$TEXINPUTS",
-            PERLINPUTS      = ".;$CTXDEVPLPATH;$TEXMF/scripts/context/perl",
-            PYTHONINPUTS    = ".;$CTXDEVPYPATH;$TEXMF/scripts/context/python",
-            RUBYINPUTS      = ".;$CTXDEVRBPATH;$TEXMF/scripts/context/ruby",
-            LUAINPUTS       = ".;$CTXDEVLUPATH;$TEXINPUTS;$TEXMF/scripts/context/lua//",
+            TEXMFSCRIPTS    = ".;$TEXMF/scripts/context/{lua,ruby,python,perl}//;$TEXINPUTS",
+            PERLINPUTS      = ".;$TEXMF/scripts/context/perl",
+            PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
+            RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
+            LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//",
             CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{context,luatex,}/lua//",
 
             -- Not really used by MkIV so they might go away.
 
-            BIBINPUTS       = ".;{$CTXDEVTXPATH};$TEXMF/bibtex/bib//",
-            BSTINPUTS       = ".;{$CTXDEVTXPATH};$TEXMF/bibtex/bst//",
+            BIBINPUTS       = ".;$TEXMF/bibtex/bib//",
+            BSTINPUTS       = ".;$TEXMF/bibtex/bst//",
 
             -- Experimental
 
@@ -102,7 +108,6 @@ return {
 
             FONTCONFIG_FILE = "fonts.conf",
             FONTCONFIG_PATH = "$TEXMFSYSTEM/fonts/conf",
-            FC_CACHEDIR     = "$TEXMFSYSTEM/fonts/cache", -- not needed
 
         },
 
@@ -155,7 +160,6 @@ return {
             -- as they only make sense when testing.
 
          -- ["fonts.autoreload"]         = "no",
-         -- ["fonts.otf.loader.method"]  = "table", -- table mixed sparse
          -- ["fonts.otf.loader.cleanup"] = "0",     -- 0 1 2 3
 
             -- In an edit cycle it can be handy to launch an editor. The
@@ -174,6 +178,6 @@ return {
 
     },
 
-    TEXMFCACHE  = "$SELFAUTOPARENT/texmf-cache", -- for old times sake
+ -- TEXMFCACHE  = "$SELFAUTOPARENT/texmf-cache", -- for old times sake
 
 }

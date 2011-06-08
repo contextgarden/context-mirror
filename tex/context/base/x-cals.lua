@@ -126,6 +126,8 @@ end
 function cals.table(root,namespace)
 
     local prefix = (namespace or "cals") .. ":"
+
+    local prefix = namespace and namespace ~= "" and (namespace .. ":") or ""
     local p = "/" .. prefix
 
     local tgroupspec = p .. "tgroup"
@@ -134,7 +136,7 @@ function cals.table(root,namespace)
     local hcolspec   = p .. "thead" .. p .. "colspec"
     local bcolspec   = p .. "tbody" .. p .. "colspec"
     local fcolspec   = p .. "tfoot" .. p .. "colspec"
-    local entryspec  = p .. "entry" .. "|" ..prefix .. "entrytbl"
+    local entryspec  = p .. "entry" .. "|" .. prefix .. "entrytbl" -- shouldn't that be p ?
     local hrowspec   = p .. "thead" .. p .. "row"
     local browspec   = p .. "tbody" .. p .. "row"
     local frowspec   = p .. "tfoot" .. p .. "row"

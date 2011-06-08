@@ -5,7 +5,7 @@
 %D       subtitle=Initialization,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -20,9 +20,11 @@
 %registerctxluafile{lxml-xml}{1.001} % xml finalizers
 %registerctxluafile{lxml-aux}{1.001} % extras using parser
 %registerctxluafile{lxml-mis}{1.001} % extras independent of parser
+\registerctxluafile{char-ent}{1.001}
 \registerctxluafile{lxml-ent}{1.001} % entity hacks
 \registerctxluafile{lxml-tex}{1.001} % tex finalizers
 \registerctxluafile{lxml-dir}{1.001} % ctx hacks
+
 
 \unprotect
 
@@ -334,7 +336,7 @@
 \def\xmlwithindex #1#2{\ctxlxml{withindex("\xmldocument","#1","#2")}}
 \def\xmlreference #1#2{\string\xmlwithindex{#1}{#2}}
 
-%D Entities:
+%D Entities (might change):
 
 \setnewconstant\xmlautoentities\plusone % 0=off, 1=upper, 2=upper,lower
 
@@ -374,6 +376,24 @@
    \else
      #1%
    \fi\fi}
+
+% handy helpers (analogue to MP and LUA and TEX and also MkII)
+
+\unexpanded\def\processXMLbuffer
+  {\dosingleempty\doprocessXMLbuffer}
+
+\def\doprocessXMLbuffer[#1]%
+  {\xmlprocessbuffer{temp}{#1}{}}
+
+\unexpanded\def\processXMLfile#1%
+  {\xmlprocessfile{temp}{#1}{}}
+
+\unexpanded\def\XMLdata#1%
+  {\xmlprocessdata{temp}{#1}{}}
+
+\let\processxmlbuffer\processXMLbuffer
+\let\processxmlfile  \processXMLfile
+\let\xmldata         \XMLdata
 
 \protect \endinput
 

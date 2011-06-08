@@ -359,6 +359,7 @@
 		<cd:variable name='previousoddpage' value='predchozilichastranka'/>
 		<cd:variable name='previouspage' value='predchozistranka'/>
 		<cd:variable name='previoussubpage' value='predchozipodstranka'/>
+		<cd:variable name='print' value='print'/>
 		<cd:variable name='printable' value='tisknutelne'/>
 		<cd:variable name='process' value='process'/>
 		<cd:variable name='product' value='produkt'/>

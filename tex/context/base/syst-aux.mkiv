@@ -5,7 +5,7 @@
 %D       subtitle=General,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -1656,11 +1656,11 @@
 
 \let\currentvalue\empty
 
-\def\getparameters   {\dogetparameters\dosetvalue}
-\def\geteparameters  {\dogetparameters\dosetevalue}
-\def\getgparameters  {\dogetparameters\dosetgvalue}
-\def\getxparameters  {\dogetparameters\dosetxvalue}
-\def\forgetparameters{\dogetparameters\doignorevalue}
+\unexpanded\def\getparameters   {\dogetparameters\dosetvalue}
+\unexpanded\def\geteparameters  {\dogetparameters\dosetevalue}
+\unexpanded\def\getgparameters  {\dogetparameters\dosetgvalue}
+\unexpanded\def\getxparameters  {\dogetparameters\dosetxvalue}
+\unexpanded\def\forgetparameters{\dogetparameters\doignorevalue}
 
 \let\getexpandedparameters=\geteparameters
 

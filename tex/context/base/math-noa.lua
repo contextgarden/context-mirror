@@ -17,9 +17,9 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local utf = unicode.utf8
 
+local utfchar, utfbyte = utf.char, utf.byte
 local format, rep  = string.format, string.rep
 local concat = table.concat
-local utfchar, utfbyte = utf.char, utf.byte
 
 local fonts, nodes, node, mathematics = fonts, nodes, node, mathematics
 
@@ -31,10 +31,14 @@ local trace_remapping     = false  trackers.register("math.remapping",   functio
 local trace_processing    = false  trackers.register("math.processing",  function(v) trace_processing  = v end)
 local trace_analyzing     = false  trackers.register("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
+local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
+
+local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
 
 local report_processing   = logs.reporter("mathematics","processing")
 local report_remapping    = logs.reporter("mathematics","remapping")
 local report_normalizing  = logs.reporter("mathematics","normalizing")
+local report_goodies      = logs.reporter("mathematics","goodies")
 
 local set_attribute       = node.set_attribute
 local has_attribute       = node.has_attribute
@@ -43,6 +47,7 @@ local font_of_family      = node.family_font
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
+local fontcharacters      = fonthashes.characters
 
 noads                     = noads or { }  -- todo: only here
 local noads               = noads
@@ -158,34 +163,30 @@ end
 local remapalphabets = mathematics.remapalphabets
 local setnodecolor   = nodes.tracers.colors.set
 
--- we can have a global famdata == fonts.famdata
-
 --~ This does not work out well, as there are no fallbacks. Ok, we could
 --~ define a poor mans simplify mechanism.
---~
---~ local function checked(pointer)
---~     local char = pointer.char
---~     local fam = pointer.fam
---~     local id = font_of_family(fam)
---~     local tfmdata = fontdata[id]
---~     local tc = tfmdata and tfmdata.characters
---~     if not tc[char] then
---~         local specials = characters.data[char].specials
---~         if specials and (specials[1] == "char" or specials[1] == "font") then
---~             newchar = specials[#specials]
---~             if trace_remapping then
---~                 report_remap("fallback",id,char,newchar)
---~             end
---~             if trace_analyzing then
---~                 setnodecolor(pointer,"font:isol")
---~             end
---~             pointer.char = newchar
---~             return true
---~         end
---~     end
---~ end
 
-local current_id, current_characters
+local function checked(pointer)
+    local char = pointer.char
+    local fam = pointer.fam
+    local id = font_of_family(fam)
+    local tc = fontcharacters[id]
+    if not tc[char] then
+        local specials = characters.data[char].specials
+        if specials and (specials[1] == "char" or specials[1] == "font") then
+            newchar = specials[#specials]
+            if trace_remapping then
+                report_remap("fallback",id,char,newchar)
+            end
+            if trace_analyzing then
+                setnodecolor(pointer,"font:isol")
+            end
+            set_attribute(pointer,exportstatus,char) -- testcase: exponentiale
+            pointer.char = newchar
+            return true
+        end
+    end
+end
 
 processors.relocate[math_char] = function(pointer)
     local g = has_attribute(pointer,mathgreek) or 0
@@ -202,15 +203,8 @@ processors.relocate[math_char] = function(pointer)
         if newchar then
             local fam = pointer.fam
             local id = font_of_family(fam)
-         --
-            local tfmdata = fontdata[id]
-            if tfmdata and tfmdata.characters[newchar] then
-         -- -- to be tested:
-         -- if id ~= current_id then
-         --     current_id = id
-         --     current_characters = fontdata[id].characters
-         -- end
-         -- if current_characters and current_characters[newchar] then
+            local characters = fontcharacters[id]
+            if characters and characters[newchar] then
                 if trace_remapping then
                     report_remap("char",id,char,newchar)
                 end
@@ -219,17 +213,18 @@ processors.relocate[math_char] = function(pointer)
                 end
                 pointer.char = newchar
                 return true
-            elseif trace_remapping then
-                report_remap("char",id,char,newchar," fails")
+            else
+                if trace_remapping then
+                    report_remap("char",id,char,newchar," fails")
+                end
             end
-        else
-            -- return checked(pointer)
         end
-    else
-        -- return checked(pointer)
     end
     if trace_analyzing then
         setnodecolor(pointer,"font:medi")
+    end
+    if check_coverage then
+        return checked(pointer)
     end
 end
 
@@ -247,6 +242,40 @@ end
 
 function handlers.relocate(head,style,penalties)
     process(head,processors.relocate)
+    return true
+end
+
+-- rendering (beware, not exported)
+
+local a_mathrendering = attributes.private("mathrendering")
+local a_exportstatus  = attributes.private("exportstatus")
+
+processors.render = { }
+
+local rendersets = mathematics.renderings.numbers or { } -- store
+
+processors.render[math_char] = function(pointer)
+    local attr = has_attribute(pointer,a_mathrendering)
+    if attr and attr > 0 then
+        local char = pointer.char
+        local renderset = rendersets[attr]
+        if renderset then
+            local newchar = renderset[char]
+            if newchar then
+                local fam = pointer.fam
+                local id = font_of_family(fam)
+                local characters = fontcharacters[id]
+                if characters and characters[newchar] then
+                    pointer.char = newchar
+                    set_attribute(pointer,a_exportstatus,char)
+                end
+            end
+        end
+    end
+end
+
+function handlers.render(head,style,penalties)
+    process(head,processors.render)
     return true
 end
 
@@ -373,8 +402,8 @@ collapse[math_noad] = function(pointer)
                         if newchar then
                             local fam = current_nucleus.fam
                             local id = font_of_family(fam)
-                            local tfmdata = fontdata[id]
-                            if tfmdata and tfmdata.characters[newchar] then
+                            local characters = fontcharacters[id]
+                            if characters and characters[newchar] then
                              -- print("!!!!!",current_char,next_char,newchar)
                                 current_nucleus.char = newchar
                                 local next_next_noad = next_noad.next
@@ -504,7 +533,8 @@ statistics.register("math script replacements", function()
     end
 end)
 
--- math alternates: (in xits lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
+-- math alternates: (in xits       lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
+-- math alternates: (in lucidanova lgf: $ABC \mathalternate{italic} ABC$)
 
 local function initializemathalternates(tfmdata)
     local goodies = tfmdata.goodies
@@ -516,6 +546,9 @@ local function initializemathalternates(tfmdata)
             local mathgoodies = goodies[i].mathematics
             local alternates = mathgoodies and mathgoodies.alternates
             if alternates then
+                if trace_goodies then
+                    report_goodies("loading alternates for font '%s'",tfmdata.properties.name)
+                end
                 local lastattribute, attributes = 0, { }
                 for k, v in next, alternates do
                     lastattribute = lastattribute + 1

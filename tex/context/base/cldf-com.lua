@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['cldf-com'] = {
 
 local tostring, type = tostring, type
 local format = string.format
+local utfchar = utf.char
 
 local context   = context
 local generics  = context.generics
@@ -40,7 +41,7 @@ function context.tabulaterowtyp (...) tabulaterow("typ", ...) end
 
 -- these will move up, just after cld definitions
 
-function context.char(k) -- todo: if catcode == letter or other then just the utf
+function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
         for i=1,#k do
             context(format([[\char%s\relax]],k[i]))

@@ -5,7 +5,7 @@
 %D       subtitle=Math Alignments,
 %D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -151,27 +151,144 @@
 \let    \equalignno     \reqalignno
 \let\aligneqalignno\alignreqalignno
 
-%D Here we implement the user interface part.
+%D Here we implement the user interface part. We start with basic math alignments:
 
-\unexpanded\def\setupmathalignment
-  {\dodoubleempty\dosetupmathalignment}
+% \unexpanded\def\setupmathalignment
+%   {\dodoubleempty\dosetupmathalignment}
+%
+% \def\dosetupmathalignment[#1][#2]%
+%   {\ifsecondargument
+%      \getparameters[\??eq#1][#2]%
+%    \else
+%      \getparameters[\??eq][#1]%
+%    \fi}
+%
+% \let\currentmathalignment\empty
+%
+% \def\mathalignmentparameter#1%
+%   {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
+%
+% \setupmathalignment
+%   [\c!n=2,
+%    \c!m=1,
+%    \c!distance=1em]
+%
+% \def\dostartmathalignment[#1][#2]%
+%   {% \begingroup not permitted ($$...assignments...\halign... )
+%    \pushmacro\doalignNC
+%    \edef\currentmathalignment{#1}%
+%    \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
+%    \def\NC{\doalignNC}%
+%    \global\let\doalignNC\dodoalignNC
+%    \def\EQ{&=}%
+%    \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
+%    % amstex compatibility mode: (ugly, will disappear)
+%    \def\notag{\def\\{&\crcr}}%
+%    \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
+%    % end of compatibility mode
+%    \eqaligncolumn\zerocount
+%    \processcommacommand
+%      [\mathalignmentparameter\c!align]
+%      {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
+%    % the real action
+%    \global\eqaligncolumn\plusone
+%    \numberedeqalign}
+%
+% \def\dostopmathalignment
+%   {\finishalignno
+%    \popmacro\doalignNC}
+%
+% \unexpanded\def\definemathalignment
+%   {\dodoubleempty\dodefinemathalignment}
+%
+% \def\dodefinemathalignment[#1]% [#2]%
+%   {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
+%    \setvalue{\e!stop #1}{\dostopmathalignment}%
+%    \setupmathalignment[#1]}% [#2]
+%
+% \definemathalignment[align]            % default case (this is what amstex users expect)
+% \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
 
-\def\dosetupmathalignment[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??eq#1][#2]%
-   \else
-     \getparameters[\??eq][#1]%
-   \fi}
+% we tag the mlist later but cells are hboxes so we can add wrappers
 
-\let\currentmathalignment\empty
+\newtoks \everymathalignment
 
-\def\mathalignmentparameter#1%
-  {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
+\def\math_alignment_NR_indeed[#1][#2]%
+  {\donestedformulanumber{#1}{#2}% to be tagged (better an attribute)
+   \crcr
+   \dostoptagged % finish row
+   \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
+
+\def\math_alignment_NC_first
+  {\dostarttagged\t!mathtablerow\empty
+   \dostarttagged\t!mathtablecell\empty
+   \let\NC\math_alignment_NC_rest}
+
+\def\math_alignment_NC_rest
+  {\aligntab
+   \dostoptagged % finish cell
+   \dostarttagged\t!mathtablecell\empty}
+
+\def\math_alignment_EQ
+  {\NC=}
+
+\def\math_alignment_NR
+  {\aligntab
+   \dostoptagged % finish cell
+   \dodoubleempty\math_alignment_NR_indeed} % use xx from tabulate
+
+% amstex compatibility mode: (ugly, will disappear)
+% \def\notag{\def\\{&\crcr}}%
+% \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
+% end of compatibility mode
+
+\appendtoks
+   \glet\math_alignment_NC\math_alignment_NC_first
+   \unexpanded\def\NC{\math_alignment_NC}% messy, due to lookahead (we cannot use a flag)
+   \let\EQ\math_alignment_EQ
+   \let\NR\math_alignment_NR
+\to \everymathalignment
+
+\def\math_alignment_start#1%
+  {\edef\currentmathalignment{#1}%
+   \dosingleempty\math_alignment_start_indeed}
+
+\def\math_alignment_start_indeed[#1]%
+  {% \begingroup not permitted ($$...assignments...\halign... )
+   \iffirstargument
+     \setupmathalignment[\currentmathalignment][#1]%
+   \fi
+   \the\everymathalignment
+   \eqaligncolumn\zerocount
+   \processcommacommand
+     [\mathalignmentparameter\c!align]
+     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
+   \global\eqaligncolumn\plusone
+   \dostarttagged\t!math\empty
+   \dostarttagged\t!mathtable\currentmathalignment
+   \numberedeqalign}
+
+\def\math_alignment_stop
+  {\finishalignno
+   \dostoptagged
+   \dostoptagged}
+
+\installcommandhandler \??eq {mathalignment} \??eq
+
+\appendtoks
+   \setevalue{\e!start\currentmathalignment}{\noexpand\math_alignment_start{\currentmathalignment}}%
+   \setevalue{\e!stop \currentmathalignment}{\noexpand\math_alignment_stop}%
+\to \everydefinemathalignment
 
 \setupmathalignment
   [\c!n=2,
    \c!m=1,
    \c!distance=1em]
+
+\definemathalignment[align]            % default case (this is what amstex users expect)
+\definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
+
+% helpers
 
 \def\numberedeqalign
   {\doifelse{\formulaparameter\c!location}\v!left\alignleqalignno\alignreqalignno}
@@ -212,46 +329,6 @@
 %D \placeformula      \startformula \startalign[n=1] a\NR[eqn2] \stopalign \stopformula See \in[eqn2]
 %D \placeformula[eqn3]\startformula \startalign[n=1] a\NR[+]    \stopalign \stopformula See \in[eqn3]
 %D \stoptyping
-
-% todo: pop in cell
-
-\def\dostartmathalignment[#1][#2]%
-  {% \begingroup not permitted ($$...assignments...\halign... )
-   \pushmacro\doalignNC
-   \edef\currentmathalignment{#1}%
-   \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
-   \def\NC{\doalignNC}%
-   \global\let\doalignNC\dodoalignNC
-   \def\EQ{&=}%
-   \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
-   % amstex compatibility mode: (ugly, will disappear)
-   \def\notag{\def\\{&\crcr}}%
-   \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
-   % end of compatibility mode
-   \eqaligncolumn\zerocount
-   \processcommacommand
-     [\mathalignmentparameter\c!align]
-     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
-   % the real action
-   \global\eqaligncolumn\plusone
-   \numberedeqalign}
-
-\def\dostopmathalignment
-  {\finishalignno
-   \popmacro\doalignNC}
-
-\unexpanded\def\definemathalignment
-  {\dodoubleempty\dodefinemathalignment}
-
-\def\dodefinemathalignment[#1]% [#2]%
-  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
-   \setvalue{\e!stop #1}{\dostopmathalignment}%
-   \setupmathalignment[#1]}% [#2]
-
-%D For the moment we only provide english commands.
-
-\definemathalignment[align]            % default case (this is what amstex users expect)
-\definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
 
 %D \startbuffer
 %D \placeformula \startformula \eqalignno {

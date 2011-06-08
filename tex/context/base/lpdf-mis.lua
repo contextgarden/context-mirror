@@ -21,35 +21,33 @@ local texset = tex.set
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
-local nodeinjections = backends.pdf.nodeinjections
-local codeinjections = backends.pdf.codeinjections
-local registrations  = backends.pdf.registrations
+local nodeinjections       = backends.pdf.nodeinjections
+local codeinjections       = backends.pdf.codeinjections
+local registrations        = backends.pdf.registrations
 
-local copy_node = node.copy
+local copy_node            = node.copy
 
-local nodepool = nodes.pool
+local nodepool             = nodes.pool
+local pdfliteral           = nodepool.pdfliteral
+local register             = nodepool.register
 
-local pdfliteral, register = nodepool.pdfliteral, nodepool.register
+local pdfdictionary        = lpdf.dictionary
+local pdfarray             = lpdf.array
+local pdfboolean           = lpdf.boolean
+local pdfconstant          = lpdf.constant
+local pdfreference         = lpdf.reference
+local pdfunicode           = lpdf.unicode
+local pdfverbose           = lpdf.verbose
+local pdfstring            = lpdf.string
+local pdfflushobject       = lpdf.flushobject
+local pdfflushstreamobject = lpdf.flushstreamobject
 
-local pdfdictionary      = lpdf.dictionary
-local pdfarray           = lpdf.array
-local pdfboolean         = lpdf.boolean
-local pdfconstant        = lpdf.constant
-local pdfreference       = lpdf.reference
-local pdfunicode         = lpdf.unicode
-local pdfverbose         = lpdf.verbose
-local pdfstring          = lpdf.string
-local pdfflushobject     = lpdf.flushobject
-local pdfimmediateobject = lpdf.immediateobject
+local variables            = interfaces.variables
 
-local variables    = interfaces.variables
-
---
-
-local positive  = register(pdfliteral("/GSpositive gs"))
-local negative  = register(pdfliteral("/GSnegative gs"))
-local overprint = register(pdfliteral("/GSoverprint gs"))
-local knockout  = register(pdfliteral("/GSknockout gs"))
+local positive             = register(pdfliteral("/GSpositive gs"))
+local negative             = register(pdfliteral("/GSnegative gs"))
+local overprint            = register(pdfliteral("/GSoverprint gs"))
+local knockout             = register(pdfliteral("/GSknockout gs"))
 
 local function initializenegative()
     local a = pdfarray { 0, 1 }
@@ -59,7 +57,7 @@ local function initializenegative()
         Range        = a,
         Domain       = a,
     }
-    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfimmediateobject("stream","1 exch sub",d())) }
+    local negative = pdfdictionary { Type = g, TR = pdfreference(pdfflushstreamobject("1 exch sub",d)) }
     local positive = pdfdictionary { Type = g, TR = pdfconstant("Identity") }
     lpdf.adddocumentextgstate("GSnegative", pdfreference(pdfflushobject(negative)))
     lpdf.adddocumentextgstate("GSPositive", pdfreference(pdfflushobject(positive)))
@@ -212,7 +210,7 @@ local function flushjavascripts()
             local name, script = t[i][1], t[i][2]
             local j = pdfdictionary {
                 S  = pdf_javascript,
-                JS = pdfreference(pdfimmediateobject("stream",script)),
+                JS = pdfreference(pdfflushstreamobject(script)),
             }
             a[#a+1] = pdfstring(name)
             a[#a+1] = pdfreference(pdfflushobject(j))

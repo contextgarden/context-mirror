@@ -5,7 +5,7 @@
 %D       subtitle=\CONTEXT\ Format Generation,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.05.18 22:26}
+\edef\contextversion{2011.06.08 19:06}
 
 %D For those who want to use this:
 
@@ -54,8 +54,8 @@
 
 %D We just quit if new functionality is expected.
 
-\ifnum\luatexversion<60 % also change message
-    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.60!}
+\ifnum\luatexversion<70 % also change message
+    \writestatus{!!!!}{Your luatex binary is too old, you need at least version 0.70!}
     \expandafter\end
 \fi
 
@@ -303,6 +303,8 @@
 \loadmarkfile{font-col}
 \loadmarkfile{font-gds}
 
+\loadmarkfile{spac-chr} % depends on fonts
+
 \loadmarkfile{blob-ini} % not to be used, we only use a helper
 
 \loadmarkfile{typo-cln}
@@ -330,6 +332,8 @@
 \loadmarkfile{meta-fun}
 \loadmarkfile{meta-pag}
 
+\loadmarkfile{page-mrk} % depends on mp
+
 \loadmarkfile{page-flw}
 \loadmarkfile{page-spr}
 \loadmarkfile{page-plg}
@@ -351,7 +355,7 @@
 \loadmarkfile{math-del}
 \loadmarkfile{math-inl}
 \loadmarkfile{math-dis}
-\loadmarkfile{math-lan}
+%loadmarkfile{math-lan}
 
 \loadmarkfile{strc-mat}
 

@@ -5,7 +5,7 @@
 %D       subtitle=Definitions,
 %D         author={Hans Hagen, Taco Hoekwater \& Aditya Mahajan},
 %D           date=\currentdate,
-%D      copyright=\PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -19,7 +19,7 @@
 
 \startluacode
     mathematics.define()
-    mathematics.xml.registerentities()
+ -- mathematics.xml.registerentities()
 \stopluacode
 
 \activatemathcharacters
@@ -95,12 +95,12 @@
 \definemathcommand [tanh]    [nolop] {\mfunctionlabeltext{tanh}}
 \definemathcommand [tan]     [nolop] {\mfunctionlabeltext{tan}}
 
-\definemathcommand [integers]      {{\mathblackboard Z}}
-\definemathcommand [reals]         {{\mathblackboard R}}
-\definemathcommand [rationals]     {{\mathblackboard Q}}
-\definemathcommand [naturalnumbers]{{\mathblackboard N}}
-\definemathcommand [complexes]     {{\mathblackboard C}}
-\definemathcommand [primes]        {{\mathblackboard P}}
+% \definemathcommand [integers]      {{\mathblackboard Z}}
+% \definemathcommand [reals]         {{\mathblackboard R}}
+% \definemathcommand [rationals]     {{\mathblackboard Q}}
+% \definemathcommand [naturalnumbers]{{\mathblackboard N}}
+% \definemathcommand [complexes]     {{\mathblackboard C}}
+% \definemathcommand [primes]        {{\mathblackboard P}}
 
 \let\normalmatharg\arg % todo: maybe automatically
 
@@ -355,6 +355,9 @@
 \unexpanded\def\overleftarrow  {\mathopwithlimits\normaloverleftarrow  }
 \unexpanded\def\underrightarrow{\mathopwithlimits\normalunderrightarrow}
 \unexpanded\def\overrightarrow {\mathopwithlimits\normaloverrightarrow }
+
+\let\lceil \lceiling
+\let\rceil \rceiling
 
 \let\normalsurd\surd
 

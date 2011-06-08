@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['math-tag'] = {
     license   = "see context related readme files"
 }
 
+local find = string.find
+
 local attributes, nodes = attributes, nodes
 
 local get_attribute       = nodes.getattribute
@@ -33,6 +35,9 @@ local vlist_code          = nodecodes.vlist
 local glyph_code          = nodecodes.glyph
 
 local a_tagged            = attributes.private('tagged')
+local a_exportstatus      = attributes.private('exportstatus')
+local a_mathcategory      = attributes.private('mathcategory')
+local a_mathmode          = attributes.private('mathmode')
 
 local tags                = structures.tags
 
@@ -40,18 +45,26 @@ local start_tagged        = tags.start
 local stop_tagged         = tags.stop
 local taglist             = tags.taglist
 
-local chardata     = characters.data
+local chardata            = characters.data
+
+local getmathcode         = tex.getmathcode
+local mathcodes           = mathematics.codes
+local ordinary_code       = mathcodes.ordinary
+local variable_code       = mathcodes.variable
 
 local process
 
 local function processsubsup(start)
+    -- At some point we might need to add an attribute signaling the
+    -- super- and subscripts because TeX and MathML use a different
+    -- order.
     local nucleus, sup, sub = start.nucleus, start.sup, start.sub
     if sub then
         if sup then
             set_attribute(start,a_tagged,start_tagged("msubsup"))
             process(nucleus)
-            process(sup)
             process(sub)
+            process(sup)
             stop_tagged()
         else
             set_attribute(start,a_tagged,start_tagged("msub"))
@@ -69,25 +82,47 @@ local function processsubsup(start)
     end
 end
 
+-- todo: check function here and keep attribute the same
+
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     while start do
         local id = start.id
         if id == math_char_code then
+            local char = start.char
             -- check for code
-            local ch = chardata[start.char]
-            local mc = ch and ch.mathclass
-            if mc == "number" then
-                set_attribute(start,a_tagged,start_tagged("mn"))
-            elseif mc == "variable" or not mc then -- variable is default
-                set_attribute(start,a_tagged,start_tagged("mi"))
-            else
-                set_attribute(start,a_tagged,start_tagged("mo"))
+            local a = get_attribute(start,a_mathcategory)
+            if a then
+                a = { detail = a }
             end
+            local code = getmathcode(char)
+            if code then
+                code = code[1]
+            end
+            local tag
+            if code == ordinary_code or code == variable_code then
+                local ch = chardata[char]
+                local mc = ch and ch.mathclass
+                if mc == "number" then
+                    tag = "mn"
+                elseif mc == "variable" or not mc then -- variable is default
+                    tag = "mi"
+                else
+                    tag = "mo"
+                end
+            else
+                tag = "mo"
+            end
+            set_attribute(start,a_tagged,start_tagged(tag,a))
             stop_tagged()
-            break
+            break -- okay?
         elseif id == math_textchar_code then
             -- check for code
-            set_attribute(start,a_tagged,start_tagged("ms"))
+            local a = get_attribute(start,a_mathcategory)
+            if a then
+                set_attribute(start,a_tagged,start_tagged("ms"),{ detail = a })
+            else
+                set_attribute(start,a_tagged,start_tagged("ms"))
+            end
             stop_tagged()
             break
         elseif id == math_delim_code then
@@ -102,6 +137,10 @@ process = function(start) -- we cannot use the processor as we have no finalizer
         elseif id == math_box_code or id == hlist_code or id == vlist_code then
             -- keep an eye on math_box_code and see what ends up in there
             local attr = get_attribute(start,a_tagged)
+local last = attr and taglist[attr]
+if last and find(last[#last],"formulacaption%-") then
+    -- leave alone, will nicely move to the outer level
+else
             local text = start_tagged("mtext")
             set_attribute(start,a_tagged,text)
             local list = start.list
@@ -123,8 +162,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         local id = n.id
                         if id == hlist_code or id == vlist_code then
                             runner(n.list)
-                        elseif id == glyph_code then
-                            local aa = get_attribute(n,a_tagged) -- only glyph needed
+                        else -- if id == glyph_code then
+                            local aa = get_attribute(n,a_tagged) -- only glyph needed (huh?)
                             if aa then
                                 local ac = cache[aa]
                                 if not ac then
@@ -152,6 +191,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 runner(list)
             end
             stop_tagged()
+end
         elseif id == math_sub_code then
             local list = start.list
             if list then
@@ -191,15 +231,38 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             end
         elseif id == math_fence_code then
             local delim = start.delim
-            if delim then
-                set_attribute(start,a_tagged,start_tagged("mo"))
-                process(delim)
+            local subtype = start.subtype
+            if subtype == 1 then
+                -- left
+                set_attribute(start,a_tagged,start_tagged("mfenced"))
+                if delim then
+                    set_attribute(start,a_tagged,start_tagged("mleft"))
+                    process(delim)
+                    stop_tagged()
+                end
+            elseif subtype == 2 then
+                -- middle
+                if delim then
+                    set_attribute(start,a_tagged,start_tagged("mmiddle"))
+                    process(delim)
+                    stop_tagged()
+                end
+            elseif subtype == 3 then
+                if delim then
+                    set_attribute(start,a_tagged,start_tagged("mright"))
+                    process(delim)
+                    stop_tagged()
+                end
                 stop_tagged()
+            else
+                -- can't happen
             end
         elseif id == math_radical_code then
             local left, degree = start.left, start.degree
             if left then
-                process(left) -- mrow needed ?
+                start_tagged("")
+                process(left) -- root symbol, ignored
+                stop_tagged()
             end
             if degree then
                 set_attribute(start,a_tagged,start_tagged("mroot"))
@@ -215,21 +278,21 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             local accent, bot_accent = start.accent, start.bot_accent
             if bot_accent then
                 if accent then
-                    set_attribute(start,a_tagged,start_tagged("munderover"))
-                    process(accent)
+                    set_attribute(start,a_tagged,start_tagged("munderover",{ detail = "accent" }))
                     processsubsup(start)
                     process(bot_accent)
+                    process(accent)
                     stop_tagged()
                 else
-                    set_attribute(start,a_tagged,start_tagged("munder"))
+                    set_attribute(start,a_tagged,start_tagged("munder",{ detail = "accent" }))
                     processsubsup(start)
                     process(bot_accent)
                     stop_tagged()
                 end
             elseif accent then
-                set_attribute(start,a_tagged,start_tagged("mover"))
-                process(accent)
+                set_attribute(start,a_tagged,start_tagged("mover",{ detail = "accent" }))
                 processsubsup(start)
+                process(accent)
                 stop_tagged()
             else
                 processsubsup(start)
@@ -243,8 +306,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
 end
 
 function noads.handlers.tags(head,style,penalties)
-    set_attribute(head,a_tagged,start_tagged("math"))
-    set_attribute(head,a_tagged,start_tagged("mrow"))
+    local v_math = start_tagged("math")
+    local v_mrow = start_tagged("mrow")
+    local v_mode = get_attribute(head,a_mathmode)
+    set_attribute(head,a_tagged,v_math)
+    set_attribute(head,a_tagged,v_mrow)
+    tags.setattributehash(v_math,"mode",v_mode == 1 and "display" or "inline")
     process(head)
     stop_tagged()
     stop_tagged()

@@ -270,13 +270,13 @@ local function writer(parent,command,first,...)
                         if v == "" then
                             flush(currentcatcodes,",",k,'=')
                         else
-                            flush(currentcatcodes,",",k,'=',v)
+                            flush(currentcatcodes,",",k,"={",v,"}")
                         end
                     else
                         if v == "" then
-                            flush(currentcatcodes,"[",k,'=')
+                            flush(currentcatcodes,"[",k,"=")
                         else
-                            flush(currentcatcodes,"[",k,'=',v)
+                            flush(currentcatcodes,"[",k,"={",v,"}")
                         end
                         done = true
                     end

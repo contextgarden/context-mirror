@@ -27,3 +27,56 @@ function metapost.uselibrary(name)
         report_metapost("unknown: library '%s'",name)
     end)
 end
+
+-- experimental
+
+local colorhash = attributes.list[attributes.private('color')]
+
+local validdimen = lpeg.patterns.validdimen * lpeg.P(-1)
+
+local lpegmatch = lpeg.match
+local gmatch    = string.gmatch
+local textype   = tex.type
+local MPcolor   = context.MPcolor
+
+function commands.prepareMPvariable(v) -- slow but ok
+    if v == "" then
+        MPcolor("black")
+    else
+        local typ, var = string.match(v,"(.):(.*)")
+        if not typ then
+            -- parse
+            if colorhash[v] then
+                MPcolor(v)
+            elseif tonumber(v) then
+                context(v)
+            elseif lpegmatch(validdimen,v) then
+                return context("\\the\\dimexpr %s",v)
+            else
+                for s in gmatch(v,"\\(.-)") do
+                    local t = textype(s)
+                    if t == "dimen" then
+                        return context("\\the\\dimexpr %s",v)
+                    elseif t == "count" then
+                        return context("\\the\\numexpr %s",v)
+                    end
+                end
+                return context("\\number %s",v) -- 0.4 ...
+            end
+        elseif typ == "d" then
+            -- dimension
+            context("\\the\\dimexpr %s",var)
+        elseif typ == "n" then
+            -- number
+            context("\\the\\numexpr %s",var)
+        elseif typ == "s" then
+            -- string
+            context(var)
+        elseif typ == "c" then
+            -- color
+            MPcolor(var)
+        else
+            context(var)
+        end
+    end
+end

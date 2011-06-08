@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['char-ini'] = {
 
 -- todo: make two files, one for format generation, one for format use
 
+-- we can remove the tag range starting at 0xE0000 (special applications)
+
 local tex = tex
 local utf = unicode.utf8
 
@@ -29,7 +31,7 @@ local ctxcatcodes       = tex.ctxcatcodes
 local texcatcodes       = tex.texcatcodes
 local setmetatableindex = table.setmetatableindex
 
-local trace_defining    = false  trackers.register("characters.defining",   function(v) characters_defining = v end)
+local trace_defining    = false  trackers.register("characters.defining", function(v) characters_defining = v end)
 
 local report_defining   = logs.reporter("characters")
 
@@ -499,6 +501,14 @@ function tex.uprint(c,n)
     end
 end
 
+local temphack = table.tohash {
+    0x00A0,
+    0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B,
+    0x202F,
+    0x205F,
+ -- 0xFEFF,
+}
+
 function characters.define(tobelettered, tobeactivated) -- catcodetables
 
     if trace_defining then
@@ -528,9 +538,11 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                         texprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u)))
                     end
                 elseif is_command[category] then
+if not temphack[u] then
                     texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
                     a = a + 1
                     activated[a] = u
+end
                 end
             end
         end
@@ -564,7 +576,9 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
     if tobeactivated and nofactivated > 0 then
         for i=1,nofactivated do
             local u = activated[i]
-            report_defining("character 0x%05X is active in sets %s (%s)",u,concat(tobeactivated,","),data[u].description)
+            if u then
+                report_defining("character 0x%05X is active in sets %s (%s)",u,concat(tobeactivated,","),data[u].description)
+            end
         end
         local saved = tex.catcodetable
         for i=1,#tobeactivated do
@@ -574,7 +588,10 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
             end
             tex.catcodetable = vector
             for i=1,nofactivated do
-                texsetcatcode(activated[i],13)
+                local u = activated[i]
+                if u then
+                    texsetcatcode(u,13)
+                end
             end
         end
         tex.catcodetable = saved

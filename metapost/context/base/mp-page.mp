@@ -475,4 +475,180 @@ def position_anchor_bar(expr p_b_self, p_e_self, y_b_self, y_e_self, h_b_self, d
     StopPage ;
 enddef ;
 
+% Crop stuff
+
+vardef crop_marks_lines (expr box, length, offset) =
+    save p ; picture p ;
+    p := image (
+        draw ((llcorner box) -- (llcorner box) shifted (-length,0)) shifted (-offset,0) ;
+        draw ((llcorner box) -- (llcorner box) shifted (0,-length)) shifted (0,-offset) ;
+        draw ((lrcorner box) -- (lrcorner box) shifted ( length,0)) shifted ( offset,0) ;
+        draw ((lrcorner box) -- (lrcorner box) shifted (0,-length)) shifted (0,-offset) ;
+        draw ((ulcorner box) -- (ulcorner box) shifted (-length,0)) shifted (-offset,0) ;
+        draw ((ulcorner box) -- (ulcorner box) shifted (0, length)) shifted (0, offset) ;
+        draw ((urcorner box) -- (urcorner box) shifted ( length,0)) shifted ( offset,0) ;
+        draw ((urcorner box) -- (urcorner box) shifted (0, length)) shifted (0, offset) ;
+    ) ;
+    setbounds p to box ;
+    p
+enddef ;
+
+vardef crop_marks_cmyk =
+    save p ; picture p ; p := image (
+        fill ulcircle   scaled 12.5 withcolor (1,0,0,0) ;
+        fill urcircle   scaled 12.5 withcolor (0,1,0,0) ;
+        fill lrcircle   scaled 12.5 withcolor (0,0,1,0) ;
+        fill llcircle   scaled 12.5 withcolor (0,0,0,1) ;
+        draw (-10,0) -- (10,0) ;
+        draw (0,-10) -- (0,10) ;
+        draw fullcircle scaled 12.5 ;
+    ) ;
+    setbounds p to fullsquare scaled 20 ;
+    p
+enddef ;
+
+vardef crop_marks_gray =
+    save p ; picture p ; p := image (
+        fill ulcircle   scaled 12.5 withcolor (0.00) ;
+        fill urcircle   scaled 12.5 withcolor (0.25) ;
+        fill lrcircle   scaled 12.5 withcolor (0.50) ;
+        fill llcircle   scaled 12.5 withcolor (0.75) ;
+        draw (-10,0) -- (10,0) ;
+        draw (0,-10) -- (0,10) ;
+        draw (-6,0) -- (6,0) withcolor white ;
+        draw (0,-6) -- (0,6) withcolor white  ;
+        draw fullcircle scaled 12.5 ;
+    ) ;
+    setbounds p to fullsquare scaled 20 ;
+    p
+enddef ;
+
+vardef crop_marks_cmykrgb =
+    save p ; picture p ; p := image (
+        fill ulcircle   scaled 15 withcolor (1,0,0) ;
+        fill urcircle   scaled 15 withcolor (0,1,0) ;
+        fill lrcircle   scaled 15 withcolor (0,0,1) ;
+        fill llcircle   scaled 15 withcolor (.5,.5,.5) ;
+        fill ulcircle   scaled 10 withcolor (1,0,0,0) ;
+        fill urcircle   scaled 10 withcolor (0,1,0,0) ;
+        fill lrcircle   scaled 10 withcolor (0,0,1,0) ;
+        fill llcircle   scaled 10 withcolor (0,0,0,1) ;
+        draw (-10,0) -- (10,0) ;
+        draw (0,-10) -- (0,10) ;
+        draw fullcircle scaled 10 ;
+        draw fullcircle scaled 15 ;
+    ) ;
+    setbounds p to fullsquare scaled 20 ;
+    p
+enddef ;
+
+vardef crop_color(expr c, h, w, dx, dy, ts) =
+    image (
+        save p ; path p ;
+        for i=1 upto 6 :
+            p := fullsquare
+                xscaled w
+                yscaled h
+                shifted (dx,dy-i*h) ;
+            fill p
+                withcolor (crop_colors[i]*c) ;
+            draw textext("\format{'@0.2f'," & decimal crop_colors[i] & "}")
+                scaled ts
+                shifted center p withcolor white ;
+        endfor ;
+    )
+enddef ;
+
+vardef crop_gray(expr c, h, w, dx, dy, ts) =
+    image (
+        save p ; path p ;
+        for i=.05 step .05 until 1 :
+                p := fullsquare
+                xscaled w
+                yscaled h
+                shifted (20*(i-1)*w+dx,dy) ;
+            fill p
+                withcolor (i*c) ;
+            draw textext("\format{'@0.2f'," & decimal i & "}")
+                scaled ts
+                shifted center p withcolor white ;
+        endfor ;
+    )
+enddef ;
+
+% draw crop_marks_cmyk shifted llcorner more ;
+% draw crop_marks_cmyk shifted lrcorner more ;
+% draw crop_marks_cmyk shifted ulcorner more ;
+% draw crop_marks_cmyk shifted urcorner more ;
+
+def page_marks_add_color(expr width, height, length, offset) = % todo: namespace
+
+    path page ; page := fullsquare xscaled width yscaled height ;
+    path more ; more := page enlarged (offset+length/2,offset+length/2) ;
+
+    numeric crop_colors[] ;
+    crop_colors[1] := 1 ;
+    crop_colors[2] := 0.95 ;
+    crop_colors[3] := 0.75 ;
+    crop_colors[4] := 0.50 ;
+    crop_colors[5] := 0.25 ;
+    crop_colors[6] := 0.05 ;
+
+    numeric h ; h := height / 20 ;
+    numeric w ; w := width  / 20 ;
+    numeric d ; d := offset + length/2 ;
+
+    draw crop_color((1,0,0,0),h,length,xpart ulcorner page - d, 10h,length/20) ;
+    draw crop_color((0,1,0,0),h,length,xpart ulcorner page - d,3.5h,length/20) ;
+    draw crop_color((0,0,1,0),h,length,xpart ulcorner page - d, -3h,length/20) ;
+
+    draw crop_color((0,1,1,0),h,length,xpart urcorner page + d, 10h,length/20) ;
+    draw crop_color((1,0,1,0),h,length,xpart urcorner page + d,3.5h,length/20) ;
+    draw crop_color((1,1,0,0),h,length,xpart urcorner page + d, -3h,length/20) ;
+
+    draw crop_gray((0,0,0,1),length,  w,-xpart llcorner page,-ypart llcorner page + d            ,w/20) ;
+    draw crop_gray((1,0,0,0),length/3,w,-xpart llcorner page, ypart llcorner page - d + 1length/3,w/20) ;
+    draw crop_gray((0,1,0,0),length/3,w,-xpart llcorner page, ypart llcorner page - d - 0length/3,w/20) ;
+    draw crop_gray((0,0,1,0),length/3,w,-xpart llcorner page, ypart llcorner page - d - 1length/3,w/20) ;
+
+    setbounds currentpicture to page ;
+
+enddef ;
+
+def page_marks_add_marking(expr width, height, length, offset) = % todo: namespace
+
+    path page ; page := fullsquare xscaled width yscaled height ;
+    path more ; more := page enlarged (offset+length/2,offset+length/2) ;
+
+    draw crop_marks_gray shifted center(topboundary    more) shifted (0, offset+length);
+    draw crop_marks_cmyk shifted center(bottomboundary more) shifted (0,-offset-length);
+
+    setbounds currentpicture to page ;
+
+enddef ;
+
+def page_marks_add_lines(expr width, height, length, offset) = % todo: namespace
+
+    path page ; page := fullsquare xscaled width yscaled height ;
+    path more ; more := page enlarged (offset+length/2,offset+length/2) ;
+
+    draw crop_marks_lines(page,length,offset) ;
+
+    setbounds currentpicture to page ;
+
+enddef ;
+
+def page_marks_add_number(expr width, height, length, offset, n) = % todo: namespace
+
+    path page ; page := fullsquare xscaled width yscaled height ;
+    path more ; more := page enlarged (offset+length/2,offset+length/2) ;
+
+    for s=llcorner more, lrcorner more, ulcorner more, urcorner more :
+        draw textext(decimal n) shifted s ;
+    endfor ;
+
+    setbounds currentpicture to page ;
+
+enddef ;
+
 endinput ;

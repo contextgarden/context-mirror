@@ -36,6 +36,8 @@ if not resolvers.instance then
 
         local register = callbacks.register
 
+     -- register('process_jobname'     , function(name) return name end, true)
+
         register('find_read_file'      , function(id,name) return findtexfile(name) end, true)
         register('open_read_file'      , function(   name) return opentexfile(name) end, true)
 

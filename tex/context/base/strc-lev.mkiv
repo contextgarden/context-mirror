@@ -5,7 +5,7 @@
 %D       subtitle=Automatic Levels,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -30,20 +30,20 @@
 \unexpanded\def\dostartstructurelevel      [#1]{\ctxlua{structures.sections.startautolevel("#1")}}
 \unexpanded\def\stopstructurelevel             {\ctxlua{structures.sections.stopautolevel()}}
 
-\unexpanded\def\nostartstructurehead{\dotripleargument\nonostartstructurehead}
-\unexpanded\def\nostopstructurehead {\dosingleargument\nonostopstructurehead }
+\unexpanded\def\nostarthead{\dotripleargument\nonostarthead}
+\unexpanded\def\nostophead {\dosingleargument\nonostophead }
 
 \unexpanded\def\dostartstructurelevel[#1]%
   {\doifassignmentelse{#1}
      {\ctxlua{structures.sections.startautolevel("\v!default")}[#1]}
      {\ctxlua{structures.sections.startautolevel("#1")}}}
 
-\unexpanded\def\nonostartstructurehead[#1][#2][#3]%
+\unexpanded\def\nonostarthead[#1][#2][#3]%
   {\blank
    \noindentation{\tttf[start missing structure level #1]}
    \blank}
 
-\unexpanded\def\nonostopstructurehead[#1]%
+\unexpanded\def\nonostophead[#1]%
   {\blank
    \noindentation{\tttf[stop missing structure level #1]}
    \blank}

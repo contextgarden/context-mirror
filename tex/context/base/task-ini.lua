@@ -17,6 +17,7 @@ local disableaction   = tasks.disableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
+appendaction("processors",   "normalizers", "typesetters.characters.handler")                    -- always on
 appendaction("processors",   "normalizers", "fonts.collections.process")                         -- todo
 appendaction("processors",   "normalizers", "fonts.checkers.missing")                            -- disabled
 
@@ -51,6 +52,8 @@ appendaction("shipouts",     "normalizers", "structures.tags.handler")          
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")                      -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 
+--~ appendaction("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
+
 appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
 appendaction("shipouts",     "finishers",   "attributes.transparencies.handler")                 -- disabled
 appendaction("shipouts",     "finishers",   "attributes.colorintents.handler")                   -- disabled
@@ -60,6 +63,7 @@ appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler")  
 
 appendaction("math",         "normalizers", "noads.handlers.unscript", nil, "nohead")            -- always on (maybe disabled)
 appendaction("math",         "normalizers", "noads.handlers.relocate", nil, "nohead")            -- always on
+appendaction("math",         "normalizers", "noads.handlers.render",   nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.collapse", nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
@@ -72,6 +76,7 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 
 appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
+appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
 -- still experimental
 
@@ -111,6 +116,8 @@ disableaction("shipouts",    "nodes.handlers.cleanuppage")
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
 
+--~ disableaction("shipouts",    "nodes.handlers.export")
+
 disableaction("mvlbuilders", "nodes.handlers.migrate")
 
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
@@ -118,6 +125,7 @@ disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 
+disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("math",        "noads.handlers.tags")
 
 freezecallbacks("find_.*_file", "find file using resolver")

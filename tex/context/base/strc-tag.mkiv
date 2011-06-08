@@ -5,7 +5,7 @@
 %D       subtitle=Tags,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=\PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -67,6 +67,11 @@
 \def\t!tabulaterow       {tabulaterow}            % TR
 \def\t!tabulatecell      {tabulatecell}           % TD
 
+\def\t!math              {math}                   % math
+\def\t!mathtable         {mtable}                 % Table
+\def\t!mathtablerow      {mtr}                    % TR
+\def\t!mathtablecell     {mtd}                    % TD
+
 \def\t!list              {list}                   % TOC
 \def\t!listitem          {listitem}               % TOCI
 \def\t!listtag           {listtag}                % Lbl
@@ -80,8 +85,9 @@
 
 \def\t!float             {float}                  % Div
 \def\t!floatcaption      {floatcaption}           % Caption
-\def\t!floattag          {floattag}               % Span
+\def\t!floatlabel        {floatlabel}             % Span
 \def\t!floattext         {floattext}              % Span
+\def\t!floatnumber       {floatnumber}            % Span
 \def\t!floatcontent      {floatcontent}           % P
 
 \def\t!image             {image}                  % P
@@ -90,7 +96,9 @@
 
 \def\t!formulaset        {formulaset}             % Div
 \def\t!formula           {formula}                % Div
-\def\t!formulatag        {formulatag}             % Span
+\def\t!formulacaption    {formulacaption}         % Span
+\def\t!formulalabel      {formulalabel}           % Span
+\def\t!formulanumber     {formulanumber}          % P
 \def\t!formulacontent    {formulacontent}         % P
 \def\t!subformula        {subformula}             % Div
 
@@ -98,6 +106,13 @@
 
 \def\t!margintext        {margintext}             % Span
 \def\t!margintextblock   {margintextblock}        % Div
+
+% we might opt for verbose variants so this is experimental:
+
+\def\t!label             {label}                  % Span
+\def\t!number            {number}                 % Span
+
+\def\t!ignore            {ignore}                 % Span
 
 % \setuptaglabeltext
 %   [en]
@@ -111,8 +126,8 @@
 \def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
 \def\setelementnature    {\dodoubleargument\dosetelementnature}
 
-\def\dosetelementbackendtag[#1][#2]{\ctxlua{structures.tags.settagproperty("#1","backend","#2")}}
-\def\dosetelementnature    [#1][#2]{\ctxlua{structures.tags.settagproperty("#1","nature", "#2")}}
+\def\dosetelementbackendtag[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
+\def\dosetelementnature    [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
 
 % todo: indirect macro for trialtypesetting
 
@@ -123,13 +138,13 @@
 \unexpanded\def\renostartelement{\dodoubleempty\nonostartelement}
 
 \unexpanded\def\dodostartelement[#1][#2]%
-  {\ctxlua{structures.tags.start("#1",{
+  {\ctxcommand{starttag("#1",{
      label    = "\dogetupsometaglabeltext{#1}",
      userdata = \!!bs#2\!!es,
    })}}
 
 \unexpanded\def\dodostopelement
-  {\ctxlua{structures.tags.stop()}}
+  {\ctxcommand{stoptag()}}
 
 \unexpanded\def\nonostartelement[#1][#2]{}
 \unexpanded\def\nonostopelement         {}
@@ -140,13 +155,13 @@
 \def\dodostoptagged {\iftrialtypesetting\expandafter\nododostoptagged \else\expandafter\dododostoptagged \fi}
 
 \def\dododostarttagged#1#2%
-  {\ctxlua{structures.tags.start("#1",{
+  {\ctxcommand{starttag("#1",{
      label  = "\dogetupsometaglabeltext{#1}",
      detail = "#2",
    })}}
 
 \def\dododostoptagged
-  {\ctxlua{structures.tags.stop()}}
+  {\ctxcommand{stoptag()}}
 
 \def\nododostarttagged#1#2{}
 \def\nododostoptagged     {}
@@ -216,5 +231,51 @@
 
 \def\doifinelementelse#1%
   {\ctxcommand{testcase(structures.atlocation("#1"))}}
+
+\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
+  {\begingroup
+   \dostarttagged\t!label{#1}%
+   \labeltexts{#1}%
+     {\dostoptagged
+      \dostarttagged\t!number{#2}%
+      #3%
+      \dostoptagged
+      \dostarttagged\t!label{#1}}%
+   \dostoptagged
+   \endgroup}
+
+\def\namedtaggedlabeltexts#1#2#3#4#5% experimental: labeltag label numbertag numberdetail numbercontent
+  {\begingroup
+   \dostarttagged{#1}{#2}%
+   \labeltexts{#2}%
+     {\dostoptagged
+      \dostarttagged{#3}{#4}%
+      #5%
+      \dostoptagged
+      \dostarttagged{#1}{#2}}%
+   \dostoptagged
+   \endgroup}
+
+%D Metadata is added after the following structure element so
+%D here we get some as child of the document root and some as child
+%D of the chapter element.
+%D
+%D \settaggedmetadata[title=Hello World!,author=Hans Hagen]
+%D
+%D \starttyping
+%D \starttext
+%D   \startelement[ignore]
+%D     \input tufte
+%D   \stopelement
+%D   \par \input ward \par
+%D   \settaggedmetadata[whatever=Again and Again]
+%D   \startchapter[title=test]
+%D     \input ward
+%D   \stopchapter
+%D \stoptext
+%D \stoptyping
+
+\def\settaggedmetadata[#1]%
+  {\ctxlua{structures.tags.registermetadata(\!!bs#1\!!es)}}
 
 \protect

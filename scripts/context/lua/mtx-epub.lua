@@ -156,9 +156,9 @@ function scripts.epub.make()
 
         os.remove(epubfile)
 
-        os.execute(format("zip %s -0 %s",epubfile,"mimetype"))
-        os.execute(format("zip %s -r %s",epubfile,"META-INF"))
-        os.execute(format("zip %s -r %s",epubfile,"OPS"))
+        os.execute(format("zip %s -X -0 %s",epubfile,"mimetype"))
+        os.execute(format("zip %s -X -r %s",epubfile,"META-INF"))
+        os.execute(format("zip %s -X -r %s",epubfile,"OPS"))
 
         lfs.chdir("..")
 

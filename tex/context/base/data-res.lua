@@ -55,17 +55,65 @@ resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARE
 resolvers.luacnfname    = 'texmfcnf.lua'
 resolvers.luacnfstate   = "unknown"
 
--- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}' -- what a rubish path
-resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c},}}'
+-- The web2c tex binaries as well as kpse have built in paths for the configuration
+-- files and there can be a depressing truckload of them. This is actually the weak
+-- spot of a distribution. So we don't want:
+--
+-- resolvers.luacnfspec = '{$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,}/web2c}'
+--
+-- but instead use:
+--
+-- resolvers.luacnfspec = 'selfautoparent:{/texmf{-local,}{,/web2c}}'
+--
+-- which does not make texlive happy as there is a texmf-local tree one level up
+-- (sigh), so we need this. (We can assume web2c as mkiv does not run on older
+-- texlives anyway.
+--
+-- texlive:
+--
+-- selfautodir:
+-- selfautoparent:
+-- selfautodir:share/texmf-local/web2c
+-- selfautodir:share/texmf/web2c
+-- selfautodir:texmf-local/web2c
+-- selfautodir:texmf/web2c
+-- selfautoparent:share/texmf-local/web2c
+-- selfautoparent:share/texmf/web2c
+-- selfautoparent:texmf-local/web2c
+-- selfautoparent:texmf/web2c
+--
+-- minimals:
+--
+-- home:texmf/web2c
+-- selfautoparent:texmf-local/web2c
+-- selfautoparent:texmf-context/web2c
+-- selfautoparent:texmf/web2c
+
+if this_is_texlive then
+ -- resolvers.luacnfspec = '{selfautodir:,selfautoparent:}{,{/share,}/texmf{-local,}/web2c}'
+ -- resolvers.luacnfspec = '{selfautodir:{/share,}/texmf-local/web2c,selfautoparent:{/share,}/texmf{-local,}/web2c}'
+ -- resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c;selfautoparent:/texmf{-local,}/web2c'
+    resolvers.luacnfspec = 'selfautodir:;selfautoparent:;{selfautodir:,selfautoparent:}{/share,}/texmf{-local,}/web2c'
+else
+    resolvers.luacnfspec = 'home:texmf/web2c;selfautoparent:texmf{-local,-context,}/web2c'
+end
+
+-- which (as we want users to use the web2c path) be can be simplified to this:
+--
+-- if environment and environment.ownpath and string.find(environment.ownpath,"[\\/]texlive[\\/]") then
+--     resolvers.luacnfspec = 'selfautodir:/texmf-local/web2c,selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
+-- else
+--     resolvers.luacnfspec = 'selfautoparent:/texmf-local/web2c,selfautoparent:/texmf/web2c'
+-- end
 
 --~ -- not yet, some reporters expect strings
 
 --~ resolvers.luacnfspec    = {
---~     "selfautoparent:/texmf-local",
+--~     "selfautoparent:/texmf-local",       -- is actually a user mistake
 --~     "selfautoparent:/texmf-local/web2c",
---~     "selfautoparent:/texmf",
+--~     "selfautoparent:/texmf",             -- idem
 --~     "selfautoparent:/texmf/web2c",
---~     "selfautoparent:",
+--~     "selfautoparent:",                   -- idem
 --~ }
 
 local unset_variable = "unset"
@@ -259,12 +307,20 @@ local function makepathexpression(str)
     end
 end
 
-local function reportcriticalvariables()
+local function reportcriticalvariables(cnfspec)
     if trace_locating then
         for i=1,#resolvers.criticalvars do
             local k = resolvers.criticalvars[i]
             local v = resolvers.getenv(k) or "unknown" -- this one will not resolve !
             report_resolving("variable '%s' set to '%s'",k,v)
+        end
+        report_resolving()
+        if cnfspec then
+            if type(cnfspec) == "table" then
+                report_resolving("using configuration specification '%s'",concat(cnfspec,","))
+            else
+                report_resolving("using configuration specification '%s'",cnfspec)
+            end
         end
         report_resolving()
     end
@@ -281,7 +337,7 @@ local function identify_configuration_files()
         else
             resolvers.luacnfstate = "environment"
         end
-        reportcriticalvariables()
+        reportcriticalvariables(cnfspec)
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
         local luacnfname = resolvers.luacnfname
         for i=1,#cnfpaths do
@@ -317,6 +373,19 @@ local function load_configuration_files()
             if blob then
                 local setups = instance.setups
                 local data = blob()
+local parent = data and data.parent
+if parent then
+    local filename = filejoin(pathname,parent)
+    local realname = resolvers.resolve(filename) -- no shortcut
+    local blob = loadfile(realname)
+    if blob then
+        local parentdata = blob()
+        if parentdata then
+            report_resolving("loading configuration file '%s'",filename)
+            data = table.merged(parentdata,data)
+        end
+    end
+end
                 data = data and data.content
                 if data then
                     if trace_locating then

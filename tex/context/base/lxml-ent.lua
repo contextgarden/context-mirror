@@ -68,6 +68,22 @@ function xml.resolvedentity(str)
     end
 end
 
-entities.amp = function() tex.write("&") end
-entities.lt  = function() tex.write("<") end
-entities.gt  = function() tex.write(">") end
+--~ entities.amp = function() tex.write("&") end
+--~ entities.lt  = function() tex.write("<") end
+--~ entities.gt  = function() tex.write(">") end
+
+if characters and characters.entities then
+
+    function characters.registerentities(forcecopy)
+        if forcecopy then
+            for name, value in next, characters.entities do
+                if not entities[name] then
+                    entities[name] = value
+                end
+            end
+        else
+            table.setmetatableindex(xml.entities,characters.entities)
+        end
+    end
+
+end

@@ -5,7 +5,7 @@
 %D       subtitle=Lists,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -15,56 +15,163 @@
 
 \registerctxluafile{strc-lst}{1.001}
 
-\unprotect
-
-\def\currentstructurelistnumber{0}
-
 % nmstate -> no pagenumber if not start
 % autocrossdocument -> todo
 % expansion -> todo
 % auto refs to lists (chain)  -> todo (\dododowritetolist)
 % todo: \normalexpanded{\noexpand\everylistentry\emptytoks\the\everylistentry}% \emptytoks, else loop
 
-% interface to lua
+\unprotect
 
-% we have to deal with compatible processing, i.e. list elements that have two
-% elements plus a pagenumber
+% \def\currentlist      {\s!unknown}
+%
+% \def\listparameter       #1{\csname\dolistparameter{\??li\currentlist}#1\endcsname}
+% \def\namedlistparameter#1#2{\csname\dolistparameter{\??li          #1}#2\endcsname}
+% \def\listparameterhash   #1{\dolistparameterhash   {\??li\currentlist}#1}
+%
+% \def\dolistparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolistparentparameter    \csname#1\s!parent\endcsname#2\fi}
+% \def\dolistparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolistparentparameterhash\csname#1\s!parent\endcsname#2\fi}
+%
+% \def\dolistparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolistparameter    #1#2\fi}
+% \def\dolistparentparameterhash#1#2{\ifx#1\relax        \else\dolistparameterhash#1#2\fi}
+%
+% \def\setlistparameter#1#2#3{\@EA\def\csname\??li#1#2\endcsname{#3}} % often
+%
+% \def\dosetlistattributes#1#2% style color
+%   {\edef\fontattributehash {\listparameterhash#1}%
+%    \edef\colorattributehash{\listparameterhash#2}%
+%    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
+%    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+%
+% \def\donestedlistattributes#1#2%
+%   {\dosetlistattributes#1#2%
+%    \ifx\colorattributehash\empty \else
+%      \resetinteractionparameter\c!color
+%      \resetinteractionparameter\c!contrastcolor
+%    \fi}
+%
+% \def\checklistexistence#1%
+%   {\ifcsname\??li#1\s!parent\endcsname \else
+%      \letvalue{\??li#1\s!parent}\??li
+%    \fi}
+%
+% \def\dosetuplist[#1][#2]% slow -)
+%   {\checklistexistence{#1}%
+%    \def\docommand##1{\getparameters[\??li##1][#2]}%
+%    \processcommalist[#1]\docommand}
+%
+% \unexpanded\def\setuplist
+%   {\dodoubleargument\dosetuplist}
+%
+% \unexpanded\def\definelist
+%   {\dotripleempty\dodefinelist}
+%
+% \def\dodefinelist[#1][#2][#3]%
+%   {\presetlocalframed[\??li#1]% still inefficient (will change when we redu core-rul)
+%    \doifassignmentelse{#2}
+%      {\getparameters[\??li#1][\s!parent=\??li,#2]}
+%      {\doifelsenothing{#2}
+%         {\getparameters[\??li#1][\s!parent=\??li]}
+%         {\getparameters[\??li#1][\s!parent=\??li#2,#3]}}}
+%
+% \unexpanded\def\setuplists % new, but not for users (hardly handy)
+%   {\dodoubleargument\getparameters[\??li]}
 
-\let\listentry\gobblesixarguments
+\installcommandhandler \??li {list} \??li
 
-\def\currentlist      {\s!unknown}
-\def\currentlistmethod{entry}
-\def\currentlistindex {0}
-
-\def\setlistparameter#1#2#3{\@EA\def\csname\??li#1#2\endcsname{#3}} % often
-%def\listparameter       #1{\ifcsname\??li\currentlist#1\endcsname\csname\??li\currentlist#1\endcsname\fi}
-
-% interface
-
-\def\listparameter       #1{\csname\dolistparameter{\??li\currentlist}#1\endcsname}
-\def\namedlistparameter#1#2{\csname\dolistparameter{\??li          #1}#2\endcsname}
-\def\listparameterhash   #1{\dolistparameterhash   {\??li\currentlist}#1}
-
-\def\dolistparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolistparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dolistparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolistparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\dolistparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolistparameter    #1#2\fi}
-\def\dolistparentparameterhash#1#2{\ifx#1\relax        \else\dolistparameterhash#1#2\fi}
-
-\def\dosetlistattributes#1#2% style color
-  {\edef\fontattributehash {\listparameterhash#1}%
-   \edef\colorattributehash{\listparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\def\donestedlistattributes#1#2%
+\def\donestedlistattributes#1#2% will change
   {\dosetlistattributes#1#2%
    \ifx\colorattributehash\empty \else
      \resetinteractionparameter\c!color
      \resetinteractionparameter\c!contrastcolor
    \fi}
 
-% handling
+% \appendtoks
+%    \ifx\currentlist\empty\else
+%      \ifcsname\??li\currentlist\s!parent\endcsname \else
+%        \letvalue{\??li\currentlist\s!parent}\??li % Is this still needed? Could be built in.
+%      \fi
+%    \fi
+% \to \everysetuplist
+
+\let\setuplists\setuplist % yes or no
+
+\def\doifelselist#1% can also move to \installcommandhandler
+  {\ifcsname\??li#1\s!parent\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\setuplist
+  [\c!height=\v!broad,
+   \c!depth=\v!broad,
+   \c!offset=0.25em,
+   \c!maxwidth=,
+   \c!state=\v!start,
+   \c!coupling=\v!off,
+   \c!criterium=\v!local,
+   \c!number=0,
+   \c!width=3em,
+   \c!alternative=\c!b,
+   \c!style=\v!normal,
+   \c!textstyle=\listparameter\c!style,
+   \c!numberstyle=\listparameter\c!style,
+   \c!pagestyle=\listparameter\c!style,
+  %\c!color=,
+   \c!textcolor=\listparameter\c!color,
+   \c!numbercolor=\listparameter\c!color,
+   \c!pagecolor=\listparameter\c!color,
+   \c!numbercommand=\listnumbercommand,
+   \c!textcommand=\listtextcommand,
+   \c!pagecommand=\listpagecommand,
+   \c!pagenumber=\v!yes,
+   \c!headnumber=\v!yes,
+   \c!extras=,
+   \c!margin=\!!zeropoint,
+   \c!aligntitle=,
+   \c!before=,
+   \c!after=,
+   \c!inbetween=,
+   \c!symbol=,
+   \c!interaction=\v!sectionnumber,
+   \c!label=\v!no,
+   \c!distance=\!!zeropoint,
+  %\c!sectionseparatorset=,
+  %\c!sectionconversionset=,
+  %\c!sectionstarter=,
+  %\c!sectionstopper=,
+  %\c!sectionset=,
+  %\c!sectionsegments=,
+  %\c!prefix=\v!no,
+  %\c!prefixseparatorset=,
+  %\c!prefixconversionset=,
+  %\c!prefixstarter=.,
+  %\c!prefixstopper=.,
+  %\c!prefixset=,
+  %\c!prefixsegments=,
+  %\c!pageseparatorset=,
+  %\c!pageconversionset=,
+  %\c!pagestarter=,
+  %\c!pagestopper=,
+  %\c!expansion=,
+  %\c!prefixconnector=., % maybe inherit from setupheads
+  %\c!pageprefix=\v!no, % is unset, inherits
+  %\c!pageprefixconnector=\listparameter\c!prefixconnector,
+  %\c!pagesegments=2:2,
+  \c!limittext=\languageparameter\c!limittext] % not used currently
+
+% Whatever:
+
+\def\currentstructurelistnumber{0}
+
+% we have to deal with compatible processing, i.e. list elements that have two
+% elements plus a pagenumber
+
+\let\listentry\gobblesixarguments
+
+\def\currentlistmethod{entry}
+\def\currentlistindex {0}
 
 % The next code injects data into the list at the current level.
 
@@ -86,7 +193,7 @@
    \edef\currentlistnumber{\ctxlua{structures.lists.push{
          references = {
             internal = \nextinternalreference,
-            block    = "\currentstructureblock", % handy for lists, like bibl
+            block    = "\currentsectionblock", % handy for lists, like bibl
             section  = structures.sections.currentid(),
           % location = "\currentlistlocation",
         },
@@ -280,91 +387,6 @@
 % \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}} % ?
 % \getvalue{\??li\c!alternative} % ?
 
-\def\checklistexistence#1%
-  {\ifcsname\??li#1\s!parent\endcsname \else
-     \letvalue{\??li#1\s!parent}\??li
-   \fi}
-
-\def\dosetuplist[#1][#2]% slow -)
-  {\checklistexistence{#1}%
-   \def\docommand##1{\getparameters[\??li##1][#2]}%
-   \processcommalist[#1]\docommand}
-
-\unexpanded\def\setuplist
-  {\dodoubleargument\dosetuplist}
-
-\def\dodefinelist[#1][#2][#3]%
-  {\presetlocalframed[\??li#1]% still inefficient (will change when we redu core-rul)
-   \doifassignmentelse{#2}
-     {\getparameters[\??li#1][\s!parent=\??li,#2]}
-     {\doifelsenothing{#2}
-        {\getparameters[\??li#1][\s!parent=\??li]}
-        {\getparameters[\??li#1][\s!parent=\??li#2,#3]}}}
-
-\unexpanded\def\setuplists % new, but not for users (hardly handy)
-  {\dodoubleargument\getparameters[\??li]}
-
-\setuplists
-  [\c!height=\v!broad,
-   \c!depth=\v!broad,
-   \c!offset=0.25em,
-   \c!maxwidth=,
-   \c!state=\v!start,
-   \c!coupling=\v!off,
-   \c!criterium=\v!local,
-   \c!number=0,
-   \c!width=3em,
-   \c!alternative=\c!b,
-   \c!style=\v!normal,
-   \c!textstyle=\listparameter\c!style,
-   \c!numberstyle=\listparameter\c!style,
-   \c!pagestyle=\listparameter\c!style,
-  %\c!color=,
-   \c!textcolor=\listparameter\c!color,
-   \c!numbercolor=\listparameter\c!color,
-   \c!pagecolor=\listparameter\c!color,
-   \c!numbercommand=\listnumbercommand,
-   \c!textcommand=\listtextcommand,
-   \c!pagecommand=\listpagecommand,
-   \c!pagenumber=\v!yes,
-   \c!headnumber=\v!yes,
-   \c!extras=,
-   \c!margin=\!!zeropoint,
-   \c!aligntitle=,
-   \c!before=,
-   \c!after=,
-   \c!inbetween=,
-   \c!symbol=,
-   \c!interaction=\v!sectionnumber,
-   \c!label=\v!no,
-   \c!distance=\!!zeropoint,
-   \c!limittext=\@@kolimittext,
-  %\c!sectionseparatorset=,
-  %\c!sectionconversionset=,
-  %\c!sectionstarter=,
-  %\c!sectionstopper=,
-  %\c!sectionset=,
-  %\c!sectionsegments=,
-  %\c!prefix=\v!no,
-  %\c!prefixseparatorset=,
-  %\c!prefixconversionset=,
-  %\c!prefixstarter=.,
-  %\c!prefixstopper=.,
-  %\c!prefixset=,
-  %\c!prefixsegments=,
-  %\c!pageseparatorset=,
-  %\c!pageconversionset=,
-  %\c!pagestarter=,
-  %\c!pagestopper=,
-  %\c!expansion=,
- % \c!prefixconnector=., % maybe inherit from setupheads
- % \c!pageprefix=\v!no, % is unset, inherits
- % \c!pageprefixconnector=\listparameter\c!prefixconnector,
- ]%\c!pagesegments=2:2]
-
-\unexpanded\def\definelist
-  {\dotripleempty\dodefinelist}
-
 \unexpanded\def\placelist
   {\dodoubleempty\doplacelist}
 
@@ -390,7 +412,6 @@
 
 \let\dowritetolist  \gobblefourarguments
 \let\dodowritetolist\gobblefourarguments
-
 
 %D Regular list entries are bound to a specific location in order to
 %D get the right pagenumber etc.\ associated. When pushing something
@@ -454,7 +475,7 @@
 
 \def\doplacerawlist[#1][#2]% listreferences will be redone
   {\begingroup
-   \dosetuplist[#1][#2]%
+   \setuplist[#1][#2]%
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
    \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#1}}%
@@ -493,7 +514,7 @@
 \def\listtextcommand   #1{\begstrut#1\endstrut}
 \def\listpagecommand   #1{\strut#1}
 
-\def\doassigndimen#1#2#3%
+\def\doassignlistdimen#1#2#3%
   {\doifinsetelse{#2}{\v!fit,\v!broad}{#1=#3}{#1=#2}\relax}
 
 \unexpanded\def\listsymbol[#1]#2%
@@ -532,7 +553,7 @@
      {\directsymbol\v!list\s!default}}
 
 \def\listsymbol@none
-  {\doassigndimen\scratchdimen{\listparameter\c!width}{1.5em}%
+  {\doassignlistdimen\scratchdimen{\listparameter\c!width}{1.5em}%
    \hbox to \scratchdimen{}}
 
 \def\listsymbol@one
@@ -543,9 +564,9 @@
 
 \def\listsymbol@three
   {\begingroup
-   \doassigndimen{\dimen0}{\listparameter\c!width }{1.5em}%
-   \doassigndimen{\dimen2}{\listparameter\c!height}{1ex}%
-   \doassigndimen{\dimen4}{\listparameter\c!depth }\zeropoint
+   \doassignlistdimen{\dimen0}{\listparameter\c!width }{1.5em}%
+   \doassignlistdimen{\dimen2}{\listparameter\c!height}{1ex}%
+   \doassignlistdimen{\dimen4}{\listparameter\c!depth }\zeropoint
    \vrule\!!width\dimen0\!!height\dimen2\!!depth\dimen4%
    \endgroup}
 
@@ -655,7 +676,7 @@
    \iflocation % we cannot tweak \iflocation as we nest
      \doifelse{\listparameter\c!interaction}{#1}
        {\begingroup
-        \doif{\namedstructureheadparameter\currentlist\c!interaction}\v!list
+        \doif{\namedheadparameter\currentlist\c!interaction}\v!list
           {\dosetsimplepagereference{bck:#2}%
            \attribute\destinationattribute\currentdestinationattribute}%
         \directgoto{\setlocationcolor\??ia#4}[internal(#2)]% we can get the attribute instead so then we don't need a goto
@@ -929,7 +950,7 @@
 
 \def\dodeterminelistcharacteristics[#1][#2]%
   {\begingroup
-   \dosetuplist[#1][#2]%
+   \setuplist[#1][#2]%
    \edef\currentlist{\firststructureelementinlist{#1}}%
    \the\everystructurelist
    \doanalyzestructurelist{#1}{\listparameter\c!criterium}{\number\listparameter\c!number}%
@@ -973,7 +994,7 @@
    \the\everystructurelist
    \doif{\combinedlistparameter\c!coupling}\v!on{\startlistreferences{#1}}%
    \dobeginoflist
-   \normalexpanded{\noexpand\dosetuplist[\combinedlist][#2]}%
+   \normalexpanded{\setuplist[\combinedlist][#2]}%
    \doplacestructurelist
      {\combinedlist}%
      {\combinedlistparameter\c!criterium}%

@@ -21,7 +21,7 @@ local pdfdictionary      = lpdf.dictionary
 local pdfarray           = lpdf.array
 local pdfnull            = lpdf.null
 local pdfreference       = lpdf.reference
-local pdfimmediateobject = lpdf.immediateobject
+local pdfflushobject     = lpdf.flushobject
 
 local checkedkey         = lpdf.checkedkey
 
@@ -75,7 +75,7 @@ local function insertswf(spec)
         },
     }
 
-    local flashreference = pdfreference(pdfimmediateobject(tostring(flash)))
+    local flashreference = pdfreference(pdfflushobject(flash))
 
     local configuration = pdfdictionary {
         Configurations = pdfarray { flashreference },
@@ -112,7 +112,7 @@ local function insertswf(spec)
         end
     end
 
-    local configurationreference = pdfreference(pdfimmediateobject(tostring(configuration)))
+    local configurationreference = pdfreference(pdfflushobject(configuration))
 
     local activation = pdfdictionary {
         Type          = pdfconstant("RichMediaActivation"),
@@ -165,7 +165,7 @@ local function insertswf(spec)
         Deactivation = deactivation,
     }
 
-    local settingsreference = pdfreference(pdfimmediateobject(tostring(richmediasettings)))
+    local settingsreference = pdfreference(pdfflushobject(richmediasettings))
 
     local appearance
 

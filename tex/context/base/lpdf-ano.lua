@@ -52,7 +52,6 @@ local pdfunicode              = lpdf.unicode
 local pdfconstant             = lpdf.constant
 local pdfflushobject          = lpdf.flushobject
 local pdfshareobjectreference = lpdf.shareobjectreference
-local pdfimmediateobject      = lpdf.immediateobject
 local pdfreserveobject        = lpdf.reserveobject
 local pdfpagereference        = lpdf.pagereference
 local pdfdelayedobject        = lpdf.delayedobject
@@ -245,7 +244,7 @@ local function use_normal_annotations()
 
 end
 
--- evenrually we can do this for special refs only
+-- eventually we can do this for special refs only
 
 local hashed, nofunique, nofused = { }, 0, 0
 

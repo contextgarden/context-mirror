@@ -5,7 +5,7 @@
 %D       subtitle=Column Sets,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -259,7 +259,7 @@
       \dostepwiserecurse{#3}\!!counte\plusone
         {\OTRSETsetgridcell\!!countf\recurselevel#1}}%
    \dostepwiserecurse{#3}\!!counte\plusone
-     {\global\wd\OTRSETgridcell{#2}\recurselevel\hsize}%
+     {\wd\OTRSETgridcell{#2}\recurselevel\hsize}%
    \OTRSETsetgridcell{#2}\!!counte#6}
 
 \def\OTRSETsetgridcells
@@ -1719,7 +1719,7 @@
       \chardef\OTRSETbalancemethod\plusone
       \OTRSETreducegridbox
       \global\setbox\OTRfinalpagebox\OTRSETmakegridbox
-      \global\ht\OTRfinalpagebox\textheight % signals output that there is content
+      \ht\OTRfinalpagebox\textheight % signals output that there is content
       \OTRSETdofinaloutput
       \globallet\OTRSETbalht\zeropoint
       \egroup}
@@ -1927,7 +1927,7 @@
 %
 % \installoutput\OTRSETflushpreposttext
 %   {\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}%
-%    \global\dp\precolumnbox\strutdepth
+%    \dp\precolumnbox\strutdepth
 %    \ifcarryoverfootnotes \else
 %      \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
 %    \fi}
@@ -1951,7 +1951,7 @@
      \global\setbox\precolumnbox\hbox
        {\lower\strutdepth\box\precolumnbox}%
    \fi
-   \global\dp\precolumnbox\strutdepth
+   \dp\precolumnbox\strutdepth
    \ifcarryoverfootnotes \else
      \global\setbox\postcolumnbox\vbox{\placebottomnotes}%
    \fi}

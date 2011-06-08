@@ -5,7 +5,7 @@
 %D       subtitle=Document Structure,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -119,7 +119,7 @@
         structures.sections.somelevel {
             references = {
                 internal        = \nextinternalreference,
-                block           = "\currentstructureblock",
+                block           = "\currentsectionblock",
                 reference       = "\currentstructurereference",
                 referenceprefix = "\currentstructurereferenceprefix",
                 backreference   = "\currentstructurebackreference",
@@ -162,7 +162,7 @@
             },
             numberdata = {
                 % needed ?
-                block         = "\currentstructureblock",
+                block         = "\currentsectionblock",
                 hidenumber    = \ifx\currentstructureshownumber\v!no true\else nil\fi, % titles
                 % so far
                 separatorset  = "\structureparameter\c!sectionseparatorset",

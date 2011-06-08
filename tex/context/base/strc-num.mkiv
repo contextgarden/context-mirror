@@ -5,7 +5,7 @@
 %D       subtitle=Basic Numbering,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA-ADE / Hans Hagen]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -56,7 +56,7 @@
   [\c!prefixsegments=\autostructureprefixsegments\sharedstructurecounterparameter]
 
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
-  {2:\thenamedstructureheadlevel{\ctxlua{structures.sections.way("#1\c!way","\v!by")}}}
+  {2:\thenamedheadlevel{\ctxlua{structures.sections.way("#1\c!way","\v!by")}}}
 
 \def\structurecounterparameter#1#2%
   {\csname
@@ -126,7 +126,7 @@
   {\ctxlua{structures.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
 
 \def\thenamedstructurecounterlevel#1%
-  {\thenamedstructureheadlevel{\structurecounterway{#1}}}
+  {\thenamedheadlevel{\structurecounterway{#1}}}
 
 \def\docheckstructurecountersetup#1%
   {% this can be done at the lua end / a bit messy here ... todo ...
@@ -414,7 +414,7 @@
             internal        = \nextinternalreference,
             reference       = "\currentreference",
             referenceprefix = "\referenceprefix",
-            block           = "\currentstructureblock",
+            block           = "\currentsectionblock",
             section         = structures.sections.currentid(),
         },
         titledata = {

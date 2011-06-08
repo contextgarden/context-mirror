@@ -99,3 +99,39 @@ local pattern = (
 function commands.autosetups(str)
     lpegmatch(pattern,str)
 end
+
+-- new (inefficient)
+
+local lookuptoken = token.lookup
+
+local dimencode   = lookuptoken("scratchdimen"  )[1]
+local countcode   = lookuptoken("scratchcounter")[1]
+local tokencode   = lookuptoken("scratchtoken"  )[1]
+local skipcode    = lookuptoken("scratchskip"   )[1]
+
+local types = {
+    [dimencode] = "dimen",
+    [countcode] = "count",
+    [tokencode] = "token",
+    [skipcode ] = "skip",
+}
+
+function tex.isdimen(name)
+    return lookuptoken(name)[1] == dimencode
+end
+function tex.iscount(name)
+    return lookuptoken(name)[1] == countcode
+end
+function tex.istoken(name)
+    return lookuptoken(name)[1] == tokencode
+end
+function tex.isskip(name)
+    return lookuptoken(name)[1] == skipcode
+end
+
+function tex.type(name)
+    return types[lookuptoken(name)[1]] or "macro"
+end
+
+--  inspect(tex.isdimen("xxxxxxxxxxxxxxx"))
+--  inspect(tex.isdimen("textwidth"))

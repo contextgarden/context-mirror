@@ -5,7 +5,7 @@
 %D       subtitle=Side Floats,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -621,8 +621,8 @@
      % todo: maybe rounding problem here
      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
      \global\setbox\floatbox\hbox{\lower\strutdepth\box\floatbox}%
-     \global\ht\floatbox\scratchdimen
-     \global\dp\floatbox\zeropoint
+     \ht\floatbox\scratchdimen
+     \dp\floatbox\zeropoint
    \fi
    \ifcase\sidefloatalign \else
      \global\sidefloattopskip\zeropoint

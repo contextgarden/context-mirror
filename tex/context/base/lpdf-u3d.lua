@@ -22,22 +22,23 @@ local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, m
 
 local backends, lpdf = backends, lpdf
 
-local nodeinjections     = backends.pdf.nodeinjections
+local nodeinjections           = backends.pdf.nodeinjections
 
-local pdfconstant        = lpdf.constant
-local pdfboolean         = lpdf.boolean
-local pdfnumber          = lpdf.number
-local pdfunicode         = lpdf.unicode
-local pdfdictionary      = lpdf.dictionary
-local pdfarray           = lpdf.array
-local pdfnull            = lpdf.null
-local pdfreference       = lpdf.reference
-local pdfimmediateobject = lpdf.immediateobject
+local pdfconstant              = lpdf.constant
+local pdfboolean               = lpdf.boolean
+local pdfnumber                = lpdf.number
+local pdfunicode               = lpdf.unicode
+local pdfdictionary            = lpdf.dictionary
+local pdfarray                 = lpdf.array
+local pdfnull                  = lpdf.null
+local pdfreference             = lpdf.reference
+local pdfflushstreamobject     = lpdf.flushstreamobject
+local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local checkedkey         = lpdf.checkedkey
-local limited            = lpdf.limited
+local checkedkey               = lpdf.checkedkey
+local limited                  = lpdf.limited
 
-local pdfannotation_node = nodes.pool.pdfannotation
+local pdfannotation_node       = nodes.pool.pdfannotation
 
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
@@ -397,12 +398,12 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
         if js then
             local jsref = stored_js[js]
             if not jsref then
-                jsref = pdfimmediateobject("streamfile",js)
+                jsref = pdfflushstreamfileobject(js)
                 stored_js[js] = jsref
             end
             attr.OnInstantiate = pdfreference(jsref)
         end
-        stored_3d[label] = pdfimmediateobject("streamfile",foundname,attr())
+        stored_3d[label] = pdfflushstreamfileobject(foundname,attr)
         stream = 1
     else
        stream = stream + 1
@@ -436,14 +437,10 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                 width = width,
                 height = height
             }
-        --  local figure = img.immediatewrite {
-        --      stream = ".5 .75 .75 rg 0 0 20 10 re f",
-        --      bbox = { 0, 0, 20, 10 }
-        --  }
             ref = figure.objnum
             stored_pr[tag] = ref
         end
-        if ref then
+        if ref then -- see back-pdf ** .. here we have a local /IM !
             local zero, one = pdfnumber(0), pdfnumber(1) -- not really needed
             local pw   = pdfdictionary {
                 Type      = pdfconstant("XObject"),
@@ -465,12 +462,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                             },
                 ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
-            local pwd = pdfimmediateobject(
-                "stream",
-                format("q /GS gs %s 0 0 %s 0 0 cm /IM Do Q",
-                factor*width,factor*height),
-                pw()
-            )
+            local pwd = pdfflushstreamobject(format("q /GS gs %s 0 0 %s 0 0 cm /IM Do Q",factor*width,factor*height),pw)
             annot.AP = pdfdictionary {
                 N = pdfreference(pwd)
             }

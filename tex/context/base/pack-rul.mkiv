@@ -5,7 +5,7 @@
 %D       subtitle=Ruled Content,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -786,18 +786,6 @@
 \let\postprocessframebox\relax
 
 \let\@@framed\s!unknown
-
-% \def\framedparameter    #1{\csname\doframedparameter\@@framed#1\endcsname}
-% \def\framedparameterhash#1{\doframedparameterhash   \@@framed#1}
-%
-% \def\doframedparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doframedparentparameter    \csname#1\s!parent\endcsname#2\fi}
-% \def\doframedparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doframedparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-%
-% \def\doframedparentparameter    #1#2{\ifx#1\relax\s!empty\else\doframedparameter    #1#2\fi}
-% \def\doframedparentparameterhash#1#2{\ifx#1\relax        \else\doframedparameterhash#1#2\fi}
-%
-% \def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1#2\fi}
-% \def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
 
 \def\framedparameter    #1{\csname\doframedparameter\@@framed{#1}\endcsname}
 \def\framedparameterhash#1{\doframedparameterhash   \@@framed#1}
@@ -2891,7 +2879,7 @@
    \dosingleempty\dodoframedtext}
 
 \def\dodoframedtext[#1]% beware!
-  {\normalexpanded{\noexpand\switchtobodyfont[\\framedtextparameter\c!bodyfont]}%
+  {\normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
    \localframed[\??kd\currentframedtext][\c!strut=\v!no,#1]%
      \bgroup
        \blank[\v!disable]%

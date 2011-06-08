@@ -34,7 +34,9 @@ storage.register("attributes/list",    list,    "attributes.list")
 
 function attributes.define(name,number) -- at the tex end
     if not numbers[name] then
-        numbers[name], names[number], list[number] = number, name, { }
+        numbers[name] = number
+        names[number] = name
+        list[number]  = { }
     end
 end
 

@@ -21,11 +21,13 @@ local round = math.round
 
 local P, S, C, Cc, Cf, Cg, Ct, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.match
 
+local trace_features      = false  trackers.register("fonts.features", function(v) trace_features = v end)
 local trace_defining      = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_usage         = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
-local trace_mapfiles      = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles  = v end)
-local trace_automode      = false  trackers.register("fonts.automode", function(v) trace_automode  = v end)
+local trace_mapfiles      = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles = v end)
+local trace_automode      = false  trackers.register("fonts.automode", function(v) trace_automode = v end)
 
+local report_features     = logs.reporter("fonts","features")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
@@ -149,6 +151,9 @@ local needsnodemode = {
 }
 
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
+    if trace_features then
+        report_features(serialize(features,"used"))
+    end
     if mode == "auto" then
         local rawdata   = tfmdata.shared.rawdata
         local resources = rawdata and rawdata.resources
@@ -726,10 +731,17 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
         setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
         texsetcount("global","lastfontid",tfmdata)
     else
-tfmdata.characters[0] = nil -- we use char0 as signal
-    --  local t = os.clock(t)
+        -- setting the extra characters will move elsewhere
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        -- we use char0 as signal
+        characters[0] = nil
+        -- cf the spec pdf can handle this (no char in slot)
+     -- characters[0x00A0] = { width = parameters.space }
+     -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
+     -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
+        --
         local id = font.define(tfmdata)
-    --  print(name,os.clock()-t)
         tfmdata.properties.id = id
         definers.register(tfmdata,id) -- to be sure, normally already done
         tex.definefont(global,cs,id)

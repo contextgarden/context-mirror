@@ -5,7 +5,7 @@
 %D       subtitle=\PDF,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=\PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -14,15 +14,16 @@
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 \registerctxluafile{lpdf-ini}{1.001}
+\registerctxluafile{lpdf-nod}{1.001}
 \registerctxluafile{lpdf-col}{1.000}
 \registerctxluafile{lpdf-xmp}{1.001}
-\registerctxluafile{lpdf-nod}{1.001}
 \registerctxluafile{lpdf-mis}{1.001}
 \registerctxluafile{lpdf-ano}{1.001}
 \registerctxluafile{lpdf-ren}{1.001}
 \registerctxluafile{lpdf-grp}{1.001}
 \registerctxluafile{lpdf-wid}{1.001}
 \registerctxluafile{lpdf-fld}{1.001}
+\registerctxluafile{lpdf-mov}{1.001}
 \registerctxluafile{lpdf-u3d}{1.001}
 \registerctxluafile{lpdf-swf}{1.001}
 \registerctxluafile{lpdf-tag}{1.001}
@@ -140,7 +141,7 @@
 \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
 \def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
 
-\def\dostartclipping#1#2#3% todo (still needed?)
+\def\dostartclipping#1#2#3% todo (still needed?) (can move to lua)
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
    \grabMPclippath{#1}{1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%

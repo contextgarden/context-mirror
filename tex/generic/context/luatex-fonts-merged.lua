@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 05/18/11 22:26:32
+-- merge date  : 06/08/11 19:06:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -1855,9 +1855,39 @@ end
 --~ print(file.join("http:///a","/y"))
 --~ print(file.join("//nas-1","/y"))
 
+-- We should be able to use:
+--
+-- function file.is_writable(name)
+--     local a = attributes(name) or attributes(dirname(name,"."))
+--     return a and sub(a.permissions,2,2) == "w"
+-- end
+--
+-- But after some testing Taco and I came up with:
+
 function file.is_writable(name)
-    local a = attributes(name) or attributes(dirname(name,"."))
-    return a and sub(a.permissions,2,2) == "w"
+    if lfs.isdir(name) then
+        name = name .. "/m_t_x_t_e_s_t.tmp"
+        local f = io.open(name,"wb")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
+        end
+    elseif lfs.isfile(name) then
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            return true
+        end
+    else
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
+        end
+    end
+    return false
 end
 
 function file.is_readable(name)

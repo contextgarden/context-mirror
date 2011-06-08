@@ -12,7 +12,7 @@ local tostring, tonumber, next = tostring, tonumber, next
 local format = string.format
 local settings_to_array = utilities.parsers.settings_to_array
 
-local backends, lpdf = backends, lpdf
+local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 
 local nodeinjections   = backends.pdf.nodeinjections
 local codeinjections   = backends.pdf.codeinjections
@@ -41,6 +41,10 @@ local pdfreference     = lpdf.reference
 local pdfflushobject   = lpdf.flushobject
 local pdfreserveobject = lpdf.reserveobject
 
+local nodepool         = nodes.pool
+local register         = nodepool.register
+local pdfliteral       = nodepool.pdfliteral
+
 local pdf_ocg          = pdfconstant("OCG")
 local pdf_ocmd         = pdfconstant("OCMD")
 local pdf_off          = pdfconstant("OFF")
@@ -48,11 +52,55 @@ local pdf_on           = pdfconstant("ON")
 local pdf_toggle       = pdfconstant("Toggle")
 local pdf_setocgstate  = pdfconstant("SetOCGState")
 
+local copy_node        = node.copy
+
 local lpdf_usage = pdfdictionary { Print = pdfdictionary { PrintState = pdf_off } }
 
 -- We can have references to layers before they are places, for instance from
 -- hide and vide actions. This is why we need to be able to force usage of layers
 -- at several moments.
+
+-- injection
+
+local cache = { }
+
+function codeinjections.startlayer(name)
+    codeinjections.useviewerlayer(name)
+    return format("/OC /%s BDC",name)
+end
+
+function codeinjections.stoplayer(name)
+    return "EMC"
+end
+
+function nodeinjections.startlayer(name)
+    local c = cache[name]
+    if not c then
+        codeinjections.useviewerlayer(name)
+        c = register(pdfliteral(format("/OC /%s BDC",name)))
+        cache[name] = c
+    end
+    return copy_node(c)
+end
+
+local stop = register(pdfliteral("EMC"))
+
+function nodeinjections.stoplayer()
+    return copy_node(stop)
+end
+
+local cache = { }
+
+function nodeinjections.switchlayer(name) -- not used, optimization
+    local c = cache[name]
+    if not c then
+        codeinjections.useviewerlayer(name)
+        c = register(pdfliteral(format("EMC /OC /%s BDC",name)))
+    end
+    return copy_node(c)
+end
+
+-- management
 
 local pdfln, pdfld = { }, { }
 local textlayers, hidelayers, videlayers = pdfarray(), pdfarray(), pdfarray()

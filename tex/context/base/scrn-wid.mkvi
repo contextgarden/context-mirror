@@ -5,7 +5,7 @@
 %D       subtitle=Widgets,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -96,15 +96,18 @@
      \def\currentattachment{_}%
      \setupattachment[_][#settings,\s!parent=\??at]%
      \ctxcommand{registerattachment{
-        tag      = "#tag",
-        title    = "\attachmentparameter\c!title",
-        subtitle = "\attachmentparameter\c!subtitle",
-        author   = "\attachmentparameter\c!author",
-        file     = "\attachmentparameter\c!file",
-        name     = "\attachmentparameter\c!name",
-        buffer   = "\attachmentparameter\c!buffer",
+        tag        = "#tag",
+        registered = "#tag",
+        title      = "\attachmentparameter\c!title",
+        subtitle   = "\attachmentparameter\c!subtitle",
+        author     = "\attachmentparameter\c!author",
+        file       = "\attachmentparameter\c!file",
+        name       = "\attachmentparameter\c!name",
+        buffer     = "\attachmentparameter\c!buffer",
      }}%
      \endgroup
+   \else
+     % todo
    \fi}
 
 \appendtoks

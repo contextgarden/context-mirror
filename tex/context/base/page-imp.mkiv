@@ -5,7 +5,7 @@
 %D       subtitle=Pagebody Building (Imposition),
 %D         author=Hans Hagen & Willi Egger,
 %D           date=\currentdate,
-%D      copyright={PRAGMA / Hans Hagen \& Ton Otten}]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -69,7 +69,7 @@
 % \starttext \dorecurse{10}{\input tufte \par} \stoptext
 
 \def\clippagebox % skip fast over false
-  {\ifdim\@@lyclipoffset>\zeropoint
+  {\ifdim\layoutparameter\c!clipoffset>\zeropoint
       \expandafter\doclippagebox
    \else
       \expandafter\gobbleoneargument
@@ -80,7 +80,7 @@
    \!!heighta\ht#1%
    \!!deptha \dp#1%
    \setbox#1\hbox
-     {\!!widthb \@@lyclipoffset
+     {\!!widthb\layoutparameter\c!clipoffset
       \advance\!!heighta\dimexpr\!!deptha+2\!!widthb\relax
       \advance\!!widtha \!!widthb
       \doifbothsides
@@ -137,9 +137,9 @@
      {\global\setbox\postponedcontent\hbox to \zeropoint
         {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
          \unhbox\postponedcontent\unhbox\nextbox}% was \box
-      \global\ht\postponedcontent\zeropoint
-      \global\dp\postponedcontent\zeropoint
-      \global\wd\postponedcontent\zeropoint}%
+      \global\postponedcontent\zeropoint
+      \global\postponedcontent\zeropoint
+      \global\postponedcontent\zeropoint}%
    \hbox}
 
 % \starttypen
@@ -552,15 +552,15 @@
    \fi}
 
 \def\handlearrangedpageSIDE
-  {\global\wd\arrangedpageA\paperwidth
-   \global\wd\arrangedpageB\paperwidth
+  {\wd\arrangedpageA\paperwidth
+   \wd\arrangedpageB\paperwidth
    \global\setbox\arrangedpageA\hbox
      {\box\arrangedpageA\box\arrangedpageB}%
-   \global\ht\arrangedpageA\paperheight}
+   \ht\arrangedpageA\paperheight}
 
 \def\handlearrangedpageTOP
-  {\global\ht\arrangedpageA\paperheight
-   \global\ht\arrangedpageB\paperheight
+  {\ht\arrangedpageA\paperheight
+   \ht\arrangedpageB\paperheight
    \global\setbox\arrangedpageA\vbox
      {\offinterlineskip\vskip\paperheight
       \box\arrangedpageA\box\arrangedpageB}%
@@ -589,13 +589,13 @@
         \clippedprintbox\plusone  \arrangedpageA}%
      \settrue\arrangedswapstate
    \fi
-   \global\ht\arrangedpageA\paperheight
+   \ht\arrangedpageA\paperheight
    \global\setbox\arrangedpageB\box\scratchbox}
 
 \def\handlearrangedpageTWODOWN
   {\splitoffarrangedpagesTWO
-   \global\ht\arrangedpageA\paperheight
-   \global\ht\arrangedpageB\paperheight
+   \ht\arrangedpageA\paperheight
+   \ht\arrangedpageB\paperheight
    \ifconditional\arrangedswapstate
      \global\setbox\arrangedpageA\vbox
        {\offinterlineskip\vskip\paperheight

@@ -28,6 +28,10 @@ local nodeinjections     = backends.nodeinjections
 local variables          = interfaces.variables
 local v_auto             = variables.auto
 
+local trace_attachments = false  trackers.register("widgets.attachments", function(v) trace_attachments = v end)
+
+local report_attachments = logs.reporter("widgets","attachments")
+
 -- Symbols
 
 function commands.presetsymbollist(list)
@@ -66,10 +70,13 @@ local function checkbuffer(specification)
     end
 end
 
-function attachments.register(specification)
-    checkregistered(specification)
+function attachments.register(specification) -- beware of tag/registered mixup(tag is namespace)
+    local registered = checkregistered(specification)
     checkbuffer(specification)
-    attachments[lastregistered] = specification
+    attachments[registered] = specification
+    if trace_attachments then
+        report_attachments("registering '%s'",registered)
+    end
     return specification
 end
 
@@ -77,12 +84,17 @@ function attachments.insert(specification)
     local registered = checkregistered(specification)
     local r = attachments[registered]
     if r then
+        if trace_attachments then
+            report_attachments("including registered '%s'",registered)
+        end
         for k, v in next, r do
             local s = specification[k]
             if s == "" then
                 specification[k] = v
             end
         end
+    elseif trace_attachments then
+        report_attachments("including unregistered '%s'",registered)
     end
     checkbuffer(specification)
     return nodeinjections.attachfile(specification)

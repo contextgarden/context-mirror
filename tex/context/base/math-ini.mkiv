@@ -5,7 +5,7 @@
 %D       subtitle=Initializations,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
-%D      copyright=PRAGMA]
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
@@ -37,10 +37,10 @@
 \registerctxluafile{math-ini}{1.001}
 \registerctxluafile{math-dim}{1.001}
 \registerctxluafile{math-act}{1.001}
-\registerctxluafile{math-ent}{1.001}
 \registerctxluafile{math-ext}{1.001}
 \registerctxluafile{math-vfu}{1.001}
 \registerctxluafile{math-map}{1.001}
+\registerctxluafile{math-ren}{1.001}
 \registerctxluafile{math-noa}{1.001}
 \registerctxluafile{math-tag}{1.001}
 
@@ -49,16 +49,39 @@
 \definesystemattribute[mathpunctuation][public]
 \definesystemattribute[mathgreek]      [public]
 \definesystemattribute[mathalternate]  [public]
+\definesystemattribute[mathrendering]  [public]
+\definesystemattribute[mathcategory]   [public]
+\definesystemattribute[mathmode]       [public]
 
-% experiment
+\appendtoks
+    \attribute\mathmodeattribute\plusone
+\to \everydisplay
+
+\appendtoks
+    \attribute\mathmodeattribute\plusone
+\to \everybeforedisplayformula
+
+%D \macros
+%D   {setupmathematics}
+%D
+%D Configuration for integrals. (If needed we can speed this up and make it
+%D installable; no processaction is needed then).
+
+\newtoks\everysetupmathematics
+
+\unexpanded\def\setupmathematics
+  {\dosingleargument\dosetupmathematics}
+
+\def\dosetupmathematics[#1]%
+  {\getparameters[\??mo][#1]%
+   \the\everysetupmathematics}
+
+\def\mathematicsparameter#1%
+  {\ifcsname\??mo#1\endcsname\csname\??mo#1\endcsname\fi}
 
 % Normally this is applied to only one character.
 %
 % $ABC$ $\cal ABC$ $\mathaltcal ABC$
-
-\def\mathalternate#1{\ctxlua{mathematics.setalternate(0,"#1")}} % fam 0
-
-\def\mathaltcal{\mathalternate{cal}\cal} % ss01 in xits
 
 % todo: only in mmode
 
@@ -72,24 +95,46 @@
 \def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.syncboth ("#1","#2")}\fi}
 \def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.syncname ("#1")}\fi}
 \def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.syncstyle("#1")}\fi}
+\def\setmathalternate  #1{\ifmmode\ctxlua{mathematics.setalternate(0,"#1")}\fi} % fam 0
 
-\unexpanded\def\mr            {\setmathattribute{regular}{tf}}
+\def\setmathstylealterternate#1%
+  {\ifcsname\??mo:\c!alternative:\fontclass:#1\endcsname
+     \setmathalternate{\csname\??mo:\c!alternative:\fontclass:#1\endcsname}%
+   \else\ifcsname\??mo:\c!alternative:#1\endcsname
+     \setmathalternate{\csname\??mo:\c!alternative:#1\endcsname}%
+   \fi\fi}
 
-\unexpanded\def\mathdefault   {\setmathattribute{regular}{it}}
-\unexpanded\def\mathscript    {\setmathalphabet{script}}
-\unexpanded\def\mathfraktur   {\setmathalphabet{fraktur}}
-\unexpanded\def\mathblackboard{\setmathalphabet{blackboard}}
+\unexpanded\def\setupmathrendering % the name might change
+  {\dodoubleargument\dosetupmathrendering}
 
-\unexpanded\def\mathrm{\setmathattribute{rm}{tf}}
-\unexpanded\def\mathss{\setmathattribute{ss}{tf}}
-\unexpanded\def\mathtt{\setmathattribute{tt}{tf}}
+\def\dosetupmathrendering[#1][#2]%
+  {\ifsecondargument
+     \getparameters[\??mo:\c!alternative:#1:][#2]%
+   \else
+     \getparameters[\??mo:\c!alternative:][#1]%
+   \fi}
 
-\unexpanded\def\mathtf{\setmathstyle{tf}}
-\unexpanded\def\mathbf{\setmathstyle{bf}}
-\unexpanded\def\mathsl{\setmathstyle{sl}}
-\unexpanded\def\mathit{\setmathstyle{it}}
-\unexpanded\def\mathbs{\setmathstyle{bs}}
-\unexpanded\def\mathbi{\setmathstyle{bi}}
+\def\mathaltcal{\setmathalternate{cal}\cal} % ss01 in xits
+
+\let\mathalternate\setmathalternate % obsolete
+
+\unexpanded\def\mr            {\setmathattribute{regular}{tf}\setmathstylealterternate{tf}}
+
+\unexpanded\def\mathdefault   {\setmathattribute{regular}{it}\setmathstylealterternate{it}}
+\unexpanded\def\mathscript    {\setmathalphabet{script}\setmathstylealterternate{script}}
+\unexpanded\def\mathfraktur   {\setmathalphabet{fraktur}\setmathstylealterternate{fraktur}}
+\unexpanded\def\mathblackboard{\setmathalphabet{blackboard}\setmathstylealterternate{blackboard}}
+
+\unexpanded\def\mathrm{\setmathattribute{rm}{tf}\setmathstylealterternate{tf}}
+\unexpanded\def\mathss{\setmathattribute{ss}{tf}\setmathstylealterternate{tf}}
+\unexpanded\def\mathtt{\setmathattribute{tt}{tf}\setmathstylealterternate{tf}}
+
+\unexpanded\def\mathtf{\setmathstyle{tf}\setmathstylealterternate{tf}}
+\unexpanded\def\mathbf{\setmathstyle{bf}\setmathstylealterternate{bf}}
+\unexpanded\def\mathsl{\setmathstyle{it}\setmathstylealterternate{it}} % no sl
+\unexpanded\def\mathit{\setmathstyle{it}\setmathstylealterternate{it}}
+\unexpanded\def\mathbs{\setmathstyle{bi}\setmathstylealterternate{bi}} % no sl
+\unexpanded\def\mathbi{\setmathstyle{bi}\setmathstylealterternate{bi}}
 
 \let\tfmath\mathtf % maybe a grouped command
 \let\bfmath\mathbf
@@ -140,6 +185,38 @@
 %     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
     \mathdefault
 \to \everymathematics
+
+%D We could set the renderign attribute at the \LUA\ end but as there
+%D can be many small math snippets we keep track of the state at the
+%D \TEX\ end (mapping is export safe).
+%D
+%D \starttyping
+%D \startformula
+%D     \reals {\mathbf R} \utfchar{"0211D} \utfchar{"1D411}
+%D \stopformula
+%D
+%D \setupmathematics
+%D   [symbolset=blackboard-to-bold]
+%D
+%D \startformula
+%D     \reals {\mathbf R} \utfchar{"0211D} \utfchar{"1D411}
+%D \stopformula
+%D \stoptyping
+
+\newcount\math_renderings_attribute
+
+\appendtoks
+    \math_renderings_attribute\cldcontext{mathematics.renderset("\mathematicsparameter\c!symbolset")}\relax
+\to \everysetupmathematics
+
+\appendtoks
+    \ifcase\math_renderings_attribute\else
+        \attribute\mathrenderingattribute\math_renderings_attribute
+    \fi
+\to \everymathematics
+
+\setupmathematics
+  [\c!symbolset=]
 
 %D \macros
 %D   {boldsymbol}
@@ -212,29 +289,54 @@
 
 % this will be sorted out:
 
-\let\mathcharacter           \getvalue
-\let\textcharacter           \getvalue
-\unexpanded\def\definefamilysynonym     {\dotripleempty\dodefinefamilysynonym}
-\def\dodefinefamilysynonym   [#1][#2][#3]{}
-\unexpanded\def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
-\def\dodefinemathsymbol      [#1][#2][#3][#4][#5][#6]{}
-\unexpanded\def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
-\def\dodefinemathcharacter   [#1][#2][#3][#4][#5][#6]{}
+% \let\mathcharacter           \getvalue
+% \let\textcharacter           \getvalue
+%
+% \unexpanded\def\definefamilysynonym     {\dotripleempty\dodefinefamilysynonym}
+% \def\dodefinefamilysynonym   [#1][#2][#3]{}
+% \unexpanded\def\definemathsymbol        {\dosixtupleempty\dodefinemathsymbol}
+% \def\dodefinemathsymbol      [#1][#2][#3][#4][#5][#6]{}
+% \unexpanded\def\definemathcharacter     {\dosixtupleempty\dodefinemathcharacter}
+% \def\dodefinemathcharacter   [#1][#2][#3][#4][#5][#6]{}
 
 \unexpanded\def\definemathcommand
   {\dotripleempty\dodefinemathcommand}
 
+% \def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
+%   {\ifthirdargument
+%      \edef\nofmathcommandarguments{#3}%
+%      \ifx\nofmathcommandarguments\v!one
+%        \setuvalue{#1}##1{\puremathcomm{#2}{#4{##1}}}%
+%      \else\ifx\nofmathcommandarguments\v!two
+%        \setuvalue{#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}%
+%      \else
+%        \setuvalue{#1}{\puremathcomm{#2}{#4}}%
+%      \fi\fi
+%    \else\ifsecondargument
+%      \setuvalue{#1}{\puremathcomm{#2}{#4}}%
+%    \else
+%      \setuvalue{#1}{\puremathcomm{nothing}{#4}}%
+%    \fi\fi}
+
 \def\dodefinemathcommand[#1][#2][#3]#4% command class args meaning
   {\ifthirdargument
-     \processaction
-       [#3]
-       [one=>\setuvalue{#1}##1{\puremathcomm{#2}{#4{##1}}},
-        two=>\setuvalue{#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}]%
+     \edef\nofmathcommandarguments{#3}%
+     \ifx\nofmathcommandarguments\v!one
+       \setuvalue{\??mo::#1}##1{\puremathcomm{#2}{#4{##1}}}%
+     \else\ifx\nofmathcommandarguments\v!two
+       \setuvalue{\??mo::#1}##1##2{\puremathcomm{#2}{#4{##1}{##2}}}%
+     \else
+       \setuvalue{\??mo::#1}{\puremathcomm{#2}{#4}}%
+     \fi\fi
    \else\ifsecondargument
-     \setuvalue{#1}{\puremathcomm{#2}{#4}}%
+     \setuvalue{\??mo::#1}{\puremathcomm{#2}{#4}}%
    \else
-     \setuvalue{#1}{\puremathcomm{nothing}{#4}}%
-   \fi\fi}
+     \setuvalue{\??mo::#1}{\puremathcomm{nothing}{#4}}%
+   \fi\fi
+   \letcsnamecsname\csname#1\endcsname\csname\??mo::#1\endcsname}
+
+\unexpanded\def\mathcommand#1%
+  {\csname\??mo::#1\endcsname}
 
 %D Moved from font-ini.mkiv:
 %D
@@ -267,12 +369,61 @@
      \let\hbox\mbox
    \to\everymathematics}
 
-%D needed for sin, cos etc
+%D needed for sin, cos etc (todo: store #1 so that we can export it)
 
 \let\mathfunction\firstofoneargument
 
-\def\mfunction         #1{{\mr#1}}
-\def\mfunctionlabeltext#1{{\mr\mathlabeltext{#1}}}
+\let\taggedmathfunction         \firstofoneargument
+\let\taggedmathfunctionlabeltext\mathlabeltext
+
+\let\taggedmathmo\firstofoneargument
+\let\taggedmathmi\firstofoneargument
+
+\def\taggedmathmn#1{\begingroup\mr#1\endgroup}
+\def\taggedmathms#1{\begingroup\mr#1\endgroup}
+
+\def\mfunction         #1{{\mr\taggedmathfunction{#1}}}
+\def\mfunctionlabeltext#1{{\mr\taggedmathfunctionlabeltext{#1}}}
+
+% Once this is stable we can store the number at the tex end which is
+% faster. Functions getnumbers >= 1000.
+
+\def\dotaggedmathfunction         #1{\ctxcommand{taggedmathfunction("#1",false,\ifconditional\c_apply_function true\else false\fi)}}
+\def\dotaggedmathfunctionlabeltext#1{\ctxcommand{taggedmathfunction("#1",true ,\ifconditional\c_apply_function true\else false\fi)}}
+
+\def\dotaggedmo#1{\begingroup   \attribute\mathcategoryattribute\plusone  #1\endgroup}
+\def\dotaggedmi#1{\begingroup   \attribute\mathcategoryattribute\plustwo  #1\endgroup}
+\def\dotaggedmn#1{\begingroup\mr\attribute\mathcategoryattribute\plusthree#1\endgroup}
+\def\dotaggedms#1{\begingroup\mr\attribute\mathcategoryattribute\plusfour #1\endgroup}
+
+\newconditional\c_apply_function
+
+\def\taggedmathapply#1#2%
+  {\begingroup
+   \settrue\c_apply_function
+   #1%
+   \endgroup
+   \begingroup
+   % todo: auto ()
+   #2%
+   \endgroup}
+
+\appendtoks
+    \let\taggedmathfunction         \dotaggedmathfunction
+    \let\taggedmathfunctionlabeltext\dotaggedmathfunctionlabeltext
+    \let\taggedmathmo               \dotaggedmo
+    \let\taggedmathmi               \dotaggedmi
+    \let\taggedmathmn               \dotaggedmn
+    \let\taggedmathms               \dotaggedms
+\to \everyenableelements
+
+\appendtoks
+    \let\mo   \taggedmathmo
+    \let\mi   \taggedmathmi
+    \let\mn   \taggedmathmn
+    \let\ms   \taggedmathms
+    \let\apply\taggedmathapply
+\to\everymathematics
 
 % \def\mlimitsfunction  #1{\mathlimopcomm{{\mr#1}}
 % \def\mnolimitsfunction#1{\mathnolopcomm{{\mr#1}}
@@ -283,8 +434,8 @@
 \def\currentmscaledstyle{rm} % will be plugged into the typeface text=ss option
 
 \unexpanded\def\do@mathopnolimits    #1{\mathop{\mscaledtext{#1}}\nolimits}
-\unexpanded\def\do@mfunction         #1{\mscaledtext{#1}}
-\unexpanded\def\do@mfunctionlabeltext#1{\mscaledtext{\mathlabeltext{#1}}}
+\unexpanded\def\do@mfunction         #1{\mscaledtext{\taggedmathfunction{#1}}}
+\unexpanded\def\do@mfunctionlabeltext#1{\mscaledtext{\taggedmathfunctionlabeltext{#1}}}
 
 \def\setmathfunctionstyle#1% rm ss tt (can be made faster if needed)
   {\doifsomething{#1}
@@ -477,23 +628,6 @@
 %D Needed for unicode:
 
 \def\nulloperator{\mathortext{\mathop{\emptyhbox}}{\emptyhbox}}
-
-%D \macros
-%D   {setupmathematics}
-%D
-%D Configuration for integrals. (If needed we can speed this up and make it
-%D installable; no processaction is needed then).
-
-\newtoks\everysetupmathematics
-
-\unexpanded\def\setupmathematics
-  {\dosingleargument\dosetupmathematics}
-
-\def\dosetupmathematics[#1]%
-  {\getparameters[\??mo][#1]%
-   \the\everysetupmathematics}
-
-\def\mathematicsparameter#1{\ifcsname\??mo#1\endcsname\csname\??mo#1\endcsname\fi}
 
 %D Memory saver:
 
@@ -727,8 +861,6 @@
 
 % for a while:
 
-\ifnum\luatexversion>65
-    \def\Umathbotaccent{\Umathaccent bottom }
-\fi
+\def\Umathbotaccent{\Umathaccent bottom }
 
 \protect \endinput
