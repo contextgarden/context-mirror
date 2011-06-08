@@ -227,7 +227,7 @@ end
 
 -- -- --
 
-local function writer(parent,command,first,...)
+local function writer(parent,command,first,...) -- already optimized before call
     local t = { first, ... }
     flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
     local direct = false
@@ -461,6 +461,7 @@ local function pushlogger(trace)
     currenttrace = trace
     flush, writer = tracedflush, tracedwriter
     context.__flush = flush
+    return flush, writer
 end
 
 local function poplogger()
@@ -469,13 +470,14 @@ local function poplogger()
         flush, writer = normalflush, normalwriter
         context.__flush = flush
     end
+    return flush, writer
 end
 
 local function settracing(v)
     if v then
-        pushlogger(report_context)
+        return pushlogger(report_context)
     else
-        poplogger()
+        return poplogger()
     end
 end
 
@@ -486,6 +488,10 @@ trackers.register("context.trace",settracing)
 context.pushlogger = pushlogger
 context.poplogger  = poplogger
 context.settracing = settracing
+
+function context.getlogger()
+    return flush, writer
+end
 
 local trace_cld = false  trackers.register("context.files", function(v) trace_cld = v end)
 
@@ -739,6 +745,8 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 --~ context.direct(something)
 
 -- helpers:
+
+-- we could have faster calls here
 
 function context.concat(t,separator)
     local done = false

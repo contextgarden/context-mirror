@@ -12,6 +12,7 @@ local type, next = type, next
 local utf = unicode.utf8
 local texsprint, ctxcatcodes, txtcatcodes = tex.sprint, tex.ctxcatcodes, tex.txtcatcodes
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
+local strip = string.strip
 local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
 local lxmltext, getid = lxml.text, lxml.getid
@@ -455,11 +456,12 @@ function xml.functions.remapopenmath(e)
 end
 
 function mathml.checked_operator(str)
-    texsprint(ctxcatcodes,(utfgsub(str,".",o_replacements)))
+    str = utfgsub(str,".",o_replacements)
+    context(str)
 end
 
 function mathml.stripped(str)
-    tex.sprint(ctxcatcodes,str:strip())
+    context(strip(str))
 end
 
 function characters.remapentity(chr,slot) -- brrrrrr
@@ -481,7 +483,7 @@ function mathml.mo(id)
     local str = xmlcontent(getid(id)) or ""
     local rep = gsub(str,"&.-;","")
     local rep = utfgsub(rep,".",o_replacements)
-    texsprint(ctxcatcodes,rep)
+    context(rep)
  -- context.mo(rep) -- fails with \left etc
 end
 
@@ -495,10 +497,10 @@ function mathml.mi(id)
         if not rep then
             rep = gsub(str,".",i_replacements)
         end
-        texsprint(ctxcatcodes,rep)
+        context(rep)
      -- context.mi(rep)
     else
-        context.xmlflush(id)
+        context.xmlflush(id) -- xmlsprint or so
     end
 end
 
@@ -521,7 +523,6 @@ function mathml.mfenced(id) -- multiple separators
             -- skip
         elseif n == 1 then
             xmlsprint(collected[1]) -- to be checked
---~             lxml.all(id,"/*")
         else
             local t = { }
             for s in utfgmatch(separators,"[^%s]") do
@@ -555,22 +556,38 @@ function mathml.mfenced(id) -- multiple separators
     texsprint(ctxcatcodes,"\\disabledelimiter")
 end
 
+--~ local function flush(e,tag,toggle)
+--~     if toggle then
+--~         context("^{")
+--~     else
+--~         context("_{")
+--~     end
+--~     if tag == "none" then
+--~         context("{}")
+--~     else
+--~         xmlsprint(e.dt)
+--~     end
+--~     if not toggle then
+--~         context("}")
+--~     else
+--~         context("}{}")
+--~     end
+--~     return not toggle
+--~ end
+
 local function flush(e,tag,toggle)
- -- texsprint(ctxcatcodes,(toggle and "^{") or "_{")
-    if toggle then
-        texsprint(ctxcatcodes,"^{")
-    else
-        texsprint(ctxcatcodes,"_{")
-    end
     if tag == "none" then
-        texsprint(ctxcatcodes,"{}")
-    else
+     -- if not toggle then
+        context("{}") -- {} starts a new ^_ set
+     -- end
+    elseif toggle then
+        context("^{")
         xmlsprint(e.dt)
-    end
-    if not toggle then
-        texsprint(ctxcatcodes,"}")
+        context("}{}") -- {} starts a new ^_ set
     else
-        texsprint(ctxcatcodes,"}{}")
+        context("_{")
+        xmlsprint(e.dt)
+        context("}")
     end
     return not toggle
 end
@@ -580,7 +597,7 @@ function mathml.mmultiscripts(id)
     for e in lxml.collected(id,"/*") do
         local tag = e.tg
         if tag == "mprescripts" then
-            texsprint(ctxcatcodes,"{}")
+            context("{}")
             done = true
         elseif done then
             toggle = flush(e,tag,toggle)
@@ -786,7 +803,7 @@ function mathml.csymbol(root)
     local hash = url.hashed(lower(at.definitionUrl or ""))
     local full = hash.original or ""
     local base = hash.path or ""
-    local text = string.strip(xmltext(root) or "")
+    local text = strip(xmltext(root) or "")
     context.mmlapplycsymbol(full,base,encoding,text)
 end
 
@@ -794,7 +811,7 @@ function mathml.menclosepattern(root)
     root = getid(root)
     local a = root.at.notation
     if a and a ~= "" then
-        texsprint("mml:enclose:",(gsub(a," +",",mml:enclose:")))
+        context("mml:enclose:",(gsub(a," +",",mml:enclose:")))
     end
 end
 
