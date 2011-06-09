@@ -6693,7 +6693,9 @@ local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
+print(">1",str,a)
             a = resolve_predefined and predefined_simplified[str]
+print(">2",str,a)
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -6701,15 +6703,20 @@ local function handle_any_entity(str)
             else
                 a = entities[str]
             end
+print(">3",str,a)
             if a then
 if type(a) == "function" then
-    report_xml("expanding entity &%s; (function)",str)
+    if trace_entities then
+        report_xml("expanding entity &%s; (function)",str)
+    end
     a = a(str) or ""
 end
+print(">4",str,a)
+                a = lpegmatch(parsedentity,a) or a
+print(">5",str,a)
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end
-                a = lpegmatch(parsedentity,a) or a
             else
                 local unknown_any_entity = placeholders.unknown_any_entity
                 if unknown_any_entity then

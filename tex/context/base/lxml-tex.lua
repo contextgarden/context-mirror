@@ -42,6 +42,61 @@ local trace_comments = false  trackers.register("lxml.comments", function(v) tra
 
 local report_lxml = logs.reporter("xml","tex")
 
+-- tex entities
+
+lxml.entities = lxml.entities or { }
+
+storage.register("lxml/entities",lxml.entities,"lxml.entities")
+
+--~ xml.placeholders.unknown_any_entity = nil -- has to be per xml
+
+local xmlentities  = xml.entities
+local texentities  = lxml.entities
+local parsedentity = xml.parsedentitylpeg
+
+function lxml.registerentity(key,value)
+    texentities[key] = value
+    if trace_entities then
+        report_xml("registering tex entity '%s' as: %s",key,value)
+    end
+end
+
+function lxml.resolvedentity(str)
+    local e = texentities[str]
+    if e then
+        local te = type(e)
+        if te == "function" then
+            e(str)
+        elseif e then
+            context(e)
+        end
+        return
+    end
+    local e = xmlentities[str]
+    if e then
+        local te = type(e)
+        if te == "function" then
+            e = e(str)
+        end
+        if e then
+            texsprint(notcatcodes,e)
+        end
+        return
+    end
+    -- resolve hex and dec, todo: escape # & etc for ctxcatcodes
+    -- normally this is already solved while loading the file
+    local chr, err = lpegmatch(parsedentity,str)
+    if chr then
+        context(chr)
+    elseif err then
+        context(err)
+    else
+        context.xmle(str,utfupper(str)) -- we need to use our own upper
+    end
+end
+
+-- tex interface
+
 lxml.loaded  = lxml.loaded or { }
 local loaded = lxml.loaded
 
@@ -72,14 +127,14 @@ local xmltextcapture = (
     space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * Cc(" ") / texsprint +
     content                                  / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / xml.resolvedentity
+    entity                                   / lxml.resolvedentity
 )^0
 
 local ctxtextcapture = (
     space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
     space^0 * newline    * space^0 * Cc(" ") / texsprint +
     content                                  / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / xml.resolvedentity
+    entity                                   / lxml.resolvedentity
 )^0
 
 local forceraw, rawroot = false, nil
@@ -349,7 +404,7 @@ function lxml.convert(id,data,entities,compress)
     end
     if entities and entities == variables.yes then
         settings.utfize_entities = true
-        settings.resolve_entities = function (str) return entityconverter(id,str) end
+     -- settings.resolve_entities = function (str) return entityconverter(id,str) end
     end
     return xml.convert(data,settings)
 end
