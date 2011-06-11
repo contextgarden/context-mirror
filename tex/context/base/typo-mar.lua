@@ -572,7 +572,7 @@ end
 
 statistics.register("margin data", function()
     if nofsaved > 0 then
-        return string.format("%s entries, %s pending",nofsaved,nofdelayed)
+        return format("%s entries, %s pending",nofsaved,nofdelayed)
     else
         return nil
     end

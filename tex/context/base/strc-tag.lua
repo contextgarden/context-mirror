@@ -66,12 +66,15 @@ local properties  = allocate {
     descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
 
     verbatimblock      = { pdf = "Code",       nature = "display" },
-    verbatimlines      = { pdf = "Code",       nature = "display"   },
+    verbatimlines      = { pdf = "Code",       nature = "display" },
     verbatimline       = { pdf = "Code",       nature = "mixed"   },
     verbatim           = { pdf = "Code",       nature = "inline"  },
 
+    lines              = { pdf = "Code",       nature = "display" },
+    line               = { pdf = "Code",       nature = "mixed"   },
+
     synonym            = { pdf = "Span",       nature = "inline"  },
-    sort               = { pdf = "Span",       nature = "inline"  },
+    sorting            = { pdf = "Span",       nature = "inline"  },
 
     register           = { pdf = "Div",        nature = "display" },
     registersection    = { pdf = "Div",        nature = "display" },
@@ -146,6 +149,7 @@ local properties  = allocate {
     mroot              = { pdf = "Span",       nature = "display" },
     msqrt              = { pdf = "Span",       nature = "display" },
     mfenced            = { pdf = "Span",       nature = "display" },
+    maction            = { pdf = "Span",       nature = "display" },
 
     mtable             = { pdf = "Table",      nature = "display" }, -- might change
     mtr                = { pdf = "TR",         nature = "display" }, -- might change
@@ -153,6 +157,10 @@ local properties  = allocate {
 
     ignore             = { pdf = "Span",       nature = "mixed"   },
     metadata           = { pdf = "Div",        nature = "display" },
+
+    sub                = { pdf = "Span",       nature = "inline"  },
+    sup                = { pdf = "Span",       nature = "inline"  },
+    subsup             = { pdf = "Span",       nature = "inline"  },
 
 }
 

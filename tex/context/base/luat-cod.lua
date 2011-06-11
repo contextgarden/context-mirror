@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-cod'] = {
     license   = "see context related readme files"
 }
 
-local match, gsub, find = string.match, string.gsub, string.find
+local match, gsub, find, format = string.match, string.gsub, string.find, string.format
 
 local texconfig, lua = texconfig, lua
 
@@ -57,7 +57,7 @@ function lua.registerfinalizer(f,comment)
     if type(f) == "function" then
         finalizers[#finalizers+1] = { action = f, comment = comment }
     else
-        print(string.format("fatal error: invalid finalizer, action: %s",finalizer.comment or "unknown"))
+        print(format("fatal error: invalid finalizer, action: %s",finalizer.comment or "unknown"))
         os.exit()
     end
 end

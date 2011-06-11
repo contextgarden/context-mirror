@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 --
 -- todo: report max textexts
 
-local format, gmatch, match = string.format, string.gmatch, string.match
+local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
 local tonumber, type = tonumber, type
 local round = math.round
 local insert, concat = table.insert, table.concat
@@ -103,9 +103,9 @@ end
 
 --~
 
-local specificationsplitter = Ct(lpeg.splitat(" "))
-local colorsplitter         = Ct(lpeg.splitter(":",tonumber)) -- no need for :
-local domainsplitter        = Ct(lpeg.splitter(" ",tonumber))
+local specificationsplitter = lpeg.tsplitat(" ")
+local colorsplitter         = lpeg.tsplitter(":",tonumber) -- no need for :
+local domainsplitter        = lpeg.tsplitter(" ",tonumber)
 local centersplitter        = domainsplitter
 local coordinatesplitter    = domainsplitter
 
@@ -142,11 +142,13 @@ local function spotcolorconverter(parent, n, d, p)
     return pdfcolor(colors.model,registercolor(nil,'spot',parent,n,d,p)), outercolor
 end
 
+local commasplitter = lpeg.tsplitat(",")
+
 local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
     -- must be the same but we don't check
     local name = format("MpSh%s",nofshades)
-    local ca = string.split(v_a,",")
-    local cb = string.split(v_b,",")
+    local ca = lpegmatch(commasplitter,v_a)
+    local cb = lpegmatch(commasplitter,v_b)
     if #ca == 0 or #cb == 0 then
         return { 0 }, { 1 }, "DeviceGray", name
     else

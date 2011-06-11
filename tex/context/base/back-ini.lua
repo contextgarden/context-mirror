@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['back-ini'] = {
     license   = "see context related readme files"
 }
 
+local next, type = next, type
+local format = string.format
 
 backends       = backends or { }
 local backends = backends
@@ -73,7 +75,7 @@ end
 statistics.register("used backend", function()
     local bc = backends.current
     if bc ~= "unknown" then
-        return string.format("%s (%s)",bc,backends[bc].comment or "no comment")
+        return format("%s (%s)",bc,backends[bc].comment or "no comment")
     else
         return nil
     end

@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['node-tsk'] = {
 -- we already have dirty flags as well. On the other hand, nodes are
 -- rather specialized and here we focus on node related tasks.
 
+local format = string.format
+
 local trace_tasks = false  trackers.register("tasks.creation", function(v) trace_tasks = v end)
 
 local report_tasks = logs.reporter("tasks")
@@ -165,7 +167,7 @@ local created, total = 0, 0
 
 statistics.register("node list callback tasks", function()
     if total > 0 then
-        return string.format("%s unique task lists, %s instances (re)created, %s calls",table.count(tasksdata),created,total)
+        return format("%s unique task lists, %s instances (re)created, %s calls",table.count(tasksdata),created,total)
     else
         return nil
     end

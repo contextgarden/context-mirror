@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 local lpeg = require("lpeg")
 
 local type = type
+local byte, char = string.byte, string.char
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -89,7 +90,7 @@ patterns.space         = space
 patterns.tab           = P("\t")
 patterns.spaceortab    = patterns.space + patterns.tab
 patterns.eol           = S("\n\r")
-patterns.spacer        = S(" \t\f\v")  -- + string.char(0xc2, 0xa0) if we want utf (cf mail roberto)
+patterns.spacer        = S(" \t\f\v")  -- + char(0xc2, 0xa0) if we want utf (cf mail roberto)
 patterns.newline       = newline
 patterns.emptyline     = newline^1
 patterns.nonspacer     = 1 - patterns.spacer
@@ -121,6 +122,19 @@ function string.unquoted(str)
     return match(unquoted,str) or str
 end
 
+-- more efficient:
+
+local unquoted = (
+    squote * Cs(1 - P(-2)) * squote
+  + dquote * Cs(1 - P(-2)) * dquote
+)
+
+function string.unquoted(str)
+    return match(unquoted,str) or str
+end
+
+patterns.unquoted = unquoted
+
 --~ print(string.unquoted("test"))
 --~ print(string.unquoted([["t\"est"]]))
 --~ print(string.unquoted([["t\"est"x]]))
@@ -134,7 +148,14 @@ function lpeg.splitter(pattern, action)
     return (((1-P(pattern))^1)/action+1)^0
 end
 
-local splitters_s, splitters_m = { }, { }
+function lpeg.tsplitter(pattern, action)
+    return Ct((((1-P(pattern))^1)/action+1)^0)
+end
+
+-- probleem: separator can be lpeg and that does not hash too well, but
+-- it's quite okay as the key is then not garbage collected
+
+local splitters_s, splitters_m, splitters_t = { }, { }, { }
 
 local function splitat(separator,single)
     local splitter = (single and splitters_s[separator]) or splitters_m[separator]
@@ -153,7 +174,17 @@ local function splitat(separator,single)
     return splitter
 end
 
-lpeg.splitat = splitat
+local function tsplitat(separator)
+    local splitter = splitters_t[separator]
+    if not splitter then
+        splitter = Ct(splitat(separator))
+        splitters_t[separator] = splitter
+    end
+    return splitter
+end
+
+lpeg.splitat  = splitat
+lpeg.tsplitat = tsplitat
 
 --~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
 --~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
@@ -165,7 +196,7 @@ local cache = { }
 function lpeg.split(separator,str)
     local c = cache[separator]
     if not c then
-        c = Ct(splitat(separator))
+        c = tsplitat(separator)
         cache[separator] = c
     end
     return match(c,str)
@@ -174,7 +205,7 @@ end
 function string.split(str,separator)
     local c = cache[separator]
     if not c then
-        c = Ct(splitat(separator))
+        c = tsplitat(separator)
         cache[separator] = c
     end
     return match(c,str)
@@ -193,7 +224,7 @@ patterns.textline = content
 --~     return match(linesplitter,str)
 --~ end
 
-local linesplitter = Ct(splitat(newline))
+local linesplitter = tsplitat(newline)
 
 patterns.linesplitter = linesplitter
 
@@ -201,7 +232,7 @@ function string.splitlines(str)
     return match(linesplitter,str)
 end
 
-local utflinesplitter = utfbom^-1 * Ct(splitat(newline))
+local utflinesplitter = utfbom^-1 * tsplitat(newline)
 
 patterns.utflinesplitter = utflinesplitter
 
@@ -237,13 +268,11 @@ end
 
 --~ from roberto's site:
 
-local f1 = string.byte
+local function f2(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
+local function f3(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
+local function f4(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
 
-local function f2(s) local c1, c2         = f1(s,1,2) return   c1 * 64 + c2                       -    12416 end
-local function f3(s) local c1, c2, c3     = f1(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
-local function f4(s) local c1, c2, c3, c4 = f1(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
-
-local utf8byte = patterns.utf8one/f1 + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
+local utf8byte = patterns.utf8one/byte + patterns.utf8two/f2 + patterns.utf8three/f3 + patterns.utf8four/f4
 
 patterns.utf8byte = utf8byte
 
@@ -536,6 +565,34 @@ end
 
 function lpeg.is_lpeg(p)
     return p and lpegtype(p) == "pattern"
+end
+
+-- For the moment here, but it might move to utilities:
+
+local sort, fastcopy, sortedpairs = table.sort, table.fastcopy, table.sortedpairs -- dependency!
+
+function lpeg.append(list,pp)
+    local p = pp
+    if #list > 0 then
+        list = fastcopy(list)
+        sort(list)
+        for l=1,#list do
+            if p then
+                p = P(list[l]) + p
+            else
+                p = P(list[l])
+            end
+        end
+    else
+        for k, v in sortedpairs(list) do
+            if p then
+                p = P(k)/v + p
+            else
+                p = P(k)/v
+            end
+        end
+    end
+    return p
 end
 
 --~ Cf(Ct("") * (Cg(C(...) * "=" * Cs(...)))^0, rawset)

@@ -144,6 +144,7 @@ end
 --~ debugger.showstats(print,3)
 
 local is_node = node and node.is_node
+local is_lpeg = lpeg and lpeg.type
 
 function inspect(i) -- global function
     local ti = type(i)
@@ -151,6 +152,8 @@ function inspect(i) -- global function
         table.print(i,"table")
     elseif is_node and is_node(i) then
         table.print(nodes.astable(i),tostring(i))
+    elseif is_lpeg and is_lpeg(i) then
+        lpeg.print(i)
     else
         print(tostring(i))
     end

@@ -36,6 +36,7 @@ local report_metapost = logs.reporter("metapost")
 local texerrormessage = logs.texerrormessage
 
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local emptystring = string.is_empty
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
@@ -323,7 +324,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
                     if not metapost.reporterror(result) then
                         if metapost.showlog then
                             local str = (result.term ~= "" and result.term) or "no terminal output"
-                            if not string.is_empty(str) then
+                            if not emptystring(str) then
                                 metapost.lastlog = metapost.lastlog .. "\n" .. str
                                 report_metapost("log: %s",str)
                             end

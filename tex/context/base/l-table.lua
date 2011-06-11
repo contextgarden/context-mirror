@@ -929,3 +929,13 @@ end
 function table.has_one_entry(t)
     return t and not next(t,next(t))
 end
+
+-- new
+
+function table.loweredkeys(t) -- maybe utf
+    local l = { }
+    for k, v in next, t do
+        l[lower(k)] = v
+    end
+    return l
+end

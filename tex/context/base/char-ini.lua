@@ -15,7 +15,7 @@ local utf = unicode.utf8
 
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
 local ustring = unicode.ustring
-local concat, unpack = table.concat, table.unpack
+local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local texsprint, texprint = tex.sprint, tex.print
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
@@ -368,7 +368,7 @@ characters.categorytags = categorytags
 --~ special   : cf (softhyphen) zs (emspace)
 --~ characters: ll lm lo lt lu mn nl no pc pd pe pf pi po ps sc sk sm so
 
-local is_character = allocate ( table.tohash {
+local is_character = allocate ( tohash {
     "lu","ll","lt","lm","lo",
     "nd","nl","no",
     "mn",
@@ -377,19 +377,19 @@ local is_character = allocate ( table.tohash {
     "sm","sc","sk","so"
 } )
 
-local is_letter = allocate ( table.tohash {
+local is_letter = allocate ( tohash {
     "ll","lm","lo","lt","lu"
 } )
 
-local is_command = allocate ( table.tohash {
+local is_command = allocate ( tohash {
     "cf","zs"
 } )
 
-local is_spacing = allocate ( table.tohash {
+local is_spacing = allocate ( tohash {
     "zs", "zl","zp",
 } )
 
-local is_mark = allocate ( table.tohash {
+local is_mark = allocate ( tohash {
     "mn", "ms",
 } )
 
@@ -501,7 +501,7 @@ function tex.uprint(c,n)
     end
 end
 
-local temphack = table.tohash {
+local temphack = tohash {
     0x00A0,
     0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x200B,
     0x202F,

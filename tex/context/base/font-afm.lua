@@ -28,6 +28,7 @@ local next, type, tonumber = next, type, tonumber
 local format, match, gmatch, lower, gsub, strip = string.format, string.match, string.gmatch, string.lower, string.gsub, string.strip
 local abs = math.abs
 local P, S, C, R, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.match, lpeg.patterns
+local derivetable = table.derive
 
 local fonts              = fonts
 local afm                = { }
@@ -768,9 +769,9 @@ local function copytotfm(data)
     if data and data.descriptions then
         local metadata     = data.metadata
         local resources    = data.resources
-        local properties   = table.derive(data.properties)
-        local descriptions = table.derive(data.descriptions)
-        local goodies      = table.derive(data.goodies)
+        local properties   = derivetable(data.properties)
+        local descriptions = derivetable(data.descriptions)
+        local goodies      = derivetable(data.goodies)
         local characters   = { }
         local parameters   = { }
         local unicodes     = resources.unicodes

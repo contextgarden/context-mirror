@@ -22,7 +22,7 @@ local getn = table.getn
 local lpegmatch = lpeg.match
 local reversed, concat, remove = table.reversed, table.concat, table.remove
 local ioflush = io.flush
-local fastcopy, tohash = table.fastcopy, table.tohash
+local fastcopy, tohash, derivetable = table.fastcopy, table.tohash, table.derive
 
 local allocate           = utilities.storage.allocate
 local registertracker    = trackers.register
@@ -1671,9 +1671,9 @@ local function copytotfm(data,cache_id)
     if data then
         local metadata       = data.metadata
         local resources      = data.resources
-        local properties     = table.derive(data.properties)
-        local descriptions   = table.derive(data.descriptions)
-        local goodies        = table.derive(data.goodies)
+        local properties     = derivetable(data.properties)
+        local descriptions   = derivetable(data.descriptions)
+        local goodies        = derivetable(data.goodies)
         local characters     = { }
         local parameters     = { }
         local mathparameters = { }

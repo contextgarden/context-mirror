@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['math-tag'] = {
     license   = "see context related readme files"
 }
 
-local find = string.find
+local find, match = string.find, string.match
+local insert, remove = table.insert, table.remove
 
 local attributes, nodes = attributes, nodes
 
@@ -33,6 +34,7 @@ local math_fence_code     = nodecodes.fence          -- attr subtype
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local glyph_code          = nodecodes.glyph
+local glue_code           = nodecodes.glue
 
 local a_tagged            = attributes.private('tagged')
 local a_exportstatus      = attributes.private('exportstatus')
@@ -83,6 +85,8 @@ local function processsubsup(start)
 end
 
 -- todo: check function here and keep attribute the same
+
+local actionstack = { }
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     while start do
@@ -137,67 +141,84 @@ process = function(start) -- we cannot use the processor as we have no finalizer
         elseif id == math_box_code or id == hlist_code or id == vlist_code then
             -- keep an eye on math_box_code and see what ends up in there
             local attr = get_attribute(start,a_tagged)
-local last = attr and taglist[attr]
-if last and find(last[#last],"formulacaption%-") then
-    -- leave alone, will nicely move to the outer level
-else
-            local text = start_tagged("mtext")
-            set_attribute(start,a_tagged,text)
-            local list = start.list
-            if not list then
-                -- empty list
-            elseif not attr then
-                -- box comes from strange place
-                set_attributes(list,a_tagged,text)
+            local last = attr and taglist[attr]
+            if last and find(last[#last],"formulacaption[:%-]") then
+                -- leave alone, will nicely move to the outer level
             else
-                -- Beware, the first node in list is the actual list so we definitely
-                -- need to nest. This approach is a hack, maybe I'll make a proper
-                -- nesting feature to deal with this at another level. Here we just
-                -- fake structure by enforcing the inner one.
-                local tagdata = taglist[attr]
-                local common = #tagdata + 1
-                local function runner(list) -- quite inefficient
-                    local cache = { } -- we can have nested unboxed mess so best local to runner
-                    for n in traverse_nodes(list) do
-                        local id = n.id
-                        if id == hlist_code or id == vlist_code then
-                            runner(n.list)
-                        else -- if id == glyph_code then
-                            local aa = get_attribute(n,a_tagged) -- only glyph needed (huh?)
-                            if aa then
-                                local ac = cache[aa]
-                                if not ac then
-                                    local tagdata = taglist[aa]
-                                    local extra = #tagdata
-                                    if common <= extra then
-                                        for i=common,extra do
-                                            ac = start_tagged(tagdata[i]) -- can be made faster
+                local text = start_tagged("mtext")
+                set_attribute(start,a_tagged,text)
+                local list = start.list
+                if not list then
+                    -- empty list
+                elseif not attr then
+                    -- box comes from strange place
+                    set_attributes(list,a_tagged,text)
+                else
+                    -- Beware, the first node in list is the actual list so we definitely
+                    -- need to nest. This approach is a hack, maybe I'll make a proper
+                    -- nesting feature to deal with this at another level. Here we just
+                    -- fake structure by enforcing the inner one.
+                    local tagdata = taglist[attr]
+                    local common = #tagdata + 1
+                    local function runner(list) -- quite inefficient
+                        local cache = { } -- we can have nested unboxed mess so best local to runner
+                        for n in traverse_nodes(list) do
+                            local id = n.id
+                            if id == hlist_code or id == vlist_code then
+                                runner(n.list)
+                            else -- if id == glyph_code then
+                                local aa = get_attribute(n,a_tagged) -- only glyph needed (huh?)
+                                if aa then
+                                    local ac = cache[aa]
+                                    if not ac then
+                                        local tagdata = taglist[aa]
+                                        local extra = #tagdata
+                                        if common <= extra then
+                                            for i=common,extra do
+                                                ac = start_tagged(tagdata[i]) -- can be made faster
+                                            end
+                                            for i=common,extra do
+                                                stop_tagged() -- can be made faster
+                                            end
+                                        else
+                                            ac = text
                                         end
-                                        for i=common,extra do
-                                            stop_tagged() -- can be made faster
-                                        end
-                                    else
-                                        ac = text
+                                        cache[aa] = ac
                                     end
-                                    cache[aa] = ac
+                                    set_attribute(n,a_tagged,ac)
+                                else
+                                    set_attribute(n,a_tagged,text)
                                 end
-                                set_attribute(n,a_tagged,ac)
-                            else
-                                set_attribute(n,a_tagged,text)
                             end
                         end
                     end
+                    runner(list)
                 end
-                runner(list)
+                stop_tagged()
             end
-            stop_tagged()
-end
         elseif id == math_sub_code then
             local list = start.list
             if list then
-                set_attribute(start,a_tagged,start_tagged("mrow"))
-                process(list)
-                stop_tagged()
+                local attr = get_attribute(start,a_tagged)
+                local last = attr and taglist[attr]
+                local action = last and match(last[#last],"maction:(.-)%-")
+                if action and action ~= "" then
+                    if actionstack[#actionstack] == action then
+                        set_attribute(start,a_tagged,start_tagged("mrow"))
+                        process(list)
+                        stop_tagged()
+                    else
+                        insert(actionstack,action)
+                        set_attribute(start,a_tagged,start_tagged("mrow",{ detail = action }))
+                        process(list)
+                        stop_tagged()
+                        remove(actionstack)
+                    end
+                else
+                    set_attribute(start,a_tagged,start_tagged("mrow"))
+                    process(list)
+                    stop_tagged()
+                end
             end
         elseif id == math_fraction_code then
             local num, denom, left, right = start.num, start.denom, start.left, start.right
@@ -297,8 +318,11 @@ end
             else
                 processsubsup(start)
             end
+        elseif id == glue_code then
+            set_attribute(start,a_tagged,start_tagged("mspace"))
+            stop_tagged()
         else
-            set_attribute(start,a_tagged,start_tagged("merror"))
+            set_attribute(start,a_tagged,start_tagged("merror", { detail = nodecodes[i] } ))
             stop_tagged()
         end
         start = start.next

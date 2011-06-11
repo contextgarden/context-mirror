@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['lxml-ctx'] = {
 
 -- is this still used?
 
+local format, find = string.format, string.find
+
 local xml = xml
 
 xml.ctx           = { }
@@ -21,7 +23,7 @@ function xml.ctx.enhancers.compound(root,lpath,before,tokens,after) -- todo lpeg
     local after   = after  or "[%a%d][%a%d][%a%d]"
     local pattern = "(" .. before .. ")(" .. tokens .. ")(" .. after .. ")"
     local action  = function(a,b,c)
-        return a .. "<compound token=" .. string.format("%q",b) .. "/>" .. c
+        return a .. "<compound token=" .. format("%q",b) .. "/>" .. c
     end
     xml.enhance(root,lpath,pattern,action) -- still present?
 end
@@ -38,7 +40,7 @@ function xml.ctx.tshow(specification)
     local attribute = specification.attribute
     if context then
         local xmlpattern = pattern
-        if not string.find(xmlpattern,"^[%a]+://") then
+        if not find(xmlpattern,"^[%a]+://") then
             xmlpattern = "xml://" .. pattern
         end
         local parsed = xml.lpath(xmlpattern)

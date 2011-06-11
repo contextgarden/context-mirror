@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 }
 
 local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.find, string.lower, string.format
+local stripstring = string.strip
 local texbox, texcount = tex.box, tex.count
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -243,7 +244,7 @@ function codeinjections.embedfile(specification)
         end
     end
     local basename = keepdir == true and filename or file.basename(filename)
-local basename = string.gsub(basename,"%./","")
+local basename = gsub(basename,"%./","")
     local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
     local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
     local f
@@ -379,7 +380,7 @@ end
 
 function nodeinjections.comment(specification) -- brrr: seems to be done twice
     nofcomments = nofcomments + 1
-    local text = string.strip(specification.data or "")
+    local text = stripstring(specification.data or "")
     if stripleading then
         text = gsub(text,"[\n\r] *","\n")
     end

@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['node-fnt'] = {
 if not context then os.exit() end -- generic function in node-dum
 
 local next, type = next, type
-local concat = table.concat
+local concat, keys = table.concat, table.keys
 
 local nodes, node, fonts = nodes, node, fonts
 
@@ -130,8 +130,8 @@ function handlers.characters(head)
     end
     if trace_fontrun then
         report_fonts()
-        report_fonts("statics : %s",(u > 0 and concat(table.keys(usedfonts)," ")) or "none")
-        report_fonts("dynamics: %s",(a > 0 and concat(table.keys(attrfonts)," ")) or "none")
+        report_fonts("statics : %s",(u > 0 and concat(keys(usedfonts)," ")) or "none")
+        report_fonts("dynamics: %s",(a > 0 and concat(keys(attrfonts)," ")) or "none")
         report_fonts()
     end
     -- we could combine these and just make the attribute nil

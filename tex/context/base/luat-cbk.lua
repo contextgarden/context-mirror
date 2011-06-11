@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
 local insert, remove, find, format = table.insert, table.remove, string.find, string.format
 local collectgarbage, type, next = collectgarbage, type, next
 local round = math.round
+local sortedhash, tohash = table.sortedhash, table.tohash
 
 local trace_checking = false  trackers.register("memory.checking", function(v) trace_checking = v end)
 
@@ -48,7 +49,7 @@ if not callbacks.list then -- otherwise counters get reset
 
 end
 
-local delayed = table.tohash {
+local delayed = tohash {
     "buildpage_filter",
 }
 
@@ -102,7 +103,7 @@ function callbacks.known(name)
 end
 
 function callbacks.report()
-    for name, _ in table.sortedhash(list) do
+    for name, _ in sortedhash(list) do
         local str = frozen[name]
         if str then
             report_callbacks("%s: %s -> %s",state(name),name,str)
@@ -115,7 +116,7 @@ end
 function callbacks.table()
     local NC, NR, verbatim = context.NC, context.NR, context.type
     context.starttabulate { "|l|l|p|" }
-    for name, _ in table.sortedhash(list) do
+    for name, _ in sortedhash(list) do
         NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
     end
     context.stoptabulate()
@@ -190,7 +191,7 @@ end
 if trace_calls then
     statistics.register("callback details", function()
         local t = { } -- todo: pass function to register and quit at nil
-        for name, n in table.sortedhash(list) do
+        for name, n in sortedhash(list) do
             if n > 0 then
                 t[#t+1] = format("%s -> %s",name,n)
             end

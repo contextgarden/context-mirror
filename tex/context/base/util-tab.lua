@@ -13,6 +13,7 @@ local tables     = utilities.tables
 local format, gmatch, rep = string.format, string.gmatch, string.rep
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
+local type, next, rawset = type, next, rawset
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -104,4 +105,41 @@ function table.toxml(t,name,nobanner,indent,spaces)
         toxml( { [name or "root"] = t }, indent, result, spaces)
     end
     return concat(result,"\n")
+end
+
+-- also experimental
+
+-- encapsulate(table,utilities.tables)
+-- encapsulate(table,utilities.tables,true)
+-- encapsulate(table,true)
+
+function tables.encapsulate(core,capsule,protect)
+    if type(capsule) ~= "table" then
+        protect = true
+        capsule = { }
+    end
+    for key, value in next, core do
+        if capsule[key] then
+            print(format("\ninvalid inheritance '%s' in '%s': %s",key,tostring(core)))
+            os.exit()
+        else
+            capsule[key] = value
+        end
+    end
+    if protect then
+        for key, value in next, core do
+            core[key] = nil
+        end
+        setmetatable(core, {
+            __index = capsule,
+            __newindex = function(t,key,value)
+                if capsule[key] then
+                    print(format("\ninvalid overload '%s' in '%s'",key,tostring(core)))
+                    os.exit()
+                else
+                    rawset(t,key,value)
+                end
+            end
+        } )
+    end
 end

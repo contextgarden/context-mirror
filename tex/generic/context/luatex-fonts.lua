@@ -122,10 +122,10 @@ else
     -- version 1.0 there will be an official api defined.
 
     loadmodule('l-string.lua')
+    loadmodule('l-table.lua')
     loadmodule('l-lpeg.lua')
     loadmodule('l-boolean.lua')
     loadmodule('l-math.lua')
-    loadmodule('l-table.lua')
     loadmodule('l-file.lua')
     loadmodule('l-io.lua')
 

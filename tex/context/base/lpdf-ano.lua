@@ -282,7 +282,7 @@ local function use_shared_annotations()
     statistics.register("pdf annotations", function()
         if nofused > 0 then
          -- table.print(hashed,"hashed_annotations")
-            return string.format("%s embedded, %s unique",nofused,nofunique)
+            return format("%s embedded, %s unique",nofused,nofunique)
         else
             return nil
         end

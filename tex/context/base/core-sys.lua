@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['core-sys'] = {
     license   = "see context related readme files"
 }
 
-local lower, extname, basename, removesuffix = string.lower, file.extname, file.basename, file.removesuffix
+local lower, format = string.lower, string.format
+local extname, basename, removesuffix = file.extname, file.basename, file.removesuffix
 
 local environment = environment
 
@@ -21,5 +22,5 @@ end
 
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
-    return string.format( "%s.%s", environment.outputfilename, (tex.pdfoutput>0 and "pdf") or "dvi")
+    return format( "%s.%s", environment.outputfilename, (tex.pdfoutput>0 and "pdf") or "dvi")
 end)

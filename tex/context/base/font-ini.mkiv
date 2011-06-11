@@ -3894,7 +3894,7 @@
 \unexpanded\def\getnamedglyphdirect#1#2{{\setdirectsymbolicfont{#1}\ctxcommand{fontchar("#2")}}}
 \unexpanded\def\getglyphstyled     #1#2{{\setstyledsymbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
 \unexpanded\def\getglyphdirect     #1#2{{\setdirectsymbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
-\unexpanded\def\getscaledglyph   #1#2#3{{\setscaledstyledsymbolicfont{#1}{#2}\doifnumberelse{#3}\char\donothing#3}}
+\unexpanded\def\getscaledglyph   #1#2#3{{\setscaledstyledsymbolicfont\fontbody{#1}{#2}\doifnumberelse{#3}\char\donothing#3}}
 
 \let\getglyph         \getglyphstyled               % old
 \let\getrawglyph      \getglyphdirect               % old

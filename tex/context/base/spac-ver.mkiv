@@ -1827,6 +1827,7 @@
    \linesparameter\c!before
    \pushmacro\checkindentation
    \whitespace
+   \dostarttagged\t!lines\currentlines
    \begingroup
    \dosetlinesattributes\c!style\c!color
    \setupindenting[\linesparameter\c!indenting]%
@@ -1840,14 +1841,19 @@
       \gdef\afterfirstobeyedline
         {\ifx\linesoption\v!packed\nobreak\fi
          \linesparameter\c!command}}%
+   \dostarttagged\t!line\empty
    \def\obeyedline
-     {\par
+     {\dostoptagged
+      \par
+      \dostarttagged\t!line\empty
       \futurelet\next\dobetweenthelines}%
    \activatespacehandler{\linesparameter\c!space}%
    \GotoPar}
 
 \def\dostoplines
-  {\endgroup
+  {\dostoptagged
+   \endgroup
+   \dostoptagged
    \popmacro\checkindentation
    \linesparameter\c!after
    \egroup}

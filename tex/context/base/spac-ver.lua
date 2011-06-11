@@ -27,6 +27,7 @@ local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local points = number.points
 local allocate = utilities.storage.allocate
+local todimen = string.todimen
 
 local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
 
@@ -141,7 +142,7 @@ local function listtohash(str)
                 else
                     k = values[key]
                     if k then
-                        detail = string.todimen(detail)
+                        detail = todimen(detail)
                         if detail then
                             t[k] = detail
                         end

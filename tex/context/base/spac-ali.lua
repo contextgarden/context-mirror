@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['spac-ali'] = {
 }
 
 local div = math.div
+local format = string.format
 
 local tasks            = nodes.tasks
 local appendaction     = tasks.appendaction
@@ -125,7 +126,7 @@ commands.setrealign = alignments.set
 
 statistics.register("realigning", function()
     if nofrealigned > 0 then
-        return string.format("%s processed",nofrealigned)
+        return format("%s processed",nofrealigned)
     else
         return nil
     end

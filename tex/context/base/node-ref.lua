@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 -- is grouplevel still used?
 
+local format = string.format
+
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
 local cleanupreferences, cleanupdestinations = false, true
@@ -560,7 +562,7 @@ end
 
 statistics.register("interactive elements", function()
     if nofreferences > 0 or nofdestinations > 0 then
-        return string.format("%s references, %s destinations",nofreferences,nofdestinations)
+        return format("%s references, %s destinations",nofreferences,nofdestinations)
     else
         return nil
     end

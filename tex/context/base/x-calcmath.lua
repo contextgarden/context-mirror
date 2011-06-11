@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['x-calcmath'] = {
 }
 
 local format, lower, upper, gsub, sub = string.format, string.lower, string.upper, string.gsub, string.sub
+local concat = table.concat
 local lpegmatch = lpeg.match
 
 local calcmath      = { }
@@ -225,7 +226,7 @@ if false then
 
     local parser = space * grammar * -1
 
-    local texprint = function(...) texio.write(table.concat{ ... }) end
+    local texprint = function(...) texio.write(concat{ ... }) end
 
     local function has_factor(t)
         for i=1,#t do

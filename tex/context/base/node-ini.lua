@@ -15,9 +15,10 @@ modules.</p>
 
 local utf = unicode.utf8
 local next, type = next, type
-local format, concat, match, gsub = string.format, table.concat, string.match, string.gsub
+local format, match, gsub = string.format, string.match, string.gsub
+local concat, remove = table.concat, table.remove
+local sortedhash, sortedkeys, swapped, tohash = table.sortedhash, table.sortedkeys, table.swapped, table.tohash
 local utfchar = utf.char
-local swapped = table.swapped
 local lpegmatch = lpeg.match
 local formatcolumns = utilities.formatters.formatcolumns
 
@@ -196,8 +197,8 @@ nodes.codes = allocate {
 
 function nodes.showcodes()
     local t = { }
-    for name, codes in table.sortedhash(nodes.codes) do
-        local sorted = table.sortedkeys(codes)
+    for name, codes in sortedhash(nodes.codes) do
+        local sorted = sortedkeys(codes)
         for i=1,#sorted do
             local s = sorted[i]
             if type(s) ~= "number" then
@@ -213,7 +214,7 @@ end
 
 local whatsit_node = nodecodes.whatsit
 
-local messyhack    = table.tohash { -- temporary solution
+local messyhack    = tohash { -- temporary solution
     nodecodes.attributelist,
     nodecodes.attribute,
     nodecodes.gluespec,
@@ -229,7 +230,7 @@ function nodes.fields(n)
         if messyhack[id] then
             for i=1,#t do
                 if t[i] == "subtype" then
-                    table.remove(t,i)
+                    remove(t,i)
                     break
                 end
             end

@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 -- course there are a couple of more changes.
 
 local next, tostring = next, tostring
-local format = string.format
+local format, gsub = string.format, string.gsub
 local texset = tex.set
 
 local backends, lpdf, nodes = backends, lpdf, nodes
@@ -191,7 +191,7 @@ local function setupidentity()
     end
     local keywords = identity.keywords or ""
     if keywords ~= "" then
-        keywords = string.gsub(keywords, "[%s,]+", " ")
+        keywords = gsub(keywords, "[%s,]+", " ")
         lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
     end
     local id = lpdf.id()

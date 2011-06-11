@@ -122,7 +122,7 @@ function javascripts.usepreamblenow(name) -- now later
     end
 end
 
-local splitter = lpeg.Ct(lpeg.splitat(lpeg.patterns.commaspacer))
+local splitter = lpeg.tsplitat(lpeg.patterns.commaspacer)
 
 local used, reported = false, { } -- we can cache more
 

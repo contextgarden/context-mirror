@@ -2061,6 +2061,10 @@
 
 % mrow / option: no fenced
 
+\startxmlsetups mml:maction
+    \xmlflush{#1}
+\stopxmlsetups
+
 \startxmlsetups mml:mrow
     \begingroup
         \edef\nofmmlrows{\xmlcount{#1}{/mml:mo}}%
