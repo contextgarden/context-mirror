@@ -23,6 +23,7 @@ luatools with a recache feature.</p>
 --ldx]]--
 
 local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
+local serialize, serializetofile = table.serialize, table.tofile
 local mkdirs, isdir = dir.mkdirs, lfs.isdir
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
@@ -176,7 +177,7 @@ function caches.usedpaths()
 end
 
 function caches.configfiles()
-    return table.concat(resolvers.instance.specification,";")
+    return concat(resolvers.instance.specification,";")
 end
 
 function caches.hashed(tree)
@@ -300,9 +301,9 @@ function caches.savedata(filepath,filename,data,raw)
     end
     data.cache_uuid = os.uuid()
     if caches.direct then
-        file.savedata(tmaname,table.serialize(data,true,saveoptions))
+        file.savedata(tmaname,serialize(data,true,saveoptions))
     else
-        table.tofile(tmaname,data,true,saveoptions)
+        serializetofile(tmaname,data,true,saveoptions)
     end
     utilities.lua.compile(tmaname,tmcname)
 end
@@ -369,7 +370,7 @@ function caches.savecontent(cachename,dataname,content)
         content = content,
         uuid    = os.uuid(),
     }
-    local ok = io.savedata(luaname,table.serialize(data,true))
+    local ok = io.savedata(luaname,serialize(data,true))
     if ok then
         if trace_locating then
             report_resolvers("category '%s', cachename '%s' saved in '%s'",dataname,cachename,luaname)

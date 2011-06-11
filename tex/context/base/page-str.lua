@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['page-str'] = {
 
 -- work in progresss .. unfinished
 
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 local find_tail, write_node, free_node, copy_nodelist = node.slide, node.write, node.free, node.copy_list
 local vpack_nodelist, hpack_nodelist = node.vpack, node.hpack
@@ -48,12 +48,12 @@ function streams.disable()
 end
 
 function streams.start(newname)
-    table.insert(stack,name)
+    insert(stack,name)
     name = newname
 end
 
 function streams.stop(newname)
-    name = table.remove(stack)
+    name = remove(stack)
 end
 
 function streams.collect(head,where)

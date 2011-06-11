@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['font-col'] = {
 local gmatch, type = string.gmatch, type
 local traverse_id = node.traverse_id
 local lpegmatch = lpeg.match
+local fastcopy = table.fastcopy
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_collecting = false  trackers.register("fonts.collecting", function(v) trace_collecting = v end)
@@ -82,7 +83,7 @@ function collections.define(name,font,ranges,details)
                 end
             end
             details.font, details.start, details.stop = font, start, stop
-            d[#d+1] = table.fastcopy(details)
+            d[#d+1] = fastcopy(details)
         end
     end
 end

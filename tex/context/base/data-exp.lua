@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-exp'] = {
     license   = "see context related readme files",
 }
 
-local format, find, gmatch, lower = string.format, string.find, string.gmatch, string.lower
+local format, find, gmatch, lower, char = string.format, string.find, string.gmatch, string.lower, string.char
 local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local Ct, Cs, Cc, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.P, lpeg.C, lpeg.S
@@ -140,7 +140,7 @@ local homedir
 function resolvers.cleanpath(str)
     if not homedir then
         homedir = lpegmatch(cleanup,environment.homedir or "")
-        if homedir == string.char(127) or homedir == "" or not lfs.isdir(homedir) then
+        if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
             if trace_expansions then
                 report_expansions("no home dir set, ignoring dependent paths")
             end
@@ -189,8 +189,8 @@ end
 
 local cache = { }
 
----- splitter = Ct(lpeg.splitat(S(ostype == "windows" and ";" or ":;"))) -- maybe add ,
-local splitter = Ct(lpeg.splitat(";")) -- as we move towards urls, prefixes and use tables we no longer do :
+----- splitter = lpeg.tsplitat(S(ostype == "windows" and ";" or ":;")) -- maybe add ,
+local splitter = lpeg.tsplitat(";") -- as we move towards urls, prefixes and use tables we no longer do :
 
 local backslashswapper = lpeg.replacer("\\","/")
 

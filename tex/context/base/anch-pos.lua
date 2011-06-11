@@ -346,7 +346,7 @@ function commands.MPpos(id)
     end
 end
 
-local splitter = lpeg.Ct(lpeg.splitat(","))
+local splitter = lpeg.tsplitat(",")
 
 function commands.MPplus(id,n,default)
     local jpi = collected[id] or tobesaved[id]

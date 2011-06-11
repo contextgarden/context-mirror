@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['syst-lua'] = {
 local texsprint, texprint, texwrite, texiowrite_nl = tex.sprint, tex.print, tex.write, texio.write_nl
 local format, find = string.format, string.find
 local tonumber = tonumber
-local S, Ct, lpegmatch, lpegsplitat = lpeg.S, lpeg.Ct, lpeg.match, lpeg.splitat
+local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
 
 local ctxcatcodes = tex.ctxcatcodes
 
@@ -54,7 +54,7 @@ function commands.doifelsespaces(str)
     return commands.doifelse(find(str,"^ +$"))
 end
 
-local s = Ct(lpegsplitat(","))
+local s = lpegtsplitat(",")
 local h = { }
 
 function commands.doifcommonelse(a,b)
@@ -89,7 +89,7 @@ function commands.doifdimenstringelse(str)
     testcase(lpegmatch(pattern,str))
 end
 
-local splitter = lpegsplitat(S(". "))
+local splitter = lpegtsplitat(S(". "))
 
 function commands.doifolderversionelse(one,two) -- one >= two
     if not two then

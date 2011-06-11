@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['meta-ini'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+local tonumber = tonumber
+local format, gmatch, match = string.format, string.gmatch, string.match
 
 metapost = metapost or { }
 
@@ -35,7 +36,6 @@ local colorhash = attributes.list[attributes.private('color')]
 local validdimen = lpeg.patterns.validdimen * lpeg.P(-1)
 
 local lpegmatch = lpeg.match
-local gmatch    = string.gmatch
 local textype   = tex.type
 local MPcolor   = context.MPcolor
 
@@ -43,7 +43,7 @@ function commands.prepareMPvariable(v) -- slow but ok
     if v == "" then
         MPcolor("black")
     else
-        local typ, var = string.match(v,"(.):(.*)")
+        local typ, var = match(v,"(.):(.*)")
         if not typ then
             -- parse
             if colorhash[v] then

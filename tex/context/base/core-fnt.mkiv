@@ -184,20 +184,20 @@
      \tx
    \fi}
 
-\def\dohighlow#1#2#3#4#5% todo, named fontdimens
+\def\dohighlow#1#2#3#4#5#6% todo, named fontdimens tag
   {\dontleavehmode
    \bgroup
    \scratchdimen\ifdim\fontexheight\textfont2=1ex #2\textfont2\else #3ex\fi
    \advance\scratchdimen #4ex
    \kern.1ex
-   \setbox\scratchbox\hbox{#1\scratchdimen\hbox{\dodohighlow#5}}%
+   \setbox\scratchbox\hbox{#1\scratchdimen\hbox{\dodohighlow\dostarttagged#5\empty#6\dostoptagged}}%
    \ht\scratchbox\strutheight
    \dp\scratchbox\strutdepth
    \box\scratchbox
    \egroup}
 
-\unexpanded\def\high{\dohighlow\raise\mathsupnormal{.86}{0}}
-\unexpanded\def\low {\dohighlow\lower\mathsubnormal{.48}{0}}
+\unexpanded\def\high{\dohighlow\raise\mathsupnormal{.86}{0}\t!sup}
+\unexpanded\def\low {\dohighlow\lower\mathsubnormal{.48}{0}\t!sub}
 
 \unexpanded\def\lohi
   {\dosingleempty\dolohi}
@@ -208,8 +208,9 @@
 \def\dolohi[#1]#2#3%
   {\dontleavehmode
    \hbox
-     {\setbox4\hbox{\dohighlow\lower\mathsubnormal{.48}{.1}{#2}}%
-      \setbox6\hbox{\dohighlow\raise\mathsupnormal{.86}{.1}{#3}}%
+     {\dostarttagged\t!subsup
+      \setbox4\hbox{\dohighlow\lower\mathsubnormal{.48}{.1}\t!sub{#2}}%
+      \setbox6\hbox{\dohighlow\raise\mathsupnormal{.86}{.1}\t!sup{#3}}%
       \doif{#1}{\v!left}
         {\ifdim\wd4<\wd6
           \setbox4\hbox to \wd6{\hss\box4}%
@@ -220,7 +221,8 @@
         \wd4=\zeropoint\box4\box6
       \else
         \wd6=\zeropoint\box6\box4
-      \fi}}
+      \fi
+      \dostoptagged}}
 
 \def\dohilo[#1]#2#3%
   {\dolohi[#1]{#3}{#2}}

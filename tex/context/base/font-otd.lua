@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-otd'] = {
 }
 
 local match = string.match
+local sequenced = table.sequenced
 
 local trace_dynamics     = false  trackers.register("otf.dynamics", function(v) trace_dynamics = v end)
 local trace_applied      = false  trackers.register("otf.applied",  function(v) trace_applied      = v end)
@@ -80,7 +81,7 @@ function otf.setdynamics(font,attribute)
 set.mode = "node" -- really needed
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
-                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,table.sequenced(set))
+                report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,sequenced(set))
             end
             -- we need to restore some values
             properties.script   = s_script

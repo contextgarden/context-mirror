@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-ini'] = {
     license   = "see context related readme files",
 }
 
-local gsub, find, gmatch = string.gsub, string.find, string.gmatch
+local gsub, find, gmatch, char = string.gsub, string.find, string.gmatch, string.char
 local concat = table.concat
 local next, type = next, type
 
@@ -68,7 +68,7 @@ do
     local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or ''
 
     if not homedir or homedir == "" then
-        homedir = string.char(127) -- we need a value, later we wil trigger on it
+        homedir = char(127) -- we need a value, later we wil trigger on it
     end
 
     homedir = file.collapsepath(homedir)

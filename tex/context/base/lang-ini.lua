@@ -20,7 +20,7 @@ local type, tonumber = type, tonumber
 local utf = unicode.utf8
 local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
-local concat = table.concat
+local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
 local lpegmatch = lpeg.match
 local texwrite = tex.write
 
@@ -170,7 +170,7 @@ function languages.synonym(synonym,tag) -- convenience function
 end
 
 function languages.installed(separator)
-    context(concat(table.sortedkeys(registered),separator or ","))
+    context(concat(sortedkeys(registered),separator or ","))
 end
 
 function languages.current(n)
@@ -320,10 +320,7 @@ languages.logger = languages.logger or { }
 
 function languages.logger.report()
     local result, r = { }, 0
-    local sorted = table.sortedkeys(registered)
-    for i=1,#sorted do
-        local tag = sorted[i]
-        local l = registered[tag]
+    for tag, l in sortedpairs(registered) do
         if l.loaded then
             r = r + 1
             result[r] = format("%s:%s:%s", tag, l.parent, l.number)

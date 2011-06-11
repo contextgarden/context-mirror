@@ -11,7 +11,8 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local texcount, texsetcount = tex.count, tex.setcount
 local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
-local concat, serialize, sort = table.concat, table.serialize, table.sort
+local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
+local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
 local formatcolumns = utilities.formatters.formatcolumns
 
@@ -351,7 +352,7 @@ local function contextnumber(name) -- will be replaced
         else
             local script, language = languages.association(lng)
             if t.script ~= script or t.language ~= language then
-                local s = table.fastcopy(t)
+                local s = fastcopy(t)
                 local n = #numbers + 1
                 setups[tag] = s
                 numbers[n] = tag
@@ -532,7 +533,7 @@ end
 specifiers.splitcontext = splitcontext
 
 function specifiers.contexttostring(name,kind,separator,yes,no,strict,omit) -- not used
-    return hash_to_string(table.merged(handlers[kind].features.defaults or {},setups[name] or {}),separator,yes,no,strict,omit)
+    return hash_to_string(mergedtable(handlers[kind].features.defaults or {},setups[name] or {}),separator,yes,no,strict,omit)
 end
 
 local function starred(features) -- no longer fallbacks here
@@ -917,7 +918,7 @@ helpers.nametoslot = nametoslot
 function loggers.reportdefinedfonts()
     if trace_usage then
         local t, tn = { }, 0
-        for id, data in table.sortedhash(fontdata) do
+        for id, data in sortedhash(fontdata) do
             local properties = data.properties or { }
             local parameters = data.parameters or { }
             tn = tn + 1
@@ -930,7 +931,7 @@ function loggers.reportdefinedfonts()
                 properties.psname   or "",
                 properties.fullname or "",
             }
-report_status("%s: %s",properties.name,concat(table.sortedkeys(data)," "))
+report_status("%s: %s",properties.name,concat(sortedkeys(data)," "))
         end
         formatcolumns(t,"  ")
         report_status()
@@ -953,7 +954,7 @@ function loggers.reportusedfeatures()
             local setup = setups[name]
             local n = setup.number
             setup.number = nil -- we have no reason to show this
-            t[i] = { i, name, table.sequenced(setup,false,true) } -- simple mode
+            t[i] = { i, name, sequenced(setup,false,true) } -- simple mode
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
@@ -1026,7 +1027,7 @@ function fonts.definetypeface(name,t)
         context.definefontsynonym( { format("%sBoldItalic", Shape) }, { format("spec:%s-%s-italic-%s",  fontname, boldweight,   boldwidth  ) } )
         context.definefontsynonym( { format("%sItalic",     Shape) }, { format("spec:%s-%s-italic-%s",  fontname, normalweight, normalwidth) } )
     context.stopfontclass()
-    local settings = table.sequenced({ features= t.features },",")
+    local settings = sequenced({ features= t.features },",")
     context.dofastdefinetypeface(name, shortcut, shape, size, settings)
 end
 

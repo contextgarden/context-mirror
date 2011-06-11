@@ -227,7 +227,7 @@ end
 
 registers.define = allocate
 
-local entrysplitter = lpeg.Ct(lpeg.splitat('+')) -- & obsolete in mkiv
+local entrysplitter = lpeg.tsplitat('+') -- & obsolete in mkiv
 
 local tagged = { }
 

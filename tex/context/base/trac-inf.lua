@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- get warnings about assignments. This is more efficient than using rawset
 -- and rawget.
 
-local format = string.format
+local format, lower = string.format, string.lower
 local clock = os.gettimeofday or os.clock -- should go in environment
 local write_nl = texio.write_nl
 
@@ -113,7 +113,7 @@ function statistics.show(reporter)
         -- this code will move
         local register = statistics.register
         register("luatex banner", function()
-            return string.lower(status.banner)
+            return lower(status.banner)
         end)
         register("control sequences", function()
             return format("%s of %s", status.cs_count, status.hash_size+status.hash_extra)

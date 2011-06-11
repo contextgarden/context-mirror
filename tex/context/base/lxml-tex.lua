@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lxml-tst'] = {
 
 local utf = unicode.utf8
 
-local utfchar = utf.char
+local utfchar, utfupper = utf.char, utf.upper
 local concat, insert, remove = table.concat, table.insert, table.remove
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring = type, next, tonumber, tostring

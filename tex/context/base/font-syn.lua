@@ -13,6 +13,7 @@ local next, tonumber = next, tonumber
 local gsub, lower, match, find, lower, upper = string.gsub, string.lower, string.match, string.find, string.lower, string.upper
 local find, gmatch = string.find, string.gmatch
 local concat, sort, format = table.concat, table.sort, string.format
+local serialize = table.serialize
 local lpegmatch = lpeg.match
 local utfgsub, utflower = utf.gsub, utf.lower
 local unpack = unpack or table.unpack
@@ -916,8 +917,8 @@ local function is_reloaded()
     if not reloaded then
         local data = names.data
         if autoreload then
-            local c_status = table.serialize(resolvers.datastate())
-            local f_status = table.serialize(data.datastate)
+            local c_status = serialize(resolvers.datastate())
+            local f_status = serialize(data.datastate)
             if c_status == f_status then
                 report_names("font database has matching configuration and file hashes")
                 return
@@ -1240,7 +1241,7 @@ local function collect(stage,found,done,name,weight,style,width,variant,all)
         report_names("resolving name '%s', weight '%s', style '%s', width '%s', variant '%s'",
             name or "?",tostring(weight),tostring(style),tostring(width),tostring(variant))
     end
-    --~ print(name,table.serialize(family))
+    --~ print(name,serialize(family))
     if weight and weight ~= "" then
         if style and style ~= "" then
             if width and width ~= "" then

@@ -13,6 +13,7 @@ local next, tostring, rawget = next, tostring, rawget
 local format, match, lower, gsub = string.format, string.match, string.lower, string.gsub
 local utfbyte = utf.byte
 local sort, insert, concat, sortedkeys, serialize, fastcopy = table.sort, table.insert, table.concat, table.sortedkeys, table.serialize, table.fastcopy
+local derivetable = table.derive
 
 local trace_defining = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_scaling  = false  trackers.register("fonts.scaling" , function(v) trace_scaling  = v end)
@@ -194,10 +195,9 @@ function constructors.scale(tfmdata,specification)
     local mathparameters = tfmdata.mathparameters or { }
     --
     local targetcharacters     = { }
-    local targetdescriptions   = table.derive(descriptions)
-    local targetparameters     = table.derive(parameters)
- -- local targetmathparameters = table.fastcopy(mathparameters) -- happens elsewhere
-    local targetproperties     = table.derive(properties)
+    local targetdescriptions   = derivetable(descriptions)
+    local targetparameters     = derivetable(parameters)
+    local targetproperties     = derivetable(properties)
     local targetgoodies        = goodies                        -- we need to loop so no metatable
     target.characters          = targetcharacters
     target.descriptions        = targetdescriptions

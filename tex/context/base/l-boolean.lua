@@ -11,10 +11,6 @@ local type, tonumber = type, tonumber
 boolean = boolean or { }
 local boolean = boolean
 
--- function boolean.tonumber(b)
---     return b and 1 or 0 -- test and test and return or return
--- end
-
 function boolean.tonumber(b)
     if b then return 1 else return 0 end -- test and return or return
 end

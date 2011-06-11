@@ -91,7 +91,12 @@ local function numbertodimen(n,unit,fmt)
         return n
     else
         unit = unit or 'pt'
-        return format(fmt or "%s%s",n*dimenfactors[unit],unit)
+        if not fmt then
+            fmt = "%s%s"
+        elseif fmt == true then
+            fmt = "%0.5f%s"
+        end
+        return format(fmt,n*dimenfactors[unit],unit)
      -- if fmt then
      --     return format(fmt,n*dimenfactors[unit],unit)
      -- else
@@ -108,18 +113,18 @@ number.maxdimen     = 1073741823
 number.todimen      = numbertodimen
 number.dimenfactors = dimenfactors
 
-function number.topoints      (n) return numbertodimen(n,"pt") end
-function number.toinches      (n) return numbertodimen(n,"in") end
-function number.tocentimeters (n) return numbertodimen(n,"cm") end
-function number.tomillimeters (n) return numbertodimen(n,"mm") end
-function number.toscaledpoints(n) return numbertodimen(n,"sp") end
-function number.toscaledpoints(n) return            n .. "sp"  end
-function number.tobasepoints  (n) return numbertodimen(n,"bp") end
-function number.topicas       (n) return numbertodimen(n "pc") end
-function number.todidots      (n) return numbertodimen(n,"dd") end
-function number.tociceros     (n) return numbertodimen(n,"cc") end
-function number.tonewdidots   (n) return numbertodimen(n,"nd") end
-function number.tonewciceros  (n) return numbertodimen(n,"nc") end
+function number.topoints      (n,fmt) return numbertodimen(n,"pt",fmt) end
+function number.toinches      (n,fmt) return numbertodimen(n,"in",fmt) end
+function number.tocentimeters (n,fmt) return numbertodimen(n,"cm",fmt) end
+function number.tomillimeters (n,fmt) return numbertodimen(n,"mm",fmt) end
+function number.toscaledpoints(n,fmt) return numbertodimen(n,"sp",fmt) end
+function number.toscaledpoints(n)     return            n .. "sp"      end
+function number.tobasepoints  (n,fmt) return numbertodimen(n,"bp",fmt) end
+function number.topicas       (n,fmt) return numbertodimen(n "pc",fmt) end
+function number.todidots      (n,fmt) return numbertodimen(n,"dd",fmt) end
+function number.tociceros     (n,fmt) return numbertodimen(n,"cc",fmt) end
+function number.tonewdidots   (n,fmt) return numbertodimen(n,"nd",fmt) end
+function number.tonewciceros  (n,fmt) return numbertodimen(n,"nc",fmt) end
 
 --[[ldx--
 <p>More interesting it to implement a (sort of) dimen datatype, one

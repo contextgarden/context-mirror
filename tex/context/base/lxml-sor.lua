@@ -6,9 +6,8 @@ if not modules then modules = { } end modules ['lxml-sor'] = {
     license   = "see context related readme files"
 }
 
-local format, concat = string.format, table.concat
+local format, concat, rep = string.format, table.concat, string.rep
 local lpegmatch = lpeg.match
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 local xml, lxml = xml, lxml
 
@@ -66,7 +65,7 @@ function lxml.sorters.show(name)
         for i=1,#entries do
             if #entries[i][2] > maxn then maxn = #entries[i][2] end
         end
-        context.starttabulate { "|Tr|Tr|" .. string.rep("Tlp|",maxn) }
+        context.starttabulate { "|Tr|Tr|" .. rep("Tlp|",maxn) }
         NC() bold("n")
         NC() bold("id")
         if maxn > 1 then

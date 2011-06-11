@@ -306,9 +306,9 @@ local P, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.Ct, lpeg.match, lpeg.pattern
 
 local space, comma = P(" "), P(",")
 
-local andsplitter    = Ct(lpeg.splitat(space^1 * "and" * space^1))
-local commasplitter  = Ct(lpeg.splitat(space^0 * comma * space^0))
-local spacesplitter  = Ct(lpeg.splitat(space^1))
+local andsplitter    = lpeg.tsplitat(space^1 * "and" * space^1)
+local commasplitter  = lpeg.tsplitat(space^0 * comma * space^0)
+local spacesplitter  = lpeg.tsplitat(space^1)
 local firstcharacter = lpegpatterns.utf8byte
 
 local function is_upper(str)

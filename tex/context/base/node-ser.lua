@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- beware, some field names will change in a next releases
 -- of luatex; this is pretty old code that needs an overhaul
 
-local type, format, concat, rep = type, string.format, table.concat, string.rep
+local type, format, rep = type, string.format, string.rep
+local concat, tohash, sortedkeys = table.concat, table.tohash, table.sortedkeys
 
 local allocate = utilities.storage.allocate
 
@@ -23,7 +24,7 @@ local nodefields  = nodes.fields
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
 
-local expand = allocate ( table.tohash {
+local expand = allocate ( tohash {
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
@@ -43,13 +44,13 @@ local expand = allocate ( table.tohash {
 -- page_insert: "height", "last_ins_ptr", "best_ins_ptr"
 -- split_insert:  "height", "last_ins_ptr", "best_ins_ptr", "broken_ptr", "broken_ins"
 
-local ignore = allocate ( table.tohash {
+local ignore = allocate ( tohash {
     "page_insert",
     "split_insert",
     "ref_count",
 } )
 
-local dimension = allocate ( table.tohash {
+local dimension = allocate ( tohash {
     "width", "height", "depth", "shift",
     "stretch", "shrink",
     "xoffset", "yoffset",
@@ -178,7 +179,7 @@ local function serialize(root,name,handle,depth,m)
         if root.id then
             fld = nodefields(root) -- we can cache these (todo)
         else
-            fld = table.sortedkeys(root)
+            fld = sortedkeys(root)
         end
         if type(root) == 'table' and root['type'] then -- userdata or table
             handle(format("%s %s=%q,",depth,'type',root['type']))

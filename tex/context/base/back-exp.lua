@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
+-- depth can go away (autodepth nu)
+
+
 -- language       -> only mainlanguage, local languages should happen through start/stoplanguage
 -- tocs/registers -> maybe add a stripper (i.e. just don't flush entries in final tree)
 
@@ -48,10 +51,12 @@ end
 nodes.locate =  locate
 
 local next, type = next, type
-local format, match, concat, rep, sub, gsub, gmatch = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch
+local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
 local lpegmatch = lpeg.match
 local utfchar, utfbyte, utfsub, utfgsub = utf.char, utf.byte, utf.sub, utf.gsub
 local insert, remove = table.insert, table.remove
+local topoints = number.topoints
+local utfvalues = string.utfvalues
 
 local trace_export = false  trackers.register  ("structures.export",            function(v) trace_export = v end)
 local less_state   = false  directives.register("structures.export.lessstate",  function(v) less_state   = v end)
@@ -69,6 +74,7 @@ local settings_to_array = utilities.parsers.settings_to_array
 local setmetatableindex = table.setmetatableindex
 local tasks             = nodes.tasks
 local fontchar          = fonts.hashes.characters
+local fontquads         = fonts.hashes.quads
 local languagenames     = languages.numbers
 
 local nodecodes         = nodes.nodecodes
@@ -85,6 +91,7 @@ local disc_code         = nodecodes.disc
 local insert_code       = nodecodes.insert
 local whatsit_code      = nodecodes.whatsit
 local refximage_code    = whatsitcodes.pdfrefximage
+local localpar_code     = whatsitcodes.localpar
 
 local userskip_code     = skipcodes.userskip
 local rightskip_code    = skipcodes.rightskip
@@ -163,6 +170,7 @@ local tree              = { data = { }, depth = 0, fulltag == "root" } -- root
 local treeroot          = tree
 local treehash          = { }
 local extras            = { }
+local checks            = { }
 local nofbreaks         = 0
 local used              = { }
 local exporting         = false
@@ -218,6 +226,8 @@ local namespaces = {
     mtr        = "m",
     mtd        = "m",
     mfenced    = "m",
+    maction    = "m",
+    mspace     = "m",
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -253,7 +263,14 @@ end
 
 local spaces = { } -- watch how we also moved the -1 in depth-1 to the creator
 
-setmetatableindex(spaces, function(t,k) local s = rep("  ",k-1) t[k] = s return s end)
+setmetatableindex(spaces, function(t,k)
+    if not k then
+        k = 1
+    end
+    local s = rep("  ",k-1)
+    t[k] = s
+    return s
+end)
 
 function structurestags.setattributehash(fulltag,key,value)
     if type(fulltag) == "number" then
@@ -713,7 +730,10 @@ local function checkmath(root) -- we can provide utf.toentities as an option
             elseif #root.data == 1 then
                 local tg = d.tg
                 if automathrows and roottg == "mrow" then
+                    -- maybe just always ! check spec first
                     if tg == "mrow" or tg == "mfenced" or tg == "mfrac" or tg == "mroot" then
+                        root.skip = "comment"
+                    elseif tg == "mo" then
                         root.skip = "comment"
                     end
                 elseif roottg == "mo" then
@@ -744,6 +764,19 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                 elseif tg == "break" then
                     di.skip = "comment"
                     i = i + 1
+                elseif tg == "mrow" and detail then
+                    di.detail = nil
+                    checkmath(di)
+                    di = {
+                        element    = "maction",
+                        nature     = "display",
+                        depth      = di.depth,
+                        attributes = { actiontype = detail },
+                        data       = { di },
+                        n          = 0,
+                    }
+                    data[i] = di
+                    i = i + 1
                 elseif detail then
                  -- no checkmath(di) here
                     local category = tonumber(detail) or 0
@@ -761,7 +794,7 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                             category = category - 1000
                         end
                         if tg == "mi" then -- function
-                            if root.tg == "mrow" then
+                            if roottg == "mrow" then
                                 root.skip = "comment"
                                 root.element = "function"
                             end
@@ -868,16 +901,39 @@ function stripmath(di)
     end
 end
 
-function extras.math(result,element,detail,n,fulltag,di)
-    if di then
-        local hash = attributehash[di.fulltag]
-        di.attributes = {
-            display = (hash and hash.mode) == "display" and "block" or "inline"
-        }
-        if automathstrip then
-            stripmath(di)
+function checks.math(di)
+    local hash = attributehash[di.fulltag]
+    local mode = (hash and hash.mode) == "display" and "block" or "inline"
+    di.attributes = {
+        display = mode
+    }
+    -- can be option if needed:
+    if mode == "inline" then
+        di.nature = "mixed" -- "inline"
+    else
+        di.nature = "display"
+    end
+    if automathstrip then
+        stripmath(di)
+    end
+    checkmath(di)
+end
+
+local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
+
+function extras.mi(result,element,detail,n,fulltag,di)
+    local str = di.data[1]
+    if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
+        for v in utfvalues(str) do
+            if (v >= a and v <= z) or (v >= A and v <= Z) then
+                local a = di.attributes
+                if a then
+                    a.mathvariant = "normal"
+                else
+                    di.attributes = { mathvariant = "normal" }
+                end
+            end
         end
-        checkmath(di)
     end
 end
 
@@ -1002,6 +1058,24 @@ local function emptytag(result,element,nature,depth)
         result[#result+1] = format("%s<%s/>\n",spaces[depth],namespaced[element])
     else
         result[#result+1] = format("\n%s<%s/>\n",spaces[depth],namespaced[element])
+    end
+    linedone = false
+end
+
+local function btag(result,element,nature,depth)
+    if linedone then
+        result[#result+1] = format("%s<%s>\n",spaces[depth],namespaced[element])
+    else
+        result[#result+1] = format("\n%s<%s>\n",spaces[depth],namespaced[element])
+    end
+    linedone = false
+end
+
+local function etag(result,element,nature,depth)
+    if linedone then
+        result[#result+1] = format("%s</%s>\n",spaces[depth],namespaced[element])
+    else
+        result[#result+1] = format("\n%s</%s>\n",spaces[depth],namespaced[element])
     end
     linedone = false
 end
@@ -1149,14 +1223,16 @@ local function endtag(result,element,nature,depth,skip)
     end
 end
 
-local function flushtree(result,data,nature)
+local function flushtree(result,data,nature,depth)
+    depth = depth + 1
     local nofdata = #data
     for i=1,nofdata do
         local di = data[i]
         if not di then -- or di == ""
-        -- collapsed
+            -- whatever
         elseif type(di) == "string" then
-di = utfgsub(di,".",entities)
+            -- already has breaks
+            di = utfgsub(di,".",entities) -- new
             if i == nofdata and sub(di,-1) == "\n" then
                 if nature == "inline" or nature == "mixed" then
                     result[#result+1] = sub(di,1,-2)
@@ -1168,26 +1244,54 @@ di = utfgsub(di,".",entities)
                 result[#result+1] = di
             end
             linedone = false
-        elseif not di.collapsed then
+        elseif not di.collapsed then -- ignore collapsed data (is appended, reconstructed par)
             local element = di.element
             if element == "break" or element == "pagebreak" then
-                emptytag(result,element,nature,di.depth)
+                emptytag(result,element,nature,depth)
             elseif element == "" or di.skip == "ignore" then
                 -- skip
             else
                 if di.before then
-                    flushtree(result,di.before,nature)
+                    flushtree(result,di.before,nature,depth)
                 end
-                local nature, depth, skip = di.nature, di.depth, di.skip
-                begintag(result,element,nature,depth,di,skip)
-                flushtree(result,di.data,nature)
-                endtag(result,element,nature,depth,skip)
+                local natu = di.nature
+                local skip = di.skip
+                if di.breaknode then
+                    emptytag(result,"break","display",depth)
+                end
+                begintag(result,element,natu,depth,di,skip)
+                flushtree(result,di.data,natu,depth)
+                endtag(result,element,natu,depth,skip)
+             -- if pdone then
+             --     etag(result,"p","display",depth)
+             -- end
                 if di.after then
-                    flushtree(result,di.after,nature)
+                    flushtree(result,di.after,nature,depth)
                 end
             end
         end
     end
+end
+
+local function breaktree(tree)
+--~     local data = tree.data
+--~     local parnumber = tree.parnumber
+--~     local nofdata = #data
+--~     for i=1,nofdata do
+--~         local di = data[i]
+--~         if di and type(di) == "table" and not di.collapsed then
+--~             local element = di.element
+--~             if element == "break" or element == "pagebreak" or element == "" or di.skip == "ignore" then
+--~                 -- do nothing
+--~             else
+--~                 local pn = di.parnumber
+--~                 if parnumber and pn and di.nature == "inline" and parnumber ~= pn then
+--~                     di.breaknode = true
+--~                 end
+--~                 breaktree(di)
+--~             end
+--~         end
+--~     end
 end
 
 -- finalizers
@@ -1217,7 +1321,9 @@ local function checkinserts(data)
     end
 end
 
---~ local function collapsetree() -- maybe better traverse tree (par stuff)
+-- tabulaterow reconstruction .. can better be a checker (TO BE CHECKED)
+
+--~ local function xcollapsetree() -- unwanted space injection
 --~     for tag, trees in next, treehash do
 --~         local d = trees[1].data
 --~         if d then
@@ -1262,7 +1368,7 @@ end
 --~                                 if not currentpar then
 --~                                     if not spacedone and not breakdone then
 --~                                         nd = nd + 1
---~                                         d[nd] = " " --
+--~                                         d[nd] = " " -- brr adds space in unwanted places (like math)
 --~                                         spacedone = true
 --~                                     end
 --~                                     previouspar = nil
@@ -1304,7 +1410,7 @@ end
 --~     end
 --~ end
 
-local function collapsetree() -- maybe better traverse tree (par stuff)
+local function collapsetree()
     for tag, trees in next, treehash do
         local d = trees[1].data
         if d then
@@ -1313,8 +1419,10 @@ local function collapsetree() -- maybe better traverse tree (par stuff)
                 for i=2,#trees do
                     local currenttree = trees[i]
                     local currentdata = currenttree.data
+                    local currentpar = currenttree.parnumber
                     local previouspar = trees[i-1].parnumber
                     currenttree.collapsed = true
+                    -- is the next ok?
                     if previouspar == 0 or type(currentdata[1]) ~= "string" then
                         previouspar = nil -- no need anyway so no further testing needed
                     end
@@ -1323,7 +1431,6 @@ local function collapsetree() -- maybe better traverse tree (par stuff)
                         if not cd or cd == "" then
                             -- skip
                         elseif type(cd) == "string" then
-                            local currentpar = d.parnumber
                             if not currentpar then
                                 -- add space ?
                             elseif not previouspar then
@@ -1356,6 +1463,22 @@ local function indextree(tree)
                 d.__i__ = i
                 d.__p__ = tree
                 indextree(d)
+            end
+        end
+    end
+end
+
+local function checktree(tree)
+    local data = tree.data
+    if data then
+        for i=1,#data do
+            local d = data[i]
+            if type(d) == "table" then
+                local check = checks[d.tg]
+                if check then
+                    check(d)
+                end
+                checktree(d)
             end
         end
     end
@@ -1395,7 +1518,11 @@ local function push(fulltag,depth)
     nesting[currentdepth] = fulltag
     treestack[currentdepth] = tree
     if trace_export then
-        report_export("%s<%s trigger='%s' index='%s'>",spaces[currentdepth-1],fulltag,currentattribute,#treedata)
+        if detail and detail ~= "" then
+            report_export("%s<%s trigger='%s' paragraph='%s' index='%s' detail='%s'>",spaces[currentdepth-1],fulltag,currentattribute or 0,currentparagraph or 0,#treedata,detail)
+        else
+            report_export("%s<%s trigger='%s' paragraph='%s' index='%s'>",spaces[currentdepth-1],fulltag,currentattribute or 0,currentparagraph or 0,#treedata)
+        end
     end
     tree = t
     if tg == "break" then
@@ -1557,6 +1684,7 @@ local function finishexport()
 end
 
 local function collectresults(head,list)
+    local p
     for n in traverse_nodes(head) do
         local id = n.id -- 14: image, 8: literal (mp)
         if id == glyph_code then
@@ -1621,25 +1749,6 @@ local function collectresults(head,list)
                         if trace_export then
                             report_export("%s<!-- skipping last glyph -->",spaces[currentdepth])
                         end
-                        -- skip
---~                     elseif c == 0x26 then
---~                         nofcurrentcontent = nofcurrentcontent + 1
---~                         currentcontent[nofcurrentcontent] = "&amp;"
---~                         if trace_export then
---~                             report_export("%s<!-- turning last glyph into entity &amp;-->",spaces[currentdepth])
---~                         end
---~                     elseif c == 0x3E then
---~                         nofcurrentcontent = nofcurrentcontent + 1
---~                         currentcontent[nofcurrentcontent] = "&gt;"
---~                         if trace_export then
---~                             report_export("%s<!-- turning last glyph into entity &gt;-->",spaces[currentdepth])
---~                         end
---~                     elseif c == 0x3C then
---~                         nofcurrentcontent = nofcurrentcontent + 1
---~                         currentcontent[nofcurrentcontent] = "&lt;"
---~                         if trace_export then
---~                             report_export("%s<!-- turning last glyph into entity &lt;-->",spaces[currentdepth])
---~                         end
                     elseif c == 0x20 then
                         local a = has_attribute(n,a_characters)
                         nofcurrentcontent = nofcurrentcontent + 1
@@ -1733,9 +1842,6 @@ local function collectresults(head,list)
                         end
                     end
                 elseif n.spec.width > threshold then
---~ if has_attribute(n,a_textblock) then
---~     -- todo
---~ else
                     if last and not somespace[currentcontent[nofcurrentcontent]] then
                         local a = has_attribute(n,a_tagged)
                         if a == last then
@@ -1779,6 +1885,7 @@ local function collectresults(head,list)
                         if s == hyphen then
                             currentcontent[nofcurrentcontent] = utfsub(r,1,-2)
                         elseif s ~= "\n" then
+-- test without this
                             if trace_export then
                                 report_export("%s<!-- injecting newline 1 -->",spaces[currentdepth])
                             end
@@ -1789,36 +1896,44 @@ local function collectresults(head,list)
                 end
             end
         elseif id == kern_code then
-            if n.kern > threshold then
-                if last and not somespace[currentcontent[nofcurrentcontent]] then
-                    local a = has_attribute(n,a_tagged)
-                    if a == last then
-                        if not somespace[currentcontent[nofcurrentcontent]] then
+            local kern = n.kern
+            if kern > 0 then
+                local limit = threshold
+                if p and p.id == glyph_code then
+                    limit = fontquads[p.font] / 4
+                end
+                if kern > limit then
+                    if last and not somespace[currentcontent[nofcurrentcontent]] then
+                        local a = has_attribute(n,a_tagged)
+                        if a == last then
+                            if not somespace[currentcontent[nofcurrentcontent]] then
+                                if trace_export then
+                                    report_export("%s<!-- injecting spacing 8 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                                end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                            end
+                        elseif a then
+                            -- e.g LOGO<space>LOGO
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 8 -->",spaces[currentdepth])
+                                report_export("%s<!-- processing kern, threshold %s, tag %s => %s -->",spaces[currentdepth],topoints(limit,true),last,a)
+                            end
+                            last = a
+                            pushcontent()
+                            if trace_export then
+                                report_export("%s<!-- injecting spacing 9 (%s) -->",spaces[currentdepth],topoints(kern,true))
                             end
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
+                            currentnesting = taglist[last]
+                            pushentry(currentnesting)
+                            currentattribute = last
                         end
-                    elseif a then
-                        -- e.g LOGO<space>LOGO
-                        if trace_export then
-                            report_export("%s<!-- processing kern > threshold (tag %s => %s)",spaces[currentdepth],last,a)
-                        end
-                        last = a
-                        pushcontent()
-                        if trace_export then
-                            report_export("%s<!-- injecting spacing 9 -->",spaces[currentdepth])
-                        end
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = " "
-                        currentnesting = taglist[last]
-                        pushentry(currentnesting)
-                        currentattribute = last
                     end
                 end
             end
         end
+        p = n
     end
 end
 
@@ -1901,6 +2016,8 @@ local function stopexport(v)
     finishexport()
     collapsetree(tree)
     indextree(tree)
+    checktree(tree)
+    breaktree(tree)
     checkinserts(tree.data)
     hashlistdata()
     if type(v) ~= "string" or v == variables.yes or v == "" then
@@ -1935,9 +2052,10 @@ local function stopexport(v)
     end
     -- collect tree
     local result  = { }
-    flushtree(result,tree.data)
+    flushtree(result,tree.data,"display",0)
     result = concat(result)
-    result = gsub(result,"\n *\n","\n")
+result = gsub(result,"\n *\n","\n")
+result = gsub(result,"\n +([^< ])","\n%1")
     results[#results+1] = result
     results = concat(results)
     -- if needed we can do a cleanup of the tree (no need to load for xhtml then)
@@ -2018,6 +2136,7 @@ local function startexport(v)
 --
         enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math",    "noads.handlers.tags")
+--~ appendaction("finalizers","lists","builders.paragraphs.tag")
 --~ enableaction("finalizers","builders.paragraphs.tag")
         luatex.registerstopactions(function() stopexport(v) end)
         exporting = true

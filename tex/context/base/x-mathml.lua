@@ -736,7 +736,7 @@ str = gsub(str,"&.-;","")
     tex.sprint(ctxcatcodes,"\\egroup")
 end
 
-local spacesplitter = lpeg.Ct(lpeg.splitat(" "))
+local spacesplitter = lpeg.tsplitat(" ")
 
 function mathml.mtable(root)
     -- todo: align, rowspacing, columnspacing, rowlines, columnlines

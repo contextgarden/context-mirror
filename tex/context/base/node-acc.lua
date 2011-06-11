@@ -19,51 +19,61 @@ local copy_node      = node.copy
 local free_nodelist  = node.flush_list
 
 local glue_code      = nodecodes.glue
+local kern_code      = nodecodes.kern
 local glyph_code     = nodecodes.glyph
 local hlist_code     = nodecodes.hlist
 local vlist_code     = nodecodes.vlist
 
 local a_characters   = attributes.private("characters")
 
+local threshold      = 65536
+
 -- todo: nbsp etc
+-- todo: collapse kerns
 
 local function injectspaces(head)
     local p
-    for n in traverse_nodes(head) do
+    local n = head
+    while n do
         local id = n.id
         if id == glue_code then -- todo: check for subtype related to spacing (13/14 but most seems to be 0)
-         -- local at = has_attribute(n,attribute)
-         -- if at then
---~ local a = has_attribute(n,a_characters)
---~ if a then
---~     -- handle this in the export
---~ else
-                if p and p.id == glyph_code then
-                    local g = copy_node(p)
-                    local c = g.components
-                    if c then -- it happens that we copied a ligature
-                        free_nodelist(c)
-                        g.components = nil
-                        g.subtype = 256
-                    end
-                    local a = has_attribute(n,a_characters)
-                    local s = copy_node(n.spec)
-                    g.char, n.spec = 32, s
-                    p.next, g.prev = g, p
-                    g.next, n.prev = n, g
-                    s.width = s.width - g.width
-                    if a then
-                        set_attribute(g,a_characters,a)
-                    end
-                    set_attribute(s,a_characters,0)
-                    set_attribute(n,a_characters,0)
+--~ if n.spec.width > 0 then -- threshold
+            if p and p.id == glyph_code then
+                local g = copy_node(p)
+                local c = g.components
+                if c then -- it happens that we copied a ligature
+                    free_nodelist(c)
+                    g.components = nil
+                    g.subtype = 256
                 end
-         -- end
+                local a = has_attribute(n,a_characters)
+                local s = copy_node(n.spec)
+                g.char, n.spec = 32, s
+                p.next, g.prev = g, p
+                g.next, n.prev = n, g
+                s.width = s.width - g.width
+                if a then
+                    set_attribute(g,a_characters,a)
+                end
+                set_attribute(s,a_characters,0)
+                set_attribute(n,a_characters,0)
+            end
 --~ end
         elseif id == hlist_code or id == vlist_code then
             injectspaces(n.list,attribute)
+        elseif id == kern_code then
+            local first = n
+            while true do -- maybe we should delete kerns but who cares at this stage
+                local nn = n.next
+                if nn.id == kern_code
+                    first.kern = first.kern + nn.kern
+                    nn.kern = 0
+                    n = nn
+                end
+            end
         end
         p = n
+        n = n.next
     end
     return head, true
 end

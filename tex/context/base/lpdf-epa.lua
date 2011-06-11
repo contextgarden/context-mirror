@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 -- change.
 
 local type, tonumber = type, tonumber
-local format = string.format
+local format, gsub = string.format, string.gsub
 
 local trace_links = false  trackers.register("figures.links", function(v) trace_links = v end)
 
@@ -171,12 +171,11 @@ function codeinjections.mergeviewerlayers(specification)
             local layers = document.layers
             if layers then
                 for i=1,layers.n do
-                    local tag = layers[i]
-tag = namespace .. string.gsub(tag," ",":")
-local title = tag
-if trace_links then
-    report_link("using layer '%s'",tag)
-end
+                    local tag = namespace .. gsub(layers[i]," ",":")
+                    local title = tag
+                    if trace_links then
+                        report_link("using layer '%s'",tag)
+                    end
                     attributes.viewerlayers.define { -- also does some cleaning
                         tag       = tag, -- todo: #3A or so
                         title     = title,

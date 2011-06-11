@@ -1270,7 +1270,7 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
         if not height or height == "" then
             return figures.defaultwidth, figures.defaultheight
         else
-            height = string.todimen(height)
+            height = todimen(height)
             if w and h then
                 return height * w/h, height
             else
@@ -1278,7 +1278,7 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
             end
         end
     else
-        width = string.todimen(width)
+        width = todimen(width)
         if not height or height == "" then
             if w and h then
                 return width, width * h/w
@@ -1286,7 +1286,7 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
                 return width, figures.defaultheight
             end
         else
-            return width, string.todimen(height)
+            return width, todimen(height)
         end
     end
 end
