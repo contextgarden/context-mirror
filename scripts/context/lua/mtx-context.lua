@@ -1219,7 +1219,8 @@ local persistent_runfiles = {
 }
 
 local special_runfiles = {
-    "-mpgraph*", "-mprun*", "-temp-*"
+--~     "-mpgraph*", "-mprun*", "-temp-*" -- hm, wasn't this escaped?
+    "-mpgraph", "-mprun", "-temp-"
 }
 
 local function purge_file(dfile,cfile)
@@ -1675,7 +1676,7 @@ elseif environment.argument("purge") then
     scripts.context.purge()
 elseif environment.argument("purgeall") then
     -- only when no filename given, supports --pattern
-    scripts.context.purge(true)
+    scripts.context.purge(true,nil,true)
 else
     application.help("basic")
 end

@@ -1,0 +1,277 @@
+%D \module
+%D   [       file=phys-dim,
+%D        version=2011-06-13, % was digits and units 1997.03.19,
+%D          title=\CONTEXT\ Physics,
+%D       subtitle=Digits and Units,
+%D         author={Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{phys-dim}{}
+
+\unprotect
+
+% We will have
+%
+% \setupunits
+%   [alternative=text,  % maybe no longer
+%    grid=yes,          % snapper
+%    style=...,         %
+%    space=...]         % small medium big
+
+% digits code:
+
+%D \startbuffer
+%D \digits{12}
+%D \digits{~~~.~~~.~~~.68.712,34}
+%D \digits{~~~.~~~.~~~.68.712,34}
+%D \digits{___.___.111.68.712,34}
+%D \digits{111.111.111.68.712,34}
+%D \digits{12.345,90}
+%D \digits{12.345.000}
+%D \digits{12,34}
+%D \digits{392.857.230.68.712,34}
+%D \digits{1234}
+%D \digits{123.222,00}
+%D \digits{123.222,==}
+%D \digits{123.222,00^10}
+%D \digits{123.222,00e10}
+%D \digits{-123.222,00e-12}
+%D \digits{/123.222,00e-12}
+%D \digits{+123.222,00e-12}
+%D \digits{n123.222,00e-12}
+%D \digits{s123.222,00e-12}
+%D \digits{p123.222,00e/12}
+%D %D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Result: \getbuffer
+
+% todo: ifmmode
+
+\def\digitsnormalized#1#2{{\setbox\scratchbox\hbox{#1}\hbox to \wd\scratchbox{\hss#2\hss}}}
+
+\def\digitsraised        {\ifmmode\expandafter\normalsuperscript\else\expandafter\high\fi}
+
+\def\digitszeropadding   {\zeroamount}
+\def\digitsnegative      {\digitsnormalized\zeroamount{\digitsraised{\textminus}}} % \mathematics \negative
+\def\digitspositive      {\digitsnormalized\zeroamount{\digitsraised{\textplus }}} % \mathematics \positive
+\def\digitsnegative      {\mathematics\negative}
+\def\digitspositive      {\mathematics\positive}
+\def\digitsspace         {\hphantom{0}}
+\def\digitsseparatorspace{\hphantom{.}}
+\def\digitssignspace     {\hphantom{\digitsminus}}
+\def\digitshighspace     {\hphantom{\digitspositive}}
+\def\digitspower         {\digitsraised}
+\def\digitspowerplus   #1{\digitsraised{\digitsplus #1}}
+\def\digitspowerminus  #1{\digitsraised{\digitsminus#1}}
+\def\digitsminus         {\mathematics-}
+\def\digitsplus          {\mathematics+}
+
+% First I need to check the old supp-num code for compatibility.
+
+\unexpanded\def\tempdigits#1% for testing
+  {\dontleavehmode
+   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es)}}
+
+%D \macros
+%D   {su}
+%D
+%D We have been using the units module (and its predecessor) for over a decade
+%D now but when we moved on to \LUATEX\ a variant was prototyped that permits a
+%D less texie coding. I finally picked up that thread and cleaned up the code a
+%D bit so users can now play with it. (The main reason was that I wanted to
+%D test exporting.)
+%D
+%D \startbuffer
+%D 01: $10\su{km/h}$
+%D 02: $\su{10      km/h}$
+%D 03: \su{km/h}
+%D 04: \su{10 km/h}
+%D 05: \su{10 km/h}
+%D 06: \su{~1 km/h}
+%D 07: 10\su{km/h}
+%D 08: 10 \su{km/h}
+%D 09: $10 \su{km/h}$
+%D 10: 10 \su{KiloMeter/Hour}
+%D 11: 10 \su{kilometer/hour}
+%D 12: 10 \su{km/h}
+%D 13: 10 \su{kilometer per hour}
+%D 14: 10 \su{km / h}
+%D 15: 10 \su{ km / h }
+%D 16: 10 \su{km/ms2}
+%D 17: 10 \su{meter per second}
+%D 18: 10 \su{cubic meter}
+%D 19: 10 \su{cubic meter per second}
+%D 21: 10 \su{cubic meter / second}
+%D 22: $10 \su{cubic meter / second}$
+%D 23: 30 \su{kilo pascal }
+%D 24: 30 \su{kilo pascal square meter / second}
+%D 25: 30 \su{kilo pascal square meter / kelvin second}
+%D 26: \su{30 kilo pascal square meter / kelvin second}
+%D 27: $30 \su{kilo pascal square meter / kelvin second }$
+%D 28: 30 \su{crap}
+%D 29: 30 \su{AC}
+%D 30: $\frac{10 \su{m/s}}{20 \su{m/s}} $
+%D 31: {\ss 30 \su{kilo pascal square meter / second kelvin}}
+%D 32: \su{123.22^-3 km/s}
+%D 33: \su{123.22e-3 km/s}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D Result: \getbuffer
+
+\newconstant   \c_units_mode   % 0=text  1=math
+\newconstant   \c_units_state  % 0=start 1=suffix 2=operator 3=unit 4=prefix 5=number
+\newconditional\c_units_number
+
+% tags and export
+% smash == snapper
+% hbox ook in mmode
+
+\def\unitshalfspace{\thinspace}
+\def\unitsbackspace{\negthinspace}
+
+\newtoks \everyunits % we keep the old \units command so we need a longer one
+
+\unexpanded\def\unit#1%
+  {\begingroup
+   \the\everyunits
+  %\removeunwantedspaces % now ok yet
+   \ifmmode
+     \c_units_mode\plusone
+     \rm\tf
+     \mathtf
+   \fi
+   \units_indeed{#1}%
+   \units_finish
+   \endgroup}
+
+\appendtoks
+    \let\unit\units_indeed
+\to \everyunits
+
+% bonus ... we might go for \un instead or maybe du (digit+unit)
+
+% \let\su\unit
+%
+% \appendtoks
+%     \let\su\units_indeed
+% \to \everyunits
+
+\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es)}}
+
+\unexpanded\def\unitsPUS#1#2#3{\units_next#1#2\unitsraise{#3}\c_units_state\plusone}   % suffix
+\unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state                        \plusthree} % unit
+\unexpanded\def\unitsPS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
+\unexpanded\def\unitsUS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
+\unexpanded\def\unitsP      #1{\units_next#1\c_units_state                          \plusfour}  % prefix
+\unexpanded\def\unitsU      #1{\units_next#1\c_units_state                          \plusthree} % unit
+\unexpanded\def\unitsS      #1{\units_start{}\unitsraise{#1}\c_units_state \plusone}   % suffix
+\unexpanded\def\unitsO      #1{\units_start#1\c_units_state                         \plustwo}   % operator
+\unexpanded\def\unitsN      #1{\units_start#1\c_units_state                         \plusfive}  % number
+
+\setelementnature[unit]    [mixed]
+\setelementnature[quantity][mixed]
+
+\let\units_finish\relax
+
+\unexpanded\def\unitsNstart
+  {\ifmmode
+   \else
+     \dostarttagged{quantity}\empty
+     \dostarttagged{number}\empty
+   \fi}
+
+\unexpanded\def\unitsNstop
+  {\ifmmode
+   \else
+     \dostoptagged
+   \fi
+   %\units_start
+   \c_units_state\plusfive}
+
+\unexpanded\def\unitsN#1%
+  {\unitsNstart#1\unitsNstop}
+
+\def\units_start
+  {\ifmmode
+     \dostarttagged\t!mathaction{unit}%
+     \bgroup % make an mrow
+   \else
+     \dostarttagged{unit}\empty
+   \fi
+   \let\units_finish\units_stop
+   \let\units_start\relax}
+
+\def\units_stop
+  {\ifmmode
+     \egroup
+   \fi
+   \ifconditional\c_units_number
+     \dostoptagged
+   \fi
+   \dostoptagged}
+
+\def\unitsraise
+  {\ifnum\c_units_mode=\plusone
+     \expandafter\normalsuperscript
+   \else
+     \expandafter\high
+   \fi}
+
+\def\unitslower
+  {\ifnum\c_units_mode=\plusone
+     \expandafter\normalsubscript
+   \else
+     \expandafter\low
+   \fi}
+
+\unexpanded\def\units_next
+  {\ifcase\c_units_state % start
+     \ifdim\lastskip=\zeropoint
+       \unitshalfspace
+       \unitshalfspace
+     \else
+       % too tricky ... we could remove and add
+     \fi
+   \or % suffix
+     {\cdot}% \unitshalfspace
+   \or % operator
+   \or % unit
+     {\cdot}% \unitshalfspace
+   \or % prefix
+   \or % number
+     \unitshalfspace
+     \unitshalfspace
+   \fi
+   \units_start}
+
+\unexpanded\def\unitsTIMES
+  {\ifnum\c_units_state=\plusone % suffix
+   \else
+     \unitshalfspace
+   \fi
+   \cdot} % or \times
+
+\unexpanded\def\unitsOUTOF
+  {\ifnum\c_units_state=\plusone % suffix
+   \else
+     \unitshalfspace
+   \fi
+   :}
+
+\unexpanded\def\unitsSOLIDUS
+  {\ifnum\c_units_state=\plusone % suffix
+     \unitsbackspace
+   \fi
+   {/}%
+   }%\unitsbackspace}
+
+\protect \endinput

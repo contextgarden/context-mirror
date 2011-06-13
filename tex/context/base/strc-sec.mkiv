@@ -702,12 +702,12 @@
 \settrue\autoheadbreak % todo: \vspacing[category:8] == keep_together
 
 \def\dopreventbreakafterheadauto % used after \c!before
-  {\ifconditonal\autoheadbreak
+  {\ifconditional\autoheadbreak
       \vspacing[\v!samepage-\currentheadlevel]%
    \fi}
 
 \def\dopreventbreakafterheadspec#1% see enumerations etc
-  {\ifconditonal\autoheadbreak
+  {\ifconditional\autoheadbreak
       \vspacing[\v!samepage-\the\numexpr\currentheadlevel+1\relax]% todo #1
    \fi}
 

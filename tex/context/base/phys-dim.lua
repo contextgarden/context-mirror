@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['m-dimensions'] = {
+if not modules then modules = { } end modules ['phys-dim'] = {
     version   = 1.001,
-    comment   = "companion to m-dimensions.mkiv",
+    comment   = "companion to phys-dim.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -9,12 +9,85 @@ if not modules then modules = { } end modules ['m-dimensions'] = {
 -- This is pretty old code that I found back, but let's give it a try
 -- in practice. It started out as m-units.lua but as we want to keep that
 -- module around we moved the code to the dimensions module.
+--
+-- todo: maybe also an sciunit command that converts to si units (1 inch -> 0.0254 m)
+-- etc .. typical something to do when listening to a news whow or b-movie
 
-local P, C, Cc, Cs, matchlpeg = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
+local P, S, R, C, Cc, Cs, matchlpeg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
 local format = string.format
 local appendlpeg = lpeg.append
 
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
+
+physics          = physics or { }
+physics.patterns = physics.patterns or { }
+
+-- digits parser (todo : use patterns)
+
+local done        = false
+local swap        = false
+
+local digit       = R("09")
+local sign        = S("+-")
+local power       = S("^e")
+local digitspace  = S("~@_")
+local digitspacex = digitspace + P(" ")
+local comma       = P(",")
+local period      = P(".")
+local signspace   = P("/")
+local positive    = S("p")
+local negative    = S("n")
+local highspace   = P("s")
+local padding     = P("=")
+local plus        = P("+")
+local minus       = P("-")
+
+-- rename context.digitsspace -> digitsS
+-- also have digitsN
+
+
+-- move done to tex end
+
+local digits       = (digit^1)
+
+local ddigitspacex = digitspacex / "" / context.digitsspace
+local ddigitspace  = digitspace  / "" / context.digitsspace
+local ddigit       = digits      /      function(s) done = true context(s) end
+local dseparator   = comma       / "" / function() if not done then context.digitsseparatorspace() elseif swap then context(".") else context(",") end end
+                   + period      / "" / function() if not done then context.digitsseparatorspace() elseif swap then context(",") else context(".") end end
+local dsignspace   = signspace   / "" / context.digitssignspace
+local dpositive    = positive    / "" / context.digitspositive
+local dnegative    = negative    / "" / context.digitsnegative
+local dhighspace   = highspace   / "" / context.digitshighspace
+local dsomesign    = plus        / "" / context.digitsplus
+                   + minus       / "" / context.digitsminus
+local dpower       = power       / "" * (
+                         plus  * C(digits) / context.digitspowerplus
+                       + minus * C(digits) / context.digitspowerminus
+                       +         C(digits) / context.digitspower
+                   )
+local dpadding     = padding     / "" / context.digitszeropadding -- todo
+
+local digitparsernospace =
+    (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
+  * (dseparator^0 * (ddigitspacex + ddigit)^1)^1
+  * dpower^0
+
+local digitparser =
+    (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
+  * (dseparator^0 * (ddigitspace + ddigit)^1)^1
+  * dpower^0
+
+physics.patterns.digitparserspace = digitparserspace
+physics.patterns.digitparser      = digitparser
+
+function commands.digits(str)
+    done = false
+ -- swap = true
+    matchlpeg(digitparserspace,str) -- also space
+end
+
+-- units parser
 
 local long_prefixes = {
     Yocto = [[y]],  -- 10^{-24}
@@ -82,10 +155,10 @@ local long_units = {
     Volt       = [[V]],
     eVolt      = [[eV]],
     Tesla      = [[T]],
-    VoltAC     = [[V\scientificunitbackspace\scientificunitlower{ac}]],
-    VoltDC     = [[V\scientificunitbackspace\scientificunitlower{dc}]],
-    AC         = [[V\scientificunitbackspace\scientificunitlower{ac}]],
-    DC         = [[V\scientificunitbackspace\scientificunitlower{dc}]],
+    VoltAC     = [[V\unitsbackspace\unitslower{ac}]],
+    VoltDC     = [[V\unitsbackspace\unitslower{dc}]],
+    AC         = [[V\unitsbackspace\unitslower{ac}]],
+    DC         = [[V\unitsbackspace\unitslower{dc}]],
     Bit        = [[bit]],
     Baud       = [[Bd]],
     Byte       = [[B]],
@@ -119,10 +192,10 @@ local long_units = {
 }
 
 local long_operators = {
-    Times   = [[\scientificunitTIMES]], -- cdot
-    Solidus = [[\scientificunitSOLIDUS]],
-    Per     = [[\scientificunitSOLIDUS]],
-    OutOf   = [[\scientificunitOUTOF]],
+    Times   = [[\unitsTIMES]], -- cdot
+    Solidus = [[\unitsSOLIDUS]],
+    Per     = [[\unitsSOLIDUS]],
+    OutOf   = [[\unitsOUTOF]],
 }
 
 local long_suffixes = {
@@ -206,7 +279,7 @@ local units      = mergedtable(long_units,short_units)
 local operators  = mergedtable(long_operators,short_operators)
 local suffixes   = mergedtable(long_suffixes,short_suffixes)
 
-local space      = P(" ")^0/""
+local somespace  = P(" ")^0/""
 
 local l_prefix   = appendlpeg(keys(long_prefixes))
 local l_unit     = appendlpeg(keys(long_units))
@@ -222,16 +295,28 @@ local s_suffix   = appendlpeg(keys(short_suffixes))
 
 -- square centi meter per square kilo seconds
 
-local l_suffix      = Cs(space * l_suffix)
-local s_suffix      = Cs(space * s_suffix) + Cc("")
-local l_operator    = Cs(space * l_operator)
-local l_combination = (Cs(space * l_prefix) + Cc("")) * Cs(space * l_unit)
-local s_combination = Cs(space * s_prefix) * Cs(space * s_unit) + Cc("") * Cs(space * s_unit)
+local l_suffix      = Cs(somespace * l_suffix)
+local s_suffix      = Cs(somespace * s_suffix) + Cc("")
+local l_operator    = Cs(somespace * l_operator)
+local l_combination = (Cs(somespace * l_prefix) + Cc("")) * Cs(somespace * l_unit)
+local s_combination = Cs(somespace * s_prefix) * Cs(somespace * s_unit) + Cc("") * Cs(somespace * s_unit)
 
 local combination   = l_combination + s_combination
 
 -- square kilo meter
 -- square km
+
+local unitsPUS    = context.unitsPUS
+local unitsPU     = context.unitsPU
+local unitsPS     = context.unitsPS
+local unitsP      = context.unitsP
+local unitsUS     = context.unitsUS
+local unitsU      = context.unitsU
+local unitsS      = context.unitsS
+local unitsO      = context.unitsO
+local unitsN      = context.unitsN
+local unitsNstart = context.unitsNstart
+local unitsNstop  = context.unitsNstop
 
 local function dimpus(p,u,s)
     p = prefixes[p] or p
@@ -240,159 +325,59 @@ local function dimpus(p,u,s)
     if p ~= "" then
         if u ~= ""  then
             if s ~= ""  then
-                return format(" p=%s u=%s s=%s ",p,u,s)
+                unitsPUS(p,u,s)
             else
-                return format(" p=%s u=%s ",p,u)
+                unitsPU(p,u)
             end
         elseif s ~= ""  then
-            return format(" p=%s s=%s ",p,s)
+            unitsPS(p,s)
         else
-            return format(" p=%s ",p)
+            unitsP(p)
         end
     else
         if u ~= ""  then
             if s ~= ""  then
-                return format(" u=%s s=%s ",u,s)
+                unitsUS(u,s)
             else
-                return format(" u=%s ",u)
+                unitsU(u)
             end
         elseif s ~= ""  then
-            return format(" s=%s ",s)
+            unitsS(s)
         else
-            return format(" p=%s ",p)
+            unitsP(p)
         end
     end
+end
+
+local function dimspu(s,p,u)
+    return dimpus(p,u,s)
 end
 
 local function dimop(o)
     o = operators[o] or o
     if o then
-        return format(" o=%s ",o)
+        unitsO(o)
     end
 end
 
-local function dimnum(n)
-    if n ~= "" then
-        return format(" n=%s ",n)
-    end
-end
+local dimension = (l_suffix * combination) / dimspu + (combination * s_suffix) / dimpus
+local number    = lpeg.patterns.number / unitsN
+local operator  = (l_operator + s_operator) / dimop
+local whatever  = (P(1)^0) / unitsU
 
-local function dimerror(s)
-    return s ~= "" and s or "error"
-end
+dimension = somespace * dimension * somespace
+number    = somespace * number    * somespace
+operator  = somespace * operator  * somespace
 
-local dimension =
-    (l_suffix * combination) / function (s,p,u)
-        return dimpus(p,u,s)
-    end
-  + (combination * s_suffix) / function (p,u,s)
-        return dimpus(p,u,s)
-    end
+----- unitparser = dimension * dimension^0 * (operator * dimension^1)^-1 + whatever
+local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever
 
-local operator = (l_operator + s_operator) / function(o)
-    return dimop(o)
-end
+local unitdigitparser = (P(true)/unitsNstart) * digitparser * (P(true)/unitsNstop)
+local combinedparser  = (unitdigitparser + number)^-1 * unitparser
 
-local number = (lpeg.patterns.number / function(n)
-    return dimnum(n)
-end)^-1
+physics.patterns.unitparser     = unitparser
+physics.patterns.combinedparser = combinedparser
 
-dimension = space * dimension * space
-number    = space * number    * space
-operator  = space * operator  * space
-
-local expression = lpeg.Cs (
-    number * dimension * dimension^0 * (operator * dimension^1)^-1 * P(-1)
-    + (P(1)^0) / function(s) return dimerror(s) end
-)
-
-if commands and context then
-
-    local scientificunitPUS = context.scientificunitPUS
-    local scientificunitPU  = context.scientificunitPU
-    local scientificunitPS  = context.scientificunitPS
-    local scientificunitP   = context.scientificunitP
-    local scientificunitUS  = context.scientificunitUS
-    local scientificunitU   = context.scientificunitU
-    local scientificunitS   = context.scientificunitS
-    local scientificunitO   = context.scientificunitO
-    local scientificunitN   = context.scientificunitN
-
-    dimpus = function(p,u,s)
-        p = prefixes[p] or p
-        u = units[u]    or u
-        s = suffixes[s] or s
-        if p ~= "" then
-            if u ~= ""  then
-                if s ~= ""  then
-                    scientificunitPUS(p,u,s)
-                else
-                    scientificunitPU(p,u)
-                end
-            elseif s ~= ""  then
-                scientificunitPS(p,s)
-            else
-                scientificunitP(p)
-            end
-        else
-            if u ~= ""  then
-                if s ~= ""  then
-                    scientificunitUS(u,s)
-                else
-                    scientificunitU(u)
-                end
-            elseif s ~= ""  then
-                scientificunitS(s)
-            else
-                scientificunitP(p)
-            end
-        end
-    end
-
-    dimop = function(o)
-        o = operators[o] or o
-        if o then
-            scientificunitO(o)
-        end
-    end
-
-    dimnum = function(n)
-        if n ~= "" then
-            scientificunitN(n)
-        end
-    end
-
-    dimerror = function(s)
-        scientificunitU(s)
-    end
-
-    function commands.scientificunit(str)
-        matchlpeg(expression,str)
-    end
-
-else
-
-    local tests = {
---~         "m/u",
---~         "km/u",
---~         "km",
---~         "km/s2",
---~         "km/ms2",
---~         "km/ms-2",
---~         "km/h",
---~         "           meter                 ",
---~         "           meter per        meter",
---~         "cubic      meter per square meter",
---~         "cubic kilo meter per square meter",
---~         "KiloMeter/Hour",
---~         "10.5 kilo pascal",
---~         "kilo pascal meter liter per second",
---~         "100 crap",
-    }
-
-    for i=1,#tests do
-        local test = tests[i]
-        print(test,matchlpeg(expression,test) or test)
-    end
-
+function commands.unit(str)
+    matchlpeg(combinedparser,str)
 end
