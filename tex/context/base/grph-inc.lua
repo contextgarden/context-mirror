@@ -301,7 +301,7 @@ local function new() -- we could use metatables status -> used -> request but it
     }
 end
 
- -- use table.insert|remove
+-- use table.insert|remove
 
 local lastfiguredata = nil -- will be topofstack or last so no { } (else problems with getfiguredimensions)
 local callstack      = { }
@@ -402,8 +402,8 @@ local function register(askedname,specification)
                     newformat = defaultformat
                 end
                 if trace_conversion then
-                    report_inclusion("checking conversion of '%s': old format '%s', new format '%s', conversion '%s', resolution '%s'",
-                        askedname,format,newformat,conversion or "default",resolution or "default")
+                    report_inclusion("checking conversion of '%s' (%s): old format '%s', new format '%s', conversion '%s', resolution '%s'",
+                        askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
                 end
                 local converter = (newformat ~= format) and converters[format]
                 if converter then
@@ -422,8 +422,7 @@ local function register(askedname,specification)
                     report_inclusion("no converter for '%s' -> '%s'",format,newformat)
                 end
                 if converter then
-                 -- local oldname = specification.fullname
-                    local oldname = specification.foundname
+                    local oldname = specification.fullname
                     local newpath = file.dirname(oldname)
                     local oldbase = file.basename(oldname)
                     local newbase = file.removesuffix(oldbase)
@@ -435,7 +434,7 @@ local function register(askedname,specification)
                     end
                     if not file.is_writable(newpath) then
                         if trace_conversion then
-                            report_inclusion("[ath '%s'is not writable, forcing conversion path '.' ",newpath)
+                            report_inclusion("path '%s'is not writable, forcing conversion path '.' ",newpath)
                         end
                         newpath = "."
                     end
@@ -459,12 +458,12 @@ local function register(askedname,specification)
                     local newtime = lfs.attributes(newname,'modification') or 0
                     if newtime == 0 or oldtime > newtime then
                         if trace_conversion then
-                            report_inclusion("converting '%s' from '%s' to '%s'",askedname,format,newformat)
+                            report_inclusion("converting '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
                         end
                         converter(oldname,newname,resolution or "")
                     else
                         if trace_conversion then
-                            report_inclusion("no need to convert '%s' from '%s' to '%s'",askedname,format,newformat)
+                            report_inclusion("no need to convert '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
                         end
                     end
                     if io.exists(newname) then
@@ -556,10 +555,10 @@ local function locate(request) -- name, format, cache
             if foundname then
                 return register(askedname, {
                     askedname  = askedname,
-                    fullname   = askedname,
+                    fullname   = foundname, -- askedname,
                     format     = format,
                     cache      = askedcache,
-                    foundname  = foundname,
+--~                     foundname  = foundname,
                     conversion = askedconversion,
                     resolution = askedresolution,
                 })
@@ -571,10 +570,11 @@ local function locate(request) -- name, format, cache
         end
         if askedpath then
             -- path and type given, todo: strip pieces of path
-            if figures.exists(askedname,askedformat,resolve_too) then
+            local foundname = figures.exists(askedname,askedformat,resolve_too)
+            if foundname then
                 return register(askedname, {
                     askedname  = askedname,
-                    fullname   = askedname,
+                    fullname   = foundname, -- askedname,
                     format     = askedformat,
                     cache      = askedcache,
                     conversion = askedconversion,
@@ -625,10 +625,11 @@ local function locate(request) -- name, format, cache
             for j=1,#list do
                 local suffix = list[j]
                 local check = file.addsuffix(askedname,suffix)
-                if figures.exists(check,format,resolve_too) then
+                local foundname = figures.exists(check,format,resolve_too)
+                if foundname then
                     return register(askedname, {
                         askedname  = askedname,
-                        fullname   = check,
+                        fullname   = foundname, -- check,
                         format     = format,
                         cache      = askedcache,
                         conversion = askedconversion,
@@ -659,15 +660,18 @@ local function locate(request) -- name, format, cache
                             if trace_figures then
                                 report_inclusion("warning: skipping path %s",path)
                             end
-                        elseif figures.exists(check,format,true) then
-                            return register(askedname, {
-                                askedname  = askedname,
-                                fullname   = check,
-                                format     = format,
-                                cache      = askedcache,
-                                conversion = askedconversion,
-                                resolution = askedresolution,
-                            })
+                        else
+                            local foundname = figures.exists(check,format,true)
+                            if foundname then
+                                return register(askedname, {
+                                    askedname  = askedname,
+                                    fullname   = foundname, -- check
+                                    format     = format,
+                                    cache      = askedcache,
+                                    conversion = askedconversion,
+                                    resolution = askedresolution,
+                                })
+                            end
                         end
                     end
                 end
@@ -686,10 +690,11 @@ local function locate(request) -- name, format, cache
                     for k=1,#list do
                         local suffix = list[k]
                         local check = path .. "/" .. file.replacesuffix(askedbase,suffix)
-                        if figures.exists(check,format,resolve_too) then
+                        local foundname = figures.exists(check,format,resolve_too)
+                        if foundname then
                             return register(askedname, {
                                 askedname  = askedname,
-                                fullname   = check,
+                                fullname   = foudname, -- check,
                                 format     = format,
                                 cache      = askedcache,
                                 conversion = askedconversion,
@@ -839,8 +844,7 @@ function checkers.generic(data)
     if not resolution or resolution == "" then
         resolution = "unknown"
     end
-    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion .. "->" .. resolution
-        .. "->" .. mask
+    local hash = name .. "->" .. page .. "->" .. size .. "->" .. color .. "->" .. conversion .. "->" .. resolution .. "->" .. mask
     local figure = figures.loaded[hash]
     if figure == nil then
         figure = img.new {

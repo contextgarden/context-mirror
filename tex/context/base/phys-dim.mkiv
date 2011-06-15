@@ -129,6 +129,7 @@
 
 \newconstant   \c_units_mode   % 0=text  1=math
 \newconstant   \c_units_state  % 0=start 1=suffix 2=operator 3=unit 4=prefix 5=number
+\newconditional\c_units_quantity
 \newconditional\c_units_number
 
 % tags and export
@@ -183,18 +184,18 @@
 \let\units_finish\relax
 
 \unexpanded\def\unitsNstart
-  {\ifmmode
-   \else
-     \dostarttagged{quantity}\empty
-     \dostarttagged{number}\empty
+  {\ifmmode \else
+     \settrue\c_units_quantity
+     \dostarttagged\t!quantity\empty
+     \settrue\c_units_number
+     \dostarttagged\t!number\empty
    \fi}
 
 \unexpanded\def\unitsNstop
-  {\ifmmode
-   \else
+  {\ifconditional\c_units_number
+     \setfalse\c_units_number
      \dostoptagged
    \fi
-   %\units_start
    \c_units_state\plusfive}
 
 \unexpanded\def\unitsN#1%
@@ -202,22 +203,27 @@
 
 \def\units_start
   {\ifmmode
-     \dostarttagged\t!mathaction{unit}%
+     \dostarttagged\t!mathaction\t!unit
      \bgroup % make an mrow
    \else
-     \dostarttagged{unit}\empty
+     \dostarttagged\t!unit\empty
    \fi
    \let\units_finish\units_stop
    \let\units_start\relax}
 
 \def\units_stop
-  {\ifmmode
-     \egroup
-   \fi
-   \ifconditional\c_units_number
+  {\ifconditional\c_units_number
+     \setfalse\c_units_number
      \dostoptagged
    \fi
-   \dostoptagged}
+   \ifconditional\c_units_quantity
+     \setfalse\c_units_quantity
+     \dostoptagged
+   \fi
+   \dostoptagged
+   \ifmmode
+     \egroup
+   \fi}
 
 \def\unitsraise
   {\ifnum\c_units_mode=\plusone

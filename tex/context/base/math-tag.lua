@@ -285,7 +285,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 process(left) -- root symbol, ignored
                 stop_tagged()
             end
-            if degree then
+            if degree then -- not good enough, can be empty mlist
                 set_attribute(start,a_tagged,start_tagged("mroot"))
                 processsubsup(start)
                 process(degree)
