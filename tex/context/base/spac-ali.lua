@@ -40,6 +40,7 @@ local texcount         = tex.count
 
 local isleftpage       = layouts.status.isleftpage
 
+typesetters            = typesetters or { }
 local alignments       = { }
 typesetters.alignments = alignments
 

@@ -1975,45 +1975,21 @@
 
 % We can completely do this in lua .. when 'I'm bored ...
 
-% \def\dododorotatenextbox
-%   {\setbox\nextbox\vbox to \@@layerysiz
-%      {\vfill
-%       \hbox to \@@layerxsiz
-%         {\dostartrotation\@@rorotation
-%            \nextboxwd\zeropoint
-%            \nextboxht\zeropoint
-%            \flushnextbox
-%          \dostoprotation
-%          \hfill}%
-%       \kern\@@layerypos}%
-%   \setbox\nextbox\hbox
-%     {\kern\@@layerxpos
-%      \kern\@@layerxoff
-%      \lower\@@layeryoff\flushnextbox}}
-
-\def\dorotatenextbox#1#2%
-  {\hbox\bgroup
-     \edef\@@rorotation{#1}%
-     \ifx\@@rorotation\empty
-     \else
-       \ifx\@@rorotation\v!left
-         \doifoddpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
-       \else\ifx\@@rorotation\v!right
-         \doifoddpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
-       \else\ifx\@@rorotation\v!outer
-         \signalrightpage
-         \doifrightpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
-       \else\ifx\@@rorotation\v!inner
-         \signalrightpage
-         \doifrightpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
-       \else
-         \edef\@@rorotation{\realnumber{\@@rorotation}}% get rid of leading zeros and spaces
-       \fi\fi\fi\fi
-       \setbox\nextbox\vbox{\flushnextbox}% not really needed
-       \dodorotatenextbox\@@rorotation#2%
-     \fi
-     \boxcursor\flushnextbox
-   \egroup}
+\def\dododorotatenextbox
+  {\setbox\nextbox\vbox to \@@layerysiz
+     {\vfill
+      \hbox to \@@layerxsiz
+        {\dostartrotation\@@rorotation
+           \nextboxwd\zeropoint
+           \nextboxht\zeropoint
+           \flushnextbox
+         \dostoprotation
+         \hfill}%
+      \kern\@@layerypos}%
+  \setbox\nextbox\hbox
+    {\kern\@@layerxpos
+     \kern\@@layerxoff
+     \lower\@@layeryoff\flushnextbox}}
 
 \def\dodorotatenextbox#1#2% quite some trial and error -)
   {\dontshowcomposition
@@ -2136,12 +2112,39 @@
      \nextboxdp\!!depthb
    \fi}
 
+% \def\dorotatenextbox#1#2%
+%   {\doifsomething{#1}
+%      {\edef\@@rorotation{\realnumber{#1}}% get rid of leading zeros and spaces
+%       \setbox\nextbox\vbox{\flushnextbox}% not really needed
+%       \dodorotatenextbox\@@rorotation#2}%
+%    \hbox{\boxcursor\flushnextbox}}
+
+% \rotate[rotation=left]{\externalfigure[cow.pdf]}
+
 \def\dorotatenextbox#1#2%
-  {\doifsomething{#1}
-     {\edef\@@rorotation{\realnumber{#1}}% get rid of leading zeros and spaces
-      \setbox\nextbox\vbox{\flushnextbox}% not really needed
-      \dodorotatenextbox\@@rorotation#2}%
-   \hbox{\boxcursor\flushnextbox}}
+  {\hbox\bgroup
+     \edef\@@rorotation{#1}%
+     \ifx\@@rorotation\empty
+     \else
+       \ifx\@@rorotation\v!left
+         \doifoddpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
+       \else\ifx\@@rorotation\v!right
+         \doifoddpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
+       \else\ifx\@@rorotation\v!inner
+         \signalrightpage
+         \doifrightpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
+       \else\ifx\@@rorotation\v!outer
+         \signalrightpage
+         \doifrightpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
+       \else
+         \edef\@@rorotation{\realnumber{\@@rorotation}}% get rid of leading zeros and spaces
+       \fi\fi\fi\fi
+       \setbox\nextbox\vbox{\flushnextbox}% not really needed
+       \dodorotatenextbox\@@rorotation#2%
+     \fi
+     \boxcursor\flushnextbox
+   \egroup}
+
 
 \def\dodorotatebox#1% {angle} \hbox/\vbox/\vtop
   {\bgroup\hbox\bgroup % compatibility hack

@@ -6,28 +6,44 @@ if not modules then modules = { } end modules ['node-typ'] = {
     license   = "see context related readme files"
 }
 
--- this will be replaced by blob-ini cum suis so typesetters will go away
+local utfvalues      = string.utfvalues
 
-local utfvalues = string.utfvalues
+local currentfont    = font.current
+local fontparameters = fonts.hashes.parameters
 
-local hpack     = node.hpack
-local vpack     = node.vpack
+local hpack          = node.hpack
+local vpack          = node.vpack
 
-local nodepool  = nodes.pool
+local nodepool       = nodes.pool
 
-local new_glyph = nodepool.glyph
-local new_glue  = nodepool.glue
+local newglyph       = nodepool.glyph
+local newglue        = nodepool.glue
 
 typesetters = typesetters or { }
 
-local function tonodes(str,fontid,spacing) -- don't use this
+local function tonodes(str,fontid,spacing) -- quick and dirty
     local head, prev = nil, nil
-    for s in utfvalues(str) do
+    if not fontid then
+        fontid = currentfont()
+    end
+    local fp = fontparameters[fontid]
+    local s, p, m
+    if spacing then
+        s, p, m = spacing, 0, 0
+    else
+        s, p, m = fp.space, fp.space_stretch, fp,space_shrink
+    end
+    local spacedone = false
+    for c in utfvalues(str) do
         local next
-        if spacing and s == 32 then
-            next = newglue(spacing or 64*1024*10)
+        if c == 32 then
+            if not spacedone then
+                next = newglue(s,p,m)
+                spacedone = true
+            end
         else
-            next = newglyph(fontid or 1,s)
+            next = newglyph(fontid or 1,c)
+            spacedone = false
         end
         if not head then
             head = next
@@ -43,7 +59,7 @@ end
 typesetters.tonodes = tonodes
 
 function typesetters.hpack(str,fontid,spacing)
-    return hpack(tonodes(str,fontid,spacing))
+    return hpack(tonodes(str,fontid,spacing),"exactly")
 end
 
 function typesetters.vpack(str,fontid,spacing)

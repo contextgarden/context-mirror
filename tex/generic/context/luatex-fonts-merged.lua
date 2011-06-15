@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/13/11 23:08:53
+-- merge date  : 06/15/11 11:49:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -2715,7 +2715,7 @@ end
 
 --
 
-local table.setmetatableindex(t,f)
+function table.setmetatableindex(t,f)
     setmetatable(t,{ __index = f })
 end
 

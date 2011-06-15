@@ -513,7 +513,8 @@
             \bgroup
                 \enablemode[setups-pass-two]
                 \doglobal\newcounter\currentSETUPargument
-                \blank[\v!line]
+               %\blank[\v!line] % packed mode (we could do \startunpacked ...)
+                \godown[.75\lineheight]
                 \switchtobodyfont[small]
                 \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
             \egroup

@@ -18,9 +18,25 @@
 %D down the road (close to version 1.00 of \LUATEX). Typesetting in
 %D pure \LUA\ sometimes makes sense.
 
+\registerctxluafile{node-typ}{1.001} % experimental
 \registerctxluafile{blob-ini}{1.001}
 
-\endinput
+%D For the moment here:
+
+\unprotect
+
+% this one takes simple (utf) strings
+
+\def\widthofstring#1{\ctxcommand{widthofstring(\!!bs#1\!!es)}}
+
+% this one takes anything that can be typeset
+
+\unexpanded\def\setwidthof#1\to#2%
+  {\bgroup
+   \setbox\scratchbox\hbox{#1}%
+   \expanded{\egroup\def\noexpand#2{\the\wd\scratchbox}}}
+
+\protect \endinput
 
 % \starttext
 %

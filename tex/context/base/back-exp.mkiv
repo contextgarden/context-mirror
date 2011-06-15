@@ -123,16 +123,9 @@
       {\enabledirectives[backend.export.css={\backendparameter\c!css}]}%
 \to \everysetupbackend
 
-%D The zero char signal is needed in order to make sure that paragraphs with only
-%D elements get seen as new ones. This is a kludge but after a day of experimenting
-%D I could not figure out a cleaner way. All kind of analysis afterwards interferes.
-%D
-%D Todo: play with a user node.
-
 \appendtoks
     \doifsomething{\backendparameter\c!export}
-      {\appendtoks \char\zerocount \to \everypar
-       \setupstructure
+      {\setupstructure
          [\c!state=\v!start]%
        \enabledirectives
          [backend.export=\backendparameter\c!export]}%

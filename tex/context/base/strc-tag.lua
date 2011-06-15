@@ -48,6 +48,7 @@ local properties  = allocate {
 
     division           = { pdf = "Div",        nature = "display" },
     paragraph          = { pdf = "P",          nature = "mixed"   },
+    p                  = { pdf = "P",          nature = "mixed"   },
     construct          = { pdf = "Span",       nature = "inline"  },
 
     section            = { pdf = "Sect",       nature = "display" },
@@ -131,7 +132,7 @@ local properties  = allocate {
     margintextblock    = { pdf = "Span",       nature = "inline"  },
     margintext         = { pdf = "Span",       nature = "inline"  },
 
-    math               = { pdf = "Div",        nature = "display" },
+    math               = { pdf = "Div",        nature = "inline"  }, -- no display
     mn                 = { pdf = "Span",       nature = "mixed"   },
     mi                 = { pdf = "Span",       nature = "mixed"   },
     mo                 = { pdf = "Span",       nature = "mixed"   },

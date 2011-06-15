@@ -56,7 +56,7 @@ local copy_node_list   = node.copy_list
 local slide_nodes      = node.slide
 local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
 local traverse_id      = node.traverse_id
-local free_node_list   = node.free_list
+local free_node_list   = node.flush_list
 
 local link_nodes       = nodes.link
 

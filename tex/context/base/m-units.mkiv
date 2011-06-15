@@ -68,6 +68,17 @@
 
 \unprotect
 
+\let\unit\undefined
+
+\definesynonyms
+  [\v!unit]
+  [\v!units]
+  [\unitmeaning]
+
+\setupsynonyms
+  [\v!unit]
+  [\c!synonymcommand=\dimension]
+
 \startmodule[units]
 
 %D This runtime loadable module implements a way of defining

@@ -221,6 +221,6 @@ end
 
 --
 
-local table.setmetatableindex(t,f)
+function table.setmetatableindex(t,f)
     setmetatable(t,{ __index = f })
 end
