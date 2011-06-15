@@ -25,6 +25,7 @@
 
 \def\t!division          {division}               % Div
 \def\t!paragraph         {paragraph}              % P
+\def\t!p                 {p}                      % P
 \def\t!construct         {construct}              % Span
 
 \def\t!section           {section}                % Sect
@@ -222,8 +223,12 @@
   {\dostarttagged\t!paragraph\empty}
 
 \unexpanded\def\stopparagraph
-  {\dostoptagged
+  {% \removeunwantedspaces % yes or no
+   \dostoptagged
    \par}
+
+\let\startpar\startparagraph
+\let\stoppar \stopparagraph
 
 \appendtoks
     \dostarttagged\t!document\empty

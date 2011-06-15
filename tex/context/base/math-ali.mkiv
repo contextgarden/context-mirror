@@ -259,7 +259,7 @@
      \setupmathalignment[\currentmathalignment][#1]%
    \fi
    \the\everymathalignment
-   \eqaligncolumn\zerocount
+   \eqaligncolumn\zerocount % LOCAL HERE?
    \processcommacommand
      [\mathalignmentparameter\c!align]
      {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
@@ -787,7 +787,7 @@
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
-   \eqaligncolumn\zerocount % could be \scratchcounter
+   \eqaligncolumn\zerocount % could be \scratchcounter LOCAL HERE?
    \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
    \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
    \global\eqaligncolumn\plusone

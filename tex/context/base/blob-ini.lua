@@ -28,27 +28,18 @@ if not modules then modules = { } end modules ['blob-ini'] = {
 -- blob.paragraph
 -- blob.page
 
-local type = type
+local type, tostring = type, tostring
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
 local report_blobs = logs.reporter("blobs")
 
-local fontdata          = fonts.hashes.identifiers
+local t_tonodes         = typesetters.tonodes
+local t_hpack           = typesetters.hpack
 
-local nodepool          = nodes.pool
-
-local new_glyph         = nodepool.glyph
-local new_glue          = nodepool.glue
-
-local copy_node         = node.copy
-local copy_node_list    = node.copy_list
-local insert_node_after = node.insert_after
 local flush_node_list   = node.flush_list
 local hpack_node_list   = node.hpack
 local vpack_node_list   = node.vpack
 local write_node        = node.write
-
-local current_font      = font.current
 
 blobs = blobs or  { }
 
@@ -57,7 +48,7 @@ local space   = lpegpatterns.spacer
 local spacing = newline * space^0
 local content = (space^1)/" " + (1-spacing)
 
-local ctxtextcapture = lpeg.Ct ( (
+local ctxtextcapture = lpeg.Ct ( ( -- needs checking (see elsewhere)
     space^0 * (
         newline^2 * space^0 * lpeg.Cc("")
       + newline   * space^0 * lpeg.Cc(" ")
@@ -69,6 +60,18 @@ function blobs.new()
     return {
         list = { },
     }
+end
+
+function blobs.dispose(t)
+    local list = t.list
+    for i=1,#list do
+        local li = list[i]
+        local pack = li.pack
+        if pack then
+            flush_node_list(pack)
+            li.pack = nil
+        end
+    end
 end
 
 function blobs.append(t,str) -- will be link nodes.link
@@ -94,7 +97,7 @@ function blobs.append(t,str) -- will be link nodes.link
                     noflist = noflist + 1
                     list[noflist] = l
                 end
-                local head, tail = tonodes(str,nil,nil)
+                local head, tail = t_tonodes(str,nil,nil)
                 if head then
                     if l.head then
                         l.tail.next = head
@@ -129,13 +132,26 @@ end
 function blobs.write(t)
     local list = t.list
     for i=1,#list do
-        local pack = list[i].pack
+        local li = list[i]
+        local pack = li.pack
         if pack then
             write_node(pack)
+            flush_node_list(pack)
+            li.pack = nil
         end
     end
 end
 
+function blobs.dimensions(t)
+    local list = t.list
+    local first = list and list[1]
+    if first then
+        local pack = first.pack
+        return pack.width, pack.height, pack.depth
+    else
+        return 0, 0, 0
+    end
+end
 
 -- blob.char
 -- blob.line: head, tail
@@ -157,3 +173,22 @@ end
 --~     pack = false,
 --~     properties = { },
 --~ end
+
+-- for the moment here:
+
+function commands.widthofstring(str)
+    local l = t_hpack(str)
+    context(number.todimen(l.width))
+    flush_node_list(l)
+end
+
+-- less efficient:
+--
+-- function commands.widthof(str)
+--     local b = blobs.new()
+--     blobs.append(b,str)
+--     blobs.pack(b)
+--     local w = blobs.dimensions(b)
+--     context(number.todimen(w))
+--     blobs.dispose(b)
+-- end

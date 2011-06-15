@@ -63,7 +63,7 @@
   {\ifcsname\??an#1\endcsname\@EA\nonoanchor\else\@EA\dodoanchor\fi[#1]}
 
 \def\nonoanchor[#1]%
-  {}
+  {\csname\??an#1\endcsname}
 
 \def\dodoanchor[#1]%
   {\dotripleempty\dododoanchor[#1]}

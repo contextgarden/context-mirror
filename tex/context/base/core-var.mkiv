@@ -86,8 +86,8 @@
 \newtoks \everyendofpar
 %newtoks \everyparflush
 
-\def\bpar{\the\everybeginofpar\ignorespaces} % may interfere with \everypar
-\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+\def\bpar{\dostarttagged\t!paragraph\empty\the\everybeginofpar\ignorespaces} % may interfere with \everypar
+\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi\dostoptagged  } % test prevents problems with \bpar\epar
 
 %D Lists:
 

@@ -6,11 +6,11 @@ if not modules then modules = { } end modules ['spac-chr'] = {
     license   = "see context related readme files"
 }
 
-local byte = string.byte
+local byte, lower = string.byte, string.lower
 
------ trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
------
------ report_characters = logs.reporter("typesetting","characters")
+trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
+
+report_characters = logs.reporter("typesetting","characters")
 
 local nodes, node = nodes, node
 
@@ -26,6 +26,8 @@ local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
+
+local chardata           = characters.data
 
 local typesetters        = typesetters
 
@@ -62,10 +64,10 @@ end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
     local attr = current.attr
+    head, current = insert_node_after(head,current,new_penalty(10000))
     head, current = insert_node_after(head,current,new_glue(space,spacestretch,spaceshrink))
     current.attr = attr
     set_attribute(current,a_character,unicode)
-    head, current = insert_node_after(head,current,new_penalty(10000))
     return head, current
 end
 
@@ -144,8 +146,12 @@ function characters.handler(head)
     while current do
         local next = current.next
         if current.id == glyph_code then
-            local method = methods[current.char]
+            local char = current.char
+            local method = methods[char]
             if method then
+                if trace_characters then
+                    report_characters("replacing character U+%04X (%s)",char,lower(chardata[char].description))
+                end
                 head = method(head,current)
                 head = remove_node(head,current,true)
                 done = true

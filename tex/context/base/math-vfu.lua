@@ -340,6 +340,7 @@ function vfmath.addmissing(main,id,size)
     jointwo  (main,characters,id,size,0x27FA,0x021D0,joinrelfactor,0x021D2)           -- \Leftarrow\joinrel\Rightarrow
     jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
+    jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage

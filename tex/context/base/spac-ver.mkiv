@@ -1307,6 +1307,8 @@
 \definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
 \definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
 
+\definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+
 \newtoks\everysetupgridsnapping % this only happens at the setuplayout level
 
 \def\dosetupgridsnapping{\the\everysetupgridsnapping} % not used !

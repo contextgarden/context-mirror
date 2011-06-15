@@ -102,9 +102,13 @@ local function process(start,what,n,parent)
         end
         local proc = what[id]
         if proc then
-            local done, newstart = proc(start,what,n,parent or start.prev)
+         -- report_processing("start processing")
+            local done, newstart = proc(start,what,n,parent) -- prev is bugged:  or start.prev
             if newstart then
                 start = newstart
+             -- report_processing("stop processing (new start)")
+            else
+             -- report_processing("stop processing")
             end
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
@@ -115,7 +119,8 @@ local function process(start,what,n,parent)
                   noad = start.sup          if noad then process(noad,what,n,start) end -- list
                   noad = start.sub          if noad then process(noad,what,n,start) end -- list
         elseif id == math_box or id == math_sub then
-            local noad = start.list         if noad then process(noad,what,n,start) end -- list
+         -- local noad = start.list         if noad then process(noad,what,n,start) end -- list
+            local noad = start.head         if noad then process(noad,what,n,start) end -- list
         elseif id == math_fraction then
             local noad = start.num          if noad then process(noad,what,n,start) end -- list
                   noad = start.denom        if noad then process(noad,what,n,start) end -- list
@@ -147,7 +152,17 @@ local function process(start,what,n,parent)
     end
 end
 
-noads.process = process
+local function processnoads(head,actions,banner)
+    if trace_processing then
+        report_processing("start '%s'",banner)
+        process(head,actions)
+        report_processing("stop '%s'",banner)
+    else
+        process(head,actions)
+    end
+end
+
+noads.process = processnoads
 
 -- character remapping
 
@@ -241,7 +256,7 @@ processors.relocate[math_delim] = function(pointer)
 end
 
 function handlers.relocate(head,style,penalties)
-    process(head,processors.relocate)
+    processnoads(head,processors.relocate,"relocate")
     return true
 end
 
@@ -275,7 +290,7 @@ processors.render[math_char] = function(pointer)
 end
 
 function handlers.render(head,style,penalties)
-    process(head,processors.render)
+    processnoads(head,processors.render,"render")
     return true
 end
 
@@ -310,7 +325,7 @@ resize[math_fence] = function(pointer)
 end
 
 function handlers.resize(head,style,penalties)
-    process(head,resize)
+    processnoads(head,resize,"resize")
     return true
 end
 
@@ -324,8 +339,9 @@ local chardata = characters.data
 
 -- only [nd,ll,ul][po][nd,ll,ul]
 
-respace[math_noad] = function(pointer)
-    if pointer.subtype == noad_ord then
+respace[math_char] = function(pointer,what,n,parent) -- not math_noad .. math_char ... and then parent
+    pointer = parent
+    if pointer and pointer.subtype == noad_ord then
         local a = has_attribute(pointer,mathpunctuation)
         if a and a > 0 then
             set_attribute(pointer,mathpunctuation,0)
@@ -372,7 +388,7 @@ respace[math_noad] = function(pointer)
 end
 
 function handlers.respace(head,style,penalties)
-    process(head,respace)
+    processnoads(head,respace,"respace")
     return true
 end
 
@@ -386,8 +402,9 @@ local collapse = { } processors.collapse = collapse
 
 local mathpairs = characters.mathpairs
 
-collapse[math_noad] = function(pointer)
-    if pointer.subtype == noad_rel then
+collapse[math_char] = function(pointer,what,n,parent)
+    pointer = parent
+    if pointer and pointer.subtype == noad_rel then
         local current_nucleus = pointer.nucleus
         if current_nucleus.id == math_char then
             local current_char = current_nucleus.char
@@ -424,7 +441,7 @@ collapse[math_noad] = function(pointer)
 end
 
 function noads.handlers.collapse(head,style,penalties)
-    process(head,collapse)
+    processnoads(head,collapse,"collapse")
     return true
 end
 
@@ -437,7 +454,8 @@ local subscripts   = characters.subscripts
 
 local replaced = { }
 
-local function replace(pointer)
+local function replace(pointer,what,n,parent)
+    pointer = parent -- we're following the parent list (chars trigger this)
     local next = pointer.next
     local start_super, stop_super, start_sub, stop_sub
     local mode = "unset"
@@ -510,15 +528,13 @@ local function replace(pointer)
         end
         stop_sub.next = nil
     end
+    -- we could return stop
 end
 
-   unscript[math_noad]     = replace
--- unscript[math_accent]   = replace
--- unscript[math_radical]  = replace
--- unscript[math_fraction] = replace
+unscript[math_char] = replace -- not noads as we need to recurse
 
 function handlers.unscript(head,style,penalties)
-    process(head,unscript)
+    processnoads(head,unscript,"unscript")
     return true
 end
 
@@ -605,7 +621,7 @@ alternate[math_char] = function(pointer)
 end
 
 function handlers.check(head,style,penalties)
-    process(head,alternate)
+    processnoads(head,alternate,"check")
     return true
 end
 

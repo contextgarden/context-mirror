@@ -60,7 +60,6 @@ local utfvalues = string.utfvalues
 
 local trace_export = false  trackers.register  ("structures.export",            function(v) trace_export = v end)
 local less_state   = false  directives.register("structures.export.lessstate",  function(v) less_state   = v end)
-local page_breaks  = false  directives.register("structures.export.pagebreaks", function(v) page_breaks  = v end)
 local show_comment = true   directives.register("structures.export.comment",    function(v) show_comment = v end)
 
 local report_export     = logs.reporter("backend","export")
@@ -290,7 +289,7 @@ function structurestags.setattributehash(fulltag,key,value)
 end
 
 properties.vspace = { export = "break",     nature = "display" }
-properties.pbreak = { export = "pagebreak", nature = "display" }
+----------------- = { export = "pagebreak", nature = "display" }
 
 local function makebreaklist(list)
     nofbreaks = nofbreaks + 1
@@ -909,7 +908,7 @@ function checks.math(di)
     }
     -- can be option if needed:
     if mode == "inline" then
-        di.nature = "mixed" -- "inline"
+        di.nature = "mixed" -- else spacing problem (maybe inline)
     else
         di.nature = "display"
     end
@@ -1246,7 +1245,7 @@ local function flushtree(result,data,nature,depth)
             linedone = false
         elseif not di.collapsed then -- ignore collapsed data (is appended, reconstructed par)
             local element = di.element
-            if element == "break" or element == "pagebreak" then
+            if element == "break" then -- or element == "pagebreak"
                 emptytag(result,element,nature,depth)
             elseif element == "" or di.skip == "ignore" then
                 -- skip
@@ -1262,9 +1261,6 @@ local function flushtree(result,data,nature,depth)
                 begintag(result,element,natu,depth,di,skip)
                 flushtree(result,di.data,natu,depth)
                 endtag(result,element,natu,depth,skip)
-             -- if pdone then
-             --     etag(result,"p","display",depth)
-             -- end
                 if di.after then
                     flushtree(result,di.after,nature,depth)
                 end
@@ -1273,25 +1269,41 @@ local function flushtree(result,data,nature,depth)
     end
 end
 
-local function breaktree(tree)
---~     local data = tree.data
---~     local parnumber = tree.parnumber
---~     local nofdata = #data
---~     for i=1,nofdata do
---~         local di = data[i]
---~         if di and type(di) == "table" and not di.collapsed then
---~             local element = di.element
---~             if element == "break" or element == "pagebreak" or element == "" or di.skip == "ignore" then
---~                 -- do nothing
---~             else
---~                 local pn = di.parnumber
---~                 if parnumber and pn and di.nature == "inline" and parnumber ~= pn then
---~                     di.breaknode = true
---~                 end
---~                 breaktree(di)
---~             end
---~         end
---~     end
+-- way too fragile
+
+local function breaktree(tree,parent,parentelement) -- also removes double breaks
+     local data = tree.data
+     if data then
+         local nofdata = #data
+         local prevelement
+         for i=1,nofdata do
+             local di = data[i]
+             if not di then
+                 -- skip
+             elseif type(di) == "string" then
+                 prevelement = nil
+             elseif not di.collapsed then
+                 local element = di.element
+                 if element == "break" then -- or element == "pagebreak"
+                     if prevelement == "break" then
+                         di.element = ""
+                     end
+                     prevelement = element
+                 elseif element == "" or di.skip == "ignore" then
+                     -- skip
+                 else
+--~ if element == "p" and di.nature ~= "display" then
+--~     di = di.data
+--~     data[i] = di
+--~                     breaktree(di,tree,element)
+--~ else
+                    prevelement = element
+                    breaktree(di,tree,element)
+--~ end
+                 end
+             end
+         end
+     end
 end
 
 -- finalizers
@@ -1683,6 +1695,8 @@ local function finishexport()
     end
 end
 
+-- whatsit_code localpar_code
+
 local function collectresults(head,list)
     local p
     for n in traverse_nodes(head) do
@@ -1727,7 +1741,6 @@ local function collectresults(head,list)
                     elseif last then
                         local at = has_attribute(n,a_taggedpar)
                         if at ~= currentparagraph then
-                            -- inject break
                             pushcontent(true) -- add break
                             pushentry(currentnesting)
                             currentattribute = last
@@ -1868,7 +1881,6 @@ local function collectresults(head,list)
                         end
                     end
                 end
---~ end
             elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                 if not somespace[currentcontent[nofcurrentcontent]] then
                     if trace_export then
@@ -1932,6 +1944,7 @@ local function collectresults(head,list)
                     end
                 end
             end
+     -- elseif id == whatsit_code and n.subtype == localpar_code then
         end
         p = n
     end

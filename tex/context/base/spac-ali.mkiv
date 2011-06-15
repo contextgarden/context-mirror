@@ -613,6 +613,7 @@
 \def\leftaligned {\doalignline \relax \hss  }
 \def\midaligned  {\doalignline \hss   \hss  }
 \def\rightaligned{\doalignline \hss   \relax}
+\def\maxaligned  {\doalignline \relax \relax}
 
 \let\centeraligned\midaligned
 
@@ -626,6 +627,7 @@
 \letvalue{\s!do\v!line\v!flushleft }\rightaligned
 \letvalue{\s!do\v!line\v!flushright}\leftaligned
 \letvalue{\s!do\v!line\v!center    }\midaligned
+\letvalue{\s!do\v!line\v!max       }\maxaligned
 
 \def\doalignedline#1{\resetrealignsignal\csname\s!do\v!line#1\endcsname}
 

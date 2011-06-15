@@ -94,7 +94,7 @@ end
 
 -- under construction:
 
-local function totable(n,flat,verbose)
+local function totable(n,flat,verbose) -- todo: no attributes
     -- todo: no local function
     local function to_table(n,flat,verbose)
         local f = nodefields(n)
