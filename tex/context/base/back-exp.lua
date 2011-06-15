@@ -453,6 +453,8 @@ function extras.sorting(result,element,detail,n,fulltag,di)
     end
 end
 
+local usedimages = { }
+
 function extras.image(result,element,detail,n,fulltag,di)
     local hash = attributehash[fulltag]
     if hash then
@@ -464,15 +466,37 @@ function extras.image(result,element,detail,n,fulltag,di)
                 local name = file.basename(fullname)
                 local path = file.dirname(fullname)
                 local page = figure.page or 1
+                local width = figure.width or 0
+                local height = figure.height or 0
+                local currentimage = { }
                 if name ~= "" then
                     result[#result+1] = format(" name='%s'",name)
+                    currentimage.name = name
+                    if file.extname(name) == "pdf" then
+                        -- temp hack .. we will have a remapper
+                        name = file.replacesuffix(name,"svg")
+                    end
+                    currentimage.filename = name
                 end
                 if path ~= "" then
                     result[#result+1] = format(" path='%s'",path)
+                    currentimage.path = path
                 end
                 if page > 1 then
                     result[#result+1] = format(" page='%s'",page)
+                    currentimage.page = page
                 end
+                if width > 0 then
+                    width = number.todimen(width,"cm","%0.3fcm")
+                    result[#result+1] = format(" width='%s'",width)
+                    currentimage.width = width
+                end
+                if height > 0 then
+                    height = number.todimen(height,"cm","%0.3fcm")
+                    result[#result+1] = format(" ysize='%s'",height)
+                    currentimage.height = height
+                end
+                usedimages[#usedimages+1] = currentimage
             end
         end
     end
@@ -730,7 +754,7 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                 local tg = d.tg
                 if automathrows and roottg == "mrow" then
                     -- maybe just always ! check spec first
-                    if tg == "mrow" or tg == "mfenced" or tg == "mfrac" or tg == "mroot" then
+                    if tg == "mrow" or tg == "mfenced" or tg == "mfrac" or tg == "mroot" or tg == "msqrt"then
                         root.skip = "comment"
                     elseif tg == "mo" then
                         root.skip = "comment"
@@ -757,6 +781,13 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                     if detail == "accent" then
                         di.attributes = { accent = "true" }
                         di.detail = nil
+                    end
+                    checkmath(di)
+                    i = i + 1
+                elseif tg == "mroot" then
+                    if #di.data == 1 then
+                        -- else firefox complains
+                        di.element = "msqrt"
                     end
                     checkmath(di)
                     i = i + 1
@@ -1169,14 +1200,23 @@ local function begintag(result,element,nature,depth,di,skip)
     used[element][detail or ""] = nature -- for template css
     local metadata = tagmetadata[fulltag]
     if metadata then
-     -- used[element] = "mixed"
-        metadata = table.toxml(metadata,"metadata",true,depth*2,2) -- nobanner
+     -- metadata = table.toxml(metadata,"metadata",true,depth*2,2) -- nobanner
+     -- if not linedone then
+     --     result[#result+1] = format("\n%s\n",metadata)
+     --     linedone = true
+     -- else
+     --     result[#result+1] = format("%s\n",metadata)
+     -- end
         if not linedone then
-            result[#result+1] = format("\n%s\n",metadata)
-        else
-            result[#result+1] = format("%s\n",metadata)
+            result[#result+1] = "\n"
+            linedone = true
         end
-        linedone = true
+        result[#result+1] = format("%s<metadata>\n",spaces[depth])
+        for k, v in table.sortedpairs(metadata) do
+            v = utfgsub(v,".",entities)
+            result[#result+1] = format("%s<metavariable name=%q>%s</metavariable>\n",spaces[depth+1],k,v)
+        end
+        result[#result+1] = format("%s</metadata>\n",spaces[depth])
     end
 end
 
@@ -2019,6 +2059,15 @@ local csspreamble = [[
 --     >
 -- ]]
 
+local imagetemplate = [[
+image[name="%s"] {
+    display          : block ;
+    background-image : url(%s) ;
+    background-size  : 100%% auto ;
+    width            : %s ;
+    height           : %s ;
+}]]
+
 local cssfile, xhtmlfile = nil, nil
 
 directives.register("backend.export.css",  function(v) cssfile   = v end)
@@ -2047,7 +2096,16 @@ local function stopexport(v)
         files = files,
     }
     report_export("saving xml data in '%s",xmlfile)
+    --
     local results = { }
+    -- collect tree
+    local result  = { }
+    flushtree(result,tree.data,"display",0) -- we need to collect images
+    result = concat(result)
+    result = gsub(result,"\n *\n","\n")
+    result = gsub(result,"\n +([^< ])","\n%1")
+    --
+    local imgfile = file.addsuffix(file.removesuffix(xmlfile) .. "-images","css")
     results[#results+1] = format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
     if cssfile then
         local cssfiles = settings_to_array(cssfile)
@@ -2062,20 +2120,32 @@ local function stopexport(v)
             report_export("adding css reference '%s",cssfile)
             results[#results+1] = format(csspreamble,cssfile)
         end
+        if #usedimages > 0 then
+            results[#results+1] = format(csspreamble,imgfile)
+        end
     end
-    -- collect tree
-    local result  = { }
-    flushtree(result,tree.data,"display",0)
-    result = concat(result)
-result = gsub(result,"\n *\n","\n")
-result = gsub(result,"\n +([^< ])","\n%1")
+    --
     results[#results+1] = result
+    --
     results = concat(results)
     -- if needed we can do a cleanup of the tree (no need to load for xhtml then)
     -- write to file
     io.savedata(xmlfile,results)
     -- css template file
     if cssfile then
+        if #usedimages > 0 then
+            report_export("saving css image definitions in '%s",imgfile)
+            local result = { format("/* images for file %s */",xmlfile) }
+            for i=1,#usedimages do
+                local im = usedimages[i]
+                -- todo: path
+                result[#result+1] = format(imagetemplate,im.name,im.filename,im.width,im.height)
+            end
+            io.savedata(imgfile,concat(result,"\n\n"))
+        else
+            os.remove(imgfile)
+        end
+        --
         local cssfile = file.replacesuffix(xmlfile,"template")
         report_export("saving css template in '%s",cssfile)
         local templates = { format("/* template for file %s */",xmlfile) }
@@ -2091,6 +2161,8 @@ result = gsub(result,"\n +([^< ])","\n%1")
             end
         end
         io.savedata(cssfile,concat(templates,"\n\n"))
+    else
+        os.remove(imgfile)
     end
     -- xhtml references
     if xhtmlfile then

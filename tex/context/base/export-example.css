@@ -1,0 +1,663 @@
+/*
+
+	author    : Hans Hagen, PRAGMA-ADE, Hasselt NL
+	copyright : PRAGMA ADE / ConTeXt Development Team
+	license   : see context related readme files
+	comment   : companion to context.mkiv
+
+*/
+
+/* ignore  : mixed   */
+/* metadata: display */
+
+ignore {
+	display : none ;
+}
+
+xmetadata {
+	display : none ;
+}
+
+xmetavariable {
+	display : none ;
+}
+
+/* document : display */
+
+document:before {
+	content       : attr(title) ;
+	font-size     : 44pt ;
+	font-weight   : bold ;
+	margin-bottom : 1em ;
+}
+
+document {
+	font-family : "Lucida Bright", "DejaVu Serif", serif ;
+	font-size   : 12pt ;
+	width       : 50em ;
+	padding     : 1em ;
+}
+
+document>metadata {
+	font-family   : "Lucida Console", "DejaVu Sans Mono", monospace ;
+	margin-bottom : 2em ;
+}
+
+document>metadata>metavariable[name="title"]:before {
+	content : "title\00A0\00A0\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="author"]:before {
+		content : "author\00A0\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="version"]:before {
+	content : "version\00A0:\00A0" ;
+}
+
+document>metadata>metavariable[name="title"], document>metadata>metavariable[name="author"], document>metadata>metavariable[name="version"] {
+	display : block ;
+}
+
+/* paragraph : mixed */
+/* p         : mixed */
+
+paragraph, p {
+	display       : block ;
+	margin-top    : 0.5em ;
+	margin-bottom : 0.5em ;
+}
+
+/* break : display */
+
+break {
+	display       : block ;
+	margin-bottom : 0.5em ;
+}
+
+/* construct : inline */
+
+construct {
+}
+
+construct[detail="important"] {
+	font-weight : bold ;
+}
+
+/* section        : display */
+/* sectiontitle   : mixed   */
+/* sectionnumber  : mixed   */
+/* sectioncontent : display */
+
+section {
+	display : block ;
+}
+
+sectioncontent {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+section[detail="chapter"], section[detail="title"] {
+	margin-top    : 3em ;
+	margin-bottom : 2em ;
+}
+
+section[detail="section"], section[detail="subject"] {
+	margin-top    : 2.5em ;
+	margin-bottom : 2.5em ;
+}
+
+section[detail="subsection"], section[detail="subsubject"] {
+	margin-top    : 2em ;
+	margin-bottom : 2em ;
+}
+
+section[detail="subsubsection"], section[detail="subsubsubject"] {
+	margin-top    : 1em ;
+	margin-bottom : 0em ;
+}
+
+section[detail="summary"], section[detail="subsummary"] {
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+}
+
+section[detail="chapter"]>sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 3em ;
+	font-weight  : bold ;
+}
+
+section[detail="chapter"]>sectiontitle, section[detail="title"]>sectiontitle {
+	font-size   : 3em ;
+	font-weight : bold ;
+}
+
+section[detail="section"]>sectiontitle, section[detail="subject"]>sectiontitle {
+	font-size   : 2.5em ;
+	font-weight : bold ;
+}
+
+section[detail="subsection"]>sectiontitle, section[detail="subsubject"]>sectiontitle{
+	font-size   : 2em ;
+	font-weight : bold ;
+}
+
+section[detail="subsubsection"]>sectiontitle, section[detail="subsubsubject"]>sectiontitle{
+	font-size   : 1em ;
+	font-weight : bold ;
+}
+
+section[detail="section"]>sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 2.5em ;
+	font-weight  : bold ;
+}
+
+section[detail="summary"]>sectiontitle {
+	display             : block ;
+	margin-top          : 1em ;
+	margin-bottom       : 1em ;
+	font-weight         : bold ;
+	border-bottom-style : solid ;
+	border-color        : rgb(50%,50%,100%) ;
+	border-width        : .15em;
+}
+
+section[detail="subsection"]>sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 2em ;
+	font-weight  : bold ;
+}
+
+section[detail="subsection"]>sectionnumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	font-size    : 1em ;
+	font-weight  : bold ;
+}
+
+section[detail="subsummary"]>sectiontitle {
+	display             : block ;
+	margin-top          : 1em ;
+	margin-bottom       : 1em ;
+	font-weight         : bold ;
+	border-color        : rgb(50%,50%,100%) ;
+	border-bottom-style : dotted ;
+	border-width        : .15em ;
+}
+
+/* itemgroup   : display */
+/* item        : display */
+/* itemtag     : mixed   */
+/* itemcontent : mixed   */
+
+itemgroup {
+	display       : block ;
+	margin-bottom : 0.5em ;
+	margin-top    : 0.5em ;
+}
+
+itemgroup[symbol="1"] { list-style-type : disc ; }
+itemgroup[symbol="2"] { list-style-type : square ; }
+itemgroup[symbol="3"] { list-style-type : square ; }
+itemgroup[symbol="4"] { list-style-type : square ; }
+itemgroup[symbol="5"] { list-style-type : circ ; }
+itemgroup[symbol="a"] { list-style-type : lower-alpha ; }
+itemgroup[symbol="A"] { list-style-type : alpha ; }
+itemgroup[symbol="r"] { list-style-type : lower-roman ; }
+itemgroup[symbol="R"] { list-style-type : upper-roman ; }
+itemgroup[symbol="n"] { list-style-type : decimal ; }
+itemgroup[symbol="g"] { list-style-type : lower-greek ; }
+itemgroup[symbol="G"] { list-style-type : upper-greek ; }
+
+item {
+	display       : list-item ;
+	margin-left   : 1em ;
+	margin-bottom : 0.5em ;
+	margin-top    : 0.5em ;
+}
+
+itemtag {
+	display: none ;
+}
+
+itemcontent {
+}
+
+/* description        : display */
+/* descriptiontag     : mixed   */
+/* descriptioncontent : mixed   */
+/* descriptionsymbol  : inline  */
+
+description {
+	display       : block ;
+	margin-bottom : 1em ;
+	margin-top    : 1em ;
+}
+
+descriptiontag {
+    float        : left ;
+    clear        : left ;
+	margin-right : 1em ;
+    text-align   : left ;
+    font-weight  : bold ;
+}
+
+descriptioncontent {
+}
+
+descriptionsymbol {
+}
+
+/* verbatimblock      : display */
+/* verbatimlines      : display */
+/* verbatimline       : mixed   */
+/* verbatim           : inline  */
+
+verbatimblock {
+	background-color : rgb(50%,50%,100%) ;
+	display          : block ;
+	padding          : 1em ;
+	margin-bottom    : 1em ;
+	margin-top       : 1em ;
+	font-family      : "Lucida Console", "DejaVu Sans Mono", monospace ;
+}
+
+verbatimlines+verbatimlines {
+	display    : block ;
+	margin-top : 1em ;
+}
+
+verbatimline {
+	display     : block ;
+	white-space : pre-wrap ;
+}
+
+verbatim {
+	white-space : pre-wrap ;
+	color       : rgb(60%,60%,0%) ;
+	font-family : "Lucida Console", "DejaVu Sans Mono", monospace ;
+}
+
+/* lines : display */
+/* line  : mixed   */
+
+lines {
+	display       : block ;
+	margin-bottom : 1em ;
+	margin-top    : 1em ;
+}
+
+lines+lines {
+	display    : block ;
+	margin-top : 1em ;
+}
+
+line {
+	display     : block ;
+	white-space : pre-wrap ;
+}
+
+/* synonym : inline  */
+/* sorting : inline  */
+
+sorting, synonym {
+	display      : inline ;
+	font-variant : small-caps ;
+}
+
+/* register          : display */
+/* registersection   : display */
+/* registertag       : mixed   */
+/* registerentries   : display */
+/* registerentry     : mixed   */
+/* registersee       : mixed   */
+/* registerpages     : mixed   */
+/* registerpage      : inline  */
+/* registerpagerange : mixed   */
+
+register {
+	display: none ;
+}
+
+/* table     : display */
+/* tablerow  : display */
+/* tablecell : mixed   */
+
+table {
+	display : table ;
+}
+
+tablerow {
+	display : table-row ;
+}
+
+tablecell[align="middle"] {
+	display    : table-cell ;
+	text-align : center ;
+	padding    : .1em ;
+}
+
+tablecell[align="flushleft"] {
+	display    : table-cell ;
+	text-align : left ;
+	padding    : .1em ;
+}
+
+tablecell[align="flushright"] {
+	display    : table-cell ;
+	text-align : right ;
+	padding    : .1em ;
+}
+
+tablecell {
+	display    : table-cell ;
+	text-align : left ;
+	padding    : .1em ;
+}
+
+/* tabulate     : display */
+/* tabulaterow  : display */
+/* tabulatecell : mixed   */
+
+tabulate {
+	display       : table ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+tabulaterow {
+	display : table-row ;
+}
+
+tabulatecell[align="middle"] {
+	display       : table-cell ;
+	text-align    : center ;
+	padding-right : 1em ;
+}
+
+tabulatecell[align="flushleft"] {
+	display       : table-cell ;
+	text-align    : left ;
+	padding-right : 1em ;
+}
+
+tabulatecell[align="flushright"] {
+	display       : table-cell ;
+	text-align    : right ;
+	padding-right : 1em ;
+}
+
+tabulatecell {
+	display       : table-cell ;
+	text-align    : left ;
+	padding-right : 1em ;
+}
+
+/* list        : display */
+/* listitem    : display */
+/* listtag     : mixed   */
+/* listcontent : mixed   */
+/* listdata    : mixed   */
+/* listpage    : mixed   */
+
+list {
+	display : block ;
+}
+
+listitem[detail="chapter"] {
+	display     : block ;
+	margin-top  : 1em ;
+	font-weight : bold ;
+}
+
+listitem[detail="section"] {
+	display : block ;
+}
+
+listitem[detail="subsection"] {
+	display : block ;
+}
+
+listtag {
+	display : inline-block ;
+	width   : 5em ;
+}
+
+listcontent {
+}
+
+listdata {
+}
+
+listpage {
+	display : none ;
+}
+
+/* delimitedblock : display */
+/* delimited      : inline  */
+/* subsentence    : inline  */
+
+/* :lang(en) */
+
+delimited[detail="quotation"]:before, delimitedblock[detail="quotation"]:before {
+	content : "\201C" ;
+}
+
+delimited[detail="quotation"]:after, delimitedblock[detail="quotation"]:after {
+	content : "\201D" ;
+}
+
+delimited[detail="quote"]:before, delimitedblock[detail="quote"]:before {
+	content : "\2018" ;
+}
+
+delimited[detail="quote"]:after, delimitedblock[detail="quote"]:after {
+	content : "\2019" ;
+}
+
+delimited {
+    display : inline
+}
+
+delimitedblock {
+    display : block
+}
+
+subsentence:before, subsentence:after {
+	content : "\2014" ;
+}
+
+subsentence {
+    display : inline
+}
+
+/* label  : mixed   */
+/* number : mixed   */
+
+/* float        : display */
+/* floatcaption : mixed   */
+/* floatlabel   : inline  */
+/* floatnumber  : inline  */
+/* floattext    : mixed   */
+/* floatcontent : mixed   */
+
+float {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+floatcaption {
+	display    : block ;
+	margin-top : 0.5em ;
+	color      : rgb(60%,60%,0%) ;
+}
+
+floatlabel {
+	font-weight  : bold ;
+	margin-right : 1em ;
+}
+
+floatnumber {
+	font-weight : bold ;
+}
+
+floattext {
+}
+
+floatcontent {
+}
+
+/* image     : mixed */
+/* mpgraphic : mixed */
+
+/* image {
+    display         : block ;
+    background      : url(hacker.jpg) ;
+    background-size : 100% auto ;
+    width           : 8.992cm ;
+    height          : 5.994cm ;
+} */
+
+mpgraphic:before { /* does not work with empty element */
+	content : "[runtime metapost graphic]" ;
+}
+
+mpgraphic {
+	display : inline ;
+}
+
+/* formula        : display */
+/* subformula     : display */
+/* formulaset     : display */
+/* formulacaption : mixed   */
+/* formulalabel   : mixed   */
+/* formulanumber  : mixed   */
+/* formulacontent : display */
+
+formula {
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+subformula { /* todo */
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+formulaset { /* todo */
+	display       : block ;
+	margin-top    : 1em ;
+	margin-bottom : 1em ;
+	margin-left   : 2.5em ;
+}
+
+formulacaption { /* todo */
+	display    : block ;
+	margin-top : 0.5em ;
+	color      : rgb(60%,60%,0%) ;
+}
+
+formulalabel {
+	font-weight  : bold ;
+	margin-right : 1em ;
+}
+
+formulanumber {
+	font-weight : bold ;
+}
+
+formulacontent {
+	display : block ;
+}
+
+/* link : inline  */
+
+/* margintextblock : inline  */
+/* margintext      : inline  */
+
+/* math       : inline  */
+/* mn         : mixed   */
+/* mi         : mixed   */
+/* mo         : mixed   */
+/* ms         : mixed   */
+/* mrow       : display */
+/* msubsup    : display */
+/* msub       : display */
+/* msup       : display */
+/* merror     : mixed   */
+/* munderover : display */
+/* munder     : display */
+/* mover      : display */
+/* mtext      : mixed   */
+/* mfrac      : display */
+/* mroot      : display */
+/* msqrt      : display */
+/* mfenced    : display */
+/* maction    : display */
+/* mtable     : display */
+/* mtr        : display */
+/* mtd        : display */
+
+/* quantity : inline */
+/* unit     : inline */
+/* number   : inline */
+
+quantity {
+}
+
+quantity>unit {
+}
+
+quantity>number {
+}
+
+/* sub    : inline */
+/* sup    : inline */
+/* subsup : inline */
+
+sup {
+	font-size      : xx-small ;
+    line-height    : 0 ;
+	vertical-align : top ;
+}
+
+sub {
+	font-size      : xx-small ;
+    line-height    : 0 ;
+	vertical-align : bottom ;
+}
+
+
+subsup>sup {
+	vertical-align : top ;
+}
+
+subsup>sub {
+	vertical-align : bottom ;
+}
+
+/* xhtml */
+
+a[href] {
+	text-decoration : none ;
+	color           : inherit ;
+}
+
+a[href]:hover {
+	color           : rgb(50%,0%,0%) ;
+	text-decoration : underline ;
+}

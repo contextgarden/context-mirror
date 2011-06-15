@@ -1,0 +1,71 @@
+\setupbackend
+  [export=export-example.xml,
+   css=export-example.css]
+
+\definedescription
+  [description]
+
+\settaggedmetadata
+  [title=Export Example,
+   author=Hans Hagen,
+   version=0.1]
+
+\setupbodyfont
+  [dejavu]
+
+\starttext
+
+\startchapter[title=Example]
+
+\typefile{export.tex}
+
+\startparagraph \input zapf (Zapf) \stopparagraph
+
+\placefigure
+  {}
+  {\externalfigure[hacker.jpg]}
+
+\startparagraph \input zapf (Zapf) \stopparagraph
+
+\placefigure
+  {}
+  {\externalfigure[mill.png]}
+
+\startparagraph \input tufte (Tufte) \stopparagraph
+
+\placefigure
+  {}
+  {\externalfigure[cow.pdf]}
+
+\startparagraph \input tufte (Tufte) \stopparagraph
+
+\startitemize[1]
+    \startitem \input ward (Ward) \stopitem
+    \startitem \input knuth (Knuth) \stopitem
+\stopitemize
+
+\startitemize[2]
+    \startitem \input zapf (Zapf) \stopitem
+    \startitem \input tufte (Tufte) \stopitem
+\stopitemize
+
+\startparagraph \input zapf (Zapf) \stopparagraph
+
+\startdescription {Ward} \input ward \stopdescription
+
+\startdescription {Tufte} \input tufte \stopdescription
+
+\startparagraph \input knuth (Knuth) \stopparagraph
+
+\startformula
+e = mc^2
+\stopformula
+
+\startparagraph
+Okay, it's somewhat boring to always use the same formula, so how about
+$\sqrt{4} = 2$ or traveling at \unit{120 km/h} instead of $\unit{110 km/h}$.
+\stopparagraph
+
+\stopchapter
+
+\stoptext

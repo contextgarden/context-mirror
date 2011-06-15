@@ -4331,7 +4331,7 @@
   {\iffirstargument
      \setuvalue{#1}{\styleinstance[#1]}%
      \def\docommand##1%
-       {\def\dodocommand####1{\letbeundefined{\??sx##1:####1:\commalistelement}}%
+       {\def\dodocommand####1{\letbeundefined{\??sx#1:##1:####1}}%
         \processcommacommand[\fontalternativelist,\s!default]\dodocommand}%
      \processcommacommand[\fontstylelist,\s!default]\docommand
    \fi}

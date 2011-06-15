@@ -158,6 +158,7 @@ local properties  = allocate {
 
     ignore             = { pdf = "Span",       nature = "mixed"   },
     metadata           = { pdf = "Div",        nature = "display" },
+    metavariable       = { pdf = "Span",       nature = "mixed"   },
 
     sub                = { pdf = "Span",       nature = "inline"  },
     sup                = { pdf = "Span",       nature = "inline"  },

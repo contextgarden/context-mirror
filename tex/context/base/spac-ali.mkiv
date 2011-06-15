@@ -105,19 +105,19 @@
 
 \def\dosetraggedvbox#1% can be more keys
   {\let\raggedbox\vbox
-   \processcommacommand[#1]\dosetraggedvbox}
+   \processcommacommand[#1]\dodosetraggedvbox}
 
 \def\dosetraggedhbox#1% can be more keys
   {\let\raggedbox\hbox
-   \processcommacommand[#1]\dosetraggedhbox}
+   \processcommacommand[#1]\dodosetraggedhbox}
 
-\def\dosetraggedvbox#1%
+\def\dodosetraggedvbox#1%
   {\ifcsname\@@ragged@@vbox#1\endcsname
      \csname\@@ragged@@vbox#1\endcsname
      \quitcommalist
    \fi}
 
-\def\dosetraggedhbox#1%
+\def\dodosetraggedhbox#1%
   {\ifcsname\@@ragged@@hbox#1\endcsname
      \csname\@@ragged@@hbox#1\endcsname
      \quitcommalist
