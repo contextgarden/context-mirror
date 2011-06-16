@@ -1271,6 +1271,13 @@ end
 lpeg.splitat  = splitat
 lpeg.tsplitat = tsplitat
 
+function string.splitup(str,separator)
+    if not separator then
+        separator = ","
+    end
+    return match(splitters_m[separator] or splitat(separator),str)
+end
+
 
 local cache = { }
 
@@ -14697,7 +14704,7 @@ function runners.prepare()
     end
     local touchname = environment.argument("iftouched")
     if type(touchname) == "string" and touchname ~= "" then
-        local oldname, newname = string.split(touchname, ",")
+        local oldname, newname = string.splitup(touchname, ",")
         if oldname and newname and oldname ~= "" and newname ~= "" then
             if not file.needs_updating(oldname,newname) then
                 if e_verbose then

@@ -1,0 +1,354 @@
+# author    : Hans Hagen, PRAGMA-ADE, Hasselt NL
+# copyright : PRAGMA ADE / ConTeXt Development Team
+# license   : see context related readme files
+# comment   : companion to context.mkiv
+
+# todo: check all content (not yet ok but a bit boring job)
+# todo: add attributes
+#
+# validate with "rnv -c export-example.rng"
+
+namespace m = "http://www.w3.org/1998/Math/MathML"
+
+start = e_document
+
+# Because users can typeset anything the content is somewhat
+# unpredictable so this is just an indication of what to expect.
+
+c_everything =
+    text
+  | c_inline
+  | e_verbatimblock
+  | e_lines
+  | e_itemgroup
+  | e_table
+  | e_tabulate
+  | e_register
+  | e_list
+  | e_section
+  | e_float
+  | e_formula
+
+c_inline =
+    text
+  | e_ignore
+  | e_metadata
+  | e_construct
+  | e_verbatim
+  | e_description
+  | e_sorting
+  | e_synonym
+  | e_image
+  | e_mpgraphic
+  | e_math
+  | e_sub
+  | e_sup
+  | e_subsup
+  | e_link
+  | e_margintext
+  | e_margintextblock
+
+# We pass some relevant information via attributes. The detail attribute
+# is common and provides information about the class or environment used.
+
+a_detail = attribute detail {
+    text
+}
+
+# The document element is the root of all.
+
+e_document = element document {
+    c_everything *
+}
+
+e_ignore = element ignore {
+    c_everything *
+}
+
+e_metadata = element metadata {
+    element metavariable {
+        attribute name { text } ?
+      , text
+    } *
+}
+
+e_section = element section {
+    a_detail ?
+  | (
+        element sectiontitle {
+            c_inline *
+        }
+      , element sectionnumber {
+            c_inline *
+        } *
+      , element sectioncontent {
+            c_everything *
+        }
+    )
+}
+
+e_paragraph = element paragraph {
+    c_inline *
+}
+
+e_p = element p {
+    c_inline *
+}
+
+e_break = element break {
+    empty
+}
+
+e_construct = element construct {
+    c_everything*
+}
+
+e_itemgroup = element itemgroup {
+    element item {
+        element itemtag {
+            c_inline *
+        }
+    } ,
+    element itemcontent {
+        c_everything *
+    }
+}
+
+e_description = element description {
+    element descriptiontag     {
+        c_inline*
+    } ,
+    element descriptioncontent {
+        c_inline*
+    } ,
+    element descriptionsymbol  {
+        c_inline*
+    }
+}
+
+e_verbatimblock = element verbatimblock {
+    element verbatimlines {
+        element verbatimline {
+            text
+        } *
+    } *
+}
+
+e_verbatim = element verbatim {
+    text
+}
+
+e_lines = element lines {
+    element line {
+        text
+    } *
+}
+
+e_synonym = element synonym {
+    text
+}
+
+e_sorting = element sorting {
+    text
+}
+
+e_register = element register {
+    element registersection {
+        element registertag {
+            text
+        } ?
+        ,
+        element registerentries {
+            (
+                element registerentry {
+                    text
+                } |
+                element registersee  {
+                    text
+                }
+            ),
+            (
+                element registerpages {
+                    element registerpage {
+                        text
+                    } *
+                } |
+                element registerpage {
+                    text
+                } |
+                element registerpagerange {
+                    element registerpage {
+                        text
+                    } ,
+                    element registerpage {
+                        text
+                    }
+                }
+            )
+        } ?
+    } *
+}
+
+e_table = element table {
+    element tablerow {
+        element tablecell {
+            c_inline *
+        } *
+    } *
+}
+
+e_tabulate = element tabulate {
+    element tabulaterow {
+        element tabulatecell {
+            c_inline *
+        } *
+    } *
+}
+
+e_list = element list {
+    element listitem {
+        element listtag {
+            text
+        } ? ,
+        element listcontent {
+            text
+        } ? ,
+        element listdata {
+            text
+        } ? ,
+        element listpage {
+            text
+        } ?
+    }
+}
+
+e_delimitedblock = element delimitedblock {
+    c_everything*
+}
+
+e_delimited = element delimited {
+    c_inline
+}
+
+e_subsentence = element subsentence {
+    c_inline
+}
+
+e_float = element float {
+    element floatcaption {
+        element floatlabel {
+            text
+        } ,
+        element floatnumber {
+            text
+        } ,
+        element floattext {
+            c_inline
+        }
+    } ,
+    element floatcontent {
+        c_inline
+    }
+}
+
+e_image = element image {
+    empty
+}
+
+e_mpgraphic = element mpgraphic {
+    empty
+}
+
+e_formula = element formula {
+    element subformula {
+        element formulacontent {
+            e_math*
+        }
+    } ,
+    element formulaset {
+        element formulacontent {
+            e_math*
+        }
+    } ,
+    element formulacaption {
+        element formulalabel {
+            text
+        } ,
+        element formulanumber {
+            text
+        }
+    } ,
+    element formulacontent {
+        e_math*
+    }
+}
+
+e_link = element link {
+    c_inline
+}
+
+e_margintextblock = element margintextblock {
+    c_inline
+}
+
+e_margintext = element margintext {
+    c_inline
+}
+
+e_quantity = element quantity {
+    element unit {
+        text
+    } ,
+    element number {
+        text
+    }
+}
+
+e_unit = element unit {
+    text |
+    e_math
+}
+
+e_sub = element sub {
+    c_inline
+}
+
+e_sup = element sup {
+    c_inline
+}
+
+e_subsup = element subsup {
+    c_inline,
+    c_inline
+}
+
+# There are enough mathml dtd's out there so this is just a
+# simplified placeholder.
+
+e_math_basics =
+    element m:mn | m:mi | m:mo | m:ms | m:merror | m:mtext {
+        text
+    } |
+    element m:mrow | m:msub | m:msup | m:msqrt | m:mfenced | m:maction {
+        e_math_basics *
+    } |
+    element m:msubsup | m:munder | m:mover | m:mfrac | m:mroot {
+        e_math_basics,
+        e_math_basics
+    } |
+    element m:munderover {
+        e_math_basics,
+        e_math_basics,
+        e_math_basics
+    } |
+    element m:mtable {
+        element m:mtr {
+            element m:mtd {
+                e_math_basics *
+            } *
+        } *
+    }
+
+e_math = element m:math {
+    e_math_basics *
+}

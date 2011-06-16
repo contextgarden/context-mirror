@@ -186,6 +186,13 @@ end
 lpeg.splitat  = splitat
 lpeg.tsplitat = tsplitat
 
+function string.splitup(str,separator)
+    if not separator then
+        separator = ","
+    end
+    return match(splitters_m[separator] or splitat(separator),str)
+end
+
 --~ local p = splitat("->",false)  print(match(p,"oeps->what->more"))  -- oeps what more
 --~ local p = splitat("->",true)   print(match(p,"oeps->what->more"))  -- oeps what->more
 --~ local p = splitat("->",false)  print(match(p,"oeps"))              -- oeps
