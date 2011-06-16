@@ -47,7 +47,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.730 -- beware: also sync font-mis.lua
+otf.version              = 2.731 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -959,6 +959,15 @@ actions["prepare tounicode"] = function(data,filename,raw)
     fonts.mappings.addtounicode(data,filename)
 end
 
+local g_directions = {
+    gsub_contextchain        =  1,
+    gpos_contextchain        =  1,
+ -- gsub_context             =  1,
+ -- gpos_context             =  1,
+    gsub_reversecontextchain = -1,
+    gpos_reversecontextchain = -1,
+}
+
 actions["reorganize subtables"] = function(data,filename,raw)
     local resources       = data.resources
     local sequences       = { }
@@ -972,10 +981,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
             for k=1,#dw do
                 local gk = dw[k]
                 local typ = gk.type
-                local chain =
-                    (typ == "gsub_contextchain"        or typ == "gpos_contextchain")        and  1 or
-                    (typ == "gsub_reversecontextchain" or typ == "gpos_reversecontextchain") and -1 or 0
-                --
+                local chain = g_directions[typ] or 0
                 local subtables = gk.subtables
                 if subtables then
                     local t = { }
@@ -1077,19 +1083,20 @@ end
 
 local function t_hashed(t,cache)
     if t then
-        local h = { }
+        local ht = { }
         for i=1,#t do
             local ti = t[i]
-            local h = cache[ti]
-            if not h then
-                h = { }
+            local tih = cache[ti]
+            if not tih then
+                tih = { }
                 for i=1,#ti do
-                    h[ti] = true
+                    tih[ti[i]] = true
                 end
+                cache[ti] = tih
             end
-            cache[ti] = h
+            ht[i] = tih
         end
-        return h
+        return ht
     else
         return nil
     end
@@ -1173,7 +1180,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
                             for i=1,#current do
                                 current[i] = current_class[current[i]] or { }
                                 if lookups and not lookups[i] then
-                                    lookups[i] = false
+                                    lookups[i] = false -- e.g. we can have two lookups and one replacement
                                 end
                             end
                             rule.current = t_hashed(current,h_cache)

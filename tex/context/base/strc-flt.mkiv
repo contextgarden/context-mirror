@@ -1233,12 +1233,22 @@
 
 \ifdefined\moveboxontogrid\else \let\movecaptionontogrid\gobblethreearguments \fi
 
+% \def\locatefloatbox
+%   {\alignstrutmode\zerocount
+%    \shiftalignedline
+%      {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
+%      {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}%
+%    \alignedline{\floatparameter\c!location}\v!middle}
+%
+% A quick hack by WS:
+
 \def\locatefloatbox
-  {\alignstrutmode\zerocount
-   \shiftalignedline
-     {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
-     {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}%
-   \alignedline{\floatparameter\c!location}\v!middle}
+   {\alignstrutmode\zerocount
+    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+      {\shiftalignedline
+         {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
+         {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
+    \alignedline{\floatparameter\c!location}\v!middle}
 
 \def\locatecaptionbox
   {\alignstrutmode\zerocount

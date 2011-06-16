@@ -334,6 +334,23 @@ function scripts.fonts.list()
 
 end
 
+function scripts.fonts.unpack()
+    local name = file.removesuffix(file.basename(environment.files[1] or ""))
+    if name and name ~= "" then
+        local cache = containers.define("fonts", "otf", 2.730, true)
+        local cleanname = containers.cleanname(name)
+        local data = containers.read(cache,cleanname)
+        if data then
+            local savename = file.addsuffix(cleanname .. "-unpacked","tma")
+            report("fontsave, saving data in %s",savename)
+            fonts.handlers.otf.enhancers.unpack(data)
+            io.savedata(savename,table.serialize(data,true))
+        else
+            report("unknown file '%s'",name)
+        end
+    end
+end
+
 function scripts.fonts.save()
     local name = environment.files[1] or ""
     local sub  = environment.files[2] or ""
@@ -387,6 +404,8 @@ elseif environment.argument("reload") then
     scripts.fonts.reload()
 elseif environment.argument("save") then
     scripts.fonts.save()
+elseif environment.argument("unpack") then
+    scripts.fonts.unpack()
 elseif environment.argument("statistics") then
     fonts.names.statistics()
 else
