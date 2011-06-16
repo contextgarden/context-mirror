@@ -1760,8 +1760,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                             end
                         end
                         local chainlookupname = chainlookups[i]
-                        local chainlookup = lookuptable[chainlookupname]
-                        local cp = chainmores[chainlookup.type]
+                        local chainlookup = lookuptable[chainlookupname] -- can be false (n matches, <n replacement)
+                        local cp = chainlookup and chainmores[chainlookup.type]
                         if cp then
                             local ok, n
                             start, ok, n = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,i,sequence)
@@ -1774,7 +1774,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 i = i + 1
                             end
                         else
-                            logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                         -- is valid
+                         -- logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup and chainlookup.type or "?")
                             i = i + 1
                         end
                         start = start.next
@@ -1957,8 +1958,7 @@ local function featuresprocessor(head,font,attr)
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
---~ print(typ)
---~ table.print(table.keys(sequence))
+--~ inspect(sequence)
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
                 local handler = handlers[typ]
@@ -2009,7 +2009,8 @@ local function featuresprocessor(head,font,attr)
                 if ns == 1 then
                     local lookupname = subtables[1]
                     local lookupcache = lookuphash[lookupname]
-                    if not lookupcache then
+--~ inspect(lookupcache)
+                    if not lookupcache then -- also check for empty cache
                         report_missing_cache(typ,lookupname)
                     else
                         while start do
@@ -2022,6 +2023,7 @@ local function featuresprocessor(head,font,attr)
                                     else
                                         a = not attribute or has_attribute(start,state,attribute)
                                     end
+--~ print(a,start.char)
                                     if a then
                                         local lookupmatch = lookupcache[start.char]
                                         if lookupmatch then
@@ -2502,7 +2504,7 @@ end
 --~ end
 
 local valid = {
-    coverage        = { chainsub = true, chainpos = true },
+    coverage        = { chainsub = true, chainpos = true, contextsub = true },
     reversecoverage = { reversesub = true },
     glyphs          = { chainsub = true, chainpos = true },
 }

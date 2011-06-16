@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/16/11 00:34:14
+-- merge date  : 06/16/11 12:50:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -4915,7 +4915,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.730 -- beware: also sync font-mis.lua
+otf.version              = 2.731 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -5827,6 +5827,15 @@ actions["prepare tounicode"] = function(data,filename,raw)
     fonts.mappings.addtounicode(data,filename)
 end
 
+local g_directions = {
+    gsub_contextchain        =  1,
+    gpos_contextchain        =  1,
+ -- gsub_context             =  1,
+ -- gpos_context             =  1,
+    gsub_reversecontextchain = -1,
+    gpos_reversecontextchain = -1,
+}
+
 actions["reorganize subtables"] = function(data,filename,raw)
     local resources       = data.resources
     local sequences       = { }
@@ -5840,10 +5849,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
             for k=1,#dw do
                 local gk = dw[k]
                 local typ = gk.type
-                local chain =
-                    (typ == "gsub_contextchain"        or typ == "gpos_contextchain")        and  1 or
-                    (typ == "gsub_reversecontextchain" or typ == "gpos_reversecontextchain") and -1 or 0
-                --
+                local chain = g_directions[typ] or 0
                 local subtables = gk.subtables
                 if subtables then
                     local t = { }
@@ -5945,19 +5951,20 @@ end
 
 local function t_hashed(t,cache)
     if t then
-        local h = { }
+        local ht = { }
         for i=1,#t do
             local ti = t[i]
-            local h = cache[ti]
-            if not h then
-                h = { }
+            local tih = cache[ti]
+            if not tih then
+                tih = { }
                 for i=1,#ti do
-                    h[ti] = true
+                    tih[ti[i]] = true
                 end
+                cache[ti] = tih
             end
-            cache[ti] = h
+            ht[i] = tih
         end
-        return h
+        return ht
     else
         return nil
     end
@@ -6041,7 +6048,7 @@ actions["reorganize lookups"] = function(data,filename,raw)
                             for i=1,#current do
                                 current[i] = current_class[current[i]] or { }
                                 if lookups and not lookups[i] then
-                                    lookups[i] = false
+                                    lookups[i] = false -- e.g. we can have two lookups and one replacement
                                 end
                             end
                             rule.current = t_hashed(current,h_cache)
@@ -9696,8 +9703,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                             end
                         end
                         local chainlookupname = chainlookups[i]
-                        local chainlookup = lookuptable[chainlookupname]
-                        local cp = chainmores[chainlookup.type]
+                        local chainlookup = lookuptable[chainlookupname] -- can be false (n matches, <n replacement)
+                        local cp = chainlookup and chainmores[chainlookup.type]
                         if cp then
                             local ok, n
                             start, ok, n = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,i,sequence)
@@ -9710,7 +9717,8 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                                 i = i + 1
                             end
                         else
-                            logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                         -- is valid
+                         -- logprocess("%s: multiple subchains for %s are not yet supported",cref(kind,chainname,chainlookupname),chainlookup and chainlookup.type or "?")
                             i = i + 1
                         end
                         start = start.next
@@ -9893,8 +9901,7 @@ local function featuresprocessor(head,font,attr)
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
---~ print(typ)
---~ table.print(table.keys(sequence))
+--~ inspect(sequence)
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
                 local handler = handlers[typ]
@@ -9945,7 +9952,8 @@ local function featuresprocessor(head,font,attr)
                 if ns == 1 then
                     local lookupname = subtables[1]
                     local lookupcache = lookuphash[lookupname]
-                    if not lookupcache then
+--~ inspect(lookupcache)
+                    if not lookupcache then -- also check for empty cache
                         report_missing_cache(typ,lookupname)
                     else
                         while start do
@@ -9958,6 +9966,7 @@ local function featuresprocessor(head,font,attr)
                                     else
                                         a = not attribute or has_attribute(start,state,attribute)
                                     end
+--~ print(a,start.char)
                                     if a then
                                         local lookupmatch = lookupcache[start.char]
                                         if lookupmatch then
@@ -10438,7 +10447,7 @@ end
 --~ end
 
 local valid = {
-    coverage        = { chainsub = true, chainpos = true },
+    coverage        = { chainsub = true, chainpos = true, contextsub = true },
     reversecoverage = { reversesub = true },
     glyphs          = { chainsub = true, chainpos = true },
 }
