@@ -20,8 +20,8 @@
 
 \unprotect
 
-\let\dotagsynonym\relax
-\let\dotagsorting\relax
+\ifdefined\dotagsynonym \else \let\dotagsynonym\relax \fi
+\ifdefined\dotagsorting \else \let\dotagsorting\relax \fi
 
 % general help, can be shared
 
@@ -175,8 +175,8 @@
   {\begingroup
    \def\currentsynonym{#1}%
    \def\currentsynonymtag{#2}%
-   \dotagsynonym
    \dostarttagged\t!synonym\currentsynonym
+   \dotagsynonym
    \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
    \synonymparameter\c!synonymcommand{\ctxlua{structures.synonyms.synonym("#1","#2")}}%
    \dostoptagged
@@ -336,8 +336,8 @@
    % no kap currently, of .. we need to map cap onto WORD
    \edef\currentsorting{#1}%
    \def\currentsortingtag{#2}%
-   \dotagsorting
    \dostarttagged\t!sorting\currentsorting
+   \dotagsorting
    \dosetsortingattributes\c!style\c!color
    \ctxlua{structures.synonyms.synonym("#1","#2")}%
    \dostoptagged

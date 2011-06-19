@@ -186,79 +186,54 @@
 \definecomplexorsimple\start
 \definecomplexorsimple\stop
 
-% \def\dododefinestartstop[#1][#2]% todo: use indirect commands
-%   {\getparameters
-%      [\??be#1]
-%      [\c!before=,
-%       \c!after=,
-%       \c!inbetween=,
-%       \c!commands=,
-%       \c!style=,
-%       #2]%
-%    \setuvalue{#1}%
-%      {\groupedcommand
-%         {\getvalue{\??be#1\c!commands}%
-%          \dostarttagged\t!construct{#1}%
-%          \dostartattributes{\??be#1}\c!style\c!color}
-%         {\dostopattributes
-%          \dostoptagged
-%          \getvalue{\??be#1\c!inbetween}}}%
-%    \setuvalue{\e!start#1}%
-%      {\getvalue{\??be#1\c!before}%
-%       \bgroup
-%       \getvalue{\??be#1\c!commands}%
-%       \dostarttagged\t!construct{#1}%
-%       \dostartattributes{\??be#1}\c!style\c!color\empty}%
-%    \setuvalue{\e!stop#1}%
-%      {\dostopattributes
-%       \dostoptagged
-%       \egroup
-%       \getvalue{\??be#1\c!after}}}
-%
-% \def\dodefinestartstop[#1][#2]%
-%   {\def\docommand##1{\dododefinestartstop[##1][#2]}%
-%    \processcommalist[#1]\docommand}
-%
-% \unexpanded\def\definestartstop
-%   {\dodoubleargument\dodefinestartstop}
-%
-% \def\dosetupstartstop[#1][#2]%
-%   {\def\docommand##1{\getparameters[\??be##1][#2]}%
-%    \processcommalist[#1]\docommand}
-%
-% \unexpanded\def\setupstartstop
-%   {\dodoubleargument\dosetupstartstop}
-
-
 % \c!before \c!after \c!inbetween \c!commands \c!style \c!color
 
 \installcommandhandler{\??be}{startstop}{\??be}
 
 \appendtoks
-    \normalexpanded{\dodefinestartstop{\currentstartstop}}%
+    \setuevalue{\e!start\currentstartstop}{\dostartstop_start {\currentstartstop}}%
+    \setuevalue{\e!stop \currentstartstop}{\dostartstop_stop  {\currentstartstop}}%
+    \setuevalue        {\currentstartstop}{\dostartstop_indeed{\currentstartstop}}%
 \to \everydefinestartstop
 
-\unexpanded\def\dodefinestartstop#1%
-  {\setuvalue{#1}%
-     {\groupedcommand
-        {\def\currentstartstop{#1}%
-         \startstopparameter\c!commands
-         \dostarttagged\t!construct\currentstartstop
-         \dosetstartstopattributes\c!style\c!color}
-        {\def\currentstartstop{#1}%
-         \dostoptagged
-         \startstopparameter\c!inbetween}}%
-   \setuvalue{\e!start#1}%
-     {\namedstartstopparameter{#1}\c!before
-      \bgroup
-      \def\currentstartstop{#1}%
-      \startstopparameter\c!commands
+\unexpanded\def\dostartstop_start#1%
+  {\namedstartstopparameter{#1}\c!before
+   \bgroup
+   \def\currentstartstop{#1}%
+   \startstopparameter\c!commands
+   \dostarttagged\t!construct\currentstartstop
+   \dosetstartstopattributes\c!style\c!color}
+
+\unexpanded\def\dostartstop_stop#1%
+  {\dostoptagged
+   \egroup
+   \namedstartstopparameter{#1}\c!after}
+
+\unexpanded\def\dostartstop_indeed#1%
+  {\groupedcommand
+     {\def\currentstartstop{#1}%
+      \startstopparameter\c!commands % will become setups
       \dostarttagged\t!construct\currentstartstop
-      \dosetstartstopattributes\c!style\c!color}%
-   \setuvalue{\e!stop#1}%
-     {\dostoptagged
-      \egroup
-      \namedstartstopparameter{#1}\c!after}}
+      \dosetstartstopattributes\c!style\c!color}
+     {\def\currentstartstop{#1}%
+      \dostoptagged
+      \startstopparameter\c!inbetween}}
+
+\installcommandhandler{\??hl}{highlight}{\??hl} % we could do with less
+
+\appendtoks
+    \setuevalue{\currenthighlight}{\dohighlight_indeed{\currenthighlight}}%
+\to \everydefinehighlight
+
+\ifdefined\dotaghighlight \else \let\dotaghighlight\relax \fi
+
+\unexpanded\def\dohighlight_indeed#1% inline style/color switch
+  {\groupedcommand
+     {\def\currenthighlight{#1}%
+      \dostarttagged\t!highlight\currenthighlight
+      \dosethighlightattributes\c!style\c!color
+      \dotaghighlight}
+     {\dostoptagged}}
 
 % \docommand kan niet worden gebruikt omdat deze macro
 %  soms lokaal wordt gebruikt

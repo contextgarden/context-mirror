@@ -15,7 +15,7 @@ local getinfo = debug.getinfo
 -- Starting with version 5.2 Lua no longer provide ipairs, which makes
 -- sense. As we already used the for loop and # in most places the
 -- impact on ConTeXt was not that large; the remaining ipairs already
--- have been replaced. In a similar fashio we also hardly used pairs.
+-- have been replaced. In a similar fashion we also hardly used pairs.
 --
 -- Just in case, we provide the fallbacks as discussed in Programming
 -- in Lua (http://www.lua.org/pil/7.3.html):
@@ -938,4 +938,21 @@ function table.loweredkeys(t) -- maybe utf
         l[lower(k)] = v
     end
     return l
+end
+
+-- new, might move (maybe duplicate)
+
+function table.unique(old)
+    local hash = { }
+    local new = { }
+    local n = 0
+    for i=1,#old do
+        local oi = old[i]
+        if not hash[oi] then
+            n = n + 1
+            new[n] = oi
+            hash[oi] = true
+        end
+    end
+    return new
 end

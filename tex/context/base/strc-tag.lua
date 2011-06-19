@@ -50,6 +50,7 @@ local properties  = allocate {
     paragraph          = { pdf = "P",          nature = "mixed"   },
     p                  = { pdf = "P",          nature = "mixed"   },
     construct          = { pdf = "Span",       nature = "inline"  },
+    highlight          = { pdf = "Span",       nature = "inline"  },
 
     section            = { pdf = "Sect",       nature = "display" },
     sectiontitle       = { pdf = "H",          nature = "mixed"   },
@@ -164,7 +165,31 @@ local properties  = allocate {
     sup                = { pdf = "Span",       nature = "inline"  },
     subsup             = { pdf = "Span",       nature = "inline"  },
 
+    combination        = { pdf = "Span",       nature = "display" },
+    combinationpair    = { pdf = "Span",       nature = "display" },
+    combinationcontent = { pdf = "Span",       nature = "mixed"   },
+    combinationcaption = { pdf = "Span",       nature = "mixed"   },
 }
+
+function tags.detailedtag(tag,detail,attribute)
+    if not attribute then
+        attribute = texattribute[a_tagged]
+    end
+    local tl = taglist[attribute]
+    local pattern
+    if detail and detail ~= "" then
+        pattern = "^" .. tag .. ":".. detail .. "%-"
+    else
+        pattern = "^" .. tag .. "%-"
+    end
+    for i=#tl,1,-1 do
+        local tli = tl[i]
+        if find(tli,pattern) then
+            return tli
+        end
+    end
+    return false -- handy as bogus index
+end
 
 tags.properties = properties
 

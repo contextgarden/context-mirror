@@ -633,13 +633,15 @@
    \the\everyinsidefloat
    \let\@@extrafloat\empty
    \presetmorefloatvariables{#2}%
+\dostarttagged\t!floatcontent\empty
    \dowithnextboxcontent % better a \the\everyfloattoks
      {\setlocalfloathsize
       \floatparameter\c!inner
-      \dostarttagged\t!floatcontent\empty
-      \aftergroup\dostoptagged % tricky, never change \dowithnextboxcontent
+%       \dostarttagged\t!floatcontent\empty
+%       \aftergroup\dostoptagged % tricky, never change \dowithnextboxcontent
       \postponenotes} % new
-     {\doifsomething{\floatparameter\c!criterium}
+     {\dostoptagged
+      \doifsomething{\floatparameter\c!criterium}
         {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
            \edef\forcedfloatmethod{\floatparameter\c!fallback}%
            \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi

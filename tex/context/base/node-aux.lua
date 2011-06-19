@@ -317,3 +317,21 @@ function nodes.link(...)
     local currentfont = font.current
     return link(nil,nil,{...},currentfont,currentattr)
 end
+
+local function locate(start,wantedid,wantedsubtype)
+    for n in traverse_nodes(start) do
+        local id = n.id
+        if id == wantedid then
+            if not wantedsubtype or n.subtype == wantedsubtype then
+                return n
+            end
+        elseif id == hlist_code or id == vlist_code then
+            local found = locate(n.list,wantedid,wantedsubtype)
+            if found then
+                return found
+            end
+        end
+    end
+end
+
+nodes.locate =  locate

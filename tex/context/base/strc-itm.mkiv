@@ -304,6 +304,8 @@
 %     test \startitemize[joinedup,nowhite,after]  \item test \item test \stopitemize test \par
 % \stoptext
 
+\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
+
 \def\itembeforecommand
   {\ifconditional\nowhitelistitem
      \ifconditional\beforelistitem
@@ -317,7 +319,7 @@
      \getitemparameter\currentitemlevel\c!before
    \fi\fi
    \dostarttagged\t!itemgroup\currentitemgroup
-   \dotagsetitemize}
+   \dotagsetitemgroup}
 
 \def\itemaftercommand
   {\dostoptagged
@@ -613,8 +615,6 @@
            \v!center=>\let\symalignleft\hfil]}
 
 \let\currentitemindenting\empty
-
-\let\dotagsetitemize\relax
 
 \def\redostartitemgroup[#1][#2]%
   {\setfalse\inlinelistitem % new, no indent (leftskip)

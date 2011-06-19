@@ -120,6 +120,8 @@ figures.used           = allocate()
 figures.found          = allocate()
 figures.suffixes       = allocate()
 figures.patterns       = allocate()
+figures.resources      = allocate()
+
 
 figures.boxnumber      = figures.boxnumber or 0
 figures.defaultsearch  = true
@@ -190,6 +192,12 @@ function figures.setlookups()
 end
 
 figures.setlookups()
+
+function figures.registerresource(t)
+    local n = #figures.resources + 1
+    figures.resources[n] = t
+    return n
+end
 
 local function register(tag,target,what)
     local data = figures.formats[target] -- resolver etc
@@ -889,6 +897,11 @@ function includers.generic(data)
     dr.height = du.height
     local hash = figures.hash(data)
     local figure = figures.used[hash]
+--~ figures.registerresource {
+--~     filename = du.fullname,
+--~     width    = dr.width,
+--~     height   = dr.height,
+--~ }
     if figure == nil then
         figure = ds.private
         if figure then

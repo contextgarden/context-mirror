@@ -6,17 +6,19 @@ if not modules then modules = { } end modules ['lxml-css'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
-local P, S, C, R, Cb, Cg, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.Cb, lpeg.Cg, lpeg.Carg
+local tonumber, rawset = tonumber, rawset
+local lower, format = string.lower, string.format
+local P, S, C, R, Cb, Cg, Carg, Ct, Cc, Cf = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.Cb, lpeg.Cg, lpeg.Carg, lpeg.Ct, lpeg.Cc, lpeg.Cf
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 
-local css        = { }
-local moduledata = moduledata or { }
-moduledata.css   = css
+xml.css            = xml.css or { }
+local css          = xml.css
 
 local dimenfactors = number.dimenfactors
-
-local bpf, cmf, mmf, inf = 1/dimenfactors.bp, 1/dimenfactors.cm, 1/dimenfactors.mm, 1/dimenfactors["in"]
+local bpf          = 1/dimenfactors.bp
+local cmf          = 1/dimenfactors.cm
+local mmf          = 1/dimenfactors.mm
+local inf          = 1/dimenfactors["in"]
 
 local validdimen = Cg(lpegpatterns.number,'a') * (
         Cb('a') * P("pt")           / function(s)     return tonumber(s) * bpf end
@@ -73,22 +75,37 @@ css.padding = padding
 -- print(padding("10pt 20pt 30pt",pixel,hsize,exheight,emwidth))
 -- print(padding("10pt 20pt 30pt 40pt",pixel,hsize,exheight,emwidth))
 
-local currentfont = font.current
-local texdimen    = tex.dimen
-local hashes      = fonts.hashes
-local quads       = hashes.quads
-local xheights    = hashes.xheights
+-- local currentfont  = font.current
+-- local texdimen     = tex.dimen
+-- local hashes       = fonts.hashes
+-- local quads        = hashes.quads
+-- local xheights     = hashes.xheights
+--
+-- local function padding(str)
+--     local font     = currentfont()
+--     local exheight = xheights[font]
+--     local emwidth  = quads[font]
+--     local hsize    = texdimen.hsize/100
+--     local pixel    = emwidth/100
+--     return padding(str,pixel,hsize,exheight,emwidth)
+-- end
+--
+-- function css.simplepadding(str)
+--     context("%ssp",padding(str,pixel,hsize,exheight,emwidth))
+-- end
 
-local function padding(str)
-    local font     = currentfont()
-    local exheight = xheights[font]
-    local emwidth  = quads[font]
-    local hsize    = texdimen.hsize/100
-    local pixel    = emwidth/100
-    return padding(str,pixel,hsize,exheight,emwidth)
+local pattern = Cf( Ct("") * Cg(
+    Cc("style")   * (C("italic") + C("oblique"))
+  + Cc("variant") * C("smallcaps")
+  + Cc("weight")  * C("bold")
+  + P(1)
+)^0 , rawset)
+
+function css.fontspecification(str)
+    return str and lpegmatch(pattern,lower(str))
 end
 
---~ function css.simplepadding(str)
---~     context("%ssp",padding(str,pixel,hsize,exheight,emwidth))
---~ end
-
+function css.colorspecification(str)
+    local c = str and attributes.colors.values[tonumber(str)]
+    return c and format("rgb(%s%%,%s%%,%s%%)",c[3]*100,c[4]*100,c[5]*100)
+end

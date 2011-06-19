@@ -65,6 +65,15 @@ local setmetatableindex = table.setmetatableindex
 
 local specifications = allocate {
     {
+        ["description"] = "Dutch",
+        ["script"] = "latn",
+     -- ["bibliographical"] = "nld",
+     -- ["terminological"] = "nld",
+        ["context"] = "nl",
+        ["opentype"] = "nld",
+        ["variant"] = "nl",
+    },
+    {
         ["description"] = "Basque",
         ["script"] = "latn",
         ["bibliographical"] = "baq",

@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['mtx-epub'] = {
 -- first we need a decent strategy to export them. More information will be
 -- available on the wiki.
 
-local format = string.format
+local format, gsub = string.format, string.gsub
 local concat = table.concat
 
 local helpinfo = [[
@@ -65,7 +65,7 @@ local package = [[
     </metadata>
 
     <manifest>
-        %s
+%s
     </manifest>
 
     <spine toc="ncx">
@@ -75,17 +75,57 @@ local package = [[
 </package>
 ]]
 
--- We need to figure out what is permitted; numbers only seem to give
--- problems is some applications as do names with dashes.
+local item = [[        <item id='%s' href='%s' media-type='%s'/>]]
+
+local toc = [[
+<?xml version="1.0"?>
+
+<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN" "http://www.daisy.org/z3986/2005/ncx-2005-1.dtd">
+
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
+
+    <head>
+        <meta name="dtb:uid"           content="%s" />
+        <meta name="dtb:depth"         content="2" />
+        <meta name="dtb:totalPgeCount" content="0" />
+        <meta name="dtb:maxPageNumber" content="0" />
+    </head>
+
+    <docTitle>
+        <text>%s</text>
+    </docTitle>
+
+    <navMap>
+        <navPoint id="np-1" playOrder="1">
+            <navLabel>
+                <text>start</text>
+            </navLabel>
+            <content src="%s"/>
+        </navPoint>
+    </navMap>
+
+</ncx>
+]]
+
+-- We need to figure out what is permitted. Numbers only seem to give
+-- problems is some applications as do names with dashes. Also the
+-- optional toc is supposed to be there and although id's are by
+-- concept neutral, there are sometimes hard requirements with respect
+-- to their name like ncx and toc.ncx). Looks like application xml and
+-- no real clean standard.
 
 local function dumbid(filename)
  -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
-    return file.nameonly(filename)
+    return file.nameonly(filename) .. "-" .. file.extname(filename)
 end
 
 local mimetypes = {
     xhtml   = "application/xhtml+xml",
     css     = "text/css",
+    svg     = "image/svg+xml",
+    png     = "image/png",
+    jpg     = "image/jpeg",
+    ncx     = "application/x-dtbncx+xml",
  -- default = "text/plain",
 }
 
@@ -106,6 +146,22 @@ local idmakers = {
 --     }
 -- }
 
+local function locateimages(oldname,newname,subpath)
+    local data = io.loaddata(oldname)
+    local images = { }
+    local done = gsub(data,"(background%-image *: * url%()(.-)(%))", function(before,name,after)
+        if subpath then
+            name = file.join(subpath,name)
+        end
+        images[#images+1] = name
+        return before .. name .. after
+    end)
+    if newname then
+        io.savedata(done,newname)
+    end
+    return images
+end
+
 function scripts.epub.make()
 
     local filename = environment.files[1]
@@ -119,46 +175,83 @@ function scripts.epub.make()
      -- inspect(specification)
 
         local name       = specification.name       or file.removesuffix(filename)
-        local identifier = specification.identifier or os.uuid()
+        local identifier = specification.identifier or os.uuid(true)
         local files      = specification.files      or { file.addsuffix(filename,"xhtml") }
+        local images     = specification.images     or { }
         local root       = specification.root       or files[1]
+
+     -- identifier = gsub(identifier,"[^a-zA-z0-9]","")
+
+        identifier = "BookId" -- weird requirement
 
         local epubname   = name
         local epubpath   = file.replacesuffix(name,"tree")
         local epubfile   = file.replacesuffix(name,"epub")
         local epubroot   = file.replacesuffix(name,"opf")
+        local epubtoc    = "toc.ncx"
 
+        application.report("creating paths in tree %s",epubpath)
         lfs.mkdir(epubpath)
         lfs.mkdir(file.join(epubpath,"META-INF"))
         lfs.mkdir(file.join(epubpath,"OPS"))
 
-        local used  = { }
+        local used = { }
 
-        for i=1,#files do
-            local filename = files[i]
+        local function copyone(filename)
             local suffix = file.suffix(filename)
             local mime = mimetypes[suffix]
             if mime then
                 local idmaker = idmakers[suffix] or idmakers.default
-                file.copy(filename,file.join(epubpath,"OPS",filename))
-                used[#used+1] = format("<item id='%s' href='%s' media-type='%s'/>",idmaker(filename),filename,mime)
+                local target = file.join(epubpath,"OPS",filename)
+                file.copy(filename,target)
+                application.report("copying %s to %s",filename,target)
+                used[#used+1] = format(item,idmaker(filename),filename,mime)
             end
         end
 
+        copyone("toc.ncx")
+
+        local function copythem(files)
+            for i=1,#files do
+                copyone(files[i])
+            end
+        end
+
+        copythem(files)
+
+        local theimages = { }
+
+        for k, v in table.sortedpairs(images) do
+            theimages[#theimages+1] = k
+            if not lfs.isfile(k) and file.extname(k) == "svg" and file.extname(v) == "pdf" then
+                local command = format("inkscape --export-plain-svg=%s %s",k,v)
+                application.report("running command '%s'\n\n",command)
+                os.execute(command)
+            end
+        end
+
+        copythem(theimages)
+
+        local idmaker = idmakers[file.extname(root)] or idmakers.default
+
         container = format(container,epubroot)
-        package   = format(package,identifier,identifier,concat(used,"\n"),file.removesuffix(root))
+        package   = format(package,identifier,identifier,concat(used,"\n"),idmaker(root))
+        toc       = format(toc,identifier,"title",root)
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)
         io.savedata(file.join(epubpath,"META-INF","container.xml"),container)
         io.savedata(file.join(epubpath,"OPS",epubroot),package)
+        io.savedata(file.join(epubpath,"OPS",epubtoc),toc)
 
         lfs.chdir(epubpath)
 
+        application.report("creating archive\n\n")
+
         os.remove(epubfile)
 
-        os.execute(format("zip %s -X -0 %s",epubfile,"mimetype"))
-        os.execute(format("zip %s -X -r %s",epubfile,"META-INF"))
-        os.execute(format("zip %s -X -r %s",epubfile,"OPS"))
+        os.execute(format("zip %s -X -0    %s",epubfile,"mimetype"))
+        os.execute(format("zip %s -X -9 -r %s",epubfile,"META-INF"))
+        os.execute(format("zip %s -X -9 -r %s",epubfile,"OPS"))
 
         lfs.chdir("..")
 
