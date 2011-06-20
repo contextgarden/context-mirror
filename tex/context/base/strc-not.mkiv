@@ -688,7 +688,7 @@
 \def\dolastnotesymbol
   {\typesetsomenotesymbol\currentnote\currentnotenumber\currentdescriptionnumberentry}
 
-\let\dotagsetnotesymbol\relax
+\ifdefined\dotagsetnotesymbol \else \let\dotagsetnotesymbol\relax \fi
 
 \def\dotypesetsomenotesymbol#1#2#3% running text (messy: #1 and current mixed)
   {\dodonotesymbol

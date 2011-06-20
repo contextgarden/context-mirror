@@ -41,11 +41,14 @@
            {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
            {\getvalue{\??ef\??ef#2}[#5]}}}}
 
+\ifdefined\dotagfigure \else \let\dotagfigure\relax \fi
+
 \def\dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\bgroup
    \dostarttagged\t!image\empty
    \let\textunderscore\letterunderscore % {\string _} % space needed as _ is now letter in unprotected mode
    \calculateexternalfigure[][#1][#2][#3][#4][#5]% [] is dummy dwcomp
+   \dotagfigure
    \naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
    \dostoptagged
    \egroup}

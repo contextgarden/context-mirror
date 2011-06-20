@@ -76,12 +76,16 @@ break {
 }
 
 /* construct : inline */
+/* highlight : inline */
 
 construct {
 }
 
 construct[detail="important"] {
 	font-weight : bold ;
+}
+
+highlight { /* todo: style and color */
 }
 
 /* section        : display */
@@ -400,6 +404,34 @@ tabulatecell {
 	text-align    : left ;
 	padding-right : 1em ;
 }
+
+/* combination        : display */
+/* combinationpair    : display */
+/* combinationcontent : mixed   */
+/* combinationcaption : mixed   */
+
+combination {
+	display       : table ;
+	margin-top    : 0em ;
+	margin-bottom : 0em ;
+}
+
+combinationpair {
+	display       : table-cell ;
+	padding-right : 1em ;
+}
+
+combinationcontent {
+	display    : table-row ;
+	text-align : center ;
+}
+
+combinationcaption {
+	display     : table-row ;
+	padding-top : 1ex ;
+	text-align  : center ;
+}
+
 
 /* list        : display */
 /* listitem    : display */

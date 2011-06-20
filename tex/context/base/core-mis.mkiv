@@ -1686,7 +1686,7 @@
 
 % todo: \startcombination \startcomb \stopcomb ...
 
-% needs to be mkiv'd
+% needs to be mkiv'd (we could map this onto bTABLE)
 
 \newcount\horcombination  % counter
 \newcount\totcombination
@@ -1725,11 +1725,11 @@
 % \startcombination[1*2] {alpha} {a} {beta} {b} \stopcombination
 % \startcombination[2]   {alpha} {a} {beta} {b} \stopcombination
 
-\def\dostartcombination[#1][#2]%
+\def\dostartcombination[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
   {\global\setsystemmode{combination}%
    \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
    \doifnothing{#2}\secondargumentfalse     % to be sure (when called in macros)
-   \ifsecondargument
+   \ifsecondargument % todo: nx ny
      \def\currentcombination{#1}%
      \edef\currentcombinationspec{#2*1*}%
    \else % better : \doifcombinationelse ... \??co#1\c!location
@@ -1743,36 +1743,50 @@
            \edef\currentcombinationspec{2*1*}}}%
    \fi
    \forgetall
+\dostarttagged\t!combination\currentcombination
    \doifelse{\combinationparameter\c!height}\v!fit
      \vbox {\vbox to \combinationparameter\c!height}%
    \bgroup
 \let\combination\empty % permits \combination{}{} handy for cld
+   \setuphorizontaldivision
+     [\c!n=\v!fit,\c!distance=\combinationparameter\c!distance]%
    \expanded{\dodostartcombination[\currentcombinationspec]}}
 
+\ifdefined\dotagcombination \else \let\dotagcombination\relax \fi
+
 \long\def\dodostartcombination[#1*#2*#3]%
-  {\setuphorizontaldivision
-     [\c!n=\v!fit,\c!distance=\combinationparameter\c!distance]%
-   \global\horcombination#1%
+  {\global\horcombination#1%
    \global\totcombination#2%
+\dotagcombination
    \global\setbox\combinationstack\emptybox
    \xdef\maxhorcombination{\the\horcombination}%
    \multiply\totcombination\horcombination
    \tabskip\zeropoint
    \doifelse{\combinationparameter\c!width}\v!fit
      {\halign}{\halign to \combinationparameter\c!width}%
-   \bgroup&%
+   \bgroup
+   &%
    %\hfil##\hfil% now : location={left,top}
    \expanded{\doifnotinset{\v!left}{\combinationparameter\c!location}}\hfil
    ##%
    \expanded{\doifnotinset{\v!right}{\combinationparameter\c!location}}\hfil
-   &\tabskip\zeropoint \!!plus 1fill##\cr
+   &%
+   \tabskip\zeropoint \!!plus 1fill
+   ##%
+   \cr
    \docombination}
 
 \def\docombination % we want to add struts but still ignore an empty box
-  {\dowithnextbox
-     {\setbox0\flushnextbox
+  {\dostarttagged\t!combinationpair\empty
+   \dostarttagged\t!combinationcontent\empty
+   \dowithnextbox
+     {\dostoptagged
+      \setbox0\flushnextbox
+      \dostarttagged\t!combinationcaption\empty
       \dowithnextbox
-        {\setbox2\flushnextbox
+        {\dostoptagged
+         \dostoptagged
+         \setbox2\flushnextbox
          \dodocombination}%
       \vtop\bgroup
         \def\next
@@ -1851,6 +1865,7 @@
 \unexpanded\def\stopcombination
   {{\scratchtoks{{}{}{}}\dorecurse\totcombination{\appendtoks{}{}{}{}\to\scratchtoks}\expandafter}\the\scratchtoks
    \egroup
+   \dostoptagged
    \egroup}
 
 \newbox\combinationstack

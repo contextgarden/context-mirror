@@ -368,9 +368,28 @@
 \unexpanded\def\defineheadplacement
   {\dodoubleargument\dodefineheadplacement}
 
-\def\dodefineheadplacement[#1][#2]% #3#4
+% \def\dodefineheadplacement[#1][#2]% #3#4
+%   {\setvalue{\??ns:#1}{#2}%
+%    \setvalue{\??ns::#1}}
+
+% \dodefineheadplacement[sectiona][vertical]{#1->#2}
+% \dodefineheadplacement[sectionb][vertical]#1#2{#1->#2}
+%
+% \setuphead[section][alternative=sectiona]
+% \setuphead[subsection][alternative=sectionb]
+
+\def\dodefineheadplacementyes[#1][#2]%#3#4%
+  {\setvalue{\??ns:#1}{#2}%
+   \setvalue{\??ns::#1}##1##2}
+
+\def\dodefineheadplacementnop[#1][#2]%
   {\setvalue{\??ns:#1}{#2}%
    \setvalue{\??ns::#1}}
+
+\def\dodefineheadplacement[#1][#2]%
+  {\doifnextbgroupelse
+     {\dodefineheadplacementyes[#1][#2]}%
+     {\dodefineheadplacementnop[#1][#2]}}
 
 \def\presetnumberheadalternative
   {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\headisdisplay}

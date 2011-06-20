@@ -26,14 +26,7 @@
 % we can replace this by a more generic attributeset mechanism where we bind
 % to any element (needed anyway, see userdata thingies)
 
-\definesystemattribute[taggedrows]   [public]
-\definesystemattribute[taggedcolumns][public]
-\definesystemattribute[taggedalign]  [public]
-\definesystemattribute[taggedpar]    [public]
-\definesystemattribute[taggedpacked] [public]
-\definesystemattribute[taggedsymbol] [public]
-\definesystemattribute[taggedinsert] [public]
-\definesystemattribute[taggedtag]    [public]
+\definesystemattribute[taggedpar][public]
 
 \def\setelementexporttag
   {\dotripleargument\dosetelementexporttag}
@@ -45,8 +38,17 @@
      \expandafter\expandafter\expandafter\dosetelementexporttagb
    \fi\fi}
 
-\def\dosetelementexporttaga[#1][#2][#3]{\ctxcommand{settagproperty("#1","#2","#3")}}
-\def\dosetelementexporttagb[#1][#2][#3]{\ctxcommand{settagproperty("#1","export","#2")}}
+\def\dosetelementexporttaga[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","#2","#3")}}
+\def\dosetelementexporttagb[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","export","#2")}}
+
+% todo: no need for calls when trialtypesetting
+
+\def\taggedctxcommand
+  {\iftrialtypesetting
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\ctxcommand
+   \fi}
 
 \newcount\tagparcounter
 
@@ -65,29 +67,34 @@
 \to \everytabulatepar % tricky, maybe this should be neverypar
 
 \appendtoks
-    \def\dotagnofTABLEcolumns{\attribute\taggedcolumnsattribute\!!counta}%
-    \def\dotagnofTABLErows   {\attribute\taggedrowsattribute   \!!countb}%
+    \def\dotagTABLEcell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
+    \def\dotagTABLEsignal{\char\zerocount}% brrr, we need to tag empty cells (unless we start numbering)
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagTABLEalign{\attribute\taggedalignattribute\raggedstatus}%
-    \def\dotagTABLEcell {\char\zerocount}% brrr, we need to tag empty cells (unless we start numbering)
-\to \everyenableelements
-
-\appendtoks
+    \def\dotagtabulatecell  {\taggedctxcommand{settagtabulatecell(\number\tabulatealign)}}%
     \def\dotagtabulatesignal{\dontleavehmode\char\zerocount\ignorespaces}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagtabulatealign{\attribute\taggedalignattribute\ifcase\tabulatealign\attributeunsetvalue\or\plusthree\or\plusone\or\plustwo\or\attributeunsetvalue\fi}%
+    \def\dotagsynonym{\taggedctxcommand{settagsynonym("\currentsynonym","\currentsynonymtag")}}%
+\to \everyenableelements
+
+\appendtoks % frozen and assumed global per highlight class
+    \def\dotaghighlight{\taggedctxcommand{settaghighlight("\currenthighlight","\highlightparameter\c!style",\number\attribute\colorattribute)}}%
+\to \everyenableelements
+
+\appendtoks % we can have differently scaled images
+    \def\dotagfigure{\taggedctxcommand{settagfigure("\figurefileoriginal","\figurefilepage",\number\dimexpr\figurewidth,\number\dimexpr\figureheight)}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsynonym{\ctxcommand{settagsynonym("\currentsynonym","\currentsynonymtag")}}%
+   %\def\dotagcombination{\taggedctxcommand{settagcombination(\combinationparameter\c!nx,\combinationparameter\c!ny)}}%
+    \def\dotagcombination{\taggedctxcommand{settagcombination(\number\horcombination,\number\totcombination)}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsorting{\ctxcommand{settagsorting("\currentsorting","\currentsortingtag")}}%
+    \def\dotagsorting{\taggedctxcommand{settagsorting("\currentsorting","\currentsortingtag")}}%
 \to \everyenableelements
 
 \appendtoks
@@ -95,15 +102,15 @@
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetitemize{\ctxcommand{settagitemgroup(\ifconditional\packlistitem true\else false\fi,"\currentitemsymbol")}}%
+    \def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup("\currentitemgroup",\ifconditional\packlistitem true\else false\fi,"\currentitemsymbol")}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetdescriptiontag{\ctxcommand{settagdescriptionid("\currentdescription",\currentdescriptionnumberentry)}}%
+    \def\dotagsetdescription{\taggedctxcommand{settagdescription("\currentdescription",\currentdescriptionnumberentry)}}%
 \to \everyenableelements
 
 \appendtoks
-    \def\dotagsetnotesymbol{\ctxcommand{settagdescriptionid("\currentnote",\currentnotenumber)}}%
+    \def\dotagsetnotesymbol{\taggedctxcommand{settagdescriptionsymbol("\currentnote",\currentnotenumber)}}%
 \to \everyenableelements
 
 \appendtoks

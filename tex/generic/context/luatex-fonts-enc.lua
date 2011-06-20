@@ -18,7 +18,7 @@ fonts.encodings.agl = { }
 setmetatable(fonts.encodings.agl, { __index = function(t,k)
     if k == "unicodes" then
         texio.write(" <loading (extended) adobe glyph list>")
-        local unicodes = dofile(resolvers.findfile("font-agl.lua"))
+        local unicodes = dofile(resolvers.findfile("font-age.lua"))
         fonts.encodings.agl = { unicodes = unicodes }
         return unicodes
     else

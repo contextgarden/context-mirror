@@ -114,6 +114,7 @@ hashes.characters   = chardata
 hashes.parameters   = parameters
 hashes.quads        = quaddata
 hashes.xheights     = xheightdata
+hashes.csnames      = csnames
 
 setmetatableindex(chardata,  function(t,k)
     local characters = fontdata[k].characters
@@ -714,10 +715,6 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
         end
     end
     local tfmdata = definers.read(specification,size) -- id not yet known
-    local cs = specification.cs
-    if cs then
-        csnames[cs] = tfmdata -- new (beware: locals can be forgotten)
-    end
     if not tfmdata then
         report_defining("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
@@ -727,6 +724,7 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
             report_defining("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
                 name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies)
         end
+        csnames[tfmdata] = specification.cs
         tex.definefont(global,cs,tfmdata)
         -- resolved (when designsize is used):
         setsomefontsize(fontdata[tfmdata].parameters.size .. "sp")
@@ -743,6 +741,7 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
      -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
         --
         local id = font.define(tfmdata)
+        csnames[id] = specification.cs
         tfmdata.properties.id = id
         definers.register(tfmdata,id) -- to be sure, normally already done
         tex.definefont(global,cs,id)

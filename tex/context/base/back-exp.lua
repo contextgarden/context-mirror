@@ -6,49 +6,18 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
--- depth can go away (autodepth nu)
-
-
 -- language       -> only mainlanguage, local languages should happen through start/stoplanguage
 -- tocs/registers -> maybe add a stripper (i.e. just don't flush entries in final tree)
+-- footnotes      -> css 3
+-- bodyfont       -> in styles.css
+-- delimited      -> left/right string (needs marking)
+-- depth          -> can go away (autodepth now and not used)
 
 -- Because we need to look ahead we now always build a tree (this was optional in
 -- the beginning). The extra overhead in the frontend is neglectable.
-
--- We can consider replacing attributes by the hash entry ... slower
--- in resolving but it's still quite okay.
-
--- todo: less attributes e.g. internal only first node
--- todo: build xml tree in mem (handy for cleaning)
-
--- delimited: left/right string (needs marking)
-
--- we can optimize the code ... currently the overhead is some 10% for xml + html
-
--- option: pack strings each page so that we save memory
-
-local nodecodes       = nodes.nodecodes
-local traverse_nodes  = node.traverse
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
-
-local function locate(start,wantedid,wantedsubtype)
-    for n in traverse_nodes(start) do
-        local id = n.id
-        if id == wantedid then
-            if not wantedsubtype or n.subtype == wantedsubtype then
-                return n
-            end
-        elseif id == hlist_code or id == vlist_code then
-            local found = locate(n.list,wantedid,wantedsubtype)
-            if found then
-                return found
-            end
-        end
-    end
-end
-
-nodes.locate =  locate
+--
+-- We can optimize the code ... currently the overhead is some 10% for xml + html so
+-- there is no hurry.
 
 local next, type = next, type
 local format, match, concat, rep, sub, gsub, gmatch, find = string.format, string.match, table.concat, string.rep, string.sub, string.gsub, string.gmatch, string.find
@@ -104,19 +73,8 @@ local a_characters      = attributes.private('characters')
 local a_exportstatus    = attributes.private('exportstatus')
 
 local a_tagged          = attributes.private('tagged')
-local a_image           = attributes.private('image')
-
-local a_taggedalign     = attributes.private("taggedalign")
-local a_taggedcolumns   = attributes.private("taggedcolumns")
-local a_taggedrows      = attributes.private("taggedrows")
 local a_taggedpar       = attributes.private("taggedpar")
-local a_taggedpacked    = attributes.private("taggedpacked")
-local a_taggedsymbol    = attributes.private("taggedsymbol")
-local a_taggedinsert    = attributes.private("taggedinsert")
-local a_taggedtag       = attributes.private("taggedtag")
-local a_mathcategory    = attributes.private("mathcategory")
-local a_mathmode        = attributes.private("mathmode")
-
+local a_image           = attributes.private('image')
 local a_reference       = attributes.private('reference')
 
 local a_textblock       = attributes.private("textblock")
@@ -137,13 +95,14 @@ local properties        = structurestags.properties
 local userdata          = structurestags.userdata -- might be combines with taglist
 local tagdata           = structurestags.data
 local tagmetadata       = structurestags.metadata
+local detailedtag       = structurestags.detailedtag
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
 -- todo: more locals (and optimize)
 
-local exportversion     = "0.22"
+local exportversion     = "0.30"
 
 local nofcurrentcontent = 0 -- so we don't free (less garbage collection)
 local currentcontent    = { }
@@ -170,6 +129,7 @@ local treeroot          = tree
 local treehash          = { }
 local extras            = { }
 local checks            = { }
+local finalizers        = { }
 local nofbreaks         = 0
 local used              = { }
 local exporting         = false
@@ -271,7 +231,7 @@ setmetatableindex(spaces, function(t,k)
     return s
 end)
 
-function structurestags.setattributehash(fulltag,key,value)
+function structurestags.setattributehash(fulltag,key,value) -- public hash
     if type(fulltag) == "number" then
         fulltag = taglist[fulltag]
         if fulltag then
@@ -287,6 +247,75 @@ function structurestags.setattributehash(fulltag,key,value)
         ah[key] = value
     end
 end
+
+
+-- experiment: styles and images
+
+local usedstyles = { }
+
+local styletemplate = [[
+%s[detail='%s'] {
+    font-style   : %s ;
+    font-variant : %s ;
+    font-weight  : %s ;
+    color        : %s ;
+}]]
+
+local function allusedstyles(xmlfile)
+    local result = { format("/* styles for file %s */",xmlfile) }
+    for element, details in table.sortedpairs(usedstyles) do
+        for detail, data in table.sortedpairs(details) do
+            local s = xml.css.fontspecification(data.style)
+            local c = xml.css.colorspecification(data.color)
+            result[#result+1] = format(styletemplate,element,detail,
+                s.style or "inherit",s.variant or "inherit",s.weight or "inherit",c or "inherit")
+        end
+    end
+    return concat(result,"\n\n")
+end
+
+local usedimages = { }
+
+local imagetemplate = [[
+%s[id="%s"] {
+    display          : block ;
+    background-image : url(%s) ;
+    background-size  : 100%% auto ;
+    width            : %s ;
+    height           : %s ;
+}]]
+
+local function allusedimages(xmlfile)
+    local result = { format("/* images for file %s */",xmlfile) }
+    for element, details in table.sortedpairs(usedimages) do
+        for detail, data in table.sortedpairs(details) do
+            local name = data.name
+            if file.extname(name) == "pdf" then
+                -- temp hack .. we will have a remapper
+                name = file.replacesuffix(name,"svg")
+            end
+            result[#result+1] = format(imagetemplate,element,detail,name,data.width,data.height)
+        end
+    end
+    return concat(result,"\n\n")
+end
+
+local function uniqueusedimages()
+    local unique = { }
+    for element, details in next, usedimages do
+        for detail, data in next, details do
+            local name = data.name
+            if file.extname(name) == "pdf" then
+                unique[file.replacesuffix(name,"svg")] = name
+            else
+                unique[name] = name
+            end
+        end
+    end
+    return unique
+end
+
+--
 
 properties.vspace = { export = "break",     nature = "display" }
 ----------------- = { export = "pagebreak", nature = "display" }
@@ -361,144 +390,142 @@ function extras.document(result,element,detail,n,fulltag,di)
     checkdocument(di)
 end
 
-local snames, snumbers = { }, { }
+local itemgroups = { }
 
-function structurestags.setitemgroup(packed,symbol,di)
-    local s = snumbers[symbol]
-    if not s then
-        s = #snames + 1
-        snames[s], snumbers[symbol] = symbol, s
-    end
-    texattribute[a_taggedpacked] = packed and 1 or unsetvalue
-    texattribute[a_taggedsymbol] = s
+function structurestags.setitemgroup(current,packed,symbol)
+    itemgroups[detailedtag("itemgroup",current)] = {
+        packed = packed,
+        symbol = symbol,
+    }
 end
 
--- todo: per class
-
-local synonymnames, synonymnumbers = { }, { } -- can be one hash
-
-function structurestags.setsynonym(class,tag)
-    local s = synonymnumbers[tag]
-    if not s then
-        s = #synonymnames + 1
-        synonymnames[s], synonymnumbers[tag] = tag, s
+function extras.itemgroup(result,element,detail,n,fulltag,di)
+    local hash = itemgroups[fulltag]
+    if hash then
+        local v = hash.packed
+        if v then
+            result[#result+1] = " packed='yes'"
+        end
+        local v = hash.symbol
+        if v then
+            result[#result+1] = format(" symbol='%s'",v)
+        end
     end
-    texattribute[a_taggedtag] = s
 end
 
-local sortingnames, sortingnumbers = { }, { } -- can be one hash
+local synonyms = { }
 
-function structurestags.setsorting(class,tag)
-    local s = sortingnumbers[tag]
-    if not s then
-        s = #sortingnames + 1
-        sortingnames[s], sortingnumbers[tag] = tag, s
-    end
-    texattribute[a_taggedtag] = s
+function structurestags.setsynonym(current,tag)
+    synonyms[detailedtag("synonym",current)] = tag
 end
 
-local insertids = { }
+function extras.synonym(result,element,detail,n,fulltag,di)
+    local tag = synonyms[fulltag]
+    if tag then
+        result[#result+1] = format(" tag='%s'",tag)
+    end
+end
 
-function structurestags.setdescriptionid(tag,n)
+local sortings = { }
+
+function structurestags.setsorting(current,tag)
+    sortings[detailedtag("sorting",current)] = tag
+end
+
+function extras.sorting(result,element,detail,n,fulltag,di)
+    local tag = sortings[fulltag]
+    if tag then
+        result[#result+1] = format(" tag='%s'",tag)
+    end
+end
+
+usedstyles.highlight = { }
+
+function structurestags.sethighlight(current,style,color) -- we assume global styles
+    usedstyles.highlight[current] = {
+        style = style, -- xml.css.fontspecification(style),
+        color = color, -- xml.css.colorspec(color),
+    }
+end
+
+local descriptions = { }
+local symbols      = { }
+local linked       = { }
+
+function structurestags.setdescription(tag,n)
     local nd = structures.notes.get(tag,n) -- todo: use listdata instead
     if nd then
-        local r = nd.references
-        texattribute[a_taggedinsert] = r.internal or unsetvalue
-    else
-        texattribute[a_taggedinsert] = unsetvalue
+        local references = nd.references
+        descriptions[references and references.internal] = detailedtag("description",tag)
     end
 end
 
-function extras.descriptiontag(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
-        local v = hash.insert
-        v = v and insertids[v]
-        if v then
-            result[#result+1] = format(" insert='%s'",v)
+function structurestags.setdescriptionsymbol(tag,n)
+    local nd = structures.notes.get(tag,n) -- todo: use listdata instead
+    if nd then
+        local references = nd.references
+        symbols[references and references.internal] = detailedtag("descriptionsymbol",tag)
+    end
+end
+
+function finalizers.descriptions(tree)
+    local n = 0
+    for id, tag in next, descriptions do
+        local sym = symbols[id]
+        if sym then
+            n = n + 1
+            linked[tag] = n
+            linked[sym] = n
         end
+    end
+end
+
+function extras.description(result,element,detail,n,fulltag,di)
+    local id = linked[fulltag]
+    if id then
+        result[#result+1] = format(" insert='%s'",id) -- maybe just fulltag
     end
 end
 
 function extras.descriptionsymbol(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
-        local v = hash.insert
-        v = v and insertids[v]
-        if v then
-            result[#result+1] = format(" insert='%s'",v)
-        end
+    local id = linked[fulltag]
+    if id then
+        result[#result+1] = format(" insert='%s'",id)
     end
 end
 
-function extras.synonym(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
-        local v = hash.tag
-        v = v and synonymnames[v]
-        if v then
-            result[#result+1] = format(" tag='%s'",v)
-        end
-    end
-end
+usedimages.image = { }
 
-function extras.sorting(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
-        local v = hash.tag
-        v = v and sortingnames[v]
-        if v then
-            result[#result+1] = format(" tag='%s'",v)
-        end
-    end
+function structurestags.setfigure(name,page,width,height)
+    usedimages.image[detailedtag("image")] = {
+        name   = name,
+        page   = page,
+        width  = number.todimen(width,"cm","%0.3fcm"),
+        height = number.todimen(height,"cm","%0.3fcm"),
+    }
 end
-
-local usedimages = { }
 
 function extras.image(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
-        local v = hash.imageindex
-        if v then
-            local figure = img.ofindex(v)
-            if figure then
-                local fullname = figure.filepath
-                local name = file.basename(fullname)
-                local path = file.dirname(fullname)
-                local page = figure.page or 1
-                local width = figure.width or 0
-                local height = figure.height or 0
-                local currentimage = { }
-                if name ~= "" then
-                    result[#result+1] = format(" name='%s'",name)
-                    currentimage.name = name
-                    if file.extname(name) == "pdf" then
-                        -- temp hack .. we will have a remapper
-                        name = file.replacesuffix(name,"svg")
-                    end
-                    currentimage.filename = name
-                end
-                if path ~= "" then
-                    result[#result+1] = format(" path='%s'",path)
-                    currentimage.path = path
-                end
-                if page > 1 then
-                    result[#result+1] = format(" page='%s'",page)
-                    currentimage.page = page
-                end
-                if width > 0 then
-                    width = number.todimen(width,"cm","%0.3fcm")
-                    result[#result+1] = format(" width='%s'",width)
-                    currentimage.width = width
-                end
-                if height > 0 then
-                    height = number.todimen(height,"cm","%0.3fcm")
-                    result[#result+1] = format(" ysize='%s'",height)
-                    currentimage.height = height
-                end
-                usedimages[#usedimages+1] = currentimage
-            end
-        end
+    local data = usedimages.image[fulltag]
+    if data then
+        result[#result+1] = format(" id='%s' name='%s' page='%s' width='%s' height='%s'",
+            fulltag,data.name,data.page,data.width,data.height)
+    end
+end
+
+local combinations = { }
+
+function structurestags.setcombination(nx,ny)
+    combinations[detailedtag("combination")] = {
+        nx = nx,
+        ny = ny,
+    }
+end
+
+function extras.combination(result,element,detail,n,fulltag,di)
+    local data = combinations[fulltag]
+    if data then
+        result[#result+1] = format(" nx='%s' ny='%s'",data.nx,data.ny)
     end
 end
 
@@ -575,6 +602,8 @@ function specials.internal(result,var)
     end
 end
 
+local referencehash = { }
+
 local function adddestination(result,references) -- todo: specials -> exporters and then concat
     if references then
         local reference = references.reference
@@ -614,12 +643,9 @@ end
 
 function extras.link(result,element,detail,n,fulltag,di)
     -- for instance in lists a link has nested elements and no own text
-    local hash = attributehash[fulltag]
-    if hash then
-        local references = hash.reference
-        if references then
-            adddestination(result,structures.references.get(references))
-        end
+    local reference = referencehash[fulltag]
+    if reference then
+        adddestination(result,structures.references.get(reference))
         return true
     else
         local data = di.data
@@ -1006,51 +1032,21 @@ function extras.float(result,element,detail,n,fulltag,di)
     end
 end
 
-function extras.itemgroup(result,element,detail,n,fulltag,di)
-    local data = di.data
-    if data then
-        for i=1,#data do
-            local di = data[i]
-            if type(di) == "table" and di.tg == "item" then
-                local ddata = di.data
-                for i=1,#ddata do
-                    local ddi = ddata[i]
-                    if type(ddi) == "table" then
-                        local tg = ddi.tg
-                        if tg == "itemtag" or tg == "itemcontent" then
-                            local hash = attributehash[ddi.fulltag]
-                            if hash then
-                                local v = hash.packed
-                                if v and v == 1 then
-                                    result[#result+1] = " packed='yes'"
-                                end
-                                local v = hash.symbol
-                                if v then
-                                    result[#result+1] = format(" symbol='%s'",snames[v])
-                                end
-                                return
-                            end
-                        end
-                    end
-                end
-            end
-        end
+local tabledata = { }
+
+function structurestags.settablecell(rows,columns,align)
+    if align > 0 or rows > 1 or columns > 1 then
+        tabledata[detailedtag("tablecell")] = {
+            rows    = rows,
+            columns = columns,
+            align   = align,
+        }
     end
 end
 
 function extras.tablecell(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
+    local hash = tabledata[fulltag]
     if hash then
-        local v = hash.align
-        if not v or v == 0 then
-            -- normal
-        elseif v == 1 then
-            result[#result+1] = " align='flushright'"
-        elseif v == 2 then
-            result[#result+1] = " align='middle'"
-        elseif v == 3 then
-            result[#result+1] = " align='flushleft'"
-        end
         local v = hash.columns
         if v and v > 1 then
             result[#result+1] = format(" columns='%s'",v)
@@ -1059,12 +1055,6 @@ function extras.tablecell(result,element,detail,n,fulltag,di)
         if v and v > 1 then
             result[#result+1] = format(" rows='%s'",v)
         end
-    end
-end
-
-function extras.tabulatecell(result,element,detail,n,fulltag,di)
-    local hash = attributehash[fulltag]
-    if hash then
         local v = hash.align
         if not v or v == 0 then
             -- normal
@@ -1074,6 +1064,53 @@ function extras.tabulatecell(result,element,detail,n,fulltag,di)
             result[#result+1] = " align='middle'"
         elseif v == 3 then
             result[#result+1] = " align='flushleft'"
+        end
+    end
+end
+
+local tabulatedata = { }
+
+function structurestags.settabulatecell(align)
+    if align > 0 then
+        tabulatedata[detailedtag("tabulatecell")] = {
+            align = align,
+        }
+    end
+end
+
+function extras.tabulate(result,element,detail,n,fulltag,di)
+    local data = di.data
+    for i=1,#data do
+        local di = data[i]
+        if di.tg == "tabulaterow" then
+            local did = di.data
+            local content = false
+            for i=1,#did do
+                local d = did[i].data
+                if d and #d > 0 then
+                    content = true
+                    break
+                end
+            end
+            if not content then
+                di.element = "" -- or simply remove
+            end
+        end
+    end
+end
+
+function extras.tabulatecell(result,element,detail,n,fulltag,di)
+    local hash = tabulatedata[fulltag]
+    if hash then
+        local v = hash.align
+        if not v or v == 0 then
+            -- normal
+        elseif v == 1 then
+            result[#result+1] = " align='flushleft'"
+        elseif v == 2 then
+            result[#result+1] = " align='flushright'"
+        elseif v == 3 then
+            result[#result+1] = " align='middle'"
         end
     end
 end
@@ -1112,7 +1149,6 @@ end
 
 local function begintag(result,element,nature,depth,di,skip)
     -- if needed we can use a local result with xresult
---~ local result = { }
     local detail  = di.detail
     local n       = di.n
     local fulltag = di.fulltag
@@ -1196,17 +1232,9 @@ local function begintag(result,element,nature,depth,di,skip)
         result[#result+1] = "\n"
         linedone = true
     end
---~ xresult[#xresult+1] = concat(result)
     used[element][detail or ""] = nature -- for template css
     local metadata = tagmetadata[fulltag]
     if metadata then
-     -- metadata = table.toxml(metadata,"metadata",true,depth*2,2) -- nobanner
-     -- if not linedone then
-     --     result[#result+1] = format("\n%s\n",metadata)
-     --     linedone = true
-     -- else
-     --     result[#result+1] = format("%s\n",metadata)
-     -- end
         if not linedone then
             result[#result+1] = "\n"
             linedone = true
@@ -1346,121 +1374,7 @@ local function breaktree(tree,parent,parentelement) -- also removes double break
      end
 end
 
--- finalizers
-
-local function checkinserts(data)
-    local nofinserts = 0
-    for i=1,#data do
-        local di = data[i]
-        if type(di) == "table" then -- id ~= false
-            if di.element == "descriptionsymbol" then
-                local hash = attributehash[di.fulltag]
-                if hash then
-                    local i = hash.insert
-                    if i then
-                        nofinserts = nofinserts + 1
-                        insertids[i] = nofinserts
-                    end
-                else
-                    -- something is wrong
-                end
-            end
-            local d = di.data
-            if d then
-                checkinserts(d)
-            end
-        end
-    end
-end
-
 -- tabulaterow reconstruction .. can better be a checker (TO BE CHECKED)
-
---~ local function xcollapsetree() -- unwanted space injection
---~     for tag, trees in next, treehash do
---~         local d = trees[1].data
---~         if d then
---~             local nd = #d
---~             if nd > 0 then
---~                 for i=2,#trees do
---~                     local currenttree = trees[i]
---~                     local currentdata = currenttree.data
---~                     local previouspar = trees[i-1].parnumber
---~                     currenttree.collapsed = true
---~                     if previouspar == 0 or type(currentdata[1]) ~= "string" then
---~                         previouspar = nil -- no need anyway so no further testing needed
---~                     end
---~                     local done = false
---~                     local breakdone = false
---~                     local spacedone = false
---~                     for j=1,#currentdata do
---~                         local cd = currentdata[j]
---~                         if not cd then
---~                             -- skip
---~                         elseif type(cd) == "string" then
---~                             if cd == "" then
---~                                 -- skip
---~                             elseif cd == " " then
---~                                 -- done check ?
---~                                 if not spacedone and not breakdone then
---~                                     nd = nd + 1
---~                                     d[nd] = cd
---~                                     spacedone = true
---~                                 end
---~                             elseif done then
---~                                 if not spacedone and not breakdone then
---~                                     nd = nd + 1
---~                                     d[nd] = " "
---~                                     spacedone = true
---~                                 end
---~                                 nd = nd + 1
---~                                 d[nd] = cd
---~                             else
---~                                 done = true
---~                                 local currentpar = d.parnumber
---~                                 if not currentpar then
---~                                     if not spacedone and not breakdone then
---~                                         nd = nd + 1
---~                                         d[nd] = " " -- brr adds space in unwanted places (like math)
---~                                         spacedone = true
---~                                     end
---~                                     previouspar = nil
---~                                 elseif not previouspar then
---~                                     if not spacedone and not breakdone then
---~                                         nd = nd + 1
---~                                         d[nd] = " "
---~                                         spacedone = true
---~                                     end
---~                                     previouspar = currentpar
---~                                 elseif currentpar ~= previouspar then
---~                                     if not breakdone then
---~                                         if not spacedone then
---~                                             nd = nd + 1
---~                                         end
---~                                         d[nd] = makebreaknode(currenttree)
---~                                         breakdone = true
---~                                     end
---~                                     previouspar = currentpar
---~                                 else
---~                                     spacedone = false
---~                                     breakdone = false
---~                                 end
---~                                 nd = nd + 1
---~                                 d[nd] = cd
---~                             end
---~                         else
---~                             if cd.tg == "break" then
---~                                 breakdone = true
---~                             end
---~                             nd = nd + 1
---~                             d[nd] = cd
---~                         end
---~                         currentdata[j] = false
---~                     end
---~                 end
---~             end
---~         end
---~     end
---~ end
 
 local function collapsetree()
     for tag, trees in next, treehash do
@@ -1506,17 +1420,32 @@ local function collapsetree()
     end
 end
 
+local function finalizetree(tree)
+    for _, finalizer in next, finalizers do
+        finalizer(tree)
+    end
+end
+
 local function indextree(tree)
     local data = tree.data
     if data then
+        local n, new = 0, { }
         for i=1,#data do
             local d = data[i]
-            if type(d) == "table" then
-                d.__i__ = i
+            if not d then
+                -- skip
+            elseif type(d) == "string" then
+                n = n + 1
+                new[n] = d
+            elseif not d.collapsed then
+                n = n + 1
+                d.__i__ = n
                 d.__p__ = tree
                 indextree(d)
+                new[n] = d
             end
         end
+        tree.data = new
     end
 end
 
@@ -1737,7 +1666,7 @@ end
 
 -- whatsit_code localpar_code
 
-local function collectresults(head,list)
+local function collectresults(head,list) -- is last used (we also have currentattribute)
     local p
     for n in traverse_nodes(head) do
         local id = n.id -- 14: image, 8: literal (mp)
@@ -1763,21 +1692,15 @@ local function collectresults(head,list)
                         currentparagraph = has_attribute(n,a_taggedpar)
                         currentnesting = tl
                         currentattribute = at
-                        local ah = { -- this includes detail ! -- we can move some to te tex end
-                            align       = has_attribute(n,a_taggedalign  ),
-                            columns     = has_attribute(n,a_taggedcolumns),
-                            rows        = has_attribute(n,a_taggedrows   ),
-                            packed      = has_attribute(n,a_taggedpacked ),
-                            symbol      = has_attribute(n,a_taggedsymbol ),
-                            insert      = has_attribute(n,a_taggedinsert ),
-                            reference   = has_attribute(n,a_reference    ),
-                            tag         = has_attribute(n,a_taggedtag    ), -- used for synonyms
-                        }
-                        if next(ah) then
-                            attributehash[tl[#tl]] = ah
-                        end
                         last = at
                         pushentry(currentnesting)
+                        -- We need to intercept this here; maybe I will also move this
+                        -- to a regular setter at the tex end.
+                        local r = has_attribute(n,a_reference)
+                        if r then
+                            referencehash[tl[#tl]] = r -- fulltag
+                        end
+                        --
                     elseif last then
                         local at = has_attribute(n,a_taggedpar)
                         if at ~= currentparagraph then
@@ -1848,12 +1771,7 @@ local function collectresults(head,list)
                     pushcontent()
                     pushentry(currentnesting) -- ??
                 end
-                local tl = taglist[at]
-                local i = locate_node(n,whatsit_code,refximage_code)
-                if i then
-                    attributehash[tl[#tl]] = { imageindex = i.index }
-                end
-                pushentry(tl) -- has an index, todo: flag empty element
+                pushentry(taglist[at]) -- has an index, todo: flag empty element
                 if trace_export then
                     report_export("%s<!-- processing image (tag %s)",spaces[currentdepth],last)
                 end
@@ -2018,13 +1936,41 @@ function builders.paragraphs.tag(head)
     return false
 end
 
--- wrapper
+-- encoding='utf-8'
 
-local displaymapping = {
-    inline  = "inline",
-    display = "block",
-    mixed   = "inline",
-}
+local xmlpreamble = [[
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+
+<!-- input filename   : %- 17s -->
+<!-- processing date  : %- 17s -->
+<!-- context version  : %- 17s -->
+<!-- exporter version : %- 17s -->
+
+]]
+
+local function wholepreamble()
+    return format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
+end
+
+local csspreamble = [[
+<?xml-stylesheet type="text/css" href="%s"?>
+]]
+
+local function allusedstylesheets(xmlfile,cssfiles,files)
+    local result = { }
+    for i=1,#cssfiles do
+        local cssfile = cssfiles[i]
+        if type(cssfile) ~= "string" or cssfile == variables.yes or cssfile == "" or cssfile == xmlfile then
+            cssfile = file.replacesuffix(xmlfile,"css")
+        else
+            cssfile = file.addsuffix(cssfile,"css")
+        end
+        files[#files+1] = cssfile
+        report_export("adding css reference '%s",cssfile)
+        result[#result+1] = format(csspreamble,cssfile)
+    end
+    return concat(result)
+end
 
 local e_template = [[
 %s {
@@ -2036,21 +1982,36 @@ local d_template = [[
     display: %s ;
 }]]
 
--- encoding='utf-8'
+local displaymapping = {
+    inline  = "inline",
+    display = "block",
+    mixed   = "inline",
+}
 
-local xmlpreamble = [[
-<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+local function allusedelements(xmlfile)
+    local result = { format("/* template for file %s */",xmlfile) }
+    for element, details in table.sortedhash(used) do
+        result[#result+1] = format("/* category: %s */",element)
+        for detail, nature in table.sortedhash(details) do
+            local d = displaymapping[nature or "display"] or "block"
+            if detail == "" then
+                result[#result+1] = format(e_template,element,d)
+            else
+                result[#result+1] = format(d_template,element,detail,d)
+            end
+        end
+    end
+    return concat(result,"\n\n")
+end
 
-<!-- input filename   : %- 17s -->
-<!-- processing date  : %- 17s -->
-<!-- context version  : %- 17s -->
-<!-- exporter version : %- 17s -->
-]]
-
-local csspreamble = [[
-
-<?xml-stylesheet type="text/css" href="%s"?>
-]]
+local function allcontent(tree)
+    local result  = { }
+    flushtree(result,tree.data,"display",0) -- we need to collect images
+    result = concat(result)
+    result = gsub(result,"\n *\n","\n")
+    result = gsub(result,"\n +([^< ])","\n%1")
+    return result
+end
 
 -- local xhtmlpreamble = [[
 --     <!DOCTYPE html PUBLIC
@@ -2059,14 +2020,35 @@ local csspreamble = [[
 --     >
 -- ]]
 
-local imagetemplate = [[
-image[name="%s"] {
-    display          : block ;
-    background-image : url(%s) ;
-    background-size  : 100%% auto ;
-    width            : %s ;
-    height           : %s ;
-}]]
+local function cleanxhtmltree(xmltree)
+    if xmltree then
+        local xmlwrap = xml.wrap
+        for e in xml.collected(xmltree,"/document") do
+            e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
+            break
+        end
+        -- todo: inject xhtmlpreamble (xmlns should have be enough)
+        local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
+        for e in xml.collected(xmltree,"link") do
+            local location = e.at.location
+            if location then
+                wrapper.at.href = "#" .. gsub(location,":","_")
+                xmlwrap(e,wrapper)
+            end
+        end
+        local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
+        for e in xml.collected(xmltree,"!link[@location]") do
+            local location = e.at.location
+            if location then
+                wrapper.at.name = gsub(location,":","_")
+                xmlwrap(e,wrapper)
+            end
+        end
+        return xmltree
+    else
+        return xml.convert("<?xml version='1.0'?>\n<error>invalid xhtml tree</error>")
+    end
+end
 
 local cssfile, xhtmlfile = nil, nil
 
@@ -2075,136 +2057,81 @@ directives.register("backend.export.xhtml",function(v) xhtmlfile = v end)
 
 local function stopexport(v)
     starttiming(treehash)
+    --
     finishexport()
+    --
     collapsetree(tree)
     indextree(tree)
     checktree(tree)
     breaktree(tree)
-    checkinserts(tree.data)
+    finalizetree(tree)
+    --
     hashlistdata()
+    --
     if type(v) ~= "string" or v == variables.yes or v == "" then
         v = tex.jobname
     end
-    local xmlfile = file.addsuffix(v,"export")
-    if type(cssfile) ~= "string" or cssfile == "" then
-        cssfile = nil
+    local basename = file.basename(v)
+    local xmlfile = file.addsuffix(basename,"export")
+    --
+    local imagefilename         = file.addsuffix(file.removesuffix(xmlfile) .. "-images","css")
+    local stylefilename         = file.addsuffix(file.removesuffix(xmlfile) .. "-styles","css")
+    local templatefilename      = file.replacesuffix(xmlfile,"template")
+    local specificationfilename = file.replacesuffix(xmlfile,"specification")
+    --
+    local cssfiles = { }
+    if type(cssfile) == "string" and cssfile ~= "" then
+        cssfiles = settings_to_array(cssfile)
+        insert(cssfiles,1,imagefilename)
+        insert(cssfiles,1,stylefilename)
     end
-    local files = { }
-    local specification = {
-        name = file.removesuffix(v),
-        identifier = os.uuid(),
-        files = files,
+    cssfiles = table.unique(cssfiles)
+    --
+    local result = allcontent(tree) -- also does some housekeeping and data collecting
+    --
+    local files = {
+        xhtmlfile,
+     -- stylefilename,
+     -- imagefilename,
     }
+    local results = concat {
+        wholepreamble(),
+        allusedstylesheets(xmlfile,cssfiles,files), -- ads to files
+        result,
+    }
+    --
+    files = table.unique(files)
+    --
     report_export("saving xml data in '%s",xmlfile)
-    --
-    local results = { }
-    -- collect tree
-    local result  = { }
-    flushtree(result,tree.data,"display",0) -- we need to collect images
-    result = concat(result)
-    result = gsub(result,"\n *\n","\n")
-    result = gsub(result,"\n +([^< ])","\n%1")
-    --
-    local imgfile = file.addsuffix(file.removesuffix(xmlfile) .. "-images","css")
-    results[#results+1] = format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
-    if cssfile then
-        local cssfiles = settings_to_array(cssfile)
-        for i=1,#cssfiles do
-            local cssfile = cssfiles[i]
-            files[#files+1] = cssfile
-            if type(cssfile) ~= "string" or cssfile == variables.yes or cssfile == "" or cssfile == xmlfile then
-                cssfile = file.replacesuffix(xmlfile,"css")
-            else
-                cssfile = file.addsuffix(cssfile,"css")
-            end
-            report_export("adding css reference '%s",cssfile)
-            results[#results+1] = format(csspreamble,cssfile)
-        end
-        if #usedimages > 0 then
-            results[#results+1] = format(csspreamble,imgfile)
-        end
-    end
-    --
-    results[#results+1] = result
-    --
-    results = concat(results)
-    -- if needed we can do a cleanup of the tree (no need to load for xhtml then)
-    -- write to file
     io.savedata(xmlfile,results)
-    -- css template file
-    if cssfile then
-        if #usedimages > 0 then
-            report_export("saving css image definitions in '%s",imgfile)
-            local result = { format("/* images for file %s */",xmlfile) }
-            for i=1,#usedimages do
-                local im = usedimages[i]
-                -- todo: path
-                result[#result+1] = format(imagetemplate,im.name,im.filename,im.width,im.height)
-            end
-            io.savedata(imgfile,concat(result,"\n\n"))
-        else
-            os.remove(imgfile)
-        end
-        --
-        local cssfile = file.replacesuffix(xmlfile,"template")
-        report_export("saving css template in '%s",cssfile)
-        local templates = { format("/* template for file %s */",xmlfile) }
-        for element, details in table.sortedhash(used) do
-            templates[#templates+1] = format("/* category: %s */",element)
-            for detail, nature in table.sortedhash(details) do
-                local d = displaymapping[nature or "display"] or "block"
-                if detail == "" then
-                    templates[#templates+1] = format(e_template,element,d)
-                else
-                    templates[#templates+1] = format(d_template,element,detail,d)
-                end
-            end
-        end
-        io.savedata(cssfile,concat(templates,"\n\n"))
-    else
-        os.remove(imgfile)
-    end
-    -- xhtml references
+    --
+    report_export("saving css image definitions in '%s",imagefilename)
+    io.savedata(imagefilename,allusedimages(xmlfile))
+    --
+    report_export("saving css style definitions in '%s",cssfile)
+    io.savedata(stylefilename,allusedstyles(xmlfile))
+    --
+    report_export("saving css template in '%s",templatefilename)
+    io.savedata(templatefilename,allusedelements(xmlfile))
+    --
     if xhtmlfile then
-        -- messy
         if type(v) ~= "string" or xhtmlfile == true or xhtmlfile == variables.yes or xhtmlfile == "" or xhtmlfile == xmlfile then
             xhtmlfile = file.replacesuffix(xmlfile,"xhtml")
         else
             xhtmlfile = file.addsuffix(xhtmlfile,"xhtml")
         end
         report_export("saving xhtml variant in '%s",xhtmlfile)
-     -- local xmltree = xml.load(xmlfile)
-        local xmltree = xml.convert(results)
-        if xmltree then
-            local xmlwrap = xml.wrap
-            for e in xml.collected(xmltree,"/document") do
-                e.at["xmlns:xhtml"] = "http://www.w3.org/1999/xhtml"
-                break
-            end
-            -- todo: inject xhtmlpreamble (xmlns should have be enough)
-            local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
-            for e in xml.collected(xmltree,"link") do
-                local location = e.at.location
-                if location then
-                    wrapper.at.href = "#" .. gsub(location,":","_")
-                    xmlwrap(e,wrapper)
-                end
-            end
-            local wrapper = { tg = "a", ns = "xhtml", at = { name = "unknown" } }
-            for e in xml.collected(xmltree,"!link[@location]") do
-                local location = e.at.location
-                if location then
-                    wrapper.at.name = gsub(location,":","_")
-                    xmlwrap(e,wrapper)
-                end
-            end
-            xml.save(xmltree,xhtmlfile)
-        end
-        files[#files+1] = xhtmlfile
-        specification.root = xhtmlfile
-        local specfile = file.replacesuffix(xmlfile,"specification")
-        report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specfile,specfile)
-        io.savedata(specfile,table.serialize(specification,true))
+        local xmltree = cleanxhtmltree(xml.convert(results))
+        xml.save(xmltree,xhtmlfile)
+        local specification = {
+            name       = file.removesuffix(v),
+            identifier = os.uuid(),
+            images     = uniqueusedimages(),
+            root       = xhtmlfile,
+            files      = files,
+        }
+        report_export("saving specification in '%s' (mtxrun --script epub --make %s)",specificationfilename,specificationfilename)
+        io.savedata(specificationfilename,table.serialize(specification,true))
     end
     stoptiming(treehash)
 end
@@ -2218,7 +2145,6 @@ local function startexport(v)
 -- not yet known in task-ini
         appendaction("shipouts",     "normalizers", "nodes.handlers.export")
 --      enableaction("shipouts","nodes.handlers.export")
---
         enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math",    "noads.handlers.tags")
 --~ appendaction("finalizers","lists","builders.paragraphs.tag")
@@ -2236,7 +2162,15 @@ statistics.register("xml exporting time", function()
     end
 end)
 
-commands.settagitemgroup     = structurestags.setitemgroup
-commands.settagsynonym       = structurestags.setsynonym
-commands.settagsorting       = structurestags.setsorting
-commands.settagdescriptionid = structurestags.setdescriptionid
+-- These are called at the tex end:
+
+commands.settagitemgroup         = structurestags.setitemgroup
+commands.settagsynonym           = structurestags.setsynonym
+commands.settagsorting           = structurestags.setsorting
+commands.settagdescription       = structurestags.setdescription
+commands.settagdescriptionsymbol = structurestags.setdescriptionsymbol
+commands.settaghighlight         = structurestags.sethighlight
+commands.settagfigure            = structurestags.setfigure
+commands.settagcombination       = structurestags.setcombination
+commands.settagtablecell         = structurestags.settablecell
+commands.settagtabulatecell      = structurestags.settabulatecell

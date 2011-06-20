@@ -1,0 +1,98 @@
+%D \module
+%D   [       file=x-udhr,
+%D        version=2011.06.11,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Unicode Language Test Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The XML files can be fetched from: \url {http://unicode.org/udhr/}.
+
+\startmodule[udhr]
+
+\startxmlsetups udhr:basics
+    \xmlsetsetup {#1} {*} {udhr:*}
+\stopxmlsetups
+
+\xmlregistersetup{udhr:basics}
+
+\startxmlsetups udhr:udhr
+
+    \mainlanguage[\xmlatt{#1}{language}]
+
+    \starttitle[title=\xmltext{#1}{/title}]
+        \xmlfirst{#1}{/preamble}
+        \xmlall{#1}{/article}
+    \stoptitle
+
+\stopxmlsetups
+
+\startxmlsetups udhr:preamble
+    \startsubject[title=\xmltext{#1}{/title}]
+        \xmlall{#1}{/*)}
+    \stopsubject
+\stopxmlsetups
+
+\startxmlsetups udhr:article
+    \startsubject[title=\xmltext{#1}{/title}]
+        \xmlall{#1}{/*)}
+    \stopsubject
+\stopxmlsetups
+
+\startxmlsetups udhr:orderedlist
+    \startitemize[n]
+        \xmlflush{#1}
+    \stopitemize
+\stopxmlsetups
+
+\startxmlsetups udhr:listitem
+    \startitem
+        \xmlflush{#1}
+    \stopitem
+\stopxmlsetups
+
+\startxmlsetups udhr:para
+    \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\setupbodyfont
+  [dejavu,10pt]
+
+\setuplayout
+  [width-=middle,
+   height=middle,
+   footer=0cm,
+   header=1.5cm]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfb,
+   align=middle]
+
+\setuphead
+  [section]
+  [style=\bfa,
+   align=middle]
+
+\setuptolerance
+  [verytolerant]
+
+\doifnotmode{demo}{\endinput}
+
+% todo: when argument given then process it
+
+\starttext
+    \xmlprocessfile{main}{udhr_nld.xml}{}
+\stoptext
+
+\stopmodule

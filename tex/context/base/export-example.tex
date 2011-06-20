@@ -1,5 +1,8 @@
+\usemodule[abr-01]
+
 \setupbackend
   [export=export-example.xml,
+   xhtml=export-example.xhtml,
    css=export-example.css]
 
 \definedescription
@@ -13,15 +16,32 @@
 \setupbodyfont
   [dejavu]
 
+\setupinteraction
+  [state=start]
+
+\setupwhitespace
+  [big]
+
+\definehighlight[interesting][style=bold,color=red]
+
 \starttext
 
 \startchapter[title=Example]
 
 \startparagraph \input zapf (Zapf) \stopparagraph
 
+\startparagraph
+    Watching a \interesting {movie} after reading a review on \goto{my favourite movie
+    reviews site}[url(http://outlawvern.com/)] is much more fun. \footnote {Just a note.}
+\stopparagraph
+
 \placefigure
   {}
-  {\externalfigure[hacker.jpg]}
+  {\startcombination[3*1]
+     {\externalfigure[hacker.jpg][width=3cm]} {first}
+     {\externalfigure[hacker.jpg][width=4cm]} {second}
+     {\externalfigure[hacker.jpg][width=2cm]} {third}
+   \stopcombination}
 
 \startparagraph \input zapf (Zapf) \stopparagraph
 
@@ -42,7 +62,7 @@
     \startitem \input knuth (Knuth) \stopitem
 \stopitemize
 
-\startitemize[2]
+\startitemize[2,packed]
     \startitem \input zapf (Zapf) \stopitem
     \startitem \input tufte (Tufte) \stopitem
 \stopitemize
@@ -63,6 +83,18 @@ e = mc^2
 Okay, it's somewhat boring to always use the same formula, so how about
 $\sqrt{4} = 2$ or traveling at \unit{120 km/h} instead of $\unit{110 km/h}$.
 \stopparagraph
+
+\bTABLE
+\bTR \bTD test \eTD \bTD test \eTD \eTR
+\bTR \bTD[nx=2] test \eTD \eTR
+\eTABLE
+
+\starttabulate[|l|r|p|]
+\NC left \NC right \NC \input ward \NC \NR
+\NC l    \NC r     \NC \input ward \NC \NR
+\stoptabulate
+
+It looks like we're using \CONTEXT\ to produce some kind of \XML\ output.
 
 \typefile{export-example.tex}
 

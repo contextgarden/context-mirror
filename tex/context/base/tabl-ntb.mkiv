@@ -116,11 +116,11 @@
 %D
 %D \typebuffer \getbuffer
 
-\let\dotagTABLEalign\relax
+\ifdefined\dotagTABLEcell \else \let\dotagTABLEcell\relax \fi
 
 \def\bTBLCELL % why not \doinhibitblank
   {\inhibitblank
-   \dotagTABLEalign
+   \dotagTABLEcell
    \doconvertfont\tbltblstyle\empty
    \everypar{\tbltblleft\delayedbegstrut}}
 
@@ -923,8 +923,6 @@
         \fi
       \egroup}}
 
-\let\dotagTABLEcell\relax
-
 \def\begintbl
   {\global\tblspn\zerocount
    \global\tblcol\zerocount
@@ -941,7 +939,8 @@
    \ignorespaces##\unskip&&\ignorespaces##\unskip\cr} % one too many
 
 \def\endtbl
-  {\dostoptagged\egroup
+  {\dostoptagged
+   \egroup
    \dostoptagged}
 
 \setvalue{\tblnone TBL}#1#2%
@@ -997,17 +996,17 @@
      \settblhei{#1}{\the\ht\scratchbox}%
    \fi}%
 
-\let\dotagnofTABLEcolumns\relax
-\let\dotagnofTABLErows   \relax
+\newcount\tablecellrows
+\newcount\tablecellcolumns
 
 \def\domakeTBLthree#1 #2 %
   {% height
-\dostarttagged\t!tablecell\empty
+   \dostarttagged\t!tablecell\empty
    \!!counta \gettblcol{#1}{#2}\relax
    \!!countb \gettblrow{#1}{#2}\relax
    \!!heighta\gettblht {#1}{#2}\relax
-\dotagnofTABLEcolumns
-\dotagnofTABLErows
+   \tablecellcolumns\!!counta % used later so don't adapt these
+   \tablecellrows   \!!countb % used later so don't adapt these
    \scratchdimen\zeropoint
    \ifnum\!!counta=\maximumcol\relax
      % case: nc=maxcolumns
@@ -1031,7 +1030,7 @@
    \edef\widthTBL{\the\dimexpr\scratchdimen-\tbltblcolumndistance\relax}%
    % cell
    \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute \bgroup
-%    \dotagTABLEcell
+    % \dotagTABLEsignal
       \gettbltxt{#1}{#2}%
    \egroup
    \ifnum\!!counta=\maximumcol\relax
