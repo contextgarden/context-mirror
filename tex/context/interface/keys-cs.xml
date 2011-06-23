@@ -609,6 +609,7 @@
 		<cd:constant name='commandafter' value='prikazpo'/>
 		<cd:constant name='commandbefore' value='predchoziprikaz'/>
 		<cd:constant name='commands' value='prikazy'/>
+		<cd:constant name='compact' value='compact'/>
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='compress'/>

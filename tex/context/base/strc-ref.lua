@@ -7,15 +7,16 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 }
 
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
-local lpegmatch, lpegP, lpegCs = lpeg.match, lpeg.P, lpeg.Cs
 local texcount, texsetcount = tex.count, tex.setcount
-local rawget = rawget
+local rawget, tonumber = rawget, tonumber
+local lpegmatch, lpegP, lpegS, lpegCs, lpegCt, lpegCf, lpegCc, lpegC, lpegCg = lpeg.match, lpeg.P, lpeg.S, lpeg.Cs, lpeg.Ct, lpeg.Cf, lpeg.Cc, lpeg.C, lpeg.Cg
 
 local allocate          = utilities.storage.allocate
 local mark              = utilities.storage.mark
 local setmetatableindex = table.setmetatableindex
 
-local trace_referencing = false  trackers.register("structures.referencing", function(v) trace_referencing = v end)
+local trace_referencing = false  trackers.register("structures.referencing",           function(v) trace_referencing = v end)
+local trace_analyzing   = false  trackers.register("structures.referencing.analyzing", function(v) trace_analyzing   = v end)
 
 local report_references = logs.reporter("structure","references")
 
@@ -210,56 +211,149 @@ end
 
 -- this reference parser is just an lpeg version of the tex based one
 
-local result = { }
+-- local result = { }
+--
+-- local lparent   = lpegP("(")
+-- local rparent   = lpegP(")")
+-- local lbrace    = lpegP("{")
+-- local rbrace    = lpegP("}")
+-- local dcolon    = lpegP("::")
+-- local backslash = lpegP("\\")
+--
+-- local reset     = lpegP("") / function()  result = { } end
+-- local b_token   = backslash / function(s) result.has_tex = true return s end
+--
+-- local o_token   = 1 - rparent - rbrace - lparent - lbrace
+-- local a_token   = 1 - rbrace
+-- local s_token   = 1 - lparent - lbrace
+-- local i_token   = 1 - lparent - lbrace
+-- local f_token   = 1 - lparent - lbrace - dcolon
+--
+-- local outer     =        (f_token          )^1  / function (s) result.outer     = s   end
+-- local operation = lpegCs((b_token + o_token)^1) / function (s) result.operation = s   end
+-- local arguments = lpegCs((b_token + a_token)^0) / function (s) result.arguments = s   end
+-- local special   =        (s_token          )^1  / function (s) result.special   = s   end
+-- local inner     =        (i_token          )^1  / function (s) result.inner     = s   end
+--
+-- local outer_reference    = (outer * dcolon)^0
+--
+-- operation = outer_reference * operation -- special case: page(file::1) and file::page(1)
+--
+-- local optional_arguments = (lbrace  * arguments * rbrace)^0
+-- local inner_reference    = inner * optional_arguments
+-- local special_reference  = special * lparent * (operation * optional_arguments + operation^0) * rparent
+--
+-- local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
+--
+-- function references.split(str)
+--     return lpegmatch(scanner,str or "")
+-- end
 
-local lparent, rparent, lbrace, rbrace, dcolon, backslash = lpegP("("), lpegP(")"), lpegP("{"), lpegP("}"), lpegP("::"), lpegP("\\")
+-- the scanner accepts nested outer, but we don't care too much, maybe some day we will
+-- have both but currently the innermost wins
 
-local reset     = lpegP("") / function()  result = { } end
-local b_token   = backslash  / function(s) result.has_tex = true return s end
+local spaces     = lpegP(" ")^0
+local lparent    = lpegP("(")
+local rparent    = lpegP(")")
+local lbrace     = lpegP("{")
+local rbrace     = lpegP("}")
+local dcolon     = lpegP("::")
+local backslash  = lpegP("\\")
 
-local o_token   = 1 - rparent - rbrace - lparent - lbrace
-local a_token   = 1 - rbrace
-local s_token   = 1 - lparent - lbrace - lparent - lbrace
-local i_token   = 1 - lparent - lbrace
-local f_token   = 1 - lparent - lbrace - dcolon
+      lparent    = spaces * lparent * spaces
+      rparent    = spaces * rparent * spaces
+      lbrace     = spaces * lbrace  * spaces
+      rbrace     = spaces * rbrace  * spaces
+      dcolon     = spaces * dcolon  * spaces
 
-local outer     =        (f_token          )^1  / function (s) result.outer     = s   end
-local operation = lpegCs((b_token + o_token)^1) / function (s) result.operation = s   end
-local arguments = lpegCs((b_token + a_token)^0) / function (s) result.arguments = s   end
-local special   =        (s_token          )^1  / function (s) result.special   = s   end
-local inner     =        (i_token          )^1  / function (s) result.inner     = s   end
+local endofall   = spaces * lpegP(-1)
 
-local outer_reference    = (outer * dcolon)^0
+local o_token    = 1 - rparent - rbrace - lparent - lbrace  -- can be made more efficient
+local a_token    = 1 - rbrace
+local s_token    = 1 - lparent - lbrace
+local i_token    = 1 - lparent - lbrace - endofall
+local f_token    = 1 - lparent - lbrace - dcolon
 
-operation = outer_reference * operation -- special case: page(file::1) and file::page(1)
+local hastexcode = lpegCg(lpegCc("has_tex")   * lpegCc(true)) -- cannot be made to work
+local outer      = lpegCg(lpegCc("outer")     * lpegCs(f_token^1))
+local operation  = lpegCg(lpegCc("operation") * lpegCs(o_token^1))
+local arguments  = lpegCg(lpegCc("arguments") * lpegCs(a_token^0))
+local special    = lpegCg(lpegCc("special")   * lpegCs(s_token^1))
+local inner      = lpegCg(lpegCc("inner")     * lpegCs(i_token^1))
 
-local optional_arguments = (lbrace  * arguments * rbrace)^0
-local inner_reference    = inner * optional_arguments
-local special_reference  = special * lparent * (operation * optional_arguments + operation^0) * rparent
+      arguments  = (lbrace * arguments * rbrace)^-1
+      outer      = (outer * dcolon)^-1
+      operation  = outer * operation -- special case: page(file::1) and file::page(1)
+      inner      = inner * arguments
+      special    = special * lparent * (operation * arguments)^-1 * rparent
 
-local scanner = (reset * outer_reference * (special_reference + inner_reference)^-1 * -1) / function() return result end
+local scanner    = spaces * lpegCf (lpegCt("") * outer * (special + inner)^-1 * endofall, rawset)
 
---~ function references.analyze(str) -- overloaded
---~     return lpegmatch(scanner,str)
---~ end
-
-function references.split(str)
-    return lpegmatch(scanner,str or "")
+local function splitreference(str)
+    if str and str ~= "" then
+        local t = lpegmatch(scanner,str)
+        if t then
+            local a = t.arguments
+            if a and find(a,"\\") then
+                t.has_tex = true
+            else
+                local o = t.arguments
+                if o and find(o,"\\") then
+                    t.has_tex = true
+                end
+            end
+            return t
+        end
+    end
 end
 
---~ print(table.serialize(references.analyze("")))
---~ print(table.serialize(references.analyze("inner")))
---~ print(table.serialize(references.analyze("special(operation{argument,argument})")))
---~ print(table.serialize(references.analyze("special(operation)")))
---~ print(table.serialize(references.analyze("special()")))
---~ print(table.serialize(references.analyze("inner{argument}")))
---~ print(table.serialize(references.analyze("outer::")))
---~ print(table.serialize(references.analyze("outer::inner")))
---~ print(table.serialize(references.analyze("outer::special(operation{argument,argument})")))
---~ print(table.serialize(references.analyze("outer::special(operation)")))
---~ print(table.serialize(references.analyze("outer::special()")))
---~ print(table.serialize(references.analyze("outer::inner{argument}")))
---~ print(table.serialize(references.analyze("special(outer::operation)")))
+references.split = splitreference
+
+--~ inspect(splitreference([[ ]]))
+--~ inspect(splitreference([[ inner ]]))
+--~ inspect(splitreference([[ special ( operation { argument, argument } ) ]]))
+--~ inspect(splitreference([[ special ( operation { argument } ) ]]))
+--~ inspect(splitreference([[ special ( operation { argument, \argument } ) ]]))
+--~ inspect(splitreference([[ special ( operation { \argument } ) ]]))
+--~ inspect(splitreference([[ special ( operation ) ]]))
+--~ inspect(splitreference([[ special ( \operation ) ]]))
+--~ inspect(splitreference([[ special ( o\peration ) ]]))
+--~ inspect(splitreference([[ special ( ) ]]))
+--~ inspect(splitreference([[ inner { argument } ]]))
+--~ inspect(splitreference([[ inner { \argument } ]]))
+--~ inspect(splitreference([[ inner { ar\gument } ]]))
+--~ inspect(splitreference([[inner{a\rgument}]]))
+--~ inspect(splitreference([[ inner { argument, argument } ]]))
+--~ inspect(splitreference([[ inner { argument, \argument } ]]))  -- fails: bug in lpeg?
+--~ inspect(splitreference([[ inner { \argument, \argument } ]]))
+--~ inspect(splitreference([[ outer :: ]]))
+--~ inspect(splitreference([[ outer :: inner]]))
+--~ inspect(splitreference([[ outer :: special (operation { argument,argument } ) ]]))
+--~ inspect(splitreference([[ outer :: special (operation { } )]]))
+--~ inspect(splitreference([[ outer :: special ( operation { argument, \argument } ) ]]))
+--~ inspect(splitreference([[ outer :: special ( operation ) ]]))
+--~ inspect(splitreference([[ outer :: special ( \operation ) ]]))
+--~ inspect(splitreference([[ outer :: special ( ) ]]))
+--~ inspect(splitreference([[ outer :: inner { argument } ]]))
+--~ inspect(splitreference([[ special ( outer :: operation ) ]]))
+
+--~ inspect(splitreference([[]]))
+--~ inspect(splitreference([[inner]]))
+--~ inspect(splitreference([[special(operation{argument,argument})]]))
+--~ inspect(splitreference([[special(operation)]]))
+--~ inspect(splitreference([[special(\operation)]]))
+--~ inspect(splitreference([[special()]]))
+--~ inspect(splitreference([[inner{argument}]]))
+--~ inspect(splitreference([[inner{\argument}]]))
+--~ inspect(splitreference([[outer::]]))
+--~ inspect(splitreference([[outer::inner]]))
+--~ inspect(splitreference([[outer::special(operation{argument,argument})]]))
+--~ inspect(splitreference([[outer::special(operation{argument,\argument})]]))
+--~ inspect(splitreference([[outer::special(operation)]]))
+--~ inspect(splitreference([[outer::special(\operation)]]))
+--~ inspect(splitreference([[outer::special()]]))
+--~ inspect(splitreference([[outer::inner{argument}]]))
+--~ inspect(splitreference([[special(outer::operation)]]))
 
 -- -- -- related to strc-ini.lua -- -- --
 
@@ -719,7 +813,7 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
             if d then
                 resolve(prefix,d[2],nil,set)
             else
-                local var = lpegmatch(scanner,ri)
+                local var = splitreference(ri)
                 if var then
                     var.reference = ri
                     local vo, vi = var.outer, var.inner
@@ -758,7 +852,6 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
         if set.has_tex then
             texcount.referencehastexstate = 1
         end
---~ table.print(set)
         return set
     else
         return { }
@@ -1047,8 +1140,6 @@ set.n = n
                     var.p = p
                 else
                     -- these are taken from other data structures (like lists)
---~ print("!!!!!!!!!!!!!!",splitprefix,splitinner)
---~ table.print(derived)
                     if splitprefix and splitinner then
                         if splitprefix == "-" then
                             i = derived[""]
@@ -1109,7 +1200,9 @@ set.n = n
         set[i] = var
     end
     references.currentset = mark(set) -- mark, else in api doc
---~ table.print(set,tostring(bug))
+    if trace_analyzing then
+        report_references(table.serialize(set,reference))
+    end
     return set, bug
 end
 
@@ -1488,7 +1581,8 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
--- weird, why is this code here and in lpdf-ano
+-- These are the testspecials not the real ones. They are used to
+-- check the validity.
 
 function specials.internal(var,actions)
     local v = references.internals[tonumber(var.operation)]
@@ -1527,5 +1621,17 @@ function specials.userpage(var,actions)
     if p then
         var.r = p
         actions.realpage = actions.realpage or p -- first wins
+    end
+end
+
+function specials.section(var,actions)
+    local sectionname = var.arguments
+    local destination = var.operation
+    local internal    = structures.sections.internalreference(sectionname,destination)
+    if internal then
+        var.special   = "internal"
+        var.operation = internal
+        var.arguments = nil
+        specials.internal(var,actions)
     end
 end

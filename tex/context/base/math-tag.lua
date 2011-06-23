@@ -44,6 +44,7 @@ local a_mathmode          = attributes.private('mathmode')
 local tags                = structures.tags
 
 local start_tagged        = tags.start
+local restart_tagged      = tags.restart
 local stop_tagged         = tags.stop
 local taglist             = tags.taglist
 
@@ -164,31 +165,30 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         local cache = { } -- we can have nested unboxed mess so best local to runner
                         for n in traverse_nodes(list) do
                             local id = n.id
+                            local aa = get_attribute(n,a_tagged)
+                            if aa then
+                                local ac = cache[aa]
+                                if not ac then
+                                    local tagdata = taglist[aa]
+                                    local extra = #tagdata
+                                    if common <= extra then
+                                        for i=common,extra do
+                                            ac = restart_tagged(tagdata[i]) -- can be made faster
+                                        end
+                                        for i=common,extra do
+                                            stop_tagged() -- can be made faster
+                                        end
+                                    else
+                                        ac = text
+                                    end
+                                    cache[aa] = ac
+                                end
+                                set_attribute(n,a_tagged,ac)
+                            else
+                                set_attribute(n,a_tagged,text)
+                            end
                             if id == hlist_code or id == vlist_code then
                                 runner(n.list)
-                            else -- if id == glyph_code then
-                                local aa = get_attribute(n,a_tagged) -- only glyph needed (huh?)
-                                if aa then
-                                    local ac = cache[aa]
-                                    if not ac then
-                                        local tagdata = taglist[aa]
-                                        local extra = #tagdata
-                                        if common <= extra then
-                                            for i=common,extra do
-                                                ac = start_tagged(tagdata[i]) -- can be made faster
-                                            end
-                                            for i=common,extra do
-                                                stop_tagged() -- can be made faster
-                                            end
-                                        else
-                                            ac = text
-                                        end
-                                        cache[aa] = ac
-                                    end
-                                    set_attribute(n,a_tagged,ac)
-                                else
-                                    set_attribute(n,a_tagged,text)
-                                end
                             end
                         end
                     end

@@ -57,9 +57,9 @@
 %D
 %D \startbuffer
 %D \setdigitsign 0 \digits +12.345,90
-%D \setdigitmode 1 \digits +12.345,90
-%D \setdigitmode 2 \digits +12.345,90
-%D \setdigitmode 3 \digits +12.345,90
+%D \setdigitsign 1 \digits +12.345,90
+%D \setdigitsign 2 \digits +12.345,90
+%D \setdigitsign 3 \digits +12.345,90
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -96,9 +96,6 @@
 %D delimited calls.
 
 \ifx\mbox\undefined \let\mbox\normalhbox \fi
-
-% \unexpanded\def\digits
-%   {\bgroup\let~@\doifnextbgroupelse\dodigits\grabdigit}
 
 \unexpanded\def\digits
   {\bgroup

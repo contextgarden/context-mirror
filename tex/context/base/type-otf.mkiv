@@ -64,11 +64,6 @@
 % \definefontsynonym [LMRoman10-DemiOblique] [\s!name:LMRoman10-DemiOblique] [\s!features=\s!default]
 % \definefontsynonym [LMRoman10-DemiOblique] [lmroman10-demioblique]         [\s!features=\s!default]
 
-% \starttypescript [math] [modern,computer-modern,latin-modern]
-%     \definefontsynonym[MathSymbol][MathSymbol-Regular@symbol-math]
-%     \loadfontgoodies[symbol-math]
-% \stoptypescript
-
 \starttypescriptcollection[latinmodern]
 
     %D The names have changed (again) ... but I will not change the symbolic names
@@ -226,9 +221,6 @@
     \starttypescript [math] [modern,latin-modern,computer-modern,default] [name]
         \definefontsynonym [MathRoman]        [LMMathRoman-Regular]
         \definefontsynonym [MathRomanBold]    [LMMathRoman-Bold]
-        %definefontsynonym [MathExtension]    [LMMathExtension-Regular]
-        %definefontsynonym [MathItalic]       [LMMathItalic-Italic]
-        %definefontsynonym [MathSymbol]       [LMMathSymbols-Italic]
     \stoptypescript
 
     \starttypescript [serif] [modern-variable,latin-modern-variable,default] [name]
@@ -1814,43 +1806,48 @@
 
 \stoptypescriptcollection
 
-\starttypescriptcollection[stix]
+% \starttypescriptcollection[stix]
+%
+%     % This typescript is only provided to keep an eye on developments of this font
+%     % but currenty these are not proper opentype math fonts (for instance they have
+%     % no math table yet). We will not make a virtual font for this as eventually
+%     % there will be a decent version. Beware, we force an otf suffix as there happen
+%     % to be ttf files as well. BTW, why 'italic' infull and 'bol' without 'd'?
+%
+%     % As xits keeps evolving and also is bidirectional, it makes no sense to keep
+%     % stix support around.
+%
+%     \starttypescript [math] [stix] [name]
+%         \definefontsynonym[MathRoman][\s!file:stixgeneral.otf] [\s!features=\s!math]
+%     \stoptypescript
+%
+%     \starttypescript [serif] [stix] [name]
+%         \setups[\s!font:\s!fallback:\s!serif]
+%         \definefontsynonym[\s!Serif]          [\s!file:stixgeneral.otf]       [\s!features=\s!default]
+%         \definefontsynonym[\s!SerifBold]      [\s!file:stixgeneralbol.otf]    [\s!features=\s!default]
+%         \definefontsynonym[\s!SerifItalic]    [\s!file:stixgeneralitalic.otf] [\s!features=\s!default]
+%         \definefontsynonym[\s!SerifBoldItalic][\s!file:stixgeneralbolita.otf] [\s!features=\s!default]
+%     \stoptypescript
+%
+%     \starttypescript[stix]
+%         \definetypeface [stix] [rm] [\s!serif] [stix] [\s!default]
+%         \definetypeface [stix] [mm] [\s!math]  [stix] [\s!default]
+%     \stoptypescript
+%
+% \stoptypescriptcollection
 
-    % This typescript is only provided to keep an eye on developments of this font
-    % but currenty these are not proper opentype math fonts (for instance they have
-    % no math table yet). We will not make a virtual font for this as eventually
-    % there will be a decent version. Beware, we force an otf suffix as there happen
-    % to be ttf files as well. BTW, why 'italic' infull and 'bol' without 'd'?
-
-    \starttypescript [math] [stix] [name]
-        \definefontsynonym[MathRoman][\s!file:stixgeneral.otf] [\s!features=\s!math]
-    \stoptypescript
-
-    \starttypescript [serif] [stix] [name]
-        \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym[\s!Serif]          [\s!file:stixgeneral.otf]       [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBold]      [\s!file:stixgeneralbol.otf]    [\s!features=\s!default]
-        \definefontsynonym[\s!SerifItalic]    [\s!file:stixgeneralitalic.otf] [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixgeneralbolita.otf] [\s!features=\s!default]
-    \stoptypescript
-
-    \starttypescript[stix]
-        \definetypeface [stix] [rm] [\s!serif] [stix] [\s!default]
-        \definetypeface [stix] [mm] [\s!math]  [stix] [\s!default]
-    \stoptypescript
-
-\stoptypescriptcollection
+% This one makes more sense. Xits uses the glyph collection from stix but packages
+% it in a proper OpenType Math font. From the Stix site:  Version 1.1, which will
+% include fonts packaged for use with Microsoft Office applications, is scheduled
+% for release by the end of 2010. Version 1.2, which will include Type 1 fonts for
+% use with LaTeX, will follow in 2011. So, we are on our own anyway.
 
 \starttypescriptcollection[xits]
 
-    % This one makes more sense. Xits uses the glyph collection from stix but packages
-    % it in a proper OpenType Math font. From the Stix site:  Version 1.1, which will
-    % include fonts packaged for use with Microsoft Office applications, is scheduled
-    % for release by the end of 2010. Version 1.2, which will include Type 1 fonts for
-    % use with LaTeX, will follow in 2011. So, we are on our own anyway.
-
-    \starttypescript [math] [xits] [name]
-        \definefontsynonym[MathRoman][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
+    \starttypescript [math] [xits,xitsbidi] [name]
+        \definefontsynonym[MathRoman]   [\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
+        \definefontsynonym[MathRomanL2R][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-l2r,\s!goodies=xits-math]
+        \definefontsynonym[MathRomanR2L][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-r2l,\s!goodies=xits-math]
     \stoptypescript
 
     \starttypescript [serif] [xits] [name]
@@ -1866,6 +1863,16 @@
         \definetypeface [xits] [ss] [\s!sans]  [heros]  [\s!default] [\s!rscale=0.9]
         \definetypeface [xits] [tt] [\s!mono]  [modern] [\s!default] [\s!rscale=1.05]
         \definetypeface [xits] [mm] [\s!math]  [xits]   [\s!default]
+    \stoptypescript
+
+    % for the moment
+
+    \starttypescript[xitsbidi]
+        \definetypeface [xitsbidi] [rm] [\s!serif] [xits]     [\s!default]
+        \definetypeface [xitsbidi] [ss] [\s!sans]  [heros]    [\s!default] [\s!rscale=0.9]
+        \definetypeface [xitsbidi] [tt] [\s!mono]  [modern]   [\s!default] [\s!rscale=1.05]
+        %definetypeface [xitsbidi] [mm] [\s!math]  [xitsbidi] [bidi] [\s!direction=\s!both]
+        \definetypeface [xitsbidi] [mm] [\s!math]  [xitsbidi] [\s!default] [\s!direction=\s!both]
     \stoptypescript
 
 \stoptypescriptcollection

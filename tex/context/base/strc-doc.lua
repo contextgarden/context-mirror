@@ -49,37 +49,36 @@ local data
 
 function documents.initialize()
     data = {
-        numbers = { },
-        forced = { },
+        numbers    = { },
+        forced     = { },
         ownnumbers = { },
-        status = { },
-        checkers = { },
-        depth = 0,
-        blocks = { },
-        block = "",
+        status     = { },
+        checkers   = { },
+        depth      = 0,
+        blocks     = { },
+        block      = "",
     }
     documents.data = data
 end
 
 function documents.reset()
-    data.numbers = { }
-    data.forced = { }
+    data.numbers    = { }
+    data.forced     = { }
     data.ownnumbers = { }
-    data.status = { }
---~     data.checkers = { }
-    data.depth = 0
+    data.status     = { }
+ -- data.checkers   = { }
+    data.depth      = 0
 end
 
 documents.initialize()
 
 -- -- -- sections -- -- --
 
+local collected  = allocate()
+local tobesaved  = allocate()
 
-local collected = allocate()
-local tobesaved = allocate()
-
-sections.collected = collected
-sections.tobesaved = tobesaved
+sections.collected  = collected
+sections.tobesaved  = tobesaved
 
 --~ local function initializer()
 --~     collected = sections.collected
@@ -87,6 +86,15 @@ sections.tobesaved = tobesaved
 --~ end
 
 --~ job.register('structures.sections.collected', tobesaved, initializer)
+
+sections.registered = sections.registered or allocate()
+local registered    = sections.registered
+
+storage.register("structures/sections/registered", registered, "structures.sections.registered")
+
+function sections.register(name,specification)
+    registered[name] = specification
+end
 
 function sections.currentid()
     return #tobesaved
@@ -691,29 +699,36 @@ function sections.title()
     end
 end
 
-function sections.findnumber(depth,what)
+function sections.findnumber(depth,what) -- needs checking (looks wrong and slow too)
     local data = data.status[depth or data.depth]
     if data then
         local index = data.references.section
         local collected = sections.collected
         local sectiondata = collected[index]
         if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
-            if what == variables.first then
+            local quit = what == variables.previous or what == variables.next
+            if what == variables.first or what == variables.previous then
                 for i=index,1,-1 do
                     local s = collected[i]
                     local n = s.numbers
                     if #n == depth and n[depth] and n[depth] ~= 0 then
                         sectiondata = s
+                        if quit then
+                            break
+                        end
                     elseif #n < depth then
                         break
                     end
                 end
-            elseif what == variables.last then
+            elseif what == variables.last or what == variables.next then
                 for i=index,#collected do
                     local s = collected[i]
                     local n = s.numbers
                     if #n == depth and n[depth] and n[depth] ~= 0 then
                         sectiondata = s
+                        if quit then
+                            break
+                        end
                     elseif #n < depth then
                         break
                     end
@@ -721,6 +736,62 @@ function sections.findnumber(depth,what)
             end
             return sectiondata
         end
+    end
+end
+
+function sections.finddata(depth,what)
+    local data = data.status[depth or data.depth]
+    if data then
+        -- if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
+        local index = data.references.listindex
+        if index then
+            local collected = structures.lists.collected
+            local quit = what == variables.previous or what == variables.next
+            if what == variables.first or what == variables.previous then
+                for i=index-1,1,-1 do
+                    local s = collected[i]
+                    if not s then
+                        break
+                    elseif s.metadata.kind == "section" then -- maybe check on name
+                        local n = s.numberdata.numbers
+                        if #n == depth and n[depth] and n[depth] ~= 0 then
+                            data = s
+                            if quit then
+                                break
+                            end
+                        elseif #n < depth then
+                            break
+                        end
+                    end
+                end
+            elseif what == variables.last or what == variables.next then
+                for i=index+1,#collected do
+                    local s = collected[i]
+                    if not s then
+                        break
+                    elseif s.metadata.kind == "section" then -- maybe check on name
+                        local n = s.numberdata.numbers
+                        if #n == depth and n[depth] and n[depth] ~= 0 then
+                            data = s
+                            if quit then
+                                break
+                            end
+                        elseif #n < depth then
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        return data
+    end
+end
+
+function sections.internalreference(sectionname,what) -- to be used in pagebuilder (no marks used)
+    local r = type(sectionname) == "number" and sectionname or registered[sectionname]
+    if r then
+        local data = sections.finddata(r.level,what)
+        return data and data.references and data.references.internal
     end
 end
 

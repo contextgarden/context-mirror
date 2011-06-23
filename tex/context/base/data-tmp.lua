@@ -86,7 +86,7 @@ local function identify()
                     end
                 elseif not writable and caches.force then
                     local cacheparent = file.dirname(cachepath)
-                    if file.is_writable(cacheparent) then
+                    if file.is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
                         if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
                             mkdirs(cachepath)
                             if isdir(cachepath) and file.is_writable(cachepath) then

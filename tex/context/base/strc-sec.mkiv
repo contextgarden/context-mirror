@@ -112,6 +112,20 @@
 \to \everydefinehead
 
 \appendtoks
+    % beware, this is a global register
+    \begingroup
+    \edef\currentsectionheadcoupling{\sectionheadcoupling\currenthead}%
+    \edef\currentsectionheadsection {\sectionheadsection \currentsectionheadcoupling}%
+    \edef\currentsectionlevel       {\sectionlevel       \currentsectionheadsection}%
+    \ctxlua{structures.sections.register("\currenthead",{
+        coupling = "\currentsectionheadcoupling",
+        section  = "\currentsectionheadsection",
+        level    = \currentsectionlevel,
+    })}%
+    \endgroup
+\to \everydefinehead
+
+\appendtoks
  % \setevalue{\e!next \currenthead}{\donexthead [\currenthead]}%
    \setevalue{\e!start\currenthead}{\dostarthead[\currenthead]}%
    \setevalue{\e!stop \currenthead}{\dostophead[\currenthead]}%

@@ -492,17 +492,21 @@
 %D check for fontclass being default or empty and save a few
 %D tests but it does not help us when no math is defined.
 
-\let\mrfam\zerocount % math regular
-\let\mbfam\plusone   % math bold
+\let\mrfam  \zerocount  % math regular
+\let\mrfamlr\plusone    % math regular l2r
+\let\mrfamrl\plustwo    % math regular r2l
 
-\unexpanded\def\mr{\ifmmode\fam\mrfam\else\setcurrentfontalternative\c!mr\fi}
-\unexpanded\def\mb{\ifmmode\fam\mbfam\else\setcurrentfontalternative\c!mb\fi}
+\let\mbfam  \plusthree  % math bold
+\let\mbfamlr\plusfour   % math bold l2r
+\let\mbfamrl\plusfive   % math bold r2l
+
+\definesystemattribute[mathfamily][public]
+
+\newconditional\bidirectionalmathstrategy
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
 \def\mathscriptscriptsuffix{-scriptscript}
-
-% \let\mathsizesuffix\empty
 
 \let\currentmathsize\empty
 
@@ -530,14 +534,14 @@
      \csname                 \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
    \ifcsname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
      \csname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \else
-                             \nullfont                                    \autofontsizetrue
+                             \nullfont                                                                    \autofontsizetrue
    \fi\fi}
 
 \def\dosetmathfamily#1#2%
   {\let\savedfontbody\fontbody % op hoger plan
    \let\fontfamily#2%
    % new per 20100817
-   \checkbodyfontenvironment[\scriptscriptface]%
+   \checkbodyfontenvironment[\scriptscriptface]% pretty slow when many switches
    \checkbodyfontenvironment[\scriptface]%
    \checkbodyfontenvironment[\textface]%
    %
@@ -548,20 +552,101 @@
    \let\fontbody\savedfontbody
    \autofontsizefalse}
 
+
+% It would be nice if characters could be defined in a neutral way (say fam 255) and
+% be mapped to a real family during noad list construction. However, this changes
+% tex in critical places so for the moment we simulate this using manipulation.
+
+% For tracing purposes we use three families but in l2r mode 1 and 2 are copies of 0
+% while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
+
+% \appendtoks
+%     \dosetmathfamily\mrfam\c!mr
+% \to \mathstrategies
+
 \appendtoks
-    \dosetmathfamily\mrfam\c!mr
+    % why here ..
+    \edef\@@fontclassdirection{\ifcsname\fontclass\c!mm\s!direction\endcsname\csname\fontclass\c!mm\s!direction\endcsname\fi}%
+    % ...
+    \ifx\@@fontclassdirection\v!both
+      \settrue\bidirectionalmathstrategy
+    \else
+      \setfalse\bidirectionalmathstrategy
+    \fi
 \to \mathstrategies
 
-% not official !
-
-\newconditional\boldmathmode % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
-
-\def\enableboldmath {\settrue \boldmathmode} % todo: \setupbodyfont[boldmath,...]
-\def\disableboldmath{\setfalse\boldmathmode}
+\appendtoks
+    \ifconditional\bidirectionalmathstrategy
+      \dosetmathfamily \mrfamlr\c!mrlr
+      \dosetmathfamily \mrfamrl\c!mrrl
+      \textfont        \mrfam  \textfont        \mrfamlr
+      \scriptfont      \mrfam  \scriptfont      \mrfamlr
+      \scriptscriptfont\mrfam  \scriptscriptfont\mrfamlr
+    \else
+      \dosetmathfamily \mrfam  \c!mr
+      \textfont        \mrfamrl\textfont        \mrfam
+      \scriptfont      \mrfamrl\scriptfont      \mrfam
+      \scriptscriptfont\mrfamrl\scriptscriptfont\mrfam
+      \textfont        \mrfamlr\textfont        \mrfam
+      \scriptfont      \mrfamlr\scriptfont      \mrfam
+      \scriptscriptfont\mrfamlr\scriptscriptfont\mrfam
+    \fi
+\to \mathstrategies
 
 \appendtoks
-    \ifconditional\boldmathmode\dosetmathfamily\mbfam\c!mb\fi
-\to \mathstrategies
+    \fam\defaultmathfamily
+\to \everymathematics
+
+\unexpanded\def\synchronizemathfamily
+  {\attribute\mathfamilyattribute\ifconditional\bidirectionalmathstrategy
+     \ifconditional\mathematics_right_to_left
+       \plustwo
+     \else
+       \plusone
+     \fi
+   \else
+     \zerocount
+   \fi}
+
+% Bold is somewhat special as we might want both full-bold-math mixed
+% regular-math, as well as automatic adaption to outer bold (in titles
+% and inline text bold) so we will need explicit switches as well as
+% an automatic one. (We will use lucida as an example.)
+
+% \unexpanded\def\mr{\ifmmode\fam\mrfam\else\setcurrentfontalternative\c!mr\fi}
+% \unexpanded\def\mb{\ifmmode\fam\mbfam\else\setcurrentfontalternative\c!mb\fi}
+
+\unexpanded\def\mr
+  {\ifmmode
+     \synchronizemathfamily
+   \else
+     \setcurrentfontalternative\c!mr
+   \fi}
+
+\unexpanded\def\mb
+  {\ifmmode
+     \fam\mbfam
+   \else
+     \setcurrentfontalternative\c!mb
+   \fi}
+
+\let\mr\mb % for the moment
+
+\appendtoks
+  \synchronizemathfamily
+\to \everymathematics
+
+% not official (doesn't work currently as some math definitions are bound to families) and
+% we're not going to mix families
+%
+% \newconditional\boldmathmode % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
+%
+% \def\enableboldmath {\settrue \boldmathmode} % todo: \setupbodyfont[boldmath,...]
+% \def\disableboldmath{\setfalse\boldmathmode}
+%
+% \appendtoks
+%     \ifconditional\boldmathmode\dosetmathfamily\mbfam\c!mb\fi
+% \to \mathstrategies
 
 %D All used styles, like rm, ss and tt, are saved in a comma
 %D separated list. Appart from practical limitations one can
@@ -765,14 +850,18 @@
       "\@@fontclassgoodies", % experiment (not yet used)
       "\@@fontgoodies" % experiment
    )}%
-%    \edef\somefontspec{at \somefontsize}% we need the resolved designsize (for fallbacks)
    \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
    \expandafter\let\expandafter\lastrawfontcall\csname#2\endcsname
    \the\everydefinefont
    \featureinheritancemode\featureinheritancedefault}
 
+% Why these expanded and rscale not ... maybe not worth the trouble (delayed
+% expansion actually would be better i.e. macros in feature specs). Test
+% without pre-expansion.
+
 \def\updatefontclassparameters
-  {\edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%
+  {\edef\@@fontclassdirection{\ifcsname\fontclass\fontstyle\s!direction\endcsname\csname\fontclass\fontstyle\s!direction\endcsname\fi}%
+   \edef\@@fontclassfeatures {\ifcsname\fontclass\fontstyle\s!features \endcsname\csname\fontclass\fontstyle\s!features \endcsname\fi}%
    \edef\@@fontclassfallbacks{\ifcsname\fontclass\fontstyle\s!fallbacks\endcsname\csname\fontclass\fontstyle\s!fallbacks\endcsname\fi}%
    \edef\@@fontclassgoodies  {\ifcsname\fontclass\fontstyle\s!goodies  \endcsname\csname\fontclass\fontstyle\s!goodies  \endcsname\fi}}
 
@@ -1700,6 +1789,9 @@
 %D user definitions like \type{\tfw} or \type{\bfq} for real
 %D large alternatives.
 
+%D If we move design size info to the lfg file (after all only lm
+%D has design sizes) we can get rid of much code .. 2012 or so.
+
 \unexpanded\def\definebodyfont
   {\doquadrupleempty\redefinebodyfont}
 
@@ -2118,14 +2210,6 @@
 %D sequence of a session. After the loading job is done, the
 %D macro relaxes itself and reset the signal.
 
-% \fontdimen1\nullfont      0\scaledpoint
-% \fontdimen2\nullfont 256377\scaledpoint
-% \fontdimen3\nullfont 128188\scaledpoint
-% \fontdimen4\nullfont  85459\scaledpoint
-% \fontdimen5\nullfont 338952\scaledpoint
-% \fontdimen6\nullfont 786432\scaledpoint
-% \fontdimen7\nullfont  85459\scaledpoint
-
 \fontslantperpoint   \nullfont      0\scaledpoint
 \fontinterwordspace  \nullfont 256377\scaledpoint
 \fontinterwordstretch\nullfont 128188\scaledpoint
@@ -2345,11 +2429,12 @@
      \trycurrentfontclass{#1}%
    \fi\fi\fi}
 
-\def\savefontclassparameters#1#2#3#4#5% #1=rm|ss|.. rscale features fallbacks goodies
+\def\savefontclassparameters#1#2#3#4#5#6% #1=rm|ss|.. rscale features fallbacks goodies direction
   {\setxvalue{\fontclass#1\s!rscale   }{#2}%
    \setxvalue{\fontclass#1\s!features }{#3}%
    \setxvalue{\fontclass#1\s!fallbacks}{#4}%
-   \setxvalue{\fontclass#1\s!goodies  }{#5}}
+   \setxvalue{\fontclass#1\s!goodies  }{#5}%
+   \setxvalue{\fontclass#1\s!direction}{#6}}
 
 \settrue\autotypescripts
 
@@ -2951,12 +3036,33 @@
    kern=yes,
    tlig=yes,
    trep=yes,
+   mathalternates=yes,
    language=dflt,
    script=math]
 
-\definefontfeature[math-text]        [virtualmath][mathalternates=yes,ssty=no]
-\definefontfeature[math-script]      [virtualmath][mathalternates=yes,ssty=1,mathsize=yes]
-\definefontfeature[math-scriptscript][virtualmath][mathalternates=yes,ssty=2,mathsize=yes]
+\definefontfeature
+  [virtualmath-l2r]
+  [virtualmath]
+  []
+
+\definefontfeature
+  [virtualmath-r2l]
+  [virtualmath]
+  [language=ara,
+   rtlm=yes,
+   locl=yes]
+
+\definefontfeature[math-text]                 [virtualmath]      [ssty=no]
+\definefontfeature[math-script]               [virtualmath]      [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript]         [virtualmath]      [ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-l2r]             [virtualmath-l2r]  [ssty=no]
+\definefontfeature[math-script-l2r]           [virtualmath-l2r]  [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-l2r]     [virtualmath-l2r]  [ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-r2l]             [virtualmath-r2l]  [ssty=no]
+\definefontfeature[math-script-r2l]           [virtualmath-r2l]  [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-r2l]     [virtualmath-r2l]  [ssty=2,mathsize=yes]
 
 \definefontfeature [math-nostack-text]        [math-text]        [nostackmath=yes]
 \definefontfeature [math-nostack-script]      [math-script]      [nostackmath=yes]

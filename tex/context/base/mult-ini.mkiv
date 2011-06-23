@@ -792,6 +792,10 @@
 %D macro's can be enhanced with more testing facilities, but
 %D for the moment they suffice.
 
+
+\ifdefined\zwnj \else \edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe
+\ifdefined\zwj  \else \edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe
+
 %D Out of convenience we define the banners here. This might move
 %D to the Lua end.
 

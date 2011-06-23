@@ -60,8 +60,9 @@ local package = [[
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
         <dc:title>My Title</dc:title>
         <dc:language>en</dc:language>
-        <dc:identifier id="%s" />
+        <dc:identifier id="%s" >urn:uuid:%s</dc:identifier>
         <dc:creator opf:file-as="Self, My" opf:role="aut">MySelf</dc:creator>
+        <dc:date>%s</dc:date> 
     </metadata>
 
     <manifest>
@@ -111,8 +112,8 @@ local toc = [[
 -- problems is some applications as do names with dashes. Also the
 -- optional toc is supposed to be there and although id's are by
 -- concept neutral, there are sometimes hard requirements with respect
--- to their name like ncx and toc.ncx). Looks like application xml and
--- no real clean standard.
+-- to their name like ncx and toc.ncx). Maybe we should stick to 3.0
+-- only.
 
 local function dumbid(filename)
  -- return (string.gsub(os.uuid(),"%-%","")) -- to be tested
@@ -121,6 +122,7 @@ end
 
 local mimetypes = {
     xhtml   = "application/xhtml+xml",
+    xml     = "application/xhtml+xml",
     css     = "text/css",
     svg     = "image/svg+xml",
     png     = "image/png",
@@ -235,7 +237,7 @@ function scripts.epub.make()
         local idmaker = idmakers[file.extname(root)] or idmakers.default
 
         container = format(container,epubroot)
-        package   = format(package,identifier,identifier,concat(used,"\n"),idmaker(root))
+        package   = format(package,identifier,identifier,os.uuid(),os.date("!%Y-%m-%dT%H:%M:%SZ"),concat(used,"\n"),idmaker(root))
         toc       = format(toc,identifier,"title",root)
 
         io.savedata(file.join(epubpath,"mimetype"),mimetype)

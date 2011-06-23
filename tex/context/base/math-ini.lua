@@ -27,7 +27,8 @@ mathematics.extrabase   = 0xFE000 -- here we push some virtuals
 mathematics.privatebase = 0xFF000 -- here we push the ex
 
 local families = allocate {
-    tf = 0, it = 1, sl = 2, bf = 3, bi = 4, bs = 5, -- no longer relevant
+    mr = 0,
+    mb = 1,
 }
 
 local classes = allocate {
@@ -66,9 +67,9 @@ local codes = allocate {
     variable       = 7, [7] = "variable",
 }
 
-mathematics.families = families
 mathematics.classes  = classes
 mathematics.codes    = codes
+mathematics.families = families
 
 classes.alphabetic  = classes.alpha
 classes.unknown     = classes.nothing

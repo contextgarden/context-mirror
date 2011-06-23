@@ -114,6 +114,8 @@
 \definesystemconstant {name}
 \definesystemconstant {spec}
 
+\definesystemconstant {both}
+
 \definesystemconstant {attribute}
 
 \definesystemconstant {serif}
@@ -245,6 +247,7 @@
 \definesystemconstant  {rscale}
 \definesystemconstant  {handling}
 \definesystemconstant  {features}
+\definesystemconstant  {direction}
 \definesystemconstant  {fallbacks}
 \definesystemconstant  {goodies}
 \definesystemconstant  {background}
@@ -316,6 +319,7 @@
 \definesystemconstant  {itemcount}
 
 \definesystemconstant  {number}
+\definesystemconstant  {symbol}
 \definesystemconstant  {references}
 \definesystemconstant  {between}
 \definesystemconstant  {format}
@@ -687,6 +691,7 @@
 \definesystemvariable {ty}   % TYpe
 \definesystemvariable {uc}   % Unicode
 \definesystemvariable {ui}   % UItvoer
+\definesystemvariable {un}   % UNits
 \definesystemvariable {ur}   % URl
 \definesystemvariable {up}   % Utility Program
 \definesystemvariable {va}   % VspAce
@@ -710,7 +715,7 @@
 \definesystemvariable {za}   % ZetspiegelAanpassing
 
 %D Next we define some language independant one letter
-%D variables and keywords.
+%D variables and keywords. (should become s!)
 
 \defineinterfaceconstant {x} {x}  % x offset
 \defineinterfaceconstant {y} {y}  % y offset
@@ -853,29 +858,31 @@
 \defineinterfaceconstant {sl} {sl}
 \defineinterfaceconstant {it} {it}
 \defineinterfaceconstant {sc} {sc}
+
 \defineinterfaceconstant {rm} {rm}
 \defineinterfaceconstant {ss} {ss}
 \defineinterfaceconstant {tt} {tt}
 \defineinterfaceconstant {hw} {hw}
 \defineinterfaceconstant {cg} {cg}
-\defineinterfaceconstant {os} {os}
 \defineinterfaceconstant {mm} {mm}
-\defineinterfaceconstant {i}  {i}
-\defineinterfaceconstant {nn} {nn}
+
+%defineinterfaceconstant {os} {os}
+\defineinterfaceconstant {i}  {i}  % still used ?
+%defineinterfaceconstant {nn} {nn}
 
 \defineinterfaceconstant {x}  {x}
 \defineinterfaceconstant {xx} {xx}
 
 \defineinterfaceconstant {em} {em}
 
-\defineinterfaceconstant {mi} {mi}
-\defineinterfaceconstant {sy} {sy}
-\defineinterfaceconstant {ex} {ex}
 \defineinterfaceconstant {mr} {mr}
-
-\defineinterfaceconstant {ma} {ma}
 \defineinterfaceconstant {mb} {mb}
-\defineinterfaceconstant {mc} {mc}
+
+\defineinterfaceconstant {mrlr} {mrlr}
+\defineinterfaceconstant {mrrl} {mrrl}
+
+\defineinterfaceconstant {mblr} {mblr}
+\defineinterfaceconstant {mbrl} {mbrl}
 
 %D For figure inclusion we need:
 

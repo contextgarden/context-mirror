@@ -146,14 +146,16 @@ function constructors.calculatescale(tfmdata,scaledpoints)
     return scaledpoints, scaledpoints / (parameters.units or 1000) -- delta
 end
 
-function constructors.assignmathparameters(target,tfmdata)
+function constructors.assignmathparameters(target,original) -- dumb version, not used in context
     -- when a tfm file is loaded, it has already been scaled
-    -- and it never enters the scaled so this is otf only
+    -- and it never enters the scaled so this is otf only and
+    -- even then we do some extra in the context math plugins
     local mathparameters = original.mathparameters
     if mathparameters and next(mathparameters) then
         local targetparameters     = target.parameters
+        local targetproperties     = target.properties
         local targetmathparameters = { }
-        local factor               = targetparameters.factor
+        local factor               = targetproperties.math_is_scaled and 1 or targetparameters.factor
         for name, value in next, mathparameters do
             if name == "RadicalDegreeBottomRaisePercent" then
                 targetmathparameters[name] = value
@@ -161,15 +163,12 @@ function constructors.assignmathparameters(target,tfmdata)
                 targetmathparameters[name] = value * factor
             end
         end
-        if not targetmathparameters.AccentBaseHeight then
-            targetmathparameters.AccentBaseHeight = nil -- safeguard, still needed?
-        end
-        if not targetmathparameters.FractionDelimiterSize then
-            targetmathparameters.FractionDelimiterSize = 0
-        end
-        if not mathparameters.FractionDelimiterDisplayStyleSize then
-            targetmathparameters.FractionDelimiterDisplayStyleSize = 0
-        end
+     -- if not targetmathparameters.FractionDelimiterSize then
+     --     targetmathparameters.FractionDelimiterSize = 0
+     -- end
+     -- if not mathparameters.FractionDelimiterDisplayStyleSize then
+     --     targetmathparameters.FractionDelimiterDisplayStyleSize = 0
+     -- end
         target.mathparameters = targetmathparameters
     end
 end
@@ -178,7 +177,7 @@ function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table
     --
     if tonumber(specification) then
-        specification = { size = specification }
+        specification    = { size = specification }
     end
     --
     local scaledpoints   = specification.size

@@ -83,6 +83,10 @@ if not resolvers.instance then
 
 end
 
-statistics.register("input load time", function()
-    return format("%s seconds", statistics.elapsedtime(resolvers.instance))
+statistics.register("resource resolver", function()
+    if resolvers.scantime then
+        return format("loadtime %s seconds, scantime %s seconds", resolvers.loadtime(), resolvers.scantime())
+    else
+        return format("loadtime %s seconds", resolvers.loadtime())
+    end
 end)

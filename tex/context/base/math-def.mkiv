@@ -18,7 +18,7 @@
 % this will be done at the lua end
 
 \startluacode
-    mathematics.define()
+    mathematics.define(\number\defaultmathfamily)
  -- mathematics.xml.registerentities()
 \stopluacode
 
@@ -45,10 +45,10 @@
 
 % will go to math-ext
 
-\Umathchardef\braceld=0 \mrfam "FF07A
-\Umathchardef\bracerd=0 \mrfam "FF07B
-\Umathchardef\bracelu=0 \mrfam "FF07C
-\Umathchardef\braceru=0 \mrfam "FF07D
+\Umathchardef\braceld=0 \defaultmathfamily "FF07A
+\Umathchardef\bracerd=0 \defaultmathfamily "FF07B
+\Umathchardef\bracelu=0 \defaultmathfamily "FF07C
+\Umathchardef\braceru=0 \defaultmathfamily "FF07D
 
 % ctx specific
 
@@ -224,7 +224,7 @@
 %D $\sqrt[3]{10}$
 %D \stoptyping
 
-\def\rootradical{\Uroot 0 "221A } % can be done in char-def
+\def\rootradical{\Uroot \defaultmathfamily "221A } % can be done in char-def
 
 \def\root#1\of{\rootradical{#1}} % #2
 
@@ -323,15 +323,39 @@
 
 %D Goodies. We might move this elsewhere.
 
-\def\underleftarrow #1{\mathop{\Uunderdelimiter 0 "2190 {#1}}}
-\def\overleftarrow  #1{\mathop{\Uoverdelimiter  0 "2190 {#1}}}
-\def\underrightarrow#1{\mathop{\Uunderdelimiter 0 "2192 {#1}}}
-\def\overrightarrow #1{\mathop{\Uoverdelimiter  0 "2192 {#1}}}
+% Be careful in choosing what accents you take (the code
+% below uses a combining one):
+%
+% \startbuffer
+% % $\Umathaccent top        0 0 "20D7 {example}$
+% % $\Umathaccent top  fixed 0 0 "20D7 {example}$
+% $\Umathaccent              0 0 "20D7 {example}$
+% $\Umathaccent        fixed 0 0 "20D7 {example}$
+% $\Umathaccent bottom       0 0 "20D7 {example}$
+% $\Umathaccent bottom fixed 0 0 "20D7 {example}$
+% $\Umathaccent both         0 0 "20D7
+%                            0 0 "20D7 {example}$
+% $\Umathaccent both fixed   0 0 "20D7
+%                    fixed   0 0 "20D7 {example}$
+% $\Umathaccent both         0 0 "20D7
+%                    fixed   0 0 "20D7 {example}$
+% $\Umathaccent both fixed   0 0 "20D7
+%                            0 0 "20D7 {example}$
+% \stopbuffer
+%
+% \setupbodyfont[modern]  \getbuffer
+% \setupbodyfont[xits]    \getbuffer
+% \setupbodyfont[cambria] \getbuffer
 
-% todo: \Udelimiterover, \Udelimiterunder
+\def\underleftarrow #1{\mathop{\Uunderdelimiter \defaultmathfamily "2190 {#1}}}
+\def\overleftarrow  #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2190 {#1}}}
+\def\underrightarrow#1{\mathop{\Uunderdelimiter \defaultmathfamily "2192 {#1}}}
+\def\overrightarrow #1{\mathop{\Uoverdelimiter  \defaultmathfamily "2192 {#1}}}
 
-\def\normaldoublebrace {\Umathaccents 0 0 "23DE 0 0 "23DF }
-\def\normaldoubleparent{\Umathaccents 0 0 "23DC 0 0 "23DD }
+% watch out: here we have a class (zero):
+
+\def\normaldoublebrace {\Umathaccents 0 \defaultmathfamily "23DE 0 \defaultmathfamily "23DF }
+\def\normaldoubleparent{\Umathaccents 0 \defaultmathfamily "23DC 0 \defaultmathfamily "23DD }
 
 \let\normaloverbrace      \overbrace
 \let\normalunderbrace     \underbrace
@@ -365,8 +389,8 @@
 
 % todo mathclass=punctuation ord
 
-% \Umathcode"02C="6 "0 "02C
-% \Umathcode"02E="0 "0 "02E
+% \Umathcode"02C="6 \defaultmathfamily "02C
+% \Umathcode"02E="0 \defaultmathfamily "02E
 
 % tricky .. todo
 

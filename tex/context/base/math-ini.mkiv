@@ -27,8 +27,6 @@
 
 \unprotect
 
-\ifx\v!compact\undefined \def\v!compact{compact} \fi
-
 %D We move these definitions into the format:
 
 % test [[\char948 \ctxlua{tex.sprint(utf.char(948))}]]
@@ -60,6 +58,8 @@
 \appendtoks
     \attribute\mathmodeattribute\plusone
 \to \everybeforedisplayformula
+
+\setnewconstant\defaultmathfamily 255
 
 %D \macros
 %D   {setupmathematics}
@@ -95,7 +95,7 @@
 \def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.syncboth ("#1","#2")}\fi}
 \def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.syncname ("#1")}\fi}
 \def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.syncstyle("#1")}\fi}
-\def\setmathalternate  #1{\ifmmode\ctxlua{mathematics.setalternate(0,"#1")}\fi} % fam 0
+\def\setmathalternate  #1{\ifmmode\ctxlua{mathematics.setalternate(\number\defaultmathfamily,"#1")}\fi}
 
 \def\setmathstylealterternate#1%
   {\ifcsname\??mo:\c!alternative:\fontclass:#1\endcsname
@@ -158,14 +158,6 @@
 
 \let\normalmr\mr
 
-% \prependtoks
-%     \let\mr\normalmr
-%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
-%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
-%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
-%     \mathdefault
-% \to \everymathematics
-
 \let\normaltf\tf \unexpanded\def\tf{\ifmmode\mathtf\else\normaltf\fi}
 \let\normalbf\bf \unexpanded\def\bf{\ifmmode\mathbf\else\normalbf\fi}
 \let\normalit\it \unexpanded\def\it{\ifmmode\mathit\else\normalit\fi}
@@ -179,14 +171,10 @@
                  \unexpanded\def\mr{\ifmmode            \normalmr\fi}
 
 \prependtoks
-%     \let\mr\normalmr
-%     \let\rm\mathrm \let\ss\mathss \let\tt\mathtt
-%     \let\tf\mathtf \let\bf\mathbf \let\it\mathit \let\sl\mathsl \let\bi\mathbi \let\bs\mathbs
-%     \let\frak\mathfraktur \let\cal\mathscript \let\bbd\mathblackboard
     \mathdefault
 \to \everymathematics
 
-%D We could set the renderign attribute at the \LUA\ end but as there
+%D We could set the rendering attribute at the \LUA\ end but as there
 %D can be many small math snippets we keep track of the state at the
 %D \TEX\ end (mapping is export safe).
 %D
@@ -632,13 +620,28 @@
 %D Memory saver:
 
 \appendtoks
-   \doifelse{\mathematicsparameter\v!compact}\v!yes
-     {\ctxlua{fonts.handlers.vf.math.optional=true}}
-     {\ctxlua{fonts.handlers.vf.math.optional=false}}%
+  \doifelse{\mathematicsparameter\c!compact}\v!yes
+    {\ctxlua{fonts.handlers.vf.math.optional=true}}%
+    {\ctxlua{fonts.handlers.vf.math.optional=false}}%
 \to \everysetupmathematics
 
 \setupmathematics
-  [\v!compact=no]
+  [\c!compact=no]
+
+%D Arabic:
+
+\newconditional\mathematics_right_to_left
+
+\appendtoks
+  \doifelse{\mathematicsparameter\c!align}{r2l}%
+    {\settrue \mathematics_right_to_left}%
+    {\setfalse\mathematics_right_to_left}%
+\to \everysetupmathematics
+
+\appendtoks
+  \mathdir T\ifconditional\mathematics_right_to_left R\else L\fi T
+%to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now
+\to \everysetupmathematics
 
 %D Delayed: greek.
 %D

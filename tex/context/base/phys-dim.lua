@@ -24,37 +24,31 @@ physics.patterns = physics.patterns or { }
 
 -- digits parser (todo : use patterns)
 
-local done        = false
-local swap        = false
+--~ local done        = false
+--~ local mode        = 0
 
-local digit       = R("09")
-local sign        = S("+-")
-local power       = S("^e")
-local digitspace  = S("~@_")
-local digitspacex = digitspace + P(" ")
-local comma       = P(",")
-local period      = P(".")
-local signspace   = P("/")
-local positive    = S("p")
-local negative    = S("n")
-local highspace   = P("s")
-local padding     = P("=")
-local plus        = P("+")
-local minus       = P("-")
-
--- rename context.digitsspace -> digitsS
--- also have digitsN
-
-
--- move done to tex end
+local digit        = R("09")
+local sign         = S("+-")
+local power        = S("^e")
+local digitspace   = S("~@_")
+local digitspacex  = digitspace + P(" ")
+local comma        = P(",")
+local period       = P(".")
+local signspace    = P("/")
+local positive     = S("p")
+local negative     = S("n")
+local highspace    = P("s")
+local padding      = P("=")
+local plus         = P("+")
+local minus        = P("-")
 
 local digits       = (digit^1)
 
 local ddigitspacex = digitspacex / "" / context.digitsspace
 local ddigitspace  = digitspace  / "" / context.digitsspace
-local ddigit       = digits      /      function(s) done = true context(s) end
-local dseparator   = comma       / "" / function() if not done then context.digitsseparatorspace() elseif swap then context(".") else context(",") end end
-                   + period      / "" / function() if not done then context.digitsseparatorspace() elseif swap then context(",") else context(".") end end
+local ddigit       = digits           / context.digitsdigit
+local dseparator   = comma       / "" / context.digitscomma
+                   + period      / "" / context.digitsperiod
 local dsignspace   = signspace   / "" / context.digitssignspace
 local dpositive    = positive    / "" / context.digitspositive
 local dnegative    = negative    / "" / context.digitsnegative
@@ -68,7 +62,7 @@ local dpower       = power       / "" * (
                    )
 local dpadding     = padding     / "" / context.digitszeropadding -- todo
 
-local digitparsernospace =
+local digitparserspace =
     (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
   * (dseparator^0 * (ddigitspacex + ddigit)^1)^1
   * dpower^0
@@ -82,9 +76,8 @@ physics.patterns.digitparserspace = digitparserspace
 physics.patterns.digitparser      = digitparser
 
 function commands.digits(str)
-    done = false
- -- swap = true
-    matchlpeg(digitparserspace,str) -- also space
+--~     done = false
+    matchlpeg(digitparserspace,str)
 end
 
 -- units parser

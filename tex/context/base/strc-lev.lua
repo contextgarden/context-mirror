@@ -27,9 +27,9 @@ function sections.startautolevel(category)
     level = level + 1
     local lc = levels[category]
     if not lc or level > #lc then
-        context.nostartstructurehead { format("%s:%s",category,level) }
+        context.nostarthead { format("%s:%s",category,level) }
     else
-        context.dostartstructurehead { lc[level] }
+        context.dostarthead { lc[level] }
     end
     insert(categories,category)
 end
@@ -38,9 +38,9 @@ function sections.stopautolevel()
     local category = remove(categories)
     local lc = levels[category]
     if not lc or level > #lc then
-        context.nostopstructurehead { format("%s:%s",category,level) }
+        context.nostophead { format("%s:%s",category,level) }
     else
-        context.dostopstructurehead { lc[level] }
+        context.dostophead { lc[level] }
     end
     level = level - 1
 end

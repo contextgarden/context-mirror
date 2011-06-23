@@ -1211,17 +1211,15 @@ if environment.initex then
         for what, handler in table.sortedpairs(handlers) do
             local features = handler.features
             if features then
-                local t = { }
-                t[#t+1] = "["
-                t[#t+1] = what
-                t[#t+1] = format("(base initializers: %s)",names(features.initializers.base))
-                t[#t+1] = format("(base processors: %s)",  names(features.processors  .base))
-                t[#t+1] = format("(base manipulators: %s)",names(features.manipulators.base))
-                t[#t+1] = format("(node initializers: %s)",names(features.initializers.node))
-                t[#t+1] = format("(node processors: %s)",  names(features.processors  .node))
-                t[#t+1] = format("(node manipulators: %s)",names(features.manipulators.node))
-                t[#t+1] = "]"
-                l[#l+1] = concat(t, " ")
+                l[#l+1] = format("[%s (base initializers: %s) (base processors: %s) (base manipulators: %s) (node initializers: %s) (node processors: %s) (node manipulators: %s)]",
+                    what,
+                    names(features.initializers.base),
+                    names(features.processors  .base),
+                    names(features.manipulators.base),
+                    names(features.initializers.node),
+                    names(features.processors  .node),
+                    names(features.manipulators.node)
+                )
             end
         end
         return concat(l, " | ")

@@ -15,6 +15,9 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- beware: names will change as we wil make noads.xxx.handler i.e. xxx
 -- subnamespaces
 
+-- 20D6 -> 2190
+-- 20D7 -> 2192
+
 local utf = unicode.utf8
 
 local utfchar, utfbyte = utf.char, utf.byte
@@ -590,7 +593,7 @@ registerotffeature {
 
 local getalternate = otf.getalternate
 
-local mathalternate = attributes.private("mathalternate")
+local a_mathalternate = attributes.private("mathalternate")
 
 local alternate = { } -- processors.alternate = alternate
 
@@ -600,14 +603,14 @@ function mathematics.setalternate(fam,tag)
     local mathalternates = tfmdata.shared.mathalternates
     if mathalternates then
         local m = mathalternates[tag]
-        tex.attribute[mathalternate] = m and m.attribute or attributes.unsetvalue
+        tex.attribute[a_mathalternate] = m and m.attribute or attributes.unsetvalue
     end
 end
 
 alternate[math_char] = function(pointer)
-    local a = has_attribute(pointer,mathalternate)
+    local a = has_attribute(pointer,a_mathalternate)
     if a and a > 0 then
-        set_attribute(pointer,mathalternate,0)
+        set_attribute(pointer,a_mathalternate,0)
         local tfmdata = fontdata[font_of_family(pointer.fam)] -- we can also have a famdata
         local mathalternatesattributes = tfmdata.shared.mathalternatesattributes
         if mathalternatesattributes then
@@ -624,6 +627,46 @@ function handlers.check(head,style,penalties)
     processnoads(head,alternate,"check")
     return true
 end
+
+-- experiment (when not present fall back to fam 0)
+
+local families = { }
+
+local a_mathfamily = attributes.private("mathfamily")
+
+families[math_char] = function(pointer)
+    if pointer.fam == 255 then
+        local a = has_attribute(pointer,a_mathfamily)
+        if a and a > 0 then
+            set_attribute(pointer,a_mathfamily,0)
+            pointer.fam = a
+        else
+            pointer.fam = 0
+        end
+    end
+end
+
+families[math_delim] = function(pointer)
+    if pointer.small_fam == 255 then
+        local a = has_attribute(pointer,a_mathfamily)
+        if a and a > 0 then
+            set_attribute(pointer,a_mathfamily,0)
+            pointer.small_fam = a
+            pointer.large_fam = a
+        else
+            pointer.small_fam = 0
+            pointer.large_fam = 0
+        end
+    end
+end
+
+families[math_textchar] = families[math_char]
+
+function handlers.families(head,style,penalties)
+    processnoads(head,families,"families")
+    return true
+end
+
 
 -- the normal builder
 

@@ -158,3 +158,20 @@ function inspect(i) -- global function
         print(tostring(i))
     end
 end
+
+-- from the lua book:
+
+function traceback()
+    local level = 1
+    while true do
+        local info = debug.getinfo(level, "Sl")
+        if not info then
+            break
+        elseif info.what == "C" then
+            print(format("%3i : C function",level))
+        else
+            print(format("%3i : [%s]:%d",level,info.short_src,info.currentline))
+        end
+        level = level + 1
+    end
+end

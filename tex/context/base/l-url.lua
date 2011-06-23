@@ -45,12 +45,19 @@ local nothing     = Cc("")
 local escaped     = (plus / " ") + (percent * C(hexdigit * hexdigit) / tochar)
 
 -- we assume schemes with more than 1 character (in order to avoid problems with windows disks)
+-- we also assume that when we have a scheme, we also have an authority
 
-local scheme    =                 Cs((escaped+(1-colon-slash-qmark-hash))^2) * colon + nothing
-local authority = slash * slash * Cs((escaped+(1-      slash-qmark-hash))^0)         + nothing
-local path      = slash *         Cs((escaped+(1-            qmark-hash))^0)         + nothing
-local query     = qmark         * Cs((escaped+(1-                  hash))^0)         + nothing
-local fragment  = hash          * Cs((escaped+(1-           endofstring))^0)         + nothing
+local schemestr    = Cs((escaped+(1-colon-slash-qmark-hash))^2)
+local authoritystr = Cs((escaped+(1-      slash-qmark-hash))^0)
+local pathstr      = Cs((escaped+(1-            qmark-hash))^0)
+local querystr     = Cs((escaped+(1-                  hash))^0)
+local fragmentstr  = Cs((escaped+(1-           endofstring))^0)
+
+local scheme    =                 schemestr    * colon + nothing
+local authority = slash * slash * authoritystr         + nothing
+local path      = slash         * pathstr              + nothing
+local query     = qmark         * querystr             + nothing
+local fragment  = hash          * fragmentstr          + nothing
 
 local validurl  = scheme * authority * path * query * fragment
 local parser    = Ct(validurl)
@@ -71,10 +78,15 @@ local function split(str)
     return (type(str) == "string" and lpegmatch(parser,str)) or str
 end
 
+local isscheme = schemestr * colon * slash * slash -- this test also assumes authority
+
 local function hasscheme(str)
-    local scheme = lpegmatch(scheme,str) -- at least one character
-    return scheme and scheme ~= ""
+    local scheme = lpegmatch(isscheme,str) -- at least one character
+    return scheme ~= "" and scheme or false
 end
+
+--~ print(hasscheme("home:"))
+--~ print(hasscheme("home://"))
 
 -- todo: cache them
 

@@ -10,6 +10,9 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 -- better and better. If you have problems with math fonts or miss
 -- characters report it to the ConTeXt mailing list.
 
+-- 20D6 -> 2190
+-- 20D7 -> 2192
+
 local type, next = type, next
 local max = math.max
 
@@ -85,12 +88,12 @@ local function arrow(main,characters,id,size,unicode,arrow,minus,isleft)
     elseif isleft then
         chr.horiz_variants = {
             { extender = 0, glyph = arrow },
-            { extender = 1, glyph = minus  },
+            { extender = 1, glyph = minus },
         }
     else
         chr.horiz_variants = {
-            { extender = 0, glyph = minus },
-            { extender = 1, glyph = arrow },
+            { extender = 1, glyph = minus },
+            { extender = 0, glyph = arrow },
         }
     end
 end
@@ -313,8 +316,8 @@ function vfmath.addmissing(main,id,size)
     dots     (main,characters,id,size,0x22F1) -- ddots
     dots     (main,characters,id,size,0x22F0) -- udots
     minus    (main,characters,id,size,0xFF501)
-    arrow    (main,characters,id,size,0x2190,0xFE190,0xFF501,true) -- left
-    arrow    (main,characters,id,size,0x2192,0xFE192,0xFF501,false) -- right
+    arrow    (main,characters,id,size,0x2190,0x2190,0xFF501,true)  -- left
+    arrow    (main,characters,id,size,0x2192,0x2192,0xFF501,false) -- right
     vertbar  (main,characters,id,size,0x0007C,0.10,0xFF601) -- big  : 0.85 bodyfontsize
     vertbar  (main,characters,id,size,0xFF601,0.30,0xFF602) -- Big  : 1.15 bodyfontsize
     vertbar  (main,characters,id,size,0xFF602,0.30,0xFF603) -- bigg : 1.45 bodyfontsize
@@ -341,6 +344,12 @@ function vfmath.addmissing(main,id,size)
     jointhree(main,characters,id,size,0x27FB,0x02190,joinrelfactor,0x0002D,0,0xFE324) -- \leftarrow\joinrel\relbar\mapsfromchar
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
+
+    -- there are more (needs discussion first):
+
+ -- characters[0x20D6] = characters[0x2190]
+ -- characters[0x20D7] = characters[0x2192]
+
 end
 
 local unique = 0 -- testcase: \startTEXpage \math{!\text{-}\text{-}\text{-}} \stopTEXpage
@@ -724,6 +733,7 @@ function vfmath.define(specification,set,goodies)
     fonts.constructors.assignmathparameters(main,main)
     --
     main.MathConstants = main.mathparameters -- we directly pass it to TeX (bypasses the scaler) so this is needed
+--~ inspect(main.MathConstants)
     --
     if trace_virtual or trace_timings then
         report_virtual("loading and virtualizing font %s at size %s took %0.3f seconds",name,size,os.clock()-start)

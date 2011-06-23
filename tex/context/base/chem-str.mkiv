@@ -204,7 +204,9 @@
 
 \appendtoks
    \edef\chemicalbodyfont{\chemicalparameter\c!bodyfont}%
-   \doifnot\chemicalbodyfont\fontbody{\switchtobodyfont[\chemicalbodyfont]}% \fontbody is not expanded (yet)
+   \ifx\chemicalbodyfont\empty
+     \switchtobodyfont[\chemicalbodyfont]%
+   \fi
    \getvalue{\??cm:\c!size:\chemicalparameter\c!size}%
 % \to \everystructurechemical
 \to \everychemical
@@ -269,6 +271,8 @@
    \mathematics{#1%
      {\strut\hbox \!!spread 2em{\hss\ctxlua{chemicals.inline(\!!bs#2\!!es)}\hss}}%
      {\strut\hbox \!!spread 2em{\hss\ctxlua{chemicals.inline(\!!bs#3\!!es)}\hss}}}%
+%      {\strut\hbox \!!spread 2em{\hss#2\hss}}%
+%      {\strut\hbox \!!spread 2em{\hss#3\hss}}}%
    \enspace}
 
 % special macros (probably needs some more work)
@@ -278,7 +282,7 @@
    \setbox0\hbox{\tx\setstrut\strut#3}%
    \setbox2\hbox{\setstrut\strut\molecule{#4}}%
    \setbox0\hbox{\raise\dimexpr\dp0+\ht2\relax\hbox to \wd2{#1\box0#2}}%
-   \smashbox0
+% no: \smashbox0
    \hbox{\box0\box2}%
    \endgroup}%
 
@@ -287,7 +291,7 @@
    \setbox0\hbox{\tx\setstrut\strut#3}%
    \setbox2\hbox{\setstrut\strut#4}%
    \setbox0\hbox{\lower\dimexpr\dp2+\ht0\relax\hbox to \wd2{#1\box0#2}}%
-   \smashbox0
+% no: \smashbox0
    \hbox{\box0\box2}%
    \endgroup}%
 
@@ -337,7 +341,7 @@
 \let\chemicalsmashedright \chemicalrightcentered
 
 \unexpanded\def\chemicaloxidation#1#2#3%
-  {\chemicaltop{\txx\ifcase#2\relax0\else#1\uppercase\expandafter{\romannumeral#2}\fi}{#3}}
+  {\chemicaltop{\txx\ifcase#2\relax0\else#1\convertnumber{I}{#2}\fi}{#3}}
 
 \unexpanded\def\chemicaloxidationplus {\dotriplegroupempty\chemicaloxidation{\textplus }} % {} needed!
 \unexpanded\def\chemicaloxidationminus{\dotriplegroupempty\chemicaloxidation{\textminus}} % {} needed!
@@ -487,26 +491,50 @@
 \unexpanded\def\formulachemical
   {\relax\dotriplegroupempty\doformulachemical}
 
+% \def\doformulachemical#1#2#3% we could do hboxes and measure
+%   {\ifthirdargument
+%      \doifelsenothing{#2}\noformulachemicaltop{\doformulachemicaltop{#2}}%
+%      \doifelsenothing{#3}\noformulachemicalbot{\doformulachemicalbot{#3}}%
+%    \else\ifsecondargument
+%      \noformulachemicaltop
+%      \doifelsenothing{#2}\noformulachemicalbot{\doformulachemicalbot{#2}}%
+%    \else
+%      \noformulachemicaltop
+%      \noformulachemicalbot
+%    \fi\fi
+%    \formulachemicalmid\expandafter{\the\formulachemicalmid\dodochemicalformulamid{#1}&}}
+%
+% \def\dodochemicalformulamid#1%
+%   {\ifcsname\??cm::\detokenize{#1}\endcsname
+%      \csname\??cm::\detokenize{#1}\expandafter\endcsname{}{}%
+%    \else
+%      \molecule{#1}{}{}%
+%    \fi}
+
+\def\domidformulachemical#1%
+  {\csname\??cm::\detokenize{#1}\endcsname}
+
 \def\doformulachemical#1#2#3% we could do hboxes and measure
-  {\ifthirdargument
-     \doifelsenothing{#2}\noformulachemicaltop{\doformulachemicaltop{#2}}%
-     \doifelsenothing{#3}\noformulachemicalbot{\doformulachemicalbot{#3}}%
-   \else\ifsecondargument
-     \noformulachemicaltop
-     \doifelsenothing{#2}\noformulachemicalbot{\doformulachemicalbot{#2}}%
+  {\ifcsname\??cm::\detokenize{#1}\endcsname
+     \formulachemicalmid\expandafter{\the\formulachemicalmid\domidformulachemical{#1}{#2}{#3}}%
    \else
-     \noformulachemicaltop
-     \noformulachemicalbot
-   \fi\fi
-   \formulachemicalmid\expandafter{\the\formulachemicalmid\dodochemicalformulamid{#1}&}}
+     \ifthirdargument
+       \doifelsenothing{#2}\noformulachemicaltop{\doformulachemicaltop{#2}}%
+       \doifelsenothing{#3}\noformulachemicalbot{\doformulachemicalbot{#3}}%
+     \else\ifsecondargument
+       \noformulachemicaltop
+       \doifelsenothing{#2}\noformulachemicalbot{\doformulachemicalbot{#2}}%
+     \else
+       \noformulachemicaltop
+       \noformulachemicalbot
+     \fi\fi
+     \formulachemicalmid\expandafter{\the\formulachemicalmid\molecule{#1}&}%
+   \fi}
 
 \def\noformulachemicaltop  {\formulachemicaltop\expandafter{\the\formulachemicaltop&}}
 \def\noformulachemicalbot  {\formulachemicalbot\expandafter{\the\formulachemicalbot&}}
 \def\doformulachemicaltop#1{\formulachemicaltop\expandafter{\the\formulachemicaltop\dodochemicalformulatop{#1}&}\settrue\formulachemicalhastop}
 \def\doformulachemicalbot#1{\formulachemicalbot\expandafter{\the\formulachemicalbot\dodochemicalformulabot{#1}&}\settrue\formulachemicalhasbot}
-
-\def\dodochemicalformulamid#1%
-  {\ifcsname\??cm::\detokenize{#1}\endcsname\csname\??cm::\detokenize{#1}\expandafter\endcsname\else\molecule{#1}\fi{}{}}
 
 \def\dodochemicalformulatop#1{\strut#1}
 \def\dodochemicalformulabot#1{\strut#1}
@@ -527,7 +555,7 @@
    \c!right=0,
    \c!top=0,
    \c!bottom=0,
-   \c!bodyfont=\the\bodyfontsize,
+   \c!bodyfont=,
    \c!scale=\v!medium,
    \c!size=\v!medium,
    \c!textsize=\v!big,

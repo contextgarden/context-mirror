@@ -145,8 +145,8 @@ regimes.disable   = disable
 
 local level = 0
 
-function regimes.process(str)
-    if level == 0 then
+function regimes.process(str,filename,currentline,noflines,coding)
+    if level == 0 and coding ~= "utf-8" then
         str = translate(str,currentregime)
         if trace_translating then
             report_translating("utf: %s",str)

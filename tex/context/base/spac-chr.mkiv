@@ -32,6 +32,8 @@
 \edef\breakablethinspace      {\utfchar{"2009}}
 \edef\hairspace               {\utfchar{"200A}}
 \edef\zerowidthspace          {\utfchar{"200B}}
+\edef\zwnj                    {\utfchar{"200C}}
+\edef\zwj                     {\utfchar{"200D}}
 
 \edef\narrownobreakspace      {\utfchar{"202F}}
 
@@ -41,7 +43,9 @@
 
 % Shortcuts:
 
-\let~\nobreakspace
+% unexpanded as otherwise we need to intercept / cleanup a lot
+
+\unexpanded\edef~{\utfchar{"00A0}}
 
 % Goodies:
 

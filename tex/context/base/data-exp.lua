@@ -26,19 +26,6 @@ local resolvers = resolvers
 -- all, when working on the main resolver code, I don't want to scroll
 -- past this every time. See data-obs.lua for the gsub variant.
 
--- {a,b,c,d}
--- a,b,c/{p,q,r},d
--- a,b,c/{p,q,r}/d/{x,y,z}//
--- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
--- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
--- a{b,c}{d,e}f
--- {a,b,c,d}
--- {a,b,c/{p,q,r},d}
--- {a,b,c/{p,q,r}/d/{x,y,z}//}
--- {a,b,c/{p,q/{x,y,z}},d/{p,q,r}}
--- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
--- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
-
 local function f_first(a,b)
     local t, n = { }, 0
     for s in gmatch(b,"[^,]+") do
@@ -129,6 +116,19 @@ function resolvers.expandedpathfromlist(pathlist)
     end
     return newlist
 end
+
+-- {a,b,c,d}
+-- a,b,c/{p,q,r},d
+-- a,b,c/{p,q,r}/d/{x,y,z}//
+-- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
+-- a,b,c/{p,q/{x,y,z},r},d/{p,q,r}
+-- a{b,c}{d,e}f
+-- {a,b,c,d}
+-- {a,b,c/{p,q,r},d}
+-- {a,b,c/{p,q,r}/d/{x,y,z}//}
+-- {a,b,c/{p,q/{x,y,z}},d/{p,q,r}}
+-- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
+-- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
 local cleanup = lpeg.replacer {
     { "!"  , ""  },
@@ -311,9 +311,21 @@ local function scan(files,spec,path,n,m,r)
     return files, n, m, r
 end
 
-function resolvers.scanfiles(path,branch)
+local cache = { }
+
+function resolvers.scanfiles(path,branch,usecache)
+    statistics.starttiming(cache)
+    if usecache then
+        local files = cache[path]
+        if files then
+            if trace_locating then
+                report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
+            end
+            return files
+        end
+    end
     if trace_locating then
-        report_expansions("scanning path '%s', branch '%s'",path, branch or path)
+        report_expansions("scanning path '%s', branch '%s'",path,branch or path)
     end
     local realpath = resolvers.resolve(path) -- no shortcut
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
@@ -324,7 +336,16 @@ function resolvers.scanfiles(path,branch)
     if trace_locating then
         report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
+    if usecache then
+        cache[path] = files
+    end
+    statistics.stoptiming(cache)
     return files
 end
+
+function resolvers.scantime()
+    return statistics.elapsedtime(cache)
+end
+
 
 --~ print(table.serialize(resolvers.scanfiles("t:/sources")))

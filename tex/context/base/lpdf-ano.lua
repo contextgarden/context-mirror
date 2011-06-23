@@ -391,10 +391,12 @@ runners["special operation with arguments"] = runners["special"]
 
 function specials.internal(var,actions) -- better resolve in strc-ref
     local i = tonumber(var.operation)
-    local v = references.internals[i]
+    local v = i and references.internals[i]
+--~ print(">>>>>>>",i)
+--~ inspect(v)
     if not v then
         -- error
-        report_reference("no internal reference '%s'",var.operation)
+        report_reference("no internal reference '%s'",i or "?")
     elseif getinnermethod() == "names" then
         -- named
         return link(nil,nil,"aut:"..i,v.references.realpage,actions)
@@ -452,6 +454,22 @@ function specials.userpage(var,actions)
         return link(nil,nil,nil,p,actions)
     end
 end
+
+-- sections
+
+--~ function specials.section(var,actions)
+--~     local sectionname = var.operation
+--~     local destination = var.arguments
+--~     local internal    = structures.sections.internalreference(sectionname,destination)
+--~     if internal then
+--~         var.special   = "internal"
+--~         var.operation = internal
+--~         var.arguments = nil
+--~         specials.internal(var,actions)
+--~     end
+--~ end
+
+specials.section = specials.internal -- specials.section just need to have a value as it's checked
 
 -- todo, do this in references namespace ordered instead (this is an experiment)
 

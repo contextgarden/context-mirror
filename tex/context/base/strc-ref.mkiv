@@ -1803,6 +1803,22 @@
 \def\currentreferencedefault
   {\ctxlua{structures.references.filter("default",\ctxlua{structures.references.getcurrentprefixspec("\v!default")})}}
 
+%D Not all support is visible by looking at the \TEX\ code; here is one of those:^
+%D
+%D \starttyping
+%D \startinteractionmenu[right]
+%D   \startbut [section(first   {chapter})]    first chapter \stopbut
+%D   \startbut [section(previous{chapter})] previous chapter \stopbut
+%D   \startbut [section(next    {chapter})]     next chapter \stopbut
+%D   \startbut [section(last    {chapter})]     last chapter \stopbut
+%D   \blank[2*big]
+%D   \startbut [section(first   {section})]    first section \stopbut
+%D   \startbut [section(previous{section})] previous section \stopbut
+%D   \startbut [section(next    {section})]     next section \stopbut
+%D   \startbut [section(last    {section})]     last section \stopbut
+%D \stopinteractionmenu
+%D \stoptyping
+
 \protect \endinput
 
 % tricky:
