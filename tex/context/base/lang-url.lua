@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lang-url'] = {
 local utf = unicode.utf8
 
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
-local utfbyte, utfgsub = utf.byte, utf.gsub
+local utfbyte, utfchar, utfgsub = utf.byte, utf.char, utf.gsub
 
 context = context
 
@@ -26,47 +26,51 @@ dealing with <l n='ascii'/> characters.</p>
 commands.hyphenatedurl = commands.hyphenatedurl or { }
 local hyphenatedurl    = commands.hyphenatedurl
 
-hyphenatedurl.characters = utilities.storage.allocate {
-  ["!"] = 1,
-  ["\""] = 1,
-  ["#"] = 1,
-  ["$"] = 1,
-  ["%"] = 1,
-  ["&"] = 1,
-  ["("] = 1,
-  ["*"] = 1,
-  ["+"] = 1,
-  [","] = 1,
-  ["-"] = 1,
-  ["."] = 1,
-  ["/"] = 1,
-  [":"] = 1,
-  [";"] = 1,
-  ["<"] = 1,
-  ["="] = 1,
-  [">"] = 1,
-  ["?"] = 1,
-  ["@"] = 1,
-  ["["] = 1,
-  ["\\"] = 1,
-  ["^"] = 1,
-  ["_"] = 1,
-  ["`"] = 1,
-  ["{"] = 1,
-  ["|"] = 1,
-  ["~"] = 1,
+local characters = utilities.storage.allocate {
+    ["!"]  = 1,
+    ["\""] = 1,
+    ["#"]  = 1,
+    ["$"]  = 1,
+    ["%"]  = 1,
+    ["&"]  = 1,
+    ["("]  = 1,
+    ["*"]  = 1,
+    ["+"]  = 1,
+    [","]  = 1,
+    ["-"]  = 1,
+    ["."]  = 1,
+    ["/"]  = 1,
+    [":"]  = 1,
+    [";"]  = 1,
+    ["<"]  = 1,
+    ["="]  = 1,
+    [">"]  = 1,
+    ["?"]  = 1,
+    ["@"]  = 1,
+    ["["]  = 1,
+    ["\\"] = 1,
+    ["^"]  = 1,
+    ["_"]  = 1,
+    ["`"]  = 1,
+    ["{"]  = 1,
+    ["|"]  = 1,
+    ["~"]  = 1,
 
-  ["'"] = 2,
-  [")"] = 2,
-  ["]"] = 2,
-  ["}"] = 2
+    ["'"]  = 2,
+    [")"]  = 2,
+    ["]"]  = 2,
+    ["}"]  = 2,
 }
 
+local mapping = utilities.storage.allocate {
+--~     [utfchar(0xA0)] = "~", -- nbsp (catch)
+}
+
+hyphenatedurl.characters     = characters
+hyphenatedurl.mapping        = mapping
 hyphenatedurl.lefthyphenmin  = 2
 hyphenatedurl.righthyphenmin = 3
 hyphenatedurl.discretionary  = nil
-
-local chars = hyphenatedurl.characters
 
 local function action(hyphenatedurl, str, left, right, disc)
     local n = 0
@@ -75,10 +79,11 @@ local function action(hyphenatedurl, str, left, right, disc)
     local d = disc or hyphenatedurl.discretionary
     for s in utfcharacters(str) do
         n = n + 1
+        s = mapping[s] or s
         if s == d then
             context.d(utfbyte(s))
         else
-            local c = chars[s]
+            local c = characters[s]
             if not c or n<=b or n>=e then
                 context.n(utfbyte(s))
             elseif c == 1 then

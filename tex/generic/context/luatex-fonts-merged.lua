@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/19/11 14:17:51
+-- merge date  : 06/23/11 19:25:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -1100,6 +1100,44 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 
 local lpeg = require("lpeg")
 
+-- tracing (only used when we encounter a problem in integration of lpeg in luatex)
+
+local report = texio and texio.write_nl or print
+
+--~ local lpmatch = lpeg.match
+--~ local lpprint = lpeg.print
+--~ local lpp     = lpeg.P
+--~ local lpr     = lpeg.R
+--~ local lps     = lpeg.S
+--~ local lpc     = lpeg.C
+--~ local lpb     = lpeg.B
+--~ local lpv     = lpeg.V
+--~ local lpcf    = lpeg.Cf
+--~ local lpcb    = lpeg.Cb
+--~ local lpcg    = lpeg.Cg
+--~ local lpct    = lpeg.Ct
+--~ local lpcs    = lpeg.Cs
+--~ local lpcc    = lpeg.Cc
+--~ local lpcmt   = lpeg.Cmt
+--~ local lpcarg  = lpeg.Carg
+
+--~ function lpeg.match(l,...) report("LPEG MATCH") lpprint(l) return lpmatch(l,...) end
+
+--~ function lpeg.P    (l) local p = lpp   (l) report("LPEG P =")    lpprint(l) return p end
+--~ function lpeg.R    (l) local p = lpr   (l) report("LPEG R =")    lpprint(l) return p end
+--~ function lpeg.S    (l) local p = lps   (l) report("LPEG S =")    lpprint(l) return p end
+--~ function lpeg.C    (l) local p = lpc   (l) report("LPEG C =")    lpprint(l) return p end
+--~ function lpeg.B    (l) local p = lpb   (l) report("LPEG B =")    lpprint(l) return p end
+--~ function lpeg.V    (l) local p = lpv   (l) report("LPEG V =")    lpprint(l) return p end
+--~ function lpeg.Cf   (l) local p = lpcf  (l) report("LPEG Cf =")   lpprint(l) return p end
+--~ function lpeg.Cb   (l) local p = lpcb  (l) report("LPEG Cb =")   lpprint(l) return p end
+--~ function lpeg.Cg   (l) local p = lpcg  (l) report("LPEG Cg =")   lpprint(l) return p end
+--~ function lpeg.Ct   (l) local p = lpct  (l) report("LPEG Ct =")   lpprint(l) return p end
+--~ function lpeg.Cs   (l) local p = lpcs  (l) report("LPEG Cs =")   lpprint(l) return p end
+--~ function lpeg.Cc   (l) local p = lpcc  (l) report("LPEG Cc =")   lpprint(l) return p end
+--~ function lpeg.Cmt  (l) local p = lpcmt (l) report("LPEG Cmt =")  lpprint(l) return p end
+--~ function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
+
 local type = type
 local byte, char = string.byte, string.char
 
@@ -1208,17 +1246,17 @@ patterns.unspacer      = ((patterns.spacer^1)/"")^0
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
-local unquoted = Cs(patterns.unquoted * endofstring) -- not C
-
-function string.unquoted(str)
-    return match(unquoted,str) or str
-end
-
--- more efficient:
+-- local unquoted = Cs(patterns.unquoted * endofstring) -- not C
+--
+-- function string.unquoted(str)
+--     return match(unquoted,str) or str
+-- end
+--
+-- more efficient on long strings:
 
 local unquoted = (
-    squote * Cs(1 - P(-2)) * squote
-  + dquote * Cs(1 - P(-2)) * dquote
+    squote * Cs((1 - P(-2))^0) * squote
+  + dquote * Cs((1 - P(-2))^0) * dquote
 )
 
 function string.unquoted(str)
@@ -1227,10 +1265,12 @@ end
 
 patterns.unquoted = unquoted
 
---~ print(string.unquoted("test"))
---~ print(string.unquoted([["t\"est"]]))
---~ print(string.unquoted([["t\"est"x]]))
---~ print(string.unquoted("\'test\'"))
+-- print(string.unquoted("test"))
+-- print(string.unquoted([["t\"est"]]))
+-- print(string.unquoted([["t\"est"x]]))
+-- print(string.unquoted("\'test\'"))
+-- print(string.unquoted('"test"'))
+-- print(string.unquoted('"test"'))
 
 function lpeg.anywhere(pattern) --slightly adapted from website
     return P { P(pattern) + 1 * V(1) } -- why so complex?
@@ -1695,6 +1735,12 @@ function lpeg.append(list,pp)
 end
 
 --~ Cf(Ct("") * (Cg(C(...) * "=" * Cs(...)))^0, rawset)
+
+--~ for k, v in next, patterns do
+--~     if type(v) ~= "table" then
+--~         lpeg.print(v)
+--~     end
+--~ end
 
 end -- closure
 
@@ -3178,14 +3224,16 @@ function constructors.calculatescale(tfmdata,scaledpoints)
     return scaledpoints, scaledpoints / (parameters.units or 1000) -- delta
 end
 
-function constructors.assignmathparameters(target,tfmdata)
+function constructors.assignmathparameters(target,original) -- dumb version, not used in context
     -- when a tfm file is loaded, it has already been scaled
-    -- and it never enters the scaled so this is otf only
+    -- and it never enters the scaled so this is otf only and
+    -- even then we do some extra in the context math plugins
     local mathparameters = original.mathparameters
     if mathparameters and next(mathparameters) then
         local targetparameters     = target.parameters
+        local targetproperties     = target.properties
         local targetmathparameters = { }
-        local factor               = targetparameters.factor
+        local factor               = targetproperties.math_is_scaled and 1 or targetparameters.factor
         for name, value in next, mathparameters do
             if name == "RadicalDegreeBottomRaisePercent" then
                 targetmathparameters[name] = value
@@ -3193,15 +3241,12 @@ function constructors.assignmathparameters(target,tfmdata)
                 targetmathparameters[name] = value * factor
             end
         end
-        if not targetmathparameters.AccentBaseHeight then
-            targetmathparameters.AccentBaseHeight = nil -- safeguard, still needed?
-        end
-        if not targetmathparameters.FractionDelimiterSize then
-            targetmathparameters.FractionDelimiterSize = 0
-        end
-        if not mathparameters.FractionDelimiterDisplayStyleSize then
-            targetmathparameters.FractionDelimiterDisplayStyleSize = 0
-        end
+     -- if not targetmathparameters.FractionDelimiterSize then
+     --     targetmathparameters.FractionDelimiterSize = 0
+     -- end
+     -- if not mathparameters.FractionDelimiterDisplayStyleSize then
+     --     targetmathparameters.FractionDelimiterDisplayStyleSize = 0
+     -- end
         target.mathparameters = targetmathparameters
     end
 end
@@ -3210,7 +3255,7 @@ function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table
     --
     if tonumber(specification) then
-        specification = { size = specification }
+        specification    = { size = specification }
     end
     --
     local scaledpoints   = specification.size

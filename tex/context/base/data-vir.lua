@@ -55,7 +55,8 @@ function openers.virtual(specification)
             report_virtual("opener, file '%s' opened",original)
         end
         data[original] = nil
-        return openers.helpers.textopener("virtual",original,d)
+        -- With utf-8 we signal that no regime is to be applied!
+        return openers.helpers.textopener("virtual",original,d,"utf-8")
     else
         if trace_virtual then
             report_virtual("opener, file '%s' not found",original)

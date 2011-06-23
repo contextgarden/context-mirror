@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- footnotes      -> css 3
 -- bodyfont       -> in styles.css
 -- delimited      -> left/right string (needs marking)
--- depth          -> can go away (autodepth now and not used)
 
 -- Because we need to look ahead we now always build a tree (this was optional in
 -- the beginning). The extra overhead in the frontend is neglectable.
@@ -124,7 +123,7 @@ local treestack         = { }
 local nesting           = { }
 local currentdepth      = 0
 
-local tree              = { data = { }, depth = 0, fulltag == "root" } -- root
+local tree              = { data = { }, fulltag == "root" } -- root
 local treeroot          = tree
 local treehash          = { }
 local extras            = { }
@@ -137,6 +136,7 @@ local restart           = false
 local specialspaces     = { [0x20] = " "  }               -- for conversion
 local somespace         = { [0x20] = true, [" "] = true } -- for testing
 local entities          = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;" }
+local attribentities    = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;", ['"'] = "quot;" }
 
 local defaultnature     = "mixed" -- "inline"
 
@@ -151,7 +151,7 @@ end)
 setmetatableindex(specialspaces, function(t,k)
     local v = utfchar(k)
     t[k] = v
-    entities[v] = format("&#%X;",k)
+    entities[v] = format("&#x%X;",k)
     somespace[k] = true
     somespace[v] = true
     return v
@@ -197,6 +197,14 @@ setmetatableindex(namespaced, function(t,k)
         return v
     end
 end)
+
+local function attribute(key,value)
+    if value and value ~= "" then
+        return format(' %s="%s"',key,gsub(value,".",attribentities))
+    else
+        return ""
+    end
+end
 
 -- local P, C, Cc = lpeg.P, lpeg.C, lpeg.Cc
 --
@@ -342,7 +350,6 @@ local function makebreaknode(node) -- maybe no fulltag
         tg         = "break",
         fulltag    = "break-" .. nofbreaks,
         n          = nofbreaks,
-        depth      = node.depth,
         element    = "break",
         nature     = "display",
      -- attributes = breakattributes,
@@ -408,7 +415,7 @@ function extras.itemgroup(result,element,detail,n,fulltag,di)
         end
         local v = hash.symbol
         if v then
-            result[#result+1] = format(" symbol='%s'",v)
+            result[#result+1] = attribute("symbol",v)
         end
     end
 end
@@ -508,8 +515,11 @@ end
 function extras.image(result,element,detail,n,fulltag,di)
     local data = usedimages.image[fulltag]
     if data then
-        result[#result+1] = format(" id='%s' name='%s' page='%s' width='%s' height='%s'",
-            fulltag,data.name,data.page,data.width,data.height)
+        result[#result+1] = attribute("name",data.name)
+        if tonumber(data.page) > 1 then
+            result[#result+1] = format("page='%s'",data.page)
+        end
+        result[#result+1] = format("id='%s' width='%s' height='%s'",fulltag,data.width,data.height)
     end
 end
 
@@ -537,27 +547,27 @@ local specials   = { }
 evaluators.inner = function(result,var)
     local inner = var.inner
     if inner then
-        result[#result+1] = format(" location='%s'",inner)
+        result[#result+1] = attribute("location",inner)
     end
 end
 
 evaluators.outer = function(result,var)
     local file, url = references.checkedfileorurl(var.outer,var.outer)
     if url then
-        result[#result+1] = format(" url='%s'",url)
+        result[#result+1] = attribute("url",url)
     elseif file then
-        result[#result+1] = format(" file='%s'",file)
+        result[#result+1] = attribute("file",file)
     end
 end
 
 evaluators["outer with inner"] = function(result,var)
     local file = references.checkedfile(var.f)
     if file then
-        result[#result+1] = format(" file='%s'",file)
+        result[#result+1] = attribute("file",file)
     end
     local inner = var.inner
     if inner then
-        result[#result+1] = format(" location='%s'",inner)
+        result[#result+1] = attribute("location",inner)
     end
 end
 
@@ -575,23 +585,23 @@ evaluators["special operation with arguments"] = evaluators.special
 function specials.url(result,var)
     local url = references.checkedurl(var.operation)
     if url then
-        result[#result+1] = format(" url='%s'",url)
+        result[#result+1] = attribute("url",url)
     end
 end
 
 function specials.file(result,var)
     local file = references.checkedfile(var.operation)
     if file then
-        result[#result+1] = format(" file='%s'",file)
+        result[#result+1] = attribute("file",file)
     end
 end
 
 function specials.fileorurl(result,var)
     local file, url = references.checkedfileorurl(var.operation,var.operation)
     if url then
-        result[#result+1] = format(" url='%s'",url)
+        result[#result+1] = attribute("url",url)
     elseif file then
-        result[#result+1] = format(" file='%s'",file)
+        result[#result+1] = attribute("file",file)
     end
 end
 
@@ -826,7 +836,6 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                     di = {
                         element    = "maction",
                         nature     = "display",
-                        depth      = di.depth,
                         attributes = { actiontype = detail },
                         data       = { di },
                         n          = 0,
@@ -867,7 +876,6 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                                      -- data    = { utfchar(0x2061) },
                                         data    = { "&#x2061;" },
                                         nature  = "mixed",
-                                        depth   = di.depth,
                                     }
                                 }
                             elseif automathapply then -- make function
@@ -893,7 +901,6 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                                              -- data    = { utfchar(0x2061) },
                                                 data    = { "&#x2061;" },
                                                 nature  = "mixed",
-                                                depth   = di.depth,
                                             }
                                         }
                                     end
@@ -1487,7 +1494,6 @@ local function push(fulltag,depth)
         fulltag    = fulltag,
         detail     = detail,
         n          = tonumber(n), -- more efficient
-        depth      = depth,
         element    = element,
         nature     = nature,
         data       = { },
@@ -2108,7 +2114,7 @@ local function stopexport(v)
     report_export("saving css image definitions in '%s",imagefilename)
     io.savedata(imagefilename,allusedimages(xmlfile))
     --
-    report_export("saving css style definitions in '%s",cssfile)
+    report_export("saving css style definitions in '%s",stylefilename)
     io.savedata(stylefilename,allusedstyles(xmlfile))
     --
     report_export("saving css template in '%s",templatefilename)

@@ -74,6 +74,43 @@
    \ifconditional\displaylefttoright \else
       ddir="r2l",
    \fi}
+
+\def\synchronizelayoutdirection
+  {\ifconditional\layoutlefttoright
+     \settrue\inlinelefttoright
+     \textdir TLT\relax
+     \pardir  TLT\relax
+   \else
+     \setfalse\inlinelefttoright
+     \textdir TRT\relax
+     \pardir  TRT\relax
+   \fi}
+
+\def\synchronizedisplaydirection
+  {\ifconditional\displaylefttoright
+     \settrue\inlinelefttoright
+     \textdir TLT\relax
+     \pardir  TLT\relax
+   \else
+     \setfalse\inlinelefttoright
+     \textdir TRT\relax
+     \pardir  TRT\relax
+   \fi}
+
+\def\synchronizeinlinedirection
+  {\ifconditional\inlinelefttoright
+     \textdir TLT\relax
+   \else
+     \textdir TRT\relax
+   \fi}
+
+\def\showdirections
+  {\dontleavehmode
+   \begingroup\infofont\textdir TLT[\space
+   layout:\ifconditional \layoutlefttoright  l2r\else r2l\fi\space
+   display:\ifconditional\displaylefttoright l2r\else r2l\fi\space
+   inline:\ifconditional \inlinelefttoright  l2r\else r2l\fi\space
+   ]\endgroup}
 
 \def\dodefinehbox[#1][#2]%
   {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}

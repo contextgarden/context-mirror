@@ -104,6 +104,9 @@ local function initializer()
                 end
             end
         end
+        if r then
+            r.listindex = i -- handy to have
+        end
     end
 end
 
@@ -118,6 +121,7 @@ function lists.push(t)
         p = #cached + 1
         cached[p] = helpers.simplify(t)
         pushed[i] = p
+        r.listindex = p
     end
     texwrite(p)
 end
@@ -144,7 +148,12 @@ function lists.enhance(n)
         local kind = metadata.kind
         local name = metadata.name
         if references then
-            references.tag = tags.getid(kind,name)
+            -- is this used ?
+            local tag = tags.getid(kind,name)
+            if tag and tag ~= "?" then
+                references.tag = tag
+            end
+        --~ references.listindex = n
         end
         -- specific enhancer (kind of obsolete)
         local enhancer = kind and lists.enhancers[kind]

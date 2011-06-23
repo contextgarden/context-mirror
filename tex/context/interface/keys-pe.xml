@@ -609,6 +609,7 @@
 		<cd:constant name='commandafter' value='فرمان‌بعداز'/>
 		<cd:constant name='commandbefore' value='فرمان‌قبل‌از'/>
 		<cd:constant name='commands' value='فرمانها'/>
+		<cd:constant name='compact' value='compact'/>
 		<cd:constant name='component' value='مولفه'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='فشردن'/>

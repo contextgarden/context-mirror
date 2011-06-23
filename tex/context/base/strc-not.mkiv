@@ -188,6 +188,7 @@
   %\c!continue=\v!no,
    \c!paragraph=\v!no,
    \c!inbetween=\hskip1em,
+   \c!symbol=\mathematics{*},
    \c!n=1]
 
 \setupnotes
@@ -633,6 +634,7 @@
 
 \setvalue{\??dd:\v!note:\s!handler:\s!text  }{\@@donotetext}
 \setvalue{\??dd:\v!note:\s!handler:\s!number}{\@@donotenumber}
+\setvalue{\??dd:\v!note:\s!handler:\s!symbol}{\@@donotesymbol}
 \setvalue{\??dd:\v!note:\s!handler          }{\@@donotehandler}
 \setvalue{\??dd:\v!note:\s!handler:\s!do    }{\@@somenotedescription}
 \setvalue{\??dd:\v!note:\s!handler:\s!start }{\@@startsomenotedescription}
@@ -725,21 +727,22 @@
 \def\currentnotedescriptiontext % todo: can be other number
   {\ctxlua{structures.notes.title("\currentnote",\currentdescriptionnumberentry)}}
 
-\def\@@donotetext
-  {\ifconditional\enumerationnumberenabled
+\def\@@donotetext % same as \@@doenumerationtext
+  {\ifcase\enumerationnumberstate
+     \doenumerationfullnumbernop
+   \or
      \iftrialtypesetting
-       \doenumerationfullnumber\showdntext
+       \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
      \else
        \doenumerationregistercoupling
-       \doenumerationfullnumber\showdntext
+       \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
      \fi
-   \else
-     \doenumerationfullnumber\showdnpuretext
+   \or
+     \doenumerationfullnumbersymbol
    \fi}
 
-% \def\currentnoteenumerationfullnumber
 \def\@@donotenumber
   {\doifelse{\noteparameter\c!interaction}\v!no
      {\docurrentnoteenumerationfullnumber}%
@@ -747,10 +750,23 @@
         {\docurrentnoteenumerationfullnumber}%
         [page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
 
+\def\@@donotesymbol
+  {\doifelse{\noteparameter\c!interaction}\v!no
+     {\docurrentnoteenumerationsymbol}%
+     {\directgotobox
+        {\docurrentnoteenumerationsymbol}%
+        [page(\ctxlua{structures.notes.getsymbolpage("\currentnote",\currentdescriptionnumberentry)})]}}
+
 \def\docurrentnoteenumerationfullnumber
   {\noteparameter\c!numbercommand
      {\dosetnoteattributes\c!numberstyle\c!numbercolor
       \ctxlua{structures.notes.number("\currentnote",\currentdescriptionnumberentry)}%
+      \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
+
+\def\docurrentnoteenumerationsymbol
+  {\noteparameter\c!numbercommand
+     {\dosetnoteattributes\c!numberstyle\c!numbercolor
+      \descriptionparameter\c!symbol
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
 \def\synchronizesomenotesymbol#1#2#3% called more often than needed

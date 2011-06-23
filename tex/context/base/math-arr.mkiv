@@ -17,7 +17,7 @@
 
 %D These will be generalized! Is it still needed in \MKIV?
 
-\def\exmthfont#1{\symbolicsizedfont#1\plusone{MathExtension}}
+\def\exmthfont#1{\mr} % \symbolicsizedfont#1\plusone{MathExtension}}
 
 \def\domthfrac#1#2#3#4#5#6#7%
   {\begingroup
@@ -26,7 +26,7 @@
    \setbox2\hbox{$#1 #7$}%
    \dimen0\wd0
    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
-   \setbox4\hbox to \dimen0{\exmthfont#2#3\leaders\hbox{#4}\hss#5}%
+   \setbox4\hbox to \dimen0{\leaders\hbox{#4}\hss#5}%
    \mathord{\vcenter{{\offinterlineskip
      \hbox to \dimen0{\hss\box0\hss}%
      \kern \ht4%
@@ -76,6 +76,47 @@
 \def\mtharrfactor{1}
 \def\mtharrextra {0}
 
+% \def\domthxarr#1#2#3#4#5% hm, looks like we do a double mathrel
+%   {\begingroup
+%    \def\mtharrfactor{1}%
+%    \def\mtharrextra {0}%
+%    \processaction[#1] % will be sped up
+%      [  \v!none=>\def\mtharrfactor{0},
+%        \v!small=>\def\mtharrextra{10},
+%       \v!medium=>\def\mtharrextra{15},
+%          \v!big=>\def\mtharrextra{20},
+%       \v!normal=>,
+%      \v!default=>,
+%      \v!unknown=>\doifnumberelse{#1}{\def\mtharrextra{#1}}\donothing]%
+%    \mathsurround\zeropoint
+%    \muskip0=\thirdoffourarguments  #2mu
+%    \muskip2=\fourthoffourarguments #2mu
+%    \muskip4=\firstoffourarguments  #2mu
+%    \muskip6=\secondoffourarguments #2mu
+%    \muskip0=\mtharrfactor\muskip0 \advance\muskip0 \mtharrextra mu
+%    \muskip2=\mtharrfactor\muskip2 \advance\muskip2 \mtharrextra mu
+%    \setbox0\hbox{$\scriptstyle
+%                   \mkern\muskip4\relax
+%                   \mkern\muskip0\relax
+%                   #5\relax
+%                   \mkern\muskip2\relax
+%                   \mkern\muskip6\relax
+%                  $}%
+%    \setbox4\hbox{#3\displaystyle}%
+%    \dimen0\wd0
+%    \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
+%    \setbox2\hbox{$\scriptstyle
+%                   \mkern\muskip4\relax
+%                   \mkern\muskip0\relax
+%                   #4\relax
+%                   \mkern\muskip2\relax
+%                   \mkern\muskip6\relax
+%                  $}%
+%    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
+%    \setbox4\hbox to \dimen0{#3\displaystyle}%
+%    \mathrel{\mathop{\hbox to \dimen0{\hss\copy4\hss}}\limits\normalsuperscript{\box0}\normalsubscript{\box2}}%
+%    \endgroup}
+
 \def\domthxarr#1#2#3#4#5% hm, looks like we do a double mathrel
   {\begingroup
    \def\mtharrfactor{1}%
@@ -91,26 +132,24 @@
    \mathsurround\zeropoint
    \muskip0=\thirdoffourarguments  #2mu
    \muskip2=\fourthoffourarguments #2mu
-   \muskip4=\firstoffourarguments  #2mu
-   \muskip6=\secondoffourarguments #2mu
-   \muskip0=\mtharrfactor\muskip0 \advance\muskip0 \mtharrextra mu
-   \muskip2=\mtharrfactor\muskip2 \advance\muskip2 \mtharrextra mu
+   \muskip0=\mtharrfactor\muskip0
+   \muskip2=\mtharrfactor\muskip2
+   \advance\muskip0 \mtharrextra mu
+   \advance\muskip2 \mtharrextra mu
+   \advance\muskip0 \firstoffourarguments  #2mu
+   \advance\muskip2 \secondoffourarguments #2mu
    \setbox0\hbox{$\scriptstyle
-                  \mkern\muskip4\relax
                   \mkern\muskip0\relax
                   #5\relax
                   \mkern\muskip2\relax
-                  \mkern\muskip6\relax
                  $}%
    \setbox4\hbox{#3\displaystyle}%
    \dimen0\wd0
    \ifdim\wd4>\dimen0 \dimen0\wd4 \fi
    \setbox2\hbox{$\scriptstyle
-                  \mkern\muskip4\relax
                   \mkern\muskip0\relax
                   #4\relax
                   \mkern\muskip2\relax
-                  \mkern\muskip6\relax
                  $}%
    \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
    \setbox4\hbox to \dimen0{#3\displaystyle}%
@@ -121,6 +160,16 @@
 
 %D There are some arrows which are created by stacking two arrows. The next
 %D macro helps in defining such \quotation{double arrows}.
+
+% weird, we get a shift with the double ... but will become core luatex anyway
+%
+% \startchemicalformula
+%     \chemical{S}
+%     \chemical{+}
+%     \chemical{O_2}
+%     \chemical{EQUILIBRIUM}{boven}{onder}
+%     \chemical{SO_2}
+% \stopchemicalformula
 
 \def\domthxarrdouble#1#2#3#4#5#6#7% opt l r sp rs top bot
   {\mathrel

@@ -21,13 +21,13 @@ local fileprocessor = nil
 local lineprocessor = nil
 
 local textfileactions = sequencers.reset {
-    arguments    = "str,filename",
+    arguments    = "str,filename,coding",
     returnvalues = "str",
     results      = "str",
 }
 
 local textlineactions = sequencers.reset {
-    arguments    = "str,filename,linenumber,noflines",
+    arguments    = "str,filename,linenumber,noflines,coding",
     returnvalues = "str",
     results      = "str",
 }
@@ -46,7 +46,7 @@ appendgroup(textlineactions,"before") -- user
 appendgroup(textlineactions,"system") -- private
 appendgroup(textlineactions,"after" ) -- user
 
-function helpers.textopener(tag,filename,filehandle)
+function helpers.textopener(tag,filename,filehandle,coding)
     local lines
     local t_filehandle = type(filehandle)
     if not filehandle then
@@ -60,7 +60,7 @@ function helpers.textopener(tag,filename,filehandle)
         filehandle:close()
     end
     if type(lines) == "string" then
-        local coding = utffiletype(lines)
+        local coding = coding or utffiletype(lines) -- so we can signal no regime
         if trace_locating then
             report_tex("%s opener, '%s' opened using method '%s'",tag,filename,coding)
         end
@@ -72,11 +72,11 @@ function helpers.textopener(tag,filename,filehandle)
             lines = unicode.utf32_to_utf8_be(lines)
         elseif coding == "utf-32-le" then
             lines = unicode.utf32_to_utf8_le(lines)
-        else -- utf8 or unknown
+        else -- utf8 or unknown (could be a mkvi file)
             if textfileactions.dirty then -- maybe use autocompile
                 fileprocessor = sequencers.compile(textfileactions)
             end
-            lines = fileprocessor(lines,filename) or lines
+            lines = fileprocessor(lines,filename,coding) or lines
             lines = splitlines(lines)
         end
     elseif trace_locating then
@@ -115,7 +115,7 @@ function helpers.textopener(tag,filename,filehandle)
                     if textlineactions.dirty then
                         lineprocessor = sequencers.compile(textlineactions) -- maybe use autocompile
                     end
-                    return lineprocessor(content,filename,currentline,noflines) or content
+                    return lineprocessor(content,filename,currentline,noflines,coding) or content
                 end
             end
         end

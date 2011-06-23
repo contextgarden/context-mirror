@@ -5175,7 +5175,7 @@
         <cd:parameter name="maxbreedte">
           <cd:constant type="cd:dimension"/>
         </cd:parameter>
-        <cd:parameter name="order">
+        <cd:parameter name="volgorde">
           <cd:constant type="commando"/>
           <cd:constant type="alles"/>
           <cd:constant type="normaal"/>

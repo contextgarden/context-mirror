@@ -6484,6 +6484,11 @@ return {
   },
   ["order"]={
    ["en"]="order",
+   ["nl"]="volgorde",
+  },
+  ["compact"]={
+   ["en"]="compact",
+   ["nl"]="compact",
   },
   ["headalign"]={
    ["en"]="headalign",

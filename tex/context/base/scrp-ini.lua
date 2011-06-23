@@ -173,7 +173,10 @@ if not next(hash) then
     for i=0x01160,0x011A7 do if not hash[i] then hash[i] = "jamo_medial"  end end
     for i=0x011A8,0x011FF do if not hash[i] then hash[i] = "jamo_final"   end end
 
+--  for i=0x03041,0x030FF do if not hash[i] then hash[i] = "japanese"     end end
+
     for i=0x01200,0x0139F do hash[i] = "ethiopic_syllable" end
+
 
     hash[0x01361] = "ethiopic_word"
     hash[0x01362] = "ethiopic_sentence"

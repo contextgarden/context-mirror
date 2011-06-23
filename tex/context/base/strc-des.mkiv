@@ -507,6 +507,7 @@
 
 \def\dodescriptiontext       {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!text  \endcsname}
 \def\dodescriptionnumber     {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!number\endcsname}
+\def\dodescriptionsymbol     {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!symbol\endcsname}
 \def\dodescriptionhandler    {\csname\??dd:\descriptionparameter\s!handler:\s!handler          \endcsname}
 \def\dohandledescriptiondo   {\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!do    \endcsname}
 \def\dohandledescriptionstart{\csname\??dd:\descriptionparameter\s!handler:\s!handler:\s!start \endcsname}
@@ -645,13 +646,15 @@
 
 % implementation
 
-\newtoks       \everyenumeration
-\newconditional\enumerationnumberenabled
-\def           \enumerationdisablenumbersignal {-}
+\newtoks    \everyenumeration
+\newconstant\enumerationnumberstate       % 1 == enabled
+\def        \enumerationsignalskip  {-}   % 0 == disabled
+\def        \enumerationsignalsymbol{+}   % 2 == disabled but symbol
 
 \appendtoks \disablepseudocaps \to \everyenumeration  % sorry, uppercase causes troubles
 
 \setvalue{\??dd:\v!enumeration:\s!handler:\s!number}{\@@doenumerationnumber}
+\setvalue{\??dd:\v!enumeration:\s!handler:\s!symbol}{\@@doenumerationsymbol}
 \setvalue{\??dd:\v!enumeration:\s!handler:\s!text  }{\@@doenumerationtext}
 \setvalue{\??dd:\v!enumeration:\s!handler          }{\@@doenumerationhandler}
 \setvalue{\??dd:\v!enumeration:\s!handler:\s!do    }{\@@somedescription}
@@ -665,6 +668,9 @@
 \def\@@doenumerationnumber
   {\ctxlua{structures.lists.savedprefixednumber("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
+\def\@@doenumerationsymbol
+  {\descriptionparameter\c!symbol}
+
 \def\@@dodoenumerationtext
   {\ctxlua{structures.lists.savedtitle("\currentdescriptionmain",\currentdescriptionnumberentry)}}
 
@@ -675,8 +681,15 @@
    \descriptionparameter\c!stopper
    \descriptionparameter\c!right}
 
+\def\doenumerationsymbol
+  {\descriptionparameter\c!left
+   \dodescriptionsymbol
+   \descriptionparameter\c!right}
+
 \def\@@doenumerationtext
-  {\ifconditional\enumerationnumberenabled
+  {\ifcase\enumerationnumberstate
+     \doenumerationfullnumbernop
+   \or
      \iftrialtypesetting
        \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
@@ -685,29 +698,19 @@
        \doenumerationfullnumberyes
        \doenumerationcouplingsymbol
      \fi
-   \else
-     \doenumerationfullnumbernop
+   \or
+     \doenumerationfullnumbersymbol
    \fi}
 
-\def\doenumerationfullnumberyes % text, title
-  {\begingroup
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
-   \the\everyenumeration
-   \descriptionparameter\c!command{\strut\showdntext\doenumerationnumber\doenumerationextratext}%
-   \endgroup}
-
-\def\doenumerationfullnumbernop % text, title
-  {\begingroup
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
-   \the\everyenumeration
-   \descriptionparameter\c!command{\strut\showdnpuretext\doenumerationextratext}%
-   \endgroup}
+\def\doenumerationfullnumberyes   {\doenumerationfullnumber{\showdntext    \doenumerationnumber\doenumerationextratext}}
+\def\doenumerationfullnumbernop   {\doenumerationfullnumber{\showdnpuretext                    \doenumerationextratext}}
+\def\doenumerationfullnumbersymbol{\doenumerationfullnumber{\showdntext    \doenumerationsymbol\doenumerationextratext}}
 
 \def\doenumerationfullnumber#1% text, title (used in notes) .. todo
   {\begingroup
    \dosetdescriptionattributes\c!headstyle\c!headcolor
    \the\everyenumeration
-   \descriptionparameter\c!command{\strut#1\doenumerationnumber\doenumerationextratext}%
+   \descriptionparameter\c!command{\strut#1}%
    \endgroup}
 
 \def\doenumerationextratext
@@ -734,10 +737,14 @@
 
 \def\doenumerationcheckconditions
   {\doifelse{\descriptionparameter\c!number}\v!yes
-     {\ifx\currentdescriptionreference\enumerationdisablenumbersignal
-        \setfalse\enumerationnumberenabled \else \settrue\enumerationnumberenabled
-      \fi}%
-     {\setfalse\enumerationnumberenabled}%
+     {\ifx\currentdescriptionreference\enumerationsignalsymbol
+        \enumerationnumberstate\plustwo   % symbol
+      \else\ifx\currentdescriptionreference\enumerationsignalskip
+        \enumerationnumberstate\zerocount % disabled
+      \else
+        \enumerationnumberstate\plusone   % enabled
+      \fi\fi}%
+     {\enumerationnumberstate\zerocount}% % disabled
    \edef\currentenumerationcoupling{\descriptionparameter\c!coupling}}
 
 \def\doenumerationregistercoupling
@@ -842,8 +849,12 @@
      \global\nodescriptioncaptiontrue\global\nodescriptionnumbertrue
    \fi
    %
-   \ifconditional\enumerationnumberenabled
+   \ifcase\enumerationnumberstate
+     % disabled
+   \or
      \doifelsedescriptioncomponent\donothing\doenumerationincrementcounter
+   \or
+     % symbol
    \fi
    %
    \ifnodescriptioncaption
@@ -879,7 +890,9 @@
             list     = \!!bs\detokenize\expandafter{\currentdescriptionlist    }\!!es,
         \fi % \fi
         },
-    \ifconditional\enumerationnumberenabled
+    \ifcase\enumerationnumberstate
+      % disabled
+    \or
         prefixdata = {
             prefix        = "\descriptionparameter\c!prefix",
             separatorset  = "\descriptionparameter\c!prefixseparatorset",
@@ -898,6 +911,8 @@
             stopper       = \!!bs\descriptionparameter\c!numberstopper\!!es,
             segments      = "\descriptionparameter\c!numbersegments",
         },
+    \or
+       % symbol
     \fi
         userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
        }

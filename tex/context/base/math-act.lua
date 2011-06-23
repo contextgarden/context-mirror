@@ -75,8 +75,9 @@ sequencers.appendaction(mathactions,"system","mathematics.scaleparameters")
 
 function mathematics.checkaccentbaseheight(target,original)
     local mathparameters = target.mathparameters
-    if mathparameters then
-        mathparameters.AccentBaseHeight = nil -- safeguard
+    if mathparameters and mathparameters.AccentBaseHeight == 0 then
+        mathparameters.AccentBaseHeight = original.parameters.x_height or 0
+--~ mathparameters.AccentBaseHeight = target.parameters.vfactor * mathparameters.AccentBaseHeight
     end
 end
 

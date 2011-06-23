@@ -371,12 +371,12 @@
 \let\typefaceencoding\s!default % obsolete
 
 \def\dostarttypefacedefining#1#2#3%
-  {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!goodies=,#3]%
+  {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!goodies=,\s!direction=,#3]%
    \pushmacro\fontclass
    \setcurrentfontclass{#1}%
    \pushmacro\relativefontsize
    \let\relativefontsize\@@tsrscale % still needed ?
-   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies}
+   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdirection}
 
 \def\dostoptypefacedefining
    {\popmacro\relativefontsize

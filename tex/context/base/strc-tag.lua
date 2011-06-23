@@ -267,6 +267,16 @@ function tags.start(tag,specification)
     return t
 end
 
+function tags.restart(completetag)
+    local t = #taglist + 1
+    nstack = nstack + 1
+    chain[nstack] = completetag
+    stack[nstack] = t
+    taglist[t] = { unpack(chain,1,nstack) }
+    texattribute[a_tagged] = t
+    return t
+end
+
 function tags.stop()
     if nstack > 0 then
         nstack = nstack -1

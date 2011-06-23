@@ -414,6 +414,7 @@
 \long\def\putcompletecaption#1#2%
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
   %\floatcaptionparameter\c!before % test for side effects first
+\synchronizedisplaydirection % temp hack, till we have a proper model
    \noindent
    \gdef\lastcaptiontag{\strut#1}% was xdef
    \begingroup
@@ -480,7 +481,7 @@
 \def\dofakecaptionthings
   {\hbox{\dosetcaptionthings\hskip\leftskip\hskip\rightskip}}
 
-\long\def\docheckcaptioncontent#1#2%
+\long\def\docheckcaptioncontent#1#2% side floats
   {\ifnofloatcaption \else
      \setbox\tempcaptionbox\hbox
        {\settrialtypesetting
@@ -1280,7 +1281,7 @@
        \doglobal\addlocalbackgroundtobox\floatbox
      \else
        % todo: installable maken, variant/method=auto vs macro
-       \dopreparedocaption{#1}{#2}{#3}%
+       \dopreparepagecaption{#1}{#2}{#3}%
        \settracedcaptionbox
        \edef\width{\the\wd\tempfloatbox}%
        \addlocalbackgroundtobox\tempfloatbox
@@ -1313,7 +1314,7 @@
       \fi\fi
       \locatefloat{\copy\tempfloatbox}}}
 
-\def\dopreparedocaption#1#2#3%
+\def\dopreparepagecaption#1#2#3%
   {\dostarttagged\t!floatcaption\empty
    \doifinsetelse{\floatcaptionparameter\c!location}{\v!top,\v!bottom}
      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
@@ -1442,18 +1443,6 @@
              \putcompletecaption{#2}{#3}}}%
      \fi
    \fi}
-
-\def\dopreparesidecaption#1#2#3%
-  {\scratchdimen\dimexpr\hsize-\wd\tempfloatbox-\floatparameter\c!margin\relax % was \tfskipsize\relax
-   \ifdim\wd\tempcaptionbox>\scratchdimen
-     \ifdim\wd\tempcaptionbox<1.3\scratchdimen
-       \scratchdimen0.8\scratchdimen
-     \fi
-   \fi
-   \dosettempcaptionbox %    \setbox\tempcaptionbox\vbox
-     {\hsize\scratchdimen
-      \doifnothing{\floatcaptionparameter\c!align}\raggedright % on purpose overloads align !
-      \putcompletecaption{#2}{#3}}}
 
 \newdimen\tempfloatheight
 \newdimen\tempfloatwidth
@@ -1804,11 +1793,11 @@
    %\showcomposition
    \setbox\tempfloatbox\vbox{\borderedfloatbox}%
    \addlocalbackgroundtobox\tempfloatbox % no \doglobal
-   \docheckcaptioncontent{#2}{#3}%
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\tempfloatbox}%
    \else
-     \dopreparedosidecaption{#1}{#2}{#3}%
+     \docheckcaptioncontent{#2}{#3}%
+     \dopreparesidecaption{#1}{#2}{#3}%
      \settracedcaptionbox
      \setbox\tempcaptionbox\hbox{\floatcaptionparameter\c!command{\box\tempcaptionbox}}%
      \moveboxontogrid\tempcaptionbox{\floatcaptionparameter\c!grid}\lastcaptionht
@@ -1817,7 +1806,7 @@
    \fi
    \egroup}
 
-\def\dopreparedosidecaption#1#2#3% will be enhanced
+\def\dopreparesidecaption#1#2#3% will be enhanced
   {\doifelse{\floatcaptionparameter\c!width}\v!max
      {\dosettempcaptionbox
         {\hsize\wd\tempfloatbox

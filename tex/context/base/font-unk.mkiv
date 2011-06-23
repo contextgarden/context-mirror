@@ -43,25 +43,7 @@
 \definefontsynonym [MonoCaps]           [unknown]
 
 \definefontsynonym [MathRoman]          [unknown]
-\definefontsynonym [MathExtension]      [unknown]
-\definefontsynonym [MathItalic]         [unknown]
-\definefontsynonym [MathSymbol]         [unknown]
-
-\definefontsynonym [MathNoName]         [unknown]
-
-\definefontsynonym [MathAlpha]          [unknown]
-\definefontsynonym [MathBeta]           [unknown]
-\definefontsynonym [MathGamma]          [unknown]
-\definefontsynonym [MathDelta]          [unknown]
-
-\definefontsynonym [MathRomanBold]      [MathRoman]     % todo:
-\definefontsynonym [MathExtensionBold]  [MathExtension] % [MathRoman]
-\definefontsynonym [MathItalicBold]     [MathItalic]    % [MathRoman]
-\definefontsynonym [MathSymbolBold]     [MathSymbol]    % [MathRoman]
-\definefontsynonym [MathAlphaBold]      [MathAlpha]     % [MathRoman]
-\definefontsynonym [MathBetaBold]       [MathBeta]      % [MathRoman]
-\definefontsynonym [MathGammaBold]      [MathGamma]     % [MathRoman]
-\definefontsynonym [MathDeltaBold]      [MathDelta]     % [MathRoman]
+\definefontsynonym [MathRomanBold]      [MathRoman]
 
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]
@@ -144,10 +126,30 @@
    sc=MonoCaps sa 1]
 
 \definebodyfont [default] [mm]
-  [mr=MathRoman mo 1]
+  [mr=MathRoman mo 1,
+   mrlr=MathRomanL2R mo 1,
+   mrrl=MathRomanR2L mo 1]
 
-\definebodyfont [bfmath] [mm]
-  [mr=MathRomanBold mo 1]
+% \definebodyfont [default] [mm]
+%   [mr=MathRoman mo 1,
+%    mrlr=MathRomanL2R mo 1,
+%    mrrl=MathRomanR2L mo 1,
+%    mb=MathRomanBold mo 1,
+%    mblr=MathRomanBoldL2R mo 1,
+%    mbrl=MathRomanBoldR2L mo 1]
+
+\definebodyfont [bfmath] [mm] % why not just bold
+  [mr=MathRomanBold mo 1,
+   mrlr=MathRomanBoldL2R mo 1,
+   mrrl=MathRomanBoldR2L mo 1]
+
+% \definebodyfont [bidi] [mm]
+%   [mrlr=MathRomanL2R mo 1,
+%    mrrl=MathRomanR2L mo 1]
+
+% \definebodyfont [bidibfmath] [mm]
+%   [mrlr=MathRomanBoldL2R mo 1,
+%    mrrl=MathRomanBoldR2L mo 1]
 
 \definebodyfont [default] [hw]
   [tf=Handwriting sa 1]

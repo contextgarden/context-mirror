@@ -38,7 +38,8 @@ end
 
 function generators.file(specification)
     local path = specification.filename
-    local content = resolvers.scanfiles(path)
+    local content = resolvers.scanfiles(path,false,true) -- scan once
+--~     inspect(content)
     resolvers.registerfilehash(path,content,true)
 end
 

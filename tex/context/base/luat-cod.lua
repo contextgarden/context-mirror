@@ -77,7 +77,9 @@ end
 environment       = environment or { }
 local environment = environment
 
-local sourcefile = arg and arg[1] or ""
+-- no string.unquoted yet
+
+local sourcefile = gsub(arg and arg[1] or "","^\"(.*)\"$","%1")
 local sourcepath = find(sourcefile,"/") and gsub(sourcefile,"/[^/]+$","") or ""
 local targetpath = "."
 

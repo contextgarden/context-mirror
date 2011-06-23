@@ -390,9 +390,7 @@ local function handle_any_entity(str)
     if resolve then
         local a = acache[str] -- per instance ! todo
         if not a then
-print(">1",str,a)
             a = resolve_predefined and predefined_simplified[str]
-print(">2",str,a)
             if a then
                 -- one of the predefined
             elseif type(resolve) == "function" then
@@ -400,7 +398,6 @@ print(">2",str,a)
             else
                 a = entities[str]
             end
-print(">3",str,a)
             if a then
 if type(a) == "function" then
     if trace_entities then
@@ -408,9 +405,7 @@ if type(a) == "function" then
     end
     a = a(str) or ""
 end
-print(">4",str,a)
                 a = lpegmatch(parsedentity,a) or a
-print(">5",str,a)
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
                 end

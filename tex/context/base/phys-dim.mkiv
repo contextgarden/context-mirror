@@ -15,19 +15,93 @@
 
 \unprotect
 
-% We will have
-%
-% \setupunits
-%   [alternative=text,  % maybe no longer
-%    grid=yes,          % snapper
-%    style=...,         %
-%    space=...]         % small medium big
-
-% digits code:
-
+%D \macros
+%D   {digits, setdigitmode, setdigitsign, setdigitorder}
+%D
+%D This is an update of the \MKII\ digits mechanism. Beware,
+%D space delimited mode is now resticted!
+%D
+%D Depending on the digit mode the command \type {\digits}
+%D normalizes number patterns depending on the language set.
+%D
+%D \starttyping
+%D This will never be a \digits{1.000.000} seller.
+%D \stoptyping
+%D
+%D We still support the space delimited case but this is only for special
+%D purposes. When used in the text, you'd better use the argument variant.
+%D
+%D \startbuffer
+%D 1 \setdigitmode {1} \setdigitorder{0} \digits {12.345,90}
+%D 2 \setdigitmode {2} \setdigitorder{0} \digits {12.345,90}
+%D 3 \setdigitmode {3} \setdigitorder{0} \digits {12.345,90}
+%D 4 \setdigitmode {4} \setdigitorder{0} \digits {12.345,90}
+%D 5 \setdigitmode {5} \setdigitorder{0} \digits {12.345,90}
+%D 6 \setdigitmode {6} \setdigitorder{0} \digits {12.345,90}
+%D 1 \setdigitmode {1} \setdigitorder{1} \digits {12.345,90}
+%D 2 \setdigitmode {2} \setdigitorder{1} \digits {12.345,90}
+%D 3 \setdigitmode {3} \setdigitorder{1} \digits {12.345,90}
+%D 4 \setdigitmode {4} \setdigitorder{1} \digits {12.345,90}
+%D 5 \setdigitmode {5} \setdigitorder{1} \digits {12.345,90}
+%D 6 \setdigitmode {6} \setdigitorder{1} \digits {12.345,90}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This is typeset as:
+%D
+%D \startlines \getbuffer \stoplines
+%D
+%D The sign can be typeset as is or within the space of a
+%D digit.
+%D
+%D \startbuffer
+%D \setdigitsign 0 \digits {+12.345,90}
+%D \setdigitsign 1 \digits {+12.345,90}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D This is typset as:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D The digit modes are:
+%D
+%D \startitemize[n,packed]
+%D \item periods/comma
+%D \item commas/period
+%D \item thinmuskips/comma
+%D \item thinmuskips/period
+%D \item thickmuskips/comma
+%D \item thickmuskips/period
+%D \stopitemize
+%D
+%D The digit parser handles a bunch of special characters as
+%D well as different formats. We strongly suggest you to use
+%D the grouped call.
+%D
+%D \starttabulate[|l|l|l|]
+%D \NC \type{.} \NC , .           \NC comma or period            \NC \NR
+%D \NC \type{,} \NC , .           \NC comma or period            \NC \NR
+%D \NC \type{@} \NC               \NC invisible space            \NC \NR
+%D \NC \type{_} \NC               \NC invisible space            \NC \NR
+%D \NC \type{/} \NC               \NC invisible sign             \NC \NR
+%D \NC \type{-} \NC $-$           \NC minus sign                 \NC \NR
+%D \NC \type{+} \NC $+$           \NC plus sign                  \NC \NR
+%D \NC \type{s} \NC               \NC invisible high sign        \NC \NR
+%D \NC \type{p} \NC $\positive$   \NC high plus sign             \NC \NR
+%D \NC \type{m} \NC $\negative$   \NC high minus sign            \NC \NR
+%D \NC \type{n} \NC $\negative$   \NC high minus (negative) sign \NC \NR
+%D \NC \type{=} \NC $\zeroamount$ \NC zero padding               \NC \NR
+%D \stoptabulate
+%D
+%D These triggers are used in the following examples.
+%D
 %D \startbuffer
 %D \digits{12}
-%D \digits{~~~.~~~.~~~.68.712,34}
 %D \digits{~~~.~~~.~~~.68.712,34}
 %D \digits{___.___.111.68.712,34}
 %D \digits{111.111.111.68.712,34}
@@ -40,47 +114,125 @@
 %D \digits{123.222,==}
 %D \digits{123.222,00^10}
 %D \digits{123.222,00e10}
-%D \digits{-123.222,00e-12}
 %D \digits{/123.222,00e-12}
+%D \digits{-123.222,00e-12}
 %D \digits{+123.222,00e-12}
 %D \digits{n123.222,00e-12}
 %D \digits{s123.222,00e-12}
-%D \digits{p123.222,00e/12}
-%D %D \stopbuffer
+%D \digits{p123.222,00e-12}
+%D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D Result: \getbuffer
+%D \startlines
+%D \getbuffer
+%D \stoplines
 
-% todo: ifmmode
+% todo: smaller adn raised signs
 
-\def\digitsnormalized#1#2{{\setbox\scratchbox\hbox{#1}\hbox to \wd\scratchbox{\hss#2\hss}}}
+\newconditional\c_digits_seen
+\newconstant   \c_digits_mode
+\newconstant   \c_digits_sign  % we has sized (text script scriptscript)
+\newconstant   \c_digits_order % 0=period comma 1=comma period
 
-\def\digitsraised        {\ifmmode\expandafter\normalsuperscript\else\expandafter\high\fi}
+\def\setdigitmode #1{\c_digits_mode #1\relax}
+\def\setdigitsign #1{\c_digits_sign #1\relax}
+\def\setdigitorder#1{\c_digits_order#1\relax}
+
+\def\digits_normalized % we could calculate once and remember
+  {\ifcase\c_digits_sign
+     \expandafter\secondoftwoarguments
+   \else\ifmmode
+     \expandafter\expandafter\expandafter\digits_normalized_math
+   \else
+     \expandafter\expandafter\expandafter\digits_normalized_text
+   \fi\fi}
+
+\def\digits_normalized_math#1#2%
+  {\setbox\scratchbox\hbox{$\Ustack{#1}$}%
+   \hbox to \wd\scratchbox{\hss{$\Ustack{#2}$}\hss}}
+
+\def\digits_normalized_text#1#2%
+  {\setbox\scratchbox\hbox{#1}%
+   \hbox to \wd\scratchbox{\hss#2\hss}}
+
+\def\digits_raised
+  {\ifmmode
+     \expandafter\normalsuperscript
+   \else
+     \expandafter\high
+   \fi}
 
 \def\digitszeropadding   {\zeroamount}
-\def\digitsnegative      {\digitsnormalized\zeroamount{\digitsraised{\textminus}}} % \mathematics \negative
-\def\digitspositive      {\digitsnormalized\zeroamount{\digitsraised{\textplus }}} % \mathematics \positive
-\def\digitsnegative      {\mathematics\negative}
-\def\digitspositive      {\mathematics\positive}
+\def\digitsnegative      {\digits_normalized{0}{\digits_raised{\textminus}}}
+\def\digitspositive      {\digits_normalized{0}{\digits_raised{\textplus}}}
+\def\digitsnegative      {\digits_normalized{0}{\mathematics{\negative}}}
+\def\digitspositive      {\digits_normalized{0}{\mathematics{\positive}}}
+\def\digitsminus         {\digits_normalized{0}{\mathematics{-}}}
+\def\digitsplus          {\digits_normalized{0}{\mathematics{+}}}
 \def\digitsspace         {\hphantom{0}}
 \def\digitsseparatorspace{\hphantom{.}}
 \def\digitssignspace     {\hphantom{\digitsminus}}
 \def\digitshighspace     {\hphantom{\digitspositive}}
-\def\digitspower         {\digitsraised}
-\def\digitspowerplus   #1{\digitsraised{\digitsplus #1}}
-\def\digitspowerminus  #1{\digitsraised{\digitsminus#1}}
-\def\digitsminus         {\mathematics-}
-\def\digitsplus          {\mathematics+}
+\def\digitspower         {\digits_raised}
+\def\digitspowerplus   #1{\digits_raised{\digitsplus#1}}
+\def\digitspowerminus  #1{\digits_raised{\digitsminus#1}}
 
-% First I need to check the old supp-num code for compatibility.
+% we can move the logic to lua
+
+\def\digitsdigit       #1{\ifconditional\c_digits_seen#1\else\ifnum#1=\zerocount\digitsspace\else\settrue\c_digits_seen#1\fi\fi}
+\def\digitscomma         {\ifconditional\c_digits_seen\ifconditional\c_digits_order\digitscommasymbol \else\digitsperiodsymbol\fi\else\digitsseparatorspace\fi}
+\def\digitsperiod        {\ifconditional\c_digits_seen\ifconditional\c_digits_order\digitsperiodsymbol\else\digitscommasymbol \fi\else\digitsseparatorspace\fi}
+
+\def\normaldigitscommasymbol {,}
+\def\normaldigitsperiodsymbol{.}
+
+\let\digitscommasymbol \normaldigitscommasymbol
+\let\digitsperiodsymbol\normaldigitsperiodsymbol
 
 \unexpanded\def\tempdigits#1% for testing
   {\dontleavehmode
-   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es)}}
+   \begingroup
+   \setfalse\c_digits_seen
+   \ifcase\c_digits_mode
+       % keep as-is
+   \or
+       \let\digitscommasymbol   \normaldigitsperiodsymbol
+       \let\digitsperiodsymbol  \normaldigitscommasymbol
+   \or
+       \let\digitscommasymbol   \normaldigitscommasymbol
+       \let\digitsperiodsymbol  \normaldigitsperiodsymbol
+   \or
+       \let\digitsperiodsymbol  \thinspace
+       \let\digitscommasymbol   \normaldigitscommasymbol
+       \let\digitsseparatorspace\thinspace
+   \or
+       \let\digitsperiodsymbol  \thinspace
+       \let\digitscommasymbol   \normaldigitsperiodsymbol
+       \let\digitsseparatorspace\thinspace
+   \or
+       \let\digitsperiodsymbol  \thickspace
+       \let\digitscommasymbol   \normaldigitscommasymbol
+       \let\digitsseparatorspace\thickspace
+   \or
+       \let\digitsperiodsymbol  \thickspace
+       \let\digitscommasymbol   \normaldigitsperiodsymbol
+       \let\digitsseparatorspace\thickspace
+   \fi
+   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es)}%
+   \endgroup}
+
+\unexpanded\def\digits
+  {\doifnextbgroupelse\digits_argument\digits_spaced}
+
+\def\digits_argument#1%
+  {\tempdigits{#1}}
+
+\def\digits_spaced#1 %
+  {\tempdigits{#1}}
 
 %D \macros
-%D   {su}
+%D   {unit}
 %D
 %D We have been using the units module (and its predecessor) for over a decade
 %D now but when we moved on to \LUATEX\ a variant was prototyped that permits a
@@ -89,94 +241,127 @@
 %D test exporting.)
 %D
 %D \startbuffer
-%D 01: $10\su{km/h}$
-%D 02: $\su{10      km/h}$
-%D 03: \su{km/h}
-%D 04: \su{10 km/h}
-%D 05: \su{10 km/h}
-%D 06: \su{~1 km/h}
-%D 07: 10\su{km/h}
-%D 08: 10 \su{km/h}
-%D 09: $10 \su{km/h}$
-%D 10: 10 \su{KiloMeter/Hour}
-%D 11: 10 \su{kilometer/hour}
-%D 12: 10 \su{km/h}
-%D 13: 10 \su{kilometer per hour}
-%D 14: 10 \su{km / h}
-%D 15: 10 \su{ km / h }
-%D 16: 10 \su{km/ms2}
-%D 17: 10 \su{meter per second}
-%D 18: 10 \su{cubic meter}
-%D 19: 10 \su{cubic meter per second}
-%D 21: 10 \su{cubic meter / second}
-%D 22: $10 \su{cubic meter / second}$
-%D 23: 30 \su{kilo pascal }
-%D 24: 30 \su{kilo pascal square meter / second}
-%D 25: 30 \su{kilo pascal square meter / kelvin second}
-%D 26: \su{30 kilo pascal square meter / kelvin second}
-%D 27: $30 \su{kilo pascal square meter / kelvin second }$
-%D 28: 30 \su{crap}
-%D 29: 30 \su{AC}
-%D 30: $\frac{10 \su{m/s}}{20 \su{m/s}} $
-%D 31: {\ss 30 \su{kilo pascal square meter / second kelvin}}
-%D 32: \su{123.22^-3 km/s}
-%D 33: \su{123.22e-3 km/s}
+%D 01: $10\unit{km/h}$
+%D 02: $\unit{10      km/h}$
+%D 03: \unit{km/h}
+%D 04: \unit{10 km/h}
+%D 05: \unit{10 km/h}
+%D 06: \unit{~1 km/h}
+%D 07: 10\unit{km/h}
+%D 08: 10 \unit{km/h}
+%D 09: $10 \unit{km/h}$
+%D 10: 10 \unit{KiloMeter/Hour}
+%D 11: 10 \unit{kilometer/hour}
+%D 12: 10 \unit{km/h}
+%D 13: 10 \unit{kilometer per hour}
+%D 14: 10 \unit{km / h}
+%D 15: 10 \unit{ km / h }
+%D 16: 10 \unit{km/ms2}
+%D 17: 10 \unit{meter per second}
+%D 18: 10 \unit{cubic meter}
+%D 19: 10 \unit{cubic meter per second}
+%D 21: 10 \unit{cubic meter / second}
+%D 22: $10 \unit{cubic meter / second}$
+%D 23: 30 \unit{kilo pascal }
+%D 24: 30 \unit{kilo pascal square meter / second}
+%D 25: 30 \unit{kilo pascal square meter / kelvin second}
+%D 26: \unit{30 kilo pascal square meter / kelvin second}
+%D 27: $30 \unit{kilo pascal square meter / kelvin second }$
+%D 28: 30 \unit{crap}
+%D 29: 30 \unit{AC}
+%D 30: $\frac{10 \unit{m/s}}{20 \unit{m/s}} $
+%D 31: {\ss 30 \unit{kilo pascal square meter / second kelvin}}
+%D 32: \unit{123.22^-3 km/s}
+%D 33: \unit{123.22e-3 km/s}
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
-%D Result: \getbuffer
+%D Result: \startlines \getbuffer \stoplines
+%D
+%D Depending on needs we can add more tweaks (also depends on to what
+%D extent we need to be compatible with \MKII.
 
-\newconstant   \c_units_mode   % 0=text  1=math
+\installcommandhandler \??un {units} \??un
+
+\setupunits
+  [alternative=, % done: text
+  %grid=yes,     % (maybe)
+  %style=...,    % done
+  %color=...,    % done
+  %space=...,    % (maybe) small medium big
+  ]
+
+\newconstant   \c_units_mode   % 0=text  1=math 2=textinmath
 \newconstant   \c_units_state  % 0=start 1=suffix 2=operator 3=unit 4=prefix 5=number
 \newconditional\c_units_quantity
 \newconditional\c_units_number
-
-% tags and export
-% smash == snapper
-% hbox ook in mmode
 
 \def\unitshalfspace{\thinspace}
 \def\unitsbackspace{\negthinspace}
 
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
-\unexpanded\def\unit#1%
+\appendtoks
+    \setuevalue\currentunits{\units_direct{\currentunits}}
+\to \everydefineunits
+
+\unexpanded\def\units_direct#1%
   {\begingroup
+   \edef\currentunits{#1}%
    \the\everyunits
   %\removeunwantedspaces % now ok yet
+   \dosetunitsattributes\c!style\c!color
    \ifmmode
-     \c_units_mode\plusone
-     \rm\tf
-     \mathtf
-   \fi
+     \edef\currentunitsalternative{\unitsparameter\c!alternative}%
+     \ifx\currentunitsalternative\v!text
+       \expandafter\expandafter\expandafter\units_direct_text_in_math
+     \else
+       \expandafter\expandafter\expandafter\units_direct_math
+     \fi
+   \else
+      \expandafter\units_direct_text
+   \fi}
+
+\unexpanded\def\units_direct_text_in_math#1%
+  {\mathtext{%
+     \c_units_mode\plustwo
+     \units_indeed{#1}%
+     \units_finish
+   }%
+   \endgroup}
+
+\unexpanded\def\units_direct_math#1%
+  {\c_units_mode\plusone
+   \rm\tf
+   \mathtf
    \units_indeed{#1}%
    \units_finish
    \endgroup}
 
+\unexpanded\def\units_direct_text#1%
+  {\units_indeed{#1}%
+   \units_finish
+   \endgroup}
+
+\unexpanded\def\units_direct_nested#1#2%
+  {\units_indeed{#2}}
+
 \appendtoks
-    \let\unit\units_indeed
+    \let\units_direct\units_direct_nested
 \to \everyunits
-
-% bonus ... we might go for \un instead or maybe du (digit+unit)
-
-% \let\su\unit
-%
-% \appendtoks
-%     \let\su\units_indeed
-% \to \everyunits
 
 \unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es)}}
 
 \unexpanded\def\unitsPUS#1#2#3{\units_next#1#2\unitsraise{#3}\c_units_state\plusone}   % suffix
-\unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state                        \plusthree} % unit
+\unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state               \plusthree} % unit
 \unexpanded\def\unitsPS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
 \unexpanded\def\unitsUS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
-\unexpanded\def\unitsP      #1{\units_next#1\c_units_state                          \plusfour}  % prefix
-\unexpanded\def\unitsU      #1{\units_next#1\c_units_state                          \plusthree} % unit
+\unexpanded\def\unitsP      #1{\units_next#1\c_units_state                 \plusfour}  % prefix
+\unexpanded\def\unitsU      #1{\units_next#1\c_units_state                 \plusthree} % unit
 \unexpanded\def\unitsS      #1{\units_start{}\unitsraise{#1}\c_units_state \plusone}   % suffix
-\unexpanded\def\unitsO      #1{\units_start#1\c_units_state                         \plustwo}   % operator
-\unexpanded\def\unitsN      #1{\units_start#1\c_units_state                         \plusfive}  % number
+\unexpanded\def\unitsO      #1{\units_start#1\c_units_state                \plustwo}   % operator
+\unexpanded\def\unitsN      #1{\units_start#1\c_units_state                \plusfive}  % number
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]
@@ -279,5 +464,10 @@
    \fi
    {/}%
    }%\unitsbackspace}
+
+%D Now we define the standard units command:
+
+\defineunits
+  [unit]
 
 \protect \endinput

@@ -221,7 +221,10 @@ function context.viafile(data)
     -- and other catcode sensitive data
     if data and data ~= "" then
         local filename = resolvers.savers.byscheme("virtual","viafile",data)
+        -- somewhat slow, these regime changes (todo: wrap in one command)
+--~         context.startregime { "utf" }
         context.input(filename)
+--~         context.stopregime()
     end
 end
 

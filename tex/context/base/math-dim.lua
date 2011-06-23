@@ -22,171 +22,77 @@ if not modules then modules = { } end modules ['math-dim'] = {
 local abs, next = math.abs, next
 
 local defaults = {
-    ['axis']={
-        ['default']={ "AxisHeight", "axis_height" },
-    },
-    ['accent_base_height']={
-        ['default']={ "AccentBaseHeight", "x_height" },
-    },
-    ['fraction_del_size']={
-        ['default']={ "FractionDelimiterSize", "delim2" },
-        ['cramped_display_style']={ "FractionDelimiterDisplayStyleSize", "delim1" },
-        ['display_style']={ "FractionDelimiterDisplayStyleSize", "delim1" },
-     },
-    ['fraction_denom_down']={
-        ['default']={ "FractionDenominatorShiftDown", "denom2" },
-        ['cramped_display_style']={ "FractionDenominatorDisplayStyleShiftDown", "denom1" },
-        ['display_style']={ "FractionDenominatorDisplayStyleShiftDown", "denom1" },
-     },
-    ['fraction_denom_vgap']={
-        ['default']={ "FractionDenominatorGapMin", "default_rule_thickness" },
-        ['cramped_display_style']={ "FractionDenominatorDisplayStyleGapMin", "3*default_rule_thickness" },
-        ['display_style']={ "FractionDenominatorDisplayStyleGapMin", "3*default_rule_thickness" },
-     },
-    ['fraction_num_up']={
-        ['default']={ "FractionNumeratorShiftUp", "num2" },
-        ['cramped_display_style']={ "FractionNumeratorDisplayStyleShiftUp", "num1" },
-        ['display_style']={ "FractionNumeratorDisplayStyleShiftUp", "num1" },
-     },
-     ['fraction_num_vgap']={
-        ['default']={ "FractionNumeratorGapMin", "default_rule_thickness" },
-        ['cramped_display_style']={ "FractionNumeratorDisplayStyleGapMin", "3*default_rule_thickness" },
-        ['display_style']={ "FractionNumeratorDisplayStyleGapMin", "3*default_rule_thickness" },
-     },
-    ['fraction_rule']={
-        ['default']={ "FractionRuleThickness", "default_rule_thickness" },
-     },
-    ['limit_above_bgap']={
-        ['default']={ "UpperLimitBaselineRiseMin", "big_op_spacing3" },
-     },
-    ['limit_above_kern']={
-        ['default']={ "0", "big_op_spacing5" },
-     },
-    ['limit_above_vgap']={
-        ['default']={ "UpperLimitGapMin", "big_op_spacing1" },
-     },
-    ['limit_below_bgap']={
-        ['default']={ "LowerLimitBaselineDropMin", "big_op_spacing4" },
-     },
-    ['limit_below_kern']={
-        ['default']={ "0", "big_op_spacing5" },
-     },
-    ['limit_below_vgap']={
-        ['default']={ "LowerLimitGapMin", "big_op_spacing2" },
-     },
-
---~     ['....']={
---~         ['default']={ "DisplayOperatorMinHeight", "....." },
---~     },
-
-    ['overbar_kern']={
-        ['default']={ "OverbarExtraAscender", "default_rule_thickness" },
-     },
-    ['overbar_rule']={
-        ['default']={ "OverbarRuleThickness", "default_rule_thickness" },
-     },
-    ['overbar_vgap']={
-        ['default']={ "OverbarVerticalGap", "3*default_rule_thickness" },
-     },
-    ['quad']={
-        ['default']={ "font_size(f)", "math_quad" },
-     },
-    ['radical_kern']={
-        ['default']={ "RadicalExtraAscender", "default_rule_thickness" },
-     },
-    ['radical_rule']={
-        ['default']={ "RadicalRuleThickness", "default_rule_thickness" },
-     -- ['default']={ "surd_height(f)", "default_rule_thickness" },
-     },
-    ['radical_vgap']={
-        ['default']={ "RadicalVerticalGap", "default_rule_thickness+(abs(default_rule_thickness)/4)" },
-        ['display_style']={ "RadicalDisplayStyleVerticalGap", "default_rule_thickness+(abs(math_x_height)/4)" },
-     },
-    ['space_after_script']={
-        ['default']={ "SpaceAfterScript", "script_space" },
-     },
-    ['stack_denom_down']={
-        ['default']={ "StackBottomShiftDown", "denom2" },
-        ['cramped_display_style']={ "StackBottomDisplayStyleShiftDown", "denom1" },
-        ['display_style']={ "StackBottomDisplayStyleShiftDown", "denom1" },
-     },
-    ['stack_num_up']={
-        ['default']={ "StackTopShiftUp", "num3" },
-        ['cramped_display_style']={ "StackTopDisplayStyleShiftUp", "num1" },
-        ['display_style']={ "StackTopDisplayStyleShiftUp", "num1" },
-     },
-    ['stack_vgap']={
-        ['default']={ "StackGapMin", "3*default_rule_thickness" },
-        ['cramped_display_style']={ "StackDisplayStyleGapMin", "7*default_rule_thickness" },
-        ['display_style']={ "StackDisplayStyleGapMin", "7*default_rule_thickness" },
-     },
-    ['sub_shift_down']={
-        ['default']={ "SubscriptShiftDown", "sub1" },
-     },
-    ['sub_shift_drop']={
-        ['default']={ "SubscriptBaselineDropMin", "sub_drop" },
-     },
-    ['sub_sup_shift_down']={
-        ['default']={ "SubscriptShiftDown", "sub2" }, -- todo
-     },
-    ['sub_top_max']={
-        ['default']={ "SubscriptTopMax", "abs(math_x_height*4)/5" },
-     },
-    ['subsup_vgap']={
-        ['default']={ "SubSuperscriptGapMin", "4*default_rule_thickness" },
-     },
-    ['sup_bottom_min']={
-        ['default']={ "SuperscriptBottomMin", "abs(math_x_height)/4" },
-     },
-    ['sup_shift_drop']={
-        ['default']={ "SuperscriptBaselineDropMax", "sup_drop" },
-     },
-    ['sup_shift_up']={
-        ['cramped_display_style']={ "SuperscriptShiftUpCramped", "sup3" },
-        ['cramped_script_script_style']={ "SuperscriptShiftUpCramped", "sup3" },
-        ['cramped_script_style']={ "SuperscriptShiftUpCramped", "sup3" },
-        ['cramped_text_style']={ "SuperscriptShiftUpCramped", "sup3" },
-        ['display_style']={ "SuperscriptShiftUp", "sup1" },
-        ['script_script_style']={ "SuperscriptShiftUp", "sup2" },
-        ['script_style']={ "SuperscriptShiftUp", "sup2" },
-        ['text_style']={ "SuperscriptShiftUp", "sup2" },
-     },
-    ['sup_sub_bottom_max']={
-        ['default']={ "SuperscriptBottomMaxWithSubscript", "abs(math_x_height*4)/5" },
-     },
-    ['underbar_kern']={
-        ['default']={ "UnderbarExtraDescender", "0" },
-     },
-    ['underbar_rule']={
-        ['default']={ "UnderbarRuleThickness", "default_rule_thickness" },
-    },
-    ['underbar_vgap']={
-        ['default']={ "UnderbarVerticalGap", "3*default_rule_thickness" },
-    },
-    ['connector_overlap_min']={
-        ['default']={ "MinConnectorOverlap", "0.25*default_rule_thickness" },
-     },
-    ['over_delimiter_vgap']={
-        ['default']={ "StretchStackGapBelowMin", "big_op_spacing1" },
-    },
-    ['over_delimiter_bgap']={
-        ['default']={ "StretchStackTopShiftUp", "big_op_spacing3" },
-    },
-    ['under_delimiter_vgap']={
-        ['default']={ "StretchStackGapAboveMin", "big_op_spacing2" },
-    },
-    ['under_delimiter_bgap']={
-        ['default']={ "StretchStackBottomShiftDown", "big_op_spacing4" },
-    },
-    ['radical_degree_before']={
-        ['default']={ "RadicalKernBeforeDegree", "(5/18)*quad" },
-    },
-    ['radical_degree_after']={
-        ['default']={ "RadicalKernAfterDegree", "(-10/18)*quad" },
-    },
-    ['radical_degree_raise']={
-        ['default']={ "RadicalDegreeBottomRaisePercent", "60" },
-    },
+    axis                  = { default                     = { "AxisHeight",                               "axis_height" }, },
+    accent_base_height    = { default                     = { "AccentBaseHeight",                         "x_height" }, },
+    fraction_del_size     = { default                     = { "FractionDelimiterSize",                    "delim2" },
+                              cramped_display_style       = { "FractionDelimiterDisplayStyleSize",        "delim1" },
+                              display_style               = { "FractionDelimiterDisplayStyleSize",        "delim1" }, },
+    fraction_denom_down   = { default                     = { "FractionDenominatorShiftDown",             "denom2" },
+                              cramped_display_style       = { "FractionDenominatorDisplayStyleShiftDown", "denom1" },
+                              display_style               = { "FractionDenominatorDisplayStyleShiftDown", "denom1" }, },
+    fraction_denom_vgap   = { default                     = { "FractionDenominatorGapMin",                "default_rule_thickness" },
+                              cramped_display_style       = { "FractionDenominatorDisplayStyleGapMin",    "3*default_rule_thickness" },
+                              display_style               = { "FractionDenominatorDisplayStyleGapMin",    "3*default_rule_thickness" }, },
+    fraction_num_up       = { default                     = { "FractionNumeratorShiftUp",                 "num2" },
+                              cramped_display_style       = { "FractionNumeratorDisplayStyleShiftUp",     "num1" },
+                              display_style               = { "FractionNumeratorDisplayStyleShiftUp",     "num1" }, },
+    fraction_num_vgap     = { default                     = { "FractionNumeratorGapMin",                  "default_rule_thickness" },
+                              cramped_display_style       = { "FractionNumeratorDisplayStyleGapMin",      "3*default_rule_thickness" },
+                              display_style               = { "FractionNumeratorDisplayStyleGapMin",      "3*default_rule_thickness" }, },
+    fraction_rule         = { default                     = { "FractionRuleThickness",                    "default_rule_thickness" }, },
+    limit_above_bgap      = { default                     = { "UpperLimitBaselineRiseMin",                "big_op_spacing3" }, },
+    limit_above_vgap      = { default                     = { "UpperLimitGapMin",                         "big_op_spacing1" }, },
+    limit_above_kern      = { default                     = { "0",                                        "big_op_spacing5" }, },
+    limit_below_bgap      = { default                     = { "LowerLimitBaselineDropMin",                "big_op_spacing4" }, },
+    limit_below_vgap      = { default                     = { "LowerLimitGapMin",                         "big_op_spacing2" }, },
+    limit_below_kern      = { default                     = { "0",                                        "big_op_spacing5" }, },
+--  ....                  = { default                     = { "DisplayOperatorMinHeight",                 "....." }, },
+    overbar_kern          = { default                     = { "OverbarExtraAscender",                     "default_rule_thickness" }, },
+    overbar_rule          = { default                     = { "OverbarRuleThickness",                     "default_rule_thickness" }, },
+    overbar_vgap          = { default                     = { "OverbarVerticalGap",                       "3*default_rule_thickness" }, },
+    quad                  = { default                     = { "font_size(f)",                             "math_quad" }, },
+    radical_kern          = { default                     = { "RadicalExtraAscender",                     "default_rule_thickness" }, },
+    radical_rule          = { default                     = { "RadicalRuleThickness",                     "default_rule_thickness" }, },
+                           -- default                     = { "surd_height(f)",                           "default_rule_thickness" },
+    radical_vgap          = { default                     = { "RadicalVerticalGap",                       "default_rule_thickness+(abs(default_rule_thickness)/4)" },
+                              display_style               = { "RadicalDisplayStyleVerticalGap",           "default_rule_thickness+(abs(math_x_height)/4)" }, },
+    space_after_script    = { default                     = { "SpaceAfterScript",                         "script_space" }, },
+    stack_denom_down      = { default                     = { "StackBottomShiftDown",                     "denom2" },
+                              cramped_display_style       = { "StackBottomDisplayStyleShiftDown",         "denom1" },
+                              display_style               = { "StackBottomDisplayStyleShiftDown",         "denom1" }, },
+    stack_num_up          = { default                     = { "StackTopShiftUp",                          "num3" },
+                              cramped_display_style       = { "StackTopDisplayStyleShiftUp",              "num1" },
+                              display_style               = { "StackTopDisplayStyleShiftUp",              "num1" }, },
+    stack_vgap            = { default                     = { "StackGapMin",                              "3*default_rule_thickness" },
+                              cramped_display_style       = { "StackDisplayStyleGapMin",                  "7*default_rule_thickness" },
+                              display_style               = { "StackDisplayStyleGapMin",                  "7*default_rule_thickness" }, },
+    sub_shift_down        = { default                     = { "SubscriptShiftDown",                       "sub1" }, },
+    sub_shift_drop        = { default                     = { "SubscriptBaselineDropMin",                 "sub_drop" }, },
+    sub_sup_shift_down    = { default                     = { "SubscriptShiftDown",                       "sub2" }, },
+    sub_top_max           = { default                     = { "SubscriptTopMax",                          "abs(math_x_height*4)/5" }, },
+    subsup_vgap           = { default                     = { "SubSuperscriptGapMin",                     "4*default_rule_thickness" }, },
+    sup_bottom_min        = { default                     = { "SuperscriptBottomMin",                     "abs(math_x_height)/4" }, },
+    sup_shift_drop        = { default                     = { "SuperscriptBaselineDropMax",               "sup_drop" }, },
+    sup_shift_up          = { cramped_display_style       = { "SuperscriptShiftUpCramped",                "sup3" },
+                              cramped_script_script_style = { "SuperscriptShiftUpCramped",                "sup3" },
+                              cramped_script_style        = { "SuperscriptShiftUpCramped",                "sup3" },
+                              cramped_text_style          = { "SuperscriptShiftUpCramped",                "sup3" },
+                              display_style               = { "SuperscriptShiftUp",                       "sup1" },
+                              script_script_style         = { "SuperscriptShiftUp",                       "sup2" },
+                              script_style                = { "SuperscriptShiftUp",                       "sup2" },
+                              text_style                  = { "SuperscriptShiftUp",                       "sup2" }, },
+    sup_sub_bottom_max    = { default                     = { "SuperscriptBottomMaxWithSubscript",        "abs(math_x_height*4)/5" }, },
+    underbar_kern         = { default                     = { "UnderbarExtraDescender",                   "0" }, },
+    underbar_rule         = { default                     = { "UnderbarRuleThickness",                    "default_rule_thickness" }, },
+    underbar_vgap         = { default                     = { "UnderbarVerticalGap",                      "3*default_rule_thickness" }, },
+    connector_overlap_min = { default                     = { "MinConnectorOverlap",                      "0.25*default_rule_thickness" }, },
+    over_delimiter_vgap   = { default                     = { "StretchStackGapBelowMin",                  "big_op_spacing1" }, },
+    over_delimiter_bgap   = { default                     = { "StretchStackTopShiftUp",                   "big_op_spacing3" }, },
+    under_delimiter_vgap  = { default                     = { "StretchStackGapAboveMin",                  "big_op_spacing2" }, },
+    under_delimiter_bgap  = { default                     = { "StretchStackBottomShiftDown",              "big_op_spacing4" }, },
+    radical_degree_before = { default                     = { "RadicalKernBeforeDegree",                  "(5/18)*quad" }, },
+    radical_degree_after  = { default                     = { "RadicalKernAfterDegree",                   "(-10/18)*quad" }, },
+    radical_degree_raise  = { default                     = { "RadicalDegreeBottomRaisePercent",          "60" }, },
 }
 
 local styles = {
