@@ -119,9 +119,35 @@
 
 % The action: \setupbackend[export=yes] % or filename
 
+% maybe we will move css to setupexport ? or just support both
+
 \def\c!export  {export}   % maybe: option={css,xhtml}
 \def\c!css     {css}
 \def\c!xhtml   {xhtml}
+
+% maybe some day a definer
+
+\installparameterhandler \??be {export}
+\installsetuphandler     \??be {export}
+
+\setupexport
+  [\c!align=\number\raggedstatus,
+   \c!bodyfont=\bodyfontsize,
+   \c!width=\textwidth,
+   \c!hyphen=\v!no]
+
+\def\dosynchronizeexport
+  {\let\currentexport\empty
+   \ctxcommand{setupexport{
+       align     = "\exportparameter\c!align",
+       bodyfont  = \number\dimexpr\exportparameter\c!bodyfont,
+       width     = \number\dimexpr\exportparameter\c!width,
+       hyphen    = "\exportparameter\c!hyphen",
+   }}}
+
+\appendtoks
+    \doifsomething{\backendparameter\c!export}{\dosynchronizeexport}%
+\to \everystarttext
 
 \appendtoks
     \doifsomething{\backendparameter\c!xhtml}

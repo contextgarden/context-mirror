@@ -66,7 +66,6 @@ expert options:
 --update              update context from website (not to be confused with contextgarden)
 --profile             profile job (use: mtxrun --script profile --analyze)
 --timing              generate timing and statistics overview
---tracefiles          show some extra info when locating files (at the tex end)
 
 --extra=name          process extra (mtx-context-<name> in distribution)
 --extras              show extras
@@ -526,14 +525,15 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         --
         setalways("%% feedback and basic job control")
         --
-        -- Option file, we can pass more on the commandline some day soon.
+        -- Option file, we can pass more on the commandline some day soon. Actually we
+        -- should use directives and trackers.
         --
         setfixed ("timing"       , "\\usemodule[timing]")
         setfixed ("batchmode"    , "\\batchmode")
         setfixed ("batch"        , "\\batchmode")
         setfixed ("nonstopmode"  , "\\nonstopmode")
         setfixed ("nonstop"      , "\\nonstopmode")
-        setfixed ("tracefiles"   , "\\tracefilestrue")
+     -- setfixed ("tracefiles"   , "\\tracefilestrue")
         setfixed ("nostats"      , "\\nomkivstatistics")
         setfixed ("paranoid"     , "\\def\\maxreadlevel{1}")
         --

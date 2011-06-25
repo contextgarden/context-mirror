@@ -34,6 +34,8 @@ local environment = environment
 
 local findbyscheme = resolvers.finders.byscheme
 
+-- needs a cleanup:
+
 function commands.checkfilename(str) -- "/whatever..." "c:..." "http://..."
     texcount.kindoffile = (find(str,"^/") or find(str,"[%a]:") and 1) or 0
 end
@@ -239,7 +241,7 @@ function commands.usemodules(prefix,askedname,truename)
         status = status + 1
     else
         if trace_modules then
-            report_modules("locating: '%s'",truename)
+            report_modules("locating: prefix: '%s', askedname: '%s', truename: '%s'",prefix or "", askedname or "", truename or "")
         end
         local hasscheme = url.hasscheme(truename)
         if hasscheme then

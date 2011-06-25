@@ -341,7 +341,9 @@ end
 -- eventually we might end up with more extensive parsing
 -- todo: pass t[start..stop] == original
 --
--- one of the time consuming functiions:
+-- one of the time consuming functions:
+
+-- we can have a fonts.hashes.originals
 
 function scripts.preprocess(head)
     local start = first_glyph(head)
@@ -381,7 +383,9 @@ function scripts.preprocess(head)
                             lastfont = f
                         end
                         local c = start.char
-                        if originals then c = originals[c] or c end
+                        if originals then
+                            c = originals[c] or c
+                        end
                         local h = hash[c]
                         if h then
                             set_attribute(start,a_prestat,categorytonumber[h])

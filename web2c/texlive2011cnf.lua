@@ -1,4 +1,7 @@
-return {
+local liveyear = string.match(resolvers.prefixes.selfautoparent(),"(20%d%d)") or "2011"
+
+--~ return {
+inspect {
 
     type    = "configuration",
     version = "1.1.1",
@@ -19,17 +22,23 @@ return {
          --
          -- TEXMFCNF        = "{selfautodir:{/share,}/texmf-local/web2c,selfautoparent:{/share,}/texmf{-local,}/web2c}",
 
-            TEXMFCACHE      = "selfautoparent:texmf-var;~/.texlive2011/texmf-cache",
-            TEXMFCONFIG     = "~/.texlive2011/texmf-config",
+            TEXMFCACHE      = string.format("selfautoparent:texmf-var;~/.texlive%s/texmf-cache",liveyear),
 
             TEXMFSYSTEM     = "selfautoparent:$SELFAUTOSYSTEM",
             TEXMFCONTEXT    = "selfautoparent:texmf-dist",
 
+         -- TEXMFLOCAL      = "selfautoparent:../texmf-local"), -- should also work
             TEXMFLOCAL      = string.gsub(resolvers.prefixes.selfautoparent(),"20%d%d$","texmf-local"),
 
             TEXMFSYSCONFIG  = "selfautoparent:texmf-config",
-
             TEXMFSYSVAR     = "selfautoparent:texmf-var",
+            TEXMFCONFIG     = string.format("home:.texlive%s/texmf-config",liveyear),
+            TEXMFVAR        = string.format("home:.texlive%s/texmf-var",liveyear),
+
+            -- We have only one cache path but there can be more. The first writable one
+            -- will be chosen but there can be more readable paths.
+
+            TEXMFCACHE      = "$TEXMFSYSVAR;$TEXMFVAR",
 
             TEXMF           = "{$TEXMFCONFIG,$TEXMFHOME,!!$TEXMFSYSCONFIG,!!$TEXMFPROJECT,!!$TEXMFFONTS,!!$TEXMFLOCAL,!!$TEXMFCONTEXT,!!$TEXMFSYSTEM,!!$TEXMFMAIN}",
 

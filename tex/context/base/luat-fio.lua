@@ -10,6 +10,7 @@ local texiowrite_nl = (texio and texio.write_nl) or print
 local texiowrite    = (texio and texio.write) or print
 
 local format = string.format
+local sequenced = table.sequenced
 
 texconfig.kpse_init      = false
 texconfig.shell_escape   = 't'
@@ -83,10 +84,28 @@ if not resolvers.instance then
 
 end
 
-statistics.register("resource resolver", function()
-    if resolvers.scantime then
-        return format("loadtime %s seconds, scantime %s seconds", resolvers.loadtime(), resolvers.scantime())
-    else
-        return format("loadtime %s seconds", resolvers.loadtime())
+-- statistics.register("resource resolver", function()
+--     if resolvers.scantime then
+--         return format("loadtime %s seconds, scantime %s seconds", resolvers.loadtime(), resolvers.scantime())
+--     else
+--         return format("loadtime %s seconds", resolvers.loadtime())
+--     end
+-- end)
+
+
+luatex.registerstopactions(function()
+    local foundintrees = resolvers.instance.foundintrees
+    texiowrite_nl("log","\n")
+    for i=1,#foundintrees do
+        texiowrite_nl("log",format("used file %4i  > %s",i,sequenced(foundintrees[i])))
     end
+    texiowrite_nl("log","")
+end)
+
+statistics.register("resource resolver", function()
+    return format("loadtime %s seconds, scantime %s seconds, %s found files",
+        resolvers.loadtime(),
+        resolvers.scantime and resolvers.scantime() or 0,
+        #resolvers.instance.foundintrees
+    )
 end)

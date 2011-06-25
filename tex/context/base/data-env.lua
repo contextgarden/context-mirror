@@ -231,7 +231,7 @@ end
 resolvers.updaterelations() -- push this in the metatable -> newindex
 
 local function simplified(t,k)
-    return rawget(t,lower(gsub(k," ","")))
+    return k and rawget(t,lower(gsub(k," ",""))) or nil
 end
 
 setmetatableindex(formats,   simplified)

@@ -872,9 +872,22 @@ local function collect_files(names)
     return noffiles > 0 and filelist or nil
 end
 
-function resolvers.registerintrees(name)
-    if not find(name,"^%.") then
-        instance.foundintrees[name] = (instance.foundintrees[name] or 0) + 1 -- maybe only one
+local fit = { }
+
+function resolvers.registerintrees(filename,format,filetype,usedmethod,foundname)
+    local foundintrees = instance.foundintrees
+    if usedmethod == "direct" and filename == foundname and fit[foundname] then
+        -- just an extra lookup after a test on presence
+    else
+        local t = {
+            filename   = filename,
+            format     = format ~= "" and format or nil,
+            filetype   = filetype  ~= "" and filetype or nil,
+            usedmethod = usedmethod,
+            foundname  = foundname,
+        }
+        fit[foundname] = t
+        foundintrees[#foundintrees+1] = t
     end
 end
 
@@ -897,110 +910,6 @@ local preparetreepattern = Cs((P(".")/"%%." + P("-")/"%%-" + P(1))^0 * Cc("$"))
 -- -- -- begin of main file search routing -- -- -- needs checking as previous has been patched
 
 local collect_instance_files
-
-local function find_direct(filename,allresults)
-    if not dangerous[askedformat] and isreadable(filename) then
-        if trace_detail then
-            report_resolving("file '%s' found directly",filename)
-        end
-        return { filename }
-    end
-end
-
-local function find_wildcard(filename,allresults)
-    if find(filename,'%*') then
-        if trace_locating then
-            report_resolving("checking wildcard '%s'", filename)
-        end
-        return resolvers.findwildcardfiles(filename) -- we can use the local
-    end
-end
-
-local function find_qualified(filename,allresults) -- this one will be split too
-    if not file.is_qualified_path(filename) then
-        return
-    end
-    if trace_locating then
-        report_resolving("checking qualified name '%s'", filename)
-    end
-    if isreadable(filename) then
-        if trace_detail then
-            report_resolving("qualified file '%s' found", filename)
-        end
-        return { filename }
-    end
-    if trace_detail then
-        report_resolving("locating qualified file '%s'", filename)
-    end
-    local forcedname, suffix = "", fileextname(filename)
-    if suffix == "" then -- why
-        local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
-        if format_suffixes then
-            for i=1,#format_suffixes do
-                local s = format_suffixes[i]
-                forcedname = filename .. "." .. s
-                if isreadable(forcedname) then
-                    if trace_locating then
-                        report_resolving("no suffix, forcing format filetype '%s'", s)
-                    end
-                    return { forcedname }
-                end
-            end
-        end
-    end
-    if suffix ~= "" then
-        -- try to find in tree (no suffix manipulation), here we search for the
-        -- matching last part of the name
-        local basename = filebasename(filename)
-        local pattern = lpegmatch(preparetreepattern,filename)
-        -- messy .. to be sorted out
-        local savedformat = askedformat
-        local format = savedformat or ""
-        if format == "" then
-            askedformat = resolvers.formatofsuffix(suffix)
-        end
-        if not format then
-            askedformat = "othertextfiles" -- kind of everything, maybe all
-        end
-        --
-        if basename ~= filename then
-            local resolved = collect_instance_files(basename,askedformat,allresults)
-            if #resolved == 0 then
-                local lowered = lower(basename)
-                if filename ~= lowered then
-                    resolved = collect_instance_files(lowered,askedformat,allresults)
-                end
-            end
-            resolvers.format = savedformat
-            --
-            if #resolved > 0 then
-                local result = { }
-                for r=1,#resolved do
-                    local rr = resolved[r]
-                    if find(rr,pattern) then
-                        result[#result+1] = rr
-                    end
-                end
-                if #result > 0 then
-                    return result
-                end
-            end
-        end
-        -- a real wildcard:
-        --
-        -- local filelist = collect_files({basename})
-        -- result = { }
-        -- for f=1,#filelist do
-        --     local ff = filelist[f][3] or ""
-        --     if find(ff,pattern) then
-        --         result[#result+1], ok = ff, true
-        --     end
-        -- end
-        -- if #result > 0 then
-        --     return result
-        -- end
-    end
-end
 
 local function find_analyze(filename,askedformat,allresults)
     local filetype, wantedfiles, ext = '', { }, fileextname(filename)
@@ -1042,6 +951,113 @@ local function find_analyze(filename,askedformat,allresults)
         end
     end
     return filetype, wantedfiles
+end
+
+local function find_direct(filename,allresults)
+    if not dangerous[askedformat] and isreadable(filename) then
+        if trace_detail then
+            report_resolving("file '%s' found directly",filename)
+        end
+        return "direct", { filename }
+    end
+end
+
+local function find_wildcard(filename,allresults)
+    if find(filename,'%*') then
+        if trace_locating then
+            report_resolving("checking wildcard '%s'", filename)
+        end
+        local method, result = resolvers.findwildcardfiles(filename)
+        if result then
+            return "wildcard", result
+        end
+    end
+end
+
+local function find_qualified(filename,allresults) -- this one will be split too
+    if not file.is_qualified_path(filename) then
+        return
+    end
+    if trace_locating then
+        report_resolving("checking qualified name '%s'", filename)
+    end
+    if isreadable(filename) then
+        if trace_detail then
+            report_resolving("qualified file '%s' found", filename)
+        end
+        return "qualified", { filename }
+    end
+    if trace_detail then
+        report_resolving("locating qualified file '%s'", filename)
+    end
+    local forcedname, suffix = "", fileextname(filename)
+    if suffix == "" then -- why
+        local format_suffixes = askedformat == "" and resolvers.defaultsuffixes or suffixes[askedformat]
+        if format_suffixes then
+            for i=1,#format_suffixes do
+                local s = format_suffixes[i]
+                forcedname = filename .. "." .. s
+                if isreadable(forcedname) then
+                    if trace_locating then
+                        report_resolving("no suffix, forcing format filetype '%s'", s)
+                    end
+                    return "qualified", { forcedname }
+                end
+            end
+        end
+    end
+    if suffix and suffix ~= "" then
+        -- try to find in tree (no suffix manipulation), here we search for the
+        -- matching last part of the name
+        local basename = filebasename(filename)
+        local pattern = lpegmatch(preparetreepattern,filename)
+        -- messy .. to be sorted out
+        local savedformat = askedformat
+        local format = savedformat or ""
+        if format == "" then
+            askedformat = resolvers.formatofsuffix(suffix)
+        end
+        if not format then
+            askedformat = "othertextfiles" -- kind of everything, maybe all
+        end
+        --
+        if basename ~= filename then
+            local resolved = collect_instance_files(basename,askedformat,allresults)
+            if #resolved == 0 then
+                local lowered = lower(basename)
+                if filename ~= lowered then
+                    resolved = collect_instance_files(lowered,askedformat,allresults)
+                end
+            end
+            resolvers.format = savedformat
+            --
+            if #resolved > 0 then
+                local result = { }
+                for r=1,#resolved do
+                    local rr = resolved[r]
+                    if find(rr,pattern) then
+                        result[#result+1] = rr
+                    end
+                end
+                if #result > 0 then
+                    return "qualified", result
+                end
+            end
+        end
+        -- a real wildcard:
+        --
+        -- local filelist = collect_files({basename})
+        -- result = { }
+        -- for f=1,#filelist do
+        --     local ff = filelist[f][3] or ""
+        --     if find(ff,pattern) then
+        --         result[#result+1], ok = ff, true
+        --     end
+        -- end
+        -- if #result > 0 then
+        --     return "qualified", result
+        -- end
+    end
 end
 
 local function check_subpath(fname)
@@ -1174,8 +1190,11 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
             -- todo recursive scanning
             if done and not allresults then
-                return #result > 0 and result
+                break
             end
+        end
+        if #result > 0 then
+            return "intree", result
         end
     end
 end
@@ -1195,36 +1214,40 @@ local function find_onpath(filename,filetype,wantedfiles,allresults)
             end
         end
     end
-    return #result > 0 and result
+    if #result > 0 then
+        return "onpath", result
+    end
 end
 
 local function find_otherwise(filename,filetype,wantedfiles,allresults) -- other text files | any | whatever
     local filelist = collect_files(wantedfiles)
     local fl = filelist and filelist[1]
     if fl then
-        return { resolvers.resolve(fl[3]) } -- filename
+        return "otherwise", { resolvers.resolve(fl[3]) } -- filename
     end
 end
 
+-- we could have a loop over the 6 functions but then we'd have to
+-- always analyze
+
 collect_instance_files = function(filename,askedformat,allresults) -- uses nested
-    local result, stamp, filetype, wantedfiles
     askedformat = askedformat or ""
     filename = collapsepath(filename)
     if allresults then
         -- no need for caching, only used for tracing
         local filetype, wantedfiles = find_analyze(filename,askedformat)
         local results = {
-            { method = "direct",    list = find_direct   (filename,stamp,true) },
-            { method = "wildcard",  list = find_wildcard (filename,true) },
-            { method = "qualified", list = find_qualified(filename,true) },
-            { method = "in tree",   list = find_intree   (filename,filetype,wantedfiles,true) },
-            { method = "on path",   list = find_onpath   (filename,filetype,wantedfiles,true) },
-            { method = "otherwise", list = find_otherwise(filename,filetype,wantedfiles,true) },
+            { find_direct   (filename,true) },
+            { find_wildcard (filename,true) },
+            { find_qualified(filename,true) },
+            { find_intree   (filename,filetype,wantedfiles,true) },
+            { find_onpath   (filename,filetype,wantedfiles,true) },
+            { find_otherwise(filename,filetype,wantedfiles,true) },
         }
         local result, status, done = { }, { }, { }
         for k, r in next, results do
-            local method, list = r.method, r.list
-            if list then
+            local method, list = r[1], r[2]
+            if method and list then
                 for i=1,#list do
                     local c = collapsepath(list[i])
                     if not done[c] then
@@ -1240,6 +1263,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
         end
         return result, status
     else
+        local method, result, stamp, filetype, wantedfiles
         if instance.remember then
             stamp = format("%s--%s", filename, askedformat)
             result = stamp and instance.found[stamp]
@@ -1250,21 +1274,27 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
                 return result
             end
         end
-        result = find_direct   (filename,stamp) or
-                 find_wildcard (filename)       or
-                 find_qualified(filename)
+        method, result = find_direct(filename)
         if not result then
-            local filetype, wantedfiles = find_analyze(filename,askedformat)
-            result = find_intree   (filename,filetype,wantedfiles) or
-                     find_onpath   (filename,filetype,wantedfiles) or
-                     find_otherwise(filename,filetype,wantedfiles)
-        end
-        if result then
-            for k=1,#result do
-                local rk = collapsepath(result[k])
-                result[k] = rk
-                resolvers.registerintrees(rk) -- for tracing used files
+            method, result = find_wildcard(filename)
+            if not result then
+                method, result = find_qualified(filename)
+                if not result then
+                    filetype, wantedfiles = find_analyze(filename,askedformat)
+                    method, result = find_intree(filename,filetype,wantedfiles)
+                    if not result then
+                        method, result = find_onpath(filename,filetype,wantedfiles)
+                        if not result then
+                            method, result = find_otherwise(filename,filetype,wantedfiles)
+                        end
+                    end
+                end
             end
+        end
+        if result and #result > 0 then
+            local foundname = collapsepath(result[1])
+            resolvers.registerintrees(filename,askedformat,filetype,method,foundname)
+            result = { foundname }
         else
             result = { } -- maybe false
         end

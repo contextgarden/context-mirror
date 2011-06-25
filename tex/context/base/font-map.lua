@@ -261,9 +261,9 @@ function mappings.addtounicode(data,filename)
                     end
                 end
             end
-            if not unicode then
-                originals[index], tounicode[index] = 0xFFFD, "FFFD"
-            end
+         -- if not unicode then
+         --     originals[index], tounicode[index] = 0xFFFD, "FFFD"
+         -- end
         end
     end
     if trace_mapping then

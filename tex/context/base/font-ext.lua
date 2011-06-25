@@ -12,8 +12,6 @@ local gmatch, concat = string.gmatch, table.concat
 local utfchar = utf.char
 local getparameters = utilities.parsers.getparameters
 
-local allocate = utilities.storage.allocate
-
 local trace_protrusion = false  trackers.register("fonts.protrusion", function(v) trace_protrusion = v end)
 local trace_expansion  = false  trackers.register("fonts.expansion",  function(v) trace_expansion  = v end)
 
@@ -33,6 +31,10 @@ local registerotffeature = otffeatures.register
 
 local afmfeatures        = fonts.constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register
+
+local allocate           = utilities.storage.allocate
+local settings_to_array  = utilities.parsers.settings_to_array
+local setmetatableindex  = table.setmetatableindex
 
 -- -- -- -- -- --
 -- shared
@@ -487,14 +489,14 @@ registerotffeature {
     }
 }
 
-local function initializeitlc(tfmdata,value)
+local function initializeitlc(tfmdata,value) -- hm, always value
     if value then
         -- the magic 40 and it formula come from Dohyun Kim
         local parameters = tfmdata.parameters
         local italicangle = parameters.italicangle
         if italicangle and italicangle ~= 0 then
             local uwidth = (parameters.uwidth or 40)/2
-            for unicode, d in next, tfmdata.descriptions do
+            for unicode, d in next, tfmdata.descriptions do -- descriptions !
                 local it = d.boundingbox[3] - d.width + uwidth
                 if it ~= 0 then
                     d.italic = it
@@ -582,6 +584,102 @@ registerafmfeature {
     initializers = {
         base = initializeextend,
         node = initializeextend,
+    }
+}
+
+-- For Wolfgang Schuster:
+--
+-- \definefontfeature[thisway][default][script=hang,language=zhs,dimensions={2,2,2}]
+-- \definedfont[file:kozminpr6nregular*thisway]
+--
+-- For the moment we don't mess with the descriptions.
+
+local function manipulatedimensions(tfmdata,key,value)
+    if type(value) == "string" and value ~= "" then
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        local emwidth = parameters.quad
+        local exheight = parameters.x_height
+        local spec = settings_to_array(value)
+        local width = (spec[1] or 0) * emwidth
+        local height = (spec[2] or 0) * exheight
+        local depth = (spec[3] or 0) * exheight
+        if width > 0 then
+            local resources = tfmdata.resources
+            local additions = { }
+            local private = resources.private
+            for unicode, old_c in next, characters do
+                local oldwidth = old_c.width
+                if oldwidth ~= width then
+                    -- Defining the tables in one step is more efficient
+                    -- than adding fields later.
+                    private = private + 1
+                    local new_c
+                    local commands = {
+                        { "right", (width - oldwidth) / 2 },
+                        { "slot", 1, private },
+                    }
+                    if height > 0 then
+                        if depth > 0 then
+                            new_c = {
+                                width    = width,
+                                height   = height,
+                                depth    = depth,
+                                commands = commands,
+                            }
+                        else
+                            new_c = {
+                                width    = width,
+                                height   = height,
+                                commands = commands,
+                            }
+                        end
+                    else
+                        if depth > 0 then
+                            new_c = {
+                                width    = width,
+                                depth    = depth,
+                                commands = commands,
+                            }
+                        else
+                            new_c = {
+                                width    = width,
+                                commands = commands,
+                            }
+                        end
+                    end
+                    setmetatableindex(new_c,old_c)
+                    characters[unicode] = new_c
+                    additions[private] = old_c
+                end
+            end
+            for k, v in next, additions do
+                characters[k] = v
+            end
+            resources.private = private
+        elseif height > 0 and depth > 0 then
+            for unicode, old_c in next, characters do
+                old_c.height = height
+                old_c.depth = depth
+            end
+        elseif height > 0 then
+            for unicode, old_c in next, characters do
+                old_c.height = height
+            end
+        elseif depth > 0 then
+            for unicode, old_c in next, characters do
+                old_c.depth = depth
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name        = "dimensions",
+    description = "force dimensions",
+    manipulators = {
+        base = manipulatedimensions,
+        node = manipulatedimensions,
     }
 }
 

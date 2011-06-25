@@ -278,6 +278,7 @@
 		<cd:variable name='marking' value='marking'/>
 		<cd:variable name='mathalignment' value='mathalignment'/>
 		<cd:variable name='mathcases' value='mathcases'/>
+		<cd:variable name='mathematics' value='mathematics'/>
 		<cd:variable name='mathmatrix' value='mathmatrix'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>

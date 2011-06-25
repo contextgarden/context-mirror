@@ -13940,6 +13940,16 @@ return {
    ["pe"]="نشانه‌گذاری",
    ["ro"]="marcaje",
   },
+  ["mathematics"]={
+   ["cs"]="mathematika",
+   ["de"]="mathematik",
+   ["en"]="mathematics",
+   ["fr"]="mathematique",
+   ["it"]="matematica",
+   ["nl"]="wiskunde",
+   ["pe"]="ریاضی",
+   ["ro"]="matematica",
+  },
   ["mathalignment"]={
    ["cs"]="mathalignment",
    ["de"]="mathalignment",
