@@ -13,7 +13,7 @@ local tables     = utilities.tables
 local format, gmatch, rep = string.format, string.gmatch, string.rep
 local concat, insert, remove = table.concat, table.insert, table.remove
 local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
-local type, next, rawset = type, next, rawset
+local type, next, rawset, tonumber = type, next, rawset, tonumber
 
 function tables.definetable(target) -- defines undefined tables
     local composed, t, n = nil, { }, 0
@@ -83,10 +83,16 @@ end
 local function toxml(t,d,result,step)
     for k, v in table.sortedpairs(t) do
         if type(v) == "table" then
-            result[#result+1] = format("%s<%s>",d,k)
-            toxml(v,d..step,result)
-            result[#result+1] = format("%s</%s>",d,k)
-        elseif tonumber(k) then
+            if type(k) == "number" then
+                result[#result+1] = format("%s<entry n='%s'>",d,k)
+                toxml(v,d..step,result,step)
+                result[#result+1] = format("%s</entry>",d,k)
+            else
+                result[#result+1] = format("%s<%s>",d,k)
+                toxml(v,d..step,result,step)
+                result[#result+1] = format("%s</%s>",d,k)
+            end
+        elseif type(k) == "number" then
             result[#result+1] = format("%s<entry n='%s'>%s</entry>",d,k,v,k)
         else
             result[#result+1] = format("%s<%s>%s</%s>",d,k,tostring(v),k)

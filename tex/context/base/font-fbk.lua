@@ -122,51 +122,51 @@ local function composecharacters(tfmdata)
                                 if cb and ab then
                                     local c_llx, c_lly, c_urx, c_ury = scale*cb[1], scale*cb[2], scale*cb[3], scale*cb[4]
                                     local a_llx, a_lly, a_urx, a_ury = scale*ab[1], scale*ab[2], scale*ab[3], scale*ab[4]
-local done = false
-if compose then
-    local i_compose = compose[i]
-    local i_anchored = i_compose and i_compose.anchored
-    if i_anchored then
-        local c_compose = compose[chr]
-        local a_compose = compose[acc]
-        local c_anchors = c_compose and c_compose.anchors
-        local a_anchors = a_compose and a_compose.anchors
-        if c_anchors and a_anchors then
-            local c_anchor = c_anchors[i_anchored]
-            local a_anchor = a_anchors[i_anchored]
-            if c_anchor and a_anchor then
-                local cx = c_anchor.x or 0
-                local cy = c_anchor.y or 0
-                local ax = a_anchor.x or 0
-                local ay = a_anchor.y or 0
-                local dx = cx - ax
-                local dy = cy - ay
-                if trace_combining_all then
-                    report_combining("building U+%05X (%s) from U+%05X (%s) and U+%05X (%s)",i,utfchar(i),chr,utfchar(chr),acc,utfchar(acc))
-                    report_combining("  boundingbox:")
-                    report_combining("    chr: %3i %3i %3i %3i",unpack(cb))
-                    report_combining("    acc: %3i %3i %3i %3i",unpack(ab))
-                    report_combining("  anchors:")
-                    report_combining("    chr: %3i %3i",cx,cy)
-                    report_combining("    acc: %3i %3i",ax,ay)
-                    report_combining("  delta:")
-                    report_combining("    %s: %3i %3i",i_anchored,dx,dy)
-                end
-                if trace_combining then
-                    t.commands = { push, {"right", scale*dx}, {"down",-scale*dy}, green, acc_t, black, pop, chr_t }
-                 -- t.commands = {
-                 --     push, {"right", scale*cx}, {"down", -scale*cy}, red,   {"rule",10000,10000,10000}, pop,
-                 --     push, {"right", scale*ax}, {"down", -scale*ay}, blue,  {"rule",10000,10000,10000}, pop,
-                 --     push, {"right", scale*dx}, {"down", -scale*dy}, green, acc_t, black,               pop, chr_t
-                 -- }
-                else
-                    t.commands = { push, {"right", scale*dx}, {"down",-scale*dy},        acc_t,        pop, chr_t }
-                end
-                done = true
-            end
-        end
-    end
-end
+                                    local done = false
+                                    if compose then
+                                        local i_compose = compose[i]
+                                        local i_anchored = i_compose and i_compose.anchored
+                                        if i_anchored then
+                                            local c_compose = compose[chr]
+                                            local a_compose = compose[acc]
+                                            local c_anchors = c_compose and c_compose.anchors
+                                            local a_anchors = a_compose and a_compose.anchors
+                                            if c_anchors and a_anchors then
+                                                local c_anchor = c_anchors[i_anchored]
+                                                local a_anchor = a_anchors[i_anchored]
+                                                if c_anchor and a_anchor then
+                                                    local cx = c_anchor.x or 0
+                                                    local cy = c_anchor.y or 0
+                                                    local ax = a_anchor.x or 0
+                                                    local ay = a_anchor.y or 0
+                                                    local dx = cx - ax
+                                                    local dy = cy - ay
+                                                    if trace_combining_all then
+                                                        report_combining("building U+%05X (%s) from U+%05X (%s) and U+%05X (%s)",i,utfchar(i),chr,utfchar(chr),acc,utfchar(acc))
+                                                        report_combining("  boundingbox:")
+                                                        report_combining("    chr: %3i %3i %3i %3i",unpack(cb))
+                                                        report_combining("    acc: %3i %3i %3i %3i",unpack(ab))
+                                                        report_combining("  anchors:")
+                                                        report_combining("    chr: %3i %3i",cx,cy)
+                                                        report_combining("    acc: %3i %3i",ax,ay)
+                                                        report_combining("  delta:")
+                                                        report_combining("    %s: %3i %3i",i_anchored,dx,dy)
+                                                    end
+                                                    if trace_combining then
+                                                        t.commands = { push, {"right", scale*dx}, {"down",-scale*dy}, green, acc_t, black, pop, chr_t }
+                                                     -- t.commands = {
+                                                     --     push, {"right", scale*cx}, {"down", -scale*cy}, red,   {"rule",10000,10000,10000}, pop,
+                                                     --     push, {"right", scale*ax}, {"down", -scale*ay}, blue,  {"rule",10000,10000,10000}, pop,
+                                                     --     push, {"right", scale*dx}, {"down", -scale*dy}, green, acc_t, black,               pop, chr_t
+                                                     -- }
+                                                    else
+                                                        t.commands = { push, {"right", scale*dx}, {"down",-scale*dy},        acc_t,        pop, chr_t }
+                                                    end
+                                                    done = true
+                                                end
+                                            end
+                                        end
+                                    end
                                     if not done then
                                         -- can be sped up for scale == 1
                                         local dx = (c_urx - a_urx - a_llx + c_llx)/2

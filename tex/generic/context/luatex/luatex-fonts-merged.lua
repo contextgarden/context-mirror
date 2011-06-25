@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/23/11 19:25:18
+-- merge date  : 06/25/11 11:24:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -4681,9 +4681,9 @@ function mappings.addtounicode(data,filename)
                     end
                 end
             end
-            if not unicode then
-                originals[index], tounicode[index] = 0xFFFD, "FFFD"
-            end
+         -- if not unicode then
+         --     originals[index], tounicode[index] = 0xFFFD, "FFFD"
+         -- end
         end
     end
     if trace_mapping then
@@ -4984,7 +4984,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.731 -- beware: also sync font-mis.lua
+otf.version              = 2.732 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers

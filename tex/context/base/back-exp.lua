@@ -26,9 +26,16 @@ local insert, remove = table.insert, table.remove
 local topoints = number.topoints
 local utfvalues = string.utfvalues
 
-local trace_export = false  trackers.register  ("structures.export",            function(v) trace_export = v end)
-local less_state   = false  directives.register("structures.export.lessstate",  function(v) less_state   = v end)
-local show_comment = true   directives.register("structures.export.comment",    function(v) show_comment = v end)
+local trace_export      = false  trackers.register  ("export.trace",     function(v) trace_export = v end)
+local less_state        = false  directives.register("export.lessstate", function(v) less_state   = v end)
+local show_comment      = true   directives.register("export.comment",   function(v) show_comment = v end)
+
+-- maybe we will also support these:
+--
+-- local css_hyphens       = false  directives.register("export.css.hyphens",      function(v) css_hyphens      = v end)
+-- local css_textalign     = false  directives.register("export.css.textalign",    function(v) css_textalign    = v end)
+-- local css_bodyfontsize  = false  directives.register("export.css.bodyfontsize", function(v) css_bodyfontsize = v end)
+-- local css_textwidth     = false  directives.register("export.css.textwidth",    function(v) css_textwidth    = v end)
 
 local report_export     = logs.reporter("backend","export")
 
@@ -84,6 +91,8 @@ local traverse_id       = node.traverse_id
 local traverse_nodes    = node.traverse
 local slide_nodelist    = node.slide
 local texattribute      = tex.attribute
+local texdimen          = tex.dimen
+local texcount          = tex.count
 local unsetvalue        = attributes.unsetvalue
 local locate_node       = nodes.locate
 
@@ -113,11 +122,15 @@ local currentparagraph  = nil
 local noftextblocks     = 0
 
 local attributehash     = { } -- to be considered: set the values at the tex end
+local hyphencode        = 0xAD
 local hyphen            = utfchar(0xAD) -- todo: also emdash etc
 local colonsplitter     = lpeg.splitat(":")
 local dashsplitter      = lpeg.splitat("-")
 local threshold         = 65536
 local indexing          = false
+local keephyphens       = false
+
+local finetuning        = { }
 
 local treestack         = { }
 local nesting           = { }
@@ -137,6 +150,19 @@ local specialspaces     = { [0x20] = " "  }               -- for conversion
 local somespace         = { [0x20] = true, [" "] = true } -- for testing
 local entities          = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;" }
 local attribentities    = { ["&"] = "&amp;", [">"] = "&gt;", ["<"] = "&lt;", ['"'] = "quot;" }
+
+local alignmapping = {
+    flushright = "right",
+    middle     = "center",
+    flushleft  = "left",
+}
+
+local numbertoallign = {
+    [0] = "justify", ["0"] = "justify", [variables.normal    ] = "justify",
+    [1] = "right",   ["1"] = "right",   [variables.flushright] = "right",
+    [2] = "center",  ["2"] = "center",  [variables.middle    ] = "center",
+    [3] = "left",    ["3"] = "left",    [variables.flushleft ] = "left",
+}
 
 local defaultnature     = "mixed" -- "inline"
 
@@ -258,8 +284,22 @@ end
 
 
 -- experiment: styles and images
+--
+-- officially we should convert to bp but we round anyway
 
 local usedstyles = { }
+
+-- /* padding      : ; */
+-- /* text-justify : inter-word ; */
+
+local documenttemplate = [[
+document {
+	font-size  : %s !important ;
+    max-width  : %s !important ;
+    text-align : %s !important ;
+    hyphens    : %s !important ;
+}
+]]
 
 local styletemplate = [[
 %s[detail='%s'] {
@@ -271,6 +311,36 @@ local styletemplate = [[
 
 local function allusedstyles(xmlfile)
     local result = { format("/* styles for file %s */",xmlfile) }
+    --
+    local bodyfont = finetuning.bodyfont
+    local width    = finetuning.width
+    local hyphen   = finetuning.hyphen
+    local align    = finetuning.align
+    --
+    if not bodyfont or bodyfont == "" then
+        bodyfont = "12pt"
+    elseif type(bodyfont) == "number" then
+        bodyfont = number.todimen(bodyfont,"pt","%ipt") or "12pt"
+    end
+    if not width or width == "" then
+        width = "50em"
+    elseif type(width) == "number" then
+        width = number.todimen(width,"pt","%ipt") or "50em"
+    end
+    if hyphen == variables.yes then
+        hyphen = "manual"
+    else
+        hyphen = "inherited"
+    end
+    if align then
+        align = numbertoallign[align]
+    end
+    if not align then
+        align = hyphens and "justify" or "inherited"
+    end
+    --
+    result[#result+1] = format(documenttemplate,bodyfont,width,align,hyphen)
+    --
     for element, details in table.sortedpairs(usedstyles) do
         for detail, data in table.sortedpairs(details) do
             local s = xml.css.fontspecification(data.style)
@@ -517,9 +587,9 @@ function extras.image(result,element,detail,n,fulltag,di)
     if data then
         result[#result+1] = attribute("name",data.name)
         if tonumber(data.page) > 1 then
-            result[#result+1] = format("page='%s'",data.page)
+            result[#result+1] = format(" page='%s'",data.page)
         end
-        result[#result+1] = format("id='%s' width='%s' height='%s'",fulltag,data.width,data.height)
+        result[#result+1] = format(" id='%s' width='%s' height='%s'",fulltag,data.width,data.height)
     end
 end
 
@@ -669,6 +739,8 @@ function extras.link(result,element,detail,n,fulltag,di)
         end
     end
 end
+
+-- no settings, as these are obscure ones
 
 local automathrows   = true  directives.register("backend.export.math.autorows",   function(v) automathrows   = v end)
 local automathapply  = true  directives.register("backend.export.math.autoapply",  function(v) automathapply  = v end)
@@ -1065,7 +1137,7 @@ function extras.tablecell(result,element,detail,n,fulltag,di)
         local v = hash.align
         if not v or v == 0 then
             -- normal
-        elseif v == 1 then
+        elseif v == 1 then -- use numbertoalign here
             result[#result+1] = " align='flushright'"
         elseif v == 2 then
             result[#result+1] = " align='middle'"
@@ -1788,6 +1860,13 @@ local function collectresults(head,list) -- is last used (we also have currentat
                 collectresults(n.list,n)
             end
         elseif id == disc_code then -- probably too late
+            if keephyphens then
+                local pre = n.pre
+                if pre and not pre.next and pre.id == glyph_code and pre.char == hyphencode then
+                    nofcurrentcontent = nofcurrentcontent + 1
+                    currentcontent[nofcurrentcontent] = hyphen
+                end
+            end
             collectresults(n.replace,nil)
         elseif id == glue_code then
             -- we need to distinguish between hskips and vskips
@@ -1859,7 +1938,9 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     if type(r) == "string" and r ~= " " then
                         local s = utfsub(r,-1)
                         if s == hyphen then
-                            currentcontent[nofcurrentcontent] = utfsub(r,1,-2)
+                            if not keephyphens then
+                                currentcontent[nofcurrentcontent] = utfsub(r,1,-2)
+                            end
                         elseif s ~= "\n" then
 -- test without this
                             if trace_export then
@@ -1957,6 +2038,7 @@ local xmlpreamble = [[
 local function wholepreamble()
     return format(xmlpreamble,tex.jobname,os.date(),environment.version,exportversion)
 end
+
 
 local csspreamble = [[
 <?xml-stylesheet type="text/css" href="%s"?>
@@ -2085,9 +2167,16 @@ local function stopexport(v)
     local templatefilename      = file.replacesuffix(xmlfile,"template")
     local specificationfilename = file.replacesuffix(xmlfile,"specification")
     --
+    if xhtml and not cssfile then
+        cssfile = true
+    end
     local cssfiles = { }
-    if type(cssfile) == "string" and cssfile ~= "" then
-        cssfiles = settings_to_array(cssfile)
+    if cssfile then
+        if cssfile == true then
+            cssfiles = { "export-example.css" }
+        else
+            cssfiles = settings_to_array(cssfile or "")
+        end
         insert(cssfiles,1,imagefilename)
         insert(cssfiles,1,stylefilename)
     end
@@ -2144,6 +2233,11 @@ end
 
 local appendaction = nodes.tasks.appendaction
 local enableaction = nodes.tasks.enableaction
+
+function commands.setupexport(t)
+    table.merge(finetuning,t)
+    keephyphens = finetuning.hyphen == variables.yes
+end
 
 local function startexport(v)
     if v and not exporting then

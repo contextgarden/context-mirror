@@ -278,6 +278,7 @@
 		<cd:variable name='marking' value='نشانه‌گذاری'/>
 		<cd:variable name='mathalignment' value='تنظیم‌ریاضی'/>
 		<cd:variable name='mathcases' value='حالتهای‌ریاضی'/>
+		<cd:variable name='mathematics' value='ریاضی'/>
 		<cd:variable name='mathmatrix' value='ماتریش‌ریاضی'/>
 		<cd:variable name='max' value='بیشترین'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>

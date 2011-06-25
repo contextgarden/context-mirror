@@ -278,6 +278,7 @@
 		<cd:variable name='marking' value='markering'/>
 		<cd:variable name='mathalignment' value='wiskundeuitlijnen'/>
 		<cd:variable name='mathcases' value='mathcases'/>
+		<cd:variable name='mathematics' value='wiskunde'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>

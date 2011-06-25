@@ -2,13 +2,19 @@
 
 \usemodule[abr-01]
 
+\setupexport
+  [%bodyfont=16pt,
+   width=650pt,
+   %align=flushleft,
+   hyphen=yes]
+
 \setupbackend
   [export=export-example.xml,
    xhtml=export-example.xhtml,
    css=export-example.css]
 
-\definedescription
-  [description]
+% \setupalign
+%   [flushleft]
 
 \settaggedmetadata
   [title=Export Example,
@@ -21,8 +27,17 @@
 \setupinteraction
   [state=start]
 
+\setuplayout
+  [width=middle]
+
 \setupwhitespace
   [big]
+
+\definedescription
+  [description]
+
+\enabledirectives[export.css.hyphens=yes]
+\enabledirectives[export.css.textwidth=100em]
 
 \definehighlight[interesting][style=bold,color=red]
 

@@ -32,10 +32,13 @@ document:before {
 }
 
 document {
-	font-family : "Lucida Bright", "DejaVu Serif", serif ;
-	font-size   : 12pt ;
-	width       : 50em ;
-	padding     : 1em ;
+	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
+	font-size    : 12pt ;
+	max-width    : 50em ;
+	padding      : 1em ;
+ /* text-align   : justify ;    */
+ /*	hyphens      : manual ;     */
+ /* text-justify : inter-word ; */
 }
 
 document>metadata {

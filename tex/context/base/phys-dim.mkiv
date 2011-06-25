@@ -220,7 +220,8 @@
        \let\digitsseparatorspace\thickspace
    \fi
    \ctxcommand{digits(\!!bs\detokenize{#1}\!!es)}%
-   \endgroup}
+   \endgroup
+   \settrue\c_units_dospace}
 
 \unexpanded\def\digits
   {\doifnextbgroupelse\digits_argument\digits_spaced}
@@ -282,6 +283,8 @@
 %D Depending on needs we can add more tweaks (also depends on to what
 %D extent we need to be compatible with \MKII.
 
+% only a space when a number is part of the unit
+
 \installcommandhandler \??un {units} \??un
 
 \setupunits
@@ -292,12 +295,20 @@
   %space=...,    % (maybe) small medium big
   ]
 
-\newconstant   \c_units_mode   % 0=text  1=math 2=textinmath
+\newconstant   \c_units_mode   % 0=text 1=math 2=textinmath 3=mathintext
 \newconstant   \c_units_state  % 0=start 1=suffix 2=operator 3=unit 4=prefix 5=number
 \newconditional\c_units_quantity
 \newconditional\c_units_number
+\newconditional\c_units_dospace
+
+% [\unit   {micro ohm}]\par %  no space before unit
+% [10\unit {micro ohm}]\par %  no space before unit
+% [10 \unit{micro ohm}]\par %     space before unit
+% [ \unit  {micro ohm}]\par %     space before unit
+% [\unit{10 micro ohm}]\par %     space before unit
 
 \def\unitshalfspace{\thinspace}
+\def\unitsfullspace{\thickspace}
 \def\unitsbackspace{\negthinspace}
 
 \newtoks \everyunits % we keep the old \units command so we need a longer one
@@ -308,19 +319,27 @@
 
 \unexpanded\def\units_direct#1%
   {\begingroup
+   \ifdim\lastskip>\zeropoint
+     \settrue\c_units_dospace
+     \removelastskip
+   \fi
    \edef\currentunits{#1}%
    \the\everyunits
   %\removeunwantedspaces % now ok yet
    \dosetunitsattributes\c!style\c!color
+   \edef\currentunitsalternative{\unitsparameter\c!alternative}%
    \ifmmode
-     \edef\currentunitsalternative{\unitsparameter\c!alternative}%
      \ifx\currentunitsalternative\v!text
        \expandafter\expandafter\expandafter\units_direct_text_in_math
      \else
        \expandafter\expandafter\expandafter\units_direct_math
      \fi
    \else
-      \expandafter\units_direct_text
+     \ifx\currentunitsalternative\v!mathematics
+       \expandafter\expandafter\expandafter\units_direct_math_in_text
+     \else
+       \expandafter\expandafter\expandafter\units_direct_text
+     \fi
    \fi}
 
 \unexpanded\def\units_direct_text_in_math#1%
@@ -342,6 +361,17 @@
 \unexpanded\def\units_direct_text#1%
   {\units_indeed{#1}%
    \units_finish
+   \endgroup}
+
+\unexpanded\def\units_direct_math_in_text#1%
+  {\removeunwantedspaces % brr
+   \startimath
+   \c_units_mode\plusthree
+   \rm\tf
+   \mathtf
+   \units_indeed{#1}%
+   \units_finish
+   \stopimath
    \endgroup}
 
 \unexpanded\def\units_direct_nested#1#2%
@@ -411,26 +441,35 @@
    \fi}
 
 \def\unitsraise
-  {\ifnum\c_units_mode=\plusone
-     \expandafter\normalsuperscript
-   \else
+  {\ifcase\c_units_mode
      \expandafter\high
+   \or
+     \expandafter\normalsuperscript
+   \or
+     \expandafter\high
+   \or
+     \expandafter\normalsuperscript
    \fi}
 
 \def\unitslower
-  {\ifnum\c_units_mode=\plusone
-     \expandafter\normalsubscript
-   \else
+  {\ifcase\c_units_mode
      \expandafter\low
+   \or
+     \expandafter\normalsubscript
+   \or
+     \expandafter\low
+   \or
+     \expandafter\normalsubscript
    \fi}
 
 \unexpanded\def\units_next
   {\ifcase\c_units_state % start
-     \ifdim\lastskip=\zeropoint
-       \unitshalfspace
-       \unitshalfspace
-     \else
-       % too tricky ... we could remove and add
+     \ifconditional\c_units_dospace
+      % \ifdim\lastskip=\zeropoint
+         \unitsfullspace
+      % \else
+      %   % too tricky ... we could remove and add
+      % \fi
      \fi
    \or % suffix
      {\cdot}% \unitshalfspace
@@ -439,9 +478,9 @@
      {\cdot}% \unitshalfspace
    \or % prefix
    \or % number
-     \unitshalfspace
-     \unitshalfspace
+     \unitsfullspace
    \fi
+   \setfalse\c_units_dospace
    \units_start}
 
 \unexpanded\def\unitsTIMES
