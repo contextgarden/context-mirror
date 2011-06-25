@@ -1760,4 +1760,10 @@
    \rigidcolumnbalance\scratchbox
    \egroup}
 
+\unexpanded\def\setsimplecolumnshsize[#1]%
+  {\getparameters[\??kl][\c!width=\hsize,\c!distance=1.5\bodyfontsize,\c!n=2,\c!lines=0,#1]%
+   \let\rigidcolumnlines\@@kllines
+   \setrigidcolumnhsize\@@klwidth\@@kldistance\@@kln}
+
+
 \protect \endinput
