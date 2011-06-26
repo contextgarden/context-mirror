@@ -344,7 +344,10 @@
      \ifpackflushedfloats
        \centerfloatboxfalse % not needed as we do call directly
        \dofloatscollect\s!text{\hsize}{1em}%
-       \OTRONEsetvsize
+       %% no longer (interferes with footnotes):
+       %%
+       %% \OTRONEsetvsize / test 2011.06.24.001
+       %%
        \global\setbox\floatbox\hbox to \hsize
          {\hfil
           \dorecurse\nofcollectedfloats

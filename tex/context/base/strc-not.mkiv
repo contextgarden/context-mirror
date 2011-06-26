@@ -102,6 +102,8 @@
 %D is that we use descriptions to typeset the note, so we have several
 %D resolvers.
 
+% will be commandhandler (but we need a finalizer for setup and define (just after \every)
+
 \let\currentnote\v!footnote
 
 \def\noteparameter    #1{\csname\donoteparameter{\??vn\currentnote}#1\endcsname}
@@ -122,6 +124,8 @@
    \edef\colorattributehash{\noteparameterhash#2}%
    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\def\setnoteparameter#1{\dosetvalue{\??vn\currentnote}{#1}}
 
 %D \macros
 %D   {setupnote,setupnotedefinition}
@@ -359,6 +363,16 @@
      \v!verystrict=>\notepenalty\maxdimen,
         \s!default=>\notepenalty\zeropoint,
         \s!unknown=>\notepenalty\commalistelement]%
+\to \everysetupnote
+
+\appendtoks
+    \edef\currentnotewidth{\noteparameter\c!width}%
+    \ifx\currentnotewidth\empty
+       \setnoteparameter\c!width{\hsize}%
+    \else
+      % \doifdimensionelse\currentnotewidth\donothing
+      %   {\setnoteparameter\c!width{\hsize}}%
+    \fi
 \to \everysetupnote
 
 %D The following switch can be used to disable limiting the
@@ -872,6 +886,10 @@
 %   \fi
 \to \everyinsidenoteinsert
 
+\appendtoks
+    \setsimplecolumnshsize[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%\currentnotewidth]%
+\to \everyinsidenoteinsert
+
 % not: \appendtoks \setnotehsize \to \everyinsidenoteinsert (spoils columns)
 
 \let\lastnotesymbol\relax
@@ -953,10 +971,7 @@
    \obeydepth} % (a) added , since split footnotes will not align properly
 
 \def\doglobalflushnotescolums
-  {\edef\currentnotewidth{\noteparameter\c!width}% brrr, is no linger valid as it's description width
-   \doifdimensionelse\currentnotewidth\donothing
-     {\edef\currentnotewidth{\the\hsize}}%
-   \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
+  {\startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%,\c!width=\currentnotewidth]%
     %\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % compare with local
      \doflushglobalnotes
    \stopsimplecolumns}

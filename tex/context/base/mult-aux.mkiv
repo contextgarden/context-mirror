@@ -62,6 +62,8 @@
 % watch the push/pop and predefinition of current .. this is needed for nested
 % definitions and overloaded defines using the predefined one
 
+% todo: add (relaxed) postsetup and postdefine hooks, just after the everys
+
 \unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7%
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{\csname#4{#1#2}{##1}\endcsname}%
