@@ -379,7 +379,12 @@ function scripts.preprocess(head)
                     if normal_process then
                         local f = start.font
                         if f ~= lastfont then
-                            originals = fontdata[f].resources.originals
+                            originals = fontdata[f].resources
+                            if resources then
+                                originals = resources.originals
+                            else
+                                -- can't happen
+                            end
                             lastfont = f
                         end
                         local c = start.char

@@ -63,6 +63,7 @@ local function read_from_tfm(specification)
     local tfmdata = font.read_tfm(filename,size) -- not cached, fast enough
     if tfmdata then
         local features      = specification.features and specification.features.normal or { }
+        local resources     = tfmdata.resources  or { }
         local properties    = tfmdata.properties or { }
         local parameters    = tfmdata.parameters or { }
         local shared        = tfmdata.shared     or { }
@@ -76,6 +77,7 @@ local function read_from_tfm(specification)
         shared.processes    = next(features) and tfm.setfeatures(tfmdata,features) or nil
         --
         tfmdata.properties  = properties
+        tfmdata.resources   = resources
         tfmdata.parameters  = parameters
         tfmdata.shared      = shared
         --
