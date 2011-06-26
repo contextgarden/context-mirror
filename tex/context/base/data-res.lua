@@ -1152,7 +1152,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                                     if not subpath or subpath == "" then
                                         -- rootscan already done
                                     elseif type(subpath) == "string" then
-                                        local fname = check_subpath(filejoin(ppname,subpath,w))
+                                        local fname = check_subpath(filejoin(pname,subpath,w))
                                         if fname then
                                             result[#result+1] = fname
                                             done = true
@@ -1166,7 +1166,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                                             if sp == "" then
                                                 -- roottest already done
                                             else
-                                                local fname = check_subpath(filejoin(ppname,sp,w))
+                                                local fname = check_subpath(filejoin(pname,sp,w))
                                                 if fname then
                                                     result[#result+1] = fname
                                                     done = true

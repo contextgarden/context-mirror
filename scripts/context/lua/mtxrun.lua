@@ -2608,10 +2608,10 @@ end
 local trick_1 = char(1)
 local trick_2 = "^" .. trick_1 .. "/+"
 
-function file.join(...)
+function file.join(...) -- rather dirty
     local lst = { ... }
     local a, b = lst[1], lst[2]
-    if a == "" then
+    if not a or a == "" then -- not a added
         lst[1] = trick_1
     elseif b and find(a,"^/+$") and find(b,"^/") then
         lst[1] = ""
@@ -12483,7 +12483,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                                     if not subpath or subpath == "" then
                                         -- rootscan already done
                                     elseif type(subpath) == "string" then
-                                        local fname = check_subpath(filejoin(ppname,subpath,w))
+                                        local fname = check_subpath(filejoin(pname,subpath,w))
                                         if fname then
                                             result[#result+1] = fname
                                             done = true
@@ -12497,7 +12497,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                                             if sp == "" then
                                                 -- roottest already done
                                             else
-                                                local fname = check_subpath(filejoin(ppname,sp,w))
+                                                local fname = check_subpath(filejoin(pname,sp,w))
                                                 if fname then
                                                     result[#result+1] = fname
                                                     done = true

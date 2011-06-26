@@ -113,10 +113,10 @@ end
 local trick_1 = char(1)
 local trick_2 = "^" .. trick_1 .. "/+"
 
-function file.join(...)
+function file.join(...) -- rather dirty
     local lst = { ... }
     local a, b = lst[1], lst[2]
-    if a == "" then
+    if not a or a == "" then -- not a added
         lst[1] = trick_1
     elseif b and find(a,"^/+$") and find(b,"^/") then
         lst[1] = ""
