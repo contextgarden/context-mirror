@@ -201,6 +201,9 @@ local long_suffixes = {
     ICubic  = [[-3]],
 }
 
+long_prefixes.Micro = [[\textmu]]
+long_units   .Ohm   = [[\textohm]]
+
 mergetable(long_prefixes, loweredkeys(long_prefixes))
 mergetable(long_units, loweredkeys(long_units))
 mergetable(long_operators, loweredkeys(long_operators))

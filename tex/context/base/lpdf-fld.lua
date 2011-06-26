@@ -368,14 +368,15 @@ local function fieldstates(specification,forceyes,values,default)
     else
         default = pdf_off
     end
+    local appearance
     if false then -- needs testing
-        local appearance = pdfdictionary { -- maybe also cache components
+        appearance = pdfdictionary { -- maybe also cache components
             N = pdfshareobjectreference(pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
             R = pdfshareobjectreference(pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
             D = pdfshareobjectreference(pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
         }
     else
-        local appearance = pdfdictionary { -- maybe also cache components
+        appearance = pdfdictionary { -- maybe also cache components
             N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
             R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
             D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
@@ -883,7 +884,7 @@ end
 
 local function makecheckparent(field,specification)
     local d = pdfdictionary {
-        T  = pdfunicode(specification.title),
+        T  = pdfunicode(specification.title), -- todo: when tracing use a string
         F  = fieldplus(specification),
         Ff = fieldflag(specification),
         OC = fieldlayer(specification),

@@ -352,7 +352,7 @@
 \to \everysetupnote
 
 \appendtoks
-  \processaction % todo
+  \processaction % todo (why doesnt it work for a global setting)
     [\noteparameter\c!split]
     [  \v!tolerant=>\notepenalty\zeropoint,
          \v!strict=>\notepenalty9999,
@@ -727,21 +727,27 @@
 \def\currentnotedescriptiontext % todo: can be other number
   {\ctxlua{structures.notes.title("\currentnote",\currentdescriptionnumberentry)}}
 
-\def\@@donotetext % same as \@@doenumerationtext
-  {\ifcase\enumerationnumberstate
-     \doenumerationfullnumbernop
-   \or
-     \iftrialtypesetting
-       \doenumerationfullnumberyes
-       \doenumerationcouplingsymbol
-     \else
-       \doenumerationregistercoupling
-       \doenumerationfullnumberyes
-       \doenumerationcouplingsymbol
-     \fi
-   \or
-     \doenumerationfullnumbersymbol
-   \fi}
+% \def\@@donotetext % same as \@@doenumerationtext
+%   {\ifcase\enumerationnumberstate
+%      \doenumerationfullnumbernop
+%    \or
+%      \iftrialtypesetting
+%        \doenumerationfullnumberyes
+%        \doenumerationcouplingsymbol
+%      \else
+%        \doenumerationregistercoupling
+%        \doenumerationfullnumberyes
+%        \doenumerationcouplingsymbol
+%      \fi
+%    \or
+%      \doenumerationfullnumbersymbol
+%    \fi}
+
+\def\@@donotetext % experiment ... we run into a problem when we migrate a note otherwise in postpone mode
+  {\doenumerationcheckconditions
+   \let\doenumerationnumber\docurrentnoteenumerationfullnumber
+   \let\doenumerationsymbol\docurrentnoteenumerationsymbol
+   \@@doenumerationtext}
 
 \def\@@donotenumber
   {\doifelse{\noteparameter\c!interaction}\v!no
@@ -919,7 +925,7 @@
 \def\dobetweenparagraphnotes % should not be too much
   {\noteparameter\c!inbetween}
 
-\def\doflushgobalnotes
+\def\doflushglobalnotes
   {\doifelse{\noteparameter\c!paragraph}\v!yes
      {\vbox
         {\beginofshapebox
@@ -943,16 +949,16 @@
 
 \def\doglobalflushnotesnormal
   {%\iftrialtypesetting\copy\else\box\fi\currentnoteins
-   \doflushgobalnotes
+   \doflushglobalnotes
    \obeydepth} % (a) added , since split footnotes will not align properly
 
 \def\doglobalflushnotescolums
-  {\edef\currentnotewidth{\noteparameter\c!width}%
+  {\edef\currentnotewidth{\noteparameter\c!width}% brrr, is no linger valid as it's description width
    \doifdimensionelse\currentnotewidth\donothing
      {\edef\currentnotewidth{\the\hsize}}%
    \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\currentnotewidth]%
     %\iftrialtypesetting\unvcopied\else\unvboxed\fi\currentnoteins % compare with local
-     \doflushgobalnotes
+     \doflushglobalnotes
    \stopsimplecolumns}
 
 \def\doplacenoteinserts

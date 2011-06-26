@@ -38,7 +38,7 @@ local function locate(head,first,last,ni,nm)
         local id = current.id
         if id == vlist_code or id == hlist_code then
             current.list, first, last, ni, nm = locate(current.list,first,last,ni,nm)
-            current= current.next
+            current = current.next
         elseif migrate_inserts and id == insert_code then
             local insert
             head, current, insert = remove_nodes(head,current)
@@ -69,6 +69,7 @@ end
 function nodes.handlers.migrate(head,where)
     local done = false
     if head then
+--~ report_nodes("migration sweep '%s'",where)
         local current = head
         while current do
             local id = current.id
@@ -87,7 +88,7 @@ function nodes.handlers.migrate(head,where)
                 if first then
                     t_inserts, t_marks = t_inserts + ni, t_marks + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
-                        report_nodes("sweep %s, %s inserts and %s marks migrated outwards",t_sweeps,ni,nm)
+                        report_nodes("sweep %s, %s inserts and %s marks migrated outwards during '%s'",t_sweeps,ni,nm,where)
                     end
                     -- inserts after head
                     local n = current.next
