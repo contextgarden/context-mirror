@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/25/11 14:54:00
+-- merge date  : 06/26/11 11:37:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -1955,10 +1955,10 @@ end
 local trick_1 = char(1)
 local trick_2 = "^" .. trick_1 .. "/+"
 
-function file.join(...)
+function file.join(...) -- rather dirty
     local lst = { ... }
     local a, b = lst[1], lst[2]
-    if a == "" then
+    if not a or a == "" then -- not a added
         lst[1] = trick_1
     elseif b and find(a,"^/+$") and find(b,"^/") then
         lst[1] = ""
