@@ -42,7 +42,7 @@
   {\dowithnextbox{\ctxlua{metapost.settext(\number\nextbox,#1)}}\hbox}
 
 \def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
-  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}% we need the colorhack or else the color backend does not sync
+  {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
    \vbox to \zeropoint{\vss\hbox to \zeropoint{\scale[\c!sx=#2,\c!sy=#3]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
 \def\MPLIBgraphictext#1%

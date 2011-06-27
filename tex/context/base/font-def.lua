@@ -119,7 +119,7 @@ function definers.registersplit(symbol,action,verbosename)
     end
 end
 
-function definers.makespecification(specification, lookup, name, sub, method, detail, size)
+function definers.makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if trace_defining then
         report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
@@ -395,13 +395,24 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     specification = definers.resolve(specification)
     local hash = constructors.hashinstance(specification)
     local tfmdata = definers.registered(hash) -- id
-    if not tfmdata then
+    if tfmdata then
+        if trace_defining then
+            report_defining("already hashed: %s",hash)
+        end
+    else
         tfmdata = definers.loadfont(specification) -- can be overloaded
         if tfmdata then
---~ constructors.checkvirtualid(tfmdata) -- interferes
+            if trace_defining then
+                report_defining("loaded and hashed: %s",hash)
+            end
+        --~ constructors.checkvirtualid(tfmdata) -- interferes
             tfmdata.properties.hash = hash
             if id then
                 definers.register(tfmdata,id)
+            end
+        else
+            if trace_defining then
+                report_defining("not loaded and hashed: %s",hash)
             end
         end
     end
@@ -412,7 +423,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }
         report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-                       properties.type          or "unknown",
+                       properties.format        or "unknown",
                        id                       or "?",
                        properties.name          or "?",
                        parameters.size          or "default",

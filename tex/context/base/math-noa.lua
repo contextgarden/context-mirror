@@ -600,7 +600,7 @@ local alternate = { } -- processors.alternate = alternate
 function mathematics.setalternate(fam,tag)
     local id = font_of_family(fam)
     local tfmdata = fontdata[id]
-    local mathalternates = tfmdata.shared.mathalternates
+    local mathalternates = tfmdata.shared and tfmdata.shared.mathalternates
     if mathalternates then
         local m = mathalternates[tag]
         tex.attribute[a_mathalternate] = m and m.attribute or attributes.unsetvalue
@@ -630,15 +630,28 @@ end
 
 -- experiment (when not present fall back to fam 0)
 
-local families = { }
+-- 0-2 regular
+-- 3-5 bold
+-- 6-8 pseudobold
 
+local families     = { }
 local a_mathfamily = attributes.private("mathfamily")
+local boldmap      = mathematics.boldmap
 
 families[math_char] = function(pointer)
-    if pointer.fam == 255 then
+    if pointer.fam == 0 then
         local a = has_attribute(pointer,a_mathfamily)
         if a and a > 0 then
             set_attribute(pointer,a_mathfamily,0)
+            if a > 5 then
+                local char = pointer.char
+                local bold = boldmap[pointer.char]
+                if bold then
+                    set_attribute(pointer,exportstatus,char)
+                    pointer.char = bold
+                end
+                a = a - 3
+            end
             pointer.fam = a
         else
             pointer.fam = 0
@@ -647,10 +660,14 @@ families[math_char] = function(pointer)
 end
 
 families[math_delim] = function(pointer)
-    if pointer.small_fam == 255 then
+    if pointer.small_fam == 0 then
         local a = has_attribute(pointer,a_mathfamily)
         if a and a > 0 then
             set_attribute(pointer,a_mathfamily,0)
+            if a > 5 then
+                -- no bold delimiters in unicode
+                a = a - 3
+            end
             pointer.small_fam = a
             pointer.large_fam = a
         else

@@ -124,14 +124,14 @@
 %D Transformations. Some day we will use primitives (once they're fixed).
 
 \def\dostartrotation#1% grouped
-  {\forcecolorhack
+  {\forcecolorhack % maybe use signal instead
    \pdfliteral{q \ctxlua{lpdf.rotationcm(#1)}}}
 
 \def\dostoprotation
   {\pdfliteral{Q}}
 
 \def\dostartscaling#1#2% the test is needed because acrobat is bugged!
-  {\forcecolorhack
+  {\forcecolorhack % maybe use signal instead
    \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
                  \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
 

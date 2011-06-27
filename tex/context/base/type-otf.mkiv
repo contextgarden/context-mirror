@@ -167,19 +167,21 @@
         \definefontsynonym[LMMathRoman12-Regular][LMMath12-Regular@lmroman12-math]
         \definefontsynonym[LMMathRoman17-Regular][LMMath17-Regular@lmroman17-math]
 
-        \definefontsynonym[LMMathRoman5-Bold]    [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman6-Bold]    [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman7-Bold]    [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman8-Bold]    [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman9-Bold]    [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman10-Bold]   [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman12-Bold]   [LMMath10-Bold@lmroman10-boldmath]
-        \definefontsynonym[LMMathRoman17-Bold]   [LMMath10-Bold@lmroman10-boldmath]
+        % we no longer care to provide pseudo full bold
+
+        \definefontsynonym[LMMathRoman5-Bold]    [LMMathRoman5-Regular]
+        \definefontsynonym[LMMathRoman6-Bold]    [LMMathRoman6-Regular]
+        \definefontsynonym[LMMathRoman7-Bold]    [LMMathRoman7-Regular]
+        \definefontsynonym[LMMathRoman8-Bold]    [LMMathRoman8-Regular]
+        \definefontsynonym[LMMathRoman9-Bold]    [LMMathRoman9-Regular]
+        \definefontsynonym[LMMathRoman10-Bold]   [LMMathRoman10-Regular]
+        \definefontsynonym[LMMathRoman12-Bold]   [LMMathRoman12-Regular]
+        \definefontsynonym[LMMathRoman17-Bold]   [LMMathRoman17-Regular]
 
         % overloads lmmath.otf usage
         %
         % \definefontsynonym[MathRoman][LMMath10-Regular@lmroman10-math]
-        % \definefontsynonym[MathBold] [LMMath10-Bold@lmroman10-boldmath]
+        % \definefontsynonym[MathBold] [MathRoman]
 
         \loadfontgoodies[lm-math]
     \stoptypescript
@@ -374,8 +376,8 @@
 
     \starttypescript [math] [modern,latin-modern,default]
       % \loadfontgoodies[lm-math]
-        \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath.otf]     [\s!features=\s!math]
-      % \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmathbold.otf] [\s!features=\s!math]
+        \definefontsynonym [LMMathRoman-Regular] [\v!file:lmmath.otf] [\s!features=\s!math]
+        \definefontsynonym [LMMathRoman-Bold]    [\v!file:lmmath.otf] [\s!features=\s!math]
     \stoptypescript
 
     \starttypescript [modern,default]

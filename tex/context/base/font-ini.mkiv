@@ -492,6 +492,10 @@
 %D check for fontclass being default or empty and save a few
 %D tests but it does not help us when no math is defined.
 
+%D Because we want to keep mr=.. and mb=... settings (read: not
+%D break downward compatibility by enforcing mrlr etc) we need a
+%D bit more code that optimal.
+
 \let\mrfam  \zerocount  % math regular
 \let\mrfamlr\plusone    % math regular l2r
 \let\mrfamrl\plustwo    % math regular r2l
@@ -502,7 +506,8 @@
 
 \definesystemattribute[mathfamily][public]
 
-\newconditional\bidirectionalmathstrategy
+\newconditional\bidirectionalmathstrategy  % can be default, not that much overhead: \settrue\bidirectionalmathstrategy
+\newconditional\completeboldmathstrategy   \settrue\completeboldmathstrategy
 
 \def\mathtextsuffix        {-text}
 \def\mathscriptsuffix      {-script}
@@ -521,7 +526,7 @@
    \fi\fi
    #1#2\font}
 
-\def\dodosetmathfamilyx#1#2%
+\def\dodosetmathfamilyx#1#2% somehow this fallback does now always work
   {\ifcsname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \autofontsizefalse
      \csname\defaultfontclass\fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
    \ifcsname\defaultfontclass\fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
@@ -534,17 +539,17 @@
      \csname                 \fontbody\c!mm\fontfamily\fontsize\currentmathsize\endcsname \else
    \ifcsname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \autofontsizetrue
      \csname                 \fontbody\c!mm\fontfamily         \currentmathsize\endcsname \else
-                             \nullfont                                                                    \autofontsizetrue
+     \nullfont                                                                            \autofontsizetrue
    \fi\fi}
 
 \def\dosetmathfamily#1#2%
   {\let\savedfontbody\fontbody % op hoger plan
    \let\fontfamily#2%
-   % new per 20100817
-   \checkbodyfontenvironment[\scriptscriptface]% pretty slow when many switches
-   \checkbodyfontenvironment[\scriptface]%
-   \checkbodyfontenvironment[\textface]%
-   %
+%    % new per 20100817
+%    \checkbodyfontenvironment[\scriptscriptface]% pretty slow when many switches
+%    \checkbodyfontenvironment[\scriptface]%
+%    \checkbodyfontenvironment[\textface]%
+%    %
    \let\currentmathsize\!!plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
    \let\currentmathsize\!!plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
    \let\currentmathsize\!!plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
@@ -552,19 +557,48 @@
    \let\fontbody\savedfontbody
    \autofontsizefalse}
 
+% experiment
+%
+% optimized: math fonts are never changed (10K \bfa $x$: 3.2 => 2.5 (baseline 1.0))
+
+\def\dosetmathfamily#1#2% fam tag
+  {\ifcsname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname
+     \csname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname
+   \else
+     \dosetmathfamilyindeed#1#2%
+   \fi}
+
+\def\dosetmathfamilyindeed#1#2%
+  {\let\savedfontbody\fontbody % op hoger plan
+   \let\fontfamily#2%
+   \let\currentmathsize\!!plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
+   \let\currentmathsize\!!plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
+   \let\currentmathsize\!!plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
+   \expandafter\xdef\csname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname{%
+     \scriptscriptfont#1\csname*\fontclass\scriptscriptface\c!mm#23\fontsize3*\endcsname
+     \scriptfont      #1\csname*\fontclass\scriptface      \c!mm#22\fontsize2*\endcsname
+     \textfont        #1\csname*\fontclass\textface        \c!mm#21\fontsize1*\endcsname
+   }%
+   \let\currentmathsize\empty
+   \let\fontbody\savedfontbody
+   \autofontsizefalse}
 
 % It would be nice if characters could be defined in a neutral way (say fam 255) and
 % be mapped to a real family during noad list construction. However, this changes
 % tex in critical places so for the moment we simulate this using manipulation.
 
-% For tracing purposes we use three families but in l2r mode 1 and 2 are copies of 0
-% while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
-
-% \appendtoks
-%     \dosetmathfamily\mrfam\c!mr
-% \to \mathstrategies
-
 \appendtoks
+   % new per 20100817
+   \checkbodyfontenvironment[\scriptscriptface]% pretty slow when many switches
+   \checkbodyfontenvironment[\scriptface]%
+   \checkbodyfontenvironment[\textface]%
+\to \mathstrategies
+
+% For tracing purposes we use three families but in l2r mode 1 and 2 are copies of 0
+% while in rl mode 0 is a copy of 1. There is no real overhead involved in this. This
+% also permits different font definitions for normal and mixed.
+
+\appendtoks % can be analyzed once
     % why here ..
     \edef\@@fontclassdirection{\ifcsname\fontclass\c!mm\s!direction\endcsname\csname\fontclass\c!mm\s!direction\endcsname\fi}%
     % ...
@@ -575,29 +609,74 @@
     \fi
 \to \mathstrategies
 
+\def\bidirectionalmathstrategyyes
+  {\dosetmathfamily \mrfamlr\c!mrlr
+   \dosetmathfamily \mrfamrl\c!mrrl
+   \textfont        \mrfam  \textfont        \mrfamlr
+   \scriptfont      \mrfam  \scriptfont      \mrfamlr
+   \scriptscriptfont\mrfam  \scriptscriptfont\mrfamlr}
+
+\def\bidirectionalmathstrategynop
+  {\dosetmathfamily \mrfam  \c!mr
+   \textfont        \mrfamrl\textfont        \mrfam
+   \scriptfont      \mrfamrl\scriptfont      \mrfam
+   \scriptscriptfont\mrfamrl\scriptscriptfont\mrfam
+   \textfont        \mrfamlr\textfont        \mrfam
+   \scriptfont      \mrfamlr\scriptfont      \mrfam
+   \scriptscriptfont\mrfamlr\scriptscriptfont\mrfam}
+
 \appendtoks
     \ifconditional\bidirectionalmathstrategy
-      \dosetmathfamily \mrfamlr\c!mrlr
-      \dosetmathfamily \mrfamrl\c!mrrl
-      \textfont        \mrfam  \textfont        \mrfamlr
-      \scriptfont      \mrfam  \scriptfont      \mrfamlr
-      \scriptscriptfont\mrfam  \scriptscriptfont\mrfamlr
+      \bidirectionalmathstrategyyes
     \else
-      \dosetmathfamily \mrfam  \c!mr
-      \textfont        \mrfamrl\textfont        \mrfam
-      \scriptfont      \mrfamrl\scriptfont      \mrfam
-      \scriptscriptfont\mrfamrl\scriptscriptfont\mrfam
-      \textfont        \mrfamlr\textfont        \mrfam
-      \scriptfont      \mrfamlr\scriptfont      \mrfam
-      \scriptscriptfont\mrfamlr\scriptscriptfont\mrfam
+      \bidirectionalmathstrategynop
+    \fi
+\to \mathstrategies
+
+\def\completeboldmathstrategyyesbidi
+  {\dosetmathfamily \mbfamlr\c!mblr
+   \dosetmathfamily \mbfamrl\c!mbrl
+   \textfont        \mbfam  \textfont        \mbfamlr
+   \scriptfont      \mbfam  \scriptfont      \mbfamlr
+   \scriptscriptfont\mbfam  \scriptscriptfont\mbfamlr}
+
+\def\completeboldmathstrategyyes
+  {\dosetmathfamily \mbfam  \c!mb
+   \textfont        \mbfamrl\textfont        \mbfam
+   \scriptfont      \mbfamrl\scriptfont      \mbfam
+   \scriptscriptfont\mbfamrl\scriptscriptfont\mbfam
+   \textfont        \mbfamlr\textfont        \mbfam
+   \scriptfont      \mbfamlr\scriptfont      \mbfam
+   \scriptscriptfont\mbfamlr\scriptscriptfont\mbfam}
+
+\def\completeboldmathstrategynop
+  {\textfont        \mbfam  \textfont        \mrfam
+   \scriptfont      \mbfam  \scriptfont      \mrfam
+   \scriptscriptfont\mbfam  \scriptscriptfont\mrfam
+   \textfont        \mbfamrl\textfont        \mrfamrl
+   \scriptfont      \mbfamrl\scriptfont      \mrfamrl
+   \scriptscriptfont\mbfamrl\scriptscriptfont\mrfamrl
+   \textfont        \mbfamlr\textfont        \mrfamlr
+   \scriptfont      \mbfamlr\scriptfont      \mrfamlr
+   \scriptscriptfont\mbfamlr\scriptscriptfont\mrfamlr}
+
+\appendtoks
+    \ifconditional\completeboldmathstrategy
+      \ifconditional\bidirectionalmathstrategy
+        \completeboldmathstrategyyesbidi
+      \else
+        \completeboldmathstrategyyes
+      \fi
+    \else
+      \completeboldmathstrategynop
     \fi
 \to \mathstrategies
 
 \appendtoks
-    \fam\defaultmathfamily
+    \fam\defaultmathfamily % all characters and symbols are in this family
 \to \everymathematics
 
-\unexpanded\def\synchronizemathfamily
+\unexpanded\def\synchronizemathfamilymr
   {\attribute\mathfamilyattribute\ifconditional\bidirectionalmathstrategy
      \ifconditional\mathematics_right_to_left
        \plustwo
@@ -608,45 +687,73 @@
      \zerocount
    \fi}
 
+\unexpanded\def\synchronizemathfamilymb
+  {\attribute\mathfamilyattribute\ifconditional\bidirectionalmathstrategy
+     \ifconditional\mathematics_right_to_left
+       \ifconditional\pseudoboldmathstate\pluseight\else\plusfive\fi
+     \else
+       \ifconditional\pseudoboldmathstate\plusseven\else\plusfour\fi
+     \fi
+   \else
+     \ifconditional\pseudoboldmathstate\plussix\else\plusthree\fi
+   \fi}
+
+\letvalue{\??ff:\c!mr:\c!tf }\synchronizemathfamilymr
+\letvalue{\??ff:\c!mr:\c!sl }\synchronizemathfamilymr
+\letvalue{\??ff:\c!mr:\c!it }\synchronizemathfamilymr
+\letvalue{\??ff:\c!mr:\c!bf }\synchronizemathfamilymb
+\letvalue{\??ff:\c!mr:\c!bs }\synchronizemathfamilymb
+\letvalue{\??ff:\c!mr:\c!bi }\synchronizemathfamilymb
+\letvalue{\??ff:\c!mr:\empty}\synchronizemathfamilymr
+
+\def\synchronizemathfamily
+  {\csname\??ff:\c!mr:\ifcsname\??ff:\c!mr:\fontalternative\endcsname\fontalternative\fi\endcsname}
+
+% we need \fontid (or could store this for a fontclass)
+
+\appendtoks
+    \edef\currentmathfontmr{\fontname\textfont\zerocount}%
+    \edef\currentmathfontmb{\fontname\textfont\plusthree}%
+    \ifx\currentmathfontmr\currentmathfontmb
+        \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
+    \else
+        \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
+    \fi
+\to \mathstrategies
+
+\def\synchronizemathboldstrategy {\csname\??ff:ms:\fontclass\endcsname}
+
+\newconditional\pseudoboldmathstate
+
+\def\dosetmathpartialboldstrategy{\settrue \pseudoboldmathstate}
+\def\dosetmathfullboldstrategy   {\setfalse\pseudoboldmathstate}
+
+\appendtoks
+    \synchronizemathboldstrategy
+\to \everymathematics
+
 % Bold is somewhat special as we might want both full-bold-math mixed
 % regular-math, as well as automatic adaption to outer bold (in titles
 % and inline text bold) so we will need explicit switches as well as
 % an automatic one. (We will use lucida as an example.)
 
-% \unexpanded\def\mr{\ifmmode\fam\mrfam\else\setcurrentfontalternative\c!mr\fi}
-% \unexpanded\def\mb{\ifmmode\fam\mbfam\else\setcurrentfontalternative\c!mb\fi}
-
 \unexpanded\def\mr
   {\ifmmode
-     \synchronizemathfamily
+     \synchronizemathfamilymr
    \else
      \setcurrentfontalternative\c!mr
    \fi}
 
 \unexpanded\def\mb
   {\ifmmode
-     \fam\mbfam
+     \synchronizeboldfamilymb
    \else
      \setcurrentfontalternative\c!mb
    \fi}
 
-\let\mr\mb % for the moment
-
 \appendtoks
-  \synchronizemathfamily
+    \synchronizemathfamily % auto bold
 \to \everymathematics
-
-% not official (doesn't work currently as some math definitions are bound to families) and
-% we're not going to mix families
-%
-% \newconditional\boldmathmode % might change ... maybe \mathfontsupport 1 (normal) 2 (bold too)
-%
-% \def\enableboldmath {\settrue \boldmathmode} % todo: \setupbodyfont[boldmath,...]
-% \def\disableboldmath{\setfalse\boldmathmode}
-%
-% \appendtoks
-%     \ifconditional\boldmathmode\dosetmathfamily\mbfam\c!mb\fi
-% \to \mathstrategies
 
 %D All used styles, like rm, ss and tt, are saved in a comma
 %D separated list. Appart from practical limitations one can
@@ -800,6 +907,8 @@
 \setnewconstant\featureinheritancedefault   \featureinheritancefontfirst
 \setnewconstant\featureinheritancemode      \featureinheritancedefault
 
+\newdimen\scaledtextface
+
 \unexpanded\def\lowleveldefinefont#1#2% #2 = cs
   {% we can now set more at the lua end
    \ctxlua{fonts.definers.stage_one("\luaescapestring{#1}")}% the escapestring catches at \somedimen
@@ -826,9 +935,15 @@
    \scaledfontsize\localrelativefontsize\scaledfontsize
    \ifautofontsize
      \scaledfontsize\currentfontbodyscale\scaledfontsize
+     \scaledtextface\currentfontbodyscale\dimexpr\textface\relax
+   \else
+     \scaledtextface\textface
    \fi
    \edef\somefontspec{at \number\scaledfontsize sp}%
    \edef\somefontfile{\truefontname\somefontname}%
+   \ifx\somefontfile\s!unknown
+     \edef\somefontfile{\defaultfontfile}%
+   \fi
    \ifx\somefontfile\s!unknown
      \edef\somefontfile{\defaultfontfile}%
    \fi
@@ -845,7 +960,7 @@
       "\@@fontclassfallbacks",
       "\@@fontfallbacks",
       0\currentmathsize,
-      \number\dimexpr\textface\relax,
+      \number\scaledtextface,
       "\relativefontid", % experiment
       "\@@fontclassgoodies", % experiment (not yet used)
       "\@@fontgoodies" % experiment
@@ -1275,6 +1390,8 @@
 %D The \type {*} makes the switch local, so that we can redefine a
 %D logical name and/or change the size in between.
 
+%D todo: now mathsize twice in name (so it can go here)
+
 \newif\ifautofontsize \autofontsizetrue
 
 \let\lastfontidentifier\empty
@@ -1285,7 +1402,7 @@
 \let\oldrawfontidentifier\rawfontidentifier
 \let\oldnewfontidentifier\newfontidentifier
 
-\def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*}
+\def\newfontidentifier{*\fontclass\lastfontidentifier\fontstyle\fontsize*} % no \currentmathsize
 
 \def\dododefinefont#1#2%
   {\featureinheritancemode\featureinheritancefontonly
@@ -1792,6 +1909,8 @@
 %D If we move design size info to the lfg file (after all only lm
 %D has design sizes) we can get rid of much code .. 2012 or so.
 
+% todo: \s!parent
+
 \unexpanded\def\definebodyfont
   {\doquadrupleempty\redefinebodyfont}
 
@@ -1905,26 +2024,6 @@
    \else
      \expandafter\checktextbodyfont
    \fi{#1}} % no \c!!mm, not expanded later on
-
-% some day we can do an auto-fam if needed
-
-% \def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
-%   {%\message{!m #1 #2 #3!}%  #1 #2 #3 = signal
-%    %ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \mr \mb
-%    \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi} % \mm
-
-% \def\checktextbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
-%   {%\message{!t #1 #2 #3!}%
-%    \ifcsname   #1#3\endcsname\else\setugvalue   {#1#3}{\setcurrentfontstylesize               {#1}{#3}}\fi  % \rma
-%    \ifcsname   #2#3\endcsname\else\setugvalue   {#2#3}{\setcurrentfontalternativesize         {#2}{#3}}\fi  % \sla
-%    \ifcsname #1#2#3\endcsname\else\setugvalue {#1#2#3}{\setcurrentfontstylealternativesize{#1}{#2}{#3}}\fi  % \rmsla
-%    \ifcsname     #1\endcsname\else\setugvalue     {#1}{\setcurrentfontstyle                       {#1}}\fi  % \rm
-%    \ifcsname     #2\endcsname\else\setugvalue     {#2}{\setcurrentfontalternative                 {#2}}\fi  % \sl
-%    \ifcsname #1\c!x\endcsname\else\setugvalue {#1\c!x}{\setcurrentfontxstylealternative           {#1}}\fi  % \rmx
-%    \ifcsname#1\c!xx\endcsname\else\setugvalue{#1\c!xx}{\setcurrentfontxxstylealternative          {#1}}\fi  % \rmxx
-%    \ifcsname #2\c!x\endcsname\else\setugvalue {#2\c!x}{\setcurrentfontxalternative                {#2}}\fi  % \slx
-%    \ifcsname#2\c!xx\endcsname\else\setugvalue{#2\c!xx}{\setcurrentfontxxalternative               {#2}}\fi  % \slxx
-%    \ifcsname   #1#2\endcsname\else\setugvalue   {#1#2}{\setcurrentfontstylealternative        {#1}{#2}}\fi} % \rmsl
 
 \def\checkmathbodyfont#1#2#3% style alt size / gdef % #3 can be empty (checking needed as \bf is already defined)
   {%\message{!m #1 #2 #3!}%  #1 #2 #3 = signal
@@ -3929,35 +4028,6 @@
 %D implement a much faster alternative:
 
 \let\thedefinedfont\relax
-
-% \def\symbolicsizedfont#1#2#3%
-%   {\scaledfontsize#1%
-%    \scaledfontsize#2\scaledfontsize
-%    \font\thedefinedfont=\truefontname{\glyphfontfile{#3}} at \currentfontbodyscale\scaledfontsize\relax
-%    \thedefinedfont}
-%
-% \def\symbolicscaledfont
-%   {\symbolicsizedfont\fontbody}
-%
-% \unexpanded\def\symbolicfont
-%   {\symbolicsizedfont\fontbody\plusone}
-%
-% \unexpanded\def\getglyph#1#2% slow, faster, much faster
-%  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa \currentfontscale]\dummy#2}}
-%  %{{\definefont[\s!dummy][\glyphfontfile{#1} sa *]\dummy#2}}
-%  %{{\symbolicfont{#1}#2}}
-%   {{\symbolicfont{#1}\doifnumberelse{#2}\char\donothing#2}}
-%
-% \unexpanded\def\getscaledglyph#1#2#3%
-%   {{\symbolicscaledfont{#1}{#2}\doifnumberelse{#3}\char\donothing#3}}
-%
-% \unexpanded\def\getrawglyph#1#2% for simple symbols
-%   {{\scaledfontsize\fontbody
-%     \font\thedefinedfont=#1 at \currentfontbodyscale\scaledfontsize\relax
-%     \thedefinedfont\doifnumberelse{#2}\char\donothing#2}}
-%
-% \unexpanded\def\getfontchar#1#2%
-%   {{\symbolicfont{#1}\fontchar{#2}}}
 
 \def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%

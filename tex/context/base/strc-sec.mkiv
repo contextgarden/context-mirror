@@ -101,7 +101,7 @@
             \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
         }%
         \doifelselist\currenthead\donothing
-          {\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}%
+          {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \fi
     \presetlabeltext[\currenthead=]%
     \the\everysetuphead
