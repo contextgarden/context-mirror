@@ -212,9 +212,10 @@ function constructors.scale(tfmdata,specification)
     -- specification.textsize : natural (text)size
     -- parameters.mathsize    : 1=text 2=script 3=scriptscript >1000 enforced size (feature value other than yes)
     --
-    local mathsize   = tonumber(specification.mathsize) or 0
-    local textsize   = tonumber(specification.textsize) or scaledpoints
-    local forcedsize = tonumber(parameters.mathsize   ) or 0
+    local mathsize    = tonumber(specification.mathsize) or 0
+    local textsize    = tonumber(specification.textsize) or scaledpoints
+    local forcedsize  = tonumber(parameters.mathsize   ) or 0
+    local extrafactor = tonumber(specification.factor  ) or 1
     if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
         scaledpoints = parameters.scriptpercentage * textsize / 100
     elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
@@ -372,6 +373,11 @@ function constructors.scale(tfmdata,specification)
     local scaledwidth      = defaultwidth  * hdelta
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
+    --
+    if trace_defining then
+        report_defining("scaling by (%s,%s): name '%s', fullname: '%s', filename: '%s'",
+            hdelta,vdelta,name or "noname",fullname or "nofullname",filename or "nofilename")
+    end
     --
     local hasmath = (properties.has_math or next(mathparameters)) and true
     if hasmath then

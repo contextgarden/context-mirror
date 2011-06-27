@@ -601,6 +601,10 @@ local setsomefontsize    = context.fntsetsomesize
 
 function definers.stage_one(str)
     statistics.starttiming(fonts)
+    if trace_defining then
+        report_defining("memory usage before: %s",statistics.memused())
+        report_defining("start stage one: %s",str)
+    end
     local fullname, size = lpegmatch(splitpattern,str)
     local lookup, name, sub, method, detail = getspecification(fullname)
     if not name then
@@ -630,6 +634,9 @@ function definers.stage_one(str)
         setemptyfontsize()
     end
     specification = definers.makespecification(str,lookup,name,sub,method,detail,size)
+    if trace_defining then
+        report_defining("stop stage one")
+    end
 end
 
 local n = 0
@@ -640,7 +647,7 @@ local n = 0
 function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
-        report_defining("memory usage before: %s",statistics.memused())
+        report_defining("start stage two: %s (%s)",str,size)
     end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = getspecification(str or "")
@@ -714,7 +721,9 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
             specification.fallbacks = fontfallbacks
         end
     end
-    local tfmdata = definers.read(specification,size) -- id not yet known
+--~ report_defining("SIZE %s %s",size,specification.size)
+    local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
+--~ report_defining("HASH AFTER %s",specification.size)
     if not tfmdata then
         report_defining("unable to define %s as \\%s",name,cs)
         texsetcount("global","lastfontid",-1)
@@ -759,6 +768,7 @@ function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fon
     end
     if trace_defining then
         report_defining("memory usage after: %s",statistics.memused())
+        report_defining("stop stage two")
     end
     statistics.stoptiming(fonts)
 end

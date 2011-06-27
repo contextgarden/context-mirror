@@ -38,10 +38,14 @@ local mathematics = mathematics
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek
 
+local function todigit(n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
+local function toupper(n) local t = { } for i=0,26 do t[0x00041+i] = n+i end return t end
+local function tolower(n) local t = { } for i=0,26 do t[0x00061+i] = n+i end return t end
+
 local regular_tf = {
-    digits    = 0x00030,
-    ucletters = 0x00041,
-    lcletters = 0x00061,
+    digits    = todigit(0x00030),
+    ucletters = toupper(0x00041),
+    lcletters = tolower(0x00061),
     ucgreek   = {
         [0x0391]=0x0391, [0x0392]=0x0392, [0x0393]=0x0393, [0x0394]=0x0394, [0x0395]=0x0395,
         [0x0396]=0x0396, [0x0397]=0x0397, [0x0398]=0x0398, [0x0399]=0x0399, [0x039A]=0x039A,
@@ -65,7 +69,7 @@ local regular_tf = {
 
 local regular_it = {
     digits    = regular_tf.digits,
-    ucletters = 0x1D434,
+    ucletters = toupper(0x1D434),
     lcletters = { -- H
         [0x00061]=0x1D44E, [0x00062]=0x1D44F, [0x00063]=0x1D450, [0x00064]=0x1D451, [0x00065]=0x1D452,
         [0x00066]=0x1D453, [0x00067]=0x1D454, [0x00068]=0x0210E, [0x00069]=0x1D456, [0x0006A]=0x1D457,
@@ -96,9 +100,9 @@ local regular_it = {
 }
 
 local regular_bf= {
-    digits    = 0x1D7CE,
-    ucletters = 0x1D400,
-    lcletters = 0x1D41A,
+    digits    = todigit(0x1D7CE),
+    ucletters = toupper(0x1D400),
+    lcletters = tolower(0x1D41A),
     ucgreek   = {
         [0x0391]=0x1D6A8, [0x0392]=0x1D6A9, [0x0393]=0x1D6AA, [0x0394]=0x1D6AB, [0x0395]=0x1D6AC,
         [0x0396]=0x1D6AD, [0x0397]=0x1D6AE, [0x0398]=0x1D6AF, [0x0399]=0x1D6B0, [0x039A]=0x1D6B1,
@@ -122,8 +126,8 @@ local regular_bf= {
 
 local regular_bi = {
     digits    = regular_bf.digits,
-    ucletters = 0x1D468,
-    lcletters = 0x1D482,
+    ucletters = toupper(0x1D468),
+    lcletters = tolower(0x1D482),
     ucgreek   = {
         [0x0391]=0x1D71C, [0x0392]=0x1D71D, [0x0393]=0x1D71E, [0x0394]=0x1D71F, [0x0395]=0x1D720,
         [0x0396]=0x1D721, [0x0397]=0x1D722, [0x0398]=0x1D723, [0x0399]=0x1D724, [0x039A]=0x1D725,
@@ -153,9 +157,9 @@ local regular = {
 }
 
 local sansserif_tf = {
-    digits    = 0x1D7E2,
-    ucletters = 0x1D5A0,
-    lcletters = 0x1D5BA,
+    digits    = todigit(0x1D7E2),
+    ucletters = toupper(0x1D5A0),
+    lcletters = tolower(0x1D5BA),
     lcgreek   = regular_tf.lcgreek,
     ucgreek   = regular_tf.ucgreek,
     symbols   = regular_tf.symbols,
@@ -163,17 +167,17 @@ local sansserif_tf = {
 
 local sansserif_it = {
     digits    = regular_tf.digits,
-    ucletters = 0x1D608,
-    lcletters = 0x1D622,
+    ucletters = toupper(0x1D608),
+    lcletters = tolower(0x1D622),
     lcgreek   = regular_tf.lcgreek,
     ucgreek   = regular_tf.ucgreek,
     symbols   = regular_tf.symbols,
 }
 
 local sansserif_bf = {
-    digits    = 0x1D7EC,
-    ucletters = 0x1D5D4,
-    lcletters = 0x1D5EE,
+    digits    = todigit(0x1D7EC),
+    ucletters = toupper(0x1D5D4),
+    lcletters = tolower(0x1D5EE),
     ucgreek   = {
         [0x0391]=0x1D756, [0x0392]=0x1D757, [0x0393]=0x1D758, [0x0394]=0x1D759, [0x0395]=0x1D75A,
         [0x0396]=0x1D75B, [0x0397]=0x1D75C, [0x0398]=0x1D75D, [0x0399]=0x1D75E, [0x039A]=0x1D75F,
@@ -197,8 +201,8 @@ local sansserif_bf = {
 
 local sansserif_bi = {
     digits    = sansserif_bf.digits,
-    ucletters = 0x1D63C,
-    lcletters = 0x1D656,
+    ucletters = toupper(0x1D63C),
+    lcletters = tolower(0x1D656),
     ucgreek   = {
         [0x0391]=0x1D790, [0x0392]=0x1D791, [0x0393]=0x1D792, [0x0394]=0x1D793, [0x0395]=0x1D794,
         [0x0396]=0x1D795, [0x0397]=0x1D796, [0x0398]=0x1D797, [0x0399]=0x1D798, [0x039A]=0x1D799,
@@ -228,9 +232,9 @@ local sansserif = {
 }
 
 local monospaced_tf = {
-    digits    = 0x1D7F6,
-    ucletters = 0x1D670,
-    lcletters = 0x1D68A,
+    digits    = todigit(0x1D7F6),
+    ucletters = toupper(0x1D670),
+    lcletters = tolower(0x1D68A),
     lcgreek   = sansserif_tf.lcgreek,
     ucgreek   = sansserif_tf.ucgreek,
     symbols   = sansserif_tf.symbols,
@@ -244,7 +248,7 @@ local monospaced = {
 }
 
 local blackboard_tf = {
-    digits    = 0x1D7D8,
+    digits    = todigit(0x1D7D8),
     ucletters = { -- C H N P Q R Z
         [0x00041]=0x1D538, [0x00042]=0x1D539, [0x00043]=0x02102, [0x00044]=0x1D53B, [0x00045]=0x1D53C,
         [0x00046]=0x1D53D, [0x00047]=0x1D53E, [0x00048]=0x0210D, [0x00049]=0x1D540, [0x0004A]=0x1D541,
@@ -253,7 +257,7 @@ local blackboard_tf = {
         [0x00055]=0x1D54C, [0x00056]=0x1D54D, [0x00057]=0x1D54E, [0x00058]=0x1D54F, [0x00059]=0x1D550,
         [0x0005A]=0x02124,
     },
-    lcletters = 0x1D552,
+    lcletters = tolower(0x1D552),
     lcgreek   = { -- gamma pi
         [0x03B3]=0x0213C, [0x03C0]=0x0213D,
     },
@@ -286,7 +290,7 @@ local fraktur_tf= {
         [0x00055]=0x1D518, [0x00056]=0x1D519, [0x00057]=0x1D51A, [0x00058]=0x1D51B, [0x00059]=0x1D51C,
         [0x0005A]=0x02128,
     },
-    lcletters = 0x1D51E,
+    lcletters = tolower(0x1D51E),
     lcgreek   = regular_tf.lcgreek,
     ucgreek   = regular_tf.ucgreek,
     symbols   = regular_tf.symbols,
@@ -294,8 +298,8 @@ local fraktur_tf= {
 
 local fraktur_bf = {
     digits    = regular_bf.digits,
-    ucletters = 0x1D56C,
-    lcletters = 0x1D586,
+    ucletters = toupper(0x1D56C),
+    lcletters = tolower(0x1D586),
     lcgreek   = regular_bf.lcgreek,
     ucgreek   = regular_bf.ucgreek,
     symbols   = regular_bf.symbols,
@@ -308,7 +312,7 @@ local fraktur = { -- ok
     bi = fraktur_bf,
 }
 
-local script_tf= {
+local script_tf = {
     digits    = regular_tf.digits,
     ucletters = { -- B E F H I L M R -- P 2118
         [0x00041]=0x1D49C, [0x00042]=0x0212C, [0x00043]=0x1D49E, [0x00044]=0x1D49F, [0x00045]=0x02130,
@@ -333,8 +337,8 @@ local script_tf= {
 
 local script_bf = {
     digits    = regular_bf.digits,
-    ucletters = 0x1D4D0,
-    lcletters = 0x1D4EA,
+    ucletters = toupper(0x1D4D0),
+    lcletters = tolower(0x1D4EA),
     lcgreek   = regular_bf.lcgreek,
     ucgreek   = regular_bf.ucgreek,
     symbols   = regular_bf.symbols,
@@ -357,6 +361,35 @@ local alphabets = allocate {
 }
 
 mathematics.alphabets = alphabets
+
+local boldmap = { }
+
+local function remap(tf,bf)
+    for _, alphabet in next, alphabets do
+        local tfdata = alphabet[tf]
+        local bfdata = alphabet[bf]
+        if tfdata then
+            for k, tfd in next, tfdata do
+                if type(tfd) == "table" then
+                    local bfd = bfdata[k]
+                    if bfd then
+                        for n, u in next, tfd do
+                            local bn = bfd[n]
+                            if bn then
+                                boldmap[u] = bn
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+remap("tf","bf")
+remap("it","bi")
+
+mathematics.boldmap = boldmap
 
 local mathremap = { }
 
@@ -481,6 +514,7 @@ function mathematics.remapalphabets(char,mathalphabet,mathgreek)
             end
         end
     end
+    -- table test can go away
     if mathalphabet and mathalphabet > 0 then
         local newchar
         local offset = mathremap[mathalphabet]

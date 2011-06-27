@@ -179,26 +179,6 @@ local ten = {
     { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional=true },
 }
 
-local ten_bold = {
-    { name = "lmroman10-bold.otf", features = "virtualmath", main = true },
-    { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
-    { name = "lmmib10.tfm", vector = "tex-mi", skewchar=0x7F },
-    { name = "lmmib10.tfm", vector = "tex-it", skewchar=0x7F },
-    { name = "lmbsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,
-    { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
--- copied from roman:
-    { name = "msam10.tfm", vector = "tex-ma" },
-    { name = "msbm10.tfm", vector = "tex-mb" },
-    { name = "stmary10.afm", vector = "tex-mc" },
- -- { name = "rm-lmbx10.tfm", vector = "tex-bf" } ,
-    { name = "lmroman10-bold.otf", vector = "tex-bf" } ,
-    { name = "lmmib10.tfm", vector = "tex-bi", skewchar=0x7F } ,
-    { name = "lmsans10-regular.otf", vector = "tex-ss", optional=true },
-    { name = "lmmono10-regular.otf", vector = "tex-tt", optional=true },
-    { name = "eufm10.tfm", vector = "tex-fraktur", optional=true },
-    { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional=true },
-}
-
 -- rm-lmr12  : LMMathRoman12-Regular
 -- rm-lmbx12 : LMMathRoman12-Bold
 -- lmmi12    : LMMathItalic12-Italic
@@ -256,15 +236,14 @@ return {
             "mkiv-base.map",
         },
         virtuals = {
-            ["lmroman5-math"]      = five,
-            ["lmroman6-math"]      = six,
-            ["lmroman7-math"]      = seven,
-            ["lmroman8-math"]      = eight,
-            ["lmroman9-math"]      = nine,
-            ["lmroman10-math"]     = ten,
-            ["lmroman10-boldmath"] = ten_bold,
-            ["lmroman12-math"]     = twelve,
-            ["lmroman17-math"]     = seventeen,
+            ["lmroman5-math"]  = five,
+            ["lmroman6-math"]  = six,
+            ["lmroman7-math"]  = seven,
+            ["lmroman8-math"]  = eight,
+            ["lmroman9-math"]  = nine,
+            ["lmroman10-math"] = ten,
+            ["lmroman12-math"] = twelve,
+            ["lmroman17-math"] = seventeen,
         },
         variables = {
             joinrelfactor = 3, -- default anyway

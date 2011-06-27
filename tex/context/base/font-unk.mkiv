@@ -43,7 +43,11 @@
 \definefontsynonym [MonoCaps]           [unknown]
 
 \definefontsynonym [MathRoman]          [unknown]
+\definefontsynonym [MathRomanL2R]       [MathRoman]
+\definefontsynonym [MathRomanR2L]       [MathRoman]
 \definefontsynonym [MathRomanBold]      [MathRoman]
+\definefontsynonym [MathRomanBoldL2R]   [MathRomanBold]
+\definefontsynonym [MathRomanBoldR2L]   [MathRomanBold]
 
 \definefontsynonym [Handwriting]        [unknown]
 \definefontsynonym [Calligraphic]       [unknown]
@@ -128,28 +132,10 @@
 \definebodyfont [default] [mm]
   [mr=MathRoman mo 1,
    mrlr=MathRomanL2R mo 1,
-   mrrl=MathRomanR2L mo 1]
-
-% \definebodyfont [default] [mm]
-%   [mr=MathRoman mo 1,
-%    mrlr=MathRomanL2R mo 1,
-%    mrrl=MathRomanR2L mo 1,
-%    mb=MathRomanBold mo 1,
-%    mblr=MathRomanBoldL2R mo 1,
-%    mbrl=MathRomanBoldR2L mo 1]
-
-\definebodyfont [bfmath] [mm] % why not just bold
-  [mr=MathRomanBold mo 1,
-   mrlr=MathRomanBoldL2R mo 1,
-   mrrl=MathRomanBoldR2L mo 1]
-
-% \definebodyfont [bidi] [mm]
-%   [mrlr=MathRomanL2R mo 1,
-%    mrrl=MathRomanR2L mo 1]
-
-% \definebodyfont [bidibfmath] [mm]
-%   [mrlr=MathRomanBoldL2R mo 1,
-%    mrrl=MathRomanBoldR2L mo 1]
+   mrrl=MathRomanR2L mo 1,
+   mb=MathRomanBold mo 1,
+   mblr=MathRomanBoldL2R mo 1,
+   mbrl=MathRomanBoldR2L mo 1]
 
 \definebodyfont [default] [hw]
   [tf=Handwriting sa 1]

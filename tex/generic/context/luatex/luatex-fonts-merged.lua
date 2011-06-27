@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/26/11 13:23:20
+-- merge date  : 06/27/11 20:17:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -3290,9 +3290,10 @@ function constructors.scale(tfmdata,specification)
     -- specification.textsize : natural (text)size
     -- parameters.mathsize    : 1=text 2=script 3=scriptscript >1000 enforced size (feature value other than yes)
     --
-    local mathsize   = tonumber(specification.mathsize) or 0
-    local textsize   = tonumber(specification.textsize) or scaledpoints
-    local forcedsize = tonumber(parameters.mathsize   ) or 0
+    local mathsize    = tonumber(specification.mathsize) or 0
+    local textsize    = tonumber(specification.textsize) or scaledpoints
+    local forcedsize  = tonumber(parameters.mathsize   ) or 0
+    local extrafactor = tonumber(specification.factor  ) or 1
     if (mathsize == 2 or forcedsize == 2) and parameters.scriptpercentage then
         scaledpoints = parameters.scriptpercentage * textsize / 100
     elseif (mathsize == 3 or forcedsize == 3) and parameters.scriptscriptpercentage then
@@ -3450,6 +3451,11 @@ function constructors.scale(tfmdata,specification)
     local scaledwidth      = defaultwidth  * hdelta
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta
+    --
+    if trace_defining then
+        report_defining("scaling by (%s,%s): name '%s', fullname: '%s', filename: '%s'",
+            hdelta,vdelta,name or "noname",fullname or "nofullname",filename or "nofilename")
+    end
     --
     local hasmath = (properties.has_math or next(mathparameters)) and true
     if hasmath then
@@ -11781,7 +11787,7 @@ function definers.registersplit(symbol,action,verbosename)
     end
 end
 
-function definers.makespecification(specification, lookup, name, sub, method, detail, size)
+function definers.makespecification(specification,lookup,name,sub,method,detail,size)
     size = size or 655360
     if trace_defining then
         report_defining("%s -> lookup: %s, name: %s, sub: %s, method: %s, detail: %s",
@@ -12057,13 +12063,24 @@ function definers.read(specification,size,id) -- id can be optional, name can al
     specification = definers.resolve(specification)
     local hash = constructors.hashinstance(specification)
     local tfmdata = definers.registered(hash) -- id
-    if not tfmdata then
+    if tfmdata then
+        if trace_defining then
+            report_defining("already hashed: %s",hash)
+        end
+    else
         tfmdata = definers.loadfont(specification) -- can be overloaded
         if tfmdata then
---~ constructors.checkvirtualid(tfmdata) -- interferes
+            if trace_defining then
+                report_defining("loaded and hashed: %s",hash)
+            end
+        --~ constructors.checkvirtualid(tfmdata) -- interferes
             tfmdata.properties.hash = hash
             if id then
                 definers.register(tfmdata,id)
+            end
+        else
+            if trace_defining then
+                report_defining("not loaded and hashed: %s",hash)
             end
         end
     end
@@ -12074,7 +12091,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         local properties = tfmdata.properties or { }
         local parameters = tfmdata.parameters or { }
         report_defining("using %s font with id %s, name:%s size:%s bytes:%s encoding:%s fullname:%s filename:%s",
-                       properties.type          or "unknown",
+                       properties.format        or "unknown",
                        id                       or "?",
                        properties.name          or "?",
                        parameters.size          or "default",

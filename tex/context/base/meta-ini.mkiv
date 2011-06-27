@@ -912,7 +912,6 @@
 \to \everyMPgraphic
 
 \appendtoks % before color
-   %\normalexpanded{\noexpand\definecolor[currentcolor][\currentcolorname]}%
     \doregistercolor{currentcolor}\currentcolorname
 \to \everyMPgraphic
 
@@ -921,10 +920,6 @@
 % fill fullcircle scaled 2cm withcolor \MPcolor{currentcolor} ;
 % fill fullcircle scaled 1cm withcolor \MPcolor{red} ;
 % \stopMPcode def}
-
-% \appendtoks
-%     \doactivatecolor\s!black\forcecolorhack % we can also move this to the backend
-% \to \everyMPgraphic
 
 \appendtoks
     \baselineskip1\baselineskip
