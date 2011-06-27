@@ -60,7 +60,7 @@ scripts.update.texformats = {
     "cont-ro",
     "cont-uk",
     "cont-pe",
-    "cont-xp",
+ -- "cont-xp",
     "mptopdf",
     "plain"
 }
@@ -229,6 +229,7 @@ function scripts.update.synchronize()
         dir.mkdirs(format("%s/%s", texroot, "texmf-local"))
         dir.mkdirs(format("%s/%s", texroot, "texmf-project"))
         dir.mkdirs(format("%s/%s", texroot, "texmf-fonts"))
+        dir.mkdirs(format("%s/%s", texroot, "texmf-modules"))
     end
 
     if ok or not force then
@@ -417,7 +418,7 @@ function scripts.update.synchronize()
     resolvers.load_tree(texroot) -- else we operate in the wrong tree
 
     -- update filename database for pdftex/xetex
-    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
     -- update filename database for luatex
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
@@ -446,7 +447,7 @@ function scripts.update.make()
 
     resolvers.load_tree(texroot)
 
-    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
 
     local askedformats = formats
@@ -479,7 +480,7 @@ function scripts.update.make()
     if not force then
         report("make, use --force to really make formats")
     end
-    scripts.update.run(format('mtxrun --tree="%s" --direct mktexlsr',texroot))
+    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
     report("make, done")
 end

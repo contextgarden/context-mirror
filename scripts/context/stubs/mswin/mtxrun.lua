@@ -14907,12 +14907,12 @@ runners.registered = {
     xmltools     = { 'xmltools.rb',     true  },
  -- luatools     = { 'luatools.lua',    true  },
     mtxtools     = { 'mtxtools.rb',     true  },
-    pdftrimwhite = { 'pdftrimwhite.pl', false }
+    pdftrimwhite = { 'pdftrimwhite.pl', false },
 }
 
 runners.launchers = {
     windows = { },
-    unix = { }
+    unix    = { },
 }
 
 -- like runners.libpath("framework"): looks on script's subpath
@@ -15431,9 +15431,11 @@ instance.lsrmode  = environment.argument("lsr") or false
 
 local is_mkii_stub = runners.registered[file.removesuffix(file.basename(filename))]
 
-if environment.argument("usekpse") or environment.argument("forcekpse") or is_mkii_stub then
+local e_argument = environment.argument
 
-    resolvers.load_tree(environment.argument('tree'),true) -- force resolve of TEXMFCNF
+if e_argument("usekpse") or e_argument("forcekpse") or is_mkii_stub then
+
+    resolvers.load_tree(e_argument('tree'),true) -- force resolve of TEXMFCNF
 
     os.setenv("engine","")
     os.setenv("progname","")
@@ -15446,7 +15448,7 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
         other = "other text files",
     }
 
-    local progname = environment.argument("progname") or 'context'
+    local progname = e_argument("progname") or 'context'
 
     local function kpse_initialized()
         texconfig.kpse_init = true
@@ -15461,7 +15463,7 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
     local findfile = resolvers.findfile
     local showpath = resolvers.showpath
 
-    if environment.argument("forcekpse") then
+    if e_argument("forcekpse") then
 
         function resolvers.findfile(name,kind)
             return (kpse_initialized():find_file(resolvers.cleanpath(name),(kind ~= "" and (remapper[kind] or kind)) or "tex") or "") or ""
@@ -15470,7 +15472,7 @@ if environment.argument("usekpse") or environment.argument("forcekpse") or is_mk
             return (kpse_initialized():show_path(name)) or ""
         end
 
-    elseif environment.argument("usekpse") or is_mkii_stub then
+    elseif e_argument("usekpse") or is_mkii_stub then
 
         resolvers.load()
 
@@ -15509,12 +15511,12 @@ else
         end
     end
 
-    resolvers.load_tree(environment.argument('tree'))
+    resolvers.load_tree(e_argument('tree'),e_argument("resolve"))
 
 end
 
 
-if environment.argument("selfmerge") then
+if e_argument("selfmerge") then
 
     -- embed used libraries
 
@@ -15524,27 +15526,27 @@ if environment.argument("selfmerge") then
         utilities.merger.selfmerge(own.name,own.libs,{ found })
     end
 
-elseif environment.argument("selfclean") then
+elseif e_argument("selfclean") then
 
     -- remove embedded libraries
 
     runners.loadbase()
     utilities.merger.selfclean(own.name)
 
-elseif environment.argument("selfupdate") then
+elseif e_argument("selfupdate") then
 
     runners.loadbase()
     trackers.enable("resolvers.locating")
     resolvers.updatescript(own.name,"mtxrun")
 
-elseif environment.argument("ctxlua") or environment.argument("internal") then
+elseif e_argument("ctxlua") or e_argument("internal") then
 
     -- run a script by loading it (using libs)
 
     runners.loadbase()
     ok = runners.execute_script(filename,true)
 
-elseif environment.argument("script") or environment.argument("scripts") then
+elseif e_argument("script") or e_argument("scripts") then
 
     -- run a script by loading it (using libs), pass args
 
@@ -15555,100 +15557,100 @@ elseif environment.argument("script") or environment.argument("scripts") then
         ok = runners.execute_ctx_script(filename)
     end
 
-elseif environment.argument("execute") then
+elseif e_argument("execute") then
 
     -- execute script
 
     runners.loadbase()
     ok = runners.execute_script(filename)
 
-elseif environment.argument("direct") then
+elseif e_argument("direct") then
 
     -- equals bin:
 
     runners.loadbase()
     ok = runners.execute_program(filename)
 
-elseif environment.argument("edit") then
+elseif e_argument("edit") then
 
     -- edit file
 
     runners.loadbase()
     runners.edit_script(filename)
 
-elseif environment.argument("launch") then
+elseif e_argument("launch") then
 
     runners.loadbase()
     runners.launch_file(filename)
 
-elseif environment.argument("makestubs") then
+elseif e_argument("makestubs") then
 
     -- make stubs (depricated)
 
     runners.handle_stubs(true)
 
-elseif environment.argument("removestubs") then
+elseif e_argument("removestubs") then
 
     -- remove stub (depricated)
 
     runners.loadbase()
     runners.handle_stubs(false)
 
-elseif environment.argument("resolve") then
+elseif e_argument("resolve") then
 
     -- resolve string
 
     runners.loadbase()
     runners.resolve_string(filename)
 
-elseif environment.argument("locate") then
+elseif e_argument("locate") then
 
     -- locate file (only database)
 
     runners.loadbase()
     runners.locate_file(filename)
 
-elseif environment.argument("platform") or environment.argument("show-platform") then
+elseif e_argument("platform") or e_argument("show-platform") then
 
     -- locate platform
 
     runners.loadbase()
     runners.locate_platform()
 
-elseif environment.argument("prefixes") then
+elseif e_argument("prefixes") then
 
     runners.loadbase()
     runners.prefixes()
 
-elseif environment.argument("timedrun") then
+elseif e_argument("timedrun") then
 
     -- locate platform
 
     runners.loadbase()
     runners.timedrun(filename)
 
-elseif environment.argument("variables") or environment.argument("show-variables") or environment.argument("expansions") or environment.argument("show-expansions") then
+elseif e_argument("variables") or e_argument("show-variables") or e_argument("expansions") or e_argument("show-expansions") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--expansions",filename)
 
     resolvers.load("nofiles")
-    resolvers.listers.variables(environment.argument("pattern"))
+    resolvers.listers.variables(e_argument("pattern"))
 
-elseif environment.argument("configurations") or environment.argument("show-configurations") then
+elseif e_argument("configurations") or e_argument("show-configurations") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--configurations",filename)
 
     resolvers.load("nofiles")
     resolvers.listers.configurations()
 
-elseif environment.argument("find-file") then
+elseif e_argument("find-file") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--find-file",filename)
 
     resolvers.load()
-    local e_all     = environment.argument("all")
-    local e_pattern = environment.argument("pattern")
-    local e_format  = environment.argument("format")
+    local e_all     = e_argument("all")
+    local e_pattern = e_argument("pattern")
+    local e_format  = e_argument("format")
     local finder    = e_all and resolvers.findfiles or resolvers.findfile
     if not e_pattern then
         runners.register_arguments(filename)
@@ -15658,7 +15660,7 @@ elseif environment.argument("find-file") then
         resolvers.dowithfilesandreport(finder,{ e_pattern },e_format)
     end
 
-elseif environment.argument("find-path") then
+elseif e_argument("find-path") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--find-path",filename)
 
@@ -15670,7 +15672,7 @@ elseif environment.argument("find-path") then
         print(path)
     end
 
-elseif environment.argument("expand-braces") then
+elseif e_argument("expand-braces") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--expand-braces",filename)
 
@@ -15679,7 +15681,7 @@ elseif environment.argument("expand-braces") then
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.expandbraces, environment.files)
 
-elseif environment.argument("expand-path") then
+elseif e_argument("expand-path") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--expand-path",filename)
 
@@ -15688,7 +15690,7 @@ elseif environment.argument("expand-path") then
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.expandpath, environment.files)
 
-elseif environment.argument("expand-var") or environment.argument("expand-variable") then
+elseif e_argument("expand-var") or e_argument("expand-variable") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--expand-var",filename)
 
@@ -15697,7 +15699,7 @@ elseif environment.argument("expand-var") or environment.argument("expand-variab
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.expansion, environment.files)
 
-elseif environment.argument("show-path") or environment.argument("path-value") then
+elseif e_argument("show-path") or e_argument("path-value") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--show-path",filename)
 
@@ -15706,7 +15708,7 @@ elseif environment.argument("show-path") or environment.argument("path-value") t
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.showpath, environment.files)
 
-elseif environment.argument("var-value") or environment.argument("show-value") then
+elseif e_argument("var-value") or e_argument("show-value") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--show-value",filename)
 
@@ -15715,20 +15717,20 @@ elseif environment.argument("var-value") or environment.argument("show-value") t
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.variable,environment.files)
 
-elseif environment.argument("format-path") then
+elseif e_argument("format-path") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--format-path",filename)
 
     resolvers.load()
     report(caches.getwritablepath("format"))
 
-elseif environment.argument("pattern") then
+elseif e_argument("pattern") then
 
     -- luatools
 
-    runners.execute_ctx_script("mtx-base","--pattern='" .. environment.argument("pattern") .. "'",filename)
+    runners.execute_ctx_script("mtx-base","--pattern='" .. e_argument("pattern") .. "'",filename)
 
-elseif environment.argument("generate") then
+elseif e_argument("generate") then
 
     -- luatools
 
@@ -15738,7 +15740,7 @@ elseif environment.argument("generate") then
 
     e_verbose = true
 
-elseif environment.argument("make") or environment.argument("ini") or environment.argument("compile") then
+elseif e_argument("make") or e_argument("ini") or e_argument("compile") then
 
     -- luatools: runners.execute_ctx_script("mtx-base","--make",filename)
 
@@ -15746,25 +15748,25 @@ elseif environment.argument("make") or environment.argument("ini") or environmen
     trackers.enable("resolvers.locating")
     environment.make_format(filename)
 
-elseif environment.argument("run") then
+elseif e_argument("run") then
 
     -- luatools
 
     runners.execute_ctx_script("mtx-base","--run",filename)
 
-elseif environment.argument("fmt") then
+elseif e_argument("fmt") then
 
     -- luatools
 
     runners.execute_ctx_script("mtx-base","--fmt",filename)
 
-elseif environment.argument("help") and filename=='base' then
+elseif e_argument("help") and filename=='base' then
 
     -- luatools
 
     runners.execute_ctx_script("mtx-base","--help")
 
-elseif environment.argument("help") or filename=='help' or filename == "" then
+elseif e_argument("help") or filename=='help' or filename == "" then
 
     application.help()
 
