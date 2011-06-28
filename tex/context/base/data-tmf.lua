@@ -47,7 +47,13 @@ function resolvers.load_tree(tree,resolve)
         -- Beware, we need to obey the relocatable autoparent so we
         -- set TEXMFCNF to its raw value. This is somewhat tricky when
         -- we run a mkii job from within. Therefore, in mtxrun, there
-        -- is a resolve applied when we're in mkii/kpse mode.
+        -- is a resolve applied when we're in mkii/kpse mode or when
+        -- --resolve is passed to mtxrun. Maybe we should also set the
+        -- local AUTOPARENT etc. although these are alwasy set new.
+
+        if resolve then
+            resolvers.luacnfspec = resolvers.resolve(resolvers.luacnfspec)
+        end
 
         setenv('SELFAUTOPARENT', newroot)
         setenv('SELFAUTODIR',    newtree)
@@ -55,11 +61,12 @@ function resolvers.load_tree(tree,resolve)
         setenv('TEXROOT',        newroot)
         setenv('TEXOS',          texos)
         setenv('TEXMFOS',        texmfos)
-        setenv('TEXMFCNF',       resolvers.luacnfspec, not resolve)
-        setenv("PATH",           newpath .. io.pathseparator .. getenv("PATH"))
+        setenv('TEXMFCNF',       resolvers.luacnfspec,true) -- already resolved
+        setenv('PATH',           newpath .. io.pathseparator .. getenv('PATH'))
 
         report_tds("changing from root '%s' to '%s'",oldroot,newroot)
-        report_tds("prepending '%s' to binary path",newpath)
+        report_tds("prepending '%s' to PATH",newpath)
+        report_tds("setting TEXMFCNF to '%s'",resolvers.luacnfspec)
         report_tds()
     end
 end

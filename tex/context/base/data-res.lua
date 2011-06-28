@@ -136,7 +136,7 @@ local     instance = resolvers.instance or nil -- the current one (fast access)
 function resolvers.setenv(key,value,raw)
     if instance then
         -- this one will be consulted first when we stay inside
-        -- the current environment
+        -- the current environment (prefixes are not resolved here)
         instance.environment[key] = value
         -- we feed back into the environment, and as this is used
         -- by other applications (via os.execute) we need to make
