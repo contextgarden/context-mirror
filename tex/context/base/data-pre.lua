@@ -24,6 +24,8 @@ local cleanpath, findgivenfile, expansion = resolvers.cleanpath, resolvers.findg
 local getenv = resolvers.getenv -- we can probably also use resolvers.expansion
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
+-- getenv = function(...) return resolvers.getenv(...) end -- needs checking (definitions changes later on)
+
 prefixes.environment = function(str)
     return cleanpath(expansion(str))
 end
