@@ -705,7 +705,7 @@ end
 local ordinals = {
     english = function(n)
         local two = n % 100
-        if two == 11 or two == 12 or to == 13 then
+        if two == 11 or two == 12 or two == 13 then
             return "th"
         else
             local one = n % 10
@@ -742,6 +742,7 @@ end
 function commands.ordinal(n,language)
     local t = language and ordinals[language]
     local o = t and t(n)
+    context(n)
     if o then
         context.highordinalstr(o)
     end

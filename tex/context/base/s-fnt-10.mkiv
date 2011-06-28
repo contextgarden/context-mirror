@@ -124,7 +124,7 @@ end
    \font\TestFontB=#1 at #2
    \setuplayout[style=\TestFontA]
    \setupheadertexts[]
-   \setupfootertexts[#1 -- \pagenumber]
+   \setupfootertexts[#1\space\endash\space\pagenumber]
    \setuplayout[width=middle,height=middle,topspace=1cm,backspace=1cm,header=1cm,footer=2cm]
    \TestFontB \setupinterlinespace[line=1.2\dimexpr#2\relax] \raggedcenter
    \nonknuthmode
