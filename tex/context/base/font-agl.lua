@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['font-map'] = {
+if not modules then modules = { } end modules ['font-agl'] = {
     version   = 1.001,
     comment   = "companion to font-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

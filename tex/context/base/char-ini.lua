@@ -418,7 +418,7 @@ setmetatableindex(characters.is_spacing,   mt)
 -- linebreak: todo: hash
 --
 -- normative   : BK CR LF CM SG GL CB SP ZW NL WJ JL JV JT H2 H3
--- informative : XX OP CL QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2
+-- informative : XX OP CL QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2 new:CP
 
 -- east asian width:
 --
