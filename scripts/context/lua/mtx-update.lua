@@ -20,7 +20,8 @@ local helpinfo = [[
 --rsync=string        rsync binary (rsync)
 --texroot=string      installation directory (not guessed for the moment)
 --engine=string       tex engine (luatex, pdftex, xetex)
---extras=string       extra modules (can be list or 'all')
+--modules=string      extra modules (can be list or 'all')
+--fonts=string        additional fonts (can be list or 'all')
 --goodies=string      extra binaries (like scite and texworks)
 --force               instead of a dryrun, do the real thing
 --update              update minimal tree
@@ -31,13 +32,13 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-update",
-    banner   = "ConTeXt Minimals Updater 0.22",
+    banner   = "ConTeXt Minimals Updater 0.30",
     helpinfo = helpinfo,
 }
 
 local report = application.report
 
-local format, concat, gmatch, gsub = string.format, table.concat, string.gmatch, string.gsub
+local format, concat, gmatch, gsub, find = string.format, table.concat, string.gmatch, string.gsub, string.find
 
 scripts         = scripts         or { }
 scripts.update  = scripts.update  or { }
@@ -180,6 +181,9 @@ scripts.update.selfscripts = {
 scripts.update.modules = {
 }
 
+scripts.update.fonts = {
+}
+
 function scripts.update.run(str)
     -- important, otherwise formats fly to a weird place
     -- (texlua sets luatex as the engine, we need to reset that or to fix texexec :)
@@ -211,7 +215,8 @@ function scripts.update.synchronize()
     local bin          = states.get("rsync.program")     -- rsync
     local url          = states.get("rsync.server")      -- contextgarden.net
     local version      = states.get("context.version")   -- current (or beta)
-    local extras       = states.get("extras")            -- extras (like modules)
+    local modules      = states.get("modules")           -- modules (third party)
+    local fonts        = states.get("fonts")             -- fonts (experimental or special)
     local goodies      = states.get("goodies")           -- goodies (like editors)
     local force        = environment.argument("force")
 
@@ -292,20 +297,41 @@ function scripts.update.synchronize()
 
         -- rsync://contextgarden.net/minimals/current/modules/
 
-        if extras and type(extras) == "table" then
+        if modules and type(modules) == "table" then
             -- fetch the list of available modules from rsync server
             local available_modules = get_list_of_files_from_rsync({"modules/"})
             -- hash of requested modules
-            -- local h = table.tohash(extras:split(","))
+            -- local h = table.tohash(modules:split(","))
+            local asked = table.copy(modules)
+            asked.all = nil
             for i=1,#available_modules do
                 local s = available_modules[i]
-            --  if extras == "all" or h[s] then
-                if extras.all or extras[s] then
-                    scripts.update.modules[#scripts.update.modules+1] = { format("modules/%s/",s), "texmf-context" }
+                if modules.all or modules[s] then
+                    scripts.update.modules[#scripts.update.modules+1] = { format("modules/%s/",s), "texmf-modules" }
                 end
+                asked[s] = nil
             end
-            -- TODO: check if every module from the list has been added and issue warning otherwise
-            -- one idea to do it: remove every value from h once added and then check if anything is left in h
+            if next(asked) then
+                report("skipping unknown modules: %s",table.concat(table.sortedkeys(asked),", "))
+            end
+        end
+
+        -- rsync://contextgarden.net/minimals/current/fonts/extra/
+
+        if fonts and type(fonts) == "table" then
+            local available_fonts = get_list_of_files_from_rsync({"fonts/extra/"})
+            local asked = table.copy(fonts)
+            asked.all = nil
+            for i=1,#available_fonts do
+                local s = available_fonts[i]
+                if fonts.all or fonts[s] then
+                    scripts.update.fonts[#scripts.update.fonts+1] = { format("fonts/extra/%s/",s), "texmf" }
+                end
+                asked[s] = nil
+            end
+            if next(asked) then
+                report("skipping unknown fonts: %s",table.concat(table.sortedkeys(asked),", "))
+            end
         end
 
         local function add_collection(collection,platform)
@@ -332,6 +358,9 @@ function scripts.update.synchronize()
         end
         for platform, _ in next, platforms do
             add_collection(scripts.update.modules,platform)
+        end
+        for platform, _ in next, platforms do
+            add_collection(scripts.update.fonts,platform)
         end
         for engine, _ in next, engines do
             for platform, _ in next, platforms do
@@ -544,8 +573,20 @@ if scripts.savestate then
     states.set("formats.cont-nl", true)
     states.set("formats.metafun", true)
 
-    for r in gmatch(environment.argument("extras") or "","([^, ]+)") do
-        states.set("extras." .. r, true)
+    for r in gmatch(environment.argument("extras") or "","([^, ]+)") do -- for old times sake
+        if not find(r,"^[a-z]%-") then
+            r= "t-" .. r
+        end
+        states.set("modules." .. r, true)
+    end
+    for r in gmatch(environment.argument("modules") or "","([^, ]+)") do
+        if not find(r,"^[a-z]%-") then
+            r= "t-" .. r
+        end
+        states.set("modules." .. r, true)
+    end
+    for r in gmatch(environment.argument("fonts") or "","([^, ]+)") do
+        states.set("fonts." .. r, true)
     end
     for r in gmatch(environment.argument("goodies") or "","([^, ]+)") do
         states.set("goodies." .. r, true)
