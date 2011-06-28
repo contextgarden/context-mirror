@@ -14871,7 +14871,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtxrun",
-    banner   = "ConTeXt TDS Runner Tool 1.30",
+    banner   = "ConTeXt TDS Runner Tool 1.31",
     helpinfo = helpinfo,
 }
 

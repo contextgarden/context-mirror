@@ -1,6 +1,6 @@
 %\module [
 %  file=s-map-se,
-%  version=2005.02.03,
+%  version=2011.06.28,
 %  title=\CONTEXT\ Style File,
 %  subtitle=\MAPS\ basis stijl,
 %  author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
@@ -20,23 +20,21 @@
 %   3. one column, with wide left margin (option asym)
 % - font sizes deviate from TeX's usual geometric progression
 % - use of sans-serif for headers and various details
-% - option realfonts uses Bitstream Charter, Euler Math and Latin Modern.
+% - option realfonts uses Linux Libertine, Euler Math and Inconsolata.
 %   This is used for final typesetting.
 %   The default font setup, intended for authors, uses Computer
-%   Modern.
+%   Modern Math instead of Euler Math (which is still in beta),
+%   and LM Mono instead of Inconsolata.
 
 % A mode nosubsub defines only two levels of sectioning. If you
 % don't need more and use the two-column layout, then this option
 % will probably improve the looks of your paper.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% pdftex support
 
 \newif\ifMapsInColumns
 \doifmode{asym}{\enablemode[onecolumn]} % implies onecolumn
 \doifnotmode{onecolumn}{\MapsInColumnstrue}
-
-\enablemode[realfonts]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% fonts
@@ -107,25 +105,20 @@
 
 \usetypescriptfile[type-inconsolata]
 
-\startmode[mkii]
-\starttypescript [maps] [ec]
-\definetypeface [maps] [mm] [math]  [euler]     [default] [encoding=default,rscale=0.9]
-\usemathcollection[euler]
-\definetypeface [maps] [tt] [mono]  [inconsolata] [default] [encoding=ec,rscale=0.92]
-\definetypeface [maps] [ss] [sans]  [default]     [default] [encoding=ec,rscale=0.95]
-\definetypeface [maps] [rm] [serif] [libertine]   [default] [encoding=ec]
-\stoptypescript
-\usetypescript[maps] [ec]
-\stopmode
-
-\startmode[mkiv]
 \starttypescript [maps]
+\definetypeface [maps] [rm] [serif] [modern]      [default] [rscale=0.95]
+\definetypeface [maps] [mm] [math]  [modern]      [computer-modern]
+\definetypeface [maps] [tt] [mono]  [modern]      [default] [rscale=0.90]
+\definetypeface [maps] [ss] [sans]  [modern]      [default] [rscale=0.95]
+\stoptypescript
+
+\startmode[realfonts]
+\starttypescript [maps]
+\definetypeface [maps] [rm] [serif] [libertine]   [default]
 \definetypeface [maps] [mm] [math]  [euler]       [default] [rscale=0.9]
 \definetypeface [maps] [tt] [mono]  [inconsolata] [default] [rscale=0.92]
 \definetypeface [maps] [ss] [sans]  [modern]      [default] [rscale=0.95]
-\definetypeface [maps] [rm] [serif] [libertine]   [default]
 \stoptypescript
-\usetypescript[maps]
 \stopmode
 
 \setupbodyfont[maps,10pt,rm]
@@ -136,10 +129,6 @@
 \setupfontsynonym[handling=pure]
 
 \setupalign[hanging]
-
-% \usetypescript[map][texnansi]
-
-% \setupbodyfont [map,10pt]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% additional general typographic details
@@ -269,36 +258,14 @@
 %%% floats
 
 \setupfloats [location=center, before={\ss}]
-\setupcaptions [headstyle={\ss},style={\ssx},
-   stopper=.,distance=6pt,
+\setupcaptions [headstyle={\ssbf},style={\ssx},
+   suffix=.,distance=6pt,
    inbetween={\blank[halfline]}]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% various document elements
 
-%\startnotmode[realfonts]
-\def\ChkBox{%
-  \hbox {\boxrulewidth=.4pt \raise.2ex\ruledvbox
-        {\phantom{\vrule width .85ex height .85ex%
-}}}}
-
-\startmode[mkii]
-\pdfmapline{stmary10 stmary10 <stmary10.pfb}
-\def\ChkBox{\definedfont[stmary10]{\char "40}}
-\stopmode
-
-\startmode[mkiv]
-\def\ChkBox{\definedfont[file:stmary10]{\char "40}} % doesnt work
-\def\ChkBox{%
-  \hbox {\boxrulewidth=.4pt \raise.2ex\ruledvbox
-        {\phantom{\vrule width .85ex height .85ex%
-}}}}
-\stopmode
-%\stopnotmode
-%\startmode[realfonts]
-%\def\ChkBox{\raise.12ex\hbox{\ws \char50}}
-%\stopmode
-\definesymbol [1][\ChkBox]
+\definesymbol [1][\getnamedglyphdirect{file:stmary10}{boxempty}]
 
 \setupitemize[1][packed]
 
@@ -328,7 +295,6 @@
 
 \unexpanded\def\smalltyping{%
   \switchtobodyfont[tt]%
-%  \setuplocalinterlinespace[line=11pt]%
   \parindent=0pt
 }
 
@@ -350,8 +316,7 @@
 \setupfootnotes
    [location=none,
     width=\textwidth,
-%     bodyfont={rm,9pt},
-    before=,
+    before={\blank},
     numbercommand=,
     command=\footnum]
 
@@ -403,15 +368,24 @@
      Address=,
      Page=1,
      Title=,
-     Author=,
-	 Period=VOORJAAR,
- 	 Number=40,
-	 Year=2010,
+     Author=, 
+     Period=,
+     Number=,
+     Year=,
      #1]%
-  \doifinstringelse{oorjaar}{\MapsPeriod}{\def\MapsPeriod{VOORJAAR}}{}%
-  \doifinstringelse{pring}{\MapsPeriod}{\def\MapsPeriod{VOORJAAR}}{}%
-  \doifinstringelse{ajaar}{\MapsPeriod}{\def\MapsPeriod{NAJAAR}}{}%
-  \doifinstringelse{utumn}{\MapsPeriod}{\def\MapsPeriod{NAJAAR}}{}%
+  \doifnothing{\MapsPeriod}{%
+    \ifnum \normalmonth<6 \gdef\MapsPeriod{VOORJAAR}\else \gdef\MapsPeriod{NAJAAR}\fi}
+  \doifinstringelse{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifinstringelse{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifnothing{\MapsYear}{\gdef\MapsYear{\the\year}}%
+  \doifnothing{\MapsNumber}{%
+    \ifnum \normalmonth<6 
+      \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2\relax}%
+    \else 
+      \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2+1\relax}%
+    \fi }%
   \doifnothing\MapsRunningAuthor
     {\global\let\MapsRunningAuthor\MapsAuthor}%
   \doifnothing\MapsRunningTitle
@@ -420,8 +394,7 @@
 \def\dostartArticle[#1]{%
   \MapsBibData[#1]
   \pageno=\MapsPage
-  \count0=\MapsPage
-  \setuppagenumber[number=\MapsPage]
+  \setupuserpagenumber[start=\MapsPage]
   \startbaselinecorrection
   \bgroup
     \hsize = 457pt
@@ -453,8 +426,6 @@
   \fi
 }
 
-\definecolumnset[mapsset][n=2,grid=on]
-
 \def\startArticle{\dosingleempty\dostartArticle}
 
 \def\signArticle{%
@@ -476,10 +447,6 @@
 \installpagebreakhandler{last}{}
 
 %%% `logos' %%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% don't do this for the proceedings because it is a TUGboat also
-%\def\LATEX{\LaTeX}
-%\def\TEX{\TeX}
 
 \unexpanded\def\LaTeX % requested by erik frambach
   {{\setbox\scratchbox\hbox{L}%
@@ -538,19 +505,6 @@
 }
 
 \def\fulltextwidth{457pt}
-
-%\MapsBibData
-%   []
-
-%\abovedisplayskip = 12pt
-%\abovedisplayshortskip = 6pt
-
-\newdimen\iabovedisplayskip
-\newdimen\iabovedisplayshortskip
-%\let\abovedisplayskip\iabovedisplayskip
-%\let\abovedisplayshortskip\iabovedisplayshortskip
-
-%\protect
 
 \def\startdescription
   {\blank

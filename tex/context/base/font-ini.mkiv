@@ -574,14 +574,17 @@
    \let\currentmathsize\!!plusthree\let\fontbody\scriptscriptface\dodosetmathfamily\scriptscriptfont#1%
    \let\currentmathsize\!!plustwo  \let\fontbody\scriptface      \dodosetmathfamily\scriptfont      #1%
    \let\currentmathsize\!!plusone  \let\fontbody\textface        \dodosetmathfamily\textfont        #1%
-   \expandafter\xdef\csname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname{%
-     \scriptscriptfont#1\csname*\fontclass\scriptscriptface\c!mm#23\fontsize3*\endcsname
-     \scriptfont      #1\csname*\fontclass\scriptface      \c!mm#22\fontsize2*\endcsname
-     \textfont        #1\csname*\fontclass\textface        \c!mm#21\fontsize1*\endcsname
-   }%
+   \dosavefontclassmathfamily#1#2%
    \let\currentmathsize\empty
    \let\fontbody\savedfontbody
    \autofontsizefalse}
+
+\def\dosavefontclassmathfamily#1#2%
+  {\expandafter\xdef\csname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname{%
+     \scriptscriptfont#1\csname*\fontclass\scriptscriptface\c!mm#23\fontsize3*\endcsname
+     \scriptfont      #1\csname*\fontclass\scriptface      \c!mm#22\fontsize2*\endcsname
+     \textfont        #1\csname*\fontclass\textface        \c!mm#21\fontsize1*\endcsname
+   }}
 
 % It would be nice if characters could be defined in a neutral way (say fam 255) and
 % be mapped to a real family during noad list construction. However, this changes
@@ -711,15 +714,29 @@
 
 % we need \fontid (or could store this for a fontclass)
 
-\appendtoks
-    \edef\currentmathfontmr{\fontname\textfont\zerocount}%
-    \edef\currentmathfontmb{\fontname\textfont\plusthree}%
-    \ifx\currentmathfontmr\currentmathfontmb
-        \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
-    \else
-        \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
-    \fi
-\to \mathstrategies
+\ifdefined\fontid
+
+    \appendtoks
+        \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
+            \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
+        \else
+            \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
+        \fi
+    \to \mathstrategies
+
+\else
+
+    \appendtoks
+        \edef\currentmathfontmr{\fontname\textfont\zerocount}%
+        \edef\currentmathfontmb{\fontname\textfont\plusthree}%
+        \ifx\currentmathfontmr\currentmathfontmb
+            \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
+        \else
+            \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
+        \fi
+    \to \mathstrategies
+
+\fi
 
 \def\synchronizemathboldstrategy {\csname\??ff:ms:\fontclass\endcsname}
 
