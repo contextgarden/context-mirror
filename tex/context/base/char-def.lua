@@ -57317,6 +57317,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER H",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x0068 },
   unicodeslot=0x2095,
  },
  [0x2096]={
@@ -57324,6 +57325,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER K",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x006B },
   unicodeslot=0x2096,
  },
  [0x2097]={
@@ -57331,6 +57333,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER L",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x006C },
   unicodeslot=0x2097,
  },
  [0x2098]={
@@ -57338,6 +57341,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER M",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x006D },
   unicodeslot=0x2098,
  },
  [0x2099]={
@@ -57345,6 +57349,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER N",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x006E },
   unicodeslot=0x2099,
  },
  [0x209A]={
@@ -57352,6 +57357,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER P",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x0070 },
   unicodeslot=0x209A,
  },
  [0x209B]={
@@ -57359,6 +57365,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER S",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x0073 },
   unicodeslot=0x209B,
  },
  [0x209C]={
@@ -57366,6 +57373,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER T",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x0074 },
   unicodeslot=0x209C,
  },
  [0x20A0]={
@@ -58539,6 +58547,7 @@ characters.data={
   description="VULGAR FRACTION ONE SEVENTH",
   direction="on",
   linebreak="al",
+  specials={ "fraction", 0x0031, 0x2044, 0x0037 },
   unicodeslot=0x2150,
  },
  [0x2151]={
@@ -58546,6 +58555,7 @@ characters.data={
   description="VULGAR FRACTION ONE NINTH",
   direction="on",
   linebreak="al",
+  specials={ "fraction", 0x0031, 0x2044, 0x0039 },
   unicodeslot=0x2151,
  },
  [0x2152]={
@@ -58553,6 +58563,7 @@ characters.data={
   description="VULGAR FRACTION ONE TENTH",
   direction="on",
   linebreak="al",
+  specials={ "fraction", 0x0031, 0x2044, 0x0031, 0x0030 },
   unicodeslot=0x2152,
  },
  [0x2153]={
@@ -59120,6 +59131,7 @@ characters.data={
   description="VULGAR FRACTION ZERO THIRDS",
   direction="on",
   linebreak="ai",
+  specials={ "fraction", 0x0030, 0x2044, 0x0033 },
   unicodeslot=0x2189,
  },
  [0x2190]={
@@ -79748,6 +79760,7 @@ characters.data={
   description="LATIN SUBSCRIPT SMALL LETTER J",
   direction="l",
   linebreak="al",
+  specials={ "sub", 0x006A },
   unicodeslot=0x2C7C,
  },
  [0x2C7D]={
@@ -79755,6 +79768,7 @@ characters.data={
   description="MODIFIER LETTER CAPITAL V",
   direction="l",
   linebreak="al",
+  specials={ "super", 0x0056 },
   unicodeslot=0x2C7D,
  },
  [0x2C7E]={
@@ -90599,6 +90613,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH QUESTION",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x554F },
   unicodeslot=0x3244,
  },
  [0x3245]={
@@ -90607,6 +90622,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH KINDERGARTEN",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x5E7C },
   unicodeslot=0x3245,
  },
  [0x3246]={
@@ -90615,6 +90631,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH SCHOOL",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x6587 },
   unicodeslot=0x3246,
  },
  [0x3247]={
@@ -90623,6 +90640,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH KOTO",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x7B8F },
   unicodeslot=0x3247,
  },
  [0x3248]={
@@ -109348,6 +109366,7 @@ characters.data={
   description="MODIFIER LETTER US",
   direction="l",
   linebreak="al",
+  specials={ "super", 0xA76F },
   unicodeslot=0xA770,
  },
  [0xA771]={
@@ -118456,6 +118475,7 @@ characters.data={
   description="CJK COMPATIBILITY IDEOGRAPH-FA6B",
   direction="l",
   linebreak="id",
+  specials={ "char", 0x6075 },
   unicodeslot=0xFA6B,
  },
  [0xFA6C]={
@@ -118464,6 +118484,7 @@ characters.data={
   description="CJK COMPATIBILITY IDEOGRAPH-FA6C",
   direction="l",
   linebreak="id",
+  specials={ "char", 0x242EE },
   unicodeslot=0xFA6C,
  },
  [0xFA6D]={
@@ -118472,6 +118493,7 @@ characters.data={
   description="CJK COMPATIBILITY IDEOGRAPH-FA6D",
   direction="l",
   linebreak="id",
+  specials={ "char", 0x8218 },
   unicodeslot=0xFA6D,
  },
  [0xFA70]={
@@ -139051,6 +139073,7 @@ characters.data={
   description="KAITHI LETTER DDDHA",
   direction="l",
   linebreak="al",
+  specials={ "char", 0x11099, 0x110BA },
   unicodeslot=0x1109A,
  },
  [0x1109B]={
@@ -139065,6 +139088,7 @@ characters.data={
   description="KAITHI LETTER RHA",
   direction="l",
   linebreak="al",
+  specials={ "char", 0x1109B, 0x110BA },
   unicodeslot=0x1109C,
  },
  [0x1109D]={
@@ -139170,6 +139194,7 @@ characters.data={
   description="KAITHI LETTER VA",
   direction="l",
   linebreak="al",
+  specials={ "char", 0x110A5, 0x110BA },
   unicodeslot=0x110AB,
  },
  [0x110AC]={
@@ -171605,6 +171630,7 @@ characters.data={
   description="DIGIT ZERO FULL STOP",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0030, 0x002E },
   unicodeslot=0x1F100,
  },
  [0x1F101]={
@@ -171613,6 +171639,7 @@ characters.data={
   description="DIGIT ZERO COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0030, 0x002C },
   unicodeslot=0x1F101,
  },
  [0x1F102]={
@@ -171621,6 +171648,7 @@ characters.data={
   description="DIGIT ONE COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0031, 0x002C },
   unicodeslot=0x1F102,
  },
  [0x1F103]={
@@ -171629,6 +171657,7 @@ characters.data={
   description="DIGIT TWO COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0032, 0x002C },
   unicodeslot=0x1F103,
  },
  [0x1F104]={
@@ -171637,6 +171666,7 @@ characters.data={
   description="DIGIT THREE COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0033, 0x002C },
   unicodeslot=0x1F104,
  },
  [0x1F105]={
@@ -171645,6 +171675,7 @@ characters.data={
   description="DIGIT FOUR COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0034, 0x002C },
   unicodeslot=0x1F105,
  },
  [0x1F106]={
@@ -171653,6 +171684,7 @@ characters.data={
   description="DIGIT FIVE COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0035, 0x002C },
   unicodeslot=0x1F106,
  },
  [0x1F107]={
@@ -171661,6 +171693,7 @@ characters.data={
   description="DIGIT SIX COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0036, 0x002C },
   unicodeslot=0x1F107,
  },
  [0x1F108]={
@@ -171669,6 +171702,7 @@ characters.data={
   description="DIGIT SEVEN COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0037, 0x002C },
   unicodeslot=0x1F108,
  },
  [0x1F109]={
@@ -171677,6 +171711,7 @@ characters.data={
   description="DIGIT EIGHT COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0038, 0x002C },
   unicodeslot=0x1F109,
  },
  [0x1F10A]={
@@ -171685,6 +171720,7 @@ characters.data={
   description="DIGIT NINE COMMA",
   direction="en",
   linebreak="ai",
+  specials={ "compat", 0x0039, 0x002C },
   unicodeslot=0x1F10A,
  },
  [0x1F110]={
@@ -171693,6 +171729,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER A",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0041, 0x0029 },
   unicodeslot=0x1F110,
  },
  [0x1F111]={
@@ -171701,6 +171738,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER B",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0042, 0x0029 },
   unicodeslot=0x1F111,
  },
  [0x1F112]={
@@ -171709,6 +171747,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER C",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0043, 0x0029 },
   unicodeslot=0x1F112,
  },
  [0x1F113]={
@@ -171717,6 +171756,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER D",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0044, 0x0029 },
   unicodeslot=0x1F113,
  },
  [0x1F114]={
@@ -171725,6 +171765,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER E",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0045, 0x0029 },
   unicodeslot=0x1F114,
  },
  [0x1F115]={
@@ -171733,6 +171774,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER F",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0046, 0x0029 },
   unicodeslot=0x1F115,
  },
  [0x1F116]={
@@ -171741,6 +171783,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER G",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0047, 0x0029 },
   unicodeslot=0x1F116,
  },
  [0x1F117]={
@@ -171749,6 +171792,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER H",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0048, 0x0029 },
   unicodeslot=0x1F117,
  },
  [0x1F118]={
@@ -171757,6 +171801,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER I",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0049, 0x0029 },
   unicodeslot=0x1F118,
  },
  [0x1F119]={
@@ -171765,6 +171810,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER J",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004A, 0x0029 },
   unicodeslot=0x1F119,
  },
  [0x1F11A]={
@@ -171773,6 +171819,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER K",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004B, 0x0029 },
   unicodeslot=0x1F11A,
  },
  [0x1F11B]={
@@ -171781,6 +171828,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER L",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004C, 0x0029 },
   unicodeslot=0x1F11B,
  },
  [0x1F11C]={
@@ -171789,6 +171837,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER M",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004D, 0x0029 },
   unicodeslot=0x1F11C,
  },
  [0x1F11D]={
@@ -171797,6 +171846,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER N",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004E, 0x0029 },
   unicodeslot=0x1F11D,
  },
  [0x1F11E]={
@@ -171805,6 +171855,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER O",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x004F, 0x0029 },
   unicodeslot=0x1F11E,
  },
  [0x1F11F]={
@@ -171813,6 +171864,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER P",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0050, 0x0029 },
   unicodeslot=0x1F11F,
  },
  [0x1F120]={
@@ -171821,6 +171873,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER Q",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0051, 0x0029 },
   unicodeslot=0x1F120,
  },
  [0x1F121]={
@@ -171829,6 +171882,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER R",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0052, 0x0029 },
   unicodeslot=0x1F121,
  },
  [0x1F122]={
@@ -171837,6 +171891,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER S",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0053, 0x0029 },
   unicodeslot=0x1F122,
  },
  [0x1F123]={
@@ -171845,6 +171900,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER T",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0054, 0x0029 },
   unicodeslot=0x1F123,
  },
  [0x1F124]={
@@ -171853,6 +171909,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER U",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0055, 0x0029 },
   unicodeslot=0x1F124,
  },
  [0x1F125]={
@@ -171861,6 +171918,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER V",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0056, 0x0029 },
   unicodeslot=0x1F125,
  },
  [0x1F126]={
@@ -171869,6 +171927,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER W",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0057, 0x0029 },
   unicodeslot=0x1F126,
  },
  [0x1F127]={
@@ -171877,6 +171936,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER X",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0058, 0x0029 },
   unicodeslot=0x1F127,
  },
  [0x1F128]={
@@ -171885,6 +171945,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER Y",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x0059, 0x0029 },
   unicodeslot=0x1F128,
  },
  [0x1F129]={
@@ -171893,6 +171954,7 @@ characters.data={
   description="PARENTHESIZED LATIN CAPITAL LETTER Z",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x0028, 0x005A, 0x0029 },
   unicodeslot=0x1F129,
  },
  [0x1F12A]={
@@ -171901,6 +171963,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED LATIN CAPITAL LETTER S",
   direction="l",
   linebreak="ai",
+  specials={ "compat", 0x3014, 0x0053, 0x3015 },
   unicodeslot=0x1F12A,
  },
  [0x1F12B]={
@@ -171909,6 +171972,7 @@ characters.data={
   description="CIRCLED ITALIC LATIN CAPITAL LETTER C",
   direction="l",
   linebreak="ai",
+  specials={ "circle", 0x0043 },
   unicodeslot=0x1F12B,
  },
  [0x1F12C]={
@@ -171917,6 +171981,7 @@ characters.data={
   description="CIRCLED ITALIC LATIN CAPITAL LETTER R",
   direction="l",
   linebreak="ai",
+  specials={ "circle", 0x0052 },
   unicodeslot=0x1F12C,
  },
  [0x1F12D]={
@@ -171925,6 +171990,7 @@ characters.data={
   description="CIRCLED CD",
   direction="l",
   linebreak="ai",
+  specials={ "circle", 0x0043, 0x0044 },
   unicodeslot=0x1F12D,
  },
  [0x1F12E]={
@@ -171932,6 +171998,7 @@ characters.data={
   description="CIRCLED WZ",
   direction="l",
   linebreak="al",
+  specials={ "circle", 0x0057, 0x005A },
   unicodeslot=0x1F12E,
  },
  [0x1F130]={
@@ -171940,6 +172007,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER A",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0041 },
   unicodeslot=0x1F130,
  },
  [0x1F131]={
@@ -171948,6 +172016,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER B",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0042 },
   unicodeslot=0x1F131,
  },
  [0x1F132]={
@@ -171956,6 +172025,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER C",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0043 },
   unicodeslot=0x1F132,
  },
  [0x1F133]={
@@ -171964,6 +172034,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER D",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0044 },
   unicodeslot=0x1F133,
  },
  [0x1F134]={
@@ -171972,6 +172043,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER E",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0045 },
   unicodeslot=0x1F134,
  },
  [0x1F135]={
@@ -171980,6 +172052,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER F",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0046 },
   unicodeslot=0x1F135,
  },
  [0x1F136]={
@@ -171988,6 +172061,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER G",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0047 },
   unicodeslot=0x1F136,
  },
  [0x1F137]={
@@ -171996,6 +172070,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER H",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0048 },
   unicodeslot=0x1F137,
  },
  [0x1F138]={
@@ -172004,6 +172079,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER I",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0049 },
   unicodeslot=0x1F138,
  },
  [0x1F139]={
@@ -172012,6 +172088,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER J",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004A },
   unicodeslot=0x1F139,
  },
  [0x1F13A]={
@@ -172020,6 +172097,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER K",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004B },
   unicodeslot=0x1F13A,
  },
  [0x1F13B]={
@@ -172028,6 +172106,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER L",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004C },
   unicodeslot=0x1F13B,
  },
  [0x1F13C]={
@@ -172036,6 +172115,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER M",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004D },
   unicodeslot=0x1F13C,
  },
  [0x1F13D]={
@@ -172044,6 +172124,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER N",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004E },
   unicodeslot=0x1F13D,
  },
  [0x1F13E]={
@@ -172052,6 +172133,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER O",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004F },
   unicodeslot=0x1F13E,
  },
  [0x1F13F]={
@@ -172060,6 +172142,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER P",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0050 },
   unicodeslot=0x1F13F,
  },
  [0x1F140]={
@@ -172068,6 +172151,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER Q",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0051 },
   unicodeslot=0x1F140,
  },
  [0x1F141]={
@@ -172076,6 +172160,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER R",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0052 },
   unicodeslot=0x1F141,
  },
  [0x1F142]={
@@ -172084,6 +172169,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER S",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0053 },
   unicodeslot=0x1F142,
  },
  [0x1F143]={
@@ -172092,6 +172178,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER T",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0054 },
   unicodeslot=0x1F143,
  },
  [0x1F144]={
@@ -172100,6 +172187,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER U",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0055 },
   unicodeslot=0x1F144,
  },
  [0x1F145]={
@@ -172108,6 +172196,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER V",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0056 },
   unicodeslot=0x1F145,
  },
  [0x1F146]={
@@ -172116,6 +172205,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER W",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0057 },
   unicodeslot=0x1F146,
  },
  [0x1F147]={
@@ -172124,6 +172214,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER X",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0058 },
   unicodeslot=0x1F147,
  },
  [0x1F148]={
@@ -172132,6 +172223,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER Y",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0059 },
   unicodeslot=0x1F148,
  },
  [0x1F149]={
@@ -172140,6 +172232,7 @@ characters.data={
   description="SQUARED LATIN CAPITAL LETTER Z",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x005A },
   unicodeslot=0x1F149,
  },
  [0x1F14A]={
@@ -172148,6 +172241,7 @@ characters.data={
   description="SQUARED HV",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0048, 0x0056 },
   unicodeslot=0x1F14A,
  },
  [0x1F14B]={
@@ -172156,6 +172250,7 @@ characters.data={
   description="SQUARED MV",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x004D, 0x0056 },
   unicodeslot=0x1F14B,
  },
  [0x1F14C]={
@@ -172164,6 +172259,7 @@ characters.data={
   description="SQUARED SD",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0053, 0x0044 },
   unicodeslot=0x1F14C,
  },
  [0x1F14D]={
@@ -172172,6 +172268,7 @@ characters.data={
   description="SQUARED SS",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0053, 0x0053 },
   unicodeslot=0x1F14D,
  },
  [0x1F14E]={
@@ -172180,6 +172277,7 @@ characters.data={
   description="SQUARED PPV",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0050, 0x0050, 0x0056 },
   unicodeslot=0x1F14E,
  },
  [0x1F14F]={
@@ -172188,6 +172286,7 @@ characters.data={
   description="SQUARED WC",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0057, 0x0043 },
   unicodeslot=0x1F14F,
  },
  [0x1F150]={
@@ -172660,6 +172759,7 @@ characters.data={
   description="SQUARE DJ",
   direction="l",
   linebreak="ai",
+  specials={ "square", 0x0044, 0x004A },
   unicodeslot=0x1F190,
  },
  [0x1F191]={
@@ -172930,6 +173030,7 @@ characters.data={
   description="SQUARE HIRAGANA HOKA",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x307B, 0x304B },
   unicodeslot=0x1F200,
  },
  [0x1F201]={
@@ -172938,6 +173039,7 @@ characters.data={
   description="SQUARED KATAKANA KOKO",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x30B3, 0x30B3 },
   unicodeslot=0x1F201,
  },
  [0x1F202]={
@@ -172946,6 +173048,7 @@ characters.data={
   description="SQUARED KATAKANA SA",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x30B5 },
   unicodeslot=0x1F202,
  },
  [0x1F210]={
@@ -172954,6 +173057,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-624B",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x624B },
   unicodeslot=0x1F210,
  },
  [0x1F211]={
@@ -172962,6 +173066,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5B57",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5B57 },
   unicodeslot=0x1F211,
  },
  [0x1F212]={
@@ -172970,6 +173075,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-53CC",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x53CC },
   unicodeslot=0x1F212,
  },
  [0x1F213]={
@@ -172978,6 +173084,7 @@ characters.data={
   description="SQUARED KATAKANA DE",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x30C7 },
   unicodeslot=0x1F213,
  },
  [0x1F214]={
@@ -172986,6 +173093,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-4E8C",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x4E8C },
   unicodeslot=0x1F214,
  },
  [0x1F215]={
@@ -172994,6 +173102,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-591A",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x591A },
   unicodeslot=0x1F215,
  },
  [0x1F216]={
@@ -173002,6 +173111,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-89E3",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x89E3 },
   unicodeslot=0x1F216,
  },
  [0x1F217]={
@@ -173010,6 +173120,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5929",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5929 },
   unicodeslot=0x1F217,
  },
  [0x1F218]={
@@ -173018,6 +173129,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-4EA4",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x4EA4 },
   unicodeslot=0x1F218,
  },
  [0x1F219]={
@@ -173026,6 +173138,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6620",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6620 },
   unicodeslot=0x1F219,
  },
  [0x1F21A]={
@@ -173034,6 +173147,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-7121",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x7121 },
   unicodeslot=0x1F21A,
  },
  [0x1F21B]={
@@ -173042,6 +173156,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6599",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6599 },
   unicodeslot=0x1F21B,
  },
  [0x1F21C]={
@@ -173050,6 +173165,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-524D",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x524D },
   unicodeslot=0x1F21C,
  },
  [0x1F21D]={
@@ -173058,6 +173174,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5F8C",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5F8C },
   unicodeslot=0x1F21D,
  },
  [0x1F21E]={
@@ -173066,6 +173183,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-518D",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x518D },
   unicodeslot=0x1F21E,
  },
  [0x1F21F]={
@@ -173074,6 +173192,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-65B0",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x65B0 },
   unicodeslot=0x1F21F,
  },
  [0x1F220]={
@@ -173082,6 +173201,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-521D",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x521D },
   unicodeslot=0x1F220,
  },
  [0x1F221]={
@@ -173090,6 +173210,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-7D42",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x7D42 },
   unicodeslot=0x1F221,
  },
  [0x1F222]={
@@ -173098,6 +173219,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-751F",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x751F },
   unicodeslot=0x1F222,
  },
  [0x1F223]={
@@ -173106,6 +173228,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-8CA9",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x8CA9 },
   unicodeslot=0x1F223,
  },
  [0x1F224]={
@@ -173114,6 +173237,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-58F0",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x58F0 },
   unicodeslot=0x1F224,
  },
  [0x1F225]={
@@ -173122,6 +173246,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5439",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5439 },
   unicodeslot=0x1F225,
  },
  [0x1F226]={
@@ -173130,6 +173255,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6F14",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6F14 },
   unicodeslot=0x1F226,
  },
  [0x1F227]={
@@ -173138,6 +173264,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6295",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6295 },
   unicodeslot=0x1F227,
  },
  [0x1F228]={
@@ -173146,6 +173273,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6355",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6355 },
   unicodeslot=0x1F228,
  },
  [0x1F229]={
@@ -173154,6 +173282,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-4E00",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x4E00 },
   unicodeslot=0x1F229,
  },
  [0x1F22A]={
@@ -173162,6 +173291,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-4E09",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x4E09 },
   unicodeslot=0x1F22A,
  },
  [0x1F22B]={
@@ -173170,6 +173300,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-904A",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x904A },
   unicodeslot=0x1F22B,
  },
  [0x1F22C]={
@@ -173178,6 +173309,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5DE6",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5DE6 },
   unicodeslot=0x1F22C,
  },
  [0x1F22D]={
@@ -173186,6 +173318,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-4E2D",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x4E2D },
   unicodeslot=0x1F22D,
  },
  [0x1F22E]={
@@ -173194,6 +173327,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-53F3",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x53F3 },
   unicodeslot=0x1F22E,
  },
  [0x1F22F]={
@@ -173202,6 +173336,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6307",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6307 },
   unicodeslot=0x1F22F,
  },
  [0x1F230]={
@@ -173210,6 +173345,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-8D70",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x8D70 },
   unicodeslot=0x1F230,
  },
  [0x1F231]={
@@ -173218,6 +173354,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6253",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6253 },
   unicodeslot=0x1F231,
  },
  [0x1F232]={
@@ -173226,6 +173363,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-7981",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x7981 },
   unicodeslot=0x1F232,
  },
  [0x1F233]={
@@ -173234,6 +173372,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-7A7A",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x7A7A },
   unicodeslot=0x1F233,
  },
  [0x1F234]={
@@ -173242,6 +173381,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5408",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5408 },
   unicodeslot=0x1F234,
  },
  [0x1F235]={
@@ -173250,6 +173390,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6E80",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6E80 },
   unicodeslot=0x1F235,
  },
  [0x1F236]={
@@ -173258,6 +173399,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6709",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6709 },
   unicodeslot=0x1F236,
  },
  [0x1F237]={
@@ -173266,6 +173408,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-6708",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x6708 },
   unicodeslot=0x1F237,
  },
  [0x1F238]={
@@ -173274,6 +173417,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-7533",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x7533 },
   unicodeslot=0x1F238,
  },
  [0x1F239]={
@@ -173282,6 +173426,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-5272",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x5272 },
   unicodeslot=0x1F239,
  },
  [0x1F23A]={
@@ -173290,6 +173435,7 @@ characters.data={
   description="SQUARED CJK UNIFIED IDEOGRAPH-55B6",
   direction="l",
   linebreak="id",
+  specials={ "square", 0x55B6 },
   unicodeslot=0x1F23A,
  },
  [0x1F240]={
@@ -173298,6 +173444,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-672C",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x672C, 0x3015 },
   unicodeslot=0x1F240,
  },
  [0x1F241]={
@@ -173306,6 +173453,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-4E09",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x4E09, 0x3015 },
   unicodeslot=0x1F241,
  },
  [0x1F242]={
@@ -173314,6 +173462,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-4E8C",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x4E8C, 0x3015 },
   unicodeslot=0x1F242,
  },
  [0x1F243]={
@@ -173322,6 +173471,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-5B89",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x5B89, 0x3015 },
   unicodeslot=0x1F243,
  },
  [0x1F244]={
@@ -173330,6 +173480,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-70B9",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x70B9, 0x3015 },
   unicodeslot=0x1F244,
  },
  [0x1F245]={
@@ -173338,6 +173489,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-6253",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x6253, 0x3015 },
   unicodeslot=0x1F245,
  },
  [0x1F246]={
@@ -173346,6 +173498,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-76D7",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x76D7, 0x3015 },
   unicodeslot=0x1F246,
  },
  [0x1F247]={
@@ -173354,6 +173507,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-52DD",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x52DD, 0x3015 },
   unicodeslot=0x1F247,
  },
  [0x1F248]={
@@ -173362,6 +173516,7 @@ characters.data={
   description="TORTOISE SHELL BRACKETED CJK UNIFIED IDEOGRAPH-6557",
   direction="l",
   linebreak="id",
+  specials={ "compat", 0x3014, 0x6557, 0x3015 },
   unicodeslot=0x1F248,
  },
  [0x1F250]={
@@ -173370,6 +173525,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH ADVANTAGE",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x5F97 },
   unicodeslot=0x1F250,
  },
  [0x1F251]={
@@ -173378,6 +173534,7 @@ characters.data={
   description="CIRCLED IDEOGRAPH ACCEPT",
   direction="l",
   linebreak="id",
+  specials={ "circle", 0x53EF },
   unicodeslot=0x1F251,
  },
  [0x1F300]={
