@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
     license   = "see context related readme files"
 }
 
--- tex.print == line with endlinechar appended
-
 local concat, tohandle = table.concat, table.tohandle
 local find, splitlines = string.find, string.splitlines
 local tostring, type = tostring, type

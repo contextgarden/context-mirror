@@ -213,6 +213,8 @@ end
 --     return regime and synonyms[regime] or regime or currentregime
 -- end
 --
+-- commands.setregimesynonym = regimes.setsynonym
+--
 -- function commands.trueregimename(regime)
 --     context(regimes.truename(regime))
 -- end

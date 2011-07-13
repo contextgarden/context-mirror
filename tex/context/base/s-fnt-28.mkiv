@@ -13,7 +13,7 @@
 
 \startluacode
     function fonts.tracers.files(goodyfile)
-        local goodies = fonts.goodies.get(goodyfile)
+        local goodies = fonts.goodies.load(goodyfile)
         if goodies then
             local files = goodies.files
             if files and files.list then

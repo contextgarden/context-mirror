@@ -13,11 +13,11 @@ local report_buffers = logs.reporter("buffers","usage")
 
 local concat = table.concat
 local type, next = type, next
-local sub, format, count, splitlines = string.sub, string.format, string.count, string.splitlines
+local sub, format, match, find = string.sub, string.format, string.match, string.find
+local count, splitlines = string.count, string.splitlines
 
 local variables = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
-local texprint, ctxcatcodes = tex.print, tex.ctxcatcodes
 
 buffers = { }
 
@@ -103,8 +103,9 @@ local function countnesting(b,e)
     return p
 end
 
-local counters = { }
-local nesting  = 0
+local counters   = { }
+local nesting    = 0
+local autoundent = true
 
 function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ to call
     local dn = getcontent(name)
@@ -123,6 +124,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
         dn = dn .. bufferdata .. endtag
         nesting = nesting - 1
     else
+        -- bufferdata ends with a \
         if dn == "" then
             dn = sub(bufferdata,1,-2)
         else
@@ -131,6 +133,27 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
         local last = sub(dn,-1)
         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar
             dn = sub(dn,1,-2)
+        end
+        if autoundent then
+            local margin = match(dn,"[\n\r]( +)[\n\r]*$") or ""
+            local indent = #margin
+            if indent > 0 then
+                local lines = splitlines(dn)
+                local ok = true
+                local pattern = "^" .. margin
+                for i=1,#lines do
+                    local l = lines[i]
+                    if find(l,pattern) then
+                        lines[i] = sub(l,indent+1)
+                    else
+                        ok = false
+                        break
+                    end
+                end
+                if ok then
+                    dn = concat(lines,"\n")
+                end
+            end
         end
     end
     assign(name,dn)
@@ -203,10 +226,14 @@ function commands.doifelsebuffer(name)
     commands.testcase(exists(name))
 end
 
--- This only used for mp buffers and is a kludge. Don't
--- change the texprint into texsprint as it fails because
--- "p<nl>enddef" becomes "penddef" then.
+-- This only used for mp buffers and is a kludge. Don't change the
+-- texprint into texsprint as it fails because "p<nl>enddef" becomes
+-- "penddef" then.
 
-function commands.feedback(names)
-    texprint(ctxcatcodes,splitlines(collectcontent(names)))
+-- function commands.feedback(names)
+--     texprint(ctxcatcodes,splitlines(collectcontent(names)))
+-- end
+
+function commands.feedback(names) -- bad name, maybe rename to injectbuffercontent
+    context.printlines(collectcontent(names))
 end

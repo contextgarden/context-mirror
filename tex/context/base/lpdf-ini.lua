@@ -735,7 +735,7 @@ function lpdf.id()
 end
 
 function lpdf.checkedkey(t,key,variant)
-    local pn = t[key]
+    local pn = t and t[key]
     if pn then
         local tn = type(pn)
         if tn == variant then
@@ -788,7 +788,7 @@ end
 
 -- lpdf.addtoinfo("ConTeXt.Version", tex.contextversiontoks)
 -- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
--- lpdf.addtoinfo("ConTeXt.Jobname", tex.jobname)
+-- lpdf.addtoinfo("ConTeXt.Jobname", environment.jobname)
 -- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
 
 if not pdfreferenceobject then

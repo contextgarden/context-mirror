@@ -148,7 +148,7 @@
 \unexpanded\def\color              [#1]{\groupedcommand{\doactivatecolor{#1}}{}}
 \unexpanded\def\startcolor         [#1]{\begingroup\doactivatecolor{#1}}
 \unexpanded\def\stopcolor              {\endgroup}
-\unexpanded\def\graycolor          [#1]{\groupedcommand{\dosetcolormodel{gray}\getvalue{#1}}{}}
+\unexpanded\def\graycolor          [#1]{\groupedcommand{\dosetcolormodel{gray}\doactivatecolor{#1}}{}}
 \unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
 \unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
 \unexpanded\def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}

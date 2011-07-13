@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 -- todo
 
 local format, concat = string.format, table.concat
-local sprint = tex.sprint
 
 local report_metapost = logs.reporter("metapost")
 
@@ -69,7 +68,7 @@ function metapost.theclippath(...)
     local result = metapost.getclippath(...)
     if result then -- we could just print the table
         result = concat(metapost.flushnormalpath(result),"\n")
-        sprint(result)
+        context(result)
     end
 end
 

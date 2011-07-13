@@ -56,7 +56,7 @@ local function insertswf(spec)
 
     local resources = resources and parametersets[resources]
     local display   = display   and parametersets[display]
-    local controls  = controls  and parametersets[controls]     -- not yet used
+    local controls  = controls  and parametersets[controls] -- not yet used
 
     local preview   = checkedkey(display,"preview","string")
     local toolbar   = checkedkey(display,"toolbar","boolean")
@@ -112,11 +112,14 @@ local function insertswf(spec)
         end
     end
 
+    local opendisplay  = display and display.open  or false
+    local closedisplay = display and display.close or false
+
     local configurationreference = pdfreference(pdfflushobject(configuration))
 
     local activation = pdfdictionary {
         Type          = pdfconstant("RichMediaActivation"),
-        Condition     = pdfconstant(activations[display.open]),
+        Condition     = pdfconstant(activations[opendisplay]),
         Configuration = flashreference,
         Animation     = pdfdictionary {
             Subtype   = pdfconstant("Linear"),
@@ -156,7 +159,7 @@ local function insertswf(spec)
 
     local deactivation = pdfdictionary {
         Type      = pdfconstant("RichMediaDeactivation"),
-        Condition = pdfconstant(deactivations[display.close]),
+        Condition = pdfconstant(deactivations[closedisplay]),
     }
 
     local richmediasettings = pdfdictionary {
@@ -199,5 +202,5 @@ function backends.pdf.nodeinjections.insertswf(spec)
      -- factor    = spec.factor,
      -- label     = spec.label,
     }
-    node.write(pdfannotation_node(spec.width,spec.height,0,annotation()))
+    context(pdfannotation_node(spec.width,spec.height,0,annotation())) -- the context wrap is probably also needed elsewhere
 end

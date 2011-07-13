@@ -53,23 +53,6 @@
 \let\unexpanded\normalprotected
 
 %D \macros
-%D   {doifolderversionelse}
-%D
-%D We start with a macro specially for Aditya who wants to be able
-%D to use development versions of \MKIV\ for real documents.
-%D
-%D \starttyping
-%D \doifolderversionelse\contextversion{1010.10.10} {OLDER} {OKAY} => OLDER
-%D \doifolderversionelse\contextversion{2020.20.20} {OLDER} {OKAY} => OKAY
-%D \doifolderversionelse\contextversion{2020}       {OLDER} {OKAY} => OKAY
-%D \stoptyping
-%D
-%D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
-
-\def\doifolderversionelse#1#2{\ctxcommand{doifolderversionelse("#1","#2")}}
-\def\doifoldercontextelse  #1{\ctxcommand{doifolderversionelse("#1")}}
-
-%D \macros
 %D   {normalspace}
 %D
 %D There is already \type{\space} but just to be sure we also
@@ -3660,7 +3643,7 @@
 
 \long\unexpanded\def\xdorecurse#1#2%
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#2}%
+   \long\@EA\gdef\csname\@@arecurse\recursedepth\endcsname{#2}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \@EA\dodorecurse\@EA1\@EA{\number#1}}
 
@@ -3718,7 +3701,7 @@
 
 \unexpanded\long\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#1}%
+   \long\@EA\gdef\csname\@@arecurse\recursedepth\endcsname{#1}%
    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
    \dodoloop1} % no \plusone else \recurselevel wrong
@@ -3925,24 +3908,57 @@
 
 \everydump\expandafter{\the\everydump\resetrecurselevel}
 
-%D This alternative looks a bit different and uses a
-%D pseudo counter. When this macro is nested, we have to use
-%D different counters. This time we use keywords.
+% %
+
+%D \macros
+%D   {doloopoverlist}
 %D
 %D \starttyping
-%D \def\alfa{2} \def\beta{100} \def\gamma{3}
-%D
-%D \for \n=55    \to 100   \step  1      \do {... \n ...}
-%D \for \n=\alfa \to \beta \step  \gamma \do {... \n ...}
-%D \for \n=\n    \to 120   \step  1      \do {... \n ...}
-%D \for \n=120   \to 100   \step -3      \do {... \n ...}
-%D \for \n=55    \to 100   \step  2      \do {... \n ...}
+%D \doloopoverlist {red,green,blue} {
+%D      \setuppalet[\recursestring]
+%D      \doloopoverlist {light,normal,dark} {
+%D          \blackrule[color=\recursestring,width=20cm,height=2cm,depth=0cm]\par
+%D      }
+%D  }
 %D \stoptyping
 %D
-%D Only in the third example we need to predefine \type{\n}.
-%D The use of \type{\od} as a dilimiter would have made nested
-%D use more problematic.
+%D or:
+%D
+%D \starttyping
+%D \doloopoverlist {red,green,blue} {
+%D      \setuppalet[#1]
+%D      \doloopoverlist {light,normal,dark} {
+%D          \blackrule[color=##1,width=20cm,height=2cm,depth=0cm]\par
+%D      }
+%D  }
+%D \stoptyping
 
+\unexpanded\def\doloopoverlist#1#2%
+  {\global\advance\outerrecurse\plusone
+   \@EA\gdef\csname\@@arecurse\recursedepth\endcsname##1{\edef\recursestring{##1}#2}%
+   \@EA\glet\csname\@@irecurse\recursedepth\endcsname\recursestring
+   \normalexpanded{\processcommalist[#1]{\expandafter\noexpand\csname\@@arecurse\recursedepth\endcsname}}%
+   \@EA\let\@EA\recursestring\csname\@@irecurse\recursedepth\endcsname
+   \global\advance\outerrecurse\minusone}
+
+% D This alternative looks a bit different and uses a
+% D pseudo counter. When this macro is nested, we have to use
+% D different counters. This time we use keywords.
+% D
+% D \starttyping
+% D \def\alfa{2} \def\beta{100} \def\gamma{3}
+% D
+% D \for \n=55    \to 100   \step  1      \do {... \n ...}
+% D \for \n=\alfa \to \beta \step  \gamma \do {... \n ...}
+% D \for \n=\n    \to 120   \step  1      \do {... \n ...}
+% D \for \n=120   \to 100   \step -3      \do {... \n ...}
+% D \for \n=55    \to 100   \step  2      \do {... \n ...}
+% D \stoptyping
+% D
+% D Only in the third example we need to predefine \type{\n}.
+% D The use of \type{\od} as a dilimiter would have made nested
+% D use more problematic.
+%
 % obsolete:
 %
 % \def\for#1=#2\to#3\step#4\do#5%
@@ -4808,8 +4824,7 @@
 %D             \dotoks\tokenlist
 %D \stoptyping
 %D
-%D Er worden eerst enkele klad||registers gedefinieerd. These
-%D macros are clones of the ones implemented in page~378 of
+%D These macros are clones of the ones implemented in page~378 of
 %D Knuth's \TeX book.
 
 \newtoks\@@scratchtoks

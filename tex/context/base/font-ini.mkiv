@@ -579,12 +579,21 @@
    \let\fontbody\savedfontbody
    \autofontsizefalse}
 
-\def\dosavefontclassmathfamily#1#2%
+% tricky: we cannot reset in \everybeforedefinetypeface as we don't know all sizes
+% so we postpone the optimization to the first starttext
+
+\def\dosavefontclassmathfamilyindeed#1#2%
   {\expandafter\xdef\csname\??ff:\fontclass:\textface:\c!mm:#2:\fontsize\endcsname{%
      \scriptscriptfont#1\csname*\fontclass\scriptscriptface\c!mm#23\fontsize3*\endcsname
      \scriptfont      #1\csname*\fontclass\scriptface      \c!mm#22\fontsize2*\endcsname
      \textfont        #1\csname*\fontclass\textface        \c!mm#21\fontsize1*\endcsname
    }}
+
+\let\dosavefontclassmathfamily\gobbletwoarguments
+
+\appendtoks
+    \glet\dosavefontclassmathfamily\dosavefontclassmathfamilyindeed
+\to \everystarttext
 
 % It would be nice if characters could be defined in a neutral way (say fam 255) and
 % be mapped to a real family during noad list construction. However, this changes
@@ -926,7 +935,7 @@
 
 \unexpanded\def\lowleveldefinefont#1#2% #2 = cs
   {% we can now set more at the lua end
-   \ctxlua{fonts.definers.stage_one("\luaescapestring{#1}")}% the escapestring catches at \somedimen
+   \ctxcommand{definefont_one(\!!bs\luaescapestring{#1}\!!es)}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\scaledfontmode\relax
      % none, avoid the designsize if possible
@@ -964,10 +973,10 @@
    \fi
    \updatefontparameters
    \updatefontclassparameters
-   \ctxlua{fonts.definers.stage_two(
+   \ctxcommand{definefont_two(
       \ifx\fontclass\empty false\else true\fi,
       "#2", % cs, trailing % is gone
-      "\somefontfile",
+      \!!bs\somefontfile\!!es,
       \number\scaledfontsize,
       \number\featureinheritancemode,
       "\@@fontclassfeatures",
@@ -2335,8 +2344,8 @@
 \fetchruntimecommand \showfontparameters  {\f!fontprefix\s!run}
 
 \def\resetnullfont % this is needed because some macro packages (tikz) misuse \nullfont
-  {\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}%
-   \ctxlua{fonts.definers.resetnullfont()}% in luatex 0.70 this will also do the previous
+  {\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
+   \ctxcommand{resetnullfont()}% in luatex 0.70 this will also do the previous
    \globallet\resetnullfont\relax}
 
 \def\preloaddefaultfonts
@@ -3068,11 +3077,12 @@
 
 \def\dodefinefontfeature[#1][#2][#3]%
   {\global\expandafter\chardef\csname\??fq=#1\endcsname % beware () needed as we get two values returned
-     \ctxsprint{((fonts.specifiers.presetcontext("#1","#2","#3")))}\relax}
+     \cldcontext{((fonts.specifiers.presetcontext("#1","#2","#3")))}\relax}
 
 \definefontfeature % experiment, this might move to the lua code
   [always]
   [mode=auto,
+   script=auto,
    kern=yes,
    mark=yes,
    mkmk=yes,
@@ -3224,7 +3234,7 @@
   {\dodoubleargument\dofontfeatureslist}
 
 \def\dofontfeatureslist[#1][#2]% todo: arg voor type
-  {\ctxsprint{fonts.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"})}}
+  {\cldcontext{fonts.specifiers.contexttostring("#1","otf","\luaescapestring{#2}","yes","no",true,{"number"})}}
 
 \attribute\zerocount\zerocount % first in list, so fast match
 
@@ -3244,15 +3254,6 @@
 % \stopbuffer
 %
 % \typebuffer \getbuffer
-
-% \unexpanded\def\featureattribute#1{\ctxsprint{fonts.specifiers.contextnumber("#1"))}}
-% \unexpanded\def\setfontfeature  #1{\edef\currentfeature{#1}\attribute\zerocount\featureattribute{#1}\relax}
-% \unexpanded\def\resetfontfeature#1{\let\currentfeature\empty\attribute\zerocount\zerocount} % initial value
-
-% \def\addfontfeaturetoset        #1{\ctxlua{fonts.withset("#1", 1)}} % merge
-% \def\subtractfontfeaturefromset #1{\ctxlua{fonts.withset("#1",-1)}} % merge
-% \def\addfontfeaturetofont       #1{\ctxlua{fonts.withfnt("#1", 2)}} % overload
-% \def\subtractfontfeaturefromfont#1{\ctxlua{fonts.withfnt("#1",-2)}} % overload
 
 \unexpanded\def\featureattribute#1{\ctxcommand{featureattribute("#1")}}
 \unexpanded\def\setfontfeature  #1{\ctxcommand{setfontfeature("#1")}\edef\currentfeature{#1}}
@@ -4335,13 +4336,6 @@
 \definealternativestyle [\v!boldslanted,\v!slantedbold]             [\bs] []
 \definealternativestyle [\v!bolditalic,\v!italicbold]               [\bi] []
 
-% \definealternativestyle [\v!small,\v!smallnormal]                 [\tfx] []
-% \definealternativestyle [\v!smallbold]                            [\bfx] []
-% \definealternativestyle [\v!smalltype]                            [\ttx] []
-% \definealternativestyle [\v!smallslanted]                         [\slx] []
-% \definealternativestyle [\v!smallboldslanted,\v!smallslantedbold] [\bsx] []
-% \definealternativestyle [\v!smallbolditalic,\v!smallitalicbold]   [\bix] []
-
 \definealternativestyle [\v!small,\v!smallnormal]                   [\setsmallbodyfont\tf] []
 \definealternativestyle [\v!smallbold]                              [\setsmallbodyfont\bf] []
 \definealternativestyle [\v!smalltype]                              [\setsmallbodyfont\tt] []
@@ -4354,6 +4348,36 @@
 
 \definealternativestyle [\v!sans,\v!sansserif]                      [\ss]    []
 \definealternativestyle [\v!sansbold]                               [\ss\bf] []
+
+% % maybe we need interface neutral as well (for use in cld):
+%
+% \letcscsname\mediaeval       \csname\v!mediaeval       \endcsname
+% \letcscsname\normal          \csname\v!normal          \endcsname
+% \letcscsname\bold            \csname\v!bold            \endcsname
+% \letcscsname\mono            \csname\v!mono            \endcsname
+% \letcscsname\slanted         \csname\v!slanted         \endcsname
+% \letcscsname\italic          \csname\v!italic          \endcsname
+% \letcscsname\boldslanted     \csname\v!boldslanted     \endcsname
+% \letcscsname\slantedbold     \csname\v!slantedbold     \endcsname
+% \letcscsname\bolditalic      \csname\v!bolditalic      \endcsname
+% \letcscsname\italicbold      \csname\v!italicbold      \endcsname
+%
+% \letcscsname\small           \csname\v!small           \endcsname
+% \letcscsname\smallnormal     \csname\v!smallnormal     \endcsname
+% \letcscsname\smallbold       \csname\v!smallbold       \endcsname
+% \letcscsname\smalltype       \csname\v!smalltype       \endcsname
+% \letcscsname\smallslanted    \csname\v!smallslanted    \endcsname
+% \letcscsname\smallboldslanted\csname\v!smallboldslanted\endcsname
+% \letcscsname\smallslantedbold\csname\v!smallslantedbold\endcsname
+% \letcscsname\smallbolditalic \csname\v!smallbolditalic \endcsname
+% \letcscsname\smallitalicbold \csname\v!smallitalicbold \endcsname
+%
+% \letcscsname\bigger          \csname\v!bigger          \endcsname
+% \letcscsname\smaller         \csname\v!smaller         \endcsname
+%
+% \letcscsname\sans            \csname\v!sans            \endcsname
+% \letcscsname\sansserif       \csname\v!sansserif       \endcsname
+% \letcscsname\sansbold        \csname\v!sansbold        \endcsname
 
 %D We can go on and on and on:
 %D
@@ -4420,8 +4444,8 @@
 %
 % \setupfonts[check=...]
 
-\def\checkcharactersinfont  {\ctxlua{fonts.checkers.enable()}}
-\def\removemissingcharacters{\ctxlua{fonts.checkers.enable(true)}}
+\def\checkcharactersinfont  {\ctxcommand{checkcharactersinfont  }}
+\def\removemissingcharacters{\ctxcommand{removemissingcharacters}}
 
 %D New commands (not yet interfaced):
 
@@ -4600,6 +4624,14 @@
 
 \def\doifelsecurrentfonthasfeature#1%
   {\ctxcommand{doifelsecurrentfonthasfeature("#1")}}
+
+% variant selectors
+%
+% \mathematics {\vsone{\utfchar{"2229}}}
+% \mathematics {\utfchar{"2229}\vsone{}}
+
+\unexpanded\edef\vsone#1{#1\utfchar{"FE00}} % used
+\unexpanded\edef\vstwo#1{#1\utfchar{"FE01}} % not used but handy for testing
 
 \protect \endinput
 

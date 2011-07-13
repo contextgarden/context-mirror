@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type = next, type
-local texwrite, texcount = tex.write, tex.count
+local texcount = tex.count
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local utfchar = utf.char
@@ -31,7 +31,7 @@ local mappings        = sorters.mappings
 local entries         = sorters.entries
 local replacements    = sorters.replacements
 
-local processor_split = processors.split
+local splitprocessor  = processors.split
 
 local variables       = interfaces.variables
 local context         = context
@@ -240,13 +240,13 @@ local function preprocessentries(rawdata)
         if type(e) == "table" then
             et = e
         else
-            entryproc, e = processor_split(e)
+            entryproc, e = splitprocessor(e)
             et = lpegmatch(entrysplitter,e)
         end
         if type(k) == "table" then
             kt = k
         else
-            pageproc, k = processor_split(k)
+            pageproc, k = splitprocessor(k)
             kt = lpegmatch(entrysplitter,k)
         end
         entries = { }
@@ -276,7 +276,7 @@ function registers.store(rawdata) -- metadata, references, entries
     data[#data+1] = rawdata
     local label = references.label
     if label and label ~= "" then tagged[label] = #data end
-    texwrite(#data)
+    context(#data)
 end
 
 function registers.enhance(name,n)
@@ -847,7 +847,7 @@ function registers.flush(data,options,prefixspec,pagespec)
 end
 
 function registers.analyze(class,options)
-    texwrite(registers.analyzed(class,options))
+    context(registers.analyzed(class,options))
 end
 
 function registers.process(class,...)

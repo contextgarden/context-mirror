@@ -10,6 +10,7 @@ local texiowrite_nl = (texio and texio.write_nl) or print
 local texiowrite    = (texio and texio.write) or print
 
 local format = string.format
+local concat = table.concat
 local sequenced = table.sequenced
 
 texconfig.kpse_init      = false
@@ -84,28 +85,34 @@ if not resolvers.instance then
 
 end
 
--- statistics.register("resource resolver", function()
---     if resolvers.scantime then
---         return format("loadtime %s seconds, scantime %s seconds", resolvers.loadtime(), resolvers.scantime())
---     else
---         return format("loadtime %s seconds", resolvers.loadtime())
---     end
--- end)
-
+local report_system = logs.reporter("system","files")
+local report_files  = logs.reporter("used files")
 
 luatex.registerstopactions(function()
     local foundintrees = resolvers.instance.foundintrees
-    texiowrite_nl("log","\n")
-    for i=1,#foundintrees do
-        texiowrite_nl("log",format("used file %4i  > %s",i,sequenced(foundintrees[i])))
+    if #foundintrees > 0 then
+        logs.pushtarget("logfile")
+        logs.newline()
+        report_system("start used files")
+        logs.newline()
+        for i=1,#foundintrees do
+            report_files("%4i: %s",i,sequenced(foundintrees[i]))
+        end
+        logs.newline()
+        report_system("stop used files")
+        logs.newline()
+        logs.poptarget()
     end
-    texiowrite_nl("log","")
 end)
 
 statistics.register("resource resolver", function()
-    return format("loadtime %s seconds, scantime %s seconds, %s found files",
+    local scandata = resolvers.scandata()
+    return format("loadtime %s seconds, %s scans with scantime %s seconds, %s shared scans, %s found files, scanned paths: %s",
         resolvers.loadtime(),
-        resolvers.scantime and resolvers.scantime() or 0,
-        #resolvers.instance.foundintrees
+        scandata.n,
+        scandata.time,
+        scandata.shared,
+        #resolvers.instance.foundintrees,
+        concat(scandata.paths," ")
     )
 end)

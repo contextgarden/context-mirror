@@ -6,15 +6,16 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
-local concat = string.concat
+local concat = table.concat
 
 local xml = xml
 
-local finalizers   = xml.finalizers.xml
-local xmlfilter    = xml.filter -- we could inline this one for speed
-local xmltostring  = xml.tostring
-local xmlserialize = xml.serialize
-local xmlcollected = xml.collected
+local finalizers     = xml.finalizers.xml
+local xmlfilter      = xml.filter -- we could inline this one for speed
+local xmltostring    = xml.tostring
+local xmlserialize   = xml.serialize
+local xmlcollected   = xml.collected
+local xmlnewhandlers = xml.newhandlers
 
 local function first(collected) -- wrong ?
     return collected and collected[1]
@@ -119,10 +120,39 @@ local function raw(collected) -- hybrid
     end
 end
 
+--
+
+local xmltexthandler = xmlnewhandlers {
+    name       = "string",
+    initialize = function()
+        result = { }
+        return result
+    end,
+    finalize   = function()
+        return concat(result)
+    end,
+    handle     = function(...)
+        result[#result+1] = concat { ... }
+    end,
+    escape     = false,
+}
+
+local function xmltotext(root)
+    if not root then
+        return ""
+    elseif type(root) == 'string' then
+        return root
+    else
+        return xmlserialize(root,xmltexthandler) or ""
+    end
+end
+
+--
+
 local function text(collected) -- hybrid
     if collected then
         local e = collected[1] or collected
-        return (e and xmltostring(e.dt)) or ""
+        return (e and xmltotext(e.dt)) or ""
     else
         return ""
     end
@@ -270,16 +300,18 @@ function xml.text(id,pattern)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)
-        return (collected and xmltostring(collected[1].dt)) or ""
+        return (collected and xmltotext(collected[1].dt)) or ""
     elseif id then
      -- return text(id)
-        return xmltostring(id.dt) or ""
+        return xmltotext(id.dt) or ""
     else
         return ""
     end
 end
 
 xml.content = text
+
+--
 
 function xml.position(id,pattern,n) -- element
     return position(xmlfilter(id,pattern),n)

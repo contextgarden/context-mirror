@@ -98,9 +98,9 @@
 \def\figurefullname      {\ctxlua{figures.tprint("used","fullname")}}
 \def\noffigurepages      {\ctxlua{figures.tprint("used","pages",0)}}
 
-\def\figurefilepath      {\ctxsprint{file.dirname (figures.get("used","fullname"))}}
-\def\figurefilename      {\ctxsprint{file.nameonly(figures.get("used","fullname"))}}
-\def\figurefiletype      {\ctxsprint{file.extname (figures.get("used","fullname"))}}
+\def\figurefilepath      {\cldcontext{file.dirname (figures.get("used","fullname"))}}
+\def\figurefilename      {\cldcontext{file.nameonly(figures.get("used","fullname"))}}
+\def\figurefiletype      {\cldcontext{file.extname (figures.get("used","fullname"))}}
 
 \let\naturalfigurewidth  \figurenaturalwidth
 \let\naturalfigureheight \figurenaturalheight

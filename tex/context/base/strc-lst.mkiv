@@ -961,26 +961,37 @@
 \unexpanded\def\determinelistcharacteristics
   {\dodoubleempty\dodeterminelistcharacteristics}
 
+% todo: make simple parameter handler
+
 \def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname}
-
-\unexpanded\def\setupcombinedlist
-  {\dodoubleargument\dosetupcombinedlist}
-
-\def\dosetupcombinedlist[#1][#2]%
-  {\getparameters[\??ih#1][#2]%
-   \edef\currentcombinedlist{#1}%
-   \normalexpanded{\noexpand\setuplist[\combinedlistparameter\c!list]}[#2]}
+\def\combinedlisttoks       {\csname\??ih::\currentcombinedlist\endcsname}
 
 \unexpanded\def\definecombinedlist
   {\dotripleempty\dodefinecombinedlist}
 
 \def\dodefinecombinedlist[#1][#2][#3]%
-  {\getparameters
+  {\edef\currentcombinedlist{#1}%
+   \getparameters
      [\??ih#1]
      [\c!criterium=\v!local,\c!number=0,\c!list={#2},#3]%
+\expandafter\newtoks\csname\??ih::\currentcombinedlist\endcsname
+\combinedlisttoks{#3}%
    \setvalue{\e!setup#1\e!endsetup}{\dodoubleempty\dosetupcombinedlist[#1]}%
    \setvalue{\e!place#1}{\dodoubleempty\doplacecombinedlist[#1]}%
    \setvalue{\e!complete#1}{\dodoubleempty\docompletecombinedlist[#1]}}
+
+\unexpanded\def\setupcombinedlist
+  {\dodoubleargument\dosetupcombinedlist}
+
+% \def\dosetupcombinedlist[#1][#2]% this will change, as we now adapt all list elements
+%   {\getparameters[\??ih#1][#2]% % maybe some parent magic or store in a toks
+%    \edef\currentcombinedlist{#1}%
+%    \normalexpanded{\setuplist[\combinedlistparameter\c!list]}[#2]}
+
+\def\dosetupcombinedlist[#1][#2]%
+  {\edef\currentcombinedlist{#1}%
+   \getparameters[\??ih#1][#2]%
+   \combinedlisttoks\expandafter{\the\combinedlisttoks,#2}}% can accumulate
 
 \unexpanded\def\placecombinedlist
   {\dodoubleempty\doplacecombinedlist}
@@ -988,13 +999,14 @@
 \def\doplacecombinedlist[#1][#2]% we can move much of the analysis to lua
   {\begingroup
    % level is no longer supported
-   \def\currentcombinedlist{#1}%
+   \edef\currentcombinedlist{#1}%
    \getparameters[\??ih#1][#2]%
    \edef\combinedlist{\combinedlistparameter\c!list}%
    \the\everystructurelist
    \doif{\combinedlistparameter\c!coupling}\v!on{\startlistreferences{#1}}%
    \dobeginoflist
-   \normalexpanded{\setuplist[\combinedlist][#2]}%
+%  \normalexpanded{\setuplist[\combinedlist][#2]}%
+\normalexpanded{\setuplist[\combinedlist][\the\combinedlisttoks,#2]}% or ,}#2]%
    \doplacestructurelist
      {\combinedlist}%
      {\combinedlistparameter\c!criterium}%

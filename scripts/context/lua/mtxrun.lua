@@ -1654,7 +1654,7 @@ end
 
 local sort, fastcopy, sortedpairs = table.sort, table.fastcopy, table.sortedpairs -- dependency!
 
-function lpeg.append(list,pp)
+function lpeg.append(list,pp,delayed)
     local p = pp
     if #list > 0 then
         list = fastcopy(list)
@@ -1664,6 +1664,14 @@ function lpeg.append(list,pp)
                 p = P(list[l]) + p
             else
                 p = P(list[l])
+            end
+        end
+    elseif delayed then
+        for k, v in sortedpairs(list) do
+            if p then
+                p = P(k)/list + p
+            else
+                p = P(k)/list
             end
         end
     else
@@ -2813,10 +2821,42 @@ local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
 
-local pattern = (drive + Cc("")) * (path + Cc("")) * (base + Cc("")) * (suffix + Cc(""))
+drive  = drive  + Cc("")
+path   = path   + Cc("")
+base   = base   + Cc("")
+suffix = suffix + Cc("")
 
-function file.splitname(str) -- returns drive, path, base, suffix
-    return lpegmatch(pattern,str)
+local pattern_a =   drive * path  *   base * suffix
+local pattern_b =           path  *   base * suffix
+local pattern_c = C(drive * path) * C(base * suffix)
+
+function file.splitname(str,splitdrive)
+    if splitdrive then
+        return lpegmatch(pattern_a,str) -- returns drive, path, base, suffix
+    else
+        return lpegmatch(pattern_b,str) -- returns path, base, suffix
+    end
+end
+
+function file.nametotable(str,splitdrive) -- returns table
+    local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+    if splitdrive then
+        return {
+            path    = path,
+            drive   = drive,
+            subpath = subpath,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    else
+        return {
+            path    = path,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    end
 end
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
@@ -3719,14 +3759,14 @@ local function utf16_to_utf8_le(t)
     return t
 end
 
-local function utf32_to_utf8_be(str)
+local function utf32_to_utf8_be(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = utfsplitlines(t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
         local r, more = 0, -1
-        for a,b in bytepairs(str) do
+        for a,b in bytepairs(t[i]) do
             if a and b then
                 if more < 0 then
                     more = 256*256*256*a + 256*256*b
@@ -3741,17 +3781,17 @@ local function utf32_to_utf8_be(str)
         end
         t[i] = concat(result,"",1,r)
     end
-    return result
+    return t
 end
 
-local function utf32_to_utf8_le(str)
+local function utf32_to_utf8_le(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = utfsplitlines(t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
         local r, more = 0, -1
-        for a,b in bytepairs(str) do
+        for a,b in bytepairs(t[i]) do
             if a and b then
                 if more < 0 then
                     more = 256*b + a
@@ -3766,7 +3806,7 @@ local function utf32_to_utf8_le(str)
         end
         t[i] = concat(result,"",1,r)
     end
-    return result
+    return t
 end
 
 unicode.utf32_to_utf8_be = utf32_to_utf8_be
@@ -3858,6 +3898,7 @@ patterns.toentities = toentities
 function utf.toentities(str)
     return lpegmatch(toentities,str)
 end
+
 
 
 
@@ -4138,8 +4179,8 @@ end
 
 -- table namespace ?
 
-local function f_empty () return "" end -- t,k
-local function f_self  (t,k) t[k] = k return k end
+local function f_empty() return "" end -- t,k
+local function f_self(t,k) t[k] = k return k end
 local function f_ignore() end -- t,k,v
 
 local t_empty  = { __index = empty }
@@ -5059,7 +5100,7 @@ end
 
 function commands.elapsedtime(name)
     stoptiming(name or "whatever")
-    tex.sprint(elapsedtime(name or "whatever"))
+    context(elapsedtime(name or "whatever"))
 end
 
 
@@ -5464,6 +5505,10 @@ if tex and tex.jobname or tex.formatname then
         write_nl(target,...)
     end
 
+    newline = function()
+        write_nl(target,"\n")
+    end
+
     report = function(a,b,c,...)
         if c then
             write_nl(target,format("%-15s > %s\n",translations[a],format(formats[b],c,...)))
@@ -5569,6 +5614,10 @@ else
 
     writer = write_nl
 
+    newline = function()
+        write_nl("\n")
+    end
+
     report = function(a,b,c,...)
         if c then
             write_nl(format("%-15s | %s",a,format(b,c,...)))
@@ -5628,6 +5677,7 @@ logs.settranslations = settranslations
 logs.direct          = direct
 logs.subdirect       = subdirect
 logs.writer          = writer
+logs.newline         = newline
 
 -- installer
 
@@ -5983,6 +6033,11 @@ else
         print(format(...))
     end
 end
+
+-- do we still need io.flush then?
+
+io.stdout:setvbuf('no')
+io.stderr:setvbuf('no')
 
 
 end -- of closure
@@ -6513,10 +6568,11 @@ xml = xml or { }
 local xml = xml
 
 
+local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar = unicode.utf8.char
+local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -6629,9 +6685,22 @@ element.</p>
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, resolve_predefined, unify_predefined = false, false, false, false, false, false
-local dcache, hcache, acache = { }, { }, { }
+local stack              = { }
+local top                = { }
+local dt                 = { }
+local at                 = { }
+local xmlns              = { }
+local errorstr           = nil
+local entities           = { }
+local strip              = false
+local cleanup            = false
+local utfize             = false
+local resolve_predefined = false
+local unify_predefined   = false
+
+local dcache             = { }
+local hcache             = { }
+local acache             = { }
 
 local mt = { }
 
@@ -6797,7 +6866,7 @@ local predefined_unified = {
     [42] = "&quot;",
     [47] = "&apos;",
     [74] = "&lt;",
-    [76] = "&gr;",
+    [76] = "&gt;",
 }
 
 local predefined_simplified = {
@@ -6807,6 +6876,57 @@ local predefined_simplified = {
     [74] = "<", lt   = "<",
     [76] = ">", gt   = ">",
 }
+
+local nofprivates = 0xF0000 -- shared but seldom used
+
+local privates_u = {
+    [ [[&]] ] = "&amp;",
+    [ [["]] ] = "&quot;",
+    [ [[']] ] = "&apos;",
+    [ [[<]] ] = "&lt;",
+    [ [[>]] ] = "&gt;",
+}
+
+local privates_p = {
+}
+
+local privates_n = {
+    -- keeps track of defined ones
+}
+
+local function escaped(s)
+    if s == "" then
+        return ""
+    else -- if utffind(s,privates_u) then
+        return (utfgsub(s,".",privates_u))
+ -- else
+ --     return s
+    end
+end
+
+local function unescaped(s)
+    local p = privates_n[s]
+    if not p then
+        nofprivates = nofprivates + 1
+        p = utfchar(nofprivates)
+        privates_n[s] = p
+        s = "&" .. s .. ";"
+        privates_u[p] = s
+        privates_p[p] = s
+    end
+    return p
+end
+
+local function unprivatized(s,resolve)
+    if s == "" then
+        return ""
+    else
+        return (utfgsub(s,".",privates_p))
+    end
+end
+
+xml.privatetoken = unescaped
+xml.unprivatized = unprivatized
 
 local function handle_hex_entity(str)
     local h = hcache[str]
@@ -6849,7 +6969,7 @@ local function handle_dec_entity(str)
             if not n then
                 report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %s",str,h)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         else
             if trace_entities then
@@ -6877,12 +6997,12 @@ local function handle_any_entity(str)
                 a = entities[str]
             end
             if a then
-if type(a) == "function" then
-    if trace_entities then
-        report_xml("expanding entity &%s; (function)",str)
-    end
-    a = a(str) or ""
-end
+                if type(a) == "function" then
+                    if trace_entities then
+                        report_xml("expanding entity &%s; (function)",str)
+                    end
+                    a = a(str) or ""
+                end
                 a = lpegmatch(parsedentity,a) or a
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
@@ -6918,18 +7038,25 @@ end
     else
         local a = acache[str]
         if not a then
-            if trace_entities then
-                report_xml("found entity &%s;",str)
-            end
             a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
+                if trace_entities then
+                    report_xml("entity &%s; becomes %s",str,tostring(a))
+                end
             elseif str == "" then
+                if trace_entities then
+                    report_xml("invalid entity &%s;",str)
+                end
                 a = "&error;"
                 acache[str] = a
             else
-                a = "&" .. str .. ";"
+                if trace_entities then
+                    report_xml("entity &%s; is made private",str)
+                end
+             -- a = "&" .. str .. ";"
+                a = unescaped(str)
                 acache[str] = a
             end
         end
@@ -7069,17 +7196,29 @@ local grammar_unparsed_text = P { "preamble",
     children = unparsedtext + V("parent") + emptyelement + comment + cdata + instruction,
 }
 
--- maybe we will add settinsg to result as well
+-- maybe we will add settings to result as well
 
 local function xmlconvert(data, settings)
-    settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
-    strip = settings.strip_cm_and_dt
-    utfize = settings.utfize_entities
-    resolve = settings.resolve_entities
+    settings           = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
+    --
+    strip              = settings.strip_cm_and_dt
+    utfize             = settings.utfize_entities
+    resolve            = settings.resolve_entities
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
-    unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
-    cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, entities = { }, { }, { }, { }, nil, settings.entities or { }
+    unify_predefined   = settings.unify_predefined_entities -- &#038; -> &amp;
+    cleanup            = settings.text_cleanup
+    entities           = settings.entities or { }
+    --
+    if utfize == nil then
+        settings.utfize_entities = true
+        utfize = true
+    end
+    if resolve_predefined == nil then
+        settings.resolve_predefined_entities = true
+        resolve_predefined = true
+    end
+    --
+    stack, top, at, xmlns, errorstr = { }, { }, { }, { }, nil
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
@@ -7131,7 +7270,7 @@ local function xmlconvert(data, settings)
             local v = rdt[k]
             if type(v) == "table" and not v.special then -- always table -)
                 result.ri = k -- rootindex
-v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
+                v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
                 break
             end
         end
@@ -7139,6 +7278,11 @@ v.__p__ = result  -- new, experiment, else we cannot go back to settings, we nee
     if errorstr and errorstr ~= "" then
         result.error = true
     end
+strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
+unify_predefined, cleanup, entities = nil, nil, nil
+stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
+acache, hcache, dcache = nil, nil, nil
+reported_attribute_errors, mt, errorhandler = nil, nil, nil
     return result
 end
 
@@ -7285,7 +7429,7 @@ local function verbose_element(e,handlers)
     local ats = eat and next(eat) and { }
     if ats then
         for k,v in next, eat do
-            ats[#ats+1] = format('%s=%q',k,v)
+            ats[#ats+1] = format('%s=%q',k,escaped(v))
         end
     end
     if ern and trace_entities and ern ~= ens then
@@ -7301,7 +7445,7 @@ local function verbose_element(e,handlers)
             for i=1,#edt do
                 local e = edt[i]
                 if type(e) == "string" then
-                    handle(e)
+                    handle(escaped(e))
                 else
                     serialize(e,handlers)
                 end
@@ -7322,11 +7466,11 @@ local function verbose_element(e,handlers)
                 handle("<",etg,">")
             end
             for i=1,#edt do
-                local ei = edt[i]
-                if type(ei) == "string" then
-                    handle(ei)
+                local e = edt[i]
+                if type(e) == "string" then
+                    handle(escaped(e))
                 else
-                    serialize(ei,handlers)
+                    serialize(e,handlers)
                 end
             end
             handle("</",etg,">")
@@ -7361,7 +7505,7 @@ local function verbose_root(e,handlers)
 end
 
 local function verbose_text(e,handlers)
-    handlers.handle(e)
+    handlers.handle(escaped(e))
 end
 
 local function verbose_document(e,handlers)
@@ -7489,19 +7633,32 @@ local result
 
 local xmlfilehandler = newhandlers {
     name       = "file",
-    initialize = function(name) result = io.open(name,"wb") return result end,
-    finalize   = function() result:close() return true end,
-    handle     = function(...) result:write(...) end,
+    initialize = function(name)
+        result = io.open(name,"wb")
+        return result
+    end,
+    finalize   = function()
+        result:close()
+        return true
+    end,
+    handle     = function(...)
+        result:write(...)
+    end,
 }
 
 -- no checking on writeability here but not faster either
 --
 -- local xmlfilehandler = newhandlers {
---     initialize = function(name) io.output(name,"wb") return true end,
---     finalize   = function() io.close() return true end,
+--     initialize = function(name)
+--         io.output(name,"wb")
+--         return true
+--     end,
+--     finalize   = function()
+--         io.close()
+--         return true
+--     end,
 --     handle     = io.write,
 -- }
-
 
 function xml.save(root,name)
     serialize(root,xmlfilehandler,name)
@@ -7511,28 +7668,34 @@ local result
 
 local xmlstringhandler = newhandlers {
     name       = "string",
-    initialize = function() result = { } return result end,
-    finalize   = function() return concat(result) end,
-    handle     = function(...) result[#result+1] = concat { ... } end
+    initialize = function()
+        result = { }
+        return result
+    end,
+    finalize   = function()
+        return concat(result)
+    end,
+    handle     = function(...)
+        result[#result+1] = concat { ... }
+    end,
 }
 
 local function xmltostring(root) -- 25% overhead due to collecting
-    if root then
-        if type(root) == 'string' then
-            return root
-        else -- if next(root) then -- next is faster than type (and >0 test)
-            return serialize(root,xmlstringhandler) or ""
-        end
+    if not root then
+        return ""
+    elseif type(root) == 'string' then
+        return root
+    else -- if next(root) then -- next is faster than type (and >0 test)
+        return serialize(root,xmlstringhandler) or ""
     end
-    return ""
 end
 
-local function xmltext(root) -- inline
+local function __tostring(root) -- inline
     return (root and xmltostring(root)) or ""
 end
 
 initialize_mt = function(root) -- redefinition
-    mt = { __tostring = xmltext, __index = root }
+    mt = { __tostring = __tostring, __index = root }
 end
 
 xml.defaulthandlers = handlers
@@ -9615,15 +9778,16 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
     license   = "see context related readme files"
 }
 
-local concat = string.concat
+local concat = table.concat
 
 local xml = xml
 
-local finalizers   = xml.finalizers.xml
-local xmlfilter    = xml.filter -- we could inline this one for speed
-local xmltostring  = xml.tostring
-local xmlserialize = xml.serialize
-local xmlcollected = xml.collected
+local finalizers     = xml.finalizers.xml
+local xmlfilter      = xml.filter -- we could inline this one for speed
+local xmltostring    = xml.tostring
+local xmlserialize   = xml.serialize
+local xmlcollected   = xml.collected
+local xmlnewhandlers = xml.newhandlers
 
 local function first(collected) -- wrong ?
     return collected and collected[1]
@@ -9718,10 +9882,39 @@ local function raw(collected) -- hybrid
     end
 end
 
+--
+
+local xmltexthandler = xmlnewhandlers {
+    name       = "string",
+    initialize = function()
+        result = { }
+        return result
+    end,
+    finalize   = function()
+        return concat(result)
+    end,
+    handle     = function(...)
+        result[#result+1] = concat { ... }
+    end,
+    escape     = false,
+}
+
+local function xmltotext(root)
+    if not root then
+        return ""
+    elseif type(root) == 'string' then
+        return root
+    else
+        return xmlserialize(root,xmltexthandler) or ""
+    end
+end
+
+--
+
 local function text(collected) -- hybrid
     if collected then
         local e = collected[1] or collected
-        return (e and xmltostring(e.dt)) or ""
+        return (e and xmltotext(e.dt)) or ""
     else
         return ""
     end
@@ -9869,16 +10062,18 @@ function xml.text(id,pattern)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)
-        return (collected and xmltostring(collected[1].dt)) or ""
+        return (collected and xmltotext(collected[1].dt)) or ""
     elseif id then
      -- return text(id)
-        return xmltostring(id.dt) or ""
+        return xmltotext(id.dt) or ""
     else
         return ""
     end
 end
 
 xml.content = text
+
+--
 
 function xml.position(id,pattern,n) -- element
     return position(xmlfilter(id,pattern),n)
@@ -10178,7 +10373,7 @@ if not modules then modules = { } end modules ['data-exp'] = {
     license   = "see context related readme files",
 }
 
-local format, find, gmatch, lower, char = string.format, string.find, string.gmatch, string.lower, string.char
+local format, find, gmatch, lower, char, sub = string.format, string.find, string.gmatch, string.lower, string.char, string.sub
 local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local Ct, Cs, Cc, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.P, lpeg.C, lpeg.S
@@ -10422,13 +10617,22 @@ end
 
 
 
-local weird = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+-- a lot of this caching can be stripped away when we have ssd's everywhere
+--
+-- we could cache all the (sub)paths here if needed
 
 local attributes, directory = lfs.attributes, lfs.dir
 
+local weird     = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local timer     = { }
+local scanned   = { }
+local nofscans  = 0
+local scancache = { }
+
 local function scan(files,spec,path,n,m,r)
-    local full = (path == "" and spec) or (spec .. path .. '/')
-    local dirs, nofdirs = { }, 0
+    local full    = (path == "" and spec) or (spec .. path .. '/')
+    local dirs    = { }
+    local nofdirs = 0
     for name in directory(full) do
         if not lpegmatch(weird,name) then
             local mode = attributes(full..name,'mode')
@@ -10466,15 +10670,17 @@ local function scan(files,spec,path,n,m,r)
             files, n, m, r = scan(files,spec,dirs[i],n,m,r)
         end
     end
+    scancache[sub(full,1,-2)] = files
     return files, n, m, r
 end
 
-local cache = { }
+local fullcache = { }
 
 function resolvers.scanfiles(path,branch,usecache)
-    statistics.starttiming(cache)
+    statistics.starttiming(timer)
+    local realpath = resolvers.resolve(path) -- no shortcut
     if usecache then
-        local files = cache[path]
+        local files = fullcache[realpath]
         if files then
             if trace_locating then
                 report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
@@ -10485,26 +10691,100 @@ function resolvers.scanfiles(path,branch,usecache)
     if trace_locating then
         report_expansions("scanning path '%s', branch '%s'",path,branch or path)
     end
-    local realpath = resolvers.resolve(path) -- no shortcut
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
-    files.__path__          = path -- can be selfautoparent:texmf-whatever
-    files.__files__         = n
-    files.__directories__   = m
-    files.__remappings__    = r
+    files.__path__        = path -- can be selfautoparent:texmf-whatever
+    files.__files__       = n
+    files.__directories__ = m
+    files.__remappings__  = r
     if trace_locating then
         report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
     if usecache then
-        cache[path] = files
+        scanned[#scanned+1] = realpath
+        fullcache[realpath] = files
     end
-    statistics.stoptiming(cache)
+    nofscans = nofscans + 1
+    statistics.stoptiming(timer)
     return files
 end
 
-function resolvers.scantime()
-    return statistics.elapsedtime(cache)
+local function simplescan(files,spec,path) -- first match only, no map and such
+    local full    = (path == "" and spec) or (spec .. path .. '/')
+    local dirs    = { }
+    local nofdirs = 0
+    for name in directory(full) do
+        if not lpegmatch(weird,name) then
+            local mode = attributes(full..name,'mode')
+            if mode == 'file' then
+                if not files[name] then
+                    -- only first match
+                    files[name] = path
+                end
+            elseif mode == 'directory' then
+                nofdirs = nofdirs + 1
+                if path ~= "" then
+                    dirs[nofdirs] = path..'/'..name
+                else
+                    dirs[nofdirs] = name
+                end
+            end
+        end
+    end
+    if nofdirs > 0 then
+        sort(dirs)
+        for i=1,nofdirs do
+            files = simplescan(files,spec,dirs[i])
+        end
+    end
+    return files
 end
 
+local simplecache    = { }
+local nofsharedscans = 0
+
+function resolvers.simplescanfiles(path,branch,usecache)
+    statistics.starttiming(timer)
+    local realpath = resolvers.resolve(path) -- no shortcut
+    if usecache then
+        local files = simplecache[realpath]
+        if not files then
+            files = scancache[realpath]
+            if files then
+                nofsharedscans = nofsharedscans + 1
+            end
+        end
+        if files then
+            if trace_locating then
+                report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
+            end
+            return files
+        end
+    end
+    if trace_locating then
+        report_expansions("scanning path '%s', branch '%s'",path,branch or path)
+    end
+    local files = simplescan({ },realpath .. '/',"")
+    if trace_locating then
+        report_expansions("%s files found",table.count(files))
+    end
+    if usecache then
+        scanned[#scanned+1] = realpath
+        simplecache[realpath] = files
+    end
+    nofscans = nofscans + 1
+    statistics.stoptiming(timer)
+    return files
+end
+
+function resolvers.scandata()
+    table.sort(scanned)
+    return {
+        n      = nofscans,
+        shared = nofsharedscans,
+        time   = statistics.elapsedtime(timer),
+        paths  = scanned,
+    }
+end
 
 
 
@@ -12144,6 +12424,7 @@ local function collect_files(names)
         if dname == "" or find(dname,"^%.") then
             dname = false
         else
+dname = gsub(dname,"*","%.*")
             dname = "/" .. dname .. "$"
         end
         local hashes = instance.hashes
@@ -12403,6 +12684,7 @@ end
 local function find_intree(filename,filetype,wantedfiles,allresults)
     local typespec = resolvers.variableofformat(filetype)
     local pathlist = resolvers.expandedpathlist(typespec)
+    local method = "intree"
     if pathlist and #pathlist > 0 then
         -- list search
         local filelist = collect_files(wantedfiles)
@@ -12425,7 +12707,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
             local done = false
             -- using file list
-            if filelist then
+            if filelist then -- database
                 -- compare list entries with permitted pattern -- /xx /xx//
                 local expression = makepathexpression(pathname)
                 if trace_detail then
@@ -12454,7 +12736,10 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                     end
                 end
             end
-            if not done then
+            if done then
+                method = "database"
+            else
+                method = "filesystem" -- bonus, even when !! is specified
                 pathname = gsub(pathname,"/+$","")
                 pathname = resolvers.resolve(pathname)
                 local scheme = url.hasscheme(pathname)
@@ -12476,7 +12761,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                             end
                             if not done and doscan then
                                 -- collect files in path (and cache the result)
-                                local files = resolvers.scanfiles(pname,false,true)
+                                local files = resolvers.simplescanfiles(pname,false,true)
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]
                                     local subpath = files[w]
@@ -12525,7 +12810,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
         end
         if #result > 0 then
-            return "intree", result
+            return method, result
         end
     end
 end

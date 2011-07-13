@@ -6,6 +6,10 @@ if not modules then modules = { } end modules ['lxml-tst'] = {
     license   = "see context related readme files"
 }
 
+-- Because we split and resolve entities we use the direct printing
+-- interface and not the context one. If we ever do that there will
+-- be an cldf-xml helper library.
+
 local utf = unicode.utf8
 
 local utfchar, utfupper = utf.char, utf.upper
@@ -18,16 +22,18 @@ local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
 
-lxml       = lxml or { }
+lxml = lxml or { }
 local lxml = lxml
 
-local texsprint, texprint, texwrite = tex.sprint, tex.print, tex.write
-local texcatcodes, ctxcatcodes, vrbcatcodes, notcatcodes = tex.texcatcodes, tex.ctxcatcodes, tex.vrbcatcodes, tex.notcatcodes
+local ctxcatcodes, notcatcodes = tex.ctxcatcodes, tex.notcatcodes
+
+local contextsprint = context.sprint -- with catcodes (here we use fast variants, but with option for tracing)
 
 local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, xml.setproperty
 local xmlwithelements = xml.withelements
 local xmlserialize, xmlcollect, xmltext, xmltostring = xml.serialize, xml.collect, xml.text, xml.tostring
 local xmlapplylpath = xml.applylpath
+local xmlunprivatized, xmlprivatetoken = xml.unprivatized, xml.privatetoken
 
 local variables = (interfaces and interfaces.variables) or { }
 
@@ -43,6 +49,8 @@ local trace_comments = false  trackers.register("lxml.comments", function(v) tra
 local report_lxml = logs.reporter("xml","tex")
 
 -- tex entities
+--
+-- todo: unprivatize attributes
 
 lxml.entities = lxml.entities or { }
 
@@ -79,7 +87,7 @@ function lxml.resolvedentity(str)
             e = e(str)
         end
         if e then
-            texsprint(notcatcodes,e)
+            contextsprint(notcatcodes,e)
         end
         return
     end
@@ -110,32 +118,40 @@ local finalizers  = xml.finalizers
 finalizers.xml = finalizers.xml or { }
 finalizers.tex = finalizers.tex or { }
 
--- this might look inefficient but it's actually rather efficient
--- because we avoid tokenization of leading spaces and xml can be
--- rather verbose (indented)
+-- serialization with entity handling
 
-local newline   = lpeg.patterns.newline
-local space     = lpeg.patterns.spacer
 local ampersand = P("&")
 local semicolon = P(";")
-local spacing   = newline * space^0
-local content   = C((1-spacing-ampersand)^1)
-local verbose   = C((1-(space+newline))^1)
-local entity    = ampersand * C((1-semicolon)^1) * semicolon
+local entity    = ampersand * C((1-semicolon)^1) * semicolon / lxml.resolvedentity -- context.bold
 
-local xmltextcapture = (
-    space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
-    space^0 * newline    * space^0 * Cc(" ") / texsprint +
-    content                                  / function(str) return texsprint(notcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / lxml.resolvedentity
-)^0
+local _, xmltextcapture = context.newtexthandler {
+    exception = entity,
+    catcodes  = notcatcodes
+}
 
-local ctxtextcapture = (
-    space^0 * newline^2  * Cc("")            / texprint  + -- better ^-2 ?
-    space^0 * newline    * space^0 * Cc(" ") / texsprint +
-    content                                  / function(str) return texsprint(ctxcatcodes,str) end + -- was just texsprint, current catcodes regime is notcatcodes
-    entity                                   / lxml.resolvedentity
-)^0
+local _, ctxtextcapture = context.newtexthandler {
+    exception = entity,
+    catcodes  = ctxcatcodes
+}
+
+-- cdata
+
+local toverbatim = context.newverbosehandler {
+    line   = context.xmlcdataobeyedline,
+    space  = context.xmlcdataobeyedspace,
+    before = context.xmlcdatabefore,
+    after  = context.xmlcdataafter,
+}
+
+lxml.toverbatim = context.newverbosehandler {
+    line   = context.xmlcdataobeyedline,
+    space  = context.xmlcdataobeyedspace,
+    before = context.xmlcdatabefore,
+    after  = context.xmlcdataafter,
+    strip  = true,
+}
+
+-- raw flushing
 
 local forceraw, rawroot = false, nil
 
@@ -149,73 +165,6 @@ end
 
 function lxml.rawroot()
     return rawroot
-end
-
---~ function lxml.rawpath(rootid)
---~     if rawroot and type(rawroot) == "table" then
---~         local text, path, rp
---~         if not rawroot.dt then
---~             text, path, rp = "text", "", rawroot[0]
---~         else
---~             path, rp = "tree", "", rawroot.__p__
---~         end
---~         while rp do
---~             local rptg = rp.tg
---~             if rptg then
---~                 path = rptg .. "/" .. path
---~             end
---~             rp = rp.__p__
---~         end
---~         return { rootid, "/" .. path, text }
---~     end
---~ end
-
--- cdata
-
-local linecommand   = "\\obeyedline"
-local spacecommand  = "\\obeyedspace" -- "\\strut\\obeyedspace"
-local beforecommand = ""
-local aftercommand  = ""
-
-local xmlverbosecapture = (
-    newline / function( ) texsprint(texcatcodes,linecommand,"{}") end +
-    verbose / function(s) texsprint(vrbcatcodes,s) end +
-    space   / function( ) texsprint(texcatcodes,spacecommand,"{}") end
-)^0
-
-local function toverbatim(str)
-    if beforecommand then texsprint(texcatcodes,beforecommand,"{}") end
-    lpegmatch(xmlverbosecapture,str)
-    if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
-end
-
-function lxml.setverbatim(before,after,obeyedline,obeyedspace)
-    beforecommand, aftercommand, linecommand, spacecommand = before, after, obeyedline, obeyedspace
-end
-
-local obeycdata = true
-
-function lxml.setcdata()
-    obeycdata = true
-end
-
-function lxml.resetcdata()
-    obeycdata = false
-end
-
--- cdata and verbatim
-
-lxml.setverbatim("\\xmlcdatabefore", "\\xmlcdataafter", "\\xmlcdataobeyedline", "\\xmlcdataobeyedspace")
-
--- local capture = (space^0*newline)^0 * capture * (space+newline)^0 * -1
-
-function lxml.toverbatim(str)
-    if beforecommand then texsprint(texcatcodes,beforecommand,"{}") end
-    -- todo: add this to capture
-    str = gsub(str,"^[ \t]+[\n\r]+","")
-    str = gsub(str,"[ \t\n\r]+$","")
-    lpegmatch(xmlverbosecapture,str)
-    if aftercommand  then texsprint(texcatcodes,aftercommand,"{}")  end
 end
 
 -- storage
@@ -358,22 +307,23 @@ end
 function lxml.withindex(name,n,command) -- will change as name is always there now
     local i, p = lpegmatch(splitter,n)
     if p then
-        texsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
+        contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
     else
-        texsprint(ctxcatcodes,"\\xmlw{",command,"}{",name,"::",n,"}")
+        contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",name,"::",n,"}")
     end
 end
 
 function lxml.getindex(name,n) -- will change as name is always there now
     local i, p = lpegmatch(splitter,n)
     if p then
-        texsprint(ctxcatcodes,n)
+        contextsprint(ctxcatcodes,n)
     else
-        texsprint(ctxcatcodes,name,"::",n)
+        contextsprint(ctxcatcodes,name,"::",n)
     end
 end
 
--- loading (to be redone, no overload)
+-- loading (to be redone, no overload) .. best use different methods and
+-- keep raw xml (at least as option)
 
 xml.originalload = xml.originalload or xml.load
 
@@ -391,21 +341,23 @@ end
 local entities = xml.entities
 
 local function entityconverter(id,str)
-    return entities[str] or "" -- -and "&"..str..";" -- feed back into tex end later
+    return entities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
 end
 
 function lxml.convert(id,data,entities,compress)
-    local settings = {
-        unify_predefined_entities = true,
---~ resolve_predefined_entities = true,
+    local settings = { -- we're now roundtrip anyway
+        unify_predefined_entities   = true,
+        utfize_entities             = true,
+        resolve_predefined_entities = true,
+        resolve_entities            = function(str) return entityconverter(id,str) end, -- needed for mathml
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true
     end
-    if entities and entities == variables.yes then
-        settings.utfize_entities = true
-     -- settings.resolve_entities = function (str) return entityconverter(id,str) end
-    end
+ -- if entities and entities == variables.yes then
+ --     settings.utfize_entities = true
+ --  -- settings.resolve_entities = function (str) return entityconverter(id,str) end
+ -- end
     return xml.convert(data,settings)
 end
 
@@ -525,10 +477,10 @@ local function tex_element(e,handlers)
                     addindex(rootname,false,true)
                     ix = e.ix
                 end
-                texsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
+                contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
             else
                 report_lxml( "fatal error: no index for '%s'",command)
-                texsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
+                contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",ix or 0,"}")
             end
         elseif tc == "function" then
             command(e)
@@ -551,7 +503,7 @@ pihandlers[#pihandlers+1] = function(str)
     if str then
         local a, b, c, d = lpegmatch(parser,str)
         if d then
-            texsprint(ctxcatcodes,"\\xmlcontextdirective{",a,"}{",b,"}{",c,"}{",d,"}")
+            contextsprint(ctxcatcodes,"\\xmlcontextdirective{",a,"}{",b,"}{",c,"}{",d,"}")
         end
     end
 end
@@ -563,6 +515,16 @@ local function tex_pi(e,handlers)
     end
 end
 
+local obeycdata = true
+
+function lxml.setcdata()
+    obeycdata = true
+end
+
+function lxml.resetcdata()
+    obeycdata = false
+end
+
 local function tex_cdata(e,handlers)
     if obeycdata then
         toverbatim(e.dt[1])
@@ -570,16 +532,17 @@ local function tex_cdata(e,handlers)
 end
 
 local function tex_text(e)
+    e = xmlunprivatized(e)
     lpegmatch(xmltextcapture,e)
 end
 
-local function ctx_text(e)
+local function ctx_text(e) -- can be just context(e) as we split there
     lpegmatch(ctxtextcapture,e)
 end
 
 local function tex_handle(...)
 --  report_lxml( "error while flushing: %s", concat { ... })
-    texsprint(...) -- notcatcodes is active anyway
+    contextsprint(ctxcatcodes,...) -- notcatcodes is active anyway
 end
 
 local xmltexhandler = xml.newhandlers {
@@ -617,11 +580,12 @@ local function sprint(root)
         local tr = type(root)
         if tr == "string" then -- can also be result of lpath
          -- rawroot = false
+            root = xmlunprivatized(root)
             lpegmatch(xmltextcapture,root)
         elseif tr == "table" then
             if forceraw then
                 rawroot = root
-                texwrite(xmltostring(root))
+                contextsprint(ctxcatcodes,xmltostring(root))
             else
                 xmlserialize(root,xmltexhandler)
             end
@@ -641,6 +605,7 @@ local function tprint(root) -- we can move sprint inline
             end
         end
     elseif tr == "string" then
+        root = xmlunprivatized(root)
         lpegmatch(xmltextcapture,root)
     end
 end
@@ -651,12 +616,13 @@ local function cprint(root) -- content
         -- quit
     elseif type(root) == 'string' then
      -- rawroot = false
+        root = xmlunprivatized(root)
         lpegmatch(xmltextcapture,root)
     else
         local rootdt = root.dt
         if forceraw then
             rawroot = root
-            texwrite(xmltostring(rootdt or root))
+            contextsprint(ctxcatcodes,xmltostring(rootdt or root))
         else
             xmlserialize(rootdt or root,xmltexhandler)
         end
@@ -776,7 +742,7 @@ function lxml.flushsetups(id,...)
                     if trace_loading then
                         report_lxml("applying setup %02i = %s to %s",k,v,document)
                     end
-                    texsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
+                    contextsprint(ctxcatcodes,"\\xmlsetup{",id,"}{",v,"}")
                     done[v] = true
                 end
             end
@@ -956,7 +922,7 @@ local function reverse(collected)
 end
 
 local function count(collected)
-    texwrite((collected and #collected) or 0)
+    contextsprint(ctxcatcodes,(collected and #collected) or 0)
 end
 
 local function position(collected,n)
@@ -974,7 +940,7 @@ end
 
 local function match(collected) -- is match in preceding collected, never change, see bibxml
     local m = collected and collected[1]
-    texwrite(m and m.mi or 0)
+    contextsprint(ctxcatcodes,m and m.mi or 0)
 end
 
 local function index(collected,n)
@@ -984,7 +950,7 @@ local function index(collected,n)
             n = #collected + n + 1 -- brrr
         end
         if n > 0 then
-            texwrite(collected[n].ni or 0)
+            contextsprint(ctxcatcodes,collected[n].ni or 0)
         end
     end
 end
@@ -999,10 +965,10 @@ local function command(collected,cmd,otherwise)
                 lxml.addindex(e.name,false,true)
                 ix = e.ix
             end
-            texsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",e.name,"::",ix,"}")
+            contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",e.name,"::",ix,"}")
         end
     elseif otherwise then
-        texsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")
+        contextsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")
     end
 end
 
@@ -1011,10 +977,10 @@ local function attribute(collected,a,default)
         local at = collected[1].at
         local str = (at and at[a]) or default
         if str and str ~= "" then
-            texsprint(notcatcodes,str)
+            contextsprint(notcatcodes,str)
         end
     elseif default then
-        texsprint(notcatcodes,default)
+        contextsprint(notcatcodes,default)
     end
 end
 
@@ -1026,7 +992,7 @@ local function chainattribute(collected,arguments) -- todo: optional levels
             if at then
                 local a = at[arguments]
                 if a then
-                    texsprint(notcatcodes,a)
+                    contextsprint(notcatcodes,a)
                 end
             else
                 break -- error
@@ -1050,7 +1016,7 @@ end
 local function ctxtext(collected)
     if collected then
         for c=1,#collected do
-            texsprint(ctxcatcodes,collected[1].dt)
+            contextsprint(ctxcatcodes,collected[1].dt)
         end
     end
 end
@@ -1072,7 +1038,7 @@ end
 local function lower(collected)
     if collected then
         for c=1,#collected do
-            texsprint(ctxcatcodes,lowerchars(collected[1].dt[1]))
+            contextsprint(ctxcatcodes,lowerchars(collected[1].dt[1]))
         end
     end
 end
@@ -1080,7 +1046,7 @@ end
 local function upper(collected)
     if collected then
         for c=1,#collected do
-            texsprint(ctxcatcodes,upperchars(collected[1].dt[1]))
+            contextsprint(ctxcatcodes,upperchars(collected[1].dt[1]))
         end
     end
 end
@@ -1091,7 +1057,7 @@ local function number(collected)
         for c=1,#collected do
             n = n + tonumber(collected[c].dt[1] or 0)
         end
-        texwrite(n)
+        contextsprint(ctxcatcodes,n)
     end
 end
 
@@ -1111,9 +1077,9 @@ local function concatrange(collected,start,stop,separator,lastseparator,textonly
             if i == nofcollected then
                 -- nothing
             elseif i == nofcollected-1 and lastseparator ~= "" then
-                texsprint(ctxcatcodes,lastseparator)
+                contextsprint(ctxcatcodes,lastseparator)
             elseif separator ~= "" then
-                texsprint(ctxcatcodes,separator)
+                contextsprint(ctxcatcodes,separator)
             end
         end
     end
@@ -1157,7 +1123,7 @@ function finalizers.tag(collected)
             c = collected[#collected-n+1]
         end
         if c then
-            texsprint(c.tg)
+            contextsprint(ctxcatcodes,c.tg)
         end
     end
 end
@@ -1174,9 +1140,9 @@ function finalizers.name(collected)
         end
         if c then
             if c.ns == "" then
-                texsprint(c.tg)
+                contextsprint(ctxcatcodes,c.tg)
             else
-                texsprint(c.ns,":",c.tg)
+                contextsprint(ctxcatcodes,c.ns,":",c.tg)
             end
         end
     end
@@ -1188,9 +1154,9 @@ function finalizers.tags(collected,nonamespace)
             local e = collected[c]
             local ns, tg = e.ns, e.tg
             if nonamespace or ns == "" then
-                texsprint(tg)
+                contextsprint(ctxcatcodes,tg)
             else
-                texsprint(ns,":",tg)
+                contextsprint(ctxcatcodes,ns,":",tg)
             end
         end
     end
@@ -1201,14 +1167,17 @@ end
 local function verbatim(id,before,after)
     local root = getid(id)
     if root then
-        if before then texsprint(ctxcatcodes,before,"[",root.tg or "?","]") end
+        if before then contextsprint(ctxcatcodes,before,"[",root.tg or "?","]") end
         lxml.toverbatim(xmltostring(root.dt))
-        if after then texsprint(ctxcatcodes,after) end
+--~         lxml.toverbatim(xml.totext(root.dt))
+        if after then contextsprint(ctxcatcodes,after) end
     end
 end
+
 function lxml.inlineverbatim(id)
     verbatim(id,"\\startxmlinlineverbatim","\\stopxmlinlineverbatim")
 end
+
 function lxml.displayverbatim(id)
     verbatim(id,"\\startxmldisplayverbatim","\\stopxmldisplayverbatim")
 end
@@ -1253,19 +1222,19 @@ end
 function lxml.raw(id,pattern) -- the content, untouched by commands
     local collected = (pattern and xmlapplylpath(getid(id),pattern)) or getid(id)
     if collected then
-        texsprint(xmltostring(collected[1].dt))
+        contextsprint(notcatcodes,xmltostring(collected[1].dt))
     end
 end
 
 function lxml.context(id,pattern) -- the content, untouched by commands
     if not pattern then
         local collected = getid(id)
-    --  texsprint(ctxcatcodes,collected.dt[1])
+    --  contextsprint(ctxcatcodes,collected.dt[1])
         ctx_text(collected.dt[1])
     else
         local collected = xmlapplylpath(getid(id),pattern) or getid(id)
         if collected and #collected > 0 then
-            texsprint(ctxcatcodes,collected[1].dt)
+            contextsprint(ctxcatcodes,collected[1].dt)
         end
     end
 end
@@ -1309,7 +1278,7 @@ lxml.index = lxml.position
 
 function lxml.pos(id)
     local root = getid(id)
-    texwrite((root and root.ni) or 0)
+    contextsprint(ctxcatcodes,(root and root.ni) or 0)
 end
 
 function lxml.att(id,a,default)
@@ -1318,10 +1287,10 @@ function lxml.att(id,a,default)
         local at = root.at
         local str = (at and at[a]) or default
         if str and str ~= "" then
-            texsprint(notcatcodes,str)
+            contextsprint(notcatcodes,str)
         end
     elseif default then
-        texsprint(notcatcodes,default)
+        contextsprint(notcatcodes,default)
     end
 end
 
@@ -1329,23 +1298,23 @@ function lxml.name(id) -- or remapped name? -> lxml.info, combine
     local r = getid(id)
     local ns = r.rn or r.ns or ""
     if ns ~= "" then
-        texsprint(ns,":",r.tg)
+        contextsprint(ctxcatcodes,ns,":",r.tg)
     else
-        texsprint(r.tg)
+        contextsprint(ctxcatcodes,r.tg)
     end
 end
 
 function lxml.match(id) -- or remapped name? -> lxml.info, combine
-    texsprint(getid(id).mi or 0)
+    contextsprint(ctxcatcodes,getid(id).mi or 0)
 end
 
 function lxml.tag(id) -- tag vs name -> also in l-xml tag->name
-    texsprint(getid(id).tg or "")
+    contextsprint(ctxcatcodes,getid(id).tg or "")
 end
 
 function lxml.namespace(id) -- or remapped name?
     local root = getid(id)
-    texsprint(root.rn or root.ns or "")
+    contextsprint(ctxcatcodes,root.rn or root.ns or "")
 end
 
 function lxml.flush(id)
@@ -1382,7 +1351,7 @@ function lxml.command(id,pattern,cmd)
                 addindex(rootname,false,true)
                 ix = e.ix
             end
-            texsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
+            contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
         end
     end
 end
@@ -1491,7 +1460,7 @@ lxml.get_id = getid   lxml.obsolete.get_id = getid
 function xml.finalizers.tex.lettered(collected)
     if collected then
         for c=1,#collected do
-            texsprint(ctxcatcodes,lettered(collected[1].dt[1]))
+            contextsprint(ctxcatcodes,lettered(collected[1].dt[1]))
         end
     end
 end
@@ -1499,7 +1468,7 @@ end
 --~ function xml.finalizers.tex.apply(collected,what) -- to be tested
 --~     if collected then
 --~         for c=1,#collected do
---~             texsprint(ctxcatcodes,what(collected[1].dt[1]))
+--~             contextsprint(ctxcatcodes,what(collected[1].dt[1]))
 --~         end
 --~     end
 --~ end

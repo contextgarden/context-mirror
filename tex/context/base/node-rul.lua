@@ -74,8 +74,6 @@ local a_color         = attributes.private('color')
 local a_transparency  = attributes.private('transparency')
 local a_colorspace    = attributes.private('colormodel')
 
-local texwrite        = tex.write
-
 local insert_before   = node.insert_before
 local insert_after    = node.insert_after
 local striprange      = nodes.striprange
@@ -234,7 +232,7 @@ local data = nodes.rules.data
 
 function nodes.rules.define(settings)
     data[#data+1] = settings
-    texwrite(#data)
+    context(#data)
 end
 
 local a_viewerlayer = attributes.private("viewerlayer")
@@ -340,7 +338,7 @@ local data = nodes.shifts.data
 
 function nodes.shifts.define(settings)
     data[#data+1] = settings
-    texwrite(#data)
+    context(#data)
 end
 
 local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose

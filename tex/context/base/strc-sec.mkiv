@@ -365,8 +365,14 @@
   {\pagetype[\currentheadcoupling]% hm also number
    \currentstructuresynchronize}
 
-\unexpanded\def\setheadmarking
-  {\normalexpanded{\noexpand\setmarking[\currenthead]{\currentstructurelistnumber}}}
+% BEWARE: \marking[section]{my text} does not work as we use list indices instead
+% so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
+
+% \unexpanded\def\setheadmarking
+%   {\normalexpanded{\noexpand\setmarking[\currenthead]{\currentstructurelistnumber}}}
+
+\unexpanded\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
+  {\normalexpanded{\noexpand\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
 \let\deepstructurenumbercommand\relax
 \let\deepstructuretitlecommand \relax

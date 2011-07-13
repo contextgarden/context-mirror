@@ -40,7 +40,7 @@
 %
 % impossible in math mode so there always fallback (till we have gyre):
 
-\def\utfchar          #1{\ctxlua{tex.uprint(\number#1)}}
+\def\utfchar          #1{\ctxcommand{utfchar(\number#1)}}
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}
 \def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}
@@ -74,9 +74,6 @@
             %number\mthcatcodes,
             \number\vrbcatcodes,
             \number\prtcatcodes,
-%           \number\xmlcatcodesn,
-%           \number\xmlcatcodese,
-%           \number\xmlcatcodesr,
             \number\tpacatcodes,
             \number\tpbcatcodes,
             \number\txtcatcodes,
@@ -85,9 +82,6 @@
             \number\ctxcatcodes,
             \number\notcatcodes,
             \number\prtcatcodes, % new
-%           \number\xmlcatcodesn,
-%           \number\xmlcatcodese,
-%           \number\xmlcatcodesr,
         }
     )
 %  catcodes.register("xmlcatcodes",\number\xmlcatcodes)

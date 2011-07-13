@@ -806,18 +806,30 @@
      \egroup
    \fi}
 
-\protect \endinput
+% \protect \endinput % THE FOLLOWING CODE IS NOT CHECKED
 
 %D I will redo these when I need them.
 
+% \setupinteraction[state=start]
+%
 % \definepushbutton [reset]
 %
-% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=green}]
-% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=white}]
+% \startuniqueMPgraphic{whatever}{color}
+%     fill fullcircle xysized (OverlayWidth,OverlayHeight) withcolor \MPvar{color} ;
+% \stopuniqueMPgraphic
 %
-% \startinteractionmenu[bottom]
-%   \psh [reset] [JS(reset_something)] \\
-% \stopinteractionmenu
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=red}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [d] [\uniqueMPgraphic{whatever}{color=blue}]
+%
+% \starttext
+%     \startTEXpage
+%         \pushbutton [reset] [page(2)]
+%     \stopTEXpage
+%     \startTEXpage
+%         \pushbutton [reset] [page(1)]
+%     \stopTEXpage
+% \stoptext
 
 \newcount\scrn_pushbutton_n
 
@@ -967,6 +979,6 @@
     \let\startrob\scrn_menu_rob_start
     \let\stoprob \relax
     \let\rob     \scrn_menu_rob_direct
-\everysetmenucommands
+\to \everysetmenucommands
 
 \protect \endinput

@@ -263,14 +263,14 @@ local function utf16_to_utf8_le(t)
     return t
 end
 
-local function utf32_to_utf8_be(str)
+local function utf32_to_utf8_be(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = utfsplitlines(t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
         local r, more = 0, -1
-        for a,b in bytepairs(str) do
+        for a,b in bytepairs(t[i]) do
             if a and b then
                 if more < 0 then
                     more = 256*256*256*a + 256*256*b
@@ -285,17 +285,17 @@ local function utf32_to_utf8_be(str)
         end
         t[i] = concat(result,"",1,r)
     end
-    return result
+    return t
 end
 
-local function utf32_to_utf8_le(str)
+local function utf32_to_utf8_le(t)
     if type(t) == "string" then
-        t = utfsplitlines(str)
+        t = utfsplitlines(t)
     end
     local result = { } -- we reuse result
     for i=1,#t do
         local r, more = 0, -1
-        for a,b in bytepairs(str) do
+        for a,b in bytepairs(t[i]) do
             if a and b then
                 if more < 0 then
                     more = 256*b + a
@@ -310,7 +310,7 @@ local function utf32_to_utf8_le(str)
         end
         t[i] = concat(result,"",1,r)
     end
-    return result
+    return t
 end
 
 unicode.utf32_to_utf8_be = utf32_to_utf8_be
@@ -403,6 +403,7 @@ patterns.toentities = toentities
 function utf.toentities(str)
     return lpegmatch(toentities,str)
 end
+
 --~ local utfchr = { } -- 60K -> 2.638 M extra mem but currently not called that often (on latin)
 --~
 --~ setmetatable(utfchr, { __index = function(t,k) local v = utfchar(k) t[k] = v return v end } )

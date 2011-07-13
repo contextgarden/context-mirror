@@ -61,6 +61,10 @@ if tex and tex.jobname or tex.formatname then
         write_nl(target,...)
     end
 
+    newline = function()
+        write_nl(target,"\n")
+    end
+
     report = function(a,b,c,...)
         if c then
             write_nl(target,format("%-15s > %s\n",translations[a],format(formats[b],c,...)))
@@ -166,6 +170,10 @@ else
 
     writer = write_nl
 
+    newline = function()
+        write_nl("\n")
+    end
+
     report = function(a,b,c,...)
         if c then
             write_nl(format("%-15s | %s",a,format(b,c,...)))
@@ -225,6 +233,7 @@ logs.settranslations = settranslations
 logs.direct          = direct
 logs.subdirect       = subdirect
 logs.writer          = writer
+logs.newline         = newline
 
 -- installer
 
@@ -585,3 +594,8 @@ else
         print(format(...))
     end
 end
+
+-- do we still need io.flush then?
+
+io.stdout:setvbuf('no')
+io.stderr:setvbuf('no')

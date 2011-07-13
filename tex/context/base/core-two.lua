@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['core-two'] = {
 }
 
 local remove, concat = table.remove, table.concat
-local texprint = tex.print
 local allocate = utilities.storage.allocate
 
 --[[ldx--
@@ -64,21 +63,21 @@ end
 function jobpasses.get(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        texprint(remove(jti,1))
+        context(remove(jti,1))
     end
 end
 
 function jobpasses.first(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        texprint(jti[1])
+        context(jti[1])
     end
 end
 
 function jobpasses.last(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        texprint(jti[#jti])
+        context(jti[#jti])
     end
 end
 
@@ -87,19 +86,19 @@ jobpasses.check = jobpasses.first
 function jobpasses.find(id,n)
     local jti = collected[id]
     if jti and jti[n] then
-        texprint(jti[n])
+        context(jti[n])
     end
 end
 
 function jobpasses.count(id)
     local jti = collected[id]
-    texprint((jti and #jti) or 0)
+    context((jti and #jti) or 0)
 end
 
 function jobpasses.list(id)
     local jti = collected[id]
     if jti then
-        texprint(concat(jti,','))
+        context(concat(jti,','))
     end
 end
 
@@ -130,13 +129,13 @@ end
 function jobpasses.getdata(id,index,default)
     local jti = collected[id]
     local value = jit and jti[index]
-    texprint((value ~= "" and value) or default or "")
+    context((value ~= "" and value) or default or "")
 end
 
 function jobpasses.getfield(id,index,tag,default)
     local jti = collected[id]
     jti = jti and jti[index]
     local value = jti and jti[tag]
-    texprint((value ~= "" and value) or default or "")
+    context((value ~= "" and value) or default or "")
 end
 

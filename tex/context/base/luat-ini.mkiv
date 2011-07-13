@@ -131,16 +131,16 @@
 %D
 %D \startbuffer
 %D \startluacode
-%D tex.print("LUA")
+%D context("LUA")
 %D \stopluacode
 %D
 %D \startusercode
-%D global.tex.print("USER 1")
-%D tex.print("USER 2")
+%D global.context("USER 1")
+%D context("USER 2")
 %D if characters then
-%D     tex.print("ACCESS")
+%D     context("ACCESS")
 %D else
-%D     tex.print("NO ACCESS")
+%D     context("NO ACCESS")
 %D end
 %D \stopusercode
 %D \stopbuffer
@@ -198,7 +198,7 @@
   {\ctxlua{parametersets["#1"]={#2}}%
    \endgroup}
 
-\def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} tex.sprint("#1")}}
+\def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} context("#1")}}
 
 % todo: \mergeparameterset
 

@@ -170,7 +170,7 @@ function splitters.define(name,parameters)
     local l = less and settings_to_array(less)
     local m = more and settings_to_array(more)
     if goodies then
-        goodies = fonts.goodies.get(goodies) -- also in tfmdata
+        goodies = fonts.goodies.load(goodies) -- also in tfmdata
         if goodies then
             local featuresets = goodies.featuresets
             local solution = solution and goodies.solutions[solution]
@@ -217,7 +217,7 @@ function splitters.define(name,parameters)
         more      = more_set or { },
         settings  = settings, -- for tracing
     }
-    tex.write(nofsolutions)
+    context(nofsolutions)
 end
 
 local nofwords, noftries, nofadapted, nofkept, nofparagraphs = 0, 0, 0, 0, 0

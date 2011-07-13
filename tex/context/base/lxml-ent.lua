@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['lxml-ent'] = {
 }
 
 local type, next, tonumber =  type, next, tonumber
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local utf = unicode.utf8
 local byte, format = string.byte, string.format
 local utfupper, utfchar = utf.upper, utf.char
@@ -40,10 +39,6 @@ function xml.registerentity(key,value)
         report_xml("registering entity '%s' as: %s",key,value)
     end
 end
-
---~ entities.amp = function() tex.write("&") end
---~ entities.lt  = function() tex.write("<") end
---~ entities.gt  = function() tex.write(">") end
 
 if characters and characters.entities then
 

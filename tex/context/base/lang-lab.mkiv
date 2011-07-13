@@ -273,10 +273,10 @@
 
 %D Now we load the labels:
 
-\ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % we could embed 0x2006 but it does not show up in a editor
+\ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % \utfchar{2006"} % we could embed 0x2006 but it does not show up in a editor
 
 %D Now we can load the labels:
 
-\ctxlua{languages.labels.define()}
+\ctxlua{languages.labels.define()} % no user command
 
 \protect \endinput

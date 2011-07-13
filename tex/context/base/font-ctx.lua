@@ -102,6 +102,8 @@ function definers.resetnullfont()
     definers.resetnullfont = function() end
 end
 
+commands.resetnullfont = definers.resetnullfont
+
 setmetatableindex(fontdata, function(t,k) return nulldata end)
 
 local chardata      = allocate() -- chardata
@@ -152,13 +154,44 @@ local needsnodemode = {
     gpos_mark2ligature = true,
 }
 
+fonts.handlers.otf.tables.scripts.auto = "automatic fallback to latn when no dflt present"
+
+local privatefeatures = {
+    tlig = true,
+    trep = true,
+    anum = true,
+}
+
 local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
     if trace_features then
         report_features(serialize(features,"used"))
     end
+    local rawdata   = tfmdata.shared.rawdata
+    local resources = rawdata and rawdata.resources
+    local script    = features.script
+    if script == "auto" then
+        local latn = false
+        for g, list in next, resources.features do
+            for f, scripts in next, list do
+                if privatefeatures[f] then
+                    -- skip
+                elseif scripts.dflt then
+                    script = "dflt"
+                    break
+                elseif scripts.latn then
+                    latn = true
+                end
+            end
+        end
+        if script == "auto" then
+            script = latn and "latn" or "dflt"
+        end
+        features.script = script
+        if trace_automode then
+            report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
+        end
+    end
     if mode == "auto" then
-        local rawdata   = tfmdata.shared.rawdata
-        local resources = rawdata and rawdata.resources
         local sequences = resources.sequences
         if sequences and #sequences > 0 then
             local script    = features.script   or "dflt"
@@ -599,7 +632,7 @@ local setsomefontname    = context.fntsetsomename
 local setemptyfontsize   = context.fntsetnopsize
 local setsomefontsize    = context.fntsetsomesize
 
-function definers.stage_one(str)
+function commands.definefont_one(str)
     statistics.starttiming(fonts)
     if trace_defining then
         report_defining("memory usage before: %s",statistics.memused())
@@ -644,7 +677,7 @@ local n = 0
 -- we can also move rscale to here (more consistent)
 -- the argument list will become a table
 
-function definers.stage_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
         mathsize,textsize,relativeid,classgoodies,goodies)
     if trace_defining then
         report_defining("start stage two: %s (%s)",str,size)
@@ -792,6 +825,10 @@ function definers.define(specification)
         specification.sub           = specification.sub    or (sub    ~= "" and sub)    or ""
         specification.method        = specification.method or (method ~= "" and method) or "*"
         specification.detail        = specification.detail or (detail ~= "" and detail) or ""
+        --
+        if type(specification.size) == "string" then
+            specification.size = tex.sp(specification.size) or 655260
+        end
         --
         specification.specification = "" -- not used
         specification.resolved      = ""
@@ -1079,7 +1116,7 @@ function commands.nbfs(amount,precision)
 end
 
 function commands.featureattribute(tag)
-    tex.write(contextnumber(tag))
+    context(contextnumber(tag))
 end
 
 function commands.setfontfeature(tag)

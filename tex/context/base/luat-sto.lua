@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-sto'] = {
     license   = "see context related readme files"
 }
 
-local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
+local type, next, setmetatable, getmetatable, collectgarbage = type, next, setmetatable, getmetatable, collectgarbage
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
 local bytecode = lua.bytecode
@@ -71,6 +71,22 @@ local function dump()
 end
 
 lua.registerfinalizer(dump,"dump storage")
+
+-- to be tested with otf caching:
+
+function lua.collectgarbage(threshold)
+    local current = collectgarbage("count")
+    local threshold = threshold or 256 * 1024
+    while true do
+        collectgarbage("collect")
+        local previous = collectgarbage("count")
+        if current - previous < threshold then
+            break
+        else
+            current = previous
+        end
+    end
+end
 
 -- we also need to count at generation time (nicer for message)
 

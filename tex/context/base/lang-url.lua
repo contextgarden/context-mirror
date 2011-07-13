@@ -103,7 +103,7 @@ table.setmetatablecall(hyphenatedurl,action)
 
 function hyphenatedurl.setcharacters(str,value) -- 1, 2 == before, after
     for s in utfcharacters(str) do
-        chars[s] = value or 1
+        characters[s] = value or 1
     end
 end
 

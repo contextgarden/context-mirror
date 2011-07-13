@@ -123,17 +123,15 @@
 
 % obsolete (old hack for idris)
 
-%D This is a hack, and only meant for special situations. We don't
-%D support this in for instance verbatim. The active characters map
-%D onto the \CONTEXT\ names and font handling etc. is up to the user.
-
-%D This feature is obsolete.
-
-\registerctxluafile{char-act}{1.001}
-
-\def\enableactiveutf {\ctxlua{characters.active.enable()}}
-\def\disableactiveutf{\ctxlua{characters.active.disable()}}
-\def\testactiveutf #1{\ctxlua{characters.active.test("#1")}}
+% %D This is a hack, and only meant for special situations. We don't
+% %D support this in for instance verbatim. The active characters map
+% %D onto the \CONTEXT\ names and font handling etc. is up to the user.
+%
+% \registerctxluafile{char-act}{1.001}
+%
+% \def\enableactiveutf {\ctxlua{characters.active.enable()}}
+% \def\disableactiveutf{\ctxlua{characters.active.disable()}}
+% \def\testactiveutf #1{\ctxlua{characters.active.test("#1")}}
 
 %D Usage:
 %D

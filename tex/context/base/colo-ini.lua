@@ -727,15 +727,25 @@ end
 
 local patterns = { "colo-imp-%s.mkiv", "colo-imp-%s.tex", "colo-%s.mkiv", "colo-%s.tex" }
 
+local function action(name,foundname)
+    context.startreadingfile()
+    context.input(foundname)
+    context.showcolormessage("colors",4,name)
+    context.stopreadingfile()
+end
+
+local function failure(name)
+    context.showcolormessage("colors",5,name)
+end
+
 function colors.usecolors(name)
-    commands.uselibrary(name,patterns,function(name,foundname)
-        context.startreadingfile()
-        context.input(foundname)
-        context.showcolormessage("colors",4,name)
-        context.stopreadingfile()
-    end, function(name)
-        context.showcolormessage("colors",5,name)
-    end)
+    commands.uselibrary {
+        name     = name,
+        patterns = patterns,
+        action   = action,
+        failure  = failure,
+        onlyonce = true,
+    }
 end
 
 -- interface

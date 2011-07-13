@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['page-flt'] = {
 }
 
 -- floats -> managers.floats
+-- some functions are a tex/lua mix so we need a separation
 
 local insert, remove = table.insert, table.remove
 local find = string.find
@@ -44,10 +45,6 @@ local stacks = initialize()
 
 function floats.stacked(which) -- floats.thenofstacked
     return #stacks[which or default]
-end
-
-function floats.thestacked(which)
-    return context(#stacks[which or default])
 end
 
 function floats.push()
@@ -164,13 +161,6 @@ function floats.flush(which,n,bylabel)
     end
 end
 
-function floats.thevar(name,default)
-    local value = last and last.data[name] or default
-    if value and value ~= "" then
-        context(value)
-    end
-end
-
 function floats.consult(which,n)
     which = which or default
     local stack = stacks[which]
@@ -213,12 +203,12 @@ function floats.collect(which,maxwidth,distance)
     setcount("global","nofcollectedfloats",m)
 end
 
-function commands.doifsavedfloatelse(which)
-    local stack = stacks[which or default]
-    commands.doifelse(#stack>0)
+function floats.getvariable(name,default)
+    local value = last and last.data[name] or default
+    return value ~= "" and value
 end
 
-function floats.thecheckedpagefloat(packed)
+function floats.checkedpagefloat(packed)
     local result = ""
     if structures.pages.is_odd() then
         if #stacks.rightpage > 0 then
@@ -245,28 +235,56 @@ function floats.thecheckedpagefloat(packed)
             end
         end
     end
-    context(result)
+    return result
+end
+
+function floats.nofstacked()
+    return #stacks[which or default] or 0
 end
 
 local method   = C((1-S(", :"))^1)
 local position = P(":") * C((1-S("*,"))^1) * P("*") * C((1-S(","))^1)
 local label    = P(":") * C((1-S(",*: "))^0)
 
-local pattern = method * (label * position + C("") * position + label + C("") * C("") * C(""))
+local pattern = method * (
+    label * position
+  + C("") * position
+  + label
+  + C("") * C("") * C("")
+) + C("") * C("") * C("") * C("")
 
--- table.print { lpeg.match(pattern,"somewhere:blabla,crap") }
--- table.print { lpeg.match(pattern,"somewhere:1*2") }
--- table.print { lpeg.match(pattern,"somewhere:blabla:1*2") }
--- table.print { lpeg.match(pattern,"somewhere::1*2") }
--- table.print { lpeg.match(pattern,"somewhere,") }
--- table.print { lpeg.match(pattern,"somewhere") }
+
+-- inspect { lpegmatch(pattern,"somewhere:blabla,crap") }
+-- inspect { lpegmatch(pattern,"somewhere:1*2") }
+-- inspect { lpegmatch(pattern,"somewhere:blabla:1*2") }
+-- inspect { lpegmatch(pattern,"somewhere::1*2") }
+-- inspect { lpegmatch(pattern,"somewhere,") }
+-- inspect { lpegmatch(pattern,"somewhere") }
+-- inspect { lpegmatch(pattern,"") }
 
 function floats.analysemethod(str)
-    if str ~= "" then -- extra check, already done at the tex end
-        local method, label, row, column = lpegmatch(pattern,str)
-        context.setvalue("floatmethod",method or "")
-        context.setvalue("floatlabel", label  or "")
-        context.setvalue("floatrow",   row    or "")
-        context.setvalue("floatcolumn",column or "")
-    end
+    return lpegmatch(pattern,str or "")
+end
+
+-- interface
+
+commands.flushfloat   = floats.flush
+commands.savefloat    = floats.save
+commands.resavefloat  = floats.resave
+commands.pushfloat    = floats.push
+commands.popfloat     = floats.pop
+commands.consultfloat = floats.consult
+commands.collectfloat = floats.collect
+
+function commands.nofstackedfloats  (...) context(floats.nofstacked(...))             end
+function commands.getfloatvariable  (...) context(floats.getvariable(...) or "")      end
+function commands.doifelsesavedfloat(...) commands.doifelse(floats.nofstacked(...)>0) end
+function commands.checkedpagefloat  (...) context(floats.checkedpagefloat(...))       end
+
+function commands.analysefloatmethod(str)
+    local method, label, row, column = floats.analysemethod(str)
+    context.setvalue("floatmethod",method)
+    context.setvalue("floatlabel", label )
+    context.setvalue("floatrow",   row   )
+    context.setvalue("floatcolumn",column)
 end

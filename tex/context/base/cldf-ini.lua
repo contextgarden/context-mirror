@@ -16,25 +16,28 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- Todo: optional checking against interface
 -- Todo: coroutine trickery
 -- Todo: maybe use txtcatcodes
+-- Todo: we could always use prtcatcodes (context.a_b_c) but then we loose protection
 
 -- tflush needs checking ... sort of weird that it's not a table
 
 -- __flushlines is an experiment and rather ugly so it will go away
+
+-- tex.print == line with endlinechar appended
 
 local tex = tex
 
 context       = context or { }
 local context = context
 
-local format, find, gmatch, splitlines = string.format, string.find, string.gmatch, string.splitlines
+local format, find, gmatch, gsub = string.format, string.find, string.gmatch, string.gsub
 local next, type, tostring, setmetatable = next, type, tostring, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
-local lpegmatch = lpeg.match
+local lpegmatch, lpegC, lpegS, lpegP, lpegCc = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc
 
 local texsprint         = tex.sprint
 local textprint         = tex.tprint
 local texprint          = tex.print
-local texiowrite        = texio.write
+local texwrite          = tex.write
 local texcount          = tex.count
 
 local isnode            = node.is_node -- after 0.65 just node.type
@@ -49,6 +52,8 @@ local vrbcatcodes       = tex.vrbcatcodes
 local xmlcatcodes       = tex.xmlcatcodes
 
 local flush             = texsprint
+local flushdirect       = texprint
+local flushraw          = texwrite
 
 local report_context    = logs.reporter("cld","tex")
 local report_cld        = logs.reporter("cld","stack")
@@ -137,62 +142,155 @@ local catcodes = {
     xml = xmlcatcodes, xmlcatcodes = xmlcatcodes,
 }
 
-function context.pushcatcodes(c)
+local function pushcatcodes(c)
     insert(catcodestack,currentcatcodes)
     currentcatcodes = (c and catcodes[c] or tonumber(c)) or currentcatcodes
     contentcatcodes = currentcatcodes
 end
 
-function context.popcatcodes()
+local function popcatcodes()
     currentcatcodes = remove(catcodestack) or currentcatcodes
     contentcatcodes = currentcatcodes
 end
 
-function tex.fprint(...) -- goodie
-    texsprint(currentcatcodes,format(...))
-end
+context.pushcatcodes = pushcatcodes
+context.popcatcodes  = popcatcodes
 
 -- -- -- todo: tracing
 
-local newline    = lpeg.patterns.newline
-local space      = lpeg.patterns.spacer
-local spacing    = newline * space^0
-local content    = lpeg.C((1-spacing)^1)
-local emptyline  = space^0 * newline^2
-local endofline  = space^0 * newline * space^0
-local simpleline = endofline * lpeg.P(-1)
+local newline       = lpeg.patterns.newline
+local space         = lpeg.patterns.spacer
+local spacing       = newline * space^0
+local content       = lpegC((1-spacing)^1)
+local emptyline     = space^0 * newline^2
+local endofline     = space^0 * newline * space^0
+local simpleline    = endofline * lpegP(-1)
+
+local verbose       = lpegC((1-space-newline)^1)
+local beginstripper = (lpegS(" \t")^1 * newline^1) / ""
+local endstripper   = beginstripper * lpegP(-1)
 
 local function n_content(s)
     flush(contentcatcodes,s)
 end
 
+local function n_verbose(s)
+    flush(vrbcatcodes,s)
+end
+
 local function n_endofline()
-    texsprint(" \r")
+    flush(currentcatcodes," \r")
 end
 
 local function n_emptyline()
-    texprint("\r")
+    flushdirect(currentcatcodes,"\r")
 end
 
 local function n_simpleline()
-    texprint("\r")
+    flushdirect(currentcatcodes,"\r")
 end
 
-function lpeg.texlinesplitter(f_content,f_endofline,f_emptyline,f_simpleline)
-    local splitlines =
-        simpleline / (f_simpleline or n_simpleline)
-      + (
-            emptyline / (f_emptyline or n_emptyline)
-          + endofline / (f_endofline or n_emptyline)
-          + content   / (f_content or n_content)
-        )^0
-    return function(str) return lpegmatch(splitlines,str) end
+local n_exception = ""
+
+-- better a table specification
+
+function context.newtexthandler(specification) -- can also be used for verbose
+    specification = specification or { }
+    --
+    local s_catcodes   = specification.catcodes
+    --
+    local f_before     = specification.before
+    local f_after      = specification.after
+    --
+    local f_endofline  = specification.endofline  or n_endofline
+    local f_emptyline  = specification.emptyline  or n_emptyline
+    local f_simpleline = specification.simpleline or n_simpleline
+    local f_content    = specification.content    or n_content
+    --
+    local p_exception    = specification.exception
+    --
+    if s_catcodes then
+        f_content = function(s)
+            flush(s_catcodes,s)
+        end
+    end
+    --
+    local pattern
+    if p_exception then
+        local content = lpegC((1-spacing-p_exception)^1)
+        pattern =
+            simpleline / f_simpleline
+          + (
+                emptyline  / f_emptyline
+              + endofline  / f_endofline
+              + p_exception
+              + content    / f_content
+            )^0
+    else
+        local content = lpegC((1-spacing)^1)
+        pattern =
+            simpleline / f_simpleline
+          + (
+                emptyline / f_emptyline
+              + endofline / f_endofline
+              + content   / f_content
+            )^0
+    end
+    --
+    if f_before then
+        pattern = (P(true) / f_before) * pattern
+    end
+    --
+    if f_after then
+        pattern = pattern * (P(true) / f_after)
+    end
+    --
+    return function(str) return lpegmatch(pattern,str) end, pattern
 end
 
-local flushlines = lpeg.texlinesplitter(n_content,n_endofline,n_emptyline,n_simpleline)
+function context.newverbosehandler(specification) -- a special variant for e.g. cdata in lxml-tex
+    specification = specification or { }
+    --
+    local f_line    = specification.line    or function() flushdirect("\r") end
+    local f_space   = specification.space   or function() flush(" ") end
+    local f_content = specification.content or n_verbose
+    local f_before  = specification.before
+    local f_after   = specification.after
+    --
+    local pattern =
+        newline * (lpegCc("") / f_line)    -- so we get call{}
+      + verbose               / f_content
+      + space   * (lpegCc("") / f_space)   -- so we get call{}
+    --
+    if specification.strip then
+        pattern = beginstripper^0 * (endstripper + pattern)^0
+    else
+        pattern = pattern^0
+    end
+    --
+    if f_before then
+        pattern = (lpegP(true) / f_before) * pattern
+    end
+    --
+    if f_after then
+        pattern = pattern * (lpegP(true) / f_after)
+    end
+    --
+    return function(str) return lpegmatch(pattern,str) end, pattern
+end
 
-context.__flushlines = flushlines       -- maybe context.helpers.flushtexlines
-context.__flush      = flush
+local flushlines = context.newtexthandler {
+    content    = n_content,
+    endofline  = n_endofline,
+    emptyline  = n_emptyline,
+    simpleline = n_simpleline,
+}
+
+context.__flushlines  = flushlines       -- maybe context.helpers.flushtexlines
+context.__flush       = flush
+context.__flushdirect = flushdirect
+
+-- The next variant is only used in rare cases (buffer to mp):
 
 local printlines_ctx = (
     (newline)     / function()  texprint("") end +
@@ -204,7 +302,7 @@ local printlines_raw = (
     (1-newline)^1 / function(s) texprint(s)  end * newline^-1
 )^0
 
-function context.printlines(str,raw)
+function context.printlines(str,raw)     -- todo: see if via file is useable
     if raw then
         lpegmatch(printlines_raw,str)
     else
@@ -212,19 +310,17 @@ function context.printlines(str,raw)
     end
 end
 
--- -- --
+-- This is the most reliable way to deal with nested buffers and other
+-- catcode sensitive data.
 
 local methodhandler = resolvers.methodhandler
 
 function context.viafile(data)
-    -- this is the only way to deal with nested buffers
-    -- and other catcode sensitive data
     if data and data ~= "" then
         local filename = resolvers.savers.byscheme("virtual","viafile",data)
-        -- somewhat slow, these regime changes (todo: wrap in one command)
---~         context.startregime { "utf" }
+     -- context.startregime { "utf" }
         context.input(filename)
---~         context.stopregime()
+     -- context.stopregime()
     end
 end
 
@@ -249,6 +345,7 @@ local function writer(parent,command,first,...) -- already optimized before call
         elseif ti == "" then
             flush(currentcatcodes,"{}")
         elseif typ == "string" then
+            -- is processelines seen ?
             if processlines and find(ti,"[\n\r]") then -- we can check for ti == "\n"
                 flush(currentcatcodes,"{")
                 local flushlines = parent.__flushlines or flushlines
@@ -305,8 +402,7 @@ local function writer(parent,command,first,...) -- already optimized before call
             flush(currentcatcodes,"{\\cldf{",_store_f_(ti),"}}") -- todo: ctx|prt|texcatcodes
         elseif typ == "boolean" then
             if ti then
-             -- flush(currentcatcodes,"^^M")
-                texprint("")
+                flushdirect(currentcatcodes,"\r")
             else
                 direct = true
             end
@@ -335,9 +431,60 @@ local function indexer(parent,k)
     return f
 end
 
+-- Potential optimization: after the first call we know if there will be an
+-- argument. Of course there is the side effect that for instance abuse like
+-- context.NC(str) fails as well as optional arguments. So, we don't do this
+-- in practice. We just keep the next trick commented. The gain on some
+-- 100000 calls is not that large: 0.100 => 0.95 which is neglectable.
+--
+-- local function constructor(parent,k,c,first,...)
+--     if first == nil then
+--         local f = function()
+--             flush(currentcatcodes,c)
+--         end
+--         parent[k] = f
+--         return f()
+--     else
+--         local f = function(...)
+--             return writer(parent,c,...)
+--         end
+--         parent[k] = f
+--         return f(first,...)
+--     end
+-- end
+--
+-- local function indexer(parent,k)
+--     local c = "\\" .. tostring(generics[k] or k)
+--     local f = function(...)
+--         return constructor(parent,k,c,...)
+--     end
+--     parent[k] = f
+--     return f
+-- end
+
+-- only for internal usage:
+
+function context.constructcsonly(k) -- not much faster than the next but more mem efficient
+    local c = "\\" .. tostring(generics[k] or k)
+    rawset(context, k, function()
+        flush(prtcatcodes,c)
+    end)
+end
+
+function context.constructcs(k)
+    local c = "\\" .. tostring(generics[k] or k)
+    rawset(context, k, function(first,...)
+        if first == nil then
+            flush(prtcatcodes,c)
+        else
+            return writer(context,c,first,...)
+        end
+    end)
+end
+
 local function caller(parent,f,a,...)
     if not parent then
-        -- so we don't need to test in the calling (slower but often no issue) (will go)
+        -- so we don't need to test in the calling (slower but often no issue)
     elseif f ~= nil then
         local typ = type(f)
         if typ == "string" then
@@ -365,8 +512,7 @@ local function caller(parent,f,a,...)
                     flushlines(f)
                     -- ignore ... maybe some day
                 else
-                 -- flush(currentcatcodes,"^^M")
-                    texprint("")
+                    flushdirect(currentcatcodes,"\r")
                 end
             else
                 if a ~= nil then
@@ -410,15 +556,45 @@ function context.protect()
     contentcatcodes = currentcatcodes
 end
 
+function context.sprint(...) -- takes catcodes as first argument
+    flush(...)
+end
+
+function context.fprint(catcodes,fmt,first,...)
+    if type(catcodes) == "number" then
+        if first then
+            flush(catcodes,format(fmt,first,...))
+        else
+            flush(catcodes,fmt)
+        end
+    else
+        if fmt then
+            flush(format(catodes,fmt,first,...))
+        else
+            flush(catcodes)
+        end
+    end
+end
+
+function tex.fprint(fmt,first,...) -- goodie
+    if first then
+        flush(currentcatcodes,format(fmt,first,...))
+    else
+        flush(currentcatcodes,fmt)
+    end
+end
+
 -- logging
 
 local trace_stack   = { }
 
-local normalflush   = flush
-local normalwriter  = writer
-local currenttrace  = nil
-local nofwriters    = 0
-local nofflushes    = 0
+local normalflush       = flush
+local normalflushdirect = flushdirect
+local normalflushraw    = flushraw
+local normalwriter      = writer
+local currenttrace      = nil
+local nofwriters        = 0
+local nofflushes        = 0
 
 statistics.register("traced context", function()
     if nofwriters > 0 or nofflushes > 0 then
@@ -426,54 +602,92 @@ statistics.register("traced context", function()
     end
 end)
 
-local tracedwriter = function(parent,...)
+local tracedwriter = function(parent,...) -- also catcodes ?
     nofwriters = nofwriters + 1
-    local t, f, n = { "w : " }, flush, 0
-    flush = function(...)
+    local savedflush       = flush
+    local savedflushdirect = flushdirect -- unlikely to be used here
+    local t, n = { "w : - : " }, 1
+    local traced = function(normal,catcodes,...) -- todo: check for catcodes
+        local s = concat({...})
+        s = gsub(s,"\r","<<newline>>") -- unlikely
         n = n + 1
-        t[n] = concat({...},"",2)
-        normalflush(...)
+        t[n] = s
+        normal(catcodes,...)
     end
+    flush       = function(...) traced(normalflush,      ...) end
+    flushdirect = function(...) traced(normalflushdirect,...) end
     normalwriter(parent,...)
-    flush = f
+    flush       = savedflush
+    flushdirect = savedflushdirect
     currenttrace(concat(t))
 end
 
-local tracedflush = function(...)
+-- we could reuse collapsed
+
+local traced = function(normal,one,two,...)
     nofflushes = nofflushes + 1
-    normalflush(...)
-    local t = { ... }
-    t[1] = "f : " -- replaces the catcode
-    for i=2,#t do
-        local ti = t[i]
-        local tt = type(ti)
-        if tt == "string" then
-            -- ok
-        elseif tt == "number" then
-            -- ok
-        else
-            t[i] = format("<%s>",tostring(ti))
+    if two then
+        -- only catcodes if 'one' is number
+        normal(one,two,...)
+        local catcodes = type(one) == "number" and one
+        local arguments = catcodes and { two, ... } or { one, two, ... }
+        local collapsed, c = { format("f : %s : ", catcodes or '-') }, 1
+        for i=1,#arguments do
+            local argument = arguments[i]
+            local argtype = type(argument)
+            c = c + 1
+            if argtype == "string" then
+                collapsed[c] = gsub(argument,"\r","<<newline>>")
+            elseif argtype == "number" then
+                collapsed[c] = argument
+            else
+                collapsed[c] = format("<<%s>>",tostring(argument))
+            end
         end
-    --  currenttrace(format("%02i: %s",i-1,tostring(t[i])))
+        currenttrace(concat(collapsed))
+    else
+        -- no catcodes
+        normal(one)
+        local argtype = type(one)
+        if argtype == "string" then
+            currenttrace(format("f : - : %s",gsub(one,"\r","<<newline>>")))
+        elseif argtype == "number" then
+            currenttrace(format("f : - : %s",one))
+        else
+            currenttrace(format("f : - : <<%s>>",tostring(one)))
+        end
     end
-    currenttrace(concat(t))
 end
+
+local tracedflush       = function(...) traced(normalflush,      ...) end
+local tracedflushdirect = function(...) traced(normalflushdirect,...) end
 
 local function pushlogger(trace)
+    trace = trace or report_context
     insert(trace_stack,currenttrace)
     currenttrace = trace
-    flush, writer = tracedflush, tracedwriter
-    context.__flush = flush
-    return flush, writer
+    --
+    flush       = tracedflush
+    flushdirect = tracedflushdirect
+    writer      = tracedwriter
+    --
+    context.__flush       = flush
+    context.__flushdirect = flushdirect
+    --
+    return flush, writer, flushdirect
 end
 
 local function poplogger()
     currenttrace = remove(trace_stack)
     if not currenttrace then
-        flush, writer = normalflush, normalwriter
-        context.__flush = flush
+        flush       = normalflush
+        flushdirect = normalflushdirect
+        writer      = normalwriter
+        --
+        context.__flush       = flush
+        context.__flushdirect = flushdirect
     end
-    return flush, writer
+    return flush, writer, flushdirect
 end
 
 local function settracing(v)
@@ -488,12 +702,34 @@ end
 
 trackers.register("context.trace",settracing)
 
-context.pushlogger = pushlogger
-context.poplogger  = poplogger
-context.settracing = settracing
+context.pushlogger  = pushlogger
+context.poplogger   = poplogger
+context.settracing  = settracing
+
+-- -- untested, no time now:
+--
+-- local tracestack, tracestacktop = { }, false
+--
+-- function context.pushtracing(v)
+--     insert(tracestack,tracestacktop)
+--     if type(v) == "function" then
+--         pushlogger(v)
+--         v = true
+--     else
+--         pushlogger()
+--     end
+--     tracestacktop = v
+--     settracing(v)
+-- end
+--
+-- function context.poptracing()
+--     poplogger()
+--     tracestacktop = remove(tracestack) or false
+--     settracing(tracestacktop)
+-- end
 
 function context.getlogger()
-    return flush, writer
+    return flush, writer, flush_direct
 end
 
 local trace_cld = false  trackers.register("context.files", function(v) trace_cld = v end)
@@ -687,65 +923,6 @@ local function caller(parent,...)
 end
 
 setmetatable(delayed, { __index = indexer, __call = caller } )
-
---~ Not that useful yet. Maybe something like this when the main loop
---~ is a coroutine. It also does not help taking care of nested calls.
---~ Even worse, it interferes with other mechanisms using context calls.
---~
---~ local create, yield, resume = coroutine.create, coroutine.yield, coroutine.resume
---~ local getflush, setflush = context.getflush, context.setflush
---~ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
---~
---~ function context.getflush()
---~     return flush
---~ end
---~
---~ function context.setflush(newflush)
---~     local oldflush = flush
---~     flush = newflush or flush
---~     return oldflush
---~ end
---~
---~ function context.direct(f)
---~     local routine = create(f)
---~     local oldflush = getflush()
---~     function newflush(...)
---~         oldflush(...)
---~         yield(true)
---~     end
---~     setflush(newflush)
---~
---~  -- local function resumecontext()
---~  --     local done = resume(routine)
---~  --     if not done then
---~  --         return
---~  --     end
---~  --     resumecontext() -- stack overflow ... no tail recursion
---~  -- end
---~  -- context.resume = resumecontext
---~  -- texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
---~
---~     local function resumecontext()
---~         local done = resume(routine)
---~         if not done then
---~             return
---~         end
---~      -- texsprint(ctxcatcodes,"\\exitloop")
---~         texsprint(ctxcatcodes,"\\ctxlua{context.resume()}") -- can be simple macro call
---~     end
---~     context.resume = resumecontext
---~  -- texsprint(ctxcatcodes,"\\doloop{\\ctxlua{context.resume()}}") -- can be fast loop at the tex end
---~     texsprint(ctxcatcodes,"\\ctxlua{context.resume()}")
---~
---~ end
---~
---~ function something()
---~     context("\\setbox0")
---~     context("\\hbox{hans hagen xx}")
---~     context("\\the\\wd0/\\box0")
---~ end
---~
---~ context.direct(something)
 
 -- helpers:
 

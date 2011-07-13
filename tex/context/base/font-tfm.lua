@@ -117,7 +117,7 @@ local function check_tfm(specification,fullname) -- we could split up like afm/o
         foundname = findbinfile(fullname, 'ofm') or "" -- not needed in context
     end
     if foundname == "" then
-        foundname = fonts.names.getfilename(fullname,"tfm")
+        foundname = fonts.names.getfilename(fullname,"tfm") or ""
     end
     if foundname ~= "" then
         specification.filename = foundname

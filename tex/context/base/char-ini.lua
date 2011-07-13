@@ -17,7 +17,6 @@ local utfchar, utfbyte, utfvalues = utf.char, utf.byte, string.utfvalues
 local ustring = unicode.ustring
 local concat, unpack, tohash = table.concat, table.unpack, table.tohash
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
-local texsprint, texprint = tex.sprint, tex.print
 local format, lower, gsub, match, gmatch = string.format, string.lower, string.gsub, string.match, string.match, string.gmatch
 local P, R, lpegmatch = lpeg.P, lpeg.R, lpeg.match
 
@@ -27,8 +26,11 @@ local texsetlccode      = tex.setlccode
 local texsetuccode      = tex.setuccode
 local texsetsfcode      = tex.setsfcode
 local texsetcatcode     = tex.setcatcode
+
+local contextsprint     = context.sprint
 local ctxcatcodes       = tex.ctxcatcodes
 local texcatcodes       = tex.texcatcodes
+
 local setmetatableindex = table.setmetatableindex
 
 local trace_defining    = false  trackers.register("characters.defining", function(v) characters_defining = v end)
@@ -487,17 +489,17 @@ use the table. After all, we have this information available anyway.</p>
 --ldx]]--
 
 function characters.makeactive(n,name) -- let ?
-    texsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
+    contextsprint(ctxcatcodes,format("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name))
  -- context("\\catcode%s=13\\unexpanded\\def %s{\\%s}",n,utfchar(n),name)
 end
 
 function tex.uprint(c,n)
     if n then
-     -- texsprint(c,charfromnumber(n))
-        texsprint(c,utfchar(n))
+     -- contextsprint(c,charfromnumber(n))
+        contextsprint(c,utfchar(n))
     else
-     -- texsprint(charfromnumber(c))
-        texsprint(utfchar(c))
+     -- contextsprint(charfromnumber(c))
+        contextsprint(utfchar(c))
     end
 end
 
@@ -520,7 +522,7 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
     for u, chr in next, data do -- these will be commands
         local fallback = chr.fallback
         if fallback then
-            texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
+            contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}")
             a = a + 1
             activated[a] = u
         else
@@ -530,16 +532,16 @@ function characters.define(tobelettered, tobeactivated) -- catcodetables
                 if is_character[category] then
                     if chr.unicodeslot < 128 then
                         if is_letter[category] then
-                            texprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u)))
+                            contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u))) -- has no s
                         else
-                            texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
+                            contextsprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u)) -- has no s
                         end
                     else
-                        texprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u)))
+                        contextsprint(ctxcatcodes,format("\\def\\%s{%s}",contextname,utfchar(u))) -- has no s
                     end
                 elseif is_command[category] then
 if not temphack[u] then
-                    texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
+                    contextsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}")
                     a = a + 1
                     activated[a] = u
 end
@@ -681,7 +683,7 @@ end
 -- xml support (moved)
 
 function characters.remapentity(chr,slot)
-    texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
+    contextsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
 end
 
 characters.activeoffset = 0x10000 -- there will be remapped in that byte range
@@ -880,7 +882,7 @@ function characters.flush(n,direct)
     if direct then
         return c
     else
-        texsprint(c)
+        contextsprint(c)
     end
 end
 
@@ -1003,3 +1005,7 @@ if not characters.superscripts then
     storage.register("characters/subscripts",   subscripts,   "characters.subscripts")
 
 end
+
+-- interface
+
+commands.utfchar = tex.uprint

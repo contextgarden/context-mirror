@@ -20,6 +20,8 @@
 %D apart from downward compatibility issues, it would make global, class
 %D spanning definitions a pain. Some day we will introduce a default class.
 
+%D Todo: store them at the lua end
+
 \unprotect
 
 \unexpanded\def\starttypescriptcollection
@@ -36,8 +38,8 @@
 \unexpanded\def\usetypescriptfile[#1]%
   {\doifelse{#1}\v!reset
      {\let\typescriptfiles\empty}
-     {\splitfiletype{#1}%
-      \addtocommalist\splitoffname\typescriptfiles}}
+     {\splitfilename{#1}%
+      \addtocommalist\splitoffbase\typescriptfiles}}
 
 % SO FAR
 
@@ -370,16 +372,25 @@
 
 \let\typefaceencoding\s!default % obsolete
 
+\newtoks \everybeforedefinetypeface
+\newtoks \everyafterdefinetypeface
+
+\let\fontclassstyle\empty
+
 \def\dostarttypefacedefining#1#2#3%
   {\geteparameters[\??ts][\s!rscale=\plusone,\s!features=,\s!fallbacks=,\s!goodies=,\s!direction=,#3]%
    \pushmacro\fontclass
+   \pushmacro\fontclassstyle
    \setcurrentfontclass{#1}%
    \pushmacro\relativefontsize
    \let\relativefontsize\@@tsrscale % still needed ?
-   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdirection}
+   \savefontclassparameters{#2}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdirection
+   \the\everybeforedefinetypeface}
 
 \def\dostoptypefacedefining
-   {\popmacro\relativefontsize
+   {\the\everyafterdefinetypeface
+    \popmacro\relativefontsize
+    \popmacro\fontclassstyle
     \popmacro\fontclass}
 
 \def\dofastdefinetypeface#1#2#3#4#5%
@@ -417,7 +428,7 @@
         \setgvalue{\??tf#1\s!default}{#2}%
       \fi
       \ifcsname#1\endcsname \else
-        \setugvalue{#1}{\switchtotypeface[#1][#2]}%
+        \setugvalue{#1}{\switchtotypeface[#1][#2]}% hm, what if #2 changes
       \fi}}
 
 \unexpanded\def\setuptypeface% [class] [settings]

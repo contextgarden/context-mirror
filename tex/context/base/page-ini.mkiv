@@ -475,15 +475,17 @@
 \def\ejectinsert
   {%\flushnotes already done
    \bgroup
+\ifsomefloatwaiting
    \noftopfloats\plusthousand
    \nofbotfloats\zerocount
    % this is needed in case a float that has been stored
    % ends up at the current page; this border case occurs when
    % the calculated room is 'eps' smaller that the room available
    % when just flushing; so now we have (maybe optional):
-   \pagebaselinecorrection
+   \pagebaselinecorrection % hm, needs checking, not needed when no floats
    % alas, this is tricky but needed (first surfaced in prikkels)
    \doflushfloats
+\fi
    \egroup}
 
 \def\ejectdummypage
@@ -795,12 +797,25 @@
 
 \def\docolumnpagebodymarks#1#2#3#4% first last column box
   {\ifnum#3=#1\relax
-     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4]%
+     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
    \else\ifnum#3=#2\relax
-     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4]%
+     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
    \else
-     \dosynchronizemarking[\number#3,\v!column:\number#3                            ][#4]%
+     \dosynchronizemarking[\number#3,\v!column:\number#3                            ][#4][]%
    \fi\fi}
+
+% tricky ... we need to retain the last mark
+
+\newconditional\buildingsuccessivepages \settrue\buildingsuccessivepages
+
+% \starttext
+%     \dorecurse{3} {
+%         \startchapter[title=Chapter #1]
+%             \input tufte
+%             \dorecurse{4}{\placefigure{Number ##1}{\externalfigure[cow][height=9cm]}}
+%         \stopchapter
+%     }
+% \stoptext
 
 \def\buildpagebody#1#2%
   {\ifsavepagebody\global\setbox\savedpagebody\fi
@@ -809,7 +824,7 @@
       \boxmaxdepth\maxdimen % new
       \dontcomplain
       % marks get done here
-      \dosynchronizemarking[\v!page][#2]% #2 box
+      \dosynchronizemarking[\v!page][#2][\ifconditional\buildingsuccessivepages\v!keep\fi]% #2 box
       % the following plugin uses and sets pagebox; beware: this
       % will change and is for my (hh) personal experiments .. takes two
       % arguments

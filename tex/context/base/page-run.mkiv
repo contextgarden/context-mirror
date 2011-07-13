@@ -15,79 +15,60 @@
 
 \unprotect
 
-\gdef\doshowprint[#1][#2][#3]%
-  {\framed
-     [\c!offset=\v!overlay,
-      \c!strut=\v!no]
-     {\forgetall
-      \dontcomplain
-      \globaldefs\minusone
-      \dimen\zerocount\pagegoal
-      \definepapersize[X][\c!width=4em, \c!height=6em]%
-      \definepapersize[Y][\c!width=12em,\c!height=14em]%
-      \setuppapersize[#1,X][#2,Y]%
-      \setuplayout[#3]%
-      \setbox\zerocount\vbox
-        {\framed
+\gdef\doshowprint[#1][#2][#3]% only english
+  {\setbuffer[crap]%
+      \unprotect
+        \definepapersize[X][\c!width=4em, \c!height=6em]
+        \definepapersize[Y][\c!width=12em,\c!height=14em]
+        \setuppapersize[X,#1][Y,#2]
+        \setuplayout[#3]
+        \setuplayout[\v!page]
+        \framed
           [\c!offset=\v!overlay,\c!strut=\v!no,
            \c!width=\paperwidth,\c!height=\paperheight]
-          {\ss ABC\par DEF}}%
-      \doublesidedfalse
-      \def\cutmarklength{.5em}%
-      \addpagecutmarks \zerocount
-      \replicatepagebox\zerocount
-      \scalepagebox    \zerocount
-      \mirrorpaperbox  \zerocount
-      \orientpaperbox  \zerocount
-      \centerpagebox   \zerocount
-      \mirrorprintbox  \zerocount
-      \orientprintbox  \zerocount
-      \offsetprintbox  \zerocount
-      \pagegoal\dimen\zerocount
-      \box0}}
+          {\ss ABC\par DEF}%
+      \protect
+   \endbuffer
+   \framed[\c!offset=\v!overlay,\c!strut=\v!no]{\typesetbuffer[crap]}}
 
 \gdef\showprint
   {\dotripleempty\doshowprint}
 
-% \switchnaarkorps[8pt]
+% \switchtobodyfont[8pt]
 %
-% \startcombinatie[4*4]
-%   {\toonprint}                                       {\strut}
-%   {\toonprint[][][plaats=midden]}                    {\type{plaats=midden}}
-%   {\toonprint[][][plaats=midden,markering=aan]}      {\type{markering=aan}\break
-%                                                      \type{plaats=midden}}
-%   {\toonprint[][][plaats=midden,markering=aan,nx=2]} {\type{markering=aan}\break
-%                                                      \type{plaats=midden}\break
-%                                                      \type{nx=2}}
-%   {\toonprint[][][plaats=links]}                     {\type{plaats=links}}
-%   {\toonprint[][][plaats=rechts]}                    {\type{plaats=rechts}}
-%   {\toonprint[][][plaats={links,onder}]}             {\type{plaats={links,onder}}}
-%   {\toonprint[][][plaats={rechts,onder}]}            {\type{plaats={rechts,onder}}}
-%   {\toonprint[][][nx=2,ny=1]}                        {\type{nx=2,ny=1}}
-%   {\toonprint[][][nx=1,ny=2]}                        {\type{nx=1,ny=2}}
-%   {\toonprint[][][nx=2,ny=2]}                        {\type{nx=2,ny=2}}
-%   {\toonprint[][][nx=2,ny=2,plaats=midden]}          {\type{nx=2,ny=2}\break
-%                                                       \type{plaats=midden}}
-%   {\toonprint[][][rugoffset=3pt]}                    {\type{rugoffset=.5cm}}
-%   {\toonprint[][][kopoffset=3pt]}                    {\type{kopoffset=.5cm}}
-%   {\toonprint[][][schaal=1.5]}                       {\type{schaal=1.5}}
-%   {\toonprint[][][schaal=0.8]}                       {\type{schaal=0.8}}
-% \stopcombinatie
+% \startcombination[4*4]
+%   {\showprint}                                      {\strut}
+%   {\showprint[][][location=middle]}                 {\type{location=middle}}
+%   {\showprint[][][location=middle,marking=on]}      {\type{markering=aan}\break\type{location=middle}}
+%   {\showprint[][][location=middle,marking=on,nx=2]} {\type{markering=aan}\break\type{location=middle}\break\type{nx=2}}
+%   {\showprint[][][location=left]}                   {\type{location=left}}
+%   {\showprint[][][location=right]}                  {\type{location=right}}
+%   {\showprint[][][location={left,bottom}]}          {\type{location={left,bottom}}}
+%   {\showprint[][][location={right,bottom}]}         {\type{location={right,bottom}}}
+%   {\showprint[][][nx=2,ny=1]}                       {\type{nx=2,ny=1}}
+%   {\showprint[][][nx=1,ny=2]}                       {\type{nx=1,ny=2}}
+%   {\showprint[][][nx=2,ny=2]}                       {\type{nx=2,ny=2}}
+%   {\showprint[][][nx=2,ny=2,location=middle]}       {\type{nx=2,ny=2}\break\type{location=middle}}
+%   {\showprint[][][backoffset=3pt]}                  {\type{rugoffset=.5cm}}
+%   {\showprint[][][topoffset=3pt]}                   {\type{kopoffset=.5cm}}
+%   {\showprint[][][scale=1.5]}                       {\type{schaal=1.5}}
+%   {\showprint[][][scale=0.8]}                       {\type{schaal=0.8}}
+% \stopcombination
 %
-% \startcombinatie[3*4]
-%   {\toonprint[liggend][][plaats=midden]}              {\type{liggend}}
-%   {\toonprint[][liggend][plaats=midden]}              {\strut\break\type{liggend}}
-%   {\toonprint[liggend][liggend][plaats=midden]}       {\type{liggend}\break\type{liggend}}
-%   {\toonprint[90][][plaats=midden]}                   {\type{90}}
-%   {\toonprint[][90][plaats=midden]}                   {\strut\break\type{90}}
-%   {\toonprint[90][90][plaats=midden]}                 {\type{90}\break\type{90}}
-%   {\toonprint[180][][plaats=midden]}                  {\type{180}}
-%   {\toonprint[][180][plaats=midden]}                  {\strut\break\type{180}}
-%   {\toonprint[180][180][plaats=midden]}               {\type{180}\break\type{180}}
-%   {\toonprint[gespiegeld][][plaats=midden]}           {\type{gespiegeld}}
-%   {\toonprint[][gespiegeld][plaats=midden]}           {\strut\break\type{gespiegeld}}
-%   {\toonprint[gespiegeld][gespiegeld][plaats=midden]} {\type{gespiegeld}\break\type{gespiegeld}}
-% \stopcombinatie
+% \startcombination[3*4]
+%   {\showprint[landscape][]         [location=middle]} {\type{landscape}}
+%   {\showprint[]         [landscape][location=middle]} {\strut\break\type{landscape}}
+%   {\showprint[landscape][landscape][location=middle]} {\type{landscape}\break\type{landscape}}
+%   {\showprint[90]       []         [location=middle]} {\type{90}}
+%   {\showprint[]         [90]       [location=middle]} {\strut\break\type{90}}
+%   {\showprint[90]       [90]       [location=middle]} {\type{90}\break\type{90}}
+%   {\showprint[180]      []         [location=middle]} {\type{180}}
+%   {\showprint[]         [180]      [location=middle]} {\strut\break\type{180}}
+%   {\showprint[180]      [180]      [location=middle]} {\type{180}\break\type{180}}
+%   {\showprint[mirrored] []         [location=middle]} {\type{mirrored}}
+%   {\showprint[]         [mirrored] [location=middle]} {\strut\break\type{mirrored}}
+%   {\showprint[mirrored] [mirrored] [location=middle]} {\type{mirrored}\break\type{mirrored}}
+% \stopcombination
 
 % maybe we will have page-run.lua
 

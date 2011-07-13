@@ -813,6 +813,7 @@ local function collect_files(names)
         if dname == "" or find(dname,"^%.") then
             dname = false
         else
+dname = gsub(dname,"*","%.*")
             dname = "/" .. dname .. "$"
         end
         local hashes = instance.hashes
@@ -1072,6 +1073,7 @@ end
 local function find_intree(filename,filetype,wantedfiles,allresults)
     local typespec = resolvers.variableofformat(filetype)
     local pathlist = resolvers.expandedpathlist(typespec)
+    local method = "intree"
     if pathlist and #pathlist > 0 then
         -- list search
         local filelist = collect_files(wantedfiles)
@@ -1094,7 +1096,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
             local done = false
             -- using file list
-            if filelist then
+            if filelist then -- database
                 -- compare list entries with permitted pattern -- /xx /xx//
                 local expression = makepathexpression(pathname)
                 if trace_detail then
@@ -1123,7 +1125,10 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                     end
                 end
             end
-            if not done then
+            if done then
+                method = "database"
+            else
+                method = "filesystem" -- bonus, even when !! is specified
                 pathname = gsub(pathname,"/+$","")
                 pathname = resolvers.resolve(pathname)
                 local scheme = url.hasscheme(pathname)
@@ -1145,7 +1150,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                             end
                             if not done and doscan then
                                 -- collect files in path (and cache the result)
-                                local files = resolvers.scanfiles(pname,false,true)
+                                local files = resolvers.simplescanfiles(pname,false,true)
                                 for k=1,#wantedfiles do
                                     local w = wantedfiles[k]
                                     local subpath = files[w]
@@ -1194,7 +1199,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             end
         end
         if #result > 0 then
-            return "intree", result
+            return method, result
         end
     end
 end

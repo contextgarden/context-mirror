@@ -61,7 +61,6 @@ if not modules then modules = { } end modules ['lang-lab'] = {
 
 local format, find = string.format, string.find
 local next, rawget, type = next, rawget, type
-local texsprint = tex.sprint
 local prtcatcodes = tex.prtcatcodes
 
 languages.labels = languages.labels or { }
@@ -75,6 +74,7 @@ function languages.labels.define()
     local data = languages.data.labels
     local function define(command,list,prefixed)
         if list then
+            context.pushcatcodes(prtcatcodes) -- context.unprotect
             for tag, data in next, list do
                 if data.hidden then
                     -- skip
@@ -84,15 +84,15 @@ function languages.labels.define()
                             -- skip
                         elseif prefixed and rawget(variables,tag) then
                             if type(text) == "table" then
-                                texsprint(prtcatcodes,format("\\%s[%s][\\v!%s={{%s},{%s}}]",command,language,tag,text[1],text[2]))
+                                context("\\%s[%s][\\v!%s={{%s},{%s}}]",command,language,tag,text[1],text[2])
                             else
-                                texsprint(prtcatcodes,format("\\%s[%s][\\v!%s={{%s},}]",command,language,tag,text))
+                                context("\\%s[%s][\\v!%s={{%s},}]",command,language,tag,text)
                             end
                         else
                             if type(text) == "table" then
-                                texsprint(prtcatcodes,format("\\%s[%s][%s={{%s},{%s}}]",command,language,tag,text[1],text[2]))
+                                context("\\%s[%s][%s={{%s},{%s}}]",command,language,tag,text[1],text[2])
                             else
-                                texsprint(prtcatcodes,format("\\%s[%s][%s={{%s},}]",command,language,tag,text))
+                                context("\\%s[%s][%s={{%s},}]",command,language,tag,text)
                             end
                         end
                         if trace_labels then
@@ -105,12 +105,13 @@ function languages.labels.define()
                     end
                 end
             end
+            context.popcatcodes() -- context.protect
         end
     end
-    define("setupheadtext", data.titles, true)
-    define("setuplabeltext", data.texts, true)
+    define("setupheadtext",      data.titles, true)
+    define("setuplabeltext",     data.texts,  true)
     define("setupmathlabeltext", data.functions)
-    define("setuptaglabeltext", data.tags)
+    define("setuptaglabeltext",  data.tags)
 end
 
 --~ function languages.labels.check()

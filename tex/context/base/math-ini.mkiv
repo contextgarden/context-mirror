@@ -29,8 +29,8 @@
 
 %D We move these definitions into the format:
 
-% test [[\char948 \ctxlua{tex.sprint(utf.char(948))}]]
-% test $[[\char948 \ctxlua{tex.sprint(utf.char(948))}]]$
+% test  [[\char948 \cldcontext{utf.char(948)}]]
+% test $[[\char948 \cldcontext{utf.char(948)}]]$
 
 \registerctxluafile{math-ini}{1.001}
 \registerctxluafile{math-dim}{1.001}
@@ -226,7 +226,7 @@
 \def\utfmathfiller #1{\cldcontext{mathematics.utfmathfiller (\!!bs#1\!!es)}}
 
 % \def\utfmathclassdefault  #1#2{\ctxlua{
-%     tex.sprint(mathematics.utfmathclass("#1","#2"))
+%     cldcontext(mathematics.utfmathclass("#1","#2"))
 % }}
 %
 % \def\utfmathcommanddefault#1#2#3{\ctxlua{
@@ -527,29 +527,14 @@
 % plain tex legacy:
 
 \bgroup
+
     \catcode\primeasciicode\activecatcode
+
     \doglobal\appendtoks
-        \let'\domathprime
+        \let'\domathprime % todo: do this at the lua end
     \to \everymathematics
+
 \egroup
-
-\newtoks\everydonknuthmode
-\newtoks\everynonknuthmode
-
-\newconditional \knuthmode
-
-\def\nonknuthmode
-  {\pushcatcodetable
-   \setcatcodetable\ctxcatcodes
-   \the\everynonknuthmode
-   \let\nonknuthmode\relax
-   \popcatcodetable}
-
-\def\donknuthmode
-  {\pushcatcodetable
-   \setcatcodetable\ctxcatcodes
-   \the\everydonknuthmode
-   \popcatcodetable}
 
 \bgroup
 
@@ -557,63 +542,115 @@
     \catcode\circumflexasciicode\activecatcode
     \catcode\ampersandasciicode \activecatcode
 
-    \global \everynonknuthmode {\appendtoks
+    \doglobal \appendtoks
         \let_\normalsubscript
         \let^\normalsuperscript
         \let&\normalmathaligntab % use \def when it's \aligntab
-    \to \everymathematics}
+    \to \everymathematics
 
 \egroup
 
-\appendtoks
-    \setfalse\knuthmode
-    \catcode\underscoreasciicode\othercatcode
-    \catcode\circumflexasciicode\othercatcode
-    \catcode\ampersandasciicode \othercatcode
-\to \everynonknuthmode
+\newtoks\everydonknuthmode
+\newtoks\everynonknuthmode
 
-\appendtoks
-    \settrue\knuthmode
-    \catcode\underscoreasciicode\subscriptcatcode
-    \catcode\circumflexasciicode\superscriptcatcode
-    \catcode\ampersandasciicode \alignmentcatcode
-\to \everydonknuthmode
+\newconditional \knuthmode
 
-\appendtoks
-    \startextendcatcodetable\ctxcatcodes
-        \catcode\underscoreasciicode\othercatcode
-        \catcode\circumflexasciicode\othercatcode
-        \catcode\ampersandasciicode \othercatcode
-    \stopextendcatcodetable
-\to \everynonknuthmode
+\let\nonknuthmode\relax
+\let\donknuthmode\relax
 
-\appendtoks
-    \startextendcatcodetable\ctxcatcodes
-        \catcode\underscoreasciicode\subscriptcatcode
-        \catcode\circumflexasciicode\superscriptcatcode
-        \catcode\ampersandasciicode \alignmentcatcode
-    \stopextendcatcodetable
-\to \everydonknuthmode
+% \def\nonknuthmode
+%   {\pushcatcodetable
+%    \setcatcodetable\ctxcatcodes
+%    \the\everynonknuthmode
+%    \let\nonknuthmode\relax
+%    \popcatcodetable}
+%
+% \def\donknuthmode
+%   {\pushcatcodetable
+%    \setcatcodetable\ctxcatcodes
+%    \the\everydonknuthmode
+%    \popcatcodetable}
+%
+% \bgroup
+%
+%     \catcode\underscoreasciicode\activecatcode
+%     \catcode\circumflexasciicode\activecatcode
+%     \catcode\ampersandasciicode \activecatcode
+%
+%     \global \everynonknuthmode {\appendtoks
+%         \let_\normalsubscript
+%         \let^\normalsuperscript
+%         \let&\normalmathaligntab % use \def when it's \aligntab
+%     \to \everymathematics}
+%
+% \egroup
+%
+% \appendtoks
+%     \setfalse\knuthmode
+%     \catcode\underscoreasciicode\othercatcode
+%     \catcode\circumflexasciicode\othercatcode
+%     \catcode\ampersandasciicode \othercatcode
+% \to \everynonknuthmode
+%
+% \appendtoks
+%     \settrue\knuthmode
+%     \catcode\underscoreasciicode\subscriptcatcode
+%     \catcode\circumflexasciicode\superscriptcatcode
+%     \catcode\ampersandasciicode \alignmentcatcode
+% \to \everydonknuthmode
+%
+% \appendtoks
+%     \startextendcatcodetable\ctxcatcodes
+%         \catcode\underscoreasciicode\othercatcode
+%         \catcode\circumflexasciicode\othercatcode
+%         \catcode\ampersandasciicode \othercatcode
+%     \stopextendcatcodetable
+% \to \everynonknuthmode
+%
+% \appendtoks
+%     \startextendcatcodetable\ctxcatcodes
+%         \catcode\underscoreasciicode\subscriptcatcode
+%         \catcode\circumflexasciicode\superscriptcatcode
+%         \catcode\ampersandasciicode \alignmentcatcode
+%     \stopextendcatcodetable
+% \to \everydonknuthmode
 
-% \def\prefermathcatcodes
-%   {\catcode\underscoreasciicode\subscriptcatcode
-%    \catcode\circumflexasciicode\superscriptcatcode
-%    \catcode\ampersandasciicode \alignmentcatcode}
+%D Even more drastic (this code will move as nonknuthmode is default now)
 
-%D Even more drastic:
+% \unexpanded\def\enableasciimode
+%   {\ctxlua{resolvers.macros.enablecomment()}%
+%    \glet\enableasciimode\relax}
+%
+% \unexpanded\def\asciimode
+%   {\catcodetable\txtcatcodes
+%    \enableasciimode
+%    \nonknuthmode}
+%
+% \unexpanded\def\startasciimode
+%   {\pushcatcodetable
+%    \catcodetable\txtcatcodes
+%    \enableasciimode
+%    \nonknuthmode}
+%
+% \unexpanded\def\stopasciimode
+%   {\popcatcodetable
+%    \ifconditional\knuthmode\else\donknuthmode\fi}
+
+\unexpanded\def\enableasciimode
+  {\ctxlua{resolvers.macros.enablecomment()}%
+   \glet\enableasciimode\relax}
 
 \unexpanded\def\asciimode
   {\catcodetable\txtcatcodes
-   \nonknuthmode}
+   \enableasciimode}
 
 \unexpanded\def\startasciimode
   {\pushcatcodetable
    \catcodetable\txtcatcodes
-   \nonknuthmode}
+   \enableasciimode}
 
 \unexpanded\def\stopasciimode
-  {\popcatcodetable
-   \ifconditional\knuthmode\else\donknuthmode\fi}
+  {\popcatcodetable}
 
 %D Needed for unicode:
 

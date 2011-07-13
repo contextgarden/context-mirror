@@ -317,7 +317,7 @@ local function setlanguage(l,m,d,u)
     method = predefinedmethods[variables[method]] or method
     data.method  = method
     --
-    data.digits  = digite
+    data.digits  = digits
     --
     local seq = utilities.parsers.settings_to_array(method or "") -- check the list
     sequence = { }

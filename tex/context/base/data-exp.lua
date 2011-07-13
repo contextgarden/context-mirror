@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['data-exp'] = {
     license   = "see context related readme files",
 }
 
-local format, find, gmatch, lower, char = string.format, string.find, string.gmatch, string.lower, string.char
+local format, find, gmatch, lower, char, sub = string.format, string.find, string.gmatch, string.lower, string.char, string.sub
 local concat, sort = table.concat, table.sort
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local Ct, Cs, Cc, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.P, lpeg.C, lpeg.S
@@ -264,13 +264,22 @@ end
 --~ test("ヒラギノ明朝 /Pro W3;")
 --~ test("ヒラギノ明朝 Pro  W3")
 
-local weird = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+-- a lot of this caching can be stripped away when we have ssd's everywhere
+--
+-- we could cache all the (sub)paths here if needed
 
 local attributes, directory = lfs.attributes, lfs.dir
 
+local weird     = P(".")^1 + lpeg.anywhere(S("~`!#$%^&*()={}[]:;\"\'||<>,?\n\r\t"))
+local timer     = { }
+local scanned   = { }
+local nofscans  = 0
+local scancache = { }
+
 local function scan(files,spec,path,n,m,r)
-    local full = (path == "" and spec) or (spec .. path .. '/')
-    local dirs, nofdirs = { }, 0
+    local full    = (path == "" and spec) or (spec .. path .. '/')
+    local dirs    = { }
+    local nofdirs = 0
     for name in directory(full) do
         if not lpegmatch(weird,name) then
             local mode = attributes(full..name,'mode')
@@ -308,15 +317,17 @@ local function scan(files,spec,path,n,m,r)
             files, n, m, r = scan(files,spec,dirs[i],n,m,r)
         end
     end
+    scancache[sub(full,1,-2)] = files
     return files, n, m, r
 end
 
-local cache = { }
+local fullcache = { }
 
 function resolvers.scanfiles(path,branch,usecache)
-    statistics.starttiming(cache)
+    statistics.starttiming(timer)
+    local realpath = resolvers.resolve(path) -- no shortcut
     if usecache then
-        local files = cache[path]
+        local files = fullcache[realpath]
         if files then
             if trace_locating then
                 report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
@@ -327,25 +338,99 @@ function resolvers.scanfiles(path,branch,usecache)
     if trace_locating then
         report_expansions("scanning path '%s', branch '%s'",path,branch or path)
     end
-    local realpath = resolvers.resolve(path) -- no shortcut
     local files, n, m, r = scan({ },realpath .. '/',"",0,0,0)
-    files.__path__          = path -- can be selfautoparent:texmf-whatever
-    files.__files__         = n
-    files.__directories__   = m
-    files.__remappings__    = r
+    files.__path__        = path -- can be selfautoparent:texmf-whatever
+    files.__files__       = n
+    files.__directories__ = m
+    files.__remappings__  = r
     if trace_locating then
         report_expansions("%s files found on %s directories with %s uppercase remappings",n,m,r)
     end
     if usecache then
-        cache[path] = files
+        scanned[#scanned+1] = realpath
+        fullcache[realpath] = files
     end
-    statistics.stoptiming(cache)
+    nofscans = nofscans + 1
+    statistics.stoptiming(timer)
     return files
 end
 
-function resolvers.scantime()
-    return statistics.elapsedtime(cache)
+local function simplescan(files,spec,path) -- first match only, no map and such
+    local full    = (path == "" and spec) or (spec .. path .. '/')
+    local dirs    = { }
+    local nofdirs = 0
+    for name in directory(full) do
+        if not lpegmatch(weird,name) then
+            local mode = attributes(full..name,'mode')
+            if mode == 'file' then
+                if not files[name] then
+                    -- only first match
+                    files[name] = path
+                end
+            elseif mode == 'directory' then
+                nofdirs = nofdirs + 1
+                if path ~= "" then
+                    dirs[nofdirs] = path..'/'..name
+                else
+                    dirs[nofdirs] = name
+                end
+            end
+        end
+    end
+    if nofdirs > 0 then
+        sort(dirs)
+        for i=1,nofdirs do
+            files = simplescan(files,spec,dirs[i])
+        end
+    end
+    return files
 end
 
+local simplecache    = { }
+local nofsharedscans = 0
+
+function resolvers.simplescanfiles(path,branch,usecache)
+    statistics.starttiming(timer)
+    local realpath = resolvers.resolve(path) -- no shortcut
+    if usecache then
+        local files = simplecache[realpath]
+        if not files then
+            files = scancache[realpath]
+            if files then
+                nofsharedscans = nofsharedscans + 1
+            end
+        end
+        if files then
+            if trace_locating then
+                report_expansions("using caches scan of path '%s', branch '%s'",path,branch or path)
+            end
+            return files
+        end
+    end
+    if trace_locating then
+        report_expansions("scanning path '%s', branch '%s'",path,branch or path)
+    end
+    local files = simplescan({ },realpath .. '/',"")
+    if trace_locating then
+        report_expansions("%s files found",table.count(files))
+    end
+    if usecache then
+        scanned[#scanned+1] = realpath
+        simplecache[realpath] = files
+    end
+    nofscans = nofscans + 1
+    statistics.stoptiming(timer)
+    return files
+end
+
+function resolvers.scandata()
+    table.sort(scanned)
+    return {
+        n      = nofscans,
+        shared = nofsharedscans,
+        time   = statistics.elapsedtime(timer),
+        paths  = scanned,
+    }
+end
 
 --~ print(table.serialize(resolvers.scanfiles("t:/sources")))

@@ -286,7 +286,7 @@
 \definemargindata [inmargin]   [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
 \definemargindata [inother]    [\v!right]    [\c!margin=\c!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
 
-\definemargindata [margintext] [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
+\definemargindata [margintext] [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright,\c!stack=\v!yes]
 
 \setupmarginframed [\v!left ] [\c!method=\v!first,\c!align=\v!flushright,\s!parent=\??mf] % we could autoparent when no define yet
 \setupmarginframed [\v!right] [\c!method=\v!first,\c!align=\v!flushleft, \s!parent=\??mf]
@@ -300,8 +300,9 @@
 \definemarginframed [inmargin] [\v!inleft]
 \definemarginframed [inother]  [\v!inright]
 
-\let\marginword \margintext
-\let\margintitle\margintext
+\let\marginword   \margintext
+\let\margintitle  \margintext
+\let\inothermargin\inother    % for old times sake
 
 %definemargindata [inouterextra] [\v!outer] [\c!margin=\c!edge,\c!location=\v!outer,\c!width=\outeredgewidth,\c!align=\v!outer,\c!category=\v!edge]
 %definemargindata [ininnerextra] [\v!inner] [\c!margin=\c!edge,\c!location=\v!inner,\c!width=\inneredgewidth,\c!align=\v!inner,\c!category=\v!edge]
@@ -310,42 +311,26 @@
 %definemarginframed [ininnerextra] [\v!inner]
 
 %D As we have more control we are not backward compatible although in
-%D practice it won't hurt that much.
-%D So, from now on use:
+%D practice it won't hurt that much. So, from now on use:
 %D
 %D \starttyping
+%D \definemargindata
 %D \setupmargindata
-%D \setupmargintext
+%D \definemarginframed
+%D \setupmarginframed
 %D \stoptyping
 
-% The following sort of works okay:
-%
-% \let\definemarginline\definemargindata
-%
-% \unexpanded\def\defineinmargin
-%   {\doquadrupleempty\dodefineinmargin}
-%
-% \def\dodefineinmargin[#name][#location][#align][#settings]% not completely compatible
-%   {\definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
-%    \definemarginframed[#name][#location][\c!align=#align,#settings]}
+% The following sort of works okay but is to be avoided:
 
-\let\setupinmargin\setupmargindata
+\let\definemarginline\definemargindata
 
-% The following is too dangerous:
-%
-% \unexpanded\def\setupinmargin
-%   {\dodoubleempty\dosetupinmargin}
-%
-% \def\dosetupinmargin[#1][#2]%
-%   {\ifsecondargument
-%      \processcommalist[#1]{\dodosetupinmargin[#2]}%
-%    \else
-%      \setupmargindata  [#1]% beware, here we can have clashes, so
-%      \setupmarginframed[#1]% don't use setupinmargin any more
-%    \fi}
-%
-% \def\dodosetupinmargin[#1]#2% [settings]{class}
-%   {\setupmargindata[#2][#1]%
-%    \setupmargintext[#2][#1]}
+\unexpanded\def\defineinmargin
+  {\doquadrupleempty\dodefineinmargin}
+
+\def\dodefineinmargin[#name][#location][#align][#settings]% not completely compatible
+  {\definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
+   \definemarginframed[#name][#location][\c!align=#align,#settings]}
+
+\let\setupinmargin\setupmargindata % only partial (no framed)
 
 \protect \endinput

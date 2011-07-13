@@ -51,7 +51,7 @@
          &\doifinset{\v!name}{#2}{\strut#1}&\cr%
          \processpalet[#1]\doshowpalet\crcr}}}
 
-\gdef\showhorizontalpalet[#1][#2]%
+\gdef\showhorizontalpalet[#1][#2]% todo: bTABLE etc
   {\localvbox
      {\offinterlineskip
       \setuppalet[#1]
@@ -86,7 +86,7 @@
                  \vskip.25ex
                  \everypar{\strut}
                  \veryraggedcenter
-                 \let\colorformatseparator=\endgraf
+                 \let\colorformatseparator\endgraf
                  \colorvalue{##1}}}%
             \processpalet[#1]\doshowpalet}%
          \crcr}}}

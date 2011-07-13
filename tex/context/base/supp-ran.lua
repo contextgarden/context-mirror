@@ -16,7 +16,6 @@ local commands = commands
 
 local math = math
 local random, randomseed, round, seed, last = math.random, math.randomseed, math.round, false, 1
-local texwrite = tex.write
 
 function math.setrandomseedi(n,comment)
     if not n then
@@ -35,12 +34,12 @@ end
 
 function commands.getrandomcounta(min,max)
     last = random(min,max)
-    texwrite(last)
+    context(last)
 end
 
 function commands.getrandomcountb(min,max)
     last = random(min,max)/65536
-    texwrite(last)
+    context(last)
 end
 
 function commands.setrandomseed(n)
@@ -49,7 +48,7 @@ function commands.setrandomseed(n)
 end
 
 function commands.getrandomseed(n)
-    texwrite(last)
+    context(last)
 end
 
 -- maybe stack

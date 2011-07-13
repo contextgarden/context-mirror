@@ -158,10 +158,10 @@
    \fi
    \endgroup}
 
-\def\registersynonym
+\unexpanded\def\registersynonym
   {\dodoubleargument\doregistersynonym}
 
-\def\registersynonym[#1][#2]%
+\def\doregistersynonym[#1][#2]%
   {\ctxlua{structures.synonyms.registerused("#1","#2")}}
 
 \unexpanded\def\doinsertsynonymmeaning#1#2% name tag
@@ -343,10 +343,10 @@
    \dostoptagged
    \normalexpanded{\endgroup\sortingparameter\c!next}}
 
-\def\registersort
+\unexpanded\def\registersort
   {\dodoubleargument\doregistersort}
 
-\def\registersort[#1][#2]%
+\def\doregistersort[#1][#2]%
   {\ctxlua{structures.synonyms.registerused("#1","#2")}}
 
 % before after
@@ -373,7 +373,8 @@
   {\dodoubleempty\docompletelistofsorts}
 
 \def\docompletelistofsorts[#1][#2]%
-  {\normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{#2}}}%
+  {\edef\currentsorting{#1}%
+   \normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\sortingparameter\s!multi}}}%
    \doplacelistofsorts[#1][#2]%
    \page[\v!yes]}
 

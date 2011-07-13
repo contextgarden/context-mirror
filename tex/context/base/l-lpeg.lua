@@ -618,7 +618,7 @@ end
 
 local sort, fastcopy, sortedpairs = table.sort, table.fastcopy, table.sortedpairs -- dependency!
 
-function lpeg.append(list,pp)
+function lpeg.append(list,pp,delayed)
     local p = pp
     if #list > 0 then
         list = fastcopy(list)
@@ -628,6 +628,14 @@ function lpeg.append(list,pp)
                 p = P(list[l]) + p
             else
                 p = P(list[l])
+            end
+        end
+    elseif delayed then
+        for k, v in sortedpairs(list) do
+            if p then
+                p = P(k)/list + p
+            else
+                p = P(k)/list
             end
         end
     else

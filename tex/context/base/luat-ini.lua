@@ -8,12 +8,9 @@ if not modules then modules = { } end modules ['luat-ini'] = {
 
 -- rather experimental down here ... will change with lua 5.2 --
 
---~ local ctxcatcodes = tex.ctxcatcodes
-
 local debug = require "debug"
 local string, table, lpeg, math, io, system = string, table, lpeg, math, io, system
 local next, setfenv = next, setfenv or debug.setfenv
-local format = string.format
 
 local mark = utilities.storage.mark
 
@@ -144,7 +141,7 @@ function lua.registername(name,message)
         lua.numbers[name] = lnn
     end
     lua.name[lnn] = message
-    tex.write(lnn)
+    context(lnn)
     -- initialize once
     if name ~= "isolateddata" then
         protect_full(name or "shareddata")
@@ -180,7 +177,7 @@ function document.getargument(key,default)
         v = (v and "yes") or "no"
         document.arguments[key] = v
     end
-    tex.sprint(tex.ctxcatcodes,v or default or "")
+    context(v or default or "")
 end
 
 function document.setfilename(i,name)
@@ -188,5 +185,5 @@ function document.setfilename(i,name)
 end
 
 function document.getfilename(i)
-    tex.sprint(tex.ctxcatcodes,document.files[i] or "")
+    context(document.files[i] or "")
 end

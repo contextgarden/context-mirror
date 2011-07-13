@@ -250,10 +250,6 @@ function visualizers.load(name)
     end
 end
 
-function commands.doifelsevisualizer(name)
-    commands.testcase(specifications[lower(name)])
-end
-
 function visualizers.register(name,specification)
     name = lower(name)
     if trace_visualize then
@@ -611,15 +607,24 @@ local function filter(lines,settings) -- todo: inline or display in settings
     return content, m
 end
 
--- main functions
-
 local getlines = buffers.getlines
+
+-- interface
+
+function commands.doifelsevisualizer(name)
+    commands.testcase(specifications[lower(name)])
+end
+
+commands.loadvisualizer = visualizers.load
+
+--~ local decodecomment = resolvers.macros.decodecomment -- experiment
 
 function commands.typebuffer(settings)
     local lines = getlines(settings.name)
     if lines then
         local content, m = filter(lines,settings)
         if content and content ~= "" then
+--~ content = decodecomment(content)
             content = dotabs(content,settings)
             visualize(content,checkedsettings(settings,"display"))
         end
@@ -642,6 +647,7 @@ end
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
+--~ content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))
     end
@@ -658,6 +664,7 @@ function commands.typefile(settings)
                 str = regimes.translate(str,regime)
             end
             if str and str~= "" then
+--~ content = decodecomment(content)
                 local lines = splitlines(str)
                 local content, m = filter(lines,settings)
                 if content and content ~= "" then

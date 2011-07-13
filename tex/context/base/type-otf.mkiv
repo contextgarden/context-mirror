@@ -1526,17 +1526,21 @@
         \definefontsynonym [CambriaSerif] [\s!file:cambria.ttf]
     \stoptypescript
 
+    % We load a goodies file that will apply a patch to the font. As a demonstration
+    % we apply the patch when caching as as when scaling which is why we also specify
+    % the goodies file with the name.
+
     \starttypescript [math] [cambria,cambria-m,cambria-a] [name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math\mathsizesuffix]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math\mathsizesuffix,\s!goodies=cambria-math]
     \stoptypescript
     \starttypescript [math] [cambria-x] [name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math,\s!goodies=cambria-math]
     \stoptypescript
     \starttypescript [math] [cambria-y] [name]
         \loadfontgoodies[cambria-math]
-        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math-nostack\mathsizesuffix]
+        \definefontsynonym [MathRoman] [CambriaMath] [\s!features=\s!math-nostack\mathsizesuffix,\s!goodies=cambria-math]
     \stoptypescript
 
     \starttypescript [serif] [cambria,cambria-m,cambria-a] [name]
@@ -1847,6 +1851,7 @@
 \starttypescriptcollection[xits]
 
     \starttypescript [math] [xits,xitsbidi] [name]
+        \loadfontgoodies[xits-math]
         \definefontsynonym[MathRoman]   [\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
         \definefontsynonym[MathRomanL2R][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-l2r,\s!goodies=xits-math]
         \definefontsynonym[MathRomanR2L][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-r2l,\s!goodies=xits-math]

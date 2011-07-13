@@ -187,18 +187,27 @@ end
 
 local patterns = { "java-imp-%s.mkiv", "java-imp-%s.tex", "java-%s.mkiv", "java-%s.tex" }
 
+local function action(name,foundname)
+    context.startnointerference()
+    context.startreadingfile()
+    context.input(foundname)
+    status_javascripts("loaded: library '%s'",name)
+    context.stopreadingfile()
+    context.stopnointerference()
+end
+
+local function failure(name)
+    report_javascripts("unknown: library '%s'",name)
+end
+
 function javascripts.usescripts(name)
-    -- this will become pure lua, no context
     if name ~= variables.reset then -- reset is obsolete
-        commands.uselibrary(name,patterns,function(name,foundname)
-            context.startnointerference()
-            context.startreadingfile()
-            context.input(foundname)
-            status_javascripts("loaded: library '%s'",name)
-            context.stopreadingfile()
-            context.stopnointerference()
-        end, function(name)
-            report_javascripts("unknown: library '%s'",name)
-        end)
+        commands.uselibrary {
+            name     = name,
+            patterns = patterns,
+            action   = action,
+            failure  = failure,
+            onlyonce = true,
+        }
     end
 end

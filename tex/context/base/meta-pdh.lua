@@ -25,7 +25,6 @@ os.exit()
 -- only needed for mp output on disk
 
 local concat, format, find, gsub, gmatch = table.concat, string.format, string.find, string.gsub, string.gmatch
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local tostring, tonumber, select = tostring, tonumber, select
 local lpegmatch = lpeg.match
 
@@ -155,11 +154,11 @@ end
 -- from lua to tex
 
 function mptopdf.pdfcode(str)
-    texsprint(ctxcatcodes,"\\pdfliteral{" .. str .. "}") -- \\MPScode
+    context.pdfliteral(str) -- \\MPScode
 end
 
 function mptopdf.texcode(str)
-    texsprint(ctxcatcodes,str)
+    context(str)
 end
 
 -- auxiliary functions
@@ -229,7 +228,7 @@ function mptopdf.convertmpstopdf(name)
         mptopdf.reset()
         statistics.stoptiming(mptopdf)
     else
-        tex.print("file " .. name .. " not found")
+        context("file " .. name .. " not found")
     end
 end
 

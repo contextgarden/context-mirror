@@ -864,7 +864,7 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
             auto = true
         end
         if ordinal and whatordinal then
-            commands.ordinal(whatordinal,currentlanguage)
+            context("%s",converters.ordinal(whatordinal,currentlanguage))
         end
     end
 end

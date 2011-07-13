@@ -188,3 +188,9 @@ function bookmarks.finalize(levels)
     -- that we will support when the main loop has become a coroutine.
     codeinjections.addbookmarks(levels,bookmarks.method)
 end
+
+-- interface
+
+commands.overloadbookmark = bookmarks.overload
+commands.registerbookmark = bookmarks.register
+commands.setupbookmarks   = bookmarks.setup

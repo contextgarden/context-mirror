@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['pack-obj'] = {
 reusable components.</p>
 --ldx]]--
 
-local texsprint, texcount = tex.sprint, tex.count
+local texcount = tex.count
 local allocate = utilities.storage.allocate
 
 local collected = allocate()
@@ -46,12 +46,12 @@ end
 
 function jobobjects.number(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    texsprint((o and o[1]) or default)
+    context((o and o[1]) or default)
 end
 
 function jobobjects.page(tag,default)
     local o = collected[tag] or tobesaved[tag]
-    texsprint((o and o[2]) or default)
+    context((o and o[2]) or default)
 end
 
 function jobobjects.doifelse(tag)

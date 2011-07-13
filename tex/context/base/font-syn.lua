@@ -32,8 +32,6 @@ local report_names = logs.reporter("fonts","names")
 using a table that has keys filtered from the font related files.</p>
 --ldx]]--
 
-local texsprint = (tex and tex.sprint) or print
-
 fonts            = fonts or { } -- also used elsewhere
 
 local names      = { }
@@ -317,7 +315,7 @@ local function cleanname(name)
 end
 
 local function cleanfilename(fullname,defaultsuffix)
-    local _, _, name, suffix = file.splitname(fullname)
+    local path, name, suffix = file.splitname(fullname)
     name = gsub(lower(name),"[^%a%d]","")
     if suffix and suffix ~= "" then
         return name .. ".".. suffix
@@ -920,7 +918,9 @@ local function is_reloaded()
             local c_status = serialize(resolvers.datastate())
             local f_status = serialize(data.datastate)
             if c_status == f_status then
-                report_names("font database has matching configuration and file hashes")
+                if trace_names then
+                    report_names("font database has matching configuration and file hashes")
+                end
                 return
             else
                 report_names("font database has mismatching configuration and file hashes")
@@ -1025,14 +1025,28 @@ function names.resolve(askedname,sub)
     end
 end
 
+-- function names.getfilename(askedname,suffix) -- last resort, strip funny chars
+--     names.load()
+--     local files = names.data.files
+--     askedname = files and files[cleanfilename(askedname,suffix)] or ""
+--     if askedname == "" then
+--         return ""
+--     else -- never entered
+--         return resolvers.findbinfile(askedname,suffix) or ""
+--     end
+-- end
+
 function names.getfilename(askedname,suffix) -- last resort, strip funny chars
     names.load()
     local files = names.data.files
-    askedname = files and files[cleanfilename(askedname,suffix)] or ""
-    if askedname == "" then
-        return ""
-    else
-        return resolvers.findbinfile(askedname,suffix) or ""
+    local cleanname = cleanfilename(askedname,suffix)
+    local found = files and files[cleanname] or ""
+    if found == "" and is_reloaded() then
+        files = names.data.files
+        found = files and files[cleanname] or ""
+    end
+    if found and found ~= "" then
+        return resolvers.findbinfile(found,suffix) or "" -- we still need to locate it
     end
 end
 

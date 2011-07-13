@@ -377,8 +377,8 @@
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
 
-\unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\ctxsprint{interfaces.getmessage("#1","#2")}}}
-\unexpanded\def\getmessage         #1#2{\ctxsprint{interfaces.getmessage("#1","#2")}}
+\unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\cldcontext{interfaces.getmessage("#1","#2")}}}
+\unexpanded\def\getmessage         #1#2{\cldcontext{interfaces.getmessage("#1","#2")}}
 
 %D Till here.
 

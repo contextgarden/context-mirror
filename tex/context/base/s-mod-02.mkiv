@@ -11,10 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\endinput
+
 %D This module looks like crap, is not documented, will
 %D change, and used to be called modu-*.tex.
 
-% now split in mkii/mkiv so we will cleanup
+% now split in mkii/mkiv so we will cleanup (needed)
 
 % Macro's
 
@@ -24,16 +26,13 @@
 
 % todo: internationalize + setups
 
-\setuphead[paragraaf][expansion=command]
-\setuphead[section][expansion=command]
+\setuphead
+  [section]
+  [expansion=command]
 
 \def\complexmodule[#1]% redefined
-  {\startglobal % i.v.m. \bgroup in \startdocumentation
-   \getparameters[Module][#1]
-   \stopglobal  % i.v.m. \bgroup in \startdocumentation
-   %%\section{\Modulesubtitle}
-   \xdef\Temp{\Modulesubtitle}%%Modulesubtitle:\framed{BEGIN \Modulesubtitle END} :#1 !}
-   \@EA\section\@EA{\Temp}
+  {\getgparameters[Module][#1]
+   \normalexpanded{\section{\Modulesubtitle}}
    \WriteLists}
 
 \def\stopmodule % redefined
@@ -58,8 +57,6 @@
 
 \def\WriteBatchFile
   {\doglobal\increment\ModuleNumber
-%    \immediate\write\BatchFile{call modu-run \FileName\space \ModuleNumber}}
-%    \immediate\write\BatchFile{texmfstart texutil --modu \FileName}}
    \immediate\write\BatchFile{texmfstart texexec --pdf --modu --batch \FileName }}
 
 \newif\ifProcessingPublic

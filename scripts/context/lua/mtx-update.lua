@@ -93,7 +93,6 @@ scripts.update.base = {
     { "fonts/common/",            "texmf" },
     { "fonts/other/",             "texmf" }, -- not *really* needed, but helpful
     { "context/<version>/",       "texmf-context" },
-    { "context/img/",             "texmf-context" },
     { "misc/setuptex/",           "." },
     { "misc/web2c",               "texmf" },
     { "bin/common/<platform>/",   "texmf-<platform>" },
@@ -526,7 +525,7 @@ if scripts.savestate then
 
     states.set("info.version",0.1) -- ok
     states.set("info.count",(states.get("info.count") or 0) + 1,1,false) -- ok
-    states.set("info.comment","this file contains the settings of the last 'mtxrun --script update ' run",false) -- ok
+    states.set("info.comment","this file contains the settings of the last 'mtxrun --script update' run",false) -- ok
     states.set("info.date",os.date("!%Y-%m-%d %H:%M:%S")) -- ok
 
     states.set("rsync.program", environment.argument("rsync"), "rsync", true) -- ok
@@ -574,14 +573,14 @@ if scripts.savestate then
     states.set("formats.metafun", true)
 
     for r in gmatch(environment.argument("extras") or "","([^, ]+)") do -- for old times sake
-        if not find(r,"^[a-z]%-") then
-            r= "t-" .. r
+        if r ~= "all" and not find(r,"^[a-z]%-") then
+            r = "t-" .. r
         end
         states.set("modules." .. r, true)
     end
     for r in gmatch(environment.argument("modules") or "","([^, ]+)") do
-        if not find(r,"^[a-z]%-") then
-            r= "t-" .. r
+        if r ~= "all" and not find(r,"^[a-z]%-") then
+            r = "t-" .. r
         end
         states.set("modules." .. r, true)
     end

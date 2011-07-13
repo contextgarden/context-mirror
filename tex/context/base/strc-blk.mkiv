@@ -41,14 +41,14 @@
       \c!inner=,
       \c!style=,
       \c!file=]% todo
-   \ctxlua{structures.blocks.define("#1")}%
+   \ctxcommand{definestructureblock("#1")}%
    \setuvalue{\e!begin#1}{\dodoubleempty\dobeginofblock[#1]}%
    \letvalue{\e!end#1}\relax}
 
 \long\def\dobeginofblock[#1][#2]%
   {\normalexpanded{\noexpand\dodowithbuffer{@block@}{\e!begin#1}{\e!end#1}}
      {}% before
-     {\ctxlua{structures.blocks.save("#1","#2","@block@")}}}% after
+     {\ctxcommand{savestructureblock("#1","#2","@block@")}}}% after
 
 \def\dostarthiddenblock
   {\startnointerference
@@ -83,17 +83,17 @@
    \egroup}
 
 \def\dosetblockstate[#1][#2][#3]% state name tag
-  {\ctxlua{structures.blocks.setstate("#1","#2","#3")}}
+  {\ctxcommand{setstructureblockstate("#1","#2","#3")}}
 
 \def\doselectblocks[#1][#2][#3][#4]% state name tag setups
   {\bgroup
    \doifassignmentelse{#3}
      {\getparameters[\??tb\??tb][\c!criterium=\v!text,#3]%
       \def\doblocksetups##1{\getparameters[\??tb##1][#3]}%
-      \ctxlua{structures.blocks.select("#1","#2","","\@@tb@@tbcriterium")}}
+      \ctxcommand{selectstructureblock("#1","#2","","\@@tb@@tbcriterium")}}
      {\getparameters[\??tb\??tb][\c!criterium=\v!text,#4]%
       \def\doblocksetups##1{\getparameters[\??tb##1][#4]}%
-      \ctxlua{structures.blocks.select("#1","#2","#3","\@@tb@@tbcriterium")}}%
+      \ctxcommand{selectstructureblock("#1","#2","#3","\@@tb@@tbcriterium")}}%
    \egroup}
 
 % hide: save, if [+] also hidden execute

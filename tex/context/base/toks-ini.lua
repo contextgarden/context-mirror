@@ -33,8 +33,6 @@ a module.</p>
 
 local token, tex = token, tex
 
-local texsprint     = tex.sprint
-
 local createtoken   = token.create
 local csname_id     = token.csname_id
 local command_id    = token.command_id
@@ -81,7 +79,7 @@ local function printlist(data)
     end)
 end
 
-tex.printlist = printlist
+tex.printlist = printlist -- will change to another namespace
 
 function collectors.flush(tag)
     printlist(collectordata[tag])
@@ -107,7 +105,7 @@ function collectors.install(tag,end_cs)
         local t = get_next()
         local a, b = t[1], t[3]
         if b == endcs then
-            texsprint('\\' ..end_cs) -- to be checked, can be context[end_cs]()
+            context["end_cs"]()
             return
         elseif a == call and registered[b] then
             expand()

@@ -13,17 +13,15 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
-local texsprint, texprint, texwrite, texcount = tex.sprint, tex.print, tex.write, tex.count
+local texcount = tex.count
 local concat, insert, remove = table.concat, table.insert, table.remove
 local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
 local allocate, checked = utilities.storage.allocate, utilities.storage.checked
 
-local trace_lists = false  trackers.register("structures.lists", function(v) trace_lists = v end)
+local trace_lists    = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
 local report_lists   = logs.reporter("structure","lists")
-
-local ctxcatcodes    = tex.ctxcatcodes
 
 local structures     = structures
 local lists          = structures.lists
@@ -123,7 +121,7 @@ function lists.push(t)
         pushed[i] = p
         r.listindex = p
     end
-    texwrite(p)
+    context(p)
 end
 
 function lists.doifstoredelse(n)
@@ -477,7 +475,12 @@ function lists.userdata(name,r,tag) -- to tex (todo: xml)
         local userdata, metadata = result.userdata, result.metadata
         local str = userdata and userdata[tag]
         if str then
-            texsprint(metadata and metadata.catcodes or ctxcatcodes,str)
+            local catcodes = metadata and metadata.catcodes
+            if catcodes then
+                context.sprint(catcodes,str)
+            else
+                context(str)
+            end
         end
     end
 end
@@ -490,19 +493,19 @@ function lists.uservalue(name,r,tag,default) -- to lua
 end
 
 function lists.size()
-    texprint(#lists.result)
+    context(#lists.result)
 end
 
 function lists.location(n)
     local l = lists.result[n]
-    texsprint(l.references.internal or n)
+    context(l.references.internal or n)
 end
 
 function lists.label(n,default)
     local l = lists.result[n]
     local t = l.titledata
     if t then
-        texsprint(t.label or default or "")
+        context(t.label or default or "")
     end
 end
 
@@ -572,9 +575,9 @@ function lists.realpage(name,n)
     local data = lists.result[n]
     if data then
         local references = data.references
-        texsprint(references and references.realpage or 0)
+        context(references and references.realpage or 0)
     else
-        texsprint(0)
+        context(0)
     end
 end
 

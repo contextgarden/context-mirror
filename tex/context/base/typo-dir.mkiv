@@ -91,7 +91,7 @@
 \startluacode
     function documentdata.split_tokens(str)
         for s in str:bytes() do
-            tex.sprint(tex.ctxcatcodes,string.format("\\hbox{\\char %s}",s))
+            context.sprint(tex.ctxcatcodes,string.format("\\hbox{\\char %s}",s))
         end
     end
 \stopluacode

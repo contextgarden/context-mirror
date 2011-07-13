@@ -288,11 +288,13 @@
 \installcommandhandler \??un {units} \??un
 
 \setupunits
-  [alternative=, % done: text
-  %grid=yes,     % (maybe)
-  %style=...,    % done
-  %color=...,    % done
-  %space=...,    % (maybe) small medium big
+  [\c!alternative=,        % done: text
+   \c!separator=\v!normal, % done: cdot|big|medium|space
+   \c!label=,              % done: (no interface yet)
+  %\c!grid=\v!yes,         % (maybe)
+  %\c!style=...,           % done
+  %\c!color=...,           % done
+  %\c!space=...,           % (maybe) small medium big
   ]
 
 \newconstant   \c_units_mode   % 0=text 1=math 2=textinmath 3=mathintext
@@ -307,9 +309,25 @@
 % [ \unit  {micro ohm}]\par %     space before unit
 % [\unit{10 micro ohm}]\par %     space before unit
 
-\def\unitshalfspace{\thinspace}
-\def\unitsfullspace{\thickspace}
-\def\unitsbackspace{\negthinspace}
+\def\unitssmallspace {\thinspace}
+\def\unitsmediumspace{\medspace}
+\def\unitsbigspace   {\thickspace}
+\def\unitsbackspace  {\negthinspace}
+
+\def\installunitsseparator#1#2%
+  {\setvalue{\??un::#1}{#2}}
+
+\unexpanded\def\dounitsseparator
+  {\edef\currentunitsseparator{\unitsparameter\c!separator}%
+   \csname\??un::%
+     \ifcsname\??un::\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
+   \endcsname}
+
+\installunitsseparator\v!normal {\cdot}
+\installunitsseparator\v!big    {\unitsbigspace}
+\installunitsseparator\v!medium {\unitsmediumspace}
+\installunitsseparator\v!small  {\unitssmallspace}
+\installunitsseparator\v!none   {}
 
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
@@ -381,7 +399,7 @@
     \let\units_direct\units_direct_nested
 \to \everyunits
 
-\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es)}}
+\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitsparameter\c!label")}}
 
 \unexpanded\def\unitsPUS#1#2#3{\units_next#1#2\unitsraise{#3}\c_units_state\plusone}   % suffix
 \unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state               \plusthree} % unit
@@ -466,19 +484,19 @@
   {\ifcase\c_units_state % start
      \ifconditional\c_units_dospace
       % \ifdim\lastskip=\zeropoint
-         \unitsfullspace
+         \unitsbigspace
       % \else
       %   % too tricky ... we could remove and add
       % \fi
      \fi
    \or % suffix
-     {\cdot}% \unitshalfspace
+     {\dounitsseparator}%
    \or % operator
    \or % unit
-     {\cdot}% \unitshalfspace
+     {\dounitsseparator}%
    \or % prefix
    \or % number
-     \unitsfullspace
+     \unitsbigspace
    \fi
    \setfalse\c_units_dospace
    \units_start}
@@ -486,14 +504,14 @@
 \unexpanded\def\unitsTIMES
   {\ifnum\c_units_state=\plusone % suffix
    \else
-     \unitshalfspace
+     \unitssmallspace
    \fi
    \cdot} % or \times
 
 \unexpanded\def\unitsOUTOF
   {\ifnum\c_units_state=\plusone % suffix
    \else
-     \unitshalfspace
+     \unitssmallspace
    \fi
    :}
 
@@ -508,5 +526,46 @@
 
 \defineunits
   [unit]
+
+%D Example:
+%D
+%D \startbuffer[definitions]
+%D \startluacode
+%D     languages.data.labels.prefixes.whatever = {
+%D         Kilo = "olik"
+%D     }
+%D
+%D     languages.data.labels.units.whatever = {
+%D         Meter  = "retem",
+%D         Second = "dnoces",
+%D     }
+%D
+%D     languages.data.labels.operators.whatever = {
+%D         Solidus = " rep "
+%D     }
+%D \stopluacode
+%D \stopbuffer
+%D
+%D \startbuffer[sample]
+%D \startlines
+%D \lunit{10 km/s}
+%D \lunit{10 Kilo Meter/s}
+%D \lunit{10 kilo Meter/s}
+%D \lunit{10 Kilo m/s}
+%D \lunit{10 k Meter/s}
+%D \stoplines
+%D \stopbuffer
+%D
+%D \typebuffer[definitions] \getbuffer[definitions]
+%D
+%D \startbuffer
+%D \typebuffer[sample]
+%D
+%D \defineunits[lunit]                 \getbuffer[sample]
+%D \defineunits[lunit][label=test]     \getbuffer[sample]
+%D \defineunits[lunit][label=whatever] \getbuffer[sample]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \protect \endinput

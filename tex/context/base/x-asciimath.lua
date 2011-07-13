@@ -19,9 +19,7 @@ moduledata.asciimath = asciimath
 local report_asciimath = logs.reporter("mathematics","asciimath")
 
 local format = string.format
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local lpegmatch = lpeg.match
-
 local S, P, R, C, V, Cc, Ct, Cs = lpeg.S, lpeg.P, lpeg.R, lpeg.C, lpeg.V, lpeg.Cc, lpeg.Ct, lpeg.Cs
 
 local letter     = lpeg.patterns.utf8
@@ -199,9 +197,9 @@ local function converted(original,totex)
     end
     if totex then
         if ok then
-            texsprint(ctxcatcodes,"\\mathematics{",result,"}")
+            context.mathematics(result)
         else
-            texsprint(ctxcatcodes,"{\\tt",result,"}")
+            context.type(result) -- some day monospaced
         end
     else
         return result

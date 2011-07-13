@@ -35,10 +35,11 @@ local xml = xml
 
 --~ local xml = xml
 
+local utf = unicode.utf8
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber = type, next, setmetatable, getmetatable, tonumber
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local utfchar = unicode.utf8.char
+local utfchar, utffind, utfgsub = utf.char, utf.find, utf.gsub
 local lpegmatch = lpeg.match
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
 
@@ -151,9 +152,22 @@ element.</p>
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack, top, dt, at, xmlns, errorstr, entities = { }, { }, { }, { }, { }, nil, { }
-local strip, cleanup, utfize, resolve, resolve_predefined, unify_predefined = false, false, false, false, false, false
-local dcache, hcache, acache = { }, { }, { }
+local stack              = { }
+local top                = { }
+local dt                 = { }
+local at                 = { }
+local xmlns              = { }
+local errorstr           = nil
+local entities           = { }
+local strip              = false
+local cleanup            = false
+local utfize             = false
+local resolve_predefined = false
+local unify_predefined   = false
+
+local dcache             = { }
+local hcache             = { }
+local acache             = { }
 
 local mt = { }
 
@@ -319,7 +333,7 @@ local predefined_unified = {
     [42] = "&quot;",
     [47] = "&apos;",
     [74] = "&lt;",
-    [76] = "&gr;",
+    [76] = "&gt;",
 }
 
 local predefined_simplified = {
@@ -329,6 +343,57 @@ local predefined_simplified = {
     [74] = "<", lt   = "<",
     [76] = ">", gt   = ">",
 }
+
+local nofprivates = 0xF0000 -- shared but seldom used
+
+local privates_u = {
+    [ [[&]] ] = "&amp;",
+    [ [["]] ] = "&quot;",
+    [ [[']] ] = "&apos;",
+    [ [[<]] ] = "&lt;",
+    [ [[>]] ] = "&gt;",
+}
+
+local privates_p = {
+}
+
+local privates_n = {
+    -- keeps track of defined ones
+}
+
+local function escaped(s)
+    if s == "" then
+        return ""
+    else -- if utffind(s,privates_u) then
+        return (utfgsub(s,".",privates_u))
+ -- else
+ --     return s
+    end
+end
+
+local function unescaped(s)
+    local p = privates_n[s]
+    if not p then
+        nofprivates = nofprivates + 1
+        p = utfchar(nofprivates)
+        privates_n[s] = p
+        s = "&" .. s .. ";"
+        privates_u[p] = s
+        privates_p[p] = s
+    end
+    return p
+end
+
+local function unprivatized(s,resolve)
+    if s == "" then
+        return ""
+    else
+        return (utfgsub(s,".",privates_p))
+    end
+end
+
+xml.privatetoken = unescaped
+xml.unprivatized = unprivatized
 
 local function handle_hex_entity(str)
     local h = hcache[str]
@@ -371,7 +436,7 @@ local function handle_dec_entity(str)
             if not n then
                 report_xml("utfize, ignoring dec entity &#%s;",str)
             elseif trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %s",str,h)
+                report_xml("utfize, converting dec entity &#%s; into %s",str,d)
             end
         else
             if trace_entities then
@@ -399,12 +464,12 @@ local function handle_any_entity(str)
                 a = entities[str]
             end
             if a then
-if type(a) == "function" then
-    if trace_entities then
-        report_xml("expanding entity &%s; (function)",str)
-    end
-    a = a(str) or ""
-end
+                if type(a) == "function" then
+                    if trace_entities then
+                        report_xml("expanding entity &%s; (function)",str)
+                    end
+                    a = a(str) or ""
+                end
                 a = lpegmatch(parsedentity,a) or a
                 if trace_entities then
                     report_xml("resolved entity &%s; -> %s (internal)",str,a)
@@ -440,18 +505,25 @@ end
     else
         local a = acache[str]
         if not a then
-            if trace_entities then
-                report_xml("found entity &%s;",str)
-            end
             a = resolve_predefined and predefined_simplified[str]
             if a then
                 -- one of the predefined
                 acache[str] = a
+                if trace_entities then
+                    report_xml("entity &%s; becomes %s",str,tostring(a))
+                end
             elseif str == "" then
+                if trace_entities then
+                    report_xml("invalid entity &%s;",str)
+                end
                 a = "&error;"
                 acache[str] = a
             else
-                a = "&" .. str .. ";"
+                if trace_entities then
+                    report_xml("entity &%s; is made private",str)
+                end
+             -- a = "&" .. str .. ";"
+                a = unescaped(str)
                 acache[str] = a
             end
         end
@@ -591,17 +663,29 @@ local grammar_unparsed_text = P { "preamble",
     children = unparsedtext + V("parent") + emptyelement + comment + cdata + instruction,
 }
 
--- maybe we will add settinsg to result as well
+-- maybe we will add settings to result as well
 
 local function xmlconvert(data, settings)
-    settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
-    strip = settings.strip_cm_and_dt
-    utfize = settings.utfize_entities
-    resolve = settings.resolve_entities
+    settings           = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
+    --
+    strip              = settings.strip_cm_and_dt
+    utfize             = settings.utfize_entities
+    resolve            = settings.resolve_entities
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
-    unify_predefined = settings.unify_predefined_entities -- &#038; -> &amp;
-    cleanup = settings.text_cleanup
-    stack, top, at, xmlns, errorstr, entities = { }, { }, { }, { }, nil, settings.entities or { }
+    unify_predefined   = settings.unify_predefined_entities -- &#038; -> &amp;
+    cleanup            = settings.text_cleanup
+    entities           = settings.entities or { }
+    --
+    if utfize == nil then
+        settings.utfize_entities = true
+        utfize = true
+    end
+    if resolve_predefined == nil then
+        settings.resolve_predefined_entities = true
+        resolve_predefined = true
+    end
+    --
+    stack, top, at, xmlns, errorstr = { }, { }, { }, { }, nil
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
@@ -653,7 +737,7 @@ local function xmlconvert(data, settings)
             local v = rdt[k]
             if type(v) == "table" and not v.special then -- always table -)
                 result.ri = k -- rootindex
-v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
+                v.__p__ = result  -- new, experiment, else we cannot go back to settings, we need to test this !
                 break
             end
         end
@@ -661,6 +745,11 @@ v.__p__ = result  -- new, experiment, else we cannot go back to settings, we nee
     if errorstr and errorstr ~= "" then
         result.error = true
     end
+strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
+unify_predefined, cleanup, entities = nil, nil, nil
+stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
+acache, hcache, dcache = nil, nil, nil
+reported_attribute_errors, mt, errorhandler = nil, nil, nil
     return result
 end
 
@@ -807,7 +896,7 @@ local function verbose_element(e,handlers)
     local ats = eat and next(eat) and { }
     if ats then
         for k,v in next, eat do
-            ats[#ats+1] = format('%s=%q',k,v)
+            ats[#ats+1] = format('%s=%q',k,escaped(v))
         end
     end
     if ern and trace_entities and ern ~= ens then
@@ -823,7 +912,7 @@ local function verbose_element(e,handlers)
             for i=1,#edt do
                 local e = edt[i]
                 if type(e) == "string" then
-                    handle(e)
+                    handle(escaped(e))
                 else
                     serialize(e,handlers)
                 end
@@ -844,11 +933,11 @@ local function verbose_element(e,handlers)
                 handle("<",etg,">")
             end
             for i=1,#edt do
-                local ei = edt[i]
-                if type(ei) == "string" then
-                    handle(ei)
+                local e = edt[i]
+                if type(e) == "string" then
+                    handle(escaped(e))
                 else
-                    serialize(ei,handlers)
+                    serialize(e,handlers)
                 end
             end
             handle("</",etg,">")
@@ -883,7 +972,7 @@ local function verbose_root(e,handlers)
 end
 
 local function verbose_text(e,handlers)
-    handlers.handle(e)
+    handlers.handle(escaped(e))
 end
 
 local function verbose_document(e,handlers)
@@ -1011,19 +1100,32 @@ local result
 
 local xmlfilehandler = newhandlers {
     name       = "file",
-    initialize = function(name) result = io.open(name,"wb") return result end,
-    finalize   = function() result:close() return true end,
-    handle     = function(...) result:write(...) end,
+    initialize = function(name)
+        result = io.open(name,"wb")
+        return result
+    end,
+    finalize   = function()
+        result:close()
+        return true
+    end,
+    handle     = function(...)
+        result:write(...)
+    end,
 }
 
 -- no checking on writeability here but not faster either
 --
 -- local xmlfilehandler = newhandlers {
---     initialize = function(name) io.output(name,"wb") return true end,
---     finalize   = function() io.close() return true end,
+--     initialize = function(name)
+--         io.output(name,"wb")
+--         return true
+--     end,
+--     finalize   = function()
+--         io.close()
+--         return true
+--     end,
 --     handle     = io.write,
 -- }
-
 
 function xml.save(root,name)
     serialize(root,xmlfilehandler,name)
@@ -1033,28 +1135,34 @@ local result
 
 local xmlstringhandler = newhandlers {
     name       = "string",
-    initialize = function() result = { } return result end,
-    finalize   = function() return concat(result) end,
-    handle     = function(...) result[#result+1] = concat { ... } end
+    initialize = function()
+        result = { }
+        return result
+    end,
+    finalize   = function()
+        return concat(result)
+    end,
+    handle     = function(...)
+        result[#result+1] = concat { ... }
+    end,
 }
 
 local function xmltostring(root) -- 25% overhead due to collecting
-    if root then
-        if type(root) == 'string' then
-            return root
-        else -- if next(root) then -- next is faster than type (and >0 test)
-            return serialize(root,xmlstringhandler) or ""
-        end
+    if not root then
+        return ""
+    elseif type(root) == 'string' then
+        return root
+    else -- if next(root) then -- next is faster than type (and >0 test)
+        return serialize(root,xmlstringhandler) or ""
     end
-    return ""
 end
 
-local function xmltext(root) -- inline
+local function __tostring(root) -- inline
     return (root and xmltostring(root)) or ""
 end
 
 initialize_mt = function(root) -- redefinition
-    mt = { __tostring = xmltext, __index = root }
+    mt = { __tostring = __tostring, __index = root }
 end
 
 xml.defaulthandlers = handlers

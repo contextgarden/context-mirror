@@ -37,7 +37,6 @@ end
 
 job.register('structures.blocks.collected', tobesaved, initializer)
 
-local printer  = (lpeg.patterns.textline/tex.print)^0 -- can be shared
 local listitem = utilities.parsers.listitem
 
 function blocks.print(name,data,hide)
@@ -144,3 +143,11 @@ function blocks.save(name,tag,buffer) -- wrong, not yet adapted
     end
     buffers.erase(buffer)
 end
+
+-- interface
+
+
+commands.definestructureblock   = blocks.define
+commands.savestructureblock     = blocks.save
+commands.selectstructureblock   = blocks.select
+commands.setstructureblockstate = blocks.setstate

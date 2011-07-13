@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['str-syn'] = {
 }
 
 local next, type = next, type
-local texwrite, format = tex.write,  string.format
+local format = string.format
 local allocate = utilities.storage.allocate
 
 -- interface to tex end

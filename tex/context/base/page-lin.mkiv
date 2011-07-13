@@ -93,7 +93,7 @@
   {continue = "\linenumberparameter\c!continue"}
 
 \def\mkdefinetextlinenumbering
-  {\setxvalue{ln:c:\currentlinenumbering}{\number\ctxlua{tex.sprint(nodes.lines.boxed.register({\mklinenumberparameters}))}}}
+  {\setxvalue{ln:c:\currentlinenumbering}{\number\cldcontext{nodes.lines.boxed.register({\mklinenumberparameters})}}}
 
 \def\mkupdatetextlinenumbering
   {\ctxlua{nodes.lines.boxed.setup(\getvalue{ln:c:\currentlinenumbering},{\mklinenumberupdateparameters})}}

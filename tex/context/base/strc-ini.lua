@@ -21,27 +21,20 @@ but it does not make sense to store all processdata.
 ]]--
 
 local format, concat, match = string.format, table.concat, string.match
-local count, texwrite, texprint, texsprint = tex.count, tex.write, tex.print, tex.sprint
+local count = tex.count
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local lpegmatch = lpeg.match
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
 
-local ctxcatcodes, xmlcatcodes, notcatcodes = tex.ctxcatcodes, tex.xmlcatcodes, tex.notcatcodes -- tricky as we're in notcatcodes
+local ctxcatcodes = tex.ctxcatcodes
+local xmlcatcodes = tex.xmlcatcodes
+local notcatcodes = tex.notcatcodes
+local txtcatcodes = tex.txtcatcodes
 
 local trace_processors = false  trackers.register("structures.processors", function(v) trace_processors = v end)
 
 local report_processors = logs.reporter("structure","processors")
-
--- move this
-
-commands       = commands or { }
-local commands = commands
-
-function commands.firstinlist(str)
-    local first = match(str,"^([^,]+),")
-    texsprint(ctxcatcodes,first or str)
-end
 
 -- -- -- namespace -- -- --
 
@@ -104,9 +97,9 @@ function specials.store(class,data)
             tobesaved[class] = s
         end
         s[#s+1] = data
-        texwrite(#s)
+        context(#s)
     else
-        texwrite(0)
+        context(0)
     end
 end
 
@@ -207,11 +200,11 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                     if trace_processors then
                         report_processors("cct: %s, txt: %s",catcodes,title)
                     end
-                    texsprint(catcodes,title)
+                    context.sprint(catcodes,title) -- was: texsprint(catcodes,title)
                 end
             end
         else
-            texsprint(title) -- no catcode switch
+            context(title) -- no catcode switch, was: texsprint(title)
         end
     end
 end
@@ -241,21 +234,65 @@ function processors.split(str)
     end
 end
 
-function processors.sprint(catcodes,str,fnc,...) -- not ok: mixed
-    local p, s = lpegmatch(splitter,str)
-    local code
-    if registered[p] then
-        code = format("\\applyprocessor{%s}{%s}",p,(fnc and fnc(s,...)) or s)
-    else
-        code = (fnc and fnc(str,...)) or str
-    end
-    if trace_processors then
-        report_processors("cct: %s, seq: %s",catcodes,code)
-    end
-    texsprint(catcodes,code)
-end
+--~ function processors.sprint(catcodes,str,fnc,...) -- not ok: mixed
+--~     local p, s = lpegmatch(splitter,str)
+--~     local code
+--~     if registered[p] then
+--~         code = format("\\applyprocessor{%s}{%s}",p,(fnc and fnc(s,...)) or s)
+--~     else
+--~         code = (fnc and fnc(str,...)) or str
+--~     end
+--~     if trace_processors then
+--~         report_processors("cct: %s, seq: %s",catcodes,code)
+--~     end
+--~     context.sprint(catcodes,code) -- was: texsprint(catcodes,code)
+--~ end
 
 function processors.apply(str)
+    local p, s = lpegmatch(splitter,str)
+    if p and registered[p] then
+        if trace_processors then
+            report_processors("known: %s, argument: %s",p,s or "")
+        end
+        context.applyprocessor(p,s)
+    elseif s then
+        if trace_processors then
+            report_processors("unknown: %s, argument: %s",p or "?",s)
+        end
+        context(s)
+    elseif str then
+        if trace_processors then
+            report_processors("direct: %s",str)
+        end
+        context(str)
+    end
+end
+
+function processors.startapply(str)
+    local p, s = lpegmatch(splitter,str)
+    if p and registered[p] then
+        if trace_processors then
+            report_processors("start: %s",p or "?")
+        end
+        context.applyprocessor(p)
+    else
+        if trace_processors then
+            report_processors("start: %s (unknown)",p or "?")
+        end
+        context.firstofoneargument()
+    end
+    context("{")
+    return s -- not: or str
+end
+
+function processors.stopapply()
+    context("}")
+    if trace_processors then
+        report_processors("stop")
+    end
+end
+
+function processors.tostring(str)
     local p, s = lpegmatch(splitter,str)
     if registered[p] then
         return format("\\applyprocessor{%s}{%s}",p,s)
@@ -264,7 +301,7 @@ function processors.apply(str)
     end
 end
 
-function processors.ignore(str)
+function processors.stripped(str)
     local p, s = lpegmatch(splitter,str)
     return s or str
 end
@@ -339,3 +376,10 @@ function sets.get(namespace,block,name,level,default) -- check if name is passed
     local dl = dn[1][level]
     return dl or dn[2] or default
 end
+
+-- interface
+
+commands.definestructureset         = sets.define
+
+commands.registerstructureprocessor = processors.register
+commands.resetstructureprocessor    = processors.reset
