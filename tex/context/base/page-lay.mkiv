@@ -124,7 +124,7 @@
 \appendtoks
     \ifx\currentlayout\v!reset
       \let\currentlayout\empty
-      \letlayoutparameter\v!normal % global ?
+      \letlayoutparameter\c!state\v!normal % global ?
     \fi
     \globallet\currentlayout\currentlayout
 \to \everysetuplayout
@@ -830,6 +830,16 @@
 
 \def\adaptlayout
   {\dodoubleempty\doadaptlayout}
+
+\unexpanded\def\startlayout[#1]%
+  {\page
+   \pushmacro\currentlayout
+   \setuplayout[#1]}
+
+\unexpanded\def\stoplayout
+  {\page
+   \popmacro\currentlayout
+   \setuplayout[\currentlayout]}
 
 % describe interface
 

@@ -72,52 +72,49 @@
 \to \everyfloatscheck
 
 \def\dofloatsflush#1#2%
-  {\ctxlua{floats.flush("#1",\number#2)}%
+  {\ctxcommand{flushfloat("#1",\number#2)}%
    \the\everyfloatscheck}
 
 \def\dofloatsflushbylabel#1#2%
-  {\ctxlua{floats.flush("#1","#2",true)}%
+  {\ctxcommand{flushfloat("#1","#2",true)}%
    \the\everyfloatscheck}
 
 \def\dofloatssave#1%
-  {\ctxlua{floats.save("#1")}%
+  {\ctxcommand{savefloat("#1")}%
    \the\everyfloatscheck}
 
 \def\dofloatsresave#1%
-  {\ctxlua{floats.resave("#1")}%
+  {\ctxcommand{resavefloat("#1")}%
    \the\everyfloatscheck}
 
 \def\dopushsavedfloats
-  {\ctxlua{floats.push()}%
+  {\ctxcommand{pushfloat()}%
    \the\everyfloatscheck}
 
 \def\dopopsavedfloats
-  {\ctxlua{floats.pop()}%
+  {\ctxcommand{popfloat()}%
    \the\everyfloatscheck}
 
 \def\dofloatsgetinfo#1%
-  {\ctxlua{floats.consult("#1")}}
+  {\ctxcommand{consultfloat("#1")}}
 
-\def\doifsavedfloatelse#1%
-  {\ctxcommand{doifsavedfloatelse("#1")}}
+\def\doifelsesavedfloat#1%
+  {\ctxcommand{doifelsesavedfloat("#1")}}
 
 \def\dofloatscollect#1#2#3%
-  {\ctxlua{floats.collect("#1",\number\dimexpr#2,\number\dimexpr#3)}}
+  {\ctxcommand{collectfloat("#1",\number\dimexpr#2,\number\dimexpr#3)}}
 
-\def\dofloatsnofstacked#1%
-  {\ctxlua{floats.thestacked("#1")}}
-
-\def\dofloatsgetvariable#1%
-  {\ctxlua{floats.thevar("specification")}}
+\def\nofstackedfloatincategory#1%
+  {\ctxcommand{nofstackedfloats("#1")}}
 
 \let\dopushcolumnfloats\dopushsavedfloats
 \let\dopopcolumnfloats \dopopsavedfloats
 
 \def\dofloatssavepagefloat#1#2%
-  {\ctxlua{floats.save("#1", { specification = "#2" })}}
+  {\ctxcommand{savefloat("#1", { specification = "#2" })}}
 
 \def\dofloatssavesomewherefloat#1#2% #1=method
-  {\ctxlua{floats.save("#1", { specification = "#2", label = "\floatlabel" })}}
+  {\ctxcommand{savefloat("#1", { specification = "#2", label = "\floatlabel" })}}
 
 %D This is an experimental new feature (for Alan Braslau), a prelude to more:
 %D
@@ -206,7 +203,7 @@
 
 \def\doflushsomepagefloat#1% future releases can do more clever things
   {\dofloatsflush{#1}{1}%
-   \edef\floatspecification{\dofloatsgetvariable{specification}}%
+   \edef\floatspecification{\ctxcommand{getfloatvariable("specification")}}% Is this okay?
    \the\everybeforeflushedpagefloat
    \vbox to \textheight
      {\doifnotinset\v!high\floatspecification\vfill
@@ -216,25 +213,25 @@
 
 % \def\doflushpagefloats
 %   {\doifoddpageelse
-%      {\ifnum\dofloatsnofstacked\s!rightpage>\zerocount
+%      {\ifnum\nofstackedfloatsincategory\s!rightpage>\zerocount
 %         \doflushsomepagefloat\s!rightpage
-%       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
+%       \else\ifnum\nofstackedfloatsincategory\s!page>\zerocount
 %         \doflushsomepagefloat\s!page
-%       \else\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
+%       \else\ifnum\nofstackedfloatsincategory\s!leftpage>\zerocount
 %         \emptyhbox\vfill\eject
 %        %\doflushsomepagefloat\s!leftpage
 %       \fi\fi\fi}
-%      {\ifnum\dofloatsnofstacked\s!leftpage>\zerocount
+%      {\ifnum\nofstackedfloatsincategory\s!leftpage>\zerocount
 %         \doflushsomepagefloat\s!leftpage
-%       \else\ifnum\dofloatsnofstacked\s!page>\zerocount
+%       \else\ifnum\nofstackedfloatsincategory\s!page>\zerocount
 %         \doflushsomepagefloat\s!page
-%       \else\ifnum\dofloatsnofstacked\s!rightpage>\zerocount
+%       \else\ifnum\nofstackedfloatsincategory\s!rightpage>\zerocount
 %         \emptyhbox\vfill\eject
 %        %\doflushsomepagefloat\s!rightpage
 %       \fi\fi\fi}}
 
 \def\doflushpagefloats
-  {\edef\checkedpagefloat{\ctxlua{floats.thecheckedpagefloat()}}% (true) for packed
+  {\edef\checkedpagefloat{\ctxcommand{checkedpagefloat()}}% (true) for packed
    \ifx\checkedpagefloat\empty
      % nothing
    \else\ifx\checkedpagefloat\v!empty

@@ -6,52 +6,54 @@ if not modules then modules = { } end modules ['syst-lua'] = {
     license   = "see context related readme files"
 }
 
-local texsprint, texprint, texwrite, texiowrite_nl = tex.sprint, tex.print, tex.write, texio.write_nl
-local format, find = string.format, string.find
+local format, find, match = string.format, string.find, string.match
 local tonumber = tonumber
 local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
 
-local ctxcatcodes = tex.ctxcatcodes
-
-commands = commands or { } -- cs = commands -- shorter, maybe some day, not used now
+commands = commands or { }
 
 function commands.writestatus(...) logs.status(...) end -- overloaded later
 
--- todo: use shorter names i.e. less tokenization
+-- todo: use shorter names i.e. less tokenization, like prtcatcodes + f_o_t_a
+
+local firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
+local secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
+local firstofoneargument   = context.firstofoneargument   -- context.constructcsonly("firstofoneargument"  )
+local gobbleoneargument    = context.gobbleoneargument    -- context.constructcsonly("gobbleoneargument"   )
 
 local function testcase(b)
-    if b then -- looks faster with if than with expression
-        texsprint(ctxcatcodes,"\\firstoftwoarguments")
+    if b then
+        firstoftwoarguments()
     else
-        texsprint(ctxcatcodes,"\\secondoftwoarguments")
+        secondoftwoarguments()
+    end
+end
+
+function commands.doif(b)
+    if b then
+        firstofoneargument()
+    else
+        gobbleoneargument()
+    end
+end
+
+function commands.doifnot(b)
+    if b then
+        gobbleoneargument()
+    else
+        firstofoneargument()
     end
 end
 
 commands.testcase = testcase
 commands.doifelse = testcase
 
-function commands.doif(b)
-    if b then
-        texsprint(ctxcatcodes,"\\firstofoneargument")
-    else
-        texsprint(ctxcatcodes,"\\gobbleoneargument")
-    end
-end
-
-function commands.doifnot(b)
-    if b then
-        texsprint(ctxcatcodes,"\\gobbleoneargument")
-    else
-        texsprint(ctxcatcodes,"\\firstofoneargument")
-    end
-end
-
 function commands.boolcase(b)
-    if b then texwrite(1) else texwrite(0) end
+    context(b and 1 or 0)
 end
 
 function commands.doifelsespaces(str)
-    return commands.doifelse(find(str,"^ +$"))
+    return testcase(find(str,"^ +$"))
 end
 
 local s = lpegtsplitat(",")
@@ -89,19 +91,7 @@ function commands.doifdimenstringelse(str)
     testcase(lpegmatch(pattern,str))
 end
 
-local splitter = lpegtsplitat(S(". "))
-
-function commands.doifolderversionelse(one,two) -- one >= two
-    if not two then
-        one, two = environment.version, one
-    elseif one == "" then
-        one = environment.version
-    end
-    local y_1, m_1, d_1 = lpegmatch(splitter,one)
-    local y_2, m_2, d_2 = lpegmatch(splitter,two)
-    commands.testcase (
-        (tonumber(y_1) or 0) >= (tonumber(y_2) or 0) and
-        (tonumber(m_1) or 0) >= (tonumber(m_2) or 0) and
-        (tonumber(d_1) or 0) >= (tonumber(d_1) or 0)
-    )
+function commands.firstinlist(str)
+    local first = match(str,"^([^,]+),")
+    context(first or str)
 end

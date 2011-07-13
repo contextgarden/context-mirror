@@ -22,7 +22,7 @@ local formuladata = { }
 
 function formulas.store(data)
     formuladata[#formuladata+1] = data
-    tex.write(#formuladata)
+    context(#formuladata)
 end
 
 function formulas.current()

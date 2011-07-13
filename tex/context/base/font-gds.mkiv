@@ -17,8 +17,7 @@
 
 \unprotect
 
-\def\loadfontgoodies[#1]%
-  {\ctxlua{fonts.goodies.get("#1")}}
+\def\loadfontgoodies[#1]{\ctxcommand{loadfontgoodies("#1")}}
 
 % this will become colorgroups and move to font-col or so
 
@@ -40,8 +39,8 @@
 
 \definesystemattribute[colorscheme][public]
 
-\def\setfontcolorscheme
-  {\ctxlua{fonts.goodies.colorschemes.enable()}%
+\def\setfontcolorscheme % will move to the lua end
+  {\ctxcommand{enablefontcolorschemes()}%
    \xdef\setfontcolorscheme[##1]{\attribute\colorschemeattribute##1\relax}%
    \setfontcolorscheme}
 

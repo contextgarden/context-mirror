@@ -14,9 +14,22 @@ local function patch(data,filename,threshold)
     end
 end
 
-patches.register("after","check math parameters","asana",function(data,filename) patch(data,filename,1350) end)
+patches.register("after","analyze math","asana",function(data,filename) patch(data,filename,1350) end)
 
-local function less(value,target,original) return 0.25 * value end
+local function less(value,target,original)
+    -- officially we should check the original
+    return 0.25 * value
+end
+
+local function more(value,target,original)
+    local o = original.mathparameters.DisplayOperatorMinHeight
+    if o < 2800 then
+        return 2800 * target.parameters.factor
+    else
+        return value -- already scaled
+    end
+end
+
 
 return {
     name = "asana-math",
@@ -26,6 +39,7 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
+            DisplayOperatorMinHeight         = more,
          -- StackBottomDisplayStyleShiftDown = 0,
          -- StackBottomShiftDown             = 0,
          -- StackDisplayStyleGapMin          = 0,

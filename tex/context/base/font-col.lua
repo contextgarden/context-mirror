@@ -88,7 +88,9 @@ function collections.define(name,font,ranges,details)
     end
 end
 
-function collections.stage_one(name)
+-- todo: provide a lua variant (like with definefont)
+
+function collections.clone_one(name)
     local last = font.current()
     if trace_collecting then
         report_fonts("def: registering font %s with name %s",last,name)
@@ -96,7 +98,7 @@ function collections.stage_one(name)
     list[#list+1] = last
 end
 
-function collections.stage_two(name)
+function collections.clone_two(name)
     statistics.starttiming(fonts)
     local d = definitions[name]
     local t = { }
@@ -221,3 +223,12 @@ function collections.process(head) -- this way we keep feature processing
         return head, false
     end
 end
+
+-- interface
+
+commands.definefontcollection    = collections.define
+commands.resetfontcollection     = collections.reset
+commands.preparefontcollection   = collections.prepare
+commands.fontcollectionmessage   = collections.message
+commands.clonefontcollection_one = collections.clone_one
+commands.clonefontcollection_two = collections.clone_two

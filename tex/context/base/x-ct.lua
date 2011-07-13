@@ -6,8 +6,9 @@ if not modules then modules = { } end modules ['x-ct'] = {
     license   = "see context related readme files"
 }
 
-local xmlsprint, xmlfilter, xmlcollected = xml.sprint, xml.filter, xml.collected
-local texsprint, ctxcatcodes  = tex.sprint, tex.ctxcatcodes
+-- needs testing
+
+local xmlsprint, xmlcprint, xmlfilter, xmlcollected = xml.sprint, xml.cprint, xml.filter, xml.collected
 local format, concat, rep, find = string.format, table.concat, string.rep, string.find
 
 lxml.context = { }
@@ -79,7 +80,7 @@ function lxml.context.tabulate(root,namespace)
     local prefix = (namespace or "context") .. ":"
 
     local templatespec = "/" .. prefix .. "template" .. "/" .. prefix .. "column"
-    local bodyrowspec  = "/" .. prefix .. "body" .. "/" .. prefix .. "row"
+    local bodyrowspec  = "/" .. prefix .. "body"     .. "/" .. prefix .. "row"
     local cellspec     = "/" .. prefix .. "cell"
 
     local template =
@@ -90,22 +91,6 @@ function lxml.context.tabulate(root,namespace)
 
     -- todo: head and foot
 
---~     lxml.directives.before(root,'cdx')
---~     texsprint(ctxcatcodes, "\\bgroup")
---~     lxml.directives.setup(root,'cdx')
---~     texsprint(ctxcatcodes, format("\\starttabulate[%s]",template))
---~     for e in xmlcollected(root,bodyrowspec) do
---~         texsprint(ctxcatcodes, "\\NC ")
---~         for e in xmlcollected(e,cellspec) do
---~             texsprint(xml.text(e)) -- use some xmlprint
---~             texsprint(ctxcatcodes, "\\NC")
---~         end
---~         texsprint(ctxcatcodes, "\\NR")
---~     end
---~     texsprint(ctxcatcodes, "\\stoptabulate")
---~     texsprint(ctxcatcodes, "\\egroup")
---~     lxml.directives.after(root,'cdx')
-
     local NC, NR = context.NC, context.NR
 
     lxml.directives.before(root,'cdx')
@@ -115,7 +100,7 @@ function lxml.context.tabulate(root,namespace)
     for e in xmlcollected(root,bodyrowspec) do
         NC()
         for e in xmlcollected(e,cellspec) do
-            texsprint(xml.text(e)) -- test: xmlcprint(e)
+            xmlcprint(e)
             NC()
         end
         NR()
@@ -147,33 +132,20 @@ function lxml.context.combination(root,namespace)
     end
     local template = format("%s*%s", nx or 1, ny or 1)
 
-    -- todo: alignments
-
---~     lxml.directives.before(root,'cdx')
---~     texsprint(ctxcatcodes, "\\bgroup")
---~     lxml.directives.setup(root,'cdx')
---~     texsprint(ctxcatcodes, "\\startcombination[",template,"]")
---~     for e in xmlcollected(root,pairspec) do
---~         texsprint(ctxcatcodes,"{")
---~         xmlfilter(e,contentspec)
---~         texsprint(ctxcatcodes,"}{")
---~         xmlfilter(e,captionspec)
---~         texsprint(ctxcatcodes,"}")
---~     end
---~     texsprint(ctxcatcodes, "\\stopcombination")
---~     texsprint(ctxcatcodes, "\\egroup")
---~     lxml.directives.after(root,'cdx')
-
     lxml.directives.before(root,'cdx')
     context.bgroup()
     lxml.directives.setup(root,'cdx')
     context.startcombination { template }
     for e in xmlcollected(root,pairspec) do
-        texsprint(ctxcatcodes,"{")
+     -- context.combination(
+     --     function() xmlfilter(e,contentspec) end,
+     --     function() xmlfilter(e,captionspec) end
+     -- )
+        context("{")
         xmlfilter(e,contentspec)
-        texsprint(ctxcatcodes,"}{")
+        context("}{")or
         xmlfilter(e,captionspec)
-        texsprint(ctxcatcodes,"}")
+        context("}")
     end
     context.stopcombination()
     context.egroup()

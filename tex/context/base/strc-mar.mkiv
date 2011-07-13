@@ -81,7 +81,7 @@
 \unexpanded\def\relatemarking     {\dodoubleempty   \dorelatemarking}
 \unexpanded\def\setmarking        {\dosingleargument\dosetmarking   } \let\marking\setmarking
 \unexpanded\def\resetmarking      {\dosingleargument\doresetmarking }
-\unexpanded\def\synchronizemarking{\dodoubleargument\dosynchronizemarking }
+\unexpanded\def\synchronizemarking{\dotripleargument\dosynchronizemarking }
 
 \def\dodefinemarking[#1][#2]% marking parent
   {\doifelsenothing{#2}
@@ -108,11 +108,11 @@
 \def\doifelsemarking#1%
   {\ctxcommand{doifelsemarking("#1")}}
 
-\def\dosynchronizemarking[#1][#2]% class boxnumber (some day also name), maybe second argument table
-  {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2)}\fi}
+\def\dosynchronizemarking[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
+  {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2,"#3")}\fi}
 
 % \appendtoks
-%     \dosynchronizemarking[\v!page][\normalpagebox]%
+%     \dosynchronizemarking[\v!page][\normalpagebox][\v!keep]% keep if no marks
 % \to \everybeforepagebody
 
 % defaults

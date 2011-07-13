@@ -51,7 +51,7 @@ function fontgoodies.report(what,trace,goodies)
     end
 end
 
-local function getgoodies(filename) -- maybe a merge is better
+local function loadgoodies(filename) -- maybe a merge is better
     local goodies = data[filename] -- we assume no suffix is given
     if goodies ~= nil then
         -- found or tagged unfound
@@ -86,7 +86,7 @@ function fontgoodies.register(name,fnc) -- will be a proper sequencer
     list[name] = fnc
 end
 
-fontgoodies.get = getgoodies
+fontgoodies.load = loadgoodies
 
 -- register goodies file
 
@@ -98,7 +98,7 @@ local function setgoodies(tfmdata,value)
     end
     for filename in gmatch(value,"[^, ]+") do
         -- we need to check for duplicates
-        local ok = getgoodies(filename)
+        local ok = loadgoodies(filename)
         if ok then
             goodies[#goodies+1] = ok
         end
@@ -507,3 +507,8 @@ fontgoodies.register("compositions", initialize)
 -- tex/fonts/data/foundry/collection
 --
 -- see lfg files in distribution
+
+-- interface
+
+commands.loadfontgoodies        = fontgoodies.load
+commands.enablefontcolorschemes = colorschemes.enable

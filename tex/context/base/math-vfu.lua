@@ -8,13 +8,15 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 
 -- All these math vectors .. thanks to Aditya and Mojca they become
 -- better and better. If you have problems with math fonts or miss
--- characters report it to the ConTeXt mailing list.
+-- characters report it to the ConTeXt mailing list. Also thanks to
+-- Boguslaw for finding a couple of errors.
 
 -- 20D6 -> 2190
 -- 20D7 -> 2192
 
 local type, next = type, next
 local max = math.max
+local format = string.format
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
@@ -139,7 +141,7 @@ local function make(main,characters,id,size,n,m)
     end
 end
 
-local function minus(main,characters,id,size,unicode)
+local function minus(main,characters,id,size,unicode) -- push/pop needed?
     local minus = characters[0x002D]
     if minus then
         local mu = size/18
@@ -147,6 +149,25 @@ local function minus(main,characters,id,size,unicode)
         characters[unicode] = {
             width = width, height = minus.height, depth = minus.depth,
             commands = { push, { "right", -3*mu }, { "slot", id, 0x002D }, pop }
+        }
+    end
+end
+
+-- pdf:page pdf:direct don't work here
+
+local scale_factor = 0.7
+local scale_down   = { "special", format("pdf: %s 0 0 %s 0 0 cm",  scale_factor,  scale_factor) } -- we need a scale
+local scale_up     = { "special", format("pdf: %s 0 0 %s 0 0 cm",1/scale_factor,1/scale_factor) }
+
+local function raise(main,characters,id,size,unicode,private) -- this is a real fake mess
+    local raised = characters[private]
+    if raised then
+        local up = .85 * main.parameters.x_height
+        characters[unicode] = {
+            width    = .7 *  raised.width,
+            height   = .7 * (raised.height + up),
+            depth    = .7 * (raised.depth  - up),
+            commands = { push, { "down", -up }, scale_down, { "slot", id, private }, scale_up, pop }
         }
     end
 end
@@ -345,10 +366,14 @@ function vfmath.addmissing(main,id,size)
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
 
+--  raise    (main,characters,id,size,0x02032,0xFE325) -- prime
+
     -- there are more (needs discussion first):
 
  -- characters[0x20D6] = characters[0x2190]
  -- characters[0x20D7] = characters[0x2192]
+
+    characters[0x02B9] = characters[0x2032] -- we're nice
 
 end
 
@@ -612,6 +637,7 @@ function vfmath.define(specification,set,goodies)
                                     commands = ref,
                                 }
                             end
+--~ report_virtual("%05X %s %s",unicode,fci.height or "NO HEIGHT",fci.depth or "NO DEPTH")
                         end
                     end
                     if ss.extension then
@@ -675,6 +701,7 @@ function vfmath.define(specification,set,goodies)
                                 if not fci then
                                     -- do nothing
                                 else
+                                    -- probably never entered
                                     local ref = si[index]
                                     if not ref then
                                         ref = { { 'slot', s, index } }
@@ -794,20 +821,26 @@ mathencodings["large-to-small"] = {
     [0x02044] = 0x0E, -- /
 }
 
+-- Beware: these are (in cm/lm) below the baseline due to limitations
+-- in the tfm format bu the engien (combined with the mathclass) takes
+-- care of it. If we need them in textmode, we should make them virtual
+-- and move them up but we're in no hurry with that.
+
 mathencodings["tex-ex"] = {
     [0x0220F] = 0x51, -- prod
-    [0x0222B] = 0x52, -- intop
     [0x02210] = 0x60, -- coprod
     [0x02211] = 0x50, -- sum
+    [0x0222B] = 0x52, -- intop
+    [0x0222E] = 0x48, -- ointop
     [0x022C0] = 0x56, -- bigwedge
     [0x022C1] = 0x57, -- bigvee
     [0x022C2] = 0x54, -- bigcap
     [0x022C3] = 0x53, -- bigcup
-    [0x02A04] = 0x55, -- biguplus
-    [0x02A02] = 0x4E, -- bigotimes
+    [0x02A00] = 0x4A, -- bigodot -- fixed BJ
     [0x02A01] = 0x4C, -- bigoplus
-    [0x02A03] = 0x4A, -- bigodot
-    [0x0222E] = 0x48, -- ointop
+    [0x02A02] = 0x4E, -- bigotimes
+ -- [0x02A03] =     , -- bigudot --
+    [0x02A04] = 0x55, -- biguplus
     [0x02A06] = 0x46, -- bigsqcup
 }
 
@@ -922,8 +955,10 @@ mathencodings["tex-mi"] = {
     [0x021C1] = 0x2B, -- rightharpoondown
     [0xFE322] = 0x2C, -- lhook (hook for combining arrows)
     [0xFE323] = 0x2D, -- rhook (hook for combining arrows)
-    [0x022B3] = 0x2E, -- triangleright (TODO: which one is right?)
-    [0x022B2] = 0x2F, -- triangleleft (TODO: which one is right?)
+    [0x025B7] = 0x2E, -- triangleright : cf lmmath / BJ
+    [0x025C1] = 0x2F, -- triangleleft  : cf lmmath / BJ
+    [0x022B3] = 0x2E, -- triangleright : cf lmmath this a cramped triangles / BJ / see *
+    [0x022B2] = 0x2F, -- triangleleft  : cf lmmath this a cramped triangles / BJ / see *
 --  [0x00041] = 0x30, -- 0
 --  [0x00041] = 0x31, -- 1
 --  [0x00041] = 0x32, -- 2
@@ -1055,7 +1090,7 @@ mathencodings["tex-sy"] = {
 --  [0x02201] = 0x00, -- complement
 --  [0x02206] = 0x00, -- increment
 --  [0x02204] = 0x00, -- not exists
---~     [0x000B7] = 0x01, -- cdot
+--  [0x000B7] = 0x01, -- cdot
     [0x022C5] = 0x01, -- cdot
     [0x000D7] = 0x02, -- times
     [0x0002A] = 0x03, -- *
@@ -1192,6 +1227,8 @@ mathencodings["tex-sy"] = {
     [0x02661] = 0x7E, -- heartsuit
     [0x02660] = 0x7F, -- spadesuit
     [0xFE321] = 0x37, -- mapstochar
+
+    [0xFE325] = 0x30, -- prime 0x02032
 }
 
 -- The names in masm10.enc can be trusted best and are shown in the first
@@ -1204,9 +1241,9 @@ mathencodings["tex-ma"] = {
     [0x022A0] = 0x02, -- squaremultiply        \boxtimes
     [0x025A1] = 0x03, -- square                \square \Box
     [0x025A0] = 0x04, -- squaresolid           \blacksquare
-    [0x000B7] = 0x05, -- squaresmallsolid      \centerdot
+    [0x025AA] = 0x05, -- squaresmallsolid      \centerdot
     [0x022C4] = 0x06, -- diamond               \Diamond \lozenge
-    [0x029EB] = 0x07, -- diamondsolid          \blacklozenge
+    [0x02666] = 0x07, -- diamondsolid          \blacklozenge
     [0x021BA] = 0x08, -- clockwise             \circlearrowright
     [0x021BB] = 0x09, -- anticlockwise         \circlearrowleft
     [0x021CC] = 0x0A, -- harpoonleftright      \rightleftharpoons
@@ -1266,9 +1303,10 @@ mathencodings["tex-ma"] = {
     [0x02277] = 0x3F, -- greaterorless         \gtrless
     [0x0228F] = 0x40, -- squareimage           \sqsubset
     [0x02290] = 0x41, -- squareoriginal        \sqsupset
-    -- wrong:
-    [0x022B3] = 0x42, -- triangleright         \rhd \vartriangleright
-    [0x022B2] = 0x43, -- triangleleft          \lhd \vartriangleleft
+    -- wrong: see **
+ -- [0x022B3] = 0x42, -- triangleright         \rhd \vartriangleright
+ -- [0x022B2] = 0x43, -- triangleleft          \lhd \vartriangleleft
+    -- cf lm
     [0x022B5] = 0x44, -- trianglerightequal    \unrhd \trianglerighteq
     [0x022B4] = 0x45, -- triangleleftequal     \unlhd \trianglelefteq
     --
@@ -1303,7 +1341,7 @@ mathencodings["tex-ma"] = {
     [0x022D0] = 0x62, -- subsetdbl             \Subset
     [0x022D1] = 0x63, -- supersetdbl           \Supset
     [0x022D3] = 0x64, -- uniondbl              \doublecup \Cup
-    [0x00100] = 0x65, -- intersectiondbl       \doublecap \Cap
+    [0x022D2] = 0x65, -- intersectiondbl       \doublecap \Cap
     [0x022CF] = 0x66, -- uprise                \curlywedge
     [0x022CE] = 0x67, -- downfall              \curlyvee
     [0x022CB] = 0x68, -- multiopenleft         \leftthreetimes
@@ -1319,7 +1357,7 @@ mathencodings["tex-ma"] = {
     [0x024C7] = 0x72, -- circleR               \circledR
     [0x024C8] = 0x73, -- circleS               \circledS
     [0x022D4] = 0x74, -- fork                  \pitchfork
-    [0x02245] = 0x75, -- dotplus               \dotplus
+    [0x02214] = 0x75, -- dotplus               \dotplus
     [0x0223D] = 0x76, -- revsimilar            \backsim
     [0x022CD] = 0x77, -- revasymptequal        \backsimeq -- AM: Check this! I mapped it to simeq.
     [0x0231E] = 0x78, -- rightanglesw          \llcorner

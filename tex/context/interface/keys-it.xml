@@ -735,6 +735,7 @@
 		<cd:constant name='label' value='etichetta'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
+		<cd:constant name='layout' value='layout'/>
 		<cd:constant name='left' value='sinistra'/>
 		<cd:constant name='leftcolor' value='coloresinistra'/>
 		<cd:constant name='leftcompoundhyphen' value='leftcompoundhyphen'/>

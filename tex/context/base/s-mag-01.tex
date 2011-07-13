@@ -178,7 +178,7 @@
   [palatino,10pt]
 
 \setuptolerance
-  [verytolerant]
+  [verytolerant,stretch]
 
 \appendtoks\setups[papershift]\to\beforeeverypage
 
@@ -248,6 +248,8 @@
 
   \startstandardmakeup[doublesided=no]
 
+  \dontcomplain
+
   \definelayer
     [makeup]
     [width=\textwidth,
@@ -307,7 +309,11 @@
   \setupheadertexts[][] \setupheadertexts[source code of this document]
   \setupfootertexts[][] \setupfootertexts[]
 
-  \typefile[TEX]{\inputfilename} % \jobname
+  \start \dontcomplain
+
+    \typefile[TEX]{\inputfilename}
+
+  \stop
 
 \stopsetups
 

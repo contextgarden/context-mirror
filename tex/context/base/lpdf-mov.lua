@@ -38,7 +38,7 @@ function nodeinjections.insertmovie(specification)
         Movie   = moviedict,
         A       = controldict,
     }
-    write_node(pdfannotation_node(width,height,0,action()))
+    write_node(pdfannotation_node(width,height,0,action())) -- test: context(...)
 end
 
 function nodeinjections.insertsound(specification)
@@ -58,6 +58,6 @@ function nodeinjections.insertsound(specification)
             Movie   = sounddict,
             A       = controldict,
         }
-        write_node(pdfannotation_node(0,0,0,action()))
+        write_node(pdfannotation_node(0,0,0,action())) -- test: context(...)
     end
 end

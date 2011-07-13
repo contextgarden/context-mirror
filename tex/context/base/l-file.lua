@@ -428,10 +428,42 @@ local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
 
-local pattern = (drive + Cc("")) * (path + Cc("")) * (base + Cc("")) * (suffix + Cc(""))
+drive  = drive  + Cc("")
+path   = path   + Cc("")
+base   = base   + Cc("")
+suffix = suffix + Cc("")
 
-function file.splitname(str) -- returns drive, path, base, suffix
-    return lpegmatch(pattern,str)
+local pattern_a =   drive * path  *   base * suffix
+local pattern_b =           path  *   base * suffix
+local pattern_c = C(drive * path) * C(base * suffix)
+
+function file.splitname(str,splitdrive)
+    if splitdrive then
+        return lpegmatch(pattern_a,str) -- returns drive, path, base, suffix
+    else
+        return lpegmatch(pattern_b,str) -- returns path, base, suffix
+    end
+end
+
+function file.nametotable(str,splitdrive) -- returns table
+    local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+    if splitdrive then
+        return {
+            path    = path,
+            drive   = drive,
+            subpath = subpath,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    else
+        return {
+            path    = path,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    end
 end
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end

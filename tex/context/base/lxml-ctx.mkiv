@@ -20,45 +20,45 @@
 
 \unprotect
 
-% the letterbar is a messy hack and is needed for the tabulate
+% The \let|=letterbar is a messy hack and is needed for the tabulate. We now use
+% \detokenize.
 
 \settrue \xmllshowbuffer
 \setfalse\xmllshowtitle
 \settrue \xmllshowwarning
 
-\definehead[lshowtitle][subsubsubsubsubject]
-\setuphead[lshowtitle][style=\tta]
+\definehead
+  [lshowtitle]
+  [subsubsubsubsubject]
+
+\setuphead
+  [lshowtitle]
+  [\c!style=\tta]
 
 % \unexpanded\def\setuplxmlshow[#1]%
 %   {\dodoubleargument\getparameters[\??xl]}
 
-\def\xmllshow#1%
-  {\begingroup
-   \let|=\letterbar
-   \ctxlua{xml.ctx.tshow {
-        pattern = \!!bs#1\!!es,
-        \ifconditional\xmllshowtitle
-            title = "lshowtitle",
-        \fi
-        \ifconditional\xmllshowwarning
-            warning = true,
-        \fi
-    } }%
-   \endgroup}
+\unexpanded\def\xmllshow#1%
+  {\ctxlua{xml.ctx.tshow {
+        pattern = \!!bs\detokenize{#1}\!!es,
+    \ifconditional\xmllshowtitle
+        title = "lshowtitle",
+    \fi
+    \ifconditional\xmllshowwarning
+        warning = true,
+    \fi
+    } }}
 
-\def\xmllshowbuffer#1#2#3%
-  {\begingroup
-   \let|=\letterbar
-   \ctxlua{xml.ctx.tshow {
-        pattern = \!!bs#2\!!es,
-        \ifconditional\xmllshowbuffer
-            xmlroot = "#1",
-            attribute = "#3",
-        \fi
-        \ifconditional\xmllshowwarning
-            warning = true,
-        \fi
-     } }%
-   \endgroup}
+\unexpanded\def\xmllshowbuffer#1#2#3%
+  {\ctxlua{xml.ctx.tshow {
+        pattern = \!!bs\detokenize{#2}\!!es,
+    \ifconditional\xmllshowbuffer
+        xmlroot   = "#1",
+        attribute = "#3",
+    \fi
+    \ifconditional\xmllshowwarning
+        warning = true,
+    \fi
+     } }}
 
 \protect

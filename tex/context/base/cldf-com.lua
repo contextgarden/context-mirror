@@ -75,8 +75,6 @@ end
 
 -- -- speedtest needed:
 --
--- local ctxcatcodes = tex.ctxcatcodes
---
 -- local flush, writer = context.getlogger()
 --
 -- trackers.register("context.trace",function(v)
@@ -122,3 +120,35 @@ context.vrule = context.hrule
 --~         hbox(a,...)
 --~     end
 --~ end
+
+-- not yet used ... but will get variant at the tex end as well
+
+function context.sethboxregister  (n) context("\\setbox %s\\hbox",n) end
+function context.setvboxregister  (n) context("\\setbox %s\\vbox",n) end
+
+function context.starthboxregister(n)
+    if type(n) == "number" then
+        context("\\setbox%s\\hbox\\bgroup",n)
+    else
+        context("\\setbox\\%s\\hbox\\bgroup",n)
+    end
+end
+
+function context.startvboxregister(n)
+    if type(n) == "number" then
+        context("\\setbox%s\\vbox\\bgroup",n)
+    else
+        context("\\setbox\\%s\\vbox\\bgroup",n)
+    end
+end
+
+context.stophboxregister = context.egroup
+context.stopvboxregister = context.egroup
+
+function context.flushboxregister(n)
+    if type(n) == "number" then
+        context("\\box%s ",n)
+    else
+        context("\\box\\%s",n)
+    end
+end

@@ -50,7 +50,7 @@
 \def\dobookmark[#1]#2%
   {\begingroup
    \simplifycommands
-   \ctxlua{structures.bookmarks.overload("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
+   \ctxcommand{overloadbookmark("#1",\!!bs\detokenize\expandafter{\normalexpanded{#2}}\!!es)}%
    \endgroup}
 
 %D Placement \unknown\ look how simple compared to \MKII:
@@ -86,7 +86,7 @@
      \else\ifsecondargument
        \doifassignmentelse{#2}{\let\askedopened\empty\getparameters[\??bm][#2]}\donothing
      \fi\fi
-     \ctxlua{structures.bookmarks.register {
+     \ctxcommand{registerbookmark {
         names  = "\askednames",
         opened = "\askedopened",
         force  = "\bookmarkparameter\c!force",
@@ -100,7 +100,7 @@
    \c!number=\v!yes]  % might become v!no
 
 \appendtoks
-    \ctxlua{structures.bookmarks.setup {
+    \ctxcommand{setupbookmarks {
         separatorset  = "\bookmarkparameter\c!numberseparatorset",
         conversionset = "\bookmarkparameter\c!numberconversionset",
         starter       = \!!bs\bookmarkparameter\c!numberstarter\!!es,
@@ -108,9 +108,6 @@
         segments      = "\bookmarkparameter\c!numbersegments",
     }}%
 \to \everysetupbookmarks
-
-% \prependtoks\ctxlua{structures.bookmarks.place()}\to\everystoptext           % too late
-% \prependtoks\ctxlua{structures.bookmarks.place()}\to\everylastbackendshipout % okay but not nice
 
 \protect \endinput
 

@@ -31,7 +31,7 @@
             str = str:gsub("e(.-)$",strip)
             str = ("\\mathematics{%s}"):format(str)
         end
-        tex.sprint(str)
+        context(str)
     end
 \stopluacode
 

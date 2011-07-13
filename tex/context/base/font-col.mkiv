@@ -33,18 +33,18 @@
   {\doquadrupleempty\dodefinefontfallback}
 
 \def\dodefinefontfallback[#1][#2][#3][#4]%
-  {\ctxlua{fonts.collections.define("#1","#2",\!!bs#3\!!es,\!!bs#4\!!es)}}
+  {\ctxcommand{definefontcollection("#1","#2",\!!bs#3\!!es,\!!bs#4\!!es)}}
 
 \def\resetfontfallback
   {\dodoubleempty\doresetfontfallback}
 
 \def\doresetfontfallback[#1][#2]%
-  {\ctxlua{fonts.collections.reset("#1","#2")}}
+  {\ctxcommand{resetfontcollection("#1","#2")}}
 
 % add fallbacks to last font
 
 \def\dodefinefontfallbacks#1%
-  {\ctxlua{fonts.collections.prepare("#1")}}
+  {\ctxcommand{preparefontcollection("#1")}}
 
 % we might as well move the handling to lua but then we need to pass the
 % fallbacks, skewchar etc.
@@ -79,7 +79,7 @@
   {\egroup}
 
 \def\doclonefonta#1#2% kind of dododefinefont
-  {\ctxlua{fonts.collections.message("defining #1 (relative scale: #2)")}% brrr
+  {\ctxcommand{fontcollectionmessage("defining #1 (relative scale: #2)")}% brrr
    \autofontsizefalse
    \let\lastfontidentifier\s!dummy
    \def\localrelativefontsize{#2}%
@@ -93,11 +93,8 @@
 \def\doclonefontb#1% #2
   {\doclonefonta{#1 \savedfontspec}}
 
-\def\doclonefontstageone#1%
-  {\ctxlua{fonts.collections.stage_one("#1")}}
-
-\def\doclonefontstagetwo#1%
-  {\ctxlua{fonts.collections.stage_two("#1")}}
+\def\doclonefontstageone#1{\ctxcommand{clonefontcollection_one("#1")}}
+\def\doclonefontstagetwo#1{\ctxcommand{clonefontcollection_two("#1")}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)

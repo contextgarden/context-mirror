@@ -22,7 +22,6 @@ local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
 local lpegmatch = lpeg.match
-local texwrite = tex.write
 
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -219,7 +218,7 @@ if environment.initex then
     end
 
     function commands.languagenumber()
-        texwrite(0)
+        context(0)
     end
 
 else
@@ -268,7 +267,7 @@ else
     languages.getnumber = getnumber
 
     function commands.languagenumber(tag,default,patterns)
-        texwrite(getnumber(tag,default,patterns))
+        context(getnumber(tag,default,patterns))
     end
 
 end

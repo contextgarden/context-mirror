@@ -11,9 +11,12 @@ if not modules then modules = { } end modules ['mult-clm'] = {
 -- needs checking
 -- todo: multilingual
 
-local texsprint, ctxcatcodes, vrbcatcodes = tex.sprint, tex.ctxcatcodes, tex.vrbcatcodes
 local format, insert, remove, concat = string.format, table.insert, table.remove, table.concat
 local unpack = unpack or table.unpack
+
+local contextsprint = context.sprint
+local ctxcatcodes   = tex.ctxcatcodes
+local vrbcatcodes   = tex.vrbcatcodes
 
 local trace_define = false  trackers.register("context.define", function(v) trace_define = v end)
 
@@ -25,6 +28,7 @@ _clma_ = utilities.parsers.settings_to_array
 local starters, stoppers, macros, stack = { }, { }, { }, { }
 
 local checkers = {
+    [0] = "",
     "\\dosingleempty",
     "\\dodoubleempty",
     "\\dotripleempty",
@@ -55,6 +59,9 @@ end
 
 _clmn_ = tonumber
 
+local estart = interfaces.elements.start
+local estop  = interfaces.elements.stop
+
 function interfaces.definecommand(name,specification) -- name is optional
     if type(name) == "table" then
         specification = name
@@ -66,53 +73,75 @@ function interfaces.definecommand(name,specification) -- name is optional
         local environment = specification.environment
         if na == 0 then
             if environment then
-                texsprint(ctxcatcodes,"\\clmb{",name,"}{\\ctxlua{_clmb_('",name,"')}}")
-                texsprint(ctxcatcodes,"\\clme{",name,"}{\\ctxlua{_clme_('",name,"')}}")
-            else
-                texsprint(ctxcatcodes,"\\clmm{",name,"}{\\ctxlua{_clmm_('",name,"')}}")
+                contextsprint(ctxcatcodes,"\\setuvalue{",estart,name,"}{\\ctxlua{_clmb_('",name,"')}}")
+                contextsprint(ctxcatcodes,"\\setuvalue{",estop, name,"}{\\ctxlua{_clme_('",name,"')}}")
+            end
+            if not environment or environment == "both" then
+                contextsprint(ctxcatcodes,"\\setuvalue{",       name,"}{\\ctxlua{_clmm_('",name,"')}}")
             end
         else
+            -- we could flush immediate but tracing is bad then
             stack[name] = { }
             local opt, done = 0, false
+            local snippets = { } -- we can reuse it
             local mkivdo = "\\mkivdo" .. name -- maybe clddo
-            texsprint(ctxcatcodes,"\\def",mkivdo)
+            snippets[#snippets+1] = "\\def"
+            snippets[#snippets+1] = mkivdo
             for i=1,na do
                 local a = arguments[i]
                 local variant = a[1]
                 if variant == "option" then
-                    texsprint(ctxcatcodes,"[#",i,"]")
+                    snippets[#snippets+1] = "[#"
+                    snippets[#snippets+1] = i
+                    snippets[#snippets+1] = "]"
                     if not done then
                         opt = opt + 1
                     end
                 else
                     done = true -- no more optional checking after this
-                    texsprint(ctxcatcodes,"#",i)
+                    snippets[#snippets+1] = "#"
+                    snippets[#snippets+1] = i
                 end
             end
             if environment then
-                texsprint(ctxcatcodes,"{\\ctxlua{_clmb_('",name,"'")
+                snippets[#snippets+1] = "{\\ctxlua{_clmb_('"
+                snippets[#snippets+1] = name
+                snippets[#snippets+1] = "'"
             else
-                texsprint(ctxcatcodes,"{\\ctxlua{_clmm_('",name,"'")
+                snippets[#snippets+1] = "{\\ctxlua{_clmm_('"
+                snippets[#snippets+1] = name
+                snippets[#snippets+1] = "'"
             end
             for i=1,na do
                 local a = arguments[i]
                 local variant = a[2]
                 if variant == "list" then
-                    texsprint(ctxcatcodes,",_clma_([[#",i,"]])")
+                    snippets[#snippets+1] = ",_clma_([[#"
+                    snippets[#snippets+1] = i
+                    snippets[#snippets+1] = "]])"
                 elseif variant == "hash" then
-                    texsprint(ctxcatcodes,",_clmh_([[#",i,"]])")
+                    snippets[#snippets+1] = ",_clmh_([[#"
+                    snippets[#snippets+1] = i
+                    snippets[#snippets+1] = "]])"
                 elseif variant == "number" then
-                    texsprint(ctxcatcodes,",_clmn_([[#",i,"]])")
+                    snippets[#snippets+1] = ",_clmn_([[#"
+                    snippets[#snippets+1] = i
+                    snippets[#snippets+1] = "]])"
                 else
-                    texsprint(ctxcatcodes,",[[#",i,"]]")
+                    snippets[#snippets+1] = ",[[#"
+                    snippets[#snippets+1] = i
+                    snippets[#snippets+1] = "]]"
                 end
             end
-            texsprint(ctxcatcodes,")}}")
+            snippets[#snippets+1] = ")}}"
+            contextsprint(ctxcatcodes,unpack(snippets))
             if environment then
-                texsprint(ctxcatcodes,"\\clme{",name,"}{\\ctxlua{_clme_('",name,"')}}")
-                texsprint(ctxcatcodes,"\\clmb{",name,"}{",checkers[opt],mkivdo,"}")
-            else
-                texsprint(ctxcatcodes,"\\clmm{",name,"}{",checkers[opt],mkivdo,"}")
+                -- needs checking
+                contextsprint(ctxcatcodes,"\\setuvalue{",estart,name,"}{",checkers[opt],mkivdo,"}")
+                contextsprint(ctxcatcodes,"\\setuvalue{",estop, name,"}{\\ctxlua{_clme_('",name,"')}}")
+            end
+            if not environment or environment == "both" then
+                contextsprint(ctxcatcodes,"\\setuvalue{",       name,"}{",checkers[opt],mkivdo,"}")
             end
         end
         if environment then

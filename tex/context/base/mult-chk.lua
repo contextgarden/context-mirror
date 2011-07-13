@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['mult-chk'] = {
 local format = string.format
 local lpegmatch = lpeg.match
 local type = type
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 local make_settings_to_hash_pattern, settings_to_set = utilities.parsers.make_settings_to_hash_pattern, utilities.parsers.settings_to_set
 
 local allocate = utilities.storage.allocate

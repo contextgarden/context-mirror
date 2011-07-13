@@ -221,12 +221,12 @@
 %     \stopchapter
 % \stoptext
 
-\def\structurevariable          #1{\ctxlua{structures.sections.structuredata(nil,"#1")}}
-\def\structureuservariable      #1{\ctxlua{structures.sections.userdata(nil,"#1")}}
-\def\structurenumber              {\ctxlua{structures.sections.fullnumber()}}
-\def\structuretitle               {\ctxlua{structures.sections.title()}}
-\def\structurecatcodedget       #1{\ctxlua{structures.sections.structuredata(nil,"#1",nil,true)}} % bad name
-\def\structuregivencatcodedget#1#2{\ctxlua{structures.sections.structuredata(nil,"#1",nil,\number#2)}} % bad name
-\def\structureautocatcodedget #1#2{\ctxlua{structures.sections.structuredata(nil,"#1",nil,"#2")}}
+\def\structurenumber              {\ctxcommand{structurenumber()}}
+\def\structuretitle               {\ctxcommand{structuretitle()}}
+\def\structurevariable          #1{\ctxcommand{structurevariable("#1")}}
+\def\structureuservariable      #1{\ctxcommand{structureuservariable("#1")}}
+\def\structurecatcodedget       #1{\ctxcommand{structurecatcodedget("#1")}} % bad name
+\def\structuregivencatcodedget#1#2{\ctxcommand{structuregivencatcodedget("#1",\number#2)}} % bad name
+\def\structureautocatcodedget #1#2{\ctxcommand{structureautocatcodedget ("#1","#2")}}
 
 \protect \endinput

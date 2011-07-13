@@ -8,26 +8,29 @@ if not modules then modules = { } end modules ['strc-pag'] = {
 
 local texcount, format = tex.count, string.format
 
-local ctxcatcodes = tex.ctxcatcodes
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local trace_pages = false  trackers.register("structures.pages", function(v) trace_pages = v end)
+local trace_pages         = false  trackers.register("structures.pages", function(v) trace_pages = v end)
 
-local report_pages = logs.reporter("structure","pages")
+local report_pages        = logs.reporter("structure","pages")
 
-local structures  = structures
+local structures          = structures
 
-local helpers     = structures.helpers
-local sections    = structures.sections
-local pages       = structures.pages
-local processors  = structures.processors
-local sets        = structures.sets
-local counters    = structures.counters
+local helpers             = structures.helpers
+local sections            = structures.sections
+local pages               = structures.pages
+local processors          = structures.processors
+local sets                = structures.sets
+local counters            = structures.counters
 
-local counterdata = counters.data
+local counterdata         = counters.data
 
-local variables   = interfaces.variables
-local context     = context
+local variables           = interfaces.variables
+local context             = context
+
+local applyprocessor      = processors.apply
+local startapplyprocessor = processors.startapply
+local stopapplyprocessor  = processors.stopapply
 
 -- storage
 
@@ -91,17 +94,19 @@ function pages.number(realdata,pagespec)
     local starter       = (pagespec and pagespec.starter       ~= "" and pagespec.starter      ) or (numberspec and numberspec.starter       ~= "" and numberspec.starter      ) or ""
     local stopper       = (pagespec and pagespec.stopper       ~= "" and pagespec.stopper      ) or (numberspec and numberspec.stopper       ~= "" and numberspec.stopper      ) or ""
     if starter ~= "" then
-        processors.sprint(ctxcatcodes,starter)
+        applyprocessor(starter)
     end
     if conversion ~= "" then
         context.convertnumber(conversion,userpage)
     else
         if conversionset == "" then conversionset = "default" end
         local theconversion = sets.get("structure:conversions",block,conversionset,1,"numbers") -- to be checked: 1
-        processors.sprint(ctxcatcodes,theconversion,convertnumber,userpage)
+        local data = startapplyprocessor(theconversion)
+        context.convertnumber(data or "number",userpage)
+        stopapplyprocessor()
     end
     if stopper ~= "" then
-        processors.sprint(ctxcatcodes,stopper)
+        applyprocessors(stopper)
     end
 end
 
@@ -271,7 +276,7 @@ function counters.analyze(name,counterspecification)
     return cd, sectiondata, "okay"
 end
 
-function counters.prefixedconverted(name,prefixspec,numberspec)
+function sections.prefixedconverted(name,prefixspec,numberspec)
     local cd, prefixdata, result = counters.analyze(name,prefixspec)
     if cd then
         if prefixdata then

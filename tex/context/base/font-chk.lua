@@ -9,27 +9,32 @@ if not modules then modules = { } end modules ['font-chk'] = {
 -- possible optimization: delayed initialization of vectors
 -- move to the nodes namespace
 
-local report_fonts = logs.reporter("fonts","checking")
+local report_fonts   = logs.reporter("fonts","checking")
 
-local fonts        = fonts
+local fonts          = fonts
 
-fonts.checkers     = fonts.checkers or { }
-local checkers     = fonts.checkers
+fonts.checkers       = fonts.checkers or { }
+local checkers       = fonts.checkers
 
-local fontdata     = fonts.hashes.identifiers
-local is_character = characters.is_character
-local chardata     = characters.data
-local tasks        = nodes.tasks
+local fonthashes     = fonts.hashes
+local fontdata       = fonthashes.identifiers
+local fontcharacters = fonthashes.characters
 
-local glyph        = node.id('glyph')
-local traverse_id  = node.traverse_id
-local remove_node  = nodes.remove
+local is_character   = characters.is_character
+local chardata       = characters.data
+
+local tasks          = nodes.tasks
+local enableaction   = tasks.enableaction
+local disableaction  = tasks.disableaction
+
+local glyph          = node.id('glyph')
+local traverse_id    = node.traverse_id
+local remove_node    = nodes.remove
 
 -- maybe in fonts namespace
 -- deletion can be option
 
-checkers.enabled = false
-checkers.delete  = false
+local cleanup = false
 
 -- to tfmdata.properties ?
 
@@ -55,45 +60,48 @@ end
 fonts.loggers.onetimemessage = onetimemessage
 
 function checkers.missing(head)
-    if checkers.enabled then
-        local lastfont, characters, found = nil, nil, nil
-        for n in traverse_id(glyph,head) do
-            local font, char = n.font, n.char
-            if font ~= lastfont then
-                characters = fontdata[font].characters
+    local lastfont, characters, found = nil, nil, nil
+    for n in traverse_id(glyph,head) do
+        local font = n.font
+        local char = n.char
+        if font ~= lastfont then
+            characters = fontcharacters[font]
+        end
+        if not characters[char] and is_character[chardata[char].category] then
+            if cleanup then
+                onetimemessage(font,char,"missing (will be deleted)")
+            else
+                onetimemessage(font,char,"missing")
             end
-            if not characters[char] and is_character[chardata[char].category] then
-                if checkers.delete then
-                    onetimemessage(font,char,"missing (will be deleted)")
-                else
-                    onetimemessage(font,char,"missing")
-                end
-                if not found then
-                    found = { n }
-                else
-                    found[#found+1] = n
-                end
+            if not found then
+                found = { n }
+            else
+                found[#found+1] = n
             end
         end
-        if found and checkers.delete then
-            for i=1,#found do
-                head = remove_node(head,found[i],true)
-            end
+    end
+    if found and cleanup then
+        for i=1,#found do
+            head = remove_node(head,found[i],true)
         end
     end
     return head, false
 end
 
 trackers.register("fonts.missing", function(v)
-    tasks.enableaction("processors", "fonts.checkers.missing") -- always on then
-    checkers.enabled = v
+    if v then
+        enableaction("processors","fonts.checkers.missing")
+    else
+        disableaction("processors","fonts.checkers.missing")
+    end
+    cleanup = v == "remove"
 end)
 
-function checkers.enable(delete)
-    tasks.enableaction("processors", "fonts.checkers.missing") -- always on then
-    if delete ~= nil then
-        checkers.delete = delete
-   end
-   checkers.enabled = true
+function commands.checkcharactersinfont()
+    enableaction("processors","fonts.checkers.missing")
 end
 
+function commands.removemissingcharacters()
+    enableaction("processors","fonts.checkers.missing")
+    cleanup = true
+end

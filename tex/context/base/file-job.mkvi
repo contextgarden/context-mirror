@@ -1,0 +1,195 @@
+%D \module
+%D   [       file=file-job, % copied from main-001, later core-job
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Core Macros,
+%D       subtitle=Job Handling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is still to be split and documented.
+
+\writestatus{loading}{ConTeXt File Macros / Job Handling}
+
+\unprotect
+
+\registerctxluafile{file-job}{1.001}
+
+% processing
+
+\def\doifinputfileelse#name{\ctxcommand{doifinputfileelse("#name")}}
+\def\processfile      #name{\ctxcommand{processfile("#name")}}
+
+% path control
+
+\def\usepath      [#path]{\ctxcommand{usepath("#path")}}
+\def\usesubpath   [#path]{\ctxcommand{usesubpath("#path")}}
+\def\allinputpaths       {\ctxcommand{allinputpaths()}}
+
+% helper (not really needed nowadays)
+
+\let\locatedfilepath\empty
+
+\def\locatefilepath#name{\edef\locatedfilepath{\ctxcommand{locatefilepath("#name")}}}
+
+% zip files are tree'd
+
+\def\usezipfile                      {\dodoubleempty\dousezipfile}
+\def\dousezipfile[#zipname][#subtree]{\ctxcommand{usezipfile("#zipname","#subtree")}}
+
+% exa stuff might become obsolete:
+
+\def\loadexamodes         {\dosingleempty\doloadexamodes}
+\def\doloadexamodes[#name]{\ctxcommand{loadexamodes("#name")}}
+
+% runtime files (maybe also do this in lua?)
+
+% \def\doloadsystemfile#1% only mkiv files
+%   {\readfile{sys:///#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
+
+\def\doloadsystemfile#name% only mkiv files
+  {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
+
+\def\loadsystemfiles
+  {\doloadsystemfile\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \doloadsystemfile\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \doloadsystemfile\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \doloadsystemfile\f!sysfilename} % local settings, but probably not that good an idea to use
+
+% \def\loadoptionfile
+%   {\readfile{job:///\jobname.\f!optionextension}
+%      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
+%       \ctxcommand{logoptionfile("\jobname.\f!optionextension")}}%
+%      {\writestatus\m!system{no \jobname.\f!optionextension}}}
+
+\def\loadoptionfile
+  {\readjobfile{\jobname.\f!optionextension}
+     {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
+      \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
+     {\writestatus\m!system{no \jobname.\f!optionextension}}}
+
+% document structure
+
+\ifdefined\else \newcount\textlevel \fi % might go away
+
+\def\dostarttext
+  {\glet\dostarttext\relax
+   \the\everystarttext
+   \global\everystarttext\emptytoks}
+
+\def\dostoptext
+  {\glet\dostoptext\relax
+   \flushfinallayoutpage % optional
+   \page                 % anyway
+   \the\everystoptext
+   \global\everystoptext\emptytoks
+   \the\everybye
+   \global\everybye\emptytoks
+   \the\everygoodbye
+   \global\everygoodbye\emptytoks
+   \doifsometokselse\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+   \normalend}           % tex's \end
+
+\unexpanded\def\starttext    {\ctxcommand{starttext()}}
+\unexpanded\def\stoptext     {\ctxcommand{stoptext()}}
+\unexpanded\def\forcequitjob {\ctxcommand{forcequitjob()}}
+\unexpanded\def\end          {\ctxcommand{forceendjob()}}
+\unexpanded\def\autostarttext{\ctxcommand{autostarttext()}}
+\unexpanded\def\autostoptext {\ctxcommand{autostoptext()}}
+
+% protect structure
+
+\unexpanded\def\processfilemany     #name{\ctxcommand{processfilemany("#name")}}
+\unexpanded\def\processfileonce     #name{\ctxcommand{processfileonce("#name")}}
+\unexpanded\def\processfilenone     #name{\ctxcommand{processfilenone("#name")}}
+
+\unexpanded\def\project                  {\doifnextoptionalelse\useproject    \redoproject}
+\unexpanded\def\product                  {\doifnextoptionalelse\useproduct    \redoproduct}
+\unexpanded\def\component                {\doifnextoptionalelse\usecomponent  \redocomponent}
+\unexpanded\def\environment              {\doifnextoptionalelse\useenvironment\redoenvironment}
+
+\def\redoproject                   #name {\ctxcommand{useproject    ("#name")}}
+\def\redoproduct                   #name {\ctxcommand{useproduct    ("#name")}}
+\def\redocomponent                 #name {\ctxcommand{usecomponent  ("#name")}}
+\def\redoenvironment               #name {\ctxcommand{useenvironment("#name")}}
+
+\unexpanded\def\startproject             {\doifnextoptionalelse\dostartproject    \redostartproject}
+\unexpanded\def\startproduct             {\doifnextoptionalelse\dostartproduct    \redostartproduct}
+\unexpanded\def\startcomponent           {\doifnextoptionalelse\dostartcomponent  \redostartcomponent}
+\unexpanded\def\startenvironment         {\doifnextoptionalelse\dostartenvironment\redostartenvironment}
+
+\def\redostartproject              #name {\ctxcommand{startproject    ("#name")}}
+\def\redostartproduct              #name {\ctxcommand{startproduct    ("#name")}}
+\def\redostartcomponent            #name {\ctxcommand{startcomponent  ("#name")}}
+\def\redostartenvironment          #name {\ctxcommand{startenvironment("#name")}}
+
+\unexpanded\def\useproject        [#name]{\ctxcommand{useproject    ("#name")}}
+\unexpanded\def\useproduct        [#name]{\ctxcommand{useproduct    ("#name")}}
+\unexpanded\def\usecomponent      [#name]{\ctxcommand{usecomponent  ("#name")}}
+\unexpanded\def\useenvironment    [#name]{\ctxcommand{useenvironment("#name")}}
+
+\unexpanded\def\dostartproject    [#name]{\ctxcommand{startproject    ("#name")}}
+\unexpanded\def\dostartproduct    [#name]{\ctxcommand{startproduct    ("#name")}}
+\unexpanded\def\dostartcomponent  [#name]{\ctxcommand{startcomponent  ("#name")}}
+\unexpanded\def\dostartenvironment[#name]{\ctxcommand{startenvironment("#name")}}
+
+\unexpanded\def\stopproject              {\ctxcommand{stopproject    ()}}
+\unexpanded\def\stopproduct              {\ctxcommand{stopproduct    ()}}
+\unexpanded\def\stopcomponent            {\ctxcommand{stopcomponent  ()}}
+\unexpanded\def\stopenvironment          {\ctxcommand{stopenvironment()}}
+
+\def\currentproject                      {\ctxcommand{currentproject    ()}}
+\def\currentproduct                      {\ctxcommand{currentproduct    ()}}
+\def\currentcomponent                    {\ctxcommand{currentcomponent  ()}}
+\def\currentenvironment                  {\ctxcommand{currentenvironment()}}
+
+\unexpanded\def\dostarttextfile     #name{\ctxcommand{dostarttextfile(name)}}
+\unexpanded\def\dostoptextfile           {\ctxcommand{dostoptextfile()}}
+\def\processedfile                       {\ctxcommand{processedfile()}}
+\def\processedfiles                      {\ctxcommand{processedfiles()}}
+
+\unexpanded\def\loadtexfile       [#name]{\cxtcommand{usetexfile("#name")}}
+\unexpanded\def\loadluafile       [#name]{\ctxcommand{useluafile("#name")}}
+\unexpanded\def\loadcldfile       [#name]{\ctxcommand{usecldfile("#name")}}
+\unexpanded\def\loadanyfile       [#name]{\ctxcommand{useanyfile("#name")}}
+
+\unexpanded\def\loadtexfileonce   [#name]{\cxtcommand{usetexfile("#name",true)}}
+\unexpanded\def\loadluafileonce   [#name]{\ctxcommand{useluafile("#name",true)}}
+\unexpanded\def\loadcldfileonce   [#name]{\ctxcommand{usecldfile("#name",true)}}
+\unexpanded\def\loadanyfileonce   [#name]{\ctxcommand{useanyfile("#name",true)}}
+
+%D Handy for modules that have a test/demo appended.
+
+\def\continueifinputfile#1{\doifnot\inputfilename{#1}{\endinput}}
+
+% \startproject test
+%     1: \startmode[*project] project \stopmode \endgraf
+%     2: \startmode[*product] product \stopmode \endgraf
+% \stopproject
+
+% replaced by modes:
+%
+% \setvalue{\e!start\v!localenvironment}[#1]%
+%   {\let\loadedlocalenvironments\empty
+%    \def\docommand##1%
+%      {\beforesplitstring##1\at.\to\someevironment
+%       \addtocommalist\someevironment\loadedlocalenvironments}%
+%    \processcommalist[#1]\docommand
+%    \doifcommonelse{\currentproject,\currentproduct,\currentcomponent,\currentenvironment}\loadedlocalenvironments
+%      {\letvalue{\e!stop\v!localenvironment}\relax}
+%      {\grabuntil{\e!stop\v!localenvironment}\gobbleoneargument}}
+%
+% \setvalue{\v!localenvironment}{\doifnextoptionalelse\uselocalenvironment\redolocalenvironment}
+%
+% \def\redolocalenvironment#1 {\uselocalenvironment[#1]}
+% \def\uselocalenvironment[#1]{\doexecutefileonce{#1}}
+
+% weird place:
+
+\neverypar\emptytoks
+
+\protect \endinput

@@ -17,7 +17,7 @@ local report_chemistry = logs.reporter("chemistry")
 
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
-local apply = structures.processors.apply
+local processor_tostring = structures.processors.tostring
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -319,7 +319,8 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local a = align and align[si]
                                     if a then a = "." .. a else a = "" end
-                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,a,bonds,si,molecule(apply(t)))
+                                    t = molecule(processor_tostring(t))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,a,bonds,si,t)
                                 end
                             end
                         elseif upto then
@@ -329,14 +330,16 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local s = align and align[i]
                                     if s then s = "." .. s else s = "" end
-                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
+                                    t = molecule(processor_tostring(t))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,t)
                                 end
                             end
                         elseif index == 0 then
                             local t = text
                             if not t then txt, t = fetch(txt) end
                             if t then
-                                m = m + 1 ; metacode[m] = format('chem_%s_zero("\\dochemicaltext{%s}");',operation,molecule(apply(t)))
+                                t = molecule(processor_tostring(t))
+                                m = m + 1 ; metacode[m] = format('chem_%s_zero("\\dochemicaltext{%s}");',operation,t)
                             end
                         elseif index then
                             local t = text
@@ -344,7 +347,8 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                             if t then
                                 local s = align and align[index]
                                 if s then s = "." .. s else s = "" end
-                                m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,index,molecule(apply(t)))
+                                t = molecule(processor_tostring(t))
+                                m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,index,t)
                             end
                         else
                             for i=1,max do
@@ -353,7 +357,8 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                                 if t then
                                     local s = align and align[i]
                                     if s then s = "." .. s else s = "" end
-                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,molecule(apply(t)))
+                                    t = molecule(processor_tostring(t))
+                                    m = m + 1 ; metacode[m] = format('chem_%s%s(%s,%s,"\\dochemicaltext{%s}");',operation,s,bonds,i,t)
                                 end
                             end
                         end

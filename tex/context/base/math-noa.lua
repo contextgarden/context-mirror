@@ -35,6 +35,7 @@ local trace_processing    = false  trackers.register("math.processing",  functio
 local trace_analyzing     = false  trackers.register("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
+local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
 
 local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
 
@@ -42,6 +43,7 @@ local report_processing   = logs.reporter("mathematics","processing")
 local report_remapping    = logs.reporter("mathematics","remapping")
 local report_normalizing  = logs.reporter("mathematics","normalizing")
 local report_goodies      = logs.reporter("mathematics","goodies")
+local report_variants     = logs.reporter("mathematics","variants")
 
 local set_attribute       = node.set_attribute
 local has_attribute       = node.has_attribute
@@ -684,6 +686,66 @@ function handlers.families(head,style,penalties)
     return true
 end
 
+-- variants
+
+local variants = { }
+
+local validvariants = { -- fast check on valid
+    [0x2229] = 0xFE00, [0x222A] = 0xFE00,
+    [0x2268] = 0xFE00, [0x2269] = 0xFE00,
+    [0x2272] = 0xFE00, [0x2273] = 0xFE00,
+    [0x228A] = 0xFE00, [0x228B] = 0xFE00,
+    [0x2293] = 0xFE00, [0x2294] = 0xFE00,
+    [0x2295] = 0xFE00,
+    [0x2297] = 0xFE00,
+    [0x229C] = 0xFE00,
+    [0x22DA] = 0xFE00, [0x22DB] = 0xFE00,
+    [0x2A3C] = 0xFE00, [0x2A3D] = 0xFE00,
+    [0x2A9D] = 0xFE00, [0x2A9E] = 0xFE00,
+    [0x2AAC] = 0xFE00, [0x2AAD] = 0xFE00,
+    [0x2ACB] = 0xFE00, [0x2ACC] = 0xFE00,
+}
+
+variants[math_char] = function(pointer,what,n,parent) -- also set export value
+    local char = pointer.char
+    local selector = validvariants[char]
+    if selector then
+        local next = parent.next
+        if next and next.id == math_noad then
+            local nucleus = next.nucleus
+            if nucleus and nucleus.id == math_char and nucleus.char == selector then
+                local variant
+                local tfmdata = fontdata[font_of_family(pointer.fam)] -- we can also have a famdata
+                local mathvariants = tfmdata.resources.variants -- and variantdata
+                if mathvariants then
+                    mathvariants = mathvariants[selector]
+                    if mathvariants then
+                        variant = mathvariants[char]
+                    end
+                end
+                if variant then
+                    pointer.char = variant
+                    set_attribute(pointer,exportstatus,char) -- we don't export the variant as it's visual markup
+                    if trace_variants then
+                        report_variants("variant (U+%05X,U+%05X) replaced by U+%05X",char,selector,variant)
+                    end
+                else
+                    if trace_variants then
+                        report_variants("no variant (U+%05X,U+%05X)",char,selector)
+                    end
+                end
+                next.prev = pointer
+                parent.next = next.next
+                node.free(next)
+            end
+        end
+    end
+end
+
+function handlers.variants(head,style,penalties)
+    processnoads(head,variants,"unicode variant")
+    return true
+end
 
 -- the normal builder
 

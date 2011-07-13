@@ -410,7 +410,9 @@
 \newconstant\MPboxmode
 
 \def\doobeyMPboxdepth % mode = 1
-  {\setbox\MPgraphicbox\hbox{\hskip\MPllx\onebasepoint\raise\MPlly\onebasepoint\box\MPgraphicbox}}
+  {\setbox\MPgraphicbox\hbox\bgroup
+     \raise\MPlly\onebasepoint\box\MPgraphicbox
+    \egroup}
 
 \def\doignoreMPboxdepth % mode = 2
   {\normalexpanded
@@ -419,8 +421,15 @@
       \ht\MPgraphicbox\the\ht\MPgraphicbox
       \dp\MPgraphicbox\the\dp\MPgraphicbox}}
 
+\def\doobeyMPboxorigin % mode = 3
+  {\setbox\MPgraphicbox\hbox\bgroup
+     \hskip\MPllx\onebasepoint
+     \raise\MPlly\onebasepoint\box\MPgraphicbox
+    \egroup}
+
 \def\obeyMPboxdepth  {\MPboxmode\plusone}
 \def\ignoreMPboxdepth{\MPboxmode\plustwo}
+\def\obeyMPboxorigin {\MPboxmode\plusthree}
 \def\normalMPboxdepth{\MPboxmode\zerocount}
 
 % compatibility hack:
@@ -434,10 +443,12 @@
      \doobeyMPboxdepth
    \or   % 2
      \doignoreMPboxdepth
+   \or   % 3
+     \doobeyMPboxorigin
    \fi
    \box\MPgraphicbox}
 
-\def\reuseMPbox#1#2#3#4#5% space delimiting would save some tokens
+\unexpanded\def\reuseMPbox#1#2#3#4#5% space delimiting would save some tokens
   {\xdef\MPllx{#2}%        but it's not worth the effort and looks
    \xdef\MPlly{#3}%        ugly as well
    \xdef\MPurx{#4}%
@@ -452,7 +463,7 @@
      \enableincludeMPgraphics % redundant
      \global\advance\MPobjectcounter\plusone
      \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
-     \setxvalue{\@@MPG\overlaystamp:#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
+     \setxvalue{\@@MPG\overlaystamp:#1}{\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
    \fi
    \getvalue{\@@MPG\overlaystamp:#1}%
    \endgroup}
@@ -648,31 +659,18 @@
    % \stopnointerference
    \stopreadingfile}
 
-%D For the moment, the next one is a private macro:
+% We need this trick because we need to make sure that the tex scanner
+% sees newlines and does not quit. Also, we do need to flush the buffer
+% under a normal catcode regime in order to expand embedded tex macros.
+% As usual with buffers, \type {#1} can be a list.
 
 \def\processMPbuffer
   {\dosingleempty\doprocessMPbuffer}
 
 \def\doprocessMPbuffer[#1]%
-  {\doifelsenothing{#1}
-     {\dodoprocessMPbuffer{\jobname}}
-     {\dodoprocessMPbuffer{#1}}}
-
-% we need to go via a toks because we have no multiline print in
-% luatex (i.e. tex.sprint does not interpret lines) and therefore
-% omits all after a comment token
-
-\newtoks\mpbuffertoks
-
-\def\doprocessMPbuffer[#1]%
-  {\doifelsenothing{#1}
-     {\doprocessMPbuffer[\jobname]}
-     {\beginMPgraphicgroup{#1}%
-      % we need this trick because tex.sprint does not interprets newlines and the scanner
-      % stops at a newline; also, we do need to flush the buffer under a normal catcode
-      % regime in order to expand embedded tex macros; #1 can be a list
-      \processMPgraphic{\ctxcommand{feedback("\currentMPgraphicname")}}%
-      \endMPgraphicgroup}}
+  {\beginMPgraphicgroup{#1}%
+   \processMPgraphic{\ctxcommand{feedback("\currentMPgraphicname")}}%
+   \endMPgraphicgroup}
 
 \def\runMPbuffer
   {\dosingleempty\dorunMPbuffer}
@@ -830,7 +828,7 @@
 %D Loading specific \METAPOST\ related definitions is
 %D accomplished by:
 
-\unexpanded\def\useMPlibrary[#1]{\ctxlua{metapost.uselibrary(\!!bs#1\!!es)}}
+\unexpanded\def\useMPlibrary[#1]{\ctxcommand{useMPlibrary(\!!bs#1\!!es)}}
 
 %D \macros
 %D   {setMPtext, MPtext, MPstring, MPbetex}

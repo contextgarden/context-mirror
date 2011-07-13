@@ -190,5 +190,5 @@ end
 
 function commands.elapsedtime(name)
     stoptiming(name or "whatever")
-    tex.sprint(elapsedtime(name or "whatever"))
+    context(elapsedtime(name or "whatever"))
 end

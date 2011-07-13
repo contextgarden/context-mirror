@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
-local texsprint, texcount = tex.sprint, tex.count
+local texcount = tex.count
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -181,26 +181,31 @@ local function savevalue(name,i)
     end
 end
 
-function counters.define(name, start, counter, method) -- todo: step
-    local d = allocate(name,1)
-    d.start = start
-    d.state = variables.start or ""
-    if counter ~= "" then
-        d.counter = counter -- only for special purposes, cannot be false
-        d.method  = method -- frozen at define time
+function counters.define(specification)
+    local name = specification.name
+    if name and name ~= "" then
+        -- todo: step
+        local d = allocate(name,1)
+        d.start = specification.start
+        d.state = variables.start or ""
+        local counter = specification.counter
+        if counter and counter ~= "" then
+            d.counter = counter -- only for special purposes, cannot be false
+            d.method  = specification.method -- frozen at define time
+        end
     end
 end
 
-function counters.trace(name)
+function counters.show(name)
     local cd = counterdata[name]
     if cd then
-        texsprint(format("[%s:",name))
+        context("[%s:",name)
         local data = cd.data
         for i=1,#data do
             local d = data[i]
-            texsprint(format(" (%s: %s,%s,%s s:%s r:%s)",i,(d.start or 0),d.number or 0,d.last,d.step or 0,d.range or 0))
+            context(" (%s: %s,%s,%s s:%s r:%s)",i,(d.start or 0),d.number or 0,d.last,d.step or 0,d.range or 0)
         end
-        texsprint("]")
+        context("]")
     end
 end
 
@@ -228,34 +233,30 @@ end
 
 -- depends on when incremented, before or after (driven by d.offset)
 
-function counters.doifelse(name)
-    commands.doifelse(counterdata[name])
-end
-
 function counters.previous(name,n)
-    texsprint(allocate(name,n).previous)
+    context(allocate(name,n).previous)
 end
 
 function counters.next(name,n)
-    texsprint(allocate(name,n).next)
+    context(allocate(name,n).next)
 end
 
 counters.prev = counters.previous
 
 function counters.current(name,n)
-    texsprint(allocate(name,n).number)
+    context(allocate(name,n).number)
 end
 
 function counters.first(name,n)
-    texsprint(allocate(name,n).first)
+    context(allocate(name,n).first)
 end
 
 function counters.last(name,n)
-    texsprint(allocate(name,n).last)
+    context(allocate(name,n).last)
 end
 
 function counters.subs(name,n)
-    texsprint(counterdata[name].data[n].subs or 0)
+    context(counterdata[name].data[n].subs or 0)
 end
 
 function counters.setvalue(name,tag,value)
@@ -426,7 +427,7 @@ function counters.get(name,n,key)
 end
 
 function counters.value(name,n) -- what to do with own
-    tex.write(counters.get(name,n or 1,'number') or 0)
+    context(counters.get(name,n or 1,'number') or 0)
 end
 
 function counters.converted(name,spec) -- name can be number and reference to storage
@@ -480,6 +481,30 @@ function counters.converted(name,spec) -- name can be number and reference to st
         cd.ownnumbers = nil
     end
 end
+
+-- interfacing
+
+commands.definestructurecounter  = counters.define
+commands.setstructurecounter     = counters.set
+commands.setownstructurecounter  = counters.setown
+commands.resetstructurecounter   = counters.reset
+commands.restartstructurecounter = counters.restart
+commands.savestructurecounter    = counters.save
+commands.restorestructurecounter = counters.restore
+commands.addstructurecounter     = counters.add
+commands.structurecountervalue   = counters.value
+commands.laststructurecounter    = counters.last
+commands.firststructurecounter   = counters.first
+commands.nextstructurecounter    = counters.next
+commands.prevstructurecounter    = counters.prev
+commands.structurecountersubs    = counters.subs
+commands.showstructurecounter    = counters.show
+
+function commands.doifelsestructurecounter(name) commands.doifelse(counterdata[name]) end
+function commands.doifstructurecounter    (name) commands.doif    (counterdata[name]) end
+function commands.doifnotstructurecounter (name) commands.doifnot (counterdata[name]) end
+
+function commands.incrementedstructurecounter(...) context(counters.add(...)) end
 
 --~ -- move to strc-pag.lua
 

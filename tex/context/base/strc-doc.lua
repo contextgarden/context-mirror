@@ -7,18 +7,18 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 }
 
 -- todo: associate counter with head
-
+-- we need to better split the lua/tex end
 -- we need to freeze and document this module
 
 local next, type = next, type
 local format, gsub, find, concat, gmatch, match = string.format, string.gsub, string.find, table.concat, string.gmatch, string.match
-local texsprint, texwrite = tex.sprint, tex.write
 local concat = table.concat
 local max, min = math.max, math.min
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local ctxcatcodes = tex.ctxcatcodes
-local variables   = interfaces.variables
+local catcodenumbers = catcodes.numbers
+local ctxcatcodes    = tex.ctxcatcodes
+local variables      = interfaces.variables
 
 --~ if not trackers then trackers = { register = function() end } end
 
@@ -29,19 +29,21 @@ local report_structure = logs.reporter("structure","sectioning")
 
 local structures, context = structures, context
 
-local helpers    = structures.helpers
-local documents  = structures.documents
-local sections   = structures.sections
-local lists      = structures.lists
-local counters   = structures.counters
-local sets       = structures.sets
-local tags       = structures.tags
-local processors = structures.processors
+local helpers             = structures.helpers
+local documents           = structures.documents
+local sections            = structures.sections
+local lists               = structures.lists
+local counters            = structures.counters
+local sets                = structures.sets
+local tags                = structures.tags
+local processors          = structures.processors
 
-local sprintprocessor = processors.sprint
-local ignoreprocessor = processors.ignore
+local applyprocessor      = processors.apply
+local startapplyprocessor = processors.startapply
+local stopapplyprocessor  = processors.stopapply
+local strippedprocessor   = processors.stripped
 
-local a_internal      = attributes.private('internal')
+local a_internal          = attributes.private('internal')
 
 -- -- -- document -- -- --
 
@@ -173,7 +175,7 @@ end
 function sections.setblock(name)
     local block = name or data.block or "unknown" -- can be used to set the default
     data.block = block
-    texwrite(block)
+    context(block)
 end
 
 function sections.pushblock(name)
@@ -182,7 +184,7 @@ function sections.pushblock(name)
     data.blocks[#data.blocks+1] = block
     data.block = block
     documents.reset()
-    texwrite(block)
+    context(block)
 end
 
 function sections.popblock()
@@ -190,7 +192,7 @@ function sections.popblock()
     local block = data.blocks[#data.blocks] or data.block
     data.block = block
     documents.reset()
-    texwrite(block)
+    context(block)
 end
 
 function sections.currentblock()
@@ -202,7 +204,7 @@ function sections.currentlevel()
 end
 
 function sections.getcurrentlevel()
-    texwrite(data.depth)
+    context(data.depth)
 end
 
 function sections.somelevel(given)
@@ -390,7 +392,7 @@ function sections.matchingtilldepth(depth,numbers,parentnumbers)
 end
 
 function sections.getnumber(depth) -- redefined later ...
-    texwrite(data.numbers[depth] or 0)
+    context(data.numbers[depth] or 0)
 end
 
 function sections.set(key,value)
@@ -401,6 +403,8 @@ function sections.cct()
     local metadata = data.status[data.depth].metadata
     context(metadata and metadata.catcodes or ctxcatcodes)
 end
+
+-- this one will become: return catcode, d (etc)
 
 function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
     if not depth or depth == 0 then depth = data.depth end
@@ -417,16 +421,21 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
         if type(d) == "string" then
             if honorcatcodetable == true or honorcatcodetable == variables.auto then
                 local metadata = data.metadata
-                texsprint((metadata and metadata.catcodes) or ctxcatcodes,d)
-            elseif not honorcatcodetable then
+                local catcodes = metadata and metadata.catcodes
+                if catcodes then
+                    context.sprint(catcodes,d)
+                else
+                    context(d)
+                end
+            elseif not honorcatcodetable or honorcatcodetable == "" then
                 context(d)
-            elseif type(honorcatcodetable) == "number" then
-                texsprint(honorcatcodetable,d)
-            elseif type(honorcatcodetable) == "string" and honorcatcodetable ~= "" then
-                honorcatcodetable = tex[honorcatcodetable] or ctxcatcodes-- we should move ctxcatcodes to another table, ctx or so
-                texsprint(honorcatcodetable,d)
             else
-                context(d)
+                local catcodes = catcodenumbers[honorcatcodetable]
+                if catcodes then
+                    context.sprint(catcodes,d)
+                else
+                    context(d)
+                end
             end
             return
         end
@@ -463,7 +472,7 @@ function sections.depthnumber(n)
     elseif n < 0 then
         n = depth + n
     end
-    return texwrite(data.numbers[n] or 0)
+    return context(data.numbers[n] or 0)
 end
 
 function sections.autodepth(numbers)
@@ -504,9 +513,9 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             local separator = sets.get("structure:separators",block,separatorset,preceding,".")
             if separator then
                 if result then
-                    result[#result+1] = ignoreprocessor(separator)
+                    result[#result+1] = strippedprocessor(separator)
                 else
-                    sprintprocessor(ctxcatcodes,separator)
+                    applyprocessor(separator)
                 end
             end
             preceding = false
@@ -522,14 +531,14 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
             end
         else
             if ownnumber ~= "" then
-                sprintprocessor(ctxcatcodes,ownnumber)
+                applyprocessor(ownnumber)
             elseif conversion and conversion ~= "" then -- traditional (e.g. used in itemgroups)
                 context.convertnumber(conversion,number)
             else
                 local theconversion = sets.get("structure:conversions",block,conversionset,index,"numbers")
-                sprintprocessor(ctxcatcodes,theconversion,function(str)
-                    return format("\\convertnumber{%s}{%s}",str or "numbers",number)
-                end)
+                local data = startapplyprocessor(theconversion)
+                context.convertnumber(data or "numbers",number)
+                stopapplyprocessor()
             end
         end
         return index, true
@@ -611,9 +620,9 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             local prefixlist = set and sets.getall("structure:prefixes","",set) -- "" == block
             if starter then
                 if result then
-                    result[#result+1] = ignoreprocessor(starter)
+                    result[#result+1] = strippedprocessor(starter)
                 else
-                    sprintprocessor(ctxcatcodes,starter)
+                    applyprocessor(starter)
                 end
             end
             if prefixlist and (kind == 'section' or kind == 'prefix' or kind == 'direct') then
@@ -676,13 +685,13 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 if result then
                     -- can't happen as we're in 'direct'
                 else
-                    sprintprocessor(ctxcatcodes,connector)
+                    applyprocessor(connector)
                 end
             elseif done and stopper then
                 if result then
-                    result[#result+1] = ignoreprocessor(stopper)
+                    result[#result+1] = strippedprocessor(stopper)
                 else
-                    sprintprocessor(ctxcatcodes,stopper)
+                    applyprocessor(stopper)
                 end
             end
             return result -- a table !
@@ -804,5 +813,16 @@ end
 
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
-    texwrite((sectiondata and sectiondata.numbers[depth]) or 0)
+    context((sectiondata and sectiondata.numbers[depth]) or 0)
 end
+
+-- interface (some are actually already commands, like sections.fullnumber)
+
+commands.structurenumber            = function()             sections.fullnumber()                        end
+commands.structuretitle             = function()             sections.title     ()                        end
+
+commands.structurevariable          = function(name)         sections.structuredata(nil,name)             end
+commands.structureuservariable      = function(name)         sections.userdata     (nil,name)             end
+commands.structurecatcodedget       = function(name)         sections.structuredata(nil,name,nil,true)    end
+commands.structuregivencatcodedget  = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
+commands.structureautocatcodedget   = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end

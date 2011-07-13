@@ -42180,6 +42180,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1820,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1821]={
   category="lo",
@@ -42187,6 +42191,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1821,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1822]={
   category="lo",
@@ -42194,6 +42201,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1822,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1823]={
   category="lo",
@@ -42201,6 +42211,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1823,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1824]={
   category="lo",
@@ -42208,6 +42221,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1824,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1825]={
   category="lo",
@@ -42215,6 +42231,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1825,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1826]={
   category="lo",
@@ -42222,6 +42242,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1826,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1827]={
   category="lo",
@@ -42236,6 +42260,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1828,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+   [0x180D]="separate form",
+  },
  },
  [0x1829]={
   category="lo",
@@ -42250,6 +42279,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x182A,
+  variants={
+   [0x180B]="alternative form",
+  },
  },
  [0x182B]={
   category="lo",
@@ -42264,6 +42296,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x182C,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+   [0x180D]="fourth form",
+  },
  },
  [0x182D]={
   category="lo",
@@ -42271,6 +42308,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x182D,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+   [0x180D]="feminine form",
+  },
  },
  [0x182E]={
   category="lo",
@@ -42292,6 +42334,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1830,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1831]={
   category="lo",
@@ -42306,6 +42352,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1832,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1833]={
   category="lo",
@@ -42313,6 +42362,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1833,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1834]={
   category="lo",
@@ -42327,6 +42379,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1835,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1836]={
   category="lo",
@@ -42334,6 +42389,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1836,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1837]={
   category="lo",
@@ -42348,6 +42407,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1838,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1839]={
   category="lo",
@@ -42432,6 +42494,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1844,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1845]={
   category="lo",
@@ -42439,6 +42504,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1845,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1846]={
   category="lo",
@@ -42446,6 +42514,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1846,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1847]={
   category="lo",
@@ -42453,6 +42524,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1847,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1848]={
   category="lo",
@@ -42460,6 +42535,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1848,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1849]={
   category="lo",
@@ -42467,6 +42545,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1849,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x184A]={
   category="lo",
@@ -42495,6 +42576,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x184D,
+  variants={
+   [0x180B]="feminine form",
+  },
  },
  [0x184E]={
   category="lo",
@@ -42502,6 +42586,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x184E,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x184F]={
   category="lo",
@@ -42607,6 +42694,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x185D,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x185E]={
   category="lo",
@@ -42614,6 +42704,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x185E,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x185F]={
   category="lo",
@@ -42628,6 +42722,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1860,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1861]={
   category="lo",
@@ -42649,6 +42746,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1863,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1864]={
   category="lo",
@@ -42684,6 +42784,10 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1868,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+  },
  },
  [0x1869]={
   category="lo",
@@ -42691,6 +42795,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1869,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x186A]={
   category="lo",
@@ -42733,6 +42840,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x186F,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1870]={
   category="lo",
@@ -42761,6 +42871,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1873,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+   [0x180D]="fourth form",
+  },
  },
  [0x1874]={
   category="lo",
@@ -42768,6 +42883,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1874,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="feminine first medial form",
+   [0x180D]="feminine second medial form",
+  },
  },
  [0x1875]={
   category="lo",
@@ -42782,6 +42902,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1876,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1877]={
   category="lo",
@@ -42796,6 +42919,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1880,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1881]={
   category="lo",
@@ -42803,6 +42929,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1881,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1882]={
   category="lo",
@@ -42845,6 +42974,11 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1887,
+  variants={
+   [0x180B]="second form",
+   [0x180C]="third form",
+   [0x180D]="fourth form",
+  },
  },
  [0x1888]={
   category="lo",
@@ -42852,6 +42986,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x1888,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x1889]={
   category="lo",
@@ -42866,6 +43003,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0x188A,
+  variants={
+   [0x180B]="second form",
+  },
  },
  [0x188B]={
   category="lo",
@@ -60728,6 +60868,9 @@ characters.data={
   mathclass="binary",
   mathname="cap",
   unicodeslot=0x2229,
+  variants={
+   [0xFE00]="with serifs",
+  },
  },
  [0x222A]={
   adobename="union",
@@ -60739,6 +60882,9 @@ characters.data={
   mathclass="binary",
   mathname="cup",
   unicodeslot=0x222A,
+  variants={
+   [0xFE00]="with serifs",
+  },
  },
  [0x222B]={
   adobename="integral",
@@ -61414,6 +61560,9 @@ characters.data={
   mathname="lneqq",
   mirror=0x2269,
   unicodeslot=0x2268,
+  variants={
+   [0xFE00]="with vertical stroke",
+  },
  },
  [0x2269]={
   category="sm",
@@ -61424,6 +61573,9 @@ characters.data={
   mathname="gneqq",
   mirror=0x2268,
   unicodeslot=0x2269,
+  variants={
+   [0xFE00]="with vertical stroke",
+  },
  },
  [0x226A]={
   adobename="muchless",
@@ -61528,6 +61680,9 @@ characters.data={
   mathname="lesssim",
   mirror=0x2273,
   unicodeslot=0x2272,
+  variants={
+   [0xFE00]="following the slant of the lower leg",
+  },
  },
  [0x2273]={
   adobename="greaterorequivalent",
@@ -61539,6 +61694,9 @@ characters.data={
   mathname="gtrsim",
   mirror=0x2272,
   unicodeslot=0x2273,
+  variants={
+   [0xFE00]="following the slant of the lower leg",
+  },
  },
  [0x2274]={
   category="sm",
@@ -61797,6 +61955,9 @@ characters.data={
   mathname="subsetneq",
   mirror=0x228B,
   unicodeslot=0x228A,
+  variants={
+   [0xFE00]="with stroke through bottom members",
+  },
  },
  [0x228B]={
   adobename="supersetnotequal",
@@ -61808,6 +61969,9 @@ characters.data={
   mathname="supsetneq",
   mirror=0x228A,
   unicodeslot=0x228B,
+  variants={
+   [0xFE00]="with stroke through bottom members",
+  },
  },
  [0x228C]={
   category="sm",
@@ -61880,6 +62044,9 @@ characters.data={
   mathclass="binary",
   mathname="sqcap",
   unicodeslot=0x2293,
+  variants={
+   [0xFE00]="with serifs",
+  },
  },
  [0x2294]={
   category="sm",
@@ -61889,6 +62056,9 @@ characters.data={
   mathclass="binary",
   mathname="sqcup",
   unicodeslot=0x2294,
+  variants={
+   [0xFE00]="with serifs",
+  },
  },
  [0x2295]={
   adobename="pluscircle",
@@ -61900,6 +62070,9 @@ characters.data={
   mathclass="binary",
   mathname="oplus",
   unicodeslot=0x2295,
+  variants={
+   [0xFE00]="with white rim",
+  },
  },
  [0x2296]={
   adobename="minuscircle",
@@ -61920,6 +62093,9 @@ characters.data={
   mathclass="binary",
   mathname="otimes",
   unicodeslot=0x2297,
+  variants={
+   [0xFE00]="with white rim",
+  },
  },
  [0x2298]={
   category="sm",
@@ -61968,6 +62144,9 @@ characters.data={
   mathclass="binary",
   mathname="circledequals",
   unicodeslot=0x229C,
+  variants={
+   [0xFE00]="with equal sign touching the circle",
+  },
  },
  [0x229D]={
   category="sm",
@@ -62178,21 +62357,21 @@ characters.data={
  },
  [0x22B2]={
   category="sm",
+  comment="cramped triangleleft",
   description="NORMAL SUBGROUP OF",
   direction="on",
   linebreak="al",
   mathclass="bin",
-  mathname="triangleleft",
   mirror=0x22B3,
   unicodeslot=0x22B2,
  },
  [0x22B3]={
   category="sm",
+  comment="cramped triangleright",
   description="CONTAINS AS NORMAL SUBGROUP",
   direction="on",
   linebreak="al",
   mathclass="bin",
-  mathname="triangleright",
   mirror=0x22B2,
   unicodeslot=0x22B3,
  },
@@ -62596,6 +62775,9 @@ characters.data={
   mathname="lesseqgtr",
   mirror=0x22DB,
   unicodeslot=0x22DA,
+  variants={
+   [0xFE00]="with slanted equal",
+  },
  },
  [0x22DB]={
   adobename="greaterequalorless",
@@ -62607,6 +62789,9 @@ characters.data={
   mathname="gtreqless",
   mirror=0x22DA,
   unicodeslot=0x22DB,
+  variants={
+   [0xFE00]="with slanted equal",
+  },
  },
  [0x22DC]={
   category="sm",
@@ -68196,6 +68381,8 @@ characters.data={
   description="WHITE RIGHT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="bin",
+  mathname="triangleright",
   unicodeslot=0x25B7,
  },
  [0x25B8]={
@@ -68281,6 +68468,8 @@ characters.data={
   description="WHITE LEFT-POINTING TRIANGLE",
   direction="on",
   linebreak="ai",
+  mathclass="bin",
+  mathname="triangleleft",
   unicodeslot=0x25C1,
  },
  [0x25C2]={
@@ -69522,6 +69711,8 @@ characters.data={
   description="BLACK DIAMOND SUIT",
   direction="on",
   linebreak="al",
+  mathclass="ord",
+  mathname="blacklozenge",
   unicodeslot=0x2666,
  },
  [0x2667]={
@@ -76066,8 +76257,6 @@ characters.data={
   description="BLACK LOZENGE",
   direction="on",
   linebreak="al",
-  mathclass="ord",
-  mathname="blacklozenge",
   unicodeslot=0x29EB,
  },
  [0x29EC]={
@@ -76220,6 +76409,8 @@ characters.data={
   description="N-ARY CIRCLED DOT OPERATOR",
   direction="on",
   linebreak="al",
+  mathclass="limop",
+  mathname="bigodot",
   unicodeslot=0x2A00,
  },
  [0x2A01]={
@@ -76246,7 +76437,7 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="limop",
-  mathname="bigodot",
+  mathname="bigudot",
   unicodeslot=0x2A03,
  },
  [0x2A04]={
@@ -76663,6 +76854,9 @@ characters.data={
   linebreak="al",
   mirror=0x2A3D,
   unicodeslot=0x2A3C,
+  variants={
+   [0xFE00]="tall variant with narrow foot",
+  },
  },
  [0x2A3D]={
   category="sm",
@@ -76671,6 +76865,9 @@ characters.data={
   linebreak="al",
   mirror=0x2A3C,
   unicodeslot=0x2A3D,
+  variants={
+   [0xFE00]="tall variant with narrow foot",
+  },
  },
  [0x2A3E]={
   category="sm",
@@ -77398,6 +77595,9 @@ characters.data={
   direction="on",
   linebreak="al",
   unicodeslot=0x2A9D,
+  variants={
+   [0xFE00]="with similar following the slant of the upper leg",
+  },
  },
  [0x2A9E]={
   category="sm",
@@ -77405,6 +77605,9 @@ characters.data={
   direction="on",
   linebreak="al",
   unicodeslot=0x2A9E,
+  variants={
+   [0xFE00]="with similar following the slant of the upper leg",
+  },
  },
  [0x2A9F]={
   category="sm",
@@ -77512,6 +77715,9 @@ characters.data={
   linebreak="al",
   mirror=0x2AAD,
   unicodeslot=0x2AAC,
+  variants={
+   [0xFE00]="with slanted equal",
+  },
  },
  [0x2AAD]={
   category="sm",
@@ -77520,6 +77726,9 @@ characters.data={
   linebreak="al",
   mirror=0x2AAC,
   unicodeslot=0x2AAD,
+  variants={
+   [0xFE00]="with slanted equal",
+  },
  },
  [0x2AAE]={
   category="sm",
@@ -77776,6 +77985,9 @@ characters.data={
   mathclass="relation",
   mathname="subsetneqq",
   unicodeslot=0x2ACB,
+  variants={
+   [0xFE00]="with stroke through bottom members",
+  },
  },
  [0x2ACC]={
   category="sm",
@@ -77785,6 +77997,9 @@ characters.data={
   mathclass="relation",
   mathname="supsetneqq",
   unicodeslot=0x2ACC,
+  variants={
+   [0xFE00]="with stroke through bottom members",
+  },
  },
  [0x2ACD]={
   category="sm",
@@ -110243,6 +110458,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA856,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping small a",
+  },
  },
  [0xA857]={
   category="lo",
@@ -110285,6 +110503,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA85C,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping ha",
+  },
  },
  [0xA85D]={
   category="lo",
@@ -110299,6 +110520,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA85E,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping i",
+  },
  },
  [0xA85F]={
   category="lo",
@@ -110306,6 +110530,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA85F,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping u",
+  },
  },
  [0xA860]={
   category="lo",
@@ -110313,6 +110540,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA860,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping e",
+  },
  },
  [0xA861]={
   category="lo",
@@ -110369,6 +110599,9 @@ characters.data={
   direction="l",
   linebreak="al",
   unicodeslot=0xA868,
+  variants={
+   [0xFE00]="phags-pa letter reversed shaping subjoined ya",
+  },
  },
  [0xA869]={
   category="lo",

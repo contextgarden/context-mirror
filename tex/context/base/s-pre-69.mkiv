@@ -231,7 +231,8 @@
             shape[#shape+1] = string.format("%sbp %sbp",left,hsize)
         end
      -- print(table.serialize(shape))
-        tex.sprint(tex.ctxcatcodes,string.format("\\parshape %s %s",#shape,table.concat(shape," ")))
+     -- context.parshape(string.format("%s %s ",#shape,table.concat(shape," ")))
+        context("\\parshape %s %s ",#shape,table.concat(shape," "))
     end
 \stopluacode
 

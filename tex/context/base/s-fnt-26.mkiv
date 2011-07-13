@@ -14,7 +14,7 @@
 \startluacode
 
     function document.show_goodies_stylistics(name)
-        local goodies = fonts.goodies.get(name)
+        local goodies = fonts.goodies.load(name)
         local stylistics = goodies and goodies.stylistics
         if stylistics then
             local col, row, type = context.NC, context.NR, context.type
@@ -28,7 +28,7 @@
     end
 
     function document.show_goodies_featuresets(name)
-        local goodies = fonts.goodies.get(name)
+        local goodies = fonts.goodies.load(name)
         local featuresets = goodies and goodies.featuresets
         if featuresets then
             local col, row, type = context.NC, context.NR, context.type
@@ -47,7 +47,7 @@
     end
 
     function document.show_goodies_colorschemes(name)
-        local goodies = fonts.goodies.get(name)
+        local goodies = fonts.goodies.load(name)
         local colorschemes = goodies and goodies.colorschemes
         if colorschemes then
             local col, row, type = context.NC, context.NR, context.type

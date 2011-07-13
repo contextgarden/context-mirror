@@ -170,7 +170,7 @@ function vspacing.definesnapmethod(name,method)
     local t = listtohash(method)
     snapmethods[n] = t
     t.name, t.specification = name, method
-    tex.write(n)
+    context(n)
 end
 
 --~ local rule_id  = nodecodes.rule
@@ -488,7 +488,8 @@ h, d = ch, cd
     local lines = (ch+cd)/snaphtdp
     if t then
         local original = (h+d)/snaphtdp
-        t[#t+1] = format("final lines: %s -> %s",original,lines)
+        local whatever = (ch+cd)/(texdimen.globalbodyfontstrutheight + texdimen.globalbodyfontstrutdepth)
+        t[#t+1] = format("final lines: %s -> %s (%s)",original,lines,whatever)
         t[#t+1] = format("final height: %s -> %s",points(h),points(ch))
         t[#t+1] = format("final depth: %s -> %s",points(d),points(cd))
     end

@@ -7,8 +7,7 @@ if not modules then modules = { } end modules ['x-cals'] = {
 }
 
 local format, lower = string.format, string.lower
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
-local xmlsprint, xmlcprint, xmlcollected = xml.sprint, xml.cprint, xml.collected
+local xmlsprint, xmlcprint, xmlcollected, xmlelements = xml.sprint, xml.cprint, xml.collected, xml.elements
 local n_todimen, s_todimen = number.todimen, string.todimen
 
 -- there is room for speedups as well as cleanup (using context functions)
@@ -120,8 +119,7 @@ local function getspans(root, pattern, names, spans)
     end
 end
 
---local function texsprint(a,b) print(b) end
---local function xmlsprint(a) print(a) end
+local bTR, eTR, bTD, eTD = context.bTR, context.eTR, context.bTD, context.eTD
 
 function cals.table(root,namespace)
 
@@ -142,25 +140,28 @@ function cals.table(root,namespace)
     local frowspec   = p .. "tfoot" .. p .. "row"
 
     local function tablepart(root, xcolspec, xrowspec, before, after) -- move this one outside
-        texsprint(ctxcatcodes,before)
+        before()
         local at = root.at
         local pphalign, ppvalign = at.align, at.valign
         local names, widths, spans = { }, { }, { }
         getspecs(root, colspec , names, widths)
         getspecs(root, xcolspec, names, widths)
         getspans(root, spanspec, names, spans)
-        for r, d, k in xml.elements(root,xrowspec) do
-            texsprint(ctxcatcodes,"\\bTR")
+        for r, d, k in xmlelements(root,xrowspec) do
+            bTR()
             local dk = d[k]
             local at = dk.at
             local phalign, pvalign = at.align or pphalign, at.valign or ppvalign -- todo: __p__ test
             local col = 1
-            for rr, dd, kk in xml.elements(dk,entryspec) do
+            for rr, dd, kk in xmlelements(dk,entryspec) do
                 local dk = dd[kk]
                 if dk.tg == "entrytbl" then
-                    texsprint(ctxcatcodes,"\\bTD{")
+                 -- bTD(function() cals.table(dk) end)
+                    bTD()
+                    context("{")
                     cals.table(dk)
-                    texsprint(ctxcatcodes,"}\\eTD")
+                    context("}")
+                    eTD()
                     col = col + 1
                 else
                     local at = dk.at
@@ -176,36 +177,42 @@ function cals.table(root,namespace)
                         valign = valignments[valign]
                     end
                     local width = widths[col]
-                    if s or m or halign or valign or width then -- only english interface !
-                        texsprint(ctxcatcodes,format("\\bTD[nx=%s,ny=%s,align={%s,%s},width=%s]",
-                            s or 1, (m or 0)+1, halign or "flushleft", valign or "high", width or "fit"))
-                     -- texsprint(ctxcatcodes,"\\bTD[nx=",s or 1,"ny=",(m or 0)+1,"align={",halign or "flushleft",",",valign or "high","},width=",width or "fit","]")
+                    if s or m or halign or valign or width then -- currently only english interface !
+                        bTD {
+                            nx    = s or 1,
+                            ny    = (m or 0) + 1,
+                            align = format("{%s,%s}",halign or "flushleft",valign or "high"),
+                            width = width or "fit",
+                        }
                     else
-                        texsprint(ctxcatcodes,"\\bTD[align={flushleft,high},width=fit]") -- else problems with vertical material
+                        bTD {
+                            align = "{flushleft,high}",
+                            width = "fit", -- else problems with vertical material
+                        }
                     end
                     xmlcprint(dk)
-                    texsprint(ctxcatcodes,"\\eTD")
+                    eTD()
                     col = col + (s or 1)
                 end
             end
-            texsprint(ctxcatcodes,"\\eTR")
+            eTR()
         end
-        texsprint(ctxcatcodes,after)
+        after()
     end
 
     for tgroup in lxml.collected(root,tgroupspec) do
-        texsprint(ctxcatcodes, "\\directsetup{cals:table:before}")
+        context.directsetup("cals:table:before")
         lxml.directives.before(root,"cdx") -- "cals:table"
-        texsprint(ctxcatcodes, "\\bgroup")
+        context.bgroup()
         lxml.directives.setup(root,"cdx") -- "cals:table"
-        texsprint(ctxcatcodes, "\\bTABLE")
-        tablepart(tgroup, hcolspec, hrowspec, "\\bTABLEhead", "\\eTABLEhead")
-        tablepart(tgroup, bcolspec, browspec, "\\bTABLEbody", "\\eTABLEbody")
-        tablepart(tgroup, fcolspec, frowspec, "\\bTABLEfoot", "\\eTABLEfoot")
-        texsprint(ctxcatcodes, "\\eTABLE")
-        texsprint(ctxcatcodes, "\\egroup")
+        context.bTABLE()
+        tablepart(tgroup, hcolspec, hrowspec, context.bTABLEhead, context.eTABLEhead)
+        tablepart(tgroup, bcolspec, browspec, context.bTABLEbody, context.eTABLEbody)
+        tablepart(tgroup, fcolspec, frowspec, context.bTABLEfoot, context.eTABLEfoot)
+        context.eTABLE()
+        context.egroup()
         lxml.directives.after(root,"cdx") -- "cals:table"
-        texsprint(ctxcatcodes, "\\directsetup{cals:table:after}")
+        context.directsetup("cals:table:after")
     end
 
 end

@@ -52,7 +52,7 @@ local nodepool                 = nodes.pool
 local pdfannotation_node       = nodepool.pdfannotation
 
 local hpack_node               = node.hpack
-local write_node               = node.write
+local write_node               = node.write -- test context(...) instead
 
 local pdf_border               = pdfarray { 0, 0, 0 } -- can be shared
 

@@ -35,14 +35,14 @@
 %D End of lines to the output. \TEX\ will map this onto the platform specific
 %D line ending. I hate this mess.
 
-\edef\operatingsystem  {\ctxwrite {os.platform}}
+\edef\operatingsystem  {\cldcontext{os.platform}}
 
-\def \jobfilename      {\ctxsprint{environment.jobfilename       or ""}}
-\def \jobfilesuffix    {\ctxsprint{environment.jobfilesuffix     or ""}}
-\def \inputfilebarename{\ctxsprint{environment.inputfilebarename or ""}}
-\def \inputfilesuffix  {\ctxsprint{environment.inputfilesuffix   or ""}}
-\def \inputfilename    {\ctxsprint{environment.inputfilename     or ""}}
-\def \outputfilename   {\ctxsprint{environment.outputfilename    or ""}}
+\def \jobfilename      {\cldcontext{environment.jobfilename       or ""}}
+\def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix     or ""}}
+\def \inputfilebarename{\cldcontext{environment.inputfilebarename or ""}}
+\def \inputfilesuffix  {\cldcontext{environment.inputfilesuffix   or ""}}
+\def \inputfilename    {\cldcontext{environment.inputfilename     or ""}}
+\def \outputfilename   {\cldcontext{environment.outputfilename    or ""}}
 
 \newtoks \everysetupsystem
 
@@ -85,7 +85,7 @@
 \to \everysetupsystem
 
 \appendtoks
-    \ctxlua {commands.updatefilenames("\inputfilename","\outputfilename")}%
+    \ctxcommand{updatefilenames("\inputfilename","\outputfilename")}%
 \to \everysetupsystem
 
 % Some mechanisms (see x-res-01) use either \jobfilename or
@@ -287,7 +287,7 @@
 \definecomplexorsimpleempty\define
 
 % \startluacode
-%     local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+%     local contextsprint, ctxcatcodes = context.sprint, tex.ctxcatcodes
 %     local format, match, gmatch, rep = string.format, string.match, string.gmatch, string.rep
 %     local empty = {
 %         "single",
@@ -316,38 +316,38 @@
 %         else
 %             n = 0
 %         end
-%         texsprint(ctxcatcodes,format("\\unexpanded\\def\\%s",cmd))
+%         contextsprint(ctxcatcodes,format("\\unexpanded\\def\\%s",cmd))
 %         if #a > 0 then
-%             texsprint(ctxcatcodes,format("{\\do%sempty\\do%s}",empty[#a],cmd))
-%             texsprint(ctxcatcodes,format("\\def\\do%s",cmd))
+%             contextsprint(ctxcatcodes,format("{\\do%sempty\\do%s}",empty[#a],cmd))
+%             contextsprint(ctxcatcodes,format("\\def\\do%s",cmd))
 %             for i=1,#a do
-%                 texsprint(ctxcatcodes,"[#",i,"]")
+%                 contextsprint(ctxcatcodes,"[#",i,"]")
 %             end
-%             texsprint(ctxcatcodes,"{")
+%             contextsprint(ctxcatcodes,"{")
 %             for i=#a,1,-1 do
-%                 texsprint(ctxcatcodes,format("\\if%sargument",check[i]))
-%                 texsprint(ctxcatcodes,format("\\def\\next{\\dodo%s",cmd))
+%                 contextsprint(ctxcatcodes,format("\\if%sargument",check[i]))
+%                 contextsprint(ctxcatcodes,format("\\def\\next{\\dodo%s",cmd))
 %                 for j=1,#a-i do
-%                     texsprint(ctxcatcodes,format("[%s]",a[j]))
+%                     contextsprint(ctxcatcodes,format("[%s]",a[j]))
 %                 end
 %                 for j=1,i do
-%                     texsprint(ctxcatcodes,format("[#%s]",j))
+%                     contextsprint(ctxcatcodes,format("[#%s]",j))
 %                 end
-%                 texsprint(ctxcatcodes,"}")
+%                 contextsprint(ctxcatcodes,"}")
 %                 if i == 1 then
-%                     texsprint(ctxcatcodes,rep("\\fi",#a))
+%                     contextsprint(ctxcatcodes,rep("\\fi",#a))
 %                 else
-%                     texsprint(ctxcatcodes,"\\else")
+%                     contextsprint(ctxcatcodes,"\\else")
 %                 end
 %             end
-%             texsprint(ctxcatcodes,"\\next}")
-%             texsprint(ctxcatcodes,format("\\def\\dodo%s",cmd))
+%             contextsprint(ctxcatcodes,"\\next}")
+%             contextsprint(ctxcatcodes,format("\\def\\dodo%s",cmd))
 %             for i=1,#a do
-%                 texsprint(ctxcatcodes,"[#",i,"]")
+%                 contextsprint(ctxcatcodes,"[#",i,"]")
 %             end
 %         end
 %         for i=1,n do
-%             texsprint(ctxcatcodes,"#",#a+i)
+%             contextsprint(ctxcatcodes,"#",#a+i)
 %         end
 %     end
 % \stopluacode

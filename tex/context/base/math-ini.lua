@@ -9,10 +9,13 @@ if not modules then modules = { } end modules ['math-ext'] = {
 -- if needed we can use the info here to set up xetex definition files
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
 
-local texsprint, format, utfchar, utfbyte = tex.sprint, string.format, utf.char, utf.byte
+local format, utfchar, utfbyte = string.format, utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 local texattribute = tex.attribute
 local floor = math.floor
+
+local contextsprint = context.sprint
+local contextfprint = context.fprint -- a bit inefficient
 
 local allocate = utilities.storage.allocate
 
@@ -146,26 +149,26 @@ if setmathcode then
 
     setmathsymbol = function(name,class,family,slot) -- hex is nicer for tracing
         if class == classes.accent then
-            texsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.topaccent then
-            texsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Umathaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.botaccent then
-            texsprint(format([[\unexpanded\gdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Umathbotaccent 0 "%X "%X }]],name,family,slot))
         elseif class == classes.over then
-            texsprint(format([[\unexpanded\gdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiterover "%X "%X }]],name,family,slot))
         elseif class == classes.under then
-            texsprint(format([[\unexpanded\gdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiterunder "%X "%X }]],name,family,slot))
         elseif class == classes.open or class == classes.close then
             setdelcode(slot,{family,slot,0,0})
-            texsprint(format([[\unexpanded\gdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiter "%X "%X "%X }]],name,class,family,slot))
         elseif class == classes.delimiter then
             setdelcode(slot,{family,slot,0,0})
-            texsprint(format([[\unexpanded\gdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Udelimiter 0 "%X "%X }]],name,family,slot))
         elseif class == classes.radical then
-            texsprint(format([[\unexpanded\gdef\%s{\Uradical "%X "%X }]],name,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Uradical "%X "%X }]],name,family,slot))
         else
             -- beware, open/close and other specials should not end up here
-            texsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+            contextsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
         end
     end
 
@@ -174,41 +177,41 @@ else
 
     setmathcharacter = function(class,family,slot,unicode,firsttime)
         if not firsttime and class <= 7 then
-            texsprint(mathcode(slot,class,family,unicode or slot))
+            contextsprint(mathcode(slot,class,family,unicode or slot))
         end
     end
 
     setmathsynonym = function(class,family,slot,unicode,firsttime)
         if not firsttime and class <= 7 then
-            texsprint(mathcode(slot,class,family,unicode))
+            contextsprint(mathcode(slot,class,family,unicode))
         end
         if class == classes.open or class == classes.close then
-            texsprint(delcode(slot,family,unicode))
+            contextsprint(delcode(slot,family,unicode))
         end
     end
 
     setmathsymbol = function(name,class,family,slot)
         if class == classes.accent then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathaccent(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathaccent(class,family,slot)))
         elseif class == classes.topaccent then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopaccent(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathtopaccent(class,family,slot)))
         elseif class == classes.botaccent then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotaccent(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathbotaccent(class,family,slot)))
         elseif class == classes.over then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathtopdelimiter(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathtopdelimiter(class,family,slot)))
         elseif class == classes.under then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathbotdelimiter(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathbotdelimiter(class,family,slot)))
         elseif class == classes.open or class == classes.close then
-            texsprint(delcode(slot,family,slot))
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(class,family,slot)))
+            contextsprint(delcode(slot,family,slot))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,delimiter(class,family,slot)))
         elseif class == classes.delimiter then
-            texsprint(delcode(slot,family,slot))
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,delimiter(0,family,slot)))
+            contextsprint(delcode(slot,family,slot))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,delimiter(0,family,slot)))
         elseif class == classes.radical then
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,radical(family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,radical(family,slot)))
         else
             -- beware, open/close and other specials should not end up here
-            texsprint(format("\\unexpanded\\xdef\\%s{%s}",name,mathchar(class,family,slot)))
+            contextsprint(format([[\unexpanded\xdef\%s{%s}]],name,mathchar(class,family,slot)))
         end
     end
 

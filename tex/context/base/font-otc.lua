@@ -59,86 +59,91 @@ local function addfeature(data,feature,specifications)
         -- subtables are tables themselves but we also accept flattened singular subtables
         for s=1,#specifications do
             local specification = specifications[s]
-            local askedfeatures = specification.features or everywhere
-            local subtables     = specification.subtables or { specification.data } or { }
-            local featuretype   = types[specification.type or "substitution"]
-            local featureflags  = specification.flags or noflags
-            local added         = false
-            local featurename   = format("ctx_%s_%s",feature,s)
-            local st = { }
-            for t=1,#subtables do
-                local list = subtables[t]
-                local full = format("%s_%s",featurename,t)
-                st[t] = full
-                if featuretype == "gsub_ligature" then
-                    lookuptypes[full] = "ligature"
-                    for code, ligature in next, list do
-                        local unicode = tonumber(code) or unicodes[code]
-                        local description = descriptions[unicode]
-                        if description then
-                            local slookups = description.slookups
-                            if type(ligature) == "string" then
-                                ligature = { lpegmatch(splitter,ligature) }
+            local valid         = specification.valid
+            if not valid or valid(data,specification,feature) then
+                local askedfeatures = specification.features or everywhere
+                local subtables     = specification.subtables or { specification.data } or { }
+                local featuretype   = types[specification.type or "substitution"]
+                local featureflags  = specification.flags or noflags
+                local added         = false
+                local featurename   = format("ctx_%s_%s",feature,s)
+                local st = { }
+                for t=1,#subtables do
+                    local list = subtables[t]
+                    local full = format("%s_%s",featurename,t)
+                    st[t] = full
+                    if featuretype == "gsub_ligature" then
+                        lookuptypes[full] = "ligature"
+                        for code, ligature in next, list do
+                            local unicode = tonumber(code) or unicodes[code]
+                            local description = descriptions[unicode]
+                            if description then
+                                local slookups = description.slookups
+                                if type(ligature) == "string" then
+                                    ligature = { lpegmatch(splitter,ligature) }
+                                end
+                                if slookups then
+                                    slookups[full] = ligature
+                                else
+                                    description.slookups = { [full] = ligature }
+                                end
+                                done, added = done + 1, true
                             end
-                            if slookups then
-                                slookups[full] = ligature
-                            else
-                                description.slookups = { [full] = ligature }
+                        end
+                    elseif featuretype == "gsub_single" then
+                        lookuptypes[full] = "substitution"
+                        for code, replacement in next, list do
+                            local unicode = tonumber(code) or unicodes[code]
+                            local description = descriptions[unicode]
+                            if description then
+                                local slookups = description.slookups
+                                replacement = tonumber(replacement) or unicodes[replacement]
+    if descriptions[replacement] then
+                                if slookups then
+                                    slookups[full] = replacement
+                                else
+                                    description.slookups = { [full] = replacement }
+                                end
+                                done, added = done + 1, true
+    end
                             end
-                            done, added = done + 1, true
                         end
                     end
-                elseif featuretype == "gsub_single" then
-                    lookuptypes[full] = "substitution"
-                    for code, replacement in next, list do
-                        local unicode = tonumber(code) or unicodes[code]
-                        local description = descriptions[unicode]
-                        if description then
-                            local slookups = description.slookups
-                            replacement = tonumber(replacement) or unicodes[replacement]
-                            if slookups then
-                                slookups[full] = replacement
-                            else
-                                description.slookups = { [full] = replacement }
-                            end
-                            done, added = done + 1, true
+                end
+                if added then
+                    -- script = { lang1, lang2, lang3 } or script = { lang1 = true, ... }
+                    for k, v in next, askedfeatures do
+                        if v[1] then
+                            askedfeatures[k] = table.tohash(v)
                         end
                     end
-                end
-            end
-            if added then
-                -- script = { lang1, lang2, lang3 } or script = { lang1 = true, ... }
-                for k, v in next, askedfeatures do
-                    if v[1] then
-                        askedfeatures[k] = table.tohash(v)
+                    sequences[#sequences+1] = {
+                        chain     = 0,
+                        features  = { [feature] = askedfeatures },
+                        flags     = featureflags,
+                        name      = featurename,
+                        subtables = st,
+                        type      = featuretype,
+                    }
+                    -- register in metadata (merge as there can be a few)
+                    if not gsubfeatures then
+                        gsubfeatures  = { }
+                        fontfeatures.gsub = gsubfeatures
                     end
-                end
-                sequences[#sequences+1] = {
-                    chain     = 0,
-                    features  = { [feature] = askedfeatures },
-                    flags     = featureflags,
-                    name      = featurename,
-                    subtables = st,
-                    type      = featuretype,
-                }
-                -- register in metadata (merge as there can be a few)
-                if not gsubfeatures then
-                    gsubfeatures  = { }
-                    fontfeatures.gsub = gsubfeatures
-                end
-                local k = gsubfeatures[feature]
-                if not k then
-                    k = { }
-                    gsubfeatures[feature] = k
-                end
-                for script, languages in next, askedfeatures do
-                    local kk = k[script]
-                    if not kk then
-                        kk = { }
-                        k[script] = kk
+                    local k = gsubfeatures[feature]
+                    if not k then
+                        k = { }
+                        gsubfeatures[feature] = k
                     end
-                    for language, value in next, languages do
-                        kk[language] = value
+                    for script, languages in next, askedfeatures do
+                        local kk = k[script]
+                        if not kk then
+                            kk = { }
+                            k[script] = kk
+                        end
+                        for language, value in next, languages do
+                            kk[language] = value
+                        end
                     end
                 end
             end
@@ -241,22 +246,37 @@ local anum_persian = {
     [0x0039] = 0x06F9,
 }
 
+local function valid(data)
+    local features = data.resources.features
+    if features then
+        for k, v in next, features do
+            for k, v in next, v do
+                if v.arab then
+                    return true
+                end
+            end
+        end
+    end
+end
+
 local anum_specification = {
     {
         type     = "substitution",
         features = { arab = { URD = true, dflt = true } },
         data     = anum_arabic,
         flags    = noflags, -- { },
+        valid    = valid,
     },
     {
         type     = "substitution",
         features = { arab = { URD = true } },
         data     = anum_persian,
         flags    = noflags, -- { },
+        valid    = valid,
     },
 }
 
-otf.addfeature("anum",anum_specification)
+otf.addfeature("anum",anum_specification) -- todo: only when there is already an arab script feature
 
 registerotffeature {
     name        = 'anum',

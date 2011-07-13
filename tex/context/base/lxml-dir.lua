@@ -7,8 +7,6 @@ if not modules then modules = { } end modules ['lxml-dir'] = {
 }
 
 local format, gsub = string.format, string.gsub
-local getid = lxml.getid
-local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 
 --~ <?xml version="1.0" standalone="yes"?>
 --~ <!-- demo.cdx -->
@@ -25,7 +23,9 @@ local texsprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
 --~ <directive attribute='cdx' value="*" element="cals:table" setup="cdx:cals:table:*"/>
 --~ </directives>
 
-local lxml = lxml
+local lxml, context = lxml, context
+
+local getid = lxml.getid
 
 lxml.directives  = lxml.directives or { }
 local directives = lxml.directives
@@ -84,14 +84,15 @@ local function handle_setup(category,root,attribute,element)
                 setup = setup[category]
             end
             if setup then
-                texsprint(ctxcatcodes,"\\directsetup{",setup,"}")
+                context.directsetup(setup)
             else
                 setup = data[format("%s::%s::*",element,attribute)]
                 if setup then
                     setup = setup[category]
                 end
                 if setup then
-                    texsprint(ctxcatcodes,"\\directsetup{",gsub(setup,'%*',value),"}")
+                    setup = gsub(setup,'%*',value)
+                    context.directsetup(setup)
                 end
             end
         end

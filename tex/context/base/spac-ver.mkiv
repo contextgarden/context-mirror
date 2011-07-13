@@ -1279,7 +1279,9 @@
 % minheight        round height down
 % maxheight        round height up
 % local            use local interline space
-% shift:-3tp       vertical shift within box
+% offset:-3tp       vertical shift within box
+% bottom:lines
+% top:lines
 
 %D We're not downward compatible with \MKII !
 
@@ -1300,6 +1302,7 @@
 \definegridsnapping[\v!first]    [\v!first]
 \definegridsnapping[\v!last]     [\v!last]
 \definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
+\definegridsnapping[\v!one]      [\v!minheight,\v!mindepth]
 \definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
 \definegridsnapping[\v!line]     [\v!line]
 \definegridsnapping[\v!strut]    [\v!strut]
@@ -1308,6 +1311,7 @@
 \definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
 
 \definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+
 
 \newtoks\everysetupgridsnapping % this only happens at the setuplayout level
 
@@ -1343,7 +1347,7 @@
 \unexpanded\def\placeongrid{\dosingleempty\doplaceongrid}
 
 \def\domoveongrid[#1]%
-  {} % gone, unless we set an attribute
+  {[obsolete]} % gone, unless we set an attribute
 
 \def\doplaceongrid[#1]%
   {\snaptogrid[#1]\vbox} % mark as done

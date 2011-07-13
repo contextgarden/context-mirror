@@ -18,19 +18,29 @@ local status_symbols = logs.messenger("fonts","symbols")
 local patterns = { "symb-imp-%s.mkiv", "symb-imp-%s.tex", "symb-%s.mkiv", "symb-%s.tex" }
 local listitem = utilities.parsers.listitem
 
+local function action(name,foundname)
+    -- context.startnointerference()
+    context.startreadingfile()
+    context.input(foundname)
+    status_symbols("loaded: library '%s'",name)
+    context.stopreadingfile()
+    -- context.stopnointerference()
+end
+
+local function failure(name)
+    report_symbols("unknown: library '%s'",name)
+end
+
 function symbols.uselibrary(name)
     if name ~= variables.reset then
         for name in listitem(name) do
-            commands.uselibrary(name,patterns,function(name,foundname)
-             -- context.startnointerference()
-                context.startreadingfile()
-                context.input(foundname)
-                status_symbols("loaded: library '%s'",name)
-                context.stopreadingfile()
-             -- context.stopnointerference()
-            end, function(name)
-                report_symbols("unknown: library '%s'",name)
-            end)
+            commands.uselibrary {
+                name     = name,
+                patterns = patterns,
+                action   = action,
+                failure  = failure,
+                onlyonce = true,
+            }
         end
     end
 end

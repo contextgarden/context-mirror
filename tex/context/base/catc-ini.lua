@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['catc-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: everywhere replace tex.ctxcatcodes -> catcodes.numbers.ctxcatcodes
+
 catcodes         = catcodes         or { }
 catcodes.numbers = catcodes.numbers or { }
 catcodes.names   = catcodes.names   or { }
@@ -31,3 +33,8 @@ end
 for k, v in next, catcodes.numbers do
     tex[k] = v
 end
+
+-- nasty
+
+table.setmetatableindex(catcodes.numbers,function(t,k) if type(k) == "number" then t[k] = k return k end end)
+table.setmetatableindex(catcodes.names,  function(t,k) if type(k) == "string" then t[k] = k return k end end)

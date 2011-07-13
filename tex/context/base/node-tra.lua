@@ -218,7 +218,7 @@ function step_tracers.reset()
 end
 
 function step_tracers.nofsteps()
-    return tex.write(#collection)
+    return context(#collection)
 end
 
 function step_tracers.glyphs(n,i)

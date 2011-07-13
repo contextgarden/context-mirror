@@ -7,10 +7,12 @@ if not modules then modules = { } end modules ['strc-mar'] = {
 }
 
 -- todo: cleanup stack (structures.marks.reset(v_all) also does the job)
+-- todo: only commands.* print to tex, native marks return values
 
 local insert, concat = table.insert, table.concat
 local tostring, next, rawget = tostring, next, rawget
 local lpegmatch = lpeg.match
+local match = string.match
 
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
@@ -45,6 +47,7 @@ local v_current          = variables.current
 local v_default          = variables.default
 local v_page             = variables.page
 local v_all              = variables.all
+local v_keep             = variables.keep
 
 local v_nocheck_suffix   = ":" .. variables.nocheck
 
@@ -130,21 +133,33 @@ local classes = { }
 
 setmetatableindex(classes, function(t,k) local s = settings_to_array(k) t[k] = s return s end)
 
-function marks.synchronize(class,n)
+local lasts = { }
+
+function marks.synchronize(class,n,option)
     local box = texbox[n]
     if box then
         local first, last = sweep(box.list,0,0)
-        local classlist = classes[class]
-        for i=1,#classlist do
-            local class = classlist[i]
-            local range = ranges[class]
-            if not range then
-                range = { }
-                ranges[class] = range
-            end
-            range.first, range.last = first, last
+        if option == v_keep and first == 0 and last == 0 then
             if trace_marks_get or trace_marks_set then
-                report_marks("synchronize: class=%s, first=%s, last=%s",class,range.first,range.last)
+                report_marks("synchronize: class=%s, box=%s, retaining",class,n)
+            end
+            -- todo: check if still valid firts/last in range
+            first = lasts[class] or 0
+            last = first
+        else
+            lasts[class] = last
+            local classlist = classes[class]
+            for i=1,#classlist do
+                local class = classlist[i]
+                local range = ranges[class]
+                if not range then
+                    range = { }
+                    ranges[class] = range
+                end
+                range.first, range.last = first, last
+                if trace_marks_get or trace_marks_set then
+                    report_marks("synchronize: class=%s, first=%s, last=%s",class,range.first,range.last)
+                end
             end
         end
     elseif trace_marks_get or trace_marks_set then
@@ -274,7 +289,7 @@ function marks.set(name,value)
                 report_marks("set: parent=%s, child=%s, index=%s, value=%s",parent,child,topofstack,value)
             end
         end
-        tex.setattribute("global",a_marks,topofstack)
+        texsetattribute("global",a_marks,topofstack)
     end
 end
 
@@ -479,6 +494,15 @@ local function doresolve(name,rangename,swap,df,dl,strict)
     return value, index, found
 end
 
+-- previous : last before sync
+-- next     : first after sync
+
+-- top      : first in sync
+-- bottom   : last in sync
+
+-- first    : first not top in sync
+-- last     : last not bottom in sync
+
 methods[v_previous]         = function(name,range) return doresolve(name,range,false,-1,0,true ) end -- strict
 methods[v_top]              = function(name,range) return doresolve(name,range,false, 0,0,true ) end -- strict
 methods[v_bottom]           = function(name,range) return doresolve(name,range,true , 0,0,true ) end -- strict
@@ -489,12 +513,12 @@ methods[v_top_nocheck]      = function(name,range) return doresolve(name,range,f
 methods[v_bottom_nocheck]   = function(name,range) return doresolve(name,range,true , 0,0,false) end
 methods[v_next_nocheck]     = function(name,range) return doresolve(name,range,true , 0,1,false) end
 
-local function resolve(name,range,f_swap,l_swap,step,strict) -- we can have an offset
-    local f_value, f_index, f_found = doresolve(name,range,f_swap,0,0,strict)
-    local l_value, l_index, l_found = doresolve(name,range,l_swap,0,0,strict)
+local function do_first(name,range,check)
+    local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
+    local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
     if f_found and l_found and l_index > f_index then
         local name = parentname(name)
-        for i=f_index,l_index,step do
+        for i=f_index,l_index,1 do
             local si = stack[i]
             local sn = si[name]
             if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= f_value then
@@ -505,11 +529,26 @@ local function resolve(name,range,f_swap,l_swap,step,strict) -- we can have an o
     return f_value, f_index, f_found
 end
 
-methods[v_first        ] = function(name,range) return resolve(name,range,false,true, 1,true ) end -- strict
-methods[v_last         ] = function(name,range) return resolve(name,range,true,false,-1,true ) end -- strict
+local function do_last(name,range,check)
+    local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
+    local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
+    if f_found and l_found and l_index > f_index then
+        local name = parentname(name)
+        for i=l_index,f_index,-1 do
+            local si = stack[i]
+            local sn = si[name]
+            if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= l_value then
+                return sn, i, si
+            end
+        end
+    end
+    return l_value, l_index, l_found
+end
 
-methods[v_first_nocheck] = function(name,range) return resolve(name,range,false,true, 1,false) end
-methods[v_last_nocheck ] = function(name,range) return resolve(name,range,true,false,-1,false) end
+methods[v_first        ] = function(name,range) return do_first(name,range,true ) end
+methods[v_last         ] = function(name,range) return do_last (name,range,true ) end
+methods[v_first_nocheck] = function(name,range) return do_first(name,range,false) end
+methods[v_last_nocheck ] = function(name,range) return do_last (name,range,false) end
 
 methods[v_current] = function(name,range) -- range is ignored here
     local top = stack[topofstack]
@@ -595,12 +634,22 @@ function marks.fetchallmarks(name,range)        fetchallmarks(name,range       )
 -- here we have a few helpers
 
 function marks.title(tag,n)
-    lists.savedtitle(tag,n,"marking")
+    local listindex = match(n,"^li::(.-)$")
+    if listindex then
+        lists.savedtitle(tag,listindex,"marking")
+    else
+        context(n)
+    end
 end
 
 function marks.number(tag,n) -- no spec
-    -- no prefix (as it is the prefix)
-    lists.savednumber(tag,n)
+    local listindex = match(n,"^li::(.-)$")
+    if listindex then
+        lists.savednumber(tag,listindex)
+    else
+        -- no prefix (as it is the prefix)
+        context(n)
+    end
 end
 
 -- interface

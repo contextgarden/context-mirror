@@ -11,18 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% last_data was written wrong so it needs checking
-
 \startluacode
+    moduledata.fonts = moduledata.fonts or { }
+
     local fontdata   = fonts.hashes.identifiers
-    local otfhandler = fonts.handlers.otf --- will be moduledata
 
-    local last_data = nil
+    local last_data  = nil -- still relevant
+    local format     = string.format
 
-    local format = string.format
-
-    function otfhandler.show_shape(n)
+    function moduledata.fonts.show_shape(n)
         local tfmdata = fontdata[font.current()]
+     -- local _, tfmdata = fonts.definers.define { name = fontname, size = fontsize }
         last_data = tfmdata
         local charnum = tonumber(n)
         if not charnum then
@@ -200,21 +199,23 @@
             context("no such shape: %s",n)
         end
     end
-    function otfhandler.show_all_shapes(start,stop)
+
+    function moduledata.fonts.show_all_shapes()
         local tfmdata = fontdata[font.current()]
+     -- local _, tfmdata = fonts.definers.define { name = fontname, size = fontsize }
         last_data = tfmdata
-        start, stop = start or "\\startTEXpage\\gobbleoneargument", stop or "\\stopTEXpage"
         local unicodes, descriptions = tfmdata.unicodes, tfmdata.descriptions
         for unicode, description in fonts.iterators.descriptions(tfmdata) do
             local name = description.name
-            context("%s{%s}%%",start,unicode)
-            context("\\writestatus{glyph}{U+%04X -> %s}%%",unicode,name)
-            otfhandler.show_shape(unicode)
-            context(stop)
+            context.StartShowGlyphShape(unicode)
+            moduledata.fonts.show_shape(unicode)
+            context.StopShowGlyphShape()
         end
     end
-    function otfhandler.show_shape_field(unicode,name)
+
+    function moduledata.fonts.show_shape_field(unicode,name)
         local tfmdata = last_data or fontdata[font.current()]
+     -- local _, tfmdata = fonts.definers.define { name = fontname, size = fontsize }
         local d = tfmdata.descriptions[unicode]
         if d then
             if name == "unicode" then
@@ -229,15 +230,14 @@
     end
 \stopluacode
 
-\setupcolors
-  [state=start]
+% we can move all to lua (cld)
 
 \def\GetGlyphField#1#2%
-  {\ctxlua{fonts.handlers.otf.show_shape_field(#1,"#2")}}
+  {\ctxlua{moduledata.fonts.show_shape_field(#1,"#2")}}
 
 \def\StartShowGlyphShape#1%
   {\startTEXpage
-   \nonknuthmode
+   \nonknuthmode % default anyway
    \def\GlyphUnicode{#1}}
 
 \def\StopShowGlyphShape
@@ -249,19 +249,20 @@
   {\begingroup
    \definedfont[#1 at #2]%
    \obeyMPboxdepth
-   \ctxlua{fonts.handlers.otf.show_shape("#3")}%
+   \ctxlua{moduledata.fonts.show_shape("#3")}%
    \endgroup}
 
 \def\ShowAllGlyphShapes#1#2% name size
   {\begingroup
-   \nonknuthmode
+   \nonknuthmode % default anyway
    \definedfont[#1 at #2]%
-   \ctxlua{fonts.handlers.otf.show_all_shapes("\\StartShowGlyphShape","\\StopShowGlyphShape")}%
+   \ctxlua{moduledata.fonts.show_all_shapes()}%
    \endgroup}
 
 \setupcolors
   [state=start]
 
+% \continueifinputfile{s-fnt-23.mkiv}
 \doifnotmode{demo}{\endinput}
 
 \starttext
@@ -276,15 +277,15 @@
 
 \switchtobodyfont[cambria,10pt]
 
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x00066} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x1D453} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math} {40bp}{0x1D43F} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D444} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D447} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x02112} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D432} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D43D} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D44A} \stopTEXpage
-\startTEXpage[offset=10pt] \ShowGlyphShape{name:cambria-math}{100bp}{0x1D45D} \stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math} {40bp}{0x00066}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math} {40bp}{0x1D453}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math} {40bp}{0x1D43F}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D444}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D447}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x02112}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D432}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D43D}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D44A}\stopTEXpage
+\startTEXpage[offset=0pt]\ShowGlyphShape{name:cambria-math}{100bp}{0x1D45D}\stopTEXpage
 
 \stoptext

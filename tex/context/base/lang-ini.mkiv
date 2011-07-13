@@ -13,7 +13,7 @@
 
 %D This module needs a further cleanup (real split between ii/iv).
 
-%     \ctxlua{tex.sprint(languages.numbers[tex.count.mainlanguagenumber])}
+% \cldcontext{languages.numbers[tex.count.mainlanguagenumber]}
 
 %D This module implements the (for the moment still simple)
 %D multi||language support of \CONTEXT, which should not be
@@ -347,7 +347,7 @@
 \newtoks \everylanguage
 
 \def\docomplexlanguage% assumes that \currentlanguage is set                   % % % use different name as complex
-  {\normallanguage\ctxlua{commands.languagenumber(%
+  {\normallanguage\ctxcommand{languagenumber(%
      "\currentlanguage",%
      "\defaultlanguage\currentlanguage",%
      "\languageparameter\s!patterns"%

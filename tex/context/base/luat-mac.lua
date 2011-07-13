@@ -269,3 +269,43 @@ end
 --~  {\normalexpanded{\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname}{#name : #content}%
 --~   \next}
 --~ ]]))
+
+-- Just an experiment:
+--
+-- \catcode\numexpr"10FF25=\commentcatcode %% > 110000 is invalid
+--
+-- We could have a push/pop mechanism but binding to txtcatcodes
+-- is okay too.
+
+local txtcatcodes   = false -- also signal and yet unknown
+
+local commentsignal = utf.char(0x10FF25)
+
+local encodecomment = P("%%") / commentsignal --
+----- encodepattern = Cs(((1-encodecomment)^0 * encodecomment)) -- strips but not nice for verbatim
+local encodepattern = Cs((encodecomment + 1)^0)
+local decodecomment = P(commentsignal) / "%%%%" -- why doubles here?
+local decodepattern = Cs((decodecomment + 1)^0)
+
+function resolvers.macros.encodecomment(str)
+    if txtcatcodes and tex.catcodetable == txtcatcodes then
+        return lpegmatch(encodepattern,str) or str
+    else
+        return str
+    end
+end
+
+function resolvers.macros.decodecomment(str) -- normally not needed
+    return txtcatcodes and lpegmatch(decodepattern,str) or str
+end
+
+-- resolvers.macros.commentsignal        = commentsignal
+-- resolvers.macros.encodecommentpattern = encodepattern
+-- resolvers.macros.decodecommentpattern = decodepattern
+
+function resolvers.macros.enablecomment(thecatcodes)
+    if not txtcatcodes then
+        txtcatcodes = thecatcodes or catcodes.numbers.txtcatcodes
+        utilities.sequencers.appendaction(resolvers.openers.helpers.textlineactions,"system","resolvers.macros.encodecomment")
+    end
+end

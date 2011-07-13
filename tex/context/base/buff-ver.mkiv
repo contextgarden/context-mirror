@@ -153,7 +153,7 @@
 \to \everysetuptyping
 
 \def\doinitializevisualizer#1%
-  {\ifproductionrun\ctxlua{visualizers.load("#1")}\fi}
+  {\ifproductionrun\ctxcommand{loadvisualizer("#1")}\fi}
 
 % \definetype[typeTEX][option=tex]
 %
@@ -565,15 +565,16 @@
 
 \def\dododotypefile#1#2%
   {\doifelsetypingfile{#2}
-     {\dodododotypefile{#1}\readfilename}
+     {\dodododotypefile{#1}\askedtypingfile}
      {\showmessage\m!verbatims1{#2}}}
 
 \def\doifelsetypingfile#1% sets \readfilename (we will make this proper mkiv i.e. less messy)
-  {\doiflocfileelse{#1}
-     {\firstoftwoarguments}
-     {\doifinputfileelse{#1}
-        {\def\readfilename{#1}\firstoftwoarguments} % messy, looks wrong too
-        {\secondoftwoarguments}}}
+  {\edef\askedtypingfile{\locfilename{#1}}%
+   \ifx\askedtypingfile\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 \def\dodododotypefile#1#2% category name
   {\edef\currenttyping{#1}%

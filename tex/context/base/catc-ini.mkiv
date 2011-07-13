@@ -86,7 +86,7 @@
 \newcount\cctcounterb
 \newcount\cctcounterc
 
-\def\newcatcodetable#1%
+\def\newcatcodetable#1% we could move the cctdefcounter to lua
   {\global\advance\cctdefcounter\plusone
    \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
    \newconstant#1%

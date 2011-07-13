@@ -643,9 +643,11 @@ local function analyze(filename) -- only files on current path
     if f then
         local t = { }
         local line = f:read("*line") or ""
-        local preamble = match(line,"[\254\255]*%%%s+(.+)$") -- there can be an utf bomb in front
+        -- there can be an utf bomb in front: \254\255 or \255\254
+        -- a template line starts with % or %% (used in asciimode) followed by one or more spaces
+        local preamble = match(line,"^[\254\255]*%%%%?%s+(.+)$")
         if preamble then
-            for key, value in gmatch(preamble,"(%S+)=(%S+)") do
+            for key, value in gmatch(preamble,"(%S+)%s*=%s*(%S+)") do
                 t[key] = value
             end
             t.type = "tex"
@@ -661,7 +663,6 @@ local function analyze(filename) -- only files on current path
         f:close()
         return t
     end
-    return nil
 end
 
 local function makestub(wrap,template,filename,prepname)
@@ -898,7 +899,7 @@ function scripts.context.run(ctxdata,filename)
                         end
                         flags[#flags+1] = format('--backend="%s"',backend)
                         --
-                        local command = format("luatex %s %s", concat(flags," "), quote(filename))
+                        local command = format("luatex %s %s \\stoptext", concat(flags," "), quote(filename))
                         local oldhash, newhash = scripts.context.multipass.hashfiles(jobname), { }
                         local once = environment.argument("once")
                         local maxnofruns = (once and 1) or scripts.context.multipass.nofruns

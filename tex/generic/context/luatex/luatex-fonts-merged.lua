@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 06/29/11 09:57:49
+-- merge date  : 07/13/11 20:14:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -1710,7 +1710,7 @@ end
 
 local sort, fastcopy, sortedpairs = table.sort, table.fastcopy, table.sortedpairs -- dependency!
 
-function lpeg.append(list,pp)
+function lpeg.append(list,pp,delayed)
     local p = pp
     if #list > 0 then
         list = fastcopy(list)
@@ -1720,6 +1720,14 @@ function lpeg.append(list,pp)
                 p = P(list[l]) + p
             else
                 p = P(list[l])
+            end
+        end
+    elseif delayed then
+        for k, v in sortedpairs(list) do
+            if p then
+                p = P(k)/list + p
+            else
+                p = P(k)/list
             end
         end
     else
@@ -2270,10 +2278,42 @@ local path   = C(((1-slash)^0 * slash)^0)
 local suffix = period * C(P(1-period)^0 * P(-1))
 local base   = C((1-suffix)^0)
 
-local pattern = (drive + Cc("")) * (path + Cc("")) * (base + Cc("")) * (suffix + Cc(""))
+drive  = drive  + Cc("")
+path   = path   + Cc("")
+base   = base   + Cc("")
+suffix = suffix + Cc("")
 
-function file.splitname(str) -- returns drive, path, base, suffix
-    return lpegmatch(pattern,str)
+local pattern_a =   drive * path  *   base * suffix
+local pattern_b =           path  *   base * suffix
+local pattern_c = C(drive * path) * C(base * suffix)
+
+function file.splitname(str,splitdrive)
+    if splitdrive then
+        return lpegmatch(pattern_a,str) -- returns drive, path, base, suffix
+    else
+        return lpegmatch(pattern_b,str) -- returns path, base, suffix
+    end
+end
+
+function file.nametotable(str,splitdrive) -- returns table
+    local path, drive, subpath, name, base, suffix = lpegmatch(pattern_c,str)
+    if splitdrive then
+        return {
+            path    = path,
+            drive   = drive,
+            subpath = subpath,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    else
+        return {
+            path    = path,
+            name    = name,
+            base    = base,
+            suffix  = suffix,
+        }
+    end
 end
 
 -- function test(t) for k, v in next, t do print(v, "=>", file.splitname(v)) end end
@@ -4990,7 +5030,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.732 -- beware: also sync font-mis.lua
+otf.version              = 2.733 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -5234,11 +5274,14 @@ end
 -- patches.register("before","migrate metadata","cambria",function() end)
 
 function patches.register(what,where,pattern,action)
-    local ww = what[where]
-    if ww then
-        ww[pattern] = action
-    else
-        ww = { [pattern] = action}
+    local pw = patches[what]
+    if pw then
+        local ww = pw[where]
+        if ww then
+            ww[pattern] = action
+        else
+            pw[where] = { [pattern] = action}
+        end
     end
 end
 
@@ -5363,6 +5406,9 @@ function otf.load(filename,format,sub,featurefile)
                     duplicates = {
                         -- alternative unicodes
                     },
+                    variants = {
+                        -- alternative unicodes (variants)
+                    },
                     lookuptypes = {
                     },
                 },
@@ -5387,6 +5433,7 @@ function otf.load(filename,format,sub,featurefile)
             if packdata then
                 if cleanup > 0 then
                     collectgarbage("collect")
+--~ lua.collectgarbage()
                 end
                 enhance("pack",data,filename,nil)
             end
@@ -5394,6 +5441,7 @@ function otf.load(filename,format,sub,featurefile)
             data = containers.write(otf.cache, hash, data)
             if cleanup > 1 then
                 collectgarbage("collect")
+--~ lua.collectgarbage()
             end
             stoptiming(data)
             if elapsedtime then -- not in generic
@@ -5402,10 +5450,12 @@ function otf.load(filename,format,sub,featurefile)
             fontloader.close(fontdata) -- free memory
             if cleanup > 3 then
                 collectgarbage("collect")
+--~ lua.collectgarbage()
             end
             data = containers.read(otf.cache, hash) -- this frees the old table and load the sparse one
             if cleanup > 2 then
                 collectgarbage("collect")
+--~ lua.collectgarbage()
             end
         else
             data = nil
@@ -5543,6 +5593,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicode
     local duplicates   = resources.duplicates
+    local variants     = resources.variants
 
     if rawsubfonts then
 
@@ -5642,11 +5693,28 @@ actions["prepare glyphs"] = function(data,filename,raw)
                 }
                 local altuni = glyph.altuni
                 if altuni then
-                    local d = { }
+                    local d
                     for i=1,#altuni do
-                        d[#d+1] = altuni[i].unicode
+                        local a = altuni[i]
+                        local u = a.unicode
+                        local v = a.variant
+                        if v then
+                            local vv = variants[v]
+                            if vv then
+                                vv[u] = unicode
+                            else -- xits-math has some:
+                                vv = { [u] = unicode }
+                                variants[v] = vv
+                            end
+                        elseif d then
+                            d[#d+1] = u
+                        else
+                            d = { u }
+                        end
                     end
-                    duplicates[unicode] = d
+                    if d then
+                        duplicates[unicode] = d
+                    end
                 end
             else
                 report_otf("potential problem: glyph 0x%04X is used but empty",index)
@@ -5668,9 +5736,8 @@ actions["check encoding"] = function(data,filename,raw)
     local properties   = data.properties
     local unicodes     = resources.unicodes -- name to unicode
     local indices      = resources.indices  -- index to unicodes
-    local duplicates   = resources.duplicates
 
-    -- begin of messy (not needed whwn cidmap)
+    -- begin of messy (not needed when cidmap)
 
     local mapdata        = raw.map or { }
     local unicodetoindex = mapdata and mapdata.map or { }
@@ -5744,7 +5811,6 @@ actions["add duplicates"] = function(data,filename,raw)
             end
         end
     end
-
 end
 
 -- class      : nil base mark ligature component (maybe we don't need it in description)
@@ -6921,15 +6987,15 @@ local function check_otf(forced,specification,suffix,what)
     if forced then
         name = file.addsuffix(name,suffix,true)
     end
-    local fullname, tfmdata = findbinfile(name,suffix) or "", nil -- one shot
+    local fullname = findbinfile(name,suffix) or ""
     if fullname == "" then
-        fullname = fonts.names.getfilename(name,suffix)
+        fullname = fonts.names.getfilename(name,suffix) or ""
     end
     if fullname ~= "" then
-        specification.filename, specification.format = fullname, what -- hm, so we do set the filename, then
-        tfmdata = read_from_otf(specification)                       -- we need to do it for all matches / todo
+        specification.filename = fullname
+        specification.format   = what
+        return read_from_otf(specification)
     end
-    return tfmdata
 end
 
 local function opentypereader(specification,suffix,what)

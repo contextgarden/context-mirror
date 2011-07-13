@@ -12,7 +12,7 @@ local serialize = table.serialize
 
 local allocate          = utilities.storage.allocate
 local mark              = utilities.storage.mark
-local texsprint         = tex.sprint
+local contextsprint     = context.sprint
 local setmetatableindex = table.setmetatableindex
 
 local report_interface  = logs.reporter("interface","initialization")
@@ -176,9 +176,9 @@ logs.setmessenger(context.verbatim.ctxreport)
 
 -- status
 
-function commands.writestatus(category,message)
+function commands.writestatus(category,message,...)
     local r = reporters[category]
-    r(message)
+    r(message,...)
 end
 
 -- initialization
@@ -191,28 +191,28 @@ function interfaces.setuserinterface(interface,response)
         for given, constant in next, complete.constants do
             constant = constant[interface] or constant.en or given
             constants[constant] = given -- breedte -> width
-            texsprint("\\do@sicon{",given,"}{",constant,"}")
+            contextsprint("\\do@sicon{",given,"}{",constant,"}")
             nofconstants = nofconstants + 1
         end
         local nofvariables = 0
         for given, variable in next, complete.variables do
             variable = variable[interface] or variable.en or given
             variables[given] = variable -- ja -> yes
-            texsprint("\\do@sivar{",given,"}{",variable,"}")
+            contextsprint("\\do@sivar{",given,"}{",variable,"}")
             nofvariables = nofvariables + 1
         end
         local nofelements = 0
         for given, element in next, complete.elements do
             element = element[interface] or element.en or given
             elements[element] = given
-            texsprint("\\do@siele{",given,"}{",element,"}")
+            contextsprint("\\do@siele{",given,"}{",element,"}")
             nofelements = nofelements + 1
         end
         local nofcommands = 0
         for given, command in next, complete.commands do
             command = command[interface] or command.en or given
             if command ~= given then
-                texsprint("\\do@sicom{",given,"}{",command,"}")
+                contextsprint("\\do@sicom{",given,"}{",command,"}")
             end
             nofcommands = nofcommands + 1
         end

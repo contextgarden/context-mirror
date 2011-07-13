@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2011.06.29 09:57}
+\newcontextversion{2011.07.13 20:14}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -230,10 +230,12 @@
 \setuplabeltext
   [placeholder={, moved}]
 
+% move to support module, and then use context(...)
+
 \startluacode
     function commands.percentageof(str,dim)
         local n = str:match("^(.*)%%$")
-        tex.sprint(tex.ctxcatcodes,(n and (tonumber(n)/100)*dim .. "sp") or str)
+        context.sprint(tex.ctxcatcodes,(n and (tonumber(n)/100)*dim .. "sp") or str)
     end
 \stopluacode
 

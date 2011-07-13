@@ -98,8 +98,8 @@ end
 
 -- table namespace ?
 
-local function f_empty () return "" end -- t,k
-local function f_self  (t,k) t[k] = k return k end
+local function f_empty() return "" end -- t,k
+local function f_self(t,k) t[k] = k return k end
 local function f_ignore() end -- t,k,v
 
 local t_empty  = { __index = empty }

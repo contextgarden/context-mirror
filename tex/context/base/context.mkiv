@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.06.29 09:57}
+\edef\contextversion{2011.07.13 20:14}
 
 %D For those who want to use this:
 
@@ -92,7 +92,10 @@
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-rtp}
 
-\loadmarkfile{supp-fil}
+\loadmkvifile{file-ini}
+\loadmkvifile{file-res}
+\loadmkvifile{file-lib}
+
 \loadmarkfile{supp-dir}
 
 \loadmarkfile{char-ini}
@@ -150,7 +153,10 @@
 \loadmarkfile{typo-ini}
 
 \loadmarkfile{page-ins}
-\loadmarkfile{core-fil}
+
+\loadmkvifile{file-syn}
+\loadmkvifile{file-mod}
+
 \loadmarkfile{core-con}
 
 \loadmarkfile{cont-fil}
@@ -252,7 +258,7 @@
 %loadmarkfile{page-mar} % also commented code in anch-pgr.mkiv
 \loadmarkfile{typo-mar}
 
-\loadmarkfile{core-job} % why so late?
+\loadmkvifile{file-job} % why so late?
 
 \loadmarkfile{buff-ini}
 \loadmarkfile{buff-ver}

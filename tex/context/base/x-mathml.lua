@@ -10,12 +10,11 @@ if not modules then modules = { } end modules ['x-mathml'] = {
 
 local type, next = type, next
 local utf = unicode.utf8
-local texsprint, ctxcatcodes, txtcatcodes = tex.sprint, tex.ctxcatcodes, tex.txtcatcodes
 local format, lower, find, gsub = string.format, string.lower, string.find, string.gsub
 local strip = string.strip
 local utfchar, utffind, utfgmatch, utfgsub  = utf.char, utf.find, utf.gmatch, utf.gsub
 local xmlsprint, xmlcprint, xmltext, xmlcontent = xml.sprint, xml.cprint, xml.text, xml.content
-local lxmltext, getid = lxml.text, lxml.getid
+local getid = lxml.getid
 local utfcharacters, utfvalues = string.utfcharacters, string.utfvalues
 local lpegmatch = lpeg.match
 
@@ -56,6 +55,8 @@ local r_replacements = { -- in main table
     [">"]              = "\\mmlrightdelimiter>",
     [doublebar]        = "\\mmlrightdelimiter\\Vert",
 }
+
+-- todo: play with asciimode and avoid mmlchar
 
 local o_replacements = { -- in main table
     ["@l"]             = "\\mmlleftdelimiter.",
@@ -464,8 +465,8 @@ function mathml.stripped(str)
     context(strip(str))
 end
 
-function characters.remapentity(chr,slot) -- brrrrrr
-    texsprint(format("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr))
+function characters.remapentity(chr,slot) -- Brrrrrr, this will be replaced!
+    context("{\\catcode%s=13\\xdef%s{\\string%s}}",slot,utfchar(slot),chr)
 end
 
 function mathml.mn(id,pattern)
@@ -475,7 +476,6 @@ function mathml.mn(id,pattern)
     local rep = gsub(str,"&.-;","")
     local rep = gsub(rep,"(%s+)",utfchar(0x205F)) -- medspace e.g.: twenty one (nbsp is not seen)
     local rep = gsub(rep,".",n_replacements)
- -- texsprint(ctxcatcodes,rep)
     context.mn(rep)
 end
 
@@ -508,14 +508,14 @@ function mathml.mfenced(id) -- multiple separators
     id = getid(id)
     local left, right, separators = id.at.open or "(", id.at.close or ")", id.at.separators or ","
     local l, r = l_replacements[left], r_replacements[right]
-    texsprint(ctxcatcodes,"\\enabledelimiter")
+    context.enabledelimiter()
     if l then
-        texsprint(ctxcatcodes,l_replacements[left] or o_replacements[left] or "")
+        context(l_replacements[left] or o_replacements[left] or "")
     else
-        texsprint(ctxcatcodes,o_replacements["@l"])
-        texsprint(ctxcatcodes,left)
+        context(o_replacements["@l"])
+        context(left)
     end
-    texsprint(ctxcatcodes,"\\disabledelimiter")
+    context.disabledelimiter()
     local collected = lxml.filter(id,"/*") -- check the *
     if collected then
         local n = #collected
@@ -541,19 +541,19 @@ function mathml.mfenced(id) -- multiple separators
                     elseif m == "}" then
                         m = "\\}"
                     end
-                    texsprint(ctxcatcodes,m)
+                    context(m)
                 end
             end
         end
     end
-    texsprint(ctxcatcodes,"\\enabledelimiter")
+    context.enabledelimiter()
     if r then
-        texsprint(ctxcatcodes,r_replacements[right] or o_replacements[right] or "")
+        context(r_replacements[right] or o_replacements[right] or "")
     else
-        texsprint(ctxcatcodes,right)
-        texsprint(ctxcatcodes,o_replacements["@r"])
+        context(right)
+        context(o_replacements["@r"])
     end
-    texsprint(ctxcatcodes,"\\disabledelimiter")
+    context.disabledelimiter()
 end
 
 --~ local function flush(e,tag,toggle)
@@ -677,7 +677,9 @@ str = gsub(str,"&.-;","")
             collect(m,e)
         end
     end
-    tex.sprint(ctxcatcodes,[[\halign\bgroup\hss\startimath\alignmark\stopimath\aligntab\startimath\alignmark\stopimath\cr]])
+    context.halign()
+    context.bgroup()
+    context([[\hss\startimath\alignmark\stopimath\aligntab\startimath\alignmark\stopimath\cr]])
     for i=1,#matrix do
         local m = matrix[i]
         local mline = true
@@ -688,7 +690,7 @@ str = gsub(str,"&.-;","")
             end
         end
         if mline then
-            tex.sprint(ctxcatcodes,[[\noalign{\obeydepth\nointerlineskip}]])
+            context.noalign([[\obeydepth\nointerlineskip]])
         end
         for j=1,#m do
             local mm = m[j]
@@ -726,14 +728,14 @@ str = gsub(str,"&.-;","")
                 chr = "\\mmlmcolumndigitspace" -- utfchar(0x2007)
             end
             if j == numbers + 1 then
-                tex.sprint(ctxcatcodes,"&")
+                context("\\aligntab")
             end
             local nchr = n_replacements[chr]
-            tex.sprint(ctxcatcodes,nchr or chr)
+            context(nchr or chr)
         end
-        tex.sprint(ctxcatcodes,"\\crcr")
+        context.crcr()
     end
-    tex.sprint(ctxcatcodes,"\\egroup")
+    context.egroup()
 end
 
 local spacesplitter = lpeg.tsplitat(" ")
@@ -751,11 +753,9 @@ function mathml.mtable(root)
     local framespacing = at.framespacing or "0pt"
     local framespacing = at.framespacing or "-\\ruledlinewidth" -- make this an option
 
-    texsprint(ctxcatcodes, format("\\bTABLE[frame=%s,offset=%s]",frametypes[frame or "none"] or "off",framespacing))
---~ context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
+    context.bTABLE { frame = frametypes[frame or "none"] or "off", offset = framespacing }
     for e in lxml.collected(root,"/(mml:mtr|mml:mlabeledtr)") do
-        texsprint(ctxcatcodes,"\\bTR")
---~ context.bTR()
+        context.bTR()
         local at = e.at
         local col = 0
         local rfr = at.frame       or (frames       and frames      [#frames])
@@ -772,28 +772,23 @@ function mathml.mtable(root)
                 local cra = rowalignments   [at.rowalign    or (rowaligns    and rowaligns   [col]) or rra or "center"] or "lohi"
                 local cca = columnalignments[at.columnalign or (columnaligns and columnaligns[col]) or rca or "center"] or "middle"
                 local cfr = frametypes      [at.frame       or (frames       and frames      [col]) or rfr or "none"  ] or "off"
-                texsprint(ctxcatcodes,format("\\bTD[align={%s,%s},frame=%s,nx=%s,ny=%s]$\\ignorespaces",cra,cca,cfr,columnspan,rowspan))
---~ texfprint("\\bTD[align={%s,%s},frame=%s,nx=%s,ny=%s]$\\ignorespaces",cra,cca,cfr,columnspan,rowspan)
---~ context.bTD { align = format("{%s,%s}",cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
---~ context.bmath()
---~ context.ignorespaces()
+                context.bTD { align = format("{%s,%s}",cra,cca), frame = cfr, nx = columnspan, ny = rowspan }
+                context.startimath()
+                context.ignorespaces()
                 xmlcprint(e)
-                texsprint(ctxcatcodes,"\\removeunwantedspaces$\\eTD") -- $
---~ context.emath()
---~ context.removeunwantedspaces()
---~ context.eTD()
+                context.stopimath()
+                context.removeunwantedspaces()
+                context.eTD()
             end
         end
---~         if e.tg == "mlabeledtr" then
---~             texsprint(ctxcatcodes,"\\bTD")
---~             xmlcprint(xml.first(e,"/!mml:mtd"))
---~             texsprint(ctxcatcodes,"\\eTD")
---~         end
-        texsprint(ctxcatcodes,"\\eTR")
---~ context.eTR()
+     -- if e.tg == "mlabeledtr" then
+     --     context.bTD()
+     --     xmlcprint(xml.first(e,"/!mml:mtd"))
+     --     context.eTD()
+     -- end
+        context.eTR()
     end
-    texsprint(ctxcatcodes, "\\eTABLE")
---~ context.eTABLE()
+    context.eTABLE()
 end
 
 function mathml.csymbol(root)

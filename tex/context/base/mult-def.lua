@@ -6590,6 +6590,10 @@ return {
    ["en"]="values",
    ["nl"]="waarden",
   },
+  ["layout"]={
+   ["en"]="layout",
+   ["nl"]="layout",
+  },
   ["action"]={
    ["cs"]="akce",
    ["de"]="aktion",

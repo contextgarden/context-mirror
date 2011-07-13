@@ -272,6 +272,8 @@
   {\setuvalue        {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
    \setuvalue     {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
    \setuvalue                 {\e!place#1}{\dotripleempty\docomplexplacefloat[#1]}%
+   \setuvalue         {\e!start\e!place#1}{\dodoubleempty\dostartplacefloat[#1]}%
+   \setuvalue          {\e!stop\e!place#1}{\dostopplacefloat}%
    \setuvalue               {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
    \setuvalue          {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
    \setuvalue           {\e!stop#1\e!text}{\dostoptextfloat}%
@@ -588,10 +590,10 @@
 % A complication is that we may have to handle a pagebreak
 % first, which in turn may issue a (postponed) float.
 % Therefore we may not trust on variable assignments before
-% we're realy dealing with the float. Some day I'll root out
+% we're really dealing with the float. Some day I'll root out
 % the global settings.
 
-\def\docomplexplacefloat[#1][#2]% [#3]#4%
+\unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
   {\edef\currentfloat{#1}%
    \doifnothing\currentfloat{\let\currentfloat\v!figure}%
    \doifelsenothing{#2}
@@ -601,8 +603,20 @@
      {\normalexpanded{\noexpand\dodocomplexsplitfloat[\currentfloat][\floatlocation]}}
      {\normalexpanded{\noexpand\dodocomplexplacefloat[\currentfloat][\floatlocation]}}}
 
-\long\def\dodocomplexsplitfloat[#1][#2][#3]#4%
+\unexpanded\def\dodocomplexsplitfloat[#1][#2][#3]#4%
   {\splitfloat{\dodocomplexplacefloat[#1][#2][#3]{#4}}}
+
+\unexpanded\def\dostartplacefloat[#1][#2]% will be done the other way around but okay for now
+  {\begingroup
+   \getparameters[\??fl\??fl][\c!location=,\c!reference=,\c!title=,#2]%
+   \normalexpanded{\docomplexplacefloat[#1][\@@fl@@fllocation][\@@fl@@flreference]{\@@fl@@fltitle}}%
+   \bgroup
+   \ignorespaces}
+
+\unexpanded\def\dostopplacefloat
+  {\removeunwantedspaces
+   \egroup
+   \endgroup}
 
 \def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
@@ -840,7 +854,7 @@
      \hsize\localhsize
    \fi}
 
-\newevery \everyinsidefloat \relax
+\ifdefined\everyinsidefloat \else \newevery \everyinsidefloat \relax \fi
 
 \appendtoks
   \everyinsidefloat\emptytoks % in case it's called earlier
@@ -910,12 +924,12 @@
       \def\docommand##1%
         {\processaction
            [##1]%
-           [ \v!hang=>\dodocommand+,%
-            +\v!hang=>\dodocommand+,%
-            -\v!hang=>\dodocommand-]}%
+           [ \v!hang=>\dodocommand\plusone,%
+            +\v!hang=>\dodocommand\plusone,%
+            -\v!hang=>\dodocommand\minusone]}%
       \def\dodocommand##1% inefficient but who cares
-        {\ifdone\else\global\sidefloatsidelines\zeropoint\donetrue\fi
-         \global\advance\sidefloatsidelines\plusone\relax}%
+        {\ifdone\else\global\sidefloatsidelines\zerocount\donetrue\fi
+         \global\advance\sidefloatsidelines##1\relax}%
       \donefalse\normalexpanded{\noexpand\dorepeatwithcommand[#1]}\docommand}%
    \egroup}
 
@@ -1907,7 +1921,7 @@
 %    \@EA\beforesplitstring\floatcolumn\at*\to\floatcolumn}
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
-  {\ctxlua{floats.analysemethod("#1")}}
+  {\ctxcommand{analysefloatmethod("#1")}}
 
 \def\dogetfloatbox#1#2%
   {\ifvisible

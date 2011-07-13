@@ -20,7 +20,7 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 
 --[[
 The ConTeXt figure inclusion mechanisms are among the oldest code
-in ConTeXt and evolve dinto a complex whole. One reason is that we
+in ConTeXt and evolved into a complex whole. One reason is that we
 deal with backend in an abstract way. What complicates matters is
 that we deal with internal graphics as well: TeX code, MetaPost code,
 etc. Later on figure databases were introduced, which resulted in
@@ -413,7 +413,9 @@ local function register(askedname,specification)
                     report_inclusion("checking conversion of '%s' (%s): old format '%s', new format '%s', conversion '%s', resolution '%s'",
                         askedname,specification.fullname,format,newformat,conversion or "default",resolution or "default")
                 end
-                local converter = (newformat ~= format) and converters[format]
+                -- quick hack
+             -- local converter = (newformat ~= format) and converters[format]
+                local converter = (newformat ~= format or resolution) and converters[format]
                 if converter then
                     if converter[newformat] then
                         converter = converter[newformat]
@@ -1307,3 +1309,13 @@ function figures.applyratio(width,height,w,h) -- width and height are strings an
         end
     end
 end
+
+-- example of a simple plugin:
+--
+-- figures.converters.png = {
+--     png = function(oldname,newname,resolution)
+--         local command = string.format('gm convert -depth 1 "%s" "%s"',oldname,newname)
+--         logs.report(string.format("running command %s",command))
+--         os.execute(command)
+--     end,
+-- }

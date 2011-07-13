@@ -296,19 +296,19 @@
      \let\headlastlinewidth\!!zeropoint
      % kind of special, we want to snap heads also according to local specs local
      \ifgridsnapping
-       \begingroup
-       \edef\currentheadgridsnapping{\headparameter\c!grid}%
-       \ifconditional\headisdisplay
-         \ifx\currentheadgridsnapping\empty\else
-           \dosetheadattributes\c!style\c!color
-           \setupinterlinespace
-           \dosetheadattributes\c!textstyle\c!textcolor
-           \setupinterlinespace
+       \hbox\bgroup % extra hbox will trigger global snapper on top of local
+         \edef\currentheadgridsnapping{\headparameter\c!grid}%
+         \ifconditional\headisdisplay
+           \ifx\currentheadgridsnapping\empty\else
+             \dosetheadattributes\c!style\c!color
+             \setupinterlinespace
+             \dosetheadattributes\c!textstyle\c!textcolor
+             \setupinterlinespace
+           \fi
          \fi
-       \fi
-       \snaptogrid[\currentheadgridsnapping]\hbox
-         {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
-       \endgroup
+         \snaptogrid[\currentheadgridsnapping]\hbox
+           {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%
+       \egroup
      \else
        \hbox
          {\hskip\localheadskip\hskip\headparameter\c!margin\box\sectionheadbox}%

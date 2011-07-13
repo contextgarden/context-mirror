@@ -21,15 +21,20 @@
 \ifdefined \tpacatcodes \else \newcatcodetable \tpacatcodes \fi % { }
 \ifdefined \tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % < >
 
+\chardef\doublecommentsignal="10FF25 %% < 110000 (last valid range)
+
 \startcatcodetable \ctxcatcodes
     \catcode\tabasciicode       \spacecatcode
     \catcode\endoflineasciicode \endoflinecatcode
     \catcode\formfeedasciicode  \endoflinecatcode
     \catcode\spaceasciicode     \spacecatcode
     \catcode\endoffileasciicode \ignorecatcode
-    \catcode\circumflexasciicode\superscriptcatcode
-    \catcode\underscoreasciicode\subscriptcatcode
-    \catcode\ampersandasciicode \alignmentcatcode
+  % \catcode\circumflexasciicode\superscriptcatcode
+  % \catcode\underscoreasciicode\subscriptcatcode
+  % \catcode\ampersandasciicode \alignmentcatcode
+    \catcode\underscoreasciicode\othercatcode
+    \catcode\circumflexasciicode\othercatcode
+    \catcode\ampersandasciicode \othercatcode
     \catcode\backslashasciicode \escapecatcode
     \catcode\leftbraceasciicode \begingroupcatcode
     \catcode\rightbraceasciicode\endgroupcatcode
@@ -112,6 +117,7 @@
     \catcode\backslashasciicode \escapecatcode
     \catcode\leftbraceasciicode \begingroupcatcode
     \catcode\rightbraceasciicode\endgroupcatcode
+    \catcode\doublecommentsignal\commentcatcode
 \stopcatcodetable
 
 \letcatcodecommand \ctxcatcodes \barasciicode   \relax

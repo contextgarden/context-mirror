@@ -43,6 +43,8 @@
 %D new functionality. We no longer support the hooks for initializing
 %D code as this can be done at the \LUA\ end.
 
+% instead of \ctxwrite and \ctxprint, use \cldcontext
+
 \def\ctxdirectlua{\directlua\zerocount}
 \def\ctxlatelua  {\latelua  \zerocount}
 \def\ctxsprint #1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
@@ -59,7 +61,7 @@
 
 %D Reporting the version of \LUA\ that we use is done as follows:
 
-\edef\luaversion{\ctxlua{tex.print(_VERSION)}}
+\edef\luaversion{\ctxwrite{_VERSION}} % no context luaded yet
 
 \def\registerctxluafile#1#2{\ctxlua{lua.registercode("#1","#2")}}
 \def\ctxloadluafile      #1{\ctxlua{lua.registercode("#1")}}

@@ -1,33 +1,36 @@
 -- This patch code is moved from font-pat.lua to this goodies
--- files as it does not belomg in the core code.
+-- files as it does not belong in the core code.
 
-local patches = fonts.handlers.otf.enhancers.patches
-
-local function patch(data,filename)
-    local uni_to_ind = data.map.map
-    if not uni_to_ind[0x391] then
-        -- beware, this is a hack, features for latin often don't apply to greek
-        -- but lm has not much features anyway (and only greek for math)
-        patches.report("adding 13 greek capitals")
-        uni_to_ind[0x391] = uni_to_ind[0x41]
-        uni_to_ind[0x392] = uni_to_ind[0x42]
-        uni_to_ind[0x395] = uni_to_ind[0x45]
-        uni_to_ind[0x397] = uni_to_ind[0x48]
-        uni_to_ind[0x399] = uni_to_ind[0x49]
-        uni_to_ind[0x39A] = uni_to_ind[0x4B]
-        uni_to_ind[0x39C] = uni_to_ind[0x4D]
-        uni_to_ind[0x39D] = uni_to_ind[0x4E]
-        uni_to_ind[0x39F] = uni_to_ind[0x4F]
-        uni_to_ind[0x3A1] = uni_to_ind[0x52]
-        uni_to_ind[0x3A4] = uni_to_ind[0x54]
-        uni_to_ind[0x3A7] = uni_to_ind[0x58]
-        uni_to_ind[0x396] = uni_to_ind[0x5A]
-    end
-end
-
-patches.register("after","prepare glyphs","^lmroman",     patch)
-patches.register("after","prepare glyphs","^lmsans",      patch)
-patches.register("after","prepare glyphs","^lmtypewriter",patch)
+-- This patch is no longer needed but we keep it commented as
+-- it is an example.
+--
+-- local patches = fonts.handlers.otf.enhancers.patches
+--
+-- local function patch(data,filename)
+--     local uni_to_ind = data.map.map
+--     if not uni_to_ind[0x391] then
+--         -- beware, this is a hack, features for latin often don't apply to greek
+--         -- but lm has not much features anyway (and only greek for math)
+--         patches.report("adding 13 greek capitals")
+--         uni_to_ind[0x391] = uni_to_ind[0x41]
+--         uni_to_ind[0x392] = uni_to_ind[0x42]
+--         uni_to_ind[0x395] = uni_to_ind[0x45]
+--         uni_to_ind[0x397] = uni_to_ind[0x48]
+--         uni_to_ind[0x399] = uni_to_ind[0x49]
+--         uni_to_ind[0x39A] = uni_to_ind[0x4B]
+--         uni_to_ind[0x39C] = uni_to_ind[0x4D]
+--         uni_to_ind[0x39D] = uni_to_ind[0x4E]
+--         uni_to_ind[0x39F] = uni_to_ind[0x4F]
+--         uni_to_ind[0x3A1] = uni_to_ind[0x52]
+--         uni_to_ind[0x3A4] = uni_to_ind[0x54]
+--         uni_to_ind[0x3A7] = uni_to_ind[0x58]
+--         uni_to_ind[0x396] = uni_to_ind[0x5A]
+--     end
+-- end
+--
+-- patches.register("after","prepare glyphs","^lmroman",     patch)
+-- patches.register("after","prepare glyphs","^lmsans",      patch)
+-- patches.register("after","prepare glyphs","^lmtypewriter",patch)
 
 -- rm-lmr5  : LMMathRoman5-Regular
 -- rm-lmbx5 : LMMathRoman5-Bold          ]

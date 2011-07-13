@@ -235,14 +235,6 @@ function nodes.serializebox(n,flat,verbose,name)
     return nodes.serialize(nodes.totable(tex.box[n],flat,verbose),name)
 end
 
--- keep:
---
--- function nodes.visualizebox(...)
---     tex.print(ctxcatcodes,"\\starttyping")
---     tex.print(nodes.serializebox(...))
---     tex.print("\\stoptyping")
--- end
-
 function nodes.visualizebox(...) -- to be checked .. will move to module anyway
     context.starttyping()
     context.pushcatcodes("verbatim")
@@ -257,7 +249,7 @@ function nodes.list(head,n) -- name might change to nodes.type -- to be checked 
     end
     while head do
         local id = head.id
-        tex.write(rep(" ",n or 0) .. tostring(head) .. "\n")
+        context(rep(" ",n or 0) .. tostring(head) .. "\n")
         if id == hlist_code or id == vlist_code then
             nodes.list(head.list,(n or 0)+1)
         end

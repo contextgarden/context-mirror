@@ -10,8 +10,6 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local texwrite = tex.write
-
 local trace_analyzing  = false  trackers.register("scripts.analyzing",  function(v) trace_analyzing  = v end)
 local trace_injections = false  trackers.register("scripts.injections", function(v) trace_injections = v end)
 

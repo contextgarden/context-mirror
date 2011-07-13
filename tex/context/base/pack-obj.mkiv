@@ -288,9 +288,13 @@
    \endgroup}
 
 \def\getobject#1#2%
-  {\begingroup
-   \let\dohandleobject\dogetobject
-   \csname\r!object#1::#2\endcsname}
+  {\ifcsname\r!object#1::#2\endcsname
+      \begingroup
+      \let\dohandleobject\dogetobject
+      \csname\r!object#1::#2\expandafter\endcsname
+   \else
+      {\infofont[object #1::#2]}%
+   \fi}
 
 \def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
   {% \initializepaper

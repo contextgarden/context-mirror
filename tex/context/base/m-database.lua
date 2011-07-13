@@ -10,7 +10,9 @@ local sub, gmatch, format = string.sub, string.gmatch, string.format
 local concat = table.concat
 local lpegpatterns, lpegmatch, lpegsplitat = lpeg.patterns, lpeg.match, lpeg.splitat
 local lpegP, lpegC, lpegS, lpegCt = lpeg.P, lpeg.C, lpeg.S, lpeg.Ct
-local sprint, ctxcatcodes = tex.sprint, tex.ctxcatcodes
+
+-- One also needs to enable context.trace, here we only plug in some code (maybe
+-- some day this tracker will also toggle the main context tracer.
 
 local trace_flush = false  trackers.register("module.database.flush", function(v) trace_flush = v end)
 
@@ -26,14 +28,8 @@ local separators = { -- not interfaced
     spaces = lpegpatterns.space^1,
 }
 
-local function tracedsprint(c,str)
-    report_database("snippet: %s",str)
-    sprint(c,str)
-end
-
 function buffers.database.process(settings)
     local data
-    local sprint = trace_flush and tracedsprint or sprint
     if settings.type == "file" then
         local filename = resolvers.finders.byscheme("any",settings.database)
         data = filename ~= "" and io.loaddata(filename)
@@ -42,6 +38,9 @@ function buffers.database.process(settings)
         data = buffers.getlines(settings.database)
     end
     if data and #data > 0 then
+        if trace_flush then
+            context.pushlogger(report_database)
+        end
         local separatorchar, quotechar, commentchar = settings.separator, settings.quotechar, settings.commentchar
         local before, after = settings.before or "", settings.after or ""
         local first, last = settings.first or "", settings.last or ""
@@ -70,37 +69,56 @@ function buffers.database.process(settings)
         for i=1,#data do
             local line = data[i]
             if line ~= "" and (not checker or not lpegmatch(checker,line)) then
-                local result, r = { }, 0 -- we collect as this is nicer in tracing
                 local list = lpegmatch(splitter,line)
                 if not found then
                     if setups ~= "" then
-                        sprint(ctxcatcodes,format("\\begingroup\\setups[%s]",setups))
+                        context.begingroup()
+                        context.setups { setups }
                     end
-                    sprint(ctxcatcodes,before)
+                    context(before)
                     found = true
                 end
-                r = r + 1 ; result[r] = first
-                for j=1,#list do
-                    r = r + 1 ; result[r] = left
-                    if command == "" then
-                        r = r + 1 ; result[r] = list[j]
-                    else
-                        r = r + 1 ; result[r] = command
-                        r = r + 1 ; result[r] = "{"
-                        r = r + 1 ; result[r] = list[j]
-                        r = r + 1 ; result[r] = "}"
+                if trace_flush then
+                    local result, r = { }, 0
+                    r = r + 1 ; result[r] = first
+                    for j=1,#list do
+                        r = r + 1 ; result[r] = left
+                        if command == "" then
+                            r = r + 1 ; result[r] = list[j]
+                        else
+                            r = r + 1 ; result[r] = command
+                            r = r + 1 ; result[r] = "{"
+                            r = r + 1 ; result[r] = list[j]
+                            r = r + 1 ; result[r] = "}"
+                        end
+                        r = r + 1 ; result[r] = right
                     end
-                    r = r + 1 ; result[r] = right
+                    r = r + 1 ; result[r] = last
+                    context(concat(result))
+                else
+                    context(first)
+                    for j=1,#list do
+                        context(left)
+                        if command == "" then
+                            context(list[j])
+                        else
+                            context(command)
+                            context(false,list[j])
+                        end
+                        context(right)
+                    end
+                    context(last)
                 end
-                r = r + 1 ; result[r] = last
-                sprint(ctxcatcodes,concat(result))
             end
         end
         if found then
-            sprint(ctxcatcodes,after)
+            context(after)
             if setups ~= "" then
-                sprint(ctxcatcodes,"\\endgroup")
+                context.endgroup()
             end
+        end
+        if trace_flush then
+            context.poplogger()
         end
     else
         -- message

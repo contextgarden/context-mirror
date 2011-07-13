@@ -13,11 +13,13 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 -- todo: maybe also an sciunit command that converts to si units (1 inch -> 0.0254 m)
 -- etc .. typical something to do when listening to a news whow or b-movie
 
-local P, S, R, C, Cc, Cs, matchlpeg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
-local format = string.format
+local V, P, S, R, C, Cc, Cs, matchlpeg, Carg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match, lpeg.Carg
+local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append
 
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
+
+local allocate = utilities.storage.allocate
 
 physics          = physics or { }
 physics.patterns = physics.patterns or { }
@@ -132,8 +134,8 @@ local long_units = {
     Newton     = [[N]],
     Pascal     = [[Pa]],
     Atom       = [[u]],
-    Joule      = [[W]],
-    Watt       = [[J]],
+    Joule      = [[J]],
+    Watt       = [[W]],
     Celsius    = [[C]], -- no SI
     Kelvin     = [[K]],
     Fahrenheit = [[F]], -- no SI
@@ -204,48 +206,53 @@ local long_suffixes = {
 long_prefixes.Micro = [[\textmu]]
 long_units   .Ohm   = [[\textohm]]
 
-mergetable(long_prefixes, loweredkeys(long_prefixes))
-mergetable(long_units, loweredkeys(long_units))
-mergetable(long_operators, loweredkeys(long_operators))
-mergetable(long_suffixes, loweredkeys(long_suffixes))
+mergetable(long_suffixes,loweredkeys(long_suffixes))
 
-local short_prefixes = {
-    y  = long_prefixes.Yocto,
-    z  = long_prefixes.Zetto,
-    a  = long_prefixes.Atto,
-    f  = long_prefixes.Femto,
-    p  = long_prefixes.Pico,
-    n  = long_prefixes.Nano,
-    u  = long_prefixes.Micro,
-    m  = long_prefixes.Milli,
-    c  = long_prefixes.Centi,
-    d  = long_prefixes.Deci,
-    da = long_prefixes.Deca,
-    h  = long_prefixes.Hecto,
-    k  = long_prefixes.Kilo,
-    M  = long_prefixes.Mega,
-    G  = long_prefixes.Giga,
-    T  = long_prefixes.Tera,
-    P  = long_prefixes.Peta,
-    E  = long_prefixes.Exa,
-    Z  = long_prefixes.Zetta,
-    Y  = long_prefixes.Yotta,
+local long_prefixes_to_long  = { } for k, v in next, long_prefixes  do long_prefixes_to_long [lower(k)] = k end
+local long_units_to_long     = { } for k, v in next, long_units     do long_units_to_long    [lower(k)] = k end
+local long_operators_to_long = { } for k, v in next, long_operators do long_operators_to_long[lower(k)] = k end
+
+local short_prefixes_to_long = {
+    y  = "Yocto",
+    z  = "Zetto",
+    a  = "Atto",
+    f  = "Femto",
+    p  = "Pico",
+    n  = "Nano",
+    u  = "Micro",
+    m  = "Milli",
+    c  = "Centi",
+    d  = "Deci",
+    da = "Deca",
+    h  = "Hecto",
+    k  = "Kilo",
+    M  = "Mega",
+    G  = "Giga",
+    T  = "Tera",
+    P  = "Peta",
+    E  = "Exa",
+    Z  = "Zetta",
+    Y  = "Yotta",
 }
 
-local short_units = {
-    m  = long_units.Meter,
-    hz = long_units.Hertz,
-    u  = long_units.Hour,
-    h  = long_units.Hour,
-    s  = long_units.Second,
+local short_units_to_long = {
+    m  = "Meter",
+    hz = "Hertz",
+    u  = "Hour",
+    h  = "Hour",
+    s  = "Second",
 }
 
-local short_operators = {
-    ["."] = long_operators.Times,
-    ["*"] = long_operators.Times,
-    ["/"] = long_operators.Solidus,
-    [":"] = long_operators.OutOf,
+local short_operators_to_long = {
+    ["."] = "Times",
+    ["*"] = "Times",
+    ["/"] = "Solidus",
+    [":"] = "OutOf",
 }
+
+short_prefixes  = { } for k, v in next, short_prefixes_to_long  do short_prefixes [k] = long_prefixes [v] end
+short_units     = { } for k, v in next, short_units_to_long     do short_units    [k] = long_units    [v] end
+short_operators = { } for k, v in next, short_operators_to_long do short_operators[k] = long_operators[v] end
 
 local short_suffixes = { -- maybe just raw digit match
     ["1"]   = long_suffixes.Linear,
@@ -270,10 +277,10 @@ local short_suffixes = { -- maybe just raw digit match
     ["^-3"] = long_suffixes.ICubic,
 }
 
-local prefixes   = mergedtable(long_prefixes,short_prefixes)
-local units      = mergedtable(long_units,short_units)
-local operators  = mergedtable(long_operators,short_operators)
-local suffixes   = mergedtable(long_suffixes,short_suffixes)
+local prefixes   = long_prefixes
+local units      = long_units
+local operators  = long_operators
+local suffixes   = long_suffixes
 
 local somespace  = P(" ")^0/""
 
@@ -282,22 +289,34 @@ local l_unit     = appendlpeg(keys(long_units))
 local l_operator = appendlpeg(keys(long_operators))
 local l_suffix   = appendlpeg(keys(long_suffixes))
 
-local s_prefix   = appendlpeg(keys(short_prefixes))
-local s_unit     = appendlpeg(keys(short_units))
-local s_operator = appendlpeg(keys(short_operators))
+local l_prefix   = appendlpeg(long_prefixes_to_long,l_prefix)
+local l_unit     = appendlpeg(long_units_to_long,l_unit)
+local l_operator = appendlpeg(long_operators_to_long,l_operator)
+
+local s_prefix   = appendlpeg(short_prefixes_to_long)
+local s_unit     = appendlpeg(short_units_to_long)
+local s_operator = appendlpeg(short_operators_to_long)
+
 local s_suffix   = appendlpeg(keys(short_suffixes))
 
 -- space inside Cs else funny captures and args to function
 
 -- square centi meter per square kilo seconds
 
-local l_suffix      = Cs(somespace * l_suffix)
-local s_suffix      = Cs(somespace * s_suffix) + Cc("")
-local l_operator    = Cs(somespace * l_operator)
-local l_combination = (Cs(somespace * l_prefix) + Cc("")) * Cs(somespace * l_unit)
-local s_combination = Cs(somespace * s_prefix) * Cs(somespace * s_unit) + Cc("") * Cs(somespace * s_unit)
+local l_suffix       = Cs(somespace * l_suffix)
+local s_suffix       = Cs(somespace * s_suffix) + Cc("")
+local l_operator     = Cs(somespace * l_operator)
 
-local combination   = l_combination + s_combination
+local combination = P { "start",
+    l_prefix = Cs(somespace * l_prefix) + Cc(""),
+    s_prefix = Cs(somespace * s_prefix) + Cc(""),
+    l_unit   = Cs(somespace * l_unit),
+    s_unit   = Cs(somespace * s_unit),
+    start    = V("l_prefix") * V("l_unit")
+             + V("s_prefix") * V("s_unit")
+             + V("l_prefix") * V("s_unit")
+             + V("s_prefix") * V("l_unit"),
+}
 
 -- square kilo meter
 -- square km
@@ -314,10 +333,33 @@ local unitsN      = context.unitsN
 local unitsNstart = context.unitsNstart
 local unitsNstop  = context.unitsNstop
 
-local function dimpus(p,u,s)
-    p = prefixes[p] or p
-    u = units[u]    or u
+local l_prefixes  = allocate()
+local l_units     = allocate()
+local l_operators = allocate()
+
+local labels = languages.data.labels or { }
+
+labels.prefixes  = l_prefixes
+labels.units     = l_units
+labels.operators = l_operators
+
+l_prefixes .test = { Kilo = "kilo" }
+l_units    .test = { Meter = "meter", Second = "second" }
+l_operators.test = { Solidus = " per " }
+
+local function dimpus(p,u,s,wherefrom)
+--~ print(p,u,s,wherefrom)
+    if wherefrom == "" then
+        p = prefixes[p] or p
+        u = units   [u] or u
+    else
+        local lp = l_prefixes[wherefrom]
+        local lu = l_units   [wherefrom]
+        p = lp and lp[p] or p
+        u = lu and lu[u] or u
+    end
     s = suffixes[s] or s
+    --
     if p ~= "" then
         if u ~= ""  then
             if s ~= ""  then
@@ -345,21 +387,28 @@ local function dimpus(p,u,s)
     end
 end
 
-local function dimspu(s,p,u)
-    return dimpus(p,u,s)
+local function dimspu(s,p,u,wherefrom)
+    return dimpus(p,u,s,wherefrom)
 end
 
-local function dimop(o)
-    o = operators[o] or o
+local function dimop(o,wherefrom)
+--~ print(o,wherefrom)
+    if wherefrom == "" then
+        o = operators[o] or o
+    else
+        local lo = l_operators[wherefrom]
+        o = lo and lo[o] or o
+    end
     if o then
         unitsO(o)
     end
 end
 
-local dimension = (l_suffix * combination) / dimspu + (combination * s_suffix) / dimpus
-local number    = lpeg.patterns.number / unitsN
-local operator  = (l_operator + s_operator) / dimop
-local whatever  = (P(1)^0) / unitsU
+local dimension = ((l_suffix * combination)  * Carg(1))  / dimspu
+                + ((combination * s_suffix)  * Carg(1))  / dimpus
+local number    = lpeg.patterns.number                   / unitsN
+local operator  = C((l_operator + s_operator) * Carg(1)) / dimop  -- weird, why is the extra C needed here
+local whatever  = (P(1)^0)                               / unitsU
 
 dimension = somespace * dimension * somespace
 number    = somespace * number    * somespace
@@ -368,12 +417,13 @@ operator  = somespace * operator  * somespace
 ----- unitparser = dimension * dimension^0 * (operator * dimension^1)^-1 + whatever
 local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever
 
-local unitdigitparser = (P(true)/unitsNstart) * digitparser * (P(true)/unitsNstop)
+----- unitdigitparser = (P(true)/unitsNstart) * digitparser * (P(true)/unitsNstop) -- true forces { }
+local unitdigitparser = (Cc(nil)/unitsNstart) * digitparser * (Cc(nil)/unitsNstop) --
 local combinedparser  = (unitdigitparser + number)^-1 * unitparser
 
 physics.patterns.unitparser     = unitparser
 physics.patterns.combinedparser = combinedparser
 
-function commands.unit(str)
-    matchlpeg(combinedparser,str)
+function commands.unit(str,wherefrom)
+    matchlpeg(combinedparser,str,1,wherefrom or "")
 end
