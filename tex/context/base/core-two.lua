@@ -52,6 +52,19 @@ function jobpasses.savetagged(id,tag,str)
     jti[tag] = str
 end
 
+function jobpasses.getdata(id,index,default)
+    local jti = collected[id]
+    local value = jit and jti[index]
+    return value ~= "" and value or default or ""
+end
+
+function jobpasses.getfield(id,index,tag,default)
+    local jti = collected[id]
+    jti = jti and jti[index]
+    local value = jti and jti[tag]
+    return value ~= "" and value or default or ""
+end
+
 function jobpasses.getcollected(id)
     return collected[id] or { }
 end
@@ -60,82 +73,85 @@ function jobpasses.gettobesaved(id)
     return allocate(id)
 end
 
-function jobpasses.get(id)
+local function get(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        context(remove(jti,1))
+        return remove(jti,1)
     end
 end
 
-function jobpasses.first(id)
+local function first(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        context(jti[1])
+        return jti[1]
     end
 end
 
-function jobpasses.last(id)
+local function last(id)
     local jti = collected[id]
     if jti and #jti > 0 then
-        context(jti[#jti])
+        return jti[#jti]
     end
 end
 
-jobpasses.check = jobpasses.first
-
-function jobpasses.find(id,n)
+local function find(id,n)
     local jti = collected[id]
     if jti and jti[n] then
-        context(jti[n])
+        return jti[n]
     end
 end
 
-function jobpasses.count(id)
+local function count(id)
     local jti = collected[id]
-    context((jti and #jti) or 0)
+    return jti and #jti or 0
 end
 
-function jobpasses.list(id)
+local function list(id)
     local jti = collected[id]
     if jti then
-        context(concat(jti,','))
+        return concat(jti,',')
     end
 end
 
-function jobpasses.doifinlistelse(id,str)
+local function inlist(id,str)
     local jti = collected[id]
     if jti then
-        local found = false
         for _, v in next, jti do
             if v == str then
-                found = true
-                break
+                return true
             end
         end
-        commands.testcase(found)
-    else
-        commands.testcase(false)
     end
+    return false
 end
+
+local check = first
 
 --
 
-function jobpasses.savedata(id,data)
-    local jti = allocate(id)
-    jti[#jti+1] = data
-    return #jti
-end
+jobpasses.get    = get
+jobpasses.first  = first
+jobpasses.last   = last
+jobpasses.find   = find
+jobpasses.list   = list
+jobpasses.count  = count
+jobpasses.check  = check
+jobpasses.inlist = inlist
 
-function jobpasses.getdata(id,index,default)
-    local jti = collected[id]
-    local value = jit and jti[index]
-    context((value ~= "" and value) or default or "")
-end
+-- interface
 
-function jobpasses.getfield(id,index,tag,default)
-    local jti = collected[id]
-    jti = jti and jti[index]
-    local value = jti and jti[tag]
-    context((value ~= "" and value) or default or "")
-end
+function commands.gettwopassdata     (id) local r = get  (id) if r then context(r) end end
+function commands.getfirsttwopassdata(id) local r = first(id) if r then context(r) end end
+function commands.getlasttwopassdata (id) local r = last (id) if r then context(r) end end
+function commands.findtwopassdata    (id) local r = find (id) if r then context(r) end end
+function commands.gettwopassdatalist (id) local r = list (id) if r then context(r) end end
+function commands.counttwopassdata   (id) local r = count(id) if r then context(r) end end
+function commands.checktwopassdata   (id) local r = check(id) if r then context(r) end end
 
+commands.definetwopasslist     = jobpasses.define
+commands.savetwopassdata       = jobpasses.save
+commands.savetaggedtwopassdata = jobpasses.savetagged
+
+function commands.doifelseintwopassdata(id,str)
+    commands.testcase(inlist(id,str))
+end

@@ -20,8 +20,10 @@ local format = string.format
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics
 
-local trace_virtual = false trackers.register("math.virtual", function(v) trace_virtual = v end)
-local trace_timings = false trackers.register("math.timings", function(v) trace_timings = v end)
+local trace_virtual = false  trackers.register("math.virtual", function(v) trace_virtual = v end)
+local trace_timings = false  trackers.register("math.timings", function(v) trace_timings = v end)
+
+local add_optional  = false  directives.register("math.virtual.optional",function(v) add_optional = v end)
 
 local report_virtual    = logs.reporter("fonts","virtual math")
 
@@ -32,8 +34,6 @@ local mathencodings     = allocate()
 fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vectors
 local vfmath            = allocate()
 fonts.handlers.vf.math  = vfmath
-
-vfmath.optional         = false
 
 local shared            = { }
 
@@ -403,7 +403,7 @@ function vfmath.define(specification,set,goodies)
     for s=1,#set do
         local ss = set[s]
         local ssname = ss.name
-        if ss.optional and vfmath.optional then
+        if add_optional and ss.optional then
             if trace_virtual then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped",name,s,ssname,size)
             end
@@ -529,7 +529,7 @@ function vfmath.define(specification,set,goodies)
         local ss, fs = okset[s], loaded[s]
         if not fs then
             -- skip, error
-        elseif ss.optional and vfmath.optional then
+        elseif add_optional and ss.optional then
             -- skip, redundant
         else
             local newparameters = fs.parameters

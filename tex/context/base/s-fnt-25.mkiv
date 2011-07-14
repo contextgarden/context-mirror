@@ -74,9 +74,19 @@
 \def\mathfontlistentrysymbol#1#2%
   {mathsymbol: #1~\ruledhbox{\char#2}\par}
 
+\def\startmathfontlookupvariants
+  {lookupvariants: }
+
+\def\stopmathfontlookupvariants
+  {\par}
+
+\def\mathfontlookupvariant#1#2%
+  {#1:~\char#2}
+
 \startluacode
 local concat = table.concat
 local format, lower = string.format, string.lower
+local utfchar = utf.char
 
 local fontdata = fonts.hashes.identifiers
 
@@ -84,6 +94,9 @@ function document.showmathfont(id,slot)
     local data = characters.data
     local tfmdata = fontdata[id]
     local characters = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    local resources = tfmdata.resources
+    local lookuptypes  = resources.lookuptypes
     local sorted = (slot and { slot }) or table.sortedkeys(characters)
     local virtual, names = tfmdata.properties.virtualized, { }
     if virtual then
@@ -98,6 +111,7 @@ function document.showmathfont(id,slot)
     for _, s in next, sorted do
         if not limited or s < 0xF0000 then
             local char = characters[s]
+            local desc = descriptions[s]
             if char then
                 local info = data[s]
                 local cnext, cvert_variants, choriz_variants = char.next, char.vert_variants, char.horiz_variants
@@ -175,6 +189,46 @@ function document.showmathfont(id,slot)
                         context.mathfontlistentryvariantslist(concat(cvariants," "))
                     end
                 end
+                local slookups = desc.slookups
+                local mlookups = desc.mlookups
+                if slookups or mlookups then
+                    local variants = { }
+                    if slookups then
+                        for lookupname, lookupdata in next, slookups do
+                            local lookuptype = lookuptypes[lookupname]
+                            if lookuptype == "substitution" then
+                                variants[lookupdata] = true
+                            elseif lookuptype == "alternate" then
+                                for i=1,#lookupdata do
+                                    variants[lookupdata[i]] = true
+                                end
+                            end
+                        end
+                    end
+                    if mlookups then
+                        for lookupname, lookuplist in next, mlookups do
+                            local lookuptype = lookuptypes[lookupname]
+                            for i=1,#lookuplist do
+                                local lookupdata = lookuplist[i]
+                                local lookuptype = lookuptypes[lookupname]
+                                if lookuptype == "substitution" then
+                                    variants[lookupdata] = true
+                                elseif lookuptype == "alternate" then
+                                    for i=1,#lookupdata do
+                                        variants[lookupdata[i]] = true
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    variants = table.sortedkeys(variants)
+                    context.startmathfontlookupvariants()
+                    for i=1,#variants do
+                        local variant = variants[i]
+                        context.mathfontlookupvariant(format("U+%05X",variant),variant)
+                    end
+                    context.stopmathfontlookupvariants()
+                end
                 context.stopmathfontlistentry()
             end
         end
@@ -182,17 +236,28 @@ function document.showmathfont(id,slot)
 end
 \stopluacode
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{s-fnt-25.mkiv} % \doifnotmode{demo}\endinput
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=15mm,
+   backspace=15mm,
+   bottomspace=15mm,
+   header=1cm,
+   headerdistance=0.5cm,
+   footer=0pt]
 
 \starttext
-    \setupbodyfont[cambria,  12pt] \showmathfontcharacters
+%     \setupbodyfont[cambria,  12pt] \showmathfontcharacters
 %     \setupbodyfont[lmvirtual,12pt] \showmathfontcharacters
 %     \setupbodyfont[pxvirtual,12pt] \showmathfontcharacters
 %     \setupbodyfont[txvirtual,12pt] \showmathfontcharacters
 %     \setupbodyfont[palatino, 10pt] \showmathfontcharacters
 %     \setupbodyfont[mathtimes,12pt] \showmathfontcharacters
 %     \setupbodyfont[stix,     12pt] \showmathfontcharacters
-%     \setupbodyfont[xits,     12pt] \showmathfontcharacters
+    \setupbodyfont[xits,     12pt] \showmathfontcharacters
 %     \setupbodyfont[lucida,   12pt] \showmathfontcharacters
+%     \setupbodyfont[lucida-nova,   12pt] \showmathfontcharacters
 \stoptext
 

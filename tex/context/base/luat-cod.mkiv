@@ -45,12 +45,14 @@
 
 % instead of \ctxwrite and \ctxprint, use \cldcontext
 
-\def\ctxdirectlua{\directlua\zerocount}
-\def\ctxlatelua  {\latelua  \zerocount}
-\def\ctxsprint #1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
-\def\ctxwrite  #1{\directlua\zerocount{tex.write(#1)}} % saves tokens
-\def\ctxcommand#1{\directlua\zerocount{commands.#1}} % saves tokens
-\def\ctxreport #1{\directlua\zerocount{logs.writer[[#1]]}}
+\def\ctxdirectlua      {\directlua\zerocount}
+\def\ctxlatelua        {\latelua  \zerocount}
+\def\ctxsprint       #1{\directlua\zerocount{tex.sprint(tex.ctxcatcodes,#1)}} % saves tokens
+\def\ctxwrite        #1{\directlua\zerocount{tex.write(#1)}} % saves tokens
+\def\ctxcommand      #1{\directlua\zerocount{commands.#1}} % saves tokens
+\def\ctxdirectcommand#1{\directlua\zerocount{commands.#1}} % saves tokens
+\def\ctxlatecommand  #1{\latelua  \zerocount{commands.#1}} % saves tokens
+\def\ctxreport       #1{\directlua\zerocount{logs.writer[[#1]]}}
 
 %D Take your choice \unknown
 

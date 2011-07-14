@@ -73,17 +73,18 @@
 
 \let\twopassdatalist\empty
 
-\newif\iftwopassdatafound
+\newif\iftwopassdatafound %% will become conditional
 
 \registerctxluafile{core-two}{1.001}
 
-%D I'm not that sure if this behaves exactly like mkii. This needs a cleanup.
+%D I'm not that sure if this behaves exactly like mkii. This needs a cleanup. Is \type
+%D {\normalexpanded} needed?
 
-\def\immediatesavetwopassdata   #1#2#3{\normalexpanded{\noexpand\ctxlua    {job.passes.save('#1',"#3")}}}
-\def\savetwopassdata            #1#2#3{\normalexpanded{\noexpand\ctxlatelua{job.passes.save('#1',"#3")}}}
-\def\lazysavetwopassdata        #1#2#3{\normalexpanded{\noexpand\ctxlatelua{job.passes.save('#1',"#3")}}}
-\def\savetaggedtwopassdata    #1#2#3#4{\normalexpanded{\noexpand\ctxlua    {job.passes.savetagged('#1','#3',"#4")}}}
-\def\lazysavetaggedtwopassdata#1#2#3#4{\normalexpanded{\noexpand\ctxlatelua{job.passes.savetagged('#1','#3',"#4")}}}
+\def\immediatesavetwopassdata   #1#2#3{\normalexpanded{\noexpand\ctxcommand    {savetwopassdata('#1',"#3")}}}
+\def\savetwopassdata            #1#2#3{\normalexpanded{\noexpand\ctxlatecommand{savetwopassdata('#1',"#3")}}}
+\def\lazysavetwopassdata        #1#2#3{\normalexpanded{\noexpand\ctxlatecommand{savetwopassdata('#1',"#3")}}}
+\def\savetaggedtwopassdata    #1#2#3#4{\normalexpanded{\noexpand\ctxcommand    {savetaggedtwopassdata('#1','#3',"#4")}}}
+\def\lazysavetaggedtwopassdata#1#2#3#4{\normalexpanded{\noexpand\ctxlatecommand{savetaggedtwopassdata('#1','#3',"#4")}}}
 
 % temp hack: needs a proper \starteverytimeluacode
 
@@ -91,16 +92,18 @@
 
 % todo: move the edef to lua
 
-\unexpanded\def\definetwopasslist        #1{\ctxlua{job.passes.define('#1')}}
-\def\gettwopassdata           #1{\edef\twopassdata{\ctxlua{job.passes.get("#1")}}\testtwopassdata}
-\def\checktwopassdata         #1{\edef\twopassdata{\ctxlua{job.passes.check("#1")}}\testtwopassdata}
-\def\findtwopassdata        #1#2{\edef\twopassdata{\ctxlua{job.passes.find("#1","#2")}}\testtwopassdata}
-\def\getfirsttwopassdata      #1{\edef\twopassdata{\ctxlua{job.passes.first("#1")}}\testtwopassdata}
-\def\getlasttwopassdata       #1{\edef\twopassdata{\ctxlua{job.passes.last("#1")}}\edef\noftwopassitems{\ctxlua{job.passes.count("#1")}}\testtwopassdata}
-\def\getnamedtwopassdatalist#1#2{\edef#1{\ctxlua{job.passes.list("#2")}}}
-\def\gettwopassdatalist       #1{\edef\twopassdatalist{\ctxlua{job.passes.list("#1")}}}
-\def\doifelseintwopassdata  #1#2{\ctxlua{job.passes.doifinlistelse("#1","#2")}}
+\unexpanded\def\definetwopasslist        #1{\ctxcommand{definetwopasslist('#1')}}
+           \def\gettwopassdata           #1{\edef\twopassdata    {\ctxcommand{gettwopassdata      ("#1")}}\testtwopassdata}
+           \def\checktwopassdata         #1{\edef\twopassdata    {\ctxcommand{checktwopassdata    ("#1")}}\testtwopassdata}
+           \def\findtwopassdata        #1#2{\edef\twopassdata    {\ctxcommand{findtwopassdata("#1","#2")}}\testtwopassdata}
+           \def\getfirsttwopassdata      #1{\edef\twopassdata    {\ctxcommand{getfirsttwopassdata ("#1")}}\testtwopassdata}
+           \def\getlasttwopassdata       #1{\edef\twopassdata    {\ctxcommand{getlasttwopassdata  ("#1")}}%
+                                            \edef\noftwopassitems{\ctxcommand{counttwopassdata    ("#1")}}\testtwopassdata}
+           \def\getnamedtwopassdatalist#1#2{\edef              #1{\ctxcommand{gettwopassdatalist  ("#2")}}}
+           \def\gettwopassdatalist       #1{\edef\twopassdatalist{\ctxcommand{gettwopassdatalist  ("#1")}}}
 
-\let\getfromtwopassdata\findtwopassdata
+           \def\doifelseintwopassdata  #1#2{\ctxcommand{doifelseintwopassdata("#1","#2")}}
+
+           \let\getfromtwopassdata          \findtwopassdata
 
 \protect \endinput

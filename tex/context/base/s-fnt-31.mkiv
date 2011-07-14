@@ -45,17 +45,24 @@ function fonts.tracers.coverage(fontfiles,pattern) -- todo: patterns
         names[i] = fontname
     end
 
+    local t = { }
+
     context.starttabulate {"|Tr" .. string.rep("|l",#names) .. "|" }
-        for i=1,#names do
+        for i=1,#fontfiles do
+            local file = fontfiles[i]
+            t[#t+1] = i .. "=" .. file
             context.NC()
             context(i)
             context.NC()
-         -- context.getvalue(names[i])
-            context.type(fontfiles[i])
+            context.type(file)
             context.NC()
             context.NR()
         end
     context.stoptabulate()
+
+    context.setupfootertexts {
+        table.concat(t," ")
+    }
 
     context.starttabulate {"|Tl" .. string.rep("|c",#names) .. "|Tl|" }
         context.NC()
@@ -91,9 +98,12 @@ end
 
 \stopluacode
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{s-fnt-31.mkiv} % \doifnotmode{demo}{\endinput}
 
 \setupbodyfont[10pt]
+
+\setupfootertexts
+  [style=\ttx]
 
 \setuplayout
   [backspace=1cm,
@@ -150,15 +160,18 @@ end
 %     }
 % \stopluacode
 
-\loadfontgoodies[px-math]
-\loadfontgoodies[lm-math]
+% \loadfontgoodies[px-math]
+% \loadfontgoodies[lm-math]
 
 \startluacode
     fonts.tracers.coverage {
         "cambria.ttc(Cambria Math)",
         "xits-math.otf",
-        "LMMath10-Regular@lmroman10-math",
-        "pxmath@px-math",
+        "lmmath-regular",
+     -- "LMMath10-Regular@lmroman10-math",
+     -- "pxmath@px-math",
+        "lucida-math.otf",
+        "lucida-math-demi.otf",
      -- "LinLibertine_Re-4.7.5.otf",
     }
 \stopluacode

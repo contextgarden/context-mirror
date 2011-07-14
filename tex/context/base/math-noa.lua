@@ -796,3 +796,7 @@ callbacks.register('mlist_to_hlist',processors.mlist_to_hlist,"preprocessing mat
 statistics.register("math processing time", function()
     return statistics.elapsedseconds(noads)
 end)
+
+-- interface
+
+commands.setmathalternate = mathematics.setalternate

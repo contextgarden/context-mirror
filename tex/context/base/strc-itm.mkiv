@@ -62,12 +62,12 @@
 
 \def\dolistreference
   {\iftrialtypesetting \else % no need for different treatment of \continuelistitems
-     \ctxlua{structures.itemgroups.register("\currentitemgroup",\number\noflistelements,"\getitemparameter\currentitemlevel\c!maxwidth")}%
+     \ctxcommand{registeritemgroup("\currentitemgroup",\number\noflistelements,"\getitemparameter\currentitemlevel\c!maxwidth")}%
    \fi}
 
-\def\checkcurrentnofitems % we could do this at the lua end and save a call
-  {\edef\currentnofitems    {\ctxlua{structures.itemgroups.nofitems("\currentitemgroup",\number\currentnoflists)}}%
-   \edef\currentitemmaxwidth{\ctxlua{structures.itemgroups.maxwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
+\def\checkcurrentnofitems % we could do this at the lua end and save a call (i.e. will be dimen and counter)
+  {\edef\currentnofitems    {\ctxcommand{nofitems("\currentitemgroup",\number\currentnoflists)}}%
+   \edef\currentitemmaxwidth{\ctxcommand{maxitemwidth("\currentitemgroup",\number\currentnoflists)}\scaledpoint}}
 
 % todo: \dodosetreference -> \dostructurecountercomponent (to be checked)
 
