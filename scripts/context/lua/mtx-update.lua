@@ -542,18 +542,30 @@ if scripts.savestate then
     for r in gmatch(environment.argument("repository") or "current","([^, ]+)") do
         if valid[r] then states.set("repositories." .. r, true) end
     end
+
     local valid = scripts.update.engines
-    for r in gmatch(environment.argument("engine") or "all","([^, ]+)") do
-        if r == "all" then
-            for k, v in next, valid do
-                if k ~= "all" then
-                    states.set("engines." .. k, true)
-                end
-            end
-        elseif valid[r] then
-            states.set("engines." .. r, true)
+    local engine = environment.argument("engine") or ""
+    if engine == "" then
+        local e = states.get("engines")
+        if not e or not next(e) then
+            engine = "all"
         end
     end
+    if engine ~= "" then
+        for r in gmatch(engine,"([^, ]+)") do
+            if r == "all" then
+                for k, v in next, valid do
+                    if k ~= "all" then
+                        states.set("engines." .. k, true)
+                    end
+                end
+                break
+            elseif valid[r] then
+                states.set("engines." .. r, true)
+            end
+        end
+    end
+
     local valid = scripts.update.platforms
     for r in gmatch(environment.argument("platform") or os.platform,"([^, ]+)") do
         if valid[r] then states.set("platforms." .. r, true) end

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/13/11 20:14:04
+-- merge date  : 07/14/11 12:19:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -7264,7 +7264,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         substitution = function(lookupdata,lookupname,description,unicode)
             if trace_baseinit and trace_singles then
                 report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-                    gref(descriptions,unicode),gref(descriptions,replacement))
+                    gref(descriptions,unicode),gref(descriptions,lookupdatat))
             end
             changed[unicode] = lookupdata
         end,
@@ -8249,6 +8249,7 @@ local copy_node          = node.copy
 local find_node_tail     = node.tail or node.slide
 local set_attribute      = node.set_attribute
 local has_attribute      = node.has_attribute
+local flush_node_list    = node.flush_list
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -8402,21 +8403,35 @@ end
 local function toligature(kind,lookupname,start,stop,char,markflag,discfound) -- brr head
     if start == stop then
         start.char = char
+        return start
     elseif discfound then
      -- print("start->stop",nodes.tosequence(start,stop))
+        local components = start.components
+        if components then
+            flush_node_list(components)
+            start.components = nil
+        end
         local lignode = copy_node(start)
-        lignode.font, lignode.char, lignode.subtype = start.font, char, ligature_code
-        local next, prev = stop.next, start.prev
+        lignode.font = start.font
+        lignode.char = char
+        lignode.subtype = ligature_code
+        local next = stop.next
+        local prev = start.prev
         stop.next = nil
-        lignode = node.do_ligature_n(start, stop, lignode)
+        start.prev = nil
+        lignode.components = start
+     -- print("lignode",nodes.tosequence(lignode))
+     -- print("components",nodes.tosequence(lignode.components))
         prev.next = lignode
         if next then
             next.prev = lignode
         end
-        lignode.next, lignode.prev = next, prev
-        start = lignode
+        lignode.next = next
+        lignode.prev = prev
      -- print("start->end",nodes.tosequence(start))
-    else -- start is the ligature
+        return lignode
+    else
+        -- start is the ligature
         local deletemarks = markflag ~= "mark"
         local n = copy_node(start)
         local current
@@ -8426,8 +8441,11 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         if snext then
             snext.prev = current
         end
-        start.prev, stop.next = nil, nil
-        current.char, current.subtype, current.components = char, ligature_code, start
+        start.prev = nil
+        stop.next = nil
+        current.char = char
+        current.subtype = ligature_code
+        current.components = start
         local head = current
         if deletemarks then
             if trace_marks then
@@ -8467,7 +8485,6 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
         end
         return head
     end
-    return start
 end
 
 function handlers.gsub_single(start,kind,lookupname,replacement)

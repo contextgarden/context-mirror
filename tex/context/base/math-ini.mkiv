@@ -92,10 +92,10 @@
 \let\mathgreeknormal\mathgreekupright
 \let\mathgreeknone  \mathgreekdefault
 
-\def\setmathattribute#1#2{\ifmmode\ctxlua{mathematics.syncboth ("#1","#2")}\fi}
-\def\setmathalphabet   #1{\ifmmode\ctxlua{mathematics.syncname ("#1")}\fi}
-\def\setmathstyle      #1{\ifmmode\ctxlua{mathematics.syncstyle("#1")}\fi}
-\def\setmathalternate  #1{\ifmmode\ctxlua{mathematics.setalternate(\number\defaultmathfamily,"#1")}\fi}
+\def\setmathattribute#1#2{\ifmmode\ctxcommand{setmathattribute("#1","#2")}\fi}
+\def\setmathalphabet   #1{\ifmmode\ctxcommand{setmathalphabet("#1")}\fi}
+\def\setmathstyle      #1{\ifmmode\ctxcommand{setmathstyle("#1")}\fi}
+\def\setmathalternate  #1{\ifmmode\ctxcommand{setmathalternate(\number\defaultmathfamily,"#1")}\fi}
 
 \def\setmathstylealterternate#1%
   {\ifcsname\??mo:\c!alternative:\fontclass:#1\endcsname
@@ -224,20 +224,6 @@
 \def\utfmathstretch#1{\cldcontext{mathematics.utfmathstretch(\!!bs#1\!!es)}}
 \def\utfmathcommand#1{\cldcontext{mathematics.utfmathcommand(\!!bs#1\!!es)}}
 \def\utfmathfiller #1{\cldcontext{mathematics.utfmathfiller (\!!bs#1\!!es)}}
-
-% \def\utfmathclassdefault  #1#2{\ctxlua{
-%     cldcontext(mathematics.utfmathclass("#1","#2"))
-% }}
-%
-% \def\utfmathcommanddefault#1#2#3{\ctxlua{
-%     local cmd = mathematics.utfmathcommand("#1","") or ""
-%     if cmd == "" then
-%         commands.cs("#2","#3")
-%     else
-%         commands.cs(cmd)
-%     end}}
-
-% % %
 
 \def\@@mathlimopcomm #1{\mathop{#1}} %no \limits
 \def\@@mathnolopcomm #1{\mathop{#1}\nolimits}
@@ -660,8 +646,8 @@
 
 \appendtoks
   \doifelse{\mathematicsparameter\c!compact}\v!yes
-    {\ctxlua{fonts.handlers.vf.math.optional=true}}%
-    {\ctxlua{fonts.handlers.vf.math.optional=false}}%
+    {\enabledirectives [math.virtual.optional]}%
+    {\disabledirectives[math.virtual.optional]}%
 \to \everysetupmathematics
 
 \setupmathematics

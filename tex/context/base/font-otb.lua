@@ -228,7 +228,7 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         substitution = function(lookupdata,lookupname,description,unicode)
             if trace_baseinit and trace_singles then
                 report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-                    gref(descriptions,unicode),gref(descriptions,replacement))
+                    gref(descriptions,unicode),gref(descriptions,lookupdatat))
             end
             changed[unicode] = lookupdata
         end,

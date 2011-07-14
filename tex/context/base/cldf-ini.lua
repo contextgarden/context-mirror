@@ -6,22 +6,18 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
     license   = "see context related readme files"
 }
 
--- This is an experiment: generating context code at the lua end. After all
--- it is surprisingly simple to implement due to metatables. I was wondering
--- if there was a more natural way to deal with commands at the lua end.
--- Of course it's a bit slower but often more readable when mixed with lua
--- code. It can also be handy when generating documents from databases or
--- when constructing large tables or so.
+-- This started as an experiment: generating context code at the lua end. After all
+-- it is surprisingly simple to implement due to metatables. I was wondering if
+-- there was a more natural way to deal with commands at the lua end. Of course it's
+-- a bit slower but often more readable when mixed with lua code. It can also be handy
+-- when generating documents from databases or when constructing large tables or so.
 --
--- Todo: optional checking against interface
--- Todo: coroutine trickery
--- Todo: maybe use txtcatcodes
--- Todo: we could always use prtcatcodes (context.a_b_c) but then we loose protection
-
+-- maybe optional checking against interface
+-- currently no coroutine trickery
+-- we could always use prtcatcodes (context.a_b_c) but then we loose protection
 -- tflush needs checking ... sort of weird that it's not a table
-
 -- __flushlines is an experiment and rather ugly so it will go away
-
+--
 -- tex.print == line with endlinechar appended
 
 local tex = tex
@@ -30,7 +26,7 @@ context       = context or { }
 local context = context
 
 local format, find, gmatch, gsub = string.format, string.find, string.gmatch, string.gsub
-local next, type, tostring, setmetatable = next, type, tostring, setmetatable
+local next, type, tostring, tonumber, setmetatable = next, type, tostring, tonumber, setmetatable
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegCc = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.Cc
 

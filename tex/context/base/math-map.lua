@@ -556,3 +556,9 @@ function mathematics.addfallbacks(main)
     checkedcopy(characters,regular.bi.ucgreek,regular.it.ucgreek)
     checkedcopy(characters,regular.bi.lcgreek,regular.it.lcgreek)
 end
+
+-- interface
+
+commands.setmathattribute = mathematics.syncboth
+commands.setmathalphabet  = mathematics.syncname
+commands.setmathstyle     = mathematics.syncstyle
