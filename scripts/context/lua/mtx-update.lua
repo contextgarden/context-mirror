@@ -508,8 +508,10 @@ function scripts.update.make()
     if not force then
         report("make, use --force to really make formats")
     end
-    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot))
+
+    scripts.update.run(format('mtxrun --tree="%s" --direct --resolve mktexlsr',texroot)) -- needed for mpost
     scripts.update.run(format('mtxrun --tree="%s" --generate',texroot))
+
     report("make, done")
 end
 
