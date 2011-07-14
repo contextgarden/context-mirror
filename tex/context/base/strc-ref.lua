@@ -1325,22 +1325,26 @@ function references.getcurrentprefixspec(default) -- todo: message
 end
 
 function references.filter(name,...) -- number page title ...
-    local data = currentreference and currentreference.i
+    local data = currentreference and currentreference.i -- maybe we should take realpage from here
     if data then
-        local kind = data.metadata and data.metadata.kind
-        if kind then
-            local filter = filters[kind] or filters.generic
-            filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
-            if filter then
-                if trace_referencing then
-                    report_references("name '%s', kind '%s', using dedicated filter",name,kind)
+        if name == "realpage" then
+            references.realpage() -- special case, does an analysis (maybe we have more)
+        else
+            local kind = data.metadata and data.metadata.kind
+            if kind then
+                local filter = filters[kind] or filters.generic
+                filter = filter and (filter[name] or filter.unknown or filters.generic[name] or filters.generic.unknown)
+                if filter then
+                    if trace_referencing then
+                        report_references("name '%s', kind '%s', using dedicated filter",name,kind)
+                    end
+                    filter(data,name,...)
+                elseif trace_referencing then
+                    report_references("name '%s', kind '%s', using generic filter",name,kind)
                 end
-                filter(data,name,...)
             elseif trace_referencing then
-                report_references("name '%s', kind '%s', using generic filter",name,kind)
+                report_references("name '%s', unknown kind",name)
             end
-        elseif trace_referencing then
-            report_references("name '%s', unknown kind",name)
         end
     elseif trace_referencing then
         report_references("name '%s', no reference",name)
@@ -1495,7 +1499,7 @@ local function checkedpagestate(n,page)
     end
 end
 
-function references.analyze(actions)
+local function analyze(actions)
     actions = actions or references.currentset
     if not actions then
         actions = { realpage = 0 }
@@ -1524,8 +1528,10 @@ function references.analyze(actions)
     return actions
 end
 
-function references.realpage() -- special case, we always want result
-    local cs = references.analyze()
+references.analyze = analyze
+
+function references.realpage() -- special case, we always want result (also does test ... still needed?)
+    local cs = analyze()
     context(cs.realpage or 0)
 end
 
@@ -1635,3 +1641,7 @@ function specials.section(var,actions)
         specials.internal(var,actions)
     end
 end
+
+-- needs a better split ^^^
+
+commands.filterreference = references.filter

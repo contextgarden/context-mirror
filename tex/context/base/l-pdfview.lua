@@ -69,7 +69,7 @@ function pdfview.open(...)
         for i=1,#t do
             local name = fullname(t[i])
             if io.exists(name) then
-                os.execute(format('%s "%s" 2>&1', opencall, name))
+                os.execute(format('%s "%s"', opencall, name)) -- no 2>&1 any more, needs checking on windows
                 openedfiles[name] = true
             end
         end
@@ -83,7 +83,7 @@ function pdfview.close(...)
         for i=1,#t do
             local name = fullname(t[i])
             if openedfiles[name] then
-                os.execute(format('%s "%s" 2>&1', closecall, name))
+                os.execute(format('%s "%s"', closecall, name)) -- no 2>&1 any more, needs checking on windows
                 openedfiles[name] = nil
             else
                 pdfview.closeall()
@@ -96,7 +96,7 @@ end
 function pdfview.closeall()
     local allcall = allcalls[pdfview.method]
     if allcall then
-        os.execute(format('%s 2>&1', allcall))
+        os.execute(format('%s', allcall)) -- no 2>&1 any more, needs checking on windows
     end
     openedfiles = { }
 end

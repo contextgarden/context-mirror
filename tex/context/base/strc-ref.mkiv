@@ -833,14 +833,15 @@
 % \definecommand from  {\dospecialfrom}
 % \definecommand over  {\dospecialabout} % needed here, else math problems
 
-\def\currentreferencenumber  {\ctxlua{structures.references.filter("number")}}
-\def\currentreferencepage    {\ctxlua{structures.references.filter("page")}}
-\def\currentreferencetitle   {\ctxlua{structures.references.filter("title")}}
-\def\currentreferencetext    {\ctxlua{structures.references.filter("text")}}
-\def\currentreferencedefault {\ctxlua{structures.references.filter("default")}}
-\def\currentreferencerealpage{\ctxlua{structures.references.realpage()}}
+           \def\filterreference  #1{\ctxcommand{filterreference("#1")}}
+\unexpanded\def\getreferenceentry#1{\ctxcommand{filterreference("#1")}}
 
-\def\getreferenceentry#1{\ctxlua{structures.references.filter("#1")}} % user entry
+\def\currentreferencenumber  {\filterreference{number}}
+\def\currentreferencepage    {\filterreference{page}}
+\def\currentreferencetitle   {\filterreference{title}}
+\def\currentreferencetext    {\filterreference{text}}
+\def\currentreferencedefault {\filterreference{default}}
+\def\currentreferencerealpage{\filterreference{realpage}}
 
 \unexpanded\def\dospecialabout[#1]%
   {\dontleavehmode
@@ -1032,7 +1033,6 @@
 %D Instead of a text, one can specify a label, which should
 %D be defined with \type {\setuplabeltext}.
 %D
-%D
 %D Watch out: the second argument is somewhat special and mostly
 %D meant for a suffix to a number:
 %D
@@ -1051,45 +1051,48 @@
 %D
 %D \typebuffer \getbuffer
 
-% todo: inherit
+% to be done: interfaced
 
-\let\currentreferenceformat\empty
+\installcommandhandler \??re {referenceformat} \??re
 
-\def\referenceformatparameter#1% some day we will add inheritance
-  {\ifcsname\??rf\currentreferenceformat#1\endcsname\csname\??rf\currentreferenceformat#1\expandafter\endcsname\fi}
+\appendtoks
+    \setuevalue\currentreferenceformat{\doexecutereferenceformat{\currentreferenceformat}}%
+\to \everydefinereferenceformat
 
-\unexpanded\def\definereferenceformat
-  {\dodoubleargument\dodefinereferenceformat}
+\setupreferenceformat
+  [\c!left=,
+   \c!right=,
+   \c!text=,
+   \c!label=,
+   \c!autocase=\v!no,
+   \c!style=,
+   \c!type=default, % to be done: interfaced
+   \c!setups=,
+   \c!color=]
 
-% left right text label
-
-\def\dodefinereferenceformat[#1][#2]%
-  {\iffirstargument
-     \getparameters[\??rf#1][\c!left=,\c!right=,\c!text=,\c!label=,\c!autocase=v!no,#2]%
-     \setuvalue{#1}{\doexecutereferenceformat{#1}}%
-   \fi}
-
-\def\doexecutereferenceformat#1% quite slow due to all assignments but we will speed it up
-  {\dostartgotoreference       % once it's stable
+\unexpanded\def\doexecutereferenceformat#1%
+  {\dostartgotoreference
    \edef\currentreferenceformat{#1}%
-   \gdef\leftofreference {\referenceformatparameter\c!left }%
-   \gdef\rightofreference{\referenceformatparameter\c!right}%
-   % we can make a helper for this .. we will use the new parameter handler anyway
-   % but at least aditya can play with it now
-   \doifsomething{\referenceformatparameter\c!style}
-     {\dosetfontattribute{\??rf\currentreferenceformat}\c!style
-      \resetinteractionparameter\c!style}%
-   \doifsomething{\referenceformatparameter\c!color}
-     {\dosetcolorattribute{\??rf\currentreferenceformat}\c!color
-      \resetinteractionparameter\c!contrastcolor
-      \resetinteractionparameter\c!color}%
-   %
-   \edef\currentreferenceformatlabel{\referenceformatparameter\c!label}%
+   \gdef\leftofreference               {\referenceformatparameter\c!left    }%
+   \gdef\rightofreference              {\referenceformatparameter\c!right   }%
+   \edef\currentreferenceformatlabel   {\referenceformatparameter\c!label   }%
+   \edef\currentreferenceformattype    {\referenceformatparameter\c!type    }%
+   \edef\currentreferenceformatsetups  {\referenceformatparameter\c!setups  }%
+   \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
+   \dosetreferenceformatattributes \c!style \c!color
+   \ifx\fontattributehash\empty \else
+     \resetinteractionparameter\c!style
+   \fi
+   \ifx\colorattributehash\empty \else
+     \resetinteractionparameter\c!contrastcolor
+     \resetinteractionparameter\c!color
+   \fi
    \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
       \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
    \fi
-   \doif{\referenceformatparameter\c!autocase}\v!yes
-     {\setcharactercleaning[1]}%
+   \ifx\currentreferenceformatautocase\v!yes
+     \setcharactercleaning[1]%
+   \fi
    \ifx\currentreferenceformatlabel\empty
      \defaultleftreferencetoks {\referenceformatparameter\c!text}%
      \defaultrightreferencetoks\emptytoks
@@ -1097,9 +1100,16 @@
      \defaultleftreferencetoks {\leftlabeltext \currentreferenceformatlabel}%
      \defaultrightreferencetoks{\rightlabeltext\currentreferenceformatlabel}%
    \fi
-   \doifelse{\referenceformatparameter\c!type}\v!page
-     {\let\currentreferencecontent\currentreferencepage}
-     {\let\currentreferencecontent\currentreferencedefault}%
+   \ifx\currentreferenceformattype\empty
+     \def\currentreferenceformattype{default}%
+   \fi
+   %
+   \ifx\currentreferenceformatsetups\empty
+     \def\currentreferencecontent{\filterreference\currentreferenceformattype}%
+   \else
+     \def\currentreferencecontent{\directsetup\currentreferenceformatsetups}%
+   \fi
+   %
    \let\leftofreferencecontent \empty
    \let\rightofreferencecontent\empty
    \dopickupgotoreference}
@@ -1120,6 +1130,12 @@
 %     [\at{page}{okay}[one]]
 %     [\inxx{a}{b}[one]]
 % \stoptext
+
+% \startsetups referenceformat:numberplustext
+%     \filterreference{number}, \filterreference{title}
+% \stopsetups
+%
+% \definereferenceformat[hellup][text=Hellup ,setups=referenceformat:numberplustext]
 
 %D In interactive documents going to a specific location is not
 %D bound to cross references. The \type{\goto} commands can be
