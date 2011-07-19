@@ -37,10 +37,10 @@ local v_component    = variables.component
 local function findctxfile(name) -- loc ? any ?
     if file.is_qualified_path(name) then -- maybe when no suffix do some test for tex
         return name
-    elseif not url.hasscheme(filename) then
-        return findbyscheme("loc",filename) or ""
+    elseif not url.hasscheme(name) then
+        return resolvers.finders.byscheme("loc",name) or ""
     else
-        return resolvers.findtexfile(filename) or ""
+        return resolvers.findtexfile(name) or ""
     end
 end
 
