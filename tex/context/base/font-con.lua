@@ -1036,7 +1036,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                 for i=1,#initializers do
                     local step = initializers[i]
                     local feature = step.name
--- we could intercept mode here .. needs a rewrite of this whole loop then btu it's cleaner that way
+-- we could intercept mode here .. needs a rewrite of this whole loop then but it's cleaner that way
                     local value = features[feature]
                     if not value then
                         -- disabled

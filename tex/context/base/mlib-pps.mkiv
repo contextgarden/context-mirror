@@ -52,7 +52,7 @@
   {\dosavepositionwhd{#1}{0}{#2sp}{#3sp}{#4sp}{#5sp}{0sp}}
 
 \def\MPLIBextrapass#1%
-  {\ctxlua{metapost.graphic_extra_pass(#1)}}
+  {\ctxlua{metapost.graphic_extra_pass("#1")}}
 
 \def\MPLIBresettexts
   {\ctxlua{metapost.resettextexts()}}

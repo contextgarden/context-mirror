@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/14/11 16:09:42
+-- merge date  : 07/19/11 10:35:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -4154,7 +4154,7 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
                 for i=1,#initializers do
                     local step = initializers[i]
                     local feature = step.name
--- we could intercept mode here .. needs a rewrite of this whole loop then btu it's cleaner that way
+-- we could intercept mode here .. needs a rewrite of this whole loop then but it's cleaner that way
                     local value = features[feature]
                     if not value then
                         -- disabled

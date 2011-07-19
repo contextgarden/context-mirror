@@ -568,8 +568,11 @@
      {\dodododotypefile{#1}\askedtypingfile}
      {\showmessage\m!verbatims1{#2}}}
 
-\def\doifelsetypingfile#1% sets \readfilename (we will make this proper mkiv i.e. less messy)
+\def\doifelsetypingfile#1%
   {\edef\askedtypingfile{\locfilename{#1}}%
+   \ifx\askedtypingfile\empty
+     \edef\askedtypingfile{\locfilename{#1.tex}}% downward compatible
+   \fi
    \ifx\askedtypingfile\empty
      \expandafter\secondoftwoarguments
    \else

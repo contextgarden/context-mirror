@@ -22,12 +22,28 @@ string CRLF ; CRLF := char 10 & char 13 ;
 
 picture _currentpicture_ ;
 
+numeric _fig_nesting_ ; _fig_nesting_ := 0 ;
+
 def beginfig (expr c) =
-  begingroup
-  charcode := c ;
-  resetfig ;
-  scantokens extra_beginfig ;
+    _fig_nesting_ := _fig_nesting_ + 1 ;
+    if _fig_nesting_  = 1 :
+        begingroup
+        charcode := c ;
+        resetfig ;
+        scantokens extra_beginfig ;
+    fi ;
 enddef ;
+
+def endfig =
+    ; % safeguard
+    if _fig_nesting_ = 1 :
+        scantokens extra_endfig;
+        shipit ;
+        endgroup ;
+    fi ;
+    _fig_nesting_ := _fig_nesting_ - 1 ;
+enddef;
+
 
 def resetfig =
   clearxy ;

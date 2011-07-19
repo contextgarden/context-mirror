@@ -2460,10 +2460,10 @@
 \def\dodosetfont#1#2%  #1 = set/switch state | check fo rempty, else space
   {\doifsomething{#2}{\dododosetfont{#1}{#2}{\showmessage\m!fonts4{#2}}}}
 
-\def\dododosetfont#1#2#3% #1 = set/switch state ! ! ! !could also be used for mkii
+\def\dododosetfont#1#2#3% #1 = set/switch state
   {\doifnumberelse{#2}\dodododosetfont\redododosetfont{#1}{#2}{#3}}
 
-\def\redododosetfont#1#2#3% #1 = set/switch state ! ! ! !could also be used for mkii
+\def\redododosetfont#1#2#3% #1 = set/switch state
   {\edef\expandedfontthing{#2}%
    \def\interfacedfontsize{\normalizedbodyfontsize\interfaced\expandedfontthing}%
    \ifcsname\??ft\interfacedfontsize\endcsname
@@ -2548,9 +2548,9 @@
      \edef\fontclass{#1}%
    \else\ifcsname\@no@fontclass@#1\endcsname
      % already tried
-   \else\ifcase\currentgrouplevel
+   \else   % too messy: \ifcase\currentgrouplevel % (unpredictable)
      \trycurrentfontclass{#1}%
-   \fi\fi\fi}
+   \fi\fi} % \fi}
 
 \def\savefontclassparameters#1#2#3#4#5#6% #1=rm|ss|.. rscale features fallbacks goodies direction
   {\setxvalue{\fontclass#1\s!rscale   }{#2}%

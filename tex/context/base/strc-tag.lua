@@ -175,18 +175,24 @@ function tags.detailedtag(tag,detail,attribute)
     if not attribute then
         attribute = texattribute[a_tagged]
     end
-    local tl = taglist[attribute]
-    local pattern
-    if detail and detail ~= "" then
-        pattern = "^" .. tag .. ":".. detail .. "%-"
-    else
-        pattern = "^" .. tag .. "%-"
-    end
-    for i=#tl,1,-1 do
-        local tli = tl[i]
-        if find(tli,pattern) then
-            return tli
+    if attribute >= 0 then
+        local tl = taglist[attribute]
+        if tl then
+            local pattern
+            if detail and detail ~= "" then
+                pattern = "^" .. tag .. ":".. detail .. "%-"
+            else
+                pattern = "^" .. tag .. "%-"
+            end
+            for i=#tl,1,-1 do
+                local tli = tl[i]
+                if find(tli,pattern) then
+                    return tli
+                end
+            end
         end
+    else
+        -- enabled but not auto
     end
     return false -- handy as bogus index
 end

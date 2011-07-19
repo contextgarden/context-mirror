@@ -87,6 +87,7 @@ function getreadfilename(scheme,path,name) -- better do a split and then pass ta
     else
         fullname = ((path == "") and format("%s:///%s",scheme,name)) or format("%s:///%s/%s",scheme,path,name)
     end
+--~ print(">>>",fullname)
     return resolvers.findtexfile(fullname) or "" -- can be more direct
 end
 

@@ -46,7 +46,7 @@ local defaults = {
     limit_below_bgap      = { default                     = { "LowerLimitBaselineDropMin",                "big_op_spacing4" }, },
     limit_below_vgap      = { default                     = { "LowerLimitGapMin",                         "big_op_spacing2" }, },
     limit_below_kern      = { default                     = { "0",                                        "big_op_spacing5" }, },
---  ....                  = { default                     = { "DisplayOperatorMinHeight",                 "....." }, },
+    math_operator_size    = { default                     = { "DisplayOperatorMinHeight",                 "math_x_height*3" }, }, -- 2
     overbar_kern          = { default                     = { "OverbarExtraAscender",                     "default_rule_thickness" }, },
     overbar_rule          = { default                     = { "OverbarRuleThickness",                     "default_rule_thickness" }, },
     overbar_vgap          = { default                     = { "OverbarVerticalGap",                       "3*default_rule_thickness" }, },
@@ -139,6 +139,8 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         dimens["7*default_rule_thickness"] = 7 * default_rule_thickness
         dimens["(5/18)*quad"] = (math_quad * 5) / 18
         dimens["(-10/18)*quad"] = - (math_quad * 10) / 18
+        dimens["math_x_height*2"] = math_x_height * 2 -- needs checking
+        dimens["math_x_height*3"] = math_x_height * 3 -- needs checking
         dimens["abs(math_x_height*4)/5"] = abs(math_x_height * 4) / 5
         dimens["default_rule_thickness+(abs(default_rule_thickness)/4)"] = default_rule_thickness+(abs(default_rule_thickness) / 4)
         dimens["default_rule_thickness+(abs(math_x_height)/4)"] = default_rule_thickness+(abs(math_x_height) / 4)
@@ -168,7 +170,7 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
             AccentBaseHeight                            = t . accent_base_height    . text_style,
             AxisHeight                                  = t . axis                  . text_style,
          -- DelimitedSubFormulaMinHeight
-         -- DisplayOperatorMinHeight
+            DisplayOperatorMinHeight                    = t . math_operator_size    . text_style, -- no longer let tex decide (weird values)
          -- FlattenedAccentBaseHeight
             FractionDenominatorDisplayStyleGapMin       = t . fraction_denom_vgap   . display_style,
             FractionDenominatorDisplayStyleShiftDown    = t . fraction_denom_down   . display_style,

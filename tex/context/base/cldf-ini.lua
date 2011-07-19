@@ -152,15 +152,21 @@ end
 context.pushcatcodes = pushcatcodes
 context.popcatcodes  = popcatcodes
 
--- -- -- todo: tracing
+-- -- --
+
+--~     local capture  = (
+--~         space^0 * newline^2  * lpeg.Cc("")            / texprint  +
+--~         space^0 * newline    * space^0 * lpeg.Cc(" ") / texsprint +
+--~         content                                       / texsprint
+--~     )^0
 
 local newline       = lpeg.patterns.newline
 local space         = lpeg.patterns.spacer
 local spacing       = newline * space^0
-local content       = lpegC((1-spacing)^1)
-local emptyline     = space^0 * newline^2
-local endofline     = space^0 * newline * space^0
-local simpleline    = endofline * lpegP(-1)
+local content       = lpegC((1-spacing)^1)            -- texsprint
+local emptyline     = space^0 * newline^2             -- texprint("")
+local endofline     = space^0 * newline * space^0     -- texsprint(" ")
+local simpleline    = endofline * lpegP(-1)           --
 
 local verbose       = lpegC((1-space-newline)^1)
 local beginstripper = (lpegS(" \t")^1 * newline^1) / ""
@@ -183,7 +189,7 @@ local function n_emptyline()
 end
 
 local function n_simpleline()
-    flushdirect(currentcatcodes,"\r")
+    flush(currentcatcodes," \r")
 end
 
 local n_exception = ""
@@ -216,7 +222,8 @@ function context.newtexthandler(specification) -- can also be used for verbose
         local content = lpegC((1-spacing-p_exception)^1)
         pattern =
             simpleline / f_simpleline
-          + (
+          +
+          (
                 emptyline  / f_emptyline
               + endofline  / f_endofline
               + p_exception
@@ -226,7 +233,8 @@ function context.newtexthandler(specification) -- can also be used for verbose
         local content = lpegC((1-spacing)^1)
         pattern =
             simpleline / f_simpleline
-          + (
+            +
+            (
                 emptyline / f_emptyline
               + endofline / f_endofline
               + content   / f_content
