@@ -226,7 +226,7 @@
 \unexpanded\def\genfrac#1#2#3#4%
   {\edef\!!stringa
      {#1#2}%
-   \expanded
+   \normalexpanded
      {\dogenfrac{#4}%
       \csname
         \ifx @#3@%
@@ -245,7 +245,7 @@
       \endcsname}%
      {#1#2#3}}
 
-\def\dogenfrac#1#2#3#4#5%
+\unexpanded\def\dogenfrac#1#2#3#4#5%
   {{#1{\begingroup#4\endgroup#2#3\relax#5}}}
 
 %D \macros

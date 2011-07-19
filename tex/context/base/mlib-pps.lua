@@ -6,11 +6,6 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
     license   = "see context related readme files",
 }
 
--- pps: prescript, postscripts and specials (although specials are dropped)
---
--- current limitation: if we have textext as well as a special color then due to
--- prescript/postscript overload we can have problems
---
 -- todo: report max textexts
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
@@ -31,6 +26,7 @@ local sortedhash           = table.sortedhash
 local starttiming          = statistics.starttiming
 local stoptiming           = statistics.stoptiming
 
+local trace_runs           = false  trackers.register("metapost.runs",     function(v) trace_runs     = v end)
 local trace_textexts       = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 local trace_scripts        = false  trackers.register("metapost.scripts",  function(v) trace_scripts  = v end)
 
@@ -467,8 +463,8 @@ end
 
 local no_trial_run       = "_trial_run_ := false ;"
 local do_trial_run       = "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;"
-local text_data_template = "_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;"
-local do_begin_fig       = "; beginfig(1); "
+local text_data_template = "_tt_w_[%i] := %f ; _tt_h_[%i] := %f ; _tt_d_[%i] := %f ;"
+local do_begin_fig       = "; beginfig(1) ; "
 local do_end_fig         = "; endfig ;"
 local do_safeguard       = ";"
 
@@ -497,8 +493,28 @@ metapost.method = 1 -- 1:dumb 2:clever
 
 -- maybe we can latelua the texts some day
 
+local nofruns = 0 -- askedfig: "all", "first", number
+
+local function checkaskedfig(askedfig) -- return askedfig, wrappit
+    if not askedfig then
+        return "direct", true
+    elseif askedfig == "all" then
+        return "all", false
+    elseif askedfig == "direct" then
+        return "all", true
+    else
+        askedfig = tonumber(askedfig)
+        if askedfig then
+            return askedfig, false
+        else
+            return "direct", true
+        end
+    end
+end
+
 function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,askedfig)
-    local nofig = (askedfig and "") or false
+    nofruns = nofruns + 1
+    local askedfig, wrappit = checkaskedfig(askedfig)
     local done_1, done_2, forced_1, forced_2
     str, done_1, forced_1 = checktexts(str)
     if not preamble or preamble == "" then
@@ -510,16 +526,18 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
     metapost.multipass = false -- no needed here
     current_format, current_graphic, current_initializations = mpsformat, str, initializations or ""
     if metapost.method == 1 or (metapost.method == 2 and (done_1 or done_2)) then
+        if trace_runs then
+            report_metapost("first run of job %s (asked: %s)",nofruns,tostring(askedfig))
+        end
      -- first true means: trialrun, second true means: avoid extra run if no multipass
         local flushed = metapost.process(mpsformat, {
             preamble,
-            nofig or do_begin_fig,
+            wrappit and do_begin_fig or "",
             do_trial_run,
             current_initializations,
             do_safeguard,
             current_graphic,
-            nofig or do_end_fig
-     -- }, true, nil, true )
+            wrappit and do_end_fig or "",
         }, true, nil, not (forced_1 or forced_2), false, askedfig)
         if metapost.intermediate.needed then
             for _, action in next, metapost.intermediate.actions do
@@ -529,32 +547,38 @@ function metapost.graphic_base_pass(mpsformat,str,initializations,preamble,asked
         if not flushed or not metapost.optimize then
             -- tricky, we can only ask once for objects and therefore
             -- we really need a second run when not optimized
-            context.MPLIBextrapass(askedfig or "false")
+            context.MPLIBextrapass(askedfig)
         end
     else
+        if trace_runs then
+            report_metapost("running job %s (asked: %s)",nofruns,tostring(askedfig))
+        end
         metapost.process(mpsformat, {
             preamble,
-            nofig or do_begin_fig,
+            wrappit and do_begin_fig or "",
             no_trial_run,
             current_initializations,
             do_safeguard,
             current_graphic,
-            nofig or do_end_fig
+            wrappit and do_end_fig or "",
         }, false, nil, false, false, askedfig )
     end
 end
 
 function metapost.graphic_extra_pass(askedfig)
-    local nofig = (askedfig and "") or false
+    if trace_runs then
+        report_metapost("second run of job %s (asked: %s)",nofruns,tostring(askedfig))
+    end
+    local askedfig, wrappit = checkaskedfig(askedfig)
     metapost.process(current_format, {
-        nofig or do_begin_fig,
+        wrappit and do_begin_fig or "",
         no_trial_run,
         concat(metapost.texttextsdata()," ;\n"),
         current_initializations,
         do_safeguard,
         current_graphic,
-        nofig or do_end_fig
-    }, false, nil, false, true, askedfig )
+        wrappit and do_end_fig or "",
+    }, false, nil, false, true, askedfig)
     context.MPLIBresettexts() -- must happen afterwards
 end
 

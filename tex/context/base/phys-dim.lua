@@ -129,7 +129,7 @@ local long_units = {
     Second     = [[s]],
     Hour       = [[h]],
     Liter      = [[l]],
-    Litre      = [[l]],
+--  Litre      = [[l]],
     Gram       = [[g]],
     Newton     = [[N]],
     Pascal     = [[Pa]],
@@ -241,6 +241,9 @@ local short_units_to_long = {
     u  = "Hour",
     h  = "Hour",
     s  = "Second",
+
+    Litre = "Liter",
+    Metre = "Meter",
 }
 
 local short_operators_to_long = {

@@ -64,14 +64,24 @@ function metapost.convert(result, trialrun, flusher, multipass, askedfig)
     return true -- done
 end
 
-metapost.flushers = { }
+metapost.flushers     = { }
 metapost.flushers.pdf = { }
 
-local savedliterals = nil
+-- \def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
+
+local savedliterals = nil -- needs checking
 
 local mpsliteral = nodes.pool.register(node.new("whatsit",8)) -- pdfliteral
 
-function metapost.flushliteral(d) -- \def\MPLIBtoPDF#1{\ctxlua{metapost.flush_literal(#1)}}
+local pdfliteral = function(s)
+    local literal = copy_node(mpsliteral)
+    literal.data = s
+    return literal
+end
+
+local experiment = true -- uses context(node) that already does delayed nodes
+
+function metapost.flushliteral(d)
     if savedliterals then
         local literal = copy_node(mpsliteral)
         literal.data = savedliterals[d]
@@ -88,6 +98,9 @@ end
 function metapost.flushers.pdf.comment(message)
     if message then
         message = format("%% mps graphic %s: %s", metapost.n, message)
+if experiment then
+    context(pdfliteral(message))
+else
         if savedliterals then
             local last = #savedliterals + 1
             savedliterals[last] = message
@@ -96,6 +109,7 @@ function metapost.flushers.pdf.comment(message)
             savedliterals = { message }
             context.MPLIBtoPDF(1)
         end
+end
     end
 end
 
@@ -115,6 +129,9 @@ end
 function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
+if experiment then
+    context(pdfliteral(pdfliterals))
+else
         if savedliterals then
             local last = #savedliterals + 1
             savedliterals[last] = pdfliterals
@@ -123,6 +140,7 @@ function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
             savedliterals = { pdfliterals }
             context.MPLIBtoPDF(1)
         end
+end
     end
 end
 
@@ -267,7 +285,7 @@ function metapost.flush(result,flusher,askedfig)
                 local figure = figures[f]
                 local objects = getobjects(result,figure,f)
                 local fignum = figure:charcode() or 0
-                if not askedfig or (askedfig == fignum) then
+                if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
                     local t = { }
                     local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
                     local bbox = figure:boundingbox()
@@ -416,7 +434,7 @@ function metapost.flush(result,flusher,askedfig)
                         flushfigure(t)
                         stopfigure("end")
                     end
-                    if askedfig then
+                    if askedfig ~= "all" then
                         break
                     end
                 end
@@ -433,7 +451,7 @@ function metapost.parse(result,askedfig)
             for f=1, #figures do
                 local figure = figures[f]
                 local fignum = figure:charcode() or 0
-                if not askedfig or (askedfig == fignum) then
+                if askedfig == "direct" or askedfig == "all" or askedfig == fignum then
                     local bbox = figure:boundingbox()
                     local llx, lly, urx, ury = bbox[1], bbox[2], bbox[3], bbox[4] -- faster than unpack
                     metapost.llx = llx
@@ -452,7 +470,9 @@ function metapost.parse(result,askedfig)
                             analyzeplugins(objects[o])
                         end
                     end
-                    break
+                    if askedfig ~= "all" then
+                        break
+                    end
                 end
             end
         end

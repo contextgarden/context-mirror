@@ -126,12 +126,12 @@ local entity    = ampersand * C((1-semicolon)^1) * semicolon / lxml.resolvedenti
 
 local _, xmltextcapture = context.newtexthandler {
     exception = entity,
-    catcodes  = notcatcodes
+    catcodes  = notcatcodes,
 }
 
 local _, ctxtextcapture = context.newtexthandler {
     exception = entity,
-    catcodes  = ctxcatcodes
+    catcodes  = ctxcatcodes,
 }
 
 -- cdata

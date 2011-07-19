@@ -15,7 +15,7 @@ local type, next, rawset, rawget, setmetatable, getmetatable = type, next, rawse
 local format, lower, upper,match, find, sub = string.format, string.lower, string.upper, string.match, string.find, string.sub
 local splitlines = string.splitlines
 local concat = table.concat
-local C, P, R, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
+local C, P, R, S, V, Carg, Cc, Cs = lpeg.C, lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.Carg, lpeg.Cc, lpeg.Cs
 local patterns, lpegmatch, is_lpeg = lpeg.patterns, lpeg.match, lpeg.is_lpeg
 
 local trace_visualize      = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
@@ -340,25 +340,141 @@ local function hack(pattern)
     return Cs(pattern * Cc(signal))
 end
 
-function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod)
+local split_processor = structures.processors.split
+local apply_processor = structures.processors.apply
+
+-- function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod,processor)
+--     local escapepattern = escapepatterns[name]
+--     if not escapepattern then
+-- before    = type(before)    == "table" and before   [1] or before
+-- after     = type(after)     == "table" and after    [1] or after
+-- processor = type(processor) == "table" and processor[1] or processor
+--         if trace_visualize then
+--             report_visualizers("registering escape pattern, name: '%s', before: '%s', after: '%s'",name,before,after)
+--         end
+--         before = P(before) * space_pattern
+--         after = space_pattern * P(after)
+--         local action
+--         if processor then
+--             action = function(s) apply_processor(processor,s) end
+--         else
+--             action = escapemethod or texmethod
+--         end
+--         escapepattern = (
+--             (before / "")
+--           * ((1 - after)^0 / action)
+--           * (after / "")
+--           + hack((1 - before)^1) / (normalmethod or defaultmethod)
+--         )^0
+--         escapepatterns[name] = escapepattern
+--     end
+--     return escapepattern
+-- end
+
+-- todo: { before = b, after = a, processor = p }, ...
+
+function visualizers.registerescapepattern(name,befores,afters,normalmethod,escapemethod,processors)
     local escapepattern = escapepatterns[name]
     if not escapepattern then
-        if trace_visualize then
-            report_visualizers("registering escape pattern, name: '%s', before: '%s', after: '%s'",name,before,after)
+        if type(befores)    ~= "table" then befores    = { befores    } end
+        if type(afters)     ~= "table" then afters     = { afters     } end
+        if type(processors) ~= "table" then processors = { processors } end
+        for i=1,#befores do
+            local before    = befores[i]
+            local after     = afters[i]
+            local processor = processors[i]
+            if trace_visualize then
+                report_visualizers("registering escape pattern, name: '%s', index: '%s', before: '%s', after: '%s', processor: '%s'",
+                    name,i,before,after,processor or "default")
+            end
+            before = P(before) * space_pattern
+            after = space_pattern * P(after)
+            local action
+            if processor then
+                action = function(s) apply_processor(processor,s) end
+            else
+                action = escapemethod or texmethod
+            end
+            local ep = (before / "") * ((1 - after)^0 / action) * (after / "")
+            if escapepattern then
+                escapepattern = escapepattern + ep
+            else
+                escapepattern = ep
+            end
         end
-        before, after = P(before) * space_pattern, space_pattern * P(after)
         escapepattern = (
-            (before / "")
-          * ((1 - after)^0 / (escapemethod or texmethod))
-          * (after / "")
-          + hack((1 - before)^1) / (normalmethod or defaultmethod)
+            escapepattern
+          + hack((1 - escapepattern)^1) / (normalmethod or defaultmethod)
         )^0
         escapepatterns[name] = escapepattern
     end
     return escapepattern
 end
 
-function visualizers.registerescapecommand(name,token,normalmethod,escapecommand)
+--~ function visualizers.registerescapeline(name,before,normalmethod,escapemethod,processor)
+--~     local escapepattern = escapepatterns[name]
+--~     if not escapepattern then
+--~         before    = type(before)    == "table" and before   [1] or before
+--~         processor = type(processor) == "table" and processor[1] or processor
+--~         if trace_visualize then
+--~             report_visualizers("registering escape line pattern, name: '%s', before: '%s', after: <<newline>>",name,before)
+--~         end
+--~         before = P(before) * space_pattern
+--~         after = space_pattern * P("\n")
+--~         local action
+--~         if processor then
+--~             action = function(s) apply_processor(processor,s) end
+--~         else
+--~             action = escapemethod or texmethod
+--~         end
+--~         escapepattern = (
+--~             (before / "")
+--~           * ((1 - after)^0 / action)
+--~           * (space_pattern / "")
+--~        -- * (after / (normalmethod or defaultmethod))
+--~           + hack((1 - before)^1) / (normalmethod or defaultmethod)
+--~         )^0
+--~         escapepatterns[name] = escapepattern
+--~     end
+--~     return escapepattern
+--~ end
+
+function visualizers.registerescapeline(name,befores,normalmethod,escapemethod,processors)
+    local escapepattern = escapepatterns[name]
+    if not escapepattern then
+        if type(befores)    ~= "table" then befores    = { befores    } end
+        if type(processors) ~= "table" then processors = { processors } end
+        for i=1,#befores do
+            local before    = befores[i]
+            local processor = processors[i]
+            if trace_visualize then
+                report_visualizers("registering escape line pattern, name: '%s', before: '%s', after: <<newline>>",name,before)
+            end
+            before = P(before) * space_pattern
+            after = space_pattern * P("\n")
+            local action
+            if processor then
+                action = function(s) apply_processor(processor,s) end
+            else
+                action = escapemethod or texmethod
+            end
+            local ep = (before / "") * ((1 - after)^0 / action) * (space_pattern / "")
+            if escapepattern then
+                escapepattern = escapepattern + ep
+            else
+                escapepattern = ep
+            end
+        end
+        escapepattern = (
+            escapepattern
+          + hack((1 - escapepattern)^1) / (normalmethod or defaultmethod)
+        )^0
+        escapepatterns[name] = escapepattern
+    end
+    return escapepattern
+end
+
+function visualizers.registerescapecommand(name,token,normalmethod,escapecommand,processor)
     local escapepattern = escapepatterns[name]
     if not escapepattern then
         if trace_visualize then
@@ -385,24 +501,39 @@ local function visualize(content,settings) -- maybe also method in settings
         local m
         local e = settings.escape
         if e and e ~= "" then
-            local newname = format("%s-%s",e,method)
+            local newname = format("%s : %s",method,e)
             local newspec = specifications[newname]
             if newspec then
                 m = newspec
             else
-                local start, stop
+                local starts, stops, processors = { }, { }, { }
                 if e == v_yes then
-                    start, stop = "/BTEX", "/ETEX"
+                    starts[1] = "/BTEX"
+                    stops [1] = "/ETEX"
                 else
-                    start, stop = match(e,"^(.-),(.-)$") -- todo: lpeg
+                    local s = settings_to_array(e,true)
+                    for i=1,#s do
+                        local si = s[i]
+                        local processor, pattern = split_processor(si)
+                        si = processor and pattern or si
+                        local start, stop = match(si,"^(.-),(.-)$")
+                        if start then
+                            local n = #starts + 1
+                            starts[n]     = start
+                            stops [n]     = stop or ""
+                            processors[n] = processor
+                        end
+                    end
                 end
                 local oldvisualizer = specifications[method] or specifications.default
                 local oldparser = oldvisualizer.direct
                 local newparser
-                if start and stop then
-                    newparser = visualizers.registerescapepattern(newname,start,stop,oldparser)
+                if starts[1] and stops[1] ~= "" then
+                    newparser = visualizers.registerescapepattern(newname,starts,stops,oldparser,nil,processors)
+                elseif starts[1] then
+                    newparser = visualizers.registerescapeline(newname,starts,oldparser,nil,processors)
                 else -- for old times sake: /em
-                    newparser = visualizers.registerescapecommand(newname,e,oldparser)
+                    newparser = visualizers.registerescapecommand(newname,e,oldparser,nil,processors)
                 end
                 m = visualizers.register(newname, {
                     parser  = newparser,
@@ -483,31 +614,31 @@ end
 
 -- helpers
 
-local function realign(lines,forced_n) -- no, auto, <number>
-    forced_n = (forced_n == v_auto and huge) or tonumber(forced_n)
-    if forced_n then
-        local n = 0
+local function realign(lines,strip) -- "yes", <number>
+    local n
+    if strip == v_yes then
+        n = math.huge
         for i=1, #lines do
             local spaces = find(lines[i],"%S")
             if not spaces then
                 -- empty line
-            elseif not n then
-                n = spaces
             elseif spaces == 0 then
                 n = 0
                 break
-            elseif n > spaces then
+            elseif spaces < n then
                 n = spaces
             end
         end
-        if n > 0 then
-            if n > forced_n then
-                n = forced_n
-            end
-            for i=1,#d do
-                lines[i] = sub(lines[i],n)
-            end
+        n = n - 1
+    else
+        n = tonumber(strip)
+    end
+    if n and n > 0 then
+        local copy = { }
+        for i=1,#lines do
+            copy[i] = sub(lines[i],n+1)
         end
+        return copy
     end
     return lines
 end
@@ -593,7 +724,7 @@ end
 
 local function filter(lines,settings) -- todo: inline or display in settings
     local strip = settings.strip
-    if strip == v_yes then
+    if strip and strip ~= "" then
         lines = realign(lines,strip)
     end
     local line, n = 0, 0

@@ -35,7 +35,7 @@ local v_component    = variables.component
 -- main code .. there is some overlap .. here we have loc://
 
 local function findctxfile(name) -- loc ? any ?
-    if file.is_qualified_path(name) then
+    if file.is_qualified_path(name) then -- maybe when no suffix do some test for tex
         return name
     elseif not url.hasscheme(filename) then
         return findbyscheme("loc",filename) or ""

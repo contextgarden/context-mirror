@@ -93,4 +93,45 @@
 \def\MPLIBflushreset
   {\ctxlua{metapost.flushreset()}}
 
+
+%D Kind of special:
+%
+% test.mp:
+%
+% beginfig(1) fill fullcircle scaled 10cm withcolor red  ; endfig ;
+% beginfig(2) draw fullcircle scaled  5cm withcolor blue ; endfig ;
+% beginfig(3) draw textext("just some text")             ; endfig ;
+%
+% standalone pages:
+%
+% \starttext
+%     \directMPgraphic{input "test.mp" ;}
+% \stoptext
+
+\let\normalstartMPLIBtoPDF\startMPLIBtoPDF
+\let\normalstopMPLIBtoPDF \stopMPLIBtoPDF
+
+\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
+\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
+
+\unexpanded\def\directMPgraphic
+  {\dodoublegroupempty\dodirectMPgraphic}
+
+\unexpanded\long\def\directMPgraphic#1#2% makes pages (todo: make boxes)
+  {\beginMPgraphicgroup{#1}%
+   \let\startMPLIBtoPDF\directstartMPLIBtoPDF
+   \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
+   \dostartcurrentMPgraphic
+   \forgetall
+   \normalexpanded{\noexpand\ctxlua{metapost.graphic(
+     "\currentMPgraphicinstance",
+     "\currentMPgraphicformat",
+      \!!bs#2;\!!es,
+      \!!bs\currentMPinitializations;\!!es,
+      \!!bs\currentMPpreamble;\!!es,
+     "all"
+   )}}%
+   \dostopcurrentMPgraphic
+   \endMPgraphicgroup}
+
 \protect \endinput

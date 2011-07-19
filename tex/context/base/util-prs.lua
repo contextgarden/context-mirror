@@ -6,9 +6,9 @@ if not modules then modules = { } end modules ['util-prs'] = {
     license   = "see context related readme files"
 }
 
-local P, R, V, C, Ct, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Carg
+local P, R, V, C, Ct, Cs, Carg = lpeg.P, lpeg.R, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
 local lpegmatch = lpeg.match
-local concat, format, gmatch = table.concat, string.format, string.gmatch
+local concat, format, gmatch, find = table.concat, string.format, string.gmatch, string.find
 local tostring, type, next = tostring, type, next
 
 utilities         = utilities or {}
@@ -36,8 +36,12 @@ local rbrace    = P("}")
 local nobrace   = 1 - (lbrace+rbrace)
 local nested    = P { lbrace * (nobrace + V(1))^0 * rbrace }
 local spaces    = space^0
+local argument  = Cs((lbrace/"") * ((nobrace + nested)^0) * (rbrace/""))
+local content   = (1-P(-1))^0
 
-lpeg.patterns.nested = nested
+lpeg.patterns.nested   = nested    -- no capture
+lpeg.patterns.argument = argument  -- argument after e.g. =
+lpeg.patterns.content  = content   -- rest after e.g =
 
 local value     = P(lbrace * C((nobrace + nested)^0) * rbrace) + C((nested + (1-comma))^0)
 
@@ -118,9 +122,15 @@ parsers.patterns.settings_to_array = pattern
 
 -- we could use a weak table as cache
 
-function parsers.settings_to_array(str)
+function parsers.settings_to_array(str,strict)
     if not str or str == "" then
         return { }
+    elseif strict then
+        if find(str,"{") then
+            return lpegmatch(pattern,str)
+        else
+            return { str }
+        end
     else
         return lpegmatch(pattern,str)
     end

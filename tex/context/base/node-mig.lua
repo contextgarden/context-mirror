@@ -28,7 +28,7 @@ local trace_migrations = false trackers.register("nodes.migrations", function(v)
 
 local report_nodes = logs.reporter("nodes","migrations")
 
-local migrate_inserts, migrate_marks
+local migrate_inserts, migrate_marks, inserts_too
 
 local t_inserts, t_marks, t_sweeps = 0, 0, 0
 
@@ -69,11 +69,15 @@ end
 function nodes.handlers.migrate(head,where)
     local done = false
     if head then
---~ report_nodes("migration sweep '%s'",where)
+        if trace_migrations then
+            report_nodes("migration sweep '%s'",where)
+        end
         local current = head
         while current do
             local id = current.id
-            if id == vlist_code or id == hlist_code and not has_attribute(current,migrated) then
+            -- inserts_too is a temp hack, we should only do them when it concerns
+            -- newly placed (flushed) inserts
+            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not has_attribute(current,migrated) then
                 set_attribute(current,migrated,1)
                 t_sweeps = t_sweeps + 1
                 local h = current.list
@@ -88,7 +92,8 @@ function nodes.handlers.migrate(head,where)
                 if first then
                     t_inserts, t_marks = t_inserts + ni, t_marks + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
-                        report_nodes("sweep %s, %s inserts and %s marks migrated outwards during '%s'",t_sweeps,ni,nm,where)
+                        report_nodes("sweep %s, container %s, %s inserts and %s marks migrated outwards during '%s'",
+                            t_sweeps,nodecodes[id],ni,nm,where)
                     end
                     -- inserts after head
                     local n = current.next
@@ -119,6 +124,13 @@ experiments.register("inserts.migrate", function(v)
         tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
     end
     migrate_inserts = v
+end)
+
+experiments.register("inserts.migrate.nested", function(v)
+    if v then
+        tasks.enableaction("mvlbuilders", "nodes.handlers.migrate")
+    end
+    inserts_too = v
 end)
 
 statistics.register("node migrations", function()

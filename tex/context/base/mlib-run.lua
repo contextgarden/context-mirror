@@ -288,8 +288,10 @@ end
 
 local mp_inp, mp_log, mp_tag = { }, { }, 0
 
+-- key/values
+
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
-    local converted, result = false, {}
+    local converted, result = false, { }
     if type(mpx) == "string" then
         mpx = metapost.format(mpx) -- goody
     end

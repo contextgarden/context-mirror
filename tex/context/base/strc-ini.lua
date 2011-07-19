@@ -23,7 +23,7 @@ but it does not make sense to store all processdata.
 local format, concat, match = string.format, table.concat, string.match
 local count = tex.count
 local type, next, tonumber, tostring = type, next, tonumber, tostring
-local lpegmatch = lpeg.match
+local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Cs
 local settings_to_array, settings_to_hash = utilities.parsers.settings_to_array, utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
 
@@ -223,7 +223,11 @@ function processors.reset(p)
     registered[p] = nil
 end
 
-local splitter = lpeg.splitat("->",true)
+--~ local splitter = lpeg.splitat("->",true) -- also support =>
+
+local becomes    = P('->')
+local processor  = (1-becomes)^1
+local splitter   = C(processor) * becomes * Cs(patterns.argument + patterns.content)
 
 function processors.split(str)
     local p, s = lpegmatch(splitter,str)
@@ -248,8 +252,11 @@ end
 --~     context.sprint(catcodes,code) -- was: texsprint(catcodes,code)
 --~ end
 
-function processors.apply(str)
-    local p, s = lpegmatch(splitter,str)
+function processors.apply(p,s)
+    local str = p
+    if s == nil then
+        p, s = lpegmatch(splitter,p)
+    end
     if p and registered[p] then
         if trace_processors then
             report_processors("known: %s, argument: %s",p,s or "")
@@ -268,21 +275,33 @@ function processors.apply(str)
     end
 end
 
-function processors.startapply(str)
-    local p, s = lpegmatch(splitter,str)
+function processors.startapply(p,s)
+    local str = p
+    if s == nil then
+        p, s = lpegmatch(splitter,p)
+    end
     if p and registered[p] then
         if trace_processors then
             report_processors("start: %s",p or "?")
         end
         context.applyprocessor(p)
-    else
+        context("{")
+        return s
+    elseif p then
         if trace_processors then
-            report_processors("start: %s (unknown)",p or "?")
+            report_processors("start: %s (unknown)",p)
         end
         context.firstofoneargument()
+        context("{")
+        return s
+    else
+        if trace_processors then
+            report_processors("start: ? (unset)")
+        end
+        context.firstofoneargument()
+        context("{")
+        return str
     end
-    context("{")
-    return s -- not: or str
 end
 
 function processors.stopapply()

@@ -1134,14 +1134,10 @@ function scripts.context.autoctx()
     scripts.context.run(ctxdata)
 end
 
--- todo: quite after first image
-
 local template = [[
-    \starttext
-        \startMPpage %% %s
-            input "%s" ;
-        \stopMPpage
-    \stoptext
+\starttext
+    \directMPgraphic{%s}{input "%s"}
+\stoptext
 ]]
 
 local loaded = false

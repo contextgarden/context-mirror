@@ -162,14 +162,13 @@ end
 
 fontgoodies.register("featureset",initialize)
 
-local function setfeatureset(tfmdata,set)
+local function setfeatureset(tfmdata,set,features)
     local goodies = tfmdata.goodies -- shared ?
     if goodies then
-        local features = tfmdata.shared.features
         local properties = tfmdata.properties
         local what
         for i=1,#goodies do
-            -- last one counts
+            -- last one wins
             local g = goodies[i]
             what = (g.featuresets and g.featuresets[set]) or what
         end
@@ -179,7 +178,7 @@ local function setfeatureset(tfmdata,set)
                     features[feature] = value
                 end
             end
-            properties.mode = features.mode or properties.mode
+            properties.mode = what.mode or properties.mode
         end
     end
 end

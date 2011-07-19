@@ -37,6 +37,8 @@ local slide_nodes        = node.slide
 local insert_node_after  = node.insert_after
 local isnode             = node.is_node
 
+local current_font       = font.current()
+
 local texbox             = tex.box
 
 function nodes.repackhlist(list,...)

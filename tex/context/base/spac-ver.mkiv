@@ -1677,6 +1677,9 @@
 \definevspacingamount[\v!height]  [\strutheight]       [\bodyfontstrutheight]
 \definevspacingamount[\v!depth]   [\strutdepth]        [\bodyfontstrutdepth]
 
+\definevspacingamount[-\v!line]    [-\openlineheight]  [-\bodyfontlineheight]
+\definevspacingamount[-\v!halfline][-.5\openlineheight][-.5\bodyfontlineheight]
+
 \def\bodyfontwhitespace
   {\dimexpr
      \ifdim\parskip=\zeropoint

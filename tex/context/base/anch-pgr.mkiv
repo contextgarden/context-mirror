@@ -803,8 +803,8 @@
    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
      \kern\textbackgroundskip\nobreak
    \fi \fi
-   \nobreak \vskip-\lineheight \nobreak
-   \nowhitespace
+   \nobreak \vskip-\dimexpr\lineheight+\parskip\relax \nobreak
+%    \nobreak \vskip-\lineheight \nobreak \nowhitespace % does not work
    \egroup
    \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
    \nobreak \noindent \strut \hfill \kern\zeropoint
