@@ -36,11 +36,15 @@ end
 
 function sections.stopautolevel()
     local category = remove(categories)
-    local lc = levels[category]
-    if not lc or level > #lc then
-        context.nostophead { format("%s:%s",category,level) }
+    if category then
+        local lc = levels[category]
+        if not lc or level > #lc then
+            context.nostophead { format("%s:%s",category,level) }
+        else
+            context.dostophead { lc[level] }
+        end
+        level = level - 1
     else
-        context.dostophead { lc[level] }
+        -- error
     end
-    level = level - 1
 end
