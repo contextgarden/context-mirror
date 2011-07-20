@@ -96,7 +96,11 @@
 
 \let\normalexternalfigurereplacement\externalfigurereplacement
 
-\def\externalfigurereplacement#1#2#3%
+% \weightGRAYfalse % monochrome anyway
+% \MPcmykcolorsfalse
+% \MPspotcolorsfalse
+
+\unexpanded\def\externalfigurereplacement#1#2#3%
   {\getpaletsize[placeholder]%
    \ifx\figurereplacementcycle\relax
      \getrandomnumber \figurereplacementcycle \!!plusone \paletsize
@@ -107,9 +111,6 @@
    \ifnum\figurereplacementcycle>\paletsize
      \globallet\figurereplacementcycle\!!plusone
    \fi
-   \weightGRAYfalse % monochrome anyway
-   \MPcmykcolorsfalse
-   \MPspotcolorsfalse
    \defineoverlay
      [\s!dummy]
      [\useMPgraphic
@@ -128,20 +129,63 @@
       \c!foregroundcolor=\s!white]}%
      {\doif\@@eftext\v!yes
         {\infofont \setupinterlinespace \dohyphens % \nohyphens
-         \doifelse{#1}\s!dummy  \!!doneafalse\!!doneatrue
-         \doifelse{#2}\s!dummy  \!!donebfalse\!!donebtrue
-         \doifelse{#3}\s!unknown\!!donecfalse\!!donectrue
-         \if!!donea
+         \edef\tempa{#1}\ifx\tempa\s!dummy\let\tempa\empty\fi
+         \edef\tempb{#2}\ifx\tempb\s!dummy\let\tempb\empty\fi
+         \edef\tempc{#3}\ifx\tempc\s!dummy\let\tempc\empty\fi
+         \ifx\tempa\empty\else
            name: \expanded{\verbatimstring{#1}}\strut\endgraf
          \fi
-         \if!!doneb
-           \if!!donea file: \else \if!!donec file: \fi \fi
+         \ifx\tempb\empty\else
+           \ifx\tempa\empty\ifx\tempc\empty\else file: \fi\else file: \fi
            \expanded{\verbatimstring{#2}}\strut\endgraf
          \fi
-         \if!!donec
+         \ifx\tempc\empty\else
            state: \expanded{\verbatimstring{#3}}\strut\endgraf
          \fi}}}
 
-\def\dummyfigure{\externalfigure[placeholder]}
+\unexpanded\def\dummyfigure
+  {\externalfigure[placeholder]}
+
+%D \starttyping
+%D \externalfigure[mediashow.swf][comment={Alas, we have no nice preview},background=figure:comment]
+%D \externalfigure[mediashow.swf][comment={Alas, we have no nice preview},background=figure:dummy]
+%D \externalfigure[mediashow.swf][background=figure:dummy]
+%D \stoptyping
+
+\defineframed
+  [figurecomment]
+  [\c!background=\v!color,
+   \c!backgroundcolor=\v!gray,
+   \c!frame=\v!off,
+   \c!foregroundstyle=\ttbf,
+   \c!align={\v!middle,\v!lohi},
+   \c!height=\figureheight,
+   \c!width=\figurewidth]
+
+\defineframed
+  [figuredummy]
+  [\c!background=figure:placeholder,
+   \c!foregroundcolor=white,
+   \c!backgroundcolor=\v!gray,
+   \c!frame=\v!off,
+   \c!foregroundstyle=\ttbf,
+   \c!align={\v!middle,\v!lohi},
+   \c!height=\figureheight,
+   \c!width=\figurewidth]
+
+\defineoverlay
+  [figure:placeholder]
+  [\externalfigurereplacement{}{}{}]
+
+\defineoverlay
+  [figure:comment]
+  [\figurecomment{\@@efcomment}]
+
+\defineoverlay
+  [figure:dummy]
+  [\figuredummy{\@@efcomment}]
+
+\setupexternalfigures
+  [comment=]
 
 \protect \endinput

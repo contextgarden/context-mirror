@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/19/11 11:04:40
+-- merge date  : 07/20/11 14:10:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -3482,10 +3482,10 @@ function constructors.scale(tfmdata,specification)
         targetparameters.descender = delta * descender
     end
     -- copies, might disappear
-    targetparameters.xheight      = targetparameters.xheight      or parameters.x_height
-    targetparameters.extraspace   = targetparameters.extraspace   or parameters.extra_space
-    targetparameters.spacestretch = targetparameters.spacestretch or parameters.space_stretch
-    targetparameters.spaceshrink  = targetparameters.spaceshrink  or parameters.space_shrink
+    targetparameters.xheight      = targetparameters.xheight      or targetparameters.x_height      or parameters.x_height
+    targetparameters.extraspace   = targetparameters.extraspace   or targetparameters.extra_space   or parameters.extra_space
+    targetparameters.spacestretch = targetparameters.spacestretch or targetparameters.space_stretch or parameters.space_stretch
+    targetparameters.spaceshrink  = targetparameters.spaceshrink  or targetparameters.space_shrink  or parameters.space_shrink
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
     local scaledwidth      = defaultwidth  * hdelta

@@ -139,8 +139,7 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         dimens["7*default_rule_thickness"] = 7 * default_rule_thickness
         dimens["(5/18)*quad"] = (math_quad * 5) / 18
         dimens["(-10/18)*quad"] = - (math_quad * 10) / 18
-        dimens["math_x_height*2"] = math_x_height * 2 -- needs checking
-        dimens["math_x_height*3"] = math_x_height * 3 -- needs checking
+dimens["math_x_height*3"] = math_x_height * 3 -- needs checking
         dimens["abs(math_x_height*4)/5"] = abs(math_x_height * 4) / 5
         dimens["default_rule_thickness+(abs(default_rule_thickness)/4)"] = default_rule_thickness+(abs(default_rule_thickness) / 4)
         dimens["default_rule_thickness+(abs(math_x_height)/4)"] = default_rule_thickness+(abs(math_x_height) / 4)

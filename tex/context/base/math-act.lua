@@ -76,8 +76,7 @@ sequencers.appendaction(mathactions,"system","mathematics.scaleparameters")
 function mathematics.checkaccentbaseheight(target,original)
     local mathparameters = target.mathparameters
     if mathparameters and mathparameters.AccentBaseHeight == 0 then
-        mathparameters.AccentBaseHeight = original.parameters.x_height or 0
---~ mathparameters.AccentBaseHeight = target.parameters.vfactor * mathparameters.AccentBaseHeight
+        mathparameters.AccentBaseHeight = target.parameters.x_height -- needs checking
     end
 end
 
@@ -87,10 +86,10 @@ function mathematics.checkprivateparameters(target,original)
     local mathparameters = target.mathparameters
     if mathparameters then
         if not mathparameters.FractionDelimiterSize then
-            mathparameters.FractionDelimiterSize = 0
+            mathparameters.FractionDelimiterSize = 1.01 * target.parameters.size
         end
         if not mathparameters.FractionDelimiterDisplayStyleSize then
-            mathparameters.FractionDelimiterDisplayStyleSize = 0
+            mathparameters.FractionDelimiterDisplayStyleSize = 2.40 * target.parameters.size
         end
     end
 end

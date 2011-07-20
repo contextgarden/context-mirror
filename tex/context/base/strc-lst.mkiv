@@ -797,18 +797,24 @@
             \fi
             \parindent\zeropoint\relax
             \leavevmode
+% % topaligned
+%
+% \dontleavehmode
+% \scratchdimen\wd2
+% \setbox2\hbox to \hsize{\box2\hss\box4}%
+% \wd2\scratchdimen
+%
             \box2\relax
             \hskip\dimen2
-\domakelistelement\v!text{#2}\firstofoneargument{%
-            \bgroup
-            \donestedlistattributes\c!textstyle\c!textcolor
-              {\let\\=\newlineinlist
-               \dontconvertfont
-              %\listparameter\c!textcommand{#4}}%
-               \limitatedlistentry{#4}}%
-              %\carryoverpar % new otherwise wrong linespacing
-            \egroup
-}%
+            \domakelistelement\v!text{#2}\firstofoneargument
+              {\bgroup
+               \donestedlistattributes\c!textstyle\c!textcolor
+                 {\let\\=\newlineinlist
+                  \dontconvertfont
+                 %\listparameter\c!textcommand{#4}}%
+                  \limitatedlistentry{#4}}%
+                 %\carryoverpar % new otherwise wrong linespacing
+               \egroup}%
             \ifdim\wd4=\zeropoint\relax % \ifvoid4
               % \ifdim\!!widtha<\hsize \hfill\strut \fi % spoils align
             \else
