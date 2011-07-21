@@ -1,0 +1,137 @@
+%D \module
+%D   [       file=meta-imp-fen,
+%D        version=2011.07.21,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Fences,
+%D         author=Wolfgang Schuster & Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The shape and background example code was posted by Wolfgang on the
+%D \CONTEXT\ list and due to request by Aditya has been turned into
+%D library.
+
+\startMPinclusions
+    vardef BasicBraceSymbol (expr rotation) =
+        save p ; path p ;
+        z1  = (-233,    0) ;
+        z2  = (-220,   22) ;
+        z3  = (-155,  211) ;
+        z4  = (-200,  690) ;
+        z5  = (-142, 1033) ;
+        z6  = ( -97, 1106) ;
+        z7  = ( -71, 1125) ;
+        z8  = ( -61, 1104) ;
+        z9  = ( -80, 1077) ;
+        z10 = (-108, 1002) ;
+        z11 = (-129,  666) ;
+        z12 = (-117,  207) ;
+        z13 = (-197,   19) ;
+        z14 = (-208,    0) ;
+        z15 = (-197,  -19) ;
+        z16 = (-117, -207) ;
+        z17 = (-129, -666) ;
+        z18 = (-108,-1026) ;
+        z19 = ( -80,-1077) ;
+        z20 = ( -61,-1104) ;
+        z21 = ( -71,-1125) ;
+        z22 = ( -97,-1106) ;
+        z23 = (-143,-1031) ;
+        z24 = (-199, -673) ;
+        z25 = (-155, -211) ;
+        z26 = (-220,  -22) ;
+        p := z1  for i= 2 upto 14 : .. z[i] endfor
+          &  z14 for j=15 upto 26 : .. z[j] endfor
+          .. z1
+          &  cycle ;
+        p := p rotated rotation ;
+        p := p ysized 100 ;
+        p shifted - center p
+    enddef ;
+    vardef LeftBraceSymbol =
+        save p, b ; path p, b ; b := fullsquare xscaled OverlayWidth yscaled OverlayHeight ;
+        setbounds currentpicture to b ;
+        p := BasicBraceSymbol(0) ysized OverlayHeight ;
+        fill p shifted (-xpart lrcorner currentpicture + xpart lrcorner p,0) withcolor OverlayColor ;
+        setbounds currentpicture to b ;
+    enddef ;
+    vardef RightBraceSymbol =
+        save p, b ; path p, b ; b := fullsquare xscaled OverlayWidth yscaled OverlayHeight ;
+        setbounds currentpicture to b ;
+        p := BasicBraceSymbol(180) ysized OverlayHeight ;
+        fill p shifted (xpart lrcorner currentpicture - xpart lrcorner p,0) withcolor OverlayColor ;
+        setbounds currentpicture to b ;
+    enddef ;
+    vardef TopBraceSymbol =
+        save p, b ; path p, b ; b := fullsquare xscaled OverlayWidth yscaled OverlayHeight ;
+        setbounds currentpicture to b ;
+        p := BasicBraceSymbol(270) xsized OverlayWidth ;
+        fill p shifted (0,ypart ulcorner currentpicture - ypart ulcorner p) withcolor OverlayColor ;
+        setbounds currentpicture to b ;
+    enddef ;
+    vardef BottomBraceSymbol =
+        save p, b ; path p, b ; b := fullsquare xscaled OverlayWidth yscaled OverlayHeight ;
+        setbounds currentpicture to b ;
+        p := BasicBraceSymbol(90) xsized OverlayWidth ;
+        fill p shifted (0,ypart lrcorner currentpicture - ypart lrcorner p) withcolor OverlayColor  ;
+        setbounds currentpicture to b ;
+    enddef ;
+\stopMPinclusions
+
+\startuniqueMPgraphic{brace_left}   LeftBraceSymbol   ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{brace_right}  RightBraceSymbol  ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{brace_top}    TopBraceSymbol    ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{brace_bottom} BottomBraceSymbol ; \stopuniqueMPgraphic
+
+\defineoverlay[leftbrace]  [\uniqueMPgraphic{brace_left}]
+\defineoverlay[rightbrace] [\uniqueMPgraphic{brace_right}]
+\defineoverlay[topbrace]   [\uniqueMPgraphic{brace_top}]
+\defineoverlay[bottombrace][\uniqueMPgraphic{brace_bottom}]
+
+\continueifinputfile{meta-imp-fen.mkiv}
+
+\starttext
+
+\startTEXpage \uniqueMPgraphic{brace_left}   \stopTEXpage
+\startTEXpage \uniqueMPgraphic{brace_right}  \stopTEXpage
+\startTEXpage \uniqueMPgraphic{brace_top}    \stopTEXpage
+\startTEXpage \uniqueMPgraphic{brace_bottom} \stopTEXpage
+
+\framedtext
+  [frame=off,
+   offset=2em,
+   background={leftbrace,rightbrace,topbrace,bottombrace},
+   backgroundcolor=red]{\input{knuth}}
+
+\setupTABLE[frame=off,offset=1ex]
+\setupTABLE[row][each][align={middle,lohi}]
+
+\bTABLE
+   \bTR
+     \bTD[nr=3,background=leftbrace] drei \eTD
+     \bTD[nr=2,background=leftbrace] zwei \eTD
+     \bTD f \eTD
+     \bTD o \eTD
+     \bTD u \eTD
+     \bTD r \eTD
+     \bTD [nr=3,background=rightbrace] three \eTD
+   \eTR
+   \bTR
+     \bTD [background=leftbrace] eins \eTD
+     \bTD [background={topbrace,bottombrace}] null \eTD
+     \bTD [background=rightbrace] one \eTD
+     \bTD [nr=2,background=rightbrace] two \eTD
+   \eTR
+   \bTR
+     \bTD v \eTD
+     \bTD i \eTD
+     \bTD e \eTD
+     \bTD r \eTD
+   \eTR
+\eTABLE
+
+\stoptext
