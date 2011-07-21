@@ -400,25 +400,25 @@ luatex.registerstopactions(logtree)
 -- product  : combination of components
 
 local processors = utilities.storage.allocate {
-    [v_outer] = {
-        [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce },
-        [v_environment] = { "once", context.processfileonce },
-        [v_product]     = { "many", context.processfileonce },
-        [v_component]   = { "many", context.processfilemany },
-    },
+ -- [v_outer] = {
+ --     [v_text]        = { "many", context.processfilemany },
+ --     [v_project]     = { "once", context.processfileonce },
+ --     [v_environment] = { "once", context.processfileonce },
+ --     [v_product]     = { "many", context.processfileonce },
+ --     [v_component]   = { "many", context.processfilemany },
+ -- },
     [v_text] = {
         [v_text]        = { "many", context.processfilemany },
-        [v_project]     = { "once", context.processfileonce }, -- none *
+        [v_project]     = { "none", context.processfileonce }, -- none
         [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "once", context.processfileonce }, -- none *
+        [v_product]     = { "none", context.processfileonce }, -- none
         [v_component]   = { "many", context.processfilemany }, -- many
     },
     [v_project] = {
         [v_text]        = { "many", context.processfilemany },
         [v_project]     = { "none", context.processfilenone }, -- none
         [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "none", context.processfilenone }, -- once *
+        [v_product]     = { "once", context.processfilenone }, -- once
         [v_component]   = { "none", context.processfilenone }, -- many *
     },
     [v_environment] = {
@@ -432,7 +432,7 @@ local processors = utilities.storage.allocate {
         [v_text]        = { "many", context.processfilemany },
         [v_project]     = { "once", context.processfileonce }, -- once
         [v_environment] = { "once", context.processfileonce }, -- once
-        [v_product]     = { "many", context.processfilemany }, -- none *
+        [v_product]     = { "none", context.processfilemany }, -- none
         [v_component]   = { "many", context.processfilemany }, -- many
     },
     [v_component] = {
@@ -468,29 +468,29 @@ local function topofstack(what)
 end
 
 local done     = { }
-local tolerant = true
+local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
 
 local function process(what,name)
     local depth = #typestack
     local process
-    if not tolerant then
+--  if not tolerant then
         -- okay, would be best but not compatible with mkii
         process = processors[currenttype][what]
-    elseif depth == 0 then
-        -- could be a component, product or (brr) project
-        if trace_jobfiles then
-            report_jobfiles("%s : %s > %s (case 1)",depth,currenttype,v_outer)
-        end
-        process = processors[v_outer][what]
-    elseif depth == 1 and typestack[1] == v_text then
-        -- we're still not doing a component or product
-        if trace_jobfiles then
-            report_jobfiles("%s : %s > %s (case 2)",depth,currenttype,v_outer)
-        end
-        process = processors[v_outer][what]
-    else
-        process = processors[currenttype][what]
-    end
+--  elseif depth == 0 then
+--      -- could be a component, product or (brr) project
+--      if trace_jobfiles then
+--          report_jobfiles("%s : %s > %s (case 1)",depth,currenttype,v_outer)
+--      end
+--      process = processors[v_outer][what]
+--  elseif depth == 1 and typestack[1] == v_text then
+--      -- we're still not doing a component or product
+--      if trace_jobfiles then
+--          report_jobfiles("%s : %s > %s (case 2)",depth,currenttype,v_outer)
+--      end
+--      process = processors[v_outer][what]
+--  else
+--      process = processors[currenttype][what]
+--  end
     if process then
         local method = process[1]
         if method == "none" then
@@ -533,15 +533,17 @@ function commands.usecomponent  (name) process(v_component,  name) end
 -- -- todo: setsystemmode to currenttype
 
 local start = {
-    [v_project]   = context.starttext,
-    [v_product]   = context.starttext,
-    [v_component] = context.starttext,
+    [v_project]     = context.starttext,
+    [v_product]     = context.starttext,
+    [v_component]   = context.starttext,
+    [v_environment] = nil,
 }
 
 local stop = {
-    [v_project]   = context.stoptext,
-    [v_product]   = context.stoptext,
-    [v_component] = context.stoptext,
+    [v_project]     = function() context.stoptext() context.signalendofinput(v_project)     end,
+    [v_product]     = function() context.stoptext() context.signalendofinput(v_product)     end,
+    [v_component]   = function() context.stoptext() context.signalendofinput(v_component)   end,
+    [v_environment] = function()                    context.signalendofinput(v_environment) end,
 }
 
 local function gotonextlevel(what,name) -- todo: something with suffix name
@@ -564,7 +566,8 @@ local function gotopreviouslevel(what)
     currentpath = remove(pathstack) or "."
     currenttype = remove(typestack) or v_text
     remove(stacks[what]) -- not currenttype ... weak recovery
-    context.endinput()
+ -- context.endinput() -- does not work
+    context.signalendofinput(what)
 end
 
 function commands.startproject    (name) gotonextlevel(v_project,    name) end

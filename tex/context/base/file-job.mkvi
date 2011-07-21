@@ -137,10 +137,21 @@
 \unexpanded\def\dostartcomponent  [#name]{\ctxcommand{startcomponent  ("#name")}}
 \unexpanded\def\dostartenvironment[#name]{\ctxcommand{startenvironment("#name")}}
 
-\unexpanded\def\stopproject              {\ctxcommand{stopproject    ()}}
-\unexpanded\def\stopproduct              {\ctxcommand{stopproduct    ()}}
-\unexpanded\def\stopcomponent            {\ctxcommand{stopcomponent  ()}}
-\unexpanded\def\stopenvironment          {\ctxcommand{stopenvironment()}}
+\newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
+
+\unexpanded\def\signalendofinput#1% argument just for tracing
+  {\global\settrue\endofinput}
+
+\unexpanded\def\honorendofinput
+  {\ifconditional\endofinput
+     \global\setfalse\endofinput
+     \endinput
+   \fi}
+
+\unexpanded\def\stopproject              {\ctxcommand{stopproject    ()}\honorendofinput}
+\unexpanded\def\stopproduct              {\ctxcommand{stopproduct    ()}\honorendofinput}
+\unexpanded\def\stopcomponent            {\ctxcommand{stopcomponent  ()}\honorendofinput}
+\unexpanded\def\stopenvironment          {\ctxcommand{stopenvironment()}\honorendofinput}
 
 \def\currentproject                      {\ctxcommand{currentproject    ()}}
 \def\currentproduct                      {\ctxcommand{currentproduct    ()}}

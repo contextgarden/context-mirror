@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['data-tex'] = {
     license   = "see context related readme files"
 }
 
+local char = string.char
+
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_tex = logs.reporter("resolvers","tex")
@@ -45,6 +47,9 @@ appendgroup(textfileactions,"after" ) -- user
 appendgroup(textlineactions,"before") -- user
 appendgroup(textlineactions,"system") -- private
 appendgroup(textlineactions,"after" ) -- user
+
+local ctrl_d = char( 4) -- unix
+local ctrl_z = char(26) -- windows
 
 function helpers.textopener(tag,filename,filehandle,coding)
     local lines
@@ -111,6 +116,8 @@ function helpers.textopener(tag,filename,filehandle,coding)
                     return nil
                 elseif content == "" then
                     return ""
+             -- elseif content == ctrl_d or ctrl_z then
+             --     return nil -- we need this as \endinput does not work in prints
                 else
                     if textlineactions.dirty then
                         lineprocessor = sequencers.compile(textlineactions) -- maybe use autocompile
