@@ -15,7 +15,7 @@
 %D \CONTEXT\ list and due to request by Aditya has been turned into
 %D library.
 
-\startMPinclusions
+\startMPextensions
     vardef BasicBraceSymbol (expr rotation) =
         save p ; path p ;
         z1  = (-233,    0) ;
@@ -52,6 +52,18 @@
         p := p ysized 100 ;
         p shifted - center p
     enddef ;
+    vardef RawLeftBraceSymbol =
+        fill BasicBraceSymbol(0) ysized OverlayHeight  withcolor OverlayColor ;
+    enddef ;
+    vardef RawRightBraceSymbol =
+        fill BasicBraceSymbol(180) ysized OverlayHeight withcolor OverlayColor ;
+    enddef ;
+    vardef RawTopBraceSymbol =
+        fill BasicBraceSymbol(270) xsized OverlayWidth withcolor OverlayColor ;
+    enddef ;
+    vardef RawBottomBraceSymbol =
+        fill BasicBraceSymbol(90) xsized OverlayWidth withcolor OverlayColor ;
+    enddef ;
     vardef LeftBraceSymbol =
         save p, b ; path p, b ; b := fullsquare xscaled OverlayWidth yscaled OverlayHeight ;
         setbounds currentpicture to b ;
@@ -80,7 +92,12 @@
         fill p shifted (0,ypart lrcorner currentpicture - ypart lrcorner p) withcolor OverlayColor  ;
         setbounds currentpicture to b ;
     enddef ;
-\stopMPinclusions
+\stopMPextensions
+
+\startuniqueMPgraphic{raw_brace_left}   RawLeftBraceSymbol   ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{raw_brace_right}  RawRightBraceSymbol  ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{raw_brace_top}    RawTopBraceSymbol    ; \stopuniqueMPgraphic
+\startuniqueMPgraphic{raw_brace_bottom} RawBottomBraceSymbol ; \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{brace_left}   LeftBraceSymbol   ; \stopuniqueMPgraphic
 \startuniqueMPgraphic{brace_right}  RightBraceSymbol  ; \stopuniqueMPgraphic
@@ -92,9 +109,28 @@
 \defineoverlay[topbrace]   [\uniqueMPgraphic{brace_top}]
 \defineoverlay[bottombrace][\uniqueMPgraphic{brace_bottom}]
 
+\installleftframerenderer  {brace}{\uniqueMPgraphic{raw_brace_left}}
+\installrightframerenderer {brace}{\uniqueMPgraphic{raw_brace_right}}
+\installtopframerenderer   {brace}{\uniqueMPgraphic{raw_brace_top}}
+\installbottomframerenderer{brace}{\uniqueMPgraphic{raw_brace_bottom}}
+
 \continueifinputfile{meta-imp-fen.mkiv}
 
 \starttext
+
+\startTEXpage[offset=10pt]
+
+    \framed
+      [offset=1ex,
+       leftframe=brace,
+       rightframe=brace,
+       topframe=brace,
+       bottomframe=brace,
+       background=color,
+       backgroundcolor=red]
+      {OEPS}
+
+\stopTEXpage
 
 \startTEXpage \uniqueMPgraphic{brace_left}   \stopTEXpage
 \startTEXpage \uniqueMPgraphic{brace_right}  \stopTEXpage
