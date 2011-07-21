@@ -233,7 +233,8 @@ local function useanyfile(name,onlyonce)
     if s then
         s(file.removesuffix(name),onlyonce)
     else
-        resolvers.readfilename(name) -- might change
+        usetexfile(name,onlyonce) -- e.g. ctx file
+--~         resolvers.readfilename(name)
     end
 end
 

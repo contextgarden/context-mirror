@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/20/11 14:10:55
+-- merge date  : 07/21/11 18:09:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -1376,7 +1376,7 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str)
+    return match(utflinesplitter,str or "")
 end
 
 --~ lpeg.splitters = cache -- no longer public

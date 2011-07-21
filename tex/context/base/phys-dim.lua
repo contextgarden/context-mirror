@@ -241,6 +241,9 @@ local short_units_to_long = {
     u  = "Hour",
     h  = "Hour",
     s  = "Second",
+    g  = "Gram",
+    n  = "Newton",
+    v  = "Volt",
 
     Litre = "Liter",
     Metre = "Meter",
@@ -306,9 +309,9 @@ local s_suffix   = appendlpeg(keys(short_suffixes))
 
 -- square centi meter per square kilo seconds
 
-local l_suffix       = Cs(somespace * l_suffix)
-local s_suffix       = Cs(somespace * s_suffix) + Cc("")
-local l_operator     = Cs(somespace * l_operator)
+local l_suffix   = Cs(somespace * l_suffix)
+local s_suffix   = Cs(somespace * s_suffix) + Cc("")
+local l_operator = Cs(somespace * l_operator)
 
 local combination = P { "start",
     l_prefix = Cs(somespace * l_prefix) + Cc(""),
@@ -321,6 +324,8 @@ local combination = P { "start",
              + V("s_prefix") * V("l_unit"),
 }
 
+--~ inspect(s_prefix)
+--~ inspect(s_unit)
 -- square kilo meter
 -- square km
 

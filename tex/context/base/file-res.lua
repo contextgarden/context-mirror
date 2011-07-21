@@ -22,7 +22,7 @@ local found = { } -- can best be done in the resolver itself
 
 local function readfilename(specification,backtrack,treetoo)
     local name = specification.filename
-    local fnd = found[name]
+    local fnd = name and found[name]
     if not fnd then
         if isfile(name) then
             if trace_files then
@@ -65,6 +65,8 @@ local function readfilename(specification,backtrack,treetoo)
     end
     return fnd or ""
 end
+
+--~ resolvers.readfilename = readfilename -- bonus use getreadfilename instead
 
 function finders.job(specification) return readfilename(specification,false,                 false) end -- current path, no backtracking
 function finders.loc(specification) return readfilename(specification,resolvers.maxreadlevel,false) end -- current path, backtracking

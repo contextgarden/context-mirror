@@ -25,9 +25,11 @@
 
 \newevery \everyheadstart \relax
 
-\unexpanded\def\placeheadmargintexts
-  {\the\everyheadstart
-   \doif{\headparameter\c!margintext}\v!yes\placemargincontent}
+% \unexpanded\def\placeheadmargintexts
+%   {\the\everyheadstart
+%    \doif{\headparameter\c!margintext}\v!yes\placemargincontent}
+
+\let\placeheadmargintexts\relax
 
 \unexpanded\def\setupheadcomponentfont#1#2%
   {\dontconvertfont
