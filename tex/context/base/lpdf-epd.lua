@@ -23,8 +23,9 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- We cannot access all destinations in one run.
 
 local setmetatable, rawset, rawget, tostring, tonumber = setmetatable, rawset, rawget, tostring, tonumber
-local lower, match, char = string.lower, string.match, string.char
+local lower, match, char, find, sub = string.lower, string.match, string.char, string.find, string.sub
 local concat = table.concat
+local toutf = string.toutf
 
 function epdf.type(o)
     local t = lower(match(tostring(o),"[^ :]+"))
@@ -51,8 +52,10 @@ local function prepare(document,d,t,n,k)
                 --
             else
                 c = checked_access[v:getTypeName()](v,document,r)
-                document.cache[r] = c
-                document.xrefs[c] = r
+                if c then
+                    document.cache[r] = c
+                    document.xrefs[c] = r
+                end
             end
             t[d:getKey(i)] = c
         end
@@ -149,7 +152,7 @@ checked_access = {
         return v:getNum()
     end,
     string = function(v)
-        return v:getString()
+        return toutf(v:getString())
     end,
     boolean = function(v)
         return v:getBool()
@@ -241,7 +244,8 @@ local function getpages(document)
     local cata  = data:getCatalog()
     local xref  = data:getXRef()
     local pages = { }
-    for pagenumber=1,cata:getNumPages() do
+    local nofpages = cata:getNumPages()
+    for pagenumber=1,nofpages do
         local pagereference = cata:getPageRef(pagenumber).num
         local pagedata = some_dictionary(xref:fetch(pagereference,0):getDict(),document,pagereference)
         pagedata.number = pagenumber
@@ -249,6 +253,7 @@ local function getpages(document)
         xrefs[pagedata] = pagereference
         cache[pagereference] = pagedata
     end
+    pages.n = nofpages
     return pages
 end
 
@@ -281,14 +286,16 @@ function lpdf.epdf.load(filename)
                 data     = data,
             }
             local Catalog    = some_dictionary(data:getXRef():getCatalog():getDict(),document)
+            local Info       = some_dictionary(data:getXRef():getDocInfo():getDict(),document)
             document.Catalog = Catalog
+            document.Info    = Info
          -- document.catalog = Catalog
             -- a few handy helper tables
             document.pages         = delayed(document,"pages",        function() return getpages(document) end)
-            document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names.Dests) end)
-            document.javascripts   = delayed(document,"javascripts",  function() return getnames(document,Catalog.Names.JS) end)
-            document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names.AcroForm) end)
-            document.embeddedfiles = delayed(document,"embeddedfiles",function() return getnames(document,Catalog.Names.EmbeddedFiles) end)
+            document.destinations  = delayed(document,"destinations", function() return getnames(document,Catalog.Names and Catalog.Names.Dests) end)
+            document.javascripts   = delayed(document,"javascripts",  function() return getnames(document,Catalog.Names and Catalog.Names.JS) end)
+            document.widgets       = delayed(document,"widgets",      function() return getnames(document,Catalog.Names and Catalog.Names.AcroForm) end)
+            document.embeddedfiles = delayed(document,"embeddedfiles",function() return getnames(document,Catalog.Names and Catalog.Names.EmbeddedFiles) end)
             document.layers        = delayed(document,"layers",       function() return getlayers(document) end)
         else
             document = false

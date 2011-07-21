@@ -284,7 +284,7 @@ local utflinesplitter = utfbom^-1 * tsplitat(newline)
 patterns.utflinesplitter = utflinesplitter
 
 function string.utfsplitlines(str)
-    return match(utflinesplitter,str)
+    return match(utflinesplitter,str or "")
 end
 
 --~ lpeg.splitters = cache -- no longer public

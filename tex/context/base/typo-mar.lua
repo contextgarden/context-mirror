@@ -19,7 +19,8 @@ local setmetatable, next = setmetatable, next
 
 local attributes, nodes, node, variables = attributes, nodes, node, variables
 
-local trace_margindata = false  trackers.register("typesetters.margindata", function(v) trace_margindata = v end)
+local trace_margindata  = false  trackers.register("typesetters.margindata",       function(v) trace_margindata  = v end)
+local trace_marginstack = false  trackers.register("typesetters.margindata.stack", function(v) trace_marginstack = v end)
 
 local report_margindata = logs.reporter("typesetters","margindata")
 
@@ -145,6 +146,17 @@ local defaults = {
 
 local enablelocal, enableglobal -- forward reference (delayed initialization)
 
+local function showstore(store,banner)
+    if #store == 0 then
+        report_margindata("%s: nothing stored",banner)
+    else
+        for i=1,#store do
+            local si =store[i]
+            report_margindata("%s: stored at %s: %s => %s",banner,i,si.name or "no name",nodes.toutf(si.box.list))
+        end
+    end
+end
+
 function margins.save(t)
     setmetatable(t,defaults)
     local inline   = t.inline
@@ -175,6 +187,9 @@ function margins.save(t)
     nofsaved = nofsaved + 1
     nofstored = nofstored + 1
     local name = t.name
+    if trace_marginstack then
+        showstore(store,"before ")
+    end
     if name and name ~= "" then
         for i=#store,1,-1 do
             local si = store[i]
@@ -183,35 +198,43 @@ function margins.save(t)
                 free_node_list(s.box)
             end
         end
+        if trace_marginstack then
+            showstore(store,"between")
+        end
     end
-    -- better make a new table and make t entry in t
-    t.box                 = copy_node_list(texbox[t.number])
-    t.n                   = nofsaved
-    -- used later (we will clean up this natural mess later)
-    -- nice is to make a special status table mechanism
-    local leftmargindistance  = texdimen.naturalleftmargindistance
-    local rightmargindistance = texdimen.naturalrightmargindistance
-    t.strutdepth          = texbox.strutbox.depth
-    t.strutheight         = texbox.strutbox.height
-    t.leftskip            = tex.leftskip.width
-    t.rightskip           = tex.rightskip.width
-    t.leftmargindistance  = leftmargindistance
-    t.rightmargindistance = rightmargindistance
-    t.leftedgedistance    = texdimen.naturalleftedgedistance
-                          + texdimen.leftmarginwidth
-                          + leftmargindistance
-    t.rightedgedistance   = texdimen.naturalrightedgedistance
-                          + texdimen.rightmarginwidth
-                          + rightmargindistance
-    t.lineheight          = texdimen.lineheight
-    --
- -- t.realpageno          = texcount.realpageno
-    if inline then
-        context(new_usernumber(inline_mark,nofsaved))
-        store[nofsaved] = t -- no insert
-        nofinlined = nofinlined + 1
-    else
-        insert(store,t)
+    if t.number then
+        -- better make a new table and make t entry in t
+        t.box                 = copy_node_list(texbox[t.number])
+        t.n                   = nofsaved
+        -- used later (we will clean up this natural mess later)
+        -- nice is to make a special status table mechanism
+        local leftmargindistance  = texdimen.naturalleftmargindistance
+        local rightmargindistance = texdimen.naturalrightmargindistance
+        t.strutdepth          = texbox.strutbox.depth
+        t.strutheight         = texbox.strutbox.height
+        t.leftskip            = tex.leftskip.width
+        t.rightskip           = tex.rightskip.width
+        t.leftmargindistance  = leftmargindistance
+        t.rightmargindistance = rightmargindistance
+        t.leftedgedistance    = texdimen.naturalleftedgedistance
+                              + texdimen.leftmarginwidth
+                              + leftmargindistance
+        t.rightedgedistance   = texdimen.naturalrightedgedistance
+                              + texdimen.rightmarginwidth
+                              + rightmargindistance
+        t.lineheight          = texdimen.lineheight
+        --
+     -- t.realpageno          = texcount.realpageno
+        if inline then
+            context(new_usernumber(inline_mark,nofsaved))
+            store[nofsaved] = t -- no insert
+            nofinlined = nofinlined + 1
+        else
+            insert(store,t)
+        end
+    end
+    if trace_marginstack then
+        showstore(store,"after  ")
     end
     if trace_margindata then
         report_margindata("saved: %s, location: %s, scope: %s, inline: %s",nofsaved,location,scope,tostring(inline))

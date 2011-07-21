@@ -13,6 +13,7 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
+%registerctxluafile{lpdf-aux}{1.001} % common helpers
 \registerctxluafile{lpdf-ini}{1.001}
 \registerctxluafile{lpdf-nod}{1.001}
 \registerctxluafile{lpdf-col}{1.000}
@@ -99,7 +100,7 @@
 \def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 \def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 
-\def\pdfbackendcurrentresources     {\ctxlua{lpdf.collectedresources()}}
+\def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
 
 \def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
 
@@ -125,7 +126,7 @@
 
 \def\dostartrotation#1% grouped
   {\forcecolorhack % maybe use signal instead
-   \pdfliteral{q \ctxlua{lpdf.rotationcm(#1)}}}
+   \pdfliteral{q \cldcontext{lpdf.rotationcm(#1)}}}
 
 \def\dostoprotation
   {\pdfliteral{Q}}

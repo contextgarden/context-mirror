@@ -162,72 +162,85 @@
   {\iffirstargument
      \setupmargindata[\currentmargindata][#dataparameters]%
    \fi
-   \edef\currentmargindatastrut{\margindataparameter\c!strut}%
-   \the\everymargindatacontent
-   \dostarttagged\t!margintext\currentmargindata
-   \ifcsname\??mf\currentmargindata\s!parent\endcsname
-     \setbox\nextbox\hbox\bgroup
-       \the\everymargindatacontent
-       \dosetmargindataattributes\c!style\c!color
-       \localframedwithsettings[\??mf\currentmargindata][\c!location=\v!normal,#textparameters]\bgroup
-         \ifx\currentmargindatastrut\empty \else
-           \dosetupstrut[\currentmargindatastrut]%
-         \fi
-         \begstrut\margindataparameter\c!command{#content}\endstrut
-       \egroup
-     \egroup
-     \edef\currentmarginfirstheight{\number\dimexpr\framedfirstheight}%
-   \else
-     \edef\currentmargindatawidth{\margindataparameter\c!width}%
-     \ifx\currentmargindatawidth\empty
+   \doifelsenothing{#content}\donefalse\donetrue
+   \ifdone
+     \edef\currentmargindatastrut{\margindataparameter\c!strut}%
+     \the\everymargindatacontent
+     \dostarttagged\t!margintext\currentmargindata
+     \ifcsname\??mf\currentmargindata\s!parent\endcsname
        \setbox\nextbox\hbox\bgroup
          \the\everymargindatacontent
          \dosetmargindataattributes\c!style\c!color
-         \ifx\currentmargindatastrut\empty \else
-           \dosetupstrut[\currentmargindatastrut]%
-         \fi
-         \begstrut\margindataparameter\c!command{#content}\endstrut
+         \localframedwithsettings[\??mf\currentmargindata][\c!location=\v!normal,#textparameters]\bgroup
+           \ifx\currentmargindatastrut\empty \else
+             \dosetupstrut[\currentmargindatastrut]%
+           \fi
+           \begstrut\margindataparameter\c!command{#content}\endstrut
+         \egroup
        \egroup
-       \let\currentmarginfirstheight\empty
+       \edef\currentmarginfirstheight{\number\dimexpr\framedfirstheight}%
      \else
-       \dosetraggedcommand{\margindataparameter\c!align}%
-       \setbox\nextbox\hbox \bgroup\vtop \bgroup % hbox is needed
-         \the\everymargindatacontent
-         \dosetmargindataattributes\c!style\c!color
-         \hsize\currentmargindatawidth
-         \raggedcommand
-         \ifx\currentmargindatastrut\empty \else
-           \dosetupstrut[\currentmargindatastrut]%
-         \fi
-         \begstrut\margindataparameter\c!command{#content}\endstrut
-       \egroup \egroup
-       \edef\currentmarginfirstheight{true}%
+       \edef\currentmargindatawidth{\margindataparameter\c!width}%
+       \ifx\currentmargindatawidth\empty
+         \setbox\nextbox\hbox\bgroup
+           \the\everymargindatacontent
+           \dosetmargindataattributes\c!style\c!color
+           \ifx\currentmargindatastrut\empty \else
+             \dosetupstrut[\currentmargindatastrut]%
+           \fi
+           \begstrut\margindataparameter\c!command{#content}\endstrut
+         \egroup
+         \let\currentmarginfirstheight\empty
+       \else
+         \dosetraggedcommand{\margindataparameter\c!align}%
+         \setbox\nextbox\hbox \bgroup\vtop \bgroup % hbox is needed
+           \the\everymargindatacontent
+           \dosetmargindataattributes\c!style\c!color
+           \hsize\currentmargindatawidth
+           \raggedcommand
+           \ifx\currentmargindatastrut\empty \else
+             \dosetupstrut[\currentmargindatastrut]%
+           \fi
+           \begstrut\margindataparameter\c!command{#content}\endstrut
+         \egroup \egroup
+         \edef\currentmarginfirstheight{true}%
+       \fi
      \fi
+     \dostoptagged
    \fi
-   \dostoptagged
-   \ctxlua{typesetters.margins.save{
-     \c!location = "\margindataparameter\c!location",
-     \c!method   = "\margindataparameter\c!method",
-     \c!category = "\margindataparameter\c!category",
-     \c!name     = "\margindataparameter\c!name",
-     \c!margin   = "\margindataparameter\c!margin", % local normal margin edge
-     \c!distance = \number\dimexpr\margindataparameter\c!distance,
-     \c!hoffset  = \number\dimexpr\margindataparameter\c!hoffset,
-     \c!voffset  = \number\dimexpr\margindataparameter\c!voffset,
-     \c!dy       = \number\dimexpr\margindataparameter\c!dy,
-   \ifx\currentmarginfirstheight\empty \else
-     baseline    = \currentmarginfirstheight,
+   \ifdone
+     \ctxlua{typesetters.margins.save{
+       \c!location = "\margindataparameter\c!location",
+       \c!method   = "\margindataparameter\c!method",
+       \c!category = "\margindataparameter\c!category",
+       \c!name     = "\margindataparameter\c!name",
+       \c!margin   = "\margindataparameter\c!margin", % local normal margin edge
+       \c!distance = \number\dimexpr\margindataparameter\c!distance,
+       \c!hoffset  = \number\dimexpr\margindataparameter\c!hoffset,
+       \c!voffset  = \number\dimexpr\margindataparameter\c!voffset,
+       \c!dy       = \number\dimexpr\margindataparameter\c!dy,
+     \ifx\currentmarginfirstheight\empty \else
+       baseline    = \currentmarginfirstheight,
+     \fi
+       threshold   = \number\dimexpr\margindataparameter\c!threshold, % will change
+     \ifhmode
+       inline      = true,
+     \fi
+       \c!scope    = "\margindataparameter\c!scope",
+       \c!align    = "\margindataparameter\c!align",
+       \c!line     = "\margindataparameter\c!line",
+       \c!stack    = "\margindataparameter\c!stack",
+       \c!number   = \number\nextbox
+     }}%
+   \else
+     \ctxlua{typesetters.margins.save{
+       \c!location = "\margindataparameter\c!location",
+       \c!method   = "\margindataparameter\c!method",
+       \c!category = "\margindataparameter\c!category",
+       \c!name     = "\margindataparameter\c!name",
+       \c!scope    = "\margindataparameter\c!scope",
+     }}%
    \fi
-     threshold   = \number\dimexpr\margindataparameter\c!threshold, % will change
-   \ifhmode
-     inline      = true,
-   \fi
-     \c!scope    = "\margindataparameter\c!scope",
-     \c!align    = "\margindataparameter\c!align",
-     \c!line     = "\margindataparameter\c!line",
-     \c!stack    = "\margindataparameter\c!stack",
-     \c!number   = \number\nextbox
-   }}%
    \endgroup}
 
 %D Downward compatible hack:

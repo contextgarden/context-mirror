@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['x-ct'] = {
 local xmlsprint, xmlcprint, xmlfilter, xmlcollected = xml.sprint, xml.cprint, xml.filter, xml.collected
 local format, concat, rep, find = string.format, table.concat, string.rep, string.find
 
-lxml.context = { }
+moduledata.ct = moduledata.ct or { }
 
 local halignments = {
     left       = 'l',
@@ -70,7 +70,7 @@ end
 
 local defaulttemplate = "|l|p|"
 
-function lxml.context.tabulate(root,namespace)
+function moduledata.ct.tabulate(root,namespace)
     if not root then
         return
     else
@@ -111,7 +111,7 @@ function lxml.context.tabulate(root,namespace)
 
 end
 
-function lxml.context.combination(root,namespace)
+function moduledata.ct.combination(root,namespace)
 
     if not root then
         return
@@ -143,7 +143,7 @@ function lxml.context.combination(root,namespace)
      -- )
         context("{")
         xmlfilter(e,contentspec)
-        context("}{")or
+        context("}{")
         xmlfilter(e,captionspec)
         context("}")
     end

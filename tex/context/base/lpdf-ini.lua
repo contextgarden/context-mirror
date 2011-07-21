@@ -9,16 +9,14 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfvalues = string.utfvalues
-local texset = tex.set
+local utfchar = utf.char
 local sind, cosd = math.sind, math.cosd
-local lpegmatch = lpeg.match
+local lpegmatch, P, C, R, S, Cc, Cs = lpeg.match, lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
 
 local pdfreserveobject   = pdf.reserveobj
 local pdfimmediateobject = pdf.immediateobj
 local pdfdeferredobject  = pdf.obj
 local pdfreferenceobject = pdf.refobj
-
-local pdfobject          = pdf.obj
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
@@ -28,7 +26,7 @@ local trace_detail     = false  trackers.register("backend.detail",     function
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 
-local backends, context = backends, context
+local backends = backends
 
 backends.pdf = backends.pdf or {
     comment        = "backend for directly generating pdf output",
@@ -41,7 +39,7 @@ backends.pdf = backends.pdf or {
 lpdf       = lpdf or { }
 local lpdf = lpdf
 
-local function tosixteen(str)
+local function tosixteen(str) -- an lpeg might be faster
     if not str or str == "" then
         return "<feff>" -- not () as we want an indication that it's unicode
     else
@@ -60,7 +58,7 @@ local function tosixteen(str)
     end
 end
 
-lpdf.tosixteen = tosixteen
+lpdf.tosixteen   = tosixteen
 
 -- lpeg is some 5 times faster than gsub (in test) on escaping
 
@@ -72,7 +70,7 @@ lpdf.tosixteen = tosixteen
 --     ["("] = "\\(", [")"] = "\\)",
 -- }
 --
--- local escaped = lpeg.Cs(lpeg.Cc("(") * (lpeg.S("\\/#<>[]()")/escapes + lpeg.P(1))^0 * lpeg.Cc(")"))
+-- local escaped = Cs(Cc("(") * (S("\\/#<>[]()")/escapes + P(1))^0 * Cc(")"))
 --
 -- local function toeight(str)
 --     if not str or str == "" then
@@ -287,7 +285,7 @@ for s in gmatch(forbidden,".") do
     replacements[s] = format("#%02x",byte(s))
 end
 
-local escaped = lpeg.Cs(lpeg.Cc("/") * (lpeg.S(forbidden)/replacements + lpeg.P(1))^0)
+local escaped = Cs(Cc("/") * (S(forbidden)/replacements + P(1))^0)
 
 local function pdfconstant(str,default)
     str = str or default or ""
@@ -376,7 +374,7 @@ end
 -- lpdf.immediateobject = pdfimmediateobject
 -- lpdf.deferredobject  = pdfdeferredobject
 -- lpdf.object          = pdfdeferredobject
--- lpdf.referenceobject    = pdfreferenceobject
+-- lpdf.referenceobject = pdfreferenceobject
 
 lpdf.pagereference      = pdf.pageref or tex.pdfpageref
 lpdf.registerannotation = pdf.registerannot
@@ -421,7 +419,7 @@ function lpdf.flushstreamobject(data,dict,compressed) -- default compressed
         report_objects("flushing stream object of %s bytes",#data)
     end
     local dtype = type(dict)
-    return pdfobject {
+    return pdfdeferredobject {
         immediate     = true,
         compresslevel = compressed == false and 0 or nil,
         type          = "stream",
@@ -435,7 +433,7 @@ function lpdf.flushstreamfileobject(filename,dict,compressed) -- default compres
         report_objects("flushing stream file object '%s'",filename)
     end
     local dtype = type(dict)
-    return pdfobject {
+    return pdfdeferredobject {
         immediate     = true,
         compresslevel = compressed == false and 0 or nil,
         type          = "stream",
@@ -663,17 +661,6 @@ local function flushcolorspaces() if next(d_colorspaces) then trace_flush("color
 local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
 local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
---~ local collected = pdfdictionary {
---~     ExtGState  = p_extgstates,
---~     ColorSpace = p_colorspaces,
---~     Pattern    = p_patterns,
---~     Shading    = p_shades,
---~ } ; collected = collected()
-
---~ function lpdf.collectedresources()
---~     context(collected)
---~ end
-
 function lpdf.collectedresources()
     local ExtGState  = next(d_extgstates ) and p_extgstates
     local ColorSpace = next(d_colorspaces) and p_colorspaces
@@ -687,7 +674,9 @@ function lpdf.collectedresources()
             Shading    = Shading,
          -- ProcSet    = pdfarray { pdfconstant("PDF") },
         }
-        context(collected())
+        return collected()
+    else
+        return ""
     end
 end
 
@@ -714,7 +703,7 @@ registerpagefinalizer(checkshades,3,"shades")
 
 function lpdf.rotationcm(a)
     local s, c = sind(a), cosd(a)
-    context("%s %s %s %s 0 0 cm",c,s,-s,c)
+    return format("%s %s %s %s 0 0 cm",c,s,-s,c)
 end
 
 -- ! -> universaltime

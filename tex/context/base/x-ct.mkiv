@@ -18,8 +18,8 @@
 \registerctxluafile{x-ct}{}
 
 \startxmlsetups xml:context:process
-    \xmlsetfunction {\xmldocument} {context:tabulate}    {lxml.context.tabulate}
-    \xmlsetfunction {\xmldocument} {context:combination} {lxml.context.combination}
+    \xmlsetfunction {\xmldocument} {context:tabulate}    {moduledata.ct.tabulate}
+    \xmlsetfunction {\xmldocument} {context:combination} {moduledata.ct.combination}
 \stopxmlsetups
 
 \xmlregistersetup{xml:context:process}
