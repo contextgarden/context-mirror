@@ -547,7 +547,7 @@
 \definesymbol[\v!list][\s!default][\listsymbol@default]
 \definesymbol[\v!list][\s!unknown][\listsymbol@unknown]
 
-\def\currentlistsymbol
+\unexpanded\def\currentlistsymbol
   {\doifinsymbolsetelse\v!list{\listparameter\c!symbol}
      {\directsymbol\v!list{\listparameter\c!symbol}}
      {\directsymbol\v!list\s!default}}
