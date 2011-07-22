@@ -150,7 +150,7 @@ figures.cachepaths = allocate {
 figures.paths  = allocate(table.copy(figures.localpaths))
 
 figures.order =  allocate{
-    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "gif", "mov", "buffer", "tex", "cld",
+    "pdf", "mps", "jpg", "png", "jp2", "jbig", "svg", "eps", "tif", "gif", "mov", "buffer", "tex", "cld",
 }
 
 figures.formats = allocate{
@@ -163,6 +163,7 @@ figures.formats = allocate{
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
     ["gif"]    = { list = { "gif" } },
+    ["tif"]    = { list = { "tif", "tiff" } },
     ["mov"]    = { list = { "mov", "flv", "mp4" } }, -- "avi" is not supported
     ["buffer"] = { list = { "tmp", "buffer", "buf" } },
     ["tex"]    = { list = { "tex" } },
@@ -1134,12 +1135,12 @@ svgconverter.default = svgconverter.pdf
 
 -- -- -- gif -- -- --
 
-local gifconverter     = { }
+local gifconverter = { }
 converters.gif = gifconverter
 
 programs.convert = {
-    command = "convert"    -- imagemagick
- -- command = "gm convert" -- graphicmagick
+ -- command = "convert"    -- imagemagick
+    command = "gm convert" -- graphicmagick
 }
 
 function gifconverter.pdf(oldname,newname)
@@ -1151,6 +1152,31 @@ function gifconverter.pdf(oldname,newname)
 end
 
 gifconverter.default = gifconverter.pdf
+
+-- -- -- tif -- -- --
+
+-- http://sourceforge.net/projects/gnuwin32/files/tiff/3.8.2-1/tiff-3.8.2-1-bin.zip/download
+
+local tifconverter = { }
+converters.tif = tifconverter
+
+programs.convert = {
+--~ command = "convert"    -- imagemagick
+    command = "gm convert" -- graphicmagick
+--~ command = "tiff2pdf"
+}
+
+function tifconverter.pdf(oldname,newname)
+    local convert = programs.convert
+    runprogram (
+        "%s %s %s %s",
+        convert.command, makeoptions(convert.options), oldname, newname
+--~         "%s %s -z -o %s %s",
+--~         convert.command, makeoptions(convert.options), newname, oldname
+    )
+end
+
+tifconverter.default = tifconverter.pdf
 
 -- todo: lowres
 

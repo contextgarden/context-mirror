@@ -106,6 +106,8 @@
 
 \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
   {\bgroup             % niet breedte zetten, kan fractie zijn!
+   %
+   \donetrue\processnotes{\dochecknote\ifbottomnotes\else\donefalse\fi}%
    \ifcase\kindofpagetextareas
    \or % partial page (experimental)
      \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaA
@@ -114,7 +116,8 @@
    \or % partial page (only works well with no stretch!)
      \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaB
    \fi
-   \setbox0\vbox \ifbottomnotes to \textheight \fi
+   %
+   \setbox0\vbox \ifdone to \textheight \fi
      {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
       \dotopinsertions
       \ifgridsnapping
@@ -138,7 +141,8 @@
         \dobotinsertions % added
       \fi\fi\fi
       \fakepagenotes}% was \fakenotes, but wrong! (check with \setupalign[height])
-   \ifbottomnotes
+   % we could use the local snapper hier
+   \ifdone
      \ifgridsnapping
        \ifcase\layoutlines % todo: make macro of this
          \getrawnoflines\textheight
@@ -154,16 +158,20 @@
    \else
      \scratchdimen\zeropoint
    \fi
+   %
    \setbox2\hbox
      {\checksinglecolumnfootnotes
-      \lower\scratchdimen\vbox{\placebottomnotes}}%
+      \lower\scratchdimen
+      \vbox{\placebottomnotes}}%
    \smashbox2% % needed here
-   \ifbottomnotes
+   \ifdone
      \ht0\zeropoint
    \fi
    \OTRONEregisteredtextareaB
      {\vbox to \textheight
-        {\box0\box2\ifbottomnotes\else\vfill\fi}}%
+        {\box0
+         \box2
+         \ifdone \else\vfill\fi}}%
    \egroup}
 
 \def\OTRONEfinalsidefloatoutput

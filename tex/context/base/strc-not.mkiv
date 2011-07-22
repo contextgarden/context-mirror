@@ -428,11 +428,11 @@
 \def\dochecknote
   {% node states
    \setnotelocation\plusone % page
-   \setnoteposition\plustwo % high
+   \setnoteposition\plustwo % bottom
    \normalexpanded{\rawprocesscommalist[\noteparameter\c!location]}\dosetcheckednote
    % compatibility hack
    %ifnum\noteparameter\s!noteloc=\plusfive \endnotestrue    \else \endnotesfalse    \fi
-   \ifnum\noteparameter\s!notepos=\plustwo  \bottomnotestrue \else \bottomnotesfalse \fi
+   \ifnum\noteparameter\s!notepos=\plustwo \bottomnotestrue \else \bottomnotesfalse \fi
    % set column multiplier
    \edef\currentnotenofcolumns{\noteparameter\c!n}%
    \ifx\currentnotenofcolumns\empty
@@ -476,6 +476,8 @@
      \global\dimen\currentnoteins\maxdimen
      \global\count\currentnoteins\zerocount
      \global\skip \currentnoteins\zeropoint
+   \else
+     % nothing ?
    \fi
    \the\everychecknote}
 
@@ -997,7 +999,8 @@
        \setbox\scratchbox\hbox
          {\localframed
             [\??vn\currentnote]
-            [\c!width=\v!fit,
+            [\c!location=,
+             \c!width=\v!fit,
              \c!height=\v!fit,
              \c!strut=\v!no,
              \c!offset=\v!overlay]
@@ -1166,7 +1169,7 @@
 %D \showsetup{placefootnotes}
 
 \unexpanded\def\placebottomnotes
-  {\processnotes\placenoteinserts}
+  {\processnotes\doplacenoteinserts}
 
 \unexpanded\def\placenotes
   {\dodoubleempty\doplacenotes}
@@ -1230,16 +1233,19 @@
   {\snaptogrid\hbox
     {\localframed
        [\??vn\currentnote]
+       [\c!location=]
        {\flushlocalnotes\currentnote}}}
 
 \installnotealternative \v!fixed % test if n > 0
   {\localframed
      [\??vn\currentnote]
+     [\c!location=]
      {\flushlocalnotes\currentnote}}
 
 \installnotealternative \v!columns % redundant
   {\localframed
      [\??vn\currentnote]
+     [\c!location=]
      {\edef\currentnotewidth{\noteparameter\c!width}%
       \doifdimensionelse\currentnotewidth\donothing
         {\edef\currentnotewidth{\the\hsize}}%

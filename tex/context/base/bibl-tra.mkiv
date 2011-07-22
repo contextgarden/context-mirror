@@ -945,7 +945,11 @@
 	  \ifx\LOextras\empty
         \setupcite[\@@currentalternative][#1]%
       \else
-	    \expandafter\ifx\csname LOright\endcsname \relax
+        \expandafter\ifx\csname \??pv \@@currentalternative\c!right\endcsname\relax
+          % avoids tail recursion
+          \expandafter\let\csname \??pv \@@currentalternative\c!right\endcsname\empty
+        \fi
+        \expandafter\ifx\csname LOright\endcsname \relax
           \edef\LOextras{{\LOextras\bibalternative\c!right}}%
         \else
           \edef\LOextras{{\LOextras\LOright}}%
