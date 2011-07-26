@@ -338,32 +338,45 @@
    \fi
    \dochecknote}
 
+\def\currentnoterulecommand{\csname\??vn\c!rule:c:\currentnote\endcsname}
+\def\currentnoterulealign  {\csname\??vn\c!rule:a:\currentnote\endcsname}
+
+\def\currentnoterulecommandnormal {\normalnoterule} % no let as it can be changed afterwards
+\def\currentnoterulecommandunknown{\noteparameter\c!rule}
+
+\def\letcurrentnoterulecommand{\expandafter\let\csname\??vn\c!rule:c:\currentnote\endcsname}
+
 \appendtoks
-  \setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}% hm
-  \letvalue{\??vn\c!rule:a:\currentnote}\v!left
+    \letvalue{\??vn\c!rule:c:\currentnote}\currentnoterulecommandnormal
+    \letvalue{\??vn\c!rule:a:\currentnote}\lefttoright
 \to \everysetupnote
 
 \appendtoks
-  \expanded{\processallactionsinset
-    [\noteparameter\c!rule]}
-    [     \v!on=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule}, % no let as it can be changed afterwards
-      \v!normal=>\setvalue{\??vn\c!rule:c:\currentnote}{\normalnoterule},
-        \v!left=>\setvalue{\??vn\c!rule:a:\currentnote}{l2r},
-       \v!right=>\setvalue{\??vn\c!rule:a:\currentnote}{r2l},
-         \v!off=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
-     \s!default=>\letvalue{\??vn\c!rule:c:\currentnote}\relax,
-     \s!unknown=>\setvalue{\??vn\c!rule:c:\currentnote}{\noteparameter\c!rule}]%
+  \processallactionsinset[\noteparameter\c!rule]
+    [     \v!on=>\letcurrentnoterulecommand\currentnoterulecommandnormal,
+      \v!normal=>\letcurrentnoterulecommand\currentnoterulecommandnormal,
+        \v!left=>\letcurrentnoterulecommand\lefttoright,
+       \v!right=>\letcurrentnoterulecommand\righttoleft,
+         \v!off=>\letcurrentnoterulecommand\relax,
+     \s!default=>\letcurrentnoterulecommand\relax,
+     \s!unknown=>\letcurrentnoterulecommand\currentnoterulecommandunknown]%
 \to \everysetupnote
 
-\appendtoks
-  \processaction % todo (why doesnt it work for a global setting)
-    [\noteparameter\c!split]
-    [  \v!tolerant=>\notepenalty\zeropoint,
-         \v!strict=>\notepenalty9999,
-     \v!verystrict=>\notepenalty\maxdimen,
-        \s!default=>\notepenalty\zeropoint,
-        \s!unknown=>\notepenalty\commalistelement]%
-\to \everysetupnote
+\def\currentnotepenalty
+  {\ifcsname\??vn\c!split:p:\noteparameter\c!split\endcsname
+     \csname\??vn\c!split:p:\noteparameter\c!split\endcsname
+   \else
+     \numexpr\noteparameter\c!split\relax
+   \fi}
+
+\setnewconstant\notepenaltytolerant  \zerocount
+\setnewconstant\notepenaltystrict    9999
+\setnewconstant\notepenaltyverystrict\maxdimen
+
+\letvalue{\??vn\c!split:p:\v!tolerant  }\notepenaltytolerant
+\letvalue{\??vn\c!split:p:\v!strict    }\notepenaltystrict
+\letvalue{\??vn\c!split:p:\v!verystrict}\notepenaltyverystrict
+\letvalue{\??vn\c!split:p:\empty       }\notepenaltytolerant
 
 \appendtoks
     \edef\currentnotewidth{\noteparameter\c!width}%
@@ -531,9 +544,8 @@
 
 \unexpanded\def\placenoterule
   {\bgroup
-   \setupalign[\getvalue{\??vn\c!rule:a:\currentnote}]%
-   \righttoleft
-   \getvalue{\??vn\c!rule:c:\currentnote}%
+   \currentnoterulealign
+   \currentnoterulecommand
    \par
    \egroup}
 
@@ -855,9 +867,6 @@
 \let\stoppushnote \relax
 
 \newsignal\notesignal
-\newcount \notepenalty
-
-\notepenalty=0 % needed in order to split in otrset
 
 \newconditional\processingnote
 \newconditional\postponednote
@@ -875,7 +884,7 @@
 
 \appendtoks
   \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
-  \penalty\notepenalty
+  \penalty\currentnotepenalty
   \forgetall
   \setnotebodyfont
   \redoconvertfont % to undo \undo calls in in headings etc

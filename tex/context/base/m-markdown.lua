@@ -53,10 +53,14 @@ local markdown      = moduledata.markdown
 local nofruns, nofbytes, nofhtmlblobs = 0, 0, 0
 
 local function process(func,t)
-    for i=1,#t do
-        t[i] = func(t[i])
+    if func then
+        for i=1,#t do
+            t[i] = func(t[i])
+        end
+        return t
+    else
+        return "ERROR: NO FUNCTION"
     end
-    return t
 end
 
 local function traverse_tree(t,buffer,n)
@@ -183,6 +187,8 @@ local selfclosingblocktag    = less * spnl * slash^-1 * blocktag * spnl * htmlat
 
 interblockspace              = Cmt(blanklines, function(s,i) if i == 1 then return i, "" else return i, "\n" end end)
 
+local nestedparser -- forward reference
+
 -- helper stuff
 
 local escaped = {
@@ -198,7 +204,7 @@ local escaped = {
 }
 
 for k, v in next, escaped do
-    escaped[k] = "\\char" .. utfbyte(k) .. " "
+    escaped[k] = "\\char" .. utfbyte(k) .. "{}"
 end
 
 local itemsignal = "\001"
@@ -228,8 +234,8 @@ end
 local function listitem(c)
     return {
         "\\startitem\n",
-        process(parser, lpegmatch(itemsplitter,c)),
-        "\n\stopitem\n"
+        process(nestedparser, lpegmatch(itemsplitter,c) or c),
+        "\n\\stopitem\n"
     }
 end
 
@@ -320,7 +326,7 @@ end
 local function c_blockquote(c)
     return {
         "\\startmarkdownblockquote\n",
-        parser(concat(c,"\n")),
+        nestedparser(concat(c,"\n")),
         "\\stopmarkdownblockquote\n"
     }
 end
@@ -360,9 +366,9 @@ local function c_heading(level,c)
     if level > #levels then
         level = #levels
     end
-    local finish = concat(levels,"\n",level+1) or ""
+    local finish = concat(levels,"\n",level) or ""
     for i=level+1,#levels do
-        levels[level] = ""
+        levels[i] = ""
     end
     levels[level] = "\\stopstructurelevel"
     return {
@@ -469,7 +475,8 @@ local function f_link(a)
 end
 
 local syntax
-local nestedparser = function(inp) return to_string(lpegmatch(syntax,inp)) end
+
+nestedparser = function(inp) return to_string(lpegmatch(syntax,inp)) end
 
 syntax = { "Document",  -- still rather close to the original but reformatted etc etc
 
@@ -684,7 +691,7 @@ function markdown.typesetbuffer(name)
 end
 
 function markdown.typesetfile(name)
-    local fullname = findctxfile(name)
+    local fullname = resolvers.findctxfile(name)
     if fullname and fullname ~= "" then
         markdown.typesetstring(io.loaddata(fullname))
     end

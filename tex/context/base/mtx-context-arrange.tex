@@ -33,7 +33,7 @@
       [offset=\getdocumentargument{paperoffset}]
 }
 
-\doifdocumentargumentelse {noduplex} {yes} {
+\doifdocumentargumentelse {noduplex} {
     \setuppagenumbering
         [alternative=doublesided]
     \setdocumentargument{sided}{doublesided}
@@ -41,9 +41,9 @@
     \setdocumentargument{sided}{singlesided}
 }
 
-\setdefaultdocumentargument {textwidth} {0cm}
-\setdefaultdocumentargument {backspace} {0cm}
-\setdefaultdocumentargument {topspace}  {0cm}
+\setdocumentargumentdefault {textwidth} {0cm}
+\setdocumentargumentdefault {backspace} {0cm}
+\setdocumentargumentdefault {topspace}  {0cm}
 
 \setuplayout
     [backspace=\getdocumentargument{backspace},
