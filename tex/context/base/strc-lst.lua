@@ -475,12 +475,13 @@ function lists.userdata(name,r,tag) -- to tex (todo: xml)
         local userdata, metadata = result.userdata, result.metadata
         local str = userdata and userdata[tag]
         if str then
-            local catcodes = metadata and metadata.catcodes
-            if catcodes then
-                context.sprint(catcodes,str)
-            else
-                context(str)
-            end
+--~             local catcodes = metadata and metadata.catcodes
+--~             if catcodes then
+--~                 context.sprint(catcodes,str)
+--~             else
+--~                 context(str)
+--~             end
+            helpers.title(str,metadata)
         end
     end
 end

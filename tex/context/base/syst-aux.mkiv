@@ -15,6 +15,8 @@
 %D obsolete once we've redone the bibliography module. Of course
 %D the handy helpers will stay.
 
+\registerctxluafile{syst-aux}{1.001}
+
 %D This is a stripped down combination of:
 %D
 %D \startitemize
@@ -1070,6 +1072,10 @@
 
 \newcount\processlevel
 
+%D By default we expand actions:
+
+\def\expandactions{\let\expandedaction\edef} \expandactions % this command will go away
+
 \def\p!compareprocessactionA[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
@@ -1185,35 +1191,35 @@
    \global\advance\commalevel \minusone
    #2}
 
-%D \macros
-%D   {unexpandedprocessaction,
-%D    unexpandedprocessfirstactioninset,
-%D    unexpandedprocessallactionsinset}
-%D
-%D Now what are those expansion commands doing there. Well,
-%D sometimes we want to compare actions that may consist off
-%D commands (i.e. are no constants). In such occasions we can
-%D use the a bit slower alternatives:
-
-\def\unexpandedprocessfirstactioninset{\dontexpandactions\processfirstactioninset}
-\def\unexpandedprocessaction          {\dontexpandactions\processaction}
-\def\unexpandedprocessallactionsinset {\dontexpandactions\processallactionsinset}
-
-%D By default we expand actions:
-
-\def\expandactions{\let\expandedaction\edef} \expandactions
-
-%D But when needed we convert the strings to meaningful
-%D sequences of characters.
-
-\def\unexpandedaction#1>{}
-
-\def\noexpandedaction#1#2%
-  {\def\@@convertedargument{#2}%
-   \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\@@convertedargument}}
-
-\def\dontexpandactions
-  {\let\expandedaction\noexpandedaction}
+% % THIS IS OBSOLETE (as is \expandedaction)
+%
+% %D \macros
+% %D   {unexpandedprocessaction,
+% %D    unexpandedprocessfirstactioninset,
+% %D    unexpandedprocessallactionsinset}
+% %D
+% %D Now what are those expansion commands doing there. Well,
+% %D sometimes we want to compare actions that may consist off
+% %D commands (i.e. are no constants). In such occasions we can
+% %D use the a bit slower alternatives:
+%
+% \def\unexpandedprocessfirstactioninset{\dontexpandactions\processfirstactioninset}
+% \def\unexpandedprocessaction          {\dontexpandactions\processaction}
+% \def\unexpandedprocessallactionsinset {\dontexpandactions\processallactionsinset}
+%
+% %D But when needed we convert the strings to meaningful
+% %D sequences of characters. [THIS CAN GO]
+%
+% \def\unexpandedaction#1>{}
+%
+% \def\noexpandedaction#1#2%
+%   {\def\@@convertedargument{#2}%
+%    \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\@@convertedargument}}
+%
+% \def\dontexpandactions
+%   {\let\expandedaction\noexpandedaction}
+%
+% % TILL HERE
 
 %D \macros
 %D   {getfirstcharacter, firstcharacter, remainingcharacters, doiffirstcharacter}
@@ -1230,27 +1236,8 @@
 %D complicated arguments, for instance arguments that
 %D consist of two or more expandable tokens.
 
-\def\dogetfirstcharacter#1#2\relax
-  {\def\firstcharacter{#1}%
-   \def\remainingcharacters{#2}}
-
-\def\getfirstcharacter#1%
-  {\edef\!!stringa{#1}%
-   \expandafter\dogetfirstcharacter\!!stringa\relax}
-
-\def\doiffirstcharelse#1#2% char string
-% kort (maar onleesbaar)
-% {\expanded{\dogetfirstcharacter#2}\\\doifelse{#1}\firstcharacter}
-% korter (en begrijpelijk))
-  {\getfirstcharacter{#2}\doifelse{#1}\firstcharacter}
-% snel (maar zelden gebruikt, dus niet zo belangrijk)
-% {\getfirstcharacter{#2}%
-%  \edef\!!stringa{#1}%
-%  \ifx\!!stringa\firstcharacter
-%    \expandafter\firstoftwoarguments
-%  \else
-%    \expandafter\secondoftwoarguments
-%  \fi}
+\def\getfirstcharacter  #1{\ctxcommand{getfirstcharacter(\!!bs#1\e!!es)}}
+\def\doiffirstcharelse#1#2{\ctxcommand{doiffirstcharelse(\!!bs#1\e!!es,\!!bs#2\e!!es)}} % chr str
 
 %D \macros
 %D   {doifinstringelse, doifincsnameelse}
