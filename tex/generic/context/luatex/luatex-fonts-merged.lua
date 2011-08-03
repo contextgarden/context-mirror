@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 07/26/11 09:17:48
+-- merge date  : 08/04/11 00:42:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -1245,25 +1245,6 @@ patterns.unspacer      = ((patterns.spacer^1)/"")^0
 
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
-
--- local unquoted = Cs(patterns.unquoted * endofstring) -- not C
---
--- function string.unquoted(str)
---     return match(unquoted,str) or str
--- end
---
--- more efficient on long strings:
-
-local unquoted = (
-    squote * Cs((1 - P(-2))^0) * squote
-  + dquote * Cs((1 - P(-2))^0) * dquote
-)
-
-function string.unquoted(str)
-    return match(unquoted,str) or str
-end
-
-patterns.unquoted = unquoted
 
 -- print(string.unquoted("test"))
 -- print(string.unquoted([["t\"est"]]))

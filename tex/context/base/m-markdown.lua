@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['x-markdown'] = {
-    version   = 1.001,
-    comment   = "companion to x-markdown.mkiv",
+if not modules then modules = { } end modules ['m-markdown'] = {
+    version   = 1.002,
+    comment   = "companion to m-markdown.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "see below",
     license   = "see context related readme files"
@@ -35,66 +35,42 @@ are mine. Eventually I might also adapt the parser code a bit more. When I ran i
 closure stack limitations I decided to flatten the code. The following implementation
 seems to be a couple of hundred times faster than what I started with which is not that
 bad.
+
+This is a second rewrite. The mentioned speed gain largely depended on the kind of
+content: blocks, references and items can be rather demanding. Also, There were
+some limitations with respect to the captures. So, table storage has been removed in
+favor of strings, and nesting has been simplified. The first example at the end of this
+file now takes .33 seconds for 567KB code (resulting in over 1MB) so we're getting there.
+
+There will be a third rewrite eventually.
 ]]--
 
 -- todo: we have better quote and tag scanners in ctx
 -- todo: provide an xhtml mapping
+-- todo: add a couple of extensions
+-- todo: check patches to the real peg
 
-local type, next = type, next
+local type, next, tonumber = type, next, tonumber
 local lower, upper, gsub, rep, gmatch, format, length = string.lower, string.upper, string.gsub, string.rep, string.gmatch, string.format, string.len
 local concat = table.concat
 local P, R, S, V, C, Ct, Cg, Cb, Cmt, Cc, Cf, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Ct, lpeg.Cg, lpeg.Cb, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cs
 local lpegmatch = lpeg.match
-local utfbyte = utf.byte
+local utfbyte, utfchar = utf.byte, utf.char
 
+moduledata          = moduledata or { }
 moduledata.markdown = moduledata.markdown or { }
 local markdown      = moduledata.markdown
 
 local nofruns, nofbytes, nofhtmlblobs = 0, 0, 0
 
-local function process(func,t)
-    if func then
-        for i=1,#t do
-            t[i] = func(t[i])
-        end
-        return t
-    else
-        return "ERROR: NO FUNCTION"
-    end
-end
+---------------------------------------------------------------------------------------------
 
-local function traverse_tree(t,buffer,n)
-    for k, v in next, t do
-        if type(v) == "string" then
-            n = n + 1
-            buffer[n] = v
-        else
-            n = traverse_tree(v,buffer,n)
-        end
-    end
-    return n
-end
+local nestedparser
+local syntax
 
-local function to_string(t)
-    local buffer = { }
-    traverse_tree(t, buffer, 0)
-    return concat(buffer)
-end
+nestedparser = function(str) return lpegmatch(syntax,str) end
 
-local function normalize_label(a)
-    return upper(gsub(a, "[\n\r\t ]+", " "))
-end
-
--- generic
-
-local blocktags = table.tohash {
-    "address", "blockquote" , "center", "dir", "div", "p", "pre",
-    "li", "ol", "ul", "dl", "dd",
-    "form", "fieldset", "isindex", "menu", "noframes", "frameset",
-    "h1", "h2", "h3", "h4", "h5", "h6",
-    "hr", "ht", "script", "noscript",
-    "table", "tbody", "tfoot", "thead", "th", "td", "tr",
-}
+---------------------------------------------------------------------------------------------
 
 local asterisk               = P("*")
 local dash                   = P("-")
@@ -117,6 +93,7 @@ local slash                  = P("/")
 local equal                  = P("=")
 local colon                  = P(":")
 local semicolon              = P(";")
+local exclamation            = P("!")
 
 local digit                  = R("09")
 local hexdigit               = R("09","af","AF")
@@ -131,6 +108,7 @@ local always                 = P("")
 
 local tab                    = P("\t")
 local spacechar              = S("\t ")
+local spacing                = S(" \n\r\t")
 local newline                = P("\r")^-1 * P("\n")
 local spaceornewline         = spacechar + newline
 local nonspacechar           = any - spaceornewline
@@ -143,20 +121,16 @@ local blanklines             = blankline^0
 local skipblanklines         = (optionalspace * newline)^0
 local linechar               = P(1 - newline)
 local indent                 = fourspaces + (nonindentspace * tab) / ""
-local indentedline           = indent    * C(linechar^1 * (newline + eof))
-local optionallyindentedline = indent^-1 * C(linechar^1 * (newline + eof))
+local indentedline           = indent    /"" * C(linechar^1 * (newline + eof))
+local optionallyindentedline = indent^-1 /"" * C(linechar^1 * (newline + eof))
 local spnl                   = optionalspace * (newline * optionalspace)^-1
 local specialchar            = S("*_`*&[]<!\\")
 local normalchar             = any - (specialchar + spaceornewline)
 local line                   = C((any - newline)^0 * newline)
                              + C(any^1 * eof)
 local nonemptyline           = (any - newline)^1 * newline
-local htmlattributevalue     = squote * C((any - (blankline + squote))^0) * squote
-                             + dquote * C((any - (blankline + dquote))^0) * dquote
-                             + (any - S("\t >"))^1 -- any - tab - space - more
-local htmlattribute          = (alphanumeric + S("_-"))^1 * spnl * (equal * spnl * htmlattributevalue)^-1 * spnl
-local htmlcomment            = P("<!--") * (any - P("-->"))^0 * P("-->")
-local htmltag                = less * spnl * slash^-1 * alphanumeric^1 * spnl * htmlattribute^0 * slash^-1 * spnl * more
+
+---------------------------------------------------------------------------------------------
 
 local function lineof(c)
     return (nonindentspace * (P(c) * optionalspace)^3 * newline * blankline^1)
@@ -169,6 +143,8 @@ local lineof_underscores     = lineof(underscore)
 local bullet                 = nonindentspace * (plus + (asterisk - lineof_asterisks) + (dash - lineof_dashes)) * spaces
 local enumerator             = nonindentspace * digit^1 * period * spaces
 
+---------------------------------------------------------------------------------------------
+
 local openticks              = Cg(backtick^1, "ticks")
 local closeticks             = space^-1 * Cmt(C(backtick^1) * Cb("ticks"), function(s,i,a,b) return #a == #b and i end)
 local intickschar            = (any - S(" \n\r`"))
@@ -177,19 +153,148 @@ local intickschar            = (any - S(" \n\r`"))
                              + (backtick^1 - closeticks)
 local inticks                = openticks * space^-1 * C(intickschar^1) * closeticks
 
+---------------------------------------------------------------------------------------------
+
+local leader         = space^-3
+local nestedbrackets = P { lbracket * ((1 - lbracket - rbracket) + V(1))^0 * rbracket }
+local tag            = lbracket * C((nestedbrackets + 1 - rbracket)^0) * rbracket
+local url            = less * C((1-more)^0) * more
+                     + C((1-spacing- rparent)^1) -- sneaky: ) for resolver
+local title_s        = squote  * lpeg.C((1-squote )^0) * squote
+local title_d        = dquote  * lpeg.C((1-dquote )^0) * dquote
+local title_p        = lparent * lpeg.C((1-rparent)^0) * rparent
+local title          = title_s + title_d + title_p
+local optionaltitle  = ((spacing^0 * title * spacechar^0) + lpeg.Cc(""))
+
+local references = { }
+
+local function register_link(tag,url,title)
+    tag = lower(gsub(tag, "[ \n\r\t]+", " "))
+    references[tag] = { url, title }
+end
+
+local function direct_link(label,url,title) -- title is typical html thing
+    return label, url, title
+end
+
+local function indirect_link(label,tag)
+    if tag == "" then
+        tag = label
+    end
+    tag = lower(gsub(tag, "[ \n\r\t]+", " "))
+    local r = references[tag]
+    if r then
+        return label, r[1], r[2]
+    else
+        return label, tag, ""
+    end
+end
+
+local define_reference_parser = (leader * tag * colon * spacechar^0 * url * optionaltitle)             / register_link
+local direct_link_parser      = tag * spacechar^0 * lparent * (url + Cc("")) * optionaltitle * rparent / direct_link
+local indirect_link_parser    = tag * spacechar^0 * tag                                                / indirect_link
+
+local rparser = (define_reference_parser+1)^0
+
+local function referenceparser(str)
+    references = { }
+    lpegmatch(rparser,str)
+end
+
+-- local reftest = [[
+-- [1]: <http://example.com/>
+-- [3]:http://example.com/  (Optional Title Here)
+-- [2]: http://example.com/  'Optional Title Here'
+-- [a]: http://example.com/  "Optional *oeps* Title Here"
+-- ]]
+--
+-- local linktest = [[
+-- [This link] (http://example.net/)
+-- [an example] (http://example.com/ "Title")
+-- [an example][1]
+-- [an example] [2]
+-- ]]
+--
+-- lpeg.match((define_reference_parser+1)^0,reftest)
+--
+-- inspect(references)
+--
+-- lpeg.match((direct_link_parser/print + indirect_link_parser/print + 1)^0,linktest)
+
+---------------------------------------------------------------------------------------------
+
+local blocktags = table.tohash {
+    "address", "blockquote" , "center", "dir", "div", "p", "pre",
+    "li", "ol", "ul", "dl", "dd",
+    "form", "fieldset", "isindex", "menu", "noframes", "frameset",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "hr", "ht", "script", "noscript",
+    "table", "tbody", "tfoot", "thead", "th", "td", "tr",
+}
+
+----- htmlattributevalue     = squote * C((any - (blankline + squote))^0) * squote
+-----                        + dquote * C((any - (blankline + dquote))^0) * dquote
+-----                        + (any - S("\t >"))^1 -- any - tab - space - more
+----- htmlattribute          = (alphanumeric + S("_-"))^1 * spnl * (equal * spnl * htmlattributevalue)^-1 * spnl
+----- htmlcomment            = P("<!--") * (any - P("-->"))^0 * P("-->")
+
+----- htmltag                = less * spnl * slash^-1 * alphanumeric^1 * spnl * htmlattribute^0 * slash^-1 * spnl * more
+-----
+----- blocktag               = Cmt(C(alphanumeric^1), function(s,i,a) return blocktags[lower(a)] and i, a end)
+-----
+----- openblocktag           = less * Cg(blocktag, "opentag") * spnl * htmlattribute^0 * more
+----- closeblocktag          = less * slash * Cmt(C(alphanumeric^1) * Cb("opentag"), function(s,i,a,b) return lower(a) == lower(b) and i end) * spnl * more
+----- selfclosingblocktag    = less * blocktag * spnl * htmlattribute^0 * slash * more
+-----
+----- displayhtml            = Cs { "HtmlBlock",
+-----                           InBlockTags = openblocktag * (V("HtmlBlock") + (any - closeblocktag))^0 * closeblocktag,
+-----                           HtmlBlock   = C(V("InBlockTags") + selfclosingblocktag + htmlcomment),
+-----                        }
+-----
+----- inlinehtml             = Cs(htmlcomment + htmltag)
+
+-- There is no reason to support crappy html, so we expect proper attributes.
+
+local htmlattributevalue     = squote * C((any - (blankline + squote))^0) * squote
+                             + dquote * C((any - (blankline + dquote))^0) * dquote
+local htmlattribute          = (alphanumeric + S("_-"))^1 * spnl * equal * spnl * htmlattributevalue * spnl
+
+local htmlcomment            = P("<!--") * (any - P("-->"))^0 * P("-->")
+local htmlinstruction        = P("<?")   * (any - P("?>" ))^0 * P("?>" )
+
+-- We don't care too much about matching elements and there is no reason why display elements could not
+-- have inline elements so the above should be patched then. Well, markdown mixed with html is not meant
+-- for anything else than webpages anyway.
+
 local blocktag               = Cmt(C(alphanumeric^1), function(s,i,a) return blocktags[lower(a)] and i, a end)
 
-local openblocktag           = less * spnl * Cg(blocktag, "opentag") * spnl * htmlattribute^0 * more
-local closeblocktag          = less * spnl * slash * Cmt(C(alphanumeric^1) * Cb("opentag"), function(s,i,a,b) return lower(a) == lower(b) and i end) * spnl * more
-local selfclosingblocktag    = less * spnl * slash^-1 * blocktag * spnl * htmlattribute^0 * slash * spnl * more
+local openelement            = less * alphanumeric^1 * spnl * htmlattribute^0 * more
+local closeelement           = less * slash * alphanumeric^1 * spnl * more
+local emptyelement           = less * alphanumeric^1 * spnl * htmlattribute^0 * slash * more
 
--- yields a blank line unless we're at the beginning of the document -- can be made more efficient
+local displaytext            = (any - less)^1
+local inlinetext             = displaytext / nestedparser
 
-interblockspace              = Cmt(blanklines, function(s,i) if i == 1 then return i, "" else return i, "\n" end end)
+local displayhtml            = #(less * blocktag * spnl * htmlattribute^0 * more)
+                             * Cs { "HtmlBlock",
+                                InBlockTags = openelement * (V("HtmlBlock") + displaytext)^0 * closeelement,
+                                HtmlBlock   = (V("InBlockTags") + emptyelement + htmlcomment + htmlinstruction),
+                             }
 
-local nestedparser -- forward reference
+local inlinehtml             = Cs { "HtmlBlock",
+                                InBlockTags = openelement * (V("HtmlBlock") + inlinetext)^0 * closeelement,
+                                HtmlBlock   = (V("InBlockTags") + emptyelement + htmlcomment + htmlinstruction),
+                              }
 
--- helper stuff
+---------------------------------------------------------------------------------------------
+
+local hexentity = ampersand * hash * S("Xx") * C(hexdigit    ^1) * semicolon
+local decentity = ampersand * hash           * C(digit       ^1) * semicolon
+local tagentity = ampersand *                  C(alphanumeric^1) * semicolon
+
+---------------------------------------------------------------------------------------------
+
+-- --[[
 
 local escaped = {
     ["{" ] = "",
@@ -207,149 +312,66 @@ for k, v in next, escaped do
     escaped[k] = "\\char" .. utfbyte(k) .. "{}"
 end
 
-local itemsignal = "\001"
-
-local itemsplitter = lpeg.tsplitat(itemsignal)
-
--- what is lab.inline
-
-local c_linebreak = "\\crlf\n" -- is this ok?
-local c_entity    = "?"        -- todo, no clue of usage (use better entity handler)
-local c_space     = " "
-
-local function c_string(s)
+local function c_string(s) -- has to be done more often
     return (gsub(s,".",escaped))
 end
 
+local c_linebreak = "\\crlf\n" -- is this ok?
+local c_space     = " "
+
 local function c_paragraph(c)
-    return { c, "\n" } -- { "\\startparagraph ", c, " \\stopparagraph\n" }
+    return c .. "\n\n" -- { "\\startparagraph ", c, " \\stopparagraph\n" }
 end
 
--- local function c_plain(c)
---     return c
--- end
-
--- itemize
-
 local function listitem(c)
-    return {
-        "\\startitem\n",
-        process(nestedparser, lpegmatch(itemsplitter,c) or c),
-        "\n\\stopitem\n"
-    }
+    return format("\n\\startitem\n%s\n\\stopitem\n",nestedparser(c))
 end
 
 local function c_tightbulletlist(c)
-    return {
-        "\\startmarkdownitemize[packed]\n",
-        process(listitem, c),
-        "\\stopmarkdownitemize\n"
-    }
+    return format("\n\\startmarkdownitemize[packed]\n%s\\stopmarkdownitemize\n",c)
 end
 
 local function c_loosebulletlist(c)
-    return {
-        "\\startmarkdownitemize\n",
-        process(listitem, c),
-        "\\stopmarkdownitemize\n"
-    }
+    return format("\n\\startmarkdownitemize\n\\stopmarkdownitemize\n",c)
 end
 
 local function c_tightorderedlist(c)
-    return {
-        "\\startmarkdownitemize[n,packed]\n",
-        process(listitem, c),
-        "\\stopmarkdownitemize\n"
-    }
+    return format("\n\\startmarkdownitemize[n,packed]\n%s\\stopmarkdownitemize\n",c)
 end
 
 local function c_looseorderedlist(c)
-    return {
-        "\\startmarkdownitemize[n]\n",
-        process(listitem, c),
-        "\\stopmarkdownitemize\n"
-    }
+    return format("\n\\startmarkdownitemize[n]\n%s\\stopmarkdownitemize\n",c)
 end
 
--- html
-
-local showhtml = false
-
-local function c_inline_html(c)
+local function c_inline_html(content)
     nofhtmlblobs = nofhtmlblobs + 1
-    if showhtml then
-        local x = xml.convert(c)
-        return {
-            "\\type{",
-            xml.tostring(x),
-            "}"
-        }
-    else
-        return ""
-    end
+    return format("\\markdowninlinehtml{%s}",content)
 end
 
-local function c_display_html(c)
+local function c_display_html(content)
     nofhtmlblobs = nofhtmlblobs + 1
-    if showhtml then
-        local x = xml.convert(c)
-        return {
-            "\\starttyping\n",
-            xml.tostring(x),
-            "\\stoptyping\n"
-        }
-    else
-        return ""
-    end
+    return format("\\startmarkdowndisplayhtml\n%s\n\\stopmarkdowndisplayhtml",content)
 end
-
--- highlight
 
 local function c_emphasis(c)
-     return {
-        "\\markdownemphasis{",
-        c,
-        "}"
-    }
+    return format("\\markdownemphasis{%s}",c)
 end
 
 local function c_strong(c)
-    return {
-        "\\markdownstrong{",
-        c,
-        "}"
-    }
+    return format("\\markdownstrong{%s}",c)
 end
-
--- blockquote
 
 local function c_blockquote(c)
-    return {
-        "\\startmarkdownblockquote\n",
-        nestedparser(concat(c,"\n")),
-        "\\stopmarkdownblockquote\n"
-    }
+    return format("\\startmarkdownblockquote\n%s\\stopmarkdownblockquote\n",nestedparser(c))
 end
 
--- verbatim
-
 local function c_verbatim(c)
-    return {
-        "\\startmarkdowntyping\n",
-        concat(c),
-        "\\stopmarkdowntyping\n"
-    }
+    return format("\\startmarkdowntyping\n%s\\stopmarkdowntyping\n",c)
 end
 
 local function c_code(c)
-     return {
-        "\\markdowntype{",
-        c,
-        "}"
-    }
+    return format("\\markdowntype{%s}",c)
 end
-
--- sectioning (only relative, so no # -> ###)
 
 local levels  = { "", "", "", "", "", "" }
 
@@ -371,307 +393,285 @@ local function c_heading(level,c)
         levels[i] = ""
     end
     levels[level] = "\\stopstructurelevel"
-    return {
-        finish,
-        "\\startstructurelevel[markdown][title={",
-        c,
-        "}]\n"
-    }
+    return format("%s\\startstructurelevel[markdown][title={%s}]\n",finish,c)
 end
-
---
 
 local function c_hrule()
     return "\\markdownrule\n"
 end
 
 local function c_link(lab,src,tit)
-    return {
-        "\\goto{",
-        lab.inlines,
-        "}[url(",
-        src,
-        ")]"
-    }
+    return format("\\goto{%s}[url(%s)]",nestedparser(lab),src)
 end
 
 local function c_image(lab,src,tit)
-    return {
-        "\\externalfigure[",
-        src,
-        "]"
-    }
+    return format("\\externalfigure[%s]",src)
 end
 
-local function c_email_link(addr)
-    return c_link(addr,"mailto:"..addr)
+local function c_email_link(address)
+    return format("\\goto{%s}[url(mailto:%s)]",c_string(address),address)
 end
 
--- Instead of local lpeg definitions we defne the nested parser first (this trick
--- could be backported to the original code if needed).
-
-local references = { }
-
-local function f_reference_set(lab,src,tit)
-    return {
-        key    = normalize_label(lab.raw),
-        label  = lab.inlines,
-        source = src,
-        title  = tit
-    }
+local function c_url_link(url)
+    return format("\\goto{%s}[url(%s)]",c_string(url),url)
 end
 
-local function f_reference_link_double(s,i,l)
-    local key = normalize_label(l.raw)
-    if references[key] then
-        return i, references[key].source, references[key].title
-    else
-        return false
-    end
+local function f_heading(c,n)
+    return c_heading(n,c)
 end
 
-local function f_reference_link_single(s,i,l)
-    local key = normalize_label(l.raw)
-    if references[key] then
-        return i, l, references[key].source, references[key].title
-    else
-        return false
-    end
+local function c_hex_entity(s)
+    return utfchar(tonumber(s,16))
 end
 
-local function f_label_collect(a)
-    return { "[", a.inlines, "]" }
+local function c_dec_entity(s)
+    return utfchar(tonumber(s))
 end
 
-local function f_label(a,b)
-    return {
-        raw     = a,
-        inlines = b
-    }
+local function c_tag_entity(s)
+    return s -- we can use the default resolver
 end
 
-local function f_pack_list(a)
-    return itemsignal .. concat(a)
-end
+--]]
 
-local function f_reference(ref)
-    references[ref.key] = ref
-end
+---------------------------------------------------------------------------------------------
 
-local function f_append(a,b)
-    return a .. b
-end
+--[[
 
-local function f_level_one_heading(c)
-    return c_heading(1,c)
-end
-
-local function f_level_two_heading(c)
-    return c_heading(2,c)
-end
-
-local function f_link(a)
-    return c_link({ inlines = c_string(a) }, a, "")
-end
-
-local syntax
-
-nestedparser = function(inp) return to_string(lpegmatch(syntax,inp)) end
-
-syntax = { "Document",  -- still rather close to the original but reformatted etc etc
-
-    Document              = #(Cmt(V("References"), function(s,i,a) return i end)) -- what does this do
-                          * Ct((interblockspace *  V("Block"))^0)
-                          * blanklines * eof,
-
-    References            = (V("Reference") / f_reference + (nonemptyline^1 * blankline^1) + line)^0
-                          * blanklines * eof,
-
-    Block                 = V("Blockquote")
-                          + V("Verbatim")
-                          + V("Reference") / { }
-                          + V("HorizontalRule")
-                          + V("Heading")
-                          + V("OrderedList")
-                          + V("BulletList")
-                          + V("HtmlBlock")
-                          + V("Para")
-                          + V("Plain"),
-
-    Heading               = V("AtxHeading")
-                          + V("SetextHeading"),
-
-    AtxStart              = C(hash * hash^-5) / length,
-
-    AtxInline             = V("Inline") - V("AtxEnd"),
-
-    AtxEnd                = optionalspace * hash^0 * optionalspace * newline * blanklines,
-
-    AtxHeading            = V("AtxStart") * optionalspace * Ct(V("AtxInline")^1) * V("AtxEnd") / c_heading,
-
-    SetextHeading         = V("SetextHeading1")
-                          + V("SetextHeading2"),
-
-    SetextHeading1        = Ct((V("Inline") - V("Endline"))^1) * newline * equal^3 * newline * blanklines / f_level_one_heading,
-    SetextHeading2        = Ct((V("Inline") - V("Endline"))^1) * newline * dash ^3 * newline * blanklines / f_level_two_heading,
-
-    BulletList            = V("BulletListTight")
-                          + V("BulletListLoose"),
-
-    BulletListTight       = Ct((bullet * V("ListItem"))^1) * blanklines * -bullet / c_tightbulletlist,
-
-    BulletListLoose       = Ct((bullet * V("ListItem") * C(blanklines) / f_append)^1) / c_loosebulletlist, -- just Cs
-
-    OrderedList           = V("OrderedListTight") + V("OrderedListLoose"),
-
-    OrderedListTight      = Ct((enumerator * V("ListItem"))^1) * blanklines * -enumerator / c_tightorderedlist,
-
-    OrderedListLoose      = Ct((enumerator * V("ListItem") * C(blanklines) / f_append)^1) / c_looseorderedlist, -- just Cs
-
-    ListItem              = Ct(V("ListBlock") * (V("NestedList") + V("ListContinuationBlock")^0)) / concat,
-
-    ListBlock             = Ct(line * V("ListBlockLine")^0) / concat,
-
-    ListContinuationBlock = blanklines * indent * V("ListBlock"),
-
-    NestedList            = Ct((optionallyindentedline - (bullet + enumerator))^1) / f_pack_list,
-
-    ListBlockLine         = -blankline * -(indent^-1 * (bullet + enumerator)) * optionallyindentedline,
-
-    InBlockTags           = openblocktag * (V("HtmlBlock") + (any - closeblocktag))^0 * closeblocktag,
-
-    HtmlBlock             = C(V("InBlockTags") + selfclosingblocktag + htmlcomment) * blankline^1 / c_display_html,
-
-    BlockquoteLine        = ((nonindentspace * more * space^-1 * C(linechar^0) * newline)^1 * ((C(linechar^1) - blankline) * newline)^0 * C(blankline)^0 )^1,
-
-    Blockquote            = Ct((V("BlockquoteLine"))^1) / c_blockquote,
-
-    VerbatimChunk         = blanklines * (indentedline - blankline)^1,
-
-    Verbatim              = Ct(V("VerbatimChunk")^1) * (blankline^1 + eof) / c_verbatim,
-
-    Label                 = lbracket * Cf(Cc("") * #((C(V("Label") + V("Inline")) - rbracket)^1), f_append) *
-                            Ct((V("Label") / f_label_collect + V("Inline") - rbracket)^1) * rbracket / f_label,
-
-    RefTitle              = dquote  * C((any - (dquote ^-1 * blankline))^0) * dquote  +
-                            squote  * C((any - (squote ^-1 * blankline))^0) * squote  +
-                            lparent * C((any - (rparent    * blankline))^0) * rparent +
-                            Cc(""),
-
-    RefSrc                = C(nonspacechar^1),
-
-    Reference             = nonindentspace * V("Label") * colon * spnl * V("RefSrc") * spnl * V("RefTitle") * blanklines / f_reference_set,
-
-    HorizontalRule        = (lineof_asterisks + lineof_dashes + lineof_underscores) / c_hrule,
-
-    Para                  = nonindentspace * Ct(V("Inline")^1) * newline * blankline^1 / c_paragraph,
-
-    Plain                 = Ct(V("Inline")^1), -- / c_plain,
-
-    Inline                = V("Str")
-                          + V("Endline")
-                          + V("UlOrStarLine")
-                          + V("Space")
-                          + V("Strong")
-                          + V("Emphasis")
-                          + V("Image")
-                          + V("Link")
-                          + V("Code")
-                          + V("RawHtml")
-                          + V("Entity")
-                          + V("EscapedChar")
-                          + V("Symbol"),
-
-    RawHtml               = C(htmlcomment + htmltag) / c_inline_html,
-
-    EscapedChar           = P("\\") * C(P(1 - newline)) / c_string,
-
-    -- we will use the regular entity handler
-
-    Entity                = V("HexEntity")
-                          + V("DecEntity")
-                          + V("CharEntity") / c_entity,
-
-    HexEntity             = C(ampersand * hash * S("Xx") * hexdigit^1 * semicolon),
-    DecEntity             = C(ampersand * hash * digit^1 * semicolon),
-    CharEntity            = C(ampersand * alphanumeric^1 * semicolon),
-
-    --
-
-    Endline               = V("LineBreak")
-                          + V("TerminalEndline")
-                          + V("NormalEndline"),
-
-    NormalEndline         = optionalspace * newline * -(
-                                blankline
-                              + more
-                              + V("AtxStart")
-                              + ( line * (P("===")^3 + P("---")^3) * newline )
-                            ) / c_space,
-
-    TerminalEndline       = optionalspace * newline * eof / "",
-
-    LineBreak             = P("  ") * V("NormalEndline") / c_linebreak,
-
-    Code                  = inticks / c_code,
-
-    -- This keeps the parser from getting bogged down on long strings of '*' or '_'
-    UlOrStarLine          = asterisk^4
-                          + underscore^4
-                          + (spaces * S("*_")^1 * #spaces) / c_string,
-
-    Emphasis              = V("EmphasisStar")
-                          + V("EmphasisUl"),
-
-    EmphasisStar          = asterisk   * -spaceornewline * Ct((V("Inline") - asterisk  )^1) * asterisk   / c_emphasis,
-    EmphasisUl            = underscore * -spaceornewline * Ct((V("Inline") - underscore)^1) * underscore / c_emphasis,
-
-    Strong                = V("StrongStar")
-                          + V("StrongUl"),
-
-    StrongStar            = doubleasterisks   * -spaceornewline * Ct((V("Inline") - doubleasterisks  )^1) * doubleasterisks   / c_strong,
-    StrongUl              = doubleunderscores * -spaceornewline * Ct((V("Inline") - doubleunderscores)^1) * doubleunderscores / c_strong,
-
-    Image                 = P("!") * (V("ExplicitLink") + V("ReferenceLink")) / c_image,
-
-    Link                  = V("ExplicitLink") / c_link
-                          + V("ReferenceLink") / c_link
-                          + V("AutoLinkUrl")
-                          + V("AutoLinkEmail"),
-
-    ReferenceLink         = V("ReferenceLinkDouble")
-                          + V("ReferenceLinkSingle"),
-
-    ReferenceLinkDouble   = V("Label") * spnl * Cmt(V("Label"), f_reference_link_double),
-
-    ReferenceLinkSingle   = Cmt(V("Label"), f_reference_link_single) * (spnl * P("[]"))^-1,
-
-    AutoLinkUrl           = less * C(alphanumeric^1 * P("://") * (any - (newline + more))^1) * more / f_link,
-
-    AutoLinkEmail         = less * C((alphanumeric + S("-_+"))^1 * P("@") * (any - (newline + more))^1) * more / c_email_link,
-
-    BasicSource           = (nonspacechar - S("()>"))^1 + (lparent * V("Source") * rparent)^1 + always,
-
-    AngleSource           = less * C(V("BasicSource")) * more,
-
-    Source                = V("AngleSource")
-                          + C(V("BasicSource")),
-
-    LinkTitle             = dquote * C((any - (dquote * optionalspace * rparent))^0) * dquote +
-                            squote * C((any - (squote * optionalspace * rparent))^0) * squote +
-                            Cc(""),
-
-    ExplicitLink          = V("Label") * spnl * lparent * optionalspace * V("Source") * spnl * V("LinkTitle") * optionalspace * rparent,
-
-    Str                   = normalchar^1 / c_string,
-    Space                 = spacechar^1  / c_space,
-    Symbol                = specialchar  / c_string,
+local escaped = {
+    ["<"] = "&lt;",
+    [">"] = "&gt;",
+    ["&"] = "&amp;",
+    ['"'] = "&quot;",
 }
+
+local function c_string(s) -- has to be done more often
+    return (gsub(s,".",escaped))
+end
+
+local c_linebreak = "<br/>"
+local c_space     = " "
+
+local function c_paragraph(c)
+    return format("<p>%s</p>\n", c)
+end
+
+local function listitem(c)
+    return format("<li>%s</li>",nestedparser(c))
+end
+
+local function c_tightbulletlist(c)
+    return format("<ul>\n%s\n</ul>\n",c)
+end
+
+local function c_loosebulletlist(c)
+    return format("<ul>\n%s\n</ul>\n",c)
+end
+
+local function c_tightorderedlist(c)
+    return format("<ol>\n%s\n</ol>\n",c)
+end
+
+local function c_looseorderedlist(c)
+    return format("<ol>\n%s\n</ol>\n",c)
+end
+
+local function c_inline_html(content)
+    nofhtmlblobs = nofhtmlblobs + 1
+    return content
+end
+
+local function c_display_html(content)
+    nofhtmlblobs = nofhtmlblobs + 1
+    return format("\n%s\n",content)
+end
+
+local function c_emphasis(c)
+    return format("<em>%s</em>",c)
+end
+
+local function c_strong(c)
+    return format("<strong>%s</strong>",c)
+end
+
+local function c_blockquote(c)
+    return format("<blockquote>\n%s\n</blockquote>",nestedparser(c))
+end
+
+local function c_verbatim(c)
+    return format("<pre><code>%s</code></pre>",c)
+end
+
+local function c_code(c)
+    return format("<code>%s</code>",c)
+end
+
+local c_start_document = ""
+local c_stop_document  = ""
+
+local function c_heading(level,c)
+    return format("<h%d>%s</h%d>\n",level,c,level)
+end
+
+local function c_hrule()
+    return "<hr/>\n"
+end
+
+local function c_link(lab,src,tit)
+    local titattr = #tit > 0 and format(" title=%q",tit) or ""
+    return format("<a href=%q%s>%s</a>",src,titattr,nestedparser(lab))
+end
+
+local function c_image(lab,src,tit)
+    return format("<img href=%q title=%q>%s</a>",src,tit,nestedparser(lab))
+end
+
+local function c_email_link(address)
+    return format("<a href=%q>%s</a>","mailto:",address,c_escape(address))
+end
+
+local function c_url_link(url)
+    return format("<a href=%q>%s</a>",url,c_string(url))
+end
+
+local function f_heading(c,n)
+    return c_heading(n,c)
+end
+
+local function c_hex_entity(s)
+    return utfchar(tonumber(s,16))
+end
+
+local function c_dec_entity(s)
+    return utfchar(tonumber(s))
+end
+
+local function c_tag_entity(s)
+    return format("&%s;",s)
+end
+
+--]]
+
+---------------------------------------------------------------------------------------------
+
+local Str              = normalchar^1 / c_string
+local Space            = spacechar^1  / c_space
+local Symbol           = specialchar  / c_string
+local Code             = inticks      / c_code
+
+local HeadingStart     = C(hash * hash^-5) / length
+local HeadingStop      = optionalspace * hash^0 * optionalspace * newline * blanklines
+local HeadingLevel     = equal^3 * Cc(1)
+                       + dash ^3 * Cc(2)
+
+local NormalEndline    = optionalspace * newline * -(
+                             blankline
+                           + more
+                           + HeadingStart
+                           + ( line * (P("===")^3 + P("---")^3) * newline )
+                         ) / c_space
+
+local LineBreak        = P("  ") * NormalEndline / c_linebreak
+
+local TerminalEndline  = optionalspace * newline * eof / ""
+
+local Endline          = LineBreak
+                       + TerminalEndline
+                       + NormalEndline
+
+local AutoLinkUrl      = less * C(alphanumeric^1 * P("://") * (any - (newline + more))^1)            * more / c_url_link
+local AutoLinkEmail    = less * C((alphanumeric + S("-_+"))^1 * P("@") * (any - (newline + more))^1) * more / c_email_link
+
+local DirectLink       = direct_link_parser   / c_link
+local IndirectLink     = indirect_link_parser / c_link
+
+local ImageLink        = exclamation * (direct_link_parser + indirect_link_parser) / c_image -- we can combine this with image ... smaller lpeg
+
+local UlOrStarLine     = asterisk^4
+                       + underscore^4
+                       + (spaces * S("*_")^1 * #spaces) / c_string
+
+local EscapedChar      = P("\\") * C(P(1 - newline)) / c_string
+
+local InlineHtml       = inlinehtml  / c_inline_html
+local DisplayHtml      = displayhtml / c_display_html
+local HtmlEntity       = hexentity / c_hex_entity
+                       + decentity / c_dec_entity
+                       + tagentity / c_tag_entity
+
+local NestedList       = Cs(optionallyindentedline - (bullet + enumerator))^1 / nestedparser
+
+local ListBlockLine    = -blankline * -(indent^-1 * (bullet + enumerator)) * optionallyindentedline
+
+local Verbatim         = Cs(blanklines * (indentedline - blankline)^1)  / c_verbatim
+                       * (blankline^1 + eof) -- not really needed, probably capture trailing? we can do that beforehand
+
+local Blockquote       = Cs((
+                            ((nonindentspace * more * space^-1)/"" * linechar^0 * newline)^1
+                          * ((linechar - blankline)^1 * newline)^0
+                          * blankline^0
+                         )^1) / c_blockquote
+
+local HorizontalRule   = (lineof_asterisks + lineof_dashes + lineof_underscores) / c_hrule
+
+local Reference        = define_reference_parser / ""
+
+-- could be a mini grammar
+
+local ListBlock             = line * ListBlockLine^0
+local ListContinuationBlock = blanklines * indent * ListBlock
+local ListItem              = Cs(ListBlock * (NestedList + ListContinuationBlock^0)) / listitem
+
+---- LeadingLines  = blankline^0 / ""
+---- TrailingLines = blankline^1 * #(any) / "\n"
+
+syntax = Cs { "Document",
+
+    Document              = V("Display")^0,
+
+    Display               = blankline -- ^1/"\n"
+                          + Blockquote
+                          + Verbatim
+                          + Reference
+                          + HorizontalRule
+                          + HeadingStart * optionalspace * Cs((V("Inline") - HeadingStop)^1) * HeadingStop / c_heading
+                          + Cs((V("Inline") - Endline)^1) * newline * HeadingLevel * newline * blanklines  / f_heading
+                          + Cs((bullet     /"" * ListItem)^1) *   blanklines * -bullet     / c_tightbulletlist
+                          + Cs((bullet     /"" * ListItem     * C(blanklines))^1)          / c_loosebulletlist
+                          + Cs((enumerator /"" * ListItem)^1) *   blanklines * -enumerator / c_tightorderedlist
+                          + Cs((enumerator /"" * ListItem     * C(blanklines))^1)          / c_looseorderedlist
+                          + DisplayHtml
+                          + nonindentspace * Cs(V("Inline")^1)* newline * blankline^1 / c_paragraph
+                          + V("Inline")^1,
+
+    Inline                = Str
+                          + Space
+                          + Endline
+                          + UlOrStarLine -- still needed ?
+                          + doubleasterisks   * -spaceornewline * Cs((V("Inline") - doubleasterisks  )^1) * doubleasterisks   / c_strong
+                          + doubleunderscores * -spaceornewline * Cs((V("Inline") - doubleunderscores)^1) * doubleunderscores / c_strong
+                          + asterisk          * -spaceornewline * Cs((V("Inline") - asterisk         )^1) * asterisk          / c_emphasis
+                          + underscore        * -spaceornewline * Cs((V("Inline") - underscore       )^1) * underscore        / c_emphasis
+                          + ImageLink
+                          + DirectLink
+                          + IndirectLink
+                          + AutoLinkUrl
+                          + AutoLinkEmail
+                          + Code
+                          + InlineHtml
+                          + HtmlEntity
+                          + EscapedChar
+                          + Symbol,
+
+}
+
+---------------------------------------------------------------------------------------------
 
 local function convert(str)
     nofruns = nofruns + 1
     nofbytes = nofbytes + #str
     statistics.starttiming(markdown)
+    referenceparser(str)
     local result = c_start_document() .. nestedparser(str) .. c_stop_document()
     statistics.stoptiming(markdown)
     return result
@@ -704,8 +704,121 @@ statistics.register("markdown",function()
     end
 end)
 
--- test
+---------------------------------------------------------------------------------------------
 
 --~ context.starttext()
 --~     moduledata.markdown.convert(str)
 --~ context.stoptext()
+
+if not tex.jobname then
+
+    local one = [[
+Test *123*
+==========
+
+<b>BOLD *BOLD* BOLD</b>
+
+<pre>PRE <b>PRE</b> PRE</pre>
+
+
+* Test
+** Test
+* Test1
+    * Test2
+* Test
+
+Test
+====
+
+> test
+> test **123** *123*
+> test `code`
+
+test
+
+Test
+====
+
+> test
+> test
+> test
+
+test
+oeps
+
+more
+
+    code
+    code
+
+oeps
+
+[an example][a]
+
+[an example] [2]
+
+[a]: http://example.com/  "Optional *oeps* Title Here"
+[2]: http://example.com/  'Optional Title Here'
+[3]: http://example.com/  (Optional Title Here)
+
+[an example][a]
+
+[an example] [2]
+
+[an [tricky] example](http://example.com/ "Title")
+
+[This **xx** link](http://example.net/)
+    ]]
+
+-- This snippet takes some 4 seconds in the original parser (the one that is
+-- a bit clearer from the perspective of grammars but somewhat messy with
+-- respect to the captures. In the above parser it takes .1 second. Also,
+-- in the later case only memory is the limit.
+
+    local two = [[
+Test
+====
+* Test
+** Test
+* Test
+** Test
+* Test
+
+Test
+====
+
+> test
+> test
+> test
+
+test
+
+Test
+====
+
+> test
+> test
+> test
+
+test
+    ]]
+
+    local function test(str)
+        local n = 1 -- 000
+        local t = os.clock()
+        local one = convert(str)
+     -- print("runtime",1,#str,#one,os.clock()-t)
+        str = string.rep(str,n)
+        local t = os.clock()
+        local two = convert(str)
+        print(two)
+     -- print("runtime",n,#str,#two,os.clock()-t)
+     -- print(format("==============\n%s\n==============",one))
+    end
+
+ -- test(one)
+ -- test(two)
+ -- test(io.read("*all"))
+
+
+end

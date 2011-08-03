@@ -754,9 +754,80 @@
 
 \newskip\textbackgroundskip
 
+% \def\dostarttextbackgroundpar
+%   {\endgraf % new
+%    \textbackgroundparameter\c!before
+%    \noindent
+%    \ifgridsnapping
+%      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+%      \ifdim\textbackgroundskip>\zeropoint
+%        \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\currentparbackground}}}%
+%      \else
+%       \fpos\currentparbackground
+%      \fi
+%    \else
+%      \fpos\currentparbackground
+%    \fi
+%    \bgroup
+%    \endgraf % we need a vertical nobreak - 29/06/2004
+%    \nobreak \vskip-\lineheight \nobreak
+%    \ifgridsnapping \else
+%      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+%      \ifdim\textbackgroundskip>\zeropoint
+%         \kern\textbackgroundskip\nobreak
+%      \fi
+%    \fi
+%    \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
+%    \advance\leftskip\leftskipadaption
+%    \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
+%    \advance\rightskip\leftskipadaption
+%    % new
+%    \dosetraggedcommand{\textbackgroundparameter\c!align}%
+%    \raggedcommand
+%    %
+%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+%    \nowhitespace
+%    \nobreak % new per 23/04/2006 (else potential break when whitespace)
+%    \seteffectivehsize
+%    \doinhibitblank %   \blank[\v!disable]% new
+%    \par}
+
+% \def\dostoptextbackgroundpar
+%   {\par
+%    \removelastskip % new
+%    \dostopattributes
+%    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+%    \ifdim\lastskip>\zeropoint
+%      \advance\textbackgroundskip-\lastskip
+%    \fi
+%    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+%      \kern\textbackgroundskip\nobreak
+%    \fi \fi
+%    \nobreak \vskip-\dimexpr\lineheight+\parskip\relax \nobreak
+%   %\nobreak \vskip-\lineheight \nobreak \nowhitespace % does not work
+%    \egroup
+%    \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+%    \nobreak \noindent \strut \hfill \kern\zeropoint
+%    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+%    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
+%      \ifdim\textbackgroundskip>\zeropoint
+%        \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
+%      \else
+%        \tpos\currentparbackground
+%      \fi
+%    \else
+%      \tpos\currentparbackground
+%    \fi
+%    \egroup
+%    \endgraf % new
+%    \textbackgroundparameter\c!after}
+
 \def\dostarttextbackgroundpar
   {\endgraf % new
    \textbackgroundparameter\c!before
+   \bgroup
+\begingroup
+\resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
    \noindent
    \ifgridsnapping
      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
@@ -768,8 +839,8 @@
    \else
      \fpos\currentparbackground
    \fi
-   \bgroup
    \endgraf % we need a vertical nobreak - 29/06/2004
+\endgroup
    \nobreak \vskip-\lineheight \nobreak
    \ifgridsnapping \else
      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
@@ -807,17 +878,19 @@
 %    \nobreak \vskip-\lineheight \nobreak \nowhitespace % does not work
    \egroup
    \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+\resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
    \nobreak \noindent \strut \hfill \kern\zeropoint
    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
+       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
      \else
        \tpos\currentparbackground
      \fi
    \else
      \tpos\currentparbackground
    \fi
+\endgraf
    \egroup
    \endgraf % new
    \textbackgroundparameter\c!after}
@@ -904,10 +977,9 @@
         \c!leftoffset,\c!rightoffset,\c!topoffset,\c!bottomoffset]%
      \getparameters[\??td#1][#2]%
      \doifvalue{\??td#1\c!state}\v!start\checktextbackgrounds
-     \setuvalue{#1}%
-       {\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
-     \setvalue{\e!start#1}{\starttextbackground[#1]}%
-     \setvalue{\e!stop #1}{\stoptextbackground}%
+     \setuvalue{#1}{\groupedcommand{\starttextbackground[#1]}{\stoptextbackground}}%
+     \setuvalue{\e!start#1}{\starttextbackground[#1]}%
+     \setuvalue{\e!stop #1}{\stoptextbackground}%
    \fi}
 
 \unexpanded\def\setuptextbackground

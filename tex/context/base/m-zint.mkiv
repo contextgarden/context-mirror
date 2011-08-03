@@ -67,12 +67,12 @@ function moduledata.zint.generate(code,data,suffix,options)
         io.savedata(temp,data)
         os.execute(format('%s --barcode=%s --output="%s" --input="%s"',zint,code,name,temp,options or ""))
     end
-    return  name
+    return name
 end
 
 \stopluacode
 
-\doifnotmode{demo}{\endinput}
+\continueifinputfile{m-zint.mkiv}
 
 \starttext
 

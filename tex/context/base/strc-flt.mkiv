@@ -152,8 +152,8 @@
    \c!sidespacebefore=\floatsharedparameter\c!spacebefore,
    \c!sidespaceafter=\floatsharedparameter\c!spaceafter,
    \c!sidealign=\v!normal,
-   \c!textmethod=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt)
-   \c!sidemethod=\ifgridsnapping2\else1\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt)
+   \c!textmethod=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
+   \c!sidemethod=\ifgridsnapping2\else1\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
    \c!indentnext=\v!no,
    \c!margin=1em,
    \c!method=1,
@@ -594,7 +594,7 @@
 % the global settings.
 
 \unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
-  {\edef\currentfloat{#1}%
+  {\edef\currentfloat{#1}% TODO: IF UNDEFINED THEN FALLBACK TO figure
    \doifnothing\currentfloat{\let\currentfloat\v!figure}%
    \doifelsenothing{#2}
      {\edef\floatlocation{\floatparameter\c!default}}

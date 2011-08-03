@@ -18,6 +18,26 @@ a.dir-view:link, a.dir-view:active, a.dir-view:visited {
 .invalid {
 	color: #FF0000 ;
 }
+button, .commonlink, .smallbutton {
+	font-weight: bold ;
+	font-size: 12px ;
+	text-decoration: none ;
+	color: #000000 ;
+	border-color: #7F7F7F ;
+	border-style: solid ;
+	border-width: .125ex ;
+	background-color: #FFFFFF ;
+	padding: .5ex ;
+}
+.smallbutton {
+	width: 1em ;
+}
+a.commonlink:link, a.commonlink:active, a.commonlink:visited, a.smalllink:link, a.smalllink:active, a.smalllink:visited {
+	font-weight: bold ;
+	font-size: 12px ;
+	text-decoration: none ;
+	color: #000000 ;
+}
 h1, .title {
 	font-style: normal ;
 	font-weight: normal ;

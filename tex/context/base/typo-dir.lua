@@ -53,7 +53,7 @@ local endmath_code       = mathcodes.endmath
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
-local chardata           = fonthashes.characters
+local fontchar           = fonthashes.characters
 
 local chardata           = characters.data
 local chardirs           = characters.directions -- maybe make a special mirror table
