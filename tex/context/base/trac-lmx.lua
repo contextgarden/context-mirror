@@ -83,9 +83,9 @@ function lmx.loadedfile(name)
 end
 
 local function do_include(filename)
-    local stylepath = do_variable('includepath')
+    local stylepath = do_variable('includepath') -- todo: store paths of loaded files
     local data = lmx.loadedfile(filename)
-    if (not data or data == "") and stylepath ~= "" then
+    if (not data or data == "") and stylepath and stylepath ~= "" then
         data = lmx.loadedfile(file.join(stylepath,filename))
     end
     if not data or data == "" then

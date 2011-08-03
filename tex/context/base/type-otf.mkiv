@@ -669,7 +669,7 @@
 
     % Antykwa Torunska (GUST)
 
-    \starttypescript [serif] [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
+    \starttypescript [serif] [antykwa,antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
         \definefontsynonym [AntykwaTorunska-Regular]           [\s!file:AntykwaTorunska-Regular]          [\s!features=\s!default]
         \definefontsynonym [AntykwaTorunska-Italic]            [\s!file:AntykwaTorunska-Italic]           [\s!features=\s!default]
         \definefontsynonym [AntykwaTorunska-Bold]              [\s!file:AntykwaTorunska-Bold]             [\s!features=\s!default]
@@ -705,7 +705,7 @@
         \definefontsynonym [AntykwaTorunska-CondMedItalicCap]  [\s!file:AntykwaTorunskaCondMed-Italic]    [\s!features=\s!smallcaps]
     \stoptypescript
 
-    \starttypescript [math][antykwa-torunska][all]
+    \starttypescript [math][antykwa,antykwa-torunska][all]
         \loadfontgoodies[antykwa-math]
         \definefontsynonym[MathRoman][antykwamath@antykwa-math]
     \stoptypescript
@@ -725,7 +725,7 @@
         \definefontsynonym[MathRoman][antykwalightcondmath@antykwa-lightcond-math]
     \stoptypescript
 
-    \starttypescript [serif] [antykwa-torunska] [name]
+    \starttypescript [serif] [antykwa,antykwa-torunska] [name]
         \definefontsynonym [Serif]            [AntykwaTorunska-Regular]
         \definefontsynonym [SerifBold]        [AntykwaTorunska-Bold]
         \definefontsynonym [SerifItalic]      [AntykwaTorunska-Italic]
@@ -765,7 +765,7 @@
         \definefontsynonym [SerifCaps]        [AntykwaTorunska-CondLightCap]
     \stoptypescript
 
-    \starttypescript [serif] [antykwa-torunska] [name]
+    \starttypescript [serif] [antykwa,antykwa-torunska] [name]
         \definefontsynonym [SerifRegular]         [Serif]
         \definefontsynonym [SerifRegularCaps]     [AntykwaTorunska-Cap]
         \definefontsynonym [SerifBoldCaps]        [AntykwaTorunska-BoldCap]
@@ -873,11 +873,11 @@
         \definefontsynonym [SerifCapsExp]        [AntykwaTorunska-LightCap]
     \stoptypescript
 
-    \starttypescript [antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
-        \definetypeface[antykwa][rm][serif][\typescriptone] [default]
-        \definetypeface[antykwa][ss][sans] [modern]         [default] [rscale=1.05]
-        \definetypeface[antykwa][tt][mono] [modern]         [default] [rscale=1.05]
-        \definetypeface[antykwa][mm][math] [\typescriptone] [default]
+    \starttypescript [antykwa,antykwa-torunska,antykwa-torunska-light,antykwa-torunska-cond,antykwa-torunska-lightcond]
+        \definetypeface[\typescriptone][rm][serif][\typescriptone] [default]
+        \definetypeface[\typescriptone][ss][sans] [modern]         [default] [rscale=1.05]
+        \definetypeface[\typescriptone][tt][mono] [modern]         [default] [rscale=1.05]
+        \definetypeface[\typescriptone][mm][math] [\typescriptone] [default]
         \quittypescriptscanning
     \stoptypescript
 

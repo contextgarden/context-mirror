@@ -1391,6 +1391,9 @@ end
 
 function scripts.context.extras(pattern)
     -- only in base path, i.e. only official ones
+    if type(pattern) ~= "string" then
+        pattern = "*"
+    end
     local found = resolvers.findfile("context.mkiv")
     if found ~= "" then
         pattern = file.join(dir.expandname(file.dirname(found)),format("mtx-context-%s.tex",pattern or "*"))
@@ -1646,7 +1649,7 @@ elseif environment.argument("expert") then
 elseif environment.argument("modules") then
     scripts.context.modules()
 elseif environment.argument("extras") then
-    scripts.context.extras()
+    scripts.context.extras(environment.files[1] or environment.argument("extras"))
 elseif environment.argument("extra") then
     scripts.context.extra()
 elseif environment.argument("help") then

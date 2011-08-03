@@ -46,7 +46,7 @@ local report, subreport, status, settarget, setformats, settranslations
 
 local direct, subdirect, writer, pushtarget, poptarget
 
-if tex and tex.jobname or tex.formatname then
+if tex and (tex.jobname or tex.formatname) then
 
     local valueiskey   = { __index = function(t,k) t[k] = k return k end } -- will be helper
 

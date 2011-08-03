@@ -9,11 +9,13 @@ if not modules then modules = { } end modules ['trac-fil'] = {
 local format, concat = string.format, table.concat
 local openfile = io.open
 local date = os.date
+local rawset, tonumber = rawset, tonumber
 
 local P, C, Cc, Cg, Cf, Ct, Cs  = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cs
 
-local patterns  = lpeg.patterns
-local cardinal  = patterns.cardinal
+local patterns   = lpeg.patterns
+local cardinal   = patterns.cardinal
+local whitespace = patterns.whitespace^0
 
 patterns.timestamp = Cf(Ct("") * (
       Cg (Cc("year")    * (cardinal/tonumber)) * P("-")
@@ -26,10 +28,13 @@ patterns.timestamp = Cf(Ct("") * (
     * Cg (Cc("tminute") * (cardinal/tonumber))
 )^0, rawset)
 
+patterns.keysvalues = Cf(Ct("") * (
+    Cg(C(patterns.letter^0) * whitespace * "=" * whitespace * Cs(patterns.unquoted) * whitespace)
+)^0, rawset)
+
 patterns.statusline = Cf(Ct("") * (
-      P("[") * Cg(Cc("timestamp") * patterns.timestamp) * P("]")
-    * patterns.whitespace^0
-    * Cg(Cc("status") * Cf(Ct("") * (Cg(C(patterns.letter^0) * "=" * Cs(patterns.unquoted)) * patterns.whitespace^0)^0, rawset))
+      whitespace * P("[") * Cg(Cc("timestamp") * patterns.timestamp ) * P("]")
+    * whitespace *          Cg(Cc("status"   ) * patterns.keysvalues)
 ),rawset)
 
 

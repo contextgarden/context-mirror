@@ -154,25 +154,6 @@ patterns.unspacer      = ((patterns.spacer^1)/"")^0
 patterns.somecontent   = (anything - newline - space)^1 -- (utf8char - newline - space)^1
 patterns.beginline     = #(1-newline)
 
--- local unquoted = Cs(patterns.unquoted * endofstring) -- not C
---
--- function string.unquoted(str)
---     return match(unquoted,str) or str
--- end
---
--- more efficient on long strings:
-
-local unquoted = (
-    squote * Cs((1 - P(-2))^0) * squote
-  + dquote * Cs((1 - P(-2))^0) * dquote
-)
-
-function string.unquoted(str)
-    return match(unquoted,str) or str
-end
-
-patterns.unquoted = unquoted
-
 -- print(string.unquoted("test"))
 -- print(string.unquoted([["t\"est"]]))
 -- print(string.unquoted([["t\"est"x]]))

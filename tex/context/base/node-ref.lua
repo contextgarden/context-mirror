@@ -104,7 +104,7 @@ end
 
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth = dimensions(parent,first,last)
-    if pardir == "TRT" or txtdir == "+TRT" then
+    if txtdir == "+TRT" or (txtdir == "===" and pardir == "TRT") then -- KH: textdir == "===" test added
         width = - width
     end
     local result, resolved = make(width,height,depth,reference)
