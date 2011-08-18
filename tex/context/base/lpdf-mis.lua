@@ -160,46 +160,56 @@ function codeinjections.setupidentity(specification)
     end
 end
 
+local done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
+
 local function setupidentity()
-    local title = identity.title
-    if not title or title == "" then
-        title = tex.jobname
-    end
-    lpdf.addtoinfo("Title", pdfunicode(title), title)
-    local subtitle = identity.subtitle or ""
-    if subtitle ~= "" then
-        lpdf.addtoinfo("Subject", pdfunicode(subtitle), subtitle)
-    end
-    local author = identity.author or ""
-    if author ~= "" then
-        lpdf.addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
-    end
-    local creator = identity.creator or ""
-    if creator ~= "" then
-        lpdf.addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
-    end
-    lpdf.addtoinfo("CreationDate", pdfstring(lpdf.pdftimestamp(lpdf.timestamp())))
-    local date = identity.date or ""
-    local pdfdate = lpdf.pdftimestamp(date)
-    if pdfdate then
-        lpdf.addtoinfo("ModDate", pdfstring(pdfdate), date)
+    if not done then
+        local title = identity.title
+        if not title or title == "" then
+            title = tex.jobname
+        end
+        lpdf.addtoinfo("Title", pdfunicode(title), title)
+        local subtitle = identity.subtitle or ""
+        if subtitle ~= "" then
+            lpdf.addtoinfo("Subject", pdfunicode(subtitle), subtitle)
+        end
+        local author = identity.author or ""
+        if author ~= "" then
+            lpdf.addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
+        end
+        local creator = identity.creator or ""
+        if creator ~= "" then
+            lpdf.addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
+        end
+        lpdf.addtoinfo("CreationDate", pdfstring(lpdf.pdftimestamp(lpdf.timestamp())))
+        local date = identity.date or ""
+        local pdfdate = lpdf.pdftimestamp(date)
+        if pdfdate then
+            lpdf.addtoinfo("ModDate", pdfstring(pdfdate), date)
+        else
+            -- users should enter the date in 2010-01-19T23:27:50+01:00 format
+            -- and if not provided that way we use the creation time instead
+            date = lpdf.timestamp()
+            lpdf.addtoinfo("ModDate", pdfstring(lpdf.pdftimestamp(date)), date)
+        end
+        local keywords = identity.keywords or ""
+        if keywords ~= "" then
+            keywords = gsub(keywords, "[%s,]+", " ")
+            lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
+        end
+        local id = lpdf.id()
+        lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
+        done = true
     else
-        -- users should enter the date in 2010-01-19T23:27:50+01:00 format
-        -- and if not provided that way we use the creation time instead
-        date = lpdf.timestamp()
-        lpdf.addtoinfo("ModDate", pdfstring(lpdf.pdftimestamp(date)), date)
+        -- no need for a message
     end
-    local keywords = identity.keywords or ""
-    if keywords ~= "" then
-        keywords = gsub(keywords, "[%s,]+", " ")
-        lpdf.addtoinfo("Keywords",pdfunicode(keywords), keywords)
-    end
-    local id = lpdf.id()
-    lpdf.addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
-    setupidentity = function() end
 end
 
 lpdf.registerpagefinalizer(setupidentity,"identity")
+
+-- or when we want to be able to set things after pag e1:
+--
+-- lpdf.registerdocumentfinalizer(setupidentity,1,"identity")
 
 local function flushjavascripts()
     local t = interactions.javascripts.flushpreambles()

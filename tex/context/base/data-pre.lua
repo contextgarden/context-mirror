@@ -64,7 +64,7 @@ end
 
 prefixes.filename = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.basename((fullname ~= "" and fullname) or str))
+    return cleanpath(file.basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
 end
 
 prefixes.pathname = function(str)

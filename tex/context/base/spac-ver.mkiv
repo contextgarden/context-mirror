@@ -1802,7 +1802,7 @@
 
 \def\dodostartlines[#1]% new: optional second argument (WS)
   {\iffirstargument
-     \getparameters[\??rg\currentlines][#1]%
+     \setupcurrentlines[#1]%
    \fi
    \edef\linesoption{\linesparameter\c!option}%
    \linesparameter\c!before

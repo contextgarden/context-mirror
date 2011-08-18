@@ -711,7 +711,10 @@ local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes
 local special_2 = P("/")  * Cc(register_auto_self)
 local special_3 = P("")   * Cc(register_auto_self)
 
-local pathparser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
+local no_nextcolon   = P(-1) + #(1-P(":")) -- newer lpeg needs the P(-1)
+local no_nextlparent = P(-1) + #(1-P("(")) -- newer lpeg needs the P(-1)
+
+local pathparser = Ct { "patterns", -- can be made a bit faster by moving some patterns outside
 
     patterns             = spaces * V("protocol") * spaces * (
                               ( V("special") * spaces * P(-1)                                                         ) +
@@ -740,10 +743,8 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving patter
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
- -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*") * #(1-P(":"))  * Cc(register_child     ),
---  s_child              = P("*") * #(P("/")+P(-1)) * Cc(register_child     ),
+    s_child              = P("*") * no_nextcolon * Cc(register_child     ),
     s_parent             = P("..")               * Cc(register_parent    ),
     s_self               = P("." )               * Cc(register_self      ),
     s_root               = P("^^")               * Cc(register_root      ),
@@ -770,13 +771,13 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving patter
     expressions          = expression / register_expression,
 
     letters              = R("az")^1,
-    name                 = (1-lpeg.S("/[]()|:*!"))^1,
+    name                 = (1-lpeg.S("/[]()|:*!"))^1, -- make inline
     negate               = P("!") * Cc(false),
 
     nodefunction         = V("negate") + P("not") * Cc(false) + Cc(true),
     nodetest             = V("negate") + Cc(true),
     nodename             = (V("negate") + Cc(true)) * spaces * ((V("wildnodename") * P(":") * V("wildnodename")) + (Cc(false) * V("wildnodename"))),
-    wildnodename         = (C(V("name")) + P("*") * Cc(false)) * #(1-P("(")),
+    wildnodename         = (C(V("name")) + P("*") * Cc(false)) * no_nextlparent,
     nodeset              = spaces * Ct(V("nodename") * (spaces * P("|") * spaces * V("nodename"))^0) * spaces,
 
     finalizer            = (Cb("protocol") * P("/")^-1 * C(V("name")) * arguments * P(-1)) / register_finalizer,

@@ -1072,11 +1072,9 @@
 
 \newcount\processlevel
 
-%D By default we expand actions:
+% obsolete: \def\expandactions{\let\expandedaction\edef} \expandactions (see mkii)
 
-\def\expandactions{\let\expandedaction\edef} \expandactions % this command will go away
-
-\def\p!compareprocessactionA[#1=>#2][#3]%
+\unexpanded\def\p!compareprocessactionA[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
      \let\commalistelement\empty
@@ -1085,34 +1083,30 @@
 
 % met \quitcommalist tot meer dan 25\% sneller
 
-\def\p!compareprocessactionB[#1=>#2][#3]%
-  {\expandedaction\!!stringb{#1}%
+\unexpanded\def\p!compareprocessactionB[#1=>#2][#3]%
+  {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
      \expandafter\quitcommalist
-   \else
-     \edef\!!stringb{#1}%
-     \ifx\!!stringb\s!unknown
-       \def\commalistelement{#3}% beware of loops
-       #2%
-     \fi
-   \fi}
+   \else\ifx\!!stringb\s!unknown
+     \def\commalistelement{#3}% beware of loops
+     #2%
+   \fi\fi}
 
-\def\processaction[#1]#2[%
-  {\expandedaction\!!stringa{#1}%
+\unexpanded\def\processaction[#1]#2[%
+  {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \let\p!compareprocessaction\p!compareprocessactionA
    \else
      \let\p!compareprocessaction\p!compareprocessactionB
    \fi
-   \def\p!doprocessaction##1%
-     {\p!compareprocessaction[##1][#1]}%
-   \processnextcommalist\relax\expandactions\p!doprocessaction[}
+   \edef\p!doprocessaction##1{\p!compareprocessaction[##1][#1]}% expands #1
+   \processnextcommalist\relax\relax\p!doprocessaction[}
 
-\def\p!compareprocessactionC[#1=>#2][#3]%
-  {\expandedaction\!!stringa{#1}%
-   \expandedaction\!!stringb{#3}%
+\unexpanded\def\p!compareprocessactionC[#1=>#2][#3]%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
@@ -1126,7 +1120,7 @@
    \fi}
 
 \unexpanded\def\processfirstactioninset[#1]%
-  {\expandedaction\!!stringa{#1}%
+  {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\processaction
    \else
@@ -1136,15 +1130,13 @@
 
 \unexpanded\def\processfirstactionsinsetindeed[#1]#2[#3]%
   {\def\p!doprocessaction##1%
-     {\def\p!dodoprocessaction####1%
-        {\p!compareprocessactionC[####1][##1]}%
+     {\def\p!dodoprocessaction####1{\p!compareprocessactionC[####1][##1]}%
       \processcommalist[#3]\p!dodoprocessaction}%
-   \processcommalist[#1]\p!doprocessaction
-   \expandactions}
+   \normalexpanded{\processcommalist[#1]}\p!doprocessaction}
 
-\def\p!compareprocessactionD[#1=>#2][#3]%
-  {\expandedaction\!!stringa{#1}%
-   \expandedaction\!!stringb{#3}%
+\unexpanded\def\p!compareprocessactionD[#1=>#2][#3]%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
      #2%
@@ -1157,11 +1149,11 @@
      \fi
    \fi}
 
-\def\doprocessallactionsinset
+\unexpanded\def\doprocessallactionsinset
   {\csname\s!do\the\processlevel\endcsname}
 
 \unexpanded\def\processallactionsinset[#1]%
-  {\expandedaction\!!stringa{#1}%
+  {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\processaction
    \else
@@ -1172,54 +1164,22 @@
 \unexpanded\def\processallactionsinsetindeed[#1]#2[#3]%
   {\advance\processlevel \plusone
    \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
-     {\def\p!dodoprocessaction####1%
-        {\p!compareprocessactionD[####1][##1]}%
+     {\def\p!dodoprocessaction####1{\p!compareprocessactionD[####1][##1]}%
       \processcommalist[#3]\p!dodoprocessaction}%
-   \processcommalist[#1]\doprocessallactionsinset
-   \advance\processlevel \minusone
-   \expandactions}
+   \normalexpanded{\processcommalist[#1]}\doprocessallactionsinset
+   \advance\processlevel\minusone}
 
 %D These macros use:
 
-\def\processnextcommalist#1#2#3[#4#5]%
+\unexpanded\def\processnextcommalist#1#2#3[#4#5]%
   {#1%
    \let\nexttoken#4%
    \global\advance\commalevel \plusone
    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
      {#3{##1}\doprocesscommaitem}%
    \dodoprocesscommaitem#4#5,]\relax
-   \global\advance\commalevel \minusone
+   \global\advance\commalevel\minusone
    #2}
-
-% % THIS IS OBSOLETE (as is \expandedaction)
-%
-% %D \macros
-% %D   {unexpandedprocessaction,
-% %D    unexpandedprocessfirstactioninset,
-% %D    unexpandedprocessallactionsinset}
-% %D
-% %D Now what are those expansion commands doing there. Well,
-% %D sometimes we want to compare actions that may consist off
-% %D commands (i.e. are no constants). In such occasions we can
-% %D use the a bit slower alternatives:
-%
-% \def\unexpandedprocessfirstactioninset{\dontexpandactions\processfirstactioninset}
-% \def\unexpandedprocessaction          {\dontexpandactions\processaction}
-% \def\unexpandedprocessallactionsinset {\dontexpandactions\processallactionsinset}
-%
-% %D But when needed we convert the strings to meaningful
-% %D sequences of characters. [THIS CAN GO]
-%
-% \def\unexpandedaction#1>{}
-%
-% \def\noexpandedaction#1#2%
-%   {\def\@@convertedargument{#2}%
-%    \@EA\edef\@EA#1\@EA{\@EA\unexpandedaction\meaning\@@convertedargument}}
-%
-% \def\dontexpandactions
-%   {\let\expandedaction\noexpandedaction}
-%
-% % TILL HERE
 
 %D \macros
 %D   {getfirstcharacter, firstcharacter, remainingcharacters, doiffirstcharacter}
@@ -1249,7 +1209,7 @@
 %D \doifinsetelse {substring} {string} {then ...} {else ...}
 %D \stoptyping
 
-\long\def\doifinstringelse#1%
+\unexpanded\def\doifinstringelse#1%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
      \@EA\thirdofthreearguments
@@ -1257,14 +1217,14 @@
      \@EA\dodoifinstringelse
    \fi}
 
-\long\def\dodoifinstringelse#1%
+\unexpanded\def\dodoifinstringelse#1%
   {\p!doifinstringelse\@@@instring{#1}%
      \@EA\firstoftwoarguments
    \else
      \@EA\secondoftwoarguments
    \fi}
 
-\long\def\doifinstring#1%%
+\unexpanded\def\doifinstring#1%%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
      \@EA\gobbletwoarguments
@@ -1272,14 +1232,14 @@
      \@EA\dodoifinstring
    \fi}
 
-\long\def\dodoifinstring#1%
+\unexpanded\def\dodoifinstring#1%
   {\p!doifinstringelse\@@@instring{#1}%
      \@EA\firstofoneargument
    \else
      \@EA\gobbleoneargument
    \fi}
 
-\long\def\doifnotinstring#1%%
+\unexpanded\def\doifnotinstring#1%%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
      \@EA\gobbletwoarguments
@@ -1287,7 +1247,7 @@
      \@EA\dodoifnotinstring
    \fi}
 
-\long\def\dodoifnotinstring#1%
+\unexpanded\def\dodoifnotinstring#1%
   {\p!doifinstringelse\@@@instring{#1}%
      \@EA\gobbleoneargument
    \else
@@ -1296,7 +1256,7 @@
 
 % replaces prev
 
-\long\def\p!doifinstringelse#1#2% ##2 can be {abc}
+\unexpanded\def\p!doifinstringelse#1#2% ##2 can be {abc}
   {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war{\unless\if##2@}% expand #1 here
    \expandafter\pp!doifinstringelse\normalexpanded{#2#1}@@\war} % expand #2 here
 
@@ -1313,12 +1273,12 @@
 %D possible, the latter alternative does minimal (one level)
 %D expansion.
 
-\long\def\p!doifincsnameelse#1#2%
+\unexpanded\def\p!doifincsnameelse#1#2%
   {\long\def\pp!doifincsnameelse##1#1##2##3\war
      {\unless\if##2@}%
    \@EA\pp!doifincsnameelse#2#1@@\war}
 
-\long\def\doifincsnameelse#1#2%                   % #3#4%
+\unexpanded\def\doifincsnameelse#1#2%                   % #3#4%
   {\edef\@@@instring{#1}%
    \@EA\p!doifincsnameelse\@EA{\@@@instring}{#2}% % #3\else#4\fi}
      \expandafter\firstoftwoarguments
@@ -1342,7 +1302,7 @@
 %D \type{\getal} and \type{\the\count...}. This macro is a
 %D rather dirty one.
 
-\long\def\doifnumberelse#1% does not accept counters
+\long\def\doifnumberelse#1% does not accept counters (fully expandable)
   {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
      \expandafter\secondoftwoarguments
    \else
@@ -1377,7 +1337,7 @@
 %D length of the argument (the longer the argument, the less
 %D we gain).
 
-\def\makerawcommalist[#1]#2% use \processnext ... here
+\unexpanded\def\makerawcommalist[#1]#2% use \processnext ... here
   {\def\domakerawcommalist##1% we don't expand ##1
      {\ifx#2\empty
         \def#2{##1}%
@@ -1407,7 +1367,7 @@
 
 \def\@@rawempty{,,}
 
-\long\def\rawdoifinsetelse#1%
+\unexpanded\def\rawdoifinsetelse#1%
   {\edef\@@@instring{,#1,}% expand #1 here
    \ifx\@@@instring\@@rawempty
      \@EA\thirdofthreearguments
@@ -1415,14 +1375,14 @@
      \@EA\rawdodoifinsetelse
    \fi}
 
-\long\def\rawdodoifinsetelse#1%
+\unexpanded\def\rawdodoifinsetelse#1%
   {\p!doifinstringelse\@@@instring{,#1,}%
      \@EA\firstoftwoarguments
    \else
      \@EA\secondoftwoarguments
    \fi}
 
-\long\def\rawdoifinset#1%
+\unexpanded\def\rawdoifinset#1%
   {\edef\@@@instring{,#1,}% expand #1 here
    \ifx\@@@instring\@@rawempty
      \@EA\gobbletwoarguments
@@ -1430,7 +1390,7 @@
      \@EA\rawdodoifinset
    \fi}
 
-\long\def\rawdodoifinset#1%%
+\unexpanded\def\rawdodoifinset#1%%
   {\p!doifinstringelse\@@@instring{,#1,}%
      \@EA\firstofoneargument
    \else
@@ -1446,7 +1406,7 @@
       \fi}%
    \pp!rawprocessaction,#2,#1=>,@\war}
 
-\def\rawprocessaction[#1]#2[#3]%
+\unexpanded\def\rawprocessaction[#1]#2[#3]%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{undefined}% better \!!undefined
    \let\!!processaction\!!stringb

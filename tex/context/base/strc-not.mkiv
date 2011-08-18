@@ -345,6 +345,7 @@
 \def\currentnoterulecommandunknown{\noteparameter\c!rule}
 
 \def\letcurrentnoterulecommand{\expandafter\let\csname\??vn\c!rule:c:\currentnote\endcsname}
+\def\letcurrentnoterulealign  {\expandafter\let\csname\??vn\c!rule:a:\currentnote\endcsname}
 
 \appendtoks
     \letvalue{\??vn\c!rule:c:\currentnote}\currentnoterulecommandnormal
@@ -355,8 +356,8 @@
   \processallactionsinset[\noteparameter\c!rule]
     [     \v!on=>\letcurrentnoterulecommand\currentnoterulecommandnormal,
       \v!normal=>\letcurrentnoterulecommand\currentnoterulecommandnormal,
-        \v!left=>\letcurrentnoterulecommand\lefttoright,
-       \v!right=>\letcurrentnoterulecommand\righttoleft,
+        \v!left=>\letcurrentnoterulealign  \lefttoright,
+       \v!right=>\letcurrentnoterulealign  \righttoleft,
          \v!off=>\letcurrentnoterulecommand\relax,
      \s!default=>\letcurrentnoterulecommand\relax,
      \s!unknown=>\letcurrentnoterulecommand\currentnoterulecommandunknown]%

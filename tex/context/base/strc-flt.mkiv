@@ -247,7 +247,7 @@
 \presetlocalframed[\??fl]
 
 \def\dododefinefloat[#1][#2]%
-  {\copylocalframed[\??fl#1][\??fl]%
+  {\inheritlocalframed[\??fl#1][\??fl]%
    \definestructurecounter[#1]%
    \addtocommalist{#1}\alldefinedfloats
    \setupfloat[#1][\s!parent=\??fl]%
@@ -259,7 +259,7 @@
    }% \newnodelocation{\v!float\@@thenumber{#1}}}
 
 \def\redodefinefloat[#1][#2][#3]%
-  {\copylocalframed[\??fl#1][\??fl#3]%
+  {\inheritlocalframed[\??fl#1][\??fl#3]%
    \setupfloat[#1][\s!parent=\??fl#3]%
    \setupcaption[#1][\s!parent=\??kj#3]%
    \definestructurecounter[#1][#3]%

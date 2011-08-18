@@ -605,8 +605,7 @@
 \def\defaultframeoffset{.25ex}
 
 \def\presetlocalframed       [#1]{\letvalue{#1\s!parent}\??oi}
-\def\inheritlocalframed[#1]#2[#3]{\letvalue{#1\s!parent}#3}
-\def\copylocalframed   [#1]#2[#3]{\setvalue{#1\s!parent}{#3}}
+\def\inheritlocalframed[#1]#2[#3]{\setevalue{#1\s!parent}{#3}}
 
 \presetlocalframed[\??ol]
 
@@ -621,13 +620,6 @@
 \unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
 
-% \def\dosetupframed
-%   {\ifsecondargument
-%      \@EA\dodoublesetupframed
-%    \else
-%      \@EA\dosinglesetupframed
-%    \fi}
-
 % we can consider setting the parent of the regular framed to
 % something else in the otr so that we isolate it there
 
@@ -637,17 +629,6 @@
    \else
      \getparameters[\??ol][#1]%
    \fi}
-
-% \def\dosinglesetupframed[#1][#2]%
-%   {\getparameters[\??ol][#1]}
-
-% \def\dodoublesetupframed[#1][#2]%
-%   {\bgroup
-%    \let\dodoubleempty\empty
-%    \def\doframed[##1]{\gdef\globalredefinedframed{\dodoubleempty\doframed[##1,#2]}}%
-%    \getvalue{#1}%
-%    \egroup
-%    \letvalue{#1}\globalredefinedframed}
 
 %D \startbuffer
 %D \setupframed [framecolor=yellow]          \framed{A}
@@ -769,7 +750,7 @@
 %D Because it is used so often the he next macro is (and
 %D looks) rather optimized.
 
-% \def\s!root{root} % maybe configurable
+% todo: see if we can use commandhandler
 
 \let\postprocessframebox\relax
 
@@ -2772,7 +2753,7 @@
     %  \insidefloattrue % ? better
        \normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
        \startcolor[\framedtextparameter\c!color]%
-       \localframed[\??kd\currentframedtext][\c!strut=\v!no]% todo: use delayedstrut
+       \localframed[\currentframedtexthash][\c!strut=\v!no]% todo: use delayedstrut
        \bgroup
          \let\\=\endgraf
          \framedtextparameter\c!inner % oud spul
@@ -2825,23 +2806,35 @@
 
 \def\doftstartdepthcorrection
   {\bgroup
-   \verticalstrut
-   % we need \nowhitespace in case of setups setting whitespace
-   % nb, not safe, text vs \vbox as next
-   \vskip-\struttotal
-   \nowhitespace} % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
+   \ifhmode
+     \par
+   \fi
+   \ifvmode
+     \verticalstrut
+     % we need \nowhitespace in case of setups setting whitespace
+     % nb, not safe, text vs \vbox as next
+     \vskip-\struttotal
+     \nowhitespace
+   \fi} % na vskip ! new 20/05/2004, fails with next content being box (\scale{..})
 
 \def\doftstopdepthcorrection
-  {\forgetall
-   \vskip-\struttotal
-   \verticalstrut
-   \egroup
-   \forgetall % brrr too often
-   \vskip-\lineheight
-   % will be an option, not default
-   % \setbaselinecorrections
-   % \donegbotbaselinecorrection
-   \verticalstrut}
+  {\ifhmode
+     \par
+   \fi
+   \ifvmode
+     \forgetall
+     \vskip-\struttotal
+     \verticalstrut
+     \egroup
+     \forgetall % brrr too often
+     \vskip-\lineheight
+     % will be an option, not default
+     % \setbaselinecorrections
+     % \donegbotbaselinecorrection
+     \verticalstrut
+   \else
+     \egroup
+   \fi}
 
 %D Placement can be ignored:
 %D
@@ -2868,7 +2861,7 @@
 
 \def\dodoframedtext[#1]% beware!
   {\normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
-   \localframed[\??kd\currentframedtext][\c!strut=\v!no,#1]%
+   \localframed[\currentframedtexthash][\c!strut=\v!no,#1]%
      \bgroup
        \blank[\v!disable]%
        \let\\=\endgraf
@@ -2914,7 +2907,7 @@
   {\bgroup
    \expandafter\let\expandafter\tempframedcount\csname\??ol:#1\endcsname
    \advance\tempframedcount\plusone
-   \expandafter\def\csname\??ol#1:\the\tempframedcount\s!parent\endcsname{\??ol#1}% \copylocalframed
+   \expandafter\def\csname\??ol#1:\the\tempframedcount\s!parent\endcsname{\??ol#1}% \inheritlocalframed
    \dodoubleempty\dolocalframed[\??ol#1:\the\tempframedcount]}
 
 %D We can do:

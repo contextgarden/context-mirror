@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/04/11 00:42:26
+-- merge date  : 08/18/11 16:00:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -1098,6 +1098,9 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+
+-- a new lpeg fails on a #(1-P(":")) test and really needs a + P(-1)
+
 local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
@@ -1165,7 +1168,7 @@ patterns.alwaysmatched = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local newline          = crlf + cr + lf
+local newline          = crlf + S("\r\n") -- cr + lf
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
@@ -1722,14 +1725,6 @@ function lpeg.append(list,pp,delayed)
     end
     return p
 end
-
---~ Cf(Ct("") * (Cg(C(...) * "=" * Cs(...)))^0, rawset)
-
---~ for k, v in next, patterns do
---~     if type(v) ~= "table" then
---~         lpeg.print(v)
---~     end
---~ end
 
 end -- closure
 
@@ -3426,6 +3421,7 @@ function constructors.scale(tfmdata,specification)
     local isvirtual  = properties.virtualized or tfmdata.type == "virtual"
     local hasquality = target.auto_expand or target.auto_protrude
     local hasitalic  = properties.italic_correction
+    local autoitalic = properties.auto_italic_correction
     local stackmath  = not properties.no_stackmath
     local nonames    = properties.noglyphnames
     local nodemode   = properties.mode == "node"
@@ -3583,8 +3579,13 @@ function constructors.scale(tfmdata,specification)
             end
         end
         -- todo: hasitalic
-        if hasitalic then
-            local vi = description.italic or character.italic
+        if autoitalic then
+            local vi = description.italic or (description.boundingbox[3] - description.width + autoitalic)
+            if vi and vi ~= 0 then
+                chr.italic = vi*hdelta
+            end
+        elseif hasitalic then
+            local vi = description.italic or character.italic -- why character
             if vi and vi ~= 0 then
                 chr.italic = vi*hdelta
             end
@@ -7637,6 +7638,7 @@ local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
+local copy_node          = node.copy
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
@@ -7647,6 +7649,21 @@ local cursbase = attributes.private('cursbase')
 local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
+local fontkern = attributes.private('fontkern')
+
+if context then
+
+    local kern = nodes.pool.register(newkern())
+
+    set_attribute(kern,fontkern,1) -- we can have several, attributes are shared
+
+    newkern = function(k)
+        local c = copy_node(kern)
+        c.kern = k
+        return c
+    end
+
+end
 
 local cursives = { }
 local marks    = { }
@@ -8477,7 +8494,11 @@ function handlers.gsub_single(start,kind,lookupname,replacement)
 end
 
 local function alternative_glyph(start,alternatives,kind,chainname,chainlookupname,lookupname) -- chainname and chainlookupname optional
-    local value, choice, n = featurevalue or tfmdata.shared.features[kind], nil, #alternatives -- global value, brrr
+    -- needs checking: (global value, brrr)
+    local value  = featurevalue == true and tfmdata.shared.features[kind] or featurevalue
+    local choice = nil
+    local n      = #alternatives
+    --
     if value == "random" then
         local r = random(1,n)
         value, choice = format("random, choice %s",r), alternatives[r]

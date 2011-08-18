@@ -477,17 +477,21 @@ enddef ;
 
 % Crop stuff
 
-vardef crop_marks_lines (expr box, length, offset) =
-    save p ; picture p ;
+vardef crop_marks_lines (expr box, length, offset, nx, ny) =
+    save p ; picture p ; save w, h, x, y ; numeric w, h, x, y  ;
     p := image (
-        draw ((llcorner box) -- (llcorner box) shifted (-length,0)) shifted (-offset,0) ;
-        draw ((llcorner box) -- (llcorner box) shifted (0,-length)) shifted (0,-offset) ;
-        draw ((lrcorner box) -- (lrcorner box) shifted ( length,0)) shifted ( offset,0) ;
-        draw ((lrcorner box) -- (lrcorner box) shifted (0,-length)) shifted (0,-offset) ;
-        draw ((ulcorner box) -- (ulcorner box) shifted (-length,0)) shifted (-offset,0) ;
-        draw ((ulcorner box) -- (ulcorner box) shifted (0, length)) shifted (0, offset) ;
-        draw ((urcorner box) -- (urcorner box) shifted ( length,0)) shifted ( offset,0) ;
-        draw ((urcorner box) -- (urcorner box) shifted (0, length)) shifted (0, offset) ;
+        x := if nx = 0 : 1 else : nx - 1 fi ;
+        y := if ny = 0 : 1 else : ny - 1 fi ;
+        w := bbwidth (box) / x ;
+        h := bbheight(box) / y ;
+        for i=0 upto y :
+            draw ((llcorner box) -- (llcorner box) shifted (-length,0)) shifted (-offset,i*h) ;
+            draw ((lrcorner box) -- (lrcorner box) shifted ( length,0)) shifted ( offset,i*h) ;
+        endfor ;
+        for i=0 upto x :
+            draw ((llcorner box) -- (llcorner box) shifted (0,-length)) shifted (i*w,-offset) ;
+            draw ((ulcorner box) -- (ulcorner box) shifted (0, length)) shifted (i*w, offset) ;
+        endfor ;
     ) ;
     setbounds p to box ;
     p
@@ -627,12 +631,12 @@ def page_marks_add_marking(expr width, height, length, offset) = % todo: namespa
 
 enddef ;
 
-def page_marks_add_lines(expr width, height, length, offset) = % todo: namespace
+def page_marks_add_lines(expr width, height, length, offset, nx, ny) = % todo: namespace
 
     path page ; page := fullsquare xscaled width yscaled height ;
     path more ; more := page enlarged (offset+length/2,offset+length/2) ;
 
-    draw crop_marks_lines(page,length,offset) ;
+    draw crop_marks_lines(page,length,offset,nx,ny) ;
 
     setbounds currentpicture to page ;
 

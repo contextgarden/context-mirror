@@ -148,36 +148,36 @@
      }%
    \fi}
 
-\def\doifstructurecounterelse#1{\ctxcommand{doifelsestructurecounter("\@@thestructurecounter{#1}")}}
-\def\doifstructurecounter    #1{\ctxcommand{doifstructurecounter    ("\@@thestructurecounter{#1}")}}
-\def\doifnotstructurecounter #1{\ctxcommand{doifnotstructurecounter ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\doifstructurecounterelse#1{\ctxcommand{doifelsestructurecounter("\@@thestructurecounter{#1}")}}
+\unexpanded\def\doifstructurecounter    #1{\ctxcommand{doifstructurecounter    ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\doifnotstructurecounter #1{\ctxcommand{doifnotstructurecounter ("\@@thestructurecounter{#1}")}}
 
-\def\setstructurecounter      [#1]#2{\ctxcommand{setstructurecounter    ("\@@thestructurecounter{#1}",1,\number#2)}}
-\def\setstructurecounterown   [#1]#2{\ctxcommand{setownstructurecounter ("\@@thestructurecounter{#1}",1,"#2")}}
-\def\resetstructurecounter      [#1]{\ctxcommand{resetstructurecounter  ("\@@thestructurecounter{#1}",1)}}
-\def\restartstructurecounter  [#1]#2{\ctxcommand{restartstructurecounter("\@@thestructurecounter{#1}",1,#2)}}
-\def\savestructurecounter       [#1]{\ctxcommand{savestructurecounter   ("\@@thestructurecounter{#1}")}}
-\def\restorestructurecounter    [#1]{\ctxcommand{restorestructurecounter("\@@thestructurecounter{#1}")}}
-\def\incrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,1)}}
-\def\decrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,-1)}}
-\def\rawstructurecounter        [#1]{\ctxcommand{structurecountervalue  ("\@@thestructurecounter{#1}",1)}}
-\def\laststructurecounter       [#1]{\ctxcommand{laststructurecounter   ("\@@thestructurecounter{#1}",1)}}
-\def\firststructurecounter      [#1]{\ctxcommand{firststructurecounter  ("\@@thestructurecounter{#1}",1)}}
-\def\nextstructurecounter       [#1]{\ctxcommand{nextstructurecounter   ("\@@thestructurecounter{#1}",1)}}
-\def\prevstructurecounter       [#1]{\ctxcommand{prevstructurecounter   ("\@@thestructurecounter{#1}",1)}}
-\def\structurecountersubs       [#1]{\ctxcommand{structurecounterssub   ("\@@thestructurecounter{#1}",1)}}
-\def\showstructurecounter       [#1]{\ctxcommand{tracestructurecounter  ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\setstructurecounter      [#1]#2{\ctxcommand{setstructurecounter    ("\@@thestructurecounter{#1}",1,\number#2)}}
+\unexpanded\def\setstructurecounterown   [#1]#2{\ctxcommand{setownstructurecounter ("\@@thestructurecounter{#1}",1,"#2")}}
+\unexpanded\def\resetstructurecounter      [#1]{\ctxcommand{resetstructurecounter  ("\@@thestructurecounter{#1}",1)}}
+\unexpanded\def\restartstructurecounter  [#1]#2{\ctxcommand{restartstructurecounter("\@@thestructurecounter{#1}",1,#2)}}
+\unexpanded\def\savestructurecounter       [#1]{\ctxcommand{savestructurecounter   ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\restorestructurecounter    [#1]{\ctxcommand{restorestructurecounter("\@@thestructurecounter{#1}")}}
+\unexpanded\def\incrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,1)}}
+\unexpanded\def\decrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,-1)}}
+           \def\rawstructurecounter        [#1]{\ctxcommand{structurecountervalue  ("\@@thestructurecounter{#1}",1)}}
+           \def\laststructurecounter       [#1]{\ctxcommand{laststructurecounter   ("\@@thestructurecounter{#1}",1)}}
+           \def\firststructurecounter      [#1]{\ctxcommand{firststructurecounter  ("\@@thestructurecounter{#1}",1)}}
+           \def\nextstructurecounter       [#1]{\ctxcommand{nextstructurecounter   ("\@@thestructurecounter{#1}",1)}}
+           \def\prevstructurecounter       [#1]{\ctxcommand{prevstructurecounter   ("\@@thestructurecounter{#1}",1)}}
+           \def\structurecountersubs       [#1]{\ctxcommand{structurecounterssub   ("\@@thestructurecounter{#1}",1)}}
+           \def\showstructurecounter       [#1]{\ctxcommand{tracestructurecounter  ("\@@thestructurecounter{#1}")}}
 
-\def\incrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1, 1)}}
-\def\decrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1,-1)}}
+\unexpanded\def\incrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1, 1)}}
+\unexpanded\def\decrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1,-1)}}
 
-\def\setsubstructurecounter        {\dodoubleargument\dosetsubstructurecounter}
-\def\setsubstructurecounterown     {\dodoubleargument\dosetsubstructurecounterown}
-\def\resetsubstructurecounter      {\dodoubleargument\doresetsubstructurecounter}
-\def\restartsubstructurecounter    {\dodoubleargument\dorestartsubstructurecounter}
-\def\incrementsubstructurecounter  {\dodoubleargument\doincrementsubstructurecounter}
-\def\decrementsubstructurecounter  {\dodoubleargument\dodecrementsubstructurecounter}
-\def\rawsubstructurecounter        {\dodoubleargument\dorawsubstructurecounter}
+\unexpanded\def\setsubstructurecounter        {\dodoubleargument\dosetsubstructurecounter}
+\unexpanded\def\setsubstructurecounterown     {\dodoubleargument\dosetsubstructurecounterown}
+\unexpanded\def\resetsubstructurecounter      {\dodoubleargument\doresetsubstructurecounter}
+\unexpanded\def\restartsubstructurecounter    {\dodoubleargument\dorestartsubstructurecounter}
+\unexpanded\def\incrementsubstructurecounter  {\dodoubleargument\doincrementsubstructurecounter}
+\unexpanded\def\decrementsubstructurecounter  {\dodoubleargument\dodecrementsubstructurecounter}
+           \def\rawsubstructurecounter        {\dodoubleargument\dorawsubstructurecounter}
 
 \def\dosetsubstructurecounter      [#1][#2]#3{\ctxcommand{setstructurecounter        ("\@@thestructurecounter{#1}",#2,\number#3)}}
 \def\dosetsubstructurecounterown   [#1][#2]#3{\ctxcommand{setownstructurecounter     ("\@@thestructurecounter{#1}",#2,"#3")}}
@@ -199,7 +199,7 @@
 \def\docheckstructurecounterbypage#1% since we call lua to get the way we can as well do all in lua
   {\doif{\structurecounterway{#1}}\v!page{\checkpagechange{#1}\ifpagechanged\resetstructurecounter[#1]\fi}}
 
-\def\incrementstructurecounter[#1]%
+\unexpanded\def\incrementstructurecounter[#1]%
   {\docheckstructurecounterbypage{#1}%
    \ctxcommand{addstructurecounter("\@@thestructurecounter{#1}",1,1)}}
 
@@ -207,7 +207,7 @@
   {\docheckstructurecounterbypage{#1}%
    \ctxcommand{addstructurecounter("\@@thestructurecounter{#1}",#2,1)}}
 
-\def\convertedstructurecounter
+\unexpanded\def\convertedstructurecounter
   {\dodoubleempty\doconvertedstructurecounter}
 
 \def\doconvertedstructurecounter[#1][#2]%
@@ -241,8 +241,7 @@
    \endgroup}
 
 \def\directconvertedstructurecounter#1#2% name, type
-  {\begingroup
-   \ctxlua{structures.sections.prefixedconverted(
+  {\ctxlua{structures.sections.prefixedconverted(
      "\@@thestructurecounter{#1}",
      {
        prefix        = "\structurecounterparameter{#1}\c!prefix",
@@ -265,8 +264,7 @@
        segments      = "\structurecounterparameter{#1}\c!numbersegments",
        type          = "#2",
      }
-   )}%
-   \endgroup}
+   )}}
 
 \unexpanded\def\convertedsubstructurecounter
   {\dotripleempty\doconvertedsubstructurecounter}
@@ -280,9 +278,9 @@
 
 \let\getstructurecounter\convertedstructurecounter
 
-\def\doifdefinedstructurecounter    #1{\doifdefined    {\csname\s!structurecounter#1\c!number\endcsname}}
-\def\doifundefinedstructurecounter  #1{\doifundefined  {\csname\s!number#1\c!number\endcsname}}
-\def\doifdefinedstructurecounterelse#1{\doifdefinedelse{\csname\s!number#1\c!number\endcsname}}
+\unexpanded\def\doifdefinedstructurecounter    #1{\doifdefined    {\csname\s!structurecounter#1\c!number\endcsname}}
+\unexpanded\def\doifundefinedstructurecounter  #1{\doifundefined  {\csname\s!number#1\c!number\endcsname}}
+\unexpanded\def\doifdefinedstructurecounterelse#1{\doifdefinedelse{\csname\s!number#1\c!number\endcsname}}
 
 \ifx\checkstructurecounter\undefined \def\checkstructurecounter[#1]{} \fi
 

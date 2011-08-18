@@ -109,12 +109,14 @@ setmetatableindex(fontdata, function(t,k) return nulldata end)
 local chardata      = allocate() -- chardata
 local parameters    = allocate()
 local csnames       = allocate() -- namedata
-local quaddata      = allocate() -- quaddata
+local quaddata      = allocate()
+local markdata      = allocate()
 local xheightdata   = allocate() -- xheightdata
 
 hashes.characters   = chardata
 hashes.parameters   = parameters
 hashes.quads        = quaddata
+hashes.marks        = markdata
 hashes.xheights     = xheightdata
 hashes.csnames      = csnames
 
@@ -135,6 +137,13 @@ setmetatableindex(quaddata, function(t,k)
     local quad = parameters and parameters.quad or 0
     t[k] = quad
     return quad
+end)
+
+setmetatableindex(markdata, function(t,k)
+    local resources = fontdata[k].resources or { }
+    local marks = resources.marks or { }
+    t[k] = marks
+    return marks
 end)
 
 setmetatableindex(xheightdata, function(t,k)

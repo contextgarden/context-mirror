@@ -10,7 +10,7 @@ utilities         = utilities or {}
 utilities.strings = utilities.strings or { }
 local strings     = utilities.strings
 
-local find, gsub, rep = string.find, string.gsub, string.rep
+local gsub, rep = string.gsub, string.rep
 local Cs, C, Cp, P, Carg = lpeg.Cs, lpeg.C, lpeg.Cp, lpeg.P, lpeg.Carg
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
 
@@ -33,26 +33,44 @@ end
 
 -- The following functions might end up in another namespace.
 
---~ function strings.tabtospace(str,tab)
---~     -- we don't handle embedded newlines
---~     while true do
---~         local s = find(str,"\t")
---~         if s then
---~             if not tab then tab = 7 end -- only when found
---~             local d = tab-(s-1) % tab
---~             if d > 0 then
---~                 str = gsub(str,"\t",rep(" ",d),1)
---~             else
---~                 str = gsub(str,"\t","",1)
---~             end
---~         else
---~             break
---~         end
---~     end
---~     return str
---~ end
+local repeaters = { } -- watch how we also moved the -1 in depth-1 to the creator
+
+function strings.newrepeater(str,offset)
+    offset = offset or 0
+    local s = repeaters[str]
+    if not s then
+        s = { }
+        repeaters[str] = s
+    end
+    local t = s[offset]
+    if t then
+        return t
+    end
+    t = { }
+    setmetatable(t, {
+        __index = function(t,k)
+            if not k then
+                return ""
+            end
+            local n = k + offset
+            local s = n > 0 and rep(str,n) or ""
+            t[k] = s
+            return s
+        end
+    } )
+    s[offset] = t
+    return t
+end
+
+--~ local dashes = strings.newrepeater("--",-1)
+
+--~ print(dashes[2])
+--~ print(dashes[3])
+--~ print(dashes[1])
 
 local extra, tab, start = 0, 0, 4, 0
+
+local nspaces = strings.newrepeater(" ")
 
 local pattern =
     Carg(1) / function(t)
@@ -64,7 +82,7 @@ local pattern =
           local spaces = tab-(current-1) % tab
           if spaces > 0 then
               extra = extra + spaces - 1
-              return rep(" ",spaces)
+              return nspaces[spaces] -- rep(" ",spaces)
           else
               return ""
           end

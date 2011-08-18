@@ -68,7 +68,7 @@
    \c!background=\v!color,
    \c!backgroundcolor=gray]
 
-\presetlocalframed[\??wp]
+\presetlocalframed[\??wp] %% not needed
 
 \appendtoks
     \setuevalue         \currenthelp {\scrn_help_argument{\currenthelp}}%
@@ -115,7 +115,7 @@
 
 \def\scrn_help_register#text%
   {\setbox\scrn_help_box\hbox
-     {\localframed[\??wp\currenthelp]{#text}}%
+     {\localframed[\currenthelphash]{#text}}%
    \definesymbol
      [\currenthelpname]
      [\copy\scrn_help_box]%

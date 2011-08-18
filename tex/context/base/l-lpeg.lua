@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+
+-- a new lpeg fails on a #(1-P(":")) test and really needs a + P(-1)
+
 local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
@@ -73,7 +76,7 @@ patterns.alwaysmatched = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local newline          = crlf + cr + lf
+local newline          = crlf + S("\r\n") -- cr + lf
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
@@ -630,11 +633,3 @@ function lpeg.append(list,pp,delayed)
     end
     return p
 end
-
---~ Cf(Ct("") * (Cg(C(...) * "=" * Cs(...)))^0, rawset)
-
---~ for k, v in next, patterns do
---~     if type(v) ~= "table" then
---~         lpeg.print(v)
---~     end
---~ end

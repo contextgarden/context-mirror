@@ -31,6 +31,9 @@
 \newconditional\c_page_marks_add_page_lines
 \newconditional\c_page_marks_add_more_number
 
+\newcount\c_page_marks_nx
+\newcount\c_page_marks_ny
+
 \startuniqueMPgraphic{print:color}{w,h,l,o}
     page_marks_add_color(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
 \stopuniqueMPgraphic
@@ -39,8 +42,8 @@
     page_marks_add_marking(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
 \stopuniqueMPgraphic
 
-\startuniqueMPgraphic{print:lines}{w,h,l,o}
-    page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
+\startuniqueMPgraphic{print:lines}{w,h,l,o,x,y}
+    page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar x,\MPvar y) ;
 \stopuniqueMPgraphic
 
 \startuseMPgraphic{print:number}{w,h,l,o,n}
@@ -75,7 +78,8 @@
      \uniqueMPgraphic
        {print:lines}%
        {w=\the\scratchwidth,h=\the\scratchheight,%
-        l=\pagecutmarklength,o=\pagecutmarkoffset}%
+        l=\pagecutmarklength,o=\pagecutmarkoffset,%
+        x=\the\c_page_marks_nx,y=\the\c_page_marks_ny}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
    \hskip-\scratchwidth\box\scratchbox}
@@ -87,7 +91,7 @@
        {print:number}%
        {w=\the\scratchwidth ,h=\the\scratchheight,%
         l=\pagecutmarklength,o=\pagecutmarkoffset,%
-        n=\realfolio}%
+        n=\number\ifcase\arrangeno\realpageno\else\arrangeno\fi}%
    \egroup
    \wd\scratchbox\scratchwidth\ht\scratchbox\scratchheight\dp\scratchbox\scratchdepth
    \hskip-\scratchwidth\box\scratchbox}

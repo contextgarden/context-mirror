@@ -1112,6 +1112,9 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
     license   = "see context related readme files"
 }
 
+
+-- a new lpeg fails on a #(1-P(":")) test and really needs a + P(-1)
+
 local lpeg = require("lpeg")
 
 -- tracing (only used when we encounter a problem in integration of lpeg in luatex)
@@ -1148,7 +1151,7 @@ patterns.alwaysmatched = alwaysmatched
 
 local digit, sign      = R('09'), S('+-')
 local cr, lf, crlf     = P("\r"), P("\n"), P("\r\n")
-local newline          = crlf + cr + lf
+local newline          = crlf + S("\r\n") -- cr + lf
 local escaped          = P("\\") * anything
 local squote           = P("'")
 local dquote           = P('"')
@@ -1666,8 +1669,6 @@ function lpeg.append(list,pp,delayed)
     end
     return p
 end
-
-
 
 
 end -- of closure
@@ -7425,18 +7426,15 @@ alternative.</p>
 
 function xml.checkbom(root) -- can be made faster
     if root.ri then
-        local dt, found = root.dt, false
+        local dt = root.dt
         for k=1,#dt do
             local v = dt[k]
             if type(v) == "table" and v.special and v.tg == "@pi@" and find(v.dt[1],"xml.*version=") then
-                found = true
-                break
+                return
             end
         end
-        if not found then
-            insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
-            insert(dt, 2, "\n" )
-        end
+        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+        insert(dt, 2, "\n" )
     end
 end
 
@@ -8547,7 +8545,10 @@ local special_1 = P("*")  * Cc(register_auto_descendant) * Cc(register_all_nodes
 local special_2 = P("/")  * Cc(register_auto_self)
 local special_3 = P("")   * Cc(register_auto_self)
 
-local pathparser = Ct { "patterns", -- can be made a bit faster by moving pattern outside
+local no_nextcolon   = P(-1) + #(1-P(":")) -- newer lpeg needs the P(-1)
+local no_nextlparent = P(-1) + #(1-P("(")) -- newer lpeg needs the P(-1)
+
+local pathparser = Ct { "patterns", -- can be made a bit faster by moving some patterns outside
 
     patterns             = spaces * V("protocol") * spaces * (
                               ( V("special") * spaces * P(-1)                                                         ) +
@@ -8576,10 +8577,8 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving patter
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
- -- s_descendant_or_self = P("/")                * Cc(register_descendant_or_self),
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*") * #(1-P(":"))  * Cc(register_child     ),
---  s_child              = P("*") * #(P("/")+P(-1)) * Cc(register_child     ),
+    s_child              = P("*") * no_nextcolon * Cc(register_child     ),
     s_parent             = P("..")               * Cc(register_parent    ),
     s_self               = P("." )               * Cc(register_self      ),
     s_root               = P("^^")               * Cc(register_root      ),
@@ -8606,13 +8605,13 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving patter
     expressions          = expression / register_expression,
 
     letters              = R("az")^1,
-    name                 = (1-lpeg.S("/[]()|:*!"))^1,
+    name                 = (1-lpeg.S("/[]()|:*!"))^1, -- make inline
     negate               = P("!") * Cc(false),
 
     nodefunction         = V("negate") + P("not") * Cc(false) + Cc(true),
     nodetest             = V("negate") + Cc(true),
     nodename             = (V("negate") + Cc(true)) * spaces * ((V("wildnodename") * P(":") * V("wildnodename")) + (Cc(false) * V("wildnodename"))),
-    wildnodename         = (C(V("name")) + P("*") * Cc(false)) * #(1-P("(")),
+    wildnodename         = (C(V("name")) + P("*") * Cc(false)) * no_nextlparent,
     nodeset              = spaces * Ct(V("nodename") * (spaces * P("|") * spaces * V("nodename"))^0) * spaces,
 
     finalizer            = (Cb("protocol") * P("/")^-1 * C(V("name")) * arguments * P(-1)) / register_finalizer,
@@ -10522,40 +10521,72 @@ end
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
-local cleanup = lpeg.replacer {
-    { "!"  , ""  },
-    { "\\" , "/" },
-}
+-- local cleanup = lpeg.replacer {
+--     { "!"  , ""  },
+--     { "\\" , "/" },
+-- }
+--
+-- local homedir
+--
+-- function resolvers.cleanpath(str) -- tricky, maybe only simple paths
+--     if not homedir then
+--         homedir = lpegmatch(cleanup,environment.homedir or "")
+--         if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
+--             if trace_expansions then
+--                 report_expansions("no home dir set, ignoring dependent paths")
+--             end
+--             function resolvers.cleanpath(str)
+--                 if find(str,"~") then
+--                     return "" -- special case
+--                 else
+--                     return str and lpegmatch(cleanup,str)
+--                 end
+--             end
+--         else
+--             cleanup = lpeg.replacer {
+--                 { "!"  , ""      },
+--                 { "\\" , "/"     },
+--                 { "~"  , homedir },
+--             }
+--             function resolvers.cleanpath(str)
+--                 return str and lpegmatch(cleanup,str)
+--             end
+--         end
+--     end
+--     return resolvers.cleanpath(str)
+-- end
 
-local homedir
-
-function resolvers.cleanpath(str)
-    if not homedir then
-        homedir = lpegmatch(cleanup,environment.homedir or "")
-        if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
-            if trace_expansions then
-                report_expansions("no home dir set, ignoring dependent paths")
+function resolvers.cleanpath(str) -- tricky, maybe only simple paths
+    local doslashes  = (P("\\")/"/" + 1)^0
+    local donegation = (P("!") /""     )^0
+    local homedir = lpegmatch(Cs(donegation * doslashes),environment.homedir or "")
+    if homedir == "~" or homedir == "" or not lfs.isdir(homedir) then
+        if trace_expansions then
+            report_expansions("no home dir set, ignoring dependent paths")
+        end
+        function resolvers.cleanpath(str)
+            if not str or find(str,"~") then
+                return "" -- special case
+            else
+                return lpegmatch(cleanup,str)
             end
-            function resolvers.cleanpath(str)
-                if find(str,"~") then
-                    return "" -- special case
-                else
-                    return str and lpegmatch(cleanup,str)
-                end
-            end
-        else
-            cleanup = lpeg.replacer {
-                { "!"  , ""      },
-                { "\\" , "/"     },
-                { "~"  , homedir },
-            }
-            function resolvers.cleanpath(str)
-                return str and lpegmatch(cleanup,str)
-            end
+        end
+    else
+        local dohome  = ((P("~")+P("$HOME"))/homedir)^0
+        local cleanup = Cs(donegation * dohome * doslashes)
+        function resolvers.cleanpath(str)
+            return str and lpegmatch(cleanup,str) or ""
         end
     end
     return resolvers.cleanpath(str)
 end
+
+-- print(resolvers.cleanpath(""))
+-- print(resolvers.cleanpath("!"))
+-- print(resolvers.cleanpath("~"))
+-- print(resolvers.cleanpath("~/test"))
+-- print(resolvers.cleanpath("!~/test"))
+-- print(resolvers.cleanpath("~/test~test"))
 
 -- This one strips quotes and funny tokens.
 
@@ -13338,7 +13369,7 @@ end
 
 prefixes.filename = function(str)
     local fullname = findgivenfile(str) or ""
-    return cleanpath(file.basename((fullname ~= "" and fullname) or str))
+    return cleanpath(file.basename((fullname ~= "" and fullname) or str)) -- no cleanpath needed here
 end
 
 prefixes.pathname = function(str)

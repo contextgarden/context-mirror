@@ -630,6 +630,8 @@
 
 \stoptypescriptcollection
 
+% nb: on my system already 'type-imp-dejavu.mkiv' and 'type-imp-dejavu-condensed.mkiv'
+
 \starttypescriptcollection[dejavu]
 
     \starttypescript [serif] [dejavu] [name]
@@ -661,6 +663,38 @@
         \definetypeface [dejavu] [ss] [sans]  [dejavu] [default]
         \definetypeface [dejavu] [tt] [mono]  [dejavu] [default]
         \definetypeface [dejavu] [mm] [math]  [xits]   [default] [rscale=auto]
+    \stoptypescript
+
+    \starttypescript [serif] [dejavu-condensed] [name]
+        \setups[font:fallback:serif]
+        \definefontsynonym [Serif]           [name:dejavuserifcondensed]           [features=default]
+        \definefontsynonym [SerifBold]       [name:dejavuserifcondensedbold]       [features=default]
+        \definefontsynonym [SerifItalic]     [name:dejavuserifcondenseditalic]     [features=default]
+        \definefontsynonym [SerifBoldItalic] [name:dejavuserifcondensedbolditalic] [features=default]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu-condensed] [name]
+        \setups[font:fallback:sans]
+        \definefontsynonym [Sans]           [name:dejavusanscondensed]            [features=default]
+        \definefontsynonym [SansBold]       [name:dejavusanscondensedbold]        [features=default]
+        \definefontsynonym [SansItalic]     [name:dejavusanscondensedoblique]     [features=default]
+        \definefontsynonym [SansBoldItalic] [name:dejavusanscondensedboldoblique] [features=default]
+    \stoptypescript
+
+  % \starttypescript [mono] [dejavu-condensed] [name]
+  %     \setups[font:fallback:mono]
+  %     \definefontsynonym [Mono]           [name:dejavusansmono]            [features=none]
+  %     \definefontsynonym [MonoBold]       [name:dejavusansmonobold]        [features=none]
+  %     \definefontsynonym [MonoItalic]     [name:dejavusansmonooblique]     [features=none]
+  %     \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldoblique] [features=none]
+  % \stoptypescript
+
+    \starttypescript[dejavu-condensed]
+        \definetypeface [dejavu-condensed] [rm] [serif] [dejavu-condensed] [default]
+        \definetypeface [dejavu-condensed] [ss] [sans]  [dejavu-condensed] [default]
+        \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu-condensed] [default]
+      % \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu]           [default]
+        \definetypeface [dejavu-condensed] [mm] [math]  [xits]             [default] [rscale=auto]
     \stoptypescript
 
 \stoptypescriptcollection
@@ -1887,13 +1921,13 @@
 \starttypescriptcollection[punk]
 
     \definefontfeature [punknova]         [mode=node,script=latn,rand=yes,kern=yes,liga=yes,tlig=yes]
-    \definefontfeature [punknova-slanted] [punknova] [slant=.25]
+  % \definefontfeature [punknova-slanted] [punknova] [slant=.25] % obsolete as we now have all
 
     \starttypescript [serif] [punknova]
-        \definefontsynonym [Serif]           [\s!file:punknova-regular] [\s!features=punknova]
-        \definefontsynonym [SerifSlanted]    [\s!file:punknova-regular] [\s!features=punknova-slanted]
-        \definefontsynonym [SerifBold]       [\s!file:punknova-bold]    [\s!features=punknova]
-        \definefontsynonym [SerifBoldSlanted][\s!file:punknova-bold]    [\s!features=punknova-slanted]
+        \definefontsynonym [Serif]           [\s!file:punknova-regular]     [\s!features=punknova]
+        \definefontsynonym [SerifSlanted]    [\s!file:punknova-slanted]     [\s!features=punknova]
+        \definefontsynonym [SerifBold]       [\s!file:punknova-bold]        [\s!features=punknova]
+        \definefontsynonym [SerifBoldSlanted][\s!file:punknova-boldslanted] [\s!features=punknova]
         \definefontsynonym [SerifItalic]     [SerifSlanted]
         \definefontsynonym [SerifBoldItalic] [SerifBoldSlanted]
     \stoptypescript

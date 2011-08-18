@@ -518,7 +518,9 @@ end
 local resolve_too = true -- urls
 
 local function locate(request) -- name, format, cache
-    local askedname = resolvers.cleanpath(request.name)
+    -- not resolvers.cleanpath(request.name) as it fails on a!b.pdf and b~c.pdf
+    -- todo: more restricted cleanpath
+    local askedname = request.name
     local foundname = figures.found[askedname .. "->" .. (request.conversion or "default") .. "->" .. (request.resolution or "default")]
     if foundname then
         return foundname
@@ -845,7 +847,10 @@ end
 
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
-    local name, page, size, color = du.fullname or "unknown generic", du.page or dr.page, dr.size or "crop", dr.color or "natural"
+    local name = du.fullname or "unknown generic"
+    local page = du.page or dr.page
+    local size = dr.size or "crop"
+    local color = dr.color or "natural"
     local mask = dr.mask or "none"
     local conversion = dr.conversion
     local resolution = dr.resolution
@@ -1345,3 +1350,10 @@ end
 --         os.execute(command)
 --     end,
 -- }
+
+
+--     local fig = figures.push { name = pdffile }
+--     figures.identify()
+--     figures.check()
+--     local nofpages = fig.used.pages
+--     figures.pop()

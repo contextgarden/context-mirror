@@ -24,6 +24,13 @@
             <link rel="StyleSheet" href="<?lua p(v) ?>" type="text/css" />
         <?lua end end ?>
     </head>
+    <?lua if (v('refreshtime') and (tonumber(v('refreshtime')) or 0) > 0) and v('refreshurl') then ?>
+        <!--[if IE]>
+            <script type="text/javascript">
+                setTimeout("document.location='<?lua pv('refreshurl') ?>'", 1000*<?lua pv('refreshtime') ?>);
+            </script>
+        <![endif]-->
+    <?lua end ?>
     <?lua if v('action') then ?>
         <form action="<?lua pv(action) ?>" enctype="multi-part/form-data" method="post">
     <?lua end ?>

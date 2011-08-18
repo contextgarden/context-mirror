@@ -28,6 +28,7 @@ local pool         = nodes.pool
 
 local whatsitcodes = nodes.whatsitcodes
 local skipcodes    = nodes.skipcodes
+local kerncodes    = nodes.kerncodes
 local nodecodes    = nodes.nodecodes
 
 local glyph_code   = nodecodes.glyph
@@ -75,7 +76,8 @@ function pool.usage()
 end
 
 local disc              = register_node(new_node("disc"))
-local kern              = register_node(new_node("kern",1))
+local kern              = register_node(new_node("kern",kerncodes.userkern))
+local fontkern          = register_node(new_node("kern",kerncodes.fontkern))
 local penalty           = register_node(new_node("penalty"))
 local glue              = register_node(new_node("glue")) -- glue.spec = nil
 local glue_spec         = register_node(new_node("glue_spec"))
@@ -122,6 +124,12 @@ end
 
 function pool.kern(k)
     local n = copy_node(kern)
+    n.kern = k
+    return n
+end
+
+function pool.fontkern(k)
+    local n = copy_node(fontkern)
     n.kern = k
     return n
 end

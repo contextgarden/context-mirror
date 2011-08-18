@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 -- we need to freeze and document this module
 
 local next, type = next, type
-local format, gsub, find, concat, gmatch, match = string.format, string.gsub, string.find, table.concat, string.gmatch, string.match
+local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
 local concat = table.concat
 local max, min = math.max, math.min
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
@@ -814,6 +814,55 @@ end
 function sections.getnumber(depth,what) -- redefined here
     local sectiondata = sections.findnumber(depth,what)
     context((sectiondata and sectiondata.numbers[depth]) or 0)
+end
+
+-- experimental
+
+local levels = { }
+
+--~ function commands.autonextstructurelevel(level)
+--~     if level > #levels then
+--~         for i=#levels+1,level do
+--~             levels[i] = ""
+--~         end
+--~     end
+--~     local finish = concat(levels,"\n",level) or ""
+--~     for i=level+1,#levels do
+--~         levels[i] = ""
+--~     end
+--~     levels[level] = [[\finalizeautostructurelevel]]
+--~     context(finish)
+--~ end
+
+--~ function commands.autofinishstructurelevels()
+--~     local finish = concat(levels,"\n") or ""
+--~     levels = { }
+--~     context(finish)
+--~ end
+
+function commands.autonextstructurelevel(level)
+    if level > #levels then
+        for i=#levels+1,level do
+            levels[i] = false
+        end
+    else
+        for i=level,#levels do
+            if levels[i] then
+                context.finalizeautostructurelevel()
+                levels[i] = false
+            end
+        end
+    end
+    levels[level] = true
+end
+
+function commands.autofinishstructurelevels()
+    for i=1,#levels do
+        if levels[i] then
+            context.finalizeautostructurelevel()
+        end
+    end
+    levels = { }
 end
 
 -- interface (some are actually already commands, like sections.fullnumber)

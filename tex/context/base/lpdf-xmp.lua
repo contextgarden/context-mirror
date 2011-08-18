@@ -10,9 +10,11 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
 local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
 local xmlfillin = xml.fillin
 
-local trace_xmp = false  trackers.register("backend.xmp", function(v) trace_xmp = v end)
+local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
+local trace_info = false  trackers.register("backend.info", function(v) trace_info = v end)
 
-local report_xmp = logs.reporter("backend","xmp")
+local report_xmp  = logs.reporter("backend","xmp")
+local report_info = logs.reporter("backend","info")
 
 local backends, lpdf = backends, lpdf
 
@@ -122,7 +124,11 @@ local addxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
     addtoinfo(tag,pdfvalue)
-    addxmpinfo(tag,strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1")) -- hack
+    local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
+    if trace_info then
+        report_info("set '%s' to '%s'",tag,value)
+    end
+    addxmpinfo(tag,value)
 end
 
 -- for the do-it-yourselvers

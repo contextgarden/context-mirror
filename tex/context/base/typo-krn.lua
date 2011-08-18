@@ -50,6 +50,7 @@ local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
+local markdata           = fonthashes.marks
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -60,6 +61,7 @@ local kerns              = typesetters.kerns
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
+local a_fontkern         = attributes.private('fontkern')
 kerns.attribute          = kerns.attribute
 
 storage.register("typesetters/kerns/mapping", kerns.mapping, "typesetters.kerns.mapping")
@@ -83,8 +85,8 @@ kerns.keeptogether = false -- just for fun (todo: control setting with key/value
 
 local function do_process(namespace,attribute,head,force) -- todo: glue so that we can fully stretch
     local start, done, lastfont = head, false, nil
-local keepligature = kerns.keepligature
-local keeptogether = kerns.keeptogether
+    local keepligature = kerns.keepligature
+    local keeptogether = kerns.keeptogether
     while start do
         -- faster to test for attr first
         local attr = force or has_attribute(start,attribute)
@@ -97,55 +99,62 @@ local keeptogether = kerns.keeptogether
                     lastfont = start.font
                     local c = start.components
                     if c then
-if keepligature and keepligature(start) then
-    -- keep 'm
-else
-                        c = do_process(namespace,attribute,c,attr)
-                        local s = start
-                        local p, n = s.prev, s.next
-                        local tail = find_node_tail(c)
-                        if p then
-                            p.next = c
-                            c.prev = p
+                        if keepligature and keepligature(start) then
+                            -- keep 'm
                         else
-                            head = c
+                            c = do_process(namespace,attribute,c,attr)
+                            local s = start
+                            local p, n = s.prev, s.next
+                            local tail = find_node_tail(c)
+                            if p then
+                                p.next = c
+                                c.prev = p
+                            else
+                                head = c
+                            end
+                            if n then
+                                n.prev = tail
+                            end
+                            tail.next = n
+                            start = c
+                            s.components = nil
+                            -- we now leak nodes !
+                        --  free_node(s)
+                            done = true
                         end
-                        if n then
-                            n.prev = tail
-                        end
-                        tail.next = n
-                        start = c
-                        s.components = nil
-                        -- we now leak nodes !
-                    --  free_node(s)
-                        done = true
-end
                     end
                     local prev = start.prev
-                    if prev then
+                    if not prev then
+                        -- skip
+                    elseif markdata[lastfont][start.char] then
+                            -- skip
+                    else
                         local pid = prev.id
                         if not pid then
                             -- nothing
-                        elseif pid == kern_code and prev.subtype == kerning_code then
-if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start) then -- we could also pass start
-    -- keep 'm
-else
-                            prev.subtype = userkern_code
-                            prev.kern = prev.kern + quaddata[lastfont]*krn -- here
-                            done = true
-end
+                        elseif pid == kern_code then
+                            if prev.subtype == kerning_code or has_attribute(prev,a_fontkern) then
+                                if keeptogether and prev.prev.id == glyph_code and keeptogether(prev.prev,start) then -- we could also pass start
+                                    -- keep 'm
+                                else
+                                    -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+                                    prev.subtype = userkern_code
+                                    prev.kern = prev.kern + quaddata[lastfont]*krn -- here
+                                    done = true
+                                end
+                            end
                         elseif pid == glyph_code then
                             if prev.font == lastfont then
                                 local prevchar, lastchar = prev.char, start.char
-if keeptogether and keeptogether(prev,start) then
-    -- keep 'm
-else
-                                local kerns = chardata[lastfont][prevchar].kerns
-                                local kern = kerns and kerns[lastchar] or 0
-                                krn = kern + quaddata[lastfont]*krn -- here
-                                insert_node_before(head,start,new_kern(krn))
-                                done = true
-end
+                                if keeptogether and keeptogether(prev,start) then
+                                    -- keep 'm
+                                else
+                                    local kerns = chardata[lastfont][prevchar].kerns
+                                    local kern = kerns and kerns[lastchar] or 0
+                                    krn = kern + quaddata[lastfont]*krn -- here
+                                    insert_node_before(head,start,new_kern(krn))
+                                    done = true
+                                end
                             else
                                 krn = quaddata[lastfont]*krn -- here
                                 insert_node_before(head,start,new_kern(krn))
@@ -210,20 +219,24 @@ end
                             end
                         end
                     end
-                elseif id == glue_code and start.subtype == userskip_code then
-                    local s = start.spec
-                    local w = s.width
-                    if w > 0 then
-                        local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
-                        start.spec = new_gluespec(width,stretch*width/w,shrink*width/w)
-                        done = true
+                elseif id == glue_code then
+                    if start.subtype == userskip_code then
+                        local s = start.spec
+                        local w = s.width
+                        if w > 0 then
+                            local width, stretch, shrink = w+gluefactor*w*krn, s.stretch, s.shrink
+                            start.spec = new_gluespec(width,stretch*width/w,shrink*width/w)
+                            done = true
+                        end
                     end
-                elseif false and id == kern_code and start.subtype == kerning_code then -- handle with glyphs
-                    local sk = start.kern
-                    if sk > 0 then
-                        start.kern = sk*krn
-                        done = true
-                    end
+                elseif id == kern_code then
+                 -- if start.subtype == kerning_code then -- handle with glyphs
+                 --     local sk = start.kern
+                 --     if sk > 0 then
+                 --         start.kern = sk*krn
+                 --         done = true
+                 --     end
+                 -- end
                 elseif lastfont and (id == hlist_code or id == vlist_code) then -- todo: lookahead
                     local p = start.prev
                     if p and p.id ~= glue_code then

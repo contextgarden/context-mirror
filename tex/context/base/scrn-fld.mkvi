@@ -659,7 +659,7 @@
        {\setuptooltip[\currenttooltip][#settings]}%
        {\setuptooltip[\currenttooltip][\c!location=#settings]}%
      \setbox\scrn_tooltip_box_text\hbox
-       {\localframed[\??wh\currenttooltip][\c!location=]{#tiptext}}%
+       {\localframed[\currenttooltiphash][\c!location=]{#tiptext}}%
      \definesymbol
        [\currenttooltipname:txt]
        [\copy\scrn_tooltip_box_text]%

@@ -58,6 +58,7 @@ local slide_nodes      = node.slide
 local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
 local traverse_id      = node.traverse_id
 local free_node_list   = node.flush_list
+local insert_node_after= node.insert_after
 
 local link_nodes       = nodes.link
 
@@ -74,6 +75,9 @@ local line_code        = listcodes.line
 local leftskip_code    = gluecodes.leftskip
 local rightskip_code   = gluecodes.rightskip
 local userdefined_code = whatsitcodes.userdefined
+
+local dir_code         = whatsitcodes.dir
+local localpar_code    = whatsitcodes.localpar
 
 local nodepool         = nodes.pool
 
@@ -301,6 +305,7 @@ local function realign(current,candidate)
     -- we assume that list is a hbox, otherwise we had to take the whole current
     -- in order to get it right
     current.width = 0
+--~ delta = delta + hsize
     current.list = hpack_nodes(link_nodes(new_kern(-delta),current.list,new_kern(delta)))
     current.width = 0
     if trace_margindata then
@@ -406,11 +411,19 @@ local function inject(parent,head,candidate)
     end
     box.shift = shift
     box.width = 0
-    if head then
+    if not head then
+        head = box
+    elseif head.id == whatsit_code and head.subtype == localpar_code then
+        -- experimental
+        if head.dir == "TRT" then
+            box.list = hpack_nodes(link_nodes(new_kern(candidate.hsize),box.list,new_kern(-candidate.hsize)))
+        end
+        insert_node_after(head,head,box)
+    else
         head.prev = box
         box.next = head
+        head = box
     end
-    head = box
     set_attribute(box,a_margindata,nofstatus)
     if trace_margindata then
         report_margindata("injected: %s, location: %s",candidate.n,location)
