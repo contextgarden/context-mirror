@@ -270,12 +270,12 @@
 \doinstallarrangedoption\v!rotated
   {\gdef\arrangedrotationO {90}%
    \gdef\arrangedrotationE{270}%
-   \swapcounts\horizontalcutmarks\verticalcutmarks}
+   \swapcounts\c_page_marks_nx\c_page_marks_ny}
 
 \doinstallarrangedoption{90}
   {\gdef\arrangedrotationO {90}%
    \gdef\arrangedrotationE{270}%
-   \swapcounts\horizontalcutmarks\verticalcutmarks}
+   \swapcounts\c_page_marks_nx\c_page_marks_ny}
 
 \doinstallarrangedoption{180}
   {\gdef\arrangedrotationO{180}%
@@ -284,7 +284,7 @@
 \doinstallarrangedoption{270}
   {\gdef\arrangedrotationO{270}%
    \gdef\arrangedrotationE {90}%
-   \swapcounts\horizontalcutmarks\verticalcutmarks}
+   \swapcounts\c_page_marks_nx\c_page_marks_ny}
 
 \doinstallarrangedoption\s!reset
   {\global\arrangingpagesfalse}
@@ -319,8 +319,8 @@
   {\global\arrangedpageX         #1%
    \global\arrangedpageY         #2%
    \global\arrangedpageT         #3%
-   \global\horizontalcutmarks    #4%
-   \global\verticalcutmarks      #5%
+   \global\c_page_marks_nx       #4%
+   \global\c_page_marks_ny       #5%
    \global\let\pusharrangedpage  #6%
    \global\let\poparrangedpages  #7%
    \global\let\handlearrangedpage#8}

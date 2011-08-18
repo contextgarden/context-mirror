@@ -108,7 +108,7 @@
 %D Specific inline verbatim commands can be defined with the
 %D following command.
 
-\installcommandhandler{\??ty}{type}{\??ty}
+\installcommandhandler \??ty {type} \??ty
 
 \appendtoks
     \normalexpanded{\dodefinetype{\currenttype}}%
@@ -138,7 +138,7 @@
 %D
 %D The definitions default to the standard typing values.
 
-\installcommandhandler{\??tp}{typing}{\??tp}
+\installcommandhandler \??tp {typing} \??tp
 
 \appendtoks
     \normalexpanded{\dodefinetyping{\currenttyping}}%
@@ -294,7 +294,7 @@
    \doifnextoptionalelse\redotype\dodotype}
 
 \def\redotype[#1]%
-  {\getparameters[\??ty\currenttype][#1]%
+  {\setupcurrenttype[#1]%
    \dodotype}
 
 \def\dodotype

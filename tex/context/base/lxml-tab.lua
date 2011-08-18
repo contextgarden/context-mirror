@@ -867,18 +867,15 @@ alternative.</p>
 
 function xml.checkbom(root) -- can be made faster
     if root.ri then
-        local dt, found = root.dt, false
+        local dt = root.dt
         for k=1,#dt do
             local v = dt[k]
             if type(v) == "table" and v.special and v.tg == "@pi@" and find(v.dt[1],"xml.*version=") then
-                found = true
-                break
+                return
             end
         end
-        if not found then
-            insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
-            insert(dt, 2, "\n" )
-        end
+        insert(dt, 1, { special=true, ns="", tg="@pi@", dt = { "xml version='1.0' standalone='yes'"} } )
+        insert(dt, 2, "\n" )
     end
 end
 

@@ -130,40 +130,72 @@ end
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
-local cleanup = lpeg.replacer {
-    { "!"  , ""  },
-    { "\\" , "/" },
-}
+-- local cleanup = lpeg.replacer {
+--     { "!"  , ""  },
+--     { "\\" , "/" },
+-- }
+--
+-- local homedir
+--
+-- function resolvers.cleanpath(str) -- tricky, maybe only simple paths
+--     if not homedir then
+--         homedir = lpegmatch(cleanup,environment.homedir or "")
+--         if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
+--             if trace_expansions then
+--                 report_expansions("no home dir set, ignoring dependent paths")
+--             end
+--             function resolvers.cleanpath(str)
+--                 if find(str,"~") then
+--                     return "" -- special case
+--                 else
+--                     return str and lpegmatch(cleanup,str)
+--                 end
+--             end
+--         else
+--             cleanup = lpeg.replacer {
+--                 { "!"  , ""      },
+--                 { "\\" , "/"     },
+--                 { "~"  , homedir },
+--             }
+--             function resolvers.cleanpath(str)
+--                 return str and lpegmatch(cleanup,str)
+--             end
+--         end
+--     end
+--     return resolvers.cleanpath(str)
+-- end
 
-local homedir
-
-function resolvers.cleanpath(str)
-    if not homedir then
-        homedir = lpegmatch(cleanup,environment.homedir or "")
-        if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
-            if trace_expansions then
-                report_expansions("no home dir set, ignoring dependent paths")
+function resolvers.cleanpath(str) -- tricky, maybe only simple paths
+    local doslashes  = (P("\\")/"/" + 1)^0
+    local donegation = (P("!") /""     )^0
+    local homedir = lpegmatch(Cs(donegation * doslashes),environment.homedir or "")
+    if homedir == "~" or homedir == "" or not lfs.isdir(homedir) then
+        if trace_expansions then
+            report_expansions("no home dir set, ignoring dependent paths")
+        end
+        function resolvers.cleanpath(str)
+            if not str or find(str,"~") then
+                return "" -- special case
+            else
+                return lpegmatch(cleanup,str)
             end
-            function resolvers.cleanpath(str)
-                if find(str,"~") then
-                    return "" -- special case
-                else
-                    return str and lpegmatch(cleanup,str)
-                end
-            end
-        else
-            cleanup = lpeg.replacer {
-                { "!"  , ""      },
-                { "\\" , "/"     },
-                { "~"  , homedir },
-            }
-            function resolvers.cleanpath(str)
-                return str and lpegmatch(cleanup,str)
-            end
+        end
+    else
+        local dohome  = ((P("~")+P("$HOME"))/homedir)^0
+        local cleanup = Cs(donegation * dohome * doslashes)
+        function resolvers.cleanpath(str)
+            return str and lpegmatch(cleanup,str) or ""
         end
     end
     return resolvers.cleanpath(str)
 end
+
+-- print(resolvers.cleanpath(""))
+-- print(resolvers.cleanpath("!"))
+-- print(resolvers.cleanpath("~"))
+-- print(resolvers.cleanpath("~/test"))
+-- print(resolvers.cleanpath("!~/test"))
+-- print(resolvers.cleanpath("~/test~test"))
 
 -- This one strips quotes and funny tokens.
 

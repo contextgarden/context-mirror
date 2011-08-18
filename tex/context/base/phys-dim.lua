@@ -24,18 +24,19 @@ local allocate = utilities.storage.allocate
 physics          = physics or { }
 physics.patterns = physics.patterns or { }
 
--- digits parser (todo : use patterns)
+local variables  = interfaces.variables
+local v_reverse  = variables.reverse
 
---~ local done        = false
---~ local mode        = 0
+-- digits parser (todo : use patterns)
 
 local digit        = R("09")
 local sign         = S("+-")
 local power        = S("^e")
 local digitspace   = S("~@_")
-local digitspacex  = digitspace + P(" ")
 local comma        = P(",")
 local period       = P(".")
+local semicolon    = P(";")
+local colon        = P(":")
 local signspace    = P("/")
 local positive     = S("p")
 local negative     = S("n")
@@ -43,14 +44,22 @@ local highspace    = P("s")
 local padding      = P("=")
 local plus         = P("+")
 local minus        = P("-")
+local space        = P(" ")
 
-local digits       = (digit^1)
+local digits       = digit^1
 
-local ddigitspacex = digitspacex / "" / context.digitsspace
 local ddigitspace  = digitspace  / "" / context.digitsspace
+local dcommayes    = semicolon   / "" / context.digitsfinalcomma
+local dcommanop    = semicolon   / "" / context.digitsseparatorspace
+local dperiodyes   = colon       / "" / context.digitsfinalperiod
+local dperiodnop   = colon       / "" / context.digitsseparatorspace
 local ddigit       = digits           / context.digitsdigit
-local dseparator   = comma       / "" / context.digitscomma
-                   + period      / "" / context.digitsperiod
+local dfinalcomma  = comma       / "" / context.digitsfinalcomma
+local dfinalperiod = period      / "" / context.digitsfinalperiod
+local dintercomma  = comma  * #(digitspace) / "" / context.digitsseparatorspace
+                   + comma                  / "" / context.digitsintermediatecomma
+local dinterperiod = period * #(digitspace) / "" / context.digitsseparatorspace
+                   + period                 / "" / context.digitsintermediateperiod
 local dsignspace   = signspace   / "" / context.digitssignspace
 local dpositive    = positive    / "" / context.digitspositive
 local dnegative    = negative    / "" / context.digitsnegative
@@ -64,22 +73,34 @@ local dpower       = power       / "" * (
                    )
 local dpadding     = padding     / "" / context.digitszeropadding -- todo
 
-local digitparserspace =
-    (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
-  * (dseparator^0 * (ddigitspacex + ddigit)^1)^1
-  * dpower^0
+local dleader      = (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
+local dtrailer     = dpower^0
+local dfinal       = P(-1) + #P(1 - comma - period - semicolon - colon)
+local dnumber      = (ddigitspace + ddigit)^1
+local dtemplate    = ddigitspace^1
 
-local digitparser =
-    (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
-  * (dseparator^0 * (ddigitspace + ddigit)^1)^1
-  * dpower^0
+-- probably too complex, due to lookahead (lookback with state is probably easier)
 
-physics.patterns.digitparserspace = digitparserspace
-physics.patterns.digitparser      = digitparser
+local dpcfinalnumber = dtemplate * (dfinalcomma  + dcommanop ) + dnumber * (dfinalcomma  + dcommayes )
+local dcpfinalnumber = dtemplate * (dfinalperiod + dperiodnop) + dnumber * (dfinalperiod + dperiodyes)
 
-function commands.digits(str)
---~     done = false
-    matchlpeg(digitparserspace,str)
+local dpcinternumber = dtemplate * (dintercomma  + dcommanop ) + dnumber * (dintercomma  + dcommayes )
+local dcpinternumber = dtemplate * (dinterperiod + dperiodnop) + dnumber * (dinterperiod + dperiodyes)
+
+local dfallback      = (dtemplate * (dcommanop + dperiodnop)^0)^0 * (dcommayes + dperiodyes + ddigit)^0
+
+local p_c_number     = (dcpinternumber)^0 * (dpcfinalnumber)^0 * ddigit + dfallback -- 000.000.000,00
+local c_p_number     = (dpcinternumber)^0 * (dcpfinalnumber)^0 * ddigit + dfallback -- 000,000,000.00
+
+local p_c_dparser    = dleader * p_c_number * dtrailer * dfinal
+local c_p_dparser    = dleader * c_p_number * dtrailer * dfinal
+
+function commands.digits(str,p_c)
+    if p_c == v_reverse then
+        matchlpeg(p_c_dparser,str)
+    else
+        matchlpeg(c_p_dparser,str)
+    end
 end
 
 -- units parser
@@ -412,26 +433,33 @@ local function dimop(o,wherefrom)
     end
 end
 
+-- todo 0x -> rm
+-- pretty large lpeg (maybe do dimension lookup otherwise)
+
 local dimension = ((l_suffix * combination)  * Carg(1))  / dimspu
                 + ((combination * s_suffix)  * Carg(1))  / dimpus
 local number    = lpeg.patterns.number                   / unitsN
 local operator  = C((l_operator + s_operator) * Carg(1)) / dimop  -- weird, why is the extra C needed here
 local whatever  = (P(1)^0)                               / unitsU
 
+local number    = (1-R("az","AZ")-P(" "))^1 / unitsN -- todo: catch { }
+
 dimension = somespace * dimension * somespace
 number    = somespace * number    * somespace
 operator  = somespace * operator  * somespace
 
------ unitparser = dimension * dimension^0 * (operator * dimension^1)^-1 + whatever
-local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever
+local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever + P(-1)
 
------ unitdigitparser = (P(true)/unitsNstart) * digitparser * (P(true)/unitsNstop) -- true forces { }
-local unitdigitparser = (Cc(nil)/unitsNstart) * digitparser * (Cc(nil)/unitsNstop) --
-local combinedparser  = (unitdigitparser + number)^-1 * unitparser
+local p_c_unitdigitparser = (Cc(nil)/unitsNstart) * p_c_dparser * (Cc(nil)/unitsNstop) --
+local c_p_unitdigitparser = (Cc(nil)/unitsNstart) * c_p_dparser * (Cc(nil)/unitsNstop) --
 
-physics.patterns.unitparser     = unitparser
-physics.patterns.combinedparser = combinedparser
+local p_c_combinedparser  = (p_c_unitdigitparser + number)^-1 * unitparser
+local c_p_combinedparser  = (c_p_unitdigitparser + number)^-1 * unitparser
 
-function commands.unit(str,wherefrom)
-    matchlpeg(combinedparser,str,1,wherefrom or "")
+function commands.unit(str,wherefrom,p_c)
+    if p_c == v_reverse then
+        matchlpeg(p_c_combinedparser,str,1,wherefrom or "")
+    else
+        matchlpeg(c_p_combinedparser,str,1,wherefrom or "")
+    end
 end

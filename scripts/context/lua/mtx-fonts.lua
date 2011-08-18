@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['mtx-fonts'] = {
 
 local helpinfo = [[
 --save                save open type font in raw table
+--unpack              save a tma file in a more readale format
 
 --reload              generate new font database
 --reload --simple     generate 'luatex-fonts-names.lua' (not for context!)

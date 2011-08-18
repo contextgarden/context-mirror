@@ -153,64 +153,6 @@
 
 %D Here we implement the user interface part. We start with basic math alignments:
 
-% \unexpanded\def\setupmathalignment
-%   {\dodoubleempty\dosetupmathalignment}
-%
-% \def\dosetupmathalignment[#1][#2]%
-%   {\ifsecondargument
-%      \getparameters[\??eq#1][#2]%
-%    \else
-%      \getparameters[\??eq][#1]%
-%    \fi}
-%
-% \let\currentmathalignment\empty
-%
-% \def\mathalignmentparameter#1%
-%   {\executeifdefined{\??eq\currentmathalignment#1}{\executeifdefined{\??eq#1}\empty}}
-%
-% \setupmathalignment
-%   [\c!n=2,
-%    \c!m=1,
-%    \c!distance=1em]
-%
-% \def\dostartmathalignment[#1][#2]%
-%   {% \begingroup not permitted ($$...assignments...\halign... )
-%    \pushmacro\doalignNC
-%    \edef\currentmathalignment{#1}%
-%    \doifassignmentelse{#2}{\setupmathalignment[#1][#2]}\donothing
-%    \def\NC{\doalignNC}%
-%    \global\let\doalignNC\dodoalignNC
-%    \def\EQ{&=}%
-%    \def\NR{&\global\let\doalignNC\dodoalignNC\doxxdoubleempty\doalignNR}%
-%    % amstex compatibility mode: (ugly, will disappear)
-%    \def\notag{\def\\{&\crcr}}%
-%    \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
-%    % end of compatibility mode
-%    \eqaligncolumn\zerocount
-%    \processcommacommand
-%      [\mathalignmentparameter\c!align]
-%      {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
-%    % the real action
-%    \global\eqaligncolumn\plusone
-%    \numberedeqalign}
-%
-% \def\dostopmathalignment
-%   {\finishalignno
-%    \popmacro\doalignNC}
-%
-% \unexpanded\def\definemathalignment
-%   {\dodoubleempty\dodefinemathalignment}
-%
-% \def\dodefinemathalignment[#1]% [#2]%
-%   {\setvalue{\e!start#1}{\dodoubleempty\dostartmathalignment[#1]}%
-%    \setvalue{\e!stop #1}{\dostopmathalignment}%
-%    \setupmathalignment[#1]}% [#2]
-%
-% \definemathalignment[align]            % default case (this is what amstex users expect)
-% \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
-
-% we tag the mlist later but cells are hboxes so we can add wrappers
-
 \newtoks \everymathalignment
 
 \def\math_alignment_NR_indeed[#1][#2]%

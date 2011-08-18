@@ -23,60 +23,6 @@
 
 \unprotect
 
-% \def\currentlist      {\s!unknown}
-%
-% \def\listparameter       #1{\csname\dolistparameter{\??li\currentlist}#1\endcsname}
-% \def\namedlistparameter#1#2{\csname\dolistparameter{\??li          #1}#2\endcsname}
-% \def\listparameterhash   #1{\dolistparameterhash   {\??li\currentlist}#1}
-%
-% \def\dolistparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dolistparentparameter    \csname#1\s!parent\endcsname#2\fi}
-% \def\dolistparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dolistparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-%
-% \def\dolistparentparameter    #1#2{\ifx#1\relax\s!empty\else\dolistparameter    #1#2\fi}
-% \def\dolistparentparameterhash#1#2{\ifx#1\relax        \else\dolistparameterhash#1#2\fi}
-%
-% \def\setlistparameter#1#2#3{\@EA\def\csname\??li#1#2\endcsname{#3}} % often
-%
-% \def\dosetlistattributes#1#2% style color
-%   {\edef\fontattributehash {\listparameterhash#1}%
-%    \edef\colorattributehash{\listparameterhash#2}%
-%    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-%    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-%
-% \def\donestedlistattributes#1#2%
-%   {\dosetlistattributes#1#2%
-%    \ifx\colorattributehash\empty \else
-%      \resetinteractionparameter\c!color
-%      \resetinteractionparameter\c!contrastcolor
-%    \fi}
-%
-% \def\checklistexistence#1%
-%   {\ifcsname\??li#1\s!parent\endcsname \else
-%      \letvalue{\??li#1\s!parent}\??li
-%    \fi}
-%
-% \def\dosetuplist[#1][#2]% slow -)
-%   {\checklistexistence{#1}%
-%    \def\docommand##1{\getparameters[\??li##1][#2]}%
-%    \processcommalist[#1]\docommand}
-%
-% \unexpanded\def\setuplist
-%   {\dodoubleargument\dosetuplist}
-%
-% \unexpanded\def\definelist
-%   {\dotripleempty\dodefinelist}
-%
-% \def\dodefinelist[#1][#2][#3]%
-%   {\presetlocalframed[\??li#1]% still inefficient (will change when we redu core-rul)
-%    \doifassignmentelse{#2}
-%      {\getparameters[\??li#1][\s!parent=\??li,#2]}
-%      {\doifelsenothing{#2}
-%         {\getparameters[\??li#1][\s!parent=\??li]}
-%         {\getparameters[\??li#1][\s!parent=\??li#2,#3]}}}
-%
-% \unexpanded\def\setuplists % new, but not for users (hardly handy)
-%   {\dodoubleargument\getparameters[\??li]}
-
 \installcommandhandler \??li {list} \??li
 
 \def\donestedlistattributes#1#2% will change
@@ -86,18 +32,10 @@
      \resetinteractionparameter\c!contrastcolor
    \fi}
 
-% \appendtoks
-%    \ifx\currentlist\empty\else
-%      \ifcsname\??li\currentlist\s!parent\endcsname \else
-%        \letvalue{\??li\currentlist\s!parent}\??li % Is this still needed? Could be built in.
-%      \fi
-%    \fi
-% \to \everysetuplist
-
 \let\setuplists\setuplist % yes or no
 
-\def\doifelselist#1% can also move to \installcommandhandler
-  {\ifcsname\??li#1\s!parent\endcsname
+\unexpanded\def\doifelselist#1% can also move to \installcommandhandler
+  {\ifcsname\namedlisthash{#1}\s!parent\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -358,6 +296,8 @@
 
 % so far (todo: also recursive)
 
+% TODO: also make this a commandhandler
+
 \def\listalternativeparameter#1%
   {\ifcsname\??li\??li\listparameter\c!alternative#1\endcsname
       \csname\??li\??li\listparameter\c!alternative#1\endcsname
@@ -383,9 +323,6 @@
 
 %def\listdots{\leaders \hbox to .5em{\hss.\hss}\hfill}
 \def\listdots{\gleaders\hbox to .5em{\hss.\hss}\hfill}
-
-% \setvalue{\??li\c!alternative}{\getvalue{\??li\c!alternative b}} % ?
-% \getvalue{\??li\c!alternative} % ?
 
 \unexpanded\def\placelist
   {\dodoubleempty\doplacelist}
@@ -639,7 +576,7 @@
      {\doifelsenothing{#2}
         {\getvalue{\@@dodolistelement\v!command}}%
         {\executeifdefined{\@@dodolistelement#2}{\getvalue{\@@dodolistelement\v!command}}}%
-      \setvalue{\??li\currentlist\c!command}{\getvalue{\@@dodolistelement::#1}}}%
+      \setlistparameter\c!command{\getvalue{\@@dodolistelement::#1}}}%
    \setvalue{\@@dodolistelement::#1}}
 
 % don't mess arround with endgraf/grouping else we loose leftskip
@@ -647,8 +584,6 @@
 % \strippedcsname\dodolistelement
 
 \def\newlineinlist{\space}
-
-\let\currentlist\s!unknown
 
 \def\docurrentlistalternative
   {\edef\currentlistalternative{\listparameter\c!alternative}%
@@ -667,7 +602,7 @@
    \dosomelistelement{#1}{#2}{#3}{#4}{#5}{#6}}
 
 \def\dodocommandlistelement#1#2#3#4#5#6%
-  {\doifdefinedelse{\??li#1\c!command}
+  {\doifdefinedelse{\currentlisthash\c!command}
      {\listparameter\c!command{#3}{#4}{#5}}
      {[\currentlist: #3 -- #4 -- #5]}}
 
@@ -686,9 +621,9 @@
      #3{#4}%
    \fi}
 
-\def\dodofreelistelement#1#2#3#4#5#6#7#8%
+\def\dodofreelistelement#1#2#3#4#5#6#7#8% #1 is sort of redundant
   {\listparameter\c!before% can be \hskip
-   \doifdefinedelse{\??li#1\c!command}
+   \doifdefinedelse{\currentlisthash\c!command} % maybe ifcsname
      {\domakelistelement{\listparameter\c!interaction}{#2}\hbox
         {\listparameter\c!command
            {#3}% geen conversies etc
@@ -748,7 +683,6 @@
             \!!widthc\zeropoint}
            {\!!widtha\listparameter\c!width}}
         {\!!widtha\listparameter\c!width}}%
-%    \getvalue{\??li\c!alternative\listparameter\c!alternative}% ?
    \endgraf
    \noindent
    \domakelistelement\v!all{#2}\hbox
@@ -916,7 +850,7 @@
 \def\dodofixdlistelementE#1%
   {\dodofixdlistelementEFG
      {\setupinteraction[\c!strut=\v!no]}
-     {\localframed[\??li\currentlist][\c!depth=\!!zeropoint,\c!color=]}
+     {\localframed[\currentlisthash][\c!depth=\!!zeropoint,\c!color=]}
      {}}
 
 \def\dodofixdlistelementF#1%
@@ -934,7 +868,7 @@
 \def\dodofixdlistelementEFG#1#2#3#4#5#6#7#8%
   {\noindent
    \bgroup
-   \domakelistelement\v!no{#4}{#2}%
+   \domakelistelement\v!all{#4}{#2}%
      {\let\\=\newlineinlist
       #1% in case E nils the strut (still needed?)
       \dosetlistattributes\c!style\c!color

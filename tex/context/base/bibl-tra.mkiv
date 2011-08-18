@@ -656,9 +656,7 @@
 %D Now prohibits comments, so % can be used for urls
 
 \unexpanded\def\startpublication
-  {\begingroup
-   \catcode\commentasciicode\othercatcode
-   \dosingleempty\dostartpublication}
+  {\dosingleempty\dostartpublication}
 
 \let\stoppublication\relax
 
@@ -676,12 +674,17 @@
 
 % hm, we can store at the lua end ...
 
-\long\def\dostartpublication[#1]#2\stoppublication
-  {\doifassignmentelse{#1}%
+\def\dostartpublication[#1]%
+  {\begingroup
+   \doifassignmentelse{#1}%
      {\getparameters[\??pb][k=\s!unknown,t=article,n=,s=,a=,y=,o=,u=,#1]}%
      {\getparameters[\??pb][k=#1,t=article,n=,s=,a=,y=,o=,u=]}%
    \ctxlua{bibtex.hacks.register("\@@pbk")}%
-   \setxvalue{pbd:\@@pbk}##1{\noexpand\ifcase##1\noexpand\or
+   \catcode\commentasciicode\othercatcode
+   \dodostartpublication}
+
+\def\dodostartpublication#1\stoppublication
+  {\setxvalue{pbd:\@@pbk}##1{\noexpand\ifcase##1\noexpand\or
      \@@pbk\noexpand\or
      \@@pba\noexpand\or
      \@@pby\noexpand\or
@@ -690,7 +693,7 @@
      \@@pbt\noexpand\or
      \@@pbo\noexpand\or
      \@@pbu\noexpand\or
-     \normalunexpanded{#2}\noexpand\fi}%
+     \normalunexpanded{#1}\noexpand\fi}%
    \endgroup
    \ignorespaces}
 

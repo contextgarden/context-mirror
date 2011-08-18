@@ -144,6 +144,7 @@
    \begingroup
   %\settrue\inhibitmargindata  % no flushing in here
    \def\currentmargindata{#name}%
+   \let\currentmarginframed\currentmargindata
    \dodoubleempty\domargindata}
 
 \appendtoks
@@ -160,18 +161,18 @@
 
 \unexpanded\def\domargindata[#dataparameters][#textparameters]#content%
   {\iffirstargument
-     \setupmargindata[\currentmargindata][#dataparameters]%
+     \setupcurrentmargindata[#dataparameters]%
    \fi
    \doifelsenothing{#content}\donefalse\donetrue
    \ifdone
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
      \the\everymargindatacontent
      \dostarttagged\t!margintext\currentmargindata
-     \ifcsname\??mf\currentmargindata\s!parent\endcsname
+     \ifcsname\currentmargindatahash\s!parent\endcsname
        \setbox\nextbox\hbox\bgroup
          \the\everymargindatacontent
          \dosetmargindataattributes\c!style\c!color
-         \localframedwithsettings[\??mf\currentmargindata][\c!location=\v!normal,#textparameters]\bgroup
+         \localframedwithsettings[\currentmarginframedhash][\c!location=\v!normal,#textparameters]\bgroup
            \ifx\currentmargindatastrut\empty \else
              \dosetupstrut[\currentmargindatastrut]%
            \fi

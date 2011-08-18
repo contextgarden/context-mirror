@@ -327,6 +327,7 @@ function constructors.scale(tfmdata,specification)
     local isvirtual  = properties.virtualized or tfmdata.type == "virtual"
     local hasquality = target.auto_expand or target.auto_protrude
     local hasitalic  = properties.italic_correction
+    local autoitalic = properties.auto_italic_correction
     local stackmath  = not properties.no_stackmath
     local nonames    = properties.noglyphnames
     local nodemode   = properties.mode == "node"
@@ -484,8 +485,13 @@ function constructors.scale(tfmdata,specification)
             end
         end
         -- todo: hasitalic
-        if hasitalic then
-            local vi = description.italic or character.italic
+        if autoitalic then
+            local vi = description.italic or (description.boundingbox[3] - description.width + autoitalic)
+            if vi and vi ~= 0 then
+                chr.italic = vi*hdelta
+            end
+        elseif hasitalic then
+            local vi = description.italic or character.italic -- why character
             if vi and vi ~= 0 then
                 chr.italic = vi*hdelta
             end

@@ -6,8 +6,7 @@ rsfs10 rsfs10                      <rsfs10.pfb
 
 % marvosym
 
-fmvr8x  MarVoSym                   <marvosym.pfb
-fmvri8x MarVoSym ".167 SlantFont"  <marvosym.pfb
+umvs MarVoSym                      <marvosym.pfb
 
 % context
 

@@ -63,15 +63,7 @@
 
 \installcommandhandler \??nh {head} \??nh
 
-\def\headparameterstrict#1{\csname\ifcsname\??nh\currenthead#1\endcsname\??nh\currenthead#1\else\s!empty\fi\endcsname}
-
 \let\setupheads\setuphead % will go
-
-\newif\ifsectionnumber % maybe conditional
-
-\appendtoks
-    \doifelse{\headparameter\c!sectionnumber}\v!yes\sectionnumbertrue\sectionnumberfalse
-\to \everysetuphead
 
 \appendtoks
     \ifx\currentheadparent\empty
@@ -85,8 +77,9 @@
           \let\currentheadparent\currentheaddefault
         \fi\fi
         \normalexpanded {%
-            \getparameters[\??nh\currenthead][\c!label=\currenthead]%
-            \getparameters[\??nh\currenthead][\s!parent=\??nh\currentheadparent]%
+            \setheadparameter{\c!label }{\currenthead}%
+            \setheadparameter{\c!coupling}{\currenthead}%
+            \setheadparameter{\s!parent}{\??nh\currentheadparent}%
             \definemarking[\currenthead]         [\currentheadsection]%
             \definemarking[\currenthead\v!number][\currentheadsection]%
             \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
@@ -96,7 +89,8 @@
           {\definelist[\currenthead][\c!prefix=\v!no]}%
     \else
         \normalexpanded {%
-            \getparameters[\??nh\currenthead][\c!label=\currenthead,\c!coupling=\currentheadparent]%
+            \setheadparameter{\c!label}{\currenthead}%
+            \setheadparameter{\c!coupling}{\currentheadparent}%
             \definemarking[\currenthead]         [\currentheadparent]%
             \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
         }%
@@ -139,41 +133,41 @@
 
 % structure sections (the parents of chapter etc)
 
-\newcount\maxstructuredepth
-
-\let\lastsectionname\empty
+\let\firstsectionname\empty
+\let\lastsectionname \empty
 
 \let\resetallstructuremarks            \relax
 \let\resetcurrentstructuremarks        \relax
 \let\resetcurrentstructuremarkswithpage\relax
 
-\def\resetallstructuremarks            {\resetmarking[\v!section-1]}              % will become option
-\def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]} % will become option
-%def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]} % will become option
+\def\resetallstructuremarks            {\resetmarking[\firstsectionname]} % will become option (was \v!section-1)
+\def\resetcurrentstructuremarks        {\resetmarking[\lastsectionname]}  % will become option
+%def\resetcurrentstructuremarkswithpage{\resetmarking[\lastsectionname]}  % will become option
+
+% -2=text -1=manual 0=block 1+=structurelevel
+
+\newcount\maxstructuredepth
+
+\def\setnextsectionlevel#1%
+  {\global\advance\maxstructuredepth\plusone
+   \setevalue{\??nh:\c!level:#1}{\the\maxstructuredepth}}
+
+\def\sectionlevel#1%
+  {\csname\??nh:\c!level:\ifcsname\??nh:\c!level:#1\endcsname#1\else\v!none\fi\endcsname}
+
+\setvalue{\??nh:\c!level:\v!block}{0}
+\setvalue{\??nh:\c!level:\v!none }{-1}
+\setvalue{\??nh:\c!level:\v!text }{-2}
 
 \newtoks\everydefinesection
 
-\appendtoks
-     % This is a rather practical default that we don't want to
-     % be part of the parent chain lookup mechanism; it's also
-     % mkii compatible. Somewhat weird that it's part of the
-     % top level structure but it will be flattened anyway.
-    \getparameters[\??nh\currentsection]
-       [  \c!textstyle=\headparameterstrict\c!style,
-          \c!textcolor=\headparameterstrict\c!color,
-        \c!numberstyle=\headparameterstrict\c!style,
-        \c!numbercolor=\headparameterstrict\c!color]%
-\to \everydefinesection
-
 \unexpanded\def\definesection[#1]%
-  {\ifcsname\??nh#1\endcsname
-     % redefinition is a rather fatal error
-   \else
-     \edef\currentsection{#1}%
-     \global\advance\maxstructuredepth\plusone
-     \setevalue{\??nh#1\c!level}{\the\maxstructuredepth}%
-     \setstructurelevel{#1}{\the\maxstructuredepth}%
-     \normalexpanded{\noexpand\getparameters[\??nh#1][\s!parent=\??nh\lastsectionname]}%
+  {\ifcsname\??nh:\c!level:#1\endcsname \else
+     \edef\currentsection{#1}% not used, will go
+     \edef\currenthead{#1}%
+     \setnextsectionlevel{#1}%
+     \setstructurelevel{#1}{\sectionlevel{#1}}%
+     \normalexpanded{\setheadparameter{\s!parent}{\??nh\lastsectionname}}% TO BE CHECKED
      \the\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
@@ -181,48 +175,56 @@
        \normalexpanded{\noexpand\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
      \xdef\lastsectionname{#1}%
-  \fi}
+     \ifx\firstsectionname\empty
+        \glet\firstsectionname\lastsectionname
+     \fi
+   \fi}
 
 \unexpanded\def\setupsection
   {\dotripleempty\dosetupsection}
 
 \def\dosetupsection[#1]%
-  {\doifdefinedelse{\??nh#1}
-     {\dodosetupsection[#1]}
-     {\dodosetupsection[\sectionheadsection{#1}]}}
-
-\def\dodosetupsection[#1][#2][#3]%
-  {\ifthirdargument
-     \getparameters[\??nh#1#2][#3]% ? probably sectionblock
+  {\ifcsname\??nh:\c!level:#1\endcsname
+     \dodosetupsection[#1]%
    \else
-     \getparameters[\??nh#1][#2]%
+     \dodosetupsection[\sectionheadsection{#1}]%
    \fi}
 
-% -2=text -1=manual 0=block 1+=structurelevel
+\def\dodosetupsection[#1][#2][#3]%
+  {\pushmacro\currenthead
+   \ifthirdargument
+   % \getparameters[\??nh#1#2][#3]% ? probably sectionblock
+     \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
+     \setupcurrenthead[#3]%
+   \else
+   % \getparameters[\??nh#1][#2]%
+     \edef\currenthead{#1}%
+     \setupcurrenthead[#2]%
+   \fi
+   \popmacro\currenthead}
 
-\def\sectionlevel#1%
-  {\executeifdefined{\??nh#1\c!level}{-1}}
+% we share the parameters as sections are roots of heads so eventually we can
+% consider \definesection -> \definehead with one argument
 
-\setvalue{\??nh\v!block\c!level}{0}
-\setvalue{\??nh\v!none \c!level}{-1}
-\setvalue{\??nh\v!text \c!level}{-2}
+\appendtoks
+    % This is a rather practical default that we don't want to
+    % be part of the parent chain lookup mechanism; it's also
+    % mkii compatible. Somewhat weird that it's part of the
+    % top level structure but it will be flattened anyway.
+    \let\currenthead\currentsection %
+    \setheadparameter\c!textstyle  {\strictheadparameter\c!style}%
+    \setheadparameter\c!textcolor  {\strictheadparameter\c!color}%
+    \setheadparameter\c!numberstyle{\strictheadparameter\c!style}%
+    \setheadparameter\c!numbercolor{\strictheadparameter\c!color}%
+\to \everydefinesection
 
 % head -> head
 
 \def\sectionheadmarkingtitle #1#2{\ctxlua{structures.marks.title("#1","#2")}}
 \def\sectionheadmarkingnumber#1#2{\ctxlua{structures.marks.number("#1","#2")}}
 
-% todo, check if section is defined
-
-\def\sectionheadcoupling#1%
-  {\ifcsname\??nh#1\c!coupling\endcsname
-     \expandafter\sectionheadcoupling\csname\??nh#1\c!coupling\endcsname\else#1%
-   \fi}
-
-\def\sectionheadsection#1%
-  {\ifcsname\??nh#1\c!section\endcsname
-     \expandafter\sectionheadcoupling\csname\??nh#1\c!section\endcsname\else#1%
-   \fi}
+\def\sectionheadcoupling#1{\namedheadparameter{#1}\c!coupling}
+\def\sectionheadsection #1{\namedheadparameter{#1}\c!section}
 
 % head construction
 
@@ -237,10 +239,12 @@
 
 \unexpanded\def\dodohandleheadown[#1][#2]#3#4%
   {\settrue\currentstructureown
+   \triggerautostructurelevel
    \dohandlehead{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
 
 \unexpanded\def\dodohandleheadnop[#1][#2]% for taco: [key=value] variant
   {\setfalse\currentstructureown
+   \triggerautostructurelevel
    \doifassignmentelse{#2}\dodohandleheadnopA\dodohandleheadnopB{#1}{#2}}
 
 \unexpanded\def\dodohandleheadnopA#1#2%
@@ -264,10 +268,10 @@
    \headparameter\c!aftersection
    \the\everyafterhead}
 
-\unexpanded\def\donexthead[#1][#2][#3]% obsolete
-  {\setfalse\currentstructureown
-   \xdef\currenthead{#1}%
-   \dohandlehead{#1}{#2}{#3}} % name -- -- -- userdata
+% \unexpanded\def\donexthead[#1][#2][#3]% obsolete
+%   {\setfalse\currentstructureown
+%    \xdef\currenthead{#1}%
+%    \dohandlehead{#1}{#2}{#3}} % name -- -- -- userdata
 
 % \newconditional\structurereversesectionnumbers  % todo: key/val
 
@@ -344,22 +348,18 @@
 
 \def\dosettructureheadnumbercontent
   {\setsystemmode  \v!sectionnumber
-   \settrue\headshownumber}
+   \settrue\headshownumber} % why ?
 
 \def\doresettructureheadnumbercontent
   {\resetsystemmode\v!sectionnumber
-   \setfalse\headshownumber}
+   \setfalse\headshownumber} % why ?
 
 \def\setheadnumber
-  {\ifsectionnumber
-     \doifelse{\sectionblockparameter\c!number}\v!yes % todo
-       {\doifelse{\headparameter\c!number}\v!yes
-         {\settrue\headshownumber}
-         {\setfalse\headshownumber}}
-       {\setfalse\headshownumber}%
-   \else
-     \setfalse\headshownumber
-   \fi}
+  {\doifelse{\sectionblockparameter\c!number}\v!yes % todo
+     {\doifelse{\headparameter\c!number}\v!yes
+        {\settrue\headshownumber}
+        {\setfalse\headshownumber}}
+     {\setfalse\headshownumber}}
 
 \unexpanded\def\theheadsynchonization
   {\pagetype[\currentheadcoupling]% hm also number
@@ -471,6 +471,8 @@
    \endgroup}
 
 \ifdefined\presetnumberheadalternative \else \let\presetnumberheadalternative\relax \fi
+\ifdefined\setautostructurelevel       \else \let\setautostructurelevel      \relax \fi
+\ifdefined\triggerautostructurelevel   \else \let\triggerautostructurelevel  \relax \fi
 
 \def\dohandlehead#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
@@ -479,6 +481,7 @@
    \xdef\currentheadlevel   {\sectionlevel       \currentheadsection}%
    %writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
    %
+   \setautostructurelevel
    \setheadreference % does not do much currently
    \setheadincrement
    \setheadplacement
@@ -584,7 +587,7 @@
       \currentstructuresynchronize}}
 
 \def\synchronizehead#1%
-  {\getvalue{#1:sync}}
+  {\csname#1:sync\endcsname}
 
 \unexpanded\def\placerawheaddata  [#1]{\synchronizehead {#1}}
 \unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedheadlevel{#1}}}
@@ -782,5 +785,33 @@
 
 \let\startlistreferences\relax
 \let\stoplistreferences \relax
+
+% experimental
+
+\newconditional\auto_structure_level
+
+\appendtoks
+    \settrue\auto_structure_levels
+\to \everyenableelements
+
+\def\setautostructurelevel
+  {\ifconditional\auto_structure_level
+     \ctxcommand{autonextstructurelevel(\number\currentheadlevel)}%
+     \global\setfalse\auto_structure_level
+   \fi}
+
+\def\triggerautostructurelevel
+  {\global\settrue\auto_structure_level}
+
+\def\finalizeautostructurelevels
+  {\ctxcommand{autofinishstructurelevels()}}
+
+\unexpanded\def\finalizeautostructurelevel
+  {\dostoptagged
+   \dostoptagged}
+
+\appendtoks
+    \finalizeautostructurelevels
+\to \everystoptext
 
 \protect \endinput

@@ -344,7 +344,7 @@ function scripts.update.synchronize()
                         destination = gsub(destination,"\\","/")
                         archive = gsub(archive,"<version>",version)
                         if osplatform == "windows" or osplatform == "mswin" then
-                            destination = gsub(destination,"([a-zA-Z]):/", "/cygdrive/%1/")
+                            destination = gsub(destination,"([a-zA-Z]):/", "/cygdrive/%1/") -- ^
                         end
                         individual[#individual+1] = { archive, destination }
                     end

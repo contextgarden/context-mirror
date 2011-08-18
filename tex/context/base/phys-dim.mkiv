@@ -16,7 +16,7 @@
 \unprotect
 
 %D \macros
-%D   {digits, setdigitmode, setdigitsign, setdigitorder}
+%D   {digits, setdigitmode, setdigitsign}
 %D
 %D This is an update of the \MKII\ digits mechanism. Beware,
 %D space delimited mode is now resticted!
@@ -128,16 +128,15 @@
 %D \getbuffer
 %D \stoplines
 
-% todo: smaller adn raised signs
+\newconstant\c_digits_order
+\newconstant\c_digits_method
+\newconstant\c_digits_sign  % we has sized (text script scriptscript)
 
-\newconditional\c_digits_seen
-\newconstant   \c_digits_mode
-\newconstant   \c_digits_sign  % we has sized (text script scriptscript)
-\newconstant   \c_digits_order % 0=period comma 1=comma period
+\def\setdigitmethod#1{\c_digits_method #1\relax}
+\def\setdigitsign  #1{\c_digits_sign   #1\relax}
+\def\setdigitorder #1{\c_digits_order  #1\relax}
 
-\def\setdigitmode #1{\c_digits_mode #1\relax}
-\def\setdigitsign #1{\c_digits_sign #1\relax}
-\def\setdigitorder#1{\c_digits_order#1\relax}
+\let\setdigitmode\setdigitmethod % compatibility
 
 \def\digits_normalized % we could calculate once and remember
   {\ifcase\c_digits_sign
@@ -177,49 +176,55 @@
 \def\digitspower         {\digits_raised}
 \def\digitspowerplus   #1{\digits_raised{\digitsplus#1}}
 \def\digitspowerminus  #1{\digits_raised{\digitsminus#1}}
+\def\digitsdigit       #1{#1}
 
-% we can move the logic to lua
+\def\normaldigitscommasymbol   {,}
+\def\normaldigitsperiodsymbol  {.}
+\let\normaldigitsseparatorspace\digitsseparatorspace
 
-\def\digitsdigit       #1{\ifconditional\c_digits_seen#1\else\ifnum#1=\zerocount\digitsspace\else\settrue\c_digits_seen#1\fi\fi}
-\def\digitscomma         {\ifconditional\c_digits_seen\ifconditional\c_digits_order\digitscommasymbol \else\digitsperiodsymbol\fi\else\digitsseparatorspace\fi}
-\def\digitsperiod        {\ifconditional\c_digits_seen\ifconditional\c_digits_order\digitsperiodsymbol\else\digitscommasymbol \fi\else\digitsseparatorspace\fi}
+\letvalue{digit_c_0}\normaldigitscommasymbol
+\letvalue{digit_p_0}\normaldigitsperiodsymbol
+\letvalue{digit_s_0}\normaldigitsseparatorspace
 
-\def\normaldigitscommasymbol {,}
-\def\normaldigitsperiodsymbol{.}
+\letvalue{digit_c_1}\normaldigitsperiodsymbol
+\letvalue{digit_p_1}\normaldigitscommasymbol
+\letvalue{digit_s_1}\normaldigitsseparatorspace
 
-\let\digitscommasymbol \normaldigitscommasymbol
-\let\digitsperiodsymbol\normaldigitsperiodsymbol
+\letvalue{digit_c_2}\normaldigitscommasymbol
+\letvalue{digit_p_2}\normaldigitsperiodsymbol
+\letvalue{digit_s_2}\normaldigitsseparatorspace
 
-\unexpanded\def\tempdigits#1% for testing
+\letvalue{digit_c_3}\thinspace
+\letvalue{digit_p_3}\normaldigitscommasymbol
+\letvalue{digit_s_3}\thinspace
+
+\letvalue{digit_c_4}\thinspace
+\letvalue{digit_p_4}\normaldigitsperiodsymbol
+\letvalue{digit_s_4}\thinspace
+
+\letvalue{digit_c_5}\thickspace
+\letvalue{digit_p_5}\normaldigitscommasymbol
+\letvalue{digit_s_5}\thickspace
+
+\letvalue{digit_c_6}\thickspace
+\letvalue{digit_p_6}\normaldigitsperiodsymbol
+\letvalue{digit_s_6}\thickspace
+
+\def\digitscommasymbol         {\csname digit_c_\number\c_digits_method\endcsname}
+\def\digitsperiodsymbol        {\csname digit_p_\number\c_digits_method\endcsname}
+\def\digitsseparatorspace      {\csname digit_s_\number\c_digits_method\endcsname}
+
+\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
+\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
+\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
+\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
+
+%D The user macro:
+
+\unexpanded\def\digits_indeed#1%
   {\dontleavehmode
    \begingroup
-   \setfalse\c_digits_seen
-   \ifcase\c_digits_mode
-       % keep as-is
-   \or
-       \let\digitscommasymbol   \normaldigitsperiodsymbol
-       \let\digitsperiodsymbol  \normaldigitscommasymbol
-   \or
-       \let\digitscommasymbol   \normaldigitscommasymbol
-       \let\digitsperiodsymbol  \normaldigitsperiodsymbol
-   \or
-       \let\digitsperiodsymbol  \thinspace
-       \let\digitscommasymbol   \normaldigitscommasymbol
-       \let\digitsseparatorspace\thinspace
-   \or
-       \let\digitsperiodsymbol  \thinspace
-       \let\digitscommasymbol   \normaldigitsperiodsymbol
-       \let\digitsseparatorspace\thinspace
-   \or
-       \let\digitsperiodsymbol  \thickspace
-       \let\digitscommasymbol   \normaldigitscommasymbol
-       \let\digitsseparatorspace\thickspace
-   \or
-       \let\digitsperiodsymbol  \thickspace
-       \let\digitscommasymbol   \normaldigitsperiodsymbol
-       \let\digitsseparatorspace\thickspace
-   \fi
-   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es)}%
+   \ctxcommand{digits(\!!bs\detokenize{#1}\!!es,"\ifcase\c_digits_order \v!normal\else\v!reverse\fi")}%
    \endgroup
    \settrue\c_units_dospace}
 
@@ -227,10 +232,10 @@
   {\doifnextbgroupelse\digits_argument\digits_spaced}
 
 \def\digits_argument#1%
-  {\tempdigits{#1}}
+  {\digits_indeed{#1}}
 
-\def\digits_spaced#1 %
-  {\tempdigits{#1}}
+\def\digits_spaced#1 % space delimited
+  {\digits_indeed{#1}}
 
 %D \macros
 %D   {unit}
@@ -282,6 +287,46 @@
 %D
 %D Depending on needs we can add more tweaks (also depends on to what
 %D extent we need to be compatible with \MKII.
+%D
+%D Formatting is supported too:
+%D
+%D \startbuffer
+%D \starttabulate[|l|l|l|]
+%D \HL
+%D \NC \unit{10 kilo gram}       \NC \digits{10}        \NC \unit{10}        \NC \NR
+%D \NC \unit{1 kilogram}         \NC \digits{1}         \NC \unit{1}         \NC \NR
+%D \NC \unit{0.1 kilogram}       \NC \digits{0.1}       \NC \unit{0.1}       \NC \NR
+%D \NC \unit{1.1 kilogram}       \NC \digits{1.1}       \NC \unit{1.1}       \NC \NR
+%D \NC \unit{11 kilogram}        \NC \digits{11}        \NC \unit{11}        \NC \NR
+%D \HL
+%D \NC \unit{00,000.10 kilogram} \NC \digits{00,000.10} \NC \unit{00,000.10} \NC \NR
+%D \NC \unit{@@,@@0.10 kilogram} \NC \digits{@@,@@0.10} \NC \unit{@@,@@0.10} \NC \NR
+%D \NC \unit{__,___.10 kilogram} \NC \digits{__,___.10} \NC \unit{__,___.10} \NC \NR
+%D \NC \unit{__,__0:10 kilogram} \NC \digits{__,__0:10} \NC \unit{__,__0:10} \NC \NR
+%D \NC \unit{__,___:10 kilogram} \NC \digits{__,___:10} \NC \unit{__,___:10} \NC \NR
+%D \HL
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D Punctuation can be configures usiing \type {method}:
+%D
+%D \startbuffer
+%D \starttabulate[|l|l|l|]
+%D \HL
+%D \NC   \NC \setupunits[method=0]\unit{00,000.10 kilogram} \NC \setupunits[method=0]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 1 \NC \setupunits[method=1]\unit{00,000.10 kilogram} \NC \setupunits[method=1]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 2 \NC \setupunits[method=2]\unit{00,000.10 kilogram} \NC \setupunits[method=2]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 3 \NC \setupunits[method=3]\unit{00,000.10 kilogram} \NC \setupunits[method=3]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 4 \NC \setupunits[method=4]\unit{00,000.10 kilogram} \NC \setupunits[method=4]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 5 \NC \setupunits[method=5]\unit{00,000.10 kilogram} \NC \setupunits[method=5]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \NC 6 \NC \setupunits[method=6]\unit{00,000.10 kilogram} \NC \setupunits[method=6]\unit{@@,@@0.10 kilogram} \NC \NR
+%D \HL
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 % only a space when a number is part of the unit
 
@@ -291,6 +336,8 @@
   [\c!alternative=,        % done: text
    \c!separator=\v!normal, % done: cdot|big|medium|space
    \c!label=,              % done: (no interface yet)
+   \c!order=\v!normal,     % ,. (reverse: .,)
+   \c!method=0,
   %\c!grid=\v!yes,         % (maybe)
   %\c!style=...,           % done
   %\c!color=...,           % done
@@ -341,6 +388,8 @@
      \settrue\c_units_dospace
      \removelastskip
    \fi
+   \c_digits_method\unitsparameter\c!method\relax
+   \ifmmode\else\dontleavehmode\fi
    \edef\currentunits{#1}%
    \the\everyunits
   %\removeunwantedspaces % now ok yet
@@ -399,7 +448,7 @@
     \let\units_direct\units_direct_nested
 \to \everyunits
 
-\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitsparameter\c!label")}}
+\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitsparameter\c!label","\unitsparameter\c!order")}}
 
 \unexpanded\def\unitsPUS#1#2#3{\units_next#1#2\unitsraise{#3}\c_units_state\plusone}   % suffix
 \unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state               \plusthree} % unit

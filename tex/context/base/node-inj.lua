@@ -34,6 +34,7 @@ local traverse_id        = node.traverse_id
 local unset_attribute    = node.unset_attribute
 local has_attribute      = node.has_attribute
 local set_attribute      = node.set_attribute
+local copy_node          = node.copy
 local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
@@ -44,6 +45,21 @@ local cursbase = attributes.private('cursbase')
 local curscurs = attributes.private('curscurs')
 local cursdone = attributes.private('cursdone')
 local kernpair = attributes.private('kernpair')
+local fontkern = attributes.private('fontkern')
+
+if context then
+
+    local kern = nodes.pool.register(newkern())
+
+    set_attribute(kern,fontkern,1) -- we can have several, attributes are shared
+
+    newkern = function(k)
+        local c = copy_node(kern)
+        c.kern = k
+        return c
+    end
+
+end
 
 local cursives = { }
 local marks    = { }

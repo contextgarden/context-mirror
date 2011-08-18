@@ -164,7 +164,7 @@ local numbertoallign = {
     [3] = "left",    ["3"] = "left",    [variables.flushleft ] = "left",
 }
 
-local defaultnature     = "mixed" -- "inline"
+local defaultnature = "mixed" -- "inline"
 
 setmetatableindex(used, function(t,k)
     if k then
@@ -254,16 +254,18 @@ local function hashlistdata()
     end
 end
 
-local spaces = { } -- watch how we also moved the -1 in depth-1 to the creator
+--~ local spaces = { } -- watch how we also moved the -1 in depth-1 to the creator
 
-setmetatableindex(spaces, function(t,k)
-    if not k then
-        k = 1
-    end
-    local s = rep("  ",k-1)
-    t[k] = s
-    return s
-end)
+--~ setmetatableindex(spaces, function(t,k)
+--~     if not k then
+--~         return ""
+--~     end
+--~     local s = rep("  ",k-1)
+--~     t[k] = s
+--~     return s
+--~ end)
+
+local spaces = utilities.strings.newrepeater("  ",-1)
 
 function structurestags.setattributehash(fulltag,key,value) -- public hash
     if type(fulltag) == "number" then

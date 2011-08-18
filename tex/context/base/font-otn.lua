@@ -412,7 +412,11 @@ function handlers.gsub_single(start,kind,lookupname,replacement)
 end
 
 local function alternative_glyph(start,alternatives,kind,chainname,chainlookupname,lookupname) -- chainname and chainlookupname optional
-    local value, choice, n = featurevalue or tfmdata.shared.features[kind], nil, #alternatives -- global value, brrr
+    -- needs checking: (global value, brrr)
+    local value  = featurevalue == true and tfmdata.shared.features[kind] or featurevalue
+    local choice = nil
+    local n      = #alternatives
+    --
     if value == "random" then
         local r = random(1,n)
         value, choice = format("random, choice %s",r), alternatives[r]

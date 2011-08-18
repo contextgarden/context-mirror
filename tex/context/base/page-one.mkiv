@@ -362,7 +362,7 @@
             {\ifcase\columndirection % nog document wide
                \dofloatsflush\s!text{1}%
              \else
-               \dofloatsflushn\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \dofloatsflush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
              \fi
              \ifdim\wd\floatbox>\makeupwidth % \hsize
                \hbox to \makeupwidth{\hss\box\floatbox\hss}%

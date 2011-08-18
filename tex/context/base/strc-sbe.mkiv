@@ -75,7 +75,7 @@
 \def\dosetsectionblock[#1]% used to set the default
   {\edef\currentsectionblock{\ctxlua{structures.sections.setblock("#1")}}}
 
-\let\currentsectionblock\s!unknown
+\let\currentsectionblock\empty % was \s!unknown
 
 \unexpanded\def\startsectionblock[#1]%
   {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)

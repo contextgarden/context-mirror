@@ -23,16 +23,27 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
+local format, find = string.format, string.find
+local concat = table.concat
+
 local report = application.report
 
-graphics            = graphics            or { }
-graphics.converters = graphics.converters or { }
+scripts              = scripts or { }
+scripts.convert      = scripts.convert or { }
+local convert        = scripts.convert
+convert.converters   = convert.converters or { }
+local converters     = convert.converters
 
-local gsprogram = (os.type == "windows" and "gswin32c") or "gs"
-local gstemplate = "%s -q -sDEVICE=pdfwrite -dEPSCrop -dNOPAUSE -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
+local gsprogram      = (os.type == "windows" and "gswin32c") or "gs"
+local gstemplate_eps = "%s -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dEPSCrop -dNOPAUSE -dSAFER -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
+local gstemplate_ps  = "%s -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dNOPAUSE -dSAFER -dNOCACHE -dBATCH -dAutoRotatePages=/None -dProcessColorModel=/DeviceCMYK -sOutputFile=%s %s -c quit"
 
-function graphics.converters.eps(oldname,newname)
-    return gstemplate:format(gsprogram,newname,oldname)
+function converters.eps(oldname,newname)
+    return format(gstemplate_eps,gsprogram,newname,oldname)
+end
+
+function converters.ps(oldname,newname)
+    return format(gstemplate_ps,gsprogram,newname,oldname)
 end
 
 local improgram  = "convert"
@@ -42,21 +53,21 @@ local imtemplate = {
     high   = "%s -quality 100 -compress zip %s pdf:%s",
 }
 
-function graphics.converters.jpg(oldname,newname)
+function converters.jpg(oldname,newname)
     local ea = environment.arguments
     local quality = (ea.high and 'high') or (ea.medium and 'medium') or (ea.low and 'low') or 'high'
-    return imtemplate[quality]:format(improgram,oldname,newname)
+    return format(imtemplate[quality],improgram,oldname,newname)
 end
 
-graphics.converters.gif  = graphics.converters.jpg
-graphics.converters.tif  = graphics.converters.jpg
-graphics.converters.tiff = graphics.converters.jpg
-graphics.converters.png  = graphics.converters.jpg
+converters.gif  = converters.jpg
+converters.tif  = converters.jpg
+converters.tiff = converters.jpg
+converters.png  = converters.jpg
 
-local function convert(kind,oldname,newname)
-    if graphics.converters[kind] then -- extra test
+function converters.convertgraphic(kind,oldname,newname)
+    if converters[kind] then -- extra test
         local tmpname = file.replacesuffix(newname,"tmp")
-        local command = graphics.converters[kind](oldname,tmpname)
+        local command = converters[kind](oldname,tmpname)
         report("command: %s",command)
         io.flush()
         os.spawn(command)
@@ -68,58 +79,62 @@ local function convert(kind,oldname,newname)
     end
 end
 
-function graphics.converters.convertpath(inputpath,outputpath)
+function converters.convertpath(inputpath,outputpath)
     inputpath  = inputpath  or "."
     outputpath = outputpath or "."
     for name in lfs.dir(inputpath) do
         local suffix = file.extname(name)
-        if name:find("%.$") then
+        if find(name,"%.$") then
             -- skip . and ..
-        elseif graphics.converters[suffix] then
+        elseif converters[suffix] then
             local oldname = file.join(inputpath,name)
             local newname = file.join(outputpath,file.replacesuffix(name,"pdf"))
             local et = lfs.attributes(oldname,"modification")
             local pt = lfs.attributes(newname,"modification")
             if not pt or et > pt then
                 dir.mkdirs(outputpath)
-                convert(suffix,oldname,newname)
+                converters.convertgraphic(suffix,oldname,newname)
             end
         elseif lfs.isdir(inputpath .. "/".. name) then
-            graphics.converters.convertpath(inputpath .. "/".. name,outputpath .. "/".. name)
+            converters.convertpath(inputpath .. "/".. name,outputpath .. "/".. name)
         end
     end
 end
 
-function graphics.converters.convertfile(oldname)
+function converters.convertfile(oldname)
     local suffix = file.extname(oldname)
-    if graphics.converters[suffix] then
-        local newname = file.replacesuffix(name,"pdf")
+    if converters[suffix] then
+        local newname = file.replacesuffix(oldname,"pdf")
         if oldname == newname then
             -- todo: downsample, crop etc
         elseif environment.argument("force") then
-            convert(suffix,oldname,newname)
+            converters.convertgraphic(suffix,oldname,newname)
         else
             local et = lfs.attributes(oldname,"modification")
             local pt = lfs.attributes(newname,"modification")
             if not pt or et > pt then
-                convert(suffix,oldname,newname)
+                converters.convertgraphic(suffix,oldname,newname)
             end
         end
     end
 end
 
-scripts         = scripts         or { }
-scripts.convert = scripts.convert or { }
+if environment.ownscript then
+    -- stand alone
+else
+    report(application.banner)
+    return convert
+end
 
-scripts.convert.delay = 5 * 60 -- 5 minutes
+convert.delay = 5 * 60 -- 5 minutes
 
-function scripts.convert.convertall()
+function convert.convertall()
     local watch  = environment.arguments.watch      or false
-    local delay  = environment.arguments.delay      or scripts.convert.delay
+    local delay  = environment.arguments.delay      or convert.delay
     local input  = environment.arguments.inputpath  or "."
     local output = environment.arguments.outputpath or "."
     while true do
-        graphics.converters.convertpath(input, output)
+        converters.convertpath(input, output)
         if watch then
             os.sleep(delay)
         else
@@ -128,17 +143,17 @@ function scripts.convert.convertall()
     end
 end
 
-function scripts.convert.convertgiven()
+function convert.convertgiven()
     local files = environment.files
     for i=1,#files do
-        graphics.converters.convertfile(files[i])
+        converters.convertfile(files[i])
     end
 end
 
-if environment.argument("convertall") then
-    scripts.convert.convertall()
+if environment.arguments.convertall then
+    convert.convertall()
 elseif environment.files[1] then
-    scripts.convert.convertgiven()
+    convert.convertgiven()
 else
     application.help()
 end

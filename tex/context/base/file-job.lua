@@ -384,7 +384,7 @@ end
 local function logtree()
     logspushtarget("logfile")
     logsnewline()
-    report_system("start used stucture")
+    report_system("start used structure")
     logsnewline()
     root.name = environment.jobname
     log_tree(root,"")
