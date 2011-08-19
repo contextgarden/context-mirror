@@ -577,11 +577,11 @@ function codeinjections.clonefield(specification) -- obsolete
     local p, c, v = specification.parent, specification.children, specification.alternative
     if not p or not c then
         if trace_fields then
-            report_fields("invalid clone: children: '%s', parent '%s', alternative: '%s'",p or "?",c or "?", v or "?")
+            report_fields("invalid clone: children: '%s', parent '%s', alternative: '%s'",c or "?",p or "?", v or "?")
         end
         return
     end
-    local x = fields[p]
+    local x = fields[p] or radios[p]
     if not x then
         if trace_fields then
             report_fields("cloning: unknown parent '%s'",p)
@@ -592,11 +592,11 @@ function codeinjections.clonefield(specification) -- obsolete
         local f, r, c = fields[n], radios[n], clones[n]
         if f or r or c then
             if trace_fields then
-                report_fields("already cloned: child: '%s', parent '%s', alternative: '%s'",p,n, v or "?")
+                report_fields("already cloned: child: '%s', parent '%s', alternative: '%s'",n,p,v or "?")
             end
         else
             if trace_fields then
-                report_fields("cloning: child: '%s', parent '%s', alternative: '%s'",p,n, v or "?")
+                report_fields("cloning: child: '%s', parent '%s', alternative: '%s'",n,p,v or "?")
             end
             clones[n] = specification
             predefinesymbols(specification)
@@ -1033,9 +1033,12 @@ local function makeradiochild(name,specification)
             end
             makeradioparent(parent,parent)
         end
-        field = radios[name]
     else
         field = radios[name]
+        if not field then
+            report_fields("there is some problem with field '%s'",name)
+            return nil
+        end
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then

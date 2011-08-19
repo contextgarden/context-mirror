@@ -168,13 +168,13 @@ local function prepared(name,list) -- list is optional
         list = name
     end
     if not name or name == "" then
-        name = tex.jobname .. "-" .. list .. ".tmp"
+        name = list
     end
     local content = collectcontent(list,nil) or ""
     if content == "" then
         content = "empty buffer"
     end
-    return name, content
+    return tex.jobname .. "-" .. name .. ".tmp", content
 end
 
 local capsule = "\\starttext\n%s\n\\stoptext\n"

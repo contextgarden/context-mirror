@@ -50,11 +50,11 @@
 
 \let\setupbuttons\setupbutton
 
-\presetlocalframed[\??bt]
+\presetlocalframed[\namedbuttonhash\empty]
 
 \appendtoks
     \setuevalue\currentbutton{\scrn_button_direct{\currentbutton}}%
-    \setevalue{\??bt:\currentbutton\s!parent}{\??bt\currentbutton}% framed
+    \setevalue{\??bt:\currentbutton\s!parent}{\currentbuttonhash}% framed
 \to \everydefinebutton
 
 \unexpanded\def\scrn_button_direct#tag%
@@ -75,7 +75,7 @@
 
 \def\scrn_button_direct_indeed[#settings]#text[#action]%
   {\iffirstargument
-     \setupbuttons[\currentbutton][#settings]%
+     \setupcurrentbutton[#settings]%
    \fi
    \scrn_button_make\??bt\currentbutton\buttonparameter{#text}{#action}%
    \endgroup}
@@ -320,7 +320,7 @@
 
 \let\setupinteractionmenus\setupinteractionmenu
 
-\presetlocalframed[\??am]
+\presetlocalframed[\namedinteractionmenuhash\empty]
 
 \let\scrn_menu_action\relax
 
@@ -335,17 +335,17 @@
        {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
        {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
      \scrn_menu_register{#tag}{#category}%
-     \setevalue{\??am:#tag\s!parent}{\??am#tag}% framed
+     \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}% framed
    \else\ifsecondargument
      \doifassignmentelse{#category}%
        {\scrn_menu_define_original[#tag][#category]%                                 % root definition
-        \setevalue{\??am:#tag\s!parent}{\??am}}% framed
+        \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}}% framed
        {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
         \scrn_menu_register{#tag}{#category}%
-        \setevalue{\??am:#tag\s!parent}{\??am#tag}}% framed
+        \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}}% framed
    \else
      \scrn_menu_define_original[#tag]%                                               % root definition
-     \setevalue{\??am:#tag\s!parent}{\??am}% framed
+     \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}% framed
    \fi\fi}
 
 \def\scrn_menu_register#tag#category%
@@ -687,7 +687,7 @@
 
 \unexpanded\def\scrn_menu_got_start[#action]#text\stopgot
   {\scrn_menu_action_start
-   \setupbuttons[\currentinteractionmenu][\c!frame=\v!off,\c!background=]%
+   \setupcurrentinteractionmenu[\c!frame=\v!off,\c!background=]% needs checking, was buttons
    \scrn_button_make\??am\currentinteractionmenu\interactionmenuparameter{#text}{#action}%
    \scrn_menu_action_stop}
 

@@ -664,8 +664,7 @@
 
 \unexpanded\def\fastlocalframed[#1]#2[#3]#4% 3-4
   {\bgroup
-   \inframedtrue
-   \edef\@@framed{#1}%
+   \doinitializeframed{#1}%
    \setbox\framebox\hbox{#4}%
    \getparameters[\@@framed][#3]% no \expanded !
    \!!framedframeoffset\framedparameter\c!frameoffset
@@ -700,8 +699,7 @@
 
 \def\localbackgroundframed#1#2#3#4% tag box wd ht
   {\setbox#2\vbox\bgroup
-   \inframedtrue
-   \edef\@@framed{\??ma#1}%
+   \doinitializeframed{\??ma#1}%
    \expandafter\def\csname\??ma#1\c!component\endcsname{#1}%
    \expandafter\def\csname\??ma#1\c!width    \endcsname{#3}%
    \expandafter\def\csname\??ma#1\c!height   \endcsname{#4}%
@@ -750,7 +748,8 @@
 %D Because it is used so often the he next macro is (and
 %D looks) rather optimized.
 
-% todo: see if we can use commandhandler
+% eventually all will ue the commandhandler but now we have a
+% hybrid (with and without colon)
 
 \let\postprocessframebox\relax
 
@@ -768,13 +767,22 @@
 \def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1{#2}\fi}
 \def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
 
-\def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
-
 \def\dosetframedattributes#1#2% style color
   {\edef\fontattributehash {\framedparameterhash#1}%
    \edef\colorattributehash{\framedparameterhash#2}%
    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+
+\def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
+
+\let\normalframedparameter    \framedparameter
+\let\normalframedparameterhash\framedparameterhash
+
+\def\doinitializeframed#1%
+  {\inframedtrue
+   \edef\@@framed{#1}%
+   \let\framedparameter    \normalframedparameter
+   \let\framedparameterhash\normalframedparameterhash}
 
 % defaults, kind of isolated now
 
@@ -858,8 +866,7 @@
 
 \unexpanded\def\dolocalframed[#1][#2]% assumes a \dodoubleempty (slows down), also should have leading \bgroup
   {\bgroup
-   \inframedtrue
-   \edef\@@framed{#1}%
+   \doinitializeframed{#1}%
    \ifsecondargument % faster
      \getparameters[\@@framed][#2]% here !
    \fi
@@ -868,17 +875,38 @@
 \unexpanded\def\directlocalframed[#1]% no optional
   {\bgroup
    \bgroup
-   \inframedtrue
-   \edef\@@framed{#1}%
+   \doinitializeframed{#1}%
    \dodolocalframed}
 
 \unexpanded\def\localframedwithsettings[#1][#2]% no checking (so no spaces between)
   {\bgroup
    \bgroup
-   \inframedtrue
-   \edef\@@framed{#1}%
+   \doinitializeframed{#1}%
    \getparameters[\@@framed][#2]% here !
    \dodolocalframed}
+
+\def\installinheritedframed#1#2%
+  {\normalexpanded{\doinstallinheritedframed
+     \expandafter\noexpand\csname current#1\endcsname
+     \expandafter\noexpand\csname #1parameter\endcsname
+     \expandafter\noexpand\csname #1parameterhash\endcsname
+     \expandafter\noexpand\csname do#1parameter\endcsname
+     \expandafter\noexpand\csname do#1parentparameter\endcsname
+     \expandafter\noexpand\csname do#1rootparameter\endcsname
+     \expandafter\noexpand\csname inherited#1framed\endcsname
+     \noexpand{#2}}}
+
+\unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8%
+  {\def#5##1##2{\ifx##1\relax#6{##2}\else#4##1{##2}\fi}%
+   \def#6##1{\ifcsname#8##1\endcsname#8##1\else\s!empty\fi}%
+   \unexpanded\def#7%
+     {\bgroup
+      \bgroup
+      \inframedtrue
+      \let\@@framed           #1% not used (more for tracing)
+      \let\framedparameter    #2%
+      \let\framedparameterhash#3%
+      \dodolocalframed}}
 
 \def\c!fr!analyze{fr:analyze} % private option
 
@@ -960,7 +988,8 @@
      \boxisoverlaidfalse
      \ifx\localoffset\v!default % new per 2-6-2000
        \let\localoffset\defaultframeoffset
-       \expandafter\let\csname\@@framed\c!offset\endcsname\defaultframeoffset
+      %\expandafter\let\csname\@@framed\c!offset\endcsname\defaultframeoffset
+       \letframedparameter\c!offset\defaultframeoffset
      \else
        \let\defaultframeoffset\localoffset
      \fi

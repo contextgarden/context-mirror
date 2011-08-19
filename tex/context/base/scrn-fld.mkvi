@@ -165,9 +165,11 @@
 \def\scrn_field_check_category
   {\edef\currentfieldbodycategory{\fieldbodyparameter\c!category}%
    \ifx\currentfieldbodycategory\empty
-     \setevalue{\??fb\currentfieldbody\s!parent}{\??fd}%
+     letfieldbodyparameter\s!parent\??fd
+    %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\empty}% to WS: not hash !
    \else
-     \setevalue{\??fb\currentfieldbody\s!parent}{\??fd\currentfieldbodycategory}%
+     \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fd\currentfieldbodycategory}}%
+    %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\currentfieldbodycategory}% to WS: not hash !
    \fi}
 
 \appendtoks % we cannot use parent .. maybe s!parent has to change
@@ -201,7 +203,7 @@
      \hbox\bgroup
        \edef\currentfieldbody{#tag}%
        \ifsecondargument
-         \setupfieldbody[#tag][#settings]%
+         \setupcurrentfieldbody[#settings]%
        \fi
        \scrn_field_body_typeset
        \box\scrn_field_box_body
@@ -326,9 +328,10 @@
 %D (implemented as properties).
 
 \appendtoks
+    \let\currentfieldcategory\empty
     \doifelse{\interactionparameter\c!fieldlayer}\v!auto
-      {\setupfieldcategory[\c!fieldlayer=\currentviewerlayer]}%
-      {\setupfieldcategory[\c!fieldlayer=]}%
+      {\setupcurrentfieldcategory[\c!fieldlayer=\currentviewerlayer]}%
+      {\setupcurrentfieldcategory[\c!fieldlayer=]}%
 \to \everysetupinteraction
 
 \setupinteraction
@@ -373,13 +376,17 @@
 %D The traditional field command does some labeling and
 %D boxing:
 
-\installparameterhandler \??wl {fieldlabelframed}
-\installparameterhandler \??wc {fieldcontentframed}
-\installparameterhandler \??wt {fieldtotalframed}
+\installparameterhandler     \??wl {fieldlabelframed}
+\installparameterhandler     \??wc {fieldcontentframed}
+\installparameterhandler     \??wt {fieldtotalframed}
 
-\installsetuphandler     \??wl {fieldlabelframed}
-\installsetuphandler     \??wc {fieldcontentframed}
-\installsetuphandler     \??wt {fieldtotalframed}
+\installsetuphandler         \??wl {fieldlabelframed}
+\installsetuphandler         \??wc {fieldcontentframed}
+\installsetuphandler         \??wt {fieldtotalframed}
+
+\installinheritedframed {fieldlabelframed}   \??oi
+\installinheritedframed {fieldcontentframed} \??oi
+\installinheritedframed {fieldtotalframed}   \??oi
 
 \unexpanded\def\setupfield {\doquintupleempty\scrn_field_setup_field}
 \unexpanded\def\setupfields{\doquadrupleempty\scrn_field_setup_fields}
@@ -414,6 +421,8 @@
    \c!strut=\v!no,
    \c!align=,
    \s!parent=\??ol]
+
+% \setupcurrent
 
 \def\scrn_field_setup_field[#tag][#variant][#totalsettings][#labelsettings][#fieldsettings]%
   {\iffifthargument
@@ -457,9 +466,9 @@
 % just to get the chain right for no category:
 
 \definefieldcategory    [][\s!parent=\??wc]
-\setupfieldtotalframed  [][\s!parent=\??wt]
-\setupfieldlabelframed  [][\s!parent=\??wl]
-\setupfieldcontentframed[][\s!parent=\??wc]
+% \setupfieldtotalframed  [][\s!parent=\??wt]
+% \setupfieldlabelframed  [][\s!parent=\??wl]
+% \setupfieldcontentframed[][\s!parent=\??wc]
 
 % no longer supported:
 
@@ -475,7 +484,7 @@
 \unexpanded\def\field
   {\dodoubleempty\scrn_field_direct}
 
-\def\scrn_field_direct[#tag][#label]%
+\def\scrn_field_direct[#tag][#label]% can be sped up with \setupcurrentfieldtotalframed etc
   {\iflocation
      \dontleavehmode
      \begingroup
@@ -499,9 +508,11 @@
      \let\currentfieldcontentframed\currentfieldcategory
      \scrn_field_analyze_setups
      \ifconditional\fieldframeshown
-       \localframed[\??wt\currentfieldcategory]\bgroup
+       \inheritedfieldtotalframedframed % lower framedoffset
+       \bgroup
      \else
-       \vbox\bgroup
+       \vbox
+       \bgroup
      \fi
      \dontcomplain
      \ifconditional\fieldlabelshown
@@ -531,8 +542,7 @@
 \def\scrn_field_set_label_box
   {\setbox\scrn_field_box_label\hbox
       {\reshapeframeboxtrue % else wrong dimensions % still needed?
-       \localframed
-         [\??wl\currentfieldcategory]
+       \inheritedfieldlabelframedframed
          {\currentfieldlabel}}}
 
 % \c!fieldoffset=-\framedoffset,\c!fieldbackgroundcolor=,
@@ -541,18 +551,27 @@
 \def\scrn_field_set_content_box
   {\setbox\scrn_field_box_content\hbox
      {\reshapeframeboxtrue % else wrong dimensions (to be checked)
-      \ifconditional\fieldisvertical
-        \setupfieldcontentframed[\c!height=6ex,\c!width=\hsize]%
-      \else\ifconditional\fieldishorizontal
-        \setupfieldcontentframed[\c!height=\vsize,\c!width=20em]%
-      \else
-        \setupfieldcontentframed[\c!height=2cm,\c!width=2cm]%
-      \fi\fi
-      \localframed % lower framedoffset
-        [\??wc\currentfieldcategory]
+      \doifnothing{\fieldcontentframedparameter\c!height}
+        {\ifconditional\fieldisvertical
+           \setfieldcontentframedparameter\c!height{6ex}%
+         \else\ifconditional\fieldishorizontal
+           \setfieldcontentframedparameter\c!height{\vsize}%
+         \else
+           \setfieldcontentframedparameter\c!height{2cm}%
+         \fi\fi}%
+      \doifnothing{\fieldcontentframedparameter\c!width}
+        {\ifconditional\fieldisvertical
+           \setfieldcontentframedparameter\c!width{\hsize}%
+         \else\ifconditional\fieldishorizontal
+           \setfieldcontentframedparameter\c!width{20em}%
+         \else
+           \setfieldcontentframedparameter\c!width{2cm}%
+         \fi\fi}%
+      \inheritedfieldcontentframedframed % lower framedoffset
         {\fieldbody
            [\currentfieldbody]
            [\c!width=\framedwidth,\c!height=\framedheight]}}}
+
 
 \def\scrn_field_flush_vertical
   {\vbox
@@ -633,7 +652,7 @@
    \c!background=\v!color,
    \c!backgroundcolor=gray]
 
-\presetlocalframed[\??wh]
+\presetlocalframed[\namedtooltiphash\empty]
 
 \appendtoks
     \setuevalue\currenttooltip{\scrn_tooltip_direct{\currenttooltip}}%
@@ -757,7 +776,7 @@
   {\iflocation
      \dontleavehmode
      \begingroup
-     \getparameters[\??fd][\c!start=1,#settings]%
+     \setupfieldcategory[\c!start=1,#settings]% was just \??fd
      \scrn_field_load_scripts
      \definecollector
        [fieldstack]%
