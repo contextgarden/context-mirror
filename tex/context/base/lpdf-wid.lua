@@ -200,12 +200,13 @@ end
 lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
 function codeinjections.embedfile(specification)
-    local data       = specification.data
-    local filename   = specification.file
-    local name       = specification.name or ""
-    local title      = specification.title or ""
-    local hash       = specification.hash or filename
-    local keepdir    = specification.keepdir -- can change
+    local data     = specification.data
+    local filename = specification.file
+    local name     = specification.name or ""
+    local title    = specification.title or ""
+    local hash     = specification.hash or filename
+    local keepdir  = specification.keepdir -- can change
+    local usedname = specification.usedname
     if filename == "" then
         filename = nil
     end
@@ -243,7 +244,8 @@ function codeinjections.embedfile(specification)
             end
         end
     end
-    local basename = keepdir == true and filename or file.basename(filename)
+    usedname = usedname ~= "" and usedname or filename
+    local basename = keepdir == true and usedname or file.basename(usedname)
 local basename = gsub(basename,"%./","")
     local savename = file.addsuffix(name ~= "" and name or basename,"txt") -- else no valid file
     local a = pdfdictionary { Type = pdfconstant("EmbeddedFile") }
