@@ -94,7 +94,7 @@
   {\ifsecondargument
      \begingroup
      \def\currentattachment{_}%
-     \setupattachment[_][#settings,\s!parent=\??at]%
+     \setupcurrentattachment[#settings,\s!parent=\??at]%
      \ctxcommand{registerattachment{
         tag        = "#tag",
         registered = "#tag",
@@ -371,7 +371,7 @@
    \c!ny=10,
    \c!location=\v!high]
 
-\presetlocalframed[\??cc]
+\presetlocalframed[\namedcommenthash\empty]
 
 \appendtoks
     \setuevalue         \currentcomment {\scrn_comment_argument{\currentcomment}}%
@@ -392,8 +392,8 @@
 
 \def\scrn_comment_argument_indeed[#title][#settings]#text%
   {\doifassignmentelse{#title}
-     {\setupcomment[\currentcomment][#title]}
-     {\setupcomment[\currentcomment][\c!title=#title,#settings]}%
+     {\setupcurrentcomment[#title]}
+     {\setupcurrentcomment[\c!title=#title,#settings]}%
    \ctxlua{buffers.assign("\v!comment",\!!bs#text\!!es)}% todo: expansion control, but expanded by default (xml)
    \scrn_comment_inject
    \ignorespaces}
@@ -415,8 +415,8 @@
 \def\scrn_comment_start_indeed[#title][#settings]%
   {\bgroup
    \doifassignmentelse{#title}
-     {\setupcomment[\currentcomment][#title]}
-     {\setupcomment[\currentcomment][\c!title=#title,#settings]}%
+     {\setupcurrentcomment[\currentcomment][#title]}
+     {\setupcurrentcomment[\currentcomment][\c!title=#title,#settings]}%
    \def\scrn_comment_stop{\scrn_comment_inject\egroup}%
    \dostartbuffer[\v!comment][\e!start\currentcomment][\e!stop\currentcomment]}
 

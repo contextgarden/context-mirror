@@ -32,6 +32,9 @@ local codes, preambles, functions = javascripts.codes, javascripts.preambles, ja
 local preambled = { }
 
 local function storefunction(s,preamble)
+    if trace_javascript then
+        report_javascripts("found: function '%s'",s)
+    end
     functions[s] = preamble
 end
 
