@@ -30,6 +30,10 @@ local nodeinjections     = backends.pdf.nodeinjections
 
 local pdfannotation_node = nodes.pool.pdfannotation
 
+local trace_swf = false  trackers.register("backend.swf", function(v) trace_swf = v end)
+
+local report_swf = logs.reporter("backend","swf")
+
 local activations = {
     click = "XA",
     page  = "PO",
@@ -87,27 +91,79 @@ local function insertswf(spec)
         },
     }
 
+    -- todo: check op subpath figuur (relatief)
+
     if resources then
         local names = configuration.Assets.Names
-        local function add(filename)
+        local root = file.dirname(filename)
+        local prefix = format("^%s/",root)
+        local function add(filename,strip)
             local filename = gsub(filename,"%./","")
-            local embeddedreference = codeinjections.embedfile { file = filename, keepdir = true }
+            local usedname = strip and gsub(filename,prefix,"") -- always when relative
+            local embeddedreference = codeinjections.embedfile {
+                file     = filename,
+                usedname = usedname,
+                keepdir  = true,
+            }
             names[#names+1] = pdfstring(filename)
             names[#names+1] = embeddedreference
+            if trace_swf then
+                if usedname == filename then
+                    report_swf("embedding file '%s'",filename)
+                else
+                    report_swf("embedding file '%s' as '%s'",filename,usedname)
+                end
+            end
+        end
+        local relativepaths = resources.relativepaths
+        if relativepaths then
+            if trace_swf then
+                report_swf("checking %s relative paths",#relativepaths)
+            end
+            for i=1,#relativepaths do
+                local relativepath = relativepaths[i]
+                if trace_swf then
+                    report_swf("checking path '%s' relative to '%s'",relativepath,root)
+                end
+                local path = file.join(root,relativepath)
+                local files = dir.glob(path .. "/**")
+                for i=1,#files do
+                    add(files[i],true)
+                end
+            end
         end
         local paths = resources.paths
         if paths then
+            if trace_swf then
+                report_swf("checking %s paths",#paths)
+            end
             for i=1,#paths do
-                local files = dir.glob(paths[i] .. "/**")
-                for i=1,#files do
-                    add(files[i])
+                local path = paths[i]
+                if trace_swf then
+                    report_swf("checking path '%s'",path)
                 end
+                local files = dir.glob(path .. "/**")
+                for i=1,#files do
+                    add(files[i],false)
+                end
+            end
+        end
+        local relativefiles = resources.relativefiles
+        if relativefiles then
+            if trace_swf then
+                report_swf("checking %s relative files",#relativefiles)
+            end
+            for i=1,#relativefiles do
+                add(relativefiles[i],true)
             end
         end
         local files = resources.files
         if files then
+            if trace_swf then
+                report_swf("checking %s files",#files)
+            end
             for i=1,#files do
-                add(files[i])
+                add(files[i],false)
             end
         end
     end

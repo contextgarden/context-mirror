@@ -165,7 +165,7 @@
 \def\scrn_field_check_category
   {\edef\currentfieldbodycategory{\fieldbodyparameter\c!category}%
    \ifx\currentfieldbodycategory\empty
-     letfieldbodyparameter\s!parent\??fd
+     \letfieldbodyparameter\s!parent\??fd
     %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\empty}% to WS: not hash !
    \else
      \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fd\currentfieldbodycategory}}%
@@ -398,7 +398,7 @@
 \setupfieldcontentframed
   [\c!align=\v!flushleft,
    \c!strut=\v!no,
-   \s!parent=\??ol]
+   \s!parent=\??ol] % needs checking
 
 \setupfieldcontentframed % independent
   [\c!alternative=\v!normal,
@@ -414,13 +414,13 @@
   [\c!style=,
    \c!color=,
    \c!align=\v!flushleft,
-   \s!parent=\??ol]
+   \s!parent=\??ol] % needs checking
 
 \setupfieldtotalframed
   [%\c!alternative={\v!label,\v!frame,\v!horizontal},
    \c!strut=\v!no,
    \c!align=,
-   \s!parent=\??ol]
+   \s!parent=\??ol] % needs checking
 
 % \setupcurrent
 
