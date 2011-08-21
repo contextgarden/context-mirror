@@ -99,11 +99,10 @@
 %D argument concerns the data, the second the framed. Not sharing the setup is
 %D on purpose: location, offset, alignment and other parameters might clash.
 
-\def\??mc{@@mc} % margincategory
-\def\??mf{@@mf} % marginframed
-
 \installcommandhandler\??mc{margindata}\??mc
 \installcommandhandler\??mf{marginframed}\??mf
+
+\installinheritedframed {marginframed} \??oi
 
 \setupmargindata
   [\c!location=\v!left,
@@ -172,7 +171,8 @@
        \setbox\nextbox\hbox\bgroup
          \the\everymargindatacontent
          \dosetmargindataattributes\c!style\c!color
-         \localframedwithsettings[\currentmarginframedhash][\c!location=\v!normal,#textparameters]\bgroup
+         \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
+         \inheritedmarginframedframed\bgroup
            \ifx\currentmargindatastrut\empty \else
              \dosetupstrut[\currentmargindatastrut]%
            \fi

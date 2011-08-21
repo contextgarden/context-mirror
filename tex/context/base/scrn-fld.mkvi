@@ -391,10 +391,6 @@
 \unexpanded\def\setupfield {\doquintupleempty\scrn_field_setup_field}
 \unexpanded\def\setupfields{\doquadrupleempty\scrn_field_setup_fields}
 
-% \presetlocalframed[\??wl]
-% \presetlocalframed[\??wc]
-% \presetlocalframed[\??wt]
-
 \setupfieldcontentframed
   [\c!align=\v!flushleft,
    \c!strut=\v!no,
@@ -645,14 +641,14 @@
 
 \installcommandhandler \??wh {tooltip} \??wh
 
+\installinheritedframed {tooltip} \??oi
+
 \setuptooltip
   [\c!location=\v!right,
    \c!frame=\v!off,
    \c!offset=.1ex,
    \c!background=\v!color,
    \c!backgroundcolor=gray]
-
-\presetlocalframed[\namedtooltiphash\empty]
 
 \appendtoks
     \setuevalue\currenttooltip{\scrn_tooltip_direct{\currenttooltip}}%
@@ -675,10 +671,11 @@
      \setbox\scrn_tooltip_box_anchor\hbox
        {\strut#anchortext}%
      \doifassignmentelse{#settings}
-       {\setuptooltip[\currenttooltip][#settings]}%
-       {\setuptooltip[\currenttooltip][\c!location=#settings]}%
+       {\setupcurrenttooltip[#settings]}%
+       {\setupcurrenttooltip[\c!location=#settings]}%
      \setbox\scrn_tooltip_box_text\hbox
-       {\localframed[\currenttooltiphash][\c!location=]{#tiptext}}%
+       {\lettooltipparameter\c!location\empty
+        \inheritedtooltipframed{#tiptext}}%
      \definesymbol
        [\currenttooltipname:txt]
        [\copy\scrn_tooltip_box_text]%
@@ -908,7 +905,7 @@
     \let\startpsh\scrn_menu_psh_start
     \let\stoppsh \relax
     \let\psh     \scrn_menu_psh_direct
-\everysetmenucommands
+\to \everysetmenucommands
 
 %D Another goodie: (unchecked in \MKIV)
 
@@ -944,6 +941,20 @@
 \unexpanded\def\rollbutton
   {\dodoubleempty\scrn_rollbutton}
 
+\def\scrn_rollbutton_symbol_m
+  {\scrn_rollbutton_symbol_indeed
+     \getinteractionmenuparameter
+     \inheritedinteractionmenuframed
+     \setinteractionmenuparameter
+     \dosetinteractionmenuattributes}
+
+\def\scrn_rollbutton_symbol_b
+  {\scrn_rollbutton_symbol_indeed
+     \getbuttonparameter
+     \inheritedbuttonframed
+     \setbuttonparameter
+     \dosetbuttonattributes}
+
 \def\scrn_rollbutton[#tag][#settings]#text[#reference]%
   {\dontleavehmode
    \bgroup
@@ -951,21 +962,24 @@
    \doglobal\advance\scrn_rollbutton_n_symbol
    \iffirstargument
      \ifsecondargument
-       \getparameters[\??am#tag][#settings]%
-       \def\scrn_rollbutton_symbol{\scrn_rollbutton_symbol_indeed{\??am#tag}{#text}}%
+       \edef\currentinteractionmenu{#tag}%
+       \setupcurrentinteractionmenu[#settings]%
+       \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m
      \else
        \doifassignmentelse{#tag}
-         {\getparameters[\??bt][#tag]%
-          \def\scrn_rollbutton_symbol{\scrn_rollbutton_symbol_indeed{\??bt}{#text}}}
-         {\def\scrn_rollbutton_symbol{\scrn_rollbutton_symbol_indeed{\??am#tag}{#text}}}%
+         {\let\currentbutton\empty
+          \setupcurrentbutton[#tag]%
+          \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b}%
+         {\edef\currentinteractionmenu{#tag}%
+          \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m}%
      \fi
    \else
-     \def\scrn_rollbutton_symbol{\set_location_box_indeed_indeed{\??bt}{#text}}%
+     \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b
    \fi
    % todo: share symbols, tricky since different dimensions
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}]%
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}]%
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}]%
+   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}{#text}]%
+   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}{#text}]%
+   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}{#text}]%
    \setupfield
      [rollbutton]
      [\c!frame=\v!off,
@@ -979,12 +993,14 @@
    \fitfield[rollbutton:\number\scrn_rollbutton_n_button]%
    \egroup}
 
-\unexpanded\def\scrn_rollbutton_symbol_indeed#namespace#text#what%
+\unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#dosetattributes#what#text%
   {\definecolor[rollover][rollover:#what]%
-   \doifelse{#what}{n}{\doifelsevalue{#namespace\c!alternative}\v!hidden\phantom\hbox}\hbox
-     {\localframed[#namespace]
-        [\c!framecolor=rollover,\c!backgroundcolor=rollover,\c!color=rollover]%
-        {\dolocationattributes{#namespace}\c!style\c!color{#text}}}}%
+   \doifelse{#what}{n}% ?
+     {\doifelse{#getparameter\c!alternative}\v!hidden\phantom\hbox}\hbox
+        {#setparameter\c!framecolor     {rollover}%
+         #setparameter\c!backgroundcolor{rollover}%
+         #setparameter\c!color          {rollover}%
+         #inheritedframed{#dosetattributes\c!style\c!color{#text}}}}
 
 %D We plug into the menu system
 
