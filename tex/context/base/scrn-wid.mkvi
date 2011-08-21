@@ -348,7 +348,7 @@
 %
 % test
 
-\installcommandhandler\??cc{comment}\??cc
+\installcommandhandler \??cc {comment} \??cc
 
 \newbox\scrn_comment_box_collect
 \newbox\scrn_comment_box_rendering
@@ -370,8 +370,6 @@
    \c!nx=40,
    \c!ny=10,
    \c!location=\v!high]
-
-\presetlocalframed[\namedcommenthash\empty]
 
 \appendtoks
     \setuevalue         \currentcomment {\scrn_comment_argument{\currentcomment}}%
@@ -588,8 +586,8 @@
 \def\renderingtype  #tag{\ctxlua{interactions.renderings.var("#tag","type")}}
 \def\renderingoption#tag{\ctxlua{interactions.renderings.var("#tag","option")}}
 
-\def\renderingwidth    {8cm} % will become private
-\def\renderingheight   {6cm} % will become private
+\def\renderingwidth {8cm} % will become private
+\def\renderingheight{6cm} % will become private
 
 \unexpanded\def\definerenderingwindow
   {\dodoubleempty\scrn_rendering_define_window}

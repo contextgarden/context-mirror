@@ -25,6 +25,8 @@
 
 \installcommandhandler \??li {list} \??li
 
+\installinheritedframed {list}
+
 \def\donestedlistattributes#1#2% will change
   {\dosetlistattributes#1#2%
    \ifx\colorattributehash\empty \else
@@ -850,7 +852,9 @@
 \def\dodofixdlistelementE#1%
   {\dodofixdlistelementEFG
      {\setupinteraction[\c!strut=\v!no]}
-     {\localframed[\currentlisthash][\c!depth=\!!zeropoint,\c!color=]}
+     {\letlistparameter\c!depth\!!zeropoint
+      \letlistparameter\c!color\empty
+      \inheritedlistframed}
      {}}
 
 \def\dodofixdlistelementF#1%

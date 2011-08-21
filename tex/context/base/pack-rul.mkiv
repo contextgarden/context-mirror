@@ -885,7 +885,7 @@
    \getparameters[\@@framed][#2]% here !
    \dodolocalframed}
 
-\def\installinheritedframed#1#2%
+\def\installinheritedframed#1%
   {\normalexpanded{\doinstallinheritedframed
      \expandafter\noexpand\csname current#1\endcsname
      \expandafter\noexpand\csname #1parameter\endcsname
@@ -894,7 +894,7 @@
      \expandafter\noexpand\csname do#1parentparameter\endcsname
      \expandafter\noexpand\csname do#1rootparameter\endcsname
      \expandafter\noexpand\csname inherited#1framed\endcsname
-     \noexpand{#2}}}
+     \noexpand\??oi}} % if needed we can have a variant
 
 \unexpanded\def\doinstallinheritedframed#1#2#3#4#5#6#7#8%
   {\def#5##1##2{\ifx##1\relax#6{##2}\else#4##1{##2}\fi}%
