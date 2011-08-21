@@ -59,7 +59,7 @@
 
 \installcommandhandler \??ib {interactionbar} \??ib
 
-\presetlocalframed[\namedinteractionbarhash\empty]
+\installinheritedframed {interactionbar}
 
 \unexpanded\def\interactionbar
   {\dodoubleempty\scrn_bar_direct}
@@ -127,23 +127,24 @@
 \def\scrn_bar_buttons_indeed[#settings][#list]%
   {\begingroup
   %\let\menuparameter\interactionbarparameter
-   \setupinteractionbar[#settings]%
+   \setupcurrentinteractionbar[#settings]%
    \scrn_bar_width\interactionbarparameter\c!width
    \ifdim\scrn_bar_width=\zeropoint
      \scrn_bar_width1.5\emwidth
    \fi
    \doifnothing{\interactionbarparameter\c!height}{\letinteractionbarparameter\c!height\v!broad}%
    \doifnothing{\interactionbarparameter\c!depth }{\letinteractionbarparameter\c!depth\!!zeropoint}%%%
-   \setbox2\hbox{\localframed[\currentinteractionbarhash][\c!background=]{\symbol[\interactionparameter\c!symbolset][\v!previouspage]}}%
+   \letinteractionbarparameter\c!background\empty
+   \setbox2\hbox{\inheritedinteractionbarframed{\symbol[\interactionparameter\c!symbolset][\v!previouspage]}}%
    \!!heighta\ht2 % needed because we default to nothing
-   \setupinteractionbar[\c!strut=\v!no]%
+   \letinteractionbarparameter\c!strut\v!no
    \letinteractionparameter\c!width\zeropoint
    \!!counta\zerocount % new, was 1
    \processallactionsinset
      [#list]
-     [   \v!page=>\advance\!!counta 4,
-      \v!subpage=>\advance\!!counta 4,
-      \s!unknown=>\advance\!!counta 1]%
+     [   \v!page=>\advance\!!counta\plusfour,
+      \v!subpage=>\advance\!!counta\plusfour,
+      \s!unknown=>\advance\!!counta\plusone]%
    \ifdim\scrn_bar_width=\zeropoint
      \!!widtha\dimexpr2\emwidth+\scrn_bar_distance\relax
      \!!widthb\dimexpr\!!counta\!!widtha-\scrn_bar_distance\relax
@@ -178,6 +179,8 @@
      {\symbol[#action]}% we could expand this one once only
      [#action]%
    \hss}
+
+% todo: this will be \letblackruleparameter\c!width\!!widtha (faster)
 
 \def\scrn_bar_alternative_a
   {\scrn_bar_width   \interactionbarparameter\c!width

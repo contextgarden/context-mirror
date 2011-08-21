@@ -62,13 +62,13 @@
 
 \installcommandhandler \??wp {help} \??wp
 
+\installinheritedframed {help}
+
 \setuphelp
   [\c!frame=\v!off,
    \c!align=\v!normal,
    \c!background=\v!color,
    \c!backgroundcolor=gray]
-
-\presetlocalframed[\namedhelphash\empty]
 
 \appendtoks
     \setuevalue         \currenthelp {\scrn_help_argument{\currenthelp}}%
@@ -114,8 +114,7 @@
    \fi}
 
 \def\scrn_help_register#text%
-  {\setbox\scrn_help_box\hbox
-     {\localframed[\currenthelphash]{#text}}%
+  {\setbox\scrn_help_box\hbox{\inheritedhelpframed{#text}}%
    \definesymbol
      [\currenthelpname]
      [\copy\scrn_help_box]%
