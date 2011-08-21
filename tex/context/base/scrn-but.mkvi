@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% framed needs checking
-
 % \restorestandardblank
 % better namespace for pos
 
@@ -48,13 +46,13 @@
 
 \installcommandhandler \??bt {button} \??bt
 
-\let\setupbuttons\setupbutton
+\installinheritedframed {button} \??oi
 
-\presetlocalframed[\namedbuttonhash\empty]
+\let\setupbuttons\setupbutton
 
 \appendtoks
     \setuevalue\currentbutton{\scrn_button_direct{\currentbutton}}%
-    \setevalue{\??bt:\currentbutton\s!parent}{\currentbuttonhash}% framed
+%   \setevalue{\??bt:\currentbutton\s!parent}{\currentbuttonhash}% framed
 \to \everydefinebutton
 
 \unexpanded\def\scrn_button_direct#tag%
@@ -77,7 +75,13 @@
   {\iffirstargument
      \setupcurrentbutton[#settings]%
    \fi
-   \scrn_button_make\??bt\currentbutton\buttonparameter{#text}{#action}%
+   \scrn_button_make
+     \buttonparameter
+     \inheritedbuttonframed
+     \letbuttonparameter
+     \setbuttonparameter
+     {#text}%
+     {#action}%
    \endgroup}
 
 \def\scrn_button_direct_ignore[#settings]#text[#destination]%
@@ -150,13 +154,17 @@
 
 \newconditional\scrn_button_skipped
 
-\def\scrn_button_make#namespace#current#currentparameter#text#action%
+\def\scrn_button_make#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \global\setfalse\scrn_button_skipped
-   \chardef\locationboxpagestate\csname\??bt:\c!location:#currentparameter\c!samepage\endcsname
+   \chardef\locationboxpagestate\csname\??bt:\c!location:#currentparameter\c!samepage\endcsname % ?? bt: todo
    \doifreferencefoundelse{#action}\scrn_button_make_yes\scrn_button_make_nop
-     {#namespace}{#current}{#currentparameter}{#text}%
+     #currentparameter%
+     #inheritedframed%
+     #letparameter%
+     #setparameter
+     {#text}%
    \endgroup}
 
 \def\scrn_button_make_yes
@@ -196,38 +204,32 @@
      \expandafter\scrn_button_make_skipped
    \fi}
 
-\def\scrn_button_make_framed#namespace#current#currentparameter#text%
-  {\directlocalframed[#namespace:#current]{\ignorespaces#text\removeunwantedspaces}}
+\def\scrn_button_make_framed#currentparameter#inheritedframed#letparameter#setparameter#text%
+  {#inheritedframed{\ignorespaces#text\removeunwantedspaces}}
 
-\def\scrn_button_make_skipped#namespace#current#currentparameter#text%
+\def\scrn_button_make_skipped#currentparameter#inheritedframed#letparameter#setparameter#text%
   {\global\settrue\scrn_button_skipped}
 
-\def\scrn_button_make_normal#namespace#current#currentparameter#text%
+\def\scrn_button_make_normal#currentparameter#inheritedframed#letparameter#setparameter#text%
   {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
    \hbox attr \referenceattribute \lastreferenceattribute
-     {\directlocalframed
-        [#namespace:#current]%
-        {\ignorespaces#text\removeunwantedspaces}}}
+     {#inheritedframed{\ignorespaces#text\removeunwantedspaces}}}
 
-\def\scrn_button_make_contrast#namespace#current#currentparameter#text%
+\def\scrn_button_make_contrast#currentparameter#inheritedframed#letparameter#setparameter#text%
   {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
    \hbox attr \referenceattribute \lastreferenceattribute
-     {\localframedwithsettings
-        [#namespace:#current]%
-        [\c!foregroundcolor=#currentparameter\c!contrastcolor]%
-        {\ignorespaces#text\removeunwantedspaces}}}
+     {#setparameter\c!foregroundcolor{#currentparameter\c!contrastcolor}%
+      #inheritedframed{\ignorespaces#text\removeunwantedspaces}}}
 
-\def\scrn_button_make_empty#namespace#current#currentparameter#text%
-  {\localframedwithsettings
-     [#namespace:#current]%
-     [\c!empty=\v!yes]%
-     {\ignorespaces#text\removeunwantedspaces}}
+\def\scrn_button_make_empty#currentparameter#inheritedframed#letparameter#setparameter#text%
+  {#letparameter\c!empty\v!yes
+   #inheritedframed{\ignorespaces#text\removeunwantedspaces}}
 
-\def\scrn_button_make_nothing#namespace#current#currentparameter#text%
-  {\localframedwithsettings
-     [#namespace:#current]%
-     [\c!empty=\v!yes,\c!frame=,\c!background=]%
-     {\ignorespaces#text\removeunwantedspaces}}
+\def\scrn_button_make_nothing#currentparameter#inheritedframed#letparameter#setparameter#text%
+  {#letparameter\c!empty\v!yes
+   #letparameter\c!frame\empty
+   #letparameter\c!background\empty
+   #inheritedframed{\ignorespaces#text\removeunwantedspaces}}
 
 %D Menus:
 %D
@@ -318,9 +320,9 @@
 
 \installcommandhandler \??am {interactionmenu} \??am
 
-\let\setupinteractionmenus\setupinteractionmenu
+\installinheritedframed {interactionmenu} \??oi
 
-\presetlocalframed[\namedinteractionmenuhash\empty]
+\let\setupinteractionmenus\setupinteractionmenu
 
 \let\scrn_menu_action\relax
 
@@ -329,23 +331,38 @@
 \unexpanded\def\defineinteractionmenu
   {\dotripleempty\scrn_menu_define}
 
+% \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
+%   {\ifthirdargument
+%      \doifassignmentelse{#settings}%
+%        {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
+%        {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
+%      \scrn_menu_register{#tag}{#category}%
+%      \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}% framed
+%    \else\ifsecondargument
+%      \doifassignmentelse{#category}%
+%        {\scrn_menu_define_original[#tag][#category]%                                 % root definition
+%         \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}}% framed
+%        {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
+%         \scrn_menu_register{#tag}{#category}%
+%         \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}}% framed
+%    \else
+%      \scrn_menu_define_original[#tag]%                                               % root definition
+%      \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}% framed
+%    \fi\fi}
+
 \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
   {\ifthirdargument
      \doifassignmentelse{#settings}%
        {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
        {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
      \scrn_menu_register{#tag}{#category}%
-     \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}% framed
    \else\ifsecondargument
      \doifassignmentelse{#category}%
-       {\scrn_menu_define_original[#tag][#category]%                                 % root definition
-        \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}}% framed
+       {\scrn_menu_define_original[#tag][#category]}%                                % root definition
        {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
-        \scrn_menu_register{#tag}{#category}%
-        \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}}% framed
-   \else
+        \scrn_menu_register{#tag}{#category}}%
+  \else
      \scrn_menu_define_original[#tag]%                                               % root definition
-     \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}% framed
    \fi\fi}
 
 \def\scrn_menu_register#tag#category%
@@ -670,10 +687,16 @@
      \expandafter\scrn_button_make_position
    \else
      \expandafter\scrn_button_make
-   \fi\??am\currentinteractionmenu\interactionmenuparameter{#text}{#action}%
+   \fi
+     \interactionmenuparameter
+     \inheritedinteractionmenuframed
+     \letinteractionmenuparameter
+     \setinteractionmenuparameter
+     {#text}%
+     {#action}%
    \scrn_menu_action_stop}
 
-\def\scrn_button_make_position#namespace#current#currentparameter#text#action%
+\def\scrn_button_make_position#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\global\advance\scrn_menu_position\plusone
    \doifreferencefoundelse{#action}% 0=not found, 1=same page, >1=elsewhere
      {\scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
@@ -683,35 +706,44 @@
    \to \scrn_menu_mp_data
    \hpos
      {\askedinteractionmenulocation:\number\scrn_menu_position}%
-     {\scrn_button_make{#namespace}{#current}{#currentparameter}{#text}{#action}}}
+     {\scrn_button_make
+        #currentparameter%
+        #inheritedframed%
+        #letparameter%
+        #setparameter%
+        {#text}%
+        {#action}}}
 
 \unexpanded\def\scrn_menu_got_start[#action]#text\stopgot
   {\scrn_menu_action_start
    \setupcurrentinteractionmenu[\c!frame=\v!off,\c!background=]% needs checking, was buttons
-   \scrn_button_make\??am\currentinteractionmenu\interactionmenuparameter{#text}{#action}%
+   \scrn_button_make
+     \interactionmenuparameter
+     \inheritedinteractionmenuframed
+     \letinteractionmenuparameter
+     \setinteractionmenuparameter
+     {#text}%
+     {#action}%
    \scrn_menu_action_stop}
 
 \unexpanded\def\scrn_menu_nop_start#text\stopnop
   {\scrn_menu_action_start
-   \localframedwithsettings
-     [\??am:\currentinteractionmenu]%
-     [\c!frame=\v!off,\c!background=,\c!empty=\v!yes]%
-     {\ignorespaces#text\removeunwantedspaces}%
+   \letinteractionmenuparameter\c!frame\v!off
+   \letinteractionmenuparameter\c!background\empty
+   \letinteractionmenuparameter\v!yes
+   \inheritedinteractionmenuframed{\ignorespaces#text\removeunwantedspaces}%
    \scrn_menu_action_stop}
 
 \unexpanded\def\scrn_menu_txt_start#text\stoptxt
   {\scrn_menu_action_start
-   \localframedwithsettings
-     [\??am:\currentinteractionmenu]%
-     [\c!frame=\v!off,\c!background=]%
-     {\ignorespaces#text\removeunwantedspaces}%
+   \letinteractionmenuparameter\c!frame\v!off
+   \letinteractionmenuparameter\c!background\empty
+   \inheritedinteractionmenuframed{\ignorespaces#text\removeunwantedspaces}%
    \scrn_menu_action_stop}
 
 \unexpanded\def\scrn_menu_rul_start#text\stoprul
   {\scrn_menu_action_start
-   \directlocalframed
-     [\??am:\currentinteractionmenu]%
-     {\ignorespaces#text\removeunwantedspaces}%
+   \inheritedinteractionmenuframed{\ignorespaces#text\removeunwantedspaces}%
    \scrn_menu_action_stop}
 
 \unexpanded\def\scrn_menu_com_start#text\stopcom
@@ -757,7 +789,7 @@
    \edef\currentinteractionmenu{#tag}%
    \doif{\interactionmenuparameter\c!state}\v!local
      {\letinteractionmenuparameter\c!state\v!start
-      \setinteractionmenuparameter\s!parent{\??am\askedinteractionmenulocation}% nice hack
+    %  \setinteractionmenuparameter\s!parent{\??am\askedinteractionmenulocation}% nice hack
       \interactionmenuparameter\c!menu}%
    \endgroup}
 
@@ -768,13 +800,9 @@
 
 \def\scrn_menu_interaction_menu[#tag][#settings]%
   {\begingroup
-   \setupinteractionmenu[#tag][#settings]%
-%    \edef\currentinteractionmenu         {#tag}%
-%    \edef\askedinteractionmenulocation   {\interactionmenuparameter\c!category}%
-%    \edef\askedinteractionmenualternative{\interactionmenuparameter\c!alternative}%
-%    \def\scrn_menu_actions#dummy{\scrn_menu_package_indeed\currentinteractionmenu}%
-%    \csname\??am:\c!menu:\askedinteractionmenualternative\endcsname
-     \scrn_menu_insert{#tag}%
+   \edef\currentinteractionmenu{#tag}%
+   \setupcurrentinteractionmenu[#settings]%
+   \scrn_menu_insert{#tag}%
    \endgroup}
 
 %D Plugin handler:
@@ -954,7 +982,8 @@
      \scrn_menu_menu_button_a
        {#menutag}{#settings}{#text}{#action}%
    \else
-     \doifassignmentelse{#menutag}\scrn_menu_menu_button_b\scrn_menu_menu_button_c{#menutag}{#text}{#action}%
+     \doifassignmentelse{#menutag}\scrn_menu_menu_button_b\scrn_menu_menu_button_c
+       {#menutag}{#text}{#action}%
    \fi}
 
 \def\scrn_menu_menu_button_ignore[#menutag][#settings]#text[#action]%
@@ -963,21 +992,42 @@
 \def\scrn_menu_menu_button_a#tag#settings#text#action%
   {\doif{\interactionmenuparameter\c!state}\v!start
      {\dontleavehmode \begingroup
-        \setupinteractionmenu[#tag][#settings]%
-        \scrn_button_make\??am{#tag}\menuparameter{#text}{#action}%
+        \edef\currentinteractionmenu{#tag}%
+        \setupcurrentinteractionmenu[#settings]%
+        \scrn_button_make
+          \interactionmenuparameter
+          \inheritedinteractionmenuframed
+          \letinteractionmenuparameter
+          \setinteractionmenuparameter
+          {#text}%
+          {#action}%
       \endgroup}}
 
 \def\scrn_menu_menu_button_b#settings#text#action%
   {\doif{\buttonparameter\c!state}\v!start
      {\dontleavehmode \begingroup
-        \setupbuttons[#settings]%
-        \scrn_button_make\??bt\empty\buttonparameter{#text}{#action}%
+        \let\currentbutton\empty
+        \setupcurrentbutton[#settings]%
+        \scrn_button_make
+          \buttonparameter
+          \inheritedbuttonframed
+          \letbuttonparameter
+          \setbuttonparameter
+          {#text}%
+          {#action}%
       \endgroup}}
 
 \def\scrn_menu_menu_button_c#tag#text#action%
   {\doif{\interactionmenuparameter\c!state}\v!start
      {\dontleavehmode \begingroup
-        \scrn_button_make\??am{#tag}\menuparameter{#text}{#action}%
+        \edef\currentinteractionmenu{#tag}%
+        \scrn_button_make
+          \interactionmenuparameter
+          \inheritedinteractionmenuframed
+          \letinteractionmenuparameter
+          \setinteractionmenuparameter
+          {#text}%
+          {#action}%
       \endgroup}}
 
 %D Untested:
