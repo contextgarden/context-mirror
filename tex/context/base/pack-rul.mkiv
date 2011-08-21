@@ -2701,9 +2701,9 @@
 
 \installcommandhandler \??kd {framedtext} \??kd
 
-\let\setupframedtexts\setupframedtext
+\installinheritedframed {framedtext}
 
-\presetlocalframed[\??kd]
+\let\setupframedtexts\setupframedtext
 
 \setupframedtext
   [\c!width=0.75\hsize,
@@ -2782,8 +2782,8 @@
     %  \insidefloattrue % ? better
        \normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
        \startcolor[\framedtextparameter\c!color]%
-       \localframed[\currentframedtexthash][\c!strut=\v!no]% todo: use delayedstrut
-       \bgroup
+       \letframedtextparameter\c!strut\v!no
+       \inheritedframedtextframed\bgroup
          \let\\=\endgraf
          \framedtextparameter\c!inner % oud spul
          \doif{\framedtextparameter\c!depthcorrection}\v!on\doftstartdepthcorrection
@@ -2890,15 +2890,18 @@
 
 \def\dodoframedtext[#1]% beware!
   {\normalexpanded{\noexpand\switchtobodyfont[\framedtextparameter\c!bodyfont]}%
-   \localframed[\currentframedtexthash][\c!strut=\v!no,#1]%
+   \letframedtextparameter\c!strut\v!no
+   \iffirstargument
+     \setupcurrentframedtext[#1]%
+   \fi
+   \inheritedframedtextframed\bgroup
+     \blank[\v!disable]%
+     \let\\=\endgraf
+     \framedtextparameter\c!inner
+     \dosetframedtextattributes\c!style\c!color
      \bgroup
-       \blank[\v!disable]%
-       \let\\=\endgraf
-       \framedtextparameter\c!inner
-       \dosetframedtextattributes\c!style\c!color
-       \bgroup
-       \aftergroup\docloseframedtext
-       \let\next=}
+     \aftergroup\docloseframedtext
+     \let\next=}
 
 \def\docloseframedtext
   {\removelastskip
@@ -3276,8 +3279,6 @@
 %D
 %D \showsetup{setupbackground}
 
-\presetlocalframed[\??ag]
-
 \def\dosetupbackground[#1]%
   {\getparameters[\??ag][#1]%
    \doifelse\@@agstate\v!start
@@ -3323,6 +3324,8 @@
 %D \lineheight}. That way \type{\topskip} takes care of the
 %D lineheight. I'll probably forget to apply this trick
 %D elsewhere.
+
+\presetlocalframed[\??ag]
 
 \def\dostopbackground % improved version (i hope)
   {\endgraf
