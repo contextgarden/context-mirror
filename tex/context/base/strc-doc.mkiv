@@ -60,8 +60,21 @@
    \c!command=\showstructuredata]
 
 % maybe flags for list, bm, mark
-%
-% hm messed up
+
+\def\structurereferenceprefixon {+}
+\def\structurereferenceprefixoff{-}
+
+\def\setstructurereferenceprefix
+  {\ifx\currentstructurereferenceprefix\empty
+     % nothing
+   \else\ifx\currentstructurereferenceprefix\structurereferenceprefixon
+     \setupglobalreferenceprefix[\currentstructurereference]%
+   \else\ifx\currentstructurereferenceprefix\structurereferenceprefixoff
+     \setupglobalreferenceprefix[]%
+   \else
+     \setupglobalreferenceprefix[\currentstructurereferenceprefix]%
+   \fi\fi\fi
+   \let\currentstructurereferenceprefix\referenceprefix}
 
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
@@ -115,6 +128,7 @@
      \globallet\currentstructurecoding\s!tex
    \fi
    \setnextinternalreference
+   \setstructurereferenceprefix
    \xdef\currentstructurenumber{\ctxlua{ % todo: combine with next call, adapt marks accordingly
         structures.sections.somelevel {
             references = {

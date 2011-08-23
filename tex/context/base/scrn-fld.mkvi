@@ -384,9 +384,9 @@
 \installsetuphandler         \??wc {fieldcontentframed}
 \installsetuphandler         \??wt {fieldtotalframed}
 
-\installinheritedframed {fieldlabelframed}
-\installinheritedframed {fieldcontentframed}
-\installinheritedframed {fieldtotalframed}
+\installinheritedframed            {fieldlabelframed}
+\installinheritedframed            {fieldcontentframed}
+\installinheritedframed            {fieldtotalframed}
 
 \unexpanded\def\setupfield {\doquintupleempty\scrn_field_setup_field}
 \unexpanded\def\setupfields{\doquadrupleempty\scrn_field_setup_fields}
@@ -639,9 +639,7 @@
 \newbox  \scrn_tooltip_box_text
 \newcount\scrn_tooltip_n
 
-\installcommandhandler \??wh {tooltip} \??wh
-
-\installinheritedframed {tooltip}
+\installframedcommandhandler \??wh {tooltip} \??wh
 
 \setuptooltip
   [\c!location=\v!right,
