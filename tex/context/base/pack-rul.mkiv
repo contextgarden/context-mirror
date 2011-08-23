@@ -885,6 +885,8 @@
    \getparameters[\@@framed][#2]% here !
    \dodolocalframed}
 
+% will probably move
+
 \def\installinheritedframed#1%
   {\normalexpanded{\doinstallinheritedframed
      \expandafter\noexpand\csname current#1\endcsname
@@ -907,6 +909,12 @@
       \let\framedparameter    #2%
       \let\framedparameterhash#3%
       \dodolocalframed}}
+
+\unexpanded\def\installframedcommandhandler#1#2#3%
+  {\installcommandhandler{#1}{#2}{#3}%
+   \installinheritedframed{#2}}
+
+% done
 
 \def\c!fr!analyze{fr:analyze} % private option
 
@@ -2699,9 +2707,7 @@
 %D
 %D The next definition shows the defaults.
 
-\installcommandhandler \??kd {framedtext} \??kd
-
-\installinheritedframed {framedtext}
+\installframedcommandhandler \??kd {framedtext} \??kd
 
 \let\setupframedtexts\setupframedtext
 

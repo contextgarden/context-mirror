@@ -283,17 +283,6 @@
 \newconditional\headshownumber
 \newconditional\headisdisplay
 
-\let\headprefix\empty \def\headprefixplus{+}
-
-\def\setheadreference
-  {\edef\headreference      {\headparameter\c!reference}%
-   \edef\headreferenceprefix{\headparameter\c!prefix}%
-   \ifx\headreferenceprefix\empty
-     \let\headreferenceprefix\referenceprefix
-   \else
-     \setupreferenceprefix[\headreferenceprefix]% currenty no pop
-   \fi}
-
 \setvalue{\??nh:\c!incrementnumber:\v!yes  }{\settrue \headdoincrement\settrue \headtolist}
 \setvalue{\??nh:\c!incrementnumber:\v!no   }{\setfalse\headdoincrement\setfalse\headtolist}
 \setvalue{\??nh:\c!incrementnumber:\v!list }{\setfalse\headdoincrement\settrue \headtolist}
@@ -429,8 +418,8 @@
       \c!sectionstopper=\headparameter\c!sectionstopper,
       \c!sectionset=\headparameter\c!sectionset,
       \c!sectionsegments=\headparameter\c!sectionsegments,
-      \c!reference=\headreference,
-      \c!referenceprefix=\headreferenceprefix,
+      \c!reference=\headparameter\c!reference,
+      \c!referenceprefix=\headparameter\c!referenceprefix,
       \c!backreference=,
       \c!command=,
       #2]%
@@ -482,7 +471,6 @@
    %writestatus\m!system{setup: \currenthead,\currentheadcoupling,\currentheadsection,\currentheadlevel}%
    %
    \setautostructurelevel
-   \setheadreference % does not do much currently
    \setheadincrement
    \setheadplacement
    \setheaddisplay

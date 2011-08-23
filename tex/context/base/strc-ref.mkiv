@@ -728,6 +728,9 @@
      \edef\referenceprefix{\@@rfprefix:}%
    \fi\fi\fi\fi}
 
+\unexpanded\def\setupglobalreferenceprefix[#1]%
+  {\xdef\referenceprefix{#1:}}
+
 %D The most straightforward way of retrieving references is
 %D using \type{\ref}. Consider the reference:
 %D

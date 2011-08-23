@@ -151,7 +151,16 @@
 
 \definebuffer[\v!hiding] \setupbuffer[\v!hiding][\c!before=,\c!after=]
 
-\let\processTEXbuffer\getbuffer % handy synonym
+% \let\processTEXbuffer\getbuffer % handy synonym
+
+\unexpanded\def\processTEXbuffer
+  {\dosingleempty\doprocessTEXbuffer}
+
+\def\doprocessTEXbuffer[#1]%
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes
+   \getbuffer[#1]%
+   \popcatcodetable}
 
 \setupbuffer
   [\c!before=,
