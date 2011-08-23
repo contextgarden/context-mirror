@@ -1,0 +1,87 @@
+# file    : pragma.properties
+# version : 18 august 2003
+# author  : Hans Hagen / PRAGMA ADE / www.pragma-ade.com
+
+# save.backup.first=1
+# save.backup.once=1
+# save.backup.suffix=.bak
+
+# TeX: experimental features
+
+keywordclass.primitives.pdftex.experimental=\
+    pdfavoidoverfull \
+    pdflastdemerits \
+    pdflastvbreakpenalty \
+    pdflinesnapx pdflinesnapy \
+    pdfmaxpenalty pdfminpenalty pdfmovechars \
+    pdfsnaprefpoint pdfsnapx pdfsnapy \
+    pdfstartthread
+
+# Editor: screen
+
+position.left=25
+position.top=25
+position.width=1550
+position.height=1100
+output.horizontal.size=250
+output.vertical.size=100
+
+# Editor: filters
+
+open.filter=\
+All Files (*.*)|*.*|\
+$(filter.context)\
+$(filter.metafun)\
+$(filter.example)\
+$(filter.lua)\
+$(filter.ruby)\
+$(filter.perl)\
+$(filter.text)
+
+# Editor: menus
+
+menu.language=\
+TeX|tex||\
+Metapost|metapost||\
+XML|xml||\
+Lua|lua||\
+Ruby|ruby||\
+Perl|perl||\
+Text|txt||
+
+# Abbreviations : demo
+
+# ext=\\externalfigure[|][width=,height=]
+# for=\n\\startformula\n|\n\\stopformula\n
+# itm=\\startitemize\n\\item |\n\\item \n\\stopitemize
+# tab=\\starttable[||c||c||]\n\\NC | \\NC  \\NC \\AR\n\\NC  \\NC  \\NC \\AR\n\\stoptable\n
+# TAB=\\bTABLE\n\\bTR \\bTD | \\eTD \\bTD  \\eTD \\eTR\n\\bTR \\bTD  \\eTD \\bTD  \\eTD \\eTR\n\\eTABLE\n
+# tbl=\\starttabulate\n\\NC | \\NC  \\NC \\AR\n\\NC  \\NC  \\NC \\NR\n\\stoptabulate\n
+# tpg=\\starttyping\n|\n\\stoptyping\n
+# txt=\\starttext\n\n|\n\n\\stoptext
+#
+# pfg=\\placefigure\n  {}\n  {|}
+# ptb=\\placetable\n  {}\n  {|}
+# pfr=\\placeformula[]\n\\startformula\n|\n\\stopformula\n
+#
+# c=\\chapter{|}\n\n
+# e=\\emph{|}
+# i=\\item |
+# k=\\cap{|}
+# m=\\mathematics{|}
+# s=\\section{|}\n\n
+# t=\\type{|}
+#
+# mu=\\startusableMPgraphic{|}\n\n\\stopusableMPgraphic\n
+# mr=\\startreusableMPgraphic{|}\n\n\\stopreusableMPgraphic\n
+# mq=\\startuniqueMPgraphic{|}\n\n\\stopuniqueMPgraphic\n
+#
+# um=\useMPgraphic{|}
+# rm=\reuseMPgraphic{|}
+# qm=\uniqueMPgraphic{|}
+
+keywords2.$(file.patterns.lua)=$(keywordclass2.lua)$(keywordclass2.lua5)
+keywords3.$(file.patterns.lua)=$(keywordclass3.lua5)
+keywords4.$(file.patterns.lua)=$(keywordclass4.lua5)
+
+#~ keywords4.$(file.patterns.lua)=$(keywordclass4.lua4)
