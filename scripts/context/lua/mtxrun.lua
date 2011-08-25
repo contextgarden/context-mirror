@@ -6905,7 +6905,7 @@ local predefined_simplified = {
 
 local nofprivates = 0xF0000 -- shared but seldom used
 
-local privates_u = {
+local privates_u = { -- unescaped
     [ [[&]] ] = "&amp;",
     [ [["]] ] = "&quot;",
     [ [[']] ] = "&apos;",
@@ -7016,40 +7016,44 @@ local function handle_any_entity(str)
         if not a then
             a = resolve_predefined and predefined_simplified[str]
             if a then
-                -- one of the predefined
-            elseif type(resolve) == "function" then
-                a = resolve(str) or entities[str]
-            else
-                a = entities[str]
-            end
-            if a then
-                if type(a) == "function" then
-                    if trace_entities then
-                        report_xml("expanding entity &%s; (function)",str)
-                    end
-                    a = a(str) or ""
-                end
-                a = lpegmatch(parsedentity,a) or a
                 if trace_entities then
-                    report_xml("resolved entity &%s; -> %s (internal)",str,a)
+                    report_xml("resolved entity &%s; -> %s (predefined)",str,a)
                 end
             else
-                local unknown_any_entity = placeholders.unknown_any_entity
-                if unknown_any_entity then
-                    a = unknown_any_entity(str) or ""
+                if type(resolve) == "function" then
+                    a = resolve(str) or entities[str]
+                else
+                    a = entities[str]
                 end
                 if a then
+                    if type(a) == "function" then
+                        if trace_entities then
+                            report_xml("expanding entity &%s; (function)",str)
+                        end
+                        a = a(str) or ""
+                    end
+                    a = lpegmatch(parsedentity,a) or a -- for nested
                     if trace_entities then
-                        report_xml("resolved entity &%s; -> %s (external)",str,a)
+                        report_xml("resolved entity &%s; -> %s (internal)",str,a)
                     end
                 else
-                    if trace_entities then
-                        report_xml("keeping entity &%s;",str)
+                    local unknown_any_entity = placeholders.unknown_any_entity
+                    if unknown_any_entity then
+                        a = unknown_any_entity(str) or ""
                     end
-                    if str == "" then
-                        a = "&error;"
+                    if a then
+                        if trace_entities then
+                            report_xml("resolved entity &%s; -> %s (external)",str,a)
+                        end
                     else
-                        a = "&" .. str .. ";"
+                        if trace_entities then
+                            report_xml("keeping entity &%s;",str)
+                        end
+                        if str == "" then
+                            a = "&error;"
+                        else
+                            a = "&" .. str .. ";"
+                        end
                     end
                 end
             end
@@ -7191,6 +7195,7 @@ local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * val
 local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
 local simpledoctype    = (1-close)^1 -- * balanced^0
 local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
+local somedoctype      = C((somespace * (publicdoctype + systemdoctype + definitiondoctype + simpledoctype) * optionalspace)^0)
 
 local instruction      = (spacing * begininstruction * someinstruction * endinstruction) / function(...) add_special("@pi@",...) end
 local comment          = (spacing * begincomment     * somecomment     * endcomment    ) / function(...) add_special("@cm@",...) end
@@ -7243,6 +7248,7 @@ local function xmlconvert(data, settings)
         settings.resolve_predefined_entities = true
         resolve_predefined = true
     end
+    --
     --
     stack, top, at, xmlns, errorstr = { }, { }, { }, { }, nil
     acache, hcache, dcache = { }, { }, { } -- not stored
@@ -7304,11 +7310,11 @@ local function xmlconvert(data, settings)
     if errorstr and errorstr ~= "" then
         result.error = true
     end
-strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
-unify_predefined, cleanup, entities = nil, nil, nil
-stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
-acache, hcache, dcache = nil, nil, nil
-reported_attribute_errors, mt, errorhandler = nil, nil, nil
+    strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
+    unify_predefined, cleanup, entities = nil, nil, nil
+    stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
+    acache, hcache, dcache = nil, nil, nil
+    reported_attribute_errors, mt, errorhandler = nil, nil, nil
     return result
 end
 
@@ -9897,10 +9903,10 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
-local function raw(collected) -- hybrid
+local function raw(collected) -- hybrid (not much different from text so it might go)
     if collected then
         local e = collected[1] or collected
-        return (e and xmlserialize(e)) or "" -- only first as we cannot concat function
+        return e and xmltostring(e) or "" -- only first as we cannot concat function
     else
         return ""
     end
@@ -9924,10 +9930,15 @@ local xmltexthandler = xmlnewhandlers {
 }
 
 local function xmltotext(root)
-    if not root then
+    local dt = root.dt
+    if not dt then
         return ""
-    elseif type(root) == 'string' then
-        return root
+    end
+    local nt = #dt -- string or table
+    if nt == 0 then
+        return ""
+    elseif nt == 1 and type(dt[1]) == "string" then
+        return dt[1] -- no escaping of " ' < > &
     else
         return xmlserialize(root,xmltexthandler) or ""
     end
@@ -9938,7 +9949,7 @@ end
 local function text(collected) -- hybrid
     if collected then
         local e = collected[1] or collected
-        return (e and xmltotext(e.dt)) or ""
+        return (e and xmltotext(e)) or ""
     else
         return ""
     end
@@ -10086,10 +10097,10 @@ function xml.text(id,pattern)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)
-        return (collected and xmltotext(collected[1].dt)) or ""
+        return (collected and xmltotext(collected[1])) or ""
     elseif id then
      -- return text(id)
-        return xmltotext(id.dt) or ""
+        return xmltotext(id) or ""
     else
         return ""
     end
