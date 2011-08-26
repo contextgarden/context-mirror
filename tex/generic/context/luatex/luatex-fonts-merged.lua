@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/26/11 13:33:00
+-- merge date  : 08/26/11 23:45:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -9194,6 +9194,7 @@ function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,look
                     local choice, index = alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
                     current.char = choice
                     if trace_alternatives then
+                        m = m + 1
                         logprocess("%s: %s of %s, replacing single %s by alternative %s (%s)",
                             cref(kind,chainname,chainlookupname,lookupname),m,n,index,gref(currentchar),gref(choice))
                     end

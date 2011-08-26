@@ -1112,6 +1112,7 @@ function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,look
                     local choice, index = alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
                     current.char = choice
                     if trace_alternatives then
+                        m = m + 1
                         logprocess("%s: %s of %s, replacing single %s by alternative %s (%s)",
                             cref(kind,chainname,chainlookupname,lookupname),m,n,index,gref(currentchar),gref(choice))
                     end

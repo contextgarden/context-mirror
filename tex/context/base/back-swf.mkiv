@@ -14,6 +14,35 @@
 % This is only a placeholder that demonstrates the usage of swf
 % resources.
 
+%D \starttyping
+%D \starttext
+%D
+%D \enabletrackers[graphics.locating]
+%D \enabletrackers[backend.swf]
+%D
+%D \startluaparameterset [swf:relative:resources]
+%D     relativepaths = {
+%D         "assets"
+%D     }
+%D \stopluaparameterset
+%D
+%D \startluaparameterset[swf:relative:display]
+%D     toolbar  = true,
+%D     preview  = "images/posterframes/*.jpg", -- relative to assets
+%D     open     = "click",
+%D     close    = "focus",
+%D \stopluaparameterset
+%D
+%D \startTEXpage
+%D    \externalfigure
+%D      [whatever.swf]
+%D      [resources=swf:relative:resources,
+%D       display=swf:relative:display]
+%D \stopTEXpage
+%D \stoptyping
+
+\stoptext
+
 \endinput
 
 \starttext
