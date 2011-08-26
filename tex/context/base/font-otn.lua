@@ -976,17 +976,29 @@ example, the following is valid:</p>
 
 <p>Therefore we we don't really do the replacement here already unless we have the
 single lookup case. The efficiency of the replacements can be improved by deleting
-as less as needed but that would also mke the code even more messy.</p>
+as less as needed but that would also make the code even more messy.</p>
 --ldx]]--
 
 local function delete_till_stop(start,stop,ignoremarks)
-    if start ~= stop then
-        -- todo keep marks
+    local n = 1
+    if start == stop then
+        -- done
+    elseif ignoremarks then
+        repeat -- start x x m x x stop => start m
+            local next = start.next
+            if not marks[next.char] then
+                delete_node(start,next)
+            end
+            n = n + 1
+        until next == stop
+    else -- start x x x stop => start
         repeat
             local next = start.next
             delete_node(start,next)
+            n = n + 1
         until next == stop
     end
+    return n
 end
 
 --[[ldx--
@@ -1076,29 +1088,32 @@ end
 
 function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
     -- todo: marks ?
-    delete_till_stop(start,stop)
+    local n = delete_till_stop(start,stop)
     local current = start
     local subtables = currentlookup.subtables
+    local m = 0
     while current do
         if current.id == glyph_code then
+            m = m + 1
             local currentchar = current.char
             local lookupname = subtables[1]
             local alternatives = lookuphash[lookupname]
             if not alternatives then
                 if trace_bugs then
-                    logwarning("%s: no alternative hits",cref(kind,chainname,chainlookupname,lookupname))
+                    logwarning("%s: %s of %s, no alternative hit",cref(kind,chainname,chainlookupname,lookupname),m,n)
                 end
             else
                 alternatives = alternatives[currentchar]
                 if not alternatives then
                     if trace_bugs then
-                        logwarning("%s: no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar))
+                        logwarning("%s:  %s of %s, no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),m,n,gref(currentchar))
                     end
                 else
                     local choice, index = alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
                     current.char = choice
                     if trace_alternatives then
-                        logprocess("%s: replacing single %s by alternative %s (%s)",cref(kind,chainname,chainlookupname,lookupname),index,gref(currentchar),gref(choice),index)
+                        logprocess("%s: %s of %s, replacing single %s by alternative %s (%s)",
+                            cref(kind,chainname,chainlookupname,lookupname),m,n,index,gref(currentchar),gref(choice))
                     end
                 end
             end

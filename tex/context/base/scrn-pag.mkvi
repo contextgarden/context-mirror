@@ -31,93 +31,56 @@
 
 \newconditional\scrn_canvas_tight_page
 
-% \def\scrn_canvas_calculate
-%   {\begingroup
-%    \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
-%    \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
-%    \canvasbackoffset\backspace
-%    \canvastopoffset\topspace
-%    \ifx\currentinteractionscreenwidth\v!fit
-%      \global\canvaswidth\leftcombitotal
-%      \ifdim\backspace>\canvaswidth
-%        \ifdim\backspace>\zeropoint\relax
-%          \global\advance\canvasbackoffset -\canvaswidth
-%        \fi
-%      \fi
-%      \global\advance\canvaswidth\dimexpr
-%        \rightcombitotal
-%      + 2\dimexpr
-%           \interactionscreenparameter\c!backspace
-%         + \interactionscreenparameter\c!horoffset
-%         \relax
-%      \relax
-%      \donetrue
-%    \else\ifx\currentinteractionscreenwidth\v!max
-%      \global\canvaswidth\printpaperwidth
-%      \donetrue
-%    \else
-%      \global\canvaswidth\currentinteractionscreenwidth
-%      \donefalse
-%    \fi\fi
-%    \ifdone
-%      \ifdim\canvaswidth>\paperwidth\ifdim\canvaswidth>\zeropoint
-%        \global\paperwidth\canvaswidth % kills location=middle
-%      \fi\fi
-%    \fi
-%    \ifx\currentinteractionscreenheight\v!fit
-%      \global\canvasheight\dimexpr\topheight+\topdistance\relax
-%      \ifdim\topspace>\canvasheight
-%        \ifdim\topspace>\zeropoint\relax
-%          \global\advance\canvastopoffset -\canvasheight
-%        \fi
-%      \fi
-%      \global\advance\canvasheight\dimexpr
-%        \makeupheight
-%      + \bottomdistance
-%      + \bottomheight
-%      + 2\dimexpr
-%           \interactionscreenparameter\c!topspace
-%         + \interactionscreenparameter\c!veroffset
-%         \relax
-%      \relax
-%    \else\ifx\currentinteractionscreenheight\v!max
-%      \global\canvasheight\printpaperheight
-%    \else
-%      \global\canvasheight\currentinteractionscreenheight
-%    \fi\fi
-%    \ifdone
-%      \ifdim\canvasheight>\paperheight\ifdim\canvasheight>\zeropoint
-%        \global\paperheight\canvasheight % kills location=middle
-%      \fi\fi
-%    \fi
-%    \endgroup}
-
 \def\scrn_canvas_calculate
   {\begingroup
    \edef\currentinteractionscreenwidth {\interactionscreenparameter\c!width }%
    \edef\currentinteractionscreenheight{\interactionscreenparameter\c!height}%
    \canvasbackoffset\backspace
    \canvastopoffset\topspace
-   \ifx\currentinteractionscreenwidth\v!fit
-     \global\canvaswidth\leftcombitotal
+   \ifx\currentinteractionscreenwidth\v!max
+     \global\canvaswidth\printpaperwidth
+   \else\ifx\currentinteractionscreenwidth\v!fit
+     \global\canvaswidth\dimexpr
+       \leftcombitotal
+     + \makeupwidth
+     + \rightcombitotal
+     + 2\dimexpr
+          \interactionscreenparameter\c!backspace
+        + \interactionscreenparameter\c!horoffset
+        \relax
+     \relax
+   \else\ifx\currentinteractionscreenwidth\v!tight
      \ifdim\backspace>\canvaswidth
        \ifdim\backspace>\zeropoint\relax
          \global\advance\canvasbackoffset -\canvaswidth
        \fi
      \fi
      \global\advance\canvaswidth\dimexpr
-       \rightcombitotal
+       \makeupwidth
+     + \rightcombitotal
      + 2\dimexpr
           \interactionscreenparameter\c!backspace
         + \interactionscreenparameter\c!horoffset
         \relax
      \relax
-   \else\ifx\currentinteractionscreenwidth\v!max
-     \global\canvaswidth\printpaperwidth
    \else
      \global\canvaswidth\currentinteractionscreenwidth
-   \fi\fi
-   \ifx\currentinteractionscreenheight\v!fit
+   \fi\fi\fi
+   \ifx\currentinteractionscreenheight\v!max
+     \global\canvasheight\printpaperheight
+   \else\ifx\currentinteractionscreenheight\v!fit
+     \global\canvasheight\dimexpr
+       \topheight
+     + \topdistance
+     + \makeupheight
+     + \bottomdistance
+     + \bottomheight
+     + 2\dimexpr
+          \interactionscreenparameter\c!topspace
+        + \interactionscreenparameter\c!veroffset
+        \relax
+     \relax
+   \else\ifx\currentinteractionscreenheight\v!tight
      \global\canvasheight\dimexpr\topheight+\topdistance\relax
      \ifdim\topspace>\canvasheight
        \ifdim\topspace>\zeropoint\relax
@@ -133,11 +96,9 @@
         + \interactionscreenparameter\c!veroffset
         \relax
      \relax
-   \else\ifx\currentinteractionscreenheight\v!max
-     \global\canvasheight\printpaperheight
    \else
      \global\canvasheight\currentinteractionscreenheight
-   \fi\fi
+   \fi\fi\fi
    \ifconditional\c_page_layouts_location_is_set
      \global\setfalse\scrn_canvas_tight_page
    \fi

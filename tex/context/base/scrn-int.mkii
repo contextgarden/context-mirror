@@ -89,7 +89,8 @@
         \advance\backspace -\!!widtha
       \fi\fi
       \advance\!!widtha\rightcombitotal
-      \advance\!!widtha 2\dimexpr\@@scbackspace+\@@schoroffset\relax}
+      \advance\!!widtha 2\dimexpr\@@scbackspace+\@@schoroffset\relax
+      \advance\!!widtha \makeupwidth}
      {\doifelse\@@scwidth\v!max
         {\!!widtha\printpaperwidth}
         {\!!widtha\@@scwidth}}%

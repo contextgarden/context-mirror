@@ -417,6 +417,8 @@
       \edef\backgroundwidth {\the\wd\framebox}%
       \edef\backgroundheight{\the\ht\framebox}%
       \edef\backgrounddepth {\the\dp\framebox}%
+      \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+      \edef\overlaylinewidth{\the\ruledlinewidth}%
      %\edef\foregroundbox{\box#1}%
       \edef\component{\framedparameter\c!component}%
       \ifx\component\empty
@@ -676,10 +678,6 @@
    \fi
    % not here, in calling macro: setups
    \removeframedboxdepth
-%    \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
-%    \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
-   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}%
    \edef\@@localframing {\framedparameter\c!frame}%
    \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
      \edef\framedrulethickness{\framedparameter\c!rulethickness}%
@@ -712,23 +710,17 @@
    \fi
    \setbox\framebox\box#2%
    \dp\framebox\zeropoint
-%  \removeframedboxdepth
-%    \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
-%    \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
-   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}%
-   \edef\@@localframing {\framedparameter\c!frame}%
+   \edef\framedbackground   {\framedparameter\c!background}%
+   \edef\framedrulethickness{\framedparameter\c!rulethickness}%
+   \edef\@@localframing     {\framedparameter\c!frame}%
    \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
-     \edef\framedrulethickness{\framedparameter\c!rulethickness}%
      \ifx\framedrulethickness\empty\else
         \ruledlinewidth\framedrulethickness\relax
         \ifinheritruledlinewidth\linewidth\ruledlinewidth\fi
      \fi
      \dooutlinebox % real or invisible frame
    \fi \fi
-   \edef\framedbackground{\framedparameter\c!background}%
    \ifx\framedbackground\empty\else\dobackedbox\fi
-%  \restoreframedboxdepth
    \box\framebox
    \egroup}
 
@@ -1286,8 +1278,6 @@
      \let\postprocessframebox\relax % prevent nesting
      \next\framebox
    \fi
-   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}% \@@...
    \ifboxhasframe % real or invisible frame
      \dooutlinebox
    \fi

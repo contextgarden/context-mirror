@@ -871,7 +871,7 @@
    \edef\framedforegroundcolor{\framedparameter\c!foregroundcolor}%
    \ifx\framedforegroundcolor\empty\else\docolorframebox\fi
    \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}%
+   \def \overlaylinewidth{\the\ruledlinewidth}% no edef
    \edef\@@localframing {\framedparameter\c!frame}%
    \ifx\@@localframing\v!overlay \else \ifx\@@localframing\v!none \else
      \edef\framedrulethickness{\framedparameter\c!rulethickness}%
