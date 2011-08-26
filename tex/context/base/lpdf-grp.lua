@@ -172,11 +172,11 @@ function codeinjections.getpreviewfigure(request)
         return
     end
     figure = figures.identify(figure)
-    if not figure then
+    if not (figure and figure.status and figure.status.fullname) then
         return
     end
     figure = figures.check(figure)
-    if not figure then
+    if not (figure and figure.status and figure.status.fullname) then
         return
     end
     local image = figure.status.private
