@@ -111,10 +111,10 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     return ""
 end
 
-local function raw(collected) -- hybrid
+local function raw(collected) -- hybrid (not much different from text so it might go)
     if collected then
         local e = collected[1] or collected
-        return (e and xmlserialize(e)) or "" -- only first as we cannot concat function
+        return e and xmltostring(e) or "" -- only first as we cannot concat function
     else
         return ""
     end
@@ -138,10 +138,15 @@ local xmltexthandler = xmlnewhandlers {
 }
 
 local function xmltotext(root)
-    if not root then
+    local dt = root.dt
+    if not dt then
         return ""
-    elseif type(root) == 'string' then
-        return root
+    end
+    local nt = #dt -- string or table
+    if nt == 0 then
+        return ""
+    elseif nt == 1 and type(dt[1]) == "string" then
+        return dt[1] -- no escaping of " ' < > &
     else
         return xmlserialize(root,xmltexthandler) or ""
     end
@@ -152,7 +157,7 @@ end
 local function text(collected) -- hybrid
     if collected then
         local e = collected[1] or collected
-        return (e and xmltotext(e.dt)) or ""
+        return (e and xmltotext(e)) or ""
     else
         return ""
     end
@@ -300,10 +305,10 @@ function xml.text(id,pattern)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)
-        return (collected and xmltotext(collected[1].dt)) or ""
+        return (collected and xmltotext(collected[1])) or ""
     elseif id then
      -- return text(id)
-        return xmltotext(id.dt) or ""
+        return xmltotext(id) or ""
     else
         return ""
     end

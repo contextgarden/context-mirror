@@ -272,7 +272,7 @@
   {\EveryPar
      {\doglobal\newcounter\NOfMarginLines}}
 
-\def\dodomargeaanduidingen[#1]#2%
+\unexpanded\def\dodomargeaanduidingen[#1]#2%
   {\def\docommand##1%
      {\indent\hbox
         {\ifx#2\relax
@@ -285,7 +285,7 @@
        \endgraf}%
    \processcommalist[#1]\docommand}
 
-\def\margeaanduidingen#1[#2]%
+\unexpanded\def\margeaanduidingen#1[#2]% to be renamed
   {\def\domargeaanduidingen##1##2%
      {\margintitle[#2]%
         {\switchtobodyfont[\v!small]%
@@ -299,13 +299,13 @@
          \processcommalist[##2]\index}}%
    \dodoublegroupempty\domargeaanduidingen}
 
-\def\complexmacros{\margeaanduidingen\tex  }
-\def\complexextras{\margeaanduidingen\relax}
+\unexpanded\def\complexmacros{\margeaanduidingen\tex  }
+\unexpanded\def\complexextras{\margeaanduidingen\relax}
 
-\def\complexelements
+\unexpanded\def\complexelements
   {\margeaanduidingen\someelement}
 
-\def\someelement#1{\type{<#1>}}
+\unexpanded\def\someelement#1{\type{<#1>}}
 
 \definecomplexorsimpleempty\macros
 \definecomplexorsimpleempty\extras

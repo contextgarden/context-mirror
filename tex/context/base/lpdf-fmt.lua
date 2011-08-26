@@ -438,7 +438,7 @@ local function handleinternalprofile(s,include)
                 elseif not channel then
                     report_backend("error, couldn't resolve channel entry for colorspace '%s'",colorspace)
                 else
-                    profile = pdfflushstreamfileobject(fullname,{ N = channel },false) -- uncompressed
+                    profile = pdfflushstreamfileobject(fullname,pdfdictionary{ N = channel },false) -- uncompressed
                     internalprofiles[tag] = profile
                     if trace_format then
                         report_backend("including '%s' color profile from '%s'",colorspace,fullname)
