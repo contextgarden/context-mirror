@@ -242,13 +242,21 @@ function tags.start(tag,specification)
         codeinjections.enabletags()
         enabled = true
     end
-    labels[tag] = label ~= "" and label or tag
-    local fulltag
+    --
+--~     labels[tag] = label ~= "" and label or tag
+--~     local fulltag
+--~     if detail and detail ~= "" then
+--~         fulltag = tag .. ":" .. detail
+--~     else
+--~         fulltag = tag
+--~     end
+    --
+    local fulltag = label ~= "" and label or tag
+    labels[tag] = fulltag
     if detail and detail ~= "" then
-        fulltag = tag .. ":" .. detail
-    else
-        fulltag = tag
+        fulltag = fulltag .. ":" .. detail
     end
+    --
     local t = #taglist + 1
     local n = (ids[fulltag] or 0) + 1
     ids[fulltag] = n
