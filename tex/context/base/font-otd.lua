@@ -78,7 +78,7 @@ function otf.setdynamics(font,attribute)
             shared.features     = { }
             -- end of save
             local set = constructors.checkedfeatures("otf",features)
-set.mode = "node" -- really needed
+            set.mode = "node" -- really needed
             dsla = otf.setfeatures(tfmdata,set)
             if trace_dynamics then
                 report_otf("setting dynamics %s: attribute %s, script %s, language %s, set: %s",contextnumbers[attribute],attribute,script,language,sequenced(set))
@@ -123,9 +123,9 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
     local features = sequence.features
     if features then
         for kind, scripts in next, features do
-            local s_e = s_enabled and s_enabled[kind]
-            local a_e = a_enabled and a_enabled[kind]
-            local e_e = s_e or a_e
+            local s_e = s_enabled and s_enabled[kind] -- the value
+            local a_e = a_enabled and a_enabled[kind] -- the value
+            local e_e = s_e or a_e -- todo: when one of them is true and the other is a value
             if e_e then
                 local languages = scripts[script] or scripts[wildcard]
                 if languages then
@@ -134,13 +134,13 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                     -- only first attribute match check, so we assume simple fina's
                     -- default can become a font feature itself
                     if languages[language] then
-                        valid = true
+                        valid = e_e -- was true
                         what  = language
                  -- elseif languages[default] then
                  --     valid = true
                  --     what  = default
                     elseif languages[wildcard] then
-                        valid = true
+                        valid = e_e -- was true
                         what  = wildcard
                     end
                     if valid then

@@ -1995,11 +1995,10 @@ local function featuresprocessor(head,font,attr)
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
---~ inspect(sequence)
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
                 local handler = handlers[typ]
-                -- we need to get rid of this slide !
+                -- we need to get rid of this slide! probably no longer needed in latest luatex
                 local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
                 while start do
                     local id = start.id
