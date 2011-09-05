@@ -353,7 +353,11 @@ local transparencies = { [0] =
     pdfconstant("Lighten"),
     pdfconstant("Difference"),
     pdfconstant("Exclusion"),
-    pdfconstant("Compatible"),
+    pdfconstant("Hue"),
+    pdfconstant("Saturation"),
+    pdfconstant("Color"),
+    pdfconstant("Luminosity"),
+    pdfconstant("Compatible"), -- obsolete; 'Normal' is used in this case
 }
 
 local documenttransparencies = { }
