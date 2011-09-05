@@ -937,6 +937,8 @@ local value = Cs ( (
   + P(","))^1
 )
 
+-- should be codeinjections
+
 local function tr_process(object,prescript,before,after)
     -- before can be shortcut to t
     local tr_alternative = prescript.tr_alternative
@@ -947,9 +949,12 @@ local function tr_process(object,prescript,before,after)
     end
     local cs = object.color
     if cs and #cs > 0 then
-        local sp_name = prescript.sp_name
         local b, a
-        if sp_name then
+        local sp_type = prescript.sp_type
+        if not sp_type then
+            b, a = colorconverter(cs)
+        elseif sp_type == "spot" or sp_type == "multitone" then
+            local sp_name       = prescript.sp_name       or "black"
             local sp_fractions  = prescript.sp_fractions  or 1
             local sp_components = prescript.sp_components or ""
             local sp_value      = prescript.sp_value      or "1"
@@ -958,14 +963,18 @@ local function tr_process(object,prescript,before,after)
                 -- beware, we do scale the spotcolors but not the alternative representation
                 sp_value = lpeg.match(value,sp_value,1,cf) or sp_value
             end
-            -- should be codeinjections
             b, a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
-        else
-            -- should be codeinjections
+        elseif sp_type == "named" then
+--~ local sp_name = prescript.sp_name       or "black"
+--~ local c = attributes.list[attributes.private('color')][sp_name] -- string or attribute
+--~ local r = attributes.colors.registered[r]
+--~ local v = attributes.colors.value(r)
             b, a = colorconverter(cs)
         end
-        before[#before+1] = b
-        after[#after+1] = a
+        if a and b then
+            before[#before+1] = b
+            after[#after+1] = a
+        end
     end
 end
 

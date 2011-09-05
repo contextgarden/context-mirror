@@ -669,10 +669,6 @@
 \newif\ifMPcmykcolors % \MPcmykcolorsfalse
 \newif\ifMPspotcolors % \MPspotcolorsfalse
 
-\ifx\MPcolor\undefined
-    \def\MPcolor#1{(0,0,0)}
-\fi
-
 %D For the moment we keep the next downward compatibility
 %D switch, i.e.\ expanded colors. However, predefined colors
 %D and palets are no longer expanded (which is what I wanted
@@ -1022,6 +1018,7 @@
 \let\colorformatseparator\space
 
 \def\MPcolor                 #1{\ctxcommand{mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
+\def\MPoptions               #1{\ctxcommand{mpoptions(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
 
 \def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
 \def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}

@@ -224,7 +224,7 @@ else
         if not mpx then
             result = { status = 99, error = "out of memory"}
         else
-            result = mpx:execute(format(preamble, file.replacesuffix(name,"mp")))
+            result = mpx:execute(format(preamble, file.addsuffix(name,"mp")))
         end
         stoptiming(mplib)
         metapost.reporterror(result)
@@ -233,14 +233,31 @@ else
 
     function metapost.checkformat(mpsinput)
         local mpsversion = environment.version or "unset version"
-        local mpsinput   = file.addsuffix(mpsinput or "metafun", "mp")
-        report_metapost("loading '%s' (experimental metapost version two)",mpsinput)
-        local mpx, result = metapost.load(mpsinput)
-        if mpx then
-            return mpx
+        local mpsinput   = mpsinput or "metafun"
+        local foundfile  = ""
+        if file.suffix(mpsinput) ~= "" then
+            foundfile  = finder(mpsinput) or ""
+        end
+        if foundfile == "" then
+            foundfile  = finder(file.replacesuffix(mpsinput,"mpvi")) or ""
+        end
+        if foundfile == "" then
+            foundfile  = finder(file.replacesuffix(mpsinput,"mpiv")) or ""
+        end
+        if foundfile == "" then
+            foundfile  = finder(file.replacesuffix(mpsinput,"mp")) or ""
+        end
+        if foundfile == "" then
+            report_metapost("loading '%s' fails, format not found",mpsinput)
         else
-            report_metapost("error in loading '%s'",mpsinput)
-            metapost.reporterror(result)
+            report_metapost("loading '%s': %s",mpsinput,foundfile)
+            local mpx, result = metapost.load(foundfile)
+            if mpx then
+                return mpx
+            else
+                report_metapost("error in loading '%s'",mpsinput)
+                metapost.reporterror(result)
+            end
         end
     end
 
