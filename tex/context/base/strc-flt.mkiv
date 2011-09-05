@@ -594,8 +594,8 @@
 % the global settings.
 
 \unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
-  {\edef\currentfloat{#1}% TODO: IF UNDEFINED THEN FALLBACK TO figure
-   \doifnothing\currentfloat{\let\currentfloat\v!figure}%
+  {\edef\currentfloat{#1}%
+   \doifnothing\currentfloat{\let\currentfloat\v!figure}% hack
    \doifelsenothing{#2}
      {\edef\floatlocation{\floatparameter\c!default}}
      {\edef\floatlocation{#2}}%
@@ -626,7 +626,7 @@
    \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
    \v!text,\v!opposite}% \v!page
 
-\long\def\dodocomplexplacefloat[#1][#2][#3]#4%
+\unexpanded\def\dodocomplexplacefloat[#1][#2][#3]#4%
   {\flushnotes
    \flushsidefloats % here !
    \ifsomefloatwaiting
