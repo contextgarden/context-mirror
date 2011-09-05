@@ -583,3 +583,30 @@ def bitmapimage(expr xresolution, yresolution, data) =
             withpostscript data ;
     )
 enddef ;
+
+% TODO:
+
+let property = picture ;
+
+vardef properties(text t) =
+    image(draw unitcircle t)
+enddef ;
+
+def withproperties expr p =
+    if colormodel p = 3 :
+        withcolor graypart p
+    elseif colormodel p = 5 :
+        withcolor (redpart p,greenpart p,bluepart p)
+    elseif colormodel p = 7 :
+        withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
+    fi
+    % todo, when available in mp:
+    %
+    % withprescript prescript p
+    % withpostscript postscript p
+    %
+    % todo, penpart
+enddef ;
+
+% property p ; p = properties(withcolor (1,1,0,1)) ;
+% fill fullcircle scaled 20cm withproperties p ;
