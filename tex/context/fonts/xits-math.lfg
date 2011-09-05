@@ -4,43 +4,6 @@
 --     $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$
 -- \stoptext
 
--- fonts.handlers.otf.enhancers.patches.register("after","check metadata","xits%-math", function(data,filename)
---     local variants = {
---         [0xFE00] = {
---             [0x2229] = "uni2229.vs1",
---             [0x222A] = "uni222A.vs1",
---             [0x2268] = "uni2268.vs1",
---             [0x2269] = "uni2269.vs1",
---             [0x2272] = "uni2272.vs1",
---             [0x2273] = "uni2273.vs1",
---             [0x228A] = "uni228A.vs1",
---             [0x228B] = "uni228B.vs1",
---             [0x2293] = "uni2293.vs1",
---             [0x2294] = "uni2294.vs1",
---             [0x2295] = "uni2295.vs1",
---             [0x2297] = "uni2297.vs1",
---             [0x229C] = "uni229C.vs1",
---             [0x22DA] = "uni22DA.vs1",
---             [0x22DB] = "uni22DB.vs1",
---             [0x2A3C] = "uni2A3C.vs1",
---             [0x2A3D] = "uni2A3D.vs1",
---             [0x2A9D] = "uni2A9D.vs1",
---             [0x2A9E] = "uni2A9E.vs1",
---             [0x2AAC] = "uni2AAC.vs1",
---             [0x2AAD] = "uni2AAD.vs1",
---             [0x2ACB] = "uni2ACB.vs1",
---             [0x2ACC] = "uni2ACC.vs1",
---         }
---     }
---     local unicodes = data.resources.unicodes
---     for k, v in next, variants do
---         for kk, vv in next, v do
---             v[kk] = unicodes[vv]
---         end
---     end
---     data.resources.variants = variants
--- end)
-
 return {
     name = "xits-math",
     version = "1.00",
@@ -57,6 +20,7 @@ return {
             mathbbit  = { feature = 'ss06', value = 1, comment = "Mathematical Italic Double-Struck Alphabet" },
             mathbbbi  = { feature = 'ss07', value = 1, comment = "Mathematical Bold Italic Double-Struck Alphabet" },
             upint     = { feature = 'ss08', value = 1, comment = "Upright Integrals" },
+            vertnot   = { feature = 'ss09', value = 1, comment = "Negated Symbols With Vertical Stroke" },
         },
     }
 }

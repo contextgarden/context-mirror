@@ -18,6 +18,7 @@ boolean context_mlib ; context_mlib := true ;
 
 %D Color and transparency
 
+%D Standard separable blend modes
 newinternal normaltransparent     ; normaltransparent     :=  1 ;
 newinternal multiplytransparent   ; multiplytransparent   :=  2 ;
 newinternal screentransparent     ; screentransparent     :=  3 ;
@@ -30,6 +31,11 @@ newinternal darkentransparent     ; darkentransparent     :=  9 ;
 newinternal lightentransparent    ; lightentransparent    := 10 ;
 newinternal differencetransparent ; differencetransparent := 11 ;
 newinternal exclusiontransparent  ; exclusiontransparent  := 12 ;
+%D Standard nonseparable blend modes
+newinternal huetransparent        ; huetransparent        := 13 ;
+newinternal saturationtransparent ; saturationtransparent := 14 ;
+newinternal colortransparent      ; colortransparent      := 15 ;
+newinternal luminositytransparent ; luminositytransparent := 16 ;
 
 vardef transparency_alternative_to_number(expr name) =
     if string name :
@@ -38,7 +44,7 @@ vardef transparency_alternative_to_number(expr name) =
         else :
             0
         fi
-    elseif name < 13 :
+    elseif name < 17 :
         name
     else :
         0
@@ -361,6 +367,39 @@ enddef ;
 
 primarydef p withshade sc =
     p withprescript _defined_cs_pre_[sc]
+enddef ;
+
+
+vardef define_sampled_linear_shade(expr a,b,n)(text t) =
+    _defined_cs_ := _defined_cs_ + 1 ;
+    _defined_cs_pre_ [_defined_cs_] := "ssh_type=linear"
+      & prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+      & prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+      & prescript_separator & "ssh_nofcolors=" & decimal n
+      & prescript_separator & "ssh_domain=" & domstr
+      & prescript_separator & "ssh_extend=" & extstr
+      & prescript_separator & "ssh_colors=" & colstr
+      & prescript_separator & "ssh_bounds=" & bndstr
+      & prescript_separator & "ssh_ranges=" & ranstr
+    ;
+    _defined_cs_
+enddef ;
+
+vardef define_sampled_circular_shade(expr a,b,ra,rb,n)(text t) =
+    _defined_cs_ := _defined_cs_ + 1 ;
+    _defined_cs_pre_ [_defined_cs_] := "ssh_type=circular"
+      & prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+      & prescript_separator & "ssh_radius_a=" & decimal ra
+      & prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+      & prescript_separator & "ssh_radius_b=" & decimal rb
+      & prescript_separator & "ssh_nofcolors=" & decimal n
+      & prescript_separator & "ssh_domain=" & domstr
+      & prescript_separator & "ssh_extend=" & extstr
+      & prescript_separator & "ssh_colors=" & colstr
+      & prescript_separator & "ssh_bounds=" & bndstr
+      & prescript_separator & "ssh_ranges=" & ranstr
+    ;
+    _defined_cs_
 enddef ;
 
 % vardef predefined_linear_shade (expr p, n, ca, cb) =

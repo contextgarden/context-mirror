@@ -358,11 +358,12 @@ local usedimages = { }
 
 local imagetemplate = [[
 %s[id="%s"] {
-    display          : block ;
-    background-image : url(%s) ;
-    background-size  : 100%% auto ;
-    width            : %s ;
-    height           : %s ;
+    display           : block ;
+    background-image  : url(%s) ;
+    background-size   : 100%% auto ;
+    background-repeat : no-repeat ;
+    width             : %s ;
+    height            : %s ;
 }]]
 
 local function allusedimages(xmlfile)

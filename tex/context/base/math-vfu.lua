@@ -569,6 +569,7 @@ function vfmath.define(specification,set,goodies)
                 local offset = 0xFF000
                 local vector = mathencodings[vectorname]
                 local rotcev = reverse[vectorname]
+                local isextension = ss.extension
                 if vector and rotcev then
                     local fc, fd, si = fs.characters, fs.descriptions, shared[s]
                     local skewchar = ss.skewchar
@@ -599,9 +600,10 @@ function vfmath.define(specification,set,goodies)
                             local kerns = fci.kerns
                             local width = fci.width
                             local italic = fci.italic
-                         -- if italic then
-                         --     width = width + italic -- old interpretation of otf math specs
-                         -- end
+                            if italic and isextension then
+                                -- int_a^b
+                                width = width + italic
+                            end
                             if kerns then
                                 local krn = { }
                                 for k, v in next, kerns do -- kerns is sparse
@@ -621,7 +623,7 @@ function vfmath.define(specification,set,goodies)
                                     kerns    = krn,
                                     commands = ref,
                                 }
-                                if skewchar and kerns then
+                                if skewchar then
                                     local k = kerns[skewchar]
                                     if k then
                                         t.top_accent = width/2 + k
@@ -640,7 +642,7 @@ function vfmath.define(specification,set,goodies)
 --~ report_virtual("%05X %s %s",unicode,fci.height or "NO HEIGHT",fci.depth or "NO DEPTH")
                         end
                     end
-                    if ss.extension then
+                    if isextension then
                         -- todo: if multiple ex, then 256 offsets per instance
                         local extension = mathencodings["large-to-small"]
                         local variants_done = fs.variants_done

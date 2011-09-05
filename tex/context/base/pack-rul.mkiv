@@ -571,6 +571,9 @@
 %D start with defining some booleans. These give an impression
 %D of what we are going to take into account.
 
+% todo   : \c_framed_hasoffset
+% faster : \let\c_framed_hasoffset\falseconditional
+
 \newif\ifboxhasoffset
 \newif\ifboxhaswidth
 \newif\ifboxhasheight
@@ -991,6 +994,11 @@
      \boxhasstrutfalse
      \boxisoverlaidtrue
      \@@localoffset\zeropoint
+%  \else\ifx\localoffset\v!strut
+%    \boxhasoffsetfalse
+%    \boxhasstruttrue
+%    \boxisoverlaidtrue
+%    \@@localoffset\zeropoint
    \else
      \boxhasoffsettrue
      \boxhasstruttrue
@@ -1003,7 +1011,7 @@
        \let\defaultframeoffset\localoffset
      \fi
      \@@localoffset\dimexpr\localoffset+\ruledlinewidth\relax
-   \fi\fi
+   \fi\fi % \fi
    \!!framedheight\zeropoint
    \!!framedwidth \zeropoint
    \ifx\localwidth\empty % fallback to fit

@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 08/27/11 13:24:43
+-- merge date  : 09/05/11 12:54:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -11532,7 +11532,7 @@ registerotffeature {
 
 methods.latn = analyzers.setstate
 
--- this info eventually will go into char-def adn we will have a state
+-- this info eventually will go into char-def and we will have a state
 -- table for generic then
 
 local zwnj = 0x200C
@@ -11562,6 +11562,12 @@ local isol_fina = {
     [0x076C] = true, [0x0771] = true, [0x0773] = true, [0x0774] = true,
 	[0x0778] = true, [0x0779] = true, [0xFEF5] = true, [0xFEF7] = true,
 	[0xFEF9] = true, [0xFEFB] = true,
+
+    -- syriac
+
+	[0x0710] = true, [0x0715] = true, [0x0716] = true, [0x0717] = true,
+	[0x0718] = true, [0x0719] = true, [0x0728] = true, [0x072A] = true,
+	[0x072C] = true, [0x071E] = true,
 }
 
 local isol_fina_medi_init = {
@@ -11599,9 +11605,18 @@ local isol_fina_medi_init = {
     [0x0772] = true, [0x0775] = true, [0x0776] = true, [0x0777] = true,
     [0x077A] = true, [0x077B] = true, [0x077C] = true, [0x077D] = true,
     [0x077E] = true, [0x077F] = true, [zwj] = true,
+
+    -- syriac
+
+	[0x0712] = true, [0x0713] = true, [0x0714] = true, [0x071A] = true,
+	[0x071B] = true, [0x071C] = true, [0x071D] = true, [0x071F] = true,
+	[0x0720] = true, [0x0721] = true, [0x0722] = true, [0x0723] = true,
+	[0x0725] = true, [0x0726] = true, [0x0727] = true, [0x0729] = true,
+	[0x072B] = true, [0x0724] = true, [0x0706] = true, [0x0707] = true,
 }
 
 local arab_warned = { }
+
 
 -- todo: gref
 
@@ -11719,6 +11734,8 @@ function methods.arab(head,font,attr) -- maybe make a special version with no tr
     first, last = finish(first,last)
     return head, done
 end
+
+methods.syrc = methods.arab
 
 directives.register("otf.analyze.useunicodemarks",function(v)
     analyzers.useunicodemarks = v

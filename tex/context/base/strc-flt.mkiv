@@ -600,8 +600,8 @@
      {\edef\floatlocation{\floatparameter\c!default}}
      {\edef\floatlocation{#2}}%
    \doifinsetelse\v!split{#2}
-     {\normalexpanded{\noexpand\dodocomplexsplitfloat[\currentfloat][\floatlocation]}}
-     {\normalexpanded{\noexpand\dodocomplexplacefloat[\currentfloat][\floatlocation]}}}
+     {\normalexpanded{\dodocomplexsplitfloat[\currentfloat][\floatlocation]}}
+     {\normalexpanded{\dodocomplexplacefloat[\currentfloat][\floatlocation]}}}
 
 \unexpanded\def\dodocomplexsplitfloat[#1][#2][#3]#4%
   {\splitfloat{\dodocomplexplacefloat[#1][#2][#3]{#4}}}
@@ -788,9 +788,22 @@
 \let\currentfloatattribute\empty % to be checked
 
 \def\floatcaptionattribute
-  {\iflocation \ifnofloatnumber \else \ifnofloatcaption \else \ifinsidesplitfloat \else
-     attr \destinationattribute \currentfloatattribute
-   \fi \fi \fi \fi}
+  {\iflocation
+     \ifnofloatnumber
+     \else
+       \ifnofloatcaption
+       \else
+         \ifinsidesplitfloat
+            \ifconditional\splitfloatfirstdone
+            \else
+              attr \destinationattribute \currentfloatattribute
+            \fi
+         \else
+           attr \destinationattribute \currentfloatattribute
+         \fi
+       \fi
+     \fi
+   \fi}
 
 \newconditional\usesamefloatnumber
 
