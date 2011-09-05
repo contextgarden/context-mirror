@@ -10950,12 +10950,12 @@ local relations = allocate { -- todo: handlers also here
         mp = {
             names    = { "mp" },
             variable = 'MPINPUTS',
-            suffixes = { 'mp' },
+            suffixes = { 'mp', 'mpvi', 'mpiv', 'mpii' },
         },
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
-            suffixes = { 'tex', "mkiv", "mkiv", "mkii" },
+            suffixes = { 'tex', "mkvi", "mkiv", "mkii" },
         },
         icc = {
             names    = { "icc", "icc profile", "icc profiles" },

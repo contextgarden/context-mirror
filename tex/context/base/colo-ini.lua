@@ -433,7 +433,7 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     end
 end
 
-function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
+local function mpcolor(model,ca,ta,default) -- will move to mlib-col
     local cv = colors.supported and colors.value(ca) -- faster when direct colors.values[ca]
     if cv then
         local tv = transparencies.supported and transparencies.value(ta)
@@ -468,7 +468,7 @@ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
     end
 end
 
---~ function colors.mpcolor(model,ca,ta,default) -- will move to mlib-col
+--~ local function mpcolor(model,ca,ta,default) -- will move to mlib-col
 --~     local cv = colors.supported and colors.value(ca) -- faster when direct colors.values[ca]
 --~     if cv then
 --~         local tv = transparencies.supported and transparencies.value(ta)
@@ -502,6 +502,13 @@ end
 --~         return format("(%s,%s,%s)",default,default,default)
 --~     end
 --~ end
+
+local function mpoptions(model,ca,ta,default) -- will move to mlib-col
+    return format("withcolor %s",mpcolor(model,ca,ta,default))
+end
+
+colors.mpcolor   = mpcolor
+colors.mpoptions = mpoptions
 
 function colors.formatcolor(ca,separator)
     local cv = colors.value(ca)
@@ -752,7 +759,7 @@ function colors.usecolors(name)
     }
 end
 
--- interface
+-- interface (todo: use locals)
 
 local setcolormodel = colors.setmodel
 
@@ -783,7 +790,11 @@ function commands.formatcolor           (...) context(colors.formatcolor        
 function commands.formatgray            (...) context(colors.formatgray            (...)) end
 
 function commands.mpcolor(model,ca,ta,default)
-    context(colors.mpcolor(model,ca,ta,default))
+    context(mpcolor(model,ca,ta,default))
+end
+
+function commands.mpoptions(model,ca,ta,default)
+    context(mpoptions(model,ca,ta,default))
 end
 
 function commands.doifblackelse(a)

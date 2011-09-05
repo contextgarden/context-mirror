@@ -440,8 +440,8 @@
 
 \startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
   initialize_box(\MPpos{\MPvar{self}}) ;
-  boxfillcolor  := \MPvar{fillcolor} ;
-  boxlinecolor  := \MPvar{linecolor} ;
+  def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+  def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
   boxlinewidth  := \MPvar{linewidth} ;
   boxfilloffset := \MPvar{filloffset} ;
   draw_box ;
@@ -457,8 +457,8 @@
 
 \startMPpositiongraphic{mpos:area}{fillcolor,linecolor,linewidth}
   initialize_area(\MPpos{b:\MPvar{self}},\MPpos{e:\MPvar{self}}) ;
-  boxfillcolor  := \MPvar{fillcolor} ;
-  boxlinecolor  := \MPvar{linecolor} ;
+  def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+  def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
   boxlinewidth  := \MPvar{linewidth} ;
   boxfilloffset := \MPvar{filloffset} ;
   draw_area ;
@@ -497,9 +497,9 @@
    boxlinetype   := \MPvar{linetype} ;
    boxfilltype   := \MPvar{filltype} ;
    boxdashtype   := \MPvar{dashtype} ;
-   boxgridcolor  := \MPvar{gridcolor} ;
-   boxlinecolor  := \MPvar{linecolor} ;
-   boxfillcolor  := \MPvar{fillcolor} ;
+   def boxgridoptions = withcolor \MPvar{gridcolor} enddef ;
+   def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+   def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
    boxfilloffset := \MPvar{filloffset} ;
    boxlinewidth  := \MPvar{linewidth} ;
    boxgridwidth  := \MPvar{gridwidth} ;
@@ -1058,13 +1058,12 @@
 % these might become macros in mp-page
 
 \startuseMPgraphic{mpos:common:ec}
-  path pa ; pair ca ; color lc ; numeric lw ;
+  path pa ; pair ca ; numeric lw ;
   lw := \MPvar{linewidth} ;
-  lc := \MPvar{linecolor} ;
   initialize_box(\MPpos{\MPvar{self}}) ;
   pa := pxy ; ca := cxy ; pa := boundingbox pa enlarged 2lw ;
-  pa := llcorner pa...lrcorner pa...urcorner pa...ulcorner pa...cycle ;
-  drawoptions (withpen pencircle scaled lw withcolor lc) ;
+  pa := llcorner pa ... lrcorner pa ... urcorner pa ... ulcorner pa ... cycle ;
+  drawoptions (withpen pencircle scaled lw withcolor \MPvar{linecolor}) ;
 \stopuseMPgraphic
 
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth}
