@@ -2438,8 +2438,18 @@ enddef ;
 
 % new
 
-vardef colorpart(expr i) =
-  (redpart i, greenpart i,bluepart i)
+% vardef colorpart(expr i) =
+%   (redpart i, greenpart i,bluepart i)
+% enddef ;
+
+vardef colorpart(expr c) =
+    if colormodel c = 3 :
+        graypart c
+    elseif colormodel c = 5 :
+        (redpart c,greenpart c,bluepart c)
+    elseif colormodel c = 7 :
+        (cyanpart c,magentapart c,yellowpart c,blackpart c)
+    fi
 enddef ;
 
 % for david arnold:

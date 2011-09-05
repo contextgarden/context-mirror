@@ -54,15 +54,21 @@
 \xmlmapvalue {mml:math:display} {block}   {\displaymathematics} % before this showed up
 \xmlmapvalue {mml:math:display} {inline}  {\inlinemathematics }
 
+\xmlmapvalue {mml:math:dir}     {ltr}     {\setfalse\mathematics_right_to_left\mathematics_synchronize_direction}
+\xmlmapvalue {mml:math:dir}     {rtl}     {\settrue \mathematics_right_to_left\mathematics_synchronize_direction}
+
 \startxmlsetups mml:math
-    \xmlval {mml:math:display} {\xmlatt{#1}{display}} {
-        \xmlval {mml:math:mode} {\xmlatt{#1}{mode}} {
-            \automathematics
+    \begingroup
+        \xmlval {mml:math:dir} {\xmlatt{#1}{dir}} {}
+        \xmlval {mml:math:display} {\xmlatt{#1}{display}} {
+            \xmlval {mml:math:mode} {\xmlatt{#1}{mode}} {
+                \automathematics
+            }
         }
-    }
-    {
-        \MMLhack\xmlflush{#1}
-    }
+        {
+            \MMLhack\xmlflush{#1}
+        }
+    \endgroup
 \stopxmlsetups
 
 \startxmlsetups mml:imath

@@ -663,8 +663,11 @@
     {\setfalse\mathematics_right_to_left}%
 \to \everysetupmathematics
 
+\unexpanded\def\mathematics_synchronize_direction
+  {\mathdir T\ifconditional\mathematics_right_to_left R\else L\fi T}
+
 \appendtoks
-  \mathdir T\ifconditional\mathematics_right_to_left R\else L\fi T
+    \mathematics_synchronize_direction
 %to \everymathematics % comes too late and I'm not in the mood for a mixed mode kludge now
 \to \everysetupmathematics
 
