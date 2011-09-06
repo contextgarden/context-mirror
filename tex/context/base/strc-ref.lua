@@ -945,8 +945,8 @@ local n = 0
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
     local bug = false
-n = n + 1
-set.n = n
+    n = n + 1
+    set.n = n
     for i=1,#set do
         local var = set[i]
         local special, inner, outer, arguments, operation = var.special, var.inner, var.outer, var.arguments, var.operation
@@ -1199,6 +1199,7 @@ set.n = n
         bug = bug or var.error
         set[i] = var
     end
+--~ references.analyze(set)
     references.currentset = mark(set) -- mark, else in api doc
     if trace_analyzing then
         report_references(table.serialize(set,reference))
@@ -1328,7 +1329,8 @@ function references.filter(name,...) -- number page title ...
     local data = currentreference and currentreference.i -- maybe we should take realpage from here
     if data then
         if name == "realpage" then
-            references.realpage() -- special case, does an analysis (maybe we have more)
+            local cs = references.analyze() -- normally already analyzed but also sets state
+            context(cs.realpage or 0) -- todo, return and in command namespace
         else
             local kind = data.metadata and data.metadata.kind
             if kind then
@@ -1499,14 +1501,14 @@ local function checkedpagestate(n,page)
     end
 end
 
-local function analyze(actions)
+function references.analyze(actions)
     actions = actions or references.currentset
     if not actions then
-        actions = { realpage = 0 }
-        texcount.referencepagestate = 0
+        actions = { realpage = 0, pagestate = 0 }
+    elseif actions.pagestate then
+        -- already done
     elseif actions.realpage then
-        -- already analyzed
-        texcount.referencepagestate = checkedpagestate(actions.n,actions.realpage)
+        actions.pagestate = checkedpagestate(actions.n,actions.realpage)
     else
         -- we store some analysis data alongside the indexed array
         -- at this moment only the real reference page is analyzed
@@ -1517,22 +1519,27 @@ local function analyze(actions)
                 local a = actions[i]
                 local what = runners[a.kind]
                 if what then
-                    what = what(a,actions)
+                    what = what(a,actions) -- needs documentation
                 end
             end
-            texcount.referencepagestate = checkedpagestate(actions.n,actions.realpage)
+            actions.pagestate = checkedpagestate(actions.n,actions.realpage)
         else
-            texcount.referencepagestate = 0
+            actions.pagestate = 0
         end
     end
     return actions
 end
 
-references.analyze = analyze
-
-function references.realpage() -- special case, we always want result (also does test ... still needed?)
-    local cs = analyze()
-    context(cs.realpage or 0)
+function commands.referencepagestate(actions)
+    actions = actions or references.currentset
+    if not actions then
+        context(0)
+    else
+        if not actions.pagestate then
+            references.analyze(actions) -- delayed unless explicitly asked for
+        end
+        context(actions.pagestate)
+    end
 end
 
 local plist

@@ -120,19 +120,26 @@
         \expandafter\noexpand\csname let#2parameter\endcsname
         \expandafter\noexpand\csname reset#2parameter\endcsname}}
 
-\unexpanded\def\doinstallattributehandler#1#2#3% #1 not used here
-  {\def#2##1##2% style color
-     {\edef\fontattributehash {#3{##1}}% this name is public
-      \edef\colorattributehash{#3{##2}}% this name is public
+\unexpanded\def\doinstallattributehandler#1#2#3#4%
+  {\unexpanded\def#2##1##2% style color
+     {\edef\fontattributehash {#1{##1}}% this name is public
+      \edef\colorattributehash{#1{##2}}% this name is public
       \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi
-      \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##2}\fi}}
+      \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##2}\fi}%
+   \unexpanded\def#3##1% style
+     {\edef\fontattributehash {#1{##1}}% this name is public
+      \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi}%
+   \unexpanded\def#4##1% color
+     {\edef\colorattributehash{#1{##1}}% this name is public
+      \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##1}\fi}}
 
 \unexpanded\def\installattributehandler#1#2%
   {\normalexpanded
      {\doinstallattributehandler
-        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname #2parameterhash\endcsname
         \expandafter\noexpand\csname doset#2attributes\endcsname
-        \expandafter\noexpand\csname #2parameterhash\endcsname}}
+        \expandafter\noexpand\csname doset#2fontattribute\endcsname
+        \expandafter\noexpand\csname doset#2colorattribute\endcsname}}
 
 \let\definehandlerparent\empty
 

@@ -45,6 +45,8 @@ local vlist_code         = nodecodes.vlist
 local kerning_code       = kerncodes.kerning
 local userkern_code      = kerncodes.userkern
 local userskip_code      = skipcodes.userskip
+local spaceskip_code     = skipcodes.spaceskip
+local xspaceskip_code    = skipcodes.xspaceskip
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
@@ -220,7 +222,8 @@ local function do_process(namespace,attribute,head,force) -- todo: glue so that 
                         end
                     end
                 elseif id == glue_code then
-                    if start.subtype == userskip_code then
+                    local subtype = start.subtype
+                    if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
                         local s = start.spec
                         local w = s.width
                         if w > 0 then
