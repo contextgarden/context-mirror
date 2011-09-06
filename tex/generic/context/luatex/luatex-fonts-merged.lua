@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 09/05/11 23:49:07
+-- merge date  : 09/06/11 14:02:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -5012,7 +5012,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.733 -- beware: also sync font-mis.lua
+otf.version              = 2.735 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -8983,33 +8983,6 @@ end
 
 local logwarning = report_subchain
 
-function chainmores.chainsub(start,stop,kind,chainname,currentcontext,lookuphash,lookuplist,chainlookupname,n)
-    logprocess("%s: a direct call to chainsub cannot happen",cref(kind,chainname,chainlookupname))
-    return start, false
-end
-
--- handled later:
---
--- function chainmores.gsub_single(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
---     return chainprocs.gsub_single(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
--- end
-
-function chainmores.gsub_multiple(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
-    logprocess("%s: gsub_multiple not yet supported",cref(kind,chainname,chainlookupname))
-    return start, false
-end
-
-function chainmores.gsub_alternate(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
-    logprocess("%s: gsub_alternate not yet supported",cref(kind,chainname,chainlookupname))
-    return start, false
-end
-
--- handled later:
---
--- function chainmores.gsub_ligature(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
---     return chainprocs.gsub_ligature(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
--- end
-
 local function logprocess(...)
     if trace_steps then
         registermessage(...)
@@ -9024,6 +8997,11 @@ local logwarning = report_chain
 
 function chainprocs.chainsub(start,stop,kind,chainname,currentcontext,lookuphash,lookuplist,chainlookupname)
     logwarning("%s: a direct call to chainsub cannot happen",cref(kind,chainname,chainlookupname))
+    return start, false
+end
+
+function chainmores.chainsub(start,stop,kind,chainname,currentcontext,lookuphash,lookuplist,chainlookupname,n)
+    logprocess("%s: a direct call to chainsub cannot happen",cref(kind,chainname,chainlookupname))
     return start, false
 end
 
@@ -9139,7 +9117,7 @@ the match.</p>
 --ldx]]--
 
 function chainprocs.gsub_multiple(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
-    delete_till_stop(start,stop)
+    delete_till_stop(start,stop) -- we can assume that marks are to be deleted
     local startchar = start.char
     local subtables = currentlookup.subtables
     local lookupname = subtables[1]
@@ -9164,39 +9142,49 @@ function chainprocs.gsub_multiple(start,stop,kind,chainname,currentcontext,looku
     return start, false
 end
 
+-- function chainmores.gsub_multiple(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
+--     logprocess("%s: gsub_multiple not yet supported",cref(kind,chainname,chainlookupname))
+--     return start, false
+-- end
+
+chainmores.gsub_multiple = chainprocs.gsub_multiple
+
 --[[ldx--
 <p>Here we replace start by new glyph. First we delete the rest of the match.</p>
 --ldx]]--
 
+-- char_1 mark_1 -> char_x mark_1 (ignore marks)
+-- char_1 mark_1 -> char_x
+
+-- to be checked: do we always have just one glyph?
+-- we can also have alternates for marks
+-- marks come last anyway
+-- are there cases where we need to delete the mark
+
 function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname)
-    -- todo: marks ?
-    local n = delete_till_stop(start,stop)
     local current = start
     local subtables = currentlookup.subtables
-    local m = 0
     while current do
-        if current.id == glyph_code then
-            m = m + 1
+        if current.id == glyph_code then -- is this check needed?
             local currentchar = current.char
             local lookupname = subtables[1]
             local alternatives = lookuphash[lookupname]
             if not alternatives then
                 if trace_bugs then
-                    logwarning("%s: %s of %s, no alternative hit",cref(kind,chainname,chainlookupname,lookupname),m,n)
+                    logwarning("%s: no alternative hit",cref(kind,chainname,chainlookupname,lookupname))
                 end
             else
                 alternatives = alternatives[currentchar]
                 if not alternatives then
                     if trace_bugs then
-                        logwarning("%s:  %s of %s, no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),m,n,gref(currentchar))
+                        logwarning("%s: no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar))
                     end
                 else
                     local choice, index = alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
                     current.char = choice
                     if trace_alternatives then
-                        m = m + 1
-                        logprocess("%s: %s of %s, replacing single %s by alternative %s (%s)",
-                            cref(kind,chainname,chainlookupname,lookupname),m,n,index,gref(currentchar),gref(choice))
+                        logprocess("%s: replacing single %s by alternative %s (%s)",
+                            cref(kind,chainname,chainlookupname,lookupname),index,gref(currentchar),gref(choice))
                     end
                 end
             end
@@ -9209,6 +9197,13 @@ function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,look
     end
     return start, false
 end
+
+-- function chainmores.gsub_alternate(start,stop,kind,chainname,currentcontext,lookuphash,currentlookup,chainlookupname,n)
+--     logprocess("%s: gsub_alternate not yet supported",cref(kind,chainname,chainlookupname))
+--     return start, false
+-- end
+
+chainmores.gsub_alternate = chainprocs.gsub_alternate
 
 --[[ldx--
 <p>When we replace ligatures we use a helper that handles the marks. I might change

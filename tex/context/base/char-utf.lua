@@ -35,6 +35,9 @@ local characters      = characters
 characters.graphemes  = allocate()
 local graphemes       = characters.graphemes
 
+characters.combined   = allocate()
+local combined        = characters.combined
+
 characters.decomposed = allocate()
 local decomposed      = characters.decomposed
 
@@ -73,32 +76,45 @@ local decomposed = allocate {
 }
 characters.decomposed = decomposed
 
-local function initialize()
-    for unicode, v in next, characters.data do
+local function initialize() -- maybe only 'mn'
+    local data = characters.data
+    for unicode, v in next, data do
         -- using vs and first testing for length is faster (.02->.01 s)
         local vs = v.specials
-        if vs and #vs == 3 and vs[1] == 'char' then
+        if vs and #vs == 3 and vs[1] == "char" then
             local one, two = vs[2], vs[3]
-            local first, second, combined = utfchar(one), utfchar(two), utfchar(unicode)
+            if data[two].category == "mn" then
+                local cgf = combined[one]
+                if not cgf then
+                    cgf = { [two] = unicode }
+                    combined[one]  = cgf
+                else
+                    cgf[two] = unicode
+                end
+            end
+            local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
             local cgf = graphemes[first]
             if not cgf then
-                cgf = { }
+                cgf = { [second] = combination }
                 graphemes[first] = cgf
+            else
+                cgf[second] = combination
             end
-            cgf[second] = combined
             if v.mathclass or v.mathspec then
                 local mps = mathpairs[two]
                 if not mps then
-                    mps = { }
+                    mps = { [one] = unicode }
                     mathpairs[two] = mps
+                else
+                    mps[one] = unicode -- here unicode
                 end
-                mps[one] = unicode -- here unicode
                 local mps = mathpairs[second]
                 if not mps then
-                    mps = { }
+                    mps = { [first] = combination }
                     mathpairs[second] = mps
+                else
+                    mps[first] = combination
                 end
-                mps[first] = combined
             end
      -- else
      --     local description = v.description
@@ -123,7 +139,10 @@ local function initialize()
         end
     end
     initialize = false
+    characters.initialize = function() end -- when used outside tex
 end
+
+characters.initialize = initialize
 
 -- utffilters.addgrapheme(utfchar(318),'l','\string~')
 -- utffilters.addgrapheme('c','a','b')
@@ -441,17 +460,23 @@ function utffilters.decompose(str)
     return str
 end
 
-local textfileactions = resolvers.openers.helpers.textfileactions
+local sequencers = utilities.sequencers
 
-utilities.sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
-utilities.sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+if sequencers then
 
-utilities.sequencers.appendaction (textfileactions,"system","characters.filters.utf.decompose")
-utilities.sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+    local textfileactions = resolvers.openers.helpers.textfileactions
 
-function characters.filters.utf.enable()
-    utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
-    utilities.sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
+    sequencers.appendaction (textfileactions,"system","characters.filters.utf.collapse")
+    sequencers.disableaction(textfileactions,"characters.filters.utf.collapse")
+
+    sequencers.appendaction (textfileactions,"system","characters.filters.utf.decompose")
+    sequencers.disableaction(textfileactions,"characters.filters.utf.decompose")
+
+    function characters.filters.utf.enable()
+        sequencers.enableaction(textfileactions,"characters.filters.utf.collapse")
+        sequencers.enableaction(textfileactions,"characters.filters.utf.decompose")
+    end
+
 end
 
 --[[ldx--
