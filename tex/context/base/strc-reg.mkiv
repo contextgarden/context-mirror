@@ -743,7 +743,7 @@
    \iflocation
      \def\currentregisterseeindex{#3}%
      \doifelse{\registerparameter\c!interaction}\v!text
-       {\directgoto{\setlocationcolor\??ia\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
+       {\directgoto{\setlocationcolor\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
        {\doapplyregisterentrycommand{#1}{#4}}%
    \else
      \let\currentregisterseeindex\empty

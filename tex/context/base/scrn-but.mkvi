@@ -166,8 +166,7 @@
    \endgroup}
 
 \def\scrn_button_make_yes
-  {\analyzecurrentreference                                           % needed as we act on the state
-   \ifcase\referencepagestate
+  {\ifcase\referencepagestate\relax
      \expandafter\scrn_button_make_normal                             % no state :  something else than a page reference
    \or
      \ifcase\locationboxpagestate\relax

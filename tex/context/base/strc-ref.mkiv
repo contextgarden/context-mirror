@@ -290,27 +290,13 @@
 \let\currentsubtextreference   \empty
 \let\currentsubsubtextreference\empty
 
-\newcount\referencepagestate   % set in backend
 \newcount\referencehastexstate % set in backend
+
+\def\referencepagestate{\ctxcommand{referencepagestate()}}
 
 % referencepagestate:
 %
 % 0 = no page ref, 1=same page, 2=before, 3=after
-
-%D Text references can contain more than one entry and
-%D therefore we check for
-%D
-%D \starttyping
-%D {entry}
-%D \stoptyping
-%D
-%D or
-%D
-%D \starttyping
-%D {{entry}{entry}{entry}}
-%D \stoptyping
-%D
-%D and split accordingly.
 
 %D Cross references appear as numbers (figure~1.1, chapter~2)
 %D or pagenumbers (page~2, page 3--2), and are called with
@@ -332,27 +318,8 @@
 %D are references to a file or \URL. The brace delimited
 %D references for instance refer to a \JAVASCRIPT. The last
 %D example shows that we can pass arguments to the actions.
-%D
-%D When we split off the components of such a reference, the
-%D results are available in:
-%D
-%D \starttyping
-%D \currentreferencespecial
-%D \currentreferenceoperation
-%D \currentreferencearguments
-%D \currentinnerreference
-%D \currentouterreference
-%D \currentfullreference
-%D \stoptyping
 
 \newif\ifreferencefound
-
-% \let\currentfullreference     \empty
-% \let\currentreferencespecial  \empty
-% \let\currentreferenceoperation\empty
-% \let\currentreferencearguments\empty
-% \let\currentouterreference    \empty
-% \let\currentinnerreference    \empty
 
 %D Now we've come to the testing step. As we can see below,
 %D this macro does bit more than testing: it also resolves
@@ -469,8 +436,8 @@
 %D one wants to use the pagestate the next macro seldom needs to
 %D be called.
 
-\def\analyzecurrentreference
-  {\ctxlua{structures.references.analyze()}}
+% \def\analyzecurrentreference
+%   {\ctxlua{structures.references.analyze()}}
 
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
@@ -876,12 +843,12 @@
 
 \unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2 % todo
   {\doifreferencefoundelse{#4}% kind of inefficient as \goto also analyzes
-     {\goto{\analyzecurrentreference\ifcase\referencepagestate\relax#1/#2\or#2\or#1\or#2\fi}[#4]}
+     {\goto{\ifcase\referencepagestate\relax#1/#2\or#2\or#1\or#2\fi}[#4]}
      {[#1/#2]}}
 
 \unexpanded\def\atpage[#1]% todo
   {\doifreferencefoundelse{#1}% kind of inefficient as \goto also analyzes
-     {\goto{\analyzecurrentreference\ifcase\referencepagestate
+     {\goto{\ifcase\referencepagestate\relax
         \labeltexts\v!page\dummyreference
       \or
         \labeltexts\v!atpage\currentreferencepage
@@ -900,7 +867,7 @@
   {\hbox{\strut\high
      {\setupsymbolset[\interactionparameter\c!symbolset]%
       \symbol
-        [\ifcase\referencepagestate
+        [\ifcase\referencepagestate\relax
            \v!somewhere
          \or % same
            \v!nowhere
@@ -1186,7 +1153,7 @@
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
-     \setlocationattributes\??ia
+     \setlocationattributes
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \attribute\referenceattribute\lastreferenceattribute
@@ -1205,7 +1172,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
-     \setlocationattributes\??ia
+     \setlocationattributes
      \attribute\referenceattribute\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
@@ -1226,7 +1193,7 @@
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
-        \setlocationattributes\??ia
+        \setlocationattributes
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute
@@ -1249,7 +1216,7 @@
      \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax)}%
-        \setlocationattributes\??ia
+        \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
@@ -1268,7 +1235,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
-     \setlocationattributes\??ia
+     \setlocationattributes
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#1}%
@@ -1285,7 +1252,7 @@
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
      \ctxlua{structures.references.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
-     \setlocationcolorspec{#1}% no consequence for strut
+     \setlocationcolorspec{#1}% #1=\resolver; no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
      \hbox attr \referenceattribute \lastreferenceattribute {#2}%
@@ -1320,7 +1287,7 @@
      \ctxlua{structures.references.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
-        \setlocationattributes\??ia
+        \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
         \hbox attr \referenceattribute \lastreferenceattribute {#1}%

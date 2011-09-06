@@ -614,7 +614,7 @@
         \doif{\namedheadparameter\currentlist\c!interaction}\v!list
           {\dosetsimplepagereference{bck:#2}%
            \attribute\destinationattribute\currentdestinationattribute}%
-        \directgoto{\setlocationcolor\??ia#4}[internal(#2)]% we can get the attribute instead so then we don't need a goto
+        \directgoto{\setlocationcolor#4}[internal(#2)]% we can get the attribute instead so then we don't need a goto
         \endgroup}% was \directgotobox
        {#3{#4}}%
    \else

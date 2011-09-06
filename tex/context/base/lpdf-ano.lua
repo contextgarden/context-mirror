@@ -180,7 +180,6 @@ end
 
 local function pdfaction(actions)
     local nofactions = #actions
-    texcount.referencepagestate = 0 -- goodie, as we do all in the backend, we need to set it here too
     if nofactions > 0 then
         local a = actions[1]
         local action = runners[a.kind]

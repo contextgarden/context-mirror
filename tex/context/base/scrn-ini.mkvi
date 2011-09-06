@@ -27,7 +27,7 @@
 %D
 %D \showsetup{setupinteraction}
 
-\installcommandhandler\??ia{interaction}\??ia
+\installcommandhandler\??ia {interaction} \??ia
 
 \let\currentinteraction\empty
 
@@ -107,33 +107,32 @@
 %D When we're dealing with pure page references, contrast
 %D colors are used when we are already at the page mentioned.
 
-\def\setlocationcolor#1% not grouped !
+\def\setlocationcolor % not grouped !
   {\ifnum\referencepagestate=\plusone
-     \edef\askedcontrastcolor{\csname#1\c!contrastcolor\endcsname}%
+     \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \dosetcolorattribute{#1}\c!color
+       \dosetinteractioncolorattribute\c!color
      \else
-       \dosetcolorattribute{#1}\c!contrastcolor
+       \dosetinteractioncolorattribute\c!contrastcolor
      \fi
    \else % we could just set and if > 0 set again
-     \dosetcolorattribute{#1}\c!color
+     \dosetinteractioncolorattribute\c!color
    \fi}
 
-\def\setlocationfont#1%
-  {\dosetfontattribute{#1}\c!style}
+\def\setlocationfont % not grouped !
+  {\dosetinteractionfontattribute\c!style}
 
-\def\setlocationattributes#1%
+\def\setlocationattributes % not grouped !
   {\ifnum\referencepagestate=\plusone
-     \edef\askedcontrastcolor{\csname#1\c!contrastcolor\endcsname}%
+     \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \dosetcolorattribute{#1}\c!color
+       \dosetinteractionattributes\c!style\c!color
      \else
-       \dosetcolorattribute{#1}\c!contrastcolor
+       \dosetinteractionattributes\c!style\c!contrastcolor
      \fi
    \else % we could just set and if > 0 set again
-     \dosetcolorattribute{#1}\c!color
-   \fi
-   \dosetfontattribute{#1}\c!style}
+     \dosetinteractionattributes\c!style\c!color
+   \fi}
 
 \def\setlocationcolorspec#1% \resolver
   {\ifnum\referencepagestate=\plusone
