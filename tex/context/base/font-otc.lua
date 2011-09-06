@@ -51,7 +51,8 @@ local function addfeature(data,feature,specifications)
         local unicodes     = resources.unicodes
         local lookuptypes  = resources.lookuptypes
         local splitter     = lpeg.splitter(" ",unicodes)
-        local done = 0
+        local done         = 0
+        local skip         = 0
         if not specifications[1] then
             -- so we accept a one entry specification
             specifications = { specifications }
@@ -61,6 +62,11 @@ local function addfeature(data,feature,specifications)
             local specification = specifications[s]
             local valid         = specification.valid
             if not valid or valid(data,specification,feature) then
+                local initialize = specification.initialize
+                if initialize then
+                    -- when false is returned we initialize only once
+                    specification.initialize = initialize(specification) and initialize or nil
+                end
                 local askedfeatures = specification.features or everywhere
                 local subtables     = specification.subtables or { specification.data } or { }
                 local featuretype   = types[specification.type or "substitution"]
@@ -82,12 +88,23 @@ local function addfeature(data,feature,specifications)
                                 if type(ligature) == "string" then
                                     ligature = { lpegmatch(splitter,ligature) }
                                 end
-                                if slookups then
-                                    slookups[full] = ligature
-                                else
-                                    description.slookups = { [full] = ligature }
+                                local present = true
+                                for i=1,#ligature do
+                                    if not descriptions[ligature[i]] then
+                                        present = false
+                                        break
+                                    end
                                 end
-                                done, added = done + 1, true
+                                if present then
+                                    if slookups then
+                                        slookups[full] = ligature
+                                    else
+                                        description.slookups = { [full] = ligature }
+                                    end
+                                    done, added = done + 1, true
+                                else
+                                    skip = skip + 1
+                                end
                             end
                         end
                     elseif featuretype == "gsub_single" then
@@ -98,14 +115,14 @@ local function addfeature(data,feature,specifications)
                             if description then
                                 local slookups = description.slookups
                                 replacement = tonumber(replacement) or unicodes[replacement]
-    if descriptions[replacement] then
-                                if slookups then
-                                    slookups[full] = replacement
-                                else
-                                    description.slookups = { [full] = replacement }
+                                if descriptions[replacement] then
+                                    if slookups then
+                                        slookups[full] = replacement
+                                    else
+                                        description.slookups = { [full] = replacement }
+                                    end
+                                    done, added = done + 1, true
                                 end
-                                done, added = done + 1, true
-    end
                             end
                         end
                     end
@@ -148,8 +165,8 @@ local function addfeature(data,feature,specifications)
                 end
             end
         end
-        if done > 0 and trace_loading then
-            report_otf("enhance: registering %s feature (%s glyphs affected)",feature,done)
+        if trace_loading then
+            report_otf("enhance: registering feature '%s', %s glyphs affected, %s glyphs skipped",feature,done,skip)
         end
     end
 end
@@ -184,9 +201,9 @@ local tlig = {
 
 local tlig_specification = {
     type     = "ligature",
-    features = everywhere, -- { ["*"] = { ["*"] = true } },
+    features = everywhere,
     data     = tlig,
-    flags    = noflags, -- { },
+    flags    = noflags,
 }
 
 otf.addfeature("tlig",tlig_specification)
@@ -206,9 +223,9 @@ local trep = {
 
 local trep_specification = {
     type      = "substitution",
-    features  = everywhere, -- { ["*"] = { ["*"] = true } },
+    features  = everywhere,
     data      = trep,
-    flags     = noflags, -- { },
+    flags     = noflags,
 }
 
 otf.addfeature("trep",trep_specification)
@@ -217,6 +234,39 @@ registerotffeature {
     name        = 'trep',
     description = 'tex replacements',
 }
+
+-- tcom
+
+if characters.combined then
+
+    local tcom = { }
+
+    local function initialize()
+        characters.initialize()
+        for first, seconds in next, characters.combined do
+            for second, combination in next, seconds do
+                tcom[combination] = { first, second }
+            end
+        end
+        -- return false
+    end
+
+    local tcom_specification = {
+        type       = "ligature",
+        features   = everywhere,
+        data       = tcom,
+        flags      = noflags,
+        initialize = initialize,
+    }
+
+    otf.addfeature("tcom",tcom_specification)
+
+    registerotffeature {
+        name        = 'tcom',
+        description = 'tex combinations',
+    }
+
+end
 
 -- anum
 
