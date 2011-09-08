@@ -108,6 +108,13 @@ function namespaces.define(namespace,settings)
             report_namespaces("installing set/let/reset command for '%s' (multiple)",name)
         end
     end
+    local frame = ns.frame
+    if frame == v_yes then
+        context.installinheritedframed(name)
+        if trace_namespaces then
+            report_namespaces("installing framed command for '%s'",name)
+        end
+    end
     context.protect()
 end
 

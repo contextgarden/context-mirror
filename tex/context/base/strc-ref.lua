@@ -1542,22 +1542,39 @@ function commands.referencepagestate(actions)
     end
 end
 
-local plist
+local plist, nofrealpages
 
 local function realpageofpage(p)
     if not plist then
         local pages = structures.pages.collected
+        nofrealpages = #pages
         plist = { }
-        for rp=1,#pages do
+        for rp=1,nofrealpages do
             plist[pages[rp].number] = rp
         end
+        references.nofrealpages = nofrealpages
     end
     return plist[p]
 end
 
 references.realpageofpage = realpageofpage
 
---
+function references.checkedrealpage(r)
+    if not plist then
+        realpageofpage(r) -- just initialize
+    end
+    if not r then
+        return texcount.realpageno
+    elseif r < 1 then
+        return 1
+    elseif r > nofrealpages then
+        return nofrealpages
+    else
+        return r
+    end
+end
+
+-- use local ?
 
 local pages = allocate {
     [variables.firstpage]       = function() return counters.record("realpage")["first"]    end,
@@ -1632,6 +1649,15 @@ end
 function specials.userpage(var,actions)
     local p = tonumber(realpageofpage(var.operation))
     if p then
+        var.r = p
+        actions.realpage = actions.realpage or p -- first wins
+    end
+end
+
+function specials.deltapage(var,actions)
+    local p = tonumber(var.operation)
+    if p then
+        p = references.checkedrealpage(p + texcount.realpageno)
         var.r = p
         actions.realpage = actions.realpage or p -- first wins
     end

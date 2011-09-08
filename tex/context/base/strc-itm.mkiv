@@ -209,6 +209,9 @@
      \setxvalue{\??op\currentitemgroup\number#1\s!parent}{\??op\currentitemgroup}%
    \fi}
 
+\let\currentitemconversionset\empty
+\def\currentitemsymbol       {n}
+
 \unexpanded\def\defineitemgroup
   {\dotripleempty\dodefineitemgroup}
 
@@ -226,6 +229,7 @@
            {\getparameters[\??op#1][\s!parent=\??op#2,#3]}}%
       \dorecurse{\itemparameter\empty\c!levels}{\initializeitemgrouplevel\recurselevel}%
       \definestructurecounter[itemgroup:#1]%
+      \definestructureconversionset[itemgroup:#1][\currentitemconversionset][\currentitemsymbol]%
       \popmacro\currentitemgroup}}
 
 \newtoks\everysetupitemgroup
@@ -443,14 +447,10 @@
       \c!numberorder=\ifconditional\reverselistitem\v!reverse\else\v!normal\fi,
       \c!numberstopper=\expdoif{\getitemparameter\currentitemlevel\c!placestopper}\v!yes{\getitemparameter\currentitemlevel\c!stopper},
      %\c!numberseparatorset=,
-     %\c!numberconversionset=,
-      \c!numberconversion=\currentitemsymbol,
+      \c!numberconversionset=itemgroup:\currentitemgroup,
+     %\c!numberconversion=\currentitemsymbol,
       \c!numbersegments=\ifx\currentrepeatstart\empty\else\currentrepeatstart:\fi\number\currentitemlevel]%
-   \ifconditional\reverselistitem
-     \convertedstructurecounter[\currentitemgroupcounter]% [\number\currentitemlevel]%
-   \else
-     \convertedstructurecounter[\currentitemgroupcounter]% [\number\currentitemlevel]%
-   \fi
+   \convertedstructurecounter[\currentitemgroupcounter]% [\number\currentitemlevel]%
    \dohandleitemreference
    \endgroup}
 
@@ -741,6 +741,11 @@
      \ifconditional\inlinelistitem\else
        \advance\leftskip\itemgrouplistwidth\relax
      \fi
+   \fi
+   \ifx\currentrepeatstart\empty
+     \let\currentitemconversionset\currentitemsymbol
+   \else
+     \edef\currentitemconversionset{\currentitemconversionset,\currentitemsymbol}%
    \fi
    \startcollectitems}
 

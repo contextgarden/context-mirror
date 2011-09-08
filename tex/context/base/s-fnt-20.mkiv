@@ -21,7 +21,8 @@
 %    font=husayni,
 %    sample={ببب بببب ببببب بببببب}]
 
-\def\checkedfeature#1#2{\ifnum\featureattribute{#1}=\zerocount#2\else#1\fi}
+\def\checkedotftrackerfeature  #1{otftracker-\ifnum\featureattribute{otftracker-#1}=\zerocount default\else#1\fi}
+\def\checkedotftrackerdirection#1{\csname otftracker-direction-\ifcsname otftracker-direction-#1\endcsname#1\else default\fi\endcsname}
 
 % we can consider adding a dir key to features
 
@@ -49,7 +50,7 @@
 \definefontfeature
   [otftracker-husayni]
   [analyze=yes,mode=node,
-   language=dflt,script=arab,ccmp=no,
+   language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,
    rlig=yes,
    ccmp=yes,
@@ -57,12 +58,13 @@
    ss05=yes, % full Jiim stacking
    ss09=yes, % full Haa stacking
    ss10=yes, % partial dipped Miim
-   % ss11=yes, % full dipped Miim
    ss13=yes, % full stacked Miim
    ss15=yes, % full stacked Laam-on-Miim
    ss17=yes, % full stacked Ayn-on-Miim
    ss19=yes, % LM_im
-   ss24=yes,ss25=yes,ss26=yes, % BX, LH_im, full Yaa.final specials
+   ss24=yes, % BX specials
+   ss25=yes, % LH_im specials
+   ss26=yes, % full Yaa.final specials
    ss27=yes, % partial thin Miim.final
    ss31=yes, % partial Raa.final contexts
    ss34=yes, % partial Raa.final contexts
@@ -73,10 +75,7 @@
    ss39=yes, % high and low Baa strings
    ss40=yes, % diagonal entry
    ss41=yes, % initial alternates
-   % js06=yes,js08=yes,js10=yes,js11=yes,js17=yes,
-   % ttwl=yes,
-   mark=yes,mkmk=yes,
-   kern=yes,curs=yes]
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
 
 \definefontfeature
   [otftracker-simplenaskhi]
@@ -84,21 +83,22 @@
    language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,calt=yes,
    rlig=yes,liga=yes,dlig=yes,
-   mark=yes,mkmk=yes,curs=yes]
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
 
 \setvalue{otftracker-direction-arabtype}{-1}
 \setvalue{otftracker-direction-husayni}{-1}
 \setvalue{otftracker-direction-simplenaskhi}{-1}
+\setvalue{otftracker-direction-default}{0}
 
 \setvariables
   [otftracker]
   [font=Serif,
-   features=\checkedfeature{otftracker-\getvariable{otftracker}{font}}{otftracker-default},
+   features=\checkedotftrackerfeature{\getvariable{otftracker}{font}},
+   direction=\checkedotftrackerdirection{\getvariable{otftracker}{font}},
    size=48pt,
    figure=,
    title=Feature Check,
    sample=no sample,
-   direction=\executeifdefined{otftracker-direction-\getvariable{otftracker}{font}}{0},
    set=\setups{otftracker}]
 
 \setuplayout

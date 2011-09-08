@@ -1,0 +1,245 @@
+%D \module
+%D   [      file=s-mat-10.mkiv, % was: s-fnt-25
+%D        version=2009.01.25,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Math Glyph Checking,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This base module will be cleaned up and extended.
+
+\def\enableshowmathfontvirtual
+  {\ctxlua{fonts.constructors.autocleanup=false}}
+
+\def\showmathfontcharacters
+  {\dodoubleempty\doshowmathfontcharacters}
+
+\def\doshowmathfontcharacters[#1][#2]%
+  {\begingroup
+   \dontcomplain
+   \doifelsenothing{#1}
+     {\definedfont[MathRoman*math-text]}
+     {\definedfont[#1]}%
+   \doifelsenothing{#2}
+     {\ctxlua{document.showmathfont(font.current())}}
+     {\def\dodoshowmathfontcharacters##1{\ctxlua{document.showmathfont(font.current(),##1)}}%
+      \processcommalist[#2]\dodoshowmathfontcharacters}%
+   \endgroup}
+
+% the interface might (and will) change
+
+\let\startmathfontlist                 \relax
+\let\stopmathfontlist                  \relax
+\let\mathfontlistreference             \gobbleoneargument
+\let\startmathfontlistentry            \relax
+\let\stopmathfontlistentry             \relax
+\let\mathfontlistentryhexdectit        \gobblethreearguments
+\let\mathfontlistentrywdhtdpic         \gobblefourarguments
+\let\mathfontlistentryresource         \gobbleoneargument
+\let\startmathfontlistnext             \relax
+\let\mathfontlistnextentry             \gobblethreearguments
+\let\mathfontlistnextcycle             \gobbleonearguments
+\let\stopmathfontlistnext              \relax
+\let\startmathfontlisthvariants        \relax
+\let\mathfontlisthvariantsentry        \gobblethreearguments
+\let\stopmathfontlisthvariants         \relax
+\let\startmathfontlistvvariants        \startmathfontlisthvariants
+\let\mathfontlistvvariantsentry        \mathfontlisthvariantsentry
+\let\stopmathfontlistvvariants         \stopmathfontlisthvariants
+\let\mathfontlistbetweennextandvariants\relax
+\let\startmathfontlistentryclassspec   \relax
+\let\stopmathfontlistentryclassspec    \relax
+\let\mathfontlistentryclassname        \gobbletwoarguments
+\let\mathfontlistentrysymbol           \gobbletwoarguments
+\let\startmathfontlookupvariants       \relax
+\let\stopmathfontlookupvariants        \relax
+\let\mathfontlookupvariant             \gobblefourarguments
+
+\startluacode
+local concat = table.concat
+local format, lower = string.format, string.lower
+local utfchar = utf.char
+local round = math.round
+
+local fontdata = fonts.hashes.identifiers
+local chardata = characters.data
+
+local no_description = "no description, private to font"
+
+local limited       = true
+local fillinthegaps = true
+local upperlimit    = 0x000FF
+local upperlimit    = 0xF0000
+
+function document.showmathfont(id,slot)
+    local tfmdata      = fontdata[id]
+    local characters   = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    local resources    = tfmdata.resources
+    local lookuptypes  = resources.lookuptypes
+    local virtual      = tfmdata.properties.virtualized
+    local names        = { }
+    local gaps         = mathematics.gaps
+    local sorted       = { }
+    if slot then
+        sorted = { slot }
+    elseif fillinthegaps then
+        sorted = table.keys(characters)
+        for k, v in next, gaps do
+            if characters[v] then
+                sorted[#sorted+1] = k
+            end
+        end
+        table.sort(sorted)
+    else
+        sorted = table.sortedkeys(characters)
+    end
+    if virtual then
+        for k, v in ipairs(tfmdata.fonts) do
+            local id = v.id
+            local name = fontdata[id].properties.name
+            names[k] = (name and file.basename(name)) or id
+        end
+    end
+    context.startmathfontlist()
+    for _, unicode in next, sorted do
+        if not limited or unicode < upperlimit then
+            local code = gaps[unicode] or unicode
+            local char = characters[code]
+            local desc = descriptions[code]
+            local info = chardata[code]
+            if char then
+                local next_sizes  = char.next
+                local v_variants  = char.vert_variants
+                local h_variants  = char.horiz_variants
+                local commands    = char.commands
+                local slookups    = desc.slookups
+                local mlookups    = desc.mlookups
+                local mathclass   = info.mathclass
+                local mathspec    = info.mathspec
+                local mathsymbol  = info.mathsymbol
+                local description = info.description or no_description
+                context.startmathfontlistentry()
+                context.mathfontlistreference(format("U+%05X",unicode))
+                context.mathfontlistentryhexdectit(format("U+%05X",code),code,lower(description))
+                context.mathfontlistentrywdhtdpic(round(char.width or 0),round(char.height or 0),round(char.depth or 0),round(char.italic or 0))
+                if virtual and commands then
+                    local t = { }
+                    for i=1,#commands do
+                        local ci = commands[i]
+                        if ci[1] == "slot" then
+                            local fnt, idx = ci[2], ci[3]
+                            t[#t+1] = format("%s/%0X",names[fnt] or fnt,idx)
+                        end
+                    end
+                    if #t > 0 then
+                        context.mathfontlistentryresource(concat(t,", "))
+                    end
+                end
+                if mathclass or mathspec then
+                    context.startmathfontlistentryclassspec()
+                    if mathclass then
+                        context.mathfontlistentryclassname(mathclass,info.mathname or "no name")
+                    end
+                    if mathspec then
+                        for i=1,#mathspec do
+                            local mi = mathspec[i]
+                            context.mathfontlistentryclassname(mi.class,mi.name or "no name")
+                        end
+                    end
+                    context.stopmathfontlistentryclassspec()
+                end
+                if mathsymbol then
+                    context.mathfontlistentrysymbol(format("U+%05X",mathsymbol),mathsymbol)
+                end
+                if next_sizes then
+                    local n, done = 0, { }
+                    context.startmathfontlistnext()
+                    while next_sizes do
+                        n = n + 1
+                        if done[next_sizes] then
+                            context.mathfontlistnextcycle(n)
+                            break
+                        else
+                            done[next_sizes] = true
+                            context.mathfontlistnextentry(n,format("U+%05X",next_sizes),next_sizes)
+                            next_sizes = characters[next_sizes]
+                            v_variants = next_sizes.vert_variants  or v_variants
+                            h_variants = next_sizes.horiz_variants or h_variants
+                            if next_sizes then
+                                next_sizes = next_sizes.next
+                            end
+                        end
+                    end
+                    context.stopmathfontlistnext()
+                    if h_variants or v_variants then
+                        context.mathfontlistbetweennextandvariants()
+                    end
+                end
+                if h_variants then
+                    context.startmathfontlisthvariants()
+                    for i=1,#h_variants do -- we might go top-down in the original
+                        local vi = h_variants[i]
+                        context.mathfontlisthvariantsentry(i,format("U+%05X",vi.glyph),vi.glyph)
+                    end
+                    context.stopmathfontlisthvariants()
+                elseif v_variants then
+                    context.startmathfontlistvvariants()
+                    for i=1,#v_variants do
+                        local vi = v_variants[#v_variants-i+1]
+                        context.mathfontlistvvariantsentry(i,format("U+%05X",vi.glyph),vi.glyph)
+                    end
+                    context.stopmathfontlistvvariants()
+                end
+                if slookups or mlookups then
+                    local variants = { }
+                    if slookups then
+                        for lookupname, lookupdata in next, slookups do
+                            local lookuptype = lookuptypes[lookupname]
+                            if lookuptype == "substitution" then
+                                variants[lookupdata] = "sub"
+                            elseif lookuptype == "alternate" then
+                                for i=1,#lookupdata do
+                                    variants[lookupdata[i]] = "alt"
+                                end
+                            end
+                        end
+                    end
+                    if mlookups then
+                        for lookupname, lookuplist in next, mlookups do
+                            local lookuptype = lookuptypes[lookupname]
+                            for i=1,#lookuplist do
+                                local lookupdata = lookuplist[i]
+                                local lookuptype = lookuptypes[lookupname]
+                                if lookuptype == "substitution" then
+                                    variants[lookupdata] = "sub"
+                                elseif lookuptype == "alternate" then
+                                    for i=1,#lookupdata do
+                                        variants[lookupdata[i]] = "alt"
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    context.startmathfontlookupvariants()
+                    local i = 0
+                    for variant, lookuptype in table.sortedpairs(variants) do
+                        i = i + 1
+                        context.mathfontlookupvariant(i,format("U+%05X",variant),variant,lookuptype)
+                    end
+                    context.stopmathfontlookupvariants()
+                end
+                context.stopmathfontlistentry()
+            end
+        end
+    end
+    context.stopmathfontlist()
+end
+\stopluacode
+
+\endinput

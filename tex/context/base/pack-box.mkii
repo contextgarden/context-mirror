@@ -572,14 +572,17 @@
   {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
    \hbox\framed[#3]}
 
+% \def\dosetlayerframedS[#1][#2][#3]%
+%   {\dowithnextbox
+%      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,\c!offset=\!!zeropoint,#2]{\flushnextbox}}%
+%      \hbox\framed[\c!location=\v!normal,#2]}
+%
+% better (2011-09-06)
+
 \def\dosetlayerframedS[#1][#2][#3]%
   {\dowithnextbox
-     {\setlayer
-        [#1]
-        [\c!width=\nextboxwd,\c!height=\nextboxht,
-         \c!offset=\!!zeropoint,#2]
-        {\flushnextbox}}%
-   \hbox\framed[\c!location=\v!normal,#2]}
+     {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
+     \hbox\framed[\c!location=\v!normal,#2]}
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}
