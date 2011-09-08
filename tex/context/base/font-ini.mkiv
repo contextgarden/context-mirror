@@ -1513,13 +1513,14 @@
 \let\fontalternativelist\empty
 \let\fontstylelist      \empty
 
+\def\docheckfontnamecombinations#1%
+  {\def\dodocheckfontnamecombinations##1%
+     {\def\dododocheckfontnamecombinations####1{\checkbodyfont{####1}{##1}{#1}}%
+      \processcommacommand[\fontstylelist]\dododocheckfontnamecombinations}%
+   \processcommacommand[\fontalternativelist]\dodocheckfontnamecombinations}
+
 \def\checkfontnamecombinations % we need to split math and text here ... todo (math only has mr and mb)
-  {\def\docommand##1%
-     {\def\dodocommand####1%
-        {\def\dododocommand########1{\checkbodyfont{########1}{####1}{##1}}%
-         \processcommacommand[\fontstylelist]\dododocommand}%
-      \processcommacommand[\fontalternativelist]\dodocommand}%
-   \processcommacommand[\fontsizelist]\docommand}
+  {\processcommacommand[\fontsizelist]\docheckfontnamecombinations}
 
 \unexpanded\def\definefontsize[#1]% sneller met toks
   {\addtocommalist{#1}\fontsizelist
@@ -1708,7 +1709,7 @@
      \the\everyendfontdef
    \fi}
 
-%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%% todo: inheritance with parent
 
 \unexpanded\def\definebodyfontenvironment
   {\dotripleempty\dodefinebodyfontenvironment}
@@ -1739,13 +1740,13 @@
    \else
      % speeding this up saves 0.01 sec on a run (tested 20100817)
      % but some day we will clean this up anyway
-     \def\docommand##1%
+     \def\dodododefinebodyfontenvironment##1%
        {\scratchdimen\csname\??ft\s!default##1\endcsname\dimexpr#1\relax
         \edef\tempbodyfontsize{\thenormalizedbodyfontsize\scratchdimen}%
         \letvalue{\??ft#2#1##1}\tempbodyfontsize}%
-     \processcommacommand[\fontrelativesizelist]\docommand
+     \processcommacommand[\fontrelativesizelist]\dodododefinebodyfontenvironment
      \copyparameters
-       [\??ft#2#1][\??ft\s!default]
+       [\??ft#2#1][\??ft\s!default]%
        [\c!interlinespace,\c!em]%
    \fi
    \getparameters[\??ft#2#1][#3]%
@@ -1802,18 +1803,19 @@
   {\ifcsname\??ft          #1\c!em\endcsname\else\docheckbodyfontenvironment\empty    {#1}\fi
    \ifcsname\??ft\fontclass#1\c!em\endcsname\else\docheckbodyfontenvironment\fontclass{#1}\fi}
 
+\def\dodocheckbodyfontenvironment#1#2% text script scriptscript x xx big small
+  {\setevalue{\??ft#1\tempbodyfontsize#2}%
+     {\thenormalizedbodyfontsize{\csname\??ft\s!default#2\endcsname\dimexpr\tempbodyfontsize\relax}}}
+
 \def\docheckbodyfontenvironment#1#2% class size (simplified version of definebodyfontenvironment)
    {\@@beginfontdef
     \edef\tempbodyfontsize{\thenormalizedbodyfontsize{#2}}%
     \addtocommalist\tempbodyfontsize\bodyfontenvironmentlist
-    \def\docommand##1% text script scriptscript x xx big small
-      {\setevalue{\??ft#1\tempbodyfontsize##1}%
-         {\thenormalizedbodyfontsize{\csname\??ft\s!default##1\endcsname\dimexpr\tempbodyfontsize\relax}}}%
-    \processcommacommand[\fontrelativesizelist]\docommand
+    \processcommacommand[\fontrelativesizelist]{\dodocheckbodyfontenvironment{#1}}%
     \copyparameters % can inherit
       [\??ft#1\tempbodyfontsize][\??ft\s!default]
       [\c!interlinespace,\c!em]%
-%     \ifproductionrun
+   %\ifproductionrun
       \ifcsname\@size@\tempbodyfontsize\endcsname \else
         \letvalueempty{\@size@\tempbodyfontsize}% prevent loop
         \pushmacro\fontclass
@@ -1821,7 +1823,7 @@
         \normalexpanded{\defineunknownfont{\tempbodyfontsize}}% we can also inherit here
         \popmacro\fontclass
       \fi
-%     \fi
+   %\fi
     \setevalue{\@size@#1}{\noexpand\docompletefontswitch[#1]}%
     \@@endfontdef}
 
@@ -2937,17 +2939,13 @@
 %D \definefontstyle [sansserif,ss] [ss]
 %D \stoptyping
 
+\def\dododefinefontstyle#1#2%
+  {\setvalue{\@shortstyle@#2}{#1}%
+   \setvalue{\@style@#2}{\csname#1\endcsname}}
+
 \def\dodefinefontstyle[#1][#2]%
-  {\rawdoifinsetelse{#2}{\fontstylelist}
-     {%\debuggerinfo\m!fonts{unknown style #2}%
-      }
-     {%\debuggerinfo\m!fonts8{#2\space (#1)}%
-      \addtocommalist{#2}\fontstylelist}%
-   % check kan hier
-   \def\docommand##1%
-     {\setvalue{\@shortstyle@##1}{#2}%
-      \setvalue{\@style@##1}{\csname#2\endcsname}}%
-   \processcommalist[#1]\docommand}
+  {\rawdoifinsetelse{#2}{\fontstylelist}{}{\addtocommalist{#2}\fontstylelist}%
+   \processcommalist[#1]{\dododefinefontstyle{#2}}}
 
 \unexpanded\def\definefontstyle
   {\dodoubleargument\dodefinefontstyle}
@@ -3330,8 +3328,8 @@
 %D because \PLAIN\ \TEX\ is english anyway.
 
 \def\dodefinebodyfontswitch[#1][#2]%
-  {\def\docommand##1{\setvalue{##1}{\switchtobodyfont[#2]}}%
-   \processcommalist[#1]\docommand}
+  {\def\dododefinebodyfontswitch##1{\setvalue{##1}{\switchtobodyfont[#2]}}%
+   \processcommalist[#1]\dododefinebodyfontswitch}
 
 \unexpanded\def\definebodyfontswitch
   {\dodoubleargument\dodefinebodyfontswitch}
@@ -3471,13 +3469,6 @@
 %D command \type{\cap}, we want this to take effect in both
 %D text and headings, which is accomplished by assigning both
 %D arguments.
-
-% \def\dodefinealternativestyle[#1][#2][#3]%
-%   {\def\docommand##1%
-%      {\ifcsname##1\endcsname\else\setuvalue{##1}{\groupedcommand{#2}{}}\fi
-%       \setvalue{\@letter@  ##1}{#2}%
-%       \setvalue{\@noletter@##1}{#3}}%
-%    \processcommalist[#1]\docommand}
 
 \setnewconstant \currentalternativestyleindex \plusone
 
@@ -4545,10 +4536,10 @@
 \def\dodefinestylecollection[#1]%
   {\iffirstargument
      \setuvalue{#1}{\styleinstance[#1]}%
-     \def\docommand##1%
-       {\def\dodocommand####1{\letbeundefined{\??sx#1:##1:####1}}%
-        \processcommacommand[\fontalternativelist,\s!default]\dodocommand}%
-     \processcommacommand[\fontstylelist,\s!default]\docommand
+     \def\dododefinestylecollection##1%
+       {\def\dodododefinestylecollection####1{\letbeundefined{\??sx#1:##1:####1}}%
+        \processcommacommand[\fontalternativelist,\s!default]\dodododefinestylecollection}%
+     \processcommacommand[\fontstylelist,\s!default]\dododefinestylecollection
    \fi}
 
 \unexpanded\def\definestyleinstance

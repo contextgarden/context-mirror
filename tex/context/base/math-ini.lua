@@ -228,7 +228,7 @@ local function report(class,family,unicode,name)
     end
 end
 
--- there will be a combined \(math)chardef
+-- there will be a combined \(math)chardef (tracker)
 
 function mathematics.define(family)
     family = family or 0

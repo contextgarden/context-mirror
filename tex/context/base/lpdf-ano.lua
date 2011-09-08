@@ -20,30 +20,31 @@ local report_reference   = logs.reporter("backend","references")
 local report_destination = logs.reporter("backend","destinations")
 local report_bookmark    = logs.reporter("backend","bookmarks")
 
-local variables = interfaces.variables
-local constants = interfaces.constants
+local variables               = interfaces.variables
+local constants               = interfaces.constants
 
-local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_array       = utilities.parsers.settings_to_array
 
-local nodeinjections      = backends.pdf.nodeinjections
-local codeinjections      = backends.pdf.codeinjections
-local registrations       = backends.pdf.registrations
+local nodeinjections          = backends.pdf.nodeinjections
+local codeinjections          = backends.pdf.codeinjections
+local registrations           = backends.pdf.registrations
 
-local javascriptcode      = interactions.javascripts.code
+local javascriptcode          = interactions.javascripts.code
 
-local references          = structures.references
-local bookmarks           = structures.bookmarks
+local references              = structures.references
+local bookmarks               = structures.bookmarks
 
-local runners             = references.runners
-local specials            = references.specials
-local handlers            = references.handlers
-local executers           = references.executers
+local runners                 = references.runners
+local specials                = references.specials
+local handlers                = references.handlers
+local executers               = references.executers
+local getinnermethod          = references.getinnermethod
 
-local nodepool            = nodes.pool
+local nodepool                = nodes.pool
 
-local pdfannotation_node  = nodepool.pdfannotation
-local pdfdestination_node = nodepool.pdfdestination
-local latelua_node        = nodepool.latelua
+local pdfannotation_node      = nodepool.pdfannotation
+local pdfdestination_node     = nodepool.pdfdestination
+local latelua_node            = nodepool.latelua
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
@@ -57,23 +58,21 @@ local pdfpagereference        = lpdf.pagereference
 local pdfdelayedobject        = lpdf.delayedobject
 local pdfregisterannotation   = lpdf.registerannotation
 
-local pdf_annot      = pdfconstant("Annot")
-local pdf_uri        = pdfconstant("URI")
-local pdf_gotor      = pdfconstant("GoToR")
-local pdf_goto       = pdfconstant("GoTo")
-local pdf_launch     = pdfconstant("Launch")
-local pdf_javascript = pdfconstant("JavaScript")
-local pdf_link       = pdfconstant("Link")
-local pdf_n          = pdfconstant("N")
-local pdf_t          = pdfconstant("T")
-local pdf_fit        = pdfconstant("Fit")
-local pdf_named      = pdfconstant("Named")
-
 -- todo: 3dview
 
-local pdf_border     = pdfarray { 0, 0, 0 }
+local pdf_annot               = pdfconstant("Annot")
+local pdf_uri                 = pdfconstant("URI")
+local pdf_gotor               = pdfconstant("GoToR")
+local pdf_goto                = pdfconstant("GoTo")
+local pdf_launch              = pdfconstant("Launch")
+local pdf_javascript          = pdfconstant("JavaScript")
+local pdf_link                = pdfconstant("Link")
+local pdf_n                   = pdfconstant("N")
+local pdf_t                   = pdfconstant("T")
+local pdf_fit                 = pdfconstant("Fit")
+local pdf_named               = pdfconstant("Named")
 
-local getinnermethod = references.getinnermethod
+local pdf_border              = pdfarray { 0, 0, 0 }
 
 local cache = { }
 
@@ -454,6 +453,14 @@ function specials.userpage(var,actions)
     end
 end
 
+function specials.deltapage(var,actions)
+    local p = tonumber(var.operation)
+    if p then
+        p = references.checkedrealpage(p + texcount.realpageno)
+        return link(nil,nil,nil,p,actions)
+    end
+end
+
 -- sections
 
 --~ function specials.section(var,actions)
@@ -579,9 +586,11 @@ function executers.submitform(arguments)
     }
 end
 
+local pdf_hide = pdfconstant("Hide")
+
 function executers.hide(arguments)
     return pdfdictionary {
-        S = pdfconstant("Hide"),
+        S = pdf_hide,
         H = true,
         T = arguments,
     }
@@ -589,7 +598,7 @@ end
 
 function executers.show(arguments)
     return pdfdictionary {
-        S = pdfconstant("Hide"),
+        S = pdf_hide,
         H = false,
         T = arguments,
     }
@@ -633,7 +642,7 @@ function specials.action(var)
 end
 
 --~ entry.A = pdfdictionary {
---~     S = pdfconstant("GoTo"),
+--~     S = pdf_goto,
 --~     D = ....
 --~ }
 

@@ -34,6 +34,37 @@ local report_remapping = logs.reporter("mathematics","remapping")
 mathematics       = mathematics or { }
 local mathematics = mathematics
 
+-- Unfortunately some alphabets have gaps (thereby troubling all applications that
+-- need to deal with math). Somewhat strange considering all those weird symbols that
+-- were added afterwards.
+
+mathematics.gaps = {
+    [0x1D455] = 0x0210E, -- H
+    [0x1D49D] = 0x0212C, -- script B
+    [0x1D4A0] = 0x02130, -- script E
+    [0x1D4A1] = 0x02131, -- script F
+    [0x1D4A3] = 0x0210B, -- script H
+    [0x1D4A4] = 0x02110, -- script I
+    [0x1D4A7] = 0x02112, -- script L
+    [0x1D4A8] = 0x02133, -- script M
+    [0x1D4AD] = 0x0211B, -- script R
+    [0x1D4BA] = 0x0212F, -- script e
+    [0x1D4BC] = 0x0210A, -- script g
+    [0x1D4C4] = 0x02134, -- script o
+    [0x1D506] = 0x0212D, -- fraktur C
+    [0x1D50B] = 0x0210C, -- fraktur H
+    [0x1D50C] = 0x02111, -- fraktur I
+    [0x1D515] = 0x0211C, -- fraktur R
+    [0x1D51D] = 0x02128, -- fraktur Z
+    [0x1D53A] = 0x02102, -- bb C
+    [0x1D53F] = 0x0210D, -- bb H
+    [0x1D545] = 0x02115, -- bb N
+    [0x1D547] = 0x02119, -- bb P
+    [0x1D548] = 0x0211A, -- bb Q
+    [0x1D549] = 0x0211D, -- bb R
+    [0x1D551] = 0x02124, -- bb Z
+}
+
 -- we could use one level less and have tf etc be tables directly but the
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek

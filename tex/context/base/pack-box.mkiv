@@ -78,7 +78,7 @@
 \def\dodoanchorS[#1][#2][#3]%
   {\dodoanchorT[#1][#2][#2]}
 
-\def\dodoanchorT[#1][#2][#3]%
+\def\dodoanchorT[#1][#2][#3]% brrr: we need to apply offset only once .. a bit messy
   {\dowithnextbox
      {\bgroup
       \checktextbackgrounds
@@ -571,10 +571,21 @@
   {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
    \hbox\framed[#3]}
 
+% tricky: offsets apply to both the layer and the framed; it makes sense to
+% only apply the offset to ...
+
+% \def\dosetlayerframedS[#1][#2][#3]%
+%   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
+%      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,\c!offset=\!!zeropoint,#2]{\flushnextbox}}%
+%      \hbox\framed[\c!location=\v!normal,#2]}% could be a fast one
+%
+% better (2011-09-06)
+
 \def\dosetlayerframedS[#1][#2][#3]%
   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
-     {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,\c!offset=\!!zeropoint,#2]{\flushnextbox}}%
-     \hbox\framed[\c!location=\v!normal,#2]}
+     {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
+%      \hbox\framed[\c!location=\v!normal,#2]}% could be a fast one (no #2,\c!offset=\defaultframeoffset)
+     \hbox\localframedwithsettings[][\c!location=\v!normal,#2]}%
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}
