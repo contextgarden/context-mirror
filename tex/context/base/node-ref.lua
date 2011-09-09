@@ -222,7 +222,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             elseif id == glue_code and current.subtype == leftskip_code then -- any glue at the left?
                 --
             elseif id == hlist_code or id == vlist_code then
--- somehow reference is true so teh following fails (second one not done) in
+-- somehow reference is true so the following fails (second one not done) in
 --    test \goto{test}[page(2)] test \gotobox{test}[page(2)]
 -- so let's wait till this fails again
 -- if not reference and r and (not skip or r > skip) then -- > or ~=

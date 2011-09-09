@@ -474,7 +474,7 @@ function scripts.context.multipass.changed(oldhash, newhash)
     return false
 end
 
-function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,currentrun,finalrun)
+function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,currentrun,finalrun,once)
     -- take jobname from ctx
     jobname = file.removesuffix(jobname)
     local f = io.open(jobname..".top","w")
@@ -554,6 +554,9 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
         setvalue ("setuppath"    , "\\setupsystem[\\c!directory={%s}]")
         setvalue ("randomseed"   , "\\setupsystem[\\c!random=%s]")
         setvalue ("arguments"    , "\\setupenv[%s]")
+        if once then
+            setalways("\\enabledirectives[system.runonce]")
+        end
         setalways("%% modes")
         setvalues("modefile"     , "\\readlocfile{%s}{}{}")
         setvalues("mode"         , "\\enablemode[%s]", true)
@@ -907,7 +910,7 @@ function scripts.context.run(ctxdata,filename)
                         for i=1,maxnofruns do
                             -- 1:first run, 2:successive run, 3:once, 4:last of maxruns
                             local kindofrun = (once and 3) or (i==1 and 1) or (i==maxnofruns and 4) or 2
-                            scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,false) -- kindofrun, currentrun, final
+                            scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,i,false,once) -- kindofrun, currentrun, final
                             report("run %s: %s",i,command)
 --~                             print("\n") -- cleaner, else continuation on same line
                             print("") -- cleaner, else continuation on same line

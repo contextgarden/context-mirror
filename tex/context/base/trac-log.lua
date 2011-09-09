@@ -405,19 +405,55 @@ function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
 end
 
-function logs.stop_page_number()
-    if real > 0 then
-        if user > 0 then
-            if sub > 0 then
-                report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+local timing    = false
+local starttime = nil
+local lasttime  = nil
+
+trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
+    starttime = os.clock()
+    timing    = true
+end)
+
+function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
+    if timing then
+        local elapsed, average
+        local stoptime = os.clock()
+        if not lasttime or real < 2 then
+            elapsed   = stoptime
+            average   = stoptime
+            starttime = stoptime
+        else
+            elapsed  = stoptime - lasttime
+            average  = (stoptime - starttime) / (real - 1)
+        end
+        lasttime = stoptime
+        if real > 0 then
+            if user > 0 then
+                if sub > 0 then
+                    report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
+                else
+                    report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+                end
             else
-                report_pages("flushing realpage %s, userpage %s",real,user)
+                report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
             end
         else
-            report_pages("flushing realpage %s",real)
+            report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
         end
     else
-        report_pages("flushing page")
+        if real > 0 then
+            if user > 0 then
+                if sub > 0 then
+                    report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+                else
+                    report_pages("flushing realpage %s, userpage %s",real,user)
+                end
+            else
+                report_pages("flushing realpage %s",real)
+            end
+        else
+            report_pages("flushing page")
+        end
     end
     logs.flush()
 end
