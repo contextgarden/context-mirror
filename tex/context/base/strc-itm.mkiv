@@ -423,7 +423,11 @@
 
 \unexpanded\def\actualitemnumber
   {\ifconditional\repeatlistitem
-     \ifcase\currentitemlevel\or\else
+     \ifcase\currentitemlevel
+       % skip
+     \or
+       \doactualitemnumber % this could become an option
+     \else
        \doactualitemnumber
      \fi
    \else
@@ -1139,7 +1143,8 @@
    \ignorespaces}
 
 \def\doitemgroupnoitem
-  {\doadvanceitem\donolistitem}
+  {\let\currentitemreference\empty
+   \doadvanceitem\donolistitem}
 
 % For Frank Grieshaber and Mojca Miklavec:
 

@@ -4821,60 +4821,54 @@ local names    = { }
 -- one
 
 local function hook()
-    local f = getinfo(2,"f").func
-    local n = getinfo(2,"Sn")
---  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
+    local f = getinfo(2) -- "nS"
     if f then
-        local cf = counters[f]
-        if cf == nil then
-            counters[f] = 1
-            names[f] = n
-        else
-            counters[f] = cf + 1
-        end
-    end
-end
-
-local function getname(func)
-    local n = names[func]
-    if n then
-        if n.what == "C" then
-            return n.name or '<anonymous>'
+        local n = "unknown"
+        if f.what == "C" then
+            n = f.name or '<anonymous>'
+            if not names[n] then
+                names[n] = format("%42s",n)
+            end
         else
             -- source short_src linedefined what name namewhat nups func
-            local name = n.name or n.namewhat or n.what
-            if not name or name == "" then name = "?" end
-            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
+            n = f.name or f.namewhat or f.what
+            if not n or n == "" then
+                n = "?"
+            end
+            if not names[n] then
+                names[n] = format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
+            end
         end
-    else
-        return "unknown"
+        counters[n] = (counters[n] or 0) + 1
     end
 end
 
-function debugger.showstats(printer,threshold)
+function debugger.showstats(printer,threshold) -- hm, something has changed, rubish now
     printer   = printer or texio.write or print
     threshold = threshold or 0
     local total, grandtotal, functions = 0, 0, 0
-    printer("\n") -- ugly but ok
- -- table.sort(counters)
-    for func, count in next, counters do
-        if count > threshold then
-            local name = getname(func)
-            if not find(name,"for generator") then
-                printer(format("%8i  %s", count, name))
-                total = total + count
-            end
+    local dataset = { }
+    for name, count in next, counters do
+        dataset[#dataset+1] = { name, count }
+    end
+    table.sort(dataset,function(a,b) return a[2] == b[2] and b[1] > a[1] or a[2] > b[2] end)
+    for i=1,#dataset do
+        local d = dataset[i]
+        local name  = d[1]
+        local count = d[2]
+        if count > threshold and not find(name,"for generator") then -- move up
+            printer(format("%8i  %s\n", count, names[name]))
+            total = total + count
         end
         grandtotal = grandtotal + count
         functions = functions + 1
     end
-    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
+    printer("\n")
+    printer(format("functions  : % 10i\n", functions))
+    printer(format("total      : % 10i\n", total))
+    printer(format("grand total: % 10i\n", grandtotal))
+    printer(format("threshold  : % 10i\n", threshold))
 end
-
--- two
-
-
--- rest
 
 function debugger.savestats(filename,threshold)
     local f = io.open(filename,'w')
@@ -5875,19 +5869,55 @@ function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
 end
 
-function logs.stop_page_number()
-    if real > 0 then
-        if user > 0 then
-            if sub > 0 then
-                report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+local timing    = false
+local starttime = nil
+local lasttime  = nil
+
+trackers.register("pages.timing", function(v) -- only for myself (diagnostics)
+    starttime = os.clock()
+    timing    = true
+end)
+
+function logs.stop_page_number() -- the first page can includes the initialization so we omit this in average
+    if timing then
+        local elapsed, average
+        local stoptime = os.clock()
+        if not lasttime or real < 2 then
+            elapsed   = stoptime
+            average   = stoptime
+            starttime = stoptime
+        else
+            elapsed  = stoptime - lasttime
+            average  = (stoptime - starttime) / (real - 1)
+        end
+        lasttime = stoptime
+        if real > 0 then
+            if user > 0 then
+                if sub > 0 then
+                    report_pages("flushing realpage %s, userpage %s, subpage %s, time %0.04f / %0.04f",real,user,sub,elapsed,average)
+                else
+                    report_pages("flushing realpage %s, userpage %s, time %0.04f / %0.04f",real,user,elapsed,average)
+                end
             else
-                report_pages("flushing realpage %s, userpage %s",real,user)
+                report_pages("flushing realpage %s, time %0.04f / %0.04f",real,elapsed,average)
             end
         else
-            report_pages("flushing realpage %s",real)
+            report_pages("flushing page, time %0.04f / %0.04f",elapsed,average)
         end
     else
-        report_pages("flushing page")
+        if real > 0 then
+            if user > 0 then
+                if sub > 0 then
+                    report_pages("flushing realpage %s, userpage %s, subpage %s",real,user,sub)
+                else
+                    report_pages("flushing realpage %s, userpage %s",real,user)
+                end
+            else
+                report_pages("flushing realpage %s",real)
+            end
+        else
+            report_pages("flushing page")
+        end
     end
     logs.flush()
 end

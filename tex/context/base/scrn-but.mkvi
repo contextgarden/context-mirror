@@ -166,39 +166,46 @@
    \endgroup}
 
 \def\scrn_button_make_yes
-  {\ifcase\referencepagestate\relax
-     \expandafter\scrn_button_make_normal                             % no state :  something else than a page reference
-   \or
-     \ifcase\locationboxpagestate\relax
-       \expandafter\expandafter\expandafter\scrn_button_make_contrast % same page:  yes: same page or not ... todo
-     \or
-       \expandafter\expandafter\expandafter\scrn_button_make_empty    % same page:  empty but frame: no click
-     \or
-       \expandafter\expandafter\expandafter\scrn_button_make_nothing  % same page:  empty no frame: no
-     \else
-       \expandafter\expandafter\expandafter\scrn_button_make_skipped  % same page:  nothing at all
-     \fi
+  {\scratchcounter\referencerealpage\relax % called in otr
+   \ifcase\scratchcounter
+     \expandafter\scrn_button_make_normal   % no state :  something else than a page reference
+   \else\ifnum\scratchcounter=\realpageno
+     \expandafter\expandafter\expandafter\scrn_button_make_yes_same
    \else
-     \ifcase\locationboxpagestate\relax
-       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: yes: same page or not ... todo
-     \or
-       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: empty but frame: no click
-     \or
-       \expandafter\expandafter\expandafter\scrn_button_make_normal   % other page: empty no frame: no
-     \else
-       \expandafter\expandafter\expandafter\scrn_button_make_skipped  % other page: nothing at all
-     \fi%
+     \expandafter\expandafter\expandafter\scrn_button_make_yes_other
+   \fi\fi}
+
+\def\scrn_button_make_yes_same
+  {\ifcase\locationboxpagestate\relax
+     \expandafter\scrn_button_make_contrast % same page:  yes: same page or not ... todo
+   \or
+     \expandafter\scrn_button_make_empty    % same page:  empty but frame: no click
+   \or
+     \expandafter\scrn_button_make_nothing  % same page:  empty no frame: no
+   \else
+     \expandafter\scrn_button_make_skipped  % same page:  nothing at all
+   \fi}
+
+\def\scrn_button_make_yes_other
+  {\ifcase\locationboxpagestate\relax
+     \expandafter\scrn_button_make_normal   % other page: yes: same page or not ... todo
+   \or
+     \expandafter\scrn_button_make_normal   % other page: empty but frame: no click
+   \or
+     \expandafter\scrn_button_make_normal   % other page: empty no frame: no
+   \else
+     \expandafter\scrn_button_make_skipped  % other page: nothing at all
    \fi}
 
 \def\scrn_button_make_nop
   {\ifcase\locationboxpagestate\relax
-     \expandafter\scrn_button_make_framed
+      \expandafter\scrn_button_make_framed
    \or
-     \expandafter\scrn_button_make_empty
+      \expandafter\scrn_button_make_empty
    \or
-     \expandafter\scrn_button_make_nothing
+      \expandafter\scrn_button_make_nothing
    \or
-     \expandafter\scrn_button_make_skipped
+      \expandafter\scrn_button_make_skipped
    \fi}
 
 \def\scrn_button_make_framed#currentparameter#inheritedframed#letparameter#setparameter#text%
@@ -325,25 +332,6 @@
 
 \unexpanded\def\defineinteractionmenu
   {\dotripleempty\scrn_menu_define}
-
-% \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
-%   {\ifthirdargument
-%      \doifassignmentelse{#settings}%
-%        {\scrn_menu_define_original[#tag][#category][\c!category=#category,#settings]}% child definition
-%        {\scrn_menu_define_original[#tag][#settings][\c!category=#category]}%         % child definition
-%      \scrn_menu_register{#tag}{#category}%
-%      \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}% framed
-%    \else\ifsecondargument
-%      \doifassignmentelse{#category}%
-%        {\scrn_menu_define_original[#tag][#category]%                                 % root definition
-%         \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}}% framed
-%        {\scrn_menu_define_original[#tag][#category][\c!category=#category]%          % child definition
-%         \scrn_menu_register{#tag}{#category}%
-%         \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash{#tag}}}% framed
-%    \else
-%      \scrn_menu_define_original[#tag]%                                               % root definition
-%      \setevalue{\??am:#tag\s!parent}{\namedinteractionmenuhash\empty}% framed
-%    \fi\fi}
 
 \def\scrn_menu_define[#tag][#category][#settings]% category reflects location, settings can be parent
   {\ifthirdargument
@@ -545,13 +533,15 @@
 
 %D With the packager being one of:
 
+\let\currentinteractionmenudistance\!!zeropoint
+
 \def\scrn_menu_packager_vertical
   {\scrn_menu_set_used
    \hskip\scrn_menu_next_distance
    \setbox\scrn_menu_box\hbox to \scrn_menu_used_width
      {\ifx\currentinteractionmenustate\v!empty \else
         \interactionmenuparameter\c!left
-        \scrn_menu_package_vertical{\interactionmenuparameter\c!menu}%
+        \scrn_menu_package_vertical{\strictinteractionmenuparameter\c!menu}%
         \interactionmenuparameter\c!right
       \fi}%
    \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
@@ -572,7 +562,7 @@
      {\ifx\currentinteractionmenustate\v!none \else
         \scrn_menu_top_align
         \interactionmenuparameter\c!before
-        \scrn_menu_package_horizontal{\interactionmenuparameter\c!menu}%
+        \scrn_menu_package_horizontal{\strictinteractionmenuparameter\c!menu}%
         \interactionmenuparameter\c!after
         \scrn_menu_bottom_align
       \fi}%
@@ -756,13 +746,13 @@
 \newtoks\everysetmenucommands % public
 
 \appendtoks
-    \let\raw\scrn_menu_raw \let\startraw\scrn_menu_raw_start
-    \let\but\scrn_menu_but \let\startbut\scrn_menu_but_start
-    \let\got\scrn_menu_got \let\startgot\scrn_menu_got_start
-    \let\nop\scrn_menu_nop \let\startnop\scrn_menu_nop_start
-    \let\txt\scrn_menu_txt \let\starttxt\scrn_menu_txt_start
-    \let\rul\scrn_menu_rul \let\startrul\scrn_menu_rul_start
-    \let\com\scrn_menu_com \let\startcom\scrn_menu_com_start
+    \let\raw\scrn_menu_raw \let\startraw\scrn_menu_raw_start \let\stopraw\relax
+    \let\but\scrn_menu_but \let\startbut\scrn_menu_but_start \let\stopbut\relax
+    \let\got\scrn_menu_got \let\startgot\scrn_menu_got_start \let\stopgot\relax
+    \let\nop\scrn_menu_nop \let\startnop\scrn_menu_nop_start \let\stopnop\relax
+    \let\txt\scrn_menu_txt \let\starttxt\scrn_menu_txt_start \let\stoptxt\relax
+    \let\rul\scrn_menu_rul \let\startrul\scrn_menu_rul_start \let\stoprul\relax
+    \let\com\scrn_menu_com \let\startcom\scrn_menu_com_start \let\stopcom\relax
 \to \everysetmenucommands
 
 %D Sometimes handy:
@@ -785,7 +775,7 @@
    \doif{\interactionmenuparameter\c!state}\v!local
      {\letinteractionmenuparameter\c!state\v!start
     %  \setinteractionmenuparameter\s!parent{\??am\askedinteractionmenulocation}% nice hack
-      \interactionmenuparameter\c!menu}%
+      \strictinteractionmenuparameter\c!menu}%
    \endgroup}
 
 %D Direct call (todo):

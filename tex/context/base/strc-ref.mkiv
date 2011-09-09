@@ -293,6 +293,7 @@
 \newcount\referencehastexstate % set in backend
 
 \def\referencepagestate{\ctxcommand{referencepagestate()}}
+\def\referencerealpage {\ctxcommand{referencerealpage ()}}
 
 % referencepagestate:
 %
@@ -971,6 +972,7 @@
        \defaultrightreferencetoks
        \let\rightofreferencecontent\empty
      \fi
+   % inefficient: double resolve
    \doifreferencefoundelse{#4} % we need to resolve the text
      {\goto{\referencesequence}[#4]}
      {\let\currentreferencecontent\dummyreference

@@ -234,7 +234,7 @@ local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = valu
 local mt_r = { __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
 local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
 
-local function pdfstream(t) -- we need to add attrbutes
+local function pdfstream(t) -- we need to add attributes
     if t then
         for i=1,#t do
             t[i] = tostring(t[i])

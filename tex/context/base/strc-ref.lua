@@ -104,42 +104,90 @@ end
 job.register('structures.references.collected', tobesaved, initializer, finalizer)
 
 local maxreferred = 1
+local nofreferred = 0
 
 local function initializer() -- can we use a tobesaved as metatable for collected?
     tobereferred = references.tobereferred
     referred     = references.referred
-    local function get(t,n)    -- catch sparse, a bit slow but who cares
-        for i=n,1,-1 do  -- we could make a tree ... too much work
-            local p = rawget(t,i)
-            if p then
-                return p
+    nofreferred = #referred
+end
+
+local function initializer() -- can we use a tobesaved as metatable for collected?
+    tobereferred = references.tobereferred
+    referred     = references.referred
+    setmetatableindex(referred,get)
+end
+
+-- We make the array sparse (maybe a finalizer should optionally return a table) because
+-- there can be quite some page links involved. We only store one action number per page
+-- which is normally good enough for what we want (e.g. see above/below) and we do
+-- a combination of a binary search and traverse backwards. A previous implementation
+-- always did a traverse and was pretty slow on a large number of links (given that this
+-- methods was used). It took me about a day to locate this as a bottleneck in processing
+-- a 2500 page interactive document with 60 links per page. In that case, traversing
+-- thousands of slots per link then brings processing to a grinding halt (especially when
+-- there are no slots at all, which is the case in a first run).
+
+local sparsetobereferred = { }
+
+local function finalizer()
+    local lastr, lasti
+    local n = 0
+    for i=1,maxreferred do
+        local r = tobereferred[i]
+        if not lastr then
+            lastr = r
+            lasti = i
+        elseif r ~= lastr then
+            n = n + 1
+            sparsetobereferred[n] = { lastr, lasti }
+            lastr = r
+            lasti = i
+        end
+    end
+    if lastr then
+        n = n + 1
+        sparsetobereferred[n] = { lastr, lasti }
+    end
+end
+
+job.register('structures.references.referred', sparsetobereferred, initializer, finalizer)
+
+local function referredpage(n)
+    local max = nofreferred
+    if max > 0 then
+        -- find match
+        local min = 1
+        while true do
+            local mid = floor((min+max)/2)
+            local r = referred[mid]
+            local m = r[2]
+            if n == m then
+                return r[1]
+            elseif n > m then
+                min = mid + 1
+            else
+                max = mid - 1
+            end
+            if min > max then
+                break
+            end
+        end
+        -- find first previous
+        for i=min,1,-1 do
+            local r = referred[i]
+            if r and r[2] < n then
+                return r[1]
             end
         end
     end
-    setmetatableindex(referred, get)
+    -- fallback
+    return texcount.realpageno
 end
 
-local function finalizer() -- make sparse
-    local last
-    for i=1,maxreferred do
-        local r = tobereferred[i]
-        if not last then
-            last = r
-        elseif r == last then
-            tobereferred[i] = nil
-        else
-            last = r
-        end
-    end
-end
+references.referredpage = referredpage
 
-job.register('structures.references.referred', tobereferred, initializer, finalizer)
-
-function references.referredpage(n)
-    return referred[n] or referred[n] or texcount.realpageno
-end
-
-function references.registerpage(n)
+function references.registerpage(n) -- called in the backend code
     if not tobereferred[n] then
         if n > maxreferred then
             maxreferred = n
@@ -358,8 +406,9 @@ references.split = splitreference
 -- -- -- related to strc-ini.lua -- -- --
 
 references.resolvers = references.resolvers or { }
+local resolvers = references.resolvers
 
-function references.resolvers.section(var)
+function resolvers.section(var)
     local vi = lists.collected[var.i[2]]
     if vi then
         var.i = vi
@@ -370,12 +419,12 @@ function references.resolvers.section(var)
     end
 end
 
-references.resolvers.float       = references.resolvers.section
-references.resolvers.description = references.resolvers.section
-references.resolvers.formula     = references.resolvers.section
-references.resolvers.note        = references.resolvers.section
+resolvers.float       = resolvers.section
+resolvers.description = resolvers.section
+resolvers.formula     = resolvers.section
+resolvers.note        = resolvers.section
 
-function references.resolvers.reference(var)
+function resolvers.reference(var)
     local vi = var.i[2]
     if vi then
         var.i = vi
@@ -787,7 +836,6 @@ end
 local strict = false
 
 local function resolve(prefix,reference,args,set) -- we start with prefix,reference
-    texcount.referencehastexstate = 0
     if reference and reference ~= "" then
         if not set then
             set = { prefix = prefix, reference = reference }
@@ -848,9 +896,6 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 --  report_references("funny pattern: %s",ri or "?")
                 end
             end
-        end
-        if set.has_tex then
-            texcount.referencehastexstate = 1
         end
         return set
     else
@@ -945,6 +990,7 @@ local n = 0
 local function identify(prefix,reference)
     local set = resolve(prefix,reference)
     local bug = false
+    texcount.referencehastexstate = set.has_tex and 1 or 0
     n = n + 1
     set.n = n
     for i=1,#set do
@@ -995,7 +1041,7 @@ local function identify(prefix,reference)
                                     var.kind = "outer with inner"
                                 end
                                 var.i = { "reference", r }
-                                references.resolvers.reference(var)
+                                resolvers.reference(var)
                                 var.f = outer
                                 var.e = true -- external
                             end
@@ -1017,7 +1063,7 @@ local function identify(prefix,reference)
                                         var.kind = "outer with inner"
                                     end
                                     var.i = r
-                                    references.resolvers[r[1]](var)
+                                    resolvers[r[1]](var)
                                     var.f = outer
                                 end
                             end
@@ -1060,7 +1106,7 @@ local function identify(prefix,reference)
                         var.kind = "outer with inner"
                     end
                     var.i = { "reference", inner }
-                    references.resolvers.reference(var)
+                    resolvers.reference(var)
                     var.f = outer
                 elseif special then
                     local s = specials[special]
@@ -1135,7 +1181,7 @@ local function identify(prefix,reference)
                 end
                 if i then
                     var.i = { "reference", i }
-                    references.resolvers.reference(var)
+                    resolvers.reference(var)
                     var.kind = "inner"
                     var.p = p
                 else
@@ -1172,7 +1218,7 @@ local function identify(prefix,reference)
                     if i then
                         var.kind = "inner"
                         var.i = i
-                        references.resolvers[i[1]](var)
+                        resolvers[i[1]](var)
                         var.p = p
                     else
                         -- no prefixes here
@@ -1186,7 +1232,7 @@ local function identify(prefix,reference)
                             if i then
                                 var.kind = "inner"
                                 var.i = { "reference", i }
-                                references.resolvers.reference(var)
+                                resolvers.reference(var)
                                 var.p = ""
                             else
                                 var.error = "unknown inner or special"
@@ -1488,8 +1534,12 @@ references.testspecials = references.testspecials or { }
 local runners  = references.testrunners
 local specials = references.testspecials
 
+-- We need to prevent ending up in the 'relative location' analyzer as it is
+-- pretty slow (progressively). In the pagebody one can best check the reference
+-- real page to determine if we need contrastlocation as that is more lightweight.
+
 local function checkedpagestate(n,page)
-    local r, p = referred[n] or texcount.realpageno, tonumber(page)
+    local r, p = referredpage(n), tonumber(page)
     if not p then
         return 0
     elseif p > r then
@@ -1501,18 +1551,15 @@ local function checkedpagestate(n,page)
     end
 end
 
-function references.analyze(actions)
+local function setreferencerealpage(actions)
     actions = actions or references.currentset
     if not actions then
-        actions = { realpage = 0, pagestate = 0 }
-    elseif actions.pagestate then
-        -- already done
-    elseif actions.realpage then
-        actions.pagestate = checkedpagestate(actions.n,actions.realpage)
+        return 0
     else
-        -- we store some analysis data alongside the indexed array
-        -- at this moment only the real reference page is analyzed
-        -- normally such an analysis happens in the backend code
+        local realpage = actions.realpage
+        if realpage then
+            return realpage
+        end
         local nofactions = #actions
         if nofactions > 0 then
             for i=1,nofactions do
@@ -1522,9 +1569,32 @@ function references.analyze(actions)
                     what = what(a,actions) -- needs documentation
                 end
             end
-            actions.pagestate = checkedpagestate(actions.n,actions.realpage)
-        else
+            realpage = actions.realpage
+            if realpage then
+                return realpage
+            end
+        end
+        actions.realpage = 0
+        return 0
+    end
+end
+
+-- we store some analysis data alongside the indexed array
+-- at this moment only the real reference page is analyzed
+-- normally such an analysis happens in the backend code
+
+function references.analyze(actions)
+    actions = actions or references.currentset
+    if not actions then
+        actions = { realpage = 0, pagestate = 0 }
+    elseif actions.pagestate then
+        -- already done
+    else
+        local realpage = actions.realpage or setreferencerealpage(actions)
+        if realpage == 0 then
             actions.pagestate = 0
+        else
+            actions.pagestate = checkedpagestate(actions.n,realpage)
         end
     end
     return actions
@@ -1540,6 +1610,11 @@ function commands.referencepagestate(actions)
         end
         context(actions.pagestate)
     end
+end
+
+function commands.referencerealpage(actions)
+    actions = actions or references.currentset
+    context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
 end
 
 local plist, nofrealpages

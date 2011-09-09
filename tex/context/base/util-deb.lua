@@ -27,89 +27,54 @@ local names    = { }
 -- one
 
 local function hook()
-    local f = getinfo(2,"f").func
-    local n = getinfo(2,"Sn")
---  if n.what == "C" and n.name then print (n.namewhat .. ': ' .. n.name) end
+    local f = getinfo(2) -- "nS"
     if f then
-        local cf = counters[f]
-        if cf == nil then
-            counters[f] = 1
-            names[f] = n
-        else
-            counters[f] = cf + 1
-        end
-    end
-end
-
-local function getname(func)
-    local n = names[func]
-    if n then
-        if n.what == "C" then
-            return n.name or '<anonymous>'
+        local n = "unknown"
+        if f.what == "C" then
+            n = f.name or '<anonymous>'
+            if not names[n] then
+                names[n] = format("%42s",n)
+            end
         else
             -- source short_src linedefined what name namewhat nups func
-            local name = n.name or n.namewhat or n.what
-            if not name or name == "" then name = "?" end
-            return format("%s : %s : %s", n.short_src or "unknown source", n.linedefined or "--", name)
+            n = f.name or f.namewhat or f.what
+            if not n or n == "" then
+                n = "?"
+            end
+            if not names[n] then
+                names[n] = format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
+            end
         end
-    else
-        return "unknown"
+        counters[n] = (counters[n] or 0) + 1
     end
 end
 
-function debugger.showstats(printer,threshold)
+function debugger.showstats(printer,threshold) -- hm, something has changed, rubish now
     printer   = printer or texio.write or print
     threshold = threshold or 0
     local total, grandtotal, functions = 0, 0, 0
-    printer("\n") -- ugly but ok
- -- table.sort(counters)
-    for func, count in next, counters do
-        if count > threshold then
-            local name = getname(func)
-            if not find(name,"for generator") then
-                printer(format("%8i  %s", count, name))
-                total = total + count
-            end
+    local dataset = { }
+    for name, count in next, counters do
+        dataset[#dataset+1] = { name, count }
+    end
+    table.sort(dataset,function(a,b) return a[2] == b[2] and b[1] > a[1] or a[2] > b[2] end)
+    for i=1,#dataset do
+        local d = dataset[i]
+        local name  = d[1]
+        local count = d[2]
+        if count > threshold and not find(name,"for generator") then -- move up
+            printer(format("%8i  %s\n", count, names[name]))
+            total = total + count
         end
         grandtotal = grandtotal + count
         functions = functions + 1
     end
-    printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
+    printer("\n")
+    printer(format("functions  : % 10i\n", functions))
+    printer(format("total      : % 10i\n", total))
+    printer(format("grand total: % 10i\n", grandtotal))
+    printer(format("threshold  : % 10i\n", threshold))
 end
-
--- two
-
---~ local function hook()
---~     local n = getinfo(2)
---~     if n.what=="C" and not n.name then
---~         local f = tostring(debug.traceback())
---~         local cf = counters[f]
---~         if cf == nil then
---~             counters[f] = 1
---~             names[f] = n
---~         else
---~             counters[f] = cf + 1
---~         end
---~     end
---~ end
---~ function debugger.showstats(printer,threshold)
---~     printer   = printer or texio.write or print
---~     threshold = threshold or 0
---~     local total, grandtotal, functions = 0, 0, 0
---~     printer("\n") -- ugly but ok
---~  -- table.sort(counters)
---~     for func, count in next, counters do
---~         if count > threshold then
---~             printer(format("%8i  %s", count, func))
---~             total = total + count
---~         end
---~         grandtotal = grandtotal + count
---~         functions = functions + 1
---~     end
---~     printer(format("functions: %s, total: %s, grand total: %s, threshold: %s\n", functions, total, grandtotal, threshold))
---~ end
-
--- rest
 
 function debugger.savestats(filename,threshold)
     local f = io.open(filename,'w')
