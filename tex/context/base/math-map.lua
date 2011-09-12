@@ -23,9 +23,10 @@ local type, next = type, next
 local floor, div = math.floor, math.div
 local merged = table.merged
 
-local allocate = utilities.storage.allocate
-
-local texattribute = tex.attribute
+local allocate            = utilities.storage.allocate
+local texattribute        = tex.attribute
+local otffeatures         = fonts.constructors.newfeatures("otf")
+local registerotffeature  = otffeatures.register
 
 local trace_greek  = false  trackers.register("math.greek",  function(v) trace_greek = v end)
 
@@ -36,7 +37,9 @@ local mathematics = mathematics
 
 -- Unfortunately some alphabets have gaps (thereby troubling all applications that
 -- need to deal with math). Somewhat strange considering all those weird symbols that
--- were added afterwards.
+-- were added afterwards. The following trickery (and data) is only to be used for
+-- diagnostics and quick and dirty alphabet tracing (s-mat-10.mkiv) as we deal with
+-- it otherwise.
 
 mathematics.gaps = {
     [0x1D455] = 0x0210E, -- H
@@ -63,6 +66,28 @@ mathematics.gaps = {
     [0x1D548] = 0x0211A, -- bb Q
     [0x1D549] = 0x0211D, -- bb R
     [0x1D551] = 0x02124, -- bb Z
+}
+
+local function fillinmathgaps(tfmdata,key,value)
+    local mathgaps     = mathematics.gaps
+    local characters   = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    for gap, original in next, mathgaps do
+        if characters[original] and not characters[gap] then
+            characters  [gap] = characters  [original]
+            descriptions[gap] = descriptions[original]
+        end
+    end
+end
+
+registerotffeature {
+    name         = "mathgaps",
+    description  = "plug gaps in math alphabets",
+    comment      = "regular document sources should not depend on this",
+    manipulators = {
+        base = fillinmathgaps,
+        node = fillinmathgaps,
+    }
 }
 
 -- we could use one level less and have tf etc be tables directly but the

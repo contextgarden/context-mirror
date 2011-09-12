@@ -47,6 +47,9 @@ local function numberofcode(code)
     if not reverse then
         local types = os.resultof(format("%s --types",zint)) or ""
         local formats = lpeg.match(pattern,types)
+        if not formats or not next(formats) then
+            return code
+        end
         reverse = table.swapped(formats) or { }
     end
     code = cleancode(code)
@@ -65,7 +68,8 @@ function moduledata.zint.generate(code,data,suffix,options)
         local code = numberofcode(code)
         logs.simple("using 'zint' to generate '%s'",base)
         io.savedata(temp,data)
-        os.execute(format('%s --barcode=%s --output="%s" --input="%s"',zint,code,name,temp,options or ""))
+        os.execute(format('%s --barcode=%s --output="%s" --input="%s" %s',zint,code,name,temp,options or ""))
+        os.remove(temp)
     end
     return name
 end
