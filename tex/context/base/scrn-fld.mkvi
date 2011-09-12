@@ -751,7 +751,7 @@
 \def\scrn_fieldstack_add#tag#settings#symbol%
   {\advance\scratchcounter\plusone
    \edef\currentfieldstackname{#tag:\number\scratchcounter}%
-   \ifnum\scratchcounter=\ifnum\scratchcounter=\fieldcategoryparameter\c!start\relax
+   \ifnum\scratchcounter=\fieldcategoryparameter\c!start\relax
      \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default={#symbol}]%
    \else
      \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default=]%

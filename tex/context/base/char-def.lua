@@ -68165,6 +68165,8 @@ characters.data={
   category="so",
   cjkwd="a",
   description="BLACK SQUARE",
+  mathclass="ord",
+  mathname="blacksquare",
   direction="on",
   linebreak="ai",
   unicodeslot=0x25A0,
@@ -68194,7 +68196,6 @@ characters.data={
   direction="on",
   linebreak="al",
   mathclass="ord",
-  mathname="blacksquare",
   unicodeslot=0x25A2,
  },
  [0x25A3]={

@@ -1,0 +1,78 @@
+\starttext
+
+The following files are needed for the lpeg based lexer:
+
+\starttyping
+scite-ctx.lua
+scite-context.properties
+scite-pragma.properties
+scite-ctx-context.properties
+scite-ctx-example.properties
+lezers/context.lua
+lezers/metafun.lua
+lezers/scite-context-lexer.lua
+lexers/context/mult-def.lua
+lexers/context/mult-prm.lua
+lexers/context/mult-mps.lua
+lexers/themes/scite-context-theme.lua
+\stoptyping
+
+On windows you can copy al files including the subpaths to the path where
+the scite binary lives.
+
+If the \type {mult-*.lua} files are not in the archive but you can copy them
+from the \CONTEXT\ distribution, where they live in:
+
+\starttyping
+<contextroot>/tex/texmf-context/tex/context/base
+\stoptyping
+
+Because property files can only be loaded from the same path you need to copy
+the following files:
+
+\starttyping
+scite-context.properties
+scite-pragma.properties
+scite-ctx-context.properties
+scite-ctx-example.properties
+\stoptyping
+
+to (on windows):
+
+\starttyping
+c:/Users/YourName
+\stoptyping
+
+Next you need to add this to:
+
+\starttyping
+import scite-context
+import scite-pragma
+\stoptyping
+
+to the file:
+
+\starttyping
+SciTEUser.properties
+\stoptyping
+
+If you want to have spellchecking, you need have files with correct words on each
+line. The first line of a file determines the language:
+
+\starttyping
+% language=uk
+\stoptyping
+
+In this case the following file is needed:
+
+\starttyping
+spell-uk.txt
+\stoptyping
+
+This file is searched on the the path determined by the environment variable:
+
+\starttyping
+CTXSPELLPATH
+\stoptyping
+
+\stoptext

@@ -1,0 +1,18 @@
+\starttext
+
+\startluacode
+    local primitives = { }
+    table.merge(primitives,table.fromhash(tex.primitives()))
+    table.merge(primitives,tex.extraprimitives('etex'))
+    table.merge(primitives,tex.extraprimitives('pdftex'))
+    table.merge(primitives,tex.extraprimitives('luatex'))
+    table.merge(primitives,tex.extraprimitives('aleph'))
+    table.merge(primitives,tex.extraprimitives('omega'))
+    table.sort(primitives)
+    while string.find(primitives[1],"[^A-Za-z]") do
+        table.remove(primitives,1)
+    end
+    io.savedata("mult-prm.lua",table.serialize({ primitives = primitives },true,{ reduce = true, inline = false }))
+\stopluacode
+
+\stoptext

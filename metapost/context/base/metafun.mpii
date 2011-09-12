@@ -28,7 +28,7 @@
 %D end even may use a patched version, we prefer to use a
 %D copy.
 
-input mp-base.mp ;
+input mp-base.mpii ;
 input mp-tool.mp ;
 input mp-spec.mpii ;
 input mp-core.mpii ;
