@@ -146,7 +146,7 @@ local special     = S("-+/*^%=#") + P("..")
 local equals      = P("=")^0
 local open        = P("[") * Cg(equals, "init") * P("[") * P("\n")^-1 -- maybe better: patterns.newline^-1
 local close       = P("]") * C(equals) * P("]")
-local closeeq     = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end)
+local closeeq     = Cmt(close * Cb("init"), function(s,i,a,b) return a == b end) -- wrong return value
 local longstring  = open * Cs((P(1) - closeeq)^0) * close * Carg(1)
 
 local function long(content,equals,settings)

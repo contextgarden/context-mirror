@@ -156,7 +156,7 @@
 %D alternatives to this command. Beware, only the simple one
 %D has \type {\noexpand} before its argument.
 
- \long\def\@@expanded{} % always long; global (less restores)
+\long\def\@@expanded{} % always long; global (less restores)
 
 \long\def\expanded#1%
   {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
@@ -3763,28 +3763,28 @@
 
 % faster
 
-\long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
-  {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \ifnum#3>\zerocount
-     \ifnum#2<#1\relax
-       \let\nextrecurse\exitstepwiserecurse
-     \else
-       \let\nextrecurse\dodostepwiserecurse
-     \fi
-   \else
-     \ifnum#3<\zerocount
-       \ifnum#1<#2\relax
-         \let\nextrecurse\exitstepwiserecurse
-       \else
-         \let\nextrecurse\dodostepwisereverse
-       \fi
-     \else
-       \let\nextrecurse\exitstepwiserecurse
-     \fi
-   \fi
-   \normalexpanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
+% \long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+%   {\global\advance\outerrecurse \plusone
+%    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+%    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+%    \ifnum#3>\zerocount
+%      \ifnum#2<#1\relax
+%        \let\nextrecurse\exitstepwiserecurse
+%      \else
+%        \let\nextrecurse\dodostepwiserecurse
+%      \fi
+%    \else
+%      \ifnum#3<\zerocount
+%        \ifnum#1<#2\relax
+%          \let\nextrecurse\exitstepwiserecurse
+%        \else
+%          \let\nextrecurse\dodostepwisereverse
+%        \fi
+%      \else
+%        \let\nextrecurse\exitstepwiserecurse
+%      \fi
+%    \fi
+%    \normalexpanded{\nextrecurse{\number#1}{\number#2}{\number#3}}}
 
 % slightly faster
 
@@ -5982,7 +5982,7 @@
 
 \newbox\@@dlhbox
 
-\unexpanded \def\dontleavehmode
+\unexpanded\def\dontleavehmode
   {\ifhmode\else \ifmmode\else
      \setbox\@@dlhbox\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\@@dlhbox
    \fi \fi}
