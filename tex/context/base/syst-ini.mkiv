@@ -581,7 +581,7 @@
 %D
 %D In \LUATEX\ we have ways around this.
 
-\def\tracingall
+\normalprotected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
    \tracingstats     \plustwo
@@ -600,11 +600,11 @@
    \tracingassigns   \plustwo
    \errorstopmode}
 
-\def\loggingall
+\normalprotected\def\loggingall
   {\tracingall
    \tracingonline    \zerocount}
 
-\def\tracingnone
+\normalprotected\def\tracingnone
   {\tracingassigns   \zerocount
    \tracingnesting   \zerocount
    \tracingscantokens\zerocount
@@ -700,7 +700,7 @@
 %D does not support nested loops. We use a namespace prefix
 %D \type {@@pln}.
 
-\long\def\loop#1\repeat{\long\def\@@plnbody{#1}\@@plniterate}
+\long\def\loop#1\repeat{\long\def\@@plnbody{#1}\@@plniterate} % might go
 
 %D The following makes \type {\loop} \unknown\ \type {\if}
 %D \unknown\ \type {\repeat} skippable (clever trick):

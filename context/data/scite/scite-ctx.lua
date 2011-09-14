@@ -68,7 +68,7 @@
 
 -- generic functions
 
-props = props or { } setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
+props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
 
 local byte, lower, upper, gsub, sub, find, rep, match, gmatch = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch
 local sort, concat = table.sort, table.concat
@@ -80,20 +80,20 @@ function traceln(str)
     io.flush()
 end
 
-function string:grab(delimiter)
-    local list = {}
-    for snippet in self:gmatch(delimiter) do
+function string.grab(str,delimiter)
+    local list = { }
+    for snippet in gmatch(str,delimiter) do
         list[#list+1] = snippet
     end
     return list
 end
 
-function string:expand()
-    return (self:gsub("ENV%((%w+)%)", os.envvar))
+function string.expand(str)
+    return (gsub(str,"ENV%((%w+)%)", os.envvar))
 end
 
-function string:strip()
-    return (self:gsub("^%s*(.-)%s*$", "%1"))
+function string.strip(str)
+    return (gsub(str,"^%s*(.-)%s*$", "%1"))
 end
 
 function table.alphasort(list,i)

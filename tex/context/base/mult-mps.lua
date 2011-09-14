@@ -22,7 +22,7 @@ return {
         "special",
         "begingroup", "endgroup", "of", "curl", "tension", "and", "controls",
         "reflectedabout", "rotatedaround", "interpath", "on", "off", "beginfig",
-        "endfig", "def", "vardef", "enddef", "epxr", "suffix", "text", "primary", "secondary",
+        "endfig", "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
         "tertiary", "primarydef", "secondarydef", "tertiarydef", "top", "bottom",
         "ulft", "urt", "llft", "lrt", "randomseed", "also", "contour", "doublepath",
         "withcolor", "withpen", "dashed", "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif",

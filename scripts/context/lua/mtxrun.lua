@@ -1670,6 +1670,29 @@ function lpeg.append(list,pp,delayed)
     return p
 end
 
+-- function lpeg.exact_match(words,case_insensitive)
+--     local pattern = concat(words)
+--     if case_insensitive then
+--         local pattern = S(upper(characters)) + S(lower(characters))
+--         local list = { }
+--         for i=1,#words do
+--             list[lower(words[i])] = true
+--         end
+--         return Cmt(pattern^1, function(_,i,s)
+--             return list[lower(s)] and i
+--         end)
+--     else
+--         local pattern = S(concat(words))
+--         local list = { }
+--         for i=1,#words do
+--             list[words[i]] = true
+--         end
+--         return Cmt(pattern^1, function(_,i,s)
+--             return list[s] and i
+--         end)
+--     end
+-- end
+
 
 end -- of closure
 
