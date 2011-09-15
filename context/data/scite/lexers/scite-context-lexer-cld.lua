@@ -9,12 +9,14 @@ local info = {
 -- Adapted from lua.lua by Mitchell who based it on a lexer by Peter Odding.
 
 local lexer = lexer
-local token, style, colors, word_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.word_match, lexer.style_nothing
+local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
 local P, R, S, C, Cg, Cb, Cs, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt
 local match, find = string.match, string.find
 local global = _G
 
 module(...)
+
+local cldlexer = _M
 
 local keywords = {
   'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
@@ -77,53 +79,58 @@ local longcomment =  Cmt(#('[[' + ('[' * C(P('=')^0) * '[')), function(input,ind
     return stop and stop + 1 or #input + 1
 end)
 
-local whitespace    = token(lexer.WHITESPACE, lexer.space^1)
-local any_char      = lexer.any_char
+local whitespace    = cldlexer.WHITESPACE -- triggers states
+
+local space         = lexer.space -- S(" \n\r\t\f\v")
+local any           = lexer.any
 
 local squote        = P("'")
 local dquote        = P('"')
 local escaped       = P("\\") * P(1)
 local dashes        = P('--')
 
+local spacing       = token(whitespace, space^1)
+local rest          = token("default",  any)
+
 local shortcomment  = dashes * lexer.nonnewline^0
 local longcomment   = dashes * longcomment
-local comment       = token(lexer.COMMENT, longcomment + shortcomment)
+local comment       = token("comment", longcomment + shortcomment)
 
-local shortstring   = token("quote",      squote)
-                    * token(lexer.STRING, (escaped + (1-squote))^0 )
-                    * token("quote",      squote)
-                    + token("quote",      dquote)
-                    * token(lexer.STRING, (escaped + (1-dquote))^0 )
-                    * token("quote",      dquote)
+local shortstring   = token("quote",  squote)
+                    * token("string", (escaped + (1-squote))^0 )
+                    * token("quote",  squote)
+                    + token("quote",  dquote)
+                    * token("string", (escaped + (1-dquote))^0 )
+                    * token("quote",  dquote)
 
-local longstring    = token("quote",      longonestart)
-                    * token(lexer.STRING, longonestring)
-                    * token("quote",      longonestop)
-                    + token("quote",      longtwostart)
-                    * token(lexer.STRING, longtwostring)
-                    * token("quote",      longtwostop)
+local longstring    = token("quote",  longonestart)
+                    * token("string", longonestring)
+                    * token("quote",  longonestop)
+                    + token("quote",  longtwostart)
+                    * token("string", longtwostring)
+                    * token("quote",  longtwostop)
 
 local string        = shortstring
                     + longstring
 
 local integer       = P('-')^-1 * (lexer.hex_num + lexer.dec_num)
-local number        = token(lexer.NUMBER, lexer.float + integer)
+local number        = token("number", lexer.float + integer)
 
 local word          = R('AZ','az','__','\127\255') * (lexer.alnum + '_')^0
-local identifier    = token(lexer.IDENTIFIER, word)
+local identifier    = token("default", word)
 
-local operator      = token(lexer.OPERATOR, P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split of {}[]()
+local operator      = token("special", P('~=') + S('+-*/%^#=<>;:,.{}[]()')) -- maybe split of {}[]()
 
-local keyword       = token(lexer.KEYWORD,  word_match(keywords))
-local builtin       = token(lexer.FUNCTION, word_match(functions))
-local constant      = token(lexer.CONSTANT, word_match(constants))
-local csname        = token("user",       word_match(csnames)) * (
-                        whitespace^0 * #S("{(")
-                        + ( whitespace^0 * token(lexer.OPERATOR, P(".")) * whitespace^0 * token("csname",word) )^1
+local keyword       = token("keyword", exact_match(keywords))
+local builtin       = token("plain", exact_match(functions))
+local constant      = token("data", exact_match(constants))
+local csname        = token("user",         exact_match(csnames)) * (
+                        spacing^0 * #S("{(")
+                        + ( spacing^0 * token("special", P(".")) * spacing^0 * token("csname",word) )^1
                     )
 
 _rules = {
-    { 'whitespace', whitespace },
+    { 'whitespace', spacing    },
     { 'keyword',    keyword    },
     { 'function',   builtin    },
     { 'csname',     csname     },
@@ -133,24 +140,17 @@ _rules = {
     { 'comment',    comment    },
     { 'number',     number     },
     { 'operator',   operator   },
-    { 'any_char',   any_char   },
+    { 'rest',       rest       },
 }
 
-_tokenstyles = {
-    { "comment",  lexer.style_context_comment  },
-    { "quote",    lexer.style_context_quote    },
-    { "keyword",  lexer.style_context_keyword  },
-    { "user",     lexer.style_context_user     },
-    { "specials", lexer.style_context_specials },
-    { "extras",   lexer.style_context_extras   },
-}
+_tokenstyles = lexer.context.styleset
 
 _foldsymbols = {
     _patterns = {
         '%l+',
         '[%({%)}%[%]]',
     },
-    [lexer.KEYWORD] = {
+    ['keyword'] = {
         ['if']       =  1,
         ['end']      = -1,
         ['do']       =  1,
@@ -158,13 +158,13 @@ _foldsymbols = {
         ['repeat']   =  1,
         ['until']    = -1,
       },
-    [lexer.COMMENT] = {
+    ['comment'] = {
         ['['] = 1, [']'] = -1,
     },
-    ["quote"] = { -- to be tested
+    ['quote'] = { -- to be tested
         ['['] = 1, [']'] = -1,
     },
-    [lexer.OPERATOR] = {
+    ['special'] = {
         ['('] = 1, [')'] = -1,
         ['{'] = 1, ['}'] = -1,
     },

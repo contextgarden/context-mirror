@@ -846,15 +846,15 @@ vardef bottomboundary primary p =
   if pair p : p else : (llcorner p -- lrcorner p) fi
 enddef ;
 
-vardef rightboundary  primary p =
+vardef rightboundary primary p =
   if pair p : p else : (lrcorner p -- urcorner p) fi
 enddef ;
 
-vardef topboundary    primary p =
+vardef topboundary primary p =
   if pair p : p else : (urcorner p -- ulcorner p) fi
 enddef ;
 
-vardef leftboundary   primary p =
+vardef leftboundary primary p =
   if pair p : p else : (ulcorner p -- llcorner p) fi
 enddef ;
 
@@ -2250,7 +2250,7 @@ vardef simplified expr p =
   (reverse dostraightened(+1,dostraightened(+1,reverse p)))
 enddef ;
 
-vardef unspiked   expr p =
+vardef unspiked expr p =
   (reverse dostraightened(-1,dostraightened(-1,reverse p)))
 enddef ;
 

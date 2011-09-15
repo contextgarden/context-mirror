@@ -372,7 +372,7 @@ function pool.usertokens(id,tokens)
 end
 
 statistics.register("cleaned up reserved nodes", function()
-    return format("%s nodes, %s lists of %s", pool.cleanup(tex.count["lastallocatedbox"]))
+    return format("%s nodes, %s lists of %s", pool.cleanup(tex.count["last_allocated_box"]))
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !

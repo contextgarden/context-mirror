@@ -226,16 +226,16 @@
   {\let\charactertoken=#1% = needed here
    \def\!!stringa{#2}%
    \def\!!stringb{#3}%
-   \futurelet\nexttoken\inspectnextcharacter}
+   \futurelet\nexttoken\inspect_next_character}
 
-\def\inspectnextcharacter
+\def\inspect_next_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspectnextcharacter
+     \@EA\reinspect_next_character
    \else
-     \@EA\inspectnextcharacterindeed
+     \@EA\inspect_next_character_indeed
    \fi}
 
-\def\inspectnextcharacterindeed
+\def\inspect_next_character_indeed
   {\ifx\nexttoken\charactertoken
      \@EA\!!stringa
    \else
@@ -248,87 +248,87 @@
 %D test in a run. Of course it also is more convenient to read a
 %D trace then.
 
-\newif\ifnextblankspacetoken
+\newif\if_next_blank_space_token
 
-\let\nextoptionalcharactertoken=[
+\let\next_optional_character_token=[
 
 \long\def\doifnextoptionalelse#1#2%
-  {\def\nextoptionalcommandyes{#1}%
-   \def\nextoptionalcommandnop{#2}%
-   \let\ifnextblankspacetoken\iffalse
-   \futurelet\nexttoken\inspectnextoptionalcharacter}
+  {\def\next_optional_command_yes{#1}%
+   \def\next_optional_command_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\inspect_next_optional_character}
 
-\def\inspectnextoptionalcharacter
+\def\inspect_next_optional_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspectnextoptionalcharacter
+     \@EA\reinspect_next_optional_character
    \else
-     \@EA\inspectnextoptionalcharacterindeed
+     \@EA\inspect_next_optional_character_indeed
    \fi}
 
-\def\inspectnextoptionalcharacterindeed
-  {\ifx\nexttoken\nextoptionalcharactertoken
-     \@EA\nextoptionalcommandyes
+\def\inspect_next_optional_character_indeed
+  {\ifx\nexttoken\next_optional_character_token
+     \@EA\next_optional_command_yes
    \else
-     \@EA\nextoptionalcommandnop
+     \@EA\next_optional_command_nop
    \fi}
 
-\let\nextbgroupcharactertoken\bgroup
+\let\next_bgroup_character_token\bgroup
 
 \long\def\doifnextbgroupelse#1#2%
-  {\def\nextbgroupcommandyes{#1}%
-   \def\nextbgroupcommandnop{#2}%
-   \let\ifnextblankspacetoken\iffalse
-   \futurelet\nexttoken\inspectnextbgroupcharacter}
+  {\def\next_bgroup_command_yes{#1}%
+   \def\next_bgroup_command_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\inspect_next_bgroup_character}
 
-\def\inspectnextbgroupcharacter
+\def\inspect_next_bgroup_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspectnextbgroupcharacter
+     \@EA\reinspect_next_bgroup_character
    \else
-     \@EA\inspectnextbgroupcharacterindeed
+     \@EA\inspect_next_bgroup_character_indeed
    \fi}
 
-\def\inspectnextbgroupcharacterindeed
-  {\ifx\nexttoken\nextbgroupcharactertoken
-     \@EA\nextbgroupcommandyes
+\def\inspect_next_bgroup_character_indeed
+  {\ifx\nexttoken\next_bgroup_character_token
+     \@EA\next_bgroup_command_yes
    \else
-     \@EA\nextbgroupcommandnop
+     \@EA\next_bgroup_command_nop
    \fi}
 
-\let\nextparenthesischaractertoken(
+\let\next_parenthesis_character_token(
 
 \long\def\doifnextparenthesiselse#1#2%
-  {\def\nextparenthesiscommandyes{#1}%
-   \def\nextparenthesiscommandnop{#2}%
-   \let\ifnextblankspacetoken\iffalse
-   \futurelet\nexttoken\inspectnextparenthesischaracter}
+  {\def\next_parenthesis_command_yes{#1}%
+   \def\next_parenthesis_command_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\inspect_next_parenthesis_character}
 
-\def\inspectnextparenthesischaracter
+\def\inspect_next_parenthesis_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspectnextparenthesischaracter
+     \@EA\reinspect_next_parenthesis_character
    \else
-     \@EA\inspectnextparenthesischaracterindeed
+     \@EA\inspect_next_parenthesis_character_indeed
    \fi}
 
-\def\inspectnextparenthesischaracterindeed
-  {\ifx\nexttoken\nextparenthesischaractertoken
-     \@EA\nextparenthesiscommandyes
+\def\inspect_next_parenthesis_character_indeed
+  {\ifx\nexttoken\next_parenthesis_character_token
+     \@EA\next_parenthesis_command_yes
    \else
-     \@EA\nextparenthesiscommandnop
+     \@EA\next_parenthesis_command_nop
    \fi}
 
 %D The next one is handy in predictable situations:
 
 \long\def\doiffastoptionalcheckelse#1#2%
-  {\def\nextoptionalcommandyes{#1}%
-   \def\nextoptionalcommandnop{#2}%
-   \let\ifnextblankspacetoken\iffalse % not needed
-   \futurelet\nexttoken\dodoiffastoptionalcheckelse}
+  {\def\next_optional_command_yes{#1}%
+   \def\next_optional_command_nop{#2}%
+   \let\if_next_blank_space_token\iffalse % not needed
+   \futurelet\nexttoken\do_if_fast_optional_check_else}
 
-\def\dodoiffastoptionalcheckelse
-  {\ifx\nexttoken\nextoptionalcharactertoken
-     \expandafter\nextoptionalcommandyes
+\def\do_if_fast_optional_check_else
+  {\ifx\nexttoken\next_optional_character_token
+     \expandafter\next_optional_command_yes
    \else
-     \expandafter\nextoptionalcommandnop
+     \expandafter\next_optional_command_nop
    \fi}
 
 %D This macro uses some auxiliary macros. Although we were able
@@ -350,14 +350,14 @@
 
 \def\:{\let\blankspace= }  \:
 
-\def\:{\reinspectnextcharacter}
-\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextcharacter}
+\def\:{\reinspect_next_character}
+\expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\inspect_next_character}
 
-\def\:{\reinspectnextoptionalcharacter}
-\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextoptionalcharacter}
+\def\:{\reinspect_next_optional_character}
+\expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\inspect_next_optional_character}
 
-\def\:{\reinspectnextbgroupcharacter}
-\expandafter\def\: {\let\ifnextblankspacetoken\iftrue\futurelet\nexttoken\inspectnextbgroupcharacter}
+\def\:{\reinspect_next_bgroup_character}
+\expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\inspect_next_bgroup_character}
 
 \let\:\next
 
@@ -525,19 +525,20 @@
 %D was due to this grouping subtilities. We therefore decided
 %D to use \type{\begingroup} instead of \type{\bgroup}.
 
-\def\docheckonedefined#1%
-  {\ifcsname#1\endcsname\else
-     \donefalse
-     \expandafter\quitcommalist % added
-   \fi}
-
 \def\doifalldefinedelse#1%
   {\begingroup
-   \donetrue \processcommalist[#1]\docheckonedefined
+   \donetrue
+   \processcommalist[#1]\do_if_all_defined_else
    \ifdone
      \endgroup\expandafter\firstoftwoarguments
    \else
      \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\def\do_if_all_defined_else#1%
+  {\ifcsname#1\endcsname\else
+     \donefalse
+     \expandafter\quitcommalist % added
    \fi}
 
 %D \macros
@@ -560,7 +561,8 @@
 %D \stoptyping
 
 \long\def\doif#1#2%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
      \expandafter\firstofoneargument
    \else
@@ -568,7 +570,8 @@
    \fi}
 
 \long\def\doifnot#1#2%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
      \expandafter\gobbleoneargument
    \else
@@ -576,7 +579,8 @@
    \fi}
 
 \long\def\doifelse#1#2%
-  {\edef\!!stringa{#1}\edef\!!stringb{#2}%
+  {\edef\!!stringa{#1}%
+   \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
      \expandafter\firstoftwoarguments
    \else
@@ -662,28 +666,28 @@
 
 \def\rightoptionalbracket{]}
 
-\long\def\doquitifiteminsetelse#1],\relax{\firstoftwoarguments}
-\long\def\doquitifiteminset    #1],\relax{\firstofoneargument}
-\long\def\doquitifitemnotinset #1],\relax{\gobbleoneargument}
+\long\def\do_quit_if_item_in_set_else#1],\relax{\firstoftwoarguments}
+\long\def\do_quit_if_item_in_set     #1],\relax{\firstofoneargument}
+\long\def\do_quit_if_item_not_in_set #1],\relax{\gobbleoneargument}
 
-\long\def\redoifinsetelse{\expandafter\docheckifiteminsetelse\!!stringb,],\relax}
-\long\def\redoifinset    {\expandafter\docheckifiteminset    \!!stringb,],\relax}
-\long\def\redoifnotinset {\expandafter\docheckifitemnotinset \!!stringb,],\relax}
+\long\def\redo_if_in_set_else{\expandafter\do_check_if_item_in_set_else\!!stringb,],\relax}
+\long\def\redo_if_in_set     {\expandafter\do_check_if_item_in_set     \!!stringb,],\relax}
+\long\def\redo_if_not_in_set {\expandafter\do_check_if_item_not_in_set \!!stringb,],\relax}
 
 \long\def\doifinsetelse#1% make this two step too
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\thirdofthreearguments
    \else
-     \expandafter\dodoifinsetelse
+     \expandafter\do_if_in_set_else
    \fi}
 
-\long\def\dodoifinsetelse#1%
+\long\def\do_if_in_set_else#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\redoifinsetelse
+     \expandafter\redo_if_in_set_else
    \fi}
 
 \long\def\doifinset#1%
@@ -691,15 +695,15 @@
    \ifx\!!stringa\empty
      \expandafter\gobbletwoarguments
    \else
-     \expandafter\dodoifinset
+     \expandafter\do_if_in_set
    \fi}
 
-\long\def\dodoifinset#1%
+\long\def\do_if_in_set#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
      \expandafter\gobbleoneargument
    \else
-     \expandafter\redoifinset
+     \expandafter\redo_if_in_set
    \fi}
 
 \long\def\doifnotinset#1%
@@ -707,81 +711,81 @@
    \ifx\!!stringa\empty
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\dodoifnotinset
+     \expandafter\do_if_not_in_set
    \fi}
 
-\long\def\dodoifnotinset#1%
+\long\def\do_if_not_in_set#1%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
      \expandafter\firstofoneargument
    \else
-     \expandafter\redoifnotinset % ...]{true}
+     \expandafter\redo_if_not_in_set % ...]{true}
    \fi}
 
-\def\docheckifiteminsetelse#1,#2% #2 eats up preceding space
+\def\do_check_if_item_in_set_else#1,#2% #2 eats up preceding space
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
-     \expandafter\docheckifiteminsetelse
+     \expandafter\do_check_if_item_in_set_else
    \else
-     \expandafter\dodocheckifiteminsetelse
+     \expandafter\do_do_check_if_item_in_set_else
    \fi#2}
 
-\def\dodocheckifiteminsetelse
+\def\do_do_check_if_item_in_set_else
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\thirdofthreearguments
    \else
-     \expandafter\dododocheckifiteminsetelse
+     \expandafter\do_do_do_check_if_item_in_set_else
    \fi}
 
-\def\dododocheckifiteminsetelse
+\def\do_do_do_check_if_item_in_set_else
   {\ifx\!!stringa\!!stringb
-     \expandafter\doquitifiteminsetelse
+     \expandafter\do_quit_if_item_in_set_else
    \else
-     \expandafter\docheckifiteminsetelse
+     \expandafter\do_check_if_item_in_set_else
    \fi}
 
-\def\docheckifiteminset#1,#2% #2 eats up preceding space
+\def\do_check_if_item_in_set#1,#2% #2 eats up preceding space
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
-     \expandafter\docheckifiteminset
+     \expandafter\do_check_if_item_in_set
    \else
-     \expandafter\dodocheckifiteminset
+     \expandafter\do_do_check_if_item_in_set
    \fi#2}
 
-\def\dodocheckifiteminset
+\def\do_do_check_if_item_in_set
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\gobbletwoarguments
    \else
-     \expandafter\dododocheckifiteminset
+     \expandafter\do_do_do_check_if_item_in_set
    \fi}
 
-\def\dododocheckifiteminset
+\def\do_do_do_check_if_item_in_set
   {\ifx\!!stringa\!!stringb
-     \expandafter\doquitifiteminset
+     \expandafter\do_quit_if_item_in_set
    \else
-     \expandafter\docheckifiteminset
+     \expandafter\do_check_if_item_in_set
    \fi}
 
-\def\docheckifitemnotinset#1,#2% #2 eats up preceding space
+\def\do_check_if_item_not_in_set#1,#2% #2 eats up preceding space
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\empty
-     \expandafter\docheckifitemnotinset
+     \expandafter\do_check_if_item_not_in_set
    \else
-     \expandafter\dodocheckifitemnotinset
+     \expandafter\do_do_check_if_item_not_in_set
    \fi#2}
 
-\def\dodocheckifitemnotinset
+\def\do_do_check_if_item_not_in_set
   {\ifx\!!stringb\rightoptionalbracket
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\dododocheckifitemnotinset
+     \expandafter\do_do_do_check_if_item_not_in_set
    \fi}
 
-\def\dododocheckifitemnotinset
+\def\do_do_do_check_if_item_not_in_set
   {\ifx\!!stringa\!!stringb
-     \expandafter\doquitifitemnotinset
+     \expandafter\do_quit_if_item_not_in_set
    \else
-     \expandafter\docheckifitemnotinset
+     \expandafter\do_check_if_item_not_in_set
    \fi}
 
 %D \macros
@@ -812,43 +816,41 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
-\long\def\doquitifcommonelse#1],\relax#2],\relax{\firstoftwoarguments}
+\long\def\do_quit_if_common_else#1],\relax#2],\relax{\firstoftwoarguments}
 
-\long\def\doquitifcommonelsenop{\secondoftwoarguments}
-
-\def\docheckifcommonelseone#1,#2%
+\def\do_check_if_common_else_one#1,#2%
   {\edef\!!stringc{#1}%
    \ifx\!!stringc\rightoptionalbracket
      \expandafter\thirdofthreearguments
    \else
-     \expandafter\p!docommoncheck
+     \expandafter\do_common_check
    \fi#2}
 
-\def\docheckifcommonelsetwo#1,#2% we can do an empty #1 check too
+\def\do_check_if_common_else_two#1,#2% we can do an empty #1 check too
   {\edef\commalistelement{#1}%
    \ifx\commalistelement\rightoptionalbracket
-     \expandafter\redocheckifcommonelseone
+     \expandafter\re_do_check_if_common_else_one
    \else
-     \expandafter\dodocheckifcommonelsetwo
+     \expandafter\do_do_check_if_common_else_two
    \fi#2}
 
-\def\dodocheckifcommonelsetwo
+\def\do_do_check_if_common_else_two
   {\ifx\commalistelement\empty
-     \expandafter\docheckifcommonelsetwo
+     \expandafter\do_check_if_common_else_two
    \else
-     \expandafter\dododocheckifcommonelsetwo
+     \expandafter\do_do_do_check_if_common_else_two
    \fi}
 
-\def\dododocheckifcommonelsetwo
+\def\do_do_do_check_if_common_else_two
   {\ifx\!!stringc\commalistelement
-     \expandafter\doquitifcommonelse
+     \expandafter\do_quit_if_common_else
    \else
-     \expandafter\docheckifcommonelsetwo
+     \expandafter\do_check_if_common_else_two
    \fi}
 
-\def\redocheckifcommonelseone#1{\docheckifcommonelseone}
+\def\re_do_check_if_common_else_one#1{\do_check_if_common_else_one}
 
-\def\p!doifcommonelse#1#2#3#4%
+\def\do_do_if_common_else#1#2#3#4%
   {\edef\!!stringa{#3}%
    \edef\!!stringb{#4}%
    \ifx\!!stringa\empty
@@ -856,17 +858,17 @@
    \else\ifx\!!stringb\empty
      \expandafter\expandafter\expandafter\secondoftwoarguments
    \else
-     \expandafter\expandafter\expandafter\pp!doifcommonelse
+     \expandafter\expandafter\expandafter\do_do_do_if_common_else
    \fi\fi
    #1#2}
 
-\def\pp!doifcommonelse
-  {\def\p!docommoncheck{\expandafter\docheckifcommonelsetwo\!!stringb,],\relax}%
-   \expandafter\docheckifcommonelseone\!!stringa,],\relax}
+\def\do_do_do_if_common_else
+  {\def\do_common_check{\expandafter\do_check_if_common_else_two\!!stringb,],\relax}%
+   \expandafter\do_check_if_common_else_one\!!stringa,],\relax}
 
-\def\doifcommonelse{\p!doifcommonelse\firstoftwoarguments\secondoftwoarguments}
-\def\doifcommon    {\p!doifcommonelse\firstofoneargument \gobbleoneargument   }
-\def\doifnotcommon {\p!doifcommonelse\gobbleoneargument  \firstofoneargument  }
+\def\doifcommonelse{\do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
+\def\doifcommon    {\do_do_if_common_else\firstofoneargument \gobbleoneargument   }
+\def\doifnotcommon {\do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
 
 %D \macros
 %D   {processcommalist,processcommacommand,quitcommalist,
@@ -2034,7 +2036,7 @@
 %   {\let\charactertoken=#1%
 %    \def\!!stringa{\noshowargumenterror#3\dodogetargument}%
 %    \def\!!stringb{\doshowargumenterror#4\dodogetargument#1#2}%
-%    \futurelet\nexttoken\inspectnextcharacter}
+%    \futurelet\nexttoken\inspect_next_character}
 
 % \def\getsingleempty#1#2#3%
 %   {\def\dodogetargument%
@@ -2244,7 +2246,7 @@
 
 \def\dodoubleemptyNOPtwo
   {\secondargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dodoubleemptyonespaced
    \else
      \expandafter\dodoubleemptyonenormal
@@ -2282,7 +2284,7 @@
 \def\dotripleemptyNOPtwo
   {\secondargumentfalse
    \thirdargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dotripleemptytwospaced
    \else
      \expandafter\dotripleemptytwonormal
@@ -2290,7 +2292,7 @@
 
 \def\dotripleemptyNOPthree
   {\thirdargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dotripleemptythreespaced
    \else
      \expandafter\dotripleemptythreenormal
@@ -2338,7 +2340,7 @@
   {\secondargumentfalse
    \thirdargumentfalse
    \fourthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquadrupleemptytwospaced
    \else
      \expandafter\doquadrupleemptytwonormal
@@ -2347,7 +2349,7 @@
 \def\doquadrupleemptyNOPthree
   {\thirdargumentfalse
    \fourthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquadrupleemptythreespaced
    \else
      \expandafter\doquadrupleemptythreenormal
@@ -2355,7 +2357,7 @@
 
 \def\doquadrupleemptyNOPfour
   {\fourthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquadrupleemptyfourspaced
    \else
      \expandafter\doquadrupleemptyfournormal
@@ -2413,7 +2415,7 @@
    \thirdargumentfalse
    \fourthargumentfalse
    \fifthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquintupleemptytwospaced
    \else
      \expandafter\doquintupleemptytwonormal
@@ -2423,7 +2425,7 @@
   {\thirdargumentfalse
    \fourthargumentfalse
    \fifthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquintupleemptythreespaced
    \else
      \expandafter\doquintupleemptythreenormal
@@ -2432,7 +2434,7 @@
 \def\doquintupleemptyNOPfour
   {\fourthargumentfalse
    \fifthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquintupleemptyfourspaced
    \else
      \expandafter\doquintupleemptyfournormal
@@ -2440,7 +2442,7 @@
 
 \def\doquintupleemptyNOPfive
   {\fifthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\doquintupleemptyfivespaced
    \else
      \expandafter\doquintupleemptyfivenormal
@@ -2508,7 +2510,7 @@
    \fourthargumentfalse
    \fifthargumentfalse
    \sixthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosixemptytwospaced
    \else
      \expandafter\dosixemptytwonormal
@@ -2519,7 +2521,7 @@
    \fourthargumentfalse
    \fifthargumentfalse
    \sixthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosixemptythreespaced
    \else
      \expandafter\dosixemptythreenormal
@@ -2529,7 +2531,7 @@
   {\fourthargumentfalse
    \fifthargumentfalse
    \sixthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosixemptyfourspaced
    \else
      \expandafter\dosixemptyfournormal
@@ -2538,7 +2540,7 @@
 \def\dosixtupleemptyNOPfive
   {\fifthargumentfalse
    \sixthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosixemptyfivespaced
    \else
      \expandafter\dosixemptyfivenormal
@@ -2546,7 +2548,7 @@
 
 \def\dosixtupleemptyNOPsix
   {\sixthargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosixemptysixspaced
    \else
      \expandafter\dosixemptysixnormal
@@ -2624,7 +2626,7 @@
    \fifthargumentfalse
    \sixthargumentfalse
    \seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptytwospaced
    \else
      \expandafter\dosevenemptytwonormal
@@ -2636,7 +2638,7 @@
    \fifthargumentfalse
    \sixthargumentfalse
    \seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptythreespaced
    \else
      \expandafter\dosevenemptythreenormal
@@ -2647,7 +2649,7 @@
    \fifthargumentfalse
    \sixthargumentfalse
    \seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptyfourspaced
    \else
      \expandafter\dosevenemptyfournormal
@@ -2657,7 +2659,7 @@
   {\fifthargumentfalse
    \sixthargumentfalse
    \seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptyfivespaced
    \else
      \expandafter\dosevenemptyfivenormal
@@ -2666,7 +2668,7 @@
 \def\doseventupleemptyNOPsix
   {\sixthargumentfalse
    \seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptysixspaced
    \else
      \expandafter\dosevenemptysixnormal
@@ -2674,7 +2676,7 @@
 
 \def\doseventupleemptyNOPseven
   {\seventhargumentfalse
-   \ifnextblankspacetoken
+   \if_next_blank_space_token
      \expandafter\dosevenemptysevenspaced
    \else
      \expandafter\dosevenemptysevennormal
@@ -3297,26 +3299,20 @@
 %D Nowadays we don't mind a few more tokens if we can gain a
 %D bit of speed.
 
-\def\doincrement#1%
-  {\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\plusone \relax}}
-\def\dodecrement#1%
-  {\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\minusone\relax}}
+\def\do_increment#1{\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\plusone \relax}}
+\def\do_decrement#1{\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\minusone\relax}}
 
-\def\dododoincrement#1,#2)%
-  {\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+#2\relax}}
-\def\dodododecrement#1,#2)%
-  {\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi-#2\relax}}
+\def\do_do_do_increment#1,#2){\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+#2\relax}}
+\def\do_do_do_decrement#1,#2){\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi-#2\relax}}
 
-\def\dodoincrement(#1%
-  {\doifnextcharelse,{\dododoincrement#1}{\dododoincrement#1,\plusone}}
-\def\dododecrement(#1%
-  {\doifnextcharelse,{\dodododecrement#1}{\dodododecrement#1,\plusone}}
+\def\do_do_increment(#1{\doifnextcharelse,{\do_do_do_increment#1}{\do_do_do_increment#1,\plusone}}
+\def\do_do_decrement(#1{\doifnextcharelse,{\do_do_do_decrement#1}{\do_do_do_decrement#1,\plusone}}
 
 \def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr#1+\plusone \relax}}
 \def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr#1+\minusone\relax}}
 
-\def\increment{\doifnextcharelse(\dodoincrement\doincrement}
-\def\decrement{\doifnextcharelse(\dododecrement\dodecrement}
+\def\increment{\doifnextcharelse(\do_do_increment\do_increment}
+\def\decrement{\doifnextcharelse(\do_do_decrement\do_decrement}
 
 \def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
 \def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
@@ -5497,22 +5493,17 @@
 %D \type {\doifallcommonelse}, where the first two
 %D arguments are sets.
 
-\def\@@doifallcommonelse#1#2#3#4% slow
-  {\def\p!docommoncheck##1%
+\def\do_if_all_common_else#1#2#3#4% slow
+  {\def\do_common_check##1%
      {\doifnotinset{##1}{#4}\donefalse
       \ifdone\else\expandafter\quitcommalist\fi}%
    \donetrue
-   \processcommalist[#3]\p!docommoncheck
+   \processcommalist[#3]\do_common_check
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
-\def\doifallcommonelse
-  {\@@doifallcommonelse\firstoftwoarguments\secondoftwoarguments}
-
-\def\doifallcommon
-  {\@@doifallcommonelse\firstofonearguments\gobbleoneargument}
-
-\def\doifnotallcommon
-  {\@@doifallcommonelse\gobbleoneargument\firstofonearguments}
+\def\doifallcommonelse{\do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
+\def\doifallcommon    {\do_if_all_common_else\firstofonearguments\gobbleoneargument   }
+\def\doifnotallcommon {\do_if_all_common_else\gobbleoneargument  \firstofonearguments }
 
 %D \macros
 %D   {DOIF,DOIFELSE,DOIFNOT}
@@ -5531,38 +5522,38 @@
 %D We have to use a two||step implementation, because the
 %D expansion has to take place outside \type{\uppercase}.
 
-\unexpanded\def\DOIF#1#2%
+\unexpanded\def\DO_IF#1#2%
   {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\DOIFNOT#1#2%
+\unexpanded\def\DO_IF_NOT#1#2%
   {\uppercase{{$#1$}{$#2$}}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\DOIFELSE#1#2%
+\unexpanded\def\DO_IF_ELSE#1#2%
   {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\DOIFINSTRINGELSE#1#2%
+\unexpanded\def\DO_IF_INSTRING_ELSE#1#2%
   {\uppercase{{$#1$}{$#2$}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\DOIF             #1#2{\normalexpanded{\p!DOIF            {#1}{#2}}}
-\def\DOIFNOT          #1#2{\normalexpanded{\p!DOIFNOT         {#1}{#2}}}
-\def\DOIFELSE         #1#2{\normalexpanded{\p!DOIFELSE        {#1}{#2}}}
-\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\p!DOIFINSTRINGELSE{#1}{#2}}}
+\unexpanded\def\DOIF             #1#2{\normalexpanded{\DO_IF              {#1}{#2}}}
+\unexpanded\def\DOIFNOT          #1#2{\normalexpanded{\DO_IF_NOT          {#1}{#2}}}
+\unexpanded\def\DOIFELSE         #1#2{\normalexpanded{\DO_IF_ELSE         {#1}{#2}}}
+\unexpanded\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\DO_IF_INSTRING_ELSE{#1}{#2}}}
 
 %D \macros
 %D   {dosingleargumentwithset,
@@ -6224,19 +6215,24 @@
 %D macro rounds a real number to two digits. It takes one
 %D argument and only works in \ETEX.
 
-\def\dointegerrounding   #1.#2\relax      {#1}
-\def\doonedigitrounding  #1.#2#3\relax    {\ifx#2*#1\else#1.#2\fi}
-\def\dotwodigitrounding  #1.#2#3#4\relax  {\ifx#2*#1\else#1.#2#3\fi}
-\def\dothreedigitrounding#1.#2#3#4#5\relax{\ifx#2*#1\else#1.#2#3#4\fi}
+% \def\dointegerrounding   #1.#2\relax      {#1}
+% \def\doonedigitrounding  #1.#2#3\relax    {\ifx#2*#1\else#1.#2\fi}
+% \def\dotwodigitrounding  #1.#2#3#4\relax  {\ifx#2*#1\else#1.#2#3\fi}
+% \def\dothreedigitrounding#1.#2#3#4#5\relax{\ifx#2*#1\else#1.#2#3#4\fi}
+%
+% \def\integerrounding#1%
+%   {\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points   \relax      .\relax}
+% \def\onedigitrounding#1%
+%   {\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.05\points  \relax  00.*0\relax}
+% \def\twodigitrounding#1%
+%   {\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.005\points \relax 000.*00\relax}
+% \def\threedigitrounding#1%
+%   {\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
 
-\def\integerrounding#1%
-  {\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points   \relax      .\relax}
-\def\onedigitrounding#1%
-  {\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.05\points  \relax  00.*0\relax}
-\def\twodigitrounding#1%
-  {\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.005\points \relax 000.*00\relax}
-\def\threedigitrounding#1%
-  {\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
+\def\integerrounding   #1{\cldcontext{"\letterpercent 0.0f",#1}}
+\def\onedigitrounding  #1{\cldcontext{"\letterpercent 0.1f",#1}}
+\def\twodigitrounding  #1{\cldcontext{"\letterpercent 0.2f",#1}}
+\def\threedigitrounding#1{\cldcontext{"\letterpercent 0.3f",#1}}
 
 %D \macros
 %D   {processcontent}
@@ -6422,9 +6418,9 @@
 %D
 %D This one if for Taco's bibliography module:
 
-\let\normalinspectnextcharacter\inspectnextcharacter
+\let\normal_inspect_next_character\inspect_next_character
 
-\def\strictinspectnextcharacter% no user macro !
+\def\strict_inspect_next_character% no user macro !
   {\ifx\nexttoken\charactertoken
      \expandafter\!!stringa
    \else
@@ -6434,10 +6430,10 @@
 % better: push/pop
 
 \unexpanded\def\startstrictinspectnextcharacter
-  {\let\inspectnextcharacter\strictinspectnextcharacter}
+  {\let\inspect_next_character\strict_inspect_next_character}
 
 \unexpanded\def\stopstrictinspectnextcharacter
-  {\let\inspectnextcharacter\normalinspectnextcharacter}
+  {\let\inspect_next_character\normal_inspect_next_character}
 
 \def\strictdoifnextoptionalelse#1#2%
   {\startstrictinspectnextcharacter

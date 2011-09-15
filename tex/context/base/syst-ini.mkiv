@@ -126,14 +126,13 @@
 
 \long\def\gobbleoneargument#1{} % will be defined later on anyway
 
-\mathchardef\etexversion =
-    \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
+\mathchardef\etexversion = \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
 
 %D First we define a simplified version of the \CONTEXT\
 %D protection mechanism.
 
-\def\unprotect{\catcode`@=11 }
-\def\protect  {\catcode`@=12 }
+\def\protect  {\catcode`@=\the\catcode`@ \catcode`_=\the\catcode`_}
+\def\unprotect{\catcode`@=11             \catcode`_=11 }
 
 \unprotect
 
@@ -163,34 +162,34 @@
 % 255       : page
 % 256 -     : user
 
-\countdef   \minallocatedregister   =    52 \minallocatedregister   =   256 % can change
-\countdef   \maxallocatedregister   =    53 \maxallocatedregister   = 32767
-\countdef   \minallocatediochannel  =    54 \minallocatediochannel  =    -1
-\countdef   \maxallocatediochannel  =    55 \maxallocatediochannel  =    16
-\countdef   \minallocatedlanguage   =    56 \minallocatedlanguage   =     0
-\countdef   \maxallocatedlanguage   =    57 \maxallocatedlanguage   =   255
-\countdef   \maxallocatedinsert     =    58 \maxallocatedinsert     =   254
-\countdef   \minallocatedinsert     =    59 \minallocatedinsert     =   128
-\countdef   \minallocatedfamily     =    60 \minallocatedfamily     =   128
-\countdef   \maxallocatedfamily     =    61 \maxallocatedfamily     =   255
-\countdef   \minallocatedattribute  =    62 \minallocatedattribute  =  1024 % 127-1023 : private
+\countdef   \min_allocated_register   =    52 \min_allocated_register   =   256 % can change
+\countdef   \max_allocated_register   =    53 \max_allocated_register   = 32767
+\countdef   \min_allocated_iochannel  =    54 \min_allocated_iochannel  =    -1
+\countdef   \max_allocated_iochannel  =    55 \max_allocated_iochannel  =    16
+\countdef   \min_allocated_language   =    56 \min_allocated_language   =     0
+\countdef   \max_allocated_language   =    57 \max_allocated_language   =   255
+\countdef   \max_allocated_insert     =    58 \max_allocated_insert     =   254
+\countdef   \min_allocated_insert     =    59 \min_allocated_insert     =   128
+\countdef   \min_allocated_family     =    60 \min_allocated_family     =   128
+\countdef   \max_allocated_family     =    61 \max_allocated_family     =   255
+\countdef   \min_allocated_attribute  =    62 \min_allocated_attribute  =  1024 % 127-1023 : private
 
-\countdef   \lastallocatedcount     =    32 \lastallocatedcount     = \minallocatedregister
-\countdef   \lastallocateddimen     =    33 \lastallocateddimen     = \minallocatedregister
-\countdef   \lastallocatedskip      =    34 \lastallocatedskip      = \minallocatedregister
-\countdef   \lastallocatedmuskip    =    35 \lastallocatedmuskip    = \minallocatedregister
-\countdef   \lastallocatedbox       =    36 \lastallocatedbox       = \minallocatedregister
-\countdef   \lastallocatedtoks      =    37 \lastallocatedtoks      = \minallocatedregister
-\countdef   \lastallocatedread      =    38 \lastallocatedread      = \minallocatediochannel
-\countdef   \lastallocatedwrite     =    39 \lastallocatedwrite     = \minallocatediochannel
-\countdef   \lastallocatedmarks     =    40 \lastallocatedmarks     = \minallocatedregister
-\countdef   \lastallocatedlanguage  =    41 \lastallocatedlanguage  = \minallocatedlanguage    % not used in context
-\countdef   \lastallocatedinsertion =    42 \lastallocatedinsertion = \minallocatedinsert
-\countdef   \lastallocatedfamily    =    43 \lastallocatedfamily    = \minallocatedfamily      % not used in context
-\countdef   \lastallocatedattribute =    44 \lastallocatedattribute = \minallocatedattribute
+\countdef   \last_allocated_count     =    32 \last_allocated_count     = \min_allocated_register
+\countdef   \last_allocated_dimen     =    33 \last_allocated_dimen     = \min_allocated_register
+\countdef   \last_allocated_skip      =    34 \last_allocated_skip      = \min_allocated_register
+\countdef   \last_allocated_muskip    =    35 \last_allocated_muskip    = \min_allocated_register
+\countdef   \last_allocated_box       =    36 \last_allocated_box       = \min_allocated_register
+\countdef   \last_allocated_toks      =    37 \last_allocated_toks      = \min_allocated_register
+\countdef   \last_allocated_read      =    38 \last_allocated_read      = \min_allocated_iochannel
+\countdef   \last_allocated_write     =    39 \last_allocated_write     = \min_allocated_iochannel
+\countdef   \last_allocated_marks     =    40 \last_allocated_marks     = \min_allocated_register
+\countdef   \last_allocated_language  =    41 \last_allocated_language  = \min_allocated_language    % not used in context
+\countdef   \last_allocated_insertion =    42 \last_allocated_insertion = \min_allocated_insert
+\countdef   \last_allocated_family    =    43 \last_allocated_family    = \min_allocated_family      % not used in context
+\countdef   \last_allocated_attribute =    44 \last_allocated_attribute = \min_allocated_attribute
 
-\countdef   \mincountervalue        =   125 \mincountervalue        = -"7FFFFFFF % beware, we use index 125 at the lua end
-\countdef   \maxcountervalue        =   126 \maxcountervalue        =  "7FFFFFFF % beware, we use index 126 at the lua end
+\countdef   \min_counter_value        =   125 \min_counter_value        = -"7FFFFFFF % beware, we use index 125 at the lua end
+\countdef   \max_counter_value        =   126 \max_counter_value        =  "7FFFFFFF % beware, we use index 126 at the lua end
 
 %countdef   \minusone               =   127 \minusone               = -1
 %chardef    \zerocount              =     0
@@ -220,29 +219,29 @@
 
 %D The allocators share a common helper macro.
 
-\def\newcount   {\allocateregister\lastallocatedcount    \count   \countdef   \maxallocatedregister}
-\def\newdimen   {\allocateregister\lastallocateddimen    \dimen   \dimendef   \maxallocatedregister}
-\def\newskip    {\allocateregister\lastallocatedskip     \skip    \skipdef    \maxallocatedregister}
-\def\newmuskip  {\allocateregister\lastallocatedmuskip   \muskip  \muskipdef  \maxallocatedregister}
-\def\newbox     {\allocateregister\lastallocatedbox      \box     \mathchardef\maxallocatedregister}
-\def\newtoks    {\allocateregister\lastallocatedtoks     \toks    \toksdef    \maxallocatedregister}
-\def\newread    {\allocateregister\lastallocatedread     \read    \chardef    \maxallocatediochannel}
-\def\newwrite   {\allocateregister\lastallocatedwrite    \write   \chardef    \maxallocatediochannel}
-\def\newmarks   {\allocateregister\lastallocatedmarks    \marks   \mathchardef\maxallocatedregister}
-\def\newinsert  {\allocateregister\lastallocatedinsertion\insert  \chardef    \maxallocatedinsert}
+\normalprotected\def\newcount   {\allocate_register\last_allocated_count    \count   \countdef   \max_allocated_register}
+\normalprotected\def\newdimen   {\allocate_register\last_allocated_dimen    \dimen   \dimendef   \max_allocated_register}
+\normalprotected\def\newskip    {\allocate_register\last_allocated_skip     \skip    \skipdef    \max_allocated_register}
+\normalprotected\def\newmuskip  {\allocate_register\last_allocated_muskip   \muskip  \muskipdef  \max_allocated_register}
+\normalprotected\def\newbox     {\allocate_register\last_allocated_box      \box     \mathchardef\max_allocated_register}
+\normalprotected\def\newtoks    {\allocate_register\last_allocated_toks     \toks    \toksdef    \max_allocated_register}
+\normalprotected\def\newread    {\allocate_register\last_allocated_read     \read    \chardef    \max_allocated_iochannel}
+\normalprotected\def\newwrite   {\allocate_register\last_allocated_write    \write   \chardef    \max_allocated_iochannel}
+\normalprotected\def\newmarks   {\allocate_register\last_allocated_marks    \marks   \mathchardef\max_allocated_register}
+\normalprotected\def\newinsert  {\allocate_register\last_allocated_insertion\insert  \chardef    \max_allocated_insert}
 
 %D We don't need these in \CONTEXT:
 
-\def\newlanguage{\allocateregister\lastallocatedlanguage \language\chardef    \maxallocatedlanguage}
-\def\newfamily  {\allocateregister\lastallocatedfamily   \fam     \chardef    \maxallocatedfamily}
+\normalprotected\def\newlanguage{\allocate_register\last_allocated_language \language\chardef    \max_allocated_language}
+\normalprotected\def\newfamily  {\allocate_register\last_allocated_family   \fam     \chardef    \max_allocated_family}
 
 \let\newfam\newfamily
 
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
-\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+\normalprotected\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\normalprotected\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
 
 % maybe setconstant with check
 
@@ -259,10 +258,10 @@
 %D now provide many registers we removed all traces.
 
 \ifdefined\writestatus \else
-    \def\writestatus#1#2{\immediate\write16{#1: #2}}
+    \normalprotected\def\writestatus#1#2{\immediate\write16{#1: #2}}
 \fi
 
-\def\allocateregisteryes#1#2#3#4#5% last class method max name
+\def\allocate_register_yes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax
      \global\advance#1\plusone
      \global#3#5=#1\relax
@@ -270,16 +269,16 @@
      \writestatus{warning}{no room for \string#2\space \string#5\space (max: \number#4)}%
    \fi}
 
-\def\allocateregisternop#1#2#3#4#5% last class method max name
+\def\allocate_register_nop#1#2#3#4#5% last class method max name
   {\writestatus{warning}{\string#2 \string#5 is already defined (\string\relax\space it first)}}
 
-\def\allocateregister#1#2#3#4#5% last class method max name
+\def\allocate_register#1#2#3#4#5% last class method max name
   {\ifx#5\undefined
-     \expandafter\allocateregisteryes
+     \expandafter\allocate_register_yes
    \else\ifx#5\relax
-     \expandafter\expandafter\expandafter\allocateregisteryes
+     \expandafter\expandafter\expandafter\allocate_register_yes
    \else
-     \expandafter\expandafter\expandafter\allocateregisternop
+     \expandafter\expandafter\expandafter\allocate_register_nop
    \fi\fi
    #1#2#3#4#5}
 
@@ -287,8 +286,8 @@
 %D {\chardef} instead of the more limited \type {\mathchardef}.
 
 \ifnum\texengine>\pdftexengine
-    \def\newbox  {\allocateregister\lastallocatedbox  \box  \chardef\maxallocatedregister}
-    \def\newmarks{\allocateregister\lastallocatedmarks\marks\chardef\maxallocatedregister}
+    \normalprotected\def\newbox  {\allocate_register\last_allocated_box  \box  \chardef\max_allocated_register}
+    \normalprotected\def\newmarks{\allocate_register\last_allocated_marks\marks\chardef\max_allocated_register}
 \fi
 
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not
@@ -298,15 +297,15 @@
 %D and should not be touched.
 
 \ifnum\texengine=\luatexengine
-    \let\attributeunsetvalue\mincountervalue % used to be \minusone
-    \def\newattribute{\allocateregister\minallocatedattribute\attribute\attributedef\maxallocatedregister}
+    \let\attributeunsetvalue\min_counter_value % used to be \minusone
+    \normalprotected\def\newattribute{\allocate_register\min_allocated_attribute\attribute\attributedef\max_allocated_register}
 \fi
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a
 %D trick to force strings instead of tokens that take more memory.
 %D It's a trick to trick to force strings.
 
-\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
 
 %D \macros
 %D   {scratchcounter,
@@ -317,12 +316,12 @@
 %D We now define a few scratch registers, so that successive
 %D loads at least have some available.
 
-\newcount   \scratchcounter   \newcount  \globalscratchcounter
-\newdimen   \scratchdimen     \newdimen  \globalscratchdimen
-\newskip    \scratchskip      \newskip   \globalscratchskip
-\newmuskip  \scratchmuskip    \newmuskip \globalscratchmuskip
-\newtoks    \scratchtoks      \newtoks   \globalscratchtoks
-\newbox     \scratchbox       \newbox    \globalscratchbox
+\newcount \scratchcounter  \newcount \globalscratchcounter
+\newdimen \scratchdimen    \newdimen \globalscratchdimen
+\newskip  \scratchskip     \newskip  \globalscratchskip
+\newmuskip\scratchmuskip   \newmuskip\globalscratchmuskip
+\newtoks  \scratchtoks     \newtoks  \globalscratchtoks
+\newbox   \scratchbox      \newbox   \globalscratchbox
 
 \newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
 \newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree
@@ -415,7 +414,7 @@
 \let     \@ne            \plusone
 \let     \tw@            \plustwo
 \let     \thr@@          \plusthree
-\let     \sixt@@n        \sixteen
+\let     \sixt@@n        \plussixteen
 \let     \@cclv          \pluscclv
 \let     \@cclvi         \pluscclvi
 \newbox  \voidb@x
@@ -435,7 +434,7 @@
 %D with \type {\iffoo}.
 %D \stopnarrower
 
-\def\newif#1%
+\normalprotected\def\newif#1%
   {\count@\escapechar
    \escapechar\minusone
    \expandafter\expandafter\expandafter\def\@if #1{true}{\let#1\iftrue }%
@@ -653,8 +652,8 @@
 
 \normaleveryjob{\the\everyjob}
 
-\def\appendtotoks #1{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
-\def\prependtotoks#1{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
+\normalprotected\def\appendtotoks #1{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
+\normalprotected\def\prependtotoks#1{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
 
 \def\doappendtotoks {\expandafter\expandafter\expandafter{\expandafter\the\expandafter\temp\the\scratchtoks}}
 \def\doprependtotoks{\expandafter\expandafter\expandafter{\expandafter\the\expandafter\scratchtoks\the\temp}}
@@ -749,7 +748,7 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
-%D Again a few kind-of-extensions the core:
+%D Again a few kind-of-extensions the core: (might go away)
 
 \newskip \hideskip   \hideskip  = -1000pt plus 1fill
 \newskip \centering  \centering = 0pt plus 1000pt minus 1000pt
@@ -855,9 +854,9 @@
     \ifdefined\pdfgentounicode      \else \newcount\pdfgentounicode       \fi \pdfgentounicode      \plusone
     \ifdefined\pdfinclusioncopyfonts\else \newcount\pdfinclusioncopyfonts \fi \pdfinclusioncopyfonts\plusone
 
-    \def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
-    \def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
-    \def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
+    \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
+    \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
+    \normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
 
     \normalpdfcompression
 
@@ -888,12 +887,12 @@
 \ifx\fmtname   \undefined \def\fmtname   {ConTeXt Minimized Plain TeX} \fi
 \ifx\fmtversion\undefined \def\fmtversion{3.1415926}                   \fi
 
-\let\normalfmtversion\fmtversion
+\let\normalfmtversion\fmtversion % still needed ?
 
 %D A few bonus macros:
 
 \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
-\def\dividonumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
+\def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
 \ifnum\texengine=\xetexengine
     \edef\xetexversion   {\numexpr\XeTeXversion*100+(\expandafter\gobbleoneargument\XeTeXrevision-5)/10\relax}
@@ -901,19 +900,19 @@
 \fi
 
 \ifcase\texengine
-    \def\texenginename    {impossible}
+    \def \texenginename   {impossible}
     \edef\texengineversion{0}
 \or
-    \def\texenginename    {pdfTeX}
-    \edef\texengineversion{\dividonumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
+    \def \texenginename   {pdfTeX}
+    \edef\texengineversion{\dividenumber{100}\pdftexversion.\modulonumber{100}\pdftexversion.\pdftexrevision}
 \or
-    \def\texenginename    {XeTeX}
-    \edef\texengineversion{\dividonumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
+    \def \texenginename   {XeTeX}
+    \edef\texengineversion{\dividenumber{100}\xetexversion .\modulonumber{100}\xetexversion .\xetexrevision}
 \or
-    \def\texenginename    {LuaTeX}
-    \edef\texengineversion{\dividonumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
+    \def \texenginename   {LuaTeX}
+    \edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
 \else
-    \def\texenginename    {impossible}
+    \def \texenginename   {impossible}
     \edef\texengineversion{0}
 \fi
 

@@ -19,6 +19,15 @@ if not modules then modules = { } end modules ['math-map'] = {
 -- todo: alphabets namespace
 -- maybe: script/scriptscript dynamic,
 
+-- to be looked into once the fonts are ready (will become font
+-- goodie):
+--
+-- (U+2202,U+1D715) : upright
+-- (U+2202,U+1D715) : italic
+-- (U+2202,U+1D715) : upright
+--
+-- plus add them to the regular vectors below so that they honor \it etc
+
 local type, next = type, next
 local floor, div = math.floor, math.div
 local merged = table.merged

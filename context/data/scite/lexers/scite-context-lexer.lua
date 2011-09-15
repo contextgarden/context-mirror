@@ -16,6 +16,14 @@ local info = {
 -- function and optimizing the lex function gained another 2+ seconds. A 6 second load
 -- is quite ok for me.
 
+-- Function load(lexer_name) starts with _M.WHITESPACE = lexer_name..'_whitespace' which
+-- means that we need to have it frozen at the moment we load another lexer. Because spacing
+-- is used to revert to a parent lexer we need to make sure that we load children as late
+-- as possible in order not to get the wrong whitespace trigger. This took me quite a while
+-- to figure out (not being that familiar with the internals). BTW, if performance becomes
+-- an issue we can rewrite the main lex function (memorize the grammars and speed up the
+-- byline variant).
+
 local R, P, S, Cp, Cs, Ct, Cmt, Cc = lpeg.R, lpeg.P, lpeg.S, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc
 local lpegmatch = lpeg.match
 local find, gmatch, match, lower, upper, gsub = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub
@@ -26,22 +34,6 @@ local type, next, setmetatable = type, next, setmetatable
 dofile(_LEXERHOME .. '/lexer.lua')
 
 lexer.context = lexer.context or { }
-
--- function lexer.context.loaddefinitions(name)
---     local basepath = lexer.context and lexer.context.path or _LEXERHOME
---     local definitions = loadfile(basepath and (basepath .. "/" .. name) or name)
---     if not definitions then
---         definitions = loadfile(_LEXERHOME .. "/context/" .. name)
---     end
---     if type(definitions) == "function" then
---         definitions = definitions()
---     end
---     if type(definitions) == "table" then
---         return definitions
---     else
---         return nil
---     end
--- end
 
 function lexer.context.loaddefinitions(name)
     local definitions = loadfile(_LEXERHOME .. "/context/" .. name)
@@ -91,19 +83,34 @@ function lexer.context.word_match(words,word_chars,case_insensitive)
     end
 end
 
--- nicer anyway:
+-- nicer (todo: utf):
 
--- todo: utf
+local defaults = R("az","AZ","\127\255","__")
 
-function lexer.context.exact_match(words,case_insensitive)
-    local pattern = S(concat(words)) + R("az","AZ","\127\255") -- the concat catches _ etc
+function lexer.context.exact_match(words,word_chars,case_insensitive)
+    local characters = concat(words)
+    local pattern -- the concat catches _ etc
+    if word_chars == true or word_chars == false or word_chars == nil then
+        word_chars = ""
+    end
+    if type(word_chars) == "string" then
+        pattern = S(characters) + defaults
+        if case_insensitive then
+            pattern = pattern + S(upper(characters)) + S(lower(characters))
+        end
+        if word_chars ~= "" then
+            pattern = pattern + S(word_chars)
+        end
+    elseif word_chars then
+        pattern = word_chars
+    end
     if case_insensitive then
         local list = { }
         for i=1,#words do
             list[lower(words[i])] = true
         end
         return Cmt(pattern^1, function(_,i,s)
-            return list[lower(s)] and i
+            return list[lower(s)] -- and i
         end)
     else
         local list = { }
@@ -111,28 +118,20 @@ function lexer.context.exact_match(words,case_insensitive)
             list[words[i]] = true
         end
         return Cmt(pattern^1, function(_,i,s)
-            return list[s] and i
+            return list[s] -- and i
         end)
     end
 end
 
-function lexer.context.word_match(words,word_chars,case_insensitive) -- word_chars not used (can be omitted)
-    if word_chars == true then
-        return lexer.context.exact_match(words,true)
-    else
-        return lexer.context.exact_match(words,case_insensitive)
-    end
-end
+-- overloaded functions
 
--- Overloaded functions.
+local FOLD_BASE         = SC_FOLDLEVELBASE
+local FOLD_HEADER       = SC_FOLDLEVELHEADERFLAG
+local FOLD_BLANK        = SC_FOLDLEVELWHITEFLAG
 
-local FOLD_BASE   = SC_FOLDLEVELBASE
-local FOLD_HEADER = SC_FOLDLEVELHEADERFLAG
-local FOLD_BLANK  = SC_FOLDLEVELWHITEFLAG
-
-local newline = P("\r\n") + S("\r\n")
-
-local splitlines = Ct( ( Ct ( (Cp() * Cs((1-newline)^1) * newline^-1) + (Cp() * Cc("") * newline) ) )^0)
+local get_style_at      = GetStyleAt
+local get_property      = GetProperty
+local get_indent_amount = GetIndentAmount
 
 local h_table, b_table, n_table = { }, { }, { }
 
@@ -140,53 +139,53 @@ setmetatable(h_table, { __index = function(t,level) local v = { level, FOLD_HEAD
 setmetatable(b_table, { __index = function(t,level) local v = { level, FOLD_BLANK  } t[level] = v return v end })
 setmetatable(n_table, { __index = function(t,level) local v = { level              } t[level] = v return v end })
 
-local get_style_at      = GetStyleAt
-local get_property      = GetProperty
-local get_indent_amount = GetIndentAmount
-
---         local lines = lpegmatch(splitlines,text) -- iterating over lines is faster
---         for i=1, #lines do
---             local li = lines[i]
---             local line = li[2]
---             if line ~= "" then
---                 local pos = li[1]
---                 for i=1,nofpatterns do
---                     for s, m in gmatch(line,patterns[i]) do
---                         if hash[m] then
---                             local symbols = fold_symbols[get_style_at(start_pos + pos + s - 1)]
---                             if symbols then
---                                 local l = symbols[m]
---                                 if l then
---                                     local t = type(l)
---                                     if t == 'number' then
---                                         current_level = current_level + l
---                                     elseif t == 'function' then
---                                         current_level = current_level + l(text, pos, line, s, match)
---                                     end
---                                     if current_level < FOLD_BASE then -- integrate in previous
---                                         current_level = FOLD_BASE
---                                     end
---                                 end
+-- local newline    = P("\r\n") + S("\r\n")
+-- local splitlines = Ct( ( Ct ( (Cp() * Cs((1-newline)^1) * newline^-1) + (Cp() * Cc("") * newline) ) )^0)
+--
+-- local lines = lpegmatch(splitlines,text) -- iterating over lines is faster
+-- for i=1, #lines do
+--     local li = lines[i]
+--     local line = li[2]
+--     if line ~= "" then
+--         local pos = li[1]
+--         for i=1,nofpatterns do
+--             for s, m in gmatch(line,patterns[i]) do
+--                 if hash[m] then
+--                     local symbols = fold_symbols[get_style_at(start_pos + pos + s - 1)]
+--                     if symbols then
+--                         local l = symbols[m]
+--                         if l then
+--                             local t = type(l)
+--                             if t == 'number' then
+--                                 current_level = current_level + l
+--                             elseif t == 'function' then
+--                                 current_level = current_level + l(text, pos, line, s, match)
+--                             end
+--                             if current_level < FOLD_BASE then -- integrate in previous
+--                                 current_level = FOLD_BASE
 --                             end
 --                         end
 --                     end
 --                 end
---                 if current_level > prev_level then
---                     folds[line_num] = h_table[prev_level] -- { prev_level, FOLD_HEADER }
---                 else
---                     folds[line_num] = n_table[prev_level] -- { prev_level }
---                 end
---                 prev_level = current_level
---             else
---                 folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
 --             end
---             line_num = line_num + 1
 --         end
-
--- not that much faster but less memory:
+--         if current_level > prev_level then
+--             folds[line_num] = h_table[prev_level] -- { prev_level, FOLD_HEADER }
+--         else
+--             folds[line_num] = n_table[prev_level] -- { prev_level }
+--         end
+--         prev_level = current_level
+--     else
+--         folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
+--     end
+--     line_num = line_num + 1
+-- end
+--
+-- -- not that much faster but less memory:
 
 local action_y, action_n
 
+local newline    = P("\r\n") + S("\r\n")
 local splitlines = ( (
     (Cp() * Cs((1-newline)^1) * newline^-1) / function(p,l) action_y(p,l) end
   + (                           newline   ) / function()    action_n()    end
@@ -194,7 +193,7 @@ local splitlines = ( (
 
 function lexer.context.fold(text, start_pos, start_line, start_level)
     if text == '' then
-        return folds
+        return { }
     end
     local lexer = global._LEXER
     if lexer._fold then
@@ -220,7 +219,7 @@ function lexer.context.fold(text, start_pos, start_line, start_level)
             end
             fold_symbols._hash = hash
         end
-        action_y = function(pos,line)
+        action_y = function(pos,line) -- we can consider moving this one outside the function
             for i=1,nofpatterns do
                 for s, m in gmatch(line,patterns[i]) do
                     if hash[m] then
@@ -253,12 +252,12 @@ function lexer.context.fold(text, start_pos, start_line, start_level)
             prev_level = current_level
             line_num = line_num + 1
         end
-        action_n = function()
+        action_n = function() -- we can consider moving this one outside the function
             folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
             line_num = line_num + 1
         end
         local lines = lpegmatch(splitlines,text)
-    elseif get_property('fold.by.indentation', 1) == 1 then
+    elseif get_property('fold.by.indentation',1) == 1 then
         local current_line = start_line
         local prev_level = start_level
         for _, line in gmatch(text,'([\t ]*)(.-)\r?\n') do
@@ -303,58 +302,97 @@ function lexer.context.fold(text, start_pos, start_line, start_level)
     return folds
 end
 
-function lexer.context.lex(text, init_style)
+function lexer.context.lex(text,init_style)
     local lexer = global._LEXER
     local grammar = lexer._GRAMMAR
     if not grammar then
         return { }
-    elseif lexer._LEXBYLINE then
+    elseif lexer._LEXBYLINE then -- we could keep token
         local tokens = { }
         local offset = 0
         local noftokens = 0
-        for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
-            local line_tokens = lpeg_match(grammar, line)
-            if line_tokens then
-                for i=1,#line_tokens do
-                    local token = line_tokens[i]
-                    token[2] = token[2] + offset
+        if true then
+            for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
+                local line_tokens = lpeg_match(grammar,line)
+                if line_tokens then
+                    for i=1,#line_tokens do
+                        local token = line_tokens[i]
+                        token[2] = token[2] + offset
+                        noftokens = noftokens + 1
+                        tokens[noftokens] = token
+                    end
+                end
+                offset = offset + #line
+                if noftokens > 0 and tokens[noftokens][2] ~= offset then
                     noftokens = noftokens + 1
-                    tokens[noftokens] = token
+                    tokens[noftokens] = { 'default', offset + 1 }
                 end
             end
-            offset = offset + #line
-            if noftokens > 0 and tokens[noftokens][2] ~= offset then
-                noftokens = noftokens + 1
-                tokens[noftokens] = { 'default', offset + 1 }
+        else -- alternative
+            local lasttoken, lastoffset
+            for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
+                local line_tokens = lpeg_match(grammar,line)
+                if line_tokens then
+                    for i=1,#line_tokens do
+                        lasttoken = line_tokens[i]
+                        lastoffset = lasttoken[2] + offset
+                        lasttoken[2] = lastoffset
+                        noftokens = noftokens + 1
+                        tokens[noftokens] = lasttoken
+                    end
+                end
+                offset = offset + #line
+                if lastoffset ~= offset then
+                    lastoffset = offset + 1
+                    lasttoken = { 'default', lastoffset }
+                    noftokens = noftokens + 1
+                    tokens[noftokens] = lasttoken
+                end
             end
         end
         return tokens
     elseif lexer._CHILDREN then
+        -- as we cannot print, tracing is not possible ... this might change as we can as well
+        -- generate them all in one go (sharing as much as possible)
         local _hash = lexer._HASH
         if not hash then
             hash = { }
             lexer._HASH = hash
         end
         grammar = hash[init_style]
-        if not grammar then
+        if grammar then
+            lexer._GRAMMAR = grammar
+        else
             for style, style_num in next, lexer._TOKENS do
                 if style_num == init_style then
                     local lexer_name = match(style,'^(.+)_whitespace') or lexer._NAME
                     if lexer._INITIALRULE ~= lexer_name then
-                        build_grammar(lexer, lexer_name)
+                        grammar = hash[lexer_name]
+                        if not grammar then
+                            build_grammar(lexer,lexer_name)
+                            grammar = lexer._GRAMMAR
+                            hash[lexer_name] = grammar
+                        end
                     end
                     break
                 end
             end
-            grammar = lexer._GRAMMAR
+            grammar = grammar or lexer._GRAMMAR
             hash[init_style] = grammar
         end
-        return lpegmatch(grammar, text)
+        return lpegmatch(grammar,text)
     else
-        return lpegmatch(grammar, text)
+        return lpegmatch(grammar,text)
     end
 end
 
-lexer.fold       = lexer.context.fold
-lexer.lex        = lexer.context.lex
-lexer.word_match = lexer.context.word_match
+-- todo: keywords: one lookup and multiple matches
+
+-- function lexer.context.token(name, patt)
+--     return Ct(patt * Cc(name) * Cp())
+-- end
+
+lexer.fold        = lexer.context.fold
+lexer.lex         = lexer.context.lex
+-- lexer.token       = lexer.context.token
+lexer.exact_match = lexer.context.exact_match

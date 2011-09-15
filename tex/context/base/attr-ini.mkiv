@@ -43,9 +43,8 @@
 \def\dodefineattribute[#1][#2]% alternatively we can let lua do the housekeeping
   {\expandafter\newattribute\csname @attr@#1\endcsname
    \expandafter\newconstant \csname :attr:#1\endcsname
-   \csname :attr:#1\endcsname\lastallocatedattribute
-   \ctxcommand{defineattribute("#1",\number\lastallocatedattribute)}%
-  %\writestatus\m!system{defining attribute #1 with number \number\lastallocatedattribute}%
+   \csname :attr:#1\endcsname\last_allocated_attribute
+   \ctxcommand{defineattribute("#1",\number\last_allocated_attribute)}%
    \doifnotinset\s!global{#2}{\appendetoks\csname @attr@#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
    \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname :attr:#1\endcsname}}
 
