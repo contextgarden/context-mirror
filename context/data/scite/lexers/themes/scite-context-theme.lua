@@ -6,10 +6,8 @@ local info = {
     license   = "see context related readme files",
 }
 
--- we need a proper pipe:
---
--- -- context_path = string.split(os.resultof("mtxrun --find-file context.mkiv"))[1] or ""
--- -- global.trace("OEPS") -- how do we get access to the regular lua extensions
+-- context_path = string.split(os.resultof("mtxrun --find-file context.mkiv"))[1] or ""
+-- global.trace("OEPS") -- how do we get access to the regular lua extensions
 
 local context_path = "t:/sources" -- c:/data/tex-context/tex/texmf-context/tex/base
 local font_name    = 'Dejavu Sans Mono'
@@ -17,7 +15,7 @@ local font_size    = 14
 
 local global = _G
 
-dofile(_LEXERHOME .. '/themes/scite.lua') -- starting point so we miss nothing
+-- dofile(_LEXERHOME .. '/themes/scite.lua') -- starting point so we miss nothing
 
 module('lexer', package.seeall)
 
@@ -63,44 +61,59 @@ style_nothing = style {
     -- empty
 }
 
-style_comment           = style { fore = colors.yellow              }
-style_string            = style { fore = colors.magenta             }
+style_number             = style { fore = colors.cyan }
+style_comment            = style { fore = colors.yellow }
+style_string             = style { fore = colors.magenta }
+style_keyword            = style { fore = colors.blue, bold = true }
 
-style_char              = style { fore = colors.magenta             }
-style_class             = style { fore = colors.black,  bold = true }
-style_constant          = style { fore = colors.cyan,   bold = true }
-style_definition        = style { fore = colors.black,  bold = true }
-style_error             = style { fore = colors.red                 }
-style_function          = style { fore = colors.black,  bold = true }
-style_keyword           = style { fore = colors.blue,   bold = true }
-style_number            = style { fore = colors.cyan                }
-style_operator          = style { fore = colors.blue                }
-style_preproc           = style { fore = colors.yellow, bold = true }
-style_tag               = style { fore = colors.cyan                }
-style_type              = style { fore = colors.blue                }
-style_variable          = style { fore = colors.black               }
-style_identifier        = style_nothing
+style_char               = style { fore = colors.magenta }
+style_class              = style { fore = colors.black, bold = true }
+style_constant           = style { fore = colors.cyan, bold = true }
+style_definition         = style { fore = colors.black, bold = true }
+style_error              = style { fore = colors.red }
+style_function           = style { fore = colors.black, bold = true }
+style_operator           = style { fore = colors.blue }
+style_preproc            = style { fore = colors.yellow, bold = true }
+style_tag                = style { fore = colors.cyan }
+style_type               = style { fore = colors.blue }
+style_variable           = style { fore = colors.black }
+style_identifier         = style_nothing
 
-style_line_number       = style { back = colors.linepanel,                        }
-style_bracelight        = style { bold = true, fore = colors.orange                                     }
-style_bracebad          = style { bold = true, fore = colors.orange                                     }
-style_indentguide       = style { fore = colors.linepanel, back = colors.white    }
-style_calltip           = style { fore = colors.white,     back = colors.tippanel }
-style_controlchar       = style_nothing
+style_line_number        = style { back = colors.linepanel }
+style_bracelight         = style { fore = colors.orange, bold = true }
+style_bracebad           = style { fore = colors.orange, bold = true }
+style_indentguide        = style { fore = colors.linepanel, back = colors.white }
+style_calltip            = style { fore = colors.white, back = colors.tippanel }
+style_controlchar        = style_nothing
 
-style_context_preamble  = style_comment
-style_context_comment   = style_comment
-style_context_string    = style_string
-style_context_default   = style_nothing
-style_context_number    = style_number
-style_context_keyword   = style_keyword
-style_context_quote     = style { fore = colors.blue, bold = true }
-style_context_primitive = style_keyword
-style_context_plain     = style { fore = colors.dark, bold = true }
-style_context_command   = style { fore = colors.green, bold = true }
-style_context_embedded  = style { fore = colors.black, bold = true }
-style_context_user      = style { fore = colors.green }
-style_context_grouping  = style { fore = colors.red  }
-style_context_specials  = style { fore = colors.blue }
-style_context_extras    = style { fore = colors.yellow }
+lexer.context.styles = {
 
+ -- ["whitespace"] = style_whitespace,
+
+    ["default"]    = style_nothing,
+    ["number"]     = style_number,
+    ["comment"]    = style_comment,
+    ["keyword"]    = style_keyword,
+    ["string"]     = style_string,
+
+    ["command"]    = style { fore = colors.green, bold = true },
+    ["preamble"]   = style_comment,
+    ["embedded"]   = style { fore = colors.black, bold = true },
+    ["grouping"]   = style { fore = colors.red  },
+    ["primitive"]  = style_keyword,
+    ["plain"]      = style { fore = colors.dark, bold = true },
+    ["user"]       = style { fore = colors.green },
+    ["data"]       = style_constant,
+    ["special"]    = style { fore = colors.blue },
+    ["extra"]      = style { fore = colors.yellow },
+    ["quote"]      = style { fore = colors.blue, bold = true },
+
+}
+
+local styleset = { }
+
+for k, v in next, lexer.context.styles do
+    styleset[#styleset+1] = { k, v }
+end
+
+lexer.context.styleset = styleset

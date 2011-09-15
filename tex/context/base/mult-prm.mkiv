@@ -10,7 +10,12 @@
             tex.extraprimitives('luatex'),
             tex.extraprimitives('aleph'),
             tex.extraprimitives('omega'),
-            { "def", "catcode", "futurelet", "chardef", }
+            {
+                "def", "catcode", "futurelet", "chardef",
+                "voffset", "hoffset", "savingvdiscards",
+                "numexpr", "dimexpr",
+                "write", "dump", "skipdef,"
+            }
         )
     )
     table.sort(primitives)

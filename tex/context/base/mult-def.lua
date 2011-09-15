@@ -7,62 +7,6 @@ if not modules then modules = { } end modules ['mult-def'] = {
 }
 
 return {
- ["helpers"]={ -- for syntax highlighters, only the ones that are for users (boring to collect them)
-    --
-    "doif", "doifnot", "doifelse",
-    "doifinset", "doifnotinset", "doifinsetelse",
-    "doifnextcharelse", "doifnextoptionalelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
-    "doifundefinedelse", "doifdefinedelse", "doifundefined", "doifdefined",
-    "doifelsevalue", "doifvalue", "doifnotvalue",
-    "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
-    "doifvaluenothing", "doifvaluesomething", "doifelsevaluenothing",
-    "doifdimensionelse",
-    --
-    "tracingall", "tracingnone", "loggingall",
-    --
-    "appendtoks", "prependtoks", "appendtotoks", "prependtotoks",
-    --
-    "endgraf", "empty", "null", "space", "obeyspaces", "obeylines",
-    --
-    "executeifdefined",
-    --
-    "dontleavehmode",
-    --
-    "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "measure",
-    --
-    "getvalue", "setvalue", "setevalue", "setgvalue", "setxvalue", "letvalue", "letgvalue",
-    "resetvalue", "undefinevalue", "ignorevalue",
-    "setuvalue", "setuevalue", "setugvalue", "setuxvalue",
-    "globallet", "glet",
-    "getparameters", "geteparameters",
-    --
-    "processcommalist", "processcommacommand", "quitcommalist",
-    "processaction", "processallactions",
-    --
-    "startsetups", "stopsetups",
-    "startxmlsetups", "stopxmlsetups",
-    "starttexdefinition", "stoptexdefinition",
-    --
-    "unexpanded", "expanded", "startexpanded", "stopexpanded", "protected", "protect", "unprotect",
-    --
-    "firstofoneargument",
-    "firstoftwoarguments", "secondoftwoarguments",
-    "firstofthreearguments", "secondofthreearguments", "thirdofthreearguments",
-    "firstoffourarguments", "secondoffourarguments", "thirdoffourarguments", "fourthoffourarguments",
-    "firstoffivearguments", "secondoffivearguments", "thirdoffivearguments", "fourthoffivearguments", "fifthoffivearguments",
-    "firstofsixarguments", "secondofsixarguments", "thirdofsixarguments", "fourthofsixarguments", "fifthofsixarguments", "sixthofsixarguments",
-    --
-    "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
-    "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",
-    --
-    "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth",
-    --
-    "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse",
-    --
-    "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
-    "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
-    --
- },
  ["commands"]={
   ["CAPPED"]={
    ["cs"]="KAP",
