@@ -35,14 +35,14 @@ dofile(_LEXERHOME .. '/lexer.lua')
 
 lexer.context = lexer.context or { }
 
-function lexer.context.loaddefinitions(name)
-    local definitions = loadfile(_LEXERHOME .. "/context/" .. name)
-    if not definitions and lexer.context and lexer.context.path then
-        definitions = loadfile(lexer.context.path .. "/" .. name)
-    end
-    if not definitions and lexer.context and lexer.context.path then
-        definitions = loadfile(name)
-    end
+local locations = {
+ -- lexer.context.path,
+    _LEXERHOME .. "/data", -- optional data directory
+    _LEXERHOME .. "/..",   -- regular scite directory
+}
+
+local function collect(name)
+    local definitions = loadfile(name .. ".lua")
     if type(definitions) == "function" then
         definitions = definitions()
     end
@@ -50,6 +50,41 @@ function lexer.context.loaddefinitions(name)
         return definitions
     else
         return nil
+    end
+end
+
+-- local function exists(name)
+--     local f = global.io.open(name)
+--     return f and true or false
+-- end
+--
+-- local function collect(name)
+--     local f = global.io.open(name .. ".properties")
+--     if f then
+--         local result = { }
+--         local data = gsub(f:read("*all") or "","\\ *[\n\r]+"," ")
+--         for name, words in gmatch(data,".-([^%.]-)=(.-)\n") do
+--             if name ~= "all" then
+--                 local list = { }
+--                 for word in gmatch(words,"([^ ]+)") do
+--                     list[#list+1] = word
+--                 end
+--                 result[name] = list
+--             end
+--         end
+--         f:close()
+--         if next(result) then
+--             return result
+--         end
+--     end
+-- end
+
+function lexer.context.loaddefinitions(name)
+    for i=1,#locations do
+        local data = collect(locations[i] .. "/" .. name)
+        if data then
+            return data
+        end
     end
 end
 

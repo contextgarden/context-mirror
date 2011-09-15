@@ -853,20 +853,20 @@
 
 \def\doifcolorelse#1%
   {\ifcsname(ca:\currentpalet#1)\endcsname
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else\ifcsname(ca:#1)\endcsname
-     \@EAEAEA\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \else
-     \@EAEAEA\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
 \def\doifcolor#1%
   {\ifcsname(ca:\currentpalet#1)\endcsname
-     \@EA\firstofoneargument
+     \expandafter\firstofoneargument
    \else\ifcsname(ca:#1)\endcsname
-     \@EAEAEA\firstofoneargument
+     \doubleexpandafter\firstofoneargument
    \else
-     \@EAEAEA\gobbleoneargument
+     \doubleexpandafter\gobbleoneargument
    \fi\fi}
 
 %D \macros

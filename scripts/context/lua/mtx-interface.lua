@@ -47,132 +47,167 @@ local flushers          = { }
 local userinterfaces    = { 'en','cs','de','it','nl','ro','fr','pe' }
 local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 
-function flushers.scite(interface,commands)
-    local result, i = {}, 0
-    result[#result+1] = format("keywordclass.macros.context.%s=",interface)
-    for i=1,#commands do
-        local command = commands[i]
-        if i==0 then
-            result[#result+1] = "\\\n"
-            i = 5
-        else
-            i = i - 1
+local function collect(filename,class,data)
+    if data then
+        local result = { }
+        for name, list in next, data do
+            result[#result+1] = format("keywordclass.%s.%s=\\\n",class,name)
+            for i=1,#list do
+                if i%5 == 0 then
+                    result[#result+1] = "\\\n"
+                end
+                result[#result+1] = format("%s ",list[i])
+            end
+            result[#result+1] = "\n\n"
         end
-        result[#result+1] = format("%s ",command)
+        io.savedata(file.addsuffix(filename,"properties"),concat(result))
+        io.savedata(file.addsuffix(filename,"lua"),       table.serialize(data,true))
+    else
+        os.remove(filename)
     end
-    io.savedata(format("cont-%s-scite.properties",interface), concat(result),"\n")
-    io.savedata(format("cont-%s-scite.lua",interface), table.serialize(commands,true))
 end
 
-function flushers.jedit(interface,commands)
-    local result = {}
-    result[#result+1] = "<?xml version='1.0'?>"
-    result[#result+1] = "<!DOCTYPE MODE SYSTEM 'xmode.dtd'>\n"
-    result[#result+1] = "<MODE>"
-    result[#result+1] = "\t<RULES>"
-    result[#result+1] = "\t\t<KEYWORDS>"
-    for i=1,#commands do
-        result[#result+1] = format("\t\t\t<KEYWORD2>%s</KEYWORD2>",commands[i])
+function flushers.scite(collected)
+    local data = { }
+    for interface, whatever in next, collected do
+        data[interface] = whatever.commands
     end
-    result[#result+1] = "\t\t</KEYWORDS>"
-    result[#result+1] = "\t</RULES>"
-    result[#result+1] = "</MODE>"
-    io.savedata(format("context-jedit-%s.xml",interface), concat(result),"\n")
+    collect("scite-context-data-interfaces", "context",  data)
+    collect("scite-context-data-metapost",   "metapost", dofile(resolvers.findfile("mult-mps.lua")))
+    collect("scite-context-data-metafun",    "metafun",  dofile(resolvers.findfile("mult-fun.lua")))
+    collect("scite-context-data-context",    "context",  dofile(resolvers.findfile("mult-low.lua")))
+    collect("scite-context-data-tex",        "tex",      dofile(resolvers.findfile("mult-prm.lua")))
 end
 
-function flushers.bbedit(interface,commands)
-    local result = {}
-    result[#result+1] = "<?xml version='1.0'?>"
-    result[#result+1] = "<key>BBLMKeywordList</key>"
-    result[#result+1] = "<array>"
-    for i=1,#commands do
-        result[#result+1]  = format("\t<string>\\%s</string>",commands[i])
+function flushers.jedit(collected)
+    for interface, whatever in next, collected do
+        local commands     = whatever.commands
+        local environments = whatever.environments
+        local result = { }
+        result[#result+1] = "<?xml version='1.0'?>"
+        result[#result+1] = "<!DOCTYPE MODE SYSTEM 'xmode.dtd'>\n"
+        result[#result+1] = "<MODE>"
+        result[#result+1] = "\t<RULES>"
+        result[#result+1] = "\t\t<KEYWORDS>"
+        for i=1,#commands do
+            result[#result+1] = format("\t\t\t<KEYWORD2>%s</KEYWORD2>",commands[i])
+        end
+        result[#result+1] = "\t\t</KEYWORDS>"
+        result[#result+1] = "\t</RULES>"
+        result[#result+1] = "</MODE>"
+        io.savedata(format("context-jedit-%s.xml",interface), concat(result),"\n")
     end
-    result[#result+1] = "</array>"
-    io.savedata(format("context-bbedit-%s.xml",interface), concat(result),"\n")
 end
 
-function flushers.raw(interface,commands)
-    for i=1,#commands do
-        report(commands[i])
+function flushers.bbedit(collected)
+    for interface, whatever in next, collected do
+        local commands     = whatever.commands
+        local environments = whatever.environments
+        local result = {}
+        result[#result+1] = "<?xml version='1.0'?>"
+        result[#result+1] = "<key>BBLMKeywordList</key>"
+        result[#result+1] = "<array>"
+        for i=1,#commands do
+            result[#result+1]  = format("\t<string>\\%s</string>",commands[i])
+        end
+        result[#result+1] = "</array>"
+        io.savedata(format("context-bbedit-%s.xml",interface), concat(result),"\n")
+    end
+end
+
+function flushers.raw(collected)
+    for interface, whatever in next, collected do
+        local commands     = whatever.commands
+        local environments = whatever.environments
+        for i=1,#commands do
+            report(commands[i])
+        end
     end
 end
 
 local textpadcreator = "mtx-interface-textpad.lua"
 
-function flushers.text(interface,commands,environments)
-    local c, cname = { }, format("context-commands-%s.txt",interface)
-    local e, ename = { }, format("context-environments-%s.txt",interface)
-    report("saving '%s'",cname)
-    for i=1,#commands do
-        c[#c+1] = format("\\%s",commands[i])
+function flushers.text(collected)
+    for interface, whatever in next, collected do
+        local commands     = whatever.commands
+        local environments = whatever.environments
+        local c, cname = { }, format("context-commands-%s.txt",interface)
+        local e, ename = { }, format("context-environments-%s.txt",interface)
+        report("saving '%s'",cname)
+        for i=1,#commands do
+            c[#c+1] = format("\\%s",commands[i])
+        end
+        io.savedata(cname,concat(c,"\n"))
+        report("saving '%s'",ename)
+        for i=1,#environments do
+            e[#e+1] = format("\\start%s",environments[i])
+            e[#e+1] = format("\\stop%s", environments[i])
+        end
+        io.savedata(format("context-environments-%s.txt",interface),concat(e,"\n"))
     end
-    io.savedata(cname,concat(c,"\n"))
-    report("saving '%s'",ename)
-    for i=1,#environments do
-        e[#e+1] = format("\\start%s",environments[i])
-        e[#e+1] = format("\\stop%s", environments[i])
-    end
-    io.savedata(format("context-environments-%s.txt",interface),concat(e,"\n"))
 end
 
-function flushers.textpad(interface,commands,environments)
-    flushers.text(interface,commands,environments)
-    --
-    -- plugin, this is a rewrite of a file provided by Lukas Prochazka
-    --
-    local function merge(templatedata,destinationdata,categories)
-        report("loading '%s'",templatedata)
-        local data = io.loaddata(templatedata)
-        local done = 0
-        for i=1,#categories do
-            local category = categories[i]
-            local cpattern = ";%s*category:%s*(" .. category .. ")%s*[\n\r]+"
-            local fpattern = ";%s*filename:%s*(" .. "%S+"     .. ")%s*[\n\r]+"
-            data = gsub(data,cpattern..fpattern,function(category,filename)
-                local found = resolvers.findfile(filename) or ""
-                local blob = found ~= "" and io.loaddata(found) or ""
-                if blob == ""  then
-                    report("category: %s, filename: %s, not found",category,filename)
-                else
-                    done = done + 1
-                    report("category: %s, filename: %s, merged",category,filename)
-                end
-                return format("; category: %s\n; filename: %s\n%s\n\n",category,filename,blob)
-            end)
+function flushers.textpad(collected)
+    flushers.text(collected)
+    for interface, whatever in next, collected do
+        local commands     = whatever.commands
+        local environments = whatever.environments
+        --
+        -- plugin, this is a rewrite of a file provided by Lukas Prochazka
+        --
+        local function merge(templatedata,destinationdata,categories)
+            report("loading '%s'",templatedata)
+            local data = io.loaddata(templatedata)
+            local done = 0
+            for i=1,#categories do
+                local category = categories[i]
+                local cpattern = ";%s*category:%s*(" .. category .. ")%s*[\n\r]+"
+                local fpattern = ";%s*filename:%s*(" .. "%S+"     .. ")%s*[\n\r]+"
+                data = gsub(data,cpattern..fpattern,function(category,filename)
+                    local found = resolvers.findfile(filename) or ""
+                    local blob = found ~= "" and io.loaddata(found) or ""
+                    if blob == ""  then
+                        report("category: %s, filename: %s, not found",category,filename)
+                    else
+                        done = done + 1
+                        report("category: %s, filename: %s, merged",category,filename)
+                    end
+                    return format("; category: %s\n; filename: %s\n%s\n\n",category,filename,blob)
+                end)
+            end
+            if done > 0 then
+                report("saving '%s' (%s files merged)",destinationdata,done)
+                io.savedata(destinationdata,data)
+            else
+                report("skipping '%s' (no files merged)",destinationdata)
+            end
         end
-        if done > 0 then
-            report("saving '%s' (%s files merged)",destinationdata,done)
-            io.savedata(destinationdata,data)
+        local templatename = "textpad-context-template.txt"
+        local templatedata = resolvers.findfile(templatename) or ""
+        if templatedata == "" then
+            report("unable to locate template '%s'",templatename)
         else
-            report("skipping '%s' (no files merged)",destinationdata)
+            merge(templatedata, "context.syn",       { "tex commands","context commands" })
+            if environment.argument("textpad") == "latex" then
+                merge(templatedata, "context-latex.syn", { "tex commands","context commands", "latex commands" })
+            end
         end
-    end
-    local templatename = "textpad-context-template.txt"
-    local templatedata = resolvers.findfile(templatename) or ""
-    if templatedata == "" then
-        report("unable to locate template '%s'",templatename)
-    else
-        merge(templatedata, "context.syn",       { "tex commands","context commands" })
-        if environment.argument("textpad") == "latex" then
-            merge(templatedata, "context-latex.syn", { "tex commands","context commands", "latex commands" })
+        local r = { }
+        local c = io.loaddata("context-commands-en.txt")     or "" -- sits on the same path
+        local e = io.loaddata("context-environments-en.txt") or "" -- sits on the same path
+        for s in gmatch(c,"\\(.-)%s") do
+            r[#r+1] = format("\n!TEXT=%s\n\\%s\n!",s,s)
         end
+        for s in gmatch(e,"\\start(.-)%s+\\stop(.-)") do
+            r[#r+1] = format("\n!TEXT=%s (start/stop)\n\\start%s \\^\\stop%s\n!",s,s,s)
+        end
+        sort(r)
+        insert(r,1,"!TCL=597,\n!TITLE=ConTeXt\n!SORT=N\n!CHARSET=DEFAULT")
+        io.savedata("context.tcl",concat(r,"\n"))
+        -- cleanup
+        os.remove("context-commands-en.txt")
+        os.remove("context-environments-en.txt")
     end
-    local r = { }
-    local c = io.loaddata("context-commands-en.txt")     or "" -- sits on the same path
-    local e = io.loaddata("context-environments-en.txt") or "" -- sits on the same path
-    for s in gmatch(c,"\\(.-)%s") do
-        r[#r+1] = format("\n!TEXT=%s\n\\%s\n!",s,s)
-    end
-    for s in gmatch(e,"\\start(.-)%s+\\stop(.-)") do
-        r[#r+1] = format("\n!TEXT=%s (start/stop)\n\\start%s \\^\\stop%s\n!",s,s,s)
-    end
-    sort(r)
-    insert(r,1,"!TCL=597,\n!TITLE=ConTeXt\n!SORT=N\n!CHARSET=DEFAULT")
-    io.savedata("context.tcl",concat(r,"\n"))
-    -- cleanup
-    os.remove("context-commands-en.txt")
-    os.remove("context-environments-en.txt")
 end
 
 function scripts.interface.editor(editor,split,forcedinterfaces)
@@ -184,6 +219,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
     if xmlfile == "" then
         report("unable to locate cont-en.xml")
     end
+    local collected = { }
     for i=1,#interfaces do
         local interface = interfaces[i]
         local keyfile = resolvers.findfile(format("keys-%s.xml",interface)) or ""
@@ -222,10 +258,43 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             if #commands > 0 then
                 sort(commands)
                 sort(environments)
-                flushers[editor](interface,commands,environments)
+                collected[interface] = {
+                    commands     = commands,
+                    environments = environments,
+                }
             end
         end
     end
+    -- awaiting completion of the xml file
+    local definitions = dofile(resolvers.findfile("mult-def.lua"))
+    if definitions then
+        local commands = { en = { } }
+        for command, languages in next, definitions.commands do
+            commands.en[languages.en or command] = true
+            for language, command in next, languages do
+                local c = commands[language]
+                if c then
+                    c[command] = true
+                else
+                    commands[language] = { [command] = true }
+                end
+            end
+        end
+        for language, data in next, commands do
+            local fromlua = data
+            local fromxml = collected[language].commands
+            for i=1,#fromxml do
+                local c = fromxml[i]
+                if not fromlua[c] then
+                 -- print(language,c)
+                    fromlua[c] = true
+                end
+            end
+            collected[language].commands = table.sortedkeys(fromlua)
+        end
+    end
+    --
+    flushers[editor](collected)
 end
 
 function scripts.interface.check()

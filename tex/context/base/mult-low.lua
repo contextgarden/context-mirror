@@ -83,6 +83,8 @@ return {
         --
         "executeifdefined",
         --
+        "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
+        --
         "dontleavehmode",
         --
         "wait", "writestatus", "define", "redefine",
@@ -125,5 +127,8 @@ return {
         "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",
         --
         "modulonumber", "dividenumber",
+        --
+        "getfirstcharacter", "doiffirstcharelse",
+        --
     }
 }
