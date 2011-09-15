@@ -1330,11 +1330,11 @@
 
 \def\doifelsefontsynonym#1%
   {\ifcsname\??ff\fontclass#1\endcsname
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else\ifcsname\??ff\defaultfontclass#1\endcsname
-     \@EAEAEA\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \else
-     \@EAEAEA\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
 % \definetypeface[palatino][rm][serif][palatino,allbold][default]
@@ -3574,11 +3574,11 @@
 %
 % \def\dododoconvertfont % #1 (detokenize no longer needed in luatex)
 %    {\ifcsname\@letter@\detokenize\@EA{\p!defined}\endcsname
-%       \@EA\@@dodoconvertfont
+%       \expandafter\@@dodoconvertfont
 %     \else\ifcsname\detokenize\@EA{\p!defined}\endcsname
-%       \@EAEAEA\@@redoconvertfont
+%       \doubleexpandafter\@@redoconvertfont
 %     \else
-%       \@EAEAEA\firstofoneargument
+%       \doubleexpandafter\firstofoneargument
 %     \fi\fi} % {#1}
 %
 % \let\doconvertfont\dodoconvertfont
@@ -3607,7 +3607,7 @@
 \unexpanded\def\doconvertfont#1% #2% we need the protection
   {\edef\currentconvertfont{#1}%
    \ifx\currentconvertfont\empty \else
-     \@EA\dodoconvertfont
+     \expandafter\dodoconvertfont
    \fi}
 
 \def\dodoconvertfont
@@ -3617,7 +3617,7 @@
    \else\ifcsname\dtcurrentconvertfont\endcsname
      \csname\dtcurrentconvertfont\expandafter\endcsname
    \else
-     \@EAEAEA\currentconvertfont
+     \doubleexpandafter\currentconvertfont
    \fi\fi}
 
 %D Low level switches (downward compatible):

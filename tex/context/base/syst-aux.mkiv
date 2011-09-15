@@ -127,19 +127,22 @@
 \def\s!empty   {empty}
 
 %D \macros
-%D   {@EA,@EAEA,@EAEAEA,@EAEAEAEAEAEA,expanded,startexpanded}
+%D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
 %D
 %D When in unprotected mode, to be entered with
 %D \type{\unprotect}, one can use \type{\@EA} as equivalent
 %D of \type{\expandafter}.
 
-\let\@NX\noexpand
-\let\@EA\expandafter
+\let\singleexpandafter \expandafter
+\def\doubleexpandafter{\expandafter\expandafter\expandafter}
+\def\tripleexpandafter{\expandafter\doubleexpandafter\expandafter}
 
-\def\@EAEA  {\expandafter\expandafter}
-\def\@EAEAEA{\expandafter\expandafter\expandafter}
+%D not needed any more now that we have wide screens
 
-\def\@EAEAEAEAEAEA{\expandafter\@EAEAEA\expandafter}
+\let\@NX          \noexpand
+\let\@EA          \expandafter
+\let\@EAEAEA      \doubleexpandafter
+\let\@EAEAEAEAEAEA\tripleexpandafter
 
 %D Sometimes we pass macros as arguments to commands that
 %D don't expand them before interpretation. Such commands can
@@ -156,7 +159,7 @@
 %D alternatives to this command. Beware, only the simple one
 %D has \type {\noexpand} before its argument.
 
-\long\def\@@expanded{} % always long; global (less restores)
+\let\@@expanded\empty % always long and global (less restores)
 
 \long\def\expanded#1%
   {\long\xdef\@@expanded{\noexpand#1}\@@expanded}
@@ -230,16 +233,16 @@
 
 \def\inspect_next_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspect_next_character
+     \expandafter\reinspect_next_character
    \else
-     \@EA\inspect_next_character_indeed
+     \expandafter\inspect_next_character_indeed
    \fi}
 
 \def\inspect_next_character_indeed
   {\ifx\nexttoken\charactertoken
-     \@EA\!!stringa
+     \expandafter\!!stringa
    \else
-     \@EA\!!stringb
+     \expandafter\!!stringb
    \fi}
 
 %D Because we will mostly use this macro for testing if the next
@@ -260,16 +263,16 @@
 
 \def\inspect_next_optional_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspect_next_optional_character
+     \expandafter\reinspect_next_optional_character
    \else
-     \@EA\inspect_next_optional_character_indeed
+     \expandafter\inspect_next_optional_character_indeed
    \fi}
 
 \def\inspect_next_optional_character_indeed
   {\ifx\nexttoken\next_optional_character_token
-     \@EA\next_optional_command_yes
+     \expandafter\next_optional_command_yes
    \else
-     \@EA\next_optional_command_nop
+     \expandafter\next_optional_command_nop
    \fi}
 
 \let\next_bgroup_character_token\bgroup
@@ -282,16 +285,16 @@
 
 \def\inspect_next_bgroup_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspect_next_bgroup_character
+     \expandafter\reinspect_next_bgroup_character
    \else
-     \@EA\inspect_next_bgroup_character_indeed
+     \expandafter\inspect_next_bgroup_character_indeed
    \fi}
 
 \def\inspect_next_bgroup_character_indeed
   {\ifx\nexttoken\next_bgroup_character_token
-     \@EA\next_bgroup_command_yes
+     \expandafter\next_bgroup_command_yes
    \else
-     \@EA\next_bgroup_command_nop
+     \expandafter\next_bgroup_command_nop
    \fi}
 
 \let\next_parenthesis_character_token(
@@ -304,16 +307,16 @@
 
 \def\inspect_next_parenthesis_character
   {\ifx\nexttoken\blankspace
-     \@EA\reinspect_next_parenthesis_character
+     \expandafter\reinspect_next_parenthesis_character
    \else
-     \@EA\inspect_next_parenthesis_character_indeed
+     \expandafter\inspect_next_parenthesis_character_indeed
    \fi}
 
 \def\inspect_next_parenthesis_character_indeed
   {\ifx\nexttoken\next_parenthesis_character_token
-     \@EA\next_parenthesis_command_yes
+     \expandafter\next_parenthesis_command_yes
    \else
-     \@EA\next_parenthesis_command_nop
+     \expandafter\next_parenthesis_command_nop
    \fi}
 
 %D The next one is handy in predictable situations:
@@ -456,44 +459,44 @@
 
     \def\doifundefinedelse#1%
       {\ifcsname#1\endcsname
-         \@EA\secondoftwoarguments\else\@EA\firstoftwoarguments
+         \expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments
        \fi}
 
     \def\doifdefinedelse#1%
       {\ifcsname#1\endcsname
-         \@EA\firstoftwoarguments\else\@EA\secondoftwoarguments
+         \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments
        \fi}
 
     \def\doifundefined#1%
       {\ifcsname#1\endcsname
-         \@EA\gobbleoneargument\else\@EA\firstofoneargument
+         \expandafter\gobbleoneargument\else\expandafter\firstofoneargument
        \fi}
 
     \def\doifdefined#1%
       {\ifcsname#1\endcsname
-         \@EA\firstofoneargument\else\@EA\gobbleoneargument
+         \expandafter\firstofoneargument\else\expandafter\gobbleoneargument
        \fi}
 
 \else
 
     \def\doifundefinedelse#1%
-      {\ifcsname\detokenize\@EA{\normalexpanded{#1}}\endcsname
-         \@EA\secondoftwoarguments\else\@EA\firstoftwoarguments
+      {\ifcsname\detokenize\expandafter{\normalexpanded{#1}}\endcsname
+         \expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments
        \fi}
 
     \def\doifdefinedelse#1%
-      {\ifcsname\detokenize\@EA{\normalexpanded{#1}}\endcsname
-         \@EA\firstoftwoarguments\else\@EA\secondoftwoarguments
+      {\ifcsname\detokenize\expandafter{\normalexpanded{#1}}\endcsname
+         \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments
        \fi}
 
     \def\doifundefined#1%
-      {\ifcsname\detokenize\@EA{\normalexpanded{#1}}\endcsname
-         \@EA\gobbleoneargument\else\@EA\firstofoneargument
+      {\ifcsname\detokenize\expandafter{\normalexpanded{#1}}\endcsname
+         \expandafter\gobbleoneargument\else\expandafter\firstofoneargument
        \fi}
 
     \def\doifdefined#1%
-      {\ifcsname\detokenize\@EA{\normalexpanded{#1}}\endcsname
-         \@EA\firstofoneargument\else\@EA\gobbleoneargument
+      {\ifcsname\detokenize\expandafter{\normalexpanded{#1}}\endcsname
+         \expandafter\firstofoneargument\else\expandafter\gobbleoneargument
        \fi}
 
 \fi
@@ -664,15 +667,15 @@
 % !5yes=\doifnotinset{}{}{yes}
 % !6yes=\doifnotinset{aaa}{}{yes}
 
-\def\rightoptionalbracket{]}
+\def\right_optional_bracket{]}
 
 \long\def\do_quit_if_item_in_set_else#1],\relax{\firstoftwoarguments}
 \long\def\do_quit_if_item_in_set     #1],\relax{\firstofoneargument}
 \long\def\do_quit_if_item_not_in_set #1],\relax{\gobbleoneargument}
 
-\long\def\redo_if_in_set_else{\expandafter\do_check_if_item_in_set_else\!!stringb,],\relax}
-\long\def\redo_if_in_set     {\expandafter\do_check_if_item_in_set     \!!stringb,],\relax}
-\long\def\redo_if_not_in_set {\expandafter\do_check_if_item_not_in_set \!!stringb,],\relax}
+\long\def\re_do_if_in_set_else{\expandafter\do_check_if_item_in_set_else\!!stringb,],\relax}
+\long\def\re_do_if_in_set     {\expandafter\do_check_if_item_in_set     \!!stringb,],\relax}
+\long\def\re_do_if_not_in_set {\expandafter\do_check_if_item_not_in_set \!!stringb,],\relax}
 
 \long\def\doifinsetelse#1% make this two step too
   {\edef\!!stringa{#1}%
@@ -687,7 +690,7 @@
    \ifx\!!stringb\empty
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\redo_if_in_set_else
+     \expandafter\re_do_if_in_set_else
    \fi}
 
 \long\def\doifinset#1%
@@ -703,7 +706,7 @@
    \ifx\!!stringb\empty
      \expandafter\gobbleoneargument
    \else
-     \expandafter\redo_if_in_set
+     \expandafter\re_do_if_in_set
    \fi}
 
 \long\def\doifnotinset#1%
@@ -719,7 +722,7 @@
    \ifx\!!stringb\empty
      \expandafter\firstofoneargument
    \else
-     \expandafter\redo_if_not_in_set % ...]{true}
+     \expandafter\re_do_if_not_in_set % ...]{true}
    \fi}
 
 \def\do_check_if_item_in_set_else#1,#2% #2 eats up preceding space
@@ -731,7 +734,7 @@
    \fi#2}
 
 \def\do_do_check_if_item_in_set_else
-  {\ifx\!!stringb\rightoptionalbracket
+  {\ifx\!!stringb\right_optional_bracket
      \expandafter\thirdofthreearguments
    \else
      \expandafter\do_do_do_check_if_item_in_set_else
@@ -753,7 +756,7 @@
    \fi#2}
 
 \def\do_do_check_if_item_in_set
-  {\ifx\!!stringb\rightoptionalbracket
+  {\ifx\!!stringb\right_optional_bracket
      \expandafter\gobbletwoarguments
    \else
      \expandafter\do_do_do_check_if_item_in_set
@@ -775,7 +778,7 @@
    \fi#2}
 
 \def\do_do_check_if_item_not_in_set
-  {\ifx\!!stringb\rightoptionalbracket
+  {\ifx\!!stringb\right_optional_bracket
      \expandafter\secondoftwoarguments
    \else
      \expandafter\do_do_do_check_if_item_not_in_set
@@ -820,7 +823,7 @@
 
 \def\do_check_if_common_else_one#1,#2%
   {\edef\!!stringc{#1}%
-   \ifx\!!stringc\rightoptionalbracket
+   \ifx\!!stringc\right_optional_bracket
      \expandafter\thirdofthreearguments
    \else
      \expandafter\do_common_check
@@ -828,7 +831,7 @@
 
 \def\do_check_if_common_else_two#1,#2% we can do an empty #1 check too
   {\edef\commalistelement{#1}%
-   \ifx\commalistelement\rightoptionalbracket
+   \ifx\commalistelement\right_optional_bracket
      \expandafter\re_do_check_if_common_else_one
    \else
      \expandafter\do_do_check_if_common_else_two
@@ -904,68 +907,68 @@
 
 \newcount\commalevel
 
-\def\dododoprocesscommaitem
+\def\do_do_do_process_comma_item
   {\csname\s!next\the\commalevel\endcsname}
 
-\def\dodoprocesscommaitem
+\def\do_do_process_comma_item
   {\ifx\nexttoken\blankspace
-     \@EA\redoprocesscommaitem
+     \expandafter\re_do_process_comma_item
    \else
-     \@EA\dodoprocesscommaitemindeed
+     \expandafter\do_do_process_comma_item_indeed
    \fi}
 
-\def\dodoprocesscommaitemindeed
+\def\do_do_process_comma_item_indeed
   {\ifx\nexttoken]%
-     \@EA\gobbleoneargument
+     \expandafter\gobbleoneargument
    \else
-     \@EA\dododoprocesscommaitem
+     \expandafter\do_do_do_process_comma_item
    \fi}
 
-\def\doprocesscommaitem
-  {\futurelet\nexttoken\dodoprocesscommaitem}
+\def\do_process_comma_item
+  {\futurelet\nexttoken\do_do_process_comma_item}
 
 %D Empty arguments are not processed. Empty items (\type{,,})
 %D however are treated. We have to check for the special case
 %D \type{[{a,b,c}]}.
 
 \unexpanded\def\processcommalist[%
-  {\futurelet\nexttoken\docheckcommaitem}
+  {\futurelet\nexttoken\do_check_comma_item}
 
-\def\docheckcommaitem
+\def\do_check_comma_item
   {\ifx\nexttoken]%
      \expandafter\gobblethreearguments
    \else
-     \expandafter\doprocesscommalist
+     \expandafter\do_process_comma_list
    \fi
    \relax} % this one preserved the next {}
 
-\def\doprocesscommalist#1]#2%
+\def\do_process_comma_list#1]#2%
   {\global\advance\commalevel \plusone
    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
-     {#2{##1}\doprocesscommaitem}%
-   \@EA\dodoprocesscommaitem\gobbleoneargument#1,]\relax
+     {#2{##1}\do_process_comma_item}%
+   \expandafter\do_do_process_comma_item\gobbleoneargument#1,]\relax
    \global\advance\commalevel \minusone }
 
 %D One way of quitting a commalist halfway is:
 
 \def\quitcommalist
-  {\begingroup\let\doprocesscommaitem\doquitcommalist}
+  {\begingroup\let\do_process_comma_item\do_quit_comma_list}
 
-\def\doquitcommalist#1]%
+\def\do_quit_comma_list#1]%
   {\endgroup}
 
 \def\quitprevcommalist
-  {\begingroup\let\doprocesscommaitem\doquitprevcommalist}
+  {\begingroup\let\do_process_comma_item\do_quit_prev_comma_list}
 
-\def\doquitprevcommalist#1]%
-  {\let\doprocesscommaitem\doquitcommalist}
+\def\do_quit_prev_comma_list#1]%
+  {\let\do_process_comma_item\do_quit_commalist}
 
 %D The hack we used for checking the next character
 %D \type {\doifnextcharelse} is also used here.
 
-\def\:{\redoprocesscommaitem}
+\def\:{\re_do_process_comma_item}
 
-\expandafter\def\: {\futurelet\nexttoken\dodoprocesscommaitem}
+\expandafter\def\: {\futurelet\nexttoken\do_do_process_comma_item}
 
 %D The previous examples lead to:
 %D
@@ -1016,8 +1019,8 @@
 %D \stoptyping
 
 \def\processcommalistwithparameters[#1]#2%
-  {\def\docommand##1{#2[##1]}%
-   \processcommalist[#1]\docommand}
+  {\def\do_process_comma_list_with_parameters##1{#2[##1]}%
+   \processcommalist[#1]\do_process_comma_list_with_parameters}
 
 %D \macros
 %D   {startprocesscommalist,startprocesscommacommand}
@@ -1076,7 +1079,7 @@
 
 % obsolete: \def\expandactions{\let\expandedaction\edef} \expandactions (see mkii)
 
-\unexpanded\def\p!compareprocessactionA[#1=>#2][#3]%
+\unexpanded\def\do_compare_process_action_a[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringb\s!default
      \let\commalistelement\empty
@@ -1085,7 +1088,7 @@
 
 % met \quitcommalist tot meer dan 25\% sneller
 
-\unexpanded\def\p!compareprocessactionB[#1=>#2][#3]%
+\unexpanded\def\do_compare_process_action_b[#1=>#2][#3]%
   {\edef\!!stringb{#1}%
    \ifx\!!stringa\!!stringb
      \def\commalistelement{#3}%
@@ -1099,14 +1102,14 @@
 \unexpanded\def\processaction[#1]#2[%
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
-     \let\p!compareprocessaction\p!compareprocessactionA
+     \let\do_compare_process_action\do_compare_process_action_a
    \else
-     \let\p!compareprocessaction\p!compareprocessactionB
+     \let\do_compare_process_action\do_compare_process_action_b
    \fi
-   \edef\p!doprocessaction##1{\p!compareprocessaction[##1][#1]}% expands #1
-   \processnextcommalist\relax\relax\p!doprocessaction[}
+   \edef\do_process_action##1{\do_compare_process_action[##1][#1]}% expands #1
+   \processnextcommalist\relax\relax\do_process_action[}
 
-\unexpanded\def\p!compareprocessactionC[#1=>#2][#3]%
+\unexpanded\def\do_compare_process_action_c[#1=>#2][#3]%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
@@ -1126,17 +1129,17 @@
    \ifx\!!stringa\empty
      \expandafter\processaction
    \else
-     \expandafter\processfirstactionsinsetindeed
+     \expandafter\process_first_action_in_set_indeed
    \fi
    [#1]}
 
-\unexpanded\def\processfirstactionsinsetindeed[#1]#2[#3]%
-  {\def\p!doprocessaction##1%
-     {\def\p!dodoprocessaction####1{\p!compareprocessactionC[####1][##1]}%
-      \processcommalist[#3]\p!dodoprocessaction}%
-   \normalexpanded{\processcommalist[#1]}\p!doprocessaction}
+\unexpanded\def\process_first_action_in_set_indeed[#1]#2[#3]%
+  {\def\do_process_action##1%
+     {\def\do_do_process_action####1{\do_compare_process_action_c[####1][##1]}%
+      \processcommalist[#3]\do_do_process_action}%
+   \normalexpanded{\processcommalist[#1]}\do_process_action}
 
-\unexpanded\def\p!compareprocessactionD[#1=>#2][#3]%
+\unexpanded\def\do_compare_process_action_d[#1=>#2][#3]%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#3}%
    \ifx\!!stringa\!!stringb
@@ -1151,7 +1154,7 @@
      \fi
    \fi}
 
-\unexpanded\def\doprocessallactionsinset
+\unexpanded\def\do_process_all_actions_in_set
   {\csname\s!do\the\processlevel\endcsname}
 
 \unexpanded\def\processallactionsinset[#1]%
@@ -1159,16 +1162,16 @@
    \ifx\!!stringa\empty
      \expandafter\processaction
    \else
-     \expandafter\processallactionsinsetindeed
+     \expandafter\process_all_actions_in_set_indeed
    \fi
    [#1]}
 
-\unexpanded\def\processallactionsinsetindeed[#1]#2[#3]%
+\unexpanded\def\process_all_actions_in_set_indeed[#1]#2[#3]%
   {\advance\processlevel \plusone
    \expandafter\def\csname\s!do\the\processlevel\endcsname##1%
-     {\def\p!dodoprocessaction####1{\p!compareprocessactionD[####1][##1]}%
-      \processcommalist[#3]\p!dodoprocessaction}%
-   \normalexpanded{\processcommalist[#1]}\doprocessallactionsinset
+     {\def\do_do_process_action####1{\do_compare_process_action_d[####1][##1]}%
+      \processcommalist[#3]\do_do_process_action}%
+   \normalexpanded{\processcommalist[#1]}\do_process_all_actions_in_set
    \advance\processlevel\minusone}
 
 %D These macros use:
@@ -1178,8 +1181,8 @@
    \let\nexttoken#4%
    \global\advance\commalevel \plusone
    \long\expandafter\def\csname\s!next\the\commalevel\endcsname##1,%
-     {#3{##1}\doprocesscommaitem}%
-   \dodoprocesscommaitem#4#5,]\relax
+     {#3{##1}\do_process_comma_item}%
+   \do_do_process_comma_item#4#5,]\relax
    \global\advance\commalevel\minusone
    #2}
 
@@ -1214,53 +1217,54 @@
 \unexpanded\def\doifinstringelse#1%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
-     \@EA\thirdofthreearguments
+     \expandafter\thirdofthreearguments
    \else
-     \@EA\dodoifinstringelse
+     \expandafter\do_if_in_string_else_indeed
    \fi}
 
-\unexpanded\def\dodoifinstringelse#1%
-  {\p!doifinstringelse\@@@instring{#1}%
-     \@EA\firstoftwoarguments
+\unexpanded\def\do_if_in_string_else_indeed#1%
+  {\do_if_in_string_else\@@@instring{#1}%
+     \expandafter\firstoftwoarguments
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 \unexpanded\def\doifinstring#1%%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
-     \@EA\gobbletwoarguments
+     \expandafter\gobbletwoarguments
    \else
-     \@EA\dodoifinstring
+     \expandafter\do_if_in_string_indeed
    \fi}
 
-\unexpanded\def\dodoifinstring#1%
-  {\p!doifinstringelse\@@@instring{#1}%
-     \@EA\firstofoneargument
+\unexpanded\def\do_if_in_string_indeed#1%
+  {\do_if_in_string_else\@@@instring{#1}%
+     \expandafter\firstofoneargument
    \else
-     \@EA\gobbleoneargument
+     \expandafter\gobbleoneargument
    \fi}
 
 \unexpanded\def\doifnotinstring#1%%
   {\edef\@@@instring{#1}% expand #1 here
    \ifx\@@@instring\empty
-     \@EA\gobbletwoarguments
+     \expandafter\gobbletwoarguments
    \else
-     \@EA\dodoifnotinstring
+     \expandafter\do_if_not_in_string_indeed
    \fi}
 
-\unexpanded\def\dodoifnotinstring#1%
-  {\p!doifinstringelse\@@@instring{#1}%
-     \@EA\gobbleoneargument
+\unexpanded\def\do_if_not_in_string_indeed#1%
+  {\do_if_in_string_else\@@@instring{#1}%
+     \expandafter\gobbleoneargument
    \else
-     \@EA\firstofoneargument
+     \expandafter\firstofoneargument
    \fi}
 
 % replaces prev
 
-\unexpanded\def\p!doifinstringelse#1#2% ##2 can be {abc}
-  {\long\@EA\def\@EA\pp!doifinstringelse\@EA##\@EA1#1##2##3\war{\unless\if##2@}% expand #1 here
-   \expandafter\pp!doifinstringelse\normalexpanded{#2#1}@@\war} % expand #2 here
+\unexpanded\def\do_if_in_string_else#1#2% ##2 can be {abc}
+  {\long\expandafter\def\expandafter\do_do_if_in_string_else
+     \expandafter##\expandafter1#1##2##3\war{\unless\if##2@}% expand #1 here
+   \expandafter\do_do_if_in_string_else\normalexpanded{#2#1}@@\war} % expand #2 here
 
 %D The next alternative proved to be upto twice as fast on
 %D tasks like checking reserved words in pretty verbatim
@@ -1275,14 +1279,14 @@
 %D possible, the latter alternative does minimal (one level)
 %D expansion.
 
-\unexpanded\def\p!doifincsnameelse#1#2%
-  {\long\def\pp!doifincsnameelse##1#1##2##3\war
+\unexpanded\def\do_if_in_csname_else#1#2%
+  {\long\def\do_do_if_in_csname_else##1#1##2##3\war
      {\unless\if##2@}%
-   \@EA\pp!doifincsnameelse#2#1@@\war}
+   \expandafter\do_do_if_in_csname_else#2#1@@\war}
 
-\unexpanded\def\doifincsnameelse#1#2%                   % #3#4%
+\unexpanded\def\doifincsnameelse#1#2%
   {\edef\@@@instring{#1}%
-   \@EA\p!doifincsnameelse\@EA{\@@@instring}{#2}% % #3\else#4\fi}
+   \expandafter\do_if_in_csname_else\expandafter{\@@@instring}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -1340,25 +1344,25 @@
 %D we gain).
 
 \unexpanded\def\makerawcommalist[#1]#2% use \processnext ... here
-  {\def\domakerawcommalist##1% we don't expand ##1
+  {\def\do_make_raw_comma_list##1% we don't expand ##1
      {\ifx#2\empty
         \def#2{##1}%
       \else
-        \@EA\def\@EA#2\@EA{#2,##1}%
+        \expandafter\def\expandafter#2\expandafter{#2,##1}%
       \fi}%
    \let#2\empty
-   \processcommalist[#1]\domakerawcommalist}
+   \processcommalist[#1]\do_make_raw_comma_list}
 
-\def\rawprocesscommaitem#1,#2% #2 eats up preceding space
+\def\raw_process_comma_item#1,#2% #2 eats up preceding space
   {\if]#1\else
      \csname\s!next\the\commalevel\endcsname{#1}%
-     \expandafter\rawprocesscommaitem
+     \expandafter\raw_process_comma_item
    \fi#2}
 
 \unexpanded\def\rawprocesscommalist[#1]#2% accepteert ook [\cs]
   {\global\advance\commalevel \plusone
    \expandafter\let\csname\s!next\the\commalevel\endcsname#2%
-   \expandafter\rawprocesscommaitem#1,],% \relax
+   \expandafter\raw_process_comma_item#1,],% \relax
    \global\advance\commalevel \minusone }
 
 \unexpanded\def\rawprocesscommacommand[#1]% not really needed
@@ -1372,52 +1376,52 @@
 \unexpanded\def\rawdoifinsetelse#1%
   {\edef\@@@instring{,#1,}% expand #1 here
    \ifx\@@@instring\@@rawempty
-     \@EA\thirdofthreearguments
+     \expandafter\thirdofthreearguments
    \else
-     \@EA\rawdodoifinsetelse
+     \expandafter\raw_do_if_in_set_else
    \fi}
 
-\unexpanded\def\rawdodoifinsetelse#1%
-  {\p!doifinstringelse\@@@instring{,#1,}%
-     \@EA\firstoftwoarguments
+\unexpanded\def\raw_do_if_in_set_else#1%
+  {\do_if_in_string_else\@@@instring{,#1,}%
+     \expandafter\firstoftwoarguments
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 \unexpanded\def\rawdoifinset#1%
   {\edef\@@@instring{,#1,}% expand #1 here
    \ifx\@@@instring\@@rawempty
-     \@EA\gobbletwoarguments
+     \expandafter\gobbletwoarguments
    \else
-     \@EA\rawdodoifinset
+     \expandafter\raw_do_if_in_set
    \fi}
 
-\unexpanded\def\rawdodoifinset#1%%
-  {\p!doifinstringelse\@@@instring{,#1,}%
-     \@EA\firstofoneargument
+\unexpanded\def\raw_do_if_in_set#1%%
+  {\do_if_in_string_else\@@@instring{,#1,}%
+     \expandafter\firstofoneargument
    \else
-     \@EA\gobbleoneargument
+     \expandafter\gobbleoneargument
    \fi}
 
 %D Some more raw material:
 
-\def\p!rawprocessaction[#1][#2]%
-  {\def\pp!rawprocessaction##1,#1=>##2,##3\war%
+\def\do_raw_process_action[#1][#2]%
+  {\def\do_do_raw_process_action##1,#1=>##2,##3\war
      {\if##3@\else
         \def\!!processaction{##2}%
       \fi}%
-   \pp!rawprocessaction,#2,#1=>,@\war}
+   \do_do_raw_process_action,#2,#1=>,@\war}
 
 \unexpanded\def\rawprocessaction[#1]#2[#3]%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{undefined}% better \!!undefined
    \let\!!processaction\!!stringb
    \ifx\!!stringa\empty
-     \@EA\p!rawprocessaction\@EA[\s!default][#3]%
+     \expandafter\do_raw_process_action\expandafter[\s!default][#3]%
    \else
-      \expandafter\p!rawprocessaction\expandafter[\!!stringa][#3]%
+      \expandafter\do_raw_process_action\expandafter[\!!stringa][#3]%
       \ifx\!!processaction\!!stringb
-        \@EA\p!rawprocessaction\@EA[\s!unknown][#3]%
+        \expandafter\do_raw_process_action\expandafter[\s!unknown][#3]%
       \fi
    \fi
    \ifx\!!processaction\!!stringb
@@ -1451,22 +1455,22 @@
 %D for use outside the assignment macros.
 
 \def\dosetvalue#1#2% #3
-  {\@EA\def\csname#1#2\endcsname} % {#3}}
+  {\expandafter\def\csname#1#2\endcsname} % {#3}}
 
 \def\dosetevalue#1#2% #3
-  {\@EA\edef\csname#1#2\endcsname} % {#3}}
+  {\expandafter\edef\csname#1#2\endcsname} % {#3}}
 
 \def\dosetgvalue#1#2% #3
-  {\@EA\gdef\csname#1#2\endcsname} % {#3}}
+  {\expandafter\gdef\csname#1#2\endcsname} % {#3}}
 
 \def\doresetvalue#1#2%
-  {\@EA\let\csname#1#2\endcsname\empty}
+  {\expandafter\let\csname#1#2\endcsname\empty}
 
 \def\doignorevalue#1#2#3%
-  {\@EA\let\csname#1#2\endcsname\empty}
+  {\expandafter\let\csname#1#2\endcsname\empty}
 
 \def\docopyvalue#1#2#3%
-  {\@EA\def\csname#1#3\endcsname{\csname#2#3\endcsname}}
+  {\expandafter\def\csname#1#3\endcsname{\csname#2#3\endcsname}}
 
 %D \macros
 %D   {doassign,undoassign,doassignempty}
@@ -1594,7 +1598,7 @@
 \unexpanded\def\getxparameters  {\dogetparameters\dosetxvalue}
 \unexpanded\def\forgetparameters{\dogetparameters\doignorevalue}
 
-\let\getexpandedparameters=\geteparameters
+\let\getexpandedparameters\geteparameters
 
 \def\dogetparameters#1[#2]#3[#4%
   {\if\noexpand#4]%
@@ -1610,12 +1614,12 @@
 
 \long\def\xprocesscommaitem#1,#2% #2 takes space before ,
   {\if,#1,% dirty trick for testing #1=empty
-     \@EA\xprocesscommaitem
+     \expandafter\xprocesscommaitem
    \else\if]#1%
-     \@EAEAEA\gobbleoneargument
+     \doubleexpandafter\gobbleoneargument
    \else
      \p!dogetparameter\@relax@#1==\empty\@relax@
-     \@EAEAEA\xprocesscommaitem
+     \doubleexpandafter\xprocesscommaitem
    \fi\fi#2}
 
 \def\xshowassignerror#1#2#3%
@@ -1623,26 +1627,26 @@
 
 \def\p!n!doassign#1\@relax@#2=#3=#4#5\@relax@
   {\ifx\empty#2\empty
-     \@EA\xshowassignerror
+     \expandafter\xshowassignerror
    \else\ifx#4\empty
-     \@EAEAEA\xshowassignerror
+     \doubleexpandafter\xshowassignerror
    \else
-     \@EAEAEA\setsomevalue
+     \doubleexpandafter\setsomevalue
    \fi\fi
    {#1}{#2}{#3}}
 
 \def\p!e!doassign#1\@relax@#2=#3=#4#5\@relax@
   {\ifx\empty#2\empty
-     \@EA\xshowassignerror
+     \expandafter\xshowassignerror
    \else\ifx#4\empty
-     \@EAEAEA\xshowassignerror
+     \doubleexpandafter\xshowassignerror
    \else
      \ifcsname#1#2\endcsname
-       \@EA\let\@EA\currentvalue\csname#1#2\endcsname
+       \expandafter\let\expandafter\currentvalue\csname#1#2\endcsname
      \else
        \let\currentvalue\empty
      \fi
-     \@EAEAEA\setsomevalue
+     \doubleexpandafter\setsomevalue
    \fi\fi
    {#1}{#2}{#3}}
 
@@ -1907,7 +1911,7 @@
 % check sources
 
 \def\dogetcommacommandelement#1\from#2\to%
-  {\@EA\dodogetcommalistelement\@EA#1\@EA\from#2,,,,,,\to}
+  {\expandafter\dodogetcommalistelement\expandafter#1\expandafter\from#2,,,,,,\to}
 
 %D \macros
 %D   {dosingleargument,dodoubleargument,dotripleargument,
@@ -2779,13 +2783,13 @@
 \unexpanded\def\definecomplexorsimple#1%
   {\unexpanded\edef#1%
      {\noexpand\docomplexorsimple
-        \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname
-        \@EA\noexpand\csname\s!simple \strippedcsname#1\endcsname}}
+        \expandafter\noexpand\csname\s!complex\strippedcsname#1\endcsname
+        \expandafter\noexpand\csname\s!simple \strippedcsname#1\endcsname}}
 
 \unexpanded\def\definecomplexorsimpleempty#1%
   {\unexpanded\edef#1%
      {\noexpand\docomplexorsimpleempty
-        \@EA\noexpand\csname\s!complex\strippedcsname#1\endcsname}}
+        \expandafter\noexpand\csname\s!complex\strippedcsname#1\endcsname}}
 
 %D These commands are called as:
 %D
@@ -3498,8 +3502,8 @@
 
 \long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname{#4}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname{#4}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \ifnum#3>0\relax
      \ifnum#2<#1\relax
        \let\nextrecurse\exitstepwiserecurse
@@ -3520,11 +3524,11 @@
 
 \long\def\dodostepwiserecurse#1#2#3% from to step
   {\ifnum#1>#2\relax
-     \@EA\nodostepwiserecurse
+     \expandafter\nodostepwiserecurse
    \else
      \def\recurselevel{#1}%
-     \@EAEAEA\redostepwiserecurse\@EA
-   \fi\@EA{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
+     \doubleexpandafter\redostepwiserecurse\expandafter
+   \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
 \unexpanded\def\expandrecursecontent
   {\csname\@@arecurse\recursedepth\endcsname}
@@ -3534,13 +3538,13 @@
 
 \long\unexpanded\def\dodostepwisereverse#1#2#3% from to step
   {\ifnum#1<#2\relax
-     \@EA\nodostepwiserecurse
+     \expandafter\nodostepwiserecurse
    \else
      \def\recurselevel{#1}%
      \innerrecurse#1\relax
      \advance\innerrecurse#3\relax
-     \@EAEAEA\redostepwisereverse\@EA
-   \fi\@EA{\the\innerrecurse}{#2}{#3}}
+     \doubleexpandafter\redostepwisereverse\expandafter
+   \fi\expandafter{\the\innerrecurse}{#2}{#3}}
 
 \unexpanded\def\redostepwisereverse
   {\expandrecursecontent\dodostepwisereverse}
@@ -3549,11 +3553,11 @@
   {\nodostepwiserecurse\relax}
 
 \unexpanded\def\nodostepwiserecurse#1#2#3#4%
-  {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+  {\expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
 \unexpanded\def\nonostepwiserecurse#1#2#3%
-  {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+  {\expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
 \unexpanded\def\dorecurse#1%
@@ -3589,40 +3593,40 @@
 
 \long\unexpanded\def\xdorecurse#1#2%
   {\global\advance\outerrecurse \plusone
-   \long\@EA\gdef\csname\@@arecurse\recursedepth\endcsname{#2}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \@EA\dodorecurse\@EA1\@EA{\number#1}}
+   \long\expandafter\gdef\csname\@@arecurse\recursedepth\endcsname{#2}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \expandafter\dodorecurse\expandafter1\expandafter{\number#1}}
 
 \long\unexpanded\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\recurselevel\!!plusone
    #2%
-   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
 \long\unexpanded\def\dodorecurse#1#2% from to
   {\ifnum#1>#2\relax
-     \@EA\nodorecurse
+     \expandafter\nodorecurse
    \else
      \def\recurselevel{#1}%
-     \@EAEAEA\redorecurse
-   \fi\@EA{\the\numexpr\recurselevel+\plusone\relax}{#2}}
+     \doubleexpandafter\redorecurse
+   \fi\expandafter{\the\numexpr\recurselevel+\plusone\relax}{#2}}
 
 \long\unexpanded\def\dodorecurse#1#2% from to
   {\ifnum#1>#2\relax
-     \@EA\nodorecurse
+     \expandafter\nodorecurse
    \else
      \def\recurselevel{#1}%
      \innerrecurse#1\advance\innerrecurse\plusone
-     \@EAEAEA\redorecurse
-   \fi\@EA{\the\innerrecurse}{#2}}
+     \doubleexpandafter\redorecurse
+   \fi\expandafter{\the\innerrecurse}{#2}}
 
 \unexpanded\def\redorecurse
   {\expandrecursecontent\dodorecurse}
 
 \unexpanded\def\nodorecurse#1#2#3%
-  {\@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+  {\expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone }
 
 %D \macros
@@ -3647,21 +3651,21 @@
 
 \unexpanded\long\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-   \long\@EA\gdef\csname\@@arecurse\recursedepth\endcsname{#1}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \long\expandafter\gdef\csname\@@arecurse\recursedepth\endcsname{#1}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
    \dodoloop1} % no \plusone else \recurselevel wrong
 
 \unexpanded\long\def\dodoloop#1%
   {\def\recurselevel{#1}%
-   \@EA\redoloop\@EA{\the\numexpr\recurselevel+\plusone\relax}}
+   \expandafter\redoloop\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
 
 \unexpanded\def\redoloop
   {\expandrecursecontent\endofloop}
 
 \unexpanded\def\nodoloop#1%
   {\let\endofloop\dodoloop % new, permits nested \doloop's
-   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse\minusone}
 
 \unexpanded\def\exitloop                     % \exitloop quits at end
@@ -3709,27 +3713,28 @@
 %D \stoptyping
 
 \def\expandrecursecontent
-  {\csname\@@arecurse\recursedepth\@EA\@EA\@EA\endcsname\@EA\@EA\@EA{\@EA\recurselevel\@EA}\@EA{\recursedepth}}
+  {\csname\@@arecurse\recursedepth\expandafter\expandafter\expandafter\endcsname
+     \expandafter\expandafter\expandafter{\expandafter\recurselevel\expandafter}\expandafter{\recursedepth}}
 
 \long\unexpanded\def\xdorecurse#1#2%
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
-   \@EA\dodorecurse\@EA1\@EA{\number#1}}
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \expandafter\dodorecurse\expandafter1\expandafter{\number#1}}
 
 \long\unexpanded\def\ydorecurse#1#2%
   {\global\advance\outerrecurse \plusone
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\recurselevel\!!plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#2}%
    \expandrecursecontent
-   \@EA\let\@EA\recurselevel\csname\@@irecurse\recursedepth\endcsname
+   \expandafter\let\expandafter\recurselevel\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse \minusone}
 
 \long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \ifnum#3>0\relax
      \ifnum#2<#1\relax
        \let\nextrecurse\exitstepwiserecurse
@@ -3750,8 +3755,8 @@
 
 \long\unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#1}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \let\endofloop\dodoloop
    \dodoloop1} % no \plusone else \recurselevel wrong
 
@@ -3761,8 +3766,8 @@
 
 % \long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
 %   {\global\advance\outerrecurse \plusone
-%    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-%    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+%    \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+%    \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
 %    \ifnum#3>\zerocount
 %      \ifnum#2<#1\relax
 %        \let\nextrecurse\exitstepwiserecurse
@@ -3786,8 +3791,8 @@
 
 \long\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
-   \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-   \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+   \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+   \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
    \csname @swr%
      \ifnum#3>\zerocount
        \ifnum#2<#1\else d\fi
@@ -3804,8 +3809,8 @@
 %
 % \long\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
 %   {\global\advance\outerrecurse \plusone
-%    \long\global\@EA\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
-%    \global\@EA\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
+%    \long\global\expandafter\def\csname\@@arecurse\recursedepth\endcsname##1##2{#4}%
+%    \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
 %    \normalexpanded
 %      {\ifnum#3>\zerocount
 %         \ifnum#2<#1
@@ -3881,10 +3886,10 @@
 
 \unexpanded\def\doloopoverlist#1#2%
   {\global\advance\outerrecurse\plusone
-   \@EA\gdef\csname\@@arecurse\recursedepth\endcsname##1{\edef\recursestring{##1}#2}%
-   \@EA\glet\csname\@@irecurse\recursedepth\endcsname\recursestring
+   \expandafter\gdef\csname\@@arecurse\recursedepth\endcsname##1{\edef\recursestring{##1}#2}%
+   \expandafter\glet\csname\@@irecurse\recursedepth\endcsname\recursestring
    \normalexpanded{\processcommalist[#1]{\expandafter\noexpand\csname\@@arecurse\recursedepth\endcsname}}%
-   \@EA\let\@EA\recursestring\csname\@@irecurse\recursedepth\endcsname
+   \expandafter\let\expandafter\recursestring\csname\@@irecurse\recursedepth\endcsname
    \global\advance\outerrecurse\minusone}
 
 % D This alternative looks a bit different and uses a
@@ -4033,7 +4038,7 @@
   {\expandafter\convertcommand\csname#1\endcsname\to}
 
 \def\defconvertedvalue#1#2% less sensitive for \to
-  {\@EA\defconvertedcommand\@EA#1\csname#2\endcsname}
+  {\expandafter\defconvertedcommand\expandafter#1\csname#2\endcsname}
 
 %D \macros
 %D   {doifassignmentelse}
@@ -4075,7 +4080,7 @@
 % D \stoptyping
 %
 % \def\convertasciiafter#1#2%
-%   {\@EA#1\@EA{\detokenize{#2}}}
+%   {\expandafter#1\expandafter{\detokenize{#2}}}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type
@@ -4085,16 +4090,16 @@
 %D {\jobname} were fed (or something undefined).
 
 \long\def\convertargument#1\to#2{\dodoglobal\edef#2{\detokenize{#1}}}
-\long\def\convertcommand #1\to#2{\dodoglobal\edef#2{\@EA\detokenize\@EA{#1}}} % hm, only second is also ok
+\long\def\convertcommand #1\to#2{\dodoglobal\edef#2{\expandafter\detokenize\expandafter{#1}}} % hm, only second is also ok
 
-\long\def\defconvertedargument #1#2{\edef#1{\detokenize    {#2}}}
-\long\def\defconvertedcommand  #1#2{\edef#1{\detokenize\@EA{#2}}}
+\long\def\defconvertedargument #1#2{\edef#1{\detokenize{#2}}}
+\long\def\defconvertedcommand  #1#2{\edef#1{\detokenize\expandafter{#2}}}
 \long\def\edefconvertedargument#1#2{\edef#1{#2}%
-                                    \edef#1{\detokenize\@EA{#1}}}
-\long\def\gdefconvertedargument#1#2{\xdef#1{\detokenize    {#2}}}
-\long\def\gdefconvertedcommand #1#2{\xdef#1{\detokenize\@EA{#2}}}
+                                    \edef#1{\detokenize\expandafter{#1}}}
+\long\def\gdefconvertedargument#1#2{\xdef#1{\detokenize{#2}}}
+\long\def\gdefconvertedcommand #1#2{\xdef#1{\detokenize\expandafter{#2}}}
 \long\def\xdefconvertedargument#1#2{\xdef#1{#2}%
-                                    \xdef#1{\detokenize\@EA{#1}}}
+                                    \xdef#1{\detokenize\expandafter{#1}}}
 
 %D When you try to convert a primitive command, you'll find
 %D out that the \ETEX\ method fails on for instance \type
@@ -4233,7 +4238,7 @@
 %D where \type{...} can be anything legally \TEX.
 
 \def\CheckConstantAfter#1#2%
-  {\@EA\convertargument\v!prefix!\to\ascii
+  {\expandafter\convertargument\v!prefix!\to\ascii
    \convertargument#1\to#2\relax
    \doifinstringelse\ascii{#2}
      {\expandafter\convertargument#1\to#2}
@@ -4734,10 +4739,10 @@
 %D
 %D \starttyping
 %D \long\def\doifstringinstringelse#1#2%
-%D   {\p!doifinstringelse#1#2%
-%D      \@EA\firstoftwoarguments
+%D   {\do_if_in_string_else#1#2%
+%D      \expandafter\firstoftwoarguments
 %D    \else
-%D      \@EA\secondoftwoarguments
+%D      \expandafter\secondoftwoarguments
 %D    \fi}
 %D \stoptyping
 %D
@@ -4745,15 +4750,15 @@
 
 \def\pp!doifstringinstringelse#1%
   {\if#1@%
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \else
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \fi}
 
 \long\def\doifstringinstringelse#1#2%
-  {\long\@EA\def\@EA\p!doifstringinstringelse\@EA##\@EA1#1##2##3\war
+  {\long\expandafter\def\expandafter\p!doifstringinstringelse\expandafter##\expandafter1#1##2##3\war
      {\pp!doifstringinstringelse##2}%
-   \@EA\@EA\@EA\p!doifstringinstringelse\@EA#2#1@@\war}
+   \expandafter\expandafter\expandafter\p!doifstringinstringelse\expandafter#2#1@@\war}
 
 %D \macros
 %D   {appendtoks,prependtoks,appendtoksonce,prependtoksonce,
@@ -4781,27 +4786,27 @@
 \def\prependtoksonce{\doprependtoksonce\relax}
 
 \def\dodoappendtoks
-  {\dodoglobal\@@toks\@EAEAEA{\@EA\the\@EA\@@toks\the\@@scratchtoks}}
+  {\dodoglobal\@@toks\doubleexpandafter{\expandafter\the\expandafter\@@toks\the\@@scratchtoks}}
 
 \def\dodoprependtoks
-  {\dodoglobal\@@toks\@EAEAEA{\@EA\the\@EA\@@scratchtoks\the\@@toks}}
+  {\dodoglobal\@@toks\doubleexpandafter{\expandafter\the\expandafter\@@scratchtoks\the\@@toks}}
 
 \long\def\doappendtoks#1\to#2%
   {\def\@@toks{#2}%
-   \@@scratchtoks\@EA{\gobbleoneargument#1}\dodoappendtoks}
+   \@@scratchtoks\expandafter{\gobbleoneargument#1}\dodoappendtoks}
 
 \long\def\doprependtoks#1\to#2%
   {\def\@@toks{#2}%
-   \@@scratchtoks\@EA{\gobbleoneargument#1}\dodoprependtoks}
+   \@@scratchtoks\expandafter{\gobbleoneargument#1}\dodoprependtoks}
 
 \long\def\doappendtoksonce#1\to#2%
   {\def\@@toks{#2}%
-   \@@scratchtoks\@EA{\gobbleoneargument#1}%
+   \@@scratchtoks\expandafter{\gobbleoneargument#1}%
    \doifintokselse\@@scratchtoks\@@toks\donothing\dodoappendtoks}
 
 \long\def\doprependtoksonce#1\to#2%
   {\def\@@toks{#2}%
-   \@@scratchtoks\@EA{\gobbleoneargument#1}%
+   \@@scratchtoks\expandafter{\gobbleoneargument#1}%
    \doifintokselse\@@scratchtoks\@@toks\donothing\dodoprependtoks}
 
 %D The test macro:
@@ -4858,28 +4863,28 @@
 %D \stoptyping
 
 \def\makecounter#1%
-  {\global\@EA\let\csname#1\endcsname\zerocountervalue} % see earlier
+  {\global\expandafter\let\csname#1\endcsname\zerocountervalue} % see earlier
 
 \def\countervalue#1%
   {\ifcsname#1\endcsname\csname#1\endcsname\fi}
 
 \def\pluscounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
+  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname+\plusone\relax}}
 
 \def\minuscounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname-\plusone\relax}}
+  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname#1\endcsname-\plusone\relax}}
 
 \def\resetcounter#1%
-  {\global\@EA\let\csname#1\endcsname\zerocountervalue}
+  {\global\expandafter\let\csname#1\endcsname\zerocountervalue}
 
 \def\setcounter#1#2%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr#2\relax}}
+  {\expandafter\xdef\csname#1\endcsname{\the\numexpr#2\relax}}
 
 \def\savecounter#1%
-  {\@EA\xdef\csname ! #1 !\endcsname{\the\numexpr\csname#1\endcsname\relax}}
+  {\expandafter\xdef\csname ! #1 !\endcsname{\the\numexpr\csname#1\endcsname\relax}}
 
 \def\restorecounter#1%
-  {\@EA\xdef\csname#1\endcsname{\the\numexpr\csname ! #1 !\endcsname\relax}}
+  {\expandafter\xdef\csname#1\endcsname{\the\numexpr\csname ! #1 !\endcsname\relax}}
 
 %D \macros
 %D   {beforesplitstring,aftersplitstring}
@@ -4901,12 +4906,12 @@
 \def\beforesplitstring#1\at#2\to#3%
   {\def\dosplitstring##1#2##2#2##3\\%
      {\def#3{##1}}%
-   \@EA\dosplitstring#1#2#2\\}
+   \expandafter\dosplitstring#1#2#2\\}
 
 \def\aftersplitstring#1\at#2\to#3%
   {\def\dosplitstring##1#2##2@@@##3\\%
      {\def#3{##2}}%
-   \@EA\dosplitstring#1@@@#2@@@\\}
+   \expandafter\dosplitstring#1@@@#2@@@\\}
 
 %D \macros
 %D   {splitstring,greedysplitstring}
@@ -4922,7 +4927,7 @@
       \else
         \def#4{##2}%
       \fi}%
-   \@EA\dosplitstring#1\empty\empty\empty#2\empty\empty\empty\\}
+   \expandafter\dosplitstring#1\empty\empty\empty#2\empty\empty\empty\\}
 
 \def\greedysplitstring#1\at#2\to#3\and#4%
   {\edef\asciib{#1}%
@@ -4949,17 +4954,17 @@
 \def\beforetestandsplitstring#1\at#2\to#3%
   {\def\dosplitstring##1#2##2#2##3##4\\%
      {\ifx##3\empty\let#3\empty\else\def#3{##1}\fi}%
-   \@EA\dosplitstring#1#2#2\empty\\}
+   \expandafter\dosplitstring#1#2#2\empty\\}
 
 \def\aftertestandsplitstring#1\at#2\to#3%
   {\def\dosplitstring ##1#2##2@@@##3##4\\%
      {\ifx##3\empty\let#3\empty\else\def#3{##2}\fi}%
-   \@EA\dosplitstring #1@@@#2@@@\empty\\}
+   \expandafter\dosplitstring #1@@@#2@@@\empty\\}
 
 \def\testandsplitstring#1\at#2\to#3\and#4%
   {\def\dosplitstring##1#2##2#2##3##4\\%
      {\ifx##3\empty\let#3\empty\let#4\empty\else\def#3{##1}\def#4{##2}\fi}%
-   \@EA\dosplitstring#1#2#2\empty\\}
+   \expandafter\dosplitstring#1#2#2\empty\\}
 
 %D \macros
 %D   {removesubstring}
@@ -5065,7 +5070,7 @@
   {\def\dosplitstring##1,#2,##2,#2,##3\\%
      {\edef\!!stringa{\bcleanedupcommalist##1\empty\empty\relax}%
       \edef\!!stringb{\acleanedupcommalist##2,,\relax}}%
-   \@EA\dosplitstring\@EA,#1,,#2,,#2,\\}
+   \expandafter\dosplitstring\expandafter,#1,,#2,,#2,\\}
 
 \def\bcleanedupcommalist#1#2#3\relax{\if#1,\else#1\fi\if#2,\else#2\fi#3}
 \def\bcleanedupcommalist#1#2\relax{\if#1,\else#1\fi#2}
@@ -5107,7 +5112,7 @@
       \else
         \edef#3{#3\ifx#3\empty\else,\fi##1}%
       \fi}%
-   \@EA\rawprocesscommacommand\@EA[\!!stringa]\dosubstituteincommalist}
+   \expandafter\rawprocesscommacommand\expandafter[\!!stringa]\dosubstituteincommalist}
 
 %D A not so useful macro:
 
@@ -5121,7 +5126,7 @@
 \def\dofrontstrip#1%
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty \else
-     \@EA\dodofrontstrip\@EA[#1]#1%
+     \expandafter\dodofrontstrip\expandafter[#1]#1%
    \fi}
 
 %D \macros
@@ -5155,8 +5160,9 @@
           \ifx\newcommalist\empty
             \let\newcommalist\newcommalistelement
           \else
-            \@EA\@EA\@EA\def\@EA\@EA\@EA\newcommalist\@EA\@EA\@EA
-              {\@EA\newcommalist\@EA,\newcommalistelement}%
+            \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
+              \newcommalist\expandafter\expandafter\expandafter
+                {\expandafter\newcommalist\expandafter,\newcommalistelement}%
           \fi
         \fi
         \def\commalistelement{##1}%
@@ -5169,9 +5175,9 @@
           \fi
         \else
           \ifx\nexttoken\bgroup % is known -)
-            \@EA\def\@EA\newcommalist\@EA{\newcommalist,{##1}}%
+            \expandafter\def\expandafter\newcommalist\expandafter{\newcommalist,{##1}}%
           \else
-            \@EA\def\@EA\newcommalist\@EA{\newcommalist,##1}%
+            \expandafter\def\expandafter\newcommalist\expandafter{\newcommalist,##1}%
           \fi
         \fi
       \fi
@@ -5179,7 +5185,7 @@
    \let\commalistelement\empty
    \let\newcommalist\empty
    \commalistcounter\plusone
-   \@EA\processcommalist\@EA[#1]\doreplaceincommalist
+   \expandafter\processcommalist\expandafter[#1]\doreplaceincommalist
    \dodoglobal\let#1\newcommalist}
 
 %D \macros
@@ -5277,27 +5283,27 @@
 \def\globalpushmacro#1%
   {\xdef\@@pushedmacro{\string#1}%
    \ifcsname\@sg@\@@pushedmacro\endcsname \else
-     \@EA\newcount\csname\@sg@\@@pushedmacro\endcsname
+     \expandafter\newcount\csname\@sg@\@@pushedmacro\endcsname
    \fi
    \global\advance\csname\@sg@\@@pushedmacro\endcsname \plusone
-   \global\@EA\let\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
+   \global\expandafter\let\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
 \def\globalpopmacro#1%
   {\xdef\@@pushedmacro{\string#1}%
-   \global\@EA\let\@EA#1\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \global\expandafter\let\expandafter#1\csname\the\csname\@sg@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
    \global\advance\csname\@sg@\@@pushedmacro\endcsname \minusone}
 
 \def\localpushmacro#1% this one can be used to push a value over an \egroup
   {\xdef\@@pushedmacro{\string#1}%
    \ifcsname\@sl@\@@pushedmacro\endcsname \else
-     \@EA\newcount\csname\@sl@\@@pushedmacro\endcsname
+     \expandafter\newcount\csname\@sl@\@@pushedmacro\endcsname
    \fi
    \global\advance\csname\@sl@\@@pushedmacro\endcsname \plusone
-   \global\@EA\let\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
+   \global\expandafter\let\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname#1}
 
 \def\localpopmacro#1%
   {\xdef\@@pushedmacro{\string#1}%
-   \@EA\let\@EA#1\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
+   \expandafter\let\expandafter#1\csname\the\csname\@sl@\@@pushedmacro\endcsname\@@pushedmacro\endcsname
    \global\advance\csname\@sl@\@@pushedmacro\endcsname \minusone }
 
 \let\pushmacro\localpushmacro
@@ -5466,21 +5472,21 @@
 %D Also handy:
 
 \def\doifemptyelsevalue#1%
-  {\@EA\ifx\csname#1\endcsname\empty
+  {\expandafter\ifx\csname#1\endcsname\empty
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \def\doifemptyvalue#1%
-  {\@EA\ifx\csname#1\endcsname\empty
+  {\expandafter\ifx\csname#1\endcsname\empty
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \def\doifnotemptyvalue#1%
-  {\@EA\ifx\csname#1\endcsname\empty
+  {\expandafter\ifx\csname#1\endcsname\empty
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -5640,7 +5646,7 @@
       \doifnotempty{##2}{\dostripcharacter##2\end}}%
    \let\!!strippedstring\empty
    \edef\!!stringa{#2}%
-   \@EA\dostripcharacter\!!stringa#1\end
+   \expandafter\dostripcharacter\!!stringa#1\end
    \dodoglobal\let#3\!!strippedstring}
 
 \def\stripspaces\from#1\to#2% will become \unspacestring#1\from#2
@@ -5806,7 +5812,7 @@
          #4{##1##2}%
        \fi\fi\fi
        \dodoprocessseparatedlist}%
-    \@EA\dodoprocessseparatedlist\gobbleoneargument#1#3]#3}
+    \expandafter\dodoprocessseparatedlist\gobbleoneargument#1#3]#3}
 
 \def\processseparatedlist[%
   {\doprocessseparatedlist\relax}
@@ -5995,11 +6001,11 @@
 %D
 %D the first argument may be a \type{\macro}.
 
-\def\uppercasestring#1\to#2% first @EA redundant
-  {\uppercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\normalexpanded{#1}}}}
+\def\uppercasestring#1\to#2%
+  {\uppercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
 
-\def\lowercasestring#1\to#2% first @EA redundant
-  {\lowercase\@EA{\@EA\dodoglobal\@EA\edef\@EA#2\@EA{\normalexpanded{#1}}}}
+\def\lowercasestring#1\to#2%
+  {\lowercase\expandafter{\expandafter\dodoglobal\expandafter\edef\expandafter#2\expandafter{\normalexpanded{#1}}}}
 
 %D \macros
 %D   {handletokens}
@@ -6073,8 +6079,8 @@
           \edef#3{#3##1}%
         \fi}%
    % \let#3\empty % #3 can be #2, so:
-     \@EA\let\@EA#3\@EA\empty
-     \@EA\handletokens#2\with\dosplitofftokens
+     \expandafter\let\expandafter#3\expandafter\empty
+     \expandafter\handletokens#2\with\dosplitofftokens
    \else
      \edef#3{#2}%
    \fi}
@@ -6091,11 +6097,11 @@
 %D mysterious way of expanding. Look at this:
 %D
 %D \startbuffer[next]
-%D \def\next{a} \edef\test{\next}                  [\test]
-%D \let\next=b  \edef\test{\test\next}             [\test]
-%D \let\next=c  \edef\test{\next}                  [\test]
-%D \let\next=d  \edef\test{\test\next}             [\test]
-%D \let\next=e  \@EA\edef\@EA\test\@EA{\test\next} [\test]
+%D \def\next{a} \edef\test{\next}                                          [\test]
+%D \let\next=b  \edef\test{\test\next}                                     [\test]
+%D \let\next=c  \edef\test{\next}                                          [\test]
+%D \let\next=d  \edef\test{\test\next}                                     [\test]
+%D \let\next=e  \expandafter\edef\expandafter\test\expandafter{\test\next} [\test]
 %D \stopbuffer
 %D
 %D \typebuffer[next]
@@ -6221,13 +6227,13 @@
 % \def\dothreedigitrounding#1.#2#3#4#5\relax{\ifx#2*#1\else#1.#2#3#4\fi}
 %
 % \def\integerrounding#1%
-%   {\@EA\@EA\@EA\dointegerrounding   \@EA\WITHOUTPT\the\dimexpr#1\points+.5\points   \relax      .\relax}
+%   {\expandafter\expandafter\expandafter\dointegerrounding   \expandafter\WITHOUTPT\the\dimexpr#1\points+.5\points   \relax      .\relax}
 % \def\onedigitrounding#1%
-%   {\@EA\@EA\@EA\doonedigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.05\points  \relax  00.*0\relax}
+%   {\expandafter\expandafter\expandafter\doonedigitrounding  \expandafter\WITHOUTPT\the\dimexpr#1\points+.05\points  \relax  00.*0\relax}
 % \def\twodigitrounding#1%
-%   {\@EA\@EA\@EA\dotwodigitrounding  \@EA\WITHOUTPT\the\dimexpr#1\points+.005\points \relax 000.*00\relax}
+%   {\expandafter\expandafter\expandafter\dotwodigitrounding  \expandafter\WITHOUTPT\the\dimexpr#1\points+.005\points \relax 000.*00\relax}
 % \def\threedigitrounding#1%
-%   {\@EA\@EA\@EA\dothreedigitrounding\@EA\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
+%   {\expandafter\expandafter\expandafter\dothreedigitrounding\expandafter\WITHOUTPT\the\dimexpr#1\points+.0005\points\relax0000.*00\relax}
 
 \def\integerrounding   #1{\cldcontext{"\letterpercent 0.0f",#1}}
 \def\onedigitrounding  #1{\cldcontext{"\letterpercent 0.1f",#1}}
@@ -6249,7 +6255,7 @@
 %D This macro is first used in the tabulation macros.
 
 \def\processcontent#1%
-  {\begingroup\@EA\doprocesscontent\csname#1\endcsname}
+  {\begingroup\expandafter\doprocesscontent\csname#1\endcsname}
 
 \def\doprocesscontent#1#2#3%
   {\long\def\doprocesscontent##1#1%
@@ -6304,7 +6310,7 @@
 \newcount\comparedresult
 
 \def\sortcommacommand[#1]%
-  {\@EA\sortcommalist\@EA[#1]}
+  {\expandafter\sortcommalist\expandafter[#1]}
 
 \def\sortcommalist[#1]#2%
   {\getcommalistsize[#1]%
@@ -6323,8 +6329,8 @@
      \def\!!tempa{#1}%
      \ifx\!!tempa\empty\else
        \scratchcounter\plusone
-       \@EA\getcommalistsize\@EA[\sortedcommalist]%
-       \@EA\processcommalist\@EA[\sortedcommalist]\docompareitems
+       \expandafter\getcommalistsize\expandafter[\sortedcommalist]%
+       \expandafter\processcommalist\expandafter[\sortedcommalist]\docompareitems
      \fi
    \fi}
 
@@ -6333,20 +6339,22 @@
 
 \def\docompareitems#1%
   {\doifnotempty{#1}
-     {\@EA\comparecommand\@EA{\!!tempa}{#1}\relax
+     {\expandafter\comparecommand\expandafter{\!!tempa}{#1}\relax
      %\ifcase\compareresult % equal
       \ifnum\comparedresult<2
         \ifnum\scratchcounter=\commalistsize
-          \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
-          \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+          \expandafter\expandafter\expandafter\def
+            \expandafter\expandafter\expandafter\sortedcommalist
+              \expandafter\expandafter\expandafter{\expandafter\sortedcommalist\expandafter,\!!tempa}%
         \fi
      %\or % new element larger
      %  \ifnum\scratchcounter=\commalistsize
-     %    \@EA\@EA\@EA\def\@EA\@EA\@EA\sortedcommalist
-     %    \@EA\@EA\@EA{\@EA\sortedcommalist\@EA,\!!tempa}%
+     %    \expandafter\expandafter\expandafter\def
+     %      \expandafter\expandafter\expandafter\sortedcommalist
+     %        \expandafter\expandafter\expandafter{\expandafter\sortedcommalist\expandafter,\!!tempa}%
      %  \fi
       \else % old element larger
-        \@EA\def\@EA\newcommalistelement\@EA{\!!tempa,#1}%
+        \expandafter\def\expandafter\newcommalistelement\expandafter{\!!tempa,#1}%
         \replaceincommalist\sortedcommalist\scratchcounter
         \expandafter\quitcommalist
       \fi}%
@@ -6373,8 +6381,8 @@
 
 \def\@True    {00}
 \def\@False   {01}
-\def\@Not   #1{0\ifcase#11 \or\@EA 1\else \@EA 0\fi}
-\def\@And #1#2{0\ifcase#1#2 \@EA 0\else \@EA 1\fi}
+\def\@Not   #1{0\ifcase#11 \or\expandafter 1\else \expandafter 0\fi}
+\def\@And #1#2{0\ifcase#1#2 \expandafter 0\else \expandafter 1\fi}
 
 %D \macros
 %D   {setdimensionwithunit, freezedimensionwithunit}
@@ -6461,16 +6469,16 @@
 %D These are needed in ordinal number conversions:
 
 \def\lastdigit#1%
-  {\@EA\thelastdigit\number#1\relax}
+  {\expandafter\thelastdigit\number#1\relax}
 
 \def\thelastdigit#1#2%
-  {\ifx#2\relax#1\else\@EA\thelastdigit\@EA#2\fi}
+  {\ifx#2\relax#1\else\expandafter\thelastdigit\expandafter#2\fi}
 
 \def\lasttwodigits#1%
-  {\@EA\thelasttwodigits\@EA0\number#1\relax}
+  {\expandafter\thelasttwodigits\expandafter0\number#1\relax}
 
 \def\thelasttwodigits#1#2#3% 0 dig ... \relax
-  {\ifx#3\relax#1#2\else\@EA\thelasttwodigits\@EA#2\@EA#3\fi}
+  {\ifx#3\relax#1#2\else\expandafter\thelasttwodigits\expandafter#2\expandafter#3\fi}
 
 %D \macros
 %D   {serializecommalist}
@@ -6498,7 +6506,7 @@
 %D macro works ok with \type {\the}, \type {\number} as well
 %D as \ETEX's \type {\numexpr}.
 
-\def\purenumber#1{\@EA\firstofoneargument\@EA{\number#1}}
+\def\purenumber#1{\expandafter\firstofoneargument\expandafter{\number#1}}
 
 %D \macros
 %D   {filterfromvalue}
@@ -6554,8 +6562,8 @@
    \fi}
 
 \def\filterfromvalue#1#2#3% value max n
-  {\@EA\@EAEAEA\csname                   % we use the fact that an
-     \@EA\ifx\csname#1\endcsname\relax   % undefined cs has become \relax
+  {\expandafter\doubleexpandafter\csname         % we use the fact that an
+     \expandafter\ifx\csname#1\endcsname\relax   % undefined cs has become \relax
        \strippedcsname\gobbleoneargument % which we then gobble here
      \else
        \dofilterfromstr{#2}{#3}%
@@ -6712,28 +6720,28 @@
 
 % \copycsname xxx\endcsname\csname ..\endcsname
 
-\def\copycsname{\@EA\@EA\@EA\let\@EA\@EA\csname}
+\def\copycsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter\csname}
 
 % \letcscsname    \crap               \csname ..\endcsname
 % \letcsnamecs    \csname ..\endcsname\crap
 % \letcsnamecsname\csname ..\endcsname\csname ..\endcsname
 
-\def\letcscsname    {\@EA\let\@EA}
-\def\letcsnamecs    {\@EA\let}
-\def\letcsnamecsname{\@EA\@EA\@EA\let\@EA\@EA}
+\def\letcscsname    {\expandafter\let\expandafter}
+\def\letcsnamecs    {\expandafter\let}
+\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
 
 % another one, add an item to a commalist
 
 \def\addvalue#1#2% cs item
   {\ifcsname#1\endcsname\else\expandafter\let\csname#1\endcsname\empty\fi
-   \normalexpanded{\noexpand\addtocommalist{#2}\@EA\noexpand\csname#1\endcsname}}
+   \normalexpanded{\noexpand\addtocommalist{#2}\expandafter\noexpand\csname#1\endcsname}}
 
 \def\unspaced#1%
   {\dounspaced#1\end}
 
 \def\dounspaced#1%
   {\ifx#1\end
-     \@EA\gobbleoneargument
+     \expandafter\gobbleoneargument
    \else
      \ifx#1\blankspace\else#1\fi
    \fi
@@ -6757,44 +6765,44 @@
 
 \def\dodoifhasspaceelse#1 #2#3\relax % \space\empty\relax
   {\ifx\!!stringa\space
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else\ifx#2\empty
-     \@EAEAEA\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \else
-     \@EAEAEA\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \fi\fi}
 
 % this will replace loadfile once and alike !!! todo
 
 \def\@flg@{@flg@}
 
-\def\setflag  #1{\@EA\dodoglobal\@EA\let\csname\@flg@#1\endcsname\zerocount}
-\def\resetflag#1{\@EA\dodoglobal\@EA\let\csname\@flg@#1\endcsname\plusone}
+\def\setflag  #1{\expandafter\dodoglobal\expandafter\let\csname\@flg@#1\endcsname\zerocount}
+\def\resetflag#1{\expandafter\dodoglobal\expandafter\let\csname\@flg@#1\endcsname\plusone}
 
 \let\ifflagged\ifcase
 
 \def\flag#1{\csname\@flg@#1\endcsname}
 
 \def\doifelseflagged#1%
-  {\@EA\ifx\csname\@flg@#1\endcsname\relax
-     \@EA\secondoftwoarguments
+  {\expandafter\ifx\csname\@flg@#1\endcsname\relax
+     \expandafter\secondoftwoarguments
    \else\ifcase\csname\@flg@#1\endcsname
-     \@EAEAEA\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \else
-     \@EAEAEA\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
 \def\doifnotflagged#1%
-  {\@EA\ifx\csname\@flg@#1\endcsname\relax
-     \@EA\firstofoneargument
+  {\expandafter\ifx\csname\@flg@#1\endcsname\relax
+     \expandafter\firstofoneargument
    \else\ifcase\csname\@flg@#1\endcsname
-     \@EAEAEA\gobbleoneargument
+     \doubleexpandafter\gobbleoneargument
    \else
-     \@EAEAEA\firstofoneargument
+     \doubleexpandafter\firstofoneargument
    \fi\fi}
 
 \def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey % [bypasses k!prefix]
-  {\@EA\def\csname#1#3\@EA\endcsname\@EA{\csname#1#5\endcsname}}
+  {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter{\csname#1#5\endcsname}}
 
 % \buildarray[test][aa,bb,cc,dd,ee,ff]
 % \setarrayelement{test}{1}{qq}
@@ -6830,14 +6838,14 @@
   {\ifx#1\relax
      \ifcase\scratchcounter
        \endgroup
-       \@EAEAEA\secondoftwoarguments
+       \doubleexpandafter\secondoftwoarguments
      \else
        \endgroup
-       \@EAEAEA\firstoftwoarguments
+       \doubleexpandafter\firstoftwoarguments
      \fi
    \else
       \endgroup
-      \@EA\secondoftwoarguments
+      \expandafter\secondoftwoarguments
    \fi}
 
 \def\doifnonzeropositiveelse#1%
@@ -6845,10 +6853,10 @@
 
 % here ?
 
-\def\dosetrawvalue #1#2#3{\@EA \def\csname#1#2\endcsname{#3}}
-\def\dosetrawevalue#1#2#3{\@EA\edef\csname#1#2\endcsname{#3}}
-\def\dosetrawgvalue#1#2#3{\@EA\gdef\csname#1#2\endcsname{#3}}
-\def\dosetrawxvalue#1#2#3{\@EA\xdef\csname#1#2\endcsname{#3}}
+\def\dosetrawvalue #1#2#3{\expandafter \def\csname#1#2\endcsname{#3}}
+\def\dosetrawevalue#1#2#3{\expandafter\edef\csname#1#2\endcsname{#3}}
+\def\dosetrawgvalue#1#2#3{\expandafter\gdef\csname#1#2\endcsname{#3}}
+\def\dosetrawxvalue#1#2#3{\expandafter\xdef\csname#1#2\endcsname{#3}}
 
 \def\getrawparameters      {\dogetparameters\dosetrawvalue }
 \def\getraweparameters     {\dogetparameters\dosetrawevalue}
@@ -6945,10 +6953,10 @@
   {\afterassignment\gobbleassigndimen#1=#2\!!zeropoint\\}
 
 \def\setusage#1%
-  {\@EA\let\csname#1\endcsname\iftrue}
+  {\expandafter\let\csname#1\endcsname\iftrue}
 
 \def\resetusage#1%
-  {\@EA\let\csname#1\endcsname\iffalse}
+  {\expandafter\let\csname#1\endcsname\iffalse}
 
 \def\ifusage#1%
   {\ifcsname#1\endcsname\else
@@ -6980,17 +6988,17 @@
 \def\@@ifequal#1#2\@@and#3%
   {\ifx#1\relax
      \ifx#3\relax
-       \@EAEAEA\@@if@@equal@@true
+       \doubleexpandafter\@@if@@equal@@true
      \else
-       \@EAEAEA\@@if@@equal@@false
+       \doubleexpandafter\@@if@@equal@@false
      \fi
    \else
      \ifx#3\relax
-       \@EAEAEAEAEAEA\@@if@@equal@@false
+       \tripleexpandafter\@@if@@equal@@false
      \else\ifx#1#3%
        % go on
      \else
-       \@EAEAEAEAEAEA\@@if@@equal@@false
+       \tripleexpandafter\@@if@@equal@@false
      \fi\fi
    \fi
    \@@ifequal#2\@@and}
@@ -6998,13 +7006,17 @@
 \long\def\@@if@@equal@@true #1\@@then#2#3{#2}
 \long\def\@@if@@equal@@false#1\@@then#2#3{#3}
 
-\def\appended#1#2#3{\@EA#1\@EA#2\@EA{#2#3}}
-\def\appendvalue #1{\@EA\appended\@EA \def\csname#1\endcsname}
-\def\appendgvalue#1{\@EA\appended\@EA\gdef\csname#1\endcsname}
+\def\appended#1#2#3{\expandafter#1\expandafter#2\expandafter{#2#3}}
+\def\appendvalue #1{\expandafter\appended\expandafter \def\csname#1\endcsname}
+\def\appendgvalue#1{\expandafter\appended\expandafter\gdef\csname#1\endcsname}
 
-\def\prepended#1#2#3{\scratchtoks{#3}\@EA\@EA\@EA#1\@EA\@EA\@EA#2\@EA\@EA\@EA{\@EA\the\@EA\scratchtoks#2}}
-\def\prependvalue #1{\@EA\prepended\@EA \def\csname#1\endcsname}
-\def\prependgvalue#1{\@EA\prepended\@EA\gdef\csname#1\endcsname}
+\def\prepended#1#2#3%
+  {\scratchtoks{#3}%
+   \expandafter\expandafter\expandafter#1\expandafter\expandafter\expandafter#2\expandafter\expandafter\expandafter
+     {\expandafter\the\expandafter\scratchtoks#2}}
+
+\def\prependvalue #1{\expandafter\prepended\expandafter \def\csname#1\endcsname}
+\def\prependgvalue#1{\expandafter\prepended\expandafter\gdef\csname#1\endcsname}
 
 %D \macros
 %D   {compresscommacommandnrs,compresscommalistnrs,compressedcommalistnrs,
@@ -7048,7 +7060,7 @@
 \def\dodocompresslistnrs
   {\edef\compressedlist
      {\ifx\compressedlist\empty\else\compressedlist,\fi
-      {\the\!!counta}{\ifnum\!!countb>\!!counta\the\!!countb\fi}}}
+       {\the\!!counta}{\ifnum\!!countb>\!!counta\the\!!countb\fi}}}
 
 %D \def\test#1{{\tttf#1->\compresscommalistnrs[#1]\defconvertedcommand\ascii\compressedlist\ascii}}
 %D \startlines
@@ -7159,9 +7171,9 @@
 \def\uncompresslist[#1]% by TH
   {\let\uncompressedlist\empty
    \def\docompressedlistitem##1-##2-%
-     {\@EA\dorecurse\@EA
+     {\expandafter\dorecurse\expandafter
         {\the\numexpr1+##2-##1\relax}%
-        {\@EA\appendtocommalist\@EA{\the\numexpr##1-1+####1\relax}\uncompressedlist}}%
+        {\expandafter\appendtocommalist\expandafter{\the\numexpr##1-1+####1\relax}\uncompressedlist}}%
    \def\douncompresslist##1%
      {\doifinstringelse{-}{##1}
         {\docompressedlistitem##1-}

@@ -17,18 +17,25 @@ module(...)
 local metafunlexer = _M
 local basepath     = lexer.context and lexer.context.path or _LEXERHOME
 
-local metafuncommands   = { }
+local metafunhelpers    = { }
+local metafunconstants  = { }
 local plaincommands     = { }
 local primitivecommands = { }
 
 do
 
-    local definitions = lexer.context.loaddefinitions("mult-mps.lua")
+    local definitions = lexer.context.loaddefinitions("scite-context-data-metapost")
 
     if definitions then
-        metafuncommands   = definitions.metafun    or { }
         plaincommands     = definitions.plain      or { }
         primitivecommands = definitions.primitives or { }
+    end
+
+    local definitions = lexer.context.loaddefinitions("scite-context-data-metafun")
+
+    if definitions then
+        metafunhelpers   = definitions.helpers   or { }
+        metafunconstants = definitions.constants or { }
     end
 
 end
@@ -52,7 +59,8 @@ local number     = sign^-1 * (                     -- at most one
 local spacing    = token(whitespace,  space^1)
 local rest       = token('default',   any)
 local comment    = token('comment',   P('%') * (1-S("\n\r"))^0)
-local metafun    = token('command',   exact_match(metafuncommands))
+local constant   = token('data',      exact_match(metafunconstants))
+local helper     = token('command',   exact_match(metafunhelpers))
 local plain      = token('plain',     exact_match(plaincommands))
 local quoted     = token('quote',     dquote)
                  * token('string',    P(1-dquote)^1)
@@ -67,7 +75,8 @@ local extra      = token('extra',     S("`~%^&_-+/\'|\\"))
 _rules = {
     { 'whitespace', spacing    },
     { 'comment',    comment    },
-    { 'metafun',    metafun    },
+    { 'constant',   constant   },
+    { 'helper',     helper     },
     { 'plain',      plain      },
     { 'primitive',  primitive  },
     { 'identifier', identifier },

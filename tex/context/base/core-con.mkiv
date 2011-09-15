@@ -640,11 +640,11 @@
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??cv\currentlanguage#1\endcsname
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else\ifcsname\??cv#1\endcsname
-     \@EAEAEA\firstoftwoarguments
+     \doubleexpandafter\firstoftwoarguments
    \else
-     \@EAEAEA\secondoftwoarguments
+     \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
 \def\doifelseconversionnumber#1#2% slow but seldom used

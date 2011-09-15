@@ -1,47 +1,83 @@
 \starttext
 
+Scite has built-in lexers as well as external lpeg based ones. We
+can use both but for the external lexers some more work is needed
+to get them running. As they are more advanced it's worth the
+effort.
+
+First you need to install Scite. Just get the latest greatest from:
+
+\starttyping
+www.scintilla.org
+\stoptyping
+
+Next you need to install the lpeg lexers. These can be fetched from:
+
+\starttyping
+code.google.com/p/scintilla
+\stoptyping
+
+On windows you need to copy the \type {lexers} subfolder to the \type
+{wscite} folder. For Linux the place depends on the distribution.
+
+In the \CONTEXT\ distribution you find the relevant files in:
+
+\starttyping
+<contextroot>/tex/texmf-context/context/data/scite
+\stoptyping
+
 The following files are needed for the lpeg based lexer:
 
 \starttyping
-scite-ctx.lua
-scite-context.properties
-scite-pragma.properties
-scite-ctx.properties
-scite-ctx-context.properties
-scite-ctx-example.properties
+lexers/scite-context-lexer.lua
 lexers/scite-context-lexer-tex.lua
 lexers/scite-context-lexer-mps.lua
 lexers/scite-context-lexer-cld.lua
-lexers/scite-context-lexer.lua
-lexers/context/mult-def.lua
-lexers/context/mult-prm.lua
-lexers/context/mult-low.lua
-lexers/context/mult-mps.lua
+
+lexers/context/data/scite-context-data-tex.lua
+lexers/context/data/scite-context-data-context.lua
+lexers/context/data/scite-context-data-interfaces.lua
+lexers/context/data/scite-context-data-metapost.lua
+lexers/context/data/scite-context-data-metafun.lua
+
 lexers/themes/scite-context-theme.lua
 \stoptyping
 
-On windows you can copy al files including the subpaths to the path where
-the scite binary lives.
+The data files are needed because we cannot access property files
+from within the lexer. If we could open a file we could use the
+property files instead.
 
-If the \type {mult-*.lua} files are not in the archive but you can copy them
-from the \CONTEXT\ distribution, where they live in:
+These files go to the \type {lexers} subpath in your Scite
+installation. Normally this sits in the binary path. The
+following files provide some extensions. On windows you can copy
+these files to the path where the scite binary lives.
 
 \starttyping
-<contextroot>/tex/texmf-context/tex/context/base
+scite-ctx.lua
 \stoptyping
 
-Because property files can only be loaded from the same path you need to copy
-the following files:
+Because property files can only be loaded from the same path
+where the (user) file loads them you need to copy the following
+files to the same path where the loading is defined:
 
 \starttyping
 scite-context.properties
 scite-pragma.properties
+
+scite-context-data-tex.properties
+scite-context-data-context.properties
+scite-context-data-interfaces.properties
+scite-context-data-metapost.properties
+scite-context-data-metafun.properties
+
 scite-ctx.properties
 scite-ctx-context.properties
+scite-ctx-context-internal.properties
+scite-ctx-context-external.properties
 scite-ctx-example.properties
 \stoptyping
 
-to (on windows):
+On Windows these go to:
 
 \starttyping
 c:/Users/YourName
@@ -51,6 +87,8 @@ Next you need to add this to:
 
 \starttyping
 import scite-context
+import scite-context-internal
+import scite-context-external
 import scite-pragma
 \stoptyping
 
@@ -60,8 +98,11 @@ to the file:
 SciTEUser.properties
 \stoptyping
 
-If you want to have spellchecking, you need have files with correct words on each
-line. The first line of a file determines the language:
+Of course the pragma import is optional. You can comment either the
+internal  or external variant but there is no reason not to keep them both.
+
+If you want to have spellchecking, you need have files with correct words
+on each line. The first line of a file determines the language:
 
 \starttyping
 % language=uk
@@ -77,6 +118,12 @@ This file is searched on the the path determined by the environment variable:
 
 \starttyping
 CTXSPELLPATH
+\stoptyping
+
+In a similar fashion you can drive the interface checking:
+
+\starttyping
+% interface=nl
 \stoptyping
 
 \stoptext

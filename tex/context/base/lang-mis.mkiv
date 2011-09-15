@@ -216,7 +216,7 @@
    \setvalue {\@tmd@text@\detokenize{#1}}{#2}%
    \setvalue {\@tmd@both@\detokenize{#1}}{\discretionarycommand#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
-   \@EA\uedcatcodecommand\@EA\ctxcatcodes\@EA\scratchcounter\csname\@tmd@both@\detokenize{#1}\endcsname}
+   \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\@tmd@both@\detokenize{#1}\endcsname}
 
 \def\handlemathmodediscretionary#1{\executeifdefined{\@tmd@math@\detokenize{#1}}\donothing}
 \def\handletextmodediscretionary#1{\executeifdefined{\@tmd@text@\detokenize{#1}}\donothing}
@@ -549,11 +549,11 @@
       % ignore mode
    \else
      \chardef\thecompoundcharacter`#1%
-     \@EA\chardef\csname\@nc@\string#1\endcsname\thecompoundcharacter
+     \expandafter\chardef\csname\@nc@\string#1\endcsname\thecompoundcharacter
      \def\!!stringa{#3}%
-     \@EA\def\csname\ifx\!!stringa\empty\@cc@\else\@cs@\fi\detokenize{#1#2#3}\endcsname{#4}%
+     \expandafter\def\csname\ifx\!!stringa\empty\@cc@\else\@cs@\fi\detokenize{#1#2#3}\endcsname{#4}%
      \setevalue{\@cx@\detokenize{#1}}{\noexpand\handlecompoundcharacter{\detokenize{#1}}}% beter nr's
-     \@EA\letcatcodecommand\@EA\ctxcatcodes\@EA\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
+     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
    \fi}
 
 %D In order to serve the language specific well, we will introduce
@@ -595,28 +595,28 @@
 
 \def\dohandlecompoundcharacter
   {\ifx\next\bgroup
-    %\@EA\dodohandlecompoundcharacter % handle "{ee} -> \"ee
-    %\@EA\gobbleoneargument           % forget "{ee} -> ee
-     \@EA\handlecompoundcharacterone  % ignore "{ee} -> "ee
+    %\expandafter\dodohandlecompoundcharacter % handle "{ee} -> \"ee
+    %\expandafter\gobbleoneargument           % forget "{ee} -> ee
+     \expandafter\handlecompoundcharacterone  % ignore "{ee} -> "ee
    \else\ifx\next\egroup
-     \@EAEAEA\donohandlecompoundcharacter
+     \doubleexpandafter\donohandlecompoundcharacter
    \else\ifx\next\blankspace
-     \@EA\@EAEAEA\@EA\donohandlecompoundcharacter
+     \tripleexpandafter\donohandlecompoundcharacter
    \else
-     \@EA\@EAEAEA\@EA\dodohandlecompoundcharacter
+     \tripleexpandafter\dodohandlecompoundcharacter
    \fi\fi\fi}
 
 \def\donohandlecompoundcharacter#1{\csname\@nc@\string#1\endcsname}
 
 \def\dododohandlecompoundcharacter
   {\ifx\next\bgroup
-     \@EA\handlecompoundcharacterone
+     \expandafter\handlecompoundcharacterone
    \else\ifx\next\egroup
-     \@EAEAEA\handlecompoundcharacterone
+     \doubleexpandafter\handlecompoundcharacterone
    \else\ifx\next\blankspace
-     \@EA\@EAEAEA\@EA\handlecompoundcharacterone
+     \tripleexpandafter\handlecompoundcharacterone
    \else
-     \@EA\@EAEAEA\@EA\handlecompoundcharactertwo
+     \tripleexpandafter\handlecompoundcharactertwo
    \fi\fi\fi}
 
 \def\dodohandlecompoundcharacter#1#2% preserve space
@@ -663,7 +663,7 @@
 
 \def\simplifiedcompoundcharacter#1#2%
   {\ifcsname\@cc@\string#1\string#2\endcsname
-     \@EA\@EA\@EA\firstofoneargument\csname\@cc@\string#1\string#2\endcsname
+     \doubleexpandafter\firstofoneargument\csname\@cc@\string#1\string#2\endcsname
    \else
      #2%
    \fi}

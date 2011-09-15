@@ -52,37 +52,51 @@ local constants  = { }
 
 do -- todo: only once, store in global
 
-    local definitions = lexer.context.loaddefinitions("mult-def.lua")
+    local definitions = lexer.context.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
-        for command, languages in next, definitions.commands do
-            commands.en[languages.en or command] = true
-            for language, command in next, languages do
-                local c = commands[language]
-                if c then
-                    c[command] = true
-                else
-                    commands[language] = { [command] = true }
+        for interface, list in next, definitions do
+            local c = { }
+            for i=1,#list do
+                c[list[i]] = true
+            end
+            if interface ~= "en" then
+                list = definitions.en
+                if list then
+                    for i=1,#list do
+                        c[list[i]] = true
+                    end
                 end
             end
+            commands[interface] = c
         end
     end
 
-    local definitions = lexer.context.loaddefinitions("mult-low.lua")
+    local definitions = lexer.context.loaddefinitions("scite-context-data-context")
 
     if definitions then
         helpers   = definitions.helpers   or { }
         constants = definitions.constants or { }
     end
 
-    local definitions = lexer.context.loaddefinitions("mult-prm.lua")
+    local definitions = lexer.context.loaddefinitions("scite-context-data-tex")
 
     if definitions then
-        primitives = definitions.primitives or { }
-        for i=1,#primitives do
-            primitives[#primitives+1] = "normal" .. primitives[i]
+        local function add(data)
+            for k, v in next, data do
+                primitives[#primitives+1] = v
+                if normal then
+                    primitives[#primitives+1] = "normal" .. v
+                end
+            end
         end
-        table.sort(primitives)
+        add(definitions.tex,true)
+        add(definitions.etex)
+        add(definitions.pdftex)
+        add(definitions.aleph)
+        add(definitions.omega)
+        add(definitions.luatex)
+        add(definitions.xetex)
     end
 
 end
