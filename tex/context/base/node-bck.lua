@@ -31,7 +31,7 @@ local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 local a_background   = attributes.private('background')
 
-local function add_backgrounds(head) -- boxes, inline will be done too
+local function add_backgrounds(head)
     local id = head.id
     if id == vlist_code or id == hlist_code then
         local current = head.list

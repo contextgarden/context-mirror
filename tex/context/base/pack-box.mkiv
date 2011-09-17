@@ -585,7 +585,7 @@
   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
 %      \hbox\framed[\c!location=\v!normal,#2]}% could be a fast one (no #2,\c!offset=\defaultframeoffset)
-     \hbox\localframedwithsettings[][\c!location=\v!normal,#2]}%
+     \hbox\normalframedwithsettings[\c!location=\v!normal,#2]}% fast call (no arg check)
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}

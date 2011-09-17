@@ -42,6 +42,8 @@ local find, match = string.find, string.match
 module(...)
 
 local contextlexer = _M
+local cldlexer     = lexer.load('scite-context-lexer-cld')
+local mpslexer     = lexer.load('scite-context-lexer-mps')
 
 local basepath     = lexer.context and lexer.context.path or _LEXERHOME
 
@@ -158,61 +160,171 @@ end)
 --     end
 -- end)
 
+-- experiment: keep space with whatever ... less tables
+
+local commentline            = P('%') * (1-S("\n\r"))^0
+local endline                = S("\n\r")^1
+
 local whitespace             = contextlexer.WHITESPACE -- triggers states
 
 local space                  = lexer.space -- S(" \n\r\t\f\v")
 local any                    = lexer.any
 
-local spacing                = token(whitespace,  space^1)
-local rest                   = token('default',   any)
-local preamble               = token('preamble',  knownpreamble)
-local comment                = token('comment',   P('%') * (1-S("\n\r"))^0)
-local command                = token('command',   P('\\') * knowncommand)
-local constant               = token('data',      P('\\') * exact_match(constants))
-local helper                 = token('plain',     P('\\') * exact_match(helpers))
-local primitive              = token('primitive', P('\\') * exact_match(primitives))
-local ifprimitive            = token('primitive', P('\\if') * cstoken^1)
-local csname                 = token('user',      P('\\') * (cstoken^1 + P(1)))
-local grouping               = token('grouping',  S("{$}")) -- maybe also \bgroup \egroup \begingroup \endgroup
-local special                = token('special',   S("#()[]<>=\""))
-local extra                  = token('extra',     S("`~%^&_-+/\'|"))
+local p_spacing              = space^1
+local p_rest                 = any
 
-local text                   = token('default',   cstoken^1 )
+local p_preamble             = knownpreamble
+local p_comment              = commentline
+local p_command              = P('\\')   * knowncommand
+local p_constant             = P('\\')   * exact_match(constants)
+local p_helper               = P('\\')   * exact_match(helpers)
+local p_primitive            = P('\\')   * exact_match(primitives)
+local p_ifprimitive          = P('\\if') * cstoken^1
+local p_csname               = P('\\')   * (cstoken^1 + P(1))
+local p_grouping             = S("{$}")
+local p_special              = S("#()[]<>=\"")
+local p_extra                = S("`~%^&_-+/\'|")
+local p_text                 = cstoken^1
+
+-- keep key pressed at end-of syst-aux.mkiv:
+--
+-- 0 : 15 sec
+-- 1 : 13 sec
+-- 2 : 10 sec
+--
+-- the problem is that quite some style subtables get generated so collapsing ranges helps
+
+local option = 1
+
+if option == 1 then
+
+    p_comment                = p_comment^1
+    p_grouping               = p_grouping^1
+    p_special                = p_special^1
+    p_extra                  = p_extra^1
+    p_text                   = p_text^1
+
+    p_command                = p_command^1
+    p_constant               = p_constant^1
+    p_helper                 = p_helper^1
+    p_primitive              = p_primitive^1
+    p_ifprimitive            = p_ifprimitive^1
+
+elseif option == 2 then
+
+    local included           = space^0
+
+    p_comment                = (p_comment     * included)^1
+    p_grouping               = (p_grouping    * included)^1
+    p_special                = (p_special     * included)^1
+    p_extra                  = (p_extra       * included)^1
+    p_text                   = (p_text        * included)^1
+
+    p_command                = (p_command     * included)^1
+    p_constant               = (p_constant    * included)^1
+    p_helper                 = (p_helper      * included)^1
+    p_primitive              = (p_primitive   * included)^1
+    p_ifprimitive            = (p_ifprimitive * included)^1
+
+end
+
+local spacing                = token(whitespace,  p_spacing    )
+
+local rest                   = token('default',   p_rest       )
+local preamble               = token('preamble',  p_preamble   )
+local comment                = token('comment',   p_comment    )
+local command                = token('command',   p_command    )
+local constant               = token('data',      p_constant   )
+local helper                 = token('plain',     p_helper     )
+local primitive              = token('primitive', p_primitive  )
+local ifprimitive            = token('primitive', p_ifprimitive)
+local csname                 = token('user',      p_csname     )
+local grouping               = token('grouping',  p_grouping   )
+local special                = token('special',   p_special    )
+local extra                  = token('extra',     p_extra      )
+local text                   = token('default',   p_text       )
 
 ----- startluacode           = token("grouping", P("\\startluacode"))
 ----- stopluacode            = token("grouping", P("\\stopluacode"))
 
-local luastatus              = nil
+local luastatus = false
+local luatag    = nil
+local lualevel  = 0
+
+local function startdisplaylua(_,i,s)
+    luatag = s
+    luastatus = "display"
+    cldlexer._directives.cld_inline = false
+    return true
+end
+
+local function stopdisplaylua(_,i,s)
+    local ok = luatag == s
+    if ok then
+        luastatus = false
+    end
+    return ok
+end
+
+local function startinlinelua(_,i,s)
+    if luastatus == "display" then
+        return false
+    elseif not luastatus then
+        luastatus = "inline"
+        cldlexer._directives.cld_inline = true
+        lualevel = 1
+        return true
+    else
+        lualevel = lualevel + 1
+        return true
+    end
+end
+
+local function stopinlinelua_b(_,i,s) -- {
+    if luastatus == "display" then
+        return false
+    elseif luastatus == "inline" then
+        lualevel = lualevel + 1
+        return false
+    else
+        return true
+    end
+end
+
+local function stopinlinelua_e(_,i,s) -- }
+    if luastatus == "display" then
+        return false
+    elseif luastatus == "inline" then
+        lualevel = lualevel - 1
+        local ok = lualevel <= 0
+        if ok then
+            luastatus = false
+        end
+        return ok
+    else
+        return true
+    end
+end
+
 local luaenvironment         = P("luacode")
 
-local inlinelua              = P("\\ctx") * ( P("lua") + P("command") )
-                             + P("\\cldcontext")
+local inlinelua              = P("\\") * (
+                                    P("ctx") * ( P("lua") + P("command") )
+                                  + P("cldcontext")
+                               )
 
-local startlua               = P("\\start") * Cmt(luaenvironment,function(_,i,s) luastatus = s return true end)
-                             + inlinelua
-                             * space^0
-                             * Cmt(P("{"),function(_,i,s) luastatus = "}" return true end)
-local stoplua                = P("\\stop") * Cmt(luaenvironment,function(_,i,s) return luastatus == s end)
-                             + Cmt(P("}"),function(_,i,s) return luastatus == "}" end)
+local startlua               = P("\\start") * Cmt(luaenvironment,startdisplaylua)
+                             + inlinelua * space^0 * Cmt(P("{"),startinlinelua)
+
+local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
+                             + Cmt(P("{"),stopinlinelua_b)
+                             + Cmt(P("}"),stopinlinelua_e)
 
 local startluacode           = token("embedded", startlua)
 local stopluacode            = token("embedded", stoplua)
 
--- local metafunenvironment     = P("useMPgraphic")
---                              + P("reusableMPgraphic")
---                              + P("uniqueMPgraphic")
---                              + P("MPcode")
---                              + P("MPpage")
---                              + P("MPinclusions")
---                              + P("MPextensions")
---                              + P("MPgraphic")
-
 local metafunenvironment     = ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
                              + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("extensions") + P("graphic") )
-
--- local metafunstatus          = nil -- this does not work, as the status gets lost in an embedded lexer
--- local startmetafun           = P("\\start") * Cmt(metafunenvironment,function(_,i,s) metafunstatus = s return true end)
--- local stopmetafun            = P("\\stop")  * Cmt(metafunenvironment,function(_,i,s) return metafunstatus == s end)
 
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment
@@ -226,9 +338,6 @@ local metafunarguments       = (spacing^0 * openargument * argumentcontent * clo
 local startmetafuncode       = token("embedded", startmetafun) * metafunarguments
 local stopmetafuncode        = token("embedded", stopmetafun)
 
-local cldlexer = lexer.load('scite-context-lexer-cld')
-local mpslexer = lexer.load('scite-context-lexer-mps')
-
 lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 
@@ -238,24 +347,18 @@ lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 _rules = {
     { "whitespace",  spacing     },
     { "preamble",    preamble    },
-
     { "text",        text        },
-
     { "comment",     comment     },
-
     { "constant",    constant    },
     { "helper",      helper      },
     { "command",     command     },
-    { "ifprimitive", ifprimitive },
     { "primitive",   primitive   },
+    { "ifprimitive", ifprimitive },
     { "csname",      csname      },
-
  -- { "whatever",    specialword }, -- not yet, crashes
-
     { "grouping",    grouping    },
     { "special",     special     },
     { "extra",       extra       },
-
     { "rest",        rest        },
 }
 

@@ -1,5 +1,7 @@
 \starttext
 
+\subject{Installing Scite}
+
 Scite has built-in lexers as well as external lpeg based ones. We
 can use both but for the external lexers some more work is needed
 to get them running. As they are more advanced it's worth the
@@ -20,11 +22,46 @@ code.google.com/p/scintilla
 On windows you need to copy the \type {lexers} subfolder to the \type
 {wscite} folder. For Linux the place depends on the distribution.
 
+\subject{Extending Scite}
+
 In the \CONTEXT\ distribution you find the relevant files in:
 
 \starttyping
 <contextroot>/tex/texmf-context/context/data/scite
 \stoptyping
+
+The easy way is to copy all the files in that path to the path where
+the global properties files lives
+
+\starttyping
+SciteGlobal.properties
+\stoptyping
+
+At the end of that file (on windows it is in the path where the Scite
+binary) you then add a line to the end:
+
+\starttyping
+import scite-context-user
+\stoptyping
+
+You need to restart Scite in order to see if things work out as expected.
+
+Disabling the external lexer in a recent Scite is somewhat tricky. In that
+case the end of that file looks like:
+
+\starttyping
+imports.exclude=scite-context-external
+import *
+import scite-context-user
+\stoptyping
+
+In any case you need to make sure that the user file is loaded last.
+
+\subject{An alternative approach}
+
+If for some reason you prefer not to mess with property files in the main
+Scite path, you can follow a different route and selectively copy files to
+places.
 
 The following files are needed for the lpeg based lexer:
 
@@ -32,6 +69,7 @@ The following files are needed for the lpeg based lexer:
 lexers/scite-context-lexer.lua
 lexers/scite-context-lexer-tex.lua
 lexers/scite-context-lexer-mps.lua
+lexers/scite-context-lexer-lua.lua
 lexers/scite-context-lexer-cld.lua
 
 lexers/context/data/scite-context-data-tex.lua
@@ -62,7 +100,13 @@ files to the same path where the loading is defined:
 
 \starttyping
 scite-context.properties
+scite-context-internal.properties
+scite-context-external.properties
+
 scite-pragma.properties
+
+scite-tex.properties
+scite-metapost.properties
 
 scite-context-data-tex.properties
 scite-context-data-context.properties
@@ -72,8 +116,6 @@ scite-context-data-metafun.properties
 
 scite-ctx.properties
 scite-ctx-context.properties
-scite-ctx-context-internal.properties
-scite-ctx-context-external.properties
 scite-ctx-example.properties
 \stoptyping
 
@@ -101,6 +143,8 @@ SciTEUser.properties
 Of course the pragma import is optional. You can comment either the
 internal  or external variant but there is no reason not to keep them both.
 
+\subject{Spell checking}
+
 If you want to have spellchecking, you need have files with correct words
 on each line. The first line of a file determines the language:
 
@@ -119,6 +163,8 @@ This file is searched on the the path determined by the environment variable:
 \starttyping
 CTXSPELLPATH
 \stoptyping
+
+\subject{Interface selection}
 
 In a similar fashion you can drive the interface checking:
 

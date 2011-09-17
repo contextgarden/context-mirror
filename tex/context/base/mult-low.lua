@@ -39,8 +39,21 @@ return {
         --
         "uprotationangle", "rightrotatioangle", "downrotatioangle", "leftrotatioangle",
         --
+        -- maybe a different class
+        --
+        "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",
+        "startenvironment", "stopenvironment", "environment",
+        "startcomponent", "stopcomponent", "component",
+        "startproduct", "stopproduct", "product",
+        "startproject", "stopproject", "project",
+        "starttext", "stoptext"
     },
     ["helpers"] = {
+        --
+        "startsetups", "stopsetups",
+        "startxmlsetups", "stopxmlsetups",
+        "starttexdefinition", "stoptexdefinition",
+        "starttexcode", "stoptexcode",
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
@@ -77,7 +90,7 @@ return {
         --
         "tracingall", "tracingnone", "loggingall",
         --
-        "appendtoks", "prependtoks", "appendtotoks", "prependtotoks",
+        "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
         "endgraf", "empty", "null", "space", "obeyspaces", "obeylines", "normalspace",
         --
@@ -99,11 +112,6 @@ return {
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",
-        --
-        "startsetups", "stopsetups",
-        "startxmlsetups", "stopxmlsetups",
-        "starttexdefinition", "stoptexdefinition",
-        "starttexcode", "stoptexcode",
         --
         "unexpanded", "expanded", "startexpanded", "stopexpanded", "protected", "protect", "unprotect",
         --

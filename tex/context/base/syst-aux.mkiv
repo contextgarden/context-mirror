@@ -349,6 +349,8 @@
 %D \type{\:} becomes a delimiter of the longer named
 %D \type{\reinspectnextcharacter}.
 
+% try: \expandafter\def\firstofoneargument{\reinspect_next_character} {...}
+
 \let\next\:
 
 \def\:{\let\blankspace= }  \:
@@ -361,6 +363,9 @@
 
 \def\:{\reinspect_next_bgroup_character}
 \expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\inspect_next_bgroup_character}
+
+\def\:{\reinspect_next_parenthesis_character}
+\expandafter\def\: {\let\if_next_blank_space_token\iftrue\futurelet\nexttoken\inspect_next_parenthesis_character}
 
 \let\:\next
 

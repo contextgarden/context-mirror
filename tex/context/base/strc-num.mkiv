@@ -171,13 +171,13 @@
 \unexpanded\def\incrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1, 1)}}
 \unexpanded\def\decrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1,-1)}}
 
-\unexpanded\def\setsubstructurecounter        {\dodoubleargument\dosetsubstructurecounter}
-\unexpanded\def\setsubstructurecounterown     {\dodoubleargument\dosetsubstructurecounterown}
-\unexpanded\def\resetsubstructurecounter      {\dodoubleargument\doresetsubstructurecounter}
-\unexpanded\def\restartsubstructurecounter    {\dodoubleargument\dorestartsubstructurecounter}
-\unexpanded\def\incrementsubstructurecounter  {\dodoubleargument\doincrementsubstructurecounter}
-\unexpanded\def\decrementsubstructurecounter  {\dodoubleargument\dodecrementsubstructurecounter}
-           \def\rawsubstructurecounter        {\dodoubleargument\dorawsubstructurecounter}
+\unexpanded\def\setsubstructurecounter      {\dodoubleargument\dosetsubstructurecounter}
+\unexpanded\def\setsubstructurecounterown   {\dodoubleargument\dosetsubstructurecounterown}
+\unexpanded\def\resetsubstructurecounter    {\dodoubleargument\doresetsubstructurecounter}
+\unexpanded\def\restartsubstructurecounter  {\dodoubleargument\dorestartsubstructurecounter}
+\unexpanded\def\incrementsubstructurecounter{\dodoubleargument\doincrementsubstructurecounter}
+\unexpanded\def\decrementsubstructurecounter{\dodoubleargument\dodecrementsubstructurecounter}
+           \def\rawsubstructurecounter      {\dodoubleargument\dorawsubstructurecounter}
 
 \def\dosetsubstructurecounter      [#1][#2]#3{\ctxcommand{setstructurecounter        ("\@@thestructurecounter{#1}",#2,\number#3)}}
 \def\dosetsubstructurecounterown   [#1][#2]#3{\ctxcommand{setownstructurecounter     ("\@@thestructurecounter{#1}",#2,"#3")}}

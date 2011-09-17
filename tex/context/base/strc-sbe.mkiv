@@ -102,15 +102,15 @@
 
 %D \starttyping
 %D \startsectionblockenvironment[frontpart]
-%D   \setuppagenumbering[conversion=romannumerals]
+%D   \setupnumber[userpage][numberconversion=romannumerals,start=1]
 %D \stopsectionblockenvironment
 %D
 %D \startsectionblockenvironment[bodypart]
-%D   \setuppagenumber[number=1]
+%D   \setupnumber[userpage][numberconversion=numbers,start=1]
 %D \stopsectionblockenvironment
 %D
-%D \startsectionblockenvironment[frontpart]
-%D   \setuppagenumbering[conversion=character]
+%D \startsectionblockenvironment[backpart]
+%D   \setupnumber[userpage][numberconversion=numbers,start=1]
 %D \stopsectionblockenvironment
 %D
 %D \starttext
@@ -124,18 +124,6 @@
   {\dosingleargument\dostartsectionblockenvironment}
 
 \def\dostartsectionblockenvironment[#1]% evt \pushendofline \popendofline
-  {\long\def\do##1##2{\setsectionblockenvironment{#1}{##1##2}}%
-  %\grabuntil{\e!stop\v!sectionblockenvironment}{\sectionblockparameter{\s!do#1}}}
-   \grabuntil{\e!stop\v!sectionblockenvironment}{\csname\??sb\s!do#1\endcsname}}
-
-% this will become: (we ran in parallel for a while during transition)
-
-\setvalue{\e!start\v!sectionblockenvironment}%
-  {\dosingleargument\dostartsectionblockenvironment}
-
-\def\dostartsectionblockenvironment[#1]% evt \pushendofline \popendofline
-  {\long\def\do##1##2{\setsectionblockenvironment{#1}{##1##2}}%
-  %\grabuntil{\e!stop\v!sectionblockenvironment}{\sectionblockparameter{\s!do#1}}}
-   \grabuntil{\e!stop\v!sectionblockenvironment}{\csname\??sb\s!do#1\endcsname}}
+  {\grabuntil{\e!stop\v!sectionblockenvironment}{\setsectionblockenvironment{#1}}}
 
 \protect \endinput

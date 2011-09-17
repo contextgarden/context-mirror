@@ -20,7 +20,7 @@
 
 \registerctxluafile{node-bck}{1.001}
 
-\def\doinitializeboxbackgrounds
+\def\doinitializeboxbackgrounds % will move to lua
   {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
    \glet\doinitializeboxbackgrounds\donothing}
 

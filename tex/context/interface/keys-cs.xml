@@ -502,6 +502,8 @@
 		<cd:variable name='unavailable' value='nedostupne'/>
 		<cd:variable name='underbar' value='podtrzeno'/>
 		<cd:variable name='underbars' value='podtrzeni'/>
+		<cd:variable name='understrike' value='understrike'/>
+		<cd:variable name='understrikes' value='understrikes'/>
 		<cd:variable name='unit' value='jednotka'/>
 		<cd:variable name='units' value='jednotky'/>
 		<cd:variable name='unknown' value='neznamy'/>

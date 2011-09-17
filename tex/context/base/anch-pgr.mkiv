@@ -558,12 +558,17 @@
   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
 \stopuseMPgraphic
 
-\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset}
+\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset,linewidth}
+    begingroup ; save p ; picture p ;
     for i=1 upto nofmultipars :
-        fill leftboundary multipars[i]
+        p := image ( fill leftboundary multipars[i]
             shifted (-\MPvar{lineoffset},0)
-            rightenlarged 1mm withcolor \MPvar{linecolor} ;
+            rightenlarged \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+        ) ;
+        setbounds p to multipars[i] ;
+        draw p ;
     endfor ;
+    endgroup ;
 \stopuseMPgraphic
 
 \startMPpositionmethod{mpos:par:columnset}

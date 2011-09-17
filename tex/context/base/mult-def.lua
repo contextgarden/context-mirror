@@ -11271,6 +11271,12 @@ return {
    ["pe"]="میله‌ها‌رو",
    ["ro"]="supralinie",
   },
+  ["understrike"]={
+   ["en"]="understrike",
+  },
+  ["understrikes"]={
+   ["en"]="understrikes",
+  },
   ["overstrike"]={
    ["cs"]="preskrtnuto",
    ["de"]="durchgestrichen",
