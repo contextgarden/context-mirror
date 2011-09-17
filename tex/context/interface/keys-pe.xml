@@ -502,6 +502,8 @@
 		<cd:variable name='unavailable' value='غیرموجود'/>
 		<cd:variable name='underbar' value='میله‌زیر'/>
 		<cd:variable name='underbars' value='میله‌‌های‌زیر'/>
+		<cd:variable name='understrike' value='understrike'/>
+		<cd:variable name='understrikes' value='understrikes'/>
 		<cd:variable name='unit' value='واحد'/>
 		<cd:variable name='units' value='واحدها'/>
 		<cd:variable name='unknown' value='ناشناس'/>

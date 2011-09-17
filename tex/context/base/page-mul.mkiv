@@ -1341,7 +1341,7 @@
      \getcolumnstatus\column\count255\total\dimen0\goal\dimen2\\%
      \dofloatsgetinfo\s!text
      \setbox\scratchbox\vbox % tricky met objecten ?
-       {\blank[\@@bkspacebefore]
+       {\blank[\rootfloatparameter\c!spacebefore]
         \snaptogrid\vbox{\vskip\floatheight}}% copy?
      \advance\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
      \ifdim\dimen0>\dimen2
@@ -1374,7 +1374,7 @@
           % dropped ?
        \else
          \setbox2\vbox
-           {\blank[\@@bkspacebefore]
+           {\blank[\rootfloatparameter\c!spacebefore]
             \snaptogrid\vbox{\vskip\floatheight}}%
          \advance\dimen0 \ht2
          \ifdim\dimen0>\dimen2
@@ -1385,7 +1385,7 @@
                \global\setbox\currenttopcolumnbox\vbox
                  {\snaptogrid\vbox{\box\floatbox}
                   \whitespace % nodig ?
-                  \blank[\@@bkspaceafter]}%
+                  \blank[\rootfloatparameter\c!spaceafter]}%
                \dimen4=\htdp\currenttopcolumnbox
                \global\advance\vsize -\dimen4
                \advance\dimen4 -\pagegoal
@@ -1402,12 +1402,12 @@
            \par
            \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
              \nobreak
-             \blank[\@@bkspacebefore]
+             \blank[\rootfloatparameter\c!spacebefore]
              \nobreak
            \fi
            \dofloatsflush\s!text{1}%
            \flushfloatbox
-           \blank[\@@bkspaceafter]
+           \blank[\rootfloatparameter\c!spaceafter]
          \fi
        \fi
      \fi
@@ -1444,7 +1444,7 @@
                  {\copy\currenttopcolumnbox
                   \hbox{\vphantom{\vskip\floatheight}}}% known from previous
                   \whitespace % nodig ?
-                  \blank[\@@bkspaceafter]}%
+                  \blank[\rootfloatparameter\c!spaceafter]}%
           \else
             \dofloatsgetinfo\s!text
             \ifdim\floatwidth>\hsize
@@ -1462,7 +1462,7 @@
                   \global\setbox\floatbox\hbox to \finalcolumntextwidth{\hss\box\floatbox\hss}%
                 \fi % otherwise the graphic may disappear
                 \global\setbox\floatbox\hbox to \dimen0
-                  {\processaction[\@@bklocation] % how easy to forget
+                  {\processaction[\rootfloatparameter\c!location] % how easy to forget
                      [   \v!left=>\box\floatbox\hss,
                         \v!right=>\hss\box\floatbox,
                       \s!default=>\hss\box\floatbox\hss,
@@ -1482,7 +1482,7 @@
                    {\box\currenttopcolumnbox % was copy
                     \box\floatbox}
                  \whitespace % nodig ?
-                 \blank[\@@bkspaceafter]}%
+                 \blank[\rootfloatparameter\c!spaceafter]}%
             \fi
             \dimen6\htdp\currenttopcolumnbox
           \fi
@@ -1511,9 +1511,9 @@
         \forgetall
         % no check for width
         \dogetfloat
-        \blank[\@@bkspacebefore]
+        \blank[\rootfloatparameter\c!spacebefore]
         \snaptogrid\vbox{\copy\floatbox}
-        \blank[\@@bkspaceafter]
+        \blank[\rootfloatparameter\c!spaceafter]
         \egroup
       \else
         \exitloop

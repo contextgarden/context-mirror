@@ -625,6 +625,12 @@
 \unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
 
+\unexpanded\def\normalframedwithsettings
+  {\bgroup
+   \advance\framednesting\plusone
+   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
+   \dolocalframed[\??ol:\the\framednesting]}
+
 % we can consider setting the parent of the regular framed to
 % something else in the otr so that we isolate it there
 

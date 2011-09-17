@@ -24,67 +24,16 @@
 
 \unexpanded\def\placefloats{\doflushfloats}  % keep this one
 
-\let\currentfloat\empty
+\installframedcommandhandler \??fl {float}        \??fl
+\installframedcommandhandler \??kj {floatcaption} \??kj
 
-\def\letfloatparameter   #1{\expandafter\let\csname\??fl\currentfloat#1\endcsname}
-
-\def\floatparameter      #1{\csname\dofloatparameter{\??fl\currentfloat}#1\endcsname}
-\def\floatsharedparameter#1{\csname                  \??fl              #1\endcsname}
-\def\floatparameterhash  #1{\dofloatparameterhash   {\??fl\currentfloat}#1}
-
-\def\dofloatparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dofloatparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dofloatparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dofloatparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\dofloatparentparameter    #1#2{\ifx#1\relax\s!empty\else\dofloatparameter    #1#2\fi}
-\def\dofloatparentparameterhash#1#2{\ifx#1\relax        \else\dofloatparameterhash#1#2\fi}
-
-\def\detokenizedfloatparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??fl\currentfloat#1\endcsname}}
-
-\def\dosetfloatattributes#1#2% style color
-  {\edef\fontattributehash {\floatparameterhash#1}%
-   \edef\colorattributehash{\floatparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\def\floatcaptionparameter    #1{\csname\dofloatcaptionparameter{\??kj\currentfloat}#1\endcsname}
-\def\floatcaptionparameterhash#1{\dofloatcaptionparameterhash   {\??kj\currentfloat}#1}
-
-\def\dofloatcaptionparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dofloatcaptionparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dofloatcaptionparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dofloatcaptionparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\dofloatcaptionparentparameter    #1#2{\ifx#1\relax\s!empty\else\dofloatcaptionparameter    #1#2\fi}
-\def\dofloatcaptionparentparameterhash#1#2{\ifx#1\relax        \else\dofloatcaptionparameterhash#1#2\fi}
-
-\def\detokenizedcaptionparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??kj\currentfloat#1\endcsname}}
-
-\def\dosetfloatcaptionattributes#1#2% style color
-  {\edef\fontattributehash {\floatcaptionparameterhash#1}%
-   \edef\colorattributehash{\floatcaptionparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+\let\setupfloats  \setupfloat
+\let\setupcaption \setupfloatcaption
+\let\setupcaptions\setupfloatcaption
 
 \def\dohandlenextfloatindent
   {\checknextindentation[\floatparameter\c!indentnext]%
    \dorechecknextindentation}
-
-%D The two shared (parent) definitions:
-
-% todo: everysetupfloat everysetupcaption for all floats
-
-\unexpanded\def\setupfloats  {\dosingleargument\dosetupfloats} % was \??bk
-\unexpanded\def\setupcaptions{\dosingleargument\dosetupcaptions}
-
-\let\alldefinedfloats\empty
-
-\def\doprocessallfloats#1%
-  {\def\doprocesssomefloat##1{\def\currentfloat{##1}#1}%
-   \processcommacommand[\alldefinedfloats]\doprocesssomefloat}
-
-\def\dosetupfloats  [#1]{\getparameters[\??fl][#1]\doprocessallfloats{\the\everysetupfloat}}
-\def\dosetupcaptions[#1]{\getparameters[\??kj][#1]\doprocessallfloats{\the\everysetupcaption}}
-
-% \def\dosetupfloats  [#1]{\getparameters[\??fl][#1]}
-% \def\dosetupcaptions[#1]{\getparameters[\??kj][#1]}
 
 \setupcaptions
   [\c!location=\v!bottom,
@@ -137,20 +86,20 @@
    \c!strut=\v!no,
    \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
-   \c!background=,
-   \c!backgroundcolor=,
+  %\c!background=,
+  %\c!backgroundcolor=,
    \c!backgroundoffset=\!!zeropoint,
-   \c!topframe=,
-   \c!bottomframe=,
-   \c!leftframe=,
-   \c!rightframe=,
+  %\c!topframe=,
+  %\c!bottomframe=,
+  %\c!leftframe=,
+  %\c!rightframe=,
    \c!frameoffset=\!!zeropoint,
-   \c!before=,
-   \c!after=,
+  %\c!before=,
+  %\c!after=,
    \c!spacebefore=\v!big,
    \c!spaceafter=\v!big,
-   \c!sidespacebefore=\floatsharedparameter\c!spacebefore,
-   \c!sidespaceafter=\floatsharedparameter\c!spaceafter,
+   \c!sidespacebefore=\rootfloatparameter\c!spacebefore,
+   \c!sidespaceafter=\rootfloatparameter\c!spaceafter,
    \c!sidealign=\v!normal,
    \c!textmethod=\ifgridsnapping2\else0\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
    \c!sidemethod=\ifgridsnapping2\else1\fi, % 0=raw 1=safe (.99pg) 2=tight (-1pt) % THIS WILL CHANGE
@@ -167,70 +116,25 @@
    \c!ntop=2,
    \c!nbottom=0,
    \c!nlines=4,
-   \c!local=,
-   \c!bottombefore=, % e.g. \vfill
-   \c!bottomafter=,
-   \c!default=, % default location
+  %\c!local=,
+  %\c!bottombefore=, % e.g. \vfill
+  %\c!bottomafter=,
+  %\c!default=, % default location
    \c!numbering=\v!yes]
-
-\def\@@bknumbering  {\floatsharedparameter\c!numbering  } % global one
-\def\@@bkspaceafter {\floatsharedparameter\c!spaceafter } % global one
-\def\@@bkspacebefore{\floatsharedparameter\c!spacebefore} % global one
-\def\@@bknbottom    {\floatsharedparameter\c!nbottom    } % global one
-\def\@@bkntop       {\floatsharedparameter\c!ntop       } % global one
-\def\@@bknlines     {\floatsharedparameter\c!nlines     } % global one
-\def\@@bkmargin     {\floatsharedparameter\c!margin     } % global one
-\def\@@bkcache      {\floatsharedparameter\c!cache      } % global one
-\def\@@bklocation   {\floatsharedparameter\c!location   }
-
-% float
-%
-%      [%\c!width=8\lineheight, % 15\bodyfontsize,
-%       %\c!height=6\lineheight,  % 10\bodyfontsize,
-%       \c!offset=\v!overlay,
-%       \c!width=\v!fit,
-%       \c!height=\v!fit,
-%       \c!minwidth=,
-%       \c!maxwidth=,
-%       \c!maxheight=,
-%       \c!criterium=,
-%       % inherited
-%       \c!pageboundaries=,
-%       \c!default=]%
-
-% number
-%
-%      [\c!text=#1,
-%       \c!location=\v!intext,
-%       \c!way=\floatcaptionparameter\c!way,
-%       \c!blockway=\floatcaptionparameter\c!blockway,
-%       \c!sectionnumber=\floatcaptionparameter\c!sectionnumber,
-%       \c!conversion=\floatcaptionparameter\c!conversion]%
 
 %D Individial settings:
 
-\unexpanded\def\setupfloat  {\dodoubleargument\dosetupfloat}
-\unexpanded\def\setupcaption{\dodoubleargument\dosetupcaption}
-
-\newtoks\everysetupfloat
-\newtoks\everysetupcaption
-
-\def\dosetupfloat[#1][#2]%
-  {\def\docommand##1{\getparameters[\??fl##1][#2]\def\currentfloat{##1}\the\everysetupfloat}%
-   \processcommalist[#1]\docommand}
-
-\def\dosetupcaption[#1][#2]%
-  {\def\docommand##1{\getparameters[\??kj##1][#2]\def\currentfloat{##1}\the\everysetupcaption}%
-   \processcommalist[#1]\docommand}
-
-\presetstructurecountersetup\setupcaptions\sharedstructurecounterparameter
+\presetstructurecountersetup\setupcaption\sharedstructurecounterparameter
 
 \appendtoks
+    \let\currenfloat\currentcaption
     \dostructurecountersetup\currentfloat\floatcaptionparameter
     \docheckstructurecountersetup\currentfloat
-\to \everysetupcaption
+\to \everysetupfloatcaption
 
 %D Definitions:
+
+\let\saveddefinefloat\definefloat
 
 \unexpanded\def\definefloat
   {\dotripleempty\dodefinefloat}
@@ -244,28 +148,22 @@
      \dododefinefloat[#1][#1]%
    \fi\fi}
 
-\presetlocalframed[\??fl]
-
 \def\dododefinefloat[#1][#2]%
-  {\inheritlocalframed[\??fl#1][\??fl]%
+  {\definefloatcaption[#1]%
    \definestructurecounter[#1]%
-   \addtocommalist{#1}\alldefinedfloats
-   \setupfloat[#1][\s!parent=\??fl]%
-   \setupcaption[#1][\s!parent=\??kj]%
    \definelist[#1]%
    \presetlabeltext[#1=\Word{#1}~]%
    \presetheadtext[#2=\Word{#2}]%
-   \dodefinefloatcommands[#1][#2]%
-   }% \newnodelocation{\v!float\@@thenumber{#1}}}
+   \saveddefinefloat[#1]%
+   \dodefinefloatcommands[#1][#2]}
 
 \def\redodefinefloat[#1][#2][#3]%
-  {\inheritlocalframed[\??fl#1][\??fl#3]%
-   \setupfloat[#1][\s!parent=\??fl#3]%
-   \setupcaption[#1][\s!parent=\??kj#3]%
+  {\definefloatcaption[#1][#3]%
    \definestructurecounter[#1][#3]%
    \definelist[#1][#3]%
    \presetlabeltext[#1=\Word{#3}~]%
    \presetheadtext[#2=\Word{#2}]%
+   \saveddefinefloat[#1][#3]%
    \dodefinefloatcommands[#1][#2]}
 
 \def\dodefinefloatcommands[#1][#2]%
@@ -287,10 +185,10 @@
 \def\doemptyfloatblock#1%
   {\framed
      [\c!frame=\v!on,
-      \c!width=\floatsharedparameter\c!width,
-      \c!height=\floatsharedparameter\c!height,
+      \c!width=\rootfloatparameter\c!width,
+      \c!height=\rootfloatparameter\c!height,
       \c!location=\v!normal,
-      \c!offset=\floatsharedparameter\c!offset]%
+      \c!offset=\rootfloatparameter\c!offset]%
      {\getmessage\m!floatblocks{12}\empty}}
 
 %D Data. We can generalize this to lists.
@@ -299,7 +197,6 @@
 \newif\ifnofloatnumber
 \newif\ifemptyfloatcaption
 
-\def\getfloatparameters  {\getparameters[\??fl\currentfloat]}
 \def\getcaptionparameters{\getparameters[\??kj\currentfloat]}
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
@@ -312,18 +209,6 @@
 \def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
-%        \dostarttagged\t!floatlabel\empty
-%        \labeltexts\currentfloat
-%           {\dostoptagged
-%            \dostarttagged\t!floatnumber\empty
-%            \ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
-%            \thecurrentfloatnumbersuffix
-%            \dostoptagged
-%            \dostarttagged\t!floatlabel\empty}%
-%        \dostoptagged
-%        \taggedlabeltexts\currentfloat\currentfloat
-%          {\ctxlua{structures.lists.savedprefixednumber("\currentfloat",\currentfloatnumber)}%
-%           \thecurrentfloatnumbersuffix}%
        \namedtaggedlabeltexts
          \t!floatlabel \currentfloat
          \t!floatnumber\currentfloat
@@ -525,7 +410,7 @@
    \fi}
 
 \def\tracefloatnumber#1%
-  {\doifnot{\floatsharedparameter\c!numbering}\v!nocheck{\tagnodelocation{\v!float\@@thenumber{#1}}}}
+  {\doifnot{\rootfloatparameter\c!numbering}\v!nocheck{\tagnodelocation{\v!float\@@thenumber{#1}}}}
 
 \newconditional\retainfloatnumber
 
@@ -533,7 +418,7 @@
   {\xdef\floatcaptionnumber{#1}%
    \doifelsenodelocation{\v!float\@@thenumber{#1}}
      \donothing {\nodelocationmode\zerocount}%
-   \doifelse{\floatsharedparameter\c!numbering}\v!nocheck
+   \doifelse{\rootfloatparameter\c!numbering}\v!nocheck
      {\incrementnumber[#1]%
       \makesectionnumber[#1]%
       \ifconditional\retainfloatnumber\decrementnumber[#1]\fi}
@@ -595,6 +480,7 @@
 
 \unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
   {\edef\currentfloat{#1}%
+   \let\currentfloatcaption\currentfloat
    \doifnothing\currentfloat{\let\currentfloat\v!figure}% hack
    \doifelsenothing{#2}
      {\edef\floatlocation{\floatparameter\c!default}}
@@ -823,7 +709,7 @@
        {float}%
        \getcaptionparameters
        \floatcaptionparameter
-       \detokenizedcaptionparameter
+       \detokenizedfloatcaptionparameter
        \relax
        \relax
        \relax
@@ -908,14 +794,14 @@
    \global\sidefloatextrashift\zeropoint
    \doifassignmentelse{#1}%
      {\bgroup
-      \getparameters[\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#1]%
+      \getparameters[\??fl\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#1]%
       \ifgridsnapping
         \getnoflines\@@fly
         \global\sidefloatdownshift\noflines\lineheight
       \else
-        \global\sidefloatdownshift\@@fly
+        \global\sidefloatdownshift\@@fl@@fly
       \fi
-      \global\sidefloatextrashift\@@flx
+      \global\sidefloatextrashift\@@fl@@flx
       \egroup}
      {\movedownsidefloat[#1]}}
 
@@ -1026,8 +912,16 @@
    \flushsidefloats % hoort eigenlijk niet hier
    \docomplexplacefloat[#1][\v!text,#2,\v!left][#3]}
 
+\def\docomplexreserveblock#1#2%
+  {\begingroup
+   \edef\currentfloat{#1}%
+   \let\currentfloatcaption\currentfloat
+   \setupcurrentfloat[#2]%
+   \inheritedfloatframed{#1}%
+   \endgroup}
+
 \long\def\docomplexreserveblock[#1][#2][#3][#4]#5%
-  {\getvalue{\e!place#1}[#3][#4]{#5}{\localframed[\??fl#1][#2]{#1}}}
+  {\getvalue{\e!place#1}[#3][#4]{#5}{\docomplexreserveblock{#1}{#2}{#1}}}
 
 \def\docomplexstartreservetextblock[#1][#2][#3][#4]%
   {\flushsidefloats % hoort eigenlijk niet hier
@@ -1070,38 +964,38 @@
          \global#1\ht\scratchbox}}}
 
 \def\calculatefloatskips
-  {{\docalculatefloatskip\floattopskip{\floatsharedparameter\c!spacebefore}%
-    \docalculatefloatskip\floatbottomskip{\floatsharedparameter\c!spaceafter}%
-    \docalculatefloatskip\sidefloattopskip{\floatsharedparameter\c!sidespacebefore}%
-    \docalculatefloatskip\sidefloatbottomskip{\floatsharedparameter\c!sidespaceafter}%
+  {{\docalculatefloatskip\floattopskip{\rootfloatparameter\c!spacebefore}%
+    \docalculatefloatskip\floatbottomskip{\rootfloatparameter\c!spaceafter}%
+    \docalculatefloatskip\sidefloattopskip{\rootfloatparameter\c!sidespacebefore}%
+    \docalculatefloatskip\sidefloatbottomskip{\rootfloatparameter\c!sidespaceafter}%
     \gdef\sidefloattopoffset{\openstrutdepth}% was \def
-    \global\floatsideskip\floatsharedparameter\c!margin
+    \global\floatsideskip\rootfloatparameter\c!margin
     \global\sidefloatleftshift\floatparameter\c!leftmargindistance
     \global\sidefloatrightshift\floatparameter\c!rightmargindistance
-    \global\noftopfloats\floatsharedparameter\c!ntop\relax
-    \global\nofbotfloats\floatsharedparameter\c!nbottom\relax}}
+    \global\noftopfloats\rootfloatparameter\c!ntop\relax
+    \global\nofbotfloats\rootfloatparameter\c!nbottom\relax}}
 
 % beter de laatste skip buiten de \insert uitvoeren,
 % bovendien bij volle flush onder baseline.
 
 % \def\betweenfloatblanko% assumes that spaceafter is present
 %   {\bgroup
-%    \setbox0\vbox{\strut\blank[\floatsharedparameter\c!spacebefore]\strut}%
-%    \setbox2\vbox{\strut\blank[\floatsharedparameter\c!spaceafter]\strut}%
+%    \setbox0\vbox{\strut\blank[\rootfloatparameter\c!spacebefore]\strut}%
+%    \setbox2\vbox{\strut\blank[\rootfloatparameter\c!spaceafter]\strut}%
 %    \ifdim\ht0>\ht2
-%      \blank[-\floatsharedparameter\c!spaceafter,\floatsharedparameter\c!spacebefore]%
+%      \blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]%
 %    \fi
 %    \egroup}
 
 \def\betweenfloatblanko% assumes that spaceafter is present
-  {\blank[\floatsharedparameter\c!spacebefore]} % or v!back,....
+  {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....
 
 \def\doplacefloatbox
   {%\forgetall % NO
    \whitespace
-   \blank[\floatsharedparameter\c!spacebefore]
+   \blank[\rootfloatparameter\c!spacebefore]
    \flushfloatbox
-   \blank[\floatsharedparameter\c!spaceafter]}
+   \blank[\rootfloatparameter\c!spaceafter]}
 
 \ifdefined\someherefloat\else \let\someherefloat\doplacefloatbox \fi
 \ifdefined\someslotfloat\else \let\someslotfloat\doplacefloatbox \fi
@@ -1123,7 +1017,7 @@
    \global\floatwidth\wd\floatbox
    \global\floatheight\ht\floatbox % forget about the depth
    \global\advance\floattextwidth -\floatwidth
-   \global\advance\floattextwidth -\floatsharedparameter\c!margin\relax % was \tfskipsize
+   \global\advance\floattextwidth -\rootfloatparameter\c!margin\relax % was \tfskipsize
    \doifinsetelse\v!tall{#1}
      {\floattextheight\pagegoal
       \advance\floattextheight -\pagetotal
@@ -1184,12 +1078,12 @@
          \box\floattext}}%
    \baselinecorrection
    \whitespace
-   \blank[\floatsharedparameter\c!spacebefore]%
+   \blank[\rootfloatparameter\c!spacebefore]%
    \doifnotinset\v!tall{#1}%
      {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
    \box\floatbox
    \dostoptagged
-   \blank[\floatsharedparameter\c!spaceafter]%
+   \blank[\rootfloatparameter\c!spaceafter]%
    \endgroup % **
 %    \dostoptagged
    \doinsertfloatinfo}
@@ -1252,10 +1146,10 @@
            {\placesomeherefloat[#1]}}}}
 
 \def\borderedfloatbox
-  {\localframed
-    [\??fl\currentfloat]
-    [\c!location=\v!normal,\c!width=\wd\floatbox,\c!height=\htdp\floatbox]
-    {\box\floatbox}}
+  {\begingroup
+   \setupcurrentfloat[\c!location=\v!normal,\c!width=\v!fit,\c!height=\v!fit]%
+   \inheritedfloatframed{\box\floatbox}%
+   \endgroup}
 
 \newbox\tempfloatbox
 

@@ -119,13 +119,15 @@
   {\groupedcommand{\dodoruled{#1}}\relax}
 
 \def\dodoruled
-  {\ctxlua{nodes.rules.enable()}%
+  {\ctxlua{nodes.rules.enable()}% will be moved to lua
    \glet\dodoruled\dodoruledindeed
    \dodoruled}
 
-\def\dodoruledindeed#1% maybe reverse the 1000
-  {\advance\csname\??on:#1:c\endcsname\plusone % local ?
+\def\dodoruledindeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+  {\edef\currentbar{#1}%
+   \advance\csname\??on:#1:c\endcsname\plusone % local ?
    \scratchcounter\csname\??on:#1:c\endcsname
+   \dosetbarattributes\c!foregroundstyle\c!foregroundcolor
    \attribute\ruledattribute\numexpr
      1000*\scratchcounter
      +\csname\??on#1\ifcsname\??on#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
@@ -158,6 +160,7 @@
    \c!offset=0,                 % upwards, replaces: topoffset bottomoffset
    \c!dy=0,
    \c!max=3,
+   \c!style=,
    \c!rulethickness=.1,
    \c!order=\v!foreground,
    \c!unit=ex,                  % so now we are relative
@@ -166,13 +169,23 @@
 % \definebar[touchbar]    [\c!method=0,\c!dy=-0.4,\c!offset=-0.0]
 % \definebar[touchbars]   [touchbar]   [\c!continue=\v!yes]
 
-\definebar[\v!overstrike]  [\c!method=0,\c!dy= 0.4,\c!offset= 0.5,\c!continue=\v!yes]
+\definebar[\v!overstrike]  [\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
 \definebar[\v!underbar]    [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
-\definebar[\v!overbar]     [\c!method=1,\c!dy= 0.4,\c!offset= 1.8,\c!continue=\v!yes]
+\definebar[\v!overbar]     [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
+
+\definebar
+  [\v!understrike]
+  [\c!method=0,
+   \c!offset=1.375,
+   \c!rulethickness=2.5,
+   \c!continue=\v!yes,
+   \c!order=\v!background,
+   \c!color=lightgray]
 
 \definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
 \definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
 \definebar[\v!overbars]    [\v!overbar]    [\c!continue=\v!no]
+\definebar[\v!understrikes][\v!understrike][\c!continue=\v!no]
 
 % we want these always so ...
 

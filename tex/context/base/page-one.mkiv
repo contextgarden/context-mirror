@@ -190,11 +190,11 @@
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \OTRONEdodosettopinserts
-     \ifnum\@@bknbottom=\zerocount
-       \ifnum\@@bknlines>\zerocount
+     \ifnum\rootfloatparameter\c!nbottom=\zerocount
+       \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
-           \ifdim\dimexpr\@@bknlines\lineheight+\totaltopinserted\relax>\textheight
-             \showmessage\m!floatblocks8\@@bknlines
+           \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
+             \showmessage\m!floatblocks8\rootfloatparameter\c!nlines
              \vfilll\eject
            \fi
          \fi
@@ -221,11 +221,11 @@
             \kern-\lineskip\par
             \prevdepth\maxdimen
           \else
-            %\blank[-\@@bkspaceafter,\@@bkspacebefore]% inserts can't look back
+            %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
             \betweenfloatblanko
           \fi
           \flushfloatbox
-          \blank[\@@bkspaceafter]}%
+          \blank[\rootfloatparameter\c!spaceafter]}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
        \else
@@ -261,7 +261,7 @@
      \ifdim\botinserted<\pagegoal\relax
        \insert\botins
          {\forgetall
-          \blank[\@@bkspacebefore]%
+          \blank[\rootfloatparameter\c!spacebefore]%
           \flushfloatbox}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
@@ -289,7 +289,7 @@
      \OTRONEdosettopinserts
      \OTRONEdosetbotinserts
      \ifsomefloatwaiting
-        \doif\@@bkcache\v!no\doflushfloats
+        \doif\rootfloatparameter\c!cache\v!no\doflushfloats
      \fi
    \fi}
 
@@ -520,18 +520,18 @@
         \topskipcorrection % [xx] new: see icare topbleed
         \kern-\lineskip\par\prevdepth\maxdimen
       \else
-        %\blank[-\@@bkspaceafter,\@@bkspacebefore]% inserts can't look back
+        %\blank[-\rootfloatparameter\c!spaceafter,\rootfloatparameter\c!spacebefore]% inserts can't look back
         \betweenfloatblanko
       \fi
       \flushfloatbox
-      \blank[\@@bkspaceafter]}%
+      \blank[\rootfloatparameter\c!spaceafter]}%
    \doinsertfloatinfo}
 
 \def\OTRONEsomebotsfloat[#1]%
   {\global\advance\botinserted\dimexpr\ht\floatbox+\dp\floatbox+\floattopskip\relax
    \insert\botins
      {\forgetall
-      \blank[\@@bkspacebefore]%
+      \blank[\rootfloatparameter\c!spacebefore]%
       \flushfloatbox}%
    %\global\nofloatpermittedtrue
    \doinsertfloatinfo}

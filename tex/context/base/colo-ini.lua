@@ -30,7 +30,6 @@ local gettexattribute = tex.getattribute
 local a_color         = attributes.private('color')
 local a_transparency  = attributes.private('transparency')
 local a_colorspace    = attributes.private('colormodel')
-local a_background    = attributes.private('background')
 
 local register_color  = colors.register
 local attributes_list = attributes.list

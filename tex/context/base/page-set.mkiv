@@ -2022,14 +2022,14 @@
      \noffloatinserts\zerocount
      \let\totaltopinserted\!!zeropoint
      \OTRSETdodosettopinserts
-     \ifnum\@@bknbottom=\zerocount
-       \ifnum\@@bknlines>\zerocount
+     \ifnum\rootfloatparameter\c!nbottom=\zerocount
+       \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
            \dimen0\lineheight
-           \dimen0=\@@bknlines\dimen0
+           \dimen0=\rootfloatparameter\c!nlines\dimen0
            \advance\dimen0 \totaltopinserted\relax
            \ifdim\dimen0>\textheight % \vsize  %%%%%%%%% \textheight
-             \showmessage\m!floatblocks8{\@@bknlines}%
+             \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
              \vfilll\eject
            \fi
          \fi
@@ -2056,7 +2056,7 @@
           \betweenfloatblanko % inserts can't look back
         \fi
         \flushfloatbox
-        \blank[\@@bkspaceafter]}%
+        \blank[\rootfloatparameter\c!spaceafter]}%
      \global\advance\topinserted \ht\scratchbox\relax
      \ifdim\topinserted>\vsize % was \textheight\relax
        \OTRSETresavebox\floatbox
@@ -2098,7 +2098,7 @@
      \ifdim\botinserted<\pagegoal\relax
        \insert\botins
          {\forgetall
-          \blank[\@@bkspacebefore]%
+          \blank[\rootfloatparameter\c!spacebefore]%
           \flushfloatbox}%
        \ifsomefloatwaiting
          \advance\noffloatinserts \plusone
