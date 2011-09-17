@@ -37,7 +37,7 @@ local global, string, table, lpeg = _G, string, table, lpeg
 local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
 local type, next, pcall, loadfile, setmetatable = type, next, pcall, loadfile, setmetatable
-local find, match = string.find, string.match
+local find, match, lower = string.find, string.match, string.lower
 
 module(...)
 
@@ -111,14 +111,19 @@ local knowncommand = Cmt(cstoken^1, function(_,i,s)
     return currentcommands[s] and i
 end)
 
+local validwords = false
+
 local knownpreamble = Cmt(P("% "), function(input,i,_)
     if i < 10 then
+        validwords = false
         local s, e, word = find(input,'^(.+)[\n\r]',i) -- combine with match
         if word then
             local interface = match(word,"interface=(..)")
             if interface then
                 currentcommands  = commands[interface] or commands.en or { }
             end
+            local language = match(word,"language=(..)")
+            validwords = language and lexer.context.setwordlist(language)
         end
     end
     return false
@@ -169,22 +174,51 @@ local whitespace             = contextlexer.WHITESPACE -- triggers states
 
 local space                  = lexer.space -- S(" \n\r\t\f\v")
 local any                    = lexer.any
+local backslash              = P("\\")
+local hspace                 = S(" \t")
 
 local p_spacing              = space^1
 local p_rest                 = any
 
 local p_preamble             = knownpreamble
 local p_comment              = commentline
-local p_command              = P('\\')   * knowncommand
-local p_constant             = P('\\')   * exact_match(constants)
-local p_helper               = P('\\')   * exact_match(helpers)
-local p_primitive            = P('\\')   * exact_match(primitives)
+local p_command              = backslash * knowncommand
+local p_constant             = backslash * exact_match(constants)
+local p_helper               = backslash * exact_match(helpers)
+local p_primitive            = backslash * exact_match(primitives)
 local p_ifprimitive          = P('\\if') * cstoken^1
-local p_csname               = P('\\')   * (cstoken^1 + P(1))
+local p_csname               = backslash * (cstoken^1 + P(1))
 local p_grouping             = S("{$}")
 local p_special              = S("#()[]<>=\"")
 local p_extra                = S("`~%^&_-+/\'|")
-local p_text                 = cstoken^1
+local p_text                 = cstoken^1 --maybe add punctuation and space
+
+-- no looking back           = #(1-S("[=")) * cstoken^3 * #(1-S("=]"))
+
+local p_word                 = Cmt(cstoken^3, function(_,i,s)
+    if not validwords then
+        return true, { "text", i }
+    else
+        -- keys are lower
+        local word = validwords[s]
+        if word == s then
+            return true, { "okay", i } -- exact match
+        elseif word then
+            return true, { "warning", i } -- case issue
+        else
+            local word = validwords[lower(s)]
+            if word == s then
+                return true, { "okay", i } -- exact match
+            elseif word then
+                return true, { "warning", i } -- case issue
+            else
+                return true, { "error", i }
+            end
+        end
+    end
+end)
+
+-- local p_text                 = (1 - p_grouping - p_special - p_extra - backslash - space + hspace)^1
 
 -- keep key pressed at end-of syst-aux.mkiv:
 --
@@ -202,7 +236,6 @@ if option == 1 then
     p_grouping               = p_grouping^1
     p_special                = p_special^1
     p_extra                  = p_extra^1
-    p_text                   = p_text^1
 
     p_command                = p_command^1
     p_constant               = p_constant^1
@@ -218,7 +251,6 @@ elseif option == 2 then
     p_grouping               = (p_grouping    * included)^1
     p_special                = (p_special     * included)^1
     p_extra                  = (p_extra       * included)^1
-    p_text                   = (p_text        * included)^1
 
     p_command                = (p_command     * included)^1
     p_constant               = (p_constant    * included)^1
@@ -243,6 +275,8 @@ local grouping               = token('grouping',  p_grouping   )
 local special                = token('special',   p_special    )
 local extra                  = token('extra',     p_extra      )
 local text                   = token('default',   p_text       )
+----- word                   = token("okay",      p_word       )
+local word                   = p_word
 
 ----- startluacode           = token("grouping", P("\\startluacode"))
 ----- stopluacode            = token("grouping", P("\\stopluacode"))
@@ -261,6 +295,7 @@ end
 local function stopdisplaylua(_,i,s)
     local ok = luatag == s
     if ok then
+cldlexer._directives.cld_inline = false
         luastatus = false
     end
     return ok
@@ -298,6 +333,7 @@ local function stopinlinelua_e(_,i,s) -- }
         lualevel = lualevel - 1
         local ok = lualevel <= 0
         if ok then
+cldlexer._directives.cld_inline = false
             luastatus = false
         end
         return ok
@@ -347,7 +383,8 @@ lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 _rules = {
     { "whitespace",  spacing     },
     { "preamble",    preamble    },
-    { "text",        text        },
+    { "word",        word        },
+ -- { "text",        text        },
     { "comment",     comment     },
     { "constant",    constant    },
     { "helper",      helper      },

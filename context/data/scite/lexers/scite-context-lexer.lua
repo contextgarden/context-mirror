@@ -24,12 +24,12 @@ local info = {
 -- an issue we can rewrite the main lex function (memorize the grammars and speed up the
 -- byline variant).
 
-local R, P, S, Cp, Cs, Ct, Cmt, Cc = lpeg.R, lpeg.P, lpeg.S, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc
+local R, P, S, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
 local find, gmatch, match, lower, upper, gsub = string.find, string.gmatch, string.match, string.lower, string.upper, string.gsub
 local concat = table.concat
 local global = _G
-local type, next, setmetatable = type, next, setmetatable
+local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
 dofile(_LEXERHOME .. '/lexer.lua')
 
@@ -42,7 +42,7 @@ local locations = {
 }
 
 local function collect(name)
-    local definitions = loadfile(name .. ".lua")
+    local definitions = loadfile(name .. ".luc") or loadfile(name .. ".lua")
     if type(definitions) == "function" then
         definitions = definitions()
     end
@@ -423,11 +423,45 @@ end
 
 -- todo: keywords: one lookup and multiple matches
 
--- function lexer.context.token(name, patt)
---     return Ct(patt * Cc(name) * Cp())
--- end
+function lexer.context.token(name, patt)
+    return Ct(patt * Cc(name) * Cp())
+end
 
 lexer.fold        = lexer.context.fold
 lexer.lex         = lexer.context.lex
--- lexer.token       = lexer.context.token
+lexer.token       = lexer.context.token
 lexer.exact_match = lexer.context.exact_match
+
+-- spell checking (we can only load lua files)
+
+local lists = { }
+
+local splitter = (Cf(Ct("") * (Cg(C((1-S(" \t\n\r"))^1 * Cc(true))) + P(1))^1,rawset) )^0
+local splitter = (Cf(Ct("") * (Cg(C(R("az","AZ","\127\255")^1) * Cc(true)) + P(1))^1,rawset) )^0
+
+local function splitwords(words)
+    return lpegmatch(splitter,words)
+end
+
+function lexer.context.setwordlist(tag)
+    if not tag or tag == "" then
+        return false
+    elseif lists[tag] ~= nil then
+        return lists[tag]
+    else
+        local list = collect("spell-" .. tag)
+        if not list or type(list) ~= "table" then
+            lists[tag] = false
+            return nil
+        elseif type(list.words) == "string" then
+            list = splitwords(list.words)
+            lists[tag] = list
+            return list
+        else
+            list = list.words or false
+            lists[tag] = list
+            return list
+        end
+    end
+end
+
