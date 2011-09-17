@@ -56,6 +56,10 @@ local number     = sign^-1 * (                     -- at most one
                       + digit^1                    -- 10
                    )
 
+local cstokentex = R("az","AZ","\127\255") + S("@!?_")
+
+-- we could collapse as in tex
+
 local spacing    = token(whitespace,  space^1)
 local rest       = token('default',   any)
 local comment    = token('comment',   P('%') * (1-S("\n\r"))^0)
@@ -66,10 +70,10 @@ local quoted     = token('quote',     dquote)
                  * token('string',    P(1-dquote)^1)
                  * token('quote',     dquote)
 local primitive  = token('primitive', exact_match(primitivecommands))
------ csname     = token('user',      cstoken^1)
-local identifier = token('default',   cstoken^1)
+local identifier = token('default',   cstoken)
 local number     = token('number',    number)
-local special    = token('special',   S("#()[]<>=:\""))
+local special    = token('special',   S("#()[]<>=:\"")) -- or else := <> etc split
+local texlike    = token('string',    P("\\") * cstokentex^1)
 local extra      = token('extra',     S("`~%^&_-+/\'|\\"))
 
 _rules = {
@@ -83,6 +87,7 @@ _rules = {
     { 'number',     number     },
     { 'quoted',     quoted     },
     { 'special',    special    },
+--     { 'texlike',    texlike    },
     { 'extra',      extra      },
     { 'rest',       rest       },
 }

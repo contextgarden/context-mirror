@@ -1,12 +1,10 @@
 local info = {
     version   = 1.002,
-    comment   = "scintilla lpeg lexer for cld/lua",
+    comment   = "scintilla lpeg lexer for lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files",
 }
-
--- Adapted from lua.lua by Mitchell who based it on a lexer by Peter Odding.
 
 local lexer = lexer
 local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
@@ -19,6 +17,8 @@ module(...)
 local cldlexer = _M
 
 _directives = { } -- communication channel
+
+-- this will be eextended
 
 local keywords = {
   'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',

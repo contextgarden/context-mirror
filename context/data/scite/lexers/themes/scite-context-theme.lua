@@ -70,7 +70,9 @@ style_char               = style { fore = colors.magenta }
 style_class              = style { fore = colors.black, bold = true }
 style_constant           = style { fore = colors.cyan, bold = true }
 style_definition         = style { fore = colors.black, bold = true }
+style_okay               = style { fore = colors.dark }
 style_error              = style { fore = colors.red }
+style_warning            = style { fore = colors.orange }
 style_function           = style { fore = colors.black, bold = true }
 style_operator           = style { fore = colors.blue }
 style_preproc            = style { fore = colors.yellow, bold = true }
@@ -85,6 +87,8 @@ style_bracebad           = style { fore = colors.orange, bold = true }
 style_indentguide        = style { fore = colors.linepanel, back = colors.white }
 style_calltip            = style { fore = colors.white, back = colors.tippanel }
 style_controlchar        = style_nothing
+
+-- only bold seems to work
 
 lexer.context.styles = {
 
@@ -107,6 +111,10 @@ lexer.context.styles = {
     ["special"]    = style { fore = colors.blue },
     ["extra"]      = style { fore = colors.yellow },
     ["quote"]      = style { fore = colors.blue, bold = true },
+
+    ["okay"]       = style_okay,
+    ["warning"]    = style_warning,
+    ["error"]      = style_error,
 
 }
 
