@@ -80,6 +80,8 @@ function traceln(str)
     io.flush()
 end
 
+-- traceln("LPEG " .. tostring(lpeg))
+
 function string.grab(str,delimiter)
     local list = { }
     for snippet in gmatch(str,delimiter) do

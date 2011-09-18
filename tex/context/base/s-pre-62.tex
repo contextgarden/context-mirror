@@ -54,13 +54,12 @@
      backspace=5\measure{layoutwd},
       topspace=5\measure{layoutht}]
 
-\setuplayout
+\definelayout
   [step]
   [  backspace=\numexpr2+                         \getvariable{layout}{dx}\relax\measure{layoutwd},
       cutspace=\numexpr3+\getvariable{layout}{nx}-\getvariable{layout}{dx}\relax\measure{layoutwd},
       topspace=\numexpr2+                         \getvariable{layout}{dy}\relax\measure{layoutht},
    bottomspace=\numexpr3+\getvariable{layout}{ny}-\getvariable{layout}{dy}\relax\measure{layoutht}]
-
 
 \definecolor[layout:left]  [t=.5,a=1,b=1]
 \definecolor[layout:right] [t=.5,a=1,r=1]

@@ -966,7 +966,7 @@
   {\begingroup\let\do_process_comma_item\do_quit_prev_comma_list}
 
 \def\do_quit_prev_comma_list#1]%
-  {\let\do_process_comma_item\do_quit_commalist}
+  {\let\do_process_comma_item\do_quit_comma_list}
 
 %D The hack we used for checking the next character
 %D \type {\doifnextcharelse} is also used here.
@@ -6601,12 +6601,12 @@
 % \setmeasure {xx} {1cm}
 % \setmeasure {xxx}{1cm}
 
-\def\setmeasure #1#2{\expandafter\def \csname\??dm#1\endcsname{#2}} % quick way
-\def\setemeasure#1#2{\expandafter\edef\csname\??dm#1\endcsname{#2}} % quick way
-\def\setgmeasure#1#2{\expandafter\gdef\csname\??dm#1\endcsname{#2}} % quick way
-\def\setxmeasure#1#2{\expandafter\xdef\csname\??dm#1\endcsname{#2}} % quick way
+\unexpanded\def\setmeasure #1#2{\expandafter\def \csname\??dm#1\endcsname{#2}} % quick way
+\unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??dm#1\endcsname{#2}} % quick way
+\unexpanded\def\setgmeasure#1#2{\expandafter\gdef\csname\??dm#1\endcsname{#2}} % quick way
+\unexpanded\def\setxmeasure#1#2{\expandafter\xdef\csname\??dm#1\endcsname{#2}} % quick way
 
-\def\measure#1%
+\def\measure#1% maybe \dimexpr ... \relax
   {\ifcsname\??dm#1\endcsname\csname\??dm#1\endcsname\else\zeropoint\fi}
 
 %D \macros

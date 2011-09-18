@@ -9,6 +9,11 @@ local info = {
 -- The fold and lex functions are copied and patched from original code by Mitchell (see
 -- lexer.lua). All errors are mine.
 --
+-- I'll probably make a whole copy and patch the other functions too as we need an extra
+-- nesting model.
+--
+-- Also needed: preamble scan once. Can be handled in caller below and _M.preamble.
+--
 -- For huge files folding can be pretty slow and I do have some large ones that I keep
 -- open all the time. Loading is normally no ussue, unless one has remembered the status
 -- and the cursor is at the last line of a 200K line file. Optimizing the fold function
@@ -23,6 +28,9 @@ local info = {
 -- to figure out (not being that familiar with the internals). BTW, if performance becomes
 -- an issue we can rewrite the main lex function (memorize the grammars and speed up the
 -- byline variant).
+
+-- Maybe it's safer to copy th eother methods here so that we have no dependencies, apart
+-- from the the library.
 
 local R, P, S, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
@@ -155,6 +163,74 @@ function lexer.context.exact_match(words,word_chars,case_insensitive)
         return Cmt(pattern^1, function(_,i,s)
             return list[s] -- and i
         end)
+    end
+end
+
+
+-- spell checking (we can only load lua files)
+
+-- return {
+--     words = {
+--         ["someword"]    = "someword",
+--         ["anotherword"] = "Anotherword",
+--     },
+-- }
+
+local lists = { }
+
+local splitter = (Cf(Ct("") * (Cg(C((1-S(" \t\n\r"))^1 * Cc(true))) + P(1))^1,rawset) )^0
+local splitter = (Cf(Ct("") * (Cg(C(R("az","AZ","\127\255")^1) * Cc(true)) + P(1))^1,rawset) )^0
+
+local function splitwords(words)
+    return lpegmatch(splitter,words)
+end
+
+function lexer.context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
+    if not tag or tag == "" then
+        return false
+    elseif lists[tag] ~= nil then
+        return lists[tag]
+    else
+        local list = lexer.context.loaddefinitions("spell-" .. tag)
+        if not list or type(list) ~= "table" then
+            lists[tag] = false
+            return nil
+        elseif type(list.words) == "string" then
+            list = splitwords(list.words)
+            lists[tag] = list
+            return list
+        else
+            list = list.words or false
+            lists[tag] = list
+            return list
+        end
+    end
+end
+
+lexer.context.wordpattern = R("az","AZ","\127\255")^3 -- todo: if limit and #s < limit then
+
+function lexer.context.checkedword(validwords,s,i) -- ,limit
+    if not validwords then
+        return true, { "text", i }
+    else
+        -- keys are lower
+        local word = validwords[s]
+        if word == s then
+            return true, { "okay", i } -- exact match
+        elseif word then
+            return true, { "warning", i } -- case issue
+        else
+            local word = validwords[lower(s)]
+            if word == s then
+                return true, { "okay", i } -- exact match
+            elseif word then
+                return true, { "warning", i } -- case issue
+            elseif upper(s) == s then
+                return true, { "warning", i } -- probably a logo or acronym
+            else
+                return true, { "error", i }
+            end
+        end
     end
 end
 
@@ -348,7 +424,7 @@ function lexer.context.lex(text,init_style)
         local noftokens = 0
         if true then
             for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
-                local line_tokens = lpeg_match(grammar,line)
+                local line_tokens = lpegmatch(grammar,line)
                 if line_tokens then
                     for i=1,#line_tokens do
                         local token = line_tokens[i]
@@ -366,7 +442,7 @@ function lexer.context.lex(text,init_style)
         else -- alternative
             local lasttoken, lastoffset
             for line in gmatch(text,'[^\r\n]*\r?\n?') do -- could be an lpeg
-                local line_tokens = lpeg_match(grammar,line)
+                local line_tokens = lpegmatch(grammar,line)
                 if line_tokens then
                     for i=1,#line_tokens do
                         lasttoken = line_tokens[i]
@@ -431,37 +507,3 @@ lexer.fold        = lexer.context.fold
 lexer.lex         = lexer.context.lex
 lexer.token       = lexer.context.token
 lexer.exact_match = lexer.context.exact_match
-
--- spell checking (we can only load lua files)
-
-local lists = { }
-
-local splitter = (Cf(Ct("") * (Cg(C((1-S(" \t\n\r"))^1 * Cc(true))) + P(1))^1,rawset) )^0
-local splitter = (Cf(Ct("") * (Cg(C(R("az","AZ","\127\255")^1) * Cc(true)) + P(1))^1,rawset) )^0
-
-local function splitwords(words)
-    return lpegmatch(splitter,words)
-end
-
-function lexer.context.setwordlist(tag)
-    if not tag or tag == "" then
-        return false
-    elseif lists[tag] ~= nil then
-        return lists[tag]
-    else
-        local list = collect("spell-" .. tag)
-        if not list or type(list) ~= "table" then
-            lists[tag] = false
-            return nil
-        elseif type(list.words) == "string" then
-            list = splitwords(list.words)
-            lists[tag] = list
-            return list
-        else
-            list = list.words or false
-            lists[tag] = list
-            return list
-        end
-    end
-end
-

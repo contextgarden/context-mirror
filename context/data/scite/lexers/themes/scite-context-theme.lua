@@ -13,6 +13,10 @@ local context_path = "t:/sources" -- c:/data/tex-context/tex/texmf-context/tex/b
 local font_name    = 'Dejavu Sans Mono'
 local font_size    = 14
 
+if not WIN32 then
+    font_name = '!' .. font_name
+end
+
 local global = _G
 
 -- dofile(_LEXERHOME .. '/themes/scite.lua') -- starting point so we miss nothing
