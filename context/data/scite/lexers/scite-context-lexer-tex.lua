@@ -45,8 +45,6 @@ local contextlexer = _M
 local cldlexer     = lexer.load('scite-context-lexer-cld')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
 
-local basepath     = lexer.context and lexer.context.path or _LEXERHOME
-
 local commands   = { en = { } }
 local primitives = { }
 local helpers    = { }
@@ -111,9 +109,14 @@ local knowncommand = Cmt(cstoken^1, function(_,i,s)
     return currentcommands[s] and i
 end)
 
-local validwords = false
+local wordpattern = lexer.context.wordpattern
+local checkedword = lexer.context.checkedword
+local setwordlist = lexer.context.setwordlist
+local validwords  = false
 
-local knownpreamble = Cmt(P("% "), function(input,i,_)
+-- % language=uk
+
+local knownpreamble = Cmt(#P("% "), function(input,i,_) -- todo : utfbomb
     if i < 10 then
         validwords = false
         local s, e, word = find(input,'^(.+)[\n\r]',i) -- combine with match
@@ -123,7 +126,7 @@ local knownpreamble = Cmt(P("% "), function(input,i,_)
                 currentcommands  = commands[interface] or commands.en or { }
             end
             local language = match(word,"language=(..)")
-            validwords = language and lexer.context.setwordlist(language)
+            validwords = language and setwordlist(language)
         end
     end
     return false
@@ -195,26 +198,34 @@ local p_text                 = cstoken^1 --maybe add punctuation and space
 
 -- no looking back           = #(1-S("[=")) * cstoken^3 * #(1-S("=]"))
 
-local p_word                 = Cmt(cstoken^3, function(_,i,s)
-    if not validwords then
-        return true, { "text", i }
+-- local p_word                 = Cmt(wordpattern, function(_,i,s)
+--     if not validwords then
+--         return true, { "text", i }
+--     else
+--         -- keys are lower
+--         local word = validwords[s]
+--         if word == s then
+--             return true, { "okay", i } -- exact match
+--         elseif word then
+--             return true, { "warning", i } -- case issue
+--         else
+--             local word = validwords[lower(s)]
+--             if word == s then
+--                 return true, { "okay", i } -- exact match
+--             elseif word then
+--                 return true, { "warning", i } -- case issue
+--             else
+--                 return true, { "error", i }
+--             end
+--         end
+--     end
+-- end)
+
+local p_word = Cmt(wordpattern, function(_,i,s)
+    if validwords then
+        return checkedword(validwords,s,i)
     else
-        -- keys are lower
-        local word = validwords[s]
-        if word == s then
-            return true, { "okay", i } -- exact match
-        elseif word then
-            return true, { "warning", i } -- case issue
-        else
-            local word = validwords[lower(s)]
-            if word == s then
-                return true, { "okay", i } -- exact match
-            elseif word then
-                return true, { "warning", i } -- case issue
-            else
-                return true, { "error", i }
-            end
-        end
+        return true, { "text", i }
     end
 end)
 
@@ -274,7 +285,7 @@ local csname                 = token('user',      p_csname     )
 local grouping               = token('grouping',  p_grouping   )
 local special                = token('special',   p_special    )
 local extra                  = token('extra',     p_extra      )
-local text                   = token('default',   p_text       )
+----- text                   = token('default',   p_text       )
 ----- word                   = token("okay",      p_word       )
 local word                   = p_word
 

@@ -832,17 +832,24 @@ local function sh_process(object,prescript,before,after)
             local value_a, components_a, fractions_a, name_a
             local value_b, components_b, fractions_b, name_b
             for i=1,#prescript do
+                -- { "sh_color_a", "1" },
+                -- { "sh_color", "into" },
+                -- { "sh_radius_b", "0" },
+                -- { "sh_radius_a", "141.73225" },
+                -- { "sh_center_b", "425.19676 141.73225" },
+                -- { "sh_center_a", "425.19676 0" },
+                -- { "sh_factor", "1" },
                 local tag = prescript[i][1]
                 if not name_a and tag == "sh_color_a" then
-                    value_a      = prescript[i-4][2]
-                    components_a = prescript[i-3][2]
-                    fractions_a  = prescript[i-2][2]
-                    name_a       = prescript[i-1][2]
+                    value_a      = prescript[i-5][2]
+                    components_a = prescript[i-4][2]
+                    fractions_a  = prescript[i-3][2]
+                    name_a       = prescript[i-2][2]
                 elseif not name_b and tag == "sh_color_b" then
-                    value_b      = prescript[i-4][2]
-                    components_b = prescript[i-3][2]
-                    fractions_b  = prescript[i-2][2]
-                    name_b       = prescript[i-1][2]
+                    value_b      = prescript[i-5][2]
+                    components_b = prescript[i-4][2]
+                    fractions_b  = prescript[i-3][2]
+                    name_b       = prescript[i-2][2]
                 end
                 if name_a and name_b then
                     break

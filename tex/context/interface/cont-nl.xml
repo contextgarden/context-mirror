@@ -2,16 +2,18 @@
 
 <!-- versions:
 
-    comment  : user interface definitions of ConTeXt
+     comment  : user interface definitions of ConTeXt
 
-    authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach, Wolfgang Schuster, and others
+     authors  : Hans Hagen, Taco Hoekwater, Patrick Gundlach, Wolfgang Schuster, and others
 
-    versions : 2004.11.17 : initial version
-               2006.08.02 : define + resolve
+     versions : 2004.11.17 : initial version
+                2006.08.02 : define + resolve
+
+    <lexertest/>ss
 
 -->
 
-<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context" language="nl" version="2006.08.02">
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context test" language="nl" version="2006.08.02">
 
   <cd:define name="align">
     <cd:constant type="binnen"/>

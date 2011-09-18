@@ -15,7 +15,6 @@ local type, next, pcall, loadfile = type, next, pcall, loadfile
 module(...)
 
 local metafunlexer = _M
-local basepath     = lexer.context and lexer.context.path or _LEXERHOME
 
 local metafunhelpers    = { }
 local metafunconstants  = { }

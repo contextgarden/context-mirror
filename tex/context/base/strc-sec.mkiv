@@ -183,11 +183,11 @@
 \unexpanded\def\setupsection
   {\dotripleempty\dosetupsection}
 
-\def\dosetupsection[#1]%
+\def\dosetupsection[#1][#2][#3]%
   {\ifcsname\??nh:\c!level:#1\endcsname
-     \dodosetupsection[#1]%
+     \dodosetupsection[#1][#2][#3]%
    \else
-     \dodosetupsection[\sectionheadsection{#1}]%
+     \dodosetupsection[\sectionheadsection{#1}][#2][#3]%
    \fi}
 
 \def\dodosetupsection[#1][#2][#3]%

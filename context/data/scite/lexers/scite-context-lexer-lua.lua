@@ -12,6 +12,8 @@ local P, R, S, C, Cg, Cb, Cs, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpe
 local match, find = string.match, string.find
 local global = _G
 
+-- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
+
 module(...)
 
 local cldlexer = _M
