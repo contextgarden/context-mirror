@@ -128,8 +128,10 @@
 
 \appendtoks
     \let\currentfloat\currentfloatcaption
-    \dostructurecountersetup\currentfloatcaption\floatcaptionparameter
-    \docheckstructurecountersetup\currentfloatcaption
+    \ifx\currentfloat\empty \else
+        \dostructurecountersetup\currentfloatcaption\floatcaptionparameter
+        \docheckstructurecountersetup\currentfloatcaption
+    \fi
 \to \everysetupfloatcaption
 
 %D Definitions:
