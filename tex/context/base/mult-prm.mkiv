@@ -54,7 +54,7 @@
         xetex  = table.sorted( table.merged( missing.xetex , { }                              ) ),
     }
 
-    table.remove(primitives.tex,1) -- get rid of \-
+ -- table.remove(primitives.tex,1) -- get rid of \-
 
     io.savedata("mult-prm.lua",table.serialize(primitives,true,{ reduce = true, inline = false }))
 

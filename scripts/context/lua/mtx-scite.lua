@@ -180,7 +180,9 @@ scripts.scite = scripts.scite or { }
 local function splitwords(words)
     local w = { }
     for s in string.gmatch(words,"[a-zA-Z\127-255]+") do
-        w[lower(s)] = s
+        if #s > 2 then -- will become option
+            w[lower(s)] = s
+        end
     end
     return w
 end

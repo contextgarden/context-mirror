@@ -357,7 +357,7 @@ local luaenvironment         = P("luacode")
 
 local inlinelua              = P("\\") * (
                                     P("ctx") * ( P("lua") + P("command") )
-                                  + P("cldcontext")
+                                  + P("cld") * ( P("command") + P("context") )
                                )
 
 local startlua               = P("\\start") * Cmt(luaenvironment,startdisplaylua)

@@ -9,8 +9,6 @@
      versions : 2004.11.17 : initial version
                 2006.08.02 : define + resolve
 
-    <lexertest/>ss
-
 -->
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context test" language="fr" version="2006.08.02">

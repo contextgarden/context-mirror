@@ -247,7 +247,7 @@ local hangul_syllable_basetable = {
 local hangul_syllable_metatable = {
     __index = function(t,k)
         local u = t.unicodeslot
-        if k == "fscode" then
+        if k == "fscode" or k == "leadconsonant" then
             return leadconsonant(u)
         elseif k == "decomposed" then
             return { decomposed(u) }
@@ -260,6 +260,22 @@ local hangul_syllable_metatable = {
         end
     end
 }
+
+function characters.remap_hangul_syllabe(t)
+    local tt = type(t)
+    if tt == "number" then
+        return remapped[t] or t
+    elseif tt == "table" then
+        local r = { }
+        for i=1,#t do
+            local ti = t[i]
+            r[i] = remapped[ti] or ti
+        end
+        return r
+    else
+        return t
+    end
+end
 
 local hangul_syllable_extender = function(k,v)
     local t = {

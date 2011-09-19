@@ -863,8 +863,7 @@ definitions["et"] = {
 local fschars = characters.fschars
 
 local function firstofsplit(first)
-    local fs = fschars[first] or first
- -- print(string.format("%04x %04x",utfbyte(first),utfbyte(fs)))
+    local fs = fschars[first] or first -- leadconsonant
     return fs, fs -- entry, tag
 end
 

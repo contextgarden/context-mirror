@@ -109,11 +109,11 @@ setmetatableindex(data, function(t,k)
     if tk == "string" then
         k = lpegmatch(pattern,k) or utfbyte(k)
         if k then
-            local tk = rawget(t,k)
-            if tk then
-                return tk
+            local v = rawget(t,k)
+            if v then
+                return v
             else
-                -- goes to ranges
+                tk = "number" -- fall through to range
             end
         else
             return private
@@ -125,10 +125,10 @@ setmetatableindex(data, function(t,k)
             if k >= rr.first and k <= rr.last then
                 local extender = rr.extender
                 if extender then
-                    v = extender(k,v)
+                    local v = extender(k,v)
+                    t[k] = v
+                    return v
                 end
-                t[k] = v
-                return v
             end
         end
     end
@@ -743,11 +743,21 @@ setmetatableindex(shchars, function(t,u) if u then local c = data[u] c = c and c
 setmetatableindex(fschars, function(t,u) if u then local c = data[u] c = c and c.fscode c = c and utfstring(c) or (type(u) == "number" and utfchar(u)) or u t[u] = c return c end end)
 
 local decomposed = allocate()  characters.decomposed = decomposed   -- lazy table
+local specials   = allocate()  characters.specials   = specials     -- lazy table
 
 setmetatableindex(decomposed, function(t,u) -- either a table or false
     if u then
         local c = data[u]
-        local s = c and c.decomposed or false
+        local s = c and c.decomposed or false -- could fall back to specials
+        t[u] = s
+        return s
+    end
+end)
+
+setmetatableindex(specials, function(t,u) -- either a table or false
+    if u then
+        local c = data[u]
+        local s = c and c.specials or false
         t[u] = s
         return s
     end
