@@ -44,8 +44,8 @@
 \long\def\dodostartluacode#1\stopluacode
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\unexpanded\def\startlua    {\dostartlua    } % tex catcodes
-\unexpanded\def\startluacode{\dostartluacode} % lua catcodes
+\unexpanded\def\startlua    {\dostartlua    } \let\stoplua    \relax % tex catcodes
+\unexpanded\def\startluacode{\dostartluacode} \let\stopluacode\relax % lua catcodes
 
 %D Some delayed definitions:
 
