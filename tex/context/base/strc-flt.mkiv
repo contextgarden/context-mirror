@@ -128,8 +128,8 @@
 
 \appendtoks
     \let\currentfloat\currentfloatcaption
-    \dostructurecountersetup\currentfloat\floatcaptionparameter
-    \docheckstructurecountersetup\currentfloat
+    \dostructurecountersetup\currentfloatcaption\floatcaptionparameter
+    \docheckstructurecountersetup\currentfloatcaption
 \to \everysetupfloatcaption
 
 %D Definitions:
@@ -196,8 +196,6 @@
 \newif\ifnofloatcaption
 \newif\ifnofloatnumber
 \newif\ifemptyfloatcaption
-
-\def\getcaptionparameters{\getparameters[\??kj\currentfloat]}
 
 \installstructurelistprocessor{float}{\usestructurelistprocessor{number+title}}
 
@@ -266,7 +264,7 @@
             \fi
             \letgvalue{@fl@r@#1}\relax}% nils
          \setgvalue{@fl@t@#1}%
-           {\preparefullnumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber
+           {\preparefullnumber{\??kj#1}{\getvalue{@fl@n@#1}}\preparednumber % !!!!!!!!!!!!!!!!!!!!!!!!!!! wrong
             \begingroup
               \dosetfloatcaptionattributes\c!style\c!color
               \begingroup
@@ -480,8 +478,8 @@
 
 \unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
   {\edef\currentfloat{#1}%
-   \let\currentfloatcaption\currentfloat
    \doifnothing\currentfloat{\let\currentfloat\v!figure}% hack
+   \let\currentfloatcaption\currentfloat
    \doifelsenothing{#2}
      {\edef\floatlocation{\floatparameter\c!default}}
      {\edef\floatlocation{#2}}%
@@ -707,7 +705,7 @@
    \else
      \dostructurecountercomponent
        {float}%
-       \getcaptionparameters
+       \setupcurrentfloatcaption
        \floatcaptionparameter
        \detokenizedfloatcaptionparameter
        \relax

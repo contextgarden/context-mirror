@@ -64,15 +64,14 @@
 
 % todo: add (relaxed) postsetup and postdefine hooks, just after the everys
 
-\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9%
+\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8%
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{\csname#4{#1#2}{##1}\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
-   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
-   \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
-   \def#9##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\s!empty\fi\endcsname}}
+   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
+   \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}}
 
 \unexpanded\def\installparameterhandler#1#2%
   {\normalexpanded
@@ -84,7 +83,17 @@
         \expandafter\noexpand\csname do#2parentparameter\endcsname
         \expandafter\noexpand\csname named#2parameter\endcsname
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
-        \expandafter\noexpand\csname strict#2parameter\endcsname
+        \expandafter\noexpand\csname strict#2parameter\endcsname}}
+
+\unexpanded\def\doinstallrootparameterhandler#1#2#3%
+  {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
+   \def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\s!empty\fi\endcsname}}
+
+\unexpanded\def\installrootparameterhandler#1#2%
+  {\normalexpanded
+     {\doinstallrootparameterhandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
         \expandafter\noexpand\csname root#2parameter\endcsname}}
 
 \unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5#6#7%
@@ -251,6 +260,7 @@
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
+   \installrootparameterhandler{#1}{#2}%
    \installdefinehandler       {#1}{#2}{#3}%
    \installsetuphandler        {#1}{#2}%
    \installattributehandler    {#1}{#2}}
@@ -259,6 +269,7 @@
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
+   \installrootparameterhandler{#1}{#2}%
    \installdefinehandler       {#1}{#2}{#3}%
    \installswitchsetuphandler  {#1}{#2}%
    \installattributehandler    {#1}{#2}}
