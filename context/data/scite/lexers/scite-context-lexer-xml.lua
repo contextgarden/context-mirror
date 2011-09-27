@@ -14,14 +14,16 @@ local info = {
 
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
+local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
-local type, setmetatable = type, setmetatable
+local type = type
 local match, find = string.match, string.find
 
 module(...)
 
 local examplelexer     = _M
+
+local context          = lexer.context
 
 local whitespace       = examplelexer.WHITESPACE -- triggers states
 
@@ -49,9 +51,9 @@ local closecdata       = P("]]>")
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
-local wordpattern = lexer.context.wordpattern
-local checkedword = lexer.context.checkedword
-local setwordlist = lexer.context.setwordlist
+local wordpattern = context.patterns.wordpattern
+local checkedword = context.patterns.checkedword
+local setwordlist = context.setwordlist
 local validwords  = false
 
 -- <?xml version="1.0" encoding="UTF-8" language="uk" ?>
@@ -71,7 +73,6 @@ local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
     end
     return false
 end)
-
 
 local p_word =
     Cmt(wordpattern, function(_,i,s)
@@ -190,7 +191,7 @@ _rules = {
     { "rest",        p_rest        },
 }
 
-_tokenstyles = lexer.context.styleset
+_tokenstyles = context.styleset
 
 _foldsymbols = { -- somehow doesn't work yet
     _patterns = {

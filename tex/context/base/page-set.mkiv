@@ -2480,7 +2480,7 @@
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
    \hsize\columnsetspanhsize
    \setbox\scratchbox\vbox\bgroup
-     \dostartframedtext[cs:#1][\v!none]% geen nils placement
+     \dostartframedtext{cs:#1}[\v!none]% geen nils placement
      % spoils spacing : \vskip-\struttotal\par\verticalstrut\par
      \ifnum\columnsetlevel>\zerocount
        \namedframedtextparameter{cs:#1}\c!before

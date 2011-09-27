@@ -204,12 +204,12 @@ function bibtex.toxml(session,options)
     local strip = options.strip -- todo: interface
     local entries = session.entries
     r = r + 1 ; result[r] = format("<?xml version='1.0' standalone='yes'?>")
-    result[#result+1] = format("<bibtex>")
+    r = r + 1 ; result[r] = format("<bibtex>")
     for id, categories in next, session.data do
         id = lower(gsub(id,"^@",""))
         for name, entry in next, categories do
             if not entries or entries[name] then
-                result[#result+1] = format("<entry tag='%s' category='%s'>",lower(name),id)
+                r = r + 1 ; result[r] = format("<entry tag='%s' category='%s'>",lower(name),id)
                 for key, value in next, entry do
                     value = gsub(value,"\\(.)",ihatethis)
                     value = lpegmatch(escaped_pattern,value)

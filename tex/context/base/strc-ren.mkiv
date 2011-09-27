@@ -25,12 +25,6 @@
 
 \newevery \everyheadstart \relax
 
-% \unexpanded\def\placeheadmargintexts
-%   {\the\everyheadstart
-%    \doif{\headparameter\c!margintext}\v!yes\placemargincontent}
-
-\let\placeheadmargintexts\relax
-
 \unexpanded\def\setupheadcomponentfont#1#2%
   {\dontconvertfont
    \ifconditional\headisdisplay
@@ -77,9 +71,8 @@
   {\begingroup
      \setupheadcomponentfont\c!textstyle\c!textcolor
      \headparameter\c!commandbefore
-     \placeheadmargintexts
-     \ifcsname\??nh\currenthead\c!deeptextcommand\endcsname
-       \expandafter\let\expandafter\deepstructuretitlecommand\csname\??nh\currenthead\c!deeptextcommand\endcsname
+     \ifcsname\currentheadhash\c!deeptextcommand\endcsname
+       \expandafter\let\expandafter\deepstructuretitlecommand\csname\currentheadhash\c!deeptextcommand\endcsname
      \fi
      \ifconditional\headisdisplay % \ifdisplaysectionhead
        % struts can be nilled with \setnostrut
@@ -100,9 +93,8 @@
 \def\doplaceheadnumbercomponent#1%
   {\begingroup
      \setupheadcomponentfont\c!numberstyle\c!numbercolor
-     \placeheadmargintexts
-     \ifcsname\??nh\currenthead\c!deepnumbercommand\endcsname
-       \expandafter\let\expandafter\deepstructurenumbercommand\csname\??nh\currenthead\c!deepnumbercommand\endcsname
+     \ifcsname\currentheadhash\c!deepnumbercommand\endcsname
+       \expandafter\let\expandafter\deepstructurenumbercommand\csname\currentheadhash\c!deepnumbercommand\endcsname
      \fi
      \ifconditional\headisdisplay % \ifdisplaysectionhead
        % can be nilled with \setnostrut
@@ -149,7 +141,7 @@
       % maybe auto: backreference when given, else list
    \fi\fi}
 
-\unexpanded\def\placeheadtext
+\unexpanded\def\placecurrentheadtext
   {\beginheadplacement
    \setheadmarking
    \doresettructureheadnumbercontent
@@ -161,13 +153,13 @@
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
        {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
-        \dosetfontattribute{\??nh\currenthead}\c!style % but we don't want color to influence user command, todo: get the if-else out of it
+        \dosetheadfontattribute\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
    \endheadplacement{\getheadsyncs}}
 
-\unexpanded\def\placeheadnumbertext
+\unexpanded\def\placecurrentheadnumbertext
   {\beginheadplacement
    \setheadmarking
    \doiftextelse{\getheadnumber}\dosettructureheadnumbercontent\doresettructureheadnumbercontent
@@ -178,13 +170,13 @@
      \docheckheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
        {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
-        \dosetfontattribute{\??nh\currenthead}\c!style
+        \dosetheadfontattribute\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{\doplaceheadnumbercomponent\getheadnumber}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
    \endheadplacement{\getheadsyncs}}
 
-\unexpanded\def\placeheadempty
+\unexpanded\def\placecurrentheadempty
   {\hbox \headreferenceattributes {\getheadsyncs}}
 
 %D \starttyping
@@ -461,7 +453,7 @@
       \fi
       #2}}
 
-\unexpanded\def\placeheadmargin#1#2%
+\unexpanded\def\placeheadmarginalternative#1#2%
   {\vbox
      {\localheadsetup
       \begstrut % use one \strut here!
@@ -473,8 +465,8 @@
       \fi
       {#2}}}
 
-\defineheadplacement[\v!inmargin][\v!vertical]#1#2{\placeheadmargin{#1}{#2}}
-\defineheadplacement[\v!margin]  [\v!vertical]#1#2{\placeheadmargin{#1}{#2}}
+\defineheadplacement[\v!inmargin][\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}
+\defineheadplacement[\v!margin]  [\v!vertical]#1#2{\placeheadmarginalternative{#1}{#2}}
 
 \defineheadplacement[\v!middle][\v!vertical]#1#2%
   {\vbox
@@ -496,7 +488,7 @@
    {\begstrut#2}%
    \egroup}
 
-\unexpanded\def\placeheadlohi#1#2#3%
+\unexpanded\def\placeheadlohialternative#1#2#3%
   {\ifconditional\headshownumber
      \setbox0\hbox{#2}
      \setbox2=#1{\localheadsetup\advance\hsize-\wd0\relax#3}%
@@ -508,8 +500,8 @@
 % onder/boven lijnt het nummer op de onderste/bovenste regel
 % uit van een meerregelige kop
 
-\defineheadplacement[\v!bottom][\v!vertical]#1#2{\placeheadlohi\vbox{#1}{#2}}
-\defineheadplacement[\v!top]   [\v!vertical]#1#2{\placeheadlohi\vtop{#1}{#2}}
+\defineheadplacement[\v!bottom][\v!vertical]#1#2{\placeheadlohialternative\vbox{#1}{#2}}
+\defineheadplacement[\v!top]   [\v!vertical]#1#2{\placeheadlohialternative\vtop{#1}{#2}}
 
 % helpers
 

@@ -13,6 +13,8 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands" name="context test" language="ro" version="2006.08.02">
 
+  <!-- there are some more -->
+
   <cd:define name="align">
     <cd:constant type="intern"/>
     <cd:constant type="extern"/>
@@ -25,6 +27,10 @@
     <cd:constant type="normal"/>
     <cd:constant type="nu"/>
     <cd:constant type="da"/>
+    <cd:constant type="broad"/>
+    <cd:constant type="ultim"/>
+    <cd:constant type="r2l"/>
+    <cd:constant type="l2r"/>
   </cd:define>
 
   <cd:define name="symalign">

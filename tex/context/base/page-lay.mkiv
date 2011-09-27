@@ -586,13 +586,13 @@
    \recalculatelayout}
 
 \def\checkcurrentoddlayout
-  {\ifcsname\??ly\v!odd\c!state\endcsname
-     \doifvalue{\??ly\v!odd\c!state}\v!start{\changetolayout\v!odd}%
+  {\ifcsname\namedlayouthash\v!odd\c!state\endcsname
+     \doif{\namedlayoutparameter\v!odd\c!state}\v!start{\changetolayout\v!odd}%
    \fi}
 
 \def\checkcurrentevenlayout
-  {\ifcsname\??ly\v!even\c!state\endcsname
-     \doifvalue{\??ly\v!even\c!state}\v!start{\changetolayout\v!even}%
+  {\ifcsname\namedlayouthash\v!even\c!state\endcsname
+     \doif{\namedlayoutparameter\v!even\c!state}\v!start{\changetolayout\v!even}%
    \fi}
 
 \ifx\lastpage\undefined
@@ -613,11 +613,11 @@
    \fi}
 
 \def\checkcurrentlayout % public and used in naw, so keep this name
-  {\ifcsname\??ly\realfolio\c!state\endcsname
-     \doifvalue{\??ly\realfolio\c!state}\v!start{\changetolayout\realfolio}%
-   \else\ifcsname\??ly\reverserealfolio\c!state\endcsname
-     \doifvalue{\??ly\reverserealfolio\c!state}\v!start{\changetolayout\reverserealfolio}%
-   \else\ifcsname\??ly\v!current\c!state\endcsname
+  {\ifcsname\namedlayouthash\realfolio\c!state\endcsname
+     \doif{\namedlayoutparameter\realfolio\c!state}\v!start{\changetolayout\realfolio}%
+   \else\ifcsname\namedlayouthash\reverserealfolio\c!state\endcsname
+     \doif{\namedlayoutparameter\reverserealfolio\c!state}\v!start{\changetolayout\reverserealfolio}%
+   \else\ifcsname\namedlayouthash\v!current\c!state\endcsname
      \changetolayout\v!current % no start test ?
    \else
      \doifoddpageelse\checkcurrentoddlayout\checkcurrentevenlayout

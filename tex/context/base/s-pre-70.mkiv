@@ -119,16 +119,16 @@
   [state=start]
 
 \startinteractionmenu[bottom]
-    \txt
+    \starttxt
         \interactionbar
           [alternative=d,
            symbol=yes,
            color=white,
            contrastcolor=textcolor]
-    \\
+    \stoptxt
     \hfilll
-    \but [previouspage] < < < \\
-    \but [nextpage] > > > \\
+    \startbut [previouspage] < < < \stopbut
+    \startbut [nextpage]     > > > \stopbut
 \stopinteractionmenu
 
 %D Instead of the normal symbols we use more punky ones.
@@ -150,7 +150,7 @@
 %D Run this file with the command: \type {context --mode=demo s-pre-70}
 %D in order to get an example.
 
-\doifnotmode{demo} {\endinput}
+\continueifinputfile{s-pre-70.mkiv}
 
 \usemodule[pre-60] % use the stepper
 
@@ -159,14 +159,18 @@
 \title {Punk for dummies}
 
 \dorecurse{10} {
+
     \title{Just a few dummy pages}
-    \StartSteps \startitemize[packed]
-    \startitemize
-        \startitem bla \FlushStep \stopitem
-        \startitem bla bla \FlushStep \stopitem
-        \startitem bla bla bla \FlushStep \stopitem
-        \startitem bla bla bla bla \FlushStep \stopitem
-    \stopitemize \StopSteps
+
+    \StartSteps
+        \startitemize[packed]
+            \startitem bla \FlushStep \stopitem
+            \startitem bla bla \FlushStep \stopitem
+            \startitem bla bla bla \FlushStep \stopitem
+            \startitem bla bla bla bla \FlushStep \stopitem
+        \stopitemize
+    \StopSteps
+
 }
 
 \stoptext

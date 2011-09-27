@@ -912,7 +912,7 @@
    \flushsidefloats % hoort eigenlijk niet hier
    \docomplexplacefloat[#1][\v!text,#2,\v!left][#3]}
 
-\def\docomplexreserveblock#1#2%
+\def\dodocomplexreserveblock#1#2%
   {\begingroup
    \edef\currentfloat{#1}%
    \let\currentfloatcaption\currentfloat
@@ -921,7 +921,7 @@
    \endgroup}
 
 \long\def\docomplexreserveblock[#1][#2][#3][#4]#5%
-  {\getvalue{\e!place#1}[#3][#4]{#5}{\docomplexreserveblock{#1}{#2}{#1}}}
+  {\getvalue{\e!place#1}[#3][#4]{#5}{\dodocomplexreserveblock{#1}{#2}}}
 
 \def\docomplexstartreservetextblock[#1][#2][#3][#4]%
   {\flushsidefloats % hoort eigenlijk niet hier

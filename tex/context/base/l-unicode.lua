@@ -218,7 +218,7 @@ local function utf16_to_utf8_be(t)
             if right then
                 local now = 256*left + right
                 if more > 0 then
-                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
                     more = 0
                     r = r + 1
                     result[r] = utfchar(now)
@@ -246,7 +246,7 @@ local function utf16_to_utf8_le(t)
             if right then
                 local now = 256*right + left
                 if more > 0 then
-                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
                     more = 0
                     r = r + 1
                     result[r] = utfchar(now)

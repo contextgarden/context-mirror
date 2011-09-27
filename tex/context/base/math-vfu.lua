@@ -653,11 +653,12 @@ function vfmath.define(specification,set,goodies)
                                     ref = { { 'slot', s, index } }
                                     si[index] = ref
                                 end
+                                local italic = fci.italic
                                 local t = {
-                                    width    = fci.width,
+                                    width    = fci.width + italic, -- watch this !
                                     height   = fci.height,
                                     depth    = fci.depth,
-                                    italic   = fci.italic,
+                                    italic   = italic,
                                     commands = ref,
                                 }
                                 local n = fci.next

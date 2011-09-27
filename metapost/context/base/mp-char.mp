@@ -37,7 +37,6 @@ grid_width   := 60pt ; grid_height  := 40pt ;
 shape_width  := 45pt ; shape_height := 30pt ;
 
 chart_offset :=  2pt ;
-
 color chart_background_color ; chart_background_color := white ;
 
 %D test mode

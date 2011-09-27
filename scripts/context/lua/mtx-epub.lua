@@ -62,7 +62,7 @@ local package = [[
         <dc:language>en</dc:language>
         <dc:identifier id="%s" >urn:uuid:%s</dc:identifier>
         <dc:creator opf:file-as="Self, My" opf:role="aut">MySelf</dc:creator>
-        <dc:date>%s</dc:date> 
+        <dc:date>%s</dc:date>
     </metadata>
 
     <manifest>
@@ -168,13 +168,13 @@ function scripts.epub.make()
 
     local filename = environment.files[1]
 
-    if filename and filename ~= "" then
+    if filename and filename ~= "" and type(filename) == "string" then
 
         filename = file.basename(filename)
         local specfile = file.replacesuffix(filename,"specification")
         local specification = lfs.isfile(specfile) and dofile(specfile) or { }
 
-     -- inspect(specification)
+--         inspect(specification)
 
         local name       = specification.name       or file.removesuffix(filename)
         local identifier = specification.identifier or os.uuid(true)
@@ -215,7 +215,10 @@ function scripts.epub.make()
 
         local function copythem(files)
             for i=1,#files do
-                copyone(files[i])
+                local filename = files[i]
+                if type(filename) == "string" then
+                    copyone(filename)
+                end
             end
         end
 

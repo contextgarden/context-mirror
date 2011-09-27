@@ -426,8 +426,8 @@
      [#3]%
    \reportcurrentstructure}
 
-\unexpanded\def\placeheadtext  {\dosingleempty\doplaceheadtext  } % use with care
-\unexpanded\def\placeheadnumber{\dosingleempty\doplaceheadnumber} % use with care
+\unexpanded\def\placeheadtext  {\dosingleempty\place_head_text  } % use with care
+\unexpanded\def\placeheadnumber{\dosingleempty\place_head_number} % use with care
 
 \ifdefined\setupheadcomponentfont \else
 
@@ -439,7 +439,7 @@
 
 \fi
 
-\def\doplaceheadtext[#1]%
+\def\place_head_text[#1]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%
@@ -449,7 +449,7 @@
    \endgraf
    \endgroup}
 
-\def\doplaceheadnumber[#1]%
+\def\place_head_number[#1]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%
@@ -504,20 +504,20 @@
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
          \let\getheadnumber\fullheadnumber
-         \placeheadnumbertext
+         \placecurrentheadnumbertext
        \else
-         \placeheadtext
+         \placecurrentheadtext
        \fi
        \doheadspacingafteryes
      \else\ifconditional\headhidden
        \doregisterhead\currenthead{#2}{#3}% after optional \page
        \let\getheadsyncs\theheadsynchonization
-       \placeheadhidden % only something when tracing
+       \placecurrentheadhidden % only something when tracing
      \else
        \doheadspacingbeforenop % toegevoegd ivm subpaginanr / tug sheets
        \doregisterhead\currenthead{#2}{#3}% after optional \page
        \let\getheadsyncs\theheadsynchonization
-       \placeheadempty % just flush 'm
+       \placecurrentheadempty % just flush 'm
        \doheadspacingafternop
      \fi\fi
    \else
@@ -526,18 +526,18 @@
        \doregisterhead\currenthead{#2}{#3}% after optional \page
        \let\getheadsyncs\theheadsynchonization
        \let\getheadtitle\fullheadtitle
-       \placeheadtext
+       \placecurrentheadtext
        \doheadspacingafteryes
      \else\ifconditional\headhidden
        \doregisterhead\currenthead{#2}{#3}% after optional \page
        \let\getheadsyncs\theheadsynchonization
-       \placeheadhidden % only something when tracing
+       \placecurrentheadhidden % only something when tracing
      \else
        % do nothing / should be vbox to 0pt
        \doheadspacingbeforenop
        \doregisterhead\currenthead{#2}{#3}% after optional \page
        \let\getheadsyncs\theheadsynchonization
-       \placeheadempty % just flush 'm
+       \placecurrentheadempty % just flush 'm
        \doheadspacingafternop
      \fi\fi
    \fi
@@ -553,21 +553,21 @@
 
 % typesetting
 
-\unexpanded\def\placeheadnumbertext % dummy, will be overloaded
+\unexpanded\def\placecurrentheadnumbertext
   {\setheadmarking
    \getheadnumber/\getheadtitle
    \getheadsyncs}
 
-\unexpanded\def\placeheadtext % dummy, will be overloaded
+\unexpanded\def\placecurrentheadtext
   {\setheadmarking
    \getheadtitle
    \getheadsyncs}
 
-\unexpanded\def\placeheadempty % dummy, will be overloaded
+\unexpanded\def\placecurrentheadempty
   {\setheadmarking
    \getheadsyncs}
 
-\unexpanded\def\placeheadhidden
+\unexpanded\def\placecurrentheadhidden
   {\setxvalue{\currenthead:sync}%
      {\noexpand\setgvalue{\currenthead:sync}{}%
       \noexpand\pagetype[\currentheadcoupling]% hm also number

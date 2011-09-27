@@ -34,9 +34,9 @@ local info = {
 
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
+local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt, lpeg.Cp, lpeg.Cc, lpeg.Ct
-local type, next, pcall, loadfile, setmetatable = type, next, pcall, loadfile, setmetatable
+local type, next = type, next
 local find, match, lower = string.find, string.match, string.lower
 
 module(...)
@@ -45,14 +45,16 @@ local contextlexer = _M
 local cldlexer     = lexer.load('scite-context-lexer-cld')
 local mpslexer     = lexer.load('scite-context-lexer-mps')
 
-local commands   = { en = { } }
-local primitives = { }
-local helpers    = { }
-local constants  = { }
+local commands     = { en = { } }
+local primitives   = { }
+local helpers      = { }
+local constants    = { }
+
+local context      = lexer.context
 
 do -- todo: only once, store in global
 
-    local definitions = lexer.context.loaddefinitions("scite-context-data-interfaces")
+    local definitions = context.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
         for interface, list in next, definitions do
@@ -72,14 +74,14 @@ do -- todo: only once, store in global
         end
     end
 
-    local definitions = lexer.context.loaddefinitions("scite-context-data-context")
+    local definitions = context.loaddefinitions("scite-context-data-context")
 
     if definitions then
         helpers   = definitions.helpers   or { }
         constants = definitions.constants or { }
     end
 
-    local definitions = lexer.context.loaddefinitions("scite-context-data-tex")
+    local definitions = context.loaddefinitions("scite-context-data-tex")
 
     if definitions then
         local function add(data)
@@ -109,9 +111,10 @@ local knowncommand = Cmt(cstoken^1, function(_,i,s)
     return currentcommands[s] and i
 end)
 
-local wordpattern = lexer.context.wordpattern
-local checkedword = lexer.context.checkedword
-local setwordlist = lexer.context.setwordlist
+local wordtoken   = context.patterns.wordtoken
+local wordpattern = context.patterns.wordpattern
+local checkedword = context.checkedword
+local setwordlist = context.setwordlist
 local validwords  = false
 
 -- % language=uk
@@ -121,11 +124,11 @@ local knownpreamble = Cmt(#P("% "), function(input,i,_) -- todo : utfbomb
         validwords = false
         local s, e, word = find(input,'^(.+)[\n\r]',i) -- combine with match
         if word then
-            local interface = match(word,"interface=(..)")
+            local interface = match(word,"interface=([a-z]+)")
             if interface then
                 currentcommands  = commands[interface] or commands.en or { }
             end
-            local language = match(word,"language=(..)")
+            local language = match(word,"language=([a-z]+)")
             validwords = language and setwordlist(language)
         end
     end
@@ -170,6 +173,8 @@ end)
 
 -- experiment: keep space with whatever ... less tables
 
+-- 10pt
+
 local commentline            = P('%') * (1-S("\n\r"))^0
 local endline                = S("\n\r")^1
 
@@ -194,7 +199,10 @@ local p_csname               = backslash * (cstoken^1 + P(1))
 local p_grouping             = S("{$}")
 local p_special              = S("#()[]<>=\"")
 local p_extra                = S("`~%^&_-+/\'|")
-local p_text                 = cstoken^1 --maybe add punctuation and space
+local p_text                 = wordtoken^1 --maybe add punctuation and space
+
+local p_number               = context.patterns.real
+local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") + P("cc") + P("dd")
 
 -- no looking back           = #(1-S("[=")) * cstoken^3 * #(1-S("=]"))
 
@@ -283,10 +291,11 @@ local primitive              = token('primitive', p_primitive  )
 local ifprimitive            = token('primitive', p_ifprimitive)
 local csname                 = token('user',      p_csname     )
 local grouping               = token('grouping',  p_grouping   )
+local number                 = token('number',    p_number     )
+                             * token('constant',  p_unit       )
 local special                = token('special',   p_special    )
 local extra                  = token('extra',     p_extra      )
------ text                   = token('default',   p_text       )
------ word                   = token("okay",      p_word       )
+local text                   = token('default',   p_text       )
 local word                   = p_word
 
 ----- startluacode           = token("grouping", P("\\startluacode"))
@@ -306,7 +315,7 @@ end
 local function stopdisplaylua(_,i,s)
     local ok = luatag == s
     if ok then
-cldlexer._directives.cld_inline = false
+        cldlexer._directives.cld_inline = false
         luastatus = false
     end
     return ok
@@ -344,7 +353,7 @@ local function stopinlinelua_e(_,i,s) -- }
         lualevel = lualevel - 1
         local ok = lualevel <= 0
         if ok then
-cldlexer._directives.cld_inline = false
+            cldlexer._directives.cld_inline = false
             luastatus = false
         end
         return ok
@@ -395,7 +404,7 @@ _rules = {
     { "whitespace",  spacing     },
     { "preamble",    preamble    },
     { "word",        word        },
- -- { "text",        text        },
+    { "text",        text        }, -- non words
     { "comment",     comment     },
     { "constant",    constant    },
     { "helper",      helper      },
@@ -405,12 +414,13 @@ _rules = {
     { "csname",      csname      },
  -- { "whatever",    specialword }, -- not yet, crashes
     { "grouping",    grouping    },
+ -- { "number",      number      },
     { "special",     special     },
     { "extra",       extra       },
     { "rest",        rest        },
 }
 
-_tokenstyles = lexer.context.styleset
+_tokenstyles = context.styleset
 
 local folds = {
     ["\\start"] = 1, ["\\stop" ] = -1,

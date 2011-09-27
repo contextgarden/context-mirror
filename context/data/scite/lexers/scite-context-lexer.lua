@@ -41,7 +41,11 @@ local type, next, setmetatable, rawset = type, next, setmetatable, rawset
 
 dofile(_LEXERHOME .. '/lexer.lua')
 
-lexer.context = lexer.context or { }
+lexer.context    = lexer.context or { }
+local context    = lexer.context
+
+context.patterns = context.patterns or { }
+local patterns   = context.patterns
 
 local locations = {
  -- lexer.context.path,
@@ -87,7 +91,7 @@ end
 --     end
 -- end
 
-function lexer.context.loaddefinitions(name)
+function context.loaddefinitions(name)
     for i=1,#locations do
         local data = collect(locations[i] .. "/" .. name)
         if data then
@@ -98,7 +102,7 @@ end
 
 -- maybe more efficient:
 
-function lexer.context.word_match(words,word_chars,case_insensitive)
+function context.word_match(words,word_chars,case_insensitive)
     local chars = '%w_' -- maybe just "" when word_chars
     if word_chars then
         chars = '^([' .. chars .. gsub(word_chars,'([%^%]%-])', '%%%1') ..']+)'
@@ -128,16 +132,42 @@ end
 
 -- nicer (todo: utf):
 
-local defaults = R("az","AZ","\127\255","__")
+local idtoken = R("az","AZ","\127\255","__")
+local digit   = R("09")
+local sign    = S("+-")
+local period  = P(".")
+local space   = S(" \n\r\t\f\v")
 
-function lexer.context.exact_match(words,word_chars,case_insensitive)
+patterns.idtoken  = idtoken
+
+patterns.digit    = digit
+patterns.sign     = sign
+patterns.period   = period
+
+patterns.cardinal = digit^1
+patterns.integer  = sign^-1 * digit^1
+
+patterns.real     =
+    sign^-1 * (                    -- at most one
+        digit^1 * period * digit^0 -- 10.0 10.
+      + digit^0 * period * digit^1 -- 0.10 .10
+      + digit^1                    -- 10
+   )
+
+patterns.restofline = (1-S("\n\r"))^1
+patterns.space      = space
+patterns.spacing    = space^1
+patterns.nospacing  = (1-space)^1
+patterns.anything   = P(1)
+
+function context.exact_match(words,word_chars,case_insensitive)
     local characters = concat(words)
     local pattern -- the concat catches _ etc
     if word_chars == true or word_chars == false or word_chars == nil then
         word_chars = ""
     end
     if type(word_chars) == "string" then
-        pattern = S(characters) + defaults
+        pattern = S(characters) + idtoken
         if case_insensitive then
             pattern = pattern + S(upper(characters)) + S(lower(characters))
         end
@@ -166,7 +196,6 @@ function lexer.context.exact_match(words,word_chars,case_insensitive)
     end
 end
 
-
 -- spell checking (we can only load lua files)
 
 -- return {
@@ -185,13 +214,13 @@ local function splitwords(words)
     return lpegmatch(splitter,words)
 end
 
-function lexer.context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
+function context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
     if not tag or tag == "" then
         return false
     elseif lists[tag] ~= nil then
         return lists[tag]
     else
-        local list = lexer.context.loaddefinitions("spell-" .. tag)
+        local list = context.loaddefinitions("spell-" .. tag)
         if not list or type(list) ~= "table" then
             lists[tag] = false
             return nil
@@ -207,9 +236,10 @@ function lexer.context.setwordlist(tag,limit) -- returns hash (lowercase keys an
     end
 end
 
-lexer.context.wordpattern = R("az","AZ","\127\255")^3 -- todo: if limit and #s < limit then
+patterns.wordtoken   = R("az","AZ","\127\255")
+patterns.wordpattern = patterns.wordtoken^3 -- todo: if limit and #s < limit then
 
-function lexer.context.checkedword(validwords,s,i) -- ,limit
+function context.checkedword(validwords,s,i) -- ,limit
     if not validwords then
         return true, { "text", i }
     else
@@ -302,7 +332,7 @@ local splitlines = ( (
   + (                           newline   ) / function()    action_n()    end
 ) )^0
 
-function lexer.context.fold(text, start_pos, start_line, start_level)
+function context.fold(text, start_pos, start_line, start_level)
     if text == '' then
         return { }
     end
@@ -413,7 +443,7 @@ function lexer.context.fold(text, start_pos, start_line, start_level)
     return folds
 end
 
-function lexer.context.lex(text,init_style)
+function context.lex(text,init_style)
     local lexer = global._LEXER
     local grammar = lexer._GRAMMAR
     if not grammar then
@@ -499,11 +529,11 @@ end
 
 -- todo: keywords: one lookup and multiple matches
 
-function lexer.context.token(name, patt)
+function context.token(name, patt)
     return Ct(patt * Cc(name) * Cp())
 end
 
-lexer.fold        = lexer.context.fold
-lexer.lex         = lexer.context.lex
-lexer.token       = lexer.context.token
-lexer.exact_match = lexer.context.exact_match
+lexer.fold        = context.fold
+lexer.lex         = context.lex
+lexer.token       = context.token
+lexer.exact_match = context.exact_match

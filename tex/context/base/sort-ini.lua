@@ -96,10 +96,11 @@ local validmethods      = table.tohash {
 }
 
 local predefinedmethods = {
-    [v_before] = "mm,mc,uc",
-    [v_after]  = "pm,mc,uc",
-    [v_first]  = "pc,mm,uc",
-    [v_last]   = "mc,mm,uc",
+    [v_default] = "zc,pc,zm,pm,uc",
+    [v_before]  = "mm,mc,uc",
+    [v_after]   = "pm,mc,uc",
+    [v_first]   = "pc,mm,uc",
+    [v_last]    = "mc,mm,uc",
 }
 
 sorters = {
@@ -113,7 +114,7 @@ sorters = {
         digitsoffset      = digitsoffset,
         digitsmaximum     = digitsmaximum,
         defaultlanguage   = v_default,
-        defaultmethod     = v_before,
+        defaultmethod     = v_default,
         defaultdigits     = v_numbers,
     }
 }

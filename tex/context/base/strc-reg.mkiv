@@ -706,9 +706,9 @@
 \def\withregisterpagecommand#1#2#3#4%
   {\def\currentregisterpageindex{#2}%
    \iflocation
-     \goto{\registerparameter\c!pagecommand{#4}}[internal(#2)]%
+     \goto{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
    \else
-     \registerparameter\c!pagecommand{#4}%
+     \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
    \fi}
 
 \def\registeronepage#1#2#3#4% #1:processor content
