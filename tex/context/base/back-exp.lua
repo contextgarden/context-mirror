@@ -25,6 +25,7 @@ local utfchar, utfbyte, utfsub, utfgsub = utf.char, utf.byte, utf.sub, utf.gsub
 local insert, remove = table.insert, table.remove
 local topoints = number.topoints
 local utfvalues = string.utfvalues
+local fromunicode16 = fonts.mappings.fromunicode16
 
 local trace_export      = false  trackers.register  ("export.trace",     function(v) trace_export = v end)
 local less_state        = false  directives.register("export.lessstate", function(v) less_state   = v end)
@@ -1825,10 +1826,12 @@ local function collectresults(head,list) -- is last used (we also have currentat
                                 local u = fc.tounicode
                                 if u and u ~= "" then
                                     -- tracing
-                                    for s in gmatch(u,"....") do -- is this ok?
-                                        nofcurrentcontent = nofcurrentcontent + 1
-                                        currentcontent[nofcurrentcontent] = utfchar(tonumber(s,16))
-                                    end
+--                                     for s in gmatch(u,"....") do -- is this ok?
+--                                         nofcurrentcontent = nofcurrentcontent + 1
+--                                         currentcontent[nofcurrentcontent] = utfchar(tonumber(s,16))
+--                                     end
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = utfchar(fromunicode16(u))
                                 else
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(c)
@@ -2188,9 +2191,6 @@ local function stopexport(v)
     local result = allcontent(tree) -- also does some housekeeping and data collecting
     --
     local files = {
-        xhtmlfile,
-     -- stylefilename,
-     -- imagefilename,
     }
     local results = concat {
         wholepreamble(),
@@ -2218,6 +2218,7 @@ local function stopexport(v)
         else
             xhtmlfile = file.addsuffix(xhtmlfile,"xhtml")
         end
+        files[#files+1] = xhtmlfile
         report_export("saving xhtml variant in '%s",xhtmlfile)
         local xmltree = cleanxhtmltree(xml.convert(results))
         xml.save(xmltree,xhtmlfile)

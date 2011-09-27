@@ -403,21 +403,35 @@ function constructors.scale(tfmdata,specification)
     local sharedkerns   = { }
     --
     for unicode, character in next, characters do
-        local chr, description, index
+        local chr, description, index, touni
         if changed then
-            -- basemode hack
+            -- basemode hack (we try to catch missing tounicodes, e.g. needed for ssty in math cambria)
             local c = changed[unicode]
             if c then
-                description = descriptions[c] or character
+                description = descriptions[c] or descriptions[unicode] or character
                 character = characters[c] or character
                 index = description.index or c
+                if tounicode then
+                    touni = tounicode[index] -- nb: index!
+                    if not touni then -- goodie
+                        local d = descriptions[unicode] or characters[unicode]
+                        local i = d.index or unicode
+                        touni = tounicode[i] -- nb: index!
+                    end
+                end
             else
                 description = descriptions[unicode] or character
                 index = description.index or unicode
+                if tounicode then
+                    touni = tounicode[index] -- nb: index!
+                end
             end
         else
             description = descriptions[unicode] or character
             index = description.index or unicode
+            if tounicode then
+                touni = tounicode[index] -- nb: index!
+            end
         end
         local width  = description.width
         local height = description.height
@@ -460,15 +474,12 @@ function constructors.scale(tfmdata,specification)
                 }
             end
         end
+        if touni then
+            chr.tounicode = touni
+        end
     --  if trace_scaling then
     --    report_defining("t=%s, u=%s, i=%s, n=%s c=%s",k,chr.tounicode or "",index or 0,description.name or '-',description.class or '-')
     --  end
-        if tounicode then
-            local tu = tounicode[index] -- nb: index!
-            if tu then
-                chr.tounicode = tu
-            end
-        end
         if hasquality then
             -- we could move these calculations elsewhere (saves calculations)
             local ve = character.expansion_factor

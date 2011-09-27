@@ -8,13 +8,15 @@ local info = {
 
 local lexer = lexer
 local global, string, table, lpeg = _G, string, table, lpeg
-local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
+local token, exact_match = lexer.token, lexer.exact_match
 local P, R, S, V, C, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, lpeg.Cmt
-local type, next, pcall, loadfile = type, next, pcall, loadfile
+local type = type
 
 module(...)
 
-local metafunlexer = _M
+local metafunlexer      = _M
+
+local context           = lexer.context
 
 local metafunhelpers    = { }
 local metafunconstants  = { }
@@ -23,14 +25,14 @@ local primitivecommands = { }
 
 do
 
-    local definitions = lexer.context.loaddefinitions("scite-context-data-metapost")
+    local definitions = context.loaddefinitions("scite-context-data-metapost")
 
     if definitions then
         plaincommands     = definitions.plain      or { }
         primitivecommands = definitions.primitives or { }
     end
 
-    local definitions = lexer.context.loaddefinitions("scite-context-data-metafun")
+    local definitions = context.loaddefinitions("scite-context-data-metafun")
 
     if definitions then
         metafunhelpers   = definitions.helpers   or { }
@@ -44,16 +46,9 @@ local whitespace = metafunlexer.WHITESPACE -- triggers states
 local space      = lexer.space -- S(" \n\r\t\f\v")
 local any        = lexer.any
 
-local digit      = R("09")
-local sign       = S("+-")
-local period     = P(".")
 local dquote     = P('"')
 local cstoken    = R("az","AZ") + P("_")
-local number     = sign^-1 * (                     -- at most one
-                        digit^1 * period * digit^0 -- 10.0 10.
-                      + digit^0 * period * digit^1 -- 0.10 .10
-                      + digit^1                    -- 10
-                   )
+local number     = context.patterns.real
 
 local cstokentex = R("az","AZ","\127\255") + S("@!?_")
 
@@ -66,10 +61,10 @@ local constant   = token('data',      exact_match(metafunconstants))
 local helper     = token('command',   exact_match(metafunhelpers))
 local plain      = token('plain',     exact_match(plaincommands))
 local quoted     = token('quote',     dquote)
-                 * token('string',    P(1-dquote)^1)
+                 * token('string',    P(1-dquote)^0)
                  * token('quote',     dquote)
 local primitive  = token('primitive', exact_match(primitivecommands))
-local identifier = token('default',   cstoken)
+local identifier = token('default',   cstoken^1)
 local number     = token('number',    number)
 local special    = token('special',   S("#()[]<>=:\"")) -- or else := <> etc split
 local texlike    = token('string',    P("\\") * cstokentex^1)
@@ -86,12 +81,12 @@ _rules = {
     { 'number',     number     },
     { 'quoted',     quoted     },
     { 'special',    special    },
---     { 'texlike',    texlike    },
+ -- { 'texlike',    texlike    },
     { 'extra',      extra      },
     { 'rest',       rest       },
 }
 
-_tokenstyles = lexer.context.styleset
+_tokenstyles = context.styleset
 
 _foldsymbols = {
     _patterns = {

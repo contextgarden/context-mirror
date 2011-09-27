@@ -100,10 +100,10 @@ local shortcomment  = token("comment", dashes * lexer.nonnewline^0)
 local longcomment   = token("comment", dashes * longcomment)
 
 local shortstring   = token("quote",  dquote)
-                    * token("string", (escaped + (1-dquote))^0 )
+                    * token("string", (escaped + (1-dquote))^0)
                     * token("quote",  dquote)
                     + token("quote",  squote)
-                    * token("string", (escaped + (1-squote))^0 )
+                    * token("string", (escaped + (1-squote))^0)
                     * token("quote",  squote)
 
 local longstring    = token("quote",  longonestart)

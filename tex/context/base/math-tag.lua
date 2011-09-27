@@ -87,6 +87,8 @@ end
 
 -- todo: check function here and keep attribute the same
 
+-- todo: variants -> original
+
 local actionstack = { }
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
@@ -117,6 +119,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             else
                 tag = "mo"
             end
+-- print(start,a,tag)
             set_attribute(start,a_tagged,start_tagged(tag,a))
             stop_tagged()
             break -- okay?

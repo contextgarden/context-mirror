@@ -244,6 +244,10 @@
      \let\raggedtopcommand   \vfilll % used with \framed for
    \fi}                              % instance in tables
 
+\setvalue{\@@ragged@@command\v!last}%
+  {\appendtoks\centeredlastline\to\everyraggedcommand
+   \!!donecfalse}
+
 \setvalue{\@@ragged@@command\v!flushleft }{\getvalue{\@@ragged@@command\v!right }}
 \setvalue{\@@ragged@@command\v!flushright}{\getvalue{\@@ragged@@command\v!left  }}
 \setvalue{\@@ragged@@command\v!center    }{\getvalue{\@@ragged@@command\v!middle}}
@@ -358,8 +362,8 @@
 
 \let\updateraggedskips\relax
 
-\def\setraggedskips#1#2#3#4#5#6#7% never change this name
-  {\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
+\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name
+  {\unexpanded\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
    \updateraggedskips}
 
 \def\dosetraggedskips#1#2#3#4#5#6#7%
@@ -419,10 +423,12 @@
 
 % defaults
 
-\def\raggedfillamount    {1fil}
-\def\raggedhalffillamount{.5fil}
-\def\raggedspaceamount   {\interwordspace} % {.3333em}
-\def\raggedxspaceamount  {.5em}
+\def\raggedfillamount        {1fil}
+\def\raggednegativefillamount{-1fil}
+\def\raggeddoublefillamount  {2fil}
+\def\raggedhalffillamount    {.5fil}
+\def\raggedspaceamount       {\interwordspace} % {.3333em}
+\def\raggedxspaceamount      {.5em}
 
 \unexpanded\def\notragged
   {\raggedstatus\zerocount
@@ -444,6 +450,16 @@
   {\setraggedness\middleraggedness
    \setraggedskips2\middleraggedness\middleraggedness\raggedspaceamount
      \raggedxspaceamount\zeropoint\zeropoint}
+
+\unexpanded\def\centeredlastline
+  {\setraggedskips
+     \zerocount
+     \raggedfillamount
+     \raggednegativefillamount
+     \zeropoint
+     \zeropoint
+     \raggeddoublefillamount
+     \zeropoint}
 
 %D We used to have:
 %D
@@ -560,6 +576,8 @@
 \installalign \v!lefttoright   {\righttoleft}
 \installalign {l2r}            {\lefttoright}
 \installalign {r2l}            {\righttoleft}
+
+\installalign \v!last          {\centeredlastline}
 
 \newcount\hyphenminoffset
 

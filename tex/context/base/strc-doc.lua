@@ -595,6 +595,9 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         local firstprefix, lastprefix = 0, 16
         if segments then
             local f, l = match(tostring(segments),"^(.-):(.+)$")
+            if l == "*" then
+                l = 100 -- new
+            end
             if f and l then
                 -- 0:100, chapter:subsubsection
                 firstprefix = tonumber(f) or sections.getlevel(f) or 0
