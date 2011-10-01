@@ -927,7 +927,7 @@
 % macros.
 
 \def\reinstatedescriptionnumberentry#1%
-  {\xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.getinternalreference(#1))}}%
+  {\xdef\currentdescriptionattribute  {\ctxlua    {structures.references.getinternalreference(#1)}}%
    \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
 
 \installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}

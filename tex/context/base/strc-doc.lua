@@ -16,18 +16,17 @@ local concat = table.concat
 local max, min = math.max, math.min
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 
-local catcodenumbers = catcodes.numbers
-local ctxcatcodes    = tex.ctxcatcodes
-local variables      = interfaces.variables
+local catcodenumbers      = catcodes.numbers
+local ctxcatcodes         = tex.ctxcatcodes
+local variables           = interfaces.variables
 
---~ if not trackers then trackers = { register = function() end } end
+local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
+local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
 
-local trace_sectioning = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
-local trace_detail     = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
+local report_structure    = logs.reporter("structure","sectioning")
 
-local report_structure = logs.reporter("structure","sectioning")
-
-local structures, context = structures, context
+local structures          = structures
+local context             = context
 
 local helpers             = structures.helpers
 local documents           = structures.documents
@@ -73,6 +72,19 @@ function documents.reset()
 end
 
 documents.initialize()
+
+-- -- -- components -- -- --
+
+function documents.preset(numbers)
+    local nofnumbers = #numbers
+    data.numbers = numbers
+    data.depth = nofnumbers
+    data.ownnumbers = { }
+    for i=1,nofnumbers do
+        data.ownnumbers[i] = ""
+    end
+    sections.setnumber(nofnumbers,"-1")
+end
 
 -- -- -- sections -- -- --
 
@@ -209,12 +221,16 @@ end
 
 function sections.somelevel(given)
     -- old number
-    local numbers, ownnumbers, forced, status, olddepth = data.numbers, data.ownnumbers, data.forced, data.status, data.depth
-    local givenname = given.metadata.name
+    local numbers     = data.numbers
+    local ownnumbers  = data.ownnumbers
+    local forced      = data.forced
+    local status      = data.status
+    local olddepth    = data.depth
+    local givenname   = given.metadata.name
     local mappedlevel = levelmap[givenname]
-    local newdepth = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
-    local directives = given.directives
-    local resetset = (directives and directives.resetset) or ""
+    local newdepth    = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
+    local directives  = given.directives
+    local resetset    = (directives and directives.resetset) or ""
  -- local resetter = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permits userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
@@ -333,6 +349,11 @@ function sections.somelevel(given)
     local references = given.references
 
     references.tag = references.tag or tags.getid(metadata.kind,metadata.name)
+
+    local setcomponent = structures.references.setcomponent
+    if setcomponent then
+        setcomponent(given) -- might move to the tex end
+    end
 
     references.section = sections.save(given)
  -- given.numberdata = nil

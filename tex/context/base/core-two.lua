@@ -140,13 +140,13 @@ jobpasses.inlist = inlist
 
 -- interface
 
-function commands.gettwopassdata     (id) local r = get  (id) if r then context(r) end end
-function commands.getfirsttwopassdata(id) local r = first(id) if r then context(r) end end
-function commands.getlasttwopassdata (id) local r = last (id) if r then context(r) end end
-function commands.findtwopassdata    (id) local r = find (id) if r then context(r) end end
-function commands.gettwopassdatalist (id) local r = list (id) if r then context(r) end end
-function commands.counttwopassdata   (id) local r = count(id) if r then context(r) end end
-function commands.checktwopassdata   (id) local r = check(id) if r then context(r) end end
+function commands.gettwopassdata     (id)   local r = get  (id)   if r then context(r) end end
+function commands.getfirsttwopassdata(id)   local r = first(id)   if r then context(r) end end
+function commands.getlasttwopassdata (id)   local r = last (id)   if r then context(r) end end
+function commands.findtwopassdata    (id,n) local r = find (id,n) if r then context(r) end end
+function commands.gettwopassdatalist (id)   local r = list (id)   if r then context(r) end end
+function commands.counttwopassdata   (id)   local r = count(id)   if r then context(r) end end
+function commands.checktwopassdata   (id)   local r = check(id)   if r then context(r) end end
 
 commands.definetwopasslist     = jobpasses.define
 commands.savetwopassdata       = jobpasses.save

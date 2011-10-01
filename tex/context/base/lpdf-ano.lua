@@ -323,10 +323,15 @@ end
 
 runners["inner"] = function(var,actions)
     if getinnermethod() == "names" then
-        local vir = var.i.references
-        local internal = vir and vir.internal
-        if internal then
-            var.inner = "aut:" .. internal
+        local vi = var.i
+        if vi then
+            local vir = vi.references
+            if vir then
+                local internal = vir.internal
+                if internal then
+                    var.inner = "aut:" .. internal
+                end
+            end
         end
     else
         var.inner = nil

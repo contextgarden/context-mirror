@@ -107,35 +107,35 @@
 \unexpanded\def\processfileonce     #name{\ctxcommand{processfileonce("#name")}}
 \unexpanded\def\processfilenone     #name{\ctxcommand{processfilenone("#name")}}
 
-\unexpanded\def\project                  {\doifnextoptionalelse\useproject    \redoproject}
-\unexpanded\def\product                  {\doifnextoptionalelse\useproduct    \redoproduct}
-\unexpanded\def\component                {\doifnextoptionalelse\usecomponent  \redocomponent}
-\unexpanded\def\environment              {\doifnextoptionalelse\useenvironment\redoenvironment}
+\unexpanded\def\project                  {\doifnextoptionalelse\useproject    \do_project}
+\unexpanded\def\product                  {\doifnextoptionalelse\useproduct    \do_product}
+\unexpanded\def\component                {\doifnextoptionalelse\usecomponent  \do_component}
+\unexpanded\def\environment              {\doifnextoptionalelse\useenvironment\do_environment}
 
-\def\redoproject                   #name {\ctxcommand{useproject    ("#name")}}
-\def\redoproduct                   #name {\ctxcommand{useproduct    ("#name")}}
-\def\redocomponent                 #name {\ctxcommand{usecomponent  ("#name")}}
-\def\redoenvironment               #name {\ctxcommand{useenvironment("#name")}}
+\def\do_project                   #name {\ctxcommand{useproject    ("#name")}}
+\def\do_product                   #name {\ctxcommand{useproduct    ("#name")}}
+\def\do_component                 #name {\ctxcommand{usecomponent  ("#name")}}
+\def\do_environment               #name {\ctxcommand{useenvironment("#name")}}
 
-\unexpanded\def\startproject             {\doifnextoptionalelse\dostartproject    \redostartproject}
-\unexpanded\def\startproduct             {\doifnextoptionalelse\dostartproduct    \redostartproduct}
-\unexpanded\def\startcomponent           {\doifnextoptionalelse\dostartcomponent  \redostartcomponent}
-\unexpanded\def\startenvironment         {\doifnextoptionalelse\dostartenvironment\redostartenvironment}
+\unexpanded\def\startproject             {\doifnextoptionalelse\do_startproject    \redo_startproject}
+\unexpanded\def\startproduct             {\doifnextoptionalelse\do_startproduct    \redo_startproduct}
+\unexpanded\def\startcomponent           {\doifnextoptionalelse\do_startcomponent  \redo_startcomponent}
+\unexpanded\def\startenvironment         {\doifnextoptionalelse\do_startenvironment\redo_startenvironment}
 
-\def\redostartproject              #name {\ctxcommand{startproject    ("#name")}}
-\def\redostartproduct              #name {\ctxcommand{startproduct    ("#name")}}
-\def\redostartcomponent            #name {\ctxcommand{startcomponent  ("#name")}}
-\def\redostartenvironment          #name {\ctxcommand{startenvironment("#name")}}
+\def\redo_startproject              #name {\ctxcommand{startproject    ("#name")}}
+\def\redo_startproduct              #name {\ctxcommand{startproduct    ("#name")}}
+\def\redo_startcomponent            #name {\ctxcommand{startcomponent  ("#name")}}
+\def\redo_startenvironment          #name {\ctxcommand{startenvironment("#name")}}
 
-\unexpanded\def\useproject        [#name]{\ctxcommand{useproject    ("#name")}}
-\unexpanded\def\useproduct        [#name]{\ctxcommand{useproduct    ("#name")}}
-\unexpanded\def\usecomponent      [#name]{\ctxcommand{usecomponent  ("#name")}}
-\unexpanded\def\useenvironment    [#name]{\ctxcommand{useenvironment("#name")}}
+\unexpanded\def\useproject        [#name]{\do_project    {#name}}
+\unexpanded\def\useproduct        [#name]{\do_product    {#name}}
+\unexpanded\def\usecomponent      [#name]{\do_component  {#name}}
+\unexpanded\def\useenvironment    [#name]{\do_environment{#name}}
 
-\unexpanded\def\dostartproject    [#name]{\ctxcommand{startproject    ("#name")}}
-\unexpanded\def\dostartproduct    [#name]{\ctxcommand{startproduct    ("#name")}}
-\unexpanded\def\dostartcomponent  [#name]{\ctxcommand{startcomponent  ("#name")}}
-\unexpanded\def\dostartenvironment[#name]{\ctxcommand{startenvironment("#name")}}
+\unexpanded\def\do_startproject    [#name]{\ctxcommand{startproject    ("#name")}}
+\unexpanded\def\do_startproduct    [#name]{\ctxcommand{startproduct    ("#name")}}
+\unexpanded\def\do_startcomponent  [#name]{\ctxcommand{startcomponent  ("#name")}}
+\unexpanded\def\do_startenvironment[#name]{\ctxcommand{startenvironment("#name")}}
 
 \newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
 
@@ -202,5 +202,36 @@
 % weird place:
 
 \neverypar\emptytoks
+
+%D Wrappers (the signal is a synchronization with lua hack):
+
+\def\startprojectindeed
+  {\starttext}
+
+\def\stopprojectindeed
+  {\stoptext
+   \signalendofinput\v!project}
+
+\def\startproductindeed
+  {\starttext}
+
+\def\stopproductindeed
+  {\stoptext
+   \signalendofinput\v!product}
+
+\def\startcomponentindeed
+  {\starttext
+   \pushreferenceprefix\currentcomponent}
+
+\def\stopcomponentindeed
+  {\popreferenceprefix
+   \stoptext
+   \signalendofinput\v!component}
+
+\def\startenvironmentindeed
+  {}
+
+\def\stopenvironmentindeed
+  {\signalendofinput\v!project}
 
 \protect \endinput

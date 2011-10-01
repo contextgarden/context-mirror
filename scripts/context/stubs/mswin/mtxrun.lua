@@ -4016,12 +4016,29 @@ function tables.definetable(target) -- defines undefined tables
     return concat(t,"\n")
 end
 
-function tables.accesstable(target)
-    local t = _G
+function tables.accesstable(target,root)
+    local t = root or _G
     for name in gmatch(target,"([^%.]+)") do
         t = t[name]
+        if not t then
+            return
+        end
     end
     return t
+end
+
+function tables.migratetable(target,v,root)
+    local t = root or _G
+    local names = string.split(target,".")
+    for i=1,#names-1 do
+        local name = names[i]
+        t[name] = t[name] or { }
+        t = t[name]
+        if not t then
+            return
+        end
+    end
+    t[names[#names]] = v
 end
 
 function tables.removevalue(t,value) -- todo: n
@@ -4158,8 +4175,8 @@ local storage     = utilities.storage
 
 function storage.mark(t)
     if not t then
-        texio.write_nl("fatal error: storage '%s' cannot be marked",t)
-        os.exit()
+        texio.write_nl("fatal error: storage cannot be marked")
+        return -- os.exit()
     end
     local m = getmetatable(t)
     if not m then
@@ -4188,8 +4205,8 @@ end
 
 function storage.checked(t)
     if not t then
-        texio.write_nl("fatal error: storage '%s' has not been allocated",t)
-        os.exit()
+        texio.write_nl("fatal error: storage has not been allocated")
+        return -- os.exit()
     end
     return t
 end

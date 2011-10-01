@@ -2748,4 +2748,128 @@
 
 \stoptypescriptcollection
 
+\starttypescriptcollection[dejavu]
+
+    \definetypescriptprefix [e:ec]  [t1]
+    \definetypescriptprefix [e:qx]  [qx]
+    \definetypescriptprefix [e:t2a] [t2a]
+
+    \starttypescript [serif] [dejavu] [ec,qx,t2a]
+        \definefontsynonym [DejaVuSerif]                     [DejaVuSerif-tlf-\typescriptprefix{e:\typescriptthree}]            [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerif-Italic]              [DejaVuSerif-Italic-tlf-\typescriptprefix{e:\typescriptthree}]     [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerif-Bold]                [DejaVuSerif-Bold-tlf-\typescriptprefix{e:\typescriptthree}]       [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerif-BoldItalic]          [DejaVuSerif-BoldItalic-tlf-\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree]
+
+        \loadmapfile[dejavu-truetype.map]
+    \stoptypescript
+
+    \starttypescript [serif] [dejavu-condensed] [ec,qx,t2a]
+        \definefontsynonym [DejaVuSerifCondensed]            [DejaVuSerifCondensed-tlf-\typescriptprefix{e:\typescriptthree}]            [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerifCondensed-Italic]     [DejaVuSerifCondensed-Italic-tlf-\typescriptprefix{e:\typescriptthree}]     [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerifCondensed-Bold]       [DejaVuSerifCondensed-Bold-tlf-\typescriptprefix{e:\typescriptthree}]       [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSerifCondensed-BoldItalic] [DejaVuSerifCondensed-BoldItalic-tlf-\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree]
+
+        \loadmapfile[dejavu-truetype.map]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu] [ec,qx,t2a]
+        \definefontsynonym [DejaVuSans]                      [DejaVuSans-tlf-\typescriptprefix{e:\typescriptthree}]            [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSans-Italic]               [DejaVuSans-Italic-tlf-\typescriptprefix{e:\typescriptthree}]     [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSans-Bold]                 [DejaVuSans-Bold-tlf-\typescriptprefix{e:\typescriptthree}]       [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSans-BoldItalic]           [DejaVuSans-BoldItalic-tlf-\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree]
+
+        \loadmapfile[dejavu-truetype.map]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu-condensed] [ec,qx,t2a]
+        \definefontsynonym [DejaVuSansCondensed]             [DejaVuSansCondensed-tlf-\typescriptprefix{e:\typescriptthree}]            [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSansCondensed-Italic]      [DejaVuSansCondensed-Italic-tlf-\typescriptprefix{e:\typescriptthree}]     [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSansCondensed-Bold]        [DejaVuSansCondensed-Bold-tlf-\typescriptprefix{e:\typescriptthree}]       [encoding=\typescriptthree]
+        \definefontsynonym [DejaVuSansCondensed-BoldItalic]  [DejaVuSansCondensed-BoldItalic-tlf-\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree]
+
+        \loadmapfile[dejavu-truetype.map]
+    \stoptypescript
+
+  \starttypescript [mono] [dejavu,dejavu-condensed] [ec,qx,t2a]
+      \definefontsynonym [DejaVuSansMono]                      [DejaVuSansMono-tlf-\typescriptprefix{e:\typescriptthree}]            [encoding=\typescriptthree]
+      \definefontsynonym [DejaVuSansMono-Italic]               [DejaVuSansMono-Italic-tlf-\typescriptprefix{e:\typescriptthree}]     [encoding=\typescriptthree]
+      \definefontsynonym [DejaVuSansMono-Bold]                 [DejaVuSansMono-Bold-tlf-\typescriptprefix{e:\typescriptthree}]       [encoding=\typescriptthree]
+      \definefontsynonym [DejaVuSansMono-BoldItalic]           [DejaVuSansMono-BoldItalic-tlf-\typescriptprefix{e:\typescriptthree}] [encoding=\typescriptthree]
+
+      \loadmapfile[dejavu-truetype.map]
+  \stoptypescript
+
+    \starttypescript [serif] [dejavu] [name]
+        \definefontsynonym [Serif]            [DejaVuSerif]
+        \definefontsynonym [SerifItalic]      [DejaVuSerif-Italic]
+        \definefontsynonym [SerifBold]        [DejaVuSerif-Bold]
+        \definefontsynonym [SerifBoldItalic]  [DejaVuSerif-BoldItalic]
+
+        \definefontsynonym [SerifSlanted]     [SerifItalic]
+        \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+        \definefontsynonym [SerifCaps]        [Serif]
+    \stoptypescript
+
+    \starttypescript [serif] [dejavu-condensed] [name]
+        \definefontsynonym [Serif]            [DejaVuSerifCondensed]
+        \definefontsynonym [SerifItalic]      [DejaVuSerifCondensed-Italic]
+        \definefontsynonym [SerifBold]        [DejaVuSerifCondensed-Bold]
+        \definefontsynonym [SerifBoldItalic]  [DejaVuSerifCondensed-BoldItalic]
+
+        \definefontsynonym [SerifSlanted]     [SerifItalic]
+        \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
+        \definefontsynonym [SerifCaps]        [Serif]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu] [name]
+        \definefontsynonym [Sans]             [DejaVuSans]
+        \definefontsynonym [SansItalic]       [DejaVuSans-Italic]
+        \definefontsynonym [SansBold]         [DejaVuSans-Bold]
+        \definefontsynonym [SansBoldItalic]   [DejaVuSans-BoldItalic]
+
+        \definefontsynonym [SansSlanted]      [SansItalic]
+        \definefontsynonym [SansBoldSlanted]  [SansBoldItalic]
+        \definefontsynonym [SansCaps]         [Sans]
+    \stoptypescript
+
+    \starttypescript [sans] [dejavu-condensed] [name]
+        \definefontsynonym [Sans]             [DejaVuSansCondensed]
+        \definefontsynonym [SansItalic]       [DejaVuSansCondensed-Italic]
+        \definefontsynonym [SansBold]         [DejaVuSansCondensed-Bold]
+        \definefontsynonym [SansBoldItalic]   [DejaVuSansCondensed-BoldItalic]
+
+        \definefontsynonym [SansSlanted]      [SansItalic]
+        \definefontsynonym [SansBoldSlanted]  [SansBoldItalic]
+        \definefontsynonym [SansCaps]         [Sans]
+    \stoptypescript
+
+  \starttypescript [mono] [dejavu,dejavu-condensed] [name]
+      \definefontsynonym [Mono]             [DejaVuSansMono]
+      \definefontsynonym [MonoItalic]       [DejaVuSansMono-Italic]
+      \definefontsynonym [MonoBold]         [DejaVuSansMono-Bold]
+      \definefontsynonym [MonoBoldItalic]   [DejaVuSansMono-BoldItalic]
+
+      \definefontsynonym [MonoSlanted]      [MonoItalic]
+      \definefontsynonym [MonoBoldSlanted]  [MonoBoldItalic]
+      \definefontsynonym [MonoCaps]         [Mono]
+  \stoptypescript
+
+    \starttypescript [dejavu] [ec,qx,t2a]
+        \definetypeface [dejavu] [rm] [serif] [dejavu] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu] [ss] [sans]  [dejavu] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu] [tt] [mono]  [dejavu] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu] [mm] [math]  [xits]   [default] [rscale=auto]
+        \loadmapfile [dejavu-truetype.map]
+    \stoptypescript
+
+    \starttypescript [dejavu-condensed] [ec,qx,t2a]
+        \definetypeface [dejavu-condensed] [rm] [serif] [dejavu-condensed] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu-condensed] [ss] [sans]  [dejavu-condensed] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu-condensed] [default] [encoding=\typescripttwo]
+        \definetypeface [dejavu-condensed] [mm] [math]  [xits]             [default] [rscale=auto]
+        \loadmapfile [dejavu-truetype.map]
+    \stoptypescript
+
+\stoptypescriptcollection
+
 \endinput

@@ -62,34 +62,38 @@ packers.simplehashed = simplehashed
 --~ end
 
 local function pack(t,keys,hash,index)
-    for k,v in next, t do
-        if type(v) == "table" then
-            pack(v,keys,hash,index)
-            if keys[k] then
-                local h = hashed(v)
-                local i = hash[h]
-                if not i then
-                    i = #index + 1
-                    index[i] = v
-                    hash[h] = i
+    if t then
+        for k,v in next, t do
+            if type(v) == "table" then
+                pack(v,keys,hash,index)
+                if keys[k] then
+                    local h = hashed(v)
+                    local i = hash[h]
+                    if not i then
+                        i = #index + 1
+                        index[i] = v
+                        hash[h] = i
+                    end
+                    t[k] = i
                 end
-                t[k] = i
             end
         end
     end
 end
 
 local function unpack(t,keys,index)
-    for k,v in next, t do
-        if keys[k] and type(v) == "number" then
-            local iv = index[v]
-            if iv then
-                v = iv
-                t[k] = v
+    if t then
+        for k, v in next, t do
+            if keys[k] and type(v) == "number" then
+                local iv = index[v]
+                if iv then
+                    v = iv
+                    t[k] = v
+                end
             end
-        end
-        if type(v) == "table" then
-            unpack(v,keys,index)
+            if type(v) == "table" then
+                unpack(v,keys,index)
+            end
         end
     end
 end

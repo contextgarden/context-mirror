@@ -55,8 +55,8 @@ function pages.save(prefixdata,numberdata)
             report_pages("saving page %s.%s",realpage,userpage)
         end
         local data = {
-            number = userpage,
-            block = sections.currentblock(),
+            number     = userpage,
+            block      = sections.currentblock(),
             prefixdata = prefixdata and helpers.simplify(prefixdata),
             numberdata = numberdata and helpers.simplify(numberdata),
         }
@@ -121,17 +121,29 @@ function pages.analyze(entry,pagespecification)
     if not references then
         return false, false, "no references"
     end
-    local realpage = references.realpage
-    if not realpage then
-        return false, false, "no realpage"
+    local pagedata = references.pagedata -- sometimes resolved (external)
+    if not pagedata then
+        local realpage = references.realpage
+        if realpage then
+            pagedata = collected[realpage]
+        else
+            return false, false, "no realpage"
+        end
     end
-    local pagedata = collected[realpage]
     if not pagedata then
         return false, false, "no pagedata"
     end
-    local section = references.section
-    if not section then
-        return pagedata, false, "no section"
+    local sectiondata = references.sectiondata -- sometimes resolved (external)
+    if not sectiondata then
+        local section = references.section
+        if section then
+            sectiondata = sections.collected[section]
+        else
+            return pagedata, false, "no section"
+        end
+    end
+    if not sectiondata then
+        return pagedata, false, "no sectiondata"
     end
     local no = variables.no
     -- local preferences
@@ -139,16 +151,16 @@ function pages.analyze(entry,pagespecification)
         return pagedata, false, "current spec blocks prefix"
     end
     -- stored preferences
---~     if entry.prefix == no then
---~         return pagedata, false, "entry blocks prefix"
---~     end
+ -- if entry.prefix == no then
+ --     return pagedata, false, "entry blocks prefix"
+ -- end
     -- stored page state
     pagespecification = pagedata.prefixdata
     if pagespecification and pagespecification.prefix == no then
         return pagedata, false, "pagedata blocks prefix"
     end
     -- final verdict
-    return pagedata, sections.collected[references.section], "okay"
+    return pagedata, sectiondata, "okay"
 end
 
 function helpers.page(data,pagespec)
