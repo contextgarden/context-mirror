@@ -148,7 +148,8 @@
 
 \def\dochecksplitofffloat#1% box
   {\ifinsidesplitfloat
-     \ifdim\ht#1=\zeropoint
+   % \ifdim\ht#1=\zeropoint % funny: \ifcase does not check for overflow
+     \ifcase\ht#1\relax
        \global\setfalse\somenextplitofffloat
      \else
        \global\settrue \somenextplitofffloat

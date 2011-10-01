@@ -19,37 +19,38 @@ local lpegmatch = lpeg.match
 local simple_hash_to_string, settings_to_hash = utilities.parsers.simple_hash_to_string, utilities.parsers.settings_to_hash
 local allocate, checked = utilities.storage.allocate, utilities.storage.checked
 
-local trace_lists    = false  trackers.register("structures.lists", function(v) trace_lists = v end)
+local trace_lists       = false  trackers.register("structures.lists", function(v) trace_lists = v end)
 
-local report_lists   = logs.reporter("structure","lists")
+local report_lists      = logs.reporter("structure","lists")
 
-local structures     = structures
-local lists          = structures.lists
-local sections       = structures.sections
-local helpers        = structures.helpers
-local documents      = structures.documents
-local pages          = structures.pages
-local tags           = structures.tags
-local references     = structures.references
+local structures        = structures
+local lists             = structures.lists
+local sections          = structures.sections
+local helpers           = structures.helpers
+local documents         = structures.documents
+local pages             = structures.pages
+local tags              = structures.tags
+local references        = structures.references
 
-local collected      = allocate()
-local tobesaved      = allocate()
-local cached         = allocate()
-local pushed         = allocate()
+local collected         = allocate()
+local tobesaved         = allocate()
+local cached            = allocate()
+local pushed            = allocate()
 
-lists.collected      = collected
-lists.tobesaved      = tobesaved
+lists.collected         = collected
+lists.tobesaved         = tobesaved
 
-lists.enhancers      = lists.enhancers or { }
-lists.internals      = allocate(lists.internals or { }) -- to be checked
-lists.ordered        = allocate(lists.ordered   or { }) -- to be checked
-lists.cached         = cached
-lists.pushed         = pushed
+lists.enhancers         = lists.enhancers or { }
+lists.internals         = allocate(lists.internals or { }) -- to be checked
+lists.ordered           = allocate(lists.ordered   or { }) -- to be checked
+lists.cached            = cached
+lists.pushed            = pushed
 
-references.specials  = references.specials or { }
+references.specials     = references.specials or { }
 
-local variables = interfaces.variables
-local matchingtilldepth, numberatdepth = sections.matchingtilldepth, sections.numberatdepth
+local variables         = interfaces.variables
+local matchingtilldepth = sections.matchingtilldepth
+local numberatdepth     = sections.numberatdepth
 
 -- -- -- -- -- --
 
@@ -121,6 +122,12 @@ function lists.push(t)
         pushed[i] = p
         r.listindex = p
     end
+
+    local setcomponent = references.setcomponent
+    if setcomponent then
+        setcomponent(t) -- might move to the tex end
+    end
+
     context(p)
 end
 

@@ -593,7 +593,7 @@ function scripts.context.multipass.makeoptionfile(jobname,ctxdata,kindofrun,curr
     end
 end
 
-function scripts.context.multipass.copyluafile(jobname)
+function scripts.context.multipass.copyluafile(jobname) -- obsolete
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if lfs.isfile(tuaname) then
         os.remove(tucname)

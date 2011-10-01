@@ -67,17 +67,9 @@
 
 % temporary here:
 
-\ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \dospecialin   } \else \let\in   \dospecialin    \fi
-\ifdefined\at    \let\normalmathat   \at    \unexpanded\def\at   {\mathortext\normalmathat   \dospecialat   } \else \let\at   \dospecialat    \fi
-\ifdefined\about \let\normalmathabout\about \unexpanded\def\about{\mathortext\normalmathabout\dospecialabout} \else \let\about\dospecialabout \fi
-\ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \dospecialfrom } \else \let\from \dospecialfrom  \fi
-\ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \dospecialabout} \else \let\over \dospecialabout \fi
-
 \unexpanded\def\arg{\mathortext\normalmatharg\normaltextarg}
 
-% for the moment here
-
-\enablemode[*nofonts]
+% might move to \everydump or even disappear:
 
 \nonknuthmode
 

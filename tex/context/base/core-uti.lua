@@ -19,9 +19,11 @@ saves much runtime but at the cost of more memory usage.</p>
 
 local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
+local concat = table.concat
 
 local definetable       = utilities.tables.definetable
 local accesstable       = utilities.tables.accesstable
+local migratetable      = utilities.tables.migratetable
 local serialize         = table.serialize
 local packers           = utilities.packers
 local allocate          = utilities.storage.allocate
@@ -32,7 +34,7 @@ local report_jobcontrol = logs.reporter("jobcontrol")
 job                     = job or { }
 local job               = job
 
-job.version             = 1.14
+job.version             = 1.15
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -66,7 +68,7 @@ end
 
 -- as an example we implement variables
 
-local tobesaved, collected, checksums = allocate(),  allocate(),  allocate()
+local tobesaved, collected, checksums = allocate(), allocate(), allocate()
 
 local jobvariables = {
     collected = collected,
@@ -125,9 +127,9 @@ local jobpacker = packers.new(packlist,1.01)
 
 job.pack = true
 
-local _save_, _load_ = { }, { } -- registers timing
+local _save_, _load_, _others_ = { }, { }, { } -- registers timing
 
-function job.save(filename)
+function job.save(filename) -- we could return a table but it can get pretty large
     statistics.starttiming(_save_)
     local f = io.open(filename,'w')
     if f then
@@ -135,9 +137,13 @@ function job.save(filename)
             f:write("-- ",comment[c],"\n")
         end
         f:write("\n")
+        f:write("local utilitydata = { }\n")
+        f:write("\n")
         for l=1,#savelist do
-            local list = savelist[l]
-            local target, data, finalizer = list[1], list[2], list[4]
+            local list      = savelist[l]
+            local target    = format("utilitydata.%s",list[1])
+            local data      = list[2]
+            local finalizer = list[4]
             if type(finalizer) == "function" then
                 finalizer()
             end
@@ -149,15 +155,17 @@ function job.save(filename)
         end
         if job.pack then
             packers.strip(jobpacker)
-            f:write(serialize(jobpacker,"job.packed",true,true),"\n")
+            f:write(serialize(jobpacker,"utilitydata.job.packed",true,true),"\n")
         end
+        f:write("\n")
+        f:write("return utilitydata\n")
+        f:write("\n")
         f:close()
     end
     statistics.stoptiming(_save_)
 end
 
-function job.load(filename)
-    statistics.starttiming(_load_)
+local function load(filename)
     local data = io.loaddata(filename)
     if data and data ~= "" then
         local version = tonumber(match(data,"^-- version: ([%d%.]+)"))
@@ -165,20 +173,47 @@ function job.load(filename)
             report_jobcontrol("version mismatch with jobfile: %s <> %s", version or "?", job.version)
         else
             local data = loadstring(data)
-            if data then
-                data()
-            end
-            for l=1,#savelist do
-                local list = savelist[l]
-                local target, initializer = list[1], list[3]
-                local result = mark(accesstable(target))
-                packers.unpack(result,job.packed,true)
-                if type(initializer) == "function" then
-                    initializer(result)
-                end
-            end
-            job.packed = nil
+            return data and data()
         end
+    end
+end
+
+function job.load(filename)
+    statistics.starttiming(_load_)
+    local utilitydata = load(filename)
+    if utilitydata then
+        local jobpacker = utilitydata.job.packed
+        for l=1,#savelist do
+            local list        = savelist[l]
+            local target      = list[1]
+            local initializer = list[3]
+            local result      = accesstable(target,utilitydata)
+            packers.unpack(result,jobpacker,true)
+            migratetable(target,mark(result))
+            if type(initializer) == "function" then
+                initializer(result)
+            end
+        end
+    end
+    statistics.stoptiming(_load_)
+end
+
+function job.loadother(filename)
+    statistics.starttiming(_load_)
+    _others_[#_others_+1] = file.nameonly(filename)
+    local utilitydata = load(filename)
+    if utilitydata then
+        local jobpacker = utilitydata.job.packed
+        local unpacked = { }
+        for l=1,#savelist do
+            local list   = savelist[l]
+            local target = list[1]
+            local result = accesstable(target,utilitydata)
+            packers.unpack(result,jobpacker,true)
+            migratetable(target,result,unpacked)
+        end
+        unpacked.job.packed = nil -- nicer in inspecting
+        return unpacked
     end
     statistics.stoptiming(_load_)
 end
@@ -190,8 +225,12 @@ statistics.register("startup time", function()
 end)
 
 statistics.register("jobdata time",function()
-    if statistics.elapsedindeed(_save_) or statistics.elapsedindeed(_load_) then
-        return format("%s seconds saving, %s seconds loading", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_))
+    if statistics.elapsedindeed(_save_) or statistics.elapsedindeed(_load_) or #_others_ > 0 then
+        if #_others_ > 0 then
+            return format("%s seconds saving, %s seconds loading, other files: %s", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_),concat(_others_," "))
+        else
+            return format("%s seconds saving, %s seconds loading", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_))
+        end
     end
 end)
 

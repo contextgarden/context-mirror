@@ -1097,14 +1097,15 @@ return {
             no = "ulovlig referanse %s",
             ro = "referinta eronata %s",
         },
-        ["references:5"] = {
-            en = "number of unknown references: %s",
-        },
+     -- ["number of unknown references: %s"] = {
+     -- },
         ["references:6"] = {
             en = "number of illegal references: %s",
         },
-        ["start: '%s'"] = {},
-        ["stop: '%s'"] = {},
+        ["start: '%s'"] = {
+        },
+        ["stop: '%s'"] = {
+        },
         ["stored: preamble '%s', state '%s', order '%s'"] = {
             nl = "opgeslagen: preamble '%s', status '%s', volgorde '%s'",
         },

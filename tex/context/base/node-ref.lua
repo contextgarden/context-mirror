@@ -376,11 +376,10 @@ nodes.references = {
 
 -- todo: get rid of n (n is just a number, can be used for tracing, obsolete)
 
-local function setreference(n,h,d,r)
+local function setreference(h,d,r)
     topofstack = topofstack + 1
     -- the preroll permits us to determine samepage (but delayed also has some advantages)
     -- so some part of the backend work is already done here
---~     stack[topofstack] = { n, h, d, codeinjections.prerollreference(r) }
     stack[topofstack] = { r, h, d, codeinjections.prerollreference(r) }
  -- texattribute[attribute] = topofstack -- todo -> at tex end
     texcount.lastreferenceattribute = topofstack
@@ -533,14 +532,14 @@ function references.inject(prefix,reference,h,d,highlight,newwindow,layer) -- to
     else
         -- check
         set.highlight, set.newwindow,set.layer = highlight, newwindow, layer
-        setreference(tex.currentgrouplevel,h,d,set) -- sets attribute / todo: for set[*].error
+        setreference(h,d,set) -- sets attribute / todo: for set[*].error
     end
 end
 
 function references.injectcurrentset(h,d) -- used inside doifelse
     local currentset = references.currentset
     if currentset then
-        setreference(tex.currentgrouplevel,h,d,currentset) -- sets attribute / todo: for set[*].error
+        setreference(h,d,currentset) -- sets attribute / todo: for set[*].error
     end
 end
 

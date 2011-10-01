@@ -31,6 +31,7 @@ local v_project      = variables.project
 local v_environment  = variables.environment
 local v_product      = variables.product
 local v_component    = variables.component
+local c_prefix       = variables.prefix
 
 -- main code .. there is some overlap .. here we have loc://
 
@@ -346,11 +347,16 @@ local treestack          = { }
 local top                = tree.branches
 local root               = tree
 
+local project_stack      = { }
+local product_stack      = { }
+local component_stack    = { }
+local environment_stack  = { }
+
 local stacks = {
-    [v_project    ] = { },
-    [v_product    ] = { },
-    [v_component  ] = { },
-    [v_environment] = { },
+    [v_project    ] = project_stack,
+    [v_product    ] = product_stack,
+    [v_component  ] = component_stack,
+    [v_environment] = environment_stack,
 }
 
 --
@@ -395,6 +401,12 @@ local function logtree()
 end
 
 luatex.registerstopactions(logtree)
+
+job.structure           = job.structure or { }
+job.structure.collected = job.structure.collected or { }
+job.structure.tobesaved = root
+
+job.register('job.structure.collected',root)
 
 -- component: small unit, either or not components itself
 -- product  : combination of components
@@ -467,6 +479,29 @@ local function topofstack(what)
     return stack and stack[#stack] or environment.jobname
 end
 
+local function currentcomponent() -- only when in product
+    local product = product_stack[#product_stack]
+    if product and product ~= "" then
+        local component = component_stack[1]
+        if component and component ~= "" then
+            return component
+        end
+    end
+end
+
+local function justacomponent()
+    local product = product_stack[#product_stack]
+    if not product or product == "" then
+        local component = component_stack[1]
+        if component and component ~= "" then
+            return component
+        end
+    end
+end
+
+resolvers.jobs.currentcomponent = currentcomponent
+resolvers.jobs.justacomponent   = justacomponent
+
 local done     = { }
 local tolerant = false -- too messy, mkii user with the wrong sructure should adapt
 
@@ -530,20 +565,21 @@ function commands.useenvironment(name) process(v_environment,name) end
 function commands.useproduct    (name) process(v_product,    name) end
 function commands.usecomponent  (name) process(v_component,  name) end
 
--- -- todo: setsystemmode to currenttype
+-- todo: setsystemmode to currenttype
+-- todo: make start/stop commands at the tex end
 
 local start = {
-    [v_project]     = context.starttext,
-    [v_product]     = context.starttext,
-    [v_component]   = context.starttext,
-    [v_environment] = nil,
+    [v_project]     = context.startprojectindeed,
+    [v_product]     = context.startproductindeed,
+    [v_component]   = context.startcomponentindeed,
+    [v_environment] = context.startenvironmentindeed,
 }
 
 local stop = {
-    [v_project]     = function() context.stoptext() context.signalendofinput(v_project)     end,
-    [v_product]     = function() context.stoptext() context.signalendofinput(v_product)     end,
-    [v_component]   = function() context.stoptext() context.signalendofinput(v_component)   end,
-    [v_environment] = function()                    context.signalendofinput(v_environment) end,
+    [v_project]     = context.stopprojectindeed,
+    [v_product]     = context.stopproductindeed,
+    [v_component]   = context.stopcomponentindeed,
+    [v_environment] = context.stopenvironmentindeed,
 }
 
 local function gotonextlevel(what,name) -- todo: something with suffix name

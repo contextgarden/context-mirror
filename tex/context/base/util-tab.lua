@@ -29,12 +29,29 @@ function tables.definetable(target) -- defines undefined tables
     return concat(t,"\n")
 end
 
-function tables.accesstable(target)
-    local t = _G
+function tables.accesstable(target,root)
+    local t = root or _G
     for name in gmatch(target,"([^%.]+)") do
         t = t[name]
+        if not t then
+            return
+        end
     end
     return t
+end
+
+function tables.migratetable(target,v,root)
+    local t = root or _G
+    local names = string.split(target,".")
+    for i=1,#names-1 do
+        local name = names[i]
+        t[name] = t[name] or { }
+        t = t[name]
+        if not t then
+            return
+        end
+    end
+    t[names[#names]] = v
 end
 
 function tables.removevalue(t,value) -- todo: n

@@ -2396,13 +2396,19 @@
     \everyvbox{\zerostagepreloadfonts}
 \to \everydump
 
-\def\firststagepreloadfonts % see core-def.mkiv
-  {\doifmodeelse{*nofonts}
-     {\writestatus\m!fonts{latin modern fonts are not preloaded}}
-     {\preloaddefaultfonts
-      \writestatus\m!fonts{preloading latin modern fonts (first stage)}}}
+% \def\firststagepreloadfonts % see core-def.mkiv
+%   {\doifmodeelse{*nofonts}
+%      {\writestatus\m!fonts{latin modern fonts are not preloaded}}
+%      {\preloaddefaultfonts
+%       \writestatus\m!fonts{preloading latin modern fonts (first stage)}}}
 
-\def\secondstagepreloadfonts % see core-def.mkiv
+\def\firststagepreloadfonts % *nofonts -> *preloadfonts
+  {\doifmodeelse{*preloadfonts}
+     {\preloaddefaultfonts
+      \writestatus\m!fonts{preloading latin modern fonts (first stage)}}
+     {\writestatus\m!fonts{latin modern fonts are not preloaded}}}
+
+\def\secondstagepreloadfonts
   {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
    \preloaddefaultfonts}
 

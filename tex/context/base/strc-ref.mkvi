@@ -27,6 +27,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Cross Referencing}
 
+\registerctxluafile{strc-rsc}{1.001}
 \registerctxluafile{strc-ref}{1.001}
 \registerctxluafile{node-ref}{1.001}
 
@@ -93,17 +94,17 @@
 %D \reference[here]{some text}
 %D \stoptyping
 
-\unexpanded\def\textreference {\dosingleargument\dotextreference}
-\unexpanded\def\pagereference {\dosingleargument\dopagereference}
-\unexpanded\def\reference     {\dosingleargument\doreference    }
-\unexpanded\def\setreference  {\dodoubleargument\dosetreference }
+\unexpanded\def\textreference {\dosingleargument\do_text_reference}
+\unexpanded\def\pagereference {\dosingleargument\do_page_reference}
+\unexpanded\def\reference     {\dosingleargument\do_full_reference}
+\unexpanded\def\setreference  {\dodoubleargument\do_set_reference }
 
 %D These are implemented in a low level form as:
 
-\def\dotextreference   [#1]{\dodosetreference\s!text{#1}{}}
-\def\dopagereference   [#1]{\dodosetreference\s!page{#1}{}{}}
-\def\doreference       [#1]{\dodosetreference\s!full{#1}{}}
-\def\dosetreference[#1][#2]{\dodosetreference\s!user{#1}{#2}{}}
+\def\do_text_reference          [#labels]{\do_do_set_reference\s!text{#labels}{}}
+\def\do_page_reference          [#labels]{\do_do_set_reference\s!page{#labels}{}{}}
+\def\do_full_reference          [#labels]{\do_do_set_reference\s!full{#labels}{}}
+\def\do_set_reference[#labels][#settings]{\do_do_set_reference\s!user{#labels}{#settings}{}}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -112,40 +113,40 @@
 \newcount\lastreferenceattribute
 \newcount\lastdestinationattribute
 
-\def\dofinishfullreference#1#2{\normalexpanded{\ctxlatelua{structures.references.enhance("#1","#2")}}}
-\def\dofinishtextreference#1#2{\normalexpanded{\ctxlatelua{structures.references.enhance("#1","#2",{})}}}
+\def\dofinishfullreference#prefix#label{\normalexpanded{\ctxlatelua{structures.references.enhance("#prefix","#label")}}}
+\def\dofinishtextreference#prefix#label{\normalexpanded{\ctxlatelua{structures.references.enhance("#prefix","#label",{})}}}
 
 \let\dofinishpagereference\dofinishfullreference
 \let\dofinishuserreference\dofinishfullreference
 
-\def\dofinishsomereference#1{\executeifdefined{dofinish#1reference}\gobbletwoarguments}
+\def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
 
-\def\dodosetreference
+\def\do_do_set_reference
   {\ifreferencing
-      \expandafter\dododosetreference
+      \expandafter\do_do_do_set_reference
    \else
       \expandafter\gobblefourarguments
    \fi}
 
-\def\dododosetreference#1#2#3#4% kind labels userdata text -> todo: userdata
+\def\do_do_do_set_reference#kind#labels#userdata#text% labels userdata text -> todo: userdata
   {\ifreferencing
      % we could have a more efficient one for page references but for the moment
      % we don't care too much
-     \edef\currentreferencekind{#1}%
-     \edef\currentreferencelabels{#2}%
-     \edef\currentreferenceuserdata{#3}%
+     \edef\currentreferencekind     {#kind}%
+     \edef\currentreferencelabels   {#labels}%
+     \edef\currentreferenceuserdata {#userdata}%
      \edef\currentreferenceexpansion{\@@rfexpansion}% {\referenceparameter\c!expansion}
      \ifx\currentreferencelabels\empty \else
        \ifx\currentreferenceexpansion\s!xml
          \xmlstartraw
-           \xdef\currentreferencedata{#4}% data, no text else conflict
+           \xdef\currentreferencedata{#text}% data, no text else conflict
          \xmlstopraw
          \globallet\currentreferencecoding\s!xml
        \else
          \ifx\currentreferenceexpansion\v!yes
-           \xdef\currentreferencedata{#4}%
+           \xdef\currentreferencedata{#text}%
          \else
-           \xdef\currentreferencedata{\detokenize{#4}}%
+           \xdef\currentreferencedata{\detokenize{#text}}%
          \fi
          \globallet\currentreferencecoding\s!tex
        \fi
@@ -159,10 +160,10 @@
                     section  = structures.sections.currentid(),
                 },
                 metadata = { % we could assume page to have no metadata
-                    kind = "#1",
+                    kind = "#kind",
                     \ifx\currentreferencekind\s!page\else
                         catcodes = \the\catcodetable,
-                        xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument" \else nil \fi, % only useful when text
+                        xmlroot  = \ifx\currentreferencecoding\s!xml "\xmldocument"\else nil\fi, % only useful when text
                     \fi
                 },
                 \ifx\currentreferencedata\empty\else
@@ -171,7 +172,7 @@
                     },
                 \fi
                 \ifx\currentreferenceuserdata\empty\else
-                    userdata = structures.helpers.touserdata(\!!bs\detokenize{#3}\!!es)
+                    userdata = structures.helpers.touserdata(\!!bs\detokenize{#userdata}\!!es)
                 \fi
             },"\interactionparameter\c!focus")
        }%
@@ -181,14 +182,14 @@
      \fi
    \fi}
 
-\def\defaultreferencepage#1{[[[#1]]]}
-\def\defaultreferencetext#1{[[[#1]]]}
+\def\defaultreferencepage#text{[[[#text]]]}
+\def\defaultreferencetext#text{[[[#text]]]}
 
 %D For internal usage:
 
-\def\dosetsimplepagereference#1% label
+\def\dosetsimplepagereference#label%
   {\iflocation
-     \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#1",
+     \ctxlua{structures.references.setandgetattribute("\s!page", "\referenceprefix","#label",
         {
             references = {
             %   block    = "\currentsectionblock",
@@ -204,19 +205,13 @@
      \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
    \fi}
 
-\def\dogetsimplepagereference#1%
+\def\dogetsimplepagereference#label%
   {\iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#1",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#label",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
    \else
      \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
    \fi}
-
-%D These macros depend on three other ones,
-%D \type {\makesectionformat}, that generated \type
-%D {\sectionformat}, \type {\pagenumber}. The not yet used
-%D argument \type{#1} is a tag that specifies the type of
-%D reference.
 
 %D \macros
 %D   {everyreference}
@@ -230,7 +225,7 @@
 %D different alphabet and needs accented entries in registers.
 
 \appendtoks
-  \cleanupfeatures
+    \cleanupfeatures
 \to \everyreference
 
 %D We did not yet discuss prefixing. Especially in interactive
@@ -257,8 +252,7 @@
 %D \NC               \NC $\star$              \NC         \NC\NR
 %D \stoptabulate
 
-\def\usereferences[#1]% not yet
-  {\writestatus\m!system{references from other files are handled automatically}}
+\unexpanded\def\usereferences[#filename]{} % obsolete
 
 %D As mentioned we will also use the cross reference mechanism
 %D for navigational purposes. The main reason for this is that
@@ -319,9 +313,7 @@
 %D are references to a file or \URL. The brace delimited
 %D references for instance refer to a \JAVASCRIPT. The last
 %D example shows that we can pass arguments to the actions.
-
-\newif\ifreferencefound
-
+%D
 %D Now we've come to the testing step. As we can see below,
 %D this macro does bit more than testing: it also resolves
 %D the reference. This means that whenever we test for the
@@ -381,16 +373,16 @@
 %D true.
 
 \unexpanded\def\definereference
-  {\dodoubleempty\dodefinereference}
+  {\dodoubleempty\do_define_reference}
 
-\def\dodefinereference[#1][#2]%
-  {\ctxlua{structures.references.define("\referenceprefix","#1",\!!bs\detokenize{#2}\!!es)}}
+\def\do_define_reference[#name][#specification]%
+  {\ctxlua{structures.references.define("\referenceprefix","#name",\!!bs\detokenize{#specification}\!!es)}}
 
-\def\resetreference[#1]%
-  {\ctxlua{structures.references.reset("\referenceprefix","#1")}}
+\unexpanded\def\resetreference[#name]%
+  {\ctxlua{structures.references.reset("\referenceprefix","#name")}}
 
-\def\setpagereference#1#2% name, specification
-  {\ctxlua{structures.references.define("","#1",\!!bs\v!page(\luaescapestring{#2})\!!es)}}
+\def\setpagereference#name#specification% hm,. low level ?
+  {\ctxlua{structures.references.define("","#name",\!!bs\v!page(\luaescapestring{#specification})\!!es)}}
 
 %D Chained references are defined as:
 %D
@@ -422,13 +414,14 @@
 \def\expandtexincurrentreference % will happen in lua some time
   {\ifcase\referencehastexstate\else\ctxlua{structures.references.expandcurrent()}\fi}
 
-\def\expandreferenceoperation#1#2{\ctxcommand{setreferenceoperation(#1,\!!bs#2\!!es)}}
-\def\expandreferencearguments#1#2{\ctxcommand{setreferencearguments(#1,\!!bs#2\!!es)}}
+\def\expandreferenceoperation#tag#content{\ctxcommand{setreferenceoperation(#tag,\!!bs#content\!!es)}}
+\def\expandreferencearguments#tag#content{\ctxcommand{setreferencearguments(#tag,\!!bs#content\!!es)}}
 
-\def\doifreferencefoundelse#1#2#3%
-  {\ctxlua{structures.references.doifelse("\referenceprefix","#1",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
-     {\expandtexincurrentreference#2}%
-     {#3}}
+\def\doifreferencefoundelse#labels#yes#nop%
+  {\ctxlua{structures.references.doifelse("\referenceprefix","#labels",\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow)}%
+     {\expandtexincurrentreference
+      #yes}%
+     {#nop}}
 
 %D The tester only splits the reference in components but does
 %D not look into them. The following macro does a preroll and
@@ -436,9 +429,6 @@
 %D The \type {\currentrealreference} macro does the same so unless
 %D one wants to use the pagestate the next macro seldom needs to
 %D be called.
-
-% \def\analyzecurrentreference
-%   {\ctxlua{structures.references.analyze()}}
 
 %D The inner case is simple. Only two cases have to be taken
 %D care of:
@@ -461,13 +451,6 @@
 %D
 %D An unknown reference is reported on the screen, in the log
 %D file and, when enabled, in the left margin of the text.
-
-% \def\unknownreference#1%
-%   {\iftrialtypesetting \else
-%      \ifinpagebody \else
-%        \doifconcepttracing{\doifsomething{#1}{\inleft{\infofont\doboundtext{#1}{\dimexpr\leftmarginwidth-2em\relax}{..}->}}}%
-%      \fi
-%    \fi}
 
 \let\unknownreference\gobbleoneargument
 
@@ -543,29 +526,29 @@
 \def\setnextinternalreference
   {\global\advance\locationcount\plusone}
 
-\def\setnextinternalreferences#1#2% plural
-  {\ctxlua{structures.references.setnextinternal("#1","#2")}}
+\def\setnextinternalreferences#kind#name% plural
+  {\ctxlua{structures.references.setnextinternal("#kind","#name")}}
 
-\def\getinternalorderreference#1#2%
-  {\ctxlua{structures.references.currentorder("#1","#2")}}
+\def\getinternalorderreference#kind#name%
+  {\ctxlua{structures.references.currentorder("#kind","#name")}}
 
-\def\thisissomeinternal#1#2%  tag reference (only for old time sake)
+\def\thisissomeinternal#kind#name% only for old time sake
   {\begingroup
-   \ctxlua{structures.references.setinternalreference("","#1:#2")}%
+   \ctxlua{structures.references.setinternalreference("","#kind:#name")}%
    \hbox attr \destinationattribute\lastdestinationattribute{}%
    \endgroup}
 
 \newconditional\preferpagereferences
 
-\def\gotosomeinternal#1#2#3#4%
+\def\gotosomeinternal#kind#name#target#text%
   {\ifconditional\preferpagereferences
-     \directgoto{#4}[page(#3)]%
+     \directgoto{#text}[page(#target)]%
    \else
-     \directgoto{#4}[#1:#2]%
+     \directgoto{#text}[#kind:#name]%
    \fi}
 
-\def\gotonextinternal#1#2%
-  {\directgoto{#1}[internal(#2)]}
+\def\gotonextinternal#text#target%
+  {\directgoto{#text}[internal(#target)]}
 
 %D In this module we define three system references: one for
 %D handling navigational, viewer specific, commands, another
@@ -586,10 +569,6 @@
 %D \goto{some text}[\v!action(PreviousJump]
 %D \stoptyping
 
-% compatibility hack
-
-\def\setglobalsystemreference#1#2#3{\definereference[#2][\v!action(#3)]}
-
 \newif\ifreferencing \referencingtrue
 
 %D One can also activate an automatic prefix mechanism. By
@@ -608,16 +587,13 @@
 %D document). By setting the \type{interaction} variable, one
 %D can influences the way interactive references are set.
 
-\newconstant\autocrossfilereferences  % not yet supported in mkiv
-\newconstant\referencefilecaseswap    % not yet supported in mkiv
-
 \newtoks \everysetupreferencing
 
 \unexpanded\def\setupreferencing
-  {\dosingleargument\dosetupreferencing}
+  {\dosingleargument\do_setup_referencing}
 
-\def\dosetupreferencing[#1]%
-  {\getparameters[\??rf][\c!prefix=\s!unknown,#1]%
+\def\do_setup_referencing[#settings]%
+  {\getparameters[\??rf][\c!prefix=\s!unknown,#settings]%
    \the\everysetupreferencing}
 
 \appendtoks
@@ -627,65 +603,29 @@
        \v!start=>\referencingtrue]%
 \to \everysetupreferencing
 
-% \newconstant \referencecontentmode
-%
-% \appendtoks
-%     \processaction
-%       [\@@rfinteraction]
-%       [   \v!all=>\referencecontentmode\zerocount,
-%         \v!label=>\referencecontentmode\plusone,
-%          \v!text=>\referencecontentmode\plustwo,
-%        \v!symbol=>\referencecontentmode\plusthree]%
-% \to \everysetupreferencing
+\newconditional\autocrossfilereferences
 
 \appendtoks
-   \autocrossfilereferences\zerocount
-   \processaction
-     [\@@rfautofile] % not yet in mkiv
-     [  \v!yes=>\autocrossfilereferences\plusone,
-       \v!page=>\autocrossfilereferences\plustwo]%
+   \doifelse\@@rfautofile\v!yes\settrue\setfalse\autocrossfilereferences
 \to \everysetupreferencing
-
-\appendtoks
-    \referencefilecaseswap\zerocount
-    \processaction[\@@rfconvertfile] % not yet in mkiv
-      [  \v!yes=>\referencefilecaseswap\plusone,
-         \v!big=>\referencefilecaseswap\plusone,
-       \v!small=>\referencefilecaseswap\plustwo]%
-\to \everysetupreferencing
-
-\appendtoks
-   \setupreferenceprefix[\@@rfprefix]%
-   \doifelse\@@rfglobal\v!yes
-     {\settrue \autoglobalfilereferences}%
-     {\setfalse\autoglobalfilereferences}%
-\to \everysetupreferencing
-
-% \appendtoks\ctxlua{structures.references.export("whatever")}\to\everystoptext
-% \starttext
-%     \chapter[test]{test}
-%     test \in{IN}[more]           and \in{IN}[test]           or \at{AT}[more]           and \at{AT}[test]\par
-%     test \in{IN}[whatever::more] and \in{IN}[whatever::test] or \at{AT}[whatever::more] and \at{AT}[whatever::test] \page
-%     reference\reference[more]{oeps}
-% \stoptext
 
 \def\exportreferences
   {\doif\@@rfexport\v!yes{\ctxlua{structures.references.export()}}}
 
 \appendtoks
-  \exportreferences
+    \exportreferences
 \to \everygoodbye
 
 \def\incrementreferenceprefix{+}
 \def\decrementreferenceprefix{-}
 
-\unexpanded\def\setupreferenceprefix[#1]%
-  {\edef\@@rfprefix{#1}%
+\unexpanded\def\setupreferenceprefix[#prefix]%
+  {\edef\@@rfprefix{#prefix}%
    \ifx\@@rfprefix\empty
      \let\referenceprefix\empty
    \else\ifx\@@rfprefix\incrementreferenceprefix
      \advance\prefixcounter \plusone % should be global
-     \edef\referenceprefix{\the\prefixcounter:}%
+     \edef\referenceprefix{\the\prefixcounter}%
      \let\@@rfprefix\s!unknown
    \else\ifx\@@rfprefix\decrementreferenceprefix
      \let\referenceprefix\empty
@@ -693,60 +633,18 @@
    \else\ifx\@@rfprefix\s!unknown
      % forget about it
    \else
-     \edef\referenceprefix{\@@rfprefix:}%
+     \edef\referenceprefix{\@@rfprefix}% expanded !
    \fi\fi\fi\fi}
 
-\unexpanded\def\setupglobalreferenceprefix[#1]%
-  {\xdef\referenceprefix{#1:}}
+\unexpanded\def\setupglobalreferenceprefix[#prefix]%
+  {\xdef\referenceprefix{#prefix}}
 
-%D The most straightforward way of retrieving references is
-%D using \type{\ref}. Consider the reference:
-%D
-%D \startbuffer
-%D \reference[my ref]{{Look}{Here}{I am}}
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D \getbuffer
-%D
-%D We can ask for upto five reference components:
-%D
-%D \startbuffer
-%D user page reference:  \ref[p][my ref]
-%D text reference:       \ref[t][my ref]
-%D real page reference:  \ref[r][my ref]
-%D sub text reference:   \ref[s][my ref]
-%D extra text reference: \ref[e][my ref]
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D And get back:
-%D
-%D \startlines
-%D \getbuffer
-%D \stoplines
-%D
-%D This is a cheap compatibility hack. Don't use this command
-%D as there will be more advanced access to user data.
+\unexpanded\def\pushreferenceprefix#prefix%
+  {\pushmacro\referenceprefix
+   \xdef\referenceprefix{#prefix}}
 
-\def\ref{\dodoubleargument\doref}
-
-\def\reftypep{\currentreferencepage}
-\def\reftypet{\currentreferencetext}
-\def\reftyper{\currentreferencepage}
-\def\reftypes{\currentreferencetext}
-\def\reftypee{\currentreferencetext}
-
-\def\doref[#1][#2]%
-  {\ifsecondargument
-     \doifreferencefoundelse{#2}
-       {\executeifdefined{reftype#1}\reftypep}
-       {\dummyreference}%
-   \else
-     \dummyreference
-   \fi}
+\unexpanded\def\popreferenceprefix
+  {\popmacro\referenceprefix}
 
 %D We can typeset a reference using \type{\in}, \type{\at} and
 %D \type{\about} and goto specific locations using
@@ -792,20 +690,28 @@
 %D and~\type{[} becomes active (and when asked for, typeset
 %D in a different color and typeface).
 
-% \unexpanded\def\in   {\mathortext\donormalmathin   \dospecialin}
-% \unexpanded\def\at   {\mathortext\donormalmathat   \dospecialat}
-% \unexpanded\def\about{\mathortext\donormalmathabout\dospecialabout}
-% \unexpanded\def\from {\mathortext\donormalmathfrom \dospecialfrom}
-% \unexpanded\def\over {\mathortext\donormalmathover \dospecialabout}
+% \unexpanded\def\in   {\mathortext\donormalmathin   \reference_in}
+% \unexpanded\def\at   {\mathortext\donormalmathat   \reference_at}
+% \unexpanded\def\about{\mathortext\donormalmathabout\reference_about}
+% \unexpanded\def\from {\mathortext\donormalmathfrom \reference_from}
+% \unexpanded\def\over {\mathortext\donormalmathover \reference_about}
 
-% \definecommand in    {\dospecialin}
-% \definecommand at    {\dospecialat}
-% \definecommand about {\dospecialabout}
-% \definecommand from  {\dospecialfrom}
-% \definecommand over  {\dospecialabout} % needed here, else math problems
+% \definecommand in    {\reference_in}
+% \definecommand at    {\reference_at}
+% \definecommand about {\reference_about}
+% \definecommand from  {\reference_from}
+% \definecommand over  {\reference_about} % needed here, else math problems
 
-           \def\filterreference  #1{\ctxcommand{filterreference("#1")}}
-\unexpanded\def\getreferenceentry#1{\ctxcommand{filterreference("#1")}}
+\appendtoks
+    \ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \reference_in   } \else \let\in   \reference_in    \fi
+    \ifdefined\at    \let\normalmathat   \at    \unexpanded\def\at   {\mathortext\normalmathat   \reference_at   } \else \let\at   \reference_at    \fi
+    \ifdefined\about \let\normalmathabout\about \unexpanded\def\about{\mathortext\normalmathabout\reference_about} \else \let\about\reference_about \fi
+    \ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \reference_from } \else \let\from \reference_from  \fi
+    \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \reference_about} \else \let\over \reference_about \fi
+\to \everydump
+
+           \def\filterreference  #key{\ctxcommand{filterreference("#key")}} % no checking, expanded
+\unexpanded\def\getreferenceentry#key{\ctxcommand{filterreference("#key")}} % no checking, unexpanded
 
 \def\currentreferencenumber  {\filterreference{number}}
 \def\currentreferencepage    {\filterreference{page}}
@@ -814,15 +720,32 @@
 \def\currentreferencedefault {\filterreference{default}}
 \def\currentreferencerealpage{\filterreference{realpage}}
 
-\unexpanded\def\dospecialabout[#1]%
+%D The most straightforward way of retrieving references is
+%D using \type{\ref}.
+
+\unexpanded\def\getreference % checking, unexpanded
+  {\dodoubleargument\do_get_reference}
+
+\def\do_get_reference[#key][#label]% #key = number page title text default realpage ...
+  {\ifsecondargument
+     \doifreferencefoundelse{#label}{\ctxcommand{filterreference("#key")}}\dummyreference
+   \else
+     \dummyreference
+   \fi}
+
+\let\ref\getreference
+
+%D Special cases:
+
+\unexpanded\def\reference_about[#label]%
   {\dontleavehmode
    \begingroup
    \let\crlf\space
    \let\\\space
    \postponenotes
    \@@rfleft
-   \doifreferencefoundelse{#1}
-     {\goto{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#1]}% not so efficient (dup lookup)
+   \doifreferencefoundelse{#label}
+     {\goto{\limitatetext\currentreferencetitle\@@rfwidth\unknown}[#label]}% not so efficient (dup lookup)
      {}% todo
    \@@rfright
    \endgroup}
@@ -834,57 +757,42 @@
 %D $^\gobackwardcharacter$ $^\gonowherecharacter$}, depending
 %D on the direction to go.
 
-% 1 = whatever
-% 2 = forward, following page
-% 3 = backward, preceding page
-% 4 = forward, same page
-% 5 = backward, same page
+% 0 = unknown
+% 1 = same
+% 2 = before
+% 3 = after
 
-% Yet untested:
+\def\do_by_reference_page_state#unknown#before#current#after%
+  {\ifcase\referencepagestate\relax#unknown\or#current\or#before\or#after\fi}
 
-\unexpanded\def\somewhere#1#2#3[#4]% #3 gobbles space around #2 % todo
-  {\doifreferencefoundelse{#4}% kind of inefficient as \goto also analyzes
-     {\goto{\ifcase\referencepagestate\relax#1/#2\or#2\or#1\or#2\fi}[#4]}
-     {[#1/#2]}}
+\unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
+  {\doifreferencefoundelse{#label}% usage needs checking (useless)
+     {\goto{\do_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+     {[#label]}}
 
-\unexpanded\def\atpage[#1]% todo
-  {\doifreferencefoundelse{#1}% kind of inefficient as \goto also analyzes
-     {\goto{\ifcase\referencepagestate\relax
-        \labeltexts\v!page\dummyreference
-      \or
-        \labeltexts\v!atpage\currentreferencepage
-      \or
-        \labeltexts\v!atpage\currentreferencepage
-      \or
-        \labeltexts\v!atpage\currentreferencepage
-      \or
-        \labeltext\v!hereafter
-      \or
-        \labeltext\v!hencefore
-      \fi}[#1]}
-     {[?]}}
+\unexpanded\def\atpage[#label]% todo
+  {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
+     {\goto
+        {\do_by_reference_page_state
+           {\labeltexts\v!page\dummyreference}%
+           {\labeltext\v!hencefore}%
+           {\labeltexts\v!atpage\currentreferencepage}%
+           {\labeltext\v!hereafter}}%
+           [#label]}
+     {[#label]}}
 
 \unexpanded\def\referencesymbol
   {\hbox{\strut\high
      {\setupsymbolset[\interactionparameter\c!symbolset]%
-      \symbol
-        [\ifcase\referencepagestate\relax
-           \v!somewhere
-         \or % same
-           \v!nowhere
-         \or % before
-           \v!previous
-         \or % after
-           \v!next%
-         \fi]}}}
+      \symbol[\do_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
 
 % \dounknownreference -> \dummyreference
 
-\def\symbolreference[#1]% for old times sake
-  {\goto{\referencesymbol}[#1]}
+\def\symbolreference[#label]% for old times sake
+  {\goto{\referencesymbol}[#label]}
 
 % \referencecontentmode 0=all 1=label 2=text 3=symbol
 
@@ -897,15 +805,6 @@
 \let\rightofreferencecontent \empty
 \let\leftofreference         \empty
 \let\rightofreference        \empty
-
-% \setvalue{\??rf\c!interaction\v!all}%
-%   {\leftofreference
-%    \the\leftreferencetoks
-%    \doifsometokselse\leftreferencetoks \leftofreferencecontent \donothing
-%    \currentreferencecontent
-%    \doifsometokselse\rightreferencetoks\rightofreferencecontent\donothing
-%    \the\rightreferencetoks
-%    \rightofreference}
 
 \setvalue{\??rf\c!interaction\v!all}%
   {\the\leftreferencetoks
@@ -946,41 +845,41 @@
     \glet\rightofreference\relax
 \to \everyresetinatreference
 
-\def\dostartgotoreference
+\def\start_goto_reference
   {\dontleavehmode
    \begingroup}
 
-\def\dostopgotoreference
+\def\stop_goto_reference
   {\the\everyresetinatreference
    \endgroup}
 
-\def\dopickupgotoreference
-  {\dodoublegroupempty\dodopickupgotoreference}
+\def\pickup_goto_reference
+  {\dodoublegroupempty\do_pickup_goto_reference}
 
-\def\dodopickupgotoreference#1#2#3[#4]% #3 gobbles spaces (really needed)
+\def\do_pickup_goto_reference#left#right#dummy[#label]% #dummy gobbles spaces (really needed)
   {\leftreferencetoks
      \iffirstargument
-       {#1}%
+       {#left}%
      \else
        \defaultleftreferencetoks
        \let\leftofreferencecontent\empty
      \fi
    \rightreferencetoks
      \ifsecondargument
-       {#2}%
+       {#right}%
      \else
        \defaultrightreferencetoks
        \let\rightofreferencecontent\empty
      \fi
    % inefficient: double resolve
-   \doifreferencefoundelse{#4} % we need to resolve the text
-     {\goto{\referencesequence}[#4]}
+   \doifreferencefoundelse{#label} % we need to resolve the text
+     {\goto{\referencesequence}[#label]}
      {\let\currentreferencecontent\dummyreference
-      \goto{\referencesequence}[#4]}%
-   \dostopgotoreference}
+      \goto{\referencesequence}[#label]}%
+   \stop_goto_reference}
 
-\unexpanded\def\dospecialin{\dostartgotoreference\let\currentreferencecontent\currentreferencedefault\dopickupgotoreference}
-\unexpanded\def\dospecialat{\dostartgotoreference\let\currentreferencecontent\currentreferencepage   \dopickupgotoreference}
+\unexpanded\def\reference_in{\start_goto_reference\let\currentreferencecontent\currentreferencedefault\pickup_goto_reference}
+\unexpanded\def\reference_at{\start_goto_reference\let\currentreferencecontent\currentreferencepage   \pickup_goto_reference}
 
 %D \macros
 %D   {definereferenceformat}
@@ -1028,7 +927,7 @@
 \installcommandhandler \??re {referenceformat} \??re
 
 \appendtoks
-    \setuevalue\currentreferenceformat{\doexecutereferenceformat{\currentreferenceformat}}%
+    \setuevalue\currentreferenceformat{\execute_reference_format{\currentreferenceformat}}%
 \to \everydefinereferenceformat
 
 \setupreferenceformat
@@ -1042,9 +941,9 @@
    \c!setups=,
    \c!color=]
 
-\unexpanded\def\doexecutereferenceformat#1%
-  {\dostartgotoreference
-   \edef\currentreferenceformat{#1}%
+\unexpanded\def\execute_reference_format#name%
+  {\start_goto_reference
+   \edef\currentreferenceformat{#name}%
    \gdef\leftofreference               {\referenceformatparameter\c!left    }%
    \gdef\rightofreference              {\referenceformatparameter\c!right   }%
    \edef\currentreferenceformatlabel   {\referenceformatparameter\c!label   }%
@@ -1084,7 +983,7 @@
    %
    \let\leftofreferencecontent \empty
    \let\rightofreferencecontent\empty
-   \dopickupgotoreference}
+   \pickup_goto_reference}
 
 \def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
 
@@ -1133,10 +1032,22 @@
 
 \newconditional\uselocationstrut \settrue\uselocationstrut
 
-\def\extrareferencearguments{\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow,"\currentviewerlayer"}
+\def\extrareferencearguments
+  {\luaconditional\highlighthyperlinks,\luaconditional\gotonewwindow,"\currentviewerlayer"}
 
-\unexpanded\def\directgoto{\ifconditional\uselocationstrut\expandafter\dodirectgoto\else\expandafter\dodirectgotohtdp\fi}
-\unexpanded\def\goto      {\ifconditional\uselocationstrut\expandafter\dogoto      \else\expandafter\dogotohtdp      \fi}
+\unexpanded\def\directgoto
+  {\ifconditional\uselocationstrut
+     \expandafter\dodirectgoto
+   \else
+     \expandafter\dodirectgotohtdp
+   \fi}
+
+\unexpanded\def\goto
+  {\ifconditional\uselocationstrut
+     \expandafter\dogoto
+   \else
+     \expandafter\dogotohtdp
+   \fi}
 
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
 % the reference attribute migrates to the outer boxes.
@@ -1148,51 +1059,51 @@
 \def\revivesavedreferenceattribute % sometimes handy as no test etc needed
   {\attribute\referenceattribute\lastsavedreferenceattribute}
 
-\def\dodirectgoto#1[#2]% no test for valid references
+\def\dodirectgoto#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#label",\number\ht\strutbox,\number\dp\strutbox,\extrareferencearguments)}%
      \setlocationattributes
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \attribute\referenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty % not here
-     #1%
+     #content%
      \dostoptagged
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\def\dodirectgotohtdp#1[#2]% no test for valid references
+\def\dodirectgotohtdp#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#2",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#label",\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax,\extrareferencearguments)}%
      \setlocationattributes
      \attribute\referenceattribute\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
-     #1%
+     #content%
      \dostoptagged
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\def\dogoto#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
+\def\dogoto#content#dummy[#label]% #dummy gobbles spaces
   {\dontleavehmode
    \begingroup
   %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#label",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(\number\ht\strutbox,\number\dp\strutbox)}%
         \setlocationattributes
@@ -1200,113 +1111,115 @@
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
-        #1%
+        #content%
         \dostoptagged}%
-       {#1}%
+       {#content}%
    \else
-     #1%
+     #content%
    \fi
   %\egroup\unhbox\referencebox}
    \endgroup}
 
-\def\dogotohtdp#1#2[#3]% #2 gobbles spaces after #1 so that \goto{xx} [yy] works ok
+\def\dogotohtdp#content#dummy[#label]% dummy gobbles spaces
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#label",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(\number\dimexpr\interactionparameter\c!height\relax,\number\dimexpr\interactionparameter\c!depth\relax)}%
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \attribute\referenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
-        #1%
+        #content%
         \dostoptagged}%
-       {#1}%
+       {#content}%
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\unexpanded\def\directgotobox#1[#2]% no test for valid references
+\unexpanded\def\directgotobox#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
      \setlocationattributes
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
-     \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
      \dostoptagged
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\unexpanded\def\directgotospecbox#1#2[#3]% no test for valid references
+\unexpanded\def\directgotospecbox#resolver#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#3",nil,nil,\extrareferencearguments)}%
-     \setlocationcolorspec{#1}% #1=\resolver; no consequence for strut
+     \ctxlua{structures.references.inject("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
+     \setlocationcolorspec{#resolver}% no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
-     \hbox attr \referenceattribute \lastreferenceattribute {#2}%
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
      \dostoptagged
    \else
-     #2%
+     #content%
    \fi
    \endgroup}
 
-\unexpanded\def\directgotodumbbox#1[#2]% no test for valid references
+\unexpanded\def\directgotodumbbox#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.inject("\referenceprefix","#2",nil,nil,\extrareferencearguments)}%
+     \ctxlua{structures.references.inject("\referenceprefix","#label",nil,nil,\extrareferencearguments)}%
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
-     \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+     \hbox attr \referenceattribute \lastreferenceattribute {#content}%
      \dostoptagged
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\unexpanded\def\gotobox#1[#2]% no test for valid references
+\unexpanded\def\gotobox#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
    \iflocation
-     \ctxlua{structures.references.doifelse("\referenceprefix","#2",\extrareferencearguments)}%
+     \ctxlua{structures.references.doifelse("\referenceprefix","#label",\extrareferencearguments)}%
        {\expandtexincurrentreference
         \ctxlua{structures.references.injectcurrentset(nil,nil)}%
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \dostarttagged\t!link\empty
-        \hbox attr \referenceattribute \lastreferenceattribute {#1}%
+        \hbox attr \referenceattribute \lastreferenceattribute {#content}%
         \dostoptagged}%
-       {#1}%
+       {#content}%
    \else
-     #1%
+     #content%
    \fi
    \endgroup}
 
-\unexpanded\def\gotowdhtbox#1#2[#3]% fast variant for overlays
+\unexpanded\def\gotowdhtbox#width#height[#label]% fast variant for overlays
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\emptyhbox\wd\scratchbox#1\ht\scratchbox#2%
+   \setbox\scratchbox\emptyhbox
+   \wd\scratchbox#width%
+   \ht\scratchbox#height%
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \attribute\referenceattribute\attributeunsetvalue
-   \ctxlua{structures.references.doifelse("\referenceprefix","#3",\extrareferencearguments)}%
+   \ctxlua{structures.references.doifelse("\referenceprefix","#label",\extrareferencearguments)}%
      {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
       \global\lastsavedreferenceattribute\lastreferenceattribute
       \hbox attr \referenceattribute \lastreferenceattribute {\box\scratchbox}}
@@ -1362,20 +1275,20 @@
 %D specified. This is logical when one keeps in mind that a
 %D valid \URL\ can also be a mail address.
 
-\unexpanded\def\usefile{\dotripleargument\dousefile}  % so that they can be used in expanded arguments
-\unexpanded\def\useurl {\doquadrupleempty\douseurl }  % so that they can be used in expanded arguments
+\unexpanded\def\useurl {\doquadrupleempty\do_use_url }  % so that they can be used in expanded arguments
+\unexpanded\def\usefile{\dotripleargument\do_use_file}  % so that they can be used in expanded arguments
 
 \let\useURL             \useurl
 \let\useexternaldocument\usefile
 
-\def\douseurl[#1][#2][#3][#4]%
-  {\ctxlua{structures.references.urls.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es,\!!bs\detokenize{#4}\!!es)}}
+\def\do_use_url[#label][#url][#file][#description]%
+  {\ctxlua{structures.references.urls.define("#label",\!!bs\detokenize{#url}\!!es,\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
-\def\dousefile[#1][#2][#3]%
-  {\ctxlua{structures.references.files.define("#1",\!!bs\detokenize{#2}\!!es,\!!bs\detokenize{#3}\!!es)}}
+\def\do_use_file[#label][#file][#description]%
+  {\ctxlua{structures.references.files.define("#label",\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
-\def\doifurldefinedelse #1{\ctxcommand{doifurldefinedelse ("#1")}}
-\def\doiffiledefinedelse#1{\ctxcommand{doiffiledefinedelse("#1")}}
+\def\doifurldefinedelse #label{\ctxcommand{doifurldefinedelse ("#label")}}
+\def\doiffiledefinedelse#label{\ctxcommand{doiffiledefinedelse("#label")}}
 
 %D \macros
 %D   {url,setupurl}
@@ -1397,12 +1310,12 @@
 \unexpanded\def\setupurl
   {\dodoubleargument\getparameters[\??ur]}
 
-\unexpanded\def\url[#1]%
+\unexpanded\def\url[#label]% move \hyphenatedurl to lua end (is already lua)
   {\dontleavehmode
    \begingroup
    \dosetfontattribute\??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   \hyphenatedurl{\ctxlua{structures.references.urls.get("#1","\@@uralternative","\@@urspace")}}%
+   \hyphenatedurl{\ctxlua{structures.references.urls.get("#label","\@@uralternative","\@@urspace")}}%
    \endgroup}
 
 % # fails
@@ -1447,20 +1360,20 @@
 
 %D We keep this for compatibility reasons, hence the hackery.
 
-\unexpanded\def\dospecialfrom
-  {\dosingleempty\dodospecialfrom}
+\unexpanded\def\reference_from
+  {\dosingleempty\do_do_special_from}
 
-\def\dodospecialfrom[#1]%
+\def\do_do_special_from[#label]%
   {\dontleavehmode
-   \goto{\ctxlua{structures.references.from("#1")}}[fileorurl(#1)]}
+   \goto{\ctxlua{structures.references.from("#label")}}[fileorurl(#label)]}
 
-\def\dofromurldescription#1%
-  {#1}
+\def\dofromurldescription#content% called at the lua end
+  {#content}
 
-\def\dofromurlliteral#1%
+\def\dofromurlliteral#content% called at the lua end
   {\dosetfontattribute \??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   \hyphenatedurl{#1}}
+   \hyphenatedurl{#content}}
 
 \let\dofromfiledescription\dofromurldescription
 \let\dofromfileliteral    \dofromurlliteral     % maybe some day setupfile that inherits from url
@@ -1494,17 +1407,17 @@
   {\dodoubleargument\getparameters[\??pr]}
 
 \unexpanded\def\defineprogram
-  {\dotripleargument\dodefineprogram}
+  {\dotripleargument\do_define_program}
 
-\def\dodefineprogram[#1][#2][#3]%
-  {\ctxlua{structures.references.programs.define("#1","#2","#3")}}
+\def\do_define_program[#name][#program][#description]%
+  {\ctxlua{structures.references.programs.define("#name","#program","#description")}}
 
-\def\program[#1]% incompatible, more consistent, hardy used anyway
+\def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
    \dosetfontattribute\??pr\c!style
    \dosetcolorattribute\??pr\c!color
-   \ctxlua{structures.references.programs.get("#1","\@@pralternative","\@@prspace")}%
+   \ctxlua{structures.references.programs.get("#name","\@@pralternative","\@@prspace")}%
    \endgroup}
 
 %D As we can see, we directly use the special reference
@@ -1541,13 +1454,13 @@
 %D \showsetup{gotopage}
 
 \unexpanded\def\definepage
-  {\dodoubleargument\dodefinepage}
+  {\dodoubleargument\do_define_page}
 
-\def\dodefinepage[#1][#2]%
-  {\definereference[#1][page(#1)]}
+\def\do_define_page[#name][#target]%
+  {\definereference[#name][page(#target)]}
 
-\def\gotopage#1[#2]%
-  {\goto{#1}[\v!page(#2)]}
+\def\gotopage#text[#target]%
+  {\goto{#text}[\v!page(#target)]}
 
 %D The previous definitions are somewhat obsolete so we don't
 %D use it here.
@@ -1591,9 +1504,9 @@
 %D to, that is, when one clicks on the title.
 
 \def\coupledocument
-  {\doquadrupleempty\docoupledocument}
+  {\doquadrupleempty\do_couple_document}
 
-\def\docoupledocument[#1][#2][#3][#4]% [name] [file] [sections] [description]
+\def\do_couple_document[#name][#file][#sections][#description]%
   {\ifthirdargument
      % this will be done differently (when it's needed)
    \fi}
@@ -1610,9 +1523,9 @@
 %D
 %D Only when \type {text} is not empty, a space is inserted.
 
-\def\dotextprefix#1%
+\def\dotextprefix#text%
   {\begingroup
-   \setbox\scratchbox\hbox{#1}% to be solved some day
+   \setbox\scratchbox\hbox{#text}% to be solved some day
    \ifdim\wd\scratchbox>\zeropoint
      \unhbox\scratchbox
      \doifsomething\@@rfseparator{\removeunwantedspaces\@@rfseparator}% remove is new
@@ -1745,48 +1658,37 @@
 %     \stop \blank
 % \stoptext
 
-\unexpanded\def\setupreferencestructureprefix
-  {\dotripleargument\dosetupreferencestructureprefix}
+% todo: parameterhandler
 
-\def\getreferencestructureprefix#1#2#3%
+\def\getreferencestructureprefix#kind#name#category%
   {{
-        prefix        = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefix",
-        separatorset  = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixseparatorset",
-        conversion    = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconversion",
-        conversionset = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconversionset",
-        set           = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixset",
-        segments      = "\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixsegments",
-        connector     = \!!bs\referencestructureprefixparameter{#1}{#2}{#3}\c!prefixconnector\!!es,
+        prefix        =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefix",
+        separatorset  =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixseparatorset",
+        conversion    =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversion",
+        conversionset =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconversionset",
+        set           =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixset",
+        segments      =     "\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixsegments",
+        connector     = \!!bs\referencestructureprefixparameter{#kind}{#name}{#category}\c!prefixconnector\!!es,
   }}
 
 \unexpanded\def\setupreferencestructureprefix
-  {\dotripleempty\dosetupreferencestructureprefix}
+  {\dotripleempty\do_setup_reference_structure_prefix}
 
-\def\dosetupreferencestructureprefix[#1][#2][#3]%
+\def\do_setup_reference_structure_prefix[#kind][#category][#settings]%
   {\ifthirdargument
-     \getparameters[\??rf:\c!prefix:#1:#2][#3]%
+     \getparameters[\??rf:\c!prefix:#kind:#category][#settings]%
    \else\ifsecondargument
-     \getparameters[\??rf:\c!prefix::#1][#2]%
+     \getparameters[\??rf:\c!prefix::#kind][#category]%
    \fi\fi}
 
-\def\referencestructureprefixparameter#1#2#3#4% kind name category parameter
-  {\ifcsname\??rf:\c!prefix:#2:#3#4\endcsname
-     \csname\??rf:\c!prefix:#2:#3#4\endcsname
-   \else\ifcsname\??rf:\c!prefix:#1:#3#4\endcsname
-     \csname\??rf:\c!prefix:#1:#3#4\endcsname
-   \else\ifcsname\??rf:\c!prefix::#3#4\endcsname
-     \csname\??rf:\c!prefix::#3#4\endcsname
+\def\referencestructureprefixparameter#kind#name#category#parameter%
+  {\ifcsname\??rf:\c!prefix:#name:#category#parameter\endcsname
+     \csname\??rf:\c!prefix:#name:#category#parameter\endcsname
+   \else\ifcsname\??rf:\c!prefix:#kind:#category#parameter\endcsname
+     \csname     \??rf:\c!prefix:#kind:#category#parameter\endcsname
+   \else\ifcsname\??rf:\c!prefix::#category#parameter\endcsname
+     \csname     \??rf:\c!prefix::#category#parameter\endcsname
    \fi\fi\fi}
-
-% \def\getreferencestructureprefixspec#1% we can save one call by moving this to the lua end
-%   {\getreferencestructureprefix
-%      {\ctxlua{structures.references.getcurrentmetadata("kind")}}
-%      {\ctxlua{structures.references.getcurrentmetadata("name")}}
-%      {#1}}
-% \def\currentreferencedefault
-%   {\ctxlua{structures.references.filter("default",\getreferencestructureprefixspec\v!default)}}
-%
-% this is shortcut for:
 
 \def\currentreferencedefault
   {\ctxlua{structures.references.filter("default",\ctxlua{structures.references.getcurrentprefixspec("\v!default")})}}
