@@ -106,3 +106,41 @@ commands.defineattribute = attributes.define
 function commands.getprivateattribute(name)
     context(attributes.private(name))
 end
+
+-- rather special
+
+local store = { }
+
+function commands.savecurrentattributes(name)
+    name = name or ""
+    local n = node.current_attr()
+    n = n and n.next
+    local t = { }
+    while n do
+        t[n.number] = n.value
+        n = n.next
+    end
+    store[name] = {
+        attr = t,
+        font = font.current(),
+    }
+end
+
+function commands.restorecurrentattributes(name)
+    name = name or ""
+    local t = store[name]
+    if t then
+        local attr = t.attr
+        local font = t.font
+        if attr then
+            for k, v in next, attr do
+                tex.attribute[k] = v
+            end
+        end
+        if font then
+         -- tex.font = font
+            context.getvalue(fonts.hashes.csnames[font]) -- we don't have a direct way yet (will discuss it with taco)
+        end
+    end
+ -- store[name] = nil
+end

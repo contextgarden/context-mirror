@@ -194,7 +194,7 @@
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
            \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
-             \showmessage\m!floatblocks8\rootfloatparameter\c!nlines
+             \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
              \vfilll\eject
            \fi
          \fi

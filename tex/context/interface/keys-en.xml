@@ -75,11 +75,11 @@
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='appendices'/>
 		<cd:variable name='appendix' value='appendix'/>
-		<cd:variable name='april' value='April'/>
+		<cd:variable name='april' value='april'/>
 		<cd:variable name='atmargin' value='atmargin'/>
 		<cd:variable name='atpage' value='atpage'/>
 		<cd:variable name='attachment' value='attachment'/>
-		<cd:variable name='august' value='August'/>
+		<cd:variable name='august' value='august'/>
 		<cd:variable name='author' value='author'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
@@ -137,7 +137,7 @@
 		<cd:variable name='cutspace' value='cutspace'/>
 		<cd:variable name='date' value='date'/>
 		<cd:variable name='day' value='day'/>
-		<cd:variable name='december' value='December'/>
+		<cd:variable name='december' value='december'/>
 		<cd:variable name='default' value='default'/>
 		<cd:variable name='depth' value='depth'/>
 		<cd:variable name='description' value='description'/>
@@ -157,7 +157,7 @@
 		<cd:variable name='even' value='even'/>
 		<cd:variable name='external' value='external'/>
 		<cd:variable name='fact' value='fact'/>
-		<cd:variable name='february' value='February'/>
+		<cd:variable name='february' value='february'/>
 		<cd:variable name='figure' value='figure'/>
 		<cd:variable name='figures' value='figures'/>
 		<cd:variable name='file' value='file'/>
@@ -235,10 +235,10 @@
 		<cd:variable name='item' value='item'/>
 		<cd:variable name='itemize' value='itemize'/>
 		<cd:variable name='its' value='its'/>
-		<cd:variable name='january' value='January'/>
+		<cd:variable name='january' value='january'/>
 		<cd:variable name='joinedup' value='joinedup'/>
-		<cd:variable name='july' value='July'/>
-		<cd:variable name='june' value='June'/>
+		<cd:variable name='july' value='july'/>
+		<cd:variable name='june' value='june'/>
 		<cd:variable name='keep' value='keep'/>
 		<cd:variable name='knockout' value='knockout'/>
 		<cd:variable name='label' value='label'/>
@@ -271,7 +271,7 @@
 		<cd:variable name='ls' value='ls'/>
 		<cd:variable name='makeup' value='makeup'/>
 		<cd:variable name='mar' value='mar'/>
-		<cd:variable name='march' value='March'/>
+		<cd:variable name='march' value='march'/>
 		<cd:variable name='margin' value='margin'/>
 		<cd:variable name='marginedge' value='marginedge'/>
 		<cd:variable name='margintitle' value='margintitle'/>
@@ -284,7 +284,7 @@
 		<cd:variable name='maxdepth' value='maxdepth'/>
 		<cd:variable name='maxheight' value='maxheight'/>
 		<cd:variable name='maxwidth' value='maxwidth'/>
-		<cd:variable name='may' value='May'/>
+		<cd:variable name='may' value='may'/>
 		<cd:variable name='mediaeval' value='mediaeval'/>
 		<cd:variable name='medium' value='medium'/>
 		<cd:variable name='middle' value='middle'/>
@@ -321,12 +321,12 @@
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='nothanging'/>
 		<cd:variable name='nothyphenated' value='nothyphenated'/>
-		<cd:variable name='november' value='November'/>
+		<cd:variable name='november' value='november'/>
 		<cd:variable name='nowhere' value='nowhere'/>
 		<cd:variable name='nowhite' value='nowhite'/>
 		<cd:variable name='number' value='number'/>
 		<cd:variable name='numbers' value='numbers'/>
-		<cd:variable name='october' value='October'/>
+		<cd:variable name='october' value='october'/>
 		<cd:variable name='odd' value='odd'/>
 		<cd:variable name='off' value='off'/>
 		<cd:variable name='offset' value='offset'/>
@@ -407,7 +407,7 @@
 		<cd:variable name='sectionblockenvironment' value='sectionblockenvironment'/>
 		<cd:variable name='sectionnumber' value='sectionnumber'/>
 		<cd:variable name='see' value='see'/>
-		<cd:variable name='september' value='September'/>
+		<cd:variable name='september' value='september'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serried' value='serried'/>
 		<cd:variable name='setups' value='setups'/>

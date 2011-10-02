@@ -62,56 +62,80 @@ if not modules then modules = { } end modules ['lang-lab'] = {
 local format, find = string.format, string.find
 local next, rawget, type = next, rawget, type
 local prtcatcodes = tex.prtcatcodes
+local lpegmatch = lpeg.match
 
-languages.labels = languages.labels or { }
+languages.labels    = languages.labels or { }
 
-local trace_labels = false  trackers.register("languages.labels", function(v) trace_labels = v end)
-
+local trace_labels  = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 local report_labels = logs.reporter("languages","labels")
 
-function languages.labels.define()
-    local variables = interfaces.variables
-    local data = languages.data.labels
-    local function define(command,list,prefixed)
-        if list then
-            context.pushcatcodes(prtcatcodes) -- context.unprotect
-            for tag, data in next, list do
-                if data.hidden then
-                    -- skip
-                else
-                    for language, text in next, data.labels do
-                        if text == "" then
-                            -- skip
-                        elseif prefixed and rawget(variables,tag) then
-                            if type(text) == "table" then
-                                context("\\%s[%s][\\v!%s={{%s},{%s}}]",command,language,tag,text[1],text[2])
-                            else
-                                context("\\%s[%s][\\v!%s={{%s},}]",command,language,tag,text)
-                            end
-                        else
-                            if type(text) == "table" then
-                                context("\\%s[%s][%s={{%s},{%s}}]",command,language,tag,text[1],text[2])
-                            else
-                                context("\\%s[%s][%s={{%s},}]",command,language,tag,text)
-                            end
-                        end
-                        if trace_labels then
-                            if type(text) == "table" then
-                                report_labels("language '%s', defining label '%s' as '%s' and '%s'",language,tag,text[1],text[2])
-                            else
-                                report_labels("language '%s', defining label '%s' as '%s'",language,tag,text)
-                            end
-                        end
-                    end
-                end
+local variables     = interfaces.variables
+
+local splitter = lpeg.splitat(":")
+
+local function split(tag)
+    return lpegmatch(splitter,tag)
+end
+
+languages.labels.split = split
+
+local function definelanguagelabels(data,command,tag,rawtag)
+    for language, text in next, data.labels do
+        if text == "" then
+            -- skip
+        elseif type(text) == "table" then
+            context("\\%s[%s][%s={{%s},{%s}}]",command,language,tag,text[1],text[2])
+            if trace_labels then
+                report_labels("language '%s', defining label '%s' as '%s' and '%s'",language,rawtag,text[1],text[2])
             end
-            context.popcatcodes() -- context.protect
+        else
+            context("\\%s[%s][%s={{%s},}]",command,language,tag,text)
+            if trace_labels then
+                report_labels("language '%s', defining label '%s' as '%s'",language,rawtag,text)
+            end
         end
     end
-    define("setupheadtext",      data.titles, true)
-    define("setuplabeltext",     data.texts,  true)
-    define("setupmathlabeltext", data.functions)
-    define("setuptaglabeltext",  data.tags)
+end
+
+local function definelabels(command,list,prefixed)
+    if list then
+        context.pushcatcodes(prtcatcodes) -- context.unprotect
+        for tag, data in next, list do
+            if data.hidden then
+                -- skip
+            elseif prefixed then
+                local first, second = lpegmatch(splitter,tag)
+                if second then
+                    if rawget(variables,first) then
+                        if rawget(variables,second) then
+                            definelanguagelabels(data,command,format("\\v!%s:\\v!%s",first,second),tag)
+                        else
+                            definelanguagelabels(data,command,format("\\v!%s:%s",first,second),tag)
+                        end
+                    elseif rawget(variables,second) then
+                        definelanguagelabels(data,command,format("%s:\\v!%s",first,second),tag)
+                    else
+                        definelanguagelabels(data,command,format("%s:%s",first,second),tag)
+                    end
+                elseif rawget(variables,rawtag) then
+                    definelanguagelabels(data,command,format("\\v!%s",tag),tag)
+                else
+                    definelanguagelabels(data,command,tag,tag)
+                end
+            else
+                definelanguagelabels(data,command,tag,tag)
+            end
+        end
+        context.popcatcodes() -- context.protect
+    end
+end
+
+function languages.labels.define()
+    local data = languages.data.labels
+    definelabels("setupheadtext", data.titles, true)
+    definelabels("setuplabeltext", data.texts, true)
+    definelabels("setupmathlabeltext", data.functions)
+    definelabels("setuptaglabeltext", data.tags)
 end
 
 --~ function languages.labels.check()
