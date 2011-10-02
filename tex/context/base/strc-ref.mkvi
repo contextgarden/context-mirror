@@ -101,10 +101,10 @@
 
 %D These are implemented in a low level form as:
 
-\def\do_text_reference          [#labels]{\do_do_set_reference\s!text{#labels}{}}
-\def\do_page_reference          [#labels]{\do_do_set_reference\s!page{#labels}{}{}}
-\def\do_full_reference          [#labels]{\do_do_set_reference\s!full{#labels}{}}
-\def\do_set_reference[#labels][#settings]{\do_do_set_reference\s!user{#labels}{#settings}{}}
+\def\do_text_reference          [#labels]{\set_named_reference\s!text{#labels}{}}
+\def\do_page_reference          [#labels]{\set_named_reference\s!page{#labels}{}{}}
+\def\do_full_reference          [#labels]{\set_named_reference\s!full{#labels}{}}
+\def\do_set_reference[#labels][#settings]{\set_named_reference\s!user{#labels}{#settings}{}}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -121,14 +121,14 @@
 
 \def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
 
-\def\do_do_set_reference
+\def\set_named_reference
   {\ifreferencing
-      \expandafter\do_do_do_set_reference
+      \expandafter\set_named_reference_indeed
    \else
       \expandafter\gobblefourarguments
    \fi}
 
-\def\do_do_do_set_reference#kind#labels#userdata#text% labels userdata text -> todo: userdata
+\def\set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
   {\ifreferencing
      % we could have a more efficient one for page references but for the moment
      % we don't care too much
