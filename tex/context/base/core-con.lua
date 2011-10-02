@@ -803,8 +803,7 @@ end
 
 -- a prelude to a function that we can use at the lua end
 
--- historic    : day+    month:mnem
--- maybe better: day:ord month:mmem
+-- day:ord month:mmem
 
 function commands.currentdate(str,currentlanguage) -- j and jj obsolete
     local list = utilities.parsers.settings_to_array(str)
@@ -812,7 +811,7 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
     local auto = true
     for i=1,#list do
         local entry = list[i]
-        local tag, plus = match(entry,"^([^%+:]+)(.*)$")
+        local tag, plus = languages.labels.split(entry)
         local ordinal, mnemonic, whatordinal = false, false, nil
         if not tag then
             tag = entry

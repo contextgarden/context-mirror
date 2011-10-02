@@ -71,6 +71,11 @@
 
 \def\resetallattributes{\the\attributesresetlist}
 
+%D Rather special.
+
+\def\savecurrentattributes   #1{\ctxcommand{savecurrentattributes   ("#1")}}
+\def\restorecurrentattributes#1{\ctxcommand{restorecurrentattributes("#1")}}
+
 %D For the moment we put this here (later it will move to where it's used):
 
 \definesystemattribute [state]

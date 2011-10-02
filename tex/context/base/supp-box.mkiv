@@ -1303,14 +1303,16 @@
 \unexpanded\def\processisolatedchars#1#2%
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\normalhbox{#1}%
+   \setbox\scratchbox\normalhbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
+   \setbox\scratchbox\normalhbox{\restorecurrentattributes{pic}#1}%
    \ctxcommand{applytochars(\number\scratchbox,"\strippedcsname#2",true)}%
    \endgroup}
 
 \unexpanded\def\processisolatedwords#1#2%
   {\dontleavehmode
    \begingroup
-   \setbox\scratchbox\normalhbox{#1}%
+   \setbox\scratchbox\normalhbox{\settrialtypesetting#2{\savecurrentattributes{pic}}}%
+   \setbox\scratchbox\normalhbox{\restorecurrentattributes{pic}#1}%
    \ctxcommand{applytowords(\number\scratchbox,"\strippedcsname#2",true)}%
    \endgroup}
 
