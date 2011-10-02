@@ -2501,3 +2501,48 @@
     \ruledvbox to \strutheight{\hbox{\strut gans}}
     \ruledvbox to \strutheight{\vss\hbox{gans}}
 \egroup
+
+% to be considered
+
+% \startluacode
+%
+%     local spacer = lpeg.patterns.spacer
+%
+%     function commands.withwords(command,str)
+%         if str then
+%             command = command or "ruledhbox"
+%             local done = false
+%             local function apply(s)
+%                 if done then
+%                     context.space()
+%                     done = true
+%                 else
+%                     context.dontleavehmode()
+%                 end
+%                 context[command](s)
+%             end
+%             lpeg.match(lpeg.splitter(spacer,apply),str)
+%         end
+%
+%     end
+%
+% \stopluacode
+%
+% \unprotect
+%
+% \unexpanded\def\withwordsinstring#1#2% command str
+%   {\ctxcommand{withwords(\!!bs#1\!!es,\!!bs#2\!!es)}}
+%
+% \unexpanded\def\withwordsinfile#1#2% command name
+%   {\ctxcommand{withwords(\!!bs#1\!!es,io.loaddata(resolvers.findfile("#2")))}}
+%
+% \protect
+%
+% \starttext
+%
+%     \defineframed[colored][foregroundcolor=red,foregroundstyle=\bfc\underbar,location=low]
+%
+%     \withwordsinstring{colored}{bla bla}
+%     \withwordsinfile{colored}{ward.tex}
+%
+% \stoptext

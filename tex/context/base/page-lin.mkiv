@@ -129,7 +129,7 @@
    \attribute\linereferenceattribute\linerefcounter
    #3%
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
-   \expanded{\dodosetreference{line}{#2}{conversion=\linenumberparameter\c!conversion}{\the\linerefcounter}}% kind labels userdata text
+   \expanded{\set_named_reference{line}{#2}{conversion=\linenumberparameter\c!conversion}{\the\linerefcounter}}% kind labels userdata text
    \endgroup}
 
 \def\mkstartlinereference#1{\mksomelinereference{#1}{lr:b:#1}{}\ignorespaces}
