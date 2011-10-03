@@ -10637,6 +10637,11 @@ end
 --     return resolvers.cleanpath(str)
 -- end
 
+local cleanup = lpeg.replacer {
+    { "!"  , ""  },
+    { "\\" , "/" },
+}
+
 function resolvers.cleanpath(str) -- tricky, maybe only simple paths
     local doslashes  = (P("\\")/"/" + 1)^0
     local donegation = (P("!") /""     )^0
