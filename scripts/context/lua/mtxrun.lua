@@ -10602,41 +10602,6 @@ end
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
--- local cleanup = lpeg.replacer {
---     { "!"  , ""  },
---     { "\\" , "/" },
--- }
---
--- local homedir
---
--- function resolvers.cleanpath(str) -- tricky, maybe only simple paths
---     if not homedir then
---         homedir = lpegmatch(cleanup,environment.homedir or "")
---         if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
---             if trace_expansions then
---                 report_expansions("no home dir set, ignoring dependent paths")
---             end
---             function resolvers.cleanpath(str)
---                 if find(str,"~") then
---                     return "" -- special case
---                 else
---                     return str and lpegmatch(cleanup,str)
---                 end
---             end
---         else
---             cleanup = lpeg.replacer {
---                 { "!"  , ""      },
---                 { "\\" , "/"     },
---                 { "~"  , homedir },
---             }
---             function resolvers.cleanpath(str)
---                 return str and lpegmatch(cleanup,str)
---             end
---         end
---     end
---     return resolvers.cleanpath(str)
--- end
-
 local cleanup = lpeg.replacer {
     { "!"  , ""  },
     { "\\" , "/" },
@@ -15128,7 +15093,7 @@ end
 
 -- End of hack.
 
-local format, gsub, gmatch, match = string.format, string.gsub, string.gmatch, string.match
+local format, gsub, gmatch, match, find = string.format, string.gsub, string.gmatch, string.match, string.find
 local concat = table.concat
 
 own.name = (environment and environment.ownname) or arg[0] or 'mtxrun.lua'
@@ -15409,11 +15374,11 @@ function runners.execute_script(fullname,internal,nosplit)
             if path ~= "" then
                 result = fullname
             elseif name then
-                name = name:gsub("^int[%a]*:",function()
+                name = gsub(name,"^int[%a]*:",function()
                     internal = true
                     return ""
                 end )
-                name = name:gsub("^script:","")
+                name = gsub(name,"^script:","")
                 if suffix == "" and runners.registered[name] and runners.registered[name][1] then
                     name = runners.registered[name][1]
                     suffix = file.extname(name)
@@ -15496,7 +15461,7 @@ function runners.execute_program(fullname)
             local before, after = environment.splitarguments(fullname)
             for k=1,#after do after[k] = resolvers.resolve(after[k]) end
             environment.initializearguments(after)
-            fullname = fullname:gsub("^bin:","")
+            fullname = gsub(fullname,"^bin:","")
             local command = fullname .. " " .. (environment.reconstructcommandline(after or "",noquote) or "")
             report()
             report("executing: %s",command)
@@ -15678,6 +15643,11 @@ function runners.launch_file(filename)
     end
 end
 
+local mtxprefixes = {
+    { "^mtx%-",    "mtx-"  },
+    { "^mtx%-t%-", "mtx-t-" },
+}
+
 function runners.find_mtx_script(filename)
     local function found(name)
         local path = file.dirname(name)
@@ -15703,24 +15673,27 @@ function runners.find_mtx_script(filename)
         return fullname
     end
     -- mtx- prefix checking
-    local mtxprefix = (filename:find("^mtx%-") and "") or "mtx-"
-    -- context namespace, mtx-<filename>
-    fullname = mtxprefix .. filename
-    fullname = found(fullname) or resolvers.findfile(fullname)
-    if fullname and fullname ~= "" then
-        return fullname
-    end
-    -- context namespace, mtx-<filename>s
-    fullname = mtxprefix .. basename .. "s" .. "." .. suffix
-    fullname = found(fullname) or resolvers.findfile(fullname)
-    if fullname and fullname ~= "" then
-        return fullname
-    end
-    -- context namespace, mtx-<filename minus trailing s>
-    fullname = mtxprefix .. basename:gsub("s$","") .. "." .. suffix
-    fullname = found(fullname) or resolvers.findfile(fullname)
-    if fullname and fullname ~= "" then
-        return fullname
+    for i=1,#mtxprefixes do
+        local mtxprefix = mtxprefixes[i]
+        mtxprefix = find(filename,mtxprefix[1]) and "" or mtxprefix[2]
+        -- context namespace, mtx-<filename>
+        fullname = mtxprefix .. filename
+        fullname = found(fullname) or resolvers.findfile(fullname)
+        if fullname and fullname ~= "" then
+            return fullname
+        end
+        -- context namespace, mtx-<filename>s
+        fullname = mtxprefix .. basename .. "s" .. "." .. suffix
+        fullname = found(fullname) or resolvers.findfile(fullname)
+        if fullname and fullname ~= "" then
+            return fullname
+        end
+        -- context namespace, mtx-<filename minus trailing s>
+        fullname = mtxprefix .. gsub(basename,"s$","") .. "." .. suffix
+        fullname = found(fullname) or resolvers.findfile(fullname)
+        if fullname and fullname ~= "" then
+            return fullname
+        end
     end
     -- context namespace, just <filename>
     fullname = resolvers.findfile(filename)
@@ -16206,7 +16179,7 @@ elseif e_argument("help") or filename=='help' or filename == "" then
 
     application.help()
 
-elseif filename:find("^bin:") then
+elseif find(filename,"^bin:") then
 
     runners.loadbase()
     ok = runners.execute_program(filename)

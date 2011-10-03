@@ -321,126 +321,147 @@ setmetatable(n_table, { __index = function(t,level) local v = { level           
 --     end
 --     line_num = line_num + 1
 -- end
---
--- -- not that much faster but less memory:
 
-local action_y, action_n
+local newline = P("\r\n") + S("\r\n")
+local p_yes   = Cp() * Cs((1-newline)^1) * newline^-1
+local p_nop   = newline
 
-local newline    = P("\r\n") + S("\r\n")
-local splitlines = ( (
-    (Cp() * Cs((1-newline)^1) * newline^-1) / function(p,l) action_y(p,l) end
-  + (                           newline   ) / function()    action_n()    end
-) )^0
-
-function context.fold(text, start_pos, start_line, start_level)
-    if text == '' then
+local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
+    local foldsymbols = lexer._foldsymbols
+    if not foldsymbols then
         return { }
     end
-    local lexer = global._LEXER
-    if lexer._fold then
-        return lexer._fold(text, start_pos, start_line, start_level)
+    local patterns = foldsymbols._patterns
+    if not patterns then
+        return { }
+    end
+    local nofpatterns = #patterns
+    if nofpatterns == 0 then
+        return { }
     end
     local folds = { }
-    if lexer._foldsymbols then
-        local fold_symbols = lexer._foldsymbols
-        local line_num = start_line
-        local prev_level = start_level
-        local current_level = prev_level
-        local patterns = fold_symbols._patterns
-        local nofpatterns = #patterns
-        local hash = fold_symbols._hash
-        if not hash then
-            hash = { }
-            for symbol, matches in next, fold_symbols do
-                if not find(symbol,"^_") then
-                    for s, _ in next, matches do
-                        hash[s] = true
-                    end
+    local line_num = start_line
+    local prev_level = start_level
+    local current_level = prev_level
+    local validmatches = foldsymbols._validmatches
+    if not validmatches then
+        validmatches = { }
+        for symbol, matches in next, foldsymbols do -- whatever = { start = 1, stop = -1 }
+            if not find(symbol,"^_") then -- brrr
+                for s, _ in next, matches do
+                    validmatches[s] = true
                 end
             end
-            fold_symbols._hash = hash
         end
-        action_y = function(pos,line) -- we can consider moving this one outside the function
-            for i=1,nofpatterns do
-                for s, m in gmatch(line,patterns[i]) do
-                    if hash[m] then
-                        local symbols = fold_symbols[get_style_at(start_pos + pos + s - 1)]
-                        if symbols then
-                            local l = symbols[m]
-                            if l then
-                                local t = type(l)
-                                if t == 'number' then
-                                    current_level = current_level + l
-                                    if current_level < FOLD_BASE then -- can this happen?
-                                        current_level = FOLD_BASE
-                                    end
-                                elseif t == 'function' then
-                                    current_level = current_level + l(text, pos, line, s, match)
-                                    if current_level < FOLD_BASE then
-                                        current_level = FOLD_BASE
-                                    end
-                                end
+        foldsymbols._validmatches = validmatches
+    end
+    local function action_y(pos,line) -- we can consider moving the local functions outside (drawback: folds is kept)
+        for i=1,nofpatterns do
+            for s, m in gmatch(line,patterns[i]) do
+                if validmatches[m] then
+                    local symbols = foldsymbols[get_style_at(start_pos + pos + s - 1)]
+                    if symbols then
+                        local action = symbols[m]
+                        if action then
+                            if type(action) == 'number' then -- we could store this in validmatches if there was only one symbol category
+                                current_level = current_level + action
+                            else
+                                current_level = current_level + action(text,pos,line,s,m)
+                            end
+                            if current_level < FOLD_BASE then
+                                current_level = FOLD_BASE
                             end
                         end
                     end
                 end
             end
-            if current_level > prev_level then
-                folds[line_num] = h_table[prev_level] -- { prev_level, FOLD_HEADER }
-            else
-                folds[line_num] = n_table[prev_level] -- { prev_level }
+        end
+        if current_level > prev_level then
+            folds[line_num] = h_table[prev_level] -- { prev_level, FOLD_HEADER }
+        else
+            folds[line_num] = n_table[prev_level] -- { prev_level }
+        end
+        prev_level = current_level
+        line_num = line_num + 1
+    end
+    local function action_n()
+        folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
+        line_num = line_num + 1
+    end
+    if lexer._reset_parser then
+        lexer._reset_parser()
+    end
+    local lpegpattern = (p_yes/action_y + p_nop/action_n)^0 -- not too efficient but indirect function calls are neither but
+    lpegmatch(lpegpattern,text)                             -- keys are not pressed that fast ... large files are slow anyway
+    return folds
+end
+
+local function fold_by_indentation(text,start_pos,start_line,start_level)
+    local folds = { }
+    local current_line = start_line
+    local prev_level = start_level
+    for _, line in gmatch(text,'([\t ]*)(.-)\r?\n') do
+        if line ~= "" then
+            local current_level = FOLD_BASE + get_indent_amount(current_line)
+            if current_level > prev_level then -- next level
+                local i = current_line - 1
+                while true do
+                    local f = folds[i]
+                    if f and f[2] == FOLD_BLANK then
+                        i = i - 1
+                    else
+                        break
+                    end
+                end
+                local f = folds[i]
+                if f then
+                    f[2] = FOLD_HEADER
+                end -- low indent
+                folds[current_line] = n_table[current_level] -- { current_level } -- high indent
+            elseif current_level < prev_level then -- prev level
+                local f = folds[current_line - 1]
+                if f then
+                    f[1] = prev_level -- high indent
+                end
+                folds[current_line] = n_table[current_level] -- { current_level } -- low indent
+            else -- same level
+                folds[current_line] = n_table[prev_level] -- { prev_level }
             end
             prev_level = current_level
-            line_num = line_num + 1
+        else
+            folds[current_line] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
         end
-        action_n = function() -- we can consider moving this one outside the function
-            folds[line_num] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
-            line_num = line_num + 1
-        end
-        local lines = lpegmatch(splitlines,text)
-    elseif get_property('fold.by.indentation',1) == 1 then
-        local current_line = start_line
-        local prev_level = start_level
-        for _, line in gmatch(text,'([\t ]*)(.-)\r?\n') do
-            if line ~= "" then
-                local current_level = FOLD_BASE + get_indent_amount(current_line)
-                if current_level > prev_level then -- next level
-                    local i = current_line - 1
-                    while true do
-                        local f = folds[i]
-                        if f and f[2] == FOLD_BLANK then
-                            i = i - 1
-                        else
-                            break
-                        end
-                    end
-                    local f = folds[i]
-                    if f then
-                        f[2] = FOLD_HEADER
-                    end -- low indent
-                    folds[current_line] = n_table[current_level] -- { current_level } -- high indent
-                elseif current_level < prev_level then -- prev level
-                    local f = folds[current_line - 1]
-                    if f then
-                        f[1] = prev_level -- high indent
-                    end
-                    folds[current_line] = n_table[current_level] -- { current_level } -- low indent
-                else -- same level
-                    folds[current_line] = n_table[prev_level] -- { prev_level }
-                end
-                prev_level = current_level
-            else
-                folds[current_line] = b_table[prev_level] -- { prev_level, FOLD_BLANK }
-            end
-            current_line = current_line + 1
-        end
-    else
-        for _ in gmatch(text,".-\r?\n") do
-            folds[start_line] = n_table[start_level] -- { start_level }
-            start_line = start_line + 1
-        end
+        current_line = current_line + 1
     end
     return folds
+end
+
+local function fold_by_line(text,start_pos,start_line,start_level)
+    local folds = { }
+    for _ in gmatch(text,".-\r?\n") do
+        folds[start_line] = n_table[start_level] -- { start_level }
+        start_line = start_line + 1
+    end
+    return folds
+end
+
+function context.fold(text,start_pos,start_line,start_level)
+    if text == '' then
+        return { }
+    end
+    local lexer = global._LEXER
+    local fold_by_lexer = lexer._fold
+    if fold_by_lexer then
+        return fold_by_lexer(text,start_pos,start_line,start_level,lexer)
+    elseif get_property('fold.by.parsing',1) > 0 then
+        return fold_by_parsing(text,start_pos,start_line,start_level,lexer)
+    elseif get_property('fold.by.indentation',1) > 0 then -- not that usefull
+        return fold_by_indentation(text,start_pos,start_line,start_level,lexer)
+    elseif get_property('fold.by.line',1) > 0 then -- rather useless
+        return fold_by_line(text,start_pos,start_line,start_level,lexer)
+    else
+        return { }
+    end
 end
 
 function context.lex(text,init_style)

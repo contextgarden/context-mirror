@@ -130,41 +130,6 @@ end
 -- {a,b,c/{p,q/{x,y,z},w}v,d/{p,q,r}}
 -- {$SELFAUTODIR,$SELFAUTOPARENT}{,{/share,}/texmf{-local,.local,}/web2c}
 
--- local cleanup = lpeg.replacer {
---     { "!"  , ""  },
---     { "\\" , "/" },
--- }
---
--- local homedir
---
--- function resolvers.cleanpath(str) -- tricky, maybe only simple paths
---     if not homedir then
---         homedir = lpegmatch(cleanup,environment.homedir or "")
---         if homedir == char(127) or homedir == "" or not lfs.isdir(homedir) then
---             if trace_expansions then
---                 report_expansions("no home dir set, ignoring dependent paths")
---             end
---             function resolvers.cleanpath(str)
---                 if find(str,"~") then
---                     return "" -- special case
---                 else
---                     return str and lpegmatch(cleanup,str)
---                 end
---             end
---         else
---             cleanup = lpeg.replacer {
---                 { "!"  , ""      },
---                 { "\\" , "/"     },
---                 { "~"  , homedir },
---             }
---             function resolvers.cleanpath(str)
---                 return str and lpegmatch(cleanup,str)
---             end
---         end
---     end
---     return resolvers.cleanpath(str)
--- end
-
 local cleanup = lpeg.replacer {
     { "!"  , ""  },
     { "\\" , "/" },

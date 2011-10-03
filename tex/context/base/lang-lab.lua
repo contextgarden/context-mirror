@@ -153,3 +153,6 @@ end
 --~
 --~ languages.labels.check()
 
+-- function commands.setstrippedtextprefix(str)
+--     context(string.strip(str))
+-- end

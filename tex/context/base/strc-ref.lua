@@ -389,13 +389,6 @@ references.files.data = references.files.data or { }
 
 local files = references.files.data
 
-table.setmetatableindex(files, function(t,k)
-    -- we assume that it's a file anyway
-    local v = { k, k }
-    files[k] = v
-    return v
-end)
-
 function references.files.define(name,file,description)
     if name and name ~= "" then
         files[name] = { file or "", description or file or "" }
@@ -711,8 +704,19 @@ local function loadexternalreferences(name,utilitydata)
     end
 end
 
+local externalfiles = { }
+
+table.setmetatableindex(externalfiles, function(t,k)
+    local v = files[k]
+    if not v then
+        v = { k, k }
+    end
+    externalfiles[k] = v
+    return v
+end)
+
 table.setmetatableindex(externals,function(t,k) -- either or not automatically
-    local filename = files[k][1] -- filename
+    local filename = externalfiles[k][1] -- filename
     local fullname = file.replacesuffix(filename,"tuc")
     if lfs.isfile(fullname) then -- todo: use other locator
         local utilitydata = job.loadother(fullname)
