@@ -16,7 +16,7 @@ local global = _G
 
 module(...)
 
-local cldlexer = _M
+local lualexer = _M
 
 _directives = { } -- communication channel
 
@@ -83,7 +83,7 @@ local longcomment =  Cmt(#('[[' + ('[' * C(P('=')^0) * '[')), function(input,ind
     return stop and stop + 1 or #input + 1
 end)
 
-local whitespace    = cldlexer.WHITESPACE -- triggers states
+local whitespace    = lualexer.WHITESPACE -- triggers states
 
 local space         = lexer.space -- S(" \n\r\t\f\v")
 local any           = lexer.any
@@ -147,9 +147,10 @@ _rules = {
     { 'constant',     constant     },
     { 'identifier',   identifier   },
     { 'string',       string       },
+    { 'number',       number       },
     { 'longcomment',  longcomment  },
     { 'shortcomment', shortcomment },
-    { 'number',       number       },
+--  { 'number',       number       },
     { 'operator',     operator     },
     { 'rest',         rest         },
 }
@@ -159,9 +160,10 @@ _tokenstyles = lexer.context.styleset
 _foldsymbols = {
     _patterns = {
         '%l+',
-        '[%({%)}%[%]]',
+     -- '[%({%)}%[%]]',
+        '[{}%[%]]',
     },
-    ['keyword'] = {
+    ['keyword'] = { -- challenge:  if=0  then=1  else=-1  elseif=-1
         ['if']       =  1,
         ['end']      = -1,
         ['do']       =  1,
@@ -176,7 +178,7 @@ _foldsymbols = {
         ['['] = 1, [']'] = -1,
     },
     ['special'] = {
-        ['('] = 1, [')'] = -1,
+     -- ['('] = 1, [')'] = -1,
         ['{'] = 1, ['}'] = -1,
     },
 }
@@ -184,7 +186,7 @@ _foldsymbols = {
 -- embedded in tex:
 
 local cstoken         = R("az","AZ","\127\255") + S("@!?_")
-local csnametex       = P("\\") * cstoken^1
+local texcsname       = P("\\") * cstoken^1
 local commentline     = P('%') * (1-S("\n\r"))^0
 
 local texcomment      = token('comment', Cmt(commentline, function() return _directives.cld_inline end))
@@ -197,8 +199,9 @@ local texstring       = token("quote",  longthreestart)
                       * token("string", longthreestring)
                       * token("quote",  longthreestop)
 
--- local texcommand   = token("user", csnametex)
---
+-- local texcommand      = token("user", texcsname)
+local texcommand      = token("warning", texcsname)
+
 -- local texstring    = token("quote", longthreestart)
 --                    * (texcommand + token("string",P(1-texcommand-longthreestop)^1) - longthreestop)^0 -- we match long non-\cs sequences
 --                    * token("quote", longthreestop)
@@ -207,6 +210,7 @@ _rules_cld = {
     { 'whitespace',   spacing      },
     { 'texstring',    texstring    },
     { 'texcomment',   texcomment   },
+    { 'texcommand',   texcommand   },
     { 'keyword',      keyword      },
     { 'function',     builtin      },
     { 'csname',       csname       },

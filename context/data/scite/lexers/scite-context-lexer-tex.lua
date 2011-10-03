@@ -329,7 +329,7 @@ local function startinlinelua(_,i,s)
         cldlexer._directives.cld_inline = true
         lualevel = 1
         return true
-    else
+    else-- if luastatus == "inline" then
         lualevel = lualevel + 1
         return true
     end
@@ -351,7 +351,7 @@ local function stopinlinelua_e(_,i,s) -- }
         return false
     elseif luastatus == "inline" then
         lualevel = lualevel - 1
-        local ok = lualevel <= 0
+        local ok = lualevel <= 0 -- was 0
         if ok then
             cldlexer._directives.cld_inline = false
             luastatus = false
@@ -360,6 +360,12 @@ local function stopinlinelua_e(_,i,s) -- }
     else
         return true
     end
+end
+
+contextlexer._reset_parser = function()
+    luastatus = false
+    luatag    = nil
+    lualevel  = 0
 end
 
 local luaenvironment         = P("luacode")
