@@ -883,21 +883,6 @@
          \hskip\leftskip\hskip\leftmargindistance}}%
    \itemgroupitem}
 
-\appendtoks \let\item        \itemgroupitem    \to \itemgroupcommands
-\appendtoks \let\noitem      \itemgroupnoitem  \to \itemgroupcommands
-\appendtoks \letvalue\v!item \itemgroupitem    \to \itemgroupcommands
-\appendtoks \let\itm         \itemgroupitem    \to \itemgroupcommands
-\appendtoks \let\but         \itemgroupbutton  \to \itemgroupcommands
-\appendtoks \let\nop         \itemgroupdummy   \to \itemgroupcommands
-\appendtoks \letvalue\v!sub  \itemgroupsubitem \to \itemgroupcommands
-\appendtoks \letvalue\v!sym  \itemgroupsymbol  \to \itemgroupcommands
-\appendtoks \letvalue\v!ran  \itemgroupedge    \to \itemgroupcommands
-\appendtoks \letvalue\v!head \itemgrouphead    \to \itemgroupcommands
-\appendtoks \letvalue\v!its  \itemgroupitems   \to \itemgroupcommands
-\appendtoks \letvalue\v!mar  \itemgroupmargin  \to \itemgroupcommands
-
-% todo : \startitem .. \stopitem
-%
 % beware, we don't group (yet) as we want to keep the left/right skip
 %
 % \startitemize
@@ -907,6 +892,28 @@
 % \stopitem
 %
 % so we need to keep that property
+
+\appendtoks
+    \let\item  \itemgroupitem
+    \let\noitem\itemgroupnoitem
+    \let\itm   \itemgroupitem
+    \let\but   \itemgroupbutton
+    \let\nop   \itemgroupdummy
+\to \itemgroupcommands
+
+\ifx\currentinterface \v!english \else
+
+    \appendtoks
+        \letvalue\v!item\itemgroupitem
+        \letvalue\v!sub \itemgroupsubitem
+        \letvalue\v!sym \itemgroupsymbol
+        \letvalue\v!ran \itemgroupedge
+        \letvalue\v!head\itemgrouphead
+        \letvalue\v!its \itemgroupitems
+        \letvalue\v!mar \itemgroupmargin
+    \to \itemgroupcommands
+
+\fi
 
 \let\startitemgroupitem\itemgroupitem
 
@@ -928,14 +935,40 @@
    \fi}
 
 \appendtoks
-  \letvalue{\e!start\v!item}\startitemgroupitem
-  \letvalue{\e!stop \v!item}\stopitemgroupitem
+    \let\startitem\startitemgroupitem
+    \let\stopitem \stopitemgroupitem
+    \let\starthead\startitemgroupitemhead
+    \let\stophead \stopitemgroupitemhead
 \to \itemgroupcommands
 
+\ifx\currentinterface \v!english \else
+
+    \appendtoks % can be sped up by \csname if needed
+        \letvalue{\e!start\v!item}\startitemgroupitem
+        \letvalue{\e!stop \v!item}\stopitemgroupitem
+        \letvalue{\e!start\v!head}\startitemgroupitemhead
+        \letvalue{\e!stop \v!head}\stopitemgroupitemhead
+    \to \itemgroupcommands
+
+\fi
+
 \appendtoks
-  \letvalue{\e!start\v!head}\startitemgroupitemhead
-  \letvalue{\e!stop \v!head}\stopitemgroupitemhead
+    \let\startspecialitem\startspecialitemgroupitem
+    \let\stopspecialitem \stopspecialitemgroupitem
 \to \itemgroupcommands
+
+\unexpanded\def\startspecialitemgroupitem[#1]%
+  {\csname\??op:\e!start:\ifcsname#1\endcsname #1\else\v!item\fi\endcsname}
+
+\unexpanded\def\stopspecialitemgroupitem
+  {\stopitemgroupitem}
+
+\letvalue{\??op:\e!start:\v!item}\itemgroupitem
+\letvalue{\??op:\e!start:\v!sub }\itemgroupsubitem
+\letvalue{\??op:\e!start:\v!sym }\itemgroupsymbol
+\letvalue{\??op:\e!start:\v!ran }\itemgroupedge
+\letvalue{\??op:\e!start:\v!its }\itemgroupitems
+\letvalue{\??op:\e!start:\v!mar }\itemgroupmargin
 
 % \startitemize
 %   \starthead {xx} test \stophead
