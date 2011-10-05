@@ -2942,21 +2942,49 @@
 %D also simplified the \type {\setupframed} command. There are
 %D certainly more places where such improvements can be made.
 
-\def\defineframed
-  {\dodoubleempty\dodefineframed}
+% \def\defineframed
+%   {\dodoubleempty\dodefineframed}
+%
+% \def\dodefineframed[#1][#2]%
+%   {\ifcsname\??ol:#1\endcsname
+%      % already defined, keeps settings
+%    \else
+%      \expandafter\newcount\csname\??ol:#1\endcsname % \the\everypresetframed
+%    \fi
+%    \getparameters[\??ol#1][\s!parent=\??ol,#2]%
+%    \setuvalue{#1}{\doframed[#1]}}% % \the\everydefineframed
 
-\def\dodefineframed[#1][#2]%
+\def\defineframed % also inheritance now
+  {\dotripleempty\dodefineframed}
+
+\def\dodefineframed[#1][#2][#3]%
   {\ifcsname\??ol:#1\endcsname
      % already defined, keeps settings
    \else
      \expandafter\newcount\csname\??ol:#1\endcsname % \the\everypresetframed
    \fi
-   \getparameters[\??ol#1][\s!parent=\??ol,#2]%
+   \ifsecondargument
+     \doifassignmentelse{#2}
+       {\getparameters[\??ol#1][\s!parent=\??ol,#2]}%
+       {\ifcsname#2\endcsname
+          \getparameters[\??ol#1][\s!parent=\??ol#2,#3]%
+        \else
+          \getparameters[\??ol#1][\s!parent=\??ol,#3]%
+        \fi}%
+   \else
+      \getparameters[\??ol#1][\s!parent=\??ol,#2]%
+   \fi
    \setuvalue{#1}{\doframed[#1]}}% % \the\everydefineframed
 
-\def\doframed[#1]%
+\newcount\crapframedcount
+
+\def\doframed[#1]% official (not much checking, todo: parent)
   {\bgroup
-   \expandafter\let\expandafter\tempframedcount\csname\??ol:#1\endcsname
+   \ifcsname\??ol:#1\endcsname
+     \expandafter\let\expandafter\tempframedcount\csname\??ol:#1\endcsname
+   \else
+     \let\tempframedcount\crapframedcount
+   \fi
    \advance\tempframedcount\plusone
    \expandafter\def\csname\??ol#1:\the\tempframedcount\s!parent\endcsname{\??ol#1}% \inheritlocalframed
    \dodoubleempty\dolocalframed[\??ol#1:\the\tempframedcount]}

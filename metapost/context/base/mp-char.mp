@@ -111,6 +111,7 @@ def new_chart =
   color   xydraw   [][] ;
   numeric xyline   [][] ;
   boolean xypeep   [][] ;
+  picture xypicture[][] ;
 
   numeric cpath         ; cpath := 0 ;
   path    cpaths    []  ;
@@ -232,6 +233,15 @@ def flush_shapes =
     endfor ;
   endfor ;
 enddef ;
+
+def flush_pictures =
+  for x=1 upto max_x :
+    for y=1 upto max_y :
+      flush_picture (x, y) ;
+    endfor ;
+  endfor ;
+enddef ;
+
 
 def draw_connection_point (expr x, y, z) =
   pickup pencircle scaled if (z=0): 2 fi xyline[x][y] ;
@@ -448,6 +458,16 @@ def draw_midpoint (expr n) =
     drawdot p withcolor .7white ;
   fi ;
   endgroup ;
+enddef ;
+
+def flush_picture(expr x, y) =
+    if known xypicture[x][y]:
+        draw xypicture[x][y] shifted xy_offset((x+0.5)*grid_width,(max_y-y+1.5)*grid_height) ;
+    fi ;
+enddef ;
+
+def chart_draw_picture(expr x, y, p) =
+    xypicture[x][y] := p ;
 enddef ;
 
 boolean reverse_connection ; reverse_connection := false ;
@@ -911,6 +931,7 @@ enddef ;
 def end_chart =
   flush_shapes ;
   flush_connections ;
+  flush_pictures ;
   cmin_x := cmin_x ;
   cmax_x := cmin_x+cmax_x ;
   cmin_y := cmin_y-1 ;

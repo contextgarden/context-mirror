@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-otf'] = {
     license   = "see context related readme files"
 }
 
-local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
+local type, next, tonumber, tostring, rawget, rawset = type, next, tonumber, tostring, rawget, rawset
 local gsub, lower, format, match = string.gsub, string.lower, string.format, string.match
 local is_boolean = string.is_boolean
 
@@ -635,10 +635,17 @@ local baselines = allocate {
     ['romn'] = 'roman baseline'
 }
 
+local acceptscripts   = true  directives.register("otf.acceptscripts",   function(v) acceptscripts   = v end)
+local acceptlanguages = true  directives.register("otf.acceptlanguages", function(v) acceptlanguages = v end)
+
+local report_checks   = logs.reporter("fonts","checks")
+
 tables.scripts   = scripts
 tables.languages = languages
 tables.features  = features
 tables.baselines = baselines
+
+-- hm, we overload the metatables
 
 if otffeatures.features then
     for k, v in next, otffeatures.features do
@@ -670,7 +677,6 @@ local function resolve(t,k)
             return v
         end
     end
-    return "dflt"
 end
 
 setmetatableindex(verbosescripts,   resolve)
@@ -678,20 +684,51 @@ setmetatableindex(verboselanguages, resolve)
 setmetatableindex(verbosefeatures,  resolve)
 setmetatableindex(verbosebaselines, resolve)
 
-local function resolve(t,k)
+setmetatableindex(scripts, function(t,k)
     if k then
         k = lower(k)
-        local v = rawget(t,k) or rawget(t,gsub(k," ",""))
+        if k == "dflt" then
+            return k
+        end
+        local v = rawget(t,k)
         if v then
             return v
         end
+        k = gsub(k," ","")
+        v = rawget(t,v)
+        if v then
+            return v
+        elseif acceptscripts then
+            report_checks("registering extra script: %s",k)
+            rawset(t,k,k)
+            return k
+        end
     end
     return "dflt"
-end
+end)
 
-setmetatableindex(scripts,   resolve)
-setmetatableindex(scripts,   resolve)
-setmetatableindex(languages, resolve)
+setmetatableindex(languages, function(t,k)
+    if k then
+        k = lower(k)
+        if k == "dflt" then
+            return k
+        end
+        local v = rawget(t,k)
+        if v then
+            return v
+        end
+        k = gsub(k," ","")
+        v = rawget(t,v)
+        if v then
+            return v
+        elseif acceptlanguages then
+            report_checks("registering extra languages: %s",k)
+            rawset(t,k,k)
+            return k
+        end
+    end
+    return "dflt"
+end)
 
 setmetatablenewindex(languages, "ignore")
 setmetatablenewindex(baselines, "ignore")
@@ -745,18 +782,10 @@ function otf.features.normalize(features) -- no longer 'lang'
             k = lower(k)
             if k == "language" then
                 v = gsub(lower(v),"[^a-z0-9]","")
-                if rawget(languages,v) then
-                    h.language = v
-                else
-                    h.language = rawget(verboselanguages,v) or "dflt"
-                end
+                h.language = rawget(verboselanguages,v) or languages[v] or "dflt" -- auto adds
             elseif k == "script" then
                 v = gsub(lower(v),"[^a-z0-9]","")
-                if rawget(scripts,v) then
-                    h.script = v
-                else
-                    h.script = rawget(verbosescripts,v) or "dflt"
-                end
+                h.script = rawget(verbosescripts,v) or scripts[v] or "dflt" -- auto adds
             else
                 if type(v) == "string" then
                     local b = is_boolean(v)

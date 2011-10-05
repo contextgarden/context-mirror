@@ -48,6 +48,8 @@ local trace_comments = false  trackers.register("lxml.comments", function(v) tra
 
 local report_lxml = logs.reporter("xml","tex")
 
+local forceraw, rawroot = false, nil
+
 -- tex entities
 --
 -- todo: unprivatize attributes
@@ -70,36 +72,40 @@ function lxml.registerentity(key,value)
 end
 
 function lxml.resolvedentity(str)
-    local e = texentities[str]
-    if e then
-        local te = type(e)
-        if te == "function" then
-            e(str)
-        elseif e then
-            context(e)
-        end
-        return
-    end
-    local e = xmlentities[str]
-    if e then
-        local te = type(e)
-        if te == "function" then
-            e = e(str)
-        end
-        if e then
-            contextsprint(notcatcodes,e)
-        end
-        return
-    end
-    -- resolve hex and dec, todo: escape # & etc for ctxcatcodes
-    -- normally this is already solved while loading the file
-    local chr, err = lpegmatch(parsedentity,str)
-    if chr then
-        context(chr)
-    elseif err then
-        context(err)
+    if forceraw then
+        context("&%s;",str)
     else
-        context.xmle(str,utfupper(str)) -- we need to use our own upper
+        local e = texentities[str]
+        if e then
+            local te = type(e)
+            if te == "function" then
+                e(str)
+            elseif e then
+                context(e)
+            end
+            return
+        end
+        local e = xmlentities[str]
+        if e then
+            local te = type(e)
+            if te == "function" then
+                e = e(str)
+            end
+            if e then
+                contextsprint(notcatcodes,e)
+            end
+            return
+        end
+        -- resolve hex and dec, todo: escape # & etc for ctxcatcodes
+        -- normally this is already solved while loading the file
+        local chr, err = lpegmatch(parsedentity,str)
+        if chr then
+            context(chr)
+        elseif err then
+            context(err)
+        else
+            context.xmle(str,utfupper(str)) -- we need to use our own upper
+        end
     end
 end
 
@@ -152,8 +158,6 @@ lxml.toverbatim = context.newverbosehandler {
 }
 
 -- raw flushing
-
-local forceraw, rawroot = false, nil
 
 function lxml.startraw()
     forceraw = true
@@ -575,17 +579,19 @@ function lxml.setaction(id,pattern,action)
     end
 end
 
-local function sprint(root)
+local function sprint(root) -- check rawroot usage
     if root then
         local tr = type(root)
         if tr == "string" then -- can also be result of lpath
-         -- rawroot = false
+         -- rawroot = false -- ?
             root = xmlunprivatized(root)
             lpegmatch(xmltextcapture,root)
         elseif tr == "table" then
             if forceraw then
                 rawroot = root
-                contextsprint(ctxcatcodes,xmltostring(root))
+             -- contextsprint(ctxcatcodes,xmltostring(root)) -- goe wrong with % etc
+                root = xmlunprivatized(xmltostring(root))
+                lpegmatch(xmltextcapture,root) -- goes to toc
             else
                 xmlserialize(root,xmltexhandler)
             end
@@ -622,7 +628,9 @@ local function cprint(root) -- content
         local rootdt = root.dt
         if forceraw then
             rawroot = root
-            contextsprint(ctxcatcodes,xmltostring(rootdt or root))
+         -- contextsprint(ctxcatcodes,xmltostring(rootdt or root))
+            root = xmlunprivatized(xmltostring(root))
+            lpegmatch(xmltextcapture,root) -- goes to toc
         else
             xmlserialize(rootdt or root,xmltexhandler)
         end

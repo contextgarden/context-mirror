@@ -700,7 +700,7 @@ end
 
 local basepoints = number.dimenfactors["bp"]
 
-local cm = function(object)
+local function cm(object)
     local op = object.path
     local first, second, fourth = op[1], op[2], op[4]
     local tx, ty = first.x_coord      , first.y_coord
@@ -768,17 +768,19 @@ local function tx_process(object,prescript,before,after)
             if trace_textexts then
                 report_textexts("processing %s (second pass)",tx_number)
             end
-            before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+        --  before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+            local sx,rx,ry,sy,tx,ty = cm(object)
             before[#before+1] = function()
                 -- flush always happens, we can have a special flush function injected before
                 local box = textexts[tx_number]
                 if box then
-                    context.MPLIBgettextscaled(tx_number,sxsy(box.width,box.height,box.depth))
+                --  context.MPLIBgettextscaled(tx_number,sxsy(box.width,box.height,box.depth))
+                    context.MPLIBgettextscaledcm(tx_number,sx,rx,ry,sy,tx,ty,sxsy(box.width,box.height,box.depth))
                 else
                     report_textexts("unknown %s",tx_number)
                 end
             end
-            before[#before+1] = "Q"
+         -- before[#before+1] = "Q"
             if not trace_textexts then
                 object.path = false -- else: keep it
             end

@@ -1,0 +1,482 @@
+%D \module
+%D   [       file=m-flow,   -- m-chart
+%D        version=2011.10.1, -- 1998.10.10,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Flow Charts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% todo (if used):
+%    autofocus={name,name,name} -> min/max
+%    flowsets
+%    autoscaling (bodyfontsteps)
+%    comment
+%    overlay
+%
+% todo:
+%    \useFLOWchart[name][parent][setting,setting][additional settings]
+%    \useFLOWchart[name][parent][additional settings]
+%    setups
+%    mp instance with less files
+
+\registerctxluafile{m-flow}{}
+
+\unprotect
+
+\ifdefined \installsimplecommandhandler \else
+
+    \unexpanded\def\installsimplecommandhandler#1#2#3% no define
+      {\installparameterhandler    {#1}{#2}%
+       \installparameterhashhandler{#1}{#2}%
+       \installparametersethandler {#1}{#2}%
+       \installrootparameterhandler{#1}{#2}%
+       \installsetuphandler        {#1}{#2}%
+       \installattributehandler    {#1}{#2}}
+
+\fi
+
+% todo: figure out a nice way to define the lot: share current and
+% support current as name (nb: we need to set parent then)
+
+\def\??flch{@@flch} % chart
+\def\??flln{@@flln} % line
+\def\??flsh{@@flsh} % shape
+\def\??flfc{@@flfc} % focus
+\def\??flst{@@flst} % sets
+\def\??flsp{@@flsp} % split
+
+\installsimplecommandhandler \??flch {FLOWchart} \??flch
+\installsimplecommandhandler \??flln {FLOWline}  \??flln
+\installsimplecommandhandler \??flsh {FLOWshape} \??flsh
+\installsimplecommandhandler \??flfc {FLOWfocus} \??flfc
+\installsimplecommandhandler \??flst {FLOWsets}  \??flst
+\installsimplecommandhandler \??flsp {FLOWsplit} \??flsp
+
+\let\setupFLOWcharts\setupFLOWchart
+\let\setupFLOWlines \setupFLOWline
+\let\setupFLOWshapes\setupFLOWshape
+\let\setupFLOWsets  \setupFLOWset
+
+\setupFLOWcharts
+  [\c!width=12\bodyfontsize,
+   \c!height=7\bodyfontsize,
+   \c!offset=0pt, % \v!standard, % == auto offset
+   \c!dx=2\bodyfontsize,
+   \c!dy=2\bodyfontsize,
+   \c!nx=0,
+   \c!ny=0,
+   \c!x=1,
+   \c!y=1,
+ % \c!maxwidth=,
+ % \c!maxheight=,
+ % \c!option=,
+ % \c!bodyfont=,
+ % \c!dot=, % private option
+ % \c!autofocus=,
+ % \c!focus=,
+ % \c!background=,
+ % \c!framecolor=
+ % \c!backgroundcolor=, % \s!white
+   \c!rulethickness=\linewidth,
+   \c!frame=\v!off]
+
+\setupFLOWlines
+  [\c!corner=\v!round,
+   \c!arrow=\v!yes,
+   \c!dash=\v!no,
+   \c!radius=.375\bodyfontsize,
+   \c!color=FLOWlinecolor,
+   \c!rulethickness=.15\bodyfontsize,
+   \c!offset=\v!none]
+
+\setupFLOWshapes
+  [\c!default=action,
+   \c!framecolor=FLOWframecolor,
+   \c!background=\v!color,
+   \c!backgroundcolor=FLOWbackgroundcolor,
+   \c!rulethickness=.15\bodyfontsize,
+   \c!offset=.5\bodyfontsize]
+
+\setupFLOWfocus
+  [\c!framecolor=FLOWfocuscolor,
+   \c!background=\FLOWshapeparameter\c!background,
+   \c!backgroundcolor=\FLOWshapeparameter\c!backgroundcolor,
+   \c!backgroundscreen=\FLOWshapeparameter\c!backgroundscreen,
+   \c!rulethickness=\FLOWshapeparameter\c!rulethickness,
+   \c!offset=\FLOWshapeparameter\c!offset]
+
+\setupFLOWsplit
+  [\c!state=\v!stop,
+   \c!marking=\v!on,
+ % \c!command=,
+ % \c!before=,
+ % \c!after=,
+   \c!nx=3,
+   \c!ny=3]
+
+\definecolor [FLOWfocuscolor]      [s=.2]
+\definecolor [FLOWlinecolor]       [s=.5]
+\definecolor [FLOWframecolor]      [s=.7]
+\definecolor [FLOWbackgroundcolor] [s=.9]
+
+\newtoks\everyFLOWchart
+
+\unexpanded\def\startFLOWchart
+  {\startnointerference
+   \the\everyFLOWchart
+   \dosingleempty\start_FLOW_chart}
+
+\unexpanded\def\start_FLOW_chart[#name]%
+  {\ctxcommand{flow_start_chart("#name")}}
+
+\unexpanded\def\stopFLOWchart
+  {\ctxcommand{flow_stop_chart()}%
+   \stopnointerference}
+
+\unexpanded\def\defineFLOWchart % for old times sake
+  {\dodoubleempty\define_FLOW_chart}
+
+\unexpanded\def\define_FLOW_chart[#name][#settings]#cells% todo: save settings
+  {\startnointerference
+   \the\everyFLOWchart
+   \ctxcommand{flow_start_chart("#name")}%
+   #cells%
+   \ctxcommand{flow_stop_chart()}%
+   \stopnointerference}
+
+\unexpanded\def\startFLOWcell
+  {\dodoubleempty\start_FLOW_cell}
+
+\unexpanded\def\start_FLOW_cell[#1][#2]%
+  {\begingroup
+   \iffirstargument
+     \setupFLOWshape[#1]%
+   \fi
+   \ifsecondargument
+     \setupFLOWline[#2]%
+   \fi
+   \ctxcommand{flow_start_cell {
+        shape = {
+            rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
+            default         = "\FLOWshapeparameter\c!default",
+            framecolor      = "\FLOWshapeparameter\c!framecolor",
+            backgroundcolor = "\FLOWshapeparameter\c!backgroundcolor",
+        },
+        focus = {
+            rulethickness   = \number\dimexpr\FLOWfocusparameter\c!rulethickness,
+            framecolor      = "\FLOWfocusparameter\c!framecolor",
+            backgroundcolor = "\FLOWfocusparameter\c!backgroundcolor",
+        },
+        line = {
+            rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
+            radius          = \number\dimexpr\FLOWlineparameter\c!radius,
+            corner          = "\FLOWlineparameter\c!corner",
+            dash            = "\FLOWlineparameter\c!dash",
+            arrow           = "\FLOWlineparameter\c!arrow",
+            offset          = "\FLOWlineparameter\c!offset",
+        },
+  } }%
+  \endgroup}
+
+\unexpanded\def\stopFLOWcell
+  {\ctxcommand{flow_stop_cell()}}
+
+\unexpanded\def\FLOWchart
+  {\dodoubleempty\FLOW_chart}
+
+\def\FLOW_chart[#name][#settings]%
+  {\vbox\bgroup
+     \insidefloattrue
+     \dontcomplain
+     \setupFLOWchart[#settings]%
+     \ctxcommand{flow_make_chart {
+        chart = {
+            name            = "#name",
+            option          = "\FLOWchartparameter\c!option",
+            backgroundcolor = "\FLOWchartparameter\c!backgroundcolor",
+            width           = \number\dimexpr\FLOWchartparameter\c!width,
+            height          = \number\dimexpr\FLOWchartparameter\c!height,
+            dx              = \number\dimexpr\FLOWchartparameter\c!dx,
+            dy              = \number\dimexpr\FLOWchartparameter\c!dy,
+            offset          = \number\dimexpr\FLOWchartparameter\c!offset,
+            bodyfont        = "\FLOWchartparameter\c!bodyfont",
+            dot             = "\FLOWchartparameter\c!dot", % private option
+        },
+        shape = {
+            rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
+            default         = "\FLOWshapeparameter\c!default",
+            framecolor      = "\FLOWshapeparameter\c!framecolor",
+            backgroundcolor = "\FLOWshapeparameter\c!backgroundcolor",
+        },
+        focus = {
+            rulethickness   = \number\dimexpr\FLOWfocusparameter\c!rulethickness,
+            framecolor      = "\FLOWfocusparameter\c!framecolor",
+            backgroundcolor = "\FLOWfocusparameter\c!backgroundcolor",
+        },
+        line = {
+            rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
+            radius          = \number\dimexpr\FLOWlineparameter\c!radius,
+            corner          = "\FLOWlineparameter\c!corner",
+            dash            = "\FLOWlineparameter\c!dash",
+            arrow           = "\FLOWlineparameter\c!arrow",
+            offset          = "\FLOWlineparameter\c!offset",
+        },
+        set = {
+        },
+        split = {
+            state           = "\FLOWsplitparameter\c!state",
+            nx              = \number\FLOWsplitparameter\c!nx,
+            ny              = \number\FLOWsplitparameter\c!ny,
+            command         = "",
+            marking         = "\FLOWsplitparameter\c!marking",
+            before          = "",
+            after           = "",
+        }
+     } }%
+  \egroup}
+
+\unexpanded\def\FLOWcharts
+  {\dodoubleempty\FLOW_charts}
+
+\def\FLOW_charts[#name][#settings]
+  {\begingroup
+   \setupFLOWsplit[\c!state=\v!start,#settings]%
+   \FLOW_chart[#name][]%
+   \endgroup}
+
+\appendtoks
+   \let\name       \FLOW_name
+   \let\shape      \FLOW_shape
+   \let\destination\FLOW_destination
+   \let\focus      \FLOW_focus
+   \let\overlay    \FLOW_overlay
+   \let\location   \FLOW_location
+   \let\text       \FLOW_text
+   \let\label      \FLOW_label
+   \let\comment    \FLOW_comment
+   \let\exit       \FLOW_exit
+   \let\connection \FLOW_connection
+   \let\include    \FLOW_include
+   \let\figure     \FLOW_figure
+   %
+   \let\connect    \FLOW_connection
+   \let\locate     \FLOW_location
+   %
+   \let\includeFLOWchart\include
+\to \everyFLOWchart
+
+\unexpanded\def\FLOW_name                             #name{\ctxcommand{flow_set_name("#name")}\ignorespaces}
+\unexpanded\def\FLOW_shape                           #shape{\ctxcommand{flow_set_shape("#shape")}\ignorespaces}
+\unexpanded\def\FLOW_destination               #destination{\ctxcommand{flow_set_destination("#destination")}\ignorespaces}
+\unexpanded\def\FLOW_focus                           #focus{\ctxcommand{flow_set_focus("#focus")}\ignorespaces}
+\unexpanded\def\FLOW_overlay                       #overlay{\ctxcommand{flow_set_overlay("#overlay")}\ignorespaces}
+\unexpanded\def\FLOW_location                     #location{\ctxcommand{flow_set_location("#location")}\ignorespaces}
+\unexpanded\def\FLOW_figure                         #figure{\ctxcommand{flow_set_figure("#figure")}\ignorespaces}
+
+\unexpanded\def\FLOW_text                                  {\dosingleempty\do_FLOW_text}
+\unexpanded\def\FLOW_label                                 {\dosingleempty\do_FLOW_label}
+\unexpanded\def\FLOW_comment                               {\dosingleempty\do_FLOW_commment}
+\unexpanded\def\FLOW_exit                                  {\dosingleempty\do_FLOW_exit}
+\unexpanded\def\FLOW_connection                            {\dodoubleempty\do_FLOW_connection}
+\unexpanded\def\FLOW_include                               {\dodoubleempty\do_FLOW_include}
+
+\unexpanded\def\do_FLOW_text                  [#align]#text{\ctxcommand{flow_set_text("#align",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\do_FLOW_label              [#location]#text{\ctxcommand{flow_set_label("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\do_FLOW_comment            [#location]#text{\ctxcommand{flow_set_comment("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\do_FLOW_exit               [#location]#text{\ctxcommand{flow_set_exit("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\do_FLOW_connection[#location][#offset]#name{\ctxcommand{flow_set_connection("#location","#offset","#name")}\ignorespaces}
+
+\unexpanded\def\do_FLOW_include          [#name][#settings]{%
+    \begingroup
+        \getparameters[FLOWi][x=1,y=1,#settings]%
+        \ctxcommand{flow_set_include("#name",\number\FLOWix,\number\FLOWiy,\!!bs\detokenize{#settings}\!!es)}%
+    \endgroup
+    \ignorespaces
+}
+
+\setvariables
+  [flowcell:text]
+  [x=1,
+   y=1,
+   text=,
+   align=,
+   set=\setups{flowcell:text:place}]
+
+% \c!background={\@@FLOWbackground,\FLOWoverlay},
+
+\defineoverlay
+    [flowcell:figure]
+    [\overlayfigure{\getvariable{flowcell:text}{figure}}]
+
+\startsetups flowcell:text:place
+    \begingroup
+        \iftrialtypesetting
+            \directsetup{flowcell:text:place:indeed}
+        \else \iflocation
+            \doifelsenothing {\getvariable{flowcell:text}{destination}} {
+                \directsetup{flowcell:text:place:indeed}
+            } {
+                % tricky: scaling and moving around is not taken into account
+                \setupinteraction[\c!color=,\c!contrastcolor=]
+                \gotobox{\directsetup{flowcell:text:place:indeed}}[\getvariable{flowcell:text}{destination}]
+            }
+        \else
+            \directsetup{flowcell:text:place:indeed}
+        \fi \fi
+    \endgroup
+\stopsetups
+
+\startsetups flowcell:text:place:indeed
+    \begingroup
+        \directsetup{flowcell:text:user}
+        \doifelsenothing {\getvariable{flowcell:text}{figure}} {
+            \doframed
+                [flowcell:\getvariable{flowcell:text}{align}]
+                {\getvariable{flowcell:text}{text}}
+            } {
+                \doframed
+                    [flowcell:\getvariable{flowcell:text}{align}]
+                    [background=flowcell:figure]
+                    {\getvariable{flowcell:text}{text}}
+            }
+    \endgroup
+\stopsetups
+
+\defineframed % to be discussed: shape or global
+  [flowcell:base]
+  [\c!offset=\v!overlay, % no strut ?
+   \c!frame=\FLOWchartparameter\c!frame,
+   \c!background=\FLOWchartparameter\c!background,
+   \c!backgroundcolor=\FLOWchartparameter\c!backgroundcolor,
+  %\c!foregroundcolor=\FLOWshapeparameter\c!foregroundcolor,
+   \c!align=\v!middle,
+   \c!bottom=\vfill,
+   \c!top=\vfill,
+   \c!width=\FLOWchartparameter\c!width,
+   \c!height=\FLOWchartparameter\c!height,
+ % \c!rulethickness=\FLOWchartparameter\c!rulethickness,
+   \c!rulethickness=\zeropoint, % comment for tracing
+   \c!framecolor=\FLOWchartparameter\c!framecolor]
+
+\defineframed[flowcell:]  [flowcell:base]
+\defineframed[flowcell:l] [flowcell:base][\c!align=\v!flushleft]
+\defineframed[flowcell:r] [flowcell:base][\c!align=\v!flushright]
+\defineframed[flowcell:m] [flowcell:base][\c!align=\v!middle]
+\defineframed[flowcell:c] [flowcell:base][\c!align=\v!middle]
+
+\defineframed[flowcell:t] [flowcell:base][\c!top=]
+\defineframed[flowcell:b] [flowcell:base][\c!bottom=]
+
+\defineframed[flowcell:lt][flowcell:base][\c!top=,\c!align=\v!flushleft]
+\defineframed[flowcell:rt][flowcell:base][\c!top=,\c!align=\v!flushright]
+\defineframed[flowcell:mt][flowcell:base][\c!top=,\c!align=\v!middle]
+\defineframed[flowcell:ct][flowcell:base][\c!top=,\c!align=\v!middle]
+
+\defineframed[flowcell:lb][flowcell:base][\c!bottom=,\c!align=\v!flushleft]
+\defineframed[flowcell:rb][flowcell:base][\c!bottom=,\c!align=\v!flushright]
+\defineframed[flowcell:mb][flowcell:base][\c!bottom=,\c!align=\v!middle]
+\defineframed[flowcell:cb][flowcell:base][\c!bottom=,\c!align=\v!middle]
+
+% todo: each cell its own setup
+%
+% \startsetups flowcell
+%   \definelayer
+%     [flowcell]
+%     [width=\FLOWshapewidth,
+%      height=\FLOWshapeheight]
+%   \setlayerframed
+%     [flowcell]
+%     [preset=rightbottom,offset=1ex]
+%     [frame=off]
+%     {\tx(\FLOWx,\FLOWy)}
+% \stopsetups
+
+%D \starttyping
+%D \setupFLOWsplit
+%D   [nx=5,ny=10,
+%D    dx=0,dy=0,
+%D    before=,
+%D    after=\page]
+%D
+%D \FLOWcharts[mybigflow]
+%D \stoptyping
+%D
+%D \starttyping
+%D \splitfloat
+%D   {\placefigure{What a big flowchart this is!}}
+%D   {\FLOWcharts[mybigflow]}
+%D \stoptyping
+
+\protect
+
+\continueifinputfile{m-flow.mkvi}
+
+\input chrt-xml.tex
+
+\usemodule[abr-01]
+
+\setupFLOWcharts[option=test]
+\setupFLOWcharts[frame=on]
+\setupinteraction[state=start]
+
+% \setupFLOWcharts[dx=30pt,dy=30pt]
+
+\startFLOWchart[demo]
+  \startFLOWcell[framecolor=darkgray]
+    \name       {start}
+    \location   {1,1}
+    \shape      {action}
+    \text       {start}
+    \connection [bl] {one}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {one}
+%     \destination{CloseDocument}
+    \location   {2,2}
+    \shape      {action}
+    \text       {first}
+%     \label      [b] {\bfx bottom}
+    \connection [rt] {two}
+%     \exit       [l] {exit l}
+%     \exit       [r] {exit r}
+%     \exit       [t] {exit t}
+%     \exit       [b] {exit b}
+  \stopFLOWcell
+  \setupFLOWshapes[framecolor=darkgray]
+  \startFLOWcell % [foregroundcolor=white]
+    \name       {two}
+%     \destination{CloseDocument}
+    \location   {3,3}
+    \shape      {action}
+    \text       {second}
+    \figure     {cow.pdf}
+%     \label      [l] {\bfx left}
+%     \exit       [l] {exit l}
+%     \exit       [r] {exit r}
+%     \exit       [t] {exit t}
+%     \exit       [b] {exit b}
+  \stopFLOWcell
+\stopFLOWchart
+
+\starttext
+
+\startTEXpage
+%     \FLOWchart[convert-en]
+%     \FLOWchart[conversion 1]
+%     \FLOWchart[conversion 7]
+%     \FLOWchart[conversion 9]
+%     \FLOWchart[conversion 10]
+    \FLOWchart[demo]
+
+\stopTEXpage
+
+\startTEXpage
+    \FLOWchart[conversion 10]
+\stopTEXpage
+
+\stoptext

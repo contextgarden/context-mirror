@@ -46,7 +46,8 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext"
+        "starttext", "stoptext",
+        "startmodule", "stopmodule", "usemodule",
     },
     ["helpers"] = {
         --
@@ -137,6 +138,8 @@ return {
         "modulonumber", "dividenumber",
         --
         "getfirstcharacter", "doiffirstcharelse",
+        --
+        "startnointerference", "stopnointerference",
         --
     }
 }
