@@ -5244,6 +5244,10 @@ local function set(t,what,newvalue)
     if type(what) ~= "table" then
         return
     end
+    if not done then -- catch ... why not set?
+        done = { }
+        t.done = done
+    end
     for w, value in next, what do
         if value == "" then
             value = newvalue

@@ -170,6 +170,8 @@ local tags = {
 --
 --  local command = format("\\xmlprocessbuffer{%s}{%s}{}",metadata.xmlroot or "main",tag)
 
+local experiment = true
+
 function helpers.title(title,metadata) -- coding is xml is rather old and not that much needed now
     if title and title ~= "" then      -- so it might disappear
         if metadata then
@@ -178,12 +180,21 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                 -- title can contain raw xml
                 local tag = tags[metadata.kind] or tags.generic
                 local xmldata = format("<?xml version='1.0'?><%s>%s</%s>",tag,title,tag)
+if not experiment then
                 buffers.assign(tag,xmldata)
+end
                 if trace_processors then
                     report_processors("putting xml data in buffer: %s",xmldata)
                     report_processors("processing buffer with setup '%s' and tag '%s'",xmlsetup or "",tag)
                 end
+if experiment then
+    -- the question is: will this be forgotten ... better store in a via file
+    local xmltable = lxml.convert("temp",xmldata or "")
+    lxml.store("temp",xmltable)
+    context.xmlsetup("temp",xmlsetup or "")
+else
                 context.xmlprocessbuffer("dummy",tag,xmlsetup or "")
+end
             elseif xmlsetup then -- title is reference to node (so \xmlraw should have been used)
                 if trace_processors then
                     report_processors("feeding xmlsetup '%s' using node '%s'",xmlsetup,title)

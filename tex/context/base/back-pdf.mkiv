@@ -124,20 +124,44 @@
 
 %D Transformations. Some day we will use primitives (once they're fixed).
 
+% \def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+%                  \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
+%
+% \def\dostopscaling
+%   {\pdfliteral{Q}}
+%
+% \def\dostartrotation#1% grouped
+%   {\forcecolorhack % maybe use signal instead
+%    \pdfliteral{q \cldcontext{lpdf.rotationcm(#1)}}}
+%
+% \def\dostoprotation
+%   {\pdfliteral{Q}}
+
+% function lpdf.rotationcm(a)
+%     local s, c = sind(a), cosd(a)
+%     return format("%s %s %s %s 0 0 cm",c,s,-s,c)
+% end
+
+% todo: inject at the lua end
+
 \def\dostartrotation#1% grouped
   {\forcecolorhack % maybe use signal instead
-   \pdfliteral{q \cldcontext{lpdf.rotationcm(#1)}}}
+   \pdfsave \pdfsetmatrix
+     {\ctxcommand{pdfrotation(#1)}}}
 
 \def\dostoprotation
-  {\pdfliteral{Q}}
+  {\pdfrestore}
 
 \def\dostartscaling#1#2% the test is needed because acrobat is bugged!
   {\forcecolorhack % maybe use signal instead
-   \pdfliteral{q \ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
-                 \ifdim#2\points=\zeropoint.0001\else#2\fi\space 0 0 cm}}
+   \pdfsave \pdfsetmatrix
+     {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
+      \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
 
 \def\dostopscaling
-  {\pdfliteral{Q}}
+  {\pdfrestore}
 
 \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
 \def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}

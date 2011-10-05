@@ -42,6 +42,7 @@ return {
         "xoffset", "chardx", "granularity", "smoothing", "turningcheck", "yoffset",
         "chardy", "hppp", "tracingedges", "vppp",
         "extra_beginfig", "extra_endfig", "mpxbreak",
+        "endinput",
     },
     plain = {
         "ahangle", "ahlength", "bboxmargin", "defaultpen", "defaultscale",

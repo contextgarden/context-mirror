@@ -17,21 +17,21 @@
 %D copy.
 
 input mp-base.mpiv ;
-input mp-tool.mp ;
+input mp-tool.mp   ;
 input mp-core.mpiv ;
-input mp-page.mp ;
-input mp-text.mp ;
-input mp-txts.mp ;
-input mp-shap.mp ;
-input mp-butt.mp ;
-input mp-char.mp ;
-input mp-step.mp ;
-input mp-grph.mp ;
-input mp-figs.mp ;
+input mp-page.mp   ;
+input mp-text.mp   ;
+input mp-txts.mp   ;
+input mp-butt.mp   ;
+%     mp-shap.mp   ; % there no need to always load this
+%     mp-char.mp   ; % there no need to always load this
+input mp-step.mp   ; % there no need to always load this (todo)
+input mp-grph.mp   ;
+input mp-figs.mp   ;
 input mp-mlib.mpiv ;
-input mp-chem.mpiv ;
-input mp-grid.mp ;
-input mp-func.mp ;
+input mp-chem.mpiv ; % there no need to always load this (todo)
+input mp-grid.mp   ;
+input mp-func.mp   ;
 
 string metafunversion ;
 

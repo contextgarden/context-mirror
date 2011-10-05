@@ -98,18 +98,18 @@ end
 function metapost.flushers.pdf.comment(message)
     if message then
         message = format("%% mps graphic %s: %s", metapost.n, message)
-if experiment then
-    context(pdfliteral(message))
-else
-        if savedliterals then
-            local last = #savedliterals + 1
-            savedliterals[last] = message
-            context.MPLIBtoPDF(last)
+        if experiment then
+            context(pdfliteral(message))
         else
-            savedliterals = { message }
-            context.MPLIBtoPDF(1)
+            if savedliterals then
+                local last = #savedliterals + 1
+                savedliterals[last] = message
+                context.MPLIBtoPDF(last)
+            else
+                savedliterals = { message }
+                context.MPLIBtoPDF(1)
+            end
         end
-end
     end
 end
 
@@ -129,18 +129,18 @@ end
 function metapost.flushers.pdf.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
-if experiment then
-    context(pdfliteral(pdfliterals))
-else
-        if savedliterals then
-            local last = #savedliterals + 1
-            savedliterals[last] = pdfliterals
-            context.MPLIBtoPDF(last)
+        if experiment then
+            context(pdfliteral(pdfliterals))
         else
-            savedliterals = { pdfliterals }
-            context.MPLIBtoPDF(1)
+            if savedliterals then
+                local last = #savedliterals + 1
+                savedliterals[last] = pdfliterals
+                context.MPLIBtoPDF(last)
+            else
+                savedliterals = { pdfliterals }
+                context.MPLIBtoPDF(1)
+            end
         end
-end
     end
 end
 

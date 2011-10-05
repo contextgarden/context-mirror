@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
     license   = "see context related readme files"
 }
 
+-- when using rotation: \disabledirectives[refences.sharelinks] (maybe flag links)
+
 local next, tostring = next, tostring
 local rep, format = string.rep, string.format
 local texcount = tex.count
@@ -254,7 +256,7 @@ local function use_shared_annotations()
         local h, v = pdf.h, pdf.v
         local llx, lly = h*factor, (v - depth)*factor
         local urx, ury = (h + width)*factor, (v + height)*factor
-        local annot = format("<< /Type /Annot %s /Rect [%0.2f %0.2f %0.2f %0.2f] >>",prerolled,llx,lly,urx,ury)
+        local annot = format("<< /Type /Annot %s /Rect [%0.3f %0.3f %0.3f %0.3f] >>",prerolled,llx,lly,urx,ury)
         local n = hashed[annot]
         if not n then
             n = pdfdelayedobject(annot)

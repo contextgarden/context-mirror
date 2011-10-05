@@ -230,9 +230,9 @@ local function process(spec,text,n,rulethickness,rulecolor,offset)
                 m = m + 1 ; metacode[m] = syntax.pb.direct
                 if keys[special] == "text" and index then
                     if keys["c"..special] == "text" then -- can be option: auto ...
-                        metacode[#metacode+1] = format('chem_c%s(%s,%s,"");',special,bonds,index)
+                        m = m + 1 ; metacode[m] = format('chem_c%s(%s,%s,"");',special,bonds,index)
                     else
-                        metacode[#metacode+1] = format('chem_%s(%s,%s,"");',special,bonds,index)
+                        m = m + 1 ; metacode[m] = format('chem_%s(%s,%s,"");',special,bonds,index)
                     end
                 end
             elseif operation == "save" then

@@ -175,7 +175,8 @@
 
 %D Handy for modules that have a test/demo appended.
 
-\def\continueifinputfile#1{\doifnot\inputfilename{#1}{\endinput}}
+\def\continueifinputfile#name{\doifnot\inputfilename{#name}\endinput}
+%def\processifinputfile #name{\doif   \inputfilename{#name}}
 
 % \startproject test
 %     1: \startmode[*project] project \stopmode \endgraf

@@ -414,15 +414,15 @@
 
 \def\??vars{@@vars}
 
-\def\setvariables {\dotripleargument\dosetvariables[\getrawparameters ]}
-\def\setevariables{\dotripleargument\dosetvariables[\getraweparameters]}
-\def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
-\def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
+\unexpanded\def\setvariables {\dotripleargument\dosetvariables[\getrawparameters ]}
+\unexpanded\def\setevariables{\dotripleargument\dosetvariables[\getraweparameters]}
+\unexpanded\def\setgvariables{\dotripleargument\dosetvariables[\getrawgparameters]}
+\unexpanded\def\setxvariables{\dotripleargument\dosetvariables[\getrawxparameters]}
 
-\def\globalsetvariables % obsolete
+\unexpanded\def\globalsetvariables % obsolete
   {\dotripleargument\dosetvariables[\globalgetrawparameters]}
 
-\long\def\dosetvariables[#1][#2][#3]% tricky, test on s-pre-60
+\def\dosetvariables[#1][#2][#3]% tricky, test on s-pre-60
   {\errorisfataltrue
    \doifelse{#2}\currentvariableclass
      {#1[\??vars:#2:][#3]}%
@@ -434,10 +434,10 @@
       \popmacro\currentvariableclass}%
    \errorisfatalfalse}
 
-\long\def\setvariable #1#2#3{\long\expandafter\def \csname\??vars:#1:#2\endcsname{#3}}
-\long\def\setevariable#1#2#3{\long\expandafter\edef\csname\??vars:#1:#2\endcsname{#3}}
-\long\def\setgvariable#1#2#3{\long\expandafter\gdef\csname\??vars:#1:#2\endcsname{#3}}
-\long\def\setxvariable#1#2#3{\long\expandafter\xdef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setvariable #1#2#3{\long\expandafter\def \csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setevariable#1#2#3{\long\expandafter\edef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setgvariable#1#2#3{\long\expandafter\gdef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setxvariable#1#2#3{\long\expandafter\xdef\csname\??vars:#1:#2\endcsname{#3}}
 
 \def\getvariable#1#2%
   {\csname
