@@ -426,6 +426,10 @@
 
 % \setupFLOWcharts[dx=30pt,dy=30pt]
 
+\startMPinclusions
+    predefined_shapes[101] := fullcircle ;
+\stopMPinclusions
+
 \startFLOWchart[demo]
   \startFLOWcell[framecolor=darkgray]
     \name       {start}
@@ -438,7 +442,8 @@
     \name       {one}
 %     \destination{CloseDocument}
     \location   {2,2}
-    \shape      {action}
+%     \shape      {action}
+    \shape      {101}
     \text       {first}
 %     \label      [b] {\bfx bottom}
     \connection [rt] {two}

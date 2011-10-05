@@ -23,7 +23,7 @@ input mp-page.mp   ;
 input mp-text.mp   ;
 input mp-txts.mp   ;
 input mp-butt.mp   ;
-%     mp-shap.mp   ; % there no need to always load this
+input mp-shap.mp   ;
 %     mp-char.mp   ; % there no need to always load this
 input mp-step.mp   ; % there no need to always load this (todo)
 input mp-grph.mp   ;
