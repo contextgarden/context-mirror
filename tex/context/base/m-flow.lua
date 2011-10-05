@@ -93,7 +93,7 @@ table.setmetatableindex(validshapes,function(t,k)
     if not v then
         local n = tonumber(k)
         if n then
-            v = { "shape", n }
+            v = { kind = "shape", number = n }
         else
             v = rawget(t,"action")
         end
