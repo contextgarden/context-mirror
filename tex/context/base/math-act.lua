@@ -43,6 +43,8 @@ sequencers.appendaction(mathactions,"system","mathematics.initializeparameters")
 local how = {
  -- RadicalKernBeforeDegree         = "horizontal",
  -- RadicalKernAfterDegree          = "horizontal",
+    ScriptPercentScaleDown          = "unscaled",
+    ScriptScriptPercentScaleDown    = "unscaled",
     RadicalDegreeBottomRaisePercent = "unscaled"
 }
 
