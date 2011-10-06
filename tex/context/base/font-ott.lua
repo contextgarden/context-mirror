@@ -778,14 +778,14 @@ local checkers = {
 function otf.features.normalize(features) -- no longer 'lang'
     if features then
         local h = { }
-        for k,v in next, features do
+        for k, v in next, features do
             k = lower(k)
             if k == "language" then
                 v = gsub(lower(v),"[^a-z0-9]","")
-                h.language = rawget(verboselanguages,v) or languages[v] or "dflt" -- auto adds
+                h.language = rawget(verboselanguages,v) or (languages[v] and v) or "dflt" -- auto adds
             elseif k == "script" then
                 v = gsub(lower(v),"[^a-z0-9]","")
-                h.script = rawget(verbosescripts,v) or scripts[v] or "dflt" -- auto adds
+                h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
             else
                 if type(v) == "string" then
                     local b = is_boolean(v)

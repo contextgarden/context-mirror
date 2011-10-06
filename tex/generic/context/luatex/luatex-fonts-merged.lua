@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/05/11 23:53:43
+-- merge date  : 10/07/11 00:40:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -3263,7 +3263,13 @@ function constructors.calculatescale(tfmdata,scaledpoints)
     return scaledpoints, scaledpoints / (parameters.units or 1000) -- delta
 end
 
-function constructors.assignmathparameters(target,original) -- dumb version, not used in context
+local unscaled = {
+    ScriptPercentScaleDown          = true,
+    ScriptScriptPercentScaleDown    = true,
+    RadicalDegreeBottomRaisePercent = true
+}
+
+function constructors.assignmathparameters(target,original) -- simple variant, not used in context
     -- when a tfm file is loaded, it has already been scaled
     -- and it never enters the scaled so this is otf only and
     -- even then we do some extra in the context math plugins
@@ -3274,18 +3280,18 @@ function constructors.assignmathparameters(target,original) -- dumb version, not
         local targetmathparameters = { }
         local factor               = targetproperties.math_is_scaled and 1 or targetparameters.factor
         for name, value in next, mathparameters do
-            if name == "RadicalDegreeBottomRaisePercent" then
+            if unscaled[name] then
                 targetmathparameters[name] = value
             else
                 targetmathparameters[name] = value * factor
             end
         end
-     -- if not targetmathparameters.FractionDelimiterSize then
-     --     targetmathparameters.FractionDelimiterSize = 0
-     -- end
-     -- if not mathparameters.FractionDelimiterDisplayStyleSize then
-     --     targetmathparameters.FractionDelimiterDisplayStyleSize = 0
-     -- end
+        if not targetmathparameters.FractionDelimiterSize then
+            targetmathparameters.FractionDelimiterSize = 1.01 * targetparameters.size
+        end
+        if not mathparameters.FractionDelimiterDisplayStyleSize then
+            targetmathparameters.FractionDelimiterDisplayStyleSize = 2.40 * targetparameters.size
+        end
         target.mathparameters = targetmathparameters
     end
 end
@@ -4239,6 +4245,9 @@ function constructors.collectprocessors(what,tfmdata,features,trace,report)
                     end
                 end
             end
+        else
+            report("no feature processors for mode %s for font %s",
+                mode or 'unknown', tfmdata.properties.fullname or 'unknown')
         end
     end
     return processes
@@ -5367,8 +5376,8 @@ function otf.load(filename,format,sub,featurefile)
                 local attr = lfs.attributes(name)
                 featurefiles[#featurefiles+1] = {
                     name = name,
-                    size = size,
-                    time = time,
+                    size = attr and attr.size or 0,
+                    time = attr and attr.modification or 0,
                 }
             end
         end
@@ -10129,11 +10138,11 @@ local function featuresprocessor(head,font,attr)
     local datasets         = otf.dataset(tfmdata,sequences,font,attr)
 
     for s=1,#sequences do
-        local pardir, txtdir, success = 0, { }, false -- we could reuse txtdir and use a top pointer
-        local sequence = sequences[s]
-        local dataset = datasets[s] -- cache
+        local dataset = datasets[s] -- cache -- s?
         featurevalue = dataset and dataset[1] -- todo: pass to function instead of using a global
         if featurevalue then
+            local sequence = sequences[s]
+            local pardir, txtdir, success = 0, { }, false -- we could reuse txtdir and use a top pointer
             local attribute, chain, typ, subtables = dataset[2], dataset[3], sequence.type, sequence.subtables
             if chain < 0 then
                 -- this is a limited case, no special treatments like 'init' etc
@@ -12013,13 +12022,14 @@ end
 function resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
-        local resolved, sub = fonts.names.resolve(specification.name,specification.sub)
-        specification.resolved, specification.sub = resolved, sub
+        local resolved, sub = resolve(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
         if resolved then
+            specification.resolved = resolved
+            specification.sub      = sub
             local suffix = file.suffix(resolved)
             if fonts.formats[suffix] then
                 specification.forced = suffix
-                specification.name = file.removesuffix(resolved)
+                specification.name   = file.removesuffix(resolved)
             else
                 specification.name = resolved
             end
@@ -12032,10 +12042,12 @@ end
 function resolvers.spec(specification)
     local resolvespec = fonts.names.resolvespec
     if resolvespec then
-        specification.resolved, specification.sub = fonts.names.resolvespec(specification.name,specification.sub)
-        if specification.resolved then
-            specification.forced = file.extname(specification.resolved)
-            specification.name = file.removesuffix(specification.resolved)
+        local resolved, sub = resolvespec(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
+        if resolved then
+            specification.resolved = resolved
+            specification.sub      = sub
+            specification.forced   = file.extname(resolved)
+            specification.name     = file.removesuffix(resolved)
         end
     else
         resolvers.name(specification)
