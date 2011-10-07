@@ -138,41 +138,67 @@
 %
 % \def\dostoprotation
 %   {\pdfliteral{Q}}
-
+%
 % function lpdf.rotationcm(a)
 %     local s, c = sind(a), cosd(a)
 %     return format("%s %s %s %s 0 0 cm",c,s,-s,c)
 % end
+%
+% \def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
+% \def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
 
-% todo: inject at the lua end
+% todo: inject at the lua end cq. deal with #5 and #6 too
 
-\def\dostartrotation#1% grouped
+\unexpanded\def\dostartrotation#1% grouped
   {\forcecolorhack % maybe use signal instead
-   \pdfsave \pdfsetmatrix
-     {\ctxcommand{pdfrotation(#1)}}}
+   \advance\backendtransformlevel\plusone
+   \pdfsave
+   \pdfsetmatrix{\ctxcommand{pdfrotation(#1)}}}
 
-\def\dostoprotation
-  {\pdfrestore}
+\unexpanded\def\dostoprotation
+  {\pdfrestore
+   \advance\backendtransformlevel\minusone}
 
-\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
+\unexpanded\def\dostartscaling#1#2% the test is needed because acrobat is bugged!
   {\forcecolorhack % maybe use signal instead
-   \pdfsave \pdfsetmatrix
+   \advance\backendtransformlevel\plusone
+   \pdfsave
+   \pdfsetmatrix
      {\ifdim#1\points=\zeropoint.0001\else#1\fi\space 0 0
       \ifdim#2\points=\zeropoint.0001\else#2\fi\space}}% 0 0
 
-\def\dostopscaling
-  {\pdfrestore}
+\unexpanded\def\dostopscaling
+  {\pdfrestore
+   \advance\backendtransformlevel\minusone}
 
-\def\dostartmirroring{\pdfliteral{-1 0 0 1 0 0 cm}}
-\def\dostopmirroring {\pdfliteral{-1 0 0 1 0 0 cm}}
+\unexpanded\def\dostartmirroring
+  {\advance\backendtransformlevel\plusone
+   \pdfsave
+   \pdfsetmatrix{-1 0 0 1}} % 0 0
 
-\def\dostartclipping#1#2#3% todo (still needed?) (can move to lua)
+\unexpanded\def\dostopmirroring
+  {\pdfrestore
+   \advance\backendtransformlevel\minusone}
+
+\unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
+  {\advance\backendtransformlevel\plusone
+   \dowithnextbox % fixing ht/dp/wd should happen elsewhere
+     {\hbox
+        {\hskip#5\onebasepoint
+         \raise#6\onebasepoint\hbox
+           {\pdfsave
+            \pdfsetmatrix{#1 #2 #3 #4}% 0 0 (no #5 #6 yet)
+            \box\nextbox
+            \pdfrestore
+            \advance\backendtransformlevel\minusone}}}}
+
+\unexpanded\def\dostartclipping#1#2#3% todo (still needed?) (can move to lua)
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
    \grabMPclippath{#1}{1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
-\def\dostopclipping
+\unexpanded\def\dostopclipping
   {\pdfliteral{Q n}}
 
 %D The following will move to the backend \LUA\ code:

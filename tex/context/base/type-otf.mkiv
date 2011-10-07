@@ -1846,8 +1846,8 @@
 
 \stoptypescriptcollection
 
-% \starttypescriptcollection[stix]
-%
+\starttypescriptcollection[stix]
+
 %     % This typescript is only provided to keep an eye on developments of this font
 %     % but currenty these are not proper opentype math fonts (for instance they have
 %     % no math table yet). We will not make a virtual font for this as eventually
@@ -1855,26 +1855,26 @@
 %     % to be ttf files as well. BTW, why 'italic' infull and 'bol' without 'd'?
 %
 %     % As xits keeps evolving and also is bidirectional, it makes no sense to keep
-%     % stix support around.
-%
-%     \starttypescript [math] [stix] [name]
-%         \definefontsynonym[MathRoman][\s!file:stixgeneral.otf] [\s!features=\s!math]
-%     \stoptypescript
-%
-%     \starttypescript [serif] [stix] [name]
-%         \setups[\s!font:\s!fallback:\s!serif]
-%         \definefontsynonym[\s!Serif]          [\s!file:stixgeneral.otf]       [\s!features=\s!default]
-%         \definefontsynonym[\s!SerifBold]      [\s!file:stixgeneralbol.otf]    [\s!features=\s!default]
-%         \definefontsynonym[\s!SerifItalic]    [\s!file:stixgeneralitalic.otf] [\s!features=\s!default]
-%         \definefontsynonym[\s!SerifBoldItalic][\s!file:stixgeneralbolita.otf] [\s!features=\s!default]
-%     \stoptypescript
-%
-%     \starttypescript[stix]
-%         \definetypeface [stix] [rm] [\s!serif] [stix] [\s!default]
-%         \definetypeface [stix] [mm] [\s!math]  [stix] [\s!default]
-%     \stoptypescript
-%
-% \stoptypescriptcollection
+%     % stix support around. It might disappear. So, just for testing:
+
+    \starttypescript [math] [stix] [name]
+        \definefontsynonym[MathRoman][\s!file:stixgeneral.otf] [\s!features=\s!math]
+    \stoptypescript
+
+    \starttypescript [serif] [stix] [name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym[\s!Serif]          [\s!file:stix-regular.otf]   [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:stix-bold.otf]      [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:stix-italic.otf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:stix-bolditalic.otf][\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[stix]
+        \definetypeface [stix] [rm] [\s!serif] [stix] [\s!default]
+        \definetypeface [stix] [mm] [\s!math]  [stix] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
 
 % This one makes more sense. Xits uses the glyph collection from stix but packages
 % it in a proper OpenType Math font. From the Stix site:  Version 1.1, which will
