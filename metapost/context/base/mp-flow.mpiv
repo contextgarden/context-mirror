@@ -536,7 +536,7 @@ vardef flow_x_on_grid (expr n, xfrom, xto, zfrom) =
     fi
 enddef ;
 
-vardef y_on_grid (expr n, yfrom, yto, zfrom) =
+vardef flow_y_on_grid (expr n, yfrom, yto, zfrom) =
     if (yfrom = yto) and not (zfrom = 0) :
         if (zfrom = 1) : flow_up_on_grid(2) else : flow_down_on_grid(2) fi
     elseif ypart flow_xypoints[1] < ypart flow_xypoints[6] :

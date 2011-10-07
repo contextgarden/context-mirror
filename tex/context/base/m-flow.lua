@@ -299,7 +299,7 @@ function commands.flow_set_location(str) -- handle include differently
     temp.x = x
     temp.y = y
     last_x = x
-    last_y = 0
+    last_y = y
 end
 
 function commands.flow_set_connection(location,displacement,name)
@@ -523,8 +523,7 @@ local function makechart(chart)
         context.switchtobodyfont { bodyfont }
     end
     --
-    context.resetMPdrawing()
-    context.startMPdrawing()
+    context.startMPcode()
     context("if unknown context_flow : input mp-flow.mpiv ; fi ;")
     context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
     --
@@ -582,11 +581,7 @@ local function makechart(chart)
     process_texts(chart,0,0)
  -- context("clip_chart(%s,%s,%s,%s) ;",x,y,nx,ny) -- todo: draw lines but not shapes
     context("flow_end_chart ;")
-    context.stopMPdrawing()
-    context.MPdrawingdonetrue() -- brrr
---     context.MPstaticgraphictrue()
---     context.MPshiftdrawingfalse()
-    context.getMPdrawing()
+    context.stopMPcode()
     context.endgroup()
 end
 

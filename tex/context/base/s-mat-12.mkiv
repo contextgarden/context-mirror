@@ -207,7 +207,9 @@
       \mathfontlistmth{10}{#1}%
       \endgroup
       \vfilll
-      \strut\textcolor\mathfontlisttxt{#2}}%
+      \doifmodeelse{crosslink}
+        {\goto{\strut\textcolor\mathfontlisttxt{#2}}[#2::#1]}%
+              {\strut\textcolor\mathfontlisttxt{#2}}}%
    \hskip1ex}
 
 \def\setmathfontlistbodyfonts#1%

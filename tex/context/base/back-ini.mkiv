@@ -50,12 +50,15 @@
 %D Not everything here makes sense and the content of this file will
 %D definitely change.
 
-\let \dostartrotation  \gobbleoneargument
-\let \dostoprotation   \donothing
-\let \dostartscaling   \gobbletwoarguments
-\let \dostopscaling    \donothing
-\let \dostartmirroring \donothing
-\let \dostopmirroring  \donothing
+\newcount\backendtransformlevel
+
+\let \dostartrotation   \gobbleoneargument
+\let \dostoprotation    \donothing
+\let \dostartscaling    \gobbletwoarguments
+\let \dostopscaling     \donothing
+\let \dostartmirroring  \donothing
+\let \dostopmirroring   \donothing
+\let \dotransformnextbox\gobblesixarguments % and pass last box
 
 %D \macros
 %D   {doovalbox}
