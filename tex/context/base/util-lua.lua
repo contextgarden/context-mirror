@@ -10,14 +10,29 @@ utilities        = utilities or {}
 utilities.lua    = utilities.lua or { }
 utilities.report = logs and logs.reporter("system") or print
 
-function utilities.lua.compile(luafile,lucfile,cleanup,strip) -- defaults: cleanup=false strip=true
+local function stupidcompile(luafile,lucfile)
+    local data = io.loaddata(luafile)
+    if data and data ~= "" then
+        data = string.dump(data)
+        if data and data ~= "" then
+            io.savedata(lucfile,data)
+        end
+    end
+end
+
+function utilities.lua.compile(luafile,lucfile,cleanup,strip,fallback) -- defaults: cleanup=false strip=true
     utilities.report("lua: compiling %s into %s",luafile,lucfile)
     os.remove(lucfile)
     local command = "-o " .. string.quoted(lucfile) .. " " .. string.quoted(luafile)
     if strip ~= false then
         command = "-s " .. command
     end
-    local done = os.spawn("texluac " .. command) == 0 or os.spawn("luac " .. command) == 0
+    local done = os.spawn("texluac " .. command) == 0 -- or os.spawn("luac " .. command) == 0
+    if not done and fallback then
+        utilities.report("lua: dumping %s into %s (unstripped)",luafile,lucfile)
+        stupidcompile(luafile,lucfile) -- maybe use the stripper we have elsewhere
+        cleanup = false -- better see how worse it is
+    end
     if done and cleanup == true and lfs.isfile(lucfile) and lfs.isfile(luafile) then
         utilities.report("lua: removing %s",luafile)
         os.remove(luafile)

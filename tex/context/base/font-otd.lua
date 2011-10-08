@@ -154,38 +154,45 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                                 "%s font: %03i, dynamic: %03i, kind: %s, script: %-4s, language: %-4s (%-4s), type: %s, action: %s, name: %s",
                                 (valid and "+") or "-",font,attr or 0,kind,script,language,what,typ,action,sequence.name)
                         end
-                        return { valid, attribute, sequence.chain or 0, kind }
+                        return { valid, attribute, sequence.chain or 0, kind, sequence }
                     end
                 end
             end
         end
-        return false -- { valid, attribute, chain, "generic" } -- false anyway, could be flag instead of table
+        return false -- { valid, attribute, chain, "generic", sequence } -- false anyway, could be flag instead of table
     else
-        return false -- { false, false, chain } -- indirect lookup, part of chain (todo: make this a separate table)
+        return false -- { false, false, chain, false, sequence } -- indirect lookup, part of chain (todo: make this a separate table)
     end
 end
 
-function otf.dataset(tfmdata,sequences,font,attr)
+-- local contextresolved = { }
+--
+-- setmetatableindex(contextresolved, function(t,k)
+--     local v = contextsetups[contextnumbers[k]]
+--     t[k] = v
+--     return v
+-- end)
 
-    local shared     = tfmdata.shared
-    local properties = tfmdata.properties
+function otf.dataset(tfmdata,sequences,font,attr) -- attr only when explicit (as in special parbuilder)
 
     local script, language, s_enabled, a_enabled, dynamic
 
     if attr and attr ~= 0 then
         local features = contextsetups[contextnumbers[attr]] -- could be a direct list
+     -- local features = contextresolved[attr]
         language  = features.language or "dflt"
         script    = features.script   or "dflt"
         a_enabled = features
         dynamic   = contextmerged[attr] or 0
         if dynamic == 2 or dynamic == -2 then
             -- font based
-            s_enabled = shared.features
+            s_enabled = tfmdata.shared.features
         end
     else
+        local properties = tfmdata.properties
         language  = properties.language or "dflt"
         script    = properties.script   or "dflt"
-        s_enabled = shared.features -- can be made local to the resolver
+        s_enabled = tfmdata.shared.features -- can be made local to the resolver
         dynamic   = 0
     end
 
@@ -210,7 +217,7 @@ function otf.dataset(tfmdata,sequences,font,attr)
         rl[attr] = ra
         setmetatableindex(ra, function(t,k)
             local v = initialize(sequences[k],script,language,s_enabled,a_enabled,font,attr,dynamic)
-            t[k] = v
+            t[k] = v or false
             return v
         end)
     end
