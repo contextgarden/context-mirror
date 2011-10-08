@@ -96,7 +96,9 @@ function handlers.characters(head)
         end
     end
     for n in traverse_id(glyph_code,head) do
-        local font, attr = n.font, has_attribute(n,0) or 0 -- zero attribute is reserved for fonts in context
+-- if n.subtype<256 then
+        local font = n.font
+        local attr = has_attribute(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
             if attr > 0 then
                 local used = attrfonts[font]
@@ -111,6 +113,8 @@ function handlers.characters(head)
                         if d then
                             used[attr] = d
                             a = a + 1
+                        else
+                            -- can't happen ... otherwise best use nil/false distinction
                         end
                     end
                 end
@@ -121,12 +125,15 @@ function handlers.characters(head)
                     if fp then
                         usedfonts[font] = fp
                         u = u + 1
+                    else
+                        -- can't happen ... otherwise best use nil/false distinction
                     end
                 end
             end
             prevfont = font
             prevattr = attr
         end
+-- end
     end
     if trace_fontrun then
         report_fonts()
