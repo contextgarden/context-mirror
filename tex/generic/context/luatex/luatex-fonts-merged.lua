@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/08/11 10:33:58
+-- merge date  : 10/08/11 11:42:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -10196,6 +10196,11 @@ local function featuresprocessor(head,font,attr)
 
     local dirstack = { } -- could move outside function
 
+    -- We could work on sub start-stop ranges instead but I wonder if there is that
+    -- much speed gain (experiments showed that it made not much sense) and we need
+    -- to keep track of directions anyway. Also at some point I want to play with
+    -- font interactions and then we do need the full sweeps.
+
     for s=1,#sequences do
         local dataset = datasets[s]
         if dataset then
@@ -10289,7 +10294,7 @@ local function featuresprocessor(head,font,attr)
                                     else
                                         start = start.next
                                     end
-                                elseif id == whatsit_code then
+                                elseif id == whatsit_code then -- will be function
                                     local subtype = start.subtype
                                     if subtype == dir_code then
                                         local dir = start.dir
@@ -10335,7 +10340,7 @@ local function featuresprocessor(head,font,attr)
                             local id = start.id
                             if id == glyph_code then
                                 if start.subtype<256 and start.font == font then
-                                    local a has_attribute(start,0)
+                                    local a = has_attribute(start,0)
                                     if a then
                                         a = (a == attr) and (not attribute or has_attribute(start,state,attribute))
                                     else
