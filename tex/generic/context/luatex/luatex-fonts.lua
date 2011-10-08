@@ -7,9 +7,20 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 }
 
 -- The following code isolates the generic ConTeXt code from already
--- defined or to be defined namespaces.
-
--- todo: all global namespaces in called modules will get local shortcuts
+-- defined or to be defined namespaces. This is the reference loader
+-- for plain, but the generic code is also used in luaotfload (which
+-- is is a file meant for latex) and that is maintained by Khaled
+-- Hosny. We do our best to keep the interface as clean as possible.
+--
+-- The code base is rather stable now, especially if you stay away from
+-- the non generic code. All relevant data is organized in tables within
+-- the main table of a font instance. There are a few places where in
+-- context other code is plugged in, but this does not affect the core
+-- code. Users can (given that their macro package provides this option)
+-- access the font data (characters, descriptions, properties, parameters,
+-- etc) of this main table.
+--
+-- Todo: all global namespaces in called modules will get local shortcuts.
 
 utf = unicode.utf8
 
