@@ -268,7 +268,7 @@ function margins.save(t)
     end
     if name and name ~= "" then
         if inlinestore then -- todo: inline store has to be done differently (not sparse)
-            local t = table.sortedkeys(store) for j=#t,1,-1 do local i = t[i]
+            local t = table.sortedkeys(store) for j=#t,1,-1 do local i = t[j]
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)

@@ -132,13 +132,13 @@
 %    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
 %      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4","#5"}}}}
 
-\def\dosaveposition            #1#2#3#4{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4)}}}
-\def\dosavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4,#5,#6,#7)}}}
-\def\dosavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4,#5,#6,#7,"#8")}}}
+\def\dosaveposition            #1#2#3#4{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4)}}}
+\def\dosavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}}
+\def\dosavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7,"#8")}}}
 
 \def\dosetposition                   #1{\normalexpanded{\ctxlatelua{_plib_.setdim("#1")}}}
-\def\dosetpositionwhd          #1#2#3#4{\normalexpanded{\ctxlatelua{_plib_.setdim("#1","#2","#3","#4")}}}
-\def\dosetpositionplus       #1#2#3#4#5{\normalexpanded{\ctxlatelua{_plib_.setdim("#1","#2","#3","#4","#5")}}}
+\def\dosetpositionwhd          #1#2#3#4{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4)}}}
+\def\dosetpositionplus       #1#2#3#4#5{\normalexpanded{\ctxlatelua{_plib_.setdim("#1",\number\dimexpr#2,\number\dimexpr#3,\number\dimexpr#4,"#5")}}}
 
 % % %
 
