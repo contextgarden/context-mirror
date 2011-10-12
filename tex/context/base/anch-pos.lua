@@ -51,7 +51,7 @@ end
 function jobpositions.setdim(name,wd,ht,dp,plus) -- will be used when we move to sp allover
     if plus then
         tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v, wd, ht, dp, plus }
-    elseif w then
+    elseif wd then
         tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v, wd, ht, dp }
     else
         tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v }
@@ -61,7 +61,7 @@ end
 function jobpositions.setall(name,p,x,y,wd,ht,dp,plus) -- will be used when we move to sp allover
     if plus then
         tobesaved[name] = { p, x, y, wd, ht, dp, plus }
-    elseif w then
+    elseif wd then
         tobesaved[name] = { p, x, y, wd, ht, dp }
     else
         tobesaved[name] = { p, x, y }

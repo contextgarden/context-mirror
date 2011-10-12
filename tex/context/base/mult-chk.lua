@@ -47,7 +47,7 @@ function interfaces.addvalidkeys(category,list)
     end
 end
 
--- weird code, looks incomplete ... probbably an experiment
+-- weird code, looks incomplete ... probably an experiment
 
 local prefix, category, keys
 

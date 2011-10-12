@@ -206,7 +206,7 @@
          \let\currentmarginfirstheight\empty
        \else
          \dosetraggedcommand{\margindataparameter\c!align}%
-          % hbox is always needed
+         \setbox\nextbox\hbox\bgroup
            \vtop \bgroup
              \the\everymargindatacontent
              \dosetmargindataattributes\c!style\c!color
