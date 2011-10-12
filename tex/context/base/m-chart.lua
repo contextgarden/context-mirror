@@ -517,7 +517,7 @@ local function makechart(chart)
     end
     --
     context.startMPcode()
-    context("if unknown context_flow : input mp-flow.mpiv ; fi ;")
+    context("if unknown context_flow : input mp-char.mpiv ; fi ;")
     context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
     --
     if settings.chart.option == variables.test or settings.chart.dot == variables.yes then
