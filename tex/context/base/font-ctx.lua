@@ -108,10 +108,11 @@ setmetatableindex(fontdata, function(t,k) return nulldata end)
 
 local chardata      = allocate() -- chardata
 local parameters    = allocate()
-local csnames       = allocate() -- namedata
 local quaddata      = allocate()
 local markdata      = allocate()
-local xheightdata   = allocate() -- xheightdata
+local xheightdata   = allocate()
+local csnames       = allocate() -- namedata
+local italicsdata   = allocate()
 
 hashes.characters   = chardata
 hashes.parameters   = parameters
@@ -119,6 +120,7 @@ hashes.quads        = quaddata
 hashes.marks        = markdata
 hashes.xheights     = xheightdata
 hashes.csnames      = csnames
+hashes.italics      = italicsdata
 
 setmetatableindex(chardata,  function(t,k)
     local characters = fontdata[k].characters
@@ -151,6 +153,18 @@ setmetatableindex(xheightdata, function(t,k)
     local xheight = parameters and parameters.xheight or 0
     t[k] = xheight
     return quad
+end)
+
+setmetatableindex(italicsdata, function(t,k)
+    local properties = fontdata[k].properties
+    local italics = properties and properties.italic_correction
+    if italics then
+        italics = chardata[k]
+    else
+        italics = false
+    end
+    t[k] = italics
+    return italics
 end)
 
 -- this cannot be a feature initializer as there is no auto namespace

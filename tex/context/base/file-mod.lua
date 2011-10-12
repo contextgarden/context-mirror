@@ -20,7 +20,7 @@ at the <l n='tex'/> side.</p>
 
 local format, concat, tonumber = string.format, table.concat, tonumber
 
-local trace_modules = false  trackers.register("modules.loading",    function(v) trace_modules = v end)
+local trace_modules = false  trackers.register("modules.loading", function(v) trace_modules = v end)
 
 local report_modules = logs.reporter("resolvers","modules")
 

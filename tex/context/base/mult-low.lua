@@ -46,7 +46,7 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext",
+        "starttext", "stoptext", "startdocument", "stopdocument", "documentvariable",
         "startmodule", "stopmodule", "usemodule",
     },
     ["helpers"] = {
@@ -61,6 +61,7 @@ return {
         --
         "htdp",
         "unvoidbox",
+        "vfilll",
         --
         "scratchcounter", "globalscratchcounter",
         "scratchdimen", "globalscratchdimen",
@@ -88,6 +89,7 @@ return {
         "doifdimensionelse", "doifnumberelse",
         "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifinstringelse",
+        "doifassignmentelse",
         --
         "tracingall", "tracingnone", "loggingall",
         --
@@ -141,5 +143,6 @@ return {
         --
         "startnointerference", "stopnointerference",
         --
+        "strut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd",
     }
 }

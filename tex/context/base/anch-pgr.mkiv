@@ -65,7 +65,8 @@
 \appendtoks \presetpositionanchors \to \beforeeverypage
 \appendtoks \presetpositionanchors \to \aftereverypage
 
-% todo: change with each page size change
+% todo: change with each page size change .. can be made more efficient
+% as some values are the same
 
 \def\registerpageposition#1% this one is flushed first !
   {\ifpositioning\ifcase\realpageno\or

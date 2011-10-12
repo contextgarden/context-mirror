@@ -235,4 +235,26 @@
 \def\stopenvironmentindeed
   {\signalendofinput\v!project}
 
+%D Relatively new (might move as it depends on setups):
+
+\unexpanded\def\startdocument % todo: dostarttagged\t!document
+  {\dosingleargument\start_document}
+
+\unexpanded\def\start_document[#settings]%
+  {\setvariables[document][#settings]%
+   \starttext
+   \documentvariable\c!before}
+
+\unexpanded\def\stopdocument % todo: dostoptagged\t!document
+  {\documentvariable\c!after
+   \stoptext}
+
+\def\documentvariable#1%
+  {\getvariable{document}{#1}}
+
+\setvariables
+  [document]
+  [\c!before=\directsetup{document:start},
+   \c!after=\directsetup{document:stop}]
+
 \protect \endinput

@@ -71,4 +71,12 @@
 \def\showgoodiesfeaturesets #1{\ctxlua{document.show_goodies_featuresets ("#1")}}
 \def\showgoodiescolorschemes#1{\ctxlua{document.show_goodies_colorschemes("#1")}}
 
-\endinput
+\continueifinputfile{s-fnt-26.mkiv}
+
+\starttext
+
+    \showgoodiesstylistics  {husayni}
+    \showgoodiesfeaturesets {husayni}
+    \showgoodiescolorschemes{husayni}
+
+\stoptext

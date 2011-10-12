@@ -2119,19 +2119,28 @@ enddef ;
 
 % handy
 
-vardef bbwidth  (expr p) =
-  (if known p :
-     if path p or picture p :
-       xpart (lrcorner p - llcorner p)
-     else : 0 fi else : 0
-   fi )
+vardef bbwidth (expr p) = % vardef width_of primary p =
+    if known p :
+        if path p or picture p :
+            xpart (lrcorner p - llcorner p)
+        else :
+            0
+        fi
+    else :
+        0
+    fi
 enddef ;
 
-vardef bbheight (expr p) =
-  (if known p : if path p or picture p :
-     ypart (urcorner p - lrcorner p)
-     else : 0 fi else : 0
-   fi)
+vardef bbheight (expr p) = % vardef heigth_of primary p =
+    if known p :
+        if path p or picture p :
+            ypart (urcorner p - lrcorner p)
+        else :
+            0
+        fi
+    else :
+        0
+    fi
 enddef ;
 
 color nocolor ; numeric noline ; % both unknown signals

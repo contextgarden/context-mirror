@@ -429,8 +429,11 @@ function specials.page(var,actions)
             if type(p) == "function" then -- double
                 p = p()
             else
-                p = tonumber(references.realpageofpage(tonumber(o)))
+                p = references.realpageofpage(tonumber(p))
             end
+         -- if p then
+         --     var.r = p
+         -- end
         end
         return link(nil,nil,nil,p or var.operation,actions)
     end
@@ -454,9 +457,15 @@ function specials.userpage(var,actions)
     else
         local p = var.r
         if not p then -- todo: call special from reference code
-            p = tonumber(references.realpageofpage(var.operation))
+            p = var.operation
+            if p then -- no function and special check here. only numbers
+                p = references.realpageofpage(tonumber(p))
+            end
+         -- if p then
+         --     var.r = p
+         -- end
         end
-        return link(nil,nil,nil,p,actions)
+        return link(nil,nil,nil,p or var.operation,actions)
     end
 end
 

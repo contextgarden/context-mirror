@@ -98,13 +98,13 @@ end
 
 -- table namespace ?
 
-local function f_empty() return "" end -- t,k
-local function f_self(t,k) t[k] = k return k end
-local function f_ignore() end -- t,k,v
+local function f_empty ()             return "" end -- t,k
+local function f_self  (t,k) t[k] = k return k  end
+local function f_ignore()                       end -- t,k,v
 
-local t_empty  = { __index = empty }
-local t_self   = { __index = self }
-local t_ignore = { __newindex = ignore }
+local t_empty  = { __index    = f_empty  }
+local t_self   = { __index    = f_self   }
+local t_ignore = { __newindex = f_ignore }
 
 function table.setmetatableindex(t,f)
     local m = getmetatable(t)

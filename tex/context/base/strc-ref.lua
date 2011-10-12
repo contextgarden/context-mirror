@@ -1770,7 +1770,7 @@ end
 
 local plist, nofrealpages
 
-local function realpageofpage(p)
+local function realpageofpage(p) -- the last one counts !
     if not plist then
         local pages = structures.pages.collected
         nofrealpages = #pages

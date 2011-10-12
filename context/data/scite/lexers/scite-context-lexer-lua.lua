@@ -42,6 +42,7 @@ local constants = {
 local csnames = { -- todo: option
     "context",
     "metafun",
+    "metapost",
 }
 
 local level         = nil
@@ -98,6 +99,9 @@ local rest          = token("default",  any)
 
 local shortcomment  = token("comment", dashes * lexer.nonnewline^0)
 local longcomment   = token("comment", dashes * longcomment)
+
+-- fails on very long string with \ at end of lines (needs embedded lexer)
+-- and also on newline before " but it makes no sense to waste tiem on it
 
 local shortstring   = token("quote",  dquote)
                     * token("string", (escaped + (1-dquote))^0)

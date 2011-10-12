@@ -966,14 +966,20 @@ end
 local function command(collected,cmd,otherwise)
     local n = collected and #collected
     if n and n > 0 then
-        for c=1,n do
+        local wildcard = find(cmd,"%*")
+        for c=1,n do -- maybe optimize for n=1
             local e = collected[c]
             local ix = e.ix
+            local name = e.name
             if not ix then
-                lxml.addindex(e.name,false,true)
+                lxml.addindex(name,false,true)
                 ix = e.ix
             end
-            contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",e.name,"::",ix,"}")
+            if wildcard then
+                contextsprint(ctxcatcodes,"\\xmlw{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
+            else
+                contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",name,"::",ix,"}")
+            end
         end
     elseif otherwise then
         contextsprint(ctxcatcodes,"\\xmlw{",otherwise,"}{#1}")

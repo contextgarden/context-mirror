@@ -28,18 +28,6 @@
 
 \unprotect
 
-\ifdefined \installsimplecommandhandler \else
-
-    \unexpanded\def\installsimplecommandhandler#1#2#3% no define
-      {\installparameterhandler    {#1}{#2}%
-       \installparameterhashhandler{#1}{#2}%
-       \installparametersethandler {#1}{#2}%
-       \installrootparameterhandler{#1}{#2}%
-       \installsetuphandler        {#1}{#2}%
-       \installattributehandler    {#1}{#2}}
-
-\fi
-
 % todo: figure out a nice way to define the lot: share current and
 % support current as name (nb: we need to set parent then)
 
@@ -175,6 +163,7 @@
         line = {
             rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
             radius          = \number\dimexpr\FLOWlineparameter\c!radius,
+            color           = "\FLOWlineparameter\c!color",
             corner          = "\FLOWlineparameter\c!corner",
             dash            = "\FLOWlineparameter\c!dash",
             arrow           = "\FLOWlineparameter\c!arrow",
@@ -221,6 +210,7 @@
         line = {
             rulethickness   = \number\dimexpr\FLOWlineparameter\c!rulethickness,
             radius          = \number\dimexpr\FLOWlineparameter\c!radius,
+            color           = "\FLOWlineparameter\c!color",
             corner          = "\FLOWlineparameter\c!corner",
             dash            = "\FLOWlineparameter\c!dash",
             arrow           = "\FLOWlineparameter\c!arrow",

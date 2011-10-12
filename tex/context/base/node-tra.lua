@@ -643,15 +643,32 @@ local bpfactor = number.dimenfactors.bp
 local stripper = lpeg.patterns.stripzeros
 
 local points = function(n)
-    return lpegmatch(stripper,format("%.5fpt",n*ptfactor))
+    if not n or n == 0 then
+        return "0pt"
+    else
+        return lpegmatch(stripper,format("%.5fpt",n*ptfactor))
+    end
 end
 
 local basepoints = function(n)
-    return lpegmatch(stripper,format("%.5fbp",n*bpfactor))
+    if not n or n == 0 then
+        return "0bp"
+    else
+        return lpegmatch(stripper,format("%.5fbp",n*bpfactor))
+    end
+end
+
+local pts = function(n)
+    if not n or n == 0 then
+        return "0pt"
+    else
+        return format("%.5fpt",n*ptfactor)
+    end
 end
 
 number.points     = points
 number.basepoints = basepoints
+number.pts        = pts
 
 --~ function nodes.thespec(s)
 --~     local stretch_order = s.stretch_order

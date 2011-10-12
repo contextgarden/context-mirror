@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['node-aux'] = {
     license   = "see context related readme files"
 }
 
+-- todo: n1 .. n2 : __concat metatable
+
 local type, tostring = type, tostring
 
 local nodes, node = nodes, node

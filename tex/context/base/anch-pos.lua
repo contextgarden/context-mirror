@@ -14,13 +14,16 @@ more efficient.</p>
 
 -- to be considered: store as numbers instead of string
 -- maybe replace texsp by our own converter (stay at the lua end)
+-- eventually mp will have large numbers so we can use sp there too
 
 local tostring = tostring
 local concat, format, gmatch = table.concat, string.format, string.gmatch
 local lpegmatch = lpeg.match
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
-local texsp = tex.sp
+local texsp, texcount = tex.sp, tex.count
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
+
+local pts = number.pts
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -32,23 +35,42 @@ local jobpositions = {
 
 job.positions = jobpositions
 
-_ptbs_, _pcol_ = tobesaved, collected -- global
-
-local dx, dy, nx, ny = "0pt", "0pt", 0, 0
+_plib_ = jobpositions
 
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
-    _ptbs_    = tobesaved -- global
-    _pcol_    = collected -- global
- -- local p   = collected["page:0"] -- page:1
- -- if p then
- --    dx, nx = p[2] or "0pt", 0
- --    dy, ny = p[3] or "0pt", 0
- -- end
 end
 
 job.register('job.positions.collected', tobesaved, initializer)
+
+function jobpositions.setraw(name,val)
+    tobesaved[name] = val
+end
+
+function jobpositions.setdim(name,wd,ht,dp,plus) -- will be used when we move to sp allover
+    if plus then
+        tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v, wd, ht, dp, plus }
+    elseif w then
+        tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v, wd, ht, dp }
+    else
+        tobesaved[name] = { texcount.realpageno, pdf.h, pdf.v }
+    end
+end
+
+function jobpositions.setall(name,p,x,y,wd,ht,dp,plus) -- will be used when we move to sp allover
+    if plus then
+        tobesaved[name] = { p, x, y, wd, ht, dp, plus }
+    elseif w then
+        tobesaved[name] = { p, x, y, wd, ht, dp }
+    else
+        tobesaved[name] = { p, x, y }
+    end
+end
+
+-- _praw_ = jobpositions.setraw
+-- _pdim_ = jobpositions.setdim
+-- _pall_ = jobpositions.setall
 
 function jobpositions.copy(target,source)
     collected[target] = collected[source] or tobesaved[source]
@@ -58,10 +80,14 @@ function jobpositions.replace(name,...)
     collected[name] = {...}
 end
 
+function jobpositions.v(id,default)
+    return collected[id] or tobesaved[id] or default
+end
+
 function jobpositions.page(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[1])
+        return jpi[1]
     else
         return 0
     end
@@ -70,7 +96,7 @@ end
 function jobpositions.x(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) - nx
+        return jpi[2]
     else
         return 0
     end
@@ -78,44 +104,28 @@ end
 
 function jobpositions.y(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return texsp(jpi[3]) - ny
-    else
-        return 0
-    end
+    return jpi and jpi[3] or 0
 end
 
 function jobpositions.width(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return texsp(jpi[4])
-    else
-        return 0
-    end
+    return jpi and jpi[4] or 0
 end
 
 function jobpositions.height(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return texsp(jpi[5])
-    else
-        return 0
-    end
+    return jpi and jpi[5] or 0
 end
 
 function jobpositions.depth(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return texsp(jpi[6])
-    else
-        return 0
-    end
+    return jpi and jpi[6] or 0
 end
 
 function jobpositions.xy(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) - nx, texsp(jpi[3]) - ny
+        return jpi[2], jpi[3]
     else
         return 0, 0
     end
@@ -124,7 +134,7 @@ end
 function jobpositions.lowerleft(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) - nx, texsp(jpi[3]) - texsp(jpi[6]) - ny
+        return jpi[2], jpi[3] - jpi[6]
     else
         return 0, 0
     end
@@ -133,7 +143,7 @@ end
 function jobpositions.lowerright(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) + texsp(jpi[4]) - nx, texsp(jpi[3]) - texsp(jpi[6]) - ny
+        return jpi[2] + jpi[4], jpi[3] - jpi[6]
     else
         return 0, 0
     end
@@ -142,7 +152,7 @@ end
 function jobpositions.upperright(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) + texsp(jpi[4]) - nx, texsp(jpi[3]) + texsp(jpi[5]) - ny
+        return jpi[2] + jpi[4], jpi[3] + jpi[5]
     else
         return 0, 0
     end
@@ -151,7 +161,7 @@ end
 function jobpositions.upperleft(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[2]) - nx, texsp(jpi[3]) + texsp(jpi[5]) - ny
+        return jpi[2], jpi[3] + jpi[5]
     else
         return 0, 0
     end
@@ -160,7 +170,7 @@ end
 function jobpositions.position(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        return texsp(jpi[1]), texsp(jpi[2]), texsp(jpi[3]), texsp(jpi[4]), texsp(jpi[5]), texsp(jpi[6])
+        return jpi[1], jpi[2], jpi[3], jpi[4], jpi[5], jpi[6]
     else
         return 0, 0, 0, 0, 0, 0
     end
@@ -176,11 +186,11 @@ function jobpositions.extra(id,n,default) -- assume numbers
             split = lpegmatch(splitter,jpi[7])
             jpi[0] = split
         end
-        return texsp(split[n]) or default
+        return texsp(split[n]) or default -- watch the texsp here
     end
 end
 
-local function overlapping(one,two,overlappingmargin)
+local function overlapping(one,two,overlappingmargin) -- hm, strings so this is wrong .. texsp
     one = collected[one] or tobesaved[one]
     two = collected[two] or tobesaved[two]
     if one and two and one[1] == two[1] then
@@ -252,50 +262,37 @@ end
 function commands.MPx(id)
     local jpi = collected[id] or tobesaved[id]
     local x = jpi and jpi[2]
-    if x then
-        if nx == 0 then
-            context(x)
-        else
-            context('\\the\\dimexpr%s-%s\\relax',x,dx)
-        end
-    else
-        context('0pt')
-    end
+    context(x and pts(x) or '0pt')
 end
 
 function commands.MPy(id)
     local jpi = collected[id] or tobesaved[id]
     local y = jpi and jpi[3]
-    if y then
-        if ny == 0 then
-            context(y)
-        else
-            context('\\the\\dimexpr%s-%s\\relax',y,dy)
-        end
-    else
-        context('0pt')
-    end
+    context(y and pts(y) or '0pt')
 end
 
 function commands.MPw(id)
     local jpi = collected[id] or tobesaved[id]
-    context(jpi and jpi[4] or '0pt')
+    local w = jpi and jpi[4]
+    context(w and pts(w) or '0pt')
 end
 
 function commands.MPh(id)
     local jpi = collected[id] or tobesaved[id]
-    context(jpi and jpi[5] or '0pt')
+    local h = jpi and jpi[5]
+    context(h and pts(h) or '0pt')
 end
 
 function commands.MPd(id)
     local jpi = collected[id] or tobesaved[id]
-    context(jpi and jpi[6] or '0pt')
+    local d = jpi and jpi[6]
+    context(d and pts(d) or '0pt')
 end
 
 function commands.MPxy(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s-%s,%s-%s)',jpi[2],dx,jpi[3],dy)
+        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]))
     else
         context('(0,0)')
     end
@@ -304,7 +301,7 @@ end
 function commands.MPll(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s-%s,%s-%s-%s)',jpi[2],dx,jpi[3],jpi[6],dy)
+        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]-jpi[6]))
     else
         context('(0,0)')
     end
@@ -313,7 +310,7 @@ end
 function commands.MPlr(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s+%s-%s,%s-%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[6],dy)
+        context('(%s,%s)',pts(jpi[2]+jpi[4]),pts(jpi[3]-jpi[6]))
     else
         context('(0,0)')
     end
@@ -322,7 +319,7 @@ end
 function commands.MPur(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s+%s-%s,%s+%s-%s)',jpi[2],jpi[4],dx,jpi[3],jpi[5],dy)
+        context('(%s,%s)',pts(jpi[2]+jpi[4]),pts(jpi[3]+jpi[5]))
     else
         context('(0,0)')
     end
@@ -331,7 +328,7 @@ end
 function commands.MPul(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s-%s,%s+%s-%s)',jpi[2],dx,jpi[3],jpi[5],dy)
+        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]+jpi[5]))
     else
         context('(0,0)')
     end

@@ -309,6 +309,7 @@ local styletemplate = [[
     font-style   : %s ;
     font-variant : %s ;
     font-weight  : %s ;
+    font-family  : %s ;
     color        : %s ;
 }]]
 
@@ -349,7 +350,11 @@ local function allusedstyles(xmlfile)
             local s = xml.css.fontspecification(data.style)
             local c = xml.css.colorspecification(data.color)
             result[#result+1] = format(styletemplate,element,detail,
-                s.style or "inherit",s.variant or "inherit",s.weight or "inherit",c or "inherit")
+                s.style   or "inherit",
+                s.variant or "inherit",
+                s.weight  or "inherit",
+                s.family  or "inherit",
+                c         or "inherit")
         end
     end
     return concat(result,"\n\n")

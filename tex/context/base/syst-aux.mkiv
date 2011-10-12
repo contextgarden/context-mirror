@@ -3240,6 +3240,8 @@
 
 \egroup
 
+\unexpanded\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname}
+
 % This is a first variant, more might be added:
 
 \def\starttexcode{\unprotect}

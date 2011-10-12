@@ -468,7 +468,7 @@ local do_begin_fig       = "; beginfig(1) ; "
 local do_end_fig         = "; endfig ;"
 local do_safeguard       = ";"
 
-function metapost.texttextsdata()
+function metapost.textextsdata()
     local t, nt, n = { }, 0, 0
     for n, box in next, textexts do
         if box then
@@ -573,7 +573,7 @@ function metapost.graphic_extra_pass(askedfig)
     metapost.process(current_format, {
         wrappit and do_begin_fig or "",
         no_trial_run,
-        concat(metapost.texttextsdata()," ;\n"),
+        concat(metapost.textextsdata()," ;\n"),
         current_initializations,
         do_safeguard,
         current_graphic,
@@ -753,7 +753,7 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                     s = format("\\colored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
                 end
             end
-            context.MPLIBsettext(tx_number,s)
+            context.MPLIBsettext(tx_number,s) -- combine colored in here, saves call
             metapost.multipass = true
         end
     end
