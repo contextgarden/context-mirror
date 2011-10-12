@@ -41,6 +41,7 @@ appendaction("processors",   "fonts",       "nodes.handlers.stripping")         
 appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
+appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
@@ -99,6 +100,7 @@ disableaction("processors",  "typesetters.directions.handler")
 disableaction("processors",  "languages.words.check")
 disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
+disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "nodes.handlers.stripping")
 
 disableaction("shipouts",    "typesetters.alignments.handler")

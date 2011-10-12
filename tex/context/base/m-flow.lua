@@ -30,19 +30,19 @@ local defaults = {
         dot             = "",
     },
     shape = { -- FLOS
-        rulethickness   = 65435,
+        rulethickness   = 65436,
         default         = "",
         framecolor      = "green",
         backgroundcolor = "yellow",
     },
     focus = { -- FLOF
-        rulethickness   = 65435,
+        rulethickness   = 65436,
         framecolor      = "red",
         backgroundcolor = "yellow",
     },
     line = { -- FLOL
-        rulethickness   = 65435,
-        radius          = 65435,
+        rulethickness   = 65436,
+        radius          = 65436,
         color           = "blue",
         corner          = "",
         dash            = "",
@@ -101,17 +101,6 @@ table.setmetatableindex(validshapes,function(t,k)
     t[k] = v
     return v
 end)
-
-local replacements = {
-    ["0"] = "a", ["1"] = "b", ["2"] = "c", ["3"] = "d", ["4"] = "e",
-    ["5"] = "f", ["6"] = "g", ["7"] = "h", ["8"] = "i", ["9"] = "j",
-}
-
-local function cleanname(str)
-    str = gsub(str,"[0-9]",replacements)
-    str = gsub(str,"[^a-zA-Z]","_")
-    return str
-end
 
 local charts = { }
 
@@ -373,17 +362,20 @@ local function process_cells(chart,xoffset,yoffset)
                 local shapedata = validshapes[shape]
                 context("flow_begin_sub_chart ;")
                 if shapedata.kind == "line" then
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", settings.line.color)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", settings.line.color)
-                    context("flow_shape_line_width := %s ; ",           points(settings.line.rulethickness))
+                    local linesettings = settings.line
+                    context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
+                    context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
+                    context("flow_shape_line_width := %s ; ",           points(linesettingsrulethickness))
                 elseif hasfocus then -- doifcommonelse{FLOWcell,FLOWfocus}@@FLOWfocus
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", settings.focus.framecolor)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", settings.focus.backgroundcolor)
-                    context("flow_shape_line_width := %s ; ",           points(settings.focus.rulethickness))
+                    local focussettings = settings.focus
+                    context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
+                    context("flow_shape_fill_color := \\MPcolor{%s} ;", focussettings.backgroundcolor)
+                    context("flow_shape_line_width := %s ; ",           points(focussettings.rulethickness))
                 else
-                    context("flow_shape_line_color := \\MPcolor{%s} ;", settings.shape.framecolor)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", settings.shape.backgroundcolor)
-                    context("flow_shape_line_width := %s ; " ,          points(settings.shape.rulethickness))
+                    local shapesettings = settings.shape
+                    context("flow_shape_line_color := \\MPcolor{%s} ;", shapesettings.framecolor)
+                    context("flow_shape_fill_color := \\MPcolor{%s} ;", shapesettings.backgroundcolor)
+                    context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
                 end
                 context("bodyfontsize := 10pt ;") -- todo
                 context("flow_peepshape := false ;")   -- todo
@@ -416,18 +408,19 @@ local function process_connections(chart,xoffset,yoffset)
                     local otherx, othery, location = othercell.x, othercell.y, connection.location
                     if otherx > 0 and othery > 0 and cellx > 0 and celly > 0 and connection.location then
                         -- move to setter
-                        local what_cell, where_cell, what_other, where_other = match(location,"([%+%-pm]-)([lrtb])([%+%-pm]-)([lrtb])")
+                        local what_cell, where_cell, what_other, where_other = match(location,"([%+%-pm]-)([lrtb]),?([%+%-pm]-)([lrtb])")
                         local what_cell   = what [what_cell]   or 0
                         local what_other  = what [what_other]  or 0
                         local where_cell  = where[where_cell]  or "left"
                         local where_other = where[where_other] or "right"
-                        context("flow_smooth := %s ;", settings.line.corner == variables.round and "true" or "false")
-                        context("flow_dashline := %s ;", settings.line.dash == variables.yes and "true" or "false")
-                        context("flow_arrowtip := %s ;", settings.line.arrow == variables.yes and "true" or "false")
-                        context("flow_touchshape := %s ;", settings.line.offset == variables.none and "true" or "false")
+                        local linesettings = settings.line
+                        context("flow_smooth := %s ;", linesettings.corner == variables.round and "true" or "false")
+                        context("flow_dashline := %s ;", linesettings.dash == variables.yes and "true" or "false")
+                        context("flow_arrowtip := %s ;", linesettings.arrow == variables.yes and "true" or "false")
+                        context("flow_touchshape := %s ;", linesettings.offset == variables.none and "true" or "false")
                         context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
-                        context("flow_connection_line_color := green ;",chart.settings.line.color)
-                        context("flow_connection_line_width := 2pt ;",points(chart.settings.line.rulethickness))
+                        context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
+                        context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
                         context("flow_connect_%s_%s(%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,cellx,celly,what_cell,otherx,othery,what_other)
                         context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                     end
@@ -544,10 +537,10 @@ local function makechart(chart)
     local gridwidth   = shapewidth + 2*settings.chart.dx
     local shapeheight = settings.chart.height
     local gridheight  = shapeheight + 2*settings.chart.dy
-    context("flow_grid_width             := %s ;", points(gridwidth))
-    context("flow_grid_height            := %s ;", points(gridheight))
-    context("flow_shape_width            := %s ;", points(shapewidth))
-    context("flow_shape_height           := %s ;", points(shapeheight))
+    context("flow_grid_width := %s ;", points(gridwidth))
+    context("flow_grid_height := %s ;", points(gridheight))
+    context("flow_shape_width := %s ;", points(shapewidth))
+    context("flow_shape_height := %s ;", points(shapeheight))
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
@@ -562,10 +555,10 @@ local function makechart(chart)
             radius = dy
         end
     end
-    context("flow_connection_line_width  := %s ;", points(rulethickness))
+    context("flow_connection_line_width := %s ;", points(rulethickness))
     context("flow_connection_smooth_size := %s ;", points(radius))
-    context("flow_connection_arrow_size  := %s ;", points(radius))
-    context("flow_connection_dash_size   := %s ;", points(radius))
+    context("flow_connection_arrow_size := %s ;", points(radius))
+    context("flow_connection_dash_size := %s ;", points(radius))
     --
     local offset = settings.chart.offset -- todo: pass string
     if offset == variables.none or offset == variables.overlay or offset == "" then

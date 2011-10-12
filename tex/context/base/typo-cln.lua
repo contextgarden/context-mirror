@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['typo-cap'] = {
+if not modules then modules = { } end modules ['typo-cln'] = {
     version   = 1.001,
-    comment   = "companion to typo-cap.mkiv",
+    comment   = "companion to typo-cln.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -15,8 +15,8 @@ local utfbyte = utf.byte
 local trace_cleaners = false  trackers.register("typesetters.cleaners",         function(v) trace_cleaners = v end)
 local trace_autocase = false  trackers.register("typesetters.cleaners.autocase",function(v) trace_autocase = v end)
 
-local report_cleaners = logs.reporters("nodes","cleaners")
-local report_autocase = logs.reporters("nodes","autocase")
+local report_cleaners = logs.reporter("nodes","cleaners")
+local report_autocase = logs.reporter("nodes","autocase")
 
 typesetters.cleaners  = typesetters.cleaners or { }
 local cleaners        = typesetters.cleaners

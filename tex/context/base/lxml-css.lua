@@ -94,11 +94,24 @@ css.padding = padding
 --     context("%ssp",padding(str,pixel,hsize,exheight,emwidth))
 -- end
 
-local pattern = Cf( Ct("") * Cg(
-    Cc("style")   * (C("italic") + C("oblique"))
-  + Cc("variant") * C("smallcaps")
-  + Cc("weight")  * C("bold")
-  + P(1)
+local pattern = Cf( Ct("") * (
+    Cg(
+        Cc("style")   * (
+            C("italic")
+          + C("oblique")
+          + C("slanted") / "oblique"
+        )
+      + Cc("variant") * (
+            (C("smallcaps") + C("caps")) / "small-caps"
+        )
+      + Cc("weight")  *
+            C("bold")
+      + Cc("family")  * (
+            (C("mono") + C("type")) / "monospace"       -- just ignore the "space(d)"
+          + (C("sansserif") + C("sans")) / "sans-serif" -- match before serif
+          + C("serif")
+        )
+    ) + P(1)
 )^0 , rawset)
 
 function css.fontspecification(str)

@@ -136,19 +136,9 @@
 \newconditional\inhibitmargindata      % This one is used at the Lua end!
 \newtoks       \everymargindatacontent % Later on we will set this one.
 
-\unexpanded\def\margindata[#name]%
-  {\setfalse\inhibitmargindata % flushing afterwards
-   \begingroup
-  %\settrue\inhibitmargindata  % no flushing in here
-   \def\currentmargindata{#name}%
-   \let\currentmarginframed\currentmargindata
-   \dodoubleempty\domargindata}
-
 \appendtoks
     \settrue\inhibitmargindata
 \to \everyforgetall
-
-% option test -> ruled
 
 \appendtoks
     \forgetall
@@ -156,7 +146,31 @@
     \deactivatecolor
 \to \everymargindatacontent
 
-\unexpanded\def\domargindata[#dataparameters][#textparameters]#content%
+% trialtypesetting: no need for margin stuff while trialing as
+% is has no dimensions
+
+\unexpanded\def\margindata
+  {\iftrialtypesetting
+     \expandafter\nomargindata
+   \else
+     \expandafter\domargindata
+   \fi}
+
+\def\nomargindata[#name]%
+  {\dodoubleempty\donomargindata}
+
+\def\domargindata[#name]%
+  {\setfalse\inhibitmargindata % flushing afterwards
+   \begingroup
+  %\settrue\inhibitmargindata  % no flushing in here
+   \def\currentmargindata{#name}%
+   \let\currentmarginframed\currentmargindata
+   \dodoubleempty\dodomargindata}
+
+\unexpanded\def\donomargindata[#dataparameters][#textparameters]#content%
+  {}
+
+\unexpanded\def\dodomargindata[#dataparameters][#textparameters]#content%
   {\iffirstargument
      \setupcurrentmargindata[#dataparameters]%
    \fi
@@ -192,22 +206,25 @@
          \let\currentmarginfirstheight\empty
        \else
          \dosetraggedcommand{\margindataparameter\c!align}%
-         \setbox\nextbox\hbox \bgroup\vtop \bgroup % hbox is needed
-           \the\everymargindatacontent
-           \dosetmargindataattributes\c!style\c!color
-           \hsize\currentmargindatawidth
-           \raggedcommand
-           \ifx\currentmargindatastrut\empty \else
-             \dosetupstrut[\currentmargindatastrut]%
-           \fi
-           \begstrut\margindataparameter\c!command{#content}\endstrut
-         \egroup \egroup
+          % hbox is always needed
+           \vtop \bgroup
+             \the\everymargindatacontent
+             \dosetmargindataattributes\c!style\c!color
+             \hsize\currentmargindatawidth
+             \raggedcommand
+             \ifx\currentmargindatastrut\empty \else
+               \dosetupstrut[\currentmargindatastrut]%
+             \fi
+             \begstrut\margindataparameter\c!command{#content}\endstrut
+           \egroup
+         \egroup
          \edef\currentmarginfirstheight{true}%
        \fi
      \fi
      \dostoptagged
    \fi
    \ifdone
+     \initializenextposition % we use positions at the lua end
      \ctxlua{typesetters.margins.save{
        \c!location = "\margindataparameter\c!location",
        \c!method   = "\margindataparameter\c!method",
@@ -229,7 +246,7 @@
        \c!align    = "\margindataparameter\c!align",
        \c!line     = "\margindataparameter\c!line",
        \c!stack    = "\margindataparameter\c!stack",
-       \c!number   = \number\nextbox
+       \c!number   = \number\nextbox,
      }}%
    \else
      \ctxlua{typesetters.margins.save{
@@ -344,5 +361,20 @@
    \definemarginframed[#name][#location][\c!align=#align,#settings]}
 
 \let\setupinmargin\setupmargindata % only partial (no framed)
+
+% begin of experimental code (will move)
+%
+% \dosetanchor{x}test \dostarthanchoring{x}\llap{crap}\dostophanchoring{x}test test test
+% test \dostarthanchoring{text}\llap{crap}\dostophanchoring{text}test test test
+
+% \def\dosetanchor      #1{\dontleavehmode\latelua{anchors.set("#1")}}
+% \def\doresetanchor    #1{\dontleavehmode\latelua{anchors.reset("#1")}}
+% \def\doresetanchornow #1{\directlua{anchors.reset("#1")}}
+% \def\dostartanchoring #1{\dontleavehmode\latelua{anchors.startmove("#1")}}
+% \def\dostopanchoring  #1{\dontleavehmode\latelua{anchors.stopmove("#1")}}
+% \def\dostarthanchoring#1{\dontleavehmode\latelua{anchors.startmove("#1","h")}}
+% \def\dostartvanchoring#1{\dontleavehmode\latelua{anchors.startmove("#1","v")}}
+% \let\dostophanchoring    \dostopanchoring
+% \let\dostopvanchoring    \dostopanchoring
 
 \protect \endinput

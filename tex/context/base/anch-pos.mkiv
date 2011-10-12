@@ -106,31 +106,41 @@
 %D method is implemented in a special driver. If needed, the
 %D driver can fall back on the following macros.
 
-\def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4"}}}}
-\def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-\def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-\def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4"}}}}
-\def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-\def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+% \def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4"}}}}
+% \def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+% \def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+% \def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4"}}}}
+% \def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
+% \def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
+%
+% \def\lastsavedpositionx {\the\dimexpr\pdflastxpos\scaledpoint\relax}
+% \def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
+% \let\savecurrentposition\pdfsavepos
+%
+% \def\dosetposition#1% will become commands.setposition
+%   {\savecurrentposition
+%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
+%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony"}}}}
+%
+% \def\dosetpositionwhd#1#2#3#4%
+%   {\savecurrentposition
+%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
+%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4"}}}}
+%
+% \def\dosetpositionplus#1#2#3#4#5%
+%   {\savecurrentposition
+%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
+%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4","#5"}}}}
 
-\def\lastsavedpositionx {\the\dimexpr\pdflastxpos\scaledpoint\relax}
-\def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
-\let\savecurrentposition\pdfsavepos
+\def\dosaveposition            #1#2#3#4{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4)}}}
+\def\dosavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4,#5,#6,#7)}}}
+\def\dosavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_plib_.setall("#1",#2,#3,#4,#5,#6,#7,"#8")}}}
 
-\def\dosetposition#1% will become commands.setposition
-  {\savecurrentposition
-   \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony"}}}}
+\def\dosetposition                   #1{\normalexpanded{\ctxlatelua{_plib_.setdim("#1")}}}
+\def\dosetpositionwhd          #1#2#3#4{\normalexpanded{\ctxlatelua{_plib_.setdim("#1","#2","#3","#4")}}}
+\def\dosetpositionplus       #1#2#3#4#5{\normalexpanded{\ctxlatelua{_plib_.setdim("#1","#2","#3","#4","#5")}}}
 
-\def\dosetpositionwhd#1#2#3#4%
-  {\savecurrentposition
-   \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4"}}}}
-
-\def\dosetpositionplus#1#2#3#4#5%
-  {\savecurrentposition
-   \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-     \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4","#5"}}}}
+% % %
 
 \let\dosetpositionpapersize\gobbletwoarguments
 
@@ -154,11 +164,6 @@
 %D Sometimes we want to trick the position handler a bit:
 
 \def\replacepospxywhd#1#2#3#4#5#6#7{\ctxcommand{replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
-
-%D For postprocessing purposes, we save the number of
-%D positions.
-
-\newcount\currentpositions  % current number of positions
 
 %D The next switch can be used to communicate a special
 %D situation. Positioning and associated actions can be
@@ -241,8 +246,7 @@
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize\printpaperwidth\printpaperheight
-   \fi
-   \global\advance\currentpositions\plusone}
+   \fi}
 
 \def\setpositiononly#1%
   {\iftrialtypesetting

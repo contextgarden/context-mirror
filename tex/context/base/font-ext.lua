@@ -529,6 +529,28 @@ registerafmfeature {
     }
 }
 
+local function initializenotextitalics(tfmdata,value)
+    tfmdata.properties.no_textitalics = value
+end
+
+registerotffeature {
+    name        = "notextitalics",
+    description = "don't pass text italic correction to tex",
+    initializers = {
+        base = initializenotextitalics,
+        node = initializenotextitalics,
+    }
+}
+
+registerafmfeature {
+    name        = "notextitalics",
+    description = "don't pass text italic correction to tex",
+    initializers = {
+        base = initializenotextitalics,
+        node = initializenotextitalics,
+    }
+}
+
 -- slanting
 
 local function initializeslant(tfmdata,value)

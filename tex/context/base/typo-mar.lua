@@ -13,6 +13,66 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 --   using margin data then as also vertical spacing kicks in
 -- * floating margin data, with close-to-call anchoring
 
+-- -- experiment (does not work, too much interference)
+--
+-- local pdfprint = pdf.print
+-- local format = string.format
+--
+-- anchors = anchors or { }
+--
+-- local whatever = { }
+-- local factor   = (7200/7227)/65536
+--
+-- function anchors.set(tag)
+--     whatever[tag] = { pdf.h, pdf.v }
+-- end
+--
+-- function anchors.reset(tag)
+--     whatever[tag] = nil
+-- end
+--
+-- function anchors.startmove(tag,how)
+--     local w = whatever[tag]
+--     if not w then
+--         -- error
+--     elseif how == "horizontal" or how == "h" then
+--         pdfprint("page",format(" q 1 0 0 1 %s 0 cm ", (w[1] - pdf.h) * factor))
+--     elseif how == "vertical" or how == "v" then
+--         pdfprint("page",format(" q 1 0 0 1 0 %s cm ", (w[2] - pdf.v) * factor))
+--     else
+--         pdfprint("page",format(" q 1 0 0 1 %s %s cm ", (w[1] - pdf.h) * factor, (w[2] - pdf.v) * factor))
+--     end
+-- end
+--
+-- function anchors.stopmove(tag)
+--     local w = whatever[tag]
+--     if not w then
+--         -- error
+--     else
+--         pdfprint("page"," Q ")
+--     end
+-- end
+--
+-- local latelua = nodes.pool.latelua
+--
+-- function anchors.node_set(tag)
+--     return latelua(format("anchors.set(%q)",tag))
+-- end
+--
+-- function anchors.node_reset(tag)
+--     return latelua(format("anchors.reset(%q)",tag))
+-- end
+--
+-- function anchors.node_start_move(tag,how)
+--     return latelua(format("anchors.startmove(%q,%q)",tag,how))
+-- end
+--
+-- function anchors.node_stop_move(tag)
+--     return latelua(format("anchors.stopmove(%q)",tag))
+-- end
+
+-- so far
+
 local format = string.format
 local insert, remove = table.insert, table.remove
 local setmetatable, next = setmetatable, next
@@ -84,6 +144,7 @@ local nodepool         = nodes.pool
 local new_kern         = nodepool.kern
 local new_stretch      = nodepool.stretch
 local new_usernumber   = nodepool.usernumber
+local new_latelua      = nodepool.latelua
 
 local texcount         = tex.count
 local texdimen         = tex.dimen
@@ -150,14 +211,25 @@ local defaults = {
 
 local enablelocal, enableglobal -- forward reference (delayed initialization)
 
+-- local function showstore(store,banner)
+--     if #store == 0 then
+--         report_margindata("%s: nothing stored",banner)
+--     else
+--         for i=1,#store do
+--             local si =store[i]
+--             report_margindata("%s: stored at %s: %s => %s",banner,i,si.name or "no name",nodes.toutf(si.box.list))
+--         end
+--     end
+-- end
+
 local function showstore(store,banner)
-    if #store == 0 then
-        report_margindata("%s: nothing stored",banner)
-    else
-        for i=1,#store do
+    if next(store) then
+        for i, si in table.sortedpairs(store) do
             local si =store[i]
             report_margindata("%s: stored at %s: %s => %s",banner,i,si.name or "no name",nodes.toutf(si.box.list))
         end
+    else
+        report_margindata("%s: nothing stored",banner)
     end
 end
 
@@ -195,11 +267,21 @@ function margins.save(t)
         showstore(store,"before ")
     end
     if name and name ~= "" then
-        for i=#store,1,-1 do
-            local si = store[i]
-            if si.name == name then
-                local s = remove(store,i)
-                free_node_list(s.box)
+        if inlinestore then -- todo: inline store has to be done differently (not sparse)
+            local t = table.sortedkeys(store) for j=#t,1,-1 do local i = t[i]
+                local si = store[i]
+                if si.name == name then
+                    local s = remove(store,i)
+                    free_node_list(s.box)
+                end
+            end
+        else
+            for i=#store,1,-1 do
+                local si = store[i]
+                if si.name == name then
+                    local s = remove(store,i)
+                    free_node_list(s.box)
+                end
             end
         end
         if trace_marginstack then
@@ -253,7 +335,7 @@ end
 -- When the prototype inner/outer code that was part of this proved to be
 -- okay it was moved elsewhere.
 
-local status, nofstatus = { }, 0
+local status, nofstatus, anchors = { }, 0, 0
 
 local function realign(current,candidate)
     local location      = candidate.location
@@ -285,6 +367,7 @@ local function realign(current,candidate)
     if leftpage then
         leftdistance, rightdistance = rightdistance, leftdistance
     end
+
     if location == v_left then
         delta =  hoffset + width + leftdistance  + leftdelta
     elseif location == v_right then
@@ -302,15 +385,31 @@ local function realign(current,candidate)
             delta = -hoffset - hsize - rightdistance + rightdelta
         end
     end
+
     -- we assume that list is a hbox, otherwise we had to take the whole current
     -- in order to get it right
+
     current.width = 0
---~ delta = delta + hsize
-    current.list = hpack_nodes(link_nodes(new_kern(-delta),current.list,new_kern(delta)))
-    current.width = 0
-    if trace_margindata then
-        report_margindata("realigned: %s, location: %s, margin: %s",candidate.n,location,margin)
+
+    if candidate.inline then -- this mess is needed for alignments (combinations)
+        anchors = anchors + 1
+        local anchor = new_latelua(format("_plib_.setraw('_md_:%s',pdf.h)",anchors))
+        local blob_x = job.positions.v("_md_:"..anchors) or 0
+        local text_x = job.positions.x("text:"..tex.count.realpageno) or 0
+        local move_x = text_x - blob_x
+        delta = delta - move_x
+        current.list = hpack_nodes(link_nodes(anchor,new_kern(-delta),current.list,new_kern(delta)))
+        if trace_margindata then
+            report_margindata("realigned: %s, location: %s, margin: %s, move: %s",candidate.n,location,margin,number.points(move_x))
+        end
+    else
+        current.list = hpack_nodes(link_nodes(new_kern(-delta),current.list,new_kern(delta)))
+        if trace_margindata then
+            report_margindata("realigned: %s, location: %s, margin: %s",candidate.n,location,margin)
+        end
     end
+
+    current.width = 0
 end
 
 local function realigned(current,a)
@@ -468,7 +567,7 @@ local function flushed(scope,parent) -- current is hlist
             local location = locations[l]
             local store = displaystore[category][location][scope]
             while true do
-                local candidate = remove(store,1)
+                local candidate = remove(store,1) -- brr, local stores are sparse
                 if candidate then -- no vpack, as we want to realign
                     head = inject(parent,head,candidate) -- maybe return applied offset
                     done = true
@@ -534,11 +633,15 @@ function margins.localhandler(head,group)
     end
 end
 
-function margins.globalhandler(head,group)
+function margins.globalhandler(head,group) -- check group
 --~     print(group)
-    if conditionals.inhibitmargindata then
+    if conditionals.inhibitmargindata or nofstored == 0 then
         return head, false
-    elseif nofstored > 0 and group == "hmode_par" then
+    elseif group == "hmode_par" then
+        return handler("global",head,group)
+    elseif group == "vmode_par" then              -- experiment (for alignments)
+        return handler("global",head,group)
+    elseif group == "box" then                    -- experiment (for alignments)
         return handler("global",head,group)
     else
         return head, false
@@ -583,6 +686,9 @@ function margins.finalhandler(head)
     end
 end
 
+-- Somehow the vbox builder (in combinations) gets pretty confused and decides to
+-- go horizontal. So this needs more testing.
+
 prependaction("finalizers",   "lists",       "typesetters.margins.localhandler")
 prependaction("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
 prependaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")
@@ -595,7 +701,7 @@ disableaction("shipouts",     "typesetters.margins.finalhandler")
 
 enablelocal = function()
     enableaction("finalizers",   "typesetters.margins.localhandler")
-    enableaction("vboxbuilders", "typesetters.margins.localhandler")
+ -- enableaction("vboxbuilders", "typesetters.margins.localhandler")
     enableaction("shipouts",     "typesetters.margins.finalhandler")
     enablelocal = nil
 end

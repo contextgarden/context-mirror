@@ -274,6 +274,15 @@
    \installswitchsetuphandler  {#1}{#2}%
    \installattributehandler    {#1}{#2}}
 
+\unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment)
+  {\installparameterhandler    {#1}{#2}%
+   \installparameterhashhandler{#1}{#2}%
+   \installparametersethandler {#1}{#2}%
+   \installrootparameterhandler{#1}{#2}%
+   \installsetuphandler        {#1}{#2}%
+   \installattributehandler    {#1}{#2}}
+
+
 \unexpanded\def\installnamespace#1%
   {\setvalue{????#1}{@@@@#1}}
 
