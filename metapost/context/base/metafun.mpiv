@@ -24,8 +24,8 @@ input mp-text.mp   ;
 input mp-txts.mp   ;
 input mp-butt.mp   ;
 input mp-shap.mp   ;
-%     mp-char.mp   ; % there no need to always load this
-%     mp-step.mp   ; % there no need to always load this
+%     mp-char.mpiv ; % there no need to always load this
+%     mp-step.mpiv ; % there no need to always load this
 input mp-grph.mp   ;
 input mp-figs.mp   ;
 input mp-mlib.mpiv ;

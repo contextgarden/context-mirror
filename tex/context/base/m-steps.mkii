@@ -146,7 +146,7 @@
 %D \def\startSTEPchart%
 %D   {\bgroup
 %D    \startMPdrawing
-%D      input mp-step ; begin_step_chart ;
+%D      input mp-step.mpii ; begin_step_chart ;
 %D    \stopMPdrawing
 %D    \initializeSTEP
 %D    \let\cells\stepchartcells \def\cell{\cells{}}%
@@ -208,7 +208,7 @@
 %D    \resetMPdrawing
 %D    \advance\noftabpositions\plusone % begin of preroll
 %D    \startMPdrawing
-%D      input mp-step ;
+%D      input mp-step.mpii ;
 %D      begin_step_chart ;
 %D    \stopMPdrawing
 %D    \initializeSTEP
@@ -401,7 +401,7 @@
    \resetMPdrawing
    \doglobal\increment\currentstepchart
    \startMPdrawing
-     input mp-step ;
+     input mp-step.mpii ;
      begin_step_chart ;
    \stopMPdrawing
    \initializeSTEP
@@ -682,7 +682,7 @@
    \pushMPdrawing
    \doglobal\increment\currentsteptable
    \startMPdrawing
-     input mp-step ;
+     input mp-step.mpii ;
      begin_step_table ;
    \stopMPdrawing
    \initializeSTEP

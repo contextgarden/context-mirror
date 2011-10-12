@@ -1,0 +1,382 @@
+%D \module
+%D   [       file=m-steps,
+%D        version=2011.10.07, % 2001.05.28,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Step Charts \& Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% multiple texts?
+
+\registerctxluafile{m-steps}{}
+
+\unprotect
+
+\def\??stpc{@@stpc} % charts
+\def\??stpt{@@stpt} % tables
+\def\??stec{@@stec} % cells
+\def\??stet{@@stet} % texts
+\def\??stel{@@stel} % lines
+
+\installsimplecommandhandler \??stpc {STEPchart} \??stpc
+\installsimplecommandhandler \??stpt {STEPtable} \??stpt
+\installsimplecommandhandler \??stec {STEPcell}  \??stec
+\installsimplecommandhandler \??stet {STEPtext}  \??stet
+\installsimplecommandhandler \??stel {STEPline}  \??stel
+
+\let\setupSTEPcharts\setupSTEPchart
+\let\setupSTEPtables\setupSTEPtable
+\let\setupSTEPcells \setupSTEPcell
+\let\setupSTEPtexts \setupSTEPtext
+\let\setupSTEPlines \setupSTEPline
+
+% numeric text_text_distance ; text_text_distance   := 20pt ;
+% numeric step_distance      ; step_distance        := 20pt ;
+
+\setupSTEPcharts
+  [\c!alternative=\v!horizontal,
+   \c!before=\blank,
+   \c!after=\blank]
+%    \c!offset=.15\bodyfontsize
+%    \c!height=2ex
+
+% \setupSTEPtables
+%   [\c!before=\blank,
+%    \c!after=\blank,
+%    \c!distance=.25em,
+%    \c!voffset=1ex,
+%    \c!method=1,
+%    \c!width=4em,
+%    \c!offset=.15\bodyfontsize]
+
+\setupSTEPcells
+  [\c!alternative=1, % TODO
+%    \c!style=,
+%    \c!color=,
+   \c!dx=\bodyfontsize,
+   \c!dy=\bodyfontsize,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
+   \c!offset=.25\bodyfontsize]
+
+\setupSTEPtexts
+  [\c!alternative=1, % TODO
+%    \c!style=\v!smallbodyfont,
+%    \c!color=,
+   \c!background=\v!color,
+   \c!backgroundcolor=STEPbackgroundcolor,
+   \c!rulethickness=.1\bodyfontsize,
+   \c!framecolor=STEPframecolor,
+   \c!distance=.5\bodyfontsize,
+   \c!offset=.25\bodyfontsize]
+
+\setupSTEPlines
+  [\c!alternative=1, % TODO
+   \c!rulethickness=.15\bodyfontsize,
+   \c!height=3\bodyfontsize,
+   \c!distance=.5\bodyfontsize,
+   \c!offset=.25\bodyfontsize,
+   \c!color=STEPlinecolor]
+
+\definecolor [STEPlinecolor]       [s=.5]
+\definecolor [STEPframecolor]      [s=.7]
+\definecolor [STEPbackgroundcolor] [s=.9]
+
+\newtoks\everySTEPchart
+
+\unexpanded\def\startSTEPchart
+  {\begingroup
+   \dodoubleempty\start_STEP_chart}
+
+\def\start_STEP_chart[#name][#settings]%
+  {\startnointerference
+   \iffirstargument
+     \doifassignmentelse{#name}
+       {\let\currentSTEPchart\empty
+        \xdef\flush_STEP_chart{\STEP_chart[][#name]}}
+       {\edef\currentSTEPchart{#name}%
+        \glet\flush_STEP_chart\relax}% settings are not stored
+   \else
+     \let\currentSTEPchart\empty
+     \gdef\flush_STEP_chart{\STEP_chart[][]}%
+   \fi
+   \the\everySTEPchart
+   \ctxcommand{step_start_chart("\currentSTEPchart")}}
+
+\unexpanded\def\stopSTEPchart
+  {\ctxcommand{step_stop_chart()}%
+   \stopnointerference
+   \flush_STEP_chart
+   \endgroup}
+
+\unexpanded\def\startSTEPtable
+  {\begingroup
+   \setupSTEPchart[\c!alternative=\v!vertical]%
+   \dodoubleempty\start_STEP_chart}
+
+\let\stopSTEPtable\stopSTEPchart
+
+\let\flush_STEP_chart\relax
+
+\unexpanded\def\STEPchart
+  {\dodoubleempty\STEP_chart}
+
+\unexpanded\def\STEP_chart[#name][#settings]%
+  {\begingroup
+   \setupSTEPchart[#settings]%
+   \ifinsidefloat
+     \makeSTEPchart[#name]%
+   \else
+     \STEPchartparameter\c!before
+     \startbaselinecorrection
+       \setlocalhsize
+       \makeSTEPchart[#name]%
+     \stopbaselinecorrection
+     \STEPchartparameter\c!after
+   \fi
+   \endgroup}
+
+\unexpanded\def\makeSTEPchart[#name]%
+  {\ctxcommand{step_make_chart {
+        chart = {
+            name            = "#name",
+            alternative     = "\STEPchartparameter\c!alternative",
+        },
+        cell = {
+            alternative     = "\STEPcellparameter\c!alternative", % TODO: shapes
+            offset          = \number\dimexpr\STEPcellparameter\c!offset,
+            rulethickness   = \number\dimexpr\STEPcellparameter\c!rulethickness,
+            framecolor      = "\STEPcellparameter\c!framecolor",
+            backgroundcolor = "\STEPcellparameter\c!backgroundcolor",
+            dx              = \number\dimexpr\STEPcellparameter\c!dx,
+            dy              = \number\dimexpr\STEPcellparameter\c!dy,
+        },
+        text = {
+            alternative     = "\STEPtextparameter\c!alternative", % TODO: shapes
+            offset          = \number\dimexpr\STEPtextparameter\c!offset,
+            distance        = \number\dimexpr\STEPtextparameter\c!distance,
+            rulethickness   = \number\dimexpr\STEPtextparameter\c!rulethickness,
+            framecolor      = "\STEPtextparameter\c!framecolor",
+            backgroundcolor = "\STEPtextparameter\c!backgroundcolor",
+        },
+        line = {
+            alternative     = "\STEPlineparameter\c!alternative", % TODO: dash, arrow
+            rulethickness   = \number\dimexpr\STEPlineparameter\c!rulethickness,
+            height          = \number\dimexpr\STEPlineparameter\c!height,
+            distance        = \number\dimexpr\STEPlineparameter\c!distance,
+            offset          = \number\dimexpr\STEPlineparameter\c!offset,
+            color           = "\STEPlineparameter\c!color",
+        },
+   }}}
+
+\unexpanded\def\startSTEPcell
+  {\ctxcommand{step_start_cell()}}
+
+\unexpanded\def\stopSTEPcell
+  {\ctxcommand{step_stop_cell()}}
+
+\unexpanded\def\step_cells#top#bot%
+  {\ctxcommand{step_cells(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
+
+\unexpanded\def\step_texts#top#bot%
+  {\ctxcommand{step_texts(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
+
+\unexpanded\def\step_cell#str%
+  {\ctxcommand{step_cell(\!!bs\detokenize{#str}\!!es)}}
+
+\unexpanded\def\step_text#str%
+  {\ctxcommand{step_text(\!!bs\detokenize{#str}\!!es)}}
+
+\unexpanded\def\step_textset#left#middle#right%
+  {\ctxcommand{step_textset(\!!bs\detokenize{#left}\!!es,\!!bs\detokenize{#middle}\!!es,\!!bs\detokenize{#right}\!!es)}}
+
+\unexpanded\def\step_toptext#top%
+  {\ctxcommand{step_text_top(\!!bs\detokenize{#top}\!!es)}}
+
+\unexpanded\def\step_bottext#bot%
+  {\ctxcommand{step_text_bot(\!!bs\detokenize{#bot}\!!es)}}
+
+\unexpanded\def\step_topcell#top%
+  {\ctxcommand{step_cell_top(\!!bs\detokenize{#top}\!!es)}}
+
+\unexpanded\def\step_botcell#bot%
+  {\ctxcommand{step_cell_bot(\!!bs\detokenize{#bot}\!!es)}}
+
+\appendtoks
+    \let\cells  \step_cells
+    \let\texts  \step_texts
+    \let\cell   \step_cell
+    \let\text   \step_text
+    \let\textset\step_textset
+    \let\toptext\step_toptext
+    \let\bottext\step_bottext
+    \let\topcell\step_topcell
+    \let\botcell\step_botcell
+\to \everySTEPchart
+
+% todo: mapping can be done in lua
+
+\startxmlsetups xml:step:define
+    \xmlsetsetup{#1} {stepchart|steptable} {xml:step:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:step:define}
+
+\startxmlsetups xml:step:stepchart
+    \startSTEPchart
+        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+    \stopSTEPchart
+\stopxmlsetups
+
+\startxmlsetups xml:step:steptable
+    \startSTEPtable
+        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+    \stopSTEPtable
+\stopxmlsetups
+
+\startxmlsetups xml:step:cells
+    \cells {\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+\stopxmlsetups
+
+\startxmlsetups xml:step:texts
+    \texts {\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+\stopxmlsetups
+
+\startxmlsetups xml:step:stepcell
+    \cells {\xmltext{#1}{/topcell}} {\xmltext{#1}{/botcell}}
+    \texts {\xmltext{#1}{/toptext}} {\xmltext{#1}{/bottext}}
+\stopxmlsetups
+
+\startxmlsetups xml:step:cell
+    \cell {\xmlflush{#1}}
+\stopxmlsetups
+
+\startxmlsetups xml:step:text
+    \text {\xmlflush{#1}}
+\stopxmlsetups
+
+\protect
+
+\continueifinputfile{m-steps.mkvi}
+
+\starttext
+
+\startbuffer
+<stepchart>
+  <cell> some cell </cell>
+  <text> some text </text>
+  <cell> some cell </cell>
+  <text> some text </text>
+  <cell> some cell </cell>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+
+\startbuffer
+<steptable>
+  <cell> some cell </cell>
+  <text> some text </text>
+  <cell> some cell </cell>
+  <text> some text </text>
+  <cell> some cell </cell>
+</steptable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\page
+
+\startSTEPchart
+    \cells {A}     {B}
+    \cells {one}   {five}  \texts{$+2$}{$-2$}
+    \cells {two}   {four}  \texts{$+3$}{$-3$}
+    \cells {three} {three} \texts{$+4$}{$-4$}
+    \cells {four}  {two}   \texts{$+5$}{$-5$}
+    \cells {five}  {one}
+\stopSTEPchart
+
+\startSTEPtable
+    \cell {one}   \textset{$x$}  {=}{$a+b+c$}
+    \cell {two}   \textset{$c+d$}{=}{$y$}
+    \cell {three}
+\stopSTEPtable
+
+
+\page
+
+\startbuffer
+<stepchart>
+  <cells> <top> some text </top> <bot> some text </bot> </cells>
+  <texts> <top> text      </top> <bot> text      </bot> </texts>
+  <cells> <top> some text </top> <bot> some text </bot> </cells>
+</stepchart>
+\stopbuffer
+
+\processxmlbuffer
+
+\startbuffer
+<stepchart>
+  <cell> some text </cell>
+  <texts> <top> text </top> <bot> text </bot> </texts>
+  <cell> some text </cell>
+</stepchart>
+\stopbuffer
+
+\processxmlbuffer
+
+\page
+
+\startSTEPchart[second]
+    \startSTEPcell
+        \topcell {A}
+        \botcell {B}
+    \startSTEPcell
+        \topcell {one}
+        \botcell {five}
+        \toptext {$+2$}
+        \bottext {$-2$}
+    \stopSTEPcell
+    \startSTEPcell
+        \topcell {two}
+        \botcell {four}
+        \toptext {$+3$}
+        \bottext {$-3$}
+    \stopSTEPcell
+    \startSTEPcell
+        \topcell {three}
+        \botcell {three}
+        \toptext {$+4$}
+        \bottext {$-4$}
+    \stopSTEPcell
+    \startSTEPcell
+        \topcell {four}
+        \botcell {two}
+        \toptext {$+5$}
+        \bottext {$-5$}
+    \stopSTEPcell
+    \startSTEPcell
+        \topcell {five}
+        \botcell {one}
+    \stopSTEPcell
+\stopSTEPchart
+
+\STEPchart[first][alternative=horizontal]
+\STEPchart[first][alternative=vertical]
+
+\page
+
+\STEPchart[second][alternative=horizontal]
+\STEPchart[second][alternative=vertical]
+
+\page
+
+\stoptext
