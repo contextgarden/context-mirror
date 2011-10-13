@@ -155,7 +155,7 @@ setmetatableindex(xheightdata, function(t,k)
     return quad
 end)
 
-setmetatableindex(italicsdata, function(t,k)
+setmetatableindex(italicsdata, function(t,k) -- is test !
     local properties = fontdata[k].properties
     local italics = properties and properties.italic_correction
     if italics then

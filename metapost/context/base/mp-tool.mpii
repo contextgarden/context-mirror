@@ -85,18 +85,12 @@ mpprocset    := 1 ;
 %
 % protect ;
 
-%D A semicolor to be used in specials: ? ? ?
-
-string semicolor ; semicolor := char 59 ;
-
 %D By including this module, \METAPOST\ automatically writes a
 %D high resolution boundingbox to the \POSTSCRIPT\ file. This
 %D hack is due to John Hobby himself.
 
 % When somehow the first one gets no HiRes, then make sure
 % that the format matches the mem sizes in the config file.
-
-% eerste " " er uit
 
 string space ; space = char 32 ;
 

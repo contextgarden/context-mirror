@@ -11,8 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_cell : endinput         ; fi ;
+% step prefixes .. no save needed
+
+if known context_cell : endinput ; fi ;
 
 boolean context_cell ; context_cell := true ;
 

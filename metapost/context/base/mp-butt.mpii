@@ -11,22 +11,26 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_butt : endinput         ; fi ;
+if known context_butt : endinput ; fi ;
 
 boolean context_butt ; context_butt := true ;
 
-def some_button (expr button_type, button_size, button_linecolor, button_fillcolor) =
+def predefinedbutton (expr button_type, button_size, button_linecolor, button_fillcolor) =
+
+    begingroup ;
+
+    save button_linewidth, p, d, l ;
 
     numeric button_linewidth ; button_linewidth := button_size/10 ;
 
     drawoptions (withpen pencircle scaled button_linewidth withcolor button_linecolor) ;
 
-    path p    ; p := unitsquare scaled button_size ;
+    path    p ; p := unitsquare scaled button_size ;
     numeric d ; d := button_size ;
     numeric l ; l := button_linewidth ;
 
-    fill p withcolor button_fillcolor ; draw p ;
+    fill p withcolor button_fillcolor ;
+    draw p ;
 
     if     button_type = 101 :
         draw (d-2l,2l)--(2l,.5d)--(d-2l,d-2l)--cycle ;
@@ -66,6 +70,10 @@ def some_button (expr button_type, button_size, button_linecolor, button_fillcol
         endfor ;
     fi ;
 
+    endgroup ;
+
 enddef ;
+
+let some_button = predefinedbutton
 
 endinput ;

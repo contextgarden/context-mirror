@@ -66,9 +66,10 @@ local quoted     = token('quote',     dquote)
 local primitive  = token('primitive', exact_match(primitivecommands))
 local identifier = token('default',   cstoken^1)
 local number     = token('number',    number)
-local special    = token('special',   S("#()[]<>=:\"")) -- or else := <> etc split
+local grouping   = token('grouping',  S("()[]{}")) -- can be an option
+local special    = token('special',   S("#()[]{}<>=:\"")) -- or else := <> etc split
 local texlike    = token('string',    P("\\") * cstokentex^1)
-local extra      = token('extra',     S("`~%^&_-+/\'|\\"))
+local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
 
 _rules = {
     { 'whitespace', spacing    },
@@ -80,6 +81,7 @@ _rules = {
     { 'identifier', identifier },
     { 'number',     number     },
     { 'quoted',     quoted     },
+ -- { 'grouping',   grouping   }, -- can be an option
     { 'special',    special    },
  -- { 'texlike',    texlike    },
     { 'extra',      extra      },

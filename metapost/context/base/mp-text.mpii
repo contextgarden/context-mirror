@@ -13,8 +13,7 @@
 
 %D Under construction.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_text : endinput         ; fi ;
+if known context_text : endinput ; fi ;
 
 boolean context_text ; context_text := true ;
 

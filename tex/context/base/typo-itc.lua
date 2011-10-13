@@ -96,14 +96,19 @@ local function process(namespace,attribute,head)
                 local attr = forcedvariant or has_attribute(current,attribute)
                 if attr and attr > 0 then
                     local cd = data[char]
-                    italic = cd.italic or cd.italic_correction
-                    if not italic then
+                    if not cd then
+                        -- this really can happen
                         italic = 0
-                    elseif italic ~= 0 then
-                        lastfont = font
-                        lastattr = attr
-                        previous = current
-                        prevchar = char
+                    else
+                        italic = cd.italic or cd.italic_correction
+                        if not italic then
+                            italic = 0
+                        elseif italic ~= 0 then
+                            lastfont = font
+                            lastattr = attr
+                            previous = current
+                            prevchar = char
+                        end
                     end
                 else
                     italic = 0

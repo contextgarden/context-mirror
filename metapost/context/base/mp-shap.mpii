@@ -11,8 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_shap : endinput         ; fi ;
+if known context_shap : endinput ; fi ;
 
 boolean context_shap ; context_shap := true ;
 
@@ -145,7 +144,7 @@ def some_shape (expr shape_type, shape_width, shape_height, shape_linewidth, sha
     endgroup ;
 enddef ;
 
-vardef drawshape (expr t, p, lw, lc, fc) =
+vardef drawpredefinedshape (expr t, p, lw, lc, fc) =
     save pp ;
     if t>1 : % normal shape
         path pp ;
@@ -163,7 +162,7 @@ vardef drawshape (expr t, p, lw, lc, fc) =
     fi ;
 enddef ;
 
-vardef drawline (expr t, p, lw, lc) =
+vardef drawpredefinedline (expr t, p, lw, lc) =
     if (t>0) and (length(p)>1) :
         saveoptions ;
         drawoptions(withpen pencircle scaled lw withcolor lc) ;
@@ -202,5 +201,8 @@ vardef drawline (expr t, p, lw, lc) =
         fi ;
     fi ;
 enddef ;
+
+let drawshape = drawpredefinedshape ;
+let drawline  = drawpredefinedline  ;
 
 endinput ;

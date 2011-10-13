@@ -13,8 +13,7 @@
 
 %D Under construction.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_grid : endinput         ; fi ;
+if known context_grid : endinput ; fi ;
 
 boolean context_grid ; context_grid := true ;
 

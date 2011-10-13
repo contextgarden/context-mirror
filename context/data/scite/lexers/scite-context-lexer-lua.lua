@@ -23,20 +23,24 @@ _directives = { } -- communication channel
 -- this will be eextended
 
 local keywords = {
-  'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
-  'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
-  'until', 'while',
+    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+    'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
+    'until', 'while',
 }
 
 local functions = {
-  'assert', 'collectgarbage', 'dofile', 'error', 'getfenv', 'getmetatable',
-  'ipairs', 'load', 'loadfile', 'loadstring', 'module', 'next', 'pairs',
-  'pcall', 'print', 'rawequal', 'rawget', 'rawset', 'require', 'setfenv',
-  'setmetatable', 'tonumber', 'tostring', 'type', 'unpack', 'xpcall',
+    'assert', 'collectgarbage', 'dofile', 'error', 'getfenv', 'getmetatable',
+    'ipairs', 'load', 'loadfile', 'loadstring', 'module', 'next', 'pairs',
+    'pcall', 'print', 'rawequal', 'rawget', 'rawset', 'require', 'setfenv',
+    'setmetatable', 'tonumber', 'tostring', 'type', 'unpack', 'xpcall', "select",
 }
 
 local constants = {
-  '_G', '_VERSION', '_M',
+    '_G', '_VERSION', '_M', "...",
+}
+
+local depricated = {
+    "arg", "arg.n",
 }
 
 local csnames = { -- todo: option

@@ -13,8 +13,7 @@
 
 %D Under construction.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_grph : endinput         ; fi ;
+if known context_grph : endinput ; fi ;
 
 boolean context_grph ; context_grph := true ;
 
