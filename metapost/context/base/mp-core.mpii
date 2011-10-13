@@ -1,6 +1,4 @@
-
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_core : endinput         ; fi ;
+if known context_core : endinput ; fi ;
 
 boolean context_core ; context_core := true ;
 

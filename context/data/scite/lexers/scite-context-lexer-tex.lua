@@ -371,7 +371,7 @@ end
 local luaenvironment         = P("luacode")
 
 local inlinelua              = P("\\") * (
-                                    P("ctx") * ( P("lua") + P("command") )
+                                    P("ctx") * ( P("lua") + P("command") + P("latelua") )
                                   + P("cld") * ( P("command") + P("context") )
                                )
 

@@ -11,8 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_step : endinput         ; fi ;
+if known context_step : endinput ; fi ;
 
 boolean context_step ; context_step := true ;
 
@@ -39,7 +38,7 @@ enddef ;
 
 def analyze_step_chart =
   numeric n[], l[][], r[][] ; pair p[] ;
-  n[t] := n[b] := 0 ; numeric tb ; 
+  n[t] := n[b] := 0 ; numeric tb ;
   for i=1 upto nofcells : for nn = t, b :
     if bbwidth(cells[nn][i])>0 : n[nn] := n[nn] + 1 ; fi ;
     l[t][i] := r[t][i] := l[b][i] := r[b][i] := 0 ;
@@ -80,15 +79,15 @@ vardef get_step_chart_top_line (expr i, j) =
         p[3] := p[3] shifted (0,+line_v_offset) ;
         (p[1] {up} ... p[2] ... {down} p[3])
       else :
-        origin 
-      fi 
+        origin
+      fi
     else :
-      origin 
-    fi 
+      origin
+    fi
   else :
-    origin 
-  fi 
-enddef ; 
+    origin
+  fi
+enddef ;
 
 vardef get_step_chart_bot_line (expr i, j) =
   if bbwidth(cells[b][i])>0 :
@@ -108,31 +107,31 @@ vardef get_step_chart_bot_line (expr i, j) =
         p[3] := p[3] shifted (0,-line_v_offset) ;
         (p[1] {down} ... p[2] ... {up} p[3])
       else :
-        origin 
-      fi 
+        origin
+      fi
     else :
-      origin 
-    fi 
+      origin
+    fi
   else :
-    origin 
-  fi 
+    origin
+  fi
 enddef ;
 
 def end_step_chart =
-  for i=1 upto nofcells :                         for nn = t, b : 
-      if bbwidth(cells[nn][i])   >0 : draw cells[nn][i]    ; fi ; 
+  for i=1 upto nofcells :                         for nn = t, b :
+      if bbwidth(cells[nn][i])   >0 : draw cells[nn][i]    ; fi ;
   endfor ;          endfor ;
-  for i=1 upto nofcells : for j=i upto nofcells : for nn = t, b : 
+  for i=1 upto nofcells : for j=i upto nofcells : for nn = t, b :
     if known lines[nn][i][j] :
       if bbwidth(lines[nn][i][j])>0 : draw lines[nn][i][j] ; fi ;
-    fi ; 
+    fi ;
   endfor ; endfor ; endfor ;
   for i=1 upto nofcells : for j=i upto nofcells : for nn = t, b :
       if bbwidth(texts[nn][i][j])>0 : draw texts[nn][i][j] ; fi ;
   endfor ; endfor ; endfor ;
 enddef ;
 
-%D Step tables. 
+%D Step tables.
 
 def begin_step_table =
   initialize_step_variables ;
@@ -141,13 +140,13 @@ def begin_step_table =
 enddef ;
 
 def end_step_table =
-  for i=1 upto nofcells : if known cells[i] : if bbwidth(cells[i])>0 : 
-    draw cells[i] ; 
+  for i=1 upto nofcells : if known cells[i] : if bbwidth(cells[i])>0 :
+    draw cells[i] ;
   fi ; fi ; endfor ;
-  for i=1 upto nofcells : if known lines[i] : if bbwidth(lines[i])>0 : 
-    draw lines[i] ; 
+  for i=1 upto nofcells : if known lines[i] : if bbwidth(lines[i])>0 :
+    draw lines[i] ;
   fi ; fi ; endfor ;
-  for i=1 upto nofcells : if known texts[i] : if bbwidth(texts[i])>0 : 
+  for i=1 upto nofcells : if known texts[i] : if bbwidth(texts[i])>0 :
     draw texts[i] ;
   fi ; fi ; endfor ;
 enddef ;

@@ -28,21 +28,21 @@
 %D end even may use a patched version, we prefer to use a
 %D copy.
 
-input mp-base.mpii ;
-input mp-tool.mp ;
-input mp-spec.mpii ;
-input mp-core.mpii ;
-input mp-page.mp ;
-input mp-text.mp ;
-input mp-txts.mp ;
-input mp-shap.mp ;
-input mp-butt.mp ;
-input mp-char.mpii ;
-input mp-step.mpii ;
-input mp-grph.mp ;
-input mp-figs.mp ;
-input mp-grid.mp ;
-input mp-func.mp ;
+input "mp-base.mpii" ;
+input "mp-tool.mpii" ;
+input "mp-spec.mpii" ;
+input "mp-core.mpii" ;
+input "mp-page.mpii" ;
+input "mp-text.mpii" ;
+input "mp-txts.mpii" ;
+input "mp-shap.mpii" ;
+input "mp-butt.mpii" ;
+input "mp-char.mpii" ;
+input "mp-step.mpii" ;
+input "mp-grph.mpii" ;
+input "mp-figs.mpii" ;
+input "mp-grid.mpii" ;
+input "mp-func.mpii" ;
 
 string metafunversion ;
 

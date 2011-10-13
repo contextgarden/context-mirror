@@ -16,33 +16,33 @@
 %D end even may use a patched version, we prefer to use a
 %D copy.
 
-input mp-base.mpiv ;
-input mp-tool.mp   ;
-input mp-core.mpiv ;
-input mp-page.mp   ;
-input mp-text.mp   ;
-input mp-txts.mp   ;
-input mp-butt.mp   ;
-input mp-shap.mp   ;
-%     mp-char.mpiv ; % there no need to always load this
-%     mp-step.mpiv ; % there no need to always load this
-input mp-grph.mp   ;
-input mp-figs.mp   ;
-input mp-mlib.mpiv ;
-input mp-chem.mpiv ; % there no need to always load this (todo)
-input mp-grid.mp   ;
-input mp-func.mp   ;
+input "mp-base.mpiv" ;
+input "mp-tool.mpiv" ;
+input "mp-mlib.mpiv" ;
+input "mp-core.mpiv" ; % todo: namespace and cleanup
+input "mp-page.mpiv" ; % todo: namespace and cleanup
+input "mp-butt.mpiv" ; % todo: namespace and cleanup
+input "mp-shap.mpiv" ; % will be improved
+input "mp-grph.mpiv" ; % todo: namespace and cleanup
+input "mp-grid.mpiv" ; % todo: namespace and cleanup
 
-string metafunversion ;
+input "mp-figs.mpiv" ; % obsolete, needs checking
+input "mp-text.mpiv" ; % will be redone into a module
+input "mp-func.mpiv" ; % under construction
 
-metafunversion = "metafun iv"                        & " " &
-                 decimal year                        & "-" &
-                 decimal month                       & "-" &
-                 decimal day                         & " " &
-                 if ((time div 60) < 10)           :   "0" & fi
-                 decimal (time div 60)               & ":" &
-                 if ((time-(time div 60)*60) < 10) :   "0" & fi
-                 decimal (time-(time div 60)*60)   ;
+%     "mp-char.mpiv" ; % loaded on demand
+%     "mp-step.mpiv" ; % loaded on demand
+%     "mp-chem.mpiv" ; % loaded on demand
+
+string metafunversion ; metafunversion =
+    "metafun iv"                        & " " &
+    decimal year                        & "-" &
+    decimal month                       & "-" &
+    decimal day                         & " " &
+    if ((time div 60) < 10)           :   "0" & fi
+    decimal (time div 60)               & ":" &
+    if ((time-(time div 60)*60) < 10) :   "0" & fi
+    decimal (time-(time div 60)*60)   ;
 
 let normalend = end ;
 
@@ -50,4 +50,6 @@ def end =
   ; message "" ; message metafunversion ; message "" ; normalend ;
 enddef ;
 
-dump ; endinput .
+dump ; % obsolete in mplib
+
+endinput

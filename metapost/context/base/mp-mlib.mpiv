@@ -89,28 +89,30 @@ def withtransparency(expr alternative, transparency) =
     withprescript "tr_transparency=" & decimal transparency
 enddef ;
 
-def cmyk(expr c, m, y, k) =
+def cmyk(expr c, m, y, k) = % provided for downward compability
     (c,m,y,k)
 enddef ;
 
-% Texts
+% Texts (todo: better strut ratio, now .7 hardcoded, should be passed)
 
-numeric _tt_w_[], _tt_h_[], _tt_d_[] ;
-numeric _tt_n_ ; _tt_n_ := 0 ;
-picture _tt_p_ ; _tt_p_ := nullpicture ;
-boolean _trial_run_ ; _trial_run_ := false ;
+newinternal textextoffset ; textextoffset := 0 ;
 
-def resettextexts =
-    _tt_n_ := 0 ;
-    _tt_p_ := nullpicture ;
+numeric mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ; % we can consider using colors (less hash space)
+numeric mfun_tt_n ; mfun_tt_n := 0 ;
+picture mfun_tt_p ; mfun_tt_p := nullpicture ;
+boolean mfun_trial_run ; mfun_trial_run := false ;
+
+def mfun_reset_tex_texts =
+    mfun_tt_n := 0 ;
+    mfun_tt_p := nullpicture ;
 enddef ;
 
-def flushtextexts =
-    addto currentpicture also _tt_p_
+def mfun_flush_tex_texts =
+    addto currentpicture also mfun_tt_p
 enddef ;
 
-extra_endfig   := "flushtextexts;" & extra_endfig;
-extra_beginfig := extra_beginfig & "resettextexts;";
+extra_endfig   := "mfun_flush_tex_texts;" & extra_endfig;
+extra_beginfig := extra_beginfig & "mfun_reset_tex_texts;";
 
 % We collect and flush them all, as we can also have temporary textexts
 % that gets never really flushed but are used for calculations. So, we
@@ -120,29 +122,29 @@ extra_beginfig := extra_beginfig & "resettextexts;";
 vardef rawtextext(expr str) =
     if str = "" :
         nullpicture
-    elseif _trial_run_ :
-        _tt_n_ := _tt_n_ + 1 ;
-        addto _tt_p_ doublepath unitsquare
-            withprescript "tx_number=" & decimal _tt_n_
+    elseif mfun_trial_run :
+        mfun_tt_n := mfun_tt_n + 1 ;
+        addto mfun_tt_p doublepath unitsquare
+            withprescript "tx_number=" & decimal mfun_tt_n
             withprescript "tx_stage=extra"
             withpostscript str ;
         image (
             addto currentpicture doublepath unitsquare
-                withprescript "tx_number=" & decimal _tt_n_
+                withprescript "tx_number=" & decimal mfun_tt_n
                 withprescript "tx_stage=trial"
                 withpostscript str
         )
     else :
-        _tt_n_ := _tt_n_ + 1 ;
-        if known _tt_d_[_tt_n_] :
+        mfun_tt_n := mfun_tt_n + 1 ;
+        if known mfun_tt_d[mfun_tt_n] :
             image (
                 addto currentpicture doublepath unitsquare
-                    xscaled _tt_w_[_tt_n_]
-                    yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
-                    withprescript "tx_number=" & decimal _tt_n_
+                    xscaled mfun_tt_w[mfun_tt_n]
+                    yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
+                    withprescript "tx_number=" & decimal mfun_tt_n
                     withprescript "tx_stage=final"
                     ; % withpostscript str ;
-            ) shifted (0,-_tt_d_[_tt_n_])
+            ) shifted (0,-mfun_tt_d[mfun_tt_n])
         else :
             image (
                 addto currentpicture doublepath unitsquare ;
@@ -153,119 +155,116 @@ enddef ;
 
 % More text
 
-pair laboff.d, laboff.dlft, laboff.drt ; % new positional suffixes
-pair laboff.origin, laboff.raw         ; % graph mess
+defaultfont := "Mono" ; % was cmr10, could be lmmono10-regular, but is fed into context anyway
 
-laboff.d    := laboff     ; labxf.d    := labxf     ; labyf.d    := labyf     ;
-laboff.dlft := laboff.lft ; labxf.dlft := labxf.lft ; labyf.dlft := labyf.lft ;
-laboff.drt  := laboff.rt  ; labxf.drt  := labxf.rt  ; labyf.drt  := labyf.rt  ;
+pair mfun_laboff        ; mfun_laboff        := (0,0)            ;
+pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)           ;
+pair mfun_laboff.rt     ; mfun_laboff.rt     := (1,0)            ;
+pair mfun_laboff.bot    ; mfun_laboff.bot    := (0,-1)           ;
+pair mfun_laboff.top    ; mfun_laboff.top    := (0,1)            ;
+pair mfun_laboff.ulft   ; mfun_laboff.ulft   := (-.7,.7)         ;
+pair mfun_laboff.urt    ; mfun_laboff.urt    := (.7,.7)          ;
+pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7)         ;
+pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7)         ;
 
-labtype        :=  0 ; labtype.lft  :=  1 ; labtype.rt   :=  2 ;
-labtype.bot    :=  3 ; labtype.top  :=  4 ; labtype.ulft :=  5 ;
-labtype.urt    :=  6 ; labtype.llft :=  7 ; labtype.lrt  :=  8 ;
-labtype.d      := 10 ; labtype.dlft := 11 ; labtype.drt  := 12 ;
-labtype.origin :=  0 ; labtype.raw  :=  0 ;
+pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff      ;
+pair mfun_laboff.dlft   ; mfun_laboff.dlft   := mfun_laboff.lft  ;
+pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt   ;
+pair mfun_laboff.origin ; mfun_laboff.origin := origin           ;
+pair mfun_laboff.raw    ; mfun_laboff.raw    := origin           ;
 
-% laboff.origin = (infinity,infinity) ; labxf.origin := 0 ; labyf.origin := 0 ;
-% laboff.raw    = (infinity,infinity) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+pair mfun_laboff.l      ; mfun_laboff.l      := mfun_laboff.lft  ;
+pair mfun_laboff.r      ; mfun_laboff.r      := mfun_laboff.rt   ;
+pair mfun_laboff.b      ; mfun_laboff.b      := mfun_laboff.bot  ;
+pair mfun_laboff.t      ; mfun_laboff.t      := mfun_laboff.top  ;
+pair mfun_laboff.l_t    ; mfun_laboff.l_t    := mfun_laboff.ulft ;
+pair mfun_laboff.r_t    ; mfun_laboff.r_t    := mfun_laboff.urt  ;
+pair mfun_laboff.l_b    ; mfun_laboff.l_b    := mfun_laboff.llft ;
+pair mfun_laboff.r_b    ; mfun_laboff.r_b    := mfun_laboff.lrt  ;
+pair mfun_laboff.t_l    ; mfun_laboff.t_l    := mfun_laboff.ulft ;
+pair mfun_laboff.t_r    ; mfun_laboff.t_r    := mfun_laboff.urt  ;
+pair mfun_laboff.b_l    ; mfun_laboff.b_l    := mfun_laboff.llft ;
+pair mfun_laboff.b_r    ; mfun_laboff.b_r    := mfun_laboff.lrt  ;
 
-% todo: thelabel.origin("xxxx",origin) (overflows)
+mfun_labxf                                              := 0.5 ;
+mfun_labxf.lft      := mfun_labxf.l                     := 1   ;
+mfun_labxf.rt       := mfun_labxf.r                     := 0   ;
+mfun_labxf.bot      := mfun_labxf.b                     := 0.5 ;
+mfun_labxf.top      := mfun_labxf.t                     := 0.5 ;
+mfun_labxf.ulft     := mfun_labxf.l_t := mfun_labxf.t_l := 1   ;
+mfun_labxf.urt      := mfun_labxf.r_t := mfun_labxf.t_r := 0   ;
+mfun_labxf.llft     := mfun_labxf.l_b := mfun_labxf.b_l := 1   ;
+mfun_labxf.lrt      := mfun_labxf.r_b := mfun_labxf.b_r := 0   ;
 
-laboff.origin = (0,0) ; labxf.origin := 0 ; labyf.origin := 0 ;
-laboff.raw    = (0,0) ; labxf.raw    := 0 ; labyf.raw    := 0 ;
+mfun_labxf.d        := mfun_labxf      ;
+mfun_labxf.dlft     := mfun_labxf.lft  ;
+mfun_labxf.drt      := mfun_labxf.rt   ;
+mfun_labxf.origin   := 0               ;
+mfun_labxf.raw      := 0               ;
 
-pair laboff.l   ; laboff.l  = laboff.lft  ;
-pair laboff.r   ; laboff.r  = laboff.rt   ;
-pair laboff.b   ; laboff.b  = laboff.bot  ;
-pair laboff.t   ; laboff.t  = laboff.top  ;
-pair laboff.l_t ; laboff.l_t = laboff.ulft ;
-pair laboff.r_t ; laboff.r_t = laboff.urt  ;
-pair laboff.l_b ; laboff.l_b = laboff.llft ;
-pair laboff.r_b ; laboff.r_b = laboff.lrt  ;
-pair laboff.t_l ; laboff.t_l = laboff.ulft ;
-pair laboff.t_r ; laboff.t_r = laboff.urt  ;
-pair laboff.b_l ; laboff.b_l = laboff.llft ;
-pair laboff.b_r ; laboff.b_r = laboff.lrt  ;
+mfun_labyf                                              := 0.5 ;
+mfun_labyf.lft      := mfun_labyf.l                     := 0.5 ;
+mfun_labyf.rt       := mfun_labyf.r                     := 0.5 ;
+mfun_labyf.bot      := mfun_labyf.b                     := 1   ;
+mfun_labyf.top      := mfun_labyf.t                     := 0   ;
+mfun_labyf.ulft     := mfun_labyf.l_t := mfun_labyf.t_l := 0   ;
+mfun_labyf.urt      := mfun_labyf.r_t := mfun_labyf.t_r := 0   ;
+mfun_labyf.llft     := mfun_labyf.l_b := mfun_labyf.b_l := 1   ;
+mfun_labyf.lrt      := mfun_labyf.r_b := mfun_labyf.b_r := 1   ;
 
-numeric labxf.l   ; labxf.l  = labxf.lft  ;
-numeric labxf.r   ; labxf.r  = labxf.rt   ;
-numeric labxf.b   ; labxf.b  = labxf.bot  ;
-numeric labxf.t   ; labxf.t  = labxf.top  ;
-numeric labxf.l_t ; labxf.l_t = labxf.ulft ;
-numeric labxf.r_t ; labxf.r_t = labxf.urt  ;
-numeric labxf.l_b ; labxf.l_b = labxf.llft ;
-numeric labxf.r_b ; labxf.r_b = labxf.lrt  ;
-numeric labxf.t_l ; labxf.t_l = labxf.ulft ;
-numeric labxf.t_r ; labxf.t_r = labxf.urt  ;
-numeric labxf.b_l ; labxf.b_l = labxf.llft ;
-numeric labxf.b_r ; labxf.b_r = labxf.lrt  ;
+mfun_labyf.d        := mfun_labyf      ;
+mfun_labyf.dlft     := mfun_labyf.lft  ;
+mfun_labyf.drt      := mfun_labyf.rt   ;
+mfun_labyf.origin   := 0               ;
+mfun_labyf.raw      := 0               ;
 
-numeric labyf.l   ; labyf.l  = labyf.lft  ;
-numeric labyf.r   ; labyf.r  = labyf.rt   ;
-numeric labyf.b   ; labyf.b  = labyf.bot  ;
-numeric labyf.t   ; labyf.t  = labyf.top  ;
-numeric labyf.l_t ; labyf.l_t = labyf.ulft ;
-numeric labyf.r_t ; labyf.r_t = labyf.urt  ;
-numeric labyf.l_b ; labyf.l_b = labyf.llft ;
-numeric labyf.r_b ; labyf.r_b = labyf.lrt  ;
-numeric labyf.t_l ; labyf.t_l = labyf.ulft ;
-numeric labyf.t_r ; labyf.t_r = labyf.urt  ;
-numeric labyf.b_l ; labyf.b_l = labyf.llft ;
-numeric labyf.b_r ; labyf.b_r = labyf.lrt  ;
+mfun_labtype                                                 :=  0 ;
+mfun_labtype.lft    := mfun_labtype.l                        :=  1 ;
+mfun_labtype.rt     := mfun_labtype.r                        :=  2 ;
+mfun_labtype.bot    := mfun_labtype.b                        :=  3 ;
+mfun_labtype.top    := mfun_labtype.t                        :=  4 ;
+mfun_labtype.ulft   := mfun_labtype.l_t :=  mfun_labtype.t_l :=  5 ;
+mfun_labtype.urt    := mfun_labtype.r_t :=  mfun_labtype.t_r :=  6 ;
+mfun_labtype.llft   := mfun_labtype.l_b :=  mfun_labtype.b_l :=  7 ;
+mfun_labtype.lrt    := mfun_labtype.r_b :=  mfun_labtype.b_r :=  8 ;
+mfun_labtype.d                                               := 10 ;
+mfun_labtype.dlft                                            := 11 ;
+mfun_labtype.drt                                             := 12 ;
+mfun_labtype.origin                                          :=  0 ;
+mfun_labtype.raw                                             :=  0 ;
 
-numeric labtype.l   ; labtype.l   = labtype.lft  ;
-numeric labtype.r   ; labtype.r   = labtype.rt   ;
-numeric labtype.b   ; labtype.b   = labtype.bot  ;
-numeric labtype.t   ; labtype.t   = labtype.top  ;
-numeric labtype.l_t ; labtype.l_t = labtype.ulft ;
-numeric labtype.r_t ; labtype.r_t = labtype.urt  ;
-numeric labtype.l_b ; labtype.l_b = labtype.llft ;
-numeric labtype.r_b ; labtype.r_b = labtype.lrt  ;
-numeric labtype.t_l ; labtype.t_l = labtype.ulft ;
-numeric labtype.t_r ; labtype.t_r = labtype.urt  ;
-numeric labtype.b_l ; labtype.b_l = labtype.llft ;
-numeric labtype.b_r ; labtype.b_r = labtype.lrt  ;
-
-vardef thetextext@#(expr p,z) = % adapted copy of thelabel@
+vardef thetextext@#(expr p,z) =
+  % interim labeloffset := textextoffset ;
     if string p :
         thetextext@#(rawtextext(p),z)
     else :
         p
-            if (labtype@# >= 10) : shifted (0,ypart center p) fi
-            shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+            if (mfun_labtype@# >= 10) :
+                shifted (0,ypart center p)
+            fi
+            shifted (z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
     fi
 enddef ;
 
-vardef textext@#(expr txt) =
-    interim labeloffset := textextoffset ;
-    if string txt :
-        thetextext@#(rawtextext(txt),origin)
-    else :
-        thetextext@#(txt,origin)
-    fi
+vardef textext@#(expr p) =
+    thetextext@#(p,origin)
 enddef ;
 
-% \starttext
-%   \startMPpage
-%     numeric value ; value = 123 ;
-%     label.lft(decimal value,origin) ;
-%     draw "oeps" infont defaultfont ;
-%   \stopMPpage
-% \stoptext
-
-vardef thelabel@#(expr s, z) =
-    save p ; picture p ;
-    if picture s :
-        p = s ;
+vardef thelabel@#(expr p,z) =
+    if string p :
+        thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
     else :
-        p = textext("\definedfont[" & defaultfont & "]" & s) scaled defaultscale ;
-    fi ;
-    p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+        p shifted (z + labeloffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+    fi
 enddef;
+
+def label = % takes two arguments, contrary to textext that takes one
+    draw thelabel
+enddef ;
 
 let normalinfont = infont ;
 
-primarydef str infont name = % very naughty !
+primarydef str infont name = % nasty hack
     if name = "" :
         textext(str)
     else :
@@ -346,72 +345,73 @@ def withlinearshade (expr a, b, ca, cb) =
     withprescript "sh_center_b=" & ddecimal (b shifted shadeoffset)
 enddef ;
 
-string _defined_cs_pre_[] ; numeric _defined_cs_ ; _defined_cs_:= 0 ;
-string prescript_separator ; prescript_separator := char(13) ;
+string mfun_defined_cs_pre[] ; numeric mfun_defined_cs ; mfun_defined_cs := 0 ;
+
+string mfun_prescript_separator ; mfun_prescript_separator := char(13) ;
 
 vardef define_circular_shade (expr a, b, ra, rb, ca, cb) =
-    _defined_cs_ := _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] := "sh_type=circular"
-      & prescript_separator & "sh_domain=0 1"
-      & prescript_separator & "sh_factor="   & decimal shadefactor
-      & prescript_separator & "sh_color_a="  & colordecimals ca
-      & prescript_separator & "sh_color_b="  & colordecimals cb
-      & prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-      & prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
-      & prescript_separator & "sh_radius_a=" & decimal ra
-      & prescript_separator & "sh_radius_b=" & decimal rb
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=circular"
+      & mfun_prescript_separator & "sh_domain=0 1"
+      & mfun_prescript_separator & "sh_factor="   & decimal shadefactor
+      & mfun_prescript_separator & "sh_color_a="  & colordecimals ca
+      & mfun_prescript_separator & "sh_color_b="  & colordecimals cb
+      & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
+      & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+      & mfun_prescript_separator & "sh_radius_a=" & decimal ra
+      & mfun_prescript_separator & "sh_radius_b=" & decimal rb
     ;
-    _defined_cs_
+    mfun_defined_cs
 enddef ;
 
 vardef define_linear_shade (expr a, b, ca, cb) =
-    _defined_cs_ := _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] := "sh_type=linear"
-      & prescript_separator & "sh_domain=0 1"
-      & prescript_separator & "sh_factor=" & decimal shadefactor
-      & prescript_separator & "sh_color_a=" & colordecimals ca
-      & prescript_separator & "sh_color_b=" & colordecimals cb
-      & prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
-      & prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "sh_type=linear"
+      & mfun_prescript_separator & "sh_domain=0 1"
+      & mfun_prescript_separator & "sh_factor=" & decimal shadefactor
+      & mfun_prescript_separator & "sh_color_a=" & colordecimals ca
+      & mfun_prescript_separator & "sh_color_b=" & colordecimals cb
+      & mfun_prescript_separator & "sh_center_a=" & ddecimal (a shifted shadeoffset)
+      & mfun_prescript_separator & "sh_center_b=" & ddecimal (b shifted shadeoffset)
     ;
-    _defined_cs_
+    mfun_defined_cs
 enddef ;
 
 primarydef p withshade sc =
-    p withprescript _defined_cs_pre_[sc]
+    p withprescript mfun_defined_cs_pre[sc]
 enddef ;
 
 
 vardef define_sampled_linear_shade(expr a,b,n)(text t) =
-    _defined_cs_ := _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] := "ssh_type=linear"
-      & prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
-      & prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
-      & prescript_separator & "ssh_nofcolors=" & decimal n
-      & prescript_separator & "ssh_domain=" & domstr
-      & prescript_separator & "ssh_extend=" & extstr
-      & prescript_separator & "ssh_colors=" & colstr
-      & prescript_separator & "ssh_bounds=" & bndstr
-      & prescript_separator & "ssh_ranges=" & ranstr
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=linear"
+      & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+      & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+      & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+      & mfun_prescript_separator & "ssh_domain=" & domstr
+      & mfun_prescript_separator & "ssh_extend=" & extstr
+      & mfun_prescript_separator & "ssh_colors=" & colstr
+      & mfun_prescript_separator & "ssh_bounds=" & bndstr
+      & mfun_prescript_separator & "ssh_ranges=" & ranstr
     ;
-    _defined_cs_
+    mfun_defined_cs
 enddef ;
 
 vardef define_sampled_circular_shade(expr a,b,ra,rb,n)(text t) =
-    _defined_cs_ := _defined_cs_ + 1 ;
-    _defined_cs_pre_ [_defined_cs_] := "ssh_type=circular"
-      & prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
-      & prescript_separator & "ssh_radius_a=" & decimal ra
-      & prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
-      & prescript_separator & "ssh_radius_b=" & decimal rb
-      & prescript_separator & "ssh_nofcolors=" & decimal n
-      & prescript_separator & "ssh_domain=" & domstr
-      & prescript_separator & "ssh_extend=" & extstr
-      & prescript_separator & "ssh_colors=" & colstr
-      & prescript_separator & "ssh_bounds=" & bndstr
-      & prescript_separator & "ssh_ranges=" & ranstr
+    mfun_defined_cs := mfun_defined_cs + 1 ;
+    mfun_defined_cs_pre[mfun_defined_cs] := "ssh_type=circular"
+      & mfun_prescript_separator & "ssh_center_a=" & ddecimal (a shifted shadeoffset)
+      & mfun_prescript_separator & "ssh_radius_a=" & decimal ra
+      & mfun_prescript_separator & "ssh_center_b=" & ddecimal (b shifted shadeoffset)
+      & mfun_prescript_separator & "ssh_radius_b=" & decimal rb
+      & mfun_prescript_separator & "ssh_nofcolors=" & decimal n
+      & mfun_prescript_separator & "ssh_domain=" & domstr
+      & mfun_prescript_separator & "ssh_extend=" & extstr
+      & mfun_prescript_separator & "ssh_colors=" & colstr
+      & mfun_prescript_separator & "ssh_bounds=" & bndstr
+      & mfun_prescript_separator & "ssh_ranges=" & ranstr
     ;
-    _defined_cs_
+    mfun_defined_cs
 enddef ;
 
 % vardef predefined_linear_shade (expr p, n, ca, cb) =
@@ -474,44 +474,11 @@ primarydef a shadedinto b =
     withprescript "sh_color_b=" & colordecimals b
 enddef ;
 
-% END OF NEW
-
-% Graphic text (we will move code here)
-
-def graphictext primary t =
-    if _trial_run_ :
-        let dographictextindeed = nographictext ;
-    else :
-        let dographictextindeed = dographictext ;
-    fi
-    dographictextindeed(t)
-enddef ;
-
-def dographictext (expr t) =
-    % withprescript "gt_stage=final"
-    begingroup ;
-    save figurepicture ; picture figurepicture ;
-    figurepicture := currentpicture ; currentpicture := nullpicture ;
-    currentgraphictext := currentgraphictext + 1 ;
-    dofinishgraphictext
-enddef ;
-
-def nographictext (expr t) text rest =
-    draw unitsquare withprescript "gt_stage=trial" withpostscript t
-enddef ;
-
-% def savegraphictext (expr str) =
-% enddef ;
-
-% def erasegraphictextfile =
-% enddef ;
-
 % Layers
 
 def onlayer primary name =
     withprescript "la_name=" & name
 enddef ;
-
 
 % Figures
 
@@ -562,10 +529,10 @@ enddef ;
 
 extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
 extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
-extra_endfig   := extra_endfig   & "resettextexts ; " ;
+extra_endfig   := extra_endfig   & "mfun_reset_tex_texts ; " ;
 
-boolean cmykcolors ; cmykcolors := true ;
-boolean spotcolors ; spotcolors := true ;
+boolean cmykcolors ; cmykcolors := true ; % are these still used?
+boolean spotcolors ; spotcolors := true ; % are these still used?
 
 % Bonus
 
@@ -594,7 +561,7 @@ enddef ;
 
 def withproperties expr p =
     if colormodel p = 3 :
-        withcolor graypart p
+        withcolor greypart p
     elseif colormodel p = 5 :
         withcolor (redpart p,greenpart p,bluepart p)
     elseif colormodel p = 7 :

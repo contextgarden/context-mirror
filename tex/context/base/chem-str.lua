@@ -393,6 +393,9 @@ function chemicals.start(settings)
     local textsize, rulethickness, rulecolor = settings.size, settings.rulethickness, settings.rulecolor
     local width, height, scale, offset = settings.width or 0, settings.height or 0, settings.scale or "medium", settings.offset or 0
     local l, r, t, b = settings.left or 0, settings.right or 0, settings.top or 0, settings.bottom or 0
+    --
+    metacode = { "if unknown context_chem : input mp-chem.mpiv ; fi ;" } -- no format anyway
+    --
     if scale == variables.small then
         scale = 500
     elseif scale == variables.medium or scale == 0 then
@@ -440,16 +443,19 @@ function chemicals.start(settings)
         height = false
     end
     scale = 0.75 * scale/625
-    metacode = { format("chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ;",
+    --
+    metacode[#metacode+1] = format("chem_start_structure(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ;",
         chemicals.structures,
         l/25, r/25, t/25, b/25, scale,
         tostring(settings.axis == variables.on), tostring(width), tostring(height), tostring(offset)
-    ) }
+    )
+    --
     variant, keys, bonds, stack, rot, pstack = "six", { }, 6, { }, 1, { }
 end
 
 function chemicals.stop()
     metacode[#metacode+1] = "chem_stop_structure ;"
+    --
     local mpcode = concat(metacode,"\n")
     if trace_structure then
         report_chemistry("metapost code:\n%s", mpcode)

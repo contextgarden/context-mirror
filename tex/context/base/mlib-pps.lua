@@ -461,9 +461,9 @@ local function sxsy(wd,ht,dp) -- helper for text
     return (wd ~= 0 and factor/wd) or 0, (hd ~= 0 and factor/hd) or 0
 end
 
-local no_trial_run       = "_trial_run_ := false ;"
-local do_trial_run       = "if unknown _trial_run_ : boolean _trial_run_ fi ; _trial_run_ := true ;"
-local text_data_template = "_tt_w_[%i] := %f ; _tt_h_[%i] := %f ; _tt_d_[%i] := %f ;"
+local no_trial_run       = "mfun_trial_run := false ;"
+local do_trial_run       = "if unknown mfun_trial_run : boolean mfun_trial_run fi ; mfun_trial_run := true ;"
+local text_data_template = "mfun_tt_w[%i] := %f ; mfun_tt_h[%i] := %f ; mfun_tt_d[%i] := %f ;"
 local do_begin_fig       = "; beginfig(1) ; "
 local do_end_fig         = "; endfig ;"
 local do_safeguard       = ";"

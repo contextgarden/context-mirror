@@ -47,9 +47,8 @@
 %D for instance shading. More information can be found in
 %D type {supp-mpe.tex}.
 
-if   known mplib        : endinput         ; fi ;
-if unknown context_tool :    input mp-tool ; fi ;
-if   known context_spec : endinput         ; fi ;
+if known mplib        : endinput ; fi ;
+if known context_spec : endinput ; fi ;
 
 boolean context_spec ; context_spec := true ;
 

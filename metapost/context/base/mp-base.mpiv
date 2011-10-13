@@ -6,6 +6,10 @@
 % features of plain METAFONT except those specific to font-making.
 % There are also a number of macros for labeling figures, etc.
 
+% For practical reasons I have moved some new code here (and might
+% remove some code as well). After all, there is no development in
+% this format.
+
 string base_name, base_version ;
 
 base_name    := "plain" ;
@@ -15,27 +19,21 @@ message "Preloading the plain mem file, version " & base_version ;
 
 delimiters () ; % this makes parentheses behave like parentheses
 
-def upto =
-    step 1 until
-enddef ;
-
-def downto =
-    step -1 until
-enddef ;
+def upto   = step  1 until enddef ;
+def downto = step -1 until enddef ;
 
 def exitunless expr c =
     exitif not c
 enddef ;
 
-let relax = \ ; % ignore the word `relax', as in TeX
+let relax = \ ; % ignore the word relax, as in TeX
 let \\    = \ ; % double relaxation is like single
 
-def ]] = % right brackets should be loners
-    ] ]
-enddef ;
+def [[ = [ [ enddef ;
+def ]] = ] ] enddef ;
 
 def -- =
-    {curl 1}..{curl 1}
+    {curl 1} .. {curl 1}
 enddef ;
 
 def --- =
@@ -58,7 +56,7 @@ enddef ;
 
 def ??? =
     hide (
-        interim showstopping : =1 ;
+        interim showstopping := 1 ;
         showdependencies
     )
 enddef ;
@@ -95,7 +93,7 @@ enddef ;
 def tracingall = % turns on every form of tracing
     tracingonline := 1 ;
     showstopping  := 1 ;
-    loggingall
+    loggingall ;
 enddef ;
 
 def tracingnone = % turns off every form of tracing
@@ -130,19 +128,19 @@ tertiarydef p _on_ d =
         w := w + d ;
         pic shifted (0,d)
     endgroup
-enddef;
+enddef ;
 
 tertiarydef p _off_ d =
-    begingroup w:=w+d;
+    begingroup w := w + d ;
         p shifted (0,d)
     endgroup
-enddef;
+enddef ;
 
 %% basic constants and mathematical macros
 
 % numeric constants
 
-newinternal eps, epsilon,infinity, _ ;
+newinternal eps, epsilon, infinity, _ ;
 
 eps      := .00049 ;      % this is a pretty small positive number
 epsilon  := 1/256/256 ;   % but this is the smallest
@@ -181,16 +179,23 @@ for z=origin,right,up :
     z transformed identity = z ;
 endfor
 
-% color constants
+% color constants (all in rgb color space)
 
-color black, white, red, green, blue, background;
+color black, white, red, green, blue, cyan, magenta, yellow, background;
 
-black      = (0,0,0) ;
-white      = (1,1,1) ;
-red        = (1,0,0) ;
-green      = (0,1,0) ;
-blue       = (0,0,1) ;
-background = white ;
+black      := (0,0,0) ;
+white      := (1,1,1) ;
+red        := (1,0,0) ;
+green      := (0,1,0) ;
+blue       := (0,0,1) ;
+cyan       := (0,1,1) ;
+magenta    := (1,0,1) ;
+yellow     := (1,1,0) ;
+
+background := white ; % obsolete
+
+let graypart  = greypart  ;
+let graycolor = greycolor ;
 
 % picture constants
 
@@ -212,7 +217,7 @@ EOF   = char  0 ; % end-of-file for readfrom and write..to
 pen pensquare, penrazor, penspeck ;
 
 pensquare = makepen(unitsquare shifted -(.5,.5)) ;
-penrazor  = makepen((-.5,0)--(.5,0)--cycle) ;
+penrazor  = makepen((-.5,0) -- (.5,0) -- cycle) ;
 penspeck  = pensquare scaled eps ;
 
 % nullary operators
@@ -332,7 +337,7 @@ enddef ;
 
 vardef directionpoint expr z of p =
     a_ := directiontime z of p ;
-    if a_<0 :
+    if a_ < 0 :
         errmessage("The direction doesn't occur") ;
     fi
     point a_ of p
@@ -342,27 +347,27 @@ secondarydef p intersectionpoint q =
     begingroup
     save x_, y_ ;
     (x_,y_) = p intersectiontimes q ;
-    if x_<0 :
+    if x_ < 0 :
         errmessage("The paths don't intersect") ;
         origin
     else :
         .5[point x_ of p, point y_ of q]
     fi
     endgroup
-enddef;
+enddef ;
 
 tertiarydef p softjoin q =
     begingroup
     c_ := fullcircle scaled 2join_radius shifted point 0 of q ;
     a_ := ypart(c_ intersectiontimes p) ;
     b_ := ypart(c_ intersectiontimes q) ;
-    if a_<0 :
+    if a_ < 0 :
         point 0 of p{direction 0 of p}
     else :
         subpath(0,a_) of p
     fi
     ...
-    if b_<0 :
+    if b_ < 0 :
         {direction infinity of q} point infinity of q
     else :
         subpath(b_,infinity) of q
@@ -372,14 +377,13 @@ enddef ;
 
 newinternal join_radius, a_, b_ ; path c_ ;
 
-
 path cuttings ; % what got cut off
 
 tertiarydef a cutbefore b =  % tries to cut as little as possible
     begingroup
     save t ;
     (t, whatever) = a intersectiontimes b ;
-    if t<0 :
+    if t < 0 :
         cuttings := point 0 of a ;
         a
     else :
@@ -392,7 +396,7 @@ enddef ;
 tertiarydef a cutafter b =
     reverse (reverse a  cutbefore  b)
     hide(cuttings := reverse cuttings)
-enddef;
+enddef ;
 
 % special operators
 
@@ -421,7 +425,7 @@ vardef min(expr u)(text t) = % t is a list of numerics, pairs, or strings
     save u_ ;
     setu_ u ;
     for uu = t :
-        if uu<u_ :
+        if uu < u_ :
             u_ := uu ;
         fi
     endfor
@@ -432,7 +436,7 @@ vardef max(expr u)(text t) = % t is a list of numerics, pairs, or strings
     save u_ ;
     setu_ u ;
     for uu = t :
-        if uu>u_ :
+        if uu > u_ :
             u_ := uu ;
         fi
     endfor
@@ -464,10 +468,10 @@ enddef ;
 newinternal n_; pair z_[],dz_;
 
 def superellipse(expr r,t,l,b,s) =
-    r{up}    ... (s[xpart t,xpart r],s[ypart r,ypart t]){t-r} ...
-    t{left}  ... (s[xpart t,xpart l],s[ypart l,ypart t]){l-t} ...
-    l{down}  ... (s[xpart b,xpart l],s[ypart l,ypart b]){b-l} ...
-    b{right} ... (s[xpart b,xpart r],s[ypart r,ypart b]){r-b} ... cycle enddef ;
+    r { up    } ... (s[xpart t,xpart r],s[ypart r,ypart t]) { t-r } ...
+    t { left  } ... (s[xpart t,xpart l],s[ypart l,ypart t]) { l-t } ...
+    l { down  } ... (s[xpart b,xpart l],s[ypart l,ypart b]) { b-l } ...
+    b { right } ... (s[xpart b,xpart r],s[ypart r,ypart b]) { r-b } ... cycle enddef ;
 
 vardef interpath(expr a,p,q) =
     for t=0 upto length p-1 :
@@ -529,7 +533,7 @@ pc := 11.95517 ;
 cc := 12.79213 ;
 in := 72 ;
 
-vardef magstep primary m =
+vardef magstep primary m = % obsolete
     mexp(46.67432m)
 enddef ;
 
@@ -582,7 +586,7 @@ def erase text t =
         withcolor background hide(def _e_ = enddef ;)
     enddef ;
     t _e_
-enddef;
+enddef ;
 
 def _e_ = enddef ;
 
@@ -599,7 +603,7 @@ vardef image(text t) =
     currentpicture := nullpicture ;
     t ;
     currentpicture
-enddef;
+enddef ;
 
 def pickup secondary q =
     if numeric q :
@@ -630,7 +634,7 @@ def pen_pickup_ primary q =
     pen_top :=ypart penoffset left  of currentpen ;
     pen_bot :=ypart penoffset right of currentpen ;
     path currentpen_path ;
-enddef;
+enddef ;
 
 newinternal pen_lft, pen_rt, pen_top, pen_bot, pen_count_ ;
 
@@ -642,7 +646,7 @@ vardef savepen =
     pen_bot_ [pen_count_] = pen_bot ;
     pen_path_[pen_count_] = currentpen_path ;
     pen_count_
-enddef;
+enddef ;
 
 def clearpen = currentpen:=nullpen;
     pen_lft := pen_rt := pen_top := pen_bot := 0 ;
@@ -664,7 +668,7 @@ vardef bot primary y = y + if pair y: (0,pen_bot) else: pen_bot fi enddef ;
 vardef penpos@#(expr b,d) =
     (x@#r-x@#l,y@#r-y@#l) = (b,0) rotated d ;
     x@# = .5(x@#l+x@#r) ;
-    y@# = .5(y@#l+y@#r)
+    y@# = .5(y@#l+y@#r) ; % ; added HH
 enddef ;
 
 path path_.l, path_.r ;
@@ -688,7 +692,7 @@ vardef arrowhead expr p =
     e = point length p of p ;
     q = gobble(p shifted -e cutafter makepath(pencircle scaled 2ahlength)) cuttings ;
     (q rotated .5ahangle & reverse q rotated -.5ahangle -- cycle) shifted e
-enddef;
+enddef ;
 
 path _apth ;
 
@@ -698,7 +702,7 @@ def drawdblarrow expr p = _apth := p ; _findarr enddef ;
 def _finarr text t =
     draw _apth t ;
     filldraw arrowhead _apth t
-enddef;
+enddef ;
 
 def _findarr text t =
     draw _apth t ;
@@ -713,11 +717,10 @@ newinternal bboxmargin ;
 bboxmargin := 2bp ; % this can bite you
 
 vardef bbox primary p =
-    llcorner p-( bboxmargin, bboxmargin)
- -- lrcorner p+( bboxmargin,-bboxmargin)
- -- urcorner p+( bboxmargin, bboxmargin)
- -- ulcorner p+(-bboxmargin, bboxmargin)
- -- cycle
+    llcorner p - ( bboxmargin, bboxmargin) --
+    lrcorner p + ( bboxmargin,-bboxmargin) --
+    urcorner p + ( bboxmargin, bboxmargin) --
+    ulcorner p + (-bboxmargin, bboxmargin) -- cycle
 enddef ;
 
 string defaultfont ; newinternal defaultscale, labeloffset ;
@@ -734,7 +737,7 @@ vardef thelabel@#(expr s,z) = % Position s near z
         p = s infont defaultfont scaled defaultscale
     fi ;
     p shifted (z + labeloffset*laboff@# - ( labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p) )
-enddef;
+enddef ;
 
 def label =
     draw thelabel
@@ -747,13 +750,15 @@ dotlabeldiam := 3bp ;
 vardef dotlabel@#(expr s,z) text t_ =
     label@#(s,z) t_ ;
   % label@#(s,z) ;
-    interim linecap:=rounded ;
+    interim linecap := rounded ;
     draw z withpen pencircle scaled dotlabeldiam t_ ;
 enddef ;
 
 def makelabel =
     dotlabel
 enddef ;
+
+% this will be overloaded
 
 pair laboff, laboff.lft, laboff.rt, laboff.top, laboff.bot ;
 pair laboff.ulft, laboff.llft, laboff.urt, laboff.lrt ;
@@ -773,6 +778,8 @@ vardef labels@#(text t) =
         label@#(str$,z$) ;
     endfor
 enddef ;
+
+% til lhere
 
 vardef dotlabels@#(text t) =
     forsuffixes $=t:
@@ -818,14 +825,14 @@ def beginfig(expr c) =
     pickup defaultpen ;
     drawoptions() ;
     scantokens extra_beginfig ;
-enddef;
+enddef ;
 
 def endfig =
     ; % added by HH
     scantokens extra_endfig ;
     shipit ;
     endgroup
-enddef;
+enddef ;
 
 %% last-minute items
 

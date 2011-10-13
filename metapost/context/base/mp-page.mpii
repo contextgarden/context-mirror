@@ -14,8 +14,7 @@
 %D This module is rather preliminary and subjected to
 %D changes.
 
-if unknown context_tool : input mp-tool ; fi ;
-if   known context_page : endinput      ; fi ;
+if known context_page : endinput ; fi ;
 
 boolean context_page ; context_page := true ;
 
