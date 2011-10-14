@@ -36,6 +36,7 @@ local trace_analyzing     = false  trackers.register("math.analyzing",   functio
 local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
+local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
 
 local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
 
@@ -44,15 +45,26 @@ local report_remapping    = logs.reporter("mathematics","remapping")
 local report_normalizing  = logs.reporter("mathematics","normalizing")
 local report_goodies      = logs.reporter("mathematics","goodies")
 local report_variants     = logs.reporter("mathematics","variants")
+local report_italics      = logs.reporter("mathematics","italics")
 
 local set_attribute       = node.set_attribute
 local has_attribute       = node.has_attribute
 local mlist_to_hlist      = node.mlist_to_hlist
 local font_of_family      = node.family_font
+local insert_node_after   = node.insert_after
+
+local new_kern            = nodes.pool.kern
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local fontcharacters      = fonthashes.characters
+local fontproperties      = fonthashes.properties
+local fontitalics         = fonthashes.italics
+local fontquads           = fonthashes.quads
+
+local variables           = interfaces.variables
+local texattribute        = tex.attribute
+local unsetvalue          = attributes.unsetvalue
 
 noads                     = noads or { }  -- todo: only here
 local noads               = noads
@@ -605,7 +617,7 @@ function mathematics.setalternate(fam,tag)
     local mathalternates = tfmdata.shared and tfmdata.shared.mathalternates
     if mathalternates then
         local m = mathalternates[tag]
-        tex.attribute[a_mathalternate] = m and m.attribute or attributes.unsetvalue
+        tex.attribute[a_mathalternate] = m and m.attribute or unsetvalue
     end
 end
 
@@ -630,7 +642,7 @@ function handlers.check(head,style,penalties)
     return true
 end
 
--- experiment (when not present fall back to fam 0)
+-- experiment (when not present fall back to fam 0) -- needs documentation
 
 -- 0-2 regular
 -- 3-5 bold
@@ -684,6 +696,111 @@ families[math_textchar] = families[math_char]
 function handlers.families(head,style,penalties)
     processnoads(head,families,"families")
     return true
+end
+
+-- italics: we assume that only characters matter
+--
+-- = we check for correction first because accessing nodes is slower
+-- = the actual glyph is not that important (we can control it with numbers)
+
+local a_mathitalics = attributes.private("mathitalics")
+
+local italics        = { }
+local default_factor = 1/20
+
+italics[math_char] = function(pointer,what,n,parent)
+    local method = has_attribute(pointer,a_mathitalics)
+    if method and method > 0 then
+        local char = pointer.char
+        local font = font_of_family(pointer.fam) -- todo: table
+        local correction
+        if method == 1 then
+            -- only font data triggered by fontitalics
+            local italics = fontitalics[font]
+            if italics then
+                local character = fontcharacters[font][char]
+                correction = character and character.italic_correction -- or character.italic (this one is for tex)
+            end
+        elseif method == 2 then
+            -- only font data triggered by fontdata
+            local character = fontcharacters[font][char]
+            correction = character and character.italic_correction -- or character.italic (this one is for tex)
+        elseif method == 3 then
+            -- only quad based by selective
+            local visual = chardata[char].visual
+            if not visual then
+                -- skip
+            elseif visual == "it" or visual == "bi" then
+                correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontquads[font]
+            end
+        elseif method == 4 then
+            -- combination of 1 and 3
+            local italics = fontitalics[font]
+            if italics then
+                local character = fontcharacters[font][char]
+                correction = character and character.italic_correction -- or character.italic (this one is for tex)
+            end
+            if not correction then
+                local visual = chardata[char].visual
+                if not visual then
+                    -- skip
+                elseif visual == "it" or visual == "bi" then
+                    correction = fontproperties[font].mathitalic_defaultvalue or default_factor*fontquads[font]
+                end
+            end
+        end
+        if correction and correction ~= 0 then
+            local next_noad = parent.next
+            if next_noad and next_noad.id == math_noad then
+                local next_subtype = next_noad.subtype
+                if next_subtype == noad_punct or next_subtype == noad_ord then
+                    local next_nucleus = next_noad.nucleus
+                    if next_nucleus.id == math_char then
+                        local next_char = next_nucleus.char
+                        if not chardata[next_char].italic then -- or category
+                            if trace_italics then
+                                report_italics("method %s: adding %s italic correction between %s (0x%05X) and %s (0x%05X)",
+                                    method,number.points(correction),utfchar(char),char,utfchar(next_char),next_char)
+                            end
+                            insert_node_after(parent,parent,new_kern(correction))
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function handlers.italics(head,style,penalties)
+    processnoads(head,italics,"italics")
+    return true
+end
+
+local enable
+
+enable = function()
+    tasks.enableaction("math", "noads.handlers.italics")
+    if trace_italics then
+        report_italics("enabling math italics")
+    end
+    enable = false
+end
+
+-- best do this only on math mode (less overhead)
+
+function mathematics.setitalics(n)
+    if enable then
+        enable()
+    end
+    if n == variables.reset then
+        texattribute[a_mathitalics] = unsetvalue
+    else
+        texattribute[a_mathitalics] = tonumber(n) or unsetvalue
+    end
+end
+
+function mathematics.resetitalics()
+    texattribute[a_mathitalics] = unsetvalue
 end
 
 -- variants
@@ -800,3 +917,5 @@ end)
 -- interface
 
 commands.setmathalternate = mathematics.setalternate
+commands.setmathitalics   = mathematics.setitalics
+commands.resetmathitalics = mathematics.resetitalics

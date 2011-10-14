@@ -1099,6 +1099,11 @@ function table.unique(old)
     return new
 end
 
+-- function table.sorted(t,...)
+--     table.sort(t,...)
+--     return t -- still sorts in-place
+-- end
+
 
 end -- of closure
 
@@ -7042,6 +7047,7 @@ end
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized
+xml.privatecodes = privates_n
 
 local function handle_hex_entity(str)
     local h = hcache[str]

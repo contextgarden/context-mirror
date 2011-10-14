@@ -12,7 +12,7 @@ local smallcaps = {
 }
 
 local function statistics(tfmdata)
-    commands.showfontparameters
+    commands.showfontparameters(tfmdata)
 end
 
 local function squeeze(tfmdata)

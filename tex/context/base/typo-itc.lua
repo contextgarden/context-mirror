@@ -156,7 +156,7 @@ local enable
 enable = function()
     tasks.enableaction("processors","typesetters.italics.handler")
     if trace_italics then
-        report_italics("enabling italics")
+        report_italics("enabling text italics")
     end
     enable = false
 end
@@ -165,7 +165,11 @@ function italics.set(n)
     if enable then
         enable()
     end
-    texattribute[a_italics] = n
+    if n == variables.reset then
+        texattribute[a_italics] = unsetvalue
+    else
+        texattribute[a_italics] = tonumber(n) or unsetvalue
+    end
 end
 
 function italics.reset()

@@ -528,7 +528,7 @@ function constructors.scale(tfmdata,specification)
                 chr[italickey] = vi*hdelta
             end
         elseif hasitalic then
-            local vi = description.italic or character.italic -- why character
+            local vi = description.italic -- or character.italic hm, already scaled !
             if vi and vi ~= 0 then
                 chr[italickey] = vi*hdelta
             end

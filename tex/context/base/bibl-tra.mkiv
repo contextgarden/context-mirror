@@ -23,6 +23,8 @@
 %D A bit ongoing: make more local macros prefixed with bib, i.e. the bib
 %D namespace is reserved.
 
+%D Todo: commandhandler
+
 \writestatus{loading}{ConTeXt Bibliography Support / BibTeX}
 
 \definefilesynonym[bib][obsolete]
@@ -1032,7 +1034,9 @@
 %D does not have to be year info always. \type{\thebibyears} is
 %D pre-initialized because this makes the insertion macros simpler.
 %D
-%D In `normal' \TeX, of course there are expansion problems again.
+%D In normal \TEX, of course there are expansion problems again.
+
+%D Delegate this to \LUA.
 
 \def\ixbibauthoryear#1#2#3#4%
   {\bgroup
@@ -1222,9 +1226,11 @@
 %D
 %D The final task is looping over that list until a match is found.
 
-\def\gotobiblink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{}}
-\def\atbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{}}
-\def\inbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{}}
+%D Beware, we can have cites without reference match.
+
+\def\gotobiblink#1[#2]{\doifreferencefoundelse{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
+\def\atbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\at      [\bibrefprefix#1]}{#1}}
+\def\inbiblink    [#1]{\doifreferencefoundelse{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
 
 %D \macros{bibauthoryearref,bibauthoryearsref,bibauthorref,bibyearref}
 %D
@@ -1457,7 +1463,7 @@
   {\getcommalistsize[#1]%
    \global\bibitemcounter\commalistsize
    \bibresetrefsep
-   \processcommalist[#1]\dobibauthornumref }
+   \processcommalist[#1]\dobibauthornumref}
 
 \def\dobibauthornumref#1%
  {\bibinsertrefsep

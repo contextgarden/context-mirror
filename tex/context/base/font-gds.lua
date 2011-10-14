@@ -13,8 +13,11 @@ local gmatch, format = string.gmatch, string.format
 
 local fonts, nodes, attributes, node = fonts, nodes, attributes, node
 
-local trace_goodies      = false  trackers.register("fonts.goodies", function(v) trace_goodies = v end)
-local report_fonts       = logs.reporter("fonts","goodies")
+local trace_goodies      = false
+
+trackers.register("fonts.goodies", function(v) trace_goodies = v end)
+
+local report_goodies     = logs.reporter("fonts","goodies")
 
 local allocate           = utilities.storage.allocate
 
@@ -46,7 +49,7 @@ function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
         local whatever = goodies[what]
         if whatever then
-            report_fonts("goodie '%s' found in '%s'",what,goodies.name)
+            report_goodies("goodie '%s' found in '%s'",what,goodies.name)
         end
     end
 end
@@ -61,15 +64,15 @@ local function loadgoodies(filename) -- maybe a merge is better
             fullname = resolvers.findfile(file.addsuffix(filename,"lua")) or "" -- fallback suffix
         end
         if fullname == "" then
-            report_fonts("goodie file '%s.lfg' is not found",filename)
+            report_goodies("goodie file '%s.lfg' is not found",filename)
             data[filename] = false -- signal for not found
         else
             goodies = dofile(fullname) or false
             if not goodies then
-                report_fonts("goodie file '%s' is invalid",fullname)
+                report_goodies("goodie file '%s' is invalid",fullname)
                 return nil
             elseif trace_goodies then
-                report_fonts("goodie file '%s' is loaded",fullname)
+                report_goodies("goodie file '%s' is loaded",fullname)
             end
             goodies.name = goodies.name or "no name"
             for name, fnc in next, list do
@@ -141,7 +144,7 @@ function fontgoodies.prepare_features(goodies,name,set)
         local n, s = fonts.specifiers.presetcontext(fullname,"",ff)
         goodies.featuresets[name] = s -- set
         if trace_goodies then
-            report_fonts("feature set '%s' gets number %s and name '%s'",name,n,fullname)
+            report_goodies("feature set '%s' gets number %s and name '%s'",name,n,fullname)
         end
         return n
     end
@@ -152,7 +155,7 @@ local function initialize(goodies,tfmdata)
     local goodiesname = goodies.name
     if featuresets then
         if trace_goodies then
-            report_fonts("checking featuresets in '%s'",goodies.name)
+            report_goodies("checking featuresets in '%s'",goodies.name)
         end
         for name, set in next, featuresets do
             fontgoodies.prepare_features(goodies,name,set)
@@ -185,6 +188,16 @@ end
 
 -- postprocessors (we could hash processor and share code)
 
+function fontgoodies.registerpostprocessor(tfmdata,f,prepend)
+    if not tfmdata.postprocessors then
+        tfmdata.postprocessors = { f }
+    elseif prepend then
+        table.insert(tfmdata.postprocessors,f,1)
+    else
+        table.insert(tfmdata.postprocessors,f)
+    end
+end
+
 local function setpostprocessor(tfmdata,processor)
     local goodies = tfmdata.goodies
     if goodies and type(processor) == "string" then
@@ -203,7 +216,7 @@ local function setpostprocessor(tfmdata,processor)
                 end
             end
         end
-        local postprocessors = { }
+        local postprocessors = tfmdata.postprocessors or { }
         for i=1,#asked do
             local a = asked[i]
             local f = found[a]
@@ -216,23 +229,6 @@ local function setpostprocessor(tfmdata,processor)
         end
     end
 end
-
--- fontgoodies.postprocessors = fontgoodies.postprocessors or { }
--- local postprocessors       = fontgoodies.postprocessors
---
--- function postprocessors.apply(tfmdata)
---     local postprocessors = tfmdata.postprocessors
---     if postprocessors then
---         for i=1,#postprocessors do
---             postprocessors[i](tfmdata)
---         end
---     end
--- end
---
--- function definers.applypostprocessors(tfmdata)
---     fonts.goodies.postprocessors.apply(tfmdata) -- only here
---     return tfmdata
--- end
 
 -- colorschemes
 
@@ -444,6 +440,88 @@ fontgoodies.register("mathematics", initialize)
 --         },
 --     },
 -- }
+
+-- math italics
+
+-- it would be nice to have a \noitalics\font option
+
+local function initialize(tfmdata)
+    local goodies = tfmdata.goodies
+    if goodies then
+        local shared = tfmdata.shared
+        for i=1,#goodies do
+            local mathgoodies = goodies[i].mathematics
+            local mathitalics = mathgoodies and mathgoodies.italics
+            if mathitalics then
+                local properties = tfmdata.properties
+                mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
+                if mathitalics then
+                    if trace_goodies then
+                        report_goodies("loading mathitalics for font '%s'",properties.name)
+                    end
+                    local corrections   = mathitalics.corrections
+                    local defaultfactor = mathitalics.defaultfactor
+                    local disableengine = mathitalics.disableengine
+                    properties.italic_correction        = true
+                    properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway
+                    if properties.no_mathitalics == nil then
+                        properties.no_mathitalics = disableengine
+                    end
+                    if corrections then
+                        -- As we want to set italic_correction (the context one) we need a
+                        -- postprocessor instead of messing with the (unscaled) descriptions.
+                        fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
+                            local properties = tfmdata.properties
+                            local parameters = tfmdata.parameters
+                            local characters = tfmdata.characters
+                            properties.italic_correction        = true
+                            properties.mathitalic_defaultfactor = defaultfactor
+                            properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
+                            if properties.no_mathitalics == nil then
+                                properties.no_mathitalics = disableengine
+                            end
+                            if trace_goodies then
+                                report_goodies("assigning mathitalics for font '%s'",properties.name)
+                            end
+                            local no_mathitalics = properties.no_mathitalics
+                            local quad           = parameters.quad
+                            local hfactor        = parameters.hfactor
+                            for k, v in next, corrections do
+                                local c = characters[k]
+                                if v > -1 and v < 1 then
+                                    v = v * quad
+                                else
+                                    v = v * hfactor
+                                end
+                                c.italic_correction = v -- for context
+                                if no_mathitalics then
+                                    c.italic = v -- for tex
+                                else
+                                    c.italic = nil
+                                end
+                            end
+                        end)
+                    end
+                    return -- maybe not as these can accumulate
+                end
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name         = "mathitalics",
+    description  = "additional math italic corrections",
+ -- default      = true,
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+-- fontgoodies.register("mathitalics", initialize)
+
+-- files
 
 local function initialize(goodies)
     local files = goodies.files

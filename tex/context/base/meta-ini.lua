@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['meta-ini'] = {
 }
 
 local tonumber = tonumber
-local format, gmatch, match = string.format, string.gmatch, string.match
+local format, gmatch, match, gsub = string.format, string.gmatch, string.match, string.gsub
 
 metapost = metapost or { }
 
@@ -89,4 +89,14 @@ function commands.prepareMPvariable(v) -- slow but ok
             context(var)
         end
     end
+end
+
+function metapost.formatnumber(f,n) -- just lua format
+    f = gsub(f,"@(%d)","%%.%1")
+    f = gsub(f,"@","%%")
+    f = format(f,tonumber(n) or 0)
+    f = gsub(f,"e([%+%-%d]+)",function(s)
+        return format("\\times10^{%s}",tonumber(s) or s) -- strips leading zeros
+    end)
+    context.mathematics(f)
 end
