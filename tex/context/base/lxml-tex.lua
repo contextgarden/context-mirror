@@ -33,7 +33,7 @@ local xmlelements, xmlcollected, xmlsetproperty = xml.elements, xml.collected, x
 local xmlwithelements = xml.withelements
 local xmlserialize, xmlcollect, xmltext, xmltostring = xml.serialize, xml.collect, xml.text, xml.tostring
 local xmlapplylpath = xml.applylpath
-local xmlunprivatized, xmlprivatetoken = xml.unprivatized, xml.privatetoken
+local xmlunprivatized, xmlprivatetoken, xmlprivatecodes = xml.unprivatized, xml.privatetoken, xml.privatecodes
 
 local variables = (interfaces and interfaces.variables) or { }
 
@@ -45,8 +45,10 @@ local trace_setups   = false  trackers.register("lxml.setups",   function(v) tra
 local trace_loading  = false  trackers.register("lxml.loading",  function(v) trace_loading  = v end)
 local trace_access   = false  trackers.register("lxml.access",   function(v) trace_access   = v end)
 local trace_comments = false  trackers.register("lxml.comments", function(v) trace_comments = v end)
+local trace_entities = false  trackers.register("xml.entities",  function(v) trace_entities = v end)
 
 local report_lxml = logs.reporter("xml","tex")
+local report_xml  = logs.reporter("xml","tex")
 
 local forceraw, rawroot = false, nil
 
@@ -73,14 +75,23 @@ end
 
 function lxml.resolvedentity(str)
     if forceraw then
+        if trace_entities then
+            report_xml("passing entity '%s' as &%s;",str,str)
+        end
         context("&%s;",str)
     else
         local e = texentities[str]
         if e then
             local te = type(e)
             if te == "function" then
+                if trace_entities then
+                    report_xml("passing entity '%s' using function",str)
+                end
                 e(str)
             elseif e then
+                if trace_entities then
+                    report_xml("passing entity '%s' as '%s'using ctxcatcodes",str,e)
+                end
                 context(e)
             end
             return
@@ -92,19 +103,32 @@ function lxml.resolvedentity(str)
                 e = e(str)
             end
             if e then
+                if trace_entities then
+                    report_xml("passing entity '%s' as '%s' using notcatcodes",str,e)
+                end
                 contextsprint(notcatcodes,e)
+                return
             end
-            return
         end
         -- resolve hex and dec, todo: escape # & etc for ctxcatcodes
         -- normally this is already solved while loading the file
         local chr, err = lpegmatch(parsedentity,str)
         if chr then
+            if trace_entities then
+                report_xml("passing entity '%s' as '%s' using ctxcatcodes",str,chr)
+            end
             context(chr)
         elseif err then
+            if trace_entities then
+                report_xml("passing faulty entity '%s' as '%s'",str,err)
+            end
             context(err)
         else
-            context.xmle(str,utfupper(str)) -- we need to use our own upper
+            local tag = utfupper(str)
+            if trace_entities then
+                report_xml("passing entity '%s' to \\xmle using tag '%s'",str,tag)
+            end
+            context.xmle(str,tag) -- we need to use our own upper
         end
     end
 end
@@ -342,10 +366,8 @@ function xml.load(filename,settings)
     return xmltable
 end
 
-local entities = xml.entities
-
 local function entityconverter(id,str)
-    return entities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
+    return xmlentities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
 end
 
 function lxml.convert(id,data,entities,compress)
@@ -419,9 +441,6 @@ function xml.getbuffer(name,compress,entities) -- we need to make sure that comm
 end
 
 function lxml.loadbuffer(id,name,compress,entities)
---~     if not name or name == "" then
---~         name = tex.jobname
---~     end
     starttiming(xml)
     nofconverted = nofconverted + 1
     local data = buffers.collectcontent(name or id) -- name can be list
@@ -536,7 +555,9 @@ local function tex_cdata(e,handlers)
 end
 
 local function tex_text(e)
+-- print("before",e)
     e = xmlunprivatized(e)
+-- print("after",e)
     lpegmatch(xmltextcapture,e)
 end
 
@@ -545,7 +566,6 @@ local function ctx_text(e) -- can be just context(e) as we split there
 end
 
 local function tex_handle(...)
---  report_lxml( "error while flushing: %s", concat { ... })
     contextsprint(ctxcatcodes,...) -- notcatcodes is active anyway
 end
 
@@ -589,7 +609,7 @@ local function sprint(root) -- check rawroot usage
         elseif tr == "table" then
             if forceraw then
                 rawroot = root
-             -- contextsprint(ctxcatcodes,xmltostring(root)) -- goe wrong with % etc
+             -- contextsprint(ctxcatcodes,xmltostring(root)) -- goes wrong with % etc
                 root = xmlunprivatized(xmltostring(root))
                 lpegmatch(xmltextcapture,root) -- goes to toc
             else
@@ -637,9 +657,9 @@ local function cprint(root) -- content
     end
 end
 
-xml.sprint = sprint local xmlsprint = sprint  -- redo these names
-xml.tprint = tprint local xmltprint = tprint
-xml.cprint = cprint local xmlcprint = cprint
+xml.sprint = sprint local xmlsprint = sprint  -- calls ct mathml   -> will be replaced
+xml.tprint = tprint local xmltprint = tprint  -- only used here
+xml.cprint = cprint local xmlcprint = cprint  -- calls ct  mathml  -> will be replaced
 
 -- now we can flush
 

@@ -394,6 +394,7 @@ end
 
 xml.privatetoken = unescaped
 xml.unprivatized = unprivatized
+xml.privatecodes = privates_n
 
 local function handle_hex_entity(str)
     local h = hcache[str]

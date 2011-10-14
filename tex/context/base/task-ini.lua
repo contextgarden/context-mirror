@@ -72,6 +72,7 @@ appendaction("math",         "normalizers", "noads.handlers.resize",   nil, "noh
 appendaction("math",         "normalizers", "noads.handlers.respace",  nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.check",    nil, "nohead")            -- always on
 appendaction("math",         "normalizers", "noads.handlers.tags",     nil, "nohead")            -- disabled
+appendaction("math",         "normalizers", "noads.handlers.italics",  nil, "nohead")            -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
 
@@ -128,9 +129,10 @@ disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
-
 disableaction("finalizers",  "builders.paragraphs.tag")
+
 disableaction("math",        "noads.handlers.tags")
+disableaction("math",        "noads.handlers.italics")
 
 freezecallbacks("find_.*_file", "find file using resolver")
 freezecallbacks("read_.*_file", "read file at once")

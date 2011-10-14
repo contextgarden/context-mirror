@@ -1,8 +1,21 @@
 -- \setupbodyfont[xits]
 --
--- \starttext
---     $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$
--- \stoptext
+-- $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$
+--
+-- \setupmathematics[italics=1] test $a;b;a; b; f;$ test\par % fontitalics
+-- \setupmathematics[italics=2] test $a;b;a; b; f;$ test\par % fontdata
+-- \setupmathematics[italics=3] test $a;b;a; b; f;$ test\par % quad based
+-- \setupmathematics[italics=4] test $a;b;a; b; f;$ test\par % combination of 1 and 3
+
+local italics = {
+    defaultfactor = 0.025,
+    disableengine = true,
+    corrections   = {
+     -- [0x1D44E] = 0.99,    -- a (fraction of quad)
+     -- [0x1D44F] = 100,     -- b (font points)
+        [0x1D453] = -0.0375, -- f
+    }
+}
 
 return {
     name = "xits-math",
@@ -11,6 +24,9 @@ return {
     author = "Hans Hagen",
     copyright = "ConTeXt development team",
     mathematics = {
+        italics = {
+            ["xits-math"] = italics,
+        },
         alternates = {
             cal       = { feature = 'ss01', value = 1, comment = "Mathematical Calligraphic Alphabet" },
             greekssup = { feature = 'ss02', value = 1, comment = "Mathematical Greek Sans Serif Alphabet" },

@@ -24,7 +24,10 @@ mfun_pathconnectors[1] := "--"  ;
 mfun_pathconnectors[2] := ".."  ;
 mfun_pathconnectors[3] := "..." ;
 
-vardef mfun_draw_function (expr f) (expr u, t, b, e, s) = save x ; numeric x ;
+def pathconnectors = mfun_pathconnectors enddef ;
+
+vardef mfun_function (expr f) (expr u, t, b, e, s) =
+    save x ; numeric x ;
     for xx := b step s until e :
         hide (x := xx ;)
         if xx > b :
@@ -34,6 +37,7 @@ vardef mfun_draw_function (expr f) (expr u, t, b, e, s) = save x ; numeric x ;
     endfor
 enddef ;
 
+def function       = mfun_function     enddef ; % let doesn't work here
 def punkedfunction = mfun_function (1) enddef ;
 def curvedfunction = mfun_function (2) enddef ;
 def tightfunction  = mfun_function (3) enddef ;
@@ -50,9 +54,10 @@ vardef mfun_constructedpath (expr f) (text t) =
     endfor
 enddef ;
 
-def punkedpath = mfun_constructedpath (1) enddef ;
-def curvedpath = mfun_constructedpath (2) enddef ;
-def tightpath  = mfun_constructedpath (3) enddef ;
+def constructedpath = mfun_constructedpath     enddef ; % let doesn't work here
+def punkedpath      = mfun_constructedpath (1) enddef ;
+def curvedpath      = mfun_constructedpath (2) enddef ;
+def tightpath       = mfun_constructedpath (3) enddef ;
 
 vardef mfun_constructedpairs (expr f) (text p) =
     save i ; i := -1 ;
@@ -65,6 +70,9 @@ vardef mfun_constructedpairs (expr f) (text p) =
     endfor
 enddef ;
 
-def punkedpairs = mfun_constructedpairs (1) enddef ;
-def curvedpairs = mfun_constructedpairs (2) enddef ;
-def tightpairs  = mfun_constructedpairs (3) enddef ;
+def constructedpairs = mfun_constructedpairs     enddef ; % let doesn't work here
+def punkedpairs      = mfun_constructedpairs (1) enddef ;
+def curvedpairs      = mfun_constructedpairs (2) enddef ;
+def tightpairs       = mfun_constructedpairs (3) enddef ;
+
+

@@ -27,7 +27,7 @@ local report_xml = logs.reporter("xml")
 
 local xml = xml
 
-xml.entities = xml.entities  or { }
+xml.entities = xml.entities or { }
 
 storage.register("xml/entities", xml.entities, "xml.entities" )
 
@@ -44,18 +44,15 @@ if characters and characters.entities then
 
     function characters.registerentities(forcecopy)
         if forcecopy then
+            table.setmetatableindex(entities,nil)
             for name, value in next, characters.entities do
                 if not entities[name] then
                     entities[name] = value
                 end
             end
         else
-            table.setmetatableindex(xml.entities,characters.entities)
+            table.setmetatableindex(entities,characters.entities)
         end
     end
 
 end
-
-local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
-
-local report_xml = logs.reporter("xml")

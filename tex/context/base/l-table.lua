@@ -956,3 +956,8 @@ function table.unique(old)
     end
     return new
 end
+
+-- function table.sorted(t,...)
+--     table.sort(t,...)
+--     return t -- still sorts in-place
+-- end

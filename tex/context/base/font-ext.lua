@@ -498,15 +498,6 @@ local function initializeitlc(tfmdata,value) -- hm, always value
             local factor = tonumber(value) or 1
             tfmdata.properties.italic_correction = true
             tfmdata.properties.auto_italic_correction = factor * (parameters.uwidth or 40)/2
-         -- local descriptions = tfmdata.descriptions
-         -- local uwidth = (parameters.uwidth or 40)/2
-         -- for unicode, d in next, tfmdata.characters do -- we cannot loop over descriptions
-         --     local d = descriptions[unicode]
-         --     local it = d.boundingbox[3] - d.width + uwidth
-         --     if it ~= 0 then
-         --         d.italic = it
-         --     end
-         -- end
         end
     end
 end

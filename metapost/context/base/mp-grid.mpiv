@@ -65,36 +65,32 @@ enddef ;
 
 vardef hlintext@#(expr Min, Max, Step, Length, Format) text t =
     image (
-        do_initialize_numbers ;
         for i=Min step Step until Max+grid_eps :
-            draw textext@#(do_format(Format,i)) shifted (0,i*(Length/Max)) t ;
+            draw textext@#(mfun_format_number(Format,i)) shifted (0,i*(Length/Max)) t ;
         endfor ;
     )
 enddef ;
 
 vardef vlintext@#(expr Min, Max, Step, Length, Format) text t =
     image (
-        do_initialize_numbers ;
         for i=Min step Step until Max+grid_eps :
-            draw textext@#(do_format(Format,i)) shifted (i*(Length/Max),0) t ;
+            draw textext@#(mfun_format_number(Format,i)) shifted (i*(Length/Max),0) t ;
         endfor ;
     )
 enddef ;
 
 vardef hlogtext@#(expr Min, Max, Step, Length, Format) text t =
     image (
-        do_initialize_numbers ;
         for i=max(Min,1) step Step until min(Max,10)+grid_eps :
-            draw textext@#(do_format(Format,i)) shifted (0,Length*log(i)) t ;
+            draw textext@#(mfun_format_number(Format,i)) shifted (0,Length*log(i)) t ;
         endfor ;
     )
 enddef ;
 
 vardef vlogtext@#(expr Min, Max, Step, Length, Format) text t =
     image (
-        do_initialize_numbers ;
         for i=max(Min,1) step Step until min(Max,10)+grid_eps :
-            draw textext@#(do_format(Format,i)) shifted (Length*log(i),0) t ;
+            draw textext@#(mfun_format_number(Format,i)) shifted (Length*log(i),0) t ;
         endfor ;
     )
 enddef ;
@@ -113,31 +109,6 @@ vardef vlinlabel@#(expr Min, Max, Step, Length) text t =
             draw thelabel@#(decimal i,(i*(Length/Max),0)) t ;
         endfor ;
     )
-enddef ;
-
-boolean numbers_initialized ; numbers_initialized := false ;
-
-def do_initialize_numbers =
-    if not numbers_initialized :
-        init_numbers (
-            textext.raw("$-$")          ,
-            textext.raw("$1$")          ,
-            textext.raw("${\times}10$") ,
-            textext.raw("${}^-$")       ,
-            textext.raw("${}^2$")
-        ) ;
-        if unknown _trial_run_ :
-            numbers_initialized := true ;
-        else :
-            % no reset, otherwise textexts get out of sync
-            % slows down graphics a bit but not much
-        fi ;
-    fi ;
-enddef ;
-
-def initialize_numbers =
-    numbers_initialized := false ;
-    do_initialize_numbers ;
 enddef ;
 
 vardef linlog(expr xy) = (    xpart xy,  log(ypart xy)) enddef ;
@@ -168,3 +139,4 @@ vardef processpath (expr p) (text pp) =
         p
     fi
 enddef ;
+

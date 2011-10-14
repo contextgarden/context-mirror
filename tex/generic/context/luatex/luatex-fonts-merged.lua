@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/12/11 19:52:43
+-- merge date  : 10/14/11 22:47:14
 
 do -- begin closure to overcome local limits and interference
 
@@ -1085,6 +1085,11 @@ function table.unique(old)
     end
     return new
 end
+
+-- function table.sorted(t,...)
+--     table.sort(t,...)
+--     return t -- still sorts in-place
+-- end
 
 end -- closure
 
@@ -3686,7 +3691,7 @@ function constructors.scale(tfmdata,specification)
                 chr[italickey] = vi*hdelta
             end
         elseif hasitalic then
-            local vi = description.italic or character.italic -- why character
+            local vi = description.italic -- or character.italic hm, already scaled !
             if vi and vi ~= 0 then
                 chr[italickey] = vi*hdelta
             end
@@ -12176,26 +12181,26 @@ features (esp in virtual fonts) so let's not do that now.</p>
 specification yet.</p>
 --ldx]]--
 
--- not in context, at least not now:
---
--- function definers.applypostprocessors(tfmdata)
---     local postprocessors = tfmdata.postprocessors
---     if postprocessors then
---         for i=1,#postprocessors do
---             local extrahash = postprocessors[i](tfmdata) -- after scaling etc
---             if type(extrahash) == "string" and extrahash ~= "" then
---                 -- e.g. a reencoding needs this
---                 extrahash = gsub(lower(extrahash),"[^a-z]","-")
---                 tfmdata.properties.fullname = format("%s-%s",tfmdata.properties.fullname,extrahash)
---             end
---         end
---     end
---     return tfmdata
--- end
+-- very experimental:
 
 function definers.applypostprocessors(tfmdata)
+    local postprocessors = tfmdata.postprocessors
+    if postprocessors then
+        for i=1,#postprocessors do
+            local extrahash = postprocessors[i](tfmdata) -- after scaling etc
+            if type(extrahash) == "string" and extrahash ~= "" then
+                -- e.g. a reencoding needs this
+                extrahash = gsub(lower(extrahash),"[^a-z]","-")
+                tfmdata.properties.fullname = format("%s-%s",tfmdata.properties.fullname,extrahash)
+            end
+        end
+    end
     return tfmdata
 end
+
+-- function definers.applypostprocessors(tfmdata)
+--     return tfmdata
+-- end
 
 function definers.loadfont(specification)
     local hash = constructors.hashinstance(specification)

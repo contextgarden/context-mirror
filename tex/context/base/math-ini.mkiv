@@ -50,6 +50,7 @@
 \definesystemattribute[mathrendering]  [public]
 \definesystemattribute[mathcategory]   [public]
 \definesystemattribute[mathmode]       [public]
+\definesystemattribute[mathitalics]    [public]
 
 \appendtoks
     \attribute\mathmodeattribute\plusone
@@ -703,6 +704,26 @@
 \setupmathematics
   [lcgreek=\v!italic,
    ucgreek=\v!normal] % was: none
+
+%D Math italics (experiment)
+
+% we need keys
+
+\setevalue{\??mo:italics:1}{\attribute\mathitalicsattribute\plusone  } % fontitalics
+\setevalue{\??mo:italics:2}{\attribute\mathitalicsattribute\plustwo  } % fontdata
+\setevalue{\??mo:italics:3}{\attribute\mathitalicsattribute\plusthree} % quad based
+\setevalue{\??mo:italics:4}{\attribute\mathitalicsattribute\plusfour } % combination of 1 and 3
+
+\setupmathematics
+  [italics=]
+
+\appendtoks
+    \doifsomething\@@moitalics{\ctxlua{mathematics.setitalics()}}%
+\to \everysetupmathematics
+
+\appendtoks
+    \csname\??mo:italics:\@@moitalics\endcsname
+\to \everymathematics
 
 %D \macros
 %D   {enablemathpunctuation,disablemathpunctuation}

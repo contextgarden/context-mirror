@@ -68165,10 +68165,10 @@ characters.data={
   category="so",
   cjkwd="a",
   description="BLACK SQUARE",
-  mathclass="ord",
-  mathname="blacksquare",
   direction="on",
   linebreak="ai",
+  mathclass="ord",
+  mathname="blacksquare",
   unicodeslot=0x25A0,
  },
  [0x25A1]={
@@ -162464,6 +162464,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D400,
+  visual="bf",
  },
  [0x1D401]={
   category="lu",
@@ -162472,6 +162473,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D401,
+  visual="bf",
  },
  [0x1D402]={
   category="lu",
@@ -162480,6 +162482,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D402,
+  visual="bf",
  },
  [0x1D403]={
   category="lu",
@@ -162488,6 +162491,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D403,
+  visual="bf",
  },
  [0x1D404]={
   category="lu",
@@ -162496,6 +162500,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D404,
+  visual="bf",
  },
  [0x1D405]={
   category="lu",
@@ -162504,6 +162509,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D405,
+  visual="bf",
  },
  [0x1D406]={
   category="lu",
@@ -162512,6 +162518,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D406,
+  visual="bf",
  },
  [0x1D407]={
   category="lu",
@@ -162520,6 +162527,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D407,
+  visual="bf",
  },
  [0x1D408]={
   category="lu",
@@ -162528,6 +162536,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D408,
+  visual="bf",
  },
  [0x1D409]={
   category="lu",
@@ -162536,6 +162545,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D409,
+  visual="bf",
  },
  [0x1D40A]={
   category="lu",
@@ -162544,6 +162554,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D40A,
+  visual="bf",
  },
  [0x1D40B]={
   category="lu",
@@ -162552,6 +162563,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D40B,
+  visual="bf",
  },
  [0x1D40C]={
   category="lu",
@@ -162560,6 +162572,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D40C,
+  visual="bf",
  },
  [0x1D40D]={
   category="lu",
@@ -162568,6 +162581,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D40D,
+  visual="bf",
  },
  [0x1D40E]={
   category="lu",
@@ -162576,6 +162590,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D40E,
+  visual="bf",
  },
  [0x1D40F]={
   category="lu",
@@ -162584,6 +162599,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D40F,
+  visual="bf",
  },
  [0x1D410]={
   category="lu",
@@ -162592,6 +162608,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D410,
+  visual="bf",
  },
  [0x1D411]={
   category="lu",
@@ -162600,6 +162617,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D411,
+  visual="bf",
  },
  [0x1D412]={
   category="lu",
@@ -162608,6 +162626,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D412,
+  visual="bf",
  },
  [0x1D413]={
   category="lu",
@@ -162616,6 +162635,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D413,
+  visual="bf",
  },
  [0x1D414]={
   category="lu",
@@ -162624,6 +162644,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D414,
+  visual="bf",
  },
  [0x1D415]={
   category="lu",
@@ -162632,6 +162653,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D415,
+  visual="bf",
  },
  [0x1D416]={
   category="lu",
@@ -162640,6 +162662,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D416,
+  visual="bf",
  },
  [0x1D417]={
   category="lu",
@@ -162648,6 +162671,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D417,
+  visual="bf",
  },
  [0x1D418]={
   category="lu",
@@ -162656,6 +162680,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D418,
+  visual="bf",
  },
  [0x1D419]={
   category="lu",
@@ -162664,6 +162689,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D419,
+  visual="bf",
  },
  [0x1D41A]={
   category="ll",
@@ -162672,6 +162698,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D41A,
+  visual="bf",
  },
  [0x1D41B]={
   category="ll",
@@ -162680,6 +162707,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D41B,
+  visual="bf",
  },
  [0x1D41C]={
   category="ll",
@@ -162688,6 +162716,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D41C,
+  visual="bf",
  },
  [0x1D41D]={
   category="ll",
@@ -162696,6 +162725,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D41D,
+  visual="bf",
  },
  [0x1D41E]={
   category="ll",
@@ -162704,6 +162734,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D41E,
+  visual="bf",
  },
  [0x1D41F]={
   category="ll",
@@ -162712,6 +162743,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D41F,
+  visual="bf",
  },
  [0x1D420]={
   category="ll",
@@ -162720,6 +162752,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D420,
+  visual="bf",
  },
  [0x1D421]={
   category="ll",
@@ -162728,6 +162761,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D421,
+  visual="bf",
  },
  [0x1D422]={
   category="ll",
@@ -162736,6 +162770,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D422,
+  visual="bf",
  },
  [0x1D423]={
   category="ll",
@@ -162744,6 +162779,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D423,
+  visual="bf",
  },
  [0x1D424]={
   category="ll",
@@ -162752,6 +162788,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D424,
+  visual="bf",
  },
  [0x1D425]={
   category="ll",
@@ -162760,6 +162797,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D425,
+  visual="bf",
  },
  [0x1D426]={
   category="ll",
@@ -162768,6 +162806,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D426,
+  visual="bf",
  },
  [0x1D427]={
   category="ll",
@@ -162776,6 +162815,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D427,
+  visual="bf",
  },
  [0x1D428]={
   category="ll",
@@ -162784,6 +162824,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D428,
+  visual="bf",
  },
  [0x1D429]={
   category="ll",
@@ -162792,6 +162833,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D429,
+  visual="bf",
  },
  [0x1D42A]={
   category="ll",
@@ -162800,6 +162842,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D42A,
+  visual="bf",
  },
  [0x1D42B]={
   category="ll",
@@ -162808,6 +162851,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D42B,
+  visual="bf",
  },
  [0x1D42C]={
   category="ll",
@@ -162816,6 +162860,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D42C,
+  visual="bf",
  },
  [0x1D42D]={
   category="ll",
@@ -162824,6 +162869,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D42D,
+  visual="bf",
  },
  [0x1D42E]={
   category="ll",
@@ -162832,6 +162878,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D42E,
+  visual="bf",
  },
  [0x1D42F]={
   category="ll",
@@ -162840,6 +162887,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D42F,
+  visual="bf",
  },
  [0x1D430]={
   category="ll",
@@ -162848,6 +162896,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D430,
+  visual="bf",
  },
  [0x1D431]={
   category="ll",
@@ -162856,6 +162905,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D431,
+  visual="bf",
  },
  [0x1D432]={
   category="ll",
@@ -162864,6 +162914,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D432,
+  visual="bf",
  },
  [0x1D433]={
   category="ll",
@@ -162872,6 +162923,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D433,
+  visual="bf",
  },
  [0x1D434]={
   category="lu",
@@ -162880,6 +162932,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D434,
+  visual="it",
  },
  [0x1D435]={
   category="lu",
@@ -162888,6 +162941,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D435,
+  visual="it",
  },
  [0x1D436]={
   category="lu",
@@ -162896,6 +162950,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D436,
+  visual="it",
  },
  [0x1D437]={
   category="lu",
@@ -162904,6 +162959,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D437,
+  visual="it",
  },
  [0x1D438]={
   category="lu",
@@ -162912,6 +162968,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D438,
+  visual="it",
  },
  [0x1D439]={
   category="lu",
@@ -162920,6 +162977,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D439,
+  visual="it",
  },
  [0x1D43A]={
   category="lu",
@@ -162928,6 +162986,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D43A,
+  visual="it",
  },
  [0x1D43B]={
   category="lu",
@@ -162936,6 +162995,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D43B,
+  visual="it",
  },
  [0x1D43C]={
   category="lu",
@@ -162944,6 +163004,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D43C,
+  visual="it",
  },
  [0x1D43D]={
   category="lu",
@@ -162952,6 +163013,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D43D,
+  visual="it",
  },
  [0x1D43E]={
   category="lu",
@@ -162960,6 +163022,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D43E,
+  visual="it",
  },
  [0x1D43F]={
   category="lu",
@@ -162968,6 +163031,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D43F,
+  visual="it",
  },
  [0x1D440]={
   category="lu",
@@ -162976,6 +163040,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D440,
+  visual="it",
  },
  [0x1D441]={
   category="lu",
@@ -162984,6 +163049,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D441,
+  visual="it",
  },
  [0x1D442]={
   category="lu",
@@ -162992,6 +163058,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D442,
+  visual="it",
  },
  [0x1D443]={
   category="lu",
@@ -163000,6 +163067,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D443,
+  visual="it",
  },
  [0x1D444]={
   category="lu",
@@ -163008,6 +163076,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D444,
+  visual="it",
  },
  [0x1D445]={
   category="lu",
@@ -163016,6 +163085,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D445,
+  visual="it",
  },
  [0x1D446]={
   category="lu",
@@ -163024,6 +163094,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D446,
+  visual="it",
  },
  [0x1D447]={
   category="lu",
@@ -163032,6 +163103,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D447,
+  visual="it",
  },
  [0x1D448]={
   category="lu",
@@ -163040,6 +163112,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D448,
+  visual="it",
  },
  [0x1D449]={
   category="lu",
@@ -163048,6 +163121,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D449,
+  visual="it",
  },
  [0x1D44A]={
   category="lu",
@@ -163056,6 +163130,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D44A,
+  visual="it",
  },
  [0x1D44B]={
   category="lu",
@@ -163064,6 +163139,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D44B,
+  visual="it",
  },
  [0x1D44C]={
   category="lu",
@@ -163072,6 +163148,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D44C,
+  visual="it",
  },
  [0x1D44D]={
   category="lu",
@@ -163080,6 +163157,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D44D,
+  visual="it",
  },
  [0x1D44E]={
   category="ll",
@@ -163088,6 +163166,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D44E,
+  visual="it",
  },
  [0x1D44F]={
   category="ll",
@@ -163096,6 +163175,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D44F,
+  visual="it",
  },
  [0x1D450]={
   category="ll",
@@ -163104,6 +163184,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D450,
+  visual="it",
  },
  [0x1D451]={
   category="ll",
@@ -163112,6 +163193,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D451,
+  visual="it",
  },
  [0x1D452]={
   category="ll",
@@ -163120,6 +163202,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D452,
+  visual="it",
  },
  [0x1D453]={
   category="ll",
@@ -163128,6 +163211,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D453,
+  visual="it",
  },
  [0x1D454]={
   category="ll",
@@ -163136,6 +163220,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D454,
+  visual="it",
  },
  [0x1D456]={
   category="ll",
@@ -163144,6 +163229,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D456,
+  visual="it",
  },
  [0x1D457]={
   category="ll",
@@ -163152,6 +163238,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D457,
+  visual="it",
  },
  [0x1D458]={
   category="ll",
@@ -163160,6 +163247,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D458,
+  visual="it",
  },
  [0x1D459]={
   category="ll",
@@ -163168,6 +163256,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D459,
+  visual="it",
  },
  [0x1D45A]={
   category="ll",
@@ -163176,6 +163265,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D45A,
+  visual="it",
  },
  [0x1D45B]={
   category="ll",
@@ -163184,6 +163274,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D45B,
+  visual="it",
  },
  [0x1D45C]={
   category="ll",
@@ -163192,6 +163283,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D45C,
+  visual="it",
  },
  [0x1D45D]={
   category="ll",
@@ -163200,6 +163292,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D45D,
+  visual="it",
  },
  [0x1D45E]={
   category="ll",
@@ -163208,6 +163301,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D45E,
+  visual="it",
  },
  [0x1D45F]={
   category="ll",
@@ -163216,6 +163310,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D45F,
+  visual="it",
  },
  [0x1D460]={
   category="ll",
@@ -163224,6 +163319,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D460,
+  visual="it",
  },
  [0x1D461]={
   category="ll",
@@ -163232,6 +163328,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D461,
+  visual="it",
  },
  [0x1D462]={
   category="ll",
@@ -163240,6 +163337,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D462,
+  visual="it",
  },
  [0x1D463]={
   category="ll",
@@ -163248,6 +163346,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D463,
+  visual="it",
  },
  [0x1D464]={
   category="ll",
@@ -163256,6 +163355,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D464,
+  visual="it",
  },
  [0x1D465]={
   category="ll",
@@ -163264,6 +163364,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D465,
+  visual="it",
  },
  [0x1D466]={
   category="ll",
@@ -163272,6 +163373,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D466,
+  visual="it",
  },
  [0x1D467]={
   category="ll",
@@ -163280,6 +163382,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D467,
+  visual="it",
  },
  [0x1D468]={
   category="lu",
@@ -163288,6 +163391,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D468,
+  visual="bi",
  },
  [0x1D469]={
   category="lu",
@@ -163296,6 +163400,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D469,
+  visual="bi",
  },
  [0x1D46A]={
   category="lu",
@@ -163304,6 +163409,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D46A,
+  visual="bi",
  },
  [0x1D46B]={
   category="lu",
@@ -163312,6 +163418,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D46B,
+  visual="bi",
  },
  [0x1D46C]={
   category="lu",
@@ -163320,6 +163427,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D46C,
+  visual="bi",
  },
  [0x1D46D]={
   category="lu",
@@ -163328,6 +163436,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D46D,
+  visual="bi",
  },
  [0x1D46E]={
   category="lu",
@@ -163336,6 +163445,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D46E,
+  visual="bi",
  },
  [0x1D46F]={
   category="lu",
@@ -163344,6 +163454,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D46F,
+  visual="bi",
  },
  [0x1D470]={
   category="lu",
@@ -163352,6 +163463,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D470,
+  visual="bi",
  },
  [0x1D471]={
   category="lu",
@@ -163360,6 +163472,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D471,
+  visual="bi",
  },
  [0x1D472]={
   category="lu",
@@ -163368,6 +163481,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D472,
+  visual="bi",
  },
  [0x1D473]={
   category="lu",
@@ -163376,6 +163490,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D473,
+  visual="bi",
  },
  [0x1D474]={
   category="lu",
@@ -163384,6 +163499,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D474,
+  visual="bi",
  },
  [0x1D475]={
   category="lu",
@@ -163392,6 +163508,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D475,
+  visual="bi",
  },
  [0x1D476]={
   category="lu",
@@ -163400,6 +163517,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D476,
+  visual="bi",
  },
  [0x1D477]={
   category="lu",
@@ -163408,6 +163526,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D477,
+  visual="bi",
  },
  [0x1D478]={
   category="lu",
@@ -163416,6 +163535,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D478,
+  visual="bi",
  },
  [0x1D479]={
   category="lu",
@@ -163424,6 +163544,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D479,
+  visual="bi",
  },
  [0x1D47A]={
   category="lu",
@@ -163432,6 +163553,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D47A,
+  visual="bi",
  },
  [0x1D47B]={
   category="lu",
@@ -163440,6 +163562,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D47B,
+  visual="bi",
  },
  [0x1D47C]={
   category="lu",
@@ -163448,6 +163571,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D47C,
+  visual="bi",
  },
  [0x1D47D]={
   category="lu",
@@ -163456,6 +163580,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D47D,
+  visual="bi",
  },
  [0x1D47E]={
   category="lu",
@@ -163464,6 +163589,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D47E,
+  visual="bi",
  },
  [0x1D47F]={
   category="lu",
@@ -163472,6 +163598,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D47F,
+  visual="bi",
  },
  [0x1D480]={
   category="lu",
@@ -163480,6 +163607,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D480,
+  visual="bi",
  },
  [0x1D481]={
   category="lu",
@@ -163488,6 +163616,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D481,
+  visual="bi",
  },
  [0x1D482]={
   category="ll",
@@ -163496,6 +163625,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D482,
+  visual="bi",
  },
  [0x1D483]={
   category="ll",
@@ -163504,6 +163634,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D483,
+  visual="bi",
  },
  [0x1D484]={
   category="ll",
@@ -163512,6 +163643,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D484,
+  visual="bi",
  },
  [0x1D485]={
   category="ll",
@@ -163520,6 +163652,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D485,
+  visual="bi",
  },
  [0x1D486]={
   category="ll",
@@ -163528,6 +163661,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D486,
+  visual="bi",
  },
  [0x1D487]={
   category="ll",
@@ -163536,6 +163670,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D487,
+  visual="bi",
  },
  [0x1D488]={
   category="ll",
@@ -163544,6 +163679,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D488,
+  visual="bi",
  },
  [0x1D489]={
   category="ll",
@@ -163552,6 +163688,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D489,
+  visual="bi",
  },
  [0x1D48A]={
   category="ll",
@@ -163560,6 +163697,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D48A,
+  visual="bi",
  },
  [0x1D48B]={
   category="ll",
@@ -163568,6 +163706,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D48B,
+  visual="bi",
  },
  [0x1D48C]={
   category="ll",
@@ -163576,6 +163715,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D48C,
+  visual="bi",
  },
  [0x1D48D]={
   category="ll",
@@ -163584,6 +163724,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D48D,
+  visual="bi",
  },
  [0x1D48E]={
   category="ll",
@@ -163592,6 +163733,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D48E,
+  visual="bi",
  },
  [0x1D48F]={
   category="ll",
@@ -163600,6 +163742,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D48F,
+  visual="bi",
  },
  [0x1D490]={
   category="ll",
@@ -163608,6 +163751,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D490,
+  visual="bi",
  },
  [0x1D491]={
   category="ll",
@@ -163616,6 +163760,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D491,
+  visual="bi",
  },
  [0x1D492]={
   category="ll",
@@ -163624,6 +163769,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D492,
+  visual="bi",
  },
  [0x1D493]={
   category="ll",
@@ -163632,6 +163778,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D493,
+  visual="bi",
  },
  [0x1D494]={
   category="ll",
@@ -163640,6 +163787,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D494,
+  visual="bi",
  },
  [0x1D495]={
   category="ll",
@@ -163648,6 +163796,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D495,
+  visual="bi",
  },
  [0x1D496]={
   category="ll",
@@ -163656,6 +163805,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D496,
+  visual="bi",
  },
  [0x1D497]={
   category="ll",
@@ -163664,6 +163814,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D497,
+  visual="bi",
  },
  [0x1D498]={
   category="ll",
@@ -163672,6 +163823,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D498,
+  visual="bi",
  },
  [0x1D499]={
   category="ll",
@@ -163680,6 +163832,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D499,
+  visual="bi",
  },
  [0x1D49A]={
   category="ll",
@@ -163688,6 +163841,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D49A,
+  visual="bi",
  },
  [0x1D49B]={
   category="ll",
@@ -163696,6 +163850,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D49B,
+  visual="bi",
  },
  [0x1D49C]={
   category="lu",
@@ -164032,6 +164187,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D4D0,
+  visual="bf",
  },
  [0x1D4D1]={
   category="lu",
@@ -164040,6 +164196,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D4D1,
+  visual="bf",
  },
  [0x1D4D2]={
   category="lu",
@@ -164048,6 +164205,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D4D2,
+  visual="bf",
  },
  [0x1D4D3]={
   category="lu",
@@ -164056,6 +164214,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D4D3,
+  visual="bf",
  },
  [0x1D4D4]={
   category="lu",
@@ -164064,6 +164223,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D4D4,
+  visual="bf",
  },
  [0x1D4D5]={
   category="lu",
@@ -164072,6 +164232,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D4D5,
+  visual="bf",
  },
  [0x1D4D6]={
   category="lu",
@@ -164080,6 +164241,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D4D6,
+  visual="bf",
  },
  [0x1D4D7]={
   category="lu",
@@ -164088,6 +164250,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D4D7,
+  visual="bf",
  },
  [0x1D4D8]={
   category="lu",
@@ -164096,6 +164259,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D4D8,
+  visual="bf",
  },
  [0x1D4D9]={
   category="lu",
@@ -164104,6 +164268,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D4D9,
+  visual="bf",
  },
  [0x1D4DA]={
   category="lu",
@@ -164112,6 +164277,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D4DA,
+  visual="bf",
  },
  [0x1D4DB]={
   category="lu",
@@ -164120,6 +164286,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D4DB,
+  visual="bf",
  },
  [0x1D4DC]={
   category="lu",
@@ -164128,6 +164295,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D4DC,
+  visual="bf",
  },
  [0x1D4DD]={
   category="lu",
@@ -164136,6 +164304,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D4DD,
+  visual="bf",
  },
  [0x1D4DE]={
   category="lu",
@@ -164144,6 +164313,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D4DE,
+  visual="bf",
  },
  [0x1D4DF]={
   category="lu",
@@ -164152,6 +164322,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D4DF,
+  visual="bf",
  },
  [0x1D4E0]={
   category="lu",
@@ -164160,6 +164331,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D4E0,
+  visual="bf",
  },
  [0x1D4E1]={
   category="lu",
@@ -164168,6 +164340,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D4E1,
+  visual="bf",
  },
  [0x1D4E2]={
   category="lu",
@@ -164176,6 +164349,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D4E2,
+  visual="bf",
  },
  [0x1D4E3]={
   category="lu",
@@ -164184,6 +164358,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D4E3,
+  visual="bf",
  },
  [0x1D4E4]={
   category="lu",
@@ -164192,6 +164367,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D4E4,
+  visual="bf",
  },
  [0x1D4E5]={
   category="lu",
@@ -164200,6 +164376,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D4E5,
+  visual="bf",
  },
  [0x1D4E6]={
   category="lu",
@@ -164208,6 +164385,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D4E6,
+  visual="bf",
  },
  [0x1D4E7]={
   category="lu",
@@ -164216,6 +164394,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D4E7,
+  visual="bf",
  },
  [0x1D4E8]={
   category="lu",
@@ -164224,6 +164403,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D4E8,
+  visual="bf",
  },
  [0x1D4E9]={
   category="lu",
@@ -164232,6 +164412,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D4E9,
+  visual="bf",
  },
  [0x1D4EA]={
   category="ll",
@@ -164240,6 +164421,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D4EA,
+  visual="bf",
  },
  [0x1D4EB]={
   category="ll",
@@ -164248,6 +164430,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D4EB,
+  visual="bf",
  },
  [0x1D4EC]={
   category="ll",
@@ -164256,6 +164439,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D4EC,
+  visual="bf",
  },
  [0x1D4ED]={
   category="ll",
@@ -164264,6 +164448,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D4ED,
+  visual="bf",
  },
  [0x1D4EE]={
   category="ll",
@@ -164272,6 +164457,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D4EE,
+  visual="bf",
  },
  [0x1D4EF]={
   category="ll",
@@ -164280,6 +164466,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D4EF,
+  visual="bf",
  },
  [0x1D4F0]={
   category="ll",
@@ -164288,6 +164475,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D4F0,
+  visual="bf",
  },
  [0x1D4F1]={
   category="ll",
@@ -164296,6 +164484,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D4F1,
+  visual="bf",
  },
  [0x1D4F2]={
   category="ll",
@@ -164304,6 +164493,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D4F2,
+  visual="bf",
  },
  [0x1D4F3]={
   category="ll",
@@ -164312,6 +164502,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D4F3,
+  visual="bf",
  },
  [0x1D4F4]={
   category="ll",
@@ -164320,6 +164511,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D4F4,
+  visual="bf",
  },
  [0x1D4F5]={
   category="ll",
@@ -164328,6 +164520,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D4F5,
+  visual="bf",
  },
  [0x1D4F6]={
   category="ll",
@@ -164336,6 +164529,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D4F6,
+  visual="bf",
  },
  [0x1D4F7]={
   category="ll",
@@ -164344,6 +164538,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D4F7,
+  visual="bf",
  },
  [0x1D4F8]={
   category="ll",
@@ -164352,6 +164547,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D4F8,
+  visual="bf",
  },
  [0x1D4F9]={
   category="ll",
@@ -164360,6 +164556,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D4F9,
+  visual="bf",
  },
  [0x1D4FA]={
   category="ll",
@@ -164368,6 +164565,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D4FA,
+  visual="bf",
  },
  [0x1D4FB]={
   category="ll",
@@ -164376,6 +164574,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D4FB,
+  visual="bf",
  },
  [0x1D4FC]={
   category="ll",
@@ -164384,6 +164583,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D4FC,
+  visual="bf",
  },
  [0x1D4FD]={
   category="ll",
@@ -164392,6 +164592,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D4FD,
+  visual="bf",
  },
  [0x1D4FE]={
   category="ll",
@@ -164400,6 +164601,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D4FE,
+  visual="bf",
  },
  [0x1D4FF]={
   category="ll",
@@ -164408,6 +164610,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D4FF,
+  visual="bf",
  },
  [0x1D500]={
   category="ll",
@@ -164416,6 +164619,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D500,
+  visual="bf",
  },
  [0x1D501]={
   category="ll",
@@ -164424,6 +164628,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D501,
+  visual="bf",
  },
  [0x1D502]={
   category="ll",
@@ -164432,6 +164637,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D502,
+  visual="bf",
  },
  [0x1D503]={
   category="ll",
@@ -164440,6 +164646,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D503,
+  visual="bf",
  },
  [0x1D504]={
   category="lu",
@@ -165184,6 +165391,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D56C,
+  visual="bf",
  },
  [0x1D56D]={
   category="lu",
@@ -165192,6 +165400,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D56D,
+  visual="bf",
  },
  [0x1D56E]={
   category="lu",
@@ -165200,6 +165409,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D56E,
+  visual="bf",
  },
  [0x1D56F]={
   category="lu",
@@ -165208,6 +165418,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D56F,
+  visual="bf",
  },
  [0x1D570]={
   category="lu",
@@ -165216,6 +165427,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D570,
+  visual="bf",
  },
  [0x1D571]={
   category="lu",
@@ -165224,6 +165436,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D571,
+  visual="bf",
  },
  [0x1D572]={
   category="lu",
@@ -165232,6 +165445,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D572,
+  visual="bf",
  },
  [0x1D573]={
   category="lu",
@@ -165240,6 +165454,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D573,
+  visual="bf",
  },
  [0x1D574]={
   category="lu",
@@ -165248,6 +165463,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D574,
+  visual="bf",
  },
  [0x1D575]={
   category="lu",
@@ -165256,6 +165472,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D575,
+  visual="bf",
  },
  [0x1D576]={
   category="lu",
@@ -165264,6 +165481,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D576,
+  visual="bf",
  },
  [0x1D577]={
   category="lu",
@@ -165272,6 +165490,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D577,
+  visual="bf",
  },
  [0x1D578]={
   category="lu",
@@ -165280,6 +165499,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D578,
+  visual="bf",
  },
  [0x1D579]={
   category="lu",
@@ -165288,6 +165508,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D579,
+  visual="bf",
  },
  [0x1D57A]={
   category="lu",
@@ -165296,6 +165517,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D57A,
+  visual="bf",
  },
  [0x1D57B]={
   category="lu",
@@ -165304,6 +165526,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D57B,
+  visual="bf",
  },
  [0x1D57C]={
   category="lu",
@@ -165312,6 +165535,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D57C,
+  visual="bf",
  },
  [0x1D57D]={
   category="lu",
@@ -165320,6 +165544,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D57D,
+  visual="bf",
  },
  [0x1D57E]={
   category="lu",
@@ -165328,6 +165553,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D57E,
+  visual="bf",
  },
  [0x1D57F]={
   category="lu",
@@ -165336,6 +165562,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D57F,
+  visual="bf",
  },
  [0x1D580]={
   category="lu",
@@ -165344,6 +165571,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D580,
+  visual="bf",
  },
  [0x1D581]={
   category="lu",
@@ -165352,6 +165580,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D581,
+  visual="bf",
  },
  [0x1D582]={
   category="lu",
@@ -165360,6 +165589,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D582,
+  visual="bf",
  },
  [0x1D583]={
   category="lu",
@@ -165368,6 +165598,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D583,
+  visual="bf",
  },
  [0x1D584]={
   category="lu",
@@ -165376,6 +165607,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D584,
+  visual="bf",
  },
  [0x1D585]={
   category="lu",
@@ -165384,6 +165616,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D585,
+  visual="bf",
  },
  [0x1D586]={
   category="ll",
@@ -165392,6 +165625,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D586,
+  visual="bf",
  },
  [0x1D587]={
   category="ll",
@@ -165400,6 +165634,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D587,
+  visual="bf",
  },
  [0x1D588]={
   category="ll",
@@ -165408,6 +165643,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D588,
+  visual="bf",
  },
  [0x1D589]={
   category="ll",
@@ -165416,6 +165652,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D589,
+  visual="bf",
  },
  [0x1D58A]={
   category="ll",
@@ -165424,6 +165661,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D58A,
+  visual="bf",
  },
  [0x1D58B]={
   category="ll",
@@ -165432,6 +165670,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D58B,
+  visual="bf",
  },
  [0x1D58C]={
   category="ll",
@@ -165440,6 +165679,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D58C,
+  visual="bf",
  },
  [0x1D58D]={
   category="ll",
@@ -165448,6 +165688,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D58D,
+  visual="bf",
  },
  [0x1D58E]={
   category="ll",
@@ -165456,6 +165697,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D58E,
+  visual="bf",
  },
  [0x1D58F]={
   category="ll",
@@ -165464,6 +165706,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D58F,
+  visual="bf",
  },
  [0x1D590]={
   category="ll",
@@ -165472,6 +165715,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D590,
+  visual="bf",
  },
  [0x1D591]={
   category="ll",
@@ -165480,6 +165724,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D591,
+  visual="bf",
  },
  [0x1D592]={
   category="ll",
@@ -165488,6 +165733,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D592,
+  visual="bf",
  },
  [0x1D593]={
   category="ll",
@@ -165496,6 +165742,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D593,
+  visual="bf",
  },
  [0x1D594]={
   category="ll",
@@ -165504,6 +165751,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D594,
+  visual="bf",
  },
  [0x1D595]={
   category="ll",
@@ -165512,6 +165760,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D595,
+  visual="bf",
  },
  [0x1D596]={
   category="ll",
@@ -165520,6 +165769,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D596,
+  visual="bf",
  },
  [0x1D597]={
   category="ll",
@@ -165528,6 +165778,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D597,
+  visual="bf",
  },
  [0x1D598]={
   category="ll",
@@ -165536,6 +165787,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D598,
+  visual="bf",
  },
  [0x1D599]={
   category="ll",
@@ -165544,6 +165796,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D599,
+  visual="bf",
  },
  [0x1D59A]={
   category="ll",
@@ -165552,6 +165805,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D59A,
+  visual="bf",
  },
  [0x1D59B]={
   category="ll",
@@ -165560,6 +165814,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D59B,
+  visual="bf",
  },
  [0x1D59C]={
   category="ll",
@@ -165568,6 +165823,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D59C,
+  visual="bf",
  },
  [0x1D59D]={
   category="ll",
@@ -165576,6 +165832,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D59D,
+  visual="bf",
  },
  [0x1D59E]={
   category="ll",
@@ -165584,6 +165841,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D59E,
+  visual="bf",
  },
  [0x1D59F]={
   category="ll",
@@ -165592,6 +165850,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D59F,
+  visual="bf",
  },
  [0x1D5A0]={
   category="lu",
@@ -166016,6 +166275,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D5D4,
+  visual="bf",
  },
  [0x1D5D5]={
   category="lu",
@@ -166024,6 +166284,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D5D5,
+  visual="bf",
  },
  [0x1D5D6]={
   category="lu",
@@ -166032,6 +166293,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D5D6,
+  visual="bf",
  },
  [0x1D5D7]={
   category="lu",
@@ -166040,6 +166302,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D5D7,
+  visual="bf",
  },
  [0x1D5D8]={
   category="lu",
@@ -166048,6 +166311,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D5D8,
+  visual="bf",
  },
  [0x1D5D9]={
   category="lu",
@@ -166056,6 +166320,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D5D9,
+  visual="bf",
  },
  [0x1D5DA]={
   category="lu",
@@ -166064,6 +166329,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D5DA,
+  visual="bf",
  },
  [0x1D5DB]={
   category="lu",
@@ -166072,6 +166338,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D5DB,
+  visual="bf",
  },
  [0x1D5DC]={
   category="lu",
@@ -166080,6 +166347,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D5DC,
+  visual="bf",
  },
  [0x1D5DD]={
   category="lu",
@@ -166088,6 +166356,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D5DD,
+  visual="bf",
  },
  [0x1D5DE]={
   category="lu",
@@ -166096,6 +166365,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D5DE,
+  visual="bf",
  },
  [0x1D5DF]={
   category="lu",
@@ -166104,6 +166374,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D5DF,
+  visual="bf",
  },
  [0x1D5E0]={
   category="lu",
@@ -166112,6 +166383,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D5E0,
+  visual="bf",
  },
  [0x1D5E1]={
   category="lu",
@@ -166120,6 +166392,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D5E1,
+  visual="bf",
  },
  [0x1D5E2]={
   category="lu",
@@ -166128,6 +166401,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D5E2,
+  visual="bf",
  },
  [0x1D5E3]={
   category="lu",
@@ -166136,6 +166410,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D5E3,
+  visual="bf",
  },
  [0x1D5E4]={
   category="lu",
@@ -166144,6 +166419,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D5E4,
+  visual="bf",
  },
  [0x1D5E5]={
   category="lu",
@@ -166152,6 +166428,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D5E5,
+  visual="bf",
  },
  [0x1D5E6]={
   category="lu",
@@ -166160,6 +166437,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D5E6,
+  visual="bf",
  },
  [0x1D5E7]={
   category="lu",
@@ -166168,6 +166446,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D5E7,
+  visual="bf",
  },
  [0x1D5E8]={
   category="lu",
@@ -166176,6 +166455,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D5E8,
+  visual="bf",
  },
  [0x1D5E9]={
   category="lu",
@@ -166184,6 +166464,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D5E9,
+  visual="bf",
  },
  [0x1D5EA]={
   category="lu",
@@ -166192,6 +166473,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D5EA,
+  visual="bf",
  },
  [0x1D5EB]={
   category="lu",
@@ -166200,6 +166482,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D5EB,
+  visual="bf",
  },
  [0x1D5EC]={
   category="lu",
@@ -166208,6 +166491,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D5EC,
+  visual="bf",
  },
  [0x1D5ED]={
   category="lu",
@@ -166216,6 +166500,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D5ED,
+  visual="bf",
  },
  [0x1D5EE]={
   category="ll",
@@ -166224,6 +166509,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D5EE,
+  visual="bf",
  },
  [0x1D5EF]={
   category="ll",
@@ -166232,6 +166518,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D5EF,
+  visual="bf",
  },
  [0x1D5F0]={
   category="ll",
@@ -166240,6 +166527,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D5F0,
+  visual="bf",
  },
  [0x1D5F1]={
   category="ll",
@@ -166248,6 +166536,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D5F1,
+  visual="bf",
  },
  [0x1D5F2]={
   category="ll",
@@ -166256,6 +166545,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D5F2,
+  visual="bf",
  },
  [0x1D5F3]={
   category="ll",
@@ -166264,6 +166554,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D5F3,
+  visual="bf",
  },
  [0x1D5F4]={
   category="ll",
@@ -166272,6 +166563,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D5F4,
+  visual="bf",
  },
  [0x1D5F5]={
   category="ll",
@@ -166280,6 +166572,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D5F5,
+  visual="bf",
  },
  [0x1D5F6]={
   category="ll",
@@ -166288,6 +166581,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D5F6,
+  visual="bf",
  },
  [0x1D5F7]={
   category="ll",
@@ -166296,6 +166590,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D5F7,
+  visual="bf",
  },
  [0x1D5F8]={
   category="ll",
@@ -166304,6 +166599,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D5F8,
+  visual="bf",
  },
  [0x1D5F9]={
   category="ll",
@@ -166312,6 +166608,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D5F9,
+  visual="bf",
  },
  [0x1D5FA]={
   category="ll",
@@ -166320,6 +166617,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D5FA,
+  visual="bf",
  },
  [0x1D5FB]={
   category="ll",
@@ -166328,6 +166626,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D5FB,
+  visual="bf",
  },
  [0x1D5FC]={
   category="ll",
@@ -166336,6 +166635,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D5FC,
+  visual="bf",
  },
  [0x1D5FD]={
   category="ll",
@@ -166344,6 +166644,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D5FD,
+  visual="bf",
  },
  [0x1D5FE]={
   category="ll",
@@ -166352,6 +166653,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D5FE,
+  visual="bf",
  },
  [0x1D5FF]={
   category="ll",
@@ -166360,6 +166662,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D5FF,
+  visual="bf",
  },
  [0x1D600]={
   category="ll",
@@ -166368,6 +166671,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D600,
+  visual="bf",
  },
  [0x1D601]={
   category="ll",
@@ -166376,6 +166680,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D601,
+  visual="bf",
  },
  [0x1D602]={
   category="ll",
@@ -166384,6 +166689,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D602,
+  visual="bf",
  },
  [0x1D603]={
   category="ll",
@@ -166392,6 +166698,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D603,
+  visual="bf",
  },
  [0x1D604]={
   category="ll",
@@ -166400,6 +166707,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D604,
+  visual="bf",
  },
  [0x1D605]={
   category="ll",
@@ -166408,6 +166716,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D605,
+  visual="bf",
  },
  [0x1D606]={
   category="ll",
@@ -166416,6 +166725,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D606,
+  visual="bf",
  },
  [0x1D607]={
   category="ll",
@@ -166424,6 +166734,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D607,
+  visual="bf",
  },
  [0x1D608]={
   category="lu",
@@ -166432,6 +166743,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D608,
+  visual="it",
  },
  [0x1D609]={
   category="lu",
@@ -166440,6 +166752,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D609,
+  visual="it",
  },
  [0x1D60A]={
   category="lu",
@@ -166448,6 +166761,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D60A,
+  visual="it",
  },
  [0x1D60B]={
   category="lu",
@@ -166456,6 +166770,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D60B,
+  visual="it",
  },
  [0x1D60C]={
   category="lu",
@@ -166464,6 +166779,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D60C,
+  visual="it",
  },
  [0x1D60D]={
   category="lu",
@@ -166472,6 +166788,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D60D,
+  visual="it",
  },
  [0x1D60E]={
   category="lu",
@@ -166480,6 +166797,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D60E,
+  visual="it",
  },
  [0x1D60F]={
   category="lu",
@@ -166488,6 +166806,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D60F,
+  visual="it",
  },
  [0x1D610]={
   category="lu",
@@ -166496,6 +166815,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D610,
+  visual="it",
  },
  [0x1D611]={
   category="lu",
@@ -166504,6 +166824,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D611,
+  visual="it",
  },
  [0x1D612]={
   category="lu",
@@ -166512,6 +166833,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D612,
+  visual="it",
  },
  [0x1D613]={
   category="lu",
@@ -166520,6 +166842,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D613,
+  visual="it",
  },
  [0x1D614]={
   category="lu",
@@ -166528,6 +166851,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D614,
+  visual="it",
  },
  [0x1D615]={
   category="lu",
@@ -166536,6 +166860,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D615,
+  visual="it",
  },
  [0x1D616]={
   category="lu",
@@ -166544,6 +166869,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D616,
+  visual="it",
  },
  [0x1D617]={
   category="lu",
@@ -166552,6 +166878,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D617,
+  visual="it",
  },
  [0x1D618]={
   category="lu",
@@ -166560,6 +166887,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D618,
+  visual="it",
  },
  [0x1D619]={
   category="lu",
@@ -166568,6 +166896,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D619,
+  visual="it",
  },
  [0x1D61A]={
   category="lu",
@@ -166576,6 +166905,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D61A,
+  visual="it",
  },
  [0x1D61B]={
   category="lu",
@@ -166584,6 +166914,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D61B,
+  visual="it",
  },
  [0x1D61C]={
   category="lu",
@@ -166592,6 +166923,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D61C,
+  visual="it",
  },
  [0x1D61D]={
   category="lu",
@@ -166600,6 +166932,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D61D,
+  visual="it",
  },
  [0x1D61E]={
   category="lu",
@@ -166608,6 +166941,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D61E,
+  visual="it",
  },
  [0x1D61F]={
   category="lu",
@@ -166616,6 +166950,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D61F,
+  visual="it",
  },
  [0x1D620]={
   category="lu",
@@ -166624,6 +166959,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D620,
+  visual="it",
  },
  [0x1D621]={
   category="lu",
@@ -166632,6 +166968,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D621,
+  visual="it",
  },
  [0x1D622]={
   category="ll",
@@ -166640,6 +166977,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D622,
+  visual="it",
  },
  [0x1D623]={
   category="ll",
@@ -166648,6 +166986,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D623,
+  visual="it",
  },
  [0x1D624]={
   category="ll",
@@ -166656,6 +166995,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D624,
+  visual="it",
  },
  [0x1D625]={
   category="ll",
@@ -166664,6 +167004,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D625,
+  visual="it",
  },
  [0x1D626]={
   category="ll",
@@ -166672,6 +167013,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D626,
+  visual="it",
  },
  [0x1D627]={
   category="ll",
@@ -166680,6 +167022,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D627,
+  visual="it",
  },
  [0x1D628]={
   category="ll",
@@ -166688,6 +167031,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D628,
+  visual="it",
  },
  [0x1D629]={
   category="ll",
@@ -166696,6 +167040,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D629,
+  visual="it",
  },
  [0x1D62A]={
   category="ll",
@@ -166704,6 +167049,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D62A,
+  visual="it",
  },
  [0x1D62B]={
   category="ll",
@@ -166712,6 +167058,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D62B,
+  visual="it",
  },
  [0x1D62C]={
   category="ll",
@@ -166720,6 +167067,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D62C,
+  visual="it",
  },
  [0x1D62D]={
   category="ll",
@@ -166728,6 +167076,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D62D,
+  visual="it",
  },
  [0x1D62E]={
   category="ll",
@@ -166736,6 +167085,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D62E,
+  visual="it",
  },
  [0x1D62F]={
   category="ll",
@@ -166744,6 +167094,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D62F,
+  visual="it",
  },
  [0x1D630]={
   category="ll",
@@ -166752,6 +167103,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D630,
+  visual="it",
  },
  [0x1D631]={
   category="ll",
@@ -166760,6 +167112,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D631,
+  visual="it",
  },
  [0x1D632]={
   category="ll",
@@ -166768,6 +167121,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D632,
+  visual="it",
  },
  [0x1D633]={
   category="ll",
@@ -166776,6 +167130,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D633,
+  visual="it",
  },
  [0x1D634]={
   category="ll",
@@ -166784,6 +167139,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D634,
+  visual="it",
  },
  [0x1D635]={
   category="ll",
@@ -166792,6 +167148,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D635,
+  visual="it",
  },
  [0x1D636]={
   category="ll",
@@ -166800,6 +167157,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D636,
+  visual="it",
  },
  [0x1D637]={
   category="ll",
@@ -166808,6 +167166,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D637,
+  visual="it",
  },
  [0x1D638]={
   category="ll",
@@ -166816,6 +167175,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D638,
+  visual="it",
  },
  [0x1D639]={
   category="ll",
@@ -166824,6 +167184,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D639,
+  visual="it",
  },
  [0x1D63A]={
   category="ll",
@@ -166832,6 +167193,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D63A,
+  visual="it",
  },
  [0x1D63B]={
   category="ll",
@@ -166840,6 +167202,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D63B,
+  visual="it",
  },
  [0x1D63C]={
   category="lu",
@@ -166848,6 +167211,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0041 },
   unicodeslot=0x1D63C,
+  visual="bi",
  },
  [0x1D63D]={
   category="lu",
@@ -166856,6 +167220,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0042 },
   unicodeslot=0x1D63D,
+  visual="bi",
  },
  [0x1D63E]={
   category="lu",
@@ -166864,6 +167229,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0043 },
   unicodeslot=0x1D63E,
+  visual="bi",
  },
  [0x1D63F]={
   category="lu",
@@ -166872,6 +167238,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0044 },
   unicodeslot=0x1D63F,
+  visual="bi",
  },
  [0x1D640]={
   category="lu",
@@ -166880,6 +167247,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0045 },
   unicodeslot=0x1D640,
+  visual="bi",
  },
  [0x1D641]={
   category="lu",
@@ -166888,6 +167256,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0046 },
   unicodeslot=0x1D641,
+  visual="bi",
  },
  [0x1D642]={
   category="lu",
@@ -166896,6 +167265,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0047 },
   unicodeslot=0x1D642,
+  visual="bi",
  },
  [0x1D643]={
   category="lu",
@@ -166904,6 +167274,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0048 },
   unicodeslot=0x1D643,
+  visual="bi",
  },
  [0x1D644]={
   category="lu",
@@ -166912,6 +167283,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0049 },
   unicodeslot=0x1D644,
+  visual="bi",
  },
  [0x1D645]={
   category="lu",
@@ -166920,6 +167292,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004A },
   unicodeslot=0x1D645,
+  visual="bi",
  },
  [0x1D646]={
   category="lu",
@@ -166928,6 +167301,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004B },
   unicodeslot=0x1D646,
+  visual="bi",
  },
  [0x1D647]={
   category="lu",
@@ -166936,6 +167310,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004C },
   unicodeslot=0x1D647,
+  visual="bi",
  },
  [0x1D648]={
   category="lu",
@@ -166944,6 +167319,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004D },
   unicodeslot=0x1D648,
+  visual="bi",
  },
  [0x1D649]={
   category="lu",
@@ -166952,6 +167328,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004E },
   unicodeslot=0x1D649,
+  visual="bi",
  },
  [0x1D64A]={
   category="lu",
@@ -166960,6 +167337,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x004F },
   unicodeslot=0x1D64A,
+  visual="bi",
  },
  [0x1D64B]={
   category="lu",
@@ -166968,6 +167346,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0050 },
   unicodeslot=0x1D64B,
+  visual="bi",
  },
  [0x1D64C]={
   category="lu",
@@ -166976,6 +167355,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0051 },
   unicodeslot=0x1D64C,
+  visual="bi",
  },
  [0x1D64D]={
   category="lu",
@@ -166984,6 +167364,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0052 },
   unicodeslot=0x1D64D,
+  visual="bi",
  },
  [0x1D64E]={
   category="lu",
@@ -166992,6 +167373,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0053 },
   unicodeslot=0x1D64E,
+  visual="bi",
  },
  [0x1D64F]={
   category="lu",
@@ -167000,6 +167382,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0054 },
   unicodeslot=0x1D64F,
+  visual="bi",
  },
  [0x1D650]={
   category="lu",
@@ -167008,6 +167391,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0055 },
   unicodeslot=0x1D650,
+  visual="bi",
  },
  [0x1D651]={
   category="lu",
@@ -167016,6 +167400,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0056 },
   unicodeslot=0x1D651,
+  visual="bi",
  },
  [0x1D652]={
   category="lu",
@@ -167024,6 +167409,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0057 },
   unicodeslot=0x1D652,
+  visual="bi",
  },
  [0x1D653]={
   category="lu",
@@ -167032,6 +167418,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0058 },
   unicodeslot=0x1D653,
+  visual="bi",
  },
  [0x1D654]={
   category="lu",
@@ -167040,6 +167427,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0059 },
   unicodeslot=0x1D654,
+  visual="bi",
  },
  [0x1D655]={
   category="lu",
@@ -167048,6 +167436,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x005A },
   unicodeslot=0x1D655,
+  visual="bi",
  },
  [0x1D656]={
   category="ll",
@@ -167056,6 +167445,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0061 },
   unicodeslot=0x1D656,
+  visual="bi",
  },
  [0x1D657]={
   category="ll",
@@ -167064,6 +167454,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0062 },
   unicodeslot=0x1D657,
+  visual="bi",
  },
  [0x1D658]={
   category="ll",
@@ -167072,6 +167463,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0063 },
   unicodeslot=0x1D658,
+  visual="bi",
  },
  [0x1D659]={
   category="ll",
@@ -167080,6 +167472,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0064 },
   unicodeslot=0x1D659,
+  visual="bi",
  },
  [0x1D65A]={
   category="ll",
@@ -167088,6 +167481,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0065 },
   unicodeslot=0x1D65A,
+  visual="bi",
  },
  [0x1D65B]={
   category="ll",
@@ -167096,6 +167490,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0066 },
   unicodeslot=0x1D65B,
+  visual="bi",
  },
  [0x1D65C]={
   category="ll",
@@ -167104,6 +167499,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0067 },
   unicodeslot=0x1D65C,
+  visual="bi",
  },
  [0x1D65D]={
   category="ll",
@@ -167112,6 +167508,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0068 },
   unicodeslot=0x1D65D,
+  visual="bi",
  },
  [0x1D65E]={
   category="ll",
@@ -167120,6 +167517,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0069 },
   unicodeslot=0x1D65E,
+  visual="bi",
  },
  [0x1D65F]={
   category="ll",
@@ -167128,6 +167526,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006A },
   unicodeslot=0x1D65F,
+  visual="bi",
  },
  [0x1D660]={
   category="ll",
@@ -167136,6 +167535,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006B },
   unicodeslot=0x1D660,
+  visual="bi",
  },
  [0x1D661]={
   category="ll",
@@ -167144,6 +167544,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006C },
   unicodeslot=0x1D661,
+  visual="bi",
  },
  [0x1D662]={
   category="ll",
@@ -167152,6 +167553,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006D },
   unicodeslot=0x1D662,
+  visual="bi",
  },
  [0x1D663]={
   category="ll",
@@ -167160,6 +167562,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006E },
   unicodeslot=0x1D663,
+  visual="bi",
  },
  [0x1D664]={
   category="ll",
@@ -167168,6 +167571,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x006F },
   unicodeslot=0x1D664,
+  visual="bi",
  },
  [0x1D665]={
   category="ll",
@@ -167176,6 +167580,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0070 },
   unicodeslot=0x1D665,
+  visual="bi",
  },
  [0x1D666]={
   category="ll",
@@ -167184,6 +167589,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0071 },
   unicodeslot=0x1D666,
+  visual="bi",
  },
  [0x1D667]={
   category="ll",
@@ -167192,6 +167598,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0072 },
   unicodeslot=0x1D667,
+  visual="bi",
  },
  [0x1D668]={
   category="ll",
@@ -167200,6 +167607,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0073 },
   unicodeslot=0x1D668,
+  visual="bi",
  },
  [0x1D669]={
   category="ll",
@@ -167208,6 +167616,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0074 },
   unicodeslot=0x1D669,
+  visual="bi",
  },
  [0x1D66A]={
   category="ll",
@@ -167216,6 +167625,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0075 },
   unicodeslot=0x1D66A,
+  visual="bi",
  },
  [0x1D66B]={
   category="ll",
@@ -167224,6 +167634,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0076 },
   unicodeslot=0x1D66B,
+  visual="bi",
  },
  [0x1D66C]={
   category="ll",
@@ -167232,6 +167643,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0077 },
   unicodeslot=0x1D66C,
+  visual="bi",
  },
  [0x1D66D]={
   category="ll",
@@ -167240,6 +167652,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0078 },
   unicodeslot=0x1D66D,
+  visual="bi",
  },
  [0x1D66E]={
   category="ll",
@@ -167248,6 +167661,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0079 },
   unicodeslot=0x1D66E,
+  visual="bi",
  },
  [0x1D66F]={
   category="ll",
@@ -167256,6 +167670,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x007A },
   unicodeslot=0x1D66F,
+  visual="bi",
  },
  [0x1D670]={
   category="lu",
@@ -167682,6 +168097,7 @@ characters.data={
   mathname="imath",
   specials={ "font", 0x0131 },
   unicodeslot=0x1D6A4,
+  visual="it",
  },
  [0x1D6A5]={
   category="ll",
@@ -167692,6 +168108,7 @@ characters.data={
   mathname="jmath",
   specials={ "font", 0x0237 },
   unicodeslot=0x1D6A5,
+  visual="it",
  },
  [0x1D6A8]={
   category="lu",
@@ -167700,6 +168117,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0391 },
   unicodeslot=0x1D6A8,
+  visual="bf",
  },
  [0x1D6A9]={
   category="lu",
@@ -167708,6 +168126,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0392 },
   unicodeslot=0x1D6A9,
+  visual="bf",
  },
  [0x1D6AA]={
   category="lu",
@@ -167716,6 +168135,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0393 },
   unicodeslot=0x1D6AA,
+  visual="bf",
  },
  [0x1D6AB]={
   category="lu",
@@ -167724,6 +168144,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0394 },
   unicodeslot=0x1D6AB,
+  visual="bf",
  },
  [0x1D6AC]={
   category="lu",
@@ -167732,6 +168153,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0395 },
   unicodeslot=0x1D6AC,
+  visual="bf",
  },
  [0x1D6AD]={
   category="lu",
@@ -167740,6 +168162,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0396 },
   unicodeslot=0x1D6AD,
+  visual="bf",
  },
  [0x1D6AE]={
   category="lu",
@@ -167748,6 +168171,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0397 },
   unicodeslot=0x1D6AE,
+  visual="bf",
  },
  [0x1D6AF]={
   category="lu",
@@ -167756,6 +168180,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0398 },
   unicodeslot=0x1D6AF,
+  visual="bf",
  },
  [0x1D6B0]={
   category="lu",
@@ -167764,6 +168189,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0399 },
   unicodeslot=0x1D6B0,
+  visual="bf",
  },
  [0x1D6B1]={
   category="lu",
@@ -167772,6 +168198,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039A },
   unicodeslot=0x1D6B1,
+  visual="bf",
  },
  [0x1D6B2]={
   category="lu",
@@ -167780,6 +168207,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039B },
   unicodeslot=0x1D6B2,
+  visual="bf",
  },
  [0x1D6B3]={
   category="lu",
@@ -167788,6 +168216,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039C },
   unicodeslot=0x1D6B3,
+  visual="bf",
  },
  [0x1D6B4]={
   category="lu",
@@ -167796,6 +168225,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039D },
   unicodeslot=0x1D6B4,
+  visual="bf",
  },
  [0x1D6B5]={
   category="lu",
@@ -167804,6 +168234,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039E },
   unicodeslot=0x1D6B5,
+  visual="bf",
  },
  [0x1D6B6]={
   category="lu",
@@ -167812,6 +168243,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039F },
   unicodeslot=0x1D6B6,
+  visual="bf",
  },
  [0x1D6B7]={
   category="lu",
@@ -167820,6 +168252,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A0 },
   unicodeslot=0x1D6B7,
+  visual="bf",
  },
  [0x1D6B8]={
   category="lu",
@@ -167828,6 +168261,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A1 },
   unicodeslot=0x1D6B8,
+  visual="bf",
  },
  [0x1D6B9]={
   category="lu",
@@ -167836,6 +168270,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F4 },
   unicodeslot=0x1D6B9,
+  visual="bf",
  },
  [0x1D6BA]={
   category="lu",
@@ -167844,6 +168279,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A3 },
   unicodeslot=0x1D6BA,
+  visual="bf",
  },
  [0x1D6BB]={
   category="lu",
@@ -167852,6 +168288,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A4 },
   unicodeslot=0x1D6BB,
+  visual="bf",
  },
  [0x1D6BC]={
   category="lu",
@@ -167860,6 +168297,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A5 },
   unicodeslot=0x1D6BC,
+  visual="bf",
  },
  [0x1D6BD]={
   category="lu",
@@ -167868,6 +168306,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A6 },
   unicodeslot=0x1D6BD,
+  visual="bf",
  },
  [0x1D6BE]={
   category="lu",
@@ -167876,6 +168315,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A7 },
   unicodeslot=0x1D6BE,
+  visual="bf",
  },
  [0x1D6BF]={
   category="lu",
@@ -167884,6 +168324,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A8 },
   unicodeslot=0x1D6BF,
+  visual="bf",
  },
  [0x1D6C0]={
   category="lu",
@@ -167892,6 +168333,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A9 },
   unicodeslot=0x1D6C0,
+  visual="bf",
  },
  [0x1D6C1]={
   category="sm",
@@ -167900,6 +168342,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D6C1,
+  visual="bf",
  },
  [0x1D6C2]={
   category="ll",
@@ -167908,6 +168351,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B1 },
   unicodeslot=0x1D6C2,
+  visual="bf",
  },
  [0x1D6C3]={
   category="ll",
@@ -167916,6 +168360,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B2 },
   unicodeslot=0x1D6C3,
+  visual="bf",
  },
  [0x1D6C4]={
   category="ll",
@@ -167924,6 +168369,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B3 },
   unicodeslot=0x1D6C4,
+  visual="bf",
  },
  [0x1D6C5]={
   category="ll",
@@ -167932,6 +168378,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B4 },
   unicodeslot=0x1D6C5,
+  visual="bf",
  },
  [0x1D6C6]={
   category="ll",
@@ -167940,6 +168387,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B5 },
   unicodeslot=0x1D6C6,
+  visual="bf",
  },
  [0x1D6C7]={
   category="ll",
@@ -167948,6 +168396,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B6 },
   unicodeslot=0x1D6C7,
+  visual="bf",
  },
  [0x1D6C8]={
   category="ll",
@@ -167956,6 +168405,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B7 },
   unicodeslot=0x1D6C8,
+  visual="bf",
  },
  [0x1D6C9]={
   category="ll",
@@ -167964,6 +168414,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B8 },
   unicodeslot=0x1D6C9,
+  visual="bf",
  },
  [0x1D6CA]={
   category="ll",
@@ -167972,6 +168423,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B9 },
   unicodeslot=0x1D6CA,
+  visual="bf",
  },
  [0x1D6CB]={
   category="ll",
@@ -167980,6 +168432,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BA },
   unicodeslot=0x1D6CB,
+  visual="bf",
  },
  [0x1D6CC]={
   category="ll",
@@ -167988,6 +168441,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BB },
   unicodeslot=0x1D6CC,
+  visual="bf",
  },
  [0x1D6CD]={
   category="ll",
@@ -167996,6 +168450,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BC },
   unicodeslot=0x1D6CD,
+  visual="bf",
  },
  [0x1D6CE]={
   category="ll",
@@ -168004,6 +168459,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BD },
   unicodeslot=0x1D6CE,
+  visual="bf",
  },
  [0x1D6CF]={
   category="ll",
@@ -168012,6 +168468,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BE },
   unicodeslot=0x1D6CF,
+  visual="bf",
  },
  [0x1D6D0]={
   category="ll",
@@ -168020,6 +168477,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BF },
   unicodeslot=0x1D6D0,
+  visual="bf",
  },
  [0x1D6D1]={
   category="ll",
@@ -168028,6 +168486,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C0 },
   unicodeslot=0x1D6D1,
+  visual="bf",
  },
  [0x1D6D2]={
   category="ll",
@@ -168036,6 +168495,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C1 },
   unicodeslot=0x1D6D2,
+  visual="bf",
  },
  [0x1D6D3]={
   category="ll",
@@ -168044,6 +168504,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C2 },
   unicodeslot=0x1D6D3,
+  visual="bf",
  },
  [0x1D6D4]={
   category="ll",
@@ -168052,6 +168513,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C3 },
   unicodeslot=0x1D6D4,
+  visual="bf",
  },
  [0x1D6D5]={
   category="ll",
@@ -168060,6 +168522,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C4 },
   unicodeslot=0x1D6D5,
+  visual="bf",
  },
  [0x1D6D6]={
   category="ll",
@@ -168068,6 +168531,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C5 },
   unicodeslot=0x1D6D6,
+  visual="bf",
  },
  [0x1D6D7]={
   category="ll",
@@ -168076,6 +168540,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C6 },
   unicodeslot=0x1D6D7,
+  visual="bf",
  },
  [0x1D6D8]={
   category="ll",
@@ -168084,6 +168549,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C7 },
   unicodeslot=0x1D6D8,
+  visual="bf",
  },
  [0x1D6D9]={
   category="ll",
@@ -168092,6 +168558,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C8 },
   unicodeslot=0x1D6D9,
+  visual="bf",
  },
  [0x1D6DA]={
   category="ll",
@@ -168100,6 +168567,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C9 },
   unicodeslot=0x1D6DA,
+  visual="bf",
  },
  [0x1D6DB]={
   category="sm",
@@ -168108,6 +168576,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2202 },
   unicodeslot=0x1D6DB,
+  visual="bf",
  },
  [0x1D6DC]={
   category="ll",
@@ -168116,6 +168585,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F5 },
   unicodeslot=0x1D6DC,
+  visual="bf",
  },
  [0x1D6DD]={
   category="ll",
@@ -168124,6 +168594,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D1 },
   unicodeslot=0x1D6DD,
+  visual="bf",
  },
  [0x1D6DE]={
   category="ll",
@@ -168132,6 +168603,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F0 },
   unicodeslot=0x1D6DE,
+  visual="bf",
  },
  [0x1D6DF]={
   category="ll",
@@ -168140,6 +168612,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D5 },
   unicodeslot=0x1D6DF,
+  visual="bf",
  },
  [0x1D6E0]={
   category="ll",
@@ -168148,6 +168621,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F1 },
   unicodeslot=0x1D6E0,
+  visual="bf",
  },
  [0x1D6E1]={
   category="ll",
@@ -168156,6 +168630,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D6 },
   unicodeslot=0x1D6E1,
+  visual="bf",
  },
  [0x1D6E2]={
   category="lu",
@@ -168164,6 +168639,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0391 },
   unicodeslot=0x1D6E2,
+  visual="it",
  },
  [0x1D6E3]={
   category="lu",
@@ -168172,6 +168648,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0392 },
   unicodeslot=0x1D6E3,
+  visual="it",
  },
  [0x1D6E4]={
   category="lu",
@@ -168180,6 +168657,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0393 },
   unicodeslot=0x1D6E4,
+  visual="it",
  },
  [0x1D6E5]={
   category="lu",
@@ -168188,6 +168666,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0394 },
   unicodeslot=0x1D6E5,
+  visual="it",
  },
  [0x1D6E6]={
   category="lu",
@@ -168196,6 +168675,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0395 },
   unicodeslot=0x1D6E6,
+  visual="it",
  },
  [0x1D6E7]={
   category="lu",
@@ -168204,6 +168684,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0396 },
   unicodeslot=0x1D6E7,
+  visual="it",
  },
  [0x1D6E8]={
   category="lu",
@@ -168212,6 +168693,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0397 },
   unicodeslot=0x1D6E8,
+  visual="it",
  },
  [0x1D6E9]={
   category="lu",
@@ -168220,6 +168702,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0398 },
   unicodeslot=0x1D6E9,
+  visual="it",
  },
  [0x1D6EA]={
   category="lu",
@@ -168228,6 +168711,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0399 },
   unicodeslot=0x1D6EA,
+  visual="it",
  },
  [0x1D6EB]={
   category="lu",
@@ -168236,6 +168720,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039A },
   unicodeslot=0x1D6EB,
+  visual="it",
  },
  [0x1D6EC]={
   category="lu",
@@ -168244,6 +168729,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039B },
   unicodeslot=0x1D6EC,
+  visual="it",
  },
  [0x1D6ED]={
   category="lu",
@@ -168252,6 +168738,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039C },
   unicodeslot=0x1D6ED,
+  visual="it",
  },
  [0x1D6EE]={
   category="lu",
@@ -168260,6 +168747,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039D },
   unicodeslot=0x1D6EE,
+  visual="it",
  },
  [0x1D6EF]={
   category="lu",
@@ -168268,6 +168756,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039E },
   unicodeslot=0x1D6EF,
+  visual="it",
  },
  [0x1D6F0]={
   category="lu",
@@ -168276,6 +168765,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039F },
   unicodeslot=0x1D6F0,
+  visual="it",
  },
  [0x1D6F1]={
   category="lu",
@@ -168284,6 +168774,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A0 },
   unicodeslot=0x1D6F1,
+  visual="it",
  },
  [0x1D6F2]={
   category="lu",
@@ -168292,6 +168783,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A1 },
   unicodeslot=0x1D6F2,
+  visual="it",
  },
  [0x1D6F3]={
   category="lu",
@@ -168300,6 +168792,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F4 },
   unicodeslot=0x1D6F3,
+  visual="it",
  },
  [0x1D6F4]={
   category="lu",
@@ -168308,6 +168801,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A3 },
   unicodeslot=0x1D6F4,
+  visual="it",
  },
  [0x1D6F5]={
   category="lu",
@@ -168316,6 +168810,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A4 },
   unicodeslot=0x1D6F5,
+  visual="it",
  },
  [0x1D6F6]={
   category="lu",
@@ -168324,6 +168819,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A5 },
   unicodeslot=0x1D6F6,
+  visual="it",
  },
  [0x1D6F7]={
   category="lu",
@@ -168332,6 +168828,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A6 },
   unicodeslot=0x1D6F7,
+  visual="it",
  },
  [0x1D6F8]={
   category="lu",
@@ -168340,6 +168837,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A7 },
   unicodeslot=0x1D6F8,
+  visual="it",
  },
  [0x1D6F9]={
   category="lu",
@@ -168348,6 +168846,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A8 },
   unicodeslot=0x1D6F9,
+  visual="it",
  },
  [0x1D6FA]={
   category="lu",
@@ -168356,6 +168855,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A9 },
   unicodeslot=0x1D6FA,
+  visual="it",
  },
  [0x1D6FB]={
   category="sm",
@@ -168366,6 +168866,7 @@ characters.data={
   mathname="nabla",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D6FB,
+  visual="it",
  },
  [0x1D6FC]={
   category="ll",
@@ -168374,6 +168875,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B1 },
   unicodeslot=0x1D6FC,
+  visual="it",
  },
  [0x1D6FD]={
   category="ll",
@@ -168382,6 +168884,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B2 },
   unicodeslot=0x1D6FD,
+  visual="it",
  },
  [0x1D6FE]={
   category="ll",
@@ -168390,6 +168893,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B3 },
   unicodeslot=0x1D6FE,
+  visual="it",
  },
  [0x1D6FF]={
   category="ll",
@@ -168398,6 +168902,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B4 },
   unicodeslot=0x1D6FF,
+  visual="it",
  },
  [0x1D700]={
   category="ll",
@@ -168406,6 +168911,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B5 },
   unicodeslot=0x1D700,
+  visual="it",
  },
  [0x1D701]={
   category="ll",
@@ -168414,6 +168920,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B6 },
   unicodeslot=0x1D701,
+  visual="it",
  },
  [0x1D702]={
   category="ll",
@@ -168422,6 +168929,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B7 },
   unicodeslot=0x1D702,
+  visual="it",
  },
  [0x1D703]={
   category="ll",
@@ -168430,6 +168938,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B8 },
   unicodeslot=0x1D703,
+  visual="it",
  },
  [0x1D704]={
   category="ll",
@@ -168438,6 +168947,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B9 },
   unicodeslot=0x1D704,
+  visual="it",
  },
  [0x1D705]={
   category="ll",
@@ -168446,6 +168956,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BA },
   unicodeslot=0x1D705,
+  visual="it",
  },
  [0x1D706]={
   category="ll",
@@ -168454,6 +168965,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BB },
   unicodeslot=0x1D706,
+  visual="it",
  },
  [0x1D707]={
   category="ll",
@@ -168462,6 +168974,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BC },
   unicodeslot=0x1D707,
+  visual="it",
  },
  [0x1D708]={
   category="ll",
@@ -168470,6 +168983,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BD },
   unicodeslot=0x1D708,
+  visual="it",
  },
  [0x1D709]={
   category="ll",
@@ -168478,6 +168992,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BE },
   unicodeslot=0x1D709,
+  visual="it",
  },
  [0x1D70A]={
   category="ll",
@@ -168486,6 +169001,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BF },
   unicodeslot=0x1D70A,
+  visual="it",
  },
  [0x1D70B]={
   category="ll",
@@ -168494,6 +169010,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C0 },
   unicodeslot=0x1D70B,
+  visual="it",
  },
  [0x1D70C]={
   category="ll",
@@ -168502,6 +169019,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C1 },
   unicodeslot=0x1D70C,
+  visual="it",
  },
  [0x1D70D]={
   category="ll",
@@ -168510,6 +169028,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C2 },
   unicodeslot=0x1D70D,
+  visual="it",
  },
  [0x1D70E]={
   category="ll",
@@ -168518,6 +169037,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C3 },
   unicodeslot=0x1D70E,
+  visual="it",
  },
  [0x1D70F]={
   category="ll",
@@ -168526,6 +169046,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C4 },
   unicodeslot=0x1D70F,
+  visual="it",
  },
  [0x1D710]={
   category="ll",
@@ -168534,6 +169055,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C5 },
   unicodeslot=0x1D710,
+  visual="it",
  },
  [0x1D711]={
   category="ll",
@@ -168542,6 +169064,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C6 },
   unicodeslot=0x1D711,
+  visual="it",
  },
  [0x1D712]={
   category="ll",
@@ -168550,6 +169073,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C7 },
   unicodeslot=0x1D712,
+  visual="it",
  },
  [0x1D713]={
   category="ll",
@@ -168558,6 +169082,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C8 },
   unicodeslot=0x1D713,
+  visual="it",
  },
  [0x1D714]={
   category="ll",
@@ -168566,6 +169091,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C9 },
   unicodeslot=0x1D714,
+  visual="it",
  },
  [0x1D715]={
   category="sm",
@@ -168574,6 +169100,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2202 },
   unicodeslot=0x1D715,
+  visual="it",
  },
  [0x1D716]={
   category="ll",
@@ -168582,6 +169109,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F5 },
   unicodeslot=0x1D716,
+  visual="it",
  },
  [0x1D717]={
   category="ll",
@@ -168592,6 +169120,7 @@ characters.data={
   mathname="vartheta",
   specials={ "font", 0x03D1 },
   unicodeslot=0x1D717,
+  visual="it",
  },
  [0x1D718]={
   category="ll",
@@ -168602,6 +169131,7 @@ characters.data={
   mathname="varkappa",
   specials={ "font", 0x03F0 },
   unicodeslot=0x1D718,
+  visual="it",
  },
  [0x1D719]={
   category="ll",
@@ -168610,6 +169140,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D5 },
   unicodeslot=0x1D719,
+  visual="it",
  },
  [0x1D71A]={
   category="ll",
@@ -168620,6 +169151,7 @@ characters.data={
   mathname="varrho",
   specials={ "font", 0x03F1 },
   unicodeslot=0x1D71A,
+  visual="it",
  },
  [0x1D71B]={
   category="ll",
@@ -168628,6 +169160,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D6 },
   unicodeslot=0x1D71B,
+  visual="it",
  },
  [0x1D71C]={
   category="lu",
@@ -168636,6 +169169,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0391 },
   unicodeslot=0x1D71C,
+  visual="bi",
  },
  [0x1D71D]={
   category="lu",
@@ -168644,6 +169178,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0392 },
   unicodeslot=0x1D71D,
+  visual="bi",
  },
  [0x1D71E]={
   category="lu",
@@ -168652,6 +169187,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0393 },
   unicodeslot=0x1D71E,
+  visual="bi",
  },
  [0x1D71F]={
   category="lu",
@@ -168660,6 +169196,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0394 },
   unicodeslot=0x1D71F,
+  visual="bi",
  },
  [0x1D720]={
   category="lu",
@@ -168668,6 +169205,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0395 },
   unicodeslot=0x1D720,
+  visual="bi",
  },
  [0x1D721]={
   category="lu",
@@ -168676,6 +169214,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0396 },
   unicodeslot=0x1D721,
+  visual="bi",
  },
  [0x1D722]={
   category="lu",
@@ -168684,6 +169223,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0397 },
   unicodeslot=0x1D722,
+  visual="bi",
  },
  [0x1D723]={
   category="lu",
@@ -168692,6 +169232,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0398 },
   unicodeslot=0x1D723,
+  visual="bi",
  },
  [0x1D724]={
   category="lu",
@@ -168700,6 +169241,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0399 },
   unicodeslot=0x1D724,
+  visual="bi",
  },
  [0x1D725]={
   category="lu",
@@ -168708,6 +169250,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039A },
   unicodeslot=0x1D725,
+  visual="bi",
  },
  [0x1D726]={
   category="lu",
@@ -168716,6 +169259,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039B },
   unicodeslot=0x1D726,
+  visual="bi",
  },
  [0x1D727]={
   category="lu",
@@ -168724,6 +169268,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039C },
   unicodeslot=0x1D727,
+  visual="bi",
  },
  [0x1D728]={
   category="lu",
@@ -168732,6 +169277,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039D },
   unicodeslot=0x1D728,
+  visual="bi",
  },
  [0x1D729]={
   category="lu",
@@ -168740,6 +169286,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039E },
   unicodeslot=0x1D729,
+  visual="bi",
  },
  [0x1D72A]={
   category="lu",
@@ -168748,6 +169295,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039F },
   unicodeslot=0x1D72A,
+  visual="bi",
  },
  [0x1D72B]={
   category="lu",
@@ -168756,6 +169304,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A0 },
   unicodeslot=0x1D72B,
+  visual="bi",
  },
  [0x1D72C]={
   category="lu",
@@ -168764,6 +169313,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A1 },
   unicodeslot=0x1D72C,
+  visual="bi",
  },
  [0x1D72D]={
   category="lu",
@@ -168772,6 +169322,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F4 },
   unicodeslot=0x1D72D,
+  visual="bi",
  },
  [0x1D72E]={
   category="lu",
@@ -168780,6 +169331,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A3 },
   unicodeslot=0x1D72E,
+  visual="bi",
  },
  [0x1D72F]={
   category="lu",
@@ -168788,6 +169340,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A4 },
   unicodeslot=0x1D72F,
+  visual="bi",
  },
  [0x1D730]={
   category="lu",
@@ -168796,6 +169349,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A5 },
   unicodeslot=0x1D730,
+  visual="bi",
  },
  [0x1D731]={
   category="lu",
@@ -168804,6 +169358,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A6 },
   unicodeslot=0x1D731,
+  visual="bi",
  },
  [0x1D732]={
   category="lu",
@@ -168812,6 +169367,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A7 },
   unicodeslot=0x1D732,
+  visual="bi",
  },
  [0x1D733]={
   category="lu",
@@ -168820,6 +169376,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A8 },
   unicodeslot=0x1D733,
+  visual="bi",
  },
  [0x1D734]={
   category="lu",
@@ -168828,6 +169385,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A9 },
   unicodeslot=0x1D734,
+  visual="bi",
  },
  [0x1D735]={
   category="sm",
@@ -168836,6 +169394,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D735,
+  visual="bi",
  },
  [0x1D736]={
   category="ll",
@@ -168844,6 +169403,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B1 },
   unicodeslot=0x1D736,
+  visual="bi",
  },
  [0x1D737]={
   category="ll",
@@ -168852,6 +169412,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B2 },
   unicodeslot=0x1D737,
+  visual="bi",
  },
  [0x1D738]={
   category="ll",
@@ -168860,6 +169421,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B3 },
   unicodeslot=0x1D738,
+  visual="bi",
  },
  [0x1D739]={
   category="ll",
@@ -168868,6 +169430,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B4 },
   unicodeslot=0x1D739,
+  visual="bi",
  },
  [0x1D73A]={
   category="ll",
@@ -168876,6 +169439,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B5 },
   unicodeslot=0x1D73A,
+  visual="bi",
  },
  [0x1D73B]={
   category="ll",
@@ -168884,6 +169448,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B6 },
   unicodeslot=0x1D73B,
+  visual="bi",
  },
  [0x1D73C]={
   category="ll",
@@ -168892,6 +169457,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B7 },
   unicodeslot=0x1D73C,
+  visual="bi",
  },
  [0x1D73D]={
   category="ll",
@@ -168900,6 +169466,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B8 },
   unicodeslot=0x1D73D,
+  visual="bi",
  },
  [0x1D73E]={
   category="ll",
@@ -168908,6 +169475,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B9 },
   unicodeslot=0x1D73E,
+  visual="bi",
  },
  [0x1D73F]={
   category="ll",
@@ -168916,6 +169484,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BA },
   unicodeslot=0x1D73F,
+  visual="bi",
  },
  [0x1D740]={
   category="ll",
@@ -168924,6 +169493,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BB },
   unicodeslot=0x1D740,
+  visual="bi",
  },
  [0x1D741]={
   category="ll",
@@ -168932,6 +169502,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BC },
   unicodeslot=0x1D741,
+  visual="bi",
  },
  [0x1D742]={
   category="ll",
@@ -168940,6 +169511,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BD },
   unicodeslot=0x1D742,
+  visual="bi",
  },
  [0x1D743]={
   category="ll",
@@ -168948,6 +169520,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BE },
   unicodeslot=0x1D743,
+  visual="bi",
  },
  [0x1D744]={
   category="ll",
@@ -168956,6 +169529,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BF },
   unicodeslot=0x1D744,
+  visual="bi",
  },
  [0x1D745]={
   category="ll",
@@ -168964,6 +169538,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C0 },
   unicodeslot=0x1D745,
+  visual="bi",
  },
  [0x1D746]={
   category="ll",
@@ -168972,6 +169547,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C1 },
   unicodeslot=0x1D746,
+  visual="bi",
  },
  [0x1D747]={
   category="ll",
@@ -168980,6 +169556,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C2 },
   unicodeslot=0x1D747,
+  visual="bi",
  },
  [0x1D748]={
   category="ll",
@@ -168988,6 +169565,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C3 },
   unicodeslot=0x1D748,
+  visual="bi",
  },
  [0x1D749]={
   category="ll",
@@ -168996,6 +169574,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C4 },
   unicodeslot=0x1D749,
+  visual="bi",
  },
  [0x1D74A]={
   category="ll",
@@ -169004,6 +169583,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C5 },
   unicodeslot=0x1D74A,
+  visual="bi",
  },
  [0x1D74B]={
   category="ll",
@@ -169012,6 +169592,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C6 },
   unicodeslot=0x1D74B,
+  visual="bi",
  },
  [0x1D74C]={
   category="ll",
@@ -169020,6 +169601,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C7 },
   unicodeslot=0x1D74C,
+  visual="bi",
  },
  [0x1D74D]={
   category="ll",
@@ -169028,6 +169610,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C8 },
   unicodeslot=0x1D74D,
+  visual="bi",
  },
  [0x1D74E]={
   category="ll",
@@ -169036,6 +169619,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C9 },
   unicodeslot=0x1D74E,
+  visual="bi",
  },
  [0x1D74F]={
   category="sm",
@@ -169044,6 +169628,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2202 },
   unicodeslot=0x1D74F,
+  visual="bi",
  },
  [0x1D750]={
   category="ll",
@@ -169052,6 +169637,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F5 },
   unicodeslot=0x1D750,
+  visual="bi",
  },
  [0x1D751]={
   category="ll",
@@ -169060,6 +169646,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D1 },
   unicodeslot=0x1D751,
+  visual="bi",
  },
  [0x1D752]={
   category="ll",
@@ -169068,6 +169655,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F0 },
   unicodeslot=0x1D752,
+  visual="bi",
  },
  [0x1D753]={
   category="ll",
@@ -169076,6 +169664,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D5 },
   unicodeslot=0x1D753,
+  visual="bi",
  },
  [0x1D754]={
   category="ll",
@@ -169084,6 +169673,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F1 },
   unicodeslot=0x1D754,
+  visual="bi",
  },
  [0x1D755]={
   category="ll",
@@ -169092,6 +169682,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D6 },
   unicodeslot=0x1D755,
+  visual="bi",
  },
  [0x1D756]={
   category="lu",
@@ -169100,6 +169691,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0391 },
   unicodeslot=0x1D756,
+  visual="bf",
  },
  [0x1D757]={
   category="lu",
@@ -169108,6 +169700,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0392 },
   unicodeslot=0x1D757,
+  visual="bf",
  },
  [0x1D758]={
   category="lu",
@@ -169116,6 +169709,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0393 },
   unicodeslot=0x1D758,
+  visual="bf",
  },
  [0x1D759]={
   category="lu",
@@ -169124,6 +169718,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0394 },
   unicodeslot=0x1D759,
+  visual="bf",
  },
  [0x1D75A]={
   category="lu",
@@ -169132,6 +169727,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0395 },
   unicodeslot=0x1D75A,
+  visual="bf",
  },
  [0x1D75B]={
   category="lu",
@@ -169140,6 +169736,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0396 },
   unicodeslot=0x1D75B,
+  visual="bf",
  },
  [0x1D75C]={
   category="lu",
@@ -169148,6 +169745,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0397 },
   unicodeslot=0x1D75C,
+  visual="bf",
  },
  [0x1D75D]={
   category="lu",
@@ -169156,6 +169754,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0398 },
   unicodeslot=0x1D75D,
+  visual="bf",
  },
  [0x1D75E]={
   category="lu",
@@ -169164,6 +169763,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0399 },
   unicodeslot=0x1D75E,
+  visual="bf",
  },
  [0x1D75F]={
   category="lu",
@@ -169172,6 +169772,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039A },
   unicodeslot=0x1D75F,
+  visual="bf",
  },
  [0x1D760]={
   category="lu",
@@ -169180,6 +169781,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039B },
   unicodeslot=0x1D760,
+  visual="bf",
  },
  [0x1D761]={
   category="lu",
@@ -169188,6 +169790,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039C },
   unicodeslot=0x1D761,
+  visual="bf",
  },
  [0x1D762]={
   category="lu",
@@ -169196,6 +169799,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039D },
   unicodeslot=0x1D762,
+  visual="bf",
  },
  [0x1D763]={
   category="lu",
@@ -169204,6 +169808,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039E },
   unicodeslot=0x1D763,
+  visual="bf",
  },
  [0x1D764]={
   category="lu",
@@ -169212,6 +169817,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039F },
   unicodeslot=0x1D764,
+  visual="bf",
  },
  [0x1D765]={
   category="lu",
@@ -169220,6 +169826,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A0 },
   unicodeslot=0x1D765,
+  visual="bf",
  },
  [0x1D766]={
   category="lu",
@@ -169228,6 +169835,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A1 },
   unicodeslot=0x1D766,
+  visual="bf",
  },
  [0x1D767]={
   category="lu",
@@ -169236,6 +169844,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F4 },
   unicodeslot=0x1D767,
+  visual="bf",
  },
  [0x1D768]={
   category="lu",
@@ -169244,6 +169853,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A3 },
   unicodeslot=0x1D768,
+  visual="bf",
  },
  [0x1D769]={
   category="lu",
@@ -169252,6 +169862,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A4 },
   unicodeslot=0x1D769,
+  visual="bf",
  },
  [0x1D76A]={
   category="lu",
@@ -169260,6 +169871,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A5 },
   unicodeslot=0x1D76A,
+  visual="bf",
  },
  [0x1D76B]={
   category="lu",
@@ -169268,6 +169880,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A6 },
   unicodeslot=0x1D76B,
+  visual="bf",
  },
  [0x1D76C]={
   category="lu",
@@ -169276,6 +169889,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A7 },
   unicodeslot=0x1D76C,
+  visual="bf",
  },
  [0x1D76D]={
   category="lu",
@@ -169284,6 +169898,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A8 },
   unicodeslot=0x1D76D,
+  visual="bf",
  },
  [0x1D76E]={
   category="lu",
@@ -169292,6 +169907,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A9 },
   unicodeslot=0x1D76E,
+  visual="bf",
  },
  [0x1D76F]={
   category="sm",
@@ -169300,6 +169916,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D76F,
+  visual="bf",
  },
  [0x1D770]={
   category="ll",
@@ -169308,6 +169925,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B1 },
   unicodeslot=0x1D770,
+  visual="bf",
  },
  [0x1D771]={
   category="ll",
@@ -169316,6 +169934,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B2 },
   unicodeslot=0x1D771,
+  visual="bf",
  },
  [0x1D772]={
   category="ll",
@@ -169324,6 +169943,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B3 },
   unicodeslot=0x1D772,
+  visual="bf",
  },
  [0x1D773]={
   category="ll",
@@ -169332,6 +169952,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B4 },
   unicodeslot=0x1D773,
+  visual="bf",
  },
  [0x1D774]={
   category="ll",
@@ -169340,6 +169961,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B5 },
   unicodeslot=0x1D774,
+  visual="bf",
  },
  [0x1D775]={
   category="ll",
@@ -169348,6 +169970,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B6 },
   unicodeslot=0x1D775,
+  visual="bf",
  },
  [0x1D776]={
   category="ll",
@@ -169356,6 +169979,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B7 },
   unicodeslot=0x1D776,
+  visual="bf",
  },
  [0x1D777]={
   category="ll",
@@ -169364,6 +169988,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B8 },
   unicodeslot=0x1D777,
+  visual="bf",
  },
  [0x1D778]={
   category="ll",
@@ -169372,6 +169997,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B9 },
   unicodeslot=0x1D778,
+  visual="bf",
  },
  [0x1D779]={
   category="ll",
@@ -169380,6 +170006,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BA },
   unicodeslot=0x1D779,
+  visual="bf",
  },
  [0x1D77A]={
   category="ll",
@@ -169388,6 +170015,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BB },
   unicodeslot=0x1D77A,
+  visual="bf",
  },
  [0x1D77B]={
   category="ll",
@@ -169396,6 +170024,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BC },
   unicodeslot=0x1D77B,
+  visual="bf",
  },
  [0x1D77C]={
   category="ll",
@@ -169404,6 +170033,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BD },
   unicodeslot=0x1D77C,
+  visual="bf",
  },
  [0x1D77D]={
   category="ll",
@@ -169412,6 +170042,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BE },
   unicodeslot=0x1D77D,
+  visual="bf",
  },
  [0x1D77E]={
   category="ll",
@@ -169420,6 +170051,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BF },
   unicodeslot=0x1D77E,
+  visual="bf",
  },
  [0x1D77F]={
   category="ll",
@@ -169428,6 +170060,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C0 },
   unicodeslot=0x1D77F,
+  visual="bf",
  },
  [0x1D780]={
   category="ll",
@@ -169436,6 +170069,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C1 },
   unicodeslot=0x1D780,
+  visual="bf",
  },
  [0x1D781]={
   category="ll",
@@ -169444,6 +170078,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C2 },
   unicodeslot=0x1D781,
+  visual="bf",
  },
  [0x1D782]={
   category="ll",
@@ -169452,6 +170087,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C3 },
   unicodeslot=0x1D782,
+  visual="bf",
  },
  [0x1D783]={
   category="ll",
@@ -169460,6 +170096,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C4 },
   unicodeslot=0x1D783,
+  visual="bf",
  },
  [0x1D784]={
   category="ll",
@@ -169468,6 +170105,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C5 },
   unicodeslot=0x1D784,
+  visual="bf",
  },
  [0x1D785]={
   category="ll",
@@ -169476,6 +170114,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C6 },
   unicodeslot=0x1D785,
+  visual="bf",
  },
  [0x1D786]={
   category="ll",
@@ -169484,6 +170123,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C7 },
   unicodeslot=0x1D786,
+  visual="bf",
  },
  [0x1D787]={
   category="ll",
@@ -169492,6 +170132,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C8 },
   unicodeslot=0x1D787,
+  visual="bf",
  },
  [0x1D788]={
   category="ll",
@@ -169500,6 +170141,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C9 },
   unicodeslot=0x1D788,
+  visual="bf",
  },
  [0x1D789]={
   category="sm",
@@ -169508,6 +170150,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2202 },
   unicodeslot=0x1D789,
+  visual="bf",
  },
  [0x1D78A]={
   category="ll",
@@ -169516,6 +170159,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F5 },
   unicodeslot=0x1D78A,
+  visual="bf",
  },
  [0x1D78B]={
   category="ll",
@@ -169524,6 +170168,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D1 },
   unicodeslot=0x1D78B,
+  visual="bf",
  },
  [0x1D78C]={
   category="ll",
@@ -169532,6 +170177,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F0 },
   unicodeslot=0x1D78C,
+  visual="bf",
  },
  [0x1D78D]={
   category="ll",
@@ -169540,6 +170186,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D5 },
   unicodeslot=0x1D78D,
+  visual="bf",
  },
  [0x1D78E]={
   category="ll",
@@ -169548,6 +170195,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F1 },
   unicodeslot=0x1D78E,
+  visual="bf",
  },
  [0x1D78F]={
   category="ll",
@@ -169556,6 +170204,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D6 },
   unicodeslot=0x1D78F,
+  visual="bf",
  },
  [0x1D790]={
   category="lu",
@@ -169564,6 +170213,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0391 },
   unicodeslot=0x1D790,
+  visual="bi",
  },
  [0x1D791]={
   category="lu",
@@ -169572,6 +170222,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0392 },
   unicodeslot=0x1D791,
+  visual="bi",
  },
  [0x1D792]={
   category="lu",
@@ -169580,6 +170231,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0393 },
   unicodeslot=0x1D792,
+  visual="bi",
  },
  [0x1D793]={
   category="lu",
@@ -169588,6 +170240,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0394 },
   unicodeslot=0x1D793,
+  visual="bi",
  },
  [0x1D794]={
   category="lu",
@@ -169596,6 +170249,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0395 },
   unicodeslot=0x1D794,
+  visual="bi",
  },
  [0x1D795]={
   category="lu",
@@ -169604,6 +170258,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0396 },
   unicodeslot=0x1D795,
+  visual="bi",
  },
  [0x1D796]={
   category="lu",
@@ -169612,6 +170267,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0397 },
   unicodeslot=0x1D796,
+  visual="bi",
  },
  [0x1D797]={
   category="lu",
@@ -169620,6 +170276,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0398 },
   unicodeslot=0x1D797,
+  visual="bi",
  },
  [0x1D798]={
   category="lu",
@@ -169628,6 +170285,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x0399 },
   unicodeslot=0x1D798,
+  visual="bi",
  },
  [0x1D799]={
   category="lu",
@@ -169636,6 +170294,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039A },
   unicodeslot=0x1D799,
+  visual="bi",
  },
  [0x1D79A]={
   category="lu",
@@ -169644,6 +170303,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039B },
   unicodeslot=0x1D79A,
+  visual="bi",
  },
  [0x1D79B]={
   category="lu",
@@ -169652,6 +170312,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039C },
   unicodeslot=0x1D79B,
+  visual="bi",
  },
  [0x1D79C]={
   category="lu",
@@ -169660,6 +170321,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039D },
   unicodeslot=0x1D79C,
+  visual="bi",
  },
  [0x1D79D]={
   category="lu",
@@ -169668,6 +170330,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039E },
   unicodeslot=0x1D79D,
+  visual="bi",
  },
  [0x1D79E]={
   category="lu",
@@ -169676,6 +170339,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x039F },
   unicodeslot=0x1D79E,
+  visual="bi",
  },
  [0x1D79F]={
   category="lu",
@@ -169684,6 +170348,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A0 },
   unicodeslot=0x1D79F,
+  visual="bi",
  },
  [0x1D7A0]={
   category="lu",
@@ -169692,6 +170357,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A1 },
   unicodeslot=0x1D7A0,
+  visual="bi",
  },
  [0x1D7A1]={
   category="lu",
@@ -169700,6 +170366,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F4 },
   unicodeslot=0x1D7A1,
+  visual="bi",
  },
  [0x1D7A2]={
   category="lu",
@@ -169708,6 +170375,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A3 },
   unicodeslot=0x1D7A2,
+  visual="bi",
  },
  [0x1D7A3]={
   category="lu",
@@ -169716,6 +170384,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A4 },
   unicodeslot=0x1D7A3,
+  visual="bi",
  },
  [0x1D7A4]={
   category="lu",
@@ -169724,6 +170393,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A5 },
   unicodeslot=0x1D7A4,
+  visual="bi",
  },
  [0x1D7A5]={
   category="lu",
@@ -169732,6 +170402,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A6 },
   unicodeslot=0x1D7A5,
+  visual="bi",
  },
  [0x1D7A6]={
   category="lu",
@@ -169740,6 +170411,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A7 },
   unicodeslot=0x1D7A6,
+  visual="bi",
  },
  [0x1D7A7]={
   category="lu",
@@ -169748,6 +170420,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A8 },
   unicodeslot=0x1D7A7,
+  visual="bi",
  },
  [0x1D7A8]={
   category="lu",
@@ -169756,6 +170429,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03A9 },
   unicodeslot=0x1D7A8,
+  visual="bi",
  },
  [0x1D7A9]={
   category="sm",
@@ -169764,6 +170438,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2207 },
   unicodeslot=0x1D7A9,
+  visual="bi",
  },
  [0x1D7AA]={
   category="ll",
@@ -169772,6 +170447,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B1 },
   unicodeslot=0x1D7AA,
+  visual="bi",
  },
  [0x1D7AB]={
   category="ll",
@@ -169780,6 +170456,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B2 },
   unicodeslot=0x1D7AB,
+  visual="bi",
  },
  [0x1D7AC]={
   category="ll",
@@ -169788,6 +170465,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B3 },
   unicodeslot=0x1D7AC,
+  visual="bi",
  },
  [0x1D7AD]={
   category="ll",
@@ -169796,6 +170474,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B4 },
   unicodeslot=0x1D7AD,
+  visual="bi",
  },
  [0x1D7AE]={
   category="ll",
@@ -169804,6 +170483,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B5 },
   unicodeslot=0x1D7AE,
+  visual="bi",
  },
  [0x1D7AF]={
   category="ll",
@@ -169812,6 +170492,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B6 },
   unicodeslot=0x1D7AF,
+  visual="bi",
  },
  [0x1D7B0]={
   category="ll",
@@ -169820,6 +170501,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B7 },
   unicodeslot=0x1D7B0,
+  visual="bi",
  },
  [0x1D7B1]={
   category="ll",
@@ -169828,6 +170510,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B8 },
   unicodeslot=0x1D7B1,
+  visual="bi",
  },
  [0x1D7B2]={
   category="ll",
@@ -169836,6 +170519,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03B9 },
   unicodeslot=0x1D7B2,
+  visual="bi",
  },
  [0x1D7B3]={
   category="ll",
@@ -169844,6 +170528,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BA },
   unicodeslot=0x1D7B3,
+  visual="bi",
  },
  [0x1D7B4]={
   category="ll",
@@ -169852,6 +170537,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BB },
   unicodeslot=0x1D7B4,
+  visual="bi",
  },
  [0x1D7B5]={
   category="ll",
@@ -169860,6 +170546,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BC },
   unicodeslot=0x1D7B5,
+  visual="bi",
  },
  [0x1D7B6]={
   category="ll",
@@ -169868,6 +170555,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BD },
   unicodeslot=0x1D7B6,
+  visual="bi",
  },
  [0x1D7B7]={
   category="ll",
@@ -169876,6 +170564,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BE },
   unicodeslot=0x1D7B7,
+  visual="bi",
  },
  [0x1D7B8]={
   category="ll",
@@ -169884,6 +170573,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03BF },
   unicodeslot=0x1D7B8,
+  visual="bi",
  },
  [0x1D7B9]={
   category="ll",
@@ -169892,6 +170582,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C0 },
   unicodeslot=0x1D7B9,
+  visual="bi",
  },
  [0x1D7BA]={
   category="ll",
@@ -169900,6 +170591,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C1 },
   unicodeslot=0x1D7BA,
+  visual="bi",
  },
  [0x1D7BB]={
   category="ll",
@@ -169908,6 +170600,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C2 },
   unicodeslot=0x1D7BB,
+  visual="bi",
  },
  [0x1D7BC]={
   category="ll",
@@ -169916,6 +170609,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C3 },
   unicodeslot=0x1D7BC,
+  visual="bi",
  },
  [0x1D7BD]={
   category="ll",
@@ -169924,6 +170618,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C4 },
   unicodeslot=0x1D7BD,
+  visual="bi",
  },
  [0x1D7BE]={
   category="ll",
@@ -169932,6 +170627,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C5 },
   unicodeslot=0x1D7BE,
+  visual="bi",
  },
  [0x1D7BF]={
   category="ll",
@@ -169940,6 +170636,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C6 },
   unicodeslot=0x1D7BF,
+  visual="bi",
  },
  [0x1D7C0]={
   category="ll",
@@ -169948,6 +170645,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C7 },
   unicodeslot=0x1D7C0,
+  visual="bi",
  },
  [0x1D7C1]={
   category="ll",
@@ -169956,6 +170654,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C8 },
   unicodeslot=0x1D7C1,
+  visual="bi",
  },
  [0x1D7C2]={
   category="ll",
@@ -169964,6 +170663,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03C9 },
   unicodeslot=0x1D7C2,
+  visual="bi",
  },
  [0x1D7C3]={
   category="sm",
@@ -169972,6 +170672,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x2202 },
   unicodeslot=0x1D7C3,
+  visual="bi",
  },
  [0x1D7C4]={
   category="ll",
@@ -169980,6 +170681,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F5 },
   unicodeslot=0x1D7C4,
+  visual="bi",
  },
  [0x1D7C5]={
   category="ll",
@@ -169988,6 +170690,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D1 },
   unicodeslot=0x1D7C5,
+  visual="bi",
  },
  [0x1D7C6]={
   category="ll",
@@ -169996,6 +170699,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F0 },
   unicodeslot=0x1D7C6,
+  visual="bi",
  },
  [0x1D7C7]={
   category="ll",
@@ -170004,6 +170708,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D5 },
   unicodeslot=0x1D7C7,
+  visual="bi",
  },
  [0x1D7C8]={
   category="ll",
@@ -170012,6 +170717,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03F1 },
   unicodeslot=0x1D7C8,
+  visual="bi",
  },
  [0x1D7C9]={
   category="ll",
@@ -170020,6 +170726,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03D6 },
   unicodeslot=0x1D7C9,
+  visual="bi",
  },
  [0x1D7CA]={
   category="lu",
@@ -170028,6 +170735,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03DC },
   unicodeslot=0x1D7CA,
+  visual="bf",
  },
  [0x1D7CB]={
   category="ll",
@@ -170036,6 +170744,7 @@ characters.data={
   linebreak="al",
   specials={ "font", 0x03DD },
   unicodeslot=0x1D7CB,
+  visual="bf",
  },
  [0x1D7CE]={
   category="nd",
@@ -170044,6 +170753,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0030 },
   unicodeslot=0x1D7CE,
+  visual="bf",
  },
  [0x1D7CF]={
   category="nd",
@@ -170052,6 +170762,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0031 },
   unicodeslot=0x1D7CF,
+  visual="bf",
  },
  [0x1D7D0]={
   category="nd",
@@ -170060,6 +170771,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0032 },
   unicodeslot=0x1D7D0,
+  visual="bf",
  },
  [0x1D7D1]={
   category="nd",
@@ -170068,6 +170780,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0033 },
   unicodeslot=0x1D7D1,
+  visual="bf",
  },
  [0x1D7D2]={
   category="nd",
@@ -170076,6 +170789,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0034 },
   unicodeslot=0x1D7D2,
+  visual="bf",
  },
  [0x1D7D3]={
   category="nd",
@@ -170084,6 +170798,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0035 },
   unicodeslot=0x1D7D3,
+  visual="bf",
  },
  [0x1D7D4]={
   category="nd",
@@ -170092,6 +170807,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0036 },
   unicodeslot=0x1D7D4,
+  visual="bf",
  },
  [0x1D7D5]={
   category="nd",
@@ -170100,6 +170816,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0037 },
   unicodeslot=0x1D7D5,
+  visual="bf",
  },
  [0x1D7D6]={
   category="nd",
@@ -170108,6 +170825,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0038 },
   unicodeslot=0x1D7D6,
+  visual="bf",
  },
  [0x1D7D7]={
   category="nd",
@@ -170116,6 +170834,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0039 },
   unicodeslot=0x1D7D7,
+  visual="bf",
  },
  [0x1D7D8]={
   category="nd",
@@ -170284,6 +171003,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0030 },
   unicodeslot=0x1D7EC,
+  visual="bf",
  },
  [0x1D7ED]={
   category="nd",
@@ -170292,6 +171012,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0031 },
   unicodeslot=0x1D7ED,
+  visual="bf",
  },
  [0x1D7EE]={
   category="nd",
@@ -170300,6 +171021,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0032 },
   unicodeslot=0x1D7EE,
+  visual="bf",
  },
  [0x1D7EF]={
   category="nd",
@@ -170308,6 +171030,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0033 },
   unicodeslot=0x1D7EF,
+  visual="bf",
  },
  [0x1D7F0]={
   category="nd",
@@ -170316,6 +171039,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0034 },
   unicodeslot=0x1D7F0,
+  visual="bf",
  },
  [0x1D7F1]={
   category="nd",
@@ -170324,6 +171048,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0035 },
   unicodeslot=0x1D7F1,
+  visual="bf",
  },
  [0x1D7F2]={
   category="nd",
@@ -170332,6 +171057,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0036 },
   unicodeslot=0x1D7F2,
+  visual="bf",
  },
  [0x1D7F3]={
   category="nd",
@@ -170340,6 +171066,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0037 },
   unicodeslot=0x1D7F3,
+  visual="bf",
  },
  [0x1D7F4]={
   category="nd",
@@ -170348,6 +171075,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0038 },
   unicodeslot=0x1D7F4,
+  visual="bf",
  },
  [0x1D7F5]={
   category="nd",
@@ -170356,6 +171084,7 @@ characters.data={
   linebreak="nu",
   specials={ "font", 0x0039 },
   unicodeslot=0x1D7F5,
+  visual="bf",
  },
  [0x1D7F6]={
   category="nd",

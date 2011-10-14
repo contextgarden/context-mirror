@@ -28,9 +28,9 @@ local list, done, alldone, used, registered, ordered  = { }, { }, { }, { }, { },
 local mode = 0
 
 local template = utilities.strings.striplong([[
-  \citation{*}
-  \bibstyle{cont-%s}
-  \bibdata{%s}
+    \citation{*}
+    \bibstyle{cont-%s}
+    \bibdata{%s}
 ]])
 
 function hacks.process(settings)
@@ -128,6 +128,7 @@ local function compare(a,b)
 end
 
 function hacks.resolve(prefix,block,reference) -- maybe already feed it split
+    -- needs checking (the prefix in relation to components)
     local subset = references.collected[prefix or ""] or references.collected[""]
     if subset then
         local result, nofresult, done = { }, 0, { }
