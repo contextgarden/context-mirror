@@ -166,8 +166,6 @@ vardef get_step_table_line (expr i) =
   fi
 enddef ;
 
-endinput
-
 %D The older method let \METAPOST\ do the typesetting. The
 %D macros needed for that are included here for educational
 %D purposes.

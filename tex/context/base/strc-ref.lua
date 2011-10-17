@@ -1236,7 +1236,7 @@ local function identify_inner_or_outer(set,var,i)
     -- here we fall back on product data
     local inner = var.inner
     if inner and inner ~= "" then
-        local v = identify_inner(set,copytable(var),prefix,collected,derived,tobesaved)
+        local v = identify_inner(set,copytable(var),set.prefix,collected,derived,tobesaved)
         if v.i and not v.error then
             v.kind = "inner" -- check this
             if trace_identifying then
@@ -1311,6 +1311,21 @@ local function identify_inner_or_outer(set,var,i)
     end
     return var
 end
+
+-- local function identify_inner_or_outer(set,var,i)
+--     -- we might consider first checking with a prefix prepended and then without
+--     -- which is better for fig:oeps
+--     local var = do_identify_inner_or_outer(set,var,i)
+--     if var.error then
+--         local prefix = set.prefix
+--         if prefix and prefix ~= "" then
+--             var.inner = prefix .. ':' .. var.inner
+--             var.error = nil
+--             return do_identify_inner_or_outer(set,var,i)
+--         end
+--     end
+--     return var
+-- end
 
 local function identify_inner_component(set,var,i)
     -- we're in a product (maybe ignore when same as component)

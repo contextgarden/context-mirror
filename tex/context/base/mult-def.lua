@@ -6920,6 +6920,10 @@ return {
    ["en"]="beforesection",
    ["nl"]="voorsectie",
   },
+  ["insidesection"]={
+   ["en"]="insidesection",
+   ["nl"]="binnensectie",
+  },
   ["beforehead"]={
    ["cs"]="predhlavickou",
    ["de"]="vorkopf",

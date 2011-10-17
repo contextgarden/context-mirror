@@ -33,12 +33,6 @@
 
 \def\@@MPG{@MPG@}
 
-\startMPextensions
-    if unknown context_tool: input mp-tool; fi;
-    if unknown context_spec: input mp-spec; fi;
-    if unknown context_grph: input mp-grph; fi;
-\stopMPextensions
-
 %D Since we want lables to follow the document settings, we
 %D also set the font related variables.
 
@@ -464,9 +458,9 @@
 
 \startMPextensions
     boolean collapse_data; collapse_data:=true;
-    def data_mpd_file = "\MPdataMPDfile" enddef ;
-    def data_mpo_file = "\MPdataMPOfile" enddef ;
-    def data_mpy_file = "\MPdataMPYfile" enddef ;
+    def data_mpd_file="\MPdataMPDfile"; enddef ;
+    def data_mpo_file="\MPdataMPOfile"; enddef ;
+    def data_mpy_file="\MPdataMPYfile"; enddef ;
 \stopMPextensions
 
 \def\getMPdata

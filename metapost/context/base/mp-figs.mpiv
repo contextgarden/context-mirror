@@ -45,5 +45,3 @@ let figuredimensions = figuresize ; % for old times sake
 def naturalfigure(expr name) =
     externalfigure name xyscaled(figuresize(name))
 enddef ;
-
-endinput

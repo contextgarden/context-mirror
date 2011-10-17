@@ -15,31 +15,15 @@
 
 boolean mant_font ; mant_font := true ; % signals graph not to load form
 
-if known mplib :
-    boolean fmt_loaded ; fmt_loaded := true ;
-    expandafter endinput
-fi ;
+if known context_form : endinput ; fi ;
 
-if   known fmt_loaded : expandafter endinput fi ;
-   boolean fmt_loaded ; fmt_loaded := true ;
+boolean context_form ; context_form := true ;
 
-if unknown fmt_precision :
-   numeric fmt_precision ; fmt_precision := 3 ;
-fi ;
-
-if unknown fmt_initialize :
-   boolean fmt_initialize ; fmt_initialize := true ;
-fi ;
-
-if unknown fmt_separator :
-    string fmt_separator ; fmt_separator := "%" ;
-fi ;
-
-if unknown fmt_zerocheck :
-   boolean fmt_zerocheck ; fmt_zerocheck := false ;
-fi ;
-
-boolean fmt_metapost ; fmt_metapost := true ; % == use old method
+if unknown fmt_metapost   : boolean fmt_metapost   ; fmt_metapost   := true  ; fi ; % == use old method
+if unknown fmt_precision  : numeric fmt_precision  ; fmt_precision  := 3     ; fi ;
+if unknown fmt_initialize : boolean fmt_initialize ; fmt_initialize := true  ; fi ;
+if unknown fmt_separator  : string  fmt_separator  ; fmt_separator  := "%"   ; fi ;
+if unknown fmt_zerocheck  : boolean fmt_zerocheck  ; fmt_zerocheck  := false ; fi ;
 
 % As said, all clever code is from John, the more stupid
 % extensions are mine. The following string variables are

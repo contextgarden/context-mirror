@@ -204,5 +204,3 @@ enddef ;
 
 let drawshape = drawpredefinedshape ;
 let drawline  = drawpredefinedline  ;
-
-endinput ;

@@ -41,7 +41,7 @@ input "mp-char.mpii" ;
 input "mp-step.mpii" ;
 input "mp-grph.mpii" ;
 input "mp-figs.mpii" ;
-input "mp-form.mpii" ;
+%%%%% "mp-form.mpii" ;
 input "mp-grid.mpii" ;
 input "mp-func.mpii" ;
 
@@ -62,4 +62,4 @@ def end =
   ; message "" ; message metafunversion ; message "" ; normalend ;
 enddef ;
 
-dump ; endinput .
+dump ;

@@ -290,28 +290,21 @@ def graphictextdirective text t =
   graphictextstring := graphictextstring & t & CRLF ;
 enddef ;
 
-endinput
-
 % example
-
-input mp-grph ;
-
-  graphictextformat := "context" ;
-% graphictextformat := "plain" ;
-% graphictextformat := "latex" ; graphictextdirective "\documentclass[]{article}" ;
-
-beginfig (1) ;
-  graphictext
-    "\vbox{\hsize10cm \input tufte }"
-    scaled 8
-    withdrawcolor blue
-    withfillcolor red
-    withpen pencircle scaled 2pt ;
-endfig ;
-
-beginfig(1) ;
-  loadfigure "gracht.mp" rotated 20 ;
-  loadfigure "koe.mp" number 1 scaled 2 ;
-endfig ;
-
-end
+%
+% % graphictextformat := "context" ;
+% % graphictextformat := "plain" ;
+%
+% beginfig (1) ;
+%   graphictext
+%     "\vbox{\hsize10cm \input tufte }"
+%     scaled 8
+%     withdrawcolor blue
+%     withfillcolor red
+%     withpen pencircle scaled 2pt ;
+% endfig ;
+%
+% beginfig(1) ;
+%   loadfigure "gracht.mp" rotated 20 ;
+%   loadfigure "koe.mp" number 1 scaled 2 ;
+% endfig ;

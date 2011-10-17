@@ -47,7 +47,6 @@
 %D for instance shading. More information can be found in
 %D type {supp-mpe.tex}.
 
-if known mplib        : endinput ; fi ;
 if known context_spec : endinput ; fi ;
 
 boolean context_spec ; context_spec := true ;
@@ -713,8 +712,6 @@ vardef scaledgray(expr s,sf) =
 enddef ;
 
 % spotcolor is already scaled
-
-endinput ;
 
 % just an exercise (due to a question by Chof on the context mailing list); scaling of
 % 'special' colors is not possible and the next solution is incomplete (spot colors,

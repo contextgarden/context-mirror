@@ -50,7 +50,7 @@
 \def\getsomestructurenumber    #1#2{\ctxlua{structures.sections.getnumber(#1,"#2")}}   % level, what
 \def\getfullstructurenumber      #1{\ctxlua{structures.sections.fullnumber(#1)}}       % level
 \def\getsomefullstructurenumber#1#2{\ctxlua{structures.sections.fullnumber(#1,"#2")}}
-\def\getspecificstructuretitle   #1{\ctxlua{structures.sections.structuredata(#1,"titledata.title",nil,"\headparameter\s!catcodes")}}%
+\def\getspecificstructuretitle   #1{\ctxlua{structures.sections.structuredata("#1","titledata.title",nil,"\headparameter\s!catcodes")}}%
 
 % structure heads (like \startchapter)
 
@@ -77,7 +77,7 @@
           \let\currentheadparent\currentheaddefault
         \fi\fi
         \normalexpanded {%
-            \setheadparameter{\c!label }{\currenthead}%
+            \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currenthead}%
             \setheadparameter{\s!parent}{\??nh\currentheadparent}%
             \definemarking[\currenthead]         [\currentheadsection]%
@@ -122,7 +122,7 @@
 \appendtoks
  % \setevalue{\e!next \currenthead}{\donexthead [\currenthead]}%
    \setevalue{\e!start\currenthead}{\dostarthead[\currenthead]}%
-   \setevalue{\e!stop \currenthead}{\dostophead[\currenthead]}%
+   \setevalue{\e!stop \currenthead}{\dostophead [\currenthead]}%
 \to \everydefinehead
 
 \appendtoks
@@ -257,9 +257,10 @@
   {\setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
    \xdef\currenthead{#1}%
-   \headparameter\c!beforesection
+   \headparameter\c!beforesection % beware, no users vars set yet
    \the\everybeforehead
-   \dohandlehead{#1}{#2}{#3}} % name -- -- -- userdata (we might move the tagged to here)
+   \dohandlehead{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
+   \headparameter\c!insidesection}
 
 \unexpanded\def\dostophead[#1]%
   {\dostoptagged\dostoptagged

@@ -396,68 +396,6 @@
 %D \getbuffer
 %D \stoplines
 
-% \newtoks \everycurrentdate
-%
-% \newsignal\datesignal
-%
-% \def\dobetweendates
-%   {\ifdim\lastskip=\datesignal\relax\else
-%      \unskip\space
-%      \hskip\datesignal\relax
-%    \fi}
-%
-% \def\referraldatepattern{j,mm,dd} % jj,mm,dd changed at januari 1-1-2000
-%
-% \def\dodobetweendates
-%   {\let\betweendates\dobetweendates}%
-%
-% \def\dodocurrentdate#1%
-%   {\processallactionsinset[#1]
-%      [   \v!year=>\betweendates
-%                   \convertnumber\v!year\normalyear,
-%               yy=>\lasttwodigits\normalyear,
-%                y=>\convertnumber\v!year\normalyear,
-%                Y=>\number\normalyear,
-%         \v!month=>\betweendates
-%                   \month\normalmonth,
-%               mm=>\twodigits\normalmonth,
-%                m=>\month\normalmonth,
-%                M=>\number\normalmonth,
-%           \v!day=>\betweendates
-%                   \convertnumber\v!day\normalday,
-%          \v!day+=>\betweendates
-%                   \convertnumber\v!day\normalday
-%                   \ordinal\normalday,
-%               dd=>\twodigits\normalday,
-%              dd+=>\convertnumber\v!day{\twodigits\normalday}%
-%                   \ordinal\normalday,
-%                d=>\convertnumber\v!day\normalday,
-%               d+=>\convertnumber\v!day\normalday
-%                   \ordinal\normalday,
-%                d=>\number\normalday,
-%       \v!weekday=>\betweendates
-%                   \convertnumber\v!day{\dayoftheweek\normalday\normalmonth\normalyear},
-%                w=>\convertnumber\v!day{\dayoftheweek\normalday\normalmonth\normalyear},
-%                W=>\dayoftheweek\normalday\normalmonth\normalyear,
-%      \v!referral=>\docomplexcurrentdate\referraldatepattern,
-%         \v!space=>\unskip\ \hskip\datesignal,
-%               \ =>\unskip\ \hskip\datesignal,
-%       \s!default=>,
-%       \s!unknown=>\unskip\commalistelement
-%                   \hskip\datesignal
-%                   \let\betweendates\dodobetweendates]}
-%
-% \def\docurrentdate[#1]%
-%   {\begingroup
-%    \the\everycurrentdate
-%    \let\betweendates\dodobetweendates
-%    \doifsomething{#1}{\edef\currentdatespecification{#1}}%
-%    \normalexpanded{\dodocurrentdate{\currentdatespecification}}%
-%    \ifdim\lastskip=\datesignal\relax
-%      \unskip
-%    \fi
-%    \endgroup}
-
 %D \starttabulate[|l|l|]
 %D \HL
 %D \NC year     \NC (\currentdate[year])     \NC\NR
@@ -481,10 +419,10 @@
 %D \HL
 %D \NC referral \NC (\currentdate[referral]) \NC\NR
 %D \HL
-%D \NC day+     \NC (\currentdate[day+])     \NC\NR
-%D \NC dd+      \NC (\currentdate[dd+])      \NC\NR
-%D \NC d+       \NC (\currentdate[d+])       \NC\NR
-%D \NC D+       \NC (\currentdate[D+])       \NC\NR
+%D \NC day:mnem \NC (\currentdate[day:mnem]) \NC\NR
+%D \NC dd:mnem  \NC (\currentdate[dd:mnem])  \NC\NR
+%D \NC d:mnem   \NC (\currentdate[d:mnem])   \NC\NR
+%D \NC D:mnem   \NC (\currentdate[D:mnem])   \NC\NR
 %D \HL
 %D \stoptabulate
 %D

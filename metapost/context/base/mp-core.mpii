@@ -1375,10 +1375,6 @@ def ProcessSyncTask(expr p, c) =
   fill p withcolor c ;
 enddef ;
 
-endinput ;
-
-end
-
 % for Jelle Huisman
 %
 % \setupcolors[state=start]

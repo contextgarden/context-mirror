@@ -53,6 +53,7 @@ return {
         "redpart", "greenpart", "bluepart", "cyanpart", "magentapart", "yellowpart", "blackpart", "greypart",
         "rgbcolor", "cmykcolor", "greycolor", "graycolor",
         "colormodel",  "graypart",
+        "expandafter",
     },
     commands = {
         "arrowhead",

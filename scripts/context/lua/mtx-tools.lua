@@ -112,7 +112,7 @@ function scripts.tools.dirtoxml()
     local root       = environment.argument('root')    or "."
     local outputfile = environment.argument('output')
 
-    local recurse    = environment.argument('recurse')
+    local recurse    = environment.argument('recurse') or false
     local stripname  = environment.argument('stripname')
     local longname   = environment.argument('longname')
 

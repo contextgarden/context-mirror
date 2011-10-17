@@ -238,22 +238,20 @@ def mfun_finish_graphic_text text x_op_x =
     endgroup ;
 enddef ;
 
-endinput
-
 % example
-
-beginfig (1) ;
-    graphictext
-        "\vbox{\hsize10cm \input tufte }"
-        scaled 8
-        withdrawcolor blue
-        withfillcolor red
-        withpen pencircle scaled 2pt ;
-endfig ;
-
-beginfig(1) ;
-      loadfigure "gracht.mp" rotated 20 ;
-      loadfigure "koe.mp" number 1 scaled 2 ;
-endfig ;
-
-end
+%
+% beginfig (1) ;
+%     graphictext
+%         "\vbox{\hsize10cm \input tufte }"
+%         scaled 8
+%         withdrawcolor blue
+%         withfillcolor red
+%         withpen pencircle scaled 2pt ;
+% endfig ;
+%
+% beginfig(1) ;
+%       loadfigure "gracht.mp" rotated 20 ;
+%       loadfigure "koe.mp" number 1 scaled 2 ;
+% endfig ;
+%
+% end

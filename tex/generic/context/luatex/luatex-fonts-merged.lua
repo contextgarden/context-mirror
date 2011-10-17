@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/14/11 22:47:14
+-- merge date  : 10/17/11 10:36:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -3589,7 +3589,9 @@ function constructors.scale(tfmdata,specification)
         end
     end
     --
-    local sharedkerns   = { }
+    local sharedkerns = { }
+    --
+    -- we can have a dumb mode (basemode without math etc) that skips most
     --
     for unicode, character in next, characters do
         local chr, description, index, touni

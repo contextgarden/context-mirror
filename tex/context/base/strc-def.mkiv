@@ -63,7 +63,10 @@
     %\c!strut=,
     %\c!style=,
     %\c!text=,
-    %\c!tolerance=
+    %\c!tolerance=,
+    %\c!beforesection=\directsetup{document:\currenthead:start},  % these might become defaults i.e. acpect document: namespace
+    %\c!insidesection=\directsetup{document:\currenthead:inside}, % these might become defaults i.e. acpect document: namespace
+    %\c!aftersection=\directsetup{document:\currenthead:stop},    % these might become defaults i.e. acpect document: namespace
    ]
 
 % \setupsectionblock[appendix][sectionconversionset=appendix]
