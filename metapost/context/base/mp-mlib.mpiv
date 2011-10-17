@@ -246,7 +246,7 @@ vardef thetextext@#(expr p,z) =
     fi
 enddef ;
 
-vardef textext@#(expr p) =
+vardef textext@#(expr p) = % no draw hers
     thetextext@#(p,origin)
 enddef ;
 
@@ -260,6 +260,14 @@ enddef;
 
 def label = % takes two arguments, contrary to textext that takes one
     draw thelabel
+enddef ;
+
+vardef anchored@#(expr p, z) = % beware: no "+ mfun_laboff@#" here (never!)
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
 enddef ;
 
 let normalinfont = infont ;

@@ -400,17 +400,23 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,(#t>0 and concat(t,".",1,depth)) or "?",#collected)
         end
         if number > 0 then
-            local parent = nested and nested.parent and nested.parent.numberdata.numbers -- so local as well as nested
+            local pnumbers = nil
+            local pblock = block
+            local parent = nested and nested.parent
+            if parent then
+                pnumbers = parent.numberdata.numbers or pnumbers -- so local as well as nested
+                pblock = parent.references.block or pblock
+            end
             for i=1,#collected do
                 local v = collected[i]
                 local r = v.references
-                if r then -- block ?
+                if r and (not block or not r.block or pblock == r.block) then
                     local sectionnumber = sections.collected[r.section]
                     if sectionnumber then
                         local metadata = v.metadata
                         local cnumbers = sectionnumber.numbers
                         if cnumbers then
-                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers,parent) then
+                            if (all or names[metadata.name or false]) and #cnumbers >= depth and matchingtilldepth(depth,cnumbers,pnumbers) then
                                 nofresult = nofresult + 1
                                 result[nofresult] = v
                             end

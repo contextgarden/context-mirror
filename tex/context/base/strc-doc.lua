@@ -428,7 +428,12 @@ end
 -- this one will become: return catcode, d (etc)
 
 function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: spec table and then also depth
-    if not depth or depth == 0 then depth = data.depth end
+    if depth then
+        depth = levelmap[depth] or tonumber(depth)
+    end
+    if not depth or depth == 0 then
+        depth = data.depth
+    end
     local data = data.status[depth]
     local d = data
     for k in gmatch(key,"([^.]+)") do
@@ -467,7 +472,12 @@ function sections.structuredata(depth,key,default,honorcatcodetable) -- todo: sp
 end
 
 function sections.userdata(depth,key,default)
-    if not depth or depth == 0 then depth = data.depth end
+    if depth then
+        depth = levelmap[depth] or tonumber(depth)
+    end
+    if not depth or depth == 0 then
+        depth = data.depth
+    end
     if depth > 0 then
         local userdata = data.status[depth]
         userdata = userdata and userdata.userdata
@@ -899,3 +909,6 @@ commands.structureuservariable      = function(name)         sections.userdata  
 commands.structurecatcodedget       = function(name)         sections.structuredata(nil,name,nil,true)    end
 commands.structuregivencatcodedget  = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
 commands.structureautocatcodedget   = function(name,catcode) sections.structuredata(nil,name,nil,catcode) end
+
+commands.namedstructurevariable     = function(depth,name)   sections.structuredata(depth,name)           end
+commands.namedstructureuservariable = function(depth,name)   sections.userdata     (depth,name)           end

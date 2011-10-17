@@ -723,6 +723,7 @@
 		<cd:constant name='inner' value='binnen'/>
 		<cd:constant name='innermargin' value='binnenmarge'/>
 		<cd:constant name='inputfile' value='inputfile'/>
+		<cd:constant name='insidesection' value='binnensectie'/>
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interactie'/>
 		<cd:constant name='interlinespace' value='interlinie'/>

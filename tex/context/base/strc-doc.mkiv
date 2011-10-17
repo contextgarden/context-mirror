@@ -235,12 +235,17 @@
 %     \stopchapter
 % \stoptext
 
-\def\structurenumber              {\ctxcommand{structurenumber()}}
-\def\structuretitle               {\ctxcommand{structuretitle()}}
-\def\structurevariable          #1{\ctxcommand{structurevariable("#1")}}
-\def\structureuservariable      #1{\ctxcommand{structureuservariable("#1")}}
-\def\structurecatcodedget       #1{\ctxcommand{structurecatcodedget("#1")}} % bad name
-\def\structuregivencatcodedget#1#2{\ctxcommand{structuregivencatcodedget("#1",\number#2)}} % bad name
-\def\structureautocatcodedget #1#2{\ctxcommand{structureautocatcodedget ("#1","#2")}}
+% todo: #1 => "#1" ... adapt lua code for name and number
+
+\def\structurenumber               {\ctxcommand{structurenumber()}}
+\def\structuretitle                {\ctxcommand{structuretitle()}}
+\def\structurevariable           #1{\ctxcommand{structurevariable("#1")}}
+\def\structureuservariable       #1{\ctxcommand{structureuservariable("#1")}}
+\def\structurecatcodedget        #1{\ctxcommand{structurecatcodedget("#1")}} % bad name
+\def\structuregivencatcodedget #1#2{\ctxcommand{structuregivencatcodedget("#1",\number#2)}} % bad name
+\def\structureautocatcodedget  #1#2{\ctxcommand{structureautocatcodedget ("#1","#2")}}
+
+\def\namedstructurevariable    #1#2{\ctxcommand{namedstructurevariable    ("#1","#2")}}
+\def\namedstructureuservariable#1#2{\ctxcommand{namedstructureuservariable("#1","#2")}}
 
 \protect \endinput

@@ -52,5 +52,3 @@ def end =
 enddef ;
 
 dump ; % obsolete in mplib
-
-endinput

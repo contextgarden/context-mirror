@@ -1,5 +1,8 @@
+if known metafunversion : endinput ; fi ;
+
 if known mplib :
-    input metafun.mpiv ;
+    input metafun.mpiv
 else :
-    input metafun.mpii ;
+    input metafun.mpii
 fi ;
+

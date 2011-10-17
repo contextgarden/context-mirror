@@ -22,7 +22,7 @@ numeric fmt_precision  ; fmt_precision  := 3 ;
 boolean fmt_initialize ; fmt_initialize := false ;
 boolean fmt_zerocheck  ; fmt_zerocheck  := true ;
 
-if unknown fmt_loaded : input mp-form ; fi ;
+if unknown fmt_loaded : input "mp-form.mpii" ; fi ;
 
 boolean fmt_pictures ; fmt_pictures := true ;
 

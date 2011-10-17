@@ -75,5 +75,3 @@ def predefinedbutton (expr button_type, button_size, button_linecolor, button_fi
 enddef ;
 
 let some_button = predefinedbutton
-
-endinput ;

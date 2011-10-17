@@ -401,30 +401,76 @@ def SetPageAreas =
 enddef ;
 
 def BoundPageAreas =
-
- % pickup pencircle scaled 0pt ;
-
-  bboxmargin := 0 ; setbounds currentpicture to Page ;
-
+    % pickup pencircle scaled 0pt ;
+    bboxmargin := 0 ; setbounds currentpicture to Page ;
 enddef ;
 
 def StartPage =
-
+    begingroup ;
     if PageStateAvailable :
         LoadPageState ;
         SwapPageState ;
     fi ;
-
     SetPageAreas ;
     BoundPageAreas ;
-
 enddef ;
 
 def StopPage =
-
     BoundPageAreas ;
+    endgroup ;
+enddef ;
+
+% cover pages
+
+def BoundCoverAreas =
+    % todo: add cropmarks
+    bboxmargin := 0 ; setbounds currentpicture to Paper enlarged PaperBleed ;
+enddef ;
+
+def SetCoverAreas =
+
+    if unknown SpineWidth :
+        SpineWidth := 8mm ;
+    fi ;
+
+    if unknown PaperBleed :
+        PaperBleed := 0 ;
+    fi ;
+
+    FrontPageWidth  := PaperWidth ;
+    BackPageWidth   := PaperWidth ;
+    PaperWidth      := 2 * PaperWidth + SpineWidth ;
+
+    FrontPageHeight := PaperHeight ;
+    BackPageHeight  := PaperHeight ;
+    PaperHeight     := PaperHeight ;
+    SpineHeight     := PaperHeight ;
+
+    path Paper     ; Paper     := unitsquare xscaled PaperWidth      yscaled PaperHeight ;
+    path Spine     ; Spine     := unitsquare xscaled SpineWidth      yscaled PaperHeight shifted (BackPageWidth,0);
+    path BackPage  ; BackPage  := unitsquare xscaled BackPageWidth   yscaled PaperHeight ;
+    path FrontPage ; FrontPage := unitsquare xscaled FrontPageWidth  yscaled PaperHeight shifted (BackPageWidth+SpineWidth,0) ;
 
 enddef ;
+
+
+def StartCover =
+    begingroup ;
+    if PageStateAvailable :
+        LoadPageState ;
+     %  SwapPageState ;
+    fi ;
+    SetPageAreas ;
+    SetCoverAreas ;
+    BoundCoverAreas ;
+enddef ;
+
+def StopCover =
+    BoundCoverAreas ;
+    endgroup ;
+enddef ;
+
+% overlays:
 
 def OverlayBox =
     (unitsquare xyscaled (OverlayWidth,OverlayHeight))
@@ -662,5 +708,3 @@ def page_marks_add_number(expr width, height, length, offset, n) = % todo: names
     setbounds currentpicture to page ;
 
 enddef ;
-
-endinput ;

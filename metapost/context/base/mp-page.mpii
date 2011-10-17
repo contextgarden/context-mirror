@@ -401,6 +401,8 @@ enddef ;
 
 def StartPage =
 
+  begingroup ;
+
   if PageStateAvailable :
     LoadPageState ;
     SwapPageState ;
@@ -414,6 +416,8 @@ enddef ;
 def StopPage =
 
   BoundPageAreas ;
+
+  endgroup ;
 
 enddef ;
 
@@ -653,5 +657,3 @@ def page_marks_add_number(expr width, height, length, offset, n) = % todo: names
     setbounds currentpicture to page ;
 
 enddef ;
-
-endinput ;

@@ -723,6 +723,7 @@
 		<cd:constant name='inner' value='vnitrni'/>
 		<cd:constant name='innermargin' value='innermargin'/>
 		<cd:constant name='inputfile' value='inputfile'/>
+		<cd:constant name='insidesection' value='insidesection'/>
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='interakce'/>
 		<cd:constant name='interlinespace' value='meziradkovamezera'/>

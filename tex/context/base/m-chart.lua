@@ -134,6 +134,9 @@ function commands.flow_start_cell(settings)
         exits       = { },
         connections = { },
         settings    = settings,
+        x           = 1,
+        y           = 1,
+        name        = "",
     }
 end
 
@@ -285,10 +288,10 @@ function commands.flow_set_location(str) -- handle include differently
     else
         y = tonumber(y)
     end
-    temp.x = x
-    temp.y = y
-    last_x = x
-    last_y = y
+    temp.x = x or 1
+    temp.y = y or 1
+    last_x = x or last_x
+    last_y = y or last_y
 end
 
 function commands.flow_set_connection(location,displacement,name)

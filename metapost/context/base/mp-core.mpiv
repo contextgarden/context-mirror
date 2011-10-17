@@ -1334,5 +1334,3 @@ enddef ;
 def ProcessSyncTask(expr p, c) =
     fill p withcolor c ;
 enddef ;
-
-endinput ;

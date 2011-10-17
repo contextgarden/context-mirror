@@ -723,6 +723,7 @@
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
 		<cd:constant name='inputfile' value='پرونده‌ورودی'/>
+		<cd:constant name='insidesection' value='insidesection'/>
 		<cd:constant name='intent' value='intent'/>
 		<cd:constant name='interaction' value='پانل'/>
 		<cd:constant name='interlinespace' value='فضای‌بین‌خط'/>

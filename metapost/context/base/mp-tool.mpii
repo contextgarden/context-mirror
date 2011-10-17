@@ -2562,7 +2562,3 @@ primarydef p snapped s =
   fi ; )
   p
 enddef ;
-
-% done
-
-endinput ;

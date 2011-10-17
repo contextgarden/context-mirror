@@ -991,28 +991,16 @@ def end_sub_chart =
   endgroup ;
 enddef ;
 
-%D done
-
-endinput ;
-
-%D testing
-
-show_shapes(100) ;
-
-end
-
-%D more testing
-
-show_connections ;
-
-begin_chart (1,4,5) ;
- %clip_chart(1,1,1,2) ;
-  new_shape (1,1,31) ;
-  new_shape (1,2,3) ;
-  new_shape (4,4,5) ;
-  connect_top_left   (1,1,0) (4,4,0) ;
-  connect_bottom_top (1,2,0) (4,4,0) ;
-  connect_left_right (1,2,0) (1,1,0) ;
-end_chart ;
-
-end
+% show_shapes(100) ;
+%
+% show_connections ;
+%
+% begin_chart (1,4,5) ;
+%  %clip_chart(1,1,1,2) ;
+%   new_shape (1,1,31) ;
+%   new_shape (1,2,3) ;
+%   new_shape (4,4,5) ;
+%   connect_top_left   (1,1,0) (4,4,0) ;
+%   connect_bottom_top (1,2,0) (4,4,0) ;
+%   connect_left_right (1,2,0) (1,1,0) ;
+% end_chart ;

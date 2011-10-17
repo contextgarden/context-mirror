@@ -507,7 +507,7 @@ bcircle = origin -- (-.5,0) & (-.5,0) {down}  .. (0,-.5) .. {up}    (+.5,0) -- c
 lcircle = origin -- (0,+.5) & (0,+.5) {left}  .. (-.5,0) .. {right} (0,-.5) -- cycle ;
 rcircle = origin -- (0,-.5) & (0,-.5) {right} .. (+.5,0) .. {left}  (0,+.5) -- cycle ;
 
-path urtriangle, ultriangle, lltriangle, lrtriangle ;
+path urtriangle, ultriangle, lltriangle, lrtriangle ; % watch out: it's contrary to what you expect and starts in the origin
 
 urtriangle := origin -- (+.5,0) -- (0,+.5) -- cycle ;
 ultriangle := origin -- (0,+.5) -- (-.5,0) -- cycle ;
@@ -1105,6 +1105,15 @@ def naturalizepaths =
 enddef ;
 
 extra_endfig := extra_endfig & " naturalizepaths ; " ;
+
+%D Noce tracer:
+
+def drawboundary primary p =
+    draw p dashed evenly withcolor white ;
+    draw p dashed oddly  withcolor black ;
+    draw (- llcorner p) withpen pencircle scaled 3   withcolor white ;
+    draw (- llcorner p) withpen pencircle scaled 1.5 withcolor black ;
+enddef ;
 
 %D Also handy:
 
@@ -1793,6 +1802,15 @@ enddef ;
 def [[ = [ [ enddef ; def [[[ = [ [ [ enddef ;
 def ]] = ] ] enddef ; def ]]] = ] ] ] enddef ;
 
+let == = = ;
+
+% added
+
+picture oddly ; % evenly already defined
+
+evenly := dashpattern(on  3 off 3) ;
+oddly  := dashpattern(off 3 on  3) ;
+
 % not perfect, but useful since it removes redundant points.
 
 vardef mfun_straightened(expr sign, p) =
@@ -1871,9 +1889,9 @@ enddef;
 
 % also new
 
-vardef anchored@#(expr p, z) = % maybe use the textext variant
-    p shifted (z + (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
-enddef ;
+% vardef anchored@#(expr p, z) = % maybe use the textext variant
+%     p shifted (z + (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+% enddef ;
 
 % epsed(1.2345)
 
@@ -2139,7 +2157,3 @@ primarydef p snapped s =
     )
     p
 enddef ;
-
-% done
-
-endinput ;

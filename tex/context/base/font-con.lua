@@ -426,7 +426,9 @@ function constructors.scale(tfmdata,specification)
         end
     end
     --
-    local sharedkerns   = { }
+    local sharedkerns = { }
+    --
+    -- we can have a dumb mode (basemode without math etc) that skips most
     --
     for unicode, character in next, characters do
         local chr, description, index, touni
