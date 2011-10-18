@@ -183,6 +183,7 @@
      \insidefloattrue
      \dontcomplain
      \setupFLOWchart[#settings]%
+     \setupbodyfont[\FLOWchartparameter\c!bodyfont]%
      \ctxcommand{flow_make_chart {
         chart = {
             name            = "#name",
@@ -193,8 +194,10 @@
             dx              = \number\dimexpr\FLOWchartparameter\c!dx,
             dy              = \number\dimexpr\FLOWchartparameter\c!dy,
             offset          = \number\dimexpr\FLOWchartparameter\c!offset,
-            bodyfont        = "\FLOWchartparameter\c!bodyfont",
+          % bodyfont        = "\FLOWchartparameter\c!bodyfont",
             dot             = "\FLOWchartparameter\c!dot", % private option
+            hcompact        = "\FLOWchartparameter\c!hcompact", % undocumented option
+            vcompact        = "\FLOWchartparameter\c!vcompact", % undocumented option
         },
         shape = {
             rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
@@ -428,7 +431,7 @@
     \text       {start}
     \connection [bl] {one}
   \stopFLOWcell
-  \startFLOWcell
+  \startFLOWcell[framecolor=darkred]
     \name       {one}
 %     \destination{CloseDocument}
     \location   {2,2}

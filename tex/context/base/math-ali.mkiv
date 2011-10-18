@@ -179,11 +179,6 @@
    \dostoptagged % finish cell
    \dodoubleempty\math_alignment_NR_indeed} % use xx from tabulate
 
-% amstex compatibility mode: (ugly, will disappear)
-% \def\notag{\def\\{&\crcr}}%
-% \doifelse{#2}{*}{\def\\{&\crcr}}{\def\\{&\doalignNR[+][]\crcr}}%
-% end of compatibility mode
-
 \appendtoks
    \glet\math_alignment_NC\math_alignment_NC_first
    \unexpanded\def\NC{\math_alignment_NC}% messy, due to lookahead (we cannot use a flag)
@@ -311,70 +306,12 @@
 %D
 %D \startbuffer
 %D \placeformula \startformula \startalign
-%D a &= b \\
-%D c &= d \notag \\
-%D   &= e \notag \\
-%D   &= f \\
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign
 %D \NC  a \NC \eq  b \NR[+]
 %D \NC  c \NC \neq d \NR
 %D \NC    \NC \neq f \NR[for:demo-b-1]
 %D \NC    \NC \geq g \NR[for:demo-b-2][a]
 %D \NC    \NC \leq h \NR[for:demo-b-3][b]
 %D \NC    \NC \neq i \NR
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign[*]
-%D a &= b \\
-%D c &= d \\
-%D   &= e \\
-%D   &= f \\
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign
-%D     x &= y \\
-%D     a &= b \\
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign[m=3]
-%D     x &= y & x &= y & z &= t \\
-%D     a &= b & p &= q & w &= s \\
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign[m=3,distance=0pt]
-%D     x &= y &= x &= y &= z &= t \\
-%D     a &= b &= p &= q &= w &= s \\
-%D \stopalign \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D \startbuffer
-%D \placeformula \startformula \startalign[n=5,distance=0pt]
-%D     x &= yy &= xx &= yy &= zz \\
-%D     a &= b  &= p  &= q  &= w  \\
 %D \stopalign \stopformula
 %D \stopbuffer
 %D
@@ -895,23 +832,23 @@
    \penalty\predisplaypenalty
    \beforedisplayspace}
 
-% %D \macros
-% %D   {substack}
-% %D
-% %D Preliminary code:
-% %D
-% %D \starttyping
-% %D \startformula
-% %D    \sum_{%
-% %D      \startsubstack
-% %D       i = 1 \NR
-% %D       i \neq n \NR
-% %D       i \neq m
-% %D       \stopsubstack
-% %D     }a_i
-% %D \stopformula
-% %D \stoptyping
-
+% \macros
+%   {substack}
+%
+% Preliminary code:
+%
+% \starttyping
+% \startformula
+%    \sum_{%
+%      \startsubstack
+%       i = 1 \NR
+%       i \neq n \NR
+%       i \neq m
+%       \stopsubstack
+%     }a_i
+% \stopformula
+% \stoptyping
+%
 % \unexpanded\def\startsubstack
 %    {\begingroup
 %     \emptyhbox
@@ -928,7 +865,7 @@
 %     \mathsurround\zeropoint
 %     \everycr\emptytoks
 %     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
-
+%
 % \unexpanded\def\stopsubstack
 %    {\crcr
 %     \egroup

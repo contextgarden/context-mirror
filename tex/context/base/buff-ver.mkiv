@@ -155,52 +155,6 @@
 \def\doinitializevisualizer#1%
   {\ifproductionrun\ctxcommand{loadvisualizer("#1")}\fi}
 
-% \definetype[typeTEX][option=tex]
-%
-% \typeTEX|\example---oeps|. this---ligates---again.
-% \typeTEX{\example---oeps}. this---ligates---again.
-% \type   {\example---oeps}. this---ligates---again.
-
-%D \startbuffer
-%D \setuptyping[TEX][escape=yes]
-%D
-%D \startTEX
-%D /BTEX\em sometex/ETEX
-%D /BTEX\em sometex/ETEX \after
-%D \before /BTEX\em sometex/ETEX
-%D \before /BTEX\em sometex/ETEX \after
-%D \before /BTEX\em sometex/ETEX \inbetween /BTEX\em sometex/ETEX \after
-%D \before \after
-%D \stopTEX
-%D \stopbuffer
-%D
-%D \typebuffer \start \getbuffer \stop
-%D
-%D \startbuffer
-%D \setuptyping[TEX][escape={[[,]]}]
-%D
-%D \startTEX
-%D [[\em sometex]]
-%D [[\em sometex]] \after
-%D \before [[\em sometex]]
-%D \before [[\em sometex]] \after
-%D \before [[\em sometex]] \inbetween [[\em sometex]] \after
-%D \before \after
-%D \stopTEX
-%D \stopbuffer
-%D
-%D \typebuffer \start \getbuffer \stop
-%D
-%D \startbuffer
-%D \setuptyping[TEX][escape=//]
-%D
-%D \startTEX
-%D //\em sometex
-%D \before //\em sometex
-%D \stopTEX
-%D
-%D \typebuffer \start \getbuffer \stop
-
 %D Verbatim command are very sensitive to argument processing,
 %D which is a direct result of the \CATCODES\ being fixed at
 %D reading time.

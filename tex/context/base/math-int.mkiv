@@ -16,14 +16,15 @@
 \unprotect
 
 %D \startbuffer
-%D   $\int_a^b f(x) dx$ and also
-%D   $\iint_a^b f(x,y) dxdy$, $\iiint_a^b f(x,y) dxdy$,
-%D   $\iiiint_a^b f(x) dx$
+%D   $\int    _a^b f(x)   dx  $ and also
+%D   $\iint   _a^b f(x,y) dxdy$,
+%D   $\iiint  _a^b f(x,y) dxdy$,
+%D   $\iiiint _a^b f(x)   dx  $.
 %D   \startformula
-%D     \int_a^b f(x) dx \quad
-%D     \iint_a^b f(x) dx \quad
-%D     \iiint_a^b f(x) dx \quad
-%D     \iiiint_a^b f(x) dx \quad
+%D     \int    _a^b f(x) dx \quad
+%D     \iint   _a^b f(x) dx \quad
+%D     \iiint  _a^b f(x) dx \quad
+%D     \iiiint _a^b f(x) dx \quad
 %D   \stopformula
 %D \stopbuffer
 %D
@@ -33,81 +34,97 @@
 %D
 %D Limits: \setupmathematics[integral=limits] \getbuffer
 
-\newconstant\mathintlimitmode % 0 nolimits 1 displaylimits 2 limits
-
-\def\intlimits
-  {\ifcase\mathintlimitmode \nolimits \or \displaylimits \or \limits \fi}
+%D Adapted to mkiv by HH from code by AM.
 
 \ifx\v!integral\undefined \def\v!integral{integral} \fi
 
+\newconstant\mathintlimitmode % 0 nolimits 1 displaylimits 2 limits
+
+\def\intlimits % also used elsewhere
+  {\ifcase\mathintlimitmode
+     \nolimits
+   \or
+     \displaylimits
+   \or
+     \limits
+   \fi}
+
+\letvalue{\??mo::\v!integral::nolimits}\zerocount
+\letvalue{\??mo::\v!integral::displaylimits}\plusone
+\letvalue{\??mo::\v!integral::limits}\plustwo
+
 \appendtoks
-   \processaction
-      [\mathematicsparameter\v!integral]
-      [     nolimits=>\mathintlimitmode\zerocount,
-       displaylimits=>\mathintlimitmode\plusone,
-              limits=>\mathintlimitmode\plustwo]%
+    \mathintlimitmode\executeifdefined{\??mo::\v!integral::limits}\zerocount
 \to \everysetupmathematics
 
 \setupmathematics
   [\v!integral=nolimits]
 
-%D More integrals (AM):
+%D The following code is used for fallbacks and might become obsolete once
+%D we have enough \OPENTYPE\ math fonts.
 
-%def\integralrepeatsymbol{\intop}
-\def\integralrepeatsymbol{{\int}}
+\def\math_repeated_integal_i
+  {\int}
 
-% \def\repeatintegral#1%
-%   {\scratchtoks\emptytoks
-%    \let\dointlimits\donothing
-%    \let\dodointlimits\intlimits
-%    \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}%
-%    \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
-%    \edef\dodorepeatintegral{\the\scratchtoks}%
-%    \futurelet\next\dorepeatintegral}
+\def\math_repeated_integal_ii
+  {\math_repeated_integal_i
+   \math_repeated_integral_kern
+   \math_repeated_integal_i
+   \math_repeat_integral_finish
+   \intlimits}
 
-% \definemathcommand [iint]   {\repeatintegral\plusone  }
-% \definemathcommand [iiint]  {\repeatintegral\plustwo  }
-% \definemathcommand [iiiint] {\repeatintegral\plusthree}
+\def\math_repeated_integal_iii
+  {\math_repeated_integal_i
+   \math_repeated_integral_kern
+   \math_repeated_integal_ii}
 
-\def\fakerepeatintegral#1%
-  {\scratchtoks\emptytoks
-   \dorecurse{#1}{\appendtoks \integralrepeatsymbol \dointkern \to \scratchtoks}%
-   \appendtoks \intop \dointlimits \dodointlimits \to \scratchtoks
-   \edef\dodorepeatintegral{\the\scratchtoks}}
+\def\math_repeated_integal_iiii
+  {\math_repeated_integal_i
+   \math_repeated_integral_kern
+   \math_repeated_integal_iii}
 
-\def\repeatintegral#1#2#3%
-  {\let\dointlimits\donothing
-   \let\dodointlimits\intlimits
+\unexpanded\def\math_repeat_integral#1%
+  {\let\math_repeat_integral_finish\donothing
    \iffontchar\textfont\zerocount#1\relax
-    %\edef\dodorepeatintegral{\utfchar{#1}}%
-     \let\dodorepeatintegral#2%
+     \expandafter\math_repeat_integral_real
    \else
-     \fakerepeatintegral{#3}%
-   \fi
-   \futurelet\next\dorepeatintegral}
+     \expandafter\math_repeat_integral_fake
+   \fi}
 
-% This is a temporary solution, as we will make a virtual glyph in lm.
+\def\math_repeat_integral_fake#1#2%
+  {\let\math_repeat_integral_fake_symbol#2%
+   \futurelet\next\math_repeat_integral_fake_indeed}
 
-\definemathcommand [iint]   {\repeatintegral{"222B}\normaliint  \plusone  }
-\definemathcommand [iiint]  {\repeatintegral{"222C}\normaliiint \plustwo  }
-\definemathcommand [iiiint] {\repeatintegral{"222D}\normaliiiint\plusthree}
+\def\math_repeat_integral_real#1#2%
+  {#1}
 
-%D If the \type{\limits} option is used after \type{\iint}, use
-%D \type{\mathop} and fudge the left hand space a bit to make the
-%D subscript visually centered.
+\definemathcommand [iint]   {\math_repeat_integral{"0222C}\normalint  \math_repeated_integal_ii  } % double
+\definemathcommand [iiint]  {\math_repeat_integral{"0222D}\normaliint \math_repeated_integal_iii } % tripple
+\definemathcommand [iiiint] {\math_repeat_integral{"FFFFF}\normaliiint\math_repeated_integal_iiii} % quadruple
 
-\def\dointkern
+\def\math_repeated_integral_kern
   {\mkern-6mu\mathchoice{\mkern-3mu}{}{}{}}
 
-\def\dorepeatintegral
-   {\ifx\next\limits          \dointlimitcorrection \else
-    \ifx\next\displaylimits   \dointlimitcorrection \else
-    \ifx\next\nolimits        \donothing            \else
-    \ifcase\mathintlimitmode\else \dointlimitcorrection \fi\fi\fi\fi
-    \dodorepeatintegral}
+\def\math_repeat_integral_fake_indeed
+   {\ifx\next\limits
+      \math_repeated_integral_correction
+    \else\ifx\next\displaylimits
+      \math_repeated_integral_correction
+    \else\ifx\next\nolimits
+      % nothing
+    \else\ifcase\mathintlimitmode
+      % nothing
+    \else
+      \math_repeated_integral_correction
+    \fi\fi\fi\fi
+    \math_repeat_integral_fake_symbol}
 
-\def\dointlimitcorrection
+\def\math_repeated_integral_correction
   {\mkern-7mu\mathchoice{\mkern-2mu}{}{}{}%
-   \mathop\bgroup\mkern7mu\mathchoice{\mkern2mu}{}{}{}\let\dointlimits\egroup}
+   \mathop\bgroup\mkern7mu\mathchoice{\mkern2mu}{}{}{}\let\math_repeat_integral_finish\egroup}
+
+%D If the \type{\limits} option is used after \type {\iint}, use \type
+%D {\mathop} and fudge the left hand space a bit to make the subscript
+%D visually centered.
 
 \protect \endinput

@@ -695,6 +695,7 @@
 		<cd:constant name='global' value='سراسری'/>
 		<cd:constant name='grid' value='توری'/>
 		<cd:constant name='hang' value='بیاویز'/>
+		<cd:constant name='hcompact' value='hcompact'/>
 		<cd:constant name='headalign' value='headalign'/>
 		<cd:constant name='headcolor' value='رنگ‌سر'/>
 		<cd:constant name='headcommand' value='فرمان‌سر'/>
@@ -1029,6 +1030,7 @@
 		<cd:constant name='validate' value='تاییداعتبار'/>
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vcommand'/>
+		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='veroffset' value='آفست‌عم'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='آفست‌ع'/>

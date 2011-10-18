@@ -654,6 +654,12 @@ def flow_connect_left_right (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
             flow_xypoints[3] := flow_y_on_grid(2,yfrom,yto,zfrom) ;
             flow_xypoints[4] := flow_xy_on_grid(5,3) ;
         fi ;
+        %%%% begin experiment
+        if flow_dsp_y <> 0 :
+            flow_xypoints[3] := flow_xypoints[3] shifted (0,-flow_dsp_y) ;
+            flow_xypoints[4] := flow_xypoints[4] shifted (0,-flow_dsp_y) ;
+        fi ;
+        %%%% end experiment
         flow_draw_connection ;
   fi ;
 enddef ;
@@ -783,6 +789,14 @@ def flow_connect_top_top (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
             flow_xypoints[3] := flow_x_on_grid(2,xfrom,xto,zfrom) ;
             flow_xypoints[4] := flow_xy_on_grid(3,5) ;
         fi ;
+        %%%% begin experiment (todo: not value but just + and )
+        if flow_dsp_y <> 0 :
+            flow_xypoints[2] := flow_xypoints[2] shifted (0,flow_dsp_y) ;
+            flow_xypoints[3] := flow_xypoints[3] shifted (0,flow_dsp_y) ;
+            flow_xypoints[4] := flow_xypoints[4] shifted (0,flow_dsp_y) ;
+            flow_xypoints[5] := flow_xypoints[5] shifted (0,flow_dsp_y) ;
+        fi ;
+        %%%% end experiment
         flow_draw_connection ;
     fi ;
 enddef ;

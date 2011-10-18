@@ -15,6 +15,9 @@
 %D obsolete once we've redone the bibliography module. Of course
 %D the handy helpers will stay.
 
+% no longs
+% more unexpanded
+
 \registerctxluafile{syst-aux}{1.001}
 
 %D This is a stripped down combination of:
@@ -3212,6 +3215,40 @@
 %
 % [\test]
 
+% todo: pick up keywords:
+%
+% \starttexdefinition unexpanded bagger ....
+
+% \bgroup \obeylines
+%
+% \gdef\starttexdefinition%
+%   {\bgroup%
+%    \obeylines%
+%    \dostarttexdefinition}
+%
+% \gdef\dostarttexdefinition #1
+%   {\catcode\endoflineasciicode\ignorecatcode%
+%    \doifinstringelse\letterhash{\detokenize{#1}}\dodostarttexdefinition\nonostarttexdefinition#1
+%   }
+%
+% \gdef\dodostarttexdefinition#1 #2
+%   {\dododostarttexdefinition{#1}{#2}}
+%
+% \gdef\dododostarttexdefinition#1#2#3\stoptexdefinition%
+%   {\egroup%
+%    \expandafter\def\csname#1\endcsname#2{#3}}
+%
+% \gdef\nonostarttexdefinition#1
+%   {\nononostarttexdefinition{#1}{}}
+%
+% \gdef\nononostarttexdefinition#1#2#3\stoptexdefinition%
+%   {\egroup%
+%    \expandafter\def\csname#1\endcsname{#3}}
+%
+% \egroup
+
+\def\s!unexpanded{unexpanded}
+
 \bgroup \obeylines
 
 \gdef\starttexdefinition%
@@ -3224,17 +3261,30 @@
    \doifinstringelse\letterhash{\detokenize{#1}}\dodostarttexdefinition\nonostarttexdefinition#1
   }
 
-\long\gdef\dodostarttexdefinition#1 #2
-  {\dododostarttexdefinition{#1}{#2}}
+\gdef\dodostarttexdefinition#1 #2
+  {\edef\texdefinitionname{#1}%
+   \ifx\texdefinitionname\s!unexpanded%
+     \expandafter\dododostarttexdefinitionU%
+   \else%
+     \expandafter\dododostarttexdefinitionN%
+   \fi%
+   {#1}#2
+   }
 
-\long\gdef\dododostarttexdefinition#1#2#3\stoptexdefinition%
+\gdef\dododostarttexdefinitionU#1#2 #3
+                                       #4\stoptexdefinition%
+  {\egroup% #1=unexpanded
+   \unexpanded\expandafter\def\csname#2\endcsname#3{#4}}
+
+\gdef\dododostarttexdefinitionN#1#2
+                                    #3\stoptexdefinition%
   {\egroup%
    \expandafter\def\csname#1\endcsname#2{#3}}
 
-\long\gdef\nonostarttexdefinition#1
+\gdef\nonostarttexdefinition#1
   {\nononostarttexdefinition{#1}{}}
 
-\long\gdef\nononostarttexdefinition#1#2#3\stoptexdefinition%
+\gdef\nononostarttexdefinition#1#2#3\stoptexdefinition%
   {\egroup%
    \expandafter\def\csname#1\endcsname{#3}}
 

@@ -1165,10 +1165,9 @@
 %D \stoptable
 %D \stopbuffer
 %D
-%D \startcombination
-%D   {\tracetablesfalse\getbuffer} {\type{\tracetablesfalse}}
-%D   {\tracetablestrue\getbuffer}  {\type{\tracetablestrue}}
-%D \stopcombination
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
 %D
 %D This table is specified as:
 %D
@@ -1189,36 +1188,8 @@
 %D \VL beta  \VL 2      \VL\AR
 %D \VL gamma \VL 3      \VL\AR
 %D \HL
-%D \stoptable
+%D \stoptables
 %D \stopbuffer
-%D
-%D When we use the split table feature, we get a bit more
-%D information.
-%D
-%D {\tracetablesfalse\getbuffer}
-%D
-%D Sometimes in tables information shows up that is not typed
-%D in by the user. These messages give a cue in what aspect a
-%D table definition is wrong.
-%D
-%D \startbuffer
-%D \starttable[||||]
-%D \HL
-%D \VL first     second    \VL third \VL\AR
-%D \HL
-%D \VL alfa  \VL 1         \VL a     \VL\AR
-%D \VL beta  \VL 2         \VL b     \VL
-%D \VL gamma \VL \THREE{3}     c     \VL\AR
-%D \HL
-%D \stoptable
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D Those terrible table has three errors, which all show up in
-%D typeset messages. Errors cannot always recovered 100\% and
-%D therefore can result in two or more succesive messages, like
-%D in the last row.
 %D
 %D \getbuffer
 %D
@@ -1292,16 +1263,14 @@
 %D instead of brackets because we need brackets to specify the
 %D format.
 %D
-%D \startbuffer
+%D \starttyping
 %D \starttable{|q[00,000]|Q[00,00]|}
 %D \HL
 %D \VL -1,2   \VL 12,35 \VL\FR
 %D \VL 11,203 \VL  2,4  \VL\LR
 %D \HL
 %D \stoptable
-%D \stopbuffer
-%D
-%D \ShowExample
+%D \stoptyping
 %D
 %D Although a more efficient implementation is possible |<|we
 %D can for instance share common macros|>| we just adapt a copy
@@ -1382,7 +1351,7 @@
 % We cannot define \unexpanded\def\dostoptable a ssomehow lookahead
 % in alignments fail then, so we relax it and define it locally.
 
-\let\stoptabel\relax
+\let\stoptable\relax
 
 \def\dostoptable
   {\dochucktableautorow % before the tail, else noalign problem
@@ -1403,7 +1372,7 @@
 %D Before we can grab the argument, we have to make sure that
 %D the \CATCODES\ are set. The first stage takes care of that.
 
-\def\firststagestarttable%
+\def\firststagestarttable
   {\bgroup
    \global\intabletrue
    \secondstagestarttable}

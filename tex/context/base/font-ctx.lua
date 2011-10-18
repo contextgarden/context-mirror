@@ -1367,3 +1367,7 @@ to scale virtual characters.</p>
 --         end
 --     end
 -- end
+
+function commands.setfontofid(id)
+    context.getvalue(csnames[id])
+end

@@ -1623,7 +1623,7 @@
 %D unwanted loop, we temporary redefine \type{\c!text}. For
 %D the moment this in only place that some trickery is needed
 %D to fool the multilingual interface. However, long ago
-%D we decided to stick to \s!text in definitions as it closely
+%D we decided to stick to \type {\s!text} in definitions as it closely
 %D relates to the math model where text, script and scriptscript
 %D are used untranslated. Also, we are now english at the low
 %D level so it cannot go wrong anymore.
@@ -4102,7 +4102,7 @@
 %D The last implementation of \type {\getglyph} permits
 %D definitions like:
 %D
-%D \starttypings
+%D \starttyping
 %D \definefontsynonym [EuroSans]            [eurose]
 %D \definefontsynonym [EuroSansBold]        [euroseb]
 %D \definefontsynonym [EuroSansItalic]      [eurosei]
@@ -4635,6 +4635,10 @@
 
 \unexpanded\edef\vsone#1{#1\utfchar{"FE00}} % used
 \unexpanded\edef\vstwo#1{#1\utfchar{"FE01}} % not used but handy for testing
+
+% new:
+
+\unexpanded\def\setfontofid#1{\ctxcommand{setfontofid(#1)}}
 
 \protect \endinput
 
