@@ -2880,16 +2880,6 @@ return {
    ["pe"]="مرجع‌صفحه",
    ["ro"]="referintapagina",
   },
-  ["pagetype"]={
-   ["cs"]="typstrany",
-   ["de"]="seitentyp",
-   ["en"]="pagetype",
-   ["fr"]="tapepage",
-   ["it"]="tipopagina",
-   ["nl"]="soortpagina",
-   ["pe"]="نوع‌صفحه",
-   ["ro"]="tippagina",
-  },
   ["paperheight"]={
    ["cs"]="vyskapapiru",
    ["de"]="papierhoehe",

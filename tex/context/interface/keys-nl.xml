@@ -1373,7 +1373,6 @@
 		<cd:command name='pagenumber' value='paginanummer'/>
 		<cd:command name='pageoffset' value='paginaoffset'/>
 		<cd:command name='pagereference' value='paginareferentie'/>
-		<cd:command name='pagetype' value='soortpagina'/>
 		<cd:command name='paperheight' value='papierhoogte'/>
 		<cd:command name='paperwidth' value='papierbreedte'/>
 		<cd:command name='periods' value='punten'/>

@@ -1373,7 +1373,6 @@
 		<cd:command name='pagenumber' value='شماره‌صفحه'/>
 		<cd:command name='pageoffset' value='آفست‌صفحه'/>
 		<cd:command name='pagereference' value='مرجع‌صفحه'/>
-		<cd:command name='pagetype' value='نوع‌صفحه'/>
 		<cd:command name='paperheight' value='ارتفاع‌برگ'/>
 		<cd:command name='paperwidth' value='عرض‌برگ'/>
 		<cd:command name='periods' value='نقطه‌ها'/>

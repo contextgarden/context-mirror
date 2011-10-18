@@ -1266,14 +1266,6 @@
 
 \def\dodefinepagebreak[#1][#2]% non recursive, meant for simple mappings
   {\setvalue{\??pe::#1}{#2}}
-
-% don't change this / test case:
-%
-% \setupbackgrounds[state=repeat]
-% \setupbackgrounds[text][text][background=whatever]
-% \couplepage[chapter][before={\defineoverlay[whatever][ON]}]
-% \setuphead[chapter][before={\pagetype[chapter]}]
-% \chapter{First} \page test \chapter{second} \page test
 
 \long\def\installcolumnbreakhandler#1#2#3% #1=otr-id #2=tag
   {\long\setvalue{\??cn:#1:#2}{#3}}
@@ -1374,24 +1366,6 @@
 \def\doaftershipout
   {\doifsomething\currentpageselection
      {\processcommacommand[\currentpageselection]\dodoaftershipout}}
-
-% Dit wordt eigenlijk nooit en moet worden vervangen door
-% het meer algemene mechanisme.
-
-\def\dopagetype[#1]%
-  {\edef\desoortpagina{#1}%
-   \ifx\desoortpagina\empty \else
-     \@EA\doglobal\@EA\addtocommalist\@EA{\desoortpagina}\currentpageselection
-     \ifselectingpages
-       \fullexpandtwoargsafter\doifcommon\desoortpagina\pageselection
-         {\global\pageselectedtrue}%
-     \fi
-     \gdef\beforeshipout{\dobeforeshipout}%
-     \gdef\aftershipout {\doaftershipout}%
-   \fi}
-
-\def\pagetype
-  {\dosingleargument\dopagetype}
 
 \def\docouplepage[#1][#2]%
   {\getparameters
