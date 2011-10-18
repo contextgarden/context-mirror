@@ -1373,7 +1373,6 @@
 		<cd:command name='pagenumber' value='pagenumber'/>
 		<cd:command name='pageoffset' value='pageoffset'/>
 		<cd:command name='pagereference' value='pagereference'/>
-		<cd:command name='pagetype' value='pagetype'/>
 		<cd:command name='paperheight' value='paperheight'/>
 		<cd:command name='paperwidth' value='paperwidth'/>
 		<cd:command name='periods' value='periods'/>

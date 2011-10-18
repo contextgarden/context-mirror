@@ -7236,16 +7236,16 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="pagetype" file="page-ini.tex">
+  <!-- cd:command name="pagetype" file="page-ini.tex">
     <cd:sequence>
-      <cd:string value="soortpagina"/>
+      <cd:string value="pagetype"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1">
         <cd:constant type="cd:name"/>
       </cd:keywords>
     </cd:arguments>
-  </cd:command>
+  </cd:command -->
 
   <cd:command name="processpage" file="page-ini.tex">
     <cd:sequence>

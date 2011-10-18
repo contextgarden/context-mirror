@@ -352,8 +352,7 @@
      {\setfalse\headshownumber}}
 
 \unexpanded\def\theheadsynchonization
-  {\pagetype[\currentheadcoupling]% hm also number
-   \currentstructuresynchronize}
+  {\currentstructuresynchronize}
 
 % BEWARE: \marking[section]{my text} does not work as we use list indices instead
 % so we need a 'keep track of raw set option' (or maybe a funny internal prefix)
@@ -569,18 +568,20 @@
    \getheadsyncs}
 
 \unexpanded\def\placecurrentheadhidden
-  {\setxvalue{\currenthead:sync}%
-     {\noexpand\setgvalue{\currenthead:sync}{}%
-      \noexpand\pagetype[\currentheadcoupling]% hm also number
+  {\setxvalue{\currenthead:hidden:attr}%
+     {\headreferenceattributes}% can be used when making a box
+   \setxvalue{\currenthead:hidden:sync}%
+     {\noexpand\letgvalue{\currenthead:hidden:sync}\relax
       \noexpand\setmarking[\currentheadcoupling]{\currentstructurelistnumber}%
-      \currentstructuresynchronize}}
+      \hbox\headreferenceattributes{}% otherwise no destination ... maybe tag ref as hidden and fall back on page reference
+      \currentstructuresynchronize}} % and it's a node anyway
 
-\def\synchronizehead#1%
-  {\csname#1:sync\endcsname}
+\def\synchronizehead           #1{\csname#1:hidden:sync\endcsname}
+\def\theheadreferenceattributes#1{\csname#1:hidden:attr\endcsname}
 
-\unexpanded\def\placerawheaddata  [#1]{\synchronizehead {#1}}
+\unexpanded\def\placerawheaddata  [#1]{\synchronizehead{#1}}
 \unexpanded\def\placerawheadtext  [#1]{\getspecificstructuretitle{\thenamedheadlevel{#1}}}
-\unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber   {\thenamedheadlevel{#1}}}
+\unexpanded\def\placerawheadnumber[#1]{\getfullstructurenumber{\thenamedheadlevel{#1}}}
 
 % \setuphead[chapter][placehead=hidden]
 % \chapter {test}

@@ -14,8 +14,10 @@ if not modules then modules = { } end modules ['x-flow'] = {
 moduledata.charts = moduledata.charts or { }
 
 local gsub, match, find, format, lower = string.gsub, string.match, string.find, string.format, string.lower
-local lpegmatch = lpeg.match
 local setmetatableindex = table.setmetatableindex
+
+local P, S, C, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
+local lpegmatch = lpeg.match
 
 local points    = number.points
 
@@ -357,7 +359,6 @@ local function expanded(chart,chartsettings)
     return expandedchart
 end
 
-
 local splitter = lpeg.splitat(",")
 
 function commands.flow_set_location(x,y)
@@ -455,6 +456,7 @@ local function process_cells(chart,xoffset,yoffset)
     if not data then
         return
     end
+    local focus = utilities.parsers.settings_to_hash(chart.settings.chart.focus or "")
     for i=1,#data do
         local cell = visible(chart,data[i])
         if cell then
@@ -472,7 +474,7 @@ local function process_cells(chart,xoffset,yoffset)
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
                     context("flow_shape_line_width := %s ; ",           points(linesettingsrulethickness))
-                elseif hasfocus then -- doifcommonelse{FLOWcell,FLOWfocus}@@FLOWfocus
+                elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
                     context("flow_shape_line_color := \\MPcolor{%s} ;", focussettings.framecolor)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", focussettings.backgroundcolor)
@@ -492,6 +494,37 @@ local function process_cells(chart,xoffset,yoffset)
 end
 
 -- todo : make lpeg for splitter
+
+local sign  = S("+p") /  "1"
+            + S("-m") / "-1"
+
+local full  = C(P("left"))
+            + C(P("right"))
+            + C(P("top"))
+            + C(P("bottom"))
+
+local char  = P("l") / "left"
+            + P("r") / "right"
+            + P("t") / "top"
+            + P("b") / "bottom"
+
+local space = P(" ")^0
+
+local what  = space
+            * (sign + Cc("0"))
+            * space
+            * (full + char)
+            * space
+            * (sign + Cc("0"))
+            * space
+            * (full + char)
+            * space
+            * P(-1)
+
+-- print(lpegmatch(what,"lr"))
+-- print(lpegmatch(what,"+l+r"))
+-- print(lpegmatch(what,"+l"))
+-- print(lpegmatch(what,"+ left+r     "))
 
 local function process_connections(chart,xoffset,yoffset)
     local data = chart.data
@@ -513,21 +546,24 @@ local function process_connections(chart,xoffset,yoffset)
                     local otherx, othery, location = othercell.x, othercell.y, connection.location
                     if otherx > 0 and othery > 0 and cellx > 0 and celly > 0 and connection.location then
                         -- move to setter
-                        local what_cell, where_cell, what_other, where_other = match(location,"([%+%-pm]-)([lrtb]),?([%+%-pm]-)([lrtb])")
-                        local what_cell   = what [what_cell]   or 0
-                        local what_other  = what [what_other]  or 0
-                        local where_cell  = where[where_cell]  or "left"
-                        local where_other = where[where_other] or "right"
-                        local linesettings = settings.line
-                        context("flow_smooth := %s ;", linesettings.corner == v_round and "true" or "false")
-                        context("flow_dashline := %s ;", linesettings.dash == v_yes and "true" or "false")
-                        context("flow_arrowtip := %s ;", linesettings.arrow == v_yes and "true" or "false")
-                        context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
-                        context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
-                        context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
-                        context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
-                        context("flow_connect_%s_%s(%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,cellx,celly,what_cell,otherx,othery,what_other)
-                        context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
+                     -- local what_cell, where_cell, what_other, where_other = match(location,"([%+%-pm]-)([lrtb]),?([%+%-pm]-)([lrtb])")
+                     -- local what_cell   = what [what_cell]   or 0
+                     -- local what_other  = what [what_other]  or 0
+                     -- local where_cell  = where[where_cell]  or "left"
+                     -- local where_other = where[where_other] or "right"
+                        local what_cell, where_cell, what_other, where_other = lpegmatch(what,location)
+                        if what_cell and where_cell and what_other and where_other then
+                            local linesettings = settings.line
+                            context("flow_smooth := %s ;", linesettings.corner == v_round and "true" or "false")
+                            context("flow_dashline := %s ;", linesettings.dash == v_yes and "true" or "false")
+                            context("flow_arrowtip := %s ;", linesettings.arrow == v_yes and "true" or "false")
+                            context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
+                            context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
+                            context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
+                            context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
+                            context("flow_connect_%s_%s(%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,cellx,celly,what_cell,otherx,othery,what_other)
+                            context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
+                        end
                     end
                 end
             end

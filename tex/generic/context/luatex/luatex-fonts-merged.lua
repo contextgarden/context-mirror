@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/18/11 22:09:27
+-- merge date  : 10/19/11 00:02:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -2688,6 +2688,8 @@ local remapper = {
     dfont = "truetype fonts", -- "truetype dictionary",
     cid   = "cid maps",
     fea   = "font feature files",
+    pfa   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
+    pfb   = "type1 fonts", -- this is for Khaled, in ConTeXt we don't use this!
 }
 
 function resolvers.findfile(name,fileformat)
@@ -6936,6 +6938,11 @@ local function copytotfm(data,cache_id)
         local fontname = metadata.fontname
         local fullname = metadata.fullname or fontname
         local units    = metadata.units_per_em or 1000
+        --
+        if units == 0 then -- catch bugs in fonts
+            units = 1000
+            metadata.units_per_em = 1000
+        end
         --
         parameters.slant         = 0
         parameters.space         = spaceunits          -- 3.333 (cmr10)

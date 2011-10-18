@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['strc-lst'] = {
 -- section, metadata cache (internal then has to move up one level) or a
 -- shared cache [we can use a fast and stupid serializer]
 
+-- todo: tag entry in list is crap
+
 local format, gmatch, gsub = string.format, string.gmatch, string.gsub
 local tonumber = tonumber
 local texcount = tex.count
@@ -122,12 +124,12 @@ function lists.push(t)
         pushed[i] = p
         r.listindex = p
     end
-
+    --
     local setcomponent = references.setcomponent
     if setcomponent then
         setcomponent(t) -- might move to the tex end
     end
-
+    --
     context(p)
 end
 
