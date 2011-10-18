@@ -13,17 +13,8 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Compounds}
 
-%D \gdef\starttest
-%D   {\blank
-%D    \noindent
-%D    \halign\bgroup\tt##\hskip2em&##\hskip2em&##\cr}
-%D
-%D \gdef\stoptest
-%D   {\egroup
-%D    \blank}
-%D
-%D \gdef\test#1%
-%D   {\defconvertedargument\ascii{#1}\ascii&\hyphenatedword{#1}&#1\cr}
+%D \gdef\starttest#1\stoptest{\starttabulate[|l|l|p|]#1\stoptabulate}
+%D \gdef\test     #1{\NC\detokenize{#1}\NC\hyphenatedword{#1}\NC#1\NC\NR}
 
 \unprotect
 
@@ -131,31 +122,30 @@
 %D compound words is using \type{||}, which is installed by:
 %D
 %D \starttyping
-%D \installdiscretionaries || -
+%D \installdiscretionary | -
 %D \stoptyping
 %D
 %D Some alternative definitions are:
 %D
 %D \startbuffer
-%D \installdiscretionaries ** -
-%D \installdiscretionaries ++ -
-%D \installdiscretionaries // -
-%D \installdiscretionaries ~~ -
+%D \installdiscretionary * -
+%D \installdiscretionary + -
+%D \installdiscretionary / -
+%D \installdiscretionary ~ -
 %D \stopbuffer
 %D
 %D \typebuffer
 %D
 %D after which we can say:
 %D
-%D \bgroup
-%D \getbuffer
+%D \start \getbuffer
 %D \starttest
 %D \test {test**test**test}
 %D \test {test++test++test}
 %D \test {test//test//test}
 %D \test {test~~test~~test}
 %D \stoptest
-%D \egroup
+%D \stop
 
 %D \macros
 %D   {compoundhyphen,
@@ -447,7 +437,7 @@
 
 % \ifx\normalcompound\undefined \let\normalcompound=| \fi
 
-%D \installdiscretionary  | +
+%D \installdiscretionary | +
 %D \installdiscretionary + =
 
 \def\defaultdiscretionaryhyphen{\compoundhyphen}

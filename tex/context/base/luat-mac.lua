@@ -122,9 +122,9 @@ local grammar = { "converter",
     texcode     = pushlocal
                 * startcode
                 * spaces
-                * name
-                * spaces
-                * (declaration + furthercomment + (1 - newline - space))^0
+                * (name * spaces)^1 -- new: multiple
+             -- * (declaration + furthercomment + (1 - newline - space))^0
+                * ((declaration * (space^0/""))^1 + furthercomment + (1 - newline - space))^0 -- accepts #a #b #c
                 * V("texbody")
                 * stopcode
                 * poplocal,
@@ -230,45 +230,52 @@ if resolvers.schemes then
 
 end
 
---~ print(macros.preprocessed([[\def\bla#bla{bla#{bla}}]]))
---~ print(macros.preprocessed([[\def\bla#bla{#{bla}bla}]]))
---~ print(macros.preprocessed([[\def\blä#{blá}{blà:#{blá}}]]))
---~ print(macros.preprocessed([[\def\blä#bla{blà:#bla}]]))
---~ print(macros.preprocessed([[\setvalue{xx}#bla{blà:#bla}]]))
---~ print(macros.preprocessed([[\def\foo#bar{\setvalue{xx#bar}{#bar}}]]))
---~ print(macros.preprocessed([[\def\bla#bla{bla:#{bla}}]]))
---~ print(macros.preprocessed([[\def\bla_bla#bla{bla:#bla}]]))
---~ print(macros.preprocessed([[\def\test#oeps{test:#oeps}]]))
---~ print(macros.preprocessed([[\def\test_oeps#oeps{test:#oeps}]]))
---~ print(macros.preprocessed([[\def\test#oeps{test:#{oeps}}]]))
---~ print(macros.preprocessed([[\def\test#{oeps:1}{test:#{oeps:1}}]]))
---~ print(macros.preprocessed([[\def\test#{oeps}{test:#oeps}]]))
---~ print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}]]))
---~ print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}}]]))
---~ print(macros.preprocessed([[% test
---~ \def\test#oeps{#oeps} % {test}
---~ % test
---~
---~ % test
---~ two
---~ %test]]))
---~ print(macros.preprocessed([[
---~ \def\scrn_button_make_normal#namespace#current#currentparameter#text%
---~   {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
---~ %    \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#namespace:#current]{#text}}}
---~    \hbox attr \referenceattribute \lastreferenceattribute {\directlocalframed[#namespace:#current]{#text}}}
---~ ]]))
---~
---~ print(macros.preprocessed([[
---~ \def\definefoo[#name]%
---~  {\setvalue{start#name}{\dostartfoo{#name}}}
---~ \def\dostartfoo#name%
---~   {\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname{#name : #content}%
---~   \next}
---~ \def\dostartfoo#name%
---~  {\normalexpanded{\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname}{#name : #content}%
---~   \next}
---~ ]]))
+-- print(macros.preprocessed(
+-- [[
+--     \starttexdefinition unexpanded test #aa #bb #cc
+--         test
+--     \stoptexdefinition
+-- ]]))
+
+-- print(macros.preprocessed([[\def\bla#bla{bla#{bla}}]]))
+-- print(macros.preprocessed([[\def\bla#bla{#{bla}bla}]]))
+-- print(macros.preprocessed([[\def\blä#{blá}{blà:#{blá}}]]))
+-- print(macros.preprocessed([[\def\blä#bla{blà:#bla}]]))
+-- print(macros.preprocessed([[\setvalue{xx}#bla{blà:#bla}]]))
+-- print(macros.preprocessed([[\def\foo#bar{\setvalue{xx#bar}{#bar}}]]))
+-- print(macros.preprocessed([[\def\bla#bla{bla:#{bla}}]]))
+-- print(macros.preprocessed([[\def\bla_bla#bla{bla:#bla}]]))
+-- print(macros.preprocessed([[\def\test#oeps{test:#oeps}]]))
+-- print(macros.preprocessed([[\def\test_oeps#oeps{test:#oeps}]]))
+-- print(macros.preprocessed([[\def\test#oeps{test:#{oeps}}]]))
+-- print(macros.preprocessed([[\def\test#{oeps:1}{test:#{oeps:1}}]]))
+-- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps}]]))
+-- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}]]))
+-- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}}]]))
+-- print(macros.preprocessed([[% test
+-- \def\test#oeps{#oeps} % {test}
+-- % test
+--
+-- % test
+-- two
+-- %test]]))
+-- print(macros.preprocessed([[
+-- \def\scrn_button_make_normal#namespace#current#currentparameter#text%
+--   {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
+-- %    \hbox attr \referenceattribute \lastreferenceattribute {\localframed[#namespace:#current]{#text}}}
+--    \hbox attr \referenceattribute \lastreferenceattribute {\directlocalframed[#namespace:#current]{#text}}}
+-- ]]))
+--
+-- print(macros.preprocessed([[
+-- \def\definefoo[#name]%
+--  {\setvalue{start#name}{\dostartfoo{#name}}}
+-- \def\dostartfoo#name%
+--   {\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname{#name : #content}%
+--   \next}
+-- \def\dostartfoo#name%
+--  {\normalexpanded{\def\noexpand\next#content\expandafter\noexpand\csname stop#name\endcsname}{#name : #content}%
+--   \next}
+-- ]]))
 
 -- Just an experiment:
 --

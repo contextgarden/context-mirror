@@ -74,6 +74,8 @@ setmetatableindex(tex.ifs, function(t,k)
     return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
 end)
 
+-- todo : global
+
 function tex.settrue(name)
     texcount[name] = 0
 end

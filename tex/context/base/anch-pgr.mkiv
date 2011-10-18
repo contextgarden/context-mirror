@@ -1093,22 +1093,8 @@
 %D \macros
 %D   {stackposdown, stackposup, stackposleft,stackposright}
 %D
-%D A non graphic example of the use of positioning, is to stack
-%D text in for instance the margin.
-%D
-%D \stackposdown \inleft {some text}The text \type {some text}
-%D goes into the left margin, and \stackposdown \inleft {some
-%D more}\type {some more} as well. When they overlap, they
-%D will not touch.
-%D
-%D Here we said \type {\stackposdown \inleft{some text}}. Instead
-%D of \stackposleft \inleft {one}stacking \stackposleft \inleft
-%D {two}vertically, one can stack horizontally by \stackposleft
-%D \inleft {three}using \type {\stackposleft}.
-%D
-%D We can go in all four directions, using \type {\stackposdown},
-%D \type {\stackposup}, \type {\stackposleft} and \type
-%D {\stackposright}.
+%D This is sort of obsolete as we have now stacking in the
+%D margin in a different way.
 
 \def\stackposdistance{.5em}
 
@@ -1117,202 +1103,23 @@
 
 \def\POSstackprefix{stack:}
 
-\def\dostackposbox#1#2%
+\unexpanded\def\dostackposbox#1#2%
   {\dowithnextbox
-     {#2{\previousautopos\currentautopos
-         \global\advance\currentautopos\plusone
-         \edef\currentposition {\POSstackprefix\number\currentautopos}%
-         \edef\previousposition{\POSstackprefix\number\previousautopos}%
-         \hpos\currentposition{\doifoverlappingelse\currentposition\previousposition{#1}{\flushnextbox}}}}%
+     {#2%
+      \bgroup
+      \previousautopos\currentautopos
+      \global\advance\currentautopos\plusone
+      \edef\currentposition {\POSstackprefix\number\currentautopos}%
+      \edef\previousposition{\POSstackprefix\number\previousautopos}%
+      \hpos\currentposition{\doifoverlappingelse\currentposition\previousposition{#1}{\flushnextbox}%
+      \egroup}}%
      \hbox}
 
-\def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
-\def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
-\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
-\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
-
-%  obsolete
-%
-%  %D \macros
-%  %D   {stackeddown}
-%  %D
-%  %D However, a better implementation is possible with the
-%  %D following macro. We now have an extra key \type {stack} for
-%  %D margin settings. When set to \type {yes}, this macro comes
-%  %D into action.
-%
-%  % Because there can be many stacked items in a line and successive lines, we
-%  % play dirty and adapt the position and height of the current node so that
-%  % this becomes visible to a next pass.
-%  %
-%  % \startbuffer
-%  % \inleft {test 1} test 1 \inleft {test 2} test 2 \endgraf
-%  % \inleft {test 3} test 3
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft {test 1} test 1 \inleft {test 2} test 2 \inleft {test 3} test 3 \endgraf
-%  % \inleft {test 4} test 4
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft {test 1} test 1 \endgraf
-%  % \inleft {test 2} test 2 \endgraf
-%  % \inleft {test 3} test 3
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft {test 1\\test 1} test 1 \inleft {test 2} test 2 \endgraf
-%  % \inleft {test 3} test 3
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft {test 1\\test 1\\test 1\\test 1\\test 1} test 1 \endgraf
-%  % test 2 \endgraf
-%  % \inleft {test 3} test 3
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft{test 1} test \inleft{test 2} test \inleft{test 3\\test 3} test
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%  %
-%  % \startbuffer
-%  % \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test \endgraf
-%  % \inleft{test 1\\test 1\\test 1} test \inleft{test 2\\test 2} test \inleft{test 3\\test 3\\test 3} test
-%  % \stopbuffer
-%  % \getbuffer \typebuffer \flushstatus \page
-%
-%  \newdimen\laststackvmove % use \scratchdimenone instead of skip
-%
-%  \def\stackeddown
-%    {\bgroup
-%     % this macro assumes a few things and is meant to work for margin notes
-%     \dowithnextbox
-%       {\global\advance\currentautopos\plusone
-%        \global\laststackvmove\zeropoint
-%        \hpos{\POSstackprefix\number\currentautopos}
-%          {\edef\next
-%             {\nextboxht\the\nextboxht
-%              \nextboxdp\the\nextboxdp
-%              \nextboxwd\the\nextboxwd}%
-%           \previousautopos\currentautopos
-%           \scratchdimen\zeropoint
-%           \scratchcounter\zerocount
-%           \doloop
-%             {\advance\previousautopos\minusone
-%              \edef\currentposition {\POSstackprefix\number\currentautopos}%
-%              \edef\previousposition{\POSstackprefix\number\previousautopos}%
-%              \ifnum\MPp\currentposition=\MPp\previousposition\relax
-%                %\registerstatus{doing \number\currentautopos/\number\previousautopos}%
-%                \doifoverlappingelse\currentposition\previousposition
-%                  {\scratchskip\dimexpr
-%                      \MPy\currentposition
-%                     -\MPy\previousposition
-%                     -\MPd\currentposition  % untested
-%                     +\MPd\previousposition % untested
-%                     +\MPh\currentposition
-%                   \relax\relax % second relax realy needed, forgotten while dimexpressing
-%                   % todo: also take depth into account
-%                   \ifdim\scratchskip<\scratchdimen
-%                     %\registerstatus{no \the\scratchskip}%
-%                   \else
-%                     %\registerstatus{yes \the\scratchskip}%
-%                     \scratchdimen\scratchskip
-%                   \fi}%
-%                  \donothing % {\registerstatus{next}}%
-%                \ifnum\previousautopos<\zerocount\exitloop\fi
-%              \else
-%                \exitloop
-%              \fi}%
-%           \ifdim\scratchdimen=\zeropoint \else
-%             \bgroup
-%             \edef\currentposition{\POSstackprefix\number\currentautopos}%
-%             \scratchskip\scratchdimen
-%             \advance\scratchskip\MPh\currentposition
-%             \scratchdimen-\scratchdimen
-%             \advance\scratchdimen\MPy\currentposition
-%             %\registerstatus{old \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
-%             \expanded{\replacepospxywhd
-%               {\currentposition}{\MPp\currentposition}{\MPx\currentposition}{\the\scratchdimen}%
-%               {\MPw\currentposition}{\the\scratchskip}{\MPd\currentposition}}%
-%             %\registerstatus{new \number\currentautopos: \MPy\currentposition/\MPh\currentposition}%
-%             \egroup
-%             \global\laststackvmove\scratchdimen % new
-%             \setbox\nextbox\iftracepositions\@EA\ruledhbox\else\@EA\hbox\fi
-%               {\lower\scratchdimen\flushnextbox}%
-%             \next
-%             %\registerstatus{\strut}%
-%           \fi
-%           \flushnextbox}%
-%          \egroup}}
-%
-%  %D The next hack make sure that margin texts near faulty
-%  %D strutted lines are handled ok.
-%
-%  \newif\ifrepositionmarginbox \repositionmarginboxtrue
-%
-%  \newcount\currentmarginpos
-%
-%  \def\dopositionmarginbox#1%
-%    {\bgroup
-%     \ifrepositionmarginbox
-%       \global\advance\currentmarginpos\plusone
-%      %\setposition{\s!margin:\number\currentmarginpos}% not always
-%       \ifcase\marginrepositionmethod
-%         % nothing
-%       \or
-%         % nothing
-%       \or
-%         % stack / page check yet untested
-%         \setposition{\s!margin:\number\currentmarginpos}%
-%         \scratchdimen\MPy{\s!margin:\number\currentmarginpos}%
-%         \global\advance\currentmarginpos\plusone
-%         \advance\scratchdimen -\MPy{\s!margin:\number\currentmarginpos}%
-%         \advance\scratchdimen -\strutdp
-%         % new but bugged
-%         % \setbox#1\hbox
-%         %   {\hskip-\MPx{\s!margin:\number\currentmarginpos}%
-%         %    \hskip\MPx{head:\the\realpageno}%
-%         %    \box#1}%
-%         % so far
-%         \setbox#1\hbox
-%           {\setposition{\s!margin:\number\currentmarginpos}%
-%            \raise\scratchdimen\box#1}%
-%       \or
-%         % move up
-%         \setposition{\s!margin:\number\currentmarginpos}%
-%         \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
-%           \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
-%           \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
-%         \fi
-%       \or
-%         % move up, assume end of par
-%         \setposition{\s!margin:\number\currentmarginpos}%
-%         \ifnum\MPp{p:\number\parposcounter}=\MPp{\s!margin:\number\currentmarginpos}\relax
-%           \getnoflines\margincontentheight
-%           \advance\noflines\minusone
-%           \scratchdimen\noflines\lineheight
-%         \else
-%           \scratchdimen\dimexpr\MPy{p:\number\parposcounter}-\MPy{\s!margin:\number\currentmarginpos}\relax
-%         \fi
-%         \expanded{\setbox#1\hbox{\raise\scratchdimen\box#1}\ht#1\the\ht#1\dp#1\the\dp#1}%
-%       \fi
-%       \dp#1\zeropoint
-%       \ht#1\zeropoint
-%     \fi
-%     \graphicvadjust{\dontleavehmode\box#1}% dontleavehmode is needed to get direction right
-%     \egroup}
-%
-%  % \setnewconstant\marginrepositionmethod\plusone   % sidemethod
-%  % \setnewconstant\margincontentmethod   \plusthree % textmethod  % beware: 1 = old method
-%  % \setnewconstant\marginpagecheckmethod \plusone   % splitmethod
-
+\unexpanded\def\stackposup   {\dostackposbox{\raise\lineheight\flushnextbox}}
+\unexpanded\def\stackposdown {\dostackposbox{\lower\lineheight\flushnextbox}}
+\unexpanded\def\stackposleft {\dostackposbox{\copy\nextbox\hskip\nextboxwd\hskip\stackposdistance}}
+\unexpanded\def\stackposright{\dostackposbox{\hskip\stackposdistance\hskip\nextboxwd\flushnextbox}}
+
 %D \macros
 %D   {GFC, GTC, GSC}
 %D

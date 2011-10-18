@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Misc Float Things}
 
+\registerctxluafile{page-mis}{1.001}
+
 \unprotect
 
 \newif\ifmarginblocks
@@ -133,10 +135,23 @@
   {\dostopattributes
    \egroup
    \@@mbafter}
-
-\newcount\nofpostponedblocks
 
-\newif\ifinpostponing
+\setupmarginblocks
+  [\c!state=\v!start,
+   \c!location=\v!inmargin,
+   \c!width=\rightmarginwidth,
+   \c!style=,
+   \c!color=,
+   \c!align=,
+   \c!left=,
+   \c!right=,
+   \c!top=,
+   \c!inbetween=\blank,
+   \c!bottom=\vfill,
+   \c!before=,
+   \c!after=]
+
+% postponing
 
 \newevery\everytopofpage\relax
 
@@ -159,32 +174,56 @@
 %
 % \starttext \dorecurse{4}{\input tufte \page} \stoptext
 
-\newtoks  \postponedpageblocks
-\newcount \nofpostponedpageblocks
+%D There is no real need to use \LUA\ here but the bookkeeping
+%D is somewhat easier and we also can erase buffers easier when
+%D we keep a local cache, especially as we can flush per page.
 
-% \ifinpostponing: handhaven, want gebruikt in stijlen ! ! ! ! !
+\newif   \ifinpostponing                  % prevents nesting
+\newcount\postponed_page_blocks_next_page % set at the lua end
 
-\def\dodoflushpostponedblocks
-  {\bgroup % we need the font switch, else problems inside split verbatim
-   \setnormalcatcodes % postponing in verbatim
-   \restoreglobalbodyfont
-   \global\pagetotal\zeropoint
-   \global\inpostponingtrue
-   \the\postponedpageblocks
-   \dorecurse\nofpostponedblocks
-     {\getbuffer[pbuf-\recurselevel]}%
-   \doflushfloats % new but potential dangerous
-   \global\nofpostponedblocks\zerocount
-   \global\inpostponingfalse
+\unexpanded\setvalue{\e!start\v!postponing}%
+  {\bgroup
+   \obeylines
+   \doifnextoptionalelse{\egroup\postponed_page_block_start}{\egroup\postponed_page_block_start[0]}}
+
+\unexpanded\setvalue{\e!stop\v!postponing}%
+  {\ctxcommand{registerpostponedblock("\currentpostponedpage")}\relax}
+
+\def\postponed_page_block_start[#1]%
+  {\edef\currentpostponedpage{#1}%
+   \dostartbuffer[postponedblock][\e!start\v!postponing][\e!stop\v!postponing]}
+
+% officially we should flush again after a flush as there can be new future pages
+% but that will be looked into when we run into it
+
+\unexpanded\def\postponed_page_block_flush
+  {\bgroup
+   \inpostponingtrue                  % for old times sake
+   \global\pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
+   \the\everytopofpage\relax
+  %\flushrestfloats
+   \doflushpagefloats
+   \setnormalcatcodes                 % postponing in verbatim
+   \restoreglobalbodyfont             % otherwise problems inside split verbatim
+   \ctxcommand{flushpostponedblocks()}%
+   \relax
+   \doflushfloats                     % new but potential dangerous
    \egroup}
 
 \def\doflushpostponedblocks
-  {\ifinpostponing \else
-     \ifcase\nofpostponedblocks     \else \dodoflushpostponedblocks \fi
-     \ifcase\nofpostponedpageblocks \else \dodoflushpostponedblocks \fi
-   \fi}
+  {\ifinpostponing
+     % probably a nested flush
+   \else\ifnum\postponed_page_blocks_next_page=\zerocount
+     \postponed_page_block_flush
+    %\doflushpostponedblocks
+   \else\ifnum\postponed_page_blocks_next_page>\realpageno
+     % not yet
+   \else
+     \postponed_page_block_flush
+    %\doflushpostponedblocks
+   \fi\fi\fi}
 
-\def\doflushpostponedcontent
+\def\doflushpostponedcontent % called in page-one
   {\bgroup
    \setsystemmode\v!postponing
    \the\everytopofpage
@@ -192,48 +231,5 @@
    \doflushpagefloats
    \doflushpostponedblocks
    \egroup}
-
-\def\getpostponedblock#1#2%
-  {\doif{#1}\realfolio{\getbuffer[rbuf-#2]}} % no \ifnum, avoid \fi
-
-% beware, \dosingleempty conflicts with buffers (feeds back the \par)
-
-\setvalue{\e!start\v!postponing}%
-  {\bgroup
-   \obeylines
-   \doifnextoptionalelse{\egroup\nodostartpostponing}{\egroup\dodostartpostponing}}
-
-\def\nodostartpostponing[#1]%
-  {\global\advance\nofpostponedpageblocks\plusone % hm, never reset?
-   \bgroup % a little bit of misusing grouping
-   \doifinstring{+}{#1}\advance \realpageno#1\relax % ugly but efficient
-   \doglobal\appendetoks\noexpand\getpostponedblock
-     {\realfolio}{\number\nofpostponedpageblocks}\to\postponedpageblocks
-   \egroup
-   \showmessage\m!layouts3{\number\nofpostponedpageblocks}%
-   \dostartbuffer[rbuf-\number\nofpostponedpageblocks]%
-     [\e!start\v!postponing][\e!stop\v!postponing]}
-
-\def\dodostartpostponing
-  {\global\advance\nofpostponedblocks\plusone
-   \showmessage\m!layouts3{\number\nofpostponedblocks}%
-   \expanded{\dostartbuffer[pbuf-\number\nofpostponedblocks][\e!start\v!postponing][\e!stop\v!postponing]}}
-
-% Setups:
-
-\setupmarginblocks
-  [\c!state=\v!start,
-   \c!location=\v!inmargin,
-   \c!width=\rightmarginwidth,
-   \c!style=,
-   \c!color=,
-   \c!align=,
-   \c!left=,
-   \c!right=,
-   \c!top=,
-   \c!inbetween=\blank,
-   \c!bottom=\vfill,
-   \c!before=,
-   \c!after=]
 
 \protect \endinput

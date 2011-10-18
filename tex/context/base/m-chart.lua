@@ -6,44 +6,60 @@ if not modules then modules = { } end modules ['x-flow'] = {
     license   = "see context related readme files"
 }
 
--- when we can resolve mpcolor at the lua end we will use metapost.graphic(....) directly
+-- when we can resolve mpcolor at the lua end we will
+-- use metapost.graphic(....) directly
+
+-- todo: labels
 
 moduledata.charts = moduledata.charts or { }
 
 local gsub, match, find, format, lower = string.gsub, string.match, string.find, string.format, string.lower
 local lpegmatch = lpeg.match
+local setmetatableindex = table.setmetatableindex
 
-local points = number.points
-local variables = interfaces.variables
+local points    = number.points
+
+local variables  = interfaces.variables
+
+local v_yes      = variables.yes
+local v_no       = variables.no
+local v_none     = variables.none
+local v_standard = variables.standard
+local v_start    = variables.start
+local v_overlay  = variables.overlay
+local v_round    = variables.round
+local v_test     = variables.test
 
 local defaults = {
     chart = {
         name            = "",
         option          = "",
         backgroundcolor = "",
-        width           = 0,
-        height          = 0,
-        dx              = 0,
-        dy              = 0,
+        width           = 100*65436,
+        height          = 50*65436,
+        dx              = 30*65436,
+        dy              = 30*65436,
         offset          = 0,
         bodyfont        = "",
         dot             = "",
+        hcompact        = variables_no,
+        vcompact        = variables_no,
     },
     shape = { -- FLOS
         rulethickness   = 65436,
         default         = "",
-        framecolor      = "green",
-        backgroundcolor = "yellow",
+        framecolor      = "darkblue",
+        backgroundcolor = "lightgray",
     },
     focus = { -- FLOF
         rulethickness   = 65436,
-        framecolor      = "red",
-        backgroundcolor = "yellow",
+        framecolor      = "darkred",
+        backgroundcolor = "gray",
     },
     line = { -- FLOL
         rulethickness   = 65436,
-        radius          = 65436,
-        color           = "blue",
+        radius          = 10*65436,
+        color           = "darkgreen",
         corner          = "",
         dash            = "",
         arrow           = "",
@@ -87,7 +103,7 @@ local validlabellocations = {
     b = "b", bottom = "b",
 }
 
-table.setmetatableindex(validshapes,function(t,k)
+setmetatableindex(validshapes,function(t,k)
     local l = gsub(lower(k)," ","")
     local v = rawget(t,l)
     if not v then
@@ -121,6 +137,36 @@ function commands.flow_stop_chart()
         last_y = last_y,
     }
     data, hash, temp = nil, nil, nil
+end
+
+-- function commands.flow_set(chartname,chartdata)
+--     local hash = { }
+--     local data = { }
+--     charts[name] = {
+--         data = data,
+--         hash = hash,
+--     }
+--     for i=1,#chartdata do
+--         local di = data[i]
+--         local name = di.name or ""
+--         if name then
+--             data[#data+1] = {
+--                 name        = name,
+--                 labels      = di.labels      or { },
+--                 comments    = di.comments    or { },
+--                 exits       = di.exits       or { },
+--                 connections = di.connections or { },
+--                 settings    = di.settings    or { },
+--                 x           = di.x           or 1,
+--                 y           = di.y           or 1,
+--             }
+--             hash[name] = i
+--         end
+--      end
+-- end
+
+function commands.flow_reset(chartname)
+    charts[name] = nil
 end
 
 function commands.flow_set_current_cell(n)
@@ -223,20 +269,43 @@ local function inject(includedata,data,hash)
             y        = si.y + yoffset,
             settings = settings,
         }
-        table.setmetatableindex(t,si)
+        setmetatableindex(t,si)
         data[#data+1] = t
         hash[si.name or #data] = t
     end
 end
 
-local function expanded(chart)
+local function pack(data,field)
+    local list, max = { }, 0
+    for e=1,#data do
+        local d = data[e]
+        local f = d[field]
+        list[f] = true
+        if f > max then
+            max = f
+        end
+    end
+    for i=1,max do
+        if not list[i] then
+            for e=1,#data do
+                local d = data[e]
+                local f = d[field]
+                if f > i then
+                    d[field] = f - 1
+                end
+            end
+        end
+    end
+end
+
+local function expanded(chart,chartsettings)
     local expandeddata = { }
     local expandedhash = { }
     local expandedchart = {
         data = expandeddata,
         hash = expandedhash,
     }
-    table.setmetatableindex(expandedchart,chart)
+    setmetatableindex(expandedchart,chart)
     local data = chart.data
     local hash = chart.hash
     for i=1,#data do
@@ -248,13 +317,41 @@ local function expanded(chart)
             expandedhash[di.name or #expandeddata] = di
         end
     end
+    --
+    expandedchart.settings = chartsettings or { }
+    -- make locals
+    chartsettings.shape = chartsettings.shape or { }
+    chartsettings.focus = chartsettings.focus or { }
+    chartsettings.line  = chartsettings.line  or { }
+    chartsettings.set   = chartsettings.set   or { }
+    chartsettings.split = chartsettings.split or { }
+    chartsettings.chart = chartsettings.chart or { }
+    setmetatableindex(chartsettings.shape,defaults.shape)
+    setmetatableindex(chartsettings.focus,defaults.focus)
+    setmetatableindex(chartsettings.line ,defaults.line )
+    setmetatableindex(chartsettings.set  ,defaults.set  )
+    setmetatableindex(chartsettings.split,defaults.split)
+    setmetatableindex(chartsettings.chart,defaults.chart)
+    --
+    if chartsettings.chart.vcompact == v_yes then
+        pack(expandeddata,"y")
+    end
+    if chartsettings.chart.hcompact == v_yes then
+        pack(expandeddata,"x")
+    end
+    --
     for i=1,#expandeddata do
         local cell = expandeddata[i]
         local settings = cell.settings
         if not settings then
-            cell.settings = chart.settings
+            cell.settings = chartsettings
         else
-            table.setmetatableindex(settings,chart.settings)
+            settings.shape = settings.shape or { }
+            settings.focus = settings.focus or { }
+            settings.line  = settings.line  or { }
+            setmetatableindex(settings.shape,chartsettings.shape)
+            setmetatableindex(settings.focus,chartsettings.focus)
+            setmetatableindex(settings.line ,chartsettings.line)
         end
     end
     return expandedchart
@@ -263,11 +360,14 @@ end
 
 local splitter = lpeg.splitat(",")
 
-function commands.flow_set_location(str) -- handle include differently
-    -- wrong: delay real x,y, only store relative
-    local x, y = lpegmatch(splitter,str)
+function commands.flow_set_location(x,y)
+    if type(x) == "string" and not y then
+        x, y = lpegmatch(splitter,x)
+    end
     if not x or x == "" then
         x = last_x
+    elseif type(x) == "number" then
+        -- ok
     elseif x == "+" then
         x = last_x + 1
     elseif x == "-" then
@@ -279,6 +379,8 @@ function commands.flow_set_location(str) -- handle include differently
     end
     if not y or y == "" then
         y = last_y
+    elseif type(y) == "number" then
+        -- ok
     elseif y == "+" then
         y = last_y + 1
     elseif x == "-" then
@@ -296,12 +398,12 @@ end
 
 function commands.flow_set_connection(location,displacement,name)
     local dx, dy = lpegmatch(splitter,displacement)
-    dx = tonumber(dx) or 1
-    dy = tonumber(dy) or 1
+    dx = tonumber(dx)
+    dy = tonumber(dy)
     temp.connections[#temp.connections+1] = {
         location = location,
-        dx       = dx - 1,
-        dy       = dy - 1,
+        dx       = dx or 0,
+        dy       = dy or 0,
         name     = name,
     }
 end
@@ -356,12 +458,13 @@ local function process_cells(chart,xoffset,yoffset)
     for i=1,#data do
         local cell = visible(chart,data[i])
         if cell then
+            local settings = cell.settings
+            local shapesettings = settings.shape
             local shape = cell.shape
             if not shape or shape == "" then
-                shape = settings.shape.default or "none"
+                shape = shapesettings.default or "none"
             end
-            if shape ~= variables.none then
-                local settings = cell.settings
+            if shape ~= v_none then
                 local shapedata = validshapes[shape]
                 context("flow_begin_sub_chart ;")
                 if shapedata.kind == "line" then
@@ -380,7 +483,6 @@ local function process_cells(chart,xoffset,yoffset)
                     context("flow_shape_fill_color := \\MPcolor{%s} ;", shapesettings.backgroundcolor)
                     context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
                 end
-                context("bodyfontsize := 10pt ;") -- todo
                 context("flow_peepshape := false ;")   -- todo
                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
                 context("flow_end_sub_chart ;")
@@ -417,10 +519,10 @@ local function process_connections(chart,xoffset,yoffset)
                         local where_cell  = where[where_cell]  or "left"
                         local where_other = where[where_other] or "right"
                         local linesettings = settings.line
-                        context("flow_smooth := %s ;", linesettings.corner == variables.round and "true" or "false")
-                        context("flow_dashline := %s ;", linesettings.dash == variables.yes and "true" or "false")
-                        context("flow_arrowtip := %s ;", linesettings.arrow == variables.yes and "true" or "false")
-                        context("flow_touchshape := %s ;", linesettings.offset == variables.none and "true" or "false")
+                        context("flow_smooth := %s ;", linesettings.corner == v_round and "true" or "false")
+                        context("flow_dashline := %s ;", linesettings.dash == v_yes and "true" or "false")
+                        context("flow_arrowtip := %s ;", linesettings.arrow == v_yes and "true" or "false")
+                        context("flow_touchshape := %s ;", linesettings.offset == v_none and "true" or "false")
                         context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
                         context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
                         context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
@@ -486,6 +588,10 @@ local function process_texts(chart,xoffset,yoffset)
 end
 
 local function getchart(settings)
+    if not settings then
+        print("no settings given")
+        return
+    end
     local chartname = settings.chart.name
     if not chartname then
         print("no name given")
@@ -496,9 +602,7 @@ local function getchart(settings)
         print("no such chart",chartname)
         return
     end
-    chart.settings = settings
-    table.setmetatableindex(settings,defaults)
-    chart = expanded(chart)
+    chart = expanded(chart,settings)
     local _, _, nx, ny = check_cells(chart,0,0,0,0,0,0)
     chart.from_x = chart.settings.chart.x  or 1
     chart.from_y = chart.settings.chart.y  or 1
@@ -506,6 +610,7 @@ local function getchart(settings)
     chart.to_y   = chart.settings.chart.ny or ny
     chart.nx     = chart.to_x - chart.from_x  + 1
     chart.ny     = chart.to_y - chart.from_y  + 1
+--  inspect(chart)
     return chart
 end
 
@@ -514,16 +619,16 @@ local function makechart(chart)
     context.begingroup()
     context.forgetall()
     --
-    local bodyfont = settings.chart.bodyfont
-    if bodyfont ~= "" then
-        context.switchtobodyfont { bodyfont }
-    end
+ -- local bodyfont = settings.chart.bodyfont
+ -- if bodyfont ~= "" then
+ --     context.switchtobodyfont { bodyfont }
+ -- end
     --
     context.startMPcode()
     context("if unknown context_flow : input mp-char.mpiv ; fi ;")
     context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
     --
-    if settings.chart.option == variables.test or settings.chart.dot == variables.yes then
+    if settings.chart.option == v_test or settings.chart.dot == v_yes then
         context("flow_show_con_points := true ;")
         context("flow_show_mid_points := true ;")
         context("flow_show_all_points := true ;")
@@ -564,9 +669,9 @@ local function makechart(chart)
     context("flow_connection_dash_size := %s ;", points(radius))
     --
     local offset = settings.chart.offset -- todo: pass string
-    if offset == variables.none or offset == variables.overlay or offset == "" then
+    if offset == v_none or offset == v_overlay or offset == "" then
         offset = -2.5 * radius -- or rulethickness?
-    elseif offset == variables.standard then
+    elseif offset == v_standard then
         offset = radius -- or rulethickness?
     end
     context("flow_chart_offset := %s ;",points(offset))
@@ -585,7 +690,7 @@ function commands.flow_make_chart(settings)
     local chart = getchart(settings)
     if chart then
         local settings = chart.settings
-        if settings.split.state == variables.start then
+        if settings.split.state == v_start then
             local nx = chart.settings.split.nx
             local ny = chart.settings.split.ny
             local x = 1

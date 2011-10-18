@@ -201,7 +201,9 @@
 \let\currentstructurecounter \!!zerocount
 \let\previousstructurecounter\!!zerocount
 
-\def\setstructuresynchronization#1%
+% todo: a direct flusher (needed when hidden)
+
+\def\setstructuresynchronization#1% todo: use ctxcontext
   {\xdef\currentstructureattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
    \xdef\currentstructuresynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
 

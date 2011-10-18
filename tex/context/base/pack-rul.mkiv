@@ -1584,12 +1584,9 @@
 %D \stopformula
 %D \stopbuffer
 %D
-%D \typebuffer
+%D \typebuffer \getbuffer
 %D
-%D \getbuffer
-%D
-%D However, we got into troubles when we want to nest sub- and
-%D superscripts, like in
+%D And:
 %D
 %D \startbuffer
 %D \startformula
@@ -1597,23 +1594,7 @@
 %D \stopformula
 %D \stopbuffer
 %D
-%D \typebuffer
-%D
-%D \getbuffer
-%D
-%D Therefore, we can best use \type {\super} and \type {\suber}
-%D instead of \type {^} and \type {_}. Both commands take care
-%D of proper font switching.
-%D
-%D \startbuffer
-%D \startformula
-%D   x \times \mframed{y} \times y\super{\mframed{z}\suber{\mframed{z}}}
-%D \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D \getbuffer
+%D \typebuffer \getbuffer
 %D
 %D As usual, one can specify in what way the text should be
 %D framed. One should be aware of the fact that, inorder to
@@ -1623,13 +1604,11 @@
 %D
 %D \startbuffer
 %D \startformula
-%D   x \times y\super{\mframed[framecolor=red]{z}\suber{z}}
+%D   x \times y^{\mframed[framecolor=red]{z}_{z}}
 %D \stopformula
 %D \stopbuffer
 %D
-%D \typebuffer
-%D
-%D \getbuffer
+%D \typebuffer \getbuffer
 %D
 %D For inline use, we also provide the \type {\inmframed}
 %D alternative: we want $x \times \inmframed{y}$ in inline
@@ -1877,44 +1856,49 @@
 %D \bgroup
 %D \showstruts
 %D \dontcomplain
-%D \startlinecorrection
-%D \halign{#\enskip&#\enskip&#\enskip&#\enskip&#\enskip&#\cr
-%D   \framed[width=.2\hsize, height=.2\hsize, align=]      {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,    align=]      {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,      align=]      {a\par b\par c}&
-%D   \framed[width=fit,      height=.2\hsize, align=]      {a\par b\par c}&
-%D   \framed[width=fit,      height=broad,    align=]      {a\par b\par c}&
-%D   \framed[width=fit,      height=fit,      align=]      {a\par b\par c}\cr
-%D   \noalign{\vskip1em}
-%D   \framed[width=.2\hsize, height=.2\hsize, align=yes]   {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,    align=yes]   {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,      align=yes]   {a\par b\par c}&
-%D   \framed[width=fit,      height=.2\hsize, align=yes]   {a\par b\par c}&
-%D   \framed[width=fit,      height=broad,    align=yes]   {a\par b\par c}&
-%D   \framed[width=fit,      height=fit,      align=yes]   {a\par b\par c}\cr
-%D   \noalign{\vskip1em}
-%D   \framed[width=.2\hsize, height=.2\hsize, align=right] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,    align=right] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,      align=right] {a\par b\par c}&
-%D   \framed[width=fit,      height=.2\hsize, align=right] {a\par b\par c}&
-%D   \framed[width=fit,      height=broad,    align=right] {a\par b\par c}&
-%D   \framed[width=fit,      height=fit,      align=right] {a\par b\par c}\cr
-%D   \noalign{\vskip1em}
-%D   \framed[width=.2\hsize, height=.2\hsize, align=left]  {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,    align=left]  {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,      align=left]  {a\par b\par c}&
-%D   \framed[width=fit,      height=.2\hsize, align=left]  {a\par b\par c}&
-%D   \framed[width=fit,      height=broad,    align=left]  {a\par b\par c}&
-%D   \framed[width=fit,      height=fit,      align=left]  {a\par b\par c}\cr
-%D   \noalign{\vskip1em}
-%D   \framed[width=.2\hsize, height=.2\hsize, align=middle] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=broad,    align=middle] {a\par b\par c}&
-%D   \framed[width=.2\hsize, height=fit,      align=middle] {a\par b\par c}&
-%D   \framed[width=fit,      height=.2\hsize, align=middle] {a\par b\par c}&
-%D   \framed[width=fit,      height=broad,    align=middle] {a\par b\par c}&
-%D   \framed[width=fit,      height=fit,      align=middle] {a\par b\par c}\cr}
-%D \stoplinecorrection
-%D \blank[2*big]
+%D \starttabulate[|c|c|c|c|c|c|]
+%D % \HL
+%D \NC \framed[width=.2\hsize, height=.2\hsize, align=]       {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=broad,    align=]       {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=fit,      align=]       {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=.2\hsize, align=]       {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=broad,    align=]       {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=fit,      align=]       {a\endgraf b\endgraf c}
+%D \NC \NR
+%D % \HL
+%D \NC \framed[width=.2\hsize, height=.2\hsize, align=yes]    {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=broad,    align=yes]    {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=fit,      align=yes]    {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=.2\hsize, align=yes]    {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=broad,    align=yes]    {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=fit,      align=yes]    {a\endgraf b\endgraf c}
+%D \NC \NR
+%D % \HL
+%D \NC \framed[width=.2\hsize, height=.2\hsize, align=right]  {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=broad,    align=right]  {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=fit,      align=right]  {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=.2\hsize, align=right]  {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=broad,    align=right]  {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=fit,      align=right]  {a\endgraf b\endgraf c}
+%D \NC \NR
+%D % \HL
+%D \NC \framed[width=.2\hsize, height=.2\hsize, align=left]   {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=broad,    align=left]   {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=fit,      align=left]   {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=.2\hsize, align=left]   {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=broad,    align=left]   {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=fit,      align=left]   {a\endgraf b\endgraf c}
+%D \NC \NR
+%D % \HL
+%D \NC \framed[width=.2\hsize, height=.2\hsize, align=middle] {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=broad,    align=middle] {a\endgraf b\endgraf c}
+%D \NC \framed[width=.2\hsize, height=fit,      align=middle] {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=.2\hsize, align=middle] {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=broad,    align=middle] {a\endgraf b\endgraf c}
+%D \NC \framed[width=fit,      height=fit,      align=middle] {a\endgraf b\endgraf c}
+%D \NC \NR
+%D % \HL
+%D \stoptabulate
 %D \egroup
 %D \stoppostponing
 

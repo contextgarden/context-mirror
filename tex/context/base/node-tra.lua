@@ -666,9 +666,18 @@ local pts = function(n)
     end
 end
 
+local nopts = function(n)
+    if not n or n == 0 then
+        return "0"
+    else
+        return format("%.5f",n*ptfactor)
+    end
+end
+
 number.points     = points
 number.basepoints = basepoints
 number.pts        = pts
+number.nopts      = nopts
 
 --~ function nodes.thespec(s)
 --~     local stretch_order = s.stretch_order

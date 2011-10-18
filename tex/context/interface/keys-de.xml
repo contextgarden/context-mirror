@@ -695,6 +695,7 @@
 		<cd:constant name='global' value='global'/>
 		<cd:constant name='grid' value='gritter'/>
 		<cd:constant name='hang' value='haengend'/>
+		<cd:constant name='hcompact' value='hcompact'/>
 		<cd:constant name='headalign' value='headalign'/>
 		<cd:constant name='headcolor' value='kopffarbe'/>
 		<cd:constant name='headcommand' value='headcommand'/>
@@ -1029,6 +1030,7 @@
 		<cd:constant name='validate' value='validieren'/>
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vbefehl'/>
+		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='veroffset' value='kopfoffset'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>

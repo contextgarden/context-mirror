@@ -681,6 +681,20 @@
         \definefontsynonym [SansBoldItalic] [name:dejavusanscondensedboldoblique] [features=default]
     \stoptypescript
 
+    \definefontfeature[dejavu-condensed-mono][extend=.8]
+
+    \starttypescript [mono] [dejavu-condensed] [name]
+        \setups[font:fallback:mono]
+      % \definefontsynonym [Mono]           [name:dejavusansmonocondensed]            [features=none]
+      % \definefontsynonym [MonoBold]       [name:dejavusansmonoboldcondensed]        [features=none]
+      % \definefontsynonym [MonoItalic]     [name:dejavusansmonoobliquecondensed]     [features=none]
+      % \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldobliquecondensed] [features=none]
+        \definefontsynonym [Mono]           [name:dejavusansmono]            [features=dejavu-condensed-mono]
+        \definefontsynonym [MonoBold]       [name:dejavusansmonobold]        [features=dejavu-condensed-mono]
+        \definefontsynonym [MonoItalic]     [name:dejavusansmonooblique]     [features=dejavu-condensed-mono]
+        \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldoblique] [features=dejavu-condensed-mono]
+    \stoptypescript
+
   % \starttypescript [mono] [dejavu-condensed] [name]
   %     \setups[font:fallback:mono]
   %     \definefontsynonym [Mono]           [name:dejavusansmono]            [features=none]
@@ -693,7 +707,6 @@
         \definetypeface [dejavu-condensed] [rm] [serif] [dejavu-condensed] [default]
         \definetypeface [dejavu-condensed] [ss] [sans]  [dejavu-condensed] [default]
         \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu-condensed] [default]
-      % \definetypeface [dejavu-condensed] [tt] [mono]  [dejavu]           [default]
         \definetypeface [dejavu-condensed] [mm] [math]  [xits]             [default] [rscale=auto]
     \stoptypescript
 

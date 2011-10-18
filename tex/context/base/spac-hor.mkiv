@@ -524,8 +524,8 @@
 
 \def\dodefinenarrower[#1][#2]%
   {\getparameters[\??sl#1][\s!parent=\??sl,#2]%
-   \setvalue{\e!start#1}{\dodoubleempty\dostartnarrower[#1]}%
-   \setvalue{\e!stop #1}{\dostopnarrower}}
+   \unexpanded\setvalue{\e!start#1}{\dodoubleempty\dostartnarrower[#1]}%
+   \unexpanded\setvalue{\e!stop #1}{\dostopnarrower}}
 
 \unexpanded\def\setupnarrower
   {\dodoubleempty\dosetupnarrower}

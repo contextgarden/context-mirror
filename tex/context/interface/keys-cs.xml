@@ -695,6 +695,7 @@
 		<cd:constant name='global' value='globalne'/>
 		<cd:constant name='grid' value='mrizka'/>
 		<cd:constant name='hang' value='zaveseni'/>
+		<cd:constant name='hcompact' value='hcompact'/>
 		<cd:constant name='headalign' value='headalign'/>
 		<cd:constant name='headcolor' value='barvahlavicky'/>
 		<cd:constant name='headcommand' value='headcommand'/>
@@ -1029,6 +1030,7 @@
 		<cd:constant name='validate' value='validovat'/>
 		<cd:constant name='values' value='values'/>
 		<cd:constant name='vcommand' value='vprikaz'/>
+		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='veroffset' value='offsethlavicky'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='voffset' value='voffset'/>

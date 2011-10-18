@@ -6471,6 +6471,14 @@ return {
   },
  },
  ["constants"]={
+  ["hcompact"]={
+   ["en"]="hcompact",
+   ["nl"]="hcomprimeer",
+  },
+  ["vcompact"]={
+   ["en"]="vcompact",
+   ["nl"]="vcomprimeer",
+  },
   ["keys"]={
    ["en"]="keys",
    ["nl"]="sleutels", -- brrr

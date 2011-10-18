@@ -305,17 +305,17 @@
 
 % text
 
-\definemargindata [inleft]     [\v!left ]    [\c!margin=\c!margin,\c!width=\leftmarginwidth ,\c!align=\v!flushright]
-\definemargindata [inright]    [\v!right]    [\c!margin=\c!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
-\definemargindata [inouter]    [\v!outer]    [\c!margin=\c!margin,\c!width=\outermarginwidth,\c!align=\v!inner]
-\definemargindata [ininner]    [\v!inner]    [\c!margin=\c!margin,\c!width=\innermarginwidth,\c!align=\v!outer]
+\definemargindata [inleft]     [\v!left ]    [\c!margin=\v!margin,\c!width=\leftmarginwidth ,\c!align=\v!flushright]
+\definemargindata [inright]    [\v!right]    [\c!margin=\v!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
+\definemargindata [inouter]    [\v!outer]    [\c!margin=\v!margin,\c!width=\outermarginwidth,\c!align=\v!inner]
+\definemargindata [ininner]    [\v!inner]    [\c!margin=\v!margin,\c!width=\innermarginwidth,\c!align=\v!outer]
 
 % no longer auto auto-other
 
-\definemargindata [inmargin]   [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
-\definemargindata [inother]    [\v!right]    [\c!margin=\c!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
+\definemargindata [inmargin]   [\v!left]     [\c!margin=\v!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright]
+\definemargindata [inother]    [\v!right]    [\c!margin=\v!margin,\c!width=\rightmarginwidth,\c!align=\v!flushleft]
 
-\definemargindata [margintext] [\v!left]     [\c!margin=\c!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright,\c!stack=\v!yes]
+\definemargindata [margintext] [\v!left]     [\c!margin=\v!margin,\c!width=\leftmarginwidth, \c!align=\v!flushright,\c!stack=\v!yes]
 
 \setupmarginframed [\v!left ] [\c!method=\v!first,\c!align=\v!flushright,\s!parent=\??mf] % we could autoparent when no define yet
 \setupmarginframed [\v!right] [\c!method=\v!first,\c!align=\v!flushleft, \s!parent=\??mf]
@@ -333,8 +333,8 @@
 \let\margintitle  \margintext
 \let\inothermargin\inother    % for old times sake
 
-%definemargindata [inouterextra] [\v!outer] [\c!margin=\c!edge,\c!location=\v!outer,\c!width=\outeredgewidth,\c!align=\v!outer,\c!category=\v!edge]
-%definemargindata [ininnerextra] [\v!inner] [\c!margin=\c!edge,\c!location=\v!inner,\c!width=\inneredgewidth,\c!align=\v!inner,\c!category=\v!edge]
+%definemargindata [inouterextra] [\v!outer] [\c!margin=\v!edge,\c!location=\v!outer,\c!width=\outeredgewidth,\c!align=\v!outer,\c!category=\v!edge]
+%definemargindata [ininnerextra] [\v!inner] [\c!margin=\v!edge,\c!location=\v!inner,\c!width=\inneredgewidth,\c!align=\v!inner,\c!category=\v!edge]
 %
 %definemarginframed [inouterextra] [\v!outer]
 %definemarginframed [ininnerextra] [\v!inner]

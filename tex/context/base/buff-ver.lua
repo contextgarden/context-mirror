@@ -670,6 +670,7 @@ local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     if last < 0 then
         last = noflines + last
     end
+    local range = settings.range
     local what = settings_to_array(range)
     local r_first, r_last = what[1], what[2]
     local f, l = tonumber(r_first), tonumber(r_last)
