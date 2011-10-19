@@ -50,6 +50,8 @@ local filters         = characters.filters
 filters.utf           = filters.utf  or { }
 local utffilters      = characters.filters.utf
 
+-- is characters.combined cached?
+
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect
 source code to depend on collapsing.</p>
@@ -81,7 +83,8 @@ local function initialize() -- maybe only 'mn'
     for unicode, v in next, data do
         -- using vs and first testing for length is faster (.02->.01 s)
         local vs = v.specials
-        if vs and #vs == 3 and vs[1] == "char" then
+        local vc = vs and #vs == 3 and vs[1]
+        if vc == "char" then
             local one, two = vs[2], vs[3]
             if data[two].category == "mn" then
                 local cgf = combined[one]
@@ -116,6 +119,7 @@ local function initialize() -- maybe only 'mn'
                     mps[first] = combination
                 end
             end
+     -- elseif vc == "compat" then
      -- else
      --     local description = v.description
      --     if find(description,"LIGATURE") then
