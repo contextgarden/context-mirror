@@ -34,6 +34,7 @@ local trace_remapping     = false  trackers.register("math.remapping",   functio
 local trace_processing    = false  trackers.register("math.processing",  function(v) trace_processing  = v end)
 local trace_analyzing     = false  trackers.register("math.analyzing",   function(v) trace_analyzing   = v end)
 local trace_normalizing   = false  trackers.register("math.normalizing", function(v) trace_normalizing = v end)
+local trace_collapsing    = false  trackers.register("math.collapsing",  function(v) trace_collapsing  = v end)
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
 local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
@@ -43,6 +44,7 @@ local check_coverage      = true   directives.register("math.checkcoverage", fun
 local report_processing   = logs.reporter("mathematics","processing")
 local report_remapping    = logs.reporter("mathematics","remapping")
 local report_normalizing  = logs.reporter("mathematics","normalizing")
+local report_collapsing   = logs.reporter("mathematics","collapsing")
 local report_goodies      = logs.reporter("mathematics","goodies")
 local report_variants     = logs.reporter("mathematics","variants")
 local report_italics      = logs.reporter("mathematics","italics")
@@ -52,6 +54,7 @@ local has_attribute       = node.has_attribute
 local mlist_to_hlist      = node.mlist_to_hlist
 local font_of_family      = node.family_font
 local insert_node_after   = node.insert_after
+local free_node           = node.free
 
 local new_kern            = nodes.pool.kern
 
@@ -391,7 +394,7 @@ respace[math_char] = function(pointer,what,n,parent) -- not math_noad .. math_ch
                                         --~ next_noad.attr = nil
                                             ord.next = last_noad
                                             pointer.next = ord
-                                            node.free(next_noad)
+                                            free_node(next_noad)
                                         end
                                     end
                                 end
@@ -419,35 +422,50 @@ local collapse = { } processors.collapse = collapse
 
 local mathpairs = characters.mathpairs
 
-collapse[math_char] = function(pointer,what,n,parent)
-    pointer = parent
-    if pointer and pointer.subtype == noad_rel then
-        local current_nucleus = pointer.nucleus
-        if current_nucleus.id == math_char then
-            local current_char = current_nucleus.char
-            local mathpair = mathpairs[current_char]
-            if mathpair then
-                local next_noad = pointer.next
-                if next_noad and next_noad.id == math_noad and next_noad.subtype == noad_rel then
-                    local next_nucleus = next_noad.nucleus
-                    if next_nucleus.id == math_char then
-                        local next_char = next_nucleus.char
-                        local newchar = mathpair[next_char]
-                        if newchar then
-                            local fam = current_nucleus.fam
-                            local id = font_of_family(fam)
-                            local characters = fontcharacters[id]
-                            if characters and characters[newchar] then
-                             -- print("!!!!!",current_char,next_char,newchar)
-                                current_nucleus.char = newchar
-                                local next_next_noad = next_noad.next
-                                if next_next_noad then
-                                    pointer.next = next_next_noad
-                                    next_next_noad.prev = pointer
-                                else
-                                    pointer.next = nil
+mathpairs[0x2032] = { [0x2032] = 0x2033, [0x2033] = 0x2034 } -- (prime,prime) (prime,doubleprime)
+mathpairs[0x2033] = { [0x2032] = 0x2034 }                    -- (doubleprime,prime)
+
+local function collapsepair(pointer,what,n,parent) -- todo: switch to turn in on and off
+    if parent then
+        local subtype = parent.subtype
+        if subtype == noad_rel or subtype == noad_ord then -- ord is new
+            local current_nucleus = parent.nucleus
+            if not parent.sub and not parent.sup and current_nucleus.id == math_char then
+                local current_char = current_nucleus.char
+                local mathpair = mathpairs[current_char]
+                if mathpair then
+                    local next_noad = parent.next
+                    if next_noad and next_noad.id == math_noad then
+                        local next_subtype = next_noad.subtype
+                        if next_subtype == noad_rel or next_subtype == noad_ord then -- ord is new
+                            local next_nucleus = next_noad.nucleus
+                            if next_nucleus.id == math_char then
+                                local next_char = next_nucleus.char
+                                local newchar = mathpair[next_char]
+                                if newchar then
+                                    local fam = current_nucleus.fam
+                                    local id = font_of_family(fam)
+                                    local characters = fontcharacters[id]
+                                    if characters and characters[newchar] then
+                                        if trace_collapsing then
+                                            report_collapsing("U+%05X + U+%05X => U+%05X",current_char,next_char,newchar)
+                                        end
+                                        current_nucleus.char = newchar
+                                        local next_next_noad = next_noad.next
+                                        if next_next_noad then
+                                            parent.next = next_next_noad
+                                            next_next_noad.prev = parent
+                                        else
+                                            parent.next = nil
+                                        end
+                                        parent.sup = next_noad.sup
+                                        parent.sub = next_noad.sub
+                                        next_noad.sup = nil
+                                        next_noad.sub = nil
+                                        free_node(next_noad)
+                                        collapsepair(pointer,what,n,parent)
+                                    end
                                 end
-                                node.free(next_noad)
                             end
                         end
                     end
@@ -456,6 +474,8 @@ collapse[math_char] = function(pointer,what,n,parent)
         end
     end
 end
+
+collapse[math_char] = collapsepair
 
 function noads.handlers.collapse(head,style,penalties)
     processnoads(head,collapse,"collapse")
@@ -853,7 +873,7 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
                 end
                 next.prev = pointer
                 parent.next = next.next
-                node.free(next)
+                free_node(next)
             end
         end
     end

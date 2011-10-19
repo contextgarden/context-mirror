@@ -68,20 +68,66 @@
 \ifx\!\undefined \def\!{\mskip-\thinmuskip } \fi
 \ifx\*\undefined \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
 
+% \switchtobodyfont[modern]
+% \switchtobodyfont[cambria]
+% \switchtobodyfont[xits]
+% \switchtobodyfont[minion]
+% \setupbodyfont[dejavu]
+%
+% \startbuffer
+% \def\SampleLine#1{%
+%    \NC#1
+%    \NC\switchtobodyfont[#1]$f^2$                       %  1
+%    \NC\switchtobodyfont[#1]$f\prime^2$                 %  2
+%    \NC\switchtobodyfont[#1]$f\prime\prime^2$           %  3
+%    \NC\switchtobodyfont[#1]$f\prime\prime\prime^2$     %  4
+%    \NC\switchtobodyfont[#1]$f{\prime}^2$               %  5
+%    \NC\switchtobodyfont[#1]$f{\prime\prime}^2$         %  6
+%    \NC\switchtobodyfont[#1]$f{\prime\prime\prime}^2$   %  7
+%    \NC\switchtobodyfont[#1]$f'(x)$                     %  8
+%    \NC\switchtobodyfont[#1]$f''(x)$                    %  9
+%    \NC\switchtobodyfont[#1]$f'''(x)$                   % 10
+%    \NC\NR
+% }
+%
+% \starttabulate[|Tl|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|]
+%     \NC\NC1\NC2\NC3\NC4\NC5\NC6\NC7\NC8\NC9\NC10\NC\NR
+%     \SampleLine{modern}
+%     \SampleLine{cambria}
+%     \SampleLine{xits}
+%     \SampleLine{minion}
+% \stoptabulate
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+
 { \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
 { \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
 
-\def\domathprime{^\bgroup\dodomathprime}
+% collapsing to 0x2033 and 0x2034 happens elsewhere
+
+\let\normalprime\prime
+
+\unexpanded\def\domathprime
+  {\iffontchar\textfont\zerocount"FE325\relax
+    ^\bgroup\expandafter\dodomathprime % virtual mess (using funny signal)
+   \else
+     \expandafter\normalprime % gets collapsed
+   \fi}
+
+\let\prime\domathprime
 
 \def\dodomathprime
- {\prime\futurelet\nexttoken\dododomathprime}
+  {\normalprime\futurelet\nexttoken\dododomathprime}
 
 \def\dododomathprime
   {\csname domathprime@%
      \ifx                          '\nexttoken a\else
+     \ifx               \normalprime\nexttoken a\else
+     \ifx                     \prime\nexttoken a\else
      \ifx\superscriptcircumflextoken\nexttoken b\else
      \ifx\othercircumflextoken      \nexttoken b\else
-                                               c\fi\fi\fi
+                                               c\fi\fi\fi\fi\fi
    \endcsname}
 
 \def\domathprime@a  #1{\dodomathprime}

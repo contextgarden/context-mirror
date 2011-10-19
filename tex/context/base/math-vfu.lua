@@ -153,21 +153,43 @@ local function minus(main,characters,id,size,unicode) -- push/pop needed?
     end
 end
 
--- pdf:page pdf:direct don't work here
+-- fails: pdf:page: pdf:direct: ... some funny displacement
 
-local scale_factor = 0.7
-local scale_down   = { "special", format("pdf: %s 0 0 %s 0 0 cm",  scale_factor,  scale_factor) } -- we need a scale
-local scale_up     = { "special", format("pdf: %s 0 0 %s 0 0 cm",1/scale_factor,1/scale_factor) }
+-- this does not yet work ... { "scale", 2, 0, 0, 3 } .. commented code
+--
+-- this does not work ... no interpretation going on here
+--
+-- local nodeinjections = backends.nodeinjections
+-- { "node", nodeinjections.save() },
+-- { "node", nodeinjections.transform(.7,0,0,.7) },
+-- commands[#commands+1] = { "node", nodeinjections.restore() }
 
-local function raise(main,characters,id,size,unicode,private) -- this is a real fake mess
+local done = { }
+
+local function raise(main,characters,id,size,unicode,private,n) -- this is a real fake mess
     local raised = characters[private]
     if raised then
-        local up = .85 * main.parameters.x_height
+        if not done[unicode] then
+            report_virtual("temporary too large U+%05X due to issues in luatex backend",unicode)
+            done[unicode] = true
+        end
+        local up = 0.85 * main.parameters.x_height
+        local slot = { "slot", id, private }
+        local commands = {
+            push,
+            { "down", - up },
+         -- { "scale", .7, 0, 0, .7 },
+            slot,
+        }
+        for i=2,n do
+            commands[#commands+1] = slot
+        end
+        commands[#commands+1] = pop
         characters[unicode] = {
-            width    = .7 *  raised.width,
+            width    = .7 * n * raised.width,
             height   = .7 * (raised.height + up),
             depth    = .7 * (raised.depth  - up),
-            commands = { push, { "down", -up }, scale_down, { "slot", id, private }, scale_up, pop }
+            commands = commands,
         }
     end
 end
@@ -366,7 +388,9 @@ function vfmath.addmissing(main,id,size)
     jointhree(main,characters,id,size,0x27FC,0xFE321,0,0x0002D,joinrelfactor,0x02192) -- \mapstochar\relbar\joinrel\rightarrow
     jointwo  (main,characters,id,size,0x2254,0x03A,0,0x03D)                           -- := (≔)
 
---  raise    (main,characters,id,size,0x02032,0xFE325) -- prime
+ -- raise    (main,characters,id,size,0x02032,0xFE325,1) -- prime
+ -- raise    (main,characters,id,size,0x02033,0xFE325,2) -- double prime
+ -- raise    (main,characters,id,size,0x02034,0xFE325,3) -- triple prime
 
     -- there are more (needs discussion first):
 
