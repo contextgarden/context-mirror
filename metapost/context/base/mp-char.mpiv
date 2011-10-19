@@ -298,7 +298,9 @@ def flow_flush_shape(expr x, yy) =
 enddef ;
 
 vardef flow_points_initialized(expr xfrom, yfrom, xto, yto, n) =
-    if not flow_xyfree[xfrom][yfrom] and not flow_xyfree[xto][yto] :
+    if unknown flow_xyfree[xfrom][yfrom] or unknown flow_xyfree[xto][yto] :
+        flow_xypoint := 0 ; false
+    elseif not flow_xyfree[xfrom][yfrom] and not flow_xyfree[xto][yto] :
         flow_xypoint := n ; true
     else :
         flow_xypoint := 0 ; false

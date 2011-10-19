@@ -1,0 +1,219 @@
+%D \module
+%D   [       file=page-mak, % copied from main-001,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Simple MakeUp,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / MakeUp}
+
+\unprotect
+
+%D \macros
+%D   {definemakeup, setupmakeup, startmakeup}
+%D
+%D A makeup is a separate page, like a title page or colofon.
+%D There is one standard makeup page, but you can define more
+%D if needed.
+%D
+%D \starttyping
+%D \startstandardmakeup
+%D   My Fancy Title
+%D \stopstandardmakeup
+%D \stoptyping
+%D
+%D The associated commands are:
+%D
+%D \showsetup{definemakeup}
+%D \showsetup{setupmakeup}
+%D \showsetup{startmakeup}
+
+%D New is that we have a layout with the same name so one can set
+%D up a special layout tthat then gets used.
+
+\installcommandhandler \??do {makeup} \??do
+
+\appendtoks
+   \setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
+   \setuevalue{\e!stop \currentmakeup\e!makeup}{\stopmakeup}%
+   \definelayout[\currentmakeup]% new
+\to \everydefinemakeup
+
+%D The \type{\start}||\type{\stop} macros are used for both
+%D the direct and indirect way. The parameterless call will
+%D build a simple box.
+
+\unexpanded\def\startmakeup
+  {\dodoubleempty\page_makeup_start}
+
+\let\stopmakeup\relax
+
+\def\page_makeup_start
+  {\iffirstargument
+      \expandafter\page_makeup_start_yes
+   \else
+      \expandafter\page_makeup_start_nop
+   \fi}
+
+%D The simple case: just a box with text dimensions.
+
+\unexpanded\def\page_makeup_start_nop[#name][#settings]% dummies
+  {\page
+   \setupheader[\c!state=\v!empty]%
+   \setupfooter[\c!state=\v!empty]%
+   \bgroup
+   \forgetall % else indented flush
+   \dontcomplain
+   \vbox to \textheight \bgroup
+     \setsystemmode\v!makeup
+     \hsize\textwidth
+     \let\stopmakeup\page_makeup_stop_nop}
+
+\unexpanded\def\page_makeup_stop_nop
+  {\egroup
+   \egroup
+   \page}
+
+%D The normal variant.
+
+\newbox \page_makeup_box
+\newtoks\page_makeup_every_setup
+
+\def\page_makeup_start_yes[#name][#settings]%
+  {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
+     {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
+     {\page[\namedmakeupparameter{#name}\c!page]}%
+   \startlayout[#name]%
+   \bgroup
+   \edef\currentmakeup{#name}%
+   \setupcurrentmakeup[#settings]%
+   \setsystemmode\v!makeup
+   \the\page_makeup_every_setup
+   \makeupparameter\c!commands % hm, what is this one doing here ?
+   \forgetall % else indented flush
+   \dontcomplain
+   \global\setbox\page_makeup_box\vbox to \makeupparameter\c!height \bgroup
+     \dosetmakeupattributes\c!style\c!color
+     \hsize\makeupparameter\c!width
+     \setupalign[\makeupparameter\c!align]%
+     \doprocesslocalsetups{\makeupparameter\c!setups}% lua(..),xml(...,..),tex(..)
+     \makeupparameter\c!top
+     \let\stopmakeup\page_makeup_stop_yes}
+
+\unexpanded\def\page_makeup_stop_yes
+    {\endgraf
+     \makeupparameter\c!bottom
+     \egroup
+   \ifprocessingpages % this will be redone anyway (is this needed at all?)
+     \ifpageselected
+       \page_makeup_flush_box
+     \else
+       \page_makeup_wipe_box
+     \fi
+   \else
+     \ifpageselected
+       \page_makeup_wipe_box
+     \else
+       \page_makeup_flush_box
+     \fi
+   \fi
+   \ifselectingpages
+     \global\pageselectedfalse
+   \fi
+   \egroup
+   \stoplayout}
+
+\def\page_makeup_flush_box
+  {\pushpagestate % new
+   \makeupparameter\c!before
+   \relax % to be sure we don't enter the \if
+   \ifdim\ht\page_makeup_box>\vsize
+     \ht\page_makeup_box\vsize % is already set to \textheight (maybe set dp to 0)
+   \fi
+   \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
+   \box\page_makeup_box
+   \the\page_makeup_every_setup
+   \page
+   \makeupparameter\c!after
+   \relax % to be sure we don't enter the \if
+   \ifdoublesided \ifodd\realpageno \else
+     \getvalue{\??do::\c!doublesided::\makeupparameter\c!doublesided}%
+   \fi \fi
+   \poppagestate} % new
+
+\def\page_makeup_wipe_box
+  {\global\box\page_makeup_box\emptybox}
+
+\setvalue{\??do::\c!doublesided::\v!yes}%
+  {\emptyhbox
+   \page}
+
+\setvalue{\??do::\c!doublesided::\v!empty}%
+  {\the\page_makeup_every_setup
+  % == \page[\v!dummy]
+   \page[\v!blank]%
+   \emptyhbox
+   \page}
+
+%D The text surrounding the main body text can be influenced
+%D by setting their associated status variables. The
+%D connection between them is made by the following macro
+
+\appendtoks % this might need a revision
+    \setupfooter[\c!state=\makeupparameter\c!footerstate]%
+    \setupheader[\c!state=\makeupparameter\c!headerstate]%
+    \setuptext  [\c!state=\makeupparameter\c!textstate]%
+    \setupbottom[\c!state=\makeupparameter\c!bottomstate]%
+    \setuptop   [\c!state=\makeupparameter\c!topstate]%
+    % this is needed, but no \setuplayout here; fails in texexec --fig=c
+   %\recalculatelayout
+\to \page_makeup_every_setup
+
+%D The standard page template is defined as follows:
+
+\setupmakeup
+  [\c!width=\innermakeupwidth,  % example in manual / was \makeupwidth
+   \c!height=\textheight,       % example in manual
+  %\c!commands=,
+  %\c!setups=,
+  %\c!color=,
+  %\c!align=,
+  %\c!before=,
+  %\c!after=,
+   \c!page=\v!right,
+   \c!doublesided=\v!empty,
+   \c!top=\vss,
+   \c!bottom=\vss,
+   \c!bottomstate=\v!normal,
+   \c!topstate=\v!normal,
+   \c!textstate=\v!normal,
+   \c!headerstate=\v!stop,
+   \c!footerstate=\v!stop,
+   \c!pagestate=\v!stop] % in manual ! ! !
+
+\definemakeup
+  [\v!standard]
+  [\c!width=\innermakeupwidth,
+   \c!height=\textheight,
+   \c!page=\v!right,
+   \c!doublesided=\v!empty]
+
+\definemakeup
+  [\v!text]
+  [\c!topstate=\v!start,
+   \c!headerstate=\v!start,
+   \c!textstate=\v!start,
+   \c!footerstate=\v!start,
+   \c!bottomstate=\v!start,
+   \c!doublesided=\v!no,
+   \c!page=\v!yes,
+   \c!top=\pseudostrut\ignorespaces,
+   \c!bottom=\obeydepth\vss]
+
+\protect

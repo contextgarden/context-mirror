@@ -46,6 +46,8 @@ local defaults = {
         dot             = "",
         hcompact        = variables_no,
         vcompact        = variables_no,
+        autofocus       = "",
+        focus           = "",
     },
     shape = { -- FLOS
         rulethickness   = 65436,
@@ -409,46 +411,11 @@ function commands.flow_set_connection(location,displacement,name)
     }
 end
 
-local where = {
-    l = "left",
-    r = "right",
-    t = "top",
-    b = "bottom",
-}
-
-local what = {
-    ["p"] =  1,
-    ["m"] = -1,
-    ["+"] =  1,
-    ["-"] = -1,
-}
-
 local function visible(chart,cell)
     local x, y = cell.x, cell.y
     return
         x >= chart.from_x and x <= chart.to_x and
         y >= chart.from_y and y <= chart.to_y and cell
-end
-
-local function check_cells(chart,xoffset,yoffset,min_x,min_y,max_x,max_y)
-    local data = chart.data
-    if not data then
-        return
-    end
-    for i=1,#data do
-        local cell = data[i]
-        local x, y = cell.x + xoffset, cell.y + yoffset
-        if min_x == 0 then
-            min_x, max_x = x, x
-            min_y, max_y = y, y
-        else
-            if x < min_x then min_x = x end
-            if y < min_y then min_y = y end
-            if x > max_x then max_x = x end
-            if y > max_y then max_y = y end
-        end
-    end
-    return min_x, min_y, max_x, max_y
 end
 
 local function process_cells(chart,xoffset,yoffset)
@@ -468,7 +435,7 @@ local function process_cells(chart,xoffset,yoffset)
             end
             if shape ~= v_none then
                 local shapedata = validshapes[shape]
-                context("flow_begin_sub_chart ;")
+                context("flow_begin_sub_chart ;") -- when is this needed
                 if shapedata.kind == "line" then
                     local linesettings = settings.line
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
@@ -486,6 +453,7 @@ local function process_cells(chart,xoffset,yoffset)
                     context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
                 end
                 context("flow_peepshape := false ;")   -- todo
+--                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
                 context("flow_end_sub_chart ;")
             end
@@ -541,16 +509,10 @@ local function process_connections(chart,xoffset,yoffset)
                 local connection = connections[j]
                 local othername = connection.name
                 local othercell = hash[othername]
-                if othercell then
+                if othercell then -- and visible(chart,data[i]) then
                     local cellx, celly = cell.x, cell.y
                     local otherx, othery, location = othercell.x, othercell.y, connection.location
                     if otherx > 0 and othery > 0 and cellx > 0 and celly > 0 and connection.location then
-                        -- move to setter
-                     -- local what_cell, where_cell, what_other, where_other = match(location,"([%+%-pm]-)([lrtb]),?([%+%-pm]-)([lrtb])")
-                     -- local what_cell   = what [what_cell]   or 0
-                     -- local what_other  = what [what_other]  or 0
-                     -- local where_cell  = where[where_cell]  or "left"
-                     -- local where_other = where[where_other] or "right"
                         local what_cell, where_cell, what_other, where_other = lpegmatch(what,location)
                         if what_cell and where_cell and what_other and where_other then
                             local linesettings = settings.line
@@ -639,14 +601,73 @@ local function getchart(settings)
         return
     end
     chart = expanded(chart,settings)
-    local _, _, nx, ny = check_cells(chart,0,0,0,0,0,0)
-    chart.from_x = chart.settings.chart.x  or 1
-    chart.from_y = chart.settings.chart.y  or 1
-    chart.to_x   = chart.settings.chart.nx or nx
-    chart.to_y   = chart.settings.chart.ny or ny
-    chart.nx     = chart.to_x - chart.from_x  + 1
-    chart.ny     = chart.to_y - chart.from_y  + 1
---  inspect(chart)
+    local cc_settings = chart.settings.chart
+    local autofocus = chart.settings.chart.autofocus
+    if autofocus then
+        autofocus = utilities.parsers.settings_to_hash(autofocus)
+        if not next(autofocus) then
+            autofocus = false
+        end
+    end
+    -- check natural window
+    local x  = tonumber(cc_settings.x)
+    local y  = tonumber(cc_settings.y)
+    local nx = tonumber(cc_settings.nx)
+    local ny = tonumber(cc_settings.ny)
+    --
+    local minx, miny, maxx, maxy = 0, 0, 0, 0
+    local data = chart.data
+    for i=1,#data do
+        local cell = data[i]
+        if not autofocus or autofocus[cell.name] then -- offsets probably interfere with autofocus
+            local x = cell.x
+            local y = cell.y
+            if minx == 0 or x < minx then minx = x end
+            if miny == 0 or y < miny then miny = y end
+            if minx == 0 or x > maxx then maxx = x end
+            if miny == 0 or y > maxy then maxy = y end
+        end
+    end
+    -- check of window should be larger (maybe autofocus + nx/ny?)
+    if autofocus then
+        -- x and y are ignored
+        if nx and nx > 0 then
+            maxx = minx + nx - 1
+        end
+        if ny and ny > 0 then
+            maxy = miny + ny - 1
+        end
+    else
+        if x and x > 0 then
+            minx = x
+        end
+        if y and y > 0 then
+            minx = y
+        end
+        if nx and nx > 0 then
+            maxx = minx + nx - 1
+        end
+        if ny and ny > 0 then
+            miny = miny + ny - 1
+        end
+    end
+    --
+    local nx = maxx - minx + 1
+    local ny = maxy - miny + 1
+    -- relocate cells
+    for i=1,#data do
+        local cell = data[i]
+        cell.x = cell.x - minx + 1
+        cell.y = cell.y - miny + 1
+    end
+    chart.from_x = 1
+    chart.from_y = 1
+    chart.to_x   = nx
+    chart.to_y   = ny
+    chart.nx     = nx
+    chart.ny     = ny
+    --
+ -- inspect(chart)
     return chart
 end
 
@@ -726,38 +747,38 @@ function commands.flow_make_chart(settings)
     local chart = getchart(settings)
     if chart then
         local settings = chart.settings
-        if settings.split.state == v_start then
-            local nx = chart.settings.split.nx
-            local ny = chart.settings.split.ny
-            local x = 1
-            while true do
-                local y = 1
-                while true do
-                    -- FLOTbefore
-                    -- doif @@FLOTmarking on -> cuthbox
-                    -- @@FLOTcommand
-                    chart.from_x = x
-                    chart.from_y = y
-                    chart.to_x   = math.min(x + nx - 1,chart.nx)
-                    chart.to_y   = math.min(x + ny - 1,chart.ny)
-                    makechart(chart)
-                    -- FLOTafter
-                    y = y + ny
-                    if y > chart.max_y then
-                       break
-                    else
-                       y = y - dy
-                    end
-                end
-                x = x + nx
-                if x > chart.max_x then
-                    break
-                else
-                    x = x - dx
-                end
-            end
-        else
+--         if settings.split.state == v_start then
+--             local nx = chart.settings.split.nx
+--             local ny = chart.settings.split.ny
+--             local x = 1
+--             while true do
+--                 local y = 1
+--                 while true do
+--                     -- FLOTbefore
+--                     -- doif @@FLOTmarking on -> cuthbox
+--                     -- @@FLOTcommand
+--                     chart.from_x = x
+--                     chart.from_y = y
+--                     chart.to_x   = math.min(x + nx - 1,chart.nx)
+--                     chart.to_y   = math.min(x + ny - 1,chart.ny)
+--                     makechart(chart)
+--                     -- FLOTafter
+--                     y = y + ny
+--                     if y > chart.max_y then
+--                        break
+--                     else
+--                        y = y - dy
+--                     end
+--                 end
+--                 x = x + nx
+--                 if x > chart.max_x then
+--                     break
+--                 else
+--                     x = x - dx
+--                 end
+--             end
+--         else
             makechart(chart)
-        end
+--         end
     end
 end

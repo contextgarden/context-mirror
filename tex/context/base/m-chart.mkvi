@@ -12,7 +12,6 @@
 %C details.
 
 % todo (if used):
-%    autofocus={name,name,name} -> min/max
 %    flowsets
 %    autoscaling (bodyfontsteps)
 %    comment
@@ -199,6 +198,11 @@
             hcompact        = "\FLOWchartparameter\c!hcompact", % undocumented option
             vcompact        = "\FLOWchartparameter\c!vcompact", % undocumented option
             focus           = "\FLOWchartparameter\c!focus",
+            autofocus       = "\FLOWchartparameter\c!autofocus",
+            nx              = "\FLOWchartparameter\c!nx",
+            ny              = "\FLOWchartparameter\c!ny",
+            x               = "\FLOWchartparameter\c!x",
+            y               = "\FLOWchartparameter\c!y",
         },
         shape = {
             rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,
@@ -274,7 +278,7 @@
 
 \unexpanded\def\FLOW_text                                  {\dosingleempty\do_FLOW_text}
 \unexpanded\def\FLOW_label                                 {\dosingleempty\do_FLOW_label}
-\unexpanded\def\FLOW_comment                               {\dosingleempty\do_FLOW_commment}
+\unexpanded\def\FLOW_comment                               {\dosingleempty\do_FLOW_comment}
 \unexpanded\def\FLOW_exit                                  {\dosingleempty\do_FLOW_exit}
 \unexpanded\def\FLOW_connection                            {\dodoubleempty\do_FLOW_connection}
 \unexpanded\def\FLOW_include                               {\dodoubleempty\do_FLOW_include}
