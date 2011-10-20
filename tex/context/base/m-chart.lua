@@ -101,10 +101,29 @@ local validshapes = {
 }
 
 local validlabellocations = {
-    l = "l", left   = "l",
-    r = "r", right  = "r",
-    t = "t", top    = "t",
-    b = "b", bottom = "b",
+    l  = "l",  left   = "l",
+    r  = "r",  right  = "r",
+    t  = "t",  top    = "t",
+    b  = "b",  bottom = "b",
+    lt = "lt",
+    rt = "rt",
+    lb = "lb",
+    rb = "rb",
+}
+
+local validcommentlocations = {
+    l  = "l",  left   = "l",
+    r  = "r",  right  = "r",
+    t  = "t",  top    = "t",
+    b  = "b",  bottom = "b",
+    lt = "lt",
+    rt = "rt",
+    lb = "lb",
+    rb = "rb",
+    tl = "lt",
+    tr = "rt",
+    bl = "lb",
+    br = "rb",
 }
 
 setmetatableindex(validshapes,function(t,k)
@@ -180,7 +199,6 @@ end
 function commands.flow_start_cell(settings)
     temp = {
         labels      = { },
-        comments    = { },
         exits       = { },
         connections = { },
         settings    = settings,
@@ -231,11 +249,20 @@ function commands.flow_set_label(location,text)
     }
 end
 
-function commands.flow_set_comment(name,str)
-    temp.comments[#temp.comments+1] = {
-        location = location,
-        text = text,
-    }
+function commands.flow_set_comment(location,text)
+    local connections = temp.connections
+    if connections then
+        local connection = connections[#connections]
+        if connection then
+            local comments = connection.comments
+            if comments then
+                comments[#comments+1] = {
+                    location = location,
+                    text = text,
+                }
+            end
+        end
+    end
 end
 
 function commands.flow_set_exit(location,text)
@@ -408,6 +435,7 @@ function commands.flow_set_connection(location,displacement,name)
         dx       = dx or 0,
         dy       = dy or 0,
         name     = name,
+        comments = { },
     }
 end
 
@@ -453,7 +481,6 @@ local function process_cells(chart,xoffset,yoffset)
                     context("flow_shape_line_width := %s ; " ,          points(shapesettings.rulethickness))
                 end
                 context("flow_peepshape := false ;")   -- todo
---                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
                 context("flow_new_shape(%s,%s,%s) ;",cell.x+xoffset,cell.y+yoffset,shapedata.number)
                 context("flow_end_sub_chart ;")
             end
@@ -523,7 +550,7 @@ local function process_connections(chart,xoffset,yoffset)
                             context("flow_dsp_x := %s ; flow_dsp_y := %s ;",connection.dx or 0, connection.dy or 0)
                             context("flow_connection_line_color := \\MPcolor{%s} ;",linesettings.color)
                             context("flow_connection_line_width := 2pt ;",points(linesettings.rulethickness))
-                            context("flow_connect_%s_%s(%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,cellx,celly,what_cell,otherx,othery,what_other)
+                            context("flow_connect_%s_%s (%s) (%s,%s,%s) (%s,%s,%s) ;",where_cell,where_other,j,cellx,celly,what_cell,otherx,othery,what_other)
                             context("flow_dsp_x := 0 ; flow_dsp_y := 0 ;")
                         end
                     end
@@ -534,6 +561,8 @@ local function process_connections(chart,xoffset,yoffset)
 end
 
 local texttemplate = "\\setvariables[flowcell:text][x=%s,y=%s,text={%s},align={%s},figure={%s},destination={%s}]"
+
+local splitter = lpeg.splitat(":")
 
 local function process_texts(chart,xoffset,yoffset)
     local data = chart.data
@@ -577,9 +606,24 @@ local function process_texts(chart,xoffset,yoffset)
                     end
                 end
             end
-            local comments = cell.comments
-            for i=1,#comments do
-                -- invisible
+            local connections = cell.connections
+            for i=1,#connections do
+                local comments = connections[i].comments
+                for j=1,#comments do
+                    local comment = comments[j]
+                    local text = comment.text
+                    local location = comment.location or ""
+                    local length = 0
+                    local loc, len = lpegmatch(splitter,location)
+                    if loc then
+                        location = loc
+                        length   = tonumber(len) or 0
+                    end
+                    location = validcommentlocations[location]
+                    if text and location then
+                        context('flow_chart_draw_comment(%s,%s,%s,%s,textext("%s"),"%s",%s) ;',x,y,i,j,text,location,length)
+                    end
+                end
             end
         end
     end
@@ -702,10 +746,13 @@ local function makechart(chart)
     local gridwidth   = shapewidth + 2*settings.chart.dx
     local shapeheight = settings.chart.height
     local gridheight  = shapeheight + 2*settings.chart.dy
+    local chartoffset = settings.chart.offset
+
     context("flow_grid_width := %s ;", points(gridwidth))
     context("flow_grid_height := %s ;", points(gridheight))
     context("flow_shape_width := %s ;", points(shapewidth))
     context("flow_shape_height := %s ;", points(shapeheight))
+    context("flow_chart_offset := %s ;", points(chartoffset))
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness
