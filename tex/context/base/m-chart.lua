@@ -126,6 +126,23 @@ local validcommentlocations = {
     br = "rb",
 }
 
+local validtextlocations = {
+    l  = "l",  left   = "l",
+    r  = "r",  right  = "r",
+    t  = "t",  top    = "t",
+    b  = "b",  bottom = "b",
+    c  = "c",  center = "c",
+    m  = "c",  middle = "m",
+    lt = "lt",
+    rt = "rt",
+    lb = "lb",
+    rb = "rb",
+    tl = "lt",
+    tr = "rt",
+    bl = "lb",
+    br = "rb",
+}
+
 setmetatableindex(validshapes,function(t,k)
     local l = gsub(lower(k)," ","")
     local v = rawget(t,l)
@@ -226,7 +243,7 @@ function commands.flow_set_destination(str)
 end
 
 function commands.flow_set_text(align,str)
-    temp.align = align
+    temp.align = validtextlocations[align] or align
     temp.text  = str
 end
 

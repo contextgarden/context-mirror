@@ -34,6 +34,12 @@
    \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
    \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
 
+\definemakeup
+  [\??fp\s!dummy]
+  [\c!textstate=\v!empty,
+   \c!doublesided=\v!no,
+   \c!pagestate=\getvalue{\currentfittingpage\c!pagestate}]
+
 \def\dostartfittingpage[#1][#2]%
   {\page % this is kind of tricky! there can be preceding page refs
    \autostarttext
@@ -77,13 +83,11 @@
       \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
    \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
    \definelayout
-     [\v!page]%
+     [\??fp\s!dummy]%
      [\c!location=\v!middle,
       \c!width=\fittingwd,
       \c!height=\fittinght]%
-   \setuplayout
-     [\v!page]%
-   \startmakeup[\v!standard][\c!textstate=\v!empty,\c!doublesided=\v!no,\c!pagestate=\getvalue{\currentfittingpage\c!pagestate}]%
+   \startmakeup[\??fp\s!dummy]%
      \centerbox{\box\scratchbox}%
    \stopmakeup
    \stoplocallayout

@@ -3239,13 +3239,13 @@ local function collectpattern(path,patt,recurse,result)
     local ok, scanner
     result = result or { }
     if path == "/" then
-        ok, scanner = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+        ok, scanner, first = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
     else
-        ok, scanner = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
+        ok, scanner, first = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
     end
     if ok and type(scanner) == "function" then
         if not find(path,"/$") then path = path .. '/' end
-        for name in scanner do
+        for name in scanner, first do
             local full = path .. name
             local attr = attributes(full)
             local mode = attr.mode
