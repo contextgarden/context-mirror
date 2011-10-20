@@ -168,7 +168,8 @@ if setmathcode then
             contextsprint(format([[\unexpanded\gdef\%s{\Uradical "%X "%X }]],name,family,slot))
         else
             -- beware, open/close and other specials should not end up here
-            contextsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+--             contextsprint(format([[\unexpanded\gdef\%s{\Umathchar "%X "%X "%X }]],name,class,family,slot))
+            contextsprint(format([[\Umathchardef\%s "%X "%X "%X ]],name,class,family,slot))
         end
     end
 
