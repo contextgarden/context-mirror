@@ -106,7 +106,19 @@
 
 % collapsing to 0x2033 and 0x2034 happens elsewhere
 
+\ifdefined \prime \else
+    \Umathchardef\prime "0 "0 "2032
+\fi
+
 \let\normalprime\prime
+
+% The \let\prime\domathprime might become an obsolete as we have \doubleprime and \tripleprime
+% and collapsing can nicely handle the script then
+
+\appendtoks
+    \let\normalprime\prime % gets defined later
+    \let\prime\domathprime % so this is needed
+\to \everydump
 
 \unexpanded\def\domathprime
   {\iffontchar\textfont\zerocount"FE325\relax
