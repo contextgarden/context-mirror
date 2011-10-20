@@ -135,6 +135,13 @@
    \presetcenterpagebox
 \to \everysetuplayout
 
+\def\doiflayoutdefinedelse#1%
+  {\ifcsname\??ly#1\c!state\endcsname % maybe a helper
+      \expandafter\firstoftwoarguments
+   \else
+      \expandafter\secondoftwoarguments
+   \fi}
+
 \def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
 
 \def\setlayoutdimensions
@@ -834,12 +841,13 @@
 \unexpanded\def\startlayout[#1]%
   {\page
    \pushmacro\currentlayout
-   \setuplayout[#1]}
+   \doiflayoutdefinedelse{#1}{\setuplayout[#1]}\donothing} % {\setuplayout[\currentlayout]}}
 
 \unexpanded\def\stoplayout
   {\page
    \popmacro\currentlayout
    \setuplayout[\currentlayout]}
+
 
 % describe interface
 

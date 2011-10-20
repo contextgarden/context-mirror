@@ -89,7 +89,7 @@
   {\doifelsenothing{\namedmakeupparameter{#name}\c!page}
      {\page}% new, so best not have dangling mess here like references (we could capture then and flush embedded)
      {\page[\namedmakeupparameter{#name}\c!page]}%
-   \startlayout[#name]%
+   \startlayout[#name]% includes \page
    \bgroup
    \edef\currentmakeup{#name}%
    \setupcurrentmakeup[#settings]%
@@ -127,7 +127,7 @@
      \global\pageselectedfalse
    \fi
    \egroup
-   \stoplayout}
+   \stoplayout} % includes \page
 
 \def\page_makeup_flush_box
   {\pushpagestate % new
@@ -215,5 +215,8 @@
    \c!page=\v!yes,
    \c!top=\pseudostrut\ignorespaces,
    \c!bottom=\obeydepth\vss]
+
+% \definelayout[standard]
+% \definelayout[text]
 
 \protect
