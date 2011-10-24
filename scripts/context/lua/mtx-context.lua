@@ -1211,7 +1211,8 @@ local temporary_runfiles = {
     "tui", "tua", "tup", "ted", "tes", "top",
     "log", "tmp", "run", "bck", "rlg",
     "mpt", "mpx", "mpd", "mpo", "mpb", "ctl",
-    "synctex.gz", "pgf"
+    "synctex.gz", "pgf",
+    "prep",
 }
 
 local persistent_runfiles = {

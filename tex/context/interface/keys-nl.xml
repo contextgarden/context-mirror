@@ -612,6 +612,7 @@
 		<cd:constant name='commandafter' value='nacommando'/>
 		<cd:constant name='commandbefore' value='voorcommando'/>
 		<cd:constant name='commands' value='commandos'/>
+		<cd:constant name='commentoffset' value='commentoffset'/>
 		<cd:constant name='compact' value='compact'/>
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='koppelteken'/>
@@ -659,6 +660,7 @@
 		<cd:constant name='equalwidth' value='equalwidth'/>
 		<cd:constant name='escape' value='escape'/>
 		<cd:constant name='evenmargin' value='evenmarge'/>
+		<cd:constant name='exitoffset' value='labeloffset'/>
 		<cd:constant name='expansion' value='expansie'/>
 		<cd:constant name='export' value='exporteer'/>
 		<cd:constant name='extras' value='extras'/>
@@ -737,6 +739,7 @@
 		<cd:constant name='keys' value='sleutels'/>
 		<cd:constant name='keyword' value='trefwoord'/>
 		<cd:constant name='label' value='label'/>
+		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>

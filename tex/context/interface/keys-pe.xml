@@ -612,6 +612,7 @@
 		<cd:constant name='commandafter' value='فرمان‌بعداز'/>
 		<cd:constant name='commandbefore' value='فرمان‌قبل‌از'/>
 		<cd:constant name='commands' value='فرمانها'/>
+		<cd:constant name='commentoffset' value='commentoffset'/>
 		<cd:constant name='compact' value='compact'/>
 		<cd:constant name='component' value='مولفه'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
@@ -659,6 +660,7 @@
 		<cd:constant name='equalwidth' value='عرض‌یکسان'/>
 		<cd:constant name='escape' value='فرار'/>
 		<cd:constant name='evenmargin' value='حاشیه‌زوج'/>
+		<cd:constant name='exitoffset' value='labeloffset'/>
 		<cd:constant name='expansion' value='گسترش'/>
 		<cd:constant name='export' value='export'/>
 		<cd:constant name='extras' value='extras'/>
@@ -737,6 +739,7 @@
 		<cd:constant name='keys' value='keys'/>
 		<cd:constant name='keyword' value='کلید‌واژه'/>
 		<cd:constant name='label' value='برچسب'/>
+		<cd:constant name='labeloffset' value='labeloffset'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>
 		<cd:constant name='lastpubsep' value='lastpubsep'/>
 		<cd:constant name='layout' value='layout'/>

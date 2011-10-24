@@ -193,6 +193,7 @@ local function collect(list,collected,c)
     end
     return c
 end
+
 apply_axis['descendant'] = function(list)
     local collected, c = { }, 0
     for l=1,#list do

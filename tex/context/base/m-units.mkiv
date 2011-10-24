@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D Best use the buitl in unit handle!
+
 %D Scientific units can be typeset in math mode pretty well,
 %D but occasionally one has to take care of spacing.
 %D Furthermore, entering these units is not that natural as
@@ -86,15 +88,9 @@
 %D one that is able to cooperate with some other dimension
 %D related macros. As said, this module enables user to enter:
 %D
-%D \startbuffer
+%D \starttyping
 %D some 10 \Square \Meter \Per \Second or more
-%D \stopbuffer
-%D
-%D \getbuffer
-%D
-%D as:
-%D
-%D \typebuffer
+%D \stoptyping
 %D
 %D The units itself are implemented as synonyms.
 %D
@@ -124,7 +120,7 @@
 %D The next useless examples show some of the cases we want
 %D to handle in a proper way.
 %D
-%D \startbuffer
+%D \starttyping
 %D ... 10 \Square \Meter \Per \Volt \
 %D ... 10 \Square \Meter \Volt \
 %D ... 10 \Meter \Volt \
@@ -133,13 +129,7 @@
 %D ... 10 \Meter \Times \Meter \
 %D ... 10 \Square \Meter \Times \Meter \
 %D ... 10 \Square \Milli \Meter \Times \Meter \
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D Becomes:
-%D
-%D \getbuffer
+%D \stoptyping
 
 %D \macros
 %D   {mathematicstypeface, dimensiontypeface,
@@ -178,9 +168,8 @@
 %D
 %D The actual definition of \type {\dimension} overruled the
 %D one in the core modules. The boolean can be used to
-%D force spacing between units. Vergelijk {\Newton \Meter}
-%D eens met {\spaceddimensionstrue \Newton \Meter}. The
-%D rather ugly test prevents problems with nested dimensions.
+%D force spacing between units. The rather ugly test prevents
+%D problems with nested dimensions.
 
 \newif\ifspaceddimensions \spaceddimensionsfalse % user switch
 \newif\iftextdimensions   \textdimensionsfalse   % user switch

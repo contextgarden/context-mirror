@@ -1,12 +1,11 @@
-%\module [
-%  file=s-map-se,
-%  version=2011.06.28,
-%  title=\CONTEXT\ Style File,
-%  subtitle=\MAPS\ basis stijl,
-%  author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
-%  date=\currentdate,
-%  copyright={NTG / MAPS}%
-%]
+%D \module
+%D   [file=s-map-10,
+%D   version=2011.06.28,
+%D   title=\CONTEXT\ Style File,
+%D   subtitle=\MAPS\ basis stijl,
+%D   author={Hans Hagen, Taco Hoekwater and Siep Kroonenberg},
+%D   date=\currentdate,
+%D   copyright=NTG/MAPS]
 
 % This module re-implements the MAPS style for use with the Context
 % macro package. The original MAPS layout was designed and
@@ -311,7 +310,7 @@
   indentnext=no%
 ]
 
-\def\footnum#1{#1.} 
+\def\footnum#1{#1.}
 
 \setupfootnotes
    [location=none,
@@ -368,7 +367,7 @@
      Address=,
      Page=1,
      Title=,
-     Author=, 
+     Author=,
      Period=,
      Number=,
      Year=,
@@ -381,9 +380,9 @@
   \doifinstringelse{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
   \doifnothing{\MapsYear}{\gdef\MapsYear{\the\year}}%
   \doifnothing{\MapsNumber}{%
-    \ifnum \normalmonth<6 
+    \ifnum \normalmonth<6
       \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2\relax}%
-    \else 
+    \else
       \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2+1\relax}%
     \fi }%
   \doifnothing\MapsRunningAuthor
@@ -403,7 +402,7 @@
     \switchtobodyfont[24pt]
     \setupalign[right]
     {\noindent\bf\MapsTitle\par}
-    \ifx\MapsSubTitle\empty 
+    \ifx\MapsSubTitle\empty
       \blank[30pt]
     \else
       \bgroup

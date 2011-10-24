@@ -14,6 +14,7 @@
         <!-- ctx:flag>purge</ctx:flag -->
         <ctx:flag>global</ctx:flag>
         <ctx:flag>prep</ctx:flag>
+        <ctx:flag>purge</ctx:flag>
     </ctx:flags>
     <ctx:process>
         <ctx:resources>

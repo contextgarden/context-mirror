@@ -83,7 +83,7 @@
 \def\simplesetupindenting % empty case, a it strange, needed this way?
   {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
 
-\def\indenting % kind of obsolete
+\unexpanded\def\indenting % kind of obsolete
   {\dosingleargument\complexsetupindenting}
 
 % use \noindentation to suppress next indentation
@@ -115,8 +115,14 @@
                                     \parindent\zeropoint
                                     \indentingtogglestate\zerocount}
 
-\def\noindenting{\indenting[\v!no, \v!next ]}
-\def\doindenting{\indenting[\v!yes,\v!first]}
+\defineindentingmethod [\v!toggle] {\parindent\ifdim\parindent=\zeropoint
+                                      \ctxparindent
+                                    \else
+                                      \zeropoint
+                                    \fi\relax}
+
+\unexpanded\def\noindenting{\indenting[\v!no, \v!next ]}
+\unexpanded\def\doindenting{\indenting[\v!yes,\v!first]}
 
 %D This one sets up the local indentation behaviour (i.e. either or not
 %D a next paragraph will be indented).

@@ -37,7 +37,7 @@
 
 % nog eens \interface \\ \\ verder doorvoeren
 
-\def\resetmodule
+\def\resetmoduledocumentation
   {\getrawparameters
      [Module]
      [       file=\jobname,
@@ -51,24 +51,18 @@
         copyright=Unknown Copyright,
       suggestions=]}
 
-\resetmodule
+\resetmoduledocumentation
 
-\def\dostartmodule[#1]%
+\def\dostartmoduledocumentation[#1]%
   {\newcounter\ParagraphNumber
-   \resetmodule
+   \resetmoduledocumentation
    \getrawparameters[Module][type=tex,#1]}
 
-\def\startmodule
+\def\startmoduledocumentation
   {\starttext
-   \dosingleempty\dostartmodule}
+   \dosingleempty\dostartmoduledocumentation}
 
-\def\complexmodule[#1]%
-  {\startglobal % i.v.m. \bgroup in \startdocumentation
-   \getrawparameters[Module][#1]
-   \stopglobal  % i.v.m. \bgroup in \startdocumentation
-   \moduletitle}
-
-\def\stopmodule
+\def\stopmoduledocumentation
   {\page
    \placeregister
      [\v!index]
@@ -77,10 +71,16 @@
       \c!criterium=\v!text]
    \stoptext}
 
-\def\simplemodule#1%
-  {\type{#1}}
-
-\definecomplexorsimple\module
+% \def\complexmodule[#1]%
+%   {\startglobal % i.v.m. \bgroup in \startdocumentation
+%    \getrawparameters[Module][#1]
+%    \stopglobal  % i.v.m. \bgroup in \startdocumentation
+%    \moduletitle}
+%
+% \def\simplemodule#1%
+%   {\type{#1}}
+%
+% \definecomplexorsimple\module
 
 % \startmode[atpragma]
 %

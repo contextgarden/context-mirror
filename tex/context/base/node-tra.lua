@@ -541,14 +541,26 @@ end
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
-function nodes.listtoutf(h,joiner)
-    local joiner = (joiner ==true and utfchar(0x200C)) or joiner -- zwnj
+local function listtoutf(h,joiner,textonly)
+    local joiner = (joiner == true and utfchar(0x200C)) or joiner -- zwnj
     local w = { }
     while h do
-        if h.id == glyph_code then -- always true
+        local id = h.id
+        if id == glyph_code then -- always true
             w[#w+1] = utfchar(h.char)
             if joiner then
                 w[#w+1] = joiner
+            end
+        elseif id == disc_code then
+            local pre, rep, pos = h.pre, h.replace, h.post
+            w[#w+1] = format("[%s|%s|%s]",
+                pre and listtoutf(pre,joiner,textonly) or "",
+                rep and listtoutf(rep,joiner,textonly) or "",
+                mid and listtoutf(mid,joiner,textonly) or ""
+            )
+        elseif textonly then
+            if id == glue_code and h.width > 0 then
+                w[#w+1] = " "
             end
         else
             w[#w+1] = "[-]"
@@ -557,6 +569,8 @@ function nodes.listtoutf(h,joiner)
     end
     return concat(w)
 end
+
+nodes.listtoutf = listtoutf
 
 local what = { [0] = "unknown", "line", "box", "indent", "row", "cell" }
 

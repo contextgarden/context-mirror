@@ -48,6 +48,10 @@ local defaults = {
         vcompact        = variables_no,
         autofocus       = "",
         focus           = "",
+        labeloffset     = 5*65436,
+        commentoffset   = 5*65436,
+        exitoffset      = 0,
+
     },
     shape = { -- FLOS
         rulethickness   = 65436,
@@ -109,6 +113,10 @@ local validlabellocations = {
     rt = "rt",
     lb = "lb",
     rb = "rb",
+    tl = "tl",
+    tr = "tr",
+    bl = "bl",
+    br = "br",
 }
 
 local validcommentlocations = {
@@ -120,10 +128,10 @@ local validcommentlocations = {
     rt = "rt",
     lb = "lb",
     rb = "rb",
-    tl = "lt",
-    tr = "rt",
-    bl = "lb",
-    br = "rb",
+    tl = "tl",
+    tr = "tr",
+    bl = "bl",
+    br = "br",
 }
 
 local validtextlocations = {
@@ -215,6 +223,7 @@ end
 
 function commands.flow_start_cell(settings)
     temp = {
+        texts       = { },
         labels      = { },
         exits       = { },
         connections = { },
@@ -243,8 +252,10 @@ function commands.flow_set_destination(str)
 end
 
 function commands.flow_set_text(align,str)
-    temp.align = validtextlocations[align] or align
-    temp.text  = str
+    temp.texts[#temp.texts+1] = {
+        location = align,
+        text = str,
+    }
 end
 
 function commands.flow_set_overlay(str)
@@ -592,20 +603,22 @@ local function process_texts(chart,xoffset,yoffset)
         if cell then
             local x = cell.x or 1
             local y = cell.y or 1
-            local text = cell.text
-            if text and text ~= "" then
-                local a = cell.align or ""
-                local f = cell.figure or ""
-                local d = cell.destination or ""
-                context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,format(texttemplate,x,y,text,a,f,d))
+            local texts = cell.texts
+            for i=1,#texts do
+                local text = texts[i]
+                local data = text.text
+                local align = validlabellocations[text.align or ""] or text.align or ""
+                local figure = i == 1 and cell.figure or ""
+                local destination = i == 1 and cell.destination or ""
+                context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,format(texttemplate,x,y,data,align,figure,destination))
             end
             local labels = cell.labels
             for i=1,#labels do
                 local label = labels[i]
                 local text = label.text
-                local location = validlabellocations[label.location or ""]
+                local location = validlabellocations[label.location or ""] or label.location or ""
                 if text and location then
-                    context('flow_chart_draw_label_%s(%s,%s,textext("%s")) ;',location,x,y,text)
+                    context('flow_chart_draw_label(%s,%s,"%s",textext("\\strut %s")) ;',x,y,location,text)
                 end
             end
             local exits = cell.exits
@@ -619,7 +632,7 @@ local function process_texts(chart,xoffset,yoffset)
                        location == "r" and x == chart.to_x   - 1 or
                        location == "t" and y == chart.to_y   - 1 or
                        location == "b" and y == chart.from_y + 1 then
-                        context('flow_chart_draw_exit_%s(%s,%s,textext("%s")) ;',location,x,y,text)
+                        context('flow_chart_draw_exit(%s,%s,"%s",textext("\\strut %s")) ;',x,y,location,text)
                     end
                 end
             end
@@ -631,14 +644,23 @@ local function process_texts(chart,xoffset,yoffset)
                     local text = comment.text
                     local location = comment.location or ""
                     local length = 0
-                    local loc, len = lpegmatch(splitter,location)
-                    if loc then
-                        location = loc
-                        length   = tonumber(len) or 0
+                    -- "tl" "tl:*" "tl:0.5"
+                    local loc, len = lpegmatch(splitter,location) -- do the following in lpeg
+                    if len == "*" then
+                        location = validcommentlocations[loc] or ""
+                        if location == "" then
+                            location = "*"
+                        else
+                            location = location .. ":*"
+                        end
+                    elseif loc then
+                        location = validcommentlocations[loc] or "*"
+                        length = tonumber(len) or 0
+                    else
+                        location = validcommentlocations[location] or ""
                     end
-                    location = validcommentlocations[location]
                     if text and location then
-                        context('flow_chart_draw_comment(%s,%s,%s,%s,textext("%s"),"%s",%s) ;',x,y,i,j,text,location,length)
+                        context('flow_chart_draw_comment(%s,%s,%s,"%s",%s,textext("\\strut %s")) ;',x,y,i,location,length,text)
                     end
                 end
             end
@@ -737,11 +759,6 @@ local function makechart(chart)
     context.begingroup()
     context.forgetall()
     --
- -- local bodyfont = settings.chart.bodyfont
- -- if bodyfont ~= "" then
- --     context.switchtobodyfont { bodyfont }
- -- end
-    --
     context.startMPcode()
     context("if unknown context_flow : input mp-char.mpiv ; fi ;")
     context("flow_begin_chart(0,%s,%s);",chart.nx,chart.ny)
@@ -759,17 +776,22 @@ local function makechart(chart)
         context("flow_chart_background_color := \\MPcolor{%s} ;",backgroundcolor)
     end
     --
-    local shapewidth  = settings.chart.width
-    local gridwidth   = shapewidth + 2*settings.chart.dx
-    local shapeheight = settings.chart.height
-    local gridheight  = shapeheight + 2*settings.chart.dy
-    local chartoffset = settings.chart.offset
-
-    context("flow_grid_width := %s ;", points(gridwidth))
-    context("flow_grid_height := %s ;", points(gridheight))
-    context("flow_shape_width := %s ;", points(shapewidth))
-    context("flow_shape_height := %s ;", points(shapeheight))
-    context("flow_chart_offset := %s ;", points(chartoffset))
+    local shapewidth    = settings.chart.width
+    local gridwidth     = shapewidth + 2*settings.chart.dx
+    local shapeheight   = settings.chart.height
+    local gridheight    = shapeheight + 2*settings.chart.dy
+    local chartoffset   = settings.chart.offset
+    local labeloffset   = settings.chart.labeloffset
+    local exitoffset    = settings.chart.exitoffset
+    local commentoffset = settings.chart.commentoffset
+    context("flow_grid_width     := %s ;", points(gridwidth))
+    context("flow_grid_height    := %s ;", points(gridheight))
+    context("flow_shape_width    := %s ;", points(shapewidth))
+    context("flow_shape_height   := %s ;", points(shapeheight))
+    context("flow_chart_offset   := %s ;", points(chartoffset))
+    context("flow_label_offset   := %s ;", points(labeloffset))
+    context("flow_exit_offset    := %s ;", points(exitoffset))
+    context("flow_comment_offset := %s ;", points(commentoffset))
     --
     local radius = settings.line.radius
     local rulethickness = settings.line.rulethickness

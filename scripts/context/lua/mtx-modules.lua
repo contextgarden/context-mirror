@@ -47,46 +47,60 @@ local report = application.report
 -- start-stop commands. The suffix specificaction can be overruled at runtime,
 -- but defaults to the file extension. This specification can be used for language
 -- depended verbatim typesetting.
+--
+-- In the mkiv variant we filter the \module settings so that we don't have
+-- to mess with global document settings.
 
-local find, format, sub, is_empty, strip = string.find, string.format, string.sub, string.is_empty, string.strip
+local find, format, sub, is_empty, strip, gsub = string.find, string.format, string.sub, string.is_empty, string.strip, string.gsub
 
 local function source_to_ted(inpname,outname,filetype)
-    local inp = io.open(inpname)
-    if not inp then
-        report("unable to open '%s'",inpname)
-        return
-    end
-    local out = io.open(outname,"w")
-    if not out then
-        report("unable to open '%s'",outname)
+    local data = io.loaddata(inpname)
+    if data == "" then
+        report("invalid module name '%s'",inpname)
         return
     end
     report("converting '%s' to '%s'",inpname,outname)
     local skiplevel, indocument, indefinition = 0, false, false
-    out:write(format("\\startmodule[type=%s]\n",filetype or file.suffix(inpname)))
-    for line in inp:lines() do
---~         line = strip(line)
+    local started = false
+    local settings = format("type=%s",filetype or file.suffix(inpname))
+    local preamble, n = lpeg.match(lpeg.Cs((1-lpeg.patterns.newline^2)^1) * lpeg.Cp(),data)
+    if preamble then
+        preamble = string.match(preamble,"\\module.-%[(.-)%]")
+        if preamble then
+            preamble = gsub(preamble,"%%D *","")
+            preamble = gsub(preamble,"%%(.-)[\n\r]","")
+            preamble = gsub(preamble,"[\n\r]","")
+            preamble = strip(preamble)
+            settings = format("%s,%s",settings,preamble)
+            data = string.sub(data,n,#data)
+        end
+    end
+    local lines = string.splitlines(data)
+    local result = { }
+    result[#result+1] = format("\\startmoduledocumentation[%s]",settings)
+    for i=1,#lines do
+        local line = lines[i]
         if find(line,"^%%D ") or find(line,"^%%D$") then
             if skiplevel == 0 then
-                local someline = (#line < 3 and "") or sub(line,4,#line)
+                local someline = #line < 3 and "" or sub(line,4,#line)
                 if indocument then
-                    out:write(format("%s\n",someline))
+                    result[#result+1] = someline
                 else
                     if indefinition then
-                        out:write("\\stopdefinition\n")
+                        result[#result+1] = "\\stopdefinition"
                         indefinition = false
                     end
                     if not indocument then
-                        out:write("\n\\startdocumentation\n")
+                        result[#result+1] = "\\startdocumentation"
                     end
-                    out:write(format("%s\n",someline))
+                    result[#result+1] = someline
                     indocument = true
                 end
             end
         elseif find(line,"^%%M ") or find(line,"^%%M$") then
             if skiplevel == 0 then
                 local someline = (#line < 3 and "") or sub(line,4,#line)
-                out:write(format("%s\n",someline))
+                result[#result+1] = someline
             end
         elseif find(line,"^%%S B") then
             skiplevel = skiplevel + 1
@@ -99,36 +113,36 @@ local function source_to_ted(inpname,outname,filetype)
             inlocaldocument = false
             local someline = line
             if indocument then
-                out:write("\\stopdocumentation\n")
+                result[#result+1] = "\\stopdocumentation"
                 indocument = false
             end
             if indefinition then
                 if is_empty(someline) then
-                    out:write("\\stopdefinition\n")
+                    result[#result+1] = "\\stopdefinition"
                     indefinition = false
                 else
-                    out:write(format("%s\n",someline))
+                    result[#result+1] = someline
                 end
             elseif not is_empty(someline) then
-                out:write("\n\\startdefinition\n")
+                result[#result+1] = "\n"
+                result[#result+1] = "\\startdefinition"
                 indefinition = true
                 if inlocaldocument then
                     -- nothing
                 else
-                    out:write(format("%s\n",someline))
+                    result[#result+1] = someline
                 end
             end
         end
     end
     if indocument then
-        out:write("\\stopdocumentation\n")
+        result[#result+1] = "\\stopdocumentation"
     end
     if indefinition then
-        out:write("\\stopdefinition\n")
+        result[#result+1] = "\\stopdefinition"
     end
-    out:write("\\stopmodule\n")
-    out:close()
-    inp:close()
+    result[#result+1] = "\\stopmoduledocumentation"
+    io.savedata(outname,table.concat(result,"\n"))
     return true
 end
 
@@ -150,7 +164,7 @@ function scripts.modules.process(runtex)
             end
             local done = source_to_ted(shortname,longname)
             if done and runtex then
-                os.execute(format("mtxrun --script context --usemodule=mod-01 %s",longname))
+                os.execute(format("mtxrun --script context --usemodule=mod-01 --purge %s",longname))
                 processed[#processed+1] = longname
             end
         end

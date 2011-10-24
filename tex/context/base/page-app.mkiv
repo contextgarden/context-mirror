@@ -17,30 +17,42 @@
 
 \unprotect
 
-\definepapersize
-  [\??fp\s!dummy]
-  [\c!width=\fittingwd,
-   \c!height=\fittinght]
+\installframedcommandhandler \??fp {fittingpage} \??fp
 
-\definelayout
-  [\??fp\s!dummy]
-  [\c!width=\fittingwd,\c!height=\fittinght,\c!location=\v!middle,
-   \c!topspace=\!!zeropoint,\c!backspace=\!!zeropoint,
-   \c!cutspace=\!!zeropoint,\c!bottomspace=\!!zeropoint,
-   \c!textdistance=\!!zeropoint,\c!lines=0,\c!grid=\v!no,
-   \c!top=\!!zeropoint,\c!bottom=\!!zeropoint,
-   \c!margin=\!!zeropoint,\c!edge=\!!zeropoint,
-   \c!leftmargin=\!!zeropoint,\c!leftedge=\!!zeropoint,
-   \c!rightmargin=\!!zeropoint,\c!rightedge=\!!zeropoint,
-   \c!header=\!!zeropoint,\c!footer=\!!zeropoint]
+\newdimen\fitting_page_width
+\newdimen\fitting_page_height
+\newbox  \fitting_page_box
+
+\definepapersize
+  [fittingpage]
+  [\c!width=\fitting_page_width,
+   \c!height=\fitting_page_height]
 
 \definemakeup
-  [\??fp\s!dummy]
+  [fittingpage]
   [\c!textstate=\v!empty,
    \c!doublesided=\v!no,
-   \c!pagestate=\getvalue{\currentfittingpage\c!pagestate}]
+   \c!pagestate=\fittingpageparameter\c!pagestate]%
 
-\def\dostartfittingpage[#1][#2]%
+\definelayout
+  [fittingpage]
+  [\v!page]
+
+\setuplayout
+  [fittingpage]
+  [\c!width=\fitting_page_width,
+   \c!height=\fitting_page_height,
+   \c!location=\v!middle]
+
+\appendtoks
+  \setuevalue{\e!start\currentfittingpage}{\startfittingpage[\currentfittingpage]}%
+  \setuevalue{\e!stop \currentfittingpage}{\stopfittingpage}%
+\to \everydefinefittingpage
+
+\unexpanded\def\startfittingpage
+   {\dodoubleempty\start_fitting_page}
+
+\def\start_fitting_page[#1][#2]%
   {\page % this is kind of tricky! there can be preceding page refs
    \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
@@ -48,78 +60,81 @@
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
    \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
-   \setbox\scratchbox\hbox
-     \bgroup
-     % needed later \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
-     \doifvalue{\currentfittingpage\c!margin}\v!page % undocumented
-       {\offsetbox
+   \doifelsenothing{\fittingpageparameter\c!command}
+     \start_fitting_page_normal
+     \start_fitting_page_command}
+
+\def\start_fitting_page_command
+  {\grabuntil{\e!stop\currentfittingpage}\stop_fitting_page_command}
+
+\def\stop_fitting_page_command#1%
+  {\start_fitting_page_normal
+   \fittingpageparameter\c!command{#1}%
+   \stop_fitting_page_normal}
+
+\def\start_fitting_page_normal
+   {\setbox\fitting_page_box\hbox
+      \bgroup
+      \inheritedfittingpageframed
+      \bgroup
+      \gobblespacetokens}
+
+\unexpanded\def\stop_fitting_page_normal
+  {\removeunwantedspaces
+   \egroup
+   \egroup
+   % finalize
+   \doif{\fittingpageparameter\c!margin}\v!page
+     {\setbox\fitting_page_box\hbox\bgroup
+        \offsetbox
           [\c!leftoffset=\backspace,
            \c!rightoffset=\cutspace,
            \c!topoffset=\topspace,
-           \c!bottomoffset=\bottomspace]\hbox}%
-     \bgroup
-     \scale[\c!scale=\getvalue{\currentfittingpage\c!scale}]%
-     \bgroup\localframed[\currentfittingpage]%
-     \bgroup}
-
-\def\dostopfittingpage
-  {\egroup % localframed
-   \egroup % scale
-   \egroup % offsetbox
-   \egroup % scratchbox
-   \edef\fittingwd{\the\wd\scratchbox}%
-   \edef\fittinght{\the\ht\scratchbox}%
-   \startlocallayout
-   \ifdim\fittinght<\lineheight
+           \c!bottomoffset=\bottomspace]
+          {\box\fitting_page_box}%
+       \egroup}%
+   \doifsomething{\fittingpageparameter\c!scale}
+     {\setbox\fitting_page_box\hbox\bgroup
+        \scale[\c!scale=\fittingpageparameter\c!scale]{\box\fitting_page_box}%
+      \egroup}%
+   \ifdim\ht\fitting_page_box<\lineheight
      % write status : too small
      \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
-     \edef\fittinght{\the\lineheight}%
    \fi
+   \fitting_page_width \wd\fitting_page_box
+   \fitting_page_height\ht\fitting_page_box
+   \startlocallayout % still valid?
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
-     [\getvalue{\currentfittingpage\c!paper}]
+     [\fittingpageparameter\c!paper]
      [   \v!auto=>\def\fittingpapersize{\printpapersize},
       \s!unknown=>\let\fittingpapersize\commalistelement,
-      \s!default=>\def\fittingpapersize{\??fp\s!dummy}]%
-   \expanded{\setuppapersize[\??fp\s!dummy][\fittingpapersize]}%
-   \definelayout
-     [\??fp\s!dummy]%
-     [\c!location=\v!middle,
-      \c!width=\fittingwd,
-      \c!height=\fittinght]%
-   \startmakeup[\??fp\s!dummy]%
-     \centerbox{\box\scratchbox}%
+      \s!default=>\def\fittingpapersize{fittingpage}]%
+   \expanded{\setuppapersize[fittingpage][\fittingpapersize]}%
+   \startmakeup[fittingpage]%
+     \box\fitting_page_box
    \stopmakeup
-   \stoplocallayout
+   \stoplocallayout % still valid?
    \egroup
    \autostoptext}
 
-%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
+\let\stopfittingpage\stop_fitting_page_normal
 
-\presetlocalframed[\??tg]
-
-\unexpanded\def\setupTEXpage
-  {\dodoubleargument\getparameters[\??tg]}
-
-\unexpanded\def\startTEXpage
-  {\dosingleempty\dostartTEXpage}
-
-\def\dostartTEXpage[#1]%
-  {\dostartfittingpage[\??tg][#1]\gobblespacetokens}
-
-\unexpanded\def\stopTEXpage
-  {\removelastspace
-   \dostopfittingpage}
-
-\setupTEXpage
-  [\c!scale=1000,
-   \c!pagestate=,
+\setupfittingpage
+  [%\c!scale=1000,
+   %\c!pagestate=,
    \c!strut=\v!no,
-   \c!align=\v!normal, % needed, else problems !
+   \c!align=\v!normal,
    \c!offset=\v!overlay,
    \c!width=\v!fit,
    \c!height=\v!fit,
    \c!frame=\v!off]
+
+%D \TEX\ pages (for \METAPOST\ pages, see \type {meta-fig}):
+
+\definefittingpage
+  [TEXpage]
+  [\c!align=\v!normal] % needed, else problems !
 
 %D For Mojca:
 %D

@@ -290,21 +290,44 @@ end
 references.resolvers = references.resolvers or { }
 local resolvers = references.resolvers
 
-function resolvers.section(var)
-    local vi = var.i[3] or lists.collected[var.i[2]]
+local function getfromlist(var)
+    local vi = var.i
     if vi then
-        var.i = vi
-        var.r = (vi.references and vi.references.realpage) or (vi.pagedata and vi.pagedata.realpage) or 1
+        vi = vi[3] or lists.collected[vi[2]]
+        if vi then
+            local r = vi.references and vi.references
+            if r then
+                r = r.realpage
+            end
+            if not r then
+                r = vi.pagedata and vi.pagedata
+                if r then
+                    r = r.realpage
+                end
+            end
+            var.i = vi
+            var.r = r or 1
+        else
+            var.i = nil
+            var.r = 1
+        end
     else
         var.i = nil
         var.r = 1
     end
 end
 
-resolvers.float       = resolvers.section
-resolvers.description = resolvers.section
-resolvers.formula     = resolvers.section
-resolvers.note        = resolvers.section
+-- resolvers.section     = getfromlist
+-- resolvers.float       = getfromlist
+-- resolvers.description = getfromlist
+-- resolvers.formula     = getfromlist
+-- resolvers.note        = getfromlist
+
+setmetatableindex(resolvers,function(t,k)
+    local v = getfromlist
+    resolvers[k] = v
+    return v
+end)
 
 function resolvers.reference(var)
     local vi = var.i[2] -- check
@@ -1105,8 +1128,14 @@ local function identify_inner(set,var,prefix,collected,derived,tobesaved)
         if i then
             var.kind = "inner"
             var.i = i
-            resolvers[i[1]](var)
             var.p = p
+            local ri = resolvers[i[1]]
+            if ri then
+                ri(var)
+            else
+                -- can't happen as we catch it with a metatable now
+                report_references("unknown inner resolver for '%s'",i[1])
+            end
         else
             -- no prefixes here
             local s = specials[inner]

@@ -13,18 +13,6 @@
 
 \registerctxluafile{m-pstricks}{}
 
-%D \startbuffer
-%D \usePSTRICKSmodule[pst-barcode]
-%D
-%D \startPSTRICKS
-%D     \pspicture(-4mm,-1mm)(38mm,26mm)
-%D         \psbarcode{9781860742712}{includetext guardwhitespace}{ean13}%
-%D     \endpspicture
-%D \stopPSTRICKS
-%D \stopbuffer
-%D
-%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
-
 \unprotect
 
 % best we can make a special colors module
@@ -62,5 +50,16 @@
 \unexpanded\def\setPSTRICKS        #1{\setbuffer[def-\thebuffernumber{PSTRICKS}]#1\endbuffer}
 
 \let\stopPSTRICKS\processPSTRICKS
+
+%D \starttyping
+%D \usemodule[pstricks]
+%D \usePSTRICKSmodule[pst-barcode]
+%D
+%D \startPSTRICKS
+%D     \pspicture(-4mm,-1mm)(38mm,26mm)
+%D         \psbarcode{9781860742712}{includetext guardwhitespace}{ean13}%
+%D     \endpspicture
+%D \stopPSTRICKS
+%D \stoptyping
 
 \protect \endinput
