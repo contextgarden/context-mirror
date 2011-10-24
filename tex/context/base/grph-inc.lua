@@ -484,6 +484,17 @@ local function register(askedname,specification)
                         specification.subpath   = subpath
                         specification.converted = true
                         format = newformat
+                        if not figures.suffixes[format] then
+                            -- maybe the new format is lowres.png (saves entry in suffixes)
+                            -- so let's do thsi extra check
+                            local suffix = file.suffix(newformat)
+                            if figures.suffixes[suffix] then
+                                if trace_figures then
+                                    report_inclusion("using suffix '%s' as format for '%s'",suffix,format)
+                                end
+                                format = suffix
+                            end
+                        end
                     elseif io.exists(oldname) then
                         specification.fullname  = newname
                         specification.converted = false
@@ -499,7 +510,7 @@ local function register(askedname,specification)
             else
                 specification.found = true
                 if trace_figures then
-                    if validtypes[format] then
+                    if validtypes[format] then -- format?
                         report_inclusion("format natively supported by backend: %s",format)
                     else
                         report_inclusion("format supported by output file format: %s",format)

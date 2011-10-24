@@ -41,38 +41,10 @@
 %D definitions with the text flow, since all settings are
 %D kept local. The page is clipped to the image size.
 
-\presetlocalframed[\??mg]
-
-\unexpanded\def\setupMPpage
-  {\dodoubleargument\getparameters[\??mg]}
-
-% \def\startMPpage
-%   {\dodoubleempty\dostartMPpage}
-%
-% \long\def\dostartMPpage[#1][#2]#3\stopMPpage % second arg gobbles space
-%   {\dostartfittingpage[\??mg][#1]%
-%    \processMPgraphic{#3}%
-%    \dostopfittingpage}
-
-\def\startMPpage
-  {\dosingleempty\dostartMPpage}
-
-\long\def\dostartMPpage[#1]#2\stopMPpage
-  {\dostartfittingpage[\??mg][#1]%
-   \processMPgraphic{#2}%
-   \dostopfittingpage}
-
-\let\stopMPpage \relax % so that we can use it in \expanded
-
-\setupMPpage
-  [\c!scale=1000,
-   \c!pagestate=,
-   \c!strut=\v!no,
-   \c!align=,
-   \c!offset=\v!overlay,
-   \c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!frame=\v!off]
+\definefittingpage
+  [MPpage]
+  [\c!align=,
+   \c!command=\processMPgraphic]
 
 %D \macros
 %D  {MPfigure}

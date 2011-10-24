@@ -2129,9 +2129,15 @@ local function cleanxhtmltree(xmltree)
         -- todo: inject xhtmlpreamble (xmlns should have be enough)
         local wrapper = { tg = "a", ns = "xhtml", at = { href = "unknown" } }
         for e in xml.collected(xmltree,"link") do
-            local location = e.at.location
-            if location then
-                wrapper.at.href = "#" .. gsub(location,":","_")
+            local at = e.at
+            local href
+            if at.url then
+                href = at.url
+            elseif at.location then
+                at.href = "#" .. gsub(at.location,":","_")
+            end
+            if href then
+                wrapper.at.href = href
                 xmlwrap(e,wrapper)
             end
         end

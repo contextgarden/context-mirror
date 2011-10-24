@@ -606,12 +606,12 @@ end
 #D structured as:
 #D
 #D \starttypen
-#D \startmodule[type=suffix]
+#D \startmoduledocumentation[type=suffix]
 #D \startdocumentation
 #D \stopdocumentation
 #D \startdefinition
 #D \stopdefinition
-#D \stopmodule
+#D \stopmoduledocumentation
 #D \stoptypen
 #D
 #D Macro definitions specific to the documentation are not
@@ -661,7 +661,7 @@ class Commands
                 else
                   tex.rewind # seek(0)
                 end
-                ted.puts("\\startmodule[type=#{filetype}]\n")
+                ted.puts("\\startmoduledocumentation[type=#{filetype}]\n")
                 while str = tex.gets do
                     if skippingbang then
                         skippingbang = false
@@ -737,7 +737,7 @@ class Commands
                 if indefinition then
                     ted.puts("\\stopdefinition\n")
                 end
-                ted.puts("\\stopmodule\n")
+                ted.puts("\\stopmoduledocumentation\n")
                 ted.close
 
                 if nofdocuments == 0 && nofdefinitions == 0 then

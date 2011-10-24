@@ -527,10 +527,10 @@ enddef ;
 % Positions
 
 def register (expr label, width, height, offset) =
-    image (
+%     draw image (
         addto currentpicture doublepath unitsquare xscaled width yscaled height shifted offset
             withprescript "ps_label=" & label ;
-    ) ; % no transformations
+%     ) ; % no transformations
 enddef ;
 
 % Housekeeping

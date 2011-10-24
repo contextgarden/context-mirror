@@ -249,8 +249,11 @@
   {\documentvariable\c!after
    \stoptext}
 
-\def\documentvariable#1%
-  {\getvariable{document}{#1}}
+\def\documentvariable#name%
+  {\getvariable{document}{#name}}
+
+\unexpanded\def\setupdocument
+  {\dodoubleempty\setvariables[document]}
 
 \setvariables
   [document]

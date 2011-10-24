@@ -47,7 +47,7 @@ end
 commands.hyphenatedlist = hyphenatedlist
 
 function commands.showhyphenatedinlist(list)
-    report_hyphenation("show: %s",nodes.listtoutf(list))
+    report_hyphenation("show: %s",nodes.listtoutf(list,false,true))
 end
 
 local function checkedlist(list)

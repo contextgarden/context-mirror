@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=m-chart,
-%D        version=2011.10.1, -- 1998.10.10,
+%D        version=2011.10.1, % 1998.10.10,
 %D          title=\CONTEXT\ Modules,
 %D       subtitle=Flow Charts,
 %D         author=Hans Hagen,
@@ -59,6 +59,9 @@
    \c!ny=0,
    \c!x=1,
    \c!y=1,
+   \c!labeloffset=.5\bodyfontsize,
+   \c!commentoffset=.5\bodyfontsize,
+   \c!exitoffset=\zeropoint,
  % \c!maxwidth=,
  % \c!maxheight=,
  % \c!option=,
@@ -203,6 +206,9 @@
             ny              = "\FLOWchartparameter\c!ny",
             x               = "\FLOWchartparameter\c!x",
             y               = "\FLOWchartparameter\c!y",
+            labeloffset     = \number\dimexpr\FLOWchartparameter\c!labeloffset,
+            commentoffset   = \number\dimexpr\FLOWchartparameter\c!commentoffset,
+            exitoffset      = \number\dimexpr\FLOWchartparameter\c!exitoffset,
         },
         shape = {
             rulethickness   = \number\dimexpr\FLOWshapeparameter\c!rulethickness,

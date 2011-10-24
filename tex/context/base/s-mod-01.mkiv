@@ -16,22 +16,242 @@
 
 % now split in mkii/mkiv so we will cleanup
 
-\usemodule[mod-00,abr-01]
-
-\dontcomplain
-
 \unprotect
 
+\setvariables
+   [document]
+   [       file=\jobname,
+           type=unknown,
+        version={\currentdate[\v!year,{.},\v!month,{.},\v!day]},
+         system=\CONTEXT,
+          title=Unknown Title,
+       subtitle=,
+         author=Unknown Author,
+           date=\currentdate,
+      copyright=Unknown Copyright,
+    suggestions=]
+
+\let\module\setupdocument
+
+\definepalet [module:unknown] [localone=black,localtwo=white]
+
+\definepalet [module:tex]     [localone=blue,localtwo=green]
+\definepalet [module:mkii]    [localone=blue,localtwo=green]
+\definepalet [module:mkiv]    [localone=blue,localtwo=green]
+\definepalet [module:mkvi]    [localone=blue,localtwo=green]
+
+\definepalet [module:lua]     [localone=red,localtwo=green]
+\definepalet [module:cld]     [localone=red,localtwo=green]
+
+\definepalet [module:mp]      [localone=red,localtwo=blue]
+\definepalet [module:mpii]    [localone=red,localtwo=blue]
+\definepalet [module:mpiv]    [localone=red,localtwo=blue]
+\definepalet [module:metapost][localone=red,localtwo=blue]
+
+\setuppalet
+  [module:unknown]
+
+\startuseMPgraphic{page}
+
+    StartPage ;
+
+        color local_white ; local_white := .8white ;
+        color local_one   ; local_one   := \MPcolor{localone} randomized (.6,.8) ;
+        color local_two   ; local_two   := \MPcolor{localtwo} randomized (.3,.4) ;
+
+        color local_one   ; local_one   := .75[\MPcolor{localone},white] ;
+        color local_two   ; local_two   := .75[\MPcolor{localtwo},white] ;
+
+        numeric width  ; width  := bbwidth  Page ;
+        numeric height ; height := bbheight Page ;
+
+        u := width/400 ;
+
+        def a_module (expr dx, dy) =
+            picture p ; p := image (
+                ddy := 0 ; sx := 60u ;
+                for i=1 upto (4 randomized 2) :
+                    sy := 7u randomized 3u ;
+                    fill unitsquare xyscaled(sx,sy) shifted (0,ddy) withcolor local_two ;
+                    ddy := ddy + sy + 4u ;
+                endfor ;
+            ) ;
+            p := p shifted (dx,dy) shifted - center p ;
+            fill boundingbox p enlarged 8u withcolor local_white ;
+            fill boundingbox p enlarged 4u withcolor local_one ;
+            draw p ;
+        enddef ;
+
+        set_grid(width, height, width/15, height/15) ;
+
+        forever:
+            if new_on_grid(uniformdeviate width,uniformdeviate height):
+                a_module(dx,dy) ;
+            fi ;
+            exitif grid_full ;
+        endfor ;
+
+        picture p ;
+
+        draw image (
+            draw anchored.urt(textext("\bf\strut\documentvariable{system}")   ysized 5.0cm,urcorner Page shifted (-1cm,- 1cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{title}")    ysized 1.5cm,urcorner Page shifted (-1cm,- 8cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{subtitle}") ysized 1.5cm,urcorner Page shifted (-1cm,-10cm)) ;
+            draw anchored.urt(textext("\bf\strut\documentvariable{author}")   ysized 1.5cm,lrcorner Page shifted (-1cm,  5cm)) ;
+            draw anchored.urt(textext("\bf\strut\currentdate")                ysized 1.5cm,lrcorner Page shifted (-1cm,  3cm)) ;
+        ) withcolor .25white ;
+
+    StopPage ;
+
+\stopuseMPgraphic
+
+\startsetups[document:start]
+
+    \setuppalet
+      [module:\documentvariable{type}]
+
+    \startTEXpage
+        \useMPgraphic{page}
+    \stopTEXpage
+
+    \page[right]
+
+\stopsetups
+
+\startsetups[document:stop]
+
+    \page
+
+    \placeregister
+      [\v!index]
+      [\c!balance=\v!yes,
+       \c!indicator=\v!no,
+       \c!criterium=\v!text]
+
+\stopsetups
+
+\unexpanded\def\startmoduledocumentation
+  {\starttext
+   \page
+   \begingroup
+   \startdocument}
+
+\unexpanded\def\stopmoduledocumentation
+  {\stopdocument
+   \page
+   \endgroup
+   \stoptext}
+
+\unexpanded\def\startdocumentation % grouped !
+  {\par
+   \bgroup}
+
+\unexpanded\def\stopdocumentation
+  {\par
+   \egroup}
+
+\definetyping
+  [definition]
+
+\unexpanded\def\startcompressdefinitions
+  {\blank
+   \begingroup
+   \setuptyping[definition][bodyfont=small]}
+
+\unexpanded\def\stopcompressdefinitions
+  {\blank
+   \endgroup}
+
+\doifnotmode {nocode} { % \startmode ... \stopmode fails in the module documentation
+
+    \unexpanded\def\startdefinition{\gobbleuntil\stopdefinition}
+    \unexpanded\def\stopdefinition {}
+
+}
+
+\definetyping [PL]  [\c!option=PL]
+\definetyping [JV]  [\c!option=JV]
+\definetyping [MP]  [\c!option=MP]
+\definetyping [TEX] [\c!option=TEX]
+\definetyping [LUA] [\c!option=LUA]
+
+\setuptyping [\v!typing]  [\c!margin=\v!standard]
+\setuptyping [\v!file]    [\c!margin=\v!standard]
+\setuptyping [definition] [\c!margin=0pt,\c!numbering=\v!line,\c!continue=\v!yes] % this continue wins
+
+\setuplinenumbering
+  [definition]
+  [\c!style=\ttx,
+   \c!distance=\leftmargindistance,
+   \c!align=\v!flushright]
+
+\unexpanded\def\dodomodulemarginstuff[#1]#2%
+  {\def\docommand##1%
+     {\indent\hbox
+        {\ifx#2\relax
+           \index{##1}%
+         \else
+           \index{#2{##1}}%
+         \fi
+         #2{\doboundtext{##1}{\leftmarginwidth}{..}}}%
+       \endgraf}%
+   \processcommalist[#1]\docommand}
+
+\unexpanded\def\modulemarginstuff#1[#2]% to be renamed
+  {\def\domodulemarginstuff##1##2%
+     {\margintitle[#2]%
+        {\switchtobodyfont[\v!small]%
+         \dodomodulemarginstuff[##1]#1%
+         \processcommalist[##2]\index}}%
+   \dodoublegroupempty\domodulemarginstuff}
+
+\unexpanded\def\complexmacros  {\modulemarginstuff\tex  }
+\unexpanded\def\complexextras  {\modulemarginstuff\relax}
+\unexpanded\def\complexelements{\modulemarginstuff\someelement}
+
+\unexpanded\def\someelement#1{\type{<#1>}}
+
+\definecomplexorsimpleempty\macros
+\definecomplexorsimpleempty\extras
+\definecomplexorsimpleempty\elements
+
+% \macros{a,b}
+% \macros{a,b}{b}
+% \macros[a]{a,b}{b}
+
+% weg ermee
+
+\defineparagraphs [interface] [\c!n=2]
+\setupparagraphs  [interface] [1] [\c!width=4cm]
+
+\def\startexample{\par\startnarrower}
+\def\stopexample {\stopnarrower}
+
+%D Command references:
+
+\usemodule[int-load] \loadsetups
+
+\let\showsetup\setup
+
+\setupframedtexts
+  [setuptext]
+  [\c!background=\v!screen,
+   \c!frame=\v!off]
+
+% style (we use dejavu as it supports more characters)
+
+\switchtobodyfont
+  [dejavu-condensed,10pt] % preload
+
 \setupbodyfont
-  [10pt]
-
-\definetypeface [narrowtt] [tt] [mono] [modern-cond] [default]
-
-\setuptyping[\v!typing][\c!style=\narrowtt]
-\setuptype  [\v!type]  [\c!style=\narrowtt]
+  [dejavu,10pt] % main font
 
 \mainlanguage
   [en]
+
+\setuptyping
+  [\v!typing]
+  [\c!bodyfont=dejavu-condensed]
 
 \setupwhitespace
   [\v!big]
@@ -54,49 +274,30 @@
    \c!height=middle,
    \c!style=\ss]
 
-\setupsetup
-  [\c!reference=1] % mkiv?
-
-\startnotmode[single]
-
-  \setuppagenumbering
-    [\c!alternative={\v!doublesided,\v!singlesided}]
-
-\stopnotmode
-
 \setuppagenumbering
   [\c!location=]
 
+\setuppagenumbering
+  [\c!alternative={\v!doublesided,\v!singlesided}]
+
 \setupfootertexts
   [\v!edge]
-  [][\v!pagenumber]
+  [][\pagenumber]
 
-\startmode[single]
-
-  \setupfootertexts
-    [\v!margin]
-    [\filename{\Modulefile}][]
-
-\stopmode
-
-\startnotmode[single]
-
-  \setupfootertexts
-    [\v!margin]
-    [\filename{\Modulefile}][]
-    [\filename{\Modulefile}][]
-
-\stopnotmode
+\setupfootertexts
+  [\v!margin]
+  [\filename{\documentvariable{file}}][]
+  [\filename{\documentvariable{file}}][]
 
 \setupfootertexts
   [\v!text]
   [\CONTEXT]
-  [\Moduletitle]
+  [\documentvariable{title}]
 
 \setupheadertexts
   [\v!text]
   []
-  [\Modulesubtitle]
+  [\documentvariable{subtitle}]
 
 \setupinmargin
   [\c!location=\v!left]
@@ -106,14 +307,18 @@
 
 \setuphead
   [\v!chapter]
-  [\c!style=\ssc,
+  [\c!style=\bfc,
    \c!page=\v!right,
    \c!header=\v!empty]
 
 \setuphead
   [\v!section]
-  [\c!style=\ssb,
+  [\c!style=\bfb,
    \c!page=\v!right]
+
+\setuphead
+  [\v!subsection]
+  [\c!style=\bfa]
 
 \setuplist
   [\v!chapter]
@@ -130,12 +335,6 @@
   [\c!balance=\v!yes,
    \c!indicator=\v!no]
 
-\startmode[nocolor]
-
-  \setupcolors
-    [\c!conversion=\v!always]
-
-\stopmode
 
 \setupinteraction
   [\c!state=\v!start,
@@ -143,4 +342,43 @@
    \c!contrastcolor=,
    \c!style=]
 
-\protect \endinput
+% modes
+
+\doifmode {nocolor} {
+
+    \setupcolors
+        [\c!conversion=\v!always]
+
+}
+
+\doifmode {single} {
+
+  \setuppagenumbering
+    [\c!alternative=\v!singlesided]
+
+  \setupfootertexts
+    [\v!margin]
+    [\filename{\documentvariable{file}}][]
+
+}
+
+% bonus
+
+\usemodule
+  [abr-01]
+
+% another one
+
+\dontcomplain
+
+\protect
+
+\continueifinputfile{s-mod-01.mkiv}
+
+\startmodule
+
+    \macros{alpha,beta}
+
+    \input ward
+
+\stopmodule

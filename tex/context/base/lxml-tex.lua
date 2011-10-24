@@ -159,6 +159,23 @@ local _, xmltextcapture = context.newtexthandler {
     catcodes  = notcatcodes,
 }
 
+local _, xmlspacecapture = context.newtexthandler {
+    endofline  = context.xmlcdataobeyedline,
+    emptyline  = context.xmlcdataobeyedline,
+    simpleline = context.xmlcdataobeyedline,
+    space      = context.xmlcdataobeyedspace,
+    exception  = entity,
+    catcodes   = notcatcodes,
+}
+
+local _, xmllinecapture = context.newtexthandler {
+    endofline  = context.xmlcdataobeyedline,
+    emptyline  = context.xmlcdataobeyedline,
+    simpleline = context.xmlcdataobeyedline,
+    exception  = entity,
+    catcodes   = notcatcodes,
+}
+
 local _, ctxtextcapture = context.newtexthandler {
     exception = entity,
     catcodes  = ctxcatcodes,
@@ -500,6 +517,7 @@ local function tex_element(e,handlers)
                     addindex(rootname,false,true)
                     ix = e.ix
                 end
+             -- faster than context.xmlw
                 contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",rootname,"::",ix,"}")
             else
                 report_lxml( "fatal error: no index for '%s'",command)
@@ -555,9 +573,7 @@ local function tex_cdata(e,handlers)
 end
 
 local function tex_text(e)
--- print("before",e)
     e = xmlunprivatized(e)
--- print("after",e)
     lpegmatch(xmltextcapture,e)
 end
 
@@ -585,6 +601,62 @@ local xmltexhandler = xml.newhandlers {
 }
 
 lxml.xmltexhandler = xmltexhandler
+
+-- begin of test
+
+local function tex_space(e)
+    e = xmlunprivatized(e)
+    lpegmatch(xmlspacecapture,e)
+end
+
+local xmltexspacehandler = xml.newhandlers {
+    name       = "texspace",
+    handle     = tex_handle,
+    functions  = {
+        ["@dt@"]   = tex_doctype,
+        ["@el@"]   = tex_element,
+        ["@pi@"]   = tex_pi,
+        ["@cm@"]   = tex_comment,
+        ["@cd@"]   = tex_cdata,
+        ["@tx@"]   = tex_space,
+    }
+}
+
+local function tex_line(e)
+    e = xmlunprivatized(e)
+    lpegmatch(xmllinecapture,e)
+end
+
+local xmltexlinehandler = xml.newhandlers {
+    name       = "texline",
+    handle     = tex_handle,
+    functions  = {
+        ["@dt@"]   = tex_doctype,
+        ["@el@"]   = tex_element,
+        ["@pi@"]   = tex_pi,
+        ["@cm@"]   = tex_comment,
+        ["@cd@"]   = tex_cdata,
+        ["@tx@"]   = tex_line,
+    }
+}
+
+function lxml.flushspacewise(id) -- keeps spaces and lines
+    id = getid(id)
+    local dt = id and id.dt
+    if dt then
+        xmlserialize(dt,xmltexspacehandler)
+    end
+end
+
+function lxml.flushlinewise(id) -- keeps lines
+    id = getid(id)
+    local dt = id and id.dt
+    if dt then
+        xmlserialize(dt,xmltexlinehandler)
+    end
+end
+
+-- end of test
 
 function lxml.serialize(root)
     xmlserialize(root,xmltexhandler)

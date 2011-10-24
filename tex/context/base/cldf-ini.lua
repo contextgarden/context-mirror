@@ -172,6 +172,9 @@ local verbose       = lpegC((1-space-newline)^1)
 local beginstripper = (lpegS(" \t")^1 * newline^1) / ""
 local endstripper   = beginstripper * lpegP(-1)
 
+local justaspace    = space * lpegCc("")
+local justanewline  = newline * lpegCc("")
+
 local function n_content(s)
     flush(contentcatcodes,s)
 end
@@ -208,8 +211,9 @@ function context.newtexthandler(specification) -- can also be used for verbose
     local f_emptyline  = specification.emptyline  or n_emptyline
     local f_simpleline = specification.simpleline or n_simpleline
     local f_content    = specification.content    or n_content
+    local f_space      = specification.space
     --
-    local p_exception    = specification.exception
+    local p_exception  = specification.exception
     --
     if s_catcodes then
         f_content = function(s)
@@ -218,27 +222,48 @@ function context.newtexthandler(specification) -- can also be used for verbose
     end
     --
     local pattern
-    if p_exception then
-        local content = lpegC((1-spacing-p_exception)^1)
-        pattern =
-            simpleline / f_simpleline
-          +
-          (
-                emptyline  / f_emptyline
-              + endofline  / f_endofline
-              + p_exception
-              + content    / f_content
-            )^0
+    if f_space then
+        if p_exception then
+            local content = lpegC((1-spacing-p_exception)^1)
+            pattern =
+              (
+                    justaspace   / f_space
+                  + justanewline / f_endofline
+                  + p_exception
+                  + content      / f_content
+                )^0
+        else
+            local content = lpegC((1-space-endofline)^1)
+            pattern =
+                (
+                    justaspace   / f_space
+                  + justanewline / f_endofline
+                  + content      / f_content
+                )^0
+        end
     else
-        local content = lpegC((1-spacing)^1)
-        pattern =
-            simpleline / f_simpleline
-            +
-            (
-                emptyline / f_emptyline
-              + endofline / f_endofline
-              + content   / f_content
-            )^0
+        if p_exception then
+            local content = lpegC((1-spacing-p_exception)^1)
+            pattern =
+                simpleline / f_simpleline
+              +
+              (
+                    emptyline  / f_emptyline
+                  + endofline  / f_endofline
+                  + p_exception
+                  + content    / f_content
+                )^0
+        else
+            local content = lpegC((1-spacing)^1)
+            pattern =
+                simpleline / f_simpleline
+                +
+                (
+                    emptyline / f_emptyline
+                  + endofline / f_endofline
+                  + content   / f_content
+                )^0
+        end
     end
     --
     if f_before then
@@ -262,9 +287,9 @@ function context.newverbosehandler(specification) -- a special variant for e.g. 
     local f_after   = specification.after
     --
     local pattern =
-        newline * (lpegCc("") / f_line)    -- so we get call{}
-      + verbose               / f_content
-      + space   * (lpegCc("") / f_space)   -- so we get call{}
+        justanewline / f_line    -- so we get call{}
+      + verbose      / f_content
+      + justaspace   / f_space   -- so we get call{}
     --
     if specification.strip then
         pattern = beginstripper^0 * (endstripper + pattern)^0

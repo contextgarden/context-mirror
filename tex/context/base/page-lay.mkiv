@@ -136,7 +136,7 @@
 \to \everysetuplayout
 
 \def\doiflayoutdefinedelse#1%
-  {\ifcsname\??ly#1\c!state\endcsname % maybe a helper
+  {\ifcsname\namedlayouthash{#1}\c!state\endcsname % maybe a helper
       \expandafter\firstoftwoarguments
    \else
       \expandafter\secondoftwoarguments
@@ -1463,6 +1463,9 @@
 %D A few goodies:
 
 \definelayout
+  [\v!page]
+
+\setuplayout
   [\v!page]
   [\c!backspace=\zeropoint,
    \c!cutspace=\zeropoint,

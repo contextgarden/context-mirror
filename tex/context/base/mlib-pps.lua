@@ -921,6 +921,7 @@ local function ps_process(object,prescript,before,after)
         before[#before+1] = function()
             context.MPLIBpositionwhd(ps_label,x,y,w,h)
         end
+        object.path = false
     end
 end
 
@@ -929,7 +930,7 @@ end
 local function fg_process(object,prescript,before,after)
     local fg_name = prescript.fg_name
     if fg_name then
-        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object))
+        before[#before+1] = format("q %f %f %f %f %f %f cm",cm(object)) -- beware: does not use the cm stack
         before[#before+1] = function()
             context.MPLIBfigure(fg_name,prescript.fg_mask or "")
         end

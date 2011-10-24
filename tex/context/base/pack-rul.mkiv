@@ -2202,11 +2202,9 @@
 %D
 %D or:
 %D
-%D \startvoorbeeld
 %D \startlines
 %D \getbuffer
 %D \stoplines
-%D \stopvoorbeeld
 %D
 %D We could of course have implemented this macro using
 %D \type{\leaders}, but this would probably have taken more
@@ -2348,9 +2346,9 @@
 %D In next example we show most features. Watch the rule
 %D thickness adapting itself to the level.
 %D
-%D \startvoorbeeld
+%D \startexample
 %D \getbuffer
-%D \stopvoorbeeld
+%D \stopexample
 %D
 %D We just said:
 %D
@@ -2422,9 +2420,9 @@
 %D
 %D becomes
 %D
-%D \startvoorbeeld
+%D \startexample
 %D \getbuffer
-%D \stopvoorbeeld
+%D \stopexample
 %D
 %D So we've got
 %D
@@ -2994,7 +2992,7 @@
 %D \textrule
 %D \stopbuffer
 %D
-%D \bgroup \typebuffer \getbuffer \egroup
+%D \start \typebuffer \getbuffer \stop
 %D
 %D \startbuffer
 %D \setuptextrules
@@ -3229,9 +3227,9 @@
 %D \fillinline[margin=0cm] \input reich \par
 %D \stopbuffer
 %D
-%D \startvoorbeeld
+%D \startexample
 %D \getbuffer
-%D \stopvoorbeeld
+%D \stopexample
 %D
 %D which was typeset by saying:
 %D
@@ -3269,26 +3267,6 @@
       \endgraf % !
       \@@ilafter}}
 
-%D \stopdocumentation
-%D \bgroup
-%D
-%D \setupframedtexts
-%D   [setuptext]
-%D   [background=color,backgroundcolor=white]
-%D
-%D \startbuffer
-%D \setupbackground
-%D   [backgroundoffset=4pt,
-%D    background=screen,
-%D    frame=on,
-%D    framecolor=red,
-%D    leftoffset=2pt]
-%D \stopbuffer
-%D
-%D \getbuffer
-%D
-%D \startbackground
-%D
 %D \macros
 %D   {setupbackground,startbackground,background}
 %D
@@ -3297,18 +3275,28 @@
 %D show what can be done, we provide this part of the
 %D documentation with some gray background and a red frame.
 %D Both the background and frame can have all characteristics
-%D of \type{\framed}. This time we used the setting:
+%D of \type{\framed}.
 %D
-%D \typebuffer
+%D \starttyping
+%D \setupbackground
+%D   [backgroundoffset=4pt,
+%D    background=screen,
+%D    frame=on,
+%D    framecolor=red,
+%D    leftoffset=2pt]
+%D \stoptyping
 %D
 %D The implementation is not that sophisticated, but suffices.
 %D The main problem with this kind of functionality is to get
 %D the spacing all right.
-
+%D
 %D Specifying the background is more or less the same as
 %D specifying a framed box.
 %D
 %D \showsetup{setupbackground}
+%D
+%D {\em This mechanism is sort of obsolete and textbackgrounds should
+%D be used instead.}
 
 \def\dosetupbackground[#1]%
   {\getparameters[\??ag][#1]%
@@ -3434,10 +3422,6 @@
    \dowithnextbox
      {\localframed[\??ag][\c!offset=\v!overlay]{\flushnextbox}\egroup}
      \vbox}
-
-%D \stopdocumentation
-%D \stopbackground
-%D \egroup
 
 %D New, for the moment private; let's see when GB finds out
 %D about this one and its obscure usage. It's used in:

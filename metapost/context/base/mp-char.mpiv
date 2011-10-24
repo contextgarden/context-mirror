@@ -16,6 +16,9 @@
 %D when used in \CONTEXT\ but it does not pay off now to look into
 %D that.
 
+%D For historic reason we first build and then flush but we could
+%D as well flush directly which would save us caching.
+
 if unknown context_shap : input "mp-shap.mpiv" ; fi ;
 if   known context_flow : endinput ; fi ;
 
@@ -73,6 +76,10 @@ numeric flow_shape_left             ; flow_shape_left             := 67 ;
 numeric flow_shape_up               ; flow_shape_up               := 68 ;
 numeric flow_shape_down             ; flow_shape_down             := 69 ;
 
+numeric flow_label_offset           ; flow_label_offset           := 0 ;
+numeric flow_exit_offset            ; flow_exit_offset            := 0 ;
+numeric flow_comment_offset         ; flow_comment_offset         := 0 ;
+
 % vardef some_shape_path (expr type) == imported from mp-shap
 
 def flow_show_shapes(expr n) =
@@ -107,6 +114,9 @@ def flow_new_chart =
     flow_connection_smooth_size := 5pt ;
     flow_connection_arrow_size  := 4pt ;
     flow_connection_dash_size   := 3pt ;
+    flow_label_offset           := 0 ;
+    flow_exit_offset            := 0 ;
+    flow_comment_offset         := 0 ;
 
     flow_max_x                  := 6 ;
     flow_max_y                  := 4 ;
@@ -135,17 +145,9 @@ def flow_new_chart =
     numeric flow_xyline     [][] ;
     boolean flow_xypeep     [][] ;
     picture flow_xytext     [][] ;
-    picture flow_xylabel_l  [][] ;
-    picture flow_xylabel_r  [][] ;
-    picture flow_xylabel_t  [][] ;
-    picture flow_xylabel_b  [][] ;
-    picture flow_xyexit_l   [][] ;
-    picture flow_xyexit_r   [][] ;
-    picture flow_xyexit_t   [][] ;
-    picture flow_xyexit_b   [][] ;
-    picture flow_xycomment_txt[][][][] ;
-    string  flow_xycomment_loc[][][][] ;
-    numeric flow_xycomment_len[][][][] ;
+    picture flow_xylabel    [][] ;
+    picture flow_xyexit     [][] ;
+    picture flow_xycomment  [][] ;
     path    flow_cpaths     [] ;
     numeric flow_cline      [] ;
     color   flow_ccolor     [] ;
@@ -156,7 +158,7 @@ def flow_new_chart =
     picture flow_bpicture   [][] ;
     picture flow_lpicture   [][] ;
     picture flow_rpicture   [][] ;
-    path    flow_centers    [][][] ;
+    path    flow_connections[][][] ;
 
     predefined_shapes[61] := (fullcircle scaled (1.5*predefined_shapes_yradius) xscaled (flow_grid_height/flow_grid_width)) ;
     predefined_shapes[62] := (fullcircle scaled (2.0*predefined_shapes_yradius) xscaled (flow_grid_height/flow_grid_width)) ;
@@ -399,9 +401,9 @@ def flow_draw_connection(expr i,xfrom,yfrom,xto,yto) = % 'i' is a comment refere
         flow_cdash[flow_cpath]  := flow_dashline ;
         flow_ccross[flow_cpath] := flow_showcrossing ;
         if flow_reverse_connection :
-            flow_centers[xto]  [yto]  [i] := flow_cpaths[flow_cpath] ;
+            flow_connections[xto]  [yto]  [i] := flow_cpaths[flow_cpath] ;
         else :
-            flow_centers[xfrom][yfrom][i] := flow_cpaths[flow_cpath] ;
+            flow_connections[xfrom][yfrom][i] := flow_cpaths[flow_cpath] ;
         fi ;
     else :
         message("no connection defined") ;
@@ -461,108 +463,131 @@ def flow_draw_midpoint (expr n) =
     endgroup ;
 enddef ;
 
-def flow_flush_picture(expr x, yy) = % more in lua
+def flow_flush_picture(expr x, yy) =
     begingroup ;
     save y ; numeric y ;
-    y := flow_y_pos(yy) ;
-    if known flow_xytext[x][y] : % maybe test on path for comments
-        begingroup ;
-            % flow_xypath[x][y]
-            save p, offset ; path p ; pair offset ;
-            offset := flow_xy_offset((x+0.5)*flow_grid_width,(flow_max_y-y+1.5)*flow_grid_height) ;
-            offset := offset shifted (-flow_xyline[x][y]/4,-flow_xyline[x][y]/4) ; % terrible hack (some compensation)
-            p := fullsquare xscaled flow_grid_width yscaled flow_grid_height shifted offset ;
-            %
-            save loc ; string  loc ;
-            save len ; numeric len ;
-            save txt ; picture txt ;
-            save cen ; path    cen ;
-            %
-            txt := flow_xytext[x][y] ; if known txt :
-                draw txt shifted offset ;
-            fi ;
-            % is simple comment (sort of obsolete)
-            txt := flow_xylabel_t[x][y] ; if known txt :
-                label.urt(txt,0.5[ulcorner p,urcorner p]) ;
-            fi ;
-            txt := flow_xylabel_b[x][y] ; if known txt :
-                label.lrt(txt,0.5[llcorner p,lrcorner p]) ;
-            fi ;
-            txt := flow_xylabel_l[x][y] ; if known txt :
-                label.ulft(txt,0.5[ulcorner p,llcorner p]) ;
-            fi ;
-            txt := flow_xylabel_r[x][y] ; if known txt :
-                label.urt (txt,0.5[urcorner p,lrcorner p]) ;
-            fi ;
-            % is shifted comment
-            txt := flow_xyexit_t[x][y] ; if known txt :
-                label.top(txt,0.5[ulcorner p,urcorner p] shifted (0, flow_grid_height/2)) ;
-            fi ;
-            txt := flow_xyexit_b[x][y] ; if known txt :
-                label.bot(txt,0.5[llcorner p,lrcorner p] shifted (0,-flow_grid_height/2)) ;
-            fi ;
-            txt := flow_xyexit_l[x][y] ; if known txt :
-                label.lft(txt,0.5[ulcorner p,llcorner p] shifted (-flow_grid_width/2,0)) ;
-            fi ;
-            txt := flow_xyexit_r[x][y] ; if known txt :
-                label.rt (txt,0.5[urcorner p,lrcorner p] shifted ( flow_grid_width/2,0)) ;
-            fi ;
-            % along the path or anchored
-            for i=1 upto infinity :
-                cen := flow_centers[x][y][i] ;
-                if unknown cen :
-                    break ;
-                else :
-                    for j=1 upto infinity :
-                        txt := flow_xycomment_txt[x][y][i][j] ;
-                        if unknown txt :
-                            break ;
-                        else : % todo: see how we can store suffix
-                            loc := flow_xycomment_loc[x][y][i][j] ;
-                            len := flow_xycomment_len[x][y][i][j] ;
-                            pair a ;
-                            if len <> 0 :
-                                a := point len along cen ;
-                            fi ;
-                            if     loc = "tl" : label.ulft(txt,if len = 0 : 0.5[ulcorner p,urcorner p] else : a fi) ;
-                            elseif loc = "t"  : label.top (txt,if len = 0 : 0.5[ulcorner p,urcorner p] else : a fi) ;
-                            elseif loc = "tr" : label.urt (txt,if len = 0 : 0.5[ulcorner p,urcorner p] else : a fi) ;
-                            elseif loc = "bl" : label.llft(txt,if len = 0 : 0.5[llcorner p,lrcorner p] else : a fi) ;
-                            elseif loc = "b"  : label.bot (txt,if len = 0 : 0.5[llcorner p,lrcorner p] else : a fi) ;
-                            elseif loc = "br" : label.lrt (txt,if len = 0 : 0.5[llcorner p,lrcorner p] else : a fi) ;
-                            elseif loc = "lt" : label.ulft(txt,if len = 0 : 0.5[ulcorner p,llcorner p] else : a fi) ;
-                            elseif loc = "l"  : label.lft (txt,if len = 0 : 0.5[ulcorner p,llcorner p] else : a fi) ;
-                            elseif loc = "lb" : label.lrt (txt,if len = 0 : 0.5[ulcorner p,llcorner p] else : a fi) ;
-                            elseif loc = "rt" : label.urt (txt,if len = 0 : 0.5[urcorner p,lrcorner p] else : a fi) ;
-                            elseif loc = "r"  : label.rt  (txt,if len = 0 : 0.5[urcorner p,lrcorner p] else : a fi) ;
-                            elseif loc = "rb" : label.lrt (txt,if len = 0 : 0.5[urcorner p,lrcorner p] else : a fi) ; fi ;
-                        fi ;
-                    endfor ;
-                fi ;
-            endfor ;
-        endgroup ;
+    y := flow_y_pos(yy) ; % maybe move this to the makers
+    if known flow_xytext[x][y] :
+        draw flow_xytext[x][y] ;
+    fi ;
+    if known flow_xylabel[x][y] :
+        draw flow_xylabel[x][y] ;
+    fi ;
+    if known flow_xyexit[x][y] :
+        draw flow_xyexit[x][y] ;
+    fi ;
+    if known flow_xycomment[x][y] :
+        draw flow_xycomment[x][y] ;
     fi ;
     endgroup ;
 enddef ;
 
-def flow_chart_draw_text(expr x, y, p) =
-    flow_xytext[x][y] := p ;
+vardef flow_offset(expr x, y) =
+    flow_xy_offset((x+0.5)*flow_grid_width,(flow_max_y-y+1.5)*flow_grid_height)
+        shifted (-flow_xyline[x][y]/4,-flow_xyline[x][y]/4) % terrible hack (some compensation)
 enddef ;
 
-def flow_chart_draw_label_t   (expr x, y, p) = flow_xylabel_t  [x][y] := p ; enddef ;
-def flow_chart_draw_label_b   (expr x, y, p) = flow_xylabel_b  [x][y] := p ; enddef ;
-def flow_chart_draw_label_l   (expr x, y, p) = flow_xylabel_l  [x][y] := p ; enddef ;
-def flow_chart_draw_label_r   (expr x, y, p) = flow_xylabel_r  [x][y] := p ; enddef ;
+def flow_chart_draw_text(expr x, y, p) =
+    if known flow_xytext[x][y] :
+        addto flow_xytext[x][y] also
+    else :
+        flow_xytext[x][y] :=
+    fi
+    p shifted flow_offset(x,y) ;
+enddef ;
 
-def flow_chart_draw_exit_t    (expr x, y, p) = flow_xyexit_t   [x][y] := p ; enddef ;
-def flow_chart_draw_exit_b    (expr x, y, p) = flow_xyexit_b   [x][y] := p ; enddef ;
-def flow_chart_draw_exit_l    (expr x, y, p) = flow_xyexit_l   [x][y] := p ; enddef ;
-def flow_chart_draw_exit_r    (expr x, y, p) = flow_xyexit_r   [x][y] := p ; enddef ;
+def flow_chart_draw_label (expr x, y, loc, txt) =
+    begingroup ;
+        save p, s ; path p ; picture s ;
+        p := fullsquare xscaled flow_grid_width yscaled flow_grid_height ;
+        p := p shifted flow_offset(x,y) ;
+        s := txt ;
+        setbounds s to boundingbox s enlarged flow_label_offset ;
+        if known flow_xylabel[x][y] :
+            addto flow_xylabel[x][y] also
+        else :
+            flow_xylabel[x][y] :=
+        fi
+        if     loc = "tr" : anchored.llft(s,0.5[ulcorner p,urcorner p]) ;
+        elseif loc = "t"  : anchored.bot (s,0.5[ulcorner p,urcorner p]) ;
+        elseif loc = "tl" : anchored.lrt (s,0.5[ulcorner p,urcorner p]) ;
+        elseif loc = "br" : anchored.ulft(s,0.5[llcorner p,lrcorner p]) ;
+        elseif loc = "b"  : anchored.top (s,0.5[llcorner p,lrcorner p]) ;
+        elseif loc = "bl" : anchored.urt (s,0.5[llcorner p,lrcorner p]) ;
+        elseif loc = "lb" : anchored.urt (s,0.5[ulcorner p,llcorner p]) ;
+        elseif loc = "l"  : anchored.rt  (s,0.5[ulcorner p,llcorner p]) ;
+        elseif loc = "lt" : anchored.lrt (s,0.5[ulcorner p,llcorner p]) ;
+        elseif loc = "rb" : anchored.ulft(s,0.5[urcorner p,lrcorner p]) ;
+        elseif loc = "r"  : anchored.lft (s,0.5[urcorner p,lrcorner p]) ;
+        elseif loc = "rt" : anchored.llft(s,0.5[urcorner p,lrcorner p]) ;
+        else              : anchored     (s,center p) ;
+        fi ;
+    endgroup ;
+enddef ;
 
-def flow_chart_draw_comment (expr x, y, i, j, p, l, n) =
-    flow_xycomment_txt[x][y][i][j] := p ;
-    flow_xycomment_loc[x][y][i][j] := l ;
-    flow_xycomment_len[x][y][i][j] := n ;
+def flow_chart_draw_exit (expr x, y, loc, txt) =
+    begingroup ;
+        save p, s ; path p ; picture s ;
+        p := fullsquare xscaled flow_grid_width yscaled flow_grid_height ;
+        p := p shifted flow_offset(x,y) ;
+        s := txt ;
+        setbounds s to boundingbox s enlarged flow_exit_offset ;
+        if known flow_xyexit[x][y] :
+            addto flow_xyexit[x][y] also
+        else :
+            flow_xyexit[x][y] :=
+        fi
+        if     loc = "t" : anchored.top(s,0.5[ulcorner p,urcorner p]) ;
+        elseif loc = "b" : anchored.bot(s,0.5[llcorner p,lrcorner p]) ;
+        elseif loc = "l" : anchored.lft(s,0.5[ulcorner p,llcorner p]) ;
+        elseif loc = "r" : anchored.rt (s,0.5[urcorner p,lrcorner p]) ;
+        else             : anchored    (s,center p) ;
+        fi ;
+    endgroup ;
+enddef ;
+
+def flow_chart_draw_comment (expr x, y, i, loc, len, txt) = % per connection
+    begingroup ;
+        if known flow_connections[x][y][i] :
+            save p, q, s ; path p, q ; picture s ;
+            p := fullsquare xscaled flow_shape_width yscaled flow_shape_height ;
+            p := p shifted flow_offset(x,y) ;
+            q := flow_connections[x][y][i] ; % already relocated
+            s := txt ;
+            setbounds s to boundingbox s enlarged flow_comment_offset ;
+            if known flow_xycomment[x][y] :
+                addto flow_xycomment[x][y] also
+            else :
+                flow_xycomment[x][y] :=
+            fi
+            if     loc = "tr"   : anchored.llft(s,if len = 0 : 0.5[ulcorner p,urcorner p] else : point len along q fi) ;
+            elseif loc = "t"    : anchored.bot (s,if len = 0 : 0.5[ulcorner p,urcorner p] else : point len along q fi) ;
+            elseif loc = "tl"   : anchored.lrt (s,if len = 0 : 0.5[ulcorner p,urcorner p] else : point len along q fi) ;
+            elseif loc = "br"   : anchored.ulft(s,if len = 0 : 0.5[llcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "b"    : anchored.top (s,if len = 0 : 0.5[llcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "bl"   : anchored.urt (s,if len = 0 : 0.5[llcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "lb"   : anchored.urt (s,if len = 0 : 0.5[ulcorner p,llcorner p] else : point len along q fi) ;
+            elseif loc = "l"    : anchored.rt  (s,if len = 0 : 0.5[ulcorner p,llcorner p] else : point len along q fi) ;
+            elseif loc = "lt"   : anchored.lrt (s,if len = 0 : 0.5[ulcorner p,llcorner p] else : point len along q fi) ;
+            elseif loc = "rb"   : anchored.ulft(s,if len = 0 : 0.5[urcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "r"    : anchored.lft (s,if len = 0 : 0.5[urcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "rt"   : anchored.llft(s,if len = 0 : 0.5[urcorner p,lrcorner p] else : point len along q fi) ;
+            elseif loc = "tr:*" : anchored.llft(s,point 0 of q) ;
+            elseif loc = "t:*"  : anchored.bot (s,point 0 of q) ;
+            elseif loc = "tl:*" : anchored.lrt (s,point 0 of q) ;
+            elseif loc = "br:*" : anchored.ulft(s,point 0 of q) ;
+            elseif loc = "b:*"  : anchored.top (s,point 0 of q) ;
+            elseif loc = "bl:*" : anchored.urt (s,point 0 of q) ;
+            elseif loc = "lb:*" : anchored.urt (s,point 0 of q) ;
+            elseif loc = "l:*"  : anchored.rt  (s,point 0 of q) ;
+            elseif loc = "lt:*" : anchored.lrt (s,point 0 of q) ;
+            elseif loc = "rb:*" : anchored.ulft(s,point 0 of q) ;
+            elseif loc = "r:*"  : anchored.lft (s,point 0 of q) ;
+            elseif loc = "rt:*" : anchored.llft(s,point 0 of q) ;
+            else                : anchored     (s,point 0 of q) ;
+            fi ;
+        fi ;
+    endgroup ;
 enddef ;
 
 boolean flow_reverse_connection ; flow_reverse_connection := false ;

@@ -63,8 +63,34 @@
 \def\MPLIBgraphictext#1%
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 
-\def\MPLIBpositionwhd#1#2#3#4#5%
-  {\dosavepositionwhd{#1}{0}{#2sp}{#3sp}{#4sp}{#5sp}{0sp}}
+%D \startbuffer
+%D \definelayer[test]
+%D
+%D \setlayerframed
+%D   [test]
+%D   [x=\MPx{somepos-1},y=\MPy{somepos-1}]
+%D   [width=\MPw{somepos-1},height=\MPh{somepos-1}]
+%D   {Whatever we want here!}
+%D
+%D \setlayerframed
+%D   [test]
+%D   [x=\MPx{somepos-2},y=\MPy{somepos-2}]
+%D   [width=\MPw{somepos-2},height=\MPh{somepos-2}]
+%D   {Whatever we need there!}
+%D
+%D \startuseMPgraphic{oeps}
+%D     draw fullcircle scaled 6cm withcolor red ;
+%D     register ("somepos-1",5cm,1cm,center currentpicture) ;
+%D     register ("somepos-2",4cm,3cm,(-1cm,-2cm)) ;
+%D \stopuseMPgraphic
+%D
+%D \framed[background=test,offset=overlay]{\useMPgraphic{oeps}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+\def\MPLIBpositionwhd#1#2#3#4#5% bp !
+  {\dosavepositionwhd{#1}{0}{#2bp}{#3bp}{#4bp}{#5bp}{0bp}}
 
 \def\MPLIBextrapass#1%
   {\ctxlua{metapost.graphic_extra_pass("#1")}}

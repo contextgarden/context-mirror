@@ -6461,6 +6461,15 @@ return {
   },
  },
  ["constants"]={
+  ["labeloffset"]={
+   ["en"]="labeloffset",
+  },
+  ["exitoffset"]={
+   ["en"]="labeloffset",
+  },
+  ["commentoffset"]={
+   ["en"]="commentoffset",
+  },
   ["hcompact"]={
    ["en"]="hcompact",
    ["nl"]="hcomprimeer",
