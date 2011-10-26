@@ -50,12 +50,14 @@
      \ifdim\oldvsize=\vsize
        % let's assume that the layout didn't change
      \else
-       \bgroup
-         \global\oldvsize\vsize
-         \advance\vsize-\topinserted
-         \advance\vsize-\botinserted
-         \global\pagegoal\vsize
-       \egroup
+       \global\oldvsize\vsize
+       \global\pagegoal\dimexpr\vsize-\topinserted-\botinserted\relax
+%        \bgroup
+%          \global\oldvsize\vsize
+%          \advance\vsize-\topinserted
+%          \advance\vsize-\botinserted
+%          \global\pagegoal\vsize
+%        \egroup
      \fi
    \fi}
 
@@ -354,7 +356,7 @@
        \dofloatscollect\s!text{\hsize}{1em}%
        %% no longer (interferes with footnotes):
        %%
-       %% \OTRONEsetvsize / test 2011.06.24.001
+       %% \OTRONEsetvsize % test 2011.06.24.001
        %%
        \global\setbox\floatbox\hbox to \hsize
          {\hfil

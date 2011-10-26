@@ -207,21 +207,23 @@
    \restoreglobalbodyfont             % otherwise problems inside split verbatim
    \ctxcommand{flushpostponedblocks()}%
    \relax
-   \doflushfloats                     % new but potential dangerous
-   \egroup}
+   \doflushfloats                     % new but potential dangerous, maybe we need a classification
+   \egroup}                           % of blocks: with and without flush
 
 \def\doflushpostponedblocks
   {\ifinpostponing
      % probably a nested flush
    \else\ifnum\postponed_page_blocks_next_page=\zerocount
+     % nothing in cache
+   \else\ifnum\postponed_page_blocks_next_page<\zerocount
+     % generic cache
      \postponed_page_block_flush
-    %\doflushpostponedblocks
    \else\ifnum\postponed_page_blocks_next_page>\realpageno
-     % not yet
+     % future content
    \else
+     % pending content
      \postponed_page_block_flush
-    %\doflushpostponedblocks
-   \fi\fi\fi}
+   \fi\fi\fi\fi}
 
 \def\doflushpostponedcontent % called in page-one
   {\bgroup

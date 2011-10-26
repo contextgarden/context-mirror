@@ -94,6 +94,12 @@ local skipcodes = allocate {
     [18] = "thickmuskip",
 }
 
+local penaltycodes = allocate { -- unfortunately not used
+    [ 0] = "userpenalty",
+}
+
+table.setmetatableindex(penaltycodes,function(t,k) return "userpenalty" end) -- not used anyway
+
 local noadcodes = allocate {
     [ 0] = "ord",
     [ 1] = "opdisplaylimits",
@@ -158,25 +164,27 @@ end
 local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
-skipcodes  = allocate(swapped(skipcodes, skipcodes ))
-noadcodes  = allocate(swapped(noadcodes, noadcodes ))
-nodecodes  = allocate(swapped(nodecodes, nodecodes ))
-whatcodes  = allocate(swapped(whatcodes, whatcodes ))
-listcodes  = allocate(swapped(listcodes, listcodes ))
-glyphcodes = allocate(swapped(glyphcodes,glyphcodes))
-kerncodes  = allocate(swapped(kerncodes, kerncodes ))
-mathcodes  = allocate(swapped(mathcodes, mathcodes ))
-fillcodes  = allocate(swapped(fillcodes, fillcodes ))
+skipcodes     = allocate(swapped(skipcodes,    skipcodes ))
+noadcodes     = allocate(swapped(noadcodes,    noadcodes ))
+nodecodes     = allocate(swapped(nodecodes,    nodecodes ))
+whatcodes     = allocate(swapped(whatcodes,    whatcodes ))
+listcodes     = allocate(swapped(listcodes,    listcodes ))
+glyphcodes    = allocate(swapped(glyphcodes,   glyphcodes))
+kerncodes     = allocate(swapped(kerncodes,    kerncodes ))
+penaltycodes  = allocate(swapped(penaltycodes, penaltycodes ))
+mathcodes     = allocate(swapped(mathcodes,    mathcodes ))
+fillcodes     = allocate(swapped(fillcodes,    fillcodes ))
 
-nodes.skipcodes  = skipcodes  nodes.gluecodes    = skipcodes -- more official
-nodes.noadcodes  = noadcodes
-nodes.nodecodes  = nodecodes
-nodes.whatcodes  = whatcodes  nodes.whatsitcodes = whatcodes -- more official
-nodes.listcodes  = listcodes
-nodes.glyphcodes = glyphcodes
-nodes.kerncodes  = kerncodes
-nodes.mathcodes  = mathcodes
-nodes.fillcodes  = fillcodes
+nodes.skipcodes    = skipcodes  nodes.gluecodes    = skipcodes -- more official
+nodes.noadcodes    = noadcodes
+nodes.nodecodes    = nodecodes
+nodes.whatcodes    = whatcodes  nodes.whatsitcodes = whatcodes -- more official
+nodes.listcodes    = listcodes
+nodes.glyphcodes   = glyphcodes
+nodes.kerncodes    = kerncodes
+nodes.penaltycodes = kerncodes
+nodes.mathcodes    = mathcodes
+nodes.fillcodes    = fillcodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment

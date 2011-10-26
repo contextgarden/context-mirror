@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 10/20/11 15:49:15
+-- merge date  : 10/26/11 15:10:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -3172,6 +3172,8 @@ if not modules then modules = { } end modules ['font-con'] = {
 }
 
 
+-- some names of table entries will be changed (no _)
+
 local utf = unicode.utf8
 
 local next, tostring, rawget = next, tostring, rawget
@@ -3216,7 +3218,80 @@ constructors.cache           = containers.define("fonts", "constructors", constr
 
 constructors.privateoffset   = 0xF0000 -- 0x10FFFF
 
--- This might become an interface;
+-- Some experimental helpers (handy for tracing):
+
+constructors.keys = {
+    properties = {
+        encodingbytes          = "number",
+        embedding              = "number",
+        cidinfo                = {
+                                 },
+        format                 = "string",
+        fontname               = "string",
+        fullname               = "string",
+        filename               = "filename",
+        psname                 = "string",
+        name                   = "string",
+        virtualized            = "boolean",
+        italic_correction      = "boolean",
+        auto_italic_correction = "boolean",
+        no_stackmath           = "boolean",
+        noglyphnames           = "boolean",
+        mode                   = "string",
+        has_math               = "boolean",
+        no_math_italics        = "boolean",
+        no_text_italics        = "boolean",
+        finalized              = "boolean",
+    },
+    parameters = {
+        mathsize               = "scaledpoints",
+        scriptpercentage       = "float",
+        scriptscriptpercentage = "float",
+        units                  = "cardinal",
+        designsize             = "scalespoints",
+        expansion              = {
+                                    stretch = "integerscale", -- might become float
+                                    shrink  = "integerscale", -- might become float
+                                    step    = "integerscale", -- might become float
+                                    auto    = "boolean",
+                                 },
+        protrusion             = {
+                                    auto    = "boolean",
+                                 },
+        expand_factor          = "float",
+        slant_factor           = "float",
+        factor                 = "float",
+        hfactor                = "float",
+        vfactor                = "float",
+        size                   = "scaledpoints",
+        units                  = "scaledpoints",
+        scaledpoints           = "scaledpoints",
+        slant                  = "float",
+        space                  = "scaledpoints",
+        space_stretch          = "scaledpoints",
+        space_shrink           = "scaledpoints",
+        x_height               = "scaledpoints",
+        quad                   = "scaledpoints",
+        extra_space            = "scaledpoints",
+        ascender               = "scaledpoints",
+        descender              = "scaledpoints",
+    },
+    description = {
+        width                  = "basepoints",
+        height                 = "basepoints",
+        depth                  = "basepoints",
+        boundingbox            = { },
+    },
+    character = {
+        width                  = "scaledpoints",
+        height                 = "scaledpoints",
+        depth                  = "scaledpoints",
+        italic                 = "scaledpoints",
+    },
+
+}
+
+-- This might become an interface:
 
 local designsizes           = allocate()
 constructors.designsizes    = designsizes
@@ -5112,6 +5187,8 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- modification/creationtime in subfont is runtime dus zinloos
 -- to_table -> totable
 -- ascent descent
+
+-- more checking against low level calls of functions
 
 local utf = unicode.utf8
 
@@ -8628,6 +8705,11 @@ local function toligature(kind,lookupname,start,stop,char,markflag,discfound) --
                 start = start.next
             end
         end
+     -- we do need components in funny kerning mode but maybe I can better reconstruct then
+     -- as we do have the font components info available; removing components makes the
+     -- previous code much simpler
+     --
+     -- flush_node_list(head.components)
         return head
     end
 end

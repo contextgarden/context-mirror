@@ -17,7 +17,8 @@
 
 \registerctxluafile{spac-ali}{1.001}
 
-\definesystemattribute[realign][public]
+\definesystemattribute[realign]   [public] % might be combined with the next one
+\definesystemattribute[alignstate][public] % will make a single attributes for several states
 
 \unexpanded\def\resetrealignsignal{\attribute\realignattribute\attributeunsetvalue}
 \unexpanded\def\signalinnerrealign{\ctxcommand{setrealign(2)}}
@@ -318,6 +319,9 @@
 
 \newconstant\raggedstatus % normal left center right
 
+% \unexpanded\def\setalignstateattribute % unexpanded !
+%   {\attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
+
 \def\leftraggedness   {2\bodyfontsize}
 \def\rightraggedness  {2\bodyfontsize}
 \def\middleraggedness {6\bodyfontsize}
@@ -368,12 +372,17 @@
 
 \def\dosetraggedskips#1#2#3#4#5#6#7%
   {\raggedstatus#1\relax
+   \attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi
    \leftskip   1\leftskip \!!plus#2\relax % zie: Tex By Topic 8.1.3
    \rightskip  1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
    \spaceskip  #4\relax
    \xspaceskip #5\relax
    \parfillskip\zeropoint\!!plus#6\relax
    \parindent  #7\relax}
+
+\appendtoks
+    \attribute\alignstateattribute\attributeunsetvalue
+\to \everyforgetall
 
 % \def\notragged%
 %   {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}

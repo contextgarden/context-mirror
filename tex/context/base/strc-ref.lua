@@ -1683,7 +1683,7 @@ end
 
 filters.section = { }
 
-function filters.section.number(data,what,prefixspec)
+local function filternumber(data,what,prefixspec)
     if data then
         local numberdata = data.numberdata
         if numberdata then
@@ -1697,15 +1697,22 @@ function filters.section.number(data,what,prefixspec)
     end
 end
 
+filters.section.number  = filternumber
 filters.section.title   = filters.generic.title
 filters.section.page    = filters.generic.page
 filters.section.default = filters.section.number
 
-filters.note        = { default = filters.generic.number }
-filters.formula     = { default = filters.generic.number }
-filters.float       = { default = filters.generic.number }
-filters.description = { default = filters.generic.number }
-filters.item        = { default = filters.generic.number }
+-- filters.note        = { default = filters.generic.number }
+-- filters.formula     = { default = filters.generic.number }
+-- filters.float       = { default = filters.generic.number }
+-- filters.description = { default = filters.generic.number }
+-- filters.item        = { default = filters.generic.number }
+
+setmetatableindex(filters, function(t,k)
+    local v = { default = filternumber } -- not copy as it might be extended differently
+    t[k] = v
+    return v
+end)
 
 -- function references.sectiontitle(n)
 --     helpers.sectiontitle(lists.collected[tonumber(n) or 0])

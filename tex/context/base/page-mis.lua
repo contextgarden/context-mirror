@@ -23,7 +23,15 @@ local function flush(page)
 end
 
 local function setnextpage()
-    tex.setcount("global","postponed_page_blocks_next_page",next(cache) and sortedkeys(cache)[1] or -1)
+    local n = next(cache) and sortedkeys(cache)[1]
+    if not n then
+        n = 0           -- nothing in the cache
+    elseif n == 0 then
+        n = -1          -- generic buffer (0)
+    elseif n > 0 then
+                        -- upcoming page (realpageno)
+    end
+    tex.setcount("global","postponed_page_blocks_next_page",n)
 end
 
 function commands.flushpostponedblocks(page)

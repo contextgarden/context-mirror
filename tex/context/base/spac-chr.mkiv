@@ -19,8 +19,44 @@
 
 \definesystemattribute[characters][public]
 
-\edef\nobreakspace            {\utfchar{"00A0}}
+%D The nobreakspace is special as it needs to keep track of the space being
+%D flexible. Another option is to use space (glue) nodes and tag them as characters
+%D instead. No big deal but takes a moment of coding. So, as a prelude we
+%D tag the nobreakspace only. Interesting is that it also fits better in the
+%D tagging mechanism.
+%D
+%D But we need to do some checking as from then on we no longer can compare
+%D them in a string. So this needs thinking. Not that we can compare the
+%D nobreakspace now anyway.
 
+% \unexpanded\def\specialspacecharacter#1{\begingroup\attribute\charactersattribute#1\ \endgroup}
+%
+% \unexpanded\edef\nobreakspace            {\specialspacecharacter{"00A0}} % 1 = left
+% \unexpanded\edef\ideographicspace        {\specialspacecharacter{"2000}}
+% \unexpanded\edef\ideographichalffillspace{\specialspacecharacter{"2001}}
+% \unexpanded\edef\twoperemspace           {\specialspacecharacter{"2002}}
+% \unexpanded\edef\threeperemspace         {\specialspacecharacter{"2004}}
+% \unexpanded\edef\fourperemspace          {\specialspacecharacter{"2005}}
+% \unexpanded\edef\sixperemspace           {\specialspacecharacter{"2006}}
+% \unexpanded\edef\figurespace             {\specialspacecharacter{"2007}}
+% \unexpanded\edef\punctuationspace        {\specialspacecharacter{"2008}}
+% \unexpanded\edef\breakablethinspace      {\specialspacecharacter{"2009}}
+% \unexpanded\edef\hairspace               {\specialspacecharacter{"200A}}
+% \unexpanded\edef\zerowidthspace          {\specialspacecharacter{"200B}}
+% \unexpanded\edef\zwnj                    {\specialspacecharacter{"200C}}
+% \unexpanded\edef\zwj                     {\specialspacecharacter{"200D}}
+% \unexpanded\edef\narrownobreakspace      {\specialspacecharacter{"202F}}
+
+% This does not work as spaceskip is only inserted in the case of raggedleft
+% and we need to be able to figure out all of them. Which makes me wonder ...
+% can't we just always set spaceskip to some value?
+
+% Making them active is also not an option unless we do that in every
+% catcode vector.
+
+%    \nobreakspace            {\begingroup\setalignstateattribute\utfchar{"00A0}\endgroup} % 1 = left
+
+\edef\nobreakspace            {\utfchar{"00A0}}
 \edef\ideographicspace        {\utfchar{"2000}}
 \edef\ideographichalffillspace{\utfchar{"2001}}
 \edef\twoperemspace           {\utfchar{"2002}}
@@ -34,7 +70,6 @@
 \edef\zerowidthspace          {\utfchar{"200B}}
 \edef\zwnj                    {\utfchar{"200C}}
 \edef\zwj                     {\utfchar{"200D}}
-
 \edef\narrownobreakspace      {\utfchar{"202F}}
 
 %edef\zerowidthnobreakspace   {\utfchar{"FEFF}}
@@ -45,7 +80,7 @@
 
 % unexpanded as otherwise we need to intercept / cleanup a lot
 
-\unexpanded\edef~{\utfchar{"00A0}}
+\unexpanded\def~{\nobreakspace}
 
 % Goodies:
 
