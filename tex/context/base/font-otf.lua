@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['font-otf'] = {
 -- to_table -> totable
 -- ascent descent
 
+-- more checking against low level calls of functions
+
 local utf = unicode.utf8
 
 local utfbyte = utf.byte

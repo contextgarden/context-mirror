@@ -711,6 +711,8 @@ local function getchart(settings)
             if miny == 0 or y > maxy then maxy = y end
         end
     end
+-- print("1>",x,y,nx,ny)
+-- print("2>",minx, miny, maxx, maxy)
     -- check of window should be larger (maybe autofocus + nx/ny?)
     if autofocus then
         -- x and y are ignored
@@ -725,15 +727,16 @@ local function getchart(settings)
             minx = x
         end
         if y and y > 0 then
-            minx = y
+            miny = y
         end
         if nx and nx > 0 then
             maxx = minx + nx - 1
         end
         if ny and ny > 0 then
-            miny = miny + ny - 1
+            maxy = miny + ny - 1
         end
     end
+-- print("3>",minx, miny, maxx, maxy)
     --
     local nx = maxx - minx + 1
     local ny = maxy - miny + 1

@@ -162,13 +162,6 @@
   {\blank
    \endgroup}
 
-\doifnotmode {nocode} { % \startmode ... \stopmode fails in the module documentation
-
-    \unexpanded\def\startdefinition{\gobbleuntil\stopdefinition}
-    \unexpanded\def\stopdefinition {}
-
-}
-
 \definetyping [PL]  [\c!option=PL]
 \definetyping [JV]  [\c!option=JV]
 \definetyping [MP]  [\c!option=MP]
@@ -185,35 +178,34 @@
    \c!distance=\leftmargindistance,
    \c!align=\v!flushright]
 
-\unexpanded\def\dodomodulemarginstuff[#1]#2%
-  {\def\docommand##1%
-     {\indent\hbox
-        {\ifx#2\relax
-           \index{##1}%
-         \else
-           \index{#2{##1}}%
-         \fi
-         #2{\doboundtext{##1}{\leftmarginwidth}{..}}}%
-       \endgraf}%
-   \processcommalist[#1]\docommand}
+% This will be cleaned up.
 
-\unexpanded\def\modulemarginstuff#1[#2]% to be renamed
-  {\def\domodulemarginstuff##1##2%
-     {\margintitle[#2]%
-        {\switchtobodyfont[\v!small]%
-         \dodomodulemarginstuff[##1]#1%
-         \processcommalist[##2]\index}}%
-   \dodoublegroupempty\domodulemarginstuff}
+\unexpanded\def\domodulemarginstuff#1#2%
+  {\marginstuff
+     {\ifx#1\relax
+        \index{#2}%
+      \else
+        \index{#1{#2}}%
+      \fi
+      #1{\doboundtext{#2}{\leftmarginwidth}{..}}}}
 
-\unexpanded\def\complexmacros  {\modulemarginstuff\tex  }
-\unexpanded\def\complexextras  {\modulemarginstuff\relax}
-\unexpanded\def\complexelements{\modulemarginstuff\someelement}
+\unexpanded\def\modulemarginstuff#1#2% to be renamed
+  {\processcommalist[#2]{\domodulemarginstuff#1}}
+
+\definemargindata
+  [marginstuff]
+  [left]
+  [stack=yes,
+   hoffset=2em,
+   style=\ttxx]
+
+\unexpanded\def\macros  {\modulemarginstuff\tex  }
+\unexpanded\def\extras  {\modulemarginstuff\relax}
+\unexpanded\def\elements{\modulemarginstuff\someelement}
 
 \unexpanded\def\someelement#1{\type{<#1>}}
 
-\definecomplexorsimpleempty\macros
-\definecomplexorsimpleempty\extras
-\definecomplexorsimpleempty\elements
+% [index]{command}
 
 % \macros{a,b}
 % \macros{a,b}{b}
@@ -344,10 +336,17 @@
 
 % modes
 
+\doifmode {nocode} { % \startmode ... \stopmode fails in the module documentation
+
+  \unexpanded\def\startdefinition{\gobbleuntil\stopdefinition}
+  \unexpanded\def\stopdefinition {}
+
+}
+
 \doifmode {nocolor} {
 
-    \setupcolors
-        [\c!conversion=\v!always]
+  \setupcolors
+    [\c!conversion=\v!always]
 
 }
 

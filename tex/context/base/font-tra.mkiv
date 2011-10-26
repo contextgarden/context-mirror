@@ -50,6 +50,7 @@
   {\begingroup
    \tttf\language\minusone
    \veryraggedright
+   \forgetparindent
    \hangindent1em
    \hangafter\plusone
    \dontleavehmode\hbox{\detokenize{#1}}\removeunwantedspaces
@@ -67,7 +68,10 @@
   {\ctxlua{nodes.tracers.steppers.features()}}
 
 \def\showotfsteps
-  {\dontleavehmode\bgroup\tttf \language\minusone features: \showotfstepfeatures\egroup
+  {\begingroup
+   \veryraggedright
+   \forgetparindent
+   \dontleavehmode\bgroup\tttf \language\minusone features: \showotfstepfeatures\egroup
    \blank
    \dontleavehmode\bgroup\tttf result:\egroup
    \blank
@@ -84,14 +88,17 @@
       \blank
       \startlinecorrection
       \ruledhbox % can be mode
-      \bgroup\resetallattributes\showotfstepglyphs\recurselevel\egroup % reset is new, we don't want additional processing
+        \bgroup\resetallattributes\showotfstepglyphs\recurselevel\egroup % reset is new, we don't want additional processing
       \stoplinecorrection
-      \blank}}
+      \blank}%
+   \endgroup}
 
 \unexpanded\def\startotfsample
   {\enabletrackers[*otf.sample]% beware, kind of global
    \startotfcollecting
-   \begingroup}
+   \begingroup
+   \veryraggedright
+   \forgetparindent}
 
 \unexpanded\def\stopotfsample
   {\endgroup
@@ -104,6 +111,8 @@
 
 \def\showotfcomposition#1#2#3% {font*features at size}, rl=-1, text
   {\begingroup
+   \veryraggedright
+   \forgetparindent
    \setupcolors[\c!state=\v!start]% can be option
    \startotfsample
    \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\ifnum#2<0 \textdir TRT\else\ifnum#2>0 \textdir TLT\fi\fi\relax#3}%

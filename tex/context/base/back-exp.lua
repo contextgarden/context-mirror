@@ -2131,10 +2131,12 @@ local function cleanxhtmltree(xmltree)
         for e in xml.collected(xmltree,"link") do
             local at = e.at
             local href
-            if at.url then
+            if at.location then
+                href = "#" .. gsub(at.location,":","_")
+            elseif at.url then
                 href = at.url
-            elseif at.location then
-                at.href = "#" .. gsub(at.location,":","_")
+            elseif at.file then
+                href = at.file
             end
             if href then
                 wrapper.at.href = href

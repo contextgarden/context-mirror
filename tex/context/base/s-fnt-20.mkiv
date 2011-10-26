@@ -138,3 +138,23 @@
             {\getvariable{otftracker}{sample}}
     \stoptext
 \stopsetups
+
+\continueifinputfile{s-fnt-20.mkiv}
+
+\usemodule[art-01]
+
+\setupbodyfont
+%   [cambria]
+  [dejavu]
+
+\starttext
+
+\setvariables
+  [otftracker]
+  [font=Serif,
+   size=48pt,
+   figure=,
+   title=Feature Check,
+   sample={affiliation}]
+
+\stoptext

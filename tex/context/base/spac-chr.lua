@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['spac-chr'] = {
 
 local byte, lower = string.byte, string.lower
 
+-- to be redone: characters will become tagged spaces instead as then we keep track of
+-- spaceskip etc
+
 trace_characters = false  trackers.register("typesetters.characters", function(v) trace_characters = v end)
 
 report_characters = logs.reporter("typesetting","characters")
@@ -15,6 +18,7 @@ report_characters = logs.reporter("typesetting","characters")
 local nodes, node = nodes, node
 
 local set_attribute      = node.set_attribute
+local has_attribute      = node.has_attribute
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
 
@@ -25,7 +29,11 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
+local skipcodes          = nodes.skipcodes
 local glyph_code         = nodecodes.glyph
+local glue_code          = nodecodes.glue
+
+local space_skip_code    = skipcodes["spaceskip"]
 
 local chardata           = characters.data
 
@@ -38,6 +46,7 @@ local fontparameters     = fonts.hashes.parameters
 local fontcharacters     = fonts.hashes.characters
 
 local a_character        = attributes.private("characters")
+local a_alignstate       = attributes.private("alignstate")
 
 local c_zero   = byte('0')
 local c_period = byte('.')
@@ -64,6 +73,7 @@ end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
     local attr = current.attr
+    local next = current.next
     head, current = insert_node_after(head,current,new_penalty(10000))
     head, current = insert_node_after(head,current,new_glue(space,spacestretch,spaceshrink))
     current.attr = attr
@@ -73,9 +83,18 @@ end
 
 local methods = {
 
-    [0x00A0] = function(head,current) -- nobreakspace
+    -- The next one uses an attribute assigned to the character but still we
+    -- don't have the 'local' value.
+
+    [0x00A0] = function(head,current)
         local para = fontparameters[current.font]
-        return inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+        if has_attribute(current,a_alignstate) == 1 then -- flushright
+            head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
+            current.subtype = space_skip_code
+        else
+            head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+        end
+        return head, current
     end,
 
     [0x2000] = function(head,current) -- enquad
@@ -145,7 +164,8 @@ function characters.handler(head)
     local done = false
     while current do
         local next = current.next
-        if current.id == glyph_code then
+        local id = current.id
+        if id == glyph_code then
             local char = current.char
             local method = methods[char]
             if method then
