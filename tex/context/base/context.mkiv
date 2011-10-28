@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.10.26 15:10}
+\edef\contextversion{2011.10.28 16:04}
 
 %D For those who want to use this:
 
@@ -82,6 +82,8 @@
 
 \loadmarkfile{cldf-ini}
 
+\nopdfcompression
+
 % From here on we have \unexpanded being \normalprotected, as we
 % already had \unexpanded long before etex came around.
 
@@ -123,6 +125,9 @@
 \loadmarkfile{layo-ini}
 
 \loadmarkfile{node-ini}
+
+\loadmarkfile{cldf-bas} % basics / depends on nodes
+
 \loadmarkfile{node-fin}
 \loadmarkfile{node-mig}
 \loadmarkfile{node-par}
@@ -298,6 +303,7 @@
 \loadmarkfile{tabl-nte}
 \loadmarkfile{tabl-ltb}
 \loadmarkfile{tabl-tsp}
+\loadmkvifile{tabl-xtb}
 
 \loadmarkfile{java-ini}
 

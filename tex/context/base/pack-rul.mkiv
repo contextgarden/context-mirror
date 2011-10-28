@@ -985,7 +985,7 @@
      \boxhasformatfalse
    \else
      \boxhasformattrue
-     \dosetraggedcommand\localformat
+     \dosetraggedcommand\localformat % not that fast
      \edef\dobeforeframedbox{\raggedtopcommand\framedparameter\c!top}%
      \edef\doafterframedbox {\framedparameter\c!bottom\raggedbottomcommand}%
    \fi
@@ -1301,10 +1301,16 @@
      \let\postprocessframebox\relax % prevent nesting
      \next\framebox
    \fi
-   \ifboxhasframe % real or invisible frame
-     \dooutlinebox
+   \iftrialtypesetting
+     % new
+   \else
+     \ifboxhasframe % real or invisible frame
+       \dooutlinebox
+     \fi
+     \ifx\framedbackground\empty \else
+       \dobackedbox
+     \fi
    \fi
-   \ifx\framedbackground\empty\else\dobackedbox\fi
    \handleframedlocator\c!after\@@locallocation
    \box\framebox
    \egroup
@@ -1505,14 +1511,6 @@
 %D When we set \type{empty} to \type{yes}, we get
 %D ourselves a frame and/or background, but no content, so
 %D actually we have a sort of phantom framed box.
-
-%D Because color marks and specials can interfere with
-%D spacing, we provide a way to specify a foregroundcolor.
-
-\def\docolorframebox
-  {\doifcolor\framedforegroundcolor
-     {\setbox\framebox\hbox{\faststartcolor[\framedforegroundcolor]\box\framebox\faststopcolor}}}
-    %{\setbox\framebox\hbox{\doactivatecolor\framedforegroundcolor\box\framebox}}}
 
 %D \macros
 %D   {mframed, minframed}
@@ -1735,7 +1733,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1754,7 +1754,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1773,7 +1775,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \oninterlineskip
        \doframedsetups
        \raggedcommand
@@ -1790,7 +1794,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \oninterlineskip
        \hsize\!!framedwidth
        \doframedsetups
@@ -1808,7 +1814,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \vsize\!!framedheight
        \doframedsetups
        \vss
@@ -1826,7 +1834,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \doframedsetups
        \hss
        \localstrut
@@ -1838,7 +1848,9 @@
 \def\doformatboxNoSize
   {\hbox
      \bgroup
+\iftrialtypesetting \else
        \setframedforegroundcolor
+\fi
        \let\postprocessframebox\relax
        \doframedsetups
        \localstrut

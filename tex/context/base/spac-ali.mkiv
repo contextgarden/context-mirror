@@ -180,9 +180,6 @@
 \setvalue{\@@ragged@@hbox\v!flushright}{\def\raggedbox{\doalignedline\v!left  }}
 \setvalue{\@@ragged@@hbox\v!center    }{\def\raggedbox{\doalignedline\v!middle}}
 
-\def\dosetraggedcommand#1%
-  {\normalexpanded{\noexpand\dodosetraggedcommand{#1}}}
-
 \newtoks\everyraggedcommand
 
 \def\raggedcommand{\the\everyraggedcommand}
@@ -191,35 +188,69 @@
 
 \let\raggedbox\relax
 
-\unexpanded\def\dodosetraggedcommand#1% beware: #1=empty is ignored, keep that!
+% pretty slow (will be sped up)
+
+\unexpanded\def\dosetraggedcommand#1% beware: #1=empty is ignored, keep that! assumes \forgetall
+  {\edef\askedraggedalign{#1}%
+   \ifx\askedraggedalign\empty
+     \nonosetraggedcommand
+   \else
+     \dodosetraggedcommand
+   \fi}
+
+\def\nonosetraggedcommand
+  {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
+   \let\raggedtopcommand\empty
+   \let\raggedbottomcommand\empty
+   \let\raggedbox\relax
+   \setfalse\raggedonelinerstate}
+
+\def\dodosetraggedcommand                  %  beware: #1=empty is ignored, keep that!
   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
    \let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \let\raggedbox\relax
    \setfalse\raggedonelinerstate
-   \doifsomething{#1}%
-     {\doifinsetelse\v!broad{#1}\!!doneatrue\!!doneafalse
-      \doifinsetelse\v!wide {#1}\!!donebtrue\!!donebfalse
-      \!!donectrue
-      \rawprocesscommalist[#1]\dododosetraggedcommand}}
+   \ifcsname\@@ragged@@command\askedraggedalign\endcsname % fast for one keyword and special table case
+     \!!doneafalse
+     \!!donebfalse
+     \!!donectrue
+     \csname\@@ragged@@command\askedraggedalign\endcsname
+   \else
+     \doifinsetelse\v!broad\askedraggedalign\!!doneatrue\!!doneafalse
+     \doifinsetelse\v!wide \askedraggedalign\!!donebtrue\!!donebfalse
+     \!!donectrue
+     \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
+   \fi}
+
+\setvalue{\@@ragged@@command\v!table}% {flushleft,broad,high}
+  {\let\raggedbottomcommand\vfilll
+   \appendtoks\veryraggedright\to\everyraggedcommand}
 
 \def\dododosetraggedcommand#1%
-  {\executeifdefined{\@@ragged@@command\string#1}\relax}
+%   {\executeifdefined{\@@ragged@@command\string#1}\relax}
+  {\csname\@@ragged@@command#1\endcsname}
+
+\def\ragged_command_tolerant     {\tolerance3000\relax}
+\def\ragged_command_very_tolerant{\tolerance4500\relax}
+\def\ragged_command_stretch      {\emergencystretch\bodyfontsize}
+
+% \everyraggedcommand\expandafter{\the\everyraggedcommand#1}
 
 \setvalue{\@@ragged@@command\v!hanging      }{\appendtoks\enableprotruding    \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nothanging   }{\appendtoks\disableprotruding   \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!hz           }{\appendtoks\enableadjusting     \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nohz         }{\appendtoks\disableadjusting    \to\everyraggedcommand}
-% \setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling
-%                                                          \enablekernhandling  \to\everyraggedcommand}
-% \setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling
-%                                                          \disablekernhandling \to\everyraggedcommand}
+%setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling
+%                                                        \enablekernhandling  \to\everyraggedcommand}
+%setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling
+%                                                        \disablekernhandling \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!hyphenated   }{\appendtoks\dohyphens           \to\everyraggedcommand}
 \setvalue{\@@ragged@@command\v!nothyphenated}{\appendtoks\nohyphens           \to\everyraggedcommand}
 
-\setvalue{\@@ragged@@command\v!tolerant    }{\appendtoks\tolerance3000\relax  \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!verytolerant}{\appendtoks\tolerance4500\relax  \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!stretch     }{\appendtoks\emergencystretch\bodyfontsize\to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!tolerant     }{\appendtoks\ragged_command_tolerant     \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!verytolerant }{\appendtoks\ragged_command_very_tolerant\to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!stretch      }{\appendtoks\ragged_command_stretch      \to\everyraggedcommand}
 
 \setvalue{\@@ragged@@command\v!left}%
   {\if!!donea \appendtoks\veryraggedleft\to\everyraggedcommand

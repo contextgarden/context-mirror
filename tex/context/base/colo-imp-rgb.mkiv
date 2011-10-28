@@ -8,8 +8,8 @@
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
-%C details. 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
 
 %D Just to give users a start we define some colors. While
 %D switching fonts is as international as can be, thanks to the
@@ -18,7 +18,7 @@
 %D interface dependant colors. We use the color inheritance
 %D mechanisms to implement the interface dependant ones.
 
-%D First we define some simple primary \cap{RGB} and \cap{CMYK} 
+%D First we define some simple primary \cap{RGB} and \cap{CMYK}
 %D colors. All colors are defined in \cap{RGB} color space.
 
 \definecolor [red]           [r=1,   g=0,   b=0]
@@ -30,33 +30,32 @@
 \definecolor [yellow]        [r=1,   g=1,   b=0]
 
 \definecolor [white]         [s=1] % [r=1,   g=1,   b=1]
-\definecolor [black]         [s=0] 
+\definecolor [black]         [s=0]
 \definecolor [gray]          [s=.9]
 
-\definecolor [darkred]       [r=.8,  g=0,   b=0]
-\definecolor [middlered]     [r=.9,  g=0,   b=0]
+% adapted per 2011.10.28
+
 \definecolor [lightred]      [r=1,   g=0,   b=0]
-
-\definecolor [darkgreen]     [r=0,   g=.6,  b=0]
-\definecolor [middlegreen]   [r=0,   g=.8,  b=0]
 \definecolor [lightgreen]    [r=0,   g=1,   b=0]
-
-\definecolor [darkblue]      [r=0,   g=0,   b=.8]
-\definecolor [middleblue]    [r=0,   g=0,   b=.9]
 \definecolor [lightblue]     [r=0,   g=0,   b=1]
 
-\definecolor [darkcyan]      [r=.6,  g=.8,  b=.8]
-\definecolor [middlecyan]    [r=0,   g=.8,  b=.8]
+\definecolor [middlered]     [r=.8,  g=0,   b=0]
+\definecolor [middlegreen]   [r=0,   g=.8,  b=0]
+\definecolor [middleblue]    [r=0,   g=0,   b=.8]
+\definecolor [middlecyan]    [r=0,   g=.6,  b=.6]
+\definecolor [middlemagenta] [r=.6,  g=0,   b=.6]
+\definecolor [middleyellow]  [r=.6,  g=.6,  b=.0]
 
-\definecolor [darkmagenta]   [r=.8,  g=.6,  b=.8]
-\definecolor [middlemagenta] [r=1,   g=0,   b=.6]
+\definecolor [darkred]       [r=.6,  g=0,   b=0]
+\definecolor [darkgreen]     [r=0,   g=.6,  b=0]
+\definecolor [darkblue]      [r=0,   g=0,   b=.6]
+\definecolor [darkcyan]      [r=0,   g=.4,  b=.4]
+\definecolor [darkmagenta]   [r=.4,  g=0,   b=.4]
+\definecolor [darkyellow]    [r=.4,  g=.4,  b=0]
 
-\definecolor [darkyellow]    [r=.8,  g=.8,  b=.6]
-\definecolor [middleyellow]  [r=1,   g=1,   b=.2]
-
-\definecolor [darkgray]      [s=.5]
-\definecolor [middlegray]    [s=.7]
-\definecolor [lightgray]     [s=.9]
+\definecolor [darkgray]      [s=.60]
+\definecolor [middlegray]    [s=.725]
+\definecolor [lightgray]     [s=.85]
 
 %D These colors are mapped to interface dependant colornames.
 
@@ -211,10 +210,10 @@
   \definecolor [bluchiaro]     [lightblue]
 
   \definecolor [azzurroscuro]  [darkcyan]
-  \definecolor [azzurrochiaro] [middlecyan]      
+  \definecolor [azzurrochiaro] [middlecyan]
 
-  \definecolor [cremisiscuro]  [darkmagenta]    
-  \definecolor [cremisichiaro] [middlemagenta]  
+  \definecolor [cremisiscuro]  [darkmagenta]
+  \definecolor [cremisichiaro] [middlemagenta]
 
 
   \definecolor [gialloscuro]     [darkyellow]
@@ -270,7 +269,7 @@
 %D Like colors, we first define the english colorgroups. These
 %D colorgroups are tuned for distinctive gray scale printing.
 
-% todo : more efficient and real gray 
+% todo : more efficient and real gray
 
 \definecolorgroup
   [gray]
@@ -523,7 +522,7 @@
 \definecolor [texcolorthree] [middleblue]
 \definecolor [texcolorfour]  [darkyellow]
 
-%D Bonus (needed for FO test): 
+%D Bonus (needed for FO test):
 
 \definecolor [orange]        [r=1,g=.5]
 

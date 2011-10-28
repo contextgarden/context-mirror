@@ -1,0 +1,368 @@
+% macros=mkvi
+
+%D \module
+%D   [       file=tabl-xtb,
+%D        version=2011.10.26,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Xtreme,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Xtreme}
+
+\registerctxluafile{tabl-xtb}{1.001}
+
+%D This module started as an afternoon experiment and surprisingly could be
+%D mostly finished the same evening. Of course it builds upon existing
+%D functionality. The main reason for writing it is that we occasionally
+%D run into pretty large tables that take tens of pages and need to be split
+%D into floats. Speed is one issue there, avoiding to use vsplit is another.
+%D
+%D \starttyping
+%D \definextable [tag] | [tag][parent]
+%D \setupxtable [settings] | [tag][settings]
+%D
+%D \startxtable[tag|settings]
+%D     \startxtablehead|\startxtablenext|\startxtablebody|\startxtablefoot
+%D         \startxrowgroup[tag|settings]
+%D             \startxrow[settings]
+%D                 \startxcellgroup[tag|settings]
+%D                     \startxcell[settings] ... \stopxcell
+%D                 \stopxcellgroup
+%D             \stopxrow
+%D         \startxrowgroup
+%D     \stopxtablehead|\stopxtablenext|\stopxtablebody|\stopxtablefoot
+%D \stopxtable
+%D \stoptyping
+%D
+%D See xtables-001.tex etc for some examples.
+
+% We can avoid some checking by using the fastoptionalcheckcs helpers
+% instead of dosingleempty but the speed gain is neglectable.
+
+\unprotect
+
+\def\v!xtable{xtable}
+
+% todo:
+%
+% - template alignment
+% - maybe split horizontal (a la linetables)
+% - before/after and wrapping (linecorrection)
+% - maybe also some before/after commands
+% - maybe correction when non float usage
+% - tagging needs to be checked
+% - maybe only tag the box
+
+% option=stretch         : equal distribution
+% option={stretch,width} : proportional distribution
+
+% \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute {...}
+%
+% \let\tsplitbeforeresult\donothing
+% \let\tsplitafterresult \donothing
+% \let\tsplitinbetween   \donothing
+% \let\tsplitbefore      \donothing
+% \let\tsplitafter       \donothing
+% \let\postprocesstsplit \donothing
+
+\let\dotagxtablecell  \relax
+\let\dotagxtablesignal\relax
+
+\appendtoks
+    \def\dotagxtablecell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
+    \def\dotagxtablesignal{\char\zerocount}% not used
+\to \everyenableelements
+
+\newdimen\x_table_width
+\newdimen\x_table_height
+\newdimen\x_table_depth        % not used
+\newdimen\x_table_distance
+\newcount\x_table_nx
+\newcount\x_table_ny
+\newcount\x_table_mode
+\newbox  \x_table_box
+\newcount\x_table_state        % 0=empty 1=content 3=splitleft
+\newdimen\x_table_final_width
+\newcount\x_table_nesting
+
+\installframedcommandhandler \??lt {xtable} \??lt
+
+\appendtoks
+    \checkxtableparent % so we can deal with undefined settings, not that it's efficient
+\to \everysetupxtable
+
+\setupxtable[%
+    \c!nx=1,
+    \c!ny=1,
+    \c!align=\v!table, % {\v!flushleft,\v!broad,\v!high}, % just as \bTABLE .. \eTABLE
+    \c!frameoffset=.5\linewidth,
+    \c!backgroundoffset=\v!frame,
+  % \c!framecolor=\s!black,
+    \c!width=\v!fit,
+    \c!height=\v!fit,
+    \c!autowidth=\v!yes,              % controls framed
+    \c!rulethickness=\linewidth,
+    \c!strut=\v!yes,
+    \c!autostrut=\v!no,
+    \c!split=\v!auto,                 % a number will take that many lines
+    \c!splitoffset=\zeropoint,        % extra space taken
+  % \c!aligncharacter=\v!no,
+  % \c!alignmentcharacter={,},
+  % \c!option=,                       % \v!stretch {\v!stretch,\v!width}
+  % \c!footer=,
+  % \c!header=,
+    \c!spaceinbetween=,
+    \c!textwidth=\hsize,
+    \c!distance=\zeropoint,           % individual column
+    \c!columndistance=\zeropoint,     % each column (whole table)
+    \c!leftmargindistance=\zeropoint, % whole table
+    \c!rightmargindistance=\zeropoint,% whole table
+]
+
+\unexpanded\def\startxtable
+  {\dosingleempty\start_x_table}
+
+\let\stopxtable\relax
+
+\unexpanded\def\start_x_table[#settings]% maybe two arguments: [tag][settings] | [tag] | [settings]
+  {\bgroup
+   \advance\x_table_nesting\plusone
+   \dostarttagged\t!table\empty
+   \forgetall
+   \iffirstargument
+     \set_checked_x_table{#settings}%
+   \fi
+   \normalexpanded
+     {\dodowithbuffer
+        {x_table:\number\x_table_nesting}%
+        {\e!start\v!xtable}%
+        {\e!stop\v!xtable}
+        \relax
+       \x_table_process}} % name start stop before after
+
+\unexpanded\def\x_table_process
+  {\setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
+   \ctxcommand{x_table_create {
+        option              = "\xtableparameter\c!option",
+        textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
+        columndistance      = \number\dimexpr\xtableparameter\c!columndistance,
+        leftmargindistance  = \number\dimexpr\xtableparameter\c!leftmargindistance,
+        rightmargindistance = \number\dimexpr\xtableparameter\c!rightmargindistance,
+        rowdistance         = \number\ht\scratchbox,
+        header              = "\xtableparameter\c!header",
+        footer              = "\xtableparameter\c!footer",
+   } }%
+   \begingroup
+     \let\start_x_row \start_x_row_one
+     \let\stop_x_row  \stop_x_row_one
+     \let\start_x_cell\start_x_cell_one
+     \let\stop_x_cell \stop_x_cell_one
+     \settrialtypesetting
+     \doprocesstexbuffer{x_table:\number\x_table_nesting}\relax
+     \ctxcommand{x_table_reflow()}%
+     \relax
+   \endgroup
+   \begingroup
+     \let\start_x_row \start_x_row_two
+     \let\stop_x_row  \stop_x_row_two
+     \let\start_x_cell\start_x_cell_two
+     \let\stop_x_cell \stop_x_cell_two
+     \doprocesstexbuffer{x_table:\number\x_table_nesting}\relax
+     \ctxcommand{x_table_construct()}%
+     \relax
+   \endgroup
+   \ifinsidesplitfloat
+     \x_table_flush_float_split
+   \else\ifinsidefloat
+     \x_table_flush_float_normal
+   \else
+     \doifelse{\xtableparameter\c!split}\v!yes
+       {\x_table_flush_flow_split}
+       {\x_table_flush_flow_normal}%
+   \fi\fi
+   \ctxcommand{x_table_cleanup()}%
+   \dostoptagged
+   \resetbuffer[x_table:\number\x_table_nesting]%
+   \egroup}
+
+\let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it
+
+\def\x_table_flush_float_normal
+  {\ctxcommand{x_table_flush{ method = "\v!normal" }}}
+
+\def\x_table_flush_float_split
+  {\resetdirecttsplit
+   \edef\extrasplitfloatlines  {\xtableparameter\c!split}%
+   \edef\tsplitminimumfreespace{\the\dimexpr\extratxtablesplitheight+\xtableparameter\c!splitoffset\relax}%
+ % \edef\tsplitminimumfreelines{2}% not needed here as we're precise enough
+   \let\tsplitdirectsplitter\x_table_split_splitter
+   \let\tsplitdirectwidth   \x_table_final_width
+   \handledirecttsplit}
+
+\def\x_table_flush_flow_normal
+  {\ctxcommand{x_table_flush{ method = "\v!normal" }}}
+
+\def\x_table_flush_flow_split
+  {\ctxcommand{x_table_flush{ method = "\v!split" }}}
+
+\def\x_table_split_splitter#vsize%
+  {\setbox\tsplitresult\vbox
+     {\ctxcommand{x_table_flush{ method = "\v!split", vsize = \number\dimexpr#vsize }}}%
+   \ifcase\x_table_state
+     \global\setfalse\somenextsplitofffloat
+   \else
+     \global\settrue \somenextsplitofffloat
+   \fi}
+
+\unexpanded\def\startxrow
+  {\begingroup
+   \dosingleempty\start_x_row}
+
+\def\start_x_row_one[#settings]%
+  {\iffirstargument
+     \setupcurrentxtable[#settings]%
+   \fi
+   \ctxcommand{x_table_next_row()}}
+
+\def\start_x_row_two[#settings]%
+  {\iffirstargument
+     \setupcurrentxtable[#settings]%
+   \fi
+   \dostarttagged\t!tablerow\empty
+   \ctxcommand{x_table_next_row()}}
+
+\def\stop_x_row_one
+  {}
+
+\def\stop_x_row_two
+  {\dostoptagged}
+
+\unexpanded\def\stopxrow
+  {\stop_x_row
+   \endgroup}
+
+\unexpanded\def\startxcell
+  {\dosingleempty\start_x_cell}
+
+\def\start_x_cell_one[#settings]%
+  {\setbox\x_table_box\hbox\bgroup
+   \ifnum\x_table_nesting>\plusone
+     \letxtableparameter\c!width \v!fit  % overloads given width
+     \letxtableparameter\c!height\v!fit  % overloads given height
+   \fi
+   \iffirstargument
+     \setupcurrentxtable[#settings]%
+   \fi
+   \x_table_nx      \xtableparameter\c!nx
+   \x_table_ny      \xtableparameter\c!ny
+   \x_table_distance\xtableparameter\c!distance
+   \relax
+   \ctxcommand{x_table_init_one()}%
+   \inheritedxtableframed\bgroup
+   \inhibitblank
+   \everypar{\delayedbegstrut}} % could be a copy
+
+\def\start_x_cell_two[#settings]%
+  {\dostarttagged\t!tablecell\empty % can't we just tag the box
+   \setbox\x_table_box\hbox\bgroup
+   \iffirstargument
+     \setupcurrentxtable[#settings]%
+   \fi
+   \letxtableparameter\c!width \x_table_width  % overloads given width
+   \letxtableparameter\c!height\x_table_height % overloads given height
+ % \letxtableparameter\c!depth \x_table_depth  % overloads given depth
+   \ctxcommand{x_table_init_two()}%
+   \inheritedxtableframed\bgroup
+   \inhibitblank
+   \dotagxtablecell % needs checking
+   \everypar{\delayedbegstrut}} % could be a copy
+
+\unexpanded\def\stopxcell
+  {\ifhmode
+     \delayedendstrut
+     \par
+   \else
+     \par
+     \ifdim\prevdepth<\zeropoint % =-1000pt ?
+       \vskip-\strutdp
+     \else
+       \removebottomthings
+     \fi
+   \fi
+   \egroup
+   \egroup
+   \stop_x_cell}
+
+\unexpanded\def\stop_x_cell_one
+  {\ctxcommand{x_table_set_one()}}
+
+\unexpanded\def\stop_x_cell_two
+  {\ctxcommand{x_table_set_two()}%
+   \dostoptagged}
+
+\unexpanded\def\startxcellgroup
+  {\begingroup
+   \dosingleempty\start_x_cell_group}
+
+\unexpanded\def\stopxcellgroup
+  {\endgroup}
+
+\def\start_x_cell_group[#settings]%
+  {\iffirstargument
+     \set_checked_x_table{#settings}%
+   \fi}
+
+\unexpanded\def\startxrowgroup
+  {\begingroup
+   \dosingleempty\start_x_row_group}
+
+\unexpanded\def\stopxrowgroup
+  {\dostoptagged
+   \endgroup}
+
+\def\start_x_row_group[#settings]%
+  {\iffirstargument
+     \set_checked_x_table{#settings}%
+   \fi}
+
+% \def\set_checked_x_table#settings
+%   {\doifassignmentelse{#settings}
+%      {\setupcurrentxtable[#settings]}
+%      {\ifcsname\namedxtablehash{#settings}\s!parent\endcsname
+%         \edef\currentxtable{#settings}%
+%       \fi}}
+
+\def\set_checked_x_table#settings%
+  {\ifcsname\namedxtablehash{#settings}\s!parent\endcsname
+     \edef\currentxtable{#settings}%
+   \else
+     \setupcurrentxtable[#settings]%
+   \fi}
+
+\unexpanded\def\startxtablehead{\begingroup\x_table_mode\plusone  \dosingleempty\start_x_table_partition}
+\unexpanded\def\startxtablefoot{\begingroup\x_table_mode\plustwo  \dosingleempty\start_x_table_partition}
+\unexpanded\def\startxtablenext{\begingroup\x_table_mode\plusthree\dosingleempty\start_x_table_partition}
+\unexpanded\def\startxtablebody{\begingroup\x_table_mode\plusfour \dosingleempty\start_x_table_partition}
+
+\unexpanded\def\start_x_table_partition[#settings]%
+  {\iffirstargument
+     \set_checked_x_table{#settings}%
+   \fi}
+
+\unexpanded\def\stop_x_table_partition
+  {\endgroup}
+
+\let\stopxtablehead\stop_x_table_partition
+\let\stopxtablefoot\stop_x_table_partition
+\let\stopxtablenext\stop_x_table_partition
+\let\stopxtablebody\stop_x_table_partition
+
+\protect
+
+% \continueifinputfile{tabl-xtb.mkvi}

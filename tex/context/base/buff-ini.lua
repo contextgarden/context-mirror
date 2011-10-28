@@ -106,13 +106,21 @@ end
 local counters   = { }
 local nesting    = 0
 local autoundent = true
+local continue   = false
+
+-- Beware: the first character of bufferdata has to be discarded as it's there to
+-- prevent gobbling of newlines in the case of nested buffers. The last one is
+-- a newlinechar and is removed too.
+--
+-- An \n is unlikely to show up as \r is the endlinechar but \n is more generic
+-- for us.
 
 function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ to call
     local dn = getcontent(name)
     if dn == "" then
         nesting = 0
+        continue = false
     end
- -- nesting = nesting + count(bufferdata,"\\"..begintag) - count(bufferdata,"\\"..endtag)
     local counter = counters[begintag]
     if not counter then
         counter = countnesting(begintag,endtag)
@@ -121,14 +129,18 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
     nesting = nesting + lpegmatch(counter,bufferdata)
     local more = nesting > 0
     if more then
-        dn = dn .. bufferdata .. endtag
+        dn = dn .. sub(bufferdata,2,-1) .. endtag
         nesting = nesting - 1
+        continue = true
     else
-        -- bufferdata ends with a \
-        if dn == "" then
-            dn = sub(bufferdata,1,-2)
+        if continue then
+            dn = dn .. sub(bufferdata,2,-2) -- no \r, \n is more generic
         else
-            dn = dn .. "\n" .. sub(bufferdata,1,-2) -- no \r, \n is more generic
+            if dn == "" then
+                dn = sub(bufferdata,2,-2)
+            else
+                dn = dn .. "\n" .. sub(bufferdata,2,-2) -- no \r, \n is more generic
+            end
         end
         local last = sub(dn,-1)
         if last == "\n" or last == "\r" then -- \n is unlikely as \r is the endlinechar

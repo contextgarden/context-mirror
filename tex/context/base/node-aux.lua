@@ -339,3 +339,21 @@ local function locate(start,wantedid,wantedsubtype)
 end
 
 nodes.locate =  locate
+
+function nodes.concat(list) -- no slide !
+    local head, tail
+    for i=1,#list do
+        local li = list[i]
+        if not li then
+            -- skip
+        elseif head then
+            tail.next = li
+            li.prev = tail
+            tail = li
+        else
+            head = li
+            tail = li
+        end
+    end
+    return head, tail
+end

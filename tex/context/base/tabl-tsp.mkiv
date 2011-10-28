@@ -59,7 +59,7 @@
    \the\everysplitfloatsetup
    \def\splitfloatcommand{#2}%
    \global\settrue \onlyonesplitofffloat
-   \global\setfalse\somenextplitofffloat
+   \global\setfalse\somenextsplitofffloat
    \dopushsavedfloats
    \@@sibefore
    \let\next} % \bgroup
@@ -71,7 +71,7 @@
    \fi}
 
 \settrue \onlyonesplitofffloat
-\setfalse\somenextplitofffloat
+\setfalse\somenextsplitofffloat
 
 %D When \type {inbetween} is made empty instead of the
 %D default \type {\page}, we will get delayed flushing
@@ -109,24 +109,18 @@
       \global\settrue\splitfloatdone
       \nodelocationmode\zerocount % bypass auto-renumbering
       \global\advance\noffloatssplits\plusone
-      \ifcase\noffloatssplits\relax
-      \or
+      \ifcase\noffloatssplits\relax \or
         \ifconditional\onlyonesplitofffloat
           \let\floatcaptionsuffix\empty
         \fi
-      \else
-        \global\settrue\usesamefloatnumber % one shot
       \fi
       \bgroup
-      \ifconditional\somenextplitofffloat
-        \settrue\retainfloatnumber
-        \notesenabledfalse % best here, experimental, brrr; test with note in caption
-      \else
-        \setfalse\retainfloatnumber
-      \fi
-      \splitfloatcommand{\box\nextbox}%
+        \ifconditional\somenextsplitofffloat
+          \notesenabledfalse % best here, experimental, brrr; test with note in caption
+        \fi
+        \splitfloatcommand{\box\nextbox}%
       \egroup
-      \ifconditional\somenextplitofffloat
+      \ifconditional\somenextsplitofffloat
         \doifelsenothing\@@siinbetween
           {\ifconditional\splitfloatfirstdone\else\page\fi}
           \@@siinbetween
@@ -150,29 +144,29 @@
   {\ifinsidesplitfloat
    % \ifdim\ht#1=\zeropoint % funny: \ifcase does not check for overflow
      \ifcase\ht#1\relax
-       \global\setfalse\somenextplitofffloat
+       \global\setfalse\somenextsplitofffloat
      \else
-       \global\settrue \somenextplitofffloat
+       \global\settrue \somenextsplitofffloat
        \global\setfalse\onlyonesplitofffloat
      \fi
    \fi}
 
-\def\analyzesplitfloatcaption#1% depends on page-flt
-  {\doif\extrasplitfloatlines\v!auto
-     {\bgroup
-      \settrue\retainfloatnumber
-      \nodelocationmode\zerocount
+\def\analyzesplitfloatcaption#1% depends on page-flt .. pretty messy
+  {\edef\extrasplitfloatlines{\extrasplitfloatlines}%
+   \ifx\extrasplitfloatlines\v!auto
+      \bgroup
       \forcelocalfloats
       \setuplocalfloats[\c!before=,\c!after=,\c!inbetween=]%
-      \splitfloatcommand{\hbox to \wd#1{\strut}}% dummy line
+      \splitfloatcommand{\hbox to #1{\strut}}% dummy line
       \setbox\scratchbox\vbox{\flushlocalfloats}%
       \getnoflines{\ht\scratchbox}%
       \resetlocalfloats
       \advance\noflines\minusone % compensate dummy line
-      \expanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}}}
-
-% \def\analyzesplitfloatcaption#1%
-%   {\edef\extrasplitfloatlines{11}}
+      \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
+      \global\settrue\usesamefloatnumber
+   \else
+      \doifnumberelse\extrasplitfloatlines\donothing{\def\extrasplitfloatlines{1}}%
+   \fi}
 
 \def\dowithsplitofffloat % nextbox
   {\ifinsidesplitfloat
@@ -228,7 +222,7 @@
 \newconditional\splitfloatfirstdone
 
 \def\handletsplit
-  {\analyzesplitfloatcaption\tsplitcontent
+  {\analyzesplitfloatcaption{\wd\tsplitcontent}%
    \global\setfalse\splitfloatfirstdone
    \testpagesync % new, sync, but still tricky
      [\tsplitminimumfreelines]
@@ -311,6 +305,7 @@
            \tsplitinbetween
            \unvcopy\tsplittail}%
         \dowithsplitofffloat{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
+        \global\settrue\usesamefloatnumber % new, prevent next increment
         \doifnotinsidesplitfloat\tsplitafter
         \endgraf
         \exitloop
@@ -335,6 +330,63 @@
           \doifnotinsidesplitfloat\page
         \fi
       \fi}%
+   \global\setfalse\usesamefloatnumber % new, prevent next increment
+   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+
+%D The next one assumes that the split takes place elsewhere. This is
+%D used in xtables.
+
+\let\resetdirecttsplit\resettsplit
+
+\def\tsplitdirectwidth{\hsize}
+
+\def\handledirecttsplit
+  {\analyzesplitfloatcaption{\tsplitdirectwidth}%
+   \global\setfalse\splitfloatfirstdone
+   \testpagesync % new, sync, but still tricky
+     [\tsplitminimumfreelines]
+     [\dimexpr\tsplitminimumfreespace+\extrasplitfloatlines\lineheight\relax]%
+   \doloop
+     {\ifinsidecolumns
+        \global\setfalse\splitfloatfirstdone
+        \scratchdimen\textheight
+      \else\ifconditional\splitfloatfirstdone
+        \scratchdimen\textheight
+      \else\ifdim\pagegoal<\maxdimen
+        \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
+      \else
+        \scratchdimen\textheight
+      \fi\fi\fi
+      \scratchdimen\dimexpr\scratchdimen-\tsplitminimumfreespace-\extrasplitfloatlines\lineheight\relax
+      \tsplitdirectsplitter\scratchdimen % also sets state
+      \ifdim\ht\tsplitresult>\zeropoint
+        \ifconditional\somenextsplitofffloat
+          \global\setfalse\onlyonesplitofffloat
+        \fi
+        \ifdim\pagegoal<\maxdimen
+          \global\pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+        \fi
+        \dowithsplitofffloat{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
+        \global\settrue\usesamefloatnumber % new, prevent next increment
+        \endgraf
+        \ifconditional\somenextsplitofffloat
+            \ifinsidecolumns
+              \goodbreak
+            \else
+              \page
+            \fi
+        \fi
+        \global\settrue\splitfloatfirstdone
+      \else\ifconditional\somenextsplitofffloat
+        \ifinsidecolumns
+          \goodbreak
+        \else
+          \page % no room
+        \fi
+      \else
+         \exitloop
+      \fi\fi}%
+   \global\setfalse\usesamefloatnumber % new, prevent next increment
    \global\setfalse\splitfloatfirstdone} % we can use this one for tests
 
 \protect \endinput

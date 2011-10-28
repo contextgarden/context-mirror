@@ -71,7 +71,8 @@
      {\egroup
       #5}%
    \long\def\dododowithbuffer##1#3% is detokenize needed? TEST
-     {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
+    %{\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
+     {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs>##1\!!es)}% space ?
       \dododowithbuffer
       \nododowithbuffer}%
    \dododowithbuffer}
@@ -153,14 +154,17 @@
 
 % \let\processTEXbuffer\getbuffer % handy synonym
 
+\unexpanded\def\doprocesstexbuffer#1%
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes
+   \dododogetbuffer{#1}%
+   \popcatcodetable}
+
 \unexpanded\def\processTEXbuffer
   {\dosingleempty\doprocessTEXbuffer}
 
 \def\doprocessTEXbuffer[#1]%
-  {\pushcatcodetable
-   \catcodetable\ctxcatcodes
-   \getbuffer[#1]%
-   \popcatcodetable}
+  {\doprocesstexbuffer{#1}}
 
 \setupbuffer
   [\c!before=,
