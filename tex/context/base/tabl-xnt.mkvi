@@ -1,0 +1,127 @@
+% macros=mkvi
+
+%D \module
+%D   [       file=tabl-xtb,
+%D        version=2011.10.28,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Natural to Xtreme Tables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Natural to Xtreme Tables}
+
+\unprotect
+
+%D Don't expect wonders but it might come in handy:
+%D
+%D \starttyping
+%D \mapTABLEtoxtable
+%D \restoreTABLEfromxtable
+%D \stoptyping
+%D
+%D We stick to a simple example:
+%D
+%D \startbuffer
+%D \bTABLE
+%D   \bTR
+%D     \bTD[width=1cm,background=color,backgroundcolor=red] one \eTD
+%D     \bTD[width=2cm] two \eTD
+%D   \eTR
+%D   \bTR
+%D     \bTD alpha \eTD
+%D     \bTD beta  \eTD
+%D   \eTR
+%D \eTABLE
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startbuffer
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \mapTABLEtoxtable \getbuffer
+%D \stoplinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\let\normal_x_table_bTABLEhead\bTABLEhead
+\let\normal_x_table_eTABLEhead\eTABLEhead
+\let\normal_x_table_bTABLEnext\bTABLEnext
+\let\normal_x_table_eTABLEnext\eTABLEnext
+\let\normal_x_table_bTABLEfoot\bTABLEfoot
+\let\normal_x_table_eTABLEfoot\eTABLEfoot
+\let\normal_x_table_bTABLEbody\bTABLEbody
+\let\normal_x_table_eTABLEbody\eTABLEbody
+\let\normal_x_table_bTR       \bTR
+\let\normal_x_table_eTR       \eTR
+\let\normal_x_table_bTD       \bTD
+\let\normal_x_table_eTD       \eTD
+\let\normal_x_table_bTH       \bTH
+\let\normal_x_table_eTH       \eTH
+\let\normal_x_table_setupTABLE\setupTABLE
+\let\normal_x_table_bTABLE    \bTABLE
+\let\normal_x_table_eTABLE    \eTABLE
+
+\unexpanded\def\restoreTABLEfromxtable
+  {\let\bTABLEhead\normal_x_table_bTABLEhead
+   \let\eTABLEhead\normal_x_table_eTABLEhead
+   \let\bTABLEnext\normal_x_table_bTABLEnext
+   \let\eTABLEnext\normal_x_table_eTABLEnext
+   \let\bTABLEfoot\normal_x_table_bTABLEfoot
+   \let\eTABLEfoot\normal_x_table_eTABLEfoot
+   \let\bTABLEbody\normal_x_table_bTABLEbody
+   \let\eTABLEbody\normal_x_table_eTABLEbody
+   \let\bTR       \normal_x_table_bTR
+   \let\eTR       \normal_x_table_eTR
+   \let\bTD       \normal_x_table_bTD
+   \let\eTD       \normal_x_table_eTD
+   \let\bTH       \normal_x_table_bTH
+   \let\eTH       \normal_x_table_eTH
+   \let\setupTABLE\normal_x_table_setupTABLE
+   \let\bTABLE    \normal_x_table_bTABLE
+   \let\eTABLE    \normal_x_table_eTABLE}
+
+\unexpanded\def\mapTABLEtoxtable
+  {\let\bTABLEhead\startxtablehead
+   \let\eTABLEhead\stopxtablehead
+   \let\bTABLEnext\startxtablefoot
+   \let\eTABLEnext\stopxtablefoot
+   \let\bTABLEfoot\startxtablefoot
+   \let\eTABLEfoot\stopxtablefoot
+   \let\bTABLEbody\startxtablebody
+   \let\eTABLEbody\stopxtablebody
+   \let\bTR       \startxrow
+   \let\eTR       \stopxrow
+   \let\bTD       \startxcell
+   \let\eTD       \stopxcell
+   \let\bTH       \startxcell
+   \let\eTH       \stopxcell
+   \let\setupTABLE\setup_x_table_TABLE
+   \let\bTABLE    \start_x_table_TABLE
+   \let\eTABLE    \stop_x_table_TABLE}
+
+\unexpanded\def\setup_x_table_TABLE{\dosingleempty\do_setup_x_table_TABLE}
+\unexpanded\def\start_x_table_TABLE{\dosingleempty\do_start_x_table_TABLE}
+\unexpanded\def\stop_x_table_TABLE {\stopxtable}
+
+\def\do_setup_x_table_TABLE[#settings]%
+  {\iffirstargument
+     \setupxtable[#settings]%
+   \fi}
+
+\def\do_start_x_table_TABLE[#settings]%
+  {\bgroup
+   \x_table_prepare{#settings}%
+   \edef\x_table_current_buffer{\x_table_default_buffer}%
+   \dodowithbuffer\x_table_current_buffer{bTABLE}{eTABLE}\relax\x_table_process}
+
+\protect \endinput
