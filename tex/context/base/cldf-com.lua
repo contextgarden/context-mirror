@@ -6,12 +6,9 @@ if not modules then modules = { } end modules ['cldf-com'] = {
     license   = "see context related readme files"
 }
 
-local tostring, type = tostring, type
-local format = string.format
-local utfchar = utf.char
-
+local tostring  = tostring
 local context   = context
-local generics  = context.generics
+local generics  = context.generics -- needs documentation
 local variables = interfaces.variables
 
 generics.starttabulate = "start" .. variables.tabulate -- todo: e!start
@@ -38,117 +35,3 @@ function context.tabulaterow    (...) tabulaterow(false, ...) end
 function context.tabulaterowbold(...) tabulaterow("bold",...) end
 function context.tabulaterowtype(...) tabulaterow("type",...) end
 function context.tabulaterowtyp (...) tabulaterow("typ", ...) end
-
--- these will move up, just after cld definitions
-
-function context.char(k) -- used as escape too, so don't change to utf
-    if type(k) == "table" then
-        for i=1,#k do
-            context(format([[\char%s\relax]],k[i]))
-        end
-    elseif k then
-        context(format([[\char%s\relax]],k))
-    end
-end
-
-function context.utfchar(k)
-    context(utfchar(k))
-end
-
--- plain variants
-
-function context.chardef(cs,u)
-    context(format([[\chardef\%s=%s\relax]],k)) -- context does already do format
-end
-
-function context.par()
-    context([[\par]]) -- no need to add {} there
-end
-
-function context.bgroup()
-    context("{")
-end
-
-function context.egroup()
-    context("}")
-end
-
--- -- speedtest needed:
---
--- local flush, writer = context.getlogger()
---
--- trackers.register("context.trace",function(v)
---     flush, writer = context.getlogger()
--- end)
---
--- function context.bgroup()
---     flush(ctxcatcodes,"{")
--- end
---
--- function context.egroup()
---     flush(ctxcatcodes,"}")
--- end
-
-local rule = nodes.pool.rule
-
-function context.hrule(w,h,d,dir)
-    if type(w) == "table" then
-        context(rule(w.width,w.height,w.depth,w.dir))
-    else
-        context(rule(w,h,d,dir))
-    end
-end
-
-context.vrule = context.hrule
-
---~ local hbox, bgroup, egroup = context.hbox, context.bgroup, context.egroup
-
---~ function context.hbox(a,...)
---~     if type(a) == "table" then
---~         local s = { }
---~         if a.width then
---~             s[#s+1] = "to " .. a.width -- todo: check for number
---~         elseif a.spread then
---~             s[#s+1] = "spread " .. a.spread -- todo: check for number
---~         end
---~         -- todo: dir, attr etc
---~         hbox(false,table.concat(s," "))
---~         bgroup()
---~         context(string.format(...))
---~         egroup()
---~     else
---~         hbox(a,...)
---~     end
---~ end
-
--- not yet used ... but will get variant at the tex end as well
-
-function context.sethboxregister  (n) context("\\setbox %s\\hbox",n) end
-function context.setvboxregister  (n) context("\\setbox %s\\vbox",n) end
-
-function context.starthboxregister(n)
-    if type(n) == "number" then
-        context("\\setbox%s\\hbox\\bgroup",n)
-    else
-        context("\\setbox\\%s\\hbox\\bgroup",n)
-    end
-end
-
-function context.startvboxregister(n)
-    if type(n) == "number" then
-        context("\\setbox%s\\vbox\\bgroup",n)
-    else
-        context("\\setbox\\%s\\vbox\\bgroup",n)
-    end
-end
-
-context.stophboxregister = context.egroup
-context.stopvboxregister = context.egroup
-
-function context.flushboxregister(n)
-    if type(n) == "number" then
-        context("\\box%s ",n)
-    else
-        context("\\box\\%s",n)
-    end
-end

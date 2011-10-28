@@ -258,6 +258,16 @@
 %D test in a run. Of course it also is more convenient to read a
 %D trace then.
 
+% We could make variants without the \if_next_blank_space_token but
+% the overhead is only .1 sec on 3.5 for 10^6 tests and often that
+% branch is not entered anyway. The fast variants with less checking
+% do make a difference however:
+
+% \testfeature{1000000}{\doifnextoptionalelse       \gobbleoneargument\gobbleoneargument[} % 2.902s
+% \testfeature{1000000}{\doifnextoptionalcselse     \gobbleoneargument\gobbleoneargument[} % 2.590s
+% \testfeature{1000000}{\doiffastoptionalcheckelse  \gobbleoneargument\gobbleoneargument[} % 2.387s
+% \testfeature{1000000}{\doiffastoptionalcheckcselse\gobbleoneargument\gobbleoneargument[} % 2.168s
+
 \newif\if_next_blank_space_token
 
 \let\next_optional_character_token=[
@@ -265,6 +275,12 @@
 \unexpanded\def\doifnextoptionalelse#1#2%
   {\def\next_optional_command_yes{#1}%
    \def\next_optional_command_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\inspect_next_optional_character}
+
+\unexpanded\def\doifnextoptionalcselse#1#2% \cs \cs (upto 10% faster)
+  {\let\next_optional_command_yes#1%
+   \let\next_optional_command_nop#2%
    \let\if_next_blank_space_token\iffalse
    \futurelet\nexttoken\inspect_next_optional_character}
 
@@ -331,7 +347,11 @@
 \unexpanded\def\doiffastoptionalcheckelse#1#2%
   {\def\next_optional_command_yes{#1}%
    \def\next_optional_command_nop{#2}%
-   \let\if_next_blank_space_token\iffalse % not needed
+   \futurelet\nexttoken\do_if_fast_optional_check_else}
+
+\unexpanded\def\doiffastoptionalcheckcselse#1#2% \cs \cs
+  {\let\next_optional_command_yes#1%
+   \let\next_optional_command_nop#2%
    \futurelet\nexttoken\do_if_fast_optional_check_else}
 
 \def\do_if_fast_optional_check_else
@@ -952,9 +972,13 @@
 %D The hack we used for checking the next character
 %D \type {\doifnextcharelse} is also used here.
 
-\def\:{\re_do_process_comma_item}
+\let\next\:
+
+\def\:{\re_do_process_comma_item} % \:not saved ?
 
 \expandafter\def\: {\futurelet\nexttoken\do_do_process_comma_item}
+
+\let\:\next
 
 %D The previous examples lead to:
 %D

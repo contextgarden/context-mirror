@@ -11960,6 +11960,7 @@ function resolvers.newinstance() -- todo: all vars will become lowercase and alp
         remember        = true,
         diskcache       = true,
         renewcache      = false,
+        renewtree       = false,
         loaderror       = false,
         savelists       = true,
         pattern         = nil, -- lists
@@ -12266,6 +12267,39 @@ local function save_file_databases() -- will become cachers
             caches.savecontent(cachename,"files",content)
         elseif trace_locating then
             report_resolving("not saving runtime tree '%s'",cachename)
+        end
+    end
+end
+
+function resolvers.renew(hashname)
+    if hashname and hashname ~= "" then
+        local expanded = resolvers.expansion(hashname) or ""
+        if expanded ~= "" then
+            if trace_locating then
+                report_resolving("identifying tree '%s' from '%s'",expanded,hashname)
+            end
+            hashname = expanded
+        else
+            if trace_locating then
+                report_resolving("identifying tree '%s'",hashname)
+            end
+        end
+        local realpath = resolvers.resolve(hashname)
+        if lfs.isdir(realpath) then
+            if trace_locating then
+                report_resolving("using path '%s'",realpath)
+            end
+            methodhandler('generators',hashname)
+            -- could be shared
+            local content = instance.files[hashname]
+            caches.collapsecontent(content)
+            if trace_locating then
+                report_resolving("saving tree '%s'",hashname)
+            end
+            caches.savecontent(hashname,"files",content)
+            -- till here
+        else
+            report_resolving("invalid path '%s'",realpath)
         end
     end
 end
@@ -16169,9 +16203,15 @@ elseif e_argument("generate") then
 
     -- luatools
 
-    instance.renewcache = true
-    trackers.enable("resolvers.locating")
-    resolvers.load()
+    if filename and filename ~= "" then
+        resolvers.load("nofiles")
+        trackers.enable("resolvers.locating")
+        resolvers.renew(filename)
+    else
+        instance.renewcache = true
+        trackers.enable("resolvers.locating")
+        resolvers.load()
+    end
 
     e_verbose = true
 

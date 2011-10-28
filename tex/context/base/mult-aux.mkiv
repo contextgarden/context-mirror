@@ -96,13 +96,14 @@
         \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
         \expandafter\noexpand\csname root#2parameter\endcsname}}
 
-\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5#6#7%
+\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5#6#7#8%
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{#4{#1#2}{##1}:}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#6{#1#2:}%
-   \def#7##1{#1##1:}}%
+   \def#7##1{#1##1:}%
+   \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}}
 
 \unexpanded\def\installparameterhashhandler#1#2%
   {\normalexpanded
@@ -113,13 +114,24 @@
         \expandafter\noexpand\csname do#2parameterhash\endcsname
         \expandafter\noexpand\csname do#2parentparameterhash\endcsname
         \expandafter\noexpand\csname current#2hash\endcsname
-        \expandafter\noexpand\csname named#2hash\endcsname}}
+        \expandafter\noexpand\csname named#2hash\endcsname
+        \expandafter\noexpand\csname check#2parent\endcsname}}
 
-\unexpanded\def\doinstallparametersethandler#1#2#3#4#5%
+\unexpanded\def\doinstallparametersethandler#1#2#3#4#5% we can speed thsi up for english
   {\ifx#2\relax\let#2\empty\fi
    \unexpanded\def#3{\dosetvalue{#1#2:}}%        ##1 {##2} (braces are mandate)
    \unexpanded\def#4{\doletvalue{#1#2:}}%        ##1 ##2
    \unexpanded\def#5{\doletvalue{#1#2:}\empty}}% ##1
+
+\startinterface english
+
+    \unexpanded\def\doinstallparametersethandler#1#2#3#4#5%
+      {\ifx#2\relax\let#2\empty\fi
+       \unexpanded\def#3##1{\expandafter\def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \unexpanded\def#4##1{\expandafter\let\csname#1#2:##1\endcsname}%        ##1 ##2
+       \unexpanded\def#5##1{\expandafter\let\csname#1#2:##1\endcsname\empty}}% ##1
+
+\stopinterface
 
 \unexpanded\def\installparametersethandler#1#2%
   {\normalexpanded
