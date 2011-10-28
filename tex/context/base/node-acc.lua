@@ -61,16 +61,19 @@ local function injectspaces(head)
 --~ end
         elseif id == hlist_code or id == vlist_code then
             injectspaces(n.list,attribute)
-        elseif id == kern_code then
-            local first = n
-            while true do -- maybe we should delete kerns but who cares at this stage
-                local nn = n.next
-                if nn.id == kern_code
-                    first.kern = first.kern + nn.kern
-                    nn.kern = 0
-                    n = nn
-                end
-            end
+     -- elseif id == kern_code then -- the backend already collapses
+     --     local first = n
+     --     while true do
+     --         local nn = n.next
+     --         if nn and nn.id == kern_code then
+     --          -- maybe we should delete kerns but who cares at this stage
+     --             first.kern = first.kern + nn.kern
+     --             nn.kern = 0
+     --             n = nn
+     --         else
+     --             break
+     --         end
+     --     end
         end
         p = n
         n = n.next

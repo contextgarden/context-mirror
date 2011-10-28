@@ -98,19 +98,15 @@
 
 \stopMPinclusions
 
-\doifnotmode {demo} {\endinput}
-
-\doiffileelse {agepop91.d} {} {\writestatus{graph}{no data files found}\wait\end}
-
-%D The test:
+\continueifinputfile{m-graph.mkiv}
 
 \starttext
 
-% \startMPpage
-% draw begingraph(3in,2in);
-%     gdraw "t:/metapost/grphdata/agepop91.d";
-% endgraph;
-% \stopMPpage
+\startMPpage
+draw begingraph(3in,2in);
+    gdraw "t:/metapost/grphdata/agepop91.d";
+endgraph;
+\stopMPpage
 
 % \startMPpage
 % draw begingraph(3in,2in);

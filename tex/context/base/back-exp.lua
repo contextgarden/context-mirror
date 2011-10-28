@@ -2260,7 +2260,7 @@ local function startexport(v)
     if v and not exporting then
         report_export("enabling export to xml")
 -- not yet known in task-ini
-        appendaction("shipouts",     "normalizers", "nodes.handlers.export")
+        appendaction("shipouts","normalizers", "nodes.handlers.export")
 --      enableaction("shipouts","nodes.handlers.export")
         enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math",    "noads.handlers.tags")
