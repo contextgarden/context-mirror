@@ -86,8 +86,7 @@ references.tobereferred  = tobereferred
 references.referred      = referred
 
 local splitreference     = references.splitreference
-local splitprefix        = references.splitprefix
-local splitprefix        = references.splitcomponent
+local splitprefix        = references.splitcomponent -- replaces: references.splitprefix
 local prefixsplitter     = references.prefixsplitter
 local componentsplitter  = references.componentsplitter
 
@@ -1683,7 +1682,7 @@ end
 
 filters.section = { }
 
-local function filternumber(data,what,prefixspec)
+function filters.section.number(data,what,prefixspec)
     if data then
         local numberdata = data.numberdata
         if numberdata then
@@ -1697,7 +1696,6 @@ local function filternumber(data,what,prefixspec)
     end
 end
 
-filters.section.number  = filternumber
 filters.section.title   = filters.generic.title
 filters.section.page    = filters.generic.page
 filters.section.default = filters.section.number
@@ -1708,8 +1706,8 @@ filters.section.default = filters.section.number
 -- filters.description = { default = filters.generic.number }
 -- filters.item        = { default = filters.generic.number }
 
-setmetatableindex(filters, function(t,k)
-    local v = { default = filternumber } -- not copy as it might be extended differently
+setmetatableindex(filters, function(t,k) -- beware, test with rawget
+    local v = { default = filters.generic.number } -- not copy as it might be extended differently
     t[k] = v
     return v
 end)
