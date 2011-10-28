@@ -58,7 +58,7 @@
 % - maybe correction when non float usage
 % - tagging needs to be checked
 % - maybe only tag the box
-
+%
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
 
@@ -130,21 +130,36 @@
 
 \let\stopxtable\relax
 
+\def\x_table_default_buffer{x_table_\number\x_table_nesting}
+
 \unexpanded\def\start_x_table[#settings]% maybe two arguments: [tag][settings] | [tag] | [settings]
   {\bgroup
-   \advance\x_table_nesting\plusone
+   \x_table_prepare{#settings}%
+   \edef\x_table_current_buffer{\x_table_default_buffer}%
+   \dodowithbuffer{\x_table_current_buffer}{startxtable}{stopxtable}\relax\x_table_process}
+
+\unexpanded\def\processxtablebuffer
+  {\dosingleempty\process_x_table_buffer}
+
+\let\normal_start_x_table\start_x_table
+
+\def\process_x_table_buffer[#name]%
+  {\bgroup
+   \let\start_x_table\start_process_x_table_buffer
+   \edef\x_table_current_buffer{#name}%
+   \x_table_process}
+
+\def\start_process_x_table_buffer[#settings]%
+  {\x_table_prepare{#settings}%
+   \let\start_x_table\normal_start_x_table}
+
+\def\x_table_prepare#settings% assumes \iffirstargument to be set
+  {\advance\x_table_nesting\plusone
    \dostarttagged\t!table\empty
    \forgetall
    \iffirstargument
      \set_checked_x_table{#settings}%
-   \fi
-   \normalexpanded
-     {\dodowithbuffer
-        {x_table:\number\x_table_nesting}%
-        {\e!start\v!xtable}%
-        {\e!stop\v!xtable}
-        \relax
-       \x_table_process}} % name start stop before after
+   \fi}
 
 \unexpanded\def\x_table_process
   {\setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
@@ -164,7 +179,7 @@
      \let\start_x_cell\start_x_cell_one
      \let\stop_x_cell \stop_x_cell_one
      \settrialtypesetting
-     \doprocesstexbuffer{x_table:\number\x_table_nesting}\relax
+     \doprocesstexbuffer\x_table_current_buffer\relax
      \ctxcommand{x_table_reflow()}%
      \relax
    \endgroup
@@ -173,7 +188,7 @@
      \let\stop_x_row  \stop_x_row_two
      \let\start_x_cell\start_x_cell_two
      \let\stop_x_cell \stop_x_cell_two
-     \doprocesstexbuffer{x_table:\number\x_table_nesting}\relax
+     \doprocesstexbuffer\x_table_current_buffer\relax
      \ctxcommand{x_table_construct()}%
      \relax
    \endgroup
@@ -188,7 +203,7 @@
    \fi\fi
    \ctxcommand{x_table_cleanup()}%
    \dostoptagged
-   \resetbuffer[x_table:\number\x_table_nesting]%
+   \resetbuffer[\x_table_current_buffer]%
    \egroup}
 
 \let\extratxtablesplitheight\zeropoint % might disappear so don't depend on it

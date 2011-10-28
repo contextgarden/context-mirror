@@ -6461,6 +6461,9 @@ return {
   },
  },
  ["constants"]={
+  ["buffer"]={
+   ["en"]="buffer",
+  },
   ["labeloffset"]={
    ["en"]="labeloffset",
   },
