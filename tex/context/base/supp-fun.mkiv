@@ -13,6 +13,9 @@
 
 \unprotect
 
+%D Beware, these macros wil be replaced and at some point this
+%D module will not be preloaded any more.
+
 %D This module implements some typographics tricks that can
 %D be fun when designing document layouts. The examples use
 %D macros that are typical to \CONTEXT, but non \CONTEXT\
@@ -20,13 +23,7 @@
 %D macros without problems. This module will be extended
 %D when the need for more of such tricks arises.
 
-\ifx \undefined \writestatus \input supp-mis.tex \relax \fi
-
 \writestatus{loading}{ConTeXt Support Macros / Fun Stuff}
-
-\ifx\definefont\undefined
-  \def\definedfont[#1]{\font\temp#1\relax\temp}
-\fi
 
 %D \macros
 %D   {DroppedCaps, DroppedString, DroppedIndent, DroppedLines}
@@ -537,30 +534,9 @@
 \def\NormalizeFontHeight{\NormalizeFontSize\ht}
 \def\NormalizeFontWidth {\NormalizeFontSize\wd}
 
-% \def\NormalizeFontSize#1#2#3#4#5%
-%   {\bgroup
-%    \dimen0=#4% #4 can be \ht0 or so
-%    \setbox0\hbox{\definedfont[#5 at 10pt]#3}%
-%    \ifdim\wd0>\zeropoint
-%      \dimen2=#10 % #1 is \wd or \ht
-%      \dimen4=10000pt
-%      \divide\dimen4 \dimen2
-%      \divide\dimen0 \plusthousand
-%      \dimen0=\number\dimen4\dimen0
-%      \xdef\TheNormalizedFontSize{\the\dimen0}%
-%    \else
-%      \dimen0\bodyfontsize
-%    \fi
-%    \definedfont[#5 at \the\dimen0]%
-%    \expandafter
-%    \egroup
-%    \expandafter\font\expandafter#2\fontname\font\relax}
-%
-% the familiar struggle with accuracy forces us to use:
-
 \def\NormalizeFontSize#1#2#3#4#5%
   {\bgroup
-    \dimen0=#4% #4 can be \ht0 or so
+   \dimen0=#4% #4 can be \ht0 or so
    \setbox0\hbox{\definedfont[#5 at 5pt]#3}% 10pt
    \ifdim\wd0>\zeropoint
      \dimen2=#10 % #1 is \wd or \ht
@@ -573,12 +549,6 @@
    \else
      \dimen0\bodyfontsize
    \fi
-   % mkii
-   %    \definedfont[#5 at \the\dimen0]%
-   %    \expandafter
-   %    \egroup
-   %   \expandafter\font\expandafter#2\fontname\font\relax}
-   % mkiv safe (file: prefix etc)
    \expanded{\egroup\def\noexpand#2{\definedfont[#5 at \the\dimen0]}}}
 
 %D Afterwards, we have access to the calculated size by:

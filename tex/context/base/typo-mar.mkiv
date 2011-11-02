@@ -116,6 +116,7 @@
    \c!width=,
  % \c!stack=,
    \c!line=0,
+   \c!bottomspace=\strutdepth, % slack used for keeptogether
    \c!dy=\zeropoint,
    \c!distance=\zeropoint,
    \c!hoffset=\zeropoint,
@@ -226,35 +227,36 @@
    \ifdone
      \initializenextposition % we use positions at the lua end
      \ctxlua{typesetters.margins.save{
-       \c!location = "\margindataparameter\c!location",
-       \c!method   = "\margindataparameter\c!method",
-       \c!category = "\margindataparameter\c!category",
-       \c!name     = "\margindataparameter\c!name",
-       \c!margin   = "\margindataparameter\c!margin", % local normal margin edge
-       \c!distance = \number\dimexpr\margindataparameter\c!distance,
-       \c!hoffset  = \number\dimexpr\margindataparameter\c!hoffset,
-       \c!voffset  = \number\dimexpr\margindataparameter\c!voffset,
-       \c!dy       = \number\dimexpr\margindataparameter\c!dy,
+       \c!location    = "\margindataparameter\c!location",
+       \c!method      = "\margindataparameter\c!method",
+       \c!category    = "\margindataparameter\c!category",
+       \c!name        = "\margindataparameter\c!name",
+       \c!margin      = "\margindataparameter\c!margin", % local normal margin edge
+       \c!distance    = \number\dimexpr\margindataparameter\c!distance,
+       \c!hoffset     = \number\dimexpr\margindataparameter\c!hoffset,
+       \c!voffset     = \number\dimexpr\margindataparameter\c!voffset,
+       \c!dy          = \number\dimexpr\margindataparameter\c!dy,
+       \c!bottomspace = \number\dimexpr\margindataparameter\c!bottomspace,
      \ifx\currentmarginfirstheight\empty \else
-       baseline    = \currentmarginfirstheight,
+       baseline       = \currentmarginfirstheight,
      \fi
-       threshold   = \number\dimexpr\margindataparameter\c!threshold, % will change
+       threshold      = \number\dimexpr\margindataparameter\c!threshold, % overlap related, will change
      \ifhmode
-       inline      = true,
+       inline         = true,
      \fi
-       \c!scope    = "\margindataparameter\c!scope",
-       \c!align    = "\margindataparameter\c!align",
-       \c!line     = "\margindataparameter\c!line",
-       \c!stack    = "\margindataparameter\c!stack",
-       \c!number   = \number\nextbox,
+       \c!scope       = "\margindataparameter\c!scope",
+       \c!align       = "\margindataparameter\c!align",
+       \c!line        = "\margindataparameter\c!line",
+       \c!stack       = "\margindataparameter\c!stack",
+       \c!number      = \number\nextbox,
      }}%
    \else
      \ctxlua{typesetters.margins.save{
-       \c!location = "\margindataparameter\c!location",
-       \c!method   = "\margindataparameter\c!method",
-       \c!category = "\margindataparameter\c!category",
-       \c!name     = "\margindataparameter\c!name",
-       \c!scope    = "\margindataparameter\c!scope",
+       \c!location    = "\margindataparameter\c!location",
+       \c!method      = "\margindataparameter\c!method",
+       \c!category    = "\margindataparameter\c!category",
+       \c!name        = "\margindataparameter\c!name",
+       \c!scope       = "\margindataparameter\c!scope",
      }}%
    \fi
    \endgroup}

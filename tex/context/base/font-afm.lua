@@ -968,7 +968,8 @@ local function read_from_afm(specification)
     if tfmdata then
         tfmdata.properties.name = specification.name
         tfmdata = constructors.scale(tfmdata, specification)
-        constructors.applymanipulators("afm",tfmdata,specification.features.normal,trace_features,report_afm)
+        local allfeatures = tfmdata.shared.features or specification.features.normal
+        constructors.applymanipulators("afm",tfmdata,allfeatures,trace_features,report_afm)
         fonts.loggers.register(tfmdata,'afm',specification)
     end
     return tfmdata

@@ -237,11 +237,14 @@
 
 %D Relatively new (might move as it depends on setups):
 
+\newtoks\everysetupdocument
+
 \unexpanded\def\startdocument % todo: dostarttagged\t!document
   {\dosingleargument\start_document}
 
 \unexpanded\def\start_document[#settings]%
   {\setvariables[document][#settings]%
+   \the\everysetupdocument\relax
    \starttext
    \documentvariable\c!before}
 
@@ -252,8 +255,9 @@
 \def\documentvariable#name%
   {\getvariable{document}{#name}}
 
-\unexpanded\def\setupdocument
-  {\dodoubleempty\setvariables[document]}
+\unexpanded\def\setupdocument[#1]%
+  {\setvariables[document][#1]%
+   \the\everysetupdocument\relax}
 
 \setvariables
   [document]

@@ -1,0 +1,105 @@
+%D \module
+%D   [       file=typo-par,
+%D        version=2011.10.27,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Paragraphs,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Paragraphs}
+
+%D This will change ... par specific attribute set and such.
+
+\unprotect
+
+\registerctxluafile{typo-par}{1.001}
+
+\definesystemattribute[paragraphspecial][public]
+
+\unexpanded\def\setparagraphspecial[#1]%
+  {\ctxlua{typesetters.paragraphs.set("#1")}}
+
+\appendtoks
+    \attribute\paragraphspecialattribute\attributeunsetvalue
+\to \everyforgetall
+
+%D For the moment here: dropped caps redone. In addition to the
+%D parameters shown in the example you can use the \type {style} and
+%D more low level \type {font} keys to set up the font where
+%D the first one wins. If you don't like the behaviour you can always
+%D roll out your own command.
+%D
+%D \starttyping
+%D \placeinitial \input ward \par \input ward \par \placeinitial \input tufte
+%D
+%D \setupinitial
+%D   [location=text,
+%D    n=2,
+%D    color=darkred,
+%D    distance=-1em,
+%D    hoffset=1em,
+%D    voffset=-3ex,
+%D    before=\blank]
+%D
+%D \placeinitial \input ward \par \input ward \placeinitial \input tufte
+%D \stoptyping
+
+\installsimplecommandhandler \??dc {initial}
+
+\appendtoks
+    \checkinitialparent % this might become automatic
+\to \everysetupinitial
+
+\def\initial_auto_scale % magic
+  {\the\dimexpr\lineheight*\initialparameter\c!n-\initialparameter\c!voffset\relax}
+
+\setupinitial
+  [\c!location=\v!text,
+   \c!n=3,
+ % \s!font=Bold sa 4,
+   \s!font=Bold at \initial_auto_scale,
+   \c!distance=.125em,
+   \c!hoffset=\zeropoint,
+   \c!voffset=-1ex,
+   \c!style=,
+   \c!color=,
+   \c!before=\blank]
+
+\unexpanded\def\placeinitial
+  {\dosingleempty\place_initial}
+
+\def\place_initial[#1]% todo: optional text
+  {\par
+   \begingroup
+   \edef\currentinitial{#1}%
+   \begingroup
+   \dosetinitialcolorattribute\c!color
+   \ctxlua{typesetters.paragraphs.droppers.set {
+     location = "\initialparameter\c!location",
+     enabled  = true,
+     n        = \number\initialparameter\c!n,
+     distance = \number\dimexpr\initialparameter\c!distance,
+     hoffset  = \number\dimexpr\initialparameter\c!hoffset,
+     voffset  = \number\dimexpr\initialparameter\c!voffset,
+     ma       = \the\attribute\colormodelattribute  ,
+     ca       = \the\attribute\colorattribute       ,
+     ta       = \the\attribute\transparencyattribute
+   }}%
+   \stopluacode
+   \endgroup
+   \begingroup
+   \doifelsenothing{\initialparameter\c!style}
+     {\definedfont[\initialparameter\s!font]}
+     {\initialparameter\c!style}%
+   \ctxlua{typesetters.paragraphs.droppers.freeze()}%
+   \endgroup
+   \endgroup
+   \setparagraphspecial[1]%
+   \namedinitialparameter{#1}\c!before}
+
+\protect \endinput

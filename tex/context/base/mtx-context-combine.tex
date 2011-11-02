@@ -44,15 +44,15 @@
 
 }
 
+\setuppapersize
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
+
 \setuplayout
   [header=0pt,
    footer=0pt,
    width=middle,
    height=middle]
-
-\setuppapersize
-  [\getdocumentargument{paperformat_paper}]
-  [\getdocumentargument{paperformat_print}]
 
 \doifnotdocumentargument {bannerheight} {
     \setuplayout

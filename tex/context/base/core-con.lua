@@ -804,8 +804,9 @@ end
 -- a prelude to a function that we can use at the lua end
 
 -- day:ord month:mmem
+-- j and jj obsolete
 
-function commands.currentdate(str,currentlanguage) -- j and jj obsolete
+function commands.currentdate(str,currentlanguage) -- second argument false : no label
     local list = utilities.parsers.settings_to_array(str)
     local year, month, day = tex.year, tex.month, tex.day
     local auto = true
@@ -831,7 +832,9 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
         elseif tag == "Y" then
             context(year)
         elseif tag == v_month or tag == "m" then
-            if mnemonic then
+            if currentlanguage == false then
+                context(months[month] or "unknown")
+            elseif mnemonic then
                 commands.monthmnem(month)
             else
                 commands.monthname(month)
@@ -841,7 +844,11 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
         elseif tag == "M" then
             context(month)
         elseif tag == v_day or tag == "d" then
-            context.convertnumber(v_day,day)
+            if currentlanguage == false then
+                context(days[day] or "unknown")
+            else
+                context.convertnumber(v_day,day)
+            end
             whatordinal = day
         elseif tag == "dd" then
             context("%02i",day)
@@ -850,7 +857,12 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
             context(day)
             whatordinal = day
         elseif tag == v_weekday or tag == "w" then
-            commands.dayname(weekday(day,month,year))
+            local wd = weekday(day,month,year)
+            if currentlanguage == false then
+                context(days[wd] or "unknown")
+            else
+                commands.dayname(wd)
+            end
         elseif tag == "W" then
             context(weekday(day,month,year))
         elseif tag == v_referral then
@@ -863,7 +875,15 @@ function commands.currentdate(str,currentlanguage) -- j and jj obsolete
             auto = true
         end
         if ordinal and whatordinal then
-            context("%s",converters.ordinal(whatordinal,currentlanguage))
+            if currentlanguage == false then
+                -- ignore
+            else
+                context("%s",converters.ordinal(whatordinal,currentlanguage))
+            end
         end
     end
+end
+
+function commands.rawdate(str)
+    commands.currentdate(str,false)
 end

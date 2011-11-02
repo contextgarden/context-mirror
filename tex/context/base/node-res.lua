@@ -85,6 +85,7 @@ local glyph             = register_node(new_node("glyph",0))
 local textdir           = register_node(new_node("whatsit",whatsitcodes.dir))
 local rule              = register_node(new_node("rule"))
 local latelua           = register_node(new_node("whatsit",whatsitcodes.latelua))
+local special           = register_node(new_node("whatsit",whatsitcodes.special))
 local user_n            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_n.type = 100 -- 44
 local user_l            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_l.type = 110 -- 44
 local user_s            = register_node(new_node("whatsit",whatsitcodes.userdefined)) user_s.type = 115 -- 44
@@ -368,6 +369,12 @@ function pool.usertokens(id,tokens)
     else
         n.value = id
     end
+    return n
+end
+
+function pool.special(str)
+    local n = copy_node(special)
+    n.data = str
     return n
 end
 

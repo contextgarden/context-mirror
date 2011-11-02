@@ -2,8 +2,8 @@
 %D   [      file=s-mod-01,
 %D        version=very-old,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Documentation Paper Environment,
-%D         author=Hans Hagen,
+%D       subtitle=Module Documentation,
+%D         author={Hans Hagen \& Luigi Scarso},
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -11,12 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module looks like crap, is not documented, will
-%D change, and used to be called modu-*.tex.
-
-% now split in mkii/mkiv so we will cleanup
-
 \unprotect
+
+%D Usage:
+%D
+%D \starttyping
+%D context --ctx=s-mod somefile.mkiv
+%D \stoptyping
+%D
+%D In due time there will be a \type {mtx-context-module} as well.
+%D
+%D Luigi Scarso coordinates the processing of modules so best contact
+%D him when you run into problems. Bugs in this style can be sent to
+%D Hans.
 
 \setvariables
    [document]
@@ -130,37 +137,46 @@
 
 \stopsetups
 
-\unexpanded\def\startmoduledocumentation
-  {\starttext
-   \page
-   \begingroup
-   \startdocument}
+% In order to be able to typeset this one too, we need to avoid
+% direct backslashed names.
 
-\unexpanded\def\stopmoduledocumentation
-  {\stopdocument
-   \page
-   \endgroup
-   \stoptext}
+\starttexdefinition startmoduledocumentation
+    \starttext
+    \page
+    \begingroup
+    \startdocument
+\stoptexdefinition
 
-\unexpanded\def\startdocumentation % grouped !
-  {\par
-   \bgroup}
+\starttexdefinition stopmoduledocumentation
+    \stopdocument
+    \page
+    \endgroup
+    \stoptext
+\stoptexdefinition
 
-\unexpanded\def\stopdocumentation
-  {\par
-   \egroup}
+\starttexdefinition startdocumentation
+    \par
+    \bgroup
+\stoptexdefinition
+
+\starttexdefinition stopdocumentation
+    \par
+    \egroup
+\stoptexdefinition
 
 \definetyping
   [definition]
 
-\unexpanded\def\startcompressdefinitions
-  {\blank
-   \begingroup
-   \setuptyping[definition][bodyfont=small]}
+\starttexdefinition startcompressdefinitions
+    \blank
+    \begingroup
+    \setuptyping[definition][bodyfont=small]
+\stoptexdefinition
 
-\unexpanded\def\stopcompressdefinitions
-  {\blank
-   \endgroup}
+\starttexdefinition stopcompressdefinitions
+    \blank
+    \endgroup
+\stoptexdefinition
 
 \definetyping [PL]  [\c!option=PL]
 \definetyping [JV]  [\c!option=JV]
@@ -216,8 +232,14 @@
 \defineparagraphs [interface] [\c!n=2]
 \setupparagraphs  [interface] [1] [\c!width=4cm]
 
-\def\startexample{\par\startnarrower}
-\def\stopexample {\stopnarrower}
+\starttexdefinition startexample
+    \par
+    \startnarrower
+\stoptexdefinition
+
+\starttexdefinition stopexample
+    \stopnarrower
+\stoptexdefinition
 
 %D Command references:
 
@@ -327,7 +349,6 @@
   [\c!balance=\v!yes,
    \c!indicator=\v!no]
 
-
 \setupinteraction
   [\c!state=\v!start,
    \c!color=,
@@ -336,13 +357,6 @@
 
 % modes
 
-\doifmode {nocode} { % \startmode ... \stopmode fails in the module documentation
-
-  \unexpanded\def\startdefinition{\gobbleuntil\stopdefinition}
-  \unexpanded\def\stopdefinition {}
-
-}
-
 \doifmode {nocolor} {
 
   \setupcolors
@@ -350,7 +364,7 @@
 
 }
 
-\doifmode {single} {
+\doifmode {singlesided} {
 
   \setuppagenumbering
     [\c!alternative=\v!singlesided]
@@ -364,20 +378,10 @@
 % bonus
 
 \usemodule
-  [abr-01]
+  [abr-02]
 
 % another one
 
 \dontcomplain
 
-\protect
-
-\continueifinputfile{s-mod-01.mkiv}
-
-\startmodule
-
-    \macros{alpha,beta}
-
-    \input ward
-
-\stopmodule
+\protect \endinput

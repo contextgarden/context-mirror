@@ -107,6 +107,7 @@ commands.resetnullfont = definers.resetnullfont
 setmetatableindex(fontdata, function(t,k) return nulldata end)
 
 local chardata      = allocate() -- chardata
+local descriptions  = allocate()
 local parameters    = allocate()
 local properties    = allocate()
 local quaddata      = allocate()
@@ -116,6 +117,7 @@ local csnames       = allocate() -- namedata
 local italicsdata   = allocate()
 
 hashes.characters   = chardata
+hashes.descriptions = descriptions
 hashes.parameters   = parameters
 hashes.properties   = properties
 hashes.quads        = quaddata
@@ -128,6 +130,12 @@ setmetatableindex(chardata,  function(t,k)
     local characters = fontdata[k].characters
     t[k] = characters
     return characters
+end)
+
+setmetatableindex(descriptions,  function(t,k)
+    local descriptions = fontdata[k].descriptions
+    t[k] = descriptions
+    return descriptions
 end)
 
 setmetatableindex(parameters, function(t,k)

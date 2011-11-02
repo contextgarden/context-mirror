@@ -130,6 +130,8 @@ local whatsitcodes     = nodes.whatsitcodes
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
 local glue_code        = nodecodes.glue
+local kern_code        = nodecodes.kern
+local penalty_code     = nodecodes.penalty
 local whatsit_code     = nodecodes.whatsit
 local line_code        = listcodes.line
 local leftskip_code    = gluecodes.leftskip
@@ -142,6 +144,7 @@ local localpar_code    = whatsitcodes.localpar
 local nodepool         = nodes.pool
 
 local new_kern         = nodepool.kern
+local new_penalty      = nodepool.penalty
 local new_stretch      = nodepool.stretch
 local new_usernumber   = nodepool.usernumber
 local new_latelua      = nodepool.latelua
@@ -151,6 +154,7 @@ local texdimen         = tex.dimen
 local texbox           = tex.box
 
 local isleftpage       = layouts.status.isleftpage
+local registertogether = builders.paragraphs.registertogether
 
 local a_margindata     = attributes.private("margindata")
 
@@ -530,7 +534,13 @@ local function inject(parent,head,candidate)
     -- we need to add line etc to offset as well
     offset = offset + depth
     stacked[location] = offset
-    return head
+    -- todo: if no real depth then zero
+    local room = {
+        height = box.height,
+        depth  = offset,
+        slack  = candidate.bottomspace, -- todo: 'depth' => strutdepth
+    }
+    return head, room
 end
 
 local function flushinline(parent,head,done)
@@ -561,6 +571,7 @@ end
 local function flushed(scope,parent) -- current is hlist
     local done = false
     local head = parent.list
+    local room
     for c=1,#categories do
         local category = categories[c]
         for l=1,#locations do
@@ -569,9 +580,10 @@ local function flushed(scope,parent) -- current is hlist
             while true do
                 local candidate = remove(store,1) -- brr, local stores are sparse
                 if candidate then -- no vpack, as we want to realign
-                    head = inject(parent,head,candidate) -- maybe return applied offset
+                    head, room = inject(parent,head,candidate) -- maybe return applied offset
                     done = true
                     nofstored = nofstored - 1
+                    registertogether(parent,room)
                 else
                     break
                 end
@@ -596,9 +608,9 @@ end
 
 local function handler(scope,head,group)
    if nofstored > 0 then
-     -- if trace_margindata then
-     --     report_margindata("flushing stage one, stored: %s, scope: %s, delayed: %s, group: %s",nofstored,scope,nofdelayed,group)
-     -- end
+        if trace_margindata then
+            report_margindata("flushing stage one, stored: %s, scope: %s, delayed: %s, group: %s",nofstored,scope,nofdelayed,group)
+        end
         local current = head
         local done = false
         while current do
@@ -641,6 +653,8 @@ function margins.globalhandler(head,group) -- check group
         return handler("global",head,group)
     elseif group == "vmode_par" then              -- experiment (for alignments)
         return handler("global",head,group)
+    -- this needs checking as we then get quite some one liners to process and
+    -- we cannot look ahead then:
     elseif group == "box" then                    -- experiment (for alignments)
         return handler("global",head,group)
     else

@@ -336,7 +336,7 @@
 % [\the\normaltime=\the\time]
 
 %D \macros
-%D   {currentdate, date}
+%D   {currentdate, rawdate, date}
 %D
 %D We use these conversion macros in the date formatting
 %D macro:
@@ -455,6 +455,9 @@
    \fi
    \docurrentdate[#2]%
    \endgroup}
+
+\def\rawdate[#1]% expandable and no labels
+  {\ctxcommand{rawdate(\!!bs\currentdatespecification\!!es)}}
 
 %D \macros
 %D   {currenttime}
