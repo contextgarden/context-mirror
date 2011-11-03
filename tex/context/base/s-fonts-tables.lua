@@ -26,7 +26,7 @@ local digits = {
 
 local punctuation = {
     dflt = {
-        dflt = ". , : ; ? !",
+        dflt = ". , : ; ? ! ‹ › « »",
     },
 }
 
@@ -36,9 +36,12 @@ local symbols = {
     },
 }
 
+local LATN = "abcdefghijklmnopqrstuvwxyz"
+
 local uppercase = {
     latn = {
-        dflt = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        dflt = LATN,
+        fra  = LATN .. " ÀÁÂÈÉÊÒÓÔÙÚÛÆÇ",
     },
     grek = {
         dftl = "ΑΒΓΔΕΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
@@ -48,9 +51,14 @@ local uppercase = {
     },
 }
 
+local latn = "abcdefghijklmnopqrstuvwxyz"
+
 local lowercase = {
     latn = {
-        dftl = "abcdefghijklmnopqrstuvwxyz",
+        dftl = latn,
+        nld  = latn .. " ïèéë",
+        deu  = latn .. " äöüß",
+        fra  = latn .. " àáâèéêòóôùúûæç",
     },
     grek = {
         dftl = "αβγδεηθικλμνξοπρστυφχψω",
@@ -88,13 +96,14 @@ setmetatableindex(digits.dflt,      function(t,k) return rawget(t,"dflt") end)
 setmetatableindex(symbols.dflt,     function(t,k) return rawget(t,"dflt") end)
 setmetatableindex(punctuation.dflt, function(t,k) return rawget(t,"dflt") end)
 
-local function typeset(t,keys,nesting,prefix)
+local function typesettable(t,keys,synonyms,nesting,prefix)
     if t then
         if not prefix then
-            context.starttabulate { "|Tl|Tl|" }
+            context.starttabulate { "|Tl|Tl|Tl|" }
         end
         for k, v in sortedhash(keys) do
-            if type(v) ~= "table" then
+            if k == "synonyms" then
+            elseif type(v) ~= "table" then
                 context.NC()
                 if prefix then
                     context("%s.%s",prefix,k)
@@ -103,12 +112,12 @@ local function typeset(t,keys,nesting,prefix)
                 end
                 context.NC()
                 local tk = t[k]
-                if not tk then
+                if v == "boolean" then
+                    context(tostring(tk or false))
+                elseif not tk then
                     context("<unset>")
                 elseif v == "filename" then
                     context(file.basename(tk))
-                elseif v == "boolean" then
-                    context(tostring(tk or false))
                 elseif v == "basepoints" then
                     context("%sbp",tk)
                 elseif v == "scaledpoints" then
@@ -119,17 +128,39 @@ local function typeset(t,keys,nesting,prefix)
                     context(tostring(tk))
                 end
                 context.NC()
+                local synonym = (not prefix and synonyms[k]) or (prefix and synonyms[format("%s.%s",prefix,k)])
+                if synonym then
+                    context(format("(%s)",concat(synonym," ")))
+                end
+                context.NC()
                 context.NR()
             elseif nesting == false then
                 context("<table>")
             else -- true or nil
-                typeset(t[k],v,nesting,k)
+                typesettable(t[k],v,synonyms,nesting,k)
             end
         end
         if not prefix then
             context.stoptabulate()
         end
     end
+end
+
+local function typeset(t,keys,nesting,prefix)
+    local synonyms = keys.synonyms or { }
+    local collected = { }
+    for k, v in next, synonyms do
+        local c = collected[v]
+        if not c then
+            c = { }
+            collected[v] = c
+        end
+        c[#c+1] = k
+    end
+    for k, v in next, collected do
+        table.sort(v)
+    end
+    typesettable(t,keys,collected,nesting,prefix)
 end
 
 tabletracers.typeset = typeset
@@ -233,7 +264,7 @@ function tabletracers.substitutionfeatures()
                             context.verbatim(samples.lowercase  [script][language]) context.par()
                             context.verbatim(samples.uppercase  [script][language]) context.par()
                             context.verbatim(samples.digits     [script][language]) context.par()
-                            context.verbatim(samples.punctuation[script][language])
+                            context.verbatim(samples.punctuation[script][language]) context.quad()
                             context.verbatim(samples.symbols    [script][language])
                             if not dynamics then
                                 context.stopfont()

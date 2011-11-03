@@ -47,7 +47,7 @@
 
 \unprotect
 
-\def\v!xtable{xtable}
+% \def\v!xtable{xtable}
 
 % todo:
 %
@@ -58,9 +58,11 @@
 % - maybe correction when non float usage
 % - tagging needs to be checked
 % - maybe only tag the box
+% - scale to fit
 %
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
+% option={max}           : prefer max over forced width/height
 
 % \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute {...}
 %
@@ -90,6 +92,7 @@
 \newcount\x_table_state        % 0=empty 1=content 3=splitleft
 \newdimen\x_table_final_width
 \newcount\x_table_nesting
+\newcount\x_table_skip_mode    % 1 = skip
 
 \installframedcommandhandler \??lt {xtable} \??lt
 
@@ -106,6 +109,7 @@
   % \c!framecolor=\s!black,
     \c!width=\v!fit,
     \c!height=\v!fit,
+    \c!maxwidth=8em,
     \c!autowidth=\v!yes,              % controls framed
     \c!rulethickness=\linewidth,
     \c!strut=\v!yes,
@@ -166,6 +170,7 @@
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
         textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
+        maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
         columndistance      = \number\dimexpr\xtableparameter\c!columndistance,
         leftmargindistance  = \number\dimexpr\xtableparameter\c!leftmargindistance,
         rightmargindistance = \number\dimexpr\xtableparameter\c!rightmargindistance,
@@ -174,21 +179,37 @@
         footer              = "\xtableparameter\c!footer",
    } }%
    \begingroup
-     \let\start_x_row \start_x_row_one
-     \let\stop_x_row  \stop_x_row_one
-     \let\start_x_cell\start_x_cell_one
-     \let\stop_x_cell \stop_x_cell_one
+     \let\start_x_row \start_x_row_reflow_width
+     \let\stop_x_row  \stop_x_row_reflow_width
+     \let\start_x_cell\start_x_cell_reflow_width
+     \let\stop_x_cell \stop_x_cell_reflow_width
      \settrialtypesetting
-     \doprocesstexbuffer\x_table_current_buffer\relax
-     \ctxcommand{x_table_reflow()}%
+%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
+     \ctxcommand{getbuffer("\x_table_current_buffer")}%
+     \relax
+     \ctxcommand{x_table_reflow_width()}%
      \relax
    \endgroup
    \begingroup
-     \let\start_x_row \start_x_row_two
-     \let\stop_x_row  \stop_x_row_two
-     \let\start_x_cell\start_x_cell_two
-     \let\stop_x_cell \stop_x_cell_two
-     \doprocesstexbuffer\x_table_current_buffer\relax
+     \let\start_x_row \start_x_row_reflow_height
+     \let\stop_x_row  \stop_x_row_reflow_height
+     \let\start_x_cell\start_x_cell_reflow_height
+     \let\stop_x_cell \stop_x_cell_reflow_height
+     \settrialtypesetting
+%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
+     \ctxcommand{getbuffer("\x_table_current_buffer")}%
+     \relax
+     \ctxcommand{x_table_reflow_height()}%
+     \relax
+   \endgroup
+   \begingroup
+     \let\start_x_row \start_x_row_construct
+     \let\stop_x_row  \stop_x_row_construct
+     \let\start_x_cell\start_x_cell_construct
+     \let\stop_x_cell \stop_x_cell_construct
+%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
+     \ctxcommand{getbuffer("\x_table_current_buffer")}%
+     \relax
      \ctxcommand{x_table_construct()}%
      \relax
    \endgroup
@@ -239,23 +260,26 @@
   {\begingroup
    \dosingleempty\start_x_row}
 
-\def\start_x_row_one[#settings]%
+\def\start_x_row_reflow_width[#settings]%
   {\iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
    \ctxcommand{x_table_next_row()}}
 
-\def\start_x_row_two[#settings]%
+\def\stop_x_row_reflow_width
+  {}
+
+\let\start_x_row_reflow_height\start_x_row_reflow_width
+\let\stop_x_row_reflow_height \stop_x_row_reflow_width
+
+\def\start_x_row_construct[#settings]%
   {\iffirstargument
      \setupcurrentxtable[#settings]%
    \fi
    \dostarttagged\t!tablerow\empty
    \ctxcommand{x_table_next_row()}}
 
-\def\stop_x_row_one
-  {}
-
-\def\stop_x_row_two
+\def\stop_x_row_construct
   {\dostoptagged}
 
 \unexpanded\def\stopxrow
@@ -265,7 +289,27 @@
 \unexpanded\def\startxcell
   {\dosingleempty\start_x_cell}
 
-\def\start_x_cell_one[#settings]%
+\unexpanded\def\stopxcell
+  {\stop_x_cell}
+
+\def\begin_of_cell
+  {\inhibitblank
+   \everypar{\delayedbegstrut}}
+
+\def\end_of_cell
+  {\ifhmode
+     \delayedendstrut
+     \par
+   \else
+     \par
+     \ifdim\prevdepth<\zeropoint % =-1000pt ?
+       \vskip-\strutdp
+     \else
+       \removebottomthings
+     \fi
+   \fi}
+
+\unexpanded\def\start_x_cell_reflow_width[#settings]%
   {\setbox\x_table_box\hbox\bgroup
    \ifnum\x_table_nesting>\plusone
      \letxtableparameter\c!width \v!fit  % overloads given width
@@ -278,12 +322,41 @@
    \x_table_ny      \xtableparameter\c!ny
    \x_table_distance\xtableparameter\c!distance
    \relax
-   \ctxcommand{x_table_init_one()}%
+   \ctxcommand{x_table_init_reflow_width()}%
    \inheritedxtableframed\bgroup
-   \inhibitblank
-   \everypar{\delayedbegstrut}} % could be a copy
+   \begin_of_cell}
 
-\def\start_x_cell_two[#settings]%
+\unexpanded\def\stop_x_cell_reflow_width
+  {\end_of_cell
+   \egroup
+   \egroup
+   \ctxcommand{x_table_set_reflow_width()}}
+
+\unexpanded\def\start_x_cell_reflow_height[#settings]%
+  {\setbox\x_table_box\hbox\bgroup
+   \ctxcommand{x_table_init_reflow_height()}%
+   \ifcase\x_table_skip_mode % can be sped up
+     \ifnum\x_table_nesting>\plusone
+       \letxtableparameter\c!height\v!fit  % overloads given height
+     \fi
+     \iffirstargument
+       \setupcurrentxtable[#settings]%
+     \fi
+     \relax
+     \letxtableparameter\c!width\x_table_width  % overloads given width
+     \inheritedxtableframed\bgroup
+     \begin_of_cell
+   \fi}
+
+\unexpanded\def\stop_x_cell_reflow_height
+  {\ifcase\x_table_skip_mode
+     \end_of_cell
+     \egroup
+   \fi
+   \egroup
+   \ctxcommand{x_table_set_reflow_height()}}
+
+\unexpanded\def\start_x_cell_construct[#settings]%
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\x_table_box\hbox\bgroup
    \iffirstargument
@@ -291,34 +364,16 @@
    \fi
    \letxtableparameter\c!width \x_table_width  % overloads given width
    \letxtableparameter\c!height\x_table_height % overloads given height
- % \letxtableparameter\c!depth \x_table_depth  % overloads given depth
-   \ctxcommand{x_table_init_two()}%
+   \ctxcommand{x_table_init_construct()}%
    \inheritedxtableframed\bgroup
-   \inhibitblank
-   \dotagxtablecell % needs checking
-   \everypar{\delayedbegstrut}} % could be a copy
+   \begin_of_cell
+   \dotagxtablecell}
 
-\unexpanded\def\stopxcell
-  {\ifhmode
-     \delayedendstrut
-     \par
-   \else
-     \par
-     \ifdim\prevdepth<\zeropoint % =-1000pt ?
-       \vskip-\strutdp
-     \else
-       \removebottomthings
-     \fi
-   \fi
+\unexpanded\def\stop_x_cell_construct
+  {\end_of_cell
    \egroup
    \egroup
-   \stop_x_cell}
-
-\unexpanded\def\stop_x_cell_one
-  {\ctxcommand{x_table_set_one()}}
-
-\unexpanded\def\stop_x_cell_two
-  {\ctxcommand{x_table_set_two()}%
+   \ctxcommand{x_table_set_construct()}%
    \dostoptagged}
 
 \unexpanded\def\startxcellgroup
@@ -328,7 +383,7 @@
 \unexpanded\def\stopxcellgroup
   {\endgroup}
 
-\def\start_x_cell_group[#settings]%
+\unexpanded\def\start_x_cell_group[#settings]%
   {\iffirstargument
      \set_checked_x_table{#settings}%
    \fi}
@@ -341,7 +396,7 @@
   {\dostoptagged
    \endgroup}
 
-\def\start_x_row_group[#settings]%
+\unexpanded\def\start_x_row_group[#settings]%
   {\iffirstargument
      \set_checked_x_table{#settings}%
    \fi}
@@ -353,7 +408,7 @@
 %         \edef\currentxtable{#settings}%
 %       \fi}}
 
-\def\set_checked_x_table#settings%
+\unexpanded\def\set_checked_x_table#settings%
   {\ifcsname\namedxtablehash{#settings}\s!parent\endcsname
      \edef\currentxtable{#settings}%
    \else

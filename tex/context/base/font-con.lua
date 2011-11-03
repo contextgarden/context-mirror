@@ -54,6 +54,16 @@ constructors.cache           = containers.define("fonts", "constructors", constr
 constructors.privateoffset   = 0xF0000 -- 0x10FFFF
 
 -- Some experimental helpers (handy for tracing):
+--
+-- todo: extra:
+--
+-- extra_space       => space.extra
+-- space             => space.width
+-- space_stretch     => space.stretch
+-- space_shrink      => space.shrink
+
+-- We do keep the x-height, extra_space, space_shrink and space_stretch
+-- around as these are low level official names.
 
 constructors.keys = {
     properties = {
@@ -68,12 +78,12 @@ constructors.keys = {
         psname                 = "string",
         name                   = "string",
         virtualized            = "boolean",
-        italic_correction      = "boolean",
-        auto_italic_correction = "boolean",
-        no_stackmath           = "boolean",
+        hasitalics             = "boolean",
+        autoitalicamount       = "basepoints",
+        nostackmath            = "boolean",
         noglyphnames           = "boolean",
         mode                   = "string",
-        has_math               = "boolean",
+        hasmath                = "boolean",
         mathitalics            = "boolean",
         textitalics            = "boolean",
         finalized              = "boolean",
@@ -83,7 +93,7 @@ constructors.keys = {
         scriptpercentage       = "float",
         scriptscriptpercentage = "float",
         units                  = "cardinal",
-        designsize             = "scalespoints",
+        designsize             = "scaledpoints",
         expansion              = {
                                     stretch = "integerscale", -- might become float
                                     shrink  = "integerscale", -- might become float
@@ -93,23 +103,38 @@ constructors.keys = {
         protrusion             = {
                                     auto    = "boolean",
                                  },
-        expand_factor          = "float",
-        slant_factor           = "float",
+        slantfactor            = "float",
+        extendfactor           = "float",
         factor                 = "float",
         hfactor                = "float",
         vfactor                = "float",
         size                   = "scaledpoints",
         units                  = "scaledpoints",
         scaledpoints           = "scaledpoints",
-        slant                  = "float",
-        space                  = "scaledpoints",
-        space_stretch          = "scaledpoints",
-        space_shrink           = "scaledpoints",
-        x_height               = "scaledpoints",
+        slantperpoint          = "scaledpoints",
+        spacing                = {
+                                    width   = "scaledpoints",
+                                    stretch = "scaledpoints",
+                                    shrink  = "scaledpoints",
+                                    extra   = "scaledpoints",
+                                 },
+        xheight                = "scaledpoints",
         quad                   = "scaledpoints",
-        extra_space            = "scaledpoints",
         ascender               = "scaledpoints",
         descender              = "scaledpoints",
+        synonyms               = {
+                                    space         = "spacing.width",
+                                    spacestretch  = "spacing.stretch",
+                                    spaceshrink   = "spacing.shrink",
+                                    extraspace    = "spacing.extra",
+                                    x_height      = "xheight",
+                                    space_stretch = "spacing.stretch",
+                                    space_shrink  = "spacing.shrink",
+                                    extra_space   = "spacing.extra",
+                                    em            = "quad",
+                                    ex            = "xheight",
+                                    slant         = "slantperpoint",
+                                  },
     },
     description = {
         width                  = "basepoints",
@@ -123,7 +148,6 @@ constructors.keys = {
         depth                  = "scaledpoints",
         italic                 = "scaledpoints",
     },
-
 }
 
 -- This might become an interface:
@@ -175,7 +199,7 @@ excessive memory usage in CJK fonts, we no longer pass the boundingbox.)</p>
 
 -- The scaler is only used for otf and afm and virtual fonts. If
 -- a virtual font has italic correction make sure to set the
--- italic_correction flag. Some more flags will be added in
+-- hasitalics flag. Some more flags will be added in
 -- the future.
 
 --[[ldx--
@@ -252,6 +276,29 @@ function constructors.assignmathparameters(target,original) -- simple variant, n
         end
         target.mathparameters = targetmathparameters
     end
+end
+
+function constructors.enhanceparameters(parameters)
+    local xheight = parameters.x_height
+    local quad    = parameters.quad
+    local space   = parameters.space
+    local stretch = parameters.space_stretch
+    local shrink  = parameters.space_shrink
+    local extra   = parameters.extra_space
+    local slant   = parameters.slant
+    parameters.xheight       = xheight
+    parameters.spacestretch  = stretch
+    parameters.spaceshrink   = shrink
+    parameters.extraspace    = extra
+    parameters.em            = quad
+    parameters.ex            = xheight
+    parameters.slantperpoint = slant
+    parameters.spacing = {
+        width   = space,
+        stretch = stretch,
+        shrink  = shrink,
+        extra   = extra,
+    }
 end
 
 function constructors.scale(tfmdata,specification)
@@ -383,17 +430,17 @@ function constructors.scale(tfmdata,specification)
         target.auto_protrude = protrusion.auto
     end
     -- widening
-    local extend_factor = parameters.extend_factor or 0
-    if extend_factor ~= 0 and extend_factor ~= 1 then
-        hdelta = hdelta * extend_factor
-        target.extend = extend_factor * 1000 -- extent ?
+    local extendfactor = parameters.extendfactor or 0
+    if extendfactor ~= 0 and extendfactor ~= 1 then
+        hdelta = hdelta * extendfactor
+        target.extend = extendfactor * 1000 -- extent ?
     else
         target.extend = 1000 -- extent ?
     end
     -- slanting
-    local slant_factor = parameters.slant_factor or 0
-    if slant_factor ~= 0 then
-        target.slant = slant_factor * 1000
+    local slantfactor = parameters.slantfactor or 0
+    if slantfactor ~= 0 then
+        target.slant = slantfactor * 1000
     else
         target.slant = 0
     end
@@ -405,20 +452,20 @@ function constructors.scale(tfmdata,specification)
     targetparameters.units        = units
     targetparameters.scaledpoints = askedscaledpoints
     --
-    local isvirtual     = properties.virtualized or tfmdata.type == "virtual"
-    local hasquality    = target.auto_expand or target.auto_protrude
-    local hasitalic     = properties.italic_correction
-    local autoitalic    = properties.auto_italic_correction
-    local stackmath     = not properties.no_stackmath
-    local nonames       = properties.noglyphnames
-    local nodemode      = properties.mode == "node"
+    local isvirtual        = properties.virtualized or tfmdata.type == "virtual"
+    local hasquality       = target.auto_expand or target.auto_protrude
+    local hasitalics       = properties.hasitalics
+    local autoitalicamount = properties.autoitalicamount
+    local stackmath        = not properties.nostackmath
+    local nonames          = properties.noglyphnames
+    local nodemode         = properties.mode == "node"
     --
     if changed and not next(changed) then
         changed = false
     end
     --
     target.type = isvirtual and "virtual" or "real"
-    -- this will move to some subtable so that it is copied at once
+    --
     target.postprocessors = tfmdata.postprocessors
     --
     local targetslant         = (parameters.slant         or parameters[1] or 0)
@@ -429,7 +476,7 @@ function constructors.scale(tfmdata,specification)
     local targetquad          = (parameters.quad          or parameters[6] or 0)*hdelta
     local targetextra_space   = (parameters.extra_space   or parameters[7] or 0)*hdelta
     --
-    targetparameters.slant         = targetslant
+    targetparameters.slant         = targetslant -- slantperpoint
     targetparameters.space         = targetspace
     targetparameters.space_stretch = targetspace_stretch
     targetparameters.space_shrink  = targetspace_shrink
@@ -445,11 +492,8 @@ function constructors.scale(tfmdata,specification)
     if descender then
         targetparameters.descender = delta * descender
     end
-    -- copies, might disappear
-    targetparameters.xheight      = targetparameters.xheight      or targetparameters.x_height      or parameters.x_height
-    targetparameters.extraspace   = targetparameters.extraspace   or targetparameters.extra_space   or parameters.extra_space
-    targetparameters.spacestretch = targetparameters.spacestretch or targetparameters.space_stretch or parameters.space_stretch
-    targetparameters.spaceshrink  = targetparameters.spaceshrink  or targetparameters.space_shrink  or parameters.space_shrink
+    --
+    constructors.enhanceparameters(targetparameters) -- official copies for us
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
     local scaledwidth      = defaultwidth  * hdelta
@@ -461,14 +505,14 @@ function constructors.scale(tfmdata,specification)
             hdelta,vdelta,name or "noname",fullname or "nofullname",filename or "nofilename")
     end
     --
-    local hasmath = (properties.has_math or next(mathparameters)) and true
+    local hasmath = (properties.hasmath or next(mathparameters)) and true
     if hasmath then
         if trace_defining then
             report_defining("math enabled for: name '%s', fullname: '%s', filename: '%s'",
                 name or "noname",fullname or "nofullname",filename or "nofilename")
         end
         constructors.assignmathparameters(target,tfmdata) -- does scaling and whatever is needed
-        properties.has_math   = true
+        properties.hasmath    = true
         target.nomath         = false
         target.MathConstants  = target.mathparameters
     else
@@ -476,7 +520,7 @@ function constructors.scale(tfmdata,specification)
             report_defining("math disabled for: name '%s', fullname: '%s', filename: '%s'",
                 name or "noname",fullname or "nofullname",filename or "nofilename")
         end
-        properties.has_math   = false
+        properties.hasmath    = false
         target.nomath         = true
         target.mathparameters = nil -- nop
     end
@@ -493,7 +537,7 @@ function constructors.scale(tfmdata,specification)
                     name or "noname",fullname or "nofullname",filename or "nofilename")
             end
         end
-        autoitalic = false -- new
+        autoitalicamount = false -- new
     else
         if properties.textitalics then
             italickey = "italic_correction"
@@ -502,7 +546,7 @@ function constructors.scale(tfmdata,specification)
                     name or "noname",fullname or "nofullname",filename or "nofilename")
             end
             if properties.delaytextitalics then
-                autoitalic = false
+                autoitalicamount = false
             end
         end
     end
@@ -607,17 +651,17 @@ function constructors.scale(tfmdata,specification)
             end
         end
         --
-        if autoitalic then
+        if autoitalicamount then
             local vi = description.italic
             if not vi then
-                local vi = description.boundingbox[3] - description.width + autoitalic
+                local vi = description.boundingbox[3] - description.width + autoitalicamount
                 if vi > 0 then -- < 0 indicates no overshoot or a very small auto italic
                     chr[italickey] = vi*hdelta
                 end
             elseif vi ~= 0 then
                 chr[italickey] = vi*hdelta
             end
-        elseif hasitalic then
+        elseif hasitalics then
             local vi = description.italic
             if vi and vi ~= 0 then
                 chr[italickey] = vi*hdelta
@@ -791,12 +835,12 @@ function constructors.finalize(tfmdata)
         parameters.size = tfmdata.size
     end
     --
-    if not parameters.extend_factor then
-        parameters.extend_factor = tfmdata.extend or 0
+    if not parameters.extendfactor then
+        parameters.extendfactor = tfmdata.extend or 0
     end
     --
-    if not parameters.slant_factor then
-        parameters.slant_factor = tfmdata.slant or 0
+    if not parameters.slantfactor then
+        parameters.slantfactor = tfmdata.slant or 0
     end
     --
     if not parameters.designsize then
@@ -849,8 +893,8 @@ function constructors.finalize(tfmdata)
     -- tfmdata.fonts
     -- tfmdata.unscaled
     --
-    if not properties.has_math then
-        properties.has_math  = not tfmdata.nomath
+    if not properties.hasmath then
+        properties.hasmath  = not tfmdata.nomath
     end
     --
     tfmdata.MathConstants  = nil

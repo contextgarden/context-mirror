@@ -517,7 +517,7 @@ local mt = {
 }
 
 actions["prepare tables"] = function(data,filename,raw)
-    data.properties.italic_correction = false
+    data.properties.hasitalics = false
 end
 
 actions["add dimensions"] = function(data,filename)
@@ -602,7 +602,7 @@ local function somecopy(old) -- fast one
     end
 end
 
--- not setting italic_correction and class (when nil) during
+-- not setting hasitalics and class (when nil) during
 -- table cronstruction can save some mem
 
 actions["prepare glyphs"] = function(data,filename,raw)
@@ -846,7 +846,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
     local resources         = data.resources
     local metadata          = data.metadata
     local properties        = data.properties
-    local italic_correction = false
+    local hasitalics        = false
     local widths            = { }
     local marks             = { }
     for unicode, description in next, descriptions do
@@ -858,7 +858,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
             -- skip
         else
             description.italic = italic
-            italic_correction  = true
+            hasitalics = true
         end
         local width = glyph.width
         widths[width] = (widths[width] or 0) + 1
@@ -871,7 +871,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
         end
     end
     -- flag italic
-    properties.italic_correction = italic_correction
+    properties.hasitalics = hasitalics
     -- flag marks
     resources.marks = marks
     -- share most common width for cjk fonts
@@ -1310,8 +1310,6 @@ actions["reorganize lookups"] = function(data,filename,raw)
         end
     end
 end
-
--- to be checked italic_correction
 
 local function check_variants(unicode,the_variants,splitter,unicodes)
     local variants = the_variants.variants

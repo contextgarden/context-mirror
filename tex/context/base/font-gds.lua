@@ -462,8 +462,8 @@ local function initialize(tfmdata)
                     local corrections   = mathitalics.corrections
                     local defaultfactor = mathitalics.defaultfactor
                     local disableengine = mathitalics.disableengine
-                    properties.italic_correction        = true
-                    properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway
+                    properties.hasitalics = true
+                    properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway (name will change)
                     if properties.mathitalics == nil then
                         properties.mathitalics = disableengine
                     end
@@ -474,7 +474,7 @@ local function initialize(tfmdata)
                             local properties = tfmdata.properties
                             local parameters = tfmdata.parameters
                             local characters = tfmdata.characters
-                            properties.italic_correction        = true
+                            properties.hasitalics = true
                             properties.mathitalic_defaultfactor = defaultfactor
                             properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
                             if properties.mathitalics == nil then
