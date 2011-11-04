@@ -776,10 +776,20 @@ end
 
 -- not really buffers but it's closely related
 
+-- A string.gsub(str,"(\\.-) +$","%1") is faster than an lpeg when there is a
+-- match but slower when there is no match. But anyway, we need a more clever
+-- parser so we use lpeg.
+--
+-- [[\text ]]  [[\text{}]]  [[\text \text ]]  [[\text \\ \text ]]
+
+----- strip = Cs((P(" ")^1 * P(-1)/"" + 1)^0)
+local strip = Cs((P("\\") * ((1-S("\\ "))^1) * (P(" ")/"") + 1)^0) --
+
 function commands.typestring(settings)
     local content = settings.data
     if content and content ~= "" then
---~ content = decodecomment(content)
+        content = lpegmatch(strip,content) -- can be an option, btu needed in e.g. tabulate
+     -- content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))
     end

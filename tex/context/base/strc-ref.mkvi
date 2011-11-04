@@ -136,7 +136,9 @@
      \edef\currentreferencelabels   {#labels}%
      \edef\currentreferenceuserdata {#userdata}%
      \edef\currentreferenceexpansion{\@@rfexpansion}% {\referenceparameter\c!expansion}
-     \ifx\currentreferencelabels\empty \else
+     \ifx\currentreferencelabels\empty
+       \lastdestinationattribute\attributeunsetvalue
+     \else
        \ifx\currentreferenceexpansion\s!xml
          \xmlstartraw
            \xdef\currentreferencedata{#text}% data, no text else conflict
@@ -176,11 +178,50 @@
                 \fi
             },"\interactionparameter\c!focus")
        }%
-       % todo: optional
-       \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
-       \begingroup\attribute\destinationattribute\currentdestinationattribute\emptyhbox\endgroup % todo
      \fi
+   \else
+     \lastdestinationattribute\attributeunsetvalue
+   \fi
+   % will become obsolete:
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute{}%
    \fi}
+
+\def\set_page_only_destination_attribute#labels% could in fact be fully expandable
+  {\ifreferencing
+     \edef\currentreferencelabels{#labels}%
+     \ifx\currentreferencelabels\empty
+       \lastdestinationattribute\attributeunsetvalue
+     \else
+       \ctxlua{structures.references.setandgetattribute("page", "\referenceprefix","\currentreferencelabels",
+            {
+                references = {
+                    block    = "\currentsectionblock",
+                    section  = structures.sections.currentid(),
+                },
+                metadata = {
+                    kind = "page",
+                },
+            },"\interactionparameter\c!focus")
+       }%
+     \fi
+   \else
+     \lastdestinationattribute\attributeunsetvalue
+   \fi}
+
+\def\set_page_only_destination_box_attribute#cs#labels%
+   {\set_page_only_destination_attribute{#labels}%
+    \ifnum\lastdestinationattribute>\zerocount
+      \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
+    \else
+      \let#cs\empty
+    \fi}
+
+% \ifx\currentdestinationattribute\empty
+%   \begingroup\attribute\destinationattribute\currentdestinationattribute\emptyhbox\endgroup % todo
+% \fi
 
 \def\defaultreferencepage#text{[[[#text]]]}
 \def\defaultreferencetext#text{[[[#text]]]}

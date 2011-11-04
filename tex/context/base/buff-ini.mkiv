@@ -65,6 +65,7 @@
 \unexpanded\long\def\dodowithbuffer#1#2#3#4#5% name, startsequence, stopsequence, before, after
   {#4%
    \bgroup
+   \edef\catcodetableofbuffer{\number\catcodetable}%
    \ctxcommand{erasebuffer("#1")}%
    \setcatcodetable \vrbcatcodes
    \long\def\nododowithbuffer
@@ -72,7 +73,7 @@
       #5}%
    \long\def\dododowithbuffer##1#3% is detokenize needed? TEST
     %{\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
-     {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs>##1\!!es)}% space ?
+     {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs>##1\!!es,\catcodetableofbuffer)}% space ?
       \dododowithbuffer
       \nododowithbuffer}%
    \dododowithbuffer}
@@ -83,7 +84,7 @@
 \let\endbuffer\relax
 
 \long\def\dosetbuffer[#1]#2\endbuffer % seldom used so we just pass #2
-  {\ctxcommand{assignbuffer("#1", \!!bs\detokenize{#2}\!!es)}}
+  {\ctxcommand{assignbuffer("#1",\!!bs\detokenize{#2}\!!es,\number\catcodetable)}}
 
 \def\namedbufferparameter#1#2{\csname\??bu#1#2\endcsname}
 
@@ -156,7 +157,7 @@
 
 \unexpanded\def\doprocesstexbuffer#1%
   {\pushcatcodetable
-   \catcodetable\ctxcatcodes
+   \catcodetable\ctxcatcodes % \setcatcodetable
    \dododogetbuffer{#1}%
    \popcatcodetable}
 
