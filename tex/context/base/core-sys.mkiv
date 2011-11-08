@@ -222,13 +222,13 @@
 \installcommandhandler{\??hl}{highlight}{\??hl} % we could do with less
 
 \appendtoks
-    \setuevalue{\currenthighlight}{\dohighlight_indeed{\currenthighlight}}%
+    \setuevalue\currenthighlight{\dohighlight_indeed{\currenthighlight}}%
 \to \everydefinehighlight
 
 \ifdefined\dotaghighlight \else \let\dotaghighlight\relax \fi
 
 \unexpanded\def\dohighlight_indeed#1% inline style/color switch
-  {\groupedcommand
+  {\dontleavehmode\groupedcommand % otherwise wrong par number in tags
      {\def\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
       \dosethighlightattributes\c!style\c!color

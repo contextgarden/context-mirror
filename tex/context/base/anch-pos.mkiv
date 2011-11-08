@@ -159,7 +159,11 @@
 
 %D Sometimes we want to trick the position handler a bit:
 
-\def\replacepospxywhd#1#2#3#4#5#6#7{\ctxcommand{replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
+% \def\replacepospxywhd#1#2#3#4#5#6#7%
+%   {\ctxcommand{replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
+
+\def\replacepospxywhd#1#2#3#4#5#6#7%
+  {\ctxcommand{replacepospxywhd('#1',\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}
 
 %D The next switch can be used to communicate a special
 %D situation. Positioning and associated actions can be

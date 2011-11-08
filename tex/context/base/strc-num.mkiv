@@ -346,14 +346,123 @@
 \newconditional\hasstructurecountertitle
 \newconditional\hasstructurecounternumber
 
-\def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]%
+% \def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]%
+%   {\begingroup
+%    %
+%    #2[\s!haslevel=1,#8]%
+%    \edef\hasstructurecountercaption{#3\s!hascaption}%
+%    \edef\hasstructurecountertitle  {#3\s!hastitle}%
+%    \edef\hasstructurecounternumber {#3\s!hasnumber}%
+%    \edef\hasstructurecounterlevel  {#3\s!haslevel}%
+%    %
+%    \edef\askedprefixsegments{#3\c!prefixsegments}%
+%    \ifx\askedprefixsegments\v!auto
+%      \edef\askedprefixsegments{\autostructureprefixsegments#3}%
+%    \fi
+%    %
+%    \edef\currentname{#3\c!name}%
+%    \ifx\currentname\empty
+%      \edef\currentname{#1}%
+%    \fi
+%    \edef\currentcounter{#3\s!counter}%
+%    \ifx\currentcounter\empty
+%      \let\currentcounter\currentname
+%    \fi
+%    %
+%    \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
+%    %
+%    \ifx\hasstructurecounternumber\v!yes % here due to previous test but best in callers
+%      \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
+%    \fi
+%    %
+%    \ifx\hasstructurecountercaption\v!yes
+%      \edef\currentexpansion{#3\c!expansion}%
+%      \ifx\currentexpansion\s!xml
+%        \edef\currenttitle{#4\c!title}%
+%        \edef\currentbookmark{#4\c!bookmark}%
+%        \xmlstartraw
+%          \edef\currentlisttitle{#3\c!title}%
+%        \xmlstopraw
+%        \let\currentcoding\s!xml
+%      \else
+%        \ifx\currentexpansion\v!yes
+%          \edef\currenttitle{#3\c!title}%
+%          \edef\currentbookmark{#3\c!bookmark}%
+%        \else
+%          \edef\currenttitle{#4\c!title}%
+%          \edef\currentbookmark{#4\c!bookmark}%
+%        \fi
+%        \let\currentlisttitle\currenttitle
+%        \let\currentcoding\s!tex
+%      \fi
+%      \edef\currentlabel{#3\c!label}%
+%      \edef\currentreference{#3\c!reference}%
+%      \setnextinternalreference
+%      \xdef\laststructurecounternumber{\ctxlua{structures.lists.push{
+%         metadata = {
+%             kind     = "#1",
+%             name     = "\currentname",
+%             level    = structures.sections.currentlevel(),
+%             catcodes = \the\catcodetable,
+%         },
+%         references = {
+%             internal        = \nextinternalreference,
+%             reference       = "\currentreference",
+%             referenceprefix = "\referenceprefix",
+%             block           = "\currentsectionblock",
+%             section         = structures.sections.currentid(),
+%         },
+%         titledata = {
+%             label    = \!!bs\detokenize\expandafter{\currentlabel    }\!!es,
+%             title    = \!!bs\detokenize\expandafter{\currenttitle    }\!!es,
+%         \ifx\currentbookmark\currenttitle \else
+%             bookmark = \!!bs\detokenize\expandafter{\currentbookmark }\!!es,
+%         \fi
+%         \ifx\currentlisttitle\currenttitle \else
+%             list     = \!!bs\detokenize\expandafter{\currentlisttitle}\!!es,
+%         \fi
+%         },
+%     \ifx\hasstructurecounternumber\v!yes
+%         prefixdata = {
+%             prefix        = "#3\c!prefix",
+%             separatorset  = "#3\c!prefixseparatorset",
+%             conversion    = \!!bs#3\c!prefixconversion\!!es,
+%             conversionset = "#3\c!prefixconversionset",
+%             set           = "#3\c!prefixset",
+%         %   segments      = "#3\c!prefixsegments",
+%             segments      = "\askedprefixsegments",
+%             connector     = \!!bs#3\c!prefixconnector\!!es,
+%         },
+%         numberdata = {
+%             numbers       = structures.counters.compact("\currentcounter",nil,true),
+%             separatorset  = "#3\c!numberseparatorset",
+%             conversion    = \!!bs#3\c!numberconversion\!!es,
+%             conversionset = "#3\c!numberconversionset",
+%             starter       = \!!bs#3\c!numberstarter\!!es,
+%             stopper       = \!!bs#3\c!numberstopper\!!es,
+%             segments      = "#3\c!numbersegments",
+%         },
+%     \fi
+%         userdata = structures.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
+%        }
+%      }}%
+%      \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
+%      \xdef\laststructurecountersynchronize{\ctxlatelua{structures.lists.enhance(\laststructurecounternumber)}}%
+%    \else
+%      \glet\laststructurecounternumber     \relax
+%      \glet\laststructurecounterattribute  \attributeunsetvalue
+%      \glet\laststructurecountersynchronize\relax
+%    \fi
+%    \endgroup}
+
+\def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
    #2[\s!haslevel=1,#8]%
+   \edef\hasstructurecounterlevel  {#3\s!haslevel}%
    \edef\hasstructurecountercaption{#3\s!hascaption}%
    \edef\hasstructurecountertitle  {#3\s!hastitle}%
    \edef\hasstructurecounternumber {#3\s!hasnumber}%
-   \edef\hasstructurecounterlevel  {#3\s!haslevel}%
    %
    \edef\askedprefixsegments{#3\c!prefixsegments}%
    \ifx\askedprefixsegments\v!auto
@@ -376,50 +485,82 @@
    \fi
    %
    \ifx\hasstructurecountercaption\v!yes
-     \edef\currentexpansion{#3\c!expansion}%
-     \ifx\currentexpansion\s!xml
-       \edef\currenttitle{#4\c!title}%
-       \edef\currentbookmark{#4\c!bookmark}%
+     \xdef\currentstructurecomponentname           {#3\c!name}%
+     \xdef\currentstructurecomponentlevel          {#3\c!level}%
+     \edef\currentstructurecomponentexpansion      {#3\c!expansion}%
+     \xdef\currentstructurecomponentxmlsetup       {#3\c!xmlsetup}%
+     \xdef\currentstructurecomponentcatcodes       {#3\s!catcodes}%
+     \xdef\currentstructurecomponentlabel          {#3\c!label}%
+     \xdef\currentstructurecomponentreference      {#3\c!reference}%
+     \xdef\currentstructurecomponentreferenceprefix{#3\c!referenceprefix}%
+     \ifx\currentstructurecomponentexpansion\s!xml
        \xmlstartraw
-         \edef\currentlisttitle{#3\c!title}%
+         \xdef\currentstructurecomponenttitle   {#3\c!title}%
+         \xdef\currentstructurecomponentbookmark{#3\c!bookmark}%
+         \xdef\currentstructurecomponentmarking {#3\c!marking}%
+         \xdef\currentstructurecomponentlist    {#3\c!list}%
        \xmlstopraw
-       \let\currentcoding\s!xml
-     \else
-       \ifx\currentexpansion\v!yes
-         \edef\currenttitle{#3\c!title}%
-         \edef\currentbookmark{#3\c!bookmark}%
-       \else
-         \edef\currenttitle{#4\c!title}%
-         \edef\currentbookmark{#4\c!bookmark}%
+       \ifx\currentstructurecomponentlist\empty
+         \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
        \fi
-       \let\currentlisttitle\currenttitle
-       \let\currentcoding\s!tex
+       \globallet\currentstructurecomponentcoding\s!xml
+     \else
+       \ifx\currentstructurecomponentexpansion\v!yes
+         \xdef\currentstructurecomponenttitle   {#3\c!title}%
+         \xdef\currentstructurecomponentbookmark{#3\c!bookmark}%
+         \xdef\currentstructurecomponentmarking {#3\c!marking}%
+         \xdef\currentstructurecomponentlist    {#3\c!list}%
+       \else
+         \xdef\currentstructurecomponenttitle   {#4\c!title}%
+         \xdef\currentstructurecomponentbookmark{#4\c!bookmark}%
+         \xdef\currentstructurecomponentmarking {#4\c!marking}%
+         \xdef\currentstructurecomponentlist    {#4\c!list}%
+         \iflocation \ifx\currentstructurecomponentbookmark\empty
+           \begingroup
+           \simplifycommands
+           \xdef\currentstructurecomponentbookmark{\detokenize\expandafter{\normalexpanded{#3\c!title}}}%
+          \endgroup
+         \fi \fi
+       \fi
+       \ifx\currentstructurecomponentlist\empty
+         \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
+       \fi
+       \globallet\currentstructurecomponentcoding\s!tex
      \fi
-     \edef\currentlabel{#3\c!label}%
-     \edef\currentreference{#3\c!reference}%
+     %
      \setnextinternalreference
      \xdef\laststructurecounternumber{\ctxlua{structures.lists.push{
         metadata = {
             kind     = "#1",
             name     = "\currentname",
             level    = structures.sections.currentlevel(),
-            catcodes = \the\catcodetable,
+            catcodes  = \the\ifx\currentstructurecomponentcatcodes\empty\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi,
+            coding    = "\currentstructurecomponentcoding",
+        \ifx\currentstructurecomponentcoding\s!xml
+            xmlroot   =  "\xmldocument",
+        \fi
+        \ifx\currentstructurecomponentxmlsetup\empty \else
+            xmlsetup  = "\currentstructurexmlsetup",
+        \fi
         },
         references = {
             internal        = \nextinternalreference,
-            reference       = "\currentreference",
-            referenceprefix = "\referenceprefix",
             block           = "\currentsectionblock",
+            reference       = "\currentstructurecomponentreference",
+            referenceprefix = "\currentstructurecomponentreferenceprefix",
             section         = structures.sections.currentid(),
         },
         titledata = {
-            label    = \!!bs\detokenize\expandafter{\currentlabel    }\!!es,
-            title    = \!!bs\detokenize\expandafter{\currenttitle    }\!!es,
-        \ifx\currentbookmark\currenttitle \else
-            bookmark = \!!bs\detokenize\expandafter{\currentbookmark }\!!es,
+            label    = \!!bs\detokenize\expandafter{\currentstructurecomponentlabel    }\!!es,
+            title    = \!!bs\detokenize\expandafter{\currentstructurecomponenttitle    }\!!es,
+        \ifx\currentstructurecomponentbookmark\currentstructurecomponenttitle \else
+            bookmark = \!!bs\detokenize\expandafter{\currentstructurecomponentbookmark }\!!es,
         \fi
-        \ifx\currentlisttitle\currenttitle \else
-            list     = \!!bs\detokenize\expandafter{\currentlisttitle}\!!es,
+        \ifx\currentstructurecomponentmarking\currentstructurecomponenttitle \else
+            marking  = \!!bs\detokenize\expandafter{\currentstructurecomponentmarking  }\!!es,
+        \fi
+        \ifx\currentstructurecomponentlist\currentstructurecomponenttitle \else
+          list     = \!!bs\detokenize\expandafter{\currentstructurecomponentlist}\!!es,
         \fi
         },
     \ifx\hasstructurecounternumber\v!yes

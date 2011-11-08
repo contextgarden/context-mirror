@@ -27,7 +27,7 @@
 %D
 %D \showsetup{setupinteraction}
 
-\installcommandhandler\??ia {interaction} \??ia
+\installswitchcommandhandler \??ia {interaction} \??ia
 
 \let\currentinteraction\empty
 
@@ -84,6 +84,17 @@
 
 \unexpanded\def\setinteraction[#1]%
   {\def\currentinteraction{#1}}
+
+\defineinteraction % keep it simple
+  [\v!hidden]
+
+\setupinteraction
+  [\v!hidden]
+  [\c!state=\v!start,
+   \c!color=,
+   \c!contrastcolor=,
+   \c!style=,
+   \c!click=\v!off]
 
 %D As long as there a natural feeling of what can be considered
 %D hyper active or not, we have to tell users where they can

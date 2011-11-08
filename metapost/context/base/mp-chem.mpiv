@@ -522,8 +522,8 @@ vardef chem_text@#(expr txt, z) = % adapted copy of thelabel@
     save p ; picture p ;
     p := textext(txt) ;
     p := p
-        if (labtype@# >= 10) : shifted (0,ypart center p) fi
-        shifted (z + chem_text_offset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p)) ;
+        if (mfun_labtype@# >= 10) : shifted (0,ypart center p) fi
+        shifted (z + chem_text_offset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p)) ;
     if chem_text_trace :
         draw z             withpen pencircle scaled 2pt withcolor red ;
         draw boundingbox p withpen pencircle scaled 1pt withcolor red ;

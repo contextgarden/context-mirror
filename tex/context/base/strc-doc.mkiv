@@ -76,6 +76,8 @@
    \fi\fi\fi
    \let\currentstructurereferenceprefix\referenceprefix}
 
+% why xdef ?
+
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \getparameters[\??ns][#1]%

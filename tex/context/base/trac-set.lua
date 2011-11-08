@@ -314,6 +314,8 @@ end
 
 if texconfig then
 
+    -- this happens too late in ini mode but that is no problem
+
     local function set(k,v)
         v = tonumber(v)
         if v then

@@ -17,6 +17,18 @@
 
 \unprotect
 
+\newconditional \parbasedattributes % this will change .. old mkii stuff
+
+\def\finishparbasedattributes
+  {\ifconditional\parbasedattributes
+     \setfalse\parbasedattributes
+     \par
+   \fi}
+
+\def\dostopparbasedattributes
+  {\settrue\parbasedattributes
+   \dostopattributes}
+
 \let\dostopattributes\relax % in case these commands end up in an edef
 
 \unexpanded\def\@@dostopattributes

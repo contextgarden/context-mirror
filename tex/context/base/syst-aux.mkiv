@@ -4530,7 +4530,7 @@
 %D a row. In both commands, the \type{n*} is optional. When this
 %D specification is missing, the command executes once.
 
-\def\dorepeatwithcommand[#1]%
+\unexpanded\def\dorepeatwithcommand[#1]%
   {\dodorepeatwithcommand#1*\empty*\relax}
 
 \def\dodorepeatwithcommand#1*#2#3*#4\relax#5%
@@ -4540,7 +4540,8 @@
   {\ifx#2\empty % redundant but gives cleaner extensions
      #4{#1}%
    \else\ifnum#1<\zerocount
-     \normalexpanded{\dorecurse{\number-\number#1}}{#4{-#2#3}}%
+    %\normalexpanded{\dorecurse{\number-\number#1}}{#4{-#2#3}}%
+     \dorecurse{-#1}{#4{-#2#3}}%
    \else\ifx#2+%
      \dorecurse{#1}{#4{#3}}%
    \else

@@ -1491,7 +1491,7 @@
      {\xdef\restarttable{\noexpand\dorestarttable{\noexpand\thirdstagestarttable{#1}}}}
      {\doifdefinedelse{\s!TaBlE#1}
         {\gdef\restarttable{\getvalue{\s!TaBlE#1}}}
-        {\gdef\restarttable{\dorestartable{\getvalue{#1}}}}}%
+        {\gdef\restarttable{\dorestarttable{\getvalue{#1}}}}}%
    \egroup
    \restarttable}
 

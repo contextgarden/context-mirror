@@ -23,6 +23,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local texsp, texcount = tex.sp, tex.count
 ----- texsp = string.todimen -- because we cache this is much faster but no rounding
 
+local pt  = number.dimenfactors.pt
 local pts = number.pts
 
 local collected = allocate()
@@ -256,43 +257,62 @@ commands.copyposition     = jobpositions.copy
 
 function commands.MPp(id)
     local jpi = collected[id] or tobesaved[id]
-    context(jpi and jpi[1] or '0')
+    if jpi then
+        context(jpi[1])
+    else
+        context('0')
+    end
 end
 
 function commands.MPx(id)
     local jpi = collected[id] or tobesaved[id]
-    local x = jpi and jpi[2]
-    context(x and pts(x) or '0pt')
+    if jpi then
+        context("%spt",jpi[2]*pt)
+    else
+        context('0pt')
+    end
 end
 
 function commands.MPy(id)
     local jpi = collected[id] or tobesaved[id]
-    local y = jpi and jpi[3]
-    context(y and pts(y) or '0pt')
+    if jpi then
+        context("%spt",jpi[3]*pt)
+    else
+        context('0pt')
+    end
 end
 
 function commands.MPw(id)
     local jpi = collected[id] or tobesaved[id]
-    local w = jpi and jpi[4]
-    context(w and pts(w) or '0pt')
+    if jpi then
+        context("%spt",jpi[4]*pt)
+    else
+        context('0pt')
+    end
 end
 
 function commands.MPh(id)
     local jpi = collected[id] or tobesaved[id]
-    local h = jpi and jpi[5]
-    context(h and pts(h) or '0pt')
+    if jpi then
+        context("%spt",jpi[5]*pt)
+    else
+        context('0pt')
+    end
 end
 
 function commands.MPd(id)
     local jpi = collected[id] or tobesaved[id]
-    local d = jpi and jpi[6]
-    context(d and pts(d) or '0pt')
+    if jpi then
+        context("%spt",jpi[6]*pt)
+    else
+        context('0pt')
+    end
 end
 
 function commands.MPxy(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]))
+        context('(%spt,%spt)',jpi[2]*pt,jpi[3]*pt)
     else
         context('(0,0)')
     end
@@ -301,7 +321,7 @@ end
 function commands.MPll(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]-jpi[6]))
+        context('(%spt,%spt)',jpi[2]*pt,(jpi[3]-jpi[6])*pt)
     else
         context('(0,0)')
     end
@@ -310,7 +330,7 @@ end
 function commands.MPlr(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s,%s)',pts(jpi[2]+jpi[4]),pts(jpi[3]-jpi[6]))
+        context('(%spt,%spt)',(jpi[2]+jpi[4])*pt,(jpi[3]-jpi[6])*pt)
     else
         context('(0,0)')
     end
@@ -319,7 +339,7 @@ end
 function commands.MPur(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s,%s)',pts(jpi[2]+jpi[4]),pts(jpi[3]+jpi[5]))
+        context('(%spt,%spt)',(jpi[2]+jpi[4])*pt,(jpi[3]+jpi[5])*pt)
     else
         context('(0,0)')
     end
@@ -328,7 +348,7 @@ end
 function commands.MPul(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context('(%s,%s)',pts(jpi[2]),pts(jpi[3]+jpi[5]))
+        context('(%spt,%spt)',jpi[2]*pt,(jpi[3]+jpi[5])*pt)
     else
         context('(0,0)')
     end
@@ -337,7 +357,7 @@ end
 function commands.MPpos(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context(concat(jpi,',',1,6))
+        context("%spt,%spt,%spt,%spt,%spt,%spt",jpi[1]*pt,jpi[2]*pt,jpi[3]*pt,jpi[4]*pt,jpi[5]*pt,jpi[6]*pt)
     else
         context('0,0,0,0,0,0')
     end

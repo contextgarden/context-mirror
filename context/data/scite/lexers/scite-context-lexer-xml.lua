@@ -141,6 +141,14 @@ local p_name =
 
 local p_key = p_name
 
+local p_key =
+    token("plain",name)
+  * (
+        token("default",colon)
+      * token("constant",name)
+    )^1
+  + token("constant",name)
+
 local p_attributes = (
     p_optionalwhitespace
   * p_key

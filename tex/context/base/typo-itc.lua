@@ -8,39 +8,39 @@ if not modules then modules = { } end modules ['typo-itc'] = {
 
 local utfchar = utf.char
 
-local trace_italics      = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
+local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
 
-local report_italics     = logs.reporter("nodes","italics")
+local report_italics      = logs.reporter("nodes","italics")
 
-typesetters.italics      = typesetters.italics or { }
-local italics            = typesetters.italics
+typesetters.italics       = typesetters.italics or { }
+local italics             = typesetters.italics
 
-local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
-local disc_code          = nodecodes.disc
+local nodecodes           = nodes.nodecodes
+local glyph_code          = nodecodes.glyph
+local kern_code           = nodecodes.kern
+local glue_code           = nodecodes.glue
+local disc_code           = nodecodes.disc
 
-local tasks              = nodes.tasks
+local tasks               = nodes.tasks
 
-local insert_node_after  = node.insert_after
-local delete_node        = nodes.delete
-local has_attribute      = node.has_attribute
+local insert_node_after   = node.insert_after
+local delete_node         = nodes.delete
+local has_attribute       = node.has_attribute
 
-local texattribute       = tex.attribute
-local a_italics          = attributes.private("italics")
-local unsetvalue         = attributes.unsetvalue
+local texattribute        = tex.attribute
+local a_italics           = attributes.private("italics")
+local unsetvalue          = attributes.unsetvalue
 
------ new_correction     = nodes.pool.fontkern
-local new_correction     = nodes.pool.glue
+local new_correction_kern = nodes.pool.fontkern
+local new_correction_glue = nodes.pool.glue
 
-local points             = number.points
+local points              = number.points
 
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local italicsdata        = fonthashes.italics
+local fonthashes          = fonts.hashes
+local fontdata            = fonthashes.identifiers
+local italicsdata         = fonthashes.italics
 
-local forcedvariant      = false
+local forcedvariant       = false
 
 function typesetters.italics.forcevariant(variant)
     forcedvariant = variant
@@ -80,6 +80,7 @@ local function setitalicinfont(font,char)
     end
 end
 
+-- todo: clear attribute
 
 local function process(namespace,attribute,head)
     local done     = false
@@ -106,7 +107,7 @@ local function process(namespace,attribute,head)
                         if trace_italics then
                             report_italics("inserting %s between italic %s and regular %s",points(italic),utfchar(prevchar),utfchar(char))
                         end
-                        insert_node_after(head,previous,new_correction(italic))
+                        insert_node_after(head,previous,new_correction_kern(italic))
                         done = true
                     end
                 elseif inserted and data then
@@ -156,7 +157,7 @@ local function process(namespace,attribute,head)
                 if trace_italics then
                     report_italics("inserting %s between italic %s and glue",points(italic),utfchar(prevchar))
                 end
-                inserted = new_correction(italic)
+                inserted = new_correction_glue(italic) -- maybe just add ? else problem with penalties
                 insert_node_after(head,previous,inserted)
                 italic = 0
                 done = true
@@ -166,7 +167,7 @@ local function process(namespace,attribute,head)
                 report_italics("inserting %s between italic %s and whatever",points(italic),utfchar(prevchar))
             end
             inserted = nil
-            insert_node_after(head,previous,new_correction(italic),new_correction(italic))
+            insert_node_after(head,previous,new_correction_kern(italic))
             italic = 0
             done = true
         end
@@ -176,7 +177,7 @@ local function process(namespace,attribute,head)
         if trace_italics then
             report_italics("inserting %s between italic %s and end of list",points(italic),utfchar(prevchar))
         end
-        insert_node_after(head,previous,new_correction(italic),new_correction(italic))
+        insert_node_after(head,previous,new_correction_kern(italic))
         done = true
     end
     return head, done

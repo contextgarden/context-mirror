@@ -63,8 +63,6 @@ local whatsit_code    = nodecodes.whatsit
 local localpar_code   = whatcodes.localpar
 local dir_code        = whatcodes.dir
 
-local userskip_code   = skipcodes.userskip
-
 local nodepool        = nodes.pool
 
 local new_glyph       = nodepool.glyph
@@ -626,7 +624,7 @@ local function toutf(list,result,nofresult,stopcriterium)
 --~                     result[nofresult] = " "
 --~                 end
                 result, nofresult = toutf(n.list,result,nofresult)
-            elseif id == glue_code and n.subtype == userskip_code and n.spec.width > threshold then
+            elseif id == glue_code then
                 if nofresult > 0 and result[nofresult] ~= " " then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
@@ -642,6 +640,10 @@ local function toutf(list,result,nofresult,stopcriterium)
             end
         end
     end
+    if nofresult > 0 and result[nofresult] == " " then
+        result[nofresult] = nil
+        nofresult = nofresult - 1
+    end
     return result, nofresult
 end
 
@@ -650,7 +652,7 @@ function nodes.toutf(list,stopcriterium)
     return concat(result)
 end
 
--- might move elsewhere
+-- this will move elsewhere
 
 local ptfactor = number.dimenfactors.pt
 local bpfactor = number.dimenfactors.bp

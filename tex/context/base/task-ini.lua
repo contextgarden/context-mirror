@@ -43,6 +43,8 @@ appendaction("processors",   "lists",       "typesetters.kerns.handler")        
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
+-- appendaction("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
+
 appendaction("processors",   "lists",       "typesetters.paragraphs.handler")                    -- disabled
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled

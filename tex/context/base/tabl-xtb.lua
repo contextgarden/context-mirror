@@ -6,6 +6,23 @@ if not modules then modules = { } end modules ['tabl-xtb'] = {
     license   = "see context related readme files"
 }
 
+--[[
+
+This table mechanism is a combination between TeX and Lua. We do process
+cells at the TeX end and inspect them at the Lua end. After some analysis
+we have a second pass using the calculated widths, and if needed cells
+will go through a third pass to get the heights right. This last pass is
+avoided when possible which is why some code below looks a bit more
+complex than needed. The reason for such optimizations is that each cells
+is actually a framed instance and because tables like this can be hundreds
+of pages we want to keep processing time reasonable.
+
+To a large extend the behaviour is comparable with the way bTABLE/eTABLE
+works and there is a module that maps that one onto this one. Eventually
+this mechamism will be improved so that it can replace its older cousin.
+
+]]--
+
 local texdimen    = tex.dimen
 local texcount    = tex.count
 local texbox      = tex.box
@@ -271,8 +288,8 @@ function xtables.initialize_construct()
         w = w + widths[c+x]
     end
     for y=1,drc.ny-1 do
-        h = h + heights[c+y]
-        d = d + depths[c+y]
+        h = h + heights[r+y]
+        d = d + depths[r+y]
     end
     texdimen.x_table_width = w
     texdimen.x_table_height = h + d

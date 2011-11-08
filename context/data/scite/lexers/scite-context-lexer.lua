@@ -29,8 +29,10 @@ local info = {
 -- an issue we can rewrite the main lex function (memorize the grammars and speed up the
 -- byline variant).
 
--- Maybe it's safer to copy th eother methods here so that we have no dependencies, apart
+-- Maybe it's safer to copy the other methods here so that we have no dependencies, apart
 -- from the the library.
+
+-- Something is wrong with folds in combination with scite 3.00.
 
 local R, P, S, C, Cp, Cs, Ct, Cmt, Cc, Cf, Cg = lpeg.R, lpeg.P, lpeg.S, lpeg.C, lpeg.Cp, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Cf, lpeg.Cg
 local lpegmatch = lpeg.match
@@ -445,23 +447,37 @@ local function fold_by_line(text,start_pos,start_line,start_level)
     return folds
 end
 
-function context.fold(text,start_pos,start_line,start_level)
+local threshold_by_lexer       =  512 * 1024 -- we don't know the filesize yet
+local threshold_by_parsing     =  512 * 1024 -- we don't know the filesize yet
+local threshold_by_indentation =  512 * 1024 -- we don't know the filesize yet
+local threshold_by_line        =  512 * 1024 -- we don't know the filesize yet
+
+function context.fold(text,start_pos,start_line,start_level) -- hm, we had size thresholds .. where did they go
     if text == '' then
         return { }
     end
     local lexer = global._LEXER
     local fold_by_lexer = lexer._fold
+    local fold_by_symbols = lexer._foldsymbols
+    local filesize = 0 -- we don't know that
     if fold_by_lexer then
-        return fold_by_lexer(text,start_pos,start_line,start_level,lexer)
-    elseif get_property('fold.by.parsing',1) > 0 then
-        return fold_by_parsing(text,start_pos,start_line,start_level,lexer)
-    elseif get_property('fold.by.indentation',1) > 0 then -- not that usefull
-        return fold_by_indentation(text,start_pos,start_line,start_level,lexer)
-    elseif get_property('fold.by.line',1) > 0 then -- rather useless
-        return fold_by_line(text,start_pos,start_line,start_level,lexer)
-    else
-        return { }
+        if filesize <= threshold_by_lexer then
+            return fold_by_lexer(text,start_pos,start_line,start_level,lexer)
+        end
+    elseif fold_by_symbols and get_property('fold.by.parsing',1) > 0 then
+        if filesize <= threshold_by_parsing then
+            return fold_by_parsing(text,start_pos,start_line,start_level,lexer)
+        end
+    elseif get_property('fold.by.indentation',1) > 0 then
+        if filesize <= threshold_by_indentation then
+            return fold_by_indentation(text,start_pos,start_line,start_level,lexer)
+        end
+    elseif get_property('fold.by.line',1) > 0 then
+        if filesize <= threshold_by_line then
+            return fold_by_line(text,start_pos,start_line,start_level,lexer)
+        end
     end
+    return { }
 end
 
 function context.lex(text,init_style)

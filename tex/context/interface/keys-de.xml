@@ -1063,8 +1063,6 @@
 		<cd:element name='complete' value='vollende'/>
 		<cd:element name='coupled' value='verknuepft'/>
 		<cd:element name='currentlocal' value='aktuelllokal'/>
-		<cd:element name='emptyone' value='vuoto'/>
-		<cd:element name='emptytwo' value='leer'/>
 		<cd:element name='end' value='ende'/>
 		<cd:element name='endsetup' value='ein'/>
 		<cd:element name='get' value='get'/>
