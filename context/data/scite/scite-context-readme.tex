@@ -1,27 +1,14 @@
 % interface=en modes=icon,screen language=uk
 
+\usemodule[art-01]
 \usemodule[abr-02]
 
-\logo [METAPOST] {MetaPost}
-\logo [METAFUN]  {MetaFun}
-
-\setupcolors
-  [state=start]
-
-\setuplayout
-  [footer=0pt,
-   width=middle,
-   height=middle]
-
-\setupbodyfont
-  [dejavu,11pt]
+\unexpanded\def\METAPOST{MetaPost}
+\unexpanded\def\METAFUN {MetaFun}
 
 \setuphead
   [section]
-  [page=,
-   style=\bfb,
-   color=darkblue,
-   after=\blank]
+  [color=darkblue]
 
 \setuptype
   [color=darkblue]
@@ -114,7 +101,7 @@
    frame=off,
    foregroundcolor=gray]
   {\definedfont[SerifBold sa 10]SciTE\endgraf
-   \definedfont[SerifBold sa 2.48]IN CONTEXT\kern.25\bodyfontsize}
+   \definedfont[SerifBold sa 2.48]IN CONTEXT MkIV\kern.25\bodyfontsize}
 
 \startTEXpage
   \tightlayer[TitlePage]
@@ -124,13 +111,7 @@
 
 \subject{About \SCITE}
 
-{\em This is an updated but yet uncorrected version.}
-
-{\em Todo: look into using lpeg without special library (might be faster).}
-
-\SCITE\ is a source code editor written by Neil Hodgson. After
-playing with several editors we decided that this editor was quite
-configurable and extendible.
+{\em This manual is under (re)construction.}
 
 For a long time at \PRAGMA\ we used \TEXEDIT, an editor we'd
 written in \MODULA. It had some project management features and
@@ -139,24 +120,27 @@ rewrote this to a platform independent reimplementation called
 \TEXWORK\ written in \PERLTK\ (not to be confused with the editor
 with the plural name).
 
-In the beginning of the century we can into \SCITE. Although the
-mentioned editors provide some functionality not present in
-\SCITE\ we've decided to use that editor because it frees us from
-maintaining our own. We ported our \TEX\ and \METAPOST\ (line based)
-syntax highlighting to \SCITE\ and got a lot of others for free.
+In the beginning of the century I can into \SCITE, written by Neil
+Hodgson. Although the mentioned editors provide some functionality
+not present in \SCITE\ we decided to use that editor because it
+frees us from maintaining our own. I ported our \TEX\ and
+\METAPOST\ (line based) syntax highlighting to \SCITE\ and got a
+lot of others for free.
 
 After a while I found out that there was an extension interface
 written in \LUA. I played with it and wrote a few extensions too.
 This pleasant experience later triggered the \LUATEX\ project.
 
-A decade into the century \SCITE\ as another new feature: you can
+A decade into the century \SCITE\ got another new feature: you can
 write dynamic external lexers in \LUA\ using \LPEG. As in the
-meantime \CONTEXT\ had evolved in a \TEX/\LUA\ hybrid, it made
+meantime \CONTEXT\ has evolved in a \TEX/\LUA\ hybrid, it made
 sense to look into this. The result is a couple of lexers that
-suit \TEX, \METAPOST\ and \LUA\ usage in \CONTEXT\ \MKIV.
-\footnote {In the process some of the general lexing framework was
-adapted to suit our demands for speed. We shipe these files as
-well.}
+suit \TEX, \METAPOST\ and \LUA\ usage in \CONTEXT\ \MKIV. As we
+also use \XML\ as input and output format a lexer for \XML\ is also
+provided. And because \PDF\ is one of the backend formats lexing of
+\PDF\ is also implemented. \footnote {In the process some of the
+general lexing framework was adapted to suit our demands for speed.
+We ship these files as well.}
 
 In the \CONTEXT\ (standalone) distribution you will find the
 relevant files under:
@@ -168,6 +152,28 @@ relevant files under:
 Normally a user will not have to dive into the implementation
 details but in principle you can tweak the properties files to
 suit your purpose.
+
+\subject{The look and feel}
+
+The color scheme that we use is consistent over the lexers but we
+use more colors that in the traditional lexing. For instance,
+\TEX\ primitives, low level \TEX\ commands, \TEX\ constants, basic
+file structure related commands, and user commands all get a
+different treatment. When spell checking is turned on, we indicate
+unknown words, but also words that are known but might need
+checking, for instance because they have an uppercase character.
+In \in {figure} [fig:colors] we some of that in practice.
+
+\placefigure
+  [page]
+  [fig:colors]
+  {Nested lexers in action.}
+  {\rotate
+     [rotation=90]
+     {\externalfigure
+        [scite-context-visual.png]
+        [maxheight=1.2\textwidth,
+         maxwidth=.9\textheight]}}
 
 \subject{Installing \SCITE}
 
@@ -201,8 +207,10 @@ to comment the external lexer import.} These can be fetched from:
 code.google.com/p/scintilla
 \stoptyping
 
-On windows you need to copy the \type {lexers} subfolder to the \type
-{wscite} folder. For Linux the place depends on the distribution.
+On windows you need to copy the \type {lexers} subfolder to the
+\type {wscite} folder. For Linux the place depends on the
+distribution and I just copy them in the same path as where the
+regular properties files live.
 
 For \UNIX, one can take a precompiled version as well. Here we
 need to split the set of files into:
@@ -260,9 +268,12 @@ at the console as well).
 
 \subject{Fonts}
 
-The configuration file defauls to the Dejavu fonts. These are part of the
-\CONTEXT\ standalone (minimals) distribution. You can copy them to your
-operating system from:
+The configuration file defaults to the Dejavu fonts. These free
+fonts are part of the \CONTEXT\ suite (also known as the
+standalone distribution). Of course you can fetch them from \type
+{http://dejavu-fonts.org} as well. You have to copy them to where
+your operating system expects them. In the suite they are
+available in
 
 \starttyping
 <contextroot>/tex/texmf/fonts/truetype/public/dejavu
@@ -270,9 +281,9 @@ operating system from:
 
 \subject{An alternative approach}
 
-If for some reason you prefer not to mess with property files in the main
-\SCITE\ path, you can follow a different route and selectively copy files to
-places.
+If for some reason you prefer not to mess with property files in
+the main \SCITE\ path, you can follow a different route and
+selectively copy files to places.
 
 The following files are needed for the lpeg based lexer:
 
@@ -282,6 +293,9 @@ lexers/scite-context-lexer-tex.lua
 lexers/scite-context-lexer-mps.lua
 lexers/scite-context-lexer-lua.lua
 lexers/scite-context-lexer-cld.lua
+lexers/scite-context-lexer-txt.lua
+lexers/scite-context-lexer-xml*.lua
+lexers/scite-context-lexer-pdf*.lua
 
 lexers/context/data/scite-context-data-tex.lua
 lexers/context/data/scite-context-data-context.lua
@@ -363,26 +377,29 @@ ones will be provided at some point.
 
 \subject{Spell checking}
 
-If you want to have spell checking, you need have files with correct words
-on each line. The first line of a file determines the language:
+If you want to have spell checking, you need have files with
+correct words on each line. The first line of a file determines
+the language:
 
 \starttyping
 % language=uk
 \stoptyping
 
-When you use the external lexers, you need to provide some files. Given that
-you have a text file with valid words only, you can run the following script:
+When you use the external lexers, you need to provide some files.
+Given that you have a text file with valid words only, you can run
+the following script:
 
 \starttyping
 mtxrun --script scite --words nl uk
 \stoptyping
 
-This will convert files with names like \type {spell-nl.txt} into \LUA\ files
-that you need to copy to the \type {lexers/data} path. Spell checking happens
-realtime when you have the language directive (just add a bogus character to
-disable it). Wrong words are colored red, and words that might have a case
-problem are colored orange. Recognized words are greyed and words with less than
-three characters are ignored.
+This will convert files with names like \type {spell-nl.txt} into
+\LUA\ files that you need to copy to the \type {lexers/data} path.
+Spell checking happens realtime when you have the language
+directive (just add a bogus character to disable it). Wrong words
+are colored red, and words that might have a case problem are
+colored orange. Recognized words are greyed and words with less
+than three characters are ignored.
 
 In the case of internal lexers, the following file is needed:
 
@@ -390,10 +407,44 @@ In the case of internal lexers, the following file is needed:
 spell-uk.txt
 \stoptyping
 
-This file is searched on the path determined by the environment variable:
+If you use the traditional lexer, this file is taken from the
+path determined by the environment variable:
 
 \starttyping
 CTXSPELLPATH
+\stoptyping
+
+As already mentioned, the lpeg lexer expects them in the data
+path. This is because the \LUA\ instance that does the lexing is
+rather minimalistic and lacks some libraries as well as cannot
+access the main \SCITE\ state.
+
+Spell checking in \type {txt} files is enabled by adding a first
+line:
+
+\starttyping
+[#!-%] language=uk
+\stoptyping
+
+The first character on that line is one of the four mentioned
+between square brackets. So,
+
+\starttyping
+# language=uk
+\stoptyping
+
+should work. For \XML\ files there are two methods. You can use the
+following (at the start of the file):
+
+\starttyping
+<?xml ... language="uk" ?>
+\stoptyping
+
+But probably better is to use the next directive just below the
+usual \XML\ marker line:
+
+\starttyping
+<?context-xml-directive editor language uk ?>
 \stoptyping
 
 \subject{Interface selection}
@@ -411,8 +462,8 @@ external ones are steered with themes. Unfortunately there is
 hardly any access to properties from the external lexer code nor
 can we consult the file system and/or run programs like \type
 {mtxrun}. This means that we cannot use configuration files in the
-\CONTEXT\ distribution directly. Hopefully this changes with future
-releases.
+\CONTEXT\ distribution directly. Hopefully this changes with
+future releases.
 
 \subject{The external lexers}
 
@@ -435,8 +486,27 @@ In principle the external lexers can be used with \type
 for lpeg lexing originates in \type {textadept}. Currently \type
 {textadept} lacks a couple of features I like about \SCITE\ (for
 instance it has no realtime logpane) and it's also still changing.
-At some point the \CONTEXT\ distribution will probably provide
-files for \type {textadept} as well.
+At some point the \CONTEXT\ distribution might ship with files
+for \type {textadept} as well.
+
+The external lpeg lexers work okay with the \MSWINDOWS\ and
+\LINUX\ versions of \SCITE, but unfortunately at the time of
+writing this, the \LUA\ library that is needed is not available
+for the \MACOSX\ version of \SCITE. Also, due to the fact that the
+lexing framework is rather isolated, there are some issues that
+cannot be addressed in the properly, at least not currently.
+
+In addition to \CONTEXT\ and \METAFUN\ lexing a \LUA\ lexer is
+also provided so that we can handle \CONTEXT\ \LUA\ Document
+(\CLD) files too. There is also an \XML\ lexer. This one also
+provides spell checking. The \PDF\ lexer tries to do a good job on
+\PDF\ files, but it has some limitations. There is also a simple
+text file lexer that does spell checking.
+
+Don't worry if you see an orange rectangle in your \TEX\ or \XML\
+document. This indicates that there is a special space character
+there, for instance \type {0xA0}, the nonbreakable space. Of course
+we assume that you use \UTF8 as input encoding.
 
 \subject{The internal lexers}
 
@@ -716,7 +786,7 @@ list is taken from the on|-|line help pages.
 \startbuffer[keybindings]
 \starttabulate[|l|p|]
 \FL
-\NC \rm \bf keybinding   \NC \bf meaning (taken from the \SCITE\ help file)                         \NC \NR
+\NC \rm \bf keybinding   \NC \bf meaning (taken from the \SCITE\ help file)                                \NC \NR
 \ML
 \NC \type{Ctrl+Keypad+}         \NC magnify text size                                                      \NC \NR
 \NC \type{Ctrl+Keypad-}         \NC reduce text size                                                       \NC \NR
@@ -784,13 +854,5 @@ list is taken from the on|-|line help pages.
 \NC           \NC \type {www.contextgarden.net} \NC \NR
 \NC version   \NC \currentdate                  \NC \NR
 \stoptabulate
-
-\startstandardmakeup[headerstate=none,footer=none]
-
-  \setuptabulate[before=,after=] \getbuffer[keybindings]
-
-  \vfill
-
-\stopstandardmakeup
 
 \stoptext

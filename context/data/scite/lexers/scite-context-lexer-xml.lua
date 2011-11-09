@@ -51,10 +51,12 @@ local closecdata       = P("]]>")
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
-local wordpattern = context.patterns.wordpattern
-local checkedword = context.patterns.checkedword
-local setwordlist = context.setwordlist
-local validwords  = false
+local wordpattern  = context.patterns.iwordpattern
+local iwordpattern = context.patterns.wordpattern
+local checkedword  = context.patterns.checkedword
+local setwordlist  = context.setwordlist
+local invisibles   = context.patterns.invisibles
+local validwords   = false
 
 -- <?xml version="1.0" encoding="UTF-8" language="uk" ?>
 --
@@ -75,7 +77,7 @@ local p_preamble = Cmt(#P("<?xml "), function(input,i,_) -- todo: utf bomb
 end)
 
 local p_word =
-    Cmt(wordpattern, function(_,i,s)
+    Cmt(iwordpattern, function(_,i,s)
         if validwords then
             return checkedword(validwords,s,i)
         else
@@ -185,6 +187,9 @@ local p_instruction =
   * token("default",(1-closeinstruction)^1)
   * token("command",closeinstruction)
 
+local p_invisible =
+    token("invisible",invisibles^1)
+
 _rules = {
     { "whitespace",  p_spacing     },
     { "preamble",    p_preamble    },
@@ -196,6 +201,7 @@ _rules = {
     { "close",       p_close       },
     { "open",        p_open        },
     { "entity",      p_entity      },
+    { "invisible",   p_invisible   },
     { "rest",        p_rest        },
 }
 

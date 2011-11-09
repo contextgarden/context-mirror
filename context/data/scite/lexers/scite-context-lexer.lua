@@ -574,3 +574,134 @@ lexer.fold        = context.fold
 lexer.lex         = context.lex
 lexer.token       = context.token
 lexer.exact_match = context.exact_match
+
+-- helper .. alas ... the lexer's lua instance is rather crippled .. not even
+-- math is part of it
+
+local floor = math and math.floor
+local char  = string.char
+
+if not floor then
+
+    floor = function(n)
+        return tonumber(string.format("%d",n))
+    end
+
+    math = math or { }
+
+    math.floor = floor
+
+end
+
+local function utfchar(n)
+    if n < 0x80 then
+        return char(n)
+    elseif n < 0x800 then
+        return char(
+            0xC0 + floor(n/0x40),
+            0x80 + (n % 0x40)
+        )
+    elseif n < 0x10000 then
+        return char(
+            0xE0 + floor(n/0x1000),
+            0x80 + (floor(n/0x40) % 0x40),
+            0x80 + (n % 0x40)
+        )
+    elseif n < 0x40000 then
+        return char(
+            0xF0 + floor(n/0x40000),
+            0x80 + floor(n/0x1000),
+            0x80 + (floor(n/0x40) % 0x40),
+            0x80 + (n % 0x40)
+        )
+    else
+     -- return char(
+     --     0xF1 + floor(n/0x1000000),
+     --     0x80 + floor(n/0x40000),
+     --     0x80 + floor(n/0x1000),
+     --     0x80 + (floor(n/0x40) % 0x40),
+     --     0x80 + (n % 0x40)
+     -- )
+        return "?"
+    end
+end
+
+context.utfchar = utfchar
+
+-- a helper from l-lpeg:
+
+local gmatch = string.gmatch
+
+local function make(t)
+    local p
+    for k, v in next, t do
+        if not p then
+            if next(v) then
+                p = P(k) * make(v)
+            else
+                p = P(k)
+            end
+        else
+            if next(v) then
+                p = p + P(k) * make(v)
+            else
+                p = p + P(k)
+            end
+        end
+    end
+    return p
+end
+
+function lpeg.utfchartabletopattern(list)
+    local tree = { }
+    for i=1,#list do
+        local t = tree
+        for c in gmatch(list[i],".") do
+            if not t[c] then
+                t[c] = { }
+            end
+            t = t[c]
+        end
+    end
+    return make(tree)
+end
+
+-- patterns.invisibles =
+--     P(utfchar(0x00A0)) -- nbsp
+--   + P(utfchar(0x2000)) -- enquad
+--   + P(utfchar(0x2001)) -- emquad
+--   + P(utfchar(0x2002)) -- enspace
+--   + P(utfchar(0x2003)) -- emspace
+--   + P(utfchar(0x2004)) -- threeperemspace
+--   + P(utfchar(0x2005)) -- fourperemspace
+--   + P(utfchar(0x2006)) -- sixperemspace
+--   + P(utfchar(0x2007)) -- figurespace
+--   + P(utfchar(0x2008)) -- punctuationspace
+--   + P(utfchar(0x2009)) -- breakablethinspace
+--   + P(utfchar(0x200A)) -- hairspace
+--   + P(utfchar(0x200B)) -- zerowidthspace
+--   + P(utfchar(0x202F)) -- narrownobreakspace
+--   + P(utfchar(0x205F)) -- math thinspace
+
+patterns.invisibles = lpeg.utfchartabletopattern {
+    utfchar(0x00A0), -- nbsp
+    utfchar(0x2000), -- enquad
+    utfchar(0x2001), -- emquad
+    utfchar(0x2002), -- enspace
+    utfchar(0x2003), -- emspace
+    utfchar(0x2004), -- threeperemspace
+    utfchar(0x2005), -- fourperemspace
+    utfchar(0x2006), -- sixperemspace
+    utfchar(0x2007), -- figurespace
+    utfchar(0x2008), -- punctuationspace
+    utfchar(0x2009), -- breakablethinspace
+    utfchar(0x200A), -- hairspace
+    utfchar(0x200B), -- zerowidthspace
+    utfchar(0x202F), -- narrownobreakspace
+    utfchar(0x205F), -- math thinspace
+}
+
+-- now we can make:
+
+patterns.iwordtoken   = patterns.wordtoken - patterns.invisibles
+patterns.iwordpattern = patterns.iwordtoken^3

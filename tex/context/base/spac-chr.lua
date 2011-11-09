@@ -86,7 +86,7 @@ local methods = {
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
-    [0x00A0] = function(head,current)
+    [0x00A0] = function(head,current) -- nbsp
         local para = fontparameters[current.font]
         if has_attribute(current,a_alignstate) == 1 then -- flushright
             head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
