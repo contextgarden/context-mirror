@@ -130,7 +130,7 @@ p, li {
 	font-size: 16px ;
 	border-style: none ;
 	border-width: 0 ;
-	background-color: <?lua pv('color-background-one')?> ;
+	background-color: <?lua pv('color-background-three')?> ;
 	_margin-left: -15px ;
 }
 #bottom {
@@ -163,7 +163,7 @@ p, li {
 	font-size: 16px ;
 	border-style: none ;
 	border-width: 0 ;
-	background-color: <?lua pv('color-background-two')?> ;
+	background-color: <?lua pv('color-background-four')?> ;
 }
 #top-one {
 	position: absolute ;

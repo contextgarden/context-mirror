@@ -4322,6 +4322,7 @@ function table.setmetatableindex(t,f)
             setmetatable(t,{ __index = f })
         end
     end
+    return t
 end
 
 function table.setmetatablenewindex(t,f)
@@ -4339,6 +4340,7 @@ function table.setmetatablenewindex(t,f)
             setmetatable(t,{ __newindex = f })
         end
     end
+    return t
 end
 
 function table.setmetatablecall(t,f)
@@ -4348,6 +4350,7 @@ function table.setmetatablecall(t,f)
     else
         setmetatable(t,{ __call = f })
     end
+    return t
 end
 
 function table.setmetatablekey(t,key,value)
@@ -4357,6 +4360,7 @@ function table.setmetatablekey(t,key,value)
         setmetatable(t,m)
     end
     m[key] = value
+    return t
 end
 
 function table.getmetatablekey(t,key,value)
