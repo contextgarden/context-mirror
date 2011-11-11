@@ -166,17 +166,17 @@
 \def\dodoifnotmode
   {\docheckformode\gobbleoneargument\firstofoneargument}
 
-\long\unexpanded\def\dostartmode[#1]%
+\unexpanded\def\dostartmode[#1]%
   {\docheckformode\donothing\dostopmode{#1}}
 
-\long\def\dostartnotmode[#1]%
+\def\dostartnotmode[#1]%
   {\docheckformode\dostopnotmode\donothing{#1}}
 
 \unexpanded\def\stopmode   {} % no relax
 \unexpanded\def\stopnotmode{} % no relax
 
-\long\def\dostopmode   #1\stopmode   {}
-\long\def\dostopnotmode#1\stopnotmode{}
+\def\dostopmode   #1\stopmode   {}
+\def\dostopnotmode#1\stopnotmode{}
 
 \unexpanded\def\doifallmodeselse{\unprotect\dodoifallmodeselse}
 \unexpanded\def\doifallmodes    {\unprotect\dodoifallmodes}
@@ -193,17 +193,41 @@
 \def\dodoifnotallmodes
   {\docheckforallmodes\gobbleoneargument\firstofoneargument}
 
-\long\def\dostartallmodes[#1]%
+\def\dostartallmodes[#1]%
   {\docheckforallmodes\donothing\dostopallmodes{#1}}
 
-\long\def\dostartnotallmodes[#1]%
+\def\dostartnotallmodes[#1]%
   {\docheckforallmodes\dostopnotallmodes\donothing{#1}}
 
 \unexpanded\def\stopallmodes   {} % no relax
 \unexpanded\def\stopnotallmodes{} % no relax
 
-\long\def\dostopallmodes   #1\stopallmodes   {}
-\long\def\dostopnotallmodes#1\stopnotallmodes{}
+\def\dostopallmodes   #1\stopallmodes   {}
+\def\dostopnotallmodes#1\stopnotallmodes{}
+
+%D Pushing/popping:
+
+\unexpanded\def\pushmode[#1]%
+  {\ifcsname\@mode@#1\endcsname\else\donewmode{#1}\fi
+   \expandafter\edef\csname\@mode@:#1\endcsname{\number\csname\@mode@#1\endcsname}%
+   \expandafter\pushmacro\csname\@mode@:#1\endcsname}
+
+\unexpanded\def\popmode[#1]%
+  {\ifcsname\@mode@:#1\endcsname
+     \expandafter\popmacro\csname\@mode@:#1\endcsname
+     \csname\@mode@#1\endcsname\csname\@mode@:#1\endcsname\relax
+   \fi}
+
+\def\pushsystemmode#1%
+  {\ifcsname\@mode@\systemmodeprefix#1\endcsname\else\donewmode{\systemmodeprefix#1}\fi
+   \expandafter\edef\csname\@mode@:\systemmodeprefix#1\endcsname{\number\csname\@mode@\systemmodeprefix#1\endcsname}%
+   \expandafter\pushmacro\csname\@mode@:\systemmodeprefix#1\endcsname}
+
+\def\resetsystemmode#1%
+  {\ifcsname\@mode@:\systemmodeprefix#1\endcsname
+     \expandafter\popmacro\csname\@mode@:\systemmodeprefix#1\endcsname
+     \csname\@mode@\systemmodeprefix#1\endcsname\csname\@mode@:\systemmodeprefix#1\endcsname\relax
+   \fi}
 
 %D Lets now set a mode:
 
@@ -215,7 +239,7 @@
 \unexpanded\def\stopsetups {} % to please dep checker
 
 \expanded % will become obsolete
-  {\long\def\@EA\noexpand\csname\e!start\v!setups\endcsname
+  {\def\@EA\noexpand\csname\e!start\v!setups\endcsname
      {\begingroup\noexpand\doifnextoptionalelse
         {\noexpand\dostartsetupsA\@EA\noexpand\csname\e!stop\v!setups\endcsname}
         {\noexpand\dostartsetupsB\@EA\noexpand\csname\e!stop\v!setups\endcsname}}}
@@ -347,11 +371,11 @@
 \let\stoplocalsetups            \relax
 \let\stopsetups                 \relax
 
-\def\dodostartluasetups   #1#2#3\stopluasetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
-\def\dodostartxmlsetups   #1#2#3\stopxmlsetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
-\def\dodostartrawsetups   #1#2#3\stoprawsetups  {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
-\def\dodostartlocalsetups #1#2#3\stoplocalsetups{\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
-\def\dodostartsetups      #1#2#3\stopsetups     {\endgroup\dodoglobal\long\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartluasetups   #1#2#3\stopluasetups  {\endgroup\dodoglobal\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartxmlsetups   #1#2#3\stopxmlsetups  {\endgroup\dodoglobal\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartrawsetups   #1#2#3\stoprawsetups  {\endgroup\dodoglobal\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartlocalsetups #1#2#3\stoplocalsetups{\endgroup\dodoglobal\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
+\def\dodostartsetups      #1#2#3\stopsetups     {\endgroup\dodoglobal\@EA\def\csname\??su#1:#2\@EA\endcsname\@EA##\@EA1\@EA{#3}}
 
 \def\dostartluasetups           {\ifsecondargument\@EA\dostartluasetupsC  \else\@EA\dostartluasetupsD  \fi}
 \def\dostartxmlsetups           {\ifsecondargument\@EA\dostartxmlsetupsC  \else\@EA\dostartxmlsetupsD  \fi}
@@ -434,10 +458,10 @@
       \popmacro\currentvariableclass}%
    \errorisfatalfalse}
 
-\unexpanded\def\setvariable #1#2#3{\long\expandafter\def \csname\??vars:#1:#2\endcsname{#3}}
-\unexpanded\def\setevariable#1#2#3{\long\expandafter\edef\csname\??vars:#1:#2\endcsname{#3}}
-\unexpanded\def\setgvariable#1#2#3{\long\expandafter\gdef\csname\??vars:#1:#2\endcsname{#3}}
-\unexpanded\def\setxvariable#1#2#3{\long\expandafter\xdef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setvariable #1#2#3{\expandafter\def \csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setevariable#1#2#3{\expandafter\edef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setgvariable#1#2#3{\expandafter\gdef\csname\??vars:#1:#2\endcsname{#3}}
+\unexpanded\def\setxvariable#1#2#3{\expandafter\xdef\csname\??vars:#1:#2\endcsname{#3}}
 
 \def\getvariable#1#2%
   {\csname
@@ -460,14 +484,14 @@
 \def\docheckvariables
   {\dogetparameters\docheckrawvalue}
 
-\long\def\docheckrawvalue#1#2#3%
+\def\docheckrawvalue#1#2#3%
   {\ifcsname\??vars:#1:#2\endcsname
      \edef\checkedrawvalue{\csname\??vars:#1:#2\endcsname}%
      \ifx\checkedrawvalue\empty
-       \long\expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
+       \expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
      \fi
    \else
-     \long\expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
+     \expandafter\def\csname\??vars:#1:#2\endcsname{#3}%
    \fi}
 
 %D \macros
