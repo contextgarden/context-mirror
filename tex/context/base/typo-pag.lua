@@ -24,12 +24,14 @@ local points              = number.points
 
 local a_keeptogether      = attributes.private("keeptogether")
 
-local trace_keeptogether  = false  trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = v end)
+local trace_keeptogether  = false
 local report_keeptogether = logs.reporter("parbuilders","keeptogether")
 
 local cache               = { }
 local last                = 0
 local enabled             = false
+
+trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = v end)
 
 -- todo: also support lines = 3 etc (e.g. dropped caps) but how to set that
 -- when no hlists are there ? ... maybe the local_par
@@ -71,8 +73,17 @@ function builders.paragraphs.registertogether(line,specification) -- might chang
         local a = a or last
         local c = cache[a]
         if trace_keeptogether then
-            report_keeptogether("registered, index: %s, height: %s, depth: %s, slack: %s",
-                a,points(c.height),points(c.depth),points(c.slack))
+            local noflines = specification.lineheight
+            local height = c.height
+            local depth = c.depth
+            local slack = c.slack
+            if not noflines or noflines == 0 then
+                noflines = "unknown"
+            else
+                noflines = math.round((height + depth - slack) / noflines)
+            end
+            report_keeptogether("registered, index: %s, height: %s, depth: %s, slack: %s, noflines: %s",
+                a,points(height),points(depth),points(slack),noflines)
         end
     end
 end

@@ -26,6 +26,7 @@ local insert, remove = table.insert, table.remove
 local topoints = number.topoints
 local utfvalues = string.utfvalues
 local fromunicode16 = fonts.mappings.fromunicode16
+local sortedhash = table.sortedhash
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
@@ -251,7 +252,8 @@ local function hashlistdata()
         local ci = c[i]
         local tag = ci.references.tag
         if tag then
-            listdata[ci.metadata.kind .. ":" .. ci.metadata.name .. "-" .. tag] = ci
+            local m = ci.metadata
+            listdata[m.kind .. ":" .. m.name .. "-" .. tag] = ci
         end
     end
 end
@@ -346,10 +348,12 @@ local function allusedstyles(xmlfile)
     --
     result[#result+1] = format(documenttemplate,bodyfont,width,align,hyphen)
     --
-    for element, details in table.sortedpairs(usedstyles) do
-        for detail, data in table.sortedpairs(details) do
-            local s = xml.css.fontspecification(data.style)
-            local c = xml.css.colorspecification(data.color)
+    local colorspecification = xml.css.fontspecification
+    local fontspecification = xml.css.fontspecification
+    for element, details in sortedhash(usedstyles) do
+        for detail, data in sortedhash(details) do
+            local s = fontspecification(data.style)
+            local c = colorspecification(data.color)
             result[#result+1] = format(styletemplate,element,detail,
                 s.style   or "inherit",
                 s.variant or "inherit",
@@ -375,8 +379,8 @@ local imagetemplate = [[
 
 local function allusedimages(xmlfile)
     local result = { format("/* images for file %s */",xmlfile) }
-    for element, details in table.sortedpairs(usedimages) do
-        for detail, data in table.sortedpairs(details) do
+    for element, details in sortedhash(usedimages) do
+        for detail, data in sortedhash(details) do
             local name = data.name
             if file.extname(name) == "pdf" then
                 -- temp hack .. we will have a remapper
@@ -446,12 +450,13 @@ local function checkdocument(root)
     if data then
         for i=1,#data do
             local di = data[i]
-            if type(di) == "table" then
-                if di.tg == "ignore" then
-                    di.element = ""
-                else
-                    checkdocument(di)
-                end
+            if di.content then
+                -- ok
+            elseif di.tg == "ignore" then
+                di.element = ""
+                checkdocument(di)
+            else
+                -- can't happen
             end
         end
     end
@@ -742,8 +747,11 @@ function extras.link(result,element,detail,n,fulltag,di)
         if data then
             for i=1,#data do
                 local di = data[i]
-                if di and extras.link(result,element,detail,n,di.fulltag,di) then
-                    return true
+                if di then
+                    local fulltag = di.fulltag
+                    if fulltag and extras.link(result,element,detail,n,fulltag,di) then
+                        return true
+                    end
                 end
             end
         end
@@ -817,16 +825,19 @@ local function checkmath(root) -- we can provide utf.toentities as an option
         if roottg == "msubsup" then
             local nucleus, superscript, subscript
             for i=1,ndata do
-                if type(data[i]) == "table" then
-                    if not nucleus then
-                        nucleus = i
-                    elseif not superscript then
-                        superscript = i
-                    elseif not subscript then
-                        subscript = i
-                    else
-                        -- error
-                    end
+                local di = data[i]
+                if not di then
+                    -- weird
+                elseif di.content then
+                    -- text
+                elseif not nucleus then
+                    nucleus = i
+                elseif not superscript then
+                    superscript = i
+                elseif not subscript then
+                    subscript = i
+                else
+                    -- error
                 end
             end
             if superscript and subscript then
@@ -841,7 +852,12 @@ local function checkmath(root) -- we can provide utf.toentities as an option
             root.attributes = attributes
             for i=1,ndata do
                 local di = data[i]
-                if type(di) == "table" then
+                if not di then
+                    -- weird
+                elseif di.content then
+                    n = n + 1
+                    new[n] = di
+                else
                     local tg = di.tg
                     if tg == "mleft" then
                         attributes.left   = tostring(di.data[1].data[1])
@@ -854,9 +870,6 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                         di.__i__ = n
                         new[n] = di
                     end
-                else
-                    n = n + 1
-                    new[n] = di
                 end
             end
             root.data = new
@@ -866,8 +879,10 @@ local function checkmath(root) -- we can provide utf.toentities as an option
             return
         elseif ndata == 1 then
             local d = data[1]
-            if type(d) ~= "table" then
-                return -- can be string or false
+            if not d then
+                return
+            elseif d.content then
+                return
             elseif #root.data == 1 then
                 local tg = d.tg
                 if automathrows and roottg == "mrow" then
@@ -887,7 +902,7 @@ local function checkmath(root) -- we can provide utf.toentities as an option
         local i = 1
         while i <= ndata do                   -- -- -- TOO MUCH NESTED CHECKING -- -- --
             local di = data[i]
-            if di and type(di) == "table" then
+            if di and not di.content then
                 local tg = di.tg
                 local detail = di.detail
                 if tg == "math" then
@@ -1014,34 +1029,43 @@ local function checkmath(root) -- we can provide utf.toentities as an option
 end
 
 function stripmath(di)
-    local tg = di.tg
-    if tg == "mtext" or tg == "ms" then
+    if not di then
+        --
+    elseif di.content then
         return di
     else
-        local data = di.data
-        local ndata = #data
-        local n = 0
-        for i=1,ndata do
-            local di = data[i]
-            if type(di) == "table" then
-                di = stripmath(di)
-            end
-            if not di or di == " " or di == "" then
-                -- skip
-            elseif type(di) == "table" then
-                n = n + 1
-                di.__i__ = n
-                data[n] = di
-            else
-                n = n + 1
-                data[n] = di
-            end
-        end
-        for i=ndata,n+1,-1 do
-            data[i] = nil
-        end
-        if #data > 0 then
+        local tg = di.tg
+        if tg == "mtext" or tg == "ms" then
             return di
+        else
+            local data = di.data
+            local ndata = #data
+            local n = 0
+            for i=1,ndata do
+                local di = data[i]
+                if di and not di.content then
+                    di = stripmath(di)
+                end
+                if di then
+                    local content = di.content
+                    if not content then
+                        n = n + 1
+                        di.__i__ = n
+                        data[n] = di
+                    elseif content == " " or content == "" then
+                        -- skip
+                    else
+                        n = n + 1
+                        data[n] = di
+                    end
+                end
+            end
+            for i=ndata,n+1,-1 do
+                data[i] = nil
+            end
+            if #data > 0 then
+                return di
+            end
         end
     end
 end
@@ -1066,8 +1090,8 @@ end
 
 local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
 
-function extras.mi(result,element,detail,n,fulltag,di)
-    local str = di.data[1]
+function extras.mi(result,element,detail,n,fulltag,di) -- check with content
+    local str = di.data[1].content
     if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
         for v in utfvalues(str) do
             if (v >= a and v <= z) or (v >= A and v <= Z) then
@@ -1176,7 +1200,8 @@ function extras.tabulate(result,element,detail,n,fulltag,di)
             local content = false
             for i=1,#did do
                 local d = did[i].data
-                if d and #d > 0 then
+                local c = d and c.content
+                if c and #c > 0 then
                     content = true
                     break
                 end

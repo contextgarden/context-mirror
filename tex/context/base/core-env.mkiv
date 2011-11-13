@@ -223,7 +223,7 @@
    \expandafter\edef\csname\@mode@:\systemmodeprefix#1\endcsname{\number\csname\@mode@\systemmodeprefix#1\endcsname}%
    \expandafter\pushmacro\csname\@mode@:\systemmodeprefix#1\endcsname}
 
-\def\resetsystemmode#1%
+\def\popsystemmode#1%
   {\ifcsname\@mode@:\systemmodeprefix#1\endcsname
      \expandafter\popmacro\csname\@mode@:\systemmodeprefix#1\endcsname
      \csname\@mode@\systemmodeprefix#1\endcsname\csname\@mode@:\systemmodeprefix#1\endcsname\relax

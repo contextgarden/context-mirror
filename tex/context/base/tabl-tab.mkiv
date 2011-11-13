@@ -893,7 +893,7 @@
 
 \def\@VLd{.125em}
 
-\def\do!ttInsertVrule % will be merged in 2005
+\def\do!ttInsertVrule
   {\vrule\!!width
      \ifnum\!tgCode=\plusone
        \ifx\!tgValue\empty
@@ -983,6 +983,9 @@
 \def\donormaltableshortrule % was: \!ttShortHrule
   {\omit
    \!ttGetHalfRuleThickness
+   \ifx\tablecurrenthrulecolor\empty\else
+     \switchtocolor[\tablecurrenthrulecolor]% see *DL*
+   \fi
    \leaders\hrule\!!height\scratchdimen\!!depth\scratchdimen\hfill
    \emptyhbox
    \ignorespaces}
@@ -2055,9 +2058,9 @@
 
 \unexpanded\def\dotableDL
   {\dochecktabledivision
-   \dosingleempty\dotableDL}
+   \dosingleempty\dodotableDL}
 
-\def\dotableDL[#1]%
+\def\dodotableDL[#1]%
   {\ifnum\tableactionstate=\tablerulestate
      \writestatus\m!TABLE{skipping \string\DL}%
    \else
@@ -2072,9 +2075,9 @@
      \iffirstargument
        \global\let\tablecurrenthrulecolor\empty
        \rawprocesscommalist[#1]\dotabledrulecommand
-       \ifx\tablecurrenthrulecolor\empty\else
-         \switchtocolor[\tablecurrenthrulecolor]%
-       \fi
+     % \ifx\tablecurrenthrulecolor\empty\else
+     %   \switchtocolor[\tablecurrenthrulecolor]% see *DL*
+     % \fi
      \fi
      \ifcase\tabledrulespan
        \global\advance\currenttablecolumn \plusone

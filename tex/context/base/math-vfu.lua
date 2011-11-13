@@ -421,7 +421,7 @@ end)
 function vfmath.define(specification,set,goodies)
     local name = specification.name -- symbolic name
     local size = specification.size -- given size
-    local loaded, fontlist, main = { }, { }, nil
+    local loaded, fontlist, names, main = { }, { }, { }, nil
     local start = (trace_virtual or trace_timings) and os.clock()
     local okset, n = { }, 0
     for s=1,#set do
@@ -438,7 +438,17 @@ function vfmath.define(specification,set,goodies)
             if ss.main then
                 main = s
             end
-            local f, id = fonts.constructors.readanddefine(ssname,size)
+            local alreadyloaded = names[ssname] -- for px we load one twice (saves .04 sec)
+            local f, id
+            if alreadyloaded then
+                f, id = alreadyloaded.f, alreadyloaded.id
+                if trace_virtual then
+                    report_virtual("loading font %s subfont %s with name %s is reused",name,s,ssname)
+                end
+            else
+                f, id = fonts.constructors.readanddefine(ssname,size)
+                names[ssname] = { f = f, id = id }
+            end
             if not f or id == 0 then
                 report_virtual("loading font %s subfont %s with name %s at %s is skipped, not found",name,s,ssname,size)
             else
@@ -446,7 +456,9 @@ function vfmath.define(specification,set,goodies)
                 okset[n] = ss
                 loaded[n] = f
                 fontlist[n] = { id = id, size = size }
-                if not shared[s] then shared[n] = { } end
+                if not shared[s] then
+                    shared[n] = { }
+                end
                 if trace_virtual then
                     report_virtual("loading font %s subfont %s with name %s at %s as id %s using encoding %s",name,s,ssname,size,id,ss.vector or "none")
                 end

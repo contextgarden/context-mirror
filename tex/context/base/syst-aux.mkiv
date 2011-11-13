@@ -168,11 +168,13 @@
 
 \let\@@expanded\empty % always long and global (less restores)
 
-\def\expanded#1%
+\unexpanded\def\expanded#1%
   {\xdef\@@expanded{\noexpand#1}\@@expanded}
 
-\def\startexpanded#1\stopexpanded % see x-fo for example
+\unexpanded\def\startexpanded#1\stopexpanded % see x-fo for example
   {\xdef\@@expanded{#1}\@@expanded}
+
+\let\stopexpanded\relax
 
 %D Recent \TEX's have a primitive \expanded
 
@@ -3396,7 +3398,7 @@
 \def\@@irecurse{@@ir@@} % ecurse} % stepper
 \def\@@arecurse{@@ar@@} % ecurse} % action
 
-\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \global\expandafter\def\csname\@@arecurse\recursedepth\endcsname{#4}%
    \global\expandafter\let\csname\@@irecurse\recursedepth\endcsname\recurselevel
@@ -4420,7 +4422,7 @@
   {\def\dodogotopar{#1}%
    \redogotopar\par}
 
-\def\GetPar
+\unexpanded\def\GetPar
   {\expanded
      {\dowithpar
         {\the\BeforePar
@@ -4429,7 +4431,7 @@
          \BeforePar\emptytoks
          \AfterPar\emptytoks}}}
 
-\def\GotoPar
+\unexpanded\def\GotoPar
   {\expanded
      {\dogotopar
         {\the\BeforePar
@@ -4468,7 +4470,7 @@
 %D   ... \par
 %D \stoptyping
 
-\def\dowithpargument#1%
+\unexpanded\def\dowithpargument#1%
   {\def\nextpar##1 \par{#1{##1}}%
    \def\nextarg##1{#1{##1}}%
    \doifnextbgroupelse\nextarg{\doifnextcharelse\par{#1{}}\nextpar}}
@@ -4495,7 +4497,7 @@
 %D   ...
 %D \stoptyping
 
-\def\dowithwargument#1%
+\unexpanded\def\dowithwargument#1%
   {\def\nextwar##1 {#1{##1}}%
    \def\nextarg##1{#1{##1}}%
    \doifnextbgroupelse\nextarg\nextwar}
@@ -4626,10 +4628,10 @@
 
 \newtoks\@@scratchtoks
 
-\def\appendtoks     {\doappendtoks     \relax}
-\def\prependtoks    {\doprependtoks    \relax}
-\def\appendtoksonce {\doappendtoksonce \relax}
-\def\prependtoksonce{\doprependtoksonce\relax}
+\unexpanded\def\appendtoks     {\doappendtoks     \relax}
+\unexpanded\def\prependtoks    {\doprependtoks    \relax}
+\unexpanded\def\appendtoksonce {\doappendtoksonce \relax}
+\unexpanded\def\prependtoksonce{\doprependtoksonce\relax}
 
 \def\dodoappendtoks
   {\dodoglobal\@@toks\doubleexpandafter{\expandafter\the\expandafter\@@toks\the\@@scratchtoks}}
@@ -4657,7 +4659,7 @@
 
 %D The test macro:
 
-\def\doifintokselse#1#2% #1 en #2 zijn toks
+\unexpanded\def\doifintokselse#1#2% #1 en #2 zijn toks
   {\edef\asciia{\detokenize\expandafter{\the#1}}%
    \edef\asciib{\detokenize\expandafter{\the#2}}%
    \doifstringinstringelse\asciia\asciib}
@@ -4670,7 +4672,7 @@
 % {\scratchtoks{xaa} \removetoks x\from\scratchtoks [\the\scratchtoks]}
 % {\scratchtoks{a\relax b} \removetoks \relax\from\scratchtoks [\showthe\scratchtoks]}
 
-\def\removetoks#1\from#2%
+\unexpanded\def\removetoks#1\from#2%
   {\def\doremovetoks##1#1##2\empty\empty\empty##3\\%
      {\def\!!stringa{##3}%
       \ifx\!!stringa\empty#2{##1}\else#2{##1##2}\fi}%
@@ -4678,8 +4680,8 @@
 
 %D Also:
 
-\def\appendetoks #1\to{\normalexpanded{\noexpand\appendtoks #1}\to}
-\def\prependetoks#1\to{\normalexpanded{\noexpand\prependtoks#1}\to}
+\unexpanded\def\appendetoks #1\to{\normalexpanded{\noexpand\appendtoks #1}\to}
+\unexpanded\def\prependetoks#1\to{\normalexpanded{\noexpand\prependtoks#1}\to}
 
 %D Hm.
 
