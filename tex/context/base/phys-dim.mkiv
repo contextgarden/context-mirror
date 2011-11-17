@@ -361,12 +361,12 @@
 \def\unitsbackspace  {\negthinspace}
 
 \def\installunitsseparator#1#2%
-  {\setvalue{\??un::#1}{#2}}
+  {\setvalue{\??un:1:#1}{#2}}
 
 \unexpanded\def\dounitsseparator
   {\edef\currentunitsseparator{\unitsparameter\c!separator}%
-   \csname\??un::%
-     \ifcsname\??un::\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
+   \csname\??un:1:%
+     \ifcsname\??un:1:\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
    \endcsname}
 
 \installunitsseparator\v!normal {\cdot}
@@ -374,6 +374,21 @@
 \installunitsseparator\v!medium {\unitsmediumspace}
 \installunitsseparator\v!small  {\unitssmallspace}
 \installunitsseparator\v!none   {}
+
+\def\installunitsspace#1#2%
+  {\setvalue{\??un:2:#1}{#2}}
+
+\unexpanded\def\dounitsspace
+  {\edef\currentunitsspace{\unitsparameter\c!space}%
+   \csname\??un:2:%
+     \ifcsname\??un:2:\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
+   \endcsname}
+
+\installunitsspace\v!normal {\unitsbigspace}
+\installunitsspace\v!big    {\unitsbigspace}
+\installunitsspace\v!medium {\unitsmediumspace}
+\installunitsspace\v!small  {\unitssmallspace}
+\installunitsspace\v!none   {}
 
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
@@ -532,7 +547,7 @@
   {\ifcase\c_units_state % start
      \ifconditional\c_units_dospace
       % \ifdim\lastskip=\zeropoint
-         \unitsbigspace
+         \dounitsspace % \unitsbigspace
       % \else
       %   % too tricky ... we could remove and add
       % \fi
@@ -544,7 +559,7 @@
      {\dounitsseparator}%
    \or % prefix
    \or % number
-     \unitsbigspace
+     \dounitsspace % \unitsbigspace
    \fi
    \setfalse\c_units_dospace
    \units_start}
