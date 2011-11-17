@@ -38,9 +38,9 @@ local period       = P(".")
 local semicolon    = P(";")
 local colon        = P(":")
 local signspace    = P("/")
-local positive     = S("p")
-local negative     = S("n")
-local highspace    = P("s")
+local positive     = P("++") -- was p
+local negative     = P("--") -- was n
+local highspace    = P("//") -- was s
 local padding      = P("=")
 local plus         = P("+")
 local minus        = P("-")
@@ -73,7 +73,7 @@ local dpower       = power       / "" * (
                    )
 local dpadding     = padding     / "" / context.digitszeropadding -- todo
 
-local dleader      = (dsomesign + dsignspace + dpositive + dnegative + dhighspace)^0
+local dleader      = (dpositive + dnegative + dhighspace + dsomesign + dsignspace)^0
 local dtrailer     = dpower^0
 local dfinal       = P(-1) + #P(1 - comma - period - semicolon - colon)
 local dnumber      = (ddigitspace + ddigit)^1
@@ -92,8 +92,13 @@ local dfallback      = (dtemplate * (dcommanop + dperiodnop)^0)^0 * (dcommayes +
 local p_c_number     = (dcpinternumber)^0 * (dpcfinalnumber)^0 * ddigit + dfallback -- 000.000.000,00
 local c_p_number     = (dpcinternumber)^0 * (dcpfinalnumber)^0 * ddigit + dfallback -- 000,000,000.00
 
+-- ony signs before numbers (otherwise we get s / seconds issues)
+--
 local p_c_dparser    = dleader * p_c_number * dtrailer * dfinal
 local c_p_dparser    = dleader * c_p_number * dtrailer * dfinal
+
+-- local p_c_dparser    = p_c_number * dtrailer * dfinal
+-- local c_p_dparser    = c_p_number * dtrailer * dfinal
 
 function commands.digits(str,p_c)
     if p_c == v_reverse then
@@ -265,6 +270,7 @@ local short_units_to_long = {
     g  = "Gram",
     n  = "Newton",
     v  = "Volt",
+    l  = "Liter",
 
     Litre = "Liter",
     Metre = "Meter",
@@ -345,8 +351,8 @@ local combination = P { "start",
              + V("s_prefix") * V("l_unit"),
 }
 
---~ inspect(s_prefix)
---~ inspect(s_unit)
+-- inspect(s_prefix)
+-- inspect(s_unit)
 -- square kilo meter
 -- square km
 
@@ -435,9 +441,10 @@ end
 
 -- todo 0x -> rm
 -- pretty large lpeg (maybe do dimension lookup otherwise)
+-- not ok yet ... we have this p n s problem
 
-local dimension = ((l_suffix * combination)  * Carg(1))  / dimspu
-                + ((combination * s_suffix)  * Carg(1))  / dimpus
+local dimension = ((l_suffix * combination)   * Carg(1)) / dimspu
+                + ((combination * s_suffix)   * Carg(1)) / dimpus
 local number    = lpeg.patterns.number                   / unitsN
 local operator  = C((l_operator + s_operator) * Carg(1)) / dimop  -- weird, why is the extra C needed here
 local whatever  = (P(1)^0)                               / unitsU
@@ -453,8 +460,8 @@ local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever + P(-1)
 local p_c_unitdigitparser = (Cc(nil)/unitsNstart) * p_c_dparser * (Cc(nil)/unitsNstop) --
 local c_p_unitdigitparser = (Cc(nil)/unitsNstart) * c_p_dparser * (Cc(nil)/unitsNstop) --
 
-local p_c_combinedparser  = (p_c_unitdigitparser + number)^-1 * unitparser
-local c_p_combinedparser  = (c_p_unitdigitparser + number)^-1 * unitparser
+local p_c_combinedparser  = dleader * (p_c_unitdigitparser + number)^-1 * unitparser
+local c_p_combinedparser  = dleader * (c_p_unitdigitparser + number)^-1 * unitparser
 
 function commands.unit(str,wherefrom,p_c)
     if p_c == v_reverse then

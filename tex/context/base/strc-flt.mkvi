@@ -410,6 +410,16 @@
    \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
    \doifinsetelse\v!split\floatlocation\place_next_float_box_split\place_next_float_box_normal}
 
+\unexpanded\def\placefloat
+  {\flushnotes
+   \flushsidefloats % here !
+   \float_begin_group
+   \dotripleempty\float_place_float}
+
+\def\float_place_float[#tag]%
+  {\float_set_current_tag{#tag}%
+   \float_place_indeed}
+
 % start-stop
 
 \unexpanded\def\float_start_place#tag%
@@ -434,6 +444,18 @@
 \unexpanded\def\float_stop_place
   {\removeunwantedspaces
    \egroup}
+
+\unexpanded\def\startplacefloat
+  {\flushnotes
+   \flushsidefloats % here !
+   \float_begin_group
+   \dodoubleempty\float_start_place_float}
+
+\def\float_start_place_float[#tag]%
+  {\float_set_current_tag{#tag}%
+   \float_start_place_indeed}
+
+\let\stopplacefloat\float_stop_place
 
 % reserve
 
@@ -883,9 +905,6 @@
                 \box\floatbox
                 \doifnot{\floatparameter\c!location}\v!right\hss}}}%
       \fi}}
-
-\unexpanded\def\placefloat
-  {\dotripleempty\docomplexplacefloat}
 
 \unexpanded\def\placefloats
   {\doflushfloats}
