@@ -49,8 +49,11 @@ local vpack_node_list         = node.vpack
 local slide_node_list         = node.slide
 local flush_node_list         = node.flush_list
 
-local new_glue                = nodes.pool.glue
-local new_kern                = nodes.pool.kern
+local nodepool                = nodes.pool
+
+local new_glue                = nodepool.glue
+local new_kern                = nodepool.kern
+local new_penalty             = nodepool.penalty
 
 local v_stretch               = variables.stretch
 local v_normal                = variables.normal
@@ -434,6 +437,26 @@ function xtables.reflow_height()
     data.currentcolumn = 0
 end
 
+local function showspans(data)
+    local rows = data.rows
+    local nofcolumns = data.nofcolumns
+    local nofrows = data.nofrows
+    for r=1,nofrows do
+        local line = { }
+        for c=1,nofcolumns do
+            local cell =rows[r][c]
+            if cell.list then
+                line[#line+1] = "list"
+            elseif cell.span then
+                line[#line+1] = "span"
+            else
+                line[#line+1] = "none"
+            end
+        end
+        report_xtable("%3d : %s",r,concat(line," "))
+    end
+end
+
 function xtables.construct()
     local rows = data.rows
     local heights = data.heights
@@ -452,20 +475,7 @@ function xtables.construct()
     -- ranges can be mixes so we collect
 
     if trace_xtable then
-        for r=1,data.nofrows do
-            local line = { }
-            for c=1,data.nofcolumns do
-                local cell =rows[r][c]
-                if cell.list then
-                    line[#line+1] = "list"
-                elseif cell.span then
-                    line[#line+1] = "span"
-                else
-                    line[#line+1] = "none"
-                end
-            end
-            report_xtable("%3d : %s",r,concat(line," "))
-        end
+        showspans(data)
     end
 
     local ranges = {
@@ -493,8 +503,12 @@ function xtables.construct()
             start = new_kern(leftmargindistance)
             stop = start
         end
+        local hasspan = false
         for c=1,nofcolumns do
             local drc = row[c]
+            if not hasspan then
+                hasspan = drc.span
+            end
             local list = drc.list
             if list then
                 list.shift = list.height + list.depth
@@ -530,21 +544,26 @@ function xtables.construct()
                 kern.prev = stop
              -- stop = kern
             end
-            return start, heights[r] + depths[r]
+            return start, heights[r] + depths[r], hasspan
         end
     end
     local function collect_range(range)
-        local result = { }
+        local result, nofr = { }, 0
         local nofrange = #range
         for i=1,#range do
             local r = range[i]
-            local row = rows[r]
-            local list, size = packaged_column(r)
+         -- local row = rows[r]
+            local list, size, hasspan = packaged_column(r)
             if list then
-                result[#result+1] = {
+                if hasspan and nofr > 0 then
+                    result[nofr][4] = true
+                end
+                nofr = nofr + 1
+                result[nofr] = {
                     hpack_node_list(list),
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
+                    false
                 }
             end
         end
@@ -577,7 +596,9 @@ local function inject(row,copy,package)
         context(new_kern(row[2]))
         context_endvbox()
         context_nointerlineskip() -- figure out a better way
-        if row[3] then
+        if row[4] then
+            -- nothing as we have a span
+        elseif row[3] then
             context_blank(row[3] .. "sp")
         else
             context(new_glue(0))
