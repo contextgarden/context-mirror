@@ -102,8 +102,10 @@
 \to \everysetupxtable
 
 \setupxtable[%
-    \c!nx=1,
-    \c!ny=1,
+    \c!nr=1,
+    \c!nc=1,
+    \c!nx=1, % slow
+    \c!ny=1, % slow
     \c!align=\v!table, % {\v!flushleft,\v!broad,\v!high}, % just as \bTABLE .. \eTABLE
     \c!frameoffset=.5\linewidth,
     \c!backgroundoffset=\v!frame,
@@ -333,6 +335,32 @@
      \fi
    \fi}
 
+% For historic reasons we support both nx/nc and ny/nr : maybe nx/ny becomes
+% obsolete some day. The let as well as the direct speed things up a bit. We
+% could also consider a \defaultxtableparameter.
+%
+% \x_table_nx\defaultxtableparameter\c!nc{\defaultxtableparameter\c!nx\plusone}
+% \x_table_ny\defaultxtableparameter\c!nr{\defaultxtableparameter\c!ny\plusone}
+%
+% Although this becomes kind of messy. It saves already time that we only check
+% for it when we have settings.
+
+\def\before_x_cell_settings
+  {\letxtableparameter\c!nx\plusone
+   \letxtableparameter\c!ny\plusone
+   \letxtableparameter\c!nr\plusone
+   \letxtableparameter\c!nc\plusone}
+
+\def\after_x_cell_settings
+  {\x_table_nx\directxtableparameter\c!nc\relax
+   \x_table_ny\directxtableparameter\c!nr\relax
+   \ifnum\x_table_nx=\plusone
+     \x_table_nx\directxtableparameter\c!nx\relax
+   \fi
+   \ifnum\x_table_ny=\plusone
+     \x_table_ny\directxtableparameter\c!ny\relax
+   \fi}
+
 \unexpanded\def\start_x_cell_reflow_width[#settings]%
   {\setbox\x_table_box\hbox\bgroup
    \ifnum\x_table_nesting>\plusone
@@ -340,12 +368,14 @@
      \letxtableparameter\c!height\v!fit  % overloads given height
    \fi
    \iffirstargument
+     \before_x_cell_settings
      \setupcurrentxtable[#settings]%
+     \after_x_cell_settings
+   \else
+     \x_table_nx\plusone
+     \x_table_ny\plusone
    \fi
-   \x_table_nx      \xtableparameter\c!nx
-   \x_table_ny      \xtableparameter\c!ny
-   \x_table_distance\xtableparameter\c!distance
-   \relax
+   \x_table_distance\xtableparameter\c!distance\relax
    \ctxcommand{x_table_init_reflow_width()}%
    \inheritedxtableframed\bgroup
    \begin_of_cell}
