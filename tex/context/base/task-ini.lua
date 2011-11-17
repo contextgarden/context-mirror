@@ -10,6 +10,8 @@ if not modules then modules = { } end modules ['task-ini'] = {
 -- the load order can determine the trickery to be applied to node lists
 --
 -- we can disable more handlers and enable then when really used (*)
+--
+-- todo: two finalizers: real shipout (can be imposed page) and page shipout (individual page)
 
 local tasks           = nodes.tasks
 local appendaction    = tasks.appendaction
