@@ -478,11 +478,11 @@
      \let\currentcounter\currentname
    \fi
    %
-   \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
-   %
-   \ifx\hasstructurecounternumber\v!yes % here due to previous test but best in callers
-     \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
-   \fi
+%    \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
+%    %
+%    \ifx\hasstructurecounternumber\v!yes % here due to previous test but best in callers
+%      \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
+%    \fi
    %
    \ifx\hasstructurecountercaption\v!yes
      \xdef\currentstructurecomponentname           {#3\c!name}%

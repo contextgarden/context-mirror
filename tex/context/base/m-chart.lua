@@ -323,14 +323,18 @@ local function inject(includedata,data,hash)
     local settings = includedata.settings
     for i=1,#subdata do
         local si = subdata[i]
-        local t = {
-            x        = si.x + xoffset,
-            y        = si.y + yoffset,
-            settings = settings,
-        }
-        setmetatableindex(t,si)
-        data[#data+1] = t
-        hash[si.name or #data] = t
+        if si.include then
+            inject(si,data,hash)
+        else
+            local t = {
+                x        = si.x + xoffset,
+                y        = si.y + yoffset,
+                settings = settings,
+            }
+            setmetatableindex(t,si)
+            data[#data+1] = t
+            hash[si.name or #data] = t
+        end
     end
 end
 

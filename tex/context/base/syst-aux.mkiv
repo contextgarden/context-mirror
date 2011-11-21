@@ -1979,13 +1979,13 @@
 %D us to do some checking, we reimplemented the non||empty
 %D ones.
 
-\def\dosingleargument    {\let\expectedarguments\plusone   \dosingleempty    }
-\def\dodoubleargument    {\let\expectedarguments\plustwo   \dodoubleempty    }
-\def\dotripleargument    {\let\expectedarguments\plusthree \dotripleempty    }
-\def\doquadrupleargument {\let\expectedarguments\plusfour  \doquadrupleempty }
-\def\doquintupleargument {\let\expectedarguments\plusfive  \doquintupleempty }
-\def\dosixtupleargument  {\let\expectedarguments\plussix   \dosixtupleempty  }
-\def\doseventupleargument{\let\expectedarguments\plusseven \doseventupleempty}
+\unexpanded\def\dosingleargument    {\let\expectedarguments\plusone   \dosingleempty    }
+\unexpanded\def\dodoubleargument    {\let\expectedarguments\plustwo   \dodoubleempty    }
+\unexpanded\def\dotripleargument    {\let\expectedarguments\plusthree \dotripleempty    }
+\unexpanded\def\doquadrupleargument {\let\expectedarguments\plusfour  \doquadrupleempty }
+\unexpanded\def\doquintupleargument {\let\expectedarguments\plusfive  \doquintupleempty }
+\unexpanded\def\dosixtupleargument  {\let\expectedarguments\plussix   \dosixtupleempty  }
+\unexpanded\def\doseventupleargument{\let\expectedarguments\plusseven \doseventupleempty}
 
 %D \macros
 %D   {iffirstagument,ifsecondargument,ifthirdargument,

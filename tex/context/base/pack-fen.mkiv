@@ -13,7 +13,17 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Fences for Ruled Content}
 
-% we can move the main fences here too
+%D \startbuffer
+%D \useMPlibrary[meta-imp-hooks.mkiv]
+%D
+%D \framed[frame=off,bottomframe=righthook]{Bottom right hook}
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
 
 \unprotect
 
@@ -34,8 +44,12 @@
    \expandafter\let\csname b\@@frame@@\v!off#1\expandafter\endcsname\csname b\@@frame@@\v!on#1\endcsname}
 
 \def\setinstalledframedimensions
-  {\edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp}%
-   \edef\overlaywidth {\the\frameddimenwd}}
+  {\edef\overlaywidth {\the\frameddimenwd\space}%
+   \edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
+   \edef\overlaydepth {\the\frameddimendp\space}%
+   \edef\overlaycolor {\framedparameter\c!backgroundcolor}%
+   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+   \edef\overlaylinewidth{\the\ruledlinewidth}}
 
 \newbox\specialframebox
 

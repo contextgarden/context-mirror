@@ -386,23 +386,39 @@ end
 
 local pushcatcodes, popcatcodes, txtcatcodes = context.pushcatcodes, context.popcatcodes, tex.txtcatcodes
 
-function references.urls.get(name,method,space) -- method: none, before, after, both, space: yes/no
+function references.urls.get(name)
     local u = urls[name]
     if u then
         local url, file = u[1], u[2]
-        pushcatcodes(txtcatcodes)
         if file and file ~= "" then
-            context("%s/%s",url,file)
+            return format("%s/%s",url,file)
         else
-            context(url)
+            return url
         end
+    end
+end
+
+function commands.geturl(name)
+    local url = references.urls.get(name)
+    if url and url ~= "" then
+        pushcatcodes(txtcatcodes)
+        context(url)
         popcatcodes()
     end
 end
 
+-- function commands.gethyphenatedurl(name,...)
+--     local url = references.urls.get(name)
+--     if url and url ~= "" then
+--         hyphenatedurl(url,...)
+--     end
+-- end
+
 function commands.doifurldefinedelse(name)
     commands.doifelse(urls[name])
 end
+
+commands.useurl= references.urls.define
 
 -- files
 
@@ -427,6 +443,8 @@ end
 function commands.doiffiledefinedelse(name)
     commands.doifelse(files[name])
 end
+
+commands.usefile= references.files.define
 
 -- helpers
 
@@ -529,7 +547,7 @@ function references.from(name)
     else
         local f = files[name]
         if f then
-            local description, file = f[1], f[2]
+            local file, description = f[1], f[2]
             if description ~= "" then
                 context.dofromfiledescription(description)
             else

@@ -48,6 +48,15 @@ local openinstruction  = P("<?")
 local closeinstruction = P("?>")
 local opencdata        = P("<![CDATA[")
 local closecdata       = P("]]>")
+local opendoctype      = P("<!DOCTYPE") -- could grab the whole doctype
+local closedoctype     = P("]>") + P(">")
+
+-- <!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
+-- <!DOCTYPE Something PUBLIC "... ..." "..." >
+-- <!DOCTYPE Something SYSTEM "... ..." [ ... ] >
+-- <!DOCTYPE Something SYSTEM "... ..." >
+-- <!DOCTYPE Something [ ... ] >
+-- <!DOCTYPE Something >
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
@@ -125,13 +134,94 @@ local p_dstring =
 --   * token("comment",(1-closecdata)^0)   -- different from context
 --   * token("command",closecdata)
 
-local commentlexer = lexer.load("scite-context-lexer-xml-comment")
-local cdatalexer   = lexer.load("scite-context-lexer-xml-cdata")
+-- maybe cdata just text (then we don't need the extra lexer as we only have one comment then)
+
+-- <!DOCTYPE Something PUBLIC "... ..." "..." [ ... ] >
+-- <!DOCTYPE Something PUBLIC "... ..." "..." >
+-- <!DOCTYPE Something SYSTEM "... ..." [ ... ] >
+-- <!DOCTYPE Something SYSTEM "... ..." >
+-- <!DOCTYPE Something [ ... ] >
+-- <!DOCTYPE Something >
+
+-- <!ENTITY xxxx SYSTEM "yyyy" NDATA zzzz>
+-- <!ENTITY xxxx PUBLIC "yyyy" >
+-- <!ENTITY xxxx "yyyy" >
+
+local p_docstr  = p_dstring + p_sstring
+
+local p_docent  = token("command",P("<!ENTITY"))
+                * p_optionalwhitespace
+                * token("keyword",name)
+                * p_optionalwhitespace
+                * (
+                    (
+                        token("constant",P("SYSTEM"))
+                      * p_optionalwhitespace
+                      * p_docstr
+                      * p_optionalwhitespace
+                      * token("constant",P("NDATA"))
+                      * p_optionalwhitespace
+                      * token("keyword",name)
+                    ) + (
+                        token("constant",P("PUBLIC"))
+                      * p_optionalwhitespace
+                      * p_docstr
+                    ) + (
+                        p_docstr
+                    )
+                  )
+                * p_optionalwhitespace
+                * token("command",P(">"))
+
+local p_docele  = token("command",P("<!ELEMENT"))
+                * p_optionalwhitespace
+                * token("keyword",name)
+                * p_optionalwhitespace
+                * token("command",P("("))
+                * (
+                    p_spacing
+                  + token("constant",P("#CDATA") + P("#PCDATA") + P("ANY"))
+                  + token("text",P(","))
+                  + token("comment",(1-S(",)"))^1)
+                  )^1
+                * token("command",P(")"))
+                * p_optionalwhitespace
+                * token("command",P(">"))
+
+local p_docset  = token("command",P("["))
+                * p_optionalwhitespace
+                * ((p_optionalwhitespace * (p_docent + p_docele))^1 + token("comment",(1-P("]"))^0))
+                * p_optionalwhitespace
+                * token("command",P("]"))
+
+local p_doctype = token("command",P("<!DOCTYPE"))
+                * p_optionalwhitespace
+                * token("keyword",name)
+                * p_optionalwhitespace
+                * (
+                    (
+                        token("constant",P("PUBLIC"))
+                      * p_optionalwhitespace
+                      * p_docstr
+                      * p_optionalwhitespace
+                      * p_docstr
+                      * p_optionalwhitespace
+                      ) + (
+                        token("constant",P("SYSTEM"))
+                      * p_optionalwhitespace
+                      * p_docstr
+                      * p_optionalwhitespace
+                      )
+                  )^-1
+                * p_docset^-1
+                * p_optionalwhitespace
+                * token("command",P(">"))
+
+local commentlexer = lexer.load("scite-context-lexer-xml-comment") -- indirect (some issue with the lexer framework)
+local cdatalexer   = lexer.load("scite-context-lexer-xml-cdata")   -- indirect (some issue with the lexer framework)
 
 lexer.embed_lexer(examplelexer, commentlexer, token("command",opencomment), token("command",closecomment))
 lexer.embed_lexer(examplelexer, cdatalexer,   token("command",opencdata),   token("command",closecdata))
-
--- maybe cdata just text (then we don't need the extra lexer as we only have one comment then)
 
 local p_name =
     token("plain",name)
@@ -197,6 +287,7 @@ _rules = {
 --  { "text",        p_text        },
 --  { "comment",     p_comment     },
 --  { "cdata",       p_cdata       },
+    { "doctype",     p_doctype     },
     { "instruction", p_instruction },
     { "close",       p_close       },
     { "open",        p_open        },
