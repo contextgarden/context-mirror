@@ -2255,4 +2255,3 @@ characters.entities = entities
 entities.plusminus  = "±"               -- 0x000B1
 entities.minusplus  = "∓"               -- 0x02213
 entities.cdots      = utf.char(0x02026) -- U+02026
-

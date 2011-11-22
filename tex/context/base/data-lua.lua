@@ -78,8 +78,15 @@ local function loaded(libpaths,name,simple)
 end
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
-    if trace_locating then -- mode detail
-        report_libraries("! locating '%s'",name)
+    if file.suffix(name) == "" then
+        name = file.addsuffix(name,"lua") -- maybe a list
+        if trace_locating then -- mode detail
+            report_libraries("! locating '%s' with forced suffix",name)
+        end
+    else
+        if trace_locating then -- mode detail
+            report_libraries("! locating '%s'",name)
+        end
     end
     for i=1,#libformats do
         local format = libformats[i]
