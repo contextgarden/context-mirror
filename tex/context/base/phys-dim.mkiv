@@ -131,9 +131,9 @@
 \newconstant\c_digits_method
 \newconstant\c_digits_sign  % we has sized (text script scriptscript)
 
-\def\setdigitmethod#1{\c_digits_method #1\relax}
-\def\setdigitsign  #1{\c_digits_sign   #1\relax}
-\def\setdigitorder #1{\c_digits_order  #1\relax}
+\unexpanded\def\setdigitmethod#1{\c_digits_method #1\relax}
+\unexpanded\def\setdigitsign  #1{\c_digits_sign   #1\relax}
+\unexpanded\def\setdigitorder #1{\c_digits_order  #1\relax}
 
 \let\setdigitmode\setdigitmethod % compatibility
 
@@ -161,24 +161,25 @@
      \expandafter\high
    \fi}
 
-\def\digitszeropadding   {\zeroamount}
-\def\digitsnegative      {\digits_normalized{0}{\digits_raised{\textminus}}}
-\def\digitspositive      {\digits_normalized{0}{\digits_raised{\textplus}}}
-\def\digitsnegative      {\digits_normalized{0}{\mathematics{\negative}}}
-\def\digitspositive      {\digits_normalized{0}{\mathematics{\positive}}}
-\def\digitsminus         {\digits_normalized{0}{\mathematics{-}}}
-\def\digitsplus          {\digits_normalized{0}{\mathematics{+}}}
-\def\digitsspace         {\hphantom{0}}
-\def\digitsseparatorspace{\hphantom{.}}
-\def\digitssignspace     {\hphantom{\digitsminus}}
-\def\digitshighspace     {\hphantom{\digitspositive}}
-\def\digitspower         {\digits_raised}
-\def\digitspowerplus   #1{\digits_raised{\digitsplus#1}}
-\def\digitspowerminus  #1{\digits_raised{\digitsminus#1}}
-\def\digitsdigit       #1{#1}
+\unexpanded\def\digitszeropadding   {\zeroamount}
+\unexpanded\def\digitsnegative      {\digits_normalized{0}{\digits_raised{\textminus}}}
+\unexpanded\def\digitspositive      {\digits_normalized{0}{\digits_raised{\textplus}}}
+\unexpanded\def\digitsnegative      {\digits_normalized{0}{\mathematics{\negative}}}
+\unexpanded\def\digitspositive      {\digits_normalized{0}{\mathematics{\positive}}}
+\unexpanded\def\digitsminus         {\digits_normalized{0}{\mathematics{-}}}
+\unexpanded\def\digitsplus          {\digits_normalized{0}{\mathematics{+}}}
+\unexpanded\def\digitsspace         {\hphantom{0}}
+\unexpanded\def\digitsseparatorspace{\hphantom{.}}
+\unexpanded\def\digitssignspace     {\hphantom{\digitsminus}}
+\unexpanded\def\digitshighspace     {\hphantom{\digitspositive}}
+\unexpanded\def\digitspower         {\digits_raised}
+\unexpanded\def\digitspowerplus   #1{\digits_raised{\digitsplus#1}}
+\unexpanded\def\digitspowerminus  #1{\digits_raised{\digitsminus#1}}
+\unexpanded\def\digitsdigit       #1{#1}
 
-\def\normaldigitscommasymbol   {,}
-\def\normaldigitsperiodsymbol  {.}
+\unexpanded\def\normaldigitscommasymbol {,}
+\unexpanded\def\normaldigitsperiodsymbol{.}
+
 \let\normaldigitsseparatorspace\digitsseparatorspace
 
 \letvalue{digit_c_0}\normaldigitscommasymbol
@@ -209,14 +210,14 @@
 \letvalue{digit_p_6}\normaldigitsperiodsymbol
 \letvalue{digit_s_6}\thickspace
 
-\def\digitscommasymbol         {\csname digit_c_\number\c_digits_method\endcsname}
-\def\digitsperiodsymbol        {\csname digit_p_\number\c_digits_method\endcsname}
-\def\digitsseparatorspace      {\csname digit_s_\number\c_digits_method\endcsname}
+\unexpanded\def\digitscommasymbol         {\csname digit_c_\number\c_digits_method\endcsname}
+\unexpanded\def\digitsperiodsymbol        {\csname digit_p_\number\c_digits_method\endcsname}
+\unexpanded\def\digitsseparatorspace      {\csname digit_s_\number\c_digits_method\endcsname}
 
-\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
-\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
-\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
-\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
+\unexpanded\def\digitsfinalcomma          {\digitscommasymbol } % more for tracing
+\unexpanded\def\digitsfinalperiod         {\digitsperiodsymbol} % more for tracing
+\unexpanded\def\digitsintermediatecomma   {\digitscommasymbol } % more for tracing
+\unexpanded\def\digitsintermediateperiod  {\digitsperiodsymbol} % more for tracing
 
 %D The user macro:
 
@@ -355,12 +356,12 @@
 % [ \unit  {micro ohm}]\par %     space before unit
 % [\unit{10 micro ohm}]\par %     space before unit
 
-\def\unitssmallspace {\thinspace}
-\def\unitsmediumspace{\medspace}
-\def\unitsbigspace   {\thickspace}
-\def\unitsbackspace  {\negthinspace}
+\unexpanded\def\unitssmallspace {\thinspace}
+\unexpanded\def\unitsmediumspace{\medspace}
+\unexpanded\def\unitsbigspace   {\thickspace}
+\unexpanded\def\unitsbackspace  {\negthinspace}
 
-\def\installunitsseparator#1#2%
+\unexpanded\def\installunitsseparator#1#2%
   {\setvalue{\??un:1:#1}{#2}}
 
 \unexpanded\def\dounitsseparator
@@ -375,7 +376,7 @@
 \installunitsseparator\v!small  {\unitssmallspace}
 \installunitsseparator\v!none   {}
 
-\def\installunitsspace#1#2%
+\unexpanded\def\installunitsspace#1#2%
   {\setvalue{\??un:2:#1}{#2}}
 
 \unexpanded\def\dounitsspace
@@ -473,6 +474,7 @@
 \unexpanded\def\unitsS      #1{\units_start{}\unitsraise{#1}\c_units_state \plusone}   % suffix
 \unexpanded\def\unitsO      #1{\units_start#1\c_units_state                \plustwo}   % operator
 \unexpanded\def\unitsN      #1{\units_start#1\c_units_state                \plusfive}  % number
+\unexpanded\def\unitsC      #1{\units_next#1\c_units_state                 \plussix}   % connected
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]
@@ -547,19 +549,20 @@
   {\ifcase\c_units_state % start
      \ifconditional\c_units_dospace
       % \ifdim\lastskip=\zeropoint
-         \dounitsspace % \unitsbigspace
+         \dounitsspace
       % \else
       %   % too tricky ... we could remove and add
       % \fi
      \fi
-   \or % suffix
+   \or % 1: suffix
      {\dounitsseparator}%
-   \or % operator
-   \or % unit
+   \or % 2: operator
+   \or % 3: unit
      {\dounitsseparator}%
-   \or % prefix
-   \or % number
-     \dounitsspace % \unitsbigspace
+   \or % 4: prefix
+   \or % 5: number
+     \dounitsspace
+   \or % 6: symbol (connected)
    \fi
    \setfalse\c_units_dospace
    \units_start}

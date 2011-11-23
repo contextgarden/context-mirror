@@ -70,45 +70,6 @@
 %D (On the 824 pages maps bibliography runtime went down from
 %D 309 to 299 seconds.)
 
-% \let\currentotrbackground\empty
-%
-% \def\@@docheckbackground#1#2%
-%   {\ifcsname\currentotrbackground#1\endcsname
-%      \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\!!doneatrue\fi
-%    \fi}
-%
-% \def\@@nocheckbackground#1#2%
-%   {\ifcsname\currentotrbackground#1\endcsname
-%      \edef\!!stringa{\csname\currentotrbackground#1\endcsname}\ifx\!!stringa#2\else\!!doneatrue\fi
-%    \fi}
-%
-% \def\checkbackground#1%
-%   {\edef\currentotrbackground{\??ma#1}%
-%    \begingroup
-%    \!!doneafalse
-%    \if!!donea\else\@@nocheckbackground\c!background     \empty
-%    \if!!donea\else\@@docheckbackground\c!frame          \v!on
-%    \if!!donea\else\@@nocheckbackground\c!foregroundcolor\empty
-%    \if!!donea\else\@@docheckbackground\c!leftframe      \v!on
-%    \if!!donea\else\@@docheckbackground\c!rightframe     \v!on
-%    \if!!donea\else\@@docheckbackground\c!topframe       \v!on
-%    \if!!donea\else\@@docheckbackground\c!bottomframe    \v!on \fi\fi\fi\fi\fi\fi\fi
-%    \if!!donea
-%      \endgroup\setusage  \currentotrbackground
-%    \else
-%      \endgroup\resetusage\currentotrbackground
-%    \fi}
-%
-% \def\ifsomebackgroundfound#1%
-%   {\ifusage{\??ma#1}}
-%
-% \def\doifsomebackgroundelse#1%
-%   {\ifusage{\??ma#1}%
-%      \expandafter\firstoftwoarguments
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
-
 \let\currentotrbackground\empty
 
 \def\@@docheckbackground#1#2%
@@ -158,17 +119,6 @@
 %D The background mechanism falls back on the \type {\framed}
 %D macro. This means that all normal frame and overlay
 %D features can be used.
-
-% \def\addsomebackground#1#2#3#4% area box width height / zero test added
-%   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
-%      \ifcsname\??ma#1\c!setups\endcsname % to be done
-%         \doprocesslocalsetups{\csname\??ma#1\c!setups\endcsname}% should not produce funny spaces !
-%      \fi
-%      \setbox#2\vbox\fastlocalframed % maybe \superfastlocalframed{tag}{w}{h}
-%        [\??ma#1]%
-%        [\c!component=#1,\c!width=#3,\c!height=#4]% are width and height used?
-%        {\dp#2\zeropoint\box#2}%
-%    \fi\fi\fi}
 
 \def\addsomebackground#1#2#3#4% area box width height / zero test added
   {\ifsomebackgroundfound#1\ifdim#3>\zeropoint\ifdim#4>\zeropoint
@@ -234,14 +184,6 @@
 
 \newdimen\pageoffset % bleed
 \newdimen\pagedepth
-
-% \def\setbackgroundboxes
-%   {\showmessage\m!layouts8\empty
-%    \setbackgroundbox\leftbackground\relax
-%    \ifdoublesided
-%      \setbackgroundbox\rightbackground\doswapmargins
-%    \fi
-%    \doifnot\@@mastatus\v!herhaal{\global\newbackgroundfalse}}
 
 %D We need a bit more clever mechanism in order to handle
 %D layers well. This means that we cannot calculate both
