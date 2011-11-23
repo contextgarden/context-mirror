@@ -116,6 +116,7 @@
   % \c!framecolor=\s!black,
   % \c!foregroundstyle=\xtableparameter\c!style, % not clean, better capture elsewhere
   % \c!foregroundcolor=\xtableparameter\c!color, % not clean, better capture elsewhere
+  % \c!bodyfont=,
     \c!width=\v!fit,
     \c!height=\v!fit,
     \c!maxwidth=8em,
@@ -205,11 +206,15 @@
   {\ctxcommand{gettexbuffer("\x_table_current_buffer")}}
 
 \unexpanded\def\x_table_process
-  {\setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
+  {\begingroup
+\doifsomething{\xtableparameter\c!bodyfont}
+  {\setupbodyfont[\xtableparameter\c!bodyfont]}%
+   \setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
         textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
         maxwidth            = \number\dimexpr\xtableparameter\c!maxwidth,
+        lineheight          = \number\openlineheight,
         columndistance      = \number\dimexpr\xtableparameter\c!columndistance,
         leftmargindistance  = \number\dimexpr\xtableparameter\c!leftmargindistance,
         rightmargindistance = \number\dimexpr\xtableparameter\c!rightmargindistance,
@@ -217,6 +222,9 @@
         header              = "\xtableparameter\c!header",
         footer              = "\xtableparameter\c!footer",
    } }%
+   % not so nice but needed as we use this in the setup
+   \linewidth\xtableparameter\c!rulethickness\relax
+   % so we freeze it
    \begingroup
      \let\start_x_row_yes \start_x_row_reflow_width_yes
      \let\start_x_row_nop \start_x_row_reflow_width_nop
@@ -249,6 +257,7 @@
      \x_table_get_buffer
      \ctxcommand{x_table_construct()}\relax
    \endgroup
+\endgroup
    \ifinsidesplitfloat
      \x_table_flush_float_split
    \else\ifinsidefloat
@@ -359,6 +368,9 @@
 % Although this becomes kind of messy. It saves already time that we only check
 % for it when we have settings.
 
+\def\set_x_table_hsize
+  {\hsize.25\maxdimen} % let's be reasonable
+
 \unexpanded\def\start_x_cell_reflow_width_yes[#settings]%
   {\setbox\x_table_box\hbox\bgroup
    \ifnum\x_table_nesting>\plusone
@@ -385,7 +397,8 @@
    \x_table_distance\xtableparameter\c!distance\relax
    \ctxcommand{x_table_init_reflow_width()}%
    \inheritedxtableframed\bgroup
-   \begin_of_cell}
+   \begin_of_cell
+   \set_x_table_hsize}
 
 \unexpanded\def\start_x_cell_reflow_width_nop
   {\setbox\x_table_box\hbox\bgroup
@@ -398,7 +411,8 @@
    \x_table_distance\xtableparameter\c!distance\relax
    \ctxcommand{x_table_init_reflow_width()}%
    \inheritedxtableframed\bgroup
-   \begin_of_cell}
+   \begin_of_cell
+   \set_x_table_hsize}
 
 \unexpanded\def\stop_x_cell_reflow_width
   {\end_of_cell

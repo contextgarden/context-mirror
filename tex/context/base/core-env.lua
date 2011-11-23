@@ -14,8 +14,8 @@ if not modules then modules = { } end modules ['core-env'] = {
 local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.match, lpeg.patterns
 
 local csname_id         = token.csname_id
-local texcount          = tex.count
 local create            = token.create
+local texcount          = tex.count
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
@@ -71,6 +71,7 @@ setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
 end)
 
 setmetatableindex(tex.ifs, function(t,k)
+ -- k = "if" .. k -- better not
     return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
 end)
 

@@ -33,6 +33,7 @@ local texsetdimen = tex.setdimen
 
 local format      = string.format
 local concat      = table.concat
+local points      = number.points
 
 local context                 = context
 local context_beginvbox       = context.beginvbox
@@ -59,6 +60,7 @@ local v_stretch               = variables.stretch
 local v_normal                = variables.normal
 local v_width                 = variables.width
 local v_repeat                = variables["repeat"]
+local v_max                   = variables.max
 
 xtables = { } -- maybe in typesetters
 
@@ -70,6 +72,14 @@ local head_mode = 1
 local foot_mode = 2
 local more_mode = 3
 local body_mode = 4
+
+local namedmodes = { [0] =
+    "null",
+    "head",
+    "foot",
+    "next",
+    "body",
+}
 
 local stack, data = { }, nil
 
@@ -133,6 +143,8 @@ function xtables.create(settings)
     setmetatableindex(depths,add_zero)
     setmetatableindex(distances,add_zero)
     setmetatableindex(modes,add_zero)
+    setmetatableindex(fixedrows,add_zero)
+    setmetatableindex(fixedcolumns,add_zero)
     --
     settings.columndistance = tonumber(settings.columndistance) or 0
     settings.rowdistance = tonumber(settings.rowdistance) or 0
@@ -140,10 +152,14 @@ function xtables.create(settings)
     settings.rightmargindistance = tonumber(settings.rightmargindistance) or 0
     settings.options = utilities.parsers.settings_to_hash(settings.option)
     settings.textwidth = tonumber(settings.textwidth) or tex.hsize
+    settings.lineheight = tonumber(settings.lineheight) or texdimen.lineheight
     settings.maxwidth = tonumber(settings.maxwidth) or settings.textwidth/8
  -- if #stack > 0 then
  --     settings.textwidth = tex.hsize
  -- end
+    data.criterium_v =   2 * data.settings.lineheight
+    data.criterium_h = .75 * data.settings.textwidth
+
 end
 
 function xtables.initialize_reflow_width()
@@ -159,6 +175,9 @@ function xtables.initialize_reflow_width()
     end
     data.currentcolumn = c
 end
+
+-- local function rather_fixed(n)
+--     for n in node.
 
 function xtables.set_reflow_width()
     local r = data.currentrow
@@ -187,13 +206,23 @@ function xtables.set_reflow_width()
     end
     --
     local dimensionstate = texcount.frameddimensionstate
+    local fixedcolumns = data.fixedcolumns
+    local fixedrows = data.fixedrows
     if dimensionstate == 1 then
-        data.fixedcolumns[c] = width
+if width > fixedcolumns[c] then -- how about a span here?
+        fixedcolumns[c] = width
+end
     elseif dimensionstate == 2 then
-        data.fixedrows[r]    = height
+        fixedrows[r]    = height
     elseif dimensionstate == 3 then
-        data.fixedrows[r]    = width
-        data.fixedcolumns[c] = height
+        fixedrows[r]    = width
+        fixedcolumns[c] = height
+    else -- probably something frozen, like an image -- we could parse the list
+        if width <= data.criterium_h and height >= data.criterium_v then
+            if width > fixedcolumns[c] then -- how about a span here?
+                fixedcolumns[c] = width
+            end
+        end
     end
     drc.dimensionstate = dimensionstate
     --
@@ -264,7 +293,7 @@ function xtables.set_reflow_height()
 --     end
     local tb = texbox.x_table_box
     local drc = row[c]
-    if not data.fixedrows[r] then --  and drc.dimensionstate < 2
+    if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
         local heights, height = data.heights, tb.height
         if height > heights[r] then
             heights[r] = height
@@ -321,6 +350,14 @@ function xtables.set_construct()
 --     data.currentcolumn = c
 end
 
+local function showwidths(where,widths,autowidths)
+    local result = { }
+    for i=1,#widths do
+        result[#result+1] = format("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
+    end
+    return report_xtable("%s : %s",where,concat(result," "))
+end
+
 function xtables.reflow_width()
     local nofrows = data.nofrows
     local nofcolumns = data.nofcolumns
@@ -348,7 +385,11 @@ function xtables.reflow_width()
     local distance = 0
     local nofwide = 0
     local widetotal = 0
-    if options[variables.max] then
+    local available = settings.textwidth - settings.leftmargindistance - settings.rightmargindistance
+    if trace_xtable then
+        showwidths("stage 1",widths,autowidths)
+    end
+    if options[v_max] then
         for c=1,nofcolumns do
             width = width + widths[c]
             if width > maxwidth then
@@ -363,7 +404,7 @@ function xtables.reflow_width()
     else
         for c=1,nofcolumns do -- also keep track of forced
             local fixedwidth = fixedcolumns[c]
-            if fixedwidth then
+            if fixedwidth > 0 then
                 widths[c] = fixedwidth
                 width = width + fixedwidth
             else
@@ -379,53 +420,90 @@ function xtables.reflow_width()
             end
         end
     end
-    local delta = settings.textwidth - width - distance - (nofcolumns-1) * settings.columndistance
-        - settings.leftmargindistance - settings.rightmargindistance
-    --
+    if trace_xtable then
+        showwidths("stage 2",widths,autowidths)
+    end
+    local delta = available - width - distance - (nofcolumns-1) * settings.columndistance
     if delta == 0 then
         -- nothing to be done
+        if trace_xtable then
+            report_xtable("perfect fit")
+        end
     elseif delta > 0 then
         -- we can distribute some
         if not options[v_stretch] then
             -- not needed
+            if trace_xtable then
+                report_xtable("too wide but no stretch, delta: %s",points(delta))
+            end
         elseif options[v_width] then
+            local factor = delta / width
+            if trace_xtable then
+                report_xtable("proportional stretch, delta: %s, width: %s, factor: %s",
+                    points(delta),points(width),factor)
+            end
             for c=1,nofcolumns do
-                widths[c] = widths[c] + delta * widths[c] / width
+                widths[c] = widths[c] + factor * widths[c]
             end
         else
-            local plus = delta / nofcolumns
+            local extra = delta / nofcolumns
+            if trace_xtable then
+                report_xtable("normal stretch, delta: %s, extra: %s",
+                    points(delta),points(extra))
+            end
             for c=1,nofcolumns do
-                widths[c] = widths[c] + plus
+                widths[c] = widths[c] + extra
             end
         end
     elseif nofwide > 0 then
-        if options[v_width] then
-            -- proportionally
-            for c=1,nofcolumns do
-                local minus = - delta / nofwide
-                if autowidths[c] then
-                    widths[c] = widths[c] - minus
-                end
-            end
-        else
-            -- we can also consider a loop adding small amounts till
-            -- we have a fit etc which is sometimes nicer
+        while true do
+            done = false
             local available = (widetotal + delta) / nofwide
+            if trace_xtable then
+                report_xtable("shrink check, total: %s, delta: %s, columns: %s, fixed: %s",
+                    points(widetotal),points(delta),nofwide,points(available))
+            end
             for c=1,nofcolumns do
                 if autowidths[c] and available >= widths[c] then
                     autowidths[c] = nil
                     nofwide = nofwide - 1
                     widetotal = widetotal - widths[c]
+                    done = true
                 end
             end
+            if not done then
+                break
+            end
+        end
+        -- maybe also options[v_width] here but tricky as width does not say
+        -- much about amount
+
+        if options[v_width] then -- not that much (we could have a clever vpack loop balancing .. no fun)
+            local factor = (widetotal + delta) / width
+            if trace_xtable then
+                report_xtable("proportional shrink used, total: %s, delta: %s, columns: %s, factor: %s",
+                    points(widetotal),points(delta),nofwide,factor)
+            end
+            for c=1,nofcolumns do
+                if autowidths[c] then
+                    widths[c] = factor * widths[c]
+                end
+            end
+        else
             local available = (widetotal + delta) / nofwide
+            if trace_xtable then
+                report_xtable("normal shrink used, total: %s, delta: %s, columns: %s, fixed: %s",
+                    points(widetotal),points(delta),nofwide,points(available))
+            end
             for c=1,nofcolumns do
                 if autowidths[c] then
                     widths[c] = available
                 end
             end
-            -- maybe stretch
         end
+    end
+    if trace_xtable then
+        showwidths("stage 3",widths,autowidths)
     end
     --
     data.currentrow = 0
@@ -439,12 +517,14 @@ end
 
 local function showspans(data)
     local rows = data.rows
+    local modes = data.modes
     local nofcolumns = data.nofcolumns
     local nofrows = data.nofrows
     for r=1,nofrows do
         local line = { }
+        local row = rows[r]
         for c=1,nofcolumns do
-            local cell =rows[r][c]
+            local cell =row[c]
             if cell.list then
                 line[#line+1] = "list"
             elseif cell.span then
@@ -453,7 +533,7 @@ local function showspans(data)
                 line[#line+1] = "none"
             end
         end
-        report_xtable("%3d : %s",r,concat(line," "))
+        report_xtable("%3d : %s : %s",r,namedmodes[modes[r]] or "----",concat(line," "))
     end
 end
 
@@ -599,7 +679,7 @@ local function inject(row,copy,package)
         if row[4] then
             -- nothing as we have a span
         elseif row[3] then
-            context_blank(row[3] .. "sp")
+            context_blank(row[3] .. "sp") -- why blank ?
         else
             context(new_glue(0))
         end
@@ -632,6 +712,25 @@ end
 --     end
 -- end
 
+local function spanheight(body,i)
+    local height, n = 0, 1
+    while true do
+        local bi = body[i]
+        if bi then
+            height = height + bi[2] + (bi[3] or 0)
+            if bi[4] then
+                n = n + 1
+                i = i + 1
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+    return height, n
+end
+
 function xtables.flush(directives) -- todo split by size / no inbetween then ..  glue list kern blank
     local vsize = directives.vsize
     local method = directives.method or v_normal
@@ -653,7 +752,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
             local footsize = total(foot,rowdistance)
             local headsize = total(head,rowdistance)
             local moresize = total(more,rowdistance)
-            local firstsize = body[bodystart][2]
+            local firstsize, firstspans = spanheight(body,bodystart)
             if bodystart == 1 then -- first chunk gets head
                 bodysize = bodysize - headsize - footsize
                 if headsize > 0 and bodysize >= firstsize then
@@ -691,14 +790,18 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                 bodysize = bodysize - footsize
             end
             if bodysize >= firstsize then
-                for i=bodystart,bodystop do -- room for improvement
-                    local bi = body[i]
-                    local bs = bodysize - bi[2] - (bi[3] or 0)
+                local i = bodystart
+                while i <= bodystop do -- room for improvement
+                    local total, spans = spanheight(body,i)
+                    local bs = bodysize - total
                     if bs > 0 then
-                        inject(bi)
                         bodysize = bs
-                        bodystart = i + 1
-                        body[i] = nil
+                        for s=1,spans do
+                            inject(body[i])
+                            body[i] = nil
+                            i = i + 1
+                        end
+                        bodystart = i
                     else
                         break
                     end
@@ -734,9 +837,11 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
             else
                 if firstsize > vsize then
                     -- get rid of the too large cell
-                    inject(body[bodystart])
-                    body[bodystart] = nil
-                    bodystart = bodystart + 1
+                    for s=1,firstspans do
+                        inject(body[bodystart])
+                        body[bodystart] = nil
+                        bodystart = bodystart + 1
+                    end
                 end
                 texsetcount("global","x_table_state",2) -- 1
             end
