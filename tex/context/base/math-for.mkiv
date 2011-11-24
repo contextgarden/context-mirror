@@ -18,62 +18,28 @@
 
 \unprotect
 
-\let\currentformula\s!unknown
-
-\def\formulaparameter    #1{\csname\doformulaparameter{\??fm\currentformula}#1\endcsname}
-\def\formulaparameterhash#1{\doformulaparameterhash   {\??fm\currentformula}#1}
-
-\def\doformulaparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\doformulaparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\doformulaparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\doformulaparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\detokenizedformulaparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??fm\currentformula#1\endcsname}}
-
-\def\doformulaparentparameter    #1#2{\ifx#1\relax\s!empty\else\doformulaparameter    #1#2\fi}
-\def\doformulaparentparameterhash#1#2{\ifx#1\relax        \else\doformulaparameterhash#1#2\fi}
-
-\def\dosetformulaattributes#1#2% style color
-  {\edef\fontattributehash {\formulaparameterhash#1}%
-   \edef\colorattributehash{\formulaparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\def\getformulaparameters{\getparameters[\??fm]}
-
 %D \macros
-%D   {setupformulas}
+%D   {setupformulas,setupsubformulas}
 
-\newtoks \everysetupformulas
+\installcommandhandler \??fm {formula}    \??fm
+\installcommandhandler \??fn {subformula} \??fn % maybe just setuphandler (no childs used yet)
 
-\unexpanded\def\setupformulas
-  {\dodoubleempty\dosetupformulas}
+\let\setupformulas   \setupformula
+\let\setupsubformulas\setupsubformula
 
-\def\dosetupformulas[#1][#2]%
-  {\ifsecondargument
-     \edef\currentformula{#1}%
-     \getparameters[\??fm#1][#2]%
-   \else
-%      \let\currentformula\v!formula % hm
-     \let\currentformula\empty
-     \getparameters[\??fm][#1]%
-   \fi
-   \the\everysetupformulas
-   \let\currentformula\empty}
+% D \macros
+% D   {setuptextformulas}
+% D
+% D This command sets up in||line math. Most features deals
+% D with grid snapping and are experimental.
 
-%D Not yet cleanup up:
-
-%D \macros
-%D   {setuptextformulas}
-%D
-%D This command sets up in||line math. Most features deals
-%D with grid snapping and are experimental.
-
-\newtoks \everysetuptextformulas
-
-\unexpanded\def\setuptextformulas
-  {\dosingleempty\dosetuptextformulas}
-
-\def\dosetuptextformulas[#1]%
-  {\getparameters[\??mt][#1]%
-   \the\everysetuptextformulas}
+% \newtoks \everysetuptextformulas
+%
+% \unexpanded\def\setuptextformulas
+%   {\dosingleempty\dosetuptextformulas}
+%
+% \def\dosetuptextformulas[#1]%
+%   {\getparameters[\??mt][#1]%
+%    \the\everysetuptextformulas}
 
 \protect \endinput

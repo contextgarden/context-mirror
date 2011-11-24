@@ -21,52 +21,116 @@
 
 \unprotect
 
-\definestructureconversionset[\v!formula][numbers,characters]
-
 \setupformulas
-  [%\c!way=\@@nrway,
+  [%\c!way=,
    %\c!blockway=,
-   %\c!sectionnumber=\@@nrsectionnumber,
+   %\c!sectionnumber=,
    %\c!conversion=\v!numbers,
+   %\c!numberstyle=,
+   %\c!numbercolor=,
+   %\c!numbercommand=,
+   %\c!margin=,
+   %\c!align=,
+   %\c!separator=,
+   %\c!grid=,
    \c!location=\v!right,
    \c!left=(,
    \c!right=),
    \c!expansion=\v!yes, % maybe automatically
-   %\c!numberstyle=,
-   %\c!numbercolor=,
-   %\c!numbercommand=,
    \c!spacebefore=\v!big,
    \c!spaceafter=\formulaparameter\c!spacebefore,
    \c!leftmargin=\!!zeropoint,
    \c!rightmargin=\!!zeropoint,
-   %\c!margin=,
    \c!indentnext=\v!no,
    \c!alternative=\s!default,
-   %\c!align=,
    \c!strut=\v!no,
-   %\c!separator=\@@koseparator,
-   %\c!grid=,
    \c!distance=1em]
+
+\setupsubformulas % subformulas could be last in chain
+  [\c!indentnext=\formulaparameter\c!indentnext]
 
 \definestructurecounter
   [\v!formula]
 
-\presetstructurecountersetup\setupformulas\sharedstructurecounterparameter
+\definestructureconversionset
+  [\v!formula]
+  [numbers,characters]
 
+\presetstructurecountersetup\setupformulas\sharedstructurecounterparameter
 
 \appendtoks
     \dostructurecountersetup\v!formula\formulaparameter
     \docheckstructurecountersetup\v!formula % yes or no
-\to \everysetupformulas
+\to \everysetupformula
 
 \setupformulas
   [\c!numberconversionset=\v!formula] % why forgotten
+
+\appendtoks
+    \normalexpanded{\definelist[\currentformula]}% is expansion needed?
+    \setuevalue{\e!start\currentformula\v!formula}{\dostartformula{\currentformula}}%
+    \setuevalue{\e!stop \currentformula\v!formula}{\dostopformula}%
+\to \everydefineformula
+
+\definelist[\v!formula]
+
+\setuvalue{\e!start\v!formula}{\dostartformula{}}
+\setuvalue{\e!stop \v!formula}{\dostopformula}
+
+\let\dostartformula\relax % defined later
+\let\dostopformula \relax % defined later
+
+\unexpanded\def\defineformulaalternative         % this might change ... start and stop can become keys
+  {\dotripleargument\dodefineformulaalternative} % to the general define .. s!startcommand
+
+\def\dodefineformulaalternative[#1][#2][#3]%
+  {\setvalue{\e!start#1\v!formula}{#2}%
+   \setvalue{\e!stop #1\v!formula}{#3}}
+
+% sp = single line paragraph  sd = single line display
+% mp = multi  line paragraph  md = multy  line display
+
+\defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
+\defineformulaalternative[\s!single] [\startdisplaymath][\stopdisplaymath]
+\defineformulaalternative[\s!multi]  [\startdisplaymath][\stopdisplaymath]
+
+\defineformula
+  [sp]
+  [\c!spacebefore=\v!none,
+   \c!spaceafter=\v!none,
+   \c!indentnext=\v!no,
+   \c!alternative=\s!single]
+
+\defineformula
+  [sd]
+  [\c!spacebefore=\v!none,
+   \c!spaceafter=\v!none,
+   \c!indentnext=\v!yes,
+   \c!alternative=\s!single]
+
+\defineformula
+  [mp]
+  [\c!indentnext=\v!no,
+   \c!alternative=\s!multi]
+
+\defineformula
+  [md]
+  [\c!indentnext=\v!yes,
+   \c!alternative=\s!multi]
+
+\newtoks\everyresetformulas
+
+\appendtoks
+    \let\currentformula\empty % to be checked:
+\to \everyresetformulas
+
+% implementation
 
 \def\storecurrentformulanumber#1#2#3#4#5% ref, todo:str, \sync % todo: title etc (like float)
   {\settrue\handleformulanumber
    \dostructurecountercomponent
      {formula}%
-     \getformulaparameters \formulaparameter \detokenizedformulaparameter
+     \setupcurrentformula \formulaparameter \detokenizedformulaparameter
      \relax \relax \relax
      [\c!name=\v!formula,\s!counter=\v!formula,%
       \s!hascaption=\v!yes,\s!hastitle=\v!yes,\s!hasnumber=\v!yes,%\s!haslevel=#6,%
@@ -77,26 +141,32 @@
    \globallet#4\laststructurecountersynchronize
    \globallet#5\laststructurecounterattribute}
 
-\newif\ifnoformulanumber
-
-\newconditional\handleformulanumber
-\newconditional\incrementformulanumber
-
-\newtoks\everyresetformulas
-
-% 0=unset, 1=forced, 2=none, 3=reference
+% modes: 0=unset, 1=forced, 2=none, 3=reference
 
 \newconstant\placeformulanumbermode
 \newconstant\formulasnumbermode
 \newconstant\subformulasnumbermode
 \newconstant\nestedformulanumbermode
 
+\appendtoks
+    \placeformulanumbermode \zerocount
+    \formulasnumbermode     \zerocount
+    \subformulasnumbermode  \zerocount
+    \nestedformulanumbermode\zerocount
+\to \everyresetformulas
+
+\newconditional\handleformulanumber
+\newconditional\incrementformulanumber
+
 \newconditional\insideplaceformula
 \newconditional\insideplacesubformula
 \newconditional\insideformulas
 \newconditional\insidesubformulas
 
-% 0=unset, 1=forced, 2=none, 3=reference
+\appendtoks
+    \global\setfalse\insideplaceformula
+    \global\setfalse\insideplacesubformula
+\to \everyresetformulas
 
 \def\handleplaceformulanumbering % place formula
   {\settrue\handleformulanumber
@@ -118,8 +188,23 @@
      \currentsubformulasattribute
   }
 
-\def\tracedformulamode
-  {\hbox{\quad\tt\txx[\number\placeformulanumbermode,\number\formulasnumbermode,\number\subformulasnumbermode,\number\nestedformulanumbermode]}}
+\let\dotraceformulareferencestate\relax
+\let\doshowformulareferencestate \relax
+
+% \def\dotraceformulareferencestate
+%   {\rlap{\hbox{\quad\tt\txx[%
+%       \number\placeformulanumbermode,%
+%       \number\formulasnumbermode,%
+%       \number\subformulasnumbermode,%
+%       \number\nestedformulanumbermode
+%    ]}}}
+
+% \def\doshowformulareferencestate
+%   {\writestatus{\v!formula}%
+%      {place:      \number\placeformulanumbermode,\space
+%       formula:    \number\formulasnumbermode,\space
+%       subformula: \number\subformulasnumbermode,\space
+%       nested:     \number\nestedformulanumbermode]}}
 
 \unexpanded\def\placecurrentformulanumber
   {\rm % nodig ?
@@ -148,24 +233,53 @@
      \glet#1\relax
    \fi\fi\fi}
 
+\let\currentplaceformulaattribute\relax
+\let\currentformulaattribute     \relax
+\let\currentsubformulaattribute  \relax
+\let\currentformulasattribute    \relax
+
+\let\currentplaceformulanumber\relax
+\let\currentformulanumber     \relax
+\let\currentsubformulanumber  \relax
+\let\currentformulasnumber    \relax
+
+\let\currentformulasreference     \empty
+\let\currentformulareference      \empty
+\let\currentsubformulareference   \empty
+\let\currentnestedformulareference\empty
+
+\appendtoks
+    \glet\currentformulasreference     \empty
+    \glet\currentformulareference      \empty
+    \glet\currentsubformulareference   \empty
+    \glet\currentnestedformulareference\empty
+\to \everyresetformulas
+
+\let\currentformulassuffix     \empty
+\let\currentformulasuffix      \empty
+\let\currentsubformulasuffix   \empty
+\let\currentnestedformulasuffix\empty
+
+\appendtoks
+    \glet\currentformulassuffix     \empty
+    \glet\currentformulasuffix      \empty
+    \glet\currentsubformulasuffix   \empty
+    \glet\currentnestedformulasuffix\empty
+\to \everyresetformulas
+
+\let\currentplaceformulasynchronize\relax
+\let\currentformulasynchronize     \relax
+\let\currentsubformulasynchronize  \relax
+\let\currentformulassynchronize    \relax
+
 \appendtoks
     \glet\currentplaceformulasynchronize \relax
     \glet\currentformulassynchronize     \relax
     \glet\currentsubformulassynchronize  \relax
     \glet\currentnestedformulasynchronize\relax
-    \let\currentformula\empty
 \to \everyresetformulas
 
 % currently we do the number, some day we will do the (sub) formula
-
-\let\doshowformulareferencestate\relax
-
-% \def\doshowformulareferencestate
-%   {\writestatus{\v!formula}%
-%      {place:      \number\placeformulanumbermode,\space
-%       formula:    \number\formulasnumbermode,\space
-%       subformula: \number\subformulasnumbermode,\space
-%       nested:     \number\nestedformulanumbermode]}}
 
 \def\dohandlecurrentformulareferences
   {\doshowformulareferencestate
@@ -208,16 +322,6 @@
    \fi}
 
 % needs checking ... too many:
-
-\let\currentplaceformulaattribute\relax \let\currentplaceformulasynchronize\relax \let\currentplaceformulanumber\relax
-\let\currentformulaattribute     \relax \let\currentformulasynchronize     \relax \let\currentformulanumber     \relax
-\let\currentsubformulaattribute  \relax \let\currentsubformulasynchronize  \relax \let\currentsubformulanumber  \relax
-\let\currentformulasattribute    \relax \let\currentformulassynchronize    \relax \let\currentformulasnumber    \relax
-
-\let\currentformulasreference     \empty \let\currentformulassuffix     \empty
-\let\currentformulareference      \empty \let\currentformulasuffix      \empty
-\let\currentsubformulareference   \empty \let\currentsubformulasuffix   \empty
-\let\currentnestedformulareference\empty \let\currentnestedformulasuffix\empty
 
 \def\dohandleformulanumbering
   {\doincrementsubstructurecounter[\v!formula][1]%
@@ -267,11 +371,9 @@
            \dohandlesubformulanumbering
          \fi
        \fi
-      %\rlap{\tracedformulamode}%
+      \dotraceformulareferencestate
      \egroup
    \fi}
-
-\definelist[\v!formula]
 
 \installstructurelistprocessor\v!formula % to be checked ...
   {\dodolistelement
@@ -281,35 +383,6 @@
      \structurelistgenerictitle % hm, can end up in message (volkers test)
      \structurelistpagenumber
      \structurelistrealpagenumber}
-
-\appendtoks
-    \global\setfalse\insideplaceformula
-    \global\setfalse\insideplacesubformula
-\to \everyresetformulas
-
-\appendtoks
-    \placeformulanumbermode            \zerocount
-    \formulasnumbermode                \zerocount
-    \subformulasnumbermode             \zerocount
-    \nestedformulanumbermode           \zerocount
-    \glet\currentformulasreference     \empty
-    \glet\currentformulareference      \empty
-    \glet\currentsubformulareference   \empty
-    \glet\currentnestedformulareference\empty
-    \glet\currentformulassuffix        \empty
-    \glet\currentformulasuffix         \empty
-    \glet\currentsubformulasuffix      \empty
-    \glet\currentnestedformulasuffix   \empty
-\to \everyresetformulas
-
-\let\currentformulasreference     \empty
-\let\currentformulareference      \empty
-\let\currentsubformulareference   \empty
-\let\currentnestedformulareference\empty
-\let\currentformulassuffix        \empty
-\let\currentformulasuffix         \empty
-\let\currentsubformulasuffix      \empty
-\let\currentnestedformulasuffix   \empty
 
 \newif\ifinformula
 
@@ -328,69 +401,9 @@
    \let\normalreqno\gobbleoneargument \let\eqno \gobbleoneargument
    \let\doplaceformulanumber\empty}
 
-%D
-
-\unexpanded\def\defineformula
-  {\dodoubleempty\dodefineformula}
-
-\def\dodefineformula[#1][#2]%
-  {\doifsomething{#1}
-     {\getparameters[\??fm#1][\s!parent=\??fm,#2]%
-      \definelist[#1]%
-      \setvalue{\e!start#1\v!formula}{\dostartformula{#1}}%
-      \setvalue{\e!stop #1\v!formula}{\dostopformula}}}
-
-\unexpanded\def\defineformulaalternative
-  {\dotripleargument\dodefineformulaalternative}
-
-\def\dodefineformulaalternative[#1][#2][#3]%
-  {\setvalue{\e!start#1\v!formula}{#2}%
-   \setvalue{\e!stop #1\v!formula}{#3}}
-
-% sp = single line paragraph  sd = single line display
-% mp = multi  line paragraph  md = multy  line display
-
-\defineformulaalternative[\s!default][\startdisplaymath][\stopdisplaymath]
-\defineformulaalternative[\s!single] [\startdisplaymath][\stopdisplaymath]
-\defineformulaalternative[\s!multi]  [\startdisplaymath][\stopdisplaymath]
-
-\defineformula
-  [sp]
-  [\c!spacebefore=\v!none,
-   \c!spaceafter=\v!none,
-   \c!indentnext=\v!no,
-   \c!alternative=\s!single]
-
-\defineformula
-  [sd]
-  [\c!spacebefore=\v!none,
-   \c!spaceafter=\v!none,
-   \c!indentnext=\v!yes,
-   \c!alternative=\s!single]
-
-\defineformula
-  [mp]
-  [\c!indentnext=\v!no,
-   \c!alternative=\s!multi]
-
-\defineformula
-  [md]
-  [\c!indentnext=\v!yes,
-   \c!alternative=\s!multi]
-
 %D \macros
-%D   {setupsubformulas, startsubformulas}
+%D   {startsubformulas}
 
-\def\subformulaparameter#1{\ifcsname\??fn#1\endcsname\csname\??fn#1\endcsname\fi}
-
-\unexpanded\def\setupsubformulas
-  {\dodoubleargument\getparameters[\??fn]}
-
-\setupsubformulas
-  [\c!indentnext=\formulaparameter\c!indentnext]
-
-% \setupsubformulas[conversion=romannumerals]
-%
 % \placeformula
 % \startsubformulas[Maxwell]
 %     \startformulas
@@ -427,9 +440,6 @@
    \abovedisplayshortskip\zeropoint
    \belowdisplayshortskip\zeropoint}
 
-\setvalue{\e!start\v!formula}{\dostartformula{}}
-\setvalue{\e!stop \v!formula}{\dostopformula}
-
 \def\predisplaysizethreshhold{2em} % was 3em
 
 \def\leftdisplayskip    {\leftskip}
@@ -457,7 +467,7 @@
    \advance\displaywidth\dimexpr-\displayindent-\rightdisplayskip-\rightdisplaymargin\relax
    \hsize\displaywidth} % new, else overfull in itemize
 
-\def\dostartformula#1%
+\unexpanded\def\dostartformula#1%
   {\dodoubleempty\dodostartformula[#1]}
 
 \newskip\formulaparskip
@@ -500,7 +510,7 @@
 
 % tagging of formulanumbers is not ok (we get two display maths blobs)
 
-\def\dostopformula
+\unexpanded\def\dostopformula
   {\dostarttagged\t!formulacaption\empty
    \doplaceformulanumber
    \dostoptagged
@@ -528,7 +538,7 @@
 
 \def\switchtoformulabodyfont{\switchtobodyfont}
 
-\setvalue{\v!formula}{\dosingleempty\doformula}
+\setuvalue{\v!formula}{\dosingleempty\doformula}
 
 \def\doformula[#1]#2% todo: tagged
   {\begingroup
@@ -566,9 +576,6 @@
    \afterdisplayspace
    \par
    \egroup}
-
-\newif\ifclipdisplaymath \clipdisplaymathtrue
-\def\displaymathclipfactor{1.1}
 
 % already defined
 %
@@ -735,8 +742,8 @@
 
 % to be checked
 
-\glet\doplaceformulanumber \relax
-\glet\donestedformulanumber\gobbletwoarguments
+\let\doplaceformulanumber \relax
+\let\donestedformulanumber\gobbletwoarguments
 
 \def\donestedformulanumberindeed#1#2%
   {\def\currentnestedformulareference{#1}%
@@ -773,9 +780,9 @@
    \setformulalistentry{#2}%
    \next}
 
-\glet\namedformulaentry\empty % \relax % this will become a key/value so that we can do bookmarks
+\let\namedformulaentry\empty % \relax % this will become a key/value so that we can do bookmarks
 
-\def\setformulalistentry#1%
+\unexpanded\def\setformulalistentry#1%
   {\gdef\namedformulaentry{#1}}
 
 \protect \endinput

@@ -23,7 +23,7 @@ numeric _fig_nesting_ ; _fig_nesting_ := 0 ;
 
 def beginfig (expr c) =
     _fig_nesting_ := _fig_nesting_ + 1 ;
-    if _fig_nesting_  = 1 :
+    if _fig_nesting_ = 1 :
         begingroup
         charcode := c ;
         resetfig ;
@@ -34,7 +34,7 @@ enddef ;
 def endfig =
     ; % safeguard
     if _fig_nesting_ = 1 :
-        scantokens extra_endfig;
+        scantokens extra_endfig ;
         shipit ;
         endgroup ;
     fi ;

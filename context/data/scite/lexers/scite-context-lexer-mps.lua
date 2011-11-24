@@ -14,29 +14,53 @@ local type = type
 
 module(...)
 
-local metafunlexer      = _M
+local metafunlexer       = _M
 
-local context           = lexer.context
+local context            = lexer.context
 
-local metafunhelpers    = { }
-local metafunconstants  = { }
-local plaincommands     = { }
-local primitivecommands = { }
+local metapostprimitives = { }
+local metapostinternals  = { }
+local metapostshortcuts  = { }
+local metapostcommands   = { }
+
+local metafuninternals   = { }
+local metafunshortcuts   = { }
+local metafuncommands    = { }
+
+local mergedshortcuts    = { }
+local mergedinternals    = { }
 
 do
 
     local definitions = context.loaddefinitions("scite-context-data-metapost")
 
     if definitions then
-        plaincommands     = definitions.plain      or { }
-        primitivecommands = definitions.primitives or { }
+        metapostprimitives = definitions.primitives or { }
+        metapostinternals  = definitions.internals  or { }
+        metapostshortcuts  = definitions.shortcuts  or { }
+        metapostcommands   = definitions.commands   or { }
     end
 
     local definitions = context.loaddefinitions("scite-context-data-metafun")
 
     if definitions then
-        metafunhelpers   = definitions.helpers   or { }
-        metafunconstants = definitions.constants or { }
+        metafuninternals  = definitions.internals or { }
+        metafunshortcuts  = definitions.shortcuts or { }
+        metafuncommands   = definitions.commands  or { }
+    end
+
+    for i=1,#metapostshortcuts do
+        mergedshortcuts[#mergedshortcuts+1] = metapostshortcuts[i]
+    end
+    for i=1,#metafunshortcuts do
+        mergedshortcuts[#mergedshortcuts+1] = metafunshortcuts[i]
+    end
+
+    for i=1,#metapostinternals do
+        mergedinternals[#mergedinternals+1] = metapostinternals[i]
+    end
+    for i=1,#metafuninternals do
+        mergedinternals[#mergedinternals+1] = metafuninternals[i]
     end
 
 end
@@ -57,13 +81,17 @@ local cstokentex = R("az","AZ","\127\255") + S("@!?_")
 local spacing    = token(whitespace,  space^1)
 local rest       = token('default',   any)
 local comment    = token('comment',   P('%') * (1-S("\n\r"))^0)
-local constant   = token('data',      exact_match(metafunconstants))
-local helper     = token('command',   exact_match(metafunhelpers))
-local plain      = token('plain',     exact_match(plaincommands))
+local internal   = token('reserved',  exact_match(mergedshortcuts,false))
+local shortcut   = token('data',      exact_match(mergedinternals))
+local helper     = token('command',   exact_match(metafuncommands))
+local plain      = token('plain',     exact_match(metapostcommands))
 local quoted     = token('quote',     dquote)
                  * token('string',    P(1-dquote)^0)
                  * token('quote',     dquote)
-local primitive  = token('primitive', exact_match(primitivecommands))
+local texstuff   = token('quote',     P("btex ") + P("verbatimtex "))
+                 * token('string',    P(1-P(" etex"))^0)
+                 * token('quote',     P(" etex"))
+local primitive  = token('primitive', exact_match(metapostprimitives))
 local identifier = token('default',   cstoken^1)
 local number     = token('number',    number)
 local grouping   = token('grouping',  S("()[]{}")) -- can be an option
@@ -74,10 +102,12 @@ local extra      = token('extra',     S("`~%^&_-+*/\'|\\"))
 _rules = {
     { 'whitespace', spacing    },
     { 'comment',    comment    },
-    { 'constant',   constant   },
+    { 'internal',   internal   },
+    { 'shortcut',   shortcut   },
     { 'helper',     helper     },
     { 'plain',      plain      },
     { 'primitive',  primitive  },
+    { 'texstuff',   texstuff   },
     { 'identifier', identifier },
     { 'number',     number     },
     { 'quoted',     quoted     },

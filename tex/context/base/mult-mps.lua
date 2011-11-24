@@ -27,8 +27,8 @@ return {
         "shipout", "show", "showdependencies", "showtoken", "showvariable",
         "special",
         "begingroup", "endgroup", "of", "curl", "tension", "and", "controls",
-        "reflectedabout", "rotatedaround", "interpath", "on", "off", "beginfig",
-        "endfig", "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
+        "interpath", "on", "off",
+        "def", "vardef", "enddef", "expr", "suffix", "text", "primary", "secondary",
         "tertiary", "primarydef", "secondarydef", "tertiarydef",
         "randomseed", "also", "contour", "doublepath",
         "withcolor", "withpen", "dashed", "if", "else", "elseif", "fi", "for", "endfor", "forever", "exitif",
@@ -56,6 +56,8 @@ return {
         "expandafter",
     },
     commands = {
+        "beginfig", "endfig",
+        "rotatedaround", "reflectedabout",
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",
         "defaultfont", "extra_beginfig", "extra_endfig",
@@ -106,6 +108,5 @@ return {
         "bboxmargin", "ahlength", "ahangle", "labeloffset", "dotlabeldiam", "defaultpen", "defaultscale", "join_radius",
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",
-        --
     },
 }

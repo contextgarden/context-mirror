@@ -809,7 +809,7 @@ tertiarydef m thru n =
     endfor
 enddef ;
 
-%% Overall adminstration
+%% Overall administration
 
 string extra_beginfig, extra_endfig ;
 

@@ -665,8 +665,11 @@ end
 function lxml.setaction(id,pattern,action)
     local collected = xmlapplylpath(getid(id),pattern)
     if collected then
-        for c=1,#collected do
-            collected[c].command = action
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                collected[c].command = action
+            end
         end
     end
 end
@@ -878,40 +881,45 @@ function lxml.setsetup(id,pattern,setup)
     if not setup or setup == "" or setup == "*" or setup == "-" or setup == "+" then
         local collected = xmlapplylpath(getid(id),pattern)
         if collected then
-            if trace_setups then
-                for c=1, #collected do
-                    local e = collected[c]
-                    local ix = e.ix or 0
-                    if setup == "-" then
-                        e.command = false
-                        report_lxml("lpath matched (a) %5i: %s = %s -> skipped",c,ix,setup)
-                    elseif setup == "+" then
-                        e.command = true
-                        report_lxml("lpath matched (b) %5i: %s = %s -> text",c,ix,setup)
-                    else
-                        local tg = e.tg
-                        if tg then -- to be sure
-                            e.command = tg
-                            local ns = e.rn or e.ns
-                            if ns == "" then
-                                report_lxml("lpath matched (c) %5i: %s = %s -> %s",c,ix,tg,tg)
-                            else
-                                report_lxml("lpath matched (d) %5i: %s = %s:%s -> %s",c,ix,ns,tg,tg)
+            local nc = #collected
+            if nc > 0 then
+                if trace_setups then
+                    for c=1,nc do
+                        local e = collected[c]
+                        local ix = e.ix or 0
+                        if setup == "-" then
+                            e.command = false
+                            report_lxml("lpath matched (a) %5i: %s = %s -> skipped",c,ix,setup)
+                        elseif setup == "+" then
+                            e.command = true
+                            report_lxml("lpath matched (b) %5i: %s = %s -> text",c,ix,setup)
+                        else
+                            local tg = e.tg
+                            if tg then -- to be sure
+                                e.command = tg
+                                local ns = e.rn or e.ns
+                                if ns == "" then
+                                    report_lxml("lpath matched (c) %5i: %s = %s -> %s",c,ix,tg,tg)
+                                else
+                                    report_lxml("lpath matched (d) %5i: %s = %s:%s -> %s",c,ix,ns,tg,tg)
+                                end
                             end
                         end
                     end
-                end
-            else
-                for c=1, #collected do
-                    local e = collected[c]
-                    if setup == "-" then
-                        e.command = false
-                    elseif setup == "+" then
-                        e.command = true
-                    else
-                        e.command = e.tg
+                else
+                    for c=1,nc do
+                        local e = collected[c]
+                        if setup == "-" then
+                            e.command = false
+                        elseif setup == "+" then
+                            e.command = true
+                        else
+                            e.command = e.tg
+                        end
                     end
                 end
+            elseif trace_setups then
+                report_lxml("zero lpath matches for %s",pattern)
             end
         elseif trace_setups then
             report_lxml("no lpath matches for %s",pattern)
@@ -921,44 +929,49 @@ function lxml.setsetup(id,pattern,setup)
         if a and b then
             local collected = xmlapplylpath(getid(id),pattern)
             if collected then
-                if trace_setups then
-                    for c=1, #collected do
-                        local e = collected[c]
-                        local ns, tg, ix = e.rn or e.ns, e.tg, e.ix or 0
-                        if b == "-" then
-                            e.command = false
-                            if ns == "" then
-                                report_lxml("lpath matched (e) %5i: %s = %s -> skipped",c,ix,tg)
+                local nc = #collected
+                if nc > 0 then
+                    if trace_setups then
+                        for c=1,nc do
+                            local e = collected[c]
+                            local ns, tg, ix = e.rn or e.ns, e.tg, e.ix or 0
+                            if b == "-" then
+                                e.command = false
+                                if ns == "" then
+                                    report_lxml("lpath matched (e) %5i: %s = %s -> skipped",c,ix,tg)
+                                else
+                                    report_lxml("lpath matched (f) %5i: %s = %s:%s -> skipped",c,ix,ns,tg)
+                                end
+                            elseif b == "+" then
+                                e.command = true
+                                if ns == "" then
+                                    report_lxml("lpath matched (g) %5i: %s = %s -> text",c,ix,tg)
+                                else
+                                    report_lxml("lpath matched (h) %5i: %s = %s:%s -> text",c,ix,ns,tg)
+                                end
                             else
-                                report_lxml("lpath matched (f) %5i: %s = %s:%s -> skipped",c,ix,ns,tg)
+                                e.command = a .. tg
+                                if ns == "" then
+                                    report_lxml("lpath matched (i) %5i: %s = %s -> %s",c,ix,tg,e.command)
+                                else
+                                    report_lxml("lpath matched (j) %5i: %s = %s:%s -> %s",c,ix,ns,tg,e.command)
+                                end
                             end
-                        elseif b == "+" then
-                            e.command = true
-                            if ns == "" then
-                                report_lxml("lpath matched (g) %5i: %s = %s -> text",c,ix,tg)
+                        end
+                    else
+                        for c=1,nc do
+                            local e = collected[c]
+                            if b == "-" then
+                                e.command = false
+                            elseif b == "+" then
+                                e.command = true
                             else
-                                report_lxml("lpath matched (h) %5i: %s = %s:%s -> text",c,ix,ns,tg)
-                            end
-                        else
-                            e.command = a .. tg
-                            if ns == "" then
-                                report_lxml("lpath matched (i) %5i: %s = %s -> %s",c,ix,tg,e.command)
-                            else
-                                report_lxml("lpath matched (j) %5i: %s = %s:%s -> %s",c,ix,ns,tg,e.command)
+                                e.command = a .. e.tg
                             end
                         end
                     end
-                else
-                    for c=1, #collected do
-                        local e = collected[c]
-                        if b == "-" then
-                            e.command = false
-                        elseif b == "+" then
-                            e.command = true
-                        else
-                            e.command = a .. e.tg
-                        end
-                    end
+                elseif trace_setups then
+                    report_lxml("zero lpath matches for %s",pattern)
                 end
             elseif trace_setups then
                 report_lxml("no lpath matches for %s",pattern)
@@ -966,21 +979,26 @@ function lxml.setsetup(id,pattern,setup)
         else
             local collected = xmlapplylpath(getid(id),pattern)
             if collected then
-                if trace_setups then
-                    for c=1, #collected do
-                        local e = collected[c]
-                        e.command = setup
-                        local ns, tg, ix = e.rn or e.ns, e.tg, e.ix or 0
-                        if ns == "" then
-                            report_lxml("lpath matched (k) %5i: %s = %s -> %s",c,ix,tg,setup)
-                        else
-                            report_lxml("lpath matched (l) %5i: %s = %s:%s -> %s",c,ix,ns,tg,setup)
+                local nc = #collected
+                if nc > 0 then
+                    if trace_setups then
+                        for c=1,nc do
+                            local e = collected[c]
+                            e.command = setup
+                            local ns, tg, ix = e.rn or e.ns, e.tg, e.ix or 0
+                            if ns == "" then
+                                report_lxml("lpath matched (k) %5i: %s = %s -> %s",c,ix,tg,setup)
+                            else
+                                report_lxml("lpath matched (l) %5i: %s = %s:%s -> %s",c,ix,ns,tg,setup)
+                            end
+                        end
+                    else
+                        for c=1,nc do
+                            collected[c].command = setup
                         end
                     end
-                else
-                    for c=1, #collected do
-                        collected[c].command = setup
-                    end
+                elseif trace_setups then
+                    report_lxml("zero lpath matches for %s",pattern)
                 end
             elseif trace_setups then
                 report_lxml("no lpath matches for %s",pattern)
@@ -994,65 +1012,89 @@ end
 local finalizers = xml.finalizers.tex
 
 local function first(collected)
-    if collected then
+    if collected and #collected > 0 then
         xmlsprint(collected[1])
     end
 end
 
 local function last(collected)
     if collected then
-        xmlsprint(collected[#collected])
+        local nc = #collected
+        if nc > 0 then
+            xmlsprint(collected[nc])
+        end
     end
 end
 
 local function all(collected)
     if collected then
-        for c=1,#collected do
-            xmlsprint(collected[c])
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                xmlsprint(collected[c])
+            end
         end
     end
 end
 
 local function reverse(collected)
     if collected then
-        for c=#collected,1,-1 do
-            xmlsprint(collected[c])
+        local nc = #collected
+        if nc >0 then
+            for c=nc,1,-1 do
+                xmlsprint(collected[c])
+            end
         end
     end
 end
 
 local function count(collected)
-    contextsprint(ctxcatcodes,(collected and #collected) or 0)
+    contextsprint(ctxcatcodes,(collected and #collected) or 0) -- why ctxcatcodes
 end
 
 local function position(collected,n)
     -- todo: if not n then == match
     if collected then
-        n = tonumber(n) or 0
-        if n < 0 then
-            n = #collected + n + 1
-        end
-        if n > 0 then
-            xmlsprint(collected[n])
+        local nc = #collected
+        if nc > 0 then
+            n = tonumber(n) or 0
+            if n < 0 then
+                n = nc + n + 1
+            end
+            if n > 0 then
+                local cn = collected[n]
+                if cn then
+                    xmlsprint(cn)
+                    return
+                end
+            end
         end
     end
 end
 
 local function match(collected) -- is match in preceding collected, never change, see bibxml
     local m = collected and collected[1]
-    contextsprint(ctxcatcodes,m and m.mi or 0)
+    contextsprint(ctxcatcodes,m and m.mi or 0) -- why ctxcatcodes
 end
 
 local function index(collected,n)
     if collected then
-        n = tonumber(n) or 0
-        if n < 0 then
-            n = #collected + n + 1 -- brrr
-        end
-        if n > 0 then
-            contextsprint(ctxcatcodes,collected[n].ni or 0)
+        local nc = #collected
+        if nc > 0 then
+            n = tonumber(n) or 0
+            if n < 0 then
+                n = nc + n + 1 -- brrr
+            end
+            if n > 0 then
+                local cn = collected[n]
+                if cn then
+                    contextsprint(ctxcatcodes,cn.ni or 0) -- why ctxcatcodes
+                    return
+                end
+            end
         end
     end
+    contextsprint(ctxcatcodes,0) -- why ctxcatcodes
 end
 
 local function command(collected,cmd,otherwise)
@@ -1091,7 +1133,7 @@ local function attribute(collected,a,default)
 end
 
 local function chainattribute(collected,arguments) -- todo: optional levels
-    if collected then
+    if collected and #collected > 0 then
         local e = collected[1]
         while e do
             local at = e.at
@@ -1111,7 +1153,9 @@ end
 local function text(collected)
     if collected then
         local nc = #collected
-        if nc == 1 then -- hardly any gain so this will go
+        if nc == 0 then
+            -- nothing
+        elseif nc == 1 then -- hardly any gain so this will go
             cprint(collected[1])
         else for c=1,nc do
             cprint(collected[c])
@@ -1121,71 +1165,80 @@ end
 
 local function ctxtext(collected)
     if collected then
-        for c=1,#collected do
-            contextsprint(ctxcatcodes,collected[1].dt)
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                contextsprint(ctxcatcodes,collected[c].dt)
+            end
         end
     end
 end
 
---~     local str = xmltext(getid(id),pattern) or ""
---~     str = gsub(str,"^%s*(.-)%s*$","%1")
---~     if nolines then
---~         str = gsub(str,"%s+"," ")
---~     end
-
 local function stripped(collected) -- tricky as we strip in place
     if collected then
-        for c=1,#collected do
-            cprint(xml.stripelement(collected[c]))
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                cprint(xml.stripelement(collected[c]))
+            end
         end
     end
 end
 
 local function lower(collected)
-    if collected then
-        for c=1,#collected do
-            contextsprint(ctxcatcodes,lowerchars(collected[1].dt[1]))
+    if not collected then
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                contextsprint(ctxcatcodes,lowerchars(collected[c].dt[1]))
+            end
         end
     end
 end
 
 local function upper(collected)
     if collected then
-        for c=1,#collected do
-            contextsprint(ctxcatcodes,upperchars(collected[1].dt[1]))
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                contextsprint(ctxcatcodes,upperchars(collected[c].dt[1]))
+            end
         end
     end
 end
 
 local function number(collected)
-    if collected then
-        local n = 0
-        for c=1,#collected do
+    local nc = collected and #collected or 0
+    local n = 0
+    if nc > 0 then
+        for c=1,nc do
             n = n + tonumber(collected[c].dt[1] or 0)
         end
-        contextsprint(ctxcatcodes,n)
     end
+    contextsprint(ctxcatcodes,n)
 end
 
 local function concatrange(collected,start,stop,separator,lastseparator,textonly) -- test this on mml
     if collected then
         local nofcollected = #collected
-        local separator = separator or ""
-        local lastseparator = lastseparator or separator or ""
-        start, stop = (start == "" and 1) or tonumber(start) or 1, (stop == "" and nofcollected) or tonumber(stop) or nofcollected
-        if stop < 0 then stop = nofcollected + stop end -- -1 == last-1
-        for i=start,stop do
-            if textonly then
-                xmlcprint(collected[i])
-            else
-                xmlsprint(collected[i])
-            end
-            if i == nofcollected then
-                -- nothing
-            elseif i == nofcollected-1 and lastseparator ~= "" then
-                contextsprint(ctxcatcodes,lastseparator)
-            elseif separator ~= "" then
-                contextsprint(ctxcatcodes,separator)
+        if nofcollected > 0 then
+            local separator = separator or ""
+            local lastseparator = lastseparator or separator or ""
+            start, stop = (start == "" and 1) or tonumber(start) or 1, (stop == "" and nofcollected) or tonumber(stop) or nofcollected
+            if stop < 0 then stop = nofcollected + stop end -- -1 == last-1
+            for i=start,stop do
+                if textonly then
+                    xmlcprint(collected[i])
+                else
+                    xmlsprint(collected[i])
+                end
+                if i == nofcollected then
+                    -- nothing
+                elseif i == nofcollected-1 and lastseparator ~= "" then
+                    contextsprint(ctxcatcodes,lastseparator)
+                elseif separator ~= "" then
+                    contextsprint(ctxcatcodes,separator)
+                end
             end
         end
     end
@@ -1218,37 +1271,43 @@ finalizers.default        = all -- !!
 
 local concat = table.concat
 
-function finalizers.tag(collected)
+function finalizers.tag(collected,n)
     if collected then
-        local c
-        if n == 0 or not n then
-            c = collected[1]
-        elseif n > 1 then
-            c = collected[n]
-        else
-            c = collected[#collected-n+1]
-        end
-        if c then
-            contextsprint(ctxcatcodes,c.tg)
+        local nc = #collected
+        if nc > 0 then
+            local c
+            if n == 0 or not n then
+                c = collected[1]
+            elseif n > 1 then
+                c = collected[n]
+            else
+                c = collected[nc-n+1]
+            end
+            if c then
+                contextsprint(ctxcatcodes,c.tg)
+            end
         end
     end
 end
 
-function finalizers.name(collected)
+function finalizers.name(collected,n)
     if collected then
-        local c
-        if n == 0 or not n then
-            c = collected[1]
-        elseif n > 1 then
-            c = collected[n]
-        else
-            c = collected[#collected-n+1]
-        end
-        if c then
-            if c.ns == "" then
-                contextsprint(ctxcatcodes,c.tg)
+        local nc = #collected
+        if nc > 0 then
+            local c
+            if n == 0 or not n then
+                c = collected[1]
+            elseif n > 1 then
+                c = collected[n]
             else
-                contextsprint(ctxcatcodes,c.ns,":",c.tg)
+                c = collected[nc-n+1]
+            end
+            if c then
+                if c.ns == "" then
+                    contextsprint(ctxcatcodes,c.tg)
+                else
+                    contextsprint(ctxcatcodes,c.ns,":",c.tg)
+                end
             end
         end
     end
@@ -1256,13 +1315,16 @@ end
 
 function finalizers.tags(collected,nonamespace)
     if collected then
-        for c=1,#collected do
-            local e = collected[c]
-            local ns, tg = e.ns, e.tg
-            if nonamespace or ns == "" then
-                contextsprint(ctxcatcodes,tg)
-            else
-                contextsprint(ctxcatcodes,ns,":",tg)
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                local e = collected[c]
+                local ns, tg = e.ns, e.tg
+                if nonamespace or ns == "" then
+                    contextsprint(ctxcatcodes,tg)
+                else
+                    contextsprint(ctxcatcodes,ns,":",tg)
+                end
             end
         end
     end
@@ -1327,7 +1389,7 @@ end
 
 function lxml.raw(id,pattern) -- the content, untouched by commands
     local collected = (pattern and xmlapplylpath(getid(id),pattern)) or getid(id)
-    if collected then
+    if collected and #collected > 0 then
         contextsprint(notcatcodes,xmltostring(collected[1].dt))
     end
 end
@@ -1335,7 +1397,6 @@ end
 function lxml.context(id,pattern) -- the content, untouched by commands
     if not pattern then
         local collected = getid(id)
-    --  contextsprint(ctxcatcodes,collected.dt[1])
         ctx_text(collected.dt[1])
     else
         local collected = xmlapplylpath(getid(id),pattern) or getid(id)
@@ -1345,9 +1406,23 @@ function lxml.context(id,pattern) -- the content, untouched by commands
     end
 end
 
+function lxml.context(id,pattern) -- the content, untouched by commands
+    if pattern then
+        local collected = xmlapplylpath(getid(id),pattern) or getid(id)
+        if collected and #collected > 0 then
+            contextsprint(ctxcatcodes,collected[1].dt)
+        end
+    else
+        local collected = getid(id)
+        if collected and #collected > 0 then
+            ctx_text(collected.dt[1])
+        end
+    end
+end
+
 function lxml.text(id,pattern)
     local collected = (pattern and xmlapplylpath(getid(id),pattern)) or getid(id)
-    if collected then
+    if collected and #collected > 0 then
         text(collected)
     end
 end
@@ -1355,17 +1430,11 @@ end
 lxml.content = text
 
 function lxml.position(id,pattern,n)
-    local collected = xmlapplylpath(getid(id),pattern)
-    if collected then
-        position(collected,n)
-    end
+    position(xmlapplylpath(getid(id),pattern),n)
 end
 
 function lxml.chainattribute(id,pattern,a,default)
-    local collected = xmlapplylpath(getid(id),pattern)
-    if collected then
-        chainattribute(collected,a,default)
-    end
+    chainattribute(xmlapplylpath(getid(id),pattern),a,default)
 end
 
 function lxml.concatrange(id,pattern,start,stop,separator,lastseparator,textonly) -- test this on mml
@@ -1449,15 +1518,18 @@ function lxml.command(id,pattern,cmd)
     local i, p = getid(id,true)
     local collected = xmlapplylpath(getid(i),pattern)
     if collected then
-        local rootname = p or i.name
-        for c=1,#collected do
-            local e = collected[c]
-            local ix = e.ix
-            if not ix then
-                addindex(rootname,false,true)
-                ix = e.ix
+        local nc = #collected
+        if nc > 0 then
+            local rootname = p or i.name
+            for c=1,nc do
+                local e = collected[c]
+                local ix = e.ix
+                if not ix then
+                    addindex(rootname,false,true)
+                    ix = e.ix
+                end
+                contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
             end
-            contextsprint(ctxcatcodes,"\\xmlw{",cmd,"}{",rootname,"::",ix,"}")
         end
     end
 end
@@ -1565,8 +1637,11 @@ lxml.get_id = getid   lxml.obsolete.get_id = getid
 
 function xml.finalizers.tex.lettered(collected)
     if collected then
-        for c=1,#collected do
-            contextsprint(ctxcatcodes,lettered(collected[1].dt[1]))
+        local nc = #collected
+        if nc > 0 then
+            for c=1,nc do
+                contextsprint(ctxcatcodes,lettered(collected[c].dt[1]))
+            end
         end
     end
 end
@@ -1574,7 +1649,7 @@ end
 --~ function xml.finalizers.tex.apply(collected,what) -- to be tested
 --~     if collected then
 --~         for c=1,#collected do
---~             contextsprint(ctxcatcodes,what(collected[1].dt[1]))
+--~             contextsprint(ctxcatcodes,what(collected[c].dt[1]))
 --~         end
 --~     end
 --~ end
