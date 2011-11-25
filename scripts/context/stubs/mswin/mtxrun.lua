@@ -10204,9 +10204,9 @@ end
 --
 
 local function text(collected) -- hybrid
-    if collected and #collected > 0 then
+    if collected then -- no # test here !
         local e = collected[1] or collected
-        return (e and xmltotext(e)) or ""
+        return e and xmltotext(e) or ""
     else
         return ""
     end
