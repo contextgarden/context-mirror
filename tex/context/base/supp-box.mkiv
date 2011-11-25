@@ -646,8 +646,8 @@
 \def\dodotlap{\normalvbox to \zeropoint{\normalvss\flushnextbox}\endgroup}
 \def\dodoblap{\normalvbox to \zeropoint{\flushnextbox\normalvss}\endgroup}
 
-\def\tlap{\begingroup\dowithnextboxcs\dodotlap\normalvbox}
-\def\blap{\begingroup\dowithnextboxcs\dodoblap\normalvbox}
+\unexpanded\def\tlap{\begingroup\dowithnextboxcs\dodotlap\normalvbox}
+\unexpanded\def\blap{\begingroup\dowithnextboxcs\dodoblap\normalvbox}
 
 %D \macros
 %D   {beginofshapebox,

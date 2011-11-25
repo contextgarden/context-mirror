@@ -13,6 +13,8 @@
 
 \registerctxluafile{phys-dim}{}
 
+% todo: optional space between 'connected' symbols
+
 \unprotect
 
 %D \macros
@@ -474,7 +476,10 @@
 \unexpanded\def\unitsS      #1{\units_start{}\unitsraise{#1}\c_units_state \plusone}   % suffix
 \unexpanded\def\unitsO      #1{\units_start#1\c_units_state                \plustwo}   % operator
 \unexpanded\def\unitsN      #1{\units_start#1\c_units_state                \plusfive}  % number
-\unexpanded\def\unitsC      #1{\units_next#1\c_units_state                 \plussix}   % connected
+\unexpanded\def\unitsC      #1{\removeunwantedspaces#1\c_units_state       \plussix}   % connected
+
+\unexpanded\def\checkedtextprime      {\iffontchar\font"2032′\else\textacute\fi}
+\unexpanded\def\checkedtextdoubleprime{\iffontchar\font"2033″\else\textacute\kern-.25em\textacute\fi}
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]
@@ -588,6 +593,35 @@
    {/}%
    }%\unitsbackspace}
 
+%D You can define additional units:
+%D
+%D \starttyping
+%D \registerunit
+%D   [units]
+%D   [point=pt,
+%D    basepoint=bp,
+%D    scaledpoint=sp,
+%D    didot=dd,
+%D    cicero=cc]
+%D \stoptyping
+%D
+%D Possible categories are: \type {prefixes}, \type {units}, \type {operators},
+%D \type {suffixes}, \type {symbols},\type {packaged}.
+
+\unexpanded\def\registerunit
+  {\dodoubleempty\register_unit}
+
+\def\register_unit[#1][#2]%
+  {\ctxcommand{registerunit(\!!bs#1\!!es,\!!bs#2\!!es)}}
+
+%D You can generate a list as follows:
+%D
+%D \starttyping
+%D \usemodule[phy-01]
+%D
+%D \ShowUnitsTable % [prefixes]
+%D \stoptyping
+
 %D Now we define the standard units command:
 
 \defineunits
@@ -633,5 +667,22 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
+%D
+%D Another example:
+%D
+%D \starttyping
+%D \startluacode
+%D     languages.data.labels.units.foo = {
+%D         Liter = "l"
+%D     }
+%D     languages.data.labels.units.bar = {
+%D         Liter = "L"
+%D     }
+%D \stopluacode
+%D
+%D \defineunits[lunit]            \lunit{10 l/s}\par
+%D \defineunits[funit][label=foo] \funit{10 l/s}\par
+%D \defineunits[bunit][label=bar] \bunit{10 l/s}\par
+%D \stoptyping
 
 \protect \endinput
