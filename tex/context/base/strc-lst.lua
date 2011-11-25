@@ -230,7 +230,7 @@ local sorters = {
     end,
 }
 
--- some day soon we will pass a table
+-- some day soon we will pass a table .. also split the function
 
 local function filtercollected(names, criterium, number, collected, forced, nested, sortorder) -- names is hash or string
     local numbers, depth = documents.data.numbers, documents.data.depth
@@ -392,6 +392,20 @@ local function filtercollected(names, criterium, number, collected, forced, nest
             return filtercollected(names,variables.all,number,collected,forced,false,sortorder)
         else
             return filtercollected(names,variables.current,number,collected,forced,false,sortorder)
+        end
+    elseif criterium == variables.component then
+        -- special case, no structure yet
+        local component = resolvers.jobs.currentcomponent() or ""
+        if component ~= "" then
+            for i=1,#collected do
+                local v = collected[i]
+                local r = v.references
+                local m = v.metadata
+                if r and r.component == component and (m and names[m.name] or all) then
+                    nofresult = nofresult + 1
+                    result[nofresult] = v
+                end
+            end
         end
     else -- sectionname, number
         -- not the same as register
