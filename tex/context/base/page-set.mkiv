@@ -2406,6 +2406,14 @@
 \def\setcolumnsetspanhsize#1#2% x nx / uses counta/b
   {\!!counta#1\!!countb#2\docalculatecolumnsetspan
    \edef\columnsetspanhsize{\the\!!widtha}}
+
+\def\OTRSETsetfloathsize % new, otherwise wrong spanning floats in columnset
+  {\hsize                % maybe checking optional
+     \ifdim\tempfloatwidth>\makeupwidth
+       \makeupwidth
+     \else
+       \tempfloatwidth
+     \fi}
 
 \unexpanded\def\definecolumnsetspan
   {\dodoubleempty\dodefinecolumnsetspan}
