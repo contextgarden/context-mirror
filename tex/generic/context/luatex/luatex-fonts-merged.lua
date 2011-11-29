@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/25/11 21:29:42
+-- merge date  : 11/29/11 18:47:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -1695,32 +1695,72 @@ function lpeg.is_lpeg(p)
     return p and lpegtype(p) == "pattern"
 end
 
--- For the moment here, but it might move to utilities:
+-- For the moment here, but it might move to utilities. Beware, we need to
+-- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
+-- loop back from the end.
 
-local sort, fastcopy, sortedpairs = table.sort, table.fastcopy, table.sortedpairs -- dependency!
+local sort, fastcopy, sortedkeys = table.sort, table.fastcopy, table.sortedkeys -- dependency!
 
-function lpeg.append(list,pp,delayed)
+function lpeg.append(list,pp,delayed,checked)
     local p = pp
     if #list > 0 then
-        list = fastcopy(list)
-        sort(list)
-        for l=1,#list do
+        local keys = fastcopy(list)
+        sort(keys)
+        for i=#keys,1,-1 do
+            local k = keys[i]
             if p then
-                p = P(list[l]) + p
+                p = P(k) + p
             else
-                p = P(list[l])
+                p = P(k)
             end
         end
-    elseif delayed then
-        for k, v in sortedpairs(list) do
-            if p then
+    elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
+        local keys = sortedkeys(list)
+        if p then
+            for i=#keys,1,-1 do
+                local k = keys[i]
+                local v = list[k]
                 p = P(k)/list + p
+            end
+        else
+            for i=#keys,1,-1 do
+                local k = keys[i]
+                local v = list[k]
+                if p then
+                    p = P(k) + p
+                else
+                    p = P(k)
+                end
+            end
+            if p then
+                p = p / list
+            end
+        end
+    elseif checked then
+        -- problem: substitution gives a capture
+        local keys = sortedkeys(list)
+        for i=#keys,1,-1 do
+            local k = keys[i]
+            local v = list[k]
+            if p then
+                if k == v then
+                    p = P(k) + p
+                else
+                    p = P(k)/v + p
+                end
             else
-                p = P(k)/list
+                if k == v then
+                    p = P(k)
+                else
+                    p = P(k)/v
+                end
             end
         end
     else
-        for k, v in sortedpairs(list) do
+        local keys = sortedkeys(list)
+        for i=#keys,1,-1 do
+            local k = keys[i]
+            local v = list[k]
             if p then
                 p = P(k)/v + p
             else

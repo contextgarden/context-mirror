@@ -1200,7 +1200,7 @@ function extras.tabulate(result,element,detail,n,fulltag,di)
             local content = false
             for i=1,#did do
                 local d = did[i].data
-                local c = d and c.content
+                local c = d and d.content
                 if c and #c > 0 then
                     content = true
                     break

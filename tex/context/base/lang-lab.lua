@@ -97,8 +97,10 @@ local function definelanguagelabels(data,command,tag,rawtag)
     end
 end
 
-local function definelabels(command,list,prefixed)
+function languages.labels.define(command,name,prefixed)
+    local list = languages.data.labels[name]
     if list then
+        report_labels("defining label set '%s'",name)
         context.pushcatcodes(prtcatcodes) -- context.unprotect
         for tag, data in next, list do
             if data.hidden then
@@ -127,15 +129,9 @@ local function definelabels(command,list,prefixed)
             end
         end
         context.popcatcodes() -- context.protect
+    else
+        report_labels("unknown label set '%s'",name)
     end
-end
-
-function languages.labels.define()
-    local data = languages.data.labels
-    definelabels("setupheadtext", data.titles, true)
-    definelabels("setuplabeltext", data.texts, true)
-    definelabels("setupmathlabeltext", data.functions)
-    definelabels("setuptaglabeltext", data.tags)
 end
 
 --~ function languages.labels.check()

@@ -18,6 +18,10 @@
 
 \unprotect
 
+%D Left-overs:
+
+\ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % \utfchar{2006"} % we could embed 0x2006 but it does not show up in a editor
+
 %C The UPPERCASE variants are obsolete as we can now use \WORD
 %C in an non-interfering way.
 
@@ -61,12 +65,14 @@
 %D
 %D The last two cases concern the current language.
 
-\def\definelabelclass
-  {\dodoubleempty\dodefinelabelclass}
+\let\currentlabelcategory\empty
 
-\def\dodefinelabelclass[#1][#2]%
+\def\definelabelclass
+  {\dodoubleempty\define_label_class}
+
+\def\define_label_class[#1][#2]%
   {\normalexpanded
-     {\noexpand\dododefinelabelclass
+     {\define_label_class_indeed
         {#1}%
         {\ifsecondargument#2\else\zerocount\fi}%
         \expandafter\noexpand\csname   dogetupsome#1text\endcsname
@@ -77,12 +83,10 @@
         \expandafter\noexpand\csname             #1texts\endcsname
         \expandafter\noexpand\csname              #1text\endcsname}}
 
-\let\currentlabelcategory\empty
-
-\def\dododefinelabelclass#1#2#3#4#5#6#7#8#9%
-  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
-   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\dosetupsometextprefix}%
-   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\dostartsometextprefix[#1]}%
+\unexpanded\def\define_label_class_indeed#1#2#3#4#5#6#7#8#9%
+  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\setup_some_text_prefix}%
+   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\setup_some_text_prefix}%
+   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\start_some_text_prefix[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo
@@ -159,11 +163,6 @@
 %D These macros enable us to automatically define head and label
 %D texts without replacing predefined ones. They are internal macros.
 
-\definelabelclass [head]      [0] % titles
-\definelabelclass [label]     [0] % texts
-\definelabelclass [mathlabel] [0] % functions
-\definelabelclass [taglabel]  [2] % tags
-
 \appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
 
 \newconstant\protecttextprefixes
@@ -171,7 +170,7 @@
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
 
-\def\dostartsometextprefix[#1][#2][#3]% class language name
+\def\start_some_text_prefix[#1][#2][#3]% class language name
   {\ifthirdargument
      \edef\currenttextprefixtag{\reallanguagetag{#2}}%
      \edef\currenttextprefixname{#3}%
@@ -179,43 +178,43 @@
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
      \edef\currenttextprefixname{#2}%
    \fi
-   \grabuntil{stop#1text}\dodostartsometextprefix}
+   \grabuntil{stop#1text}\start_some_text_prefix_indeed}
 
-\def\dodostartsometextprefix#1% text (not special checking done here yet, only for long texts anyway)
+\def\start_some_text_prefix_indeed#1% text (not special checking done here yet, only for long texts anyway)
   {\expandafter\edef\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxlua{context(string.strip(\!!bs#1\!!es))}}\empty}}
 
-\def\dosetupsometextprefix[#1][#2]%
+\def\setup_some_text_prefix[#1][#2]%
   {\ifsecondargument
      \edef\currenttextprefixtag{\reallanguagetag{#1}}%
-     \processcommalist[#2]\dodosetupsometextprefix
+     \processcommalist[#2]\setup_some_text_prefix_indeed
    \else
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
-     \processcommalist[#1]\dodosetupsometextprefix
+     \processcommalist[#1]\setup_some_text_prefix_indeed
    \fi}
 
-\def\dodosetupsometextprefix#1%
-  {\dododosetupsometextprefix[#1]}
+\def\setup_some_text_prefix_indeed#1%
+  {\assign_some_text_prefix[#1]}
 
-\def\dododosetupsometextprefix[#1=#2]%
-  {\doassignsometextprefix{#1}[#2,,]}
+\def\assign_some_text_prefix[#1=#2]%
+  {\assign_some_text_prefix_indeed{#1}[#2,,]}
 
-\def\doassignsometextprefix#1%
+\def\assign_some_text_prefix_indeed#1%
   {\ifcase\protecttextprefixes
      % no checking
-     \expandafter\doassignsometextprefixyes
+     \expandafter\assign_some_text_prefix_yes
    \or
      % checking
      \ifcsname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
-       \expandafter\expandafter\expandafter\doassignsometextprefixnop
+       \expandafter\expandafter\expandafter\assign_some_text_prefix_nop
      \else
-       \expandafter\expandafter\expandafter\doassignsometextprefixyes
+       \expandafter\expandafter\expandafter\assign_some_text_prefix_yes
      \fi
    \or
      % simple assignment (a bit overkill but it fits in the whole)
-     \expandafter\doassignsometextprefixdumb
+     \expandafter\assign_some_text_prefix_dumb
    \fi{#1}}
 
-\def\doassignsometextprefixyes#1[#2,#3,#4]%
+\def\assign_some_text_prefix_yes#1[#2,#3,#4]%
   {\edef\!!stringa{#2}%
    \edef\!!stringb{#3}%
    \ifx\!!stringb\empty
@@ -228,11 +227,23 @@
      \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
    \fi}
 
-\def\doassignsometextprefixnop#1[#2]%
+\def\assign_some_text_prefix_nop#1[#2]%
   {}
 
-\def\doassignsometextprefixdumb#1[#2,#3]%
+\def\assign_some_text_prefix_dumb#1[#2,#3]%
   {\expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
+
+\definelabelclass [head]      [0] % titles
+\definelabelclass [label]     [0] % texts
+\definelabelclass [mathlabel] [0] % functions
+\definelabelclass [taglabel]  [2] % tags
+
+\ctxlua{
+    languages.labels.define("setupheadtext","titles",true)%
+    languages.labels.define("setuplabeltext","texts",true)%
+    languages.labels.define("setupmathlabeltext","functions",false)%
+    languages.labels.define("setuptaglabeltext","tags",false)%
+}
 
 %D \macros
 %D   {translate}
@@ -252,7 +263,11 @@
 %D which expands to {\em something} or {\em iets}, depending on
 %D de current language.
 
-\def\dotranslate[#1]%
+
+\unexpanded\def\translate
+  {\dosingleempty\translate_indeed}
+
+\def\translate_indeed[#1]%
   {\getparameters[\??lg][#1]%
    \ifcsname\??lg\currentlanguage\endcsname
      \csname\??lg\currentlanguage\endcsname
@@ -261,9 +276,6 @@
    \else
      [translation #1]%
    \fi\fi}
-
-\unexpanded\def\translate
-  {\dosingleempty\dotranslate}
 
 %D When used without argument, the last defined values are
 %D used. This enables repetitive use like
@@ -285,13 +297,5 @@
 \def\assigntranslation[#1]\to#2%
   {\getparameters[\??lg][#1]%
    \edef#2{\csname\??lg\currentlanguage\endcsname}}
-
-%D Now we load the labels:
-
-\ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % \utfchar{2006"} % we could embed 0x2006 but it does not show up in a editor
-
-%D Now we can load the labels:
-
-\ctxlua{languages.labels.define()} % no user command
 
 \protect \endinput

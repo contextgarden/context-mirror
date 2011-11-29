@@ -18,64 +18,74 @@
 \startluacode
 moduledata.units = moduledata.units or { }
 
-local tables = physics.units.tables
+local tables    = physics.units.tables
+local units     = tables.units
+local shortcuts = tables.shortcuts
 
 local HL = context.HL
 local NC = context.NC
 local NR = context.NR
 
-local function typeset(category,name,list,followup)
-    if followup then
-        context.TB()
-    end
-    HL()
-    NC()
-    context.rlap(category .. ":" .. name)
-    NC()
-    NC()
-    NR()
-    HL()
-    for k, v in table.sortedhash(list) do
-        NC()
-        context(k)
-        NC()
-        if isunit then
-            context(v)
-        else
-            context.type(v)
+local function typeset(list,followup,name,category)
+    if list then
+        if followup then
+            context.TB()
         end
-        NC()
-        NR()
+        if category then
+            HL()
+            NC()
+            context.rlap(category .. ":" .. name)
+            NC()
+            NC()
+            NR()
+            HL()
+        end
+        for k, v in table.sortedhash(list) do
+            NC()
+            context(k)
+            NC()
+            if isunit then
+                context(v)
+            else
+                context.type(v)
+            end
+            NC()
+            if name == "units" or name == "symbols" or name == "packaged" then
+                context.unittext(v)
+            elseif name == "prefixes" then
+                context.prefixtext(v)
+            elseif name == "operators" then
+                context.operatortext(v)
+            elseif name == "suffixes" then
+                context.suffixtext(v)
+            end
+            NC()
+            NR()
+        end
+        if category and name then
+            HL()
+        end
     end
-    HL()
 end
 
 function moduledata.units.show_table(name)
-    context.starttabulate { "|lT|l|" }
+    context.starttabulate { "|lT|l|c|" }
     if name and name ~= "" then
-        local first, second = string.match("(.-):(.-)")
+        local first, second = string.match(name,"(.-):(.-)") -- [units|shortcuts]:[units|...]
         if first then
-            local t = tables[first]
-            if t then
-                t = t[second]
-            end
-            if t then
-                typeset(first,second,t,false)
-            end
+            typeset(tables[first] and tables[first][second],false)
         else
-            local t = tables.entries[name]
-            if t then
-                typeset("entries",name,t,false)
-            end
+            typeset(units[name],false)
+            typeset(shortcuts[name],true)
         end
     else
         local done = false
-        for what, list in table.sortedhash(tables.units) do
-            typeset("units",what,list,done)
+        for what, list in table.sortedhash(units) do
+            typeset(list,done,what,"units")
             done = true
         end
-        for what, list in table.sortedhash(tables.shortcuts) do
-            typeset("shortcuts",what,list,done)
+        for what, list in table.sortedhash(shortcuts) do
+            typeset(list,done,what,"shortcuts")
             done = true
         end
     end

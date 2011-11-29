@@ -132,8 +132,6 @@ function context.word_match(words,word_chars,case_insensitive)
     end
 end
 
--- nicer (todo: utf):
-
 local idtoken = R("az","AZ","\127\255","__")
 local digit   = R("09")
 local sign    = S("+-")
@@ -185,7 +183,7 @@ function context.exact_match(words,word_chars,case_insensitive)
             list[lower(words[i])] = true
         end
         return Cmt(pattern^1, function(_,i,s)
-            return list[lower(s)] -- and i
+            return list[lower(s)] -- and i or nil
         end)
     else
         local list = { }
@@ -193,7 +191,7 @@ function context.exact_match(words,word_chars,case_insensitive)
             list[words[i]] = true
         end
         return Cmt(pattern^1, function(_,i,s)
-            return list[s] -- and i
+            return list[s] -- and i or nil
         end)
     end
 end

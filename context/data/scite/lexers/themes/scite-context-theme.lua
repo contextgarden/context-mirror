@@ -111,6 +111,7 @@ lexer.context.styles = {
     ["preamble"]   = style_comment,
     ["embedded"]   = style { fore = colors.black, bold = true },
     ["grouping"]   = style { fore = colors.red  },
+    ["label"]      = style { fore = colors.red, bold = true  },
     ["primitive"]  = style_keyword,
     ["plain"]      = style { fore = colors.dark, bold = true },
     ["user"]       = style { fore = colors.green },

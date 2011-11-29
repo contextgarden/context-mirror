@@ -820,7 +820,7 @@ function methods.line(name,specification)
 end
 
 function methods.text(name,specification)
-    return makelinechine(name,enhance(specification,"MultiLine"))
+    return makelinechild(name,enhance(specification,"MultiLine"))
 end
 
 local function makechoiceparent(field,specification)

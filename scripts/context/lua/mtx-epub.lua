@@ -164,6 +164,19 @@ local function locateimages(oldname,newname,subpath)
     return images
 end
 
+local zippers = {
+    {
+        name         = "zip",
+        uncompressed = "zip %s -X -0 %s",
+        compressed   = "zip %s -X -9 -r %s",
+    },
+    {
+        name         = "7zip (7z)",
+        uncompressed = "7z a -tzip -mx0 %s %s",
+        compressed   = "7z a -tzip %s %s",
+    },
+}
+
 function scripts.epub.make()
 
     local filename = environment.files[1]
@@ -248,19 +261,32 @@ function scripts.epub.make()
         io.savedata(file.join(epubpath,"OPS",epubroot),package)
         io.savedata(file.join(epubpath,"OPS",epubtoc),toc)
 
-        lfs.chdir(epubpath)
-
         application.report("creating archive\n\n")
 
+        local done = false
+        local list = { }
+
+        lfs.chdir(epubpath)
         os.remove(epubfile)
 
-        os.execute(format("zip %s -X -0    %s",epubfile,"mimetype"))
-        os.execute(format("zip %s -X -9 -r %s",epubfile,"META-INF"))
-        os.execute(format("zip %s -X -9 -r %s",epubfile,"OPS"))
+        for i=1,#zippers do
+            local zipper = zippers[i]
+            if os.execute(format(zipper.uncompressed,epubfile,"mimetype")) then
+                os.execute(format(zipper.compressed,epubfile,"META-INF"))
+                os.execute(format(zipper.compressed,epubfile,"OPS"))
+                done = zipper.name
+            else
+                list[#list+1] = zipper.name
+            end
+        end
 
         lfs.chdir("..")
 
-        application.report("epub archive: %s",file.join(epubpath,epubfile))
+        if done then
+            application.report("epub archive made using %s: %s",done,file.join(epubpath,epubfile))
+        else
+            application.report("no epub archive made, install one of: %s",concat(list," "))
+        end
 
     end
 
