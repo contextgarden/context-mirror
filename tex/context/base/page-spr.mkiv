@@ -26,7 +26,7 @@
 
 \def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
   {\setbox#1\hbox
-     {\setlayoutcomponentattribute\v!page\v!text
+     {\setlayoutcomponentattribute{\v!page:\v!text}%
       \vbox \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth

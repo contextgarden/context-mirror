@@ -316,12 +316,17 @@
        \trackingmarginnotesfalse
      \fi
    \fi
+   \recalculatebackgrounds
    \dosetpagenumberlocation
 \to \everysetuppagenumbering
 
-\appendtoks
-   \ifdefined \recalculatebackgrounds \recalculatebackgrounds \fi
-\to \everysetuppagenumbering
+\ifdefined \recalculatebackgrounds \else
+    \let\recalculatebackgrounds\relax
+\fi
+
+\ifdefined \dosetpagenumberlocation \else
+    \let\dosetpagenumberlocation\relax
+\fi
 
 \def\flushfinallayoutpage
   {\doifsomething\@@nmpage{\doifnot\@@nmpage\v!no{\page[\@@nmpage]}}}
@@ -329,42 +334,6 @@
 % The numbered location handler is there because we need to be downward
 % compatible. So, in fact there can be multiple handlers active at the
 % same time, but only the current one does something.
-%
-% thsi code might move to page-txt
-
-\newcount\currentpagenumberlocation
-
-\def\dosetpagenumberlocation
-  {\advance\currentpagenumberlocation\plusone
-   \ifx\@@nmlocation\empty \else
-     \let\@@pagenumbervlocation\v!footer
-     \let\@@pagenumberhlocation\v!text
-     \let\@@pagenumberxlocation\c!middletext
-     \normalexpanded{\noexpand\processallactionsinset[\@@nmlocation]}
-       [    \v!header=>\let\@@pagenumbervlocation\v!header,
-            \v!footer=>\let\@@pagenumbervlocation\v!footer,
-            \v!middle=>\let\@@pagenumberhlocation\v!text  \let\@@pagenumberxlocation\c!middletext,
-              \v!left=>\let\@@pagenumberhlocation\v!text  \let\@@pagenumberxlocation\c!lefttext,
-             \v!right=>\let\@@pagenumberhlocation\v!text  \let\@@pagenumberxlocation\c!righttext,
-            \v!inleft=>\let\@@pagenumberhlocation\v!margin\let\@@pagenumberxlocation\c!lefttext,
-           \v!inright=>\let\@@pagenumberhlocation\v!margin\let\@@pagenumberxlocation\c!righttext,
-          \v!inmargin=>\let\@@pagenumberhlocation\v!margin\def\@@pagenumberxlocation{\ifdoublesided\c!margintext\else\c!righttext\fi},
-            \v!margin=>\let\@@pagenumberhlocation\v!margin\def\@@pagenumberxlocation{\ifdoublesided\c!margintext\else\c!righttext\fi},
-          \v!atmargin=>\let\@@pagenumberhlocation\v!text  \let\@@pagenumberxlocation\c!marginedgetext,
-        \v!marginedge=>\let\@@pagenumberhlocation\v!text  \let\@@pagenumberxlocation\c!marginedgetext]%
-     \normalexpanded{\noexpand\setspecificlayouttext
-        {\@@pagenumbervlocation}{\@@pagenumberhlocation}{\@@pagenumberxlocation}%
-        {\noexpand\doplacepagenumberatlocation{\number\currentpagenumberlocation}}}%
-   \fi}
-
-\def\setspecificlayouttext#1#2#3#4{\setvalue{\??tk#1#2#3}{#4}} % weird place
-
-\appendtoks
-    \dosetpagenumberlocation
-\to \everyinitializepagecounters
-
-\def\doplacepagenumberatlocation#1%
-  {\ifnum#1=\currentpagenumberlocation\relax\expandafter\placelocationpagenumber\fi}
 
 % Rendering:
 
@@ -372,7 +341,11 @@
   {\ifnum\userpagenumberstate=\plustwo
      \ifnum\overallpagenumberstate=\plusone
         \doif\@@nmstrut\v!yes\strut
-        \@@nmcommand{\doattributes\??nm\c!style\c!color{\@@nmleft\labeltexts\v!pagenumber{\prefixedpagenumber}\@@nmright}}%
+        \begingroup
+        \dousestyleparameter\@@nmstyle
+        \dousecolorparameter\@@nmcolor
+        \@@nmcommand{\@@nmleft\labeltexts\v!pagenumber{\prefixedpagenumber}\@@nmright}%
+        \endgroup
      \fi
    \fi}
 

@@ -131,6 +131,20 @@
      {\setevalue\currenthead{\dohandleheadnop[\currenthead]}}%
 \to \everysetuphead
 
+\let\currentnamedsection\empty
+
+\unexpanded\def\startnamedsection
+  {\dotripleempty\startnamedsection}
+
+\def\dostartnamedsection[#1]% [#2][#3]
+  {\pushmacro\currentnamedsection
+   \edef\currentnamedsection{#1}%
+   \dostarthead[#1]} % [#2][#3]
+
+\unexpanded\def\stopnamedsection
+  {\normalexpanded{\dostophead[\currentnamedsection]}%
+   \popmacro\currentnamedsection}
+
 % structure sections (the parents of chapter etc)
 
 \let\firstsectionname\empty
@@ -336,6 +350,8 @@
      {\setfalse\headisdisplay}
      {\settrue \headisdisplay}}
 
+\newmode\v!sectionnumber
+
 \def\dosettructureheadnumbercontent
   {\setsystemmode  \v!sectionnumber
    \settrue\headshownumber} % why ?
@@ -361,7 +377,7 @@
 %   {\normalexpanded{\noexpand\setmarking[\currenthead]{\currentstructurelistnumber}}}
 
 \unexpanded\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
-  {\normalexpanded{\noexpand\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
+  {\normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
 \let\deepstructurenumbercommand\relax
 \let\deepstructuretitlecommand \relax
@@ -433,8 +449,8 @@
 
     \unexpanded\def\setupheadcomponentfont#1#2%
       {\dontconvertfont
-       \dosetheadattributes\c!style\c!color
-       \dosetheadattributes#1#2%
+       \useheadstyleandcolor\c!style\c!color
+       \useheadstyleandcolor#1#2%
        \setupinterlinespace}
 
 \fi

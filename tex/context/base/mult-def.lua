@@ -920,15 +920,9 @@ return {
    ["pe"]="تعریف‌سر",
    ["ro"]="definesteantet",
   },
-  ["defineindenting"]={
-   ["cs"]="definujodsazovani",
-   ["de"]="definiereeinzug",
-   ["en"]="defineindenting",
-   ["fr"]="definitcompoalinea",
-   ["it"]="definiscirientro",
-   ["nl"]="doorspringen",
-   ["pe"]="تعریف‌تورفتگی",
-   ["ro"]="definestealiat",
+  ["defineindentedtext"]={
+   ["en"]="defineindentedtext",
+   ["nl"]="definieeringesprongentext",
   },
   ["defineinmargin"]={
    ["cs"]="defineinmargin",
@@ -4030,15 +4024,9 @@ return {
    ["pe"]="بارگذاری‌نشانه‌شکستن",
    ["ro"]="seteazaliniesilabe",
   },
-  ["setupindentations"]={
-   ["cs"]="nastavodsazeni",
-   ["de"]="stelleeinzuegein",
-   ["en"]="setupindentations",
-   ["fr"]="reglealineas",
-   ["it"]="impostarientri",
-   ["nl"]="steldoorspringenin",
-   ["pe"]="بارگذاری‌تورفتگیها",
-   ["ro"]="seteazaaliniate",
+  ["setupindentedtext"]={
+   ["en"]="setupindentedtext",
+   ["nl"]="stelingesprongentextin",
   },
   ["setupindenting"]={
    ["cs"]="nastavodsazovani",

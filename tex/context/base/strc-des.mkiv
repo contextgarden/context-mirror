@@ -105,11 +105,11 @@
 \def\dodescriptionparentparameterhash#1#2%
   {\ifx#1\relax\else\dodescriptionparameterhash#1#2\fi}
 
-\def\dosetdescriptionattributes#1#2% style color
-  {\edef\fontattributehash {\descriptionparameterhash#1}%
-   \edef\colorattributehash{\descriptionparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+\def\usedescriptionstyleandcolor#1#2% style color
+  {\edef\currentstyleparameter{\descriptionparameter#1}%
+   \edef\currentcolorparameter{\descriptionparameter#2}%
+   \ifx\currentstyleparameter\empty\else\dousestyleparameter\currentstyleparameter\fi
+   \ifx\currentcolorparameter\empty\else\dousecolorparameter\currentcolorparameter\fi}
 
 % typesetting code
 
@@ -392,7 +392,7 @@
    \dorechecknextindentation}
 
 \def\@@dodescription
-  {\dosetdescriptionattributes\c!style\c!color
+  {\usedescriptionstyleandcolor\c!style\c!color
    \ignorespaces}
 
 % starters:
@@ -455,10 +455,6 @@
 
 % % % % % % % % % % % %
 
-% helpers
-
-% todo: \dosetfontattributewithhash \descriptionparameterhash\c!headstyle
-
 % setup descriptions
 
 \unexpanded\def\setupdescriptions
@@ -473,6 +469,50 @@
 
 \def\dodosetupdescriptions[#1]% [#2]%
   {\getparameters[\??dd#1]}   % [#2]}
+
+\setupdescriptions
+  [\c!location=\v!left,
+   \c!headstyle=\v!bold,
+   \c!titlestyle=\v!bold,
+   \c!style=\v!normal,
+   \c!color=,
+   \c!headcolor=,
+   \c!titlecolor=,
+  %\c!width=8em,
+  %\c!distance=0pt,
+   \c!titledistance=0.5em,
+   \c!hang=,
+   \c!sample=,
+   \c!align=,
+   \c!headalign=,
+   \c!margin=\v!no,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+   \c!indentnext=\v!yes,
+   \c!indenting=\v!never,
+   \c!titleleft=(,
+   \c!titleright=),
+   \c!closesymbol=,
+   \c!closecommand=\wordright,
+   \c!display=\v!yes,
+   \c!command=,
+   \c!titlecommand=]
+
+\setupdescriptions
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
+
+\setupdescriptions
+  [\c!width=7em,
+   \c!distance=1em]
+
+\setupdescriptions[\c!width:\c!top=\localhsize] % undocumented, only width and distance
+% \setupdescriptions[\c!width:\c!left=7em,\c!distance=1em]
+% \setupdescriptions[\c!width:\c!right=7em,\c!distance=1em]
+% \setupdescriptions[\c!width:\v!hanging=\v!fit] % yes or no
 
 % define descriptions
 
@@ -544,7 +584,7 @@
 
 \def\@@dodescriptiontext
   {\begingroup
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \usedescriptionstyleandcolor\c!headstyle\c!headcolor
    \the\everydescription
    \descriptionparameter\c!command{\strut\descriptionparameter\c!text\ignorespaces\@@dododescriptiontext}% probably incomplete
    \endgroup}
@@ -565,6 +605,24 @@
    \else
      \getparameters[\??dn][#1]%
    \fi}
+
+\setupenumerations
+  [\c!location=\v!top,
+   \c!text=,
+   \c!way=\v!by\v!text,
+   \c!prefix=\v!no,
+   \c!prefixconnector=.,
+   \c!starter=,
+   \c!stopper=,
+   \c!number=\v!yes, % else description
+   \c!start=0,
+   \s!parent=\??dd]
+
+\setupenumerations
+  [\c!expansion=\v!no,
+   \c!xmlsetup=,
+   \s!catcodes=,
+   \c!saveinlist=\v!yes]
 
 % define enumerations
 
@@ -711,7 +769,7 @@
 
 \def\doenumerationfullnumber#1% text, title (used in notes) .. todo
   {\begingroup
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \usedescriptionstyleandcolor\c!headstyle\c!headcolor
    \the\everyenumeration
    \descriptionparameter\c!command{\strut#1}%
    \endgroup}
@@ -720,7 +778,7 @@
   {\doif{\descriptionparameter\c!title}\v!yes
      {\doifsomething\@@dodoenumerationtext
         {\begingroup
-         \dosetdescriptionattributes\c!titlestyle\c!titlecolor
+         \usedescriptionstyleandcolor\c!titlestyle\c!titlecolor
          \hskip\descriptionparameter\c!titledistance
          \descriptionparameter\c!titlecommand
             {\descriptionparameter\c!titleleft
@@ -1005,143 +1063,112 @@
    \descriptionparameter\c!before
    \begingroup
    \doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]%
-   \dosetdescriptionattributes\c!headstyle\c!headcolor
+   \usedescriptionstyleandcolor\c!headstyle\c!headcolor
    \executeifdefined{\??db:\c!location:\descriptionparameter\c!location}{\descriptionparameter\c!command}{\dodocurrentlabelnumber[#1]}%
    \endgroup
    \descriptionparameter\c!after}
-
-% to be reimplmented
-
-\unexpanded\def\setupindentations
-  {\dodoubleempty\dosetupindentations}
-
-\def\dosetupindentations[#1][#2]%
-  {\ifsecondargument
-     \dodoubleargumentwithset\dodosetupindentations[#1][#2]%
-   \else
-     \dodosetupindentations[][#1]%
-   \fi}
-
-\def\dodosetupindentations[#1][#2]%
-  {\getparameters[\??ds#1][#2]}
-
-\unexpanded\def\defineindenting
-  {\dodoubleargumentwithset\dodefineindenting}
-
-\def\dodefineindenting[#1][#2]%
-  {\copyparameters[\??ds#1][\??ds]
-      [\c!text,\c!separator,\c!width,\c!style,\c!color,
-       \c!headstyle,\c!sample,\c!before,\c!after,\c!distance]%
-   \getparameters[\??ds#1][#2]%
-   \setuvalue            {#1}{\dododefineindenting{#1}{0}{1}}%
-   \setuvalue      {\v!sub#1}{\dododefineindenting{#1}{1}{2}}%
-   \setuvalue{\v!sub\v!sub#1}{\dododefineindenting{#1}{2}{3}}}
-
-\def\dododefineindenting#1#2#3%
-  {\par
-   \getvalue{\??ds#1\c!before}%
-   \begingroup
-   \doifvaluenothing{\??ds#1\c!sample}
-     {\setvalue{\??ds#1\c!sample}{\getvalue{\??ds#1\c!text}}}%
-   \assignwidth
-     {\descriptionsheadwidth}
-     {\getvalue{\??ds#1\c!width}}
-     {\doattributes
-        {\??ds#1}\c!headstyle\c!headcolor
-        {\getvalue{\??ds#1\c!sample}%
-         \spr{\getvalue{\??ds#1\c!separator}}}}
-     {\getvalue{\??ds#1\c!distance}}%
-   \advance\descriptionsheadwidth \getvalue{\??ds#1\c!distance}%
-   \setbox\scratchbox\hbox to \descriptionsheadwidth
-     {\doattributes
-        {\??ds#1}\c!headstyle\c!headcolor
-        {\strut
-         \getvalue{\??ds#1\c!text}%
-         \hss
-         \spr{\getvalue{\??ds#1\c!separator}}%
-         \hskip\getvalue{\??ds#1\c!distance}}}%
-   \parindent\zeropoint
-   \hskip#2\descriptionsheadwidth\indent\box\scratchbox
-   \hangindent#3\descriptionsheadwidth
-   \doattributes{\??ds#1}\c!style\c!color\empty
-   \AfterPar{\endgroup\getvalue{\??ds#1\c!after}}% must be redone
-   \GetPar}
-
-\setupdescriptions
-  [\c!location=\v!left,
-   \c!headstyle=\v!bold,
-   \c!titlestyle=\v!bold,
-   \c!style=\v!normal,
-   \c!color=,
-   \c!headcolor=,
-   \c!titlecolor=,
-   \c!width=8em,
-   \c!distance=0pt,
-   \c!titledistance=0.5em,
-   \c!hang=,
-   \c!sample=,
-   \c!align=,
-   \c!headalign=,
-   \c!margin=\v!no,
-   \c!before=\blank,
-   \c!inbetween=\blank,
-   \c!after=\blank,
-   \c!indentnext=\v!yes,
-   \c!indenting=\v!never,
-   \c!titleleft=(,
-   \c!titleright=),
-   \c!closesymbol=,
-   \c!closecommand=\wordright,
-   \c!display=\v!yes,
-   \c!command=,
-   \c!titlecommand=]
-
-% way=bychapter,prefix=yes,prefixsegments=2:2
-
-\setupenumerations
-  [\c!location=\v!top,
-   \c!text=,
-   \c!way=\v!by\v!text,
-   \c!prefix=\v!no,
-   \c!prefixconnector=.,
-   \c!starter=,
-   \c!stopper=,
-   \c!number=\v!yes, % else description
-   \c!start=0,
-   \s!parent=\??dd]
-
-\setupdescriptions
-  [\c!expansion=\v!no,
-   \c!xmlsetup=,
-   \s!catcodes=,
-   \c!saveinlist=\v!yes]
-
-\setupenumerations
-  [\c!expansion=\v!no,
-   \c!xmlsetup=,
-   \s!catcodes=,
-   \c!saveinlist=\v!yes]
-
-\setupdescriptions
-  [\c!width=7em,
-   \c!distance=1em]
-
-\setupdescriptions[\c!width:\c!top=\localhsize] % undocumented, only width and distance
-% \setupdescriptions[\c!width:\c!left=7em,\c!distance=1em]
-% \setupdescriptions[\c!width:\c!right=7em,\c!distance=1em]
-
 
 \setuplabels
   [\s!parent=\??dn]
 
-\setupindentations
+%D \macros
+%D   {defineindentedtext,
+%D    setupindentedtext}
+%D
+%D Ok, we keep it but with a different command as it all looks too
+%D much like indentation and indenting. We also assume start/stop
+%D usage or some explicit par.
+
+\installcommandhandler \??ds {indentedtext} \??ds
+
+%D \startbuffer
+%D \defineindentedtext[one][text=one]
+%D \defineindentedtext[two][text=two]
+%D
+%D \one test test \par
+%D \subone test test \par
+%D \subtwo test test \par
+%D \subsubone test test \par
+%D
+%D \startone
+%D     test test
+%D     \startone
+%D         test test
+%D         \startone
+%D             test test
+%D         \stopone
+%D         \starttwo
+%D             test test
+%D             \startone
+%D                 test test
+%D             \stopone
+%D         \stoptwo
+%D     \stopone
+%D \stopone
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\appendtoks
+   \setuevalue    {\e!start\currentindentedtext}{\start_indented_text{\currentindentedtext}\indented_text_nesting}%
+   \setuevalue    {\e!stop \currentindentedtext}{\stop_indented_text}%
+   % to be avoided ... might go away
+   \setuevalue            {\currentindentedtext}{\indented_text{\currentindentedtext}{0}}%
+   \setuevalue      {\v!sub\currentindentedtext}{\indented_text{\currentindentedtext}{1}}%
+   \setuevalue{\v!sub\v!sub\currentindentedtext}{\indented_text{\currentindentedtext}{2}}%
+\to \everydefineindentedtext
+
+\newcount\indented_text_nesting
+\newdimen\indented_text_width
+
+\unexpanded\def\start_indented_text#1#2%
+  {\par
+   \begingroup
+   \indented_text_nesting#2\relax
+   \edef\currentindentedtext{#1}%
+   \indentedtextparameter\c!before
+   \doifnothing{\indentedtextparameter\c!sample}
+     {\setindentedtextparameter\c!sample{\indentedtextparameter\c!text}}%
+   \assignwidth
+     {\indented_text_width}
+     {\indentedtextparameter\c!width}
+     {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
+      \indentedtextparameter\c!sample
+      \spr{\indentedtextparameter\c!separator}}
+     {\indentedtextparameter\c!distance}%
+   \advance\indented_text_width \indentedtextparameter\c!distance
+   \setbox\scratchbox\hbox to \indented_text_width
+     {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
+      \strut
+      \indentedtextparameter\c!text
+      \hss
+      \spr{\indentedtextparameter\c!separator}%
+      \hskip\indentedtextparameter\c!distance}%
+   \parindent\zeropoint
+   \hskip\indented_text_nesting\indented_text_width
+   \advance\indented_text_nesting\plusone
+   \dontleavehmode\box\scratchbox
+   \hangindent\indented_text_nesting\indented_text_width
+   \useindentedtextstyleandcolor\c!style\c!color}
+
+\unexpanded\def\stop_indented_text
+  {\indentedtextparameter\c!after
+   \par
+   \endgroup}
+
+\let\stopindentedtext\stop_indented_text
+
+\unexpanded\def\indented_text#1#2#3\par % no longer clever grabpar trickery
+  {\start_indented_text{#1}{#2}#3\stop_indented_text}
+
+\setupindentedtext
   [\c!style=\v!normal,
    \c!headstyle=\v!normal,
-   \c!color=,
-   \c!headcolor=,
+  %\c!color=,
+  %\c!headcolor=,
    \c!width=\v!fit,
    \c!text=\unknown,
-   \c!sample=,
+  %\c!sample=,
    \c!before=\blank,
    \c!after=\blank,
    \c!distance=1em,

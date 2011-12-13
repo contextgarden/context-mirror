@@ -46,7 +46,9 @@
 %  \index[pageclass::]   {textclass::entry}
 %  \index[pageclass::key]{textclass::entry}
 
-%D Parameters:
+%D Parameters ... we set up levels so we need a slightly different command handler here .. okay, we
+%D can use the childs for that ... but then we need to tweak the name in order to distinguis:
+%D register -> register:1 (i.e. prefix)
 
 \let\currentregister\empty
 
@@ -63,11 +65,11 @@
 \def\doregisterparentparameter    #1#2{\ifx#1\relax\s!empty\else\doregisterparameter    #1{#2}\fi}
 \def\doregisterparentparameterhash#1#2{\ifx#1\relax        \else\doregisterparameterhash#1{#2}\fi}
 
-\def\dosetregisterattributes#1#2% style color
-  {\edef\fontattributehash {\registerparameterhash#1}%
-   \edef\colorattributehash{\registerparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+\def\useregisterstyleandcolor#1#2% style color
+  {\edef\currentstyleparameter{\registerparameter#1}%
+   \edef\currentcolorparameter{\registerparameter#2}%
+   \ifx\currentstyleparameter\empty\else\dousestyleparameter\currentstyleparameter\fi
+   \ifx\currentcolorparameter\empty\else\dousecolorparameter\currentcolorparameter\fi}
 
 %D Setup:
 
@@ -538,10 +540,10 @@
   {\iffirstargument
      \begingroup
      \edef\currentregister{#1}%
-     % the expansion is needed because we don't want \v!'s in the tuo file (french)
-     \normalexpanded{\systemsuppliedchapter[\currentregister]{\noexpand\headtext{\currentregister}}}%
+     \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\currentregister}},reference=\currentregister]}%
      \placeregister[\currentregister][#2]%
      \page[\v!yes]%
+     \stopnamedsection
      \endgroup
    \fi}
 
@@ -597,7 +599,7 @@
   {\registerparameter\c!before
    % bugged, why does leftskip gets set: \vskip\lineheight\goodbreak\vskip-\lineheight
    \begingroup
-   \dosetregisterattributes\c!style\c!color
+   \useregisterstyleandcolor\c!style\c!color
    \dontleavehmode
    \strut
    \iflocation
@@ -614,7 +616,7 @@
 \setvalue{\??id:\c!indicator:b}#1% will be shared with a
   {\registerparameter\c!before
    \begingroup
-   \dosetregisterattributes\c!style\c!color
+   \useregisterstyleandcolor\c!style\c!color
    \dontleavehmode
    \strut
    \iflocation
@@ -651,7 +653,7 @@
   {\endgraf
    \begingroup
    \dostarttagged\t!registerentries\empty
-   \dosetregisterattributes\c!textstyle\c!textcolor
+   \useregisterstyleandcolor\c!textstyle\c!textcolor
    \advance\leftskip\numexpr#1-1\relax\dimexpr\registerparameter\c!distance\relax
    \hangindent\registerparameter\c!distance\hangafter\plusone}
 
@@ -676,7 +678,7 @@
   {\begingroup
    \dostarttagged\t!registerpages\empty
    \setfalse\registerpagedone
-   \dosetregisterattributes\c!pagestyle\c!pagecolor}
+   \useregisterstyleandcolor\c!pagestyle\c!pagecolor}
 
 \unexpanded\def\stopregisterpages
   {\dostoptagged
@@ -687,7 +689,7 @@
    \begingroup
    \setfalse\registerpagedone
    \dostarttagged\t!registerpage\empty
-   \dosetregisterattributes\c!pagestyle\c!pagecolor}
+   \useregisterstyleandcolor\c!pagestyle\c!pagecolor}
 
 \unexpanded\def\stopregisterseewords
   {\dostoptagged

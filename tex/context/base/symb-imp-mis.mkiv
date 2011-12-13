@@ -16,17 +16,18 @@
 %D We predefine some common symbols and conversions that will
 %D be understood by many commands. The \type {\mathematics}
 %D is no longer needed, although only math fonts might have
-%D these symbols.
+%D these symbols. The \type {\textmath} macro is twice as
+%D efficient.
 
 \definesymbol [\v!none]     []
 
-\definesymbol [bullet]      [\mathematics{\bullet}]
-\definesymbol [dash]        [\mathematics{-}]
-\definesymbol [star]        [\mathematics{\star}]
-\definesymbol [triangle]    [\mathematics{\triangleright}]
-\definesymbol [circle]      [\mathematics{\circ}]
-\definesymbol [square]      [\mathematics{\square}]
-\definesymbol [diamond]     [\mathematics{\diamond}]
+\definesymbol [bullet]      [\textmath\bullet]
+\definesymbol [dash]        [\textmath-]
+\definesymbol [star]        [\textmath\star]
+\definesymbol [triangle]    [\textmath\triangleright]
+\definesymbol [circle]      [\textmath\circ]
+\definesymbol [square]      [\textmath\square]
+\definesymbol [diamond]     [\textmath\diamond]
 
 % I'm not sure about this ... I dislike the small bullet. So we provide
 % it as variant: \type {\setupsymbolset[text]}. Also, we want to be
@@ -49,9 +50,9 @@
 
 \stopsymbolset
 
-\definesymbol [smallcircle] [\hbox{\raise.1ex\hbox{\mathematics{\scriptscriptstyle\bigcirc}}}]
-\definesymbol [medcircle]   [\hbox{\raise.1ex\hbox{\mathematics{\scriptstyle      \bigcirc}}}]
-\definesymbol [bigcircle]   [\mathematics{\bigcirc}]
+\definesymbol [smallcircle] [\hbox{\raise.1ex\hbox{\textmath{\scriptscriptstyle\bigcirc}}}]
+\definesymbol [medcircle]   [\hbox{\raise.1ex\hbox{\textmath{\scriptstyle      \bigcirc}}}]
+\definesymbol [bigcircle]   [\textmath{\bigcirc}]
 
 \definesymbol [1]           [\symbol{bullet}]
 \definesymbol [2]           [\symbol{dash}]

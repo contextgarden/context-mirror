@@ -291,13 +291,13 @@
      {\decrement\margincontentlines
       \dorecurse\margincontentlines{\savedstrut\endgraf\nointerlineskip}% ! savedstrut
       \@@imbefore
-      \dostartattributes{\??im\margincontenttag}\c!style\c!color\empty
-        \dosetupstrut[\margincontentstrut]% was: \setstrut % yes or no
-        \dostarttagged\t!margintextblock\currentmargincontent % margincontenttag
-        \begstrut#3\endstrut\endgraf
-        \dostoptagged
-        \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
-      \dostopattributes
+      \dousestylehashparameter{\??im\margincontenttag}\c!style
+      \dousecolorhashparameter{\??im\margincontenttag}\c!color
+      \dosetupstrut[\margincontentstrut]% was: \setstrut % yes or no
+      \dostarttagged\t!margintextblock\currentmargincontent % margincontenttag
+      \begstrut#3\endstrut\endgraf
+      \dostoptagged
+      \xdef\margincontentstrutheight{\the\strutht}% so that it's known outside the framed
       \@@imafter}%
    \global        \naturalmargincontentheight\ht\scratchbox
    \global\advance\naturalmargincontentheight\dp\scratchbox

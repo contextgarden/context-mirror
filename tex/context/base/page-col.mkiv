@@ -1,0 +1,156 @@
+%D \module
+%D   [       file=page-col,   % moved from page-ini
+%D        version=2011.12.07, % 2000.10.20,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Column Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Column Helpers}
+
+%D Here we implement a coouple of helpers for dealing with
+%D columns. For the moment we keep the names.
+
+\unprotect
+
+%D The next two registers can be used to store pre column
+%D material as well as footnotes or so.
+
+\newbox\precolumnbox   \newdimen\precolumnboxheight
+\newbox\postcolumnbox  \newdimen\postcolumnboxheight
+
+%D We reserve a counter for the number of columns as well as
+%D the current column. Both are not to be changed by users!
+
+\newcount\nofcolumns \nofcolumns = 1
+\newcount\mofcolumns \mofcolumns = 1
+
+\setnewconstant\maxnofcolumns       50
+\setnewconstant\allocatednofcolumns  0
+
+%D The next dimensions reports the final column height
+
+\newdimen\finalcolumnheights
+\newcount\finalcolumnlines
+
+%D This register can be used as a temporary storage for page
+%D content.
+
+\newbox\restofpage
+
+%D A few more (some might go away):
+
+\newif\ifintermediatefootnotes
+\newif\ifcarryoverfootnotes  %\carryoverfootnotestrue
+\newif\iflastcolumnfootnotes %\lastcolumnfootnotestrue
+\newif\ifbalancecolumns      %\balancecolumnstrue
+\newif\ifbalancetoheight     %\balancetoheighttrue
+\newif\ifforcecolumngrid      \forcecolumngridtrue
+\newif\ifstretchcolumns       \stretchcolumnsfalse
+\newif\ifinheritcolumns       \inheritcolumnsfalse
+\newif\ifheightencolumns      \heightencolumnsfalse
+
+\newif\ifbalancingcolumns
+\newif\ifcollectingcontent
+\newif\ifcolumnoverflow
+
+\newdimen\intercolumnwidth
+\newdimen\localcolumnwidth
+\newdimen\savedpagetotal
+
+\newconstant\columndirection % 0:lr 1:rl
+
+\def\minbalancetoplines      {1}
+\def\minfreecolumnlines      {2}
+
+\newif\ifrecentercolumnbox    \recentercolumnboxtrue
+\newif\ifrerecentercolumnbox  \rerecentercolumnboxtrue
+\newif\ifpackcolumnfloats     \packcolumnfloatstrue
+
+%D During initialization the temporary boxes are allocated.
+%D This enables us to use as much columns as we want, without
+%D exhausting the pool of boxes too fast. We could have packed
+%D them in one box, but we've got enough boxes.
+%D
+%D Two sets of boxes are declared, the txtboxes are used for
+%D the text, the topboxes are for moved column floats.
+
+\def\initializecolumns#1%
+  {\ifnum#1>\maxnofcolumns
+     \showmessage\m!columns1\maxnofcolumns
+     \nofcolumns\maxnofcolumns
+   \else
+     \nofcolumns#1\relax
+   \fi
+   \ifnum\nofcolumns>\allocatednofcolumns
+     \dorecurse\nofcolumns
+       {\ifnum\recurselevel>\allocatednofcolumns\relax
+          % \newbox\next \letgvalue{\??zc-\recurselevel-t}=\next
+          \expandafter\newbox\csname\??zc-\recurselevel-t\endcsname % text
+          \expandafter\newbox\csname\??zc-\recurselevel-f\endcsname % foot
+          \expandafter\newbox\csname\??zc-\recurselevel-h\endcsname % top insert
+          \expandafter\newbox\csname\??zc-\recurselevel-l\endcsname % top insert
+        \fi}%
+     \global\allocatednofcolumns\nofcolumns
+   \fi}
+
+\def\firstcolumnbox      {\columntextbox\plusone}
+\def\currentcolumnbox    {\columntextbox\mofcolumns}
+\def\lastcolumnbox       {\columntextbox\nofcolumns}
+
+\def\firsttopcolumnbox   {\columntopbox \plusone}
+\def\currenttopcolumnbox {\columntopbox \mofcolumns}
+\def\lasttopcolumnbox    {\columntopbox \nofcolumns}
+
+\def\columntextbox     #1{\csname\??zc-\number#1-t\endcsname}
+\def\columnfootbox     #1{\csname\??zc-\number#1-f\endcsname}
+\def\columntopbox      #1{\csname\??zc-\number#1-h\endcsname}
+\def\columnbotbox      #1{\csname\??zc-\number#1-l\endcsname}
+
+\def\columnsettextbox    {\global\setbox\columntextbox}
+\def\columnsetfootbox    {\global\setbox\columnfootbox}
+\def\columnsettopbox     {\global\setbox\columntopbox}
+\def\columnsetbotbox     {\global\setbox\columnbotbox}
+
+\def\columngettextbox    {\copy\columntextbox}
+\def\columngetfootbox    {\copy\columnfootbox}
+\def\columngettopbox     {\copy\columntopbox}
+\def\columngetbotbox     {\copy\columnbotbox}
+
+\def\columnerasetextboxes{\dorecurse\allocatednofcolumns{\columnsettextbox\recurselevel\emptybox}}
+\def\columnerasefootboxes{\dorecurse\allocatednofcolumns{\columnsetfootbox\recurselevel\emptybox}}
+\def\columnerasetopboxes {\dorecurse\allocatednofcolumns{\columnsettopbox \recurselevel\emptybox}}
+\def\columnerasebotboxes {\dorecurse\allocatednofcolumns{\columnsetbotbox \recurselevel\emptybox}}
+
+%D Without going in details we present two macro's which handle
+%D the columns. The action which is transfered by the the first
+%D and only parameter can do something with \type
+%D {\currentcolumnbox}. In case of the mid columns, \type
+%D {\firstcolumnbox} and \type {\lastcolumnbox} are handled
+%D outside these macro's.
+
+\def\dohandlecolumn#1%
+  {\mofcolumns\recurselevel
+   \let\currentcolumn\recurselevel
+   #1\relax}
+
+\def\dohandleallcolumns#1%
+  {\dorecurse\nofcolumns{\dohandlecolumn{#1}}}
+
+\def\dohandlerevcolumns#1%
+  {\dostepwiserecurse\nofcolumns\plusone\minusone{\dohandlecolumn{#1}}}
+
+\def\dohandlemidcolumns#1%
+  {\dohandleallcolumns
+     {\ifnum\recurselevel>\plusone
+        \ifnum\recurselevel<\nofcolumns
+          \dohandlecolumn{#1}%
+        \fi
+      \fi}}
+
+\protect \endinput

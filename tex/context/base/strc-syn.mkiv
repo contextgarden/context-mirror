@@ -51,35 +51,9 @@
      \globallet#3\s!tex
    \fi}
 
-\let\currentsynonym\empty
+\installsimplecommandhandler \??sm {synonym} \??sm
 
-\def\synonymparameter    #1{\csname\dosynonymparameter{\??sm\currentsynonym}#1\endcsname}
-\def\synonymparameterhash#1{\dosynonymparameterhash   {\??sm\currentsynonym}#1}
-
-\def\dosynonymparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dosynonymparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dosynonymparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dosynonymparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\dosynonymparentparameter    #1#2{\ifx#1\relax\s!empty\else\dosynonymparameter    #1#2\fi}
-\def\dosynonymparentparameterhash#1#2{\ifx#1\relax        \else\dosynonymparameterhash#1#2\fi}
-
-\unexpanded\def\dosetsynonymattributes#1#2% style color
-  {\edef\fontattributehash {\synonymparameterhash#1}%
-   \edef\colorattributehash{\synonymparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\newtoks\everysetupsynonyms
-
-\unexpanded\def\setupsynonyms
-  {\dodoubleargument\dosetupsynonyms}
-
-\def\dosetupsynonyms[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??sm#1][#2]%
-   \else
-     \getparameters[\??sm][#1]%
-   \fi
-   \the\everysetupsynonyms}
+\let\setupsynonyms\setupsynonym
 
 \setupsynonyms
   [\c!state=\v!start,
@@ -106,7 +80,8 @@
   {\doquadrupleempty\dodefinesynonyms}
 
 \def\dodefinesynonyms[#1][#2][#3][#4]% name plural \meaning \use
-  {\iffourthargument
+  {\edef\currentsynonym{#1}%
+   \iffourthargument
      \unexpanded\def#4##1{\doinsertsynonym{#1}{##1}}% name tag
      \ifthirdargument
        \unexpanded\def#3##1{\doinsertsynonymmeaning{#1}{##1}}% \meaning
@@ -118,10 +93,10 @@
      \fi
      \setuvalue{#1}{\definesynonym[\v!yes][#1]}% \name
    \fi
-   \getparameters[\??sm#1][\s!parent=\??sm,\s!single={#1},\s!multi={#2}]%
+   \checksynonymparent
+   \setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% changes the \if...argument
-  %\ctxlua{structures.synonyms.define('#1')}%
-   \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??sm#1]}% to be obsolete
+   \setvalue{\e!setup #2\e!endsetup}{\setupsynonym[#1]}% obsolete definition
    \setvalue{\e!place   \e!listof#2}{\placelistofsynonyms[#1]}% accepts extra argument
    \setvalue{\e!complete\e!listof#2}{\completelistofsynonyms[#1]}}
 
@@ -167,7 +142,7 @@
 \unexpanded\def\doinsertsynonymmeaning#1#2% name tag
   {\begingroup
    \def\currentsynonym{#1}%
-   \dosetsynonymattributes\c!textstyle\c!textcolor
+   \usesynonymstyleandcolor\c!textstyle\c!textcolor
    \synonymparameter\c!textcommand{\ctxlua{structures.synonyms.meaning("#1","#2")}}%
    \endgroup}
 
@@ -177,7 +152,7 @@
    \def\currentsynonymtag{#2}%
    \dostarttagged\t!synonym\currentsynonym
    \dotagsynonym
-   \dosetsynonymattributes\c!synonymstyle\c!synonymcolor
+   \usesynonymstyleandcolor\c!synonymstyle\c!synonymcolor
    \synonymparameter\c!synonymcommand{\ctxlua{structures.synonyms.synonym("#1","#2")}}%
    \dostoptagged
    \normalexpanded{\endgroup\synonymparameter\c!next}}
@@ -200,8 +175,6 @@
      \c!inbetween=\synonymparameter\c!inbetween,
      \c!after=\synonymparameter\c!after,
      \c!indentnext=\synonymparameter\c!indentnext,
-%      \c!headstyle=\synonymparameter\c!headstyle,
-%      \c!headcolor=\synonymparameter\c!headcolor,
      \c!headstyle=\synonymparameter\c!textstyle,
      \c!headcolor=\synonymparameter\c!textcolor,
      \c!style=,
@@ -221,9 +194,10 @@
 
 \def\docompletelistofsynonyms[#1][#2]%
   {\edef\currentsynonym{#1}%
-   \normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\synonymparameter\s!multi}}}%
+   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\synonymparameter\s!multi}},\c!reference=#1]}%
    \doplacelistofsynonyms[#1][#2]%
-   \page[\v!yes]}
+   \page
+   \stopnamedsection}
 
 \let\startsynonymoutput \relax
 \let\stopsynonymoutput  \relax
@@ -231,41 +205,11 @@
 \let\stopsynonymsection \relax
 
 \unexpanded\def\synonymentry#1#2#3#4%
-%   {\syndef{\dosetsynonymattributes\c!textstyle\c!textcolor#2}#3\par}
-%   {\startsyndef{#2}#3\stopsyndef}
   {\syndef{#3}#4\par}
-
-\let\currentsorting\empty
 
-% we can share if we also have synonymprefix = so
+%D Sorting (a simplified version of synonym).
 
-\def\sortingparameter    #1{\csname\dosortingparameter{\??so\currentsorting}#1\endcsname}
-\def\sortingparameterhash#1{\dosortingparameterhash   {\??so\currentsorting}#1}
-
-\def\dosortingparameter    #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dosortingparentparameter    \csname#1\s!parent\endcsname#2\fi}
-\def\dosortingparameterhash#1#2{\ifcsname#1#2\endcsname  #1\else\expandafter\dosortingparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-
-\def\dosortingparentparameter    #1#2{\ifx#1\relax\s!empty\else\dosortingparameter    #1#2\fi}
-\def\dosortingparentparameterhash#1#2{\ifx#1\relax        \else\dosortingparameterhash#1#2\fi}
-
-\def\dosetsortingattributes#1#2% style color
-  {\edef\fontattributehash {\sortingparameterhash#1}%
-   \edef\colorattributehash{\sortingparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
-\newtoks\everysetupsorting
-
-\unexpanded\def\setupsorting
-  {\dodoubleargument\dosetupsorting}
-
-\def\dosetupsorting[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??so#1][#2]%
-   \else
-     \getparameters[\??so][#1]%
-   \fi
-   \the\everysetupsorting}
+\installsimplecommandhandler \??so {sorting} \??so
 
 \setupsorting
   [\c!state=\v!start,
@@ -284,7 +228,8 @@
 % if #3=\relax or \v!none, then no command but still protected
 
 \def\dodefinesorting[#1][#2][#3]%
-  {\ifthirdargument
+  {\edef\currentsorting{#1}%
+   \ifthirdargument
      \doifnot{#3}\v!none
        {\ifx#3\relax \else
           \unexpanded\def#3##1{\doinsertsort{#1}{##1}}%
@@ -293,10 +238,10 @@
    \else
      \setuvalue{#1}{\definesort[\v!yes][#1]}%
    \fi
-   \getparameters[\??so#1][\s!parent=\??so,\s!multi={#2}]%
+   \checksortingparent
+   \setupcurrentsorting[\s!multi={#2}]%
    \presetheadtext[#2=\Word{#2}]% after \ifthirdargument -)
-  %\ctxlua{structures.synonyms.define('#1')}%
-   \setvalue{\e!setup #2\e!endsetup}{\dodoubleargument\getparameters[\??so#1]}% to be obsolete
+   \setvalue{\e!setup #2\e!endsetup}{\setupsorting[#1]}% obsolete definition
    \setvalue{\e!place   \e!listof#2}{\placelistofsorts[#1]}%
    \setvalue{\e!complete\e!listof#2}{\completelistofsorts[#1]}}
 
@@ -338,7 +283,7 @@
    \def\currentsortingtag{#2}%
    \dostarttagged\t!sorting\currentsorting
    \dotagsorting
-   \dosetsortingattributes\c!style\c!color
+   \usesortingstyleandcolor\c!style\c!color
    \ctxlua{structures.synonyms.synonym("#1","#2")}%
    \dostoptagged
    \normalexpanded{\endgroup\sortingparameter\c!next}}
@@ -374,9 +319,10 @@
 
 \def\docompletelistofsorts[#1][#2]%
   {\edef\currentsorting{#1}%
-   \normalexpanded{\systemsuppliedchapter[#1]{\noexpand\headtext{\sortingparameter\s!multi}}}%
+   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\sortingparameter\s!multi}},\c!reference=#1]}%
    \doplacelistofsorts[#1][#2]%
-   \page[\v!yes]}
+   \page
+   \stopnamedsection}
 
 \let\startsortingoutput \relax
 \let\stopsortingoutput  \relax
@@ -385,42 +331,8 @@
 
 \def\sortingentry#1#2#3#4% #4 is meaning but empty here
   {\doifelsenothing{\sortingparameter\c!command}
-     {\begingroup\dosetsortingattributes\c!style\c!color#3\endgroup\par} % todo
+     {\begingroup\usesortingstyleandcolor\c!style\c!color#3\endgroup\par} % todo
      {\sortingparameter\c!command{#1}{#2}{#3}}}
-
-%D Here we define a support macro that can sort simple comma
-%D separated lists. It's a multi-list variant of a prototype
-%D written by Taco.
-
-% \def\mkloadsortedlist#1% class
-%   {\bgroup
-%    \getvalue{\s!set#1}%
-%    \ctxlua{structures.synonyms.process('#1')}%
-%    \getvalue{\s!reset#1}%
-%    \egroup}
-
-% \def\processlistofsorts[#1]%
-%   {\mkloadsortedlist{#1}}
-
-% \newcounter\nofsortedalphalists
-
-% \def\sortalphacommacommand#1%
-%   {\begingroup
-%    \doglobal\increment\nofsortedalphalists
-%    \edef\currentsortedalphalist{alpha:\nofsortedalphalists}%
-%    \definesorting[\currentsortedalphalist][\currentsortedalphalist]%
-%    \processcommacommand[#1]{\getvalue\currentsortedalphalist}%
-%    \global\let\sortedcommalist\empty
-%    \def\makesortedlist##1{\doglobal\appendtocommalist{##1}\sortedcommalist}%
-%    \setupsorting[\currentsortedalphalist][\c!criterium=\v!all,\c!command=\makesortedlist]%
-%    \processlistofsorts[\currentsortedalphalist]%
-%    \endgroup
-%    \dodoglobal\let#1\sortedcommalist}
-
-% \starttext
-%     \def\whatever{a,b,q,d,r,f}       \sortalphacommacommand\whatever \whatever \endgraf
-%     \def\whatever{ax,bx,qx,dx,rx,fx} \sortalphacommacommand\whatever \whatever \endgraf
-% \stoptext
 
 %D Presets.
 
@@ -436,17 +348,6 @@
 \definesorting
   [\v!logo]
   [\v!logos]
-  % no [\logogram]
-
-% As we now have \unit in the core, this now happens in m-units:
-%
-% \definesynonyms
-%   [\v!unit]
-%   [\v!units]
-%   [\unitmeaning]
-%
-% \setupsynonyms
-%   [\v!unit]
-%   [\c!synonymcommand=\dimension]
+% [\logogram] % no
 
 \protect \endinput

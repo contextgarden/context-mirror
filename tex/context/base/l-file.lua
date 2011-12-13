@@ -226,7 +226,7 @@ end
 --~ variant. After some skyping we got it sort of compatible with the old
 --~ one. After that the anchoring to currentdir was added in a better way.
 --~ Of course there are some optimizations too. Finally we had to deal with
---~ windows drive prefixes and thinsg like sys://.
+--~ windows drive prefixes and things like sys://.
 
 function file.collapsepath(str,anchor)
     if anchor and not find(str,"^/") and not find(str,"^%a:") then
@@ -254,7 +254,7 @@ function file.collapsepath(str,anchor)
         if element == '.' then
             -- do nothing
         elseif element == '..' then
-            local n = i -1
+            local n = i - 1
             while n > 0 do
                 local element = oldelements[n]
                 if element ~= '..' and element ~= '.' then

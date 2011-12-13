@@ -51,7 +51,7 @@
 \stopuseMPgraphic
 
 \def\page_marks_add_color
-  {\setlayoutcomponentattribute\v!print\v!color
+  {\setlayoutcomponentattribute{\v!print:\v!color}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:color}%
@@ -62,7 +62,7 @@
    \hskip-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_marking
-  {\setlayoutcomponentattribute\v!print\v!marking
+  {\setlayoutcomponentattribute{\v!print:\v!marking}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:marking}%
@@ -73,7 +73,7 @@
    \hskip-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_lines
-  {\setlayoutcomponentattribute\v!print\v!lines
+  {\setlayoutcomponentattribute{\v!print:\v!lines}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:lines}%
@@ -85,7 +85,7 @@
    \hskip-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_number
-  {\setlayoutcomponentattribute\v!print\v!number
+  {\setlayoutcomponentattribute{\v!print:\v!number}%
    \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
      \useMPgraphic
        {print:number}%
@@ -194,70 +194,3 @@
   [\c!marking=\v!off]
 
 \protect \endinput
-
-% We keep the old code for while.
-
-% \def\pagecutmarksymbol    {\the\realpageno}
-% \def\pagecutmarklength    {.5cm}
-% \let\pagecutmarktoptext    \empty
-% \let\pagecutmarkbottomtext \empty
-% \def\pagecutmarkoffset    {.5\dimexpr\pagecutmarklength\relax}
-%
-% \def\extrapagecutmarkbottomtext
-%   {\rlap{\jobname}\hfill\currentdate\space-\space\currenttime\hfill\llap{\realfolio}}
-%
-% \def\makepagecutbox % #1
-%   {\let\cutmarksymbol    \pagecutmarksymbol
-%    \let\cutmarklength    \pagecutmarklength
-%    \let\cutmarktoptext   \pagecutmarktoptext
-%    \let\cutmarkbottomtext\pagecutmarkbottomtext
-%    \let\cutmarkhoffset   \pagecutmarkoffset
-%    \let\cutmarkvoffset   \pagecutmarkoffset
-%    \makecutbox}
-%
-% \newcount\currentpagebox % will be used in more places
-%
-% \def\installpagecutmark  #1#2{\setvalue{\??ly:n:\c!marking:#1}{#2}}
-% \def\installpagecolormark#1#2{\setvalue{\??ly:c:\c!marking:#1}{#2}}
-%
-% % \def\addpagecolormarks{\expandcheckedcsname{\??ly:c:\c!marking:}{\layoutparameter\c!marking}\s!unknown}
-% % \def\addpagecutmarks  {\expandcheckedcsname{\??ly:n:\c!marking:}{\layoutparameter\c!marking}\s!unknown}
-%
-% \def\addpagecutmarks#1%  only at outer when nx/ny > 0
-%   {\ifcsname\??ly:n:\c!marking:\layoutparameter\c!marking\endcsname
-%      \currentpagebox#1\relax
-%      \csname\??ly:n:\c!marking:\layoutparameter\c!marking\endcsname
-%    \fi}
-%
-% \def\addpagecolormarks#1%
-%   {\ifcsname\??ly:c:\c!marking:\layoutparameter\c!marking\endcsname
-%      \currentpagebox#1\relax
-%      \ifnum\horizontalcutmarks>\plustwo \def\colormarkoffset{\plusfour}\fi
-%      \ifnum\verticalcutmarks  >\plustwo \def\colormarkoffset{\plusfour}\fi
-%      \csname\??ly:c:\c!marking:\layoutparameter\c!marking\endcsname
-%    \fi}
-%
-% \installpagecutmark\v!on
-%   {\makepagecutbox\currentpagebox}
-%
-% \installpagecutmark\v!page
-%   {\makepagecutbox\currentpagebox}
-%
-% \installpagecutmark\v!empty
-%   {\let\pagecutmarksymbol\empty
-%    \let\pagecutmarktoptext\empty
-%    \let\pagecutmarkbottomtext\empty
-%    \makepagecutbox\currentpagebox}
-%
-% \installpagecutmark\v!text
-%   {\let\pagecutmarksymbol\empty
-%    \let\pagecutmarkbottomtext\extrapagecutmarkbottomtext
-%    \makepagecutbox\currentpagebox}
-%
-% \installpagecolormark\v!color
-%   {\makepagecutbox\currentpagebox % maybe move this elsewhere
-%    \colormarkbox\currentpagebox}
-%
-% \installpagecolormark\v!screen % obsolete (all \v!screen will be removed)
-%   {\makepagecutbox\currentpagebox % maybe move this elsewhere
-%    \rastermarkbox\currentpagebox}

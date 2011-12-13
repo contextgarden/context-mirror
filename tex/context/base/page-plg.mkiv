@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\pageareabox\undefined \else \endinput \fi
+% \ifx\pageareabox\undefined \else \endinput \fi
 
 \writestatus{loading}{ConTeXt Page Macros / Extra Page Building}
 
@@ -110,7 +110,7 @@
 
 \unprotect
 
-\def\constructmakeuppagecontent#1#2%
+\def\page_boxes_construct_content_makeup#1#2%
   {\setbox\pagebox\hbox
      {\vbox to \textheight
         {\offinterlineskip
@@ -137,40 +137,39 @@
    \ht\pagebox\paperheight
    \dp\pagebox\zeropoint}
 
-\installlayoutalternative\v!makeup
-  {\constructmakeuppagecontent}
+\installlayoutalternative\v!makeup{\page_boxes_construct_content_makeup}
 
 \newbox\pageareabox
 
 \def\pagearea
-  {\dotripleempty\dopagearea}
+  {\dotripleempty\page_area}
 
-\def\dopagearea[#1][#2][#3]%
+\def\page_area[#1][#2][#3]%
   {\ifthirdargument
      \doifelse{#3}\v!left
-       {\dodopagearea{#1}{#2}\c!lefttext}
+       {\page_area_indeed{#1}{#2}\c!lefttext}
        {\doifelse{#3}\v!right
-          {\dodopagearea{#1}{#2}\c!righttext}
-          {\dodopagearea{#1}{#2}\c!middletext}}%
+          {\page_area_indeed{#1}{#2}\c!righttext}
+          {\page_area_indeed{#1}{#2}\c!middletext}}%
    \else\ifsecondargument
      \doifbothsidesoverruled
-       {\dodopagearea{#1}{#2}\c!righttext}
-       {\dodopagearea{#1}{#2}\c!righttext}
-       {\dodopagearea{#1}{#2}\c!lefttext }%
+       {\page_area_indeed{#1}{#2}\c!righttext}
+       {\page_area_indeed{#1}{#2}\c!righttext}
+       {\page_area_indeed{#1}{#2}\c!lefttext }%
    \else
      \doif{#1}\v!text % copy due to trial runs in TABLE
        {\iftrialtypesetting
           \copy\pagebox
         \else
           \localpositioningfalse
-          \addtextbackground\pagebox
-          \addtextgridlayer\pagebox
+          \page_backgrounds_add_to_text\pagebox
+          \page_grids_add_to_box\pagebox
           \box\pagebox
         \fi}%
    \fi\fi}
 
-\def\dodopagearea#1#2#3%
-  {\setbox\pageareabox\vbox{\getvalue{\??tk#1#2#3}}%
+\def\page_area_indeed#1#2#3%
+  {\setbox\pageareabox\vbox{\getspecificlayouttext{#1}{#2}{#3}}%
    \ifsomebackgroundfound{#1#2}%
      \iftrialtypesetting
        \box\pageareabox
@@ -188,13 +187,18 @@
 
 % to be done nicely (proper namespacing)
 
-\setvalue{\??ly\c!method:\v!leftpage }{\getvalue{\??ly\c!method:\v!page}}
-\setvalue{\??ly\c!method:\v!rightpage}{\getvalue{\??ly\c!method:\v!page}}
+\setvalue{\??ly:m:\v!leftpage }{\csname\??ly:m:\v!page\endcsname}
+\setvalue{\??ly:m:\v!rightpage}{\csname\??ly:m:\v!page\endcsname}
 
-\long\unexpanded\def\startpagelayout
-  {\bgroup\catcode\endoflineasciicode\ignorecatcode\dostartpagelayout}
+\unexpanded\def\startpagelayout
+  {\bgroup
+   \catcode\endoflineasciicode\ignorecatcode
+   \start_page_layout}
 
-\long\def\dostartpagelayout[#1]#2\stoppagelayout
-  {\egroup\long\setvalue{\??ly\c!method:#1}{#2}}
+\let\stoppagelayout\relax
+
+\def\start_page_layout[#1]#2\stoppagelayout
+  {\egroup
+   \setvalue{\??ly:m:#1}{#2}}
 
 \protect \endinput

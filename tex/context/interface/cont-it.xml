@@ -3275,9 +3275,9 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="setupindentations" file="core-des.tex">
+  <cd:command name="setupindentedtext" file="strc-des.tex">
     <cd:sequence>
-      <cd:string value="impostarientri"/>
+      <cd:string value="setupindentedtext"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1" optional="yes" list="yes">
@@ -3316,16 +3316,16 @@
     </cd:arguments>
   </cd:command>
 
-  <cd:command name="defineindenting" file="core-des.tex">
+  <cd:command name="defineindentedtext" file="strc-des.tex">
     <cd:sequence>
-      <cd:string value="definiscirientro"/>
+      <cd:string value="defineindentedtext"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1">
         <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:assignments n="2" list="yes">
-        <cd:inherit name="impostarientri" n="2"/>
+        <cd:inherit name="setupindentedtext" n="2"/>
       </cd:assignments>
     </cd:arguments>
   </cd:command>

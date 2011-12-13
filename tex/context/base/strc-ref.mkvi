@@ -995,11 +995,11 @@
    \edef\currentreferenceformattype    {\referenceformatparameter\c!type    }%
    \edef\currentreferenceformatsetups  {\referenceformatparameter\c!setups  }%
    \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
-   \dosetreferenceformatattributes \c!style \c!color
-   \ifx\fontattributehash\empty \else
+   \usereferenceformatstyleandcolor\c!style\c!color
+   \ifx\currentstyleparameter\empty \else
      \resetinteractionparameter\c!style
    \fi
-   \ifx\colorattributehash\empty \else
+   \ifx\currentcolorparameter\empty \else
      \resetinteractionparameter\c!contrastcolor
      \resetinteractionparameter\c!color
    \fi
@@ -1358,8 +1358,8 @@
 \unexpanded\def\url[#label]% move \hyphenatedurl to lua end (is already lua)
   {\dontleavehmode
    \begingroup
-   \dosetfontattribute\??ur\c!style
-   \dosetcolorattribute\??ur\c!color
+   \dousestyleparameter\@@urstyle
+   \dousecolorparameter\@@urcolor
    \hyphenatedurl{\ctxcommand{geturl("#label")}}%
    \endgroup}
 
@@ -1397,8 +1397,8 @@
   {#content}
 
 \def\dofromurlliteral#content% called at the lua end
-  {\dosetfontattribute \??ur\c!style
-   \dosetcolorattribute\??ur\c!color
+  {\dousestyleparameter\@@urstyle
+   \dousecolorparameter\@@urcolor
    \hyphenatedurl{#content}}
 
 \let\dofromfiledescription\dofromurldescription
@@ -1441,8 +1441,8 @@
 \def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
-   \dosetfontattribute\??pr\c!style
-   \dosetcolorattribute\??pr\c!color
+   \dousestyleparameter\@@prstyle
+   \dousecolorparameter\@@prcolor
    \ctxlua{structures.references.programs.get("#name","\@@pralternative","\@@prspace")}%
    \endgroup}
 

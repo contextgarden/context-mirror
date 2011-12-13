@@ -14,9 +14,11 @@
 %D Some of the macros will move to syst-obs as they might become
 %D obsolete once we've redone the bibliography module. Of course
 %D the handy helpers will stay.
-
-% no longs
-% more unexpanded
+%D
+%D There are some references to \LUA\ variants here but these concern
+%D (often old) experiments, moved from local test modules to here,
+%D cleaned up, but not really used. After all it's not that urgent
+%D and replacing helpers is a delicate process. Don't depend on it.
 
 \registerctxluafile{syst-aux}{1.001}
 
@@ -685,7 +687,7 @@
 \def\re_do_if_in_set     {\expandafter\do_check_if_item_in_set     \!!stringb,],\relax}
 \def\re_do_if_not_in_set {\expandafter\do_check_if_item_not_in_set \!!stringb,],\relax}
 
-\def\doifinsetelse#1% make this two step too
+\unexpanded\def\doifinsetelse#1% make this two step too
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\thirdofthreearguments
@@ -701,7 +703,7 @@
      \expandafter\re_do_if_in_set_else
    \fi}
 
-\def\doifinset#1%
+\unexpanded\def\doifinset#1%
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\gobbletwoarguments
@@ -717,7 +719,7 @@
      \expandafter\re_do_if_in_set
    \fi}
 
-\def\doifnotinset#1%
+\unexpanded\def\doifnotinset#1%
   {\edef\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\secondoftwoarguments
@@ -877,9 +879,9 @@
   {\def\do_common_check{\expandafter\do_check_if_common_else_two\!!stringb,],\relax}%
    \expandafter\do_check_if_common_else_one\!!stringa,],\relax}
 
-\def\doifcommonelse{\do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
-\def\doifcommon    {\do_do_if_common_else\firstofoneargument \gobbleoneargument   }
-\def\doifnotcommon {\do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
+\unexpanded\def\doifcommonelse{\do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifcommon    {\do_do_if_common_else\firstofoneargument \gobbleoneargument   }
+\unexpanded\def\doifnotcommon {\do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
 
 %D \macros
 %D   {processcommalist,processcommacommand,quitcommalist,
@@ -3311,8 +3313,8 @@
 
 % maybe reserve special zero and plusone
 
-\def\settrue #1{\let#1\zerocount}
-\def\setfalse#1{\let#1\plusone}
+\unexpanded\def\settrue #1{\let#1\zerocount}
+\unexpanded\def\setfalse#1{\let#1\plusone  }
 
 \let\newconditional\setfalse
 \let\ifconditional \ifcase
@@ -4887,30 +4889,30 @@
 %D
 %D The faster alternatives are:
 
-\def\appendtocommalist#1#2%
+\unexpanded\def\appendtocommalist#1#2%
   {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}
 
-\def\prependtocommalist#1#2%
+\unexpanded\def\prependtocommalist#1#2%
   {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}
 
-\def\addtocommalist#1#2% {item} \cs
+\unexpanded\def\addtocommalist#1#2% {item} \cs
   {\rawdoifinsetelse{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
 
-\def\pretocommalist#1#2% {item} \cs
+\unexpanded\def\pretocommalist#1#2% {item} \cs
   {\rawdoifinsetelse{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
 
-\def\robustdoifinsetelse#1#2%
+\unexpanded\def\robustdoifinsetelse#1#2%
   {\edef\!!stringa{\detokenize\expandafter{\normalexpanded{#1}}}%
    \edef\!!stringb{\detokenize\expandafter{\normalexpanded{#2}}}%
    \rawdoifinsetelse\!!stringa\!!stringb}
 
-\def\robustaddtocommalist#1#2% {item} \cs
+\unexpanded\def\robustaddtocommalist#1#2% {item} \cs
   {\robustdoifinsetelse{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
 
-\def\robustpretocommalist#1#2% {item} \cs
+\unexpanded\def\robustpretocommalist#1#2% {item} \cs
   {\robustdoifinsetelse{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
 
@@ -4924,7 +4926,7 @@
 \def\bcleanedupcommalist#1#2\relax{\if#1,\else#1\fi#2}
 \def\acleanedupcommalist#1,,#2\relax{#1}
 
-\def\removefromcommalist#1#2% to be sped up
+\unexpanded\def\removefromcommalist#1#2% to be sped up
   {\rawdoifinsetelse{#1}#2%
      {\normalexpanded{\noexpand\xsplitstring\noexpand#2{#1}}%
       \dodoglobal\edef#2%
@@ -4934,6 +4936,12 @@
            \!!stringa\ifx\!!stringb\empty\else,\!!stringb\fi
          \fi}}
      \resetglobal}
+
+% \unexpanded\def\addtocommalist#1#2% upto 3 times slower
+%   {\dodoglobal\edef#2{\ctxcommand{addtocommalist(\!!bs#1\!!es,\!!bs#2\!!es)}}}
+%
+% \unexpanded\def\removefromcommalist#1#2% faster and more robust
+%   {\dodoglobal\edef#2{\ctxcommand{addtocommalist(\!!bs#1\!!es,\!!bs#2\!!es)}}}
 
 %D \macros
 %D   {substituteincommalist}
@@ -5100,16 +5108,23 @@
 \def\numberofpoints    #1{\the\numexpr\dimexpr#1\relax/\maxcard\relax}
 
 %D \macros
-%D   {swapdimens,swapcounts,swapmacros}
+%D   {swapdimens,swapcounts,swapmacros,
+%D    globalswapdimens,globalswapcounts,globalswapmacros}
 %D
 %D Simple but effective are the next two macros. There name
-%D exactly states their purpose. The \type{\scratchdimen} and
-%D \type{\!!stringa} can only be swapped when being the first
-%D argument.
+%D exactly states their purpose.
 
-\def\swapdimens#1#2{\scratchdimen  #1\redoglobal    #1#2\dodoglobal    #2\scratchdimen}
-\def\swapcounts#1#2{\scratchcounter#1\redoglobal    #1#2\dodoglobal    #2\scratchcounter}
-\def\swapmacros#1#2{\let\!!stringa #1\redoglobal\let#1#2\dodoglobal\let#2\!!stringa}
+\newdimen\swapped_dimen
+\newcount\swapped_count
+\let     \swapped_macro\relax
+
+\unexpanded\def\swapdimens#1#2{\swapped_dimen    #1\relax#1#2\relax#2\swapped_dimen}
+\unexpanded\def\swapcounts#1#2{\swapped_count    #1\relax#1#2\relax#2\swapped_count}
+\unexpanded\def\swapmacros#1#2{\let\swapped_macro#1\let  #1#2\let  #2\swapped_macro}
+
+\unexpanded\def\globalswapdimens#1#2{\swapped_dimen    #1\global    #1#2\global    #2\swapped_dimen}
+\unexpanded\def\globalswapcounts#1#2{\swapped_count    #1\global    #1#2\global    #2\swapped_count}
+\unexpanded\def\globalswapmacros#1#2{\let\swapped_macro#1\global\let#1#2\global\let#2\swapped_macro}
 
 %D \macros
 %D   {pushmacro,popmacro}
@@ -5533,55 +5548,55 @@
      \expandafter\firstoftwoarguments
    \fi}
 
-%D \macros
-%D   {adaptdimension,balancedimensions}
-%D
-%D Again we introduce some macros that are closely related to
-%D an interface aspect of \CONTEXT. The first command can be
-%D used to adapt a \DIMENSION.
-%D
-%D \starttyping
-%D \adaptdimension {dimension} {value}
-%D \stoptyping
-%D
-%D When the value is preceed by a \type{+} or minus, the
-%D dimension is advanced accordingly, otherwise it gets the
-%D value.
-
-\def\doadaptdimension#1#2\\#3\\%
-  {\if#1+%
-     \dodoglobal\advance
-   \else\if#1-%
-     \dodoglobal\advance
-   \else
-     \dodoglobal
-   \fi\fi
-   #3 #1#2\relax}
-
-\def\adaptdimension#1#2%
-  {\expandafter\doadaptdimension#2\\#1\\}
-
-%D A second command takes two \DIMENSIONS. Both are adapted,
-%D depending on the sign of the given value.
-%D maat. This time we take the value as it is, and don't look
-%D explicitly at the preceding sign.
-%D
-%D \starttyping
-%D \balancedimensions {dimension 1} {dimension 2} {value}
-%D \stoptyping
-%D
-%D When a positive value is given, the first dimension is
-%D incremented, the second ond is decremented. A negative value
-%D has the opposite result.
-
-\def\balancedimensions#1#2#3%
-  {\scratchdimen#3\relax
-   \redoglobal\advance#1  \scratchdimen
-   \dodoglobal\advance#2 -\scratchdimen}
-
-%D Both commands can be preceded by \type{\doglobal}. Here we
-%D use \type{\redo} first, because \type{\dodo} resets the
-%D global character.
+% %D \macros
+% %D   {adaptdimension,balancedimensions}
+% %D
+% %D Again we introduce some macros that are closely related to
+% %D an interface aspect of \CONTEXT. The first command can be
+% %D used to adapt a \DIMENSION.
+% %D
+% %D \starttyping
+% %D \adaptdimension {dimension} {value}
+% %D \stoptyping
+% %D
+% %D When the value is preceed by a \type{+} or minus, the
+% %D dimension is advanced accordingly, otherwise it gets the
+% %D value.
+%
+% \def\doadaptdimension#1#2\\#3\\%
+%   {\if#1+%
+%      \dodoglobal\advance
+%    \else\if#1-%
+%      \dodoglobal\advance
+%    \else
+%      \dodoglobal
+%    \fi\fi
+%    #3 #1#2\relax}
+%
+% \def\adaptdimension#1#2%
+%   {\expandafter\doadaptdimension#2\\#1\\}
+%
+% %D A second command takes two \DIMENSIONS. Both are adapted,
+% %D depending on the sign of the given value.
+% %D maat. This time we take the value as it is, and don't look
+% %D explicitly at the preceding sign.
+% %D
+% %D \starttyping
+% %D \balancedimensions {dimension 1} {dimension 2} {value}
+% %D \stoptyping
+% %D
+% %D When a positive value is given, the first dimension is
+% %D incremented, the second ond is decremented. A negative value
+% %D has the opposite result.
+%
+% \def\balancedimensions#1#2#3%
+%   {\scratchdimen#3\relax
+%    \redoglobal\advance#1  \scratchdimen
+%    \dodoglobal\advance#2 -\scratchdimen}
+%
+% %D Both commands can be preceded by \type{\doglobal}. Here we
+% %D use \type{\redo} first, because \type{\dodo} resets the
+% %D global character.
 
 %D \macros
 %D   {processseparatedlist}
@@ -6718,7 +6733,7 @@
 
 \newcount\featuretest
 
-\def\testfeature#1#2%
+\unexpanded\def\testfeature#1#2%
   {\def\dotestfeature
      {\advance\featuretest \plusone
       \ifnum\featuretest>#1\else#2\expandafter\dotestfeature\fi}%
@@ -6734,11 +6749,14 @@
    \wait
    \egroup}
 
-\def\showtimer#1%
+\unexpanded\def\showtimer#1%
   {\writestatus{runtime}{\elapsedseconds\space s / #1}}
 
-\def\testfeatureonce#1#2%
-  {\let\wait\relax\testfeature{#1}{#2}\end}
+\unexpanded\def\testfeatureonce#1#2%
+  {\begingroup
+   \let\wait\relax
+   \testfeature{#1}{#2}%
+   \endgroup}
 
 %D \macros
 %D   {freezedimenmacro}

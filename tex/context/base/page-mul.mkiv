@@ -43,20 +43,12 @@
 \newtoks \OTRMULoutput
 
 \def\OTRMULgotonextpage
-  {\ejectpage}
+  {\page_otr_eject_page}
 
 \def\OTRMULgotonextpageX % will become obsolete
-  {\superejectpage}
+  {\page_otr_eject_page_and_flush_inserts}
 
 % check \count<insert> multiplications
-
-% some day try this in balancing routine
-%
-% \ifdim\pagetotal>\pagegoal
-%   \eject
-% \else
-%   \goodbreak
-% \fi
 
 %D The following macro's implement a multi||column output
 %D routine. The original implementation was based on Donald
@@ -229,7 +221,8 @@
 %D always work.
 
 \def\ejectcolumn
-  {\goodbreak\showmessage\m!columns2\empty}
+  {\goodbreak
+   \showmessage\m!columns2\empty}
 
 %D The next macro should never be called so let's deal with it.
 %D There were several solutions to these kind of errors. First
@@ -445,16 +438,16 @@
    \global\singlecolumnout\output % hm
   %\global\output{\global\setbox\precolumnbox\vbox{\unvbox\normalpagebox}}%
   %\global\output{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
-   \setoutputroutine{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
-   \eject % no \holdinginserts=1, can make footnote disappear !
+   \page_otf_set_engine_output_routine{\global\setbox\precolumnbox\vbox{\dotopinsertions\unvbox\normalpagebox}}%
+   \page_otr_trigger_output_routine % no \holdinginserts=1, can make footnote disappear !
    \global\precolumnboxheight\ht\precolumnbox
   %\global\output{\continuousmulticolumnsout}%
-   \setoutputroutine{\continuousmulticolumnsout}%
+   \page_otf_set_engine_output_routine{\continuousmulticolumnsout}%
    \setcolumnfloats
    \dohandleallcolumns
      {\global\setbox\currenttopcolumnbox\emptybox}%
    \checkbegincolumnfootnotes
-   \activateotr{MUL}{ONE}% todo ! ! ! !
+   \page_otr_activate{MUL}{ONE}% todo ! ! ! !
    \let\sethsize\setcolumnhsize
    \let\setvsize\setcolumnvsize
    \sethsize
@@ -495,20 +488,18 @@
    \ifbalancecolumns
      \ifnum\multicolumnendsyncmethod=\plusone
       %\global\output{\continuousmulticolumnsout}%
-       \setoutputroutine{\continuousmulticolumnsout}%
+       \page_otf_set_engine_output_routine{\continuousmulticolumnsout}%
        \goodbreak
      \fi
     %\global\output{\balancedmulticolumnsout}%
-     \setoutputroutine{\balancedmulticolumnsout}%
+     \page_otf_set_engine_output_routine{\balancedmulticolumnsout}%
    \else
      \goodbreak
    \fi
-   \eject               % the prevdepth is important, try e.g. toclist in
+   \page_otr_trigger_output_routine % the prevdepth is important, try e.g. toclist in
    \prevdepth\zeropoint % columns before some noncolumned text text
-  %\global\output\singlecolumnout
-   \setoutputroutine{\singlecolumnout}%
-  %\global\output{\the\mainoutput}% % % % % todo
-   \setoutputroutine{\the\mainoutput}% % % % % todo
+   \page_otf_set_engine_output_routine{\singlecolumnout}%
+   \page_otf_set_engine_output_routine{\page_otr_triggered_output_routine}%
    \ifvoid\precolumnbox\else
      \unvbox\precolumnbox
    \fi
@@ -605,7 +596,7 @@
    \dohandleallcolumns
      {\mkprocesscolumncontents\currentcolumnbox}%
    \dohandleallcolumns
-     {\docolumnpagebodymarks\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
+     {\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
    \postprocesscolumns
    \dohandleallcolumns % \hbox i.v.m. \showcomposition
      {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth
@@ -715,8 +706,12 @@
         \vskip-\scratchdimen}%
      \scratchdimen\noflines\openlineheight
      \advance\scratchdimen-\openstrutdepth
+\ifgridsnapping
+    % quick hack (at least it works with itemize)
+\else
      \advance\scratchdimen-\openlineheight
      \advance\scratchdimen\topskip
+\fi
      \ht\columnpagebox\scratchdimen
      \dp\columnpagebox\openstrutdepth
      % end of mess
@@ -1165,7 +1160,7 @@
      \global\setbox\firstcolumnbox\vbox{\unvbox0}%
    \fi
   %\global\output{\balancingerror}%
-   \setoutputroutine{\balancingerror}%
+   \page_otf_set_engine_output_routine{\balancingerror}%
    \b@selinebottomtrue % forces depth in separation rule
    \flushcolumnedpage\plusone
    \multicolumnseject
@@ -1173,7 +1168,7 @@
 
 \def\multicolumnseject
   {%\ifdim\pagetotal>\textheight
-   %  \eject % new, but wrong as fails on mixed-001.tex (wrong pagetotal at this point)
+   %  \page_otr_trigger_output_routine % new, but wrong as fails on mixed-001.tex (wrong pagetotal at this point)
    %\else
      \allowbreak
    }%\fi}

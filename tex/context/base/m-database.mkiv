@@ -22,34 +22,6 @@
 \def\c!quotechar   {quotechar}
 \def\c!commentchar {commentchar}
 
-% \def\????db{@@@@db}
-%
-% \installparameterhandler  \????db {database}
-% \installcommandhandler    \????db {database} \????db % #3 == defaultroot
-% \installattributehandler  \????db {database}
-%
-% or:
-%
-% \installnamespace{db} \installcommandhandler\????db{database}\????db
-%
-% \appendtoks
-%   \getparameters
-%     [\????db\currentdatabase]
-%     [\c!separator={,},
-%      \c!quotechar=,
-%      \c!commentchar=,
-%      \c!setups=,
-%      \c!before=,
-%      \c!after=,
-%      \c!first=,
-%      \c!last=,
-%      \c!left=,
-%      \c!right=,
-%      \c!command=]%
-% \to \everypresetdatabase
-%
-% or:
-
 \definenamespace
   [db]
   [type=module,

@@ -1200,8 +1200,7 @@ function extras.tabulate(result,element,detail,n,fulltag,di)
             local content = false
             for i=1,#did do
                 local d = did[i].data
-                local c = d and d.content
-                if c and #c > 0 then
+                if d and #d > 0 and d[1].content then
                     content = true
                     break
                 end
@@ -1847,15 +1846,18 @@ local function collectresults(head,list) -- is last used (we also have currentat
                     local c = n.char
                     if last ~= at then
                         local tl = taglist[at]
-                        if trace_export then
-                            report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
-                        end
+--                         if trace_export then
+--                             report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
+--                         end
                         pushcontent()
                         currentnesting = tl
                         currentparagraph = has_attribute(n,a_taggedpar)
                         currentattribute = at
                         last = at
                         pushentry(currentnesting)
+                if trace_export then
+                    report_export("%s<!-- processing glyph %s (tag %s) -->",spaces[currentdepth],utfchar(c),at)
+                end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
                         local r = has_attribute(n,a_reference)
@@ -1951,110 +1953,68 @@ local function collectresults(head,list) -- is last used (we also have currentat
             collectresults(n.replace,nil)
         elseif id == glue_code then
             -- we need to distinguish between hskips and vskips
-            local subtype = n.subtype
-            if subtype == userskip_code then
-                local ca = has_attribute(n,a_characters)
-                if ca then
-                    if ca == 0 then
-                        -- skip this one ... already converted special character (node-acc)
-                    else
-                        local a = has_attribute(n,a_tagged)
-                        if somespace[currentcontent[nofcurrentcontent]] then
-                            if trace_export then
-                                report_export("%s<!-- removing space -->",spaces[currentdepth])
-                            end
-                            nofcurrentcontent = nofcurrentcontent - 1
-                        end
-                        if last ~= a then
-                            pushcontent()
-                            last = a
-                            currentnesting = taglist[last]
-                            pushentry(currentnesting)
-                            currentattribute = last
-                        end
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = specialspaces[ca] -- utfchar(ca)
+            local ca = has_attribute(n,a_characters)
+            if ca == 0 then
+                -- skip this one ... already converted special character (node-acc)
+            elseif ca then
+                local a = has_attribute(n,a_tagged)
+                if a then
+                    local c = specialspaces[ca]
+                    if last ~= a then
+                        local tl = taglist[a]
                         if trace_export then
-                            report_export("%s<!-- adding special space/glue (tag %s => %s) -->",spaces[currentdepth],last,a)
+                            report_export("%s<!-- processing space glyph U+%05X (tag %s) case 1 -->",spaces[currentdepth],ca,a)
                         end
-                    end
-                elseif n.spec.width > threshold then
-                    if last and not somespace[currentcontent[nofcurrentcontent]] then
-                        local a = has_attribute(n,a_tagged)
-                        if a == last then
-                            if trace_export then
-                                report_export("%s<!-- injecting spacing 5a -->",spaces[currentdepth])
-                            end
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                        elseif a then
-                            -- e.g LOGO<space>LOGO
-                            if trace_export then
-                                report_export("%s<!-- processing glue > threshold (tag %s => %s) -->",spaces[currentdepth],last,a)
-                            end
-                            pushcontent()
-                            if trace_export then
-                                report_export("%s<!-- injecting spacing 5b -->",spaces[currentdepth])
-                            end
-                            last = a
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            currentcontent[nofcurrentcontent] = " "
-                            currentnesting = taglist[last]
-                            pushentry(currentnesting)
-                            currentattribute = last
-                        end
-                    end
-                end
-            elseif subtype == spaceskip_code or subtype == xspaceskip_code then
-                if not somespace[currentcontent[nofcurrentcontent]] then
-                    local a = has_attribute(n,a_tagged)
-                    if a == last then
-                        if trace_export then
-                            report_export("%s<!-- injecting spacing 7 (stay in element) -->",spaces[currentdepth])
-                        end
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = " "
-                    else
-                        if trace_export then
-                            report_export("%s<!-- injecting spacing 7 (end of element) -->",spaces[currentdepth])
-                        end
-                        last = a
                         pushcontent()
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = " "
-                        currentnesting = taglist[last]
+                        currentnesting = tl
+                        currentparagraph = has_attribute(n,a_taggedpar)
+                        currentattribute = a
+                        last = a
                         pushentry(currentnesting)
-                        currentattribute = last
+                        -- no reference check (see above)
+                    elseif last then
+                        local ap = has_attribute(n,a_taggedpar)
+                        if ap ~= currentparagraph then
+                            pushcontent(format("new paragraph (%s -> %s)",tostring(currentparagraph),tostring(ap)))
+                            pushentry(currentnesting)
+                            currentattribute = last
+                            currentparagraph = ap
+                        end
+                        if trace_export then
+                            report_export("%s<!-- processing space glyph U+%05X (tag %s) case 2 -->",spaces[currentdepth],ca,last)
+                        end
                     end
+                    -- if somespace[currentcontent[nofcurrentcontent]] then
+                    --     if trace_export then
+                    --         report_export("%s<!-- removing space -->",spaces[currentdepth])
+                    --     end
+                    --     nofcurrentcontent = nofcurrentcontent - 1
+                    -- end
+                    nofcurrentcontent = nofcurrentcontent + 1
+                    currentcontent[nofcurrentcontent] = c
                 end
-            elseif id == kern_code then
-                local kern = n.kern
-                if kern > 0 then
-                    local limit = threshold
-                    if p and p.id == glyph_code then
-                        limit = fontquads[p.font] / 4
-                    end
-                    if kern > limit then
+            else
+                local subtype = n.subtype
+                if subtype == userskip_code then
+                    if n.spec.width > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = has_attribute(n,a_tagged)
                             if a == last then
-                                if not somespace[currentcontent[nofcurrentcontent]] then
-                                    if trace_export then
-                                        report_export("%s<!-- injecting spacing 8 (%s) -->",spaces[currentdepth],topoints(kern,true))
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
+                                if trace_export then
+                                    report_export("%s<!-- injecting spacing 5a -->",spaces[currentdepth])
                                 end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
                             elseif a then
                                 -- e.g LOGO<space>LOGO
                                 if trace_export then
-                                    report_export("%s<!-- processing kern, threshold %s, tag %s => %s -->",spaces[currentdepth],topoints(limit,true),last,a)
+                                    report_export("%s<!-- processing glue > threshold (tag %s => %s) -->",spaces[currentdepth],last,a)
                                 end
-                                last = a
                                 pushcontent()
                                 if trace_export then
-                                    report_export("%s<!-- injecting spacing 9 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                                    report_export("%s<!-- injecting spacing 5b -->",spaces[currentdepth])
                                 end
+                                last = a
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
                                 currentnesting = taglist[last]
@@ -2063,26 +2023,18 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             end
                         end
                     end
-                end
-            elseif subtype == rightskip_code then
-                -- a line
-                if nofcurrentcontent > 0 then
-                    local r = currentcontent[nofcurrentcontent]
-                    if r == hyphen then
-                        if not keephyphens then
-                            nofcurrentcontent = nofcurrentcontent - 1
-                        end
-                    elseif not somespace[r] then
+                elseif subtype == spaceskip_code or subtype == xspaceskip_code then
+                    if not somespace[currentcontent[nofcurrentcontent]] then
                         local a = has_attribute(n,a_tagged)
                         if a == last then
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 1 (end of line, stay in element) -->",spaces[currentdepth])
+                                report_export("%s<!-- injecting spacing 7 (stay in element) -->",spaces[currentdepth])
                             end
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
                         else
                             if trace_export then
-                                report_export("%s<!-- injecting spacing 1 (end of line, end of element) -->",spaces[currentdepth])
+                                report_export("%s<!-- injecting spacing 7 (end of element) -->",spaces[currentdepth])
                             end
                             last = a
                             pushcontent()
@@ -2093,11 +2045,78 @@ local function collectresults(head,list) -- is last used (we also have currentat
                             currentattribute = last
                         end
                     end
+                elseif subtype == rightskip_code then
+                    -- a line
+                    if nofcurrentcontent > 0 then
+                        local r = currentcontent[nofcurrentcontent]
+                        if r == hyphen then
+                            if not keephyphens then
+                                nofcurrentcontent = nofcurrentcontent - 1
+                            end
+                        elseif not somespace[r] then
+                            local a = has_attribute(n,a_tagged)
+                            if a == last then
+                                if trace_export then
+                                    report_export("%s<!-- injecting spacing 1 (end of line, stay in element) -->",spaces[currentdepth])
+                                end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                            else
+                                if trace_export then
+                                    report_export("%s<!-- injecting spacing 1 (end of line, end of element) -->",spaces[currentdepth])
+                                end
+                                last = a
+                                pushcontent()
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                                currentnesting = taglist[last]
+                                pushentry(currentnesting)
+                                currentattribute = last
+                            end
+                        end
+                    end
+                elseif subtype == parfillskip_code then
+                    -- deal with paragaph endings (crossings) elsewhere and we quit here
+                    -- as we don't want the rightskip space addition
+                    return
                 end
-            elseif subtype == parfillskip_code then
-                -- deal with paragaph endings (crossings) elsewhere and we quit here
-                -- as we don't want the rightskip space addition
-                return
+            end
+        elseif id == kern_code then
+            local kern = n.kern
+            if kern > 0 then
+                local limit = threshold
+                if p and p.id == glyph_code then
+                    limit = fontquads[p.font] / 4
+                end
+                if kern > limit then
+                    if last and not somespace[currentcontent[nofcurrentcontent]] then
+                        local a = has_attribute(n,a_tagged)
+                        if a == last then
+                            if not somespace[currentcontent[nofcurrentcontent]] then
+                                if trace_export then
+                                    report_export("%s<!-- injecting spacing 8 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                                end
+                                nofcurrentcontent = nofcurrentcontent + 1
+                                currentcontent[nofcurrentcontent] = " "
+                            end
+                        elseif a then
+                            -- e.g LOGO<space>LOGO
+                            if trace_export then
+                                report_export("%s<!-- processing kern, threshold %s, tag %s => %s -->",spaces[currentdepth],topoints(limit,true),last,a)
+                            end
+                            last = a
+                            pushcontent()
+                            if trace_export then
+                                report_export("%s<!-- injecting spacing 9 (%s) -->",spaces[currentdepth],topoints(kern,true))
+                            end
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = " "
+                            currentnesting = taglist[last]
+                            pushentry(currentnesting)
+                            currentattribute = last
+                        end
+                    end
+                end
             end
         end
         p = n

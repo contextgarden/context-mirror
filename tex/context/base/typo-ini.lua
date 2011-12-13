@@ -7,3 +7,5 @@ if not modules then modules = { } end modules ['typo-ini'] = {
 }
 
 -- nothing yet
+
+typesetters = typesetters or { }

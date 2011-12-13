@@ -69,18 +69,22 @@
 \appendtoks \presetpositionanchors \to \aftereverypage
 
 % todo: change with each page size change .. can be made more efficient
-% as some values are the same
+% as some values are the same .. this one can (at some point) be used
+% to provide correction for imposition
 
-\def\registerpageposition#1% this one is flushed first !
+\def\doregisterpageposition#1%
+  {\setbox#1\hbox{\hpos\pageanchor{\box#1}}}
+
+\def\registerpageposition#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or
      \ifdim\printpaperheight=\paperheight
        \ifdim\printpaperwidth=\paperwidth
          % not needed,
        \else
-         \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
+         \doregisterpageposition{#1}%
        \fi
      \else
-       \setbox#1\hbox{\hpos\pageanchor{\box#1}}%
+       \doregisterpageposition{#1}%
      \fi
    \fi\fi}
 
@@ -597,10 +601,10 @@
 \def\textbackgroundoverlay#1%
   {\iflocalpositioning\v!local\else\v!text\fi#1}
 
-\newcounter\localpositionnumber
+\newcount\localpositionnumber
 
 \def\MPanchornumber
-  {\iflocalpositioning\localpositionnumber\else\the\realpageno\fi}
+  {\iflocalpositioning\the\localpositionnumber\else\the\realpageno\fi}
 
 %D So far for the trickery.
 
@@ -738,91 +742,27 @@
    \carryoverpar\egroup}
 
 \unexpanded\def\starttextbackgroundmanual
-  {\dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+  {\begingroup
+   \dousestylehashparameter{\??td\currenttextbackground}\c!style
+   \dousecolorhashparameter{\??td\currenttextbackground}\c!color
    \fpos\currentparbackground\ignorespaces}
 
 \unexpanded\def\stoptextbackgroundmanual
   {\tpos\currentparbackground
-   \dostopattributes}
+   \endgroup}
 
 \def\dostarttextbackgroundtxt
   {\ifvmode \dontleavehmode \fi
-   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+   \begingroup
+   \dousestylehashparameter{\??td\currenttextbackground}\c!style
+   \dousecolorhashparameter{\??td\currenttextbackground}\c!color
    \fpos\currentparbackground\ignorespaces}
 
 \def\dostoptextbackgroundtxt
   {\tpos\currentparbackground
-   \dostopattributes}
+   \endgroup}
 
 \newskip\textbackgroundskip
-
-% \def\dostarttextbackgroundpar
-%   {\endgraf % new
-%    \textbackgroundparameter\c!before
-%    \noindent
-%    \ifgridsnapping
-%      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
-%      \ifdim\textbackgroundskip>\zeropoint
-%        \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\currentparbackground}}}%
-%      \else
-%       \fpos\currentparbackground
-%      \fi
-%    \else
-%      \fpos\currentparbackground
-%    \fi
-%    \bgroup
-%    \endgraf % we need a vertical nobreak - 29/06/2004
-%    \nobreak \vskip-\lineheight \nobreak
-%    \ifgridsnapping \else
-%      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
-%      \ifdim\textbackgroundskip>\zeropoint
-%         \kern\textbackgroundskip\nobreak
-%      \fi
-%    \fi
-%    \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
-%    \advance\leftskip\leftskipadaption
-%    \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
-%    \advance\rightskip\leftskipadaption
-%    % new
-%    \dosetraggedcommand{\textbackgroundparameter\c!align}%
-%    \raggedcommand
-%    %
-%    \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
-%    \nowhitespace
-%    \nobreak % new per 23/04/2006 (else potential break when whitespace)
-%    \seteffectivehsize
-%    \doinhibitblank %   \blank[\v!disable]% new
-%    \par}
-
-% \def\dostoptextbackgroundpar
-%   {\par
-%    \removelastskip % new
-%    \dostopattributes
-%    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
-%    \ifdim\lastskip>\zeropoint
-%      \advance\textbackgroundskip-\lastskip
-%    \fi
-%    \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
-%      \kern\textbackgroundskip\nobreak
-%    \fi \fi
-%    \nobreak \vskip-\dimexpr\lineheight+\parskip\relax \nobreak
-%   %\nobreak \vskip-\lineheight \nobreak \nowhitespace % does not work
-%    \egroup
-%    \bgroup \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
-%    \nobreak \noindent \strut \hfill \kern\zeropoint
-%    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
-%    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
-%      \ifdim\textbackgroundskip>\zeropoint
-%        \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\currentparbackground}}}%
-%      \else
-%        \tpos\currentparbackground
-%      \fi
-%    \else
-%      \tpos\currentparbackground
-%    \fi
-%    \egroup
-%    \endgraf % new
-%    \textbackgroundparameter\c!after}
 
 \def\dostarttextbackgroundpar
   {\endgraf % new
@@ -858,7 +798,9 @@
    \dosetraggedcommand{\textbackgroundparameter\c!align}%
    \raggedcommand
    %
-   \dostartattributes{\??td\currenttextbackground}\c!style\c!color\empty
+  %\begingroup
+   \dousestylehashparameter{\??td\currenttextbackground}\c!style
+   \dousecolorhashparameter{\??td\currenttextbackground}\c!color
    \nowhitespace
    \nobreak % new per 23/04/2006 (else potential break when whitespace)
    \seteffectivehsize
@@ -868,7 +810,7 @@
 \def\dostoptextbackgroundpar
   {\par
    \removelastskip % new
-   \dostopattributes
+  %\endgroup
    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifdim\lastskip>\zeropoint
      \advance\textbackgroundskip-\lastskip

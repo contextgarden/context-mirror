@@ -131,7 +131,7 @@
 \def\bTBLCELL % why not \doinhibitblank
   {\inhibitblank
    \dotagTABLEcell
-   \doconvertfont\tbltblstyle\empty
+   \dousestyleparameter\tbltblstyle
    \everypar{\tbltblleft\delayedbegstrut}}
 
 \def\eTBLCELL

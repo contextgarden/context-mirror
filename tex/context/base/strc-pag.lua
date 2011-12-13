@@ -19,7 +19,6 @@ local structures          = structures
 local helpers             = structures.helpers
 local sections            = structures.sections
 local pages               = structures.pages
-local processors          = structures.processors
 local sets                = structures.sets
 local counters            = structures.counters
 
@@ -28,6 +27,7 @@ local counterdata         = counters.data
 local variables           = interfaces.variables
 local context             = context
 
+local processors          = typesetters.processors
 local applyprocessor      = processors.apply
 local startapplyprocessor = processors.startapply
 local stopapplyprocessor  = processors.stopapply

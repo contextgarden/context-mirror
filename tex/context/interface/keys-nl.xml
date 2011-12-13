@@ -1178,7 +1178,7 @@
 		<cd:command name='defineframedtext' value='definieerkadertekst'/>
 		<cd:command name='definehbox' value='definieerhbox'/>
 		<cd:command name='definehead' value='definieerkop'/>
-		<cd:command name='defineindenting' value='doorspringen'/>
+		<cd:command name='defineindentedtext' value='definieeringesprongentext'/>
 		<cd:command name='defineinmargin' value='definieerinmarge'/>
 		<cd:command name='defineinteractionmenu' value='definieerinteractiemenu'/>
 		<cd:command name='defineitemgroup' value='definieeritemgroep'/>
@@ -1489,7 +1489,7 @@
 		<cd:command name='setupheads' value='stelkoppenin'/>
 		<cd:command name='setupheadtext' value='stelkoptekstin'/>
 		<cd:command name='setuphyphenmark' value='stelkoppeltekenin'/>
-		<cd:command name='setupindentations' value='steldoorspringenin'/>
+		<cd:command name='setupindentedtext' value='stelingesprongentextin'/>
 		<cd:command name='setupindenting' value='stelinspringenin'/>
 		<cd:command name='setupinmargin' value='stelinmargein'/>
 		<cd:command name='setupinteraction' value='stelinteractiein'/>

@@ -13,7 +13,7 @@
 
 \registerctxluafile{phys-dim}{}
 
-% todo: optional space between 'connected' symbols
+% TAGGING NEEDS CHECKING ... WILL DO WHEN PARSER IS OK
 
 \unprotect
 
@@ -170,9 +170,9 @@
 \unexpanded\def\digitsseparatorspace{\hphantom{.}}
 \unexpanded\def\digitssignspace     {\hphantom{\digitsminus}}
 \unexpanded\def\digitshighspace     {\hphantom{\digitspositive}}
-\unexpanded\def\digitspower         {\digits_raised}
-\unexpanded\def\digitspowerplus   #1{\digits_raised{\digitsplus#1}}
-\unexpanded\def\digitspowerminus  #1{\digits_raised{\digitsminus#1}}
+\unexpanded\def\digitspower       #1{\times10\digits_raised{#1}}
+\unexpanded\def\digitspowerplus   #1{\times10\digits_raised{\digitsplus#1}}
+\unexpanded\def\digitspowerminus  #1{\times10\digits_raised{\digitsminus#1}}
 \unexpanded\def\digitsdigit       #1{#1}
 
 \unexpanded\def\normaldigitscommasymbol {,}
@@ -380,12 +380,13 @@
   {\setvalue{\??un:2:#1}{#2}}
 
 \unexpanded\def\dounitsspace
-  {\edef\currentunitsspace{\unitparameter\c!space}%
+  {\unskip % weird, why is unskip needed
+   \edef\currentunitsspace{\unitparameter\c!space}%
    \csname\??un:2:%
      \ifcsname\??un:2:\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
    \endcsname}
 
-\installunitsspace\v!normal {\unitsbigspace}
+\installunitsspace\v!normal {\unitsmediumspace}
 \installunitsspace\v!big    {\unitsbigspace}
 \installunitsspace\v!medium {\unitsmediumspace}
 \installunitsspace\v!small  {\unitssmallspace}
@@ -411,7 +412,7 @@
    \let\operatorlanguage\unitlanguage
    \the\everyunits
   %\removeunwantedspaces % not ok yet
-   \dosetunitattributes\c!style\c!color
+   \useunitstyleandcolor\c!style\c!color
    \edef\currentunitsalternative{\unitparameter\c!alternative}%
    \ifmmode
      \ifx\currentunitsalternative\v!text
@@ -470,22 +471,45 @@
   {\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitparameter\c!order")}}
 
 \unexpanded\def\unitsPUS#1#2#3{\units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_units_state\plusone} % suffix
-\unexpanded\def\unitsPU   #1#2{\units_next\prefixtext{#1}\unittext{#2}\c_units_state\plusthree}              % unit
+\unexpanded\def\unitsPU   #1#2{\units_next\prefixtext{#1}\unittext{#2}\c_units_state\plusthree}                           % unit
 \unexpanded\def\unitsPS   #1#2{\units_next\prefixtext{#1}\unitsraise{\suffixtext{#2}}\c_units_state\plusone}              % suffix
 \unexpanded\def\unitsUS   #1#2{\units_next\unittext{#1}\unitsraise{\suffixtext{#2}}\c_units_state\plusone}                % suffix
-\unexpanded\def\unitsP      #1{\units_next\prefixtext{#1}1\c_units_state\plusfour}                           % prefix
-\unexpanded\def\unitsU      #1{\units_next\unittext{#1}\c_units_state\plusthree}                             % unit
+\unexpanded\def\unitsP      #1{\units_next\prefixtext{#1}1\c_units_state\plusfour}                                        % prefix
+\unexpanded\def\unitsU      #1{\units_next\unittext{#1}\c_units_state\plusthree}                                          % unit
 \unexpanded\def\unitsS      #1{\units_start{}\unitsraise{\suffixtext{#1}}\c_units_state\plusone}                          % suffix
-\unexpanded\def\unitsO      #1{\units_start\operatortext{#1}\c_units_state\plustwo}                          % operator
-\unexpanded\def\unitsN      #1{\units_start#1\c_units_state\plusfive}                                        % number
-\unexpanded\def\unitsC      #1{\removeunwantedspaces\unittext{#1}\c_units_state\plussix}                     % connected
+\unexpanded\def\unitsO      #1{\units_start\operatortext{#1}\c_units_state\plustwo}                                       % operator
+\unexpanded\def\unitsN      #1{\units_start#1\c_units_state\plusfive}                                                     % number
+\unexpanded\def\unitsC      #1{\removeunwantedspaces\unittext{#1}\c_units_state\plussix}                                  % connected
+\unexpanded\def\unitsQ      #1{\removeunwantedspaces\unitslower{#1}\c_units_state\zerocount}                             %
 
-% hm, textacute also not present in some fonts
+% Fonts can have a celsius and lack a fahrenheit symbol and as we want
+% to be consistent so we check for the counterparts as well. It's slow
+% but ok. Of course we could go virtual instead.
 
-\unexpanded\def\checkedtextprime      {\iffontchar\font"2032′\else\textacute\fi}
-\unexpanded\def\checkedtextdoubleprime{\iffontchar\font"2033″\else\textacute\kern-.25em\textacute\fi}
-\unexpanded\def\checkedtextcelsius    {\iffontchar\font"2103℃\else °C\fi}
-\unexpanded\def\checkedtextfahrenheit {\iffontchar\font"2109℉\else °F\fi}
+\def\text_fallback_prime      {\textacute}
+\def\text_fallback_doubleprime{\textacute\kern-.25em\textacute}
+\def\text_fallback_celsius    {°C}
+\def\text_fallback_fahrenheit {°F}
+
+\unexpanded\def\checkedtextprime
+  {\iffontchar\font"2032\relax\iffontchar\font"2033\relax
+     ′\else\text_fallback_prime\fi\else\text_fallback_prime
+   \fi}
+
+\unexpanded\def\checkedtextdoubleprime
+  {\iffontchar\font"2033\relax\iffontchar\font"2032\relax
+     ″\else\text_fallback_doubleprime\fi\else\text_fallback_doubleprime
+   \fi}
+
+\unexpanded\def\checkedtextcelsius
+  {\iffontchar\font"2103\relax\iffontchar\font"2109\relax
+     ℉\else\text_fallback_celsius\fi\else\text_fallback_celsius
+   \fi}
+
+\unexpanded\def\checkedtextfahrenheit
+  {\iffontchar\font"2109\relax\iffontchar\font"2103\relax
+     ℉\else\text_fallback_fahrenheit\fi\else\text_fallback_fahrenheit
+   \fi}
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]
@@ -506,6 +530,9 @@
      \dostoptagged
    \fi
    \c_units_state\plusfive}
+
+\unexpanded\def\unitsNspace
+  {\space}
 
 \unexpanded\def\unitsN#1%
   {\unitsNstart#1\unitsNstop}

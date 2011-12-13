@@ -35,8 +35,8 @@ local lists               = structures.lists
 local counters            = structures.counters
 local sets                = structures.sets
 local tags                = structures.tags
-local processors          = structures.processors
 
+local processors          = typesetters.processors
 local applyprocessor      = processors.apply
 local startapplyprocessor = processors.startapply
 local stopapplyprocessor  = processors.stopapply

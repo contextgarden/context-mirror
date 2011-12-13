@@ -15,25 +15,33 @@
 
 \unprotect
 
+\newconstant\c_spac_default_tolerance  \c_spac_default_tolerance 1500
+
 \def\forgeteverypar
   {\everypar{\the\neverypar}}
+
+% worth trying:
+%
+% \def\forgeteverypar
+%   {\everypar\neverypar}
 
 \def\forgetparindent
   {\forgeteverypar
    \indentfirstparagraphtrue % recently added
-   \let\currentindentation\v!none
    \ctxparindent\zeropoint
-   \parindent\zeropoint\relax}
+   \parindent\zeropoint
+   \let\currentindentation\v!none}
 
 \def\forgetparskip
-  {\let\currentwhitespace\v!none
-   \ctxparskip\zeropoint
-   \parskip\zeropoint\relax}
+  {\ctxparskip\zeropoint
+   \parskip\zeropoint
+   \let\currentwhitespace\v!none}
 
 \def\forgetbothskips
-  {\tolerance1500
+  {\tolerance\c_spac_default_tolerance
    \leftskip\zeropoint
-   \rightskip\zeropoint\relax}
+   \rightskip\zeropoint
+   \relax}
 
 \def\forgetspacing
   {\emergencystretch\zeropoint}

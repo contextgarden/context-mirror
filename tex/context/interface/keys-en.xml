@@ -1178,7 +1178,7 @@
 		<cd:command name='defineframedtext' value='defineframedtext'/>
 		<cd:command name='definehbox' value='definehbox'/>
 		<cd:command name='definehead' value='definehead'/>
-		<cd:command name='defineindenting' value='defineindenting'/>
+		<cd:command name='defineindentedtext' value='defineindentedtext'/>
 		<cd:command name='defineinmargin' value='defineinmargin'/>
 		<cd:command name='defineinteractionmenu' value='defineinteractionmenu'/>
 		<cd:command name='defineitemgroup' value='defineitemgroup'/>
@@ -1489,7 +1489,7 @@
 		<cd:command name='setupheads' value='setupheads'/>
 		<cd:command name='setupheadtext' value='setupheadtext'/>
 		<cd:command name='setuphyphenmark' value='setuphyphenmark'/>
-		<cd:command name='setupindentations' value='setupindentations'/>
+		<cd:command name='setupindentedtext' value='setupindentedtext'/>
 		<cd:command name='setupindenting' value='setupindenting'/>
 		<cd:command name='setupinmargin' value='setupinmargin'/>
 		<cd:command name='setupinteraction' value='setupinteraction'/>

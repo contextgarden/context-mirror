@@ -124,7 +124,7 @@ end
 
 function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
     if dimens.SpaceAfterScript then
-        dimens.SubscriptShiftDownWithSuperscript = dimens.SubscriptShiftDown * 1.5
+        dimens.SubscriptShiftDownWithSuperscript = dimens.SubscriptShiftDown * 1.5 -- move this one
         return table.fastcopy(dimens), { }
     elseif dimens.AxisHeight or dimens.axis_height then
         local t = { }

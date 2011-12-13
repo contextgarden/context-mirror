@@ -25,9 +25,9 @@
 
 \installframedcommandhandler \??li {list} \??li
 
-\def\donestedlistattributes#1#2% will change
-  {\dosetlistattributes#1#2%
-   \ifx\colorattributehash\empty \else
+\def\usenestedliststyleandcolor#1#2% will change
+  {\useliststyleandcolor#1#2%
+   \ifx\currentcolorparameter\empty \else
      \resetinteractionparameter\c!color
      \resetinteractionparameter\c!contrastcolor
    \fi}
@@ -434,12 +434,13 @@
      \setsystemmode  \v!list
    \fi}
 
-\unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % brrr
-\unexpanded\def\systemsuppliedtitle   {\getvalue{\v!title}}   % brrr
+\unexpanded\def\systemsuppliedchapter {\getvalue{\v!chapter}} % obsolete
+\unexpanded\def\systemsuppliedtitle   {\getvalue{\v!title}}   % obsolete
 
 \def\dodocompletelist[#1][#2][#3]%  enkelvoud, meervoud, instellingen
-  {\normalexpanded{\systemsuppliedtitle[#2]{\noexpand\headtext{#2}}}% expansion needed for v! vs french !
-   \doplacelist[#1][#3]}
+  {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#2},\c!reference=#2]}%
+   \doplacelist[#1][#3]%
+   \stopnamedsection}
 
 \def\docompletelist[#1][#2]%
   {\dodocompletelist[#1][#1][#2]}
@@ -636,17 +637,17 @@
          \domakelistelement\v!all{#2}\hbox
            {\doif{\listparameter\c!headnumber}\v!yes
               {\domakelistelement\v!sectionnumber{#2}\hbox
-                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                 {\usenestedliststyleandcolor\c!numberstyle\c!numbercolor
                     {\listparameter\c!numbercommand{\currentlistsymbol}}}}%
             \domakelistelement\v!text{#2}\hbox
-              {\donestedlistattributes\c!textstyle\c!textcolor
+              {\usenestedliststyleandcolor\c!textstyle\c!textcolor
                  {\let\\=\newlineinlist
                   \dontconvertfont
                   \listparameter\c!textcommand{#4}}}%
             \doif{\listparameter\c!pagenumber}\v!yes
               {\doifsomething{#5}
                  {\domakelistelement\v!pagenumber{#2}\hbox
-                    {\donestedlistattributes\c!pagestyle\c!pagecolor
+                    {\usenestedliststyleandcolor\c!pagestyle\c!pagecolor
                        {\listparameter\c!pagecommand{#5}}}}}}}%
       #8}%
    \listparameter\c!after}
@@ -691,12 +692,12 @@
       \hsize\localhsize
       \hbox to \hsize
         {\forgetall
-         \dosetlistattributes\c!style\c!color
+         \useliststyleandcolor\c!style\c!color
          \!!widthb\hsize
          \doifelse{\listparameter\c!headnumber}\v!yes
            {\setbox2\hbox \ifdim\!!widtha>\zeropoint to \!!widtha \fi
               {\domakelistelement\v!sectionnumber{#2}\hbox
-                 {\donestedlistattributes\c!numberstyle\c!numbercolor
+                 {\usenestedliststyleandcolor\c!numberstyle\c!numbercolor
                     {\listparameter\c!numbercommand{\currentlistsymbol}}%
                \hfill}}}
            {\!!widtha\zeropoint
@@ -708,7 +709,7 @@
                  {\hbox \ifdim\listwidth>\zeropoint to \listwidth\fi
                     {\hfill
                      \domakelistelement\v!pagenumber{#2}\hbox
-                       {\donestedlistattributes\c!pagestyle\c!pagecolor
+                       {\usenestedliststyleandcolor\c!pagestyle\c!pagecolor
                           {\listparameter\c!pagecommand{#5}}}}}}}%
          \vbox
            {\hsize\!!widthb
@@ -743,7 +744,7 @@
             \hskip\dimen2
             \domakelistelement\v!text{#2}\firstofoneargument
               {\bgroup
-               \donestedlistattributes\c!textstyle\c!textcolor
+               \usenestedliststyleandcolor\c!textstyle\c!textcolor
                  {\let\\=\newlineinlist
                   \dontconvertfont
                  %\listparameter\c!textcommand{#4}}%
@@ -808,7 +809,7 @@
      {\doif{\listparameter\c!pagenumber}\v!yes
         {\doifsomething{#5}
            {\domakelistelement\v!pagenumber{#2}\hbox
-              {\donestedlistattributes\c!pagestyle\c!pagecolor
+              {\usenestedliststyleandcolor\c!pagestyle\c!pagecolor
                  {\listparameter\c!pagecommand{#5}}}}}}%
 %% \domakelistelement\v!all{#2}\firstofoneargument{%
     \doif{\listparameter\c!headnumber}\v!yes
@@ -819,7 +820,7 @@
         \hbox
           {\listparameter\c!left
            \domakelistelement\v!sectionnumber{#2}\hbox
-             {\donestedlistattributes\c!numberstyle\c!numbercolor
+             {\usenestedliststyleandcolor\c!numberstyle\c!numbercolor
                 {\listparameter\c!numbercommand{\currentlistsymbol}}}%
            \listparameter\c!right
            \hskip.5em}%
@@ -827,7 +828,7 @@
      \fi}%
    \tolerance3500 % niet zomaar veranderen
 %% \domakelistelement\v!text{#2}\firstofoneargument{%
-   \donestedlistattributes\c!textstyle\c!textcolor
+   \usenestedliststyleandcolor\c!textstyle\c!textcolor
      {\let\\=\newlineinlist
       \dontconvertfont
      %\listparameter\c!textcommand{#4}}%
@@ -874,7 +875,7 @@
    \domakelistelement\v!all{#4}{#2}%
      {\let\\=\newlineinlist
       #1% in case E nils the strut (still needed?)
-      \dosetlistattributes\c!style\c!color
+      \usesetliststyleandcolor\c!style\c!color
       \ignorespaces\dontconvertfont\setstrut
       \begstrut
       \limitatedlistentry{#6}%
@@ -962,8 +963,9 @@
    \dosetlistmode}
 
 \def\docompletecombinedlist[#1][#2]%
-  {\normalexpanded{\systemsuppliedtitle[#1]{\noexpand\headtext{#1}}}% expansion due to v! vs french !
-   \doplacecombinedlist[#1][#2]}
+  {\normalexpanded{\startnamedsection[\v!title][\c!title={\headtext{#1}},\c!reference=#1]}%
+   \doplacecombinedlist[#1][#2]%
+   \stopnamedsection}
 
 % lists that have a number/title are kind of generic and can share code
 
@@ -1001,56 +1003,5 @@
         segments      = "\listparameter\c!numbersegments",
     } )}%
    \dostoptagged}
-
-% new and yet undocumented (used in cocoa qa), temporarily disabled in mkiv
-%
-% \setupremaininglistlength
-%   [left=\hss nog~,right=~ingangen]
-%
-% \resetremaininglistlength
-%   [section][settings]
-%
-% \placelist
-%   [section]
-%   [before=\showremaininglistlength]
-%
-% \dorecurse{100}{\section{hans}}
-%
-% \definesystemvariable {ll} % ListLength
-%
-% \unexpanded\def\setupremaininglistlength[#1]%
-%   {\getparameters[\??ll][#1]%
-%    \globallet\listlengthcounter\!!zerocount}
-%
-% \setupremaininglistlength
-%   [\c!left=\hss,\c!right=,\c!number=\v!yes,
-%    \c!before=\blank,\c!after=\page,
-%    \c!style=\v!smallnormal,\c!color=]
-%
-% \def\resetremaininglistlength
-%   {\dodoubleempty\doresetremaininglistlength}
-%
-% \def\doresetremaininglistlength[#1][#2]%
-%   {\determinelistcharacteristics[#1][#2]%
-%    \xdef\listlengthcounter{\number\utilitylistlength}}
-%
-% \def\showremaininglistlength
-%   {\bgroup
-%    \ifnum\listlengthcounter>\plusone
-%      \setbox\scratchbox\vbox
-%        {\@@llbefore\par\horizontalstrut\par\horizontalstrut\par\@@llafter}%
-%      \scratchdimen\pagetotal
-%      \advance\scratchdimen \ht\scratchbox
-%      \advance\scratchdimen \dp\scratchbox
-%      \ifdim\scratchdimen>\pagegoal
-%        \@@llbefore
-%        \nobreak\hbox to \hsize
-%          {\doifnot\@@llnumber\v!yes{\let\listlengthcounter\empty}%
-%           \doattributes\??ll\c!style\c!color{\@@llleft\listlengthcounter\@@llright}}
-%        \@@llafter
-%      \fi
-%    \fi
-%    \doglobal\decrement\listlengthcounter\relax
-%    \egroup}
 
 \protect \endinput

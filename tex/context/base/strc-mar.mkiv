@@ -48,18 +48,6 @@
 \def\domarkingparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\domarkingparentparameter\csname#1\s!parent\endcsname#2\fi}
 \def\domarkingparentparameter#1#2{\ifx#1\relax\s!empty\else\domarkingparameter#1#2\fi}
 
-% \def\markingparameterhash          #1{\domarkingparameterhash{\??mk\currentmarking}#1}
-% \def\domarkingparameterhash      #1#2{\ifcsname#1#2\endcsname#1\else\expandafter\domarkingparentparameterhash\csname#1\s!parent\endcsname#2\fi}
-% \def\domarkingparentparameterhash#1#2{\ifx#1\relax\else\domarkingparameterhash#1#2\fi}
-%
-% \def\detokenizedmarkingparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??mk\currentmarking#1\endcsname}}
-%
-% \def\dosetmarkingattributes#1#2% style color
-%   {\edef\fontattributehash {\markingparameterhash#1}%
-%    \edef\colorattributehash{\markingparameterhash#2}%
-%    \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-%    \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
-
 \newconditional\inhibitgetmarking
 \newconditional\inhibitsetmarking
 \newtoks       \everymarking

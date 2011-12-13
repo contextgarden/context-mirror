@@ -600,7 +600,7 @@ end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
 -- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
--- loop back from the end.
+-- loop back from the end cq. prepend.
 
 local sort, fastcopy, sortedkeys = table.sort, table.fastcopy, table.sortedkeys -- dependency!
 
@@ -620,13 +620,13 @@ function lpeg.append(list,pp,delayed,checked)
     elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
         local keys = sortedkeys(list)
         if p then
-            for i=#keys,1,-1 do
+            for i=1,#keys,1 do
                 local k = keys[i]
                 local v = list[k]
                 p = P(k)/list + p
             end
         else
-            for i=#keys,1,-1 do
+            for i=1,#keys do
                 local k = keys[i]
                 local v = list[k]
                 if p then
@@ -642,7 +642,7 @@ function lpeg.append(list,pp,delayed,checked)
     elseif checked then
         -- problem: substitution gives a capture
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -661,7 +661,7 @@ function lpeg.append(list,pp,delayed,checked)
         end
     else
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -673,6 +673,9 @@ function lpeg.append(list,pp,delayed,checked)
     end
     return p
 end
+
+-- inspect(lpeg.append({ a = "1", aa = "1", aaa = "1" } ,nil,true))
+-- inspect(lpeg.append({ ["degree celsius"] = "1", celsius = "1", degree = "1" } ,nil,true))
 
 -- function lpeg.exact_match(words,case_insensitive)
 --     local pattern = concat(words)

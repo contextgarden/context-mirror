@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['spac-chr'] = {
 
 local byte, lower = string.byte, string.lower
 
+-- beware: attribute copying is bugged ... there will be a proper luatex helper
+-- for this
+
 -- to be redone: characters will become tagged spaces instead as then we keep track of
 -- spaceskip etc
 
@@ -21,6 +24,7 @@ local set_attribute      = node.set_attribute
 local has_attribute      = node.has_attribute
 local insert_node_after  = node.insert_after
 local remove_node        = nodes.remove -- ! nodes
+local copy_node_list     = node.copy_list
 
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
@@ -56,28 +60,38 @@ local function inject_quad_space(unicode,head,current,fraction)
     if fraction ~= 0 then
         fraction = fraction * fontparameters[current.font].quad
     end
-    head, current = insert_node_after(head,current,new_glue(fraction))
-    current.attr = attr
-    set_attribute(current,a_character,unicode)
+    local glue = new_glue(fraction)
+--     glue.attr = copy_node_list(attr)
+    glue.attr = attr
+current.attr = nil
+    set_attribute(glue,a_character,unicode)
+    head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_char_space(unicode,head,current,parent)
     local attr = current.attr
     local char = fontcharacters[current.font][parent]
-    head, current = insert_node_after(head,current,new_glue(char and char.width or fontparameters[current.font].space))
-    current.attr = attr
-    set_attribute(current,a_character,unicode)
+    local glue = new_glue(char and char.width or fontparameters[current.font].space)
+--     glue.attr = copy_node_list(current.attr)
+    glue.attr = current.attr
+current.attr = nil
+    set_attribute(glue,a_character,unicode)
+    head, current = insert_node_after(head,current,glue)
     return head, current
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
     local attr = current.attr
-    local next = current.next
-    head, current = insert_node_after(head,current,new_penalty(10000))
-    head, current = insert_node_after(head,current,new_glue(space,spacestretch,spaceshrink))
-    current.attr = attr
-    set_attribute(current,a_character,unicode)
+    local glue = new_glue(space,spacestretch,spaceshrink)
+    local penalty = new_penalty(10000)
+--     glue.attr = copy_node_list(attr)
+    glue.attr = attr
+current.attr = nil
+--     penalty.attr = attr
+    set_attribute(glue,a_character,unicode)
+    head, current = insert_node_after(head,current,penalty)
+    head, current = insert_node_after(head,current,glue)
     return head, current
 end
 

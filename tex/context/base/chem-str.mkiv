@@ -82,14 +82,14 @@
 \def\dodefinechemicalsymbol[#1][#2]%
   {\setvalue{\??cm::#1}{#2}}
 
-\def\chemicalsymbol[#1]%
+\unexpanded\def\chemicalsymbol[#1]%
   {\getvalue{\??cm::#1}}
 
 % size (small medium big)
 
-\def\dosetchemicaltext
-  {\dosetfontattribute \??cm\c!style
-   \dosetcolorattribute\??cm\c!color}
+\unexpanded\def\dosetchemicaltext
+  {\dousestyleparameter\@cmstyle
+   \dousecolorparameter\@cmcolor}
 
 \edef\chemicaltoplocation{t}
 \edef\chemicalbotlocation{b}

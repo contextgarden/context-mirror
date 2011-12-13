@@ -17,89 +17,6 @@
 
 \unprotect
 
-% todo: impose a la mkiv (us elua specification tables)
-
-% sizing bug:
-%
-% \setuppapersize[A4][A4,landscape] \setuparranging[2UP] \showframe
-%
-% \starttext \dorecurse{10}{\input tufte \par} \stoptext
-
-\newif\ifclipprintbox \clipprintboxtrue % todo: conditional
-%newif\ifclippagebox  \clippageboxtrue
-
-\def\clippedprintbox#1#2% can be made more efficient, see other clipper
-  {\ifclipprintbox
-     \!!widthc \pagebackgroundoffset
-     \!!widtha \dimexpr\paperwidth + \!!widthc\relax
-     \!!heighta\dimexpr\paperheight+2\!!widthc\relax
-     \setbox#2\vbox to \paperheight{\vfill\box#2}%
-     \ht#2\paperheight
-     \wd#2\paperwidth
-     \setbox#2\vbox
-       {\framed
-          [\c!offset=\!!widthc,\c!strut=\v!no,\c!frame=\v!off]
-          {\box#2}}%
-     \setbox#2\hbox to \paperwidth
-       {\ifcase#1\relax
-          \!!widthb\zeropoint
-          \hskip-\!!widthc
-        \else
-          \!!widthb\!!widthc
-        \fi
-        \lower\!!widthc\hbox
-          {\clip
-             [\c!width=\!!widtha,\c!height=\!!heighta,
-              \c!hoffset=\!!widthb,\c!voffset=\zeropoint]
-             {\box#2}}}%
-     \wd#2\paperwidth
-     \ht#2\paperheight
-   \fi
-   \box#2\relax}
-
-\let\clippagebox \gobbleoneargument
-\let\clipprintbox\gobbleoneargument
-
-% \setuppagenumbering[alternative=doublesided]
-% \setupcolors[state=start]
-% \setuppapersize[A4][A4,oversized]
-% \setuplayout[location=middle,clipoffset=5mm]
-% \setupbackgrounds
-%   [page]
-%   [frame=on,rulethickness=1mm,
-%    backgroundoffset=10mm,background=color,backgroundcolor=red]
-% \starttext \dorecurse{10}{\input tufte \par} \stoptext
-
-\def\clippagebox % skip fast over false
-  {\ifdim\layoutparameter\c!clipoffset>\zeropoint
-      \expandafter\doclippagebox
-   \else
-      \expandafter\gobbleoneargument
-   \fi}
-
-\def\doclippagebox#1%
-  {\!!widtha \wd#1%
-   \!!heighta\ht#1%
-   \!!deptha \dp#1%
-   \setbox#1\hbox
-     {\!!widthb\layoutparameter\c!clipoffset
-      \advance\!!heighta\dimexpr\!!deptha+2\!!widthb\relax
-      \advance\!!widtha \!!widthb
-      \doifbothsides
-        {\advance\!!widtha\!!widthb \!!widthc-\!!widthb \hskip\!!widthc}%
-        {\!!widthc\zeropoint}
-        {\!!widthc-\!!widthb \hskip\!!widthc}%
-      \lower\!!widthb\hbox
-        {\clip
-           [\c!hoffset=\!!widthc,
-            \c!voffset=-\!!widthb,
-              \c!width=\!!widtha,
-             \c!height=\!!heighta]%
-           {\box#1}}}%
-   \wd#1\!!widtha
-   \ht#1\!!heighta
-   \dp#1\!!deptha}
-
 %D \macros
 %D   {starttextdata}
 %D
@@ -118,12 +35,6 @@
 
 \prependtoks \flushtextdata \to \everylastshipout
 
-\def\installpagehandler#1#2%                   % a handler takes one argument: something to be boxed
-  {\setgvalue{\??pp:\c!method:#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
-
-\installpagehandler\v!normal
-  {\ifarrangingpages\expandafter\actualarrange\else\expandafter\actualshipout\fi}
-
 % Problem: we need to apply the finalizers to a to be shipped out page (as
 % we can have positioning involved). However, we can also add stuff in the
 % imposition, like cropmarks. Fortunately we do that with metapost so
@@ -140,35 +51,75 @@
 \newconstant   \whichpagetoshipout      % 0=all 1=odd 2=even
 
 \newbox        \shipoutscratchbox
-\newbox        \postponedcontent
 
 \setnewconstant\shipoutfinalizemethod\plusone % this will be default (we will have two finalizers)
 
-\def\myshipout#1%
- {\beforeshipout % voor de pagebody dus !
-  \dontshowcomposition
-  \dontcomplain
+\def\installpagehandler#1#2%           % a handler takes one argument: something to be boxed
+  {\setgvalue{\??pp:h:#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
+
+\def\page_shipouts_handle
+  {\csname\??pp:h:\ifcsname\??pp:h:\v_page_target_method\endcsname
+     \v_page_target_method
+   \else
+     \v!none
+   \fi\endcsname}
+
+\installpagehandler\v!normal
+  {\ifarrangingpages
+     \expandafter\page_shipouts_arrange
+   \else
+     \expandafter\page_shipouts_normal
+   \fi}
+
+\installpagehandler\v!none
+  {\page_shipouts_ignore}
+
+\def\page_boxes_shipout#1% or: \page_shipouts_apply
+ {\dontshowcomposition % redundant
+  \dontcomplain        % redundant
+  \the\everybeforeshipout
   \ifcase\shipoutfinalizemethod
-    \executeifdefined{\??pp:\c!method:\@@ppmethod}\gobbleoneargument{#1}%
+    \page_shipouts_handle{#1}%
   \else
     \setbox\shipoutscratchbox\hbox{#1}% just in case there are objects there, hook for testing (will go away)
     \finalizeshipoutbox\shipoutscratchbox
-    \executeifdefined{\??pp:\c!method:\@@ppmethod}\gobbleoneargument{\box\shipoutscratchbox}%
+    \page_shipouts_handle{\box\shipoutscratchbox}%
   \fi
-  \setnextrealpageno
-  \aftershipout}
+  \the\everyaftershipout
+  \setnextrealpageno}
 
-\def\flushatshipout
-  {\dowithnextbox
-     {\global\setbox\postponedcontent\hbox to \zeropoint
-        {%\hskip-\maxdimen % niet hier, gaat mis in acrobat (clipt)
-         \unhbox\postponedcontent\unhbox\nextbox}% was \box
-      \global\postponedcontent\zeropoint
-      \global\postponedcontent\zeropoint
-      \global\postponedcontent\zeropoint}%
-   \hbox}
+\def\page_shipouts_ignore#1%
+  {\begingroup
+   \message
+     {[\ifarrangingpages arranged \fi page
+       \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
+       not flushed]}%
+   \setbox\scratchbox\hbox{#1}%
+   \deadcycles\zerocount
+   \endgroup}
 
-\def\actualshipout#1% todo: less callbacks, #1 will go away
+\def\page_otr_flush_every_stuff % this will become obsolete ... was backend related
+  {\begingroup
+   \setbox\scratchbox\hbox
+     {% before the main one !
+      \ifcase\realfolio \or
+        \the\everyfirstshipout
+        \global\everyfirstshipout\emptytoks
+      \fi
+      % the main one
+      \the\everyshipout\relax
+      % always last (and after the main one)
+      \ifnum\realpageno=\lastpage\relax
+        \the\everylastshipout
+        \global\everylastshipout\emptytoks
+      \fi}%
+   \smashbox\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+\newdimen\d_page_shipouts_offset \d_page_shipouts_offset=-1in
+
+\def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone
    % this is not resource safe!
    \ifx\pagestoshipout\empty
@@ -182,55 +133,29 @@
        \donetrue
      \fi
    \else % testen, aangepast / expanded nodig ?
-     \normalexpanded{\noexpand\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}%
+     \normalexpanded{\doifinsetelse{\the\shippedoutpages}{\pagestoshipout}}%
        \donetrue\donefalse
    \fi
    \ifdone
-     \begingroup
+     \setbox\shipoutscratchbox\hbox{#1}%
      \ifcase\shipoutfinalizemethod
-       \setbox\shipoutscratchbox\hbox{#1}%
        \finalizeshipoutbox\shipoutscratchbox
      \fi
-     \setbox\scratchbox\hbox
-       {% before the main one !
-        \ifcase\realfolio \or
-          \the\everyfirstshipout
-          \global\everyfirstshipout\emptytoks
-        \fi
-        % the main one
-        \the\everyshipout\relax
-        % always last (and after the main one)
-        \ifnum\realpageno=\lastpage\relax
-          \the\everylastshipout
-          \global\everylastshipout\emptytoks
-        \fi}%
-     \smashbox\scratchbox
-     \shipout\vbox
+     \normalshipout\vbox
        {\offinterlineskip
-        \scratchdimen-1in % to be done in luatex: zero that one
-        \vskip\scratchdimen
-        \hskip\scratchdimen
-        \hbox % \setbox0=\box.. is nicer
-          {\box\scratchbox
-           \ifvoid\postponedcontent\else\box\postponedcontent\fi % evt ver naar links !
-           \ifcase\shipoutfinalizemethod
-             \box\shipoutscratchbox
-           \else
-             \hbox{#1}%
-           \fi}}%
-     \endgroup
+        \vskip\d_page_shipouts_offset
+        \hskip\d_page_shipouts_offset
+        \hbox
+          {\page_otr_flush_every_stuff
+           \page_otr_flush_special_content
+           \box\shipoutscratchbox}}%
    \else
-     \message
-       {[\ifarrangingpages arranged \fi page
-         \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
-         not flushed]}%
-     \setbox0\hbox{#1}%
-     \deadcycles\zerocount
+     \page_shipouts_ignore{#1}%
    \fi}
 
-\def\actualarrange#1%
-  {\setbox0\hbox{#1}%
-   \pusharrangedpage0%
+\def\page_shipouts_arrange#1%
+  {\setbox\scratchbox\hbox{#1}%
+   \pusharrangedpage\scratchbox
    \deadcycles\zerocount}
 
 %D We need a couple of boxes for duplex printing \unknown
@@ -257,17 +182,17 @@
 \newcount\arrangedpageX \arrangedpageX\plusone
 \newcount\arrangedpageY \arrangedpageY\plusone
 
-\def\calculatepaperoffsets#1%
-  {\global\paperoffset\getvalue{\??pp#1\c!offset}%
+\def\pages_paper_set_offsets
+  {\global\paperoffset\v_page_target_offset
    \global\advance\paperwidth -2\dimexpr\paperoffset/\arrangedpageX\relax
    \global\advance\paperheight-2\dimexpr\paperoffset/\arrangedpageY\relax}
 
 \def\doinstallarrangedoption#1#2%
-  {\setvalue{\??pp=>#1}{#2}}
+  {\setvalue{\??pp:o:#1}{#2}}
 
 \def\doinstalledarrangedoption#1%
-  {\ifcsname\??pp=>#1\endcsname
-     \csname\??pp=>#1\endcsname
+  {\ifcsname\??pp:o:#1\endcsname
+     \csname\??pp:o:#1\endcsname
    \else
      \checkinstalledpagearrangement{#1}% this installs the arranger
    \fi}
@@ -334,10 +259,13 @@
    \fi}
 
 \def\installpagearrangement #1 % will lchange, no space
-  {\setgvalue{\??pp\??pp#1}}
+  {\setgvalue{\??pp:a:#1}}
 
 \def\checkinstalledpagearrangement#1% can be empty: aaa,,bbb
-  {\executeifdefined{\??pp\??pp#1}\donothing}
+  {\executeifdefined{\??pp:a:#1}\donothing}
+
+\let\poparrangedpages\relax
+\let\pusharrangedpage\relax
 
 \def\dosetuparrangement#1#2#3#4#5#6#7#8%
   {\global\arrangedpageX         #1%
@@ -407,7 +335,7 @@
      \ifcase\scratchcounter\else
        \advance\scratchcounter \plusone
        \dostepwiserecurse\scratchcounter\arrangedpageT\plusone
-         {\noheaderandfooterlines\ejectdummypage}%
+         {\noheaderandfooterlines\page_otr_insert_dummy_page}%
      \fi
    \fi}
 
@@ -427,7 +355,7 @@
    \def\pagecutmarksymbol{\the\arrangeno}}
 
 \def\outputarrangedbox#1%
-  {\bgroup
+  {\begingroup
    \forgetall % somehow we're back and need to redo this
    \gotonextarrangepage
    \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
@@ -443,15 +371,24 @@
         \fi}%
    \fi
    \ifconditional\arrangedmirrorstate
-     \setbox#1\vbox{\domirrorbox\vbox{\box#1}}%
+     \page_boxes_apply_mirror{#1}%
    \fi
    \ifconditional\arrangednegatestate
-     \negatecolorbox{#1}%
+     \page_boxes_apply_negate{#1}%
    \fi
-   \finishpagebox#1%
-   \ifconditional\arrangedbackgroundstate\addprintbackground#1\fi
-   \actualshipout{\box#1}%
-   \egroup}
+   \page_marks_add_more             #1%
+   \page_boxes_apply_center         #1%
+   \page_boxes_apply_mirror_print   #1%
+   \page_boxes_apply_orientate_print#1%
+   \page_boxes_apply_offset         #1%
+   \page_boxes_apply_negate_print   #1%
+   %
+   \ifconditional\arrangedbackgroundstate
+     \page_backgrounds_add_to_print#1%
+   \fi
+   %
+   \page_shipouts_normal{\box#1}%
+   \endgroup}
 
 %D The format file can be 16K smaller when we postpone the
 %D real arrangments. Some day ...
@@ -604,13 +541,13 @@
   {\splitoffarrangedpagesTWO
    \ifconditional\arrangedswapstate
      \global\setbox\arrangedpageA\hbox
-       {\clippedprintbox\zerocount\arrangedpageA
-        \clippedprintbox\plusone  \arrangedpageB}%
+       {\page_boxes_apply_clip_print_left \arrangedpageA\box\arrangedpageA
+        \page_boxes_apply_clip_print_right\arrangedpageB\box\arrangedpageB}%
      \setfalse\arrangedswapstate
    \else
      \global\setbox\arrangedpageA\hbox
-       {\clippedprintbox\zerocount\arrangedpageB
-        \clippedprintbox\plusone  \arrangedpageA}%
+       {\page_boxes_apply_clip_print_left \arrangedpageB\box\arrangedpageB
+        \page_boxes_apply_clip_print_right\arrangedpageA\box\arrangedpageA}%
      \settrue\arrangedswapstate
    \fi
    \ht\arrangedpageA\paperheight
@@ -1141,22 +1078,30 @@
   {\advancearrangedpageN
    \global\advance\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
-   \global\setbox\arrangedpageB\hbox \ifdim\@@ppwidth>\zeropoint to \@@ppwidth \fi
+   \global\setbox\arrangedpageB\hbox \ifdim\v_page_target_width>\zeropoint to \v_page_target_width \fi
       {\ifvoid\arrangedpageB\else
          \unhbox\arrangedpageB
-         \ifdim\@@ppdx>\zeropoint \else \hss\fi
-         \hskip\@@ppdx
-         \ifdim\@@ppdx>\zeropoint \else \hss\fi
+         \ifdim\v_page_target_dx>\zeropoint
+           \hskip\v_page_target_dx
+         \else
+           \hss
+           \hskip\v_page_target_dx
+           \hss
+         \fi
        \fi
        \box#1}%
     \ifnum\arrangedpageM<\arrangedpageX\else
-      \global\setbox\arrangedpageA\vbox \ifdim\@@ppheight>\zeropoint to \@@ppheight \fi
+      \global\setbox\arrangedpageA\vbox \ifdim\v_page_target_height>\zeropoint to \v_page_target_height \fi
         {\offinterlineskip
          \ifvoid\arrangedpageA\else
            \unvbox\arrangedpageA
-           \ifdim\@@ppdy>\zeropoint \else \vss\fi
-           \vskip\@@ppdy
-           \ifdim\@@ppdy>\zeropoint \else \vss\fi
+           \ifdim\v_page_target_dy>\zeropoint
+             \vskip\v_page_target_dy
+           \else
+             \vss
+             \vskip\v_page_target_dy
+             \vss
+           \fi
          \fi
          \box\arrangedpageB}%
       \global\arrangedpageM\zerocount
@@ -1175,19 +1120,42 @@
    \fi}
 
 \installpagearrangement XY
-  {\dosetuparrangement\@@ppnx\@@ppny\@@ppxy\!!zerocount\!!zerocount
+  {\dosetuparrangement
+     \v_page_target_nx
+     \v_page_target_ny
+     \v_page_target_xy
+     \zerocount
+     \zerocount
      \pusharrangedpageXY\poparrangedpagesXY\relax}
 
 %D A crazy definition, don't guess who pushed me for the landscape option.
 
+\def\page_imposition_xy_height
+  {\dimexpr
+     \dimexpr
+       \v_page_target_height
+      -\numexpr\v_page_target_ny-1\relax\v_page_target_dy
+     \relax
+    /\v_page_target_ny
+   \relax}
+
+\def\page_imposition_xy_width
+  {\dimexpr
+     \dimexpr
+       \v_page_target_width
+      -\numexpr\v_page_target_nx-1\relax\v_page_target_dx
+     \relax
+    /\v_page_target_nx
+   \relax}
+
 \definepapersize
   [XY]
-  [\c!height=\dimexpr\dimexpr\@@ppheight-\numexpr\@@ppny-1\relax\dimexpr\@@ppdy\relax\relax/\@@ppny\relax,
-   \c!width =\dimexpr\dimexpr\@@ppwidth -\numexpr\@@ppnx-1\relax\dimexpr\@@ppdx\relax\relax/\@@ppnx\relax]
+  [\c!height=\page_imposition_xy_height,
+   \c!width =\page_imposition_xy_width]
 
 \setuppaper
-  [\c!width =\dimexpr\printpaperwidth -2\dimexpr\@@ppbackspace\relax\relax,
-   \c!height=\dimexpr\printpaperheight-2\dimexpr\@@pptopspace \relax\relax]
+  [\c!width =\dimexpr\printpaperwidth -2\v_page_target_backspace\relax,
+   \c!height=\dimexpr\printpaperheight-2\v_page_target_topspace \relax]
 
 % \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
 % \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]
@@ -1205,52 +1173,68 @@
 % #1=name #2=horizontal|vertical #3=shiftlist
 
 \unexpanded\def\definepageshift
-  {\dotripleargument\dodefinepageshift}
+  {\dotripleargument\page_boxes_define_shift}
 
-\def\dodefinepageshift[#1][#2][#3]%
+\def\page_boxes_define_shift[#1][#2][#3]%
   {\setvalue{\??pt#2:#1}{#3}}
 
-\letempty\hpageshifts \newcount\nofhpageshifts
-\letempty\vpageshifts \newcount\nofvpageshifts
+\let\page_boxes_h_shifts\empty
+\let\page_boxes_v_shifts\empty
 
-\def\dogetpageshift#1#2#3% #1=\dimenx #2=\xpageshifts #3=\nofxpageshifts
-  {\ifx#2\empty          % we could do this in lua
-     #1\zeropoint
-   \else
+\newcount\c_page_boxes_h_shifts
+\newcount\c_page_boxes_v_shifts
+
+\newdimen\d_page_boxes_h_shifts
+\newdimen\d_page_boxes_v_shifts
+
+\let\page_boxes_apply_shift_print\gobbleoneargument
+\let\page_boxes_apply_shift_paper\gobbleoneargument
+
+\def\page_boxes_filter_shift#1#2#3% #1=\dimenx #2=\xpageshifts #3=\nofxpageshifts
+  {#1\zeropoint
+   \ifx#2\empty \else
      \global\advance#3\plusone
      \getfromcommacommand[#2][#3]%
      \ifx\commalistelement\empty
        \global#3\plusone % we cycle
        \getfromcommacommand[#2][#3]%
      \fi
-     \ifx\commalistelement\empty
-       #1\zeropoint
-     \else
-       #1=\commalistelement
-       \donetrue
+     \ifx\commalistelement\empty \else
+       #1\commalistelement
      \fi
    \fi}
 
-\def\shiftpagebox#1%
-  {\donefalse
-   \dogetpageshift{\dimen0}\hpageshifts\nofhpageshifts
-   \dogetpageshift{\dimen2}\vpageshifts\nofvpageshifts
-   \ifdone % see also layout offsets, maybe \movebox
-     \edef\next{\wd#1\the\wd#1\ht#1\the\ht#1\dp#1\the\dp#1}%
-     \setbox#1\vbox
-       {\offinterlineskip\vskip\dimen2\hskip\dimen0\box#1}%
-     \next
+\def\page_boxes_apply_shift#1%
+  {\page_boxes_filter_shift\d_page_boxes_h_shifts\page_boxes_h_shifts\c_page_boxes_h_shifts
+   \page_boxes_filter_shift\d_page_boxes_v_shifts\page_boxes_v_shifts\c_page_boxes_v_shifts
+   \ifzeropt\d_page_boxes_h_shifts
+     \ifzeropt\d_page_boxes_v_shifts
+       % nothing to shift
+     \else
+       \page_boxes_apply_shift_indeed#1%
+     \fi
+   \else
+     \page_boxes_apply_shift_indeed#1%
    \fi}
 
-\unexpanded\def\setuppageshift
-  {\dotripleempty\dosetuppageshift}
+\def\page_boxes_apply_shift_indeed#1%
+  {\edef\next{\wd#1\the\wd#1\ht#1\the\ht#1\dp#1\the\dp#1}%
+   \setbox#1\vbox
+     {\offinterlineskip
+      \vskip\d_page_boxes_v_shifts
+      \hskip\d_page_boxes_h_shifts
+      \box#1}%
+   \next}
 
-\def\dosetuppageshift[#1][#2][#3]% page|paper horizontal vertical
-  {\ifthirdargument              % paper=arrange
-     \edef\hpageshifts{\ifcsname\??pt\v!horizontal:#2\endcsname\csname\??pt\v!horizontal:#2\endcsname\fi}%
-     \edef\vpageshifts{\ifcsname\??pt\v!vertical  :#3\endcsname\csname\??pt\v!vertical  :#3\endcsname\fi}%
-     \doifelse{#1}\v!page {\let\shiftprintpagebox\shiftpagebox}{\let\shiftprintpagebox\gobbleoneargument}%
-     \doifelse{#1}\v!paper{\let\shiftpaperpagebox\shiftpagebox}{\let\shiftpaperpagebox\gobbleoneargument}%
+\unexpanded\def\setuppageshift
+  {\dotripleempty\page_boxes_setup_shift}
+
+\def\page_boxes_setup_shift[#1][#2][#3]% page|paper horizontal vertical
+  {\ifthirdargument                    % paper=arrange
+     \edef\page_boxes_h_shifts{\ifcsname\??pt\v!horizontal:#2\endcsname\csname\??pt\v!horizontal:#2\endcsname\fi}%
+     \edef\page_boxes_v_shifts{\ifcsname\??pt\v!vertical  :#3\endcsname\csname\??pt\v!vertical  :#3\endcsname\fi}%
+     \doifelse{#1}\v!page {\let\page_boxes_apply_shift_print\page_boxes_apply_shift}{\let\page_boxes_apply_shift_print\gobbleoneargument}%
+     \doifelse{#1}\v!paper{\let\page_boxes_apply_shift_paper\page_boxes_apply_shift}{\let\page_boxes_apply_shift_paper\gobbleoneargument}%
    \else\ifsecondargument
      \doifinsetelse{#1}{\v!page,\v!paper}
        {\setuppageshift[#1][#2][#2]}
@@ -1258,6 +1242,5 @@
    \else\iffirstargument
      \setuppageshift[\v!page][#1][#1]%
    \fi\fi\fi}
-
 
 \protect \endinput

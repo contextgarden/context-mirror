@@ -84,13 +84,16 @@
 \newif\ifnosymbol \newtoks\everysymbol
 
 \def\dodosymbol#1#2% \relax's prevent lookahead problems
-  {\nosymbolfalse{\the\everysymbol\csname\??ss:#1:#2\endcsname\relax}\relax}
+  {\nosymbolfalse
+   \begingroup
+   \the\everysymbol
+   \csname\??ss:#1:#2\endcsname\relax
+   \endgroup}
 
 \letvalue{\??ss:}\firstofoneargument
 
 \def\directsymbol#1#2% no \relax, there can be an argument, see lists
-  {%\executeifdefined{\??ss:#1:#2}\firstofoneargument}
-   \csname\??ss:\ifcsname\??ss:#1:#2\endcsname#1:#2\fi\endcsname}
+  {\csname\??ss:\ifcsname\??ss:#1:#2\endcsname#1:#2\fi\endcsname}
 
 % We support both:
 %
@@ -109,11 +112,15 @@
    \secondargumentfalse
    \donormalsymbol[#3][]}
 
+% \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}
+
 \def\donormalsymbol[#1][#2]%
   {\nosymboltrue
    \ifsecondargument
      \edef\currentsymbol{#2}%
-     \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}%
+     \ifcsname\??ss:#1:#2\endcsname
+       \dodosymbol{#1}{#2}%
+     \fi
    \else
      \edef\currentsymbol{#1}%
    \fi
@@ -124,13 +131,23 @@
      \fi
    \fi}
 
+% \doifinsymbolset{#1}\currentsymbol{\dodosymbol{#1}\currentsymbol}
+
 \def\fetchsymbol#1%
   {\ifnosymbol
-     \doifinsymbolset{#1}\currentsymbol{\dodosymbol{#1}\currentsymbol}%
+     \ifcsname\??ss:#1:\currentsymbol\endcsname
+       \dodosymbol{#1}\currentsymbol
+     \fi
    \fi}
 
+% \doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
+
 \def\redosymbol#1%
-  {\doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
+  {\ifcsname\??ss::#1\endcsname
+     \dodosymbol\empty{#1}%
+   \else
+     #1%
+   \fi}
 
 %D \macros
 %D   {definefiguresymbol}

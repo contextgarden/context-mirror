@@ -15,11 +15,20 @@
 
 \unprotect
 
-% todo: \aligntab
-% todo: less code (more efficient)
+% helpers .. will move
+
+\def\doxxdoubleempty#1#2%
+  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
+
+\def\dodoxxdoubleempty#1[#2]#3%
+  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
+
+\def\noxxdoubleempty      #1{#1[][]}
+\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
 
 %D The code here has been moved from other files. Beware: the \MKII\ and
-%D \MKIV\ code is not gathered in files with the same name.
+%D \MKIV\ code is not gathered in files with the same name. In the
+%D meantime this code has been adapted to \MKIV\ but mnore is possible.
 
 %D \macros
 %D   {definemathalignment, setupmathalignment, startmathalignment}
@@ -29,31 +38,24 @@
 
 % n>1 #### needed, strange # interaction in recurse
 
-\def\presetdisplaymath{\displ@y} % some day i will relocate the plain stuff
+\def\presetdisplaymath{\displ@y}
 
-\def\buildeqalign
+\def\math_build_eqalign
   {\scratchtoks\emptytoks
    \dorecurse{\mathalignmentparameter\c!m}
      {\ifnum\recurselevel>\plusone
-        \appendtoks
-          \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
-        \to\scratchtoks
+       %\appendtoks
+       %  \tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint
+       %\to\scratchtoks
+        \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance&\tabskip\zeropoint}%
       \fi
       \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
       \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
         {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}}%
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
 
-\def\forgetalign
-  {\tabskip\zeropoint\everycr\emptytoks}
-
-\let\firstineqalign\empty
-\let\nextineqalign \empty
-\let\leftofeqalign \empty
-\let\rightofeqalign\empty
-
-\def\mathineqalign#1{$\forgetalign\displaystyle{{}#1{}}$}
-\def\textineqalign#1{$\forgetalign#1$}
+\def\math_math_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks\displaystyle{{}#1{}}$}
+\def\math_text_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks#1$}
 
 \def\eqalign#1% why no halign here, probably because of displaywidth
   {\emptyhbox\,\vcenter
@@ -66,65 +68,65 @@
 
 \setnewconstant\eqalignmode\plusone
 
-\def\preparereqalignno
-  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+\def\math_prepare_r_eqalign_no
+  {\!!toksa{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+   \!!toksb{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
-     \!!toksc{\hfil&\span\textineqalign{##}\tabskip\zeropoint}%
+     \!!toksc{\hfil&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\textineqalign{##}\tabskip\zeropoint}%
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\span\math_text_in_eqalign{##}\tabskip\zeropoint}%
    \else
-     \!!toksc{\hfil\tabskip\centering&\llap{\span\textineqalign{##}}\tabskip\zeropoint}%
+     \!!toksc{\hfil\tabskip\centering&\llap{\span\math_text_in_eqalign{##}}\tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
-   \buildeqalign
+   \math_build_eqalign
    \presetdisplaymath
    \tabskip\centering}
 
-\def\prepareleqalignno
-  {\!!toksa{\strut\firstineqalign\hfil\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
-   \!!toksb{&\nextineqalign\leftofeqalign\span\mathineqalign{##}\rightofeqalign\tabskip\zeropoint}%
+\def\math_prepare_l_eqalign_no
+  {\!!toksa{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
+   \!!toksb{&\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
    % problem: number is handled after rest and so ends up in the margin
    \ifnum\mathraggedstatus=\plusone
-     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\mrlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil\tabskip\zeropoint\!!plus 1\!!fill&\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \else
-     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\textineqalign{##}}\tabskip\displaywidth}%
+     \!!toksc{\hfil\tabskip\centering&\kern-\displaywidth\rlap{\span\math_text_in_eqalign{##}}\tabskip\displaywidth}%
    \fi\fi
    \global\mathnumberstatus\zerocount
-   \buildeqalign
+   \math_build_eqalign
    \presetdisplaymath
    \tabskip\centering}
 
-\def\dobotheqalignno#1#2%
+\def\math_both_eqalign_no#1#2%
   {\ifmmode
      \displ@y % \let\doplaceformulanumber\relax % strange hack
      \vcenter\bgroup
-     \let\finishalignno\egroup
+     \let\math_finish_eqalign_no\egroup
    \else
-     \let\finishalignno\relax
+     \let\math_finish_eqalign_no\relax
    \fi
    #1%
    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA {\the\scratchtoks\crcr#2\crcr}%
-   \finishalignno}
+   \math_finish_eqalign_no}
 
-\def\dobothaligneqalignno#1%
+\def\math_both_eqalign_no_aligned#1%
   {\ifmmode
     \displ@y
     \global\mathnumberstatus\plusone
     \ifcase\mathraggedstatus
-       \def\finishalignno{\crcr\egroup}%
+       \def\math_finish_eqalign_no{\crcr\egroup}%
     \else
        % we're in a mathbox
        \vcenter\bgroup
-       \def\finishalignno{\crcr\egroup\egroup}%
+       \def\math_finish_eqalign_no{\crcr\egroup\egroup}%
     \fi
    \fi
    #1%
    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
 
-\def\mrlap#1%
+\def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%
    \ifdim\wd\scratchbox>\mathnumbercorrection
      \xdef\mathnumbercorrection{\the\wd\scratchbox}%
@@ -132,29 +134,22 @@
    \box\scratchbox
    \global\mathnumberstatus\plustwo}
 
-% \def\dobothaligneqalignno#1%
-%   {\ifmmode
-%     \displ@y
-%     \global\mathnumberstatus\plusone
-%      we're in a mathbox
-%      \vcenter\bgroup
-%      \def\finishalignno{\crcr\egroup\egroup}%
-%    \else
-%      \def\finishalignno{\crcr\egroup}%
-%    \fi
-%    #1%
-%    \halign \ifcase\eqalignmode \or to \displaywidth \fi \@EA \bgroup\the\scratchtoks\crcr}
+\def\math_handle_eqalign_no_r_normal {\math_both_eqalign_no_normal \math_prepare_r_eqalign_no}
+\def\math_handle_eqalign_no_l_normal {\math_both_eqalign_no_normal \math_prepare_l_eqalign_no}
+\def\math_handle_eqalign_no_r_aligned{\math_both_eqalign_no_aligned\math_prepare_r_eqalign_no}
+\def\math_handle_eqalign_no_l_aligned{\math_both_eqalign_no_aligned\math_prepare_l_eqalign_no}
+\def\math_finish_eqalign_no          {\crcr\egroup}
 
-\def\reqalignno     {\dobotheqalignno     \preparereqalignno}
-\def\leqalignno     {\dobotheqalignno     \prepareleqalignno}
-\def\alignreqalignno{\dobothaligneqalignno\preparereqalignno}
-\def\alignleqalignno{\dobothaligneqalignno\prepareleqalignno}
-\def\finishalignno  {\crcr\egroup}
-
-\let    \equalignno     \reqalignno
-\let\aligneqalignno\alignreqalignno
+\let     \reqalignno \math_handle_eqalign_no_r_normal
+\let     \leqalignno \math_handle_eqalign_no_l_normal
+\let\alignreqalignno \math_handle_eqalign_no_r_aligned
+\let\alignleqalignno \math_handle_eqalign_no_l_aligned
+\let     \equalignno \math_handle_eqalign_no_r_normal
+\let \aligneqalignno \math_handle_eqalign_no_r_aligned
 
 %D Here we implement the user interface part. We start with basic math alignments:
+
+\newcount\c_math_eqalign_column
 
 \newtoks \everymathalignment
 
@@ -185,7 +180,7 @@
    \let\NR\math_alignment_NR
 \to \everymathalignment
 
-\def\math_alignment_start#1%
+\unexpanded\def\math_alignment_start#1%
   {\edef\currentmathalignment{#1}%
    \dosingleempty\math_alignment_start_indeed}
 
@@ -195,25 +190,25 @@
      \setupmathalignment[\currentmathalignment][#1]%
    \fi
    \the\everymathalignment
-   \eqaligncolumn\zerocount
+   \c_math_eqalign_column\zerocount
    \processcommacommand
      [\mathalignmentparameter\c!align]
-     {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
-   \global\eqaligncolumn\plusone
+     {\advance\c_math_eqalign_column\plusone\doseteqaligncolumn}% takes argument
+   \global\c_math_eqalign_column\plusone
    \dostarttagged\t!math\empty
    \dostarttagged\t!mathtable\currentmathalignment
    \numberedeqalign}
 
 \def\math_alignment_stop
-  {\finishalignno
+  {\math_finish_eqalign_no
    \dostoptagged
    \dostoptagged}
 
 \installcommandhandler \??eq {mathalignment} \??eq
 
 \appendtoks
-   \setevalue{\e!start\currentmathalignment}{\noexpand\math_alignment_start{\currentmathalignment}}%
-   \setevalue{\e!stop \currentmathalignment}{\noexpand\math_alignment_stop}%
+    \setuevalue{\e!start\currentmathalignment}{\math_alignment_start{\currentmathalignment}}%
+    \setvalue  {\e!stop \currentmathalignment}{\math_alignment_stop}%
 \to \everydefinemathalignment
 
 \setupmathalignment
@@ -224,59 +219,37 @@
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
 
-% helpers
-
 \def\numberedeqalign
-  {\doifelse{\formulaparameter\c!location}\v!left\alignleqalignno\alignreqalignno}
+  {\doifelse{\formulaparameter\c!location}\v!left
+     \math_handle_eqalign_no_l_aligned
+     \math_handle_eqalign_no_r_aligned}
 
-\def\doxxdoubleempty#1#2%
-  {\ifx#2[\expandafter\dodoxxdoubleempty\else\expandafter\noxxdoubleempty\fi#1#2}
-
-\def\dodoxxdoubleempty#1[#2]#3%
-  {\ifx#3[\else\expandafter\nonoxxdoubleempty\fi#1[#2]#3}
-
-\def\noxxdoubleempty      #1{#1[][]}
-\def\nonoxxdoubleempty#1[#2]{#1[#2][]}
-
-\newcount\eqaligncolumn
-
-\def\firstineqalign
-  {\global\eqaligncolumn\plusone
+\def\math_first_in_eqalign
+  {\global\c_math_eqalign_column\plusone
    \dostarttagged\t!mathtablerow \empty
    \dostarttagged\t!mathtablecell\empty}
 
-\def\nextineqalign
-  {\global\advance\eqaligncolumn\plusone
+\def\math_next_in_eqalign
+  {\global\advance\c_math_eqalign_column\plusone
    \dostoptagged % finish cell
    \dostarttagged\t!mathtablecell\empty}
 
-% \def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
-% \def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
-
-% \def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
-%   {\letvalueempty{\??eq:\v!left :\number\eqaligncolumn}%
-%    \letvalueempty{\??eq:\v!right:\number\eqaligncolumn}%
-%    \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
-%    \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
-%    \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
-%                       \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
-
-\def\leftofeqalign
-  {\ifcsname\??eq::a::\number\eqaligncolumn\endcsname
-     \ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+\def\math_left_of_equalign
+  {\ifcsname\??eq::a::\number\c_math_eqalign_column\endcsname
+     \ifcase\csname\??eq::a::\number\c_math_eqalign_column\endcsname\or
        \relax \or \hfill \or \hfill
      \fi
    \fi}
 
-\def\rightofeqalign
-  {\ifcsname\??eq::a::\number\eqaligncolumn\endcsname
-     \ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+\def\math_right_of_eqalign
+  {\ifcsname\??eq::a::\number\c_math_eqalign_column\endcsname
+     \ifcase\csname\??eq::a::\number\c_math_eqalign_column\endcsname\or
        \hfill \or \relax \or \hfill
      \fi
    \fi}
 
 \def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
-  {\expandafter\let\csname\??eq::a::\number\eqaligncolumn\expandafter\endcsname
+  {\expandafter\let\csname\??eq::a::\number\c_math_eqalign_column\expandafter\endcsname
      \csname\??eq::a::\ifcsname\??eq::a::#1\endcsname#1\else\v!normal\fi\endcsname}
 
 \letvalue{\??eq::a::\v!normal}\zerocount
@@ -284,10 +257,7 @@
 \letvalue{\??eq::a::\v!right }\plustwo
 \letvalue{\??eq::a::\v!middle}\plusthree
 
-\def\dodoalignNC
-  {\gdef\doalignNC##1{&##1}}
-
-\def\doalignNR[#1][#2]%
+\def\math_align_NR_generic[#1][#2]%
   {\donestedformulanumber{#1}{#2}\crcr}
 
 %D \starttyping
@@ -426,20 +396,7 @@
 %D
 %D Another wish \unknown
 
-\unexpanded\def\setupmathcases
-  {\dodoubleempty\dosetupmathcases}
-
-\def\dosetupmathcases[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??ce#1][#2]%
-   \else
-     \getparameters[\??ce][#1]%
-   \fi}
-
-\let\currentmathcases\empty
-
-\def\mathcasesparameter#1%
-  {\executeifdefined{\??ce\currentmathcases#1}{\executeifdefined{\??ce#1}\empty}}
+\installcommandhandler \??ce {mathcases} \??ce
 
 \setupmathcases
   [\c!distance=1em,
@@ -447,52 +404,54 @@
    \c!left={\left\{\,},
    \c!right={\right.}]
 
-\def\dodocasesNC
-  {\gdef\docasesNC{\endmath&}}
+\appendtoks
+    \setuevalue{\e!start\currentmathcases}{\math_cases_start{\currentmathcases}}%
+    \setvalue  {\e!stop \currentmathcases}{\math_cases_stop}%
+\to \everydefinemathcases
 
-\let\docasesNR\doalignNR
-
-\def\dostartmathcases[#1][#2]%
+\unexpanded\def\math_cases_start#1%
   {\begingroup
    \edef\currentmathcases{#1}%
-   \doifassignmentelse{#2}{\setupmathcases[#1][#2]}\donothing
+   \dosingleempty\math_cases_start_indeed}
+
+\unexpanded\def\math_cases_start_indeed[#1]%
+  {\iffirstargument
+     \setupcurrentmathcases[#1]%
+   \fi
    \mathcasesparameter\c!left
    \vcenter\bgroup
-   \pushmacro\docasesNC
+   \pushmacro\math_cases_NC
    \let\endmath\relax
-   \def\NC{\docasesNC}%
-   \def\MC{\docasesNC\ifmmode\else$\def\endmath{$}\fi}%
-   \global\let\docasesNC\dodocasesNC
-   \def\NR{\unskip\endmath&\global\let\docasesNC\dodocasesNC\doxxdoubleempty\docasesNR}%
+   \def\NC{\math_cases_NC}%
+   \def\MC{\math_cases_NC\ifmmode\else$\def\endmath{$}\fi}%
+   \global\let\math_cases_NC\math_cases_NC_indeed
+   \def\NR{\unskip\endmath&\global\let\math_cases_NC\math_cases_NC_indeed\doxxdoubleempty\math_cases_NR}%
    \normalbaselines
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
-   \global\eqaligncolumn\plusone
+   \global\c_math_eqalign_column\plusone
    \halign\bgroup
         $\mathcasesparameter\c!style##$\hfil
        &\hskip\mathcasesparameter\c!distance\relax
-        \popmacro\docasesNC##\hfil
+        \popmacro\math_cases_NC##\hfil
        &\hskip\mathcasesparameter\c!numberdistance\relax
         \let\formuladistance\!!zeropoint
-        \span\textineqalign{##}%
+        \span\math_text_in_eqalign{##}%
      \crcr} % todo: number
 
-\def\dostopmathcases
+\def\math_cases_stop
   {\crcr
    \egroup
-   \popmacro\docasesNC
+   \popmacro\math_cases_NC
    \egroup
    \mathcasesparameter\c!right
    \endgroup}
 
-\unexpanded\def\definemathcases
-  {\dodoubleempty\dodefinemathcases}
+\def\math_cases_NC_indeed
+  {\gdef\math_cases_NC{\endmath&}}
 
-\def\dodefinemathcases[#1]% [#2]%
-  {\setvalue{\e!start#1}{\dodoubleempty\dostartmathcases[#1]}%
-   \setvalue{\e!stop #1}{\dostopmathcases}%
-   \setupmathcases[#1]}% [#2]
+\let\math_cases_NR\math_align_NR_generic
 
 \definemathcases[cases]
 \definemathcases[\v!mathcases]
@@ -542,20 +501,7 @@
 %D
 %D Yet another one \unknown
 
-\unexpanded\def\setupmathmatrix
-  {\dodoubleempty\dosetupmathmatrix}
-
-\def\dosetupmathmatrix[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??mx#1][#2]%
-   \else
-     \getparameters[\??mx][#1]%
-   \fi}
-
-\let\currentmathmatrix\empty
-
-\def\mathmatrixparameter#1%
-  {\executeifdefined{\??mx\currentmathmatrix#1}{\executeifdefined{\??mx#1}\empty}}
+\installcommandhandler \??mk {mathmatrix} \??mk
 
 \setupmathmatrix
   [\c!distance=1em,
@@ -563,127 +509,22 @@
    \c!right=,
    \c!align=\v!middle]
 
-\def\dosetmatrixcolumn#1% hh: todo: \definematrixalign
-  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
-   \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil
-   \doif{#1}\v!left  {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\relax
-                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}%
-   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
-                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\relax }%
-   \doif{#1}\v!middle{\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfil
-                      \letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfil}}
+\appendtoks
+    \setuevalue{\e!start\currentmathmatrix}{\math_matrix_start{\currentmathmatrix}}%
+    \setvalue  {\e!stop \currentmathmatrix}{\math_matrix_stop}% no u else lookahead problem
+\to \everydefinemathmatrix
 
-\def\buildmathmatrix % beware: etex only
-  {\scratchtoks\emptytoks
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
-   \dorecurse{\numexpr\scratchcounter-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
-
-\def\preparemathmatrix
-  {\!!toksa{\strut \firstineqalign\leftofeqalign \span
-            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
-   \!!toksb{&\hskip\mathmatrixparameter\c!distance
-            \nextineqalign\leftofeqalign \span
-            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
-   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
-            \leftofeqalign \span
-            \textineqalign{\mathmatrixparameter\c!style ##}\rightofeqalign}%
-   \buildmathmatrix
-   \halign \@EA \bgroup\the\scratchtoks \crcr}
-
-\unexpanded\def\definemathmatrix
-  {\dodoubleempty\dodefinemathmatrix}
-
-\def\dodefinemathmatrix[#1]% [#2]%
-  {\setuvalue{\e!start#1}{\dodoubleempty\dostartmathmatrix[#1]}%
-   \setvalue {\e!stop #1}{\dostopmathmatrix}% no u else lookahead problem
-   \setupmathmatrix[#1]}% [#2]
-
-\definemathmatrix[matrix]
-\definemathmatrix[\v!mathmatrix]
-
-\unexpanded\def\dodomatrixNC
-  {\gdef\domatrixNC{\endmath&}}
-
-\def\installmathmatrixhandler#1#2%
-  {\setvalue{\??mx:#1}{#2}}
-
-% First alternative:
-%
-% \def\processlowhighmathmatrix#1%
-%   {\def\mathmatrixleft
-%      {\setbox\nextbox}
-%    \def\mathmatrixright
-%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
-%       \hbox{$\mathmatrixparameter\c!left
-%             \vcenter{\unvbox\nextbox}%
-%             \mathmatrixparameter\c!right$}}%
-%     \let\mathmatrixbox\vbox}
-%
-% \installmathmatrixhandler\v!high  {\processlowhighmathmatrix\raise}
-% \installmathmatrixhandler\v!low   {\processlowhighmathmatrix\lower}
-%
-% \installmathmatrixhandler\v!top   {\processlowhighmathmatrix\raise}
-% \installmathmatrixhandler\v!bottom{\processlowhighmathmatrix\lower}
-%
-% \installmathmatrixhandler\v!lohi
-%   {\def\mathmatrixleft {\mathmatrixparameter\c!left}%
-%    \def\mathmatrixright{\mathmatrixparameter\c!right}%
-%    \let\mathmatrixbox\vcenter}
-%
-% An alternative
-%
-% \let\mathmatrixleft \empty
-% \let\mathmatrixright\empty
-%
-% \def\processlowhighmathmatrix#1%
-%   {\dowithnextbox
-%      {#1.5\dimexpr\nextboxdp-\nextboxht\relax
-%       \hbox{$\mathmatrixparameter\c!left
-%             \vcenter{\unvbox\nextbox}%
-%             \mathmatrixparameter\c!right$}}%
-%    \vbox}
-%
-% \def\processlohimathmatrix
-%   {\dowithnextbox
-%      {\mathmatrixparameter\c!left
-%       \vcenter{\unvbox\nextbox}%
-%       \mathmatrixparameter\c!right}%
-%    \vbox}
-%
-% \installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
-% \installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
-% \installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\raise}}
-% \installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\lower}}
-% \installmathmatrixhandler\v!lohi  {\let\mathmatrixbox \processlohimathmatrix}
-%
-% Final version
-
-\let\mathmatrixleft \empty % experimental hook
-\let\mathmatrixright\empty % experimental hook
-
-\def\processlowhighmathmatrix#1#2%
-  {\dowithnextbox
-     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
-      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
-      \hbox{$\mathmatrixparameter\c!left
-            \vcenter{\unvbox\nextbox}%
-            \mathmatrixparameter\c!right$}}%
-   \vbox}
-
-\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\plusone  }}
-\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\processlowhighmathmatrix\plusthree\zerocount}}
-\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\processlowhighmathmatrix\plustwo  \zerocount}}
-\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \zerocount}}
-\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\processlowhighmathmatrix\plusone  \plusone  }}
-
-\def\dostartmathmatrix[#1][#2]%
+\unexpanded\def\math_matrix_start#1%
   {\begingroup
    \edef\currentmathmatrix{#1}%
-   \doifassignmentelse{#2}{\setupmathmatrix[#1][#2]}\donothing
+   \dosingleempty\math_matrix_start_indeed}
+
+\unexpanded\def\math_matrix_start_indeed[#1]%
+  {\iffirstargument
+     \setupcurrentmathmatrix[#1]%
+   \fi
    \emptyhbox
-   \executeifdefined{\??mx:\mathmatrixparameter\c!location}{\getvalue{\??mx:\v!lohi}}%
+   \math_matrix_handler_apply
    \mathmatrixleft
    \mathmatrixbox\bgroup
    \pushmacro\domatrixNC
@@ -696,13 +537,15 @@
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
-   \eqaligncolumn\zerocount
-   \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
-   \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
-   \global\eqaligncolumn\plusone
-   \preparemathmatrix } % uses scratchcounter
+   \c_math_eqalign_column\zerocount
+   \processcommacommand
+     [\mathmatrixparameter\c!align]
+     {\advance\c_math_eqalign_column\plusone\doseteqaligncolumn}% was \dosetmatrixcolumn
+   \scratchcounter=\ifnum\c_math_eqalign_column>\zerocount \c_math_eqalign_column \else \plusone \fi
+   \global\c_math_eqalign_column\plusone
+   \math_matrix_prepare}
 
-\def\dostopmathmatrix
+\def\math_matrix_stop
   {\crcr
    \mathstrut\crcr
    \noalign{\kern-\baselineskip}%
@@ -711,6 +554,57 @@
    \egroup
    \mathmatrixright
    \endgroup}
+
+\definemathmatrix[matrix]
+\definemathmatrix[\v!mathmatrix]
+
+\def\math_matrix_prepare
+  {\!!toksa{\strut\math_first_in_eqalign\math_left_of_equalign\span
+            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
+   \!!toksb{&\hskip\mathmatrixparameter\c!distance
+            \math_next_in_eqalign\math_left_of_equalign\span
+            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
+   \!!toksc{&&\hskip\mathmatrixparameter\c!distance
+            \math_left_of_equalign\span
+            \math_text_in_eqalign{\mathmatrixparameter\c!style##}\math_right_of_eqalign}%
+   \scratchtoks\emptytoks
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
+   \dorecurse{\numexpr\scratchcounter-\plusone\relax}
+     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}%
+   \halign \@EA \bgroup\the\scratchtoks \crcr}
+
+\unexpanded\def\dodomatrixNC
+  {\gdef\domatrixNC{\endmath&}}
+
+\def\installmathmatrixhandler#1#2%
+  {\setvalue{\??mx:h:#1}{#2}}
+
+\let\mathmatrixleft \empty % experimental hook
+\let\mathmatrixright\empty % experimental hook
+
+\def\math_matrix_process#1#2%
+  {\dowithnextbox
+     {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
+      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
+      \hbox{$\mathmatrixparameter\c!left
+            \vcenter{\unvbox\nextbox}%
+            \mathmatrixparameter\c!right$}}%
+   \vbox}
+
+\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\math_matrix_process\plusthree\plusone  }}
+\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\math_matrix_process\plusthree\zerocount}}
+\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}}
+\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\math_matrix_process\plusone  \zerocount}}
+\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\math_matrix_process\plusone  \plusone  }}
+\installmathmatrixhandler\v!normal{\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}} % lohi
+
+\def\math_matrix_handler_apply
+  {\csname\??mx:h:\ifcsname\??mx:h:\mathmatrixparameter\c!location\endcsname
+     \mathmatrixparameter\c!location
+   \else
+     \v!normal
+   \fi\endcsname}
 
 %D \startbuffer
 %D \placeformula \startformula[-] \startmatrix
@@ -847,61 +741,20 @@
 %D The intertext commands have to be expandable (in aligment lookahead) so
 %D we cannot use \type {\unexpanded}.
 
+\def\startintertext#1\stopintertext
+  {\noalign{\math_intertext{#1}}}
+
 \let\stopintertext\relax
 
-\def\startintertext#1\stopintertext
-  {\noalign{\dointertext{#1}}}
-
 \def\intertext#1%
-  {\noalign{\dointertext{#1}}}
+  {\noalign{\math_intertext{#1}}}
 
-\unexpanded\def\dointertext#1%
+\unexpanded\def\math_intertext#1%
   {\penalty\postdisplaypenalty
    \afterdisplayspace
    \vbox{\forgetall\noindent#1\par}%
    \penalty\predisplaypenalty
    \beforedisplayspace}
-
-% \macros
-%   {substack}
-%
-% Preliminary code:
-%
-% \starttyping
-% \startformula
-%    \sum_{%
-%      \startsubstack
-%       i = 1 \NR
-%       i \neq n \NR
-%       i \neq m
-%       \stopsubstack
-%     }a_i
-% \stopformula
-% \stoptyping
-%
-% \unexpanded\def\startsubstack
-%    {\begingroup
-%     \emptyhbox
-%     \vcenter\bgroup
-%     \pushmacro\domatrixNC
-%     \let\stopmathmode\relax
-%     \def\NC{\domatrixNC}%
-%     \def\MC{\domatrixNC\startmathmode}%
-%     \global\let\domatrixNC\dodomatrixNC
-%     \def\NR
-%       {\stopmathmode
-%        \global\let\domatrixNC\dodomatrixNC
-%        \crcr\noalign{\nointerlineskip}}%
-%     \mathsurround\zeropoint
-%     \everycr\emptytoks
-%     \halign\bgroup\hfil$\scriptstyle\mathstrut##$\hfil\crcr}
-%
-% \unexpanded\def\stopsubstack
-%    {\crcr
-%     \egroup
-%     \popmacro\domatrixNC
-%     \egroup
-%     \endgroup}
 
 %D \macros
 %D   {substack}
@@ -953,7 +806,7 @@
    \everycr\emptytoks
    \halign\bgroup\hfil$\scriptstyle##$\hfil\crcr}
 
-\unexpanded\def\stopsubstack
+\def\stopsubstack
   {\crcr
    \egroup
    \egroup
@@ -968,12 +821,12 @@
 
 \ifx\mathparentwd\undefined \newdimen\mathparentwd \fi
 
-\let\normalbordermatrix\bordermatrix
+\let\normalbordermatrix\bordermatrix % move that code to here instead
 
 \def\bordermatrix
   {\begingroup
    \setbox\scratchbox\hbox{\mr\char"239C}%
-   \global\mathparentwd\wd\scratchbox\relax
+   \global\mathparentwd\wd\scratchbox
    \endgroup
    \normalbordermatrix}
 
@@ -1003,11 +856,11 @@
 %D Use these macros sparingly. Remember, \TEX\ was designed for
 %D mathematics, so there is usually a proper method for typesetting
 %D common math notation.
+%D
+%D These macros are a cleaner version of \type {\binrel@} and
+%D \type {\binrel@@} macros in \AMSTEX\ packages.
 
-%D These macros are a clearer version of \type{\binrel@} and
-%D \type{\binrel@@} macros in \AMSTEX\ packages.
-
-\def\preparebinrel#1%
+\def\math_binrel_apply#1%
   {\begingroup
    \setbox\scratchbox\hbox
      {\thinmuskip   0mu
@@ -1016,48 +869,46 @@
       \setbox\scratchbox\hbox{$#1\mathsurround\zeropoint$}%
       \kern-\wd\scratchbox
       ${}#1{}\mathsurround\zeropoint$}%
-   \normalexpanded
-     {\endgroup
-      \let\noexpand\currentbinrel
-      \ifdim\wd\scratchbox<\zeropoint
-        \mathbin
-      \else\ifdim\wd\scratchbox>\zeropoint
-        \mathrel
-      \else
-        \relax
-      \fi\fi}}
+   \ifdim\wd\scratchbox<\zeropoint
+     \endgroup
+     \expandafter\mathbin
+   \else\ifdim\wd\scratchbox>\zeropoint
+     \endgroup
+     \expandafter\expandafter\expandafter\mathrel
+   \else
+     \endgroup
+     \expandafter\expandafter\expandafter\firstofoneargument
+   \fi\fi}
 
 \unexpanded\def\overset#1#2%
-  {\preparebinrel{#2}%
-   \currentbinrel{\mathop{\kern\zeropoint#2}\limits\normalsuperscript{#1}}}
+  {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsuperscript{#1}}}
 
 \unexpanded\def\underset#1#2%
-  {\preparebinrel{#2}%
-   \currentbinrel{\mathop{\kern\zeropoint#2}\limits\normalsubscript{#1}}}
+  {\math_binrel_apply{#2}{\mathop{\kern\zeropoint#2}\limits\normalsubscript  {#1}}}
 
 %D The following code comes from \type {math-str.mkiv}.
-
+%D
 %D Here we implement a basic math alignment mechanism. Numbers
 %D are also handled. The macros \type {\startinnermath} and
 %D \type {\stopinnermath} can be overloaded in specialized
 %D modules.
 
 \unexpanded\def\startinnermath
-  {\getvalue{\e!start\??fm\formulaparameter\c!align}}
+  {\csname\??fm:\e!start:\formulaparameter\c!align\endcsname}
 
 \unexpanded\def\stopinnermath
-  {\getvalue{\e!stop \??fm\formulaparameter\c!align}}
+  {\csname\??fm:\e!stop :\formulaparameter\c!align\endcsname}
 
 \def\mathinnerstrut
   {\doif{\formulaparameter\c!strut}\v!yes\strut}
 
-\long\unexpanded\def\defineinnermathhandler#1#2#3%
-  {\setvalue{\e!start\??fm#1}{#2}%
-   \setvalue{\e!stop \??fm#1}{#3}}
+\unexpanded\def\defineinnermathhandler#1#2#3%
+  {\setvalue{\??fm:\e!start:#1}{#2}%
+   \setvalue{\??fm:\e!stop :#1}{#3}}
 
 \newif\iftracemath
 
-\def\mathhbox
+\def\math_hbox
   {\iftracemath\ruledhbox\else\hbox\fi}
 
 \newconstant\mathraggedstatus % normal left center  right
@@ -1065,40 +916,47 @@
 
 \let\mathnumbercorrection\!!zeropoint
 
+\let\math_the_r_eq_no\empty
+\let\math_the_l_eq_no\empty
+
 \unexpanded\def\startmathbox#1%
   {\hsize\displaywidth
    \global\mathnumberstatus\plusone
    \mathraggedstatus#1\relax
    \let\mathnumbercorrection\!!zeropoint
-   \global\let\@eqno \empty \def\eqno {\gdef\@eqno }%
-   \global\let\@leqno\empty \def\leqno{\gdef\@leqno}%
+   \global\let\math_the_r_eq_no\empty
+   \global\let\math_the_l_eq_no\empty
+   \def\reqno{\gdef\math_the_r_eq_no}%
+   \def\leqno{\gdef\math_the_l_eq_no}%
+   \let\eqno\reqno
    % added
-   \let\normalreqno\eqno
+   \let\normalreqno\reqno
    \let\normalleqno\leqno
+   \let\normaleqno \eqno
    % added
    \doplaceformulanumber
-   \setbox\scratchbox\mathhbox to \displaywidth\bgroup
+   \setbox\scratchbox\math_hbox to \displaywidth\bgroup
      \mathinnerstrut
      $%
      \displaystyle
      \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
 
-\def\llappedmathno
+\def\math_box_llapped_math_no
   {\ifcase\mathraggedstatus\or
-     \@eqno
+     \math_the_r_eq_no
    \or
-     \llap{\@eqno}%
+     \llap{\math_the_r_eq_no}%
    \or
-     \llap{\@eqno}%
+     \llap{\math_the_r_eq_no}%
    \fi}
 
-\def\rlappedmathno
+\def\math_box_rlapped_math_no
   {\ifcase\mathraggedstatus\or
-     \rlap{\@leqno}%
+     \rlap{\math_the_l_eq_no}%
    \or
-     \rlap{\@leqno}%
+     \rlap{\math_the_l_eq_no}%
    \or
-     \@leqno
+     \math_the_l_eq_no
    \fi}
 
 \unexpanded\def\stopmathbox
@@ -1116,21 +974,21 @@
      \ifcase\mathnumberstatus
        \box\scratchbox
      \or
-       \ifx\@leqno\empty
-         \ifx\@eqno\empty
+       \ifx\math_the_l_eq_no\empty
+         \ifx\math_the_r_eq_no\empty
            \box\scratchbox
          \else
            \ifdone
-             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\llappedmathno}}%
+             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\math_box_llapped_math_no}}%
            \else
-             \hss\box\scratchbox\llappedmathno % hss makes room for number
+             \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
            \fi
          \fi
        \else
          \ifdone
-           \vbox{\hbox to \displaywidth{\rlappedmathno\hss}\box\scratchbox}%
+           \vbox{\hbox to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}%
          \else
-           \rlappedmathno\box\scratchbox\hss % hss makes room for number
+           \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
          \fi
        \fi
      \or

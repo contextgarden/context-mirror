@@ -164,7 +164,7 @@ end
 
 local function text(collected) -- hybrid
     if collected then -- no # test here !
-        local e = collected[1] or collected
+        local e = collected[1] or collected -- why fallback to element, how about cdata
         return e and xmltotext(e) or ""
     else
         return ""
@@ -334,7 +334,7 @@ function xml.raw(id,pattern)
     end
 end
 
-function xml.text(id,pattern)
+function xml.text(id,pattern) -- brrr either content or element (when cdata)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)

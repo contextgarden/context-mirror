@@ -331,13 +331,14 @@
 \newbox      \scratchboxone  \newbox      \scratchboxtwo  \newbox      \scratchboxthree
 
 %D \macros
-%D   {scratchwidth, scratchheight, scratchdepth}
+%D   {scratchwidth, scratchheight, scratchdepth, scratchoffset}
 %D
 %D A few more scratch dimensions:
 
 \newdimen\scratchwidth
 \newdimen\scratchheight
 \newdimen\scratchdepth
+\newdimen\scratchoffset
 
 %D More allocations:
 
@@ -825,25 +826,25 @@
 
 % new after 1.10, watch the change in prefix
 
-\bindprimitive quitvmode      ptexquitvmode
-\bindprimitive noligatures    ptexnoligatures
-\bindprimitive setrandomseed  ptexsetrandomseed
-\bindprimitive uniformdeviate ptexuniformdeviate
+% \bindprimitive quitvmode      ptexquitvmode
+% \bindprimitive noligatures    ptexnoligatures
+% \bindprimitive setrandomseed  ptexsetrandomseed
+% \bindprimitive uniformdeviate ptexuniformdeviate
 
-\bindprimitive quitvmode      pdfquitvmode
-\bindprimitive noligatures    pdfnoligatures
-\bindprimitive setrandomseed  pdfsetrandomseed
-\bindprimitive uniformdeviate pdfuniformdeviate
+% \bindprimitive quitvmode      pdfquitvmode
+% \bindprimitive noligatures    pdfnoligatures
+% \bindprimitive setrandomseed  pdfsetrandomseed
+% \bindprimitive uniformdeviate pdfuniformdeviate
 
-\bindprimitive resettimer     pdfresettimer
-\bindprimitive elapsedtime    pdfelapsedtime
+% \bindprimitive resettimer     pdfresettimer
+% \bindprimitive elapsedtime    pdfelapsedtime
 
 % new per 1.40
 
-\bindprimitive ifprimitive    ifpdfprimitive
-\bindprimitive primitive      pdfprimitive
-\bindprimitive ifabsdim       ifpdfabsdim
-\bindprimitive ifabsnum       ifpdfabsnum
+% \bindprimitive ifprimitive    ifpdfprimitive
+% \bindprimitive primitive      pdfprimitive
+% \bindprimitive ifabsdim       ifpdfabsdim
+% \bindprimitive ifabsnum       ifpdfabsnum
 
 \ifnum\texengine=\xetexengine \else % this test might disappear some day
 

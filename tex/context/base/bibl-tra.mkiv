@@ -814,12 +814,16 @@
 
 \def\docompletepublications[#1]%
   {\begingroup
-%    \setuplist[pubs][\c!criterium=\v!previous,#1]
-   \setuplist[pubs][#1]
-   \doifelsenothing{\publicationlistparameter\c!title}
-     {\systemsuppliedchapter[pubs]{\headtext{pubs}}}
-     {\normalexpanded{\systemsuppliedchapter[pubs]{\publicationlistparameter\c!title}}}%
-   \dodoplacepublications}
+   \setuplist[pubs][#1]%
+   \edef\currentbibtexsessiontitle{\publicationlistparameter\c!title}%
+   \ifx\currentbibtexsessiontitle\empty
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\headtext{pubs}}]}%
+   \else
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\currentbibtexsessiontitle}]}%
+   \fi
+   \dodoplacepublications
+   \stopnamedsection
+   \endgroup}
 
 %D And the portion with the entries only.
 
@@ -830,9 +834,9 @@
 
 \def\doplacepublications[#1]%
   {\begingroup
-%    \setuplist[pubs][\c!criterium=\v!previous,#1]%
    \setuplist[pubs][#1]%
-   \dodoplacepublications}
+   \dodoplacepublications
+   \endgroup}
 
 \def\dodoplacepublications
   {\determinelistcharacteristics[pubs]%
@@ -842,7 +846,6 @@
    \inpublisttrue
    \typesetpubslist
    \inpublistfalse
-   \endgroup
    \global\advance\bibtexblock\plusone}
 
 %D \subsubject{What's in a publication}

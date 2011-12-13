@@ -15,24 +15,6 @@
 
 \unprotect
 
-% problem: when too small, side effects; we need to determine the
-% shift earlier so that we can act when shift < size
-%
-% \definefloat[edgefigure]
-% \setupfloat
-%     [edgefigure]
-%     [rightmargindistance=-\rightmargintotal,
-%      leftmargindistance=-\rightmargintotal,
-%      default=outer]
-% \starttext
-% \placeedgefigure{}{\framed[width=12cm]{}} \input tufte
-% \placeedgefigure{}{\framed[width=5cm]{}} \input tufte
-% \placeedgefigure{}{\framed[width=4cm]{}} \input tufte
-% \placeedgefigure{}{\framed[width=2cm]{}} \input tufte
-% \stoptext
-
-% todo: dimexpr an dnumexpr
-
 % These macro deal with side floats. We started with Daniel
 % Comenetz macros as published in TUGBoat Volume 14 (1993),
 % No.\ 1: Anchored Figures at Either Margin. I extended and
@@ -40,76 +22,67 @@
 % messy module. Therefore, this module badly needs an update
 % because it's now a mixture of old and new macros.
 
-% afhankelijke variabelen
+% Interesting cases where it goes wrong:
 %
-% \overgap    vervangen door   \floatsidetopskip
-% \sidegap    vervangen door   \floatsideskip
-% \undergap   vervangen door   \floatsidebottomskip
+% \placefigure[left]{}{} \dorecurse{3}{\input ward } {\par} \input ward
 %
-% \prskp      vervangen door   \ctxparskip
+% Here we get an unwanted carried over hangindent and parindent. A
+% solution is to associate it with the local par node instead. This
+% is something to discuss with Taco as it could be a new luatex
+% feature: explicitly set par properties.
 
-% toegevoegde macro's/aanroepen
-%
-% \logsidefloat       : loginformatie
-% \flushsidefloats    : nodig voor koppen
+% Maybe I should just rewrite the lot.
 
-% recente wijzigingen:
-%
-% namen aangepast: \float... enz. i.p.v. \pic
+\newdimen       \d_page_sides_height       % includes the topskip
+\newdimen       \d_page_sides_width
+\newdimen       \d_page_sides_hsize
+\newdimen       \d_page_sides_vsize
+\newdimen       \d_page_sides_vsize_reset  \d_page_sides_vsize_reset -\onepoint % signal (could be a chardef)
+\newdimen       \d_page_sides_progress
+\newdimen       \d_page_sides_page_total
+\newdimen       \d_page_sides_saved_depth
 
-% Pas op: \EveryPar{\EveryPar{}\margetitel{whatever}}
-% \plaatsfiguur[links]{}{} moet goed gaan. In dat geval
-% begint de tekst terecht wat lager.
+\newbox         \b_page_sides_bottom
 
-\newdimen\sidefloatheight      % includes the topskip
-\newdimen\sidefloatwidth
-\newdimen\sidefloathsize
-\newdimen\sidefloatshift
-\newdimen\sidefloatextrashift
-\newdimen\sidefloatvsize       \def\nofloatvsize{-1pt }
-\newdimen\sidefloatprogress
-\newdimen\sidefloatpagetotal
+\newcount       \c_page_sides_lines_done
+\newcount       \c_page_sides_checks_done
+\newcount       \c_page_sides_n_of_lines
+\newconstant    \c_page_sides_float_type
 
-\newbox\floatbottom
+\newconditional \c_page_sides_short
+\newconditional \c_page_sides_flag
 
-\newcount\sidefloatsidelines
-\newcount\sidefloatlinesdone
+\newconditional \c_page_sides_r_eq         % messy, needs checking anyway
+\newconditional \c_page_sides_l_eq         % messy, needs checking anyway
 
-% 1 = backspace
-% 2 = leftedge
-% 3 = leftmargin
-% 4 = leftside
-% 5 = rightside
-% 6 = rightmargin
-% 7 = rightedge
-% 8 = cutspace
+\newif          \ifroomforfloat            % shared (will change)
+\newif          \iftracesidefloats         % public (might change)
 
-\newconstant\sidefloattype
+\newdimen       \sidefloatshift            % public
+\newdimen       \sidefloatextrashift       % public
+\newdimen       \sidefloatleftskip         % public
+\newdimen       \sidefloatrightskip        % public
+\newdimen       \sidefloatmaximum          % public
 
-\def\backspacefloat    {\global\sidefloattype1 \putsidefloat}
-\def\leftedgefloat     {\global\sidefloattype2 \putsidefloat}
-\def\leftmarginfloat   {\global\sidefloattype3 \putsidefloat}
-\def\leftfloat         {\global\sidefloattype4 \putsidefloat}
-\def\rightfloat        {\global\sidefloattype5 \putsidefloat}
-\def\rightmarginfloat  {\global\sidefloattype6 \putsidefloat}
-\def\rightedgefloat    {\global\sidefloattype7 \putsidefloat}
-\def\cutspacefloat     {\global\sidefloattype8 \putsidefloat}
+\def\backspacefloat  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
+\def\leftedgefloat   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
+\def\leftmarginfloat {\global\c_page_sides_float_type\plusthree\page_sides_handle_float}
+\def\leftfloat       {\global\c_page_sides_float_type\plusfour \page_sides_handle_float}
+\def\rightfloat      {\global\c_page_sides_float_type\plusfive \page_sides_handle_float}
+\def\rightmarginfloat{\global\c_page_sides_float_type\plussix  \page_sides_handle_float}
+\def\rightedgefloat  {\global\c_page_sides_float_type\plusseven\page_sides_handle_float}
+\def\cutspacefloat   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
 
-\let\marginfloat       \cutspacefloat
+\let\marginfloat     \cutspacefloat
 
-\newif\ifroomforfloat
-\newif\iffloatshort
-\newif\iffloatflag
-\newif\iffloatrighteqo
-\newif\iffloatlefteqo
+\let\logsidefloat    \relax
 
-\newdimen\sidefloatleftskip
-\newdimen\sidefloatrightskip
-\newdimen\sidefloatmaximum
+\def\page_sides_insert_info
+  {\doinsertfloatinfo}
 
-\def\checksidefloatshift
+\def\page_sides_apply_horizontal_shift
   {\ifdim\sidefloatmaximum>\zeropoint
-     \ifcase\sidefloattype
+     \ifcase\c_page_sides_float_type
        % invalid
      \or
        % backspace
@@ -148,12 +121,27 @@
      \or
        % cutspace
      \fi
+   \fi
+   \ifdim\sidefloatshift=\zeropoint \relax
+     \ifnum\c_page_sides_float_type=\plusfour
+       \global\advance\sidefloatshift\sidefloatextrashift
+       \global\sidefloatextrashift\zeropoint
+     \else\ifnum\c_page_sides_float_type=\plusfive
+       \global\advance\sidefloatshift\sidefloatextrashift
+       \global\sidefloatextrashift\zeropoint
+     \fi\fi
+   \else
+     \ifnum\c_page_sides_float_type<\plusfour
+       \global\c_page_sides_float_type\plusfour
+     \else\ifnum\c_page_sides_float_type>\plusfive
+       \global\c_page_sides_float_type\plusfive
+     \fi\fi
    \fi}
 
-\def\setsidefloatskips
+\def\page_sides_set_skips
   {\global\sidefloatrightskip\zeropoint
    \global\sidefloatleftskip \zeropoint
-   \ifcase\sidefloattype
+   \ifcase\c_page_sides_float_type
    \or % backspace
      \global\sidefloatleftskip\dimexpr
        +\rightorleftpageaction \backspace           \cutspace
@@ -194,298 +182,229 @@
    \ifdim\sidefloatrightskip>\zeropoint \doglobal\advance\sidefloatrightskip\rightskip \fi
    \ifdim\sidefloatleftskip >\zeropoint \doglobal\advance\sidefloatleftskip \leftskip  \fi}
 
-% eq is still crap
-
-\ifx\normalleqno\undefined
-
-  \let\floatrighteqo=\eqno
-  \let\floatleftleqo=\leqno
-
-\else
-
-  \let\floatrighteqo=\normaleqno
-  \let\floatleftleqo=\normalleqno
-
-\fi
-
-% Watch it even more! In inner, gaat't mis omdat daar
-% pagetotal enz niet zijn aangepast. Inner kan overigens niet
-% betrouwbaar worden getest!
-
-\newif\iftracesidefloats
-
-\def\flushsidefloats
+\def\page_sides_flush_floats
   {\par
-   \!!heighta\sidefloatvsize
-   \advance\!!heighta -\pagetotal
-   \ifnum\!!heighta>\zeropoint
-     \global\advance\sidefloatvsize -\sidefloatbottomskip
-     \ifdim\!!heighta>\zeropoint
-       \bgroup
-       \let\flushsidefloats\relax
-       \forgetall
-       \doloop
-         {\strut
-          \iftracesidefloats
-            \color[darkgray]%
-              {\baselinerulefalse
-               \boxrulewidth.5\points
-               \ruledhbox{\strut\kern\sidefloatwidth}}%
-          \fi
-          \par
-          \!!heighta\sidefloatvsize
-          \advance\!!heighta -\pagetotal
-          \ifdim\!!heighta>\zeropoint
-            \ifnum\recurselevel>\plushundred
-              \exitloop
-            \fi
-          \else
-            \exitloop
-          \fi}%
-       \egroup
-       \ifdim\parskip>\zeropoint
-         \ifdim\sidefloatbottomskip>\parskip
-           \nowhitespace
-           \vskip\sidefloatbottomskip
-         \fi
-       \fi
-     \else\ifdim\sidefloatbottomskip>\parskip
-       \vskip\sidefloatbottomskip
-     \fi\fi
+   \ifnum\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+     \page_sides_flush_floats_indeed
    \fi
-   % not entirely the same as \forgetsidefloats
-   \global\sidefloatvsize\nofloatvsize
-   % \global\sidefloatsidelines\zerocount % no, we flush before a side float
-   \global\floatshortfalse                % so this will get lost
    % also here if used at all \global\holdinginserts\zerocount
-   \global\floatflagfalse}
+   \global\d_page_sides_vsize\d_page_sides_vsize_reset
+   \global\setfalse\c_page_sides_short
+   \global\setfalse\c_page_sides_flag}
 
-\def\dochecksidefloatafterpar
-  {\dochecksidefloat
-   \ifdim\oldpagetotal=\pagetotal \else
-     \global\let\checksidefloat\dochecksidefloat
-     \flushsidefloats
-     \global\sidefloatsidelines\zerocount % here !
+\def\page_sides_flush_floats_indeed
+  {\global\advance\d_page_sides_vsize-\sidefloatbottomskip
+   \begingroup
+   \let\page_sides_flush_floats\relax
+   \forgetall
+   \doloop
+     {\strut
+      \iftracesidefloats
+        \color[darkgray]%
+          {\baselinerulefalse
+           \boxrulewidth.5\points
+           \ruledhbox{\strut\kern\d_page_sides_width}}%
+      \fi
+     \par
+     \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+       \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+         \exitloop
+       \fi
+     \else
+       \exitloop
+     \fi}%
+   \endgroup
+   \ifdim\parskip>\zeropoint % why this test ?
+     \ifdim\sidefloatbottomskip>\parskip
+       \nowhitespace
+       \vskip\sidefloatbottomskip
+     \fi
    \fi}
 
-\def\flushsidefloatsafterpar
+\def\page_sides_check_floats_after_par
+  {\page_sides_check_floats_indeed
+   \ifdim\oldpagetotal=\pagetotal \else
+     \global\let\page_sides_check_floats\page_sides_check_floats_indeed
+     \page_sides_flush_floats
+     \global\c_page_sides_n_of_lines\zerocount % here !
+   \fi}
+
+\def\page_sides_flush_floats_after_par
   {\xdef\oldpagetotal{\the\pagetotal}%
-   \global\let\checksidefloat\dochecksidefloatafterpar}
+   \global\let\page_sides_check_floats\page_sides_check_floats_after_par}
 
-\def\forgetsidefloats
-  {\global\sidefloatvsize\nofloatvsize
-   \global\sidefloatsidelines\zerocount
+\def\page_sides_forget_floats
+  {\global\d_page_sides_vsize\d_page_sides_vsize_reset
+   \global\c_page_sides_n_of_lines\zerocount
    % also here if used at all \global\holdinginserts\zerocount
-   \global\floatshortfalse
-   \global\floatflagfalse}
+   \global\setfalse\c_page_sides_short
+   \global\setfalse\c_page_sides_flag}
 
-\let\logsidefloat=\relax
+\let\page_otr_sides_pop_penalties \relax
+\let\page_otr_sides_push_penalties\relax
 
-\def\pushpenalties % needed ? and right
-  {\widowpenalty\plusone
-   \clubpenalty\plustwo
-   \brokenpenalty\plusone
-   \let\pushpenalties\relax
-   \edef\poppenalties
-     {\widowpenalty \the\widowpenalty
-      \clubpenalty  \the\clubpenalty
-      \brokenpenalty\the\brokenpenalty
-      \let\poppenalties\relax}}
-
-% shouldn;t that be:
-%
-% \def\pushpenalties % needed?
-%   {\let\pushpenalties\relax
-%    \edef\poppenalties
+% \def\page_otr_sides_push_penalties % needed ? and right
+%   {\widowpenalty\plusone
+%    \clubpenalty\plustwo
+%    \brokenpenalty\plusone
+%    \let\page_otr_sides_push_penalties\relax
+%    \edef\page_otr_sides_pop_penalties
 %      {\widowpenalty \the\widowpenalty
 %       \clubpenalty  \the\clubpenalty
 %       \brokenpenalty\the\brokenpenalty
-%       \let\poppenalties\relax}%
+%       \let\page_otr_sides_pop_penalties\relax}}
+%
+% shouldn't that be:
+%
+% \def\page_otr_sides_push_penalties % needed?
+%   {\let\page_otr_sides_push_penalties\relax
+%    \edef\page_otr_sides_pop_penalties
+%      {\widowpenalty \the\widowpenalty
+%       \clubpenalty  \the\clubpenalty
+%       \brokenpenalty\the\brokenpenalty
+%       \let\page_otr_sides_pop_penalties\relax}%
 %    \widowpenalty\plusone
 %    \clubpenalty\plustwo
 %    \brokenpenalty\plusone}
 
-\let\poppenalties=\relax
-
-\def\restorepenalties
-  {\ifnum\outputpenalty=\!!tenthousand\else
+\def\page_sides_restore_output_penalty
+  {\ifnum\outputpenalty=\plustenthousand \else
      \penalty\outputpenalty
    \fi}
 
-\def\sidefloatoutput
-  {\iffloatshort
-     \unvbox\normalpagebox
-     \setbox\floatbottom\lastbox
-     \ifdim\wd\floatbottom>\sidefloathsize
-       \penalty-201
-       \box\floatbottom
-     \else
-       \ifvoid\floatbottom
-       \else
-         \restoreleftindent
-         \ifdim\wd\floatbottom<\sidefloathsize
-           \parskip\zeropoint
-           %\noindent
-           \ifinner\else\vadjust{\penalty\minusone}\fi
-           \iffloatlefteqo
-             \global\floatlefteqofalse
-           \else
-             \global\advance\sidefloathsize -\wd\floatbottom
-             \iffloatrighteqo
-               \global\floatrighteqofalse
-             \else
-               \global\divide\sidefloathsize \plustwo
-             \fi
-             \hskip\sidefloathsize
-           \fi
-         \fi
-         \box\floatbottom
-         \restorepenalties
-       \fi
-     \fi
-     % why was this \global\holdinginserts\zerocount
-     \global\floatshortfalse
+\def\page_sides_output_routine
+  {\ifconditional\c_page_sides_short
+     \page_sides_output_routine_yes
    \else
-     \finalsidefloatoutput % new
-     \global\sidefloatvsize\nofloatvsize
-     \global\sidefloatsidelines\zerocount
-     % we can end up in fig lock, so \global\holdinginserts\zerocount here too ?
-     \poppenalties
+     \page_sides_output_routine_nop
    \fi}
 
-\def\finalsidefloatoutput% new
-  {\finaloutput\unvbox\normalpagebox}
+\def\page_sides_output_routine_nop
+  {\finalsidefloatoutput % indirect call
+   \global\d_page_sides_vsize\d_page_sides_vsize_reset
+   \global\c_page_sides_n_of_lines\zerocount
+   % we can end up in fig lock, so \global\holdinginserts\zerocount here too ?
+   \page_otr_sides_pop_penalties}
 
-\def\restoreleftindent
-  {\relax \ifnum\sidefloattype>4 \else
-     \parskip\zeropoint % here ?
-     \ifdim\sidefloatwidth>\zeropoint % new, see prikkels
-       \noindent
+\def\page_sides_output_routine_yes % we need to rework this ... add pagediscards and such
+  {\unvbox\normalpagebox
+   \setbox\b_page_sides_bottom\lastbox
+   \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
+     \penalty-201
+     \box\b_page_sides_bottom
+   \else\ifvoid\b_page_sides_bottom
+   \else
+     \page_sides_restore_left_indent
+     \ifdim\wd\b_page_sides_bottom<\d_page_sides_hsize
+       \parskip\zeropoint
+       %\noindent
        \ifinner\else\vadjust{\penalty\minusone}\fi
-       \hskip\sidefloatwidth\relax
+       \ifconditional\c_page_sides_l_eq
+         \global\setfalse\c_page_sides_l_eq
+       \else
+         \global\advance\d_page_sides_hsize -\wd\b_page_sides_bottom
+         \ifconditional\c_page_sides_r_eq
+           \global\setfalse\c_page_sides_r_eq
+         \else
+           \global\divide\d_page_sides_hsize \plustwo
+         \fi
+         \hskip\d_page_sides_hsize
+       \fi
+     \fi
+     \box\b_page_sides_bottom
+     \page_sides_restore_output_penalty
+   \fi\fi
+   % why was this \global\holdinginserts\zerocount
+   \global\setfalse\c_page_sides_short}
+
+\def\page_sides_restore_left_indent
+  {\relax
+   \ifnum\c_page_sides_float_type>\plusfour \else
+     \parskip\zeropoint % here ?
+     \ifdim\d_page_sides_width>\zeropoint % new, see prikkels
+       \noindent
+       \ifinner \else
+         \vadjust{\penalty\minusone}%
+       \fi
+       \hskip\d_page_sides_width\relax
     %\else
     %  we have a margin or edge float
      \fi
    \fi}
 
-\ifx\normaleqno\undefined
-
-  \def\normaleqno
-    {\iffloatshort
-       \global\floatrighteqotrue
-     \fi
-     \floatrighteqo}
-
-\else
-
-  \def\eqno
-    {\iffloatshort
-       \global\floatrighteqotrue
-     \fi
-     \floatrighteqo}
-
-\fi
-
-% externfiguur     -> grid        =ja|hoogte|diepte|halveregel|passend -> helemaal in details
-% stelplaatsblokin -> zijuitlijnen=hoogte|diepte|regel|halveregel|grid -> halveregel in 'details'
-
-% replacement for below
+% The clean way:
 %
-%    \global\setbox\floatbox\hbox % no \hskip, but \kern here
-%      {\ifcase\sidefloattype
-%         \vbox{#1}%
-%       \or % 1
-%         \hskip\sidefloatleftshift
-%         \hskip\sidefloatshift
-%         \vbox{#1}%
-%         \kern-\sidefloatextrashift
-%       \or % 2
-%         \hskip\sidefloatshift
-%         \vbox{#1}%
-%         \kern-\sidefloatextrashift
-%       \or % 3
-%         \hskip\sidefloatshift
-%         \vbox{#1}%
-%         \kern-\sidefloatextrashift
-%       \or % 4
-%         \hskip\sidefloatleftshift
-%         \hskip\sidefloatshift
-%         \vbox{#1\removedepth}%
-%         \kern-\sidefloatextrashift
-%       \or % 5
-%         \hskip-\sidefloatextrashift
-%         \vbox{#1}%
-%         \kern\sidefloatshift
-%         \kern\sidefloatrightshift
-%       \or % 6
-%         \hskip-\sidefloatextrashift
-%         \vbox{#1}%
-%         \kern\sidefloatshift
-%       \or % 7
-%         \hskip-\sidefloatextrashift
-%         \vbox{#1}%
-%         \kern\sidefloatshift
-%       \or % 8
-%         \hskip-\sidefloatextrashift
-%         \vbox{#1}%
-%         \kern\sidefloatshift
-%         \kern\sidefloatrightshift
-%       \fi}%
+% \global\setbox\floatbox\hbox % no \hskip, but \kern here
+%   {\ifcase\c_page_sides_float_type
+%      \vbox{#1}%
+%    \or % 1
+%      \hskip\sidefloatleftshift
+%      \hskip\sidefloatshift
+%      \vbox{#1}%
+%      \kern-\sidefloatextrashift
+%    \or % 2
+%      \hskip\sidefloatshift
+%      \vbox{#1}%
+%      \kern-\sidefloatextrashift
+%    \or % 3
+%      \hskip\sidefloatshift
+%      \vbox{#1}%
+%      \kern-\sidefloatextrashift
+%    \or % 4
+%      \hskip\sidefloatleftshift
+%      \hskip\sidefloatshift
+%      \vbox{#1\removedepth}%
+%      \kern-\sidefloatextrashift
+%    \or % 5
+%      \hskip-\sidefloatextrashift
+%      \vbox{#1}%
+%      \kern\sidefloatshift
+%      \kern\sidefloatrightshift
+%    \or % 6
+%      \hskip-\sidefloatextrashift
+%      \vbox{#1}%
+%      \kern\sidefloatshift
+%    \or % 7
+%      \hskip-\sidefloatextrashift
+%      \vbox{#1}%
+%      \kern\sidefloatshift
+%    \or % 8
+%      \hskip-\sidefloatextrashift
+%      \vbox{#1}%
+%      \kern\sidefloatshift
+%      \kern\sidefloatrightshift
+%    \fi}
 %
-% keep this ^
+% The compact way:
 
-\def\repositionsidefloat#1%
+\def\page_sides_relocate_float#1%
   {\global\setbox\floatbox\hbox % no \hskip, but \kern here
-     {\ifnum\sidefloattype=\plusfour
+     {\ifnum\c_page_sides_float_type=\plusfour
         \hskip\sidefloatleftshift
-      \else\ifnum\sidefloattype=\plusone
+      \else\ifnum\c_page_sides_float_type=\plusone
         \hskip\sidefloatleftshift
       \fi\fi
-      \ifnum\sidefloattype>\plusfour
+      \ifnum\c_page_sides_float_type>\plusfour
         \hskip-\sidefloatextrashift
       \else
         \hskip\sidefloatshift
       \fi
       \vbox{#1\ifnum\sidefloatalign=\plusfour \removedepth\fi}%
-      \ifnum\sidefloattype>\plusfour
+      \ifnum\c_page_sides_float_type>\plusfour
         \kern\sidefloatshift
       \else
         \kern-\sidefloatextrashift
       \fi
-      \ifnum\sidefloattype=8
+      \ifnum\c_page_sides_float_type=\pluseight
         \kern\sidefloatrightshift
-      \else\ifnum\sidefloattype=\plusfive
+      \else\ifnum\c_page_sides_float_type=\plusfive
         \kern\sidefloatrightshift
       \fi\fi}}
 
-\def\putsidefloat#1% grid (4) is rather experimental
-  {\par
-   \whitespace
-   % moved here dec 2001
-   {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}% moved
-   \checksidefloatshift
-   \ifdim\sidefloatshift=\zeropoint \relax
-     \ifnum\sidefloattype=\plusfour
-       \global\advance\sidefloatshift\sidefloatextrashift
-       \global\sidefloatextrashift\zeropoint
-     \else\ifnum\sidefloattype=\plusfive
-       \global\advance\sidefloatshift\sidefloatextrashift
-       \global\sidefloatextrashift\zeropoint
-     \fi\fi
-   \else
-     \ifnum\sidefloattype<\plusfour
-       \global\sidefloattype\plusfour
-     \else\ifnum\sidefloattype>\plusfive
-       \global\sidefloattype\plusfive
-     \fi\fi
-   \fi
-   \previoussidefloat
-   \stallsidefloat
-   \repositionsidefloat{#1}%
-   \ifnum\sidefloatalign=\plusfour
+\def\page_sides_apply_vertical_shift
+  {\ifnum\sidefloatalign=\plusfour
      \getnoflines{\ht\floatbox}%
-     \scratchdimen\noflines\lineheight
-     \advance\scratchdimen-\strutdepth
+     \scratchdimen\dimexpr\noflines\lineheight-\strutdepth\relax
      \getrawnoflines\sidefloattopskip
      \advance\scratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
@@ -498,9 +417,9 @@
      \global\sidefloattopskip\zeropoint
    \fi
    \scratchdimen
-     \ifnum\sidefloattype<\plusfour
+     \ifnum\c_page_sides_float_type<\plusfour
        \sidefloattopskip
-     \else\ifnum\sidefloattype>\plusfive
+     \else\ifnum\c_page_sides_float_type>\plusfive
        \sidefloattopskip
      \else
        \zeropoint
@@ -521,101 +440,38 @@
      \advance\scratchdimen\strutheight
    \fi
    % new
-   \global\sidefloatlinesdone\zerocount
-   \ifnum\sidefloatsidelines>\zerocount
-     \advance\scratchdimen\sidefloatsidelines\lineheight
+   \global\c_page_sides_lines_done\zerocount
+   \ifnum\c_page_sides_n_of_lines>\zerocount
+     \advance\scratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
-   % new
-   \global\setbox\floatbox\hbox
+   \global\setbox\floatbox\hbox % why extra box
      {\vbox
         {\vskip\scratchdimen
          \nointerlineskip
          \box\floatbox
          \ifnum\sidefloatalign=\plusfive \vskip-\lineheight \fi}}%
-   \ifnum\sidefloattype<\plusfour
+   \ifnum\c_page_sides_float_type<\plusfour
      \global\sidefloattopskip\zeropoint
-   \else\ifnum\sidefloattype>\plusfive
+   \else\ifnum\c_page_sides_float_type>\plusfive
      \global\sidefloattopskip\zeropoint
    \fi\fi
-   \global\sidefloatdownshift\zeropoint
-   \measuresidefloat
-   \ifroomforfloat \else
-     \vfill\eject % inline \tosssidefloat
-     \measuresidefloat
-     \stallsidefloat
-   \fi
-   \setsidefloat}
+   \global\sidefloatdownshift\zeropoint}
 
-\def\progresssidefloat
-  {\sidefloatprogress\sidefloatvsize
-   \advance\sidefloatprogress-\iffloatflag\sidefloatpagetotal\global\floatflagfalse\else\pagetotal\fi}
-
-\def\measuresidefloat
-  {\global\floatflagtrue
-   \global\sidefloatpagetotal \pagetotal % global
-   \ifnum\sidefloattype<\plusfour
-     \global        \sidefloatwidth \zeropoint
-   \else\ifnum\sidefloattype>\plusfive
-     \global        \sidefloatwidth \zeropoint
-   \else
-     \global        \sidefloatwidth \wd\floatbox
-     \global\advance\sidefloatwidth \floatsideskip
-   \fi\fi
-   \ifdim\sidefloatwidth<\zeropoint
-     \global\sidefloatwidth\zeropoint
-   \fi
-   \global        \sidefloathsize  \hsize
-   \global\advance\sidefloathsize -\sidefloatwidth
-   \global        \sidefloatheight \ht\floatbox
-   \global\advance\sidefloatheight \dp\floatbox
-   \global\advance\sidefloatheight \sidefloattopskip
-   \global        \sidefloatvsize  \sidefloatheight
-   \global\advance\sidefloatvsize  \sidefloatpagetotal
-   \dimen0\sidefloatvsize
-   \dimen2\pagegoal
-   \relax
-   \ifcase\sidefloatmethod
-     % method 0 : raw
-   \or
-     % method 1 : safe
-     \dimen2 .99\pagegoal
-   \or
-     % method 2 : tight
-     \advance\dimen0 -\onepoint
-   \fi
-   \relax % really needed ! ! ! !
-   \ifdim\dimen0>\dimen2
-     \global\roomforfloatfalse
-   \else
-     \dimen0=\pagegoal
-     \advance\dimen0 -\sidefloatvsize
-     \ifdim\dimen0<\sidefloatbottomskip
-       \global\advance\sidefloatvsize \dimen0
-       \global\floatshorttrue
-       \pushpenalties
-       % why was this \global\holdinginserts\plusone
-     \else
-       \global\advance\sidefloatvsize \sidefloatbottomskip
-       \global\floatshortfalse
-     \fi
-     \global\roomforfloattrue
-   \fi}
-
-\def\setsidefloat% nilling everypar saves time and redudant pos's
+\def\page_sides_place_float % nilling everypar saves time and redudant pos's
   {% removed here dec 2001
    % {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}%
-   \ifnum\sidefloattype=\plusfour \kern\sidefloattopskip \fi
-   \ifnum\sidefloattype=\plusfive \kern\sidefloattopskip \fi
-   \edef\presidefloatdepth{\the\prevdepth}%
+   \ifnum\c_page_sides_float_type=\plusfour \kern\sidefloattopskip \fi
+   \ifnum\c_page_sides_float_type=\plusfive \kern\sidefloattopskip \fi
+   \d_page_sides_saved_depth\prevdepth
    \nointerlineskip
    \bgroup
    \everypar\emptytoks
    \parskip\zeropoint
-   \setsidefloatskips
-   \logsidefloat
+   \page_sides_set_skips
+   \page_sides_insert_info
    \relax
-\lefttoright % \textdir TLT\relax  % or \ifconditional\displaylefttoright below (more work)
-   \ifcase\sidefloattype
+   \lefttoright % \textdir TLT\relax  % or \ifconditional\displaylefttoright below (more work)
+   \ifcase\c_page_sides_float_type
      % invalid
    \or % backspace
      \noindent\llap{\rlap{\box\floatbox}\hskip\sidefloatleftskip}\hfill
@@ -636,161 +492,259 @@
    \fi
    \egroup
    \par
-\ifgridsnapping
-    \getrawnoflines\sidefloatheight
-    \sidefloatheight=\noflines\lineheight
-\fi
-   \kern-\sidefloatheight
+   \ifgridsnapping
+     \getrawnoflines\d_page_sides_height
+     \d_page_sides_height=\noflines\lineheight
+   \fi
+   \kern-\d_page_sides_height
    \penalty10001 % oeps, this will change
    \normalbaselines
-   \prevdepth\presidefloatdepth
+   \prevdepth\d_page_sides_saved_depth
    % \noindent
-   \resetsidefloatparagraph
+   \page_sides_check_floats_reset
    \ignorespaces} % not really needed
-
-\newcount\sidefloatparagraph
 
-\def\iffirstsidefloatparagraph
-  {\ifcase\sidefloatparagraph\or}
-
-% without sidefloat lines
-%
-% \def\setsidefloatparagraph
-%   {%\advance\sidefloatprogress \sidefloatbottomskip
-%    %\!!counta\sidefloatprogress
-%    \scratchdimen\sidefloatprogress
-%    \advance\scratchdimen \strutht
-%    \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
-%    \!!counta\scratchdimen
-%    \divide\!!counta \baselineskip
-%    \ifnum\!!counta>0
-%      \hangindent \ifnum\sidefloattype>4 -\fi\sidefloatwidth
-%      \hangafter-\!!counta
-%    \fi
-%    \global\advance\sidefloatparagraph \plusone
-%    \iftracesidefloats
-%      \hskip-\sidefloatwidth
-%      \color[darkgray]%
-%        {\vrule\!!height.5\points\!!depth.5\points\!!width\sidefloatwidth
-%        %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
-%         \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
-%    \fi}
-
-\def\setsidefloatparagraph
-  {%\advance\sidefloatprogress \sidefloatbottomskip
-   %\!!counta\sidefloatprogress
-   \scratchdimen\sidefloatprogress
-   \advance\scratchdimen \strutht
-   \advance\scratchdimen -\roundingeps % new, needed in prikkels, prevent rounding errors
-   \!!counta\scratchdimen
-   \divide\!!counta \baselineskip\relax
-   \ifnum\!!counta>0
-     % new from here
-     \ifcase\sidefloatsidelines\else
-       \ifcase\sidefloatlinesdone
-         \global\sidefloatlinesdone\!!counta
-       \else
-         \scratchcounter\sidefloatlinesdone
-         \advance\scratchcounter-\!!counta
-         \global\advance\sidefloatsidelines-\scratchcounter
-       \fi
-     \fi
-     \ifnum\sidefloatsidelines>\zerocount
-       \scratchtoks\emptytoks
-       \scratchcounter\sidefloatsidelines
-       \scratchdimen\hsize
-       \advance\scratchdimen-\sidefloatwidth
-       \dorecurse\sidefloatsidelines
-         {\appendtoks \zeropoint \hsize \to \scratchtoks}%
-       \ifnum\!!counta>\sidefloatsidelines
-         \advance\!!counta -\sidefloatsidelines\relax
-         \advance\scratchcounter\!!counta
-         \dorecurse\!!counta
-           {\ifnum\sidefloattype>\plusfour
-              \appendtoks \zeropoint \scratchdimen \to \scratchtoks
-            \else
-              \appendtoks \sidefloatwidth \scratchdimen \to \scratchtoks
-            \fi}%
-       \fi
-       \advance\scratchcounter \plusone
-       \parshape \scratchcounter \the\scratchtoks \zeropoint \hsize\relax
-     \else
-       % new till here
-       \hangindent \ifnum\sidefloattype>\plusfour -\fi\sidefloatwidth
-       \hangafter-\!!counta
-     \fi
-   \fi
-   \global\advance\sidefloatparagraph \plusone
-   \iftracesidefloats
-     \hskip-\sidefloatwidth
-     \color[darkgray]%
-       {\vrule\!!height.5\points\!!depth.5\points\!!width\sidefloatwidth
-       %\hskip-.25\bodyfontsize\showstruts\strut\hskip.25\bodyfontsize}%
-        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+\def\page_sides_analyse_progress
+  {\d_page_sides_progress\d_page_sides_vsize
+   \ifconditional\c_page_sides_flag
+     \advance\d_page_sides_progress-\d_page_sides_page_total
+     \global\setfalse\c_page_sides_flag
+   \else
+     \advance\d_page_sides_progress-\pagetotal
    \fi}
 
-\def\resetsidefloatparagraph
-  {\global\sidefloatparagraph\zerocount}
-
-\def\dochecksidefloat
-  {\progresssidefloat
-   \ifdim\sidefloatprogress>\zeropoint
-     \setsidefloatparagraph
+\def\page_sides_analyse_space
+  {\global\settrue\c_page_sides_flag
+   \global\d_page_sides_page_total \pagetotal % global
+   \ifnum\c_page_sides_float_type<\plusfour
+     \global\d_page_sides_width \zeropoint
+   \else\ifnum\c_page_sides_float_type>\plusfive
+     \global\d_page_sides_width\zeropoint
    \else
-     \resetsidefloatparagraph
+     \global\d_page_sides_width\dimexpr\wd\floatbox+\floatsideskip\relax
+   \fi\fi
+   \ifdim\d_page_sides_width<\zeropoint
+     \global\d_page_sides_width\zeropoint
+   \fi
+   \global\d_page_sides_hsize \dimexpr\hsize-\d_page_sides_width\relax
+   \global\d_page_sides_height\dimexpr\ht\floatbox+\dp\floatbox+\sidefloattopskip\relax
+   \global\d_page_sides_vsize \dimexpr\d_page_sides_height+\d_page_sides_page_total\relax
+   \dimen0\d_page_sides_vsize
+   \dimen2\pagegoal
+   \relax
+   \ifcase\sidefloatmethod
+     % method 0 : raw
+   \or
+     % method 1 : safe
+     \dimen2 .99\pagegoal
+   \or
+     % method 2 : tight
+     \advance\dimen0 -\onepoint
+   \fi
+   \relax % really needed ! ! ! !
+   \ifdim\dimen0>\dimen2
+     \global\roomforfloatfalse
+   \else
+     \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\sidefloatbottomskip
+       \global\advance\d_page_sides_vsize \dimen0
+       \global\settrue\c_page_sides_short
+       \page_otr_sides_push_penalties
+       % why was this \global\holdinginserts\plusone
+     \else
+       \global\advance\d_page_sides_vsize \sidefloatbottomskip
+       \global\setfalse\c_page_sides_short
+     \fi
+     \global\roomforfloattrue
+   \fi}
+
+\def\page_sides_prepare_space
+  {\par
+   \whitespace
+   \begingroup
+   \everypar\emptytoks
+   \forgetall
+   \verticalstrut
+   \vskip-\struttotal
+   \endgroup}
+
+\def\page_sides_handle_float#1% grid (4) is rather experimental
+  {\page_sides_prepare_space
+   \page_sides_apply_horizontal_shift
+   \page_sides_check_previous_float
+   \page_sides_inject_dummy_lines
+   \page_sides_relocate_float{#1}%
+   \page_sides_apply_vertical_shift
+   \page_sides_analyse_space
+   \ifroomforfloat \else
+     \page_otr_fill_and_eject_page
+     \page_sides_analyse_space
+     \page_sides_inject_dummy_lines
+   \fi
+   \page_sides_place_float}
+
+\def\page_sides_check_floats_indeed
+  {\page_sides_analyse_progress
+   \ifdim\d_page_sides_progress>\zeropoint
+     \page_sides_check_floats_set
+   \else
+     \page_sides_check_floats_reset
    \fi
    \parskip\ctxparskip}
 
-\let\checksidefloat\dochecksidefloat
+\let\page_sides_check_floats\page_sides_check_floats_indeed
 
-\def\synchronizesidefloats
-  {\ifinner \else \checksidefloat \fi}
+\def\iffirstsidefloatparagraph
+  {\ifcase\c_page_sides_checks_done\or}
 
-\def\doadjustsidefloatdisplaylines
-  {\par
-   % not in mkiv: \vskip-\parskip
-   \noindent
-   \ignorespaces}
-
-\def\adjustsidefloatdisplaylines
-  {\aftergroup\doadjustsidefloatdisplaylines}
-
-\def\previoussidefloat
-  {\progresssidefloat
-   \ifdim\sidefloatprogress>\zeropoint \relax
-     \iffloatshort
-       \global\floatshortfalse
-       \vfill\eject % inline \tosssidefloat
+\def\page_sides_check_floats_set
+  {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
+   \!!counta\scratchdimen
+   \divide\!!counta \baselineskip\relax
+   \ifnum\!!counta>\zerocount
+     % new from here (needs test case, old code)
+     \ifcase\c_page_sides_n_of_lines
      \else
-       \kern\sidefloatprogress
+       \ifcase\c_page_sides_lines_done
+         \global\c_page_sides_lines_done\!!counta
+       \else
+         \scratchcounter\c_page_sides_lines_done
+         \advance\scratchcounter-\!!counta
+         \global\advance\c_page_sides_n_of_lines-\scratchcounter
+       \fi
+     \fi
+     % hm, when do we get the parshape branch? needs testing
+     \ifnum\c_page_sides_n_of_lines>\zerocount
+       \scratchtoks\emptytoks
+       \scratchcounter\c_page_sides_n_of_lines
+       \scratchdimen\dimexpr\hsize-\d_page_sides_width\relax
+       \dorecurse\c_page_sides_n_of_lines
+         {\appendtoks \zeropoint \hsize \to \scratchtoks}%
+       \ifnum\!!counta>\c_page_sides_n_of_lines
+         \advance\!!counta -\c_page_sides_n_of_lines\relax
+         \advance\scratchcounter\!!counta
+         \dorecurse\!!counta % weird, shouldn't that be scratchcounter
+           {\ifnum\c_page_sides_float_type>\plusfour
+              \appendtoks \zeropoint         \scratchdimen \to \scratchtoks
+            \else
+              \appendtoks \d_page_sides_width\scratchdimen \to \scratchtoks
+            \fi}%
+       \fi
+       \parshape
+         \numexpr\scratchcounter+\plusone\relax
+         \the\scratchtoks  % \scratchcounter
+         \zeropoint \hsize % \plusone
+       \relax
+     \else
+       % new till here
+       \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
+       \hangafter-\!!counta
+     \fi
+   \fi
+   \global\advance\c_page_sides_checks_done \plusone
+   \iftracesidefloats
+     \hskip-\d_page_sides_width
+     \color[darkgray]%
+       {\vrule\!!height.5\points\!!depth.5\points\!!width\d_page_sides_width
+        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+   \fi}
+
+\def\page_sides_check_floats_reset
+  {\global\c_page_sides_checks_done\zerocount}
+
+\def\page_sides_synchronize_floats
+  {\ifinner \else
+     \page_sides_check_floats
+   \fi}
+
+\def\page_sides_check_previous_float
+  {\page_sides_analyse_progress
+   \ifdim\d_page_sides_progress>\zeropoint \relax
+     \ifconditional\c_page_sides_short
+       \global\setfalse\c_page_sides_short
+       \page_otr_fill_and_eject_page
+     \else
+       \kern\d_page_sides_progress
      \fi
    \fi}
 
-\def\stallsidefloat
-  {\!!counta\pageshrink
-   \divide\!!counta \baselineskip
-   \advance\!!counta \plusone
+\def\page_sides_inject_dummy_lines
+  {\scratchcounter\pageshrink
+   \divide\scratchcounter \baselineskip
+   \advance\scratchcounter \plusone
    \parskip\zeropoint
-   \dorecurse\!!counta{\line{}}%
-   \kern-\!!counta\baselineskip
-   \penalty\zerocount }
+   \dorecurse\scratchcounter{\hbox to \hsize{}}%
+   \kern-\scratchcounter\baselineskip
+   \penalty\zerocount}
 
-% We need to hook it into the other otr's. This code will move.
+% Display math
+%
+% If we need this, it will be redone but redefining
+% these macros does not really work out in the current
+% situation.
+%
+% \ifx\normalleqno\undefined
+%
+%   \let\floatrighteqo=\eqno
+%   \let\floatleftleqo=\leqno
+%
+% \else
+%
+%   \let\floatrighteqo=\normaleqno
+%   \let\floatleftleqo=\normalleqno
+%
+% \fi
+%
+% \ifx\normaleqno\undefined
+%
+%   \def\normaleqno
+%     {\ifconditional\c_page_sides_short
+%        \global\settrue\c_page_sides_r_eq
+%      \fi
+%      \floatrighteqo}
+%
+% \else
+%
+%   \def\eqno
+%     {\ifconditional\c_page_sides_short
+%        \global\settrue\c_page_sides_r_eq
+%      \fi
+%      \floatrighteqo}
+%
+% \fi
 
-\let\OTRONEflushsidefloats      \flushsidefloats
-\let\OTRONEsynchronizesidefloats\synchronizesidefloats
+\def\adjustsidefloatdisplaylines
+  {\aftergroup\page_sides_adjust_display_lines}
+
+\def\page_sides_adjust_display_lines
+  {\par
+   \noindent
+   \ignorespaces}
+
+% We need to hook it into the other otr's. This code will be adapted
+% once we rename the callers.
+
+% \def as they can be redefined!
+
+\def\checksidefloat         {\page_sides_check_floats}
+\def\flushsidefloats        {\page_sides_flush_floats}
+\def\flushsidefloatsafterpar{\page_sides_flush_floats_after_par}
+\def\forgetsidefloats       {\page_sides_forget_floats}
+\def\synchronizesidefloats  {\page_sides_synchronize_floats}
+
+\let\OTRONEflushsidefloats      \page_sides_flush_floats
+\let\OTRONEsynchronizesidefloats\page_sides_synchronize_floats
 
 % page-set
 %
 % \let\OTRSETflushsidefloats      \forgetsidefloats
 % \let\OTRSETsynchronizesidefloats\forgetsidefloats
-
+%
 % page-mul
 %
 % \let\OTRMULflushsidefloats      \forgetsidefloats
 % \let\OTRMULsynchronizesidefloats\forgetsidefloats
 
-\registerotrcommand\synchronizesidefloats % \def\synchronizesidefloats{\OTRcommand\synchronizesidefloats}
-\registerotrcommand\flushsidefloats       % \def\flushsidefloats      {\OTRcommand\flushsidefloats}
+\registerotrcommand\synchronizesidefloats
+\registerotrcommand\flushsidefloats
 
 \protect \endinput

@@ -2328,7 +2328,6 @@
   {\dorecurse5{\unskip\unkern\unpenalty}}
 
 \unexpanded\def\removelastskip % \ifvmode the plain tex one \fi
-% {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
 
 %D \macros
@@ -2381,8 +2380,8 @@
 
 %D New:
 
-\def\setdimentoatleast#1#2%
-  {\ifdim#1>\zeropoint\else#1=#2\fi}
+\def\setdimentoatleast#1#2{\ifdim#1>\zeropoint\else#1=#2\fi}
+\def\setdimentoatmost #1#2{\ifdim#1>#2\relax  \else#1=#2\fi}
 
 %D And even rawer:
 

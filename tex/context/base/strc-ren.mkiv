@@ -31,37 +31,37 @@
      \edef\askedheadinterlinespace{\headparameter\c!interlinespace}%
      \ifx\askedheadinterlinespace\empty
        % here the interline space is only set when style sets no space
-       \setfalse\fontattributeisset
+       \setfalse\fontattributeisset % use the currentfontparameter state instead
        \setfalse\interlinespaceisset
-       \dosetheadattributes\c!style\c!color
+       \useheadstyleandcolor\c!style\c!color
        \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
          \setupinterlinespace
        \fi \fi
-       \setfalse\fontattributeisset \dosetheadattributes#1#2%
+       \setfalse\fontattributeisset \useheadstyleandcolor#1#2%
        \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
          \setupinterlinespace
        \fi \fi
      \else
        % here the set interline space overloads any other set space in the style
        \setfalse\fontattributeisset
-       \dosetheadattributes\c!style\c!color
+       \useheadstyleandcolor\c!style\c!color
        \ifconditional\fontattributeisset
          \dosetupcheckedinterlinespace\askedheadinterlinespace
        \fi
        \setfalse\fontattributeisset
-       \dosetheadattributes#1#2%
+       \useheadstyleandcolor#1#2%
        \ifconditional\fontattributeisset
          \dosetupcheckedinterlinespace\askedheadinterlinespace
        \fi
      \fi
    \else
      \setfalse\fontattributeisset
-     \dosetheadattributes\c!style\c!color
+     \useheadstyleandcolor\c!style\c!color
      \ifconditional\fontattributeisset
        \setupspacing
      \fi
      \setfalse\fontattributeisset
-     \dosetheadattributes#1#2%
+     \useheadstyleandcolor#1#2%
      \ifconditional\fontattributeisset
        \setupspacing
      \fi
@@ -154,7 +154,7 @@
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
        {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
-        \dosetheadfontattribute\c!style
+        \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
@@ -171,7 +171,7 @@
      \docheckheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
        {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
-        \dosetheadfontattribute\c!style
+        \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{\doplaceheadnumbercomponent\getheadnumber}{\doplaceheadtextcomponent\getheadtitle}}%
    \fi
@@ -296,9 +296,9 @@
          \edef\currentheadgridsnapping{\headparameter\c!grid}%
          \ifconditional\headisdisplay
            \ifx\currentheadgridsnapping\empty\else
-             \dosetheadattributes\c!style\c!color
+             \useheadstyleandcolor\c!style\c!color
              \setupinterlinespace
-             \dosetheadattributes\c!textstyle\c!textcolor
+             \useheadstyleandcolor\c!textstyle\c!textcolor
              \setupinterlinespace
            \fi
          \fi

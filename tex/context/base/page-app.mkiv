@@ -45,8 +45,8 @@
    \c!location=\v!middle]
 
 \appendtoks
-  \setuevalue{\e!start\currentfittingpage}{\startfittingpage[\currentfittingpage]}%
-  \setuevalue{\e!stop \currentfittingpage}{\stopfittingpage}%
+    \setuevalue{\e!start\currentfittingpage}{\startfittingpage[\currentfittingpage]}%
+    \setuevalue{\e!stop \currentfittingpage}{\stopfittingpage}%
 \to \everydefinefittingpage
 
 \unexpanded\def\startfittingpage
@@ -56,6 +56,7 @@
   {\page % this is kind of tricky! there can be preceding page refs
    \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
+   \setupinterlinespace[\v!top=0]% no topskip
    \def\currentfittingpage{#1}%
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
@@ -148,17 +149,17 @@
 %D maybe I should support stream=yes in framed.
 
 \unexpanded\def\startTEXstream
-  {\dosingleempty\dostartTEXstream}
+  {\dosingleempty\start_TEX_stream}
 
-\def\dostartTEXstream[#1]% old code, to be redone
+\def\start_TEX_stream[#1]% old code, to be redone
   {\page
-   \defineoutputstream[tex]%
-   \enableoutputstream[tex]%
-   \unexpanded\def\stopTEXstream
-     {\disableoutputstream
-      \startTEXpage
-      \outputstreamunvbox[tex]%
-      \stopTEXpage}}
+   \enableoutputstream[tex]}
+
+\unexpanded\def\stopTEXstream
+  {\disableoutputstream
+   \startTEXpage
+     \outputstreamunvbox[tex]%
+   \stopTEXpage}
 
 %D Application pages, a quick \MKIV\ hack:
 
@@ -169,7 +170,7 @@
 
 \def\TEXapplicationfilename{\jobname-texapplication.tex}
 
-\def\stopTEXapplication
+\unexpanded\def\stopTEXapplication
   {\savebuffer[\thedefinedbuffer{TEXapplication}][\TEXapplicationfilename]%
    \typesetfile[TEXapplication][\TEXapplicationfilename]\relax}
 
@@ -181,9 +182,9 @@
 %D \stoptyping
 
 \unexpanded\def\startpagefigure
-  {\dodoubleempty\dostartpagefigure}
+  {\dodoubleempty\start_page_figure}
 
-\def\dostartpagefigure[#1][#2]%
+\def\start_page_figure[#1][#2]%
   {\bgroup
    \getparameters[\??ex][\c!offset=\v!overlay,#2]%
    \startTEXpage[\c!offset=\@@exoffset]%
@@ -194,9 +195,9 @@
    \egroup}
 
 \def\pagefigure
-  {\dodoubleempty\dopagefigure}
+  {\dodoubleempty\page_figure}
 
-\def\dopagefigure[#1][#2]%
-  {\dostartpagefigure[#1][#2]\stoppagefigure}
+\def\page_figure[#1][#2]%
+  {\start_page_figure[#1][#2]\stoppagefigure}
 
 \protect \endinput

@@ -61,29 +61,32 @@
 \let\startdmath       \Ustartdisplaymath        % obsolete, less safe
 \let\stopdmath        \Ustopmath                % obsolete, less safe
 
-\long\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
-\long\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
-\long\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\unexpanded\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\unexpanded\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
+\unexpanded\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\unexpanded\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
 
 \let\m\mathematics % unexpanded?
 
 \let\stopmathmode\relax
 
-\unexpanded\def\startmathmode % cannot be used nested
-  {\relax\ifmmode
-     \let\stopmathmode\relax
-   \else
-     \normalstartimath\let\stopmathmode\normalstopimath
-   \fi}
+% \unexpanded\def\startmathmode % cannot be used nested
+%   {\relax\ifmmode
+%      \let\stopmathmode\relax
+%    \else
+%      \normalstartimath\let\stopmathmode\normalstopimath
+%    \fi}
 
 \unexpanded\def\startmathmode % nested variant
   {\relax\ifmmode
-     \begingroup\let\stopmathmode\endgroup
+     \begingroup
+     \let\stopmathmode\endgroup
    \else
-     \normalstartimath\let\stopmathmode\normalstopimath
+     \normalstartimath
+     \let\stopmathmode\normalstopimath
    \fi}
 
-\def\nomathematics#1%
+\unexpanded\def\nomathematics#1%
   {\relax\ifmmode\hbox{#1}\else#1\fi}
 
 \let\math\mathematics

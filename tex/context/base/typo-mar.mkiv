@@ -187,7 +187,7 @@
      \ifcsname\currentmarginframedhash\s!parent\endcsname
        \setbox\nextbox\hbox \currentmarginreference \bgroup
          \the\everymargindatacontent
-         \dosetmargindataattributes\c!style\c!color
+         \usemargindatastyleandcolor\c!style\c!color
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
          \inheritedmarginframedframed\bgroup
            \ifx\currentmargindatastrut\empty \else
@@ -202,7 +202,7 @@
        \ifx\currentmargindatawidth\empty
          \setbox\nextbox\hbox \currentmarginreference \bgroup
            \the\everymargindatacontent
-           \dosetmargindataattributes\c!style\c!color
+           \usemargindatastyleandcolor\c!style\c!color
            \ifx\currentmargindatastrut\empty \else
              \dosetupstrut[\currentmargindatastrut]%
            \fi
@@ -214,7 +214,7 @@
          \setbox\nextbox\hbox \currentmarginreference \bgroup
            \vtop \bgroup
              \the\everymargindatacontent
-             \dosetmargindataattributes\c!style\c!color
+             \usemargindatastyleandcolor\c!style\c!color
              \hsize\currentmargindatawidth
              \raggedcommand
              \ifx\currentmargindatastrut\empty \else

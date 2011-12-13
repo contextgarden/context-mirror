@@ -151,8 +151,6 @@
 \unexpanded\def\graycolor          [#1]{\groupedcommand{\dosetcolormodel{gray}\doactivatecolor{#1}}{}}
 \unexpanded\def\colored            [#1]{\groupedcommand{\definecolor[@colored@][#1]\doactivatecolor{@colored@}}{}}
 \unexpanded\def\fastcolored      [#1]#2{\begingroup\dodefinefastcolor[@colored@][#1]\doactivatecolor{@colored@}#2\endgroup}
-\unexpanded\def\predefinecolor     [#1]{\flushatshipout{\hbox{\color[#1]{}}}}
-\unexpanded\def\predefineindexcolor[#1]{\flushatshipout{\hbox{\color[#1]{}}}}
 
 % some of this will go away
 
@@ -163,7 +161,6 @@
 \unexpanded\def\raster             [#1]{\groupedcommand{\dosetrastercolor{#1}}{}}
 \unexpanded\def\faststartcolor     [#1]{\doactivatecolor{#1}}
 \unexpanded\def\faststopcolor          {}
-\unexpanded\def\dosetcolorattribute#1#2{\ifcsname#1#2\endcsname\doactivatecolor{\csname#1#2\endcsname}\fi}
 
 \def\getcolorattributevalue#1#2% color macro (obsolete again, we have a better method)
   {\begingroup
@@ -765,17 +762,38 @@
 \letvalueempty{(cs:-}
 \letvalueempty{(ts:-}
 
-\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
-  {\def\currentcolorname{#1}%
-   \ifcsname(cs:\currentpalet#1)\endcsname
-     \csname(cs:\currentpalet#1)\endcsname
-     \csname(ts:\currentpalet#1)\endcsname
-   \else\ifcsname(cs:#1)\endcsname
-     \csname(cs:#1)\endcsname
-     \csname(ts:#1)\endcsname
+\unexpanded\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
+  {\edef\currentcolorname{#1}%
+   \ifcsname(cs:\currentpalet\currentcolorname)\endcsname
+     \csname(cs:\currentpalet\currentcolorname)\endcsname
+     \csname(ts:\currentpalet\currentcolorname)\endcsname
+   \else\ifcsname(cs:\currentcolorname)\endcsname
+     \csname(cs:\currentcolorname)\endcsname
+     \csname(ts:\currentcolorname)\endcsname
    \fi\fi}
 
 \let\normaldoactivatecolor\doactivatecolor
+
+% new:
+
+\let\dousecolorparameter\doactivatecolor
+
+\unexpanded\def\dousecolorhashparameter#1#2%
+  {\ifcsname#1#2\endcsname
+     \expandafter\dousecolorparameter\csname#1#2\endcsname
+   \fi}
+
+\unexpanded\def\dousecurrentcolorparameter
+  {\let\currentcolorname\currentcolorparameter % maybe only when success
+   \ifcsname(cs:\currentpalet\currentcolorparameter)\endcsname
+     \csname(cs:\currentpalet\currentcolorparameter)\endcsname
+     \csname(ts:\currentpalet\currentcolorparameter)\endcsname
+   \else\ifcsname(cs:\currentcolorparameter)\endcsname
+     \csname(cs:\currentcolorparameter)\endcsname
+     \csname(ts:\currentcolorparameter)\endcsname
+   \fi\fi}
+
+\let\dosetcolorattribute\dousecolorhashparameter % for a while
 
 % if it becomes a bottleneck we can set up a more complex system with one shared
 % attribute for colorspace, color and transparency

@@ -49,30 +49,30 @@
 \def\startMPdefinitions
   {\dosinglegroupempty\dostartMPdefinitions}
 
-\long\def\dostartMPdefinitions#1#2\stopMPdefinitions
+\def\dostartMPdefinitions#1#2\stopMPdefinitions
   {\edef\currentMPgraphicinstance{#1}%
    \ifx\currentMPgraphicinstance\empty
      \let\currentMPgraphicinstance\defaultMPgraphicinstance
    \fi
    \global\MPinstancetoks\expandafter{\the\MPinstancetoks#2}}
 
-\long\def\startMPextensions#1\stopMPextensions
+\def\startMPextensions#1\stopMPextensions
   {\global\MPextensions\expandafter{\the\MPextensions#1}}
 
-\long\def\startMPinitializations#1\stopMPinitializations
+\def\startMPinitializations#1\stopMPinitializations
   {\global\MPinitializations\expandafter{\the\MPinitializations#1}}
 
-\long\def\startMPinclusions
+\def\startMPinclusions
   {\dosingleempty\dostartMPinclusions}
 
-\long\def\dostartMPinclusions[#1]#2\stopMPinclusions
+\def\dostartMPinclusions[#1]#2\stopMPinclusions
   {\doifnot{#1}{+}{\global\MPuserinclusions\emptytoks}%
    \global\MPuserinclusions\expandafter{\the\MPuserinclusions#2}}
 
 \def\MPinclusions
   {\dosingleempty\doMPinclusions}
 
-\long\def\doMPinclusions[#1]#2%
+\def\doMPinclusions[#1]#2%
   {\doifnot{#1}{+}{\global\MPuserinclusions\emptytoks}%
    \global\MPuserinclusions\expandafter{\the\MPuserinclusions#2}}
 
@@ -162,7 +162,7 @@
   {\global\MPinstancetoks\emptytoks
    \endgroup}
 
-\unexpanded\long\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
+\unexpanded\def\processMPgraphic#1% todo: extensions and inclusions outside beginfig
   {\dostartcurrentMPgraphic
    \forgetall
    \setbox\MPgraphicbox\hbox\bgroup % ; added 20100901 (as in mkii)
@@ -229,29 +229,29 @@
 \def\startMPdrawing
   {\dosingleempty\dostartMPdrawing}
 
-\long\def\dostartMPdrawing[#1]#2\stopMPdrawing
+\def\dostartMPdrawing[#1]#2\stopMPdrawing
   {\relax
    \bgroup
    \enableincludeMPgraphics
    \presetMPdefinitions % in case #2 has measures
-   \doifelse{#1}{-}{\convertargument#2\to\asciia}{\long\def\asciia{#2}}%
-   \long\xdef\MPdrawingdata{\MPdrawingdata\asciia}%
+   \doifelse{#1}{-}{\convertargument#2\to\asciia}{\def\asciia{#2}}%
+   \xdef\MPdrawingdata{\MPdrawingdata\asciia}%
    \egroup}
 
 \let\stopMPdrawing\relax
 
-\long\def\MPdrawing#1%
+\def\MPdrawing#1%
   {\relax
    \bgroup
    \enableincludeMPgraphics
    \presetMPdefinitions
-   \long\xdef\MPdrawingdata{\MPdrawingdata#1}%
+   \xdef\MPdrawingdata{\MPdrawingdata#1}%
    \egroup}
 
 \let\stopMPclip\relax
 
-\long\def\startMPclip#1#2\stopMPclip % todo: store at the lua end or just store less
-  {\long\setgvalue{MPC:#1}{#2}}
+\def\startMPclip#1#2\stopMPclip % todo: store at the lua end or just store less
+  {\setgvalue{MPC:#1}{#2}}
 
 \def\grabMPclippath#1#2#3#4#5% #5 is alternative
   {\begingroup
@@ -454,7 +454,7 @@
    \xdef\MPury{#5}%
    \hbox{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
-\long\def\handleuniqueMPgraphic#1#2#3%
+\def\handleuniqueMPgraphic#1#2#3%
   {\begingroup
    \def\@@meta{#1:}%
    \extendMPoverlaystamp{#2}% incl prepare
@@ -467,11 +467,11 @@
    \getvalue{\@@MPG\overlaystamp:#1}%
    \endgroup}
 
-\long\unexpanded\def\startuniqueMPgraphic
+\unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\dostartuniqueMPgraphic}
 
-\long\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
-  {\long\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}}
+\def\dostartuniqueMPgraphic#1#2#3\stopuniqueMPgraphic%
+  {\setgvalue{\@@MPG#1}{\handleuniqueMPgraphic{#1}{#2}{#3}}}
 
 \unexpanded\def\uniqueMPgraphic
   {\dodoublegroupempty\douniqueMPgraphic}
@@ -484,7 +484,7 @@
 
 \let\stopuniqueMPcode \relax % so that we can use it in \expanded
 
-\long\def\handleuseMPgraphic#1#2#3%
+\def\handleuseMPgraphic#1#2#3%
   {\begingroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
@@ -492,22 +492,22 @@
    \processMPgraphic{#3}%
    \endgroup}
 
-\long\unexpanded\def\startuseMPgraphic
+\unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\dostartuseMPgraphic}
 
-\long\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
+\def\dostartuseMPgraphic#1#2#3\stopuseMPgraphic
+  {\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
-\long\unexpanded\def\startusableMPgraphic % redundant but handy
+\unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\dostartusableMPgraphic}
 
-\long\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
+\def\dostartusableMPgraphic#1#2#3\stopusableMPgraphic
+  {\setgvalue{\@@MPG#1}{\handleuseMPgraphic{#1}{#2}{#3}}}
 
 \let\stopuseMPgraphic    \relax % so that we can use it in \expanded
 \let\stopusableMPgraphic \relax % so that we can use it in \expanded
 
-\long\def\handlereusableMPgraphic#1#2#3%
+\def\handlereusableMPgraphic#1#2#3%
   {\begingroup
    \def\@@meta{#1:}%
    \prepareMPvariables{#2}%
@@ -518,11 +518,11 @@
    \getvalue{\@@MPG#1}%
    \endgroup}
 
-\long\unexpanded\def\startreusableMPgraphic
+\unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\dostartreusableMPgraphic}
 
-\long\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
-  {\long\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}}
+\def\dostartreusableMPgraphic#1#2#3\stopreusableMPgraphic
+  {\setgvalue{\@@MPG#1}{\handlereusableMPgraphic{#1}{#2}{#3}}}
 
 \let\stopreusableMPgraphic \relax % so that we can use it in \expanded
 
@@ -557,12 +557,12 @@
 \def\overlaypagestamp
   {\MPpageprefix\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
-\long\unexpanded\def\startuniqueMPpagegraphic
+\unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\dostartuniqueMPpagegraphic}
 
-\long\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
-  {\long\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
-   \long\setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}}
+\def\dostartuniqueMPpagegraphic#1#2#3\stopuniqueMPpagegraphic
+  {\setgvalue{\@@MPG o:#1}{\handleuniqueMPgraphic{o:#1}{#2}{#3}}%
+   \setgvalue{\@@MPG e:#1}{\handleuniqueMPgraphic{e:#1}{#2}{#3}}}
 
 \unexpanded\def\uniqueMPpagegraphic
   {\dodoublegroupempty\douniqueMPpagegraphic}
@@ -692,7 +692,7 @@
 \def\startMPenvironment % second arg gobbles spaces, so that reset gives \emptytoks
   {\dodoubleempty\dostartMPenvironment}
 
-\long\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
+\def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
   {\doif{#1}\s!reset\resetMPenvironment % reset mp toks
    \doif{#1}\v!global{#3}%              % use in main doc too
    \doif{#1}+{#3}%                      % use in main doc too
@@ -776,7 +776,7 @@
 \def\startMPrun
   {\dosinglegroupempty\dostartMPrun}
 
-\long\def\dostartMPrun#1#2\stopMPrun
+\def\dostartMPrun#1#2\stopMPrun
   {\iffirstargument
      \startuseMPgraphic{#1}#2\stopuseMPgraphic
    \else
@@ -845,7 +845,7 @@
 \def\@@MPT{@MPT@}
 
 \def\forceMPTEXgraphic
-  {\long\def\checkMPTEXgraphic##1{\global\MPTEXgraphictrue}}
+  {\def\checkMPTEXgraphic##1{\global\MPTEXgraphictrue}}
 
 \def\setMPtext#1#2% todo : #1 must be made : safe
   {%\forceMPTEXgraphic
@@ -998,7 +998,7 @@
 %D \macros
 %D   {startMPcolor}
 
-\long\unexpanded\def\startMPcolor#1\stopMPcolor
+\unexpanded\def\startMPcolor#1\stopMPcolor
   {\writestatus \m!metapost % eventually this placeholder will go away
      {\string\startMPcolor...\stopMPcolor\space is obsolete,\space
       use \string\defineintermediatecolor\space instead}}
@@ -1077,7 +1077,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\def\usestaticMPfigure
+\unexpanded\def\usestaticMPfigure
   {\dodoubleempty\dousestaticMPfigure}
 
 \def\dousestaticMPfigure[#1][#2]%
@@ -1090,11 +1090,11 @@
 \unexpanded\def\startstaticMPfigure#1#2\stopstaticMPfigure
   {\startreusableMPgraphic{\@@MPG#1@S@}#2\stopreusableMPgraphic}
 
-\long\unexpanded\def\startstaticMPgraphic
+\unexpanded\def\startstaticMPgraphic
   {\dodoublegroupempty\dostartstaticMPgraphic}
 
-\long\def\dostartstaticMPgraphic#1#2#3\stopstaticMPgraphic
-  {\long\setgvalue{\@@MPG#1@S@}{\handlereusableMPgraphic{#1}{#2}{#3}}}
+\def\dostartstaticMPgraphic#1#2#3\stopstaticMPgraphic
+  {\setgvalue{\@@MPG#1@S@}{\handlereusableMPgraphic{#1}{#2}{#3}}}
 
 %D New:
 

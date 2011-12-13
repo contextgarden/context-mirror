@@ -53,8 +53,7 @@
         \bgroup
         \unvbox\textflowcollector{#1}%
         \hsize\textflowparameter{#1}\c!width
-        \doifsomething{\textflowparameter{#1}\c!style}%
-          {\doconvertfont{\textflowparameter{#1}\c!style}}%
+        \dousestyleparameter{\textflowparameter{#1}\c!style}%
         \unexpanded\def\stoptextflow{\endgraf\egroup}}
      {\let\stoptextflow\relax}}
 

@@ -122,27 +122,27 @@
   {\ifnum\referencepagestate=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \dosetinteractioncolorattribute\c!color
+       \useinteractioncolorparameter\c!color
      \else
-       \dosetinteractioncolorattribute\c!contrastcolor
+       \useinteractioncolorparameter\c!contrastcolor
      \fi
    \else % we could just set and if > 0 set again
-     \dosetinteractioncolorattribute\c!color
+     \useinteractioncolorparameter\c!color
    \fi}
 
 \def\setlocationfont % not grouped !
-  {\dosetinteractionfontattribute\c!style}
+  {\useinteractionstyleparameter\c!style}
 
 \def\setlocationattributes % not grouped !
   {\ifnum\referencepagestate=\plusone
      \edef\askedcontrastcolor{\interactionparameter\c!contrastcolor}%
      \ifx\askedcontrastcolor\empty
-       \dosetinteractionattributes\c!style\c!color
+       \useinteractionstyleandcolor\c!style\c!color
      \else
-       \dosetinteractionattributes\c!style\c!contrastcolor
+       \useinteractionstyleandcolor\c!style\c!contrastcolor
      \fi
    \else % we could just set and if > 0 set again
-     \dosetinteractionattributes\c!style\c!color
+     \useinteractionstyleandcolor\c!style\c!color
    \fi}
 
 \def\setlocationcolorspec#1% \resolver

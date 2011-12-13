@@ -17,6 +17,8 @@
 
 \unprotect
 
+% Less globals!
+
 %D This module is being converted into a mkvi one.
 %D
 %D - rename macros
@@ -204,7 +206,8 @@
 \unexpanded\def\thecurrentfloatnumbersuffix
   {\doifsomething{\floatcaptionparameter\c!suffix}
      {\floatcaptionparameter\c!suffixseparator
-      \floatcaptionparameter\c!suffix}}
+      \floatcaptionparameter\c!suffix
+      \floatcaptionparameter\c!suffixstopper}}
 
 \unexpanded\def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
@@ -268,10 +271,10 @@
    \noindent
    \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
    \begingroup
-     \dosetfloatcaptionattributes\c!style\c!color
+     \usefloatcaptionstyleandcolor\c!style\c!color
      \ifnofloatnumber
      \else
-       \hbox{\dosetfloatcaptionattributes\c!headstyle\c!headcolor\strut\thecurrentfloatnumber}%
+       \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\strut\thecurrentfloatnumber}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
            {\scratchskip\floatcaptionparameter\c!distance\relax
@@ -283,7 +286,7 @@
        \global\float_caption_height\zeropoint
        \global\float_caption_depth \zeropoint
      \else
-       \dosetfloatcaptionattributes\c!textstyle\c!textcolor
+       \usefloatcaptionstyleandcolor\c!textstyle\c!textcolor
        \global\float_caption_height\strutheight
        \global\float_caption_depth \strutdepth
        \begstrut\thecurrentfloatcaption\endstrut\endgraf
@@ -322,7 +325,8 @@
 %   {\doprocesslocalsetups{\floatcaptionparameter\c!setups}\relax}
 
 \def\check_float_caption_content
-  {\ifnofloatcaption \else
+  {\ifnofloatcaption
+   \else
      \setbox\float_caption_box\hbox
        {\settrialtypesetting
         \notesenabledfalse
@@ -394,6 +398,11 @@
    \fi
    \let\currentfloatcaption\currentfloat}
 
+\def\float_reset_variables
+  {\global\emptyfloatcaptionfalse
+   \global\nofloatcaptionfalse
+   \global\nofloatnumberfalse}
+
 % place
 
 \unexpanded\def\float_place#tag%
@@ -404,7 +413,8 @@
    \dodoubleempty\float_place_indeed}
 
 \def\float_place_indeed[#location][#reference]#caption%
-  {\edef\floatlocation{#location}%
+  {\float_reset_variables
+   \edef\floatlocation{#location}%
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
    \fi
@@ -431,7 +441,8 @@
    \dosingleempty\float_start_place_indeed}
 
 \def\float_start_place_indeed[#settings]% tricky ... saved not ok yet
-  {\edef\savedfloatlocation{\floatcaptionparameter\c!location}%
+  {\float_reset_variables
+   \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setupcurrentfloatcaption[\c!location=\savedfloatlocation]%
@@ -637,7 +648,7 @@
      {\global\nofloatcaptiontrue}
      {\global\nofloatcaptionfalse}%
    \doif{\floatcaptionparameter\c!number}\v!none % new
-    {\global\nofloatcaptiontrue}%
+     {\global\nofloatcaptiontrue}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
    \fi \fi}
@@ -1180,15 +1191,15 @@
    \or % automatic
      \ifnofloatcaption
        \prepare_no_float_caption
-       \doglobal\addlocalbackgroundtobox\floatbox
+       \page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
      \else
        % todo: installable maken, variant/method=auto vs macro
        \prepare_page_float_caption
-       \addlocalbackgroundtobox\float_content_box
+       \page_backgrounds_add_local_to_box\float_content_box
        \setbox\float_caption_box\hbox
          {\floatcaptionparameter\c!command{\box\float_caption_box}}%
        \moveboxontogrid\float_caption_box{\floatcaptionparameter\c!grid}\float_caption_height
-       \addlocalbackgroundtobox\float_caption_box
+       \page_backgrounds_add_local_to_box\float_caption_box
        \build_float_box
      \fi
    \or % semi automatic
@@ -1701,7 +1712,7 @@
    \dontcomplain
    %\showcomposition
    \setbox\float_content_box\vbox{\borderedfloatbox}%
-   \addlocalbackgroundtobox\float_content_box % no \doglobal
+   \page_backgrounds_add_local_to_box\float_content_box
    \ifnofloatcaption
      \global\setbox\floatbox\vbox{\box\float_content_box}%
    \else
@@ -1709,7 +1720,7 @@
      \prepare_side_float_caption
      \setbox\float_caption_box\hbox{\floatcaptionparameter\c!command{\box\float_caption_box}}%
      \moveboxontogrid\float_caption_box{\floatcaptionparameter\c!grid}\float_caption_height
-     \addlocalbackgroundtobox\float_caption_box % no \doglobal
+     \page_backgrounds_add_local_to_box\float_caption_box
      \build_side_float_box
    \fi
    \egroup}
@@ -1768,7 +1779,6 @@
      \doifnotinset\v!margin\floatlocation % gaat namelijk nog fout
        {\setbox\floatbox\vbox
           {\parindent\zeropoint
-           \doifconcepttracing{\inleftmargin{\framed{\infofont\the\totalnoffloats}}}%
            \box\floatbox}}%
      \wd\floatbox\floatwidth
      \ifdim\dimexpr\floatheight+\lineheight\relax<\textheight \else
@@ -1780,9 +1790,9 @@
    \fi}
 
 \newcounter\noxfloatlocations
-
-\def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
-
+
+% \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
+
 \definefloat
   [\v!figure]
   [\v!figures]

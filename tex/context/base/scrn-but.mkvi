@@ -812,41 +812,33 @@
 \unexpanded\def\scrn_menu_leftedge
   {\hbox to \leftedgewidth \bgroup
      \hsize\leftedgewidth
-    %\csname\??tk\v!leftedge\c!left\endcsname
      \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!left
-    %\csname\??tk\v!leftedge\c!right\endcsname
    \egroup
    \hskip-\leftedgewidth}
 
 \unexpanded\def\scrn_menu_rightedge
   {\hbox to \rightedgewidth \bgroup
      \hsize\rightedgewidth
-    %\csname\??tk\v!rightedge\c!left\endcsname
      \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!right
-    %\csname\??tk\v!rightedge\c!right\endcsname
    \egroup
    \hskip-\rightedgewidth}
 
-\unexpanded\def\scrn_menu_top % uses \??tk
+\unexpanded\def\scrn_menu_top
   {\vbox to \topheight \bgroup
      \vsize\topheight
-    %\csname\??tk\v!top\c!before\endcsname
      \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!top
-    %\csname\??tk\v!top\c!after\endcsname
      \kern\zeropoint
    \egroup
    \vskip-\topheight}
 
-\unexpanded\def\scrn_menu_bottom % uses \??tk
+\unexpanded\def\scrn_menu_bottom
   {\vbox to \bottomheight \bgroup
      \vsize\bottomheight
-    %\csname\??tk\v!bottom\c!before\endcsname
      \settrue\scrn_menu_zerodimensions
      \scrn_menu_insert\v!bottom
-    %\csname\??tk\v!bottom\c!after\endcsname
      \kern\zeropoint
    \egroup
    \vskip-\bottomheight}

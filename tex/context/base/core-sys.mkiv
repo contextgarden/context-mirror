@@ -202,7 +202,7 @@
    \def\currentstartstop{#1}%
    \startstopparameter\c!commands
    \dostarttagged\t!construct\currentstartstop
-   \dosetstartstopattributes\c!style\c!color}
+   \usestartstopstyleandcolor\c!style\c!color}
 
 \unexpanded\def\dostartstop_stop#1%
   {\dostoptagged
@@ -214,7 +214,7 @@
      {\def\currentstartstop{#1}%
       \startstopparameter\c!commands % will become setups
       \dostarttagged\t!construct\currentstartstop
-      \dosetstartstopattributes\c!style\c!color}
+      \usestartstopstyleandcolor\c!style\c!color}
      {\def\currentstartstop{#1}%
       \dostoptagged
       \startstopparameter\c!inbetween}}
@@ -231,7 +231,7 @@
   {\dontleavehmode\groupedcommand % otherwise wrong par number in tags
      {\def\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
-      \dosethighlightattributes\c!style\c!color
+      \usehighlightstyleandcolor\c!style\c!color
       \dotaghighlight}
      {\dostoptagged}}
 
