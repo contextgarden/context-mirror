@@ -67,7 +67,7 @@ function namespaces.define(namespace,settings)
     end
     local style = ns.style
     if style == v_yes then
-        context.installattributehandler(self,name)
+        context.installstyleandcolorhandler(self,name)
         if trace_namespaces then
             report_namespaces("installing attribute handler for '%s'",name)
         end
