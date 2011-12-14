@@ -942,6 +942,10 @@
   {\installautocommandhandler{#1}{#2}{#3}%
    \installinheritedframed{#2}}
 
+\unexpanded\def\installsimpleframedcommandhandler#1#2#3%
+  {\installsimplecommandhandler{#1}{#2}{#3}%
+   \installinheritedframed{#2}}
+
 % done
 
 \def\c!fr!analyze{fr:analyze} % private option

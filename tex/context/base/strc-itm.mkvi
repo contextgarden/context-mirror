@@ -182,9 +182,9 @@
 % 1 = between unless before
 % 2 = between
 
-\newconstant   \c_itemgroups_spacing_mode   \c_itemgroups_spacing_mode\plustwo
-\newconditional\c_itemgroups_optimize       \settrue\c_itemgroups_optimize
-\newconditional\c_itemgroups_auto_concat    \settrue\c_itemgroups_auto_concat
+\newconstant   \c_itemgroups_spacing_mode      \c_itemgroups_spacing_mode\plustwo
+\newconditional\c_itemgroups_optimize          \settrue\c_itemgroups_optimize
+\newconditional\c_itemgroups_auto_concat       \settrue\c_itemgroups_auto_concat
 
 \newsignal     \d_itemgroups_signal
 
@@ -193,29 +193,30 @@
 \newdimen      \d_itemgroups_list_width
 \newdimen      \d_itemgroups_asked_width
 
-\newdimen      \d_itemgroups_max_width      % multipass
-\newcount      \c_itemgroups_max_items      % multipass
+\newdimen      \d_itemgroups_max_width         % multipass
+\newcount      \c_itemgroups_max_items         % multipass
 
 \newcount      \c_itemgroups_n_of_lists
 \newcount      \c_itemgroups_n_of_items
 \newcount      \c_itemgroups_nesting
 \newcount      \c_itemgroups_column_depth
 
-\def           \v_itemgroups_counter        {itemgroup:\currentparentitemgroup}
+\def           \v_itemgroups_counter           {itemgroup:\currentparentitemgroup}
 
-\let           \m_itemgroups_repeat_start   \empty
-\let           \m_itemgroups_conversion_set \empty
-\def           \m_itemgroups_item_symbol    {n}
-\def           \v_itemgroups_unknown_symbol {?}
+\let           \m_itemgroups_repeat_start      \empty
+\def           \v_itemgroups_unknown_symbol    {?}
 
-\let           \m_itemgroups_indenting      \empty
-\let           \m_itemgroups_destination    \empty
+\let           \m_itemgroups_indenting         \empty
+\let           \m_itemgroups_destination       \empty
 
-\let           \currentitemlevel            \!!zerocount % public
-\def           \currentnofitems             {\the\c_itemgroups_max_items}
-\def           \currentitemnumber           {\dorawsubstructurecounter[\v_itemgroups_counter][\currentitemlevel]} % public
+\let           \currentitemlevel               \!!zerocount % public
+\def           \currentnofitems                {\the\c_itemgroups_max_items}
+\def           \currentitemnumber              {\dorawsubstructurecounter[\v_itemgroups_counter][\currentitemlevel]} % public
 
-\newtoks       \itemgroupcommands           % maybe public
+\newtoks       \itemgroupcommands              % maybe public
+
+\def           \currentitemgroupsymbol         {n}    % here we cannot use a _ in the name
+\let           \currentitemgroupconversionset  \empty % here we cannot use a _ in the name
 
 \def\itemgroups_register_status
   {\iftrialtypesetting \else
@@ -286,7 +287,8 @@
     \setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
     \let\currentparentitemgroup\currentitemgroup
     \definestructurecounter[\v_itemgroups_counter]%
-    \definestructureconversionset[\v_itemgroups_counter][\m_itemgroups_conversion_set][\m_itemgroups_item_symbol]%
+    % beware ... we cannot use _ as the conversion set is not expanded
+    \definestructureconversionset[\v_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
 \to \everydefineitemgroup
 
 %D Global states
@@ -584,8 +586,8 @@
       \c!numberorder=\ifconditional\c_itemgroups_reverse\v!reverse\else\v!normal\fi,
       \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
      %\c!numberseparatorset=,
-      \c!numberconversionset=itemgroup:\currentparentitemgroup,
-     %\c!numberconversion=\m_itemgroups_item_symbol,
+      \c!numberconversionset=\v_itemgroups_counter, % itemgroup:\currentparentitemgroup,
+     %\c!numberconversion=\currentitemgroupsymbol,
       \c!numbersegments=\ifx\m_itemgroups_repeat_start\empty\else\m_itemgroups_repeat_start:\fi\currentitemlevel]%
    \convertedstructurecounter[\v_itemgroups_counter]% [\number\currentitemlevel]%
    \itemgroups_insert_reference
@@ -602,21 +604,21 @@
    \fi}
 
 \def\itemgroups_set_symbol_symbol
-  {\let\m_itemgroups_item_symbol\itemgroups_tmp_symbol
-   \itemgroups_store_global_symbol\m_itemgroups_item_symbol
+  {\let\currentitemgroupsymbol\itemgroups_tmp_symbol
+   \itemgroups_store_global_symbol\currentitemgroupsymbol
    \itemgroups_store_local_symbol\v_itemgroups_unknown_symbol
    \let\itemgroups_used_symbol\itemgroups_set_symbol_symbol_item
    \let\itemgroups_asked_symbol\empty}
 
 \def\itemgroups_set_symbol_conversion
-  {\let\m_itemgroups_item_symbol\itemgroups_tmp_symbol
-   \itemgroups_store_global_symbol\m_itemgroups_item_symbol
+  {\let\currentitemgroupsymbol\itemgroups_tmp_symbol
+   \itemgroups_store_global_symbol\currentitemgroupsymbol
    \itemgroups_store_local_symbol\itemgroups_insert_item_counter
    \let\itemgroups_used_symbol\itemgroups_set_symbol_conversion_item
    \let\itemgroups_asked_symbol\empty}
 
 \def\itemgroups_set_symbol_symbol_item
-  {\symbol[\m_itemgroups_item_symbol]}
+  {\symbol[\currentitemgroupsymbol]}
 
 \def\itemgroups_set_symbol_conversion_item
   {\ifconditional\c_itemgroups_text
@@ -782,7 +784,7 @@
    \ifx\itemgroups_used_symbol\empty
      \itemgroups_set_symbol\itemgroups_asked_symbol % ** default value
      \ifx\itemgroups_used_symbol\empty
-       \let\m_itemgroups_item_symbol\currentitemlevel % ** fall back
+       \let\currentitemgroupsymbol\currentitemlevel % ** fall back
      \fi
    \fi
    \ifconditional\c_itemgroups_auto_intro\ifnum\prevgraf<\plusthree
@@ -816,9 +818,9 @@
      \fi
    \fi
    \ifx\m_itemgroups_repeat_start\empty
-     \let\m_itemgroups_conversion_set\m_itemgroups_item_symbol
+     \let\currentitemgroupconversionset\currentitemgroupsymbol
    \else
-     \edef\m_itemgroups_conversion_set{\m_itemgroups_conversion_set,\m_itemgroups_item_symbol}%
+     \edef\currentitemgroupconversionset{\currentitemgroupconversionset,\currentitemgroupsymbol}%
    \fi
    \d_itemgroups_asked_width\itemgroupparameter\c!width\relax
    \startcollectitems}
@@ -1224,7 +1226,7 @@
 \def\itemgroups_check_for_repeated
   {\ifconditional\c_itemgroups_repeat
       \ifx\m_itemgroups_repeat_start\empty
-        \let\m_current_itemgroups_start\currentitemlevel
+        \let\m_current_itemgroups_repeat_start\currentitemlevel
       \fi
       \setbox\b_itemgroups\hbox to \wd\b_itemgroups
         {\hskip-\d_itemgroups_asked_width
