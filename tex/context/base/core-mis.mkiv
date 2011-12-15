@@ -1736,11 +1736,11 @@
            \edef\currentcombinationspec{2*1*}}}%
    \fi
    \forgetall
-\dostarttagged\t!combination\currentcombination
+   \dostarttagged\t!combination\currentcombination
    \doifelse{\combinationparameter\c!height}\v!fit
      \vbox {\vbox to \combinationparameter\c!height}%
    \bgroup
-\let\combination\empty % permits \combination{}{} handy for cld
+   \let\combination\empty % permits \combination{}{} handy for cld
    \setuphorizontaldivision
      [\c!n=\v!fit,\c!distance=\combinationparameter\c!distance]%
    \expanded{\dodostartcombination[\currentcombinationspec]}}
@@ -1750,7 +1750,7 @@
 \long\def\dodostartcombination[#1*#2*#3]%
   {\global\horcombination#1%
    \global\totcombination#2%
-\dotagcombination
+   \dotagcombination
    \global\setbox\combinationstack\emptybox
    \xdef\maxhorcombination{\the\horcombination}%
    \multiply\totcombination\horcombination
@@ -1772,31 +1772,34 @@
 \def\docombination % we want to add struts but still ignore an empty box
   {\dostarttagged\t!combinationpair\empty
    \dostarttagged\t!combinationcontent\empty
+   \dowithnextboxcs\docombinationfinish\hbox}
+
+\def\docombinationfinish % we want to add struts but still ignore an empty box
+  {\dostoptagged
+   \setbox0\flushnextbox
+   \dostarttagged\t!combinationcaption\empty
    \dowithnextbox
      {\dostoptagged
-      \setbox0\flushnextbox
-      \dostarttagged\t!combinationcaption\empty
-      \dowithnextbox
-        {\dostoptagged
-         \dostoptagged
-         \setbox2\flushnextbox
-         \dodocombination}%
-      \vtop\bgroup
-        \def\next
-          {\futurelet\nexttoken\nextnext}%
-        \def\nextnext
-          {\ifx\nexttoken\egroup \else % the next box is empty
-             \hsize\wd0
-             \setupalign[\combinationparameter\c!align]%
-             \dousestylehashparameter{\??co\currentcombination}\c!style
-             \dousecolorhashparameter{\??co\currentcombination}\c!color
-             \bgroup
-             \aftergroup\endstrut
-             \aftergroup\egroup
-             \begstrut
-           \fi}%
-        \afterassignment\next\let\nexttoken=}
-  \hbox}
+      \dostoptagged
+      \setbox2\flushnextbox
+      \dodocombination}%
+   \vtop\bgroup
+     \afterassignment\donextcombination\let\nexttoken=}
+
+\def\donextcombination
+  {\futurelet\nexttoken\donextnextcombination}
+
+\def\donextnextcombination
+  {\ifx\nexttoken\egroup \else % the next box is empty
+     \hsize\wd0
+     \setupalign[\combinationparameter\c!align]%
+     \dousestylehashparameter{\??co\currentcombination}\c!style
+     \dousecolorhashparameter{\??co\currentcombination}\c!color
+     \bgroup
+     \aftergroup\endstrut
+     \aftergroup\egroup
+     \begstrut
+   \fi}
 
 \def\depthonlybox
   {\dowithnextbox{\vtop{\hsize\wd\nextbox\kern\zeropoint\box\nextbox}}\vbox}
@@ -1815,30 +1818,35 @@
      \global\advance\totcombination\minusone
      \global\advance\horcombination\minusone
      \ifnum\horcombination=\zerocount
-       \def\next
-         {\cr
-          \flushcombinationstack
-          \noalign
-            {\forgetall % \setupwhitespace[\v!none]% no
-             \global\setbox\combinationstack\emptybox
-             \nointerlineskip
-             \combinationparameter\c!after
-             \combinationparameter\c!before
-             \vss
-             \nointerlineskip}%
-          \global\horcombination\maxhorcombination\relax
-          \docombination}%
+       \doubleexpandafter\docombination_a
      \else
-       \def\next
-         {&&&\hskip\combinationparameter\c!distance&\docombination}%
+       \doubleexpandafter\docombination_b
      \fi
    \else
-     \def\next
-       {\cr
-        \flushcombinationstack
-        \egroup}%
-   \fi
-   \next}
+     \expandafter\docombination_c
+   \fi}
+
+\def\docombination_a
+  {\cr
+   \flushcombinationstack
+   \noalign
+     {\forgetall % \setupwhitespace[\v!none]% no
+      \global\setbox\combinationstack\emptybox
+      \nointerlineskip
+      \combinationparameter\c!after
+      \combinationparameter\c!before
+      \vss
+      \nointerlineskip}%
+   \global\horcombination\maxhorcombination\relax
+   \docombination}
+
+\def\docombination_b
+  {&&&\hskip\combinationparameter\c!distance&\docombination}
+
+\def\docombination_c
+  {\cr
+   \flushcombinationstack
+   \egroup}
 
 % formally ok:
 %
@@ -1870,7 +1878,7 @@
 \def\flushcombinationstack
   {\noalign
      {\ifdim\ht\combinationstack>\zeropoint
-\nointerlineskip % nieuw
+        \nointerlineskip % nieuw
         \combinationparameter\c!inbetween
         \global\horcombination\maxhorcombination
         \globallet\doflushcombinationstack\dodoflushcombinationstack
@@ -1887,13 +1895,13 @@
    \box1% \ruledhbox{\box1}%
    \global\advance\horcombination\minusone\relax
    \ifnum\horcombination>\zerocount
-     \def\next{&&&&\doflushcombinationstack}%
+     \expandafter\dodoflushcombinationstacknext
    \else
      \global\setbox\combinationstack\emptybox
-    %\let\next\relax
-     \@EA\gobbleoneargument
-   \fi
-   \next}
+   \fi}
+
+\def\dodoflushcombinationstacknext
+  {&&&&\doflushcombinationstack}
 
 \setupcombinations
   [\c!width=\v!fit,
@@ -1930,19 +1938,23 @@
 \unexpanded\def\startfloatcombination
   {\dodoubleempty\dostartfloatcombination}
 
+\let\startfloatcombination\relax
+
 \def\dostartfloatcombination[#1][#2]%
   {\vbox\bgroup
   %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
    \postcenterfloatmethod\zerocount
    \forcelocalfloats
-   \unexpanded\def\stopfloatcombination
-     {\scratchtoks\emptytoks
-      \dorecurse\noflocalfloats
-        {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}%
-      \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
-      \resetlocalfloats
-     \egroup}}
-
+   \unexpanded\def\stopfloatcombination{\dostopfloatcombination{#1}}}
+
+\unexpanded\def\dostopfloatcombination#1%
+  {\scratchtoks\emptytoks
+   \dorecurse\noflocalfloats
+     {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}% brrr
+   \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+   \resetlocalfloats
+  \egroup}
+
 \unexpanded\def\placerelativetoeachother#1#2%
   {\bgroup
    \dowithnextbox

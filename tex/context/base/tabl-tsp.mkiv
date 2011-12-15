@@ -107,42 +107,44 @@
    \fi}
 
 \def\dodowithsplitofffloat
-  {\dowithnextbox
-     {\forgetall
-      \dontcomplain
-      \global\settrue\splitfloatdone
-      \nodelocationmode\zerocount % bypass auto-renumbering
-      \global\advance\noffloatssplits\plusone
-      \ifcase\noffloatssplits\relax \or
-        \ifconditional\onlyonesplitofffloat
-          \let\floatcaptionsuffix\empty
-        \fi
-      \fi
-      \bgroup
-        \ifconditional\somenextsplitofffloat
-          \notesenabledfalse % best here, experimental, brrr; test with note in caption
-        \fi
-        \splitfloatcommand{\box\nextbox}%
-      \egroup
-      \ifconditional\somenextsplitofffloat
-        \doifelsenothing\@@siinbetween
-          {\ifconditional\splitfloatfirstdone\else\page\fi}
-          \@@siinbetween
-      \else
-        \@@siafter
-        \dopopsavedfloats
-        \doflushsavedfloats
-      \fi
-      \global\settrue\splitfloatfirstdone}%
-   \vbox}
+  {\dowithnextboxcs\dodowithsplitofffloatfinish\vbox}
+
+\def\dodowithsplitofffloatfinish
+  {\forgetall
+   \dontcomplain
+   \global\settrue\splitfloatdone
+   \nodelocationmode\zerocount % bypass auto-renumbering
+   \global\advance\noffloatssplits\plusone
+   \ifcase\noffloatssplits\relax \or
+     \ifconditional\onlyonesplitofffloat
+       \let\floatcaptionsuffix\empty
+     \fi
+   \fi
+   \bgroup
+     \ifconditional\somenextsplitofffloat
+       \notesenabledfalse % best here, experimental, brrr; test with note in caption
+     \fi
+     \splitfloatcommand{\box\nextbox}%
+   \egroup
+   \ifconditional\somenextsplitofffloat
+     \doifelsenothing\@@siinbetween
+       {\ifconditional\splitfloatfirstdone\else\page\fi}
+       \@@siinbetween
+   \else
+     \@@siafter
+     \dopopsavedfloats
+     \doflushsavedfloats
+   \fi
+   \global\settrue\splitfloatfirstdone}
 
 \def\nodowithsplitofffloat
-  {\dowithnextbox
-     {\forgetall
-      \dontcomplain
-      \box\nextbox % maybe an option to unvbox
-      \global\settrue\splitfloatfirstdone}%
-   \vbox}
+  {\dowithnextboxcs\nodowithsplitofffloatfinish\vbox}
+
+\def\nodowithsplitofffloatfinish
+  {\forgetall
+   \dontcomplain
+   \box\nextbox % maybe an option to unvbox
+   \global\settrue\splitfloatfirstdone}
 
 \def\dochecksplitofffloat#1% box
   {\ifinsidesplitfloat

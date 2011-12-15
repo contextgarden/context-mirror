@@ -14,7 +14,8 @@ return {
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "plussixteen", "plushundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard",
-        "zeropoint", "onepoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint", "points",
+        "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxdimen", "scaledpoint", "thousandpoint",
+        "points", "halfpoint",
         "zeroskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         --

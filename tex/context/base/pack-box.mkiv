@@ -559,35 +559,48 @@
 % \setlayerframed[layer id][layer settings][framed setting]{data}
 % \setlayerframed[layer id][combined settings]{data}
 
+% tricky: offsets apply to both the layer and the framed; it makes sense to
+% only apply the offset to ...
+
 \def\setlayerframed
   {\dotripleempty\dosetlayerframed}
+
+% \def\dosetlayerframed
+%   {\ifthirdargument
+%      \expandafter\dosetlayerframedT
+%    \else
+%      \expandafter\dosetlayerframedS
+%    \fi}
+%
+% \def\dosetlayerframedT[#1][#2][#3]%
+%   {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
+%    \hbox\framed[#3]}
+%
+% \def\dosetlayerframedS[#1][#2][#3]%
+%   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
+%      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
+%      \hbox\normalframedwithsettings[\c!location=\v!normal,#2]}% fast call (no arg check)
 
 \def\dosetlayerframed
   {\ifthirdargument
      \expandafter\dosetlayerframedT
+   \else\ifsecondargument
+     \doubleexpandafter\dosetlayerframedD
    \else
-     \expandafter\dosetlayerframedS
-   \fi}
-
-\def\dosetlayerframedT[#1][#2][#3]%
-  {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
-   \hbox\framed[#3]}
-
-% tricky: offsets apply to both the layer and the framed; it makes sense to
-% only apply the offset to ...
-
-% \def\dosetlayerframedS[#1][#2][#3]%
-%   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
-%      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,\c!offset=\!!zeropoint,#2]{\flushnextbox}}%
-%      \hbox\framed[\c!location=\v!normal,#2]}% could be a fast one
-%
-% better (2011-09-06)
+     \doubleexpandafter\dosetlayerframedS
+   \fi\fi}
 
 \def\dosetlayerframedS[#1][#2][#3]%
-  {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
-     {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
-%      \hbox\framed[\c!location=\v!normal,#2]}% could be a fast one (no #2,\c!offset=\defaultframeoffset)
-     \hbox\normalframedwithsettings[\c!location=\v!normal,#2]}% fast call (no arg check)
+  {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,\c!offset=\zeropoint]%
+     \normalframedwithsettings[\c!location=\v!normal]} % diffrent kind of location
+
+\def\dosetlayerframedD[#1][#2][#3]%
+  {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,#2,\c!offset=\zeropoint]%
+     \normalframedwithsettings[\c!location=\v!normal,#2]} % diffrent kind of location
+
+\def\dosetlayerframedT[#1][#2][#3]%
+  {\setlayer[#1][#2]%
+     \normalframedwithsettings[#3]}
 
 \def\setlayertext
   {\dotripleempty\dosetlayertext}
@@ -604,7 +617,7 @@
    \dowithnextboxcontent
      {\forgetall
       \hsize\@@lxwidth
-      \expanded{\setupalign[\@@lxalign]}%
+      \normalexpanded{\setupalign[\@@lxalign]}%
       \dousestyleparameter\@@lxstyle}
      {\setlayer[#1][#2]{\strut\dousecolorparameter\@@lxcolor\flushnextbox}%
       \egroup}%

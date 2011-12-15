@@ -148,6 +148,31 @@
         \blank[\rootfloatparameter\c!spaceafter]
       \fi}}
 
+% \setupcaption [figure]   [align=flushleft]
+% \setupcaption [figure-1] [align=flushleft,leftmargin=10mm]
+% \setupcaption [figure-2] [align=flushleft,leftmargin=10mm,rightmargin=-10mm,width=\textwidth]
+%
+% \startsetups somefigure
+%     \ifdim\floatsetupwidth>\textwidth
+%         \placesetupfloat[figure-2]
+%     \else
+%         \placesetupfloat[figure-1]
+%     \fi
+% \stopsetups
+%
+% \placefloatwithsetups[somefigure]{}{\externalfigure[dummy][width=5cm,height=2cm]}
+
+\def\placefloatwithsetups
+  {\dotripleempty\doplacefloatwithsetups}
+
+\long\def\doplacefloatwithsetups[#1][#2][#3]#4%
+  {\def\floatsetupcaption   {#4}%
+   \def\floatsetupcontent   {\copy\nextbox}%
+   \def\floatsetupwidth     {\wd\nextbox}%
+   \def\floatsetupheight    {\ht\nextbox}%
+   \def\placesetupfloat[##1]{\placefloat[##1][#2][#3]{#4}{\floatsetupcontent}}% #4 and not \floatsetupcaption (unexpanded)
+   \dowithnextbox{\setups[#1]}\vbox}
+
 %D The following code is in transition as we don't want to break the
 %D current single column, multi column, and columnset mechanism.
 %D

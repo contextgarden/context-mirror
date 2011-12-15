@@ -142,7 +142,7 @@
 
 \def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
   {\doifelsevalue{\??ll#1\c!state}\v!stop
-     {\dowithnextbox\donothing\hbox}
+     {\dowithnextboxcs\donothing\hbox}
      {\ifthirdargument
         \dodosetlayer[#1][#2][#3]%
       \else
@@ -274,9 +274,9 @@
      \setbox\layerbox\emptybox
      \globallet\lastlayerxpos\!!zeropoint
      \globallet\lastlayerypos\!!zeropoint
-     \normalexpanded{\noexpand\doifinset{\v!bottom}{\layerparameter\c!corner}}\dosetlayerbottompositions
-     \normalexpanded{\noexpand\doifinset{\v!right }{\layerparameter\c!corner}}\dosetlayerrightpositions
-     \normalexpanded{\noexpand\doifinset{\v!middle}{\layerparameter\c!corner}}\dosetlayermiddlepositions
+     \normalexpanded{\doifinset{\v!bottom}{\layerparameter\c!corner}}\dosetlayerbottompositions
+     \normalexpanded{\doifinset{\v!right }{\layerparameter\c!corner}}\dosetlayerrightpositions
+     \normalexpanded{\doifinset{\v!middle}{\layerparameter\c!corner}}\dosetlayermiddlepositions
      \edef\layerpage{\layerparameter\c!page}%
    \fi
    \ifx\layerpage\empty \else % is expanded

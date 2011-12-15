@@ -318,9 +318,11 @@
 \unexpanded\def\aftertabulateentry {\unskip\unskip\ifmmode\else\endgraf\fi}
 
 \unexpanded\def\beginreshapedtabulatepar
-  {\dowithnextbox
-     {\ctxcommand{doreshapeframedbox(\number\nextbox)}\ifvmode\unvbox\else\box\fi\nextbox}
-     \vbox\bgroup}
+  {\dowithnextboxcs\beginreshapedtabulateparfinish\vbox\bgroup}
+
+\def\beginreshapedtabulateparfinish
+  {\ctxcommand{doreshapeframedbox(\number\nextbox)}%
+   \ifvmode\unvbox\else\box\fi\nextbox}
 
 \let\endreshapedtabulatepar\egroup
 

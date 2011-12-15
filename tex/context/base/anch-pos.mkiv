@@ -214,93 +214,111 @@
      \dosetpositionpapersize\printpaperwidth\printpaperheight
    \fi}
 
-\def\setpositiononly#1%
+\unexpanded\def\setpositiononly
   {\iftrialtypesetting
-      % nothing
+     \expandafter\gobbleoneargument
    \else
-     \initializenextposition
-     \def\currentposition{#1}%
-     \dosetposition\currentposition
+     \expandafter\positions_set_only_indeed
    \fi}
 
-\def\setposition#1%
+\def\positions_set_only_indeed#1%
+  {\initializenextposition
+   \edef\currentposition{#1}%
+   \dosetposition\currentposition}
+
+\unexpanded\def\setposition
   {\iftrialtypesetting
-      % nothing
+     \expandafter\gobbleoneargument
    \else
-     \initializenextposition
-     \def\currentposition{#1}%
-     \dosetposition\currentposition
-     \traceposstring\llap\green{\currentposition>}%
-     \dopositionaction\currentposition
+     \expandafter\positions_set_indeed
    \fi}
 
-\def\setpositiondata#1#2#3#4%
-  {\iftrialtypesetting \else
-     \initializenextposition
-     \hbox
-       {\def\currentposition{#1}%
-        \dosetpositionwhd\currentposition
-          {\the\dimexpr#2\relax}%
-          {\the\dimexpr#3\relax}%
-          {\the\dimexpr#4\relax}%
-        \traceposstring\llap\green{\currentposition>}%
-        \dopositionaction\currentposition
-        \hss}%
+\def\positions_set_indeed#1%
+  {\initializenextposition
+   \edef\currentposition{#1}%
+   \dosetposition\currentposition
+   \traceposstring\llap\green{\currentposition>}%
+   \dopositionaction\currentposition}
+
+\unexpanded\def\setpositiondata
+  {\iftrialtypesetting
+     \expandafter\gobblefourarguments
+   \else
+     \expandafter\positions_set_data_indeed
    \fi}
 
-\def\setpositionbox#1%
-  {\dowithnextbox
-     {\iftrialtypesetting
-        \flushnextbox
-      \else
-        \initializenextposition
-        \hbox to \nextboxwd
-          {\edef\currentposition{#1}%
-           \dosetpositionwhd\currentposition
-             {\the\nextboxwd}%
-             {\the\nextboxht}%
-             {\the\nextboxdp}%
-           \traceposstring\llap\green{\currentposition>}%
-           \setbox\positionbox\flushnextbox
-           \dopositionaction\currentposition
-           \box\positionbox
-           \hss}%
-      \fi}}
+\def\positions_set_data_indeed#1#2#3#4%
+  {\initializenextposition
+   \hbox
+     {\edef\currentposition{#1}%
+      \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
+      \traceposstring\llap\green{\currentposition>}%
+      \dopositionaction\currentposition
+      \hss}}
 
-\def\setpositiondataplus#1#2#3#4#5%
-  {\iftrialtypesetting \else
-     \initializenextposition
-     \hbox % bug: to \nextboxwd
-       {\edef\currentposition{#1}%
-        \dosetpositionplus\currentposition
-          {\the\dimexpr#2\relax}%
-          {\the\dimexpr#3\relax}%
-          {\the\dimexpr#4\relax}%
-          {#5}%
-        \traceposstring\rlap\magenta{<\currentposition}%
-        \dopositionaction\currentposition
-        \hss}%
+\unexpanded\def\setpositionbox
+  {\iftrialtypesetting
+     \expandafter\positions_set_box_nop
+   \else
+     \expandafter\positions_set_box_yes
    \fi}
 
-\def\setpositionplus#1#2%
-  {\dowithnextbox
-     {\iftrialtypesetting
-        \flushnextbox
-      \else
-        \initializenextposition
-        \hbox to \nextboxwd
-          {\edef\currentposition{#1}%
-           \dosetpositionplus\currentposition
-             {\the\nextboxwd}%
-             {\the\nextboxht}%
-             {\the\nextboxdp}%
-             {#2}%
-           \traceposstring\rlap\magenta{<\currentposition}%
-           \setbox\positionbox\flushnextbox
-           \dopositionaction\currentposition
-           \box\positionbox
-           \hss}%
-      \fi}}
+\def\positions_set_box_nop#1%
+  {\dowithnextboxcs\flushnextbox}
+
+\def\positions_set_box_yes#1%
+  {\dowithnextbox{\positions_set_box_finish{#1}}}
+
+\def\positions_set_box_finish#1%
+  {\initializenextposition
+   \hbox to \wd\nextbox
+     {\edef\currentposition{#1}%
+      \dosetpositionwhd\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}% already \the\dimexpr
+      \traceposstring\llap\green{\currentposition>}%
+      \setbox\positionbox\box\nextbox
+      \dopositionaction\currentposition
+      \box\positionbox
+      \hss}}
+
+\def\setpositiondataplus
+  {\iftrialtypesetting
+     \expandafter\gobblefivearguments
+   \else
+     \expandafter\positions_set_plus_indeed
+   \fi}
+
+\def\positions_set_plus_indeed#1#2#3#4#5%
+  {\initializenextposition
+   \hbox % just package
+     {\edef\currentposition{#1}%
+      \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
+      \traceposstring\rlap\magenta{<\currentposition}%
+      \dopositionaction\currentposition
+      \hss}}
+
+\def\setpositionplus
+  {\iftrialtypesetting
+     \expandafter\positions_set_plus_nop
+   \else
+     \expandafter\positions_set_plus_yes
+   \fi}
+
+\def\positions_set_plus_nop#1#2%
+  {\dowithnextboxcs\flushnextbox}
+
+\def\positions_set_plus_yes#1#2%
+  {\dowithnextbox{\positions_set_plus_yes_finish{#1}{#2}}}
+
+\def\positions_set_plus_yes_finish#1#2%
+  {\initializenextposition
+   \hbox to \nextboxwd
+     {\edef\currentposition{#1}%
+      \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
+      \traceposstring\rlap\magenta{<\currentposition}%
+      \setbox\positionbox\flushnextbox
+      \dopositionaction\currentposition
+      \box\positionbox
+      \hss}}
 
 \let\currentposition\s!unknown
 
@@ -314,7 +332,7 @@
 
 \let\POSactionprefix\POSprefix
 
-\def\dosetpositionaction#1%
+\unexpanded\def\dosetpositionaction#1%
   {\setgvalue{\POSactionprefix#1::}}
 
 %D The lists can become quite long (also because there can
@@ -325,16 +343,16 @@
 
 \def\doifpositionaction#1%
   {\ifcsname\POSactionprefix#1::\endcsname
-     \@EA\firstofoneargument
+     \expandafter\firstofoneargument
    \else
-     \@EA\gobbleoneargument
+     \expandafter\gobbleoneargument
    \fi}
 
 \def\doifpositionactionelse#1%
   {\ifcsname\POSactionprefix#1::\endcsname
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 %D We can copy a position with:
@@ -383,39 +401,40 @@
 
 \let\xypos\setpositiononly
 
-\def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
-\def\vpos#1{\setpositionbox{#1}\vbox}
+\unexpanded\def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
+\unexpanded\def\vpos#1{\setpositionbox{#1}\vbox}
 
-\def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
-\def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
+\unexpanded\def\bpos#1{\hpos{b:#1}{\strut}\ignorespaces}
+\unexpanded\def\epos#1{\removelastspace\hpos{e:#1}{\strut}}
 
-\def\fpos#1%
+\unexpanded\def\fpos#1%
   {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut
    \ignorespaces}
 
-\def\tpos#1%
+\unexpanded\def\tpos#1%
   {\removelastspace
    \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
 
-\def\ffpos#1%
+\unexpanded\def\ffpos#1%
   {\setpositionplus{b:#1}{\number\parposcounter}\horizontalstrut\wpos{#1}%
    \ignorespaces}
 
-\def\ttpos#1%
+\unexpanded\def\ttpos#1%
   {\removelastspace
    \setpositionplus{e:#1}{\number\parposcounter}\horizontalstrut}
 
-\def\wpos#1%
+\unexpanded\def\wpos#1%
   {\dontleavehmode\vadjust % may disappear if buried
-     {\setbox0\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
-      \rlap{\smashedbox0}}}
+     {\setbox\scratchbox\hbox{\raise\strutdp\hbox{\rawwpos{#1}}}%
+      \rlap
+        {\smashedbox\scratchbox}}}
 
-\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
+\unexpanded\def\wwpos#1% \hsmashed{\llap{\rawwpos{#1}}}
   {\rlap
-     {\setbox0\hbox{\rawwpos{#1}}%
-      \smashedbox0}}
+     {\setbox\scratchbox\hbox{\rawwpos{#1}}%
+      \smashedbox\scratchbox}}
 
-\def\rawwpos#1%
+\unexpanded\def\rawwpos#1%
   {\hpos{w:#1}
      {\strut
       \hskip-\leftskip
@@ -425,7 +444,7 @@
 % the next macro disables par positions (in inner boxes) and
 % only registers the width
 
-\def\setinnerparpositions
+\unexpanded\def\setinnerparpositions
   {\let\fpos\ffpos
    \let\tpos\ttpos
    \let\wpos\wwpos}
@@ -448,54 +467,49 @@
 
 % we can check for used entries, and if not, then not add one
 
-\def\enableparpositions % global
+\unexpanded\def\enableparpositions % global
   {\global\let\registerparoptions\doregisterparoptions
    \global\positioningtrue
    \global\positioningpartrue}
 
-\def\disableparpositions % local
+\unexpanded\def\disableparpositions % local
   {\positioningparfalse}
 
 \let\registerparoptions\relax
 
-\def\doregisterparoptions
+\unexpanded\def\doregisterparoptions
   {\iftrialtypesetting \else
      \ifinpagebody \else \ifmmode \else \ifinformula \else
-       \dodoregisterparoptions
+       \positions_register_par_options
      \fi \fi \fi
    \fi}
 
-\def\dodoregisterparoptions
+\def\positions_register_par_options
   {\global\advance\parposcounter\plusone
    \setpositiondataplus
-     {p:\number\parposcounter}% identifier
-     {\the\zeropoint}%
-     {\the\strutht}%
-     {\the\strutdp}%
+     {p:\number\parposcounter}\zeropoint\strutht\strutdp
      {\the\hsize,\the\dimexpr\leftskip\relax,\the\dimexpr\rightskip\relax,\the\hangindent,\the\hangafter,\the\parindent}%
   %\normalhbox{\registerparsymbol}%
    \iftracepositions\registerparsymbol\fi}
 
-\def\traceposstring#1#2#3%
+\unexpanded\def\traceposstring#1#2#3%
   {\iftracepositions
      \smashedhbox
        {#1{\infofont#2#3}%
-        \scratchdimen.5\points
-        \kern-2\scratchdimen
-        \vrule\!!width4\scratchdimen\!!height\scratchdimen\!!depth\scratchdimen}%
+        \kern-\onepoint
+        \vrule\!!width2\onepoint\!!height\halfapoint\!!depth\halfapoint}%
    \fi}
 
-\def\registerparsymbol
+\unexpanded\def\registerparsymbol
   {\iftracepositions
      \smashedhbox to \zeropoint
        {\hss
         \startcolor[blue]%
         \llap{\infofont\number\parposcounter}%
-        \scratchdimen\onepoint
         \vrule
-          \!!width 4\scratchdimen
-          \!!height2\scratchdimen
-          \!!depth 2\scratchdimen
+          \!!width 4\onepoint
+          \!!height2\onepoint
+          \!!depth 2\onepoint
         \stopcolor
         \hss}%
    \fi}
@@ -542,10 +556,10 @@
 
 \def\analyzenodelocation#1%
   {\ifcsname\@@noden#1\endcsname
-     \doanalyzenodelocation{#1}{\getnodelocationn{#1}}\zerocount
+     \positions_node_location_analyze{#1}{\getnodelocationn{#1}}\zerocount
    \fi}
 
-\def\doanalyzenodelocation#1#2#3% class n default
+\def\positions_node_location_analyze#1#2#3% class n default
   {\begingroup
    \donefalse
    \ifcase\nodelocationmode
@@ -564,37 +578,16 @@
           \edef\nodelocationotherx{\numnodelocationx{#1}\recurselevel}%
           \edef\nodelocationothery{\numnodelocationy{#1}\recurselevel}%
           \ifcase\nodelocationmode
+            % \exitloop
           \or
             % ok for single column
-            \ifcase\nodelocationotherp\relax
-              \exitloop
-            \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
-              \donetrue \advance\scratchcounter\plusone
-            \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
-              % skip
-            \else\ifdim\nodelocationothery>\nodelocationselfy\relax
-              \donetrue \advance\scratchcounter\plusone
-            \else\ifdim\nodelocationothery<\nodelocationselfy\relax
-              % skip
-            \else\ifdim\nodelocationotherx<\nodelocationselfx\relax
-              \donetrue \advance\scratchcounter\plusone
-            \fi\fi\fi\fi\fi\fi
+            \positions_node_location_analyze_one
           \or
             % acceptable for double column
-            \ifcase\nodelocationotherp\relax
-              \exitloop
-            \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
-              \donetrue \advance\scratchcounter\plusone
-            \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
-              % skip
-            \else\ifnum\recurselevel>\nodelocationselfn\relax
-              \donetrue \exitloop
-            \else
-              \donetrue \advance\scratchcounter\plusone
-            \fi\fi\fi\fi
-        \else
-          \exitloop
-        \fi
+            \positions_node_location_analyze_two
+          \else
+            \exitloop
+          \fi
         \fi}%
    \fi
    \ifdone \else
@@ -602,6 +595,34 @@
    \fi
    \setxvalue{\@@nodeo#1}{\the\scratchcounter}%
    \endgroup}
+
+\def\positions_node_location_analyze_one
+  {\ifcase\nodelocationotherp\relax
+     \exitloop
+   \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
+     \donetrue \advance\scratchcounter\plusone
+   \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
+     % skip
+   \else\ifdim\nodelocationothery>\nodelocationselfy\relax
+     \donetrue \advance\scratchcounter\plusone
+   \else\ifdim\nodelocationothery<\nodelocationselfy\relax
+     % skip
+   \else\ifdim\nodelocationotherx<\nodelocationselfx\relax
+     \donetrue \advance\scratchcounter\plusone
+   \fi\fi\fi\fi\fi\fi}
+
+\def\positions_node_location_analyze_two
+  {\ifcase\nodelocationotherp\relax
+     \exitloop
+   \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
+     \donetrue \advance\scratchcounter\plusone
+   \else\ifnum\nodelocationotherp>\nodelocationselfp\relax
+     % skip
+   \else\ifnum\recurselevel>\nodelocationselfn\relax
+     \donetrue \exitloop
+   \else
+     \donetrue \advance\scratchcounter\plusone
+   \fi\fi\fi\fi}
 
 \unexpanded\def\shownodelocation#1%
   {\ifcsname\@@noden#1\endcsname
