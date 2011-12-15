@@ -142,7 +142,12 @@
 \def\flushatnextpar
   {\bgroup
    \global\let\flushpostponednodedata\doflushpostponednodedata
-   \dowithnextbox{\global\setbox\postponednodedata\hbox{\box\postponednodedata\box\nextbox}\egroup}\hbox}
+   \dowithnextboxcs\doflushatnextpar\hbox}
+
+\def\doflushatnextpar
+  {\global\setbox\postponednodedata\hbox
+     {\box\postponednodedata\box\nextbox}%
+   \egroup}
 
 \def\doflushpostponednodedata
   {\ifvoid\postponednodedata\else
