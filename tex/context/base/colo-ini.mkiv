@@ -759,18 +759,43 @@
 
 % Since we couple definitions, we could stick to one test. Todo. Same for mpcolor.
 
+% : in currentpalet, maybe not, ugly (some day at the lua end)
+
 \letvalueempty{(cs:-}
 \letvalueempty{(ts:-}
 
-\unexpanded\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
+% \unexpanded\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
+%   {\edef\currentcolorname{#1}%
+%    \ifcsname(cs:\currentpalet\currentcolorname)\endcsname
+%      \csname(cs:\currentpalet\currentcolorname)\endcsname
+%      \csname(ts:\currentpalet\currentcolorname)\endcsname
+%    \else\ifcsname(cs:\currentcolorname)\endcsname
+%      \csname(cs:\currentcolorname)\endcsname
+%      \csname(ts:\currentcolorname)\endcsname
+%    \fi\fi}
+
+\unexpanded\def\doactivatecolor#1% not that much faster but less tracing
   {\edef\currentcolorname{#1}%
-   \ifcsname(cs:\currentpalet\currentcolorname)\endcsname
+   \ifx\currentpalet\empty
+     \expandafter\doactivatecolor_nop
+   \else
+     \expandafter\doactivatecolor_yes
+   \fi}
+
+\unexpanded\def\doactivatecolor_yes
+  {\ifcsname(cs:\currentpalet\currentcolorname)\endcsname
      \csname(cs:\currentpalet\currentcolorname)\endcsname
      \csname(ts:\currentpalet\currentcolorname)\endcsname
    \else\ifcsname(cs:\currentcolorname)\endcsname
      \csname(cs:\currentcolorname)\endcsname
      \csname(ts:\currentcolorname)\endcsname
    \fi\fi}
+
+\unexpanded\def\doactivatecolor_nop
+  {\ifcsname(cs:\currentcolorname)\endcsname
+     \csname(cs:\currentcolorname)\endcsname
+     \csname(ts:\currentcolorname)\endcsname
+   \fi}
 
 \let\normaldoactivatecolor\doactivatecolor
 
