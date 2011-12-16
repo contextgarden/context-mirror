@@ -761,17 +761,17 @@
 
 % : in currentpalet, maybe not, ugly (some day at the lua end)
 
-\letvalueempty{(cs:-}
-\letvalueempty{(ts:-}
+\letvalueempty{\??qc:-}
+\letvalueempty{\??qt:-}
 
 % \unexpanded\def\doactivatecolor#1% : in currentpalet, maybe not, ugly (some day at the lua end)
 %   {\edef\currentcolorname{#1}%
-%    \ifcsname(cs:\currentpalet\currentcolorname)\endcsname
-%      \csname(cs:\currentpalet\currentcolorname)\endcsname
-%      \csname(ts:\currentpalet\currentcolorname)\endcsname
-%    \else\ifcsname(cs:\currentcolorname)\endcsname
-%      \csname(cs:\currentcolorname)\endcsname
-%      \csname(ts:\currentcolorname)\endcsname
+%    \ifcsname\??qc:\currentpalet\currentcolorname\endcsname
+%      \csname\??qc:\currentpalet\currentcolorname\endcsname
+%      \csname\??qt:\currentpalet\currentcolorname\endcsname
+%    \else\ifcsname\??qc:\currentcolorname\endcsname
+%      \csname\??qc:\currentcolorname\endcsname
+%      \csname\??qt:\currentcolorname\endcsname
 %    \fi\fi}
 
 \unexpanded\def\doactivatecolor#1% not that much faster but less tracing
@@ -783,18 +783,18 @@
    \fi}
 
 \unexpanded\def\doactivatecolor_yes
-  {\ifcsname(cs:\currentpalet\currentcolorname)\endcsname
-     \csname(cs:\currentpalet\currentcolorname)\endcsname
-     \csname(ts:\currentpalet\currentcolorname)\endcsname
-   \else\ifcsname(cs:\currentcolorname)\endcsname
-     \csname(cs:\currentcolorname)\endcsname
-     \csname(ts:\currentcolorname)\endcsname
+  {\ifcsname\??qc:\currentpalet\currentcolorname\endcsname
+     \csname\??qc:\currentpalet\currentcolorname\endcsname
+     \csname\??qt:\currentpalet\currentcolorname\endcsname
+   \else\ifcsname\??qc:\currentcolorname\endcsname
+     \csname\??qc:\currentcolorname\endcsname
+     \csname\??qt:\currentcolorname\endcsname
    \fi\fi}
 
 \unexpanded\def\doactivatecolor_nop
-  {\ifcsname(cs:\currentcolorname)\endcsname
-     \csname(cs:\currentcolorname)\endcsname
-     \csname(ts:\currentcolorname)\endcsname
+  {\ifcsname\??qc:\currentcolorname\endcsname
+     \csname\??qc:\currentcolorname\endcsname
+     \csname\??qt:\currentcolorname\endcsname
    \fi}
 
 \let\normaldoactivatecolor\doactivatecolor
@@ -810,12 +810,12 @@
 
 \unexpanded\def\dousecurrentcolorparameter
   {\let\currentcolorname\currentcolorparameter % maybe only when success
-   \ifcsname(cs:\currentpalet\currentcolorparameter)\endcsname
-     \csname(cs:\currentpalet\currentcolorparameter)\endcsname
-     \csname(ts:\currentpalet\currentcolorparameter)\endcsname
-   \else\ifcsname(cs:\currentcolorparameter)\endcsname
-     \csname(cs:\currentcolorparameter)\endcsname
-     \csname(ts:\currentcolorparameter)\endcsname
+   \ifcsname\??qc:\currentpalet\currentcolorparameter\endcsname
+     \csname\??qc:\currentpalet\currentcolorparameter\endcsname
+     \csname\??qt:\currentpalet\currentcolorparameter\endcsname
+   \else\ifcsname\??qc:\currentcolorparameter\endcsname
+     \csname\??qc:\currentcolorparameter\endcsname
+     \csname\??qt:\currentcolorparameter\endcsname
    \fi\fi}
 
 \let\dosetcolorattribute\dousecolorhashparameter % for a while
@@ -895,18 +895,18 @@
 %D define ourselves a color conditional first.
 
 \def\doifcolorelse#1%
-  {\ifcsname(ca:\currentpalet#1)\endcsname
+  {\ifcsname\??qa:\currentpalet#1\endcsname
      \expandafter\firstoftwoarguments
-   \else\ifcsname(ca:#1)\endcsname
+   \else\ifcsname\??qa:#1\endcsname
      \doubleexpandafter\firstoftwoarguments
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
 \def\doifcolor#1%
-  {\ifcsname(ca:\currentpalet#1)\endcsname
+  {\ifcsname\??qa:\currentpalet#1\endcsname
      \expandafter\firstofoneargument
-   \else\ifcsname(ca:#1)\endcsname
+   \else\ifcsname\??qa:#1\endcsname
      \doubleexpandafter\firstofoneargument
    \else
      \doubleexpandafter\gobbleoneargument
@@ -981,60 +981,60 @@
 \appendtoks \initializemaintextcolor \to \everyjob
 \appendtoks \initializemaintextcolor \to \everysetupcolors
 
-\def\doinheritdirectcs#1{\csname(cs:\ifcsname(cs:#1)\endcsname#1\fi)\endcsname}
-\def\doinheritdirectca#1{\csname(ca:\ifcsname(ca:#1)\endcsname#1\fi)\endcsname}
-\def\doinheritdirectts#1{\csname(ts:\ifcsname(ts:#1)\endcsname#1\fi)\endcsname}
-\def\doinheritdirectta#1{\csname(ta:\ifcsname(ta:#1)\endcsname#1\fi)\endcsname}
+\def\doinheritdirectcs#1{\csname\??qc:\ifcsname\??qc:#1\endcsname#1\fi\endcsname}
+\def\doinheritdirectca#1{\csname\??qa:\ifcsname\??qa:#1\endcsname#1\fi\endcsname}
+\def\doinheritdirectts#1{\csname\??qt:\ifcsname\??qt:#1\endcsname#1\fi\endcsname}
+\def\doinheritdirectta#1{\csname\??qs:\ifcsname\??qs:#1\endcsname#1\fi\endcsname}
 
-\def\doinheritpaletca#1#2{\csname(ca:\ifcsname(ca:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
-\def\doinheritpaletcs#1#2{\csname(cs:\ifcsname(cs:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
-\def\doinheritpaletta#1#2{\csname(ta:\ifcsname(ta:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
-\def\doinheritpaletts#1#2{\csname(ts:\ifcsname(ts:\??pa#1:#2)\endcsname\??pa#1:#2\fi)\endcsname}
+\def\doinheritpaletca#1#2{\csname\??qa:\ifcsname\??qa:\??pa#1:#2\endcsname\??pa#1:#2\fi\endcsname}
+\def\doinheritpaletcs#1#2{\csname\??qc:\ifcsname\??qc:\??pa#1:#2\endcsname\??pa#1:#2\fi\endcsname}
+\def\doinheritpaletta#1#2{\csname\??qs:\ifcsname\??qs:\??pa#1:#2\endcsname\??pa#1:#2\fi\endcsname}
+\def\doinheritpaletts#1#2{\csname\??qt:\ifcsname\??qt:\??pa#1:#2\endcsname\??pa#1:#2\fi\endcsname}
 
 \def\dodefinepaletcolor#1#2#3%
   {\doifassignmentelse{#3}% \definepalet[test][xx={y=.4}]
      {\definecolor[\??pa#1:#2][#3]%
-      \dosetcolorvalue{(cs:#1:#2)}{\doinheritpaletca{#1}{#2}}%
-      \dosetcolorvalue{(ca:#1:#2)}{\doinheritpaletcs{#1}{#2}}%
-      \dosetcolorvalue{(ts:#1:#2)}{\doinheritpaletta{#1}{#2}}%
-      \dosetcolorvalue{(ta:#1:#2)}{\doinheritpaletts{#1}{#2}}}
-     {\ifcsname(cs:#3)\endcsname % \definepalet[test][xx=green]
-        \dosetcolorvalue{(cs:#1:#2)}{\doinheritdirectcs{#3}}%
-        \dosetcolorvalue{(ca:#1:#2)}{\doinheritdirectca{#3}}%
-        \dosetcolorvalue{(ts:#1:#2)}{\doinheritdirectts{#3}}%
-        \dosetcolorvalue{(ta:#1:#2)}{\doinheritdirectta{#3}}%
+      \dosetcolorvalue{\??qc:#1:#2}{\doinheritpaletca{#1}{#2}}%
+      \dosetcolorvalue{\??qa:#1:#2}{\doinheritpaletcs{#1}{#2}}%
+      \dosetcolorvalue{\??qt:#1:#2}{\doinheritpaletta{#1}{#2}}%
+      \dosetcolorvalue{\??qs:#1:#2}{\doinheritpaletts{#1}{#2}}}
+     {\ifcsname\??qc:#3\endcsname % \definepalet[test][xx=green]
+        \dosetcolorvalue{\??qc:#1:#2}{\doinheritdirectcs{#3}}%
+        \dosetcolorvalue{\??qa:#1:#2}{\doinheritdirectca{#3}}%
+        \dosetcolorvalue{\??qt:#1:#2}{\doinheritdirectts{#3}}%
+        \dosetcolorvalue{\??qs:#1:#2}{\doinheritdirectta{#3}}%
       \else
         % not entered when making format
-        \localundefine{(cs:#1:#2)}% \letvalue{(cs:#1:#2)}\undefined
-        \localundefine{(ca:#1:#2)}% \letvalue{(ca:#1:#2)}\undefined
-        \localundefine{(ts:#1:#2)}% \letvalue{(cs:#1:#2)}\undefined
-        \localundefine{(ta:#1:#2)}% \letvalue{(ca:#1:#2)}\undefined
+        \localundefine{\??qc:#1:#2}%
+        \localundefine{\??qa:#1:#2}%
+        \localundefine{\??qt:#1:#2}%
+        \localundefine{\??qs:#1:#2}%
       \fi}}
 
-\setvalue{(cs:)}{} \setvalue{(ca:)}{0}
-\setvalue{(ts:)}{} \setvalue{(ta:)}{0}
+\setvalue{\??qc:}{} \setvalue{\??qa:}{0}
+\setvalue{\??qt:}{} \setvalue{\??qs:}{0}
 
-\def\doinheritca#1{\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
-\def\doinheritcs#1{\csname(cs:\ifcsname(cs:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(cs:#1)\endcsname#1\fi\fi)\endcsname}
-\def\doinheritta#1{\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
-\def\doinheritts#1{\csname(ts:\ifcsname(ts:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ts:#1)\endcsname#1\fi\fi)\endcsname}
+\def\doinheritca#1{\csname\??qa:\ifcsname\??qa:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qa:#1\endcsname#1\fi\fi\endcsname}
+\def\doinheritcs#1{\csname\??qc:\ifcsname\??qc:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qc:#1\endcsname#1\fi\fi\endcsname}
+\def\doinheritta#1{\csname\??qs:\ifcsname\??qs:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qs:#1\endcsname#1\fi\fi\endcsname}
+\def\doinheritts#1{\csname\??qt:\ifcsname\??qt:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qt:#1\endcsname#1\fi\fi\endcsname}
 
 %D Low level defs:
 
-\def\colordefalc#1#2{\setevalue{(ca:#1)}{#2}\setvalue {(cs:#1)}{\attribute\colorattribute       #2 }}
-\def\colordefagc#1#2{\setxvalue{(ca:#1)}{#2}\setgvalue{(cs:#1)}{\attribute\colorattribute       #2 }} % was not g
-\def\colordefalt#1#2{\setevalue{(ta:#1)}{#2}\setvalue {(ts:#1)}{\attribute\transparencyattribute#2 }}
-\def\colordefagt#1#2{\setxvalue{(ta:#1)}{#2}\setgvalue{(ts:#1)}{\attribute\transparencyattribute#2 }}
+\def\colordefalc#1#2{\setevalue{\??qa:#1}{#2}\setvalue {\??qc:#1}{\attribute\colorattribute       #2 }}
+\def\colordefagc#1#2{\setxvalue{\??qa:#1}{#2}\setgvalue{\??qc:#1}{\attribute\colorattribute       #2 }} % was not g
+\def\colordefalt#1#2{\setevalue{\??qs:#1}{#2}\setvalue {\??qt:#1}{\attribute\transparencyattribute#2 }}
+\def\colordefagt#1#2{\setxvalue{\??qs:#1}{#2}\setgvalue{\??qt:#1}{\attribute\transparencyattribute#2 }}
 
-\def\colordefflc#1#2{\setvalue {(ca:#1)}{\doinheritca{#2}}\setvalue {(cs:#1)}{\doinheritcs{#2}}}
-\def\colordeffgc#1#2{\setgvalue{(ca:#1)}{\doinheritca{#2}}\setvalue {(cs:#1)}{\doinheritcs{#2}}}
-\def\colordefflt#1#2{\setvalue {(ta:#1)}{\doinheritta{#2}}\setvalue {(ts:#1)}{\doinheritts{#2}}}
-\def\colordeffgt#1#2{\setgvalue{(ta:#1)}{\doinheritta{#2}}\setgvalue{(ts:#1)}{\doinheritts{#2}}}
+\def\colordefflc#1#2{\setvalue {\??qa:#1}{\doinheritca{#2}}\setvalue {\??qc:#1}{\doinheritcs{#2}}}
+\def\colordeffgc#1#2{\setgvalue{\??qa:#1}{\doinheritca{#2}}\setvalue {\??qc:#1}{\doinheritcs{#2}}}
+\def\colordefflt#1#2{\setvalue {\??qs:#1}{\doinheritta{#2}}\setvalue {\??qt:#1}{\doinheritts{#2}}}
+\def\colordeffgt#1#2{\setgvalue{\??qs:#1}{\doinheritta{#2}}\setgvalue{\??qt:#1}{\doinheritts{#2}}}
 
-\def\colordefrlc  #1{\localundefine {(ca:#1)}\localundefine {(cs:#1)}}
-\def\colordefrgc  #1{\globalundefine{(ca:#1)}\globalundefine{(cs:#1)}}
-\def\colordefrlt  #1{\localundefine {(ta:#1)}\localundefine {(ts:#1)}}
-\def\colordefrgt  #1{\globalundefine{(ta:#1)}\globalundefine{(ts:#1)}}
+\def\colordefrlc  #1{\localundefine {\??qa:#1}\localundefine {\??qc:#1}}
+\def\colordefrgc  #1{\globalundefine{\??qa:#1}\globalundefine{\??qc:#1}}
+\def\colordefrlt  #1{\localundefine {\??qs:#1}\localundefine {\??qt:#1}}
+\def\colordefrgt  #1{\globalundefine{\??qs:#1}\globalundefine{\??qt:#1}}
 
 %D \macros
 %D   {colorvalue, grayvalue}
@@ -1063,8 +1063,8 @@
 \def\MPcolor                 #1{\ctxcommand{mpcolor(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
 \def\MPoptions               #1{\ctxcommand{mpoptions(\number\currentcolormodel,\number\doinheritca{#1},\number\doinheritta{#1})}}
 
-\def\thecolorattribute       #1{\number\csname(ca:\ifcsname(ca:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ca:#1)\endcsname#1\fi\fi)\endcsname}
-\def\thetransparencyattribute#1{\number\csname(ta:\ifcsname(ta:\currentpalet#1)\endcsname\currentpalet#1\else\ifcsname(ta:#1)\endcsname#1\fi\fi)\endcsname}
+\def\thecolorattribute       #1{\number\csname\??qa:\ifcsname\??qa:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qa:#1\endcsname#1\fi\fi\endcsname}
+\def\thetransparencyattribute#1{\number\csname\??qs:\ifcsname\??qs:\currentpalet#1\endcsname\currentpalet#1\else\ifcsname\??qs:#1\endcsname#1\fi\fi\endcsname}
 
 \def\internalspotcolorname   #1{\ctxcommand{spotcolorname(\thecolorattribute{#1})}}
 \def\internalspotcolorparent #1{\ctxcommand{spotcolorparent(\thecolorattribute{#1})}}

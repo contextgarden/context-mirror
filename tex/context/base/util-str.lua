@@ -123,3 +123,8 @@ end
 --~   bb
 --~   cccccc
 --~ ]])
+
+function strings.nice(str)
+    str = gsub(str,"[:%-+_]+"," ") -- maybe more
+    return str
+end

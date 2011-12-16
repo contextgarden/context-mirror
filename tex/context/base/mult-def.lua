@@ -9470,6 +9470,16 @@ return {
    ["pe"]="شماره‌قبلی",
    ["ro"]="numarprecedent",
   },
+  ["printable"]={
+   ["cs"]="tisknutelne",
+   ["de"]="druckbar",
+   ["en"]="printable",
+   ["fr"]="editable",
+   ["it"]="stampabile",
+   ["nl"]="printbaar", -- afdrukbaar
+   ["pe"]="قابل‌چاپ",
+   ["ro"]="tiparibil",
+  },
   ["process"]={
    ["cs"]="process",
    ["de"]="process",

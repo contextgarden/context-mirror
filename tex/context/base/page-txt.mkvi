@@ -52,23 +52,23 @@
 \definelayoutelement[\v!footer]
 \definelayoutelement[\v!bottom]
 
-\definelayoutelement[\v!top   :\v!text]  [\v!text]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!header:\v!text]  [\v!text]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!text  :\v!text]  [\v!text]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!footer:\v!text]  [\v!text]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!bottom:\v!text]  [\v!text]  [\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!top   :\v!text]  [\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!text]  [\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!text]  [\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!text]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!text]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
 
-\definelayoutelement[\v!top   :\v!margin][\v!margin][\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!header:\v!margin][\v!margin][\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!text  :\v!margin][\v!margin][\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!footer:\v!margin][\v!margin][\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!bottom:\v!margin][\v!margin][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!top   :\v!margin][\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!margin][\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!margin][\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!margin][\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!margin][\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
 
-\definelayoutelement[\v!top   :\v!edge]  [\v!edge]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!header:\v!edge]  [\v!edge]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!text  :\v!edge]  [\v!edge]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!footer:\v!edge]  [\v!edge]  [\c!lefttext=,\c!middletext=,\c!righttext=]
-\definelayoutelement[\v!bottom:\v!edge]  [\v!edge]  [\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!top   :\v!edge]  [\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!edge]  [\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!edge]  [\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!edge]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!edge]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
 
 \unexpanded\def\setuplayouttext
   {\dotripleempty\setup_layout_text}
@@ -579,13 +579,13 @@
 
 \def\place_left_edge_layout_element#parameter%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
-   \place_left_edge_layout_element_indeed\leftedgewidth
+   \place_layout_element_indeed\leftedgewidth
      {\hss\layoutelementparameter#parameter}%
    \hskip\leftedgedistance}
 
 \def\place_left_margin_layout_element#parameter#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
-   \place_left_edge_layout_element_indeed\leftmarginwidth
+   \place_layout_element_indeed\leftmarginwidth
      {\hbox to \leftmarginwidth{\hss\layoutelementparameter#parameter}%
       \ifnum#extrastate=\extra_at_margin_left
         \hskip-\leftmarginwidth
@@ -595,7 +595,7 @@
 
 \def\place_text_body_layout_element#left#middle#right#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
-   \place_left_edge_layout_element_indeed\makeupwidth
+   \place_layout_element_indeed\makeupwidth
      {\hbox to \makeupwidth{\ifnum#extrastate=\extra_at_margin_left\place_layout_extra_text_left\fi\layoutelementparameter#left\hss}%
       \hskip-\makeupwidth
       \hbox to \makeupwidth{\hss\layoutelementparameter#middle\hss}%
@@ -605,7 +605,7 @@
 \def\place_right_margin_layout_element#parameter#extrastate%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
    \hskip\rightmargindistance
-   \place_left_edge_layout_element_indeed\rightmarginwidth
+   \place_layout_element_indeed\rightmarginwidth
      {\hbox to \rightmarginwidth{\layoutelementparameter#parameter\hss}%
       \ifnum#extrastate=\extra_at_margin_right
         \hskip-\rightmarginwidth
@@ -615,10 +615,10 @@
 \def\place_right_edge_layout_element#parameter%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \hskip\rightedgedistance
-   \place_left_edge_layout_element_indeed\rightedgewidth
+   \place_layout_element_indeed\rightedgewidth
      {\layoutelementparameter#parameter\hss}}
 
-\def\place_left_edge_layout_element_indeed#width#content%
+\def\place_layout_element_indeed#width#content%
   {\vbox % to \vsize
      {\hsize#1\relax
       \layoutelementparameter\c!before

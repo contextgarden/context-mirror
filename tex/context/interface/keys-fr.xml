@@ -887,6 +887,7 @@
 		<cd:constant name='preview' value='previsualisation'/>
 		<cd:constant name='previous' value='precedent'/>
 		<cd:constant name='previousnumber' value='numeroprecedent'/>
+		<cd:constant name='printable' value='editable'/>
 		<cd:constant name='process' value='process'/>
 		<cd:constant name='profile' value='profile'/>
 		<cd:constant name='pubsep' value='pubsep'/>

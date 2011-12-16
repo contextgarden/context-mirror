@@ -118,42 +118,46 @@ function codeinjections.defineviewerlayer(specification)
     end
 end
 
-local function useviewerlayer(name)
-    local specification = specifications[name]
-    if not environment.initex and specification and not initialized[name] then
-        specifications[name] = nil -- or not
-        initialized   [name] = true
-        if not pagelayers then
-            pagelayers = pdfdictionary()
-            pagelayersreference = pdfreserveobject()
-        end
-        local tag = specification.tag
-        -- todo: reserve
-        local nn = pdfreserveobject()
-        local nr = pdfreference(nn)
-        local nd = pdfdictionary {
-            Type   = pdf_ocg,
-            Name   = specification.title or "unknown",
-            Intent = ((specification.editable  ~= v_no) and pdf_design) or nil,  -- disable layer hiding by user
-            Usage  = ((specification.printable == v_no) and lpdf_usage) or nil, -- printable or not
-        }
-        cache[#cache+1] = { nn, nd }
-        pdfln[tag] = nr -- was n
-        local dn = pdfreserveobject()
-        local dr = pdfreference(dn)
-        local dd = pdfdictionary {
-            Type = pdf_ocmd,
-            OCGs = pdfarray { nr },
-        }
-        cache[#cache+1] = { dn, dd }
-        pdfld[tag] = dr
-        textlayers[#textlayers+1] = nr
-        if specification.visible == v_start then
-            videlayers[#videlayers+1] = nr
+local function useviewerlayer(name) -- move up so that we can use it as local
+    if not environment.initex and not initialized[name] then
+        local specification = specifications[name]
+        if specification then
+            specifications[name] = nil -- or not
+            initialized   [name] = true
+            if not pagelayers then
+                pagelayers = pdfdictionary()
+                pagelayersreference = pdfreserveobject()
+            end
+            local tag = specification.tag
+            -- todo: reserve
+            local nn = pdfreserveobject()
+            local nr = pdfreference(nn)
+            local nd = pdfdictionary {
+                Type   = pdf_ocg,
+                Name   = specification.title or "unknown",
+                Intent = ((specification.editable  ~= v_no) and pdf_design) or nil, -- disable layer hiding by user
+                Usage  = ((specification.printable == v_no) and lpdf_usage) or nil, -- printable or not
+            }
+            cache[#cache+1] = { nn, nd }
+            pdfln[tag] = nr -- was n
+            local dn = pdfreserveobject()
+            local dr = pdfreference(dn)
+            local dd = pdfdictionary {
+                Type = pdf_ocmd,
+                OCGs = pdfarray { nr },
+            }
+            cache[#cache+1] = { dn, dd }
+            pdfld[tag] = dr
+            textlayers[#textlayers+1] = nr
+            if specification.visible == v_start then
+                videlayers[#videlayers+1] = nr
+            else
+                hidelayers[#hidelayers+1] = nr
+            end
+            pagelayers[tag] = dr -- check
         else
-            hidelayers[#hidelayers+1] = nr
+            -- todo: message
         end
-        pagelayers[tag] = dr -- check
     end
 end
 

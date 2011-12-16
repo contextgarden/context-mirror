@@ -98,20 +98,6 @@ local function initializer(...)
     return states.initialize(...)
 end
 
-local function register(name,lw) -- if not inimode redefine data[n] in first call
-    local stamp = format(template,name)
-    local n = registered[stamp]
-    if not n then
-        n = #values + 1
-        values[n] = name
-        registered[stamp] = n
-        listwise[n] = lw or false
-    end
-    return registered[stamp] -- == n
-end
-
-viewerlayers.register = register
-
 attributes.viewerlayers.handler = nodes.installattributehandler {
     name        = "viewerlayer",
     namespace   = viewerlayers,
@@ -120,11 +106,19 @@ attributes.viewerlayers.handler = nodes.installattributehandler {
     processor   = states.stacked,
 }
 
+local stack, enabled, global = { }, false, false
+
 function viewerlayers.enable(value)
     if value == false or not viewerlayers.supported then
-        tasks.disableaction("shipouts","attributes.viewerlayers.handler")
+        if enabled then
+            tasks.disableaction("shipouts","attributes.viewerlayers.handler")
+        end
+        enabled = false
     else
-        tasks.enableaction("shipouts","attributes.viewerlayers.handler")
+        if not enabled then
+            tasks.enableaction("shipouts","attributes.viewerlayers.handler")
+        end
+        enabled = true
     end
 end
 
@@ -134,16 +128,31 @@ function viewerlayers.forcesupport(value)
     viewerlayers.enable(value)
 end
 
+local function register(name,lw) -- if not inimode redefine data[n] in first call
+    if not enabled then
+        viewerlayers.enable(true)
+    end
+    local stamp = format(template,name)
+    local n = registered[stamp]
+    if not n then
+        n = #values + 1
+        values[n] = name
+        registered[stamp] = n
+        listwise[n] = lw or false -- lw forces a used
+    end
+    return registered[stamp] -- == n
+end
+
+viewerlayers.register = register
+
 function viewerlayers.setfeatures(hasorder)
     viewerlayers.hasorder = hasorder
 end
 
-local stack, enabled, global = { }, false, false
-
 function viewerlayers.start(name)
-    if not enabled then
-        viewerlayers.enable(true)
-    end
+--     if not enabled then
+--         viewerlayers.enable(true)
+--     end
     insert(stack,texgetattribute(a_viewerlayer))
     local a = register(name) or unsetvalue
     if global or scopes[name] == v_global then
@@ -188,4 +197,15 @@ function viewerlayers.define(settings)
     end
 end
 
-commands.defineviewerlayer = viewerlayers.define
+commands.defineviewerlayer     = viewerlayers.define
+commands.startviewerlayer      = viewerlayers.start
+commands.stopviewerlayer       = viewerlayers.stop
+
+function commands.definedviewerlayer(settings)
+    viewerlayers.define(settings)
+    context(register(settings.tag,true)) -- true forces a use
+end
+
+function commands.registeredviewerlayer(name)
+    context(register(name,true)) -- true forces a use
+end

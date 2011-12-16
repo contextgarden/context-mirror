@@ -17,66 +17,6 @@
 
 \unprotect
 
-% todo: no need for 'color' argument, we can set that once at startup; currently
-% a bit inconsistent
-
-% 1=off  2=gray  3=spot  4=rgb  5=cmyk  6=cmy % only 1/2/4/5 are supported
-%
-% We could combine this in one attribute but this is not faster and also
-% less flexible because sometimes we want to freeze the attribute bit.
-
-% % color (layer on top)
-%
-% \def\dosetcolormodel#1% overloaded later
-%   {\ctxcommand{setcolormodel('#1')}} % sets attribute
-%
-% \dosetcolormodel{all}
-%
-% \def\registerrgbcolor#1#2#3#4% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','rgb' ,#2,#3,#4)}}}
-%
-% \def\registercmykcolor#1#2#3#4#5% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','cmyk',#2,#3,#4,#5)}}}
-%
-% \def\registergraycolor#1#2% not used
-%   {\setevalue{(cs:#1)}{\attribute\colorattribute\ctxcommand{registercolor('#1','gray',#2)}}}
-
-% % transparency (layer on top)
-%
-% \def\registertransparency#1#2#3%
-%   {\setevalue{(ts:#1)}{\attribute\transparencyattribute\ctxcommand{registertransparency(#2,#3)} }}
-%
-% \def\sometransparencyswitch#1%
-%   {\csname(ts:#1)\endcsname}
-%
-% \def\sometransparencyswitch
-%   {\ctxcommand{enabletransparency()}%
-%    \gdef\sometransparencyswitch##1{\csname(ts:##1)\endcsname}%
-%    \sometransparencyswitch}
-%
-% \registertransparency {one} {1} {.5}
-% \registertransparency {two} {1} {.6}
-
-% overprint
-
-\def\registercolorintent#1#2%
-  {\setevalue{(os:#1)}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
-
-\def\dotriggercolorintent
-  {\ctxcommand{enablecolorintents()}%
-   \gdef\dotriggercolorintent##1{\csname(os:##1)\endcsname}%
-   \dotriggercolorintent}
-
-\registercolorintent{knockout} {knockout}
-\registercolorintent{overprint}{overprint}
-
-\installattributestack\colorintentattribute
-
-\setevalue{(os:#\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % does this work out ok?
+% We implement this elsewhere.
 
 \protect \endinput
-
-% test case
-%
-% {\green \hbox to \hsize{\leaders\hrule  \hfill a}\par}
-% {\red   \hbox to \hsize{\leaders\hbox{x}\hfill a}\par}

@@ -41,6 +41,23 @@
 %D or independent. For the moment we only support independent overprint
 %D handling. Here we deal with a per-document setting.
 
+%D We can move the stack and attribute setting to the \LUA\ end.
+
+\def\registercolorintent#1#2%
+  {\setevalue{\??qi:#1}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
+
+\def\dotriggercolorintent
+  {\ctxcommand{enablecolorintents()}%
+   \gdef\dotriggercolorintent##1{\csname\??qi:##1\endcsname}%
+   \dotriggercolorintent}
+
+\registercolorintent{knockout} {knockout}
+\registercolorintent{overprint}{overprint}
+
+\installattributestack\colorintentattribute
+
+\setevalue{\??qi:\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % or reset? used at all?
+
 \unexpanded\def\startcolorintent[#1]%
   {\pushattribute\colorintentattribute
    \dotriggercolorintent{#1}}
