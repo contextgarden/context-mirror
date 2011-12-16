@@ -134,12 +134,12 @@
 \let\currentnamedsection\empty
 
 \unexpanded\def\startnamedsection
-  {\dotripleempty\startnamedsection}
+  {\dotripleempty\dostartnamedsection}
 
 \def\dostartnamedsection[#1]% [#2][#3]
   {\pushmacro\currentnamedsection
    \edef\currentnamedsection{#1}%
-   \dostarthead[#1]} % [#2][#3]
+   \normalexpanded{\dodostarthead[\currentnamedsection]}} % [#2][#3]
 
 \unexpanded\def\stopnamedsection
   {\normalexpanded{\dostophead[\currentnamedsection]}%

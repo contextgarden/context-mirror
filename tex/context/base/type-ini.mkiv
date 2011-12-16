@@ -375,6 +375,10 @@
 \newtoks \everybeforedefinetypeface
 \newtoks \everyafterdefinetypeface
 
+\appendtoks
+    \resetfontclassmathfamilies\fontclass
+\to \everybeforedefinetypeface
+
 \let\fontclassstyle\empty
 
 \def\dostarttypefacedefining#1#2#3%
