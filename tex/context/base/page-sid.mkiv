@@ -205,14 +205,14 @@
            \boxrulewidth.5\points
            \ruledhbox{\strut\kern\d_page_sides_width}}%
       \fi
-     \par
-     \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
-       \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
-         \exitloop
-       \fi
-     \else
-       \exitloop
-     \fi}%
+      \par
+      \ifdim\dimexpr\d_page_sides_vsize-\pagetotal\relax>\zeropoint
+        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
+          \exitloop
+        \fi
+      \else
+        \exitloop
+      \fi}%
    \endgroup
    \ifdim\parskip>\zeropoint % why this test ?
      \ifdim\sidefloatbottomskip>\parskip

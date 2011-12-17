@@ -17,52 +17,68 @@ local texdimen, texcount = tex.dimen, tex.count
 -- fastrepack
 
 function commands.doreshapeframedbox(n)
-    local box, noflines, firstheight, lastdepth, lastlinelength = texbox[n], 0, nil, nil, 0
+    local box            = texbox[n]
+    local noflines       = 0
+    local firstheight    = nil
+    local lastdepth      = nil
+    local lastlinelength = 0
+    local minwidth       = 0
+    local maxwidth       = 0
+    local totalwidth     = 0
     if box.width ~= 0 then
         local list = box.list
         if list then
-            local width, done = 0, false
             for h in traverse_id('hlist',list) do -- no dir etc needed
                 if not firstheight then
                     firstheight = h.height
                 end
                 lastdepth = h.depth
+                noflines = noflines + 1
                 local l = h.list
                 if l then
-                    done = true
                     local p = hpack(copy(l))
                     lastlinelength = p.width
-                    if lastlinelength > width then
-                        width = lastlinelength
+                    if lastlinelength > maxwidth then
+                        maxwidth = lastlinelength
                     end
+                    if lastlinelength < minwidth or minwidth == 0 then
+                        minwidth = lastlinelength
+                    end
+                    totalwidth = totalwidth + lastlinelength
                     free(p)
                 end
             end
-            if done then
-                if width ~= 0 then
+            if firstheight then
+                if maxwidth ~= 0 then
                     for h in traverse_id('hlist',list) do
                         local l = h.list
                         if l then
-                    --  if h.width ~= width then -- else no display math handling (uses shift)
-                            h.list = hpack(l,width,'exactly',h.dir)
+                    --  if h.width ~= maxwidth then -- else no display math handling (uses shift)
+                            h.list = hpack(l,maxwidth,'exactly',h.dir)
                             h.shift = 0 -- needed for display math
-                            h.width = width
+                            h.width = maxwidth
                     --  end
                         end
                     end
                 end
-                box.width = width
+                box.width = maxwidth
             end
         end
     end
---~     print("reshape", noflines, firstheight or 0, lastdepth or 0)
-    texsetcount("global","framednoflines",    noflines)
-    texsetdimen("global","framedfirstheight", firstheight or 0)
-    texsetdimen("global","framedlastdepth",   lastdepth or 0)
+ -- print("reshape", noflines, firstheight or 0, lastdepth or 0)
+    texsetcount("global","framednoflines",     noflines)
+    texsetdimen("global","framedfirstheight",  firstheight or 0)
+    texsetdimen("global","framedlastdepth",    lastdepth or 0)
+    texsetdimen("global","framedminwidth",     minwidth)
+    texsetdimen("global","framedmaxwidth",     maxwidth)
+    texsetdimen("global","framedaveragewidth", noflines > 0 and totalwidth/noflines or 0)
 end
 
 function commands.doanalyzeframedbox(n)
-    local box, noflines, firstheight, lastdepth = texbox[n], 0, nil, nil
+    local box         = texbox[n]
+    local noflines    = 0
+    local firstheight = nil
+    local lastdepth   = nil
     if box.width ~= 0 then
         local list = box.list
         if list then
@@ -75,7 +91,7 @@ function commands.doanalyzeframedbox(n)
             end
         end
     end
---~     print("analyze", noflines, firstheight or 0, lastdepth or 0)
+ -- print("analyze", noflines, firstheight or 0, lastdepth or 0)
     texsetcount("global","framednoflines",    noflines)
     texsetdimen("global","framedfirstheight", firstheight or 0)
     texsetdimen("global","framedlastdepth",   lastdepth or 0)

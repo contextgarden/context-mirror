@@ -76,10 +76,10 @@
      printable = "\v!yes"
    }}}%
    \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%
-   \expandafter\glet\csname\??ly:a:#1\endcsname\layoutcomponentboxattribute}
+   \expandafter\glet\csname\??lr:a:#1\endcsname\layoutcomponentboxattribute}
 
 \def\dosetlayoutcomponentattribute#1% make this faster
-  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly:a:#1\endcsname
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??lr:a:#1\endcsname
    \ifx\layoutcomponentboxattribute\relax
      \doinitializelayoutcomponent{#1}% get rid of { }
    \fi}
@@ -92,7 +92,7 @@
 \let\layoutcomponentboxattribute  \empty
 
 \def\showlayoutcomponents
-  {\ctxlua{attributes.viewerlayers.enable()}%
+  {\ctxlua{attributes.viewerlayers.enable()}% will go
    \let\setlayoutcomponentattribute  \dosetlayoutcomponentattribute
    \let\resetlayoutcomponentattribute\doresetlayoutcomponentattribute}
 

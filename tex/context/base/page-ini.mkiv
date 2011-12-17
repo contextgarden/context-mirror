@@ -272,7 +272,7 @@
 
 \def\page_otr_force_another_page
   {% we should actually remove the dummy line in the otr
-   \hbox to \hsize{}
+   \hbox to \hsize{}%
    \kern-\topskip
    \nobreak
    \vfill
@@ -332,11 +332,11 @@
 % Can't we get rid of this hackery? It's used in some widgets
 % stuff so probably not.
 
-\newbox\d_page_otr_special
+\newbox\b_page_otr_special
 
 \def\page_otr_flush_special_content
-  {\ifvoid\d_page_otr_special \else
-     \box\d_page_otr_special
+  {\ifvoid\b_page_otr_special \else
+     \box\b_page_otr_special
    \fi}
 
 \def\page_otr_add_special_content
@@ -346,9 +346,9 @@
   {\wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
-   \global\setbox\d_page_otr_special\hbox
+   \global\setbox\b_page_otr_special\hbox
      {%\hskip-\maxdimen                    % not here, fails in acrobat (clips)
-      \box\d_page_otr_special\box\nextbox}}% was \unhbox, is now box again
+      \box\b_page_otr_special\box\nextbox}}% was \unhbox, is now box again
 
 \let\flushatshipout\page_otr_add_special_content
 
