@@ -449,7 +449,7 @@
         \dotabulatepostskip{\the\tabulateposskip}%
         \alignmark\alignmark
    }}%
-   \appendtoks\NC\to\tabulatedummy
+   \tabulatedummy{\the\tabulatedummy\NC}%
    \tabulatepreskip.5\tabulateunit\relax
    \ifnum\tabulatecolumns<\numexpr\noftabulatecolumns-\plusone\relax
      \tabulateposskip\tabulatepreskip
@@ -461,34 +461,48 @@
 
 \newcount\tabulatealign
 
-\setvalue{\??tt>\meaning     x}{\tabulatealign\zerocount\settabulatepreamble} % internal
-\setvalue{\??tt>\meaning     l}{\tabulatealign\plusone\settabulatepreamble}
-\setvalue{\??tt>\meaning     r}{\tabulatealign\plustwo\settabulatepreamble}
-\setvalue{\??tt>\meaning     c}{\tabulatealign\plusthree\settabulatepreamble}
+\setvalue{\??tt>\meaning     x}{\tabulatealign\zerocount
+                                \settabulatepreamble} % internal
+\setvalue{\??tt>\meaning     l}{\tabulatealign\plusone
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     r}{\tabulatealign\plustwo
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     c}{\tabulatealign\plusthree
+                                \settabulatepreamble}
 \setvalue{\??tt>\meaning     p}{\gettabulateparagraph}
 \setvalue{\??tt>\meaning     s}{\gettabulatesetups}
 \setvalue{\??tt>\meaning     w}{\gettabulatewidth}
 \setvalue{\??tt>\meaning     f}{\gettabulatefont}
-\setvalue{\??tt>\meaning     B}{\tabulatefont{\bf}\settabulatepreamble}
-\setvalue{\??tt>\meaning     I}{\tabulatefont{\it}\settabulatepreamble}
-\setvalue{\??tt>\meaning     S}{\tabulatefont{\sl}\settabulatepreamble}
-\setvalue{\??tt>\meaning     T}{\tabulatefont{\tt}\settabulatepreamble}
-\setvalue{\??tt>\meaning     R}{\tabulatefont{\rm}\settabulatepreamble}
-\setvalue{\??tt>\meaning     m}{\tabulatebmath{$}\tabulateemath{$}\settabulatepreamble}
-\setvalue{\??tt>\meaning     M}{\tabulatebmath{$\displaystyle}\tabulateemath{$}\settabulatepreamble}
+\setvalue{\??tt>\meaning     B}{\tabulatefont{\bf}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     I}{\tabulatefont{\it}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     S}{\tabulatefont{\sl}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     T}{\tabulatefont{\tt}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     R}{\tabulatefont{\rm}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     m}{\tabulatebmath{$}\tabulateemath{$}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     M}{\tabulatebmath{$\displaystyle}\tabulateemath{$}%
+                                \settabulatepreamble}
 \setvalue{\??tt>\meaning     h}{\gettabulatehook}
 \setvalue{\??tt>\meaning     b}{\gettabulatebefore}
 \setvalue{\??tt>\meaning     a}{\gettabulateafter}
 \setvalue{\??tt>\meaning     i}{\gettabulatepreskip}
 \setvalue{\??tt>\meaning     j}{\gettabulateposskip}
 \setvalue{\??tt>\meaning     k}{\gettabulatepreposskip}
-\setvalue{\??tt>\meaning     e}{\appendtoks\global\settrue\tabulateequal\to\tabulatesettings\settabulatepreamble}
-\setvalue{\??tt>\meaning     ~}{\appendtoks\fixedspaces\to\tabulatesettings\settabulatepreamble}
+\setvalue{\??tt>\meaning     e}{\tabulatesettings\expandafter{\the\tabulatesettings\global\settrue\tabulateequal}%
+                                \settabulatepreamble}
+\setvalue{\??tt>\meaning     ~}{\tabulatesettings\expandafter{\the\tabulatesettings\fixedspaces}%
+                                \settabulatepreamble}
 \setvalue{\??tt>\meaning     g}{\gettabulatealign}
 \setvalue{\??tt>\meaning     .}{\gettabulatealign.}
 \setvalue{\??tt>\meaning     ,}{\gettabulatealign,}
 \setvalue{\??tt>\meaning     C}{\doparsecolortabulate}
-\setvalue{\??tt>\s!unknown    }{\message{unknown preamble key [\meaning\next]}\settabulatepreamble}
+\setvalue{\??tt>\s!unknown    }{\writestatus{error}{unknown preamble key [\meaning\next]}%
+                                \settabulatepreamble}
 \setvalue{\??tt>\meaning\relax}{}
 
 \def\dosettabulatepreamble
@@ -1271,11 +1285,11 @@
    \fi}
 
 \appendtoks
-  \glet\registertabulateparoptions\doregistertabulateparoptions
+    \glet\registertabulateparoptions\doregistertabulateparoptions
 \to \everytabulate
 
 \appendtoks
-  \registertabulateparoptions
+    \registertabulateparoptions
 \to \everytabulaterow
 
 \def\flushtabulateindent
@@ -1651,8 +1665,12 @@
    \edef\totaltabulatecolumns{\the\numexpr3*\tabulatecolumns+4}%
    \tabulatewidth\zeropoint
    \initializetableboxes\tabulatecolumns
-   \appendtoks\aligntab\alignmark\alignmark\global\advance\tabulatecolumn\plusone\to\tabulatepreamble
-   \appendtoks\NC\unskip\unskip\crcr\flushtabulated\to\tabulatedummy % no count
+   \tabulatepreamble\expandafter{\the\tabulatepreamble
+     \aligntab\alignmark\alignmark\global\advance\tabulatecolumn\plusone
+   }%
+   \tabulatedummy\expandafter{\the\tabulatedummy
+     \NC\unskip\unskip\crcr\flushtabulated % no count
+   }%
    \global\tabulatecolumn\zerocount
    \resettabulatepheight
    \let\bbskip\empty
@@ -1725,7 +1743,7 @@
    %
    \dostarttagged\t!tabulate\empty
    \dostarttagged\t!tabulaterow\empty
-   \appendtoks\dostoptagged\dostarttagged\t!tabulaterow\empty\to\everycr
+   \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \@EA\halign\@EA{\the\tabulatepreamble\crcr\fulltabulatecontent\crcr}%
    \dostoptagged
    \dostoptagged
@@ -1840,7 +1858,9 @@
 %   {\blank
 %    \stoptabulatenoalign}
 
-\appendtoks\let\TB\TabulateTB\to\everytabulate
+\appendtoks
+    \let\TB\TabulateTB
+\to \everytabulate
 
 %D Some new trickery:
 %D

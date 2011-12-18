@@ -257,36 +257,6 @@
 %D thereby \type {\mathchoice}, the next macro looks ugly.
 %D We also take care of non||braced arguments.
 
-% \unexpanded\def\phantom {\ph@nt\nextbox\nextbox\nextbox}
-% \unexpanded\def\vphantom{\ph@nt\nextbox\nextbox\voidbox}
-% \unexpanded\def\hphantom{\ph@nt\voidbox\voidbox\nextbox}
-%
-% \def\ph@nt#1#2#3%
-%   {\def\doph@nt
-%      {\ifmmode
-%         \def\mathph@nt####1####2{\makeph@nt#1#2#3{$\mathsurround\zeropoint####1{####2}$}}%
-%         \def\nextph@nt{\mathpalette\mathph@nt}%
-%       \else\ifx\nextph@nt\bgroup
-%         \def\nextph@nt{\makeph@nt#1#2#3}%
-%       \else
-%         \def\nextph@nt####1{\makeph@nt#1#2#3{####1}}%
-%       \fi\fi
-%       \nextph@nt}%
-%    \futurelet\nextph@nt\doph@nt}
-%
-% \def\makeph@nt#1#2#3%
-%   {\begingroup
-%    \dowithnextbox
-%      {\setbox\scratchbox\emptyhbox
-%       \ht\scratchbox\ht#1%
-%       \dp\scratchbox\dp#2%
-%       \wd\scratchbox\wd#3%
-%       \box\scratchbox
-%       \endgroup}
-%    \normalhbox}
-%
-% \let\finph@nt\undefined
-
 \unexpanded\def\phantom {\begingroup\futurelet\nexttoken\boxes_phantom_indeed  }
 \unexpanded\def\vphantom{\begingroup\futurelet\nexttoken\boxes_phantom_indeed_v}
 \unexpanded\def\hphantom{\begingroup\futurelet\nexttoken\boxes_phantom_indeed_h}
@@ -686,12 +656,6 @@
 %D \stoptyping
 %D
 %D {\em todo: Search source for potential usage!}
-
-% \unexpanded\def\dowithnextboxcontent#1#2% inside, after
-%   {\def\boxes_with_next_box_one{#2}%
-%    \def\boxes_with_next_box_two{#1\aftergroup\boxes_with_next_box_one}%
-%    \afterassignment\boxes_with_next_box_two
-%    \setbox\nextbox}
 
 \unexpanded\def\dowithnextboxcontent#1#2% inside, after
   {\def\boxes_with_next_box_one{#2}%
@@ -1989,17 +1953,6 @@
 %D middle and right. These box types can be used to typeset
 %D paragraphs.
 
-% \unexpanded\def\lbox{\makelrcbox\normalvbox\raggedleft}
-% \unexpanded\def\cbox{\makelrcbox\normalvbox\raggedcenter}
-% \unexpanded\def\rbox{\makelrcbox\normalvbox\raggedright}
-%
-% \unexpanded\def\ltop{\makelrcbox\normalvtop\raggedleft}
-% \unexpanded\def\ctop{\makelrcbox\normalvtop\raggedcenter}
-% \unexpanded\def\rtop{\makelrcbox\normalvtop\raggedright}
-%
-% \def\makelrcbox#1#2#3#%
-%   {#1#3\bgroup \forgetall \let\\=\endgraf #2\let\next=}
-
 \def\boxes_lrc_process#1{\bgroup\forgetall\let\\\endgraf#1\let\next}
 
 \unexpanded\def\lbox#1#{\normalvbox#1\boxes_lrc_process\raggedleft  }
@@ -2029,22 +1982,6 @@
 %D The positioning depends on the strut settings:
 %D
 %D \getbuffer
-
-% \unexpanded\def\tbox{\tbbox\ht\dp}
-% \unexpanded\def\bbox{\tbbox\dp\ht}
-
-% \def\tbbox#1#2%
-%   {\normalhbox\bgroup
-%    \dowithnextbox
-%      {\scratchdimen\dimexpr\ht\nextbox+\dp\nextbox-#1\strutbox\relax
-%       #1\nextbox#1\strutbox
-%       #2\nextbox\scratchdimen
-%       \setbox\nextbox\normalhbox{\lower\dp\nextbox\box\nextbox}%
-%       #1\nextbox#1\strutbox
-%       #2\nextbox\scratchdimen
-%       \box\nextbox
-%       \egroup}
-%      \normalhbox}
 
 \unexpanded\def\tbox{\normalhbox\bgroup\dowithnextboxcs\boxes_tbox_finish\normalhbox}
 \unexpanded\def\bbox{\normalhbox\bgroup\dowithnextboxcs\boxes_bbox_finish\normalhbox}
@@ -2188,73 +2125,6 @@
 \newdimen\boxhdisplacement
 \newdimen\boxvdisplacement
 
-% \unexpanded\def\rightbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement\boxoffset
-%       \global\boxvdisplacement.5\ht\scratchbox
-%       \global\advance\boxvdisplacement-.5\dp\scratchbox
-%       \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\leftbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-\wd\scratchbox
-%       \global\advance\boxhdisplacement-\boxoffset
-%       \global\boxvdisplacement.5\ht\scratchbox
-%       \global\advance\boxvdisplacement-.5\dp\scratchbox
-%       \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\topbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-.5\wd\scratchbox
-%       \global\boxvdisplacement-\dp\scratchbox
-%       \global\advance\boxvdisplacement-\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\bottombox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-.5\wd\scratchbox
-%       \global\boxvdisplacement\ht\scratchbox
-%       \global\advance\boxvdisplacement\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\lefttopbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-\wd\scratchbox
-%       \global\advance\boxhdisplacement-\boxoffset
-%       \global\boxvdisplacement-\dp\scratchbox
-%       \global\advance\boxvdisplacement-\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\righttopbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement\boxoffset
-%       \global\boxvdisplacement-\dp\scratchbox
-%       \global\advance\boxvdisplacement-\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\leftbottombox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-\wd\scratchbox
-%       \global\advance\boxhdisplacement-\boxoffset
-%       \global\boxvdisplacement\ht\scratchbox
-%       \global\advance\boxvdisplacement\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\rightbottombox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement\boxoffset
-%       \global\boxvdisplacement\ht\scratchbox
-%       \global\advance\boxvdisplacement\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\scratchbox}}
-
 \unexpanded\def\rightbox      {\normalhbox\bgroup\dowithnextboxcs\boxes_rightbox_finish      \placedbox}
 \unexpanded\def\leftbox       {\normalhbox\bgroup\dowithnextboxcs\boxes_leftbox_finish       \placedbox}
 \unexpanded\def\topbox        {\normalhbox\bgroup\dowithnextboxcs\boxes_topbox_finish        \placedbox}
@@ -2306,7 +2176,7 @@
    \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
    \egroup}
 
-\unexpanded\def\righttopbox_finish
+\def\boxes_righttopbox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement-\dp\nextbox
    \global\advance\boxvdisplacement-\boxoffset
@@ -2327,30 +2197,6 @@
    \global\advance\boxvdisplacement\boxoffset
    \boxcursor\hskip\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
-
-% \unexpanded\def\middlebox#1%
-%   {\normalhbox{\setbox\scratchbox\placedbox{#1}\boxoffset=-.5\wd\scratchbox\rightbox{\box\scratchbox}}}
-
-% \def\baselinemiddlebox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement-.5\wd\scratchbox
-%       \global\advance\boxhdisplacement-\boxoffset
-%       \global\boxvdisplacement-\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\baselineleftbox#1%
-%   {\global\boxhdisplacement-\wd\scratchbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement-\boxoffset
-%    \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
-
-% \unexpanded\def\baselinerightbox#1%
-%   {\normalhbox
-%      {\setbox\scratchbox\placedbox{#1}%
-%       \global\boxhdisplacement\boxoffset
-%       \global\boxvdisplacement-\boxoffset
-%       \boxcursor\hskip\boxhdisplacement\raise-\boxvdisplacement\box\scratchbox}}
 
 \unexpanded\def\middlebox        {\normalhbox\bgroup\dowithnextboxcs\boxes_middlebox_finish        \placedbox}
 \unexpanded\def\baselinemiddlebox{\normalhbox\bgroup\dowithnextboxcs\boxes_baselinemiddlebox_finish\placedbox}

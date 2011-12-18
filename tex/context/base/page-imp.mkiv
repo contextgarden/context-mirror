@@ -21,19 +21,26 @@
 %D   {starttextdata}
 %D
 %D This is a user macro (appending to every last shipout is not
-%D really user friendly.
+%D really user friendly).
 
-\newtoks\collectedtextdata
+\newtoks\t_page_text_data
 
-\long\unexpanded\def\starttextdata#1\stoptextdata
-  {\doglobal\appendtoks#1\to\collectedtextdata}
+\unexpanded\def\starttextdata#1\stoptextdata
+  {\global\let\page_shipouts_flush_text_data\page_shipouts_flush_text_data_indeed
+   \globaladdtotoks\t_page_text_data{#1}}
 
-\def\flushtextdata
-  {\vsmashed{\the\collectedtextdata}% all dimensions zero
-   \global\collectedtextdata\emptytoks
-   \globallet\flushtextdata\donothing}
+\let\stoptextdata\relax
 
-\prependtoks \flushtextdata \to \everylastshipout
+\def\page_shipouts_flush_text_data_indeed
+  {\vsmashed{\the\t_page_text_data}%
+   \global\t_page_text_data\emptytoks
+   \global\let\page_shipouts_flush_text_data\relax}
+
+\let\page_shipouts_flush_text_data\relax
+
+\prependtoks
+    \page_shipouts_flush_text_data
+\to \everylastshipout
 
 % Problem: we need to apply the finalizers to a to be shipped out page (as
 % we can have positioning involved). However, we can also add stuff in the
@@ -85,8 +92,8 @@
     \finalizeshipoutbox\shipoutscratchbox
     \page_shipouts_handle{\box\shipoutscratchbox}%
   \fi
-  \the\everyaftershipout
-  \setnextrealpageno}
+  \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
+  \the\everyaftershipout}  % at this point we're already on the next realpage
 
 \def\page_shipouts_ignore#1%
   {\begingroup

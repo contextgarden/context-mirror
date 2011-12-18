@@ -655,11 +655,38 @@
 
 \normaleveryjob{\the\everyjob}
 
-\normalprotected\def\appendtotoks #1{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
-\normalprotected\def\prependtotoks#1{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
+% these token list helpers might move to syst-aux.mkiv
+%
+% we assume a \cs. not toks0 or so
+%
+% \normalprotected\def\appendtotoks #1#{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
+% \normalprotected\def\prependtotoks#1#{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
 
-\def\doappendtotoks {\expandafter\expandafter\expandafter{\expandafter\the\expandafter\temp\the\scratchtoks}}
-\def\doprependtotoks{\expandafter\expandafter\expandafter{\expandafter\the\expandafter\scratchtoks\the\temp}}
+\newtoks\t_syst_app_pre_temp
+
+\normalprotected\def\appendtotoks #1{\let\scratch_toks#1\afterassignment\syst_app_toks_l\t_syst_app_pre_temp=}
+\normalprotected\def\prependtotoks#1{\let\scratch_toks#1\afterassignment\syst_pre_toks_l\t_syst_app_pre_temp=}
+
+% \def\syst_app_toks{\scratch_toks\expandafter\expandafter\expandafter{\expandafter\the\expandafter\scratch_toks\the\t_syst_app_pre_temp}}}
+% \def\syst_pre_toks{\scratch_toks\expandafter\expandafter\expandafter{\expandafter\the\expandafter\t_syst_app_pre_temp\the\scratch_toks}}}
+
+\normalprotected\def\globalappendtotoks #1{\let\scratch_toks#1\afterassignment\syst_app_toks_g\t_syst_app_pre_temp=}
+\normalprotected\def\globalprependtotoks#1{\let\scratch_toks#1\afterassignment\syst_pre_toks_g\t_syst_app_pre_temp=}
+
+\def\syst_app_toks_l{\normalexpanded{\scratch_toks{\the\scratch_toks\the\t_syst_app_pre_temp}}}
+\def\syst_pre_toks_l{\normalexpanded{\scratch_toks{\the\t_syst_app_pre_temp\the\scratch_toks}}}
+
+\def\syst_app_toks_g{\global\syst_app_toks_l}
+\def\syst_pre_toks_g{\global\syst_pre_toks_l}
+
+\normalprotected\def\addtotoks      #1{\let\scratch_toks#1\afterassignment\syst_add_toks_l\let\next}
+\normalprotected\def\globaladdtotoks#1{\let\scratch_toks#1\afterassignment\syst_add_toks_g\let\next}
+
+\def\syst_add_toks_l{\scratch_toks\expandafter\bgroup\the\scratch_toks}
+\def\syst_add_toks_g{\global\syst_add_toks_l}
+
+\normalprotected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
+\normalprotected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes
 
 %D \macros
 %D   {begcsname}
