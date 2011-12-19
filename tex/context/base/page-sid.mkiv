@@ -41,12 +41,14 @@
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
 \newdimen       \d_page_sides_saved_depth
+\newdimen       \d_page_sides_grid_shift
 
 \newbox         \b_page_sides_bottom
 
 \newcount       \c_page_sides_lines_done
 \newcount       \c_page_sides_checks_done
 \newcount       \c_page_sides_n_of_lines
+\newcount       \c_page_sides_n_of_hang
 \newconstant    \c_page_sides_float_type
 
 \newconditional \c_page_sides_short
@@ -457,16 +459,54 @@
    \fi\fi
    \global\sidefloatdownshift\zeropoint}
 
-\def\page_sides_place_float % nilling everypar saves time and redudant pos's
-  {% removed here dec 2001
-   % {\everypar\emptytoks\forgetall\verticalstrut\vskip-\struttotal}%
-   \ifnum\c_page_sides_float_type=\plusfour \kern\sidefloattopskip \fi
+\def\page_sides_place_float
+  {\ifnum\c_page_sides_float_type=\plusfour \kern\sidefloattopskip \fi
    \ifnum\c_page_sides_float_type=\plusfive \kern\sidefloattopskip \fi
    \d_page_sides_saved_depth\prevdepth
    \nointerlineskip
-   \bgroup
-   \everypar\emptytoks
-   \parskip\zeropoint
+   \ifgridsnapping
+     \page_sides_place_float_grid
+   \else
+     \page_sides_place_float_normal
+   \fi
+   \par
+   \kern-\d_page_sides_height
+   \penalty10001 % oeps, this will change
+   \normalbaselines
+   \prevdepth\d_page_sides_saved_depth}
+
+\def\page_sides_place_float_normal
+  {\d_page_sides_grid_shift\zeropoint % be nice
+   \page_sides_push_float_inline\firstofoneargument}
+
+% The following needs some more work .. consider this a quick hack. We
+% probably need an mkiv hanging grid option.
+
+\def\page_sides_place_snap_to_grid#1%
+  {\snaptogrid[\v!line,\v!offset:\the\d_page_sides_grid_shift]\hbox{#1}}
+
+% this will be a grid option in float placement:
+
+\newconstant\c_page_sides_place_grid_shift \c_page_sides_place_grid_shift\plustwo
+
+\def\page_sides_place_float_grid
+  {\getrawnoflines\d_page_sides_height % raw ?
+   \d_page_sides_height\plustwo\lineheight
+   \d_page_sides_grid_shift\the\dimexpr  \noflines\lineheight
+     \ifcase\c_page_sides_place_grid_shift
+       -3\lineheight    % high
+     \or
+       -2.5\lineheight  % half
+     \else
+       -2\lineheight    % low
+     \fi
+   \relax
+   \page_sides_push_float_inline\page_sides_place_snap_to_grid}
+
+\def\page_sides_push_float_inline#1%
+  {\begingroup
+   \everypar\emptytoks % needed !
+   \parskip\zeropoint  % needed !
    \page_sides_set_skips
    \page_sides_insert_info
    \relax
@@ -474,35 +514,23 @@
    \ifcase\c_page_sides_float_type
      % invalid
    \or % backspace
-     \noindent\llap{\rlap{\box\floatbox}\hskip\sidefloatleftskip}\hfill
+     \noindent#1{\llap{\rlap{\box\floatbox}\hskip\sidefloatleftskip}}\hfill
    \or % leftedge
-     \noindent\llap{\box\floatbox\hskip\sidefloatleftskip}\hfill
+     \noindent#1{\llap{\box\floatbox\hskip\sidefloatleftskip}}\hfill
    \or % leftmargin
-     \noindent\llap{\box\floatbox\hskip\sidefloatleftskip}\hfill
+     \noindent#1{\llap{\box\floatbox\hskip\sidefloatleftskip}}\hfill
    \or % leftside
-     \noindent\box\floatbox\hfill
+     \noindent#1{\box\floatbox}\hfill
    \or % rightside
-     \hfill\box\floatbox
+     \hfill#1{\box\floatbox}%
    \or % rightmargin
-     \hfill\rlap{\hskip\sidefloatrightskip\box\floatbox}%
+     \hfill#1{\rlap{\hskip\sidefloatrightskip\box\floatbox}}%
    \or % rightedge
-     \hfill\rlap{\hskip\sidefloatrightskip\box\floatbox}%
+     \hfill#1{\rlap{\hskip\sidefloatrightskip\box\floatbox}}%
    \or % cutspace
-     \hfill\rlap{\hskip\sidefloatrightskip\llap{\box\floatbox}}%
+     \hfill#1{\rlap{\hskip\sidefloatrightskip\llap{\box\floatbox}}}%
    \fi
-   \egroup
-   \par
-   \ifgridsnapping
-     \getrawnoflines\d_page_sides_height
-     \d_page_sides_height=\noflines\lineheight
-   \fi
-   \kern-\d_page_sides_height
-   \penalty10001 % oeps, this will change
-   \normalbaselines
-   \prevdepth\d_page_sides_saved_depth
-   % \noindent
-   \page_sides_check_floats_reset
-   \ignorespaces} % not really needed
+   \endgroup}
 
 \def\page_sides_analyse_progress
   {\d_page_sides_progress\d_page_sides_vsize
@@ -580,7 +608,9 @@
      \page_sides_analyse_space
      \page_sides_inject_dummy_lines
    \fi
-   \page_sides_place_float}
+   \page_sides_place_float
+   \page_sides_check_floats_reset
+   \ignorespaces} % not really needed
 
 \def\page_sides_check_floats_indeed
   {\page_sides_analyse_progress
@@ -598,17 +628,17 @@
 
 \def\page_sides_check_floats_set
   {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
-   \!!counta\scratchdimen
-   \divide\!!counta \baselineskip\relax
-   \ifnum\!!counta>\zerocount
+   \c_page_sides_n_of_hang\scratchdimen
+   \divide\c_page_sides_n_of_hang \baselineskip\relax
+   \ifnum\c_page_sides_n_of_hang>\zerocount
      % new from here (needs test case, old code)
      \ifcase\c_page_sides_n_of_lines
      \else
        \ifcase\c_page_sides_lines_done
-         \global\c_page_sides_lines_done\!!counta
+         \global\c_page_sides_lines_done\c_page_sides_n_of_hang
        \else
          \scratchcounter\c_page_sides_lines_done
-         \advance\scratchcounter-\!!counta
+         \advance\scratchcounter-\c_page_sides_n_of_hang
          \global\advance\c_page_sides_n_of_lines-\scratchcounter
        \fi
      \fi
@@ -619,10 +649,10 @@
        \scratchdimen\dimexpr\hsize-\d_page_sides_width\relax
        \dorecurse\c_page_sides_n_of_lines
          {\appendtoks \zeropoint \hsize \to \scratchtoks}%
-       \ifnum\!!counta>\c_page_sides_n_of_lines
-         \advance\!!counta -\c_page_sides_n_of_lines\relax
-         \advance\scratchcounter\!!counta
-         \dorecurse\!!counta % weird, shouldn't that be scratchcounter
+       \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
+         \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
+         \advance\scratchcounter\c_page_sides_n_of_hang
+         \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
            {\ifnum\c_page_sides_float_type>\plusfour
               \appendtoks \zeropoint         \scratchdimen \to \scratchtoks
             \else
@@ -637,7 +667,7 @@
      \else
        % new till here
        \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
-       \hangafter-\!!counta
+       \hangafter-\c_page_sides_n_of_hang
      \fi
    \fi
    \global\advance\c_page_sides_checks_done \plusone

@@ -437,7 +437,7 @@
      \someelsefloat[\v!here]%
    \else
     %\checkwaitingfloats{#1}%
-     \setbox\floatbox\vbox{\box\floatbox}%
+     \setbox\floatbox\vbox{\box\floatbox}% ? can go
      \wd\floatbox\floatwidth
      \processfirstactioninset
        [#1]

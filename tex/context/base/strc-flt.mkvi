@@ -813,7 +813,7 @@
   {\global\sidefloatdownshift \zeropoint
    \global\sidefloatextrashift\zeropoint
    \doifassignmentelse{#settings}%
-     {\bgroup
+     {\begingroup
       \getparameters[\??fl\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#settings]%
       \ifgridsnapping
         \getnoflines\@@fly
@@ -822,7 +822,7 @@
         \global\sidefloatdownshift\@@fl@@fly
       \fi
       \global\sidefloatextrashift\@@fl@@flx
-      \egroup}
+      \endgroup}
      {\movedownsidefloat[#settings]}}
 
 \def\float_move_down#setting%
@@ -1157,8 +1157,6 @@
 
 % minwidth=fit,width=max : no overshoot, as wide as graphic
 
-\ifdefined\moveboxontogrid\else \let\movecaptionontogrid\gobblethreearguments \fi
-
 \def\float_align_content_indeed
   {\alignstrutmode\zerocount
    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
@@ -1470,6 +1468,7 @@
 
 \def\doflushfloatleftcaptionhang
   {\hsmash{\llap{\box\float_caption_box\dotfskip{\floatcaptionparameter\c!distance}}}}
+
 \def\doflushfloatrightcaptionhang
   {\hsmash{\rlap{\dotfskip{\floatcaptionparameter\c!distance}\box\float_caption_box}}}
 
