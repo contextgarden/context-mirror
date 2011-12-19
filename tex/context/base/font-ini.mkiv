@@ -459,6 +459,13 @@
 \def\@noletter@   {@f@no@} % second alternative typeface
 \def\@fontclass@  {@f@cl@} % fontclass
 
+% \edef\@size@       {\??fh:b:} % bodyfont size prefix (12pt etc)
+% \edef\@style@      {\??fh:f:} % full style prefix (roman etc)
+% \edef\@shortstyle@ {\??fh:s:} % short style prefix (rm etc)
+% \edef\@letter@     {\??fh:l:} % first alternative typeface
+% \edef\@noletter@   {\??fh:n:} % second alternative typeface
+% \edef\@fontclass@  {\??fh:c:} % fontclass
+
 %D \macros
 %D   {fontclass, defaultfontclass}
 %D
@@ -1484,21 +1491,6 @@
    \the\everyfontswitch
    \let\rawfontidentifier\oldrawfontidentifier}
 
-% \unexpanded\def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
-%   {\edef\lastfontidentifier{#1}%
-%    \ifcsname\newfontidentifier\endcsname\else
-%      \def\localrelativefontsize{#2}%
-%      \def\localabsolutefontsize{#3}%
-%      \lowleveldefinefont{#4}\newfontidentifier
-%    \fi
-%    \csname\newfontidentifier\endcsname
-%    \autofontsizefalse
-%    \ifskipfontcharacteristics \else
-%      \setfontcharacteristics
-%      \the\everyfontswitch
-%    \fi
-%    \let\newfontidentifier\oldnewfontidentifier}
-
 \unexpanded\def\xxdododefinefont#1%
   {\edef\lastfontidentifier{#1}%
    \ifcsname\newfontidentifier\endcsname
@@ -2454,12 +2446,6 @@
     \everyhbox{\zerostagepreloadfonts}
     \everyvbox{\zerostagepreloadfonts}
 \to \everydump
-
-% \def\firststagepreloadfonts % see core-def.mkiv
-%   {\doifmodeelse{*nofonts}
-%      {\writestatus\m!fonts{latin modern fonts are not preloaded}}
-%      {\preloaddefaultfonts
-%       \writestatus\m!fonts{preloading latin modern fonts (first stage)}}}
 
 \def\firststagepreloadfonts % *nofonts -> *preloadfonts
   {\doifmodeelse{*preloadfonts}
@@ -3493,7 +3479,7 @@
 %D (a rather small period indeed), the same as \PICTEX\ uses
 %D for drawing purposes.
 
-\definefont [rasterfont] [Serif at 5pt]
+\definefont [rasterfont] [Serif at 5pt] % obsolete
 
 %D \macros
 %D   {infofont}
@@ -3791,17 +3777,19 @@
 \def\setemphasisboldface
   {\let\savedemphasisboldface\bf
    \let\setemphasisboldface\relax
-   \unexpanded\def\bf
-     {%\relax
-      \let\bf\relax % new
-      \ifx\fontalternative\c!it
-        \bi
-      \else\ifx\fontalternative\c!sl
-        \bs
-      \else
-        \savedemphasisboldface
-      \fi\fi
-      \let\bf\savedemphasisboldface}}
+   \let\bf\emphasisboldface_bf}
+
+\unexpanded\def\emphasisboldface_bf
+  {%\relax
+   \let\bf\relax % new
+   \ifx\fontalternative\c!it
+     \bi
+   \else\ifx\fontalternative\c!sl
+     \bs
+   \else
+     \savedemphasisboldface
+   \fi\fi
+   \let\bf\savedemphasisboldface}
 
 %D Donald's (adapted) macros take the next character into
 %D account when placing italic correction. As a bonus we also
@@ -3879,12 +3867,13 @@
 %D   {emphbf,emphit,emphsl,emphtf}
 %D
 %D The next emphasis alternatives are for \THANH. They adapt
-%D their style as good as possible.
+%D their style as good as possible. These macros are obsolete
+%D in \MKIV.
 
-\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
-\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
-\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
-\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
+\unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
+\unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
+\unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
+\unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
 
 %D \startbuffer
 %D TEXT {\emphbf text \emphit text  \emphtf text  \emphsl text}  TEXT
@@ -4168,8 +4157,8 @@
 %D \type{\SS}. Ok, I should have used \type{\sf} instead of
 %D \type{\ss} in the first place.
 
-\ifx\undefined\SS \let\SS=\ss \fi
-\ifx\undefined\sz \let\sz=\ss \fi
+\ifdefined\SS \else \let\SS=\ss \fi
+\ifdefined\sz \else \let\sz=\ss \fi
 
 %D Personally I think that using \TEX\ macro packages is
 %D complicated by the way fonts are handled. Apart from the
