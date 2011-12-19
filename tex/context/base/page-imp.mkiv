@@ -105,7 +105,7 @@
    \deadcycles\zerocount
    \endgroup}
 
-\def\page_otr_flush_every_stuff % this will become obsolete ... was backend related
+\def\page_otr_flush_every_stuff
   {\begingroup
    \setbox\scratchbox\hbox
      {% before the main one !
@@ -161,9 +161,15 @@
    \fi}
 
 \def\page_shipouts_arrange#1%
-  {\setbox\scratchbox\hbox{#1}%
+  {% \global\advance\shippedoutpages\plusone
+   \begingroup
+   \setbox\scratchbox\hbox
+     {\page_otr_flush_every_stuff
+      \page_otr_flush_special_content
+      \box\shipoutscratchbox}%
    \pusharrangedpage\scratchbox
-   \deadcycles\zerocount}
+   \deadcycles\zerocount
+   \endgroup}
 
 %D We need a couple of boxes for duplex printing \unknown
 

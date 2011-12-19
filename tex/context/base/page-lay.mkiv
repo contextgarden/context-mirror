@@ -367,12 +367,25 @@
      \page_paper_restore
    \fi}
 
-\unexpanded\def\setup_paper_size_settings[#1]%
+\unexpanded\def\setup_paper_size_settings[#1]% sometimes used to set paper/print size
   {\let\currentlayouttarget\empty
+   \edef\tmp_layouttarget_paper_saved{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
+   \edef\tmp_layouttarget_print_saved{\page_paper_the_print_size{\layouttargetparameter\c!paper}}%
    \setupcurrentlayouttarget[#1]%
    \edef\tmp_layouttarget_paper{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
    \edef\tmp_layouttarget_print{\page_paper_the_print_size{\layouttargetparameter\c!paper}}%
-   \ifx\tmp_layouttarget_paper\empty
+   \ifx\tmp_layouttarget_paper_saved\tmp_layouttarget_paper
+     \ifx\tmp_layouttarget_print_saved\tmp_layouttarget_print
+       % we didn't change the size, maybe only sx or sy or so
+     \else
+       \setup_paper_size_settings_recalibrate
+     \fi
+   \else
+     \setup_paper_size_settings_recalibrate
+   \fi}
+
+\def\setup_paper_size_settings_recalibrate
+  {\ifx\tmp_layouttarget_paper\empty
      % forget about it
    \else
      \ifx\tmp_layouttarget_print\empty
@@ -822,9 +835,9 @@
       \begingroup % needed ?
       \uselayoutstyleandcolor\c!style\c!color
       \offinterlineskip
-      \gettextboxes
+      \page_insert_elements % zero size
       \endgroup
-      \getmainbox#1#2}}% including footnotes
+      \page_insert_body#1#2}}% including footnotes
 
 \installlayoutalternative\v!default{\page_boxes_construct_content_default}
 \installlayoutalternative\v!normal {\page_boxes_construct_content_default}

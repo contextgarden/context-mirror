@@ -23,64 +23,64 @@
 %D pagebody looks.
 
 \startMPextensions
-  boolean PageStateAvailable,OnRightPage,InPageBody;
-  PageStateAvailable:=true;
+    boolean PageStateAvailable,OnRightPage,InPageBody;
+    PageStateAvailable:=true;
 \stopMPextensions
 
 \startMPinitializations
-  OnRightPage:=true;
-  InPageBody:=\ifinpagebody true \else false \fi;
+    OnRightPage:=true;
+    InPageBody:=\ifinpagebody true \else false \fi;
 \stopMPinitializations
 
 \startMPinitializations
-  def LoadPageState =
-    OnRightPage:=\MPonrightpage;
-    OnOddPage:=\MPonoddpage;
-    RealPageNumber:=\the\realpageno;
-    PageNumber:=\the\pageno;
-    NOfPages:=\lastpage;
-    PaperHeight:=\the\paperheight;
-    PaperWidth:=\the\paperwidth;
-    PrintPaperHeight:=\the\printpaperheight;
-    PrintPaperWidth:=\the\printpaperwidth;
-    TopSpace:=\the\topspace;
-    BottomSpace:=\the\bottomspace;
-    BackSpace:=\the\backspace;
-    CutSpace:=\the\cutspace;
-    MakeupHeight:=\the\makeupheight;
-    MakeupWidth:=\the\makeupwidth;
-    TopHeight:=\the\topheight;
-    TopDistance:=\the\topdistance;
-    HeaderHeight:=\the\headerheight;
-    HeaderDistance:=\the\headerdistance;
-    TextHeight:=\the\textheight;
-    FooterDistance:=\the\footerdistance;
-    FooterHeight:=\the\footerheight;
-    BottomDistance:=\the\bottomdistance;
-    BottomHeight:=\the\bottomheight;
-    LeftEdgeWidth:=\the\leftedgewidth;
-    LeftEdgeDistance:=\the\leftedgedistance;
-    LeftMarginWidth:=\the\leftmarginwidth;
-    LeftMarginDistance:=\the\leftmargindistance;
-    TextWidth:=\the\textwidth ;
-    RightMarginDistance:=\the\rightmargindistance;
-    RightMarginWidth:=\the\rightmarginwidth;
-    RightEdgeDistance:=\the\rightedgedistance;
-    RightEdgeWidth:=\the\rightedgewidth;
-    InnerMarginDistance:=\the\innermargindistance;
-    InnerMarginWidth:=\the\innermarginwidth;
-    OuterMarginDistance:=\the\outermargindistance;
-    OuterMarginWidth:=\the\outermarginwidth;
-    InnerEdgeDistance:=\the\inneredgedistance;
-    InnerEdgeWidth:=\the\inneredgewidth;
-    OuterEdgeDistance:=\the\outeredgedistance;
-    OuterEdgeWidth:=\the\outeredgewidth;
-    PageOffset:=\the\pageoffset;
-    PageDepth:=\the\pagedepth;
-    LayoutColumns:=\the\layoutcolumns;
-    LayoutColumnDistance:=\the\layoutcolumndistance;
-    LayoutColumnWidth:=\the\layoutcolumnwidth;
-  enddef;
+    def LoadPageState =
+        OnRightPage:=\MPonrightpage;
+        OnOddPage:=\MPonoddpage;
+        RealPageNumber:=\the\realpageno;
+        PageNumber:=\the\pageno;
+        NOfPages:=\lastpage;
+        PaperHeight:=\the\paperheight;
+        PaperWidth:=\the\paperwidth;
+        PrintPaperHeight:=\the\printpaperheight;
+        PrintPaperWidth:=\the\printpaperwidth;
+        TopSpace:=\the\topspace;
+        BottomSpace:=\the\bottomspace;
+        BackSpace:=\the\backspace;
+        CutSpace:=\the\cutspace;
+        MakeupHeight:=\the\makeupheight;
+        MakeupWidth:=\the\makeupwidth;
+        TopHeight:=\the\topheight;
+        TopDistance:=\the\topdistance;
+        HeaderHeight:=\the\headerheight;
+        HeaderDistance:=\the\headerdistance;
+        TextHeight:=\the\textheight;
+        FooterDistance:=\the\footerdistance;
+        FooterHeight:=\the\footerheight;
+        BottomDistance:=\the\bottomdistance;
+        BottomHeight:=\the\bottomheight;
+        LeftEdgeWidth:=\the\leftedgewidth;
+        LeftEdgeDistance:=\the\leftedgedistance;
+        LeftMarginWidth:=\the\leftmarginwidth;
+        LeftMarginDistance:=\the\leftmargindistance;
+        TextWidth:=\the\textwidth ;
+        RightMarginDistance:=\the\rightmargindistance;
+        RightMarginWidth:=\the\rightmarginwidth;
+        RightEdgeDistance:=\the\rightedgedistance;
+        RightEdgeWidth:=\the\rightedgewidth;
+        InnerMarginDistance:=\the\innermargindistance;
+        InnerMarginWidth:=\the\innermarginwidth;
+        OuterMarginDistance:=\the\outermargindistance;
+        OuterMarginWidth:=\the\outermarginwidth;
+        InnerEdgeDistance:=\the\inneredgedistance;
+        InnerEdgeWidth:=\the\inneredgewidth;
+        OuterEdgeDistance:=\the\outeredgedistance;
+        OuterEdgeWidth:=\the\outeredgewidth;
+        PageOffset:=\the\pageoffset;
+        PageDepth:=\the\pagedepth;
+        LayoutColumns:=\the\layoutcolumns;
+        LayoutColumnDistance:=\the\layoutcolumndistance;
+        LayoutColumnWidth:=\the\layoutcolumnwidth;
+    enddef;
 \stopMPinitializations
 
 \def\MPonrightpage{true}
@@ -139,83 +139,94 @@
 
 \newif\iftracetextareas
 
-\def\registerMPtextarea#1%
-  {\ifpositioning
-     \bgroup
-     \global\advance\currentMPtextareadata\plusone
-    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
-     \hpos{gbd:\the\currentMPtextareadata}%
-       {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
-     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
-     \edef\!!stringa{RegisterTextArea(%
-       \MPx\!!stringa,\MPy\!!stringa,%
-       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
-     \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
-     \egroup
-   \else
-     \hbox{#1}%
-   \fi}
-
-\def\registerMPlocaltextarea#1%
-  {\ifpositioning
-     \bgroup
-     \global\advance\currentMPtextareadata\plusone
-    %\hpos{gbd:\the\currentMPtextareadata}{#1}%
-     \hpos{gbd:\the\currentMPtextareadata}%
-       {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
-     \edef\!!stringa{gbd:\the\currentMPtextareadata}%
-     \edef\!!stringa{RegisterLocalTextArea(%
-       \MPx\!!stringa,\MPy\!!stringa,%
-       \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
-     \global\MPlocaltextareadata\@EA{\!!stringa}%
-     \egroup
-   \else
-     \hbox{#1}%
-   \fi}
-
-% better, so that we can force a key and share with e.g. renumbering
-%
-% \let\namedtextarea\empty
-%
-% \def\registerMPlocaltextarea#1%
+% \def\registerMPtextarea#1%
 %   {\ifpositioning
 %      \bgroup
-%      \ifx\namedtextarea\empty
-%        \global\advance\currentMPtextareadata\plusone
-%        \edef\namedtextarea{gbd:\the\currentMPtextareadata}%
-%      \fi
-%      \hpos\namedtextarea{\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
-%      \edef\ascii{RegisterLocalTextArea(%
-%        \MPx\namedtextarea,\MPy\namedtextarea,%
-%        \MPw\namedtextarea,\MPh\namedtextarea,\MPd\namedtextarea);}%
-%      \global\MPlocaltextareadata\@EA{\ascii}%
+%      \global\advance\currentMPtextareadata\plusone
+%     %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+%      \hpos{gbd:\the\currentMPtextareadata}%
+%        {\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#1}}%
+%      \edef\!!stringa{gbd:\the\currentMPtextareadata}%
+%      \edef\!!stringa{RegisterTextArea(%
+%        \MPx\!!stringa,\MPy\!!stringa,%
+%        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+%      \@EA \doglobal \@EA \appendtoks \!!stringa \to \MPtextareadata
 %      \egroup
 %    \else
 %      \hbox{#1}%
 %    \fi}
 
+% \def\registerMPlocaltextarea#1%
+%   {\ifpositioning
+%      \bgroup
+%      \global\advance\currentMPtextareadata\plusone
+%     %\hpos{gbd:\the\currentMPtextareadata}{#1}%
+%      \hpos{gbd:\the\currentMPtextareadata}%
+%        {\iftracetextareas\boxrulewidth3pt\ruledhbox\fi{#1}}%
+%      \edef\!!stringa{gbd:\the\currentMPtextareadata}%
+%      \edef\!!stringa{RegisterLocalTextArea(%
+%        \MPx\!!stringa,\MPy\!!stringa,%
+%        \MPw\!!stringa,\MPh\!!stringa,\MPd\!!stringa);}%
+%      \global\MPlocaltextareadata\@EA{\!!stringa}%
+%      \egroup
+%    \else
+%      \hbox{#1}%
+%    \fi}
+\def\globalregisterMPtextarea{\normalexpanded{\global\MPtextareadata{\the\MPtextareadata
+  RegisterTextArea(%
+   \MPx\currentMPtextarea,%
+   \MPy\currentMPtextarea,%
+   \MPw\currentMPtextarea,%
+   \MPh\currentMPtextarea,%
+   \MPd\currentMPtextarea%
+  );}}}
+
+\def\localregisterMPtextarea{\normalexpanded{\global\MPlocaltextareadata{%
+  RegisterLocalTextArea(%
+   \MPx\currentMPtextarea,%
+   \MPy\currentMPtextarea,%
+   \MPw\currentMPtextarea,%
+   \MPh\currentMPtextarea,%
+   \MPd\currentMPtextarea%
+  );}}}
+
+\def\registerMPtextareaindeed#1#2%
+  {\ifpositioning
+     \begingroup
+     \global\advance\currentMPtextareadata\plusone
+     \edef\currentMPtextarea{gbd:\the\currentMPtextareadata}%
+     \hpos\currentMPtextarea{\iftracetextareas\boxrulewidth1.5pt\ruledhbox\fi{#2}}%
+     #1%
+     \endgroup
+   \else
+     \hbox{#2}%
+   \fi}
+
+\def\registerMPtextarea     {\registerMPtextareaindeed\globalregisterMPtextarea}
+\def\registerMPlocaltextarea{\registerMPtextareaindeed\localregisterMPtextarea }
+
 \def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 
 \startMPextensions
-   path PlainTextArea;
+    path PlainTextArea;
 \stopMPextensions
 
 \startMPinitializations
-  ResetTextAreas;
-  \the\MPsavedtextareadata;
-  SaveTextAreas;
-  ResetTextAreas;
-  \the\MPtextareadata;
-  \the\MPlocaltextareadata;
-  PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
-    shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
+    ResetTextAreas;
+    \the\MPsavedtextareadata;
+    SaveTextAreas;
+    ResetTextAreas;
+    \the\MPtextareadata;
+    \the\MPlocaltextareadata;
+    PlainTextArea:=boundingbox(\MPxy{text:\realfolio}--\MPxy{text:\realfolio}
+        shifted (\MPw{text:\realfolio},\MPh{text:\realfolio}));
 \stopMPinitializations
 
 \appendtoks
-  \global\MPsavedtextareadata\MPtextareadata
-  \global\MPtextareadata     \emptytoks
-  \global\MPlocaltextareadata\emptytoks
+    \global\MPsavedtextareadata\MPtextareadata
+    \global\MPtextareadata     \emptytoks
+    \global\MPlocaltextareadata\emptytoks
 \to \everyshipout
 
 \protect \endinput

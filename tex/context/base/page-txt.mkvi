@@ -648,14 +648,6 @@
 \appendtoks \placerightmarginblock \hskip-\rightmarginwidth \to \rightmargintextcontent
 \appendtoks \placeleftmarginblock  \hskip-\leftmarginwidth  \to \leftmargintextcontent
 
-%D The next hook will later be used for keeping track of
-%D positions, i.e.\ it will provide a proper (page
-%D dependent) reference point.
-
-\ifx\undefined\placepositionanchors
-  \unexpanded\def\placepositionanchors{\vskip\textheight}
-\fi
-
 %D \macros
 %D   {definetext}
 %D
@@ -823,7 +815,7 @@
 
 \newbox\layout_element_box
 
-\def\gettextboxes % will become \place_layout_elements
+\def\page_insert_elements
   {\ifcase\pageornamentstate
      \place_layout_elements_indeed
    \fi}
@@ -839,7 +831,7 @@
       \vskip\dimexpr\topheight+\topdistance\relax
       \the\headertextcontent
       \vskip\dimexpr\headerheight+\headerdistance\relax
-      \placepositionanchors
+      \positions_place_anchors
       \vskip-\textheight
       \the\texttextcontent
       \vskip\textheight
@@ -853,7 +845,7 @@
   \smashbox\layout_element_box
   \box\layout_element_box}
 
-\def\getmainbox#1#2%
+\def\page_insert_body#1#2%
   {\setbox\layout_element_box\vbox
      {\offinterlineskip
       \calculatereducedvsizes
@@ -862,37 +854,35 @@
       \vskip\dimexpr\headerheight+\headerdistance+\layoutparameter\c!textdistance\relax
       \dontleavehmode
       \hbox to \makeupwidth
-        {\bgroup
+        {\begingroup
            \swapmargins
            \goleftonpage
            \ifdim\leftedgewidth>\zeropoint
              \the\leftedgetextcontent
-             \hskip\leftedgewidth
+             \kern\dimexpr\leftedgewidth+\leftedgedistance\relax
            \fi
-           \hskip\leftedgedistance
            \ifdim\leftmarginwidth>\zeropoint
              \the\leftmargintextcontent
-             \hskip\leftmarginwidth
+             \kern\dimexpr\leftmarginwidth+\leftmargindistance\relax
            \fi
-           \hskip\leftmargindistance
-         \egroup
+         \endgroup
          \mkprocesspagecontents{#2}%
          \settextpagecontent\layout_element_box{#1}{#2}%
          \page_backgrounds_add_to_text\layout_element_box
          \page_grids_add_to_box\layout_element_box
          \box\layout_element_box
-         \bgroup
-           \hskip\rightmargindistance
+         \begingroup
            \ifdim\rightmarginwidth>\zeropoint
+             \kern\rightmargindistance
              \the\rightmargintextcontent
-             \hskip\rightmarginwidth
+             \kern\rightmarginwidth
            \fi
-           \hskip\rightedgedistance
            \ifdim\rightedgewidth>\zeropoint
+             \kern\rightedgedistance
              \the\rightedgetextcontent
-             \hskip\rightedgewidth
+             \kern\rightedgewidth
            \fi
-         \egroup
+         \endgroup
          \hss}}%
    \smashbox\layout_element_box
    \box\layout_element_box}

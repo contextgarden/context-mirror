@@ -1,0 +1,684 @@
+%D \module
+%D   [       file=anch-bck, % moved from anch-pgr (1999.08.01)
+%D        version=2011.12.19,
+%D          title=\CONTEXT\ Anchoring Macros,
+%D       subtitle=Backgrounds,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Anchoring Macros / Backgrounds}
+
+%D This module is quite okay but at some point I might add methods
+%D that use attributes although not too much is to be expected,
+%D apart from better anchoring. In fact better anchoring can be
+%D done independent of that.
+
+\unprotect
+
+% This might be overloaded later on:
+
+\defineoverlay[\v!text-2][\positionoverlay{\v!text-2}]
+\defineoverlay[\v!text-1][\positionoverlay{\v!text-1}]
+\defineoverlay[\v!text+1][\positionoverlay{\v!text+1}]
+\defineoverlay[\v!text+2][\positionoverlay{\v!text+2}]
+
+% Paragraph positions:
+
+\newcount\backgrounds_text_n
+
+\def\v_backgrounds_text_current    {pbg:0}
+\def\v_backgrounds_text_next       {pbg:1}
+
+\def\v_backgrounds_anchor_current_b{b:\v_backgrounds_text_current}
+\def\v_backgrounds_anchor_current_e{e:\v_backgrounds_text_current}
+
+\def\v_backgrounds_anchor_next_b   {b:\v_backgrounds_text_next}
+\def\v_backgrounds_anchor_next_e   {e:\v_backgrounds_text_next}
+
+\def\backgrounds_text_initialize_next
+  {\global\advance\backgrounds_text_n\plusone
+   \edef\v_backgrounds_text_current{pbg:\number\backgrounds_text_n}%
+   \xdef\v_backgrounds_text_next   {pbg:\number\numexpr\backgrounds_text_n+\plusone\relax}} % x ?
+
+% todo : \synchonizepositionpage{b:\v_backgrounds_text_current}{s:\v_backgrounds_text_current}%
+
+\ifdefined\totalnoftextbackgrounds
+    % set in tuc
+\else
+    \newcounter\totalnoftextbackgrounds
+\fi
+
+\appendtoks
+    \savecurrentvalue\totalnoftextbackgrounds{\number\backgrounds_text_n}%
+\to \everybye
+
+% actually we can just ask lua to give us the nofpositions (or a least n<>0)
+
+\def\backgrounds_text_initialize
+  {\ifcase\totalnoftextbackgrounds\else
+     \enableparpositions
+   \fi}
+
+\appendtoks
+    % a position can be mid paragraph in which case we're behind
+    % this will change when we move positions to lua
+    \backgrounds_text_initialize
+\to \everystarttext
+
+%D Some MP
+
+\newcount\localpositionnumber % incremented elsewhere
+
+\newcount\MPparcounter
+
+\def\MPself        {\MPvar{self}}
+\def\MPbself       {b:\MPvar{self}}
+\def\MPeself       {e:\MPvar{self}}
+\def\MPwself       {w:\MPvar{self}}
+\def\MPparanchor   {p:\number\MPparcounter}
+\def\MPl       #tag{\MPplus{#tag}20} % slot 2 default 0
+\def\MPr       #tag{\MPplus{#tag}30} % slot 3 default 0
+
+\def\textbackgroundoverlay#tag{\iflocalpositioning\v!local\else\v!text\fi#tag}
+\def\MPanchornumber           {\iflocalpositioning\the\localpositionnumber\else\the\realpageno\fi}
+
+% \definetextbackground[more][state=start,backgroundcolor=red] % location=paragraph
+% \definetextbackground[test][state=start,backgroundcolor=green]
+%
+% \page \placefigure[left]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+%
+% \page \placefigure[right]{}{}
+%
+% \starttextbackground[test]
+%   \readfile{ward}{}{}
+%   \starttextbackground[more]
+%     \readfile{ward}{}{}
+%   \stoptextbackground
+%   \readfile{ward}{}{}
+% \stoptextbackground
+
+\newcount\c_backgrounds_text_level
+
+\installcommandhandler \??td {textbackground} \??td
+
+\appendtoks
+    \setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
+    \setuevalue{\e!start\currenttextbackground}{\starttextbackground[\currenttextbackground]}%
+    \setuevalue{\e!stop \currenttextbackground}{\stoptextbackground}%
+    \doif{\textbackgroundparameter\c!state}\v!start\checktextbackgrounds
+\to \everydefinetextbackground
+
+\appendtoks
+    \doif{\textbackgroundparameter\c!state}\v!start\checktextbackgrounds
+\to \everysetuptextbackground
+
+\unexpanded\def\starttextbackground
+  {\begingroup
+   \advance\c_backgrounds_text_level\plusone
+   \dodoubleempty\backgrounds_text_start}
+
+\def\backgrounds_text_start[#tag][#settings]%
+  {\checktextbackgrounds
+   \def\currenttextbackground{#tag}%
+   \backgrounds_text_initialize_next
+   \ifsecondargument
+     \setupcurrenttextbackground[#settings]%
+   \fi
+   \doifelse{\textbackgroundparameter\c!state}\v!start
+     \backgrounds_text_preset_yes
+     \backgrounds_text_preset_nop
+   \backgrounds_text_start_indeed}
+
+% todo \backgroundvariable\c!variant
+
+\let\backgrounds_text_start_indeed\relax
+\let\backgrounds_text_stop_indeed \relax
+
+\setvalue{\??td:l:\v!text}%
+  {\let\backgrounds_text_start_indeed\backgrounds_text_start_txt
+   \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt}
+
+\setvalue{\??td:l:\v!paragraph}%
+  {\ifnum\c_backgrounds_text_level>\plusone
+     \let\backgrounds_text_start_indeed\backgrounds_text_start_txt
+     \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt
+   \else
+     \let\backgrounds_text_start_indeed\backgrounds_text_start_par
+     \let\backgrounds_text_stop_indeed \dostoptextbackgroundpar
+   \fi}
+
+\setvalue{\??td:l:\v!none}%
+  {\backgrounds_text_preset_nop}
+
+\def\backgrounds_text_preset_nop
+  {\let\backgrounds_text_start_indeed\relax
+   \let\backgrounds_text_stop_indeed \relax}
+
+\def\backgrounds_text_preset_yes
+  {\backgrounds_text_preset_nop
+   \csname\??td:l:\textbackgroundparameter\c!location\endcsname
+   \edef\m_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
+   \edef\m_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
+   \edef\m_backgrounds_text_background{\textbackgroundparameter\c!background}%
+   \ifx\m_backgrounds_text_frame\v!on
+     \ifx\m_backgrounds_text_corner\v!round
+       \let\m_backgrounds_text_frame\!!plustwo
+     \else
+       \let\m_backgrounds_text_frame\!!plusone
+     \fi
+   \else
+     \let\m_backgrounds_text_frame\!!zerocount
+   \fi
+   \ifx\m_backgrounds_text_background\v!color
+     \let\m_backgrounds_text_background\!!plusone
+   \else
+     \let\m_backgrounds_text_background\!!zerocount
+   \fi
+   \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
+     \backgrounds_text_mp_graphic % gets expanded directly
+   \stoppositionoverlay}
+
+\def\backgrounds_text_mp_graphic
+  {\normalexpanded
+     {\setMPpositiongraphicrange % needs to be optimized
+        {\v_backgrounds_anchor_current_b}%
+        {\v_backgrounds_anchor_current_e}%
+        {\textbackgroundparameter\c!method}%
+        {self=\v_backgrounds_text_current,
+         mp=\textbackgroundparameter\c!mp,
+         gridtype=\textbackgroundparameter\c!alternative,
+         filltype=\m_backgrounds_text_background,
+         linetype=\m_backgrounds_text_frame,
+         dashtype=\textbackgroundparameter\c!dash,
+         gridcolor=\textbackgroundparameter\c!framecolor,
+         linecolor=\textbackgroundparameter\c!framecolor,
+         lineoffset=\textbackgroundparameter\c!frameoffset,
+         fillcolor=\textbackgroundparameter\c!backgroundcolor,
+         filloffset=\textbackgroundparameter\c!backgroundoffset,
+         gridwidth=\textbackgroundparameter\c!rulethickness,
+         gridshift=\textbackgroundparameter\c!voffset,
+         linewidth=\textbackgroundparameter\c!rulethickness,
+         lineradius=\textbackgroundparameter\c!radius}}}
+
+\unexpanded\def\stoptextbackground
+  {\backgrounds_text_stop_indeed
+   \carryoverpar\endgroup}
+
+\unexpanded\def\starttextbackgroundmanual
+  {\begingroup
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \fpos\v_backgrounds_text_current\ignorespaces}
+
+\unexpanded\def\stoptextbackgroundmanual
+  {\tpos\v_backgrounds_text_current
+   \endgroup}
+
+\def\backgrounds_text_start_txt
+  {\ifvmode \dontleavehmode \fi
+   \begingroup
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \fpos\v_backgrounds_text_current\ignorespaces}
+
+\def\dostoptextbackgroundtxt
+  {\tpos\v_backgrounds_text_current
+   \endgroup}
+
+\newskip\textbackgroundskip
+
+\def\backgrounds_text_start_par
+  {\endgraf % new
+   \textbackgroundparameter\c!before
+   \begingroup
+   \begingroup
+   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
+   \noindent
+   \ifgridsnapping
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\v_backgrounds_text_current}}}%
+     \else
+      \fpos\v_backgrounds_text_current
+     \fi
+   \else
+     \fpos\v_backgrounds_text_current
+   \fi
+   \endgraf % we need a vertical nobreak - 29/06/2004
+   \endgroup
+   \nobreak
+   \vskip-\lineheight
+   \nobreak
+   \ifgridsnapping \else
+     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \ifdim\textbackgroundskip>\zeropoint
+        \kern\textbackgroundskip\nobreak
+     \fi
+   \fi
+   \dosetleftskipadaption{\textbackgroundparameter\c!leftoffset}%
+   \advance\leftskip\leftskipadaption
+   \dosetleftskipadaption{\textbackgroundparameter\c!rightoffset}%
+   \advance\rightskip\leftskipadaption
+   % new
+   \dosetraggedcommand{\textbackgroundparameter\c!align}%
+   \raggedcommand
+   %
+   \usetextbackgroundstyleandcolor\c!style\c!color
+   \nowhitespace
+   \nobreak % new per 23/04/2006 (else potential break when whitespace)
+   \seteffectivehsize
+   \doinhibitblank %   \blank[\v!disable]% new
+   \par}
+
+\def\dostoptextbackgroundpar
+  {\par
+   \removelastskip % new
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \ifdim\lastskip>\zeropoint
+     \advance\textbackgroundskip-\lastskip
+   \fi
+   \ifgridsnapping \else \ifdim\textbackgroundskip>\zeropoint
+     \kern\textbackgroundskip\nobreak
+   \fi \fi
+   \nobreak
+   \vskip-\dimexpr\lineheight+\parskip\relax
+   \nobreak
+   \endgroup
+   \begingroup
+   \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
+   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
+   \nobreak \noindent \strut \hfill \kern\zeropoint
+   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
+     \ifdim\textbackgroundskip>\zeropoint
+       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\v_backgrounds_text_current}}}%
+     \else
+       \tpos\v_backgrounds_text_current
+     \fi
+   \else
+     \tpos\v_backgrounds_text_current
+   \fi
+   \endgraf
+   \endgroup
+   \endgraf % new
+   \textbackgroundparameter\c!after}
+
+\newcount\backgrounds_text_par_pages
+\newdimen\backgrounds_text_par_height
+\newdimen\backgrounds_text_par_width
+
+\def\calculatetextpardimensions
+  {\docalculatetextpardimensions\v_backgrounds_anchor_current_b\v_backgrounds_anchor_current_e\MPparanchor}
+
+\def\calculatenexttextpardimensions
+  {\docalculatetextpardimensions\v_backgrounds_anchor_next_b\v_backgrounds_anchor_next_e\relax}
+
+\def\docalculatetextpardimensions#begin#end#par%
+  {\backgrounds_text_par_pages\numexpr
+      \MPp#end-\MPp#begin%
+   \relax
+   \backgrounds_text_par_height\dimexpr
+     \ifcase\backgrounds_text_par_pages
+       % one page
+       \MPy#begin-\MPy#end%
+     \else
+       % two or more pages
+       \ifnum\backgrounds_text_par_pages>\plustwo
+         \ifnum\backgrounds_text_par_pages<\plusfive
+           % more pages
+           \textheight*\numexpr\backgrounds_text_par_pages+\minusone
+         \else
+           % keep'm small
+           \plusfive\textheight % weird value
+         \fi
+       \else
+         \MPy#begin-\MPy#end-\MPy\textanchor+\MPy\textanchor+\MPh\textanchor
+       \fi
+     \fi
+   \relax
+   \backgrounds_text_par_width\dimexpr
+     \ifcase\backgrounds_text_par_pages
+       % one page
+       \MPx#end-\MPx#begin%
+     \else
+       % two or more pages / maybe also hang
+       \ifx#par\relax
+         \makeupwidth % \textwidth
+       \else
+         \MPw\MPparanchor-\MPl\MPparanchor-\MPr\MPparanchor
+       \fi
+     \fi
+   \relax}
+
+\def\mintextparheight{4\lineheight}
+
+\def\dontsplitnexttextbackground % dangerous but useful
+  {\ifdim\pagetotal>\textheight \else
+     \ifdim\pagegoal=\maxdimen \else
+      \calculatenexttextpardimensions
+      % too tricky
+      % \scratchdimen=\backgrounds_text_par_height
+      % \advance\scratchdimen\pagetotal\relax
+      % \ifdim\scratchdimen>\pagegoal
+      % \page
+      % \fi
+      \ifdim\backgrounds_text_par_height>\zeropoint
+        \ifdim\backgrounds_text_par_height>\mintextparheight\else
+          \page % option
+        \fi
+      \fi
+    \fi
+   \fi}
+
+\def\checktextbackgrounds
+  {\ifproductionrun
+     \enabletextarearegistration
+     \enablehiddenbackground
+   \fi}
+
+\setuptextbackground
+  [\c!mp=mpos:par:columnset,      % buggy: mpos:par:shape
+   \c!method=mpos:par:columnset, %
+   \c!state=\v!start,
+   \c!location=\v!text,
+   \c!leftoffset=\!!zeropoint, % 1em,
+   \c!rightoffset=\textbackgroundparameter\c!leftoffset,
+   \c!topoffset=\!!zeropoint,  % \v!medium,
+   \c!bottomoffset=\textbackgroundparameter\c!topoffset,
+   \c!level=-1,
+   \c!alternative=0,
+   \c!align=,
+   \c!dash=0, % to be internationalized
+   \c!background=\v!color,
+   \c!backgroundcolor=lightgray,
+   \c!backgroundoffset=\!!zeropoint,
+   \c!corner=\v!rectangular,
+   \c!radius=.5\bodyfontsize,
+   \c!voffset=\!!zeropoint,
+   \c!frame=\v!on,
+   \c!framecolor=blue,
+   \c!rulethickness=\linewidth]
+
+%D The \METAPOST\ connection:
+
+%D Some of these macros are pretty clever but too complicated
+%D to be nice. When things are kind of stable I'll clean up
+%D this mess.
+
+\setupMPvariables
+  [mpos:box]
+  [linecolor=blue,
+   linewidth=\linewidth,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint]
+
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+    initialize_box(\MPpos{\MPvar{self}}) ;
+    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxfilloffset := \MPvar{filloffset} ;
+    draw_box ;
+    anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\setupMPvariables
+  [mpos:area]
+  [linecolor=blue,
+   linewidth=\linewidth,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint]
+
+\startMPpositiongraphic{mpos:area}{fillcolor,linecolor,linewidth}
+    initialize_area(\MPpos{b:\MPvar{self}},\MPpos{e:\MPvar{self}}) ;
+    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxfilloffset := \MPvar{filloffset} ;
+    draw_area ;
+    anchor_area(\MPanchor{b:\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+% gridtype = 1 => baseline
+% gridtype = 2 => betweenline
+
+\setupMPvariables
+  [mpos:par]
+  [mp=mpos:par:shape,
+   gridtype=0,
+   linetype=1,
+   filltype=1,
+   dashtype=0, % 1 = dashed, 2 = dashed with background
+  %snaptops=true, % not that nice: true/false
+   gridcolor=red,
+   linecolor=blue,
+   fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linewidth=\linewidth,
+   gridwidth=\linewidth,
+   gridshift=\!!zeropoint,
+   lineradius=.5\bodyfontsize,
+   dashtype=1]
+
+\startuseMPgraphic{mpos:par:shape}
+    \iftracepositions show_par \else draw_par \fi ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:setup}
+    boxgridtype   := \MPvar{gridtype} ;
+    boxlinetype   := \MPvar{linetype} ;
+    boxfilltype   := \MPvar{filltype} ;
+    boxdashtype   := \MPvar{dashtype} ;
+    def boxgridoptions = withcolor \MPvar{gridcolor} enddef ;
+    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
+    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+    boxfilloffset := \MPvar{filloffset} ;
+    boxlinewidth  := \MPvar{linewidth} ;
+    boxgridwidth  := \MPvar{gridwidth} ;
+    boxgridshift  := \MPvar{gridshift} ;
+    boxlineradius := \MPvar{lineradius} ;
+    %snap_multi_par_tops := \MPvar{snaptops} ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:extra}
+    % user stuff, like:
+    % snap_multi_par_tops := false ;
+\stopuseMPgraphic
+
+\startMPpositionmethod{mpos:par} %%%%%%%%%%% will become obsolete
+    \MPparcounter\MPv\MPbself{1}\zerocount\relax
+    \directsetup{mpos:par:variant:\doifpositionelse\MPwself{w}{b}}
+    \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+\startsetups mpos:par:variant:w
+    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+        initialize_area_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself) ;
+        \includeMPgraphic{mpos:par:setup} ;
+        \includeMPgraphic{mpos:par:extra} ;
+        \includeMPgraphic{\MPvar{mp}} ;
+        anchor_par(\MPanchor\MPbself) ;
+    \stopMPpositiongraphic
+\stopsetups
+
+\startsetups mpos:par:variant:b
+    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+        initialize_par(\MPpos\MPbself,\MPpos\MPeself,\MPpos\textanchor,\MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+        \includeMPgraphic{mpos:par:setup} ;
+        \includeMPgraphic{mpos:par:extra} ;
+        \includeMPgraphic{\MPvar{mp}} ;
+        anchor_par(\MPanchor\MPbself) ;
+    \stopMPpositiongraphic
+\stopsetups
+
+%D The next alternative works in columnsets :
+
+\startuseMPgraphic{mpos:par:columnset}
+    \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset,linewidth}
+    begingroup ; save p ; picture p ;
+    for i=1 upto nofmultipars :
+        p := image ( fill leftboundary multipars[i]
+            shifted (-\MPvar{lineoffset},0)
+            rightenlarged \MPvar{linewidth} withcolor \MPvar{linecolor} ;
+        ) ;
+        setbounds p to multipars[i] ;
+        draw p ;
+    endfor ;
+    endgroup ;
+\stopuseMPgraphic
+
+\startMPpositionmethod{mpos:par:columnset}
+    \MPparcounter\MPv\MPbself{1}\zerocount\relax
+    \startMPpositiongraphic{mpos:par}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius}
+        \includeMPgraphic{mpos:par:setup} ;
+        \includeMPgraphic{mpos:par:extra} ;
+        prepare_multi_pars(\MPpos\MPbself,\MPpos\MPeself,\MPpos\MPwself,\MPpos\MPparanchor,\MPvv\MPparanchor{0pt,0pt,0pt,0pt,0,0pt}) ;
+        relocate_multipars(-\MPxy\MPanchorid) ; % inside layerpos
+        \includeMPgraphic{\MPvar{mp}} ;
+    \stopMPpositiongraphic
+    \MPpositiongraphic{mpos:par}{}%
+\stopMPpositionmethod
+
+%D \starttyping
+%D \setupbackground
+%D   [test]
+%D   [mp=mpos:par:columnset,
+%D    method=mpos:par:columnset]
+%D \stoptyping
+
+%D We need to treat floats in a special way.
+
+\startMPinitializations
+    local_multi_par_area:=\iflocalpositioning true\else false\fi;
+\stopMPinitializations
+
+%D As an example we define a grid background:
+
+\definetextbackground
+  [\v!grid]
+  [\c!state=\v!stop,
+   \c!location=\v!paragraph,
+   \c!frame=\v!off,
+   \c!framecolor=red,
+   \c!background=,
+   \c!alternative=1]
+
+\ifx\basegrid\undefined \else \letvalue\v!grid=\basegrid \fi
+
+%D Whatever
+
+\setupMPvariables
+  [mpos:connect]
+  [linecolor=red,
+   linewidth=1pt]
+
+\setupMPvariables
+  [mpos:encircle]
+  [fillcolor=lightgray,
+   filloffset=\!!zeropoint,
+   linecolor=blue,
+   linewidth=1pt]
+
+% these might become macros in mp-page
+
+\startuseMPgraphic{mpos:common:ec}
+    path pa ; pair ca ; numeric lw ;
+    lw := \MPvar{linewidth} ;
+    initialize_box(\MPpos{\MPvar{self}}) ;
+    pa := pxy ; ca := cxy ; pa := boundingbox pa enlarged 2lw ;
+    pa := llcorner pa ... lrcorner pa ... urcorner pa ... ulcorner pa ... cycle ;
+    drawoptions (withpen pencircle scaled lw withcolor \MPvar{linecolor}) ;
+\stopuseMPgraphic
+
+\startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth}
+    \includeMPgraphic{mpos:common:ec}
+    fill pa withcolor \MPvar{fillcolor} ; draw pa ;
+    anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\startMPpositiongraphic{mpos:connect}{linecolor,linewidth}
+    path pb, pc ; pair cb, cc ;
+    \includeMPgraphic{mpos:common:ec}
+    initialize_box(\MPpos{\MPvar{to}}) ;
+    pb := pxy ; cb := cxy ; pb := boundingbox pb enlarged 2lw ;
+    pb := llcorner pb...lrcorner pb...urcorner pb...ulcorner pb...cycle ;
+    pc := ca {up} .. {down} cb ;
+    cc := (pc intersection_point pa) ;
+    if intersection_found :
+        pc := pc cutbefore cc ;
+        cc := (pc intersection_point pb) ;
+        if intersection_found :
+            pc := pc cutafter cc ;
+            drawarrow pc ; drawarrow reverse pc ;
+        fi ;
+    fi ;
+    anchor_box(\MPanchor{\MPvar{self}}) ;
+\stopMPpositiongraphic
+
+\protect \endinput
+
+% todo 1: shift down option
+
+% \startuseMPgraphic{mpos:par:columnset}
+%   \iftracepositions show_multi_pars \else draw_multi_pars \fi ;
+%   path p ; p := boundingbox currentpicture ;
+%   currentpicture := currentpicture shifted (0,-StrutDepth/2) ;
+%   setbounds currentpicture to p ;
+% \stopuseMPgraphic
+
+\definetextbackground[underline]    [location=text,alternative=1,background=,frame=off]
+\definetextbackground[overstrike]   [location=text,alternative=2,background=,frame=off]
+\definetextbackground[exlines]      [location=text,alternative=3,background=,frame=off]
+\definetextbackground[strikethrough][location=text,alternative=4,background=,frame=off]
+
+\definestartstop [underline]
+  [before={\starttextbackground[underline]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [overstrike]
+  [before={\starttextbackground[overstrike]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [exlines]
+  [before={\starttextbackground[exlines]},
+   after=\stoptextbackground]
+
+\definestartstop
+  [strikethrough]
+  [before={\starttextbackground[strikethrough]},
+   after=\stoptextbackground]
+
+\definetextbackground
+  [sideline]
+  [mp=mpos:par:sideline,
+   location=paragraph,
+   framecolor=red,
+   frameoffset=5mm]
+
+\definestartstop [sideline]
+  [before={\starttextbackground[sideline]},
+   after=\stoptextbackground]
+
+\starttext
+    \startunderline     \input tufte \stopunderline      \blank
+    \startoverstrike    \input tufte \stopoverstrike     \blank
+    \startexlines       \input tufte \stopexlines        \blank
+    \startstrikethrough \input tufte \stopstrikethrough  \blank
+    \startsideline      \input tufte \stopsideline       \blank
+\stoptext
