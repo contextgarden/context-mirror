@@ -1843,20 +1843,47 @@
 %D The next macro gobble boxes and is for instance used for
 %D overlays. First we show the general handler.
 
+% we cannot use \futurelet here as we want to skip spaces between
+% boxes (see startoverlay for an example usage)
+
+% \newbox\processbox % public : this is the one where \nextbox's end up in
+%
+% \unexpanded\def\processboxes#1%
+%   {\bgroup
+%    \def\boxes_process_indeed{#1}% #1 can be redefined halfway
+%    \setbox\processbox\emptybox
+%    \afterassignment\boxes_process
+%    \let\nexttoken}
+%
+% \def\boxes_process
+%   {\ifx\nexttoken\bgroup
+%      \expandafter\boxes_process_yes
+%    \else
+%      \expandafter\boxes_process_nop
+%    \fi}
+%
+% \def\boxes_process_yes
+%   {\dowithnextboxcs\boxes_process_content\normalhbox\bgroup}
+%
+% \def\boxes_process_content
+%   {\removeunwantedspaces
+%    \boxes_process_indeed % takes \nextbox makes \processbox
+%    \afterassignment\boxes_process
+%    \let\nexttoken}
+%
+% \unexpanded\def\boxes_process_nop
+%   {\removeunwantedspaces
+%    \box\processbox
+%    \nexttoken % messy as we are still in the group
+%    \egroup}
+
 \newbox\processbox % public : this is the one where \nextbox's end up in
 
 \unexpanded\def\processboxes#1%
   {\bgroup
    \def\boxes_process_indeed{#1}% #1 can be redefined halfway
    \setbox\processbox\emptybox
-   \futurelet\nexttoken\boxes_process}
-
-\def\boxes_process
-  {\ifx\nexttoken\bgroup
-     \expandafter\boxes_process_yes
-   \else
-     \expandafter\boxes_process_nop
-   \fi}
+   \doifnextbgroupelse\boxes_process_yes\boxes_process_nop}
 
 \def\boxes_process_yes
   {\dowithnextboxcs\boxes_process_content\normalhbox}
@@ -1864,7 +1891,7 @@
 \def\boxes_process_content
   {\removeunwantedspaces
    \boxes_process_indeed % takes \nextbox makes \processbox
-   \futurelet\nexttoken\boxes_process}
+   \doifnextbgroupelse\boxes_process_yes\boxes_process_nop}
 
 \unexpanded\def\boxes_process_nop
   {\removeunwantedspaces

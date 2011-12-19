@@ -37,13 +37,9 @@
 
 \def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay          % i.e. probably an overlay by itself
-     {\positionoverlay{\v!text#1}} % see later
-     {\composedlayer  {\v!text#1}}
+     {\positionoverlay{\v!text#1}}% see later
+     {\composedlayer  {\v!text#1}}%
    \stopoverlay}
-
-%\def\internaltextoverlay#1%
-%  {\hbox to \zeropoint{\positionoverlay{\v!tekst#1}\hss}%
-%   \composedlayer{\v!tekst#1}}
 
 % todo: share info, so that tuo will be smaller
 

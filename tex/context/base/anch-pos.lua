@@ -87,20 +87,12 @@ end
 
 function jobpositions.page(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return jpi[1]
-    else
-        return 0
-    end
+    return jpi and jpi[1] or 0
 end
 
 function jobpositions.x(id)
     local jpi = collected[id] or tobesaved[id]
-    if jpi then
-        return jpi[2]
-    else
-        return 0
-    end
+    return jpi and jpi[2] or 0
 end
 
 function jobpositions.y(id)
