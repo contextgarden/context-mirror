@@ -19,6 +19,18 @@
 
 % This file is partially cleaned up.
 
+%D \macros
+%D   {dontcomplain}
+%D
+%D The next macro suppresses over- and underfull messages which
+%D often makes sense when we deal with boxes.
+
+\unexpanded\def\dontcomplain
+  {\hbadness\plustenthousand
+   \vbadness\plustenthousand
+   \hfuzz   \maxdimen
+   \vfuzz   \maxdimen}
+
 %D This module implements some box manipulation macros. Some
 %D are quite simple, some are more advanced and when understood
 %D well, all can be of use.

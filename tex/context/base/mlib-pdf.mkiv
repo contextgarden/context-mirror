@@ -13,86 +13,101 @@
 
 \unprotect
 
+% We use bit more code that needed because we want to limit the
+% amount of boxing.
+
 \registerctxluafile{mlib-pdf}{1.001}
+
+%D Some code is shared between MPLIB and MPS. The following variables
+%D are also available for introspection and other purposes.
+
+\newdimen\MPwidth
+\newdimen\MPheight
+
+\newdimen\MPllx
+\newdimen\MPlly
+\newdimen\MPurx
+\newdimen\MPury
+
+\newbox  \MPbox
+
+\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
+  {\global\MPllx   #1\onebasepoint
+   \global\MPlly   #2\onebasepoint
+   \global\MPurx   #3\onebasepoint
+   \global\MPury   #4\onebasepoint
+   \global\MPwidth \dimexpr\MPurx-\MPllx\relax
+   \global\MPheight\dimexpr\MPury-\MPlly\relax}
+
+\def\resetMPboundingbox
+  {\global\MPwidth \zeropoint
+   \global\MPheight\zeropoint
+   \global\MPllx   \zeropoint
+   \global\MPlly   \zeropoint
+   \global\MPurx   \zeropoint
+   \global\MPury   \zeropoint}
+
+\def\repositionMPboxindeed
+  {\setbox\MPbox\hbox\bgroup
+     \hskip-\MPllx
+     \raise-\MPlly
+     \box\MPbox
+   \egroup}
+
+\def\repositionMPbox
+  {\ifzeropt\MPllx
+     \ifzeropt\MPlly
+       % okay
+     \else
+       \repositionMPboxindeed
+     \fi
+   \else
+     \repositionMPboxindeed
+   \fi}
+
+\def\finalizeMPbox
+  {\repositionMPbox
+   \setbox\MPbox\vbox to \MPheight\bgroup
+     \vfill
+     \hsize\MPwidth
+     \smashbox\MPbox
+     \box\MPbox
+   \egroup
+   \wd\MPbox\MPwidth
+   \ht\MPbox\MPheight}
+
+\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
+  {\begingroup
+   \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}%
+   \MPllx-#4\onebasepoint
+   \MPlly-#5\onebasepoint
+   \repositionMPbox
+   \smashbox\MPbox
+   \box\MPbox
+   \endgroup}
+
+% MPLIB specific:
 
 \def\MPLIBtoPDF#1{\ctxlua{metapost.flushliteral(#1)}}
 
-\def\MPLIBboundingbox#1#2#3#4%
-  {\xdef\MPllx{#1}%
-   \xdef\MPlly{#2}%
-   \xdef\MPurx{#3}%
-   \xdef\MPury{#4}%
-   \xdef\MPwidth {\the\dimexpr#3\onebasepoint-#1\onebasepoint\relax}%
-   \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
-
-\def\startMPLIBtoPDF#1#2#3#4% watch the transparency reset
+\def\startMPLIBtoPDF#1#2#3#4%
   {\dostarttagged\t!mpgraphic\empty
    \naturalhbox attr \imageattribute 1 \bgroup
    \doactivatecolor\s!black\forcecolorhack
-   \MPLIBboundingbox{#1}{#2}{#3}{#4}%
-  %\forgetall % done already elsewhere
-   \setbox\scratchbox\vbox\bgroup
-   \noindent % this is really needed in order to force tex into proper cm's
-   \startMPresources}
+   \setMPboundingbox{#1}{#2}{#3}{#4}%
+   \setbox\MPbox\vbox\bgroup
+ % \forgetall % already done elsewhere
+   \noindent} % forces the proper cm in the backend
 
-\def\stopMPLIBtoPDF % watch the transparency reset
-  {%\dohandleMPresettransparency % not needed
-   \stopMPresources
-   \egroup
-   \setbox\scratchbox\hbox\bgroup
-     \hskip-\MPllx\onebasepoint
-     \raise-\MPlly\onebasepoint
-     \box\scratchbox
-   \egroup
-   \setbox\scratchbox\vbox to \MPheight\bgroup
-     \vfill
-     \hsize\MPwidth
-     \smashbox\scratchbox
-     \box\scratchbox
-   \egroup
-   \wd\scratchbox\MPwidth
-   \ht\scratchbox\MPheight
-   \dopackageMPgraphic\scratchbox
+\def\stopMPLIBtoPDF
+  {\egroup
+   \finalizeMPbox
+   \box\MPbox
    \egroup
    \dostoptagged}
 
-% \def\MPLIBtextext#1#2#3#4#5%
-%   {\begingroup
-%    \def\MPtextdata{#3}% delegate the splitter to lua
-%    \defconvertedcommand\MPtextdata\MPtextdata % no edef
-%    \splitstring\MPtextdata\at::::\to\MPtexttag\and\MPtextnumber
-%    \executeifdefined{handleMPtext\MPtexttag}
-%      {\setbox\scratchbox\hbox
-%         {\font\temp=#1\space at #2\onebasepoint
-%          \let\c\char
-%          \temp
-%          \MPfshowcommand{#3}}%
-%       \setbox\scratchbox\hbox
-%         {\hskip#4\onebasepoint
-%          \raise#5\onebasepoint
-%          \box\scratchbox}%
-%       \smashbox\scratchbox
-%       \box\scratchbox}%
-%    \endgroup}
-
-\def\MPLIBtextext#1#2#3#4#5%
-  {\begingroup
-   \setbox\scratchbox\hbox
-     {\font\temp=#1\space at #2\onebasepoint
-      \let\c\char
-      \temp
-      #3}%
-   \setbox\scratchbox\hbox
-     {\hskip#4\onebasepoint
-      \raise#5\onebasepoint
-      \box\scratchbox}%
-   \smashbox\scratchbox
-   \box\scratchbox
-   \endgroup}
-
-\def\MPLIBflushreset
+\def\MPLIBflushreset % This can (will) move to the Lua end.
   {\ctxlua{metapost.flushreset()}}
-
 
 %D Kind of special:
 %

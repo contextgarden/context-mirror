@@ -68,10 +68,6 @@
 \newif\ifconverttoGRAY
 \newif\ifweightGRAY       \weightGRAYtrue
 
-\newif\ifconvertMPcolors
-\newif\ifreduceMPcolors
-\newif\ifforcegrayMPcolors
-
 %D The last boolean controls reduction of \cap{CMYK} to
 %D \cap{CMY} colors. When set to true, the black component
 %D is added to the other ones.
@@ -260,17 +256,11 @@
      \weightGRAYfalse
      \weightGRAYtrue
    \doifelse\@@clrgb\v!no
-     {\ifRGBsupported      \showcolormessage\m!colors {9}\v!rgb        \RGBsupportedfalse \fi}
-     {\ifRGBsupported \else\showcolormessage\m!colors{10}\v!rgb        \RGBsupportedtrue  \fi}%
+     {\ifRGBsupported      \showcolormessage\m!colors {9}\v!rgb \RGBsupportedfalse \fi}
+     {\ifRGBsupported \else\showcolormessage\m!colors{10}\v!rgb \RGBsupportedtrue  \fi}%
    \doifelse\@@clcmyk\v!no
-     {\ifCMYKsupported     \showcolormessage\m!colors {9}\v!cmyk       \CMYKsupportedfalse\fi}
-     {\ifCMYKsupported\else\showcolormessage\m!colors{10}\v!cmyk       \CMYKsupportedtrue \fi}%
-   \doifelse\@@clmpcmyk\v!no
-     {\ifMPcmykcolors      \showcolormessage\m!colors {9}{\v!mp\v!cmyk}\MPcmykcolorsfalse \fi}
-     {\ifMPcmykcolors \else\showcolormessage\m!colors{10}{\v!mp\v!cmyk}\MPcmykcolorstrue  \fi}%
-   \doifelse\@@clmpspot\v!no
-     {\ifMPspotcolors      \showcolormessage\m!colors {9}{\v!mp\v!spot}\MPspotcolorsfalse \fi}
-     {\ifMPspotcolors \else\showcolormessage\m!colors{10}{\v!mp\v!spot}\MPspotcolorstrue  \fi}%
+     {\ifCMYKsupported     \showcolormessage\m!colors {9}\v!cmyk\CMYKsupportedfalse\fi}
+     {\ifCMYKsupported\else\showcolormessage\m!colors{10}\v!cmyk\CMYKsupportedtrue \fi}%
    \preferGRAYfalse
    \convertGRAYtrue
    \processaction
@@ -281,23 +271,14 @@
        \v!always=>\preferGRAYtrue\RGBsupportedfalse\CMYKsupportedfalse]%
    \ifRGBsupported
      \converttoGRAYfalse
-     \forcegrayMPcolorsfalse
    \else\ifCMYKsupported
      \converttoGRAYfalse
-     \forcegrayMPcolorsfalse
-     \convertMPcolorstrue
-     \ifreduceCMYK
-       \reduceMPcolorstrue
-     \fi
    \else
      \ifconverttoGRAY\else\showcolormessage\m!colors{11}\empty\fi
      \converttoGRAYtrue
-     \forcegrayMPcolorstrue
-     \convertMPcolorsfalse
-     \reduceMPcolorsfalse
    \fi\fi
    \doifelse\@@clstate\v!stop
-     {\incolorfalse\forcegrayMPcolorstrue}%
+     {\incolorfalse}%
      {\incolortrue\let\@@clstate\v!start}%
    \dosetupcolormodel
    \the\everysetupcolors}
@@ -649,7 +630,7 @@
   {\edef#1{\negatedcolorcomponent{#1}}}
 
 %D \macros
-%D   {ifMPgraphics, ifMPcmykcolors, MPcolor}
+%D   {MPcolor}
 %D
 %D A very special macro is \type{\MPcolor}. This one can be
 %D used to pass a \CONTEXT\ color to \METAPOST.
@@ -662,9 +643,6 @@
 %D Unless \CMYK\ color support is turned on with \type
 %D {MPcmyk}, only \cap{RGB} colors and gray scales are
 %D supported.
-
-\newif\ifMPcmykcolors % \MPcmykcolorsfalse
-\newif\ifMPspotcolors % \MPspotcolorsfalse
 
 %D For the moment we keep the next downward compatibility
 %D switch, i.e.\ expanded colors. However, predefined colors

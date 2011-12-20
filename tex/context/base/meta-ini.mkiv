@@ -408,9 +408,12 @@
 \newbox     \MPgraphicbox
 \newconstant\MPboxmode
 
+% hm, isn't this already done elsewhere?
+
 \def\doobeyMPboxdepth % mode = 1
   {\setbox\MPgraphicbox\hbox\bgroup
-     \raise\MPlly\onebasepoint\box\MPgraphicbox
+%      \raise\MPlly\onebasepoint\box\MPgraphicbox
+     \raise\MPlly\box\MPgraphicbox
     \egroup}
 
 \def\doignoreMPboxdepth % mode = 2
@@ -422,8 +425,7 @@
 
 \def\doobeyMPboxorigin % mode = 3
   {\setbox\MPgraphicbox\hbox\bgroup
-      \hskip\MPllx\onebasepoint
-      \raise\MPlly\onebasepoint\box\MPgraphicbox
+      \hskip\MPllx\raise\MPlly\box\MPgraphicbox
     \egroup}
 
 \def\obeyMPboxdepth  {\MPboxmode\plusone}
@@ -436,7 +438,7 @@
 \let\MPshiftdrawingtrue \ignoreMPboxdepth
 \let\MPshiftdrawingfalse\normalMPboxdepth
 
-\unexpanded\def\placeMPgraphic
+\unexpanded\def\placeMPgraphic % the converter also displaces so in fact we revert
   {\ifcase\MPboxmode
    \or   % 1
      \doobeyMPboxdepth
@@ -448,21 +450,18 @@
    \box\MPgraphicbox}
 
 \unexpanded\def\reuseMPbox#1#2#3#4#5% space delimiting would save some tokens
-  {\xdef\MPllx{#2}%        but it's not worth the effort and looks
-   \xdef\MPlly{#3}%        ugly as well
-   \xdef\MPurx{#4}%
-   \xdef\MPury{#5}%
+  {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
    \hbox{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
-\def\handleuniqueMPgraphic#1#2#3%
-  {\begingroup
+\def\handleuniqueMPgraphic#1#2#3% when there are too many, we can store data at the lua end, although,
+  {\begingroup                  % when there are that many they're probably not that unique anyway
    \def\@@meta{#1:}%
    \extendMPoverlaystamp{#2}% incl prepare
    \ifcsname\@@MPG\overlaystamp:#1\endcsname\else
      \enableincludeMPgraphics % redundant
      \global\advance\MPobjectcounter\plusone
      \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
-     \setxvalue{\@@MPG\overlaystamp:#1}{\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
+     \setxvalue{\@@MPG\overlaystamp:#1}{\reuseMPbox{\number\MPobjectcounter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \fi
    \getvalue{\@@MPG\overlaystamp:#1}%
    \endgroup}
@@ -514,7 +513,7 @@
    \enableincludeMPgraphics % redundant
    \global\advance\MPobjectcounter\plusone
    \setobject{MP}{\number\MPobjectcounter}\hbox{\processMPgraphic{#3}}% was vbox, graphic must end up as hbox
-   \setxvalue{\@@MPG#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\MPllx}{\MPlly}{\MPurx}{\MPury}}%
+   \setxvalue{\@@MPG#1}{\noexpand\reuseMPbox{\number\MPobjectcounter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \getvalue{\@@MPG#1}%
    \endgroup}
 
@@ -856,18 +855,6 @@
 \def\MPstring    #1{"\executeifdefined{\@@MPT#1}\empty"}
 \def\MPbetex #1{btex \executeifdefined{\@@MPT#1}\empty\space etex}
 
-%D Unfortunately \METAPOST\ does not have \CMYK\ support
-%D built in, but by means of specials we can supply the
-%D information needed to handle them naturaly.
-
-% \newif\ifMPcmykcolors \MPcmykcolorstrue
-% \newif\ifMPspotcolors \MPspotcolorstrue
-
-\startMPinitializations
-    cmykcolors:=\ifMPcmykcolors true\else false\fi;
-    spotcolors:=\ifMPspotcolors true\else false\fi;
-\stopMPinitializations
-
 %D In order to communicate conveniently with the \TEX\
 %D engine, we introduce some typesetting variables.
 
@@ -1009,8 +996,8 @@
 
 \definelayerpreset % no dx,dy - else nasty non-mp placement
   [mp]
-  [\c!y=-\MPury bp,
-   \c!x=\MPllx bp,
+  [\c!y=-\MPury,
+   \c!x=\MPllx,
    \c!method=\v!fit]
 
 \definelayer
@@ -1095,16 +1082,6 @@
 
 \def\dostartstaticMPgraphic#1#2#3\stopstaticMPgraphic
   {\setgvalue{\@@MPG#1@S@}{\handlereusableMPgraphic{#1}{#2}{#3}}}
-
-%D New:
-
-\newconditional\manyMPspecials % when set to true, > 1000 specials can be used
-
-\settrue \manyMPspecials % per 1/4/2006
-
-\prependtoks
-  _special_div_ := 1000\ifconditional\manyMPspecials0\fi ;
-\to \MPextensions
 
 %D Needed too.
 

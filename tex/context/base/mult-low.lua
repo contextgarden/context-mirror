@@ -18,7 +18,7 @@ return {
         "points", "halfpoint",
         "zeroskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
-        --
+        --        --
         "endoflinetoken", "outputnewlinechar",
         --
         "emptytoks", "empty", "undefined",
@@ -38,7 +38,7 @@ return {
         --
         "attributeunsetvalue",
         --
-        "uprotationangle", "rightrotatioangle", "downrotatioangle", "leftrotatioangle",
+        "uprotationangle", "rightrotationangle", "downrotationangle", "leftrotationangle",
         --
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
@@ -68,6 +68,15 @@ return {
         "unvoidbox",
         "vfilll",
         --
+        "hglue", "vglue", "hfillneg", "vfillneg", "hfilllneg", "vfilllneg",
+        --
+        "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
+        "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
+        "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter",
+        "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
+        "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
+        "ruledpenalty",
+        --
         "scratchcounter", "globalscratchcounter",
         "scratchdimen", "globalscratchdimen",
         "scratchskip", "globalscratchskip",
@@ -75,7 +84,7 @@ return {
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
         --
-        "nextbox",
+        "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset",
         --

@@ -31,7 +31,7 @@
 %D need to check if the next paragraph has to be indented.
 
 \def\presetindentation
-  {\doifoutervmode{\ifindentfirstparagraph\else\noindentation\fi}}
+  {\doifoutervmode{\ifindentfirstparagraph\else\indentation_variant_no\fi}}
 
 % we need a better everypar model: for each option a switch, which we
 % set to false with \forgetall and can enable when needed (context 4);
@@ -42,7 +42,7 @@
      \doifsometokselse\everypar\donothing\docheckupcomingindentation
    \fi}
 
-\def\docheckupcomingindentation
+\def\docheckupcomingindentation % brr
   {\appendtoks\checkindentation\to\everypar}
 
 \definecomplexorsimple\setupindenting
@@ -61,8 +61,8 @@
     \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
     \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
     \checkeverypar % only when non-empty #1
-    \ifindentfirstparagraph\else\noindentation\fi % added
-    \toggleindentation}
+    \ifindentfirstparagraph\else\indentation_variant_no\fi
+    \indentation_check_toggle}
 
 \def\docomplexsetupindentingA#1%
   {\ifcsname\??in:#1\endcsname
@@ -124,51 +124,70 @@
 \unexpanded\def\noindenting{\indenting[\v!no, \v!next ]}
 \unexpanded\def\doindenting{\indenting[\v!yes,\v!first]}
 
-%D This one sets up the local indentation behaviour (i.e. either or not
-%D a next paragraph will be indented).
-
-\def\dochecknextindentation#1% internal one
-  {\checknextindentation[\csname#1\c!indentnext\endcsname]}
-
-\setvalue{\??in->\s!empty}{}
-\setvalue{\??in->\v!yes  }{\doindentation}
-\setvalue{\??in->\v!no   }{\noindentation}
-\setvalue{\??in->\v!auto }{\autoindentation}
-
-\unexpanded\def\checknextindentation[#1]%
-  {\csname\??in->\ifcsname\??in->#1\endcsname#1\else\s!empty\fi\endcsname}
-
-%D Here come the handlers.
+%D Here come the handlers (still rather messy ... we need states).
 
 \newif\ifindentation \indentationtrue  % documenteren, naar buiten
 
 \let\checkindentation\relax
 
-\ifx\autoindentation\undefined \let\autoindentation\relax \fi % hook
+\def\indentation_remove
+  {\ifdim\parindent=\zeropoint \else
+     \begingroup
+     \setbox\scratchbox\lastbox
+     \endgroup
+   \fi}
 
-\def\doindentation
-  {\gdef\checkindentation{\global\indentationtrue}}
+\def\indentation_kill_indeed
+  {\global\indentationfalse
+   \indentation_remove}
 
-\def\noindentation % made global
+\def\indentation_do_toggle_indeed
+  {\global\indentationfalse
+   \global\let\checkindentation\indentation_no_toggle_indeed
+   \indentation_remove}
+
+\def\indentation_no_toggle_indeed
+  {\global\indentationtrue
+   \global\let\checkindentation\indentation_do_toggle_indeed}
+
+\def\indentation_do_indeed
+  {\global\indentationtrue}
+
+\def\indentation_do_toggle
+  {\global\let\checkindentation\indentation_do_toggle_indeed}
+
+\def\indentation_no_toggle
+  {\global\let\checkindentation\indentation_no_toggle_indeed}
+
+\def\indentation_check_toggle
+  {\ifcase\indentingtogglestate
+     % nothing
+   \or
+     \indentation_no_toggle
+   \or
+     \indentation_do_toggle
+   \fi}
+
+\def\indentation_variant_yes
+  {\global\let\checkindentation\indentation_do_indeed}
+
+\def\indentation_no_next_check
+  {\indentation_remove
+   \global\let\checkindentation\indentation_do_indeed}
+
+\def\indentation_variant_no % made global
   {\ifinpagebody \else
      \global\indentationfalse
-     \gdef\checkindentation
-       {\donoindentation
-        \gdef\checkindentation{\global\indentationtrue}}%
+     \global\let\checkindentation\indentation_no_next_check
    \fi}
 
 \def\nonoindentation % bv bij floats
   {\ifinpagebody \else
      \global\indentationtrue
-     \gdef\checkindentation{\global\indentationtrue}%
+     \global\let\checkindentation\indentation_do_indeed
    \fi}
 
-\def\donoindentation
-  {\ifdim\parindent=\zeropoint \else
-     \bgroup \setbox\scratchbox\lastbox \egroup
-   \fi}
-
-\def\indentation
+\def\indentation_variant_force
   {\ifvmode \ifdim\parindent=\zeropoint \else
      % was : \hskip\parindent
      % can be: \indent
@@ -176,52 +195,47 @@
      \noindent\hskip\parindent
    \fi \fi}
 
-\def\toggleindentation % does not play well with noindentation
-  {\ifcase\indentingtogglestate
-     % nothing
-   \or
-     \notoggleindentation
-   \or
-     \dotoggleindentation
-   \fi}
-
-\def\dokillindentation
-  {\gdef\checkindentation{\global\indentationfalse\donoindentation}}
-
-\def\dotoggleindentation
-  {\gdef\checkindentation{\global\indentationfalse\notoggleindentation\donoindentation}}
-
-\def\notoggleindentation
-  {\gdef\checkindentation{\global\indentationtrue\dotoggleindentation}}
-
 \appendtoks
-   \pushmacro\checkindentation
-   \pushmacro\ifindentation
+    \pushmacro\checkindentation
+    \pushmacro\ifindentation
 \to \everypushsomestate
 
 \appendtoks
-   \popmacro\ifindentation
-   \popmacro\checkindentation
+    \popmacro\ifindentation
+    \popmacro\checkindentation
 \to \everypopsomestate
-
-% This is a user requested hack (using the auto-hook).
 
-\newconditional\recheckindentationmode
+% public:
 
-\def\dontrechecknextindentation
-  {\global\setfalse\recheckindentationmode}
+\let\indentation  \indentation_variant_force
+\let\noindentation\indentation_variant_no    % public
+\let\doindentation\indentation_variant_yes   % public
 
-\def\dorechecknextindentation
-  {\ifconditional\recheckindentationmode
-     \dontrechecknextindentation
-     \expandafter\doautoindentation
-   \fi}
+\def\dontrechecknextindentation              % public (in macros)
+  {\global\let\dorechecknextindentation\relax}
 
-\def\doautoindentation
-  {\doifnextcharelse\par\donothing\noindentation}
+\let\dorechecknextindentation\relax          % public (in macros)
 
-\def\autoindentation
-  {\global\settrue\recheckindentationmode}
+\def\indentation_check_next_indentation
+  {\global\let\dorechecknextindentation\relax
+   \doifnextcharelse\par\donothing\indentation_variant_no}
+
+\def\indentation_variant_auto
+  {\global\let\dorechecknextindentation\indentation_check_next_indentation}
+
+%D This one sets up the local indentation behaviour (i.e. either or not
+%D a next paragraph will be indented).
+
+\def\dochecknextindentation#1% obsolete
+  {\checknextindentation[\csname#1\c!indentnext\endcsname]}
+
+\unexpanded\def\checknextindentation[#1]%
+  {\csname\??in:c:\ifcsname\??in:c:#1\endcsname#1\else\s!empty\fi\endcsname}
+
+\letvalue{\??in:c:\s!empty}\donothing
+\letvalue{\??in:c:\v!yes  }\indentation_variant_yes
+\letvalue{\??in:c:\v!no   }\indentation_variant_no
+\letvalue{\??in:c:\v!auto }\indentation_variant_auto
 
 %D An example of usage:
 %D
@@ -276,22 +290,22 @@
 \sfcode`\'=0
 \sfcode`\]=0
 
-\def\setfrenchspacing#1%
+\unexpanded\def\setfrenchspacing#1%
   {\sfcode`\.#1 \sfcode`\,#1\relax
    \sfcode`\?#1 \sfcode`\!#1\relax
    \sfcode`\:#1 \sfcode`\;#1\relax}
 
-\def\frenchspacing
+\unexpanded\def\frenchspacing
   {\setfrenchspacing{1000}}
 
-\def\resetfrenchspacing
+\unexpanded\def\resetfrenchspacing
   {\sfcode`\.3000 \sfcode`\,1250
    \sfcode`\?3000 \sfcode`\!3000
    \sfcode`\:2000 \sfcode`\;1500 }
 
-\def\frenchspacing   {\setfrenchspacing{1000}}
-\def\newfrenchspacing{\setfrenchspacing{1050}}
-\def\nonfrenchspacing{\resetfrenchspacing}
+\unexpanded\def\frenchspacing   {\setfrenchspacing{1000}}
+\unexpanded\def\newfrenchspacing{\setfrenchspacing{1050}}
+\unexpanded\def\nonfrenchspacing{\resetfrenchspacing}
 
 \unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
 

@@ -211,19 +211,19 @@
 %D
 %D This command obeys the standard method for locating files.
 
-\long\def\doonlyonce#whatever%
+\unexpanded\def\doonlyonce#whatever%
   {\doifundefinedelse{@@@#whatever@@@}
      {\letgvalue{@@@#whatever@@@}\empty
       \firstofoneargument}
      {\gobbleoneargument}}
 
-\def\doinputonce#name%
+\unexpanded\def\doinputonce#name%
   {\doonlyonce{#name}{\doiffileelse{#name}{\inputgivenfile{#name}}\donothing}}
 
-\def\doendinputonce#name%
+\unexpanded\def\doendinputonce#name%
   {\doifdefined{@@@#name@@@}\endinput}
 
-\def\forgetdoingonce#whatever%
+\unexpanded\def\forgetdoingonce#whatever%
   {\global\letbeundefined{@@@#whatever@@@}}
 
 \protect \endinput

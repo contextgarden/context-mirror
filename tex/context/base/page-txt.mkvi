@@ -115,6 +115,16 @@
 \unexpanded\def\setupfooter{\dotripleempty\setup_layout_text[\v!footer]}
 \unexpanded\def\setupbottom{\dotripleempty\setup_layout_text[\v!bottom]}
 
+%D We inherit some settings:
+
+\setuplayoutelement
+  [ \c!leftstyle=\layoutelementparameter\c!style,
+   \c!rightstyle=\layoutelementparameter\c!style,
+    \c!leftcolor=\layoutelementparameter\c!color,
+   \c!rightcolor=\layoutelementparameter\c!color,
+    \c!leftwidth=\layoutelementparameter\c!width,
+   \c!rightwidth=\layoutelementparameter\c!width]
+
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
 %D

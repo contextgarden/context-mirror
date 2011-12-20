@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
     license   = "see context related readme files"
 }
 
-os.exit()
+if true then
+    return -- or os.exit()
+end
 
 -- This file contains the history of the converter. We keep it around as it
 -- relates to the development of luatex.

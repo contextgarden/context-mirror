@@ -837,7 +837,6 @@
        \let\dodostopdelimitedtextpar\endgraf}
       {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
     % so far
-    % \dochecknextindentation{\??ci\currentdelimitedtext}% AM: not here
     \pushmacro\checkindentation
     \doifsomething{\delimitedtextparameter\c!indenting} % WS
       {\setupindenting[\delimitedtextparameter\c!indenting]}%
@@ -857,7 +856,7 @@
     \delimitedtextparameter\c!after
     \doifsomething{\delimitedtextparameter\c!spaceafter}
       {\blank[\delimitedtextparameter\c!spaceafter]}%
-    \dochecknextindentation{\??ci\currentdelimitedtext}% AM: here
+    \checknextindentation[\delimitedtextparameter\c!indentnext]% AM: here
     \dorechecknextindentation}% AM: This was missing!
 
 \def\dostartdelimitedtexttxt

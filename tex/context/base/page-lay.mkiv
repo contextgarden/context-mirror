@@ -427,39 +427,39 @@
      [\page_paper_the_paper_size{#1}]%
      [\page_paper_the_print_size{#2}]}}
 
-\setvalue{\??pp:1:\v!reset                 }{\global\setfalse\c_page_target_paper_landscape
-                                             \global\setfalse\c_page_target_paper_mirror
-                                             \global\setfalse\c_page_target_paper_negate
-                                             \global\c_page_target_paper_orientation\uprotationangle
-                                             \global\c_page_target_paper_reverse    \uprotationangle}
-\setvalue{\??pp:1:\v!landscape             }{\global\settrue\c_page_target_paper_landscape}
-\setvalue{\??pp:1:\v!mirrored              }{\global\settrue\c_page_target_paper_mirror}
-\setvalue{\??pp:1:\v!negative              }{\global\settrue\c_page_target_paper_negate}
-\setvalue{\??pp:1:\v!rotated               }{\global\c_page_target_paper_orientation\rightrotatioangle
-                                             \global\c_page_target_paper_reverse    \leftrotatioangle}
-\setvalue{\??pp:1:\number\rightrotatioangle}{\global\c_page_target_paper_orientation\rightrotatioangle
-                                             \global\c_page_target_paper_reverse    \leftrotatioangle}
-\setvalue{\??pp:1:\number\downrotatioangle }{\global\c_page_target_paper_orientation\downrotatioangle
-                                             \global\c_page_target_paper_reverse    \zerocount}
-\setvalue{\??pp:1:\number\leftrotatioangle }{\global\c_page_target_paper_orientation\leftrotatioangle
-                                             \global\c_page_target_paper_reverse    \rightrotatioangle}
+\setvalue{\??pp:1:\v!reset                  }{\global\setfalse\c_page_target_paper_landscape
+                                              \global\setfalse\c_page_target_paper_mirror
+                                              \global\setfalse\c_page_target_paper_negate
+                                              \global\c_page_target_paper_orientation\uprotationangle
+                                              \global\c_page_target_paper_reverse    \uprotationangle}
+\setvalue{\??pp:1:\v!landscape              }{\global\settrue\c_page_target_paper_landscape}
+\setvalue{\??pp:1:\v!mirrored               }{\global\settrue\c_page_target_paper_mirror}
+\setvalue{\??pp:1:\v!negative               }{\global\settrue\c_page_target_paper_negate}
+\setvalue{\??pp:1:\v!rotated                }{\global\c_page_target_paper_orientation\rightrotationangle
+                                              \global\c_page_target_paper_reverse    \leftrotationangle}
+\setvalue{\??pp:1:\number\rightrotationangle}{\global\c_page_target_paper_orientation\rightrotationangle
+                                              \global\c_page_target_paper_reverse    \leftrotationangle}
+\setvalue{\??pp:1:\number\downrotationangle }{\global\c_page_target_paper_orientation\downrotationangle
+                                              \global\c_page_target_paper_reverse    \zerocount}
+\setvalue{\??pp:1:\number\leftrotationangle }{\global\c_page_target_paper_orientation\leftrotationangle
+                                              \global\c_page_target_paper_reverse    \rightrotationangle}
 
-\setvalue{\??pp:1:\v!reset                 }{\global\setfalse\c_page_target_print_landscape
-                                             \global\setfalse\c_page_target_print_mirror
-                                             \global\setfalse\c_page_target_print_negate
-                                             \global\c_page_target_print_orientation\uprotationangle
-                                             \global\c_page_target_print_reverse    \uprotationangle}
-\setvalue{\??pp:2:\v!landscape             }{\global\settrue\c_page_target_print_landscape}
-\setvalue{\??pp:2:\v!mirrored              }{\global\settrue\c_page_target_print_mirror}
-\setvalue{\??pp:2:\v!negative              }{\global\settrue\c_page_target_print_negate}
-\setvalue{\??pp:2:\v!rotated               }{\global\c_page_target_print_orientation\rightrotatioangle
-                                             \global\c_page_target_print_reverse    \leftrotatioangle}
-\setvalue{\??pp:2:\number\rightrotatioangle}{\global\c_page_target_print_orientation\rightrotatioangle
-                                             \global\c_page_target_print_reverse    \leftrotatioangle}
-\setvalue{\??pp:2:\number\downrotatioangle }{\global\c_page_target_print_orientation\downrotatioangle
-                                             \global\c_page_target_print_reverse    \zerocount}
-\setvalue{\??pp:2:\number\leftrotatioangle }{\global\c_page_target_print_orientation\leftrotatioangle
-                                             \global\c_page_target_print_reverse    \rightrotatioangle}
+\setvalue{\??pp:1:\v!reset                  }{\global\setfalse\c_page_target_print_landscape
+                                              \global\setfalse\c_page_target_print_mirror
+                                              \global\setfalse\c_page_target_print_negate
+                                              \global\c_page_target_print_orientation\uprotationangle
+                                              \global\c_page_target_print_reverse    \uprotationangle}
+\setvalue{\??pp:2:\v!landscape              }{\global\settrue\c_page_target_print_landscape}
+\setvalue{\??pp:2:\v!mirrored               }{\global\settrue\c_page_target_print_mirror}
+\setvalue{\??pp:2:\v!negative               }{\global\settrue\c_page_target_print_negate}
+\setvalue{\??pp:2:\v!rotated                }{\global\c_page_target_print_orientation\rightrotationangle
+                                              \global\c_page_target_print_reverse    \leftrotationangle}
+\setvalue{\??pp:2:\number\rightrotationangle}{\global\c_page_target_print_orientation\rightrotationangle
+                                              \global\c_page_target_print_reverse    \leftrotationangle}
+\setvalue{\??pp:2:\number\downrotationangle }{\global\c_page_target_print_orientation\downrotationangle
+                                              \global\c_page_target_print_reverse    \zerocount}
+\setvalue{\??pp:2:\number\leftrotationangle }{\global\c_page_target_print_orientation\leftrotationangle
+                                              \global\c_page_target_print_reverse    \rightrotationangle}
 
 \def\pages_paper_handle_page_option #1{\ifcsname\??pp:1:#1\endcsname\csname\??pp:1:#1\endcsname\fi}
 \def\pages_paper_handle_print_option#1{\ifcsname\??pp:2:#1\endcsname\csname\??pp:2:#1\endcsname\fi}
@@ -521,14 +521,14 @@
    \ifx\tmp_pages_asked_option\v!max % \v!fit is
       \begingroup
       % we need to pre-swap else we get the wrong paper size
-      \ifnum\c_page_target_paper_orientation=\rightrotatioangle
+      \ifnum\c_page_target_paper_orientation=\rightrotationangle
         \swapdimens\paperwidth\paperheight
-      \else\ifnum\c_page_target_paper_orientation=\leftrotatioangle
+      \else\ifnum\c_page_target_paper_orientation=\leftrotationangle
         \swapdimens\paperwidth\paperheight
       \fi\fi
-      \ifnum\c_page_target_print_orientation=\rightrotatioangle
+      \ifnum\c_page_target_print_orientation=\rightrotationangle
         \swapdimens\printpaperwidth\printpaperheight
-      \else\ifnum\c_page_target_print_orientation=\leftrotatioangle
+      \else\ifnum\c_page_target_print_orientation=\leftrotationangle
         \swapdimens\printpaperwidth\printpaperheight
       \fi\fi
       \ifdim\paperheight>\printpaperheight

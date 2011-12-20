@@ -141,13 +141,10 @@
 \installcommandhandler \??tp {typing} \??tp
 
 \appendtoks
-    \normalexpanded{\dodefinetyping{\currenttyping}}%
+    \setuevalue{\e!start#1}{\dostarttyping{\currenttyping}}%
+    \setuevalue{\e!stop #1}{\dostoptyping {\currenttyping}}%
     \normalexpanded{\definelinenumbering[\currenttyping]}%
 \to \everydefinetyping
-
-\unexpanded\def\dodefinetyping#1%
-  {\setvalue{\e!start#1}{\dostarttyping{#1}}%
-   \setvalue{\e!stop #1}{\dostoptyping {#1}}}
 
 \appendtoks
    \doinitializevisualizer{\typingparameter\c!option}% we can check at the tex end
@@ -266,9 +263,9 @@
 
 \def\dodotypeone
   {\ifx\next\bgroup
-     \@EA\dodotypeA
+     \expandafter\dodotypeA
    \else
-     \@EA\dodotypetwo
+     \expandafter\dodotypetwo
    \fi}
 
 \def\dodotypetwo
@@ -278,9 +275,9 @@
 
 \def\dodotypethree
   {\if\next<%
-     \@EA\dodotypeB
+     \expandafter\dodotypeB
    \else
-     \@EA\dodotypeC
+     \expandafter\dodotypeC
    \fi}
 
 \def\dodotypeA
@@ -392,7 +389,7 @@
 \let\beginofverbatimlines\relax
 \let\endofverbatimlines  \relax
 
-\def\dostarttyping#1% tricky non standard lookahead
+\unexpanded\def\dostarttyping#1% tricky non standard lookahead
   {\bgroup
    \edef\currenttyping{#1}%
    \obeylines
@@ -406,7 +403,11 @@
    \fi}
 
 \def\nododostarttyping
-  {\dododostarttyping[]}
+  {\typingparameter\c!before
+   \startpacked[\v!blank]
+   \dosetuptypelinenumbering
+   \firststageinitializetyping
+   \normalexpanded{\dotypeblockverbatim{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \def\dododostarttyping[#1]%
   {\typingparameter\c!before
@@ -440,7 +441,7 @@
    \dostoptagged
    \csname#2\endcsname}
 
-\def\dostoptyping#1% hm, currenttyping
+\unexpanded\def\dostoptyping#1% hm, currenttyping
   {\stoppacked
    \typingparameter\c!after
    \normalexpanded{\egroup\checknextindentation[\typingparameter\c!indentnext]}%
@@ -617,31 +618,34 @@
 %D but they also default to the values below. Watch the
 %D alternative escape character.
 
+% \tttf   gives problems with {\tx \type...}
+% \tt\tf  does not adapt to e.g. \bf
+
 \setuptyping
-  [       \c!before=\blank,
-           \c!after=\blank,
-       %\c!bodyfont=,
-         %\c!color=,
-           \c!space=\v!off,
-            \c!page=\v!no,
-             \c!tab=\v!yes, % what is this: \s!ascii ?
-          \c!option=\v!none,
-            \c!text=\v!no,
-           \c!style=\tttf,
-      \c!indentnext=\v!yes,
-          \c!margin=\!!zeropoint,
-      \c!evenmargin=\!!zeropoint,
-       \c!oddmargin=\!!zeropoint,
-           \c!blank=\v!line,
-         %\c!escape=, % yes | no | {START,STOP} | default when yes: {BTEX,ETEX}
-       \c!numbering=\v!no,
-          %\c!lines=,
-          %\c!range=,
-           \c!start=1,
-           %\c!stop=,
-            \c!step=1,
-       %\c!continue=,
-           \c!strip=\v!no] %auto or number
+  [\c!before=\blank,
+   \c!after=\blank,
+  %\c!bodyfont=,
+  %\c!color=,
+   \c!space=\v!off,
+   \c!page=\v!no,
+   \c!tab=\v!yes, % what is this: \s!ascii ?
+   \c!option=\v!none,
+   \c!text=\v!no,
+   \c!style=\tt,
+   \c!indentnext=\v!yes,
+   \c!margin=\!!zeropoint,
+   \c!evenmargin=\!!zeropoint,
+   \c!oddmargin=\!!zeropoint,
+   \c!blank=\v!line,
+  %\c!escape=, % yes | no | {START,STOP} | default when yes: {BTEX,ETEX}
+   \c!numbering=\v!no,
+  %\c!lines=,
+  %\c!range=,
+   \c!start=1,
+  %\c!stop=,
+   \c!step=1,
+  %\c!continue=,
+   \c!strip=\v!no] % auto or number
 
 \definetyping[\v!typing]
 
@@ -651,12 +655,12 @@
 %D The setups for inline verbatim default to:
 
 \setuptype
-  [ \c!space=\v!off,
-   %\c!color=,
-    \c!style=\tt\tf, % \tttf gives problems with {\tx \type...}
+  [\c!space=\v!off,
+  %\c!color=,
+   \c!style=\tt,
   %\c!option=\v!normal,
-     \c!page=\v!no,
-      \c!tab=\v!yes]
+   \c!page=\v!no,
+   \c!tab=\v!yes]
 
 %D Buffers
 
@@ -669,10 +673,7 @@
   {\dotripleempty\dodotypedefinedbuffer}
 
 \appendtoks
-    \setuevalue{\e!type\currentbuffer}%
-      {\noexpand\dotypedefinedbuffer
-         [\v!buffer]%
-         [def-\number\nofdefinedbuffers]}%
+    \setuevalue{\e!type\currentbuffer}{\noexpand\dotypedefinedbuffer[\v!buffer][def-\number\nofdefinedbuffers]}%
 \to \everydefinebuffer
 
 \def\dotypebuffer[#1][#2]%

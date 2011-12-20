@@ -86,28 +86,38 @@
 \def\MPonrightpage{true}
 \def\MPonoddpage  {true}
 
-\def\freezeMPpagelayout
-  {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
-   \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
-
-\let\freezeMPlayout\relax % obsolete
+% obsolete (but keep the code)
+%
+% \def\freezeMPpagelayout
+%   {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
+%    \edef\MPonoddpage  {\doifoddpageelse     {tru}{fals}e}}
+%
+% \let\freezeMPlayout\relax % obsolete
 
 %D We need to freeze the pagelayout before the backgrounds
 %D are build, because the overlay will temporarily become
 %D zero (overlay).
 
-\appendtoks
-    \freezeMPpagelayout
-\to \everybeforepagebody
+% obsolete (but keep the code)
+%
+% \appendtoks
+%     \freezeMPpagelayout
+% \to \everybeforepagebody
 
 %D By freezing these value every graphic, we can use layout
 %D variables that change halfways a page, whatever use that
 %D has.
 
+% obsolete (but keep the code)
+%
+% \prependtoks
+%     \calculatereducedvsizes % this is really needed
+%     \freezeMPpagelayout
+%     \freezeMPlayout % to be used grouped
+% \to \everyMPgraphic
+
 \prependtoks
     \calculatereducedvsizes % this is really needed
-    \freezeMPpagelayout
-    \freezeMPlayout % to be used grouped
 \to \everyMPgraphic
 
 %D The next feature provides information about for instance
@@ -172,6 +182,7 @@
 %    \else
 %      \hbox{#1}%
 %    \fi}
+
 \def\globalregisterMPtextarea{\normalexpanded{\global\MPtextareadata{\the\MPtextareadata
   RegisterTextArea(%
    \MPx\currentMPtextarea,%
@@ -202,10 +213,10 @@
      \hbox{#2}%
    \fi}
 
-\def\registerMPtextarea     {\registerMPtextareaindeed\globalregisterMPtextarea}
-\def\registerMPlocaltextarea{\registerMPtextareaindeed\localregisterMPtextarea }
+\unexpanded\def\registerMPtextarea     {\registerMPtextareaindeed\globalregisterMPtextarea}
+\unexpanded\def\registerMPlocaltextarea{\registerMPtextareaindeed\localregisterMPtextarea }
 
-\def\resetMPlocaltextarea
+\expanded\def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 
 \startMPextensions

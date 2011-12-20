@@ -123,7 +123,7 @@
 
 \edef\!!TLT{\detokenize{TLT}}
 \edef\!!TRT{\detokenize{TRT}}
-
+
 %D \macros
 %D   {defineinterfaceconstant,
 %D    defineinterfacevariable,
@@ -162,9 +162,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-\unexpanded\def\defineinterfaceconstant #1#2{\setvalue{\c!prefix!#1}{#2}}
-\unexpanded\def\defineinterfacevariable #1#2{\setvalue{\v!prefix!#1}{#2}}
-\unexpanded\def\defineinterfaceelement  #1#2{\setvalue{\e!prefix!#1}{#2}}
+\unexpanded\def\defineinterfaceconstant #1#2{\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
+\unexpanded\def\defineinterfacevariable #1#2{\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
+\unexpanded\def\defineinterfaceelement  #1#2{\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -173,12 +173,12 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\unexpanded\def\definereferenceconstant #1#2{\setvalue{\r!prefix!#1}{#2}}
-\unexpanded\def\definefileconstant      #1#2{\setvalue{\f!prefix!#1}{#2}}
+\unexpanded\def\definereferenceconstant #1#2{\expandafter\def\csname\r!prefix!#1\endcsname{#2}}
+\unexpanded\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
 
 %D A new one:
 
-\unexpanded\def\definetypescriptconstant#1#2{\setvalue{\t!prefix!#1}{#2}}
+\unexpanded\def\definetypescriptconstant#1#2{\expandafter\def\csname\t!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -187,8 +187,8 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-\unexpanded\def\definesystemconstant  #1{\setvalue{\s!prefix!#1}{#1}}
-\unexpanded\def\definemessageconstant #1{\setvalue{\m!prefix!#1}{#1}}
+\unexpanded\def\definesystemconstant  #1{\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
+\unexpanded\def\definemessageconstant #1{\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
 
 %D In a parameter driven system, some parameters are shared
 %D by more system components. In \CONTEXT\ we can distinguish
@@ -199,7 +199,7 @@
 %D \definesystemvariable {name}
 %D \stoptyping
 
-\unexpanded\def\definesystemvariable#1{\setevalue{\??prefix#1}{\@@prefix#1}}
+\unexpanded\def\definesystemvariable#1{\expandafter\edef\csname\??prefix#1\endcsname{\@@prefix#1}}
 
 \definesystemvariable{ms}
 
@@ -437,15 +437,15 @@
 %D interface. (We no longer need the link back to the main
 %D internal interface.)
 
-\unexpanded\def\doresetvalue   #1#2{\dosetvalue{#1}{#2}{}}
-\unexpanded\def\doignorevalue#1#2#3{\dosetvalue{#1}{#2}{}}
+\unexpanded\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
+\unexpanded\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
+\unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
+\unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
+\unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
+\unexpanded\def\docopyvalue  #1#2#3{\expandafter \def\csname#1#3\expandafter\endcsname\expandafter{\csname#2#3\endcsname}}
 
-\unexpanded\def\doletvalue   #1#2{\@EA \let\csname#1#2\endcsname}
-\unexpanded\def\dosetvalue   #1#2{\@EA \def\csname#1#2\endcsname}
-\unexpanded\def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
-\unexpanded\def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
-\unexpanded\def\dosetxvalue  #1#2{\@EA\xdef\csname#1#2\endcsname}
-\unexpanded\def\docopyvalue#1#2#3{\@EA \def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
+\unexpanded\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
+\unexpanded\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
 
 %D We can now redefine some messages that will be
 %D introduced in the multi||lingual system module.
@@ -712,11 +712,11 @@
 
 \unexpanded\def\setinterfaceconstant#1#2%
   {\ctxlua{interfaces.setconstant("#1","#2")}%
-   \setvalue{\c!prefix!#1}{#1}}
+   \expandafter\def\csname\c!prefix!#1\endcsname{#1}}
 
 \unexpanded\def\setinterfacevariable#1#2%
   {\ctxlua{interfaces.setvariable("#1","#2")}%
-   \setvalue{\v!prefix!#1}{#2}}
+   \expandafter\def\csname\v!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {defineinterfaceconstant}
@@ -727,7 +727,7 @@
 %D documentation purposes the x||alternative comes in handy.
 
 \unexpanded\def\defineinterfaceconstant#1#2%
-  {\setvalue{\c!prefix!#1}{#2}}
+  {\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
 
 %D \macros
 %D   {startelements}
@@ -752,21 +752,22 @@
    \fi}
 
 \unexpanded\def\setinterfacecommand#1#2%
-  {\doifnot{#1}{#2}{\@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}}% or just \let ?
+  {\doifnot{#1}{#2}% todo: let when already defined
+     {\expandafter\def\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}}
 
 %D We just ignore these:
 
 \unexpanded\def\startvariables{\gobbleuntil\stopvariables}
 \unexpanded\def\startconstants{\gobbleuntil\stopconstants}
-\unexpanded\def\startelements {\gobbleuntil\stopelements}
-\unexpanded\def\startcommands {\gobbleuntil\stopcommands}
+\unexpanded\def\startelements {\gobbleuntil\stopelements }
+\unexpanded\def\startcommands {\gobbleuntil\stopcommands }
 
 %D For at the \LUA\ end (experiment):
 
-\def\do@sicon#1#2{\@EA\gdef\csname\c!prefix!#1\endcsname{#1}}
-\def\do@sivar#1#2{\@EA\gdef\csname\v!prefix!#1\endcsname{#2}}
-\def\do@siele#1#2{\@EA\gdef\csname\e!prefix!#1\endcsname{#2}}
-\def\do@sicom#1#2{\@EA\gdef\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}
+\def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+\def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
+\def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
+\def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
 
 %D \macros
 %D   {interfaced}
@@ -793,7 +794,6 @@
 %D So much for the basic multi||lingual interface commands. The
 %D macro's can be enhanced with more testing facilities, but
 %D for the moment they suffice.
-
 
 \ifdefined\zwnj \else \edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe
 \ifdefined\zwj  \else \edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe

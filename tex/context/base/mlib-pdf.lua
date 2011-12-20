@@ -146,7 +146,7 @@ end
 
 function metapost.flushers.pdf.textfigure(font,size,text,width,height,depth) -- we could save the factor
     text = gsub(text,".","\\hbox{%1}") -- kerning happens in metapost (i have to check if this is true for mplib)
-    context.MPLIBtextext(font,size,text,0,-number.dimenfactors.bp*depth)
+    context.MPtextext(font,size,text,0,-number.dimenfactors.bp*depth)
 end
 
 local bend_tolerance = 131/65536

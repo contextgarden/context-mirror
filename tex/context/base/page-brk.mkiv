@@ -330,20 +330,20 @@
          \relax
          \ifcase\testpagemethod
            \ifdim\d_page_tests_test>.99\pagegoal
-             \penalty-\!!tenthousand\relax
+             \penalty-\plustenthousand
            \fi
          \or
            \ifdim\dimexpr\d_page_tests_test-\pagegoal\relax>-\lineheight
-             \penalty-\!!tenthousand\relax
+             \penalty-\plustenthousand
            \fi
          \or
            \getnoflines\pagegoal
            \ifdim\dimexpr\d_page_tests_test-\noflines\lineheight\relax>-\lineheight
-             \penalty-\!!tenthousand\relax
+             \penalty-\plustenthousand
            \fi
          \or % same as 0 but more accurate
            \ifdim\dimexpr\d_page_tests_test-10\scaledpoint\relax>\pagegoal
-             \penalty-\!!tenthousand\relax
+             \penalty-\plustenthousand
            \fi
          \fi
        \else\ifnum\c_page_tests_mode=\plusthree

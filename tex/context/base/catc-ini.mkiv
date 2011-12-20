@@ -58,12 +58,12 @@
 \setnewconstant\tildeasciicode       126 % `\~
 \setnewconstant\delasciicode         127
 
-\bgroup
+\begingroup
     \catcode \tabasciicode       \activecatcode  \gdef\activetabtoken      {^^I}
                                                  \gdef\outputnewlinechar   {^^J}
     \catcode \formfeedasciicode  \activecatcode  \gdef\activeformfeedtoken {^^L}
     \catcode \endoflineasciicode \activecatcode  \gdef\activeendoflinetoken{^^M}
-\egroup
+\endgroup
 
 % \endlinechar = \endoflineasciicode % appended to input lines
 % \newlinechar = \newlineasciicode   % can be used in write
@@ -71,10 +71,10 @@
 % rather special and used in writing to file: \let\par\outputnewlinechar
 
 \def\initializenewlinechar % operating system dependent
-  {\bgroup
+  {\begingroup
    \newlinechar\newlineasciicode
    \xdef\outputnewlinechar{^^J}%
-   \egroup}
+   \endgroup}
 
 \ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
 
@@ -105,12 +105,12 @@
    \catcode\delasciicode      \othercatcode}
 
 \long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
-  {\bgroup
+  {\begingroup
    \catcodetable\scratchcatcodes
    \the\setdefaultcatcodes
    #2%
    \savecatcodetable#1\relax
-   \egroup}
+   \endgroup}
 
 \def\permitcircumflexescape % to be used grouped
   {\catcode\circumflexasciicode\superscriptcatcode}
@@ -120,12 +120,12 @@
 \newcatcodetable\dummycatcodes
 
 \long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
-  {\bgroup
+  {\begingroup
    \catcodetable#1\relax
    \globaldefs\plusone
    #2%
    \globaldefs\zerocount
-   \egroup}
+   \endgroup}
 
 % ==
 %
@@ -213,18 +213,18 @@
 \def\reinstatecatcodecommand{\afterassignment\reinstatecatcodecommanda\cctcounterb}
 
 \def\reinstatecatcodecommanda % can be used when a direct definition has been done
-  {\bgroup                    % and the selector has been lost
+  {\begingroup                    % and the selector has been lost
    \uccode\activehackcode\cctcounterb
    \catcode\uccode\activehackcode\activecatcode
    \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
-   \egroup}
+   \endgroup}
 
 \def\reinstatecatcodecommandua % can be used when a direct definition has been done
-  {\bgroup                     % and the selector has been lost
+  {\begingroup                     % and the selector has been lost
    \uccode\activehackcode\cctcounterb
    \catcode\uccode\activehackcode\activecatcode
    \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
-   \egroup}
+   \endgroup}
 
 \newconstant\defaultcatcodetable
 
@@ -337,7 +337,7 @@
 % \newcount\catcodetablelevel
 %
 % \def\pushcatcodes
-%   {\bgroup
+%   {\begingroup
 %    \global\advance\catcodetablelevel\plusone
 %    \ifcsname @@ccf:\number\catcodetablelevel\endcsname \else
 %      \global\advance\cctdefcounter\plusone
@@ -345,11 +345,10 @@
 %    \fi
 %    \catcodetable\ctxcatcodes
 %    \expandafter\savecatcodetable\csname @@ccf:\number\catcodetablelevel\endcsname
-%    \egroup
+%    \endgroup
 %    \expandafter\catcodetable\csname @@ccf:\number\catcodetablelevel\endcsname}
 %
 % \def\popcatcodes
 %   {\global\advance\catcodetablelevel\minusone}
 
 \endinput
-

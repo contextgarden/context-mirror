@@ -411,34 +411,6 @@ function visualizers.registerescapepattern(name,befores,afters,normalmethod,esca
     return escapepattern
 end
 
---~ function visualizers.registerescapeline(name,before,normalmethod,escapemethod,processor)
---~     local escapepattern = escapepatterns[name]
---~     if not escapepattern then
---~         before    = type(before)    == "table" and before   [1] or before
---~         processor = type(processor) == "table" and processor[1] or processor
---~         if trace_visualize then
---~             report_visualizers("registering escape line pattern, name: '%s', before: '%s', after: <<newline>>",name,before)
---~         end
---~         before = P(before) * space_pattern
---~         after = space_pattern * P("\n")
---~         local action
---~         if processor then
---~             action = function(s) apply_processor(processor,s) end
---~         else
---~             action = escapemethod or texmethod
---~         end
---~         escapepattern = (
---~             (before / "")
---~           * ((1 - after)^0 / action)
---~           * (space_pattern / "")
---~        -- * (after / (normalmethod or defaultmethod))
---~           + hack((1 - before)^1) / (normalmethod or defaultmethod)
---~         )^0
---~         escapepatterns[name] = escapepattern
---~     end
---~     return escapepattern
---~ end
-
 function visualizers.registerescapeline(name,befores,normalmethod,escapemethod,processors)
     local escapepattern = escapepatterns[name]
     if not escapepattern then

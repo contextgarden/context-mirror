@@ -548,9 +548,6 @@ extra_beginfig := extra_beginfig & "currentgraphictext := 0 ; " ;
 extra_endfig   := extra_endfig   & "finishsavingdata ; " ;
 extra_endfig   := extra_endfig   & "mfun_reset_tex_texts ; " ;
 
-boolean cmykcolors ; cmykcolors := true ; % are these still used?
-boolean spotcolors ; spotcolors := true ; % are these still used?
-
 % Bonus
 
 vardef verbatim(expr str) =

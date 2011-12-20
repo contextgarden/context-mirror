@@ -104,9 +104,10 @@
      \csname\??la\s!default#2\endcsname
    \fi\fi\fi}
 
-\unexpanded\def\setupcurrentlanguage[#1]{\setcurrentlanguage\currentmainlanguage{#1}}
+\unexpanded\def\setupcurrentlanguage[#1]%
+  {\setcurrentlanguage\currentmainlanguage{#1}}
 
-\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
+\unexpanded\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
   {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
    \ifx\xaskedlanguage\empty \else
      \ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
@@ -172,7 +173,12 @@
 
 \def\installedlanguages{\ctxlua{languages.installed()}}
 
-\def\doiflanguageelse#1{\doifdefinedelse{\??la#1\c!state}}
+\def\doiflanguageelse#1%
+  {\ifcsname\??la#1\c!state\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \def\doinstalllanguage[#1][#2]%
   {\doifassignmentelse{#2}
@@ -548,7 +554,7 @@
 %D \stoptable
 %D \protect
 
-\def\nopatterns{\normallanguage\minusone}
+\unexpanded\def\nopatterns{\normallanguage\minusone}
 
 %D We default to the language belonging to the interface. This
 %D is one of the few places outside the interface modules where
@@ -569,7 +575,7 @@
 \unexpanded\def\startexceptions
   {\dosingleempty\dostartexceptions}
 
-\long\def\dostartexceptions[#1]#2\stopexceptions % multilingual or not?
+\def\dostartexceptions[#1]#2\stopexceptions % multilingual or not?
   {\begingroup
    \edef\askedlanguage{\reallanguagetag{#1}}%
    \ifx\askedlanguage\empty
