@@ -12,6 +12,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\endinput
+
 % option=test    => boxes
 %        dummy   => file
 %        final   => file / local run
@@ -471,7 +473,7 @@
      \endpspicture
    \or
      \resetchemicalcoordinates
-     \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+     \setbox2\hbox{\ignoreMPboxdepth\getMPdrawing}%
      \wd2=\!!zeropoint
      \ht2=\!!zeropoint
      \dp2=\!!zeropoint
@@ -512,7 +514,7 @@
      \put {\box\chemicalsymbols} at 0 0 %  elders
      \ifMPdrawingdone
        \resetchemicalcoordinates
-       \setbox2\hbox{\MPshiftdrawingtrue\MPstaticgraphictrue\getMPdrawing}%
+       \setbox2\hbox{\ignoreMPboxdepth\getMPdrawing}%
        \wd2=\!!zeropoint
        \ht2=\!!zeropoint
        \dp2=\!!zeropoint

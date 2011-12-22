@@ -860,12 +860,21 @@
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulate
 
+%D Beware: using an unknown value results in char struts.
+
 \unexpanded\def\setupstrut
   {\dosingleempty\spacing_setup_strut}
 
 \def\spacing_setup_strut[#1]%
   {\ifcsname\??ut:#1\endcsname
      \csname\??ut:#1\endcsname % these are defined later
+   \else
+     \setcharstrut{#1}%
+   \fi}
+
+\def\synchronizestrut#1% no [] parsing, faster for internal
+  {\ifcsname\??ut:#1\endcsname
+     \csname\??ut:#1\endcsname
    \else
      \setcharstrut{#1}%
    \fi}
@@ -999,7 +1008,7 @@
 %D Keyword based strutting:
 
 \letvalue{\??ut:\v!yes    }\setstrut     % \setvalue{\??ut:\v!yes    }{\setstrut}
-\setvalue{\??ut:\v!auto   }\setautostrut % \setvalue{\??ut:\v!auto   }{\setautostrut}
+\letvalue{\??ut:\v!auto   }\setautostrut % \setvalue{\??ut:\v!auto   }{\setautostrut}
 \letvalue{\??ut:\v!no     }\setnostrut   % \setvalue{\??ut:\v!no     }{\setnostrut}
 \letvalue{\??ut:\v!cap    }\setcapstrut  % \setvalue{\??ut:\v!cap    }{\setcapstrut}
 \letvalue{\??ut:\v!fit    }\setfontstrut % \setvalue{\??ut:\v!fit    }{\setfontstrut}

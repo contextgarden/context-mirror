@@ -581,6 +581,7 @@
 		<cd:constant name='blank' value='blanko'/>
 		<cd:constant name='blockway' value='blokwijze'/>
 		<cd:constant name='bodyfont' value='korps'/>
+		<cd:constant name='boffset' value='boffset'/>
 		<cd:constant name='bookmark' value='bookmark'/>
 		<cd:constant name='bottom' value='onder'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
@@ -771,6 +772,7 @@
 		<cd:constant name='listtext' value='lijsttekst'/>
 		<cd:constant name='local' value='lokaal'/>
 		<cd:constant name='location' value='plaats'/>
+		<cd:constant name='loffset' value='loffset'/>
 		<cd:constant name='logo' value='logo'/>
 		<cd:constant name='logos' value='logos'/>
 		<cd:constant name='marcolor' value='markleur'/>
@@ -924,6 +926,7 @@
 		<cd:constant name='rightsubsentence' value='rechtersubzin'/>
 		<cd:constant name='righttext' value='rechtertekst'/>
 		<cd:constant name='rightwidth' value='rechterbreedte'/>
+		<cd:constant name='roffset' value='roffset'/>
 		<cd:constant name='rotation' value='rotatie'/>
 		<cd:constant name='rule' value='lijn'/>
 		<cd:constant name='rulecolor' value='lijnkleur'/>
@@ -1018,6 +1021,7 @@
 		<cd:constant name='titleright' value='titelrechts'/>
 		<cd:constant name='titlestyle' value='titelletter'/>
 		<cd:constant name='to' value='aan'/>
+		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerantie'/>
 		<cd:constant name='top' value='boven'/>
 		<cd:constant name='topdistance' value='bovenafstand'/>

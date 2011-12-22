@@ -581,6 +581,7 @@
 		<cd:constant name='blank' value='prazdny'/>
 		<cd:constant name='blockway' value='dobloku'/>
 		<cd:constant name='bodyfont' value='zakladnifont'/>
+		<cd:constant name='boffset' value='boffset'/>
 		<cd:constant name='bookmark' value='zalozka'/>
 		<cd:constant name='bottom' value='spodek'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
@@ -771,6 +772,7 @@
 		<cd:constant name='listtext' value='listtext'/>
 		<cd:constant name='local' value='lokalne'/>
 		<cd:constant name='location' value='misto'/>
+		<cd:constant name='loffset' value='loffset'/>
 		<cd:constant name='logo' value='logo'/>
 		<cd:constant name='logos' value='loga'/>
 		<cd:constant name='marcolor' value='barvaznacky'/>
@@ -924,6 +926,7 @@
 		<cd:constant name='rightsubsentence' value='podvetavpravo'/>
 		<cd:constant name='righttext' value='textvpravo'/>
 		<cd:constant name='rightwidth' value='sirkavpravo'/>
+		<cd:constant name='roffset' value='roffset'/>
 		<cd:constant name='rotation' value='rotace'/>
 		<cd:constant name='rule' value='linka'/>
 		<cd:constant name='rulecolor' value='barvalinky'/>
@@ -1018,6 +1021,7 @@
 		<cd:constant name='titleright' value='titleright'/>
 		<cd:constant name='titlestyle' value='styltitulek'/>
 		<cd:constant name='to' value='na'/>
+		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='vrsek'/>
 		<cd:constant name='topdistance' value='vzdalenostvrsku'/>

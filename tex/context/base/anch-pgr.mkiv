@@ -374,64 +374,51 @@
   {\dodoublegroupempty\positions_mp_graphic_start}
 
 \def\positions_mp_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
-  {\setgvalue{MPG:#1}{\positions_mp_graphic_use{#1}{#2}{#3}}}
+  {\setgvalue{\??gp:#1}{\positions_mp_graphic_use{#1}{#2}{#3}}}
 
 \let\stopMPpositiongraphic\relax
 
 \def\positions_mp_graphic_prepare
-  {\ifcsname\@@meta self\endcsname\else\letvalue{\@@meta self}\currentposition\fi
-   \ifcsname\@@meta from\endcsname\else\letvalue{\@@meta from}\currentposition\fi}
+  {\ifcsname\??gv\currentmpvariableclass:self\endcsname \else
+     \letvalue{\??gv\currentmpvariableclass:self}\currentposition
+   \fi
+   \ifcsname\??gv\currentmpvariableclass:from\endcsname \else
+     \letvalue{\??gv\currentmpvariableclass:from}\currentposition
+   \fi}
 
 \def\positions_mp_graphic_use#1#2#3%
   {\begingroup
-   \prepareMPvariables{#2}%
+   \mp_prepare_variables{#2}%
    \positions_mp_graphic_prepare
-   \enableincludeMPgraphics
    \startMPcode#3\stopMPcode
    \endgroup}
 
 \def\MPpositiongraphic
   {\dodoublegroupempty\positions_mp_graphic_direct}
 
-% \def\positions_mp_graphic_direct#1#2% tag setups
-%   {\begingroup
-%    \def\@@meta{#1:}%
-%    \setupMPvariables[#2]%
-%    \positions_mp_graphic_prepare
-%    \MPshiftdrawingtrue
-%    \def\positions_mp_graphic_direct{\positions_mp_graphic_nested{#2}}% takes two extra arguments
-%    \setbox\positiongraphicbox\hbox
-%      {\ignorespaces
-%       \ifcsname MPM:#1\endcsname \csname MPM:#1\endcsname \else
-%       \ifcsname MPG:#1\endcsname \csname MPG:#1\endcsname \fi\fi
-%       \removelastspace}%
-%    \smashbox\positiongraphicbox
-%    \box\positiongraphicbox
-%    \endgroup}
-
 \def\positions_mp_graphic_direct#1% tag setups
-  {\ifcsname MPM:#1\endcsname
-     \expandafter\positions_mp_graphic_direct_indeed_mpm
-   \else\ifcsname MPG:#1\endcsname
-     \doubleexpandafter\positions_mp_graphic_direct_indeed_mpg
+  {\ifcsname\??gq:#1\endcsname % method
+     \expandafter\positions_mp_graphic_direct_indeed_method
+   \else\ifcsname \??gp:#1\endcsname
+     \doubleexpandafter\positions_mp_graphic_direct_indeed_normal
    \else
-     \doubleexpandafter\positions_mp_graphic_direct_indeed_nop
+     \doubleexpandafter\positions_mp_graphic_direct_indeed_unknown
    \fi\fi{#1}}
 
-\let\positions_mp_graphic_direct_indeed_nop\gobbletwoarguments
+\let\positions_mp_graphic_direct_indeed_unknown\gobbletwoarguments
 
-\def\positions_mp_graphic_direct_indeed_mpm
-  {\positions_mp_graphic_direct_indeed{MPM}}
+\def\positions_mp_graphic_direct_indeed_method
+  {\positions_mp_graphic_direct_indeed\??gq}
 
-\def\positions_mp_graphic_direct_indeed_mpg
-  {\positions_mp_graphic_direct_indeed{MPG}}
+\def\positions_mp_graphic_direct_indeed_normal
+  {\positions_mp_graphic_direct_indeed\??gp}
 
 \def\positions_mp_graphic_direct_indeed#1#2#3% what tag setups
   {\begingroup
-   \def\@@meta{#2:}% will become a commandhandler
-   \setupMPvariables[#3]%
+   \setupMPvariables[#2][#3]%
+   \edef\currentmpvariableclass{#2}%
    \positions_mp_graphic_prepare
-   \MPshiftdrawingtrue
+   \ignoreMPboxdepth
    \def\positions_mp_graphic_direct{\positions_mp_graphic_nested{#3}}% takes two extra arguments
    \setbox\positiongraphicbox\hbox
      {\ignorespaces\csname#1:#2\endcsname\removelastspace}%
@@ -439,16 +426,16 @@
    \box\positiongraphicbox
    \endgroup}
 
-\def\positions_mp_graphic_nested#1#2#3% nesting used in prikkels / pascal
+\def\positions_mp_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
   {\begingroup
-   \def\@@meta{#2:}%
-   \setupMPvariables[#1,#3]%
+   \setupMPvariables[#2][#1,#3]%
+   \edef\currentmpvariableclass{#2}%
    \positions_mp_graphic_prepare
-   \getvalue{MPG:#2}%
+   \getvalue{\??gp:#2}%
    \endgroup}%
 
-\long\def\startMPpositionmethod#1#2\stopMPpositionmethod
-  {\long\setgvalue{MPM:#1}{#2}} % todo: var list here
+\def\startMPpositionmethod#1#2\stopMPpositionmethod
+  {\setgvalue{\??gq:#1}{#2}} % todo: var list here
 
 \let\stopMPpositionmethod\relax
 

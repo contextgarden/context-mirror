@@ -517,8 +517,8 @@
    \ht#2\tractempheight
    \dp#2\tractempdepth}
 
-\def\colormarkbox {\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi\plusone  } % #1
-\def\rastermarkbox{\ifincolor\@EA\docolormarkbox\else\@EA\gobbletwoarguments\fi\zerocount} % #1
+\def\colormarkbox {\docolormarkbox\plusone  } % #1
+\def\rastermarkbox{\docolormarkbox\zerocount} % #1
 
 %D \macros
 %D   {showwhatsits, dontshowwhatsits}

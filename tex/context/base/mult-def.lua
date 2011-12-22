@@ -9138,6 +9138,18 @@ return {
    ["pe"]="آفست",
    ["ro"]="offset",
   },
+  ["loffset"]={
+   ["en"]="loffset",
+  },
+  ["roffset"]={
+   ["en"]="roffset",
+  },
+  ["toffset"]={
+   ["en"]="toffset",
+  },
+  ["boffset"]={
+   ["en"]="boffset",
+  },
   ["openaction"]={
    ["cs"]="otevriakci",
    ["de"]="oeffenaktion",

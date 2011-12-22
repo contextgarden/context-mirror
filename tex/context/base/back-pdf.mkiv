@@ -195,10 +195,10 @@
          \pdfrestore
          \advance\backendtransformlevel\minusone}}}
 
-\unexpanded\def\dostartclipping#1#2#3% todo (still needed?) (can move to lua)
+\unexpanded\def\dostartclipping#1#2#3%
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
-   \grabMPclippath{#1}{1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \mp_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
 \unexpanded\def\dostopclipping
@@ -271,7 +271,7 @@
 \def\doPDFovalcalc#1#2#3%
   {\PointsToBigPoints{\dimexpr#1+#2\relax}#3}
 
-\def\doovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
+\unexpanded\def\doovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
   {\forcecolorhack
    \bgroup
    \dimen0=#4\divide\dimen0 \plustwo

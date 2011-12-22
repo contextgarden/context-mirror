@@ -1,0 +1,859 @@
+%D \module
+%D   [       file=pack-mrl, % was pack-rul/core-rul,
+%D        version=1998.10.16,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=More Rules,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / More Rules}
+
+%D This module needs an overhaul.
+
+\unprotect
+
+%D \macros
+%D   {setupblackrules}
+%D
+%D The graphic capabilities of \TEX\ do not go beyond simple
+%D filled rules, except of course when using specials. Let's
+%D start with a warning: using this commands is far more slower
+%D than using the \TEX\ primitives \type{\hrule} and
+%D \type{\vrule}, but they save us some tokens. The
+%D characteristics of these rule drawing command can be set by:
+%D
+%D \showsetup{setupblackrules}
+
+\unexpanded\def\setupblackrules
+  {\dodoubleargument\getparameters[\??bj]}
+
+%D \macros
+%D   {blackrule}
+%D
+%D The simple command draws only one rule. Its optional
+%D argument can be used to specify the dimensions. By setting
+%D the width, height or depth to \type {max}, one gets the
+%D natural dimensions.
+%D
+%D \showsetup{blackrule}
+
+\definecomplexorsimple\blackrule
+
+\unexpanded\def\complexblackrule[#1]%
+  {\hbox\bgroup\getparameters[\??bj][#1]\domakeblackrule\egroup}
+
+\unexpanded\def\simpleblackrule
+  {\hbox\bgroup\domakeblackrule\egroup}
+
+\def\domakeblackrule
+  {\doif\@@bjwidth \v!max{\def\@@bjwidth {1em}}%
+   \doif\@@bjheight\v!max{\setstrut\let\setstrut\relax\def\@@bjheight{\strutht}}%
+   \doif\@@bjdepth \v!max{\setstrut\def\@@bjdepth {\strutdp}}%
+   \startcolor[\@@bjcolor]% can be made faster, just direct attr
+     \vrule
+       \!!width \@@bjwidth
+       \!!height\@@bjheight
+       \!!depth \@@bjdepth
+   \stopcolor}
+
+%D \macros
+%D   {blackrules}
+%D
+%D One can call for a sequence of black rules, if needed
+%D equally spaced over the given width.
+%D
+%D \showsetup{blackrules}
+%D
+%D The two alternative calls are therefore:
+%D
+%D \startbuffer
+%D Tell me, is this according to the \blackrules[n=6]?
+%D These \blackrules[alternativevariant=b,n=10,distance=.2em,width=4cm] are quite clear.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D or:
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+%D
+%D We could of course have implemented this macro using
+%D \type{\leaders}, but this would probably have taken more
+%D tokens.
+
+\def\doblackrules[#1]%
+  {\hbox\bgroup
+   \getparameters[\??bj][#1]%
+   \!!widtha\@@bjwidth
+   \!!widthb\@@bjdistance
+   \doif\@@bjalternative\c!b
+     {\scratchcounter\@@bjn
+      \ifnum\scratchcounter=\plusone
+        \!!widthb\zeropoint
+      \else
+        \advance\scratchcounter \minusone
+        \advance\!!widtha -\scratchcounter\!!widthb
+        \divide \!!widtha \@@bjn
+      \fi}%
+   \startcolor[\@@bjcolor]%
+     \dorecurse\@@bjn
+       {\vrule
+          \!!width \!!widtha
+          \!!height\@@bjheight
+          \!!depth \@@bjdepth
+        \hskip\!!widthb}%
+     \unskip
+   \stopcolor
+   \egroup}
+
+\unexpanded\def\blackrules
+  {\dosingleempty\doblackrules}
+
+%D The next commands can be used to draw margin rules. We
+%D support two methods: \marginrule{one for in||line use} and
+%D one that acts on a paragraph. Drawing a margin rule is
+%D rather straightforward because we can use the commands that
+%D put text in the margin.
+
+\def\dodrawmarginrule
+  {\setbox\scratchbox\hbox
+     {\vrule\!!depth\strutdepth\!!height\strutheight\!!width\@@karulethickness}%
+   \smashbox\scratchbox % no \vsmash !!!
+   \box\scratchbox}
+
+\def\drawmarginrule
+  {\strut\inleft{\dodrawmarginrule}}
+
+%D \macros
+%D   {marginrule}
+%D
+%D The first method gobbles words and simply puts a bar in the
+%D margin. This method is not entirely robust.
+%D
+%D \showsetup{marginrule}
+
+\definecomplexorsimple\marginrule
+
+\def\simplemarginrule
+  {\let\processword\drawmarginrule
+   \processwords}
+
+\def\complexmarginrule[#1]%
+  {\ifnum#1<\@@kalevel\relax \else
+     \def\@@kadefaultwidth{#1}%
+     \expandafter\simplemarginrule
+   \fi}
+
+%D We need an auxiliary variable
+
+\def\@@kadefaultwidth{1}
+
+%D \macros
+%D   {setupmarginrules}
+%D
+%D This macro definitions show us that we can pass an optional
+%D level, which is matched against the previous set one. The
+%D level can be set up with
+%D
+%D \showsetup{setupmarginrules}
+
+\unexpanded\def\setupmarginrules
+  {\dodoubleargument\getparameters[\??ka]}
+
+%D \macros
+%D   {startmarginrule}
+%D
+%D The second method collects text and reformats it afterwards,
+%D using the shapebox macros. We prevent local margin rules.
+%D
+%D \showsetup{startmarginrule}
+
+\definecomplexorsimple\startmarginrule
+
+\def\simplestartmarginrule
+  {\bgroup
+   \let\drawmarginrule\relax
+   \let\stopmarginrule\dostopmarginrule
+   \beginofshapebox}
+
+\def\complexstartmarginrule[#1]%
+  {\bgroup
+   \let\drawmarginrule\relax
+   \ifnum#1<\@@kalevel\relax
+     \let\stopmarginrule\egroup
+   \else
+     \def\@@kadefaultwidth{#1}%
+     \let\stopmarginrule\dostopmarginrule
+     \expandafter\beginofshapebox
+   \fi}
+
+\def\dostopmarginrule
+  {\endofshapebox
+   \reshapebox
+     {\hbox{\inleftmargin{\dodrawmarginrule}\box\shapebox}}%
+   \flushshapebox
+   \egroup}
+
+%D \startbuffer
+%D \setupmarginrules[level=5]
+%D
+%D \startmarginrule[1]
+%D First we set the level at~5. Next we typeset this first
+%D paragraph as a level~1 one. As expected no rule show up.
+%D \stopmarginrule
+%D
+%D \startmarginrule[5]
+%D The second paragraph is a level~5 one. As we can see here,
+%D the marginal rule gets a width according to its level.
+%D \stopmarginrule
+%D
+%D \startmarginrule[8]
+%D It will of course be no surprise that this third paragraph
+%D has a even thicker margin rule. This behavior can be
+%D overruled by specifying the width explictly.
+%D \stopmarginrule
+%D \stopbuffer
+%D
+%D In next example we show most features. Watch the rule
+%D thickness adapting itself to the level.
+%D
+%D \startexample
+%D \getbuffer
+%D \stopexample
+%D
+%D We just said:
+%D
+%D \typebuffer
+
+%D \macros
+%D   {vl, hl}
+%D
+%D The command \type{\vl} draws a vertical rule \vl\ with strut
+%D dimensions, multiplied with the factor specified in the
+%D optional argument. The height and depth are clipped \vl[3]
+%D to the baselinedistance. Its horizontal counterpart
+%D \type{\hl} draws a horizontal rule \hl\ with a width of 1em,
+%D multiplied with the optional factor. The horizontal rule is
+%D drawn on top of the baseline.
+%D
+%D \showsetup{vl}
+%D \showsetup{hl}
+
+\def\dovlwdhtdp#1#2#3%
+  {\bgroup
+   \setbox\scratchbox\hbox
+     {\vrule
+        \!!width #1\linewidth
+        \!!height#2\strutht
+        \!!depth #3\strutdp}%
+   \dp\scratchbox\strutdp
+   \ht\scratchbox\strutht
+   \box\scratchbox
+   \egroup}
+
+\def\complexvl[#1]%
+  {\dovlwdhtdp\plusone{#1}{#1}}
+
+\def\complexhl[#1]%
+  {\hbox
+     {\vrule
+        \!!width #1\s!em
+        \!!height\linewidth
+        \!!depth \zeropoint}}
+
+\definecomplexorsimple\vl \def\simplevl{\complexvl[1]}
+\definecomplexorsimple\hl \def\simplehl{\complexhl[1]}
+
+%D \macros
+%D   {hairline, thinrule, thinrules, setupthinrules}
+%D
+%D Drawing thin lines can of course easily be accomplished by
+%D the \TEX\ primitives \type{\hrule} and \type{\vrule}. The
+%D next few macros however free us from some specifications.
+%D
+%D \startbuffer
+%D some text
+%D
+%D \hairline
+%D
+%D some more text
+%D
+%D \thinrule
+%D
+%D more and more text
+%D
+%D hi \thinrule\ there
+%D
+%D and then the final text
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D becomes
+%D
+%D \startexample
+%D \getbuffer
+%D \stopexample
+%D
+%D So we've got
+%D
+%D \showsetup{hairline}
+%D \showsetup{thinrule}
+%D
+%D Both can be set up with:
+%D
+%D \showsetup{setupthinrules}
+%D
+%D We also have
+%D
+%D \showsetup{thinrules}
+%D
+%D which looks like: \thinrules[n=2]
+
+\newconstant\ruletype
+
+\def\thinrule
+  {\strut
+   \bgroup
+   \ruletype\plusone
+   \processaction
+     [\@@dlalternative]
+     [ \v!a=>\ruletype\zerocount,% no line
+      %\v!b=>\ruletype\plusone  ,% height/depth
+       \v!c=>\ruletype\plustwo  ,% topheight/botdepth
+      %  11=>\ruletype\plusone  ,% fallback for  backgrounds
+          0=>\ruletype\zerocount,% compatible with backgrounds
+      %   1=>\ruletype\plusone  ,% compatible with backgrounds
+          2=>\ruletype\plustwo  ]% compatible with backgrounds
+   \doifsomething\@@dlrulethickness
+     {\linewidth\@@dlrulethickness}%
+   \ifdim\linewidth=\zeropoint
+     \ruletype\zerocount
+   \else
+     \doifnot\@@dlframe\v!on{\ruletype\zerocount}%
+   \fi
+   \ifnum\ruletype=\plusone
+     \doif\@@dlheight\v!max{\let\@@dlheight\!!plusone}%
+     \doif\@@dldepth \v!max{\let\@@dldepth \!!plusone}%
+   \else
+     \let\@@dlheight\!!plusone
+     \let\@@dldepth\!!plusone
+   \fi
+   \freezedimensionwithunit\@@dlheight\strutht
+   \freezedimensionwithunit\@@dldepth\strutdp
+   \divide\linewidth \plustwo
+   \doifelse\@@dlbackground\v!color
+     {\startcolor[\@@dlbackgroundcolor]%
+      \ifnum\ruletype=\plustwo % prevent overshoot due to rounding
+        \leaders
+          \hrule
+            \!!height\dimexpr\@@dlheight-.5\linewidth\relax
+            \!!depth \dimexpr\@@dldepth -.5\linewidth\relax
+          \hfill
+      \else
+        \leaders
+          \hrule
+            \!!height\@@dlheight
+            \!!depth \@@dldepth
+          \hfill
+      \fi
+      \stopcolor
+      \ifcase\ruletype
+        % no rule
+      \or
+        \startcolor[\@@dlcolor]%
+        \hfillneg
+        \leaders\hrule\!!height\linewidth\!!depth\linewidth\hfill
+        \stopcolor
+      \or
+        \startcolor[\@@dlcolor]%
+        \hfillneg\leaders\hrule\!!height\dimexpr-\@@dldepth+\linewidth\relax\!!depth\@@dldepth\hfill
+        \hfillneg\leaders\hrule\!!height\@@dlheight\!!depth\dimexpr-\@@dlheight+\linewidth\relax\hfill
+        \stopcolor
+      \fi}
+     {\ifcase\ruletype \else
+        \startcolor[\@@dlcolor]%
+        \leaders\hrule\!!height\@@dlheight\!!depth\@@dldepth\hfill
+        \stopcolor
+      \fi}%
+   \strut
+   \carryoverpar\egroup}
+
+\def\hairline
+  {\endgraf
+   \thinrule
+   \endgraf}
+
+\def\dosetupthinrules[#1]%
+  {\getparameters[\??dl][#1]}
+
+\unexpanded\def\setupthinrules
+  {\dosingleargument\dosetupthinrules}
+
+\def\dothinrules[#1]%
+  {\bgroup
+   \dosetupthinrules[#1]%
+   \@@dlbefore
+   \assignvalue\@@dlinterlinespace\@@dlinterlinespace{1.0}{1.5}{2.0}%
+   \spacing\@@dlinterlinespace
+   \dorecurse\@@dln
+     {\ifnum\recurselevel=\@@dln \dothinrulesnobreak \else
+      \ifnum\recurselevel=2      \dothinrulesnobreak \fi\fi
+                                 \thinrule
+      \ifnum\recurselevel<\@@dln\relax
+        % test needed, else messed up whitespace
+        \ifx\@@dlinbetween\empty
+          \softbreak
+        \else
+          \endgraf
+          \nowhitespace
+          \@@dlinbetween
+        \fi
+      \fi}%
+   \doifelsenothing\@@dlafter
+     {\carryoverpar\egroup}
+     {\@@dlafter\egroup}}
+
+\def\thinrules
+  {\dosingleempty\dothinrules}
+
+%D A couple of examples are given below.
+%D
+%D \startbuffer
+%D \setupthinrules[n=3,inbetween=,color=gray]
+%D
+%D test test \thinrules\ test test \par
+%D test test \thinrules [color=green] test test \par
+%D test test \thinrules [height=max, depth=max] test test \par
+%D
+%D \setupthinrules[height=.9,depth=.9]
+%D
+%D test test \thinrules\ test test \par
+%D test test \thinrules [alternativevariant=b] test test \par
+%D test test \thinrules [alternativevariant=c] test test \par
+%D test test \thinrules [alternativevariant=c,inbetween=\vskip2ex] test test \par
+%D \stopbuffer
+%D
+%D \typebuffer {\getbuffer}
+%D
+%D There are a couple of alternative ways to visualize rules
+%D using backgrounds. At first sight these may look strange,
+%D but they make sense in educational settings. The
+%D alternatives are more or less compatible with the more
+%D advanced \METAPOST\ based implementation.
+%D
+%D \startbuffer[a]
+%D \setupthinrules
+%D   [n=2,
+%D    backgroundcolor=gray  ,
+%D    rulethickness=1pt,
+%D    colorkleur=donkerblauw,
+%D    after=\blank,
+%D    before=\blank]
+%D \stopbuffer
+%D
+%D \typebuffer[a]
+%D
+%D \startbuffer[b]
+%D \thinrules[alternativevariant=a]
+%D \thinrules[alternativevariant=b]
+%D \thinrules[alternativevariant=c]
+%D \stopbuffer
+%D
+%D \typebuffer[b] \getbuffer[a,b]
+%D
+%D \startbuffer[b]
+%D \thinrules[alternativevariant=a,background=color]
+%D \thinrules[alternativevariant=b,background=color]
+%D \thinrules[alternativevariant=c,background=color]
+%D \stopbuffer
+%D
+%D \typebuffer[b] \getbuffer[a,b]
+%D
+%D \startbuffer[b]
+%D \thinrules[alternativevariant=a,height=.8,depth=.8,background=color]
+%D \thinrules[alternativevariant=b,height=.8,depth=.8,background=color]
+%D \thinrules[alternativevariant=c,height=.8,depth=.8,background=color]
+%D \stopbuffer
+%D
+%D \typebuffer[b] \getbuffer[a,b]
+
+%D \macros
+%D   {optimizethinrules}
+%D
+%D By saying \type {\thinrulestrue} or \type {-false}, we
+%D can influence the way dangling lines are handled.
+
+\newif\ifoptimizethinrules \optimizethinrulestrue
+
+\def\dothinrulesnobreak
+  {\ifoptimizethinrules\penalty500\fi}
+
+%D \macros
+%D   {textrule, starttextrule, setuptextrules}
+%D
+%D Putting rules before and after a paragraph is very space
+%D sensitive, but the next command handles that quite well. It
+%D comes in two disguises:
+%D
+%D \startbuffer
+%D \textrule[top]{fragments}
+%D   \input reich
+%D \textrule
+%D \stopbuffer
+%D
+%D \start \typebuffer \getbuffer \stop
+%D
+%D \startbuffer
+%D \setuptextrules
+%D   [width=90pt,distance=12pt,rulecolor=blue,
+%D    bodyfont=small,style=\sc,color=red]
+%D
+%D \starttextrule{Ship Building Tools}
+%D   \nl \setuptolerance[tolerant] \input materie
+%D \stoptextrule
+%D \stopbuffer
+%D
+%D \bgroup \typebuffer \getbuffer \egroup
+%D
+%D \startbuffer
+%D \setuptextrules
+%D   [location=inmargin,
+%D    bodyfont=small,style=slantedbold]
+%D
+%D \starttextrule{wonderful}
+%D   \input tufte
+%D \stoptextrule
+%D \stopbuffer
+%D
+%D \bgroup \typebuffer \getbuffer \egroup
+%D
+%D The formal definition of these commands is:
+%D
+%D \showsetup{textrule}
+%D \showsetup{starttextrule}
+%D \showsetup{setuptextrules}
+%D
+%D The implementation looks a bit complicated due to the
+%D optional arguments.
+
+\unexpanded\def\setuptextrules
+  {\dodoubleargument\getparameters[\??tl]}
+
+\def\complextextrule[#1]% if needed we can make it installable
+  {\let\next\dobottomtextrule
+   \processaction
+     [#1]
+     [    \v!top=>\let\next\dotoptextrule,
+       \v!middle=>\let\next\domiddletextrule,
+       \v!bottom=>\let\next\dobottomtextrule]%
+   \dosinglegroupempty\next}
+
+\definecomplexorsimple\textrule
+
+\def\simpletextrule
+  {\dosinglegroupempty\dounknowntextrule}
+
+\def\docomplextextrule#1%
+  {\bgroup
+   \advance\hsize\dimexpr-\rightskip-\leftskip\relax
+   \setbox\scratchbox\hbox to \hsize
+     {\dimen4\dimexpr .5ex+.5\linewidth\relax
+      \dimen6\dimexpr-.5ex+.5\linewidth\relax
+      \doifsomething{#1}
+        {\doifelse\@@tllocation\v!inmargin
+           {\llap
+              {\dousestyleparameter\@tlstyle
+               \dousecolorparameter\@tlcolor
+               #1%
+               \hskip\leftmargindistance}}
+           {\color[\@@tlrulecolor]
+              {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlwidth}%
+            \hbox spread 2\dimexpr\@@tldistance\relax
+              {\hss
+               \dousestyleparameter\@tlstyle
+               \dousecolorparameter\@tlcolor
+               \strut#1%
+               \hss}}}%
+      \color[\@@tlrulecolor]
+        {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
+   \ht\scratchbox\strutht
+   \dp\scratchbox\strutdp
+   \noindent\box\scratchbox
+%\nobreak\verticalstrut\kern-\struttotal
+% evt \witruimte
+   \egroup}
+
+\def\dotoptextrule#1%
+  {\page[\v!preference] % interferes
+   %\whitespace % no
+   \@@tlbefore
+   \docomplextextrule{#1}%
+% todo, option: \doifnothing{#1}{\ruledvskip-.5ex}
+   \nowhitespace
+   \@@tlinbetween
+   \endgraf}
+
+\def\dodobottomtextrule#1#2%
+  {\ifhmode
+     \endgraf
+   \fi
+   \dimen0\strutdp
+   \ifdim\prevdepth>\strutdp\else % was <\strutdp
+     \ifdim\prevdepth>\zeropoint
+       \advance\dimen0 -\prevdepth
+     \fi
+   \fi
+   \advance\dimen0 .5ex
+   \vskip\dimen0
+% ==
+%    \vskip\dimexpr \strutdp + .5ex
+%       \ifdim\prevdepth>\strutdp\else\ifdim\prevdepth>\zeropoint-\prevdepth\fi\fi\relax
+%
+   \@@tlinbetween
+   \doifelsenothing{#2}
+     {\bgroup
+      \advance\hsize\dimexpr-\rightskip-\leftskip\relax
+      \nointerlineskip
+      \moveleft-\leftskip\vbox
+        {\color[\@@tlrulecolor]
+           {\hrule\!!depth\linewidth\!!height\zeropoint\!!width\hsize}}%
+      \egroup}
+     {\docomplextextrule{#2}}%
+   \ifvmode\prevdepth\zeropoint\fi
+   #1%
+   \page[\v!preference]}
+
+\def\dobottomtextrule
+  {\dodobottomtextrule\@@tlafter}
+
+\def\domiddletextrule
+  {\dodobottomtextrule\@@tlinbetween}
+
+\def\dounknowntextrule
+  {\iffirstargument
+     \@EA\dotoptextrule
+   \else
+     \@EA\dobottomtextrule\@EA\empty
+   \fi}
+
+%D The grouped commands also supports bodyfont switching:
+
+\unexpanded\def\starttextrule#1%
+  {\bgroup
+   \def\dounknowntextrule{\domiddletextrule}
+   \dotoptextrule{#1}
+   \bgroup
+   \doifsomething\@@tlbodyfont{\switchtobodyfont[\@@tlbodyfont]}}
+
+\unexpanded\def\stoptextrule
+  {\par
+   \egroup
+   \dobottomtextrule\empty
+   \egroup}
+
+%D \macros
+%D   {fillinrules, setupfillinrules}
+%D
+%D The next few commands do not really deserve a place in a
+%D core module, because they deal with specific typography.
+%D Nevertheless I decided to make them part of the core,
+%D because they permit us to make questionaires. Let's start
+%D with some examples.
+%D
+%D \fillinrules[n=2,width=fit]{first}
+%D \fillinrules[n=2,width=broad]{first}
+%D \fillinrules[n=2,width=3cm]{first}
+%D \fillinrules[n=2,width=3cm,distance=.5em,separator=:]{first}
+%D \fillinrules[n=2]{first}{last}
+%D \fillintext{first}{last} \input reich \par
+%D
+%D The main command is \type{\fillinrules}. This command takes
+%D one and an optional second argument and sets a paragraph with
+%D empty visualized lines.
+%D
+%D \showsetup{fillinrules}
+%D \showsetup{setupfillinrules}
+
+\unexpanded\def\setupfillinrules
+  {\dodoubleargument\getparameters[\??il]}
+
+\definecomplexorsimpleempty\fillinrules
+
+\def\complexfillinrules[#1]%
+  {\def\docomplexfillinrules##1##2%
+     {\dodocomplexfillinrules[#1]{##1}{##2}{\thinrules
+        [\c!n=\@@iln,\c!interlinespace=\@@ilinterlinespace,\c!before=,\c!after=]}}%
+   \dodoublegroupempty\docomplexfillinrules}
+
+\def\dodocomplexfillinrules[#1]#2#3#4%
+  {\endgraf
+   \@@ilbefore
+   \begingroup
+   \setupfillinrules[#1]%
+   \noindent
+   \doifsomething{#2}
+     {\doifelse\@@ilwidth\v!fit
+        {\let\@@ildistance\!!zeropoint
+         \hbox}
+        {\doifelse\@@ilwidth\v!broad
+           {\hbox}
+           {\hbox to \@@ilwidth}}%
+        \bgroup
+          \dousestyleparameter\@@ilstyle
+          \dousecolorparameter\@@ilcolor
+          \strut#2\hfill\@@ilseparator\hskip\@@ildistance
+        \egroup}%
+  %\hangindent=\wd0\relax % tzt hang=yes,n
+  %\parindent=\hangindent
+  %\box0\relax
+   \setupwhitespace[\v!big]%
+   \ignorespaces
+   #4%
+   \doifsomething{#3}
+     {\kern\@@ildistance
+      \dousestyleparameter\@@ilstyle
+      \dousecolorparameter\@@ilcolor
+      #3\strut}%
+   \endgroup
+   \endgraf
+   \@@ilafter}
+
+%D \macros
+%D   {fillintext}
+%D
+%D To provide compatible layouts when texts and lines are
+%D mixed, one can typeset a paragraph by using the command
+%D \type{\fillintext}.
+%D
+%D \showsetup{fillintext}
+
+\definecomplexorsimpleempty\fillintext
+
+\def\complexfillintext[#1]% rather rough, using an \unhbox is suboptimal
+  {\def\docomplexfillintext##1##2%
+     {\dowithnextbox
+        {\dodocomplexfillinrules[#1]{##1}{\hfill##2}{\unhbox\nextbox\unskip}}%
+      \hbox\bgroup\let\par\egroup\ignorespaces}%
+   \dodoublegroupempty\docomplexfillintext}
+
+%D \macros
+%D   {fillinline, setupfillinlines}
+%D
+%D Another member of the family takes care of putting a (often
+%D small) rule after a piece of text, like
+%D
+%D \startbuffer
+%D \fillinline \input reich \par
+%D \fillinline[margin=0cm] \input reich \par
+%D \stopbuffer
+%D
+%D \startexample
+%D \getbuffer
+%D \stopexample
+%D
+%D which was typeset by saying:
+%D
+%D \typebuffer
+%D
+%D The two commands that take care of this are:
+%D
+%D \showsetup{fillinline}
+%D \showsetup{setupfillinlines}
+
+\unexpanded\def\setupfillinlines
+  {\dodoubleargument\getparameters[\??iv]}
+
+\definecomplexorsimpleempty\fillinline
+
+\def\complexfillinline[#1]%
+  {%\endgraf % interferes with \definedescription cum suis
+   \@@ivbefore
+   \begingroup
+   \setupfillinlines[#1]%
+   \advance\rightskip \@@ivmargin
+   \parfillskip\zeropoint
+   \def\par % very dangerous
+     {\let\par\endgraf % -)
+      \ifhmode\unskip\hfill\fi
+      \scratchdimen\dimexpr\@@ivwidth-\@@ivdistance\relax
+      \ifdim\scratchdimen>\@@ivmargin\else\expandafter\rlap\fi
+        {\kern\@@ivdistance
+         \vrule
+           \!!width   \scratchdimen
+           \!!height.5\linewidth
+           \!!depth .5\linewidth}%
+      \endgraf % !
+      \endgroup
+      \endgraf % !
+      \@@ilafter}}
+
+%D Will move up:
+
+
+\setupblackrules
+  [\c!n=3,
+   \c!width=1em,
+   \c!height=1ex,
+   \c!depth=\!!zeropoint,
+   \c!alternative=\c!a,
+   \c!distance=.25ex,
+   \c!color=]
+
+\setupmarginrules
+  [\c!level=0,
+   \c!rulethickness=\@@kadefaultwidth\linewidth]
+
+\setupthinrules
+  [\c!interlinespace=\v!small,
+   \c!n=3,
+   \c!before=,
+   \c!inbetween={\blank[\v!white]},
+   \c!after=,
+   \c!color=,
+   \c!height=.5\linewidth,
+   \c!depth=.5\linewidth,
+   \c!frame=\v!on, % compatible with textbackgrounds
+   \c!alternative=\v!b,
+   \c!backgroundcolor=,
+   \c!background=,
+   \c!rulethickness=]
+
+\setuptextrules
+  [\c!location=\v!left,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!inbetween=,
+   \c!width=2em,
+   \c!style=\v!bold,
+   \c!color=,
+   \c!rulecolor=,
+   \c!bodyfont=,
+   \c!distance=.5em]
+
+\setupfillinrules
+  [\c!width=\v!broad,
+   \c!distance=1em,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!n=1,
+   \c!interlinespace=\v!small,
+   \c!separator=,
+   \c!style=\v!normal,
+   \c!color=]
+
+\setupfillinlines
+  [\c!width=3cm,
+   \c!margin=\@@ivwidth,
+   \c!distance=1em,
+   \c!before=\blank,
+   \c!after=\blank]
+
+\protect \endinput

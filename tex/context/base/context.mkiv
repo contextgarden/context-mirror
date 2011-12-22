@@ -19,8 +19,11 @@
 %D 2004.8.30 the low level interface is english. Watch out and adapt
 %D your styles an modules.
 
+%D The order of loading will change when all modules have been cleaned
+%D up and the dependencies are more consistent.
+
 \edef\contextformat {\jobname}
-\edef\contextversion{2011.12.20 22:24}
+\edef\contextversion{2011.12.22 14:43}
 
 %D For those who want to use this:
 
@@ -64,7 +67,7 @@
 
 \newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion}
 
-%D Now the more fundamnetal code gets defined.
+%D Now the more fundamental code gets defined.
 
 \loadmarkfile{norm-ctx}
 \loadmarkfile{syst-pln}
@@ -103,7 +106,6 @@
 \loadmarkfile{char-act}
 
 \loadmarkfile{mult-ini}
-%loadmarkfile{mult-fst} % obsolete
 \loadmarkfile{mult-sys}
 \loadmarkfile{mult-def}
 \loadmarkfile{mult-chk}
@@ -197,6 +199,7 @@
 
 \loadmkvifile{pack-mis}
 \loadmarkfile{pack-rul}
+\loadmarkfile{pack-mrl}
 \loadmkvifile{pack-bck}
 \loadmarkfile{pack-fen}
 
@@ -271,7 +274,6 @@
 
 \loadmarkfile{page-lin}
 \loadmarkfile{page-par}
-%loadmarkfile{page-mar} % also commented code in anch-pgr.mkiv
 \loadmarkfile{typo-pag}
 \loadmarkfile{typo-mar}
 

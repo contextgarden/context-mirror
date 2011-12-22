@@ -2173,7 +2173,7 @@
 
 \def\dolocaltablesetup
   {\@@ticommands\relax
-   \expanded{\switchtobodyfont[\@@tibodyfont]}% expanded ?
+   \doifsomething\@@tibodyfont{\switchtobodyfont[\@@tibodyfont]}%
    \tablelinethicknessunit\dimexpr\@@tirulethickness/\tablelinethicknessfactor\relax
    \doifelse\@@tiheight\v!strut
      {\let\tablestrutheightfactor\tablestrutheightfactor}
@@ -2250,7 +2250,7 @@
    \c!rulethickness=\linewidth,
    \c!rulecolor=,
    \c!distance=\v!medium,
-   \c!bodyfont=\the\bodyfontsize,
+   \c!bodyfont=,
    \c!commands=,
    \c!background=\v!screen,
    \c!backgroundscreen=\@@rsscreen,

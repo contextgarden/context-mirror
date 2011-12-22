@@ -64,6 +64,11 @@
 \def\installpagehandler#1#2%           % a handler takes one argument: something to be boxed
   {\setgvalue{\??pp:h:#1}##1{#2{##1}}} % and shipped out (don't depend on the exact package)
 
+\unexpanded\def\invokepagehandler#1%
+  {\expandcheckedcsname{\??pp:h:}{#1}\v!normal}
+
+\let\pagehandler\invokepagehandler % only provided for downward compatibility
+
 \def\page_shipouts_handle
   {\csname\??pp:h:\ifcsname\??pp:h:\v_page_target_method\endcsname
      \v_page_target_method

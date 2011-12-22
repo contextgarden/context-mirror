@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=grph-fig,
+%D   [       file=grph-trf,
 %D        version=2006.08.26, % overhaul/split of 1997.03.31 core-fig
 %D          title=\CONTEXT\ Graphic Macros,
 %D       subtitle=Transformations,
@@ -11,44 +11,55 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D It may be that some functionality got lost. If it concerns
-%D defined features, let me know and it will be sorted out.
-
-%D We will move the calculations to \LUA\ and clean up this
-%D lot anyway.
-
 \writestatus{loading}{ConTeXt Graphic Macros / Transformations}
 
 \unprotect
 
-%D Scaling:
+%D We probably use too many dimens as the width calculations can
+%D go away. Some of this is an inheritance of limited backends
+%D (some supported fractions, some 1000's, some dimentions) so
+%D we calculate all of them. Nowadays scaling is always available
+%D so we could simplify the code. On the other hand, we now get
+%D some extra values for free.
+%D
+%D We could move the calculations to \LUA\ and clean up this
+%D lot anyway. On the other hand, there is some danger of messing
+%D up so it has a real low priority.
 
-\unexpanded\def\scale{\dodoubleempty\doscalenextbox[\??xy]}
+% local:
 
-% probably too many dimens / the width calculations can go
-% since we may assume scaling is available (was not true
-% long ago which is why we also calculate the width)
+\newdimen\d_transforms_scale_x_size
+\newdimen\d_transforms_scale_y_size
+\newdimen\d_transforms_scale_x_offset
+\newdimen\d_transforms_scale_y_offset
 
-\newdimen\scaleboxwidth
-\newdimen\scaleboxheight
-\newdimen\scaleboxdepth
+\newdimen\d_transforms_scale_h_size
+\newdimen\d_transforms_scale_v_size
 
-\newdimen\scaleboxsizex
-\newdimen\scaleboxsizey
-\newdimen\scaleboxoffsetx
-\newdimen\scaleboxoffsety
+\newconditional\c_transforms_scale_done
+\newconditional\c_transforms_scale_scaling_done
 
-\newdimen\scaleboxhsize
-\newdimen\scaleboxvsize
+\newdimen\d_transforms_scale_wd
+\newdimen\d_transforms_scale_ht
+\newdimen\d_transforms_scale_dp
 
 % global
 
-\newdimen\scaleboxdimx \let\figwid \scaleboxdimx
-\newdimen\scaleboxdimy \let\fighei \scaleboxdimy
-\newcount\scaleboxscax \let\figxsca\scaleboxscax
-\newcount\scaleboxscay \let\figysca\scaleboxscay
+\newdimen\d_transforms_scale_used_x_size
+\newdimen\d_transforms_scale_used_y_size
 
-\newdimen\scaleboxoutervsize % we cannot manipulate any global vsize !
+\newcount\c_transforms_scale_used_x_scale
+\newcount\c_transforms_scale_used_y_scale
+
+\newdimen\d_transforms_scale_outer_v_size % we cannot manipulate any global vsize !
+
+% scratch:
+
+\let\m_transforms_scale_temp  \empty
+\let\m_transforms_scale_temp_x\empty
+\let\m_transforms_scale_temp_y\empty
+
+% public:
 
 \let\finalscaleboxxscale \!!plusone
 \let\finalscaleboxyscale \!!plusone
@@ -57,380 +68,417 @@
 \let\finalscaleboxxfactor\!!hundred
 \let\finalscaleboxyfactor\!!hundred
 
-\newconditional\scaleboxdone
+% we can let sx/sy win (first check)
 
-\def\doscalenextbox[#1][#2]%
+\installcommandhandler \??xy {scale} \??xy % we can have instances
+
+\setupscale
+  [\c!sx=1,
+   \c!sy=1,
+  %\c!scale=,
+  %\c!xscale=,
+  %\c!yscale=,
+  %\c!width=,
+  %\c!height=,
+  %\c!lines=,
+  %\c!factor=,
+  %\c!hfactor=,
+  %\c!wfactor=,
+  %\c!grid=,
+  %\c!equalwidth=,
+  %\c!equalheight=,
+   \c!maxwidth=\scaleparameter\c!width,
+   \c!maxheight=\scaleparameter\c!height]
+
+\unexpanded\def\scale{\dodoubleempty\transforms_scale}
+
+% we could have: \freezeparameter\c!scale etc (less backtracking when used multiple)
+
+\def\transforms_scale[#1][#2]%
   {\bgroup
-   \getparameters
-     [#1]
-     [\c!scale=,\c!xscale=,\c!yscale=,\c!width=,\c!height=,\c!lines=,
-      \c!factor=,\c!hfactor=,\c!wfactor=,\c!grid=,\c!sx=1,\c!sy=1,
-      \c!equalwidth=,\c!equalheight=,
-      \c!maxwidth=\scaleparameter\c!width,\c!maxheight=\scaleparameter\c!height,
-      #2]%
-   \dowithnextbox{\dodoscalenextbox{#1}\egroup}\hbox}
+   % this is quite common so we might make this a helper
+   \ifsecondargument
+     \edef\currentscale{#1}%
+     \setupcurrentscale[#2]%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\let\currentscale\empty
+        \setupcurrentscale[#1]}
+       {\edef\currentscale{#1}}%
+   \else
+     \let\currentscale\empty
+   \fi\fi
+   %
+   \dowithnextboxcs\transforms_scale_finish\hbox}
 
-\def\doscalebox#1%
-  {\bgroup\dowithnextbox{\dodoscalenextbox{#1}\egroup}\hbox}
-
-\let\currentscaletag\??xy
-
-\def\scaleparameter#1%
-  {\csname\currentscaletag#1\endcsname}
-
-\def\setscaleparameter#1#2%
-  {\setvalue{\currentscaletag#1}{#2}}
-
-\def\dodoscalenextbox#1%
-  {\edef\currentscaletag{#1}%
-   \doif{\scaleparameter\c!depth}\v!no{\setbox\nextbox\hbox{\raise\nextboxdp\box\nextbox}}% new
+\def\transforms_scale_finish
+  {%
+   \edef\p_scale      {\scaleparameter\c!scale      }%
+   \edef\p_xscale     {\scaleparameter\c!xscale     }%
+   \edef\p_yscale     {\scaleparameter\c!yscale     }%
+   \edef\p_width      {\scaleparameter\c!width      }%
+   \edef\p_height     {\scaleparameter\c!height     }%
+   \edef\p_depth      {\scaleparameter\c!depth      }%
+   \edef\p_lines      {\scaleparameter\c!lines      }%
+   \edef\p_factor     {\scaleparameter\c!factor     }%
+   \edef\p_hfactor    {\scaleparameter\c!hfactor    }%
+   \edef\p_wfactor    {\scaleparameter\c!wfactor    }%
+ % \edef\p_grid       {\scaleparameter\c!grid       }% used once
+   \edef\p_maxwidth   {\scaleparameter\c!maxwidth   }%
+   \edef\p_maxheight  {\scaleparameter\c!maxheight  }%
+   \edef\p_sx         {\scaleparameter\c!sx         }%
+   \edef\p_sy         {\scaleparameter\c!sy         }%
+   \edef\p_equalwidth {\scaleparameter\c!equalwidth }%
+   \edef\p_equalheight{\scaleparameter\c!equalheight}%
+   %
+   \d_transforms_scale_dp\dp\nextbox
+   \ifx\p_depth\v!no \ifzeropt\d_transforms_scale_dp \else
+     \setbox\nextbox\hbox{\raise\d_transforms_scale_dp\box\nextbox}% new
+     \d_transforms_scale_dp\dp\nextbox
+   \fi \fi
+   \d_transforms_scale_wd\wd\nextbox
+   \d_transforms_scale_ht\ht\nextbox
+   \d_transforms_scale_dp\dp\nextbox
+   %
+   \global\let\finalscaleboxxscale \!!plusone
+   \global\let\finalscaleboxyscale \!!plusone
+   \xdef      \finalscaleboxwidth {\the\d_transforms_scale_wd}%
+   \xdef      \finalscaleboxheight{\the\d_transforms_scale_ht}%
+   \global\let\finalscaleboxxfactor\!!hundred
+   \global\let\finalscaleboxyfactor\!!hundred
+   %
    \forgetall
    \dontshowcomposition
    \dontcomplain
-   \doscaleboxcalculations
-   \doscaleboxindeed
-   \doscaleboxposition
-   \flushnextbox}
+   %
+   \setfalse\c_transforms_scale_done
+   \transforms_scale_calculate
+   \ifconditional\c_transforms_scale_done
+     \transforms_scale_apply
+   \fi
+   \transforms_scale_position
+   %
+   \box\nextbox
+   \egroup}
 
-\def\doscaleboxindeed
-   {\ifconditional\scaleboxdone
-      \scaleboxwidth \finalscaleboxxscale\nextboxwd
-      \scaleboxheight\finalscaleboxyscale\nextboxht
-      \scaleboxdepth \finalscaleboxyscale\nextboxdp
-      \setbox\nextbox\hbox
-        {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
-         \smashedbox\nextbox
-         \dostopscaling}%
-      \nextboxwd\scaleboxwidth
-      \nextboxht\scaleboxheight
-      \nextboxdp\scaleboxdepth
-    \fi}
+\def\transforms_scale_apply
+  {\d_transforms_scale_wd\finalscaleboxxscale\d_transforms_scale_wd
+   \d_transforms_scale_ht\finalscaleboxyscale\d_transforms_scale_ht
+   \d_transforms_scale_dp\finalscaleboxyscale\d_transforms_scale_dp
+   \setbox\nextbox\hbox
+     {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
+      \smashedbox\nextbox
+      \dostopscaling}%
+   \wd\nextbox\d_transforms_scale_wd
+   \ht\nextbox\d_transforms_scale_ht
+   \dp\nextbox\d_transforms_scale_dp}
 
-\def\doscaleboxcalculations
-  {\setfalse\scaleboxdone
-   % initial final value
-   \global\let\finalscaleboxxscale \!!plusone
-   \global\let\finalscaleboxyscale \!!plusone
-   \xdef      \finalscaleboxwidth {\the\nextboxwd}%
-   \xdef      \finalscaleboxheight{\the\nextboxht}%
-   \global\let\finalscaleboxxfactor\!!hundred
-   \global\let\finalscaleboxyfactor\!!hundred
-   \ifdim\nextboxht>\zeropoint \ifdim\nextboxwd>\zeropoint
-     % hm, still useful? better in lua anyway
-     \edef\scaleboxstampa % slow way [can be combined]
-       {\scaleparameter\c!scale \scaleparameter\c!xscale \scaleparameter\c!yscale
-        \scaleparameter\c!factor\scaleparameter\c!wfactor\scaleparameter\c!hfactor
-        \scaleparameter\c!lines \scaleparameter\c!width  \scaleparameter\c!height}%
-     \edef\scaleboxstampb % fast way [just sx/sy]
-       {\scaleparameter\c!sx
-        \scaleparameter\c!sy}%
-     \edef\scaleboxstampc
-       {11}%
-     \ifx\scaleboxstampa\empty
-       \ifx\scaleboxstampb\scaleboxstampc
-        % no scaling, but still check; new, gone again
-% wrong: scaled proportionally as side effect
-%        \doifsomething{\scaleparameter\c!maxwidth }{\letvalue{\currentscaletag\c!factor}\v!fit}%
-%        \doifsomething{\scaleparameter\c!maxheight}{\letvalue{\currentscaletag\c!factor}\v!fit}%
+\def\m_transforms_scale_stamp_c{11}
+
+\def\transforms_scale_calculate
+  {\ifdim\d_transforms_scale_ht>\zeropoint \ifdim\d_transforms_scale_wd>\zeropoint
+     \edef\m_transforms_scale_stamp_a{\p_scale\p_xscale\p_yscale\p_factor\p_wfactor\p_hfactor\p_lines\p_width\p_height}%
+     \edef\m_transforms_scale_stamp_b{\p_sx\p_sy}%
+     \ifx\m_transforms_scale_stamp_a\empty
+       \ifx\m_transforms_scale_stamp_b\m_transforms_scale_stamp_c
+         % no scaling, don't change this (previous attempts failed anyway)
          \insidefloattrue % trick
-         \dodoscaleboxcalculations
+         \transforms_scale_calculations_yes
        \else
-         \dosetscalboxsxsy
-         \nodoscaleboxcalculations
+         \transforms_scale_check_sx_sy
+         \transforms_scale_calculations_nop
        \fi
      \else
-       \ifx\scaleboxstampb\empty
+       \ifx\m_transforms_scale_stamp_b\empty
          % no need to check further
        \else
-         \dosetscalboxsxsy
+         \transforms_scale_check_sx_sy
        \fi
-       \dodoscaleboxcalculations
+       \transforms_scale_calculations_yes
      \fi
    \fi \fi}
 
-\def\dosetscalboxsxsy
-  {\ifdim\scaleparameter\c!sx\onepoint=\onepoint\else
-     \setevalue{\currentscaletag\c!width }{\the\dimexpr\scaleparameter\c!sx\wd\nextbox\relax}%
-   \fi
-   \ifdim\scaleparameter\c!sy\onepoint=\onepoint\else
-     \setevalue{\currentscaletag\c!height}{\the\dimexpr\scaleparameter\c!sy\ht\nextbox\relax}%
-   \fi}
+\def\transforms_scale_check_sx_sy
+  {\ifdim\p_sx\onepoint=\onepoint\else\edef\p_width {\the\dimexpr\p_sx\d_transforms_scale_wd}\fi
+   \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\the\dimexpr\p_sy\d_transforms_scale_ht}\fi}
 
-\def\doscaleboxrounding#1.#2\relax{#1}
+\def\transforms_scale_rounded#1%
+  {\expandafter\expandafter\expandafter\transforms_scale_rounded_indeed
+     \expandafter\WITHOUTPT\the\dimexpr#1\points*100+32768sp\relax.\relax}
 
-\def\scaleboxrounding#1%
-  {\@EA\@EA\@EA\doscaleboxrounding\@EA\WITHOUTPT\the\dimexpr#1\points*100+32768sp\relax.\relax}
+\def\transforms_scale_rounded_indeed#1.#2\relax{#1}
 
-\def\nodoscaleboxcalculations
-  {\settrue\scaleboxdone
-   \xdef\finalscaleboxwidth  {\the\dimexpr\scaleparameter\c!sx\wd\nextbox\relax}%
-   \xdef\finalscaleboxheight {\the\dimexpr\scaleparameter\c!sy\ht\nextbox\relax}%
-   \xdef\finalscaleboxxscale {\scaleparameter\c!sx}%
-   \xdef\finalscaleboxyscale {\scaleparameter\c!sy}%
+\def\transforms_scale_calculations_nop
+  {\settrue\c_transforms_scale_done
+   \xdef\finalscaleboxwidth {\the\dimexpr\p_sx\d_transforms_scale_wd\relax}%
+   \xdef\finalscaleboxheight{\the\dimexpr\p_sy\d_transforms_scale_ht\relax}%
+   \glet\finalscaleboxxscale\p_sx
+   \glet\finalscaleboxyscale\p_sy
    \ifx\finalscaleboxxscale\empty\let\finalscaleboxxscale\!!plusone\fi
    \ifx\finalscaleboxyscale\empty\let\finalscaleboxyscale\!!plusone\fi
-   \xdef\finalscaleboxxfactor{\scaleboxrounding\finalscaleboxxscale}%
-   \xdef\finalscaleboxyfactor{\scaleboxrounding\finalscaleboxyscale}}
+   \xdef\finalscaleboxxfactor{\transforms_scale_rounded\finalscaleboxxscale}%
+   \xdef\finalscaleboxyfactor{\transforms_scale_rounded\finalscaleboxyscale}}
 
-\def\dodoscaleboxcalculations
-  {\settrue\scaleboxdone
+\def\transforms_scale_calculations_yes
+  {\settrue\c_transforms_scale_done
    % initial values
-   \scaleboxoffsetx\zeropoint
-   \scaleboxoffsety\zeropoint
-   \scaleboxsizex  \nextboxwd
-   \scaleboxsizey  \nextboxht % alleen ht wordt geschaald!
+   \d_transforms_scale_x_offset\zeropoint
+   \d_transforms_scale_y_offset\zeropoint
+   \d_transforms_scale_x_size  \d_transforms_scale_wd
+   \d_transforms_scale_y_size  \d_transforms_scale_ht % alleen ht wordt geschaald!
    % final values
-   \global\scaleboxdimx \zeropoint % see note * (core-fig)
-   \global\scaleboxdimy \zeropoint % see note * (core-fig)
-   \scaleboxscax   \plusone        % see note * (core-fig)
-   \scaleboxscay   \plusone        % see note * (core-fig)
+   \global\d_transforms_scale_used_x_size \zeropoint % see note * (core-fig)
+   \global\d_transforms_scale_used_y_size \zeropoint % see note * (core-fig)
+   \c_transforms_scale_used_x_scale   \plusone        % see note * (core-fig)
+   \c_transforms_scale_used_y_scale   \plusone        % see note * (core-fig)
    % preparations
-   \setfalse\scaleboxscalingdone
-   \checkscaleboxsettings
+   \setfalse\c_transforms_scale_scaling_done
+   \transforms_scale_check_parameters
    % calculators
    % beware, they operate in sequence, and calculate missing dimensions / messy
    %setscaleboxbynature % when? needed?
-   \ifconditional\scaleboxscalingdone\else\setscaleboxbyfactor   \fi
-   \ifconditional\scaleboxscalingdone\else\setscaleboxbyscale    \fi
-   \ifconditional\scaleboxscalingdone\else\setscaleboxbydimension\fi
+   \ifconditional\c_transforms_scale_scaling_done\else\transforms_scale_by_factor   \fi
+   \ifconditional\c_transforms_scale_scaling_done\else\transforms_scale_by_scale    \fi
+   \ifconditional\c_transforms_scale_scaling_done\else\transforms_scale_by_dimension\fi
    % finalizers / to be done (no longer needed this way, clean up)
-   \convertscaleboxinsertscale\scaleboxhsize\figx\scaleboxscax\scax
-   \convertscaleboxinsertscale\scaleboxvsize\figy\scaleboxscay\scay
+   \transforms_scale_convert_large_scale\d_transforms_scale_h_size\figx\c_transforms_scale_used_x_scale\m_transforms_scale_temp_x
+   \transforms_scale_convert_large_scale\d_transforms_scale_v_size\figy\c_transforms_scale_used_y_scale\m_transforms_scale_temp_y
    % used in actual scaling
-   \xdef\finalscaleboxwidth  {\the\scaleboxdimx}%
-   \xdef\finalscaleboxheight {\the\scaleboxdimy}%
-   \xdef\finalscaleboxxfactor{\the\scaleboxscax}%
-   \xdef\finalscaleboxyfactor{\the\scaleboxscay}%
-   \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\scax\points/\plushundred\relax}%
-   \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\scay\points/\plushundred\relax}}
+   \xdef\finalscaleboxwidth  {\the\d_transforms_scale_used_x_size}%
+   \xdef\finalscaleboxheight {\the\d_transforms_scale_used_y_size}%
+   \xdef\finalscaleboxxfactor{\the\c_transforms_scale_used_x_scale}%
+   \xdef\finalscaleboxyfactor{\the\c_transforms_scale_used_y_scale}%
+   \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\m_transforms_scale_temp_x\points/\plushundred\relax}%
+   \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\m_transforms_scale_temp_y\points/\plushundred\relax}}
 
-\setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
-\setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+\strutdepth\relax}}
-\setvalue{\??xy:\c!grid:\v!depth   }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight-\strutdepth\relax}}
-\setvalue{\??xy:\c!grid:\v!halfline}{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\dimexpr\noflines\lineheight+.5\lineheight\relax}}
-\setvalue{\??xy:\c!grid:\v!fit     }{\getrawnoflines\fighei\setevalue{\currentscaletag\c!height}{\the\noflines\lineheight}}
+\setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
+\setvalue{\??xy:\c!grid:\v!depth   }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
+\setvalue{\??xy:\c!grid:\v!halfline}{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
+\setvalue{\??xy:\c!grid:\v!fit     }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
 \letvalue{\??xy:\c!grid:\empty     }\donothing
 
-\def\checkscaleboxsettings
-  {\doifsomething{\scaleparameter\c!maxwidth }% can be defined in itself
-     {\setevalue{\currentscaletag\c!maxwidth }{\the\dimexpr\scaleparameter\c!maxwidth \relax}}%
-   \doifsomething{\scaleparameter\c!maxheight}% can be defined in itself
-     {\setevalue{\currentscaletag\c!maxheight}{\the\dimexpr\scaleparameter\c!maxheight\relax}}%
-   \doifsomething{\scaleparameter\c!lines}
-     {\setevalue{\currentscaletag\c!height}{\the\dimexpr\scaleparameter\c!lines\lineheight\relax}}%
+\def\transforms_scale_check_parameters % resolve self referencing loops
+  {\ifx\p_maxwidth \empty\else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
+   \ifx\p_maxheight\empty\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
+   \ifx\p_lines    \empty\else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
    \getvalue{\??xy:\c!grid:\scaleparameter\c!grid}}
 
-\def\setscaleboxbynature % where ! ! ! ! !
-  {\doifsomething{\scaleparameter\c!width }{\global\scaleboxdimx\scaleparameter\c!width }%
-   \doifsomething{\scaleparameter\c!height}{\global\scaleboxdimy\scaleparameter\c!height}%
-   \doifsomething{\scaleparameter\c!scale }       {\scaleboxscax\scaleparameter\c!scale
-                                                   \scaleboxscay\scaleparameter\c!scale }%
-   \doifsomething{\scaleparameter\c!xscale}       {\scaleboxscax\scaleparameter\c!xscale}%
-   \doifsomething{\scaleparameter\c!yscale}       {\scaleboxscay\scaleparameter\c!yscale}} % oeps, was x
+\def\transforms_scale_by_nature % where ! ! ! ! !
+  {\ifx\p_width \empty\else \global\d_transforms_scale_used_x_size\p_width \fi
+   \ifx\p_height\empty\else \global\d_transforms_scale_used_y_size\p_height\fi
+   \ifx\p_scale \empty\else        \c_transforms_scale_used_x_scale\p_scale
+                                   \c_transforms_scale_used_y_scale\p_scale \fi
+   \ifx\p_xscale\empty\else        \c_transforms_scale_used_x_scale\p_xscale\fi
+   \ifx\p_yscale\empty\else        \c_transforms_scale_used_y_scale\p_yscale\fi}
 
 % \defineexternalfigure[width-6][factor=auto,maxwidth=\textheight,maxheight=\textwidth]
 % \defineexternalfigure[width-7][factor=auto,maxwidth=\textwidth,maxheight=\textheight]
 % \placefigure{none}{\rotate[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-6]}} \page
 % \placefigure{none}{\framed[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-7]}}
 
-\def\setscaleboxbyfactor
-  {\doifinsetelse{\scaleparameter\c!factor}{\v!max,\v!fit,\v!broad,\v!auto}
-     {\doapplyscaleboxsize
-      \ifdim\scaleboxsizex>\scaleboxsizey
-        \docalculatescaleboxnorm  \scaleboxdimx\c!factor\c!maxwidth\hsize\scaleboxhsize
-        \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
-      \else
-        \docalculatescaleboxnorm  \scaleboxdimy\c!factor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-        \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
-      \fi
-      \donetrue}
-     {\doifinsetelse{\scaleparameter\c!hfactor}{\v!max,\v!fit,\v!broad,\v!auto}
-        {\doapplyscaleboxsize
-         \docalculatescaleboxnorm  \scaleboxdimy\c!hfactor\c!maxheight\scaleboxoutervsize\scaleboxvsize
-         \docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex
-         \donetrue}
-        {\doifinsetelse{\scaleparameter\c!wfactor}{\v!max,\v!fit,\v!broad,\v!auto}
-           {\doapplyscaleboxsize
-            \docalculatescaleboxnorm  \scaleboxdimx\c!wfactor\c!maxwidth\hsize\scaleboxhsize
-            \docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey
-            \donetrue}
-           {\docalculatescaleboxnorm\scaleboxdimy\c!factor \c!height \textheight\scaleboxvsize
-            \docalculatescaleboxnorm\scaleboxdimy\c!hfactor\c!height \textheight\scaleboxvsize
-            \docalculatescaleboxnorm\scaleboxdimx\c!wfactor\c!width  \hsize     \hsize
-            \donefalse}}}%
-   \ifdone
-     \settrue\scaleboxscalingdone
-     \ifdim\scaleboxdimx>\scaleboxhsize
-       \global\scaleboxdimy\zeropoint \global\scaleboxdimx\scaleboxhsize
-     \else\ifdim\scaleboxdimy>\scaleboxvsize
-       \global\scaleboxdimx\zeropoint \global\scaleboxdimy\scaleboxvsize
-     \fi\fi
-     \setscaleboxbydimension
+\def\m_transforms_scale_factor_set{\v!max,\v!fit,\v!broad,\v!auto} % can be an \edef
+
+\def\transforms_scale_by_factor
+  {\doifinsetelse\p_factor\m_transforms_scale_factor_set
+     \transforms_scale_by_factor_a
+     {\doifinsetelse\p_hfactor\m_transforms_scale_factor_set
+        \transforms_scale_by_factor_b
+        {\doifinsetelse\p_wfactor\m_transforms_scale_factor_set
+           \transforms_scale_by_factor_c
+           \transforms_scale_by_factor_d}}}
+
+\def\transforms_scale_by_factor_a
+  {\transforms_scale_apply_size
+   \ifdim\d_transforms_scale_x_size>\d_transforms_scale_y_size
+     \transforms_scale_calculate_norm  \d_transforms_scale_used_x_size\p_factor\p_maxwidth\hsize\d_transforms_scale_h_size
+     \transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size
+   \else
+     \transforms_scale_calculate_norm  \d_transforms_scale_used_y_size\p_factor\p_maxheight\d_transforms_scale_outer_v_size\d_transforms_scale_v_size
+     \transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size
+   \fi
+   \transforms_scale_by_factor_indeed}
+
+\def\transforms_scale_by_factor_b
+  {\transforms_scale_apply_size
+   \transforms_scale_calculate_norm  \d_transforms_scale_used_y_size\p_hfactor\p_maxheight\d_transforms_scale_outer_v_size\d_transforms_scale_v_size
+   \transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size
+   \transforms_scale_by_factor_indeed}
+
+\def\transforms_scale_by_factor_c
+  {\transforms_scale_apply_size
+   \transforms_scale_calculate_norm  \d_transforms_scale_used_x_size\p_wfactor\p_maxwidth\hsize\d_transforms_scale_h_size
+   \transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size
+   \transforms_scale_by_factor_indeed}
+
+\def\transforms_scale_by_factor_d
+  {\transforms_scale_calculate_norm\d_transforms_scale_used_y_size\p_factor \p_height \textheight\d_transforms_scale_v_size
+   \transforms_scale_calculate_norm\d_transforms_scale_used_y_size\p_hfactor\p_height \textheight\d_transforms_scale_v_size
+   \transforms_scale_calculate_norm\d_transforms_scale_used_x_size\p_wfactor\p_width  \hsize     \hsize}
+
+\def\transforms_scale_by_factor_indeed
+  {\settrue\c_transforms_scale_scaling_done
+   \ifdim\d_transforms_scale_used_x_size>\d_transforms_scale_h_size
+     \global\d_transforms_scale_used_y_size\zeropoint
+     \global\d_transforms_scale_used_x_size\d_transforms_scale_h_size
+   \else\ifdim\d_transforms_scale_used_y_size>\d_transforms_scale_v_size
+     \global\d_transforms_scale_used_x_size\zeropoint
+     \global\d_transforms_scale_used_y_size\d_transforms_scale_v_size
+   \fi\fi
+   \transforms_scale_by_dimension}
+
+\def\transforms_scale_by_scale
+  {\edef\m_transforms_scale_temp{\p_scale\p_xscale\p_yscale}%
+   \ifx\m_transforms_scale_temp\empty \else
+     \transforms_scale_apply_scale\d_transforms_scale_used_x_size\d_transforms_scale_x_size\c_transforms_scale_used_x_scale\p_xscale
+     \transforms_scale_apply_scale\d_transforms_scale_used_y_size\d_transforms_scale_y_size\c_transforms_scale_used_y_scale\p_yscale
+     \global\d_transforms_scale_used_x_size\zeropoint
+     \global\d_transforms_scale_used_y_size\zeropoint
+     \ifx\p_maxwidth\empty
+       \ifx\p_maxheight\empty
+       \else
+         \ifdim\d_transforms_scale_y_size>\p_maxheight\relax
+           \global\d_transforms_scale_used_y_size\p_maxheight
+         \fi
+       \fi
+     \else
+       \ifdim\d_transforms_scale_x_size>\p_maxwidth\relax
+          \global\d_transforms_scale_used_x_size\p_maxwidth
+       \fi
+     \fi
    \fi}
 
-\def\setscaleboxbyscale
-  {\doifsomething{\scaleparameter\c!scale\scaleparameter\c!xscale\scaleparameter\c!yscale}
-     {\doapplyscaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax\c!xscale
-      \doapplyscaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay\c!yscale
-      \global\scaleboxdimx\zeropoint
-      \global\scaleboxdimy\zeropoint
-      \doifelsenothing{\scaleparameter\c!maxwidth}
-        {\doifsomething{\scaleparameter\c!maxheight}
-           {\ifdim\scaleboxsizey>\scaleparameter\c!maxheight\relax
-              \global\scaleboxdimy\scaleparameter\c!maxheight
-            \fi}}
-        {\ifdim\scaleboxsizex>\scaleparameter\c!maxwidth\relax
-           \global\scaleboxdimx\scaleparameter\c!maxwidth
-         \fi}}}
-
-\def\setscaleboxbydimension
-  {\ifdim\scaleboxdimx>\zeropoint
-     \ifdim\scaleboxdimy>\zeropoint
-       \setscaleboxbydimension_a
+\def\transforms_scale_by_dimension
+  {\ifdim\d_transforms_scale_used_x_size>\zeropoint
+     \ifdim\d_transforms_scale_used_y_size>\zeropoint
+       \transforms_scale_by_dimension_a
      \else
-       \setscaleboxbydimension_b
+       \transforms_scale_by_dimension_b
      \fi
    \else
-     \ifdim\scaleboxdimy>\zeropoint
-       \setscaleboxbydimension_c
+     \ifdim\d_transforms_scale_used_y_size>\zeropoint
+       \transforms_scale_by_dimension_c
      \else
-       \setscaleboxbydimension_d
+       \transforms_scale_by_dimension_d
      \fi
    \fi}
 
-\def\setscaleboxbydimension_a
-  {\dosetdimensionscaleboxsize
-     {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
-      \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}%
-     {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
-      \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}%
-     {\docalculatescaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay
-      \docalculatescaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax}}
+\def\transforms_scale_by_dimension_a
+  {\transforms_scale_by_dimension_indeed
+     {\transforms_scale_calculate_scale\d_transforms_scale_used_y_size\d_transforms_scale_y_size\c_transforms_scale_used_y_scale
+      \transforms_scale_calculate_scale\d_transforms_scale_used_x_size\d_transforms_scale_x_size\c_transforms_scale_used_x_scale}%
+     {\transforms_scale_calculate_scale\d_transforms_scale_used_y_size\d_transforms_scale_y_size\c_transforms_scale_used_y_scale
+      \transforms_scale_calculate_scale\d_transforms_scale_used_x_size\d_transforms_scale_x_size\c_transforms_scale_used_x_scale}%
+     {\transforms_scale_calculate_scale\d_transforms_scale_used_y_size\d_transforms_scale_y_size\c_transforms_scale_used_y_scale
+      \transforms_scale_calculate_scale\d_transforms_scale_used_x_size\d_transforms_scale_x_size\c_transforms_scale_used_x_scale}}
 
-\def\setscaleboxbydimension_b
-  {\dosetdimensionscaleboxsize
-     {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
-     {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
-     {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}}
+\def\transforms_scale_by_dimension_b
+  {\transforms_scale_by_dimension_indeed
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size}}
 
-\def\setscaleboxbydimension_c
-  {\dosetdimensionscaleboxsize
-     {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
-     {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}%
-     {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}}
+\def\transforms_scale_by_dimension_c
+  {\transforms_scale_by_dimension_indeed
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size}}
 
-\def\setscaleboxbydimension_d
-  {\dosetdimensionscaleboxsize
-     {\doapplyscaleboxscale\scaleboxdimx\scaleboxsizex\scaleboxscax\c!xscale
-      \doapplyscaleboxscale\scaleboxdimy\scaleboxsizey\scaleboxscay\c!yscale}%
-     {\docalculatescaleboxscales\scaleboxdimx\scaleboxsizex\scaleboxdimy\scaleboxsizey}%
-     {\docalculatescaleboxscales\scaleboxdimy\scaleboxsizey\scaleboxdimx\scaleboxsizex}}
+\def\transforms_scale_by_dimension_d
+  {\transforms_scale_by_dimension_indeed
+     {\transforms_scale_apply_scale\d_transforms_scale_used_x_size\d_transforms_scale_x_size\c_transforms_scale_used_x_scale\p_xscale
+      \transforms_scale_apply_scale\d_transforms_scale_used_y_size\d_transforms_scale_y_size\c_transforms_scale_used_y_scale\p_yscale}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_x_size\d_transforms_scale_x_size\d_transforms_scale_used_y_size\d_transforms_scale_y_size}%
+     {\transforms_scale_calculate_scales\d_transforms_scale_used_y_size\d_transforms_scale_y_size\d_transforms_scale_used_x_size\d_transforms_scale_x_size}}
 
-\def\dosetdimensionscaleboxsize#1#2#3%
+\def\transforms_scale_by_dimension_indeed#1#2#3%
   {#1\relax
-   \doifsomething{\scaleparameter\c!maxwidth}
-     {\ifdim\scaleboxdimx>\scaleparameter\c!maxwidth\relax
-        \global\scaleboxdimx\scaleparameter\c!maxwidth
-        #2\relax
-      \fi}%
-   \doifsomething{\scaleparameter\c!maxheight}
-     {\ifdim\scaleboxdimy>\scaleparameter\c!maxheight\relax
-        \global\scaleboxdimy\scaleparameter\c!maxheight
-         #3\relax
-      \fi}}
+   \ifx\p_maxwidth\empty \else
+     \ifdim\d_transforms_scale_used_x_size>\p_maxwidth\relax
+       \global\d_transforms_scale_used_x_size\p_maxwidth
+       #2\relax
+     \fi
+   \fi
+   \ifx\p_maxheight\empty \else
+     \ifdim\d_transforms_scale_used_y_size>\p_maxheight\relax
+       \global\d_transforms_scale_used_y_size\p_maxheight
+        #3\relax
+     \fi
+   \fi}
 
-% \def\docalculatescaleboxnorm#1#2#3#4#5% 2 3 parameters (dodo:speedup)
-%   {\processaction
-%       [\scaleparameter#2]
-%       [     \v!max=>\global#1\dimexpr#4\relax,
-%             \v!fit=>\global#1\dimexpr#5\relax,
-%           \v!broad=>\global#1\dimexpr#5-4\@@exbodyfont\relax,
-%            \v!auto=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
-%         \s!default=>\doifsomething{\scaleparameter#3}{\global#1\dimexpr\scaleparameter#3\relax},
-%         \s!unknown=>\global#1\dimexpr\scaleparameter#2\dimexpr\@@exbodyfont/10\relax\relax]}
+\def\transforms_scale_calculate_norm#1#2% todo: swap 1 and 2 and pass one less
+  {\csname\??ef:n:\ifcsname\??ef:n:#2\endcsname#2\else\s!unknown\fi\endcsname#1#2}
 
-\def\docalculatescaleboxnorm#1#2% todo: swap 1 and 2 and pass one less
-  {\edef\askedscaleboxnorm{\scaleparameter#2}%
-   \csname\??ef:n:\ifcsname\??ef:n:\askedscaleboxnorm\endcsname
-     \askedscaleboxnorm\else\s!unknown
-   \fi\endcsname{#1}}
+\setvalue{\??ef:n:\v!max    }#1#2#3#4#5{\global#1#4}
+\setvalue{\??ef:n:\v!fit    }#1#2#3#4#5{\global#1#5}
+\setvalue{\??ef:n:\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\@@exbodyfont\relax}
+\setvalue{\??ef:n:\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\@@exbodyfont/10\relax\relax} % brr ex
+\setvalue{\??ef:n:\v!auto   }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
+\setvalue{\??ef:n:\empty    }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
+\setvalue{\??ef:n:\s!default}#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
 
-\setvalue{\??ef:n:\v!max}#1#2#3#4%
-  {\global#1#3}
-
-\setvalue{\??ef:n:\v!fit}#1#2#3#4%
-  {\global#1#4}
-
-\setvalue{\??ef:n:\v!broad}#1#2#3#4%
-  {\global#1\dimexpr#4-4\@@exbodyfont\relax}
-
-\setvalue{\??ef:n:\s!unknown}#1#2#3#4%
-  {\global#1\dimexpr\askedscaleboxnorm\dimexpr\@@exbodyfont/10\relax\relax}
-
-\def\docalculatescaleboxnormauto#1#2#3#4%
-  {\edef\askedscaleboxnorm{\scaleparameter#2}%
-   \ifx\askedscaleboxnorm\empty\else\global#1\askedscaleboxnorm\fi}
-
-\letvalue{\??ef:n:\v!auto   }\docalculatescaleboxnormauto
-\letvalue{\??ef:n:\empty    }\docalculatescaleboxnormauto
-\letvalue{\??ef:n:\s!default}\docalculatescaleboxnormauto
-
-\def\docalculatescaleboxscales#1#2#3#4%
+\def\transforms_scale_calculate_scales#1#2#3#4%
   {\scratchdimen\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax
-   \scaleboxscax\scratchdimen
-   \scaleboxscay\scratchdimen
-   #3\dimexpr\scaleboxscax\dimexpr#4/\plusthousand\relax\relax}
+   \c_transforms_scale_used_x_scale\scratchdimen
+   \c_transforms_scale_used_y_scale\scratchdimen
+   #3\dimexpr\c_transforms_scale_used_x_scale\dimexpr#4/\plusthousand\relax\relax}
 
-\def\docalculatescaleboxscale#1#2#3%
+\def\transforms_scale_calculate_scale#1#2#3%
   {#3\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax}
 
-\def\doapplyscaleboxscale#1#2#3#4% $4 = parameter / scale can be empty
-  {\ifcase0\scaleparameter#4\relax
-     \ifcase0\scaleparameter\c!scale\relax
+\def\transforms_scale_apply_scale#1#2#3#4% #4 = parameter / scale can be empty
+  {\ifcase0#4\relax
+     \ifcase0\p_scale\relax
        #3=\plusthousand
      \else
-       #3=\scaleparameter\c!scale
+       #3=\p_scale
      \fi
    \else
-     #3=\scaleparameter#4%
+     #3=#4%
    \fi
    \relax % important ! still ?
    \global#1\ifnum#3=\plusthousand#2\else\dimexpr#3\dimexpr#2/\plusthousand\relax\relax\fi
    \relax}
 
-\def\doapplyscaleboxsize
-  {\doifelsenothing{\scaleparameter\c!maxheight}
-     {\scaleboxoutervsize\textheight
-      \ifinner
-        \scaleboxoutervsize \vsize % \textheight =\vsize
-        \scratchdimen\vsize % \scratchdimen=\textheight
-      \else\ifinsidefloat
-        \scaleboxoutervsize \vsize % \textheight =\vsize
-        \scratchdimen\vsize % \scratchdimen=\textheight
-      \else\ifinpagebody
-        \scaleboxoutervsize \vsize % \textheight =\vsize
-        \scratchdimen\vsize % \scratchdimen=\textheight
-      \else % hm, there should be an option to force this
-        \ifdim\pagegoal<\maxdimen
-          \ifdim\pagetotal<\pagegoal
-            \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
-          \else
-            \scratchdimen\scaleboxoutervsize % \textheight
-          \fi
-        \else
-          \scratchdimen\scaleboxoutervsize % \textheight
-        \fi
-      \fi\fi\fi}
-     {\scratchdimen\scaleparameter\c!maxheight
-      \scaleboxoutervsize\scratchdimen}%
-   \doifelsenothing{\scaleparameter\c!height}
-     {\scaleboxvsize\scratchdimen}
-     {\scaleboxvsize\scaleparameter\c!height}%
-   \doifelsenothing{\scaleparameter\c!width}
-     {\scaleboxhsize\hsize}
-     {\scaleboxhsize\scaleparameter\c!width}}
+\def\transforms_scale_apply_size
+  {\ifx\p_maxheight\empty
+     \d_transforms_scale_outer_v_size\textheight
+     \ifinner
+       \d_transforms_scale_outer_v_size \vsize % \textheight =\vsize
+       \scratchdimen\vsize % \scratchdimen=\textheight
+     \else\ifinsidefloat
+       \d_transforms_scale_outer_v_size \vsize % \textheight =\vsize
+       \scratchdimen\vsize % \scratchdimen=\textheight
+     \else\ifinpagebody
+       \d_transforms_scale_outer_v_size \vsize % \textheight =\vsize
+       \scratchdimen\vsize % \scratchdimen=\textheight
+     \else % hm, there should be an option to force this
+       \ifdim\pagegoal<\maxdimen
+         \ifdim\pagetotal<\pagegoal
+           \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
+         \else
+           \scratchdimen\d_transforms_scale_outer_v_size % \textheight
+         \fi
+       \else
+         \scratchdimen\d_transforms_scale_outer_v_size % \textheight
+       \fi
+     \fi\fi\fi
+   \else
+     \scratchdimen\p_maxheight
+     \d_transforms_scale_outer_v_size\scratchdimen
+   \fi
+   \ifx\p_height\empty
+     \d_transforms_scale_v_size\scratchdimen
+   \else
+     \d_transforms_scale_v_size\p_height
+   \fi
+   \ifx\p_width\empty
+     \d_transforms_scale_h_size\hsize
+   \else
+     \d_transforms_scale_h_size\p_width
+   \fi}
 
-\def\convertscaleboxinsertscale#1#2#3#4%
+\def\transforms_scale_convert_large_scale#1#2#3#4%
   {\scratchdimen#1\relax
    \ifnum#3=\plusthousand
      % == scale 1
@@ -443,9 +491,11 @@
    \edef#2{\the\scratchdimen}%
    \scratchcounter#3\relax
    \ifnum\scratchcounter>\plustenthousand
-     \divide\scratchcounter\!!ten \scratchdimen\the\scratchcounter\points
+     \divide\scratchcounter\plusten
+     \scratchdimen\the\scratchcounter\points
    \else
-     \scratchdimen\the\scratchcounter\points \divide\scratchdimen\!!ten
+     \scratchdimen\the\scratchcounter\points
+     \divide\scratchdimen\plusten
    \fi
    \edef#4{\withoutpt\the\scratchdimen}}
 
@@ -454,28 +504,39 @@
 %     {\externalfigure[mill.png][frame=on,height=3cm,equalwidth=6cm]} {}
 % \stopcombination
 
-\def\doscaleboxposition
-   {\doifsomething{\scaleparameter\c!equalwidth}
-      {\scratchdimen\scaleparameter\c!equalwidth\relax
-       \ifdim\wd\nextbox<\scratchdimen
-         \setbox\nextbox\hbox to \scratchdimen{\hss\box\nextbox\hss}%
-       \fi}%
-    \doifsomething{\scaleparameter\c!equalheight}
-      {\scratchdimen\scaleparameter\c!equalheight\relax
-       \ifdim\ht\nextbox<\scratchdimen
-         \setbox\nextbox\vbox to \scratchdimen{\vss\box\nextbox\vss}%
-       \fi}}
-
-\def\fastscale#1%
-  {\begingroup
-   \ifnum#1=1000\relax
-     \setfalse\scaleboxdone
-   \else
-     \settrue\scaleboxdone
-     \edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}%
-     \let\finalscaleboxyscale\finalscaleboxxscale
+\def\transforms_scale_position
+  {\ifx\p_equalwidth\empty \else
+    \scratchdimen\p_equalwidth\relax
+    \ifdim\d_transforms_scale_wd<\scratchdimen
+      \setbox\nextbox\hbox to \scratchdimen{\hss\box\nextbox\hss}%
+    \fi
    \fi
-   \dowithnextbox{\doscaleboxindeed\flushnextbox\endgroup}\hbox}
+   \ifx\p_equalheight\empty \else
+     \scratchdimen\p_equalheight\relax
+     \ifdim\d_transforms_scale_ht<\scratchdimen
+       \setbox\nextbox\vbox to \scratchdimen{\vss\box\nextbox\vss}%
+     \fi
+   \fi}
+
+\unexpanded\def\fastscale#1%
+  {\ifnum#1=1000\relax
+     \expandafter\transforms_fast_scale_nop
+   \else
+     \expandafter\transforms_fast_scale_yes
+   \fi{#1}}
+
+\def\transforms_fast_scale_nop#1%
+  {\hbox}
+
+\def\transforms_fast_scale_yes#1%
+  {\edef\finalscaleboxxscale{\withoutpt\the\dimexpr#1pt/1000\relax}%
+   \let\finalscaleboxyscale\finalscaleboxxscale
+   \dowithnextboxcs\transforms_fast_scale_finish\hbox}
+
+\def\transforms_fast_scale_finish
+  {\transforms_scale_apply
+   \box\nextbox
+   \endgroup}
 
 %D \macros
 %D   {clip, setupclipping}
@@ -511,66 +572,75 @@
 \unexpanded\def\setupclipping
   {\dodoubleargument\getparameters[\??cp]}
 
-\def\clip
-  {\dosingleempty\doclip}
+\unexpanded\def\clip
+  {\dosingleempty\transforms_clip}
 
-\def\doclip[#1]% nb top->bottom left->right
+\def\transforms_clip[#1]% nb top->bottom left->right
   {\bgroup
-   \getparameters[\??cp][#1]%
-   \doifelse\@@cpstate\v!start\dodoclip{\egroup\hbox}}
+   \iffirstargument
+     \getparameters[\??cp][#1]%
+   \fi
+   \dowithnextboxcs\transforms_clip_finish\hbox}
 
-\def\dodoclip
-  {\dowithnextbox
-     {\ifdim\@@cpwidth>\zeropoint
-        \!!dimena\@@cpwidth
-        \!!dimenc\@@cphoffset
-      \else
-        \!!dimena\nextboxwd
-        \divide\!!dimena \@@cpnx
-        \!!dimenc\@@cpx\!!dimena
-        \advance\!!dimenc -\!!dimena
-        \!!dimena\@@cpsx\!!dimena
-      \fi
-      \relax % sure
-      \ifdim\@@cpheight>\zeropoint
-        \!!dimenb\@@cpheight
-        \!!dimend\nextboxht
-        \advance\!!dimend -\@@cpvoffset
-        \advance\!!dimend -\!!dimenb
-      \else
-        \!!dimenb\nextboxht
-        \divide\!!dimenb \@@cpny
-        \!!dimend-\@@cpy\!!dimenb
-        \advance\!!dimend -\@@cpsy\!!dimenb
-        \advance\!!dimend \!!dimenb
-        \!!dimenb\@@cpsy\!!dimenb
-        \advance\!!dimend \nextboxht % dimend !
-      \fi
-      \setbox\nextbox\hbox                            % old
-        {\advance\!!dimenc -\@@cpleftoffset           % new !
-         \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
-         \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old
-      \nextboxwd\zeropoint
-      \nextboxht\zeropoint
-      \nextboxdp\zeropoint
-      \setbox\nextbox\hbox
-        {\advance\!!dimena \@@cpleftoffset         % new !
-         \advance\!!dimena \@@cprightoffset        % new !
-         \advance\!!dimenb \@@cpbottomoffset       % new !
-         \advance\!!dimenb \@@cptopoffset          % new !
-         \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
-           \flushnextbox
-         \dostopclipping}%
-      \setbox\nextbox\hbox                       % new !
-        {\!!dimena-\@@cpleftoffset               % new !
-         \!!dimenb \@@cpbottomoffset             % new ! % - removed
-         \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
-      \nextboxwd\!!dimena
-      \nextboxht\!!dimenb
-      \nextboxdp\zeropoint
-      \flushnextbox
-      \egroup}%
-   \hbox}
+\def\transforms_clip_finish
+  {\doifelse\@@cpstate\v!start
+     \transforms_clip_yes_finish
+     \transforms_clip_nop_finish}
+
+\def\transforms_clip_yes_finish
+  {\ifdim\@@cpwidth>\zeropoint
+     \!!dimena\@@cpwidth
+     \!!dimenc\@@cphoffset
+   \else
+     \!!dimena\wd\nextbox
+     \divide\!!dimena \@@cpnx
+     \!!dimenc\@@cpx\!!dimena
+     \advance\!!dimenc -\!!dimena
+     \!!dimena\@@cpsx\!!dimena
+   \fi
+   \relax % sure
+   \ifdim\@@cpheight>\zeropoint
+     \!!dimenb\@@cpheight
+     \!!dimend\ht\nextbox
+     \advance\!!dimend -\@@cpvoffset
+     \advance\!!dimend -\!!dimenb
+   \else
+     \!!dimenb\ht\nextbox
+     \divide\!!dimenb \@@cpny
+     \!!dimend-\@@cpy\!!dimenb
+     \advance\!!dimend -\@@cpsy\!!dimenb
+     \advance\!!dimend \!!dimenb
+     \!!dimenb\@@cpsy\!!dimenb
+     \advance\!!dimend \ht\nextbox % dimend !
+   \fi
+   \setbox\nextbox\hbox                            % old
+     {\advance\!!dimenc -\@@cpleftoffset           % new !
+      \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
+      \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old
+   \wd\nextbox\zeropoint
+   \ht\nextbox\zeropoint
+   \dp\nextbox\zeropoint
+   \setbox\nextbox\hbox
+     {\advance\!!dimena \@@cpleftoffset         % new !
+      \advance\!!dimena \@@cprightoffset        % new !
+      \advance\!!dimenb \@@cpbottomoffset       % new !
+      \advance\!!dimenb \@@cptopoffset          % new !
+      \dostartclipping\@@cpmp\!!dimena\!!dimenb % old
+        \box\nextbox
+      \dostopclipping}%
+   \setbox\nextbox\hbox                       % new !
+     {\!!dimena-\@@cpleftoffset               % new !
+      \!!dimenb \@@cpbottomoffset             % new ! % - removed
+      \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
+   \wd\nextbox\!!dimena
+   \ht\nextbox\!!dimenb
+   \dp\nextbox\zeropoint
+   \box\nextbox
+   \egroup}
+
+\def\transforms_clip_nop_finish
+  {\box\nextbox
+   \egroup}
 
 \setupclipping
   [\c!state=\v!start,
@@ -605,26 +675,21 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
-
+
 %D Mirroring.
 
-\def\domirrorbox % \hbox/\vbox/\vtop
-  {\bgroup
-   \dowithnextbox
-     {\dontshowcomposition
-      \scratchdimen\nextboxwd
-      % better use an hbox (if no \forgetall, leftskip etc may creep in)
-     %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
-      \setbox\nextbox\hbox{\dostartmirroring\hskip-\nextboxwd\flushnextbox\dostopmirroring}%
-      \nextboxwd\scratchdimen
-      \flushnextbox
-      \egroup}}
-
 \unexpanded\def\mirror
-  {\domirrorbox\hbox}
+  {\bgroup
+   \dowithnextboxcs\transforms_mirror_finish\hbox}
 
-% \setbox0=\hbox{gans}
-% \ruledhbox{\copy0 \schaal[sx=2,sy=2]{\copy0}}
-% \mirror{\ruledhbox{\copy0 \schaal{\box0}}}
+\def\transforms_mirror_finish
+  {\dontshowcomposition
+   \scratchdimen\wd\nextbox
+   % better use an hbox (if no \forgetall, leftskip etc may creep in)
+   %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\wd\nextbox\flushnextbox\dostopmirroring}%
+   \setbox\nextbox\hbox{\dostartmirroring\hskip-\wd\nextbox\flushnextbox\dostopmirroring}%
+   \wd\nextbox\scratchdimen
+   \box\nextbox
+   \egroup}
 
 \protect \endinput
