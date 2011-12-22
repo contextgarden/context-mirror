@@ -141,8 +141,8 @@
 \installcommandhandler \??tp {typing} \??tp
 
 \appendtoks
-    \setuevalue{\e!start#1}{\dostarttyping{\currenttyping}}%
-    \setuevalue{\e!stop #1}{\dostoptyping {\currenttyping}}%
+    \setuevalue{\e!start\currenttyping}{\dostarttyping{\currenttyping}}%
+    \setuevalue{\e!stop \currenttyping}{\dostoptyping {\currenttyping}}%
     \normalexpanded{\definelinenumbering[\currenttyping]}%
 \to \everydefinetyping
 

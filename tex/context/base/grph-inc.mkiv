@@ -138,7 +138,7 @@
 \appendtoks \resetexternalfigures \to \everyoverlay
 \appendtoks \resetexternalfigures \to \everybeforepagebody % not really needed
 
-\def\resetfigureusersettings
+\def\resetfigureusersettings % if we use a command handler we can simply define a new instance
   {%
    \let\@@efmethod    \empty
    \let\@@eflabel     \empty
