@@ -51,11 +51,14 @@ end
 
 local prefix, category, keys
 
+local setsomevalue = context.setsomevalue
+local invalidkey   = interfaces.invalidkey
+
 local function set(key,value)
     if keys and not keys[key] then
-        interfaces.invalidkey(category,key)
+        invalidkey(category,key)
     else
-        context.setsomevalue(prefix,key,value)
+        setsomevalue(prefix,key,value)
     end
 end
 

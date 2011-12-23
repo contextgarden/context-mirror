@@ -18,6 +18,7 @@ return {
         "points", "halfpoint",
         "zeroskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
+        "normalpagebox",
         --        --
         "endoflinetoken", "outputnewlinechar",
         --
@@ -40,9 +41,24 @@ return {
         --
         "uprotationangle", "rightrotationangle", "downrotationangle", "leftrotationangle",
         --
+        "inicatcodes",
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
         "xmlcatcodes",
+        --
+        "escapecatcode", "begingroupcatcode", "endgroupcatcode", "mathshiftcatcode", "alignmentcatcode",
+        "endoflinecatcode", "parametercatcode", "superscriptcatcode", "subscriptcatcode", "ignorecatcode",
+        "spacecatcode", "lettercatcode", "othercatcode", "activecatcode", "commentcatcode", "invalidcatcode",
+        --
+        "tabasciicode", "newlineasciicode", "formfeedasciicode", "endoflineasciicode", "endoffileasciicode",
+        "spaceasciicode", "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
+        "colonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
+        "leftbraceasciicode", "barasciicode", "rightbraceasciicode", "tildeasciicode", "delasciicode",
+        "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
+        "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
+        "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
+        --
+        "activetabtoken", "activeformfeedtoken", "activeendoflinetoken",
         --
         -- maybe a different class
         --
@@ -67,6 +83,11 @@ return {
         "htdp",
         "unvoidbox",
         "vfilll",
+        --
+        "currentcatcodetable", "defaultcatcodetable", "catcodetablename",
+        "newcatcodetable", "startcatcodetable", "stopcatcodetable", "startextendcatcodetable", "stopextendcatcodetable",
+        "pushcatcodetable", "popcatcodetable", "restorecatcodes",
+        "setcatcodetable", "letcatcodecommand", "defcatcodecommand", "uedcatcodecommand",
         --
         "hglue", "vglue", "hfillneg", "vfillneg", "hfilllneg", "vfilllneg",
         --
@@ -146,7 +167,7 @@ return {
         --
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth",
         --
-        "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse",
+        "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",

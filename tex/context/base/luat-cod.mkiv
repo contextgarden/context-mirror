@@ -15,12 +15,22 @@
 
 \unprotect
 
+%D We have this one for a rather long time now but nowadays \ETEX\
+%D provides a command with the same name and different meaning. That
+%D one is available as \type {\normalexpanded}.
+
 \long\def\expanded#1{\long\xdef\lastexpanded{\noexpand#1}\lastexpanded}
-%long\def\expanded#1{\normalexpanded{\noexpand#1}} % compatible ## mess
+
+%D We cannot use the following due to the fact that existing usage
+%D demanded duplicating hashes.
+%D
+%D \starttyping
+%D \def\expanded#1{\normalexpanded{\noexpand#1}} % ## mess
+%D \stoptyping
 
 \newif\ifproductionrun
 
-%D Originally we compiled the lua files externally and loaded
+%D Originally we compiled the \LUA\ files externally and loaded
 %D then at runtime, but when the amount grew, we realized that
 %D we needed away to store them in the format, which is what
 %D bytecode arrays do. And so the following is obsolete:

@@ -586,9 +586,7 @@
    \fi
    \float_end_group}
 
-\setnewconstant\sidefloatalign \zerocount
 \setnewconstant\textfloatmethod\zerocount % 0=raw 1=safe (.99) 2=tight (-1pt)
-\setnewconstant\sidefloatmethod\plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
 \setnewconstant\floatrotation  \zerocount % 0 90 180 270
 
 \def\float_analyze_variables_two
@@ -836,11 +834,17 @@
       -\v!hang=>\float_move_down_hang\minusone]}
 
 \def\float_move_down_line#sign%
-  {\if!!donea\else\global\sidefloatdownshift\zeropoint\!!doneatrue\fi
+  {\if!!donea \else
+     \global\sidefloatdownshift\zeropoint
+     \!!doneatrue
+   \fi
    \global\advance\sidefloatdownshift#sign\lineheight}
 
 \def\float_move_down_hang#lines%
-  {\if!!doneb\else\global\sidefloatsidelines\zerocount\!!donebtrue\fi
+  {\if!!doneb \else
+     \global\sidefloatsidelines\zerocount
+     \!!donebtrue
+   \fi
    \global\advance\sidefloatsidelines#lines\relax}
 
 \unexpanded\def\movedownsidefloat[#settings]% already in core
@@ -936,15 +940,6 @@
 \newdimen\floattopskip          \floattopskip       \floattopskip
 \newdimen\floatbottomskip       \floatbottomskip    \floattopskip
 
-\newdimen\sidefloattopskip      \sidefloattopskip   \floattopskip
-\newdimen\sidefloatbottomskip   \sidefloatbottomskip\floatbottomskip
-
-\newskip\sidefloatdownshift
-\newskip\sidefloatleftshift
-\newskip\sidefloatrightshift
-
-\def\sidefloattopoffset         {\openstrutdepth} % {\strutdp}
-
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
 
@@ -965,7 +960,6 @@
    \float_calculate_skip\floatbottomskip    {\rootfloatparameter\c!spaceafter}%
    \float_calculate_skip\sidefloattopskip   {\rootfloatparameter\c!sidespacebefore}%
    \float_calculate_skip\sidefloatbottomskip{\rootfloatparameter\c!sidespaceafter}%
-   \gdef  \sidefloattopoffset {\openstrutdepth}% was \def
    \global\floatsideskip      \rootfloatparameter\c!margin
    \global\sidefloatleftshift \floatparameter\c!leftmargindistance
    \global\sidefloatrightshift\floatparameter\c!rightmargindistance

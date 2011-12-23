@@ -63,13 +63,13 @@
 %D them for convenience and compatibility. Some old engine code
 %D has been removed.
 
-\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
-\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
-\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
-\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
-\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
+\normalprotected\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
+\normalprotected\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
+\normalprotected\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
+\normalprotected\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
+\normalprotected\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
 
-\def\uncatcodespacetokens
+\normalprotected\def\uncatcodespacetokens
   {\catcode\spaceasciicode    \spacecatcode
    \catcode\formfeedasciicode \ignorecatcode
    \catcode\endoflineasciicode\endoflinecatcode
@@ -84,10 +84,10 @@
 
 \newtoks\everyverbosechacters
 
-\def\setverbosecscharacter#1%
+\normalprotected\def\setverbosecscharacter#1%
   {\edef#1{\string#1}}
 
-\def\setverbosecscharacters
+\normalprotected\def\setverbosecscharacters
   {\the\everyverbosechacters}
 
 \bgroup
@@ -180,8 +180,8 @@
 \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantokens{#2\ignorespaces}\endgroup}
 
 \ifx\scantextokens\undefined \else
-  \long\def\rescan#1{\scantextokens{#1}}
-  \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
+    \long\def\rescan#1{\scantextokens{#1}}
+    \long\def\rescanwithsetup#1#2{\begingroup\directsetup{#1}\scantextokens{#2}\endgroup}
 \fi
 
 \endinput

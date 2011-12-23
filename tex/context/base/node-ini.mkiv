@@ -15,7 +15,7 @@
 
 \unprotect
 
-\newcount\filterstate \filterstate\plusone
+\newcount\filterstate \filterstate\plusone % hm, public
 
 \registerctxluafile{node-ini}{1.001}
 \registerctxluafile{node-res}{1.001}
@@ -32,14 +32,16 @@
 %registerctxluafile{node-inj}{1.001} % we might split it off
 \registerctxluafile{node-acc}{1.001} % experimental
 
-\newcount\shownodescounter
+\newcount\c_nodes_show_box % box number
 
-\def\shownextnodes     {\afterassignment\doshownodes\shownextnodescounter}
-\def\showflatnodes     {\afterassignment\doshownodes\showflatnodescounter}
-\def\doshownextnodes   {\ctxlua{texio.write_nl('log',nodes.serializebox(\number\shownodescounter,false,true))}}
-\def\doshowflatnodes   {\ctxlua{texio.write_nl('log',nodes.serializebox(\number\shownodescounter,true, true))}}
-\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
-\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
+\unexpanded\def\shownextnodes{\afterassignment\nodes_show_next\c_nodes_show_box}
+\unexpanded\def\showflatnodes{\afterassignment\nodes_show_flat\c_nodes_show_box}
+
+\def\nodes_show_next{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_nodes_show_box,false,true))}}
+\def\nodes_show_flat{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_nodes_show_box,true, true))}}
+
+\unexpanded\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
+\unexpanded\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
 
 \unexpanded\def\starttracingnodes[#1]{\ctxlua{nodes.tracers.characters.start("#1")}}
 \unexpanded\def\stoptracingnodes     {\ctxlua{nodes.tracers.characters.stop()}}

@@ -15,18 +15,7 @@
 
 \unprotect
 
-%D \macros
-%D   {processingverbatim}
-%D
-%D Typesetting a file in most cases results in more than one
-%D page. Because we don't want problems with files that are
-%D read in during the construction of the page, we set \type
-%D {\ifprocessingverbatim}, so the output routine can adapt
-%D its behavior. Originally we used \type {\scratchread}, but
-%D because we want to support nesting, we decided to use a
-%D separate input file.
-
-\newif\ifprocessingverbatim
+\ifdefined\page_otr_fill_and_eject_page \else \let\page_otr_fill_and_eject_page\relax \fi % forward reference
 
 %D \macros
 %D   {obeyedspace, obeyedtab, obeyedline, obeyedpage}
@@ -35,7 +24,7 @@
 %D \NEWLINE\ and \NEWPAGE\ active and assigning them
 %D \type{\obeysomething}, but first we set some default values.
 
-\def\obeyedspace {\ifprocessingverbatim\hbox{ }\else\space\fi}
+\def\obeyedspace {\space}
 \def\obeyedtab   {\obeyedspace}
 \def\obeyedline  {\par}
 \def\obeyedpage  {\page_otr_fill_and_eject_page}
@@ -47,14 +36,13 @@
 %D spaces (control spaces) we only have to adapt the definition
 %D of \type{\obeyedspace} to:
 
-\def\controlspace{\hbox{\char32}} % rather tex
-\def\normalspace { }
-\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
+\unexpanded\def\controlspace{\hbox{\char32}} % rather tex, we need the unicode value
+\unexpanded\def\normalspaces{\catcode\spaceasciicode\spacecatcode}
 
 \bgroup
-\catcode\spaceasciicode\activecatcode
-\gdef\obeyspaces{\catcode\spaceasciicode\activecatcode\def {\obeyedspace}}
-\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
+    \catcode\spaceasciicode\activecatcode
+    \unexpanded\gdef\obeyspaces{\catcode\spaceasciicode\activecatcode\def {\obeyedspace}}
+    \unexpanded\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
 \egroup
 
 %D \macros
@@ -66,44 +54,19 @@
 %D \NEWPAGE\ character locally, we redefine the meaning of
 %D this (often already) active character.
 
-% \bgroup \permitcircumflexescape
-
-%     \catcode\formfeedasciicode\activecatcode
-
-%     \gdef^^L{\par}
-
-% \egroup
-
 \expandafter\def\activeformfeedtoken{\par}
 
 %D The following indirect definitions enable us to implement
 %D all kind of \type{\obeyed} handlers.
 
-% \bgroup \permitcircumflexescape
+\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
+\unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
+\unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
 
-%     \catcode\tabasciicode      \activecatcode
-%     \catcode\endoflineasciicode\activecatcode
-%     \catcode\formfeedasciicode \activecatcode
-
-%     \gdef\obeytabs   {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedtab }}
-%     \gdef\obeylines  {\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedline}}
-%     \gdef\obeypages  {\catcode\formfeedasciicode \activecatcode\def^^L{\obeyedpage}}
-
-%     \gdef\ignoretabs {\catcode\tabasciicode      \activecatcode\def^^I{\obeyedspace}}
-%     \gdef\ignorelines{\catcode\endoflineasciicode\activecatcode\def^^M{\obeyedspace}}
-%     \gdef\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
-%     \gdef\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
-
-% \egroup
-
-\def\obeytabs   {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedtab }}
-\def\obeylines  {\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedline}}
-\def\obeypages  {\catcode\formfeedasciicode \activecatcode\expandafter\def\activeformfeedtoken {\obeyedpage}}
-
-\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
-\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
-\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
-\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
+\unexpanded\def\ignoretabs {\catcode\tabasciicode      \activecatcode\expandafter\def\activetabtoken      {\obeyedspace}}
+\unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\expandafter\def\activeendoflinetoken{\obeyedspace}}
+\unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
+\unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
 %D \macros
 %D   {naturaltextext}
@@ -112,29 +75,11 @@
 %D too. We also introduce a switch that can be used in the
 %D drivers and set in higher level shell macros.
 
-\def\naturaltextext#1\relax
-  {\bgroup
+\unexpanded\def\naturaltextext#1\relax % this command will become obsolete
+  {\begingroup
    \def\ascii{#1}%
    \setcatcodetable\ctxcatcodes
    \prettynaturalfont{\scantextokens\expandafter{\ascii}\ifhmode\unskip\fi}%
-   \egroup}
+   \endgroup}
 
 \endinput \protect
-
-% obsolete (old hack for idris)
-
-% %D This is a hack, and only meant for special situations. We don't
-% %D support this in for instance verbatim. The active characters map
-% %D onto the \CONTEXT\ names and font handling etc. is up to the user.
-%
-% \registerctxluafile{char-act}{1.001}
-%
-% \def\enableactiveutf {\ctxlua{characters.active.enable()}}
-% \def\disableactiveutf{\ctxlua{characters.active.disable()}}
-% \def\testactiveutf #1{\ctxlua{characters.active.test("#1")}}
-
-%D Usage:
-%D
-%D \starttyping
-%D \enableactiveutf \testactiveutf{eacute}
-%D \stoptyping

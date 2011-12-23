@@ -37,7 +37,7 @@
 \newdimen       \d_page_sides_width
 \newdimen       \d_page_sides_hsize
 \newdimen       \d_page_sides_vsize
-\newdimen       \d_page_sides_vsize_reset  \d_page_sides_vsize_reset -\onepoint % signal (could be a chardef)
+\newdimen       \d_page_sides_vsize_reset  \d_page_sides_vsize_reset -\onepoint % could be a \let
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
 \newdimen       \d_page_sides_saved_depth
@@ -57,14 +57,40 @@
 \newconditional \c_page_sides_r_eq         % messy, needs checking anyway
 \newconditional \c_page_sides_l_eq         % messy, needs checking anyway
 
-\newif          \ifroomforfloat            % shared (will change)
-\newif          \iftracesidefloats         % public (might change)
+\newdimen       \d_page_sides_shift
+\newdimen       \d_page_sides_extrashift
+\newdimen       \d_page_sided_leftshift
+\newdimen       \d_page_sided_rightshift
+\newdimen       \d_page_sides_leftskip
+\newdimen       \d_page_sides_rightskip
+\newdimen       \d_page_sides_maximum
+\newdimen       \d_page_sides_topskip
+\newdimen       \d_page_sides_bottomskip
+\newdimen       \d_page_sides_downshift
 
-\newdimen       \sidefloatshift            % public
-\newdimen       \sidefloatextrashift       % public
-\newdimen       \sidefloatleftskip         % public
-\newdimen       \sidefloatrightskip        % public
-\newdimen       \sidefloatmaximum          % public
+\setnewconstant \c_page_sides_align  \zerocount
+\setnewconstant \c_page_sides_method \plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
+
+% begin of public variables, this will change
+%
+% we need a setter and resetter .. or maybe a \placesidefloat[settings] to
+% keep variables separated
+
+\let\sidefloatshift     \d_page_sides_shift
+\let\sidefloatextrashift\d_page_sides_extrashift
+\let\sidefloatleftshift \d_page_sided_leftshift
+\let\sidefloatrightshift\d_page_sided_rightshift
+\let\sidefloatleftskip  \d_page_sides_leftskip
+\let\sidefloatrightskip \d_page_sides_rightskip
+\let\sidefloatmaximum   \d_page_sides_maximum
+\let\sidefloattopskip   \d_page_sides_topskip
+\let\sidefloatbottomskip\d_page_sides_bottomskip
+\let\sidefloatdownshift \d_page_sides_downshift
+
+\let\sidefloatsidelines \c_page_sides_n_of_lines
+
+\let\sidefloatalign     \c_page_sides_align
+\let\sidefloatmethod    \c_page_sides_method
 
 \def\backspacefloat  {\global\c_page_sides_float_type\plusone  \page_sides_handle_float}
 \def\leftedgefloat   {\global\c_page_sides_float_type\plustwo  \page_sides_handle_float}
@@ -76,29 +102,33 @@
 \def\cutspacefloat   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
 
 \let\marginfloat     \cutspacefloat
-
 \let\logsidefloat    \relax
+
+\newif\ifroomforfloat    % shared (will change)
+\newif\iftracesidefloats % public (might change)
+
+% end of public variables
 
 \def\page_sides_insert_info
   {\doinsertfloatinfo}
 
 \def\page_sides_apply_horizontal_shift
-  {\ifdim\sidefloatmaximum>\zeropoint
+  {\ifdim\d_page_sides_maximum>\zeropoint
      \ifcase\c_page_sides_float_type
        % invalid
      \or
        % backspace
      \or
-       \global\sidefloatshift\dimexpr
-         -\sidefloatmaximum
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
          -\rightorleftpageaction \leftedgedistance   \rightedgedistance
          -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
        \relax
      \or
-       \global\sidefloatshift\dimexpr
-         -\sidefloatmaximum
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
        \relax
@@ -107,14 +137,14 @@
      \or
        % right
      \or
-       \global\sidefloatshift\dimexpr
-         -\sidefloatmaximum
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
        \relax
      \or
-       \global\sidefloatshift\dimexpr
-         -\sidefloatmaximum
+       \global\d_page_sides_shift\dimexpr
+         -\d_page_sides_maximum
          -\rightorleftpageaction \leftedgedistance   \rightedgedistance
          -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
@@ -124,13 +154,13 @@
        % cutspace
      \fi
    \fi
-   \ifdim\sidefloatshift=\zeropoint \relax
+   \ifdim\d_page_sides_shift=\zeropoint \relax
      \ifnum\c_page_sides_float_type=\plusfour
-       \global\advance\sidefloatshift\sidefloatextrashift
-       \global\sidefloatextrashift\zeropoint
+       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\d_page_sides_extrashift\zeropoint
      \else\ifnum\c_page_sides_float_type=\plusfive
-       \global\advance\sidefloatshift\sidefloatextrashift
-       \global\sidefloatextrashift\zeropoint
+       \global\advance\d_page_sides_shift\d_page_sides_extrashift
+       \global\d_page_sides_extrashift\zeropoint
      \fi\fi
    \else
      \ifnum\c_page_sides_float_type<\plusfour
@@ -141,48 +171,48 @@
    \fi}
 
 \def\page_sides_set_skips
-  {\global\sidefloatrightskip\zeropoint
-   \global\sidefloatleftskip \zeropoint
+  {\global\d_page_sides_rightskip\zeropoint
+   \global\d_page_sides_leftskip \zeropoint
    \ifcase\c_page_sides_float_type
    \or % backspace
-     \global\sidefloatleftskip\dimexpr
+     \global\d_page_sides_leftskip\dimexpr
        +\rightorleftpageaction \backspace           \cutspace
        +\compensatedinnermakeupmargin
      \relax
    \or % leftedge
-     \global\sidefloatleftskip\dimexpr
+     \global\d_page_sides_leftskip\dimexpr
        +\rightorleftpageaction \leftmargindistance  \rightmargindistance
        +\rightorleftpageaction \leftmarginwidth     \rightmarginwidth
        +\rightorleftpageaction \leftedgedistance    \rightedgedistance
        +\compensatedinnermakeupmargin
      \relax
    \or % leftmargin
-     \global\sidefloatleftskip\dimexpr
+     \global\d_page_sides_leftskip\dimexpr
        +\rightorleftpageaction \leftmargindistance  \rightmargindistance
        +\compensatedinnermakeupmargin
      \relax
    \or % leftside
    \or % rightside
    \or % rightmargin
-     \global\sidefloatrightskip\dimexpr
+     \global\d_page_sides_rightskip\dimexpr
        +\rightorleftpageaction \rightmargindistance \leftmargindistance
        +\compensatedinnermakeupmargin
      \relax
    \or % rightedge
-     \global\sidefloatrightskip\dimexpr
+     \global\d_page_sides_rightskip\dimexpr
        +\rightorleftpageaction \rightmargindistance \leftmargindistance
        +\rightorleftpageaction \rightmarginwidth    \leftmarginwidth
        +\rightorleftpageaction \rightedgedistance   \leftedgedistance
        +\compensatedinnermakeupmargin
      \relax
    \or % cutspace
-     \global\sidefloatrightskip\dimexpr
+     \global\d_page_sides_rightskip\dimexpr
        +\rightorleftpageaction \cutspace            \backspace
        +\compensatedinnermakeupmargin
      \relax
    \fi
-   \ifdim\sidefloatrightskip>\zeropoint \doglobal\advance\sidefloatrightskip\rightskip \fi
-   \ifdim\sidefloatleftskip >\zeropoint \doglobal\advance\sidefloatleftskip \leftskip  \fi}
+   \ifdim\d_page_sides_rightskip>\zeropoint \doglobal\advance\d_page_sides_rightskip\rightskip \fi
+   \ifdim\d_page_sides_leftskip >\zeropoint \doglobal\advance\d_page_sides_leftskip \leftskip  \fi}
 
 \def\page_sides_flush_floats
   {\par
@@ -195,7 +225,7 @@
    \global\setfalse\c_page_sides_flag}
 
 \def\page_sides_flush_floats_indeed
-  {\global\advance\d_page_sides_vsize-\sidefloatbottomskip
+  {\global\advance\d_page_sides_vsize-\d_page_sides_bottomskip
    \begingroup
    \let\page_sides_flush_floats\relax
    \forgetall
@@ -217,9 +247,9 @@
       \fi}%
    \endgroup
    \ifdim\parskip>\zeropoint % why this test ?
-     \ifdim\sidefloatbottomskip>\parskip
+     \ifdim\d_page_sides_bottomskip>\parskip
        \nowhitespace
-       \vskip\sidefloatbottomskip
+       \vskip\d_page_sides_bottomskip
      \fi
    \fi}
 
@@ -310,7 +340,7 @@
          \else
            \global\divide\d_page_sides_hsize \plustwo
          \fi
-         \hskip\d_page_sides_hsize
+         \hskip\d_page_sides_hsize % \kern
        \fi
      \fi
      \box\b_page_sides_bottom
@@ -328,7 +358,7 @@
        \ifinner \else
          \vadjust{\penalty\minusone}%
        \fi
-       \hskip\d_page_sides_width\relax
+       \hskip\d_page_sides_width\relax % \kern
     %\else
     %  we have a margin or edge float
      \fi
@@ -336,78 +366,78 @@
 
 % The clean way:
 %
-% \global\setbox\floatbox\hbox % no \hskip, but \kern here
+% \global\setbox\floatbox\hbox
 %   {\ifcase\c_page_sides_float_type
 %      \vbox{#1}%
 %    \or % 1
-%      \hskip\sidefloatleftshift
-%      \hskip\sidefloatshift
+%      \kern\d_page_sided_leftshift
+%      \kern\d_page_sides_shift
 %      \vbox{#1}%
-%      \kern-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %    \or % 2
-%      \hskip\sidefloatshift
+%      \kern\d_page_sides_shift
 %      \vbox{#1}%
-%      \kern-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %    \or % 3
-%      \hskip\sidefloatshift
+%      \kern\d_page_sides_shift
 %      \vbox{#1}%
-%      \kern-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %    \or % 4
-%      \hskip\sidefloatleftshift
-%      \hskip\sidefloatshift
+%      \kern\d_page_sided_leftshift
+%      \kern\d_page_sides_shift
 %      \vbox{#1\removedepth}%
-%      \kern-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %    \or % 5
-%      \hskip-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
-%      \kern\sidefloatshift
-%      \kern\sidefloatrightshift
+%      \kern\d_page_sides_shift
+%      \kern\d_page_sided_rightshift
 %    \or % 6
-%      \hskip-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
-%      \kern\sidefloatshift
+%      \kern\d_page_sides_shift
 %    \or % 7
-%      \hskip-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
-%      \kern\sidefloatshift
+%      \kern\d_page_sides_shift
 %    \or % 8
-%      \hskip-\sidefloatextrashift
+%      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
-%      \kern\sidefloatshift
-%      \kern\sidefloatrightshift
+%      \kern\d_page_sides_shift
+%      \kern\d_page_sided_rightshift
 %    \fi}
 %
 % The compact way:
 
 \def\page_sides_relocate_float#1%
-  {\global\setbox\floatbox\hbox % no \hskip, but \kern here
+  {\global\setbox\floatbox\hbox
      {\ifnum\c_page_sides_float_type=\plusfour
-        \hskip\sidefloatleftshift
+        \kern\d_page_sided_leftshift
       \else\ifnum\c_page_sides_float_type=\plusone
-        \hskip\sidefloatleftshift
+        \kern\d_page_sided_leftshift
       \fi\fi
       \ifnum\c_page_sides_float_type>\plusfour
-        \hskip-\sidefloatextrashift
+        \kern-\d_page_sides_extrashift
       \else
-        \hskip\sidefloatshift
+        \kern\d_page_sides_shift
       \fi
-      \vbox{#1\ifnum\sidefloatalign=\plusfour \removedepth\fi}%
+      \vbox{#1\ifnum\c_page_sides_align=\plusfour \removedepth\fi}%
       \ifnum\c_page_sides_float_type>\plusfour
-        \kern\sidefloatshift
+        \kern\d_page_sides_shift
       \else
-        \kern-\sidefloatextrashift
+        \kern-\d_page_sides_extrashift
       \fi
       \ifnum\c_page_sides_float_type=\pluseight
-        \kern\sidefloatrightshift
+        \kern\d_page_sided_rightshift
       \else\ifnum\c_page_sides_float_type=\plusfive
-        \kern\sidefloatrightshift
+        \kern\d_page_sided_rightshift
       \fi\fi}}
 
 \def\page_sides_apply_vertical_shift
-  {\ifnum\sidefloatalign=\plusfour
+  {\ifnum\c_page_sides_align=\plusfour
      \getnoflines{\ht\floatbox}%
      \scratchdimen\dimexpr\noflines\lineheight-\strutdepth\relax
-     \getrawnoflines\sidefloattopskip
+     \getrawnoflines\d_page_sides_topskip
      \advance\scratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
@@ -415,31 +445,31 @@
      \ht\floatbox\scratchdimen
      \dp\floatbox\zeropoint
    \fi
-   \ifcase\sidefloatalign \else
-     \global\sidefloattopskip\zeropoint
+   \ifcase\c_page_sides_align \else
+     \global\d_page_sides_topskip\zeropoint
    \fi
    \scratchdimen
      \ifnum\c_page_sides_float_type<\plusfour
-       \sidefloattopskip
+       \d_page_sides_topskip
      \else\ifnum\c_page_sides_float_type>\plusfive
-       \sidefloattopskip
+       \d_page_sides_topskip
      \else
        \zeropoint
      \fi\fi
    % the top of the box is at the previous baseline
-   \ifcase\sidefloatalign
+   \ifcase\c_page_sides_align
        % 0 normal
-     \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+     \advance\scratchdimen\strutdepth  % or \openstrutdepth
    \or % 1 height
-     \advance\scratchdimen\strutdepth % == \sidefloattopoffset
+     \advance\scratchdimen\strutdepth  % or \openstrutdepth
    \or % 2 line
    \or % 3 depth
-     \advance\scratchdimen\lineheight
-     \advance\scratchdimen\strutdepth
+     \advance\scratchdimen\lineheight  % or \openlineheight
+     \advance\scratchdimen\strutdepth  % or \openstrutdepth
    \or % 4 grid
      \scratchdimen\zeropoint
    \or
-     \advance\scratchdimen\strutheight
+     \advance\scratchdimen\strutheight % or \openstrutheight
    \fi
    % new
    \global\c_page_sides_lines_done\zerocount
@@ -451,17 +481,17 @@
         {\vskip\scratchdimen
          \nointerlineskip
          \box\floatbox
-         \ifnum\sidefloatalign=\plusfive \vskip-\lineheight \fi}}%
+         \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}%
    \ifnum\c_page_sides_float_type<\plusfour
-     \global\sidefloattopskip\zeropoint
+     \global\d_page_sides_topskip\zeropoint
    \else\ifnum\c_page_sides_float_type>\plusfive
-     \global\sidefloattopskip\zeropoint
+     \global\d_page_sides_topskip\zeropoint
    \fi\fi
-   \global\sidefloatdownshift\zeropoint}
+   \global\d_page_sides_downshift\zeropoint}
 
 \def\page_sides_place_float
-  {\ifnum\c_page_sides_float_type=\plusfour \kern\sidefloattopskip \fi
-   \ifnum\c_page_sides_float_type=\plusfive \kern\sidefloattopskip \fi
+  {\ifnum\c_page_sides_float_type=\plusfour \kern\d_page_sides_topskip \fi
+   \ifnum\c_page_sides_float_type=\plusfive \kern\d_page_sides_topskip \fi
    \d_page_sides_saved_depth\prevdepth
    \nointerlineskip
    \ifgridsnapping
@@ -514,21 +544,21 @@
    \ifcase\c_page_sides_float_type
      % invalid
    \or % backspace
-     \noindent#1{\llap{\rlap{\box\floatbox}\hskip\sidefloatleftskip}}\hfill
+     \noindent#1{\llap{\rlap{\box\floatbox}\kern\d_page_sides_leftskip}}\hfill
    \or % leftedge
-     \noindent#1{\llap{\box\floatbox\hskip\sidefloatleftskip}}\hfill
+     \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
    \or % leftmargin
-     \noindent#1{\llap{\box\floatbox\hskip\sidefloatleftskip}}\hfill
+     \noindent#1{\llap{\box\floatbox\kern\d_page_sides_leftskip}}\hfill
    \or % leftside
      \noindent#1{\box\floatbox}\hfill
    \or % rightside
      \hfill#1{\box\floatbox}%
    \or % rightmargin
-     \hfill#1{\rlap{\hskip\sidefloatrightskip\box\floatbox}}%
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
    \or % rightedge
-     \hfill#1{\rlap{\hskip\sidefloatrightskip\box\floatbox}}%
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\box\floatbox}}%
    \or % cutspace
-     \hfill#1{\rlap{\hskip\sidefloatrightskip\llap{\box\floatbox}}}%
+     \hfill#1{\rlap{\kern\d_page_sides_rightskip\llap{\box\floatbox}}}%
    \fi
    \endgroup}
 
@@ -555,12 +585,12 @@
      \global\d_page_sides_width\zeropoint
    \fi
    \global\d_page_sides_hsize \dimexpr\hsize-\d_page_sides_width\relax
-   \global\d_page_sides_height\dimexpr\ht\floatbox+\dp\floatbox+\sidefloattopskip\relax
+   \global\d_page_sides_height\dimexpr\ht\floatbox+\dp\floatbox+\d_page_sides_topskip\relax
    \global\d_page_sides_vsize \dimexpr\d_page_sides_height+\d_page_sides_page_total\relax
    \dimen0\d_page_sides_vsize
    \dimen2\pagegoal
    \relax
-   \ifcase\sidefloatmethod
+   \ifcase\c_page_sides_method
      % method 0 : raw
    \or
      % method 1 : safe
@@ -573,13 +603,13 @@
    \ifdim\dimen0>\dimen2
      \global\roomforfloatfalse
    \else
-     \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\sidefloatbottomskip
+     \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomskip
        \global\advance\d_page_sides_vsize \dimen0
        \global\settrue\c_page_sides_short
        \page_otr_sides_push_penalties
        % why was this \global\holdinginserts\plusone
      \else
-       \global\advance\d_page_sides_vsize \sidefloatbottomskip
+       \global\advance\d_page_sides_vsize \d_page_sides_bottomskip
        \global\setfalse\c_page_sides_short
      \fi
      \global\roomforfloattrue
@@ -672,10 +702,10 @@
    \fi
    \global\advance\c_page_sides_checks_done \plusone
    \iftracesidefloats
-     \hskip-\d_page_sides_width
+     \hskip-\d_page_sides_width % kern
      \color[darkgray]%
        {\vrule\!!height.5\points\!!depth.5\points\!!width\d_page_sides_width
-        \llap{\showstruts\strut\hskip.25\bodyfontsize}}%
+        \llap{\showstruts\strut\kern.25\bodyfontsize}}%
    \fi}
 
 \def\page_sides_check_floats_reset
@@ -742,7 +772,7 @@
 %
 % \fi
 
-\def\adjustsidefloatdisplaylines
+\def\adjustsidefloatdisplaylines % public, will change
   {\aftergroup\page_sides_adjust_display_lines}
 
 \def\page_sides_adjust_display_lines

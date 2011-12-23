@@ -21,38 +21,42 @@
 %D we keep outside the format. We will keep code outside \TEX\ files as
 %D much as possible.
 
-\ifx\setnaturalcatcodes\undefined \let\setnaturalcatcodes\relax \fi
-\ifx\obeylualines      \undefined \let\obeylualines      \relax \fi
-\ifx\obeyluatokens     \undefined \let\obeyluatokens     \relax \fi
+\ifdefined\setnaturalcatcodes \else \let\setnaturalcatcodes\relax \fi
+\ifdefined\obeylualines       \else \let\obeylualines      \relax \fi
+\ifdefined\obeyluatokens      \else \let\obeyluatokens     \relax \fi
 
 %D A few more goodies:
 
-\long\def\dostartlua
+\unexpanded\def\startlua    {\system_start_lua     } \let\stoplua    \relax % tex catcodes
+\unexpanded\def\startluacode{\system_start_lua_code} \let\stopluacode\relax % lua catcodes
+
+% It might makes sense to have a \type {\directelua} so that we can avoid
+% the \type {\normalexpanded} around \type {\directlua}. Something to discuss
+% in the team.
+
+\def\system_start_lua
   {\begingroup
    \obeylualines
-   \dodostartlua}
+   \system_start_lua_indeed}
 
-\long\def\dodostartlua#1\stoplua
+\def\system_start_lua_indeed#1\stoplua
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\long\def\dostartluacode
+\def\system_start_lua_code
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \dodostartluacode}
+   \system_start_lua_code_indeed}
 
-\long\def\dodostartluacode#1\stopluacode
+\def\system_start_lua_code_indeed#1\stopluacode
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
-
-\unexpanded\def\startlua    {\dostartlua    } \let\stoplua    \relax % tex catcodes
-\unexpanded\def\startluacode{\dostartluacode} \let\stopluacode\relax % lua catcodes
 
 %D Some delayed definitions:
 
-\ifx\obeylines        \undefined \let\obeylines        \relax \fi
-\ifx\obeyedline       \undefined \let\obeyedline       \relax \fi
-\ifx\obeyspaces       \undefined \let\obeyspaces       \relax \fi
-\ifx\obeyedspace      \undefined \let\obeyedspace      \relax \fi
+\ifdefined\obeylines   \else \let\obeylines   \relax \fi
+\ifdefined\obeyedline  \else \let\obeyedline  \relax \fi
+\ifdefined\obeyspaces  \else \let\obeyspaces  \relax \fi
+\ifdefined\obeyedspace \else \let\obeyedspace \relax \fi
 
 \let\obeylualines\relax
 
@@ -91,7 +95,7 @@
 \to \everyluacode
 
 \def\obeyluatokens
-  {\setcatcodetable \luacatcodes
+  {\setcatcodetable\luacatcodes
    \the\everyluacode}
 
 %D \macros
@@ -104,19 +108,19 @@
 %D Beware: because \type {\expanded} is een convert command, the error
 %D message will show \type{<inserted text>} as part of the message.
 
-\long\def\dostartnamedluacode#1%
+\def\system_start_named_lua_code#1%
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \csname dodostartnamed#1\v!code\endcsname}
+   \csname\??lu:c:#1\endcsname}
 
 \unexpanded\def\definenamedlua[#1]#2[#3]% no optional arg handling here yet
-  {\ifcsname dodostartnamed#1\v!code\endcsname\else
+  {\ifcsname\??lu:c:#1\endcsname \else
      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
-     \normalexpanded{\long\edef\csname dodostartnamed#1\v!code\endcsname##1\csname\e!stop#1\v!code\endcsname}%
+     \normalexpanded{\edef\csname\??lu:c:#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
        {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
-     \long\expandafter\def \csname\e!start#1\v!code\endcsname   {\dostartnamedluacode{#1}}%
-     \long\expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
+     \expandafter\def \csname\e!start#1\v!code\endcsname   {\system_start_named_lua_code{#1}}%
+     \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
    \fi}
 
 %D We predefine a few.
@@ -192,11 +196,13 @@
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \dostartluaparameterset{#1}}
+   \system_start_lua_parameter_set{#1}}
 
-\long\def\dostartluaparameterset#1#2\stopluaparameterset
+\def\system_start_lua_parameter_set#1#2\stopluaparameterset
   {\ctxlua{parametersets["#1"]={#2}}%
    \endgroup}
+
+\let\stopluaparameterset\relax
 
 \def\luaparameterset#1#2{\ctxlua{parametersets["#1"]={#2} context("#1")}}
 
@@ -225,17 +231,19 @@
 %D \ctxluacode{context("%0.5f",1/3)}
 %D \stoptyping
 
-\long\def\ctxluacode
+\unexpanded\def\ctxluacode
   {\begingroup
    \obeylualines
    \obeyluatokens
    \catcode\leftbraceasciicode \plusone
    \catcode\rightbraceasciicode\plustwo
-   \afterassignment\doctxluacode
+   \afterassignment\system_lua_code
    \scratchtoks=}
 
-\def\doctxluacode
-  {\normalexpanded{\endgroup\noexpand\directlua\zerocount\expandafter{\the\scratchtoks}}}
+% Hm, are we sure that the \* commands work out okay here? We could probably
+% use \setcatcodetable\luacatcodes instead of \obeyluatokens now.
 
+\def\system_lua_code
+  {\normalexpanded{\endgroup\noexpand\directlua\zerocount\expandafter{\the\scratchtoks}}}
 
 \protect \endinput

@@ -40,12 +40,12 @@
 \newtoks\everysetupspellchecking
 
 \unexpanded\def\setupspellchecking[#1]% todo colors
-  {\getparameters[\??wl][#1]%
+  {\getparameters[\??lw][#1]%
    \the\everysetupspellchecking}
 
 \appendtoks
-   \doifelse\@@wlstate\v!start
-     {\ctxlua{languages.words.enable { method = "\@@wlmethod", list = "\@@wllist" }}}
+   \doifelse\@@lwstate\v!start
+     {\ctxlua{languages.words.enable { method = "\@@lwmethod", list = "\@@lwlist" }}}
      {\ctxlua{languages.words.disable()}}%
 \to \everysetupspellchecking
 

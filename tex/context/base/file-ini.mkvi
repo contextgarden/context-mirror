@@ -39,8 +39,8 @@
 %D the number of files is limited to~16, so use this one when
 %D possible. We also define a scratch output file.
 
-\ifx\undefined\scratchread  \newread \scratchread  \fi
-\ifx\undefined\scratchwrite \newwrite\scratchwrite \fi
+\ifdefined\scratchread  \else \newread \scratchread  \fi
+\ifdefined\scratchwrite \else \newwrite\scratchwrite \fi
 
 %D Seldom needed:
 
@@ -73,18 +73,18 @@
 %D \popendofline
 %D \stoptyping
 
-\newcount\endoflinelevel
+\newcount\c_system_files_eol_level
 
-\def\pushendofline
-  {\advance\endoflinelevel\plusone
-   \expandafter\chardef\csname :eol:\number\endoflinelevel\endcsname\catcode\endoflineasciicode
-   \catcode\endoflineasciicode\commentcatcode\relax}
+\unexpanded\def\pushendofline
+  {\advance\c_system_files_eol_level\plusone
+   \expandafter\chardef\csname\??fi:eol:\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
+   \catcode\endoflineasciicode\commentcatcode}
 
-\def\popendofline
-  {\catcode\endoflineasciicode\csname :eol:\number\endoflinelevel\endcsname
-   \advance\endoflinelevel\minusone}
+\unexpanded\def\popendofline
+  {\catcode\endoflineasciicode\csname\??fi:eol:\number\c_system_files_eol_level\endcsname
+   \advance\c_system_files_eol_level\minusone}
 
-\def\restoreendofline
+\unexpanded\def\restoreendofline
   {\catcode\endoflineasciicode\endoflinecatcode}
 
 %D \macros
@@ -92,7 +92,7 @@
 %D
 %D A low level capsule:
 
-\newcount\readingfilelevel
+\newcount\readingfilelevel       % no longer needed
 \newtoks \everystartreadingfile
 \newtoks \everystopreadingfile
 
@@ -108,15 +108,6 @@
    \ctxlua{regimes.pop()}% temporarily this way
    \the\everystopreadingfile
    \global\advance\readingfilelevel\minusone}
-
-% %D \macros
-% %D   {unlinkfile}
-% %D
-% %D Sometimes we want to make sure a file is deleted, so here
-% %D is a macro that does the job. It's named after the \PERL\
-% %D one.
-%
-% \def\unlinkfile#name{\ctxlua{os.remove([[#name]])}} % obsolete
 
 %D \macros
 %D   {input, normalinput}
@@ -209,21 +200,26 @@
 %D \doendinputonce{filename}
 %D \stoptyping
 %D
-%D This command obeys the standard method for locating files.
+%D This command obeys the standard method for locating files. We could
+%D move this function to the \LUA\ end.
 
 \unexpanded\def\doonlyonce#whatever%
-  {\doifundefinedelse{@@@#whatever@@@}
-     {\letgvalue{@@@#whatever@@@}\empty
-      \firstofoneargument}
-     {\gobbleoneargument}}
+  {\ifcsname\??fi:#whatever\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \letgvalue{\??fi:#whatever}\relax
+     \expandafter\firstofoneargument
+   \fi}
 
 \unexpanded\def\doinputonce#name%
   {\doonlyonce{#name}{\doiffileelse{#name}{\inputgivenfile{#name}}\donothing}}
 
 \unexpanded\def\doendinputonce#name%
-  {\doifdefined{@@@#name@@@}\endinput}
+  {\ifcsname\??fi:#name\endcsname
+     \expandafter\endinput
+   \fi}
 
 \unexpanded\def\forgetdoingonce#whatever%
-  {\global\letbeundefined{@@@#whatever@@@}}
+  {\global\letbeundefined{\??fi:#whatever}}
 
 \protect \endinput

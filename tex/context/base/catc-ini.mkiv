@@ -16,47 +16,57 @@
 
 \registerctxluafile{catc-ini}{1.001}
 
+\unprotect
+
 %D A long standing wish has been the availability of catcode
 %D arrays. Because traditional \TEX\ does not provide this we
 %D implement a fake method in the \MKII\ file. There is some
 %D overlap in code with \MKII\ but we take that for granted.
 
-\setnewconstant\escapecatcode          0
-\setnewconstant\begingroupcatcode      1
-\setnewconstant\endgroupcatcode        2
-\setnewconstant\mathshiftcatcode       3
-\setnewconstant\alignmentcatcode       4
-\setnewconstant\endoflinecatcode       5
-\setnewconstant\parametercatcode       6
-\setnewconstant\superscriptcatcode     7
-\setnewconstant\subscriptcatcode       8
-\setnewconstant\ignorecatcode          9
-\setnewconstant\spacecatcode          10
-\setnewconstant\lettercatcode         11
-\setnewconstant\othercatcode          12  \let\other \othercatcode
-\setnewconstant\activecatcode         13  \let\active\activecatcode
-\setnewconstant\commentcatcode        14
-\setnewconstant\invalidcatcode        15
+\setnewconstant\escapecatcode             0
+\setnewconstant\begingroupcatcode         1
+\setnewconstant\endgroupcatcode           2
+\setnewconstant\mathshiftcatcode          3
+\setnewconstant\alignmentcatcode          4
+\setnewconstant\endoflinecatcode          5
+\setnewconstant\parametercatcode          6
+\setnewconstant\superscriptcatcode        7
+\setnewconstant\subscriptcatcode          8
+\setnewconstant\ignorecatcode             9
+\setnewconstant\spacecatcode             10
+\setnewconstant\lettercatcode            11
+\setnewconstant\othercatcode             12  \let\other \othercatcode  % the short names are to be avoided
+\setnewconstant\activecatcode            13  \let\active\activecatcode % the short names are to be avoided
+\setnewconstant\commentcatcode           14
+\setnewconstant\invalidcatcode           15
 
-\setnewconstant\tabasciicode           9
-\setnewconstant\newlineasciicode      10  % don't confuse this one with \endoflineasciicode
-\setnewconstant\formfeedasciicode     12
-\setnewconstant\endoflineasciicode    13  % somewhat messy but this can be the active \par
-\setnewconstant\endoffileasciicode    26
-\setnewconstant\spaceasciicode        32
-\setnewconstant\hashasciicode         35
-\setnewconstant\dollarasciicode       36
-\setnewconstant\commentasciicode      37
-\setnewconstant\ampersandasciicode    38
-\setnewconstant\colonasciicode        58
-\setnewconstant\backslashasciicode    92 % `\\
-\setnewconstant\circumflexasciicode   94
-\setnewconstant\underscoreasciicode   95
-\setnewconstant\leftbraceasciicode   123 % `\{
-\setnewconstant\barasciicode         124 % `\|
-\setnewconstant\rightbraceasciicode  125 % `\}
-\setnewconstant\tildeasciicode       126 % `\~
-\setnewconstant\delasciicode         127
+\setnewconstant\tabasciicode              9
+\setnewconstant\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
+\setnewconstant\formfeedasciicode        12
+\setnewconstant\endoflineasciicode       13  % somewhat messy but this can be the active \par
+\setnewconstant\endoffileasciicode       26
+\setnewconstant\spaceasciicode           32
+\setnewconstant\exclamationmarkasciicode 33 % ! used in namespace protection
+\setnewconstant\doublequoteasciicode     34 % "
+\setnewconstant\hashasciicode            35
+\setnewconstant\dollarasciicode          36
+\setnewconstant\commentasciicode         37
+\setnewconstant\ampersandasciicode       38
+\setnewconstant\singlequoteasciicode     39 % '
+\setnewconstant\forwardslashasciicode    47 % /
+\setnewconstant\colonasciicode           58
+\setnewconstant\lessthanasciicode        60 % < used as alternative verbatim {
+\setnewconstant\morethanasciicode        62 % > used as alternative verbatim }
+\setnewconstant\questionmarkasciicode    63 % ? used in namespace protection
+\setnewconstant\atsignasciicode          64 % @ used in namespace protection
+\setnewconstant\backslashasciicode       92 % `\\
+\setnewconstant\circumflexasciicode      94
+\setnewconstant\underscoreasciicode      95
+\setnewconstant\leftbraceasciicode      123 % `\{
+\setnewconstant\barasciicode            124 % `\|
+\setnewconstant\rightbraceasciicode     125 % `\}
+\setnewconstant\tildeasciicode          126 % `\~
+\setnewconstant\delasciicode            127
 
 \begingroup
     \catcode \tabasciicode       \activecatcode  \gdef\activetabtoken      {^^I}
@@ -76,28 +86,21 @@
    \xdef\outputnewlinechar{^^J}%
    \endgroup}
 
-\ifx\gobbleoneargument\undefined \long\def\gobbleoneargument#1{} \fi
+\newcount\c_system_catcodes_n \c_system_catcodes_n\zerocount % 0 = signal, so advance before allocate
+\newcount\c_system_catcodes_a
+\newcount\c_system_catcodes_b
+\newcount\c_system_catcodes_c
 
-\newif \ifrecatcodeuppercharacters % only used in good old tex
-
-\newcount\cctdefcounter \cctdefcounter\zerocount % 0 = signal, so advance before allocate
-
-\newcount\cctcountera
-\newcount\cctcounterb
-\newcount\cctcounterc
-
-\def\newcatcodetable#1% we could move the cctdefcounter to lua
-  {\global\advance\cctdefcounter\plusone
-   \expandafter\xdef\csname @@ccn:\number\cctdefcounter\endcsname{\string#1}% logging
+\normalprotected\def\newcatcodetable#1% we could move the cctdefcounter to lua
+  {\global\advance\c_system_catcodes_n\plusone
+   \expandafter\xdef\csname\??qm:n:\number\c_system_catcodes_n\endcsname{\string#1}% logging
    \newconstant#1%
-   #1\cctdefcounter
+   #1\c_system_catcodes_n
    \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
 
-\newcatcodetable \scratchcatcodes \initcatcodetable\scratchcatcodes
+\newtoks \everysetdefaultcatcodes
 
-\newtoks \setdefaultcatcodes
-
-\setdefaultcatcodes
+\everysetdefaultcatcodes % this might get dropped
   {\catcode\backslashasciicode\othercatcode
    \catcode\endoflineasciicode\othercatcode
    \catcode\spaceasciicode    \othercatcode
@@ -106,18 +109,13 @@
 
 \long\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
   {\begingroup
-   \catcodetable\scratchcatcodes
-   \the\setdefaultcatcodes
+   \catcodetable\inicatcodes
+   \the\everysetdefaultcatcodes
    #2%
    \savecatcodetable#1\relax
    \endgroup}
 
-\def\permitcircumflexescape % to be used grouped
-  {\catcode\circumflexasciicode\superscriptcatcode}
-
-\let\permitcaretescape\permitcircumflexescape
-
-\newcatcodetable\dummycatcodes
+\let\stopcatcodetable\relax
 
 \long\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\begingroup
@@ -126,6 +124,13 @@
    #2%
    \globaldefs\zerocount
    \endgroup}
+
+\let\stopextendcatcodetable\relax
+
+\normalprotected\def\permitcircumflexescape % to be used grouped
+  {\catcode\circumflexasciicode\superscriptcatcode}
+
+\let\permitcaretescape\permitcircumflexescape
 
 % ==
 %
@@ -136,101 +141,93 @@
 %    \catcodetable\scratchcounter
 %    \egroup}
 
-\def\letcatcodecommand
-  {\afterassignment\letcatcodecommanda\cctcountera}
-
-\def\letcatcodecommanda
-  {\afterassignment\letcatcodecommandb\cctcounterb}
-
-\let\currentcatcodetable\catcodetable
-
 %D The next command can be defined in a cleaner way in the
 %D Mk IV file but we want to have a fast one with a minimal
 %D chance for interference. Do we still need this complex
 %D mechanism? Future versions of \MKIV\ might only use
 %D active characters for very special cases.
 
-\setnewconstant\activehackcode \tildeasciicode
+\setnewconstant\c_system_catcodes_hack\tildeasciicode
 
-%D Once a catcode is assigned, the next assignments will happen faster.
+%D Once a catcode is assigned, the next assignments will happen
+%D faster. We predefine some prefixes ahead of mult-sys.
 
-% (expandable) let
+\def\??ql{@@ql} % let : \let
+\def\??qd{@@qd} % def : \def
+\def\??qu{@@qu} % ued : \unexpanded\def
+\def\??qm{@@qm} %       \meaning
 
-\def\letcatcodecommand {\afterassignment\letcatcodecommanda\cctcountera}
-\def\letcatcodecommanda{\afterassignment\letcatcodecommandb\cctcounterb}
+\def\letcatcodecommand{\afterassignment\system_catcodes_let_a\c_system_catcodes_a}
+\def\defcatcodecommand{\afterassignment\system_catcodes_def_a\c_system_catcodes_a}
+\def\uedcatcodecommand{\afterassignment\system_catcodes_ued_a\c_system_catcodes_a}
 
-\def\letcatcodecommandb % each time
-  {\ifcsname CCL:\number\cctcountera:\number\cctcounterb\endcsname
-     \csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+\def\system_catcodes_let_a{\afterassignment\system_catcodes_let_b\c_system_catcodes_b}
+\def\system_catcodes_def_a{\afterassignment\system_catcodes_def_b\c_system_catcodes_b}
+\def\system_catcodes_ued_a{\afterassignment\system_catcodes_ued_b\c_system_catcodes_b}
+
+\def\system_catcodes_let_b % each time
+  {\ifcsname\??ql:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname
+     \csname\??ql:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname
    \else
-     \expandafter\letcatcodecommandc
+     \expandafter\system_catcodes_let_c
    \fi}
 
-\def\letcatcodecommandc % only first time
-  {\expandafter\gdef\csname CCL:\number\cctcountera:\number\cctcounterb\expandafter\endcsname\expandafter
-     {\expandafter\let\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname}%
-   \reinstatecatcodecommandua % unexpanded
-   \csname CCL:\number\cctcountera:\number\cctcounterb\endcsname}
-
-% expandable def
-
-\def\defcatcodecommand {\afterassignment\defcatcodecommanda\cctcountera}
-\def\defcatcodecommanda{\afterassignment\defcatcodecommandb\cctcounterb}
-
-\def\defcatcodecommandb % each time
-  {\ifcsname CCD:\number\cctcountera:\number\cctcounterb\endcsname
-     \csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+\def\system_catcodes_def_b % each time
+  {\ifcsname\??qd:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname
+     \csname\??qd:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname
    \else
-     \expandafter\defcatcodecommandc
+     \expandafter\system_catcodes_def_c
    \fi}
 
-\def\defcatcodecommandc % only first time (we could use \normalexpanded here)
-  {\expandafter\gdef\csname CCD:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+\def\system_catcodes_ued_b % each time
+  {\ifcsname\??qu:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname
+     \csname\??qu:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname
+   \else
+     \expandafter\system_catcodes_ued_c
+   \fi}
+
+\def\system_catcodes_let_c % only first time
+  {\expandafter\gdef\csname\??ql:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname\expandafter
+     {\expandafter\let\csname\??qm:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname}%
+   \system_catcodes_reinstate_unexpanded
+   \csname\??ql:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname}
+
+
+\def\system_catcodes_def_c % only first time (we could use \normalexpanded here)
+  {\expandafter\gdef\csname\??qd:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
-   \reinstatecatcodecommanda
-   \csname CCD:\number\cctcountera:\number\cctcounterb\endcsname}
+       {\expandafter\def\csname\??qm:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname{##1}}%
+   \system_catcodes_reinstate_normal
+   \csname\??qd:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname}
 
-% unexpandable def (e.g. used for discretionaries)
-
-\def\uedcatcodecommand {\afterassignment\uedcatcodecommanda\cctcountera}
-\def\uedcatcodecommanda{\afterassignment\uedcatcodecommandb\cctcounterb}
-
-\def\uedcatcodecommandb % each time
-  {\ifcsname CCU:\number\cctcountera:\number\cctcounterb\endcsname
-     \csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
-   \else
-     \expandafter\uedcatcodecommandc
-   \fi}
-
-\def\uedcatcodecommandc % only first time
-  {\expandafter\gdef\csname CCU:\number\cctcountera:\number\cctcounterb\expandafter\endcsname
+\def\system_catcodes_ued_c % only first time
+  {\expandafter\gdef\csname\??qu:\number\c_system_catcodes_a:\number\c_system_catcodes_b\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\expandafter\normalprotected\expandafter\def\csname CCC:\number\cctcountera:\number\cctcounterb\endcsname{##1}}%
-   \reinstatecatcodecommandua % unexpanded
-   \csname CCU:\number\cctcountera:\number\cctcounterb\endcsname}
+       {\expandafter\normalprotected\expandafter\def\csname\??qm:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname{##1}}%
+   \system_catcodes_reinstate_unexpanded
+   \csname\??qu:\number\c_system_catcodes_a:\number\c_system_catcodes_b\endcsname}
 
-\def\reinstatecatcodecommand{\afterassignment\reinstatecatcodecommanda\cctcounterb}
+\def\reinstatecatcodecommand{\afterassignment\system_catcodes_reinstate_normal\c_system_catcodes_b}
 
-\def\reinstatecatcodecommanda % can be used when a direct definition has been done
-  {\begingroup                    % and the selector has been lost
-   \uccode\activehackcode\cctcounterb
-   \catcode\uccode\activehackcode\activecatcode
-   \uppercase{\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
+\def\system_catcodes_reinstate_normal % can be used when a direct definition has been done
+  {\begingroup                        % and the selector has been lost
+   \uccode\c_system_catcodes_hack\c_system_catcodes_b
+   \catcode\uccode\c_system_catcodes_hack\activecatcode
+   \uppercase{\xdef~{\noexpand\catcodecommand{\number\c_system_catcodes_b}}}%
    \endgroup}
 
-\def\reinstatecatcodecommandua % can be used when a direct definition has been done
-  {\begingroup                     % and the selector has been lost
-   \uccode\activehackcode\cctcounterb
-   \catcode\uccode\activehackcode\activecatcode
-   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\cctcounterb}}}%
+\def\system_catcodes_reinstate_unexpanded % can be used when a direct definition has been done
+  {\begingroup                            % and the selector has been lost
+   \uccode\c_system_catcodes_hack\c_system_catcodes_b
+   \catcode\uccode\c_system_catcodes_hack\activecatcode
+   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_system_catcodes_b}}}%
    \endgroup}
 
 \newconstant\defaultcatcodetable
 
 \def\catcodecommand#1%
-  {\csname CCC:\number
-     \ifcsname CCC:\number\currentcatcodetable:\number#1\endcsname
+  {\csname\??qm:\number
+     \ifcsname\??qm:\number\currentcatcodetable:\number#1\endcsname
        \currentcatcodetable \else \defaultcatcodetable
      \fi
    :\number#1\endcsname}
@@ -248,107 +245,77 @@
 %D what the next macros do. Saving the catcodes can be
 %D disabled by saying \type{\localcatcodestrue}.
 
-% quite likely we will define \unexpanded earlier on so
-% that \normalprotected will go
-
-\let\savedcatcodetable\relax
-
-\newcount\catcoderestorelevel
+\newcount\c_system_catcodes_level
 
 \normalprotected\def\pushcatcodetable
-  {\advance\catcoderestorelevel\plusone
-   \tracepushcatcodetable
-   \expandafter\chardef\csname scct:\number\catcoderestorelevel\endcsname\currentcatcodetable}
+  {\advance\c_system_catcodes_level\plusone
+   \system_catcodes_trace_push
+   \expandafter\chardef\csname\??qm:t:\number\c_system_catcodes_level\endcsname\currentcatcodetable}
 
 \normalprotected\def\popcatcodetable
-  {\ifcase\catcoderestorelevel
-     \showcatcodenestingerror
+  {\ifcase\c_system_catcodes_level
+     \system_catcodes_trace_nesting_error
    \else
-     \expandafter\catcodetable\csname scct:\number\catcoderestorelevel\endcsname
-     \tracepopcatcodetable
-     \advance\catcoderestorelevel\minusone
+     \expandafter\catcodetable\csname\??qm:t:\number\c_system_catcodes_level\endcsname
+     \system_catcodes_trace_pop
+     \advance\c_system_catcodes_level\minusone
    \fi}
 
-\normalprotected\def\showcatcodenestingerror % can be overloaded
+\normalprotected\def\system_catcodes_trace_nesting_error
   {\immediate\write16{}%
-   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\catcoderestorelevel)}\wait\end
+   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\c_system_catcodes_level)}\wait\end
    \immediate\write16{}}
 
 \normalprotected\def\restorecatcodes % takes previous level
-  {\ifnum\catcoderestorelevel>\plusone
-     \expandafter\catcodetable\csname scct:\number\numexpr\catcoderestorelevel-1\relax\endcsname
+  {\ifnum\c_system_catcodes_level>\plusone
+     \expandafter\catcodetable\csname\??qm:t:\number\numexpr\c_system_catcodes_level-1\relax\endcsname
    \fi}
 
-\newtoks\everycatcodetable
+% \newtoks\everycatcodetable
 
 \normalprotected\def\setcatcodetable#1%
   {\catcodetable#1%
-   \the\everycatcodetable
-   \tracesetcatcodetable}
+%  \the\everycatcodetable
+   \system_catcodes_trace_set}
 
-\def\dotracecatcodetable#1{\immediate\write16{[#1]}}
+%D Handy for debugging:
+%D
+%D \starttyping
+%D \tracecatcodetables
+%D \stoptyping
 
-\def\tracecatcodetables
-  {\def\tracesetcatcodetable {\dotracecatcodetable{set  \catcodetablename\space                              at \number\catcoderestorelevel}}%
-   \def\tracepushcatcodetable{\dotracecatcodetable{push \catcodetablename\space from \catcodetableprev\space at \number\catcoderestorelevel}}%
-   \def\tracepopcatcodetable {\dotracecatcodetable{pop  \catcodetablename\space to   \catcodetableprev\space at \number\catcoderestorelevel}}}
+\normalprotected\def\tracecatcodetables
+  {\def\system_catcodes_trace_set {\system_catcodes_trace{set  \catcodetablename\space                                  at \number\c_system_catcodes_level}}%
+   \def\system_catcodes_trace_push{\system_catcodes_trace{push \catcodetablename\space from \system_catcodes_prev\space at \number\c_system_catcodes_level}}%
+   \def\system_catcodes_trace_pop {\system_catcodes_trace{pop  \catcodetablename\space to   \system_catcodes_prev\space at \number\c_system_catcodes_level}}}
 
-\def\catcodetableprev
-  {\ifnum\numexpr\catcoderestorelevel-1\relax>\zerocount
-     \csname @@ccn:\number\csname scct:\number\numexpr\catcoderestorelevel-1\relax\endcsname\endcsname
+\def\system_catcodes_trace#1{\immediate\write16{[#1]}}
+
+\def\system_catcodes_prev
+  {\ifnum\numexpr\c_system_catcodes_level-1\relax>\zerocount
+     \csname\??qm:n:\number\csname\??qm:t:\number\numexpr\c_system_catcodes_level-1\relax\endcsname\endcsname
    \else
      -%
    \fi}
 
 \def\catcodetablename
   {\ifnum\currentcatcodetable>\zerocount
-     \csname @@ccn:\number\currentcatcodetable\endcsname
+     \csname\??qm:n:\number\currentcatcodetable\endcsname
    \else
      -%
    \fi}
 
-\ifx\empty\undefined \def\empty{} \fi
+\let\system_catcodes_trace_set \empty
+\let\system_catcodes_trace_push\empty
+\let\system_catcodes_trace_pop \empty
 
-\let\tracesetcatcodetable \empty
-\let\tracepushcatcodetable\empty
-\let\tracepopcatcodetable \empty
+\protect
 
-%D Handy for debugging:
+%D We still have to define these so let's do that now:
 
-% \tracecatcodetables
+\newcatcodetable \inicatcodes
+\initcatcodetable\inicatcodes
 
-% D Only in \MKIV\ (to be used when crossing pages with changed catcodes
-% D in the current vector):
-% D
-% D \starttyping
-% D \normalprotected\def\startcrap
-% D   {\bgroup
-% D    \pushcatcodes
-% D    \whitespace
-% D    \obeylines
-% D    \activatespacehandler\v!yes
-% D    \strut}
-% D
-% D \normalprotected\def\stopcrap
-% D   {\popcatcodes
-% D   \egroup}
-% D \stoptyping
-%
-% \newcount\catcodetablelevel
-%
-% \def\pushcatcodes
-%   {\begingroup
-%    \global\advance\catcodetablelevel\plusone
-%    \ifcsname @@ccf:\number\catcodetablelevel\endcsname \else
-%      \global\advance\cctdefcounter\plusone
-%      \expandafter\global\expandafter\chardef\csname @@ccf:\number\catcodetablelevel\endcsname\cctdefcounter
-%    \fi
-%    \catcodetable\ctxcatcodes
-%    \expandafter\savecatcodetable\csname @@ccf:\number\catcodetablelevel\endcsname
-%    \endgroup
-%    \expandafter\catcodetable\csname @@ccf:\number\catcodetablelevel\endcsname}
-%
-% \def\popcatcodes
-%   {\global\advance\catcodetablelevel\minusone}
+\let\currentcatcodetable\catcodetable
 
 \endinput

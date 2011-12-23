@@ -21,7 +21,7 @@
 \ifdefined \tpacatcodes \else \newcatcodetable \tpacatcodes \fi % { }
 \ifdefined \tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % < >
 
-\chardef\doublecommentsignal="10FF25 %% < 110000 (last valid range)
+\setnewconstant \doublecommentsignal "10FF25 %% < 110000 (last valid range)
 
 \startcatcodetable \ctxcatcodes
     \catcode\tabasciicode       \spacecatcode
@@ -46,26 +46,26 @@
 \stopcatcodetable
 
 \startcatcodetable \prtcatcodes
-    \catcode\tabasciicode       \spacecatcode
-    \catcode\endoflineasciicode \endoflinecatcode
-    \catcode\formfeedasciicode  \endoflinecatcode
-    \catcode\spaceasciicode     \spacecatcode
-    \catcode\endoffileasciicode \ignorecatcode
-    \catcode\circumflexasciicode\superscriptcatcode     % candidate
-    \catcode\underscoreasciicode\lettercatcode
-    \catcode\ampersandasciicode \alignmentcatcode
-%   \catcode\colonasciicode     \lettercatcode          % candidate
-    \catcode\backslashasciicode \escapecatcode
-    \catcode\leftbraceasciicode \begingroupcatcode
-    \catcode\rightbraceasciicode\endgroupcatcode
-    \catcode\dollarasciicode    \mathshiftcatcode
-    \catcode\hashasciicode      \parametercatcode
-    \catcode\commentasciicode   \commentcatcode
-    \catcode`\@                 \lettercatcode
-    \catcode`\!                 \lettercatcode
-    \catcode`\?                 \lettercatcode
-    \catcode\tildeasciicode     \activecatcode
-    \catcode\barasciicode       \activecatcode
+    \catcode\tabasciicode            \spacecatcode
+    \catcode\endoflineasciicode      \endoflinecatcode
+    \catcode\formfeedasciicode       \endoflinecatcode
+    \catcode\spaceasciicode          \spacecatcode
+    \catcode\endoffileasciicode      \ignorecatcode
+    \catcode\circumflexasciicode     \superscriptcatcode     % candidate
+    \catcode\underscoreasciicode     \lettercatcode
+    \catcode\ampersandasciicode      \alignmentcatcode
+%   \catcode\colonasciicode          \lettercatcode          % candidate
+    \catcode\backslashasciicode      \escapecatcode
+    \catcode\leftbraceasciicode      \begingroupcatcode
+    \catcode\rightbraceasciicode     \endgroupcatcode
+    \catcode\dollarasciicode         \mathshiftcatcode
+    \catcode\hashasciicode           \parametercatcode
+    \catcode\commentasciicode        \commentcatcode
+    \catcode\atsignasciicode         \lettercatcode
+    \catcode\exclamationmarkasciicode\lettercatcode
+    \catcode\questionmarkasciicode   \lettercatcode
+    \catcode\tildeasciicode          \activecatcode
+    \catcode\barasciicode            \activecatcode
 \stopcatcodetable
 
 %startcatcodetable \mthcatcodes
@@ -104,8 +104,8 @@
     \catcode\formfeedasciicode  \othercatcode
     \catcode\spaceasciicode     \othercatcode
     \catcode\endoffileasciicode \othercatcode
-    \catcode`\<                 \begingroupcatcode
-    \catcode`\>                 \endgroupcatcode
+    \catcode\lessthanasciicode  \begingroupcatcode
+    \catcode\morethanasciicode  \endgroupcatcode
 \stopcatcodetable
 
 \startcatcodetable \txtcatcodes

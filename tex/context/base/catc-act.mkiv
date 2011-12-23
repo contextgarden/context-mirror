@@ -14,17 +14,22 @@
 %D This module deals with some active character handling. Use
 %D with care.
 
+\unprotect
+
 %D \macros
 %D   {installactivecharacter}
 
-\def\installactivecharacter#1 %
-  {\edef\temp{\detokenize{#1}}%
-   \cctcounterc\expandafter`\temp\relax % relax needed
+\let\m_system_catcodes_temp\empty
+
+\normalprotected\def\installactivecharacter#1 %
+  {\edef\m_system_catcodes_temp{\detokenize{#1}}%
+   \c_system_catcodes_c\expandafter`\m_system_catcodes_temp\relax % relax needed
    \expandafter\startextendcatcodetable
-      \expandafter\ctxcatcodes\expandafter\catcode\the\cctcounterc\activecatcode
+      \expandafter\ctxcatcodes\expandafter\catcode\the\c_system_catcodes_c\activecatcode
    \stopextendcatcodetable
-   \letcatcodecommand \ctxcatcodes \cctcounterc \temp \relax
-   \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
+   \letcatcodecommand \ctxcatcodes \c_system_catcodes_c \m_system_catcodes_temp \relax
+   \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi
+   \let\m_system_catcodes_temp\empty}
 
 %D \macros
 %D   {defineactivecharacter}
@@ -32,34 +37,36 @@
 %D Use this one with care, esp in combination with catcode
 %D vectors. There are better ways now.
 
-\chardef\activehackcode=`~
+\setnewconstant\c_system_catcodes_hack\tildeasciicode % also defined in catc-ini.mkiv
 
-\def\defineactivecharacter #1#2 #3%
-  {\cctcounterc\uccode\activehackcode
-   \if#1"\uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
-         \uccode\activehackcode\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
-   \catcode\uccode\activehackcode\activecatcode
-   \uppercase{\def\next{~}}%
-   \uccode\activehackcode\cctcounterc
-   \expandafter\expandafter\expandafter\def\expandafter\next\expandafter
-     {\expandafter\dohandleactivecharacter\next{#3}}}
+\normalprotected\def\defineactivecharacter #1#2 #3% uses \doifnumberelse which is not yet defined
+  {\c_system_catcodes_c\uccode\c_system_catcodes_hack
+   \if#1"\uccode\c_system_catcodes_hack\expandafter\doifnumberelse\expandafter{\string#1#2}\empty #1#2\else
+         \uccode\c_system_catcodes_hack\expandafter\doifnumberelse\expandafter{\string#1#2}\empty`#1#2\fi
+   \catcode\uccode\c_system_catcodes_hack\activecatcode
+   \uppercase{\def\m_system_catcodes_temp{~}}% brrr
+   \uccode\c_system_catcodes_hack\c_system_catcodes_c
+   \expandafter\expandafter\expandafter\def\expandafter\m_system_catcodes_temp\expandafter
+     {\expandafter\system_catcodes_handle\m_system_catcodes_temp{#3}}%
+   \let\m_system_catcodes_temp\empty}
 
 \chardef\activecharactermode\plusone % overloading still backward compatible
 
-\def\dodohandleactivecharacter#1#2{#2}
-\def\donthandleactivecharacter#1#2{\noexpand#1}
-
-\def\dohandleactivecharacter
+\def\system_catcodes_handle
   {\ifcase\activecharactermode
-     \expandafter\donthandleactivecharacter
+     \expandafter\system_catcodes_handle_nop
    \else
-     \expandafter\dodohandleactivecharacter
+     \expandafter\system_catcodes_handle_yes
    \fi}
 
-\def\makecharacteractive #1 {\catcode`#1\active}
+\def\system_catcodes_handle_yes#1#2{#2}
+\def\system_catcodes_handle_nop#1#2{\noexpand#1}
 
-\def\installanddefineactivecharacter #1 % #2%
+\normalprotected\def\makecharacteractive #1 %
+  {\catcode`#1\activecatcode}
+
+\normalprotected\def\installanddefineactivecharacter #1 % #2%
   {\normalexpanded{\noexpand\installactivecharacter \utfchar{#1} }%
    \defineactivecharacter #1 }% {#2}}
 
-\endinput
+\protect \endinput

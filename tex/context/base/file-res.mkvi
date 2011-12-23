@@ -67,15 +67,17 @@
 %D \type{\input} when needed, for instance when loading third
 %D party libraries.
 
-\def\doreadfile#protocol#path#name% #true #false
+\let\readfilename\empty
+
+\def\system_files_read_file#protocol#path#name% #true #false
   {\edef\readfilename{\ctxcommand{getreadfilename("#protocol","#path","#name")}}%
    \ifx\readfilename\empty
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\dodoreadfile
+     \expandafter\system_files_read_file_indeed
    \fi}
 
-\long\def\dodoreadfile#true#false%
+\def\system_files_read_file_indeed#true#false%
   {#true
    \relax
    \normalinput{\readfilename}%
@@ -105,13 +107,13 @@
 %D
 %D The most liberal is \type {\readfile}.
 
-\unexpanded\def\readjobfile     #name{\doreadfile{job}    {.}{#name}} % current path, no backtracking
-\unexpanded\def\readlocfile     #name{\doreadfile{loc}    {.}{#name}} % current path, backtracking
-\unexpanded\def\readsysfile     #name{\doreadfile{sys}    {.}{#name}} % current path, obeys tex search
-\unexpanded\def\readfixfile#path#name{\doreadfile{fix}{#path}{#name}} % specified path, backtracking
-\unexpanded\def\readsetfile#path#name{\doreadfile{set}{#path}{#name}} % specified path, no backtracking
-\unexpanded\def\readfile        #name{\doreadfile{any}    {.}{#name}}
-\unexpanded\def\ReadFile        #name{\doreadfile{any}    {.}{#name}\donothing\donothing}
+\unexpanded\def\readjobfile     #name{\system_files_read_file{job}    {.}{#name}} % current path, no backtracking
+\unexpanded\def\readlocfile     #name{\system_files_read_file{loc}    {.}{#name}} % current path, backtracking
+\unexpanded\def\readsysfile     #name{\system_files_read_file{sys}    {.}{#name}} % current path, obeys tex search
+\unexpanded\def\readfixfile#path#name{\system_files_read_file{fix}{#path}{#name}} % specified path, backtracking
+\unexpanded\def\readsetfile#path#name{\system_files_read_file{set}{#path}{#name}} % specified path, no backtracking
+\unexpanded\def\readfile        #name{\system_files_read_file{any}    {.}{#name}}
+\unexpanded\def\ReadFile        #name{\system_files_read_file{any}    {.}{#name}\donothing\donothing}
 
 %D So now we've got ourselves five file loading commands:
 %D
@@ -124,13 +126,15 @@
 %D \readsysfile {directory} {filename} {before loading} {not found}
 %D \stoptyping
 
-\def\readtexfile#name#true#false%
-  {\pushcatcodetable \catcodetable \ctxcatcodes
+\unexpanded\def\readtexfile#name#true#false%
+  {\pushcatcodetable
+   \catcodetable\ctxcatcodes
    \readfile{#name}{#true}{#false}%
    \popcatcodetable}
 
-\def\readxmlfile#name#true#false%
-  {\pushcatcodetable \catcodetable \xmlcatcodes
+\unexpanded\def\readxmlfile#name#true#false%
+  {\pushcatcodetable
+   \catcodetable\xmlcatcodes
    \readfile{#name}{#true}{#false}%
    \popcatcodetable}
 
