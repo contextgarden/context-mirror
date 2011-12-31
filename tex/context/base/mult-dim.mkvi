@@ -112,9 +112,12 @@
 
 \newbox\b_assign_width
 
-\setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width\b_assign_width\emptybox}
-\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width\b_assign_width\emptybox}
-\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax\b_assign_width\emptybox}
+\setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+                                                                     \setbox\b_assign_width\emptybox}
+\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+                                                                     \setbox\b_assign_width\emptybox}
+\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
+                                                                     \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!unknown}#value#dimension#content#extra{#dimension=#value\relax}
 
 \unexpanded\def\assignwidth#value%

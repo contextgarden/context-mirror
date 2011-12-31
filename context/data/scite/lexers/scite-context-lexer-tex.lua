@@ -394,7 +394,9 @@ local stoplua                = P("\\stop") * Cmt(luaenvironment,stopdisplaylua)
 local startluacode           = token("embedded", startlua)
 local stopluacode            = token("embedded", stoplua)
 
-local metafunenvironment     = ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
+local metafuncall            = ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
+
+local metafunenvironment     = metafuncall -- ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
                              + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") )
 
 local startmetafun           = P("\\start") * metafunenvironment
@@ -409,6 +411,8 @@ local metafunarguments       = (spacing^0 * openargument * argumentcontent * clo
 local startmetafuncode       = token("embedded", startmetafun) * metafunarguments
 local stopmetafuncode        = token("embedded", stopmetafun)
 
+local callers                = token("embedded", P("\\") * metafuncall) * metafunarguments
+
 lexer.embed_lexer(contextlexer, cldlexer, startluacode,     stopluacode)
 lexer.embed_lexer(contextlexer, mpslexer, startmetafuncode, stopmetafuncode)
 
@@ -422,6 +426,7 @@ _rules = {
     { "text",        text        }, -- non words
     { "comment",     comment     },
     { "constant",    constant    },
+    { "callers",     callers     },
     { "helper",      helper      },
     { "command",     command     },
     { "primitive",   primitive   },
