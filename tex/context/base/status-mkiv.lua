@@ -456,7 +456,8 @@ return {
         {
             filename = "pack-mrl",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "todo",
+            comment  = "this is something to be done on a rainy day"
         },
         {
             filename = "pack-bck",
@@ -559,6 +560,12 @@ return {
             status   = "unknown",
         },
         {
+            filename = "spac-ali",
+            marktype = "mkiv",
+            status   = "okay",
+            comment  = "maybe some tuning is needed / will happen",
+        },
+        {
             filename = "spac-hor",
             marktype = "mkiv",
             status   = "unknown",
@@ -569,15 +576,10 @@ return {
             status   = "unknown",
         },
         {
-            filename = "spac-ali",
-            marktype = "mkiv",
-            status   = "unknown",
-            comment  = "will be rewritten",
-        },
-        {
             filename = "spac-pag",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "this needs to be checked occasionally",
         },
         {
             filename = "spac-fnt",
@@ -587,7 +589,7 @@ return {
         {
             filename = "spac-par",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "spac-def",

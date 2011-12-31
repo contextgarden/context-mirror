@@ -23,7 +23,7 @@
 %D inside the group are forgotten afterwards. (I must
 %D not forget its existence).
 
-\def\carryoverpar#1% #1 can be \endgroup or \egroup or ...
+\def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded
      {\noexpand#1%
       \hangindent\the\hangindent
@@ -43,30 +43,54 @@
 \unexpanded\def\flushparagraphproperties
   {\popmacro\currentparagraphproperties}
 
-% beware, changing this will break some code (like pos/backgrounds)
+% Beware, changing this will break some code (like pos/backgrounds) but
+% it has been changed anyway so let's see where things go wrong.
 
-\newtoks\everyfirstparagraphintro
-\newtoks\everynextparagraphintro
-\newtoks\@@everyparagraphtoks
+\installcorenamespace{paragraphintro}
 
-\newconstant\everyparagraphintrostate
+\let\insertparagraphintro\relax % hook into everypar
+
+\newtoks\t_spacings_paragraphs_intro_first
+\newtoks\t_spacings_paragraphs_intro_next
+\newtoks\t_spacings_paragraphs_intro_each
+
+\newtoks\c_spacings_paragraphs_intro_first
+\newtoks\c_spacings_paragraphs_intro_next
+\newtoks\c_spacings_paragraphs_intro_each
 
 \unexpanded\def\setupparagraphintro
-  {\dodoubleempty\dosetupparagraphintro}
+  {\dodoubleempty\spacings_paragraphs_intro}
 
-\def\dosetupparagraphintro[#1][#2]%
-  {\processallactionsinset
-     [#1]
-     [   \v!reset=>\global\everyparagraphintrostate\zerocount
-                   \global\everyfirstparagraphintro\emptytoks
-                   \global\everynextparagraphintro \emptytoks,
-         \v!first=>\global\everyparagraphintrostate\plusone
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro,
-          \v!next=>\ifcase\everyparagraphintrostate\global\everyparagraphintrostate\plusone\fi
-                   \doglobal\appendtoks#2\to\everynextparagraphintro,
-          \v!each=>\ifcase\everyparagraphintrostate\global\everyparagraphintrostate\plustwo\fi
-                   \doglobal\appendtoks#2\to\everyfirstparagraphintro
-                   \doglobal\appendtoks#2\to\everynextparagraphintro]}
+\unexpanded\def\spacings_paragraphs_intro[#1][#2]%
+  {\def\spacings_paragraphs_intro_step##1%
+     {\csname\??paragraphintro\ifcsname\??paragraphintro##1\endcsname##1\fi\endcsname{#2}}%
+   \processcommacommand[#1]\spacings_paragraphs_intro_step}
+
+\letvalue{\??paragraphintro\empty}\gobbleoneargument
+
+\setvalue{\??paragraphintro\v!reset}#1%
+  {\global\setfalse\c_spacings_paragraphs_intro_first
+   \global\setfalse\c_spacings_paragraphs_intro_next
+   \global\setfalse\c_spacings_paragraphs_intro_each
+   \global\t_spacings_paragraphs_intro_first\emptytoks
+   \global\t_spacings_paragraphs_intro_next \emptytoks
+   \global\t_spacings_paragraphs_intro_each \emptytoks
+   \glet\insertparagraphintro\relax}
+
+\setvalue{\??paragraphintro\v!first}#1%
+  {\global\settrue\c_spacings_paragraphs_intro_first
+   \global\t_spacings_paragraphs_intro_first\expandafter{\the\t_spacings_paragraphs_intro_first#1}%
+   \glet\insertparagraphintro\spacings_paragraphs_flush_intro}
+
+\setvalue{\??paragraphintro\v!next}#1%
+  {\global\settrue\c_spacings_paragraphs_intro_next
+   \global\t_spacings_paragraphs_intro_next\expandafter{\the\t_spacings_paragraphs_intro_next#1}%
+   \glet\insertparagraphintro\spacings_paragraphs_flush_intro}
+
+\setvalue{\??paragraphintro\v!each}#1%
+  {\global\settrue\c_spacings_paragraphs_intro_each
+   \global\t_spacings_paragraphs_intro_each\expandafter{\the\t_spacings_paragraphs_intro_each#1}%
+   \glet\insertparagraphintro\spacings_paragraphs_flush_intro}
 
 %D We can say:
 %D
@@ -79,36 +103,7 @@
 %D \starttyping
 %D \flushatparagraph{\index{Zapf}}
 %D \stoptyping
-
-\def\flushatparagraph#1%
-  {\global\everyparagraphintrostate\plusone
-   \global\appendtoks{#1}\to\everyfirstparagraphintro
-   \global\let\insertparagraphintro\doinsertparagraphintro}
-
-\def\doinsertparagraphintro % can be merged with the next
-  {\ifcase\everyparagraphintrostate\else\@EA\dodoinsertparagraphintro\fi}
-
-\def\dodoinsertparagraphintro
-  {\begingroup
-   \everypar\emptytoks
-   \ifcase\everyparagraphintrostate\relax
-     % no data
-     \@@everyparagraphtoks\emptytoks
-   \or
-     % first data
-     \global\everyparagraphintrostate\plustwo
-     \@@everyparagraphtoks\everyfirstparagraphintro
-     \global\everyfirstparagraphintro\emptytoks
-   \or
-     % next data
-     \@@everyparagraphtoks\everynextparagraphintro
-   \fi
-   \the\@@everyparagraphtoks
-   \global\let\insertparagraphintro\relax
-   \endgroup}
-
-\let\insertparagraphintro\relax
-
+%D
 %D \starttyping
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
 %D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
@@ -120,84 +115,92 @@
 %D some paragraph \par
 %D some paragraph \par
 %D some paragraph \par
+%D some paragraph \par
 %D
-%D \definelabel[parnumber]
-%D
-%D \setupparagraphintro[reset,each][\inleft{\slxx\parnumber}]
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt FIRST \hss}]
+%D \setupparagraphintro[first][\hbox to 3.5em{\tt TSRIF \hss}]
 %D
 %D some paragraph \par
 %D some paragraph \par
+%D
+%D \setupparagraphintro[reset]
+%D
 %D some paragraph \par
 %D \stoptyping
-
+
+\unexpanded\def\flushatparagraph#1%
+  {\global\c_spacings_paragraphs_intro_first\plusone
+   \global\t_spacings_paragraphs_intro_first\expandafter{\the\t_spacings_paragraphs_intro_first#1}%
+   \glet\insertparagraphintro\spacings_paragraphs_flush_intro}
+
+%D Here comes the flusher (we misuse the one level expansion of token
+%D registers to feed a nice stream into the paragraph.)
+
+\unexpanded\def\spacings_paragraphs_flush_intro % we make sure that the token lists expand directly after another
+  {\normalexpanded{%                            % so the first code is there twice
+     \ifconditional\c_spacings_paragraphs_intro_each
+       \ifconditional\c_spacings_paragraphs_intro_next
+         \glet\insertparagraphintro\spacings_paragraphs_flush_intro_next
+       \else
+         \glet\insertparagraphintro\spacings_paragraphs_flush_intro_each
+       \fi
+       \ifconditional\c_spacings_paragraphs_intro_first
+         \global\setfalse\c_spacings_paragraphs_intro_first
+         \global\t_spacings_paragraphs_intro_first\emptytoks
+         \the\t_spacings_paragraphs_intro_first
+       \fi
+       \the\t_spacings_paragraphs_intro_each
+     \else
+       \ifconditional\c_spacings_paragraphs_intro_next
+         \glet\insertparagraphintro\spacings_paragraphs_flush_intro_next
+       \fi
+       \ifconditional\c_spacings_paragraphs_intro_first
+         \global\setfalse\c_spacings_paragraphs_intro_first
+         \global\t_spacings_paragraphs_intro_first\emptytoks
+         \the\t_spacings_paragraphs_intro_first
+       \fi
+     \fi}}
+
+\unexpanded\def\spacings_paragraphs_flush_intro_next
+  {\normalexpanded{%
+     \global\setfalse\c_spacings_paragraphs_intro_next
+     \global\t_spacings_paragraphs_intro_next\emptytoks
+     \ifconditional\c_spacings_paragraphs_intro_each
+       \glet\insertparagraphintro\spacings_paragraphs_flush_intro_each
+       \the\t_spacings_paragraphs_intro_next
+       \the\t_spacings_paragraphs_intro_each
+     \else
+       \glet\insertparagraphintro\relax
+       \the\t_spacings_paragraphs_intro_next
+     \fi}}
+
+\unexpanded\def\spacings_paragraphs_flush_intro_each
+  {\the\t_spacings_paragraphs_intro_each}
+
 %D \macros
 %D   {flushatnextpar}
 %D
 %D This macro collects data that will be flushed at the next paragraph.
 %D By using this macro you can avoid interfering nodes (writes, etc).
 
-\newbox\postponednodedata
-\let\flushpostponednodedata\relax
+\let\flushpostponednodedata\relax % hook into everypar
 
-\def\flushatnextpar
-  {\bgroup
-   \global\let\flushpostponednodedata\doflushpostponednodedata
-   \dowithnextboxcs\doflushatnextpar\hbox}
+\newbox\b_spacings_postponed_data
 
-\def\doflushatnextpar
-  {\global\setbox\postponednodedata\hbox
-     {\box\postponednodedata\box\nextbox}%
-   \egroup}
+\unexpanded\def\flushatnextpar
+  {\begingroup
+   \glet\flushpostponednodedata\spacings_flush_at_next_par_insert
+   \dowithnextboxcs\spacings_flush_at_next_par_finish\hbox}
 
-\def\doflushpostponednodedata
-  {\ifvoid\postponednodedata\else
-     \hbox{\smashedbox\postponednodedata}%
+\def\spacings_flush_at_next_par_finish
+  {\global\setbox\b_spacings_postponed_data\hbox
+     {\box\b_spacings_postponed_data\box\nextbox}%
+   \endgroup}
+
+\def\spacings_flush_at_next_par_insert
+  {\ifvoid\b_spacings_postponed_data\else
+     \hbox{\smashedbox\b_spacings_postponed_data}%
    \fi
-   \global\let\flushpostponednodedata\relax}
-
-% Very nasty but needed for margin stuff inside colored
-% paragraphs.
-
-\registerctxluafile{spac-par}{1.001}
-
-\definesystemattribute [graphicvadjust]  [public]
-
-\let\normalvadjust\vadjust
-
-\def\enablegraphicvadjust
-  {\ctxlua{nodes.tasks.enableaction("finalizers","nodes.handlers.graphicvadjust")}%
-   \glet\enablegraphicvadjust\relax}
-
-\def\graphicvadjust % currently not enabled; nasty bidi handling
-  {\enablegraphicvadjust
-   \dowithnextboxcontent
-     {\forgetall}
-     {\vadjust{\vbox attr \graphicvadjustattribute \plusone
-        {\unvbox\nextbox
-         % corrects for one line paragraphs
-         \nointerlineskip
-         \kern-\struttotal
-         \nointerlineskip
-         \verticalstrut}}}%
-     \vbox}
-
-%D This works only in a properly strutted line, and is meant
-%D for deeply burried operations, like in heads.
-
-\def\fakedvadjust
-  {\dowithnextbox
-     {\setbox\nextbox\hbox{\llap{\lower\strutdepth\box\nextbox}}%
-      \smashedbox\nextbox}%
-   \vtop}
-
-\def\localvbox#1#% used?
-  {\vbox#1\bgroup
-     \forgetparskip
-     \setlocalhsize
-     \hsize\localhsize
-     \forgetparindent
-     \forgetbothskips
-     \forgeteverypar
-     \let\next=}
+   \glet\flushpostponednodedata\relax}
 
 \protect \endinput

@@ -50,8 +50,11 @@
    \fi}
 
 \gdef\colors_show_palet_vertical[#1][#2]%
-  {\localvbox
-     {\offinterlineskip
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
       \setuppalet[#1]
       \tabskip\zeropoint
       \def\show_palet##1%
@@ -65,8 +68,11 @@
          \colors_process_palet[#1]\show_palet\crcr}}}
 
 \gdef\colors_show_palet_horizontal[#1][#2]% todo: bTABLE etc
-  {\localvbox
-     {\offinterlineskip
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
       \setuppalet[#1]
       \tabskip\zeropoint
       \!!widtha\zeropoint
@@ -119,8 +125,11 @@
    \fi}
 
 \gdef\colors_compare_palet_indeed#1[#2]%
-  {\localvbox
-     {\offinterlineskip
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
       \setuppalet[#2]
       \getcommacommandsize[\getvalue{\??colorpalet#2}]
       \!!widtha2em\relax
@@ -149,8 +158,11 @@
      {\doifinsetelse\v!vertical{#2} \colors_show_group_vertical \colors_show_group_horizontal [#1][#2]}}
 
 \gdef\colors_show_group_horizontal[#1][#2]%
-  {\localvbox
-     {\offinterlineskip
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
       \setuppalet
       \tabskip\zeropoint
       \def\colorformatseparator{\strut\cr}
@@ -173,8 +185,11 @@
          \show_group5\show_group6\show_group7\show_group8}}}
 
 \gdef\colors_show_group_vertical[#1][#2]%
-  {\localvbox
-     {\offinterlineskip
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \offinterlineskip
       \setuppalet
       \tabskip\zeropoint
       \def\show_group##1%
@@ -200,8 +215,11 @@
          \colors_compare_group_indeed\graycolor[#1]}}}
 
 \gdef\colors_compare_group_indeed#1[#2]%
-  {\localvbox
-     {\!!counta\zerocount
+  {\vbox
+     {\forgetall
+      \setlocalhsize
+      \hsize\localhsize
+      \!!counta\zerocount
       \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
       \!!widtha2em\relax
       \hsize\!!counta\!!widtha
