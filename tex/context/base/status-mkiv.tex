@@ -1,0 +1,83 @@
+\setupbodyfont[dejavu,10pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=1cm,
+   topspace=1cm,
+   footer=0pt,
+   header=1.25cm]
+
+\setuphead
+  [subject]
+  [style=\bfa]
+
+\setuppagenumbering
+  [location=]
+
+\setupheadertexts
+  [\currentdate][MkIV cleanup Status / Page \pagenumber]
+
+\starttext
+
+\startsubject[title=Todo]
+
+\startitemize[packed]
+    \startitem currently the new namespace prefixes are not consistent but this
+               will be done when we're satisfied with one scheme \stopitem
+    \startitem there will be additional columns in the table, like for namespace
+               so we need another round of checking then \stopitem
+    \startitem the imp modules are not in the list and needs checking too \stopitem
+    \startitem the s, x, m modules will be checked, redone and reorganized \stopitem
+    \startitem the lua code will be cleaned up upgraded as some is quite old
+               and experimental \stopitem
+    \startitem we need a proper dependency tree and better defined loading order \stopitem
+    \startitem all dotag.. will be moved to the tags_.. namespace \stopitem
+    \startitem we need to check what messages are gone (i.e.\ clean up mult-mes) \stopitem
+    \startitem some commands can go from mult-def (and the xml file) \stopitem
+    \startitem check for setuphandler vs simplesetuphandler \stopitem
+    \startitem all showcomposition etc can go (we can redo that in lua if needed) \stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=Status]
+
+\startluacode
+
+    local coremodules = dofile("status-mkiv.lua")
+
+    if coremodules then
+
+        local preloaded = coremodules.preloaded
+
+        if preloaded then
+
+            context.starttabulate { "|Tr|Tl|Tl|l|p|" }
+            context.NC() -- context.bold("order")
+            context.NC() context.bold("file")
+            context.NC() context.bold("mark")
+            context.NC() context.bold("status")
+            context.NC() context.bold("comment")
+            context.NC() context.NR()
+            for i=1,#preloaded do
+                local module = preloaded[i]
+                local status = module.status
+                context.NC() context(i)
+                context.NC() context(module.filename)
+                context.NC() context(module.marktype)
+                context.NC() if status == "unknown" then context.italic(status) else context(status) end
+                context.NC() context(module.comment)
+                context.NC() context.NR()
+            end
+            context.stoptabulate()
+
+        end
+
+    end
+
+\stopluacode
+
+\stopsubject
+
+\stoptext

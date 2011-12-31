@@ -20,25 +20,31 @@
 
 \unprotect
 
-\def\Mkern#1%
-  {{\setbox\scratchbox\hbox{M}\kern#1\wd\scratchbox}}
-
 \unexpanded\def\TeX
-  {T%
-   \Mkern{-.1667}\lower.5ex\hbox{E}%
-   \Mkern{-.125}X}
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{M}%
+   T%
+   \kern-.1667\wd\scratchbox
+   \lower.5ex\hbox{E}%
+   \kern-.125\wd\scratchbox
+   X%
+   \endgroup}
 
 \unexpanded\def\ConTeXt{Con\TeX t}
 \unexpanded\def\PPCHTeX{ppch\TeX}
 \unexpanded\def\PRAGMA {Pragma ADE}
 
 \unexpanded\def\LaTeX % requested by erik frambach
-  {{\setbox\scratchbox\hbox{L}%
-    \scratchdimen\ht\scratchbox
-    \setbox\scratchbox\hbox{\txx A}%
-    L\kern-.55\wd\scratchbox
-    \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
-    \kern-.2\wd\scratchbox\TeX}}
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{L}%
+   \scratchdimen\ht\scratchbox
+   \setbox\scratchbox\hbox{\txx A}%
+   L\kern-.55\wd\scratchbox
+   \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
+   \kern-.2\wd\scratchbox\TeX
+   \endgroup}
 
 \unexpanded\def\TaBlE
   {T%
@@ -53,25 +59,27 @@
    \kern-.075em C%
    \kern-.11em\TeX}
 
-\def\AMSswitch#1%
+\def\logo_ams_script#1%
   {$\cal\ifdim\bodyfontsize>1.1em\scriptstyle\fi#1$}
 
 \unexpanded\def\AmSTeX
-  {\AMSswitch A%
-   \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
-   \kern-.125em\AMSswitch S%
+  {\dontleavehmode
+   \logo_ams_script A%
+   \kern-.1667em\lower.5ex\hbox{\logo_ams_script M}%
+   \kern-.125em\logo_ams_script S%
    -\TeX}
 
 \unexpanded\def\LamSTeX
   {L%
-   \kern-.4em\raise.3ex\hbox{\AMSswitch A}%
-   \kern-.25em\lower.4ex\hbox{\AMSswitch M}%
-   \kern-.1em{\AMSswitch S}%
+   \kern-.4em\raise.3ex\hbox{\logo_ams_script A}%
+   \kern-.25em\lower.4ex\hbox{\logo_ams_script M}%
+   \kern-.1em{\logo_ams_script S}%
    -\TeX}
 
 \unexpanded\def\AmSLaTeX
-  {\AMSswitch A%
-   \kern-.1667em\lower.5ex\hbox{\AMSswitch M}%
+  {\dontleavehmode
+   \logo_ams_script A%
+   \kern-.1667em\lower.5ex\hbox{\logo_ams_script M}%
    \kern-.125em\AMSswitch S%
    -\LaTeX}
 
@@ -84,16 +92,19 @@
 %D I changed this into one that adapts itself:
 
 \unexpanded\def\Context
-  {{C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
+  {\dontleavehmode
+   \begingroup
+   C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
    -.0549emT\doifitalicelse{\kern-.1em}{\kern-.1667em}\lower.5ex\hbox
-   {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055emT}}}
+   {E}\doifitalicelse\empty{\kern-.11em}X\kern-.055emT}%
+   \endgroup}
 
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the
 %D current fontsize, an ugly but usefull hack.
 
 \let\logofont\nullfont
 
-\loadmapfile[original-base.map]
+\loadmapfile[original-base.map] % stil needed?
 
 \unexpanded\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%
@@ -106,14 +117,20 @@
      10 at \currentfontscale\bodyfontsize % there is no afm in the minimals yet
    \logofont}
 
-\def\MetaHyphen% there is no hyphenchar in this font
+\def\logo_meta_hyphen % there is no hyphenchar in this font
   {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
 
 \unexpanded\def\MetaFont
-  {{\setMFPfont META\MetaHyphen FONT}}
+  {\dontleavehmode
+   \begingroup
+   \setMFPfont META\logo_meta_hyphen FONT%
+   \endgroup}
 
 \unexpanded\def\MetaPost
-  {{\setMFPfont META\MetaHyphen POST}}
+  {\dontleavehmode
+   \begingroup
+   \setMFPfont META\logo_meta_hyphen POST%
+   \endgroup}
 
 \unexpanded\def\MetaFun
   {MetaFun}
@@ -158,7 +175,7 @@
 
 % Adapted from a patch by Mojca:
 
-\def\@XeTeX@
+\def\logo_xetex_e
   {\setbox\scratchbox\hbox{E}%
    \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
 
@@ -169,14 +186,14 @@
       \iffontchar\font"018E\relax
         \char"018E%
       \else
-        \ifx\fontalternative\c!bf\mirror{E}\else
-        \ifx\fontalternative\c!it  \@XeTeX@\else
-        \ifx\fontalternative\c!sl  \@XeTeX@\else
-        \ifx\fontalternative\c!bi  \@XeTeX@\else
-        \ifx\fontalternative\c!bs  \@XeTeX@\else
-                                 \mirror{E}\fi\fi\fi\fi\fi
+        \ifx\fontalternative\c!bf  \mirror{E}\else
+        \ifx\fontalternative\c!it\logo_xetex_e\else
+        \ifx\fontalternative\c!sl\logo_xetex_e\else
+        \ifx\fontalternative\c!bi\logo_xetex_e\else
+        \ifx\fontalternative\c!bs\logo_xetex_e\else
+                                    \mirror{E}\fi\fi\fi\fi\fi
       \fi}%
-   \kern-.1667em \TeX}
+   \kern-.1667em\TeX}
 
 \let\ETEX   \eTeX
 \let\PDFTEX \pdfTeX

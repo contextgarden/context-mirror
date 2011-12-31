@@ -55,48 +55,47 @@
    \let|=\letterbar
 \to \everyhyphenatedurl
 
-\def\hyphenatedurlseparator{} % \periodcentered
+\let\hyphenatedurlseparator    \empty % \periodcentered
+\let\hyphenatedurldiscretionary\empty
 
-\def\dohyphenatedurlspace         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
-\def\dohyphenatedurlafter       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
-\def\dohyphenatedurlbefore      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
-\def\dohyphenatedurlnormal      #1{\char#1\relax}
-\def\dohyphenatedurldisc        #1{\discretionary{}{}{}}
+\setnewconstant\hyphenatedurllefthyphenmin \plusthree
+\setnewconstant\hyphenatedurlrighthyphenmin\plusthree
 
-\def\dohyphenatedurlspace_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
-\def\dohyphenatedurlafter_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
-\def\dohyphenatedurlbefore_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
-\def\dohyphenatedurlnormal_trace#1{\char#1\relax}
-\def\dohyphenatedurldisc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
+\def\languages_hyphenated_url_space         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
+\def\languages_hyphenated_url_after       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
+\def\languages_hyphenated_url_before      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
+\def\languages_hyphenated_url_normal      #1{\char#1\relax}
+\def\languages_hyphenated_url_disc        #1{\discretionary{}{}{}}
+
+\def\languages_hyphenated_url_space_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
+\def\languages_hyphenated_url_after_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
+\def\languages_hyphenated_url_before_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
+\def\languages_hyphenated_url_normal_trace#1{\char#1\relax}
+\def\languages_hyphenated_url_disc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
 
 \def\showhyphenatedurlbreaks
- {\let\dohyphenatedurlspace \dohyphenatedurlspace_trace
-  \let\dohyphenatedurlafter \dohyphenatedurlafter_trace
-  \let\dohyphenatedurlbefore\dohyphenatedurlbefore_trace
-  \let\dohyphenatedurlnormal\dohyphenatedurlnormal_trace
-  \let\dohyphenatedurldisc  \dohyphenatedurldisc_trace}
+ {\let\languages_hyphenated_url_space \languages_hyphenated_url_space_trace
+  \let\languages_hyphenated_url_after \languages_hyphenated_url_after_trace
+  \let\languages_hyphenated_url_before\languages_hyphenated_url_before_trace
+  \let\languages_hyphenated_url_normal\languages_hyphenated_url_normal_trace
+  \let\languages_hyphenated_url_disc  \languages_hyphenated_url_disc_trace}
 
 \def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
 \def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
 \def\sethyphenatedurlafter #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
 
-\def\hyphenatedurldiscretionary{}
-
 % \sethyphenatedurlafter{ABCDEF}
-
-\setnewconstant\hyphenatedurllefthyphenmin \plusthree
-\setnewconstant\hyphenatedurlrighthyphenmin\plusthree
 
 \unexpanded \def\hyphenatedurl#1%
   {\dontleavehmode
    \begingroup
    \the\everyhyphenatedurl
-   \language\zerocount
-   \let\s\dohyphenatedurlspace
-   \let\n\dohyphenatedurlnormal
-   \let\b\dohyphenatedurlbefore
-   \let\a\dohyphenatedurlafter
-   \let\d\dohyphenatedurldisc
+   \normallanguage\zerocount
+   \let\s\languages_hyphenated_url_space
+   \let\a\languages_hyphenated_url_after
+   \let\b\languages_hyphenated_url_before
+   \let\n\languages_hyphenated_url_normal
+   \let\d\languages_hyphenated_url_disc
    \normalexpanded{\noexpand\ctxcommand{hyphenatedurl(
         \!!bs\noexpand\detokenize{#1}\!!es,
         \number\hyphenatedurllefthyphenmin,

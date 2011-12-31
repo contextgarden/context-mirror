@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-ext'] = {
 
 local utf = unicode.utf8
 local next, type, byte = next, type, string.byte
-local gmatch, concat = string.gmatch, table.concat
+local gmatch, concat, format = string.gmatch, table.concat, string.format
 local utfchar = utf.char
 local getparameters = utilities.parsers.getparameters
 
@@ -703,6 +703,106 @@ registerotffeature {
     manipulators = {
         base = manipulatedimensions,
         node = manipulatedimensions,
+    }
+}
+
+-- for zhichu chen (see mailing list archive): we might add a few more variants
+-- in due time
+--
+-- \definefontfeature[boxed][default][boundingbox=yes] % paleblue
+--
+-- maybe:
+--
+-- \definecolor[DummyColor][s=.75,t=.5,a=1] {\DummyColor test} \nopdfcompression
+--
+-- local gray  = { "special", "pdf: /Tr1 gs .75 g" }
+-- local black = { "special", "pdf: /Tr0 gs 0 g" }
+
+local push  = { "push" }
+local pop   = { "pop" }
+local gray  = { "special", "pdf: .75 g" }
+local black = { "special", "pdf: 0 g"   }
+
+local downcache = { } -- handy for huge cjk fonts
+local rulecache = { } -- handy for huge cjk fonts
+
+setmetatableindex(downcache,function(t,d)
+    local v = { "down", d }
+    t[d] = v
+    return v
+end)
+
+setmetatableindex(rulecache,function(t,h)
+    local v = { }
+    t[h] = v
+    setmetatableindex(v,function(t,w)
+        local v = { "rule", h, w }
+        t[w] = v
+        return v
+    end)
+    return v
+end)
+
+local function showboundingbox(tfmdata,key,value)
+    if value then
+        local vfspecials = backends.pdf.tables.vfspecials
+        local gray       = vfspecials and (vfspecials.rulecolors[value] or vfspecials.rulecolors.palegray) or gray
+        local characters = tfmdata.characters
+        local resources  = tfmdata.resources
+        local additions  = { }
+        local private = resources.private
+        for unicode, old_c in next, characters do
+            private = private + 1
+            local width  = old_c.width  or 0
+            local height = old_c.height or 0
+            local depth  = old_c.depth  or 0
+            local new_c
+            if depth == 0 then
+                new_c = {
+                    width    = width,
+                    height   = height,
+                    commands = {
+                        push,
+                        gray,
+                        rulecache[height][width],
+                        black,
+                        pop,
+                        { "slot", 1, private },
+                    }
+                }
+            else
+                new_c = {
+                    width    = width,
+                    height   = height,
+                    depth    = depth,
+                    commands = {
+                        push,
+                        downcache[depth],
+                        gray,
+                        rulecache[height+depth][width],
+                        black,
+                        pop,
+                        { "slot", 1, private },
+                    }
+                }
+            end
+            setmetatableindex(new_c,old_c)
+            characters[unicode] = new_c
+            additions[private] = old_c
+        end
+        for k, v in next, additions do
+            characters[k] = v
+        end
+        resources.private = private
+    end
+end
+
+fonts.constructors.newfeatures("otf").register {
+    name        = "boundingbox",
+    description = "show boundingbox",
+    manipulators = {
+        base = showboundingbox,
+        node = showboundingbox,
     }
 }
 

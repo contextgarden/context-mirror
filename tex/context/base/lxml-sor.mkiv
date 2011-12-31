@@ -19,11 +19,11 @@
 
 \unprotect
 
-\def\xmlresetsorter     #1{\ctxlxml{sorters.reset("#1")}}
-\def\xmladdsortentry#1#2#3{\ctxlxml{sorters.add("#1","#2",\!!bs#3\!!es)}}
-\def\xmlshowsorter      #1{\ctxlxml{sorters.show("#1")}}
-\def\xmlflushsorter   #1#2{\ctxlxml{sorters.flush("#1","#2")}}
-\def\xmlsortentries     #1{\ctxlxml{sorters.sort("#1")}}
+\unexpanded\def\xmlresetsorter     #1{\ctxlxml{sorters.reset("#1")}}
+\unexpanded\def\xmladdsortentry#1#2#3{\ctxlxml{sorters.add("#1","#2",\!!bs#3\!!es)}}
+\unexpanded\def\xmlshowsorter      #1{\ctxlxml{sorters.show("#1")}}
+\unexpanded\def\xmlflushsorter   #1#2{\ctxlxml{sorters.flush("#1","#2")}}
+\unexpanded\def\xmlsortentries     #1{\ctxlxml{sorters.sort("#1")}}
 
 \protect \endinput
 

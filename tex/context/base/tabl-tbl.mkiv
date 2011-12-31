@@ -1081,9 +1081,8 @@
   {\vrule\!!width\tabulatevrulethickness\relax}
 
 \def\docoloredtabulatevrule
-  {\faststartcolor[\currenttabulatevrulecolor]%
-   \vrule\!!width\tabulatevrulethickness\relax
-   \faststopcolor}
+  {\dousecolorparameter\currenttabulatevrulecolor
+   \vrule\!!width\tabulatevrulethickness\relax}
 
 \unexpanded\def\dotabulatevrule
   {\ifcase\tabulatevrulethickness\else
@@ -1164,9 +1163,8 @@
      \relax}
 
 \def\docoloredtabulatehrule
-  {\faststartcolor[\currenttabulatelocalhrulecolor]%
-   \donormaltabulatehrule
-   \faststopcolor}
+  {\dousecolorparameter\currenttabulatelocalhrulecolor
+   \donormaltabulatehrule}
 
 \unexpanded\def\dotabulatehrule
   {\ifcase\tabulatelocalhrulethickness\else
@@ -1186,9 +1184,8 @@
      \hfill}
 
 \def\docoloredtabulatehlinerule
-  {\faststartcolor[\currenttabulatelocalhrulecolor]%
-   \donormaltabulatehlinerule
-   \faststopcolor}
+  {\dousecolorparameter\currenttabulatelocalhrulecolor
+   \donormaltabulatehlinerule}
 
 \def\dotabulatelinerule
   {\multispan\totaltabulatecolumns % \multispan is a plain macro
@@ -1241,14 +1238,14 @@
    \fi
    \setxvalue{\??tt:c:\the\tabulatecolumn}{#1}%
    \attribute\backgroundattribute\plusone
-   \faststartcolor[#1]\strut\char0\faststopcolor
+   \dousecolorparameter{#1}\strut\char\zerocount % hack
    \endgroup}
 
 \def\repeatsettabulatecolor
   {\begingroup
    \ifcsname\??tt:c:\the\tabulatecolumn\endcsname
      \attribute\backgroundattribute\plusone
-     \faststartcolor[\csname\??tt:c:\the\tabulatecolumn\endcsname]\strut\char0\faststopcolor
+     \expandafter\dousecolorparameter\csname\??tt:c:\the\tabulatecolumn\endcsname\strut\char\zerocount % hack
    \fi
    \endgroup}
 

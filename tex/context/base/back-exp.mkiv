@@ -29,17 +29,17 @@
 \definesystemattribute[taggedpar][public]
 
 \unexpanded\def\setelementexporttag
-  {\dotripleargument\dosetelementexporttag}
+  {\dotripleargument\backend_set_element_export_tag}
 
-\def\dosetelementexporttag
+\def\back_set_element_export_tag
   {\ifthirdargument
-     \expandafter\dosetelementexporttaga
+     \expandafter      \backend_set_element_export_tag_a
    \else\ifsecondargument
-     \expandafter\expandafter\expandafter\dosetelementexporttagb
+     \doubleexpandafter\backend_set_element_export_tag_b
    \fi\fi}
 
-\unexpanded\def\dosetelementexporttaga[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","#2","#3")}}
-\unexpanded\def\dosetelementexporttagb[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","export","#2")}}
+\def\backend_set_element_export_tag_a[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","#2","#3")}}
+\def\backend_set_element_export_tag_a[#1][#2][#3]{\taggedctxcommand{settagproperty("#1","export","#2")}}
 
 % todo: no need for calls when trialtypesetting
 
@@ -119,16 +119,14 @@
 
 % The action: \setupbackend[export=yes] % or filename
 
-% maybe we will move css to setupexport ? or just support both
-
-\def\c!export  {export}   % maybe: option={css,xhtml}
-\def\c!css     {css}
-\def\c!xhtml   {xhtml}
+% maybe xhtml css settings will move to setupexport
 
 % maybe some day a definer
 
-\installparameterhandler \??be {export}
-\installsetuphandler     \??be {export}
+\installcorenamespace{export}
+
+\installparameterhandler \??export {export}
+\installsetuphandler     \??export {export}
 
 \setupexport
   [\c!align=\number\raggedstatus,

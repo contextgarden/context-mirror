@@ -195,7 +195,7 @@ function marks.define(name,settings)
     settings = settings or { }
     data[name] = settings
     local parent = settings.parent
-    if parent == nil or parent == "" then
+    if parent == nil or parent == "" or parent == name then
         settings.parent = false
     else
         local dp = data[parent]

@@ -93,7 +93,7 @@
 \def\startMPLIBtoPDF#1#2#3#4%
   {\dostarttagged\t!mpgraphic\empty
    \naturalhbox attr \imageattribute 1 \bgroup
-   \doactivatecolor\s!black\forcecolorhack
+   \dousecolorparameter\s!black\forcecolorhack
    \setMPboundingbox{#1}{#2}{#3}{#4}%
    \setbox\MPbox\vbox\bgroup
  % \forgetall % already done elsewhere
@@ -130,23 +130,23 @@
 \def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
 
 \unexpanded\def\directMPgraphic
-  {\dodoublegroupempty\dodirectMPgraphic}
+  {\dodoublegroupempty\mlib_direct_graphic}
 
-\unexpanded\long\def\directMPgraphic#1#2% makes pages (todo: make boxes)
-  {\beginMPgraphicgroup{#1}%
+\def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
+  {\mp_begin_graphic_group{#1}%
    \let\startMPLIBtoPDF\directstartMPLIBtoPDF
    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
-   \dostartcurrentMPgraphic
+   \mp_start_current_graphic
    \forgetall
    \normalexpanded{\noexpand\ctxlua{metapost.graphic(
      "\currentMPgraphicinstance",
      "\currentMPgraphicformat",
       \!!bs#2;\!!es,
-      \!!bs\currentMPinitializations;\!!es,
-      \!!bs\currentMPpreamble;\!!es,
+      \!!bs\mp_flush_current_initializations;\!!es,
+      \!!bs\mp_flush_current_preamble;\!!es,
      "all"
    )}}%
-   \dostopcurrentMPgraphic
-   \endMPgraphicgroup}
+   \mp_stop_current_graphic
+   \mp_end_graphic_group}
 
 \protect \endinput

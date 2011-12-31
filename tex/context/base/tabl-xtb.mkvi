@@ -74,8 +74,8 @@
 % \let\tsplitafter       \donothing
 % \let\postprocesstsplit \donothing
 
-\let\dotagxtablecell  \relax
-\let\dotagxtablesignal\relax
+\let\dotagxtablecell  \relax % names will change
+\let\dotagxtablesignal\relax % names will change
 
 \appendtoks
     \def\dotagxtablecell  {\taggedctxcommand{settagtablecell(\number\tablecellrows,\number\tablecellcolumns,\number\raggedstatus)}}%
@@ -99,7 +99,10 @@
 % \setupxtable[one]        [a=b,c=d]
 % \setupxtable             [a=b,c=d]
 
-\installframedautocommandhandler \??lt {xtable} \??lt
+\installcorenamespace{xtable}
+\installcorenamespace{xtablecheck}
+
+\installframedautocommandhandler \??xtable {xtable} \??xtable
 
 \appendtoks
     \checkxtableparent % so we can deal with undefined settings, not that it's efficient
@@ -150,7 +153,7 @@
   {\bgroup
    \x_table_prepare{#settings}%
    \edef\x_table_current_buffer{\x_table_default_buffer}%
-   \dodowithbuffer{\x_table_current_buffer}{startxtable}{stopxtable}\relax\x_table_process}
+   \buffers_pickup{\x_table_current_buffer}{startxtable}{stopxtable}\relax\x_table_process}
 
 \unexpanded\def\processxtablebuffer
   {\dosingleempty\process_x_table_buffer}
@@ -212,7 +215,7 @@
      \setupcurrentxtable[#settings]%
    \fi
    \edef\x_table_current_buffer{\x_table_default_buffer}%
-   \normalexpanded{\dodowithbuffer{\x_table_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\x_table_process}}
+   \normalexpanded{\buffers_pickup{\x_table_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\x_table_process}}
 
 \unexpanded\def\stop_named_x_table
   {}
@@ -596,7 +599,7 @@
 %D \typebuffer \placetable{}{\getbuffer}
 
 \appendtoks
-    \letvalue{\??lt\currentxtable\s!check}\relax % faster than checking parent
+    \letvalue{\??xtablecheck\currentxtable}\relax % faster than checking parent
 \to \everysetupxtable
 
 % groups
@@ -610,7 +613,7 @@
 
 \def\start_x_group_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??lt#tag\s!check\endcsname
+  {\ifcsname\??xtablecheck#tag\endcsname
      \expandafter\start_x_group_delayed_two
    \else
      \expandafter\setupcurrentxtable
@@ -636,7 +639,7 @@
 
 \def\start_x_cell_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??lt#tag\s!check\endcsname
+  {\ifcsname\??xtablecheck#tag\endcsname
      \expandafter\start_x_cell_delayed_two
    \else
      \expandafter\start_x_cell_yes
@@ -661,7 +664,7 @@
 
 \def\start_x_row_delayed_one[#tag]%
 % {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
-  {\ifcsname\??lt#tag\s!check\endcsname
+  {\ifcsname\??xtablecheck#tag\endcsname
      \expandafter\start_x_row_delayed_two
    \else
      \expandafter\start_x_row_yes
@@ -678,7 +681,4 @@
   {\stop_x_row
    \endgroup}
 
-\protect
-
-% \continueifinputfile{tabl-xtb.mkvi}
-
+\protect \endinput

@@ -15,6 +15,8 @@
 
 \registerctxluafile{strc-lst}{1.001}
 
+% needs clean up
+
 % nmstate -> no pagenumber if not start
 % autocrossdocument -> todo
 % expansion -> todo
@@ -23,7 +25,13 @@
 
 \unprotect
 
-\installframedcommandhandler \??li {list} \??li
+\installcorenamespace{list}
+\installcorenamespace{listextras}
+\installcorenamespace{listalternatives}
+\installcorenamespace{listelement}
+\installcorenamespace{listelementcommand}
+
+\installframedcommandhandler \??list {list} \??list
 
 \def\usenestedliststyleandcolor#1#2% will change
   {\useliststyleandcolor#1#2%
@@ -124,9 +132,12 @@
   {\endgroup}
 
 \def\dodostructurelistinject[#1][#2]%
-  {\getparameters[\??li\??li][\c!type=userdata,\c!location=\v!none,#1]%
-   \edef\currentlisttype    {\@@li@@litype}%
-   \edef\currentlistlocation{\@@li@@lilocation}%
+%   {\getparameters[\??li\??li][\c!type=userdata,\c!location=\v!none,#1]%
+%    \edef\currentlisttype    {\@@li@@litype}%
+%    \edef\currentlistlocation{\@@li@@lilocation}%
+  {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#1]% grouped
+   \edef\currentlisttype    {\listparameter\c!type}%
+   \edef\currentlistlocation{\listparameter\c!location}%
    \setnextinternalreference
    \edef\currentlistnumber{\ctxlua{structures.lists.push{
          references = {
@@ -252,7 +263,7 @@
   {\dodoubleargument\dodefinelistextra}
 
 \def\dodefinelistextra[#1][#2]%
-  {\getparameters[\??li:\c!extras:#1:][#2]}
+  {\getparameters[\??listextras#1:][#2]}
 
 % todo: more generic tracing
 
@@ -260,8 +271,8 @@
   [\v!page]
   [\c!before={\showmessage\m!system{14}{\currentlist/\currentlistindex}\page}]
 
-\def\processlistextrabefore{\executeifdefined{\??li:\c!extras:\currentlistextra:\c!before}\relax}
-\def\processlistextraafter {\executeifdefined{\??li:\c!extras:\currentlistextra:\c!after }\relax}
+\def\processlistextrabefore{\executeifdefined{\??listextras\currentlistextra:\c!before}\relax}
+\def\processlistextraafter {\executeifdefined{\??listextras\currentlistextra:\c!after }\relax}
 
 \unexpanded\def\processlistofstructure#1#2#3#4% name, method, n, extra
   {\ctxlua{structures.lists.pushnesting(#3)}%
@@ -301,14 +312,14 @@
 % TODO: also make this a commandhandler
 
 \def\listalternativeparameter#1%
-  {\ifcsname\??li\??li\listparameter\c!alternative#1\endcsname
-      \csname\??li\??li\listparameter\c!alternative#1\endcsname
+  {\ifcsname\??listalternatives\listparameter\c!alternative#1\endcsname
+      \csname\??listalternatives\listparameter\c!alternative#1\endcsname
    \else
        \listparameter{#1}%
    \fi}
 
 \unexpanded\def\setuplistalternative[#1]%
-  {\dodoubleargument\getparameters[\??li\??li#1]}
+  {\dodoubleargument\getparameters[\??listalternatives#1]}
 
 \def\listfill   {\listalternativeparameter\c!command }
 \def\listskip   {\listalternativeparameter\c!distance}
@@ -544,22 +555,20 @@
 
 % so far for list symbols
 
-\def\@@dodolistelement{dodolistelement}
-
 \def\dosomelistelement#1#2#3{#1 #2 #3}
 
-\setvalue{\@@dodolistelement a}{\let\dosomelistelement\dodofixdlistelementABC}
-\setvalue{\@@dodolistelement b}{\let\dosomelistelement\dodofixdlistelementABC}
-\setvalue{\@@dodolistelement c}{\let\dosomelistelement\dodofixdlistelementABC}
-\setvalue{\@@dodolistelement d}{\let\dosomelistelement\dodofixdlistelementD}
-\setvalue{\@@dodolistelement e}{\let\dosomelistelement\dodofixdlistelementE}
-\setvalue{\@@dodolistelement f}{\let\dosomelistelement\dodofixdlistelementF}
-\setvalue{\@@dodolistelement g}{\let\dosomelistelement\dodofixdlistelementG}
+\setvalue{\??listelement a}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\??listelement b}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\??listelement c}{\let\dosomelistelement\dodofixdlistelementABC}
+\setvalue{\??listelement d}{\let\dosomelistelement\dodofixdlistelementD}
+\setvalue{\??listelement e}{\let\dosomelistelement\dodofixdlistelementE}
+\setvalue{\??listelement f}{\let\dosomelistelement\dodofixdlistelementF}
+\setvalue{\??listelement g}{\let\dosomelistelement\dodofixdlistelementG}
 
-\setvalue{\@@dodolistelement\v!none      }{\def\dosomelistelement{\dodofreevlistelement}}
-\setvalue{\@@dodolistelement\v!vertical  }{\def\dosomelistelement{\dodofreevlistelement}}
-\setvalue{\@@dodolistelement\v!horizontal}{\def\dosomelistelement{\dodofreehlistelement}}
-\setvalue{\@@dodolistelement\v!command   }{\let\dosomelistelement\dodocommandlistelement}
+\setvalue{\??listelement\v!none      }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\??listelement\v!vertical  }{\def\dosomelistelement{\dodofreevlistelement}}
+\setvalue{\??listelement\v!horizontal}{\def\dosomelistelement{\dodofreehlistelement}}
+\setvalue{\??listelement\v!command   }{\let\dosomelistelement\dodocommandlistelement}
 
 % \setuplist
 %   [section]
@@ -573,13 +582,13 @@
 \unexpanded\def\definelistplacement
   {\dodoubleempty\dodefinelistplacement}
 
-\def\dodefinelistplacement[#1][#2]%
-  {\setvalue{\@@dodolistelement#1}%
+\def\dodefinelistplacement[#1][#2]% looks messy
+  {\setvalue{\??listelement#1}%
      {\doifelsenothing{#2}
-        {\getvalue{\@@dodolistelement\v!command}}%
-        {\executeifdefined{\@@dodolistelement#2}{\getvalue{\@@dodolistelement\v!command}}}%
-      \setlistparameter\c!command{\getvalue{\@@dodolistelement::#1}}}%
-   \setvalue{\@@dodolistelement::#1}}
+        {\getvalue{\??listelement\v!command}}%
+        {\executeifdefined{\??listelement#2}{\getvalue{\??listelement\v!command}}}%
+      \setlistparameter\c!command{\getvalue{\??listelementcommand#1}}}%
+   \setvalue{\??listelementcommand#1}}
 
 % don't mess arround with endgraf/grouping else we loose leftskip
 
@@ -592,7 +601,7 @@
    \ifx\currentlistalternative\empty
      [unknown list alternative]%
    \else
-     \executeifdefined{\@@dodolistelement\currentlistalternative}{[unknown list alternative: \currentlistalternative]}%
+     \executeifdefined{\??listelement\currentlistalternative}{[unknown list alternative: \currentlistalternative]}%
    \fi}
 
 \def\dodolistelement#1#2#3#4#5#6%
@@ -907,8 +916,8 @@
 
 % todo: make simple parameter handler
 
-\def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname}
-\def\combinedlisttoks       {\csname\??ih::\currentcombinedlist\endcsname}
+\def\combinedlistparameter#1{\csname\??ih\currentcombinedlist#1\endcsname} % to be redone!
+\def\combinedlisttoks       {\csname\??ih::\currentcombinedlist\endcsname} % to be redone!
 
 \unexpanded\def\definecombinedlist
   {\dotripleempty\dodefinecombinedlist}
@@ -918,8 +927,8 @@
    \getparameters
      [\??ih#1]
      [\c!criterium=\v!local,\c!number=0,\c!list={#2},#3]%
-\expandafter\newtoks\csname\??ih::\currentcombinedlist\endcsname
-\combinedlisttoks{#3}%
+   \expandafter\newtoks\csname\??ih::\currentcombinedlist\endcsname
+   \combinedlisttoks{#3}%
    \setvalue{\e!setup#1\e!endsetup}{\dodoubleempty\dosetupcombinedlist[#1]}%
    \setvalue{\e!place#1}{\dodoubleempty\doplacecombinedlist[#1]}%
    \setvalue{\e!complete#1}{\dodoubleempty\docompletecombinedlist[#1]}}

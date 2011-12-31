@@ -39,8 +39,8 @@
 % \testlanguage[de] \testlanguage[de-de] \testlanguage[de-at] \testlanguage[de-ch] \page
 % \testlanguage[en] \testlanguage[us] \testlanguage[en-us] \testlanguage[uk] \testlanguage[en-gb] \page
 
-\ifx\nonfrenchspacing\undefined \let\nonfrenchspacing\relax \fi
-\ifx\frenchspacing   \undefined \let\frenchspacing   \relax \fi
+\ifdefined\nonfrenchspacing\else \let\nonfrenchspacing\relax \fi
+\ifdefined\frenchspacing   \else \let\frenchspacing   \relax \fi
 
 %D When loading hyphenation patterns, \TEX\ assign a number to
 %D each loaded table, starting with~0. Switching to a specific
@@ -78,6 +78,13 @@
 
 %D \macros
 %D   {defaultlanguage,languageparameter,specificlanguageparameter}
+
+%D We don't use the commandhandler here (yet) because we have
+%D a rather special fallback mechanism so quite some compatibility
+%D testing is needed.
+
+\installcorenamespace{language}
+\installcorenamespace{languagelinked}
 
 \def\defaultlanguage#1%
   {\ifcsname\??la#1\s!default\endcsname
@@ -155,10 +162,6 @@
 %D implementations support run time addition of patterns to a
 %D preloaded format).
 
-% move to lua end
-
-\def\dodoinstalllanguage#1#2%
-  {\ifcsname#1\endcsname\else\setuvalue{#1}{\complexlanguage[#2]}\fi}
 
 %D \macros
 %D   {preloadlanguages}
@@ -173,48 +176,50 @@
 
 \def\installedlanguages{\ctxlua{languages.installed()}}
 
-\def\doiflanguageelse#1%
+\unexpanded\def\doiflanguageelse#1%
   {\ifcsname\??la#1\c!state\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doinstalllanguage[#1][#2]%
+\def\reallanguagetag#1%
+  {\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
+
+% \language[#1] gave unwanted side effect of loading language specifics
+
+\unexpanded\def\installlanguage
+  {\dodoubleargument\languages_install}
+
+\def\languages_install[#1][#2]%
   {\doifassignmentelse{#2}
      {\doiflanguageelse{#1}
         {\getparameters[\??la#1][#2]}
-        {\setvalue{\l!prefix!#1}{#1}%
-         \dodoinstalllanguage{#1}{#1}%
+        {\setvalue{\??languagelinked#1}{#1}%
+         \languages_install_indeed{#1}{#1}%
          \getparameters[\??la#1][\c!state=\v!start,#2]}%
       \edef\currentsetuplanguage{#1}%
       \ctxlua{languages.define("#1","\specificlanguageparameter{#1}\s!default")}%
       \the\everysetuplanguage}
-     {\setvalue{\l!prefix!#1}{#2}%
+     {\setvalue{\??languagelinked#1}{#2}%
       \ctxlua{languages.synonym("#1","#2")}%
-     %\getparameters[\??la#1][\s!default=#2]%
-      \dodoinstalllanguage{#1}{#2}}}
+      \languages_install_indeed{#1}{#2}}}
 
-\def\reallanguagetag#1%
-  {\ifcsname\l!prefix!#1\endcsname\csname\l!prefix!#1\endcsname\else#1\fi}
-
-% \language[#1] gave unwanted side effect of loading language specifics
-
-\def\installlanguage
-  {\dodoubleargument\doinstalllanguage}
+\def\languages_install_indeed#1#2%
+  {\ifcsname#1\endcsname\else\setuvalue{#1}{\complexlanguage[#2]}\fi}
 
 %D When the second argument is a language identifier, a
 %D synonym is created. This feature is present because we
 %D used dutch mnemonics in the dutch version, but nowadays
 %D conform a standard.
 
-\def\doifpatternselse#1%
-  {\bgroup % will change
+\unexpanded\def\doifpatternselse#1%
+  {\begingroup % will change
    \language[#1]%
    \ifnum\normallanguage>\zerocount
-     \bgroup\expandafter\firstoftwoarguments
+     \endgroup\expandafter\firstoftwoarguments
    \else
-     \bgroup\expandafter\secondoftwoarguments
+     \endgroup\expandafter\secondoftwoarguments
    \fi}
 
 %D \macros
@@ -227,11 +232,13 @@
 %D Beware, this command can only be used when a language is installed.
 
 \unexpanded\def\setuplanguage
-  {\dodoubleempty\dosetuplanguage}
+  {\dodoubleempty\languages_setup}
 
-\ifdefined\docomplexlanguage \else \let\docomplexlanguage\relax \fi
+\ifdefined\languages_synchronize \else
+    \let\languages_synchronize\relax % be nice for setups till we have one
+\fi
 
-\def\dosetuplanguage[#1][#2]%
+\def\languages_setup[#1][#2]%
   {\ifsecondargument
      \pushmacro\currentlanguage % can be default
      \edef\currentsetuplanguage{\reallanguagetag{#1}}%
@@ -239,13 +246,12 @@
      \the\everysetuplanguage
      \popmacro\currentlanguage
     %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
-     \docomplexlanguage
    \else
      \let\currentsetuplanguage\currentlanguage
      \getparameters[\??la\currentsetuplanguage][#1]%
      \the\everysetuplanguage
-     \docomplexlanguage
-   \fi}
+   \fi
+   \languages_synchronize}
 
 \appendtoks
     \ctxlua{languages.setdirty("\currentsetuplanguage")}%
@@ -263,6 +269,9 @@
    \c!righthyphen=-,
    \c!hyphen=-,
    \c!spacing=\v!packed,
+   \c!compoundhyphen=\compoundhyphen,
+   \c!rightcompoundhyphen=\compoundhyphen,
+   \c!leftcompoundhyphen=,
    \c!midsentence=---,
    \c!leftsentence=---,
    \c!rightsentence=---,
@@ -278,14 +287,6 @@
    \c!limittext=\unknown,
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
    \c!text=Ag]
-
-% rather new, split and per language
-
-\setuplanguage
-  [\s!default]
-  [\c!compoundhyphen=\compoundhyphen,
-   \c!rightcompoundhyphen=\compoundhyphen,
-   \c!leftcompoundhyphen=]
 
 % to be tested:
 %
@@ -352,7 +353,7 @@
 
 \newtoks \everylanguage
 
-\def\docomplexlanguage% assumes that \currentlanguage is set                   % % % use different name as complex
+\def\languages_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
   {\normallanguage\ctxcommand{languagenumber(%
      "\currentlanguage",%
      "\defaultlanguage\currentlanguage",%
@@ -398,40 +399,38 @@
 
 % we will also permit access by the other names
 
-\def\complexlanguage[#1]%
+\unexpanded\def\languages_set_specified[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
-     \ifcsname\l!prefix!\askedlanguage\endcsname
-       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+     \ifcsname\??languagelinked\askedlanguage\endcsname
+       \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
          \setcurrentlanguage\currentmainlanguage\askedlanguage
-         \docomplexlanguage
+         \languages_synchronize
        \fi
      \else
        \showmessage\m!languages6{#1}%
      \fi
    \fi}
 
-\let\simplelanguage\normallanguage
-
-\definecomplexorsimple\language
+\unexpanded\def\language
+  {\doifnextoptionalelse\languages_set_specified\normallanguage}
 
 \newcount\mainlanguagenumber
 
-\def\mainlanguage[#1]%
+\unexpanded\def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
-     \ifcsname\l!prefix!\askedlanguage\endcsname
-       \edef\askedlanguage{\csname\l!prefix!\askedlanguage\endcsname}%
+     \ifcsname\??languagelinked\askedlanguage\endcsname
+       \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage
-         \ifx\currentmainlanguage\askedlanguage
-         \else
+         \ifx\currentmainlanguage\askedlanguage \else
            \setcurrentlanguage\askedlanguage\askedlanguage
-           \docomplexlanguage
+           \languages_synchronize
          \fi
        \else
          \setcurrentlanguage\askedlanguage\askedlanguage
-         \docomplexlanguage
+         \languages_synchronize
        \fi
      \fi
    \fi
@@ -560,11 +559,9 @@
 %D is one of the few places outside the interface modules where
 %D \type{\startinterface} is used.
 
-%D We default to english:
-
 \setupcurrentlanguage[\s!en]
 
-\def\initializemainlanguage
+\unexpanded\def\initializemainlanguage
   {\mainlanguage[\currentlanguage]%
    \showmessage\m!languages9\currentlanguage}
 
@@ -586,7 +583,7 @@
 
 %D For the moment here:
 
-\uchyph      = 1 % also treat uppercase
-\exhyphenchar=45 % to permit breaking at explicit hyphens
+\uchyph        1 % also treat uppercase
+\exhyphenchar 45 % to permit breaking at explicit hyphens
 
 \protect \endinput

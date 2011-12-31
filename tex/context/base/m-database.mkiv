@@ -86,7 +86,7 @@
 
 \def\dodefineseparatedlist[#1][#2]%
   {\definedatabase[#1][#2]%
-   \setuvalue{\e!start#1}{\dostartbuffer[#1][\e!start#1][\e!stop#1]}%
+   \setuvalue{\e!start#1}{\grabbufferdatadirect{#1}{\e!start#1}{\e!stop#1}}%
    \setuvalue{\e!stop#1}{\processdatabasebuffer[#1][#1]}}
 
 \def\processseparatedfile[#1][#2]%
@@ -94,7 +94,7 @@
 
 \def\startseparatedlist[#1]% to be interfaced
   {\def\stopseparatedlist{\processdatabasebuffer[#1][#1]}%
-   \dostartbuffer[#1][startseparatedlist][stopseparatedlist]}
+   \grabbufferdatadirect{#1}{startseparatedlist}{stopseparatedlist}}
 
 \protect
 

@@ -39,27 +39,28 @@
 \newtoks\everyinsertpositionaction
 \newtoks\everycleanpositionaction
 
-\let\POSactionprefix\POSprefix
+\installcorenamespace{positionaction}
+\installcorenamespace{positioncleanup}
 
 \unexpanded\def\dosetpositionaction#1%
-  {\setgvalue{\POSactionprefix#1::}}
+  {\setgvalue{\??positionaction#1}}
 
 \def\doifpositionaction#1%
-  {\ifcsname\POSactionprefix#1::\endcsname
+  {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \def\doifpositionactionelse#1%
-  {\ifcsname\POSactionprefix#1::\endcsname
+  {\ifcsname\??positionaction#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \def\dopositionaction#1% test saves hash entry in etex
-  {\ifcsname\POSactionprefix#1::\endcsname
+  {\ifcsname\??positionaction#1\endcsname
      \positions_action_indeed{#1}%
    \fi}
 
@@ -72,7 +73,7 @@
        {\traceposstring\clap\red{<#1>}%
         \the\everyinsertpositionaction
         \the\everypositionaction
-        \csname\POSactionprefix#1::\endcsname
+        \csname\??positionaction#1\endcsname
         \positions_cleanup_action{#1}}%
      \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
      \endgroup
@@ -80,39 +81,38 @@
 
 %D Here the complication has to do with collecting actions
 %D for later execution. This collection is especially handy
-%D when we want to move actions to a specific layer.
-%D Such series of actions are stored in a macro (the one
-%D with the funny \type {++}) which is cleaned up after each
-%D invocation.
+%D when we want to move actions to a specific layer. Such
+%D series of actions are stored in a macro that is cleaned up
+%D after each invocation.
 
 % this can probably be done better
 
 % \def\positions_cleanup_action#1% not in trialtypesetting
-%   {\ifcsname\POSactionprefix#1++\endcsname
+%   {\ifcsname\??positioncleanup#1\endcsname
 %      \the\everycleanpositionaction
 %      \iflocalpositioning
-%        \letgvalue{\POSactionprefix#1++}\empty
+%        \letgvalue{\??positioncleanup#1}\empty
 %      \else
-%        \setxvalue{\POSactionprefix#1++}{\getvalue{\POSactionprefix#1++}}%
+%        \setxvalue{\??positioncleanup#1}{\getvalue{\??positioncleanup#1}}%
 %      \fi
 %    \fi}
 
 \def\positions_cleanup_action#1% not in trialtypesetting
-  {\ifcsname\POSactionprefix#1++\endcsname
+  {\ifcsname\??positioncleanup#1\endcsname
      \the\everycleanpositionaction
      \iflocalpositioning
        % erase
-       \expandafter\let\csname\POSactionprefix#1++\endcsname\empty
+       \expandafter\let\csname\??positioncleanup#1\endcsname\empty
      \else
        % globalize
-       \global\expandafter\let\csname\POSactionprefix#1++\expandafter\endcsname\csname\POSactionprefix#1++\endcsname
+       \global\expandafter\let\csname\??positioncleanup#1\expandafter\endcsname\csname\??positioncleanup#1\endcsname
      \fi
    \fi}
 
 \def\handlepositionaction#1\with#2\on#3% ugly
   {\begingroup
    \edef\!!stringa{\ifx\currentpositionoverlay\empty#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
-   \edef\!!stringc{\POSactionprefix\!!stringa++}%
+   \edef\!!stringc{\??positioncleanup\!!stringa}%
    \normalexpanded{\dosetpositionaction{\!!stringa}{\noexpand\getvalue{\!!stringc}}}%
    \global\let#1\relax
    \edef\!!stringb{\ifcsname\!!stringc\endcsname\csname\!!stringc\endcsname\fi}% why ...
@@ -368,13 +368,17 @@
 %D graphic, used immediately, with zero dimensions, so that a
 %D sequence of them does not harm.
 
+\installcorenamespace{positiongraphic}
+\installcorenamespace{positionmethod}
+%installcorenamespace{graphicvariable}
+
 \newbox\positiongraphicbox
 
 \def\startMPpositiongraphic % id setups
   {\dodoublegroupempty\positions_mp_graphic_start}
 
 \def\positions_mp_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
-  {\setgvalue{\??gp:#1}{\positions_mp_graphic_use{#1}{#2}{#3}}}
+  {\setgvalue{\??positiongraphic#1}{\positions_mp_graphic_use{#1}{#2}{#3}}}
 
 \let\stopMPpositiongraphic\relax
 
@@ -397,9 +401,9 @@
   {\dodoublegroupempty\positions_mp_graphic_direct}
 
 \def\positions_mp_graphic_direct#1% tag setups
-  {\ifcsname\??gq:#1\endcsname % method
+  {\ifcsname\??positionmethod#1\endcsname % method
      \expandafter\positions_mp_graphic_direct_indeed_method
-   \else\ifcsname \??gp:#1\endcsname
+   \else\ifcsname\??positiongraphic#1\endcsname
      \doubleexpandafter\positions_mp_graphic_direct_indeed_normal
    \else
      \doubleexpandafter\positions_mp_graphic_direct_indeed_unknown
@@ -408,10 +412,10 @@
 \let\positions_mp_graphic_direct_indeed_unknown\gobbletwoarguments
 
 \def\positions_mp_graphic_direct_indeed_method
-  {\positions_mp_graphic_direct_indeed\??gq}
+  {\positions_mp_graphic_direct_indeed\??positionmethod}
 
 \def\positions_mp_graphic_direct_indeed_normal
-  {\positions_mp_graphic_direct_indeed\??gp}
+  {\positions_mp_graphic_direct_indeed\??positiongraphic}
 
 \def\positions_mp_graphic_direct_indeed#1#2#3% what tag setups
   {\begingroup
@@ -421,7 +425,7 @@
    \ignoreMPboxdepth
    \def\positions_mp_graphic_direct{\positions_mp_graphic_nested{#3}}% takes two extra arguments
    \setbox\positiongraphicbox\hbox
-     {\ignorespaces\csname#1:#2\endcsname\removelastspace}%
+     {\ignorespaces\csname#1#2\endcsname\removelastspace}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
    \endgroup}
@@ -431,11 +435,11 @@
    \setupMPvariables[#2][#1,#3]%
    \edef\currentmpvariableclass{#2}%
    \positions_mp_graphic_prepare
-   \getvalue{\??gp:#2}%
+   \getvalue{\??positiongraphic#2}%
    \endgroup}%
 
 \def\startMPpositionmethod#1#2\stopMPpositionmethod
-  {\setgvalue{\??gq:#1}{#2}} % todo: var list here
+  {\setgvalue{\??positionmethod#1}{#2}} % todo: var list here
 
 \let\stopMPpositionmethod\relax
 

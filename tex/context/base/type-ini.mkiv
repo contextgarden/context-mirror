@@ -400,7 +400,7 @@
 \def\dofastdefinetypeface#1#2#3#4#5%
   {\dododefinetypeface[#1][#2]%
    \dostarttypefacedefining{#1}{#2}{#5}%
-   \usetypescript[#3][#4][\t!size]%
+   \usetypescript[#3][#4][\s!size]%
    \dostoptypefacedefining}
 
 \def\dodefinetypeface[#1][#2][#3][#4][#5][#6]%
@@ -408,15 +408,15 @@
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
      \dododefinetypeface[#1][#2]%
      \dostarttypefacedefining{#1}{#2}{#6}%
-       \usetypescript[#3][#4][\t!name,\t!default]%
-       \usetypescript[#3][#5][\t!size]%
+       \usetypescript[#3][#4][\s!name,\s!default]%
+       \usetypescript[#3][#5][\s!size]%
      \dostoptypefacedefining
    \else\iffourthargument
      \iftracetypescripts\writestatus\m!fonts{define: [#1] [#2] [#3] [#4]}\fi
      \dododefinetypeface[#1][#2]%
      \dostarttypefacedefining{#1}{#2}{}%
-       \usetypescript[#3][#4][\t!name,\t!default]%
-       \usetypescript[#3][\s!default][\t!size]%
+       \usetypescript[#3][#4][\s!name,\s!default]%
+       \usetypescript[#3][\s!default][\s!size]%
      \dostoptypefacedefining
    \else\ifthirdargument
      \dododefinetypeface[#1][#2]%

@@ -43,11 +43,11 @@
 %D \usemodules[pictex,chemie,unit]
 %D \stoptyping
 
-\unexpanded\def\definefilesynonym {\dodoubleempty   \dodefinefilesynonym}
-\unexpanded\def\definefilefallback{\dodoubleargument\dodefinefilefallback} % still used?
+\unexpanded\def\definefilesynonym {\dodoubleempty   \system_define_file_synonym }
+\unexpanded\def\definefilefallback{\dodoubleargument\system_define_file_fallback} % still used?
 
-\def\dodefinefilesynonym     [#name][#realname]{\ctxcommand{definefilesynonym ("#name","#realname")}}
-\def\dodefinefilefallback[#name][#alternatives]{\ctxcommand{definefilefallback("#name","#alternatives")}}
+\def\system_define_file_synonym     [#name][#realname]{\ctxcommand{definefilesynonym ("#name","#realname")}}
+\def\system_define_file_fallback[#name][#alternatives]{\ctxcommand{definefilefallback("#name","#alternatives")}}
 
 %D \macros
 %D   {truefilename}

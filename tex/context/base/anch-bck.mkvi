@@ -112,7 +112,10 @@
 
 \newcount\c_backgrounds_text_level
 
-\installcommandhandler \??td {textbackground} \??td
+\installcorenamespace{textbackground}
+\installcorenamespace{textbackgroundlevel}
+
+\installcommandhandler \??textbackground {textbackground} \??textbackground
 
 \appendtoks
     \setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
@@ -147,11 +150,11 @@
 \let\backgrounds_text_start_indeed\relax
 \let\backgrounds_text_stop_indeed \relax
 
-\setvalue{\??td:l:\v!text}%
+\setvalue{\??textbackgroundlevel\v!text}%
   {\let\backgrounds_text_start_indeed\backgrounds_text_start_txt
    \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt}
 
-\setvalue{\??td:l:\v!paragraph}%
+\setvalue{\??textbackgroundlevel\v!paragraph}%
   {\ifnum\c_backgrounds_text_level>\plusone
      \let\backgrounds_text_start_indeed\backgrounds_text_start_txt
      \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt
@@ -160,7 +163,7 @@
      \let\backgrounds_text_stop_indeed \dostoptextbackgroundpar
    \fi}
 
-\setvalue{\??td:l:\v!none}%
+\setvalue{\??textbackgroundlevel\v!none}%
   {\backgrounds_text_preset_nop}
 
 \def\backgrounds_text_preset_nop
@@ -169,7 +172,7 @@
 
 \def\backgrounds_text_preset_yes
   {\backgrounds_text_preset_nop
-   \csname\??td:l:\textbackgroundparameter\c!location\endcsname
+   \csname\??textbackgroundlevel\textbackgroundparameter\c!location\endcsname
    \edef\m_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
    \edef\m_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
    \edef\m_backgrounds_text_background{\textbackgroundparameter\c!background}%

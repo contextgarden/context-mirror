@@ -18,6 +18,8 @@ local mark_code   = nodecodes.mark
 local kern_code   = nodecodes.kern
 local glue_code   = nodecodes.glue
 
+local texbox      = tex.box
+
 local free_node   = node.free
 local remove_node = node.remove
 
@@ -60,3 +62,9 @@ function nodes.handlers.finalize(head) -- problem, attr loaded before node, todo
 end
 
 --~ nodes.handlers.finalize = actions
+
+-- interface
+
+function commands.finalizebox(n)
+    actions(texbox[n])
+end

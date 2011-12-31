@@ -606,11 +606,16 @@
    \fi}
 
 \unexpanded\def\settopskip % the extra test is needed for the lbr family
-  {\ifgridsnapping
-     \topskip\zeropoint
-   \else
-     \topskip\systemtopskipfactor\globalbodyfontsize\ifr@ggedbottom\!!plus5\globalbodyfontsize\fi\relax
+  {\topskip
+     \ifgridsnapping
+       \zeropoint
+     \else
+       \systemtopskipfactor\globalbodyfontsize
+       \ifcase\bottomraggednessmode % ragged bottom
+         \!!plus5\globalbodyfontsize
+       \fi
    \fi
+   %\relax
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
    \ifdim\minimumstrutheight>\zeropoint
@@ -1174,55 +1179,6 @@
 
 \def\savestrut {\setbox\savedstrutbox\copy\strutbox}
 \def\savedstrut{\copy  \savedstrutbox}
-
-%D Page spacing
-
-\newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
-
-\def\bottomalignlimit{3\lineheight}
-
-\newif\ifn@rmalbottom   % this will be a proper constant
-\newif\ifr@ggedbottom   % this will be a proper constant
-\newif\ifb@selinebottom % this will be a proper constant
-
-\unexpanded\def\normalbottom
-  {% \topskip 10pt
-   \r@ggedbottomfalse}
-
-\unexpanded\def\raggedbottom
-  {\bottomraggednessmode\zerocount
-   \n@rmalbottomfalse
-   \r@ggedbottomtrue
-   \b@selinebottomfalse
-   \settopskip}
-
-\unexpanded\def\alignbottom
-  {\bottomraggednessmode\plusone
-   \n@rmalbottomtrue
-   \r@ggedbottomfalse
-   \b@selinebottomfalse
-   \settopskip}
-
-\unexpanded\def\baselinebottom
-  {\bottomraggednessmode\plustwo
-   \n@rmalbottomfalse
-   \r@ggedbottomfalse
-   \b@selinebottomtrue
-   \settopskip}
-
-\let\normalbottom\alignbottom % downward compatible
-
-% so, the new one will be
-%
-% \bottomraggednessmode=0 % 0=ragged 1=normal/align 2=baseline
-%
-% \def\bottomalignlimit{3\lineheight} % will be settable
-%
-% \def\raggedbottom  {\bottomraggednessmode\zerocount\settopskip}
-% \def\alignbottom   {\bottomraggednessmode\plusone  \settopskip}
-% \def\baselinebottom{\bottomraggednessmode\plustwo  \settopskip}
-%
-% \let\normalbottom  =\alignbottom
 
 %D Good old blank redone:
 
@@ -1839,7 +1795,9 @@
 %D Contrary to \MKII\ we can now define classes of lines (generalized by
 %D Wolfgang). I will probably rewrite bits in \LUA.
 
-\installcommandhandler \??rg {lines} \??rg
+\installcorenamespace{lines}
+
+\installcommandhandler \??lines {lines} \??lines
 
 \setuplines
   [\c!option=,

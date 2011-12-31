@@ -46,7 +46,7 @@
 
     local function collect(list,suffix,n)
         local path = document.arguments.basepath or file.dirname(resolvers.find_file("context.mkiv"),".")
-        local pattern = path .. "/*." .. suffix
+        local pattern = path .. "/*." .. suffix .. "$" -- avoid bla.tex~
         local texfiles = dir.glob(pattern)
         for _, name in ipairs(texfiles) do
             local base = file.basename(name)

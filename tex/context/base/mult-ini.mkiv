@@ -43,10 +43,7 @@
 %D \NC \type{\e!prefix!} \NC  e!         \NC element             \NC\MR
 %D \NC \type{\f!prefix!} \NC  f!         \NC file                \NC\MR
 %D \NC \type{\k!prefix!} \NC  k!         \NC constant (indirect) \NC\MR
-%D \NC \type{\l!prefix!} \NC  l!         \NC language            \NC\MR
 %D \NC \type{\m!prefix!} \NC  m!         \NC age             \NC\MR
-%D \NC \type{\p!prefix!} \NC  p!         \NC procedure           \NC\MR
-%D \NC \type{\r!prefix!} \NC  r!         \NC reference           \NC\MR
 %D \NC \type{\s!prefix!} \NC  s!         \NC system              \NC\MR
 %D \NC \type{\v!prefix!} \NC  v!         \NC variable            \NC\MR
 %D \HL
@@ -54,12 +51,16 @@
 %D \stoplinecorrection
 %D
 %D In the single||lingual version we used \type{!}, \type{!!},
-%D \type{!!!} and \type{!!!!}.
+%D \type{!!!} and \type{!!!!}. In the meantime some of these
+%D are obsolete (we had some 12 originally).
 
-\def\c!prefix!{c!} \def\e!prefix!{e!} \def\f!prefix!{f!}
-\def\k!prefix!{k!} \def\l!prefix!{l!} \def\m!prefix!{m!}
-\def\p!prefix!{p!} \def\r!prefix!{r!} \def\s!prefix!{s!}
-\def\v!prefix!{v!} \def\t!prefix!{t!}
+\def\c!prefix!{c!}
+\def\e!prefix!{e!}
+\def\f!prefix!{f!} % for the moment we keep this one
+\def\k!prefix!{k!}
+\def\m!prefix!{m!}
+\def\s!prefix!{s!}
+\def\v!prefix!{v!}
 
 %D \macros
 %D   [constants,variables,commands]
@@ -131,7 +132,6 @@
 %D    definesystemvariable,
 %D    definesystemconstant,
 %D    definemessageconstant,
-%D    definereferenceconstant,
 %D    definefileconstant}
 %D
 %D The first part of this module is dedicated to dealing with
@@ -169,16 +169,10 @@
 %D Next come some interface independant constants:
 %D
 %D \starttyping
-%D \definereferenceconstant {name} {meaning}
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\unexpanded\def\definereferenceconstant #1#2{\expandafter\def\csname\r!prefix!#1\endcsname{#2}} % obsolete
 \unexpanded\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
-
-%D A new one:
-
-\unexpanded\def\definetypescriptconstant#1#2{\expandafter\def\csname\t!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D

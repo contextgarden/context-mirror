@@ -18,13 +18,13 @@
 
 \registerctxluafile{supp-ran}{1.001}
 
-\def\getrandomcount #1#2#3{#1=\ctxcommand{getrandomcounta(\number#2,\number#3)}}
-\def\getrandomdimen #1#2#3{#1=\ctxcommand{getrandomcounta(\number\dimexpr#2,\number\dimexpr#3)}\scaledpoint}
-\def\getrandomnumber#1#2#3{\edef#1{\ctxcommand{getrandomcounta(\number#2,\number#3)}}}
-\def\getrandomfloat #1#2#3{\edef#1{\ctxcommand{getrandomcountb(\number\dimexpr#2\points,\number\dimexpr#3\points)}}}
-\def\setrandomseed      #1{\ctxcommand{setrandomseed(\number#1)}}
-\def\getrandomseed      #1{\edef#1{\ctxcommand{getrandomseed()}}}
-\def\freezerandomseed     {\ctxcommand{freezerandomseed()}}
-\def\defrostrandomseed    {\ctxcommand{defrostrandomseed()}}
+\unexpanded\def\getrandomcount #1#2#3{#1=\ctxcommand{getrandomcounta(\number#2,\number#3)}}
+\unexpanded\def\getrandomdimen #1#2#3{#1=\ctxcommand{getrandomcounta(\number\dimexpr#2,\number\dimexpr#3)}\scaledpoint}
+\unexpanded\def\getrandomnumber#1#2#3{\edef#1{\ctxcommand{getrandomcounta(\number#2,\number#3)}}}
+\unexpanded\def\getrandomfloat #1#2#3{\edef#1{\ctxcommand{getrandomcountb(\number\dimexpr#2\points,\number\dimexpr#3\points)}}}
+\unexpanded\def\setrandomseed      #1{\ctxcommand{setrandomseed(\number#1)}}
+\unexpanded\def\getrandomseed      #1{\edef#1{\ctxcommand{getrandomseed()}}}
+\unexpanded\def\freezerandomseed     {\ctxcommand{freezerandomseed()}}
+\unexpanded\def\defrostrandomseed    {\ctxcommand{defrostrandomseed()}}
 
 \endinput

@@ -198,6 +198,7 @@
 \definesystemconstant  {font}
 \definesystemconstant  {link}
 \definesystemconstant  {parent}
+\definesystemconstant  {child}
 \definesystemconstant  {clone}
 \definesystemconstant  {section}
 \definesystemconstant  {handler}
@@ -222,6 +223,11 @@
 \definesystemconstant  {smallcaps}
 
 \definesystemconstant  {run}
+
+\definesystemconstant  {mode}
+\definesystemconstant  {setup}
+\definesystemconstant  {environment}
+\definesystemconstant  {document}
 
 %definesystemconstant  {fam}
 \definesystemconstant  {text}
@@ -293,6 +299,20 @@
 \definesystemconstant  {extensions}
 \definesystemconstant  {initializations}
 
+\definesystemconstant  {rgb}
+\definesystemconstant  {cmyk}
+\definesystemconstant  {gray}
+\definesystemconstant  {spot}
+\definesystemconstant  {all}
+\definesystemconstant  {none}
+
+\definesystemconstant  {map}
+\definesystemconstant  {special}
+\definesystemconstant  {size}
+
+\definesystemconstant  {depth}
+\definesystemconstant  {nodepth}
+
 %D Just to be complete we define the standard \TEX\ units.
 
 \definesystemconstant  {cm}
@@ -309,41 +329,6 @@
 \definesystemconstant  {cc}
 \definesystemconstant  {nd}
 \definesystemconstant  {nc}
-
-%definesystemconstant  {entrya}
-%definesystemconstant  {entryb}
-%definesystemconstant  {entryc}
-%definesystemconstant  {entryd}
-%definesystemconstant  {entry}
-%definesystemconstant  {see}
-%definesystemconstant  {from}
-%definesystemconstant  {to}
-%definesystemconstant  {synonym}
-%definesystemconstant  {reference}
-%definesystemconstant  {main}
-%definesystemconstant  {list}
-%definesystemconstant  {item}
-%definesystemconstant  {itemcount}
-%definesystemconstant  {references}
-%definesystemconstant  {between}
-%definesystemconstant  {old}
-%definesystemconstant  {thisisblock}
-%definesystemconstant  {thiswasblock}
-%definesystemconstant  {figurepreset}
-%definesystemconstant  {pass}
-%definesystemconstant  {list}
-%definesystemconstant  {margin}
-%definesystemconstant  {profile}
-%definesystemconstant  {versionbegin}
-%definesystemconstant  {versionend}
-%definesystemconstant  {cross}
-
-%D Reference constants are no longer used in \MKIV\ but for the
-%D moment we keep this mechanism available.
-%D
-%D \starttyping
-%D \definereferenceconstant {whatever}
-%D \stoptyping
 
 %D As the name of their define command states, the next set of
 %D constants is used in the message macro's.
@@ -412,285 +397,148 @@
 \definesystemvariable {ab}   % AlignedBoxes
 \definesystemvariable {ac}   % ACcent
 \definesystemvariable {ae}   % AttributEs
-\definesystemvariable {ag}   % AchterGrond
 \definesystemvariable {al}   % ALinea's
-\definesystemvariable {am}   % interActieMenu
 \definesystemvariable {an}   % ANchor
 \definesystemvariable {as}   % AlignmentSwitch
-\definesystemvariable {at}   % ATtachments
-%definesystemvariable {ba}   % synchronisatieBAlk
-\definesystemvariable {bc}   % BaCkend
-\definesystemvariable {be}   % startstop (BeginEnd)
 \definesystemvariable {bj}   % BlokJe
-%definesystemvariable {bk}   % Blokken (floats)
-%definesystemvariable {bl}   % BLanko
 \definesystemvariable {bg}   % BleedinG
 \definesystemvariable {bm}   % BookMark
-%definesystemvariable {bo}   % BlankO (definitions)
 \definesystemvariable {bp}   % BreakPoint
 \definesystemvariable {br}   % sideBaR
-%definesystemvariable {bs}   % SelecteerBlokken
-\definesystemvariable {bt}   % BuTton
-\definesystemvariable {bu}   % BUffer
-%definesystemvariable {bv}   % Brieven
 \definesystemvariable {bx}   % BackendExport
-%definesystemvariable {by}   % Per
 \definesystemvariable {cb}   % CollectBox
-\definesystemvariable {cc}   % Comment
-\definesystemvariable {ce}   % CasEs
-\definesystemvariable {cf}   % Style (ColorFont)
 \definesystemvariable {ch}   % CHaracterspacing
 \definesystemvariable {ci}   % CItaat
 \definesystemvariable {ck}   % Character Kerning
-\definesystemvariable {cl}   % kleur (CoLor setup)
 \definesystemvariable {cn}   % CollumN
 \definesystemvariable {cm}   % CheMical
 \definesystemvariable {co}   % COmbinaties
 \definesystemvariable {cp}   % CliP
-\definesystemvariable {cr}   % kleur (ColoR)
-%definesystemvariable {cs}   % kleur (ColorSeparation
-\definesystemvariable {cv}   % ConVersie
-%definesystemvariable {cy}   % CrYteria
 \definesystemvariable {da}   % DAte
 \definesystemvariable {db}   % Labels
-\definesystemvariable {dc}   % DroppedCaps
 \definesystemvariable {dd}   % DoorDefinieren
 \definesystemvariable {de}   % DEel
 \definesystemvariable {di}   % DIrections
 \definesystemvariable {dl}   % DunneLijnen
 \definesystemvariable {dn}   % DoorNummeren
 \definesystemvariable {dm}   % DefineMeasure
-\definesystemvariable {do}   % DefinieerOpmaak
 \definesystemvariable {du}   % DUmmy
-\definesystemvariable {ds}   % DoorSpringen
 \definesystemvariable {ef}   % ExternFiguur
-%definesystemvariable {ec}   % EnCoding
 \definesystemvariable {el}   % Elements
 \definesystemvariable {en}   % ENvironments
-%definesystemvariable {ep}   % ExternfiguurPreset
-\definesystemvariable {eq}   % EQalign
 \definesystemvariable {er}   % external resources
 \definesystemvariable {et}   % EffecT
 \definesystemvariable {ex}   % ExterneFiguren
-%definesystemvariable {fa}   % font feature
-\definesystemvariable {fb}   % FieldBody
 \definesystemvariable {fc}   % FramedContent
-\definesystemvariable {fd}   % FielDgroup
-%definesystemvariable {fe}   % FoxetExtensions
-\definesystemvariable {ff}   % FontFile
-%definesystemvariable {fg}   % FiGuurmaten
-\definesystemvariable {fh}   % FontHash
 \definesystemvariable {fi}   % FIle Once
-\definesystemvariable {fl}   % Floats
-\definesystemvariable {fm}   % ForMules
-\definesystemvariable {fn}   % subformulas
 \definesystemvariable {fo}   % xml FO (xtag)
-\definesystemvariable {fp}   % FilegroeP
 \definesystemvariable {fq}   % Features
-\definesystemvariable {fr}   % ForM
-%definesystemvariable {fs}   % FileSynonym
+\definesystemvariable {fr}   % Division
 \definesystemvariable {ft}   % FonTs
 \definesystemvariable {fu}   % FontSolution
-%definesystemvariable {fv}   % FontVariant
 \definesystemvariable {fw}   % simpleFonts by Wolfgang
 \definesystemvariable {fx}   % FoXet
 \definesystemvariable {gr}   % GRid
-\definesystemvariable {gm}   % Graphic Metapost
 \definesystemvariable {gb}   % Graphic Bitmaps
 \definesystemvariable {gi}   % Graphic Instance
-\definesystemvariable {gt}   % Graphic Text
 \definesystemvariable {gv}   % Graphic Variable
-\definesystemvariable {gp}   % Graphic Position
-\definesystemvariable {gq}   % Graphic Position Method
-\definesystemvariable {gx}   % Graphic TeX Text
 \definesystemvariable {ha}   % HAng
 \definesystemvariable {hf}   % Helpers Framed
-\definesystemvariable {hl}   % HighLight
 \definesystemvariable {hs}   % HSpace
-%definesystemvariable {ht}   % HiddenText
-\definesystemvariable {ia}   % Interactie
-\definesystemvariable {ib}   % InteractieBalk
-%definesystemvariable {ic}   % ICc profiles
 \definesystemvariable {id}   % Index
-%definesystemvariable {ig}   % ItemGroup
 \definesystemvariable {ih}   % InHoudsopgave
-%definesystemvariable {ii}   % stelIndexIn
 \definesystemvariable {il}   % stelInvulRegelsin
-%definesystemvariable {im}   % InMarge
 \definesystemvariable {in}   % INspringen
 \definesystemvariable {ip}   % InsertPages
 \definesystemvariable {is}   % Items
 \definesystemvariable {it}   % stelInTerliniein
 \definesystemvariable {iv}   % stelInvulLijnenin
 \definesystemvariable {ka}   % KAntlijn
-\definesystemvariable {kd}   % KaDerteksten
-\definesystemvariable {kj}   % KopJes (floats)
 \definesystemvariable {kk}   % Kapitalen
 \definesystemvariable {kl}   % KoLommen
 \definesystemvariable {km}   % KenMerk
-%definesystemvariable {ko}   % KOp(pen)
 \definesystemvariable {kp}   % KopPelteken
-%definesystemvariable {kr}   % KoRps
 \definesystemvariable {ks}   % KolomSpan
 \definesystemvariable {kt}   % KonTakten
 \definesystemvariable {kw}   % KontaktWaarde
 \definesystemvariable {la}   % LAnguage
-%definesystemvariable {lb}   % LaBels
 \definesystemvariable {ld}   % LegenDa
 \definesystemvariable {le}   % LinetablE
 \definesystemvariable {lf}   % LocalFigures
 \definesystemvariable {lg}   % taal (LanGuage)
-\definesystemvariable {li}   % LIjst
 \definesystemvariable {lk}   % LinK
 \definesystemvariable {ll}   % Layers
-%definesystemvariable {ln}   % LijNen
-%definesystemvariable {lo}   % LOgos
-\definesystemvariable {lt}   % LiTeratuur
 \definesystemvariable {lr}   % LayeR
-\definesystemvariable {ls}   % languageScript
-\definesystemvariable {lt}   % LuaTables
 \definesystemvariable {lu}   % LUacode
-\definesystemvariable {lw}   % WordList
 \definesystemvariable {lx}   % LayerteXt
-\definesystemvariable {ly}   % LaYout
 \definesystemvariable {ma}   % MargeAchtergrond
-\definesystemvariable {mb}   % MargeBlokken
-\definesystemvariable {mc}   % MarginCategory
+\definesystemvariable {mc}   % MultiColumn
 \definesystemvariable {md}   % MoDule
-%definesystemvariable {me}   % MultilingualElement (tags)
-\definesystemvariable {mf}   % MarginFramed
-%definesystemvariable {mg}   % Metapost paGe
-%definesystemvariable {mh}   % MultilingualHead
 \definesystemvariable {mi}   % MultilingualInterface
-\definesystemvariable {mk}   % MarKering
 \definesystemvariable {ml}   % MultilingualLabel
 \definesystemvariable {mm}   % MultilingualMath
 \definesystemvariable {mt}   % inline MaTh
 \definesystemvariable {mo}   % Math Options
 \definesystemvariable {mp}   % MetaPost
-\definesystemvariable {mx}   % MatriX
-\definesystemvariable {ng}   % parbuilders
-\definesystemvariable {nh}   % new heads (structure)
 \definesystemvariable {nn}   % structurenumbering
 \definesystemvariable {nm}   % Nummering
 \definesystemvariable {np}   % NaastPlaatsen
 \definesystemvariable {nr}   % Nummeren
 \definesystemvariable {ob}   % OBjects
-%definesystemvariable {of}   % OFfset
 \definesystemvariable {oi}   % OmlijndInstellingen
 \definesystemvariable {ol}   % OmLijnd
 \definesystemvariable {od}   % Omlijnd Defaults (simple)
-\definesystemvariable {on}   % ONderstreep
-%definesystemvariable {oo}   % OpsOmmingen
-\definesystemvariable {op}   % OPsomming
-%definesystemvariable {or}   % OtpfilteR
-%definesystemvariable {os}   % OffSet
-%definesystemvariable {ot}   % OTpsequence
-\definesystemvariable {ov}   % OVerlay
 \definesystemvariable {ox}   % OffsetBox
-\definesystemvariable {pa}   % PAlet
 \definesystemvariable {pb}   % PuBlication
 \definesystemvariable {pc}   % PageComment
 \definesystemvariable {pe}   % PagEhandler
-%definesystemvariable {pf}   % ProFiel
-%definesystemvariable {pg}   %
 \definesystemvariable {ph}   % ParagrapH
-\definesystemvariable {pl}   % PLaats
 \definesystemvariable {pn}   % PaginaNummer
-\definesystemvariable {po}   % PrOcessor
-\definesystemvariable {pp}   % PaPier
 \definesystemvariable {pr}   % PRogrammas
 \definesystemvariable {ps}   % PoSitioneren
 \definesystemvariable {pt}   % PageshifT
 \definesystemvariable {px}   % Parallel
 \definesystemvariable {py}   % PropertYs
 \definesystemvariable {pv}   % PublicationVariable
-\definesystemvariable {qi}   % colorIntentattribute
-\definesystemvariable {qc}   % Colorattribute (cs)
-\definesystemvariable {qt}   % Transparencyattribute (ts)
-\definesystemvariable {qa}   % Colorattribute (ca)
-\definesystemvariable {qs}   % Transparencyattribute (ta)
 \definesystemvariable {ql}   % catcode table let     % already defined
 \definesystemvariable {qd}   % catcode table def     % already defined
 \definesystemvariable {qu}   % catcode table ued     % already defined
 \definesystemvariable {qm}   % catcode table meaning % already defined
-\definesystemvariable {ra}   % RAise
-%definesystemvariable {rd}   % RenDering
-\definesystemvariable {re}   % REferenceformat
 \definesystemvariable {rf}   % ReFerencing
-\definesystemvariable {rg}   % ReGel
-%definesystemvariable {rl}   % ReferentieLijst
 \definesystemvariable {rn}   % RegelNummer
-\definesystemvariable {ro}   % ROteren
-%definesystemvariable {rr}   % linenotes
 \definesystemvariable {rs}   % RaSters
 \definesystemvariable {rt}   % RoosTers
-%definesystemvariable {rv}   % ReserVeerfiguur
 \definesystemvariable {rw}   % RenderingWindow
-\definesystemvariable {sa}   % ScAle
 \definesystemvariable {sb}   % SectieBlok
-\definesystemvariable {sc}   % SCherm
 \definesystemvariable {sd}   % SounD
 \definesystemvariable {se}   % SEctie
-%definesystemvariable {sf}   % SpeciFics
 \definesystemvariable {sg}   % SpacinG
 \definesystemvariable {sh}   % ShapeText
 \definesystemvariable {si}   % SplIt
-%definesystemvariable {sk}   % SectieKop
 \definesystemvariable {sl}   % SmalLer
-\definesystemvariable {sm}   % SynonieMen
-%definesystemvariable {sn}   % SubNummer
-\definesystemvariable {so}   % SOrteren
 \definesystemvariable {sp}   % SelecteerPapier
 \definesystemvariable {sr}   % SpacehandleR
-\definesystemvariable {ss}   % Symbool
 \definesystemvariable {st}   % STickers
-\definesystemvariable {su}   % SetUp
-\definesystemvariable {sv}   % SysteemVariabelen
-%definesystemvariable {sw}   % SectionWorld
 \definesystemvariable {sx}   % Selector
-%definesystemvariable {sy}   % SYnchronisatie
 \definesystemvariable {ta}   % TAb
 \definesystemvariable {tb}   % TekstBlokken
-\definesystemvariable {td}   % TextbackgrounDs
 \definesystemvariable {te}   % TEmplate
 \definesystemvariable {tf}   % TypeFace
-%definesystemvariable {tg}   % Tex paGe
 \definesystemvariable {ti}   % TabelInstellingen
-\definesystemvariable {tk}   % Teksten
 \definesystemvariable {tl}   % TekstLijnen
 \definesystemvariable {tm}   % TypesynonyM
 \definesystemvariable {to}   % TOlerance
-\definesystemvariable {tp}   % TyPen
-%definesystemvariable {tr}   % TRacer
 \definesystemvariable {ts}   % TypeScript
 \definesystemvariable {tt}   % TabulaTe
 \definesystemvariable {tx}   % TeXtflow
-\definesystemvariable {ty}   % TYpe
-%definesystemvariable {uc}   % Unicode
-%definesystemvariable {ui}   % UItvoer
-\definesystemvariable {un}   % UNits
 \definesystemvariable {ur}   % URl
 \definesystemvariable {ut}   % strUT
-%definesystemvariable {up}   % Utility Program
 \definesystemvariable {va}   % VspAce
-%definesystemvariable {ve}   % VErsie
 \definesystemvariable {vn}   % VoetNoten
 \definesystemvariable {vs}   % VSpacing
-%definesystemvariable {vt}   % VerTical
-\definesystemvariable {wc}   % WidgetContent
-\definesystemvariable {wh}   % WidgetHelp
-\definesystemvariable {wl}   % WidgetLabel
-\definesystemvariable {wp}   % WidgetPopuphelp
-%definesystemvariable {wr}   % WitRuimte
-%definesystemvariable {ws}   % WidgetStack (not used)
-\definesystemvariable {wt}   % WidgetTotal
 \definesystemvariable {wz}   % whitespace
 \definesystemvariable {xf}   % XML File (xtag)
-\definesystemvariable {xl}   % lxml (mkiv)
-\definesystemvariable {xm}   % xml (mkiv)
 \definesystemvariable {xp}   % XML Processing (xtag, so still needed)
-\definesystemvariable {xy}   % schaal
 \definesystemvariable {za}   % layout adapt % ZetspiegelAanpassing
 \definesystemvariable {zc}   % columns
 \definesystemvariable {zo}   % otr
@@ -774,15 +622,6 @@
 \definefileconstant {newfilename} {cont-new}
 \definefileconstant {locfilename} {cont-loc}
 \definefileconstant {expfilename} {cont-exp}
-
-%D Handy for typescripts (we could use s! instead) but these
-%D might go:
-
-\definetypescriptconstant {name}    {name}
-\definetypescriptconstant {default} {default}
-\definetypescriptconstant {map}     {map}
-\definetypescriptconstant {special} {special}
-\definetypescriptconstant {size}    {size}
 
 %D The setup files for the language, font, color and special
 %D subsystems have a common prefix. This means that we have at

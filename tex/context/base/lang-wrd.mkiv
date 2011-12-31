@@ -27,33 +27,28 @@
 % \setupspellchecking[state=start,method=2]
 % ...
 % \typefile{\jobname.words}
-
-\def\loadspellchecklist
-  {\dodoubleempty\doloadspellchecklist}
-
-\def\doloadspellchecklist[#1][#2]%
-  {\ctxlua{languages.words.load("#1","#2")}}
-
-\unexpanded\def\setupspellchecking
-  {\dosingleargument\dosetupspellchecking}
-
-\newtoks\everysetupspellchecking
-
-\unexpanded\def\setupspellchecking[#1]% todo colors
-  {\getparameters[\??lw][#1]%
-   \the\everysetupspellchecking}
-
-\appendtoks
-   \doifelse\@@lwstate\v!start
-     {\ctxlua{languages.words.enable { method = "\@@lwmethod", list = "\@@lwlist" }}}
-     {\ctxlua{languages.words.disable()}}%
-\to \everysetupspellchecking
-
+%
 % beware, maybe some day we will honour grouping
-
+%
 % 1: spell checking
 % 2: word counting
 % 3: language coloring
+
+\installcorenamespace{spell}
+
+\installdirectcommandhandler \??spell {spellchecking}
+
+\appendtoks
+   \doifelse{\directspellcheckingparameter\c!state}\v!start
+     {\ctxcommand{enablespellchecking { method = "\directspellcheckingparameter\c!method", list = "\directspellcheckingparameter\c!list" }}}
+     {\ctxcommand{disablespellchecking()}}%
+\to \everysetupspellchecking
+
+\unexpanded\def\loadspellchecklist
+  {\dodoubleempty\languages_load_spell_check_list}
+
+\def\languages_load_spell_check_list[#1][#2]%
+  {\ctxcommand{loadspellchecklist("#1","#2")}}
 
 \setupspellchecking
   [\c!state=\v!stop,

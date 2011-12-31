@@ -6456,6 +6456,19 @@ return {
     ["en"]="dash",
     ["nl"]="streep",
   },
+  ["export"] = {
+    ["en"]="export",
+  },
+  ["css"] = {
+    ["en"]="css",
+  },
+  ["xhtml"] = {
+    ["en"]="xhtml",
+  },
+  ["entities"]={
+    ["en"]="entities",
+    ["nl"]="entities",
+  },
   ["labeloffset"]={
    ["en"]="labeloffset",
   },

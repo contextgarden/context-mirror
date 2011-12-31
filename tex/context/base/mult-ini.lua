@@ -17,18 +17,20 @@ local setmetatableindex = table.setmetatableindex
 
 local report_interface  = logs.reporter("interface","initialization")
 
-interfaces              = interfaces                   or { }
-interfaces.constants    = mark(interfaces.constants    or { })
-interfaces.variables    = mark(interfaces.variables    or { })
-interfaces.elements     = mark(interfaces.elements     or { })
-interfaces.formats      = mark(interfaces.formats      or { })
-interfaces.translations = mark(interfaces.translations or { })
+interfaces                = interfaces                     or { }
+interfaces.constants      = mark(interfaces.constants      or { })
+interfaces.variables      = mark(interfaces.variables      or { })
+interfaces.elements       = mark(interfaces.elements       or { })
+interfaces.formats        = mark(interfaces.formats        or { })
+interfaces.translations   = mark(interfaces.translations   or { })
+interfaces.corenamespaces = mark(interfaces.corenamespaces or { })
 
-storage.register("interfaces/constants",    interfaces.constants,    "interfaces.constants")
-storage.register("interfaces/variables",    interfaces.variables,    "interfaces.variables")
-storage.register("interfaces/elements",     interfaces.elements,     "interfaces.elements")
-storage.register("interfaces/formats",      interfaces.formats,      "interfaces.formats")
-storage.register("interfaces/translations", interfaces.translations, "interfaces.translations")
+storage.register("interfaces/constants",      interfaces.constants,      "interfaces.constants")
+storage.register("interfaces/variables",      interfaces.variables,      "interfaces.variables")
+storage.register("interfaces/elements",       interfaces.elements,       "interfaces.elements")
+storage.register("interfaces/formats",        interfaces.formats,        "interfaces.formats")
+storage.register("interfaces/translations",   interfaces.translations,   "interfaces.translations")
+storage.register("interfaces/corenamespaces", interfaces.corenamespaces, "interfaces.corenamespaces")
 
 interfaces.interfaces = {
     "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
@@ -54,12 +56,13 @@ end
 
 setmetatableindex(complete, resolve)
 
-local constants    = interfaces.constants
-local variables    = interfaces.variables
-local elements     = interfaces.elements
-local formats      = interfaces.formats
-local translations = interfaces.translations
-local reporters    = { } -- just an optimization
+local constants      = interfaces.constants
+local variables      = interfaces.variables
+local elements       = interfaces.elements
+local formats        = interfaces.formats
+local translations   = interfaces.translations
+local corenamespaces = interfaces.corenamespaces
+local reporters      = { } -- just an optimization
 
 local function valueiskey(t,k) -- will be helper
     t[k] = k
@@ -71,6 +74,10 @@ setmetatableindex(constants,    valueiskey)
 setmetatableindex(elements,     valueiskey)
 setmetatableindex(formats,      valueiskey)
 setmetatableindex(translations, valueiskey)
+
+function commands.registernamespace(n,namespace)
+    corenamespaces[n] = namespace
+end
 
 local function resolve(t,k)
     local v = logs.reporter(k)

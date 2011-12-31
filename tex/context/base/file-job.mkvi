@@ -85,12 +85,12 @@
 
 \ifdefined\textlevel\else \newcount\textlevel \fi % might go away
 
-\def\dostarttext
+\unexpanded\def\dostarttext
   {\glet\dostarttext\relax
    \the\everystarttext
    \global\everystarttext\emptytoks}
 
-\def\dostoptext
+\unexpanded\def\dostoptext
   {\glet\dostoptext\relax
    \flushfinallayoutpage % optional
    \page                 % anyway
@@ -166,11 +166,11 @@
 \def\currentproduct                      {\ctxcommand{currentproduct    ()}}
 \def\currentcomponent                    {\ctxcommand{currentcomponent  ()}}
 \def\currentenvironment                  {\ctxcommand{currentenvironment()}}
+\def\processedfile                       {\ctxcommand{processedfile()}}
+\def\processedfiles                      {\ctxcommand{processedfiles()}}
 
 \unexpanded\def\dostarttextfile     #name{\ctxcommand{dostarttextfile(name)}}
 \unexpanded\def\dostoptextfile           {\ctxcommand{dostoptextfile()}}
-\def\processedfile                       {\ctxcommand{processedfile()}}
-\def\processedfiles                      {\ctxcommand{processedfiles()}}
 
 \unexpanded\def\loadtexfile       [#name]{\ctxcommand{usetexfile("#name")}}
 \unexpanded\def\loadluafile       [#name]{\ctxcommand{useluafile("#name")}}
@@ -220,43 +220,43 @@
 \newsystemmode\v!component
 \newsystemmode\v!environment
 
-\def\startprojectindeed
+\unexpanded\def\startprojectindeed
   {\starttext
    \pushsystemmode\v!project
    \setsystemmode\v!project}
 
-\def\stopprojectindeed
+\unexpanded\def\stopprojectindeed
   {\popsystemmode\v!project
    \stoptext
    \signalendofinput\v!project}
 
-\def\startproductindeed
+\unexpanded\def\startproductindeed
   {\starttext
    \pushsystemmode\v!product
    \setsystemmode\v!product}
 
-\def\stopproductindeed
+\unexpanded\def\stopproductindeed
   {\popsystemmode\v!product
    \stoptext
    \signalendofinput\v!product}
 
-\def\startcomponentindeed
+\unexpanded\def\startcomponentindeed
   {\starttext
    \pushreferenceprefix\currentcomponent
    \pushsystemmode\v!component
    \setsystemmode\v!component}
 
-\def\stopcomponentindeed
+\unexpanded\def\stopcomponentindeed
   {\popsystemmode\v!component
    \popreferenceprefix
    \stoptext
    \signalendofinput\v!component}
 
-\def\startenvironmentindeed
+\unexpanded\def\startenvironmentindeed
   {\pushsystemmode\v!environment
    \setsystemmode\v!environment}
 
-\def\stopenvironmentindeed
+\unexpanded\def\stopenvironmentindeed
   {\popsystemmode\v!environment
    \signalendofinput\v!environment}
 
@@ -268,7 +268,7 @@
   {\dosingleargument\start_document}
 
 \unexpanded\def\start_document[#settings]%
-  {\setvariables[document][#settings]%
+  {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax
    \starttext
    \documentvariable\c!before}
@@ -278,16 +278,16 @@
    \stoptext}
 
 \def\documentvariable#name%
-  {\getvariable{document}{#name}}
+  {\getvariable\s!document{#name}}
 
-\unexpanded\def\setupdocument[#1]%
-  {\setvariables[document][#1]%
+\unexpanded\def\setupdocument[#settings]%
+  {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax}
 
 \setvariables
   [document]
-  [\c!before=\directsetup{document:start},
-   \c!after=\directsetup{document:stop}]
+  [\c!before=\directsetup{\s!document:start},
+   \c!after=\directsetup{\s!document:stop}]
 
 %S The document: namespace will be used elsewhere too.
 

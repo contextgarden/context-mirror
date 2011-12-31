@@ -412,3 +412,9 @@ end
 --~     namespace = languagehacks,
 --~     processor = languagehacks.process
 --~ }
+
+-- interface
+
+commands.enablespellchecking  = words.enable
+commands.disablespellchecking = words.disable
+commands.loadspellchecklist   = words.load

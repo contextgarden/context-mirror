@@ -135,6 +135,8 @@ local jobpacker = packers.new(packlist,1.01)
 
 job.pack = true
 
+directives.register("job.pack",function(v) pack = v end)
+
 local _save_, _load_, _others_ = { }, { }, { } -- registers timing
 
 function job.save(filename) -- we could return a table but it can get pretty large

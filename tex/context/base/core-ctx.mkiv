@@ -19,10 +19,12 @@
 
 \registerctxluafile{core-ctx}{1.000}
 
-\def\loadctxpreplist{\ctxcommand{loadctxpreplist()}\global\let\loadctxpreplist\relax}
+\def\loadctxpreplist
+  {\ctxcommand{loadctxpreplist()}%
+   \glet\loadctxpreplist\relax}
 
-% \prependtoks\loadctxpreplist\to\everyjob
-
-\appendtoks\loadctxpreplist\to\everystarttext % maybe too late but don't change it now
+\appendtoks
+    \loadctxpreplist
+\to \everystarttext % maybe too late but don't change it now
 
 \protect \endinput

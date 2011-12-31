@@ -122,7 +122,7 @@ local grammar = { "converter",
     texcode     = pushlocal
                 * startcode
                 * spaces
-                * (name * spaces)^1 -- new: multiple
+                * (csname * spaces)^1 -- new: multiple, new:csname instead of name
              -- * (declaration + furthercomment + (1 - newline - space))^0
                 * ((declaration * (space^0/""))^1 + furthercomment + (1 - newline - space))^0 -- accepts #a #b #c
                 * V("texbody")

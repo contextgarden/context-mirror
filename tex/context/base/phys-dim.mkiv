@@ -328,7 +328,11 @@
 
 % only a space when a number is part of the unit
 
-\installcommandhandler \??un {unit} \??un
+\installcorenamespace {unit}
+\installcorenamespace {unitseparator}
+\installcorenamespace {unitspace}
+
+\installcommandhandler \??unit {unit} \??unit
 
 \setupunit
   [\c!alternative=,              % done: text
@@ -362,12 +366,12 @@
 \unexpanded\def\unitsbackspace  {\negthinspace}
 
 \unexpanded\def\installunitsseparator#1#2%
-  {\setvalue{\??un:1:#1}{#2}}
+  {\setvalue{\??unitseparator#1}{#2}}
 
 \unexpanded\def\dounitsseparator
   {\edef\currentunitsseparator{\unitparameter\c!separator}%
-   \csname\??un:1:%
-     \ifcsname\??un:1:\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
+   \csname\??unitseparator
+     \ifcsname\??unitseparator\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
    \endcsname}
 
 \installunitsseparator\v!normal {\cdot}
@@ -377,13 +381,13 @@
 \installunitsseparator\v!none   {}
 
 \unexpanded\def\installunitsspace#1#2%
-  {\setvalue{\??un:2:#1}{#2}}
+  {\setvalue{\??unitspace#1}{#2}}
 
 \unexpanded\def\dounitsspace
   {\unskip % weird, why is unskip needed
    \edef\currentunitsspace{\unitparameter\c!space}%
-   \csname\??un:2:%
-     \ifcsname\??un:2:\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
+   \csname\??unitspace
+     \ifcsname\??unitspace\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
    \endcsname}
 
 \installunitsspace\v!normal {\unitsmediumspace}

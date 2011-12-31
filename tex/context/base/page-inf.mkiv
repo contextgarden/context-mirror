@@ -17,6 +17,8 @@
 
 \unprotect
 
+\installcorenamespace{layoutinfo}
+
 \newtoks\everyresetversion
 \newtoks\everysetupversion
 
@@ -31,7 +33,7 @@
 
 \def\page_info_setup[#1]%
   {\the\everyresetversion
-   \ifcsname\??ly:v:#1\endcsname
+   \ifcsname\??layoutinfo#1\endcsname
      \edef\currentversioninfo{#1}%
      \let\page_info_add_to_box\page_info_add_to_box_indeed
    \else
@@ -41,13 +43,13 @@
    \the\everysetupversion}
 
 \unexpanded\def\place_info_place_info % at the bottom of the page
-  {\csname\??ly:v:\currentversioninfo\endcsname}
+  {\csname\??layoutinfo\currentversioninfo\endcsname}
 
 \unexpanded\def\installversioninfo#1#2%
-  {\setvalue{\??ly:v:#1}{#2}}
+  {\setvalue{\??layoutinfo#1}{#2}}
 
 \unexpanded\def\includeversioninfo#1%
-  {\csname\??ly:v:#1\endcsname}
+  {\csname\??layoutinfo#1\endcsname}
 
 \installversioninfo\v!concept
   {\vskip\!!sixpoint

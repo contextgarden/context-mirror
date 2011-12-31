@@ -100,17 +100,12 @@
 %D When submitting a form, we need to tell the driver module
 %D that we want \FDF\ or \HTML.
 
-\newtoks\everysetupforms
+\installcorenamespace {forms}
 
-\unexpanded\def\setupforms
-  {\dosingleempty\scrn_forms_setup}
-
-\def\scrn_forms_setup[#settings]
-  {\getparameters[\??fr][#settings]%
-   \the\everysetupforms}
+\installdirectcommandhandler \??forms {forms}
 
 \appendtoks
-    \ctxcommand{setformsmethod("\@@frmethod")}%
+    \ctxcommand{setformsmethod("\formsparameter\c!method")}%
 \to \everysetupforms
 
 \setupforms
@@ -145,8 +140,11 @@
 
 %D Now comes the real code:
 
-\installcommandhandler \??fd {fieldcategory} \??fd
-\installcommandhandler \??fb {fieldbody}     \??fb
+\installcorenamespace{fieldcategory}
+\installcorenamespace{fieldbody}
+
+\installcommandhandler \??fieldcategory {fieldcategory} \??fieldcategory
+\installcommandhandler \??fieldbody     {fieldbody}     \??fieldbody
 
 \newbox\scrn_field_box_body
 
@@ -163,10 +161,10 @@
 \def\scrn_field_check_category
   {\edef\currentfieldbodycategory{\fieldbodyparameter\c!category}%
    \ifx\currentfieldbodycategory\empty
-     \letfieldbodyparameter\s!parent\??fd
+     \letfieldbodyparameter\s!parent\??fieldcategory
     %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\empty}% to WS: not hash !
    \else
-     \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fd\currentfieldbodycategory}}%
+     \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fieldcategory\currentfieldbodycategory}}%
     %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\currentfieldbodycategory}% to WS: not hash !
    \fi}
 
@@ -212,10 +210,12 @@
   {\edef\currentfieldframecolor{\fieldbodyparameter\c!fieldframecolor}%
    \ifx\currentfieldframecolor\empty\else
      \getcolorattributevalue\currentfieldframecolor\currentfieldframecolorvalue
+    % == \edef\currentfieldframecolorvalue{\thecolorattribute\currentfieldframecolor}%
    \fi
    \edef\currentfieldbackgroundcolor{\fieldbodyparameter\c!fieldbackgroundcolor}%
    \ifx\currentfieldbackgroundcolor\empty\else
      \getcolorattributevalue\currentfieldbackgroundcolor\currentfieldbackgroundcolorvalue
+    % == \edef\currentfieldbackgroundcolorvalue{\thecolorattribute\currentfieldbackgroundcolor}%
    \fi
    \usefieldbodystyleandcolor\c!style\c!color
    \ctxcommand{insertfield("\currentfieldbody", {
@@ -235,6 +235,7 @@
     \ifx\currentfieldbackgroundcolor\empty \else
         backgroundcolor      = "\currentfieldbackgroundcolor",
         backgroundcolorvalue = "\currentfieldbackgroundcolorvalue",
+
     \fi
     \ifx\currentfieldframecolor\empty \else
         framecolor           = "\currentfieldframecolor",
@@ -374,17 +375,21 @@
 %D The traditional field command does some labeling and
 %D boxing:
 
-\installparameterhandler     \??wl {fieldlabelframed}
-\installparameterhandler     \??wc {fieldcontentframed}
-\installparameterhandler     \??wt {fieldtotalframed}
+\installcorenamespace{fieldlabel}
+\installcorenamespace{fieldcontent}
+\installcorenamespace{fieldtotal}
 
-\installsetuphandler         \??wl {fieldlabelframed}
-\installsetuphandler         \??wc {fieldcontentframed}
-\installsetuphandler         \??wt {fieldtotalframed}
+\installparameterhandler     \??fieldlabel   {fieldlabelframed}
+\installparameterhandler     \??fieldcontent {fieldcontentframed}
+\installparameterhandler     \??fieldtotal   {fieldtotalframed}
 
-\installinheritedframed            {fieldlabelframed}
-\installinheritedframed            {fieldcontentframed}
-\installinheritedframed            {fieldtotalframed}
+\installsetuphandler         \??fieldlabel   {fieldlabelframed}
+\installsetuphandler         \??fieldcontent {fieldcontentframed}
+\installsetuphandler         \??fieldtotal   {fieldtotalframed}
+
+\installinheritedframed                      {fieldlabelframed}
+\installinheritedframed                      {fieldcontentframed}
+\installinheritedframed                      {fieldtotalframed}
 
 \unexpanded\def\setupfield {\doquintupleempty\scrn_field_setup_field}
 \unexpanded\def\setupfields{\doquadrupleempty\scrn_field_setup_fields}
@@ -420,25 +425,25 @@
 
 \def\scrn_field_setup_field[#tag][#variant][#totalsettings][#labelsettings][#fieldsettings]%
   {\iffifthargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#fieldsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt,\c!alternative={#variant},#totalsettings]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl,#labelsettings]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#fieldsettings]%
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#fieldsettings]
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel,#labelsettings]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#fieldsettings]%
    \else\iffourthargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#labelsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt,\c!alternative={#variant},#totalsettings]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#labelsettings]%
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#labelsettings]
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#labelsettings]%
    \else\ifthirdargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#totalsettings]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt,\c!alternative={#variant}]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#totalsettings]%
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#totalsettings]
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant}]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#totalsettings]%
    \else\ifsecondargument
-     \definefieldcategory[#tag][\s!parent=\??wc#tag,#variant]
-     \setupfieldtotalframed  [#tag][\s!parent=\??wt]%
-     \setupfieldlabelframed  [#tag][\s!parent=\??wl]%
-     \setupfieldcontentframed[#tag][\s!parent=\??wc,#variant]%
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#variant]
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#variant]%
    \fi\fi\fi\fi}
 
 \def\scrn_field_setup_fields[#variant][#totalsettings][#labelsettings][#fieldsettings]%
@@ -459,10 +464,10 @@
 
 % just to get the chain right for no category:
 
-\definefieldcategory    [][\s!parent=\??wc]
-% \setupfieldtotalframed  [][\s!parent=\??wt]
-% \setupfieldlabelframed  [][\s!parent=\??wl]
-% \setupfieldcontentframed[][\s!parent=\??wc]
+\definefieldcategory    [][\s!parent=\??fieldcontent]
+%setupfieldtotalframed  [][\s!parent=\??fieldtotal]
+%setupfieldlabelframed  [][\s!parent=\??fieldlabel]
+%setupfieldcontentframed[][\s!parent=\??fieldcontent]
 
 % no longer supported:
 
@@ -490,9 +495,9 @@
        \let\currentfieldlabel\currentfieldbody
      \fi
      \ifx\currentfieldcategory\empty
-       \setupfieldtotalframed  [\currentfieldbody][\s!parent=\??wt]%
-       \setupfieldlabelframed  [\currentfieldbody][\s!parent=\??wl]%
-       \setupfieldcontentframed[\currentfieldbody][\s!parent=\??wc]%
+       \setupfieldtotalframed  [\currentfieldbody][\s!parent=\??fieldtotal]%
+       \setupfieldlabelframed  [\currentfieldbody][\s!parent=\??fieldlabel]%
+       \setupfieldcontentframed[\currentfieldbody][\s!parent=\??fieldcontent]%
        \definefieldcategory    [\currentfieldbody]%
        \setupfieldbody         [\currentfieldbody][\c!category=\currentfieldbody]%
        \let\currentfieldcategory\currentfieldbody
@@ -637,7 +642,9 @@
 \newbox  \scrn_tooltip_box_text
 \newcount\scrn_tooltip_n
 
-\installframedcommandhandler \??wh {tooltip} \??wh
+\installcorenamespace{tooltip}
+
+\installframedcommandhandler \??tooltip {tooltip} \??tooltip
 
 \setuptooltip
   [\c!location=\v!right,
@@ -769,7 +776,7 @@
   {\iflocation
      \dontleavehmode
      \begingroup
-     \setupfieldcategory[\c!start=1,#settings]% was just \??fd
+     \setupfieldcategory[\c!start=1,#settings]% was just \??fieldcategory
      \scrn_field_load_scripts
      \definecollector
        [fieldstack]%

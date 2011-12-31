@@ -26,8 +26,12 @@
 %D - less gobal mess
 %D - more mkiv-ish
 
-\installframedcommandhandler \??fl {float}        \??fl
-\installframedcommandhandler \??kj {floatcaption} \??kj
+\installcorenamespace{float}
+\installcorenamespace{floatbuilder}
+\installcorenamespace{floatcaption}
+
+\installframedcommandhandler \??float        {float}        \??float
+\installframedcommandhandler \??floatcaption {floatcaption} \??floatcaption
 
 \let\setupfloats  \setupfloat
 \let\setupcaption \setupfloatcaption
@@ -361,7 +365,7 @@
 \def\dogetfloatdata % precedes save !
   {\doglobal\increment\noffloatpages
    \findtwopassdata{\s!float\s!data}{\noffloatpages}%
-   \iftwopassdatafound
+   \ifconditional\twopassdatafound
      \globallet\twopassfloatdata\twopassdata
    \else
      \globallet\twopassfloatdata\realpageno % \realfolio
@@ -812,14 +816,14 @@
    \global\sidefloatextrashift\zeropoint
    \doifassignmentelse{#settings}%
      {\begingroup
-      \getparameters[\??fl\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#settings]%
+      \setupcurrentfloat[\c!x=\zeropoint,\c!y=\zeropoint,#settings]%
       \ifgridsnapping
-        \getnoflines\@@fly
+        \getnoflines{\floatparameter\c!y}%
         \global\sidefloatdownshift\noflines\lineheight
       \else
-        \global\sidefloatdownshift\@@fl@@fly
+        \global\sidefloatdownshift\floatparameter\c!y
       \fi
-      \global\sidefloatextrashift\@@fl@@flx
+      \global\sidefloatextrashift\floatparameter\c!x
       \endgroup}
      {\movedownsidefloat[#settings]}}
 
@@ -1624,7 +1628,7 @@
 \def\relocatecaptionright#1{\float_align_caption{\hbox to \tempfloatwidth{\hss#1}}}
 \def\relocatecaptionleft #1{\float_align_caption{\hbox to \tempfloatwidth{#1\hss}}}
 
-\long\def\installfloatboxbuilder#1#2{\setvalue{\??kj:#1}{#2}}
+\long\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
 
 \def\build_float_box
   {\global\setbox\floatbox\vbox
@@ -1632,9 +1636,9 @@
       \forgetall
       \let\floatcaptionarrangement\s!default
       \def\docommand##1%
-        {\doifdefined{\??kj:##1}{\def\floatcaptionarrangement{##1}\quitcommalist}}%
+        {\doifdefined{\??floatbuilder##1}{\def\floatcaptionarrangement{##1}\quitcommalist}}%
       \processcommacommand[\floatcaptionparameter\c!location]\docommand
-      \executeifdefined{\??kj:\floatcaptionarrangement}{\getvalue{\??kj:\s!default}}}}
+      \executeifdefined{\??floatbuilder\floatcaptionarrangement}{\getvalue{\??floatbuilder\s!default}}}}
 
 \def\locate_text_float
   {\let\next\float_align_caption

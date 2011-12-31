@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Language Macros / Compounds}
 
+%D More or less replaced.
+
 %D \gdef\starttest#1\stoptest{\starttabulate[|l|l|p|]#1\stoptabulate}
 %D \gdef\test     #1{\NC\detokenize{#1}\NC\hyphenatedword{#1}\NC#1\NC\NR}
 
@@ -155,10 +157,9 @@
 %D In the main \CONTEXT\ modules these can be tuned by a setup
 %D command. Watch the (maybe) better looking compound hyphen.
 
-\ifx\compoundhyphen           \undefined \def\compoundhyphen{\hbox{-\kern-.25ex-}} \fi
-
-\ifx\beginofsubsentence       \undefined \def\beginofsubsentence{\hbox{---}} \fi
-\ifx\endofsubsentence         \undefined \def\endofsubsentence  {\hbox{---}} \fi
+\ifx\compoundhyphen    \undefined \def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
+\ifx\beginofsubsentence\undefined \def\beginofsubsentence{\hbox{---}}           \fi
+\ifx\endofsubsentence  \undefined \def\endofsubsentence  {\hbox{---}}           \fi
 
 %D The last two variables are needed for subsentences
 %D |<|like this one|>| which we did not yet mention.
@@ -167,11 +168,10 @@
 %D compound characters like |-| or || to be separated from the
 %D words. \TEX\ hackers will recognise the next two macro's:
 
-\ifx\prewordbreak             \undefined \def\prewordbreak {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-%ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \prewordbreak         } \fi
-\ifx\postwordbreak            \undefined \def\postwordbreak{\penalty\zerocount      \hskip\zeropoint\relax} \fi
-
-\ifx\hspaceamount             \undefined \def\hspaceamount#1#2{.16667em} \fi % language specific
+\ifx\prewordbreak \undefined \def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
+%ifx\postwordbreak\undefined \def\postwordbreak   {\penalty\zerocount      \prewordbreak         } \fi
+\ifx\postwordbreak\undefined \def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
+\ifx\hspaceamount \undefined \def\hspaceamount#1#2{.16667em}                                       \fi % language specific
 
 %D \macros
 %D   {beginofsubsentencespacing,endofsubsentencespacing}
@@ -196,20 +196,20 @@
 %D              |x_n-{1\over2}| &for ${1\over2}<x_n\le1$   \cr}}
 %D \stopformula
 
-\def\@tmd@action@{@tmd@a@}
-\def\@tmd@text@  {@tmd@t@}
-\def\@tmd@math@  {@tmd@m@}
-\def\@tmd@both@  {@tmd@b@}
+\installcorenamespace{discretionaryaction}
+\installcorenamespace{discretionarytext}
+\installcorenamespace{discretionarymath}
+\installcorenamespace{discretionaryboth}
 
 \def\installdiscretionary#1#2%
-  {\setevalue{\@tmd@math@\detokenize{#1}}{\detokenize{#1}}%
-   \setvalue {\@tmd@text@\detokenize{#1}}{#2}%
-   \setvalue {\@tmd@both@\detokenize{#1}}{\discretionarycommand#1}%
+  {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
+   \setvalue {\??discretionarytext\detokenize{#1}}{#2}%
+   \setvalue {\??discretionaryboth\detokenize{#1}}{\languages_discretionary_command#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
-   \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\@tmd@both@\detokenize{#1}\endcsname}
+   \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
-\def\handlemathmodediscretionary#1{\executeifdefined{\@tmd@math@\detokenize{#1}}\donothing}
-\def\handletextmodediscretionary#1{\executeifdefined{\@tmd@text@\detokenize{#1}}\donothing}
+\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
+\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
 
 \def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
 
@@ -218,24 +218,24 @@
 \def\ignorediscretionaries
   {\discretionarymode\zerocount}
 
-\def\discretionarycommand
+\def\languages_discretionary_command
   {% if direct if, we need \relax for lookahead in math mode
    \csname
      \ifcase\discretionarymode
-       \strippedcsname\dononemodediscretionary
+       \strippedcsname\languages_process_discretionary_none
      \else\ifmmode
-       \strippedcsname\domathmodediscretionary
+       \strippedcsname\languages_process_discretionary_math
      \else
-       \strippedcsname\dotextmodediscretionary
+       \strippedcsname\languages_process_discretionary_text
      \fi\fi
    \endcsname}
 
-\def\dononemodediscretionary#1%
+\def\languages_process_discretionary_none#1%
   {\detokenize{#1}}
 
-%D The macro \type{\checkbeforediscretionary} takes care of
-%D loners like \type{||word}, while it counterpart
-%D \type{\checkafterdiscretionary} is responsible for handling
+%D The macro \type{\languages_check_before_discretionary} takes care
+%D of loners like \type{||word}, while it counterpart \type
+%D {\languages_check_after_discretionary} is responsible for handling
 %D the comma.
 
 \newsignal\compoundbreakpoint
@@ -243,8 +243,10 @@
 \newconditional\punctafterdiscretionary
 \newconditional\spaceafterdiscretionary
 
-\def\checkbeforediscretionary
-  {\ifvmode\dontleavehmode\fi
+\def\languages_check_before_discretionary
+  {\ifvmode
+     \dontleavehmode
+   \fi
    \ifhmode
      \begingroup
      \setbox\scratchbox\lastbox
@@ -255,7 +257,7 @@
      \endgroup
   \fi}
 
-\def\checkafterdiscretionary
+\def\languages_check_after_discretionary
   {\setfalse\punctafterdiscretionary
    \setfalse\spaceafterdiscretionary
    \ifx\blankspace\nextnext \settrue \spaceafterdiscretionary \else
@@ -265,9 +267,9 @@
    \ifx          :\nextnext \settrue \punctafterdiscretionary \else
    \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
-\let\domathmodediscretionary\handlemathmodediscretionary
+\let\languages_process_discretionary_math\handlemathmodediscretionary
 
-\def\dotextmodediscretionary#1% grouped !
+\def\languages_process_discretionary_text#1% grouped !
   {\bgroup
    \let\nextnextnext\egroup
    \def\next##1#1%
@@ -278,11 +280,11 @@
 \def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
-   \checkafterdiscretionary
+   \languages_check_after_discretionary
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
-       \ifcsname\@tmd@action@\string#1\endcsname
-         \csname\@tmd@action@\string#1\endcsname
+       \ifcsname\??discretionaryaction\string#1\endcsname
+         \csname\??discretionaryaction\string#1\endcsname
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\hbox{\string#1}\relax
        \else\ifconditional\punctafterdiscretionary
@@ -292,12 +294,12 @@
        \fi\fi\fi
        \def\nextnextnext{\afterassignment\egroup\let\next=}%
      \else
-       \checkbeforediscretionary
+       \languages_check_before_discretionary
        % the next line has been changed (20050203)
        % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
        % but an hbox blocks a possible \discretionary
-       \ifcsname\@tmd@action@\endcsname
-         \csname\@tmd@action@\endcsname
+       \ifcsname\??discretionaryaction\endcsname
+         \csname\??discretionaryaction\endcsname
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\textmodediscretionary\relax
        \else\ifconditional\punctafterdiscretionary
@@ -307,10 +309,10 @@
        \fi\fi\fi
      %  \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \fi
-   \else\ifcsname\@tmd@action@\discretionarytoken\endcsname
-     \csname\@tmd@action@\discretionarytoken\endcsname
+   \else\ifcsname\??discretionaryaction\discretionarytoken\endcsname
+     \csname\??discretionaryaction\discretionarytoken\endcsname
    \else
-     \checkbeforediscretionary
+     \languages_check_before_discretionary
      \ifconditional\spaceafterdiscretionary
        \prewordbreak\hbox{#2}\relax
      \else\ifconditional\punctafterdiscretionary
@@ -330,31 +332,31 @@
 \def\directdiscretionary
   {\csname
      \ifcase\discretionarymode
-       \strippedcsname\dononemodediscretionary
+       \strippedcsname\languages_process_discretionary_none
      \else
-       \strippedcsname\dodirectdiscretionary
+       \strippedcsname\languages_process_discretionary_direct
      \fi
    \endcsname}
 
 \def\indirectdiscretionary
   {\csname
      \ifcase\discretionarymode
-       \strippedcsname\dononemodediscretionary
+       \strippedcsname\languages_process_discretionary_none
      \else
-       \strippedcsname\doindirectdiscretionary
+       \strippedcsname\languages_process_discretionary_indirect
      \fi
    \endcsname}
 
-\unexpanded\def\dodirectdiscretionary#1%
+\unexpanded\def\languages_process_discretionary_direct#1%
   {\edef\discretionarytoken{\detokenize{#1}}%
    \let\textmodediscretionary\compoundhyphen
-   \executeifdefined{\@tmd@action@\discretionarytoken}{\indirectdiscretionary{#1}}}
+   \executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
 
-\unexpanded\def\doindirectdiscretionary#1%
+\unexpanded\def\languages_process_discretionary_indirect#1%
   {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
 
 \unexpanded\def\definetextmodediscretionary #1
-  {\setvalue{\@tmd@action@\detokenize{#1}}}
+  {\setvalue{\??discretionaryaction\detokenize{#1}}}
 
 % \start \hsize 1mm
 % test |||test test|||, test\blank
@@ -373,7 +375,7 @@
 % xxx3xxx
 % xxx1<newline>2xxx
 
-\def\hyphenliketextmodediscretionary#1#2%
+\def\languages_discretionary_hyphen_like#1#2%
   {\ifconditional\spaceafterdiscretionary
      \prewordbreak\hbox{#1}\relax
    \else\ifconditional\punctafterdiscretionary
@@ -383,16 +385,16 @@
    \fi\fi}
 
 \definetextmodediscretionary {}
-  {\hyphenliketextmodediscretionary\textmodehyphen\textmodehyphendiscretionary}
+  {\languages_discretionary_hyphen_like\textmodehyphen\textmodehyphendiscretionary}
 
 \definetextmodediscretionary -
-  {\hyphenliketextmodediscretionary\normalhyphen\normalhyphendiscretionary}
+  {\languages_discretionary_hyphen_like\normalhyphen\normalhyphendiscretionary}
 
 \definetextmodediscretionary _
-  {\hyphenliketextmodediscretionary\composedhyphen\composedhyphendiscretionary}
+  {\languages_discretionary_hyphen_like\composedhyphen\composedhyphendiscretionary}
 
 \definetextmodediscretionary )
-  {\hyphenliketextmodediscretionary{)}{\discretionary{-)}{}{)}}}
+  {\languages_discretionary_hyphen_like{)}{\discretionary{-)}{}{)}}}
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint
@@ -456,10 +458,10 @@
 %D \goto{Some||Long||Word}
 %D \stoptyping
 
-\def\fakecompoundhyphen
-  {\def\|{\mathortext\vert\dofakecompoundhyphen}}
+\unexpanded\def\fakecompoundhyphen
+  {\def\|{\mathortext\vert\languages_fake_compound_hyphen}}
 
-\def\dofakecompoundhyphen
+\def\languages_fake_compound_hyphen
   {\def##1|%
      {\doifelsenothing{##1}\compoundhyphen{##1}%
       \kern\compoundbreakpoint\allowbreak}}
@@ -473,10 +475,10 @@
 %D earlier, this one also looks ahead for spaces and grouping
 %D tokens.
 
-\def\midworddiscretionary
-  {\futurelet\next\domidworddiscretionary}
+\unexpanded\def\midworddiscretionary
+  {\futurelet\next\languages_mid_word_discretionary}
 
-\def\domidworddiscretionary
+\def\languages_mid_word_discretionary
   {\ifx\next\blankspace\else
    \ifx\next\bgroup    \else
    \ifx\next\egroup    \else
@@ -523,10 +525,10 @@
 %D mentioned earlier in this module. We take care of two
 %D arguments, which complicates things a bit.
 
-\def\@nc@{@nc@} % normal character
-\def\@cc@{@cc@} % compound character
-\def\@cs@{@cs@} % compound characters
-\def\@cx@{@cx@} % compound definition
+\installcorenamespace{compoundnormal}
+\installcorenamespace{compoundsingle}
+\installcorenamespace{compoundmultiple}
+\installcorenamespace{compounddefinition}
 
 %D When we started working on MK IV code, we needed a different
 %D approach for defining the active character itself. In MK II as
@@ -534,38 +536,25 @@
 
 \setnewconstant\compoundcharactermode\plusone
 
+\newcount\c_languages_compound_character
+
 \def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
   {\ifcase\compoundcharactermode
       % ignore mode
    \else
-     \chardef\thecompoundcharacter`#1%
-     \expandafter\chardef\csname\@nc@\string#1\endcsname\thecompoundcharacter
+     \chardef\c_languages_compound_character`#1%
+     \expandafter\chardef\csname\??compoundnormal\string#1\endcsname\c_languages_compound_character
      \def\!!stringa{#3}%
-     \expandafter\def\csname\ifx\!!stringa\empty\@cc@\else\@cs@\fi\detokenize{#1#2#3}\endcsname{#4}%
-     \setevalue{\@cx@\detokenize{#1}}{\noexpand\handlecompoundcharacter{\detokenize{#1}}}% beter nr's
-     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\thecompoundcharacter\csname\@cx@\detokenize{#1}\endcsname
+     \expandafter\def\csname\ifx\!!stringa\empty\??compoundsingle\else\??compoundmultiple\fi\detokenize{#1#2#3}\endcsname{#4}%
+     \setevalue{\??compounddefinition\detokenize{#1}}{\noexpand\languages_handle_compound_character{\detokenize{#1}}}% beter nr's
+     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_languages_compound_character\csname\??compounddefinition\detokenize{#1}\endcsname
    \fi}
-
-%D In order to serve the language specific well, we will introduce
-%D a namespace:
-
-% \ifx\currentlanguage\undefined
-  \let\compoundcharacterclass\empty
-% \else
-%   \def\compoundcharacterclass{\currentlanguage}
-% \fi
-
-\def\@cc@{@cc@\compoundcharacterclass} % compound character
-\def\@cs@{@cs@\compoundcharacterclass} % compound characters
 
 %D We can also ignore definitions (needed in for instance \XML). Beware,
 %D this macro is supposed to be used grouped!
 
 \def\ignorecompoundcharacter
   {\compoundcharactermode\zerocount}
-
-\let\restorecompoundcharacter   \gobbleoneargument % obsolete
-\let\enableactivediscretionaries\relax             % obsolete
 
 %D In handling the compound characters we have to take care of
 %D \type{\bgroup} and \type{\egroup} tokens, so we end up with
@@ -579,39 +568,40 @@
 %D with \type{\futurelet} to prevent spaces from
 %D disappearing.
 
-\def\handlecompoundcharacter#1%
-  {\def\xhandlecompoundcharacter{\dohandlecompoundcharacter{#1}}%
-   \futurelet\next\xhandlecompoundcharacter}
+\def\languages_handle_compound_character#1%
+  {\def\languages_handle_compound_character_finish{\languages_handle_compound_character_finish_indeed{#1}}%
+   \futurelet\nexttoken\xhandlecompoundcharacter}
 
-\def\dohandlecompoundcharacter
-  {\ifx\next\bgroup
-    %\expandafter\dodohandlecompoundcharacter % handle "{ee} -> \"ee
-    %\expandafter\gobbleoneargument           % forget "{ee} -> ee
-     \expandafter\handlecompoundcharacterone  % ignore "{ee} -> "ee
-   \else\ifx\next\egroup
-     \doubleexpandafter\donohandlecompoundcharacter
-   \else\ifx\next\blankspace
-     \tripleexpandafter\donohandlecompoundcharacter
+\def\languages_handle_compound_character_finish_indeed
+  {\ifx\nexttoken\bgroup
+    %\expandafter\languages_handle_compound_character_pickup % handle "{ee} -> \"ee
+    %\expandafter\gobbleoneargument                          % forget "{ee} -> ee
+     \expandafter\languages_handle_compound_character_one    % ignore "{ee} -> "ee
+   \else\ifx\nexttoken\egroup
+     \doubleexpandafter\languages_handle_compound_character_normal
+   \else\ifx\nexttoken\blankspace
+     \tripleexpandafter\languages_handle_compound_character_normal
    \else
-     \tripleexpandafter\dodohandlecompoundcharacter
+     \tripleexpandafter\languages_handle_compound_character_pickup
    \fi\fi\fi}
 
-\def\donohandlecompoundcharacter#1{\csname\@nc@\string#1\endcsname}
+\def\languages_handle_compound_character_normal#1%
+  {\csname\??compoundnormal\string#1\endcsname}
 
-\def\dododohandlecompoundcharacter
-  {\ifx\next\bgroup
-     \expandafter\handlecompoundcharacterone
-   \else\ifx\next\egroup
-     \doubleexpandafter\handlecompoundcharacterone
-   \else\ifx\next\blankspace
-     \tripleexpandafter\handlecompoundcharacterone
+\def\languages_handle_compound_character_pickup#1#2% preserve space
+  {\def\languages_handle_compound_character_finish{\languages_handle_compound_character_finish_indeed#1#2}%
+   \futurelet\nexttoken\languages_handle_compound_character_finish}
+
+\def\languages_handle_compound_character_finish_indeed
+  {\ifx\nexttoken\bgroup
+     \expandafter\languages_handle_compound_character_one
+   \else\ifx\nexttoken\egroup
+     \doubleexpandafter\languages_handle_compound_character_one
+   \else\ifx\nexttoken\blankspace
+     \tripleexpandafter\languages_handle_compound_character_one
    \else
-     \tripleexpandafter\handlecompoundcharactertwo
+     \tripleexpandafter\languages_handle_compound_character_two
    \fi\fi\fi}
-
-\def\dodohandlecompoundcharacter#1#2% preserve space
-  {\def\xdodohandlecompoundcharacter{\dododohandlecompoundcharacter#1#2}%
-   \futurelet\next\xdodohandlecompoundcharacter}
 
 %D Besides taken care of the grouping and space tokens, we have
 %D to deal with three situations. First we look if the next
@@ -626,25 +616,25 @@
 %D
 %D In later modules we will see how these commands are used.
 
-\long\def\handlecompoundcharacterone#1#2%
+\def\languages_handle_compound_character_one#1#2%
   {\if\string#1\string#2% was: \ifx#1#2%
-     \def\next{\csname\@nc@\string#1\endcsname}%
-   \else\ifcsname\@cc@\string#1\string#2\endcsname
-     \def\next{\csname\@cc@\string#1\string#2\endcsname}%
+     \def\next{\csname\??compoundnormal\string#1\endcsname}%
+   \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
+     \def\next{\csname\??compoundsingle\string#1\string#2\endcsname}%
    \else
-     \def\next{\csname\@nc@\string#1\endcsname#2}%
+     \def\next{\csname\??compoundnormal\string#1\endcsname#2}%
    \fi\fi
    \next}
 
-\long\def\handlecompoundcharactertwo#1#2#3%
+\def\languages_handle_compound_character_two#1#2#3%
   {\if\string#1\string#2%
-     \def\next{\csname\@nc@\string#1\endcsname#3}%
-   \else\ifcsname\@cs@\string#1\string#2\string#3\endcsname
-     \def\next{\csname\@cs@\string#1\string#2\string#3\endcsname}%
-   \else\ifcsname\@cc@\string#1\string#2\endcsname
-     \def\next{\csname\@cc@\string#1\string#2\endcsname#3}%
+     \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
+   \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname
+     \def\next{\csname\??compoundmultiple\string#1\string#2\string#3\endcsname}%
+   \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
+     \def\next{\csname\??compoundsingle\string#1\string#2\endcsname#3}%
    \else
-     \def\next{\csname\@nc@\string#1\endcsname#2#3}%
+     \def\next{\csname\??compoundnormal\string#1\endcsname#2#3}%
    \fi\fi\fi
    \next}
 
@@ -652,8 +642,8 @@
 %D {lang-sla.tex}) we provide:
 
 \def\simplifiedcompoundcharacter#1#2%
-  {\ifcsname\@cc@\string#1\string#2\endcsname
-     \doubleexpandafter\firstofoneargument\csname\@cc@\string#1\string#2\endcsname
+  {\ifcsname\??compoundsingle\string#1\string#2\endcsname
+     \doubleexpandafter\firstofoneargument\csname\??compoundsingle\string#1\string#2\endcsname
    \else
      #2%
    \fi}
@@ -672,6 +662,6 @@
 %D
 %D Handy in for instance XML. (Kind of obsolete)
 
-\ifx\normalcompound\undefined \let\normalcompound=| \fi
+\ifdefined\normalcompound \else \let\normalcompound=| \fi
 
 \protect \endinput

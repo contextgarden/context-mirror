@@ -38,7 +38,15 @@
 %D \showsetup{setupfooter}
 %D \showsetup{setupbottom}
 
-\installcommandhandler \??tk {layoutelement} \??tk
+\installcorenamespace{layouttexts}
+\installcorenamespace{layouttextsline}
+\installcorenamespace{layouttextsreset}
+\installcorenamespace{layouttextssynchronize}
+\installcorenamespace{layouttextstrut}
+\installcorenamespace{layouttextspecial}
+\installcorenamespace{layouttextcontent}
+
+\installcommandhandler \??layouttexts {layoutelement} \??layouttexts
 
 % \appendtoks
 %     \resetlayoutelementparameter\c!lefttext   % resolves better
@@ -87,15 +95,15 @@
 \to \everysetuplayoutelement
 
 \def\reset_layout_element_status#vertical%
-  {\expandafter\gdef\csname\??tk:r:#vertical\endcsname{\set_layout_element_status_normal#vertical}}
+  {\expandafter\gdef\csname\??layouttextsreset#vertical\endcsname{\set_layout_element_status_normal#vertical}}
 
 \def\set_layout_element_status_normal#vertical%
   {\global\expandafter\let\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
-   \global\expandafter\let\csname\??tk:r:#vertical\endcsname\relax
+   \global\expandafter\let\csname\??layouttextsreset#vertical\endcsname\relax
    \synchronize_current_layout_element{#vertical}}
 
 \def\synchronize_current_layout_element#vertical%
-  {\xdef\previoustextstate{\getvalue{\??tk:x:#vertical}}%
+  {\xdef\previoustextstate{\csname\??layouttextssynchronize#vertical\endcsname}% can be a let
    \edef\currenttextstate {\namedlayoutelementparameter{#vertical}\c!state}%
   %\writestatus{>>}{[#vertical:\currenttextstate/\previoustextstate]}%
    \ifx\currenttextstate\previoustextstate \else
@@ -107,7 +115,7 @@
    \ifx\previoustextstate\v!high \calculatevsizes\recalculatebackgrounds \else
    \ifx\currenttextstate \v!none \calculatevsizes\recalculatebackgrounds \else
    \ifx\previoustextstate\v!none \calculatevsizes\recalculatebackgrounds \fi\fi\fi\fi
-   \letgvalue{\??tk:x:#vertical}\currenttextstate}
+   \letgvalue{\??layouttextssynchronize#vertical}\currenttextstate}
 
 \unexpanded\def\setuptop   {\dotripleempty\setup_layout_text[\v!top   ]}
 \unexpanded\def\setupheader{\dotripleempty\setup_layout_text[\v!header]}
@@ -241,60 +249,6 @@
      \resetlayoutelementparameter\c!middletext
    \fi\fi\fi\fi\fi}
 
-% \def\setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
-%   {\ifsixthargument
-%      \edef\currentlayoutelement{#vertical:#horizontal}%
-%      \setlayoutelementparameter\c!lefttext
-%        {\process_layout_element_double
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
-%      \setlayoutelementparameter\c!righttext
-%        {\process_layout_element_double
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#c}}%
-%    \else\iffifthargument
-%      \sixthargumenttrue
-%      \setup_texts[#vertical][\v!text][#horizontal][#a][#b][#c]%
-%    \else\iffourthargument
-%      \edef\currentlayoutelement{#vertical:#horizontal}%
-%      \doifelsenothing{\detokenize{#a}}
-%        {\resetlayoutelementparameter\c!lefttext}
-%        {\setlayoutelementparameter\c!lefttext
-%           {\process_layout_element_double
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
-%      \doifelsenothing{\detokenize{#b}}
-%        {\resetlayoutelementparameter\c!righttext}
-%        {\setlayoutelementparameter\c!righttext
-%           {\process_layout_element_double
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}%
-%    \else\ifthirdargument
-%      \fourthargumenttrue
-%      \setup_texts[#vertical][\v!text][#horizontal][#horizontal][][]%
-%    \else\ifsecondargument
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \doifelsenothing{\detokenize{#horizontal}}
-%        {\resetlayoutelementparameter\c!middletext}
-%        {\setlayoutelementparameter\c!middletext
-%           {\process_layout_element_single\c!style\c!color\c!width{#horizontal}}}%
-%    \else
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%      \edef\currentlayoutelement{#vertical:\v!margin}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%      \edef\currentlayoutelement{#vertical:\v!edge}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%    \fi\fi\fi\fi\fi}
-
 %D Left and right texts are swapped on odd and even pages, but
 %D only when double sided typesetting is enabled.
 
@@ -303,10 +257,10 @@
      \process_layout_element_double_odd
      \process_layout_element_double_even}
 
-\def\process_layout_element_double_odd #lstyle#lstyle#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
-  {\process_layout_element_single#lstyle#lstyle#lwidth{#lcontent}}
+\def\process_layout_element_double_odd #lstyle#lcolor#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
+  {\process_layout_element_single#lstyle#lcolor#lwidth{#lcontent}}
 
-\def\process_layout_element_double_even#lstyle#lstyle#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
+\def\process_layout_element_double_even#lstyle#color#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
   {\process_layout_element_single#rstyle#rcolor#rwidth{#rcontent}}
 
 %D The next macro will be cleaned up and made less messy and
@@ -320,14 +274,14 @@
      \process_layout_element_single_indeed#style#color#width{#content}%
    \fi}
 
-\setvalue{\??tk:s:\v!yes}{\setstrut\strut} % maybe more variants
+\setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
 
 \def\process_layout_element_single_indeed#style#color#width#content%
   {\begingroup
    \uselayoutelementstyleandcolor#style#color%
-   \csname\??tk:s:\layoutelementparameter\c!strut\endcsname
-   \ifcsname\??tk:p:\layout_element_content\endcsname
-     \csname\??tk:p:\layout_element_content\endcsname
+   \csname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
+   \ifcsname\??layouttextspecial\layout_element_content\endcsname
+     \csname\??layouttextspecial\layout_element_content\endcsname
    \else
      \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
      \ifx\currentlayoutelementwidth\empty
@@ -350,8 +304,8 @@
      {\limitatetext{\getmarking[\layout_element_content][\v!first]}\currentlayoutelementwidth\unknown}
      {\ignorecrlf\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}}
 
-\setvalue{\??tk:p:\v!pagenumber}{\place_layout_page_number}
-\setvalue{\??tk:p:\v!date      }{\currentdate}
+\setvalue{\??layouttextspecial\v!pagenumber}{\place_layout_page_number}
+\setvalue{\??layouttextspecial\v!date      }{\currentdate}
 
 %D When specified, the texts are automatically limited in
 %D length.
@@ -398,7 +352,7 @@
 
 \unexpanded\def\place_layout_text_line#vertical%
   {\set_layout_element_status#vertical%
-   \csname\??tk:l:\ifcsname\??tk:l:\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#vertical}
+   \csname\??layouttextsline\ifcsname\??layouttextsline\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#vertical}
 
 \unexpanded\def\doifelselayouttextline#vertical% shown or not
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
@@ -422,32 +376,31 @@
 
 \newconditional\resyncaftertextline
 
-\setvalue{\??tk:l:\v!normal}{\place_layout_text_line_indeed}
-\setvalue{\??tk:l:\empty   }{\place_layout_text_line_indeed}
+\setvalue{\??layouttextsline\v!normal}{\place_layout_text_line_indeed}
+\setvalue{\??layouttextsline\empty   }{\place_layout_text_line_indeed}
 
-\letvalue{\??tk:l:\v!none}\gobbletwoarguments
-\letvalue{\??tk:l:\v!stop}\gobbletwoarguments
+\letvalue{\??layouttextsline\v!none}\gobbletwoarguments
+\letvalue{\??layouttextsline\v!stop}\gobbletwoarguments
 
-\setvalue{\??tk:l:\v!high}#vertical#height%
+\setvalue{\??layouttextsline\v!high}#vertical#height%
   {\global\settrue\resyncaftertextline
    \reset_layout_element_status#vertical}
 
-\setvalue{\??tk:l:\v!empty}#vertical#height%
+\setvalue{\??layouttextsline\v!empty}#vertical#height%
   {\reset_layout_element_status#vertical}
 
-\setvalue{\??tk:l:\v!start}#vertical#height%
+\setvalue{\??layouttextsline\v!start}#vertical#height%
   {\reset_layout_element_status#vertical%
    \place_layout_text_line_indeed#vertical#height}
 
-\setvalue{\??tk:l:\v!nomarking}#vertical#height%
+\setvalue{\??layouttextsline\v!nomarking}#vertical#height%
   {\bgroup
    \reset_layout_element_status#vertical%
    \settrue\inhibitgetmarking
-   \let\dogetmarking\nogetmarking % obsolete in new marking mechanism
    \place_layout_text_line_indeed#vertical#height%
    \egroup}
 
-\setvalue{\??tk:l:\s!unknown}#vertical#height%
+\setvalue{\??layouttextsline\s!unknown}#vertical#height%
   {\global\settrue\resyncaftertextline
    \begingroup % new
    \reset_layout_element_status#vertical%
@@ -462,11 +415,11 @@
 %D is flushed.
 
 \def\resetlayouttextlines % public
-  {\csname\??tk:r:\v!top   \endcsname
-   \csname\??tk:r:\v!header\endcsname
-   \csname\??tk:r:\v!text  \endcsname
-   \csname\??tk:r:\v!footer\endcsname
-   \csname\??tk:r:\v!bottom\endcsname
+  {\csname\??layouttextsreset\v!top   \endcsname
+   \csname\??layouttextsreset\v!header\endcsname
+   \csname\??layouttextsreset\v!text  \endcsname
+   \csname\??layouttextsreset\v!footer\endcsname
+   \csname\??layouttextsreset\v!bottom\endcsname
    \ifconditional\resyncaftertextline
      \calculateglobalvsizes
      \recalculatebackgrounds
@@ -480,12 +433,12 @@
 
 \def\set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
   {\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??tk:c:\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
        {\process_layout_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#three}}%
    \else\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??tk:c:\c!text:#one}\c!middletext}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\c!text:#one}\c!middletext}%
        {\process_layout_element_double
           \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
           \c!rightstyle\c!rightcolor\c!rightwidth{#two}}%
@@ -502,16 +455,16 @@
 \def\reset_text_content[#vertical][#horizontal][#tag]% header text middle
   {\edef\currentlayoutelement{#vertical:#horizontal}%
    \ifthirdargument
-     \letvalueempty{\layoutelementhash\executeifdefined{\??tk:c:\c!text:#tag}\c!middletext}%
+     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\c!text:#tag}\c!middletext}%
    \else\ifsecondargument
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
    \fi\fi}
 
-\letvalue{\??tk:c:\c!middle:\c!text}\c!middletext
-\letvalue{\??tk:c:\c!left  :\c!text}\c!lefttext
-\letvalue{\??tk:c:\c!right :\c!text}\c!righttext
+\letvalue{\??layouttextcontent\c!middle:\c!text}\c!middletext
+\letvalue{\??layouttextcontent\c!left  :\c!text}\c!lefttext
+\letvalue{\??layouttextcontent\c!right :\c!text}\c!righttext
 
 %D The placement of a whole line is handled by the next two
 %D macros. These are hooked into the general purpose token
@@ -527,22 +480,22 @@
 
 \def\place_layout_text_line_left_or_right#height%
   {\goleftonpage
-%  \hbox{%
-      \setbox\layout_element_box\vbox to #height
-        {\vsize#height\relax
-         \normalbaselines
-         \let\\\ignoredlinebreak
-         \let\crlf\ignoredlinebreak
-         \namedlayoutelementparameter\currentlayouttextline\c!before
-         \doifbothsidesoverruled
-           \place_layout_text_line_right
-           \place_layout_text_line_right
-           \place_layout_text_line_left
-         \namedlayoutelementparameter\currentlayouttextline\c!after
-         \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
-      \dp\layout_element_box\zeropoint
-      \box\layout_element_box
-%  }%
+   \setbox\layout_element_box\vbox to #height
+     {\vsize#height\relax
+     %\hsize\zeropoint % hack so that e.g. after=\hairline gives predictable results
+      \hsize\totaltextwidth
+      \normalbaselines
+      \let\\\ignoredlinebreak
+      \let\crlf\ignoredlinebreak
+      \namedlayoutelementparameter\currentlayouttextline\c!before
+      \doifbothsidesoverruled
+        \place_layout_text_line_right
+        \place_layout_text_line_right
+        \place_layout_text_line_left
+      \namedlayoutelementparameter\currentlayouttextline\c!after
+      \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+   \dp\layout_element_box\zeropoint
+   \box\layout_element_box
    \vskip-#height\relax}
 
 \let\extra_at_margin_left \plusone
@@ -630,7 +583,7 @@
 
 \def\place_layout_element_indeed#width#content%
   {\vbox % to \vsize
-     {\hsize#1\relax
+     {\hsize#width\relax
       \layoutelementparameter\c!before
       \setlayoutcomponentattribute\currentlayoutelement
       \hbox \layoutcomponentboxattribute to #width{#content}%
@@ -911,7 +864,7 @@
       \vbox \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth
-         \hsize\textwidth      % local variant of \sethsize
+         \hsize\textwidth      % local variant of \sethsize  <<< in columns?
          \boxmaxdepth\maxdepth
          \noindent             % content can be < \hsize
          \dopagecontents#2#3}%

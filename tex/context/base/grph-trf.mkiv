@@ -70,7 +70,11 @@
 
 % we can let sx/sy win (first check)
 
-\installcommandhandler \??xy {scale} \??xy % we can have instances
+\installcorenamespace{scale}
+\installcorenamespace{scalegrid}
+\installcorenamespace{scalenorm}
+
+\installcommandhandler \??scale {scale} \??scale % we can have instances
 
 \setupscale
   [\c!sx=1,
@@ -112,7 +116,7 @@
    \dowithnextboxcs\transforms_scale_finish\hbox}
 
 \def\transforms_scale_finish
-  {%
+  {% todo: p_scale_
    \edef\p_scale      {\scaleparameter\c!scale      }%
    \edef\p_xscale     {\scaleparameter\c!xscale     }%
    \edef\p_yscale     {\scaleparameter\c!yscale     }%
@@ -251,18 +255,18 @@
    \xdef\finalscaleboxxscale {\withoutpt\the\dimexpr\m_transforms_scale_temp_x\points/\plushundred\relax}%
    \xdef\finalscaleboxyscale {\withoutpt\the\dimexpr\m_transforms_scale_temp_y\points/\plushundred\relax}}
 
-\setvalue{\??xy:\c!grid:\v!yes     }{\getnoflines   \d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
-\setvalue{\??xy:\c!grid:\v!height  }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
-\setvalue{\??xy:\c!grid:\v!depth   }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
-\setvalue{\??xy:\c!grid:\v!halfline}{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
-\setvalue{\??xy:\c!grid:\v!fit     }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
-\letvalue{\??xy:\c!grid:\empty     }\donothing
+\setvalue{\??scalegrid\v!yes     }{\getnoflines   \d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\setvalue{\??scalegrid\v!height  }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
+\setvalue{\??scalegrid\v!depth   }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
+\setvalue{\??scalegrid\v!halfline}{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
+\setvalue{\??scalegrid\v!fit     }{\getrawnoflines\d_transforms_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\letvalue{\??scalegrid\empty     }\donothing
 
 \def\transforms_scale_check_parameters % resolve self referencing loops
   {\ifx\p_maxwidth \empty\else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
    \ifx\p_maxheight\empty\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
    \ifx\p_lines    \empty\else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
-   \getvalue{\??xy:\c!grid:\scaleparameter\c!grid}}
+   \getvalue{\??scalegrid\scaleparameter\c!grid}}
 
 \def\transforms_scale_by_nature % where ! ! ! ! !
   {\ifx\p_width \empty\else \global\d_transforms_scale_used_x_size\p_width \fi
@@ -407,15 +411,15 @@
    \fi}
 
 \def\transforms_scale_calculate_norm#1#2% todo: swap 1 and 2 and pass one less
-  {\csname\??ef:n:\ifcsname\??ef:n:#2\endcsname#2\else\s!unknown\fi\endcsname#1#2}
+  {\csname\??scalenorm\ifcsname\??scalenorm#2\endcsname#2\else\s!unknown\fi\endcsname#1#2}
 
-\setvalue{\??ef:n:\v!max    }#1#2#3#4#5{\global#1#4}
-\setvalue{\??ef:n:\v!fit    }#1#2#3#4#5{\global#1#5}
-\setvalue{\??ef:n:\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\@@exbodyfont\relax}
-\setvalue{\??ef:n:\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\@@exbodyfont/10\relax\relax} % brr ex
-\setvalue{\??ef:n:\v!auto   }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
-\setvalue{\??ef:n:\empty    }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
-\setvalue{\??ef:n:\s!default}#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
+\setvalue{\??scalenorm\v!max    }#1#2#3#4#5{\global#1#4}
+\setvalue{\??scalenorm\v!fit    }#1#2#3#4#5{\global#1#5}
+\setvalue{\??scalenorm\v!broad  }#1#2#3#4#5{\global#1\dimexpr#5-4\@@exbodyfont\relax}
+\setvalue{\??scalenorm\s!unknown}#1#2#3#4#5{\global#1\dimexpr#2\dimexpr\@@exbodyfont/10\relax\relax} % brr ex
+\setvalue{\??scalenorm\v!auto   }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
+\setvalue{\??scalenorm\empty    }#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
+\setvalue{\??scalenorm\s!default}#1#2#3#4#5{\ifx#3\empty\else\global#1#3\fi}
 
 \def\transforms_scale_calculate_scales#1#2#3#4%
   {\scratchdimen\dimexpr#1/\dimexpr#2/\plusthousand\relax\relax
@@ -616,7 +620,7 @@
    \setbox\nextbox\hbox                            % old
      {\advance\!!dimenc -\@@cpleftoffset           % new !
       \advance\!!dimend -\@@cpbottomoffset         % new ! % - added
-      \hskip-\!!dimenc\lower\!!dimend\flushnextbox}% old
+      \hskip-\!!dimenc\lower\!!dimend\box\nextbox}% old
    \wd\nextbox\zeropoint
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
@@ -631,7 +635,7 @@
    \setbox\nextbox\hbox                       % new !
      {\!!dimena-\@@cpleftoffset               % new !
       \!!dimenb \@@cpbottomoffset             % new ! % - removed
-      \hskip\!!dimena\lower\!!dimenb\flushnextbox}% new !
+      \hskip\!!dimena\lower\!!dimenb\box\nextbox}% new !
    \wd\nextbox\!!dimena
    \ht\nextbox\!!dimenb
    \dp\nextbox\zeropoint
@@ -686,10 +690,327 @@
   {\dontshowcomposition
    \scratchdimen\wd\nextbox
    % better use an hbox (if no \forgetall, leftskip etc may creep in)
-   %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\wd\nextbox\flushnextbox\dostopmirroring}%
-   \setbox\nextbox\hbox{\dostartmirroring\hskip-\wd\nextbox\flushnextbox\dostopmirroring}%
+   %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
+   \setbox\nextbox\hbox{\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
    \wd\nextbox\scratchdimen
    \box\nextbox
    \egroup}
+
+%D A couple of examples, demonstrating how the depth is
+%D taken care of:
+%D
+%D \startbuffer
+%D test\rotate[frame=on, rotation=0]  {gans}%
+%D test\rotate[frame=on, rotation=90] {gans}%
+%D test\rotate[frame=on, rotation=180]{gans}%
+%D test\rotate[frame=on, rotation=270]{gans}%
+%D test
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% When we rotate over arbitrary angles, we need to relocate the
+% resulting box because rotation brings that box onto the negative
+% axis. The calculations (mostly sin and cosine) need to be tuned for
+% the way a box is packages (i.e. the refence point). A typical example
+% of drawing, scribbling, and going back to the days of school math.
+%
+% We do a bit more calculations than needed, simply because that way
+% it's easier to debug the code.
+
+% Cleanup in progress ... todo: less boxing
+
+\installcorenamespace {rotate}
+\installcorenamespace {rotatelocation}
+\installcorenamespace {rotatepreset}
+
+% we can alias these to \d_layers-* to save some dimens or maybe have a generic
+% set of scratch variables
+
+% maybe just \rotation_...
+
+\newdimen\d_transforms_rotation_x_size
+\newdimen\d_transforms_rotation_y_size
+\newdimen\d_transforms_rotation_x_offset
+\newdimen\d_transforms_rotation_y_offset
+\newdimen\d_transforms_rotation_x_position
+\newdimen\d_transforms_rotation_y_position
+
+\newdimen\d_transforms_rotation_used_height
+
+\let\d_transforms_rotation_width \!!widtha
+\let\d_transforms_rotation_height\!!heighta
+\let\d_transforms_rotation_depth \!!deptha
+
+\let\d_transforms_rotation_saved_width \!!widthb
+\let\d_transforms_rotation_saved_height\!!heightb
+\let\d_transforms_rotation_saved_depth \!!depthb
+
+\newconditional\c_transforms_rotation_obey_depth
+\newconditional\c_transforms_rotation_not_fit
+\newconditional\c_transforms_rotation_center
+
+\installframedcommandhandler \??rotate {rotate} \??rotate
+
+\setuprotate
+  [\c!rotation=90,
+   \c!location=\v!normal,
+   \c!width=\v!fit,
+   \c!height=\v!fit,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off]
+
+\let\p_rotation_location\empty
+\let\p_rotation_rotation\empty
+
+\unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
+  {\bgroup
+   \dosingleempty\transforms_rotate}
+
+\def\transforms_rotate[#1]%
+  {\iffirstargument
+     \setupcurrentrotate[#1]%
+   \fi
+   \edef\p_rotation_location{\rotateparameter\c!location}%
+   \edef\p_rotation_rotation{\rotateparameter\c!rotation}%
+   \csname\??rotatelocation
+     \ifcsname\??rotatelocation\p_rotation_location\endcsname\p_rotation_location\else\v!default\fi
+   \endcsname}
+
+\def\transforms_rotate_framed
+  {\resetrotateparameter\c!location
+   \dowithnextboxcs\transforms_rotate_finish\vbox
+   \inheritedrotateframed}
+
+\def\transforms_rotate_normal
+  {\dowithnextboxcs\transforms_rotate_finish\vbox}
+
+\def\transforms_rotate_finish
+  {\transforms_rotation_finish_indeed
+   \egroup}
+
+\setvalue{\??rotatelocation\v!depth}%
+  {\setfalse\c_transforms_rotation_not_fit
+   \setfalse\c_transforms_rotation_center
+   \settrue \c_transforms_rotation_obey_depth
+   \transforms_rotate_normal}
+
+\setvalue{\??rotatelocation\v!fit}%
+  {\settrue \c_transforms_rotation_not_fit
+   \setfalse\c_transforms_rotation_center
+   \settrue \c_transforms_rotation_obey_depth
+   \transforms_rotate_normal}
+
+\setvalue{\??rotatelocation\v!broad}%
+  {\setfalse\c_transforms_rotation_not_fit
+   \setfalse\c_transforms_rotation_center
+   \setfalse\c_transforms_rotation_obey_depth
+   \transforms_rotate_normal}
+
+\setvalue{\??rotatelocation\v!high}%
+  {\setfalse\c_transforms_rotation_not_fit
+   \setfalse\c_transforms_rotation_center
+   \setfalse\c_transforms_rotation_obey_depth
+   \transforms_rotate_framed}
+
+\setvalue{\??rotatelocation\v!middle}%
+  {\setfalse\c_transforms_rotation_not_fit
+   \settrue \c_transforms_rotation_center
+   \setfalse\c_transforms_rotation_obey_depth  % hm, depth ?
+   \transforms_rotate_normal}
+
+\setvalue{\??rotatelocation\v!default}%
+  {\setfalse\c_transforms_rotation_not_fit
+   \setfalse\c_transforms_rotation_center
+   \settrue \c_transforms_rotation_obey_depth
+   \transforms_rotate_framed}
+
+\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
+  {\ifcase#1\relax
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\transforms_rotation_box
+   \fi{#1}}
+
+\def\transforms_rotation_box#1% {angle} \hbox/\vbox/\vtop
+  {\bgroup
+   \hbox\bgroup % compatibility hack
+     \edef\p_rotation_rotation{#1}%
+     \dowithnextboxcs\transforms_rotation_finish}
+
+\def\transforms_rotation_finish
+  {\getvalue{\??rotatelocation\v!broad}%
+   \transforms_rotation_finish_indeed
+   \egroup
+   \egroup}
+
+\def\transforms_rotation_finish_indeed
+  {\hbox\bgroup
+     \ifx\p_rotation_rotation\empty
+       \transforms_rotation_finish_nop
+     \else
+       \transforms_rotation_finish_yes
+     \fi
+   \egroup}
+
+\def\transforms_rotation_finish_nop
+  {\boxcursor\box\nextbox}
+
+\setvalue{\??rotatepreset\v!left}%
+  {\edef\p_rotation_rotation{\doifoddpageelse{90}{270}}}
+
+\setvalue{\??rotatepreset\v!right}%
+  {\edef\p_rotation_rotation{\doifoddpageelse{270}{90}}}
+
+\setvalue{\??rotatepreset\v!inner}%
+  {\signalrightpage
+   \doifrightpageelse{\def\p_rotation_rotation{270}}{\def\p_rotation_rotation{90}}}
+
+\setvalue{\??rotatepreset\v!outer}%
+  {\signalrightpage
+   \doifrightpageelse{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
+
+\setvalue{\??rotatepreset\v!default}%
+  {\edef\p_rotation_rotation{\realnumber{\p_rotation_rotation}}}% get rid of leading zeros and spaces
+
+\def\transforms_rotation_finish_yes
+  {\csname\??rotatepreset
+     \ifcsname\??rotatepreset\p_rotation_rotation\endcsname\p_rotation_rotation\else\v!default\fi
+   \endcsname
+   \setbox\nextbox\vbox{\box\nextbox}% not really needed
+   \dontshowcomposition
+   \dontcomplain
+   \ifconditional\c_transforms_rotation_center
+     \d_transforms_rotation_saved_width \wd\nextbox
+     \d_transforms_rotation_saved_height\ht\nextbox
+     \d_transforms_rotation_saved_depth \dp\nextbox
+     \setbox\nextbox\vbox{\vskip.5\ht\nextbox\hskip-.5\wd\nextbox\box\nextbox}%
+     \smashbox\nextbox
+   \fi
+   \d_transforms_rotation_width \wd\nextbox
+   \d_transforms_rotation_height\ht\nextbox
+   \d_transforms_rotation_depth \dp\nextbox
+   \setbox\nextbox\vbox{\hbox{\raise\dp\nextbox\box\nextbox}}%
+   \d_transforms_rotation_used_height \ht\nextbox
+   % much of the next happens in lua (all the sin and cos) so we can do that in
+   % one go if needed
+   \setcalculatedcos\cos\p_rotation_rotation
+   \setcalculatedsin\sin\p_rotation_rotation
+   \ifdim\sin\points>\zeropoint
+     \ifdim\cos\points>\zeropoint
+       \transforms_rotation_calculate_a
+       \transforms_rotation_apply
+     \else
+       \transforms_rotation_calculate_b
+       \transforms_rotation_apply
+       \wd\nextbox\ifconditional\c_transforms_rotation_not_fit\sin\d_transforms_rotation_depth\else\d_transforms_rotation_x_size\fi
+     \fi
+   \else
+     \ifdim\cos\points<\zeropoint
+       \transforms_rotation_calculate_c
+       \transforms_rotation_apply
+       \wd\nextbox\ifconditional\c_transforms_rotation_not_fit\negated\sin\d_transforms_rotation_height\else\d_transforms_rotation_x_size\fi
+     \else\ifdim\sin\points=\zeropoint
+       \transforms_rotation_calculate_d
+       \transforms_rotation_apply
+       % no wd ?
+     \else
+       \transforms_rotation_calculate_e
+       \transforms_rotation_apply
+       \wd\nextbox\ifconditional\c_transforms_rotation_not_fit\negated\sin\d_transforms_rotation_height\else\d_transforms_rotation_x_size\fi
+     \fi\fi
+   \fi
+   \ifconditional\c_transforms_rotation_center
+     \setbox\nextbox\vbox{\vskip-.5\d_transforms_rotation_saved_height\hskip.5\d_transforms_rotation_saved_height\box\nextbox}%
+     \wd\nextbox\d_transforms_rotation_saved_width
+     \ht\nextbox\d_transforms_rotation_saved_height
+     \dp\nextbox\d_transforms_rotation_saved_depth
+   \fi
+   \boxcursor\box\nextbox}
+
+\def\transforms_rotation_calculate_a
+  {\d_transforms_rotation_x_size\dimexpr\cos\d_transforms_rotation_width+\sin\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_y_size\dimexpr\sin\d_transforms_rotation_width+\cos\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_x_position\zeropoint
+   \d_transforms_rotation_y_position\cos\d_transforms_rotation_used_height
+   \ifconditional\c_transforms_rotation_not_fit
+     \d_transforms_rotation_x_offset\dimexpr\negated\sin\d_transforms_rotation_used_height+\sin\d_transforms_rotation_depth\relax
+   \fi
+   \ifconditional\c_transforms_rotation_obey_depth
+     \d_transforms_rotation_y_offset\cos\d_transforms_rotation_depth
+   \fi}
+
+\def\transforms_rotation_calculate_b
+  {\d_transforms_rotation_x_size\dimexpr\negated\cos\d_transforms_rotation_width+\sin\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_y_size\dimexpr\sin\d_transforms_rotation_width+\negated\cos\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_x_position\negated\cos\d_transforms_rotation_width
+   \d_transforms_rotation_y_position\zeropoint
+   \ifconditional\c_transforms_rotation_not_fit
+     \d_transforms_rotation_x_offset\dimexpr-\d_transforms_rotation_x_size+\sin\d_transforms_rotation_depth\relax
+   \fi
+   \ifconditional\c_transforms_rotation_obey_depth
+     \d_transforms_rotation_y_offset\negated\cos\d_transforms_rotation_height
+   \fi}
+
+\def\transforms_rotation_calculate_c
+  {\d_transforms_rotation_x_size\dimexpr\negated\cos\d_transforms_rotation_width+\negated\sin\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_y_size\dimexpr\negated\sin\d_transforms_rotation_width+\negated\cos\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_x_position\d_transforms_rotation_x_size
+   \d_transforms_rotation_y_position\negated\sin\d_transforms_rotation_width
+   \ifconditional\c_transforms_rotation_not_fit
+     \d_transforms_rotation_x_offset\dimexpr-\d_transforms_rotation_x_size+\negated\sin\d_transforms_rotation_height\relax
+   \fi
+   \ifconditional\c_transforms_rotation_obey_depth
+     \d_transforms_rotation_y_offset\dimexpr\d_transforms_rotation_y_size+\cos\d_transforms_rotation_depth\relax
+   \fi}
+
+\def\transforms_rotation_calculate_d
+  {\d_transforms_rotation_x_size\dimexpr\cos\d_transforms_rotation_width+\negated\sin\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_y_size\dimexpr\negated\sin\d_transforms_rotation_width+\cos\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_x_position\zeropoint
+   \d_transforms_rotation_y_position\d_transforms_rotation_y_size
+   \d_transforms_rotation_x_offset\zeropoint
+   \ifconditional\c_transforms_rotation_obey_depth
+     \d_transforms_rotation_y_offset\d_transforms_rotation_depth
+   \fi}
+
+\def\transforms_rotation_calculate_e
+  {\d_transforms_rotation_x_size\dimexpr\cos\d_transforms_rotation_width+\negated\sin\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_y_size\dimexpr\negated\sin\d_transforms_rotation_width+\cos\d_transforms_rotation_used_height\relax
+   \d_transforms_rotation_x_position\negated\sin\d_transforms_rotation_used_height
+   \d_transforms_rotation_y_position\d_transforms_rotation_y_size
+   \ifconditional\c_transforms_rotation_not_fit
+     \d_transforms_rotation_x_offset\dimexpr-\d_transforms_rotation_x_size+\negated\sin\d_transforms_rotation_height\relax
+   \fi
+   \ifconditional\c_transforms_rotation_obey_depth
+     \d_transforms_rotation_y_offset\negated\sin\d_transforms_rotation_depth
+   \fi}
+
+\def\transforms_rotation_apply
+  {\setbox\nextbox\vbox to \d_transforms_rotation_y_size
+     {\vfill
+      \hbox to \d_transforms_rotation_x_size
+        {\dostartrotation\p_rotation_rotation
+           \wd\nextbox\zeropoint
+           \ht\nextbox\zeropoint
+           \box\nextbox
+         \dostoprotation
+         \hfill}%
+      \kern\d_transforms_rotation_y_position}%
+   \setbox\nextbox\hbox
+     {\kern\dimexpr\d_transforms_rotation_x_position+\d_transforms_rotation_x_offset\relax
+      \lower\d_transforms_rotation_y_offset\box\nextbox}}
+
+% \dostepwiserecurse{0}{360}{10}
+%   {\startlinecorrection[blank]
+%    \hbox
+%      {\expanded{\setuprotate[rotation=\recurselevel]}%
+%       \traceboxplacementtrue
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=depth] {\ruledhbox{\bfb  (depth)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=fit]   {\ruledhbox{\bfb    (fit)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=broad] {\ruledhbox{\bfb  (broad)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=normal]{\ruledhbox{\bfb (normal)}}}}%
+%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
+%    \stoplinecorrection}
 
 \protect \endinput

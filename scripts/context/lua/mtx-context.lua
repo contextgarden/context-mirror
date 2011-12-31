@@ -642,14 +642,16 @@ scripts.context.defaultformats  = {
 --  "plain"
 }
 
+local lpegpatterns, Cs, P = lpeg.patterns, lpeg.Cs, lpeg.P
+
+local pattern = lpegpatterns.utfbom^-1 * (P("%% ") + P("% ")) * Cs((1-lpegpatterns.newline)^1)
+
 local function analyze(filename) -- only files on current path
     local f = io.open(file.addsuffix(filename,"tex"))
     if f then
         local t = { }
         local line = f:read("*line") or ""
-        -- there can be an utf bomb in front: \254\255 or \255\254
-        -- a template line starts with % or %% (used in asciimode) followed by one or more spaces
-        local preamble = match(line,"^[\254\255]*%%%%?%s+(.+)$")
+        local preamble = lpeg.match(pattern,line)
         if preamble then
             for key, value in gmatch(preamble,"(%S+)%s*=%s*(%S+)") do
                 t[key] = value

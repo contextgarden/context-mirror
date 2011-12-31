@@ -21,8 +21,11 @@
 %D \macros
 %D   {setupformulas,setupsubformulas}
 
-\installcommandhandler \??fm {formula}    \??fm
-\installcommandhandler \??fn {subformula} \??fn % maybe just setuphandler (no childs used yet)
+\installcorenamespace{formula}
+\installcorenamespace{subformula}
+
+\installcommandhandler \??formula    {formula}    \??formula
+\installcommandhandler \??subformula {subformula} \??subformula % maybe just setuphandler (no childs used yet)
 
 \let\setupformulas   \setupformula
 \let\setupsubformulas\setupsubformula

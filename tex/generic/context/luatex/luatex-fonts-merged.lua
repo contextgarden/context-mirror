@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 12/23/11 09:52:45
+-- merge date  : 12/31/11 13:16:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -1942,8 +1942,8 @@ if not math.sind then
 end
 
 if not math.odd then
-    function math.odd (n) return n % 2 == 0 end
-    function math.even(n) return n % 2 ~= 0 end
+    function math.odd (n) return n % 2 ~= 0 end
+    function math.even(n) return n % 2 == 0 end
 end
 
 end -- closure

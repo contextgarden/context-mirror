@@ -36,15 +36,18 @@
 %
 % todo: flush margin floats at end of text
 
-\installcommandhandler \??mb {marginblock} \??mb
+\installcorenamespace{marginblock}
+\installcorenamespace{marginblocklocation}
+
+\installcommandhandler \??marginblock {marginblock} \??marginblock
 
 \let\setupmarginblocks\setupmarginblock
 
-\newconditional\page_margin_blocks_c % not really needed as we can check each time
+\newconditional\c_page_margin_blocks % not really needed as we can check each time
 
 \appendtoks
    \doifelse{\rootmarginblockparameter\c!state}\v!start
-     \settrue\setfalse\page_margin_blocks_c
+     \settrue\setfalse\c_page_margin_blocks
 \to \everysetupmarginblock
 
 \setupmarginblocks
@@ -132,9 +135,9 @@
    \fi}
 
 \def\page_margin_check_indeed
-  {\ifcsname\??mb::\c!location::\marginblockparameter\c!location\endcsname
+  {\ifcsname\??marginblocklocation\marginblockparameter\c!location\endcsname
      \page_margin_prepare_box
-     \csname\??mb::\c!location::\marginblockparameter\c!location\endcsname
+     \csname\??marginblocklocation\marginblockparameter\c!location\endcsname
    \else
      \global\page_margin_box\emptybox
    \fi}
@@ -156,16 +159,16 @@
       \box\page_margin_prepared_box
       \marginblockparameter\c!after}}
 
-\setvalue{\??mb::\c!location::\v!left    }{\page_margin_set_l_box}
-\setvalue{\??mb::\c!location::\v!right   }{\page_margin_set_r_box}
-\setvalue{\??mb::\c!location::\v!inmargin}{\doifbothsidesoverruled
-                                           \page_margin_set_r_box
-                                           \page_margin_set_r_box
-                                           \page_margin_set_l_box}
-\setvalue{\??mb::\c!location::\v!middle  }{\doifbothsidesoverruled
-                                           \page_margin_set_r_box
-                                           \page_margin_set_l_box
-                                           \page_margin_set_r_box}
+\setvalue{\??marginblocklocation\v!left    }{\page_margin_set_l_box}
+\setvalue{\??marginblocklocation\v!right   }{\page_margin_set_r_box}
+\setvalue{\??marginblocklocation\v!inmargin}{\doifbothsidesoverruled
+                                             \page_margin_set_r_box
+                                             \page_margin_set_r_box
+                                             \page_margin_set_l_box}
+\setvalue{\??marginblocklocation\v!middle  }{\doifbothsidesoverruled
+                                             \page_margin_set_r_box
+                                             \page_margin_set_l_box
+                                             \page_margin_set_r_box}
 
 \unexpanded\def\place_r_margin_block_yes
   {\setbox\page_margin_prepared_box\hbox to \rightmarginwidth
@@ -218,12 +221,12 @@
   {\someelsefloat[#options,\v!here]} % still an old name
 
 \def\page_margin_float_before
-  {\ifconditional\page_margin_blocks_c
+  {\ifconditional\c_page_margin_blocks
      \doifinset\v!margin\floatlocation\endgraf
    \fi}
 
 \def\page_margin_float_set_hsize
-  {\ifconditional\page_margin_blocks_c
+  {\ifconditional\c_page_margin_blocks
      \doifinset\v!margin\floatlocation{\hsize\rootmarginblockparameter\c!width}%
    \fi}
 

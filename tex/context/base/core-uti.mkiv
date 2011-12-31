@@ -17,7 +17,7 @@
 
 \registerctxluafile{core-uti}{1.001}
 
-\def\savecurrentvalue#1#2%
+\def\savecurrentvalue#1#2% immediate, so not \unexpanded
   {\ctxlua{job.variables.save("\strippedcsname#1","#2")}}
 
 \appendtoks
@@ -34,12 +34,5 @@
         job.initialize("\jobname.tuc","\jobname.tua")
     }%
 \to \everyjob
-
-\def\notuccompression{\ctxlua{job.pack=false}}
-
-%D Some styles might use these use these commands:
-
-\def\installprogram      {\dosingleempty\doinstallprogram}
-\def\doinstallprogram[#1]{\gobbleoneargument}
 
 \protect \endinput

@@ -65,6 +65,8 @@
 %D
 %D The last two cases concern the current language.
 
+\installcorenamespace{label}
+
 \let\currentlabelcategory\empty
 
 \def\definelabelclass
@@ -92,20 +94,20 @@
    \ifnum#2=\plustwo
      \def#3{#5#4}%
      \def#5##1##2% ##1=language
-       {\ifcsname\??ml:\currentlabelcategory#1:##1:##2\endcsname
-          \csname\??ml:\currentlabelcategory#1:##1:##2\endcsname
-        \else\ifcsname\??ml:#1:##1:##2\endcsname
-          \csname\??ml:#1:##1:##2\endcsname
+       {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
+          \csname\??label\currentlabelcategory#1:##1:##2\endcsname
+        \else\ifcsname\??label#1:##1:##2\endcsname
+          \csname\??label#1:##1:##2\endcsname
         \else\ifcsname\??la#4\s!default\endcsname
           \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
-        \else\ifcsname\??ml:\currentlabelcategory#1:##2\endcsname
-          \csname\??ml:\currentlabelcategory#1:##2\endcsname
-        \else\ifcsname\??ml:#1:##2\endcsname
-          \csname\??ml:#1:##2\endcsname
-        \else\ifcsname\??ml:\currentlabelcategory#1:\s!en:##2\endcsname
-          \csname\??ml:\currentlabelcategory#1:\s!en:##2\endcsname
-        \else\ifcsname\??ml:#1:\s!en:##2\endcsname
-          \csname\??ml:#1:\s!en:##2\endcsname
+        \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
+          \csname\??label\currentlabelcategory#1:##2\endcsname
+        \else\ifcsname\??label#1:##2\endcsname
+          \csname\??label#1:##2\endcsname
+        \else\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+          \csname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+        \else\ifcsname\??label#1:\s!en:##2\endcsname
+          \csname\??label#1:\s!en:##2\endcsname
         \else
           ##2%
         \fi\fi\fi\fi\fi\fi\fi}%
@@ -116,14 +118,14 @@
    \else
      \unexpanded\def#3{#5#4}%
      \unexpanded\def#5##1##2%
-       {\ifcsname\??ml:#1:##1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:##1:##2\endcsname
+       {\ifcsname\??label#1:##1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
         \else\ifcsname\??la#4\s!default\endcsname
           \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
-        \else\ifcsname\??ml:#1:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:##2\endcsname
-        \else\ifcsname\??ml:#1:\s!en:##2\endcsname
-          \expandafter\let\expandafter\thetextprefix\csname\??ml:#1:\s!en:##2\endcsname
+        \else\ifcsname\??label#1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
+        \else\ifcsname\??label#1:\s!en:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
         \else
           \let\thetextprefix\dummytextprefix
         \fi\fi\fi\fi}%
@@ -181,7 +183,7 @@
    \grabuntil{stop#1text}\start_some_text_prefix_indeed}
 
 \def\start_some_text_prefix_indeed#1% text (not special checking done here yet, only for long texts anyway)
-  {\expandafter\edef\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxlua{context(string.strip(\!!bs#1\!!es))}}\empty}}
+  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxlua{context(string.strip(\!!bs#1\!!es))}}\empty}}
 
 \def\setup_some_text_prefix[#1][#2]%
   {\ifsecondargument
@@ -204,7 +206,7 @@
      \expandafter\assign_some_text_prefix_yes
    \or
      % checking
-     \ifcsname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
+     \ifcsname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
        \expandafter\expandafter\expandafter\assign_some_text_prefix_nop
      \else
        \expandafter\expandafter\expandafter\assign_some_text_prefix_yes
@@ -214,24 +216,27 @@
      \expandafter\assign_some_text_prefix_dumb
    \fi{#1}}
 
+\let\m_languages_label_left \empty
+\let\m_languages_label_right\empty
+
 \def\assign_some_text_prefix_yes#1[#2,#3,#4]%
-  {\edef\!!stringa{#2}%
-   \edef\!!stringb{#3}%
-   \ifx\!!stringb\empty
-     \ifx\!!stringa\empty
-       \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
+  {\edef\m_languages_label_left {#2}%
+   \edef\m_languages_label_right{#3}%
+   \ifx\m_languages_label_right\empty
+     \ifx\m_languages_label_left\empty
+       \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
      \else
-       \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
+       \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
      \fi
    \else
-     \expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
+     \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
    \fi}
 
 \def\assign_some_text_prefix_nop#1[#2]%
   {}
 
 \def\assign_some_text_prefix_dumb#1[#2,#3]%
-  {\expandafter\def\csname\??ml:\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
+  {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 \definelabelclass [head]      [0] % titles
 \definelabelclass [label]     [0] % texts

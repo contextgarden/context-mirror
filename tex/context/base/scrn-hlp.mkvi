@@ -60,7 +60,9 @@
 
 \definesystemattribute[help][public]
 
-\installframedcommandhandler \??wp {help} \??wp
+\installcorenamespace{popuphelp}
+
+\installframedcommandhandler \??popuphelp {help} \??popuphelp
 
 \setuphelp
   [\c!frame=\v!off,
@@ -104,7 +106,7 @@
 
 \def\scrn_help_start_indeed[#reference]%
   {\edef\currenthelpreference{#reference}%
-   \dostartbuffer[\currenthelp][\e!start\currenthelp][\e!stop\currenthelp]}
+   \grabbufferdatadirect\currenthelp{\e!start\currenthelp}{\e!stop\currenthelp}}
 
 \unexpanded\def\scrn_help_stop
   {\iflocation

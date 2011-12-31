@@ -49,6 +49,8 @@
 
 \unprotect
 
+\installcorenamespace{chemicalsymbol}
+
 \unexpanded\def\setupchemical
   {\dosingleempty\dosetupchemical}
 
@@ -80,16 +82,16 @@
   {\dodoubleempty\dodefinechemicalsymbol}
 
 \def\dodefinechemicalsymbol[#1][#2]%
-  {\setvalue{\??cm::#1}{#2}}
+  {\setvalue{\??chemicalsymbol#1}{#2}}
 
 \unexpanded\def\chemicalsymbol[#1]%
-  {\getvalue{\??cm::#1}}
+  {\getvalue{\??chemicalsymbol#1}}
 
 % size (small medium big)
 
 \unexpanded\def\dosetchemicaltext
-  {\dousestyleparameter\@cmstyle
-   \dousecolorparameter\@cmcolor}
+  {\dousestyleparameter\@@cmstyle
+   \dousecolorparameter\@@cmcolor}
 
 \edef\chemicaltoplocation{t}
 \edef\chemicalbotlocation{b}
@@ -505,17 +507,17 @@
 %    \formulachemicalmid\expandafter{\the\formulachemicalmid\dodochemicalformulamid{#1}&}}
 %
 % \def\dodochemicalformulamid#1%
-%   {\ifcsname\??cm::\detokenize{#1}\endcsname
-%      \csname\??cm::\detokenize{#1}\expandafter\endcsname{}{}%
+%   {\ifcsname\??chemicalsymbol\detokenize{#1}\endcsname
+%      \csname\??chemicalsymbol\detokenize{#1}\expandafter\endcsname{}{}%
 %    \else
 %      \molecule{#1}{}{}%
 %    \fi}
 
 \def\domidformulachemical#1%
-  {\csname\??cm::\detokenize{#1}\endcsname}
+  {\csname\??chemicalsymbol\detokenize{#1}\endcsname}
 
 \def\doformulachemical#1#2#3% we could do hboxes and measure
-  {\ifcsname\??cm::\detokenize{#1}\endcsname
+  {\ifcsname\??chemicalsymbol\detokenize{#1}\endcsname
      \formulachemicalmid\expandafter{\the\formulachemicalmid\domidformulachemical{#1}{#2}{#3}}%
    \else
      \ifthirdargument

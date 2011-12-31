@@ -19,6 +19,10 @@
 % looks a bit like a hack. But in fact this method is obsolete and
 % eventually might go away.
 
+\installcorenamespace{graphictextext}
+\installcorenamespace{graphictexdepth}
+\installcorenamespace{graphictexarguments}
+
 \unexpanded\def\startTeXtexts#1\stopTeXtexts
   {#1}
 
@@ -28,23 +32,23 @@
   {\dosingleempty\mp_textext}
 
 \def\mp_textext[#1]#2#3% contrary to mkii we don't process yet but we do expand
-  {\setxvalue{\??gx:#2}{\mp_textext_indeed{#1}{#3}}}
+  {\setxvalue{\??graphictextext#2}{\mp_textext_indeed{#1}{#3}}}
 
 \unexpanded\def\mp_textext_indeed#1#2%
   {\begingroup
    \setbox\nextbox\hbox{#2}%
-   \executeifdefined{\??gx:m:#1}{\getvalue{\??gx:m:depth}}%
+   \executeifdefined{\??graphictexdepth#1}{\getvalue{\??graphictexdepth\s!depth}}%
    \box\nextbox
    \endgroup}
 
 \def\getTeXtext#1%
-  {\getvalue{\??gx:#1}}
+  {\getvalue{\??graphictextext#1}}
 
-\setvalue{\??gx:m:d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
-\setvalue{\??gx:m:n}{}                                                     % unchecked
+\setvalue{\??graphictexdepth d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
+\letvalue{\??graphictexdepth n}\donothing                                             % unchecked
 
-\setvalue  {\??gx:m:depth}{\getvalue{\??gx:m:d}}
-\setvalue{\??gx:m:nodepth}{\getvalue{\??gx:m:n}}
+\setvalue{\??graphictexdepth\s!depth  }{\getvalue{\??graphictexdepth d}}
+\letvalue{\??graphictexdepth\s!nodepth}\donothing
 
 % \definetextext[framed]{\framed}
 %
@@ -66,8 +70,8 @@
   {\def\currenttextext{#1}%
    \doifnextoptionalelse\mp_define_textext_one\mp_define_textext_zero}
 
-\def\mp_define_textext_one {\setvalue{\??gx:1:\currenttextext}}
-\def\mp_define_textext_zero{\setvalue{\??gx:0:\currenttextext}}
+\def\mp_define_textext_one {\setvalue{\??graphictexarguments1:\currenttextext}}
+\def\mp_define_textext_zero{\setvalue{\??graphictexarguments0:\currenttextext}}
 
 \def\sometxt#1#{\mp_some_txt{#1}}
 
@@ -80,20 +84,20 @@
 
 \def\mp_some_txt_indeed_yes[#1]%
   {\def\currenttextext{#1}%
-   \csname\??gx:%
-     \ifcsname\??gx:0:#1\endcsname0\else
-     \ifcsname\??gx:1:#1\endcsname1\else
-                                  ?\fi\fi
+   \csname\??graphictexarguments
+     \ifcsname\??graphictexarguments0:#1\endcsname0\else
+     \ifcsname\??graphictexarguments1:#1\endcsname1\else
+                                       ?\fi\fi
    \endcsname}
 
 \def\mp_some_txt_indeed_nop
   {}
 
-\setvalue{\??gx:?}{}
-\setvalue{\??gx:0}{\csname\??gx:0:\currenttextext\endcsname}
-\setvalue{\??gx:1}{\dosingleempty\mp_gx_one}
+\setvalue{\??graphictexarguments ?}{}
+\setvalue{\??graphictexarguments 0}{\csname\??graphictexarguments\currenttextext\endcsname}
+\setvalue{\??graphictexarguments 1}{\dosingleempty\mp_gx_one}
 
-\def\mp_gx_one{\csname\??gx:1:\currenttextext\endcsname}
+\def\mp_gx_one{\csname\??graphictexarguments1:\currenttextext\endcsname}
 
 % \definetextext[framed][#1]#2{\framed[width=4cm]{\switchtobodyfont[#1]#2}}
 % \definetextext[simple]{\framed[width=8cm]}

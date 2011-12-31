@@ -121,16 +121,22 @@
 %D variables). Redefining these constants can have disastrous
 %D results.
 
-\def\v!prefix! {v!}           \def\c!prefix! {c!}
-\def\s!prefix! {s!}           \def\p!prefix! {p!}
+\def\v!prefix! {v!}
+\def\c!prefix! {c!}
+\def\s!prefix! {s!}
 
-\def\s!next    {next}         \def\s!default {default}
-\def\s!dummy   {dummy}        \def\s!unknown {unknown}
+\def\s!next    {next}
+\def\s!default {default}
+\def\s!dummy   {dummy}
+\def\s!unknown {unknown}
 
-\def\s!do      {do}           \def\s!dodo    {dodo}
+\def\s!do      {do}
+\def\s!dodo    {dodo}
 
-\def\s!complex {complex}      \def\s!start   {start}
-\def\s!simple  {simple}       \def\s!stop    {stop}
+\def\s!complex {complex}
+\def\s!start   {start}
+\def\s!simple  {simple}
+\def\s!stop    {stop}
 
 \def\s!empty   {empty}
 
@@ -540,7 +546,7 @@
 
 \unexpanded\def\doifalldefinedelse#1%
   {\begingroup
-   \donetrue
+   \donetrue % we could use a reserved one and avoid the group
    \processcommalist[#1]\do_if_all_defined_else
    \ifdone
      \endgroup\expandafter\firstoftwoarguments
@@ -573,7 +579,7 @@
 %D \doifelse {string1} {string2} {then ...}{else ...}
 %D \stoptyping
 
-\def\doif#1#2%
+\unexpanded\def\doif#1#2%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
@@ -582,7 +588,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifnot#1#2%
+\unexpanded\def\doifnot#1#2%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
@@ -591,7 +597,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\def\doifelse#1#2%
+\unexpanded\def\doifelse#1#2%
   {\edef\!!stringa{#1}%
    \edef\!!stringb{#2}%
    \ifx\!!stringa\!!stringb
@@ -613,7 +619,7 @@
 %D
 %D This time, the string is not expanded.
 
-\def\doifemptyelse#1%
+\unexpanded\def\doifemptyelse#1%
   {\def\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\firstoftwoarguments
@@ -621,7 +627,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\def\doifempty#1%
+\unexpanded\def\doifempty#1%
   {\def\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\firstofoneargument
@@ -629,7 +635,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\doifnotempty#1%
+\unexpanded\def\doifnotempty#1%
   {\def\!!stringa{#1}%
    \ifx\!!stringa\empty
      \expandafter\gobbleoneargument
@@ -875,9 +881,11 @@
    \fi\fi
    #1#2}
 
+\def\do_common_check
+  {\expandafter\do_check_if_common_else_two\!!stringb,],\relax}%
+
 \def\do_do_do_if_common_else
-  {\def\do_common_check{\expandafter\do_check_if_common_else_two\!!stringb,],\relax}%
-   \expandafter\do_check_if_common_else_one\!!stringa,],\relax}
+  {\expandafter\do_check_if_common_else_one\!!stringa,],\relax}
 
 \unexpanded\def\doifcommonelse{\do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifcommon    {\do_do_if_common_else\firstofoneargument \gobbleoneargument   }
@@ -4269,8 +4277,8 @@
 
 \def\HandleGroup#1#2%
   {\bgroup
-   \def\BeforeGroup{\bgroup#1\bgroup\aftergroup\AfterGroup}%
-   \def\AfterGroup {#2\egroup\egroup}%
+   \def\BeforeGroup{\bgroup#1\bgroup\aftergroup\AfterGroup}% can't we remove the second \bgroup
+   \def\AfterGroup {#2\egroup\egroup}%                     % and one \egroup here?
    \afterassignment\BeforeGroup
    \let\next=}
 
@@ -5330,11 +5338,11 @@
 %D arguments are sets.
 
 \def\do_if_all_common_else#1#2#3#4% slow
-  {\def\do_common_check##1%
+  {\def\do_common_check_all##1%
      {\doifnotinset{##1}{#4}\donefalse
       \ifdone\else\expandafter\quitcommalist\fi}%
    \donetrue
-   \processcommalist[#3]\do_common_check
+   \processcommalist[#3]\do_common_check_all
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
 \def\doifallcommonelse{\do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
@@ -6007,41 +6015,6 @@
 
 \appendtoks \let\iftrialtypesetting\iftrue  \to \everysettrialtypesetting
 \appendtoks \let\iftrialtypesetting\iffalse \to \everyresettrialtypesetting
-
-%D \macros
-%D   {startlocal, startglobal}
-%D
-%D The next four macros are rather self explaining:
-%D
-%D \starttyping
-%D \startlocal
-%D   whatever assignments
-%D \stoplocal
-%D
-%D \startglobal
-%D   whatever assignments
-%D \stopglobal
-%D \stoptyping
-%D
-%D These macros are meant for those who know the difference
-%D between local and global assignments and are aware of the
-%D possible unwanted side effect
-
-\def\dostartglobaldefs#1#2%
-  {\scratchcounter\globaldefs
-   \ifnum\globaldefs#1\zerocount
-     \globaldefs-\globaldefs
-   \fi
-   \advance\globaldefs#2\plusone
-   \expandafter\chardef\csname@gd@\the\globaldefs\endcsname\scratchcounter}
-
-\def\dostopglobaldefs
-  {\globaldefs\ifcsname @gd@\the\globaldefs\endcsname\zerocount}
-
-\unexpanded\def\startlocal  {\dostartglobaldefs>-}
-\unexpanded\def\stoplocal   {\dostopglobaldefs}
-\unexpanded\def\startglobal {\dostartglobaldefs<+}
-\unexpanded\def\stopglobal  {\dostopglobaldefs}
 
 %D \macros
 %D   {twodigitrounding}

@@ -628,6 +628,7 @@
 		<cd:constant name='coupling' value='koppeling'/>
 		<cd:constant name='couplingway' value='koppelwijze'/>
 		<cd:constant name='criterium' value='criterium'/>
+		<cd:constant name='css' value='css'/>
 		<cd:constant name='current' value='huidige'/>
 		<cd:constant name='cutspace' value='snijwit'/>
 		<cd:constant name='dash' value='streep'/>
@@ -656,6 +657,7 @@
 		<cd:constant name='editoretallimit' value='editoretallimit'/>
 		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='leeg'/>
+		<cd:constant name='entities' value='entities'/>
 		<cd:constant name='entries' value='ingangen'/>
 		<cd:constant name='equalheight' value='equalheight'/>
 		<cd:constant name='equalwidth' value='equalwidth'/>
@@ -1048,6 +1050,7 @@
 		<cd:constant name='white' value='wit'/>
 		<cd:constant name='width' value='breedte'/>
 		<cd:constant name='xfactor' value='xfactor'/>
+		<cd:constant name='xhtml' value='xhtml'/>
 		<cd:constant name='xmax' value='xmax'/>
 		<cd:constant name='xoffset' value='xoffset'/>
 		<cd:constant name='xscale' value='xschaal'/>

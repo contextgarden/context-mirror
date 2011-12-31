@@ -128,11 +128,11 @@
    \hsize\paperwidth
    \vsize\paperheight
    \setbox\pagebox\vbox
-     {\doifbothsidesoverruled
-        {\let\!!stringa\v!page}
-        {\let\!!stringa\v!rightpage}
-        {\let\!!stringa\v!leftpage}%
-      \getvalue{\??ly\c!method:\!!stringa}}%
+%      {\doifbothsidesoverruled
+%         {\csname\??layoutmethod\v!page\endcsname}
+%         {\csname\??layoutmethod\v!rightpage\endcsname}
+%         {\csname\??layoutmethod\v!leftpage\endcsname}}%
+     {\csname\??layoutmethod\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname}%
    \wd\pagebox\paperwidth
    \ht\pagebox\paperheight
    \dp\pagebox\zeropoint}
@@ -187,8 +187,8 @@
 
 % to be done nicely (proper namespacing)
 
-\setvalue{\??ly:m:\v!leftpage }{\csname\??ly:m:\v!page\endcsname}
-\setvalue{\??ly:m:\v!rightpage}{\csname\??ly:m:\v!page\endcsname}
+\setvalue{\??layoutmethod\v!leftpage }{\csname\??layoutmethod\v!page\endcsname}
+\setvalue{\??layoutmethod\v!rightpage}{\csname\??layoutmethod\v!page\endcsname}
 
 \unexpanded\def\startpagelayout
   {\bgroup
@@ -199,6 +199,6 @@
 
 \def\start_page_layout[#1]#2\stoppagelayout
   {\egroup
-   \setvalue{\??ly:m:#1}{#2}}
+   \setvalue{\??layoutmethod#1}{#2}}
 
 \protect \endinput

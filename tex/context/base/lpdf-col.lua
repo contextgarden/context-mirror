@@ -632,7 +632,20 @@ backends.pdf.tables.vfspecials = { -- todo: distinguish between glyph and rule c
     red        = { "special", 'pdf: 1 0 0 rg 1 0 0 RG' },
     green      = { "special", 'pdf: 0 1 0 rg 0 1 0 RG' },
     blue       = { "special", 'pdf: 0 0 1 rg 0 0 1 RG' },
+    gray       = { "special", 'pdf: .75 g .75 G' },
     black      = { "special", 'pdf: 0 g 0 G' },
+
+    rulecolors = {
+            red        = { "special", 'pdf: 1 0 0 rg' },
+            green      = { "special", 'pdf: 0 1 0 rg' },
+            blue       = { "special", 'pdf: 0 0 1 rg' },
+            gray       = { "special", 'pdf: .5 g' },
+            black      = { "special", 'pdf: 0 g' },
+            palered    = { "special", 'pdf: 1 .75 .75 rg' },
+            palegreen  = { "special", 'pdf: .75 1 .75 rg' },
+            paleblue   = { "special", 'pdf: .75 .75 1 rg' },
+            palegray   = { "special", 'pdf: .75 g' },
+    },
 
     startslant = function(a) return { "special", format("pdf: q 1 0 %s 1 0 0 cm",a) } end,
     stopslant  = { "special", "pdf: Q" },

@@ -204,7 +204,10 @@
    \dostoptagged
    \dostoptagged}
 
-\installcommandhandler \??eq {mathalignment} \??eq
+\installcorenamespace{mathalignment}
+\installcorenamespace{mathalignmentvariant}
+
+\installcommandhandler \??mathalignment {mathalignment} \??mathalignment
 
 \appendtoks
     \setuevalue{\e!start\currentmathalignment}{\math_alignment_start{\currentmathalignment}}%
@@ -235,27 +238,27 @@
    \dostarttagged\t!mathtablecell\empty}
 
 \def\math_left_of_equalign
-  {\ifcsname\??eq::a::\number\c_math_eqalign_column\endcsname
-     \ifcase\csname\??eq::a::\number\c_math_eqalign_column\endcsname\or
+  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcase\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname\or
        \relax \or \hfill \or \hfill
      \fi
    \fi}
 
 \def\math_right_of_eqalign
-  {\ifcsname\??eq::a::\number\c_math_eqalign_column\endcsname
-     \ifcase\csname\??eq::a::\number\c_math_eqalign_column\endcsname\or
+  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcase\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname\or
        \hfill \or \relax \or \hfill
      \fi
    \fi}
 
 \def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
-  {\expandafter\let\csname\??eq::a::\number\c_math_eqalign_column\expandafter\endcsname
-     \csname\??eq::a::\ifcsname\??eq::a::#1\endcsname#1\else\v!normal\fi\endcsname}
+  {\expandafter\let\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\endcsname
+     \csname\??mathalignmentvariant\ifcsname\??mathalignmentvariant#1\endcsname#1\else\v!normal\fi\endcsname}
 
-\letvalue{\??eq::a::\v!normal}\zerocount
-\letvalue{\??eq::a::\v!left  }\plusone
-\letvalue{\??eq::a::\v!right }\plustwo
-\letvalue{\??eq::a::\v!middle}\plusthree
+\letvalue{\??mathalignmentvariant\v!normal}\zerocount
+\letvalue{\??mathalignmentvariant\v!left  }\plusone
+\letvalue{\??mathalignmentvariant\v!right }\plustwo
+\letvalue{\??mathalignmentvariant\v!middle}\plusthree
 
 \def\math_align_NR_generic[#1][#2]%
   {\donestedformulanumber{#1}{#2}\crcr}
@@ -396,7 +399,9 @@
 %D
 %D Another wish \unknown
 
-\installcommandhandler \??ce {mathcases} \??ce
+\installcorenamespace{mathcases}
+
+\installcommandhandler \??mathcases {mathcases} \??mathcases
 
 \setupmathcases
   [\c!distance=1em,
@@ -501,7 +506,9 @@
 %D
 %D Yet another one \unknown
 
-\installcommandhandler \??mk {mathmatrix} \??mk
+\installcorenamespace{mathmatrix}
+
+\installcommandhandler \??mathmatrix {mathmatrix} \??mathmatrix
 
 \setupmathmatrix
   [\c!distance=1em,
@@ -577,8 +584,10 @@
 \unexpanded\def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
 
+\installcorenamespace{mathmatrixhandler}
+
 \def\installmathmatrixhandler#1#2%
-  {\setvalue{\??mx:h:#1}{#2}}
+  {\setvalue{\??mathmatrixhandler#1}{#2}}
 
 \let\mathmatrixleft \empty % experimental hook
 \let\mathmatrixright\empty % experimental hook
@@ -600,7 +609,7 @@
 \installmathmatrixhandler\v!normal{\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}} % lohi
 
 \def\math_matrix_handler_apply
-  {\csname\??mx:h:\ifcsname\??mx:h:\mathmatrixparameter\c!location\endcsname
+  {\csname\??mathmatrixhandler\ifcsname\??mathmatrixhandler\mathmatrixparameter\c!location\endcsname
      \mathmatrixparameter\c!location
    \else
      \v!normal
@@ -893,18 +902,18 @@
 %D \type {\stopinnermath} can be overloaded in specialized
 %D modules.
 
-\unexpanded\def\startinnermath
-  {\csname\??fm:\e!start:\formulaparameter\c!align\endcsname}
+\installcorenamespace{mathinnerstart}
+\installcorenamespace{mathinnerstop}
 
-\unexpanded\def\stopinnermath
-  {\csname\??fm:\e!stop :\formulaparameter\c!align\endcsname}
+\unexpanded\def\startinnermath{\csname\??mathinnerstart\formulaparameter\c!align\endcsname}
+\unexpanded\def\stopinnermath {\csname\??mathinnerstop \formulaparameter\c!align\endcsname}
 
-\def\mathinnerstrut
+\unexpanded\def\mathinnerstrut
   {\doif{\formulaparameter\c!strut}\v!yes\strut}
 
 \unexpanded\def\defineinnermathhandler#1#2#3%
-  {\setvalue{\??fm:\e!start:#1}{#2}%
-   \setvalue{\??fm:\e!stop :#1}{#3}}
+  {\setvalue{\??mathinnerstart#1}{#2}%
+   \setvalue{\??mathinnerstop #1}{#3}}
 
 \newif\iftracemath
 

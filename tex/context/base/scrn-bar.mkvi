@@ -57,7 +57,9 @@
 %D \stoptext
 %D \stoptyping
 
-\installframedcommandhandler \??ib {interactionbar} \??ib
+\installcorenamespace{interactionbar}
+
+\installframedcommandhandler \??interactionbar {interactionbar} \??interactionbar
 
 \unexpanded\def\interactionbar
   {\dodoubleempty\scrn_bar_direct}
@@ -75,7 +77,6 @@
        {\interactionbarparameter\c!command}%
      \endgroup
    \fi}
-
 
 \newdimen\scrn_bar_width
 \newdimen\scrn_bar_height

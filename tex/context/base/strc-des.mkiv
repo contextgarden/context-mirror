@@ -350,8 +350,8 @@
         {\dodescriptionhandler\currentdescriptiontext}%
         {\dodescriptionhandler\currentdescriptionsample}}%
    \assignwidth
-     \descriptionsheadwidth
      {\descriptionlocationparameter\c!width}
+     \descriptionsheadwidth
      {\unhcopy\descriptionheadbox}
      \descriptionsheaddistance
    \setbox\descriptionheadbox\hbox
@@ -1079,7 +1079,9 @@
 %D much like indentation and indenting. We also assume start/stop
 %D usage or some explicit par.
 
-\installcommandhandler \??ds {indentedtext} \??ds
+\installcorenamespace{indentedtext}
+
+\installcommandhandler \??indentedtext {indentedtext} \??indentedtext
 
 %D \startbuffer
 %D \defineindentedtext[one][text=one]
@@ -1130,8 +1132,8 @@
    \doifnothing{\indentedtextparameter\c!sample}
      {\setindentedtextparameter\c!sample{\indentedtextparameter\c!text}}%
    \assignwidth
-     {\indented_text_width}
      {\indentedtextparameter\c!width}
+     {\indented_text_width}
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \indentedtextparameter\c!sample
       \spr{\indentedtextparameter\c!separator}}

@@ -214,3 +214,11 @@ function javascripts.usescripts(name)
         }
     end
 end
+
+-- interface
+
+commands.storejavascriptcode     = interactions.javascripts.storecode
+commands.storejavascriptpreamble = interactions.javascripts.storepreamble
+commands.addtojavascriptpreamble = interactions.javascripts.addtopreamble
+commands.usejavascriptpreamble   = interactions.javascripts.usepreamblenow
+commands.usejavascriptscripts    = interactions.javascripts.usescripts

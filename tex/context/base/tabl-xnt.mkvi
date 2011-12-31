@@ -130,6 +130,6 @@
   {\bgroup
    \x_table_prepare{#settings}%
    \edef\x_table_current_buffer{\x_table_default_buffer}%
-   \dodowithbuffer\x_table_current_buffer{bTABLE}{eTABLE}\relax\x_table_process}
+   \buffers_pickup\x_table_current_buffer{bTABLE}{eTABLE}\relax\x_table_process}
 
 \protect \endinput
