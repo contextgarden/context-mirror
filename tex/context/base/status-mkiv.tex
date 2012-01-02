@@ -58,6 +58,12 @@
 
         if preloaded then
 
+            for i=1,#preloaded do
+                preloaded[i].order = i
+            end
+
+            table.sort(preloaded,function(a,b) return a.filename < b.filename end)
+
             context.starttabulate { "|Tr|Tl|Tl|l|p|" }
             context.NC() -- context.bold("order")
             context.NC() context.bold("file")
@@ -68,7 +74,7 @@
             for i=1,#preloaded do
                 local module = preloaded[i]
                 local status = module.status
-                context.NC() context(i)
+                context.NC() context(module.order)
                 context.NC() context(module.filename)
                 context.NC() context(module.marktype)
                 context.NC() if status == "unknown" then context.bold(status) else context(status) end

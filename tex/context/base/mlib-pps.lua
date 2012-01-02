@@ -736,21 +736,21 @@ local function tx_analyze(object,prescript) -- todo: hash content and reuse them
                 -- no color
             elseif #c == 1 then
                 if a and t then
-                    s = format("\\colored[s=%f,a=%f,t=%f]%s",c[1],a,t,s)
+                    s = format("\\directcolored[s=%f,a=%f,t=%f]%s",c[1],a,t,s)
                 else
-                    s = format("\\colored[s=%f]%s",c[1],s)
+                    s = format("\\directcolored[s=%f]%s",c[1],s)
                 end
             elseif #c == 3 then
                 if a and t then
-                    s = format("\\colored[r=%f,g=%f,b=%f,a=%f,t=%f]%s",c[1],c[2],c[3],a,t,s)
+                    s = format("\\directcolored[r=%f,g=%f,b=%f,a=%f,t=%f]%s",c[1],c[2],c[3],a,t,s)
                 else
-                    s = format("\\colored[r=%f,g=%f,b=%f]%s",c[1],c[2],c[3],s)
+                    s = format("\\directcolored[r=%f,g=%f,b=%f]%s",c[1],c[2],c[3],s)
                 end
             elseif #c == 4 then
                 if a and t then
-                    s = format("\\colored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s",c[1],c[2],c[3],c[4],a,t,s)
+                    s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f,a=%f,t=%f]%s",c[1],c[2],c[3],c[4],a,t,s)
                 else
-                    s = format("\\colored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
+                    s = format("\\directcolored[c=%f,m=%f,y=%f,k=%f]%s",c[1],c[2],c[3],c[4],s)
                 end
             end
             context.MPLIBsettext(tx_number,s) -- combine colored in here, saves call

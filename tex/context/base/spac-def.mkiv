@@ -86,9 +86,9 @@
   [\v!standard,
    \v!big]
 
-\definevspacing[\v!default]  [\currentblank]
-\definevspacing[\v!before]   [\v!default]
-\definevspacing[\v!inbetween][\v!default]
+\definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
+\definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
+\definevspacing[\v!inbetween][\v!default]  % then
 \definevspacing[\v!after]    [\v!before]
 
 \setupinterlinespace
