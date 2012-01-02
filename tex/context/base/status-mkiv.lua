@@ -575,6 +575,7 @@ return {
             filename = "spac-ver",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "update lua code (communicate via register)"
         },
         {
             filename = "spac-pag",
