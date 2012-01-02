@@ -459,9 +459,9 @@
    \let\par\endgraf
    \popmacro\doXMLentity % needed ?
    \disableXMLexpansion
-   \catcode`\{=\@@begingroup
-   \catcode`\}=\@@endgroup
-   \catcode`\\=\@@escape
+   \catcode`\{=\begingroupcatcode
+   \catcode`\}=\endgroupcatcode
+   \catcode`\\=\escapecatcode
    \iftraceXMLremapping
      \ifmmode\vbox\fi\bgroup
      \defconvertedcommand\ascii\remappedXMLdata
@@ -724,7 +724,7 @@
   {\remapXMLsingular[\s!unknown][CPA]\doXMLunknownSI
    \remapXMLsequence[\s!unknown][CPA]\doXMLunknownSE}
 
-\bgroup \catcode`<=\active
+\bgroup \catcode`<=\activecatcode
 
 \gdef\revertXMLremapping
   {\gdef\doXMLunknownSE##1##2{<##1>##2</##1>}%

@@ -134,21 +134,21 @@
    \fi\fi}
 
 \def\page_boxes_apply_scale#box%
-  {\edef\tmp_currentlayout_scale{\layoutparameter\c!scale}%
-   \ifdim\tmp_currentlayout_scale\points=\onepoint
-     \edef\tmp_currentlayout_sx{\layoutparameter\c!sx}%
-     \edef\tmp_currentlayout_sy{\layoutparameter\c!sy}%
-     \ifdim\tmp_currentlayout_sx\points=\onepoint
+  {\edef\p_page_layouts_scale{\layoutparameter\c!scale}%
+   \ifdim\p_page_layouts_scale\points=\onepoint
+     \edef\p_page_layouts_sx{\layoutparameter\c!sx}%
+     \edef\p_page_layouts_sy{\layoutparameter\c!sy}%
+     \ifdim\p_page_layouts_sx\points=\onepoint
        \ifdim\layoutparameter\c!sy\points=\onepoint
          % no scaling done (and no copying either)
        \else
-         \page_boxes_apply_scale_indeed\tmp_currentlayout_sx\tmp_currentlayout_sy{#box}%
+         \page_boxes_apply_scale_indeed\p_page_layouts_sx\p_page_layouts_sy{#box}%
        \fi
      \else
-       \page_boxes_apply_scale_indeed\tmp_currentlayout_sx\tmp_currentlayout_sy{#box}%
+       \page_boxes_apply_scale_indeed\p_page_layouts_sx\p_page_layouts_sy{#box}%
      \fi
    \else
-     \page_boxes_apply_scale_indeed\tmp_currentlayout_scale\tmp_currentlayout_scale{#box}%
+     \page_boxes_apply_scale_indeed\p_page_layouts_scale\p_page_layouts_scale{#box}%
    \fi}
 
 \def\page_boxes_apply_scale_indeed#sx#sy#box%

@@ -29,23 +29,23 @@
 
 % Paragraph positions:
 
-\newcount\backgrounds_text_n
+\newcount\c_anch_backgrounds_text_n
 
-\def\v_backgrounds_text_current    {pbg:0}
-\def\v_backgrounds_text_next       {pbg:1}
+\def\v_anch_backgrounds_text_current    {pbg:0}
+\def\v_anch_backgrounds_text_next       {pbg:1}
 
-\def\v_backgrounds_anchor_current_b{b:\v_backgrounds_text_current}
-\def\v_backgrounds_anchor_current_e{e:\v_backgrounds_text_current}
+\def\v_anch_backgrounds_anchor_current_b{b:\v_anch_backgrounds_text_current}
+\def\v_anch_backgrounds_anchor_current_e{e:\v_anch_backgrounds_text_current}
 
-\def\v_backgrounds_anchor_next_b   {b:\v_backgrounds_text_next}
-\def\v_backgrounds_anchor_next_e   {e:\v_backgrounds_text_next}
+\def\v_anch_backgrounds_anchor_next_b   {b:\v_anch_backgrounds_text_next}
+\def\v_anch_backgrounds_anchor_next_e   {e:\v_anch_backgrounds_text_next}
 
-\def\backgrounds_text_initialize_next
-  {\global\advance\backgrounds_text_n\plusone
-   \edef\v_backgrounds_text_current{pbg:\number\backgrounds_text_n}%
-   \xdef\v_backgrounds_text_next   {pbg:\number\numexpr\backgrounds_text_n+\plusone\relax}} % x ?
+\def\anch_backgrounds_text_initialize_next
+  {\global\advance\c_anch_backgrounds_text_n\plusone
+   \edef\v_anch_backgrounds_text_current{pbg:\number\c_anch_backgrounds_text_n}%
+   \xdef\v_anch_backgrounds_text_next   {pbg:\number\numexpr\c_anch_backgrounds_text_n+\plusone\relax}} % x ?
 
-% todo : \synchonizepositionpage{b:\v_backgrounds_text_current}{s:\v_backgrounds_text_current}%
+% todo : \synchonizepositionpage{b:\v_anch_backgrounds_text_current}{s:\v_anch_backgrounds_text_current}%
 
 \ifdefined\totalnoftextbackgrounds
     % set in tuc
@@ -54,12 +54,12 @@
 \fi
 
 \appendtoks
-    \savecurrentvalue\totalnoftextbackgrounds{\number\backgrounds_text_n}%
+    \savecurrentvalue\totalnoftextbackgrounds{\number\c_anch_backgrounds_text_n}%
 \to \everybye
 
 % actually we can just ask lua to give us the nofpositions (or a least n<>0)
 
-\def\backgrounds_text_initialize
+\def\anch_backgrounds_text_initialize
   {\ifcase\totalnoftextbackgrounds\else
      \enableparpositions
    \fi}
@@ -67,7 +67,7 @@
 \appendtoks
     % a position can be mid paragraph in which case we're behind
     % this will change when we move positions to lua
-    \backgrounds_text_initialize
+    \anch_backgrounds_text_initialize
 \to \everystarttext
 
 %D Some MP
@@ -110,7 +110,7 @@
 %   \readfile{ward}{}{}
 % \stoptextbackground
 
-\newcount\c_backgrounds_text_level
+\newcount\c_anch_backgrounds_text_level
 
 \installcorenamespace{textbackground}
 \installcorenamespace{textbackgroundlevel}
@@ -130,81 +130,81 @@
 
 \unexpanded\def\starttextbackground
   {\begingroup
-   \advance\c_backgrounds_text_level\plusone
-   \dodoubleempty\backgrounds_text_start}
+   \advance\c_anch_backgrounds_text_level\plusone
+   \dodoubleempty\anch_backgrounds_text_start}
 
-\def\backgrounds_text_start[#tag][#settings]%
+\def\anch_backgrounds_text_start[#tag][#settings]%
   {\checktextbackgrounds
    \def\currenttextbackground{#tag}%
-   \backgrounds_text_initialize_next
+   \anch_backgrounds_text_initialize_next
    \ifsecondargument
      \setupcurrenttextbackground[#settings]%
    \fi
    \doifelse{\textbackgroundparameter\c!state}\v!start
-     \backgrounds_text_preset_yes
-     \backgrounds_text_preset_nop
-   \backgrounds_text_start_indeed}
+     \anch_backgrounds_text_preset_yes
+     \anch_backgrounds_text_preset_nop
+   \anch_backgrounds_text_start_indeed}
 
 % todo \backgroundvariable\c!variant
 
-\let\backgrounds_text_start_indeed\relax
-\let\backgrounds_text_stop_indeed \relax
+\let\anch_backgrounds_text_start_indeed\relax
+\let\anch_backgrounds_text_stop_indeed \relax
 
 \setvalue{\??textbackgroundlevel\v!text}%
-  {\let\backgrounds_text_start_indeed\backgrounds_text_start_txt
-   \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt}
+  {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
+   \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundtxt}
 
 \setvalue{\??textbackgroundlevel\v!paragraph}%
-  {\ifnum\c_backgrounds_text_level>\plusone
-     \let\backgrounds_text_start_indeed\backgrounds_text_start_txt
-     \let\backgrounds_text_stop_indeed \dostoptextbackgroundtxt
+  {\ifnum\c_anch_backgrounds_text_level>\plusone
+     \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
+     \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundtxt
    \else
-     \let\backgrounds_text_start_indeed\backgrounds_text_start_par
-     \let\backgrounds_text_stop_indeed \dostoptextbackgroundpar
+     \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_par
+     \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundpar
    \fi}
 
 \setvalue{\??textbackgroundlevel\v!none}%
-  {\backgrounds_text_preset_nop}
+  {\anch_backgrounds_text_preset_nop}
 
-\def\backgrounds_text_preset_nop
-  {\let\backgrounds_text_start_indeed\relax
-   \let\backgrounds_text_stop_indeed \relax}
+\def\anch_backgrounds_text_preset_nop
+  {\let\anch_backgrounds_text_start_indeed\relax
+   \let\anch_backgrounds_text_stop_indeed \relax}
 
-\def\backgrounds_text_preset_yes
-  {\backgrounds_text_preset_nop
+\def\anch_backgrounds_text_preset_yes
+  {\anch_backgrounds_text_preset_nop
    \csname\??textbackgroundlevel\textbackgroundparameter\c!location\endcsname
-   \edef\m_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
-   \edef\m_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
-   \edef\m_backgrounds_text_background{\textbackgroundparameter\c!background}%
-   \ifx\m_backgrounds_text_frame\v!on
-     \ifx\m_backgrounds_text_corner\v!round
-       \let\m_backgrounds_text_frame\!!plustwo
+   \edef\m_anch_backgrounds_text_frame     {\textbackgroundparameter\c!frame}%
+   \edef\m_anch_backgrounds_text_corner    {\textbackgroundparameter\c!corner}%
+   \edef\m_anch_backgrounds_text_background{\textbackgroundparameter\c!background}%
+   \ifx\m_anch_backgrounds_text_frame\v!on
+     \ifx\m_anch_backgrounds_text_corner\v!round
+       \let\m_anch_backgrounds_text_frame\!!plustwo
      \else
-       \let\m_backgrounds_text_frame\!!plusone
+       \let\m_anch_backgrounds_text_frame\!!plusone
      \fi
    \else
-     \let\m_backgrounds_text_frame\!!zerocount
+     \let\m_anch_backgrounds_text_frame\!!zerocount
    \fi
-   \ifx\m_backgrounds_text_background\v!color
-     \let\m_backgrounds_text_background\!!plusone
+   \ifx\m_anch_backgrounds_text_background\v!color
+     \let\m_anch_backgrounds_text_background\!!plusone
    \else
-     \let\m_backgrounds_text_background\!!zerocount
+     \let\m_anch_backgrounds_text_background\!!zerocount
    \fi
    \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
-     \backgrounds_text_mp_graphic % gets expanded directly
+     \anch_backgrounds_text_mp_graphic % gets expanded directly
    \stoppositionoverlay}
 
-\def\backgrounds_text_mp_graphic
+\def\anch_backgrounds_text_mp_graphic
   {\normalexpanded
      {\setMPpositiongraphicrange % needs to be optimized
-        {\v_backgrounds_anchor_current_b}%
-        {\v_backgrounds_anchor_current_e}%
+        {\v_anch_backgrounds_anchor_current_b}%
+        {\v_anch_backgrounds_anchor_current_e}%
         {\textbackgroundparameter\c!method}%
-        {self=\v_backgrounds_text_current,
+        {self=\v_anch_backgrounds_text_current,
          mp=\textbackgroundparameter\c!mp,
          gridtype=\textbackgroundparameter\c!alternative,
-         filltype=\m_backgrounds_text_background,
-         linetype=\m_backgrounds_text_frame,
+         filltype=\m_anch_backgrounds_text_background,
+         linetype=\m_anch_backgrounds_text_frame,
          dashtype=\textbackgroundparameter\c!dash,
          gridcolor=\textbackgroundparameter\c!framecolor,
          linecolor=\textbackgroundparameter\c!framecolor,
@@ -217,31 +217,31 @@
          lineradius=\textbackgroundparameter\c!radius}}}
 
 \unexpanded\def\stoptextbackground
-  {\backgrounds_text_stop_indeed
+  {\anch_backgrounds_text_stop_indeed
    \carryoverpar\endgroup}
 
 \unexpanded\def\starttextbackgroundmanual
   {\begingroup
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \fpos\v_backgrounds_text_current\ignorespaces}
+   \fpos\v_anch_backgrounds_text_current\ignorespaces}
 
 \unexpanded\def\stoptextbackgroundmanual
-  {\tpos\v_backgrounds_text_current
+  {\tpos\v_anch_backgrounds_text_current
    \endgroup}
 
-\def\backgrounds_text_start_txt
+\def\anch_backgrounds_text_start_txt
   {\ifvmode \dontleavehmode \fi
    \begingroup
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \fpos\v_backgrounds_text_current\ignorespaces}
+   \fpos\v_anch_backgrounds_text_current\ignorespaces}
 
 \def\dostoptextbackgroundtxt
-  {\tpos\v_backgrounds_text_current
+  {\tpos\v_anch_backgrounds_text_current
    \endgroup}
 
 \newskip\textbackgroundskip
 
-\def\backgrounds_text_start_par
+\def\anch_backgrounds_text_start_par
   {\endgraf % new
    \textbackgroundparameter\c!before
    \begingroup
@@ -251,12 +251,12 @@
    \ifgridsnapping
      \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\v_backgrounds_text_current}}}%
+       \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\v_anch_backgrounds_text_current}}}%
      \else
-      \fpos\v_backgrounds_text_current
+      \fpos\v_anch_backgrounds_text_current
      \fi
    \else
-     \fpos\v_backgrounds_text_current
+     \fpos\v_anch_backgrounds_text_current
    \fi
    \endgraf % we need a vertical nobreak - 29/06/2004
    \endgroup
@@ -305,42 +305,42 @@
    \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\v_backgrounds_text_current}}}%
+       \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\v_anch_backgrounds_text_current}}}%
      \else
-       \tpos\v_backgrounds_text_current
+       \tpos\v_anch_backgrounds_text_current
      \fi
    \else
-     \tpos\v_backgrounds_text_current
+     \tpos\v_anch_backgrounds_text_current
    \fi
    \endgraf
    \endgroup
    \endgraf % new
    \textbackgroundparameter\c!after}
 
-\newcount\backgrounds_text_par_pages
-\newdimen\backgrounds_text_par_height
-\newdimen\backgrounds_text_par_width
+\newcount\c_anch_backgrounds_text_par_pages
+\newdimen\d_anch_backgrounds_text_par_height
+\newdimen\d_anch_backgrounds_text_par_width
 
 \def\calculatetextpardimensions
-  {\docalculatetextpardimensions\v_backgrounds_anchor_current_b\v_backgrounds_anchor_current_e\MPparanchor}
+  {\docalculatetextpardimensions\v_anch_backgrounds_anchor_current_b\v_anch_backgrounds_anchor_current_e\MPparanchor}
 
 \def\calculatenexttextpardimensions
-  {\docalculatetextpardimensions\v_backgrounds_anchor_next_b\v_backgrounds_anchor_next_e\relax}
+  {\docalculatetextpardimensions\v_anch_backgrounds_anchor_next_b\v_anch_backgrounds_anchor_next_e\relax}
 
 \def\docalculatetextpardimensions#begin#end#par%
-  {\backgrounds_text_par_pages\numexpr
+  {\c_anch_backgrounds_text_par_pages\numexpr
       \MPp#end-\MPp#begin%
    \relax
-   \backgrounds_text_par_height\dimexpr
-     \ifcase\backgrounds_text_par_pages
+   \d_anch_backgrounds_text_par_height\dimexpr
+     \ifcase\c_anch_backgrounds_text_par_pages
        % one page
        \MPy#begin-\MPy#end%
      \else
        % two or more pages
-       \ifnum\backgrounds_text_par_pages>\plustwo
-         \ifnum\backgrounds_text_par_pages<\plusfive
+       \ifnum\c_anch_backgrounds_text_par_pages>\plustwo
+         \ifnum\c_anch_backgrounds_text_par_pages<\plusfive
            % more pages
-           \textheight*\numexpr\backgrounds_text_par_pages+\minusone
+           \textheight*\numexpr\c_anch_backgrounds_text_par_pages+\minusone
          \else
            % keep'm small
            \plusfive\textheight % weird value
@@ -350,8 +350,8 @@
        \fi
      \fi
    \relax
-   \backgrounds_text_par_width\dimexpr
-     \ifcase\backgrounds_text_par_pages
+   \d_anch_backgrounds_text_par_width\dimexpr
+     \ifcase\c_anch_backgrounds_text_par_pages
        % one page
        \MPx#end-\MPx#begin%
      \else
@@ -371,13 +371,13 @@
      \ifdim\pagegoal=\maxdimen \else
       \calculatenexttextpardimensions
       % too tricky
-      % \scratchdimen=\backgrounds_text_par_height
+      % \scratchdimen=\d_anch_backgrounds_text_par_height
       % \advance\scratchdimen\pagetotal\relax
       % \ifdim\scratchdimen>\pagegoal
       % \page
       % \fi
-      \ifdim\backgrounds_text_par_height>\zeropoint
-        \ifdim\backgrounds_text_par_height>\mintextparheight\else
+      \ifdim\d_anch_backgrounds_text_par_height>\zeropoint
+        \ifdim\d_anch_backgrounds_text_par_height>\mintextparheight\else
           \page % option
         \fi
       \fi

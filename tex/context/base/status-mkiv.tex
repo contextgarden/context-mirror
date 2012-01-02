@@ -10,7 +10,8 @@
 
 \setuphead
   [subject]
-  [style=\bfa]
+  [style=\bfa,
+   page=yes]
 
 \setuppagenumbering
   [location=]
@@ -27,7 +28,7 @@
                will be done when we're satisfied with one scheme \stopitem
     \startitem there will be additional columns in the table, like for namespace
                so we need another round of checking then \stopitem
-    \startitem the imp modules are not in the list and needs checking too \stopitem
+    \startitem the imp modules are not in the list and need checking too \stopitem
     \startitem the s, x, m modules will be checked, redone and reorganized \stopitem
     \startitem the lua code will be cleaned up upgraded as some is quite old
                and experimental \stopitem
@@ -37,6 +38,10 @@
     \startitem some commands can go from mult-def (and the xml file) \stopitem
     \startitem check for setuphandler vs simplesetuphandler \stopitem
     \startitem all showcomposition etc can go (we can redo that in lua if needed) \stopitem
+    \startitem for the moment we will go for \type {xxxx_} namespaces that (mostly) match
+               the filename but later we can replace these by longer names (via a script) so
+               module writers should {\bf not} use the core commands with \type{_} in the
+               name \stopitem
 \stopitemize
 
 \stopsubject
@@ -66,7 +71,7 @@
                 context.NC() context(i)
                 context.NC() context(module.filename)
                 context.NC() context(module.marktype)
-                context.NC() if status == "unknown" then context.italic(status) else context(status) end
+                context.NC() if status == "unknown" then context.bold(status) else context(status) end
                 context.NC() context(module.comment)
                 context.NC() context.NR()
             end
@@ -74,6 +79,51 @@
 
         end
 
+    end
+
+    local namespaces = dofile("status-namespaces.lua")
+
+    local valid = table.tohash {
+        "toks", "attr", "page", "buff", "font", "colo", "phys", "supp", "typo", "strc",
+        "syst", "tabl", "spac", "scrn", "lang", "lxml", "mlib", "java", "pack", "math",
+        "symb", "grph", "anch", "luat", "mult", "back", "node", "meta", "module",
+    }
+
+    context.startsubject { title = "Valid prefixes" }
+
+    for namespace, data in table.sortedhash(namespaces) do
+        if valid[namespace] then
+            context.type(namespace)
+        end
+        context.par()
+    end
+
+    context.stopsubject()
+
+    context.startsubject { title = "Messy namespaces" }
+
+    for namespace, data in table.sortedhash(namespaces) do
+        if valid[namespace] then
+        else
+            context(namespace)
+        end
+        context.par()
+    end
+
+    context.stopsubject()
+
+    local registers  = dofile("status-registers.lua")
+
+    context.startsubject { title = "Messy registers" }
+    for register, data in table.sortedhash(registers) do
+        context(register)
+        context.par()
+        for name in table.sortedhash(data) do
+            context.quad()
+            context.type(name)
+            context.par()
+        end
+        context.par()
     end
 
 \stopluacode

@@ -119,9 +119,9 @@
 \unexpanded\def\startFLOWchart
   {\startnointerference
    \the\everyFLOWchart
-   \dosingleempty\start_FLOW_chart}
+   \dosingleempty\module_charts_start_chart}
 
-\unexpanded\def\start_FLOW_chart[#name]%
+\unexpanded\def\module_charts_process[#name]%
   {\ctxcommand{flow_start_chart("#name")}}
 
 \unexpanded\def\stopFLOWchart
@@ -129,9 +129,9 @@
    \stopnointerference}
 
 \unexpanded\def\defineFLOWchart % for old times sake
-  {\dodoubleempty\define_FLOW_chart}
+  {\dodoubleempty\module_charts_FLOW_define}
 
-\unexpanded\def\define_FLOW_chart[#name][#settings]#cells% todo: save settings
+\unexpanded\def\module_charts_FLOW_define[#name][#settings]#cells% todo: save settings
   {\startnointerference
    \the\everyFLOWchart
    \ctxcommand{flow_start_chart("#name")}%
@@ -140,9 +140,9 @@
    \stopnointerference}
 
 \unexpanded\def\startFLOWcell
-  {\dodoubleempty\start_FLOW_cell}
+  {\dodoubleempty\module_charts_start_cell}
 
-\unexpanded\def\start_FLOW_cell[#1][#2]%
+\unexpanded\def\module_charts_start_cell[#1][#2]%
   {\begingroup
    \iffirstargument
      \setupFLOWshape[#1]%
@@ -178,9 +178,9 @@
   {\ctxcommand{flow_stop_cell()}}
 
 \unexpanded\def\FLOWchart
-  {\dodoubleempty\FLOW_chart}
+  {\dodoubleempty\module_charts_process}
 
-\def\FLOW_chart[#name][#settings]%
+\def\module_charts_process[#name][#settings]%
   {\vbox\bgroup
      \insidefloattrue
      \dontcomplain
@@ -274,28 +274,28 @@
    \let\includeFLOWchart\include
 \to \everyFLOWchart
 
-\unexpanded\def\FLOW_name                             #name{\ctxcommand{flow_set_name("#name")}\ignorespaces}
-\unexpanded\def\FLOW_shape                           #shape{\ctxcommand{flow_set_shape("#shape")}\ignorespaces}
-\unexpanded\def\FLOW_destination               #destination{\ctxcommand{flow_set_destination("#destination")}\ignorespaces}
-\unexpanded\def\FLOW_focus                           #focus{\ctxcommand{flow_set_focus("#focus")}\ignorespaces}
-\unexpanded\def\FLOW_overlay                       #overlay{\ctxcommand{flow_set_overlay("#overlay")}\ignorespaces}
-\unexpanded\def\FLOW_location                     #location{\ctxcommand{flow_set_location("#location")}\ignorespaces}
-\unexpanded\def\FLOW_figure                         #figure{\ctxcommand{flow_set_figure("#figure")}\ignorespaces}
+\unexpanded\def\FLOW_name              #name{\ctxcommand{flow_set_name("#name")}\ignorespaces}
+\unexpanded\def\FLOW_shape            #shape{\ctxcommand{flow_set_shape("#shape")}\ignorespaces}
+\unexpanded\def\FLOW_destination#destination{\ctxcommand{flow_set_destination("#destination")}\ignorespaces}
+\unexpanded\def\FLOW_focus            #focus{\ctxcommand{flow_set_focus("#focus")}\ignorespaces}
+\unexpanded\def\FLOW_overlay        #overlay{\ctxcommand{flow_set_overlay("#overlay")}\ignorespaces}
+\unexpanded\def\FLOW_location      #location{\ctxcommand{flow_set_location("#location")}\ignorespaces}
+\unexpanded\def\FLOW_figure          #figure{\ctxcommand{flow_set_figure("#figure")}\ignorespaces}
 
-\unexpanded\def\FLOW_text                                  {\dosingleempty\do_FLOW_text}
-\unexpanded\def\FLOW_label                                 {\dosingleempty\do_FLOW_label}
-\unexpanded\def\FLOW_comment                               {\dosingleempty\do_FLOW_comment}
-\unexpanded\def\FLOW_exit                                  {\dosingleempty\do_FLOW_exit}
-\unexpanded\def\FLOW_connection                            {\dodoubleempty\do_FLOW_connection}
-\unexpanded\def\FLOW_include                               {\dodoubleempty\do_FLOW_include}
+\unexpanded\def\FLOW_text      {\dosingleempty\module_charts_FLOW_text}
+\unexpanded\def\FLOW_label     {\dosingleempty\module_charts_FLOW_label}
+\unexpanded\def\FLOW_comment   {\dosingleempty\module_charts_FLOW_comment}
+\unexpanded\def\FLOW_exit      {\dosingleempty\module_charts_FLOW_exit}
+\unexpanded\def\FLOW_connection{\dodoubleempty\module_charts_FLOW_connection}
+\unexpanded\def\FLOW_include   {\dodoubleempty\module_charts_FLOW_include}
 
-\unexpanded\def\do_FLOW_text                  [#align]#text{\ctxcommand{flow_set_text("#align",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\do_FLOW_label              [#location]#text{\ctxcommand{flow_set_label("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\do_FLOW_comment            [#location]#text{\ctxcommand{flow_set_comment("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\do_FLOW_exit               [#location]#text{\ctxcommand{flow_set_exit("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
-\unexpanded\def\do_FLOW_connection[#location][#offset]#name{\ctxcommand{flow_set_connection("#location","#offset","#name")}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_text                  [#align]#text{\ctxcommand{flow_set_text("#align",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_label              [#location]#text{\ctxcommand{flow_set_label("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_comment            [#location]#text{\ctxcommand{flow_set_comment("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_exit               [#location]#text{\ctxcommand{flow_set_exit("#location",\!!bs\detokenize{#text}\!!es)}\ignorespaces}
+\unexpanded\def\module_charts_FLOW_connection[#location][#offset]#name{\ctxcommand{flow_set_connection("#location","#offset","#name")}\ignorespaces}
 
-\unexpanded\def\do_FLOW_include          [#name][#settings]{%
+\unexpanded\def\module_charts_FLOW_include          [#name][#settings]{%
     \begingroup
         \getparameters[FLOWi][x=1,y=1,#settings]%
         \ctxcommand{flow_set_include("#name",\number\FLOWix,\number\FLOWiy,\!!bs\detokenize{#settings}\!!es)}%

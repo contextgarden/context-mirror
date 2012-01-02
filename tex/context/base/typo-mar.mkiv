@@ -182,7 +182,7 @@
    \ifdone
      \edef\currentmarginreference{\margindataparameter\c!reference}%
      \ifx\currentmarginreference\empty \else
-       \set_page_only_destination_box_attribute\currentmarginreference\currentmarginreference
+       \strc_references_set_page_only_destination_box_attribute\currentmarginreference\currentmarginreference
      \fi
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
      \the\everymargindatacontent
@@ -232,7 +232,7 @@
      \dostoptagged
    \fi
    \ifdone
-     \positions_initialize % we use positions at the lua end (will become pdf.h/v)
+     \anch_positions_initialize % we use positions at the lua end (will become pdf.h/v)
      \ctxlua{typesetters.margins.save{
        location    = "\margindataparameter\c!location",
        method      = "\margindataparameter\c!method",

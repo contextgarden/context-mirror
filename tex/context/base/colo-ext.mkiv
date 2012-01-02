@@ -48,10 +48,10 @@
 \unexpanded\def\registercolorintent#1#2%
   {\setevalue{\??colorintent#1}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
 
-\unexpanded\def\colors_trigger_intent
+\unexpanded\def\colo_intents_set
   {\ctxcommand{enablecolorintents()}%
-   \unexpanded\gdef\colors_trigger_intent##1{\csname\??colorintent##1\endcsname}%
-   \colors_trigger_intent}
+   \unexpanded\gdef\colo_intents_set##1{\csname\??colorintent##1\endcsname}%
+   \colo_intents_set}
 
 \registercolorintent{knockout} {knockout}
 \registercolorintent{overprint}{overprint}
@@ -62,7 +62,7 @@
 
 \unexpanded\def\startcolorintent[#1]%
   {\pushattribute\colorintentattribute
-   \colors_trigger_intent{#1}}
+   \colo_intents_set{#1}}
 
 \unexpanded\def\stopcolorintent
   {\popattribute\colorintentattribute}
@@ -77,17 +77,17 @@
 \let\stoptextcolorintent \relax
 
 \appendtoks
-    \colors_set_text_intent
+    \colo_intents_set_text
 \to \everysetupcolors
 
-\let\p_colors_intent\empty
+\let\p_colo_intent\empty
 
-\def\colors_set_text_intent
-  {\edef\p_colors_intent{\colorsparameter\c!intent}%
-   \ifx\p_colors_intent\v!none \else
-     \unexpanded\xdef\starttextcolorintent{\colors_trigger_intent{\p_colors_intent}}%
-     \glet\colors_set_text_intent\relax
-     \colors_trigger_intent\p_colors_intent
+\def\colo_intents_set_text
+  {\edef\p_colo_intent{\colorsparameter\c!intent}%
+   \ifx\p_colo_intent\v!none \else
+     \unexpanded\xdef\starttextcolorintent{\colo_intents_set{\p_colo_intent}}%
+     \glet\colo_intents_set_text\relax
+     \colo_intents_set\p_colo_intent
    \fi}
 
 \appendtoks \starttextcolorintent \to \everystarttextproperties

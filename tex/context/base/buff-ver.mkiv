@@ -428,7 +428,7 @@
    \normalexpanded{\dotypeblockverbatim{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \unexpanded\def\dotypeblockverbatim#1#2%
-  {\buffers_pickup{_typing_}{#1}{#2}{}{\dodotypeblockverbatim{#1}{#2}}} % was dowithbuffer
+  {\buff_pickup{_typing_}{#1}{#2}{}{\dodotypeblockverbatim{#1}{#2}}} % was dowithbuffer
 
 \def\dodotypeblockverbatim#1#2%
   {\secondstageinitializetyping
@@ -452,7 +452,8 @@
 \unexpanded\def\dostoptyping#1% hm, currenttyping
   {\stoppacked
    \typingparameter\c!after
-   \normalexpanded{\egroup\checknextindentation[\typingparameter\c!indentnext]}%
+   \useindentnextparameter\typingparameter
+   \egroup
    \dorechecknextindentation}
 
 %D Line numbering for files is combined with filtering, while

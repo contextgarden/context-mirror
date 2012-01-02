@@ -371,18 +371,18 @@
 
 % Mark synchronization
 
-\newconditional\page_marks_building_successive_pages \settrue\page_marks_building_successive_pages
+\newconditional\c_page_marks_building_successive_pages \settrue\c_page_marks_building_successive_pages
 
 \def\page_marks_synchronize_page#1% box
-  {\marking_synchronize[\v!page][#1][\ifconditional\page_marks_building_successive_pages\v!keep\fi]}
+  {\strc_markings_synchronize[\v!page][#1][\ifconditional\c_page_marks_building_successive_pages\v!keep\fi]}
 
 \def\page_marks_synchronize_column#1#2#3#4% first last column box
   {\ifnum#3=#1\relax
-     \marking_synchronize[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
+     \strc_markings_synchronize[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
    \else\ifnum#3=#2\relax
-     \marking_synchronize[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
+     \strc_markings_synchronize[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
    \else
-     \marking_synchronize[\number#3,\v!column:\number#3                            ][#4][]%
+     \strc_markings_synchronize[\number#3,\v!column:\number#3                            ][#4][]%
    \fi\fi}
 
 % Page body building
@@ -402,7 +402,7 @@
       \ifcase\pageornamentstate
         \page_backgrounds_add_to_paper    \pagebox
       \fi
-      \positions_register_page            \pagebox
+      \anch_positions_register_page            \pagebox
       \ifarrangingpages
         \page_boxes_apply_shift_paper     \pagebox % \v!paper
       \else

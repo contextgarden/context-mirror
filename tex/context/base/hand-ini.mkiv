@@ -39,11 +39,11 @@
 
 %D New stuff.
 
-\unexpanded\def\setupfontexpansion {\dodoubleargument\fonts_expansion_setup }
-\unexpanded\def\setupfontprotrusion{\dodoubleargument\fonts_protrusion_setup}
+\unexpanded\def\setupfontexpansion {\dodoubleargument\font_expansion_setup }
+\unexpanded\def\setupfontprotrusion{\dodoubleargument\font_protrusion_setup}
 
-\def\fonts_expansion_setup [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
-\def\fonts_protrusion_setup[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
+\def\font_expansion_setup [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
+\def\font_protrusion_setup[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
 
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
@@ -51,13 +51,13 @@
 \let\pdfadjustspacing\relax \newcount\pdfadjustspacing % a little bit protection
 \let\pdfprotrudechars\relax \newcount\pdfprotrudechars % a little bit protection
 
-\def\fonts_expansion_enable  {\normalpdfadjustspacing\plustwo  }
-\def\fonts_expansion_disable {\normalpdfadjustspacing\zerocount}
-\def\fonts_protruding_enable {\normalpdfprotrudechars\plustwo  }
-\def\fonts_protruding_disable{\normalpdfprotrudechars\zerocount}
+\def\font_expansion_enable  {\normalpdfadjustspacing\plustwo  }
+\def\font_expansion_disable {\normalpdfadjustspacing\zerocount}
+\def\font_protruding_enable {\normalpdfprotrudechars\plustwo  }
+\def\font_protruding_disable{\normalpdfprotrudechars\zerocount}
 
-\appendtoks \fonts_expansion_disable  \to \everyforgetall % Here or not here?
-\appendtoks \fonts_protruding_disable \to \everyforgetall % Here or not here?
+\appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
+\appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?
 
 % \def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
 %

@@ -89,17 +89,17 @@
 %D \reference[here]{some text}
 %D \stoptyping
 
-\unexpanded\def\textreference {\dosingleargument\do_text_reference}
-\unexpanded\def\pagereference {\dosingleargument\do_page_reference}
-\unexpanded\def\reference     {\dosingleargument\do_full_reference}
-\unexpanded\def\setreference  {\dodoubleargument\do_set_reference }
+\unexpanded\def\textreference {\dosingleargument\strc_references_text_reference}
+\unexpanded\def\pagereference {\dosingleargument\strc_references_page_reference}
+\unexpanded\def\reference     {\dosingleargument\strc_references_full_reference}
+\unexpanded\def\setreference  {\dodoubleargument\strc_references_set_reference }
 
 %D These are implemented in a low level form as:
 
-\def\do_text_reference          [#labels]{\set_named_reference\s!text{#labels}{}}
-\def\do_page_reference          [#labels]{\set_named_reference\s!page{#labels}{}{}}
-\def\do_full_reference          [#labels]{\set_named_reference\s!full{#labels}{}}
-\def\do_set_reference[#labels][#settings]{\set_named_reference\s!user{#labels}{#settings}{}}
+\def\strc_references_text_reference          [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
+\def\strc_references_page_reference          [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
+\def\strc_references_full_reference          [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
+\def\strc_references_set_reference[#labels][#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
 
 %D Actually there is not much difference between a text and a
 %D full reference, but it's the concept that counts. The low
@@ -116,14 +116,14 @@
 
 \def\dofinishsomereference#kind{\executeifdefined{dofinish#{kind}reference}\gobbletwoarguments}
 
-\def\set_named_reference
+\def\strc_references_set_named_reference
   {\ifreferencing
-      \expandafter\set_named_reference_indeed
+      \expandafter\strc_references_set_named_reference_indeed
    \else
       \expandafter\gobblefourarguments
    \fi}
 
-\def\set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
+\def\strc_references_set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
   {\ifreferencing
      % we could have a more efficient one for page references but for the moment
      % we don't care too much
@@ -184,7 +184,7 @@
      \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute{}%
    \fi}
 
-\def\set_page_only_destination_attribute#labels% could in fact be fully expandable
+\def\strc_references_set_page_only_destination_attribute#labels% could in fact be fully expandable
   {\ifreferencing
      \edef\currentreferencelabels{#labels}%
      \ifx\currentreferencelabels\empty
@@ -206,8 +206,8 @@
      \lastdestinationattribute\attributeunsetvalue
    \fi}
 
-\def\set_page_only_destination_box_attribute#cs#labels%
-   {\set_page_only_destination_attribute{#labels}%
+\def\strc_references_set_page_only_destination_box_attribute#cs#labels%
+   {\strc_references_set_page_only_destination_attribute{#labels}%
     \ifnum\lastdestinationattribute>\zerocount
       \edef#cs{attr \destinationattribute\number\lastdestinationattribute}%
     \else
@@ -409,9 +409,9 @@
 %D true.
 
 \unexpanded\def\definereference
-  {\dodoubleempty\do_define_reference}
+  {\dodoubleempty\strc_references_define_reference}
 
-\def\do_define_reference[#name][#specification]%
+\def\strc_references_define_reference[#name][#specification]%
   {\ctxlua{structures.references.define("\referenceprefix","#name",\!!bs\detokenize{#specification}\!!es)}}
 
 \unexpanded\def\resetreference[#name]%
@@ -626,9 +626,9 @@
 \newtoks \everysetupreferencing
 
 \unexpanded\def\setupreferencing
-  {\dosingleargument\do_setup_referencing}
+  {\dosingleargument\strc_references_setup_referencing}
 
-\def\do_setup_referencing[#settings]%
+\def\strc_references_setup_referencing[#settings]%
   {\getparameters[\??rf][\c!prefix=\s!unknown,#settings]%
    \the\everysetupreferencing}
 
@@ -730,24 +730,24 @@
 %D and~\type{[} becomes active (and when asked for, typeset
 %D in a different color and typeface).
 
-% \unexpanded\def\in   {\mathortext\donormalmathin   \reference_in}
-% \unexpanded\def\at   {\mathortext\donormalmathat   \reference_at}
-% \unexpanded\def\about{\mathortext\donormalmathabout\reference_about}
-% \unexpanded\def\from {\mathortext\donormalmathfrom \reference_from}
-% \unexpanded\def\over {\mathortext\donormalmathover \reference_about}
+% \unexpanded\def\in   {\mathortext\donormalmathin   \strc_references_in}
+% \unexpanded\def\at   {\mathortext\donormalmathat   \strc_references_at}
+% \unexpanded\def\about{\mathortext\donormalmathabout\strc_references_about}
+% \unexpanded\def\from {\mathortext\donormalmathfrom \strc_references_from}
+% \unexpanded\def\over {\mathortext\donormalmathover \strc_references_about}
 
-% \definecommand in    {\reference_in}
-% \definecommand at    {\reference_at}
-% \definecommand about {\reference_about}
-% \definecommand from  {\reference_from}
-% \definecommand over  {\reference_about} % needed here, else math problems
+% \definecommand in    {\strc_references_in}
+% \definecommand at    {\strc_references_at}
+% \definecommand about {\strc_references_about}
+% \definecommand from  {\strc_references_from}
+% \definecommand over  {\strc_references_about} % needed here, else math problems
 
 \appendtoks
-    \ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \reference_in   } \else \let\in   \reference_in    \fi
-    \ifdefined\at    \let\normalmathat   \at    \unexpanded\def\at   {\mathortext\normalmathat   \reference_at   } \else \let\at   \reference_at    \fi
-    \ifdefined\about \let\normalmathabout\about \unexpanded\def\about{\mathortext\normalmathabout\reference_about} \else \let\about\reference_about \fi
-    \ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \reference_from } \else \let\from \reference_from  \fi
-    \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \reference_about} \else \let\over \reference_about \fi
+    \ifdefined\in    \let\normalmathin   \in    \unexpanded\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \let\in   \strc_references_in    \fi
+    \ifdefined\at    \let\normalmathat   \at    \unexpanded\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \let\at   \strc_references_at    \fi
+    \ifdefined\about \let\normalmathabout\about \unexpanded\def\about{\mathortext\normalmathabout\strc_references_about} \else \let\about\strc_references_about \fi
+    \ifdefined\from  \let\normalmathfrom \from  \unexpanded\def\from {\mathortext\normalmathfrom \strc_references_from } \else \let\from \strc_references_from  \fi
+    \ifdefined\over  \let\normalmathover \over  \unexpanded\def\over {\mathortext\normalmathover \strc_references_about} \else \let\over \strc_references_about \fi
 \to \everydump
 
            \def\filterreference  #key{\ctxcommand{filterreference("#key")}} % no checking, expanded
@@ -764,9 +764,9 @@
 %D using \type{\ref}.
 
 \unexpanded\def\getreference % checking, unexpanded
-  {\dodoubleargument\do_get_reference}
+  {\dodoubleargument\strc_references_get_reference}
 
-\def\do_get_reference[#key][#label]% #key = number page title text default realpage ...
+\def\strc_references_get_reference[#key][#label]% #key = number page title text default realpage ...
   {\ifsecondargument
      \doifreferencefoundelse{#label}{\ctxcommand{filterreference("#key")}}\dummyreference
    \else
@@ -777,7 +777,7 @@
 
 %D Special cases:
 
-\unexpanded\def\reference_about[#label]%
+\unexpanded\def\strc_references_about[#label]%
   {\dontleavehmode
    \begingroup
    \let\crlf\space
@@ -802,18 +802,18 @@
 % 2 = before
 % 3 = after
 
-\def\do_by_reference_page_state#unknown#before#current#after%
+\def\strc_references_by_reference_page_state#unknown#before#current#after%
   {\ifcase\referencepagestate\relax#unknown\or#current\or#before\or#after\fi}
 
 \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
   {\doifreferencefoundelse{#label}% usage needs checking (useless)
-     {\goto{\do_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
+     {\goto{\strc_references_by_reference_page_state{#label}{#backward}{}{#foreward}}[#label]}
      {[#label]}}
 
 \unexpanded\def\atpage[#label]% todo
   {\doifreferencefoundelse{#label}% kind of inefficient as \goto also analyzes
      {\goto
-        {\do_by_reference_page_state
+        {\strc_references_by_reference_page_state
            {\labeltexts\v!page\dummyreference}%
            {\labeltext\v!hencefore}%
            {\labeltexts\v!atpage\currentreferencepage}%
@@ -824,7 +824,7 @@
 \unexpanded\def\referencesymbol
   {\hbox{\strut\high
      {\setupsymbolset[\interactionparameter\c!symbolset]%
-      \symbol[\do_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
+      \symbol[\strc_references_by_reference_page_state\v!somewhere\v!nowhere\v!previous\v!next]}}}
 
 %D The other alternatives just conform their names: only the
 %D label, only the text, or the label and the text.
@@ -885,18 +885,18 @@
     \glet\rightofreference\relax
 \to \everyresetinatreference
 
-\def\start_goto_reference
+\def\strc_references_start_goto
   {\dontleavehmode
    \begingroup}
 
-\def\stop_goto_reference
+\def\strc_references_stop_goto
   {\the\everyresetinatreference
    \endgroup}
 
-\def\pickup_goto_reference
-  {\dodoublegroupempty\do_pickup_goto_reference}
+\def\strc_references_pickup_goto
+  {\dodoublegroupempty\strc_references_pickup_goto_indeed}
 
-\def\do_pickup_goto_reference#left#right#dummy[#label]% #dummy gobbles spaces (really needed)
+\def\strc_references_pickup_goto_indeed#left#right#dummy[#label]% #dummy gobbles spaces (really needed)
   {\leftreferencetoks
      \iffirstargument
        {#left}%
@@ -916,10 +916,10 @@
      {\goto{\referencesequence}[#label]}
      {\let\currentreferencecontent\dummyreference
       \goto{\referencesequence}[#label]}%
-   \stop_goto_reference}
+   \strc_references_stop_goto}
 
-\unexpanded\def\reference_in{\start_goto_reference\let\currentreferencecontent\currentreferencedefault\pickup_goto_reference}
-\unexpanded\def\reference_at{\start_goto_reference\let\currentreferencecontent\currentreferencepage   \pickup_goto_reference}
+\unexpanded\def\strc_references_in{\strc_references_start_goto\let\currentreferencecontent\currentreferencedefault\strc_references_pickup_goto}
+\unexpanded\def\strc_references_at{\strc_references_start_goto\let\currentreferencecontent\currentreferencepage   \strc_references_pickup_goto}
 
 %D \macros
 %D   {definereferenceformat}
@@ -969,7 +969,7 @@
 \installcommandhandler \??referenceformat {referenceformat} \??referenceformat
 
 \appendtoks
-    \setuevalue\currentreferenceformat{\execute_reference_format{\currentreferenceformat}}%
+    \setuevalue\currentreferenceformat{\strc_references_apply_format{\currentreferenceformat}}%
 \to \everydefinereferenceformat
 
 \setupreferenceformat
@@ -983,8 +983,8 @@
    \c!setups=,
    \c!color=]
 
-\unexpanded\def\execute_reference_format#name%
-  {\start_goto_reference
+\unexpanded\def\strc_references_apply_format#name%
+  {\strc_references_start_goto
    \edef\currentreferenceformat{#name}%
    \gdef\leftofreference               {\referenceformatparameter\c!left    }%
    \gdef\rightofreference              {\referenceformatparameter\c!right   }%
@@ -1025,7 +1025,7 @@
    %
    \let\leftofreferencecontent \empty
    \let\rightofreferencecontent\empty
-   \pickup_goto_reference}
+   \strc_references_pickup_goto}
 
 \def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
 
@@ -1317,16 +1317,16 @@
 %D specified. This is logical when one keeps in mind that a
 %D valid \URL\ can also be a mail address.
 
-\unexpanded\def\useurl {\doquadrupleempty\do_use_url }  % so that they can be used in expanded arguments
-\unexpanded\def\usefile{\dotripleargument\do_use_file}  % so that they can be used in expanded arguments
+\unexpanded\def\useurl {\doquadrupleempty\strc_references_use_url }  % so that they can be used in expanded arguments
+\unexpanded\def\usefile{\dotripleargument\strc_references_use_file}  % so that they can be used in expanded arguments
 
 \let\useURL             \useurl
 \let\useexternaldocument\usefile
 
-\def\do_use_url[#label][#url][#file][#description]%
+\def\strc_references_use_url[#label][#url][#file][#description]%
   {\ctxcommand{useurl("#label",\!!bs\detokenize{#url}\!!es,\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
-\def\do_use_file[#label][#file][#description]%
+\def\strc_references_use_file[#label][#file][#description]%
   {\ctxcommand{usefile("#label",\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
 \def\doifurldefinedelse #label{\ctxcommand{doifurldefinedelse ("#label")}}
@@ -1383,10 +1383,10 @@
 %D
 %D We keep this for compatibility reasons, hence the hackery.
 
-\unexpanded\def\reference_from
-  {\dosingleempty\do_do_special_from}
+\unexpanded\def\strc_references_from
+  {\dosingleempty\strc_references_do_special_from}
 
-\def\do_do_special_from[#label]%
+\def\strc_references_do_special_from[#label]%
   {\dontleavehmode
    \goto{\ctxlua{structures.references.from("#label")}}[fileorurl(#label)]}
 
@@ -1430,9 +1430,9 @@
   {\dodoubleargument\getparameters[\??pr]}
 
 \unexpanded\def\defineprogram
-  {\dotripleargument\do_define_program}
+  {\dotripleargument\strc_references_define_program}
 
-\def\do_define_program[#name][#program][#description]%
+\def\strc_references_define_program[#name][#program][#description]%
   {\ctxlua{structures.references.programs.define("#name","#program","#description")}}
 
 \def\program[#name]% incompatible, more consistent, hardy used anyway
@@ -1477,9 +1477,9 @@
 %D \showsetup{gotopage}
 
 \unexpanded\def\definepage
-  {\dodoubleargument\do_define_page}
+  {\dodoubleargument\strc_references_define_page}
 
-\def\do_define_page[#name][#target]%
+\def\strc_references_define_page[#name][#target]%
   {\definereference[#name][page(#target)]}
 
 \def\gotopage#text[#target]%
@@ -1527,9 +1527,9 @@
 %D to, that is, when one clicks on the title.
 
 \def\coupledocument
-  {\doquadrupleempty\do_couple_document}
+  {\doquadrupleempty\strc_references_couple_document}
 
-\def\do_couple_document[#name][#file][#sections][#description]%
+\def\strc_references_couple_document[#name][#file][#sections][#description]%
   {\ifthirdargument
      % this will be done differently (when it's needed)
    \fi}
@@ -1691,9 +1691,9 @@
   }}
 
 \unexpanded\def\setupreferencestructureprefix
-  {\dotripleempty\do_setup_reference_structure_prefix}
+  {\dotripleempty\strc_references_setup_reference_structure_prefix}
 
-\def\do_setup_reference_structure_prefix[#kind][#category][#settings]%
+\def\strc_references_setup_reference_structure_prefix[#kind][#category][#settings]%
   {\ifthirdargument
      \getparameters[\??rf:\c!prefix:#kind:#category][#settings]%
    \else\ifsecondargument

@@ -50,8 +50,6 @@
 %.......
 %catcode`\z     = 11
 
-\chardef\activecatcode = 13 % later this will become a counter
-
 \def ^^L{\par}
 \def\^^M{\   } % control <return> = control <space>
 \def\^^I{\   } % same for <tab>
@@ -172,34 +170,34 @@
 % 255       : page
 % 256 -     : user
 
-\countdef   \min_allocated_register   =    52 \min_allocated_register   =   256 % can change
-\countdef   \max_allocated_register   =    53 \max_allocated_register   = 32767
-\countdef   \min_allocated_iochannel  =    54 \min_allocated_iochannel  =    -1
-\countdef   \max_allocated_iochannel  =    55 \max_allocated_iochannel  =    16
-\countdef   \min_allocated_language   =    56 \min_allocated_language   =     0
-\countdef   \max_allocated_language   =    57 \max_allocated_language   =   255
-\countdef   \max_allocated_insert     =    58 \max_allocated_insert     =   254
-\countdef   \min_allocated_insert     =    59 \min_allocated_insert     =   128
-\countdef   \min_allocated_family     =    60 \min_allocated_family     =   128
-\countdef   \max_allocated_family     =    61 \max_allocated_family     =   255
-\countdef   \min_allocated_attribute  =    62 \min_allocated_attribute  =  1024 % 127-1023 : private
+\countdef   \c_syst_min_allocated_register   =    52 \c_syst_min_allocated_register   =   256 % can change
+\countdef   \c_syst_max_allocated_register   =    53 \c_syst_max_allocated_register   = 32767
+\countdef   \c_syst_min_allocated_iochannel  =    54 \c_syst_min_allocated_iochannel  =    -1
+\countdef   \c_syst_max_allocated_iochannel  =    55 \c_syst_max_allocated_iochannel  =    16
+\countdef   \c_syst_min_allocated_language   =    56 \c_syst_min_allocated_language   =     0
+\countdef   \c_syst_max_allocated_language   =    57 \c_syst_max_allocated_language   =   255
+\countdef   \c_syst_max_allocated_insert     =    58 \c_syst_max_allocated_insert     =   254
+\countdef   \c_syst_min_allocated_insert     =    59 \c_syst_min_allocated_insert     =   128
+\countdef   \c_syst_min_allocated_family     =    60 \c_syst_min_allocated_family     =   128
+\countdef   \c_syst_max_allocated_family     =    61 \c_syst_max_allocated_family     =   255
+\countdef   \c_syst_min_allocated_attribute  =    62 \c_syst_min_allocated_attribute  =  1024 % 127-1023 : private
 
-\countdef   \last_allocated_count     =    32 \last_allocated_count     = \min_allocated_register
-\countdef   \last_allocated_dimen     =    33 \last_allocated_dimen     = \min_allocated_register
-\countdef   \last_allocated_skip      =    34 \last_allocated_skip      = \min_allocated_register
-\countdef   \last_allocated_muskip    =    35 \last_allocated_muskip    = \min_allocated_register
-\countdef   \last_allocated_box       =    36 \last_allocated_box       = \min_allocated_register
-\countdef   \last_allocated_toks      =    37 \last_allocated_toks      = \min_allocated_register
-\countdef   \last_allocated_read      =    38 \last_allocated_read      = \min_allocated_iochannel
-\countdef   \last_allocated_write     =    39 \last_allocated_write     = \min_allocated_iochannel
-\countdef   \last_allocated_marks     =    40 \last_allocated_marks     = \min_allocated_register
-\countdef   \last_allocated_language  =    41 \last_allocated_language  = \min_allocated_language    % not used in context
-\countdef   \last_allocated_insertion =    42 \last_allocated_insertion = \min_allocated_insert
-\countdef   \last_allocated_family    =    43 \last_allocated_family    = \min_allocated_family      % not used in context
-\countdef   \last_allocated_attribute =    44 \last_allocated_attribute = \min_allocated_attribute
+\countdef   \c_syst_last_allocated_count     =    32 \c_syst_last_allocated_count     = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_dimen     =    33 \c_syst_last_allocated_dimen     = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_skip      =    34 \c_syst_last_allocated_skip      = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_muskip    =    35 \c_syst_last_allocated_muskip    = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_box       =    36 \c_syst_last_allocated_box       = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_toks      =    37 \c_syst_last_allocated_toks      = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_read      =    38 \c_syst_last_allocated_read      = \c_syst_min_allocated_iochannel
+\countdef   \c_syst_last_allocated_write     =    39 \c_syst_last_allocated_write     = \c_syst_min_allocated_iochannel
+\countdef   \c_syst_last_allocated_marks     =    40 \c_syst_last_allocated_marks     = \c_syst_min_allocated_register
+\countdef   \c_syst_last_allocated_language  =    41 \c_syst_last_allocated_language  = \c_syst_min_allocated_language    % not used in context
+\countdef   \c_syst_last_allocated_insertion =    42 \c_syst_last_allocated_insertion = \c_syst_min_allocated_insert
+\countdef   \c_syst_last_allocated_family    =    43 \c_syst_last_allocated_family    = \c_syst_min_allocated_family      % not used in context
+\countdef   \c_syst_last_allocated_attribute =    44 \c_syst_last_allocated_attribute = \c_syst_min_allocated_attribute
 
-\countdef   \min_counter_value        =   125 \min_counter_value        = -"7FFFFFFF % beware, we use index 125 at the lua end
-\countdef   \max_counter_value        =   126 \max_counter_value        =  "7FFFFFFF % beware, we use index 126 at the lua end
+\countdef   \c_syst_min_counter_value =   125 \c_syst_min_counter_value = -"7FFFFFFF % beware, we use index 125 at the lua end
+\countdef   \c_syst_max_counter_value =   126 \c_syst_max_counter_value =  "7FFFFFFF % beware, we use index 126 at the lua end
 
 \countdef   \zerocount                =   120 \zerocount                =  0
 \countdef   \plusone                  =   121 \plusone                  =  1
@@ -224,21 +222,21 @@
 
 %D The allocators share a common helper macro.
 
-\normalprotected\def\newcount   {\allocate_register\last_allocated_count    \count   \countdef   \max_allocated_register}
-\normalprotected\def\newdimen   {\allocate_register\last_allocated_dimen    \dimen   \dimendef   \max_allocated_register}
-\normalprotected\def\newskip    {\allocate_register\last_allocated_skip     \skip    \skipdef    \max_allocated_register}
-\normalprotected\def\newmuskip  {\allocate_register\last_allocated_muskip   \muskip  \muskipdef  \max_allocated_register}
-\normalprotected\def\newbox     {\allocate_register\last_allocated_box      \box     \mathchardef\max_allocated_register}
-\normalprotected\def\newtoks    {\allocate_register\last_allocated_toks     \toks    \toksdef    \max_allocated_register}
-\normalprotected\def\newread    {\allocate_register\last_allocated_read     \read    \chardef    \max_allocated_iochannel}
-\normalprotected\def\newwrite   {\allocate_register\last_allocated_write    \write   \chardef    \max_allocated_iochannel}
-\normalprotected\def\newmarks   {\allocate_register\last_allocated_marks    \marks   \mathchardef\max_allocated_register}
-\normalprotected\def\newinsert  {\allocate_register\last_allocated_insertion\insert  \chardef    \max_allocated_insert}
+\normalprotected\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef   \c_syst_max_allocated_register}
+\normalprotected\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef   \c_syst_max_allocated_register}
+\normalprotected\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef    \c_syst_max_allocated_register}
+\normalprotected\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef  \c_syst_max_allocated_register}
+\normalprotected\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \mathchardef\c_syst_max_allocated_register}
+\normalprotected\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef    \c_syst_max_allocated_register}
+\normalprotected\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \chardef    \c_syst_max_allocated_iochannel}
+\normalprotected\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \chardef    \c_syst_max_allocated_iochannel}
+\normalprotected\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \mathchardef\c_syst_max_allocated_register}
+\normalprotected\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef    \c_syst_max_allocated_insert}
 
 %D We don't need these in \CONTEXT:
 
-\normalprotected\def\newlanguage{\allocate_register\last_allocated_language \language\chardef    \max_allocated_language}
-\normalprotected\def\newfamily  {\allocate_register\last_allocated_family   \fam     \chardef    \max_allocated_family}
+\normalprotected\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\chardef    \c_syst_max_allocated_language}
+\normalprotected\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \chardef    \c_syst_max_allocated_family}
 
 \let\newfam\newfamily
 
@@ -267,7 +265,7 @@
     \normalprotected\def\writestatus#1#2{\immediate\write16{#1: #2}}
 \fi
 
-\def\allocate_register_yes#1#2#3#4#5% last class method max name
+\def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
   {\ifnum#1<#4\relax
      \global\advance#1\plusone
      \global#3#5=#1\relax
@@ -275,16 +273,16 @@
      \writestatus{warning}{no room for \string#2\space \string#5\space (max: \number#4)}%
    \fi}
 
-\def\allocate_register_nop#1#2#3#4#5% last class method max name
+\def\syst_basics_allocate_nop#1#2#3#4#5% last class method max name
   {\writestatus{warning}{\string#2 \string#5 is already defined (\string\relax\space it first)}}
 
-\def\allocate_register#1#2#3#4#5% last class method max name
+\def\syst_basics_allocate#1#2#3#4#5% last class method max name
   {\ifx#5\undefined
-     \expandafter\allocate_register_yes
+     \expandafter\syst_basics_allocate_yes
    \else\ifx#5\relax
-     \expandafter\expandafter\expandafter\allocate_register_yes
+     \expandafter\expandafter\expandafter\syst_basics_allocate_yes
    \else
-     \expandafter\expandafter\expandafter\allocate_register_nop
+     \expandafter\expandafter\expandafter\syst_basics_allocate_nop
    \fi\fi
    #1#2#3#4#5}
 
@@ -292,8 +290,8 @@
 %D {\chardef} instead of the more limited \type {\mathchardef}.
 
 \ifnum\texengine>\pdftexengine
-    \normalprotected\def\newbox  {\allocate_register\last_allocated_box  \box  \chardef\max_allocated_register}
-    \normalprotected\def\newmarks{\allocate_register\last_allocated_marks\marks\chardef\max_allocated_register}
+    \normalprotected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
+    \normalprotected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
 \fi
 
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not
@@ -303,8 +301,8 @@
 %D and should not be touched.
 
 \ifnum\texengine=\luatexengine
-    \let\attributeunsetvalue\min_counter_value % used to be \minusone
-    \normalprotected\def\newattribute{\allocate_register\min_allocated_attribute\attribute\attributedef\max_allocated_register}
+    \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+    \normalprotected\def\newattribute{\syst_basics_allocate\c_syst_min_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 \fi
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a
@@ -470,62 +468,53 @@
 
 \ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
 
-%D \macros
-%D   {@@escape,@@begingroup,@@endgroup,@@mathshift,@@alignment,
-%D    @@endofline,@@parameter,@@superscript,@@subscript,
-%D    @@ignore,@@space,@@letter,@@other,@@active,@@comment}
-%D
-%D In \CONTEXT\ we sometimes manipulate the \CATCODES\ of certain
-%D characters. Because we are not that good at remembering numbers,
-%D we introduce some symbolic names.
+%D The catcode constants will be redefined in later catcode
+%D related modules but they can be used in the same way.
 
-%D As we now have catc-* files, we also have more readable names but
-%D We will keep the following around for a while.
-
-\chardef\@@escape      =  0
-\chardef\@@begingroup  =  1
-\chardef\@@endgroup    =  2
-\chardef\@@mathshift   =  3
-\chardef\@@alignment   =  4
-\chardef\@@endofline   =  5
-\chardef\@@parameter   =  6
-\chardef\@@superscript =  7
-\chardef\@@subscript   =  8
-\chardef\@@ignore      =  9
-\chardef\@@space       = 10
-\chardef\@@letter      = 11
-\chardef\@@other       = 12
-\chardef\@@active      = 13
-\chardef\@@comment     = 14
+\chardef\escapecatcode      =  0
+\chardef\begingroupcatcode  =  1
+\chardef\endgroupcatcode    =  2
+\chardef\mathshiftcatcode   =  3
+\chardef\alignmentcatcode   =  4
+\chardef\endoflinecatcode   =  5
+\chardef\parametercatcode   =  6
+\chardef\superscriptcatcode =  7
+\chardef\subscriptcatcode   =  8
+\chardef\ignorecatcode      =  9
+\chardef\spacecatcode       = 10
+\chardef\lettercatcode      = 11
+\chardef\othercatcode       = 12
+\chardef\activecatcode      = 13
+\chardef\commentcatcode     = 14
+\chardef\invalidcatcode     = 15
 
 %D Constants to be used with \type {\currentgrouptype}.
 
-\chardef\@@bottomlevelgroup   =  0
-\chardef\@@simplegroup        =  1
-\chardef\@@hboxgroup          =  2
-\chardef\@@adjustedhboxgroup  =  3
-\chardef\@@vboxgroup          =  4
-\chardef\@@vtopgroup          =  5
-\chardef\@@aligngroup         =  6
-\chardef\@@noaligngroup       =  7
-\chardef\@@outputgroup        =  8
-\chardef\@@mathgroup          =  9
-\chardef\@@discretionarygroup = 10
-\chardef\@@insertgroup        = 11
-\chardef\@@vcentergroup       = 12
-\chardef\@@mathchoicegroup    = 13
-\chardef\@@semisimplegroup    = 14
-\chardef\@@mathshiftgroup     = 15
-\chardef\@@mathleftgroup      = 16
-
-\chardef\@@vadjustgroup       = \@@insertgroup
+\chardef\bottomlevelgroupcode   =  0
+\chardef\simplegroupcode        =  1
+\chardef\hboxgroupcode          =  2
+\chardef\adjustedhboxgroupcode  =  3
+\chardef\vboxgroupcode          =  4
+\chardef\vtopgroupcode          =  5
+\chardef\aligngroupcode         =  6
+\chardef\noaligngroupcode       =  7
+\chardef\outputgroupcode        =  8
+\chardef\mathgroupcode          =  9
+\chardef\discretionarygroupcode = 10
+\chardef\insertgroupcode        = 11
+\chardef\vcentergroupcode       = 12
+\chardef\mathchoicegroupcode    = 13
+\chardef\semisimplegroupcode    = 14
+\chardef\mathshiftgroupcode     = 15
+\chardef\mathleftgroupcode      = 16
+\chardef\vadjustgroupcode       = \insertgroupcode
 
 %D Constants to be used with \type {\interactionmode}.
 
-\chardef\@@batchmode     = 0
-\chardef\@@nonstopmode   = 1
-\chardef\@@scrollmode    = 2
-\chardef\@@errorstopmode = 3
+\chardef\batchmodecode     = 0
+\chardef\nonstopmodecode   = 1
+\chardef\scrollmodecode    = 2
+\chardef\errorstopmodecode = 3
 
 %D Constants to be used with \type {\lastnodetype}. The \type
 %D {\lastnodetype} primitive is \ETEX\ compliant. The valid range is
@@ -535,45 +524,46 @@
 %D mind that the internal node numbers are different and that there
 %D are more node types that 15.
 
-\chardef\@@charnode          =  0
-\chardef\@@hlistnode         =  1
-\chardef\@@vlistnode         =  2
-\chardef\@@rulenode          =  3
-\chardef\@@insertnode        =  4
-\chardef\@@marknode          =  5
-\chardef\@@adjustnode        =  6
-\chardef\@@ligaturenode      =  7
-\chardef\@@discretionarynode =  8
-\chardef\@@whatsitnode       =  9
-\chardef\@@mathnode          = 10
-\chardef\@@gluenode          = 11
-\chardef\@@kernnode          = 12
-\chardef\@@penaltynode       = 13
-\chardef\@@unsetnode         = 14
-\chardef\@@mathsnode         = 15
+\chardef\charnodecode          =  0
+\chardef\hlistnodecode         =  1
+\chardef\vlistnodecode         =  2
+\chardef\rulenodecode          =  3
+\chardef\insertnodecode        =  4
+\chardef\marknodecode          =  5
+\chardef\adjustnodecode        =  6
+\chardef\ligaturenodecode      =  7
+\chardef\discretionarynodecode =  8
+\chardef\whatsitnodecode       =  9
+\chardef\mathnodecode          = 10
+\chardef\gluenodecode          = 11
+\chardef\kernnodecode          = 12
+\chardef\penaltynodecode       = 13
+\chardef\unsetnodecode         = 14
+\chardef\mathsnodecode         = 15
 
-%D Constants to be used with \type {\currentiftype}.
+%D Constants to be used with \type {\currentiftype}. I wonder if
+%D we will ever use these in \CONTEXT.
 
-\chardef\@@charif     =  1
-\chardef\@@catif      =  2
-\chardef\@@numif      =  3
-\chardef\@@dimif      =  4
-\chardef\@@oddif      =  5
-\chardef\@@vmodeif    =  6
-\chardef\@@hmodeif    =  7
-\chardef\@@mmodeif    =  8
-\chardef\@@innerif    =  9
-\chardef\@@voidif     = 10
-\chardef\@@hboxif     = 11
-\chardef\@@vboxif     = 12
-\chardef\@@xif        = 13
-\chardef\@@eofif      = 14
-\chardef\@@trueif     = 15
-\chardef\@@falseif    = 16
-\chardef\@@caseif     = 17
-\chardef\@@definedif  = 18
-\chardef\@@csnameif   = 19
-\chardef\@@fontcharif = 20
+\chardef\charifcode     =  1
+\chardef\catifcode      =  2
+\chardef\numifcode      =  3
+\chardef\dimifcode      =  4
+\chardef\oddifcode      =  5
+\chardef\vmodeifcode    =  6
+\chardef\hmodeifcode    =  7
+\chardef\mmodeifcode    =  8
+\chardef\innerifcode    =  9
+\chardef\voidifcode     = 10
+\chardef\hboxifcode     = 11
+\chardef\vboxifcode     = 12
+\chardef\xifcode        = 13
+\chardef\eofifcode      = 14
+\chardef\trueifcode     = 15
+\chardef\falseifcode    = 16
+\chardef\caseifcode     = 17
+\chardef\definedifcode  = 18
+\chardef\csnameifcode   = 19
+\chardef\fontcharifcode = 20
 
 %D Of course we want even bigger log files, so we copied this
 %D from the \ETEX\ source files.
@@ -670,28 +660,28 @@
 % \normalprotected\def\appendtotoks #1#{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
 % \normalprotected\def\prependtotoks#1#{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
 
-\newtoks\t_syst_app_pre_temp
+\newtoks\t_syst_toks_temp \let\m_syst_toks_temp\t_syst_toks_temp
 
-\normalprotected\def\appendtotoks #1{\let\scratch_toks#1\afterassignment\syst_app_toks_l\t_syst_app_pre_temp=}
-\normalprotected\def\prependtotoks#1{\let\scratch_toks#1\afterassignment\syst_pre_toks_l\t_syst_app_pre_temp=}
+\normalprotected\def\appendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_l \t_syst_toks_temp=}
+\normalprotected\def\prependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_l\t_syst_toks_temp=}
 
-% \def\syst_app_toks{\scratch_toks\expandafter\expandafter\expandafter{\expandafter\the\expandafter\scratch_toks\the\t_syst_app_pre_temp}}}
-% \def\syst_pre_toks{\scratch_toks\expandafter\expandafter\expandafter{\expandafter\the\expandafter\t_syst_app_pre_temp\the\scratch_toks}}}
+% \def\syst_toks_append {\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\m_syst_toks_temp\the\t_syst_toks_temp}}}
+% \def\syst_toks_prepend{\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\t_syst_toks_temp\the\m_syst_toks_temp}}}
 
-\normalprotected\def\globalappendtotoks #1{\let\scratch_toks#1\afterassignment\syst_app_toks_g\t_syst_app_pre_temp=}
-\normalprotected\def\globalprependtotoks#1{\let\scratch_toks#1\afterassignment\syst_pre_toks_g\t_syst_app_pre_temp=}
+\normalprotected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
+\normalprotected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
 
-\def\syst_app_toks_l{\normalexpanded{\scratch_toks{\the\scratch_toks\the\t_syst_app_pre_temp}}}
-\def\syst_pre_toks_l{\normalexpanded{\scratch_toks{\the\t_syst_app_pre_temp\the\scratch_toks}}}
+\def\syst_toks_append_l {\normalexpanded{\m_syst_toks_temp{\the\m_syst_toks_temp\the\t_syst_toks_temp}}}
+\def\syst_toks_prepend_l{\normalexpanded{\m_syst_toks_temp{\the\t_syst_toks_temp\the\m_syst_toks_temp}}}
 
-\def\syst_app_toks_g{\global\syst_app_toks_l}
-\def\syst_pre_toks_g{\global\syst_pre_toks_l}
+\def\syst_toks_append_g {\global\syst_toks_append_l }
+\def\syst_toks_prepend_g{\global\syst_toks_prepend_l}
 
-\normalprotected\def\addtotoks      #1{\let\scratch_toks#1\afterassignment\syst_add_toks_l\let\next}
-\normalprotected\def\globaladdtotoks#1{\let\scratch_toks#1\afterassignment\syst_add_toks_g\let\next}
+\normalprotected\def\addtotoks      #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_l\let\next}
+\normalprotected\def\globaladdtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_g\let\next}
 
-\def\syst_add_toks_l{\scratch_toks\expandafter\bgroup\the\scratch_toks}
-\def\syst_add_toks_g{\global\syst_add_toks_l}
+\def\syst_toks_add_l{\m_syst_toks_temp\expandafter\bgroup\the\m_syst_toks_temp}
+\def\syst_toks_add_g{\global\syst_toks_add_l}
 
 \normalprotected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
 \normalprotected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes

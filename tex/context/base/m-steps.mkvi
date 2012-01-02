@@ -17,17 +17,17 @@
 
 \unprotect
 
-\def\??stpc{@@stpc} % charts
-\def\??stpt{@@stpt} % tables
-\def\??stec{@@stec} % cells
-\def\??stet{@@stet} % texts
-\def\??stel{@@stel} % lines
+\definecorenamespace {stepcharts}
+\definecorenamespace {steptables}
+\definecorenamespace {stepcells}
+\definecorenamespace {steptexts}
+\definecorenamespace {steplines}
 
-\installsimplecommandhandler \??stpc {STEPchart} \??stpc
-\installsimplecommandhandler \??stpt {STEPtable} \??stpt
-\installsimplecommandhandler \??stec {STEPcell}  \??stec
-\installsimplecommandhandler \??stet {STEPtext}  \??stet
-\installsimplecommandhandler \??stel {STEPline}  \??stel
+\installsimplecommandhandler \??stepcharts {STEPchart} \??stepcharts
+\installsimplecommandhandler \??steptables {STEPtable} \??steptables
+\installsimplecommandhandler \??stepcells  {STEPcell}  \??stepcells
+\installsimplecommandhandler \??steptexts  {STEPtext}  \??steptexts
+\installsimplecommandhandler \??steplines  {STEPline}  \??steplines
 
 \let\setupSTEPcharts\setupSTEPchart
 \let\setupSTEPtables\setupSTEPtable
@@ -93,19 +93,19 @@
 
 \unexpanded\def\startSTEPchart
   {\begingroup
-   \dodoubleempty\start_STEP_chart}
+   \dodoubleempty\module_steps_start_chart}
 
-\def\start_STEP_chart[#name][#settings]%
+\def\module_steps_start_chart[#name][#settings]%
   {\startnointerference
    \iffirstargument
      \doifassignmentelse{#name}
        {\let\currentSTEPchart\empty
-        \xdef\flush_STEP_chart{\STEP_chart[][#name]}}
+        \xdef\module_steps_flush_chart{\module_steps_chart[][#name]}}
        {\edef\currentSTEPchart{#name}%
-        \glet\flush_STEP_chart\relax}% settings are not stored
+        \glet\module_steps_flush_chart\relax}% settings are not stored
    \else
      \let\currentSTEPchart\empty
-     \gdef\flush_STEP_chart{\STEP_chart[][]}%
+     \gdef\module_steps_flush_chart{\module_steps_chart[][]}%
    \fi
    \the\everySTEPchart
    \ctxcommand{step_start_chart("\currentSTEPchart")}}
@@ -113,22 +113,22 @@
 \unexpanded\def\stopSTEPchart
   {\ctxcommand{step_stop_chart()}%
    \stopnointerference
-   \flush_STEP_chart
+   \module_steps_flush_chart
    \endgroup}
 
 \unexpanded\def\startSTEPtable
   {\begingroup
    \setupSTEPchart[\c!alternative=\v!vertical]%
-   \dodoubleempty\start_STEP_chart}
+   \dodoubleempty\module_steps_start_chart}
 
 \let\stopSTEPtable\stopSTEPchart
 
-\let\flush_STEP_chart\relax
+\let\module_steps_flush_chart\relax
 
 \unexpanded\def\STEPchart
-  {\dodoubleempty\STEP_chart}
+  {\dodoubleempty\module_steps_chart}
 
-\unexpanded\def\STEP_chart[#name][#settings]%
+\unexpanded\def\module_steps_chart[#name][#settings]%
   {\begingroup
    \setupSTEPchart[#settings]%
    \ifinsidefloat
@@ -182,43 +182,43 @@
 \unexpanded\def\stopSTEPcell
   {\ctxcommand{step_stop_cell()}}
 
-\unexpanded\def\step_cells#top#bot%
+\unexpanded\def\module_steps_cells#top#bot%
   {\ctxcommand{step_cells(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
 
-\unexpanded\def\step_texts#top#bot%
+\unexpanded\def\module_steps_texts#top#bot%
   {\ctxcommand{step_texts(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
 
-\unexpanded\def\step_cell#str%
+\unexpanded\def\module_steps_cell#str%
   {\ctxcommand{step_cell(\!!bs\detokenize{#str}\!!es)}}
 
-\unexpanded\def\step_text#str%
+\unexpanded\def\module_steps_text#str%
   {\ctxcommand{step_text(\!!bs\detokenize{#str}\!!es)}}
 
-\unexpanded\def\step_textset#left#middle#right%
+\unexpanded\def\module_steps_textset#left#middle#right%
   {\ctxcommand{step_textset(\!!bs\detokenize{#left}\!!es,\!!bs\detokenize{#middle}\!!es,\!!bs\detokenize{#right}\!!es)}}
 
-\unexpanded\def\step_toptext#top%
+\unexpanded\def\module_steps_toptext#top%
   {\ctxcommand{step_text_top(\!!bs\detokenize{#top}\!!es)}}
 
-\unexpanded\def\step_bottext#bot%
+\unexpanded\def\module_steps_bottext#bot%
   {\ctxcommand{step_text_bot(\!!bs\detokenize{#bot}\!!es)}}
 
-\unexpanded\def\step_topcell#top%
+\unexpanded\def\module_steps_topcell#top%
   {\ctxcommand{step_cell_top(\!!bs\detokenize{#top}\!!es)}}
 
-\unexpanded\def\step_botcell#bot%
+\unexpanded\def\module_steps_botcell#bot%
   {\ctxcommand{step_cell_bot(\!!bs\detokenize{#bot}\!!es)}}
 
 \appendtoks
-    \let\cells  \step_cells
-    \let\texts  \step_texts
-    \let\cell   \step_cell
-    \let\text   \step_text
-    \let\textset\step_textset
-    \let\toptext\step_toptext
-    \let\bottext\step_bottext
-    \let\topcell\step_topcell
-    \let\botcell\step_botcell
+    \let\cells  \module_steps_cells
+    \let\texts  \module_steps_texts
+    \let\cell   \module_steps_cell
+    \let\text   \module_steps_text
+    \let\textset\module_steps_textset
+    \let\toptext\module_steps_toptext
+    \let\bottext\module_steps_bottext
+    \let\topcell\module_steps_topcell
+    \let\botcell\module_steps_botcell
 \to \everySTEPchart
 
 % todo: mapping can be done in lua

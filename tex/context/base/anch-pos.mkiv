@@ -210,7 +210,7 @@
 
 \let\dopositionaction\gobbleoneargument % implemented later
 
-\def\positions_initialize
+\def\anch_positions_initialize
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize\printpaperwidth\printpaperheight
@@ -220,11 +220,11 @@
   {\iftrialtypesetting
      \expandafter\gobbleoneargument
    \else
-     \expandafter\positions_set_only_indeed
+     \expandafter\anch_positions_set_only_indeed
    \fi}
 
-\def\positions_set_only_indeed#1%
-  {\positions_initialize
+\def\anch_positions_set_only_indeed#1%
+  {\anch_positions_initialize
    \edef\currentposition{#1}%
    \dosetposition\currentposition}
 
@@ -232,11 +232,11 @@
   {\iftrialtypesetting
      \expandafter\gobbleoneargument
    \else
-     \expandafter\positions_set_indeed
+     \expandafter\anch_positions_set_indeed
    \fi}
 
-\def\positions_set_indeed#1%
-  {\positions_initialize
+\def\anch_positions_set_indeed#1%
+  {\anch_positions_initialize
    \edef\currentposition{#1}%
    \dosetposition\currentposition
    \traceposstring\llap\green{\currentposition>}%
@@ -246,11 +246,11 @@
   {\iftrialtypesetting
      \expandafter\gobblefourarguments
    \else
-     \expandafter\positions_set_data_indeed
+     \expandafter\anch_positions_set_data_indeed
    \fi}
 
-\def\positions_set_data_indeed#1#2#3#4%
-  {\positions_initialize
+\def\anch_positions_set_data_indeed#1#2#3#4%
+  {\anch_positions_initialize
    \hbox
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
@@ -260,19 +260,19 @@
 
 \unexpanded\def\setpositionbox
   {\iftrialtypesetting
-     \expandafter\positions_set_box_nop
+     \expandafter\anch_positions_set_box_nop
    \else
-     \expandafter\positions_set_box_yes
+     \expandafter\anch_positions_set_box_yes
    \fi}
 
-\def\positions_set_box_nop#1%
+\def\anch_positions_set_box_nop#1%
   {\dowithnextboxcs\flushnextbox}
 
-\def\positions_set_box_yes#1%
-  {\dowithnextbox{\positions_set_box_finish{#1}}}
+\def\anch_positions_set_box_yes#1%
+  {\dowithnextbox{\anch_positions_set_box_finish{#1}}}
 
-\def\positions_set_box_finish#1%
-  {\positions_initialize
+\def\anch_positions_set_box_finish#1%
+  {\anch_positions_initialize
    \hbox to \wd\nextbox
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}% already \the\dimexpr
@@ -286,11 +286,11 @@
   {\iftrialtypesetting
      \expandafter\gobblefivearguments
    \else
-     \expandafter\positions_set_plus_indeed
+     \expandafter\anch_positions_set_plus_indeed
    \fi}
 
-\def\positions_set_plus_indeed#1#2#3#4#5%
-  {\positions_initialize
+\def\anch_positions_set_plus_indeed#1#2#3#4#5%
+  {\anch_positions_initialize
    \hbox % just package
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
@@ -300,19 +300,19 @@
 
 \def\setpositionplus
   {\iftrialtypesetting
-     \expandafter\positions_set_plus_nop
+     \expandafter\anch_positions_set_plus_nop
    \else
-     \expandafter\positions_set_plus_yes
+     \expandafter\anch_positions_set_plus_yes
    \fi}
 
-\def\positions_set_plus_nop#1#2%
+\def\anch_positions_set_plus_nop#1#2%
   {\dowithnextboxcs\flushnextbox}
 
-\def\positions_set_plus_yes#1#2%
-  {\dowithnextbox{\positions_set_plus_yes_finish{#1}{#2}}}
+\def\anch_positions_set_plus_yes#1#2%
+  {\dowithnextbox{\anch_positions_set_plus_yes_finish{#1}{#2}}}
 
-\def\positions_set_plus_yes_finish#1#2%
-  {\positions_initialize
+\def\anch_positions_set_plus_yes_finish#1#2%
+  {\anch_positions_initialize
    \hbox to \nextboxwd
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
@@ -366,7 +366,7 @@
 %D Each macro takes an identifier as argument, and the \type
 %D {\hpos} and \type {\vpos} also expect box content.
 
-% \def\xypos{\positions_initialize\dosetposition}
+% \def\xypos{\anch_positions_initialize\dosetposition}
 
 \let\xypos\setpositiononly
 
@@ -449,11 +449,11 @@
 \unexpanded\def\doregisterparoptions
   {\iftrialtypesetting \else
      \ifinpagebody \else \ifmmode \else \ifinformula \else
-       \positions_register_par_options
+       \anch_positions_register_par_options
      \fi \fi \fi
    \fi}
 
-\def\positions_register_par_options
+\def\anch_positions_register_par_options
   {\global\advance\parposcounter\plusone
    \setpositiondataplus
      {p:\number\parposcounter}\zeropoint\strutht\strutdp
@@ -525,10 +525,10 @@
 
 \def\analyzenodelocation#1%
   {\ifcsname\@@noden#1\endcsname
-     \positions_node_location_analyze{#1}{\getnodelocationn{#1}}\zerocount
+     \anch_positions_node_location_analyze{#1}{\getnodelocationn{#1}}\zerocount
    \fi}
 
-\def\positions_node_location_analyze#1#2#3% class n default
+\def\anch_positions_node_location_analyze#1#2#3% class n default
   {\begingroup
    \donefalse
    \ifcase\nodelocationmode
@@ -550,10 +550,10 @@
             % \exitloop
           \or
             % ok for single column
-            \positions_node_location_analyze_one
+            \anch_positions_node_location_analyze_one
           \or
             % acceptable for double column
-            \positions_node_location_analyze_two
+            \anch_positions_node_location_analyze_two
           \else
             \exitloop
           \fi
@@ -565,7 +565,7 @@
    \setxvalue{\@@nodeo#1}{\the\scratchcounter}%
    \endgroup}
 
-\def\positions_node_location_analyze_one
+\def\anch_positions_node_location_analyze_one
   {\ifcase\nodelocationotherp\relax
      \exitloop
    \else\ifnum\nodelocationotherp<\nodelocationselfp\relax
@@ -580,7 +580,7 @@
      \donetrue \advance\scratchcounter\plusone
    \fi\fi\fi\fi\fi\fi}
 
-\def\positions_node_location_analyze_two
+\def\anch_positions_node_location_analyze_two
   {\ifcase\nodelocationotherp\relax
      \exitloop
    \else\ifnum\nodelocationotherp<\nodelocationselfp\relax

@@ -166,12 +166,12 @@
 \installcommandhandler \??startstop {startstop} \??startstop
 
 \appendtoks
-    \setuevalue{\e!start\currentstartstop}{\dostartstop_start {\currentstartstop}}%
-    \setuevalue{\e!stop \currentstartstop}{\dostartstop_stop  {\currentstartstop}}%
-    \setuevalue        {\currentstartstop}{\dostartstop_indeed{\currentstartstop}}%
+    \setuevalue{\e!start\currentstartstop}{\syst_startstop_start {\currentstartstop}}%
+    \setuevalue{\e!stop \currentstartstop}{\syst_startstop_stop  {\currentstartstop}}%
+    \setuevalue        {\currentstartstop}{\syst_startstop_indeed{\currentstartstop}}%
 \to \everydefinestartstop
 
-\unexpanded\def\dostartstop_start#1%
+\unexpanded\def\syst_startstop_start#1%
   {\namedstartstopparameter{#1}\c!before
    \bgroup
    \def\currentstartstop{#1}%
@@ -179,12 +179,12 @@
    \dostarttagged\t!construct\currentstartstop
    \usestartstopstyleandcolor\c!style\c!color}
 
-\unexpanded\def\dostartstop_stop#1%
+\unexpanded\def\syst_startstop_stop#1%
   {\dostoptagged
    \egroup
    \namedstartstopparameter{#1}\c!after}
 
-\unexpanded\def\dostartstop_indeed#1%
+\unexpanded\def\syst_startstop_indeed#1%
   {\groupedcommand
      {\def\currentstartstop{#1}%
       \startstopparameter\c!commands % will become setups
@@ -199,12 +199,12 @@
 \installcommandhandler \??highlight {highlight} \??highlight % we could do with less
 
 \appendtoks
-    \setuevalue\currenthighlight{\dohighlight_indeed{\currenthighlight}}%
+    \setuevalue\currenthighlight{\typo_highlights_indeed{\currenthighlight}}%
 \to \everydefinehighlight
 
 \ifdefined\dotaghighlight \else \let\dotaghighlight\relax \fi
 
-\unexpanded\def\dohighlight_indeed#1% inline style/color switch
+\unexpanded\def\typo_highlights_indeed#1% inline style/color switch
   {\dontleavehmode\groupedcommand % otherwise wrong par number in tags
      {\def\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
@@ -213,9 +213,9 @@
      {\dostoptagged}}
 
 \unexpanded\def\define
-  {\doifnextoptionalelse\system_define_yes\def}
+  {\doifnextoptionalelse\syst_basics_define\def}
 
-\unexpanded\def\system_define_yes[#1]#2#3%
+\unexpanded\def\syst_basics_define[#1]#2#3%
   {\ifdefined#2%
      \showmessage\m!system4{\string#2}%
    \fi

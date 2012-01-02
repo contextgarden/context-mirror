@@ -23,14 +23,14 @@
 \unexpanded\gdef\showcolorbar[#1]%
   {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
 
-\unexpanded\gdef\showcolor          {\dosingleempty\colors_show}
-\unexpanded\gdef\showcolorset       {\dosingleempty\colors_show_set}
-\unexpanded\gdef\showcolorcomponents{\dosingleempty\colors_show_components}
+\unexpanded\gdef\showcolor          {\dosingleempty\colo_basics_show}
+\unexpanded\gdef\showcolorset       {\dosingleempty\colo_basics_show_set}
+\unexpanded\gdef\showcolorcomponents{\dosingleempty\colo_basics_show_components}
 
-\gdef\colors_show_set       [#1]{\ctxcommand{showcolorset("#1")}}
-\gdef\colors_show_components[#1]{\ctxcommand{showcolorcomponents("#1")}}
+\gdef\colo_basics_show_set       [#1]{\ctxcommand{showcolorset("#1")}}
+\gdef\colo_basics_show_components[#1]{\ctxcommand{showcolorcomponents("#1")}}
 
-\gdef\colors_show[#1]% % we do this at the tex end as loading happens
+\gdef\colo_basics_show[#1]% % we do this at the tex end as loading happens
   {\usecolors   [#1]%  % delayed and we can only ask for the set if
    \showcolorset[#1]}  % loading has happened
 
@@ -46,10 +46,10 @@
 
 \gdef\doshowpalet[#1][#2]%
   {\ifcsname\??colorpalet#1\endcsname
-     \doifinsetelse\v!vertical{#2} \colors_show_palet_vertical \colors_show_palet_horizontal [#1][#2]%
+     \doifinsetelse\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal [#1][#2]%
    \fi}
 
-\gdef\colors_show_palet_vertical[#1][#2]%
+\gdef\colo_palets_show_vertical[#1][#2]%
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -57,7 +57,7 @@
       \offinterlineskip
       \setuppalet[#1]
       \tabskip\zeropoint
-      \def\show_palet##1%
+      \def\colo_palets_show_palet##1%
         {\doifinsetelse\v!number{#2}{##1\hskip.5em}{}&
          \color[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}%
          \graycolor[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}&
@@ -65,9 +65,9 @@
       \halign
         {\hss##&\hss##\hss&##\cr
          &\doifinset\v!name{#2}{\strut#1}&\cr%
-         \colors_process_palet[#1]\show_palet\crcr}}}
+         \colo_palets_process[#1]\colo_palets_show_palet\crcr}}}
 
-\gdef\colors_show_palet_horizontal[#1][#2]% todo: bTABLE etc
+\gdef\colo_palets_show_horizontal[#1][#2]% todo: bTABLE etc
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -77,10 +77,10 @@
       \tabskip\zeropoint
       \!!widtha\zeropoint
       \doifinset\v!number{#2}
-        {\def\show_palet##1%
+        {\def\colo_palets_show_palet##1%
            {\setbox0\hbox{##1}%
             \ifdim\!!widtha<\wd0\!!widtha\wd0\fi}%
-         \colors_process_palet[#1]\show_palet}%
+         \colo_palets_process[#1]\colo_palets_show_palet}%
       \advance\!!widtha 1em
       \ifdim\!!widtha<5em
         \!!widtha5em
@@ -88,18 +88,18 @@
       \halign
         {##&&\hbox to \!!widtha{\hss##\hss}\cr
          \doifinset\v!number{#2}
-           {\def\show_palet##1{&\strut##1}%
-            \colors_process_palet[#1]\show_palet}\cr
+           {\def\colo_palets_show_palet##1{&\strut##1}%
+            \colo_palets_process[#1]\colo_palets_show_palet}\cr
          \doifinset\v!name{#2}{#1\hskip.5em}%
-         \def\show_palet##1%
+         \def\colo_palets_show_palet##1%
            {&\strut\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\zeropoint}}%
-         \colors_process_palet[#1]\show_palet\crcr
+         \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \noalign{\vskip-\strutdepth}%
-         \def\show_palet##1%
+         \def\colo_palets_show_palet##1%
            {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\zeropoint\!!depth\strutdp}}%
-         \colors_process_palet[#1]\show_palet\crcr
+         \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \doifinset\v!value{#2}
-           {\def\show_palet##1%
+           {\def\colo_palets_show_palet##1%
              {&\vbox
                 {\hsize\!!widtha
                  \vskip.25ex
@@ -107,24 +107,24 @@
                  \veryraggedcenter
                  \let\colorformatseparator\endgraf
                  \colorvalue{##1}}}%
-            \colors_process_palet[#1]\show_palet}%
+            \colo_palets_process[#1]\colo_palets_show_palet}%
          \crcr}}}
 
-\gdef\colors_process_palet[#1]%
+\gdef\colo_palets_process[#1]%
   {\expanded{\globalprocesscommalist[\getvalue{\??colorpalet#1}]}}
 
 \unexpanded\gdef\comparepalet
-  {\dosingleargument\colors_compare_palet}
+  {\dosingleargument\colo_palets_compare}
 
-\gdef\colors_compare_palet[#1]%
+\gdef\colo_palets_compare[#1]%
   {\ifcsname\??colorpalet#1\endcsname
      \hbox
-       {\colors_compare_palet_indeed\color[#1]%
+       {\colo_palets_compare_indeed\color[#1]%
         \quad
-        \colors_compare_palet_indeed\graycolor[#1]}%
+        \colo_palets_compare_indeed\graycolor[#1]}%
    \fi}
 
-\gdef\colors_compare_palet_indeed#1[#2]%
+\gdef\colo_palets_compare_indeed#1[#2]%
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -134,30 +134,30 @@
       \getcommacommandsize[\getvalue{\??colorpalet#2}]
       \!!widtha2em\relax
       \hsize\commalistsize\!!widtha
-      \def\compare_palet##1%
+      \def\colo_palets_compare##1%
         {\hbox
            {\setbox0\hbox
               {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
             \wd0\zeropoint
             \box0
             \hbox to \hsize
-              {\def\compare_palet####1%
+              {\def\colo_palets_compare####1%
                  {\hbox to \!!widtha
                     {\hss#1[####1]{\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}\hss}}%
-               \processcommacommand[\getvalue{\??colorpalet#2}]\compare_palet}}
+               \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
          \endgraf}
-      \processcommacommand[\getvalue{\??colorpalet#2}]\compare_palet}}
+      \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
 
 %D Groups
 
 \unexpanded\gdef\showcolorgroup
-  {\dodoubleargument\colors_show_group}
+  {\dodoubleargument\colo_groups_show}
 
-\gdef\colors_show_group[#1][#2]%
+\gdef\colo_groups_show[#1][#2]%
   {\doifcolor{#1:1}
-     {\doifinsetelse\v!vertical{#2} \colors_show_group_vertical \colors_show_group_horizontal [#1][#2]}}
+     {\doifinsetelse\v!vertical{#2} \colo_groups_show_vertical \colo_groups_show_horizontal [#1][#2]}}
 
-\gdef\colors_show_group_horizontal[#1][#2]%
+\gdef\colo_groups_show_horizontal[#1][#2]%
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -166,7 +166,7 @@
       \setuppalet
       \tabskip\zeropoint
       \def\colorformatseparator{\strut\cr}
-      \def\show_group##1%
+      \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}{\vbox
            {\halign
               {\hss####\hss\cr
@@ -181,10 +181,10 @@
               {\raise3\lineheight\hbox{#1\hskip.5em}}
               {#1}%
             \hskip.5em}%
-         \show_group1\show_group2\show_group3\show_group4%
-         \show_group5\show_group6\show_group7\show_group8}}}
+         \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
+         \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
 
-\gdef\colors_show_group_vertical[#1][#2]%
+\gdef\colo_groups_show_vertical[#1][#2]%
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -192,7 +192,7 @@
       \offinterlineskip
       \setuppalet
       \tabskip\zeropoint
-      \def\show_group##1%
+      \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}
            {\doifinset\v!number{#2}{##1\hskip.5em}&
             \color[#1:##1]{\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}%
@@ -201,20 +201,20 @@
       \halign
         {\hss##&\hss##\hss&##\hss\cr
          &\doifinset\v!name{#2}{\strut#1}&\crcr
-         \show_group1\show_group2\show_group3\show_group4%
-         \show_group5\show_group6\show_group7\show_group8}}}
+         \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
+         \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
 
 \unexpanded\gdef\comparecolorgroup
-  {\dosingleargument\colors_compare_group}
+  {\dosingleargument\colo_groups_compare}
 
-\gdef\colors_compare_group[#1]%
+\gdef\colo_groups_compare[#1]%
   {\doifcolor{#1:1}
      {\hbox
-        {\colors_compare_group_indeed\color[#1]%
+        {\colo_groups_compare_indeed\color[#1]%
          \quad
-         \colors_compare_group_indeed\graycolor[#1]}}}
+         \colo_groups_compare_indeed\graycolor[#1]}}}
 
-\gdef\colors_compare_group_indeed#1[#2]%
+\gdef\colo_groups_compare_indeed#1[#2]%
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -223,9 +223,9 @@
       \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
       \!!widtha2em\relax
       \hsize\!!counta\!!widtha
-      \dorecurse\!!counta{\colors_compare_group_step{#1}{#2}\recurselevel}}}
+      \dorecurse\!!counta{\colo_groups_compare_step{#1}{#2}\recurselevel}}}
 
-\def\colors_compare_group_step#1#2#3%
+\def\colo_groups_compare_step#1#2#3%
   {\hbox to \hsize
      {\setbox0\hbox
         {#1[#2:#3]{\vrule\!!width\hsize\!!height3ex}}%

@@ -48,25 +48,25 @@
 \installcorenamespace{colorgroup}
 \installcorenamespace{colorgroupsetter}
 
-\newcount\c_colors_group_n % scratch counter
+\newcount\c_colo_groups_n % scratch counter
 
 \unexpanded\def\definecolorgroup % sort of obsolete, just use palets directly
-  {\dotripleempty\colors_define_color_group}
+  {\dotripleempty\colo_groups_define}
 
-\def\colors_define_color_group
+\def\colo_groups_define
   {\ifthirdargument
-     \expandafter\colors_define_color_group_normal
+     \expandafter\colo_groups_define_normal
    \else
-     \expandafter\colors_define_color_group_checked
+     \expandafter\colo_groups_define_checked
    \fi}
 
-\def\colors_define_color_group_normal[#1][#2][#3]%
-  {\c_colors_group_n\zerocount
-   \processcommalist[#3]{\colors_define_color_group_entry{#1}{#2}}}
+\def\colo_groups_define_normal[#1][#2][#3]%
+  {\c_colo_groups_n\zerocount
+   \processcommalist[#3]{\colo_groups_define_entry{#1}{#2}}}
 
-\def\colors_define_color_group_checked[#1][#2][#3]%
+\def\colo_groups_define_checked[#1][#2][#3]%
   {\doifinstringelse{:}{#2}
-     {\colors_define_color_group_normal[#1][\v!rgb][#2]}
+     {\colo_groups_define_normal[#1][\v!rgb][#2]}
      {\doloop % inherited
         {\ifcsname\??colorgroup#2:\recurselevel\endcsname
            \setevalue{\??colorgroup#1:\recurselevel}{\csname\??colorgroup#2:\recurselevel\endcsname}%
@@ -74,9 +74,9 @@
            \exitloop
          \fi}}}
 
-\def\colors_define_color_group_entry#1#2#3% name mode specification
-  {\advance\c_colors_group_n\plusone
-   \csname\??colorgroupsetter\ifcsname\??colorgroupssetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colors_group_n][#3:0:0:0:0]}
+\def\colo_groups_define_entry#1#2#3% name mode specification
+  {\advance\c_colo_groups_n\plusone
+   \csname\??colorgroupsetter\ifcsname\??colorgroupssetter#2\endcsname#2\else\s!rgb\fi\endcsname[#1:\the\c_colo_groups_n][#3:0:0:0:0]}
 
 \setvalue{\??colorgroupsetter\s!gray}[#1][#2:#3]{\definecolor[#1][s=#2]}
 \setvalue{\??colorgroupsetter\s!rgb }[#1][#2:#3:#4:#5]{\definecolor[#1][r=#2,g=#3,b=#4]}

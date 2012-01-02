@@ -166,62 +166,62 @@
   {\def\currentcollector{#1}%
    \chardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters[\??cb#1][#2]%
-   \d_layers_x_size\wd\collectorbox
-   \d_layers_y_size\ht\collectorbox
+   \d_pack_layers_x_size\wd\collectorbox
+   \d_pack_layers_y_size\ht\collectorbox
    \doifvaluesomething{\??cb#1\c!rotation}
      {\setbox\nextbox\hbox
         {\rotate
            [\c!location=\v!high,
             \c!rotation=\collectorparameter\c!rotation]
            {\flushnextbox}}}%
-   \advance\d_layers_y_size\dp\collectorbox
-   \d_layers_x_position\collectorparameter\c!x
-   \advance\d_layers_x_position\collectorparameter\c!hoffset
-   \d_layers_y_position\collectorparameter\c!y
-   \advance\d_layers_y_position\collectorparameter\c!voffset
+   \advance\d_pack_layers_y_size\dp\collectorbox
+   \d_pack_layers_x_position\collectorparameter\c!x
+   \advance\d_pack_layers_x_position\collectorparameter\c!hoffset
+   \d_pack_layers_y_position\collectorparameter\c!y
+   \advance\d_pack_layers_y_position\collectorparameter\c!voffset
    \doifelse\v!middle{\collectorparameter\c!corner}
-     {\ifdim\d_layers_x_size>\zeropoint
-        \advance\d_layers_x_position.5\d_layers_x_size
+     {\ifdim\d_pack_layers_x_size>\zeropoint
+        \advance\d_pack_layers_x_position.5\d_pack_layers_x_size
       \fi
-      \ifdim\d_layers_y_size>\zeropoint
-        \advance\d_layers_y_position.5\d_layers_y_size
+      \ifdim\d_pack_layers_y_size>\zeropoint
+        \advance\d_pack_layers_y_position.5\d_pack_layers_y_size
       \fi}%
      {\normalexpanded{\noexpand\doifinset{\v!bottom}{\collectorparameter\c!corner}}
-        {\ifdim\d_layers_y_size>\zeropoint
-           \advance\d_layers_y_position-\d_layers_y_size
-           \d_layers_y_position-\d_layers_y_position
+        {\ifdim\d_pack_layers_y_size>\zeropoint
+           \advance\d_pack_layers_y_position-\d_pack_layers_y_size
+           \d_pack_layers_y_position-\d_pack_layers_y_position
          \fi}%
       \normalexpanded{\noexpand\doifinset{\v!right}{\collectorparameter\c!corner}}
-        {\ifdim\d_layers_x_size>\zeropoint
-           \advance\d_layers_x_position-\d_layers_x_size
-           \d_layers_x_position-\d_layers_x_position
+        {\ifdim\d_pack_layers_x_size>\zeropoint
+           \advance\d_pack_layers_x_position-\d_pack_layers_x_size
+           \d_pack_layers_x_position-\d_pack_layers_x_position
          \fi}}%
    \setbox\nextbox\hbox
      {\alignedbox[\collectorparameter\c!location]\vbox{\flushnextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
-   \global\advance\boxhdisplacement\d_layers_x_position
+   \global\advance\boxhdisplacement\d_pack_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
      \global\setbox\collectorbox\hbox
        {\hskip-\boxhdisplacement
         \box\collectorbox}%
    \fi
-   \global\advance\boxvdisplacement\d_layers_y_position
+   \global\advance\boxvdisplacement\d_pack_layers_y_position
    \ifdim\boxvdisplacement<\zeropoint
      \global\setbox\collectorbox\hbox
        {\lower-\boxvdisplacement
         \box\collectorbox}%
    \fi
-   \d_layers_x_size\wd\collectorbox
-   \d_layers_y_size\ht\collectorbox
-   \advance\d_layers_y_size\dp\collectorbox
+   \d_pack_layers_x_size\wd\collectorbox
+   \d_pack_layers_y_size\ht\collectorbox
+   \advance\d_pack_layers_y_size\dp\collectorbox
    \global\setbox\collectorbox\hbox
      {\box\collectorbox
-      \hskip-\d_layers_x_size
-      \hskip\d_layers_x_position\relax
+      \hskip-\d_pack_layers_x_size
+      \hskip\d_pack_layers_x_position\relax
       \ifdim\boxhdisplacement<\zeropoint
         \hskip-\boxhdisplacement
       \fi
-      \lower\d_layers_y_position\hbox
+      \lower\d_pack_layers_y_position\hbox
         {\ifdim\boxvdisplacement<\zeropoint
            \lower-\boxvdisplacement\flushnextbox
          \else
@@ -231,8 +231,8 @@
    \global\setbox\collectorbox\hbox
      {\lower\ht\collectorbox\box\collectorbox}%
    % just to be sure
-   \ifdim\wd\collectorbox<\d_layers_x_size
-     \wd\collectorbox\d_layers_x_size
+   \ifdim\wd\collectorbox<\d_pack_layers_x_size
+     \wd\collectorbox\d_pack_layers_x_size
    \fi}
 
 \def\flushcollector[#1]%
@@ -444,12 +444,12 @@
    \c!hoffset=\@@bgoffset]
 
 \unexpanded\def\bleed
-  {\dosingleempty\boxes_bleed}
+  {\dosingleempty\pack_boxes_bleed}
 
 \def\bleedwidth {\the\hsize}%
 \def\bleedheight{\the\vsize}%
 
-\def\boxes_bleed[#1]#2%
+\def\pack_boxes_bleed[#1]#2%
   {\hbox\bgroup
    \xdef\bleedwidth {\the\hsize}%
    \xdef\bleedheight{\the\vsize}%
@@ -561,33 +561,33 @@
 % only apply the offset to ...
 
 \def\setlayerframed
-  {\dotripleempty\layers_set_framed}
+  {\dotripleempty\pack_layers_set_framed}
 
-\def\layers_set_framed
+\def\pack_layers_set_framed
   {\ifthirdargument
-     \expandafter      \layers_set_framed_t
+     \expandafter      \pack_layers_set_framed_t
    \else\ifsecondargument
-     \doubleexpandafter\layers_set_framed_d
+     \doubleexpandafter\pack_layers_set_framed_d
    \else
-     \doubleexpandafter\layers_set_framed_s
+     \doubleexpandafter\pack_layers_set_framed_s
    \fi\fi}
 
-\def\layers_set_framed_s[#1][#2][#3]%
+\def\pack_layers_set_framed_s[#1][#2][#3]%
   {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,\c!offset=\zeropoint]%
      \normalframedwithsettings[\c!location=\v!normal]} % diffrent kind of location
 
-\def\layers_set_framed_d[#1][#2][#3]%
+\def\pack_layers_set_framed_d[#1][#2][#3]%
   {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,#2,\c!offset=\zeropoint]%
      \normalframedwithsettings[\c!location=\v!normal,#2]} % diffrent kind of location
 
-\def\layers_set_framed_t[#1][#2][#3]%
+\def\pack_layers_set_framed_t[#1][#2][#3]%
   {\setlayer[#1][#2]%
      \normalframedwithsettings[#3]}
 
 \def\setlayertext
-  {\dotripleempty\layers_set_text}
+  {\dotripleempty\pack_layers_set_text}
 
-\def\layers_set_text[#1][#2][#3]%
+\def\pack_layers_set_text[#1][#2][#3]%
   {\bgroup
    \getparameters
      [\??lx]
@@ -681,13 +681,13 @@
 
 \installcorenamespace{alignedboxes}
 
-\unexpanded\def\alignedbox{\dosingleempty\boxes_aligned_box}
-\unexpanded\def\aligned   {\dosingleempty\boxes_aligned}
+\unexpanded\def\alignedbox{\dosingleempty\pack_boxes_aligned_box}
+\unexpanded\def\aligned   {\dosingleempty\pack_boxes_aligned}
 
-\def\boxes_aligned_box[#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\boxes_aligned_finish}
-\def\boxes_aligned    [#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\boxes_aligned_finish\hbox}
+\def\pack_boxes_aligned_box[#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\pack_boxes_aligned_finish}
+\def\pack_boxes_aligned    [#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\pack_boxes_aligned_finish\hbox}
 
-\def\boxes_aligned_finish
+\def\pack_boxes_aligned_finish
   {\csname\??alignedboxes
      \ifcsname\??alignedboxes\serializedcommalist\endcsname\serializedcommalist\else\v!middle\fi
    \endcsname{\flushnextbox}%
@@ -734,13 +734,13 @@
 % left/right/top/bottomoffset -> dimensions change
 % x/y | method=fixed          -> dimensions don't change
 
-\unexpanded\def\offsetbox{\dosingleempty\boxes_offset_box}
-\unexpanded\def\offset   {\dosingleempty\boxes_offset}
+\unexpanded\def\offsetbox{\dosingleempty\pack_boxes_offset_box}
+\unexpanded\def\offset   {\dosingleempty\pack_boxes_offset}
 
-\def\boxes_offset_box[#1]{\bgroup\dowithnextbox{\boxes_offsetfinish{#1}}}
-\def\boxes_offset    [#1]{\bgroup\dowithnextbox{\boxes_offsetfinish{#1}}\hbox}
+\def\pack_boxes_offset_box[#1]{\bgroup\dowithnextbox{\pack_boxes_offsetfinish{#1}}}
+\def\pack_boxes_offset    [#1]{\bgroup\dowithnextbox{\pack_boxes_offsetfinish{#1}}\hbox}
 
-\def\boxes_offsetfinish#1%
+\def\pack_boxes_offsetfinish#1%
   {\getparameters[\??ox]
      [\c!x=\zeropoint,
       \c!y=\zeropoint,
@@ -836,16 +836,16 @@
 % \ctabbed{\romannumerals{3}}{\romannumerals{2}} test \endgraf
 % \ctabbed{\romannumerals{3}}{\romannumerals{3}} test \endgraf
 
-\def\boxes_tabbed#1#2#3#4%
+\def\pack_boxes_tabbed#1#2#3#4%
   {\dontleavehmode
    \begingroup
    \setbox\scratchbox\hbox{#3}%
    \hbox to \wd\scratchbox{#1#4#2}%
    \endgroup}
 
-\unexpanded\def\ltabbed{\boxes_tabbed\relax\hss}
-\unexpanded\def\rtabbed{\boxes_tabbed\hss  \relax}
-\unexpanded\def\ctabbed{\boxes_tabbed\hss  \hss}
+\unexpanded\def\ltabbed{\pack_boxes_tabbed\relax\hss}
+\unexpanded\def\rtabbed{\pack_boxes_tabbed\hss  \relax}
+\unexpanded\def\ctabbed{\pack_boxes_tabbed\hss  \hss}
 
 \let\mtabbed\ctabbed
 
@@ -870,9 +870,9 @@
 \unexpanded\def\backgroundimage#1#2#3% repeat hsize vsize
   {\bgroup
    \forgetall
-   \dowithnextbox{\boxes_background_image{#1}{#2}{#3}}\hbox}
+   \dowithnextbox{\pack_boxes_background_image{#1}{#2}{#3}}\hbox}
 
-\def\boxes_background_image#1#2#3%
+\def\pack_boxes_background_image#1#2#3%
   {\offinterlineskip
    \ifcase#1\relax
      % just one

@@ -28,9 +28,9 @@
 
 \unexpanded\def\graphicvadjust % currently not enabled ... nasty bidi handling
   {\enablegraphicvadjust       % and no longer needed anyway
-   \dowithnextboxcontentcs\forgetall\spacings_graphic_vadjust_finish\vbox}
+   \dowithnextboxcontentcs\forgetall\spac_vadjust_graphic_finish\vbox}
 
-\def\spacings_graphic_vadjust_finish
+\def\spac_vadjust_graphic_finish
   {\vadjust
      {\vbox attr \graphicvadjustattribute \plusone
         {\unvbox\nextbox
@@ -41,9 +41,9 @@
          \verticalstrut}}}
 
 \unexpanded\def\fakedvadjust
-  {\dowithnextboxcs\spacings_faked_vadjust_finish\vtop}
+  {\dowithnextboxcs\spac_vadjust_faked_finish\vtop}
 
-\def\spacings_faked_vadjust_finish
+\def\spac_vadjust_faked_finish
   {\setbox\nextbox\hbox{\llap{\lower\strutdepth\box\nextbox}}%
    \smashedbox\nextbox}
 

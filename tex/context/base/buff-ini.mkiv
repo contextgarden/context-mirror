@@ -28,66 +28,66 @@
   {\ctxcommand{doifelsebuffer("#1")}}
 
 \unexpanded\def\resetbuffer
-  {\dosingleempty\buffers_reset}
+  {\dosingleempty\buff_reset}
 
-\def\buffers_reset[#1]%
+\def\buff_reset[#1]%
   {\ctxcommand{erasebuffer("#1")}}
 
 \setuvalue{\e!start\v!buffer}%
   {\bgroup
    \obeylines
-   \dosingleempty\buffers_start}
+   \dosingleempty\buff_start}
 
-\def\buffers_start[#1]%
-  {\buffers_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
+\def\buff_start[#1]%
+  {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
 
-\def\buffers_start_indeed#1#2#3#4% \donothing needed !
-  {\normalexpanded{\buffers_pickup{#2}{#3}{#4}{}{\buffers_stop{#4}}}}
+\def\buff_start_indeed#1#2#3#4% \donothing needed !
+  {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer
   {\bgroup
    \obeylines
-   \doquadrupleempty\buffers_grab_direct_indeed}
+   \doquadrupleempty\buff_grab_direct_indeed}
 
 \unexpanded\def\grabbufferdatadirect % name start stop
-  {\buffers_start_indeed\empty}
+  {\buff_start_indeed\empty}
 
-\def\buffers_grab_direct_indeed % [category] [name] [start] [stop]
+\def\buff_grab_direct_indeed % [category] [name] [start] [stop]
   {\iffourthargument
-     \expandafter\buffers_grab_direct_indeed_a
+     \expandafter\buff_grab_direct_indeed_a
    \else
-     \expandafter\buffers_grab_direct_indeed_b
+     \expandafter\buff_grab_direct_indeed_b
    \fi}
 
-\def\buffers_grab_direct_indeed_a[#1][#2][#3][#4]{\buffers_start_indeed{#1}{#2}{#3}{#4}}
-\def\buffers_grab_direct_indeed_b[#1][#2][#3][#4]{\buffers_start_indeed\empty{#1}{#2}{#3}}
+\def\buff_grab_direct_indeed_a[#1][#2][#3][#4]{\buff_start_indeed{#1}{#2}{#3}{#4}}
+\def\buff_grab_direct_indeed_b[#1][#2][#3][#4]{\buff_start_indeed\empty{#1}{#2}{#3}}
 
-\unexpanded\def\buffers_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
+\unexpanded\def\buff_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
   {#4%
    \bgroup
    \edef\catcodetableofbuffer{\number\catcodetable}%
    \ctxcommand{erasebuffer("#1")}%
    \setcatcodetable\vrbcatcodes
-   \def\buffers_finish
+   \def\buff_finish
      {\egroup
       #5}%
-   \def\buffers_gobble##1#3% is detokenize needed? TEST
+   \def\buff_gobble##1#3% is detokenize needed? TEST
     %{\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?
      {\ctxcommand{grabbuffer("#1","#2","#3",\!!bs>##1\!!es,\catcodetableofbuffer)}% space ?
-      \buffers_gobble
-      \buffers_finish}%
-   \buffers_gobble}
+      \buff_gobble
+      \buff_finish}%
+   \buff_gobble}
 
-\unexpanded\def\buffers_stop#1%
+\unexpanded\def\buff_stop#1%
   {\egroup
    \getvalue{#1}}
 
 \unexpanded\def\setbuffer
-  {\dosingleempty\buffers_set}
+  {\dosingleempty\buff_set}
 
 \let\endbuffer\relax
 
-\def\buffers_set[#1]#2\endbuffer % seldom used so we just pass #2
+\def\buff_set[#1]#2\endbuffer % seldom used so we just pass #2
   {\ctxcommand{assignbuffer("#1",\!!bs\detokenize{#2}\!!es,\number\catcodetable)}}
 
 % beware, never adapt the global buffer settings, actually we might introduce
@@ -105,9 +105,9 @@
 \appendtoks
     \global\advance\nofdefinedbuffers\plusone
     \setexpandedbufferparameter\c!number{\number\nofdefinedbuffers}%
-    \setuevalue{\e!start\currentbuffer}{\buffers_start_indeed
+    \setuevalue{\e!start\currentbuffer}{\buff_start_indeed
       {\currentbuffer}{def-\number\nofdefinedbuffers}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
-    \setuevalue{\e!get\currentbuffer}{\buffers_get_stored
+    \setuevalue{\e!get\currentbuffer}{\buff_get_stored
       {\currentbuffer}{def-\number\nofdefinedbuffers}}%
 \to \everydefinebuffer
 
@@ -115,21 +115,21 @@
 \def\thedefinedbuffer#1{def-\namedbufferparameter{#1}\c!number}
 
 \unexpanded\def\getbuffer % no [settings yet]
-  {\dosingleempty\buffers_get}
+  {\dosingleempty\buff_get}
 
-\unexpanded\def\buffers_get[#1]% [name]
+\unexpanded\def\buff_get[#1]% [name]
   {\namedbufferparameter\empty\c!before
    \doifelsenothing{#1}
-     {\buffers_get_stored_indeed\empty}
-     {\processcommalist[#1]\buffers_get_stored_indeed}%
+     {\buff_get_stored_indeed\empty}
+     {\processcommalist[#1]\buff_get_stored_indeed}%
    \namedbufferparameter\empty\c!after}
 
-\unexpanded\def\buffers_get_stored#1#2%
+\unexpanded\def\buff_get_stored#1#2%
   {\namedbufferparameter{#1}\c!before
-   \buffers_get_stored_indeed{#2}%
+   \buff_get_stored_indeed{#2}%
    \namedbufferparameter{#1}\c!after}
 
-\unexpanded\def\buffers_get_stored_indeed#1%
+\unexpanded\def\buff_get_stored_indeed#1%
   {\ctxcommand{getbuffer("#1")}}
 
 \definebuffer
@@ -141,12 +141,12 @@
    \c!after=]
 
 \unexpanded\def\processTEXbuffer
-  {\dosingleempty\buffers_process_tex}
+  {\dosingleempty\buff_process_tex}
 
-\def\buffers_process_tex[#1]%
+\def\buff_process_tex[#1]%
   {\pushcatcodetable
    \catcodetable\ctxcatcodes % \setcatcodetable
-   \buffers_get_stored_indeed{#1}%
+   \buff_get_stored_indeed{#1}%
    \popcatcodetable}
 
 % only mkiv:
@@ -158,9 +158,9 @@
 % \savebuffer[x][temp.log]
 
 \unexpanded\def\savebuffer
-  {\dodoubleempty\buffers_save}
+  {\dodoubleempty\buff_save}
 
-\def\buffers_save[#1][#2]%
+\def\buff_save[#1][#2]%
   {\ctxcommand{savebuffer("#1","#2")}}
 
 %D Experimental: no expansion of commands in buffer!
@@ -174,16 +174,16 @@
 %
 % \ctxluabuffer[what] \ctxluabuffer
 
-\unexpanded\def\ctxluabuffer {\dosingleempty\buffers_ctxlua}
-\unexpanded\def\mkvibuffer   {\dosingleempty\buffers_mkvi}
+\unexpanded\def\ctxluabuffer {\dosingleempty\buff_ctxlua}
+\unexpanded\def\mkvibuffer   {\dosingleempty\buff_mkvi}
 % what was:    \mkvibufferraw
 
-\def\buffers_ctxlua[#1]{\ctxcommand{getbufferctxlua("#1")}}
-\def\buffers_mkvi  [#1]{\ctxcommand{getbuffermkvi("#1")}}
+\def\buff_ctxlua[#1]{\ctxcommand{getbufferctxlua("#1")}}
+\def\buff_mkvi  [#1]{\ctxcommand{getbuffermkvi("#1")}}
 
 % used elsewhere
 
-\unexpanded\def\doprocesstexbuffer#1{\buffers_process_tex[#1]} % still used?
+\unexpanded\def\doprocesstexbuffer#1{\buff_process_tex[#1]} % still used?
 
 \let\dostartbuffer\grabbufferdata % for old times sake
 

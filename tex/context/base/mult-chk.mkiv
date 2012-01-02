@@ -35,38 +35,38 @@
 
 \registerctxluafile{mult-chk}{1.001}
 
-\def\setvalidparameterkeys{\dodoubleargument\interfaces_set_valid_parameter_keys}
-\def\addvalidparameterkeys{\dodoubleargument\interfaces_add_valid_parameter_keys}
+\def\setvalidparameterkeys{\dodoubleargument\mult_checkers_set_valid_parameter_keys}
+\def\addvalidparameterkeys{\dodoubleargument\mult_checkers_add_valid_parameter_keys}
 
-\def\interfaces_set_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.setvalidkeys("#1",\!!bs#2\!!es)}}
-\def\interfaces_add_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.addvalidkeys("#1",\!!bs#2\!!es)}}
+\def\mult_checkers_set_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.setvalidkeys("#1",\!!bs#2\!!es)}}
+\def\mult_checkers_add_valid_parameter_keys[#1][#2]{\ctxlua{interfaces.addvalidkeys("#1",\!!bs#2\!!es)}}
 
-\def\interfaces_get_checked_parameters_yes[#1]#2[#3]#4[#5%
+\def\mult_checkers_get_checked_parameters_yes[#1]#2[#3]#4[#5%
   {\if\noexpand#5]%
      \expandafter\gobblethreearguments
    \else
      \let\setsomevalue\dosetvalue % used at the lua end
-     \expandafter\interfaces_get_checked_parameters_yes_indeed
+     \expandafter\mult_checkers_get_checked_parameters_yes_indeed
    \fi{#1}{#3}#5}
 
-\def\interfaces_get_checked_parameters_yes_indeed#1#2#3]%
+\def\mult_checkers_get_checked_parameters_yes_indeed#1#2#3]%
  %{\ctxlua{_igcp_("#1","#2",\!!bs\detokenize{#3}\!!es)}}
   {\ctxlua{interfaces.getcheckedparameters("#1","#2",\!!bs\detokenize{#3}\!!es)}}
 
-\def\interfaces_get_checked_parameters_nop[#1]#2[#3]#4[#5%
+\def\mult_checkers_get_checked_parameters_nop[#1]#2[#3]#4[#5%
   {\if\noexpand#5]%
      \expandafter\gobbletwoarguments
    \else
      \let\setsomevalue\dosetvalue % used at the lua end
-     \expandafter\interfaces_get_checked_parameters_nop_indeed
+     \expandafter\mult_checkers_get_checked_parameters_nop_indeed
    \fi{#3}#5}
 
-\def\interfaces_get_checked_parameters_nop_indeed#1#2]%
+\def\mult_checkers_get_checked_parameters_nop_indeed#1#2]%
   {\def\p!dogetparameter{\p!doassign#1}%
    \xprocesscommaitem#2,],\@relax@}
 
-\def\disablecheckparameters{\let\getcheckedparameters\interfaces_get_checked_parameters_nop}
-\def\enablecheckparameters {\let\getcheckedparameters\interfaces_get_checked_parameters_yes}
+\def\disablecheckparameters{\let\getcheckedparameters\mult_checkers_get_checked_parameters_nop}
+\def\enablecheckparameters {\let\getcheckedparameters\mult_checkers_get_checked_parameters_yes}
 
 \disablecheckparameters
 

@@ -261,25 +261,25 @@
 \let\disableXMLelements     \relax
 
 % \bgroup
-% \catcode`\*=\@@comment
-% \catcode`\.=\@@escape
-% .catcode`.B=.@@begingroup
-% .catcode`.E=.@@endgroup
-% .catcode`.P=.@@parameter
+% \catcode`\*=\commentcatcode
+% \catcode`\.=\escapecatcode
+% .catcode`.B=.begingroupcatcode
+% .catcode`.E=.endgroupcatcode
+% .catcode`.P=.parametercatcode
 %
-% .catcode`.&=.@@active
-% .catcode`.<=.@@active
+% .catcode`.&=.activecatcode
+% .catcode`.<=.activecatcode
 %
-% .catcode`.#=.@@active
-% .catcode`.$=.@@active
-% .catcode`.%=.@@active
-% .catcode`.\=.@@active
-% .catcode`.^=.@@active
-% .catcode`._=.@@active
-% .catcode`.{=.@@active
-% .catcode`.}=.@@active
-% .catcode`.|=.@@active
-% .catcode`.~=.@@active
+% .catcode`.#=.activecatcode
+% .catcode`.$=.activecatcode
+% .catcode`.%=.activecatcode
+% .catcode`.\=.activecatcode
+% .catcode`.^=.activecatcode
+% .catcode`._=.activecatcode
+% .catcode`.{=.activecatcode
+% .catcode`.}=.activecatcode
+% .catcode`.|=.activecatcode
+% .catcode`.~=.activecatcode
 %
 % .gdef.enableXMLexpansion
 %   B.def<B.doXMLelementE.let&=.doXMLentityE
@@ -297,18 +297,18 @@
 % * (eating up argument)
 %
 % .unexpanded.gdef.enableXML
-%   B.catcode`.!=.@@other
-%    .catcode`.?=.@@other
-%    .catcode`.:=.@@other * active in french
-%    .catcode`.;=.@@other * active in french
-%    .catcode`.&=.@@active
-%    .catcode`.<=.@@active
-%    .catcode`.>=.@@other
-%    .catcode`."=.@@other
-%    .catcode`./=.@@other
-%    .catcode`.'=.@@other
-%    .catcode`.~=.@@other
-%    .catcode`.#=.@@other
+%   B.catcode`.!=.othercatcode
+%    .catcode`.?=.othercatcode
+%    .catcode`.:=.othercatcode * active in french
+%    .catcode`.;=.othercatcode * active in french
+%    .catcode`.&=.activecatcode
+%    .catcode`.<=.activecatcode
+%    .catcode`.>=.othercatcode
+%    .catcode`."=.othercatcode
+%    .catcode`./=.othercatcode
+%    .catcode`.'=.othercatcode
+%    .catcode`.~=.othercatcode
+%    .catcode`.#=.othercatcode
 %    .let           &=.doXMLentity
 %    .unexpanded.def<B.doXMLelementE*
 %    .ifcase.XMLtokensreduction
@@ -323,14 +323,14 @@
 %   E
 %
 % .gdef.activateXMLescapetokens
-%   B.catcode`.$=.@@active
-%    .catcode`.%=.@@active
-%    .catcode`.\=.@@active
-%    .catcode`.^=.@@active
-%    .catcode`._=.@@active
-%    .catcode`.{=.@@active
-%    .catcode`.}=.@@active
-%    .catcode`.|=.@@active
+%   B.catcode`.$=.activecatcode
+%    .catcode`.%=.activecatcode
+%    .catcode`.\=.activecatcode
+%    .catcode`.^=.activecatcode
+%    .catcode`._=.activecatcode
+%    .catcode`.{=.activecatcode
+%    .catcode`.}=.activecatcode
+%    .catcode`.|=.activecatcode
 %   E
 %
 % .xdef.entitleXMLescapetokens
@@ -360,29 +360,29 @@
 %   E
 %
 % .gdef.ignoreXMLescapetokens
-%   B.catcode`.$=.@@other
-%    .catcode`.%=.@@other
-%    .catcode`.\=.@@other
-%    .catcode`.^=.@@other
-%    .catcode`._=.@@other
-%    .catcode`.{=.@@other
-%    .catcode`.}=.@@other
-%    .catcode`.|=.@@other
+%   B.catcode`.$=.othercatcode
+%    .catcode`.%=.othercatcode
+%    .catcode`.\=.othercatcode
+%    .catcode`.^=.othercatcode
+%    .catcode`._=.othercatcode
+%    .catcode`.{=.othercatcode
+%    .catcode`.}=.othercatcode
+%    .catcode`.|=.othercatcode
 %   E
 %
 % * The following macro can be invokes when reading from
 % * an auxiliary file.
 %
 % .unexpanded.gdef.enableXMLelements
-%   B.catcode60=.@@active * .catcode`.<=.@@active
-%    .catcode62=.@@other  * .catcode`.>=.@@other
+%   B.catcode60=.activecatcode * .catcode`.<=.activecatcode
+%    .catcode62=.othercatcode  * .catcode`.>=.other
 %    .unexpanded.def<B.doXMLelementE*
 %    .processingXMLtrue
 %   E
 %
 % .unexpanded.gdef.disableXMLelements
-%   B.catcode60=.@@active * .catcode`.<=.@@active
-%    .catcode62=.@@other  * .catcode`.>=.@@other
+%   B.catcode60=.activecatcode * .catcode`.<=.activecatcode
+%    .catcode62=.othercatcode  * .catcode`.>=.othercatcode
 %    .let<.relax * new
 %    .processingXMLfalse
 %   E
@@ -476,14 +476,14 @@
    \let&\doXMLentity}
 
 \unexpanded\gdef\enableXMLelements
-  {\catcode60=\@@active
-   \catcode62=\@@other
+  {\catcode60=\activecatcode
+   \catcode62=\othercatcode
    \unexpanded\def<{\doXMLelement}%
    \processingXMLtrue}
 
 \unexpanded\gdef\disableXMLelements
-  {\catcode60=\@@active
-   \catcode62=\@@other
+  {\catcode60=\activecatcode
+   \catcode62=\othercatcode
    \let<\relax
    \processingXMLfalse}
 
@@ -1838,7 +1838,7 @@
 %D definitions so that the mappings will run as fast as
 %D possible.
 
-\bgroup \catcode`<=\@@active
+\bgroup \catcode`<=\activecatcode
 
 \long\gdef\dododefineXMLsingular#1#2%
   {\long\@EA\def\csname\@@XMLelement:#1/\endcsname{#2}}
@@ -2675,7 +2675,7 @@
 
 %D Used in x-fo: I really need to document this!
 
-\bgroup \catcode`\<=\active
+\bgroup \catcode`\<=\activecatcode
 
 % usage: \expanded{\rescanXMLatttributes{fo:table-cell}}
 
@@ -2694,7 +2694,7 @@
 \def\XMLprocess#1%
   {\begingroup\enableXML\XMLflush{#1}\endgroup}
 
-\bgroup \catcode`<=\@@active
+\bgroup \catcode`<=\activecatcode
 
 \long\gdef\ignoreuntilXMLelement#1<{<}
 \long\gdef\grabuntilXMLelement  #1<\to#2{\def#2{#1}<}
@@ -2767,7 +2767,7 @@
    \catcode\endoflineasciicode\spacecatcode
    \catcode\formfeedasciicode \spacecatcode
    \catcode\endoffileasciicode\spacecatcode
-   \catcode`\#\@@other}
+   \catcode`\#\othercatcode}
 
 \long\def\startXMLcode
   {\begingroup
@@ -2907,7 +2907,7 @@
 \newtoks\groupedtoks
 \newif\ifcollectXMLgrouped
 
-\bgroup \catcode`\<=\@@active
+\bgroup \catcode`\<=\activecatcode
 
 \newtoks\XMLgtoks
 
@@ -2998,8 +2998,8 @@
 
 \bgroup
 
-\catcode`\<\active
-\catcode`\&\active
+\catcode`\<\activecatcode
+\catcode`\&\activecatcode
 
 \gdef\flattenXMLcontent#1% we need taco's 'over one group'
   {\begingroup

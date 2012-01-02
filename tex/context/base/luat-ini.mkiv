@@ -27,28 +27,28 @@
 
 %D A few more goodies:
 
-\unexpanded\def\startlua    {\system_start_lua     } \let\stoplua    \relax % tex catcodes
-\unexpanded\def\startluacode{\system_start_lua_code} \let\stopluacode\relax % lua catcodes
+\unexpanded\def\startlua    {\luat_start_lua     } \let\stoplua    \relax % tex catcodes
+\unexpanded\def\startluacode{\luat_start_lua_code} \let\stopluacode\relax % lua catcodes
 
 % It might makes sense to have a \type {\directelua} so that we can avoid
 % the \type {\normalexpanded} around \type {\directlua}. Something to discuss
 % in the team.
 
-\def\system_start_lua
+\def\luat_start_lua
   {\begingroup
    \obeylualines
-   \system_start_lua_indeed}
+   \luat_start_lua_indeed}
 
-\def\system_start_lua_indeed#1\stoplua
+\def\luat_start_lua_indeed#1\stoplua
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
-\def\system_start_lua_code
+\def\luat_start_lua_code
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \system_start_lua_code_indeed}
+   \luat_start_lua_code_indeed}
 
-\def\system_start_lua_code_indeed#1\stopluacode
+\def\luat_start_lua_code_indeed#1\stopluacode
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount{#1}}}
 
 %D Some delayed definitions:
@@ -108,7 +108,7 @@
 %D Beware: because \type {\expanded} is een convert command, the error
 %D message will show \type{<inserted text>} as part of the message.
 
-\def\system_start_named_lua_code#1%
+\def\luat_start_named_lua_code#1%
   {\begingroup
    \obeylualines
    \obeyluatokens
@@ -119,7 +119,7 @@
      \scratchcounter\ctxlua{lua.registername("#1","#3")}%
      \normalexpanded{\edef\csname\??lu:c:#1\endcsname##1\csname\e!stop#1\v!code\endcsname}%
        {\endgroup\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
-     \expandafter\def \csname\e!start#1\v!code\endcsname   {\system_start_named_lua_code{#1}}%
+     \expandafter\def \csname\e!start#1\v!code\endcsname   {\luat_start_named_lua_code{#1}}%
      \expandafter\edef\csname        #1\v!code\endcsname##1{\noexpand\directlua\the\scratchcounter{protect("#1\s!data")##1}}%
    \fi}
 
@@ -196,9 +196,9 @@
   {\begingroup
    \obeylualines
    \obeyluatokens
-   \system_start_lua_parameter_set{#1}}
+   \luat_start_lua_parameter_set{#1}}
 
-\def\system_start_lua_parameter_set#1#2\stopluaparameterset
+\def\luat_start_lua_parameter_set#1#2\stopluaparameterset
   {\ctxlua{parametersets["#1"]={#2}}%
    \endgroup}
 
@@ -237,13 +237,13 @@
    \obeyluatokens
    \catcode\leftbraceasciicode \plusone
    \catcode\rightbraceasciicode\plustwo
-   \afterassignment\system_lua_code
+   \afterassignment\luat_lua_code
    \scratchtoks=}
 
 % Hm, are we sure that the \* commands work out okay here? We could probably
 % use \setcatcodetable\luacatcodes instead of \obeyluatokens now.
 
-\def\system_lua_code
+\def\luat_lua_code
   {\normalexpanded{\endgroup\noexpand\directlua\zerocount\expandafter{\the\scratchtoks}}}
 
 \protect \endinput

@@ -13,9 +13,9 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Definitions}
 
-\unprotect
+% todo: move resetters to other modules
 
-\newconstant\c_spacing_default_tolerance  \c_spacing_default_tolerance 1500
+\unprotect
 
 \def\forgeteverypar
   {\everypar{\the\neverypar}}
@@ -38,8 +38,7 @@
    \let\currentwhitespace\v!none}
 
 \def\forgetbothskips
-  {\tolerance\c_spacing_default_tolerance
-   \leftskip\zeropoint
+  {\leftskip\zeropoint
    \rightskip\zeropoint
    \relax}
 
@@ -73,7 +72,7 @@
 \appendtoks  \updateraggedskips        \to \everyfontswitch  % under test
 \prependtoks \let\par\endgraf          \to \everybeforepagebody % see \fillinline
 \appendtoks  \simplesetupspacing       \to \everydefinedfont
-
+
 \setupwhitespace
   [\v!none]
 

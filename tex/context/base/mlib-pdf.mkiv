@@ -133,20 +133,20 @@
   {\dodoublegroupempty\mlib_direct_graphic}
 
 \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
-  {\mp_begin_graphic_group{#1}%
+  {\meta_begin_graphic_group{#1}%
    \let\startMPLIBtoPDF\directstartMPLIBtoPDF
    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
-   \mp_start_current_graphic
+   \meta_start_current_graphic
    \forgetall
    \normalexpanded{\noexpand\ctxlua{metapost.graphic(
      "\currentMPgraphicinstance",
      "\currentMPgraphicformat",
       \!!bs#2;\!!es,
-      \!!bs\mp_flush_current_initializations;\!!es,
-      \!!bs\mp_flush_current_preamble;\!!es,
+      \!!bs\meta_flush_current_initializations;\!!es,
+      \!!bs\meta_flush_current_preamble;\!!es,
      "all"
    )}}%
-   \mp_stop_current_graphic
-   \mp_end_graphic_group}
+   \meta_stop_current_graphic
+   \meta_end_graphic_group}
 
 \protect \endinput

@@ -60,6 +60,21 @@ return {
         --
         "activetabtoken", "activeformfeedtoken", "activeendoflinetoken",
         --
+        "batchmodecode", "nonstopmodecode", "scrollmodecode", "errorstopmodecode",
+        --
+        "bottomlevelgroupcode", "simplegroupcode", "hboxgroupcode", "adjustedhboxgroupcode", "vboxgroupcode",
+        "vtopgroupcode", "aligngroupcode", "noaligngroupcode", "outputgroupcode", "mathgroupcode",
+        "discretionarygroupcode", "insertgroupcode", "vcentergroupcode", "mathchoicegroupcode",
+        "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode", "vadjustgroupcode",
+        --
+        "charnodecode", "hlistnodecode", "vlistnodecode", "rulenodecode", "insertnodecode", "marknodecode",
+        "adjustnodecode", "ligaturenodecode", "discretionarynodecode", "whatsitnodecode", "mathnodecode",
+        "gluenodecode", "kernnodecode", "penaltynodecode", "unsetnodecode", "mathsnodecode",
+        --
+        "charifcode", "catifcode", "numifcode", "dimifcode", "oddifcode", "vmodeifcode", "hmodeifcode",
+        "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
+        "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
+      --
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",

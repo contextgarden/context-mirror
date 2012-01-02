@@ -56,7 +56,7 @@
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
 
-\backend_set_job_suffix{pdf}
+\back_job_set_suffix{pdf}
 
 %D PDF/X (maybe combine the two lua calls)
 
@@ -197,7 +197,7 @@
 \unexpanded\def\dostartclipping#1#2#3%
   {\PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
-   \mp_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
+   \meta_grab_clip_path{#1}\width\height{0 0 m \width\space 0 l \width \height l 0 \height l}%
    \pdfliteral{q 0 w \MPclippath\space W n}}
 
 \unexpanded\def\dostopclipping
@@ -222,13 +222,13 @@
 \def\dostartobject#1#2#3#4#5%
   {\bgroup
    \setbox\objectbox\vbox\bgroup
-   \def\backend_stop_object{\egroup\backend_register_object{#1}{#2}}}
+   \def\back_object_stop{\egroup\back_object_register{#1}{#2}}}
 
 \def\dostopobject
-  {\backend_stop_object
+  {\back_object_stop
    \egroup}
 
-\def\backend_register_object#1#2%
+\def\back_object_register#1#2%
   {\the\pdfbackendeveryxform
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
@@ -237,11 +237,13 @@
 \def\doresetobjects
   {}
 
+\let\m_back_object_reference\empty
+
 \def\doinsertobject#1#2%
   {\begingroup
    \doifobjectreferencefoundelse{#1}{#2}
-     {\dogetobjectreference{#1}{#2}\m_backend_object_reference
-      \pdfrefxform\m_backend_object_reference}%
+     {\dogetobjectreference{#1}{#2}\m_back_object_reference
+      \pdfrefxform\m_back_object_reference}%
      \donothing
    \endgroup}
 
@@ -251,8 +253,8 @@
   {\begingroup
    \xdef\lastpredefinedsymbol{#1}%
    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
-   \dogetobjectreference{SYM}{#1}\m_backend_object_reference
-   \ctxlua{backends.codeinjections.registersymbol("#1",\m_backend_object_reference)}%
+   \dogetobjectreference{SYM}{#1}\m_back_object_reference
+   \ctxlua{backends.codeinjections.registersymbol("#1",\m_back_object_reference)}%
    \endgroup}
 
 % for the moment here
@@ -268,7 +270,7 @@
 %D implemented in the \POSTSCRIPT\ driver. This code is
 %D somewhat obsolete as we now have metapost embedded.
 
-% \def\backend_oval_calc#1#2#3%
+% \def\back_oval_calculate#1#2#3%
 %   {\PointsToBigPoints{\dimexpr#2+#3\relax}#1}
 
 \unexpanded\def\doovalbox#1#2#3#4#5#6#7#8%
@@ -276,17 +278,17 @@
    \bgroup
 %    \scratchdimen#4%
 %    \divide\scratchdimen\plustwo
-%    \backend_oval_calc\xmin  \zeropoint\scratchdimen
-%    \backend_oval_calc\xmax  {#1}{-\scratchdimen}%
-%    \backend_oval_calc\ymax  {#2}{-\scratchdimen}%
-%    \backend_oval_calc\ymin  {-#3}\scratchdimen
+%    \back_oval_calculate\xmin  \zeropoint\scratchdimen
+%    \back_oval_calculate\xmax  {#1}{-\scratchdimen}%
+%    \back_oval_calculate\ymax  {#2}{-\scratchdimen}%
+%    \back_oval_calculate\ymin  {-#3}\scratchdimen
 %    \advance\scratchdimen by #5%
-%    \backend_oval_calc\xxmin \zeropoint\scratchdimen
-%    \backend_oval_calc\xxmax {#1}{-\scratchdimen}%
-%    \backend_oval_calc\yymax {#2}{-\scratchdimen}%
-%    \backend_oval_calc\yymin {-#3}\scratchdimen
-%    \backend_oval_calc\stroke{#4}\zeropoint
-%    \backend_oval_calc\radius{#5}\zeropoint
+%    \back_oval_calculate\xxmin \zeropoint\scratchdimen
+%    \back_oval_calculate\xxmax {#1}{-\scratchdimen}%
+%    \back_oval_calculate\yymax {#2}{-\scratchdimen}%
+%    \back_oval_calculate\yymin {-#3}\scratchdimen
+%    \back_oval_calculate\stroke{#4}\zeropoint
+%    \back_oval_calculate\radius{#5}\zeropoint
    %
    \PointsToBigPoints{#4}                       \stroke
    \PointsToBigPoints{#5}                       \radius

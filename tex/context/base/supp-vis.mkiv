@@ -398,9 +398,9 @@
 
 \unexpanded\def\ruledhbox
   {\normalhbox\bgroup
-   \dowithnextboxcs\ruledhbox_finish\normalhbox}
+   \dowithnextboxcs\supp_visualizers_hbox_finish\normalhbox}
 
-\def\ruledhbox_finish
+\def\supp_visualizers_hbox_finish
   {\makeruledbox\nextbox
    \box\nextbox
    \egroup}
@@ -420,9 +420,9 @@
 
 \unexpanded\def\ruledvbox
   {\normalvbox\bgroup
-   \dowithnextboxcs\ruledvbox_finish\normalvbox}
+   \dowithnextboxcs\supp_visualizers_vbox_finish\normalvbox}
 
-\def\ruledvbox_finish
+\def\supp_visualizers_vbox_finish
   {\makeruledbox\nextbox
    \box\nextbox
    \egroup}
@@ -442,9 +442,9 @@
 
 \unexpanded\def\ruledvtop
   {\normalvtop\bgroup
-   \dowithnextboxcs\ruledvtop_finish\normalvtop}
+   \dowithnextboxcs\supp_visualizers_vtop_finish\normalvtop}
 
-\def\ruledvtop_finish
+\def\supp_visualizers_vtop_finish
   {\makeruledbox\nextbox
    \box\nextbox
    \egroup}
@@ -464,9 +464,9 @@
 \unexpanded\def\ruledvcenter
   {\normalvbox\bgroup
    \dontinterfere
-   \dowithnextboxcs\ruledvcenter_finish\normalvbox}
+   \dowithnextboxcs\supp_visualizers_vcenter_finish\normalvbox}
 
-\def\ruledvcenter_finish
+\def\supp_visualizers_vcenter_finish
   {\scratchdimen.5\dimexpr\ht\nextbox+\dp\nextbox\relax
    \ht\nextbox\scratchdimen
    \dp\nextbox\scratchdimen
@@ -499,21 +499,21 @@
 %D variant that does not need the~\type{=}, but we stick to:
 
 \unexpanded\def\ruledbox
-  {\dowithnextboxcs\ruledbox_finish}
+  {\dowithnextboxcs\supp_visualizers_box_finish}
 
-\def\ruledbox_finish
+\def\supp_visualizers_box_finish
   {\makeruledbox\nextbox\box\nextbox}
 
 % \def\setruledbox#1=%
 %   {\dowithnextbox{\makeruledbox\nextbox\setbox#1\nextbox}}
 
 \def\setruledbox#1=% not nice, better
-  {\afterassignment\setruledbox_indeed\scratchcounter}
+  {\afterassignment\supp_visualizers_setruledbox_indeed\scratchcounter}
 
-\def\setruledbox_indeed
-  {\dowithnextboxcs\setruledbox_finish}
+\def\supp_visualizers_setruledbox_indeed
+  {\dowithnextboxcs\supp_visualizers_setruledbox_finish}
 
-\def\setruledbox_finish
+\def\supp_visualizers_setruledbox_finish
   {\makeruledbox\nextbox
    \setbox\scratchcounter\nextbox}
 
@@ -931,7 +931,7 @@
 %D stretch could be drawing the mid line over a length of the
 %D stretch, in positive or negative direction.
 
-\def\ruledhskip_indeed
+\def\supp_visualizers_hskip_indeed
   {\relax
    \dontinterfere
    \dontcomplain
@@ -1000,7 +1000,7 @@
 
 \unexpanded\def\ruledhskip
   {\bgroup
-   \afterassignment\ruledhskip_indeed
+   \afterassignment\supp_visualizers_hskip_indeed
    \scratchskip=}
 
 %D The visual skip is located at a feasible point. Normally
@@ -1183,7 +1183,7 @@
 %D visualized a bit different, because we want to see them
 %D anyhow.
 
-\def\ruledhkern_indeed
+\def\supp_visualizers_hkern_indeed
   {\dontinterfere
    \dontcomplain
    \baselinerulefalse
@@ -1230,7 +1230,7 @@
 \unexpanded\def\ruledhkern#1%
   {\bgroup
    \let\afterwards#1%
-   \afterassignment\ruledhkern_indeed
+   \afterassignment\supp_visualizers_hkern_indeed
    \scratchskip=}
 
 %D After having seen the horizontal ones, the vertical kerns
@@ -1257,7 +1257,7 @@
 %D Like before, we have to postpone \type{\prevdepth}. If we
 %D leave out this trick, we got ourselves some wrong spacing.
 
-\def\ruledvkern_finish
+\def\supp_visualizers_vkern_finish
   {\nextdepth\prevdepth
    \dontinterfere
    \dontcomplain
@@ -1305,13 +1305,13 @@
    \box0
    \prevdepth\nextdepth} % not \dp0=\nextdepth
 
-\def\ruledvkern_indeed
+\def\supp_visualizers_vkern_indeed
   {\ifdim\pagegoal=\maxdimen
      \ifinner
-       \ruledvkern_finish
+       \supp_visualizers_vkern_finish
      \fi
    \else
-     \ruledvkern_finish
+     \supp_visualizers_vkern_finish
    \fi
    \afterwards\scratchskip
    \egroup}
@@ -1319,7 +1319,7 @@
 \unexpanded\def\ruledvkern#1%
   {\bgroup
    \let\afterwards#1\relax
-   \afterassignment\ruledvkern_indeed
+   \afterassignment\supp_visualizers_vkern_indeed
    \scratchskip=}
 
 \unexpanded\def\ruledkern
@@ -1360,7 +1360,7 @@
 %D
 %D \ShowBufferedExample
 
-\def\ruledhglue_indeed
+\def\supp_visualizers_hglue_indeed
   {\leavevmode
    \scratchcounter\spacefactor
    \visualvrule\!!width\zeropoint
@@ -1371,7 +1371,7 @@
 
 \unexpanded\def\ruledhglue
   {\bgroup
-   \afterassignment\ruledhglue_indeed\scratchskip=}
+   \afterassignment\supp_visualizers_hglue_indeed\scratchskip=}
 
 %D \startbuffer
 %D first line
@@ -1390,7 +1390,7 @@
 %D
 %D \ShowBufferedExample
 
-\def\ruledvglue_indeed
+\def\supp_visualizers_vglue_indeed
   {\endgraf % \par
    \nextdepth\prevdepth
    \visualhrule\!!height\zeropoint
@@ -1401,7 +1401,7 @@
 
 \unexpanded\def\ruledvglue
   {\bgroup
-   \afterassignment\ruledvglue_indeed\scratchskip=}
+   \afterassignment\supp_visualizers_vglue_indeed\scratchskip=}
 
 %D \macros
 %D   {ruledmkern,ruledmskip}
@@ -1412,7 +1412,7 @@
 %D subtle matter, we've used a very simple, not overloaded way
 %D to show them.
 
-\def\ruledmkern_finish#1%
+\def\supp_visualizers_mkern_finish#1%
   {\dontinterfere
    \dontcomplain
    \setbox\boxrulescratchbox\normalhbox
@@ -1460,13 +1460,13 @@
 
 \unexpanded\def\ruledmkern
   {\bgroup
-   \afterassignment\ruledmkern_indeed
+   \afterassignment\supp_visualizers_mkern_indeed
    \scratchmuskip=}
 
-\def\ruledmkern_indeed
+\def\supp_visualizers_mkern_indeed
   {\investigatemuskip\scratchmuskip
    \flexiblefalse
-   \ruledmkern_finish\normalmkern}
+   \supp_visualizers_mkern_finish\normalmkern}
 
 %D \startbuffer
 %D $a \mskip3mu = \mskip3mu
@@ -1477,14 +1477,14 @@
 %D
 %D \ShowBufferedExample
 
-\def\ruledmskip_indeed
+\def\supp_visualizers_mskip_indeed
   {\investigatemuskip\scratchmuskip
    \flexibletrue
-   \ruledmkern_finish\normalmskip}
+   \supp_visualizers_mkern_finish\normalmskip}
 
 \unexpanded\def\ruledmskip
   {\bgroup
-   \afterassignment\ruledmskip_indeed
+   \afterassignment\supp_visualizers_mskip_indeed
    \scratchmuskip=}
 
 %D \macros
@@ -1555,7 +1555,7 @@
 %D test \ruledhpenalty1000 \ruledhpenalty-1000
 %D test
 
-\def\ruled_penalty_box#1#2#3#4#5#6%
+\def\supp_visualizers_penalty_box#1#2#3#4#5#6%
   {\setbox#1\normalhbox
      {\ifnum#2=\zerocount \else
         \edef\sign{\ifnum#2>\zerocount +\else-\fi}%
@@ -1588,10 +1588,10 @@
 
 \unexpanded\def\ruledhpenalty
   {\bgroup
-   \afterassignment\ruledhpenalty_indeed
+   \afterassignment\supp_visualizers_hpenalty_indeed
    \scratchcounter=}
 
-\def\ruledhpenalty_indeed
+\def\supp_visualizers_hpenalty_indeed
   {\dontinterfere
    \dontcomplain
    \investigatecount\scratchcounter
@@ -1603,7 +1603,7 @@
         \!!depth8\testrulewidth
         \!!width\ifzero\zeropoint\else4\testrulewidth\fi
       \ifpositive\else\normalhss\fi}%
-   \ruled_penalty_box{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
+   \supp_visualizers_penalty_box{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
    \normalpenalty\plustenthousand
    \setbox0\normalhbox
      {\normalhskip-4\testrulewidth
@@ -1638,10 +1638,10 @@
 
 \unexpanded\def\ruledvpenalty
   {\bgroup
-   \afterassignment\ruledvpenalty_indeed
+   \afterassignment\supp_visualizers_vpenalty_indeed
    \scratchcounter=}
 
-\def\ruledvpenalty_indeed
+\def\supp_visualizers_vpenalty_indeed
   {\ifdim\pagegoal=\maxdimen \else
      \nextdepth\prevdepth
      \dontinterfere
@@ -1658,7 +1658,7 @@
           \!!height\ifnegative.5\else4\fi\testrulewidth
           \!!dept  \ifpositive.5\else4\fi\testrulewidth
           \!!width                      8\testrulewidth}%
-     \ruled_penalty_box{2}{\scratchcounter}{4}{4}{.5}{.5}%
+     \supp_visualizers_penalty_box{2}{\scratchcounter}{4}{4}{.5}{.5}%
      \setbox0\normalhbox
        {\normalhskip-4\testrulewidth
         \ifnegative

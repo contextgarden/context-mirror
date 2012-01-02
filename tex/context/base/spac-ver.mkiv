@@ -91,26 +91,26 @@
 %
 % \def\presetnormallineheight % each bodyfont
 %   {\iflocalinterlinespace
-%      \presetnormallineheight_regular
+%      \spac_basics_set_lineheight_regular
 %    \else
-%      \presetnormallineheight_checked
+%      \spac_basics_set_lineheight_checked
 %    \fi}
 %
-% \def\presetnormallineheight_regular
+% \def\spac_basics_set_lineheight_regular
 %   {\edef\normallineheight{\interlinespaceparameter\c!line}}
 %
-% \def\presetnormallineheight_checked
+% \def\spac_basics_set_lineheight_checked
 %   {\edef\askedbodyfontinterlinespecs{\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}%
 %    \ifcsname\askedbodyfontinterlinespecs\endcsname
-%      \presetnormallineheight_specific
+%      \spac_basics_set_lineheight_specific
 %    \else
-%      \presetnormallineheight_regular
+%      \spac_basics_set_lineheight_regular
 %    \fi}
 %
-% \def\presetnormallineheight_specific
+% \def\spac_basics_set_lineheight_specific
 %   {\edef\askedbodyfontinterlinespace{\csname\bodyfontinterlinespecs\endcsname}%
 %    \ifx\askedbodyfontinterlinespace\empty
-%      \presetnormallineheight_regular
+%      \spac_basics_set_lineheight_regular
 %    \else
 %      \let\normallineheight\askedbodyfontinterlinespace
 %    \fi}
@@ -324,11 +324,11 @@
 
 %D Made slightly more readable:
 
-\unexpanded\def\vglue  {\afterassignment\spacing_vglue_indeed\scratchskip=}
-\unexpanded\def\hglue  {\afterassignment\spacing_hglue_indeed\scratchskip=}
+\unexpanded\def\vglue  {\afterassignment\spac_vglue_indeed\scratchskip=}
+\unexpanded\def\hglue  {\afterassignment\spac_hglue_indeed\scratchskip=}
 \unexpanded\def\topglue{\nointerlineskip\vglue-\topskip\vglue}
 
-\def\spacing_vglue_indeed
+\def\spac_vglue_indeed
   {\par
    \scratchdimen\prevdepth
    \hrule\!!height\zeropoint
@@ -336,7 +336,7 @@
    \vskip\scratchskip
    \prevdepth\scratchdimen}
 
-\def\spacing_hglue_indeed
+\def\spac_hglue_indeed
   {\dontleavehmode % \leavevmode
    \scratchcounter\spacefactor
    \vrule\!!width\zeropoint
@@ -358,7 +358,7 @@
 \definecomplexorsimple\setupwhitespace
 
 \def\simplesetupwhitespace
-  {\doifnot\currentwhitespace\v!none\spacing_setup_whitespace}
+  {\doifnot\currentwhitespace\v!none\spac_whitespace_setup}
 
 \def\complexsetupwhitespace[#1]%
   {\edef\nextcurrentwhitespace{#1}%
@@ -366,30 +366,30 @@
      \simplesetupwhitespace
    \else
      \let\currentwhitespace\nextcurrentwhitespace
-     \spacing_setup_whitespace
+     \spac_whitespace_setup
    \fi}
 
 \newconstant\baselinegridmode % option in layout / 1=permit_half_lines
 
-\def\spacing_setup_whitespace % quick test for no list
+\def\spac_whitespace_setup % quick test for no list
   {\ifcsname\??wz:\currentwhitespace\endcsname
      \csname\??wz:\currentwhitespace\endcsname
    \else
-     \expandafter\processcommalist\expandafter[\currentwhitespace]\spacing_setup_whitespace_method % can be raw
+     \expandafter\processcommalist\expandafter[\currentwhitespace]\spac_whitespace_setup_method % can be raw
    \fi\relax
    \ifgridsnapping
-     \spacing_setup_whitespace_grid
+     \spac_whitespace_setup_grid
    \else
-     \spacing_setup_whitespace_normal
+     \spac_whitespace_setup_normal
    \fi
    \parskip\ctxparskip}
 
-\def\spacing_setup_whitespace_normal
+\def\spac_whitespace_setup_normal
   {\ifconditional\flexiblewhitespace \else
      \ctxparskip1\ctxparskip
    \fi}
 
-\def\spacing_setup_whitespace_grid
+\def\spac_whitespace_setup_grid
   {\setfalse\flexiblewhitespace
    \ifdim\ctxparskip>\zeropoint
      \ctxparskip
@@ -421,7 +421,7 @@
 
 \definewhitespacemethod [\s!default]  {\simplesetupwhitespace}
 
-\def\spacing_setup_whitespace_method#1%
+\def\spac_whitespace_setup_method#1%
   {\ifcsname\??wz:#1\endcsname
      \csname\??wz:#1\endcsname
    \else
@@ -430,7 +430,7 @@
 
 % \definewhitespacemethod [\s!unknown]  {\ctxparskip\commalistelement\relax}
 %
-% \def\spacing_setup_whitespace_method#1%
+% \def\spac_whitespace_setup_method#1%
 %   {\csname\??wz:\ifcsname\??wz:#1\endcsname#1\else\s!unknown\endcsname\relax}
 
 \unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
@@ -445,9 +445,9 @@
 \newcount\packeddepth
 
 \unexpanded\def\startpacked
-  {\dosingleempty\spacing_start_packed}
+  {\dosingleempty\spac_start_packed}
 
-\def\spacing_start_packed[#1]% nesting afvangen
+\def\spac_start_packed[#1]% nesting afvangen
   {\global\advance\packeddepth\plusone
    \par
    \ifnum\packeddepth=\plusone \ifvmode
@@ -868,9 +868,9 @@
 %D Beware: using an unknown value results in char struts.
 
 \unexpanded\def\setupstrut
-  {\dosingleempty\spacing_setup_strut}
+  {\dosingleempty\spac_strut_setup}
 
-\def\spacing_setup_strut[#1]%
+\def\spac_strut_setup[#1]%
   {\ifcsname\??ut:#1\endcsname
      \csname\??ut:#1\endcsname % these are defined later
    \else
@@ -924,24 +924,24 @@
   {\relax\ifcase\strutht
      % \ignorespaces % maybe
    \else
-     \spacing_begstrut
+     \spac_strut_beg
    \fi}
 
-\def\spacing_begstrut
+\def\spac_strut_beg
   {\ifconditional\sigstruts
-     \spacing_begstrut_signal
+     \spac_strut_beg_signal
    \else
-     \spacing_begstrut_normal
+     \spac_strut_beg_normal
    \fi
    \ignorespaces}
 
-\def\spacing_begstrut_signal
+\def\spac_strut_beg_signal
   {\noindent\horizontalstrut
    \normalpenalty\plustenthousand
    \normalhskip-\strutsignal
    \normalhskip\strutsignal}
 
-\def\spacing_begstrut_normal
+\def\spac_strut_beg_normal
   {\strut
    \normalpenalty\plustenthousand
    \normalhskip\zeropoint}
@@ -951,18 +951,18 @@
      \ifcase\strutht
        % \removeunwantedspaces % maybe
      \else
-       \spacing_endstrut
+       \spac_strut_end
      \fi
    \fi}
 
-\def\spacing_endstrut
+\def\spac_strut_end
   {\ifconditional\sigstruts
-     \spacing_endstrut_signal
+     \spac_strut_end_signal
    \else
-     \spacing_endstrut_normal
+     \spac_strut_end_normal
    \fi}
 
-\def\spacing_endstrut_signal
+\def\spac_strut_end_signal
   {\ifdim\lastskip=\strutsignal
      \unskip
      \unskip
@@ -974,7 +974,7 @@
      \strut
    \fi}
 
-\def\spacing_endstrut_normal
+\def\spac_strut_end_normal
   {\removeunwantedspaces
    \normalpenalty\plustenthousand
    \normalhskip\zeropoint
@@ -1849,12 +1849,6 @@
    \activatespacehandler{\linesparameter\c!space}%
    \dostarttagged\t!line\empty
    \GotoPar}
-
-\def\afterfirstobeyedline_indeed % tzt two pass, net als opsomming
-  {\linesparameter\c!command
-   \gdef\afterfirstobeyedline
-     {\ifx\linesoption\v!packed\nobreak\fi
-      \linesparameter\c!command}}%
 
 \unexpanded\def\dostoplines
   {\dostoptagged

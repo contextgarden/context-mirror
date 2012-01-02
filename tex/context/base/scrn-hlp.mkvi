@@ -55,8 +55,8 @@
 
 % also status
 
-\newbox  \scrn_help_box
-\newcount\scrn_help_n
+\newbox  \b_scrn_help_box
+\newcount\c_scrn_help_n
 
 \definesystemattribute[help][public]
 
@@ -78,8 +78,8 @@
 
 \unexpanded\def\scrn_help_argument#category%
   {\def\currenthelp{#category}%
-   \global\advance\scrn_help_n\plusone
-   \edef\currenthelpname{help:\number\scrn_help_n}%
+   \global\advance\c_scrn_help_n\plusone
+   \edef\currenthelpname{help:\number\c_scrn_help_n}%
    \doifelselocation
      {\dosingleempty\scrn_help_argument_indeed}
      {\dosingleempty\scrn_help_argument_ignore}}
@@ -88,20 +88,20 @@
   {\edef\currenthelpreference{#reference}%
    \dontleavehmode \hbox \bgroup
      \dontcomplain
-     \setbox\scrn_help_box\hbox{\strut#text}%
+     \setbox\b_scrn_help_box\hbox{\strut#text}%
      \doregisterhelp{#target}%
    \egroup % can be usernode instead
    \goto
-     {\helpsignal{\number\scrn_help_n}#target}%
-     [\helpaction{\number\scrn_help_n}]}
+     {\helpsignal{\number\c_scrn_help_n}#target}%
+     [\helpaction{\number\c_scrn_help_n}]}
 
 \def\scrn_help_argument_ignore[#reference]#text#target%
   {#target}
 
 \unexpanded\def\scrn_help_start#category%
   {\def\currenthelp{#category}%
-   \global\advance\scrn_help_n\plusone
-   \edef\currenthelpname{help:\number\scrn_help_n}%
+   \global\advance\c_scrn_help_n\plusone
+   \edef\currenthelpname{help:\number\c_scrn_help_n}%
    \dosingleempty\scrn_help_start_indeed}
 
 \def\scrn_help_start_indeed[#reference]%
@@ -114,33 +114,33 @@
    \fi}
 
 \def\scrn_help_register#text%
-  {\setbox\scrn_help_box\hbox{\inheritedhelpframed{#text}}%
+  {\setbox\b_scrn_help_box\hbox{\inheritedhelpframed{#text}}%
    \definesymbol
      [\currenthelpname]
-     [\copy\scrn_help_box]%
+     [\copy\b_scrn_help_box]%
    \definefieldbody
      [\currenthelpname]
      [\c!type=push,
-      \c!width=\wd\scrn_help_box,
-      \c!height=\ht\scrn_help_box,
-      \c!depth=\dp\scrn_help_box,
+      \c!width=\wd\b_scrn_help_box,
+      \c!height=\ht\b_scrn_help_box,
+      \c!depth=\dp\b_scrn_help_box,
       \c!option=\v!hidden,
       \c!clickin=action(hide{\currenthelpname}),
       \c!closepage=action(hide{\currenthelpname}),
       \c!values=\currenthelpname]%
-   \setbox\scrn_help_box\hbox
+   \setbox\b_scrn_help_box\hbox
      {\fieldbody[\currenthelpname]}%
-   \ctxcommand{registerhelp(\number\scrn_help_n,"\currenthelpreference",\number\scrn_help_box)}}
+   \ctxcommand{registerhelp(\number\c_scrn_help_n,"\currenthelpreference",\number\b_scrn_help_box)}}
 
 \def\doifelsehelp
-  {\ifcase\scrn_help_n
+  {\ifcase\c_scrn_help_n
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \def\placehelp % was \helpdata
-  {\ifinpagebody\ifcase\scrn_help_n\else
+  {\ifinpagebody\ifcase\c_scrn_help_n\else
      \ctxcommand{collecthelp(255)}% rather hard coded ... bad
    \fi\fi}
 

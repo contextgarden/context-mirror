@@ -69,15 +69,15 @@
 
 \let\readfilename\empty
 
-\def\system_files_read_file#protocol#path#name% #true #false
+\def\syst_files_read_file#protocol#path#name% #true #false
   {\edef\readfilename{\ctxcommand{getreadfilename("#protocol","#path","#name")}}%
    \ifx\readfilename\empty
      \expandafter\secondoftwoarguments
    \else
-     \expandafter\system_files_read_file_indeed
+     \expandafter\syst_files_read_file_indeed
    \fi}
 
-\def\system_files_read_file_indeed#true#false%
+\def\syst_files_read_file_indeed#true#false%
   {#true
    \relax
    \normalinput{\readfilename}%
@@ -107,13 +107,13 @@
 %D
 %D The most liberal is \type {\readfile}.
 
-\unexpanded\def\readjobfile     #name{\system_files_read_file{job}    {.}{#name}} % current path, no backtracking
-\unexpanded\def\readlocfile     #name{\system_files_read_file{loc}    {.}{#name}} % current path, backtracking
-\unexpanded\def\readsysfile     #name{\system_files_read_file{sys}    {.}{#name}} % current path, obeys tex search
-\unexpanded\def\readfixfile#path#name{\system_files_read_file{fix}{#path}{#name}} % specified path, backtracking
-\unexpanded\def\readsetfile#path#name{\system_files_read_file{set}{#path}{#name}} % specified path, no backtracking
-\unexpanded\def\readfile        #name{\system_files_read_file{any}    {.}{#name}}
-\unexpanded\def\ReadFile        #name{\system_files_read_file{any}    {.}{#name}\donothing\donothing}
+\unexpanded\def\readjobfile     #name{\syst_files_read_file{job}    {.}{#name}} % current path, no backtracking
+\unexpanded\def\readlocfile     #name{\syst_files_read_file{loc}    {.}{#name}} % current path, backtracking
+\unexpanded\def\readsysfile     #name{\syst_files_read_file{sys}    {.}{#name}} % current path, obeys tex search
+\unexpanded\def\readfixfile#path#name{\syst_files_read_file{fix}{#path}{#name}} % specified path, backtracking
+\unexpanded\def\readsetfile#path#name{\syst_files_read_file{set}{#path}{#name}} % specified path, no backtracking
+\unexpanded\def\readfile        #name{\syst_files_read_file{any}    {.}{#name}}
+\unexpanded\def\ReadFile        #name{\syst_files_read_file{any}    {.}{#name}\donothing\donothing}
 
 %D So now we've got ourselves five file loading commands:
 %D

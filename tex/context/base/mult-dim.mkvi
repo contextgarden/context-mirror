@@ -41,7 +41,7 @@
 \setvalue{\??dimensionnormal-\v!small }#value#dimension#small#medium#big{#dimension=-#small\relax}
 \setvalue{\??dimensionnormal-\v!medium}#value#dimension#small#medium#big{#dimension=-#medium\relax}
 \setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
-\setvalue{\??dimensionnormal\s!unknown}#value#dimension#small#medium#big{#dimension=-#value\relax}
+\setvalue{\??dimensionnormal\s!unknown}#value#dimension#small#medium#big{#dimension=#value\relax}
 
 \unexpanded\def\assigndimension#value%
   {\csname\??dimensionnormal\ifcsname\??dimensionnormal#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}

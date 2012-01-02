@@ -62,17 +62,17 @@
 \unexpanded\def\applyprocessor#tag%
   {\def\currentprocessor{#tag}%
    \ifcsname\??processorcheck\currentprocessor\endcsname
-     \expandafter\apply_processor
+     \expandafter\typo_processor_apply
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\def\apply_processor
+\def\typo_processor_apply
   {\doifelse{\processorparameter\c!state}\v!stop
      \firstofoneargument
-     \apply_processor_indeed}
+     \typo_processor_apply_indeed}
 
-\def\apply_processor_indeed#content%
+\def\typo_processor_apply_indeed#content%
   {\begingroup
    \useprocessorstyleandcolor\c!style\c!color
    \processorparameter\c!left

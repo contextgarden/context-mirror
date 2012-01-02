@@ -29,11 +29,11 @@
 \unexpanded\def\installtextracer#1%
   {\addtocommalist{#1}\alltextracers}
 
-\unexpanded\def\enabletextracers [#1]{\processcommalist[#1]\system_textracer_enable }
-\unexpanded\def\disabletextracers[#1]{\processcommalist[#1]\system_textracer_disable}
+\unexpanded\def\enabletextracers [#1]{\processcommalist[#1]\syst_textracers_enable }
+\unexpanded\def\disabletextracers[#1]{\processcommalist[#1]\syst_textracers_disable}
 
-\def\system_textracer_enable #1{\csname  enabletracer#1\endcsname}
-\def\system_textracer_disable#1{\csname disabletracer#1\endcsname}
+\def\syst_textracers_enable #1{\csname  enabletracer#1\endcsname}
+\def\syst_textracers_disable#1{\csname disabletracer#1\endcsname}
 
 % The next one is for Taco, although we can use directives as well:
 

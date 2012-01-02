@@ -38,26 +38,26 @@
 
 \installcorenamespace {parbuilder}
 
-\newcount\c_par_n_of_builders
+\newcount\c_node_paragraphs_n_of_builders
 
-\let\m_par_current_builder\empty
+\let\m_node_paragraphs_current_builder\empty
 
 \unexpanded\def\defineparbuilder[#1]%
-  {\global\advance\c_par_n_of_builders\plusone
-   \ctxlua{builders.paragraphs.constructors.register("#1",\number\c_par_n_of_builders)}%
-   \setxvalue{\??parbuilder#1}{\attribute\parbuilderattribute\number\c_par_n_of_builders}}
+  {\global\advance\c_node_paragraphs_n_of_builders\plusone
+   \ctxlua{builders.paragraphs.constructors.register("#1",\number\c_node_paragraphs_n_of_builders)}%
+   \setxvalue{\??parbuilder#1}{\attribute\parbuilderattribute\number\c_node_paragraphs_n_of_builders}}
 
 \unexpanded\def\startparbuilder[#1]%
-  {\edef\m_par_current_builder{\number\attribute\parbuilderattribute}%
-   \globalpushmacro\m_par_current_builder
+  {\edef\m_node_paragraphs_current_builder{\number\attribute\parbuilderattribute}%
+   \globalpushmacro\m_node_paragraphs_current_builder
    \getvalue{\??parbuilder#1}\relax
-   \par_builders_check}
+   \node_paragraphs_builders_check}
 
 \unexpanded\def\stopparbuilder
   {\ifhmode\par\fi
-   \globalpopmacro\m_par_current_builder
-   \attribute\parbuilderattribute\m_par_current_builder\relax
-   \par_builders_check}
+   \globalpopmacro\m_node_paragraphs_current_builder
+   \attribute\parbuilderattribute\m_node_paragraphs_current_builder\relax
+   \node_paragraphs_builders_check}
 
 \unexpanded\def\setmainparbuilder[#1]%
   {\ctxlua{builders.paragraphs.constructors.set("#1")}}
@@ -72,7 +72,7 @@
 \def\enableparbuilders {\ctxlua{builders.paragraphs.constructors.enable ()}}
 \def\disableparbuilders{\ctxlua{builders.paragraphs.constructors.disable()}}
 
-\def\par_builders_check % can be made more efficient as we don't want to do this too often
+\def\node_paragraphs_builders_check % can be made more efficient as we don't want to do this too often
   {\ifcase\attribute\parbuilderattribute
      \disableparbuilders
    \else

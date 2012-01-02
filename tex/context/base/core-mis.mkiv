@@ -732,6 +732,8 @@
 
 % this will replace the quotation and speed definitions
 
+% todo: \typo_ namespace
+
 \newsignal\delimitedtextsignal
 
 \let\currentdelimitedtext\s!unknown
@@ -808,7 +810,7 @@
    \pushdelimitedtext{#1}%
    \dostarttagged\t!delimitedblock\currentdelimitedtext
    \doifelse{\delimitedtextparameter\c!method}\s!font
-     {\let\dostopdelimitedtext\dostopdelimitedtext_font
+     {\let\dostopdelimitedtext\typo_delimitedtexts_finish_font
       \ignoredelimitedtext\c!left\ignorespaces}
      {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
         {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
@@ -816,7 +818,7 @@
       \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
         {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
 
-\def\dostopdelimitedtext_font
+\def\typo_delimitedtexts_finish_font
   {\removeunwantedspaces\ignoredelimitedtext\c!right}
 
 \def\dostartdelimitedtextpar[#1]%
@@ -854,7 +856,7 @@
     \delimitedtextparameter\c!after
     \doifsomething{\delimitedtextparameter\c!spaceafter}
       {\blank[\delimitedtextparameter\c!spaceafter]}%
-    \checknextindentation[\delimitedtextparameter\c!indentnext]% AM: here
+    \useindentnextparameter\delimitedtextparameter
     \dorechecknextindentation}% AM: This was missing!
 
 \def\dostartdelimitedtexttxt
@@ -1817,15 +1819,15 @@
      \global\advance\totcombination\minusone
      \global\advance\horcombination\minusone
      \ifnum\horcombination=\zerocount
-       \doubleexpandafter\docombination_a
+       \doubleexpandafter\docombinationa
      \else
-       \doubleexpandafter\docombination_b
+       \doubleexpandafter\docombinationb
      \fi
    \else
-     \expandafter\docombination_c
+     \expandafter\docombinationc
    \fi}
 
-\def\docombination_a
+\def\docombinationa
   {\cr
    \flushcombinationstack
    \noalign
@@ -1839,10 +1841,10 @@
    \global\horcombination\maxhorcombination\relax
    \docombination}
 
-\def\docombination_b
+\def\docombinationb
   {&&&\hskip\combinationparameter\c!distance&\docombination}
 
-\def\docombination_c
+\def\docombinationc
   {\cr
    \flushcombinationstack
    \egroup}

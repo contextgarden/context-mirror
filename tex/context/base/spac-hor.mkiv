@@ -31,7 +31,7 @@
 %D need to check if the next paragraph has to be indented.
 
 \def\presetindentation
-  {\doifoutervmode{\ifindentfirstparagraph\else\indentation_variant_no\fi}}
+  {\doifoutervmode{\ifindentfirstparagraph\else\spac_indentation_variant_no\fi}}
 
 % we need a better everypar model: for each option a switch, which we
 % set to false with \forgetall and can enable when needed (context 4);
@@ -61,11 +61,11 @@
     \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
     \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
     \checkeverypar % only when non-empty #1
-    \ifindentfirstparagraph\else\indentation_variant_no\fi
-    \indentation_check_toggle}
+    \ifindentfirstparagraph\else\spac_indentation_variant_no\fi
+    \spac_indentation_check_toggle}
 
 \def\docomplexsetupindentingA#1%
-  {\ifcsname\??in:#1\endcsname
+  {\ifcsname\??indenting#1\endcsname
      % case b
    \else
      \edef\currentindentation{#1}%
@@ -74,8 +74,8 @@
    \fi}
 
 \def\docomplexsetupindentingB#1%
-  {\ifcsname\??in:#1\endcsname
-     \csname\??in:#1\endcsname
+  {\ifcsname\??indenting#1\endcsname
+     \csname\??indenting#1\endcsname
    \else
      % case a
    \fi}
@@ -88,8 +88,10 @@
 
 % use \noindentation to suppress next indentation
 
+\installcorenamespace{indenting}
+
 \unexpanded\def\defineindentingmethod[#1]#2%
-  {\setvalue{\??in:#1}{#2}}
+  {\setvalue{\??indenting#1}{#2}}
 
 \defineindentingmethod [\v!no]     {\parindent\zeropoint}% was: \ctxparindent\noindent}
 \defineindentingmethod [\v!not]    {\parindent\zeropoint}% was: \ctxparindent\noindent}
@@ -130,64 +132,64 @@
 
 \let\checkindentation\relax
 
-\def\indentation_remove
+\def\spac_indentation_remove
   {\ifdim\parindent=\zeropoint \else
      \begingroup
      \setbox\scratchbox\lastbox
      \endgroup
    \fi}
 
-\def\indentation_kill_indeed
+\def\spac_indentation_kill_indeed
   {\global\indentationfalse
-   \indentation_remove}
+   \spac_indentation_remove}
 
-\def\indentation_do_toggle_indeed
+\def\spac_indentation_do_toggle_indeed
   {\global\indentationfalse
-   \global\let\checkindentation\indentation_no_toggle_indeed
-   \indentation_remove}
+   \global\let\checkindentation\spac_indentation_no_toggle_indeed
+   \spac_indentation_remove}
 
-\def\indentation_no_toggle_indeed
+\def\spac_indentation_no_toggle_indeed
   {\global\indentationtrue
-   \global\let\checkindentation\indentation_do_toggle_indeed}
+   \global\let\checkindentation\spac_indentation_do_toggle_indeed}
 
-\def\indentation_do_indeed
+\def\spac_indentation_do_indeed
   {\global\indentationtrue}
 
-\def\indentation_do_toggle
-  {\global\let\checkindentation\indentation_do_toggle_indeed}
+\def\spac_indentation_do_toggle
+  {\global\let\checkindentation\spac_indentation_do_toggle_indeed}
 
-\def\indentation_no_toggle
-  {\global\let\checkindentation\indentation_no_toggle_indeed}
+\def\spac_indentation_no_toggle
+  {\global\let\checkindentation\spac_indentation_no_toggle_indeed}
 
-\def\indentation_check_toggle
+\def\spac_indentation_check_toggle
   {\ifcase\indentingtogglestate
      % nothing
    \or
-     \indentation_no_toggle
+     \spac_indentation_no_toggle
    \or
-     \indentation_do_toggle
+     \spac_indentation_do_toggle
    \fi}
 
-\def\indentation_variant_yes
-  {\global\let\checkindentation\indentation_do_indeed}
+\def\spac_indentation_variant_yes
+  {\global\let\checkindentation\spac_indentation_do_indeed}
 
-\def\indentation_no_next_check
-  {\indentation_remove
-   \global\let\checkindentation\indentation_do_indeed}
+\def\spac_indentation_no_next_check
+  {\spac_indentation_remove
+   \global\let\checkindentation\spac_indentation_do_indeed}
 
-\def\indentation_variant_no % made global
+\def\spac_indentation_variant_no % made global
   {\ifinpagebody \else
      \global\indentationfalse
-     \global\let\checkindentation\indentation_no_next_check
+     \global\let\checkindentation\spac_indentation_no_next_check
    \fi}
 
 \def\nonoindentation % bv bij floats
   {\ifinpagebody \else
      \global\indentationtrue
-     \global\let\checkindentation\indentation_do_indeed
+     \global\let\checkindentation\spac_indentation_do_indeed
    \fi}
 
-\def\indentation_variant_force
+\def\spac_indentation_variant_force
   {\ifvmode \ifdim\parindent=\zeropoint \else
      % was : \hskip\parindent
      % can be: \indent
@@ -207,35 +209,40 @@
 
 % public:
 
-\let\indentation  \indentation_variant_force
-\let\noindentation\indentation_variant_no    % public
-\let\doindentation\indentation_variant_yes   % public
+\let\indentation  \spac_indentation_variant_force
+\let\noindentation\spac_indentation_variant_no    % public
+\let\doindentation\spac_indentation_variant_yes   % public
 
 \def\dontrechecknextindentation              % public (in macros)
   {\global\let\dorechecknextindentation\relax}
 
 \let\dorechecknextindentation\relax          % public (in macros)
 
-\def\indentation_check_next_indentation
+\def\spac_indentation_check_next_indentation
   {\global\let\dorechecknextindentation\relax
-   \doifnextcharelse\par\donothing\indentation_variant_no}
+   \doifnextcharelse\par\donothing\spac_indentation_variant_no} % messy check as next is seldom \par
 
-\def\indentation_variant_auto
-  {\global\let\dorechecknextindentation\indentation_check_next_indentation}
+\def\spac_indentation_variant_auto
+  {\global\let\dorechecknextindentation\spac_indentation_check_next_indentation}
 
 %D This one sets up the local indentation behaviour (i.e. either or not
 %D a next paragraph will be indented).
 
-\def\dochecknextindentation#1% obsolete
-  {\checknextindentation[\csname#1\c!indentnext\endcsname]}
+\installcorenamespace{indentnext}
 
 \unexpanded\def\checknextindentation[#1]%
-  {\csname\??in:c:\ifcsname\??in:c:#1\endcsname#1\else\s!empty\fi\endcsname}
+  {\csname\??indentnext\ifcsname\??indentnext#1\endcsname#1\fi\endcsname}
 
-\letvalue{\??in:c:\s!empty}\donothing
-\letvalue{\??in:c:\v!yes  }\indentation_variant_yes
-\letvalue{\??in:c:\v!no   }\indentation_variant_no
-\letvalue{\??in:c:\v!auto }\indentation_variant_auto
+\unexpanded\def\useindentnextparameter#1% new, the more efficient variant
+  {\edef\p_indentnext{#1\c!indentnext}%
+   \ifx\p_indentnext\empty\else
+     \csname\??indentnext\ifcsname\??indentnext\p_indentnext\endcsname\p_indentnext\fi\endcsname
+   \fi}
+
+\letvalue{\??indentnext        }\donothing
+\letvalue{\??indentnext\v!yes  }\spac_indentation_variant_yes
+\letvalue{\??indentnext\v!no   }\spac_indentation_variant_no
+\letvalue{\??indentnext\v!auto }\spac_indentation_variant_auto
 
 %D An example of usage:
 %D
@@ -307,13 +314,15 @@
 \unexpanded\def\newfrenchspacing{\setfrenchspacing{1050}}
 \unexpanded\def\nonfrenchspacing{\resetfrenchspacing}
 
-\unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??sg\??sg#1}{#2}}
+\installcorenamespace{spacingmethods}
+
+\unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??spacingmethods#1}{#2}}
 
 \definespacingmethod[\v!packed]{\newfrenchspacing}
 \definespacingmethod[\v!broad ]{\nonfrenchspacing}
 
 \def\complexsetupspacing[#1]%
-  {\executeifdefined{\??sg\??sg#1}\relax
+  {\executeifdefined{\??spacingmethods#1}\relax
    \updateraggedskips}
 
 \def\simplesetupspacing
@@ -390,12 +399,12 @@
 
 \unexpanded\def\removeunwantedspaces
   {\ifhmode
-     \expandafter \doremoveunwantedspace
+     \expandafter \spac_helpers_remove_unwantedspace
    \fi}
 
-\def\doremoveunwantedspace
-  {\ifnum\lastnodetype=\@@gluenode
-     \unskip \expandafter\doremoveunwantedspace
+\def\spac_helpers_remove_unwantedspace
+  {\ifnum\lastnodetype=\gluenodecode
+     \unskip \expandafter\spac_helpers_remove_unwantedspace
    \fi}
 
 % \startbuffer

@@ -59,27 +59,27 @@
    \kern-.075em C%
    \kern-.11em\TeX}
 
-\def\logo_ams_script#1%
+\def\syst_logos_ams_script#1%
   {$\cal\ifdim\bodyfontsize>1.1em\scriptstyle\fi#1$}
 
 \unexpanded\def\AmSTeX
   {\dontleavehmode
-   \logo_ams_script A%
-   \kern-.1667em\lower.5ex\hbox{\logo_ams_script M}%
-   \kern-.125em\logo_ams_script S%
+   \syst_logos_ams_script A%
+   \kern-.1667em\lower.5ex\hbox{\syst_logos_ams_script M}%
+   \kern-.125em\syst_logos_ams_script S%
    -\TeX}
 
 \unexpanded\def\LamSTeX
   {L%
-   \kern-.4em\raise.3ex\hbox{\logo_ams_script A}%
-   \kern-.25em\lower.4ex\hbox{\logo_ams_script M}%
-   \kern-.1em{\logo_ams_script S}%
+   \kern-.4em\raise.3ex\hbox{\syst_logos_ams_script A}%
+   \kern-.25em\lower.4ex\hbox{\syst_logos_ams_script M}%
+   \kern-.1em{\syst_logos_ams_script S}%
    -\TeX}
 
 \unexpanded\def\AmSLaTeX
   {\dontleavehmode
-   \logo_ams_script A%
-   \kern-.1667em\lower.5ex\hbox{\logo_ams_script M}%
+   \syst_logos_ams_script A%
+   \kern-.1667em\lower.5ex\hbox{\syst_logos_ams_script M}%
    \kern-.125em\AMSswitch S%
    -\LaTeX}
 
@@ -117,19 +117,19 @@
      10 at \currentfontscale\bodyfontsize % there is no afm in the minimals yet
    \logofont}
 
-\def\logo_meta_hyphen % there is no hyphenchar in this font
+\def\syst_logos_meta_hyphen % there is no hyphenchar in this font
   {\discretionary{\vrule\!!height.33em\!!depth-.27em\!!width.33em}{}{}}
 
 \unexpanded\def\MetaFont
   {\dontleavehmode
    \begingroup
-   \setMFPfont META\logo_meta_hyphen FONT%
+   \setMFPfont META\syst_logos_meta_hyphen FONT%
    \endgroup}
 
 \unexpanded\def\MetaPost
   {\dontleavehmode
    \begingroup
-   \setMFPfont META\logo_meta_hyphen POST%
+   \setMFPfont META\syst_logos_meta_hyphen POST%
    \endgroup}
 
 \unexpanded\def\MetaFun
@@ -175,7 +175,7 @@
 
 % Adapted from a patch by Mojca:
 
-\def\logo_xetex_e
+\def\syst_logos_xetex_e
   {\setbox\scratchbox\hbox{E}%
    \raise\dimexpr\ht\scratchbox+\dp\scratchbox\relax\hbox{\rotate[\c!rotation=180]{\box\scratchbox}}}
 
@@ -186,12 +186,12 @@
       \iffontchar\font"018E\relax
         \char"018E%
       \else
-        \ifx\fontalternative\c!bf  \mirror{E}\else
-        \ifx\fontalternative\c!it\logo_xetex_e\else
-        \ifx\fontalternative\c!sl\logo_xetex_e\else
-        \ifx\fontalternative\c!bi\logo_xetex_e\else
-        \ifx\fontalternative\c!bs\logo_xetex_e\else
-                                    \mirror{E}\fi\fi\fi\fi\fi
+        \ifx\fontalternative\c!bf         \mirror{E}\else
+        \ifx\fontalternative\c!it\syst_logos_xetex_e\else
+        \ifx\fontalternative\c!sl\syst_logos_xetex_e\else
+        \ifx\fontalternative\c!bi\syst_logos_xetex_e\else
+        \ifx\fontalternative\c!bs\syst_logos_xetex_e\else
+                                          \mirror{E}\fi\fi\fi\fi\fi
       \fi}%
    \kern-.1667em\TeX}
 

@@ -20,26 +20,26 @@
 %D \NormalizeTextHeight {font} {height} {text}
 %D \NormalizeTextWidth  {font} {width}  {text}
 
-\newbox\normalize_font_box
+\newbox\b_typo_normalizers
 
-\def\normalized_size#axis#size%
-  {\dimexpr\ifdim#1\normalize_font_box=\zeropoint
+\def\typo_normalizers_size#axis#size%
+  {\dimexpr\ifdim#1\b_typo_normalizers=\zeropoint
      \bodyfontsize
    \else
-     \cldcontext{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\normalize_font_box}\scaledpoint
+     \cldcontext{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
    \fi\relax}
 
-\def\normalize_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
+\def\typo_normalizers_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
   {\begingroup
-   \setbox\normalize_font_box\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
-   \normalexpanded{\endgroup\edef\noexpand\TheNormalizedFontSize{\the\normalized_size{#axis}{#size}}}%
+   \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \normalexpanded{\endgroup\edef\noexpand\TheNormalizedFontSize{\the\typo_normalizers_size{#axis}{#size}}}%
    \edef#cs{\noexpand\definedfont[#font at \TheNormalizedFontSize]}}
 
-\unexpanded\def\normalize_text_at_size#axis#font#size#text%
+\unexpanded\def\typo_normalizers_text_at_size#axis#font#size#text%
   {\dontleavehmode
    \begingroup
-   \setbox\normalize_font_box\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
-   \definedfont[#font at \the\normalized_size{#axis}{#size}]#text%
+   \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \definedfont[#font at \the\typo_normalizers_size{#axis}{#size}]#text%
    \endgroup}
 
 \let\TheNormalizedFontSize\!!zeropoint
@@ -47,11 +47,11 @@
 %D Traditionally we use UpperCasedNames for this kind of
 %D functionality.
 
-\unexpanded\def\NormalizeFontHeight{\normalize_font_at_size\ht}
-\unexpanded\def\NormalizeFontWidth {\normalize_font_at_size\wd}
+\unexpanded\def\NormalizeFontHeight{\typo_normalizers_font_at_size\ht}
+\unexpanded\def\NormalizeFontWidth {\typo_normalizers_font_at_size\wd}
 
-\unexpanded\def\NormalizeTextHeight{\normalize_text_at_size\ht}
-\unexpanded\def\NormalizeTextWidth {\normalize_text_at_size\wd}
+\unexpanded\def\NormalizeTextHeight{\typo_normalizers_text_at_size\ht}
+\unexpanded\def\NormalizeTextWidth {\typo_normalizers_text_at_size\wd}
 
 \unexpanded\def\WidthSpanningText#text#width#font% compatibility macro
   {\hbox{\NormalizeFontWidth\temp{#text}{#width}{#font}\temp\the\everydefinedfont#1}}

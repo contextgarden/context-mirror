@@ -60,9 +60,9 @@
 
 % startattachment -> temp file
 
-\newbox\scrn_attachment_box_collect
-\newbox\scrn_attachment_box_link
-\newbox\scrn_attachment_box_symbol
+\newbox\b_scrn_attachment_collect
+\newbox\b_scrn_attachment_link
+\newbox\b_scrn_attachment_symbol
 
 \installcorenamespace{attachment}
 \installcorenamespace{attachmentlocation}
@@ -185,10 +185,10 @@
    \else
      \ctxcommand{presetsymbollist("\attachmentparameter\c!symbol")}%
      % we cannot yet ask for the wd/ht/dp of an xform else we could use those
-     \setbox\scrn_attachment_box_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
-     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {\wd\scrn_attachment_box_symbol}\fi
-     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{\ht\scrn_attachment_box_symbol}\fi
-     \ifx\currentattachmentdepth \v!fit\edef\currentattachmentdepth {\dp\scrn_attachment_box_symbol}\fi
+     \setbox\b_scrn_attachment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
+     \ifx\currentattachmentwidth \v!fit\edef\currentattachmentwidth {\wd\b_scrn_attachment_symbol}\fi
+     \ifx\currentattachmentheight\v!fit\edef\currentattachmentheight{\ht\b_scrn_attachment_symbol}\fi
+     \ifx\currentattachmentdepth \v!fit\edef\currentattachmentdepth {\dp\b_scrn_attachment_symbol}\fi
    \fi
    \ctxcommand{insertattachment{
      tag               = "\currentattachment",
@@ -210,11 +210,11 @@
      name              = "\attachmentparameter\c!name",
      buffer            = "\attachmentparameter\c!buffer",
    }}%
-   \setbox\scrn_attachment_box_link\hbox{\scrn_attachment_place}%
-   \wd\scrn_attachment_box_link\currentattachmentwidth
-   \ht\scrn_attachment_box_link\currentattachmentheight
-   \dp\scrn_attachment_box_link\currentattachmentdepth
-   \box\scrn_attachment_box_link}
+   \setbox\b_scrn_attachment_link\hbox{\scrn_attachment_place}%
+   \wd\b_scrn_attachment_link\currentattachmentwidth
+   \ht\b_scrn_attachment_link\currentattachmentheight
+   \dp\b_scrn_attachment_link\currentattachmentdepth
+   \box\b_scrn_attachment_link}
 
 \setvalue{scrn_attachment_method_\v!hidden}%
   {\ctxcommand{insertattachment{
@@ -226,7 +226,7 @@
 \def\scrn_attachment_place
   {\executeifdefined
      {\??attachmentlocation\attachmentparameter\c!location}\hbox
-     {\box\scrn_attachment_box_link}}
+     {\box\b_scrn_attachment_link}}
 
 \setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     }
 \setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   }
@@ -237,17 +237,17 @@
 \setvalue{\??attachmentlocation\v!none       }{\scrn_attachment_collect}
 
 \def\scrn_attachment_collect#content%
-  {\global\setbox\scrn_attachment_box_collect\hbox\bgroup
-     \ifvoid\scrn_attachment_box_collect\else
-       \box\scrn_attachment_box_collect
+  {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
+     \ifvoid\b_scrn_attachment_collect\else
+       \box\b_scrn_attachment_collect
        \hskip\attachmentparameter\c!distance
      \fi
      #content%
    \egroup}
 
 \unexpanded\def\placeattachments
-  {\ifvoid\scrn_attachment_box_collect\else
-     \box\scrn_attachment_box_collect
+  {\ifvoid\b_scrn_attachment_collect\else
+     \box\b_scrn_attachment_collect
    \fi}
 
 \defineattachment[attachment]
@@ -356,10 +356,10 @@
 
 \installcommandhandler \??comment {comment} \??comment
 
-\newbox\scrn_comment_box_collect
-\newbox\scrn_comment_box_rendering
-\newbox\scrn_comment_box_link
-\newbox\scrn_comment_box_symbol
+\newbox\b_scrn_comment_collect
+\newbox\b_scrn_comment_rendering
+\newbox\b_scrn_comment_link
+\newbox\b_scrn_comment_symbol
 
 \setupcomment
   [\c!state=\v!start,
@@ -430,13 +430,15 @@
 \unexpanded\def\scrn_comment_stop
   {}
 
+\installcorenamespace{commentmethods}
+
 \def\scrn_comment_inject
-  {\expandcheckedcsname{scrn_comment_method_}{\commentparameter\c!method}\v!normal}
+  {\expandcheckedcsname\??commentmethods{\commentparameter\c!method}\v!normal}
 
 %D Beware: comments symbols don't scale in acrobat (cf. spec but somewhat
 %D weird, esp because for instance attachment symbols do scale).
 
-\setvalue{scrn_comment_method_\v!normal}%
+\setvalue{\??commentmethods\v!normal}%
   {\edef\currentcommentsymbol{\commentparameter\c!symbol}%
    \edef\currentcommentwidth {\commentparameter\c!width }%
    \edef\currentcommentheight{\commentparameter\c!height}%
@@ -448,10 +450,10 @@
    \else
      \ctxcommand{presetsymbollist("\commentparameter\c!symbol")}%
      % we cannot yet ask for the wd/ht/dp of an xform else we could use those
-     \setbox\scrn_comment_box_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
-     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {\wd\scrn_comment_box_symbol}\fi
-     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{\ht\scrn_comment_box_symbol}\fi
-     \ifx\currentcommentdepth \v!fit\edef\currentcommentdepth {\dp\scrn_comment_box_symbol}\fi
+     \setbox\b_scrn_comment_symbol\hbox{\symbol[\lastpredefinedsymbol]}%
+     \ifx\currentcommentwidth \v!fit\edef\currentcommentwidth {\wd\b_scrn_comment_symbol}\fi
+     \ifx\currentcommentheight\v!fit\edef\currentcommentheight{\ht\b_scrn_comment_symbol}\fi
+     \ifx\currentcommentdepth \v!fit\edef\currentcommentdepth {\dp\b_scrn_comment_symbol}\fi
    \fi
    \ctxcommand{insertcomment{
         tag               = "\currentcomment",
@@ -471,12 +473,12 @@
         buffer            = "\v!comment",
         layer             = "\commentparameter\c!textlayer"
    }}%
-   \wd\scrn_comment_box_link\currentcommentwidth
-   \ht\scrn_comment_box_link\currentcommentheight
-   \dp\scrn_comment_box_link\currentcommentdepth
+   \wd\b_scrn_comment_link\currentcommentwidth
+   \ht\b_scrn_comment_link\currentcommentheight
+   \dp\b_scrn_comment_link\currentcommentdepth
    \scrn_comment_place}
 
-\setvalue{scrn_comment_method_\v!hidden}%
+\setvalue{\??commentmethods\v!hidden}%
   {}
 
 % todo: dedicated margin classes
@@ -484,7 +486,7 @@
 \def\scrn_comment_place
   {\executeifdefined
      {\??commentlocation\commentparameter\c!location}\hbox
-     {\hbox{\box\scrn_comment_box_link}}}
+     {\hbox{\box\b_scrn_comment_link}}}
 
 \setvalue{\??commentlocation\v!inmargin   }{\inmargin     }
 \setvalue{\??commentlocation\v!leftedge   }{\inleftedge   }
@@ -495,17 +497,17 @@
 \setvalue{\??commentlocation\v!none       }{\scrn_comment_collect}
 
 \def\scrn_comment_collect#content%
-  {\global\setbox\scrn_comment_box_collect\hbox\bgroup
-     \ifvoid\scrn_comment_box_collect\else
-       \box\scrn_comment_box_collect
+  {\global\setbox\b_scrn_comment_collect\hbox\bgroup
+     \ifvoid\b_scrn_comment_collect\else
+       \box\b_scrn_comment_collect
        \hskip\commentparameter\c!distance
      \fi
      #content%
    \egroup}
 
 \unexpanded\def\placecomments
-  {\ifvoid\scrn_comment_box_collect\else
-     \box\scrn_comment_box_collect
+  {\ifvoid\b_scrn_comment_collect\else
+     \box\b_scrn_comment_collect
    \fi}
 
 \definecomment[comment]

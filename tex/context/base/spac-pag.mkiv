@@ -52,12 +52,12 @@
      \ifinpagebody
        \ifdoublesided
          \ifodd\realpageno\relax
-           \system_twopass_set_found
+           \syst_twopass_set_found
          \else
-           \system_twopass_set_not_found
+           \syst_twopass_set_not_found
          \fi
        \else
-         \system_twopass_set_found
+         \syst_twopass_set_found
        \fi
      \else\ifdoublesided
        \findtwopassdata{#1}{\number#2}%
@@ -67,25 +67,25 @@
            \pagestatemismatchtrue
          \fi
          \ifodd\twopassdata\relax
-           \system_twopass_set_found
+           \syst_twopass_set_found
          \else
-           \system_twopass_set_not_found
+           \syst_twopass_set_not_found
          \fi
        \else
          \ifodd\realpageno\relax
-           \system_twopass_set_found
+           \syst_twopass_set_found
          \else
-           \system_twopass_set_not_found
+           \syst_twopass_set_not_found
          \fi
        \fi
      \else
-       \system_twopass_set_found
+       \syst_twopass_set_found
      \fi\fi
    \else
      \ifodd\realpagestateno\relax
-       \system_twopass_set_found
+       \syst_twopass_set_found
      \else
-       \system_twopass_set_not_found
+       \syst_twopass_set_not_found
      \fi
    \fi
    \ifconditional\twopassdatafound
@@ -105,22 +105,22 @@
          \pagestatemismatchtrue
        \fi
        \ifodd\twopassdata\relax
-         \system_twopass_set_found
+         \syst_twopass_set_found
        \else
-         \system_twopass_set_not_found
+         \syst_twopass_set_not_found
        \fi
      \else
        \ifodd\realpageno\relax
-         \system_twopass_set_found
+         \syst_twopass_set_found
        \else
-         \system_twopass_set_not_found
+         \syst_twopass_set_not_found
        \fi
      \fi
    \else
      \ifodd\realpagestateno\relax
-       \system_twopass_set_found
+       \syst_twopass_set_found
      \else
-       \system_twopass_set_not_found
+       \syst_twopass_set_not_found
      \fi
    \fi
    \ifconditional\twopassdatafound

@@ -146,7 +146,7 @@
 \installcommandhandler \??fieldcategory {fieldcategory} \??fieldcategory
 \installcommandhandler \??fieldbody     {fieldbody}     \??fieldbody
 
-\newbox\scrn_field_box_body
+\newbox\b_scrn_field_body
 
 \setupfieldcategory
   [\c!alternative=\v!normal, % normal clone copy
@@ -202,7 +202,7 @@
          \setupcurrentfieldbody[#settings]%
        \fi
        \scrn_field_body_typeset
-       \box\scrn_field_box_body
+       \box\b_scrn_field_body
        \egroup
    \fi}
 
@@ -346,7 +346,7 @@
 %D \ruledhbox{\fitfield[buttona]}
 %D \stoptyping
 
-\newbox\scrn_field_box_fit_symbol
+\newbox\b_scrn_field_fit_symbol
 
 \defineframed
   [fitfieldframed]
@@ -362,12 +362,12 @@
   {\iflocation
      \begingroup
        \edef\currentdefaultfieldvalue{\ctxcommand{getdefaultfieldvalue("#tag")}}%
-       \setbox\scrn_field_box_fit_symbol\hbox{\symbol[\currentdefaultfieldvalue]}%
+       \setbox\b_scrn_field_fit_symbol\hbox{\symbol[\currentdefaultfieldvalue]}%
        \fitfieldframed[#tag]
          {\fieldbody[#tag]
-            [\c!width=\wd\scrn_field_box_fit_symbol,
-             \c!height=\ht\scrn_field_box_fit_symbol,
-             \c!depth=\dp\scrn_field_box_fit_symbol,
+            [\c!width=\wd\b_scrn_field_fit_symbol,
+             \c!height=\ht\b_scrn_field_fit_symbol,
+             \c!depth=\dp\b_scrn_field_fit_symbol,
              #settings]}%
      \endgroup
    \fi}
@@ -533,13 +533,13 @@
 
 % opties: veld, label, kader, vertikaal/horizontaal
 
-\newbox\scrn_field_box_label
-\newbox\scrn_field_box_content
+\newbox\b_scrn_field_label
+\newbox\b_scrn_field_content
 
 % lower framedoffset
 
 \def\scrn_field_set_label_box
-  {\setbox\scrn_field_box_label\hbox
+  {\setbox\b_scrn_field_label\hbox
       {\reshapeframeboxtrue % else wrong dimensions % still needed?
        \inheritedfieldlabelframedframed
          {\currentfieldlabel}}}
@@ -548,7 +548,7 @@
 % \hbox{\lower\@@fdfieldoffset\hbox{\typesetfield}}
 
 \def\scrn_field_set_content_box
-  {\setbox\scrn_field_box_content\hbox
+  {\setbox\b_scrn_field_content\hbox
      {\reshapeframeboxtrue % else wrong dimensions (to be checked)
       \doifnothing{\fieldcontentframedparameter\c!height}
         {\ifconditional\fieldisvertical
@@ -574,24 +574,24 @@
 
 \def\scrn_field_flush_vertical
   {\vbox
-     {\copy\scrn_field_box_label
+     {\copy\b_scrn_field_label
       \fieldtotalframedparameter\c!inbetween
-      \copy\scrn_field_box_content}}
+      \copy\b_scrn_field_content}}
 
 \def\scrn_field_flush_horizontal
    {\hbox
-      {\vbox \ifdim\ht\scrn_field_box_content>\ht\scrn_field_box_label to \ht\scrn_field_box_content \fi
+      {\vbox \ifdim\ht\b_scrn_field_content>\ht\b_scrn_field_label to \ht\b_scrn_field_content \fi
          {\fieldtotalframedparameter\c!before
-          \copy\scrn_field_box_label
+          \copy\b_scrn_field_label
           \fieldtotalframedparameter\c!after}%
        \hskip\fieldtotalframedparameter\c!distance
-       \vbox \ifdim\ht\scrn_field_box_label>\ht\scrn_field_box_content to \ht\scrn_field_box_label \fi
+       \vbox \ifdim\ht\b_scrn_field_label>\ht\b_scrn_field_content to \ht\b_scrn_field_label \fi
          {\fieldtotalframedparameter\c!before
-          \box\scrn_field_box_content
+          \box\b_scrn_field_content
           \fieldtotalframedparameter\c!after}}}
 
 \def\scrn_field_flush_content
-  {\box\scrn_field_box_content}
+  {\box\b_scrn_field_content}
 
 \def\scrn_field_analyze_setups
   {\setfalse\fieldlabelshown
@@ -618,11 +618,11 @@
 
 %D Common stuff (obsolete)
 
-\newcount\scrn_field_system_n
+\newcount\c_scrn_field_system_n
 
 \def\nextsystemfield
-  {\global\advance\scrn_field_system_n\plusone
-   \def\currentsystemfield{sys::\number\scrn_field_system_n}}
+  {\global\advance\c_scrn_field_system_n\plusone
+   \def\currentsystemfield{sys::\number\c_scrn_field_system_n}}
 
 %D \CONTEXT\ had tooltips right from the moment that it
 %D supported fields. Due to the at that moment somewhat
@@ -638,9 +638,9 @@
 %D before \tooltip[left]{inbetween}{a very nice tip} after\par
 %D \stoptyping
 
-\newbox  \scrn_tooltip_box_anchor
-\newbox  \scrn_tooltip_box_text
-\newcount\scrn_tooltip_n
+\newbox  \b_scrn_tooltip_anchor
+\newbox  \b_scrn_tooltip_text
+\newcount\c_scrn_tooltip_n
 
 \installcorenamespace{tooltip}
 
@@ -669,50 +669,50 @@
 \def\scrn_tooltip_indeed[#settings]#anchortext#tiptext% a more modern aproach (push buttons)
   {\dontleavehmode \hbox \bgroup
      \dontcomplain
-     \global\advance\scrn_tooltip_n\plusone
-     \edef\currenttooltipname{tooltip:\number\scrn_tooltip_n}%
-     \setbox\scrn_tooltip_box_anchor\hbox
+     \global\advance\c_scrn_tooltip_n\plusone
+     \edef\currenttooltipname{tooltip:\number\c_scrn_tooltip_n}%
+     \setbox\b_scrn_tooltip_anchor\hbox
        {\strut#anchortext}%
      \doifassignmentelse{#settings}
        {\setupcurrenttooltip[#settings]}%
        {\setupcurrenttooltip[\c!location=#settings]}%
-     \setbox\scrn_tooltip_box_text\hbox
+     \setbox\b_scrn_tooltip_text\hbox
        {\lettooltipparameter\c!location\empty
         \inheritedtooltipframed{#tiptext}}%
      \definesymbol
        [\currenttooltipname:txt]
-       [\copy\scrn_tooltip_box_text]%
+       [\copy\b_scrn_tooltip_text]%
      \definefieldbody
        [\currenttooltipname:txt]
        [\c!type=push,
-        \c!width=\wd\scrn_tooltip_box_text,
-        \c!height=\ht\scrn_tooltip_box_text,
-        \c!depth=\dp\scrn_tooltip_box_text,
+        \c!width=\wd\b_scrn_tooltip_text,
+        \c!height=\ht\b_scrn_tooltip_text,
+        \c!depth=\dp\b_scrn_tooltip_text,
         \c!option=\v!hidden,
         \c!values=\currenttooltipname:txt]%
-     \setbox\scrn_tooltip_box_text\hbox
+     \setbox\b_scrn_tooltip_text\hbox
        {\fieldbody[\currenttooltipname:txt]}%
-     \setbox\scrn_tooltip_box_text\hbox
-       {\strut\lower\dimexpr.25ex+\ht\scrn_tooltip_box_text\relax\box\scrn_tooltip_box_text}%
+     \setbox\b_scrn_tooltip_text\hbox
+       {\strut\lower\dimexpr.25ex+\ht\b_scrn_tooltip_text\relax\box\b_scrn_tooltip_text}%
      \edef\currenttooltiplocation{\tooltipparameter\c!location}%
      \ifx\currenttooltiplocation\v!left
-       \hsmashed{\hskip\wd\scrn_tooltip_box_anchor\llap{\box\scrn_tooltip_box_text}}%
+       \hsmashed{\hskip\wd\b_scrn_tooltip_anchor\llap{\box\b_scrn_tooltip_text}}%
      \else\ifx\currenttooltiplocation\v!middle
-       \hsmashed to \wd\scrn_tooltip_box_anchor{\hss\box\scrn_tooltip_box_text\hss}%
+       \hsmashed to \wd\b_scrn_tooltip_anchor{\hss\box\b_scrn_tooltip_text\hss}%
      \else
-       \hsmashed{\box\scrn_tooltip_box_text}%
+       \hsmashed{\box\b_scrn_tooltip_text}%
      \fi\fi
      \definesymbol
        [\currenttooltipname:but]
-       [\hphantom{\copy\scrn_tooltip_box_anchor}]%
+       [\hphantom{\copy\b_scrn_tooltip_anchor}]%
      \definefieldbody
        [\currenttooltipname:but]
        [\c!type=push,
         \c!regionin=action(show{\currenttooltipname:txt}),
         \c!regionout=action(hide{\currenttooltipname:txt}),
-        \c!width=\wd\scrn_tooltip_box_anchor,
-        \c!height=\ht\scrn_tooltip_box_anchor,
-        \c!depth=\dp\scrn_tooltip_box_anchor]%
+        \c!width=\wd\b_scrn_tooltip_anchor,
+        \c!height=\ht\b_scrn_tooltip_anchor,
+        \c!depth=\dp\b_scrn_tooltip_anchor]%
      \hsmashed{\fieldbody[\currenttooltipname:but]}%
    \egroup
    #anchortext}% when hyphenated the text wil stick out ... such are fields and we cannot use a link here
@@ -751,7 +751,7 @@
    \fi
    \getvalue{scrn_fieldstack:#tag}}
 
-\newbox\scrn_fieldstack_box
+\newbox\b_scrn_fieldstack_box
 
 \def\scrn_fieldstack_add#tag#settings#symbol%
   {\advance\scratchcounter\plusone
@@ -761,15 +761,15 @@
    \else
      \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default=]%
    \fi
-   \setbox\scrn_fieldstack_box\hbox{\symbol[#symbol]}%
+   \setbox\b_scrn_fieldstack_box\hbox{\symbol[#symbol]}%
    \setcollector
      [fieldstack]
      {\fieldbody
         [\currentfieldstackname]
         [\c!option=\v!readonly,
-         \c!width=\wd\scrn_fieldstack_box,
-         \c!height=\ht\scrn_fieldstack_box,
-         \c!depth=\dp\scrn_fieldstack_box,
+         \c!width=\wd\b_scrn_fieldstack_box,
+         \c!height=\ht\b_scrn_fieldstack_box,
+         \c!depth=\dp\b_scrn_fieldstack_box,
          #settings]}}
 
 \def\scrn_fieldstack_construct[#tag][#symbols][#settings]% start=n, 0 == leeg
@@ -802,7 +802,7 @@
 %D \framed[background=WithTest]{toggle}
 %D \stoptyping
 
-\newcount\scrn_rollbutton_n
+\newcount\c_scrn_rollbutton_n
 
 \unexpanded\def\overlayrollbutton
   {\dodoubleargument\scrn_rollbutton_overlay}
@@ -810,12 +810,12 @@
 \def\scrn_rollbutton_overlay[#regionin][#regionout]%
   {\iflocation
      \bgroup
-     \global\advance\scrn_rollbutton_n\plusone
+     \global\advance\c_scrn_rollbutton_n\plusone
      \definesymbol
-       [rollbutton:\number\scrn_rollbutton_n]
+       [rollbutton:\number\c_scrn_rollbutton_n]
        [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
      \definefieldbody
-       [rollbutton:\number\scrn_rollbutton_n]
+       [rollbutton:\number\c_scrn_rollbutton_n]
        [\c!type=push,
         \c!regionin={#regionin},
         \c!regionout={#regionout},
@@ -850,7 +850,7 @@
 %     \stopTEXpage
 % \stoptext
 
-\newcount\scrn_pushbutton_n
+\newcount\c_scrn_pushbutton_n
 
 \unexpanded\def\definepushbutton % name optional setup
   {\dodoubleempty\scrn_pushbutton_define}
@@ -868,7 +868,7 @@
 
 \def\scrn_pushbutton_handle#tag#settings#reference%
   {\bgroup
-   \global\advance\scrn_pushbutton_n\plusone
+   \global\advance\c_scrn_pushbutton_n\plusone
    \setupfield
      [pushbutton]
      [\c!frame=\v!overlay,
@@ -876,12 +876,12 @@
       \c!clickout={#reference},
       #settings]%
    \definefield
-     [pushbutton:\number\scrn_pushbutton_n]%
+     [pushbutton:\number\c_scrn_pushbutton_n]%
      [push]
      [pushbutton]
      [pushsymbol:#tag:n,pushsymbol:#tag:r,pushsymbol:#tag:d]%
    \fitfield
-     [pushbutton:\number\scrn_pushbutton_n]%
+     [pushbutton:\number\c_scrn_pushbutton_n]%
    \egroup}
 
 \unexpanded\def\definepushsymbol
@@ -938,8 +938,8 @@
    r=green,
    d=blue]
 
-\newcount\scrn_rollbutton_n_button
-\newcount\scrn_rollbutton_n_symbol
+\newcount\c_scrn_rollbutton_n_button
+\newcount\c_scrn_rollbutton_n_symbol
 
 \unexpanded\def\rollbutton
   {\dodoubleempty\scrn_rollbutton}
@@ -961,8 +961,8 @@
 \def\scrn_rollbutton[#tag][#settings]#text[#reference]%
   {\dontleavehmode
    \bgroup
-   \doglobal\advance\scrn_rollbutton_n_button
-   \doglobal\advance\scrn_rollbutton_n_symbol
+   \doglobal\advance\c_scrn_rollbutton_n_button
+   \doglobal\advance\c_scrn_rollbutton_n_symbol
    \iffirstargument
      \ifsecondargument
        \edef\currentinteractionmenu{#tag}%
@@ -980,20 +980,20 @@
      \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b
    \fi
    % todo: share symbols, tricky since different dimensions
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}{#text}]%
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}{#text}]%
-   \definesymbol[rollsymbol:\number\scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}{#text}]%
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}{#text}]%
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}{#text}]%
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}{#text}]%
    \setupfield
      [rollbutton]
      [\c!frame=\v!off,
       \c!offset=\v!overlay,
       \c!clickout={#reference}]%
    \definefield
-     [rollbutton:\number\scrn_rollbutton_n_button][push][rollbutton]
-     [rollsymbol:\number\scrn_rollbutton_n_symbol:n,%
-      rollsymbol:\number\scrn_rollbutton_n_symbol:r,%
-      rollsymbol:\number\scrn_rollbutton_n_symbol:d]%
-   \fitfield[rollbutton:\number\scrn_rollbutton_n_button]%
+     [rollbutton:\number\c_scrn_rollbutton_n_button][push][rollbutton]
+     [rollsymbol:\number\c_scrn_rollbutton_n_symbol:n,%
+      rollsymbol:\number\c_scrn_rollbutton_n_symbol:r,%
+      rollsymbol:\number\c_scrn_rollbutton_n_symbol:d]%
+   \fitfield[rollbutton:\number\c_scrn_rollbutton_n_button]%
    \egroup}
 
 \unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#usestyleandcolor#what#text%

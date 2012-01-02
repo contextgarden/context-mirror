@@ -48,17 +48,17 @@
 % zip files are tree'd
 
 \unexpanded\def\usezipfile
-  {\dodoubleempty\use_zip_file}
+  {\dodoubleempty\syst_files_use_zip_file}
 
-\def\use_zip_file[#zipname][#subtree]%
+\def\syst_files_use_zip_file[#zipname][#subtree]%
   {\ctxcommand{usezipfile("#zipname","#subtree")}}
 
 % exa stuff might become obsolete:
 
 \unexpanded\def\loadexamodes
-  {\dosingleempty\load_exa_modes}
+  {\dosingleempty\syst_files_load_exa_modes}
 
-\def\load_exa_modes[#name]%
+\def\syst_files_load_exa_modes[#name]%
   {\ctxcommand{loadexamodes("#name")}}
 
 % runtime files (maybe also do this in lua?)
@@ -67,12 +67,12 @@
 %   {\readfile{sys:///#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
 
 \unexpanded\def\loadsystemfiles
-  {\load_system_file\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
-   \load_system_file\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
-   \load_system_file\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
-   \load_system_file\f!sysfilename} % local settings, but probably not that good an idea to use
+  {\syst_files_load\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \syst_files_load\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \syst_files_load\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \syst_files_load\f!sysfilename} % local settings, but probably not that good an idea to use
 
-\def\load_system_file#name% only mkiv files
+\def\syst_files_load#name% only mkiv files
   {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
 \unexpanded\def\loadoptionfile
@@ -112,39 +112,39 @@
 
 % protect structure
 
-\unexpanded\def\processfilemany      #name{\ctxcommand{processfilemany("#name")}}
-\unexpanded\def\processfileonce      #name{\ctxcommand{processfileonce("#name")}}
-\unexpanded\def\processfilenone      #name{\ctxcommand{processfilenone("#name")}}
+\unexpanded\def\processfilemany#name{\ctxcommand{processfilemany("#name")}}
+\unexpanded\def\processfileonce#name{\ctxcommand{processfileonce("#name")}}
+\unexpanded\def\processfilenone#name{\ctxcommand{processfilenone("#name")}}
 
-\unexpanded\def\project                   {\doifnextoptionalelse\useproject    \do_project}
-\unexpanded\def\product                   {\doifnextoptionalelse\useproduct    \do_product}
-\unexpanded\def\component                 {\doifnextoptionalelse\usecomponent  \do_component}
-\unexpanded\def\environment               {\doifnextoptionalelse\useenvironment\do_environment}
+\unexpanded\def\project    {\doifnextoptionalelse\useproject    \syst_structure_arg_project}
+\unexpanded\def\product    {\doifnextoptionalelse\useproduct    \syst_structure_arg_product}
+\unexpanded\def\component  {\doifnextoptionalelse\usecomponent  \syst_structure_arg_component}
+\unexpanded\def\environment{\doifnextoptionalelse\useenvironment\syst_structure_arg_environment}
 
-\def\do_project                     #name {\ctxcommand{useproject    ("#name")}}
-\def\do_product                     #name {\ctxcommand{useproduct    ("#name")}}
-\def\do_component                   #name {\ctxcommand{usecomponent  ("#name")}}
-\def\do_environment                 #name {\ctxcommand{useenvironment("#name")}}
+\def\syst_structure_arg_project    #name {\ctxcommand{useproject    ("#name")}}
+\def\syst_structure_arg_product    #name {\ctxcommand{useproduct    ("#name")}}
+\def\syst_structure_arg_component  #name {\ctxcommand{usecomponent  ("#name")}}
+\def\syst_structure_arg_environment#name {\ctxcommand{useenvironment("#name")}}
 
-\unexpanded\def\startproject              {\doifnextoptionalelse\do_startproject    \redo_startproject}
-\unexpanded\def\startproduct              {\doifnextoptionalelse\do_startproduct    \redo_startproduct}
-\unexpanded\def\startcomponent            {\doifnextoptionalelse\do_startcomponent  \redo_startcomponent}
-\unexpanded\def\startenvironment          {\doifnextoptionalelse\do_startenvironment\redo_startenvironment}
+\unexpanded\def\startproject    {\doifnextoptionalelse\syst_structure_start_opt_project    \syst_structure_start_arg_project    }
+\unexpanded\def\startproduct    {\doifnextoptionalelse\syst_structure_start_opt_product    \syst_structure_start_arg_product    }
+\unexpanded\def\startcomponent  {\doifnextoptionalelse\syst_structure_start_opt_component  \syst_structure_start_arg_component  }
+\unexpanded\def\startenvironment{\doifnextoptionalelse\syst_structure_start_opt_environment\syst_structure_start_arg_environment}
 
-\def\redo_startproject              #name {\ctxcommand{startproject    ("#name")}}
-\def\redo_startproduct              #name {\ctxcommand{startproduct    ("#name")}}
-\def\redo_startcomponent            #name {\ctxcommand{startcomponent  ("#name")}}
-\def\redo_startenvironment          #name {\ctxcommand{startenvironment("#name")}}
+\def\syst_structure_start_arg_project    #name {\ctxcommand{startproject    ("#name")}}
+\def\syst_structure_start_arg_product    #name {\ctxcommand{startproduct    ("#name")}}
+\def\syst_structure_start_arg_component  #name {\ctxcommand{startcomponent  ("#name")}}
+\def\syst_structure_start_arg_environment#name {\ctxcommand{startenvironment("#name")}}
 
-\unexpanded\def\useproject         [#name]{\ctxcommand{useproject    ("#name")}}
-\unexpanded\def\useproduct         [#name]{\ctxcommand{useproduct    ("#name")}}
-\unexpanded\def\usecomponent       [#name]{\ctxcommand{usecomponent  ("#name")}}
-\unexpanded\def\useenvironment     [#name]{\ctxcommand{useenvironment("#name")}}
+\unexpanded\def\useproject    [#name]{\ctxcommand{useproject    ("#name")}}
+\unexpanded\def\useproduct    [#name]{\ctxcommand{useproduct    ("#name")}}
+\unexpanded\def\usecomponent  [#name]{\ctxcommand{usecomponent  ("#name")}}
+\unexpanded\def\useenvironment[#name]{\ctxcommand{useenvironment("#name")}}
 
-\unexpanded\def\do_startproject    [#name]{\ctxcommand{startproject    ("#name")}}
-\unexpanded\def\do_startproduct    [#name]{\ctxcommand{startproduct    ("#name")}}
-\unexpanded\def\do_startcomponent  [#name]{\ctxcommand{startcomponent  ("#name")}}
-\unexpanded\def\do_startenvironment[#name]{\ctxcommand{startenvironment("#name")}}
+\unexpanded\def\syst_structure_start_opt_project    [#name]{\ctxcommand{startproject    ("#name")}}
+\unexpanded\def\syst_structure_start_opt_product    [#name]{\ctxcommand{startproduct    ("#name")}}
+\unexpanded\def\syst_structure_start_opt_component  [#name]{\ctxcommand{startcomponent  ("#name")}}
+\unexpanded\def\syst_structure_start_opt_environment[#name]{\ctxcommand{startenvironment("#name")}}
 
 \newconditional\endofinput % hack, needed because \endinput happens one level down in the input when we write from lua
 
@@ -265,9 +265,9 @@
 \newtoks\everysetupdocument
 
 \unexpanded\def\startdocument % todo: dostarttagged\t!document
-  {\dosingleargument\start_document}
+  {\dosingleargument\syst_structure_document_start}
 
-\unexpanded\def\start_document[#settings]%
+\unexpanded\def\syst_structure_document_start[#settings]%
   {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax
    \starttext
