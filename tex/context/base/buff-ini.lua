@@ -19,40 +19,45 @@ local count, splitlines = string.count, string.splitlines
 local variables = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 
+local ctxcatcodes = tex.ctxcatcodes
+local txtcatcodes = tex.txtcatcodes
+
 buffers = { }
 
 local buffers = buffers
 local context = context
 
-local data = { }
-
-function buffers.raw(name)
-    return data[name] or ""
-end
+local cache = { }
 
 local function erase(name)
-    data[name] = nil
+    cache[name] = nil
 end
 
-local function assign(name,str)
-    data[name] = str
+local function assign(name,str,catcodes)
+    cache[name] = { data = str, catcodes = catcodes }
 end
 
 local function append(name,str)
-    data[name] = (data[name] or "") .. str
+    local buffer = cache[name]
+    if buffer then
+        buffer.data = buffer.data .. str
+    else
+        cache[name] = { data = str }
+    end
 end
 
 local function exists(name)
-    return data[name] ~= nil
+    return cache[name]
 end
 
-local function getcontent(name) -- == raw
-    return data[name] or ""
+local function getcontent(name)
+    local buffer = name and cache[name]
+    return buffer and buffer.data or ""
 end
 
 local function getlines(name)
-    local d = name and data[name]
-    return d and splitlines(d)
+    local buffer = name and cache[name]
+    return buffer and splitlines(buffer.data)
 end
 
 local function collectcontent(names,separator) -- no print
@@ -61,7 +66,7 @@ local function collectcontent(names,separator) -- no print
     end
     local nnames = #names
     if nnames == 0 then
-        return data[""] or "" -- default buffer
+        return getcontent("") -- default buffer
     elseif nnames == 1 then
         return getcontent(names[1])
     else
@@ -77,6 +82,7 @@ local function collectcontent(names,separator) -- no print
     end
 end
 
+buffers.raw            = getcontent
 buffers.erase          = erase
 buffers.assign         = assign
 buffers.append         = append
@@ -115,7 +121,7 @@ local continue   = false
 -- An \n is unlikely to show up as \r is the endlinechar but \n is more generic
 -- for us.
 
-function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ to call
+function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe move \\ to call
     local dn = getcontent(name)
     if dn == "" then
         nesting = 0
@@ -168,7 +174,7 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata) -- maybe move \\ t
             end
         end
     end
-    assign(name,dn)
+    assign(name,dn,catcodes)
     commands.testcase(more)
 end
 
@@ -215,14 +221,29 @@ function commands.savebuffer(list,name) -- name is optional
 end
 
 function commands.getbuffer(name)
-    local str = data[name]
-    if str and str ~= "" then
+    local str = getcontent(name)
+    if str ~= "" then
         context.viafile(str)
     end
 end
 
-function commands.getbuffermkvi(name)
+function commands.getbuffermkvi(name) -- rather direct !
     context.viafile(resolvers.macros.preprocessed(getcontent(name)))
+end
+
+function commands.gettexbuffer(name)
+    local buffer = name and cache[name]
+    if buffer and buffer.data ~= "" then
+        context.pushcatcodetable()
+        if buffer.catcodes == txtcatcodes then
+            context.setcatcodetable(txtcatcodes)
+        else
+            context.setcatcodetable(ctxcatcodes)
+        end
+     -- context(function() context.viafile(buffer.data) end)
+        context.getbuffer { name } -- viafile flushes too soon
+        context.popcatcodetable()
+    end
 end
 
 function commands.getbufferctxlua(name)

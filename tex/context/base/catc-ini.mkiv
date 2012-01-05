@@ -271,7 +271,7 @@
 
 \normalprotected\def\showcatcodenestingerror % can be overloaded
   {\immediate\write16{}%
-   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this!}\wait\end
+   \immediate\write16{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\catcoderestorelevel)}\wait\end
    \immediate\write16{}}
 
 \normalprotected\def\restorecatcodes % takes previous level

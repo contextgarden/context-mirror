@@ -165,6 +165,9 @@
      \set_checked_x_table{#settings}%
    \fi}
 
+\def\x_table_get_buffer
+  {\ctxcommand{gettexbuffer("\x_table_current_buffer")}}
+
 \unexpanded\def\x_table_process
   {\setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
    \ctxcommand{x_table_create {
@@ -184,11 +187,8 @@
      \let\start_x_cell\start_x_cell_reflow_width
      \let\stop_x_cell \stop_x_cell_reflow_width
      \settrialtypesetting
-%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
-     \ctxcommand{getbuffer("\x_table_current_buffer")}%
-     \relax
-     \ctxcommand{x_table_reflow_width()}%
-     \relax
+     \x_table_get_buffer
+     \ctxcommand{x_table_reflow_width()}\relax
    \endgroup
    \begingroup
      \let\start_x_row \start_x_row_reflow_height
@@ -196,22 +196,16 @@
      \let\start_x_cell\start_x_cell_reflow_height
      \let\stop_x_cell \stop_x_cell_reflow_height
      \settrialtypesetting
-%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
-     \ctxcommand{getbuffer("\x_table_current_buffer")}%
-     \relax
-     \ctxcommand{x_table_reflow_height()}%
-     \relax
+     \x_table_get_buffer
+     \ctxcommand{x_table_reflow_height()}\relax
    \endgroup
    \begingroup
      \let\start_x_row \start_x_row_construct
      \let\stop_x_row  \stop_x_row_construct
      \let\start_x_cell\start_x_cell_construct
      \let\stop_x_cell \stop_x_cell_construct
-%      \doprocesstexbuffer\x_table_current_buffer\relax % we need to honor e.g. \asciimode
-     \ctxcommand{getbuffer("\x_table_current_buffer")}%
-     \relax
-     \ctxcommand{x_table_construct()}%
-     \relax
+     \x_table_get_buffer
+     \ctxcommand{x_table_construct()}\relax
    \endgroup
    \ifinsidesplitfloat
      \x_table_flush_float_split
@@ -219,8 +213,8 @@
      \x_table_flush_float_normal
    \else
      \doifelse{\xtableparameter\c!split}\v!yes
-       {\x_table_flush_flow_split}
-       {\x_table_flush_flow_normal}%
+       \x_table_flush_flow_split
+       \x_table_flush_flow_normal
    \fi\fi
    \ctxcommand{x_table_cleanup()}%
    \dostoptagged
@@ -432,6 +426,14 @@
 \let\stopxtablefoot\stop_x_table_partition
 \let\stopxtablenext\stop_x_table_partition
 \let\stopxtablebody\stop_x_table_partition
+
+%D A bonus: you can use the following construct inside a macro.
+
+\unexpanded\def\startembeddedxtable#1\stopembeddedxtable
+  {\ctxcommand{assignbuffer("embedded_x_table",\!!bs\detokenize{#1}\!!es)}%
+   \processxtablebuffer[embedded_x_table]}
+
+\let\stopembeddedxtable\relax
 
 \protect
 

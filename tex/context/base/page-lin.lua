@@ -85,7 +85,8 @@ function lines.finalize(t)
     local getnumber = lines.number
     for _,p in next, t do
         for _,r in next, p do
-            if r.metadata.kind == "line" then
+            local m = r.metadata
+            if m and m.kind == "line" then
                 local e = r.entries
                 local u = r.userdata
                 e.linenumber = getnumber(e.text or 0) -- we can nil e.text
