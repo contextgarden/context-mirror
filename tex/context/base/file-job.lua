@@ -479,7 +479,7 @@ local function topofstack(what)
     return stack and stack[#stack] or environment.jobname
 end
 
-local function currentcomponent() -- only when in product
+local function productcomponent() -- only when in product
     local product = product_stack[#product_stack]
     if product and product ~= "" then
         local component = component_stack[1]
@@ -499,8 +499,13 @@ local function justacomponent()
     end
 end
 
-resolvers.jobs.currentcomponent = currentcomponent
+resolvers.jobs.productcomponent = productcomponent
 resolvers.jobs.justacomponent   = justacomponent
+
+function resolvers.jobs.currentproject    () return topofstack(v_project    ) end
+function resolvers.jobs.currentproduct    () return topofstack(v_product    ) end
+function resolvers.jobs.currentcomponent  () return topofstack(v_component  ) end
+function resolvers.jobs.currentenvironment() return topofstack(v_environment) end
 
 local done     = { }
 local tolerant = false -- too messy, mkii user with the wrong sructure should adapt

@@ -16,6 +16,9 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 -- todo: collect used units for logging (and list of units, but then we need
 -- associations too).
 
+-- todo: degrees celsius    0x2103
+-- todo: degrees fahrenheit 0x2109
+
 local V, P, S, R, C, Cc, Cs, matchlpeg, Carg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match, lpeg.Carg
 local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append

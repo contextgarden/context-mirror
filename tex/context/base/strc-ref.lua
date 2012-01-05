@@ -39,7 +39,7 @@ local context            = context
 local texcount           = tex.count
 local texconditionals    = tex.conditionals
 
-local currentcomponent   = resolvers.jobs.currentcomponent
+local productcomponent   = resolvers.jobs.productcomponent
 local justacomponent     = resolvers.jobs.justacomponent
 
 local logsnewline        = logs.newline
@@ -244,7 +244,7 @@ end
 
 local function setcomponent(data)
     -- we might consider doing this at the tex end, just like prefix
-    local component = currentcomponent()
+    local component = productcomponent()
     if component then
         local references = data and data.references
         if references then
@@ -1446,7 +1446,7 @@ local function identify(prefix,reference)
             var = identify_arguments(set,var,i)
         elseif not var.component then
             var = identify_inner_or_outer(set,var,i)
-        elseif currentcomponent() then
+        elseif productcomponent() then
             var = identify_inner_component(set,var,i)
         else
             var = identify_outer_component(set,var,i)
