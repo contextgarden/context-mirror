@@ -785,46 +785,49 @@
 %unexpanded\def\justaperiod {\removeunwantedspaces.}
 %unexpanded\def\justacomma  {\removeunwantedspaces,}
 
-\def\ignorecrlf
+\installcorenamespace{hspace}
+
+\unexpanded\def\ignorecrlf
   {\let\crlf\justonespace\let\\\crlf}
 
 \unexpanded\def\definehspace
-  {\dotripleempty\dodefinehspace}
+  {\dotripleempty\spac_hspaces_define}
 
-\def\dodefinehspace[#1][#2][#3]% #1 = optional namespace
+\def\spac_hspaces_define[#1][#2][#3]% #1 = optional namespace
   {\ifthirdargument
-     \setvalue{\??hs#1:#2}{#3}%
+     \setvalue{\??hspace#1:#2}{#3}%
    \else
-     \setvalue{\??hs:#1}{#2}%
+     \setvalue{\??hspace:#1}{#2}%
    \fi}
 
 \unexpanded\def\hspace
-  {\dodoubleempty\dohspace}
+  {\dodoubleempty\spac_hspaces_insert}
 
-\def\dohspace[#1][#2]%
-  {\ifsecondargument
-     \dodohspace[#1][#2]%
-   \else\iffirstargument
-     \hspace[][#1]%
-   \else
-     \hspace[][\s!default]%
-   \fi\fi}
-
-\def\dodohspace[#1][#2]%
+\def\spac_hspaces_insert[#1][#2]%
   {\ifhmode
      \removeunwantedspaces
-     \hskip\hspaceamount{#1}{#2}%
+     \hskip % always a skip even when 0pt
+       \ifsecondargument
+         \hspaceamount{#1}{#2}%
+       \else\iffirstargument
+         \hspaceamount\empty{#1}%
+       \else
+         \hspaceamount\empty\s!default
+       \fi\fi
      \expandafter\ignorespaces
-    \fi}
+   \fi}
 
 \def\hspaceamount#1#2%
-  {\executeifdefined{\??hs#1:#2}{\executeifdefined{\??hs:#2}\zeropoint}}
+  {\csname\??hspace
+     \ifcsname\??hspace#1:#2\endcsname#1:#2\else:\v!none\fi
+   \endcsname}
 
 \definehspace [\v!small]   [.25\emspaceamount]
 \definehspace [\v!medium]  [.5\emspaceamount]
 \definehspace [\v!big]     [1\emspaceamount]
 \definehspace [\v!normal]  [1\spaceamount]
 \definehspace [\v!default] [\spaceamount]
+\definehspace [\v!none]    [\zeropoint]
 
 %D Taken from Taco's math module (cq. \AMS\ macros), but
 %D adapted to \type {\hspace}:
@@ -884,17 +887,23 @@
 %
 % do we need \normalspaceprimitive here?
 
+\installcorenamespace{spaces}
+
 \def\installspacehandler#1#2% needs to set \obeyedspace
-  {\setvalue{\??sr#1}{#2}}
+  {\setvalue{\??spaces#1}{#2}}
+
+\unexpanded\def\spac_spaces_checked_control{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+\unexpanded\def\spac_spaces_checked_normal {\mathortext\normalspace{\dontleavehmode\normalspace}}%
+\unexpanded\def\spac_spaces_checked_fixed  {\mathortext\normalspace{\dontleavehmode\fixedspace}}%
 
 \installspacehandler \v!on
   {\obeyspaces
-   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode{\tt\controlspace}}}%
+   \let\obeyedspace\spac_spaces_checked_control
    \let\ =\obeyedspace}
 
 \installspacehandler \v!yes
   {\obeyspaces
-   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\normalspace}}%
+   \let\obeyedspace\spac_spaces_checked_normal
    \let\ =\obeyedspace}
 
 \installspacehandler \v!off % == default
@@ -904,11 +913,11 @@
 
 \installspacehandler \v!fixed
   {\obeyspaces
-   \unexpanded\def\obeyedspace{\mathortext\normalspace{\dontleavehmode\fixedspace}}%
+   \let\obeyedspace\spac_spaces_checked_fixed
    \let\ =\obeyedspace}
 
 \def\activatespacehandler#1%
-  {\executeifdefined{\??sr#1}{\activatespacehandler\v!off}}
+  {\csname\??spaces\ifcsname\??spaces#1\endcsname#1\else\v!off\fi\endcsname}
 
 \appendtoks
    \normalspaces % to be sure
@@ -925,18 +934,15 @@
 %D
 %D \typebuffer \getbuffer
 
-% unexpanded is important here as it prevents premature expansion in
-% e.g. \normalexpanded{\egroup\sortingparameter\c!next}
-
 \unexpanded\def\autoinsertnextspace
-  {\futurelet\nexttoken\doautoinsertnextspace}
+  {\futurelet\nexttoken\spac_spaces_auto_insert_next}
 
-\def\doautoinsertnextspace
+\def\spac_spaces_auto_insert_next
   {\ctxcommand{autonextspace("\meaning\nexttoken")}} % todo, just consult nexttoken at the lua end
 
 %D Moved from bib module:
 
-\def\outdented#1%
+\unexpanded\def\outdented#1%
   {\hskip-\hangindent#1\relax}
 
 %D Beware: due to char-def this becomes an active character but that
@@ -949,19 +955,19 @@
 
 % TODO (but used in languages):
 
-\unexpanded\def\textormathglue#1#2#3% cleaned up one
+\unexpanded\def\spac_glues_text_or_math#1#2%
   {\begingroup
    \ifmmode
-     \mskip#1#2%
+     \mskip#1%
    \else
-     \scratchdimen#1\hspaceamount\empty{#3}%
+     \scratchdimen#1\hspaceamount\empty{#2}%
      \scratchskip\scratchdimen\!!plus.5\scratchdimen\!!minus.3\scratchdimen
      \hskip\scratchskip
    \fi
    \endgroup}
 
-\def\thinglue {\textormathglue+\thinmuskip 1}
-\def\medglue  {\textormathglue+\medmuskip  2}
-\def\thickglue{\textormathglue+\thickmuskip3}
+\unexpanded\def\thinglue {\spac_glues_text_or_math\thinmuskip \v!small}
+\unexpanded\def\medglue  {\spac_glues_text_or_math\medmuskip  \v!medium}
+\unexpanded\def\thickglue{\spac_glues_text_or_math\thickmuskip\v!big}
 
 \protect \endinput

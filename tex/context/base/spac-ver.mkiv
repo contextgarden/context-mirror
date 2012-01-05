@@ -30,14 +30,6 @@
      \fi \fi
    \relax}
 
-\def\linedistance    {\normalskipamount}
-\def\appliedblankskip{\skipfactor\linedistance}
-\def\lastblankskip   {\blankskip}
-\def\currentblank    {\v!big}
-\def\oldprevdepth    {\prevdepth}
-\def\newprevdepth    {-1001pt}
-\def\mindimen        {1sp} % was: 0.00002pt
-
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
@@ -115,6 +107,8 @@
 %      \let\normallineheight\askedbodyfontinterlinespace
 %    \fi}
 
+\let\currentrelativeinterlinespace\empty
+
 \unexpanded\def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it\currentinterlinespace][#1]%
    \dosetupspecifiedinterlinespaceindeed}
@@ -136,14 +130,14 @@
    \setfontparameters % redundant, can be \setstrut, test first
    \updateraggedskips} % yes indeed
 
-\let\currentrelativeinterlinespace\empty
+\installcorenamespace{interlinespacerelative}
 
-\setvalue{\??it::\v!on   }{\oninterlineskip}
-\setvalue{\??it::\v!off  }{\offinterlineskip}
-\setvalue{\??it::\v!reset}{\let\currentrelativeinterlinespace\empty
-                           \let\setrelativeinterlinespace\relax
-                           \setfontparameters}
-\setvalue{\??it::\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
+\setvalue{\??interlinespacerelative\v!on   }{\oninterlineskip}
+\setvalue{\??interlinespacerelative\v!off  }{\offinterlineskip}
+\setvalue{\??interlinespacerelative\v!reset}{\let\currentrelativeinterlinespace\empty
+                                             \let\setrelativeinterlinespace\relax
+                                             \setfontparameters}
+\setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
 
 \def\dosetspecifiedrelativeinterlinespace#1% fragile?
   {\doifdimenstringelse{#1}
@@ -155,8 +149,8 @@
   {\processcommalist[#1]\dosetuprelativeinterlinespace}
 
 \def\dosetuprelativeinterlinespace#1%
-  {\ifcsname\??it::#1\endcsname
-     \csname\??it::#1\endcsname
+  {\ifcsname\??interlinespacerelative#1\endcsname
+     \csname\??interlinespacerelative#1\endcsname
    \else
      \dosetspecifiedrelativeinterlinespace{#1}%
    \fi}
@@ -254,8 +248,14 @@
 \let\switchtointerlinespace\setuplocalinterlinespace
 
 \definecomplexorsimple\setupinterlinespace
-
-\def\removelastskip
+
+%D Helpers
+
+\newskip \s_spac_lastskip
+\newdimen\d_spac_prevdepth
+\newcount\c_spac_spacefactor
+
+\unexpanded\def\removelastskip
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
 \def\doifoutervmode
@@ -269,25 +269,25 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\def\dosomebreak#1%
+\unexpanded\def\dosomebreak#1%
   {\doifoutervmode
-     {\scratchskip\lastskip
+     {\s_spac_lastskip\lastskip
       \removelastskip
       #1\relax
-      \ifdim\scratchskip=\zeropoint
+      \ifdim\s_spac_lastskip=\zeropoint
         % avoid interference with footnotes
       \else
-        \vskip\scratchskip
+        \vskip\s_spac_lastskip
       \fi}}
-
-\def\packed
+
+\unexpanded\def\packed
   {\nointerlineskip}
 
-\def\godown[#1]%
+\unexpanded\def\godown[#1]%
   {\relax
    \ifhmode\endgraf\fi
    \ifvmode\nointerlineskip\vskip#1\relax\fi}
-
+
 \unexpanded\def\smallskip{\vskip\smallskipamount}
 \unexpanded\def\medskip  {\vskip\medskipamount}
 \unexpanded\def\bigskip  {\vskip\bigskipamount}
@@ -324,33 +324,36 @@
 
 %D Made slightly more readable:
 
-\unexpanded\def\vglue  {\afterassignment\spac_vglue_indeed\scratchskip=}
-\unexpanded\def\hglue  {\afterassignment\spac_hglue_indeed\scratchskip=}
+\unexpanded\def\vglue  {\afterassignment\spac_helpers_vglue_indeed\s_spac_lastskip=}
+\unexpanded\def\hglue  {\afterassignment\spac_helpers_hglue_indeed\s_spac_lastskip=}
 \unexpanded\def\topglue{\nointerlineskip\vglue-\topskip\vglue}
 
-\def\spac_vglue_indeed
+\def\spac_helpers_vglue_indeed
   {\par
-   \scratchdimen\prevdepth
+   \d_spac_prevdepth\prevdepth
    \hrule\!!height\zeropoint
    \nobreak
-   \vskip\scratchskip
-   \prevdepth\scratchdimen}
+   \vskip\s_spac_lastskip
+   \prevdepth\d_spac_prevdepth}
 
-\def\spac_hglue_indeed
+\def\spac_helpers_hglue_indeed
   {\dontleavehmode % \leavevmode
-   \scratchcounter\spacefactor
+   \c_spac_spacefactor\spacefactor
    \vrule\!!width\zeropoint
    \nobreak
-   \hskip\scratchskip
-   \spacefactor\scratchcounter}
+   \hskip\s_spac_lastskip
+   \spacefactor\c_spac_spacefactor}
 
 %D We adapt plain's \type {\removelastskip} a bit:
 
 \unexpanded\def\removelastskip % also in supp-box
   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
 
-\newskip\ctxparskip \ctxparskip\zeropoint
+% The whitespace handler.
 
+\installcorenamespace{whitespacemethod}
+
+\newskip        \ctxparskip         \ctxparskip\zeropoint
 \newconditional \flexiblewhitespace \settrue\flexiblewhitespace
 
 \def\currentwhitespace{\zeropoint}
@@ -372,8 +375,8 @@
 \newconstant\baselinegridmode % option in layout / 1=permit_half_lines
 
 \def\spac_whitespace_setup % quick test for no list
-  {\ifcsname\??wz:\currentwhitespace\endcsname
-     \csname\??wz:\currentwhitespace\endcsname
+  {\ifcsname\??whitespacemethod\currentwhitespace\endcsname
+     \csname\??whitespacemethod\currentwhitespace\endcsname
    \else
      \expandafter\processcommalist\expandafter[\currentwhitespace]\spac_whitespace_setup_method % can be raw
    \fi\relax
@@ -406,7 +409,7 @@
        \fi
    \fi}
 
-\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??wz:#1}{#2}}
+\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??whitespacemethod#1}{#2}}
 
 \definewhitespacemethod [\v!fix]      {}
 \definewhitespacemethod [\v!fixed]    {\setfalse\flexiblewhitespace}
@@ -422,8 +425,8 @@
 \definewhitespacemethod [\s!default]  {\simplesetupwhitespace}
 
 \def\spac_whitespace_setup_method#1%
-  {\ifcsname\??wz:#1\endcsname
-     \csname\??wz:#1\endcsname
+  {\ifcsname\??whitespacemethod#1\endcsname
+     \csname\??whitespacemethod#1\endcsname
    \else
      \ctxparskip#1\fi
    \relax}
@@ -431,7 +434,7 @@
 % \definewhitespacemethod [\s!unknown]  {\ctxparskip\commalistelement\relax}
 %
 % \def\spac_whitespace_setup_method#1%
-%   {\csname\??wz:\ifcsname\??wz:#1\endcsname#1\else\s!unknown\endcsname\relax}
+%   {\csname\??whitespacemethod\ifcsname\??whitespacemethod#1\endcsname#1\else\s!unknown\endcsname\relax}
 
 \unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
 \unexpanded\def\whitespace  {\vspacing[\v!white]}
@@ -442,16 +445,16 @@
 % van pas bij het plaatsen van (mogelijk lege) lijsten.
 
 \newconditional\noblankinpacked
-\newcount\packeddepth
+\newcount      \c_spac_packed_level
 
 \unexpanded\def\startpacked
-  {\dosingleempty\spac_start_packed}
+  {\dosingleempty\spac_packed_start}
 
-\def\spac_start_packed[#1]% nesting afvangen
-  {\global\advance\packeddepth\plusone
+\def\spac_packed_start[#1]% nesting afvangen
+  {\global\advance\c_spac_packed_level\plusone
    \par
-   \ifnum\packeddepth=\plusone \ifvmode
-     \bgroup
+   \ifnum\c_spac_packed_level=\plusone \ifvmode
+     \begingroup
      \whitespace % not combined
      \blank[\v!disable]%
      \doifelse{#1}\v!blank\setfalse\settrue\noblankinpacked
@@ -460,22 +463,18 @@
 
 \unexpanded\def\stoppacked
   {\par
-   \ifnum\packeddepth=\plusone \ifvmode
-     \egroup
+   \ifnum\c_spac_packed_level=\plusone \ifvmode
+     \endgroup
    \fi \fi
-   \global\advance\packeddepth\minusone}
+   \global\advance\c_spac_packed_level\minusone}
 
 \unexpanded\def\startunpacked
   {\blank
-   \bgroup}
+   \begingroup}
 
 \unexpanded\def\stopunpacked
-  {\egroup
+  {\endgroup
    \blank}
-
-% De onderstaande macro's moeten nog eens nader worden uitgewerkt.
-% Ze spelen een rol bij de spatiering rond omkaderde teksten
-% en/of boxen zonder diepte.
 
 % \prevdepth crosses pageboundaries!
 %
@@ -784,25 +783,6 @@
 % treatment; tests with using an attribute so far have shown that
 % it's slower because testing the attribute takes time too
 
-\newdimen\tempstrutdimen
-
-% \unexpanded\def\dosetstrut
-%   {\let\strut\normalstrut
-%    \tempstrutdimen\dimexpr\strutht+\strutdp-\lineheight\relax
-%    \ifabsnum\tempstrutdimen<\plustwo
-%      % compensate rounding error /- 1sp to avoid too many
-%      % 1sp baselineskips in for instance verbatim
-%      \strutht\dimexpr\strutht-\tempstrutdimen\relax
-%    \fi
-%    \edef\strutheight{\the\strutht}% maybe better \number\strutht sp
-%    \edef\strutdepth {\the\strutdp}%
-%    \ifdim\strutwidth=\zeropoint
-%       \dosetstruthide
-%    \else
-%       \dosetstrutvide
-%    \fi
-%    \struttotal\dimexpr\strutht+\strutdp\relax}
-
 \unexpanded\def\dosetstrut
   {\let\strut\normalstrut
    \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
@@ -816,19 +796,19 @@
    \edef\strutheight{\the\strutht}%
    \edef\strutdepth {\the\strutdp}%
    \ifdim\strutwidth=\zeropoint
-      \dosetstruthide
+      \spac_struts_set_hide
    \else
-      \dosetstrutvide
+      \spac_struts_set_vide
    \fi}
 
-\unexpanded\def\dosetstruthide
+\def\spac_struts_set_hide
   {\setbox\strutbox\normalhbox
      {\vrule
         \!!width \zeropoint
         \!!height\strutht
         \!!depth \strutdp}}
 
-\unexpanded\def\dosetstrutvide
+\def\spac_struts_set_vide
   {\setbox\strutbox\normalhbox
      {\normalhbox to \zeropoint
         {% \hss % new, will be option
@@ -842,16 +822,19 @@
 %D strut; occasionally a one scaled point difference can show
 %D up with the lineheight.
 
-% experiment
+% This is more efficient (less callbacks):
 
-\newbox\emptystrutbox \setbox\emptystrutbox\emptyhbox
+\newbox\b_spac_struts_empty \setbox\b_spac_struts_empty\emptyhbox
 
-\unexpanded\def\dosetstruthide
-  {\setbox\strutbox\copy\emptystrutbox
+\def\spac_struts_set_hide
+  {\setbox\strutbox\copy\b_spac_struts_empty
    \ht\strutbox\strutht
    \dp\strutbox\strutdp}
 
-\unexpanded\def\strut{\relax\dontleavehmode\copy\strutbox} % still callbacks for \hbox{\strut}
+\unexpanded\def\strut % still callbacks for \hbox{\strut}
+  {\relax
+  \dontleavehmode
+  \copy\strutbox}
 
 \let\normalstrut\strut
 
@@ -867,19 +850,21 @@
 
 %D Beware: using an unknown value results in char struts.
 
-\unexpanded\def\setupstrut
-  {\dosingleempty\spac_strut_setup}
+\installcorenamespace{struts}
 
-\def\spac_strut_setup[#1]%
-  {\ifcsname\??ut:#1\endcsname
-     \csname\??ut:#1\endcsname % these are defined later
+\unexpanded\def\setupstrut
+  {\dosingleempty\spac_struts_setup}
+
+\def\spac_struts_setup[#1]%
+  {\ifcsname\??struts#1\endcsname
+     \csname\??struts#1\endcsname % these are defined later
    \else
      \setcharstrut{#1}%
    \fi}
 
 \def\synchronizestrut#1% no [] parsing, faster for internal
-  {\ifcsname\??ut:#1\endcsname
-     \csname\??ut:#1\endcsname
+  {\ifcsname\??struts#1\endcsname
+     \csname\??struts#1\endcsname
    \else
      \setcharstrut{#1}%
    \fi}
@@ -924,24 +909,24 @@
   {\relax\ifcase\strutht
      % \ignorespaces % maybe
    \else
-     \spac_strut_beg
+     \spac_struts_beg
    \fi}
 
-\def\spac_strut_beg
+\def\spac_struts_beg
   {\ifconditional\sigstruts
-     \spac_strut_beg_signal
+     \spac_struts_beg_signal
    \else
-     \spac_strut_beg_normal
+     \spac_struts_beg_normal
    \fi
    \ignorespaces}
 
-\def\spac_strut_beg_signal
+\def\spac_struts_beg_signal
   {\noindent\horizontalstrut
    \normalpenalty\plustenthousand
    \normalhskip-\strutsignal
    \normalhskip\strutsignal}
 
-\def\spac_strut_beg_normal
+\def\spac_struts_beg_normal
   {\strut
    \normalpenalty\plustenthousand
    \normalhskip\zeropoint}
@@ -951,18 +936,18 @@
      \ifcase\strutht
        % \removeunwantedspaces % maybe
      \else
-       \spac_strut_end
+       \spac_struts_end
      \fi
    \fi}
 
-\def\spac_strut_end
+\def\spac_struts_end
   {\ifconditional\sigstruts
-     \spac_strut_end_signal
+     \spac_struts_end_signal
    \else
-     \spac_strut_end_normal
+     \spac_struts_end_normal
    \fi}
 
-\def\spac_strut_end_signal
+\def\spac_struts_end_signal
   {\ifdim\lastskip=\strutsignal
      \unskip
      \unskip
@@ -974,7 +959,7 @@
      \strut
    \fi}
 
-\def\spac_strut_end_normal
+\def\spac_struts_end_normal
   {\removeunwantedspaces
    \normalpenalty\plustenthousand
    \normalhskip\zeropoint
@@ -1007,19 +992,19 @@
    \setstrut}
 
 \ifdefined\setfontparameters \else
-  \def\setfontparameters{\the\everybodyfont}
+    \def\setfontparameters{\the\everybodyfont}
 \fi
 
 %D Keyword based strutting:
 
-\letvalue{\??ut:\v!yes    }\setstrut     % \setvalue{\??ut:\v!yes    }{\setstrut}
-\letvalue{\??ut:\v!auto   }\setautostrut % \setvalue{\??ut:\v!auto   }{\setautostrut}
-\letvalue{\??ut:\v!no     }\setnostrut   % \setvalue{\??ut:\v!no     }{\setnostrut}
-\letvalue{\??ut:\v!cap    }\setcapstrut  % \setvalue{\??ut:\v!cap    }{\setcapstrut}
-\letvalue{\??ut:\v!fit    }\setfontstrut % \setvalue{\??ut:\v!fit    }{\setfontstrut}
-\letvalue{\??ut:\v!line   }\setstrut     % \setvalue{\??ut:\v!line   }{\setstrut}
-\letvalue{\??ut:\s!default}\setstrut     % \setvalue{\??ut:\s!default}{\setstrut}
-\letvalue{\??ut:\empty    }\setstrut     % \setvalue{\??ut:\empty    }{\setstrut}
+\letvalue{\??struts\v!yes    }\setstrut     % \setvalue{\??struts\v!yes    }{\setstrut}
+\letvalue{\??struts\v!auto   }\setautostrut % \setvalue{\??struts\v!auto   }{\setautostrut}
+\letvalue{\??struts\v!no     }\setnostrut   % \setvalue{\??struts\v!no     }{\setnostrut}
+\letvalue{\??struts\v!cap    }\setcapstrut  % \setvalue{\??struts\v!cap    }{\setcapstrut}
+\letvalue{\??struts\v!fit    }\setfontstrut % \setvalue{\??struts\v!fit    }{\setfontstrut}
+\letvalue{\??struts\v!line   }\setstrut     % \setvalue{\??struts\v!line   }{\setstrut}
+\letvalue{\??struts\s!default}\setstrut     % \setvalue{\??struts\s!default}{\setstrut}
+\letvalue{\??struts\empty    }\setstrut     % \setvalue{\??struts\empty    }{\setstrut}
 
 %D Handy:
 
@@ -1050,7 +1035,7 @@
       \lineskip\the\lineskip
       \lineskiplimit\the\lineskiplimit
       \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
-      \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}}
+      \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}} % \noexpand not needed
 
 \unexpanded\def\nopushinterlineskip
   {\let\oninterlineskip\setnormalbaselines}
@@ -1175,10 +1160,10 @@
 
 %D To be checked:
 
-\ifx\savedstrutbox\undefined \newbox\savedstrutbox \fi
+\newbox\b_spac_struts_saved
 
-\def\savestrut {\setbox\savedstrutbox\copy\strutbox}
-\def\savedstrut{\copy  \savedstrutbox}
+\unexpanded\def\savestrut {\setbox\b_spac_struts_saved\copy\strutbox}
+\unexpanded\def\savedstrut{\copy  \b_spac_struts_saved}
 
 %D Good old blank redone:
 
@@ -1192,6 +1177,8 @@
 %definesystemattribute[snapcategory] [public]
 
 % TODO: NAMED SNAPPERS
+
+\installcorenamespace{gridsnappers}
 
 \newskip  \bodyfontlineheight
 \newdimen \bodyfontstrutheight
@@ -1216,7 +1203,7 @@
    \ifcsname\currentsnapper\endcsname \else
      \setevalue\currentsnapper{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
    \fi
-   \setevalue{\??gr:#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
+   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
 
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\dodefinegridsnapping}
@@ -1230,14 +1217,14 @@
 
 \def\setsnapvalue#1%
   {%\gridsnappingtrue
-   \ifcsname\??gr:#1\endcsname\csname\??gr:#1\endcsname\fi}
+   \ifcsname\??gridsnappers#1\endcsname\csname\??gridsnappers#1\endcsname\fi}
 
 \def\autosetsnapvalue#1%
-  {\ifcsname\??gr:#1\endcsname
-     \csname\??gr:#1\endcsname
+  {\ifcsname\??gridsnappers#1\endcsname
+     \csname\??gridsnappers#1\endcsname
    \else
      \installsnapvalues\s!dummy{#1}%
-     \csname\??gr:\s!dummy\endcsname
+     \csname\??gridsnappers\s!dummy\endcsname
    \fi}
 
 % \installsnapvalues{loose} {\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut}
@@ -1570,16 +1557,18 @@
 
 % % % % we can move much to lua once we can expand there % % % %
 
+\installcorenamespace{vspacingamount}
+
 \unexpanded\def\definevspacingamount
   {\dotripleempty\dodefinevspacingamount}
 
 \def\dodefinevspacingamount[#1][#2][#3]% can be combined
-  {\setvalue{\??vs:#1}{\ifgridsnapping#3\else#2\fi}%
+  {\setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
    \ctxlua{builders.vspacing.setskip("#1")}}
 
 \def\addpredefinedblankskip#1#2%
   {\settrue\someblankdone
-   \advance\blankskip#1\dimexpr\csname\??vs:#2\endcsname\relax}
+   \advance\blankskip#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
 \def\addaskedblankskip#1#2%
   {\settrue\someblankdone
@@ -1690,72 +1679,46 @@
 %D care as it does {\em not} work in tandem with the other spacing
 %D commands.
 
+\installcorenamespace{vspace}
+
 \unexpanded\def\definevspace
   {\dotripleempty\dodefinevspace}
 
 \def\dodefinevspace[#1][#2][#3]%
   {\ifthirdargument
-     \setvalue{\??va#1:#2}{#3}%
+     \setvalue{\??vspace#1:#2}{#3}%
    \else
-     \setvalue{\??va:#1}{#2}%
+     \setvalue{\??vspace:#1}{#2}%
    \fi}
 
-\letvalue{\??va#1:\s!unknown}\zeropoint
+\letvalue{\??vspace#1:\s!unknown}\zeropoint
 
 \unexpanded\def\vspace
   {\dodoubleempty\dovspace}
-
-% \def\dovspace[#1][#2]%
-%   {\par
-%    \ifvmode
-%      \removelastskip
-%      \vskip
-%        \ifsecondargument
-%          \vspaceamount{#1}{#2}%
-%        \else\iffirstargument
-%          \vspaceamount\empty{#1}%
-%        \else
-%          \vspaceamount\empty\s!default
-%        \fi\fi
-%      \relax
-%    \fi}
-
-% \def\vspaceamount#1#2%
-%   {\csname\??va
-%      \ifcsname\??va#1:#2\endcsname
-%        #1:#2%
-%      \else\ifcsname\??va:#2\endcsname
-%        :#2%
-%      \else
-%        :\s!unknown
-%      \fi\fi
-%    \endcsname}
-
-% alternative
 
 \def\dovspace[#1][#2]%
   {\par
    \ifvmode
      \removelastskip
      \vskip
-       \csname\??va
+       \csname\??vspace
        \ifsecondargument
-         \ifcsname\??va#1:#2\endcsname
+         \ifcsname\??vspace#1:#2\endcsname
            #1:#2%
-         \else\ifcsname\??va:#2\endcsname
+         \else\ifcsname\??vspace:#2\endcsname
            :#2%
          \else
            :\s!unknown
          \fi\fi
        \else\iffirstargument
-         \ifcsname\??va:#1\endcsname
+         \ifcsname\??vspace:#1\endcsname
            :#1%
          \else
            :\s!unknown
          \fi
        \else
-         \ifcsname\??va:\s!default\endcsname
-           :\s!default%
+         \ifcsname\??vspace:\s!default\endcsname
+           :\s!default
          \else
            :\s!unknown
          \fi

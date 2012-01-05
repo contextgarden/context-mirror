@@ -116,18 +116,12 @@
 
 % \testfeatureonce{100000}{\color[red]{}} % 1.046 => 0.541
 
-\def\@colored@{@colored@}
-
 \unexpanded\def\switchtocolor[#1]{\csname#1\endcsname}
-
-%unexpanded\def\color        [#1]{\groupedcommand{\colo_helpers_activate{#1}}{}}
 
 \unexpanded\def\color        [#1]{\bgroup
                                   \def\g_color{\colo_helpers_activate{#1}}%
                                   \afterassignment\g_color
                                   \let\nexttoken}
-
-%unexpanded\def\graycolor    [#1]{\groupedcommand{\colo_helpers_set_model\s!gray\colo_helpers_activate{#1}}{}} % special, all embeded also gray
 
 \unexpanded\def\graycolor    [#1]{\bgroup
                                   \def\g_color{\colo_helpers_set_model\s!gray\colo_helpers_activate{#1}}%
@@ -139,18 +133,17 @@
 
 \unexpanded\def\stopcolor        {\endgroup}
 
-%unexpanded\def\colored      [#1]{\groupedcommand{\colo_basics_define[\@colored@][#1]\colo_helpers_activate\@colored@}{}}
-
 \unexpanded\def\colored      [#1]{\bgroup
-                                  \def\g_color{\colo_basics_define[\@colored@][#1]\colo_helpers_activate\@colored@}%
+                                  \def\g_color{\colo_basics_defined_and_activated{#1}}%
                                   \afterassignment\g_color
                                   \let\nexttoken}
 
 \unexpanded\def\fastcolored[#1]#2{\begingroup % is this command still needed?
-                                  \dodefinefastcolor[\@colored@][#1]%
-                                  \colo_helpers_activate\@colored@
+                                  \colo_basics_defined_and_activated{#1}%
                                   #2%
                                   \endgroup}
+
+\unexpanded\def\directcolored[#1]{\colo_basics_defined_and_activated{#1}}
 
 
 %D The following command is obsolete:
@@ -568,6 +561,8 @@
 
 % Since we couple definitions, we could stick to one test. Todo. Same for mpcolor.
 
+\def\v_colo_dummy_name{d_u_m_m_y}
+
 \letvalue{\??colorsetter-}\empty % used?
 \letvalue{\??transparencysetter-}\empty % used?
 
@@ -594,6 +589,10 @@
      \csname\??colorsetter\currentcolorname\endcsname
      \csname\??transparencysetter\currentcolorname\endcsname
    \fi}
+
+\def\colo_helpers_activate_dummy
+  {\csname\??colorsetter       \v_colo_dummy_name\endcsname
+   \csname\??transparencysetter\v_colo_dummy_name\endcsname}
 
 \let\dousecolorparameter\colo_helpers_activate
 
@@ -634,6 +633,10 @@
 \def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
   {\ctxcommand{defineprocesscolor("#1","#2",false,\v_colo_freeze_state)}%
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
+
+\def\colo_basics_defined_and_activated#1%
+  {\ctxcommand{defineprocesscolor("\v_colo_dummy_name","#1",false,false)}%
+   \colo_helpers_activate_dummy}
 
 % Spotcolors used setxvalue but that messes up currentcolor
 % and probably no global is needed either but they are global

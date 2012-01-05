@@ -169,10 +169,10 @@ function xtables.initialize_reflow_width()
     local r = data.currentrow
     local c = data.currentcolumn + 1
     local drc = data.rows[r][c]
-    drc.nx = texcount.x_table_nx
-    drc.ny = texcount.x_table_ny
+    drc.nx = texcount.c_tabl_x_nx
+    drc.ny = texcount.c_tabl_x_ny
     local distances = data.distances
-    local distance = texdimen.x_table_distance
+    local distance = texdimen.d_tabl_x_distance
     if distance > distances[c] then
         distances[c] = distance
     end
@@ -190,7 +190,7 @@ function xtables.set_reflow_width()
     while row[c].span do -- can also be previous row ones
         c = c + 1
     end
-    local tb = texbox.x_table_box
+    local tb = texbox.b_tabl_x
     local drc = row[c]
     --
     drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copy_node_list(tb))
@@ -270,19 +270,19 @@ function xtables.initialize_reflow_height()
     for x=1,drc.nx-1 do
         w = w + widths[c+x]
     end
-    texdimen.x_table_width = w
+    texdimen.d_tabl_x_width = w
     local dimensionstate = drc.dimensionstate or 0
     if dimensionstate == 1 or dimensionstate == 3 then
         -- width was fixed so height is known
-        texcount.x_table_skip_mode = 1
+        texcount.c_tabl_x_skip_mode = 1
     elseif dimensionstate == 2 then
         -- height is enforced
-        texcount.x_table_skip_mode = 1
+        texcount.c_tabl_x_skip_mode = 1
     elseif data.autowidths[c] then
         -- width has changed so we need to recalculate the height
-        texcount.x_table_skip_mode = 0
+        texcount.c_tabl_x_skip_mode = 0
     else
-        texcount.x_table_skip_mode = 1
+        texcount.c_tabl_x_skip_mode = 1
     end
 end
 
@@ -294,7 +294,7 @@ function xtables.set_reflow_height()
 --     while row[c].span do -- we could adapt drc.nx instead
 --         c = c + 1
 --     end
-    local tb = texbox.x_table_box
+    local tb = texbox.b_tabl_x
     local drc = row[c]
     if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
         local heights, height = data.heights, tb.height
@@ -333,9 +333,9 @@ function xtables.initialize_construct()
         h = h + heights[r+y]
         d = d + depths[r+y]
     end
-    texdimen.x_table_width = w
-    texdimen.x_table_height = h + d
-    texdimen.x_table_depth = 0
+    texdimen.d_tabl_x_width = w
+    texdimen.d_tabl_x_height = h + d
+    texdimen.d_tabl_x_depth = 0
 end
 
 function xtables.set_construct()
@@ -348,7 +348,7 @@ function xtables.set_construct()
 --     end
     local drc = row[c]
     -- this will change as soon as in luatex we can reset a box list without freeing
-    drc.list = copy_node_list(texbox.x_table_box)
+    drc.list = copy_node_list(texbox.b_tabl_x)
 --     c = c + drc.nx - 1
 --     data.currentcolumn = c
 end
@@ -660,11 +660,11 @@ function xtables.construct()
         [body_mode] = body,
     }
     if #body == 0 then
-        texsetcount("global","x_table_state",0)
-        texsetdimen("global","x_table_final_width",0)
+        texsetcount("global","c_tabl_x_state",0)
+        texsetdimen("global","d_tabl_x_final_width",0)
     else
-        texsetcount("global","x_table_state",1)
-        texsetdimen("global","x_table_final_width",body[1][1].width)
+        texsetcount("global","c_tabl_x_state",1)
+        texsetdimen("global","d_tabl_x_final_width",body[1][1].width)
     end
 end
 
@@ -821,7 +821,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                         results[foot_mode] = { }
                     end
                     results[body_mode] = { }
-                    texsetcount("global","x_table_state",0)
+                    texsetcount("global","c_tabl_x_state",0)
                 else
                     -- some is left so footer is delayed
                     -- todo: try to flush a few more lines
@@ -835,7 +835,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                     else
                         -- todo: try to fit more of body
                     end
-                    texsetcount("global","x_table_state",2)
+                    texsetcount("global","c_tabl_x_state",2)
                 end
             else
                 if firstsize > vsize then
@@ -846,10 +846,10 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                         bodystart = bodystart + 1
                     end
                 end
-                texsetcount("global","x_table_state",2) -- 1
+                texsetcount("global","c_tabl_x_state",2) -- 1
             end
         else
-            texsetcount("global","x_table_state",0)
+            texsetcount("global","c_tabl_x_state",0)
         end
         data.bodystart = bodystart
         data.bodystop = bodystop
@@ -895,7 +895,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
         results[head_mode] = { }
         results[body_mode] = { }
         results[foot_mode] = { }
-        texsetcount("global","x_table_state",0)
+        texsetcount("global","c_tabl_x_state",0)
     end
 end
 
@@ -910,7 +910,7 @@ end
 
 function xtables.next_row()
     local r = data.currentrow + 1
-    data.modes[r] = texcount.x_table_mode
+    data.modes[r] = texcount.c_tabl_x_mode
     data.currentrow = r
     data.currentcolumn = 0
 end
