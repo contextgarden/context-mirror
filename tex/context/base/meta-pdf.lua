@@ -131,7 +131,7 @@ function mps.newpath()
 end
 
 function mps.boundingbox(llx, lly, urx, ury)
-    context.MPSboundingbox(llx,lly,urx,ury)
+    context.setMPboundingbox(llx,lly,urx,ury)
 end
 
 function mps.moveto(x,y)
@@ -228,7 +228,7 @@ function mps.textext(font, scale, str) -- old parser
         dx, dy = m_stack_path[1][1], m_stack_path[1][2]
     end
     flushconcat()
-    context.MPStextext(font,scale,str,dx,dy)
+    context.MPtextext(font,scale,str,dx,dy)
     resetpath()
 end
 

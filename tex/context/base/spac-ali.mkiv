@@ -31,14 +31,14 @@
 % We will not use bodydir and pagedir so we disable them. That way we get
 % normal hyperlink support.
 
-\let\@@bodydir\normalbodydir
-\let\@@pagedir\normalpagedir
+\let\saved_normal_body_dir\normalbodydir
+\let\saved_normal_page_dir\normalpagedir
 
-\unexpanded\def\bodydir{\afterassignment\do@@bodydir\@@bodydir} \let\normalbodydir\bodydir
-\unexpanded\def\pagedir{\afterassignment\do@@pagedir\@@pagedir} \let\normalpagedir\pagedir
+\unexpanded\def\bodydir{\afterassignment\bodydir_indeed\saved_normal_body_dir} \let\normalbodydir\bodydir
+\unexpanded\def\pagedir{\afterassignment\pagedir_indeed\saved_normal_page_dir} \let\normalpagedir\pagedir
 
-\def\do@@bodydir{\@@bodydir TLT\relax}
-\def\do@@pagedir{\@@pagedir TLT\relax}
+\def\bodydir_indeed{\saved_normal_body_dir TLT\relax}
+\def\pagedir_indeed{\saved_normal_page_dir TLT\relax}
 
 % This will become a more advanced layout controller soon:
 
@@ -48,25 +48,37 @@
 
 \unexpanded\def\lefttoright
   {\ifvmode
-     \settrue\displaylefttoright
-     \settrue\inlinelefttoright
-     \textdir TLT\relax
-     \pardir  TLT\relax
+     \lefttoright_vmode
    \else
-     \settrue\inlinelefttoright
-     \textdir TLT\relax
+     \lefttoright_hmode
    \fi}
+
+\unexpanded\def\lefttoright_vmode
+  {\settrue\displaylefttoright
+   \settrue\inlinelefttoright
+   \textdir TLT\relax
+   \pardir  TLT\relax}
+
+\unexpanded\def\lefttoright_hmode
+  {\settrue\inlinelefttoright
+   \textdir TLT\relax}
 
 \unexpanded\def\righttoleft
   {\ifvmode
-     \setfalse\displaylefttoright
-     \setfalse\inlinelefttoright
-     \textdir TRT\relax
-     \pardir  TRT\relax
+     \righttoleft_vmode
    \else
-     \textdir TRT\relax
-     \setfalse\inlinelefttoright
+     \righttoleft_hmode
    \fi}
+
+\unexpanded\def\righttoleft_vmode
+  {\setfalse\displaylefttoright
+   \setfalse\inlinelefttoright
+   \textdir TRT\relax
+   \pardir  TRT\relax}
+
+\unexpanded\def\righttoleft_hmode
+  {\textdir TRT\relax
+   \setfalse\inlinelefttoright}
 
 \def\currentdirectionparameters
   {\ifconditional\inlinelefttoright \else
@@ -78,32 +90,30 @@
 
 \unexpanded\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright
-     \settrue\inlinelefttoright
-     \textdir TLT\relax
-     \pardir  TLT\relax
+     \synchronizedirection_lr
    \else
-     \setfalse\inlinelefttoright
-     \textdir TRT\relax
-     \pardir  TRT\relax
+     \synchronizedirection_rl
    \fi}
 
 \unexpanded\def\synchronizedisplaydirection
   {\ifconditional\displaylefttoright
-     \settrue\inlinelefttoright
-     \textdir TLT\relax
-     \pardir  TLT\relax
+     \synchronizedirection_lr
    \else
-     \setfalse\inlinelefttoright
-     \textdir TRT\relax
-     \pardir  TRT\relax
+     \synchronizedirection_rl
    \fi}
 
+\def\synchronizedirection_lr
+  {\settrue\inlinelefttoright
+   \textdir TLT\relax
+   \pardir  TLT\relax}
+
+\def\synchronizedirection_rl
+  {\setfalse\inlinelefttoright
+   \textdir TRT\relax
+   \pardir  TRT\relax}
+
 \unexpanded\def\synchronizeinlinedirection
-  {\ifconditional\inlinelefttoright
-     \textdir TLT\relax
-   \else
-     \textdir TRT\relax
-   \fi}
+  {\textdir T\ifconditional\inlinelefttoright L\else R\fi T\relax}
 
 \unexpanded\def\showdirections
   {\dontleavehmode
@@ -253,6 +263,7 @@
    \else
      \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
    \fi
+  % probably also ok: \normalexpanded{\everyraggedcommand{\resetrealignsignal\the\everyraggedcommand\ragged_command_flush_align}}}
    \normalexpanded{\everyraggedcommand\expandafter{\expandafter\resetrealignsignal\the\everyraggedcommand\ragged_command_flush_align}}}
 
 \def\nonosetraggedcommand
@@ -718,7 +729,7 @@
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize % new
-   \def\\{\egroup\par\doalignline{#1}{#2}\bgroup}%
+   \def\\{\endgroup\par\doalignline{#1}{#2}\begingroup}%
    \dowithnextbox
      {\hbox to \localhsize
         {\ifcase\alignstrutmode\or\strut\fi
@@ -744,8 +755,6 @@
 
 \let\centeraligned\midaligned
 
-% \def\regelbegrensd#1{\limitatetext{#1}{\hsize}{\unknown}} % to be translated
-
 % indirecte commando's
 
 \letvalue{\s!do\v!line\v!left      }\leftaligned
@@ -766,7 +775,7 @@
    \dontleavehmode % added in marrakesch at TUG 2006\begingroup
    \begingroup
    \setlocalhsize
-   \def\\{\egroup\par\doxalignline#1#2#3#4#5#6\bgroup}% inefficient
+   \def\\{\endgroup\par\doxalignline#1#2#3#4#5#6\begingroup}% inefficient
    \dowithnextbox
      {%\noindent moved up
       \hbox to \localhsize

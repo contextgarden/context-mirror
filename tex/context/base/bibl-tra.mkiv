@@ -1430,7 +1430,7 @@
 \def\bibnumref[#1]%
   {\begingroup
    \bibalternative\v!left
-   \penalty\!!tenthousand
+   \penalty\plustenthousand
    \ctxlua{bibtex.hacks.resolve("","\number\bibtexblock","#1")}%
    \bibalternative\v!right
    \endgroup}

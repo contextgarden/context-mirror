@@ -178,7 +178,7 @@
 %D passed to \type{\write} en \type{\message}. That's why we
 %D introduce:
 
-\def\protectconversion
+\unexpanded\def\protectconversion
   {\let\doconvertcharacters\firstofoneargument}
 
 %D \macros
@@ -502,7 +502,7 @@
 %D The counters \type {\normalyear}, \type {\normalmonth} and
 %D \type{\normalday} can be used for for date manipulations.
 
-\long\def\processmonth#1#2#3% year month command
+\def\processmonth#1#2#3% year month command
   {\begingroup
    \getdayspermonth{#1}{#2}%
    \dostepwiserecurse1\numberofdays1%
@@ -514,7 +514,7 @@
 
 \def\lastmonth{12} % can be set to e.g. 1 when testing
 
-\long\def\processyear#1#2#3#4% year command before after
+\def\processyear#1#2#3#4% year command before after
   {\begingroup
    \dorecurse\lastmonth
      {\normalyear #1\relax

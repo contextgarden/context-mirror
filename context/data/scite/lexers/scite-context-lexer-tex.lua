@@ -86,7 +86,7 @@ do -- todo: only once, store in global
     if definitions then
         local function add(data,normal)
             for k, v in next, data do
-                if v ~= "/" then
+                if v ~= "/" and v ~= "-" then
                     primitives[#primitives+1] = v
                     if normal then
                         primitives[#primitives+1] = "normal" .. v

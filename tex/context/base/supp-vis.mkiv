@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% no longer generic, who cares ...
+%D This module is no longer generic \unknown\ but who cares. Maybe
+%D the code will be moved out of the core (apart from ruled boxes).
 
 %D \gdef\ShowBufferedExample% private typeseting macro
 %D   {\startlinecorrection
@@ -55,9 +56,10 @@
 %D attention. Most of those macros can be found in \type
 %D {core-vis} and other core modules. Their integration in
 %D \CONTEXT\ prohibits generic applications.
-
-\ifx \undefined \writestatus \input supp-mis.tex \fi
-
+%D
+%D We no longer assume usage outside context so we no longer
+%D load support modules.
+%D
 %D One of the strong points of \TEX\ is abstraction of textual
 %D input. When macros are defined well and do what we
 %D want them to do, we will seldom need the tools present in
@@ -93,7 +95,7 @@
 %D  unwanted results. We can therefore turn all those things
 %D off with \type{\dontinterfere}.
 
-\def\dontinterfere
+\unexpanded\def\dontinterfere % or maybe just forgetall
   {\everypar \emptytoks
    \let\par  \endgraf
    \parindent\zeropoint
@@ -109,14 +111,15 @@
 %D don't want to be confronted with to many over- and underfull
 %D messages we introduce \type{\dontcomplain}.
 
-\def\dontcomplain
-  {\hbadness\!!tenthousand \vbadness\hbadness
-   \hfuzz   \maxdimen      \vfuzz   \hfuzz}
+\ifdefined\dontcomplain \else
 
-% This obsolete dutch name is sometimes uses in manual styles; when
-% cleaning up the codebase I decided to move this definition here.
+    \unexpanded\def\dontcomplain
+      {\hbadness\plustenthousand
+       \vbadness\plustenthousand
+       \hfuzz   \maxdimen
+       \vfuzz   \maxdimen}
 
-\let\mindermeldingen\dontcomplain
+\fi
 
 %D \macros
 %D   {normaloffinterlineskip}
@@ -124,8 +127,8 @@
 %D The next hack is needed because in \CONTEXT\ we redefine
 %D \type{\offinterlineskip}.
 
-\ifx\undefined\normaloffinterlineskip
-  \let\normaloffinterlineskip\offinterlineskip
+\ifdefined\normaloffinterlineskip \else
+    \let\normaloffinterlineskip\offinterlineskip
 \fi
 
 %D \macros
@@ -138,16 +141,12 @@
 %D baseline behavior. Especially \type{\vtop}'s need our
 %D special attention.
 
-% already saved
-
 %D \macros
 %D   {normalhskip,
 %D    normalvskip}
 %D
 %D Next come the flexible skips, which come in two flavors
 %D too. Like boxes these are handled with \TEX\ primitives.
-
-% already saved
 
 %D \macros
 %D   {normalpenalty,
@@ -157,8 +156,6 @@
 %D primitives. This means that when making them visible, we
 %D have to take the current mode into account.
 
-% already saved
-
 %D \macros
 %D   {normalhglue,
 %D    normalvglue}
@@ -167,8 +164,8 @@
 %D As we will see, their definitions make the implementation of
 %D their visible counterparts a bit more \TeX{}nical.
 
-\let\normalhglue = \hglue
-\let\normalvglue = \vglue
+\let\normalhglue\hglue
+\let\normalvglue\vglue
 
 %D \macros
 %D   {normalmkern,
@@ -180,8 +177,6 @@
 %D with other dimensions. As a result, the visual appearance
 %D of these primitives is kept primitive too.
 
-% already saved
-
 %D \macros
 %D   {hfilneg,
 %D    vfilneg}
@@ -191,12 +186,12 @@
 %D offers \type{\hfilneg} and \type{\vfilneg}, we define our
 %D own alternative double \type{ll}'ed ones.
 
-\def\hfilneg  {\normalhskip\zeropoint \!!plus-1fil\relax}
-\def\vfilneg  {\normalvskip\zeropoint \!!plus-1fil\relax}
-\def\hfillneg {\normalhskip\zeropoint \!!plus-1fill\relax}
-\def\vfillneg {\normalvskip\zeropoint \!!plus-1fill\relax}
-\def\hfilllneg{\normalhskip\zeropoint \!!plus-1filll\relax}
-\def\vfilllneg{\normalvskip\zeropoint \!!plus-1filll\relax}
+\def\hfilneg  {\normalhskip\zeropoint\!!plus-1fil\relax}
+\def\vfilneg  {\normalvskip\zeropoint\!!plus-1fil\relax}
+\def\hfillneg {\normalhskip\zeropoint\!!plus-1fill\relax}
+\def\vfillneg {\normalvskip\zeropoint\!!plus-1fill\relax}
+\def\hfilllneg{\normalhskip\zeropoint\!!plus-1filll\relax}
+\def\vfilllneg{\normalvskip\zeropoint\!!plus-1filll\relax}
 
 %D \macros
 %D   {normalhss,normalhfil,normalhfill,
@@ -216,21 +211,21 @@
 %D in standard \TEX\ documentation. They can nevertheless be
 %D used at will.
 
-\let\normalhfillneg = \hfillneg
-\let\normalvfillneg = \vfillneg
+\let\normalhfillneg\hfillneg
+\let\normalvfillneg\vfillneg
 
 %D Visualization is not always wanted. Instead of turning this
 %D option off in those (unpredictable) situations, we just
 %D redefine a few \PLAIN\ macros.
 
-\ifx\tlap\undefined
-
-  \def\rlap#1{\normalhbox to \zeropoint{#1\normalhss}}
-  \def\llap#1{\normalhbox to \zeropoint{\normalhss#1}}
-  \def\blap#1{\normalvbox to \zeropoint{#1\normalvss}}
-  \def\tlap#1{\normalvbox to \zeropoint{\normalvss#1}}
-
-\fi
+% \ifx\tlap\undefined
+%
+%   \def\rlap#1{\normalhbox to \zeropoint{#1\normalhss}}
+%   \def\llap#1{\normalhbox to \zeropoint{\normalhss#1}}
+%   \def\blap#1{\normalvbox to \zeropoint{#1\normalvss}}
+%   \def\tlap#1{\normalvbox to \zeropoint{\normalvss#1}}
+%
+% \fi
 
 %D \macros
 %D   {makeruledbox}
@@ -259,8 +254,8 @@
 %D At the cost of some overhead these alternatives are
 %D implemented using \type{\if}'s:
 
-\newif\ifbaselinerule  \baselineruletrue
-\newif\ifbaselinefill  \baselinefillfalse
+\newif\ifbaselinerule\baselineruletrue
+\newif\ifbaselinefill\baselinefillfalse
 
 %D \macros
 %D   {iftoprule,ifbottomrule,ifleftrule,ifrightrule}
@@ -276,10 +271,10 @@
 %D
 %D As we see below:
 
-\newif\iftoprule     \topruletrue
-\newif\ifbottomrule  \bottomruletrue
-\newif\ifleftrule    \leftruletrue
-\newif\ifrightrule   \rightruletrue
+\newif\iftoprule   \topruletrue
+\newif\ifbottomrule\bottomruletrue
+\newif\ifleftrule  \leftruletrue
+\newif\ifrightrule \rightruletrue
 
 %D \macros
 %D   {boxrulewidth}
@@ -291,12 +286,14 @@
 %D \starttyping
 %D \boxrulewidth=.2pt
 %D \stoptyping
-%D
-%D Although we are already low on \DIMENSIONS\ it's best to
-%D spend one here, mainly because it enables easy manipulation,
-%D like multiplication by a given factor.
 
-\newdimen\boxrulewidth \boxrulewidth=.2pt
+\newdimen \boxrulewidth \boxrulewidth=.2pt
+
+\newdimen \boxruleht
+\newdimen \boxruledp
+\newdimen \boxrulewd
+
+\newbox   \boxrulescratchbox
 
 %D The core macro \type{\makeruledbox} looks a bit hefty. The
 %D manipulation at the end is needed because we want to
@@ -316,32 +313,28 @@
 %D primitive too. By storing and restoring the height and depth
 %D of box \type{#1}, we preserve the mode.
 
-\let\dowithruledbox\relax
+\let\dowithruledbox\relax % hook
 
-\let\ruledheight\!!zeropoint
-\let\ruleddepth \!!zeropoint
-\let\ruledwidth \!!zeropoint
-
-\def\makeruledbox#1%
-  {\edef\ruledheight{\the\ht#1}%
-   \edef\ruleddepth {\the\dp#1}%
-   \edef\ruledwidth {\the\wd#1}%
-   \setbox\scratchbox\normalvbox
+\unexpanded\def\makeruledbox#1%
+  {\boxruleht\ht#1%
+   \boxruledp\dp#1%
+   \boxrulewd\wd#1%
+   \setbox\boxrulescratchbox\normalvbox
      {\dontcomplain
       \normaloffinterlineskip
       \visualhrule
         \!!height\boxrulewidth
         \iftoprule\else\!!width\zeropoint\fi
       \normalvskip-\boxrulewidth
-      \normalhbox to \ruledwidth
+      \normalhbox to \boxrulewd
         {\visualvrule
-           \!!height\ruledheight
-           \!!depth\ruleddepth
-           \!!width\ifleftrule\else0\fi\boxrulewidth
-         \ifdim\ruledheight>\zeropoint \else \baselinerulefalse \fi
-         \ifdim\ruleddepth>\zeropoint \else \baselinerulefalse \fi
+           \!!height\boxruleht
+           \!!depth \boxruledp
+           \!!width \ifleftrule\boxrulewidth\else\zeropoint\fi
+         \ifdim\boxruleht>\zeropoint \else \baselinerulefalse \fi
+         \ifdim\boxruledp>\zeropoint \else \baselinerulefalse \fi
          \ifbaselinerule
-           \ifdim\ruledwidth<20\boxrulewidth
+           \ifdim\boxrulewd<20\boxrulewidth
              \baselinefilltrue
            \fi
            \cleaders
@@ -359,7 +352,7 @@
          \fi
          \normalhfill
          \visualvrule
-           \!!width\ifrightrule\else0\fi\boxrulewidth}%
+           \!!width\ifrightrule\boxrulewidth\else\zeropoint\fi}%
        \normalvskip-\boxrulewidth
        \visualhrule
          \!!height\boxrulewidth
@@ -368,10 +361,10 @@
    \setbox#1=\ifhbox#1\normalhbox\else\normalvbox\fi
      {\normalhbox
         {\box#1%
-         \lower\ruleddepth\normalhbox{\dowithruledbox{\box\scratchbox}}}}%
-   \ht#1=\ruledheight
-   \wd#1=\ruledwidth
-   \dp#1=\ruleddepth}
+         \lower\boxruledp\normalhbox{\dowithruledbox{\box\boxrulescratchbox}}}}%
+   \ht#1\boxruleht
+   \wd#1\boxrulewd
+   \dp#1\boxruledp}
 
 %D Just in case one didn't notice: the rules are in fact layed
 %D over the box. This way the contents of a box cannot
@@ -405,8 +398,12 @@
 
 \unexpanded\def\ruledhbox
   {\normalhbox\bgroup
-   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
-   \normalhbox}
+   \dowithnextboxcs\ruledhbox_finish\normalhbox}
+
+\def\ruledhbox_finish
+  {\makeruledbox\nextbox
+   \box\nextbox
+   \egroup}
 
 %D \startbuffer
 %D \vbox
@@ -423,8 +420,12 @@
 
 \unexpanded\def\ruledvbox
   {\normalvbox\bgroup
-   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
-   \normalvbox}
+   \dowithnextboxcs\ruledvbox_finish\normalvbox}
+
+\def\ruledvbox_finish
+  {\makeruledbox\nextbox
+   \box\nextbox
+   \egroup}
 
 %D \startbuffer
 %D \vtop
@@ -441,8 +442,12 @@
 
 \unexpanded\def\ruledvtop
   {\normalvtop\bgroup
-   \dowithnextbox{\makeruledbox\nextbox\box\nextbox\egroup}%
-   \normalvtop}
+   \dowithnextboxcs\ruledvtop_finish\normalvtop}
+
+\def\ruledvtop_finish
+  {\makeruledbox\nextbox
+   \box\nextbox
+   \egroup}
 
 %D \startbuffer
 %D \hbox
@@ -459,14 +464,16 @@
 \unexpanded\def\ruledvcenter
   {\normalvbox\bgroup
    \dontinterfere
-   \dowithnextbox
-     {\scratchdimen.5\ht\nextbox
-      \advance\scratchdimen .5\dp\nextbox
-      \ht\nextbox\scratchdimen
-      \dp\nextbox\scratchdimen
-      \ruledhbox{\box\nextbox}%
-      \egroup}%
-   \normalvbox}
+   \dowithnextboxcs\ruledvcenter_finish\normalvbox}
+
+\def\ruledvcenter_finish
+  {\scratchdimen.5\dimexpr\ht\nextbox+\dp\nextbox\relax
+   \ht\nextbox\scratchdimen
+   \dp\nextbox\scratchdimen
+  %\ruledhbox{\box\nextbox}%
+   \makeruledbox\nextbox
+   \box\nextbox
+   \egroup}
 
 %D \macros
 %D   {ruledbox,
@@ -492,10 +499,23 @@
 %D variant that does not need the~\type{=}, but we stick to:
 
 \unexpanded\def\ruledbox
-  {\dowithnextbox{\makeruledbox\nextbox\box\nextbox}}
+  {\dowithnextboxcs\ruledbox_finish}
 
-\def\setruledbox#1=%
-  {\dowithnextbox{\makeruledbox\nextbox\setbox#1\nextbox}}
+\def\ruledbox_finish
+  {\makeruledbox\nextbox\box\nextbox}
+
+% \def\setruledbox#1=%
+%   {\dowithnextbox{\makeruledbox\nextbox\setbox#1\nextbox}}
+
+\def\setruledbox#1=% not nice, better
+  {\afterassignment\setruledbox_indeed\scratchcounter}
+
+\def\setruledbox_indeed
+  {\dowithnextboxcs\setruledbox_finish}
+
+\def\setruledbox_finish
+  {\makeruledbox\nextbox
+   \setbox\scratchcounter\nextbox}
 
 %D \macros
 %D   {investigateskip,
@@ -526,7 +546,8 @@
 %D Users of these macros are invited to study their exact
 %D behavior first. The positive and negative states both
 %D include zero and are in fact non-negative ($\geq0$) and
-%D non-positive ($\leq0$) .
+%D non-positive ($\leq0$). Well, no dirty trick is needed
+%D any longer as we have \ETEX\ functionality.
 
 \newif\ifflexible
 \newif\ifzero
@@ -535,10 +556,19 @@
 
 \def\investigateskip#1%
   {\relax
-   \scratchdimen#1\relax
-   \edef\!!stringa{\the\scratchdimen}%
-   \edef\!!stringb{\the#1}%
-   \ifx\!!stringa\!!stringb \flexiblefalse \else \flexibletrue \fi
+   \ifdim#1=\zeropoint
+     \ifdim\gluestretch#1=\zeropoint
+       \ifdim\glueshrink#1=\zeropoint
+         \flexiblefalse
+       \else
+         \flexibletrue
+       \fi
+     \else
+       \flexibletrue
+     \fi
+   \else
+     \flexibletrue
+   \fi
    \ifdim#1=\zeropoint\relax
      \zerotrue      \else
      \zerofalse     \fi
@@ -548,33 +578,6 @@
    \ifdim#1>\zeropoint\relax
      \negativefalse \else
      \negativetrue  \fi}
-
-% etex
-%
-% \def\investigateskip#1%
-%   {\relax
-%    \ifdim\scratchskip=\zeropoint
-%      \ifdim\gluestretch\scratchskip=\zeropoint
-%        \ifdim\glueshrink\scratchskip=\zeropoint
-%          \flexiblefalse
-%        \else
-%          \flexibletrue
-%        \fi
-%      \else
-%        \flexibletrue
-%      \fi
-%    \else
-%      \flexibletrue
-%    \fi
-%    \ifdim#1=\zeropoint\relax
-%      \zerotrue      \else
-%      \zerofalse     \fi
-%    \ifdim#1<\zeropoint\relax
-%      \positivefalse \else
-%      \positivetrue  \fi
-%    \ifdim#1>\zeropoint\relax
-%      \negativefalse \else
-%      \negativetrue  \fi}
 
 \def\investigatecount#1%
   {\relax
@@ -589,9 +592,9 @@
      \negativefalse \else
      \negativetrue  \fi}
 
-\def\investigatemuskip#1%
+\def\investigatemuskip#1% etex ?
   {\relax
-   \edef\!!stringa{\the\scratchmuskip}%
+   \edef\!!stringa{\the#1}%
    \edef\!!stringb{0mu}%
    \def\!!stringc##1##2\\{##1}%
    \expandafter\edef\expandafter\!!stringc\expandafter
@@ -612,7 +615,7 @@
        \negativefalse
      \fi
    \fi}
-
+
 %D Now the neccessary utility macros are defined, we can make a
 %D start with the visualizing ones. The implementation of these
 %D macros is a compromise between readability, efficiency of
@@ -807,20 +810,11 @@
 %D All five substitutions use the same auxiliary macro. Watch
 %D the positive first -- negative next approach.
 
-\unexpanded\def\ruledhss
-  {\doruledhfiller\normalhss\normalhfilneg{0}{0}}
-
-\unexpanded\def\ruledhfil
-  {\doruledhfiller\normalhfil\normalhfilneg{10}{-6}}
-
-\unexpanded\def\ruledhfill
-  {\doruledhfiller\normalhfill\normalhfillneg{18}{-14}}
-
-\unexpanded\def\ruledhfilneg
-  {\doruledhfiller\normalhfilneg\normalhfil{-6}{10}}
-
-\unexpanded\def\ruledhfillneg
-  {\doruledhfiller\normalhfillneg\normalhfill{-14}{18}}
+\unexpanded\def\ruledhss     {\doruledhfiller\normalhss     \normalhfilneg  {0}{0}}
+\unexpanded\def\ruledhfil    {\doruledhfiller\normalhfil    \normalhfilneg {10}{-6}}
+\unexpanded\def\ruledhfill   {\doruledhfiller\normalhfill   \normalhfillneg{18}{-14}}
+\unexpanded\def\ruledhfilneg {\doruledhfiller\normalhfilneg \normalhfil    {-6}{10}}
+\unexpanded\def\ruledhfillneg{\doruledhfiller\normalhfillneg\normalhfill  {-14}{18}}
 
 %D \macros
 %D   {ruledvss,
@@ -937,7 +931,7 @@
 %D stretch could be drawing the mid line over a length of the
 %D stretch, in positive or negative direction.
 
-\def\doruledhskip
+\def\ruledhskip_indeed
   {\relax
    \dontinterfere
    \dontcomplain
@@ -995,7 +989,7 @@
      \divide\skip2 2
      \advance\scratchskip -\skip2
      \normalhskip\scratchskip
-     \normalpenalty\!!tenthousand
+     \normalpenalty\plustenthousand
      \box0
      \normalhskip\skip2
    \else
@@ -1006,7 +1000,7 @@
 
 \unexpanded\def\ruledhskip
   {\bgroup
-   \afterassignment\doruledhskip
+   \afterassignment\ruledhskip_indeed
    \scratchskip=}
 
 %D The visual skip is located at a feasible point. Normally
@@ -1135,7 +1129,7 @@
        \normalvskip\skip2
      \fi
    \fi
-   \normalpenalty\!!tenthousand
+   \normalpenalty\plustenthousand
    \box0
    \prevdepth\nextdepth % not \dp0=\nextdepth
    \normalvskip\scratchskip}
@@ -1158,7 +1152,7 @@
   {\bgroup
    \afterassignment\doruledvskip
    \scratchskip=}
-
+
 %D \macros
 %D   {ruledkern}
 %D
@@ -1189,7 +1183,7 @@
 %D visualized a bit different, because we want to see them
 %D anyhow.
 
-\def\doruledhkern
+\def\ruledhkern_indeed
   {\dontinterfere
    \dontcomplain
    \baselinerulefalse
@@ -1226,7 +1220,7 @@
      \setbox0\ruledhbox{\box0}%  \make...
    \fi
    \smashbox0%
-   \normalpenalty\!!tenthousand
+   \normalpenalty\plustenthousand
    \normalhbox to \zeropoint
      {\ifnegative\normalhskip1\scratchskip\fi
       \box0}%
@@ -1236,7 +1230,7 @@
 \unexpanded\def\ruledhkern#1%
   {\bgroup
    \let\afterwards#1%
-   \afterassignment\doruledhkern
+   \afterassignment\ruledhkern_indeed
    \scratchskip=}
 
 %D After having seen the horizontal ones, the vertical kerns
@@ -1263,7 +1257,7 @@
 %D Like before, we have to postpone \type{\prevdepth}. If we
 %D leave out this trick, we got ourselves some wrong spacing.
 
-\def\dodoruledvkern
+\def\ruledvkern_finish
   {\nextdepth\prevdepth
    \dontinterfere
    \dontcomplain
@@ -1307,17 +1301,17 @@
       \normalvcue
        {\ifnegative\normalhskip-16\testrulewidth\fi\box0}}%
    \smashbox0%
-   \normalpenalty\!!tenthousand
+   \normalpenalty\plustenthousand
    \box0
    \prevdepth\nextdepth} % not \dp0=\nextdepth
 
-\def\doruledvkern
+\def\ruledvkern_indeed
   {\ifdim\pagegoal=\maxdimen
      \ifinner
-       \dodoruledvkern
+       \ruledvkern_finish
      \fi
    \else
-     \dodoruledvkern
+     \ruledvkern_finish
    \fi
    \afterwards\scratchskip
    \egroup}
@@ -1325,7 +1319,7 @@
 \unexpanded\def\ruledvkern#1%
   {\bgroup
    \let\afterwards#1\relax
-   \afterassignment\doruledvkern
+   \afterassignment\ruledvkern_indeed
    \scratchskip=}
 
 \unexpanded\def\ruledkern
@@ -1342,7 +1336,7 @@
 %D \unexpanded\def\ruledkern%
 %D   {\csname ruled\ifvmode v\else h\fi kern\endcsname\normalkern}
 %D \stoptyping
-
+
 %D \macros
 %D   {ruledhglue,ruledvglue}
 %D
@@ -1366,18 +1360,18 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledhglue
+\def\ruledhglue_indeed
   {\leavevmode
    \scratchcounter\spacefactor
    \visualvrule\!!width\zeropoint
-   \normalpenalty\!!tenthousand
+   \normalpenalty\plustenthousand
    \ruledhkern\normalhskip\scratchskip
    \spacefactor\scratchcounter
    \egroup}
 
 \unexpanded\def\ruledhglue
   {\bgroup
-   \afterassignment\doruledhglue\scratchskip=}
+   \afterassignment\ruledhglue_indeed\scratchskip=}
 
 %D \startbuffer
 %D first line
@@ -1396,18 +1390,18 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledvglue
+\def\ruledvglue_indeed
   {\endgraf % \par
    \nextdepth\prevdepth
    \visualhrule\!!height\zeropoint
-   \normalpenalty\!!tenthousand
+   \normalpenalty\plustenthousand
    \ruledvkern\normalvskip\scratchskip
    \prevdepth\nextdepth
    \egroup}
 
 \unexpanded\def\ruledvglue
   {\bgroup
-   \afterassignment\doruledvglue\scratchskip=}
+   \afterassignment\ruledvglue_indeed\scratchskip=}
 
 %D \macros
 %D   {ruledmkern,ruledmskip}
@@ -1418,40 +1412,40 @@
 %D subtle matter, we've used a very simple, not overloaded way
 %D to show them.
 
-\def\dodoruledmkern#1%
+\def\ruledmkern_finish#1%
   {\dontinterfere
    \dontcomplain
-   \setbox0\normalhbox
-     {$\normalmkern\ifnegative-\fi\scratchmuskip$}%
-   \setbox0\normalhbox to \wd0
+   \setbox\boxrulescratchbox\normalhbox
+     {$\normalmkern\ifnegative-\fi\scratchskip$}%
+   \setbox\boxrulescratchbox\normalhbox to \wd\boxrulescratchbox
      {\visualvrule
         \!!height16\testrulewidth
-        \!!depth16\testrulewidth
-        \!!width\testrulewidth
+        \!!depth 16\testrulewidth
+        \!!width   \testrulewidth
       \leaders
         \visualhrule
-          \!!height\ifpositive16\else-14\fi\testrulewidth
-          \!!depth\ifpositive-14\else16\fi\testrulewidth
+          \!!height\ifpositive 16\else-14\fi\testrulewidth
+          \!!depth \ifpositive-14\else 16\fi\testrulewidth
         \normalhfill
       \ifflexible
-        \normalhskip-\wd0
+        \normalhskip-\wd\boxrulescratchbox
         \leaders
           \visualhrule
             \!!height\testrulewidth
-            \!!depth\testrulewidth
+            \!!depth \testrulewidth
           \normalhfill
       \fi
       \visualvrule
         \!!height16\testrulewidth
-        \!!depth16\testrulewidth
-        \!!width\testrulewidth}%
+        \!!depth 16\testrulewidth
+        \!!width   \testrulewidth}%
    \smashbox0%
    \ifnegative
-      #1\scratchmuskip
-     \box0
+      #1\scratchskip
+     \box\boxrulescratchbox
    \else
-     \box0
-      #1\scratchmuskip
+     \box\boxrulescratchbox
+      #1\scratchskip
    \fi
    \egroup}
 
@@ -1464,14 +1458,15 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledmkern
-  {\investigatemuskip\scratchmuskip
-   \flexiblefalse
-   \dodoruledmkern\normalmkern}
-
 \unexpanded\def\ruledmkern
   {\bgroup
-   \afterassignment\doruledmkern\scratchmuskip=}
+   \afterassignment\ruledmkern_indeed
+   \scratchmuskip=}
+
+\def\ruledmkern_indeed
+  {\investigatemuskip\scratchmuskip
+   \flexiblefalse
+   \ruledmkern_finish\normalmkern}
 
 %D \startbuffer
 %D $a \mskip3mu = \mskip3mu
@@ -1482,15 +1477,16 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledmskip
+\def\ruledmskip_indeed
   {\investigatemuskip\scratchmuskip
    \flexibletrue
-   \dodoruledmkern\normalmskip}
+   \ruledmkern_finish\normalmskip}
 
 \unexpanded\def\ruledmskip
   {\bgroup
-   \afterassignment\doruledmskip\scratchmuskip=}
-
+   \afterassignment\ruledmskip_indeed
+   \scratchmuskip=}
+
 %D \macros
 %D   {penalty}
 %D
@@ -1559,43 +1555,43 @@
 %D test \ruledhpenalty1000 \ruledhpenalty-1000
 %D test
 
-\def\setruledpenaltybox#1#2#3#4#5#6%
+\def\ruled_penalty_box#1#2#3#4#5#6%
   {\setbox#1\normalhbox
-     {\ifnum#2=0 \else
-        \edef\sign
-          {\ifnum#2>0 +\else-\fi}%
-        \dimen0=\ifnum\sign#2>9999
-                  28\else
-                \ifnum\sign#2>999
-                  22\else
-                \ifnum\sign#2>99
-                  16\else
-                \ifnum\sign#2>9
-                  10\else
-                  4
-                \fi\fi\fi\fi \testrulewidth
-        \ifnum#2<0
-          \normalhskip-\dimen0
+     {\ifnum#2=\zerocount \else
+        \edef\sign{\ifnum#2>\zerocount +\else-\fi}%
+        \scratchdimen
+          \ifnum\sign#2>9999 28\else
+          \ifnum\sign#2>999  22\else
+          \ifnum\sign#2>99   16\else
+          \ifnum\sign#2>9    10\else
+                              4\fi\fi\fi\fi \testrulewidth
+        \ifnum#2<\zerocount
+          \normalhskip-\scratchdimen
           \normalhskip-2\testrulewidth
           \visualvrule
-            \!!width2\testrulewidth
+            \!!width  2\testrulewidth
             \!!height#3\testrulewidth
-            \!!depth#4\testrulewidth
+            \!!depth #4\testrulewidth
         \fi
         \visualvrule
-          \!!width\dimen0
+          \!!width \scratchdimen
           \!!height#5\testrulewidth
-          \!!depth#6\testrulewidth
-        \ifnum#2>0
+          \!!depth #6\testrulewidth
+        \ifnum#2>\zerocount
           \visualvrule
-            \!!width2\testrulewidth
+            \!!width  2\testrulewidth
             \!!height#3\testrulewidth
-            \!!depth#4\testrulewidth
+            \!!depth #4\testrulewidth
          \fi
       \fi}%
    \smashbox#1}
 
-\def\doruledhpenalty
+\unexpanded\def\ruledhpenalty
+  {\bgroup
+   \afterassignment\ruledhpenalty_indeed
+   \scratchcounter=}
+
+\def\ruledhpenalty_indeed
   {\dontinterfere
    \dontcomplain
    \investigatecount\scratchcounter
@@ -1605,10 +1601,10 @@
      {\ifnegative\else\normalhss\fi
       \visualvrule
         \!!depth8\testrulewidth
-        \!!width\ifzero0\else4\fi\testrulewidth
+        \!!width\ifzero\zeropoint\else4\testrulewidth\fi
       \ifpositive\else\normalhss\fi}%
-   \setruledpenaltybox{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
-   \normalpenalty\!!tenthousand
+   \ruled_penalty_box{2}{\scratchcounter}{0}{8}{-3.5}{4.5}%
+   \normalpenalty\plustenthousand
    \setbox0\normalhbox
      {\normalhskip-4\testrulewidth
       \ifnegative
@@ -1620,11 +1616,6 @@
    \box0
    \normalpenalty\scratchcounter
    \egroup}
-
-\unexpanded\def\ruledhpenalty
-  {\bgroup
-   \afterassignment\doruledhpenalty
-   \scratchcounter=}
 
 %D The size of a vertical penalty is also shown on the
 %D horizontal axis. This way there is less interference with
@@ -1645,9 +1636,13 @@
 %D
 %D \ShowBufferedExample
 
-\def\doruledvpenalty
-  {\ifdim\pagegoal=\maxdimen
-   \else
+\unexpanded\def\ruledvpenalty
+  {\bgroup
+   \afterassignment\ruledvpenalty_indeed
+   \scratchcounter=}
+
+\def\ruledvpenalty_indeed
+  {\ifdim\pagegoal=\maxdimen \else
      \nextdepth\prevdepth
      \dontinterfere
      \dontcomplain
@@ -1657,13 +1652,13 @@
      \setbox0\ruledhbox
        {\visualvrule
           \!!height4\testrulewidth
-          \!!depth4\testrulewidth
-          \!!width\zeropoint
+          \!!depth 4\testrulewidth
+          \!!width  \zeropoint
         \visualvrule
           \!!height\ifnegative.5\else4\fi\testrulewidth
-          \!!depth\ifpositive.5\else4\fi\testrulewidth
-          \!!width8\testrulewidth}%
-     \setruledpenaltybox{2}{\scratchcounter}{4}{4}{.5}{.5}%
+          \!!dept  \ifpositive.5\else4\fi\testrulewidth
+          \!!width                      8\testrulewidth}%
+     \ruled_penalty_box{2}{\scratchcounter}{4}{4}{.5}{.5}%
      \setbox0\normalhbox
        {\normalhskip-4\testrulewidth
         \ifnegative
@@ -1673,7 +1668,7 @@
         \fi
         \normalhss}%
      \smashbox0%
-     \normalpenalty\!!tenthousand
+     \normalpenalty\plustenthousand
      \nointerlineskip
      \dp0\nextdepth  % not \prevdepth=\nextdepth
      \normalvbox
@@ -1682,10 +1677,7 @@
    \normalpenalty\scratchcounter
    \egroup}
 
-\unexpanded\def\ruledvpenalty
-  {\bgroup
-   \afterassignment\doruledvpenalty
-   \scratchcounter=}
+%D This comes together in:
 
 \unexpanded\def\ruledpenalty
   {\ifvmode
@@ -1694,14 +1686,6 @@
      \expandafter\ruledhpenalty
    \fi}
 
-%D At the cost of some more tokens, a bit more clever
-%D implementation would be:
-%D
-%D \starttyping
-%D \unexpanded\def\ruledpenalty%
-%D   {\csname ruled\ifvmode v\else h\fi penalty\endcsname}
-%D \stoptyping
-
 %D \macros
 %D   {showfils,dontshowfils,
 %D    showboxes,dontshowboxes,
@@ -1713,7 +1697,7 @@
 
 \newif\ifshowingcomposition % see later why we need this
 
-\def\showfils
+\unexpanded\def\showfils
   {\showingcompositiontrue
    \let\hss      \ruledhss
    \let\hfil     \ruledhfil
@@ -1726,7 +1710,7 @@
    \let\vfilneg  \ruledvfilneg
    \let\vfillneg \ruledvfillneg}
 
-\def\dontshowfils
+\unexpanded\def\dontshowfils
   {\let\hss      \normalhss
    \let\hfil     \normalhfil
    \let\hfill    \normalhfill
@@ -1738,7 +1722,7 @@
    \let\vfilneg  \normalvfilneg
    \let\vfillneg \normalvfillneg}
 
-\def\showboxes
+\unexpanded\def\showboxes
   {\showingcompositiontrue
    \baselineruletrue
    \let\hbox     \ruledhbox
@@ -1746,13 +1730,13 @@
    \let\vtop     \ruledvtop
    \let\vcenter  \ruledvcenter}
 
-\def\dontshowboxes
+\unexpanded\def\dontshowboxes
   {\let\hbox     \normalhbox
    \let\vbox     \normalvbox
    \let\vtop     \normalvtop
    \let\vcenter  \normalvcenter}
 
-\def\showskips
+\unexpanded\def\showskips
   {\showingcompositiontrue
    \let\hskip    \ruledhskip
    \let\vskip    \ruledvskip
@@ -1762,7 +1746,7 @@
    \let\hglue    \ruledhglue
    \let\vglue    \ruledvglue}
 
-\def\dontshowskips
+\unexpanded\def\dontshowskips
   {\let\hskip    \normalhskip
    \let\vskip    \normalvskip
    \let\kern     \normalkern
@@ -1771,11 +1755,11 @@
    \let\hglue    \normalhglue
    \let\vglue    \normalvglue}
 
-\def\showpenalties
+\unexpanded\def\showpenalties
   {\showingcompositiontrue
    \let\penalty  \ruledpenalty}
 
-\def\dontshowpenalties
+\unexpanded\def\dontshowpenalties
   {\let\penalty  \normalpenalty}
 
 %D \macros
@@ -1802,7 +1786,7 @@
 
 \newif\ifshowingcomposition
 
-\def\showcomposition
+\unexpanded\def\showcomposition
   {\ifshowingcomposition
      \showfils
      \showboxes
@@ -1810,7 +1794,7 @@
      \showpenalties
    \fi}
 
-\def\dontshowcomposition
+\unexpanded\def\dontshowcomposition
   {\ifshowingcomposition
      \dontshowfils
      \dontshowboxes
@@ -1839,12 +1823,12 @@
 %D Beware, it's a macro not a \DIMENSION.
 
 \ifx\bodyfontsize\undefined
-  \edef\defaulttestrulewidth{\the\testrulewidth}
+    \edef\defaulttestrulewidth{\the\testrulewidth}
 \else
-  \def\defaulttestrulewidth{.02\bodyfontsize}
+    \def\defaulttestrulewidth{.02\bodyfontsize}
 \fi
 
-\def\showmakeup
+\unexpanded\def\showmakeup
   {\testrulewidth\defaulttestrulewidth
    \showingcompositiontrue
    \showcomposition}

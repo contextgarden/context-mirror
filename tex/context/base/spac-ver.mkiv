@@ -78,7 +78,7 @@
 
 \fi
 
-\def\presetnormallineheight
+\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
   %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
    \iflocalinterlinespace \else
@@ -86,6 +86,34 @@
        {\doifsomething\bodyfontinterlinespace
           {\edef\normallineheight{\bodyfontinterlinespace}}}%
    \fi}
+
+% to be tested:
+%
+% \def\presetnormallineheight % each bodyfont
+%   {\iflocalinterlinespace
+%      \presetnormallineheight_regular
+%    \else
+%      \presetnormallineheight_checked
+%    \fi}
+%
+% \def\presetnormallineheight_regular
+%   {\edef\normallineheight{\interlinespaceparameter\c!line}}
+%
+% \def\presetnormallineheight_checked
+%   {\edef\askedbodyfontinterlinespecs{\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}%
+%    \ifcsname\askedbodyfontinterlinespecs\endcsname
+%      \presetnormallineheight_specific
+%    \else
+%      \presetnormallineheight_regular
+%    \fi}
+%
+% \def\presetnormallineheight_specific
+%   {\edef\askedbodyfontinterlinespace{\csname\bodyfontinterlinespecs\endcsname}%
+%    \ifx\askedbodyfontinterlinespace\empty
+%      \presetnormallineheight_regular
+%    \else
+%      \let\normallineheight\askedbodyfontinterlinespace
+%    \fi}
 
 \unexpanded\def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it\currentinterlinespace][#1]%
@@ -578,14 +606,11 @@
    \fi}
 
 \unexpanded\def\settopskip % the extra test is needed for the lbr family
-  {\topskip\systemtopskipfactor\globalbodyfontsize
-   \ifgridsnapping \else
-     \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
-   \fi
-   \ifgridsnapping
+  {\ifgridsnapping
      \topskip\zeropoint
+   \else
+     \topskip\systemtopskipfactor\globalbodyfontsize\ifr@ggedbottom\!!plus5\globalbodyfontsize\fi\relax
    \fi
-   \relax % the skip
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
    \ifdim\minimumstrutheight>\zeropoint
@@ -674,7 +699,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint} % just a start
+\setbox\strutbox\normalhbox{\vrule\!!height8.5pt\!!depth3.5pt\!!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -835,36 +860,27 @@
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulate
 
-\setvalue{@strut@\v!yes    }{\setstrut}
-\setvalue{@strut@\v!auto   }{\setautostrut}
-\setvalue{@strut@\v!no     }{\setnostrut}
-\setvalue{@strut@\v!cap    }{\setcapstrut}
-\setvalue{@strut@\v!fit    }{\setfontstrut}
-\setvalue{@strut@\v!line   }{\setstrut}
-\setvalue{@strut@\s!default}{\setstrut}
-\setvalue{@strut@\empty    }{\setstrut}
-
 \unexpanded\def\setupstrut
-  {\dosingleempty\dosetupstrut}
+  {\dosingleempty\spacing_setup_strut}
 
-\def\dosetupstrut[#1]% yet undocumented, todo: fontstrut
-  {\ifcsname @strut@#1\endcsname
-     \csname @strut@#1\endcsname
+\def\spacing_setup_strut[#1]%
+  {\ifcsname\??ut:#1\endcsname
+     \csname\??ut:#1\endcsname % these are defined later
    \else
      \setcharstrut{#1}%
    \fi}
 
-\def\showstruts
+\unexpanded\def\showstruts
   {\setteststrut
    \settestcrlf}
 
-\def\setteststrut
+\unexpanded\def\setteststrut
   {\def\strutwidth{.8pt}%
    \setstrut}
 
 \def\autostrutfactor{1.1}
 
-\def\setautostrut
+\unexpanded\def\setautostrut
   {\begingroup
    \setbox\scratchbox\copy\strutbox
    \setstrut
@@ -876,55 +892,79 @@
      \endgroup
    \fi\fi}
 
+\newbox\nostrutbox \setbox\nostrutbox\emptyhbox
+
+\unexpanded\def\setnostrut
+  {\setbox\strutbox\copy\nostrutbox
+   \let\strut\empty
+   \let\endstrut\empty
+   \let\begstrut\empty
+   \let\crlfplaceholder\empty}
+
 % when enabled, sigstruts will remove themselves if nothing
 % goes inbetween
 
 \newsignal\strutsignal \setfalse\sigstruts
 
 \unexpanded\def\begstrut
-  {\relax\ifcase\strutht\else
-     \ifconditional\sigstruts
-       \noindent\horizontalstrut
-       \normalpenalty\plustenthousand
-       \normalhskip-\strutsignal
-       \normalhskip\strutsignal
-     \else
-       \strut
-       \normalpenalty\plustenthousand
-       \normalhskip\zeropoint
-     \fi
-     \expandafter \ignorespaces
+  {\relax\ifcase\strutht
+     % \ignorespaces % maybe
+   \else
+     \spacing_begstrut
    \fi}
 
+\def\spacing_begstrut
+  {\ifconditional\sigstruts
+     \spacing_begstrut_signal
+   \else
+     \spacing_begstrut_normal
+   \fi
+   \ignorespaces}
+
+\def\spacing_begstrut_signal
+  {\noindent\horizontalstrut
+   \normalpenalty\plustenthousand
+   \normalhskip-\strutsignal
+   \normalhskip\strutsignal}
+
+\def\spacing_begstrut_normal
+  {\strut
+   \normalpenalty\plustenthousand
+   \normalhskip\zeropoint}
+
 \unexpanded\def\endstrut
-  {\relax\ifhmode\ifcase\strutht\else
-     \ifconditional\sigstruts
-       \ifdim\lastskip=\strutsignal
-         \unskip
-         \unskip
-         \unpenalty
-         \setbox\scratchbox\lastbox
-       \else
-         \normalpenalty\plustenthousand
-         \normalhskip\zeropoint
-         \strut
-       \fi
+  {\relax\ifhmode
+     \ifcase\strutht
+       % \removeunwantedspaces % maybe
      \else
-       \removeunwantedspaces
-       \normalpenalty\plustenthousand
-       \normalhskip\zeropoint
-       \strut
+       \spacing_endstrut
      \fi
-   \fi\fi}
+   \fi}
 
-\newbox\nostrutbox \setbox\nostrutbox\emptyhbox
+\def\spacing_endstrut
+  {\ifconditional\sigstruts
+     \spacing_endstrut_signal
+   \else
+     \spacing_endstrut_normal
+   \fi}
 
-\def\setnostrut
-  {\setbox\strutbox\copy\nostrutbox
-   \let\strut\empty
-   \let\endstrut\empty
-   \let\begstrut\empty
-   \let\crlfplaceholder\empty}
+\def\spacing_endstrut_signal
+  {\ifdim\lastskip=\strutsignal
+     \unskip
+     \unskip
+     \unpenalty
+     \setbox\scratchbox\lastbox
+   \else
+     \normalpenalty\plustenthousand
+     \normalhskip\zeropoint
+     \strut
+   \fi}
+
+\def\spacing_endstrut_normal
+  {\removeunwantedspaces
+   \normalpenalty\plustenthousand
+   \normalhskip\zeropoint
+   \strut}
 
 % unsave:
 %
@@ -942,21 +982,30 @@
 %
 % so:
 
-\def\pseudostrut
+\unexpanded\def\pseudostrut
   {\noindent} % better: \dontleavehmode
 
 \let\pseudobegstrut\pseudostrut
-
 \let\pseudoendstrut\removeunwantedspaces
 
-\def\resetteststrut
+\unexpanded\def\resetteststrut
   {\def\strutwidth{\zeropoint}% no let
    \setstrut}
 
-\ifdefined\setfontparameters\else
-  % problems ! ! ! !
+\ifdefined\setfontparameters \else
   \def\setfontparameters{\the\everybodyfont}
 \fi
+
+%D Keyword based strutting:
+
+\letvalue{\??ut:\v!yes    }\setstrut     % \setvalue{\??ut:\v!yes    }{\setstrut}
+\setvalue{\??ut:\v!auto   }\setautostrut % \setvalue{\??ut:\v!auto   }{\setautostrut}
+\letvalue{\??ut:\v!no     }\setnostrut   % \setvalue{\??ut:\v!no     }{\setnostrut}
+\letvalue{\??ut:\v!cap    }\setcapstrut  % \setvalue{\??ut:\v!cap    }{\setcapstrut}
+\letvalue{\??ut:\v!fit    }\setfontstrut % \setvalue{\??ut:\v!fit    }{\setfontstrut}
+\letvalue{\??ut:\v!line   }\setstrut     % \setvalue{\??ut:\v!line   }{\setstrut}
+\letvalue{\??ut:\s!default}\setstrut     % \setvalue{\??ut:\s!default}{\setstrut}
+\letvalue{\??ut:\empty    }\setstrut     % \setvalue{\??ut:\empty    }{\setstrut}
 
 %D Handy:
 
@@ -967,21 +1016,21 @@
 %D why|>| this assignment gives troubles in for instance the
 %D visual debugger.
 
-\def\offinterlineskip
+\unexpanded\def\offinterlineskip
   {\baselineskip-\thousandpoint
    \lineskip\zeropoint
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
    \def\minimumlinedistance{\zeropoint}}
 
-\def\nointerlineskip
+\unexpanded\def\nointerlineskip
   {\prevdepth-\thousandpoint}
 
-\let\normaloffinterlineskip=\offinterlineskip % knuth's original
+\let\normaloffinterlineskip\offinterlineskip % knuth's original
 
 %D My own one:
 
-\def\dopushinterlineskip
+\unexpanded\def\dopushinterlineskip
   {\edef\oninterlineskip
      {\baselineskip\the\baselineskip
       \lineskip\the\lineskip
@@ -989,10 +1038,10 @@
       \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
       \let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}}
 
-\def\nopushinterlineskip
+\unexpanded\def\nopushinterlineskip
   {\let\oninterlineskip\setnormalbaselines}
 
-\def\offinterlineskip
+\unexpanded\def\offinterlineskip
   {\ifdim\baselineskip>\zeropoint
      \dopushinterlineskip
    \else
@@ -1000,19 +1049,19 @@
    \fi
    \normaloffinterlineskip}
 
-\let\oninterlineskip=\relax
-
-\def\leaveoutervmode
+\let\oninterlineskip\relax
+
+\unexpanded\def\leaveoutervmode
   {\ifvmode\ifinner\else
      \leavevmode
    \fi\fi}
 
-\def\resetpenalties#1%
+\unexpanded\def\resetpenalties#1%
   {\ifdefined#1%
      #1\minusone
    \fi}
 
-\def\setpenalties#1#2#3%
+\unexpanded\def\setpenalties#1#2#3%
   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
      #1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
    \fi}
@@ -1031,12 +1080,12 @@
 \newcount\nofkeeplinestogether
 \let\restoreinterlinepenalty\relax
 
-\def\dorestoreinterlinepenalty
+\unexpanded\def\dorestoreinterlinepenalty
   {\global\let\restoreinterlinepenalty\relax
    \global\resetpenalties\interlinepenalties
    \global\nofkeeplinestogether\zerocount}
 
-\def\keeplinestogether#1%
+\unexpanded\def\keeplinestogether#1%
   {\ifnum#1>\nofkeeplinestogether
      \global\nofkeeplinestogether#1%
      \global\setpenalties\interlinepenalties\nofkeeplinestogether\plustenthousand
@@ -1055,7 +1104,7 @@
 \def\defaultgriddisplaywidowpenalty {0}
 \def\defaultgridbrokenpenalty       {0}
 
-\def\nopenalties
+\unexpanded\def\nopenalties
   {\widowpenalty        \zerocount
    \clubpenalty         \zerocount
    \brokenpenalty       \zerocount
@@ -1063,36 +1112,36 @@
    \finalhyphendemerits \zerocount
    \adjdemerits         \zerocount}
 
-\def\setdefaultpenalties
+\unexpanded\def\setdefaultpenalties
   {\directsetup{\systemsetupsprefix\s!default}}
 
 \startsetups [\systemsetupsprefix\s!reset]
-  \resetpenalties\widowpenalties
-  \resetpenalties\clubpenalties
-  \resetpenalties\interlinepenalties
+    \resetpenalties\widowpenalties
+    \resetpenalties\clubpenalties
+    \resetpenalties\interlinepenalties
 \stopsetups
 
 % we use \directsetup because it's faster and we know there is no csl
 
 \startsetups [\systemsetupsprefix\s!default]
 
-  \directsetup{\systemsetupsprefix\s!reset}
+    \directsetup{\systemsetupsprefix\s!reset}
 
-  \widowpenalty       \defaultwidowpenalty
-  \clubpenalty        \defaultclubpenalty
-  \displaywidowpenalty\defaultdisplaywidowpenalty
-  \brokenpenalty      \defaultbrokenpenalty
+    \widowpenalty       \defaultwidowpenalty
+    \clubpenalty        \defaultclubpenalty
+    \displaywidowpenalty\defaultdisplaywidowpenalty
+    \brokenpenalty      \defaultbrokenpenalty
 
 \stopsetups
 
 \startsetups [\v!grid] [\systemsetupsprefix\s!default]
 
-  \directsetup{\systemsetupsprefix\s!reset}
+    \directsetup{\systemsetupsprefix\s!reset}
 
-  \widowpenalty       \defaultgridwidowpenalty
-  \clubpenalty        \defaultgridclubpenalty
-  \displaywidowpenalty\defaultgriddisplaywidowpenalty
-  \brokenpenalty      \defaultgridbrokenpenalty
+    \widowpenalty       \defaultgridwidowpenalty
+    \clubpenalty        \defaultgridclubpenalty
+    \displaywidowpenalty\defaultgriddisplaywidowpenalty
+    \brokenpenalty      \defaultgridbrokenpenalty
 
 \stopsetups
 
@@ -1100,11 +1149,11 @@
 
 \startsetups [\systemsetupsprefix\v!strict]
 
-   \directsetup{\systemsetupsprefix\s!reset}
+    \directsetup{\systemsetupsprefix\s!reset}
 
-   \setpenalties\widowpenalties2\maxdimen
-   \setpenalties\clubpenalties 2\maxdimen
-                \brokenpenalty  \maxdimen
+    \setpenalties\widowpenalties2\maxdimen
+    \setpenalties\clubpenalties 2\maxdimen
+                 \brokenpenalty  \maxdimen
 
 \stopsetups
 
@@ -1123,36 +1172,36 @@
 
 \def\bottomalignlimit{3\lineheight}
 
-\newif\ifn@rmalbottom
-\newif\ifr@ggedbottom
-\newif\ifb@selinebottom
+\newif\ifn@rmalbottom   % this will be a proper constant
+\newif\ifr@ggedbottom   % this will be a proper constant
+\newif\ifb@selinebottom % this will be a proper constant
 
-\def\normalbottom
+\unexpanded\def\normalbottom
   {% \topskip 10pt
    \r@ggedbottomfalse}
 
-\def\raggedbottom
+\unexpanded\def\raggedbottom
   {\bottomraggednessmode\zerocount
    \n@rmalbottomfalse
    \r@ggedbottomtrue
    \b@selinebottomfalse
    \settopskip}
 
-\def\alignbottom
+\unexpanded\def\alignbottom
   {\bottomraggednessmode\plusone
    \n@rmalbottomtrue
    \r@ggedbottomfalse
    \b@selinebottomfalse
    \settopskip}
 
-\def\baselinebottom
+\unexpanded\def\baselinebottom
   {\bottomraggednessmode\plustwo
    \n@rmalbottomfalse
    \r@ggedbottomfalse
    \b@selinebottomtrue
    \settopskip}
 
-\let\normalbottom=\alignbottom % downward compatible
+\let\normalbottom\alignbottom % downward compatible
 
 % so, the new one will be
 %
@@ -1394,10 +1443,10 @@
       \fi
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
-         \scratchdimen#2\advance\scratchdimen \lineheight
+         \scratchdimen\dimexpr#2+\lineheight\relax
          \dorecurse\noflines
            {\strut
-            \hskip-.5\lineheight
+            \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
                 {\hskip.2\bodyfontsize\hskip\scratchdimen
@@ -1686,27 +1735,69 @@
      \setvalue{\??va:#1}{#2}%
    \fi}
 
+\letvalue{\??va#1:\s!unknown}\zeropoint
+
 \unexpanded\def\vspace
   {\dodoubleempty\dovspace}
 
-\def\dovspace[#1][#2]%
-  {\ifsecondargument
-     \dodovspace[#1][#2]%
-   \else\iffirstargument
-     \vspace[][#1]%
-   \else
-     \vspace[][\s!default]%
-   \fi\fi}
+% \def\dovspace[#1][#2]%
+%   {\par
+%    \ifvmode
+%      \removelastskip
+%      \vskip
+%        \ifsecondargument
+%          \vspaceamount{#1}{#2}%
+%        \else\iffirstargument
+%          \vspaceamount\empty{#1}%
+%        \else
+%          \vspaceamount\empty\s!default
+%        \fi\fi
+%      \relax
+%    \fi}
 
-\def\dodovspace[#1][#2]%
+% \def\vspaceamount#1#2%
+%   {\csname\??va
+%      \ifcsname\??va#1:#2\endcsname
+%        #1:#2%
+%      \else\ifcsname\??va:#2\endcsname
+%        :#2%
+%      \else
+%        :\s!unknown
+%      \fi\fi
+%    \endcsname}
+
+% alternative
+
+\def\dovspace[#1][#2]%
   {\par
    \ifvmode
      \removelastskip
-     \vskip\vspaceamount{#1}{#2}\relax
+     \vskip
+       \csname\??va
+       \ifsecondargument
+         \ifcsname\??va#1:#2\endcsname
+           #1:#2%
+         \else\ifcsname\??va:#2\endcsname
+           :#2%
+         \else
+           :\s!unknown
+         \fi\fi
+       \else\iffirstargument
+         \ifcsname\??va:#1\endcsname
+           :#1%
+         \else
+           :\s!unknown
+         \fi
+       \else
+         \ifcsname\??va:\s!default\endcsname
+           :\s!default%
+         \else
+           :\s!unknown
+         \fi
+       \fi\fi
+     \endcsname
+     \relax
    \fi}
-
-\def\vspaceamount#1#2%
-  {\executeifdefined{\??va#1:#2}{\executeifdefined{\??va:#2}\zeropoint}}
 
 %D When spacing is active we need to handle commands in
 %D a special way:
@@ -1820,8 +1911,8 @@
   {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
 
 \ifdefined\startlines \else
-  \expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname
-  \expandafter\let\expandafter\stoplines \csname\e!stop \v!lines\endcsname
+    \expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname
+    \expandafter\let\expandafter\stoplines \csname\e!stop \v!lines\endcsname
 \fi
 
 \protect \endinput

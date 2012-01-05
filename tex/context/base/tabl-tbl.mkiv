@@ -112,7 +112,8 @@
 %  \EQ \RQ \HQ     equal  (raw, hook)
 %  \NC \RC \HC     normal (raw, hook)
 %
-%  \NR
+%  \NR  checked break
+%  \NB  no break
 %
 %  \HR : rule with lineheight
 %
@@ -756,7 +757,7 @@
   {\ifconditional\tabulatehandlepbreak
      \ifconditional\tabulatenopbreak
        \dotabulatenobreak
-      \else\ifnum\tabulatemaxplines>\plusone
+     \else\ifnum\tabulatemaxplines>\plusone
        \ifnum\tabulateminplines=\plusone
          \dotabulatenobreak
        \fi
@@ -945,7 +946,7 @@
    % expansion en test needed ?
    \settrue\tabulatesplit
    \csname\??tt:\c!split:\tabulateparameter\c!split\endcsname
-   \doifvaluesomething{\??tt\currenttabulate\c!bodyfont}
+   \doifsomething{\tabulateparameter\c!bodyfont}
      {\expanded{\switchtobodyfont[\tabulateparameter\c!bodyfont]}}%
    \postponenotes % new, to be tested / will be configurable
    \tabulatepass\plusone
@@ -1349,7 +1350,19 @@
 \unexpanded\def\tabulateCMone{\global\tabulatelocalcolorspan\plustwo  \tabulatecolorcolumn\zerocount}
 \unexpanded\def\tabulateCRone{\global\tabulatelocalcolorspan\plusthree\tabulatecolorcolumn\zerocount}
 
-\unexpanded\def\tabulateNRone % next row
+% \unexpanded\def\tabulateNRone % next row
+%   {\global\advance\noftabulatelines\plusone
+%    \global\setfalse\tabulatefirstflushed
+%    \global\setfalse\tabulateequal
+%    \global\tabulatecolumn\zerocount
+%    \resettabulatepheight
+%    \unskip\unskip\crcr\flushtabulated
+%    \starttabulatenoalign
+%      \the\everyaftertabulaterow
+%      \checktabulatepenaltiesa
+%    \stoptabulatenoalign}
+
+\def\tabulateNRcommon#1%
   {\global\advance\noftabulatelines\plusone
    \global\setfalse\tabulatefirstflushed
    \global\setfalse\tabulateequal
@@ -1358,8 +1371,14 @@
    \unskip\unskip\crcr\flushtabulated
    \starttabulatenoalign
      \the\everyaftertabulaterow
-     \checktabulatepenaltiesa
+     #1%
    \stoptabulatenoalign}
+
+\unexpanded\def\tabulateNRone % next row
+  {\tabulateNRcommon\checktabulatepenaltiesa}
+
+\unexpanded\def\tabulateNBone % next row no break
+  {\tabulateNRcommon\dotabulatenobreak}
 
 \def\checktabulatepenaltiesa
   {\iftolerantTABLEbreak\else
@@ -1449,18 +1468,6 @@
 % \starttext
 %     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
 % \stoptext
-
-% old crap:
-%
-% \ifnum\noftabulatelines>\plusone
-%   \ifnum\noftabulatelines<\minusnoftabulatelines
-%   % *** somehow topskip messes up as it's intercepted
-%   % \vskip \topskip\allowbreak\vskip- \topskip
-%   % messy anyhow so this needs to be improved, so for
-%   % the moment we keep this bugged variant
-%     \vskip1\topskip
-%     \allowbreak
-%     \vskip-1\topskip
 
 \def\tabulateXXnone{\starttabulatenoalign\tabulateignorehrulespec\stoptabulatenoalign}
 
@@ -1599,9 +1606,9 @@
   {\tabulateunit\tabulateparameter\c!unit
    \checkfulltabulatecontent
    \defaulttabulatevrulethickness\tabulateparameter\c!rulethickness
-   \defaulttabulatehrulethickness\tabulateparameter\c!rulethickness
+   \defaulttabulatehrulethickness\defaulttabulatevrulethickness
    \edef\defaulttabulatevrulecolor{\tabulateparameter\c!rulecolor}%
-   \edef\defaulttabulatehrulecolor{\tabulateparameter\c!rulecolor}%
+   \let\defaulttabulatehrulecolor\defaulttabulatevrulecolor
    \edef\@@tabulatealign{\executeifdefined{\??tt:\c!align:\tabulateparameter\c!align}0}%
    \tabulateposskip.5\tabulateunit
    \tabulatepreskip\zeropoint
@@ -1637,6 +1644,7 @@
    \let\NN\tabulateNNone
    \let\ND\tabulateNDone
    \let\NR\tabulateNRone
+   \let\NB\tabulateNBone
    \let\CC\tabulateCCone
    \let\CL\tabulateCLone
    \let\CM\tabulateCMone
@@ -1680,7 +1688,7 @@
    \let\xbskip\tabulatexbskipone
    \let\xeskip\tabulatexeskipone
    \glet\tabulatehook\dotabulatehook
-   \doifvalue{\??tt\currenttabulate\c!indenting}\v!no\forgetparindent
+   \doif{\tabulateparameter\c!indenting}\v!no\forgetparindent
    \ifinsidefloat
      \let\tabulateindent\!!zeropoint
    \else
@@ -1725,7 +1733,7 @@
    \let\BL\tabulateBLfive
    \let\HL\tabulateHLfive
    \let\HR\tabulateHRfive
-   \doifvalue{\??tt\currenttabulate\c!rule}\v!line
+   \doif{\tabulateparameter\c!rule}\v!line
      {\let\HL\HR
       \let\tabulateautoline\tabulateautorule
       \let\tabulateline\tabulaterule}%
@@ -1733,7 +1741,7 @@
    %
    \ifcase\tabulaterepeathead
      \ifinsidesplitfloat
-       \global\setbox\tabulatebox\vbox \bgroup
+        \global\setbox\tabulatebox\vbox \bgroup
       \else
         \startframedcontent[\tabulateparameter\c!frame]%
       \fi
@@ -1748,7 +1756,7 @@
    \dostoptagged
    \dostoptagged
    \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
-   \doifvalue{\??tt\currenttabulate\c!distance}\v!grid{\vskip-\strutdp}% experimental tm-prikkels
+   \doif{\tabulateparameter\c!distance}\v!grid{\vskip-\strutdp}% experimental tm-prikkels
    %
    \ifcase\tabulaterepeathead
      \ifinsidesplitfloat

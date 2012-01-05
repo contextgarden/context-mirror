@@ -208,9 +208,9 @@
 %D position as well as execute an action associated with that
 %D position.
 
-\let\dopositionaction\gobbleoneargument
+\let\dopositionaction\gobbleoneargument % implemented later
 
-\def\initializenextposition
+\def\positions_initialize
   {\ifpositioning \else
      \global\positioningtrue
      \dosetpositionpapersize\printpaperwidth\printpaperheight
@@ -224,7 +224,7 @@
    \fi}
 
 \def\positions_set_only_indeed#1%
-  {\initializenextposition
+  {\positions_initialize
    \edef\currentposition{#1}%
    \dosetposition\currentposition}
 
@@ -236,7 +236,7 @@
    \fi}
 
 \def\positions_set_indeed#1%
-  {\initializenextposition
+  {\positions_initialize
    \edef\currentposition{#1}%
    \dosetposition\currentposition
    \traceposstring\llap\green{\currentposition>}%
@@ -250,7 +250,7 @@
    \fi}
 
 \def\positions_set_data_indeed#1#2#3#4%
-  {\initializenextposition
+  {\positions_initialize
    \hbox
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{#2}{#3}{#4}% already \the\dimexpr
@@ -272,7 +272,7 @@
   {\dowithnextbox{\positions_set_box_finish{#1}}}
 
 \def\positions_set_box_finish#1%
-  {\initializenextposition
+  {\positions_initialize
    \hbox to \wd\nextbox
      {\edef\currentposition{#1}%
       \dosetpositionwhd\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}% already \the\dimexpr
@@ -290,7 +290,7 @@
    \fi}
 
 \def\positions_set_plus_indeed#1#2#3#4#5%
-  {\initializenextposition
+  {\positions_initialize
    \hbox % just package
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{#2}{#3}{#4}{#5}% already \the\dimexpr
@@ -312,7 +312,7 @@
   {\dowithnextbox{\positions_set_plus_yes_finish{#1}{#2}}}
 
 \def\positions_set_plus_yes_finish#1#2%
-  {\initializenextposition
+  {\positions_initialize
    \hbox to \nextboxwd
      {\edef\currentposition{#1}%
       \dosetpositionplus\currentposition{\wd\nextbox}{\ht\nextbox}{\dp\nextbox}{#2}%
@@ -366,7 +366,7 @@
 %D Each macro takes an identifier as argument, and the \type
 %D {\hpos} and \type {\vpos} also expect box content.
 
-% \def\xypos{\initializenextposition\dosetposition}
+% \def\xypos{\positions_initialize\dosetposition}
 
 \let\xypos\setpositiononly
 

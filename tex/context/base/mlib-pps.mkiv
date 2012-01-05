@@ -30,6 +30,19 @@
 % have no limitation. Typically an example of a next version solution
 % due to \LUATEX\ evolving.
 
+% TODO: foigure out why this is shifted
+%
+% \setupbodyfont[palatino]
+%
+% \starttext
+%     \startMPpage
+%         draw textext("123") ;
+%     \stopMPpage
+% \stoptext
+%
+% A slightly larger picturew works ok. Some kind of interference
+% with the OTR.
+
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext
 
@@ -49,18 +62,23 @@
 
 \def\MPLIBgettextscaledcm#1#2#3#4#5#6#7#8#9% 2-7: sx,rx,ry,sy,tx,ty
   {\ctxlua{metapost.gettext(\number\MPtextbox,#1)}%
-   \setbox\scratchbox\hbox
-     {\dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop
-        \vbox to \zeropoint
-          {\vss
-           \hbox to \zeropoint
-             {\scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}%
-              \forcecolorhack
-              \hss}}}%
-   \smashbox\scratchbox
-   \box\scratchbox}
+   \setbox\MPbox\hbox\bgroup
+     \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}% does push pop
+       \vbox to \zeropoint\bgroup
+          \vss
+          \hbox to \zeropoint \bgroup
+          % \scale[\c!sx=#8,\c!sy=#9]{\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack
+            \dostartscaling{#8}{#9}%
+              \raise\dp\MPtextbox\box\MPtextbox
+            \dostopscaling
+            \hss
+         \egroup
+       \egroup
+   \egroup
+   \smashbox\MPbox
+   \box\MPbox}
 
-\def\MPLIBgraphictext#1%
+\def\MPLIBgraphictext#1% use at mp end
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 
 %D \startbuffer

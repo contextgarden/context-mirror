@@ -514,7 +514,13 @@ methods[v_bottom_nocheck]   = function(name,range) return doresolve(name,range,t
 methods[v_next_nocheck]     = function(name,range) return doresolve(name,range,true , 0,1,false) end
 
 local function do_first(name,range,check)
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, resolve first",name,range)
+    end
     local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, resolve last",name,range)
+    end
     local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
     if f_found and l_found and l_index > f_index then
         local name = parentname(name)
@@ -522,15 +528,27 @@ local function do_first(name,range,check)
             local si = stack[i]
             local sn = si[name]
             if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= f_value then
+                if trace_marks_get then
+                    report_marks("resolve: name=%s, range=%s, index=%s, value=%s",name,range,i,sn)
+                end
                 return sn, i, si
             end
         end
+    end
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, using first",name,range)
     end
     return f_value, f_index, f_found
 end
 
 local function do_last(name,range,check)
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, resolve first",name,range)
+    end
     local f_value, f_index, f_found = doresolve(name,range,false,0,0,check)
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, resolve last",name,range)
+    end
     local l_value, l_index, l_found = doresolve(name,range,true ,0,0,check)
     if f_found and l_found and l_index > f_index then
         local name = parentname(name)
@@ -538,9 +556,15 @@ local function do_last(name,range,check)
             local si = stack[i]
             local sn = si[name]
             if sn and sn ~= false and sn ~= true and sn ~= "" and sn ~= l_value then
+                if trace_marks_get then
+                    report_marks("resolve: name=%s, range=%s, index=%s, value=%s",name,range,i,sn)
+                end
                 return sn, i, si
             end
         end
+    end
+    if trace_marks_get then
+        report_marks("resolve: name=%s, range=%s, using last",name,range)
     end
     return l_value, l_index, l_found
 end
