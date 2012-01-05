@@ -949,20 +949,24 @@ local value = Cs ( (
 
 -- should be codeinjections
 
+local t_list = attributes.list[attributes.private('transparency')]
+local c_list = attributes.list[attributes.private('color')]
+
 local function tr_process(object,prescript,before,after)
     -- before can be shortcut to t
     local tr_alternative = prescript.tr_alternative
     if tr_alternative then
         tr_alternative = tonumber(tr_alternative)
         local tr_transparency = tonumber(prescript.tr_transparency)
-        before[#before+1], after[#after+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true)), "/Tr0 gs" -- outertransparency
+        before[#before+1] = format("/Tr%s gs",registertransparency(nil,tr_alternative,tr_transparency,true))
+        after[#after+1] = "/Tr0 gs" -- outertransparency
     end
     local cs = object.color
     if cs and #cs > 0 then
-        local b, a
+        local c_b, c_a
         local sp_type = prescript.sp_type
         if not sp_type then
-            b, a = colorconverter(cs)
+            c_b, c_a = colorconverter(cs)
         elseif sp_type == "spot" or sp_type == "multitone" then
             local sp_name       = prescript.sp_name       or "black"
             local sp_fractions  = prescript.sp_fractions  or 1
@@ -971,19 +975,47 @@ local function tr_process(object,prescript,before,after)
             local cf = cs[1]
             if cf ~= 1 then
                 -- beware, we do scale the spotcolors but not the alternative representation
-                sp_value = lpeg.match(value,sp_value,1,cf) or sp_value
+                sp_value = lpegmatch(value,sp_value,1,cf) or sp_value
             end
-            b, a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
+            c_b, c_a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
         elseif sp_type == "named" then
---~ local sp_name = prescript.sp_name       or "black"
---~ local c = attributes.list[attributes.private('color')][sp_name] -- string or attribute
---~ local r = attributes.colors.registered[r]
---~ local v = attributes.colors.value(r)
-            b, a = colorconverter(cs)
+            -- we might move this to another namespace .. also, named can be a spotcolor
+            -- so we need to check for that too
+            local sp_name = prescript.sp_name or "black"
+            if not tr_alternative then
+                -- todo: sp_name is not yet registered at this time
+                local t = t_list[sp_name] -- string or attribute
+                local v = t and attributes.transparencies.value(t)
+                if v then
+                    before[#before+1] = format("/Tr%s gs",registertransparency(nil,v[1],v[2],true))
+                    after[#after+1] = "/Tr0 gs" -- outertransparency
+                end
+            end
+            local c = c_list[sp_name] -- string or attribute
+            local v = c and attributes.colors.value(c)
+            if v then
+                -- all=1 gray=2 rgb=3 cmyk=4
+                local colorspace = v[1]
+                local f = cs[1]
+                if colorspace == 2 then
+                    local s = f*v[2]
+                    c_b, c_a = checked_color_pair(format("%.3f g %.3f G",s,s))
+                elseif colorspace == 3 then
+                    local r, g, b = f*v[3], f*v[4], f*v[5]
+                    c_b, c_a = checked_color_pair(format("%.3f %.3f %.3f rg %.3f %.3f %.3f RG",r,g,b,r,g,b))
+                elseif colorspace == 4 or colorspace == 1 then
+                    local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
+                    c_b, c_a = checked_color_pair(format("%.3f %.3f %.3f %.3f k %.3f %.3f %.3f %.3f K",c,m,y,k,c,m,y,k))
+                else
+                    local s = f*v[2]
+                    c_b, c_a = checked_color_pair(format("%.3f g %.3f G",s,s))
+                end
+            end
+            --
         end
-        if a and b then
-            before[#before+1] = b
-            after[#after+1] = a
+        if c_a and c_b then
+            before[#before+1] = c_b
+            after[#after+1] = c_a
         end
     end
 end

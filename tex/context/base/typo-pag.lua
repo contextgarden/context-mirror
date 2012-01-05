@@ -1,0 +1,172 @@
+if not modules then modules = { } end modules ['typo-pag'] = {
+    version   = 1.001,
+    comment   = "companion to typo-pag.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nodecodes           = nodes.nodecodes
+
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local glue_code           = nodecodes.glue
+local kern_code           = nodecodes.kern
+local penalty_code        = nodecodes.penalty
+
+local insert_node_after   = node.insert_after
+local new_penalty         = nodes.pool.penalty
+local has_attribute       = node.has_attribute
+local unset_attribute     = node.unset_attribute
+local set_attribute       = node.set_attribute
+
+local points              = number.points
+
+local a_keeptogether      = attributes.private("keeptogether")
+
+local trace_keeptogether  = false  trackers.register("parbuilders.keeptogether", function(v) trace_keeptogether  = v end)
+local report_keeptogether = logs.reporter("parbuilders","keeptogether")
+
+local cache               = { }
+local last                = 0
+local enabled             = false
+
+-- todo: also support lines = 3 etc (e.g. dropped caps) but how to set that
+-- when no hlists are there ? ... maybe the local_par
+
+function builders.paragraphs.registertogether(line,specification) -- might change
+    if not enabled then
+        nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
+    end
+    local a = has_attribute(line,a_keeptogether)
+    local c = a and cache[a]
+    if c then
+        local height = specification.height
+        local depth  = specification.depth
+        local slack  = specification.slack
+        if height and height > c.height then
+            c.height = height
+        end
+        if depth and depth > c.depth then
+            c.depth = depth
+        end
+        if slack and slack > c.slack then
+            c.slack = slack
+        end
+    else
+        last = last + 1
+        cache[last] = specification
+        if not specification.height then
+            specification.height = 0
+        end
+        if not specification.depth then
+            specification.depth = 0
+        end
+        if not specification.slack then
+            specification.slack = 0
+        end
+        set_attribute(line,a_keeptogether,last)
+    end
+    if trace_keeptogether then
+        local a = a or last
+        local c = cache[a]
+        if trace_keeptogether then
+            report_keeptogether("registered, index: %s, height: %s, depth: %s, slack: %s",
+                a,points(c.height),points(c.depth),points(c.slack))
+        end
+    end
+end
+
+local function keeptogether(start,a)
+    if start then
+        local specification = cache[a]
+        if a then
+            local current = start.next
+            local previous = start
+            local total = previous.depth
+            local slack = specification.slack
+            local threshold = specification.depth - slack
+            if trace_keeptogether then
+                report_keeptogether("list, index: %s, total: %s, threshold: %s, slack: %s",a,points(total),points(threshold),points(slack))
+            end
+            while current do
+                local id = current.id
+                if id == vlist_code or id == hlist_code then
+                    total = total + current.height + current.depth
+                    if trace_keeptogether then
+                        report_keeptogether("list, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                    end
+                    if total <= threshold then
+                        if previous.id == penalty_code then
+                            previous.penalty = 10000
+                        else
+                            insert_node_after(head,previous,new_penalty(10000))
+                        end
+                    else
+                        break
+                    end
+                elseif id == glue_code then
+                    -- hm, breakpoint, maybe turn this into kern
+                    total = total + current.spec.width
+                    if trace_keeptogether then
+                        report_keeptogether("glue, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                    end
+                    if total <= threshold then
+                        if previous.id == penalty_code then
+                            previous.penalty = 10000
+                        else
+                            insert_node_after(head,previous,new_penalty(10000))
+                        end
+                    else
+                        break
+                    end
+                elseif id == kern_code then
+                    total = total + current.kern
+                    if trace_keeptogether then
+                        report_keeptogether("kern, index: %s, total: %s, threshold: %s",a,points(total),points(threshold))
+                    end
+                    if total <= threshold then
+                        if previous.id == penalty_code then
+                            previous.penalty = 10000
+                        else
+                            insert_node_after(head,previous,new_penalty(10000))
+                        end
+                    else
+                        break
+                    end
+                elseif id == penalty_code then
+                    if total <= threshold then
+                        if previous.id == penalty_code then
+                            previous.penalty = 10000
+                        end
+                        current.penalty = 10000
+                    else
+                        break
+                    end
+                end
+                previous = current
+                current = current.next
+            end
+        end
+    end
+end
+
+-- also look at first non glue/kern node e.g for a dropped caps
+
+function builders.paragraphs.keeptogether(head)
+    local done = false
+    local current = head
+    while current do
+        if current.id == hlist_code then
+            local a = has_attribute(current,a_keeptogether)
+            if a and a > 0 then
+                keeptogether(current,a)
+                unset_attribute(current,a_keeptogether)
+                cache[a] = nil
+                done = true
+            end
+        end
+        current = current.next
+    end
+    return head, done
+end

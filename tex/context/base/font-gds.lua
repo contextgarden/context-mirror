@@ -464,8 +464,8 @@ local function initialize(tfmdata)
                     local disableengine = mathitalics.disableengine
                     properties.italic_correction        = true
                     properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway
-                    if properties.no_mathitalics == nil then
-                        properties.no_mathitalics = disableengine
+                    if properties.mathitalics == nil then
+                        properties.mathitalics = disableengine
                     end
                     if corrections then
                         -- As we want to set italic_correction (the context one) we need a
@@ -477,15 +477,15 @@ local function initialize(tfmdata)
                             properties.italic_correction        = true
                             properties.mathitalic_defaultfactor = defaultfactor
                             properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
-                            if properties.no_mathitalics == nil then
-                                properties.no_mathitalics = disableengine
+                            if properties.mathitalics == nil then
+                                properties.mathitalics = disableengine
                             end
                             if trace_goodies then
                                 report_goodies("assigning mathitalics for font '%s'",properties.name)
                             end
-                            local no_mathitalics = properties.no_mathitalics
-                            local quad           = parameters.quad
-                            local hfactor        = parameters.hfactor
+                            local mathitalics = properties.mathitalics
+                            local quad        = parameters.quad
+                            local hfactor     = parameters.hfactor
                             for k, v in next, corrections do
                                 local c = characters[k]
                                 if v > -1 and v < 1 then
@@ -494,7 +494,7 @@ local function initialize(tfmdata)
                                     v = v * hfactor
                                 end
                                 c.italic_correction = v -- for context
-                                if no_mathitalics then
+                                if mathitalics then
                                     c.italic = v -- for tex
                                 else
                                     c.italic = nil

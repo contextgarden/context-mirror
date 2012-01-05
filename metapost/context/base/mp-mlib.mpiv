@@ -54,12 +54,11 @@ vardef transparency_alternative_to_number(expr name) =
     fi
 enddef ;
 
-% def namedcolor(expr n, v) =
-%     1
-%     withprescript "sp_type=named"
-%     withprescript "sp_name="  & n
-%     withprescript "sp_value=" & v
-% enddef ;
+def namedcolor (expr n) =
+    1
+    withprescript "sp_type=named"
+    withprescript "sp_name=" & n
+enddef ;
 
 def spotcolor(expr n, v) =
     1
@@ -156,6 +155,16 @@ enddef ;
 % More text
 
 defaultfont := "Mono" ; % was cmr10, could be lmmono10-regular, but is fed into context anyway
+
+vardef fontsize expr str =
+    save size ; numeric size ;
+    size := bbwidth(textext("\MPfontsizehskip{" & defaultfont & "}")) ;
+    if size = 0 :
+        12pt
+    else :
+        size
+    fi
+enddef ;
 
 pair mfun_laboff        ; mfun_laboff        := (0,0)            ;
 pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)           ;

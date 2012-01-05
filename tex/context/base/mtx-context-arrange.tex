@@ -25,8 +25,13 @@
 % --marking               : add cutmarks
 % --addempty=list         : add empty pages at/after (comma separated list)
 % --printformat           : 2UP, etc
+% --paperformat=spec      : paper*print or paperxprint
+%
+% example: context --extra=arrange --printformat=2UP --paperformat=A4,A3,landscape myfile
 %
 % end help
+
+\input mtx-context-common.tex
 
 \doifdocumentargument {paperoffset} {
     \definepapersize
@@ -40,6 +45,16 @@
 } {
     \setdocumentargument{sided}{singlesided}
 }
+
+\setuppapersize
+  [\getdocumentargument{paperformat_paper}]
+  [\getdocumentargument{paperformat_print}]
+
+% todo: autopapersize
+%
+% \setuppapersize
+%   [A4]
+%   [A3,landscape]
 
 \setdocumentargumentdefault {textwidth} {0cm}
 \setdocumentargumentdefault {backspace} {0cm}

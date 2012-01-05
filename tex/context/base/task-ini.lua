@@ -43,6 +43,8 @@ appendaction("processors",   "lists",       "typesetters.kerns.handler")        
 appendaction("processors",   "lists",       "typesetters.digits.handler")                        -- disabled (after otf handling)
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
+appendaction("processors",   "lists",       "typesetters.paragraphs.handler")                    -- disabled
+
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "typesetters.alignments.handler")
 appendaction("shipouts",     "normalizers", "nodes.references.handler")                          -- disabled
@@ -78,6 +80,7 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 
 -- quite experimental (nodes.handlers.graphicvadjust might go away)
 
+appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 appendaction("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
@@ -103,6 +106,7 @@ disableaction("processors",  "typesetters.spacings.handler")
 disableaction("processors",  "typesetters.kerns.handler")
 disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "nodes.handlers.stripping")
+disableaction("processors",  "typesetters.paragraphs.handler")
 
 disableaction("shipouts",    "typesetters.alignments.handler")
 disableaction("shipouts",    "nodes.rules.handler")
@@ -127,6 +131,7 @@ disableaction("mvlbuilders", "nodes.handlers.migrate")
 
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 
+disableaction("finalizers",  "builders.paragraphs.keeptogether")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 disableaction("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")

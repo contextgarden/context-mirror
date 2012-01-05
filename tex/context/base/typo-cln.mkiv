@@ -22,9 +22,12 @@
 %D Currently there is no interface.
 %D
 %D 1: Autocap first character of a line
-%D 2: Maybe dropped caps.
 
 \unexpanded\def\setcharactercleaning[#1]% This name might change!
-  {\ctxlua{typesetters.cleaners.set(\number#1)}}
+  {\ctxlua{typesetters.cleaners.set("#1")}} % also accepts "reset"
+
+% \appendtoks
+%     \attribute\cleanerattribute\attributeunsetvalue
+% \to \everyforgetall
 
 \protect \endinput

@@ -25,6 +25,7 @@ of neutral.</p>
 --ldx]]--
 
 local fonts              = fonts
+local fontdata           = fonts.hashes.identifiers
 
 local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
@@ -491,13 +492,14 @@ registerotffeature {
 
 local function initializeitlc(tfmdata,value) -- hm, always value
     if value then
-        -- the magic 40 and it formula come from Dohyun Kim
+        -- the magic 40 and it formula come from Dohyun Kim but we might need another guess
         local parameters = tfmdata.parameters
         local italicangle = parameters.italicangle
         if italicangle and italicangle ~= 0 then
+            local properties = tfmdata.properties
             local factor = tonumber(value) or 1
-            tfmdata.properties.italic_correction = true
-            tfmdata.properties.auto_italic_correction = factor * (parameters.uwidth or 40)/2
+            properties.italic_correction = true
+            properties.auto_italic_correction = factor * (parameters.uwidth or 40)/2
         end
     end
 end
@@ -520,25 +522,27 @@ registerafmfeature {
     }
 }
 
-local function initializenotextitalics(tfmdata,value)
-    tfmdata.properties.no_textitalics = value
+local function initializetextitalics(tfmdata,value) -- yes no delay
+    local delay = value == "delay"
+    tfmdata.properties.textitalics = delay and true or value
+    tfmdata.properties.delaytextitalics = delay
 end
 
 registerotffeature {
-    name        = "notextitalics",
-    description = "don't pass text italic correction to tex",
+    name        = "textitalics",
+    description = "use alternative text italic correction",
     initializers = {
-        base = initializenotextitalics,
-        node = initializenotextitalics,
+        base = initializetextitalics,
+        node = initializetextitalics,
     }
 }
 
 registerafmfeature {
-    name        = "notextitalics",
-    description = "don't pass text italic correction to tex",
+    name        = "textitalics",
+    description = "use alternative text italic correction",
     initializers = {
-        base = initializenotextitalics,
-        node = initializenotextitalics,
+        base = initializetextitalics,
+        node = initializetextitalics,
     }
 }
 
@@ -766,3 +770,63 @@ registerotffeature {
 --         node = processformatters,
 --     }
 -- }
+
+-- a handy helper (might change or be moved to another namespace)
+
+local new_special = nodes.pool.special
+local new_glyph   = nodes.pool.glyph
+local hpack_node  = node.hpack
+
+function fonts.helpers.addprivate(tfmdata,name,characterdata)
+    local properties  = tfmdata.properties
+    local privates    = properties.privates
+    local lastprivate = properties.lastprivate
+    if lastprivate then
+        lastprivate = lastprivate + 1
+    else
+        lastprivate = 0xE000
+    end
+    if not privates then
+        privates = { }
+        properties.privates = privates
+    end
+    privates[name] = lastprivate
+    properties.lastprivate = lastprivate
+    tfmdata.characters[lastprivate] = characterdata
+    if properties.finalized then
+        properties.lateprivates = true
+    end
+    return lastprivate
+end
+
+function fonts.helpers.getprivatenode(tfmdata,name)
+    local properties = tfmdata.properties
+    local privates   = properties and properties.privates
+    if privates then
+        local p = privates[name]
+        if p then
+            local char = tfmdata.characters[p]
+            local commands = char.commands
+            if commands then
+                local fake = hpack_node(new_special(commands[1][2]))
+                fake.width = char.width
+                fake.height = char.height
+                fake.depth = char.depth
+                return fake
+            else
+                -- todo: set current attribibutes
+                return new_glyph(properties.id,p)
+            end
+        end
+    end
+end
+
+function fonts.helpers.hasprivate(tfmdata,name)
+    local properties = tfmdata.properties
+    local privates   = properties and properties.privates
+    return privates and privates[name] or false
+end
+
+function commands.getprivatechar(name)
+    context(fonts.helpers.getprivatenode(fontdata[font.current()],name))
+end

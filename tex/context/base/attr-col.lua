@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['attr-col'] = {
 -- this module is being reconstructed and code will move to other places
 -- we can also do the nsnone via a metatable and then also se index 0
 
+-- list could as well refer to the tables (instead of numbers that
+-- index into another table) .. depends on what we need
+
 local type = type
 local format = string.format
 local concat = table.concat
@@ -349,13 +352,15 @@ end
 
 -- transparencies
 
+local a_transparency      = attributes.private('transparency')
+
 attributes.transparencies = attributes.transparencies or { }
 local transparencies      = attributes.transparencies
 transparencies.registered = transparencies.registered or { }
 transparencies.data       = allocate()
 transparencies.values     = transparencies.values or { }
 transparencies.triggering = true
-transparencies.attribute  = attributes.private('transparency')
+transparencies.attribute  = a_transparency
 transparencies.supported  = true
 
 storage.register("attributes/transparencies/registered", transparencies.registered, "attributes.transparencies.registered")
@@ -392,6 +397,9 @@ function transparencies.register(name,a,t,force) -- name is irrelevant here (can
         end
     elseif force and not data[n] then
         register_transparency(n,a,t)
+    end
+    if name then
+        list[a_transparency][name] = n -- not grouped, so only global transparencies
     end
     return registered[stamp]
 end

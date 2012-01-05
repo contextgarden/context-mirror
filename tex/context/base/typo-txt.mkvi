@@ -1,0 +1,71 @@
+%D \module
+%D   [       file=typo-txt,
+%D        version=2011.10.27,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Texts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module replaces the by now rather old supp-fun module.
+
+\unprotect
+
+%D \NormalizeFontHeight \name {sample text} {height} {font}
+%D \NormalizeFontWidth  \name {sample text} {width}  {font}
+%D \NormalizeTextHeight {font} {height} {text}
+%D \NormalizeTextWidth  {font} {width}  {text}
+
+\newbox\normalize_font_box
+
+\def\normalized_size#axis#size%
+  {\dimexpr\ifdim#1\normalize_font_box=\zeropoint
+     \bodyfontsize
+   \else
+     \cldcontext{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\normalize_font_box}\scaledpoint
+   \fi\relax}
+
+\def\normalize_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
+  {\begingroup
+   \setbox\normalize_font_box\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \normalexpanded{\endgroup\edef\noexpand\TheNormalizedFontSize{\the\normalized_size{#axis}{#size}}}%
+   \edef#cs{\noexpand\definedfont[#font at \TheNormalizedFontSize]}}
+
+\unexpanded\def\normalize_text_at_size#axis#font#size#text%
+  {\dontleavehmode
+   \begingroup
+   \setbox\normalize_font_box\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
+   \definedfont[#font at \the\normalized_size{#axis}{#size}]#text%
+   \endgroup}
+
+\let\TheNormalizedFontSize\!!zeropoint
+
+%D Traditionally we use UpperCasedNames for this kind of
+%D functionality.
+
+\unexpanded\def\NormalizeFontHeight{\normalize_font_at_size\ht}
+\unexpanded\def\NormalizeFontWidth {\normalize_font_at_size\wd}
+
+\unexpanded\def\NormalizeTextHeight{\normalize_text_at_size\ht}
+\unexpanded\def\NormalizeTextWidth {\normalize_text_at_size\wd}
+
+\unexpanded\def\WidthSpanningText#text#width#font% compatibility macro
+  {\hbox{\NormalizeFontWidth\temp{#text}{#width}{#font}\temp\the\everydefinedfont#1}}
+
+%D \startbuffer
+%D \NormalizeFontWidth \MyFontName {sample text} {10cm}  {Serif*default}
+%D
+%D \ruledhbox{\MyFontName sample text}
+%D \blank
+%D \blackrule[width=10cm]
+%D \blank
+%D \ruledhbox{\NormalizeTextWidth {Serif*default} {10cm} {sample text}}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\protect \endinput

@@ -19,6 +19,7 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
+local disc_code          = nodecodes.disc
 
 local tasks              = nodes.tasks
 
@@ -31,14 +32,12 @@ local a_italics          = attributes.private("italics")
 local unsetvalue         = attributes.unsetvalue
 
 ----- new_correction     = nodes.pool.fontkern
------ new_correction     = nodes.pool.fontkern
 local new_correction     = nodes.pool.glue
 
 local points             = number.points
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
-local chardata           = fonthashes.characters
 local italicsdata        = fonthashes.italics
 
 local forcedvariant      = false
@@ -55,7 +54,43 @@ end
 --     italic = vi*parameters[font].hfactor
 -- end
 --
--- this saves us quite entries in the characters table
+-- this saves us quite some entries in the characters table
+
+local function setitalicinfont(font,char)
+    local tfmdata = fontdata[font]
+    local character = tfmdata.characters[char]
+    if character then
+        local italic = character.italic_correction
+        if not italic then
+            local autoitalic = tfmdata.properties.auto_italic_correction or 0
+            if autoitalic ~= 0 then
+                local description = tfmdata.descriptions[char]
+                if description then
+                    italic = description.italic
+                    if not italic then
+                        local boundingbox = description.boundingbox
+                        italic = boundingbox[3] - description.width + autoitalic
+                     -- print(boundingbox[3],description.width,autoitalic,italic)
+                        if italic < 0 then -- < 0 indicates no overshoot or a very small auto italic
+                            italic = 0
+                        end
+                    end
+                    if italic ~= 0 then
+                        italic = italic * tfmdata.parameters.hfactor
+                    end
+                end
+            end
+            if trace_italics then
+                report_italics("setting italic correction of %s (U+%05X) of font %s to %s",utfchar(char),char,font,points(italic))
+            end
+            character.italic_correction = italic or 0
+        end
+        return italic
+    else
+        return 0
+    end
+end
+
 
 local function process(namespace,attribute,head)
     local done     = false
@@ -82,7 +117,7 @@ local function process(namespace,attribute,head)
                         if trace_italics then
                             report_italics("inserting %s between italic %s and regular %s",points(italic),utfchar(prevchar),utfchar(char))
                         end
-                        insert_node_after(head,previous,new_correction(italic),new_correction(italic))
+                        insert_node_after(head,previous,new_correction(italic))
                         done = true
                     end
                 elseif inserted and data then
@@ -90,7 +125,10 @@ local function process(namespace,attribute,head)
                         report_italics("deleting last correction before %s",utfchar(char))
                     end
                     delete_node(head,inserted)
+                else
+                    -- nothing
                 end
+                lastfont = font
             end
             if data then
                 local attr = forcedvariant or has_attribute(current,attribute)
@@ -102,8 +140,10 @@ local function process(namespace,attribute,head)
                     else
                         italic = cd.italic or cd.italic_correction
                         if not italic then
-                            italic = 0
-                        elseif italic ~= 0 then
+                            italic = setitalicinfont(font,char) -- calculated once
+                         -- italic = 0
+                        end
+                        if italic ~= 0 then
                             lastfont = font
                             lastattr = attr
                             previous = current
@@ -117,6 +157,8 @@ local function process(namespace,attribute,head)
                 italic = 0
             end
             inserted = nil
+        elseif id == disc_code then
+            -- skip
         elseif id == kern_code then
             inserted = nil
             italic = 0
@@ -197,14 +239,14 @@ function commands.setupitaliccorrection(option) -- no grouping !
         variant = 2
     end
     if options[variables.global] then
-        forcevariant = variant
+        forcedvariant = variant
         texattribute[a_italics] = unsetvalue
     else
-        forcevariant = false
+        forcedvariant = false
         texattribute[a_italics] = variant
     end
     if trace_italics then
-        report_italics("force: %s, variant: %s",tostring(forcevariant),tostring(variant ~= unsetvalue and variant))
+        report_italics("force: %s, variant: %s",tostring(forcedvariant),tostring(variant ~= unsetvalue and variant))
     end
 end
 
@@ -213,11 +255,11 @@ end
 local stack = { }
 
 function commands.pushitaliccorrection()
-    table.insert(stack,{forcevariant, texattribute[a_italics] })
+    table.insert(stack,{forcedvariant, texattribute[a_italics] })
 end
 
 function commands.popitaliccorrection()
     local top = table.remove(stack)
-    forcevariant = top[1]
+    forcedvariant = top[1]
     texattribute[a_italics] = top[2]
 end

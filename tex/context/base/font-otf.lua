@@ -1930,9 +1930,9 @@ local function otftotfm(specification)
                     tfmdata.shared = shared
                 end
                 shared.rawdata     = rawdata
-                shared.features    = features -- default
+             -- shared.features    = features -- default
                 shared.dynamics    = { }
-                shared.processes   = { }
+             -- shared.processes   = { }
                 tfmdata.changed    = { }
                 shared.features    = features
                 shared.processes   = otf.setfeatures(tfmdata,features)
@@ -1951,7 +1951,8 @@ local function read_from_otf(specification)
         tfmdata.properties.sub  = specification.sub
         --
         tfmdata = constructors.scale(tfmdata,specification)
-        constructors.applymanipulators("otf",tfmdata,specification.features.normal,trace_features,report_otf)
+        local allfeatures = tfmdata.shared.features or specification.features.normal
+        constructors.applymanipulators("otf",tfmdata,allfeatures,trace_features,report_otf)
         constructors.setname(tfmdata,specification) -- only otf?
         fonts.loggers.register(tfmdata,file.extname(specification.filename),specification)
     end

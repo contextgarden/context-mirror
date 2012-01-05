@@ -29,7 +29,7 @@
 
 \startluacode
     local paperformat = document.arguments['paperformat'] or 'A4*A4'
-    paperformat = string.upper(paperformat)
+ -- paperformat = string.upper(paperformat) -- no, as we don't want to uppercase 'landscape'
     local f, t = string.match(paperformat,"^(.-)%s*[%*xX]%s*(.-)$")
     if not f then
         f, t = "A4", "A4"

@@ -97,9 +97,8 @@ local function read_from_tfm(specification)
             end
         end
         --
-        if next(features) then
-            constructors.applymanipulators("tfm",tfmdata,specification.features.normal,trace_features,report_tfm)
-        end
+        local allfeatures = tfmdata.shared.features or specification.features.normal
+        constructors.applymanipulators("tfm",tfmdata,allfeatures.normal,trace_features,report_tfm)
         if not features.encoding then
             local encoding, filename = match(properties.filename,"^(.-)%-(.*)$") -- context: encoding-name.*
             if filename and encoding and encodings.known[encoding] then

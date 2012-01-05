@@ -74,8 +74,8 @@ constructors.keys = {
         noglyphnames           = "boolean",
         mode                   = "string",
         has_math               = "boolean",
-        no_math_italics        = "boolean",
-        no_text_italics        = "boolean",
+        mathitalics            = "boolean",
+        textitalics            = "boolean",
         finalized              = "boolean",
     },
     parameters = {
@@ -405,13 +405,13 @@ function constructors.scale(tfmdata,specification)
     targetparameters.units        = units
     targetparameters.scaledpoints = askedscaledpoints
     --
-    local isvirtual  = properties.virtualized or tfmdata.type == "virtual"
-    local hasquality = target.auto_expand or target.auto_protrude
-    local hasitalic  = properties.italic_correction
-    local autoitalic = properties.auto_italic_correction
-    local stackmath  = not properties.no_stackmath
-    local nonames    = properties.noglyphnames
-    local nodemode   = properties.mode == "node"
+    local isvirtual     = properties.virtualized or tfmdata.type == "virtual"
+    local hasquality    = target.auto_expand or target.auto_protrude
+    local hasitalic     = properties.italic_correction
+    local autoitalic    = properties.auto_italic_correction
+    local stackmath     = not properties.no_stackmath
+    local nonames       = properties.noglyphnames
+    local nodemode      = properties.mode == "node"
     --
     if changed and not next(changed) then
         changed = false
@@ -482,9 +482,12 @@ function constructors.scale(tfmdata,specification)
     end
     --
     local italickey = "italic"
+    --
+    -- some context specific trickery (we might move this to a plug in into here
+    --
     if hasmath then
-        if properties.no_mathitalics then
-            italickey = "italic_correction" -- context specific trickery
+        if properties.mathitalics then
+            italickey = "italic_correction"
             if trace_defining then
                 report_defining("math italics disabled for: name '%s', fullname: '%s', filename: '%s'",
                     name or "noname",fullname or "nofullname",filename or "nofilename")
@@ -492,14 +495,19 @@ function constructors.scale(tfmdata,specification)
         end
         autoitalic = false -- new
     else
-        if properties.no_textitalics then
-            italickey = "italic_correction" -- context specific trickery
+        if properties.textitalics then
+            italickey = "italic_correction"
             if trace_defining then
                 report_defining("text italics disabled for: name '%s', fullname: '%s', filename: '%s'",
                     name or "noname",fullname or "nofullname",filename or "nofilename")
             end
+            if properties.delaytextitalics then
+                autoitalic = false
+            end
         end
     end
+    --
+    -- end of context specific trickery
     --
     local sharedkerns = { }
     --
@@ -600,12 +608,17 @@ function constructors.scale(tfmdata,specification)
         end
         --
         if autoitalic then
-            local vi = description.italic or (description.boundingbox[3] - description.width + autoitalic)
-            if vi and vi ~= 0 then
+            local vi = description.italic
+            if not vi then
+                local vi = description.boundingbox[3] - description.width + autoitalic
+                if vi > 0 then -- < 0 indicates no overshoot or a very small auto italic
+                    chr[italickey] = vi*hdelta
+                end
+            elseif vi ~= 0 then
                 chr[italickey] = vi*hdelta
             end
         elseif hasitalic then
-            local vi = description.italic -- or character.italic hm, already scaled !
+            local vi = description.italic
             if vi and vi ~= 0 then
                 chr[italickey] = vi*hdelta
             end
@@ -1122,7 +1135,7 @@ a helper function.</p>
 function constructors.checkedfeatures(what,features)
     local defaults = handlers[what].features.defaults
     if features and next(features) then
-        features = fastcopy(features) -- can be inherited
+        features = fastcopy(features) -- can be inherited (mt) but then no loops possible
         for key, value in next, defaults do
             if features[key] == nil then
                 features[key] = value

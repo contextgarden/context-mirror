@@ -69,19 +69,23 @@ local function process(namespace,attribute,head)
     return head, done
 end
 
--- see typo-cap for a more advanced settings handler .. now needed now
+-- see typo-cap for a more advanced settings handler .. not needed now
 
 local enabled = false
 
 function cleaners.set(n)
-    if not enabled then
-        tasks.enableaction("processors","typesetters.cleaners.handler")
-        if trace_cleaners then
-            report_cleaners("enabling cleaners")
+    if n == variables.reset or not tonumber(n) or n == 0 then
+        texattribute[a_cleaner] = unsetvalue
+    else
+        if not enabled then
+            tasks.enableaction("processors","typesetters.cleaners.handler")
+            if trace_cleaners then
+                report_cleaners("enabling cleaners")
+            end
+            enabled = true
         end
-        enabled = true
+        texattribute[a_cleaner] = n
     end
-    texattribute[a_cleaner] = n
 end
 
 cleaners.handler = nodes.installattributehandler {
