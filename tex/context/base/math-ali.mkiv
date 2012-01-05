@@ -15,6 +15,9 @@
 
 \unprotect
 
+% todo: \aligntab
+% todo: less code (more efficient)
+
 %D The code here has been moved from other files. Beware: the \MKII\ and
 %D \MKIV\ code is not gathered in files with the same name.
 
@@ -162,14 +165,10 @@
    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
 
 \def\math_alignment_NC_first
-  {\dostarttagged\t!mathtablerow\empty
-   \dostarttagged\t!mathtablecell\empty
-   \let\NC\math_alignment_NC_rest}
+  {\glet\math_alignment_NC\math_alignment_NC_rest}
 
 \def\math_alignment_NC_rest
-  {\aligntab
-   \dostoptagged % finish cell
-   \dostarttagged\t!mathtablecell\empty}
+  {\aligntab}
 
 \def\math_alignment_EQ
   {\NC=}
@@ -196,7 +195,7 @@
      \setupmathalignment[\currentmathalignment][#1]%
    \fi
    \the\everymathalignment
-   \eqaligncolumn\zerocount % LOCAL HERE?
+   \eqaligncolumn\zerocount
    \processcommacommand
      [\mathalignmentparameter\c!align]
      {\advance\eqaligncolumn\plusone\doseteqaligncolumn}% takes argument
@@ -241,18 +240,45 @@
 
 \newcount\eqaligncolumn
 
-\def\firstineqalign{\global\eqaligncolumn\plusone}
-\def\nextineqalign {\global\advance\eqaligncolumn\plusone}
-\def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
-\def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
+\def\firstineqalign
+  {\global\eqaligncolumn\plusone
+   \dostarttagged\t!mathtablerow \empty
+   \dostarttagged\t!mathtablecell\empty}
 
-\def\doseteqaligncolumn#1%
-  {\letvalueempty{\??eq:\v!left :\number\eqaligncolumn}%
-   \letvalueempty{\??eq:\v!right:\number\eqaligncolumn}%
-   \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
-   \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
-   \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
-                      \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
+\def\nextineqalign
+  {\global\advance\eqaligncolumn\plusone
+   \dostoptagged % finish cell
+   \dostarttagged\t!mathtablecell\empty}
+
+% \def\leftofeqalign {\getvalue{\??eq:\v!left :\number\eqaligncolumn}}
+% \def\rightofeqalign{\getvalue{\??eq:\v!right:\number\eqaligncolumn}}
+
+% \def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
+%   {\letvalueempty{\??eq:\v!left :\number\eqaligncolumn}%
+%    \letvalueempty{\??eq:\v!right:\number\eqaligncolumn}%
+%    \doif{#1}\v!left  {\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill}%
+%    \doif{#1}\v!right {\letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}%
+%    \doif{#1}\v!middle{\letvalue{\??eq:\v!right:\number\eqaligncolumn}\hfill
+%                       \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
+
+\def\leftofeqalign
+  {\ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+     \relax \or \hfill \or \hfill
+   \fi}
+
+\def\rightofeqalign
+  {\ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+     \hfill \or \relax \or \hfill
+   \fi}
+
+\def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
+  {\expandafter\let\csname\??eq::a::\number\eqaligncolumn\expandafter\endcsname
+     \csname\??eq::a::\ifcsname\??eq::a::#1\endcsname#1\else\v!normal\fi\endcsname}
+
+\letvalue{\??eq::a::\v!normal}\zerocount
+\letvalue{\??eq::a::\v!left  }\plusone
+\letvalue{\??eq::a::\v!right }\plustwo
+\letvalue{\??eq::a::\v!middle}\plusthree
 
 \def\dodoalignNC
   {\gdef\doalignNC##1{&##1}}
@@ -548,7 +574,7 @@
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksa}}%
    \dorecurse{\numexpr\scratchcounter-\plusone\relax}
      {\normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksb}}}%
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc }}}
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\!!toksc}}}
 
 \def\preparemathmatrix
   {\!!toksa{\strut \firstineqalign\leftofeqalign \span
@@ -666,7 +692,7 @@
    \mathsurround\zeropoint
    \everycr\emptytoks
    \tabskip\zeropoint
-   \eqaligncolumn\zerocount % could be \scratchcounter LOCAL HERE?
+   \eqaligncolumn\zerocount
    \processcommacommand[\mathmatrixparameter\c!align]{\advance\eqaligncolumn\plusone\dosetmatrixcolumn}%
    \scratchcounter=\ifnum\eqaligncolumn>\zerocount \eqaligncolumn \else \plusone \fi
    \global\eqaligncolumn\plusone

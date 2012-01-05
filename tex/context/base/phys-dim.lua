@@ -12,14 +12,18 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 --
 -- todo: maybe also an sciunit command that converts to si units (1 inch -> 0.0254 m)
 -- etc .. typical something to do when listening to a news whow or b-movie
+--
+-- todo: collect used units for logging (and list of units, but then we need
+-- associations too).
 
 local V, P, S, R, C, Cc, Cs, matchlpeg, Carg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match, lpeg.Carg
 local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
+local setmetatablenewindex = table.setmetatablenewindex
 
 physics            = physics or { }
-physics.patterns   = physics.patterns or { }
+physics.units      = physics.units or { }
 
 local variables    = interfaces.variables
 local v_reverse    = variables.reverse
@@ -111,7 +115,7 @@ function commands.digits(str,p_c)
     end
 end
 
--- units parser
+-- tables:
 
 local long_prefixes = {
     Yocto = [[y]],  -- 10^{-24}
@@ -151,72 +155,76 @@ local long_prefixes = {
     Zebi  = [[Zi]], -- binary
     Yobi  = [[Yi]], -- binary
 
-    Degrees = [[°]],
-    Degree  = [[°]],
-    Deg     = [[°]],
-    ["°"]   = [[°]],
+    Micro = [[µ]],  -- 0x00B5 \textmu
+    Root  = [[√]],  -- 0x221A
 }
 
 local long_units = {
-    Meter      = [[m]],
-    Hertz      = [[hz]],
-    Second     = [[s]],
-    Hour       = [[h]],
-    Liter      = [[l]],
---  Litre      = [[l]],
-    Gram       = [[g]],
-    Newton     = [[N]],
-    Pascal     = [[Pa]],
-    Atom       = [[u]],
-    Joule      = [[J]],
-    Watt       = [[W]],
-    Celsius    = [[C]], -- no SI
-    Kelvin     = [[K]],
-    Fahrenheit = [[F]], -- no SI
-    Mol        = [[mol]],
-    Mole       = [[mol]],
-    Equivalent = [[eql]],
-    Farad      = [[F]],
-    Ohm        = [[\Omega]],
-    Siemens    = [[S]],
-    Ampere     = [[A]],
-    Coulomb    = [[C]],
-    Volt       = [[V]],
-    eVolt      = [[eV]],
-    Tesla      = [[T]],
-    VoltAC     = [[V\unitsbackspace\unitslower{ac}]],
-    VoltDC     = [[V\unitsbackspace\unitslower{dc}]],
-    AC         = [[V\unitsbackspace\unitslower{ac}]],
-    DC         = [[V\unitsbackspace\unitslower{dc}]],
-    Bit        = [[bit]],
-    Baud       = [[Bd]],
-    Byte       = [[B]],
-    Erlang     = [[E]],
-    Bequerel   = [[Bq]],
-    Sievert    = [[Sv]],
-    Candela    = [[cd]],
-    Bell       = [[B]],
-    At         = [[at]],
-    Atm        = [[atm]],
-    Bar        = [[bar]],
-    Foot       = [[ft]],
-    Inch       = [[inch]],
-    Cal        = [[cal]],
-    Force      = [[f]],
-    Lux        = [[lux]],
-    Gray       = [[Gr]],
-    Weber      = [[Wb]],
-    Henry      = [[H]],
-    Sterant    = [[sr]],
-    Angstrom   = [[Å]],
-    Gauss      = [[G]],
-    Rad        = [[rad]],
-    RPS        = [[RPS]],
-    RPM        = [[RPM]],
-    RevPerSec  = [[RPS]],
-    RevPerMin  = [[RPM]],
-    Percent    = [[\percent]],
-    Promille   = [[\promille]],
+    Meter             = [[m]],
+    Hertz             = [[Hz]],
+    Second            = [[s]],
+    Hour              = [[h]],
+    Liter             = [[l]],
+--  Litre             = [[l]],
+    Gram              = [[g]],
+    Newton            = [[N]],
+    Pascal            = [[Pa]],
+    Atom              = [[u]],
+    Bell              = [[B]],
+    Katal             = [[kat]],
+    Dalton            = [[Da]],
+    Joule             = [[J]],
+    Watt              = [[W]],
+    Celsius           = [[C]], -- no SI
+    Kelvin            = [[K]],
+    Fahrenheit        = [[F]], -- no SI
+    Mol               = [[mol]],
+    Mole              = [[mol]],
+    Equivalent        = [[eql]],
+    Farad             = [[F]],
+    Ohm               = [[\Omega]],
+    Siemens           = [[S]],
+    Ampere            = [[A]],
+    Coulomb           = [[C]],
+    Volt              = [[V]],
+    eVolt             = [[eV]],
+    eV                = [[eV]],
+    Tesla             = [[T]],
+    VoltAC            = [[V\unitsbackspace\unitslower{ac}]],
+    VoltDC            = [[V\unitsbackspace\unitslower{dc}]],
+    AC                = [[V\unitsbackspace\unitslower{ac}]],
+    DC                = [[V\unitsbackspace\unitslower{dc}]],
+    Bit               = [[bit]],
+    Baud              = [[Bd]],
+    Byte              = [[B]],
+    Erlang            = [[E]],
+    Bequerel          = [[Bq]],
+    Sievert           = [[Sv]],
+    Candela           = [[cd]],
+    Bel               = [[B]],
+    At                = [[at]],
+    Atm               = [[atm]],
+    Bar               = [[bar]],
+    Foot              = [[ft]],
+    Inch              = [[inch]],
+    Cal               = [[cal]],
+    Force             = [[f]],
+    Lux               = [[lx]],
+    Gray              = [[Gr]],
+    Weber             = [[Wb]],
+    Henry             = [[H]],
+    Sterant           = [[sr]],
+    Tonne             = [[t]],
+    Angstrom          = [[Å]],
+    Gauss             = [[G]],
+    Rad               = [[rad]],
+    RPS               = [[RPS]],
+    RPM               = [[RPM]],
+    RevPerSec         = [[RPS]],
+    RevPerMin         = [[RPM]],
+    Ohm               = [[Ω]], -- 0x2126 \textohm
+    ["Metric Ton"]    = [[t]],
+    ["Electron Volt"] = [[eV]],
 }
 
 local long_operators = {
@@ -235,15 +243,6 @@ local long_suffixes = {
     ISquare = [[-2]],
     ICubic  = [[-3]],
 }
-
-long_prefixes.Micro = [[\textmu]]
-long_units   .Ohm   = [[\textohm]]
-
-mergetable(long_suffixes,loweredkeys(long_suffixes))
-
-local long_prefixes_to_long  = { } for k, v in next, long_prefixes  do long_prefixes_to_long [lower(k)] = k end
-local long_units_to_long     = { } for k, v in next, long_units     do long_units_to_long    [lower(k)] = k end
-local long_operators_to_long = { } for k, v in next, long_operators do long_operators_to_long[lower(k)] = k end
 
 local short_prefixes_to_long = {
     y  = "Yocto",
@@ -272,12 +271,17 @@ local short_units_to_long = { -- I'm not sure about casing
     m       = "Meter",
     Hz      = "Hertz",
     hz      = "Hertz",
+    B       = "Bel",
+    b       = "Bel",
+    lx      = "Lux",
+ -- da      = "Dalton",
     u       = "Hour",
     h       = "Hour",
     s       = "Second",
     g       = "Gram",
     n       = "Newton",
     v       = "Volt",
+    t       = "Tonne",
 
     l       = "Liter",
  -- w       = "Watt",
@@ -295,14 +299,6 @@ local short_operators_to_long = {
     ["/"] = "Solidus",
     [":"] = "OutOf",
 }
-
--- local connected = table.tohash {
---     "Degrees",
--- }
-
-short_prefixes  = { } for k, v in next, short_prefixes_to_long  do short_prefixes [k] = long_prefixes [v] end
-short_units     = { } for k, v in next, short_units_to_long     do short_units    [k] = long_units    [v] end
-short_operators = { } for k, v in next, short_operators_to_long do short_operators[k] = long_operators[v] end
 
 local short_suffixes = { -- maybe just raw digit match
     ["1"]   = long_suffixes.Linear,
@@ -327,51 +323,23 @@ local short_suffixes = { -- maybe just raw digit match
     ["^-3"] = long_suffixes.ICubic,
 }
 
-local prefixes   = long_prefixes
-local units      = long_units
-local operators  = long_operators
-local suffixes   = long_suffixes
-
-local somespace  = P(" ")^0/""
-
-local l_prefix   = appendlpeg(keys(long_prefixes))
-local l_unit     = appendlpeg(keys(long_units))
-local l_operator = appendlpeg(keys(long_operators))
-local l_suffix   = appendlpeg(keys(long_suffixes))
-
-local l_prefix   = appendlpeg(long_prefixes_to_long,l_prefix)
-local l_unit     = appendlpeg(long_units_to_long,l_unit)
-local l_operator = appendlpeg(long_operators_to_long,l_operator)
-
-local s_prefix   = appendlpeg(short_prefixes_to_long)
-local s_unit     = appendlpeg(short_units_to_long)
-local s_operator = appendlpeg(short_operators_to_long)
-
-local s_suffix   = appendlpeg(keys(short_suffixes))
-
--- space inside Cs else funny captures and args to function
-
--- square centi meter per square kilo seconds
-
-local l_suffix   = Cs(somespace * l_suffix)
-local s_suffix   = Cs(somespace * s_suffix) + Cc("")
-local l_operator = Cs(somespace * l_operator)
-
-local combination = P { "start",
-    l_prefix = Cs(somespace * l_prefix) + Cc(""),
-    s_prefix = Cs(somespace * s_prefix) + Cc(""),
-    l_unit   = Cs(somespace * l_unit),
-    s_unit   = Cs(somespace * s_unit),
-    start    = V("l_prefix") * V("l_unit")
-             + V("s_prefix") * V("s_unit")
-             + V("l_prefix") * V("s_unit")
-             + V("s_prefix") * V("l_unit"),
+local symbol_units = {
+    Degrees    = [[°]],
+    Degree     = [[°]],
+    Deg        = [[°]],
+    ["°"]      = [[°]],
+    ArcMinute  = [[\checkedtextprime]],        -- ′ 0x2032
+    ArcSecond  = [[\checkedtextdoubleprime]],  -- ″ 0x2033
+    Percent    = [[\percent]],
+    Promille   = [[\promille]],
+    Permille   = [[\promille]],
 }
 
--- inspect(s_prefix)
--- inspect(s_unit)
--- square kilo meter
--- square km
+local packaged_units = {
+    Micron = [[\textmu m]],
+}
+
+-- rendering:
 
 local unitsPUS    = context.unitsPUS
 local unitsPU     = context.unitsPU
@@ -400,6 +368,11 @@ l_prefixes .test = { Kilo = "kilo" }
 l_units    .test = { Meter = "meter", Second = "second" }
 l_operators.test = { Solidus = " per " }
 
+local prefixes   =  { }
+local units      =  { }
+local operators  =  { }
+local suffixes   =  { }
+
 local function dimpus(p,u,s,wherefrom)
     if trace_units then
         report_units("w: [%s], p: [%s], u: [%s], s: [%s]",wherefrom or "?",p or "?",u or "?",s or "?")
@@ -411,8 +384,8 @@ local function dimpus(p,u,s,wherefrom)
     else
         local lp = l_prefixes[wherefrom]
         local lu = l_units   [wherefrom]
-        p = lp and lp[p] or p
-        u = lu and lu[u] or u
+        p = lp and lp[p] or prefixes[p] or p
+        u = lu and lu[u] or units   [u] or u
     end
     s = suffixes[s] or s
     --
@@ -457,41 +430,187 @@ local function dimop(o,wherefrom)
         o = operators[o] or o
     else
         local lo = l_operators[wherefrom]
-        o = lo and lo[o] or o
+        o = lo and lo[o] or operators[o] or o
     end
     if o then
         unitsO(o)
     end
 end
 
--- todo 0x -> rm
--- pretty large lpeg (maybe do dimension lookup otherwise)
--- not ok yet ... we have this p n s problem
-
-local dimension = ((l_suffix * combination)   * Carg(1)) / dimspu
-                + ((combination * s_suffix)   * Carg(1)) / dimpus
-local number    = lpeg.patterns.number                   / unitsN
-local operator  = C((l_operator + s_operator) * Carg(1)) / dimop  -- weird, why is the extra C needed here
-local whatever  = (P(1)^0)                               / unitsU
-
-local number    = (1-R("az","AZ")-P(" "))^1 / unitsN -- todo: catch { }
-
-dimension = somespace * dimension * somespace
-number    = somespace * number    * somespace
-operator  = somespace * operator  * somespace
-
-local unitparser = dimension^1 * (operator * dimension^1)^-1 + whatever + P(-1)
-
-local p_c_unitdigitparser = (Cc(nil)/unitsNstart) * p_c_dparser * (Cc(nil)/unitsNstop) --
-local c_p_unitdigitparser = (Cc(nil)/unitsNstart) * c_p_dparser * (Cc(nil)/unitsNstop) --
-
-local p_c_combinedparser  = dleader * (p_c_unitdigitparser + number)^-1 * unitparser
-local c_p_combinedparser  = dleader * (c_p_unitdigitparser + number)^-1 * unitparser
-
-function commands.unit(str,wherefrom,p_c)
-    if p_c == v_reverse then
-        matchlpeg(p_c_combinedparser,str,1,wherefrom or "")
-    else
-        matchlpeg(c_p_combinedparser,str,1,wherefrom or "")
+local function dimsym(s,wherefrom) -- Do we need to support wherefrom here?
+    if trace_units then
+        report_units("w: [%s], s: [%s]",wherefrom,s or "?")
+    end
+    s = symbol_units[s] or s
+    if s then
+        unitsC(s)
     end
 end
+
+local function dimpre(p,wherefrom) -- Do we need to support wherefrom here?
+    if trace_units then
+        report_units("w: [%s], p: [%s]",wherefrom,p or "?")
+    end
+    p = packaged_units[p] or p
+    if p then
+        unitsU(p)
+    end
+end
+
+-- patterns:
+--
+-- space inside Cs else funny captures and args to function
+--
+-- square centi meter per square kilo seconds
+
+local function update_parsers()
+
+    local long_prefixes_to_long  = { } for k, v in next, long_prefixes           do long_prefixes_to_long [lower(k)] = k                 end
+    local long_units_to_long     = { } for k, v in next, long_units              do long_units_to_long    [lower(k)] = k                 end
+    local long_operators_to_long = { } for k, v in next, long_operators          do long_operators_to_long[lower(k)] = k                 end
+    local short_prefixes         = { } for k, v in next, short_prefixes_to_long  do short_prefixes        [k]        = long_prefixes [v] end
+    local short_units            = { } for k, v in next, short_units_to_long     do short_units           [k]        = long_units    [v] end
+    local short_operators        = { } for k, v in next, short_operators_to_long do short_operators       [k]        = long_operators[v] end
+
+    mergetable(long_suffixes, loweredkeys(long_suffixes))
+    mergetable(symbol_units,  loweredkeys(symbol_units))
+    mergetable(packaged_units,loweredkeys(packaged_units))
+
+    prefixes   = long_prefixes   -- used in above functions
+    units      = long_units      -- used in above functions
+    operators  = long_operators  -- used in above functions
+    suffixes   = long_suffixes   -- used in above functions
+
+    local somespace  = P(" ")^0/""
+
+    local l_prefix   = appendlpeg(keys(long_prefixes))
+    local l_unit     = appendlpeg(keys(long_units))
+    local l_operator = appendlpeg(keys(long_operators))
+    local l_suffix   = appendlpeg(keys(long_suffixes))
+
+    local l_prefix   = appendlpeg(long_prefixes_to_long,l_prefix)
+    local l_unit     = appendlpeg(long_units_to_long,l_unit)
+    local l_operator = appendlpeg(long_operators_to_long,l_operator)
+
+    local s_prefix   = appendlpeg(short_prefixes_to_long)
+    local s_unit     = appendlpeg(short_units_to_long)
+    local s_operator = appendlpeg(short_operators_to_long)
+
+    local s_suffix   = appendlpeg(keys(short_suffixes))
+
+    local c_symbol   = appendlpeg(keys(symbol_units))
+    local p_unit     = appendlpeg(keys(packaged_units))
+
+    local combination = P { "start",
+        l_prefix = Cs(somespace * l_prefix) + Cc(""),
+        s_prefix = Cs(somespace * s_prefix) + Cc(""),
+        l_unit   = Cs(somespace * l_unit),
+        s_unit   = Cs(somespace * s_unit),
+        start    = V("l_prefix") * V("l_unit")   -- centi meter
+                 + V("s_prefix") * V("s_unit")   -- c m
+                 + V("l_prefix") * V("s_unit")   -- centi m
+                 + V("s_prefix") * V("l_unit"),  -- c meter
+    }
+
+    local l_suffix   = Cs(somespace * l_suffix)
+    local s_suffix   = Cs(somespace * s_suffix) + Cc("")
+    local l_operator = Cs(somespace * l_operator)
+    local p_unit     = Cs(somespace * p_unit)
+
+    -- todo 0x -> rm
+    -- pretty large lpeg (maybe do dimension lookup otherwise)
+    -- not ok yet ... we have this p n s problem
+
+    local dimension = (p_unit                    * Carg(1)) / dimpre
+                    + ((l_suffix * combination)  * Carg(1)) / dimspu
+                    + ((combination * s_suffix)  * Carg(1)) / dimpus
+    local number    = lpeg.patterns.number                  / unitsN
+    local operator  = ((l_operator + s_operator) * Carg(1)) / dimop  -- weird, why is the extra C needed here
+    local whatever  = (P(1)^0)                              / unitsU
+    local symbol    = c_symbol                              / dimsym
+    local packaged  = p_unit                                / dimpre
+
+    local number    = (1-R("az","AZ")-P(" "))^1 / unitsN -- todo: catch { }
+
+    symbol    = somespace * symbol    * somespace
+    packaged  = somespace * packaged  * somespace
+    dimension = somespace * dimension * somespace
+    number    = somespace * number    * somespace
+    operator  = somespace * operator  * somespace
+
+    dimension = symbol * dimension + dimension + symbol -- too many space tests
+
+    local unitparser = dimension^1 * (operator * dimension^1)^-1 -- dimension^-1 ?
+                     + symbol
+                     + packaged
+                     + whatever
+                     + P(-1)
+
+    local p_c_unitdigitparser = (Cc(nil)/unitsNstart) * p_c_dparser * (Cc(nil)/unitsNstop) --
+    local c_p_unitdigitparser = (Cc(nil)/unitsNstart) * c_p_dparser * (Cc(nil)/unitsNstop) --
+
+    local p_c_combinedparser  = dleader * (p_c_unitdigitparser + number)^-1 * unitparser
+    local c_p_combinedparser  = dleader * (c_p_unitdigitparser + number)^-1 * unitparser
+
+    return p_c_combinedparser, c_p_combinedparser
+end
+
+local p_c_parser = nil
+local c_p_parser = nil
+local dirty      = true
+
+function commands.unit(str,wherefrom,p_c)
+    if dirty then
+        if trace_units then
+            report_units("initializing parser")
+        end
+        p_c_parser, c_p_parser = update_parsers()
+        dirty = false
+    end
+    if p_c == v_reverse then
+        matchlpeg(p_c_parser,str,1,wherefrom or "")
+    else
+        matchlpeg(c_p_parser,str,1,wherefrom or "")
+    end
+end
+
+local function trigger(t,k,v)
+    rawset(t,k,v)
+    dirty = true
+end
+
+local t_units = {
+    prefixes  = setmetatablenewindex(long_prefixes,trigger),
+    units     = setmetatablenewindex(long_units,trigger),
+    operators = setmetatablenewindex(long_operators,trigger),
+    suffixes  = setmetatablenewindex(long_suffixes,trigger),
+    symbols   = setmetatablenewindex(symbol_units,trigger),
+    packaged  = setmetatablenewindex(packaged_units,trigger),
+}
+
+local t_shortcuts = {
+    prefixes  = setmetatablenewindex(short_prefixes_to_long,trigger),
+    units     = setmetatablenewindex(short_units_to_long,trigger),
+    operators = setmetatablenewindex(short_operators_to_long,trigger),
+    suffixes  = setmetatablenewindex(short_suffixes,trigger),
+}
+
+physics.units.tables = {
+    units     = t_units,
+    shortcuts = t_shortcuts,
+}
+
+function commands.registerunit(category,list)
+    if not list or list == "" then
+        list = category
+        category = "units"
+    end
+    local t = t_units[category]
+    if t then
+        for k, v in next, utilities.parsers.settings_to_hash(list or "") do
+            t[k] = v
+        end
+    end
+    inspect(tables)
+end
+

@@ -157,15 +157,40 @@
 
 \let\normal_start_x_table\start_x_table
 
+% These direct buffers can be somewhat faster but it's probably neglectable.
+% Anyway, no nesting is supported as we then need to catch (e.g.) rows and
+% keep track of nesting and have a more complex redefinition of nested
+% instanced \unknown\ it's not worth the trouble.
+
 \def\process_x_table_buffer[#name]%
   {\bgroup
    \let\start_x_table\start_process_x_table_buffer
    \edef\x_table_current_buffer{#name}%
+   \x_table_get_buffer % pickup settings
    \x_table_process}
+
+\def\ignore_start_x_table[#settings]%
+  {}
 
 \def\start_process_x_table_buffer[#settings]%
   {\x_table_prepare{#settings}%
-   \let\start_x_table\normal_start_x_table}
+   \let\start_x_table\ignore_start_x_table
+   \gobbleuntil\stopxtable}
+
+%D A bonus: you can use the following construct inside a macro.
+
+\unexpanded\def\startembeddedxtable
+  {\dosingleempty\start_embedded_x_table}
+
+\def\start_embedded_x_table[#settings]#content\stopembeddedxtable
+  {\x_table_prepare{#settings}%
+   \ctxcommand{assignbuffer("embedded_x_table",\!!bs\detokenize{#content}\!!es)}%
+   \bgroup
+   \let\start_x_table\start_process_x_table_buffer
+   \edef\x_table_current_buffer{embedded_x_table}%
+   \x_table_process}
+
+\let\stopembeddedxtable\relax
 
 %D We can also define xtables.
 
@@ -206,10 +231,11 @@
   {\ctxcommand{gettexbuffer("\x_table_current_buffer")}}
 
 \unexpanded\def\x_table_process
-  {\begingroup
-\doifsomething{\xtableparameter\c!bodyfont}
-  {\setupbodyfont[\xtableparameter\c!bodyfont]}%
-   \setbox\scratchbox\vbox{\xtableparameter\c!spaceinbetween}%
+  {\begingroup % *
+   \doifsomething{\xtableparameter\c!bodyfont}
+     {\setupbodyfont[\xtableparameter\c!bodyfont]}%
+   \setbox\scratchbox\vbox
+     {\xtableparameter\c!spaceinbetween}%
    \ctxcommand{x_table_create {
         option              = "\xtableparameter\c!option",
         textwidth           = \number\dimexpr\xtableparameter\c!textwidth,
@@ -257,7 +283,7 @@
      \x_table_get_buffer
      \ctxcommand{x_table_construct()}\relax
    \endgroup
-\endgroup
+   \endgroup % *
    \ifinsidesplitfloat
      \x_table_flush_float_split
    \else\ifinsidefloat
@@ -539,14 +565,6 @@
 \let\stopxtablefoot\stop_x_table_partition
 \let\stopxtablenext\stop_x_table_partition
 \let\stopxtablebody\stop_x_table_partition
-
-%D A bonus: you can use the following construct inside a macro.
-
-\unexpanded\def\startembeddedxtable#1\stopembeddedxtable
-  {\ctxcommand{assignbuffer("embedded_x_table",\!!bs\detokenize{#1}\!!es)}%
-   \processxtablebuffer[embedded_x_table]}
-
-\let\stopembeddedxtable\relax
 
 %D This is an experiment! Beware: you can create loops by using nested
 %D references to already chained settings.
