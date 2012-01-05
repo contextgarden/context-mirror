@@ -1323,10 +1323,10 @@
 \let\useexternaldocument\usefile
 
 \def\do_use_url[#label][#url][#file][#description]%
-  {\ctxlua{structures.references.urls.define("#label",\!!bs\detokenize{#url}\!!es,\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
+  {\ctxcommand{useurl("#label",\!!bs\detokenize{#url}\!!es,\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
 \def\do_use_file[#label][#file][#description]%
-  {\ctxlua{structures.references.files.define("#label",\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
+  {\ctxcommand{usefile("#label",\!!bs\detokenize{#file}\!!es,\!!bs\detokenize{#description}\!!es)}}
 
 \def\doifurldefinedelse #label{\ctxcommand{doifurldefinedelse ("#label")}}
 \def\doiffiledefinedelse#label{\ctxcommand{doiffiledefinedelse("#label")}}
@@ -1356,10 +1356,8 @@
    \begingroup
    \dosetfontattribute\??ur\c!style
    \dosetcolorattribute\??ur\c!color
-   \hyphenatedurl{\ctxlua{structures.references.urls.get("#label","\@@uralternative","\@@urspace")}}%
+   \hyphenatedurl{\ctxcommand{geturl("#label")}}%
    \endgroup}
-
-% # fails
 
 %D This macro is hooked into a support macro, and thereby
 %D \URL's break ok, according to the setting of a switch,
@@ -1375,30 +1373,13 @@
 %D Such an \URL\ is, depending on the settings, hyphenated as:
 %D
 %D \getbuffer
-%D
-%D \startlinecorrection
-%D \hbox to \hsize
-%D   {\hss\en
-%D    \setupreferencing[urlalternative=both]%
-%D    \vbox{\hsize.25cm\hbox{\bf both}\prewordbreak\url[test]}%
-%D    \hss
-%D    \setupreferencing[urlalternative=before]%
-%D    \vbox{\hsize.25cm\hbox{\bf before}\prewordbreak\url[test]}%
-%D    \hss
-%D    \setupreferencing[urlalternative=after]%
-%D    \vbox{\hsize.25cm\hbox{\bf after}\prewordbreak\url[test]}%
-%D    \hss}
-%D \stoplinecorrection
-%D
-%D By setting \type{urlspace=yes} one can get slightly better
-%D spacing when using very long \URL's.
-%D
+
 %D When defining the external source of information, one can
 %D also specify a suitable name (the last argument). This name
 %D can be called upon with:
 %D
 %D \showsetup{from}
-
+%D
 %D We keep this for compatibility reasons, hence the hackery.
 
 \unexpanded\def\reference_from
@@ -1597,15 +1578,11 @@
    \c!export=\v!no]
 
 \setupurl
-  [\c!alternative=\v!both,
-   \c!space=\v!no,
-   \c!style=\v!type,
+  [\c!style=\v!type,
    \c!color=]
 
 \setupprograms
   [\c!directory=,
-   \c!alternative=\v!both,
-   \c!space=\v!no,
    \c!style=\v!type,
    \c!color=]
 

@@ -57,14 +57,28 @@
 
 \def\hyphenatedurlseparator{} % \periodcentered
 
-\def\dohyphenatedurlafter #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}%
-\def\dohyphenatedurlbefore#1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}%
-\def\dohyphenatedurlnormal#1{\char#1\relax}%
-\def\dohyphenatedurldisc  #1{\discretionary{}{}{}}
+\def\dohyphenatedurlspace         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
+\def\dohyphenatedurlafter       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
+\def\dohyphenatedurlbefore      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
+\def\dohyphenatedurlnormal      #1{\char#1\relax}
+\def\dohyphenatedurldisc        #1{\discretionary{}{}{}}
 
-\def\sethyphenatedurlnormal #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
-\def\sethyphenatedurlbefore #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
-\def\sethyphenatedurlafter  #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
+\def\dohyphenatedurlspace_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
+\def\dohyphenatedurlafter_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
+\def\dohyphenatedurlbefore_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
+\def\dohyphenatedurlnormal_trace#1{\char#1\relax}
+\def\dohyphenatedurldisc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
+
+\def\showhyphenatedurlbreaks
+ {\let\dohyphenatedurlspace \dohyphenatedurlspace_trace
+  \let\dohyphenatedurlafter \dohyphenatedurlafter_trace
+  \let\dohyphenatedurlbefore\dohyphenatedurlbefore_trace
+  \let\dohyphenatedurlnormal\dohyphenatedurlnormal_trace
+  \let\dohyphenatedurldisc  \dohyphenatedurldisc_trace}
+
+\def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
+\def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
+\def\sethyphenatedurlafter #1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,2)}}
 
 \def\hyphenatedurldiscretionary{}
 
@@ -77,6 +91,8 @@
   {\dontleavehmode
    \begingroup
    \the\everyhyphenatedurl
+   \language\zerocount
+   \let\s\dohyphenatedurlspace
    \let\n\dohyphenatedurlnormal
    \let\b\dohyphenatedurlbefore
    \let\a\dohyphenatedurlafter

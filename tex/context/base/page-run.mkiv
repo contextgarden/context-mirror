@@ -73,45 +73,67 @@
 % maybe we will have page-run.lua
 
 \startluacode
+local format, concat = string.format, table.concat
+
 local function todimen(name,unit,fmt)
     return number.todimen(tex.dimen[name],unit,fmt)
 end
 
-local function showdimension(name)
-    context.NC()
-    context.tex(interfaces.interfacedcommand(name))
-    context.NC()
-    context(todimen(name,"pt","%0.4fpt"))
-    context.NC()
-    context(todimen(name,"cm","%0.4fcm"))
-    context.NC()
-    context(todimen(name,"bp","%0.4fbp"))
-    context.NC()
-    context(todimen(name,"dd","%0.4fdd"))
-    context.NC()
-    context.NR()
-end
+function commands.showlayoutvariables(options)
 
-local function showmacro(name)
-    context.NC()
-    context.tex(interfaces.interfacedcommand(name))
-    context.NC()
-    context.getvalue(name)
-    context.NC()
-    context.NR()
-end
+    if options == "" then
+        options = "pt,cm"
+    end
 
-local function reportdimension(name)
-    commands.writestatus("layout",string.format("%-24s %12s %12s %12s %12s",
-        interfaces.interfacedcommand(name),
-        todimen(name,"pt","%0.4fpt"),
-        todimen(name,"cm","%0.4fcm"),
-        todimen(name,"bp","%0.4fbp"),
-        todimen(name,"dd","%0.4fdd")
-    ))
-end
+    local options = utilities.parsers.settings_to_hash(options)
 
-function commands.showlayoutvariables()
+    local dimensions = { "pt", "bp", "cm", "mm", "dd", "cc", "pc", "nd", "nc", "sp", "in" }
+
+    local n = 0
+    for i=1,#dimensions do
+        if options[dimensions[i]] then
+            n = n + 1
+        end
+    end
+
+    if n == 0 then
+        options.pt = true
+        n = 1
+    end
+
+    local function showdimension(name)
+        context.NC()
+        context.tex(interfaces.interfacedcommand(name))
+        context.NC()
+        for i=1,#dimensions do
+            local d = dimensions[i]
+            if options[d] then
+                context("%s%s",todimen(name,d,"%0.4f"),d)
+                context.NC()
+            end
+        end
+        context.NR()
+    end
+
+    local function showmacro(name)
+        context.NC()
+        context.tex(interfaces.interfacedcommand(name))
+        context.NC()
+        context.getvalue(name)
+        context.NC()
+        context.NR()
+    end
+
+    local function reportdimension(name)
+        local result = { }
+        for i=1,#dimensions do
+            local d = dimensions[i]
+            if options[d] then
+                result[#result+1] = format("%12s%s",todimen(name,d,"%0.4f"),d)
+            end
+        end
+        commands.writestatus("layout",format("%-24s %s",interfaces.interfacedcommand(name),concat(result," ")))
+    end
 
     if tex.count.textlevel == 0 then
 
@@ -148,7 +170,7 @@ function commands.showlayoutvariables()
 
     else
 
-        context.starttabulate { "|l|Tr|Tr|Tr|Tr|" }
+        context.starttabulate { "|l|" .. string.rep("Tr|",n) }
 
             showdimension("paperheight")
             showdimension("paperwidth")
@@ -191,11 +213,11 @@ function commands.showlayoutvariables()
 
 end
 
-function commands.showlayout()
+function commands.showlayout(options)
 
     if tex.count.textlevel == 0 then
 
-        commands.showlayoutvariables()
+        commands.showlayoutvariables(options)
 
     else
 
@@ -204,7 +226,7 @@ function commands.showlayout()
         context.showframe()
         context.setuplayout { marking = interfaces.variables.on }
         for i=1,4 do
-            commands.showlayoutvariables()
+            commands.showlayoutvariables(options)
             context.page()
         end
         context.egroup()
@@ -247,16 +269,17 @@ end
    \setupbackgrounds
      [\c!state=\v!repeat]}
 
-\gdef\showframe
-  {\dodoubleempty\doshowframe}
+\gdef\doshowsetups[#1]%
+  {\ctxcommand{showlayoutvariables("#1")}}
 
-\gdef\showsetups
-  {\ctxcommand{showlayoutvariables()}}
+\gdef\doshowlayout[#1]%
+  {\ctxcommand{showlayout("#1")}}
 
-\gdef\showlayout % interfereert lelijk met een \typefile er na
-  {\ctxcommand{showlayout()}}
+\unexpanded\gdef\showframe {\dodoubleempty\doshowframe}
+\unexpanded\gdef\showsetups{\dodoubleempty\doshowsetups}
+\unexpanded\gdef\showlayout{\dodoubleempty\doshowlayout}
 
-\gdef\showmargins
+\unexpanded\gdef\showmargins
   {\starttabulate
    \NC asynchrone   \NC \doifoddpageelse     {odd}   {even} \NC \NR
    \NC synchrone    \NC \doifrightpageelse   {right} {left} \NC \NR

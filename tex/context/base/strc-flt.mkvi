@@ -710,6 +710,9 @@
       \globallet\currentfloatattribute  \empty
       \globallet\currentfloatsynchronize\relax
    \else
+     \ifnofloatnumber \else
+       \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
+     \fi
      \dostructurecountercomponent
        {float}%
        \setupcurrentfloatcaption

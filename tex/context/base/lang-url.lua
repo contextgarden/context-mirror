@@ -72,7 +72,9 @@ hyphenatedurl.lefthyphenmin  = 2
 hyphenatedurl.righthyphenmin = 3
 hyphenatedurl.discretionary  = nil
 
-local function action(hyphenatedurl, str, left, right, disc)
+--  more fun is to write nodes
+
+local function action(hyphenatedurl,str,left,right,disc)
     local n = 0
     local b = math.max(      left  or hyphenatedurl.lefthyphenmin,    2)
     local e = math.min(#str-(right or hyphenatedurl.righthyphenmin)+2,#str)
@@ -80,6 +82,9 @@ local function action(hyphenatedurl, str, left, right, disc)
     for s in utfcharacters(str) do
         n = n + 1
         s = mapping[s] or s
+        if n > 1 then
+            context.s() -- can be option
+        end
         if s == d then
             context.d(utfbyte(s))
         else
@@ -97,7 +102,7 @@ end
 
 -- hyphenatedurl.action = function(_,...) action(...) end -- sort of obsolete
 
-table.setmetatablecall(hyphenatedurl,action)
+table.setmetatablecall(hyphenatedurl,action) -- watch out: a caller
 
 -- todo, no interface in mkiv yet
 
