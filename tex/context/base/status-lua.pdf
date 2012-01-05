@@ -13928,17 +13928,17 @@ stream
         </rdf:Description>
         <rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/">
             <pdfx:ConTeXt.Jobname>s-inf-03</pdfx:ConTeXt.Jobname>
-            <pdfx:ConTeXt.Time>2011.11.08 15:25</pdfx:ConTeXt.Time>
+            <pdfx:ConTeXt.Time>2011.11.08 19:40</pdfx:ConTeXt.Time>
             <pdfx:ConTeXt.Url>www.pragma-ade.com</pdfx:ConTeXt.Url>
-            <pdfx:ConTeXt.Version>2011.11.08 15:20</pdfx:ConTeXt.Version>
-            <pdfx:ID>s-inf-03.2011-11-08T15:25:24+01:00</pdfx:ID>
+            <pdfx:ConTeXt.Version>2011.11.08 19:35</pdfx:ConTeXt.Version>
+            <pdfx:ID>s-inf-03.2011-11-08T19:40:37+01:00</pdfx:ID>
             <pdfx:PTEX.Fullbanner>This is LuaTeX, Version beta-0.71.0-2011062811 (rev 4315) (TeX Live 2011) kpathsea version 6.0.1</pdfx:PTEX.Fullbanner>
         </rdf:Description>
         <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-            <xmp:CreateDate>2011-11-08T15:25:24+01:00</xmp:CreateDate>
-            <xmp:CreatorTool>ConTeXt - 2011.11.08 15:20</xmp:CreatorTool>
-            <xmp:ModifyDate>2011-11-08T15:25:24+01:00</xmp:ModifyDate>
-            <xmp:MetadataDate>2011-11-08T15:25:24+01:00</xmp:MetadataDate>
+            <xmp:CreateDate>2011-11-08T19:40:37+01:00</xmp:CreateDate>
+            <xmp:CreatorTool>ConTeXt - 2011.11.08 19:35</xmp:CreatorTool>
+            <xmp:ModifyDate>2011-11-08T19:40:37+01:00</xmp:ModifyDate>
+            <xmp:MetadataDate>2011-11-08T19:40:37+01:00</xmp:MetadataDate>
         </rdf:Description>
         <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
             <pdf:Keywords/>
@@ -14781,7 +14781,7 @@ endobj
 endobj
 1445 0 obj
 <<
-/ConTeXt.Url (www.pragma-ade.com) /Creator <feff0043006f006e00540065005800740020002d00200032003000310031002e00310031002e00300038002000310035003a00320030> /ConTeXt.Jobname (s-inf-03) /Author <feff00480061006e007300200048006100670065006e0020002d0020006100750074006f006d00610074006900630061006c006c0079002000670065006e006500720061007400650064> /Trapped /False /CreationDate (D:20111108152524+01'00') /Producer (LuaTeX-0.71.0) /Title <feff0043006f006e00540065005800740020004d006b00490056> /ConTeXt.Time (2011.11.08 15:25) /ID (s-inf-03.2011-11-08T15:25:24+01:00) /ConTeXt.Version (2011.11.08 15:20) /ModDate (D:20111108152524+01'00') /Subject <feff004c007500610020006d006f00640075006c0065007300200061006e0064002000660075006e006300740069006f006e0073>
+/ConTeXt.Url (www.pragma-ade.com) /Creator <feff0043006f006e00540065005800740020002d00200032003000310031002e00310031002e00300038002000310039003a00330035> /ConTeXt.Jobname (s-inf-03) /Author <feff00480061006e007300200048006100670065006e0020002d0020006100750074006f006d00610074006900630061006c006c0079002000670065006e006500720061007400650064> /Trapped /False /CreationDate (D:20111108194037+01'00') /Producer (LuaTeX-0.71.0) /Title <feff0043006f006e00540065005800740020004d006b00490056> /ConTeXt.Time (2011.11.08 19:40) /ID (s-inf-03.2011-11-08T19:40:37+01:00) /ConTeXt.Version (2011.11.08 19:35) /ModDate (D:20111108194037+01'00') /Subject <feff004c007500610020006d006f00640075006c0065007300200061006e0064002000660075006e006300740069006f006e0073>
 /PTEX.Fullbanner (This is LuaTeX, Version beta-0.71.0-2011062811 (rev 4315) (TeX Live 2011) kpathsea version 6.0.1)>>
 endobj
 xref
@@ -16233,7 +16233,7 @@ xref
 0000814756 00000 n 
 0000814939 00000 n 
 trailer
-<</Size 1446/Root 1444 0 R/Info 1445 0 R/ID[<6113321A8B8CB829A1BFEBE197B5A45C> <6113321A8B8CB829A1BFEBE197B5A45C>]>>
+<</Size 1446/Root 1444 0 R/Info 1445 0 R/ID[<2113557409CAE6A878F047BB91464E0D> <2113557409CAE6A878F047BB91464E0D>]>>
 startxref
 815824
 %%EOF

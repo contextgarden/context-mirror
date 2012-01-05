@@ -540,6 +540,7 @@
    \float_check_extra_actions
    \float_analyze_variables_two
    \float_place_packaged_boxes
+   \dostoptagged % tricky ... needs checking
    % we need to carry over the par because of side floats
    \global\sidefloatdownshift \zeropoint
    \global\sidefloatextrashift\zeropoint
@@ -711,7 +712,10 @@
    \float_set_natural_dimensions\floatbox
    \ifdim\htdp\floatbox=\zeropoint
      \showmessage\m!floatblocks{11}\empty
-     \global\setbox\floatbox\vbox{\float_place_empty_box}%
+     \global\setbox\floatbox\vbox
+       {\dostarttagged\t!floatcontent\empty
+        \float_place_empty_box
+        \dostoptagged}%
    \fi
    % deal with lack of caption
    \global\setbox\floatbox\vbox \floatcaptionattribute
@@ -1204,11 +1208,8 @@
         {\dopreparesidewidthcaption}}%
   \dostoptagged}
 
-\def\dosettempcaptionbox
-  {\setbox\float_caption_box\vbox\bgroup
-     %expanded{\setupalign[\v!new,\v!reset,\floatcaptionparameter\c!align,\v!old]}% wrong! see icare
-     \normalexpanded{\noexpand\setupalign[\v!reset,\floatcaptionparameter\c!align]}% i need to check what reset does
-     \let\next}
+\def\float_caption_set_align
+  {\normalexpanded{\noexpand\setupalign[\v!reset,\floatcaptionparameter\c!align]}}
 
 \def\dopreparesideautocaption
   {\scratchdimen\dimexpr\hsize-\wd\float_content_box-\floatparameter\c!margin\relax % was \tfskipsize\relax
@@ -1217,33 +1218,39 @@
        \scratchdimen0.8\scratchdimen
      \fi
    \fi
-   \dosettempcaptionbox
-     {\hsize\scratchdimen
+   \setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\scratchdimen
       \float_make_complete_caption}}
 
 \def\dopreparesidewidthcaption
-  {\dosettempcaptionbox
-     {\hsize\floatcaptionparameter\c!width
+  {\setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\floatcaptionparameter\c!width
       \float_make_complete_caption}}
 
 \def\dopreparestackcaptionfix
-  {\dosettempcaptionbox
-     {\hsize\floatcaptionparameter\c!minwidth % special effects
+  {\setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\floatcaptionparameter\c!minwidth % special effects
       \float_make_complete_caption}}
 
 \def\dopreparestackcaptionmax
-  {\dosettempcaptionbox
-     {\hsize\wd\float_content_box
+  {\setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\wd\float_content_box
       \float_make_complete_caption}}
 
 \def\dopreparestackcaptionwid
-  {\dosettempcaptionbox
-     {\hsize\floatcaptionparameter\c!width
+  {\setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\floatcaptionparameter\c!width
       \float_make_complete_caption}}
 
 \def\dopreparestackcaptionmin
-  {\dosettempcaptionbox
-     {\hsize\wd\float_content_box
+  {\setbox\float_caption_box\vbox
+     {\float_caption_set_align
+      \hsize\wd\float_content_box
       \doifnothing{\floatcaptionparameter\c!align}\raggedcenter % on purpose overloads align !
       \float_make_complete_caption}}
 
@@ -1254,22 +1261,25 @@
    \edef\captionhsize{\the\wd\float_content_box}%
    \ifdim\captionhsize>\hsize
      % float is wider than \hsize
-     \dosettempcaptionbox
+     \setbox\float_caption_box\vbox
        {\settrialtypesetting
+        \float_caption_set_align
         \hsize\captionhsize
         \notesenabledfalse
         \float_make_complete_caption}%
      \ifdim\ht\scratchbox>\lineheight % more lines
-       \dosettempcaptionbox
-         {\hsize\captionhsize
+       \setbox\float_caption_box\vbox
+         {\float_caption_set_align
+          \hsize\captionhsize
           \advance\hsize -\captionovershoot\relax
           \ifdim\hsize<\captionminwidth\relax
             \hsize\captionhsize
           \fi
           \float_make_complete_caption}%
      \else
-       \dosettempcaptionbox
-         {\hsize\captionhsize
+       \setbox\float_caption_box\vbox
+         {\float_caption_set_align
+          \hsize\captionhsize
           \float_make_complete_caption}%
      \fi
    \else
@@ -1288,21 +1298,24 @@
         \float_make_complete_caption}%
      \ifdim\ht\scratchbox>\lineheight
        % at least an average word longer than a line
-       \dosettempcaptionbox
-         {\scratchdimen\captionhsize
+       \setbox\float_caption_box\vbox
+         {\float_caption_set_align
+          \scratchdimen\captionhsize
           \advance\scratchdimen \captionovershoot
           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
           \float_make_complete_caption}%
      \else
        % just over a line, don't use an overshoot % % % todo: outer/inner and such
        \doifcommonelse{\floatcaptionparameter\c!align}{\v!left,\v!right,\v!flushleft,\v!flushright}
-         {\dosettempcaptionbox
-            {\hsize\captionhsize
+         {\setbox\float_caption_box\vbox
+            {\float_caption_set_align
+             \hsize\captionhsize
              % strange : \raggedcenter
              \float_make_complete_caption}}
          {% nicer
-          \dosettempcaptionbox
-            {\hsize\captionhsize
+          \setbox\float_caption_box\vbox
+            {\float_caption_set_align
+             \hsize\captionhsize
              \doifnothing{\floatcaptionparameter\c!align}\raggedcenter% overloads
              \float_make_complete_caption}}%
      \fi
@@ -1671,9 +1684,11 @@
    \egroup}
 
 \def\prepare_side_float_caption
-  {\doifelse{\floatcaptionparameter\c!width}\v!max
-     {\dosettempcaptionbox
-        {\hsize\wd\float_content_box
+  {\dostarttagged\t!floatcaption\empty
+   \doifelse{\floatcaptionparameter\c!width}\v!max
+     {\setbox\float_caption_box\vbox
+        {\float_caption_set_align
+         \hsize\wd\float_content_box
          \float_make_complete_caption}}%
      {\doifelse{\floatcaptionparameter\c!width}\v!fit
         {\ifdim\wd\float_caption_box>\wd\float_content_box\relax
@@ -1683,11 +1698,13 @@
               \float_make_complete_caption}%
          \else
            \setbox\float_caption_box\hbox to \wd\float_content_box
-             {\hss\box\float_caption_box\hss}%
+             {\hss\hbox{\float_make_complete_caption}\hss}%
          \fi}
-        {\dosettempcaptionbox
-           {\hsize\floatcaptionparameter\c!width % \wd\float_content_box
-            \float_make_complete_caption}}}}
+        {\setbox\float_caption_box\vbox
+           {\float_caption_set_align
+            \hsize\floatcaptionparameter\c!width % \wd\float_content_box
+            \float_make_complete_caption}}}%
+   \dostoptagged}
 
 \def\build_side_float_box
   {\let\float_align_content\relax

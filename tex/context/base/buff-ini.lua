@@ -7,9 +7,11 @@ if not modules then modules = { } end modules ['buff-ini'] = {
 }
 
 local trace_run       = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
+local trace_grab      = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
 local trace_visualize = false  trackers.register("buffers.visualize", function(v) trace_visualize = v end)
 
-local report_buffers = logs.reporter("buffers","usage")
+local report_buffers  = logs.reporter("buffers","usage")
+local report_grabbing = logs.reporter("buffers","grabbing")
 
 local concat = table.concat
 local type, next = type, next
@@ -126,6 +128,13 @@ function commands.grabbuffer(name,begintag,endtag,bufferdata,catcodes) -- maybe 
     if dn == "" then
         nesting = 0
         continue = false
+    end
+    if trace_grab then
+        if #bufferdata > 30 then
+            report_grabbing("%s => |%s..%s|",name,sub(bufferdata,1,10),sub(bufferdata,-10,#bufferdata))
+        else
+            report_grabbing("%s => |%s|",name,bufferdata)
+        end
     end
     local counter = counters[begintag]
     if not counter then
