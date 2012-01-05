@@ -1673,43 +1673,44 @@
      \hsize\@@ksn\hsize
      \advance\hsize -\intercolumnwidth
    \fi
-   \dowithnextbox
-     {\setbox\columnspanbox\flushnextbox
-      \ifinsidecolumns\wd\columnspanbox\hsize\fi
-      \postprocesscolumnspanbox\columnspanbox
-      \scratchdimen\ht\columnspanbox
-      \setbox\columnspanbox\hbox % depth to be checked, probably option!
-        {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
-      \ht\columnspanbox\scratchdimen
-      \dp\columnspanbox\strutdp
-      \wd\columnspanbox\hsize
-      \ifinsidecolumns
-        \ifnum\@@ksn>1
-          \setvsize
-          \dohandleallcolumns
-            {\ifnum\currentcolumn>\@@ksn\else
-               \global\setbox\currenttopcolumnbox=\vbox
-                 {\ifnum\currentcolumn=1
-                    \snaptogrid\vbox{\copy\columnspanbox}
-                  \else
-                    \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
-                  \fi}%
-               \wd\currenttopcolumnbox\hsize
-               \global\advance\vsize -\ht\currenttopcolumnbox
-             \fi}
-          \global\pagegoal\vsize
-        \else
-          \snaptogrid\vbox{\box\columnspanbox}
-        \fi
-      \else
-        \snaptogrid\vbox{\box\columnspanbox}
-      \fi
-      \endgraf
-      \ifvmode\prevdepth\strutdp\fi
-      \egroup}
-     \vbox\bgroup
-      %\topskipcorrection % becomes an option !
-       \EveryPar{\begstrut\EveryPar{}}} % also !
+   \dowithnextboxcs\dofinishcolumnsetspan\vbox\bgroup
+     %\topskipcorrection % becomes an option !
+     \EveryPar{\begstrut\EveryPar{}}} % also !
+
+\def\dofinishcolumnsetspan
+  {\setbox\columnspanbox\flushnextbox
+   \ifinsidecolumns\wd\columnspanbox\hsize\fi
+   \postprocesscolumnspanbox\columnspanbox
+   \scratchdimen\ht\columnspanbox
+   \setbox\columnspanbox\hbox % depth to be checked, probably option!
+     {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
+   \ht\columnspanbox\scratchdimen
+   \dp\columnspanbox\strutdp
+   \wd\columnspanbox\hsize
+   \ifinsidecolumns
+     \ifnum\@@ksn>1
+       \setvsize
+       \dohandleallcolumns
+         {\ifnum\currentcolumn>\@@ksn\else
+            \global\setbox\currenttopcolumnbox=\vbox
+              {\ifnum\currentcolumn=1
+                 \snaptogrid\vbox{\copy\columnspanbox}
+               \else
+                 \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
+               \fi}%
+            \wd\currenttopcolumnbox\hsize
+            \global\advance\vsize -\ht\currenttopcolumnbox
+          \fi}
+       \global\pagegoal\vsize
+     \else
+       \snaptogrid\vbox{\box\columnspanbox}
+     \fi
+   \else
+     \snaptogrid\vbox{\box\columnspanbox}
+   \fi
+   \endgraf
+   \ifvmode\prevdepth\strutdp\fi
+   \egroup}
 
 \unexpanded\def\startcolumnspan
   {\dosingleempty\dostartcolumnspan}

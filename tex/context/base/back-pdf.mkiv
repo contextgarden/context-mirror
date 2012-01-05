@@ -182,15 +182,18 @@
 
 \unexpanded\def\dotransformnextbox#1#2#3#4#5#6% sx rx ry sy tx ty (will change) / basepoints !
   {\advance\backendtransformlevel\plusone
-   \dowithnextbox % fixing ht/dp/wd should happen elsewhere
-     {\hbox
-        {\hskip#5\onebasepoint
-         \raise#6\onebasepoint\hbox
-           {\pdfsave
-            \pdfsetmatrix{#1 #2 #3 #4}% 0 0 (no #5 #6 yet)
-            \box\nextbox
-            \pdfrestore
-            \advance\backendtransformlevel\minusone}}}}
+   % fixing ht/dp/wd should happen elsewhere
+   \dowithnextbox{\dodotransformnextbox{#5}{#6}{#1 #2 #3 #4}}}
+
+\unexpanded\def\dodotransformnextbox#1#2#3%
+  {\hbox
+     {\hskip#1\onebasepoint
+      \raise#2\onebasepoint\hbox
+        {\pdfsave
+         \pdfsetmatrix{#3}% 0 0 (no #5 #6 yet)
+         \box\nextbox
+         \pdfrestore
+         \advance\backendtransformlevel\minusone}}}
 
 \unexpanded\def\dostartclipping#1#2#3% todo (still needed?) (can move to lua)
   {\PointsToBigPoints{#2}\width

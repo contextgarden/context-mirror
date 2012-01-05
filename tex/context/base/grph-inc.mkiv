@@ -19,6 +19,8 @@
 %D - alternative images
 %D - a few more obscure things
 
+% use framedcommandhandler
+
 \registerctxluafile{grph-inc}{1.001}
 \registerctxluafile{grph-fil}{1.001}
 \registerctxluafile{grph-u3d}{1.001} % this will change
@@ -299,6 +301,8 @@
         \hss
      \egroup
    \egroup}
+
+\newsystemmode\v!figure
 
 \def\signalexternalfigure % global
   {\ifcase\figurestatus

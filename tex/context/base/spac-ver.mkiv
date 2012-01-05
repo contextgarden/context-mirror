@@ -476,11 +476,12 @@
    \egroup}
 
 \unexpanded\def\correctwhitespace
-  {\dowithnextbox
-     {\startbaselinecorrection
-      \flushnextbox
-      \stopbaselinecorrection}%
-   \vbox}
+  {\dowithnextboxcs\correctwhitespacefinish\vbox}
+
+\def\correctwhitespacefinish
+  {\startbaselinecorrection
+   \flushnextbox
+   \stopbaselinecorrection}
 
 \unexpanded\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
 \unexpanded\def\horizontalstrut{\normalhbox                          {\strut}}

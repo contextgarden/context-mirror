@@ -176,10 +176,12 @@
      \background_direct_ignore}
 
 \def\background_direct_indeed
-  {\dowithnextbox
-     {\setupcurrentbackground[\c!offset=\v!overlay]%
-      \inheritedbackgroundframed{\flushnextbox}\endgroup}
-     \vbox}
+  {\dowithnextboxcs\background_direct_finish\vbox}
+
+\def\background_direct_finish
+  {\setupcurrentbackground[\c!offset=\v!overlay]%
+   \inheritedbackgroundframed{\flushnextbox}%
+   \endgroup}
 
 \def\background_direct_ignore
   {\endgroup}
@@ -237,16 +239,17 @@
 
 \unexpanded\def\backgroundline[#color]%
   {\dontleavehmode
-   \dowithnextbox
-     {\hbox
-        {\faststartcolor[#color]%
-         \vrule
-           \!!width \nextboxwd
-           \!!height\nextboxht
-           \!!depth \nextboxdp
-         \faststopcolor
-         \hskip-\nextboxwd
-         \flushnextbox}}%
-      \hbox}
+   \dowithnextbox{\background_add_to_nextbox{#color}}\hbox}
+
+\unexpanded\def\background_add_to_nextbox#color% handy helper
+  {\hbox
+     {\faststartcolor[#color]%
+      \vrule
+        \!!width \nextboxwd
+        \!!height\nextboxht
+        \!!depth \nextboxdp
+      \faststopcolor
+      \hskip-\nextboxwd
+      \flushnextbox}}
 
 \protect \endinput

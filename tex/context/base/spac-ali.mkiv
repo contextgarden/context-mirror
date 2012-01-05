@@ -429,7 +429,7 @@
 
 \let\updateraggedskips\relax
 
-\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name
+\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
   {\unexpanded\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
    \updateraggedskips}
 
@@ -640,8 +640,8 @@
 \installalign \v!new           {\@@asraggedfalse} % so new will give you consistency
 \installalign \v!reset         {\notragged\normalbottom}
 
-\installalign \v!tolerant      {\tolerance3000   \relax}
-\installalign \v!verytolerant  {\tolerance4500   \relax}
+\installalign \v!tolerant      {\tolerance3000\relax}
+\installalign \v!verytolerant  {\tolerance4500\relax}
 \installalign \v!stretch       {\emergencystretch\bodyfontsize}
 
 \installalign \v!righttoleft   {\lefttoright}
@@ -759,7 +759,7 @@
 \def\doalignedline#1{\resetrealignsignal\csname\s!do\v!line#1\endcsname}
 
 %D Experimental (will be redone when floats are redone as it's real messy
-%D now):
+%D now). It can also be made faster (if needed).
 
 \def\doxalignline#1#2#3#4#5#6%
   {\noindentation  % was \noindent
