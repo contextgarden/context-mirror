@@ -206,34 +206,50 @@
 
 %D Wrappers (the signal is a synchronization with lua hack):
 
+\newsystemmode\v!project
+\newsystemmode\v!product
+\newsystemmode\v!component
+\newsystemmode\v!environment
+
 \def\startprojectindeed
-  {\starttext}
+  {\starttext
+   \pushsystemmode\v!project
+   \setsystemmode\v!project}
 
 \def\stopprojectindeed
-  {\stoptext
+  {\popsystemmode\v!project
+   \stoptext
    \signalendofinput\v!project}
 
 \def\startproductindeed
-  {\starttext}
+  {\starttext
+   \pushsystemmode\v!product
+   \setsystemmode\v!product}
 
 \def\stopproductindeed
-  {\stoptext
+  {\popsystemmode\v!product
+   \stoptext
    \signalendofinput\v!product}
 
 \def\startcomponentindeed
   {\starttext
-   \pushreferenceprefix\currentcomponent}
+   \pushreferenceprefix\currentcomponent
+   \pushsystemmode\v!component
+   \setsystemmode\v!component}
 
 \def\stopcomponentindeed
-  {\popreferenceprefix
+  {\popsystemmode\v!component
+   \popreferenceprefix
    \stoptext
    \signalendofinput\v!component}
 
 \def\startenvironmentindeed
-  {}
+  {\pushsystemmode\v!environment
+   \setsystemmode\v!environment}
 
 \def\stopenvironmentindeed
-  {\signalendofinput\v!environment}
+  {\popsystemmode\v!environment
+   \signalendofinput\v!environment}
 
 %D Relatively new (might move as it depends on setups):
 
