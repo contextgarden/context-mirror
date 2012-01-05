@@ -534,7 +534,7 @@
    \c_spacing_state_direction \zerocount % what is default ?
    \c_spacing_state_page      \zerocount
    \ifcsname\??aligncommand\askedraggedalign\endcsname
-     \csname\??aligncommand\askedraggedalign\endcsname
+     \csname\??aligncommand\askedraggedalign\endcsname % not much gain in new method
    \else
      \rawprocesscommacommand[\askedraggedalign]\spacing_set_text_align_collect
    \fi

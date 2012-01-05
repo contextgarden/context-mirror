@@ -1,4 +1,4 @@
-ctxlatecommandif not modules then modules = { } end modules ['mult-low'] = {
+if not modules then modules = { } end modules ['mult-low'] = {
     version   = 1.001,
     comment   = "companion to mult-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -112,7 +112,7 @@ return {
         --
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
-        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset",
+        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree",
         "scratchdimenone", "scratchdimentwo", "scratchdimenthree",

@@ -18,7 +18,7 @@
 \unprotect
 
 %D \macros
-%D   {setupblackrules}
+%D   {setupblackrules,blackrule}
 %D
 %D The graphic capabilities of \TEX\ do not go beyond simple
 %D filled rules, except of course when using specials. Let's
@@ -28,12 +28,6 @@
 %D characteristics of these rule drawing command can be set by:
 %D
 %D \showsetup{setupblackrules}
-
-\unexpanded\def\setupblackrules
-  {\dodoubleargument\getparameters[\??bj]}
-
-%D \macros
-%D   {blackrule}
 %D
 %D The simple command draws only one rule. Its optional
 %D argument can be used to specify the dimensions. By setting
@@ -42,24 +36,39 @@
 %D
 %D \showsetup{blackrule}
 
-\definecomplexorsimple\blackrule
+\installcorenamespace{blackrules}
 
-\unexpanded\def\complexblackrule[#1]%
-  {\hbox\bgroup\getparameters[\??bj][#1]\domakeblackrule\egroup}
+\installsimplecommandhandler \??blackrules {blackrules}
 
-\unexpanded\def\simpleblackrule
-  {\hbox\bgroup\domakeblackrule\egroup}
+\unexpanded\def\blackrule
+  {\hbox\bgroup
+   \doifnextoptionalelse\pack_black_rule_pickup\pack_black_rule_indeed}
 
-\def\domakeblackrule
-  {\doif\@@bjwidth \v!max{\def\@@bjwidth {1em}}%
-   \doif\@@bjheight\v!max{\setstrut\let\setstrut\relax\def\@@bjheight{\strutht}}%
-   \doif\@@bjdepth \v!max{\setstrut\def\@@bjdepth {\strutdp}}%
-   \startcolor[\@@bjcolor]% can be made faster, just direct attr
-     \vrule
-       \!!width \@@bjwidth
-       \!!height\@@bjheight
-       \!!depth \@@bjdepth
-   \stopcolor}
+\def\pack_black_rule_pickup[#1]%
+  {\setupcurrentblackrules[#1]%
+   \pack_black_rule_indeed}
+
+\def\pack_black_rule_indeed
+  {\edef\p_width {\directblackrulesparameter\c!width }%
+   \edef\p_height{\directblackrulesparameter\c!height}%
+   \edef\p_depth {\directblackrulesparameter\c!depth }%
+   \ifx\p_height\v!max
+     \setstrut
+   \else\ifx\p_depth\v!max
+     \setstrut
+   \fi\fi
+   \useblackrulesstyleandcolor\c!style\c!color
+   \vrule
+     \!!width \ifx\p_width \v!max\emwidth\else\p_width \fi
+     \!!height\ifx\p_height\v!max\strutht\else\p_height\fi
+     \!!depth \ifx\p_depth \v!max\strutdp\else\p_depth \fi
+   \egroup}
+
+\setupblackrules
+  [\c!width=\emwidth,
+   \c!height=\exheight,
+   \c!depth=\zeropoint,
+   \c!color=]
 
 %D \macros
 %D   {blackrules}
@@ -88,33 +97,43 @@
 %D \type{\leaders}, but this would probably have taken more
 %D tokens.
 
-\def\doblackrules[#1]%
+\unexpanded\def\blackrules % probably never used
   {\hbox\bgroup
-   \getparameters[\??bj][#1]%
-   \!!widtha\@@bjwidth
-   \!!widthb\@@bjdistance
-   \doif\@@bjalternative\c!b
-     {\scratchcounter\@@bjn
-      \ifnum\scratchcounter=\plusone
-        \!!widthb\zeropoint
-      \else
-        \advance\scratchcounter \minusone
-        \advance\!!widtha -\scratchcounter\!!widthb
-        \divide \!!widtha \@@bjn
-      \fi}%
-   \startcolor[\@@bjcolor]%
-     \dorecurse\@@bjn
-       {\vrule
-          \!!width \!!widtha
-          \!!height\@@bjheight
-          \!!depth \@@bjdepth
-        \hskip\!!widthb}%
-     \unskip
-   \stopcolor
+   \doifnextoptionalelse\pack_black_rules_pickup\pack_black_rules_indeed}
+
+\def\pack_black_rules_pickup[#1]%
+  {\setupcurrentblackrules[#1]%
+   \pack_black_rules_indeed}
+
+\def\pack_black_rules_indeed % no max handling here
+  {\scratchwidth   \directblackrulesparameter\c!width
+   \scratchheight  \directblackrulesparameter\c!height
+   \scratchdepth   \directblackrulesparameter\c!depth
+   \scratchdistance\directblackrulesparameter\c!distance
+   \scratchcounter \directblackrulesparameter\c!n
+   \edef\p_alternative{\blackrulesparameter\c!alternative}%
+   \ifx\p_alternative\c!b
+     \ifnum\scratchcounter=\plusone
+       \scratchdistance\zeropoint
+     \else
+       \scratchwidth\dimexpr(\scratchwidth-\scratchcounter\scratchdistance+\scratchdistance)/\scratchcounter\relax
+     \fi
+   \fi
+   \useblackrulesstyleandcolor\c!style\c!color
+   \dorecurse\scratchcounter % a typical case of where we can use a simple loop
+     {\vrule
+        \!!width \scratchwidth
+        \!!height\scratchheight
+        \!!depth \scratchdepth
+      \hskip\scratchdistance}%
+   \unskip
    \egroup}
 
-\unexpanded\def\blackrules
-  {\dosingleempty\doblackrules}
+\setupblackrules
+  [\c!n=3,
+   \c!alternative=\c!a,
+   \c!distance=.25\emwidth,
+   \c!color=]
 
 %D The next commands can be used to draw margin rules. We
 %D support two methods: \marginrule{one for in||line use} and
@@ -246,7 +265,7 @@
 %D \showsetup{vl}
 %D \showsetup{hl}
 
-\def\dovlwdhtdp#1#2#3%
+\unexpanded\def\dovlwdhtdp#1#2#3% used elsewhere
   {\bgroup
    \setbox\scratchbox\hbox
      {\vrule
@@ -264,12 +283,12 @@
 \def\complexhl[#1]%
   {\hbox
      {\vrule
-        \!!width #1\s!em
+        \!!width #1\emwidth
         \!!height\linewidth
         \!!depth \zeropoint}}
 
-\definecomplexorsimple\vl \def\simplevl{\complexvl[1]}
-\definecomplexorsimple\hl \def\simplehl{\complexhl[1]}
+\definecomplexorsimple\vl \def\simplevl{\complexvl[\plusone]}
+\definecomplexorsimple\hl \def\simplehl{\complexhl[\plusone]}
 
 %D \macros
 %D   {hairline, thinrule, thinrules, setupthinrules}
@@ -570,8 +589,8 @@
       \doifsomething{#1}
         {\doifelse\@@tllocation\v!inmargin
            {\llap
-              {\dousestyleparameter\@tlstyle
-               \dousecolorparameter\@tlcolor
+              {\dousestyleparameter\@@tlstyle
+               \dousecolorparameter\@@tlcolor
                #1%
                \hskip\leftmargindistance}}
            {\color[\@@tlrulecolor]
@@ -796,16 +815,6 @@
       \@@ilafter}}
 
 %D Will move up:
-
-
-\setupblackrules
-  [\c!n=3,
-   \c!width=1em,
-   \c!height=1ex,
-   \c!depth=\!!zeropoint,
-   \c!alternative=\c!a,
-   \c!distance=.25ex,
-   \c!color=]
 
 \setupmarginrules
   [\c!level=0,
