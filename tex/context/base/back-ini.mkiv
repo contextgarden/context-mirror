@@ -146,11 +146,11 @@
 
 \let\jobsuffix\empty
 
-\unexpanded\def\backend_set_job_suffix#1% % checking could happen in mode
+\unexpanded\def\back_job_set_suffix#1% % checking could happen in mode
   {\ifx\jobsuffix\empty\else\resetsystemmode\jobsuffix\fi
    \edef\jobsuffix{#1}%
    \ifx\jobsuffix\empty\else\setsystemmode  \jobsuffix\fi}
 
-\backend_set_job_suffix{pdf} % default
+\back_job_set_suffix{pdf} % default
 
 \protect \endinput

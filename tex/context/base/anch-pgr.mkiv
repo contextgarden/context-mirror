@@ -61,10 +61,10 @@
 
 \def\dopositionaction#1% test saves hash entry in etex
   {\ifcsname\??positionaction#1\endcsname
-     \positions_action_indeed{#1}%
+     \anch_positions_action_indeed{#1}%
    \fi}
 
-\def\positions_action_indeed#1%
+\def\anch_positions_action_indeed#1%
   {\ifcase\MPp{#1}\relax
      \traceposstring\clap\cyan{<#1>}% shouldn't happen too often
    \else
@@ -74,7 +74,7 @@
         \the\everyinsertpositionaction
         \the\everypositionaction
         \csname\??positionaction#1\endcsname
-        \positions_cleanup_action{#1}}%
+        \anch_positions_cleanup_action{#1}}%
      \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
      \endgroup
    \fi}
@@ -87,7 +87,7 @@
 
 % this can probably be done better
 
-% \def\positions_cleanup_action#1% not in trialtypesetting
+% \def\anch_positions_cleanup_action#1% not in trialtypesetting
 %   {\ifcsname\??positioncleanup#1\endcsname
 %      \the\everycleanpositionaction
 %      \iflocalpositioning
@@ -97,7 +97,7 @@
 %      \fi
 %    \fi}
 
-\def\positions_cleanup_action#1% not in trialtypesetting
+\def\anch_positions_cleanup_action#1% not in trialtypesetting
   {\ifcsname\??positioncleanup#1\endcsname
      \the\everycleanpositionaction
      \iflocalpositioning
@@ -136,10 +136,10 @@
 %
 % \def\presetpositionanchors % is this still needed?
 %   {\ifpositioning
-%      \positions_preset_anchors
+%      \anch_positions_preset_anchors
 %    \fi}
 %
-% \def\positions_preset_anchors
+% \def\anch_positions_preset_anchors
 %   {\begingroup
 %    \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
 %    \!!dimenb\dimexpr\MPy\textanchor+\MPh\textanchor-\!!dimena\relax
@@ -157,32 +157,32 @@
 % as some values are the same .. this one can (at some point) be used
 % to provide correction for imposition
 
-\unexpanded\def\positions_register_page#1% this one is flushed first ! ... can't we avoid this one
+\unexpanded\def\anch_positions_register_page#1% this one is flushed first ! ... can't we avoid this one
   {\ifpositioning\ifcase\realpageno\or
      \ifdim\printpaperheight=\paperheight
        \ifdim\printpaperwidth=\paperwidth
          % not needed,
        \else
-         \positions_register_page_indeed{#1}%
+         \anch_positions_register_page_indeed{#1}%
        \fi
      \else
-       \positions_register_page_indeed{#1}%
+       \anch_positions_register_page_indeed{#1}%
      \fi
    \fi\fi}
 
-\def\positions_register_page_indeed#1%
+\def\anch_positions_register_page_indeed#1%
   {\setbox#1\hbox{\hpos\pageanchor{\box#1}}}
 
-\unexpanded\def\positions_place_anchors
+\unexpanded\def\anch_positions_place_anchors
   {\ifpositioning
-     \positions_place_anchors_yes
+     \anch_positions_place_anchors_yes
    \else
-     \positions_place_anchors_nop
+     \anch_positions_place_anchors_nop
    \fi}
 
 % FOR THE MOMENT DISABLED
 %
-% \def\positions_place_anchors_yes % todo : depth pagebox
+% \def\anch_positions_place_anchors_yes % todo : depth pagebox
 %   {\begingroup
 %    \setbox\scratchbox\vbox to \textheight
 %      {\simpletopskipcorrection
@@ -194,7 +194,7 @@
 %    \hpos\textanchor{\box\scratchbox}%
 %    \endgroup}
 
-\def\positions_place_anchors_yes % todo : depth pagebox
+\def\anch_positions_place_anchors_yes % todo : depth pagebox
   {\begingroup
    \setbox\scratchbox\emptyvbox
    \ht\scratchbox\textheight
@@ -203,7 +203,7 @@
    \hpos\textanchor{\box\scratchbox}%
    \endgroup}
 
-\def\positions_place_anchors_nop
+\def\anch_positions_place_anchors_nop
   {\vskip\textheight}
 
 %D \macros
@@ -271,14 +271,14 @@
 
 \def\positionoverlay  % the test prevents too many redundant positions
   {\ifpositioning     % in (not used) text* position layers
-     \expandafter\positions_overlay_indeed
+     \expandafter\anch_positions_overlay_indeed
    \else % also \iftrialtypesetting test here?
      \expandafter\gobbleoneargument
    \fi}
 
 % keep this for a while
 %
-% \def\positions_overlay_indeed#1% the test prevents too many redundant positions
+% \def\anch_positions_overlay_indeed#1% the test prevents too many redundant positions
 %   {\vbox to \overlayheight
 %      {\doifpositionactionelse{#1::\MPanchoridentifier}%
 %         {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
@@ -298,11 +298,11 @@
 %         {\hbox to \overlaywidth{\hss}}%
 %       \vfill}}
 
-\def\positions_overlay_indeed#1%
+\def\anch_positions_overlay_indeed#1%
   {\doifpositionactionelse{#1::\MPanchoridentifier}%
-     \positions_overlay_yes\positions_overlay_nop{#1}}
+     \anch_positions_overlay_yes\anch_positions_overlay_nop{#1}}
 
-\def\positions_overlay_yes#1%
+\def\anch_positions_overlay_yes#1%
   {\vbox to \overlayheight
      {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
       \edef\MPanchor##1{\MPpos\MPanchorid}%
@@ -316,25 +316,25 @@
          \box\scratchbox}%
       \vfill}}
 
-% \def\\positions_overlay_nop#1%
+% \def\anch_positions_overlay_nop#1%
 %   {\setbox\scratchbox\emptyvbox
 %    \ht\scratchbox\overlayheight
 %    \wd\scratchbox\overlaywidth
 %    \box\scratchbox}
 
-\let\positions_overlay_nop\gobbleoneargument
+\let\anch_positions_overlay_nop\gobbleoneargument
 
 \unexpanded\def\startpositionoverlay
   {\iftrialtypesetting
-     \expandafter\positions_overlay_start_nop
+     \expandafter\anch_positions_overlay_start_nop
    \else
-     \expandafter\positions_overlay_start_yes
+     \expandafter\anch_positions_overlay_start_yes
    \fi}
 
-\def\positions_overlay_start_nop#1\stoppositionoverlay
+\def\anch_positions_overlay_start_nop#1\stoppositionoverlay
   {}
 
-\def\positions_overlay_start_yes#1%
+\def\anch_positions_overlay_start_yes#1%
   {\def\currentpositionoverlay{#1}}
 
 \unexpanded\def\stoppositionoverlay
@@ -375,14 +375,14 @@
 \newbox\positiongraphicbox
 
 \def\startMPpositiongraphic % id setups
-  {\dodoublegroupempty\positions_mp_graphic_start}
+  {\dodoublegroupempty\anch_positions_mp_graphic_start}
 
-\def\positions_mp_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
-  {\setgvalue{\??positiongraphic#1}{\positions_mp_graphic_use{#1}{#2}{#3}}}
+\def\anch_positions_mp_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
+  {\setgvalue{\??positiongraphic#1}{\anch_positions_mp_graphic_use{#1}{#2}{#3}}}
 
 \let\stopMPpositiongraphic\relax
 
-\def\positions_mp_graphic_prepare
+\def\anch_positions_mp_graphic_prepare
   {\ifcsname\??gv\currentmpvariableclass:self\endcsname \else
      \letvalue{\??gv\currentmpvariableclass:self}\currentposition
    \fi
@@ -390,51 +390,51 @@
      \letvalue{\??gv\currentmpvariableclass:from}\currentposition
    \fi}
 
-\def\positions_mp_graphic_use#1#2#3%
+\def\anch_positions_mp_graphic_use#1#2#3%
   {\begingroup
-   \mp_prepare_variables{#2}%
-   \positions_mp_graphic_prepare
+   \meta_prepare_variables{#2}%
+   \anch_positions_mp_graphic_prepare
    \startMPcode#3\stopMPcode
    \endgroup}
 
 \def\MPpositiongraphic
-  {\dodoublegroupempty\positions_mp_graphic_direct}
+  {\dodoublegroupempty\anch_positions_mp_graphic_direct}
 
-\def\positions_mp_graphic_direct#1% tag setups
+\def\anch_positions_mp_graphic_direct#1% tag setups
   {\ifcsname\??positionmethod#1\endcsname % method
-     \expandafter\positions_mp_graphic_direct_indeed_method
+     \expandafter\anch_positions_mp_graphic_direct_indeed_method
    \else\ifcsname\??positiongraphic#1\endcsname
-     \doubleexpandafter\positions_mp_graphic_direct_indeed_normal
+     \doubleexpandafter\anch_positions_mp_graphic_direct_indeed_normal
    \else
-     \doubleexpandafter\positions_mp_graphic_direct_indeed_unknown
+     \doubleexpandafter\anch_positions_mp_graphic_direct_indeed_unknown
    \fi\fi{#1}}
 
-\let\positions_mp_graphic_direct_indeed_unknown\gobbletwoarguments
+\let\anch_positions_mp_graphic_direct_indeed_unknown\gobbletwoarguments
 
-\def\positions_mp_graphic_direct_indeed_method
-  {\positions_mp_graphic_direct_indeed\??positionmethod}
+\def\anch_positions_mp_graphic_direct_indeed_method
+  {\anch_positions_mp_graphic_direct_indeed\??positionmethod}
 
-\def\positions_mp_graphic_direct_indeed_normal
-  {\positions_mp_graphic_direct_indeed\??positiongraphic}
+\def\anch_positions_mp_graphic_direct_indeed_normal
+  {\anch_positions_mp_graphic_direct_indeed\??positiongraphic}
 
-\def\positions_mp_graphic_direct_indeed#1#2#3% what tag setups
+\def\anch_positions_mp_graphic_direct_indeed#1#2#3% what tag setups
   {\begingroup
    \setupMPvariables[#2][#3]%
    \edef\currentmpvariableclass{#2}%
-   \positions_mp_graphic_prepare
+   \anch_positions_mp_graphic_prepare
    \ignoreMPboxdepth
-   \def\positions_mp_graphic_direct{\positions_mp_graphic_nested{#3}}% takes two extra arguments
+   \def\anch_positions_mp_graphic_direct{\anch_positions_mp_graphic_nested{#3}}% takes two extra arguments
    \setbox\positiongraphicbox\hbox
      {\ignorespaces\csname#1#2\endcsname\removelastspace}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
    \endgroup}
 
-\def\positions_mp_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
+\def\anch_positions_mp_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
   {\begingroup
    \setupMPvariables[#2][#1,#3]%
    \edef\currentmpvariableclass{#2}%
-   \positions_mp_graphic_prepare
+   \anch_positions_mp_graphic_prepare
    \getvalue{\??positiongraphic#2}%
    \endgroup}%
 

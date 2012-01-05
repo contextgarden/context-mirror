@@ -22,9 +22,6 @@
 
 \ifdefined\sixperemspace \else \def\sixperemspace{ } \fi % \utfchar{2006"} % we could embed 0x2006 but it does not show up in a editor
 
-%C The UPPERCASE variants are obsolete as we can now use \WORD
-%C in an non-interfering way.
-
 %D In this module we deal with language dependant labels and
 %D prefixes, like in {\em Figure~12} and {\em Chapter 1}. In
 %D this file we set the default values. Users can easily
@@ -41,7 +38,6 @@
 %D current implementation of labels supports two labels too.
 
 \ifdefined\simplifiedcommands \else \newtoks\simplifiedcommands \fi
-\ifdefined\Word               \else \let\Word\relax             \fi
 
 %D \macros
 %D   {setupheadtext, setuplabeltext}
@@ -69,12 +65,12 @@
 
 \let\currentlabelcategory\empty
 
-\def\definelabelclass
-  {\dodoubleempty\define_label_class}
+\unexpanded\def\definelabelclass
+  {\dodoubleempty\lang_labels_define_class}
 
-\def\define_label_class[#1][#2]%
+\def\lang_labels_define_class[#1][#2]%
   {\normalexpanded
-     {\define_label_class_indeed
+     {\lang_labels_define_class_indeed
         {#1}%
         {\ifsecondargument#2\else\zerocount\fi}%
         \expandafter\noexpand\csname   dogetupsome#1text\endcsname
@@ -85,10 +81,10 @@
         \expandafter\noexpand\csname             #1texts\endcsname
         \expandafter\noexpand\csname              #1text\endcsname}}
 
-\unexpanded\def\define_label_class_indeed#1#2#3#4#5#6#7#8#9%
-  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\setup_some_text_prefix}%
-   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\setup_some_text_prefix}%
-   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\start_some_text_prefix[#1]}%
+\unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
+  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
    \letvalue{stop#1text}\relax
    \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
    \ifnum#2=\plustwo
@@ -98,8 +94,8 @@
           \csname\??label\currentlabelcategory#1:##1:##2\endcsname
         \else\ifcsname\??label#1:##1:##2\endcsname
           \csname\??label#1:##1:##2\endcsname
-        \else\ifcsname\??la#4\s!default\endcsname
-          \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+        \else\ifcsname\??language#4\s!default\endcsname
+          \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
           \csname\??label\currentlabelcategory#1:##2\endcsname
         \else\ifcsname\??label#1:##2\endcsname
@@ -120,8 +116,8 @@
      \unexpanded\def#5##1##2%
        {\ifcsname\??label#1:##1:##2\endcsname
           \expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
-        \else\ifcsname\??la#4\s!default\endcsname
-          \expandafter#5\csname\??la#4\s!default\endcsname{##2}%
+        \else\ifcsname\??language#4\s!default\endcsname
+          \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
         \else\ifcsname\??label#1:##2\endcsname
           \expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
         \else\ifcsname\??label#1:\s!en:##2\endcsname
@@ -172,7 +168,7 @@
 \let\currenttextprefixtag  \s!unknown
 \let\currenttextprefixclass\s!unknown
 
-\def\start_some_text_prefix[#1][#2][#3]% class language name
+\def\lang_labels_text_prefix_start[#1][#2][#3]% class language name
   {\ifthirdargument
      \edef\currenttextprefixtag{\reallanguagetag{#2}}%
      \edef\currenttextprefixname{#3}%
@@ -180,50 +176,50 @@
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
      \edef\currenttextprefixname{#2}%
    \fi
-   \grabuntil{stop#1text}\start_some_text_prefix_indeed}
+   \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
-\def\start_some_text_prefix_indeed#1% text (not special checking done here yet, only for long texts anyway)
+\def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
   {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\ctxlua{context(string.strip(\!!bs#1\!!es))}}\empty}}
 
-\def\setup_some_text_prefix[#1][#2]%
+\def\lang_labels_text_prefix_setup[#1][#2]%
   {\ifsecondargument
      \edef\currenttextprefixtag{\reallanguagetag{#1}}%
-     \processcommalist[#2]\setup_some_text_prefix_indeed
+     \processcommalist[#2]\lang_labels_text_prefix_setup_indeed
    \else
      \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
-     \processcommalist[#1]\setup_some_text_prefix_indeed
+     \processcommalist[#1]\lang_labels_text_prefix_setup_indeed
    \fi}
 
-\def\setup_some_text_prefix_indeed#1%
-  {\assign_some_text_prefix[#1]}
+\def\lang_labels_text_prefix_setup_indeed#1%
+  {\lang_labels_text_prefix_assign[#1]}
 
-\def\assign_some_text_prefix[#1=#2]%
-  {\assign_some_text_prefix_indeed{#1}[#2,,]}
+\def\lang_labels_text_prefix_assign[#1=#2]%
+  {\lang_labels_text_prefix_assign_indeed{#1}[#2,,]}
 
-\def\assign_some_text_prefix_indeed#1%
+\def\lang_labels_text_prefix_assign_indeed#1%
   {\ifcase\protecttextprefixes
      % no checking
-     \expandafter\assign_some_text_prefix_yes
+     \expandafter\lang_labels_text_prefix_assign_yes
    \or
      % checking
      \ifcsname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
-       \expandafter\expandafter\expandafter\assign_some_text_prefix_nop
+       \expandafter\expandafter\expandafter\lang_labels_text_prefix_assign_nop
      \else
-       \expandafter\expandafter\expandafter\assign_some_text_prefix_yes
+       \expandafter\expandafter\expandafter\lang_labels_text_prefix_assign_yes
      \fi
    \or
      % simple assignment (a bit overkill but it fits in the whole)
-     \expandafter\assign_some_text_prefix_dumb
+     \expandafter\lang_labels_text_prefix_assign_dumb
    \fi{#1}}
 
-\let\m_languages_label_left \empty
-\let\m_languages_label_right\empty
+\let\m_lang_labels_left \empty
+\let\m_lang_labels_right\empty
 
-\def\assign_some_text_prefix_yes#1[#2,#3,#4]%
-  {\edef\m_languages_label_left {#2}%
-   \edef\m_languages_label_right{#3}%
-   \ifx\m_languages_label_right\empty
-     \ifx\m_languages_label_left\empty
+\def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
+  {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
+   \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
+   \ifx\m_lang_labels_right\empty
+     \ifx\m_lang_labels_left\empty
        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
      \else
        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
@@ -232,10 +228,10 @@
      \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
    \fi}
 
-\def\assign_some_text_prefix_nop#1[#2]%
+\def\lang_labels_text_prefix_assign_nop#1[#2]%
   {}
 
-\def\assign_some_text_prefix_dumb#1[#2,#3]%
+\def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
   {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
 
 \definelabelclass [head]      [0] % titles
@@ -269,9 +265,9 @@
 %D de current language.
 
 \unexpanded\def\translate
-  {\dosingleempty\translate_indeed}
+  {\dosingleempty\lang_translate}
 
-\def\translate_indeed[#1]%
+\def\lang_translate[#1]%
   {\getparameters[\??lg][#1]%
    \ifcsname\??lg\currentlanguage\endcsname
      \csname\??lg\currentlanguage\endcsname

@@ -21,14 +21,14 @@
 
 \installframedcommandhandler \??fittingpage {fittingpage} \??fittingpage
 
-\newdimen\fitting_page_width
-\newdimen\fitting_page_height
-\newbox  \fitting_page_box
+\newdimen\d_page_fitting_width
+\newdimen\d_page_fitting_height
+\newbox  \b_page_fitting
 
 \definepapersize
   [fittingpage]
-  [\c!width=\fitting_page_width,
-   \c!height=\fitting_page_height]
+  [\c!width=\d_page_fitting_width,
+   \c!height=\d_page_fitting_height]
 
 \definemakeup
   [fittingpage]
@@ -42,8 +42,8 @@
 
 \setuplayout
   [fittingpage]
-  [\c!width=\fitting_page_width,
-   \c!height=\fitting_page_height,
+  [\c!width=\d_page_fitting_width,
+   \c!height=\d_page_fitting_height,
    \c!location=\v!middle]
 
 \appendtoks
@@ -52,9 +52,9 @@
 \to \everydefinefittingpage
 
 \unexpanded\def\startfittingpage
-   {\dodoubleempty\start_fitting_page}
+   {\dodoubleempty\page_fitting_start}
 
-\def\start_fitting_page[#1][#2]%
+\def\page_fitting_start[#1][#2]%
   {\page % this is kind of tricky! there can be preceding page refs
    \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
@@ -64,50 +64,50 @@
    % runs under current page regime, i.e. page variables passed to mp
    \setupcurrentfittingpage[\c!paper=,#2]% auto or size or nothing
    \doifelsenothing{\fittingpageparameter\c!command}
-     \start_fitting_page_normal
-     \start_fitting_page_command}
+     \page_fitting_start_normal
+     \page_fitting_start_command}
 
-\def\start_fitting_page_command
-  {\grabuntil{\e!stop\currentfittingpage}\stop_fitting_page_command}
+\def\page_fitting_start_command
+  {\grabuntil{\e!stop\currentfittingpage}\page_fitting_stop_command}
 
-\def\stop_fitting_page_command#1%
-  {\start_fitting_page_normal
+\def\page_fitting_stop_command#1%
+  {\page_fitting_start_normal
    \fittingpageparameter\c!command{#1}%
-   \stop_fitting_page_normal}
+   \page_fitting_stop_normal}
 
-\def\start_fitting_page_normal
-   {\setbox\fitting_page_box\hbox
+\def\page_fitting_start_normal
+   {\setbox\b_page_fitting\hbox
       \bgroup
       \inheritedfittingpageframed
       \bgroup
       \gobblespacetokens}
 
-\unexpanded\def\stop_fitting_page_normal % todo: figure out why a small mp image gets shifted
+\unexpanded\def\page_fitting_stop_normal % todo: figure out why a small mp image gets shifted
   {\removeunwantedspaces
    \egroup
    \egroup
    % finalize
    \doif{\fittingpageparameter\c!margin}\v!page
-     {\setbox\fitting_page_box\hbox\bgroup
+     {\setbox\b_page_fitting\hbox\bgroup
         \offsetbox
           [\c!leftoffset=\backspace,
            \c!rightoffset=\cutspace,
            \c!topoffset=\topspace,
            \c!bottomoffset=\bottomspace]
-          {\box\fitting_page_box}%
+          {\box\b_page_fitting}%
        \egroup}%
    \doifsomething{\fittingpageparameter\c!scale}
-     {\setbox\fitting_page_box\hbox\bgroup
-        \scale[\c!scale=\fittingpageparameter\c!scale]{\box\fitting_page_box}%
+     {\setbox\b_page_fitting\hbox\bgroup
+        \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
       \egroup}%
-   \ifdim\ht\fitting_page_box=\zeropoint
-     \ht\fitting_page_box\onepoint
+   \ifdim\ht\b_page_fitting=\zeropoint
+     \ht\b_page_fitting\onepoint
    \fi
-   \ifdim\wd\fitting_page_box=\zeropoint
-     \wd\fitting_page_box\onepoint
+   \ifdim\wd\b_page_fitting=\zeropoint
+     \wd\b_page_fitting\onepoint
    \fi
-   \fitting_page_width \wd\fitting_page_box
-   \fitting_page_height\ht\fitting_page_box
+   \d_page_fitting_width \wd\b_page_fitting
+   \d_page_fitting_height\ht\b_page_fitting
    \startlocallayout % still valid?
    \let\checkcurrentlayout\relax % else interference with odd/even layout
    \processaction
@@ -117,13 +117,13 @@
       \s!default=>\def\fittingpapersize{fittingpage}]%
    \expanded{\setuppapersize[fittingpage][\fittingpapersize]}%
    \startmakeup[fittingpage]%
-     \box\fitting_page_box
+     \box\b_page_fitting
    \stopmakeup
    \stoplocallayout % still valid?
    \egroup
    \autostoptext}
 
-\let\stopfittingpage\stop_fitting_page_normal
+\let\stopfittingpage\page_fitting_stop_normal
 
 \setupfittingpage
   [%\c!scale=1000,
@@ -151,9 +151,9 @@
 %D maybe I should support stream=yes in framed.
 
 \unexpanded\def\startTEXstream
-  {\dosingleempty\start_TEX_stream}
+  {\dosingleempty\page_streams_TEX_start}
 
-\def\start_TEX_stream[#1]% old code, to be redone
+\def\page_streams_TEX_start[#1]% old code, to be redone
   {\page
    \enableoutputstream[tex]}
 
@@ -184,9 +184,9 @@
 %D \stoptyping
 
 \unexpanded\def\startpagefigure
-  {\dodoubleempty\start_page_figure}
+  {\dodoubleempty\page_figures_start}
 
-\def\start_page_figure[#1][#2]%
+\def\page_figures_start[#1][#2]%
   {\bgroup
    \getparameters[\??ex][\c!offset=\v!overlay,#2]%
    \startTEXpage[\c!offset=\@@exoffset]%
@@ -200,6 +200,6 @@
   {\dodoubleempty\page_figure}
 
 \def\page_figure[#1][#2]%
-  {\start_page_figure[#1][#2]\stoppagefigure}
+  {\page_figures_start[#1][#2]\stoppagefigure}
 
 \protect \endinput

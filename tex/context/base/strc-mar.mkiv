@@ -50,19 +50,19 @@
 
 \newtoks       \everymarking
 
-\unexpanded\def\relatemarking     {\dodoubleempty   \marking_relate     }
-\unexpanded\def\setmarking        {\dosingleargument\marking_set        } \let\marking\setmarking
-\unexpanded\def\resetmarking      {\dosingleargument\marking_reset      }
-\unexpanded\def\synchronizemarking{\dotripleargument\marking_synchronize}
+\unexpanded\def\relatemarking     {\dodoubleempty   \strc_markings_relate     }
+\unexpanded\def\setmarking        {\dosingleargument\strc_markings_set        } \let\marking\setmarking
+\unexpanded\def\resetmarking      {\dosingleargument\strc_markings_reset      }
+\unexpanded\def\synchronizemarking{\dotripleargument\strc_markings_synchronize}
 
 \appendtoks
     \ctxcommand{definemarking("\currentmarking",{ parent = "\currentmarkingparent" })}%
 \to \everydefinemarking
 
-\def\marking_relate[#1][#2]%
+\def\strc_markings_relate[#1][#2]%
   {\ctxcommand{relatemarking("#1","#2")}}
 
-\def\marking_set[#1]#2%
+\def\strc_markings_set[#1]#2%
   {\ifconditional\inhibitsetmarking
      % nothing
    \else
@@ -71,17 +71,17 @@
        {\ctxcommand{setmarking("#1",\!!bs\detokenize{#2}\!!es)}}%
    \fi}
 
-\def\marking_reset[#1]%
+\def\strc_markings_reset[#1]%
   {\ctxcommand{resetmarking("#1")}}
 
-\def\marking_synchronize[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
+\def\strc_markings_synchronize[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
   {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2,"#3")}\fi}
 
 \def\doifelsemarking#1%
   {\ctxcommand{doifelsemarking("#1")}}
 
 % \appendtoks
-%     \marking_synchronize[\v!page][\normalpagebox][\v!keep]% keep if no marks
+%     \strc_markings_synchronize[\v!page][\normalpagebox][\v!keep]% keep if no marks
 % \to \everybeforepagebody
 
 % defaults
@@ -96,15 +96,15 @@
 
 \unexpanded\def\getmarking
   {\ifconditional\inhibitgetmarking
-     \expandafter\dotripleargument\expandafter\marking_get_nop
+     \expandafter\dotripleargument\expandafter\strc_markings_get_nop
    \else
-     \expandafter\dotripleargument\expandafter\marking_get_yes
+     \expandafter\dotripleargument\expandafter\strc_markings_get_yes
    \fi}
 
-\def\marking_get_nop[#1][#2][#3]%
+\def\strc_markings_get_nop[#1][#2][#3]%
   {}
 
-\def\marking_get_yes[#1][#2][#3]%
+\def\strc_markings_get_yes[#1][#2][#3]%
   {\doif{\namedmarkingparameter{#1}\c!state}\v!start
      {\begingroup
       \setsystemmode\v!marking

@@ -152,12 +152,12 @@
 \expandafter\let\csname\??buttonlocation\s!default\endcsname\plusone % default
 \expandafter\let\csname\??buttonlocation\s!empty  \endcsname\plusone % default
 
-\newconditional\scrn_button_skipped
+\newconditional\c_scrn_button_skipped
 
 \def\scrn_button_make#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\begingroup
    \attribute\referenceattribute\attributeunsetvalue
-   \global\setfalse\scrn_button_skipped
+   \global\setfalse\c_scrn_button_skipped
    \chardef\locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
    \doifreferencefoundelse{#action}\scrn_button_make_yes\scrn_button_make_nop
      #currentparameter%
@@ -214,7 +214,7 @@
   {#inheritedframed{\ignorespaces#text\removeunwantedspaces}}
 
 \def\scrn_button_make_skipped#currentparameter#inheritedframed#letparameter#setparameter#text%
-  {\global\settrue\scrn_button_skipped}
+  {\global\settrue\c_scrn_button_skipped}
 
 \def\scrn_button_make_normal#currentparameter#inheritedframed#letparameter#setparameter#text%
   {\ctxlua{structures.references.injectcurrentset(nil,nil)}%
@@ -410,60 +410,60 @@
 %D The no longer hard coded text areas offset compensation makes tuning
 %D easier. After all, menus need some setup anyway.
 
-\newbox  \scrn_menu_box
+\newbox  \b_scrn_menu
 
-\newdimen\scrn_menu_next_distance
-\newdimen\scrn_menu_final_width
-\newdimen\scrn_menu_final_height
-\newdimen\scrn_menu_used_width
-\newdimen\scrn_menu_used_height
-\newdimen\scrn_menu_asked_width
-\newdimen\scrn_menu_asked_height
-\newdimen\scrn_menu_offset_top
-\newdimen\scrn_menu_offset_bottom
-\newdimen\scrn_menu_offset_left
-\newdimen\scrn_menu_offset_right
+\newdimen\d_scrn_menu_next_distance
+\newdimen\d_scrn_menu_final_width
+\newdimen\d_scrn_menu_final_height
+\newdimen\d_scrn_menu_used_width
+\newdimen\d_scrn_menu_used_height
+\newdimen\d_scrn_menu_asked_width
+\newdimen\d_scrn_menu_asked_height
+\newdimen\d_scrn_menu_offset_top
+\newdimen\d_scrn_menu_offset_bottom
+\newdimen\d_scrn_menu_offset_left
+\newdimen\d_scrn_menu_offset_right
 
-\newconditional\scrn_menu_zerodimensions
+\newconditional\c_scrn_menu_zerodimensions
 
 \def\scrn_menu_set_used
-  {\doassigncheckedframeoffset\scrn_menu_offset_left  {\interactionmenuparameter\c!leftoffset  }%
-   \doassigncheckedframeoffset\scrn_menu_offset_right {\interactionmenuparameter\c!rightoffset }%
-   \doassigncheckedframeoffset\scrn_menu_offset_top   {\interactionmenuparameter\c!topoffset   }%
-   \doassigncheckedframeoffset\scrn_menu_offset_bottom{\interactionmenuparameter\c!bottomoffset}%
-   \scrn_menu_asked_width  \interactionmenuparameter\c!maxwidth
-   \scrn_menu_asked_height \interactionmenuparameter\c!maxheight
-   \scrn_menu_used_width\dimexpr
-     \scrn_menu_asked_width  + \scrn_menu_offset_left + \scrn_menu_offset_right
+  {\doassigncheckedframeoffset\d_scrn_menu_offset_left  {\interactionmenuparameter\c!leftoffset  }%
+   \doassigncheckedframeoffset\d_scrn_menu_offset_right {\interactionmenuparameter\c!rightoffset }%
+   \doassigncheckedframeoffset\d_scrn_menu_offset_top   {\interactionmenuparameter\c!topoffset   }%
+   \doassigncheckedframeoffset\d_scrn_menu_offset_bottom{\interactionmenuparameter\c!bottomoffset}%
+   \d_scrn_menu_asked_width  \interactionmenuparameter\c!maxwidth
+   \d_scrn_menu_asked_height \interactionmenuparameter\c!maxheight
+   \d_scrn_menu_used_width\dimexpr
+     \d_scrn_menu_asked_width  + \d_scrn_menu_offset_left + \d_scrn_menu_offset_right
    \relax
-   \scrn_menu_used_height\dimexpr
-     \scrn_menu_asked_height + \scrn_menu_offset_top  + \scrn_menu_offset_bottom
+   \d_scrn_menu_used_height\dimexpr
+     \d_scrn_menu_asked_height + \d_scrn_menu_offset_top  + \d_scrn_menu_offset_bottom
    \relax}
 
 \def\scrn_menu_set_final
-  {\scrn_menu_final_width \namedinteractionmenuparameter\askedinteractionmenulocation\c!maxwidth
-   \scrn_menu_final_height\namedinteractionmenuparameter\askedinteractionmenulocation\c!maxheight}
+  {\d_scrn_menu_final_width \namedinteractionmenuparameter\askedinteractionmenulocation\c!maxwidth
+   \d_scrn_menu_final_height\namedinteractionmenuparameter\askedinteractionmenulocation\c!maxheight}
 
 \def\scrn_menu_apply_final
-  {\ifconditional\scrn_menu_zerodimensions
-     \wd\scrn_menu_box\zeropoint
-     \ht\scrn_menu_box\zeropoint
+  {\ifconditional\c_scrn_menu_zerodimensions
+     \wd\b_scrn_menu\zeropoint
+     \ht\b_scrn_menu\zeropoint
    \else
-     \wd\scrn_menu_box\scrn_menu_final_width
-     \ht\scrn_menu_box\scrn_menu_final_height
+     \wd\b_scrn_menu\d_scrn_menu_final_width
+     \ht\b_scrn_menu\d_scrn_menu_final_height
    \fi
-   \dp\scrn_menu_box\zeropoint}
+   \dp\b_scrn_menu\zeropoint}
 
 \def\scrn_menu_apply_used
-  {\ifdim\scrn_menu_offset_left=\zeropoint \else
-     \setbox\scrn_menu_box\hbox{\hskip-\scrn_menu_offset_left   \box\scrn_menu_box}%
+  {\ifdim\d_scrn_menu_offset_left=\zeropoint \else
+     \setbox\b_scrn_menu\hbox{\hskip-\d_scrn_menu_offset_left   \box\b_scrn_menu}%
    \fi
-   \ifdim\scrn_menu_offset_bottom=\zeropoint \else
-     \setbox\scrn_menu_box\hbox{\lower \scrn_menu_offset_bottom \box\scrn_menu_box}%
+   \ifdim\d_scrn_menu_offset_bottom=\zeropoint \else
+     \setbox\b_scrn_menu\hbox{\lower \d_scrn_menu_offset_bottom \box\b_scrn_menu}%
    \fi
-   \wd\scrn_menu_box\scrn_menu_asked_width
-   \ht\scrn_menu_box\scrn_menu_asked_height
-   \dp\scrn_menu_box\zeropoint}
+   \wd\b_scrn_menu\d_scrn_menu_asked_width
+   \ht\b_scrn_menu\d_scrn_menu_asked_height
+   \dp\b_scrn_menu\zeropoint}
 
 \setvalue{\??menualign\v!right     }{\let\scrn_menu_left_align\raggedright}
 \setvalue{\??menualign\v!left      }{\let\scrn_menu_left_align\raggedleft}
@@ -500,9 +500,9 @@
   {\begingroup
    \xdef\askedinteractionmenulocation{#location}%
    \scrn_menu_set_final
-   \ifcase\scrn_menu_final_width \else \ifcase\scrn_menu_final_height \else
+   \ifcase\d_scrn_menu_final_width \else \ifcase\d_scrn_menu_final_height \else
      \forgetall
-     \global\scrn_menu_next_distance\zeropoint
+     \global\d_scrn_menu_next_distance\zeropoint
      \let\scrn_menu_action\scrn_menu_package_indeed
      \the\everysetmenucommands
      \csname\??menupacker\namedinteractionmenuparameter\askedinteractionmenulocation\c!alternative\endcsname
@@ -513,15 +513,15 @@
 
 \setvalue{\??menupacker\v!vertical}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_vertical
-   \setbox\scrn_menu_box\hbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \setbox\b_scrn_menu\hbox{\scrn_menu_actions\askedinteractionmenulocation}%
    \scrn_menu_apply_final
-   \box\scrn_menu_box}
+   \box\b_scrn_menu}
 
 \setvalue{\??menupacker\v!horizontal}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_horizontal
-   \setbox\scrn_menu_box\vbox{\scrn_menu_actions\askedinteractionmenulocation}%
+   \setbox\b_scrn_menu\vbox{\scrn_menu_actions\askedinteractionmenulocation}%
    \scrn_menu_apply_final
-   \box\scrn_menu_box}
+   \box\b_scrn_menu}
 
 % stop : skipped
 % start: processed
@@ -545,8 +545,8 @@
 
 \def\scrn_menu_packager_vertical
   {\scrn_menu_set_used
-   \hskip\scrn_menu_next_distance
-   \setbox\scrn_menu_box\hbox to \scrn_menu_used_width
+   \hskip\d_scrn_menu_next_distance
+   \setbox\b_scrn_menu\hbox to \d_scrn_menu_used_width
      {\ifx\currentinteractionmenustate\v!empty \else
         \interactionmenuparameter\c!left
         \scrn_menu_package_vertical{\strictinteractionmenuparameter\c!menu}%
@@ -554,19 +554,19 @@
       \fi}%
    \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
    \ifx\currentinteractionmenudistance\v!overlay
-     \global\scrn_menu_next_distance\zeropoint
-     \wd\scrn_menu_box\zeropoint
+     \global\d_scrn_menu_next_distance\zeropoint
+     \wd\b_scrn_menu\zeropoint
    \else
-     \global\scrn_menu_next_distance\currentinteractionmenudistance
+     \global\d_scrn_menu_next_distance\currentinteractionmenudistance
      \scrn_menu_apply_used
    \fi
-   \box\scrn_menu_box}
+   \box\b_scrn_menu}
 
 \def\scrn_menu_packager_horizontal
   {\scrn_menu_set_used
-   \vskip\scrn_menu_next_distance
+   \vskip\d_scrn_menu_next_distance
    \scrn_menu_set_align
-   \setbox\scrn_menu_box\vbox to \scrn_menu_used_height
+   \setbox\b_scrn_menu\vbox to \d_scrn_menu_used_height
      {\ifx\currentinteractionmenustate\v!none \else
         \scrn_menu_top_align
         \interactionmenuparameter\c!before
@@ -576,15 +576,15 @@
       \fi}%
    \edef\currentinteractionmenudistance{\interactionmenuparameter\c!distance}%
    \ifx\currentinteractionmenudistance\v!overlay
-     \global\scrn_menu_next_distance\zeropoint
+     \global\d_scrn_menu_next_distance\zeropoint
      \offinterlineskip
-     \dp\scrn_menu_box\zeropoint
-     \ht\scrn_menu_box\zeropoint
+     \dp\b_scrn_menu\zeropoint
+     \ht\b_scrn_menu\zeropoint
    \else
-     \global\scrn_menu_next_distance\currentinteractionmenudistance
+     \global\d_scrn_menu_next_distance\currentinteractionmenudistance
      \scrn_menu_apply_used
    \fi
-   \box\scrn_menu_box}
+   \box\b_scrn_menu}
 
 %D For a right menu, a sequence of calls to \type
 %D {right_menu_button} is generated.
@@ -597,65 +597,65 @@
 %D while the rest is positional info. The status variable is
 %D 0, 1 or~2: not found, found and found but current page.
 
-\newcount      \scrn_menu_position
-\newconstant   \scrn_menu_page_mode % 0=notfound  1=found  2=currentpage
-\newconditional\scrn_menu_positioning
-\newtoks       \scrn_menu_mp_data
+\newcount      \c_scrn_menu_position
+\newconstant   \c_scrn_menu_page_mode % 0=notfound  1=found  2=currentpage
+\newconditional\c_scrn_menu_positioning
+\newtoks       \t_scrn_menu_mp_data
 
 \def\scrn_menu_button_mp_template
   {\askedinteractionmenulocation _menu_button(%
-     \number\scrn_menu_position,%
-     \number\scrn_menu_page_mode,%
-     \MPpos{\askedinteractionmenulocation:\number\scrn_menu_position}%
+     \number\c_scrn_menu_position,%
+     \number\c_scrn_menu_page_mode,%
+     \MPpos{\askedinteractionmenulocation:\number\c_scrn_menu_position}%
    );}
 
-\def\MPmenubuttons#1{\the\scrn_menu_mp_data}
+\def\MPmenubuttons#1{\the\t_scrn_menu_mp_data}
 
 \appendtoks
-    \global\scrn_menu_mp_data\emptytoks
+    \global\t_scrn_menu_mp_data\emptytoks
 \to \everyshipout
 
 \def\scrn_menu_whole_position % cannot happen in previous due to align
-  {\setbox\scrn_menu_box\hbox \bgroup
-     \hpos{menu:\askedinteractionmenulocation:\the\realpageno}{\box\scrn_menu_box}%
+  {\setbox\b_scrn_menu\hbox \bgroup
+     \hpos{menu:\askedinteractionmenulocation:\the\realpageno}{\box\b_scrn_menu}%
    \egroup}
 
 % removed: \restorestandardblank (vspacing) ... should happen elsewhere
 
 \def\scrn_menu_package_vertical#content%
   {\begingroup
-   \global\scrn_menu_position\zerocount
+   \global\c_scrn_menu_position\zerocount
    \def\scrn_menu_between_action_indeed{\interactionmenuparameter\c!inbetween}%
-   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\scrn_menu_positioning
+   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\c_scrn_menu_positioning
    \scrn_menu_set_align
-   \setbox\scrn_menu_box\vbox to \scrn_menu_used_height \bgroup
-     \hsize\scrn_menu_used_width
+   \setbox\b_scrn_menu\vbox to \d_scrn_menu_used_height \bgroup
+     \hsize\d_scrn_menu_used_width
      \scrn_menu_left_align
      \interactionmenuparameter\c!before\relax
      \ignorespaces#content\unskip
      \interactionmenuparameter\c!after
      \scrn_menu_right_align
    \egroup
-   \ifconditional\scrn_menu_positioning
+   \ifconditional\c_scrn_menu_positioning
      \scrn_menu_whole_position
    \fi
-   \box\scrn_menu_box
+   \box\b_scrn_menu
    \endgroup}
 
 \def\scrn_menu_package_horizontal#content%
   {\begingroup
-   \global\scrn_menu_position\zerocount
+   \global\c_scrn_menu_position\zerocount
    \def\scrn_menu_between_action_indeed{\interactionmenuparameter\c!middle}%
-   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\scrn_menu_positioning
-   \setbox\scrn_menu_box\hbox to \scrn_menu_used_width \bgroup
+   \doifelse{\interactionmenuparameter\c!position}\v!yes\settrue\setfalse\c_scrn_menu_positioning
+   \setbox\b_scrn_menu\hbox to \d_scrn_menu_used_width \bgroup
      \interactionmenuparameter\c!left\relax
      \ignorespaces#content\unskip
      \interactionmenuparameter\c!right
    \egroup
-   \ifconditional\scrn_menu_positioning
+   \ifconditional\c_scrn_menu_positioning
      \scrn_menu_whole_position
    \fi
-   \box\scrn_menu_box
+   \box\b_scrn_menu
    \endgroup}
 
 \def\scrn_menu_action_start
@@ -663,7 +663,7 @@
    \begingroup}
 
 \def\scrn_menu_action_stop
-  {\ifconditional\scrn_button_skipped \else
+  {\ifconditional\c_scrn_button_skipped \else
      \scrn_menu_between_action_indeed
    \fi
    \endgroup
@@ -676,7 +676,7 @@
 
 \unexpanded\def\scrn_menu_but_start[#action]#text\stopbut
   {\scrn_menu_action_start
-   \ifconditional\scrn_menu_positioning
+   \ifconditional\c_scrn_menu_positioning
      \expandafter\scrn_button_make_position
    \else
      \expandafter\scrn_button_make
@@ -690,15 +690,15 @@
    \scrn_menu_action_stop}
 
 \def\scrn_button_make_position#currentparameter#inheritedframed#letparameter#setparameter#text#action%
-  {\global\advance\scrn_menu_position\plusone
+  {\global\advance\c_scrn_menu_position\plusone
    \doifreferencefoundelse{#action}% 0=not found, 1=same page, >1=elsewhere
-     {\scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
-     {\scrn_menu_page_mode\plustwo}%
+     {\c_scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
+     {\c_scrn_menu_page_mode\plustwo}%
    \doglobal\appendetoks
      \scrn_menu_button_mp_template
-   \to \scrn_menu_mp_data
+   \to \t_scrn_menu_mp_data
    \hpos
-     {\askedinteractionmenulocation:\number\scrn_menu_position}%
+     {\askedinteractionmenulocation:\number\c_scrn_menu_position}%
      {\scrn_button_make
         #currentparameter%
         #inheritedframed%
@@ -819,7 +819,7 @@
 \unexpanded\def\scrn_menu_leftedge
   {\hbox to \leftedgewidth \bgroup
      \hsize\leftedgewidth
-     \settrue\scrn_menu_zerodimensions
+     \settrue\c_scrn_menu_zerodimensions
      \scrn_menu_insert\v!left
    \egroup
    \hskip-\leftedgewidth}
@@ -827,7 +827,7 @@
 \unexpanded\def\scrn_menu_rightedge
   {\hbox to \rightedgewidth \bgroup
      \hsize\rightedgewidth
-     \settrue\scrn_menu_zerodimensions
+     \settrue\c_scrn_menu_zerodimensions
      \scrn_menu_insert\v!right
    \egroup
    \hskip-\rightedgewidth}
@@ -835,7 +835,7 @@
 \unexpanded\def\scrn_menu_top
   {\vbox to \topheight \bgroup
      \vsize\topheight
-     \settrue\scrn_menu_zerodimensions
+     \settrue\c_scrn_menu_zerodimensions
      \scrn_menu_insert\v!top
      \kern\zeropoint
    \egroup
@@ -844,7 +844,7 @@
 \unexpanded\def\scrn_menu_bottom
   {\vbox to \bottomheight \bgroup
      \vsize\bottomheight
-     \settrue\scrn_menu_zerodimensions
+     \settrue\c_scrn_menu_zerodimensions
      \scrn_menu_insert\v!bottom
      \kern\zeropoint
    \egroup

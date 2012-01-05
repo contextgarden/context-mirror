@@ -752,7 +752,7 @@
 
 \unexpanded\def\synchronizemathfamilymr
   {\attribute\mathfamilyattribute\ifconditional\bidirectionalmathstrategy
-     \ifconditional\mathematics_right_to_left
+     \ifconditional\c_math_right_to_left
        \plustwo
      \else
        \plusone
@@ -763,7 +763,7 @@
 
 \unexpanded\def\synchronizemathfamilymb
   {\attribute\mathfamilyattribute\ifconditional\bidirectionalmathstrategy
-     \ifconditional\mathematics_right_to_left
+     \ifconditional\c_math_right_to_left
        \ifconditional\pseudoboldmathstate\pluseight\else\plusfive\fi
      \else
        \ifconditional\pseudoboldmathstate\plusseven\else\plusfour\fi
@@ -1508,12 +1508,12 @@
 \unexpanded\def\xxdododefinefont#1%
   {\edef\lastfontidentifier{#1}%
    \ifcsname\newfontidentifier\endcsname
-     \expandafter\xxdododefinefont_nop
+     \expandafter\xxdododefinefontnop
    \else
-     \expandafter\xxdododefinefont_yes
+     \expandafter\xxdododefinefontyes
    \fi}
 
-\def\xxdododefinefont_yes#1#2#3% \autofontsizetrue is set by calling routine
+\def\xxdododefinefontyes#1#2#3% \autofontsizetrue is set by calling routine
   {\def\localrelativefontsize{#1}%
    \def\localabsolutefontsize{#2}%
    \lowleveldefinefont{#3}\newfontidentifier
@@ -1525,7 +1525,7 @@
    \fi
    \let\newfontidentifier\oldnewfontidentifier}
 
-\def\xxdododefinefont_nop#1#2#3% \autofontsizetrue is set by calling routine
+\def\xxdododefinefontnop#1#2#3% \autofontsizetrue is set by calling routine
   {\csname\newfontidentifier\endcsname
    \autofontsizefalse
    \ifskipfontcharacteristics \else
@@ -3789,9 +3789,9 @@
 \def\setemphasisboldface
   {\let\savedemphasisboldface\bf
    \let\setemphasisboldface\relax
-   \let\bf\emphasisboldface_bf}
+   \let\bf\font_emphasis_bold_bold}
 
-\unexpanded\def\emphasisboldface_bf
+\unexpanded\def\font_emphasis_bold_bold
   {%\relax
    \let\bf\relax % new
    \ifx\fontalternative\c!it
@@ -3811,7 +3811,7 @@
 \let\italiccorrection=\/ % tex primitive
 
 \def\emphasiscorrection % not in raw alignment groups, else omit problem
-  {\ifhmode\ifnum\currentgrouptype=\@@aligngroup\else
+  {\ifhmode\ifnum\currentgrouptype=\aligngroupcode\else
      \expandafter\expandafter\expandafter\emphasislook
    \fi\fi}
 
@@ -4511,75 +4511,69 @@
 
 \appendtoks
     \letvalue{\??stylecheck\currentstyle}\relax
-    \setuevalue{\e!start\currentstyle}{\apply_style_start{\currentstyle}}%
-    \setuevalue{\e!stop \currentstyle}{\apply_style_stop}%
-    \setuevalue        {\currentstyle}{\apply_style_grouped{\currentstyle}}% no longer groupedcommand here
+    \setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
+    \setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
+    \setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
 \to \everydefinestyle
 
-\unexpanded\def\apply_style_start#1%
+\unexpanded\def\font_styles_apply_start#1%
   {\begingroup
-   \use_defined_style{#1}}
+   \font_styles_use_defined{#1}}
 
-\unexpanded\def\apply_style_stop
+\unexpanded\def\font_styles_apply_stop
   {\endgroup}
 
-\unexpanded\def\apply_style_grouped#1% assumes that the next is { or \bgroup
+\unexpanded\def\font_styles_apply_grouped#1% assumes that the next is { or \bgroup
   {\bgroup
-   \def\g_style{\use_defined_style{#1}}%
+   \def\g_style{\font_styles_use_defined{#1}}%
    \afterassignment\g_style
    \let\nexttoken}
 
-\unexpanded\def\use_defined_style#1%
+\unexpanded\def\font_styles_use_defined#1%
   {\edef\currentstyle{#1}%
    \usestylestyleandcolor\c!style\c!color}
 
-\unexpanded\def\use_generic_style#1%
+\unexpanded\def\font_styles_use_generic#1%
   {\let\currentstyle\s!unknown % reasonable generic tag
    \setupcurrentstyle[\c!style=,\c!color=,#1]%
    \usestylestyleandcolor\c!style\c!color}
 
 % commands
 
+\installcorenamespace{styleargument}
+
 \unexpanded\def\style[#1]% as this is can be a switch we use groupedcommand
-  {\csname style_%
-     \ifcsname#1\endcsname
-       nop%
-     \else\ifcsname\??stylecheck#1\endcsname
-       use%
-     \else
-       yes%
-     \fi\fi
+  {\csname\??styleargument
+     \ifcsname#1\endcsname1\else\ifcsname\??stylecheck#1\endcsname2\else3\fi\fi
    \endcsname{#1}}
 
-\def\style_nop       #1{\csname#1\endcsname}
-\def\style_use       #1{\groupedcommand{\use_defined_style{#1}}{}}
-\def\style_yes       #1{\doifassignmentelse{#1}\style_assignment\style_direct{#1}}
-\def\style_assignment#1{\groupedcommand{\use_generic_style{#1}}{}}
-\def\style_direct    #1{\groupedcommand{\definedfont[#1]}{}}
+\setvalue{\??styleargument1}#1{\csname#1\endcsname}
+\setvalue{\??styleargument2}#1{\groupedcommand{\font_styles_use_defined{#1}}{}}
+\setvalue{\??styleargument3}#1{\doifassignmentelse{#1}\font_styles_assignment\font_styles_direct{#1}}
+
+\def\font_styles_assignment#1{\groupedcommand{\font_styles_use_generic{#1}}{}}
+\def\font_styles_direct    #1{\groupedcommand{\definedfont[#1]}{}}
 
 % environments
 
+\installcorenamespace{styleenvironment}
+
 \unexpanded\def\startstyle[#1]%
   {\begingroup
-   \csname start_style_%
-     \ifcsname#1\endcsname
-       nop%
-     \else\ifcsname\??stylecheck#1\endcsname
-       use%
-     \else
-       yes%
-     \fi\fi
+   \csname\??styleenvironment
+     \ifcsname#1\endcsname1\else\ifcsname\??stylecheck#1\endcsname2\else3\fi\fi
    \endcsname{#1}}
 
 \unexpanded\def\stopstyle
   {\endgroup
    \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
 
-\def\start_style_nop       #1{\csname#1\endcsname}
-\def\start_style_use       #1{\use_defined_style{#1}}
-\def\start_style_yes       #1{\doifassignmentelse{#1}\start_style_assignment\start_style_direct{#1}}
-\def\start_style_assignment#1{\usegenericstyle{#1}}
-\def\start_style_direct    #1{\definedfont[#1]\relax}
+\setvalue{\??styleenvironment1}#1{\csname#1\endcsname}
+\setvalue{\??styleenvironment2}#1{\font_styles_use_defined{#1}}
+\setvalue{\??styleenvironment3}#1{\doifassignmentelse{#1}\font_styles_start_assignment\font_styles_start_direct{#1}}
+
+\def\font_styles_start_assignment#1{\usegenericstyle{#1}}
+\def\font_styles_start_direct    #1{\definedfont[#1]\relax}
 
 %D Still experimental (might even go away).
 
@@ -4593,42 +4587,44 @@
 
 % {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
 
-\unexpanded\def\definestylecollection
-  {\dosingleargument\dodefinestylecollection}
+\installcorenamespace{stylecollection}
 
-\def\dodefinestylecollection[#1]%
+\unexpanded\def\definestylecollection
+  {\dosingleargument\font_styles_define_style_collection}
+
+\def\font_styles_define_style_collection[#1]%
   {\iffirstargument
      \setuvalue{#1}{\styleinstance[#1]}%
-     \def\dododefinestylecollection##1%
-       {\def\dodododefinestylecollection####1{\letbeundefined{\??sx#1:##1:####1}}%
-        \processcommacommand[\fontalternativelist,\s!default]\dodododefinestylecollection}%
-     \processcommacommand[\fontstylelist,\s!default]\dododefinestylecollection
+     \def\font_styles_define_style_collection_do##1%
+       {\def\font_styles_define_style_collection_do_do####1{\letbeundefined{\??stylecollection#1:##1:####1}}%
+        \processcommacommand[\fontalternativelist,\s!default]\font_styles_define_style_collection_do_do}%
+     \processcommacommand[\fontstylelist,\s!default]\font_styles_define_style_collection_do
    \fi}
 
 \unexpanded\def\definestyleinstance
-  {\doquadrupleargument\dodefinestyleinstance}
+  {\doquadrupleargument\font_styles_define_style_instance}
 
-\def\dodefinestyleinstance[#1][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
+\def\font_styles_define_style_instance[#1][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
   {\iffirstargument
-     \ifcsname#1\endcsname\else\definestylecollection[#1]\fi
+     \ifcsname#1\endcsname\else\font_styles_define_style_collection[#1]\fi
    \fi
    \iffourthargument
-     \setvalue{\??sx#1:#2:#3}{#4}%
+     \setvalue{\??stylecollection#1:#2:#3}{#4}%
    \else\ifthirdargument
-     \setvalue{\??sx#1::#2}{#3}%
+     \setvalue{\??stylecollection#1::#2}{#3}%
    \else\ifsecondargument
-     \letvalueempty{\??sx#1::#2}%
+     \letvalueempty{\??stylecollection#1::#2}%
    \fi\fi\fi}
 
 \unexpanded\def\styleinstance[#1]% will be made faster
   {%\begingroup\normalexpanded{\noexpand\infofont[#1:\fontstyle:\fontalternative]}\endgroup
-   \executeifdefined{\??sx#1:\fontstyle:\fontalternative}%
-  {\executeifdefined{\??sx#1:\fontstyle:\s!default}%
-  {\executeifdefined{\??sx#1::\fontalternative}
-  {\getvalue        {\??sx#1::\s!default}}}}}
+   \executeifdefined{\??stylecollection#1:\fontstyle:\fontalternative}%
+  {\executeifdefined{\??stylecollection#1:\fontstyle:\s!default}%
+  {\executeifdefined{\??stylecollection#1::\fontalternative}
+  {\getvalue        {\??stylecollection#1::\s!default}}}}}
 
 % \unexpanded\def\styleinstance[#1]%
-%   {\csname\??sx#1%
+%   {\csname\??stylecollection#1%
 %       \ifcsname:\fontstyle:\fontalternative\endcsname
 %         :\fontstyle:\fontalternative
 %       \else\ifcsname:\fontstyle:\s!default\endcsname

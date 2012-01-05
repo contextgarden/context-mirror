@@ -42,7 +42,7 @@
    \fi
    \the\everysetupversion}
 
-\unexpanded\def\place_info_place_info % at the bottom of the page
+\unexpanded\def\page_info_place_info % at the bottom of the page
   {\csname\??layoutinfo\currentversioninfo\endcsname}
 
 \unexpanded\def\installversioninfo#1#2%
@@ -94,7 +94,7 @@
       \settexthoffset
       \hsize\dimexpr\scratchdimen-2\texthoffset\relax
       \hskip\texthoffset % brrrr
-      \vbox to \zeropoint{\vss\place_info_place_info}%
+      \vbox to \zeropoint{\vss\page_info_place_info}%
       \vskip\bodyfontsize}%
    \dp\b_page_versions\zeropoint
    \wd\b_page_versions\scratchdimen

@@ -339,9 +339,9 @@
 % \definepapersize[name][settings]
 
 \unexpanded\def\definepapersize
-  {\dotripleempty\define_paper_size}
+  {\dotripleempty\page_paper_define_size}
 
-\def\define_paper_size[#1][#2][#3]%
+\def\page_paper_define_size[#1][#2][#3]%
   {\edef\currentlayouttarget{#1}%
    \ifx\currentlayouttarget\empty
      % invalid target
@@ -367,20 +367,20 @@
 \let\page_paper_restore  \relax
 
 \unexpanded\def\setuppapersize
-  {\dodoubleempty\setup_paper_size}
+  {\dodoubleempty\page_paper_setup_size}
 
-\unexpanded\def\setup_paper_size[#1][#2]%
+\unexpanded\def\page_paper_setup_size[#1][#2]%
   {\iffirstargument
      \doifassignmentelse{#1}
-       {\setup_paper_size_settings[#1]}
+       {\page_paper_setup_size_settings[#1]}
        {\doifassignmentelse{#2}
-          {\setup_paper_size_settings_by_name[#1][#2]}
-          {\setup_paper_size_change_size[#1][#2]}}%
+          {\page_paper_setup_size_settings_by_name[#1][#2]}
+          {\page_paper_setup_size_change_size[#1][#2]}}%
    \else
      \page_paper_restore
    \fi}
 
-\unexpanded\def\setup_paper_size_settings[#1]% sometimes used to set paper/print size
+\unexpanded\def\page_paper_setup_size_settings[#1]% sometimes used to set paper/print size
   {\let\currentlayouttarget\empty
    \edef\m_layouttarget_paper_saved{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
    \edef\m_layouttarget_print_saved{\page_paper_the_print_size{\layouttargetparameter\c!paper}}%
@@ -391,13 +391,13 @@
      \ifx\m_layouttarget_print_saved\m_layouttarget_print
        % we didn't change the size, maybe only sx or sy or so
      \else
-       \setup_paper_size_settings_recalibrate
+       \page_paper_setup_size_settings_recalibrate
      \fi
    \else
-     \setup_paper_size_settings_recalibrate
+     \page_paper_setup_size_settings_recalibrate
    \fi}
 
-\def\setup_paper_size_settings_recalibrate
+\def\page_paper_setup_size_settings_recalibrate
   {\ifx\m_layouttarget_paper\empty
      % forget about it
    \else
@@ -409,16 +409,16 @@
    \letlayouttargetparameter\c!page \papersize
    \letlayouttargetparameter\c!paper\printpapersize}
 
-\unexpanded\def\setup_paper_size_settings_by_name[#1][#2]%
+\unexpanded\def\page_paper_setup_size_settings_by_name[#1][#2]%
   {\def\currentlayouttarget{\page_paper_the_paper_size{#1}}%
    \setuplayouttarget[#2]}
 
-\unexpanded\def\setup_paper_size_change_size[#1][#2]%
+\unexpanded\def\page_paper_setup_size_change_size[#1][#2]%
   {\doifelsenothing{#2}
      {\page_paper_set_current[#1][#1]}
      {\page_paper_set_current[#1][#2]}}
 
-\let\setuppaper\setup_paper_size_settings
+\let\setuppaper\page_paper_setup_size_settings
 
 \unexpanded\def\adaptpapersize
   {\global\let\page_paper_reinstate\page_paper_reinstate_indeed
@@ -569,6 +569,9 @@
 \ifdefined\setups              \else \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi % still needed?
 \ifdefined\docheckgridsnapping \else \let\docheckgridsnapping\relax                   \fi
 
+\let\p_page_layouts_width \empty
+\let\p_page_layouts_height\empty
+
 \def\page_layouts_synchronize
   {\setups[\layoutparameter\c!preset]%
    \global\leftmarginwidth \layoutparameter\c!leftmargin
@@ -588,13 +591,13 @@
    \simplesetupblank
    \setupinterlinespace[\v!reset]% \synchronizegloballinespecs
    \global\cutspace\layoutparameter\c!cutspace\relax
-   \edef\layout_parameter_width{\layoutparameter\c!width}%
-   \ifx\layout_parameter_width\v!middle
+   \edef\p_page_layouts_width{\layoutparameter\c!width}%
+   \ifx\p_page_layouts_width\v!middle
      \ifdim\cutspace=\zeropoint
        \global\cutspace\backspace
      \fi
      \global\makeupwidth\dimexpr\paperwidth-\backspace-\cutspace\relax
-   \else\ifx\layout_parameter_width\v!fit
+   \else\ifx\p_page_layouts_width\v!fit
      \ifdim\cutspace=\zeropoint
        \global\cutspace\backspace
      \fi
@@ -610,7 +613,7 @@
        -\rightedgedistance  -\rightedgewidth
        -\scratchdimen\relax
    \else
-     \global\makeupwidth\layout_parameter_width\relax
+     \global\makeupwidth\p_page_layouts_width\relax
      \ifdim\cutspace=\zeropoint
        \global\cutspace\dimexpr\paperwidth-\makeupwidth-\backspace\relax
    % \else
@@ -627,13 +630,13 @@
    \global\bottomspace\layoutparameter\c!bottomspace\relax
    \global\layoutlines0\number\layoutparameter\c!lines\relax % may be empty
    \ifcase\layoutlines
-     \edef\layout_parameter_height{\layoutparameter\c!height}%
-     \ifx\layout_parameter_height\v!middle
+     \edef\p_page_layouts_height{\layoutparameter\c!height}%
+     \ifx\p_page_layouts_height\v!middle
        \ifdim\bottomspace=\zeropoint
          \global\bottomspace\topspace
        \fi
        \global\makeupheight\dimexpr\paperheight-\topspace-\bottomspace\relax
-     \else\ifx\layout_parameter_height\v!fit
+     \else\ifx\p_page_layouts_height\v!fit
        \ifdim\bottomspace=\zeropoint
          \global\bottomspace\topspace
        \fi
@@ -856,7 +859,7 @@
       \begingroup % needed ?
       \uselayoutstyleandcolor\c!style\c!color
       \offinterlineskip
-      \page_insert_elements % zero size
+      \page_layouts_insert_elements % zero size
       \endgroup
       \page_insert_body#1#2}}% including footnotes
 
@@ -873,9 +876,9 @@
 %D \macros
 %D   {adaptlayout}
 
-\newdimen\page_adepts_pushed_text_height
-\newdimen\page_adepts_pushed_footer_height
-\newdimen\page_adepts_height
+\newdimen\d_page_adepts_pushed_text_height
+\newdimen\d_page_adepts_pushed_footer_height
+\newdimen\d_page_adepts_height
 
 \unexpanded\def\adaptlayout
   {\dodoubleempty\page_adapts_layout}
@@ -895,20 +898,20 @@
   {\getparameters[\??za][\c!height=\zeropoint,\c!lines=0,#1]%
    \page_adepts_push
    \doifelse\@@zaheight\v!max
-     {\global\page_adepts_height\footerheight}
-     {\global\page_adepts_height\dimexpr
+     {\global\d_page_adepts_height\footerheight}
+     {\global\d_page_adepts_height\dimexpr
         \ifnum\@@zalines=\zerocount
           \@@zaheight
         \else
           \@@zalines\openlineheight
         \fi
       \relax
-      \ifdim\page_adepts_height>\footerheight
-        \global\page_adepts_height\footerheight
+      \ifdim\d_page_adepts_height>\footerheight
+        \global\d_page_adepts_height\footerheight
       \fi}
-   \global\advance\textheight   \page_adepts_height
-   \global\advance\footerheight-\page_adepts_height
-   \showmessage\m!layouts1{\the\page_adepts_height,\the\realpageno}%
+   \global\advance\textheight   \d_page_adepts_height
+   \global\advance\footerheight-\d_page_adepts_height
+   \showmessage\m!layouts1{\the\d_page_adepts_height,\the\realpageno}%
    % this will become a better one (do we need insert correction?)
    \setvsize
    \global\pagegoal\vsize
@@ -927,12 +930,12 @@
    \letvalue{\??za:\the\realpageno}\relax}
 
 \def\page_adepts_push_indeed
-  {\global\page_adepts_pushed_text_height  \textheight
-   \global\page_adepts_pushed_footer_height\footerheight}
+  {\global\d_page_adepts_pushed_text_height  \textheight
+   \global\d_page_adepts_pushed_footer_height\footerheight}
 
 \def\page_adepts_pop_indeed
-  {\global\textheight  \page_adepts_pushed_text_height
-   \global\footerheight\page_adepts_pushed_footer_height
+  {\global\textheight  \d_page_adepts_pushed_text_height
+   \global\footerheight\d_page_adepts_pushed_footer_height
    \page_layouts_synchronize
    \global\let\page_adepts_push\page_adepts_push_indeed
    \global\let\page_adepts_pop\relax}
@@ -946,7 +949,7 @@
 
 \def\page_adapts_status_info % used elsewhere
   {\ifx\page_adepts_pop\relax \else
-     \space(adept: \the\page_adepts_height)\space
+     \space(adept: \the\d_page_adepts_height)\space
    \fi
    \the\realpageno}
 

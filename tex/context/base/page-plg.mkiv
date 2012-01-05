@@ -193,11 +193,11 @@
 \unexpanded\def\startpagelayout
   {\bgroup
    \catcode\endoflineasciicode\ignorecatcode
-   \start_page_layout}
+   \page_layouts_start_layout}
 
 \let\stoppagelayout\relax
 
-\def\start_page_layout[#1]#2\stoppagelayout
+\def\page_layouts_start_layout[#1]#2\stoppagelayout
   {\egroup
    \setvalue{\??layoutmethod#1}{#2}}
 

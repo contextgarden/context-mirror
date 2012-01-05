@@ -1586,9 +1586,9 @@
 
 % to be reconsidered ... (in any case they need to be unexpandable sinze 2011.12.30)
 
-\unexpanded\def\columns_align_option_yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
-\unexpanded\def\columns_align_option_no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
-\unexpanded\def\columns_align_option_text{\stretchcolumnsfalse\inheritcolumnstrue }%
+\unexpanded\def\page_columns_align_option_yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
+\unexpanded\def\page_columns_align_option_no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
+\unexpanded\def\page_columns_align_option_text{\stretchcolumnsfalse\inheritcolumnstrue }%
 
 \def\complexstartcolumns[#1]% %% \startcolumns
   {\bgroup
@@ -1614,9 +1614,9 @@
        \doifelse\@@klbalance\v!yes
          \balancecolumnstrue
          \balancecolumnsfalse
-       \installalign\v!yes {\columns_align_option_yes }%
-       \installalign\v!no  {\columns_align_option_no  }%
-       \installalign\v!text{\columns_align_option_text}%
+       \installalign\v!yes {\page_columns_align_option_yes }%
+       \installalign\v!no  {\page_columns_align_option_no  }%
+       \installalign\v!text{\page_columns_align_option_text}%
        \stretchcolumnsfalse
        \inheritcolumnstrue
        \doifsomething\@@klalign{\expanded{\setupalign[\@@klalign]}}%
@@ -1668,7 +1668,7 @@
    \c!offset=\v!overlay,
    \c!frame=\v!off]
 
-\newbox\columnspanbox \let\postprocesscolumnspanbox\gobbleoneargument
+\newbox\b_page_columns_span \let\postprocesscolumnspanbox\gobbleoneargument
 
 \def\dostartcolumnspan[#1]%
   {\bgroup
@@ -1684,15 +1684,15 @@
      \EveryPar{\begstrut\EveryPar{}}} % also !
 
 \def\dofinishcolumnsetspan
-  {\setbox\columnspanbox\flushnextbox
-   \ifinsidecolumns\wd\columnspanbox\hsize\fi
-   \postprocesscolumnspanbox\columnspanbox
-   \scratchdimen\ht\columnspanbox
-   \setbox\columnspanbox\hbox % depth to be checked, probably option!
-     {\localframed[\??ks][\c!offset=\v!overlay]{\box\columnspanbox}}%
-   \ht\columnspanbox\scratchdimen
-   \dp\columnspanbox\strutdp
-   \wd\columnspanbox\hsize
+  {\setbox\b_page_columns_span\flushnextbox
+   \ifinsidecolumns\wd\b_page_columns_span\hsize\fi
+   \postprocesscolumnspanbox\b_page_columns_span
+   \scratchdimen\ht\b_page_columns_span
+   \setbox\b_page_columns_span\hbox % depth to be checked, probably option!
+     {\localframed[\??ks][\c!offset=\v!overlay]{\box\b_page_columns_span}}%
+   \ht\b_page_columns_span\scratchdimen
+   \dp\b_page_columns_span\strutdp
+   \wd\b_page_columns_span\hsize
    \ifinsidecolumns
      \ifnum\@@ksn>1
        \setvsize
@@ -1700,19 +1700,19 @@
          {\ifnum\currentcolumn>\@@ksn\else
             \global\setbox\currenttopcolumnbox=\vbox
               {\ifnum\currentcolumn=1
-                 \snaptogrid\vbox{\copy\columnspanbox}
+                 \snaptogrid\vbox{\copy\b_page_columns_span}
                \else
-                 \snaptogrid\vbox{\vphantom{\copy\columnspanbox}}
+                 \snaptogrid\vbox{\vphantom{\copy\b_page_columns_span}}
                \fi}%
             \wd\currenttopcolumnbox\hsize
             \global\advance\vsize -\ht\currenttopcolumnbox
           \fi}
        \global\pagegoal\vsize
      \else
-       \snaptogrid\vbox{\box\columnspanbox}
+       \snaptogrid\vbox{\box\b_page_columns_span}
      \fi
    \else
-     \snaptogrid\vbox{\box\columnspanbox}
+     \snaptogrid\vbox{\box\b_page_columns_span}
    \fi
    \endgraf
    \ifvmode\prevdepth\strutdp\fi

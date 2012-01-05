@@ -44,8 +44,8 @@
 %D is somewhat easier and we also can erase buffers easier when
 %D we keep a local cache, especially as we can flush per page.
 
-\newif   \ifinpostponing                  % prevents nesting
-\newcount\page_postponed_blocks_next_page % set at the lua end
+\newif   \ifinpostponing                    % prevents nesting
+\newcount\c_page_postponed_blocks_next_page % set at the lua end
 
 \unexpanded\setvalue{\e!start\v!postponing}%
   {\bgroup
@@ -79,12 +79,12 @@
 \def\page_postponed_blocks_flush_indeed
   {\ifinpostponing
      % probably a nested flush
-   \else\ifnum\page_postponed_blocks_next_page=\zerocount
+   \else\ifnum\c_page_postponed_blocks_next_page=\zerocount
      % nothing in cache
-   \else\ifnum\page_postponed_blocks_next_page<\zerocount
+   \else\ifnum\c_page_postponed_blocks_next_page<\zerocount
      % generic cache
      \page_postponed_blocks_flush
-   \else\ifnum\page_postponed_blocks_next_page>\realpageno
+   \else\ifnum\c_page_postponed_blocks_next_page>\realpageno
      % future content
    \else
      % pending content

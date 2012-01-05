@@ -15,9 +15,6 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Bars}
 
-%D The name of this file might change (and then the prefix will
-%D become \xxxx_bar etc).
-
 %D \macros
 %D   {underbar,underbars,
 %D    overbar,overbars,
@@ -77,18 +74,18 @@
 
 \installcommandhandler \??bar {bar} \??bar
 
-\newtoks\t_bar_checklist
+\newtoks\t_node_rules_checklist
 
-\let\c_bar_index\relax % temporary synonym
-\let\p_bar_color\empty
+\let\c_node_rules_index\relax % temporary synonym
+\let\p_node_rules_color\empty
 
 \let\setupbars\setupbar
 
 \appendtoks
     \ifsecondargument
-        \bar_define
+        \node_rules_define
     \else
-        \the\t_bar_checklist
+        \the\t_node_rules_checklist
     \fi
 \to \everysetupbar
 
@@ -98,13 +95,13 @@
     \else
         \expandafter\newcount\csname\??barindex\currentbar\endcsname
     \fi
-    \normalexpanded{\t_bar_checklist{\bar_redefine{\currentbar}\the\t_bar_checklist}}%
-    \bar_define
-    \setuevalue\currentbar{\bar_direct{\currentbar}}%
+    \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
+    \node_rules_define
+    \setuevalue\currentbar{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
 
-\unexpanded\def\bar_define
-  {\edef\p_bar_color{\barparameter\c!color}%
+\unexpanded\def\node_rules_define
+  {\edef\p_node_rules_color{\barparameter\c!color}%
    \setevalue{\??barattribute\currentbar}{\number\ctxlua{nodes.rules.define {
         method        = \barparameter\c!method,
         offset        = \barparameter\c!offset,
@@ -115,50 +112,50 @@
         order         = "\barparameter\c!order",
         max           = \barparameter\c!max,
         ma            = \thecolormodelattribute,
-        ca            = \thecolorattribute\p_bar_color,
-        ta            = \thetransparencyattribute\p_bar_color
+        ca            = \thecolorattribute\p_node_rules_color,
+        ta            = \thetransparencyattribute\p_node_rules_color
       }}}}
 
-\unexpanded\def\bar_redefine#1%
-  {\def\currentbar{#1}\bar_define}
+\unexpanded\def\node_rules_redefine#1%
+  {\def\currentbar{#1}\node_rules_define}
 
-\unexpanded\def\bar_direct#1%
-  {\groupedcommand{\bar_set{#1}}\relax}
+\unexpanded\def\node_rules_direct#1%
+  {\groupedcommand{\node_rules_set{#1}}\relax}
 
-\def\bar_set
+\def\node_rules_set
   {\ctxlua{nodes.rules.enable()}% will be moved to lua
-   \glet\bar_set\bar_set_indeed
-   \bar_set}
+   \glet\node_rules_set\node_rules_set_indeed
+   \node_rules_set}
 
-\def\bar_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
-   \expandafter\let\expandafter\c_bar_index\csname\??barindex#1\endcsname
-   \advance\c_bar_index\plusone
+   \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
+   \advance\c_node_rules_index\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \attribute\ruledattribute\numexpr
-      \plusthousand*\c_bar_index
-     +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_bar_index\s!parent\endcsname:\number\c_bar_index\fi\endcsname
+      \plusthousand*\c_node_rules_index
+     +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
    \relax}
 
 \unexpanded\def\startbar[#1]%
   {\begingroup
-   \bar_set{#1}}
+   \node_rules_set{#1}}
 
 \unexpanded\def\stopbar
   {\endgroup}
 
 % ungrouped
 
-\newcount\c_bar_nesting % todo: same as colors
+\newcount\c_node_rules_nesting % todo: same as colors
 
 \unexpanded\def\pushbar[#1]%
-  {\global\advance\c_bar_nesting\plusone
-   \expandafter\edef\csname\??barstack\number\c_bar_nesting\endcsname{\attribute\ruledattribute\the\attribute\ruledattribute}%
-   \bar_set{#1}}
+  {\global\advance\c_node_rules_nesting\plusone
+   \expandafter\edef\csname\??barstack\number\c_node_rules_nesting\endcsname{\attribute\ruledattribute\the\attribute\ruledattribute}%
+   \node_rules_set{#1}}
 
 \unexpanded\def\popbar
-  {\csname\??barstack\number\c_bar_nesting\endcsname
-   \global\advance\c_bar_nesting\minusone}
+  {\csname\??barstack\number\c_node_rules_nesting\endcsname
+   \global\advance\c_node_rules_nesting\minusone}
 
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
@@ -213,17 +210,17 @@
 
 \installcommandhandler \??shift {shift} \??shift
 
-\newtoks\t_shift_checklist
+\newtoks\t_node_shifts_checklist
 
-\let\c_shift_index\relax % temporary synonym
+\let\c_node_shifts_index\relax % temporary synonym
 
 \let\setupshifts\setupshift
 
 \appendtoks
     \ifsecondargument
-        \shift_define
+        \node_shifts_define
     \else
-        \the\t_shift_checklist
+        \the\t_node_shifts_checklist
     \fi
 \to \everysetupshift
 
@@ -233,12 +230,12 @@
     \else
         \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
     \fi
-    \normalexpanded{\t_shift_checklist{\shift_redefine{\currentshift}\the\t_shift_checklist}}%
-    \shift_define
-    \setuevalue\currentshift{\shift_direct{\currentshift}}%
+    \normalexpanded{\t_node_shifts_checklist{\node_shifts_redefine{\currentshift}\the\t_node_shifts_checklist}}%
+    \node_shifts_define
+    \setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift
 
-\unexpanded\def\shift_define
+\unexpanded\def\node_shifts_define
   {\setevalue{\??shiftattribute\currentshift}{\number\ctxlua{nodes.shifts.define {
         method   = \shiftparameter\c!method,
         continue = "\shiftparameter\c!continue",
@@ -246,36 +243,36 @@
         unit     = "\shiftparameter\c!unit",
    }}}}
 
-\unexpanded\def\shift_redefine#1%
-  {\def\currentshift{#1}\shift_define}
+\unexpanded\def\node_shifts_redefine#1%
+  {\def\currentshift{#1}\node_shifts_define}
 
-\unexpanded\def\shift_set
+\unexpanded\def\node_shifts_set
   {\ctxlua{nodes.shifts.enable()}%
-   \glet\shift_set\shift_set_indeed
-   \shift_set}
+   \glet\node_shifts_set\node_shifts_set_indeed
+   \node_shifts_set}
 
-% \unexpanded\def\shift_direct#1%
-%   {\doisolatedgroupedalign{\shift_set{#1}}\donothing}
+% \unexpanded\def\node_shifts_direct#1%
+%   {\doisolatedgroupedalign{\node_shifts_set{#1}}\donothing}
 
-\unexpanded\def\shift_direct#1%
+\unexpanded\def\node_shifts_direct#1%
   {\groupedcommand
-     {\begingroup\dostartisolation\begingroup\shift_set{#1}}
+     {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}}
      {\endgroup\dostopisolation\endgroup}}
 
-\def\shift_set_indeed#1% todo: check parent !
+\def\node_shifts_set_indeed#1% todo: check parent !
   {\def\currentshift{#1}%
-   \expandafter\let\expandafter\c_shift_index\csname\??shiftindex#1\endcsname
-   \advance\c_shift_index\plusone
+   \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
+   \advance\c_node_shifts_index\plusone
    \attribute\shiftedattribute\numexpr
-      \plusthousand*\c_shift_index
-     +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_shift_index\s!parent\endcsname:\number\c_shift_index\fi\endcsname
+      \plusthousand*\c_node_shifts_index
+     +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_node_shifts_index\s!parent\endcsname:\number\c_node_shifts_index\fi\endcsname
    \relax
    \useshiftstyleandcolor\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}}
 
 \unexpanded\def\startshift[#1]%
   {\begingroup
-   \shift_set{#1}}
+   \node_shifts_set{#1}}
 
 \unexpanded\def\stopshift
   {\endgroup}

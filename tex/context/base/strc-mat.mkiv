@@ -519,7 +519,7 @@
    \dostoptagged
    \dostoptagged
    \nonoindentation
-   \checknextindentation[\formulaparameter\c!indentnext]%
+   \useindentnextparameter\formulaparameter
    \egroup
    \hangafter\minusone   % added for side floats
    \hangindent\zeropoint % added for side floats
@@ -613,7 +613,7 @@
 
 \unexpanded\def\stopsubformulas
   {\nonoindentation
-   \checknextindentation[\subformulaparameter\c!indentnext]%
+   \useindentnextparameter\subformulaparameter
    \the\everyresetformulas % to be checked
    \global\setfalse\insidesubformulas
    \dorechecknextindentation} % here ?

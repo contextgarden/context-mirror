@@ -38,20 +38,20 @@
 \ifdefined \s!public \else \def\s!public{public} \fi % for metatex % or hard check later
 
 \unexpanded\def\defineattribute
-  {\dodoubleempty\attributes_define}
+  {\dodoubleempty\attr_basics_define}
 
-\def\attributes_define[#1][#2]% alternatively we can let lua do the housekeeping
+\def\attr_basics_define[#1][#2]% alternatively we can let lua do the housekeeping
   {\expandafter\newattribute\csname\??ae:a:#1\endcsname
    \expandafter\newconstant \csname\??ae:c:#1\endcsname
-   \csname\??ae:c:#1\endcsname\last_allocated_attribute
-   \ctxcommand{defineattribute("#1",\number\last_allocated_attribute)}%
+   \csname\??ae:c:#1\endcsname\c_syst_last_allocated_attribute
+   \ctxcommand{defineattribute("#1",\number\c_syst_last_allocated_attribute)}%
    \doifnotinset\s!global{#2}{\appendetoks\csname\??ae:a:#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
    \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??ae:c:#1\endcsname}}
 
 \unexpanded\def\definesystemattribute
-  {\dodoubleempty\attributes_define_system}
+  {\dodoubleempty\attr_basics_define_system}
 
-\def\attributes_define_system[#1][#2]% alternatively we can let lua do the housekeeping
+\def\attr_basics_define_system[#1][#2]% alternatively we can let lua do the housekeeping
   {\scratchcounter\ctxcommand{getprivateattribute("#1")}\relax
    \expandafter\attributedef\csname\??ae:a:#1\endcsname\scratchcounter
    \expandafter\newconstant \csname\??ae:c:#1\endcsname

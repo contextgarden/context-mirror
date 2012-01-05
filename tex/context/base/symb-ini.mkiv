@@ -46,11 +46,11 @@
 \installcorenamespace{symbol}
 \installcorenamespace{symbolset}
 
-\newtoks\t_symbols_setups
+\newtoks\t_symb_setups
 
-\let\m_symbols_current_set\empty
+\let\m_symb_current_set\empty
 
-\newconditional\c_symbols_found
+\newconditional\c_symb_found
 
 \newtoks\everysymbol
 
@@ -58,15 +58,15 @@
 %D subsystem for resolving values.
 
 \unexpanded\def\definesymbol
-  {\dotripleempty\symbols_define}
+  {\dotripleempty\symb_define}
 
-\def\symbols_define[#1][#2][#3]% class name meaning
+\def\symb_define[#1][#2][#3]% class name meaning
   {\ifthirdargument
      \setvalue{\??symbol#1:#2}{#3}%
      \doifsomething{#1}{\addvalue{\??symbolset#1}{#2}}%
    \else
-     \setvalue{\??symbol\m_symbols_current_set:#1}{#2}%
-     \addvalue{\??symbolset\m_symbols_current_set}{#1}%
+     \setvalue{\??symbol\m_symb_current_set:#1}{#2}%
+     \addvalue{\??symbolset\m_symb_current_set}{#1}%
    \fi}
 
 \letvalue{\??symbolset}\empty
@@ -88,39 +88,39 @@
 % Test test \symbol{whatever}  test \symbol{whatever}.
 
 \unexpanded\def\symbol           % This one always gobbles spaces,
-  {\dodoubleempty\symbols_place} % so never change it again!
+  {\dodoubleempty\symb_place} % so never change it again!
 
-\def\symbols_place   % so we also handle \symbol{name}
+\def\symb_place   % so we also handle \symbol{name}
   {\iffirstargument  % which is nicer with following spaces
-     \expandafter\symbols_place_normal
+     \expandafter\symb_place_normal
    \else
-     \expandafter\symbols_place_special
+     \expandafter\symb_place_special
    \fi}
 
-\def\symbols_place_normal[#1][#2]%
-  {\setfalse\c_symbols_found
+\def\symb_place_normal[#1][#2]%
+  {\setfalse\c_symb_found
    \ifsecondargument
      \edef\currentsymbol{#2}%
      \ifcsname\??symbol#1:#2\endcsname
-       \symbols_place_indeed{#1:#2}%
+       \symb_place_indeed{#1:#2}%
      \fi
    \else
      \edef\currentsymbol{#1}%
    \fi
-   \ifconditional\c_symbols_found \else
-     \the\t_symbols_setups
-     \ifconditional\c_symbols_found \else
-       \symbols_place_retry\currentsymbol
+   \ifconditional\c_symb_found \else
+     \the\t_symb_setups
+     \ifconditional\c_symb_found \else
+       \symb_place_retry\currentsymbol
      \fi
    \fi}
 
-\def\symbols_place_special[#1][#2]#3%
+\def\symb_place_special[#1][#2]#3%
   {\firstargumenttrue
    \secondargumentfalse
-   \symbols_place_normal[#3][]}
+   \symb_place_normal[#3][]}
 
-\def\symbols_place_indeed#1% \relax's prevent lookahead problems
-  {\settrue\c_symbols_found
+\def\symb_place_indeed#1% \relax's prevent lookahead problems
+  {\settrue\c_symb_found
    \begingroup
    \the\everysymbol
    \csname\??symbol#1\endcsname\relax
@@ -131,21 +131,21 @@
 \def\directsymbol#1#2% no \relax, there can be an argument, see lists
   {\csname\??symbol\ifcsname\??symbol#1:#2\endcsname#1:#2\fi\endcsname}
 
-\def\symbols_fetch
-  {\ifconditional\c_symbols_found
+\def\symb_fetch
+  {\ifconditional\c_symb_found
      \expandafter\gobbleoneargument
    \else
-     \expandafter\symbols_fetch_indeed
+     \expandafter\symb_fetch_indeed
    \fi}
 
-\def\symbols_fetch_indeed#1%
+\def\symb_fetch_indeed#1%
   {\ifcsname\??symbol#1:\currentsymbol\endcsname
-     \symbols_place_indeed{#1:\currentsymbol}%
+     \symb_place_indeed{#1:\currentsymbol}%
    \fi}
 
-\def\symbols_place_retry#1%
+\def\symb_place_retry#1%
   {\ifcsname\??symbol:#1\endcsname
-     \symbols_place_indeed{:#1}%
+     \symb_place_indeed{:#1}%
    \else
      #1%
    \fi}
@@ -164,22 +164,22 @@
 \def\defaultsymbolheight{1.25ex}
 
 \unexpanded\def\figuresymbol
-  {\dodoubleempty\symbols_figure}
+  {\dodoubleempty\symb_figure}
 
 \ifdefined\externalfigure       \else \def\externalfigure[#1][#2]{#1} \fi
 \ifdefined\resetexternalfigures \else \let\resetexternalfigures\relax \fi
 
-\def\symbols_figure[#1][% #2]%
+\def\symb_figure[#1][% #2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
 \unexpanded\def\definefiguresymbol
-  {\dotripleempty\symbols_figure_define}
+  {\dotripleempty\symb_figure_define}
 
-\def\symbols_figure_define[#1][#2][#3]%
+\def\symb_figure_define[#1][#2][#3]%
   {\ifsecondargument
-     \definesymbol[#1][{\symbols_figure[#2][#3]}]%
+     \definesymbol[#1][{\symb_figure[#2][#3]}]%
    \fi}
 
 %D \macros
@@ -187,30 +187,30 @@
 %D
 %D A handy private one:
 
-\def\symbols_fetch_first
-  {\ifconditional\c_symbols_found
+\def\symb_fetch_first
+  {\ifconditional\c_symb_found
      \expandafter\gobbleoneargument
    \else
-     \expandafter\symbols_fetch_first_indeed
+     \expandafter\symb_fetch_first_indeed
    \fi}
 
-\def\symbols_fetch_first_indeed#1%
-  {\doifinsymbolset{#1}\currentsymbol{\settrue\c_symbols_found}}
+\def\symb_fetch_first_indeed#1%
+  {\doifinsymbolset{#1}\currentsymbol{\settrue\c_symb_found}}
 
-\def\symbols_fetch_second#1%
-  {\doifinsymbolset\empty\currentsymbol{\settrue\c_symbols_found}}
+\def\symb_fetch_second#1%
+  {\doifinsymbolset\empty\currentsymbol{\settrue\c_symb_found}}
 
 \def\doifsymboldefinedelse#1%
   {\begingroup
    \edef\currentsymbol{#1}%
-   \let\symbols_fetch\symbols_fetch_first
-   \setfalse\c_symbols_found
-   \the\t_symbols_setups
-   \ifconditional\c_symbols_found
+   \let\symb_fetch\symb_fetch_first
+   \setfalse\c_symb_found
+   \the\t_symb_setups
+   \ifconditional\c_symb_found
      \endgroup\expandafter\firstoftwoarguments
    \else
-     \symbols_fetch_second\currentsymbol
-     \ifconditional\c_symbols_found
+     \symb_fetch_second\currentsymbol
+     \ifconditional\c_symb_found
        \endgroup\doubleexpandafter\firstoftwoarguments
      \else
        \endgroup\doubleexpandafter\secondoftwoarguments
@@ -248,20 +248,20 @@
 %D \showsetup{startsymbolset}
 
 \unexpanded\def\startsymbolset[#1]%
-  {\pushmacro\m_symbols_current_set
-   \def\m_symbols_current_set{#1}}
+  {\pushmacro\m_symb_current_set
+   \def\m_symb_current_set{#1}}
 
 \unexpanded\def\stopsymbolset
-  {\popmacro\m_symbols_current_set}
+  {\popmacro\m_symb_current_set}
 
 \unexpanded\def\setupsymbolset[#1]%
-  {\prependtoksonce\symbols_fetch{#1}\to\t_symbols_setups}
+  {\prependtoksonce\symb_fetch{#1}\to\t_symb_setups}
 
 \unexpanded\def\resetsymbolset
-  {\t_symbols_setups\emptytoks}
+  {\t_symb_setups\emptytoks}
 
 \unexpanded\def\forcesymbolset[#1]%
-  {\t_symbols_setups{\symbols_fetch{#1}}}
+  {\t_symb_setups{\symb_fetch{#1}}}
 
 %D \macros
 %D   {showsymbolset}

@@ -415,9 +415,9 @@
 \newtoks \everycurrentdate
 
 \unexpanded\def\currentdate
-  {\dosingleempty\system_current_date}
+  {\dosingleempty\syst_converters_current_date}
 
-\def\system_current_date[#1]%
+\def\syst_converters_current_date[#1]%
   {\begingroup
    \the\everycurrentdate
    \doifsomething{#1}{\edef\currentdatespecification{#1}}%
@@ -425,9 +425,9 @@
    \endgroup}
 
 \unexpanded\def\date
-  {\dodoubleempty\system_date}
+  {\dodoubleempty\syst_converters_date}
 
-\def\system_date[#1][#2]%
+\def\syst_converters_date[#1][#2]%
   {\begingroup
    \iffirstargument
      \getparameters[\??da][d=\normalday,m=\normalmonth,y=\normalyear,#1]%
@@ -435,7 +435,7 @@
      \normalmonth\@@dam\relax
      \normalyear \@@day\relax
    \fi
-   \system_current_date[#2]%
+   \syst_converters_current_date[#2]%
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
@@ -460,15 +460,15 @@
 \def\currenttimespecification{h,:,m}
 
 \unexpanded\def\currenttime
-  {\doifnextoptionalelse\system_current_time_yes\system_current_time_nop}
+  {\doifnextoptionalelse\syst_converters_current_time_yes\syst_converters_current_time_nop}
 
 
-\unexpanded\def\system_current_time_yes[#1]%
+\unexpanded\def\syst_converters_current_time_yes[#1]%
   {\calculatecurrenttime
    \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
 
-\unexpanded\def\system_current_time_nop
-  {\normalexpanded{\system_current_time_yes[\currenttimespecification]}}
+\unexpanded\def\syst_converters_current_time_nop
+  {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
 
 
 %D Because we're dealing with dates, we also introduce a few
@@ -531,22 +531,22 @@
 \installcorenamespace {conversionwords}
 
 \unexpanded\def\defineconversion
-  {\dotripleempty\system_define_conversion}
+  {\dotripleempty\syst_converters_define_conversion}
 
-\def\system_define_conversion[#1][#2][#3]% from now on global (maybe local again some day)
+\def\syst_converters_define_conversion[#1][#2][#3]% from now on global (maybe local again some day)
   {\ifthirdargument
-     \system_define_conversion_indeed{#1#2}{#1:#2}{#3}%
+     \syst_converters_define_conversion_indeed{#1#2}{#1:#2}{#3}%
    \else
-     \system_define_conversion_indeed{#1}{#1}{#2}%
+     \syst_converters_define_conversion_indeed{#1}{#1}{#2}%
    \fi}
 
-\def\system_define_conversion_indeed#1#2#3%
+\def\syst_converters_define_conversion_indeed#1#2#3%
   {\doifinstringelse{,}{\detokenize{#3}}
      {\ctxcommand{defineconversion("#2",\!!bs\detokenize{#3}\!!es)}%
-      \setgvalue{\??conversion#1}{\system_checked_conversion{#2}}}
+      \setgvalue{\??conversion#1}{\syst_converters_checked_conversion{#2}}}
      {\setgvalue{\??conversion#1}{#3}}}
 
-\def\system_checked_conversion#1#2%
+\def\syst_converters_checked_conversion#1#2%
   {\ctxcommand{checkedconversion("#1",#2)}}
 
 %D If a conversion is just a font switch then we need to make sure
@@ -562,7 +562,7 @@
 
 \setvalue{\??conversionarguments1}#1{\csname\??conversion\currentlanguage#1\endcsname}
 \setvalue{\??conversionarguments2}#1{\csname\??conversion                #1\endcsname}
-\letvalue{\??conversionarguments3}\system_checked_conversion
+\letvalue{\??conversionarguments3}\syst_converters_checked_conversion
 
 \def\doifconversiondefinedelse#1%
   {\ifcsname\??conversion\currentlanguage#1\endcsname

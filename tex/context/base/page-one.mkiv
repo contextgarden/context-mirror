@@ -116,7 +116,7 @@
 
 \def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
-   \notes_check_if_bottom_present
+   \strc_notes_check_if_bottom_present
    \setbox0\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
      {\d_page_one_natural_depth\dp#2\relax
       \dotopinsertions

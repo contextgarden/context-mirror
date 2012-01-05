@@ -87,28 +87,28 @@
 \installcorenamespace{languagelinked}
 
 \def\defaultlanguage#1%
-  {\ifcsname\??la#1\s!default\endcsname
-     \expandafter\defaultlanguage\csname\??la#1\s!default\endcsname
+  {\ifcsname\??language#1\s!default\endcsname
+     \expandafter\defaultlanguage\csname\??language#1\s!default\endcsname
    \else
      #1%
    \fi}
 
 \def\languageparameter#1%
-  {\ifcsname\??la\currentlanguage#1\endcsname
-     \csname\??la\currentlanguage#1\endcsname
-   \else\ifcsname\??la\currentlanguage\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??la\currentlanguage\s!default\endcsname{#1}%
-   \else\ifcsname\??la\s!default#1\endcsname
-     \csname\??la\s!default#1\endcsname
+  {\ifcsname\??language\currentlanguage#1\endcsname
+     \csname\??language\currentlanguage#1\endcsname
+   \else\ifcsname\??language\currentlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
+   \else\ifcsname\??language\s!default#1\endcsname
+     \csname\??language\s!default#1\endcsname
    \fi\fi\fi}
 
 \def\specificlanguageparameter#1#2%
-  {\ifcsname\??la#1#2\endcsname
-     \csname\??la#1#2\endcsname
-   \else\ifcsname\??la#1\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??la#1\s!default\endcsname{#2}%
-   \else\ifcsname\??la\s!default#2\endcsname
-     \csname\??la\s!default#2\endcsname
+  {\ifcsname\??language#1#2\endcsname
+     \csname\??language#1#2\endcsname
+   \else\ifcsname\??language#1\s!default\endcsname
+     \expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
+   \else\ifcsname\??language\s!default#2\endcsname
+     \csname\??language\s!default#2\endcsname
    \fi\fi\fi}
 
 \unexpanded\def\setupcurrentlanguage[#1]%
@@ -177,7 +177,7 @@
 \def\installedlanguages{\ctxlua{languages.installed()}}
 
 \unexpanded\def\doiflanguageelse#1%
-  {\ifcsname\??la#1\c!state\endcsname
+  {\ifcsname\??language#1\c!state\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -189,24 +189,24 @@
 % \language[#1] gave unwanted side effect of loading language specifics
 
 \unexpanded\def\installlanguage
-  {\dodoubleargument\languages_install}
+  {\dodoubleargument\lang_basics_install}
 
-\def\languages_install[#1][#2]%
+\def\lang_basics_install[#1][#2]%
   {\doifassignmentelse{#2}
      {\doiflanguageelse{#1}
-        {\getparameters[\??la#1][#2]}
+        {\getparameters[\??language#1][#2]}
         {\setvalue{\??languagelinked#1}{#1}%
-         \languages_install_indeed{#1}{#1}%
-         \getparameters[\??la#1][\c!state=\v!start,#2]}%
+         \lang_basics_install_indeed{#1}{#1}%
+         \getparameters[\??language#1][\c!state=\v!start,#2]}%
       \edef\currentsetuplanguage{#1}%
       \ctxlua{languages.define("#1","\specificlanguageparameter{#1}\s!default")}%
       \the\everysetuplanguage}
      {\setvalue{\??languagelinked#1}{#2}%
       \ctxlua{languages.synonym("#1","#2")}%
-      \languages_install_indeed{#1}{#2}}}
+      \lang_basics_install_indeed{#1}{#2}}}
 
-\def\languages_install_indeed#1#2%
-  {\ifcsname#1\endcsname\else\setuvalue{#1}{\complexlanguage[#2]}\fi}
+\def\lang_basics_install_indeed#1#2%
+  {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}
 
 %D When the second argument is a language identifier, a
 %D synonym is created. This feature is present because we
@@ -232,26 +232,26 @@
 %D Beware, this command can only be used when a language is installed.
 
 \unexpanded\def\setuplanguage
-  {\dodoubleempty\languages_setup}
+  {\dodoubleempty\lang_basics_setup}
 
-\ifdefined\languages_synchronize \else
-    \let\languages_synchronize\relax % be nice for setups till we have one
+\ifdefined\lang_basics_synchronize \else
+    \let\lang_basics_synchronize\relax % be nice for setups till we have one
 \fi
 
-\def\languages_setup[#1][#2]%
+\def\lang_basics_setup[#1][#2]%
   {\ifsecondargument
      \pushmacro\currentlanguage % can be default
      \edef\currentsetuplanguage{\reallanguagetag{#1}}%
-     \getparameters[\??la\currentsetuplanguage][#2]%
+     \getparameters[\??language\currentsetuplanguage][#2]%
      \the\everysetuplanguage
      \popmacro\currentlanguage
     %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
    \else
      \let\currentsetuplanguage\currentlanguage
-     \getparameters[\??la\currentsetuplanguage][#1]%
+     \getparameters[\??language\currentsetuplanguage][#1]%
      \the\everysetuplanguage
    \fi
-   \languages_synchronize}
+   \lang_basics_synchronize}
 
 \appendtoks
     \ctxlua{languages.setdirty("\currentsetuplanguage")}%
@@ -353,7 +353,7 @@
 
 \newtoks \everylanguage
 
-\def\languages_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
+\def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
   {\normallanguage\ctxcommand{languagenumber(%
      "\currentlanguage",%
      "\defaultlanguage\currentlanguage",%
@@ -399,14 +399,14 @@
 
 % we will also permit access by the other names
 
-\unexpanded\def\languages_set_specified[#1]%
+\unexpanded\def\lang_basics_set_current[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
      \ifcsname\??languagelinked\askedlanguage\endcsname
        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
        \ifx\currentlanguage\askedlanguage \else
          \setcurrentlanguage\currentmainlanguage\askedlanguage
-         \languages_synchronize
+         \lang_basics_synchronize
        \fi
      \else
        \showmessage\m!languages6{#1}%
@@ -414,7 +414,7 @@
    \fi}
 
 \unexpanded\def\language
-  {\doifnextoptionalelse\languages_set_specified\normallanguage}
+  {\doifnextoptionalelse\lang_basics_set_current\normallanguage}
 
 \newcount\mainlanguagenumber
 
@@ -426,11 +426,11 @@
        \ifx\currentlanguage\askedlanguage
          \ifx\currentmainlanguage\askedlanguage \else
            \setcurrentlanguage\askedlanguage\askedlanguage
-           \languages_synchronize
+           \lang_basics_synchronize
          \fi
        \else
          \setcurrentlanguage\askedlanguage\askedlanguage
-         \languages_synchronize
+         \lang_basics_synchronize
        \fi
      \fi
    \fi

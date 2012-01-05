@@ -43,9 +43,9 @@
   {\setvalue{\??framedbottom\v!on#1}{\whateverbottomframe{#2}}%
    \expandafter\let\csname\??framedbottom\v!off#1\expandafter\endcsname\csname\??framedbottom\v!on#1\endcsname}
 
-\ifdefined \framed_overlay_initialize_indeed
+\ifdefined \pack_framed_overlay_initialize_indeed
 
-    \let\installedframedimensions\framed_overlay_initialize_indeed
+    \let\installedframedimensions\pack_framed_overlay_initialize_indeed
 
 \else
 

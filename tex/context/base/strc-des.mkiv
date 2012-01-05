@@ -116,8 +116,8 @@
 \newbox   \descriptionheadbox
 \newskip  \leftdescriptionskip
 \newskip  \rightdescriptionskip
-\newdimen \descriptionsheadwidth    % replaces \!!widtha
-\newdimen \descriptionsheaddistance % replaces \!!widthb
+\newdimen \descriptionsheadwidth    % replaces \!!widtha % TODO: proper namespace dimens
+\newdimen \descriptionsheaddistance % replaces \!!widthb % TODO: proper namespace dimens
 
 \setvalue{@@description\v!left }{\@@descriptionhang\@@descriptionleftpure \@@descriptionlefthang \@@descriptionleftmargin }
 \setvalue{@@description\v!right}{\@@descriptionhang\@@descriptionrightpure\@@descriptionrighthang\@@descriptionrightmargin}
@@ -386,9 +386,8 @@
    \dostoptagged
    \endgroup
    \descriptionparameter\c!after % which currentdescription is taken here?
-   \normalexpanded
-     {\egroup % temporary hack
-      \noexpand\checknextindentation[\descriptionparameter\c!indentnext]}%
+   \useindentnextparameter\descriptionparameter
+   \egroup
    \dorechecknextindentation}
 
 \def\@@dodescription
@@ -1111,35 +1110,35 @@
 %D
 %D \typebuffer \getbuffer
 
+\newcount\c_strc_indentedtexts_nesting
+\newdimen\d_strc_indentedtexts_width
+
 \appendtoks
-   \setuevalue    {\e!start\currentindentedtext}{\start_indented_text{\currentindentedtext}\indented_text_nesting}%
-   \setuevalue    {\e!stop \currentindentedtext}{\stop_indented_text}%
+   \setuevalue    {\e!start\currentindentedtext}{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
+   \setuevalue    {\e!stop \currentindentedtext}{\strc_indentedtexts_stop}%
    % to be avoided ... might go away
-   \setuevalue            {\currentindentedtext}{\indented_text{\currentindentedtext}{0}}%
-   \setuevalue      {\v!sub\currentindentedtext}{\indented_text{\currentindentedtext}{1}}%
-   \setuevalue{\v!sub\v!sub\currentindentedtext}{\indented_text{\currentindentedtext}{2}}%
+   \setuevalue            {\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{0}}%
+   \setuevalue      {\v!sub\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{1}}%
+   \setuevalue{\v!sub\v!sub\currentindentedtext}{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
 \to \everydefineindentedtext
 
-\newcount\indented_text_nesting
-\newdimen\indented_text_width
-
-\unexpanded\def\start_indented_text#1#2%
+\unexpanded\def\strc_indentedtexts_start#1#2%
   {\par
    \begingroup
-   \indented_text_nesting#2\relax
+   \c_strc_indentedtexts_nesting#2\relax
    \edef\currentindentedtext{#1}%
    \indentedtextparameter\c!before
    \doifnothing{\indentedtextparameter\c!sample}
      {\setindentedtextparameter\c!sample{\indentedtextparameter\c!text}}%
    \assignwidth
      {\indentedtextparameter\c!width}
-     {\indented_text_width}
+     {\d_strc_indentedtexts_width}
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \indentedtextparameter\c!sample
       \spr{\indentedtextparameter\c!separator}}
      {\indentedtextparameter\c!distance}%
-   \advance\indented_text_width \indentedtextparameter\c!distance
-   \setbox\scratchbox\hbox to \indented_text_width
+   \advance\d_strc_indentedtexts_width \indentedtextparameter\c!distance
+   \setbox\scratchbox\hbox to \d_strc_indentedtexts_width
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \strut
       \indentedtextparameter\c!text
@@ -1147,21 +1146,21 @@
       \spr{\indentedtextparameter\c!separator}%
       \hskip\indentedtextparameter\c!distance}%
    \parindent\zeropoint
-   \hskip\indented_text_nesting\indented_text_width
-   \advance\indented_text_nesting\plusone
+   \hskip\c_strc_indentedtexts_nesting\d_strc_indentedtexts_width
+   \advance\c_strc_indentedtexts_nesting\plusone
    \dontleavehmode\box\scratchbox
-   \hangindent\indented_text_nesting\indented_text_width
+   \hangindent\c_strc_indentedtexts_nesting\d_strc_indentedtexts_width
    \useindentedtextstyleandcolor\c!style\c!color}
 
-\unexpanded\def\stop_indented_text
+\unexpanded\def\strc_indentedtexts_stop
   {\indentedtextparameter\c!after
    \par
    \endgroup}
 
-\let\stopindentedtext\stop_indented_text
+\let\stopindentedtext\strc_indentedtexts_stop
 
-\unexpanded\def\indented_text#1#2#3\par % no longer clever grabpar trickery
-  {\start_indented_text{#1}{#2}#3\stop_indented_text}
+\unexpanded\def\strc_indentedtexts_direct#1#2#3\par % no longer clever grabpar trickery
+  {\strc_indentedtexts_start{#1}{#2}#3\strc_indentedtexts_stop}
 
 \setupindentedtext
   [\c!style=\v!normal,

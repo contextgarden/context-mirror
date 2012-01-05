@@ -204,7 +204,7 @@
 \def\installdiscretionary#1#2%
   {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
    \setvalue {\??discretionarytext\detokenize{#1}}{#2}%
-   \setvalue {\??discretionaryboth\detokenize{#1}}{\languages_discretionary_command#1}%
+   \setvalue {\??discretionaryboth\detokenize{#1}}{\lang_discretionaries_command#1}%
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
@@ -218,24 +218,24 @@
 \def\ignorediscretionaries
   {\discretionarymode\zerocount}
 
-\def\languages_discretionary_command
+\def\lang_discretionaries_command
   {% if direct if, we need \relax for lookahead in math mode
    \csname
      \ifcase\discretionarymode
-       \strippedcsname\languages_process_discretionary_none
+       \strippedcsname\lang_discretionaries_process_none
      \else\ifmmode
-       \strippedcsname\languages_process_discretionary_math
+       \strippedcsname\lang_discretionaries_process_math
      \else
-       \strippedcsname\languages_process_discretionary_text
+       \strippedcsname\lang_discretionaries_process_text
      \fi\fi
    \endcsname}
 
-\def\languages_process_discretionary_none#1%
+\def\lang_discretionaries_process_none#1%
   {\detokenize{#1}}
 
-%D The macro \type{\languages_check_before_discretionary} takes care
+%D The macro \type{\lang_discretionaries_check_before} takes care
 %D of loners like \type{||word}, while it counterpart \type
-%D {\languages_check_after_discretionary} is responsible for handling
+%D {\lang_discretionaries_check_after} is responsible for handling
 %D the comma.
 
 \newsignal\compoundbreakpoint
@@ -243,7 +243,7 @@
 \newconditional\punctafterdiscretionary
 \newconditional\spaceafterdiscretionary
 
-\def\languages_check_before_discretionary
+\def\lang_discretionaries_check_before
   {\ifvmode
      \dontleavehmode
    \fi
@@ -257,7 +257,7 @@
      \endgroup
   \fi}
 
-\def\languages_check_after_discretionary
+\def\lang_discretionaries_check_after
   {\setfalse\punctafterdiscretionary
    \setfalse\spaceafterdiscretionary
    \ifx\blankspace\nextnext \settrue \spaceafterdiscretionary \else
@@ -267,9 +267,9 @@
    \ifx          :\nextnext \settrue \punctafterdiscretionary \else
    \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
-\let\languages_process_discretionary_math\handlemathmodediscretionary
+\let\lang_discretionaries_process_math\handlemathmodediscretionary
 
-\def\languages_process_discretionary_text#1% grouped !
+\def\lang_discretionaries_process_text#1% grouped !
   {\bgroup
    \let\nextnextnext\egroup
    \def\next##1#1%
@@ -280,7 +280,7 @@
 \def\activedododotextmodediscretionary#1#2%
   {\edef\discretionarytoken{\detokenize{#2}}%
    \def\textmodediscretionary{\handletextmodediscretionary{#1}}%
-   \languages_check_after_discretionary
+   \lang_discretionaries_check_after
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
@@ -294,7 +294,7 @@
        \fi\fi\fi
        \def\nextnextnext{\afterassignment\egroup\let\next=}%
      \else
-       \languages_check_before_discretionary
+       \lang_discretionaries_check_before
        % the next line has been changed (20050203)
        % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
        % but an hbox blocks a possible \discretionary
@@ -312,7 +312,7 @@
    \else\ifcsname\??discretionaryaction\discretionarytoken\endcsname
      \csname\??discretionaryaction\discretionarytoken\endcsname
    \else
-     \languages_check_before_discretionary
+     \lang_discretionaries_check_before
      \ifconditional\spaceafterdiscretionary
        \prewordbreak\hbox{#2}\relax
      \else\ifconditional\punctafterdiscretionary
@@ -332,27 +332,27 @@
 \def\directdiscretionary
   {\csname
      \ifcase\discretionarymode
-       \strippedcsname\languages_process_discretionary_none
+       \strippedcsname\lang_discretionaries_process_none
      \else
-       \strippedcsname\languages_process_discretionary_direct
+       \strippedcsname\lang_discretionaries_process_direct
      \fi
    \endcsname}
 
 \def\indirectdiscretionary
   {\csname
      \ifcase\discretionarymode
-       \strippedcsname\languages_process_discretionary_none
+       \strippedcsname\lang_discretionaries_process_none
      \else
-       \strippedcsname\languages_process_discretionary_indirect
+       \strippedcsname\lang_discretionaries_process_indirect
      \fi
    \endcsname}
 
-\unexpanded\def\languages_process_discretionary_direct#1%
+\unexpanded\def\lang_discretionaries_process_direct#1%
   {\edef\discretionarytoken{\detokenize{#1}}%
    \let\textmodediscretionary\compoundhyphen
    \executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
 
-\unexpanded\def\languages_process_discretionary_indirect#1%
+\unexpanded\def\lang_discretionaries_process_indirect#1%
   {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
 
 \unexpanded\def\definetextmodediscretionary #1
@@ -375,7 +375,7 @@
 % xxx3xxx
 % xxx1<newline>2xxx
 
-\def\languages_discretionary_hyphen_like#1#2%
+\def\lang_discretionaries_hyphen_like#1#2%
   {\ifconditional\spaceafterdiscretionary
      \prewordbreak\hbox{#1}\relax
    \else\ifconditional\punctafterdiscretionary
@@ -385,16 +385,16 @@
    \fi\fi}
 
 \definetextmodediscretionary {}
-  {\languages_discretionary_hyphen_like\textmodehyphen\textmodehyphendiscretionary}
+  {\lang_discretionaries_hyphen_like\textmodehyphen\textmodehyphendiscretionary}
 
 \definetextmodediscretionary -
-  {\languages_discretionary_hyphen_like\normalhyphen\normalhyphendiscretionary}
+  {\lang_discretionaries_hyphen_like\normalhyphen\normalhyphendiscretionary}
 
 \definetextmodediscretionary _
-  {\languages_discretionary_hyphen_like\composedhyphen\composedhyphendiscretionary}
+  {\lang_discretionaries_hyphen_like\composedhyphen\composedhyphendiscretionary}
 
 \definetextmodediscretionary )
-  {\languages_discretionary_hyphen_like{)}{\discretionary{-)}{}{)}}}
+  {\lang_discretionaries_hyphen_like{)}{\discretionary{-)}{}{)}}}
 
 \definetextmodediscretionary (
   {\ifdim\lastskip>\zeropoint
@@ -459,9 +459,9 @@
 %D \stoptyping
 
 \unexpanded\def\fakecompoundhyphen
-  {\def\|{\mathortext\vert\languages_fake_compound_hyphen}}
+  {\def\|{\mathortext\vert\lang_compounds_fake_hyphen}}
 
-\def\languages_fake_compound_hyphen
+\def\lang_compounds_fake_hyphen
   {\def##1|%
      {\doifelsenothing{##1}\compoundhyphen{##1}%
       \kern\compoundbreakpoint\allowbreak}}
@@ -476,12 +476,12 @@
 %D tokens.
 
 \unexpanded\def\midworddiscretionary
-  {\futurelet\next\languages_mid_word_discretionary}
+  {\futurelet\nexttoken\lang_discretionaries_mid_word}
 
-\def\languages_mid_word_discretionary
-  {\ifx\next\blankspace\else
-   \ifx\next\bgroup    \else
-   \ifx\next\egroup    \else
+\def\lang_discretionaries_mid_word
+  {\ifx\nexttoken\blankspace\else
+   \ifx\nexttoken\bgroup    \else
+   \ifx\nexttoken\egroup    \else
      \discretionary{-}{}{}%
    \fi\fi\fi}
 
@@ -536,18 +536,18 @@
 
 \setnewconstant\compoundcharactermode\plusone
 
-\newcount\c_languages_compound_character
+\newcount\c_lang_compounds_character
 
 \def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
   {\ifcase\compoundcharactermode
       % ignore mode
    \else
-     \chardef\c_languages_compound_character`#1%
-     \expandafter\chardef\csname\??compoundnormal\string#1\endcsname\c_languages_compound_character
+     \chardef\c_lang_compounds_character`#1%
+     \expandafter\chardef\csname\??compoundnormal\string#1\endcsname\c_lang_compounds_character
      \def\!!stringa{#3}%
      \expandafter\def\csname\ifx\!!stringa\empty\??compoundsingle\else\??compoundmultiple\fi\detokenize{#1#2#3}\endcsname{#4}%
-     \setevalue{\??compounddefinition\detokenize{#1}}{\noexpand\languages_handle_compound_character{\detokenize{#1}}}% beter nr's
-     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_languages_compound_character\csname\??compounddefinition\detokenize{#1}\endcsname
+     \setevalue{\??compounddefinition\detokenize{#1}}{\noexpand\lang_compounds_handle_character{\detokenize{#1}}}% beter nr's
+     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_lang_compounds_character\csname\??compounddefinition\detokenize{#1}\endcsname
    \fi}
 
 %D We can also ignore definitions (needed in for instance \XML). Beware,
@@ -568,39 +568,39 @@
 %D with \type{\futurelet} to prevent spaces from
 %D disappearing.
 
-\def\languages_handle_compound_character#1%
-  {\def\languages_handle_compound_character_finish{\languages_handle_compound_character_finish_indeed{#1}}%
+\def\lang_compounds_handle_character#1%
+  {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed{#1}}%
    \futurelet\nexttoken\xhandlecompoundcharacter}
 
-\def\languages_handle_compound_character_finish_indeed
+\def\lang_compounds_handle_character_finish_indeed
   {\ifx\nexttoken\bgroup
-    %\expandafter\languages_handle_compound_character_pickup % handle "{ee} -> \"ee
+    %\expandafter\lang_compounds_handle_character_pickup % handle "{ee} -> \"ee
     %\expandafter\gobbleoneargument                          % forget "{ee} -> ee
-     \expandafter\languages_handle_compound_character_one    % ignore "{ee} -> "ee
+     \expandafter\lang_compounds_handle_character_one    % ignore "{ee} -> "ee
    \else\ifx\nexttoken\egroup
-     \doubleexpandafter\languages_handle_compound_character_normal
+     \doubleexpandafter\lang_compounds_handle_character_normal
    \else\ifx\nexttoken\blankspace
-     \tripleexpandafter\languages_handle_compound_character_normal
+     \tripleexpandafter\lang_compounds_handle_character_normal
    \else
-     \tripleexpandafter\languages_handle_compound_character_pickup
+     \tripleexpandafter\lang_compounds_handle_character_pickup
    \fi\fi\fi}
 
-\def\languages_handle_compound_character_normal#1%
+\def\lang_compounds_handle_character_normal#1%
   {\csname\??compoundnormal\string#1\endcsname}
 
-\def\languages_handle_compound_character_pickup#1#2% preserve space
-  {\def\languages_handle_compound_character_finish{\languages_handle_compound_character_finish_indeed#1#2}%
-   \futurelet\nexttoken\languages_handle_compound_character_finish}
+\def\lang_compounds_handle_character_pickup#1#2% preserve space
+  {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed#1#2}%
+   \futurelet\nexttoken\lang_compounds_handle_character_finish}
 
-\def\languages_handle_compound_character_finish_indeed
+\def\lang_compounds_handle_character_finish_indeed
   {\ifx\nexttoken\bgroup
-     \expandafter\languages_handle_compound_character_one
+     \expandafter\lang_compounds_handle_character_one
    \else\ifx\nexttoken\egroup
-     \doubleexpandafter\languages_handle_compound_character_one
+     \doubleexpandafter\lang_compounds_handle_character_one
    \else\ifx\nexttoken\blankspace
-     \tripleexpandafter\languages_handle_compound_character_one
+     \tripleexpandafter\lang_compounds_handle_character_one
    \else
-     \tripleexpandafter\languages_handle_compound_character_two
+     \tripleexpandafter\lang_compounds_handle_character_two
    \fi\fi\fi}
 
 %D Besides taken care of the grouping and space tokens, we have
@@ -616,7 +616,7 @@
 %D
 %D In later modules we will see how these commands are used.
 
-\def\languages_handle_compound_character_one#1#2%
+\def\lang_compounds_handle_character_one#1#2%
   {\if\string#1\string#2% was: \ifx#1#2%
      \def\next{\csname\??compoundnormal\string#1\endcsname}%
    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
@@ -626,7 +626,7 @@
    \fi\fi
    \next}
 
-\def\languages_handle_compound_character_two#1#2#3%
+\def\lang_compounds_handle_character_two#1#2#3%
   {\if\string#1\string#2%
      \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
    \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname

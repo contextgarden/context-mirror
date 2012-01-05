@@ -57,14 +57,14 @@
     \checkinitialparent % this might become automatic
 \to \everysetupinitial
 
-\def\initial_auto_scale % magic
+\def\v_typo_initials_auto_scale % magic
   {\the\dimexpr\lineheight*\initialparameter\c!n-\initialparameter\c!voffset\relax}
 
 \setupinitial
   [\c!location=\v!text,
    \c!n=3,
  % \s!font=Bold sa 4,
-   \s!font=Bold at \initial_auto_scale,
+   \s!font=Bold at \v_typo_initials_auto_scale,
    \c!distance=.125em,
    \c!hoffset=\zeropoint,
    \c!voffset=-1ex,
@@ -73,9 +73,9 @@
    \c!before=\blank]
 
 \unexpanded\def\placeinitial
-  {\dosingleempty\place_initial}
+  {\dosingleempty\typo_initials_place}
 
-\def\place_initial[#1]% todo: optional text
+\def\typo_initials_place[#1]% todo: optional text
   {\par
    \begingroup
    \edef\currentinitial{#1}%

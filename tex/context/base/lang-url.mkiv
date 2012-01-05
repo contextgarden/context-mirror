@@ -15,6 +15,9 @@
 
 \unprotect
 
+%D Traditionally this code is in the language namespace as
+%D hyphenation relates to languages.
+
 %D \macros
 %D   {hyphenatedurl}
 %D
@@ -61,24 +64,24 @@
 \setnewconstant\hyphenatedurllefthyphenmin \plusthree
 \setnewconstant\hyphenatedurlrighthyphenmin\plusthree
 
-\def\languages_hyphenated_url_space         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
-\def\languages_hyphenated_url_after       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
-\def\languages_hyphenated_url_before      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
-\def\languages_hyphenated_url_normal      #1{\char#1\relax}
-\def\languages_hyphenated_url_disc        #1{\discretionary{}{}{}}
+\def\lang_url_space         {\nobreak\hskip\zeropoint plus\onepoint\nobreak}
+\def\lang_url_after       #1{\char#1\discretionary{}{\hyphenatedurlseparator}{}}
+\def\lang_url_before      #1{\discretionary{\hyphenatedurlseparator}{}{}\char#1\relax}
+\def\lang_url_normal      #1{\char#1\relax}
+\def\lang_url_disc        #1{\discretionary{}{}{}}
 
-\def\languages_hyphenated_url_space_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
-\def\languages_hyphenated_url_after_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
-\def\languages_hyphenated_url_before_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
-\def\languages_hyphenated_url_normal_trace#1{\char#1\relax}
-\def\languages_hyphenated_url_disc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
+\def\lang_url_space_trace   {\nobreak\begingroup\darkyellow\ruledhskip\zeropoint plus\onepoint\endgroup\nobreak}
+\def\lang_url_after_trace #1{\char#1\hsmash{\darkblue\vl}\discretionary{}{\hyphenatedurlseparator}{}}
+\def\lang_url_before_trace#1{\discretionary{\hyphenatedurlseparator}{}{}\hsmash{\darkred\vl}\char#1\relax}
+\def\lang_url_normal_trace#1{\char#1\relax}
+\def\lang_url_disc_trace  #1{\discretionary{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}{\hsmash{\darkgreen\vl}}}
 
 \def\showhyphenatedurlbreaks
- {\let\languages_hyphenated_url_space \languages_hyphenated_url_space_trace
-  \let\languages_hyphenated_url_after \languages_hyphenated_url_after_trace
-  \let\languages_hyphenated_url_before\languages_hyphenated_url_before_trace
-  \let\languages_hyphenated_url_normal\languages_hyphenated_url_normal_trace
-  \let\languages_hyphenated_url_disc  \languages_hyphenated_url_disc_trace}
+ {\let\lang_url_space \lang_url_space_trace
+  \let\lang_url_after \lang_url_after_trace
+  \let\lang_url_before\lang_url_before_trace
+  \let\lang_url_normal\lang_url_normal_trace
+  \let\lang_url_disc  \lang_url_disc_trace}
 
 \def\sethyphenatedurlnormal#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,0)}}
 \def\sethyphenatedurlbefore#1{\ctxcommand{hyphenatedurl.setcharacters(\!!bs#1\!!es,1)}}
@@ -91,11 +94,11 @@
    \begingroup
    \the\everyhyphenatedurl
    \normallanguage\zerocount
-   \let\s\languages_hyphenated_url_space
-   \let\a\languages_hyphenated_url_after
-   \let\b\languages_hyphenated_url_before
-   \let\n\languages_hyphenated_url_normal
-   \let\d\languages_hyphenated_url_disc
+   \let\s\lang_url_space
+   \let\a\lang_url_after
+   \let\b\lang_url_before
+   \let\n\lang_url_normal
+   \let\d\lang_url_disc
    \normalexpanded{\noexpand\ctxcommand{hyphenatedurl(
         \!!bs\noexpand\detokenize{#1}\!!es,
         \number\hyphenatedurllefthyphenmin,

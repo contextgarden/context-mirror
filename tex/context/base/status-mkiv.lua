@@ -380,6 +380,7 @@ return {
             filename = "core-two",
             marktype = "mkiv",
             status   = "okay",
+            comment  = "maybe rename to core-two",
         },
         {
             filename = "colo-ini",

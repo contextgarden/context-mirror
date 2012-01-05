@@ -19,31 +19,31 @@
 
 \bgroup
 
-\catcode`\.=\@@escape
-.catcode`.B=.@@begingroup
-.catcode`.E=.@@endgroup
-.catcode`.#=.@@active
-.catcode`.$=.@@active
-.catcode`.%=.@@active
-.catcode`.\=.@@active
-.catcode`.^=.@@active
-.catcode`._=.@@active
-.catcode`.{=.@@active
-.catcode`.}=.@@active
-.catcode`.|=.@@active
-.catcode`.~=.@@active
+\catcode`\.=\escapecatcode
+.catcode`.B=.begingroupcatcode
+.catcode`.E=.endgroupcatcode
+.catcode`.#=.activecatcode
+.catcode`.$=.activecatcode
+.catcode`.%=.activecatcode
+.catcode`.\=.activecatcode
+.catcode`.^=.activecatcode
+.catcode`._=.activecatcode
+.catcode`.{=.activecatcode
+.catcode`.}=.activecatcode
+.catcode`.|=.activecatcode
+.catcode`.~=.activecatcode
 
 .gdef.verbatimXML
-  B.catcode`.#=.@@active .let#.letterhash
-   .catcode`.$=.@@active .let$.dollar
-   .catcode`.%=.@@active .let%.percent
-   .catcode`.\=.@@active .let\.letterbackslash
-   .catcode`.^=.@@active .let^.letterhat
-   .catcode`._=.@@active .let_.letterunderscore
-   .catcode`.{=.@@active .let{.leftargument
-   .catcode`.}=.@@active .let}.rightargument
-   .catcode`.|=.@@active .let|.letterbar
-   .catcode`.~=.@@active .let~.lettertilde
+  B.catcode`.#=.activecatcode .let#.letterhash
+   .catcode`.$=.activecatcode .let$.dollar
+   .catcode`.%=.activecatcode .let%.percent
+   .catcode`.\=.activecatcode .let\.letterbackslash
+   .catcode`.^=.activecatcode .let^.letterhat
+   .catcode`._=.activecatcode .let_.letterunderscore
+   .catcode`.{=.activecatcode .let{.leftargument
+   .catcode`.}=.activecatcode .let}.rightargument
+   .catcode`.|=.activecatcode .let|.letterbar
+   .catcode`.~=.activecatcode .let~.lettertilde
   E
 
 .egroup
@@ -61,10 +61,10 @@
 
 \bgroup
 
-\@EA\catcode\string`=\@@active
-\@EA\catcode\string`"\@@active
-\@EA\catcode\string``\@@active
-\@EA\catcode\string`&\@@active
+\@EA\catcode\string`=\activecatcode
+\@EA\catcode\string`"\activecatcode
+\@EA\catcode\string``\activecatcode
+\@EA\catcode\string`&\activecatcode
 
 \gdef\doshowXMLargument#1#2#3#4%
   {\hskip\zeropoint % or maybe \allowbreak
@@ -74,10 +74,10 @@
   {\hskip\zeropoint % or maybe \allowbreak
    \ifshowXMLarguments
      \bgroup
-     \@EA\catcode\string`=\@@active
-     \@EA\catcode\string`"\@@active
-     \@EA\catcode\string``\@@active
-     \@EA\catcode\string`&\@@active
+     \@EA\catcode\string`=\activecatcode
+     \@EA\catcode\string`"\activecatcode
+     \@EA\catcode\string``\activecatcode
+     \@EA\catcode\string`&\activecatcode
      \def={\color[xtag:7]{\string=}}%
      \def"##1"{\doshowXMLargument""8{##1}}%
      \def`##1`{\doshowXMLargument``8{##1}}%

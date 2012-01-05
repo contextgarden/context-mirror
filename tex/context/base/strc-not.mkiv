@@ -511,14 +511,14 @@
 
 \newconditional\c_notes_bottom_present
 
-\def\notes_check_if_bottom_present_indeed
+\def\strc_notes_check_if_bottom_present_indeed
   {\ifnum\noteparameter\s!notepos=\plustwo
      \settrue\c_notes_bottom_present
    \fi}
 
-\def\notes_check_if_bottom_present
+\def\strc_notes_check_if_bottom_present
   {\setfalse\c_notes_bottom_present
-   \processnotes{\ifconditional\c_notes_bottom_present\else\notes_check_if_bottom_present_indeed\fi}}
+   \processnotes{\ifconditional\c_notes_bottom_present\else\strc_notes_check_if_bottom_present_indeed\fi}}
 
 % D When \type{n} exceeds~1, footnotes are typeset in
 % D multi||columns, using the algoritm presented on page~397

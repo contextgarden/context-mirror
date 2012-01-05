@@ -148,7 +148,7 @@
 
 % trial macros (used in setupx), to be sped up !
 
-\bgroup \catcode`\<=\active
+\bgroup \catcode`\<=\activecatcode
 
 \gdef\saveXMLasdata#1#2% name raw data
   {\dodoglobal\setevalue{\@@XMLsave:#1}{#2}} % \edef!
@@ -348,7 +348,7 @@
 \setupXMLprocessing
   [\c!escape=e]
 
-\bgroup \catcode`\<=\active
+\bgroup \catcode`\<=\activecatcode
 
 \long\gdef\defexpandedxmlargument#1#2#3%
   {\begingroup

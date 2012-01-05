@@ -20,7 +20,7 @@
 
 \registerctxluafile{node-bck}{1.001}
 
-\def\backgrounds_boxes_initialize % will move to lua
+\def\node_backgrounds_boxes_initialize % will move to lua
   {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
    \glet\doinitializeboxbackgrounds\donothing}
 
@@ -54,13 +54,13 @@
    attr \colorattribute        \csname\??colorattribute#1\endcsname
    attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
 
-\unexpanded\def\backgroundhbox{\backgrounds_boxes_add\hbox}
-\unexpanded\def\backgroundvbox{\backgrounds_boxes_add\vbox}
-\unexpanded\def\backgroundvtop{\backgrounds_boxes_add\vtop}
+\unexpanded\def\backgroundhbox{\node_backgrounds_boxes_add\hbox}
+\unexpanded\def\backgroundvbox{\node_backgrounds_boxes_add\vbox}
+\unexpanded\def\backgroundvtop{\node_backgrounds_boxes_add\vtop}
 
-% \def\backgrounds_boxes_add#1[#2]%
+% \def\node_backgrounds_boxes_add#1[#2]%
 %   {\begingroup
-%    \backgrounds_boxes_initialize
+%    \node_backgrounds_boxes_initialize
 %    \dousecolorparameter{#2}%
 %    \normalexpanded{\endgroup#1
 %      attr \backgroundattribute   \plusone
@@ -70,13 +70,13 @@
 %
 % more efficient:
 
-\def\backgrounds_boxes_add#1[#2]%
-  {\backgrounds_boxes_initialize#1\backgroundcolorattr{#2}}
+\def\node_backgrounds_boxes_add#1[#2]%
+  {\node_backgrounds_boxes_initialize#1\backgroundcolorattr{#2}}
 
 % less argument carry over:
 %
-% \def\backgrounds_boxes_add#1[#2]%
-%   {\backgrounds_boxes_initialize#1%
+% \def\node_backgrounds_boxes_add#1[#2]%
+%   {\node_backgrounds_boxes_initialize#1%
 %    \ifcsname\??colorattribute\currentcolorprefix#2\endcsname
 %      \thebackgroundcolorattr{\currentcolorprefix#2}%
 %    \else\ifcsname\??colorattribute#2\endcsname

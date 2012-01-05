@@ -53,42 +53,42 @@
 %D
 %D \typebuffer \getbuffer
 
-\let\normal_x_table_bTABLEhead\bTABLEhead
-\let\normal_x_table_eTABLEhead\eTABLEhead
-\let\normal_x_table_bTABLEnext\bTABLEnext
-\let\normal_x_table_eTABLEnext\eTABLEnext
-\let\normal_x_table_bTABLEfoot\bTABLEfoot
-\let\normal_x_table_eTABLEfoot\eTABLEfoot
-\let\normal_x_table_bTABLEbody\bTABLEbody
-\let\normal_x_table_eTABLEbody\eTABLEbody
-\let\normal_x_table_bTR       \bTR
-\let\normal_x_table_eTR       \eTR
-\let\normal_x_table_bTD       \bTD
-\let\normal_x_table_eTD       \eTD
-\let\normal_x_table_bTH       \bTH
-\let\normal_x_table_eTH       \eTH
-\let\normal_x_table_setupTABLE\setupTABLE
-\let\normal_x_table_bTABLE    \bTABLE
-\let\normal_x_table_eTABLE    \eTABLE
+\let\tabl_x_normal_bTABLEhead\bTABLEhead
+\let\tabl_x_normal_eTABLEhead\eTABLEhead
+\let\tabl_x_normal_bTABLEnext\bTABLEnext
+\let\tabl_x_normal_eTABLEnext\eTABLEnext
+\let\tabl_x_normal_bTABLEfoot\bTABLEfoot
+\let\tabl_x_normal_eTABLEfoot\eTABLEfoot
+\let\tabl_x_normal_bTABLEbody\bTABLEbody
+\let\tabl_x_normal_eTABLEbody\eTABLEbody
+\let\tabl_x_normal_bTR       \bTR
+\let\tabl_x_normal_eTR       \eTR
+\let\tabl_x_normal_bTD       \bTD
+\let\tabl_x_normal_eTD       \eTD
+\let\tabl_x_normal_bTH       \bTH
+\let\tabl_x_normal_eTH       \eTH
+\let\tabl_x_normal_setupTABLE\setupTABLE
+\let\tabl_x_normal_bTABLE    \bTABLE
+\let\tabl_x_normal_eTABLE    \eTABLE
 
 \unexpanded\def\restoreTABLEfromxtable
-  {\let\bTABLEhead\normal_x_table_bTABLEhead
-   \let\eTABLEhead\normal_x_table_eTABLEhead
-   \let\bTABLEnext\normal_x_table_bTABLEnext
-   \let\eTABLEnext\normal_x_table_eTABLEnext
-   \let\bTABLEfoot\normal_x_table_bTABLEfoot
-   \let\eTABLEfoot\normal_x_table_eTABLEfoot
-   \let\bTABLEbody\normal_x_table_bTABLEbody
-   \let\eTABLEbody\normal_x_table_eTABLEbody
-   \let\bTR       \normal_x_table_bTR
-   \let\eTR       \normal_x_table_eTR
-   \let\bTD       \normal_x_table_bTD
-   \let\eTD       \normal_x_table_eTD
-   \let\bTH       \normal_x_table_bTH
-   \let\eTH       \normal_x_table_eTH
-   \let\setupTABLE\normal_x_table_setupTABLE
-   \let\bTABLE    \normal_x_table_bTABLE
-   \let\eTABLE    \normal_x_table_eTABLE}
+  {\let\bTABLEhead\tabl_x_normal_bTABLEhead
+   \let\eTABLEhead\tabl_x_normal_eTABLEhead
+   \let\bTABLEnext\tabl_x_normal_bTABLEnext
+   \let\eTABLEnext\tabl_x_normal_eTABLEnext
+   \let\bTABLEfoot\tabl_x_normal_bTABLEfoot
+   \let\eTABLEfoot\tabl_x_normal_eTABLEfoot
+   \let\bTABLEbody\tabl_x_normal_bTABLEbody
+   \let\eTABLEbody\tabl_x_normal_eTABLEbody
+   \let\bTR       \tabl_x_normal_bTR
+   \let\eTR       \tabl_x_normal_eTR
+   \let\bTD       \tabl_x_normal_bTD
+   \let\eTD       \tabl_x_normal_eTD
+   \let\bTH       \tabl_x_normal_bTH
+   \let\eTH       \tabl_x_normal_eTH
+   \let\setupTABLE\tabl_x_normal_setupTABLE
+   \let\bTABLE    \tabl_x_normal_bTABLE
+   \let\eTABLE    \tabl_x_normal_eTABLE}
 
 \unexpanded\def\mapTABLEtoxtable
   {\let\bTABLEhead\startxtablehead
@@ -103,33 +103,33 @@
    \let\eTR       \stopxrow
    \let\bTD       \startxcell
    \let\eTD       \stopxcell
-   \let\bTH       \start_x_cell_th
-   \let\eTH       \stop_x_cell_th
-   \let\setupTABLE\setup_x_table_TABLE
-   \let\bTABLE    \start_x_table_TABLE
-   \let\eTABLE    \stop_x_table_TABLE}
+   \let\bTH       \tabl_x_TABLE_TH_start_cell
+   \let\eTH       \tabl_x_TABLE_TH_stop_cell
+   \let\setupTABLE\tabl_x_TABLE_setup
+   \let\bTABLE    \tabl_x_TABLE_start
+   \let\eTABLE    \tabl_x_TABLE_stop}
 
-\unexpanded\def\setup_x_table_TABLE{\dosingleempty\do_setup_x_table_TABLE}
-\unexpanded\def\start_x_table_TABLE{\dosingleempty\do_start_x_table_TABLE}
-\unexpanded\def\stop_x_table_TABLE {\stopxtable}
+\unexpanded\def\tabl_x_TABLE_setup{\dosingleempty\tabl_x_TABLE_setup_indeed}
+\unexpanded\def\tabl_x_TABLE_start{\dosingleempty\tabl_x_TABLE_start_indeed}
+\unexpanded\def\tabl_x_TABLE_stop {\stopxtable}
 
-\unexpanded\def\start_x_cell_th
+\unexpanded\def\tabl_x_TABLE_TH_start_cell
   {\startxcellgroup[\c!foregroundstyle=\v!bold]%
    \startxcell}
 
-\unexpanded\def\stop_x_cell_th
+\unexpanded\def\tabl_x_TABLE_TH_stop_cell
   {\stopxcell
    \stopxcellgroup}
 
-\unexpanded\def\do_setup_x_table_TABLE[#settings]%
+\unexpanded\def\tabl_x_TABLE_setup_indeed[#settings]%
   {\iffirstargument
      \setupxtable[#settings]%
    \fi}
 
-\unexpanded\def\do_start_x_table_TABLE[#settings]%
+\unexpanded\def\tabl_x_TABLE_start_indeed[#settings]%
   {\bgroup
-   \x_table_prepare{#settings}%
-   \edef\x_table_current_buffer{\x_table_default_buffer}%
-   \buffers_pickup\x_table_current_buffer{bTABLE}{eTABLE}\relax\x_table_process}
+   \tabl_x_prepare{#settings}%
+   \edef\tabl_x_current_buffer{\x_table_default_buffer}%
+   \buff_pickup\tabl_x_current_buffer{bTABLE}{eTABLE}\relax\tabl_x_process}
 
 \protect \endinput

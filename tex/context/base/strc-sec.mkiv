@@ -447,8 +447,8 @@
      [#3]%
    \reportcurrentstructure}
 
-\unexpanded\def\placeheadtext  {\dosingleempty\place_head_text  } % use with care
-\unexpanded\def\placeheadnumber{\dosingleempty\place_head_number} % use with care
+\unexpanded\def\placeheadtext  {\dosingleempty\strc_sections_place_head_text  } % use with care
+\unexpanded\def\placeheadnumber{\dosingleempty\strc_sections_place_head_number} % use with care
 
 \ifdefined\setupheadcomponentfont \else
 
@@ -460,7 +460,7 @@
 
 \fi
 
-\def\place_head_text[#1]%
+\def\strc_sections_place_head_text[#1]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%
@@ -470,7 +470,7 @@
    \endgraf
    \endgroup}
 
-\def\place_head_number[#1]%
+\def\strc_sections_place_head_number[#1]%
   {\dontleavehmode
    \begingroup
    \edef\currenthead{#1}%
@@ -799,20 +799,20 @@
 
 % experimental
 
-\newconditional\auto_structure_level
+\newconditional\c_strc_sections_auto_levels
 
 \appendtoks
-    \settrue\auto_structure_levels
+    \settrue\c_strc_sections_auto_levels
 \to \everyenableelements
 
 \def\setautostructurelevel
-  {\ifconditional\auto_structure_level
+  {\ifconditional\c_strc_sections_auto_levels
      \ctxcommand{autonextstructurelevel(\number\currentheadlevel)}%
-     \global\setfalse\auto_structure_level
+     \global\setfalse\c_strc_sections_auto_levels
    \fi}
 
 \def\triggerautostructurelevel
-  {\global\settrue\auto_structure_level}
+  {\global\settrue\c_strc_sections_auto_levels}
 
 \def\finalizeautostructurelevels
   {\ctxcommand{autofinishstructurelevels()}}

@@ -31,7 +31,7 @@
 \newdimen\canvasmaxwidth
 \newdimen\canvasmaxheight
 
-\newconditional\scrn_canvas_tight_page
+\newconditional\c_scrn_canvas_tight_page
 
 \def\scrn_canvas_calculate
   {\begingroup
@@ -102,9 +102,9 @@
      \global\canvasheight\currentinteractionscreenheight
    \fi\fi\fi
    \ifconditional\c_page_layouts_location_is_set
-     \global\setfalse\scrn_canvas_tight_page
+     \global\setfalse\c_scrn_canvas_tight_page
    \fi
-   \ifconditional\scrn_canvas_tight_page
+   \ifconditional\c_scrn_canvas_tight_page
      \global\canvasmaxwidth \paperwidth
      \global\canvasmaxheight\paperheight
    \else
@@ -146,8 +146,8 @@
 
 \appendtoks
     \doifcommonelse{\interactionscreenparameter\c!option}{\v!max,\v!fit}%
-      {\global\settrue \scrn_canvas_tight_page}%
-      {\global\setfalse\scrn_canvas_tight_page}%
+      {\global\settrue \c_scrn_canvas_tight_page}%
+      {\global\setfalse\c_scrn_canvas_tight_page}%
 \to \everysetupinteractionscreen
 
 \appendtoks

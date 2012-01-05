@@ -110,9 +110,9 @@
    \obeylualines
    \obeyluatokens
    \def\u{\letterbackslash u}%
-   \javascripts_start_code}
+   \java_start_code}
 
-\def\javascripts_start_code#1\stopJScode
+\def\java_start_code#1\stopJScode
   {\normalexpanded{\endgroup\ctxcommand{storejavascriptcode(\!!bs#1\!!es)}}}
 
 \let\stopJScode\relax
@@ -122,9 +122,9 @@
    \obeylualines
    \obeyluatokens
    \def\u{\letterbackslash u}%
-   \javascripts_start_preamble}
+   \java_start_preamble}
 
-\def\javascripts_start_preamble#1\stopJSpreamble
+\def\java_start_preamble#1\stopJSpreamble
   {\normalexpanded{\endgroup\ctxcommand{storejavascriptpreamble(\!!bs#1\!!es)}}}
 
 \let\stopJSpreamble\relax
@@ -148,9 +148,9 @@
 %D The not so complicated implementation of this macro is:
 
 \def\useJSscripts
-  {\dodoubleempty\javascripts_use_scripts}
+  {\dodoubleempty\java_use_scripts}
 
-\def\javascripts_use_scripts[#1][#2]%
+\def\java_use_scripts[#1][#2]%
   {\ctxcommand{usejavascriptscripts(\!!bs#1\!!es)}% two steps as this one calls tex code
    \ctxcommand{usejavascriptpreamble("#2")}}      % so this one comes later
 

@@ -70,34 +70,34 @@
 \setnewconstant\backgroundsplitmode\plusthree
 
 \appendtoks
-    \setuevalue{\e!start\currentbackground}{\background_start [\currentbackground]}%
-    \setuevalue{\e!stop \currentbackground}{\background_stop                      }%
-    \setuevalue        {\currentbackground}{\background_direct[\currentbackground]}%
+    \setuevalue{\e!start\currentbackground}{\pack_backgrounds_start [\currentbackground]}%
+    \setuevalue{\e!stop \currentbackground}{\pack_backgrounds_stop                      }%
+    \setuevalue        {\currentbackground}{\pack_backgrounds_direct[\currentbackground]}%
 \to \everydefinebackground
 
-\unexpanded\def\background_start[#tag]%
+\unexpanded\def\pack_backgrounds_start[#tag]%
   {\endgraf
    \begingroup
    \def\currentbackground{#tag}%
    \doifelse{\backgroundparameter\c!state}\v!start
-     {\dosingleempty\background_start_indeed}
-     {\dosingleempty\background_start_ignore}}
+     {\dosingleempty\pack_backgrounds_start_indeed}
+     {\dosingleempty\pack_backgrounds_start_ignore}}
 
-\def\background_start_indeed[#settings]%
+\def\pack_backgrounds_start_indeed[#settings]%
   {\setupcurrentbackground[#settings,\c!state=\v!start,\c!offset=\v!overlay]%
-   \let\background_stop\background_stop_indeed
+   \let\pack_backgrounds_stop\pack_backgrounds_stop_indeed
    \setbox0\vbox\bgroup
      \vbox to \lineheight{}\vskip\zeropoint
      \blank[\v!disable]
      \leftskip \backgroundparameter\c!leftoffset
      \rightskip\backgroundparameter\c!rightoffset}
 
-\def\background_start_ignore[#settings]%
-  {\let\background_stop\background_stop_ignore}
+\def\pack_backgrounds_start_ignore[#settings]%
+  {\let\pack_backgrounds_stop\pack_backgrounds_stop_ignore}
 
-\let\background_stop\relax
+\let\pack_backgrounds_stop\relax
 
-\unexpanded\def\background_stop_indeed
+\unexpanded\def\pack_backgrounds_stop_indeed
   {\endgraf
    \removelastskip
    \egroup
@@ -166,26 +166,26 @@
    \endgroup
    \endgraf}
 
-\unexpanded\def\background_stop_ignore
+\unexpanded\def\pack_backgrounds_stop_ignore
   {\endgroup
    \endgraf}
 
-\unexpanded\def\background_direct[#tag]%
+\unexpanded\def\pack_backgrounds_direct[#tag]%
   {\begingroup
    \def\currentbackground{#tag}%
    \doifelse{\backgroundparameter\c!state}\c!start
-     \background_direct_indeed
-     \background_direct_ignore}
+     \pack_backgrounds_direct_indeed
+     \pack_backgrounds_direct_ignore}
 
-\def\background_direct_indeed
-  {\dowithnextboxcs\background_direct_finish\vbox}
+\def\pack_backgrounds_direct_indeed
+  {\dowithnextboxcs\pack_backgrounds_direct_finish\vbox}
 
-\def\background_direct_finish
+\def\pack_backgrounds_direct_finish
   {\setupcurrentbackground[\c!offset=\v!overlay]%
    \inheritedbackgroundframed{\flushnextbox}%
    \endgroup}
 
-\def\background_direct_ignore
+\def\pack_backgrounds_direct_ignore
   {\endgroup}
 
 \definebackground[\v!background]
@@ -241,9 +241,9 @@
 
 \unexpanded\def\backgroundline[#color]%
   {\dontleavehmode
-   \dowithnextbox{\background_add_to_nextbox{#color}}\hbox}
+   \dowithnextbox{\pack_backgrounds_add_to_nextbox{#color}}\hbox}
 
-\unexpanded\def\background_add_to_nextbox#color% handy helper
+\unexpanded\def\pack_backgrounds_add_to_nextbox#color% handy helper
   {\hbox
      {\dousecolorparameter{#color}%
       \vrule
