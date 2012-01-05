@@ -706,13 +706,13 @@
 \def\float_place_packaged_boxes
   {\bgroup
    \ifconditional\usesamefloatnumber
-      \globallet\currentfloatnumber     \previousfloatnumber
-      \globallet\currentfloatattribute  \empty
-      \globallet\currentfloatsynchronize\relax
+     \globallet\currentfloatnumber     \previousfloatnumber
+     \globallet\currentfloatattribute  \empty
+     \globallet\currentfloatsynchronize\relax
    \else
-      \ifnofloatnumber \else \ifnofloatcaption \else
-        \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
-      \fi \fi
+     \ifnofloatnumber \else \ifnofloatcaption \else
+       \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
+     \fi \fi
      \dostructurecountercomponent
        {float}%
        \setupcurrentfloatcaption
@@ -1173,7 +1173,7 @@
    \postponenotes
    \dontcomplain
    \setbox\float_content_box\vbox{\borderedfloatbox}%
-   \let\float_align_content  \float_align_content_indeed
+   \let\float_align_content\float_align_content_indeed
    \let\float_align_caption\float_align_caption_indeed
    \check_float_caption_content
    \ifcase\floatparameter\c!method
@@ -1507,26 +1507,28 @@
   {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\tophangfloat
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox{\locatesidefloat{\box\float_caption_box}}%
+        \hbox{\locate_side_float  {\box\float_caption_box}}%
         \dofloatboxbetweenstack
-        \hbox{\hbox           {\box\float_content_box  }}%
+        \hbox{\hbox               {\box\float_content_box}}%
       \else
-        \hbox{\locatetextfloat{\box\float_caption_box}}
+        \setfloathsize
+        \hbox{\locate_text_float  {\box\float_caption_box}}
         \dofloatboxbetweenstack
-        \hbox{\float_align_content    {\box\float_content_box  }}%
+        \hbox{\float_align_content{\box\float_content_box}}%
       \fi}}
 
 \def\dofloatboxnormalbotstackbuilder
   {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\bothangfloat
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox{\hbox           {\box\float_content_box  }}%
+        \hbox{\hbox               {\box\float_content_box}}%
         \dofloatboxbetweenstack
-        \hbox{\locatesidefloat{\box\float_caption_box}}%
+        \hbox{\locate_side_float  {\box\float_caption_box}}%
       \else
-        \hbox{\float_align_content    {\box\float_content_box  }}%
+        \setfloathsize
+        \hbox{\float_align_content{\box\float_content_box}}%
         \dofloatboxbetweenstack
-        \hbox{\locatetextfloat{\box\float_caption_box}}%
+        \hbox{\locate_text_float  {\box\float_caption_box}}%
       \fi}}
 
 \def\dofloatboxgridtopstackbuilder
@@ -1534,13 +1536,14 @@
    \setbox\scratchbox\vbox
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \locatesidefloat{\box\float_caption_box}%
+        \locate_side_float  {\box\float_caption_box}%
         \vss\dofloatboxbetweenstack
-        \hbox           {\box\float_content_box  }%
+        \hbox               {\box\float_content_box}%
       \else
-        \locatetextfloat{\box\float_caption_box}%
+        \setfloathsize
+        \locate_text_float  {\box\float_caption_box}%
         \vss\dofloatboxbetweenstack
-        \float_align_content    {\box\float_content_box  }%
+        \float_align_content{\box\float_content_box}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight{\unvbox\scratchbox}}
@@ -1550,13 +1553,14 @@
    \setbox\scratchbox\vbox
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox           {\box\float_content_box  }%
+        \hbox               {\box\float_content_box}%
         \vss\dofloatboxbetweenstack
-        \locatesidefloat{\box\float_caption_box}%
+        \locate_side_float  {\box\float_caption_box}%
       \else
-        \float_align_content    {\box\float_content_box  }%
+        \setfloathsize
+        \float_align_content{\box\float_content_box}%
         \vss\dofloatboxbetweenstack
-        \locatetextfloat{\box\float_caption_box}%
+        \locate_text_float  {\box\float_caption_box}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight{\unvbox\scratchbox}}
@@ -1570,13 +1574,14 @@
    \vbox to \noflines\lineheight
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \locatesidefloat{\box\float_caption_box}%
+        \locate_side_float  {\box\float_caption_box}%
         \vss\dofloatboxbetweenstack\vss
-        \hbox           {\box\float_content_box  }%
+        \hbox               {\box\float_content_box}%
       \else
-        \locatetextfloat{\box\float_caption_box}%
+        \setfloathsize
+        \locate_text_float  {\box\float_caption_box}%
         \vss\dofloatboxbetweenstack\vss
-        \float_align_content    {\box\float_content_box  }%
+        \float_align_content{\box\float_content_box}%
       \fi}}
 
 \def\dofloatboxstretchbotstackbuilder
@@ -1588,13 +1593,14 @@
    \vbox to \noflines\lineheight
      {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox           {\box\float_content_box  }%
+        \hbox               {\box\float_content_box}%
         \vss\dofloatboxbetweenstack\vss
-        \locatesidefloat{\box\float_caption_box}
+        \locate_side_float  {\box\float_caption_box}
       \else
-        \float_align_content    {\box\float_content_box  }%
+        \setfloathsize
+        \float_align_content{\box\float_content_box}%
         \vss\dofloatboxbetweenstack\vss
-        \locatetextfloat{\box\float_caption_box}%
+        \locate_text_float  {\box\float_caption_box}%
       \fi}}
 
 \def\dofloatboxtopbuilder
@@ -1626,7 +1632,7 @@
       \processcommacommand[\floatcaptionparameter\c!location]\docommand
       \executeifdefined{\??kj:\floatcaptionarrangement}{\getvalue{\??kj:\s!default}}}}
 
-\def\locatetextfloat
+\def\locate_text_float
   {\let\next\float_align_caption
    \expanded{\processallactionsinset[\floatcaptionparameter\c!location]}
      [ \v!left=>\let\next\relocatecaptionleft,
@@ -1731,15 +1737,16 @@
             \float_make_complete_caption}}}%
    \dostoptagged}
 
+\def\locate_side_float#1%
+  {\begingroup
+   \alignstrutmode\zerocount
+   \hsize\tempfloatwidth \forgetall
+   \alignedline{\floatparameter\c!location}\v!middle{#1}%
+   \endgroup}
+
 \def\build_side_float_box
   {\let\float_align_content\relax
    \let\float_align_caption\relax
-   \def\locatesidefloat##1%
-     {\begingroup
-      \alignstrutmode\zerocount
-      \hsize\tempfloatwidth \forgetall
-      \alignedline{\floatparameter\c!location}\v!middle{##1}%
-      \endgroup}%
    \build_float_box}
 
 \newif\ifparfloat
