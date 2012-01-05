@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/11/11 23:29:01
+-- merge date  : 11/12/11 12:34:20
 
 do -- begin closure to overcome local limits and interference
 
@@ -7380,6 +7380,8 @@ local otf                 = fonts.handlers.otf
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
 
+otf.defaultbasealternate  = "none" -- first last
+
 local wildcard = "*"
 local default  = "dflt"
 
@@ -7410,6 +7412,22 @@ local function cref(feature,lookupname)
     else
         return format("feature %s",feature)
     end
+end
+
+local function report_alternate(feature,lookupname,descriptions,unicode,replacement,value,comment)
+    report_prepare("%s: base alternate %s => %s (%s => %s)",cref(feature,lookupname),
+        gref(descriptions,unicode),replacement and gref(descriptions,replacement) or "-",
+        tostring(value),comment)
+end
+
+local function report_substitution(feature,lookupname,descriptions,unicode,substitution)
+    report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
+        gref(descriptions,unicode),gref(descriptions,substitution))
+end
+
+local function report_ligature(feature,lookupname,descriptions,unicode,ligature)
+    report_prepare("%s: base ligature %s => %s",cref(feature,lookupname),
+        gref(descriptions,ligature),gref(descriptions,unicode))
 end
 
 local basemethods = { }
@@ -7576,27 +7594,47 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local lookuptypes  = resources.lookuptypes
 
     local ligatures    = { }
+    local alternate    = tonumber(value)
+    local defaultalt   = otf.defaultbasealternate
+
+    local trace_singles      = trace_baseinit and trace_singles
+    local trace_alternatives = trace_baseinit and trace_alternatives
+    local trace_ligatures    = trace_baseinit and trace_ligatures
 
     local actions      = {
         substitution = function(lookupdata,lookupname,description,unicode)
-            if trace_baseinit and trace_singles then
-                report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-                    gref(descriptions,unicode),gref(descriptions,lookupdatat))
+            if trace_singles then
+                report_substitution(feature,lookupname,descriptions,unicode,lookupdata)
             end
             changed[unicode] = lookupdata
         end,
         alternate = function(lookupdata,lookupname,description,unicode)
-            local replacement = lookupdata[value] or lookupdata[#lookupdata]
-            if trace_baseinit and trace_alternatives then
-                report_prepare("%s: base alternate %s %s => %s",cref(feature,lookupname),
-                    tostring(value),gref(descriptions,unicode),gref(descriptions,replacement))
+            local replacement = lookupdata[alternate]
+            if replacement then
+                changed[unicode] = replacement
+                if trace_alternatives then
+                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+                end
+            elseif defaultalt == "first" then
+                replacement = lookupdata[1]
+                changed[unicode] = replacement
+                if trace_alternatives then
+                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                end
+            elseif defaultalt == "last" then
+                replacement = lookupdata[#data]
+                if trace_alternatives then
+                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                end
+            else
+                if trace_alternatives then
+                    report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+                end
             end
-            changed[unicode] = replacement
         end,
         ligature = function(lookupdata,lookupname,description,unicode)
-            if trace_baseinit and trace_alternatives then
-                report_prepare("%s: base ligature %s %s => %s",cref(feature,lookupname),
-                    tostring(value),gref(descriptions,lookupdata),gref(descriptions,unicode))
+            if trace_ligatures then
+                report_ligature(feature,lookupname,descriptions,unicode,lookupdata)
             end
             ligatures[#ligatures+1] = { unicode, lookupdata }
         end,
@@ -7762,6 +7800,12 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     local lookuptypes  = resources.lookuptypes
 
     local ligatures    = { }
+    local alternate    = tonumber(value)
+    local defaultalt   = otf.defaultbasealternate
+
+    local trace_singles      = trace_baseinit and trace_singles
+    local trace_alternatives = trace_baseinit and trace_alternatives
+    local trace_ligatures    = trace_baseinit and trace_ligatures
 
     for l=1,#lookuplist do
         local lookupname = lookuplist[l]
@@ -7769,20 +7813,38 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
         local lookuptype = lookuptypes[lookupname]
         for unicode, data in next, lookupdata do
             if lookuptype == "substitution" then
-                if trace_baseinit and trace_singles then
-                    report_prepare("%s: base substitution %s => %s",cref(feature,lookupname),
-                        gref(descriptions,unicode),gref(descriptions,data))
+                if trace_singles then
+                    report_substitution(feature,lookupname,descriptions,unicode,data)
                 end
                 changed[unicode] = data
             elseif lookuptype == "alternate" then
-                local replacement = data[value] or data[#data]
-                if trace_baseinit and trace_alternatives then
-                    report_prepare("%s: base alternate %s %s => %s",cref(feature,lookupname),
-                        tostring(value),gref(descriptions,unicode),gref(descriptions,replacement))
+                local replacement = data[alternate]
+                if replacement then
+                    changed[unicode] = replacement
+                    if trace_alternatives then
+                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"normal")
+                    end
+                elseif defaultalt == "first" then
+                    replacement = data[1]
+                    changed[unicode] = replacement
+                    if trace_alternatives then
+                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                    end
+                elseif defaultalt == "last" then
+                    replacement = data[#data]
+                    if trace_alternatives then
+                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,defaultalt)
+                    end
+                else
+                    if trace_alternatives then
+                        report_alternate(feature,lookupname,descriptions,unicode,replacement,value,"unknown")
+                    end
                 end
-                changed[unicode] = replacement
             elseif lookuptype == "ligature" then
                 ligatures[#ligatures+1] = { unicode, data, lookupname }
+                if trace_ligatures then
+                    report_ligature(feature,lookupname,descriptions,unicode,data)
+                end
             end
         end
     end
@@ -7805,13 +7867,6 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
             local ligature = ligatures[i]
             local unicode, tree, lookupname = ligature[1], ligature[2], ligature[3]
             make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,lookupname)
-        end
-
-        if done then
-            for lookupname, list in next, done do
-                report_prepare("%s: base ligatures %s => %s",cref(feature,lookupname),
-                    tostring(value),gref(descriptions,done))
-            end
         end
 
     end
@@ -7919,13 +7974,13 @@ registerotffeature {
     description  = "features",
     default      = true,
     initializers = {
---~         position = 1, -- after setscript (temp hack ... we need to force script / language to 1
+ --     position = 1, -- after setscript (temp hack ... we need to force script / language to 1
         base     = featuresinitializer,
     }
 }
 
 -- independent : collect lookups independently (takes more runtime ... neglectable)
--- shared      : shares lookups with node mode (takes more memory  ... noticeable)
+-- shared      : shares lookups with node mode (takes more memory unless also a node mode variant is used ... noticeable)
 
 directives.register("fonts.otf.loader.basemethod", function(v)
     if basemethods[v] then
@@ -8540,25 +8595,27 @@ local random = math.random
 
 local logs, trackers, nodes, attributes = logs, trackers, nodes, attributes
 
+local registertracker = trackers.register
+
 local fonts = fonts
 local otf   = fonts.handlers.otf
 
-local trace_lookups      = false  trackers.register("otf.lookups",      function(v) trace_lookups      = v end)
-local trace_singles      = false  trackers.register("otf.singles",      function(v) trace_singles      = v end)
-local trace_multiples    = false  trackers.register("otf.multiples",    function(v) trace_multiples    = v end)
-local trace_alternatives = false  trackers.register("otf.alternatives", function(v) trace_alternatives = v end)
-local trace_ligatures    = false  trackers.register("otf.ligatures",    function(v) trace_ligatures    = v end)
-local trace_contexts     = false  trackers.register("otf.contexts",     function(v) trace_contexts     = v end)
-local trace_marks        = false  trackers.register("otf.marks",        function(v) trace_marks        = v end)
-local trace_kerns        = false  trackers.register("otf.kerns",        function(v) trace_kerns        = v end)
-local trace_cursive      = false  trackers.register("otf.cursive",      function(v) trace_cursive      = v end)
-local trace_preparing    = false  trackers.register("otf.preparing",    function(v) trace_preparing    = v end)
-local trace_bugs         = false  trackers.register("otf.bugs",         function(v) trace_bugs         = v end)
-local trace_details      = false  trackers.register("otf.details",      function(v) trace_details      = v end)
-local trace_applied      = false  trackers.register("otf.applied",      function(v) trace_applied      = v end)
-local trace_steps        = false  trackers.register("otf.steps",        function(v) trace_steps        = v end)
-local trace_skips        = false  trackers.register("otf.skips",        function(v) trace_skips        = v end)
-local trace_directions   = false  trackers.register("otf.directions",   function(v) trace_directions   = v end)
+local trace_lookups      = false  registertracker("otf.lookups",      function(v) trace_lookups      = v end)
+local trace_singles      = false  registertracker("otf.singles",      function(v) trace_singles      = v end)
+local trace_multiples    = false  registertracker("otf.multiples",    function(v) trace_multiples    = v end)
+local trace_alternatives = false  registertracker("otf.alternatives", function(v) trace_alternatives = v end)
+local trace_ligatures    = false  registertracker("otf.ligatures",    function(v) trace_ligatures    = v end)
+local trace_contexts     = false  registertracker("otf.contexts",     function(v) trace_contexts     = v end)
+local trace_marks        = false  registertracker("otf.marks",        function(v) trace_marks        = v end)
+local trace_kerns        = false  registertracker("otf.kerns",        function(v) trace_kerns        = v end)
+local trace_cursive      = false  registertracker("otf.cursive",      function(v) trace_cursive      = v end)
+local trace_preparing    = false  registertracker("otf.preparing",    function(v) trace_preparing    = v end)
+local trace_bugs         = false  registertracker("otf.bugs",         function(v) trace_bugs         = v end)
+local trace_details      = false  registertracker("otf.details",      function(v) trace_details      = v end)
+local trace_applied      = false  registertracker("otf.applied",      function(v) trace_applied      = v end)
+local trace_steps        = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
+local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
+local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
 
 local report_direct   = logs.reporter("fonts","otf direct")
 local report_subchain = logs.reporter("fonts","otf subchain")
@@ -8566,15 +8623,15 @@ local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
 
-trackers.register("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
-trackers.register("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
+registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
+registertracker("otf.normal_chain",  function(v) otf.setcontextchain(v and "normal")  end)
 
-trackers.register("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
-trackers.register("otf.positions","otf.marks,otf.kerns,otf.cursive")
-trackers.register("otf.actions","otf.replacements,otf.positions")
-trackers.register("otf.injections","nodes.injections")
+registertracker("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
+registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
+registertracker("otf.actions","otf.replacements,otf.positions")
+registertracker("otf.injections","nodes.injections")
 
-trackers.register("*otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
 
 local insert_node_after  = node.insert_after
 local delete_node        = nodes.delete
@@ -8633,6 +8690,8 @@ local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 local onetimemessage     = fonts.loggers.onetimemessage
+
+otf.defaultnodealternate = "none" -- first last
 
 -- we share some vars here, after all, we have no nested lookups and
 -- less code
@@ -8833,7 +8892,7 @@ function handlers.gsub_single(start,kind,lookupname,replacement)
     return start, true
 end
 
-local function alternative_glyph(start,alternatives,kind,chainname,chainlookupname,lookupname) -- chainname and chainlookupname optional
+local function set_alternative_glyph(start,alternatives,kind,chainname,chainlookupname,lookupname) -- chainname and chainlookupname optional
     -- needs checking: (global value, brrr)
     local value  = featurevalue == true and tfmdata.shared.features[kind] or featurevalue
     local choice = nil
@@ -8851,7 +8910,14 @@ local function alternative_glyph(start,alternatives,kind,chainname,chainlookupna
         if type(value) ~= "number" then
             value, choice = "default, choice 1", alternatives[1]
         elseif value > n then
-            value, choice = format("no %s variants, taking %s",value,n), alternatives[n]
+            local defaultalt = otf.defaultnodealternate
+            if defaultalt == "first" then
+                value, choice = format("no %s variants, taking %s",value,n), alternatives[n]
+            elseif defaultalt == "last" then
+                value, choice = format("no %s variants, taking %s",value,1), alternatives[1]
+            else
+                value, choice = format("no %s variants, ignoring",value), false
+            end
         elseif value == 0 then
             value, choice = format("choice %s (no change)",value), start.char
         elseif value < 1 then
@@ -8860,11 +8926,23 @@ local function alternative_glyph(start,alternatives,kind,chainname,chainlookupna
             value, choice = format("choice %s",value), alternatives[value]
         end
     end
-    if not choice then
-        logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(start.char))
-        choice, value = start.char, format("no replacement instead of %s",value)
+    if trace_alternatives then
+        if choice then
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),index)
+        else
+            logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(start.char))
+        end
     end
-    return choice, value
+    if choice then
+        start.char = choice
+        if trace_alternatives then
+            logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),index)
+        end
+    else
+        if trace_alternatives then
+            logwarning("%s: no variant %s for %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(start.char))
+        end
+    end
 end
 
 local function multiple_glyphs(start,multiple) -- marks ?
@@ -8895,11 +8973,7 @@ local function multiple_glyphs(start,multiple) -- marks ?
 end
 
 function handlers.gsub_alternate(start,kind,lookupname,alternative,sequence)
-    local choice, index = alternative_glyph(start,alternative,kind,lookupname)
-    if trace_alternatives then
-        logprocess("%s: replacing %s by alternative %s (%s)",pref(kind,lookupname),gref(start.char),gref(choice),index)
-    end
-    start.char = choice
+    set_alternative_glyph(start,alternative,kind,lookupname)
     return start, true
 end
 
@@ -9511,17 +9585,10 @@ function chainprocs.gsub_alternate(start,stop,kind,chainname,currentcontext,look
                 end
             else
                 alternatives = alternatives[currentchar]
-                if not alternatives then
-                    if trace_bugs then
-                        logwarning("%s: no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar))
-                    end
-                else
-                    local choice, index = alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
-                    current.char = choice
-                    if trace_alternatives then
-                        logprocess("%s: replacing single %s by alternative %s (%s)",
-                            cref(kind,chainname,chainlookupname,lookupname),index,gref(currentchar),gref(choice))
-                    end
+                if alternatives then
+                    set_alternative_glyph(current,alternatives,kind,chainname,chainlookupname,lookupname)
+                elseif trace_bugs then
+                    logwarning("%s: no alternative for %s",cref(kind,chainname,chainlookupname,lookupname),gref(currentchar))
                 end
             end
             return start, true
