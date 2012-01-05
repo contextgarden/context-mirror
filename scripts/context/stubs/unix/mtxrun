@@ -9664,18 +9664,30 @@ local function copiedelement(element,newparent)
 end
 
 function xml.delete(root,pattern)
-    local collected = xmlapplylpath(root,pattern)
-    if collected then
-        for c=1,#collected do
-            local e = collected[c]
-            local p = e.__p__
-            if p then
-                if trace_manipulations then
-                    report('deleting',pattern,c,e)
+    if not pattern or pattern == "" then
+        local p = root.__p__
+        if p then
+            if trace_manipulations then
+                report('deleting',"--",c,root)
+            end
+            local d = p.dt
+            remove(d,root.ni)
+            redo_ni(d) -- can be made faster and inlined
+        end
+    else
+        local collected = xmlapplylpath(root,pattern)
+        if collected then
+            for c=1,#collected do
+                local e = collected[c]
+                local p = e.__p__
+                if p then
+                    if trace_manipulations then
+                        report('deleting',pattern,c,e)
+                    end
+                    local d = p.dt
+                    remove(d,e.ni)
+                    redo_ni(d) -- can be made faster and inlined
                 end
-                local d = p.dt
-                remove(d,e.ni)
-                redo_ni(d) -- can be made faster and inlined
             end
         end
     end

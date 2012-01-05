@@ -379,7 +379,7 @@
      \fi
    \fi\fi}
 
-\def\dodosettabulatepreamble#1#2#3% only makes sense for many tabulates
+\def\dodosettabulatepreamble#1#2% only makes sense for many tabulates
   {\normalexpanded{\tabulatepreamble{\the\tabulatepreamble
         \dochecklocaltabulatevrulecolor{\currenttabulatevrulecolor}{\the\tabulatevrulethickness}%
         \dochecklocaltabulatecolor{\currenttabulatecolor}{\number\tabulatecolorspan}%
@@ -410,10 +410,10 @@
         \bgroup
             \noexpand\bbskip
             \bgroup % we cannot combine the if because a cell may have only one ##
-                \tabulatealign\number#1\relax % needed in tag passing
+                \tabulatealign\number\tabulatealign\relax % needed in tag passing
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
                 \noexpand\dotagtabulatecell
-                \noexpand#2%
+                \noexpand#1%
                 \ifcase\tabulatereshape\else
                     \beginreshapedtabulatepar
                 \fi
@@ -438,7 +438,7 @@
                 \ifcase\tabulatereshape\else
                     \endreshapedtabulatepar
                 \fi
-                \noexpand#3%
+                \noexpand#2%
 %                 \noexpand\dostoptagged
             \egroup
         \egroup
@@ -588,28 +588,28 @@
 
 \def\tabulatesetpreamblewidthnormal
   {\ifcase\tabulatealign\relax
-     \dodosettabulatepreamble\tabulatealign\empty      \tabulatehss \or
-     \dodosettabulatepreamble\tabulatealign\empty      \tabulatehss \or
-     \dodosettabulatepreamble\tabulatealign\tabulatehss\empty       \or
-     \dodosettabulatepreamble\tabulatealign\tabulatehss\tabulatehss \fi}
+     \dodosettabulatepreamble\empty      \tabulatehss \or
+     \dodosettabulatepreamble\empty      \tabulatehss \or
+     \dodosettabulatepreamble\tabulatehss\empty       \or
+     \dodosettabulatepreamble\tabulatehss\tabulatehss \fi}
 
 \def\tabulatesetpreamblewidthfixed
   {\ifcase\tabulatealign\relax
-     \dodosettabulatepreamble\tabulatealign\bskip                    \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedright \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedleft  \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedcenter\eskip \fi}
+     \dodosettabulatepreamble\bskip                    \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedright \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedleft  \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedcenter\eskip \fi}
 
 \def\tabulatesetpreamblewidthauto
   {\global\advance\nofautotabulate\plusone
    \ifcase\tabulatealign\relax
-     \dodosettabulatepreamble\tabulatealign\bskip                    \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedright \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedleft  \eskip \or
-     \dodosettabulatepreamble\tabulatealign\tabulatebskipraggedcenter\eskip \fi}
+     \dodosettabulatepreamble\bskip                    \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedright \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedleft  \eskip \or
+     \dodosettabulatepreamble\tabulatebskipraggedcenter\eskip \fi}
 
 \def\tabulatesetpreamblewidthsimple
-  {\dodosettabulatepreamble\tabulatealign\xbskip\xeskip}
+  {\dodosettabulatepreamble\xbskip\xeskip}
 
 \def\doparsecolortabulate#1#2%
   {\gdef\currenttabulatecolor{#2}%
