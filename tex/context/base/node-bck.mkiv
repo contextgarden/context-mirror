@@ -44,29 +44,29 @@
 \def\backgroundhbox{\doaddbackgroundtobox\hbox}
 
 \def\colorattr#1%
-  {\ifcsname(cs:\currentpalet#1)\endcsname
+  {\ifcsname\??qc:\currentpalet#1\endcsname
      \thecolorattr{\currentpalet#1}%
-   \else\ifcsname(cs:#1)\endcsname
+   \else\ifcsname\??qc:#1\endcsname
      \thecolorattr{#1}%
    \fi\fi}
 
 \def\thecolorattr#1%
   {attr \colormodelattribute   \attribute\colormodelattribute
-   attr \colorattribute        \csname(cs:#1)\endcsname
-   attr \transparencyattribute \csname(ts:#1)\endcsname}
+   attr \colorattribute        \csname\??qc:#1\endcsname
+   attr \transparencyattribute \csname\??qt:#1\endcsname}
 
 \def\backgroundcolorattr#1%
-  {\ifcsname(cs:\currentpalet#1)\endcsname
+  {\ifcsname\??qc:\currentpalet#1\endcsname
      \thebackgroundcolorattr{\currentpalet#1}%
-   \else\ifcsname(cs:#1)\endcsname
+   \else\ifcsname\??qc:#1\endcsname
      \thebackgroundcolorattr{#1}%
    \fi\fi}
 
 \def\thebackgroundcolorattr#1%
   {attr \backgroundattribute   \plusone
    attr \colormodelattribute   \attribute\colormodelattribute
-   attr \colorattribute        \csname(cs:#1)\endcsname
-   attr \transparencyattribute \csname(ts:#1)\endcsname}
+   attr \colorattribute        \csname\??qc:#1\endcsname
+   attr \transparencyattribute \csname\??qt:#1\endcsname}
 
 % \def\backgroundvbox[#1]{\vbox \backgroundcolorattr{#1}}
 % \def\backgroundvtop[#1]{\vtop \backgroundcolorattr{#1}}

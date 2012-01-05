@@ -15,21 +15,14 @@
 
 \unprotect
 
-\def\c!printable{printable} % todo
-
 \registerctxluafile{attr-lay}{1.001}
 
 % needs to work over stopitemize grouping etc
 
-\def\registerviewerlayer#1#2% global !
-  {\setxvalue{(vl:#1)}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(attributes.viewerlayers.register('#2'))} }}
-
-\setevalue{(vl:)}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
-
-\def\dotriggerviewerlayer % move to lua
-  {\ctxlua{attributes.viewerlayers.enable()}%
-   \gdef\dotriggerviewerlayer##1{\csname(vl:##1)\endcsname}%
-   \dotriggerviewerlayer}
+% \def\registerviewerlayer#1#2% global !
+%   {\setxvalue{\??ql:#1}{\global\attribute\viewerlayerattribute\ctxlua{tex.write(attributes.viewerlayers.register('#2'))} }}
+%
+% \setevalue{\??ql:}{\global\attribute\viewerlayerattribute\attributeunsetvalue}
 
 \getparameters
   [\??lr]
@@ -58,8 +51,8 @@
       \setugvalue{\e!stop #1}{\stopviewerlayer     }}%
    \endgroup}
 
-\unexpanded\def\startviewerlayer[#1]{\ctxlua{attributes.viewerlayers.start("#1")}}             % not grouped
-\unexpanded\def\stopviewerlayer     {\ctxlua{attributes.viewerlayers.stop()}}                  % not grouped
+\unexpanded\def\startviewerlayer[#1]{\ctxcommand{startviewerlayer("#1")}}             % not grouped
+\unexpanded\def\stopviewerlayer     {\ctxcommand{stopviewerlayer()}}                  % not grouped
 \unexpanded\def\viewerlayer     [#1]{\groupedcommand{\startviewerlayer[#1]}{\stopviewerlayer}} % grouped
 
 % some day we will keep this at the lua end as the info is only needed there
@@ -75,18 +68,18 @@
 % layout components are implemented rather directly (speed)
 
 \def\doinitializelayoutcomponent#1%
-  {\ctxcommand{defineviewerlayer{% this will move to the lua end i.e be merged with register
+  {\edef\layoutcomponentboxattribute{\ctxcommand{definedviewerlayer{%
      tag       = "#1",
-     title     = "#1", % todo: auto remove :
+     title     = utilities.strings.nice("#1"), % only here as in steps we have step:<number>
      visible   = "\v!start",
      editable  = "\v!yes",
      printable = "\v!yes"
-   }}%
-   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(attributes.viewerlayers.register('#1',true))}\relax}%
-   \expandafter\glet\csname\??ly>#1\endcsname\layoutcomponentboxattribute}
+   }}}%
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \layoutcomponentboxattribute\relax}%
+   \expandafter\glet\csname\??ly:a:#1\endcsname\layoutcomponentboxattribute}
 
 \def\dosetlayoutcomponentattribute#1% make this faster
-  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1\endcsname
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly:a:#1\endcsname
    \ifx\layoutcomponentboxattribute\relax
      \doinitializelayoutcomponent{#1}% get rid of { }
    \fi}
