@@ -38,6 +38,9 @@ lmxvariables['color-background-main']   = '#3F3F3F'
 lmxvariables['color-background-one']    = lmxvariables['color-background-green']
 lmxvariables['color-background-two']    = lmxvariables['color-background-blue']
 
+lmxvariables['color-background-three']  = function() return lmxvariables['color-background-one'] end
+lmxvariables['color-background-four']   = function() return lmxvariables['color-background-two'] end
+
 function lmx.set(key, value)
     lmxvariables[key] = value
 end
@@ -74,7 +77,12 @@ local function do_type(str)
 end
 
 local function do_variable(str)
-    return variables[str] or lmxvariables[str] -- or format("<!-- unset lmx instance variable: %s -->",str or "?")
+    local value = variables[str] or lmxvariables[str] -- or format("<!-- unset lmx instance variable: %s -->",str or "?")
+    if type(value) == "function" then
+        return value(str)
+    else
+        return value
+    end
 end
 
 function lmx.loadedfile(name)
