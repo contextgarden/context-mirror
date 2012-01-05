@@ -176,9 +176,10 @@ local function construct(t,nodummy)
         end
     end
     t.dirty = false
-    if nodummy and #calls == 0 then
+    if nodummy and n == 0 then
         return nil
     else
+        -- n == 0 we could just return the variables
         variables = concat(variables,"\n")
         calls = concat(calls,"\n")
         if results then
@@ -190,19 +191,21 @@ local function construct(t,nodummy)
     end
 end
 
-sequencers.tostring = construct
+sequencers.tostring = function(s) return construct(s,true) end
 sequencers.localize = localize
 
 local function compile(t,compiler,n)
+    local compiled
     if not t or type(t) == "string" then
         -- weird ... t.compiled = t .. so
         return false
     elseif compiler then
-        t.compiled = compiler(t,n)
+        compiled = compiler(t,n)
     else
-        t.compiled = construct(t)
+        compiled = construct(t,n)
     end
-    local runner = loadstring(t.compiled)()
+    local runner = compiled and loadstring(compiled)()
+    t.compiled = compiled
     t.runner = runner
     return runner -- faster
 end

@@ -79,7 +79,7 @@ function helpers.textopener(tag,filename,filehandle,coding)
             lines = unicode.utf32_to_utf8_le(lines)
         else -- utf8 or unknown (could be a mkvi file)
             if textfileactions.dirty then -- maybe use autocompile
-                fileprocessor = sequencers.compile(textfileactions)
+                fileprocessor = sequencers.compile(textfileactions) -- no need for dummy test .. always one
             end
             lines = fileprocessor(lines,filename,coding) or lines
             lines = splitlines(lines)
@@ -119,10 +119,14 @@ function helpers.textopener(tag,filename,filehandle,coding)
              -- elseif content == ctrl_d or ctrl_z then
              --     return nil -- we need this as \endinput does not work in prints
                 else
-                    if textlineactions.dirty then
-                        lineprocessor = sequencers.compile(textlineactions) -- maybe use autocompile
+                    if textlineactions.dirty then -- no dummy
+                        lineprocessor = sequencers.compile(textlineactions,false,true) -- maybe use autocompile
                     end
-                    return lineprocessor(content,filename,currentline,noflines,coding) or content
+                    if lineprocessor then
+                        return lineprocessor(content,filename,currentline,noflines,coding) or content
+                    else
+                        return content
+                    end
                 end
             end
         end

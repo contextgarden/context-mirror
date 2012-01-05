@@ -348,7 +348,7 @@ local function allusedstyles(xmlfile)
     --
     result[#result+1] = format(documenttemplate,bodyfont,width,align,hyphen)
     --
-    local colorspecification = xml.css.fontspecification
+    local colorspecification = xml.css.colorspecification
     local fontspecification = xml.css.fontspecification
     for element, details in sortedhash(usedstyles) do
         for detail, data in sortedhash(details) do
