@@ -21,52 +21,61 @@
 
 % processing
 
-\def\doifinputfileelse#name{\ctxcommand{doifinputfileelse("#name")}}
-\def\processfile      #name{\ctxcommand{processfile("#name")}}
+\unexpanded\def\doifinputfileelse#name%
+  {\ctxcommand{doifinputfileelse("#name")}}
+
+\unexpanded\def\processfile#name%
+  {\ctxcommand{processfile("#name")}}
 
 % path control
 
-\def\usepath      [#path]{\ctxcommand{usepath("#path")}}
-\def\usesubpath   [#path]{\ctxcommand{usesubpath("#path")}}
-\def\allinputpaths       {\ctxcommand{allinputpaths()}}
+\unexpanded\def\usepath[#path]%
+  {\ctxcommand{usepath("#path")}}
+
+\unexpanded\def\usesubpath[#path]%
+  {\ctxcommand{usesubpath("#path")}}
+
+\def\allinputpaths
+  {\ctxcommand{allinputpaths()}}
 
 % helper (not really needed nowadays)
 
 \let\locatedfilepath\empty
 
-\def\locatefilepath#name{\edef\locatedfilepath{\ctxcommand{locatefilepath("#name")}}}
+\unexpanded\def\locatefilepath#name% no [] ?
+  {\edef\locatedfilepath{\ctxcommand{locatefilepath("#name")}}}
 
 % zip files are tree'd
 
-\def\usezipfile                      {\dodoubleempty\dousezipfile}
-\def\dousezipfile[#zipname][#subtree]{\ctxcommand{usezipfile("#zipname","#subtree")}}
+\unexpanded\def\usezipfile
+  {\dodoubleempty\use_zip_file}
+
+\def\use_zip_file[#zipname][#subtree]%
+  {\ctxcommand{usezipfile("#zipname","#subtree")}}
 
 % exa stuff might become obsolete:
 
-\def\loadexamodes         {\dosingleempty\doloadexamodes}
-\def\doloadexamodes[#name]{\ctxcommand{loadexamodes("#name")}}
+\unexpanded\def\loadexamodes
+  {\dosingleempty\load_exa_modes}
+
+\def\load_exa_modes[#name]%
+  {\ctxcommand{loadexamodes("#name")}}
 
 % runtime files (maybe also do this in lua?)
 
 % \def\doloadsystemfile#1% only mkiv files
 %   {\readfile{sys:///#1.\mksuffix}{\showmessage\m!system2{#1.\mksuffix}}\donothing}
 
-\def\doloadsystemfile#name% only mkiv files
+\unexpanded\def\loadsystemfiles
+  {\load_system_file\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
+   \load_system_file\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
+   \load_system_file\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
+   \load_system_file\f!sysfilename} % local settings, but probably not that good an idea to use
+
+\def\load_system_file#name% only mkiv files
   {\readsysfile{#name.\mksuffix}{\showmessage\m!system2{#name.\mksuffix}}\donothing}
 
-\def\loadsystemfiles
-  {\doloadsystemfile\f!newfilename  % new code, to be integrated at some point, plus fixes posted on the list
-   \doloadsystemfile\f!locfilename  % new code, somewhat experimental, not distributed (outside the dev group)
-   \doloadsystemfile\f!expfilename  % new code, very experimental, can be engine specific, mostly for me only
-   \doloadsystemfile\f!sysfilename} % local settings, but probably not that good an idea to use
-
-% \def\loadoptionfile
-%   {\readfile{job:///\jobname.\f!optionextension}
-%      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
-%       \ctxcommand{logoptionfile("\jobname.\f!optionextension")}}%
-%      {\writestatus\m!system{no \jobname.\f!optionextension}}}
-
-\def\loadoptionfile
+\unexpanded\def\loadoptionfile
   {\readjobfile{\jobname.\f!optionextension}
      {\writestatus\m!system{\jobname.\f!optionextension\space loaded}%
       \ctxcommand{copyfiletolog("\jobname.\f!optionextension")}}%
@@ -103,34 +112,34 @@
 
 % protect structure
 
-\unexpanded\def\processfilemany     #name{\ctxcommand{processfilemany("#name")}}
-\unexpanded\def\processfileonce     #name{\ctxcommand{processfileonce("#name")}}
-\unexpanded\def\processfilenone     #name{\ctxcommand{processfilenone("#name")}}
+\unexpanded\def\processfilemany      #name{\ctxcommand{processfilemany("#name")}}
+\unexpanded\def\processfileonce      #name{\ctxcommand{processfileonce("#name")}}
+\unexpanded\def\processfilenone      #name{\ctxcommand{processfilenone("#name")}}
 
-\unexpanded\def\project                  {\doifnextoptionalelse\useproject    \do_project}
-\unexpanded\def\product                  {\doifnextoptionalelse\useproduct    \do_product}
-\unexpanded\def\component                {\doifnextoptionalelse\usecomponent  \do_component}
-\unexpanded\def\environment              {\doifnextoptionalelse\useenvironment\do_environment}
+\unexpanded\def\project                   {\doifnextoptionalelse\useproject    \do_project}
+\unexpanded\def\product                   {\doifnextoptionalelse\useproduct    \do_product}
+\unexpanded\def\component                 {\doifnextoptionalelse\usecomponent  \do_component}
+\unexpanded\def\environment               {\doifnextoptionalelse\useenvironment\do_environment}
 
-\def\do_project                   #name {\ctxcommand{useproject    ("#name")}}
-\def\do_product                   #name {\ctxcommand{useproduct    ("#name")}}
-\def\do_component                 #name {\ctxcommand{usecomponent  ("#name")}}
-\def\do_environment               #name {\ctxcommand{useenvironment("#name")}}
+\def\do_project                     #name {\ctxcommand{useproject    ("#name")}}
+\def\do_product                     #name {\ctxcommand{useproduct    ("#name")}}
+\def\do_component                   #name {\ctxcommand{usecomponent  ("#name")}}
+\def\do_environment                 #name {\ctxcommand{useenvironment("#name")}}
 
-\unexpanded\def\startproject             {\doifnextoptionalelse\do_startproject    \redo_startproject}
-\unexpanded\def\startproduct             {\doifnextoptionalelse\do_startproduct    \redo_startproduct}
-\unexpanded\def\startcomponent           {\doifnextoptionalelse\do_startcomponent  \redo_startcomponent}
-\unexpanded\def\startenvironment         {\doifnextoptionalelse\do_startenvironment\redo_startenvironment}
+\unexpanded\def\startproject              {\doifnextoptionalelse\do_startproject    \redo_startproject}
+\unexpanded\def\startproduct              {\doifnextoptionalelse\do_startproduct    \redo_startproduct}
+\unexpanded\def\startcomponent            {\doifnextoptionalelse\do_startcomponent  \redo_startcomponent}
+\unexpanded\def\startenvironment          {\doifnextoptionalelse\do_startenvironment\redo_startenvironment}
 
 \def\redo_startproject              #name {\ctxcommand{startproject    ("#name")}}
 \def\redo_startproduct              #name {\ctxcommand{startproduct    ("#name")}}
 \def\redo_startcomponent            #name {\ctxcommand{startcomponent  ("#name")}}
 \def\redo_startenvironment          #name {\ctxcommand{startenvironment("#name")}}
 
-\unexpanded\def\useproject        [#name]{\do_project    {#name}}
-\unexpanded\def\useproduct        [#name]{\do_product    {#name}}
-\unexpanded\def\usecomponent      [#name]{\do_component  {#name}}
-\unexpanded\def\useenvironment    [#name]{\do_environment{#name}}
+\unexpanded\def\useproject         [#name]{\ctxcommand{useproject    ("#name")}}
+\unexpanded\def\useproduct         [#name]{\ctxcommand{useproduct    ("#name")}}
+\unexpanded\def\usecomponent       [#name]{\ctxcommand{usecomponent  ("#name")}}
+\unexpanded\def\useenvironment     [#name]{\ctxcommand{useenvironment("#name")}}
 
 \unexpanded\def\do_startproject    [#name]{\ctxcommand{startproject    ("#name")}}
 \unexpanded\def\do_startproduct    [#name]{\ctxcommand{startproduct    ("#name")}}
