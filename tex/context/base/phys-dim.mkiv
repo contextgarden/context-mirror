@@ -86,48 +86,44 @@
 %D the grouped call.
 %D
 %D \starttabulate[|l|l|l|]
-%D \NC \type{.}  \NC , .           \NC comma or period            \NC \NR
-%D \NC \type{,}  \NC , .           \NC comma or period            \NC \NR
-%D \NC \type{@}  \NC               \NC invisible space            \NC \NR
-%D \NC \type{_}  \NC               \NC invisible space            \NC \NR
-%D \NC \type{/}  \NC               \NC invisible sign             \NC \NR
-%D \NC \type{-}  \NC $-$           \NC minus sign                 \NC \NR
-%D \NC \type{+}  \NC $+$           \NC plus sign                  \NC \NR
-%D \NC \type{//} \NC               \NC invisible high sign        \NC \NR
-%D \NC \type{--} \NC $\negative$   \NC high minus sign            \NC \NR
-%D \NC \type{++} \NC $\positive$   \NC high plus sign             \NC \NR
-%D \NC \type{=}  \NC $\zeroamount$ \NC zero padding               \NC \NR
+%D \starttabulate[|l|l|l|]
+%D \NC \type{.}  \NC , .           \NC comma or period     \NC \NR
+%D \NC \type{,}  \NC , .           \NC comma or period     \NC \NR
+%D \NC \type{:}  \NC               \NC invisible period    \NC \NR
+%D \NC \type{;}  \NC               \NC invisible comma     \NC \NR
+%D \NC \type{_}  \NC               \NC invisible space     \NC \NR
+%D \NC \type{/}  \NC               \NC invisible sign      \NC \NR
+%D \NC \type{-}  \NC $-$           \NC minus sign          \NC \NR
+%D \NC \type{+}  \NC $+$           \NC plus sign           \NC \NR
+%D \NC \type{//} \NC               \NC invisible high sign \NC \NR
+%D \NC \type{--} \NC $\negative$   \NC high minus sign     \NC \NR
+%D \NC \type{++} \NC $\positive$   \NC high plus sign      \NC \NR
+%D \NC \type{=}  \NC $\zeroamount$ \NC zero padding        \NC \NR
+%D \stoptabulate
 %D \stoptabulate
 %D
 %D These triggers are used in the following examples.
 %D
-%D \startbuffer
-%D \digits{12}
-%D \digits{~~~.~~~.~~~.68.712,34}
-%D \digits{___.___.111.68.712,34}
-%D \digits{111.111.111.68.712,34}
-%D \digits{12.345,90}
-%D \digits{12.345.000}
-%D \digits{12,34}
-%D \digits{392.857.230.68.712,34}
-%D \digits{1234}
-%D \digits{123.222,00}
-%D \digits{123.222,==}
-%D \digits{123.222,00^10}
-%D \digits{123.222,00e10}
-%D \digits{/123.222,00e-12}
-%D \digits{-123.222,00e-12}
-%D \digits{+123.222,00e-12}
-%D \digits{n123.222,00e-12}
-%D \digits{s123.222,00e-12}
-%D \digits{p123.222,00e-12}
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D \startlines
-%D \getbuffer
-%D \stoplines
+%D \starttabulate[|l|r|]
+%D \NC \type{1}                      \NC \ruledhbox{\strut\digits{1}}                      \NC \NR
+%D \NC \type{12}                     \NC \ruledhbox{\strut\digits{12}}                     \NC \NR
+%D \NC \type{12.34}                  \NC \ruledhbox{\strut\digits{12.34}}                  \NC \NR
+%D \NC \type{123,456}                \NC \ruledhbox{\strut\digits{123,456}}                \NC \NR
+%D \NC \type{123,456.78}             \NC \ruledhbox{\strut\digits{123,456.78}}             \NC \NR
+%D \NC \type{12,34}                  \NC \ruledhbox{\strut\digits{12,34}}                  \NC \NR
+%D \NC \type{.1234}                  \NC \ruledhbox{\strut\digits{.1234}}                  \NC \NR
+%D \NC \type{1234}                   \NC \ruledhbox{\strut\digits{1234}}                   \NC \NR
+%D \NC \type{123,456.78^9}           \NC \ruledhbox{\strut\digits{123,456.78^9}}           \NC \NR
+%D \NC \type{123,456.78e9}           \NC \ruledhbox{\strut\digits{123,456.78e9}}           \NC \NR
+%D \NC \type{/123,456.78e-9}         \NC \ruledhbox{\strut\digits{/123,456.78e-9}}         \NC \NR
+%D \NC \type{-123,456.78e-9}         \NC \ruledhbox{\strut\digits{-123,456.78e-9}}         \NC \NR
+%D \NC \type{+123,456.78e-9}         \NC \ruledhbox{\strut\digits{+123,456.78e-9}}         \NC \NR
+%D \NC \type{//123,456.78e-9}        \NC \ruledhbox{\strut\digits{//123,456.78e-9}}        \NC \NR
+%D \NC \type{--123,456.78e-9}        \NC \ruledhbox{\strut\digits{--123,456.78e-9}}        \NC \NR
+%D \NC \type{++123,456.78e-9}        \NC \ruledhbox{\strut\digits{++123,456.78e-9}}        \NC \NR
+%D \NC \type{___,___,123,456,789.00} \NC \ruledhbox{\strut\digits{___,___,123,456,789.00}} \NC \NR
+%D \NC \type{___,___,_12,345,678.==} \NC \ruledhbox{\strut\digits{___,___,_12,345,678.==}} \NC \NR
+%D \stoptabulate
 
 \newconstant\c_digits_order
 \newconstant\c_digits_method
@@ -163,7 +159,7 @@
      \expandafter\high
    \fi}
 
-\unexpanded\def\digitszeropadding   {\zeroamount}
+\unexpanded\def\digitszeropadding   {\hphantom{0}}
 \unexpanded\def\digitsnegative      {\digits_normalized{0}{\digits_raised{\textminus}}}
 \unexpanded\def\digitspositive      {\digits_normalized{0}{\digits_raised{\textplus}}}
 \unexpanded\def\digitsnegative      {\digits_normalized{0}{\mathematics{\negative}}}
@@ -332,19 +328,21 @@
 
 % only a space when a number is part of the unit
 
-\installcommandhandler \??un {units} \??un
+\installcommandhandler \??un {unit} \??un
 
-\setupunits
-  [\c!alternative=,        % done: text
-   \c!separator=\v!normal, % done: cdot|big|medium|space
-   \c!label=,              % done: (no interface yet)
-   \c!order=\v!normal,     % ,. (reverse: .,)
+\setupunit
+  [\c!alternative=,              % done: text
+   \c!separator=\v!normal,       % done: cdot|big|medium|space
+   \s!language=\currentlanguage, % done: (no interface yet)
+   \c!order=\v!normal,           % ,. (reverse: .,)
    \c!method=0,
-  %\c!grid=\v!yes,         % (maybe)
-  %\c!style=...,           % done
-  %\c!color=...,           % done
-  %\c!space=...,           % (maybe) small medium big
+  %\c!grid=\v!yes,               % (maybe)
+  %\c!style=...,                 % done
+  %\c!color=...,                 % done
+  %\c!space=...,                 % (maybe) small medium big
   ]
+
+\let\setupunits\setupunit
 
 \newconstant   \c_units_mode   % 0=text 1=math 2=textinmath 3=mathintext
 \newconstant   \c_units_state  % 0=start 1=suffix 2=operator 3=unit 4=prefix 5=number
@@ -367,7 +365,7 @@
   {\setvalue{\??un:1:#1}{#2}}
 
 \unexpanded\def\dounitsseparator
-  {\edef\currentunitsseparator{\unitsparameter\c!separator}%
+  {\edef\currentunitsseparator{\unitparameter\c!separator}%
    \csname\??un:1:%
      \ifcsname\??un:1:\currentunitsseparator\endcsname\currentunitsseparator\else\v!normal\fi
    \endcsname}
@@ -382,7 +380,7 @@
   {\setvalue{\??un:2:#1}{#2}}
 
 \unexpanded\def\dounitsspace
-  {\edef\currentunitsspace{\unitsparameter\c!space}%
+  {\edef\currentunitsspace{\unitparameter\c!space}%
    \csname\??un:2:%
      \ifcsname\??un:2:\currentunitsspace\endcsname\currentunitsspace\else\v!normal\fi
    \endcsname}
@@ -396,8 +394,8 @@
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
 \appendtoks
-    \setuevalue\currentunits{\units_direct{\currentunits}}
-\to \everydefineunits
+    \setuevalue\currentunit{\units_direct{\currentunit}}
+\to \everydefineunit
 
 \unexpanded\def\units_direct#1%
   {\begingroup
@@ -405,13 +403,16 @@
      \settrue\c_units_dospace
      \removelastskip
    \fi
-   \c_digits_method\unitsparameter\c!method\relax
+   \c_digits_method\unitparameter\c!method\relax
    \ifmmode\else\dontleavehmode\fi
-   \edef\currentunits{#1}%
+   \edef\currentunit{#1}%
+   \edef\unitlanguage{\unitparameter\s!language}%
+   \let\prefixlanguage\unitlanguage
+   \let\operatorlanguage\unitlanguage
    \the\everyunits
-  %\removeunwantedspaces % now ok yet
-   \dosetunitsattributes\c!style\c!color
-   \edef\currentunitsalternative{\unitsparameter\c!alternative}%
+  %\removeunwantedspaces % not ok yet
+   \dosetunitattributes\c!style\c!color
+   \edef\currentunitsalternative{\unitparameter\c!alternative}%
    \ifmmode
      \ifx\currentunitsalternative\v!text
        \expandafter\expandafter\expandafter\units_direct_text_in_math
@@ -436,7 +437,7 @@
 
 \unexpanded\def\units_direct_math#1%
   {\c_units_mode\plusone
-   \rm\tf
+   \rm\tf % slow
    \mathtf
    \units_indeed{#1}%
    \units_finish
@@ -465,21 +466,26 @@
     \let\units_direct\units_direct_nested
 \to \everyunits
 
-\unexpanded\def\units_indeed#1{\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitsparameter\c!label","\unitsparameter\c!order")}}
+\unexpanded\def\units_indeed#1%
+  {\ctxcommand{unit(\!!bs\detokenize{#1}\!!es,"\unitparameter\c!order")}}
 
-\unexpanded\def\unitsPUS#1#2#3{\units_next#1#2\unitsraise{#3}\c_units_state\plusone}   % suffix
-\unexpanded\def\unitsPU   #1#2{\units_next#1#2\c_units_state               \plusthree} % unit
-\unexpanded\def\unitsPS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
-\unexpanded\def\unitsUS   #1#2{\units_next#1\unitsraise{#2}\c_units_state  \plusone}   % suffix
-\unexpanded\def\unitsP      #1{\units_next#1\c_units_state                 \plusfour}  % prefix
-\unexpanded\def\unitsU      #1{\units_next#1\c_units_state                 \plusthree} % unit
-\unexpanded\def\unitsS      #1{\units_start{}\unitsraise{#1}\c_units_state \plusone}   % suffix
-\unexpanded\def\unitsO      #1{\units_start#1\c_units_state                \plustwo}   % operator
-\unexpanded\def\unitsN      #1{\units_start#1\c_units_state                \plusfive}  % number
-\unexpanded\def\unitsC      #1{\removeunwantedspaces#1\c_units_state       \plussix}   % connected
+\unexpanded\def\unitsPUS#1#2#3{\units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_units_state\plusone} % suffix
+\unexpanded\def\unitsPU   #1#2{\units_next\prefixtext{#1}\unittext{#2}\c_units_state\plusthree}              % unit
+\unexpanded\def\unitsPS   #1#2{\units_next\prefixtext{#1}\unitsraise{\suffixtext{#2}}\c_units_state\plusone}              % suffix
+\unexpanded\def\unitsUS   #1#2{\units_next\unittext{#1}\unitsraise{\suffixtext{#2}}\c_units_state\plusone}                % suffix
+\unexpanded\def\unitsP      #1{\units_next\prefixtext{#1}1\c_units_state\plusfour}                           % prefix
+\unexpanded\def\unitsU      #1{\units_next\unittext{#1}\c_units_state\plusthree}                             % unit
+\unexpanded\def\unitsS      #1{\units_start{}\unitsraise{\suffixtext{#1}}\c_units_state\plusone}                          % suffix
+\unexpanded\def\unitsO      #1{\units_start\operatortext{#1}\c_units_state\plustwo}                          % operator
+\unexpanded\def\unitsN      #1{\units_start#1\c_units_state\plusfive}                                        % number
+\unexpanded\def\unitsC      #1{\removeunwantedspaces\unittext{#1}\c_units_state\plussix}                     % connected
+
+% hm, textacute also not present in some fonts
 
 \unexpanded\def\checkedtextprime      {\iffontchar\font"2032′\else\textacute\fi}
 \unexpanded\def\checkedtextdoubleprime{\iffontchar\font"2033″\else\textacute\kern-.25em\textacute\fi}
+\unexpanded\def\checkedtextcelsius    {\iffontchar\font"2103℃\else °C\fi}
+\unexpanded\def\checkedtextfahrenheit {\iffontchar\font"2109℉\else °F\fi}
 
 \setelementnature[unit]    [mixed]
 \setelementnature[quantity][mixed]
@@ -593,20 +599,42 @@
    {/}%
    }%\unitsbackspace}
 
+\definelabelclass [unit]     [2]
+\definelabelclass [operator] [2]
+\definelabelclass [prefix]   [2]
+\definelabelclass [suffix]   [2] % This is only a label because we want to show them in a table.
+
+\ctxlua{
+    languages.labels.define("setupprefixtext","prefixes")%
+    languages.labels.define("setupunittext","units")%
+    languages.labels.define("setupoperatortext","operators")%
+    languages.labels.define("setupsuffixtext","suffixes")%
+}
+
 %D You can define additional units:
 %D
 %D \starttyping
 %D \registerunit
-%D   [units]
+%D   [unit]
+%D   [point=point,
+%D    basepoint=basepoint,
+%D    scaledpoint=scaledpoint,
+%D    didot=didot,
+%D    cicero=cicero]
+%D \stoptyping
+%D
+%D Possible categories are: \type {prefix}, \type {unit}, \type {operator},
+%D \type {suffix}, \type {symbol},\type {packaged}. You also need to define
+%D labels:
+%D
+%D \starttyping
+%D \setupunittext
 %D   [point=pt,
 %D    basepoint=bp,
 %D    scaledpoint=sp,
 %D    didot=dd,
 %D    cicero=cc]
 %D \stoptyping
-%D
-%D Possible categories are: \type {prefixes}, \type {units}, \type {operators},
-%D \type {suffixes}, \type {symbols},\type {packaged}.
 
 \unexpanded\def\registerunit
   {\dodoubleempty\register_unit}
@@ -624,7 +652,7 @@
 
 %D Now we define the standard units command:
 
-\defineunits
+\defineunit
   [unit]
 
 %D Example:

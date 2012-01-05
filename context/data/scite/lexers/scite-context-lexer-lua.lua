@@ -24,7 +24,7 @@ _directives = { } -- communication channel
 -- this will be eextended
 
 local keywords = {
-    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function',
+    'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', -- 'goto',
     'if', 'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true',
     'until', 'while',
 }
@@ -144,6 +144,13 @@ local operator      = token("special", P('..') + P('~=') + S('+-*/%^#=<>;:,.{}[]
 local optionalspace = spacing^0
 local hasargument   = #S("{(")
 
+local gotokeyword   = token("keyword", P("goto"))
+                    * spacing
+                    * token("grouping",validword)
+local gotolabel     = token("keyword", P("::"))
+                    * token("grouping",validword)
+                    * token("keyword", P("::"))
+
 local keyword       = token("keyword", exact_match(keywords ))
 local builtin       = token("plain",   exact_match(functions))
 local constant      = token("data",    exact_match(constants))
@@ -159,12 +166,14 @@ _rules = {
     { 'function',     builtin      },
     { 'csname',       csname       },
     { 'constant',     constant     },
+    { 'goto',         gotokeyword  },
     { 'identifier',   identifier   },
     { 'string',       string       },
     { 'number',       number       },
     { 'longcomment',  longcomment  },
     { 'shortcomment', shortcomment },
 --  { 'number',       number       },
+    { 'label',        gotolabel    },
     { 'operator',     operator     },
     { 'rest',         rest         },
 }

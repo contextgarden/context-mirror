@@ -336,6 +336,7 @@
          \global\nofloatcaptiontrue
        \fi
      \else
+       \global\emptyfloatcaptionfalse
        \setbox\float_caption_box\hbox{\hskip\leftskip\box\float_caption_box}%
      \fi
    \fi}
@@ -709,9 +710,9 @@
       \globallet\currentfloatattribute  \empty
       \globallet\currentfloatsynchronize\relax
    \else
-     \ifnofloatnumber \else
-       \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
-     \fi
+      \ifnofloatnumber \else \ifnofloatcaption \else
+        \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
+      \fi \fi
      \dostructurecountercomponent
        {float}%
        \setupcurrentfloatcaption
