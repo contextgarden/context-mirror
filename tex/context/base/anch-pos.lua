@@ -357,7 +357,7 @@ end
 function commands.MPpos(id)
     local jpi = collected[id] or tobesaved[id]
     if jpi then
-        context("%spt,%spt,%spt,%spt,%spt,%spt",jpi[1]*pt,jpi[2]*pt,jpi[3]*pt,jpi[4]*pt,jpi[5]*pt,jpi[6]*pt)
+        context("%s,%spt,%spt,%spt,%spt,%spt",jpi[1],jpi[2]*pt,jpi[3]*pt,jpi[4]*pt,jpi[5]*pt,jpi[6]*pt)
     else
         context('0,0,0,0,0,0')
     end

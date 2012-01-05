@@ -622,6 +622,18 @@
    \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
    \dodoubleempty\dolocalframed[\??ol:\the\framednesting]}
 
+\unexpanded\def\startframed
+  {\dosingleempty\dostartframed}
+
+\def\dostartframed[#1]%
+  {\bgroup
+   \advance\framednesting\plusone
+   \expandafter\let\csname\??ol:\the\framednesting\s!parent\endcsname\??ol
+   \dolocalframed[\??ol:\the\framednesting][#1]%
+   \bgroup}
+
+\let\stopframed\egroup
+
 \unexpanded\def\setupframed
   {\dodoubleempty\dosetupframed}
 
@@ -3287,162 +3299,6 @@
       \endgraf % !
       \@@ilafter}}
 
-%D \macros
-%D   {setupbackground,startbackground,background}
-%D
-%D The section deals with backgrounds in the running text. This
-%D means that texts is to be collected and split over pages. To
-%D show what can be done, we provide this part of the
-%D documentation with some gray background and a red frame.
-%D Both the background and frame can have all characteristics
-%D of \type{\framed}.
-%D
-%D \starttyping
-%D \setupbackground
-%D   [backgroundoffset=4pt,
-%D    background=screen,
-%D    frame=on,
-%D    framecolor=red,
-%D    leftoffset=2pt]
-%D \stoptyping
-%D
-%D The implementation is not that sophisticated, but suffices.
-%D The main problem with this kind of functionality is to get
-%D the spacing all right.
-%D
-%D Specifying the background is more or less the same as
-%D specifying a framed box.
-%D
-%D \showsetup{setupbackground}
-%D
-%D {\em This mechanism is sort of obsolete and textbackgrounds should
-%D be used instead.}
-
-\def\dosetupbackground[#1]%
-  {\getparameters[\??ag][#1]%
-   \doifelse\@@agstate\v!start
-     {\let\startbackground\dostartbackground
-      \let\stopbackground \dostopbackground
-      \let\background     \dobackground}
-     {\let\startbackground\relax
-      \let\stopbackground \relax
-      \let\background     \relax}}
-
-\unexpanded\def\setupbackground
-  {\dosingleargument\dosetupbackground}
-
-%D Actually typesetting the background is implemented rather
-%D straightforward. We need to handle some spacing as well as
-%D the (often) a bit smaller horizontal size.
-%D
-%D \showsetup{startbackground}
-%D
-%D Although we could have used a scratch one, we first
-%D declare a boolean.
-
-% 0=no-split, 1=no-split+indent, 2=split, 3=split+indent
-
-\setnewconstant\backgroundsplitmode\plusthree
-
-%D The \type{\vbox to \lineheight{}\vskip\zeropoint}
-%D construction gives the first real line a decent height by
-%D adding a dummy line.
-
-\def\dostartbackground
-  {\endgraf
-   \bgroup
-   \setbox0\vbox\bgroup
-     \vbox to \lineheight{}\vskip\zeropoint
-     \blank[\v!disable]
-     % \advance\hsize -\@@agleftoffset
-     % \advance\hsize -\@@agrightoffset
-     \leftskip \@@agleftoffset   % new **
-     \rightskip\@@agrightoffset} % new **
-
-%D This dummy line is removed by \type{\setbox2=\vsplit0 to
-%D \lineheight}. That way \type{\topskip} takes care of the
-%D lineheight. I'll probably forget to apply this trick
-%D elsewhere.
-
-\presetlocalframed[\??ag]
-
-\def\dostopbackground % improved version (i hope)
-  {\endgraf
-   \removelastskip
-   \egroup
-   \dimen2\leftskip % new **
-   \forgetall
-   \ifinsidefloat
-     \backgroundsplitmode\zerocount
-   \fi
-   \ifcase\backgroundsplitmode
-     \localframed[\??ag][\c!offset=\v!overlay]{\box0}%
-   \or
-     \hskip\dimen2
-     \localframed[\??ag][\c!offset=\v!overlay]{\box0}%
-   \else
-     \splitmaxdepth\boxmaxdepth
-     \splittopskip\topskip
-     \setbox2\vsplit0 to \lineheight % get rid of fake line
-     \loop
-       \ifdim\pagetotal=\zeropoint % empty page
-         \scratchdimen\textheight
-         \backgroundsplitmode\plusone % split to max height
-       \else
-         \setbox\scratchbox\vbox{\@@agbefore}%
-         \scratchdimen\dimexpr\pagegoal-\ht\scratchbox-\pagetotal\relax
-         \backgroundsplitmode\plustwo % split to partial height
-       \fi
-       \advance\scratchdimen\dimexpr-\@@agtopoffset-\@@agbottomoffset\relax
-       \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
-         \ifdim\ht0>\scratchdimen % larger than page
-           \setbox2\vsplit0 to \scratchdimen
-         \else
-           \setbox2\box0
-           \backgroundsplitmode\zerocount % no split
-         \fi
-         \setbox2\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
-           {\vskip\@@agtopoffset
-            \unvcopy2
-            \prevdepth\dp2
-            \obeydepth
-            \vskip\@@agbottomoffset
-            \vfill}
-         \@@agbefore
-         \ifcase\backgroundsplitmode\or\or % partial split
-           \ifdim\pagegoal<\maxdimen
-             \pagegoal=1.2\pagegoal % be a bit more tolerant
-           \fi
-         \fi
-         \startlinecorrection
-          %\localframed[\??ag][\c!offset=\v!overlay]{\hskip\@@agleftoffset\box2\hskip\@@agrightoffset}%
-           \ifnum\backgroundsplitmode=\plusthree \hskip\dimen2 \fi %
-           \localframed[\??ag][\c!offset=\v!overlay]{\box2}% new **
-         \stoplinecorrection
-         \ifcase\backgroundsplitmode % no split
-           \@@agafter
-         \else % some split
-           \vfill\eject % geen \page !
-         \fi
-       \else
-         \page
-       \fi
-     \ifdim\ht0>\zeropoint \repeat
-   \fi
-   \egroup
-   \endgraf}
-
-%D As a bonus we also have a short command, that is of not
-%D much use, but kept there for historic reasons.
-%D
-%D \showsetup{background}
-
-\def\dobackground
-  {\bgroup
-   \dowithnextbox
-     {\localframed[\??ag][\c!offset=\v!overlay]{\flushnextbox}\egroup}
-     \vbox}
-
 %D New, for the moment private; let's see when GB finds out
 %D about this one and its obscure usage. It's used in:
 %D
@@ -3558,41 +3414,7 @@
    \ifdone\stoplinecorrection\fi
    \egroup}
 
-%D \macros
-%D   {backgroundline}
-%D
-%D For the moment an undocumented feature, but a cancidate
-%D for going public.
-
-\def\backgroundline[#1]%
- %{\doifsomething{#1}{\dobackgroundline{#1}}\hbox}
-  {\doifcolorelse{#1}{\dobackgroundline{#1}\hbox}\hbox}
-
-% \def\backgroundline[#1]%
-%   {\doifcolor{#1}{\dobackgroundline{#1}}\hbox}
-
-\def\dobackgroundline#1%
-  {\dowithnextbox
-     {\hbox
-        {\startcolor[#1]%
-         \vrule
-           \!!width \nextboxwd
-           \!!height\nextboxht
-           \!!depth \nextboxdp
-       \stopcolor
-       \hskip-\nextboxwd
-       \flushnextbox}}}
-
-%D \macros
-%D   {encircled}
-%D
-%D Some not so robust left||overs (borrowed from Knuth,
-%D \TEX Book\ page 356):
-
-\def\encircled#1%
-  {{\ooalign{\hfil\raise0.07ex\hbox{{\tx#1}}\hfil\crcr\mathhexbox20D}}}
-
-\let\omcirkeld\encircled
+% A shared setting.
 
 \setuplinewidth
   [\v!medium]
@@ -3702,23 +3524,6 @@
    \c!distance=1em,
    \c!before=\blank,
    \c!after=\blank]
-
-\setupbackground
-  [\c!leftoffset=.5\bodyfontsize,
-   \c!rightoffset=\@@agleftoffset,
-   \c!topoffset=\!!zeropoint,
-   \c!bottomoffset=\@@agtopoffset,
-   \c!state=\v!start,
-   \c!radius=.5\bodyfontsize,
-   \c!corner=\v!rectangular,
-   \c!frame=\v!off,
-   \c!color=,
-   \c!depth=\!!zeropoint,
-   \c!background=\v!screen,
-   \c!backgroundcolor=\@@agcolor,
-   \c!screen=\@@rsscreen,
-   \c!before=,
-   \c!after=]
 
 % Experimental extension:
 
