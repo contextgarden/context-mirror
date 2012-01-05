@@ -942,7 +942,7 @@ local function profiled_apply(list,parsed,nofparsed,order)
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,order)
         elseif kind == "finalizer" then
-            collected = pi.finalizer(collected)
+            collected = pi.finalizer(collected) -- no check on # here
             p.matched = p.matched + 1
             p.finalized = p.finalized + 1
             return collected

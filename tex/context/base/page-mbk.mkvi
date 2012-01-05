@@ -1,0 +1,236 @@
+%D \module
+%D   [       file=page-mbk,   % was part of page-mis.mkiv / 2008.11.17
+%D        version=2011.11.23, % was part of page-flt.tex  / 2000.10.20
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Margin Floats,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Margin Floats}
+
+\unprotect
+
+%D This is an old mechanism that is quite independent of other
+%D floats. There is for instance no save/restore used here. When
+%D there is need (and demand) we can use the float cache and then
+%D flush them in the text when they are left over. On the other
+%D hand, margin float are somewhat manual so it does not make too
+%D much sense to complicate the code. As an alternative users can
+%D fall back on margin texts: they do stack but don't float.
+%D
+%D \starttyping
+%D \dorecurse{9} {
+%D   \placefigure[margin]{#1}{}
+%D   \input ward
+%D }
+%D \page \null % will flush them
+%D \stoptyping
+
+% status=start: in margin
+% status=stop : in text
+%
+% todo: flush margin floats at end of text
+
+\installcommandhandler \??mb {marginblock} \??mb
+
+\let\setupmarginblocks\setupmarginblock
+
+\newconditional\page_margin_blocks_c % not really needed as we can check each time
+
+\appendtoks
+   \doifelse{\rootmarginblockparameter\c!state}\v!start
+     \settrue\setfalse\page_margin_blocks_c
+\to \everysetupmarginblock
+
+\setupmarginblocks
+  [\c!state=\v!start,
+   \c!location=\v!inmargin,
+   \c!width=\rightmarginwidth,
+  %\c!style=,
+  %\c!color=,
+  %\c!align=,
+  %\c!left=,
+  %\c!right=,
+  %\c!top=,
+  %\c!before=,
+  %\c!after=,
+   \c!inbetween=\blank,
+   \c!bottom=\vfill]
+
+\unexpanded\def\startmarginblock
+  {\dosingleempty\start_margin_block}
+
+\unexpanded\def\stoptmarginblock
+  {\stop_margin_block}
+
+\def\start_margin_block[#tag]%
+  {\begingroup
+   \edef\currentmarginblock{#tag}%
+   \doifelse{\marginblockparameter\c!state}\v!start
+     \start_margin_block_yes
+     \start_margin_block_nop}
+
+\def\stop_margin_block
+  {\doifelse{\marginblockparameter\c!state}\v!start
+     \stop_margin_block_yes
+     \stop_margin_block_nop
+   \endgroup}
+
+\def\start_margin_block_yes % 2 maal \vbox ivm \unvbox elders
+  {\showmessage\m!layouts4\empty
+   \global\setbox\page_margin_box\vtop\bgroup\vbox\bgroup
+     \hsize\marginblockparameter\c!width
+     \ifvoid\page_margin_box\else
+       \unvbox\page_margin_box
+       \marginblockparameter\c!inbetween
+     \fi
+     \setupalign[\marginblockparameter\c!align]%
+     \dosetfloatcaptionattributes\c!style\c!color
+     \begstrut
+     \ignorespaces}
+
+\def\stop_margin_block_yes
+  {\removeunwantedspaces
+   \endstrut
+   \egroup
+   \egroup}
+
+\def\start_margin_block_nop
+  {\showmessage\m!layouts5\empty
+   \marginblockparameter\c!before
+   \bgroup
+   \dosetfloatcaptionattributes\c!style\c!color}
+
+\def\stop_margin_block_nop
+  {\egroup
+   \marginblockparameter\c!after}
+
+\newbox\page_margin_box
+\newbox\page_margin_prepared_box
+
+\def\page_margin_reshape
+  {\ifdim\ht\page_margin_prepared_box>\zeropoint
+     \beginofshapebox
+     \unvbox\page_margin_prepared_box
+     \endofshapebox
+     \reshapebox
+       {\box\shapebox}%
+     \setbox\page_margin_prepared_box\vbox to \textheight
+       {\marginblockparameter\c!top
+        \flushshapebox
+        \marginblockparameter\c!bottom}%
+   \fi}
+
+\unexpanded\def\checkmarginblocks
+  {\ifvoid\page_margin_box \else
+     \page_margin_check_indeed
+   \fi}
+
+\def\page_margin_check_indeed
+  {\ifcsname\??mb::\c!location::\marginblockparameter\c!location\endcsname
+     \page_margin_prepare_box
+     \csname\??mb::\c!location::\marginblockparameter\c!location\endcsname
+   \else
+     \global\page_margin_box\emptybox
+   \fi}
+
+\def\page_margin_prepare_box
+  {\setbox\page_margin_prepared_box\vbox
+     {\forgetall
+      \splittopskip\topskip
+      \ifvoid\page_margin_box\else
+        \ifdim\ht\page_margin_box>\textheight
+          \vsplit\page_margin_box to \textheight
+        \else
+          \unvbox\page_margin_box
+        \fi
+      \fi}%
+   \page_margin_reshape
+   \setbox\page_margin_prepared_box\vbox
+     {\marginblockparameter\c!before
+      \box\page_margin_prepared_box
+      \marginblockparameter\c!after}}
+
+\setvalue{\??mb::\c!location::\v!left    }{\page_margin_set_l_box}
+\setvalue{\??mb::\c!location::\v!right   }{\page_margin_set_r_box}
+\setvalue{\??mb::\c!location::\v!inmargin}{\doifbothsidesoverruled
+                                           \page_margin_set_r_box
+                                           \page_margin_set_r_box
+                                           \page_margin_set_l_box}
+\setvalue{\??mb::\c!location::\v!middle  }{\doifbothsidesoverruled
+                                           \page_margin_set_r_box
+                                           \page_margin_set_l_box
+                                           \page_margin_set_r_box}
+
+\unexpanded\def\place_r_margin_block_yes
+  {\setbox\page_margin_prepared_box\hbox to \rightmarginwidth
+     {\marginblockparameter\c!left
+      \box\page_margin_prepared_box
+      \marginblockparameter\c!right}%
+   \vsmashbox\page_margin_prepared_box
+   \box\page_margin_prepared_box}
+
+\unexpanded\def\place_l_margin_block_yes
+  {\setbox\page_margin_prepared_box\hbox to \leftmarginwidth
+     {\marginblockparameter\c!right
+      \box\page_margin_prepared_box
+      \marginblockparameter\c!left}%
+   \vsmashbox\page_margin_prepared_box
+   \box\page_margin_prepared_box}
+
+\unexpanded\def\place_r_margin_block_nop{\hskip\rightmarginwidth}
+\unexpanded\def\place_l_margin_block_nop{\hskip\leftmarginwidth}
+
+\let\placerightmarginblock\place_r_margin_block_nop
+\let\placeleftmarginblock \place_l_margin_block_nop
+
+\def\page_margin_set_r_box{\let\placerightmarginblock\place_r_margin_block_yes}
+\def\page_margin_set_l_box{\let\placeleftmarginblock \place_l_margin_block_yes}
+
+% margin floats (keyword 'margin' in option list)
+
+\unexpanded\def\page_margin_process_float
+  {\doifelse{\marginblockparameter\c!state}\v!start
+     \page_margin_process_float_yes
+     \page_margin_process_float_nop}
+
+\def\page_margin_process_float_yes#options%
+  {\global\setbox\page_margin_box\vbox
+     {\hsize\marginblockparameter\c!width
+      \unvcopy\page_margin_box
+      \ifvoid\page_margin_box\else
+        \expandafter\marginblockparameter\expandafter\c!inbetween
+      \fi
+      \box\floatbox
+      \filbreak}%
+   \ifdim\ht\page_margin_box>\textheight
+   % \dosavefloatinfo % no saving done anyway
+   \else
+     \doinsertfloatinfo
+   \fi}
+
+\def\page_margin_process_float_nop#options%
+  {\someelsefloat[#options,\v!here]} % still an old name
+
+\def\page_margin_float_before
+  {\ifconditional\page_margin_blocks_c
+     \doifinset\v!margin\floatlocation\endgraf
+   \fi}
+
+\def\page_margin_float_set_hsize
+  {\ifconditional\page_margin_blocks_c
+     \doifinset\v!margin\floatlocation{\hsize\rootmarginblockparameter\c!width}%
+   \fi}
+
+\appendtoks
+   \ifvoid\page_margin_box \else
+     \writestatus\m!layouts{beware: there are left-over margin floats!}%
+   \fi
+\to \everystoptext
+
+\protect \endinput

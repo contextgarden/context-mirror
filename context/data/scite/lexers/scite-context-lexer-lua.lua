@@ -10,6 +10,7 @@ local lexer = lexer
 local token, style, colors, exact_match, no_style = lexer.token, lexer.style, lexer.colors, lexer.exact_match, lexer.style_nothing
 local P, R, S, C, Cg, Cb, Cs, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cg, lpeg.Cb, lpeg.Cs, lpeg.Cmt
 local match, find = string.match, string.find
+local setmetatable = setmetatable
 local global = _G
 
 -- beware: all multiline is messy, so even if it's no lexer, it should be an embedded lexer
@@ -61,30 +62,32 @@ local longonestring = (1-longonestop)^0
 local longtwostart  = P('[') * Cmt(equals,setlevel) * P('[')
 local longtwostop   = P(']') *     equals           * P(']')
 
+local sentinels = { } setmetatable(sentinels, { __index = function(t,k) local v = "]" .. k .. "]" t[k] = v return v end })
+
 local longtwostring = P(function(input,index)
     if level then
-        local sentinel = ']' .. level .. ']'
+     -- local sentinel = ']' .. level .. ']'
+        local sentinel = sentinels[level]
         local _, stop = find(input,sentinel,index,true)
         return stop and stop + 1 - #sentinel or #input + 1
     end
 end)
 
--- local longtwostart  = P("[") * Cg(equals, "init") * P("[")
--- local longtwostop   = P("]") * C(equals) * P("]")
--- local longtwocheck  = Cmt(longtwostop * Cb("init"), function(s,i,a,b) return a == b end)
--- local longtwostring = (P(1) - longtwocheck)^0
+    local longtwostring_body = longtwostring
 
-local longcomment = Cmt(#('[[' + ('[' * P('=')^0 * '[')), function(input,index)
-    local level = match(input,'^%[(=*)%[',index)
-    level = "=="
-    if level then
-        local _, stop = find(input,']' .. level .. ']',index,true)
-        return stop and stop + 1 or #input + 1
-    end
-end)
+    local longtwostring_end = P(function(input,index)
+        if level then
+         -- local sentinel = ']' .. level .. ']'
+            local sentinel = sentinels[level]
+            local _, stop = find(input,sentinel,index,true)
+            return stop and stop + 1 or #input + 1
+        end
+    end)
 
-local longcomment =  Cmt(#('[[' + ('[' * C(P('=')^0) * '[')), function(input,index,level)
-    local _, stop = find(input,']' .. level .. ']',index,true)
+local longcomment = Cmt(#('[[' + ('[' * C(equals) * '[')), function(input,index,level)
+ -- local sentinel = ']' .. level .. ']'
+    local sentinel = sentinels[level]
+    local _, stop = find(input,sentinel,index,true)
     return stop and stop + 1 or #input + 1
 end)
 
@@ -105,7 +108,7 @@ local shortcomment  = token("comment", dashes * lexer.nonnewline^0)
 local longcomment   = token("comment", dashes * longcomment)
 
 -- fails on very long string with \ at end of lines (needs embedded lexer)
--- and also on newline before " but it makes no sense to waste tiem on it
+-- and also on newline before " but it makes no sense to waste time on it
 
 local shortstring   = token("quote",  dquote)
                     * token("string", (escaped + (1-dquote))^0)
@@ -122,7 +125,10 @@ local longstring    = token("quote",  longonestart)
                     * token("quote",  longtwostop)
 
 local string        = shortstring
-                    + longstring
+--                     + longstring
+
+    local longstringlexer = lexer.load("scite-context-lexer-lua-longstring")
+    lexer.embed_lexer(lualexer, longstringlexer, token("quote",longtwostart), token("string",longtwostring_body) * token("quote",longtwostring_end))
 
 local integer       = P('-')^-1 * (lexer.hex_num + lexer.dec_num)
 local number        = token("number", lexer.float + integer)

@@ -71,6 +71,7 @@ style_string             = style { fore = colors.magenta }
 style_keyword            = style { fore = colors.blue, bold = true }
 
 style_char               = style { fore = colors.magenta }
+style_reserved           = style { fore = colors.magenta, bold = true }
 style_class              = style { fore = colors.black, bold = true }
 style_constant           = style { fore = colors.cyan, bold = true }
 style_definition         = style { fore = colors.black, bold = true }
@@ -104,6 +105,7 @@ lexer.context.styles = {
     ["comment"]    = style_comment,
     ["keyword"]    = style_keyword,
     ["string"]     = style_string,
+    ["reserved"]   = style_reserved,
 
     ["command"]    = style { fore = colors.green, bold = true },
     ["preamble"]   = style_comment,

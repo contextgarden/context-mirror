@@ -514,7 +514,10 @@
 \def\float_begin_text_group {\begingroup\let\float_end_group\relax}
 \def\float_end_text_group   {\endgroup}
 
-% implemenation
+% implementation
+
+\ifdefined\page_margin_float_before    \else \let\page_margin_float_before   \relax \fi
+\ifdefined\page_margin_float_set_hsize \else \let\page_margin_float_set_hsize\relax \fi
 
 \def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
@@ -537,14 +540,10 @@
        {\doifcommonelse\floatlocation\flushfloatslist\doflushfloats\donothing}%
      % but which should be done before using box \floatbox
    \fi
-   \ifmarginblocks
-     \doifinset\v!margin\floatlocation\endgraf
-   \fi
+   \page_margin_float_before % todo: each float handler gets a before
    \global\insidefloattrue
    \dostarttagged\t!float\currentfloat
-   \ifmarginblocks
-     \doifinset\v!margin\floatlocation{\hsize\@@mbwidth}%
-   \fi
+   \page_margin_float_set_hsize % todo: each float handler gets a set_hsize
    \the\everyinsidefloat
    \float_analyze_variables_one
    \dostarttagged\t!floatcontent\empty
@@ -1878,7 +1877,7 @@
 \def\sometopfloat          [#1]{\someelsefloat[#1]\nonoindentation}
 \def\somebottomfloat       [#1]{\someelsefloat[#1]}
 \def\someautofloat         [#1]{\someelsefloat[#1]}
-\def\somemarginfloat       [#1]{\somenextfloat[#1]\nonoindentation}
+\def\somemarginfloat       [#1]{\page_margin_process_float{#1}\nonoindentation}
 \def\someinleftmarginfloat [#1]{\somesidefloat[#1]}
 \def\someinrightmarginfloat[#1]{\somesidefloat[#1]}
 \def\someinleftedgefloat   [#1]{\somesidefloat[#1]}

@@ -8949,7 +8949,7 @@ local function profiled_apply(list,parsed,nofparsed,order)
         elseif kind == "expression" then
             collected = apply_expression(collected,pi.evaluator,order)
         elseif kind == "finalizer" then
-            collected = pi.finalizer(collected)
+            collected = pi.finalizer(collected) -- no check on # here
             p.matched = p.matched + 1
             p.finalized = p.finalized + 1
             return collected
@@ -10070,6 +10070,21 @@ local function all(collected)
     return collected
 end
 
+-- local function reverse(collected)
+--     if collected then
+--         local nc = #collected
+--         if nc > 0 then
+--             local reversed, r = { }, 0
+--             for c=nc,1,-1 do
+--                 r = r + 1
+--                 reversed[r] = collected[c]
+--             end
+--             return reversed
+--         else
+--             return collected
+--         end
+--     end
+-- end
 
 local reverse = table.reversed
 
@@ -10086,34 +10101,37 @@ local function att(id,name)
 end
 
 local function count(collected)
-    return (collected and #collected) or 0
+    return collected and #collected or 0
 end
 
 local function position(collected,n)
-    if collected then
-        n = tonumber(n) or 0
-        if n < 0 then
-            return collected[#collected + n + 1]
-        elseif n > 0 then
-            return collected[n]
-        else
-            return collected[1].mi or 0
-        end
+    if not collected then
+        return 0
+    end
+    local nc = #collected
+    if nc == 0 then
+        return 0
+    end
+    n = tonumber(n) or 0
+    if n < 0 then
+        return collected[nc + n + 1]
+    elseif n > 0 then
+        return collected[n]
+    else
+        return collected[1].mi or 0
     end
 end
 
 local function match(collected)
-    return (collected and collected[1].mi) or 0 -- match
+    return collected and #collected > 0 and collected[1].mi or 0 -- match
 end
 
 local function index(collected)
-    if collected then
-        return collected[1].ni
-    end
+    return collected and #collected > 0 and collected[1].ni or 0 -- 0 is new
 end
 
 local function attributes(collected,arguments)
-    if collected then
+    if collected and #collected > 0 then
         local at = collected[1].at
         if arguments then
             return at[arguments]
@@ -10124,7 +10142,7 @@ local function attributes(collected,arguments)
 end
 
 local function chainattribute(collected,arguments) -- todo: optional levels
-    if collected then
+    if collected and #collected > 0 then
         local e = collected[1]
         while e do
             local at = e.at
@@ -10143,7 +10161,7 @@ local function chainattribute(collected,arguments) -- todo: optional levels
 end
 
 local function raw(collected) -- hybrid (not much different from text so it might go)
-    if collected then
+    if collected and #collected > 0 then
         local e = collected[1] or collected
         return e and xmltostring(e) or "" -- only first as we cannot concat function
     else
@@ -10186,7 +10204,7 @@ end
 --
 
 local function text(collected) -- hybrid
-    if collected then
+    if collected and #collected > 0 then
         local e = collected[1] or collected
         return (e and xmltotext(e)) or ""
     else
@@ -10195,89 +10213,114 @@ local function text(collected) -- hybrid
 end
 
 local function texts(collected)
-    if collected then
-        local t, n = { }, 0
-        for c=1,#collected do
-            local e = collected[c]
-            if e and e.dt then
-                n = n + 1
-                t[n] = e.dt
-            end
-        end
-        return t
+    if not collected then
+        return { } -- why no nil
     end
+    local nc = #collected
+    if nc == 0 then
+        return { } -- why no nil
+    end
+    local t, n = { }, 0
+    for c=1,nc do
+        local e = collected[c]
+        if e and e.dt then
+            n = n + 1
+            t[n] = e.dt
+        end
+    end
+    return t
 end
 
 local function tag(collected,n)
-    if collected then
-        local c
-        if n == 0 or not n then
-            c = collected[1]
-        elseif n > 1 then
-            c = collected[n]
-        else
-            c = collected[#collected-n+1]
-        end
-        return c and c.tg
+    if not collected then
+        return
     end
+    local nc = #collected
+    if nc == 0 then
+        return
+    end
+    local c
+    if n == 0 or not n then
+        c = collected[1]
+    elseif n > 1 then
+        c = collected[n]
+    else
+        c = collected[nc-n+1]
+    end
+    return c and c.tg
 end
 
 local function name(collected,n)
-    if collected then
-        local c
-        if n == 0 or not n then
-            c = collected[1]
-        elseif n > 1 then
-            c = collected[n]
-        else
-            c = collected[#collected-n+1]
-        end
-        if c then
-            if c.ns == "" then
-                return c.tg
-            else
-                return c.ns .. ":" .. c.tg
-            end
-        end
+    if not collected then
+        return
+    end
+    local nc = #collected
+    if nc == 0 then
+        return
+    end
+    local c
+    if n == 0 or not n then
+        c = collected[1]
+    elseif n > 1 then
+        c = collected[n]
+    else
+        c = collected[nc-n+1]
+    end
+    if not c then
+        -- sorry
+    elseif c.ns == "" then
+        return c.tg
+    else
+        return c.ns .. ":" .. c.tg
     end
 end
 
 local function tags(collected,nonamespace)
-    if collected then
-        local t, n = { }, 0
-        for c=1,#collected do
-            local e = collected[c]
-            local ns, tg = e.ns, e.tg
-            n = n + 1
-            if nonamespace or ns == "" then
-                t[n] = tg
-            else
-                t[n] = ns .. ":" .. tg
-            end
-        end
-        return t
+    if not collected then
+        return
     end
+    local nc = #collected
+    if nc == 0 then
+        return
+    end
+    local t, n = { }, 0
+    for c=1,nc do
+        local e = collected[c]
+        local ns, tg = e.ns, e.tg
+        n = n + 1
+        if nonamespace or ns == "" then
+            t[n] = tg
+        else
+            t[n] = ns .. ":" .. tg
+        end
+    end
+    return t
 end
 
 local function empty(collected)
-    if collected then
-        for c=1,#collected do
-            local e = collected[c]
-            if e then
-                local edt = e.dt
-                if edt then
-                    local n = #edt
-                    if n == 1 then
-                        local edk = edt[1]
-                        local typ = type(edk)
-                        if typ == "table" then
-                            return false
-                        elseif edk ~= "" then -- maybe an extra tester for spacing only
-                            return false
-                        end
-                    elseif n > 1 then
+    if not collected then
+        return true
+    end
+    local nc = #collected
+    if nc == 0 then
+        return true
+    end
+    for c=1,nc do
+        local e = collected[c]
+        if e then
+            local edt = e.dt
+            if edt then
+                local n = #edt
+                if n == 1 then
+                    local edk = edt[1]
+                    local typ = type(edk)
+                    if typ == "table" then
+                        return false
+                    elseif edk ~= "" then -- maybe an extra tester for spacing only
                         return false
                     end
+                elseif n > 1 then
+                    return false
                 end
             end
         end
@@ -10336,7 +10379,7 @@ function xml.text(id,pattern)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)
-        return (collected and xmltotext(collected[1])) or ""
+        return collected and #collected > 0 and xmltotext(collected[1]) or ""
     elseif id then
      -- return text(id)
         return xmltotext(id) or ""

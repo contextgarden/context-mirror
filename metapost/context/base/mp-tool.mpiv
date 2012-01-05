@@ -957,25 +957,25 @@ enddef ;
 
 %D PathPoints.
 
-def drawpoints        expr c = path _c_ ; _c_ := c ; do_drawpoints        enddef ;
-def drawcontrolpoints expr c = path _c_ ; _c_ := c ; do_drawcontrolpoints enddef ;
-def drawcontrollines  expr c = path _c_ ; _c_ := c ; do_drawcontrollines  enddef ;
-def drawpointlabels   expr c = path _c_ ; _c_ := c ; do_drawpointlabels   enddef ;
+def drawpoints        expr c = path _c_ ; _c_ := c ; mfun_draw_points        enddef ;
+def drawcontrolpoints expr c = path _c_ ; _c_ := c ; mfun_draw_controlpoints enddef ;
+def drawcontrollines  expr c = path _c_ ; _c_ := c ; mfun_draw_controllines  enddef ;
+def drawpointlabels   expr c = path _c_ ; _c_ := c ; mdun_draw_pointlabels   enddef ;
 
-def do_drawpoints text t =
+def mfun_draw_points text t =
     for _i_=0 upto length(_c_) :
         normaldraw point _i_ of _c_ _pnt_opt_ t ;
     endfor ;
 enddef;
 
-def do_drawcontrolpoints text t =
+def mfun_draw_controlpoints text t =
     for _i_=0 upto length(_c_) :
         normaldraw precontrol  _i_ of _c_ _ctr_opt_ t ;
         normaldraw postcontrol _i_ of _c_ _ctr_opt_ t ;
     endfor ;
 enddef;
 
-def do_drawcontrollines text t =
+def mfun_draw_controllines text t =
     for _i_=0 upto length(_c_) :
         normaldraw point _i_ of _c_ -- precontrol  _i_ of _c_ _lin_opt_ t ;
         normaldraw point _i_ of _c_ -- postcontrol _i_ of _c_ _lin_opt_ t ;
@@ -984,7 +984,7 @@ enddef;
 
 boolean swappointlabels ; swappointlabels := false ;
 
-def do_drawpointlabels text t =
+def mfun_draw_pointlabels text t =
     for _i_=0 upto length(_c_) :
         pair _u_ ; _u_ := unitvector(direction _i_ of _c_) rotated if swappointlabels : - fi 90 ;
         pair _p_ ; _p_ := (point _i_ of _c_) ;
@@ -1013,13 +1013,13 @@ enddef;
 numeric tickstep   ; tickstep   := 5mm ;
 numeric ticklength ; ticklength := 2mm ;
 
-def drawxticks expr c = path _c_ ; _c_ := c ; do_drawxticks enddef ;
-def drawyticks expr c = path _c_ ; _c_ := c ; do_drawyticks enddef ;
-def drawticks  expr c = path _c_ ; _c_ := c ; do_drawticks  enddef ;
+def drawxticks expr c = path _c_ ; _c_ := c ; mfun_draw_xticks enddef ;
+def drawyticks expr c = path _c_ ; _c_ := c ; mfun_draw_yticks enddef ;
+def drawticks  expr c = path _c_ ; _c_ := c ; mfun_draw_ticks  enddef ;
 
 % Adding eps prevents disappearance due to rounding errors.
 
-def do_drawxticks text t =
+def mfun_draw_xticks text t =
     for i=0 step -tickstep until xpart llcorner _c_ - eps :
         if (i<=xpart lrcorner _c_) :
         normaldraw (i,-ticklength)--(i,ticklength) _ori_opt_ t ;
@@ -1033,7 +1033,7 @@ def do_drawxticks text t =
     normaldraw (llcorner _c_ -- ulcorner _c_) shifted (-xpart llcorner _c_,0) _ori_opt_ t ;
 enddef ;
 
-def do_drawyticks text t =
+def mfun_draw_yticks text t =
     for i=0 step -tickstep until ypart llcorner _c_ - eps :
         if (i<=ypart ulcorner _c_) :
             normaldraw (-ticklength,i)--(ticklength,i) _ori_opt_ t ;
@@ -1047,7 +1047,7 @@ def do_drawyticks text t =
     normaldraw (llcorner _c_ -- lrcorner _c_) shifted (0,-ypart llcorner _c_) _ori_opt_ t ;
 enddef ;
 
-def do_drawticks text t =
+def mfun_draw_ticks text t =
     drawxticks _c_ t ;
     drawyticks _c_ t ;
 enddef ;
@@ -1936,7 +1936,7 @@ enddef ;
 
 % under construction
 
-vardef straightpath(expr a, b, method) =
+vardef straightpath (expr a, b, method) =
     if (method<1) or (method>6)  :
         (a--b)
     elseif method = 1 :
@@ -2033,10 +2033,6 @@ vardef asciistring (expr s) =
         fi ;
     endfor ;
     ss
-enddef ;
-
-vardef setunstringed (expr s, v) =
-    scantokens(cleanstring(s)) := v ;
 enddef ;
 
 vardef setunstringed (expr s, v) =
