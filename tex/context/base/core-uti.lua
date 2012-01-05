@@ -53,10 +53,18 @@ end
 
 job.comment(format("version: %1.2f",job.version))
 
+local enabled = true
+
+directives.register("job.save",function(v) enabled = v end)
+
+function job.disablesave() -- can be command
+    enabled = false
+end
+
 function job.initialize(loadname,savename)
     job.load(loadname) -- has to come after  structure is defined !
     luatex.registerstopactions(function()
-        if not status.lasterrorstring or status.lasterrorstring == "" then
+        if enabled and not status.lasterrorstring or status.lasterrorstring == "" then
             job.save(savename)
         end
     end)
@@ -225,11 +233,17 @@ statistics.register("startup time", function()
 end)
 
 statistics.register("jobdata time",function()
-    if statistics.elapsedindeed(_save_) or statistics.elapsedindeed(_load_) or #_others_ > 0 then
+    if enabled then
         if #_others_ > 0 then
-            return format("%s seconds saving, %s seconds loading, other files: %s", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_),concat(_others_," "))
+            return format("%s seconds saving, %s seconds loading, other files: %s",statistics.elapsedtime(_save_),statistics.elapsedtime(_load_),concat(_others_," "))
         else
-            return format("%s seconds saving, %s seconds loading", statistics.elapsedtime(_save_), statistics.elapsedtime(_load_))
+            return format("%s seconds saving, %s seconds loading",statistics.elapsedtime(_save_),statistics.elapsedtime(_load_))
+        end
+    else
+        if #_others_ > 0 then
+            return format("nothing saved, %s seconds loading, other files: %s",statistics.elapsedtime(_load_),concat(_others_," "))
+        else
+            return format("nothing saved, %s seconds loading",statistics.elapsedtime(_load_))
         end
     end
 end)

@@ -22,6 +22,9 @@
 
 \definesystemattribute[trigger][public]
 
+% There will be two: (1) page i.e. before shipout cq. impose cache
+% (2) at shipout
+
 \def\finalizeobjectbox #1{\ctxlua{nodes.handlers.finalize(tex.box[\number#1])}}
 \def\finalizeshipoutbox#1{\ctxlua{nodes.handlers.finalize(tex.box[\number#1])}}
 

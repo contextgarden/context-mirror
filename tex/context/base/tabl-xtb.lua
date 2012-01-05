@@ -23,6 +23,8 @@ this mechamism will be improved so that it can replace its older cousin.
 
 ]]--
 
+-- todo: use linked list instead of r/c array
+
 local texdimen    = tex.dimen
 local texcount    = tex.count
 local texbox      = tex.box
@@ -30,6 +32,7 @@ local texsetcount = tex.setcount
 local texsetdimen = tex.setdimen
 
 local format      = string.format
+local concat      = table.concat
 
 local context                 = context
 local context_beginvbox       = context.beginvbox
@@ -54,7 +57,11 @@ local v_normal                = variables.normal
 local v_width                 = variables.width
 local v_repeat                = variables["repeat"]
 
-xtables = { }
+xtables = { } -- maybe in typesetters
+
+local trace_xtable  = false  trackers.register("xtable.construct", function(v) trace_xtable = v end)
+
+local report_xtable = logs.reporter("xtable")
 
 local head_mode = 1
 local foot_mode = 2
@@ -150,37 +157,6 @@ function xtables.initialize_reflow_width()
     data.currentcolumn = c
 end
 
-function xtables.initialize_reflow_height()
-    local r = data.currentrow
-    local c = data.currentcolumn + 1
-    local rows = data.rows
-    local row = rows[r]
-    while row[c].span do -- can also be previous row ones
-        c = c + 1
-    end
-    data.currentcolumn = c
-    local widths = data.widths
-    local w = widths[c]
-    local drc = row[c]
-    for x=1,drc.nx-1 do
-        w = w + widths[c+x]
-    end
-    texdimen.x_table_width = w
-    local dimensionstate = drc.dimensionstate or 0
-    if dimensionstate == 1 or dimensionstate == 3 then
-        -- width was fixed so height is known
-        texcount.x_table_skip_mode = 1
-    elseif dimensionstate == 2 then
-        -- height is enforced
-        texcount.x_table_skip_mode = 1
-    elseif data.autowidths[c] then
-        -- width has changed so we need to recalculate the height
-        texcount.x_table_skip_mode = 0
-    else
-        texcount.x_table_skip_mode = 1
-    end
-end
-
 function xtables.set_reflow_width()
     local r = data.currentrow
     local c = data.currentcolumn
@@ -244,14 +220,45 @@ function xtables.set_reflow_width()
     data.currentcolumn = c
 end
 
+function xtables.initialize_reflow_height()
+    local r = data.currentrow
+    local c = data.currentcolumn + 1
+    local rows = data.rows
+    local row = rows[r]
+    while row[c].span do -- can also be previous row ones
+        c = c + 1
+    end
+    data.currentcolumn = c
+    local widths = data.widths
+    local w = widths[c]
+    local drc = row[c]
+    for x=1,drc.nx-1 do
+        w = w + widths[c+x]
+    end
+    texdimen.x_table_width = w
+    local dimensionstate = drc.dimensionstate or 0
+    if dimensionstate == 1 or dimensionstate == 3 then
+        -- width was fixed so height is known
+        texcount.x_table_skip_mode = 1
+    elseif dimensionstate == 2 then
+        -- height is enforced
+        texcount.x_table_skip_mode = 1
+    elseif data.autowidths[c] then
+        -- width has changed so we need to recalculate the height
+        texcount.x_table_skip_mode = 0
+    else
+        texcount.x_table_skip_mode = 1
+    end
+end
+
 function xtables.set_reflow_height()
     local r = data.currentrow
     local c = data.currentcolumn
     local rows = data.rows
     local row = rows[r]
-    while row[c].span do -- we could adapt drc.nx instead
-        c = c + 1
-    end
+--     while row[c].span do -- we could adapt drc.nx instead
+--         c = c + 1
+--     end
     local tb = texbox.x_table_box
     local drc = row[c]
     if not data.fixedrows[r] then --  and drc.dimensionstate < 2
@@ -264,8 +271,8 @@ function xtables.set_reflow_height()
             depths[r] = depth
         end
     end
-    c = c + drc.nx - 1
-    data.currentcolumn = c
+--     c = c + drc.nx - 1
+--     data.currentcolumn = c
 end
 
 function xtables.initialize_construct()
@@ -301,14 +308,14 @@ function xtables.set_construct()
     local c = data.currentcolumn
     local rows = data.rows
     local row = rows[r]
-    while row[c].span do -- can also be previous row ones
-        c = c + 1
-    end
+--     while row[c].span do -- can also be previous row ones
+--         c = c + 1
+--     end
     local drc = row[c]
     -- this will change as soon as in luatex we can reset a box list without freeing
     drc.list = copy_node_list(texbox.x_table_box)
-    c = c + drc.nx - 1
-    data.currentcolumn = c
+--     c = c + drc.nx - 1
+--     data.currentcolumn = c
 end
 
 function xtables.reflow_width()
@@ -443,6 +450,24 @@ function xtables.construct()
     local leftmargindistance = settings.leftmargindistance
     local rightmargindistance = settings.rightmargindistance
     -- ranges can be mixes so we collect
+
+    if trace_xtable then
+        for r=1,data.nofrows do
+            local line = { }
+            for c=1,data.nofcolumns do
+                local cell =rows[r][c]
+                if cell.list then
+                    line[#line+1] = "list"
+                elseif cell.span then
+                    line[#line+1] = "span"
+                else
+                    line[#line+1] = "none"
+                end
+            end
+            report_xtable("%3d : %s",r,concat(line," "))
+        end
+    end
+
     local ranges = {
         [head_mode] = { },
         [foot_mode] = { },
@@ -489,12 +514,14 @@ function xtables.construct()
             if c < nofcolumns then
                 step = step + columndistance + distances[c]
             end
+            local kern = new_kern(step)
             if stop then
-                local kern = new_kern(step)
                 stop.prev = kern
                 stop.next = kern
-                stop = kern
+            else -- can be first spanning next row (ny=...)
+                start = kern
             end
+            stop = kern
         end
         if start then
             if rightmargindistance > 0 then

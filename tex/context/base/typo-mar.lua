@@ -785,12 +785,12 @@ end
 -- go horizontal. So this needs more testing.
 
 prependaction("finalizers",   "lists",       "typesetters.margins.localhandler")
-prependaction("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
+-- prependaction("vboxbuilders", "normalizers", "typesetters.margins.localhandler")
 prependaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")
 prependaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")
 
 disableaction("finalizers",   "typesetters.margins.localhandler")
-disableaction("vboxbuilders", "typesetters.margins.localhandler")
+-- disableaction("vboxbuilders", "typesetters.margins.localhandler")
 disableaction("mvlbuilders",  "typesetters.margins.globalhandler")
 disableaction("shipouts",     "typesetters.margins.finalhandler")
 
