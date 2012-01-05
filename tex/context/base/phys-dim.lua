@@ -261,8 +261,9 @@ local short_prefixes_to_long = {
     Y  = "Yotta",
 }
 
-local short_units_to_long = {
+local short_units_to_long = { -- I'm not sure about casing
     m  = "Meter",
+    Hz = "Hertz",
     hz = "Hertz",
     u  = "Hour",
     h  = "Hour",
@@ -270,7 +271,12 @@ local short_units_to_long = {
     g  = "Gram",
     n  = "Newton",
     v  = "Volt",
+
     l  = "Liter",
+ -- w  = "Watt",
+    W  = "Watt",
+ -- a  = "Ampere",
+    A  = "Ampere",
 
     Litre = "Liter",
     Metre = "Meter",
