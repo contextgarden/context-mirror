@@ -487,6 +487,7 @@
 
 \def\float_begin_group      {\begingroup}
 \def\float_end_group        {\carryoverpar\endgroup}
+\def\float_end_split_group  {\endgroup}
 
 \def\float_begin_text_group {\begingroup\let\float_end_group\relax}
 \def\float_end_text_group   {\endgroup}
@@ -502,7 +503,9 @@
    \v!text,\v!opposite}% \v!page
 
 \unexpanded\def\place_next_float_box_split
-  {\splitfloat{\place_next_float_box_normal}}
+  {\let\splitfloatfinalizer\float_end_split_group
+   \let\float_end_group\relax
+   \splitfloat{\place_next_float_box_normal}}
 
 \unexpanded\def\place_next_float_box_normal
   {\ifsomefloatwaiting

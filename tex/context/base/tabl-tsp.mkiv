@@ -28,51 +28,6 @@
 
 % there is no need for a tracked structure number here
 
-\newcount\noffloatssplits
-
-\unexpanded\def\setupfloatsplitting
-  {\dodoubleargument\getparameters[\??si]}
-
-\newif\ifinsidesplitfloat % will become chardef
-
-\newtoks \everysplitfloatsetup
-
-\def\splitfloat
-  {\dosingleempty\dosplitfloat}
-
-\ifx\floatcaptionsuffix\undefined \else
-  \let\floatcaptionsuffix\empty % will become \splitfloatcaptionsuffix
-\fi
-
-\def\extrasplitfloatlines{0}
-
-\def\dosplitfloat[#1]#2% nog dubbele refs
-  {\bgroup
-   \global\setfalse\splitfloatdone
-   \aftergroup\checksplitfloat
-   \insidefloattrue
-   \insidesplitfloattrue
-   \getparameters[\??si][#1]%
-   \global\noffloatssplits\zerocount
-   \def\floatcaptionsuffix{\convertnumber\@@siconversion\noffloatssplits}%
-   \let\extrasplitfloatlines\@@silines
-   \the\everysplitfloatsetup
-   \def\splitfloatcommand{#2}%
-   \global\settrue \onlyonesplitofffloat
-   \global\setfalse\somenextsplitofffloat
-   \dopushsavedfloats
-   \@@sibefore
-   \let\next} % \bgroup
-
-\def\checksplitfloat
-  {\ifconditional\splitfloatdone\else
-      \blank{\tttf \getmessage\m!floatblocks{13}\empty}\blank
-      \showmessage\m!floatblocks{13}\empty
-   \fi}
-
-\settrue \onlyonesplitofffloat
-\setfalse\somenextsplitofffloat
-
 %D When \type {inbetween} is made empty instead of the
 %D default \type {\page}, we will get delayed flushing
 %D and text may continue below the graphic.
@@ -100,7 +55,56 @@
 %D \dorecurse{10}{\input tufte }
 %D \stoptyping
 
+\newcount\noffloatssplits
+
+\settrue \onlyonesplitofffloat
+\setfalse\somenextsplitofffloat
+
 \newconditional\splitfloatdone
+
+\newif\ifinsidesplitfloat % will become chardef
+
+\newtoks\everysplitfloatsetup
+
+\def\extrasplitfloatlines{0}
+
+\let\splitfloatfinalizer\relax
+
+\ifx\floatcaptionsuffix\undefined \else
+  \let\floatcaptionsuffix\empty % will become \splitfloatcaptionsuffix
+\fi
+
+\unexpanded\def\setupfloatsplitting
+  {\dodoubleargument\getparameters[\??si]}
+
+\unexpanded\def\splitfloat
+  {\dosingleempty\dosplitfloat}
+
+\def\dosplitfloat[#1]#2% nog dubbele refs
+  {\bgroup
+   \global\setfalse\splitfloatdone
+   \aftergroup\checksplitfloat
+   \insidefloattrue
+   \insidesplitfloattrue
+   \getparameters[\??si][#1]%
+   \global\noffloatssplits\zerocount
+   \def\floatcaptionsuffix{\convertnumber\@@siconversion\noffloatssplits}%
+   \let\extrasplitfloatlines\@@silines
+   \the\everysplitfloatsetup
+   \def\splitfloatcommand{#2}%
+   \global\settrue \onlyonesplitofffloat
+   \global\setfalse\somenextsplitofffloat
+   \dopushsavedfloats
+   \@@sibefore
+   \let\next} % \bgroup
+
+\unexpanded\def\checksplitfloat
+  {\ifconditional\splitfloatdone
+     \splitfloatfinalizer % a weird place (could interfere with flushing)
+   \else
+     \blank{\tttf \getmessage\m!floatblocks{13}\empty}\blank
+     \showmessage\m!floatblocks{13}\empty
+   \fi}
 
 \def\dodowithsplitofffloat
   {\dowithnextbox
