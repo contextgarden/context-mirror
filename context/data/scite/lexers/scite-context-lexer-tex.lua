@@ -395,7 +395,7 @@ local startluacode           = token("embedded", startlua)
 local stopluacode            = token("embedded", stoplua)
 
 local metafunenvironment     = ( P("use") + P("reusable") + P("unique") ) * ("MPgraphic")
-                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("extensions") + P("graphic") )
+                             + P("MP") * ( P("code")+ P("page") + P("inclusions") + P("initializations") + P("definitions") + P("extensions") + P("graphic") )
 
 local startmetafun           = P("\\start") * metafunenvironment
 local stopmetafun            = P("\\stop")  * metafunenvironment

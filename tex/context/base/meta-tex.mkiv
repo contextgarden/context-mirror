@@ -16,127 +16,84 @@
 \unprotect
 
 % Ok, we support this in MkIV because Mojca kept the pressure on. It
-% looks a bit like a hack.
+% looks a bit like a hack. But in fact this method is obsolete and
+% eventually might go away.
 
-\long\def\startTeXtexts#1\stopTeXtexts
+\unexpanded\def\startTeXtexts#1\stopTeXtexts
   {#1}
 
-\long\def\TeXtext
-  {\dosingleempty\doTeXtext}
+\let\stopTeXtexts\relax
 
-\long\def\doTeXtext[#1]#2#3% contrary to mkii we don't process yet but we do expand
-  {\long\setxvalue{@@st@@::#2}{\noexpand\dodoTeXtext{#1}{#3}}}
+\def\TeXtext
+  {\dosingleempty\mp_textext}
 
-\long\def\dodoTeXtext#1#2%
+\def\mp_textext[#1]#2#3% contrary to mkii we don't process yet but we do expand
+  {\setxvalue{\??gx:#2}{\mp_textext_indeed{#1}{#3}}}
+
+\unexpanded\def\mp_textext_indeed#1#2%
   {\begingroup
-   \setbox\nextbox\hbox{\executeifdefined{textext@@#1}\firstofoneargument{#2}}%
-   \executeifdefined{textext::#1}{\getvalue{textext::depth}}%
+   \setbox\nextbox\hbox{#2}%
+   \executeifdefined{\??gx:m:#1}{\getvalue{\??gx:m:depth}}%
    \box\nextbox
    \endgroup}
 
 \def\getTeXtext#1%
-  {\getvalue{@@st@@::#1}}
+  {\getvalue{\??gx:#1}}
 
-\setvalue{textext::d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
-\setvalue{textext::n}{}                                                     % unchecked
+\setvalue{\??gx:m:d}{\setbox\nextbox\hbox{\lower\dp\nextbox\box\nextbox}}  % unchecked
+\setvalue{\??gx:m:n}{}                                                     % unchecked
 
-\setvalue  {textext::depth}{\getvalue{textext::d}}
-\setvalue{textext::nodepth}{\getvalue{textext::n}}
+\setvalue  {\??gx:m:depth}{\getvalue{\??gx:m:d}}
+\setvalue{\??gx:m:nodepth}{\getvalue{\??gx:m:n}}
 
 % \definetextext[framed]{\framed}
 %
 % \startMPcode
 %     draw \sometxt[framed]{black} rotated 45 ;
 % \stopMPcode
-
-% \unexpanded\def\definetextext[#1]#2{\setvalue{@@st@@[#1]}{#2}\setvalue{@@st@@[#1] }{#2}} % we don't grab spaces after [#1]
-%       \long\def\sometxt         #1#{\dosometxt{#1}}  % grab optional [args]
-%       \long\def\dosometxt      #1#2{textext.drt("\ifcsname @@st@@#1\endcsname\csname @@st@@#1\endcsname{#2}\else#2\fi")}
-
+%
 % But Mojca wanted more! Two arguments.
 %
 % \definetextext[framed]{\framed}
 %
 % \startMPcode
 %     draw \sometxt{This is for} rotated 45 ;
-%     draw \sometxt[framed][ss,16pt]{Mojca's};
+%     draw \sometxt[framed][foregroundstyle=bold]{Mojca's};
 %     draw \sometxt[framed]{eyes only!} rotated -45 ;
 % \stopMPcode
 
-% a tex one:
-%
-% \unexpanded\def\definetextext     [#1]#2{\setvalue{@@st@@#1}{#2}}
-%            \def\sometxt              #1#{\dosometxt{#1}}
-%            \def\dosometxt           #1#2{textext.drt("\dodosometxt#1{#2}")}
-%
-% \unexpanded\def\dodosometxt             {\doifnextoptionalelse\dododosometxt\relax}
-%           \def\dododosometxt       [#1]{\dodododosometxt{#1}}
-%           \def\dodododosometxt       #1{\doifnextoptionalelse{\dododododosometxt{#1}}{\getsometxt{#1}}}
-%           \def\dododododosometxt #1[#2]{\switchtobodyfont[#2]\getsometxt{#1}}
-%           \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
-%
-%  or:
-%
-% \unexpanded\def\dodosometxt             {\dodoubleempty\dododosometxt}
-%            \def\dododosometxt           {\ifsecondargument
-%                                            \expandafter\dododosometxtA
-%                                          \else\iffirstargument
-%                                            \expandafter\expandafter\expandafter\dododosometxtB
-%                                          \else
-%                                            \expandafter\expandafter\expandafter\dododosometxtC
-%                                          \fi\fi}
-%            \def\dododosometxtA[#1][#2]#3{\getsometxt{#1}{\switchtobodyfont[#2]#3}}
-%            \def\dododosometxtB[#1][#2]#3{\getsometxt{#1}{#3}}
-%            \def\dododosometxtC[#1][#2]#3{#3}
-%            \def\getsometxt          #1#2{\csname @@st@@#1\endcsname{#2}}
-%
-% a nicer variant:
-
 \unexpanded\def\definetextext[#1]%
   {\def\currenttextext{#1}%
-   \dosingleempty\dodefinetextext}
+   \doifnextoptionalelse\mp_define_textext_one\mp_define_textext_zero}
 
-\def\dodefinetextext
-  {\iffirstargument
-     \expandafter\dodefinetextextone
-   \else
-     \expandafter\dodefinetextextzero
-   \fi}
+\def\mp_define_textext_one {\setvalue{\??gx:1:\currenttextext}}
+\def\mp_define_textext_zero{\setvalue{\??gx:0:\currenttextext}}
 
-\def\dodefinetextextone     {\setvalue{@@st@@one\currenttextext}}
-\def\dodefinetextextzero[#1]{\setvalue{@@st@@zero\currenttextext}}
+\def\sometxt#1#{\mp_some_txt{#1}}
 
-\def\sometxt#1#%
-  {\dosometxt{#1}}
+\def\mp_some_txt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
+  {textext.drt("\mpsometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
 
-\def\dosometxt#1#2% we need to capture embedded quotes (a bit messy as later on textext is filtered
-  {textext.drt("\dodosometxt#1{\ctxlua{metapost.escaped(\!!bs#2\!!es)}}")}
 
-\unexpanded\def\dodosometxt
-  {\dosingleempty\dododosometxt}
+\unexpanded\def\mpsometxt % no _ catcode
+  {\doifnextoptionalelse\mp_some_txt_indeed_yes\mp_some_txt_indeed_nop}
 
-\def\dododosometxt
-  {\iffirstargument
-     \expandafter\dosometxtsome
-   \else
-     \expandafter\dosometxtzero
-   \fi}
-
-\def\dosometxtsome[#1]%
+\def\mp_some_txt_indeed_yes[#1]%
   {\def\currenttextext{#1}%
-   \csname @@st@@%
-     \ifcsname  @@st@@one#1\endcsname  one\else
-     \ifcsname @@st@@zero#1\endcsname zero\else
-                                      none\fi\fi
+   \csname\??gx:%
+     \ifcsname\??gx:0:#1\endcsname0\else
+     \ifcsname\??gx:1:#1\endcsname1\else
+                                  ?\fi\fi
    \endcsname}
 
-\def\dosometxtzero[#1]%
+\def\mp_some_txt_indeed_nop
   {}
 
-\def\@@st@@one  {\dosingleempty\do@@st@@one}
-\def\do@@st@@one{\csname  @@st@@one\currenttextext\endcsname}
-\def\@@st@@zero {\csname @@st@@zero\currenttextext\endcsname}
-\def\@@st@@none {}
+\setvalue{\??gx:?}{}
+\setvalue{\??gx:0}{\csname\??gx:0:\currenttextext\endcsname}
+\setvalue{\??gx:1}{\dosingleempty\mp_gx_one}
+
+\def\mp_gx_one{\csname\??gx:1:\currenttextext\endcsname}
 
 % \definetextext[framed][#1]#2{\framed[width=4cm]{\switchtobodyfont[#1]#2}}
 % \definetextext[simple]{\framed[width=8cm]}
@@ -145,7 +102,7 @@
 %
 %  \startMPcode
 %      draw \sometxt{This is for} rotated 45 ;
-%      draw \sometxt [framed] [ss,16pt] {Mojca's};
+%      draw \sometxt[framed][ss,16pt] {Mojca's};
 %      draw \sometxt[framed]{eyes only!} rotated -45 ;
 %      draw \sometxt[simple]{Quotes "indeed" work!} rotated 180 ;
 %  \stopMPcode

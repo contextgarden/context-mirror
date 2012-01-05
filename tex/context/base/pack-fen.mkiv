@@ -28,62 +28,70 @@
 \unprotect
 
 \def\installleftframerenderer#1#2%
-  {\setvalue{l\@@frame@@\v!on#1}{\whateverleftframe{#2}}%
-   \expandafter\let\csname l\@@frame@@\v!off#1\expandafter\endcsname\csname l\@@frame@@\v!on#1\endcsname}
+  {\setvalue{\??hf l\v!on#1}{\whateverleftframe{#2}}%
+   \expandafter\let\csname\??hf l\v!off#1\expandafter\endcsname\csname\??hf l\v!on#1\endcsname}
 
 \def\installrightframerenderer#1#2%
-  {\setvalue{r\@@frame@@\v!on#1}{\whateverrightframe{#2}}%
-   \expandafter\let\csname r\@@frame@@\v!off#1\expandafter\endcsname\csname r\@@frame@@\v!on#1\endcsname}
+  {\setvalue{\??hf r\v!on#1}{\whateverrightframe{#2}}%
+   \expandafter\let\csname\??hf r\v!off#1\expandafter\endcsname\csname\??hf r\v!on#1\endcsname}
 
 \def\installtopframerenderer#1#2%
-  {\setvalue{t\@@frame@@\v!on#1}{\whatevertopframe{#2}}%
-   \expandafter\let\csname t\@@frame@@\v!off#1\expandafter\endcsname\csname t\@@frame@@\v!on#1\endcsname}
+  {\setvalue{\??hf t\v!on#1}{\whatevertopframe{#2}}%
+   \expandafter\let\csname\??hf t\v!off#1\expandafter\endcsname\csname\??hf t\v!on#1\endcsname}
 
 \def\installbottomframerenderer#1#2%
-  {\setvalue{b\@@frame@@\v!on#1}{\whateverbottomframe{#2}}%
-   \expandafter\let\csname b\@@frame@@\v!off#1\expandafter\endcsname\csname b\@@frame@@\v!on#1\endcsname}
+  {\setvalue{\??hf b\v!on#1}{\whateverbottomframe{#2}}%
+   \expandafter\let\csname\??hf b\v!off#1\expandafter\endcsname\csname\??hf b\v!on#1\endcsname}
 
-\def\setinstalledframedimensions
-  {\edef\overlaywidth {\the\frameddimenwd\space}%
-   \edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
-   \edef\overlaydepth {\the\frameddimendp\space}%
-   \edef\overlaycolor {\framedparameter\c!backgroundcolor}%
-   \edef\overlaylinecolor{\framedparameter\c!framecolor}%
-   \edef\overlaylinewidth{\the\ruledlinewidth}}
+\ifdefined \framed_overlay_initialize_indeed
 
-\newbox\specialframebox
+    \let\installedframedimensions\framed_overlay_initialize_indeed
+
+\else
+
+    \def\setinstalledframedimensions
+      {\edef\overlaywidth    {\the\frameddimenwd\space}%
+       \edef\overlayheight   {\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
+       \edef\overlaydepth    {\the\frameddimendp\space}%
+       \edef\overlaycolor    {\framedparameter\c!backgroundcolor}%
+       \edef\overlaylinecolor{\framedparameter\c!framecolor}%
+       \edef\overlaylinewidth{\the\ruledlinewidth}}
+
+\fi
+
+\newbox\b_framed_rendered
 
 \def\whateverleftframe#1%
   {\setinstalledframedimensions
-   \setbox\specialframebox\vbox to \overlayheight{\vss#1\vss}%
-   \setbox\specialframebox\hbox to \zeropoint{\box\specialframebox\hss}%
-   \ht\specialframebox\zeropoint
-   \dp\specialframebox\zeropoint
-   \box\specialframebox}
+   \setbox\b_framed_rendered\vbox to \overlayheight{\vss#1\vss}%
+   \setbox\b_framed_rendered\hbox to \zeropoint{\box\b_framed_rendered\hss}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
 
 \def\whateverrightframe#1%
   {\setinstalledframedimensions
-   \setbox\specialframebox\vbox to \overlayheight{\vss#1\vss}%
-   \setbox\specialframebox\hbox to \zeropoint{\hss\box\specialframebox}%
-   \ht\specialframebox\zeropoint
-   \dp\specialframebox\zeropoint
-   \box\specialframebox}
+   \setbox\b_framed_rendered\vbox to \overlayheight{\vss#1\vss}%
+   \setbox\b_framed_rendered\hbox to \zeropoint{\hss\box\b_framed_rendered}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
 
 \def\whatevertopframe#1%
   {\setinstalledframedimensions
-   \setbox\specialframebox\hbox to \overlaywidth{\hss#1\hss}%
-   \setbox\specialframebox\vbox to \zeropoint{\box\specialframebox\vss}%
-   \ht\specialframebox\zeropoint
-   \dp\specialframebox\zeropoint
-   \box\specialframebox
+   \setbox\b_framed_rendered\hbox to \overlaywidth{\hss#1\hss}%
+   \setbox\b_framed_rendered\vbox to \zeropoint{\box\b_framed_rendered\vss}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered
    \nointerlineskip}
 
 \def\whateverbottomframe#1%
   {\setinstalledframedimensions
-   \setbox\specialframebox\hbox to \overlaywidth{\hss#1\hss}%
-   \setbox\specialframebox\vbox to \zeropoint{\vss\box\specialframebox}%
-   \ht\specialframebox\zeropoint
-   \dp\specialframebox\zeropoint
-   \box\specialframebox}
+   \setbox\b_framed_rendered\hbox to \overlaywidth{\hss#1\hss}%
+   \setbox\b_framed_rendered\vbox to \zeropoint{\vss\box\b_framed_rendered}%
+   \ht\b_framed_rendered\zeropoint
+   \dp\b_framed_rendered\zeropoint
+   \box\b_framed_rendered}
 
 \protect \endinput

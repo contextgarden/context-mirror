@@ -581,6 +581,7 @@
 		<cd:constant name='blank' value='vide'/>
 		<cd:constant name='blockway' value='blockway'/>
 		<cd:constant name='bodyfont' value='policecorps'/>
+		<cd:constant name='boffset' value='boffset'/>
 		<cd:constant name='bookmark' value='marquepage'/>
 		<cd:constant name='bottom' value='inf'/>
 		<cd:constant name='bottomafter' value='bottomafter'/>
@@ -771,6 +772,7 @@
 		<cd:constant name='listtext' value='texteliste'/>
 		<cd:constant name='local' value='local'/>
 		<cd:constant name='location' value='emplacement'/>
+		<cd:constant name='loffset' value='loffset'/>
 		<cd:constant name='logo' value='logo'/>
 		<cd:constant name='logos' value='logos'/>
 		<cd:constant name='marcolor' value='couleurmarquage'/>
@@ -924,6 +926,7 @@
 		<cd:constant name='rightsubsentence' value='sousphrasedroite'/>
 		<cd:constant name='righttext' value='textedroit'/>
 		<cd:constant name='rightwidth' value='largeurdroite'/>
+		<cd:constant name='roffset' value='roffset'/>
 		<cd:constant name='rotation' value='rotation'/>
 		<cd:constant name='rule' value='ligne'/>
 		<cd:constant name='rulecolor' value='couleurligne'/>
@@ -1018,6 +1021,7 @@
 		<cd:constant name='titleright' value='titleright'/>
 		<cd:constant name='titlestyle' value='styletitre'/>
 		<cd:constant name='to' value='vers'/>
+		<cd:constant name='toffset' value='toffset'/>
 		<cd:constant name='tolerance' value='tolerance'/>
 		<cd:constant name='top' value='sup'/>
 		<cd:constant name='topdistance' value='distancesup'/>

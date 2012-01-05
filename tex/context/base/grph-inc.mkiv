@@ -227,8 +227,29 @@
 \def\docheckfiguremps     #1{\doprocessmpslikefigure{#1}}
 \def\docheckfiguremprun #1#2{\doprocesstexlikefigure{\useMPrun{#1}{#2}}}
 
+% \def\doscalefigure
+%   {\global\setbox\foundexternalfigure\vbox{\doscalebox\??ef{\dowithfigure{\box\foundexternalfigure}}}}
+
 \def\doscalefigure
-  {\global\setbox\foundexternalfigure\vbox{\doscalebox\??ef{\dowithfigure{\box\foundexternalfigure}}}}
+  {\global\setbox\foundexternalfigure\vbox{\scale[\v!figure]{\dowithfigure{\box\foundexternalfigure}}}}
+
+% quick hack: chaining \??ef via \s!parent happens when this is also a commandhandler
+
+\definescale
+  [\v!figure]
+  [\c!hfactor  =\@@efhfactor  ,
+   \c!wfactor  =\@@efwfactor  ,
+   \c!factor   =\@@effactor   ,
+   \c!maxwidth =\@@efmaxwidth ,
+   \c!maxheight=\@@efmaxheight,
+   \c!xscale   =\@@efxscale   ,
+   \c!yscale   =\@@efyscale   ,
+   \c!scale    =\@@efscale    ,
+   \c!sx       =\@@efsx       ,
+   \c!sy       =\@@efsy       ,
+   \c!width    =\@@efwidth    ,
+   \c!height   =\@@efheight   ,
+   \c!lines    =\@@eflines    ]
 
 \newconditional\testexternalfigureonly
 
