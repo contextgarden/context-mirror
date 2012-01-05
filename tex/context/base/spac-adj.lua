@@ -1,6 +1,6 @@
-if not modules then modules = { } end modules ['spac-par'] = {
+if not modules then modules = { } end modules ['spac-adj'] = {
     version   = 1.001,
-    comment   = "companion to spac-par.mkiv",
+    comment   = "companion to spac-adj.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

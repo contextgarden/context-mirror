@@ -15,15 +15,17 @@
 
 \unprotect
 
-%D A quick way to determine left|/|middle|/|right states
-%D (experimental).
+%D The code here has evolved over time and might not be the best
+%D around. Maybe much will be gone a some point.
 
-\setvalue{\??as\v!left  }{0}
-\setvalue{\??as\v!middle}{1}
-\setvalue{\??as\v!right }{2}
+\installcorenamespace {alignswitch}
+
+\letvalue{\??alignswitch\v!left  }\zerocount
+\letvalue{\??alignswitch\v!middle}\plusone
+\letvalue{\??alignswitch\v!right }\plustwo
 
 \def\setalignmentswitch#1%
-  {\chardef\alignmentswitch0\csname\??as#1\endcsname\relax}
+  {\chardef\alignmentswitch\csname\??alignswitch\ifcsname\??alignswitch#1\endcsname#1\else\v!left\fi\endcsname}
 
 \newcount   \noftrackedpagestates
 \newif      \ifpagestatemismatch
@@ -132,82 +134,79 @@
 
 % we can make more of these on top, but how to deal with mixed frozen states
 
-\definetwopasslist\s!paragraph \newcount \nofraggedparagraphs
+\definetwopasslist\s!paragraph \newcount\nofraggedparagraphs
 
 \def\signalrightpage  {\dotrackpagestate      \s!paragraph\nofraggedparagraphs}
 \def\doifrightpageelse{\doifrightpagestateelse\s!paragraph\nofraggedparagraphs}
 
-\newcount\pagesignallevel
-
-\unexpanded\def\startsignalrightpage % one may do a \postsignalrightplace
-  {\advance\pagesignallevel\plusone
-   \presignalrightpage
-   \let\signalrightpage\relax
-   \let\presignalrightpage\relax
-   \let\startsignalrightpage\relax
-   \doifrightpageelse\donothing\donothing
-   \freezepagestate}
-
-\unexpanded\def\stopsignalrightpage
-  {\ifcase\pagesignallevel\or\postsignalrightpage\fi
-   \advance\pagesignallevel\minusone}
-
-% \def\setraggedparagraphmode
-%   {\signalrightpage\doifrightpageelse} % move it there
-
-\ifx\swapmargins\undefined \let\swapmargins\undefined \fi % todo
-
-\def\doifswappedrightpageelse#1#2% alleen in box construction !
-  {\doifrightpageelse
-     {#1}
-     {\scratchcounter\realpageno
-      \realpageno\realpagestateno\relax
-      \swapmargins
-      \realpageno\scratchcounter
-      #2}}
-
-\newbox\signaledrightpage % this way we can avoid interference, i.e. postpone placement
-
-\def\presignalrightpage {\global\setbox\signaledrightpage\hbox{\signalrightpage}}
-\def\postsignalrightpage{\ifvoid\signaledrightpage\else\box\signaledrightpage\fi}
-
-% The next feature is is used in:
+% no longer used
 %
-% \definenumber[test][way=bypage]
+% \newcount\pagesignallevel
 %
-% \def\Test
-%   {\incrementnumber[test]\rawnumber[test]/%
-%    \incrementnumber[test]\rawnumber[test]/%
-%    \incrementnumber[test]\rawnumber[test]\space
-%    \checkpagechange{oeps}\changedpage{oeps}\space
-%    \ifpagechanged TRUE\else FALSE\fi}
+% \unexpanded\def\startsignalrightpage % one may do a \postsignalrightplace
+%   {\advance\pagesignallevel\plusone
+%    \presignalrightpage
+%    \let\signalrightpage\relax
+%    \let\presignalrightpage\relax
+%    \let\startsignalrightpage\relax
+%    \doifrightpageelse\donothing\donothing
+%    \freezepagestate}
 %
-% \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
+% \unexpanded\def\stopsignalrightpage
+%   {\ifcase\pagesignallevel\or\postsignalrightpage\fi
+%    \advance\pagesignallevel\minusone}
 %
-% (adapted from cont-new.tex:)
-
-\newif\ifpagechanged \let\lastchangedpage\empty
-
-\def\docheckpagestatechange#1#2#3%
-  {\pagechangedfalse
-   \doforcedtrackpagestate{#2}{#3}%
-   \findtwopassdata{#2}{\number#3}%
-   \ifconditional\twopassdatafound
-     \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
-       \pagechangedtrue
-     \fi
-   \fi
-   \ifpagechanged
-     \letgvalue{#2:p:#1}\twopassdata
-     \globallet\lastchangedpage\twopassdata
-   \else
-     \globallet\lastchangedpage\realfolio
-   \fi}
-
-\def\changedpagestate#1#2%
-  {\executeifdefined{#2:p:#1}{0}}
-
-\def\checkpagechange#1{\docheckpagestatechange{#1}\s!paragraph\nofraggedparagraphs}
-\def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
+% \ifx\swapmargins\undefined \let\swapmargins\undefined \fi % todo
+%
+% \def\doifswappedrightpageelse#1#2% alleen in box construction !
+%   {\doifrightpageelse
+%      {#1}
+%      {\scratchcounter\realpageno
+%       \realpageno\realpagestateno\relax
+%       \swapmargins
+%       \realpageno\scratchcounter
+%       #2}}
+%
+% \newbox\signaledrightpage % this way we can avoid interference, i.e. postpone placement
+%
+% \def\presignalrightpage {\global\setbox\signaledrightpage\hbox{\signalrightpage}}
+% \def\postsignalrightpage{\ifvoid\signaledrightpage\else\box\signaledrightpage\fi}
+%
+% % The next feature is is used in:
+% %
+% % \definenumber[test][way=bypage]
+% %
+% % \def\Test
+% %   {\incrementnumber[test]\rawnumber[test]/%
+% %    \incrementnumber[test]\rawnumber[test]/%
+% %    \incrementnumber[test]\rawnumber[test]\space
+% %    \checkpagechange{oeps}\changedpage{oeps}\space
+% %    \ifpagechanged TRUE\else FALSE\fi}
+% %
+% % \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
+%
+% \newif\ifpagechanged \let\lastchangedpage\empty
+%
+% \def\docheckpagestatechange#1#2#3%
+%   {\pagechangedfalse
+%    \doforcedtrackpagestate{#2}{#3}%
+%    \findtwopassdata{#2}{\number#3}%
+%    \ifconditional\twopassdatafound
+%      \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
+%        \pagechangedtrue
+%      \fi
+%    \fi
+%    \ifpagechanged
+%      \letgvalue{#2:p:#1}\twopassdata
+%      \globallet\lastchangedpage\twopassdata
+%    \else
+%      \globallet\lastchangedpage\realfolio
+%    \fi}
+%
+% \def\changedpagestate#1#2%
+%   {\executeifdefined{#2:p:#1}{0}}
+%
+% \def\checkpagechange#1{\docheckpagestatechange{#1}\s!paragraph\nofraggedparagraphs}
+% \def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
 
 \protect \endinput
