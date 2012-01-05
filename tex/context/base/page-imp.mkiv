@@ -67,8 +67,6 @@
 \unexpanded\def\invokepagehandler#1%
   {\expandcheckedcsname{\??pp:h:}{#1}\v!normal}
 
-\let\pagehandler\invokepagehandler % only provided for downward compatibility
-
 \def\page_shipouts_handle
   {\csname\??pp:h:\ifcsname\??pp:h:\v_page_target_method\endcsname
      \v_page_target_method
