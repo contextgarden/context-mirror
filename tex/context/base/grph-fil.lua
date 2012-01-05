@@ -42,11 +42,11 @@ function jobfiles.run(name,action)
         if trace_run then
             report_run("processing file, changes in '%s', processing forced",name)
         end
-        local a = type(action)
-        if a == "function" then
-            a(name)
-        elseif a == "string" and action ~= "" then
-            os.execute(a)
+        local ta = type(action)
+        if ta == "function" then
+            action(name)
+        elseif ta == "string" and action ~= "" then
+            os.execute(action)
         else
             report_run("processing file, no action given for processing '%s'",name)
         end
