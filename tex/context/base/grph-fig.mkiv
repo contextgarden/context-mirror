@@ -98,9 +98,6 @@
 \def\dodefineexternalfigure[#1][#2]%
   {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][][][#2]}}
 
-\def\getexternalfigure#1% efef has 4 args already and take an 5th
-  {\wait} % OBSOLETE
-
 % \useexternalfigure[alpha][koe]
 % \useexternalfigure[beta] [koe]       [breedte=1cm]
 % \useexternalfigure[gamma][koe][alpha]
@@ -134,20 +131,6 @@
 
 \def\useexternalfigure
   {\doquadrupleempty\douseexternalfigure}
-
-% \def\douseexternalfigure[#1][#2][#3][#4]%
-%   {\doifelsenothing{#1}
-%      {\doifsomething{#2}
-%         {\doifassignmentelse{#3}
-%            {\setvalue{\??ef\??ef#2}{\doplaceexternalfigure[#2][#2][#3][#4]}}
-%            {\setvalue{\??ef\??ef#2}{\doplaceexternalfigure[#2][#2][][#4]}}}}
-%      {\doifelsenothing{#2}
-%         {\doifassignmentelse{#3}
-%            {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#1][][#3]}}
-%            {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#1][#3][#4]}}}
-%         {\doifassignmentelse{#3}
-%            {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#2][][#3]}}
-%            {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#2][#3][#4]}}}}}
 
 \def\douseexternalfigure[#1][#2][#3][#4]%
   {\doifelsenothing{#1}
@@ -262,101 +245,15 @@
   {\long\gdef\currentresourcecomment{#1}}
 
 \let\currentresourcecomment\empty
-
+
 \def\showexternalfigures % maybe run time command is better, but no core-run, unless figs-run ...
   {%\writestatus\m!system{for \string\showexternalfigures\space see \truefilename{x-res-20}.tex}
    \usemodule[res-20]\showexternalfigures} % so for the moment we do it this way
-
+
 \def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\overlaywidth,\c!height=\overlayheight]}
-
-%D Still undocumented! No one uses it I think, better be done with layers.
 
-% when there is need for this i'll reimplement it
-%
-% \newcount\efreference
-% \newdimen\efxsteps
-% \newdimen\efysteps
-%
-% \def\calculateefsteps
-%   {\ifnum0\@@exxmax=\zerocount
-%      \ifnum0\@@exymax=\zerocount
-%        \def\@@exymax{24}%
-%      \fi
-%      \efysteps\figureheight \divide\efysteps \@@exymax
-%      \efxsteps\efysteps
-%      \dimen0=\figurewidth
-%      \advance\dimen0 \efysteps
-%      \divide \dimen0 \efysteps
-%      \edef\@@exxmax{\number\dimen0}%
-%    \else
-%      \efxsteps\figurewidth  \divide\efxsteps \@@exxmax
-%      \efysteps\figureheight \divide\efysteps \@@exymax
-%    \fi}
-%
-% \def\efcomment#1(#2,#3)#4(#5,#6)%    {kader}(x,y)(h,b)[...]{tekst}
-%   {\def\complexefdocomment[##1]##2%
-%      {\position(#2,#3)%
-%         {\setnostrut
-%          \framed
-%            [\c!width=#5\efxsteps,
-%             \c!height=#6\exysteps,
-%             \c!offset=\v!none,
-%             \c!frame=#1,
-%             ##1]%
-%            {##2}}}%
-%    \complexorsimpleempty\efdocomment}
-%
-% \def\efnocomment(#1,#2)#3(#4,#5)%    (x,y)(h,b)[...]{tekst}
-%   {\def\complexefdonocomment[##1]##2{}%
-%    \complexorsimpleempty\efdonocomment}
-%
-% \def\efdomarker(#1,#2)#3#4%    (h,b){kader}{tekst}
-%   {\framed
-%      [\c!width=#1\efxsteps,
-%       \c!height=#2\efysteps,
-%       \c!offset=\v!none,
-%       \c!frame=#3]%
-%      {#4}}
-%
-% \def\effigure#1%
-%   {\position(0,0){\getvalue{#1}}}
-%
-% \def\efdoarea(#1,#2)#3#4%    (h,b){kader}{tekst}
-%   {\bgroup
-%    \setnostrut
-%    \framed
-%      [\c!width=#1\efxsteps,
-%       \c!height=#2\efysteps,
-%       \c!offset=\!!zeropoint,
-%       \c!frame=#3]
-%      {#4}%
-%    \egroup}
-%
-% \def\efgoto(#1,#2)#3[#4]%    (h,b)kader[ref]
-%   {\setbox0=\vbox{\efdoarea(#1,#2)#3{}}%
-%    \gotobox{\copy0}[#4]}
-%
-% \def\efmark(#1,#2)#3(#4,#5)#6[#7]%
-%   {\advance\efreference \plusone
-%    \position(#1,#2)
-%      {\hbox{\the\efreference}}%
-%    \position(#1,#2)
-%      {\gotosomeinternal\s!vwb{#7}\realfolio
-%         {\efdomarker(#4,#5)\v!on{\thisissomeinternal\s!vwa{#7}}}}}
-%
-% \def\eftext#1(#2,#3)#4(#5,#6)#7[#8]%
-%   {\advance\efreference \plusone
-%    \hbox
-%      {\quad
-%       \thisissomeinternal\s!vwb{#8}%
-%       \gotosomeinternal  \s!vwa{#8}\realfolio
-%         {\hbox to 1.5em{\the\efreference\presetgoto\hfill}}%
-%       \quad#1 (#2,#3) (#5,#6) [#8]\hfill}%
-%    \endgraf}
-%
-% \def\efthisis(#1,#2)#3[#4]%
-%   {\efdoarea(#1,#2){#3}{\pagereference[#4]}}
+%D Whatever
 
 \newbox\colorbarbox
 
@@ -573,7 +470,6 @@
    \c!maxheight=\@@efheight,
    \c!bodyfont=\bodyfontsize,
    \c!directory=,
-   \c!file=\f!utilityfilename.\f!figureextension,
    \c!radius=.5\bodyfontsize,
    \c!corner=\v!rectangular,
    \c!frame=\v!off,

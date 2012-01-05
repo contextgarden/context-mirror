@@ -224,13 +224,13 @@
 \def\objectplaceholder{NOT YET FLUSHED}%
 
 \def\presetobject#1#2% \global added
-  {\ifcsname\r!object#1::#2\endcsname\else
-     \global\@EA\let\csname\r!object#1::#2\endcsname\objectplaceholder
+  {\ifcsname\??ob:#1::#2\endcsname\else
+     \global\@EA\let\csname\??ob:#1::#2\endcsname\objectplaceholder
    \fi}
 
 \def\dosetobject#1#2#3% \initializepaper this will move to \everyshipout
   {% \initializepaper
-   \ifcsname\r!object#2::#3\endcsname
+   \ifcsname\??ob:#2::#3\endcsname
      \expandafter\gobblefivearguments
    \else % tzt, overload internal referenced objects to save entries
      \expandafter\dodosetobject
@@ -238,7 +238,7 @@
    {#1}{#2}{#3}}
 
 \def\resetobject#1#2%
-  {\letbeundefined{\r!object#1::#2}}
+  {\letbeundefined{\??ob:#1::#2}}
 
 %D \macros
 %D   {finalizeobjectbox}
@@ -271,7 +271,7 @@
   {\begingroup
    \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
    \scratchdimen\objectoffset
-   \@EA\xdef\csname\r!object#2::#3\endcsname
+   \@EA\xdef\csname\??ob:#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}%
         {\ifhbox\nextbox\hbox\else\vbox\fi}%
         {\number\nextboxwd}{\number\nextboxht}{\number\nextboxdp}%
@@ -288,10 +288,10 @@
    \endgroup}
 
 \def\getobject#1#2%
-  {\ifcsname\r!object#1::#2\endcsname
+  {\ifcsname\??ob:#1::#2\endcsname
       \begingroup
       \let\dohandleobject\dogetobject
-      \csname\r!object#1::#2\expandafter\endcsname
+      \csname\??ob:#1::#2\expandafter\endcsname
    \else
       {\infofont[object #1::#2]}%
    \fi}
@@ -336,7 +336,7 @@
    \let\objectwidth \!!zeropoint
    \let\objectheight\!!zeropoint
    \let\objectdepth \!!zeropoint
-   \csname\r!object#1::#2\endcsname}
+   \csname\??ob:#1::#2\endcsname}
 
 %D Apart from this kind of objects, that have typeset content,
 %D we can have low level driver specific objects. Both types
@@ -396,7 +396,7 @@
 %D \stoptyping
 
 \def\doifobjectfoundelse#1#2%
-  {\ifcsname\r!object#1::#2\endcsname
+  {\ifcsname\??ob:#1::#2\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments

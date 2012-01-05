@@ -32,7 +32,7 @@
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
-\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
+\unexpanded\def\writestatus#1#2{\ctxcommand{writestatus(\!!bs#1\!!es,\!!bs#2\!!es)}}
 
 % a handy helper (we can probably omit the tex.ctxcatcodes here as nowadays we seldom
 % change the regime at the tex end

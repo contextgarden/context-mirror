@@ -45,14 +45,14 @@
 
 \unexpanded\def\bitmapimage[#1]#2%
   {\hbox\bgroup
-     \getparameters[@@im][\c!color=rgb,\c!width=,\c!height=,\c!x=,\c!y=,#1]%
+     \getparameters[\??gb][\c!color=rgb,\c!width=,\c!height=,\c!x=,\c!y=,#1]%
      \ctxlua{figures.bitmapimage {
         data        = \!!bs#2\!!es,
-        xresolution = "\@@imx",
-        yresolution = "\@@imy",
-        colorspace  = "\@@imcolor",
-        width       = "\@@imwidth",
-        height      = "\@@imheight"
+        xresolution = "\@@gbx",
+        yresolution = "\@@gby",
+        colorspace  = "\@@gbcolor",
+        width       = "\@@gbwidth",
+        height      = "\@@gbheight"
      }}%
    \egroup}
 

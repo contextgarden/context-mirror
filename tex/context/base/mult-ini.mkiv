@@ -173,7 +173,7 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\unexpanded\def\definereferenceconstant #1#2{\expandafter\def\csname\r!prefix!#1\endcsname{#2}}
+\unexpanded\def\definereferenceconstant #1#2{\expandafter\def\csname\r!prefix!#1\endcsname{#2}} % obsolete
 \unexpanded\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
 
 %D A new one:
@@ -218,27 +218,7 @@
 %D not ask for interface specifications when these are already
 %D defined (like in cont-nl.tex and alike).
 
-\ifx\defaultinterface\undefined
-
-  \def\defaultinterface{english}
-
-  \def\selectinterface
-    {\def\docommand##1##2%
-       {\bgroup
-        \endlinechar\minusone
-        \global\read16 to ##1
-        \egroup
-        \doifnothing\currentinterface{\let##1=##2}%
-        \doifundefined{\s!prefix!##1}{\let##1=##2}}%
-     \docommand\currentinterface\defaultinterface
-     \writestatus{interface}{defining \currentinterface\space interface}%
-     \writeline
-     \docommand\currentresponses\currentinterface
-     \writestatus{interface}{using \currentresponses\space messages}%
-     \writeline
-     \let\selectinterface\relax}
-
-\else
+\ifdefined\defaultinterface
 
   \def\selectinterface
     {\writestatus{interface}{defining \currentinterface\space interface}%
@@ -247,10 +227,30 @@
      \writeline
      \let\selectinterface\relax}
 
+\else
+
+  \def\defaultinterface{english}
+
+  \def\selectinterface
+    {\def\selectinterface##1##2%
+       {\bgroup
+        \endlinechar\minusone
+        \global\read16 to ##1
+        \egroup
+        \doifnothing\currentinterface{\let##1=##2}%
+        \doifundefined{\s!prefix!##1}{\let##1=##2}}%
+     \selectinterface\currentinterface\defaultinterface
+     \writestatus{interface}{defining \currentinterface\space interface}%
+     \writeline
+     \selectinterface\currentresponses\currentinterface
+     \writestatus{interface}{using \currentresponses\space messages}%
+     \writeline
+     \let\selectinterface\relax}
+
 \fi
 
-\ifx\currentinterface\undefined \let\currentinterface\defaultinterface \fi
-\ifx\currentresponses\undefined \let\currentresponses\defaultinterface \fi
+\ifdefined\currentinterface \else \let\currentinterface\defaultinterface \fi
+\ifdefined\currentresponses \else \let\currentresponses\defaultinterface \fi
 
 %D \macros
 %D   {startinterface}
@@ -363,30 +363,27 @@
 \unexpanded\def\startmessages #1 library: #2 %
   {\bgroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
-   \catcode13=\activecatcode
-   \doifinsetelse{#1}{\currentresponses,all}\dostartmessages\nostartmessages{#2}}
+   \catcode\endoflineasciicode\activecatcode
+   \doifinsetelse{#1}{\currentresponses,all}\interfaces_messages_start_yes\interfaces_messages_start_nop{#2}}
 
-\def\dostartmessages#1#2\stopmessages
+\def\interfaces_messages_start_yes#1#2\stopmessages
   {\ctxlua{interfaces.setmessages("#1",\!!bs#2\!!es)}%
    \egroup}
 
-\def\nostartmessages#1#2\stopmessages
+\def\interfaces_messages_start_nop#1#2\stopmessages
   {\egroup}
+
+\let\stopmessages\relax
 
 \unexpanded\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
 
-\let\stopmessages\relax
-
-\unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\cldcontext{interfaces.getmessage("#1","#2")}}}
-\unexpanded\def\getmessage         #1#2{\cldcontext{interfaces.getmessage("#1","#2")}}
-
-%D Till here.
-
-\unexpanded\def\doifelsemessage    #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
-\unexpanded\def\showmessage      #1#2#3{\ctxlua{interfaces.showmessage("#1","#2",\!!bs#3\!!es)}}
-\unexpanded\def\writestatus        #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
+\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\cldcontext{interfaces.getmessage("#1","#2")}}}
+\unexpanded\def\getmessage       #1#2{\cldcontext{interfaces.getmessage("#1","#2")}}
+\unexpanded\def\doifelsemessage  #1#2{\ctxlua{interfaces.doifelsemessage("#1","#2")}}
+\unexpanded\def\showmessage    #1#2#3{\ctxlua{interfaces.showmessage("#1","#2",\!!bs#3\!!es)}}
+\unexpanded\def\writestatus      #1#2{\ctxcommand{writestatus("#1",\!!bs#2\!!es)}}
 
 %D \macros
 %D   {ifshowwarnings, ifshowmessages}
@@ -757,10 +754,10 @@
 
 %D We just ignore these:
 
-\unexpanded\def\startvariables{\gobbleuntil\stopvariables}
-\unexpanded\def\startconstants{\gobbleuntil\stopconstants}
-\unexpanded\def\startelements {\gobbleuntil\stopelements }
-\unexpanded\def\startcommands {\gobbleuntil\stopcommands }
+\unexpanded\def\startvariables{\gobbleuntil\stopvariables} \let\stopvariables\relax
+\unexpanded\def\startconstants{\gobbleuntil\stopconstants} \let\stopconstants\relax
+\unexpanded\def\startelements {\gobbleuntil\stopelements } \let\stopelements \relax
+\unexpanded\def\startcommands {\gobbleuntil\stopcommands } \let\stopcommands \relax
 
 %D For at the \LUA\ end (experiment):
 
@@ -795,11 +792,11 @@
 %D macro's can be enhanced with more testing facilities, but
 %D for the moment they suffice.
 
-\ifdefined\zwnj \else \edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe
-\ifdefined\zwj  \else \edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe
+\ifdefined\zwnj \else \edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe % maybe to char-utf.mkiv
+\ifdefined\zwj  \else \edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe % maybe to char-utf.mkiv
 
 %D Out of convenience we define the banners here. This might move
-%D to the Lua end.
+%D to the \LUA\ end.
 
 \def\contextbanner
   {ConTeXt \space
@@ -807,7 +804,7 @@
    fmt: \formatversion \space \space
    int: \currentinterface/\currentresponses}
 
-\def\showcontextbanner
+\unexpanded\def\showcontextbanner
   {\writeline\writebanner{\contextbanner}\writeline}
 
 \edef\formatversion

@@ -92,8 +92,6 @@
     \expandafter\end
 \fi
 
-%  todo: pdfsave pdfrestore pdfcolor... don't initialize them
-
 \ifnum\texengine=\luatexengine
     \directlua 0 { % this info is stored in the format
         lua.name[0] = "main ctx instance"
@@ -129,10 +127,22 @@
 \mathchardef\etexversion = \numexpr\eTeXversion*100+\expandafter\gobbleoneargument\eTeXrevision\relax
 
 %D First we define a simplified version of the \CONTEXT\
-%D protection mechanism.
+%D protection mechanism. Later we will implement a better
+%D variant.
 
-\def\protect  {\catcode`@=\the\catcode`@ \catcode`_=\the\catcode`_}
-\def\unprotect{\catcode`@=11             \catcode`_=11 }
+\def\unprotect
+  {\edef\protect
+     {\catcode`@=\the\catcode`@\relax
+      \catcode`?=\the\catcode`?\relax
+      \catcode`!=\the\catcode`!\relax
+      \catcode`_=\the\catcode`_\relax
+      \let\protect\relax}%
+   \catcode`@=11
+   \catcode`?=11
+   \catcode`!=11
+   \catcode`_=11 }
+
+\let\protect\relax
 
 \unprotect
 
@@ -191,23 +201,18 @@
 \countdef   \min_counter_value        =   125 \min_counter_value        = -"7FFFFFFF % beware, we use index 125 at the lua end
 \countdef   \max_counter_value        =   126 \max_counter_value        =  "7FFFFFFF % beware, we use index 126 at the lua end
 
-%countdef   \minusone               =   127 \minusone               = -1
-%chardef    \zerocount              =     0
-%chardef    \plusone                =     1
+\countdef   \zerocount                =   120 \zerocount                =  0
+\countdef   \plusone                  =   121 \plusone                  =  1
+\countdef   \minusone                 =   122 \minusone                 = -1
 
-\countdef   \zerocount              =   120 \zerocount              =  0
-\countdef   \plusone                =   121 \plusone                =  1
-\countdef   \minusone               =   122 \minusone               = -1
+\countdef   \normalpagebox            =   127 \normalpagebox            = 255  % hardcoded in pdftex/xetex
 
-%chardef    \normalpagebox                                          = 255
-\countdef   \normalpagebox          =   127 \normalpagebox          = 255  % hardcoded in pdftex/xetex
+% A few traditional allocations (these might go):
 
-% A few traditional allocations:
-
-\countdef   \count@                 =   255 % hm, used in \newif .. todo: replace it there
-\dimendef   \dimen@                 =     0
-\dimendef   \dimen@i                =     1 % global only
-\dimendef   \dimen@ii               =     2
+\countdef   \count@                   =   255 % hm, used in \newif .. todo: replace it there
+\dimendef   \dimen@                   =     0
+\dimendef   \dimen@i                  =     1 % global only
+\dimendef   \dimen@ii                 =     2
 
 %D So, effectively we start allocating from 256 and upwards. The
 %D inserts sit in the range 128 upto 254. Page numbers use the
@@ -215,7 +220,7 @@
 %D scratch registers upto 31 without problem but all others are
 %D reserved.
 
-\def\wlog#1{} % \def\wlog{\immediate\write\minusone} % write on log file (only)
+\let\wlog\gobbleoneargument % Let's get rid of this one.
 
 %D The allocators share a common helper macro.
 
@@ -242,7 +247,7 @@
 
 \normalprotected\def\newconstant   #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
 \normalprotected\def\setnewconstant#1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
-\normalprotected\def\setconstant     {}                                             % dummy
+\normalprotected\def\setconstant     {}                                             % dummy, no checking, so it warns
 
 % maybe setconstant with check
 
@@ -304,7 +309,8 @@
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a
 %D trick to force strings instead of tokens that take more memory.
-%D It's a trick to trick to force strings.
+%D It's a trick to trick to force strings. This macro is never used
+%D in \CONTEXT.
 
 \normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
 
@@ -343,14 +349,14 @@
 
 %D More allocations:
 
-\newskip \zeroskip     \zeroskip     = 0pt plus 0pt minus 0pt
-\newdimen\zeropoint    \zeropoint    = 0pt
-\newdimen\onepoint     \onepoint     = 1pt
-\newdimen\halfapoint   \halfapoint   = 0.5pt
-\newdimen\maxdimen     \maxdimen     = 16383.99999pt
-\newdimen\onebasepoint \onebasepoint = 1bp
-\newdimen\scaledpoint  \scaledpoint  = 1sp
-\newdimen\thousandpoint\thousandpoint= 1000pt
+\newskip \zeroskip      \zeroskip      = 0pt plus 0pt minus 0pt
+\newdimen\zeropoint     \zeropoint     = 0pt
+\newdimen\onepoint      \onepoint      = 1pt
+\newdimen\halfapoint    \halfapoint    = 0.5pt
+\newdimen\maxdimen      \maxdimen      = 16383.99999pt
+\newdimen\onebasepoint  \onebasepoint  = 1bp
+\newdimen\scaledpoint   \scaledpoint   = 1sp
+\newdimen\thousandpoint \thousandpoint = 1000pt
 
 \let\points   \onepoint
 \let\halfpoint\halfapoint
@@ -771,9 +777,9 @@
 %D The following registers are kind of standard and (for the moment)
 %D we define them here. This might change.
 
-\newskip  \bigskipamount          \bigskipamount       = 12pt plus 4pt minus 4pt
-\newskip  \medskipamount          \medskipamount       =  6pt plus 2pt minus 2pt
-\newskip  \smallskipamount        \smallskipamount     =  3pt plus 1pt minus 1pt
+\newskip \bigskipamount    \bigskipamount   = 12pt plus 4pt minus 4pt
+\newskip \medskipamount    \medskipamount   =  6pt plus 2pt minus 2pt
+\newskip \smallskipamount  \smallskipamount =  3pt plus 1pt minus 1pt
 
 \baselineskip  = 12pt
 \lineskip      =  1pt
@@ -788,7 +794,7 @@
   {\hskip\hideskip}
 
 \def\ialign % initialized \halign
-  {\everycr{}%
+  {\everycr\emptytoks
    \tabskip\zeroskip
    \halign}
 

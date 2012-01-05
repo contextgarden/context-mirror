@@ -1358,56 +1358,59 @@
 \newif\ifflushingcolumnfloats \flushingcolumnfloatstrue
 
 \def\doflushcolumnfloat
-  {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifprocessingverbatim\else\ifsomefloatwaiting
-     \bgroup
-     \forgetall
-     \let\doflushcolumnfloat\relax
-     \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
-     \ifdim\dimen0>\zeropoint
-       \dofloatsgetinfo\s!text
-       \ifdim\floatwidth>\hsize
-          % dropped ?
-       \else
-         \setbox2\vbox
-           {\blank[\rootfloatparameter\c!spacebefore]
-            \snaptogrid\vbox{\vskip\floatheight}}%
-         \advance\dimen0 \ht2
-         \ifdim\dimen0>\dimen2
-           \ifnum\mofcolumns<\nofcolumns
-             \advance\mofcolumns \plusone
-             \ifdim\ht\currenttopcolumnbox=\zeropoint
-               \dofloatsflush\s!text{1}%
-               \global\setbox\currenttopcolumnbox\vbox
-                 {\snaptogrid\vbox{\box\floatbox}
-                  \whitespace % nodig ?
-                  \blank[\rootfloatparameter\c!spaceafter]}%
-               \dimen4=\htdp\currenttopcolumnbox
-               \global\advance\vsize -\dimen4
-               \advance\dimen4 -\pagegoal
-               \global\pagegoal-\dimen4
-               \showmessage\m!columns{12}a%
-             \else
-               \showmessage\m!columns{12}b%
-             \fi
+  {\ifpostponecolumnfloats\else\ifflushingcolumnfloats\ifsomefloatwaiting
+     \doflushcolumnfloatindeed
+   \fi\fi\fi}
+
+\def\doflushcolumnfloatindeed
+  {\bgroup
+   \forgetall
+   \let\doflushcolumnfloat\relax
+   \getcolumnstatus\column\mofcolumns\total\dimen0\goal\dimen2\\%
+   \ifdim\dimen0>\zeropoint
+     \dofloatsgetinfo\s!text
+     \ifdim\floatwidth>\hsize
+        % dropped ?
+     \else
+       \setbox2\vbox
+         {\blank[\rootfloatparameter\c!spacebefore]
+          \snaptogrid\vbox{\vskip\floatheight}}%
+       \advance\dimen0 \ht2
+       \ifdim\dimen0>\dimen2
+         \ifnum\mofcolumns<\nofcolumns
+           \advance\mofcolumns \plusone
+           \ifdim\ht\currenttopcolumnbox=\zeropoint
+             \dofloatsflush\s!text{1}%
+             \global\setbox\currenttopcolumnbox\vbox
+               {\snaptogrid\vbox{\box\floatbox}
+                \whitespace % nodig ?
+                \blank[\rootfloatparameter\c!spaceafter]}%
+             \dimen4=\htdp\currenttopcolumnbox
+             \global\advance\vsize -\dimen4
+             \advance\dimen4 -\pagegoal
+             \global\pagegoal-\dimen4
+             \showmessage\m!columns{12}a%
            \else
-             \showmessage\m!columns{12}c%
+             \showmessage\m!columns{12}b%
            \fi
          \else
-           \ifhmode{\setbox0\lastbox}\fi% waar is die er in geslopen
-           \par
-           \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
-             \nobreak
-             \blank[\rootfloatparameter\c!spacebefore]
-             \nobreak
-           \fi
-           \dofloatsflush\s!text{1}%
-           \flushfloatbox
-           \blank[\rootfloatparameter\c!spaceafter]
+           \showmessage\m!columns{12}c%
          \fi
+       \else
+         \ifhmode{\setbox0\lastbox}\fi% waar is die er in geslopen
+         \par
+         \ifdim\prevdepth<\zeropoint \else % anders bovenaan kolom witruimte
+           \nobreak
+           \blank[\rootfloatparameter\c!spacebefore]
+           \nobreak
+         \fi
+         \dofloatsflush\s!text{1}%
+         \flushfloatbox
+         \blank[\rootfloatparameter\c!spaceafter]
        \fi
      \fi
-     \egroup
-   \fi\fi\fi\fi}
+   \fi
+   \egroup}
 
 %D This one looks complicated. Upto \type{\nofcolumns} floats
 %D are placed, taking the width of a float into account. This
