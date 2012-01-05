@@ -790,6 +790,8 @@
 % \starttabulate[preamble]
 % \starttabulate -> \starttabulate[|l|p|]
 
+% todo: commandhandler
+
 \def\definetabulate
   {\dotripleempty\dodefinetabulate}
 
@@ -875,7 +877,8 @@
   {\csname\e!start#1::\ifcsname\e!start#1::#2\endcsname#2\fi\endcsname}
 
 \setuvalue{\e!start\v!tabulate}%
-  {\bgroup\dodoubleempty\donormalstarttabulate}
+  {\bgroup % whole thing
+   \dodoubleempty\donormalstarttabulate}
 
 \def\doinhibitnestedtabulate
  {\setuvalue{\e!start\v!tabulate}%
@@ -920,7 +923,7 @@
      \whitespace
      \tabulateparameter\c!before
    \fi
-   \bgroup
+   \bgroup % settings
    \resetcharacteralign
    % todo: spacing around tabulate when bodyfont is set
    % expansion en test needed ?
@@ -1710,12 +1713,12 @@
    %
    \ifcase\tabulaterepeathead
      \ifinsidesplitfloat
-       \setbox\tabulatebox\vbox \bgroup
+       \global\setbox\tabulatebox\vbox \bgroup
       \else
         \startframedcontent[\tabulateparameter\c!frame]%
       \fi
    \else
-     \setbox\tabulatebox\vbox \bgroup
+     \global\setbox\tabulatebox\vbox \bgroup
    \fi
    %
    \dostarttagged\t!tabulate\empty
@@ -1729,19 +1732,23 @@
    %
    \ifcase\tabulaterepeathead
      \ifinsidesplitfloat
-       \egroup \splittabulatebox\tabulatebox
+       \egroup % box
+       \egroup % settings
+       \splittabulatebox\tabulatebox
      \else
        \stopframedcontent
+       \egroup
      \fi
    \else
-     \egroup \splittabulatebox\tabulatebox
+     \egroup % box
+     \egroup % settings
+     \splittabulatebox\tabulatebox
    \fi
    %
-   \egroup
    \ifinsidefloat \else
      \tabulateparameter\c!after
    \fi
-   \egroup}
+   \egroup} % whole thing
 
 % \egroup
 

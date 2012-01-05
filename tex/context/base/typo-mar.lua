@@ -31,7 +31,7 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 --     whatever[tag] = nil
 -- end
 --
--- function anchors.startmove(tag,how)
+-- function anchors.startmove(tag,how) -- save/restore nodes but they don't support moves
 --     local w = whatever[tag]
 --     if not w then
 --         -- error
@@ -84,93 +84,103 @@ local trace_marginstack = false  trackers.register("typesetters.margindata.stack
 
 local report_margindata = logs.reporter("typesetters","margindata")
 
-local tasks            = nodes.tasks
-local prependaction    = tasks.prependaction
-local disableaction    = tasks.disableaction
-local enableaction     = tasks.enableaction
+local tasks              = nodes.tasks
+local prependaction      = tasks.prependaction
+local disableaction      = tasks.disableaction
+local enableaction       = tasks.enableaction
 
-local variables        = interfaces.variables
+local variables          = interfaces.variables
 
-local conditionals     = tex.conditionals
+local conditionals       = tex.conditionals
 
-local v_top            = variables.top
-local v_depth          = variables.depth
-local v_local          = variables["local"]
-local v_global         = variables["global"]
-local v_left           = variables.left
-local v_right          = variables.right
-local v_flushleft      = variables.flushleft
-local v_flushright     = variables.flushright
-local v_inner          = variables.inner
-local v_outer          = variables.outer
-local v_margin         = variables.margin
-local v_edge           = variables.edge
-local v_default        = variables.default
-local v_normal         = variables.normal
-local v_yes            = variables.yes
-local v_first          = variables.first
+local v_top              = variables.top
+local v_depth            = variables.depth
+local v_local            = variables["local"]
+local v_global           = variables["global"]
+local v_left             = variables.left
+local v_right            = variables.right
+local v_flushleft        = variables.flushleft
+local v_flushright       = variables.flushright
+local v_inner            = variables.inner
+local v_outer            = variables.outer
+local v_margin           = variables.margin
+local v_edge             = variables.edge
+local v_default          = variables.default
+local v_normal           = variables.normal
+local v_yes              = variables.yes
+local v_continue         = variables.continue
+local v_first            = variables.first
 
-local has_attribute    = node.has_attribute
-local set_attribute    = node.set_attribute
-local unset_attribute  = node.unset_attribute
-local copy_node_list   = node.copy_list
-local slide_nodes      = node.slide
-local hpack_nodes      = node.hpack -- nodes.fasthpack not really faster here
-local traverse_id      = node.traverse_id
-local free_node_list   = node.flush_list
-local insert_node_after= node.insert_after
+local has_attribute      = node.has_attribute
+local set_attribute      = node.set_attribute
+local unset_attribute    = node.unset_attribute
+local copy_node_list     = node.copy_list
+local slide_nodes        = node.slide
+local hpack_nodes        = node.hpack -- nodes.fasthpack not really faster here
+local traverse_id        = node.traverse_id
+local free_node_list     = node.flush_list
+local insert_node_after  = node.insert_after
+local insert_node_before = node.insert_before
 
-local link_nodes       = nodes.link
+local link_nodes         = nodes.link
 
-local nodecodes        = nodes.nodecodes
-local listcodes        = nodes.listcodes
-local gluecodes        = nodes.gluecodes
-local whatsitcodes     = nodes.whatsitcodes
+local nodecodes          = nodes.nodecodes
+local listcodes          = nodes.listcodes
+local gluecodes          = nodes.gluecodes
+local whatsitcodes       = nodes.whatsitcodes
 
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local glue_code        = nodecodes.glue
-local kern_code        = nodecodes.kern
-local penalty_code     = nodecodes.penalty
-local whatsit_code     = nodecodes.whatsit
-local line_code        = listcodes.line
-local leftskip_code    = gluecodes.leftskip
-local rightskip_code   = gluecodes.rightskip
-local userdefined_code = whatsitcodes.userdefined
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+local glue_code          = nodecodes.glue
+local kern_code          = nodecodes.kern
+local penalty_code       = nodecodes.penalty
+local whatsit_code       = nodecodes.whatsit
+local line_code          = listcodes.line
+local leftskip_code      = gluecodes.leftskip
+local rightskip_code     = gluecodes.rightskip
+local userdefined_code   = whatsitcodes.userdefined
 
-local dir_code         = whatsitcodes.dir
-local localpar_code    = whatsitcodes.localpar
+local dir_code           = whatsitcodes.dir
+local localpar_code      = whatsitcodes.localpar
 
-local nodepool         = nodes.pool
+local nodepool           = nodes.pool
 
-local new_kern         = nodepool.kern
-local new_penalty      = nodepool.penalty
-local new_stretch      = nodepool.stretch
-local new_usernumber   = nodepool.usernumber
-local new_latelua      = nodepool.latelua
+local new_kern           = nodepool.kern
+local new_glue           = nodepool.glue
+local new_penalty        = nodepool.penalty
+local new_stretch        = nodepool.stretch
+local new_usernumber     = nodepool.usernumber
+local new_latelua        = nodepool.latelua
 
-local texcount         = tex.count
-local texdimen         = tex.dimen
-local texbox           = tex.box
+local texcount           = tex.count
+local texdimen           = tex.dimen
+local texbox             = tex.box
 
-local isleftpage       = layouts.status.isleftpage
-local registertogether = builders.paragraphs.registertogether
+local points             = number.points
 
-local a_margindata     = attributes.private("margindata")
+local isleftpage         = layouts.status.isleftpage
+local registertogether   = builders.paragraphs.registertogether
 
-local inline_mark      = nodepool.userids["margins.inline"]
+local jobpositions       = job.positions
+local getposition        = jobpositions.position
 
-local margins          =  { }
-typesetters.margins    = margins
+local a_margindata       = attributes.private("margindata")
 
-local locations        = { v_left, v_right, v_inner, v_outer } -- order might change
-local categories       = { }
-local displaystore     = { } -- [category][location][scope]
-local inlinestore      = { } -- [number]
-local nofsaved         = 0
-local nofstored        = 0
-local nofinlined       = 0
-local nofdelayed       = 0
+local inline_mark        = nodepool.userids["margins.inline"]
+
+local margins            =  { }
+typesetters.margins      = margins
+
+local locations          = { v_left, v_right, v_inner, v_outer } -- order might change
+local categories         = { }
+local displaystore       = { } -- [category][location][scope]
+local inlinestore        = { } -- [number]
+local nofsaved           = 0
+local nofstored          = 0
+local nofinlined         = 0
+local nofdelayed         = 0
+local h_anchors          = 0
+local v_anchors          = 0
 
 local mt1 = {
     __index = function(t,location)
@@ -339,7 +349,7 @@ end
 -- When the prototype inner/outer code that was part of this proved to be
 -- okay it was moved elsewhere.
 
-local status, nofstatus, anchors = { }, 0, 0
+local status, nofstatus = { }, 0
 
 local function realign(current,candidate)
     local location      = candidate.location
@@ -396,15 +406,15 @@ local function realign(current,candidate)
     current.width = 0
 
     if candidate.inline then -- this mess is needed for alignments (combinations)
-        anchors = anchors + 1
-        local anchor = new_latelua(format("_plib_.setraw('_md_:%s',pdf.h)",anchors))
-        local blob_x = job.positions.v("_md_:"..anchors) or 0
-        local text_x = job.positions.x("text:"..tex.count.realpageno) or 0
+        h_anchors = h_anchors + 1
+        local anchor = new_latelua(format("_plib_.setraw('_mh_:%s',pdf.h)",h_anchors))
+        local blob_x = jobpositions.v("_mh_:"..h_anchors) or 0
+        local text_x = jobpositions.x("text:"..texcount.realpageno) or 0
         local move_x = text_x - blob_x
         delta = delta - move_x
         current.list = hpack_nodes(link_nodes(anchor,new_kern(-delta),current.list,new_kern(delta)))
         if trace_margindata then
-            report_margindata("realigned: %s, location: %s, margin: %s, move: %s",candidate.n,location,margin,number.points(move_x))
+            report_margindata("realigned: %s, location: %s, margin: %s, move: %s",candidate.n,location,margin,points(move_x))
         end
     else
         current.list = hpack_nodes(link_nodes(new_kern(-delta),current.list,new_kern(delta)))
@@ -412,7 +422,6 @@ local function realign(current,candidate)
             report_margindata("realigned: %s, location: %s, margin: %s",candidate.n,location,margin)
         end
     end
-
     current.width = 0
 end
 
@@ -424,15 +433,62 @@ local function realigned(current,a)
     return true
 end
 
+-- Stacking is done in two ways: the v_yes option stacks per paragraph (or line,
+-- depending on what gets by) and mostly concerns margin data dat got ste at more or
+-- less the same time. The v_continue option uses position tracking and works on
+-- larger range. However, crossing pages is not part of it. Anyway, when you have
+-- such messed up margin data you'd better think twice.
+--
+-- The stacked table keeps track (per location) of the offsets (the v_yes case). This
+-- table gets saved when the v_continue case is active. We use a special variant
+-- of position tracking, after all we only need the page number and vertical position.
+
 local stacked = { }
+local cache = { }
 
 local function resetstacked()
-    for i=1,#locations do
-        stacked[locations[i]] = false
-    end
+--     for i=1,#locations do
+--         stacked[locations[i]] = false
+--     end
+    stacked = { }
 end
 
-resetstacked()
+-- resetstacked()
+
+function margins.ha(tag)
+    local p = cache[tag]
+    p.r = texcount.realpageno
+    p.y = pdf.v
+    _plib_.setraw('_mv_:'..tag,p)
+    cache[tag] = nil
+end
+
+local function markovershoot(current)
+    h_anchors = h_anchors + 1
+    cache[h_anchors] = stacked
+    local anchor = new_latelua(format("typesetters.margins.ha(%s)",h_anchors)) -- todo: alleen als offset > line
+    current.list = hpack_nodes(link_nodes(anchor,current.list))
+end
+
+local function getovershoot(location)
+    local previous = '_mv_:' .. h_anchors
+    local current  = '_mv_:' .. (h_anchors + 1)
+    local p = jobpositions.v(previous)
+    local c = jobpositions.v(current)
+    if p and c and p.r and p.r == c.r then
+        local distance = p.y - c.y
+        local offset = p[location] or 0
+        local overshoot = offset - distance
+        if trace_marginstack then
+            report_margindata("location: %s, distance: %s, offset: %s, overshoot: %s",
+                location,points(distance),points(offset),points(overshoot))
+        end
+        if overshoot > 0 then
+            return overshoot
+        end
+    end
+    return 0
+end
 
 local function inject(parent,head,candidate)
     local box          = candidate.box
@@ -447,7 +503,7 @@ local function inject(parent,head,candidate)
     local line         = candidate.line
     local baseline     = candidate.baseline
     local offset       = stacked[location]
-    local firstonstack = offset == false
+    local firstonstack = offset == false or offset == nil
     nofstatus          = nofstatus  + 1
     nofdelayed         = nofdelayed + 1
     status[nofstatus]  = candidate
@@ -472,6 +528,9 @@ local function inject(parent,head,candidate)
     end
     if stack == v_yes then
         offset = offset + candidate.dy
+        shift = shift + offset
+    elseif stack == v_continue then
+        offset = offset + candidate.dy + getovershoot(location)
         shift = shift + offset
     end
     -- -- --
@@ -537,21 +596,25 @@ local function inject(parent,head,candidate)
     -- we need to add line etc to offset as well
     offset = offset + depth
     local room = {
-        height = height,
-        depth  = offset,
-        slack  = candidate.bottomspace, -- todo: 'depth' => strutdepth
+        height     = height,
+        depth      = offset,
+        slack      = candidate.bottomspace, -- todo: 'depth' => strutdepth
+        lineheight = candidate.lineheight, -- only for tracing
     }
-offset = offset + height
+    offset = offset + height
     stacked[location] = offset
     -- todo: if no real depth then zero
     if trace_margindata then
         report_margindata("status, offset: %s",offset)
     end
-    return head, room
+    return head, room, stack == v_continue
 end
 
-local function flushinline(parent,head,done)
+local function flushinline(parent,head)
     local current = head
+    local done = false
+    local continue = false
+    local room, don, con
     while current and nofinlined > 0 do
         local id = current.id
         if id == whatsit_code then
@@ -561,24 +624,28 @@ local function flushinline(parent,head,done)
                 if candidate then -- no vpack, as we want to realign
                     inlinestore[n] = nil
                     nofinlined = nofinlined - 1
-                    head = inject(parent,head,candidate) -- maybe return applied offset
+                    head, room, con = inject(parent,head,candidate) -- maybe return applied offset
+                    continue = continue or con
                     done = true
                     nofstored = nofstored - 1
                 end
             end
         elseif id == hlist_code or id == vlist_code then
             -- optional (but sometimes needed)
-            current.list, done = flushinline(current,current.list,done)
+            current.list, don, con = flushinline(current,current.list)
+            continue = continue or con
+            done = done or don
         end
         current = current.next
     end
-    return head, done
+    return head, done, continue
 end
 
 local function flushed(scope,parent) -- current is hlist
-    local done = false
     local head = parent.list
-    local room
+    local done = false
+    local continue = false
+    local room, con, don
     for c=1,#categories do
         local category = categories[c]
         for l=1,#locations do
@@ -587,8 +654,9 @@ local function flushed(scope,parent) -- current is hlist
             while true do
                 local candidate = remove(store,1) -- brr, local stores are sparse
                 if candidate then -- no vpack, as we want to realign
-                    head, room = inject(parent,head,candidate) -- maybe return applied offset
+                    head, room, con = inject(parent,head,candidate)
                     done = true
+                    continue = continue or con
                     nofstored = nofstored - 1
                     registertogether(parent,room)
                 else
@@ -601,13 +669,15 @@ local function flushed(scope,parent) -- current is hlist
         if done then
             parent.list = head
         end
-        head, done = flushinline(parent,head,false)
+        head, don, con = flushinline(parent,head)
+        continue = continue or con
+        done = done or don
     end
     if done then
         parent.list = hpack_nodes(head,parent.width,"exactly")
-        resetstacked()
+     -- resetstacked()
     end
-    return done
+    return done, continue
 end
 
 -- only when group   : vbox|vmode_par
@@ -623,8 +693,12 @@ local function handler(scope,head,group)
         while current do
             local id = current.id
             if (id == vlist_code or id == hlist_code) and not has_attribute(current,a_margindata) then
-                if flushed(scope,current) then
+                local don, continue = flushed(scope,current)
+                if don then
                     set_attribute(current,a_margindata,0) -- signal to prevent duplicate processing
+                    if continue then
+                        markovershoot(current)
+                    end
                     if nofstored <= 0 then
                         break
                     end
@@ -634,7 +708,7 @@ local function handler(scope,head,group)
             current = current.next
         end
      -- if done then
-     --     resetstacked()
+        resetstacked() -- why doesn't done work ok here?
      -- end
         return head, done
     else

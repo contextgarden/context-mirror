@@ -1,3 +1,5 @@
+-- we could consider taking more from 'tex-mr-missing'
+
 -- This patch code is moved from font-pat.lua to this goodies
 -- files as it does not belong in the core code.
 
@@ -188,7 +190,7 @@ local ten = {
 
 local twelve = {
     { name = "lmroman12-regular.otf", features = "virtualmath", main = true },
-    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" } ,
+    { name = "rm-lmr12.tfm", vector = "tex-mr-missing" },
     { name = "lmmi12.tfm", vector = "tex-mi", skewchar=0x7F },
     { name = "lmmi12.tfm", vector = "tex-it", skewchar=0x7F },
     { name = "lmsy10.tfm", vector = "tex-sy", skewchar=0x30, parameters = true } ,

@@ -11,6 +11,7 @@ return {
         virtuals = {
             ["tx-math"] = {
                 { name = "texgyretermes-regular.otf", features = "virtualmath", main = true },
+                { name = "texgyretermes-regular.otf", features = "virtualmath", vector = "tex-mr-missing" },
                 { name = "rtxr.tfm", vector = "tex-mr" } ,
                 { name = "rtxptmri.tfm", vector = "tex-it", skewchar=0x7F },
                 { name = "rtxmi.tfm", vector = "tex-mi", skewchar=0x7F },

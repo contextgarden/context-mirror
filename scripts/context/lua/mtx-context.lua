@@ -452,6 +452,7 @@ scripts.context.multipass = {
 --  suffixes = { ".tuo", ".tuc" },
     suffixes = { ".tuc" },
     nofruns = 8,
+--     nofruns = 7, -- test oscillation
 }
 
 function scripts.context.multipass.hashfiles(jobname)
