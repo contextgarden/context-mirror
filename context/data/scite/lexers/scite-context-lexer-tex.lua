@@ -111,11 +111,15 @@ local knowncommand = Cmt(cstoken^1, function(_,i,s)
     return currentcommands[s] and i
 end)
 
-local wordtoken   = context.patterns.wordtoken
-local wordpattern = context.patterns.wordpattern
-local checkedword = context.checkedword
-local setwordlist = context.setwordlist
-local validwords  = false
+local utfchar      = context.utfchar
+local wordtoken    = context.patterns.wordtoken
+local iwordtoken   = context.patterns.iwordtoken
+local wordpattern  = context.patterns.wordpattern
+local iwordpattern = context.patterns.iwordpattern
+local invisibles   = context.patterns.invisibles
+local checkedword  = context.checkedword
+local setwordlist  = context.setwordlist
+local validwords   = false
 
 -- % language=uk
 
@@ -199,7 +203,7 @@ local p_csname               = backslash * (cstoken^1 + P(1))
 local p_grouping             = S("{$}")
 local p_special              = S("#()[]<>=\"")
 local p_extra                = S("`~%^&_-+/\'|")
-local p_text                 = wordtoken^1 --maybe add punctuation and space
+local p_text                 = iwordtoken^1 --maybe add punctuation and space
 
 local p_number               = context.patterns.real
 local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") + P("cc") + P("dd")
@@ -229,7 +233,7 @@ local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") +
 --     end
 -- end)
 
-local p_word = Cmt(wordpattern, function(_,i,s)
+local p_word = Cmt(iwordpattern, function(_,i,s)
     if validwords then
         return checkedword(validwords,s,i)
     else
@@ -279,6 +283,8 @@ elseif option == 2 then
 
 end
 
+local p_invisible = invisibles^1
+
 local spacing                = token(whitespace,  p_spacing    )
 
 local rest                   = token('default',   p_rest       )
@@ -295,6 +301,7 @@ local number                 = token('number',    p_number     )
                              * token('constant',  p_unit       )
 local special                = token('special',   p_special    )
 local extra                  = token('extra',     p_extra      )
+local invisible              = token('invisible', p_invisible  )
 local text                   = token('default',   p_text       )
 local word                   = p_word
 
@@ -423,6 +430,7 @@ _rules = {
  -- { "number",      number      },
     { "special",     special     },
     { "extra",       extra       },
+    { "invisible",   invisible   },
     { "rest",        rest        },
 }
 

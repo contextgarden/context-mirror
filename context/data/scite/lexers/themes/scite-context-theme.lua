@@ -77,6 +77,7 @@ style_definition         = style { fore = colors.black, bold = true }
 style_okay               = style { fore = colors.dark }
 style_error              = style { fore = colors.red }
 style_warning            = style { fore = colors.orange }
+style_invisible          = style { back = colors.orange }
 style_function           = style { fore = colors.black, bold = true }
 style_operator           = style { fore = colors.blue }
 style_preproc            = style { fore = colors.yellow, bold = true }
@@ -118,6 +119,7 @@ lexer.context.styles = {
 
     ["okay"]       = style_okay,
     ["warning"]    = style_warning,
+    ["invisible"]  = style_invisible,
     ["error"]      = style_error,
 
 }

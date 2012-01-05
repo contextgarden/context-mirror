@@ -50,7 +50,7 @@ local report = texio and texio.write_nl or print
 --~ function lpeg.Carg (l) local p = lpcarg(l) report("LPEG Carg =") lpprint(l) return p end
 
 local type = type
-local byte, char = string.byte, string.char
+local byte, char, gmatch = string.byte, string.char, string.gmatch
 
 -- Beware, we predefine a bunch of patterns here and one reason for doing so
 -- is that we get consistent behaviour in some of the visualizers.
@@ -656,3 +656,58 @@ end
 --         end)
 --     end
 -- end
+
+-- experiment:
+
+local function make(t)
+    local p
+--     for k, v in next, t do
+    for k, v in table.sortedhash(t) do
+        if not p then
+            if next(v) then
+                p = P(k) * make(v)
+            else
+                p = P(k)
+            end
+        else
+            if next(v) then
+                p = p + P(k) * make(v)
+            else
+                p = p + P(k)
+            end
+        end
+    end
+    return p
+end
+
+function lpeg.utfchartabletopattern(list)
+    local tree = { }
+    for i=1,#list do
+        local t = tree
+        for c in gmatch(list[i],".") do
+            if not t[c] then
+                t[c] = { }
+            end
+            t = t[c]
+        end
+    end
+    return make(tree)
+end
+
+-- inspect ( lpeg.utfchartabletopattern {
+--     utfchar(0x00A0), -- nbsp
+--     utfchar(0x2000), -- enquad
+--     utfchar(0x2001), -- emquad
+--     utfchar(0x2002), -- enspace
+--     utfchar(0x2003), -- emspace
+--     utfchar(0x2004), -- threeperemspace
+--     utfchar(0x2005), -- fourperemspace
+--     utfchar(0x2006), -- sixperemspace
+--     utfchar(0x2007), -- figurespace
+--     utfchar(0x2008), -- punctuationspace
+--     utfchar(0x2009), -- breakablethinspace
+--     utfchar(0x200A), -- hairspace
+--     utfchar(0x200B), -- zerowidthspace
+--     utfchar(0x202F), -- narrownobreakspace
+--     utfchar(0x205F), -- math thinspace
+-- } )
