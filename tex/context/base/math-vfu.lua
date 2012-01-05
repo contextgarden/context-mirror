@@ -530,9 +530,9 @@ function vfmath.define(specification,set,goodies)
         setmetatableindex(goodies,parent.goodies)
     end
     --
-    properties.virtualized       = true
-    properties.italic_correction = true
-    properties.has_math          = true
+    properties.virtualized = true
+    properties.hasitalics  = true
+    properties.hasmath     = true
     --
     local fullname = properties.fullname -- parent via mt
     if fullname then

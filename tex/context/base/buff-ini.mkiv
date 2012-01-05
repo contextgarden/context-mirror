@@ -147,7 +147,7 @@
    \dododogetbuffer{#2}%
    \namedbufferparameter{#1}\c!after}
 
-\def\dododogetbuffer#1%
+\unexpanded\def\dododogetbuffer#1%
   {\ctxcommand{getbuffer("#1")}}
 
 \definebuffer[\v!hiding] \setupbuffer[\v!hiding][\c!before=,\c!after=]

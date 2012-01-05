@@ -78,27 +78,33 @@ local nulldata = {
     characters   = { },
     descriptions = { },
     properties   = { },
-    parameters   = {           -- lmromanregular @ 12pt
-        slant        =      0, -- 1
-        space        = 256377, -- 2
-        spacestretch = 128188, -- 3
-        spaceshrink  =  85459, -- 4
-        xheight      = 338952, -- 5
-        quad         = 786432, -- 6
-        extraspace   =  85459, -- 7
+    parameters   = { -- lmromanregular @ 12pt
+        slant         =      0, -- 1
+        space         = 256377, -- 2
+        space_stretch = 128188, -- 3
+        space_shrink  =  85459, -- 4
+        x_height      = 338952, -- 5
+        quad          = 786432, -- 6
+        extra_space   =  85459, -- 7
     },
 }
+
+constructors.enhanceparameters(nulldata.parameters) -- official copies for us
 
 function definers.resetnullfont()
     -- resetting is needed because tikz misuses nullfont
     local parameters = nulldata.parameters
-    parameters.slant        = 0 -- 1
-    parameters.space        = 0 -- 2
-    parameters.spacestretch = 0 -- 3
-    parameters.spaceshrink  = 0 -- 4
-    parameters.xheight      = 0 -- 5
-    parameters.quad         = 0 -- 6
-    parameters.extraspace   = 0 -- 7
+    --
+    parameters.slant         = 0 -- 1
+    parameters.space         = 0 -- 2
+    parameters.space_stretch = 0 -- 3
+    parameters.space_shrink  = 0 -- 4
+    parameters.x_height      = 0 -- 5
+    parameters.quad          = 0 -- 6
+    parameters.extra_space   = 0 -- 7
+    --
+    constructors.enhanceparameters(parameters) -- official copies for us
+    --
     definers.resetnullfont = function() end
 end
 
@@ -173,14 +179,14 @@ end)
 
 setmetatableindex(italicsdata, function(t,k) -- is test !
     local properties = fontdata[k].properties
-    local italics = properties and properties.italic_correction
-    if italics then
-        italics = chardata[k]
+    local hasitalics = properties and properties.hasitalics
+    if hasitalics then
+        hasitalics = chardata[k] -- convenient return
     else
-        italics = false
+        hasitalics = false
     end
-    t[k] = italics
-    return italics
+    t[k] = hasitalics
+    return hasitalics
 end)
 
 -- this cannot be a feature initializer as there is no auto namespace

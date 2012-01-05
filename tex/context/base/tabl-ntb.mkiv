@@ -22,6 +22,24 @@
 % todo: fast if
 % todo: avoid halign (just do it manual) and thereby globals
 
+% bug: width 3cm is not honored and column becomes too wide
+% as given width is added to distributed width
+%
+% \bTABLE
+%     \bTR
+%         \bTD test \eTD
+%         \bTD \framed[height=3cm]{test} \eTD
+%         \bTD[width=3cm] \dorecurse{30}{a } \eTD
+%         \bTD \input ward \eTD
+%     \eTR
+%     \bTR
+%         \bTD test \eTD
+%         \bTD \framed[height=3cm]{test} \eTD
+%         \bTD \dorecurse{30}{a } \eTD
+%         \bTD \input ward \eTD
+%     \eTR
+% \eTABLE
+
 % \unexpanded\def\startrow            {\bTR}
 % \unexpanded\def\stoprow             {\eTR}
 % \unexpanded\def\startcell#1\stopcell{\bTD#1\eTD}
@@ -1367,7 +1385,7 @@
    \settblht{#1}{#2}{\the\ht\scratchbox}%
    \settblwd{#1}{#2}{\the\wd\scratchbox}%
    \ifautoTBLcheckwidth
-     \ifdim\wd\scratchbox<.75\hsize
+     \ifdim\wd\scratchbox<.75\hsize % fuzzy guess
        \ifdim\ht\scratchbox>2\openlineheight % honor width since this
          \scratchdimen\gettblaut\tblcol\relax % can be a figure or so
          \ifdim\scratchdimen=\zeropoint

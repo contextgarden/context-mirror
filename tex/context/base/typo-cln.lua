@@ -21,6 +21,8 @@ local report_autocase = logs.reporter("nodes","autocase")
 typesetters.cleaners  = typesetters.cleaners or { }
 local cleaners        = typesetters.cleaners
 
+local variables       = interfaces.variables
+
 local nodecodes       = nodes.nodecodes
 local tasks           = nodes.tasks
 

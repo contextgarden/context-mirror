@@ -980,7 +980,8 @@ local function tr_process(object,prescript,before,after)
             c_b, c_a = spotcolorconverter(sp_name,sp_fractions,sp_components,sp_value)
         elseif sp_type == "named" then
             -- we might move this to another namespace .. also, named can be a spotcolor
-            -- so we need to check for that too
+            -- so we need to check for that too ... also we need to resolve indirect
+            -- colors so we might need the second pass for this (draw dots with \MPcolor)
             local sp_name = prescript.sp_name or "black"
             if not tr_alternative then
                 -- todo: sp_name is not yet registered at this time

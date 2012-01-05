@@ -52,7 +52,10 @@
 
 % ctx specific
 
-\def\|{|} % still letter
+% \bgroup
+% \catcode`|=\othercatcode
+% \global\let\|=|
+% \egroup
 
 % The \mfunction macro is an alternative for \hbox with a
 % controlable font switch.

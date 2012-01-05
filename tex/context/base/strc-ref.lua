@@ -1409,6 +1409,10 @@ end
 local nofidentified = 0
 
 local function identify(prefix,reference)
+    if not reference then
+        prefix    = ""
+        reference = prefix
+    end
     local set = resolve(prefix,reference)
     local bug = false
     texcount.referencehastexstate = set.has_tex and 1 or 0

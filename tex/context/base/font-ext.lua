@@ -478,7 +478,7 @@ fonts.goodies.register("protrusions", function(...) return fonts.goodies.report(
 -- -- --
 
 local function initializenostackmath(tfmdata,value)
-    tfmdata.properties.no_stackmath = value and true
+    tfmdata.properties.nostackmath = value and true
 end
 
 registerotffeature {
@@ -498,8 +498,8 @@ local function initializeitlc(tfmdata,value) -- hm, always value
         if italicangle and italicangle ~= 0 then
             local properties = tfmdata.properties
             local factor = tonumber(value) or 1
-            properties.italic_correction = true
-            properties.auto_italic_correction = factor * (parameters.uwidth or 40)/2
+            properties.hasitalics = true
+            properties.autoitalicamount = factor * (parameters.uwidth or 40)/2
         end
     end
 end
@@ -557,7 +557,7 @@ local function initializeslant(tfmdata,value)
     elseif value < -1 then
         value = -1
     end
-    tfmdata.parameters.slant_factor = value
+    tfmdata.parameters.slantfactor = value
 end
 
 registerotffeature {
@@ -587,7 +587,7 @@ local function initializeextend(tfmdata,value)
     elseif value < -10 then
         value = -10
     end
-    tfmdata.parameters.extend_factor = value
+    tfmdata.parameters.extendfactor = value
 end
 
 registerotffeature {
@@ -620,7 +620,7 @@ local function manipulatedimensions(tfmdata,key,value)
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
         local emwidth = parameters.quad
-        local exheight = parameters.x_height
+        local exheight = parameters.xheight
         local spec = settings_to_array(value)
         local width = (spec[1] or 0) * emwidth
         local height = (spec[2] or 0) * exheight

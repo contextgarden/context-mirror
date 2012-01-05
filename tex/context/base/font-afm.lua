@@ -252,7 +252,7 @@ local function readafm(filename)
                 creator  = "context mkiv",
             },
             properties = {
-                italic_correction = false,
+                hasitalics = false,
             },
             goodies = {
             },

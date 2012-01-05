@@ -81,6 +81,16 @@ local function read_from_tfm(specification)
         tfmdata.parameters  = parameters
         tfmdata.shared      = shared
         --
+        parameters.slant         = parameters.slant          or parameters[1] or 0
+        parameters.space         = parameters.space          or parameters[2] or 0
+        parameters.space_stretch = parameters.space_stretch  or parameters[3] or 0
+        parameters.space_shrink  = parameters.space_shrink   or parameters[4] or 0
+        parameters.x_height      = parameters.x_height       or parameters[5] or 0
+        parameters.quad          = parameters.quad           or parameters[6] or 0
+        parameters.extra_space   = parameters.extra_space    or parameters[7] or 0
+        --
+        constructors.enhanceparameters(parameters) -- official copies for us
+        --
         if constructors.resolvevirtualtoo then
             fonts.loggers.register(tfmdata,file.extname(filename),specification) -- strange, why here
             local vfname = findbinfile(specification.name, 'ovf')

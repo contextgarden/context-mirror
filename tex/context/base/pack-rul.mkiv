@@ -1313,8 +1313,16 @@
    \fi
    \handleframedlocator\c!after\@@locallocation
    \box\framebox
+   \global\frameddimensionstate % global so to be used directly afterwards !
+     \ifboxhaswidth
+       \ifboxhasheight \plusthree \else \plusone   \fi
+     \else
+       \ifboxhasheight \plustwo   \else \zerocount \fi
+     \fi
    \egroup
    \egroup}
+
+\newconstant\frameddimensionstate % global state: 0=unknown 1=width 2=height 3=both
 
 \def\dosetfakedframebox
   {\setbox\scratchbox\emptyhbox

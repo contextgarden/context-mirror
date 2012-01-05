@@ -46,31 +46,20 @@ function typesetters.italics.forcevariant(variant)
     forcedvariant = variant
 end
 
--- we could delay the calculations in the font scaler to here:
---
--- local description = descdata[char]
--- local vi = description.italic or (description.boundingbox[3] - description.width + properties[font].auto_italic_correction)
--- if vi and vi ~= 0 then
---     italic = vi*parameters[font].hfactor
--- end
---
--- this saves us quite some entries in the characters table
-
 local function setitalicinfont(font,char)
     local tfmdata = fontdata[font]
     local character = tfmdata.characters[char]
     if character then
         local italic = character.italic_correction
         if not italic then
-            local autoitalic = tfmdata.properties.auto_italic_correction or 0
-            if autoitalic ~= 0 then
+            local autoitalicamount = tfmdata.properties.autoitalicamount or 0
+            if autoitalicamount ~= 0 then
                 local description = tfmdata.descriptions[char]
                 if description then
                     italic = description.italic
                     if not italic then
                         local boundingbox = description.boundingbox
-                        italic = boundingbox[3] - description.width + autoitalic
-                     -- print(boundingbox[3],description.width,autoitalic,italic)
+                        italic = boundingbox[3] - description.width + autoitalicamount
                         if italic < 0 then -- < 0 indicates no overshoot or a very small auto italic
                             italic = 0
                         end

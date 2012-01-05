@@ -156,9 +156,9 @@ enddef ;
 
 defaultfont := "Mono" ; % was cmr10, could be lmmono10-regular, but is fed into context anyway
 
-vardef fontsize expr str =
+vardef fontsize expr name =
     save size ; numeric size ;
-    size := bbwidth(textext("\MPfontsizehskip{" & defaultfont & "}")) ;
+    size := bbwidth(textext("\MPfontsizehskip{" & name & "}")) ;
     if size = 0 :
         12pt
     else :
