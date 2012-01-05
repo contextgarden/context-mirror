@@ -41,7 +41,7 @@
 %D Anchors:
 
 \def\dopresetpositionanchors % also mkii
-  {\bgroup
+  {\begingroup
    \!!dimena\ifdim\topskip>\strutht\topskip\else\strutht\fi
    \!!dimenb\dimexpr\MPy\textanchor+\MPh\textanchor-\!!dimena\relax
    \!!dimenc\dimexpr\MPy\textanchor+\strutdp\relax
@@ -49,7 +49,7 @@
    \!!dimene\MPw\textanchor
    \replacepospxywhd\headanchor\realfolio\!!dimend\!!dimenb\!!dimene\!!dimena\strutdp
    \replacepospxywhd\tailanchor\realfolio\!!dimend\!!dimenc\!!dimene\strutht \strutdp
-   \egroup}
+   \endgroup}
 
 \def\presetpositionanchors% compatibility hack (still needed?)
   {\ifpositioning
@@ -167,27 +167,32 @@
 
 \let\MPanchornumber\realfolio
 
-\def\positionoverlay#1% the test prevents too many redundant positions
+\def\positionoverlay  % the test prevents too many redundant positions
   {\ifpositioning     % in (not used) text* position layers
-     \vbox to \overlayheight
-       {\doifpositionactionelse{#1::\MPanchoridentifier}%
-          {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
-           \edef\MPanchor##1{\MPpos{\MPanchorid}}%
-           \the\everyinsertpositionaction
-           \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
-           \hpos
-             {#1::\MPanchoridentifier:\MPanchornumber}%
-            % this is ok
-            %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
-            % but this one prevents cyclic runs due to
-            % rounding errors
-             {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
-              \ht\scratchbox\overlayheight
-              \dp\scratchbox\zeropoint
-              \box\scratchbox}}%
-          {\hbox to \overlaywidth{\hss}}%
-        \vfill}%
+     \expandafter\positionoverlayindeed
+   \else % also \iftrialtypesetting test here?
+     \expandafter\gobbleoneargument
    \fi}
+
+\def\positionoverlayindeed#1% the test prevents too many redundant positions
+  {\vbox to \overlayheight
+     {\doifpositionactionelse{#1::\MPanchoridentifier}%
+        {\edef\MPanchorid{#1::\MPanchoridentifier:\MPanchornumber}%
+         \edef\MPanchor##1{\MPpos{\MPanchorid}}%
+         \the\everyinsertpositionaction
+         \copyposition{#1::\MPanchoridentifier}{#1::\MPanchoridentifier:\MPanchornumber}%
+         \hpos
+           {#1::\MPanchoridentifier:\MPanchornumber}%
+          % this is ok
+          %{\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}}}%
+          % but this one prevents cyclic runs due to
+          % rounding errors
+           {\setbox\scratchbox\hbox to \overlaywidth{\dopositionaction{#1::\MPanchoridentifier}\hss}%
+            \ht\scratchbox\overlayheight
+            \dp\scratchbox\zeropoint
+            \box\scratchbox}}%
+        {\hbox to \overlaywidth{\hss}}%
+      \vfill}}
 
 \unexpanded\def\startpositionoverlay#1%
   {\iftrialtypesetting % we don't want redundant entries in the list
