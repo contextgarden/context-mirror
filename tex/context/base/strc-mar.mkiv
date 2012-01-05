@@ -41,47 +41,28 @@
 
 \definesystemattribute [marks] [global]
 
-\let\currentmarking\empty
+\installcorenamespace{marking}
 
-\def\markingparameter          #1{\csname\domarkingparameter{\??mk\currentmarking}#1\endcsname}
-\def\namedmarkingparameter   #1#2{\csname\domarkingparameter{\??mk#1}#2\endcsname}
-\def\domarkingparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\domarkingparentparameter\csname#1\s!parent\endcsname#2\fi}
-\def\domarkingparentparameter#1#2{\ifx#1\relax\s!empty\else\domarkingparameter#1#2\fi}
+\installcommandhandler \??marking {marking} \??marking
 
-\newconditional\inhibitgetmarking
-\newconditional\inhibitsetmarking
+\newconditional\inhibitgetmarking % will become private
+\newconditional\inhibitsetmarking % will become private
+
 \newtoks       \everymarking
 
-\unexpanded\def\setupmarking
-  {\dodoubleargument\dosetupmarking}
+\unexpanded\def\relatemarking     {\dodoubleempty   \marking_relate     }
+\unexpanded\def\setmarking        {\dosingleargument\marking_set        } \let\marking\setmarking
+\unexpanded\def\resetmarking      {\dosingleargument\marking_reset      }
+\unexpanded\def\synchronizemarking{\dotripleargument\marking_synchronize}
 
-\def\dosetupmarking[#1][#2]%
-  {\ifsecondargument
-     \def\docommand##1{\getparameters[\??mk##1][#2]}%
-     \processcommalist[#1]\docommand
-   \else
-     \getparameters[\??mk][#1]%
-   \fi}
+\appendtoks
+    \ctxcommand{definemarking("\currentmarking",{ parent = "\currentmarkingparent" })}%
+\to \everydefinemarking
 
-% management
-
-\unexpanded\def\definemarking     {\dodoubleempty   \dodefinemarking}
-\unexpanded\def\relatemarking     {\dodoubleempty   \dorelatemarking}
-\unexpanded\def\setmarking        {\dosingleargument\dosetmarking   } \let\marking\setmarking
-\unexpanded\def\resetmarking      {\dosingleargument\doresetmarking }
-\unexpanded\def\synchronizemarking{\dotripleargument\dosynchronizemarking }
-
-\def\dodefinemarking[#1][#2]% marking parent
-  {\doifelsenothing{#2}
-     {\ctxcommand{definemarking("#1")}%
-      \getparameters[\??mk#1][\s!parent=\??mk]}
-     {\ctxcommand{definemarking("#1",{ parent = "#2" })}%
-      \getparameters[\??mk#1][\s!parent=\??mk#2]}}
-
-\def\dorelatemarking[#1][#2]%
+\def\marking_relate[#1][#2]%
   {\ctxcommand{relatemarking("#1","#2")}}
 
-\def\dosetmarking[#1]#2%
+\def\marking_set[#1]#2%
   {\ifconditional\inhibitsetmarking
      % nothing
    \else
@@ -90,17 +71,17 @@
        {\ctxcommand{setmarking("#1",\!!bs\detokenize{#2}\!!es)}}%
    \fi}
 
-\def\doresetmarking[#1]%
+\def\marking_reset[#1]%
   {\ctxcommand{resetmarking("#1")}}
+
+\def\marking_synchronize[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
+  {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2,"#3")}\fi}
 
 \def\doifelsemarking#1%
   {\ctxcommand{doifelsemarking("#1")}}
 
-\def\dosynchronizemarking[#1][#2][#3]% #1=class #2=boxnumber (some day also name) #3=options, maybe second argument table
-  {\ifvoid#2\else\ctxcommand{synchronizemarking("#1",\number#2,"#3")}\fi}
-
 % \appendtoks
-%     \dosynchronizemarking[\v!page][\normalpagebox][\v!keep]% keep if no marks
+%     \marking_synchronize[\v!page][\normalpagebox][\v!keep]% keep if no marks
 % \to \everybeforepagebody
 
 % defaults
@@ -115,15 +96,15 @@
 
 \unexpanded\def\getmarking
   {\ifconditional\inhibitgetmarking
-     \expandafter\dotripleargument\expandafter\nogetmarking
+     \expandafter\dotripleargument\expandafter\marking_get_nop
    \else
-     \expandafter\dotripleargument\expandafter\dogetmarking
+     \expandafter\dotripleargument\expandafter\marking_get_yes
    \fi}
 
-\def\nogetmarking[#1][#2][#3]%
+\def\marking_get_nop[#1][#2][#3]%
   {}
 
-\def\dogetmarking[#1][#2][#3]%
+\def\marking_get_yes[#1][#2][#3]%
   {\doif{\namedmarkingparameter{#1}\c!state}\v!start
      {\begingroup
       \setsystemmode\v!marking

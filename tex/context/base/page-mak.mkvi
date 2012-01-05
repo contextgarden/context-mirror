@@ -37,7 +37,10 @@
 %D New is that we have a layout with the same name so one can set
 %D up a special layout tthat then gets used.
 
-\installcommandhandler \??do {makeup} \??do
+\installcorenamespace{makeup}
+\installcorenamespace{makeupdoublesided}
+
+\installcommandhandler \??makeup {makeup} \??makeup
 
 \appendtoks
    \setuevalue{\e!start\currentmakeup\e!makeup}{\startmakeup[\currentmakeup]}%
@@ -123,17 +126,17 @@
    \makeupparameter\c!after
    \relax % to be sure we don't enter the \if
    \ifdoublesided \ifodd\realpageno \else
-     \getvalue{\??do::\c!doublesided::\makeupparameter\c!doublesided}%
+     \getvalue{\??makeupdoublesided\makeupparameter\c!doublesided}%
    \fi \fi
    \poppagestate % new
    \egroup
    \stoplayout} % includes \page
 
-\setvalue{\??do::\c!doublesided::\v!yes}%
+\setvalue{\??makeupdoublesided\v!yes}%
   {\emptyhbox
    \page}
 
-\setvalue{\??do::\c!doublesided::\v!empty}%
+\setvalue{\??makeupdoublesided\v!empty}%
   {\the\page_makeup_every_setup
   % == \page[\v!dummy]
    \page[\v!blank]%

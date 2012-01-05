@@ -126,17 +126,20 @@
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
-      \else\ifr@ggedbottom
+      \else\ifcase\bottomraggednessmode
+        % ragged
         \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
-      \else\ifb@selinebottom
+      \or
+        % align (normal)
+        \dobotinsertions
+      \or
+        % baseline
         \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \dobotinsertions
-      \else
-        \dobotinsertions
-      \fi\fi\fi
+      \fi\fi
       \fakepagenotes}%
    \ifconditional\c_notes_bottom_present
      \ifgridsnapping

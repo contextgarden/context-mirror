@@ -4079,8 +4079,8 @@ if not math.sind then
 end
 
 if not math.odd then
-    function math.odd (n) return n % 2 == 0 end
-    function math.even(n) return n % 2 ~= 0 end
+    function math.odd (n) return n % 2 ~= 0 end
+    function math.even(n) return n % 2 == 0 end
 end
 
 

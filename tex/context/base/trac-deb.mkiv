@@ -16,22 +16,22 @@
 \registerctxluafile{trac-lmx}{1.001}
 \registerctxluafile{trac-deb}{1.001}
 
-\def\breakpoint{\showdebuginfo\wait}
+\unexpanded\def\breakpoint{\showdebuginfo\wait}
 
-\def\showtrackers          {\ctxlua{trackers.show()}}
-\def\enabletrackers    [#1]{\ctxlua{trackers.enable("#1")}}
-\def\disabletrackers   [#1]{\ctxlua{trackers.disable("#1")}}
-\def\resettrackers         {\ctxlua{trackers.reset()}}
+\unexpanded\def\showtrackers          {\ctxlua{trackers.show()}}
+\unexpanded\def\enabletrackers    [#1]{\ctxlua{trackers.enable("#1")}}
+\unexpanded\def\disabletrackers   [#1]{\ctxlua{trackers.disable("#1")}}
+\unexpanded\def\resettrackers         {\ctxlua{trackers.reset()}}
 
-\def\showdirectives        {\ctxlua{directives.show()}}
-\def\enabledirectives  [#1]{\ctxlua{directives.enable("#1")}}
-\def\disabledirectives [#1]{\ctxlua{directives.disable("#1")}}
+\unexpanded\def\showdirectives        {\ctxlua{directives.show()}}
+\unexpanded\def\enabledirectives  [#1]{\ctxlua{directives.enable("#1")}}
+\unexpanded\def\disabledirectives [#1]{\ctxlua{directives.disable("#1")}}
 
-\def\showexperiments       {\ctxlua{experiments.show()}}
-\def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
-\def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}
+\unexpanded\def\showexperiments       {\ctxlua{experiments.show()}}
+\unexpanded\def\enableexperiments [#1]{\ctxlua{experiments.enable("#1")}}
+\unexpanded\def\disableexperiments[#1]{\ctxlua{experiments.disable("#1")}}
 
-\def\showdebuginfo{\ctxlua{lmx.showdebuginfo()}}
-\def\overloaderror{\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]
+\unexpanded\def\showdebuginfo{\ctxlua{lmx.showdebuginfo()}}
+\unexpanded\def\overloaderror{\ctxlua{lmx.overloaderror()}} % \enabledirectives[system.showerror]
 
-\def\showlogcategories     {\ctxlua{logs.show()}}
+\unexpanded\def\showlogcategories     {\ctxlua{logs.show()}}

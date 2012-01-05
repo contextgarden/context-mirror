@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Boxes}
 
+% to be cleaned up
+
 %D This module contains all kind of macros for moving content
 %D around. Many macros here come from other modules, but
 %D depencies made it more clear to isolate them.
@@ -164,62 +166,62 @@
   {\def\currentcollector{#1}%
    \chardef\collectorbox\csname\@@collectorbox#1\endcsname
    \getparameters[\??cb#1][#2]%
-   \@@layerxsiz\wd\collectorbox
-   \@@layerysiz\ht\collectorbox
+   \d_layers_x_size\wd\collectorbox
+   \d_layers_y_size\ht\collectorbox
    \doifvaluesomething{\??cb#1\c!rotation}
      {\setbox\nextbox\hbox
         {\rotate
            [\c!location=\v!high,
             \c!rotation=\collectorparameter\c!rotation]
            {\flushnextbox}}}%
-   \advance\@@layerysiz\dp\collectorbox
-   \@@layerxpos\collectorparameter\c!x
-   \advance\@@layerxpos\collectorparameter\c!hoffset
-   \@@layerypos\collectorparameter\c!y
-   \advance\@@layerypos\collectorparameter\c!voffset
+   \advance\d_layers_y_size\dp\collectorbox
+   \d_layers_x_position\collectorparameter\c!x
+   \advance\d_layers_x_position\collectorparameter\c!hoffset
+   \d_layers_y_position\collectorparameter\c!y
+   \advance\d_layers_y_position\collectorparameter\c!voffset
    \doifelse\v!middle{\collectorparameter\c!corner}
-     {\ifdim\@@layerxsiz>\zeropoint
-        \advance\@@layerxpos.5\@@layerxsiz
+     {\ifdim\d_layers_x_size>\zeropoint
+        \advance\d_layers_x_position.5\d_layers_x_size
       \fi
-      \ifdim\@@layerysiz>\zeropoint
-        \advance\@@layerypos.5\@@layerysiz
+      \ifdim\d_layers_y_size>\zeropoint
+        \advance\d_layers_y_position.5\d_layers_y_size
       \fi}%
      {\normalexpanded{\noexpand\doifinset{\v!bottom}{\collectorparameter\c!corner}}
-        {\ifdim\@@layerysiz>\zeropoint
-           \advance\@@layerypos-\@@layerysiz
-           \@@layerypos-\@@layerypos
+        {\ifdim\d_layers_y_size>\zeropoint
+           \advance\d_layers_y_position-\d_layers_y_size
+           \d_layers_y_position-\d_layers_y_position
          \fi}%
       \normalexpanded{\noexpand\doifinset{\v!right}{\collectorparameter\c!corner}}
-        {\ifdim\@@layerxsiz>\zeropoint
-           \advance\@@layerxpos-\@@layerxsiz
-           \@@layerxpos-\@@layerxpos
+        {\ifdim\d_layers_x_size>\zeropoint
+           \advance\d_layers_x_position-\d_layers_x_size
+           \d_layers_x_position-\d_layers_x_position
          \fi}}%
    \setbox\nextbox\hbox
      {\alignedbox[\collectorparameter\c!location]\vbox{\flushnextbox}}%
    \boxmaxdepth\zeropoint % really needed, nice example
-   \global\advance\boxhdisplacement\@@layerxpos
+   \global\advance\boxhdisplacement\d_layers_x_position
    \ifdim\boxhdisplacement<\zeropoint
      \global\setbox\collectorbox\hbox
        {\hskip-\boxhdisplacement
         \box\collectorbox}%
    \fi
-   \global\advance\boxvdisplacement\@@layerypos
+   \global\advance\boxvdisplacement\d_layers_y_position
    \ifdim\boxvdisplacement<\zeropoint
      \global\setbox\collectorbox\hbox
        {\lower-\boxvdisplacement
         \box\collectorbox}%
    \fi
-   \@@layerxsiz\wd\collectorbox
-   \@@layerysiz\ht\collectorbox
-   \advance\@@layerysiz\dp\collectorbox
+   \d_layers_x_size\wd\collectorbox
+   \d_layers_y_size\ht\collectorbox
+   \advance\d_layers_y_size\dp\collectorbox
    \global\setbox\collectorbox\hbox
      {\box\collectorbox
-      \hskip-\@@layerxsiz
-      \hskip\@@layerxpos\relax
+      \hskip-\d_layers_x_size
+      \hskip\d_layers_x_position\relax
       \ifdim\boxhdisplacement<\zeropoint
         \hskip-\boxhdisplacement
       \fi
-      \lower\@@layerypos\hbox
+      \lower\d_layers_y_position\hbox
         {\ifdim\boxvdisplacement<\zeropoint
            \lower-\boxvdisplacement\flushnextbox
          \else
@@ -229,8 +231,8 @@
    \global\setbox\collectorbox\hbox
      {\lower\ht\collectorbox\box\collectorbox}%
    % just to be sure
-   \ifdim\wd\collectorbox<\@@layerxsiz
-     \wd\collectorbox\@@layerxsiz
+   \ifdim\wd\collectorbox<\d_layers_x_size
+     \wd\collectorbox\d_layers_x_size
    \fi}
 
 \def\flushcollector[#1]%
@@ -442,12 +444,12 @@
    \c!hoffset=\@@bgoffset]
 
 \unexpanded\def\bleed
-  {\dosingleempty\dobleed}
+  {\dosingleempty\boxes_bleed}
 
 \def\bleedwidth {\the\hsize}%
 \def\bleedheight{\the\vsize}%
 
-\def\dobleed[#1]#2%
+\def\boxes_bleed[#1]#2%
   {\hbox\bgroup
    \xdef\bleedwidth {\the\hsize}%
    \xdef\bleedheight{\the\vsize}%
@@ -559,49 +561,33 @@
 % only apply the offset to ...
 
 \def\setlayerframed
-  {\dotripleempty\dosetlayerframed}
+  {\dotripleempty\layers_set_framed}
 
-% \def\dosetlayerframed
-%   {\ifthirdargument
-%      \expandafter\dosetlayerframedT
-%    \else
-%      \expandafter\dosetlayerframedS
-%    \fi}
-%
-% \def\dosetlayerframedT[#1][#2][#3]%
-%   {\dowithnextbox{\setlayer[#1][#2]{\flushnextbox}}%
-%    \hbox\framed[#3]}
-%
-% \def\dosetlayerframedS[#1][#2][#3]%
-%   {\dowithnextbox % we could use a local setlayer command (no doif..empty) which also saves a nextbox
-%      {\setlayer[#1][\c!width=\nextboxwd,\c!height=\nextboxht,#2,\c!offset=\!!zeropoint]{\flushnextbox}}%
-%      \hbox\normalframedwithsettings[\c!location=\v!normal,#2]}% fast call (no arg check)
-
-\def\dosetlayerframed
+\def\layers_set_framed
   {\ifthirdargument
-     \expandafter\dosetlayerframedT
+     \expandafter      \layers_set_framed_t
    \else\ifsecondargument
-     \doubleexpandafter\dosetlayerframedD
+     \doubleexpandafter\layers_set_framed_d
    \else
-     \doubleexpandafter\dosetlayerframedS
+     \doubleexpandafter\layers_set_framed_s
    \fi\fi}
 
-\def\dosetlayerframedS[#1][#2][#3]%
+\def\layers_set_framed_s[#1][#2][#3]%
   {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,\c!offset=\zeropoint]%
      \normalframedwithsettings[\c!location=\v!normal]} % diffrent kind of location
 
-\def\dosetlayerframedD[#1][#2][#3]%
+\def\layers_set_framed_d[#1][#2][#3]%
   {\setlayer[#1][\c!width=\wd\nextbox,\c!height=\ht\nextbox,#2,\c!offset=\zeropoint]%
      \normalframedwithsettings[\c!location=\v!normal,#2]} % diffrent kind of location
 
-\def\dosetlayerframedT[#1][#2][#3]%
+\def\layers_set_framed_t[#1][#2][#3]%
   {\setlayer[#1][#2]%
      \normalframedwithsettings[#3]}
-
-\def\setlayertext
-  {\dotripleempty\dosetlayertext}
 
-\def\dosetlayertext[#1][#2][#3]%
+\def\setlayertext
+  {\dotripleempty\layers_set_text}
+
+\def\layers_set_text[#1][#2][#3]%
   {\bgroup
    \getparameters
      [\??lx]
@@ -618,7 +604,7 @@
      {\setlayer[#1][#2]{\strut\dousecolorparameter\@@lxcolor\flushnextbox}%
       \egroup}%
    \vtop}
-
+
 % \setupbackgrounds
 %   [page]
 %   [background=pagefigures]
@@ -692,159 +678,135 @@
 \definelayerpreset
   [\v!middle\v!right]
   [\c!location=\v!left,\c!corner=\v!right,\c!dy=.5\layerheight]
-
-\def\alignedbox
-  {\dodoubleempty\doalignedbox[]}
 
-% \def\doalignedbox[#1][#2]%
-%   {\bgroup
-%   %\let\iftraceboxplacement\iftracelayers % ugly
-%    \dowithnextbox
-%      {\let\next\middlebox
-%       \processaction
-%         [#2]
-%         [ t=>\let\next\topbox       , b=>\let\next\bottombox     ,
-%           l=>\let\next\leftbox      , r=>\let\next\rightbox      ,
-%          bl=>\let\next\bottomleftbox,br=>\let\next\bottomrightbox,
-%          tl=>\let\next\topleftbox   ,tr=>\let\next\toprightbox   ,
-%          lt=>\let\next\lefttopbox   ,lb=>\let\next\leftbottombox ,
-%          rt=>\let\next\righttopbox  ,rb=>\let\next\rightbottombox]%
-%       \next{\flushnextbox}%
-%       \egroup}#1}
+\installcorenamespace{alignedboxes}
 
-\def\doalignedbox[#1][#2]%
-  {\bgroup
-  %\let\iftraceboxplacement\iftracelayers % ugly
-   \dowithnextbox
-     {\serializecommalist[#2]%
-      \executeifdefined{\??ab\??ab\serializedcommalist}\middlebox{\flushnextbox}%
-      \egroup}#1}
+\unexpanded\def\alignedbox{\dosingleempty\boxes_aligned_box}
+\unexpanded\def\aligned   {\dosingleempty\boxes_aligned}
 
-\setvalue{\??ab\??ab          }{\middlebox}
-\setvalue{\??ab\??ab\v!middle }{\middlebox}
-\setvalue{\??ab\??ab\v!left   }{\leftbox  }
-\setvalue{\??ab\??ab\v!right  }{\rightbox }
-\setvalue{\??ab\??ab\v!bottom }{\bottombox}
-\setvalue{\??ab\??ab\v!top    }{\topbox   }
+\def\boxes_aligned_box[#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\boxes_aligned_finish}
+\def\boxes_aligned    [#1]{\bgroup\serializecommalist[#1]\dowithnextboxcs\boxes_aligned_finish\hbox}
 
-\setvalue{\??ab\??ab\v!middle\v!middle}{\middlebox}
-\setvalue{\??ab\??ab\v!left  \v!top   }{\lefttopbox}
-\setvalue{\??ab\??ab\v!left  \v!bottom}{\leftbottombox}
-\setvalue{\??ab\??ab\v!right \v!top   }{\righttopbox}
-\setvalue{\??ab\??ab\v!right \v!bottom}{\rightbottombox}
-\setvalue{\??ab\??ab\v!top   \v!left  }{\topleftbox}
-\setvalue{\??ab\??ab\v!bottom\v!left  }{\bottomleftbox}
-\setvalue{\??ab\??ab\v!top   \v!right }{\toprightbox}
-\setvalue{\??ab\??ab\v!bottom\v!right }{\bottomrightbox}
+\def\boxes_aligned_finish
+  {\csname\??alignedboxes
+     \ifcsname\??alignedboxes\serializedcommalist\endcsname\serializedcommalist\else\v!middle\fi
+   \endcsname{\flushnextbox}%
+   \egroup}
 
-\setvalue{\??ab\??ab  c}{\middlebox}
-\setvalue{\??ab\??ab  l}{\leftbox}
-\setvalue{\??ab\??ab  r}{\rightbox}
-\setvalue{\??ab\??ab  b}{\bottombox}
-\setvalue{\??ab\??ab  t}{\topbox}
-
-\setvalue{\??ab\??ab lt}{\lefttopbox}
-\setvalue{\??ab\??ab lb}{\leftbottombox}
-\setvalue{\??ab\??ab rt}{\righttopbox}
-\setvalue{\??ab\??ab rb}{\rightbottombox}
-\setvalue{\??ab\??ab tl}{\topleftbox}
-\setvalue{\??ab\??ab bl}{\bottomleftbox}
-\setvalue{\??ab\??ab tr}{\toprightbox}
-\setvalue{\??ab\??ab br}{\bottomrightbox}
-
-\setvalue{\??ab\??ab  m}{\middlebox}
-
-% The next ones were desparately needed by Vit Zyka (see
-% \type {supp-box} for definitions).
-
-\setvalue{\??ab\??ab  g}{\baselinemiddlebox}
-\setvalue{\??ab\??ab gl}{\baselineleftbox}
-\setvalue{\??ab\??ab gc}{\baselinemiddlebox}
-\setvalue{\??ab\??ab gr}{\baselinerightbox}
-
-\setvalue{\??ab\??ab \v!line         }{\baselinemiddlebox} % \v!grid is taken
-\setvalue{\??ab\??ab \v!line\v!left  }{\baselineleftbox}
-\setvalue{\??ab\??ab \v!line\v!middle}{\baselinemiddlebox}
-\setvalue{\??ab\??ab \v!line\v!right }{\baselinerightbox}
-
-\unexpanded\def\offsetbox
-  {\dodoubleempty\dooffsetbox[]}
+\letvalue{\??alignedboxes                  }\middlebox
+\letvalue{\??alignedboxes\v!middle         }\middlebox
+\letvalue{\??alignedboxes\v!middle\v!middle}\middlebox
+\letvalue{\??alignedboxes\v!left           }\leftbox
+\letvalue{\??alignedboxes\v!left  \v!top   }\lefttopbox
+\letvalue{\??alignedboxes\v!left  \v!bottom}\leftbottombox
+\letvalue{\??alignedboxes\v!right          }\rightbox
+\letvalue{\??alignedboxes\v!right \v!top   }\righttopbox
+\letvalue{\??alignedboxes\v!right \v!bottom}\rightbottombox
+\letvalue{\??alignedboxes\v!bottom         }\bottombox
+\letvalue{\??alignedboxes\v!bottom\v!left  }\bottomleftbox
+\letvalue{\??alignedboxes\v!bottom\v!right }\bottomrightbox
+\letvalue{\??alignedboxes\v!top            }\topbox
+\letvalue{\??alignedboxes\v!top   \v!left  }\topleftbox
+\letvalue{\??alignedboxes\v!top   \v!right }\toprightbox
+\letvalue{\??alignedboxes\v!line           }\baselinemiddlebox % \v!grid is taken
+\letvalue{\??alignedboxes\v!line  \v!left  }\baselineleftbox
+\letvalue{\??alignedboxes\v!line  \v!middle}\baselinemiddlebox
+\letvalue{\??alignedboxes\v!line  \v!right }\baselinerightbox
+\letvalue{\??alignedboxes                 c}\middlebox
+\letvalue{\??alignedboxes                 l}\leftbox
+\letvalue{\??alignedboxes                 r}\rightbox
+\letvalue{\??alignedboxes                 b}\bottombox
+\letvalue{\??alignedboxes                 t}\topbox
+\letvalue{\??alignedboxes                lt}\lefttopbox
+\letvalue{\??alignedboxes                lb}\leftbottombox
+\letvalue{\??alignedboxes                rt}\righttopbox
+\letvalue{\??alignedboxes                rb}\rightbottombox
+\letvalue{\??alignedboxes                tl}\topleftbox
+\letvalue{\??alignedboxes                bl}\bottomleftbox
+\letvalue{\??alignedboxes                tr}\toprightbox
+\letvalue{\??alignedboxes                br}\bottomrightbox
+\letvalue{\??alignedboxes                 m}\middlebox
+\letvalue{\??alignedboxes                 g}\baselinemiddlebox
+\letvalue{\??alignedboxes                gl}\baselineleftbox
+\letvalue{\??alignedboxes                gc}\baselinemiddlebox
+\letvalue{\??alignedboxes                gr}\baselinerightbox
 
 % left/right/top/bottomoffset -> dimensions change
 % x/y | method=fixed          -> dimensions don't change
 
-\def\dooffsetbox[#1][#2]%
-  {\bgroup
-   \dowithnextbox
-     {\getparameters[\??ox]
-        [\c!x=\zeropoint,
-         \c!y=\zeropoint,
-         \c!width=\nextboxwd,
-         \c!height=\nextboxht,
-         \c!depth=\nextboxdp,
-         \c!location=,
-         \c!leftoffset=\zeropoint,
-         \c!rightoffset=\zeropoint,
-         \c!topoffset=\zeropoint,
-         \c!bottomoffset=\zeropoint,
-         \c!method=,
-         #2]%
-      \donefalse
-      \ifdim\@@oxleftoffset =\zeropoint\else\donetrue\fi
-      \ifdim\@@oxrightoffset=\zeropoint\else\donetrue\fi
-      \ifdim\@@oxtopoffset  =\zeropoint\else\donetrue\fi
-      \ifdim\@@oxbottomoffset  =\zeropoint\else\donetrue\fi
-      \ifdone
-        \doif\@@oxmethod\v!fixed % new
-          {\ifdim\@@oxleftoffset=\zeropoint
-             \ifdim\@@oxrightoffset=\zeropoint \else
-               \scratchdimen-\@@oxrightoffset
-               \edef\@@oxx{\the\scratchdimen}%
-               \let\@@oxrightoffset\zeropoint
-             \fi
-           \else
-             \let\@@oxx\@@oxleftoffset
-             \let\@@oxleftoffset\zeropoint
-           \fi
-           \ifdim\@@oxtopoffset=\zeropoint
-             \ifdim\@@oxbottomoffset=\zeropoint \else
-               \scratchdimen-\@@oxbottomoffset
-               \edef\@@oxy{\the\scratchdimen}%
-               \let\@@oxbottomoffset\zeropoint
-             \fi
-           \else
-             \let\@@oxy\@@oxtopoffset
-             \let\@@oxtopoffset\zeropoint
-           \fi
-           \donefalse}%
-      \fi
-      \ifdone
-        \setbox\nextbox\vbox
-          {\forgetall\offinterlineskip
-           \vskip\@@oxtopoffset
-           \hbox
-             {\hskip\@@oxleftoffset
-              \flushnextbox
-              \hskip\@@oxrightoffset}%
-           \vskip\@@oxbottomoffset}%
-        \scratchdimen\nextboxht
-        \advance\scratchdimen\nextboxdp
-        \nextboxht\scratchdimen
-        \nextboxdp\zeropoint
-      \fi
-      \freezedimenmacro\@@oxwidth
-      \freezedimenmacro\@@oxheight
-      \freezedimenmacro\@@oxdepth
-      \setbox\nextbox\hbox
-        {\hskip\@@oxx\lower\@@oxy\hbox
-           {\doifelsenothing\@@oxlocation
-              {\flushnextbox}
-              {\alignedbox[\@@oxlocation]\hbox{\flushnextbox}}}}%
-      \nextboxwd\@@oxwidth
-      \nextboxht\@@oxheight
-      \nextboxdp\@@oxdepth
-      \flushnextbox
-      \egroup}#1}
+\unexpanded\def\offsetbox{\dosingleempty\boxes_offset_box}
+\unexpanded\def\offset   {\dosingleempty\boxes_offset}
+
+\def\boxes_offset_box[#1]{\bgroup\dowithnextbox{\boxes_offsetfinish{#1}}}
+\def\boxes_offset    [#1]{\bgroup\dowithnextbox{\boxes_offsetfinish{#1}}\hbox}
+
+\def\boxes_offsetfinish#1%
+  {\getparameters[\??ox]
+     [\c!x=\zeropoint,
+      \c!y=\zeropoint,
+      \c!width=\nextboxwd,
+      \c!height=\nextboxht,
+      \c!depth=\nextboxdp,
+      \c!location=,
+      \c!leftoffset=\zeropoint,
+      \c!rightoffset=\zeropoint,
+      \c!topoffset=\zeropoint,
+      \c!bottomoffset=\zeropoint,
+      \c!method=,
+      #1]%
+   \donefalse
+   \ifdim\@@oxleftoffset  =\zeropoint\else\donetrue\fi
+   \ifdim\@@oxrightoffset =\zeropoint\else\donetrue\fi
+   \ifdim\@@oxtopoffset   =\zeropoint\else\donetrue\fi
+   \ifdim\@@oxbottomoffset=\zeropoint\else\donetrue\fi
+   \ifdone
+     \doif\@@oxmethod\v!fixed % new
+       {\ifdim\@@oxleftoffset=\zeropoint
+          \ifdim\@@oxrightoffset=\zeropoint \else
+            \edef\@@oxx{\the\dimexpr-\@@oxrightoffset}%
+            \let\@@oxrightoffset\zeropoint
+          \fi
+        \else
+          \let\@@oxx\@@oxleftoffset
+          \let\@@oxleftoffset\zeropoint
+        \fi
+        \ifdim\@@oxtopoffset=\zeropoint
+          \ifdim\@@oxbottomoffset=\zeropoint \else
+            \edef\@@oxy{\the\dimexpr-\@@oxbottomoffset}%
+            \let\@@oxbottomoffset\zeropoint
+          \fi
+        \else
+          \let\@@oxy\@@oxtopoffset
+          \let\@@oxtopoffset\zeropoint
+        \fi
+        \donefalse}%
+   \fi
+   \ifdone
+     \setbox\nextbox\vbox
+       {\forgetall % already done
+        \offinterlineskip
+        \vskip\@@oxtopoffset
+        \hbox
+          {\hskip\@@oxleftoffset
+           \box\nextbox
+           \hskip\@@oxrightoffset}%
+        \vskip\@@oxbottomoffset}%
+     \ht\nextbox\htdp\nextbox
+     \dp\nextbox\zeropoint
+   \fi
+   \freezedimenmacro\@@oxwidth
+   \freezedimenmacro\@@oxheight
+   \freezedimenmacro\@@oxdepth
+   \setbox\nextbox\hbox
+     {\hskip\@@oxx\lower\@@oxy\hbox
+        {\doifelsenothing\@@oxlocation
+           {\box\nextbox}
+           {\alignedbox[\@@oxlocation]\hbox{\box\nextbox}}}}%
+   \wd\nextbox\@@oxwidth
+   \ht\nextbox\@@oxheight
+   \dp\nextbox\@@oxdepth
+   \box\nextbox
+   \egroup}
 
 % \useMPlibrary[pre] \setupbackgrounds[page][background=pagegrid]
 %
@@ -856,73 +818,43 @@
 % \input tufte
 % \placefigure[left,none]{}{\offset[bottomoffset=1cm]{\externalfigure[koe][breedte=3cm]}}
 % \input tufte
-
-\unexpanded\def\offset {\dodoubleempty\dooffsetbox [\hbox]} % yes or no
-\unexpanded\def\aligned{\dosingleempty\doalignedbox[\hbox]} % yes or no
 
 %\ruledhbox{\offsetbox[x=-1cm,y=-1cm,location=c]
 %  {\framed[width=4cm,height=4cm]{x}}}
-
-\def\dotabbed#1#2#3#4%
+
+% Some old code:
+%
+% \ltabbed{\romannumerals{3}}{\romannumerals{1}} test \endgraf
+% \ltabbed{\romannumerals{3}}{\romannumerals{2}} test \endgraf
+% \ltabbed{\romannumerals{3}}{\romannumerals{3}} test \endgraf
+%
+% \rtabbed{\romannumerals{3}}{\romannumerals{1}} test \endgraf
+% \rtabbed{\romannumerals{3}}{\romannumerals{2}} test \endgraf
+% \rtabbed{\romannumerals{3}}{\romannumerals{3}} test \endgraf
+%
+% \ctabbed{\romannumerals{3}}{\romannumerals{1}} test \endgraf
+% \ctabbed{\romannumerals{3}}{\romannumerals{2}} test \endgraf
+% \ctabbed{\romannumerals{3}}{\romannumerals{3}} test \endgraf
+
+\def\boxes_tabbed#1#2#3#4%
   {\dontleavehmode
-   \bgroup
+   \begingroup
    \setbox\scratchbox\hbox{#3}%
    \hbox to \wd\scratchbox{#1#4#2}%
-   \egroup}
+   \endgroup}
 
-\unexpanded\def\ltabbed{\dotabbed\relax\hss}
-\unexpanded\def\rtabbed{\dotabbed\hss  \relax}
-\unexpanded\def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
+\unexpanded\def\ltabbed{\boxes_tabbed\relax\hss}
+\unexpanded\def\rtabbed{\boxes_tabbed\hss  \relax}
+\unexpanded\def\ctabbed{\boxes_tabbed\hss  \hss}
 
-% \ltabbed{\romeins{3}}{\romeins{1}} test \endgraf
-% \ltabbed{\romeins{3}}{\romeins{2}} test \endgraf
-% \ltabbed{\romeins{3}}{\romeins{3}} test \endgraf
-%
-% \rtabbed{\romeins{3}}{\romeins{1}} test \endgraf
-% \rtabbed{\romeins{3}}{\romeins{2}} test \endgraf
-% \rtabbed{\romeins{3}}{\romeins{3}} test \endgraf
-%
-% \ctabbed{\romeins{3}}{\romeins{1}} test \endgraf
-% \ctabbed{\romeins{3}}{\romeins{2}} test \endgraf
-% \ctabbed{\romeins{3}}{\romeins{3}} test \endgraf
+\let\mtabbed\ctabbed
 
-% alternative, if done, then other name
-%
-% \def\dotabbed#1#2#3#4%
-%   {\dontleavehmode
-%    \bgroup
-%    \scratchdimen\zeropoint
-%    \def\docommand##1%
-%      {\setbox\scratchbox\hbox{##1}%
-%       \ifdim\wd\scratchbox>\scratchdimen
-%         \scratchdimen\wd\scratchbox
-%       \fi}%
-%    \processcommalist[#3]\docommand
-%    \hbox to \scratchdimen{#1#4#2}%
-%    \egroup}
-%
-% \def\ltabbed{\dotabbed\relax\hss}
-% \def\rtabbed{\dotabbed\hss  \relax}
-% \def\ctabbed{\dotabbed\hss  \hss}      \let\mtabbed\ctabbed
-%
-% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
-% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
-% \ltabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
-%
-% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
-% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
-% \rtabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
-%
-% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{10}}   test \endgraf
-% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{15}}   test \endgraf
-% \ctabbed{\romeins{10},\romeins{2000},\romeins{15}}{\romeins{2000}} test \endgraf
-
 % to be documented
 
-\unexpanded\def\phantombox[#1]%
+\unexpanded\def\phantombox[#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
   {\hbox\bgroup
    \getparameters
-     [\??ol]
+     [\??ol] % brrr
      [\c!width=\zeropoint,%
       \c!height=\zeropoint,%
       \c!depth=\zeropoint,#1]%
@@ -932,39 +864,41 @@
    \dp\scratchbox\@@oldepth
    \box\scratchbox
    \egroup}
-
+
 %  \backgroundimage{1}{\hsize}{\vsize}{\externalfigure[cow][\c!width=3cm]}
 
 \unexpanded\def\backgroundimage#1#2#3% repeat hsize vsize
   {\bgroup
    \forgetall
-   \dowithnextbox
-     {\offinterlineskip
-      \ifcase#1\relax
-        % just one
-      \else
-        \scratchdimen#2\divide\scratchdimen\nextboxwd\count0\scratchdimen\advance\count0\plusone
-        \scratchdimen#3\divide\scratchdimen\nextboxht\count2\scratchdimen\advance\count2\plusone
-        % to be considered, probably methods
-        \ifcase#1\or % x and y
-          \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
-          \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
-        \or % x
-          \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
-        \or % y
-          \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
-        \fi
-      \fi
-      \ifdim\nextboxwd>#2\relax
-        \setbox\nextbox\hbox to #2{\hss\flushnextbox\hss}%
-        \setbox\nextbox\hbox{\expanded{\clip[\c!width=#2,\c!height=\the\nextboxht]{\flushnextbox}}}%
-      \fi
-      \ifdim\nextboxht>#3\relax
-        \setbox\nextbox\vbox to #3{\vss\flushnextbox\vss}%
-        \setbox\nextbox\hbox{\expanded{\clip[\c!width=\the\nextboxwd,\c!height=#3]{\flushnextbox}}}%
-      \fi
-      \flushnextbox
-      \egroup}%
-   \hbox}
-
+   \dowithnextbox{\boxes_background_image{#1}{#2}{#3}}\hbox}
+
+\def\boxes_background_image#1#2#3%
+  {\offinterlineskip
+   \ifcase#1\relax
+     % just one
+   \else
+     \scratchdimen#2\divide\scratchdimen\wd\nextbox\count0\scratchdimen\advance\count0\plusone
+     \scratchdimen#3\divide\scratchdimen\ht\nextbox\count2\scratchdimen\advance\count2\plusone
+     % to be considered: methods
+     \ifcase#1%
+     \or % x and y
+       \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
+       \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
+     \or % x
+       \setbox\nextbox\hbox{\dorecurse{\count0}{\copy\nextbox}}%
+     \or % y
+       \setbox\nextbox\vbox{\dorecurse{\count2}{\copy\nextbox\endgraf}}%
+     \fi
+   \fi
+   \ifdim\wd\nextbox>#2\relax
+     \setbox\nextbox\hbox to #2{\hss\box\nextbox\hss}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=#2,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+   \fi
+   \ifdim\ht\nextbox>#3\relax
+     \setbox\nextbox\vbox to #3{\vss\box\nextbox\vss}%
+     \setbox\nextbox\hbox{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=#3]{\box\nextbox}}}%
+   \fi
+   \box\nextbox
+   \egroup}
+
 \protect \endinput

@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2011.12.23 09:52}
+\newcontextversion{2011.12.31 13:16}
 
 %D This file is loaded at runtime, thereby providing an
 %D excellent place for hacks, patches, extensions and new
@@ -326,8 +326,6 @@
 % \the\dimexpr(\dimchoice{11pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 % \the\dimexpr(\dimchoice{14pt}{{<10pt}{8pt}{<12pt}{9pt}{<15pt}{10pt}{=11pt}{12pt}})
 
-\def\showsetupsdefinition[#1]{\showvalue{\??su:#1}} % temp hack for debugging
-
 \def\tabulaterule % to be redone, not correct
   {\dotabulaterule
      {\hrule\!!height.5\scratchdimen\!!depth.5\scratchdimen\relax
@@ -433,25 +431,6 @@
 \appendtoks
   \setinnerparpositions % see "techniek" for application
 \to \everytabulate
-
-\def\fontclassname#1#2%
-  {\ifcsname\??ff#1#2\endcsname
-     \fontclassname{#1}{\csname\??ff#1#2\endcsname}%
-   \else\ifcsname\??ff#2\endcsname
-     \fontclassname{#1}{\csname\??ff#2\endcsname}%
-   \else
-     #2%
-   \fi\fi}
-
-\def\defineclassfontsynonym
-  {\dotripleargument\dodefineclassfontsynonym}
-
-\def\dodefineclassfontsynonym[#1][#2][#3]%
-  {\definefontsynonym[#1][\fontclassname{#2}{#3}]}
-
-%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
-%
-%\defineclassfontsynonym [KopFont] [officina] [SerifBold]
 
 \def\startcolumnmakeup % don't change
   {\bgroup

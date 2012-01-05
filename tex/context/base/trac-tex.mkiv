@@ -26,17 +26,17 @@
 
 \let\alltextracers\empty % so that we can report available tracers
 
-\def\installtextracer#1%
+\unexpanded\def\installtextracer#1%
   {\addtocommalist{#1}\alltextracers}
 
-\def\enabletextracers [#1]{\processcommalist[#1]\doenabletextracer}
-\def\disabletextracers[#1]{\processcommalist[#1]\dodisabletextracer}
+\unexpanded\def\enabletextracers [#1]{\processcommalist[#1]\system_textracer_enable }
+\unexpanded\def\disabletextracers[#1]{\processcommalist[#1]\system_textracer_disable}
 
-\def\doenabletextracer #1{\csname  enabletracer#1\endcsname}
-\def\dodisabletextracer#1{\csname disabletracer#1\endcsname}
+\def\system_textracer_enable #1{\csname  enabletracer#1\endcsname}
+\def\system_textracer_disable#1{\csname disabletracer#1\endcsname}
 
 % The next one is for Taco, although we can use directives as well:
 
-\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
+\unexpanded\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
 
 \protect \endinput

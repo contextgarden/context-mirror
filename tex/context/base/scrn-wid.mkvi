@@ -64,7 +64,10 @@
 \newbox\scrn_attachment_box_link
 \newbox\scrn_attachment_box_symbol
 
-\installcommandhandler\??at{attachment}\??at
+\installcorenamespace{attachment}
+\installcorenamespace{attachmentlocation}
+
+\installcommandhandler \??attachment {attachment} \??attachment
 
 \let\setupattachments\setupattachment % convenience and compatibility
 
@@ -94,7 +97,7 @@
   {\ifsecondargument
      \begingroup
      \def\currentattachment{_}%
-     \setupcurrentattachment[#settings,\s!parent=\??at]%
+     \setupcurrentattachment[#settings,\s!parent=\??attachment]%
      \ctxcommand{registerattachment{
         tag        = "#tag",
         registered = "#tag",
@@ -160,7 +163,7 @@
      {\doifassignmentelse{#registered}
         {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment,#registered]\egroup}}%
         {\def\scrn_attachment_stop{\scrn_attachment_inject[#registered][\c!buffer=\v!attachment,#settings]\egroup}}}%
-   \dostartbuffer[\v!attachment][\e!start\currentattachment][\e!stop\currentattachment]}
+   \grabbufferdatadirect\v!attachment{\e!start\currentattachment}{\e!stop\currentattachment}}
 
 \def\scrn_attachment_start_ignore
   {\expandafter\gobbleuntil\csname\e!stop\currentattachment\endcsname}
@@ -194,7 +197,7 @@
      height            = \number\dimexpr\currentattachmentheight\relax,
      depth             = \number\dimexpr\currentattachmentdepth \relax,
      color             = "\attachmentparameter\c!color",
-     colormodel        = \number\currentcolormodel,
+     colormodel        = \number\attribute\colormodelattribute,
      colorvalue        = \thecolorattribute{\attachmentparameter\c!color},
      transparencyvalue = \thetransparencyattribute{\attachmentparameter\c!color},
      symbol            = "\currentattachmentsymbol",
@@ -222,16 +225,16 @@
 
 \def\scrn_attachment_place
   {\executeifdefined
-     {\??at:\c!location:\attachmentparameter\c!location}\hbox
+     {\??attachmentlocation\attachmentparameter\c!location}\hbox
      {\box\scrn_attachment_box_link}}
 
-\setvalue{\??at:\c!location:\v!inmargin   }{\inmargin     }
-\setvalue{\??at:\c!location:\v!leftedge   }{\inleftedge   }
-\setvalue{\??at:\c!location:\v!rightedge  }{\inrightedge  }
-\setvalue{\??at:\c!location:\v!leftmargin }{\inleftmargin }
-\setvalue{\??at:\c!location:\v!rightmargin}{\inrightmargin}
-\setvalue{\??at:\c!location:\v!high       }{\high}
-\setvalue{\??at:\c!location:\v!none       }{\scrn_attachment_collect}
+\setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     }
+\setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   }
+\setvalue{\??attachmentlocation\v!rightedge  }{\inrightedge  }
+\setvalue{\??attachmentlocation\v!leftmargin }{\inleftmargin }
+\setvalue{\??attachmentlocation\v!rightmargin}{\inrightmargin}
+\setvalue{\??attachmentlocation\v!high       }{\high}
+\setvalue{\??attachmentlocation\v!none       }{\scrn_attachment_collect}
 
 \def\scrn_attachment_collect#content%
   {\global\setbox\scrn_attachment_box_collect\hbox\bgroup
@@ -348,7 +351,10 @@
 %
 % test
 
-\installcommandhandler \??cc {comment} \??cc
+\installcorenamespace{comment}
+\installcorenamespace{commentlocation}
+
+\installcommandhandler \??comment {comment} \??comment
 
 \newbox\scrn_comment_box_collect
 \newbox\scrn_comment_box_rendering
@@ -416,7 +422,7 @@
      {\setupcurrentcomment[\currentcomment][#title]}
      {\setupcurrentcomment[\currentcomment][\c!title=#title,#settings]}%
    \def\scrn_comment_stop{\scrn_comment_inject\egroup}%
-   \dostartbuffer[\v!comment][\e!start\currentcomment][\e!stop\currentcomment]}
+   \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
 
 \def\scrn_comment_start_ignore
   {\expandafter\gobbleuntil\csname\e!stop\currentcomment\endcsname}
@@ -457,7 +463,7 @@
         depth             = \number\dimexpr\currentcommentdepth,
         nx                = \commentparameter\c!nx,
         ny                = \commentparameter\c!ny,
-        colormodel        = \number\currentcolormodel,
+        colormodel        = \number\attribute\colormodelattribute,
         colorvalue        = \thecolorattribute{\commentparameter\c!color},
         transparencyvalue = \thetransparencyattribute{\commentparameter\c!color},
         option            = "\commentparameter\c!option", % todo
@@ -477,16 +483,16 @@
 
 \def\scrn_comment_place
   {\executeifdefined
-     {\??cc:\c!location:\commentparameter\c!location}\hbox
+     {\??commentlocation\commentparameter\c!location}\hbox
      {\hbox{\box\scrn_comment_box_link}}}
 
-\setvalue{\??cc:\c!location:\v!inmargin   }{\inmargin     }
-\setvalue{\??cc:\c!location:\v!leftedge   }{\inleftedge   }
-\setvalue{\??cc:\c!location:\v!rightedge  }{\inrightedge  }
-\setvalue{\??cc:\c!location:\v!leftmargin }{\inleftmargin }
-\setvalue{\??cc:\c!location:\v!rightmargin}{\inrightmargin}
-\setvalue{\??cc:\c!location:\v!high       }{\high}
-\setvalue{\??cc:\c!location:\v!none       }{\scrn_comment_collect}
+\setvalue{\??commentlocation\v!inmargin   }{\inmargin     }
+\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   }
+\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  }
+\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin }
+\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin}
+\setvalue{\??commentlocation\v!high       }{\high}
+\setvalue{\??commentlocation\v!none       }{\scrn_comment_collect}
 
 \def\scrn_comment_collect#content%
   {\global\setbox\scrn_comment_box_collect\hbox\bgroup

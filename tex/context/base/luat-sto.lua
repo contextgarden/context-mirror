@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['luat-sto'] = {
     license   = "see context related readme files"
 }
 
+-- we could nil some function in the productionrun
+
 local type, next, setmetatable, getmetatable, collectgarbage = type, next, setmetatable, getmetatable, collectgarbage
 local gmatch, format, write_nl = string.gmatch, string.format, texio.write_nl
 local serialize, concat, sortedhash = table.serialize, table.concat, table.sortedhash
@@ -127,6 +129,10 @@ function statistics.reportstorage(whereto)
     write_nl(whereto," ","stored catcodetables:"," ")
     for k,v in sortedhash(catcodes.names) do
         write_nl(whereto,format("%03i %s",k,concat(v," ")))
+    end
+    write_nl(whereto," ","used corenamespaces:"," ")
+    for k,v in sortedhash(interfaces.corenamespaces) do
+        write_nl(whereto,format("%03i %s",k,v))
     end
     write_nl(whereto," ")
 end

@@ -110,10 +110,10 @@
    \obeylualines
    \obeyluatokens
    \def\u{\letterbackslash u}%
-   \dostartJScode}
+   \javascripts_start_code}
 
-\long\def\dostartJScode#1\stopJScode
-  {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storecode(\!!bs#1\!!es)}}}
+\def\javascripts_start_code#1\stopJScode
+  {\normalexpanded{\endgroup\ctxcommand{storejavascriptcode(\!!bs#1\!!es)}}}
 
 \let\stopJScode\relax
 
@@ -122,16 +122,15 @@
    \obeylualines
    \obeyluatokens
    \def\u{\letterbackslash u}%
-   \dostartJSpreamble}
+   \javascripts_start_preamble}
 
-\long\def\dostartJSpreamble#1\stopJSpreamble
-  {\normalexpanded{\endgroup\ctxlua{interactions.javascripts.storepreamble(\!!bs#1\!!es)}}}
+\def\javascripts_start_preamble#1\stopJSpreamble
+  {\normalexpanded{\endgroup\ctxcommand{storejavascriptpreamble(\!!bs#1\!!es)}}}
 
 \let\stopJSpreamble\relax
 
-\def\setJSpreamble   #1#2{\ctxlua{interactions.javascripts.storepreamble ("#1",\!!bs#2\!!es)}}
-\def\addtoJSpreamble #1#2{\ctxlua{interactions.javascripts.addtopreamble ("#1",\!!bs#2\!!es)}}
-\def\douseJSpreamblenow#1{\ctxlua{interactions.javascripts.usepreamblenow("#1")}}
+\unexpanded\def\setJSpreamble  #1#2{\ctxcommand{storejavascriptpreamble("#1",\!!bs#2\!!es)}}
+\unexpanded\def\addtoJSpreamble#1#2{\ctxcommand{addtojavascriptpreamble("#1",\!!bs#2\!!es)}}
 
 %D \macros
 %D   {useJSscripts}
@@ -148,11 +147,11 @@
 %D
 %D The not so complicated implementation of this macro is:
 
-\def\douseJSscripts[#1][#2]%
-  {\ctxlua{interactions.javascripts.usescripts(\!!bs#1\!!es)}%
-   \douseJSpreamblenow{#2}}
-
 \def\useJSscripts
-  {\dodoubleempty\douseJSscripts}
+  {\dodoubleempty\javascripts_use_scripts}
+
+\def\javascripts_use_scripts[#1][#2]%
+  {\ctxcommand{usejavascriptscripts(\!!bs#1\!!es)}% two steps as this one calls tex code
+   \ctxcommand{usejavascriptpreamble("#2")}}      % so this one comes later
 
 \protect \endinput

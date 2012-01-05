@@ -49,7 +49,9 @@
 %D \placeinitial \input ward \par \input ward \placeinitial \input tufte
 %D \stoptyping
 
-\installsimplecommandhandler \??dc {initial} \??dc
+\installcorenamespace{initial}
+
+\installsimplecommandhandler \??initial {initial} \??initial
 
 \appendtoks
     \checkinitialparent % this might become automatic

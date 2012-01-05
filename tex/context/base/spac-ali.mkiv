@@ -15,18 +15,31 @@
 
 \unprotect
 
+%D The \type {new} and \type {old} methods are gone as we now have \type
+%D {flush*} variants. Starting at the last day of 2011 both methods are
+%D merged into one and caching has been added, which makes switching
+%D twice as fast.
+
 \registerctxluafile{spac-ali}{1.001}
 
 \definesystemattribute[realign]   [public] % might be combined with the next one
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
 
+\appendtoks
+    \attribute\realignattribute   \attributeunsetvalue
+    \attribute\alignstateattribute\attributeunsetvalue
+\to \everyforgetall
+
 \unexpanded\def\resetrealignsignal{\attribute\realignattribute\attributeunsetvalue}
 \unexpanded\def\signalinnerrealign{\ctxcommand{setrealign(2)}}
 \unexpanded\def\signalouterrealign{\ctxcommand{setrealign(1)}}
 
-\appendtoks
-    \resetrealignsignal
-\to \everyforgetall
+\installcorenamespace{aligncommand}
+\installcorenamespace{alignhorizontal}
+\installcorenamespace{alignvertical}
+\installcorenamespace{alignmentcache}
+
+\newtoks\everyresetalign % todo
 
 % We will not use bodydir and pagedir so we disable them. That way we get
 % normal hyperlink support.
@@ -122,545 +135,8 @@
    display:\ifconditional\displaylefttoright l2r\else r2l\fi\space
    inline:\ifconditional \inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
-
-\def\dodefinehbox[#1][#2]%
-  {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
 
-\unexpanded\def\definehbox
-  {\dodoubleargument\dodefinehbox}
-
-% To be redone:
-
-\unexpanded\def\ibox#1#2#3%
-  {\vbox\bgroup
-     \forgetall
-     \let\\=\endgraf
-     \ifdoublesided\signalinnerrealign\fi
-     \doifrightpageelse\raggedright\raggedleft
-     \let\next}
-
-\unexpanded\def\obox#1#2#3%
-  {\vbox\bgroup
-     \forgetall
-     \let\\=\endgraf
-     \ifdoublesided\signalouterrealign\fi
-     \doifrightpageelse\raggedleft\raggedright
-     \let\next}
-
-\def\@@ragged@@command{@@ragged@@c}
-\def\@@ragged@@hbox   {@@ragged@@h}
-\def\@@ragged@@vbox   {@@ragged@@v}
-
-\def\dosetraggedvbox#1% can be more keys
-  {\let\raggedbox\vbox
-   \processcommacommand[#1]\dodosetraggedvbox}
-
-\def\dosetraggedhbox#1% can be more keys
-  {\let\raggedbox\hbox
-   \processcommacommand[#1]\dodosetraggedhbox}
-
-\def\dodosetraggedvbox#1%
-  {\ifcsname\@@ragged@@vbox#1\endcsname
-     \csname\@@ragged@@vbox#1\endcsname
-     \quitcommalist
-   \fi}
-
-\def\dodosetraggedhbox#1%
-  {\ifcsname\@@ragged@@hbox#1\endcsname
-     \csname\@@ragged@@hbox#1\endcsname
-     \quitcommalist
-   \fi}
-
-\setvalue{\@@ragged@@vbox\v!left      }{\let\raggedbox\lbox}
-\setvalue{\@@ragged@@vbox\v!right     }{\let\raggedbox\rbox}
-\setvalue{\@@ragged@@vbox\v!middle    }{\let\raggedbox\cbox}
-\setvalue{\@@ragged@@vbox\v!inner     }{\let\raggedbox\ibox}
-\setvalue{\@@ragged@@vbox\v!outer     }{\let\raggedbox\obox}
-\setvalue{\@@ragged@@vbox\v!flushleft }{\let\raggedbox\rbox}
-\setvalue{\@@ragged@@vbox\v!flushright}{\let\raggedbox\lbox}
-\setvalue{\@@ragged@@vbox\v!center    }{\let\raggedbox\cbox}
-\setvalue{\@@ragged@@vbox\v!no        }{\def\raggedbox{\vbox\bgroup\raggedright\let\next=}]}
-
-\setvalue{\@@ragged@@hbox\v!left      }{\def\raggedbox{\doalignedline\v!left  }}
-\setvalue{\@@ragged@@hbox\v!right     }{\def\raggedbox{\doalignedline\v!right }}
-\setvalue{\@@ragged@@hbox\v!middle    }{\def\raggedbox{\doalignedline\v!middle}}
-\setvalue{\@@ragged@@hbox\v!inner     }{\def\raggedbox{\doalignedline\v!inner }}
-\setvalue{\@@ragged@@hbox\v!outer     }{\def\raggedbox{\doalignedline\v!outer }}
-\setvalue{\@@ragged@@hbox\v!flushleft }{\def\raggedbox{\doalignedline\v!right }}
-\setvalue{\@@ragged@@hbox\v!flushright}{\def\raggedbox{\doalignedline\v!left  }}
-\setvalue{\@@ragged@@hbox\v!center    }{\def\raggedbox{\doalignedline\v!middle}}
-
-\newtoks\everyraggedcommand
-
-\def\raggedcommand{\the\everyraggedcommand}
-
-% slow, we can do this in lua ... some day
-
-\let\raggedbox\relax
-
-% pretty slow (will be sped up)
-
-\newconstant\ragged_command_h_align_state
-\newconstant\ragged_command_v_align_state
-\newconstant\ragged_command_broad_state
-
-\ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi % public
-
-% \unexpanded\def\dosetraggedcommand#1% beware: #1=empty is ignored, keep that! assumes \forgetall
-%   {\edef\askedraggedalign{#1}%
-%    \ifx\askedraggedalign\empty
-%      \nonosetraggedcommand
-%    \else
-%      \dodosetraggedcommand
-%    \fi}
-%
-% \def\nonosetraggedcommand
-%   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
-%    \let\raggedtopcommand\empty
-%    \let\raggedbottomcommand\empty
-%    \let\raggedbox\relax
-%    \setfalse\raggedonelinerstate}
-%
-% \def\dodosetraggedcommand                  %  beware: #1=empty is ignored, keep that!
-%   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
-%    \let\raggedtopcommand\empty
-%    \let\raggedbottomcommand\empty
-%    \let\raggedbox\relax
-%    \setfalse\raggedonelinerstate
-%    \ifcsname\@@ragged@@command\askedraggedalign\endcsname % fast for one keyword and special table case
-%      \!!doneafalse
-%      \!!donebfalse
-%      \!!donectrue
-%      \csname\@@ragged@@command\askedraggedalign\endcsname
-%    \else
-%      \doifinsetelse\v!broad\askedraggedalign\!!doneatrue\!!doneafalse
-%      \doifinsetelse\v!wide \askedraggedalign\!!donebtrue\!!donebfalse
-%      \!!donectrue
-%      \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
-%    \fi}
-
-% happens a lot: {\flushleft,broad,high} \veryraggedright\let\raggedbottomcommand\vfilll
-
-\unexpanded\def\dosetraggedcommand#1% beware: #1=empty is ignored, keep that! assumes \forgetall
-  {\edef\askedraggedalign{#1}%
-   \ifx\askedraggedalign\empty
-     \nonosetraggedcommand
-   \else
-     \dodosetraggedcommand
-   \fi}
-
-\def\dodosetraggedcommand
-  {\let\raggedtopcommand\empty
-   \let\raggedbottomcommand\empty
-   \let\raggedbox\relax
-   \setfalse\raggedonelinerstate
-   \everyraggedcommand\emptytoks
-   \ragged_command_broad_state  \zerocount
-   \ragged_command_h_align_state\zerocount
-   \ragged_command_v_align_state\zerocount
-   \ifcsname\@@ragged@@command\askedraggedalign\endcsname
-     \csname\@@ragged@@command\askedraggedalign\endcsname
-   \else
-     \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
-   \fi
-  % probably also ok: \normalexpanded{\everyraggedcommand{\resetrealignsignal\the\everyraggedcommand\ragged_command_flush_align}}}
-   \normalexpanded{\everyraggedcommand\expandafter{\expandafter\resetrealignsignal\the\everyraggedcommand\ragged_command_flush_align}}}
-
-\def\nonosetraggedcommand
-  {\let\raggedtopcommand\empty
-   \let\raggedbottomcommand\empty
-   \let\raggedbox\relax
-   \setfalse\raggedonelinerstate
-   \everyraggedcommand{\resetrealignsignal}}
-
-\def\dododosetraggedcommand#1%
-  {\csname\@@ragged@@command#1\endcsname}
-
-\unexpanded\def\ragged_command_tolerant     {\tolerance3000\relax}
-\unexpanded\def\ragged_command_very_tolerant{\tolerance4500\relax}
-\unexpanded\def\ragged_command_stretch      {\emergencystretch\bodyfontsize}
-
-\def\ragged_command_flush_align
-  {\ifcase\ragged_command_h_align_state
-     % 0
-     \notragged
-   \or
-     % 1 center
-     \ifcase\ragged_command_broad_state
-       \raggedcenter
-     \or
-       \veryraggedcenter
-     \or
-       \raggedwidecenter
-     \fi
-   \or
-     % 2 flush left
-     \ifcase\ragged_command_broad_state
-       \raggedright
-     \else
-       \veryraggedright
-     \fi
-   \or
-     % 3 flush right
-     \ifcase\ragged_command_broad_state
-       \raggedleft
-     \else
-       \veryraggedleft
-     \fi
-   \or
-     % 4 inner
-     \ifdoublesided
-       \signalinnerrealign
-     \fi
-     \rightorleftpageaction\raggedright\raggedleft
-   \or
-     % 5 outer
-     \ifdoublesided
-       \signalouterrealign
-     \fi
-     \rightorleftpageaction\raggedleft\raggedright
-   \or
-     % 6 oneliner
-     \ifcase\ragged_command_broad_state
-       \raggedright
-     \else
-       \veryraggedright
-     \fi
-     \parfillskip\zeropoint
-   \or
-     % 7 centered last line
-     \centeredlastline
-   \fi}
-
-\setvalue{\@@ragged@@command\v!broad          }{\ragged_command_broad_state\plusone} % was donea
-\setvalue{\@@ragged@@command\v!wide           }{\ragged_command_broad_state\plustwo} % was doneb
-
-\setvalue{\@@ragged@@command\v!hanging        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enableprotruding}}
-\setvalue{\@@ragged@@command\v!nothanging     }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disableprotruding}}
-\setvalue{\@@ragged@@command\v!hz             }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enableadjusting}}
-\setvalue{\@@ragged@@command\v!nohz           }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disableadjusting}}
-%setvalue{\@@ragged@@command\v!spacing        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enablespacehandling\enablekernhandling}}
-%setvalue{\@@ragged@@command\v!nospacing      }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disablespacehandling\disablekernhandling}}
-\setvalue{\@@ragged@@command\v!hyphenated     }{\everyraggedcommand\expandafter{\the\everyraggedcommand\dohyphens}}
-\setvalue{\@@ragged@@command\v!nothyphenated  }{\everyraggedcommand\expandafter{\the\everyraggedcommand\nohyphens}}
-
-\setvalue{\@@ragged@@command\v!tolerant       }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_tolerant}}
-\setvalue{\@@ragged@@command\v!verytolerant   }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_very_tolerant}}
-\setvalue{\@@ragged@@command\v!stretch        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_stretch}}
-
-\setvalue{\@@ragged@@command\v!flushright     }{\ragged_command_h_align_state\plusthree}
-\setvalue{\@@ragged@@command\v!flushleft      }{\ragged_command_h_align_state\plustwo}
-\setvalue{\@@ragged@@command\v!middle         }{\ragged_command_h_align_state\plusone}
-\setvalue{\@@ragged@@command\v!no             }{\ragged_command_h_align_state\plustwo}
-\setvalue{\@@ragged@@command\v!yes            }{\ragged_command_h_align_state\zerocount}
-\setvalue{\@@ragged@@command\v!normal         }{\ragged_command_h_align_state\zerocount}
-\setvalue{\@@ragged@@command\v!inner          }{\ragged_command_h_align_state\plusfour}
-\setvalue{\@@ragged@@command\v!outer          }{\ragged_command_h_align_state\plusfive}
-\setvalue{\@@ragged@@command\v!right          }{\ragged_command_h_align_state\plustwo}
-\setvalue{\@@ragged@@command\v!left           }{\ragged_command_h_align_state\plusthree}
-\setvalue{\@@ragged@@command\v!center         }{\ragged_command_h_align_state\plusone}
-\setvalue{\@@ragged@@command\v!disable        }{\ragged_command_h_align_state\plussix}
-\setvalue{\@@ragged@@command\v!last           }{\ragged_command_h_align_state\plusseven}
-
-\setvalue{\@@ragged@@command\v!line           }{\settrue\raggedonelinerstate}
-
-\setvalue{\@@ragged@@command\v!high           }{\let\raggedbottomcommand\vfilll}                               % and since we lack a
-\setvalue{\@@ragged@@command\v!low            }{\let\raggedtopcommand   \vfilll}                               % proper keyword, but
-\setvalue{\@@ragged@@command\v!lohi           }{\let\raggedbottomcommand\vfilll\let\raggedtopcommand\vfilll}   % we do support the ugly laho (lohi)
-
-\setvalue{\@@ragged@@command\v!lesshyphenation}{\everyraggedcommand\expandafter{\the\everyraggedcommand\lesshyphens}}
-\setvalue{\@@ragged@@command\v!morehyphenation}{\everyraggedcommand\expandafter{\the\everyraggedcommand\morehyphens}}
-
-\setvalue{\@@ragged@@command\v!lefttoright    }{\everyraggedcommand\expandafter{\the\everyraggedcommand\lefttoright}}
-\setvalue{\@@ragged@@command\v!righttoleft    }{\everyraggedcommand\expandafter{\the\everyraggedcommand\righttoleft}}
-\setvalue{\@@ragged@@command               l2r}{\everyraggedcommand\expandafter{\the\everyraggedcommand\lefttoright}}
-\setvalue{\@@ragged@@command               r2l}{\everyraggedcommand\expandafter{\the\everyraggedcommand\righttoleft}}
-
-\setvalue{\@@ragged@@command\v!table          }{\let\raggedbottomcommand\vfilll
-                                                \ragged_command_broad_state\plusone
-                                                \ragged_command_h_align_state\plustwo}
-
-% compare:
-%
-% \framed[width=4cm,align=no]     {\hfil xxx}
-% \framed[width=4cm,align=disable]{\hfil xxx}
-
-% More alignments:
-
-% \hyphenpenalty  = ( 2.5 * \hsize ) / \raggedness
-% \tolerance     >= 1500 % was 200
-% \raggedness     = 2 .. 6\bodyfontsize
-
-\newconstant\raggedstatus % normal left center right
-
-% \unexpanded\def\setalignstateattribute % unexpanded !
-%   {\attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
-
-\def\leftraggedness   {2\bodyfontsize}
-\def\rightraggedness  {2\bodyfontsize}
-\def\middleraggedness {6\bodyfontsize}
-
-\def\middleraggedness {.5\hsize} % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
-
-% oeps, hsize can be 0pt in which case we get a strange division
-
-\def\middleraggedness {\ifdim\hsize=\zeropoint6\bodyfontsize\else.5\hsize\fi} % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
-
-%D More hyphenation control, will be combined with align
-%D setup.
-
-\unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
-  {\ifx\dohyphens\relax
-     \edef\dohyphens
-       {\hyphenpenalty\the\hyphenpenalty
-        \exhyphenpenalty\the\exhyphenpenalty\relax}%
-   \fi
-   \hyphenpenalty\plustenthousand
-   \exhyphenpenalty\plustenthousand}
-
-\let\dohyphens\relax
-
-%D To prevent unwanted side effects, we also have to check
-%D for hyphens here:
-
-\newskip\@@raggedskipa
-\newskip\@@raggedskipb
-
-\unexpanded\def\setraggedness#1%
-  {\ifnum\tolerance<1500\relax    % small values have
-     \tolerance1500\relax         % unwanted side effects
-   \fi
-   \ifx\dohyphens\relax
-     % this code will be reconsidered / kind of fuzzy (and old)
-     \@@raggedskipa 2.5\hsize
-     \@@raggedskipb  #1\relax
-     \divide\@@raggedskipa \@@raggedskipb
-     \hyphenpenalty\@@raggedskipa
-   \fi}
-
-\let\updateraggedskips\relax
-
-\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
-  {\unexpanded\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
-   \updateraggedskips}
-
-\def\dosetraggedskips#1#2#3#4#5#6#7%
-  {\raggedstatus#1\relax
-   \attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi
-   \leftskip   1\leftskip \!!plus#2\relax % zie: Tex By Topic 8.1.3
-   \rightskip  1\rightskip\!!plus#3\relax % zie: Tex By Topic 8.1.3
-   \spaceskip  #4\relax
-   \xspaceskip #5\relax
-   \parfillskip\zeropoint\!!plus#6\relax
-   \parindent  #7\relax}
-
-\appendtoks
-    \attribute\alignstateattribute\attributeunsetvalue
-\to \everyforgetall
-
-% \def\notragged%
-%   {\setraggedskips{0}{0em}{0em}{0em}{0em}{1fil}{\parindent}}
-
-% older (context) names:
-
-\let\spaceamount  \interwordspace
-\let\emspaceamount\emwidth
-
-% tracing:
-
-\def\doshowpardata#1%
-  {\ifx#1\relax\else
-     \hbox{\string#1: \the#1}\endgraf
-     \expandafter\doshowpardata
-   \fi}
-
-\unexpanded\def\showpardata
-  {\edef\thepardata
-     {\hbox{font: \fontname\font}\endgraf
-      \doshowpardata
-        \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
-        \hsize     \vsize
-        \leftskip  \rightskip
-        \spaceskip \xspaceskip
-        \parindent \parfillskip
-        \hyphenpenalty \exhyphenpenalty
-        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
-        \doublehyphendemerits \finalhyphendemerits \adjdemerits
-      \relax}%
-   \begingroup
-   \dontshowcomposition
-   \inleftmargin{\vsmash
-     {\infofont
-      \framed[\c!align=\v!right]{\thepardata}}}%
-   \endgroup}
-
-\unexpanded\def\startshowpardata
-  {\begingroup
-   \showcomposition
-   \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
-   \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
-
-\unexpanded\def\stopshowpardata
-  {\endgraf
-   \endgroup}
-
-% defaults
-
-\def\raggedfillamount        {1fil}
-\def\raggednegativefillamount{-1fil}
-\def\raggeddoublefillamount  {2fil}
-\def\raggedhalffillamount    {.5fil}
-\def\raggedspaceamount       {\interwordspace} % {.3333em}
-\def\raggedxspaceamount      {.5em}
-
-\unexpanded\def\notragged
-  {\raggedstatus\zerocount
-   \leftskip  1\leftskip
-   \rightskip 1\rightskip
-   \spaceskip  \zeropoint
-   \xspaceskip \zeropoint
-   \parfillskip\zeropoint\!!plus\raggedfillamount\relax
-   \let\updateraggedskips\relax} % new
-
-\let\forgetragged\notragged
-
-\unexpanded\def\raggedleft
-  {\setraggedness\leftraggedness
-   \setraggedskips1\leftraggedness\zeropoint\raggedspaceamount
-     \raggedxspaceamount\zeropoint\zeropoint}
-
-\unexpanded\def\raggedcenter
-  {\setraggedness\middleraggedness
-   \setraggedskips2\middleraggedness\middleraggedness\raggedspaceamount
-     \raggedxspaceamount\zeropoint\zeropoint}
-
-\unexpanded\def\centeredlastline
-  {\setraggedskips
-     \zerocount
-     \raggedfillamount
-     \raggednegativefillamount
-     \zeropoint
-     \zeropoint
-     \raggeddoublefillamount
-     \zeropoint}
-
-%D We used to have:
-%D
-%D \starttyping
-%D \def\raggedright
-%D   {\setraggedness\rightraggedness
-%D    \setraggedskips{3}{0em}{\rightraggedness}{.3333em}{.5em}{0em}{\parindent}}
-%D \stoptyping
-%D
-%D However, the next alternative, suggested by Taco, is better.
-
-\unexpanded\def\raggedright
-  {\setraggedness\rightraggedness
-   \setraggedskips3\zeropoint\rightraggedness\raggedspaceamount
-     \raggedxspaceamount\raggedfillamount\parindent}
-
-\unexpanded\def\veryraggedleft
-  {\setraggedskips1\raggedfillamount\zeropoint\raggedspaceamount
-     \raggedxspaceamount\zeropoint\zeropoint}
-
-%D When we want the last line to have a natural width:
-%D
-%D \starttyping
-%D \def\veryraggedleft%
-%D   {\setraggedskips{1}{1fil}{0em}{.3333em}{.5em}{0em}{-1fil}}
-%D \stoptyping
-%D
-%D but this one is not accepted by the macros.
-
-\unexpanded\def\veryraggedcenter
-  {\setraggedskips2\raggedfillamount\raggedfillamount\raggedspaceamount
-     \raggedxspaceamount\zeropoint\zeropoint}
-
-\unexpanded\def\veryraggedright
-  {\setraggedskips3\zeropoint\raggedfillamount\raggedspaceamount
-     \raggedxspaceamount\zeropoint\parindent}
-
-\unexpanded\def\ttraggedright
-  {\tttf
-   \setraggedskips3\zeropoint\rightraggedness
-     \zeropoint\zeropoint\zeropoint\parindent} % \ctxparindent
-
-%D A bonus one:
-
-\unexpanded\def\raggedwidecenter
-  {\setraggedness\middleraggedness
-   \setraggedskips2\raggedhalffillamount\raggedhalffillamount
-     \raggedspaceamount\raggedxspaceamount\zeropoint\zeropoint}
-
-\newif\if@@asragged \@@asraggedtrue % old method
-
-% todo
-%
-% \setuplayout[grid=yes,lines=44] \showgrid
-% \starttext
-% test \vfill test \endgraf \strut \endgraf \vskip-\lineheight \removedepth \pagina test
-% \stoptext
-
-% \setupalign[reset,new,right,old]
-
-\def\@@align@@rl{\if!!donea\veryraggedleft  \else\raggedleft  \fi}
-\def\@@align@@rr{\if!!donea\veryraggedright \else\raggedright \fi}
-\def\@@align@@rc{\if!!donea\veryraggedcenter\else\raggedcenter\fi}
-
-\setvalue{@@ngila@@\v!broad    }{\!!doneatrue}
-\setvalue{@@ngila@@\v!wide     }{\!!donebtrue}
-
-\unexpanded\def\setraggedparagraphmode
-  {\doifrightpageelse
-     {\ifdoublesided\signalinnerrealign\expandafter\firstoftwoarguments \fi}
-     {\ifdoublesided\signalouterrealign\expandafter\secondoftwoarguments\fi}}
-
-\unexpanded\def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
-
-\installalign \v!new           {\@@asraggedfalse}
-\installalign \v!old           {\@@asraggedtrue}
-\installalign \empty           {}
-
-\installalign \v!line          {\baselinebottom}
-\installalign \v!bottom        {\raggedbottom}
-\installalign \v!height        {\normalbottom}
-\installalign \v!width         {\notragged}
-\installalign \v!normal        {\notragged}
-\installalign \v!yes           {\notragged}
-\installalign \v!no            {\raggedright}
-\installalign \v!inner         {\if@@asragged \setraggedparagraphmode\@@align@@rl\@@align@@rr \else
-                                              \setraggedparagraphmode\@@align@@rr\@@align@@rl \fi}
-\installalign \v!outer         {\if@@asragged \setraggedparagraphmode\@@align@@rr\@@align@@rl \else
-                                \setraggedparagraphmode\@@align@@rl\@@align@@rr \fi}
-\installalign \v!left          {\if@@asragged\@@align@@rl\else\@@align@@rr\fi}
-\installalign \v!right         {\if@@asragged\@@align@@rr\else\@@align@@rl\fi}
-\installalign \v!middle        {\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
-\installalign \v!flushleft     {\if!!donea\veryraggedright \else\raggedright\fi}
-\installalign \v!flushright    {\if!!donea\veryraggedleft  \else\raggedleft \fi}
-\installalign \v!flushouter    {\setraggedparagraphmode\raggedleft\raggedright}
-\installalign \v!flushinner    {\setraggedparagraphmode\raggedright\raggedleft}
-\installalign \v!center        {\if!!doneb\raggedwidecenter\else\@@align@@rc\fi}
-\installalign \v!hanging       {\enableprotruding}
-\installalign \v!nothanging    {\disableprotruding}
-\installalign \v!hz            {\enableadjusting}
-\installalign \v!nohz          {\disableadjusting}
-\installalign \v!spacing       {\enablespacehandling \enablekernhandling}
-\installalign \v!nospacing     {\disablespacehandling\disablekernhandling}
-\installalign \v!hyphenated    {\dohyphens}
-\installalign \v!nothyphenated {\nohyphens}
-\installalign \v!new           {\@@asraggedfalse} % so new will give you consistency
-\installalign \v!reset         {\notragged\normalbottom}
-
-\installalign \v!tolerant      {\tolerance3000\relax}
-\installalign \v!verytolerant  {\tolerance4500\relax}
-\installalign \v!stretch       {\emergencystretch\bodyfontsize}
-
-\installalign \v!righttoleft   {\lefttoright}
-\installalign \v!lefttoright   {\righttoleft}
-\installalign {l2r}            {\lefttoright}
-\installalign {r2l}            {\righttoleft}
-
-\installalign \v!last          {\centeredlastline}
+% Tolerance and hyphenation
 
 \newcount\hyphenminoffset
 
@@ -676,39 +152,644 @@
    \fi
    \sethyphenationvariables}
 
-\installalign \v!lesshyphenation {\lesshyphens}
-\installalign \v!morehyphenation {\morehyphens}
 
-\def\dodosetupalign#1{\csname @@align@@#1\endcsname}
-\def\dodosetupngila#1{\csname @@ngila@@#1\endcsname}
+\unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
+  {\ifx\dohyphens\relax
+     \edef\dohyphens
+       {\hyphenpenalty  \the\hyphenpenalty
+        \exhyphenpenalty\the\exhyphenpenalty
+        \relax}%
+   \fi
+   \hyphenpenalty\plustenthousand
+   \exhyphenpenalty\plustenthousand}
+
+\let\dohyphens\relax
+
+\newcount\c_spacing_minimum_tolerance  \c_spacing_minimum_tolerance = 1500
+\newcount\c_spacing_normal_tolerance   \c_spacing_normal_tolerance  = 3000
+\newcount\c_spacing_extreme_tolerance  \c_spacing_extreme_tolerance = 4500
+
+\def\spacing_raggedness_left  {\plustwo\bodyfontsize}
+\def\spacing_raggedness_right {\plustwo\bodyfontsize}
+\def\spacing_raggedness_middle{\plussix\bodyfontsize} % overloaded below
+
+% oeps, hsize can be 0pt in which case we get a strange division
+% was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
+
+\def\spacing_raggedness_middle{\ifdim\hsize=\zeropoint\plussix\bodyfontsize\else.5\hsize\fi}
+
+\unexpanded\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
+  {\ifnum\tolerance<\c_spacing_minimum_tolerance
+     \tolerance\c_spacing_minimum_tolerance % small values have unwanted side effects
+   \else
+     % todo: take set value or none .. better done elsewhere (200 is normal)
+   \fi
+   \ifx\dohyphens\relax % was 2.5 in old implementation using scratch registers
+     \hyphenpenalty\dimexpr2.8\hsize/\dimexpr#1\relax\relax % 50 in raggedright/raggedleft
+   \fi}
+
+\unexpanded\def\ragged_command_tolerant
+  {\tolerance\c_spacing_normal_tolerance}
+
+\unexpanded\def\ragged_command_very_tolerant
+  {\tolerance\c_spacing_extreme_tolerance}
+
+\unexpanded\def\ragged_command_stretch
+  {\emergencystretch\bodyfontsize}
+
+% Vertical
+
+\newconstant\c_spacing_state_vertical
+
+\unexpanded\def\spacing_vertical_none
+  {\let\raggedtopcommand   \relax
+   \let\raggedbottomcommand\relax}
+
+\unexpanded\def\spacing_vertical_lohi
+  {\let\raggedtopcommand   \vfilll
+   \let\raggedbottomcommand\vfilll}
+
+\unexpanded\def\spacing_vertical_low
+  {\let\raggedtopcommand   \vfilll
+   \let\raggedbottomcommand\relax}
+
+\unexpanded\def\spacing_vertical_high
+  {\let\raggedtopcommand   \relax
+   \let\raggedbottomcommand\vfilll}
+
+\def\spacing_flush_vertical
+  {\ifcase\c_spacing_state_vertical
+     \spacing_vertical_none
+   \or
+     \spacing_vertical_lohi
+   \or
+     \spacing_vertical_low
+   \or
+     \spacing_vertical_high
+   \fi}
+
+% Horizontal
+
+\ifdefined\raggedonelinerstate \else
+    \newconditional\raggedonelinerstate  % public
+\fi
+
+\newconstant\raggedstatus % public
+
+\newconstant\c_spacing_state_horizontal
+\newconstant\c_spacing_state_broad
+
+\def\spacing_ragged_fill_amount          {\plusone  fil}
+\def\spacing_ragged_fill_amount_negative {\minusone fil}
+\def\spacing_ragged_fill_amount_double   {\plustwo  fil}
+\def\spacing_ragged_fill_amount_space    {\plustwo  fil} % can be added to xspace if we have a key
+\def\spacing_ragged_fill_amount_half             {.5fil}
+\let\spacing_ragged_space_amount         \interwordspace
+\def\spacing_ragged_space_amount_x          {.5\emwidth}
+
+\newskip\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
+\newskip\s_zero_plus_zero    \s_zero_plus_zero    = 0pt plus 0pt
+
+% \!!plus ... slower than inline
+
+\unexpanded\def\spacing_horizontal_none
+  {\raggedstatus\zerocount
+   \attribute\alignstateattribute\attributeunsetvalue
+   \leftskip   \plusone\leftskip
+   \rightskip  \plusone\rightskip
+   \spaceskip  \zeropoint
+   \xspaceskip \zeropoint
+   \parfillskip\s_zero_plus_one_fil} % new
+
+\unexpanded\def\spacing_horizontal_left
+  {\setraggedness\spacing_raggedness_left
+   \raggedstatus\plusone
+   \attribute\alignstateattribute\plusone
+   \leftskip   \plusone\leftskip \!!plus\spacing_raggedness_left
+   \rightskip  \plusone\rightskip\!!plus\zeropoint
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_center
+  {\setraggedness\spacing_raggedness_middle
+   \raggedstatus\plustwo
+   \attribute\alignstateattribute\plustwo
+   \leftskip   \plusone\leftskip \!!plus\spacing_raggedness_middle
+   \rightskip  \plusone\rightskip\!!plus\spacing_raggedness_middle
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_right
+  {\setraggedness\spacing_raggedness_right
+   \raggedstatus\plusthree
+   \attribute\alignstateattribute\plusthree
+   \leftskip   \plusone\leftskip \!!plus\zeropoint
+   \rightskip  \plusone\rightskip\!!plus\spacing_raggedness_right
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_one_fil
+  %\parindent  \parindent
+   \relax}
+
+\unexpanded\def\spacing_horizontal_very_left
+  {\raggedstatus\plusone
+   \attribute\alignstateattribute\plusone
+   \leftskip   \plusone\leftskip \!!plus\spacing_ragged_fill_amount
+   \rightskip  \plusone\rightskip\!!plus\zeropoint
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_very_center
+  {\raggedstatus\plustwo
+   \attribute\alignstateattribute\plustwo
+   \leftskip   \plusone\leftskip \!!plus\spacing_ragged_fill_amount
+   \rightskip  \plusone\rightskip\!!plus\spacing_ragged_fill_amount
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_very_right
+  {\raggedstatus\plusthree
+   \attribute\alignstateattribute\plusthree
+   \leftskip   \plusone\leftskip \!!plus\zeropoint
+   \rightskip  \plusone\rightskip\!!plus\spacing_ragged_fill_amount
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+  %\parindent  \parindent
+   \relax}
+
+\unexpanded\def\spacing_horizontal_wide_center
+  {\setraggedness\spacing_raggedness_middle
+   \raggedstatus\plustwo
+   \attribute\alignstateattribute\plustwo
+   \leftskip   \plusone\leftskip \!!plus\spacing_ragged_fill_amount_half
+   \rightskip  \plusone\rightskip\!!plus\spacing_ragged_fill_amount_half
+   \spaceskip  \spacing_ragged_space_amount
+   \xspaceskip \spacing_ragged_space_amount_x
+   \parfillskip\s_zero_plus_zero
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_centered_last_line
+  {\raggedstatus\zerocount
+   \attribute\alignstateattribute\attributeunsetvalue
+   \leftskip   \plusone\leftskip \!!plus\spacing_ragged_fill_amount\relax
+   \rightskip  \plusone\rightskip\!!plus\spacing_ragged_fill_amount_negative\relax
+   \spaceskip  \zeropoint\relax
+   \xspaceskip \zeropoint\relax
+   \parfillskip\zeropoint\!!plus\spacing_ragged_fill_amount_double\relax
+   \parindent  \zeropoint
+   \relax}
+
+\unexpanded\def\spacing_horizontal_right_tt % a plain command
+  {\tttf % brrr
+   \raggedstatus\plusthree
+   \attribute\alignstateattribute\plusthree
+   \leftskip   \plusone\leftskip \!!plus\zeropoint\relax
+   \rightskip  \plusone\rightskip\!!plus\spacing_raggedness_right\relax
+   \spaceskip  \zeropoint\relax
+   \xspaceskip \zeropoint\relax
+   \parfillskip\s_zero_plus_zero
+  %\parindent  \parindent
+   \relax}
+
+\unexpanded\def\spacing_horizontal_extra
+  {\xspaceskip\zeropoint\!!plus\spacing_ragged_fill_amount_space\relax}
+
+\def\spacing_flush_horizontal
+  {\ifcase\c_spacing_state_horizontal
+     % 0
+     \spacing_horizontal_none
+   \or
+     % 1 center
+     \ifcase\c_spacing_state_broad
+       \spacing_horizontal_center
+     \or
+       \spacing_horizontal_very_center
+     \or
+       \spacing_horizontal_wide_center
+     \fi
+   \or
+     % 2 flush left
+     \ifcase\c_spacing_state_broad
+       \spacing_horizontal_right
+     \else
+       \spacing_horizontal_very_right
+     \fi
+   \or
+     % 3 flush right
+     \ifcase\c_spacing_state_broad
+       \spacing_horizontal_left
+     \else
+       \spacing_horizontal_very_left
+     \fi
+   \or
+     % 4 inner
+     \ifdoublesided
+       \signalinnerrealign
+     \fi
+     \rightorleftpageaction\spacing_horizontal_right\spacing_horizontal_left
+   \or
+     % 5 outer
+     \ifdoublesided
+       \signalouterrealign
+     \fi
+     \rightorleftpageaction\c_spacing_state_horizontal_left\spacing_horizontal_right
+   \or
+     % 6 oneliner
+     \ifcase\c_spacing_state_broad
+       \spacing_horizontal_right
+     \else
+       \spacing_horizontal_very_right
+     \fi
+     \parfillskip\zeropoint
+   \or
+     % 7 centered last line
+     \spacing_horizontal_centered_last_line
+   \fi}
+
+% Page spacing:
+
+\newconstant\c_spacing_state_page
+
+\def\bottomalignlimit{\plusthree\lineheight}
+
+\newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
+
+\unexpanded\def\raggedbottom
+  {\bottomraggednessmode\zerocount
+   \settopskip}
+
+\unexpanded\def\alignbottom
+  {\bottomraggednessmode\plusone
+   \settopskip}
+
+\unexpanded\def\baselinebottom
+  {\bottomraggednessmode\plustwo
+   \settopskip}
+
+\let\normalbottom\alignbottom % downward compatible
+
+\unexpanded\def\setbottomalignmode#1%
+  {\bottomraggednessmode#1%
+   \settopskip}
+
+\def\spacing_flush_page
+  {\ifcase\c_spacing_state_page
+     % keep state
+   \or
+     \raggedbottom
+   \or
+     \alignbottom
+   \or
+     \baselinebottom
+   \fi}
+
+% Directions
+
+\newconstant\c_spacing_state_direction
+
+\def\spacing_flush_direction
+  {\ifcase\c_spacing_state_direction
+    % keep state
+   \or
+     \lefttoright
+   \or
+     \righttoleft
+   \fi}
+
+% Interesting is that the non cached version is also pretty efficient
+% and as we cache we seldom call that one now so one can debate the
+% speedup.
+
+\newtoks\t_spacing_set_alignment
+
+\let\raggedcommand    \relax
+\let\updateraggedskips\relax
+
+% \unexpanded\def\spacing_set_text_align#1% beware: #1=empty is ignored, keep that! assumes \forgetall ... needs checking
+%   {\edef\askedraggedalign{#1}%
+%    \ifx\askedraggedalign\empty
+%      \spacing_set_text_align_nop
+%    \else
+%      \spacing_set_text_align_yes
+%    \fi}
+
+% \def\spacing_set_text_align_nop % as we cache (empty) anyway, this one can go
+%   {%\let\raggedtopcommand   \relax
+%    %\let\raggedbottomcommand\relax
+%    \let\raggedbox           \relax % why
+%    \t_spacing_set_alignment
+%      {\resetrealignsignal
+%       \setfalse\raggedonelinerstate
+%       \let\raggedtopcommand   \relax
+%       \let\raggedbottomcommand\relax}}
+
+% \def\spacing_set_text_align_yes % hm, we could hash settings ! nice experiment
+%   {%\let\raggedtopcommand\empty
+%    %\let\raggedbottomcommand\empty
+%    \let\raggedbox\relax % why
+%    % we inherit hyphenation and tolerance
+%    \t_spacing_set_alignment   \emptytoks
+%    \c_spacing_state_broad     \zerocount
+%    \c_spacing_state_horizontal\zerocount
+%    \c_spacing_state_vertical  \zerocount
+%    \c_spacing_state_direction \zerocount % what is default ?
+%    \c_spacing_state_page      \zerocount
+%    \ifcsname\??aligncommand\askedraggedalign\endcsname
+%      \csname\??aligncommand\askedraggedalign\endcsname
+%    \else
+%      \rawprocesscommacommand[\askedraggedalign]\spacing_set_text_align_collect
+%    \fi
+%    \normalexpanded{\t_spacing_set_alignment
+%      {\resetrealignsignal % can go as it is alway set
+%       \setfalse\raggedonelinerstate % bad
+%       \the\t_spacing_set_alignment
+%       \spacing_flush_horizontal
+%       \spacing_flush_vertical
+%       \spacing_flush_direction
+%       \spacing_flush_page
+%       }}} % kept
+
+\unexpanded\def\spacing_set_text_align#1% what to do with empty (and forgetall)
+  {\edef\askedraggedalign{#1}%
+   \let\raggedbox\relax % why
+   % we inherit hyphenation and tolerance
+   \t_spacing_set_alignment   \emptytoks
+   \c_spacing_state_broad     \zerocount
+   \c_spacing_state_horizontal\zerocount
+   \c_spacing_state_vertical  \zerocount
+   \c_spacing_state_direction \zerocount % what is default ?
+   \c_spacing_state_page      \zerocount
+   \ifcsname\??aligncommand\askedraggedalign\endcsname
+     \csname\??aligncommand\askedraggedalign\endcsname
+   \else
+     \rawprocesscommacommand[\askedraggedalign]\spacing_set_text_align_collect
+   \fi
+   \normalexpanded{\t_spacing_set_alignment
+     {\resetrealignsignal % can go as it is alway set
+      \setfalse\raggedonelinerstate % bad
+      \the\t_spacing_set_alignment
+      \spacing_flush_horizontal
+      \spacing_flush_vertical
+      \spacing_flush_direction
+      \spacing_flush_page
+      }}} % kept
+
+\def\spacing_set_text_align_collect#1%
+  {\csname\??aligncommand#1\endcsname}
+
+\def\spacing_alignment_add_to_cache#1%
+  {\spacing_set_text_align{#1}
+   \edef\raggedcommand{\the\t_spacing_set_alignment}%
+   \global\expandafter\let\csname\??alignmentcache#1\endcsname\raggedcommand}
+
+% The regular align setter:
 
 \unexpanded\def\setupalign
-  {\dosingleargument\dosetupalign}
+  {\dosingleempty\spacing_setup_align}
 
-\def\dosetupalign[#1]% can be made faster by checking for defined #1
-  {\!!doneafalse
-   \!!donebfalse
-   \raggedstatus\zerocount
-   \resetrealignsignal
-   \processcommacommand[#1]\dodosetupngila
-   \processcommacommand[#1]\dodosetupalign}
+\def\spacing_setup_align[#1]% immediate
+  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentcache#1\endcsname
+   \ifx\raggedcommand\relax
+     \spacing_alignment_add_to_cache{#1}%
+   \fi
+   \let\updateraggedskips\raggedcommand
+   \raggedcommand}
 
-% \setupalign[flushleft]  \input ward \par % lijnlinks
-% \setupalign[right]      \input ward \par
+% the local (key driven) setter:
 
-% \setupalign[flushright] \input ward \par % lijnrechts
-% \setupalign[left]       \input ward \par
+\unexpanded\def\spacing_setup_aligned#1% deferred
+  {\expandafter\let\expandafter\raggedcommand\csname\??alignmentcache#1\endcsname
+   \ifx\raggedcommand\relax
+     \spacing_alignment_add_to_cache{#1}%
+   \fi
+   \let\updateraggedskips\raggedcommand}
 
-% \setupalign[middle]     \input ward \par % centreer
-% \setupalign[center]     \input ward \par
+\let\dosetraggedcommand\spacing_setup_aligned % sort of public
+
+% The keywords:
+
+\unexpanded\def\installalign#1#2% beware: commands must be unexpandable!
+  {\ifcsname\??aligncommand#1\endcsname \else
+     \setvalue{\??aligncommand#1}{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment#2}}%
+   \fi}
+
+\letvalue{\??aligncommand\empty            }\empty
+\setvalue{\??aligncommand\v!broad          }{\c_spacing_state_broad     \plusone  }
+\setvalue{\??aligncommand\v!wide           }{\c_spacing_state_broad     \plustwo  }
+
+\setvalue{\??aligncommand\v!bottom         }{\c_spacing_state_page      \plusone  }
+\setvalue{\??aligncommand\v!height         }{\c_spacing_state_page      \plustwo  }
+\setvalue{\??aligncommand\v!line           }{\c_spacing_state_page      \plusthree
+                                             % this will become another keyword (undocumented anyway)
+                                             \t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\settrue\raggedonelinerstate}}
+
+\setvalue{\??aligncommand\v!high           }{\c_spacing_state_vertical  \plusthree}
+\setvalue{\??aligncommand\v!low            }{\c_spacing_state_vertical  \plustwo  }
+\setvalue{\??aligncommand\v!lohi           }{\c_spacing_state_vertical  \plusone  }
+
+\setvalue{\??aligncommand\v!flushright     }{\c_spacing_state_horizontal\plusthree}
+\setvalue{\??aligncommand\v!flushleft      }{\c_spacing_state_horizontal\plustwo  }
+\setvalue{\??aligncommand\v!middle         }{\c_spacing_state_horizontal\plusone  }
+\setvalue{\??aligncommand\v!no             }{\c_spacing_state_horizontal\plustwo  }
+\setvalue{\??aligncommand\v!yes            }{\c_spacing_state_horizontal\zerocount}
+\setvalue{\??aligncommand\v!width          }{\c_spacing_state_horizontal\zerocount}
+\setvalue{\??aligncommand\v!normal         }{\c_spacing_state_horizontal\zerocount}
+\setvalue{\??aligncommand\v!reset          }{\c_spacing_state_page      \zerocount
+                                             \c_spacing_state_horizontal\zerocount}
+\setvalue{\??aligncommand\v!inner          }{\c_spacing_state_horizontal\plusfour }
+\setvalue{\??aligncommand\v!outer          }{\c_spacing_state_horizontal\plusfive }
+\setvalue{\??aligncommand\v!flushinner     }{\c_spacing_state_horizontal\plusfive }
+\setvalue{\??aligncommand\v!flushouter     }{\c_spacing_state_horizontal\plusfour }
+\setvalue{\??aligncommand\v!right          }{\c_spacing_state_horizontal\plustwo  }
+\setvalue{\??aligncommand\v!left           }{\c_spacing_state_horizontal\plusthree}
+\setvalue{\??aligncommand\v!center         }{\c_spacing_state_horizontal\plusone
+                                             \c_spacing_state_broad     \plustwo  }
+\setvalue{\??aligncommand\v!disable        }{\c_spacing_state_horizontal\plussix  }
+\setvalue{\??aligncommand\v!last           }{\c_spacing_state_horizontal\plusseven}
+
+
+\setvalue{\??aligncommand\v!lefttoright    }{\c_spacing_state_direction \plusone  }
+\setvalue{\??aligncommand\v!righttoleft    }{\c_spacing_state_direction \plustwo  }
+\setvalue{\??aligncommand               l2r}{\c_spacing_state_direction \plusone  }
+\setvalue{\??aligncommand               r2l}{\c_spacing_state_direction \plustwo  }
+
+\setvalue{\??aligncommand\v!table          }{\c_spacing_state_vertical  \plusthree
+                                             \c_spacing_state_broad     \plusone
+                                             \c_spacing_state_horizontal\plustwo  }
+
+\setvalue{\??aligncommand\v!lesshyphenation}{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\lesshyphens}}
+\setvalue{\??aligncommand\v!morehyphenation}{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\morehyphens}}
+
+\setvalue{\??aligncommand\v!hanging        }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\fonts_protruding_enable }}
+\setvalue{\??aligncommand\v!nothanging     }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\fonts_protruding_disable}}
+\setvalue{\??aligncommand\v!hz             }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\fonts_expansion_enable  }}
+\setvalue{\??aligncommand\v!nohz           }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\fonts_expansion_disable }}
+\setvalue{\??aligncommand\v!spacing        }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\enablespacehandling \enablekernhandling }}
+\setvalue{\??aligncommand\v!nospacing      }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\disablespacehandling\disablekernhandling}}
+\setvalue{\??aligncommand\v!hyphenated     }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\dohyphens}}
+\setvalue{\??aligncommand\v!nothyphenated  }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\nohyphens}}
+
+\setvalue{\??aligncommand\v!tolerant       }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\ragged_command_tolerant}}
+\setvalue{\??aligncommand\v!verytolerant   }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\ragged_command_very_tolerant}}
+\setvalue{\??aligncommand\v!stretch        }{\t_spacing_set_alignment\expandafter{\the\t_spacing_set_alignment\ragged_command_stretch}}
+
+% Visible commands:
+
+\let\notragged       \spacing_horizontal_none
+\let\forgetragged    \spacing_horizontal_none
+\let\raggedleft      \spacing_horizontal_left
+\let\raggedcenter    \spacing_horizontal_center
+\let\raggedright     \spacing_horizontal_right
+\let\veryraggedleft  \spacing_horizontal_very_left
+\let\veryraggedcenter\spacing_horizontal_very_center
+\let\veryraggedright \spacing_horizontal_very_right
+\let\raggedwidecenter\spacing_horizontal_wide_center
+\let\centeredlastline\spacing_horizontal_centered_last_line
+\let\ttraggedright   \spacing_horizontal_right_tt            % a plain command
+
+% Box commands.
+
+\unexpanded\def\ibox#1#2#3%
+  {\vbox\bgroup
+     \forgetall
+     \let\\=\endgraf
+     \ifdoublesided\signalinnerrealign\fi
+     \doifrightpageelse\spacing_horizontal_right\spacing_horizontal_left
+     \let\next}
+
+\unexpanded\def\obox#1#2#3%
+  {\vbox\bgroup
+     \forgetall
+     \let\\=\endgraf
+     \ifdoublesided\signalouterrealign\fi
+     \doifrightpageelse\c_spacing_state_horizontal_left\spacing_horizontal_right
+     \let\next}
+
+\let\raggedbox\relax
+
+\def\dosetraggedvbox#1% can be more keys
+  {\let\raggedbox\vbox
+   \processcommacommand[#1]\dodosetraggedvbox}
+
+\def\dosetraggedhbox#1% can be more keys
+  {\let\raggedbox\hbox
+   \processcommacommand[#1]\dodosetraggedhbox}
+
+\def\dodosetraggedvbox#1%
+  {\ifcsname\??alignvertical#1\endcsname
+     \csname\??alignvertical#1\endcsname
+     \quitcommalist
+   \fi}
+
+\def\dodosetraggedhbox#1%
+  {\ifcsname\??alignhorizontal#1\endcsname
+     \csname\??alignhorizontal#1\endcsname
+     \quitcommalist
+   \fi}
+
+\setvalue{\??alignvertical  \v!left      }{\let\raggedbox\lbox}
+\setvalue{\??alignvertical  \v!right     }{\let\raggedbox\rbox}
+\setvalue{\??alignvertical  \v!middle    }{\let\raggedbox\cbox}
+\setvalue{\??alignvertical  \v!inner     }{\let\raggedbox\ibox}
+\setvalue{\??alignvertical  \v!outer     }{\let\raggedbox\obox}
+\setvalue{\??alignvertical  \v!flushleft }{\let\raggedbox\rbox}
+\setvalue{\??alignvertical  \v!flushright}{\let\raggedbox\lbox}
+\setvalue{\??alignvertical  \v!center    }{\let\raggedbox\cbox}
+\setvalue{\??alignvertical  \v!no        }{\def\raggedbox{\vbox\bgroup\spacing_horizontal_right\let\next=}]}
+
+% maybe \let's
+
+\setvalue{\??alignhorizontal\v!left      }{\def\raggedbox{\doalignedline\v!left  }}
+\setvalue{\??alignhorizontal\v!right     }{\def\raggedbox{\doalignedline\v!right }}
+\setvalue{\??alignhorizontal\v!middle    }{\def\raggedbox{\doalignedline\v!middle}}
+\setvalue{\??alignhorizontal\v!inner     }{\def\raggedbox{\doalignedline\v!inner }}
+\setvalue{\??alignhorizontal\v!outer     }{\def\raggedbox{\doalignedline\v!outer }}
+\setvalue{\??alignhorizontal\v!flushleft }{\def\raggedbox{\doalignedline\v!right }}
+\setvalue{\??alignhorizontal\v!flushright}{\def\raggedbox{\doalignedline\v!left  }}
+\setvalue{\??alignhorizontal\v!center    }{\def\raggedbox{\doalignedline\v!middle}}
+
+% The next one can be in use so we keep it around but oen should
+% be aware of possible interference.
+
+\unexpanded\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
+  {\unexpanded\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
+   \updateraggedskips}
+
+\def\dosetraggedskips#1#2#3#4#5#6#7%
+  {\raggedstatus                 #1\relax
+   \leftskip   1\leftskip \!!plus#2\relax
+   \rightskip  1\rightskip\!!plus#3\relax
+   \spaceskip                    #4\relax
+   \xspaceskip                   #5\relax
+   \parfillskip \zeropoint\!!plus#6\relax
+   \parindent                    #7\relax
+   \attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
+
+% older (context) names:
+
+\let\spaceamount  \interwordspace
+\let\emspaceamount\emwidth
+
+% tracing:
+
+\def\spacing_show_par_data#1%
+  {\ifx#1\relax\else
+     \hbox{\string#1: \the#1}\endgraf
+     \expandafter\spacing_show_par_data
+   \fi}
+
+\unexpanded\def\showpardata
+  {\edef\thepardata
+     {\hbox{font: \fontname\font}\endgraf
+      \spacing_show_par_data
+        \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
+        \hsize     \vsize
+        \leftskip  \rightskip
+        \spaceskip \xspaceskip
+        \parindent \parfillskip
+        \hyphenpenalty \exhyphenpenalty
+        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
+        \doublehyphendemerits \finalhyphendemerits \adjdemerits
+      \relax}%
+   \dontleavehmode
+   \begingroup
+   \dontshowcomposition
+   \inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{\thepardata}}}%
+   \endgroup}
+
+\unexpanded\def\startshowpardata
+  {\begingroup
+   \showcomposition % all this tracing can go ... if we want it back it will be done in lua
+   \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
+   \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
+
+\unexpanded\def\stopshowpardata
+  {\endgraf
+   \endgroup}
+
+% Structure:
 
 \unexpanded\def\startalignment
-  {\bgroup
+  {\begingroup
    \setupalign}
 
 \unexpanded\def\stopalignment
   {\par
-   \egroup}
+   \endgroup}
 
 \setnewconstant\alignstrutmode\plusone
 
@@ -746,26 +827,28 @@
 \ifdefined\rightline  \else \def\rightline #1{\line{\hss#1}}     \fi
 \ifdefined\centerline \else \def\centerline#1{\line{\hss#1\hss}} \fi
 
-% directe commando's
+% direct commands
 
-\unexpanded\def\leftaligned {\doalignline \relax \hss  }
-\unexpanded\def\midaligned  {\doalignline \hss   \hss  }
-\unexpanded\def\rightaligned{\doalignline \hss   \relax}
-\unexpanded\def\maxaligned  {\doalignline \relax \relax}
+\unexpanded\def\leftaligned {\doalignline\relax \hss  }
+\unexpanded\def\midaligned  {\doalignline\hss   \hss  }
+\unexpanded\def\rightaligned{\doalignline\hss   \relax}
+\unexpanded\def\maxaligned  {\doalignline\relax \relax}
 
 \let\centeraligned\midaligned
 
-% indirecte commando's
+% indirect commands
 
-\letvalue{\s!do\v!line\v!left      }\leftaligned
-\letvalue{\s!do\v!line\v!right     }\rightaligned
-\letvalue{\s!do\v!line\v!middle    }\midaligned
-\letvalue{\s!do\v!line\v!flushleft }\rightaligned
-\letvalue{\s!do\v!line\v!flushright}\leftaligned
-\letvalue{\s!do\v!line\v!center    }\midaligned
-\letvalue{\s!do\v!line\v!max       }\maxaligned
+\installcorenamespace{alignline}
 
-\def\doalignedline#1{\resetrealignsignal\csname\s!do\v!line#1\endcsname}
+\letvalue{\??alignline\v!left      }\leftaligned
+\letvalue{\??alignline\v!right     }\rightaligned
+\letvalue{\??alignline\v!middle    }\midaligned
+\letvalue{\??alignline\v!flushleft }\rightaligned
+\letvalue{\??alignline\v!flushright}\leftaligned
+\letvalue{\??alignline\v!center    }\midaligned
+\letvalue{\??alignline\v!max       }\maxaligned
+
+\def\doalignedline#1{\resetrealignsignal\csname\??alignline#1\endcsname}
 
 %D Experimental (will be redone when floats are redone as it's real messy
 %D now). It can also be made faster (if needed).
@@ -777,8 +860,7 @@
    \setlocalhsize
    \def\\{\endgroup\par\doxalignline#1#2#3#4#5#6\begingroup}% inefficient
    \dowithnextbox
-     {%\noindent moved up
-      \hbox to \localhsize
+     {\hbox to \localhsize
         {#1\hskip\ifdone#2\else#3\fi#4%
          \hbox to \localhsize
            {\the\everyleftofalignedline
@@ -792,35 +874,33 @@
 \def\doxcheckline % used for floats so multipass anyway
   {\signalrightpage\doifrightpageelse\donetrue\donefalse}
 
-\setvalue{\s!do\v!line\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
-\setvalue{\s!do\v!line\v!outer      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
-\setvalue{\s!do\v!line\v!innermargin}{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!outermargin}{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
-\setvalue{\s!do\v!line\v!inneredge  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
-\setvalue{\s!do\v!line\v!outeredge  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
-\setvalue{\s!do\v!line\v!backspace  }{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
-\setvalue{\s!do\v!line\v!cutspace   }{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
+\setvalue{\??alignline\v!inner      }{\doxalignline\doxcheckline++\zeropoint       \relax\hss  }
+\setvalue{\??alignline\v!outer      }{\doxalignline\doxcheckline++\zeropoint       \hss  \relax}
+\setvalue{\??alignline\v!innermargin}{\doxalignline\doxcheckline-+\innermargintotal\relax\hss  }
+\setvalue{\??alignline\v!outermargin}{\doxalignline\doxcheckline+-\outermargintotal\hss  \relax}
+\setvalue{\??alignline\v!inneredge  }{\doxalignline\doxcheckline-+\inneredgetotal  \relax\hss  }
+\setvalue{\??alignline\v!outeredge  }{\doxalignline\doxcheckline+-\outeredgetotal  \hss  \relax}
+\setvalue{\??alignline\v!backspace  }{\doxalignline\doxcheckline-+\backspace       \relax\hss  }
+\setvalue{\??alignline\v!cutspace   }{\doxalignline\doxcheckline+-\cutspace        \hss  \relax}
 
-\setvalue{\s!do\v!line\v!leftmargin }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
-\setvalue{\s!do\v!line\v!rightmargin}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
-\setvalue{\s!do\v!line\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
-\setvalue{\s!do\v!line\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
+\setvalue{\??alignline\v!leftmargin }{\doxalignline\donefalse   --\leftmargintotal \hss  \relax}
+\setvalue{\??alignline\v!rightmargin}{\doxalignline\donefalse   ++\rightmargintotal\relax\hss  }
+\setvalue{\??alignline\v!leftedge   }{\doxalignline\donefalse   --\leftedgetotal   \hss  \relax}
+\setvalue{\??alignline\v!rightedge  }{\doxalignline\donefalse   ++\rightedgetotal  \relax\hss  }
 
-% ! ! ! beware, redefining \doalignline gives the wrong results ! ! !
-%
-% \def\doalignline{\doxalignline\donefalse++\zeropoint}
-
-%D Better:
-
-\def\doalignedline#1{\csname\s!do\v!line#1\endcsname}
+\def\doalignedline#1% unchecked
+  {\csname\??alignline#1\endcsname}
 
 \def\alignedline#1#2% setting default
-  {\csname\s!do\v!line\ifcsname\s!do\v!line#1\endcsname#1\else#2\fi\endcsname}
+  {\csname\??alignline\ifcsname\??alignline#1\endcsname#1\else#2\fi\endcsname}
 
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
 
-\def\dowordright[#1]%
+\unexpanded\def\wordright
+  {\dosingleempty\spacing_word_right}
+
+\def\spacing_word_right[#1]%
   {% don't change
    \groupedcommand
      {\removeunwantedspaces
@@ -835,50 +915,72 @@
       \finalhyphendemerits\zerocount % yes or no (see hyhenation/specialcases-001.tex)
       \par}}
 
-\unexpanded\def\wordright
-  {\dosingleempty\dowordright}
-
-% \dorecurse{5}{something } \wordright{--someone} \endgraf
-% \dorecurse{6}{something } \wordright{--someone} \endgraf
-% \dorecurse{7}{something } \wordright{--someone} \endgraf
+% \dorecurse{5}{something} \wordright{--someone} \endgraf
+% \dorecurse{6}{something} \wordright{--someone} \endgraf
+% \dorecurse{7}{something} \wordright{--someone} \endgraf
 %
-% \dorecurse{5}{something } \wordright{--someone else entirely} \endgraf
-% \dorecurse{6}{something } \wordright{--someone else entirely} \endgraf
-% \dorecurse{7}{something } \wordright{--someone else entirely} \endgraf
+% \dorecurse{5}{something} \wordright{--someone else entirely} \endgraf
+% \dorecurse{6}{something} \wordright{--someone else entirely} \endgraf
+% \dorecurse{7}{something} \wordright{--someone else entirely} \endgraf
 %
 % \wordright[\rightskip]{whatever}
-
+
 % \simplealignedbox{2cm}{right}{x}
 
-% \setvalue{\s!simple\c!align\v!right      }#1#2{\hbox to #1{#2\hss}}
-% \setvalue{\s!simple\c!align\v!left       }#1#2{\hbox to #1{\hss#2}}
-% \setvalue{\s!simple\c!align\v!flushright }#1#2{\hbox to #1{\hss#2}}
-% \setvalue{\s!simple\c!align\v!flushleft  }#1#2{\hbox to #1{#2\hss}}
-% \setvalue{\s!simple\c!align\v!middle     }#1#2{\hbox to #1{\hss#2\hss}}
+\installcorenamespace{alignsimple}
 
-% \unexpanded\def\simplealignedbox#1%
-%   {\csname\s!simple\c!align\ifcsname\s!simple\c!align#1\endcsname#1\else\v!right\fi\endcsname}
-
-\setvalue{\s!simple:\c!align:\v!right      }#1{{#1\hss}}
-\setvalue{\s!simple:\c!align:\v!left       }#1{{\hss#1}}
-\setvalue{\s!simple:\c!align:\v!flushright }#1{{\hss#1}}
-\setvalue{\s!simple:\c!align:\v!flushleft  }#1{{#1\hss}}
-\setvalue{\s!simple:\c!align:\v!middle     }#1{{\hss#1\hss}}
+\setvalue{\??alignsimple\v!right     }#1{{#1\hss}}
+\setvalue{\??alignsimple\v!left      }#1{{\hss#1}}
+\setvalue{\??alignsimple\v!flushright}#1{{\hss#1}}
+\setvalue{\??alignsimple\v!flushleft }#1{{#1\hss}}
+\setvalue{\??alignsimple\v!middle    }#1{{\hss#1\hss}}
 
 \unexpanded\def\simplealignedbox#1#2%
-  {\hbox to #1\csname\s!simple:\c!align:\ifcsname\s!simple:\c!align:#2\endcsname#2\else\v!right\fi\endcsname}
+  {\hbox to #1\csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\endcsname}
 
-% \setvalue{spac_align_set_ss_\v!right     }#1#2{\let#1\relax\let#2\hss  }
-% \setvalue{spac_align_set_ss_\v!left      }#1#2{\let#1\hss  \let#2\relax}
-% \setvalue{spac_align_set_ss_\v!flushright}#1#2{\let#1\hss  \let#2\relax}
-% \setvalue{spac_align_set_ss_\v!flushleft }#1#2{\let#1\relax\let#2\hss  }
-% \setvalue{spac_align_set_ss_\v!middle    }#1#2{\let#1\hss  \let#2\hss  }
-% \setvalue{spac_align_set_ss_\v!low       }#1#2{\let#1\vss  \let#2\relax}
-% \setvalue{spac_align_set_ss_\v!high      }#1#2{\let#1\relax\let#2\vss  }
-% \setvalue{spac_align_set_ss_\v!lohi      }#1#2{\let#1\vss  \let#2\vss  }
-% \setvalue{spac_align_set_ss_\s!unknown   }#1#2{\let#1\relax\let#2\relax}
-
+% \installnamespace{alignsets}
+%
+% \setvalue{\??alignsets\v!right     }#1#2{\let#1\relax\let#2\hss  }
+% \setvalue{\??alignsets\v!left      }#1#2{\let#1\hss  \let#2\relax}
+% \setvalue{\??alignsets\v!flushright}#1#2{\let#1\hss  \let#2\relax}
+% \setvalue{\??alignsets\v!flushleft }#1#2{\let#1\relax\let#2\hss  }
+% \setvalue{\??alignsets\v!middle    }#1#2{\let#1\hss  \let#2\hss  }
+% \setvalue{\??alignsets\v!low       }#1#2{\let#1\vss  \let#2\relax}
+% \setvalue{\??alignsets\v!high      }#1#2{\let#1\relax\let#2\vss  }
+% \setvalue{\??alignsets\v!lohi      }#1#2{\let#1\vss  \let#2\vss  }
+% \setvalue{\??alignsets\s!unknown   }#1#2{\let#1\relax\let#2\relax}
+%
 % \unexpanded\def\spac_align_set_ss#1%
-%   {\csname spac_align_set_ss_\ifcsname spac_align_set_ss_#1\endcsname#1\else\s!unknown\fi\endcsname}
+%   {\csname\??alignsetss\ifcsname\??alignsetss#1\endcsname#1\else\s!unknown\fi\endcsname}
+
+% Some obsolete (old) helpers:
+
+\def\dodefinehbox[#1][#2]%
+  {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
+
+\unexpanded\def\definehbox
+  {\dodoubleargument\dodefinehbox}
 
 \protect \endinput
+
+% \newskip\@@raggedskipa
+% \newskip\@@raggedskipb
+%
+% \newcount\c_spacing_minimum_tolerance \c_spacing_minimum_tolerance = 1500
+%
+% \unexpanded\def\setraggedness#1%
+%   {\ifnum\tolerance<\c_spacing_minimum_tolerance    % small values have
+%      \tolerance\c_spacing_minimum_tolerance         % unwanted side effects
+%    \fi
+%    \ifx\dohyphens\relax
+%      % this code will be reconsidered / kind of fuzzy (and old)
+%      \@@raggedskipa 2.5\hsize
+%      \@@raggedskipb  #1\relax
+%      \divide\@@raggedskipa \@@raggedskipb
+%      \hyphenpenalty\@@raggedskipa
+%    \fi}
+
+% \installalign \v!inner         {\setraggedparagraphmode\spacing_align_rl\spacing_align_rr}
+% \installalign \v!outer         {\setraggedparagraphmode\spacing_align_rr\spacing_align_rl}
+% \installalign \v!flushouter    {\setraggedparagraphmode\spacing_horizontal_left \spacing_horizontal_right}
+% \installalign \v!flushinner    {\setraggedparagraphmode\spacing_horizontal_right\spacing_horizontal_left }

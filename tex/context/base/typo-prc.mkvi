@@ -44,10 +44,13 @@
 %D Valid keys for defining a processor are \type {style}, \type {color}, \type {left},
 %D \type {right}, and \type {command} (the given command takes one argument).
 
-\installcommandhandler \??po {processor} \??po
+\installcorenamespace{processor}
+\installcorenamespace{processorcheck}
+
+\installcommandhandler \??processor {processor} \??processor
 
 \appendtoks
-    \letvalue{\??po\currentprocessor\s!check}\relax
+    \letvalue{\??processorcheck\currentprocessor}\relax
     \ctxcommand{registerstructureprocessor("\currentprocessor")}% global, but it permits using processor that are yet undefined
 \to \everydefineprocessor
 
@@ -58,7 +61,7 @@
 
 \unexpanded\def\applyprocessor#tag%
   {\def\currentprocessor{#tag}%
-   \ifcsname\??po\currentprocessor\s!check\endcsname
+   \ifcsname\??processorcheck\currentprocessor\endcsname
      \expandafter\apply_processor
    \else
      \expandafter\firstofoneargument

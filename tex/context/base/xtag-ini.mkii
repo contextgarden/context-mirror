@@ -16,6 +16,9 @@
 %D Beware: don't rely on \longempty things, since this may
 %D change!
 
+\ifdefined\keeputfcharacters \else \let\keeputfcharacters\relax  \fi % for mkiv
+\ifdefined\utfunicodetracer  \else \newconstant\utfunicodetracer \fi % for mkiv
+
 %D \macros
 %D   {defineinputmode,setinputmode}
 %D

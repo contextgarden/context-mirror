@@ -56,9 +56,9 @@
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
 
-\setjobsuffix{pdf}
+\backend_set_job_suffix{pdf}
 
-%D PDF/X (matbe combine the two lua calls)
+%D PDF/X (maybe combine the two lua calls)
 
 \setupbackend
   [xmpfile=]
@@ -87,22 +87,21 @@
 
 %D These are the only official methods to add stuff to the resources.
 
-\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
-\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
-\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetcatalog       #1#2{\ctxlua{lpdf.addtocatalog        ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetinfo          #1#2{\ctxlua{lpdf.addtoinfo           ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetname          #1#2{\ctxlua{lpdf.addtonames          ("#1",\!!bs#2\!!es)}}
 
-\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
-\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
-\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetpageattribute #1#2{\ctxlua{lpdf.addtopageattributes ("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetpagesattribute#1#2{\ctxlua{lpdf.addtopagesattributes("#1",\!!bs#2\!!es)}}
+\unexpanded\def\pdfbackendsetpageresource  #1#2{\ctxlua{lpdf.addtopageresources  ("#1",\!!bs#2\!!es)}}
 
-\def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
-\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetextgstate     #1#2{\ctxlua{lpdf.adddocumentextgstate ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetcolorspace    #1#2{\ctxlua{lpdf.adddocumentcolorspace("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetpattern       #1#2{\ctxlua{lpdf.adddocumentpattern   ("#1",lpdf.verbose(\!!bs#2\!!es))}}
+\unexpanded\def\pdfbackendsetshade         #1#2{\ctxlua{lpdf.adddocumentshade     ("#1",lpdf.verbose(\!!bs#2\!!es))}}
 
-\def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
-
-\def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
+           \def\pdfbackendcurrentresources     {\cldcontext{lpdf.collectedresources()}}
+           \def\pdfcolor                     #1{\ctxlua{lpdf.pdfcolor(\thecolorattribute{#1})}} \let\PDFcolor\pdfcolor
 
 %D Let's block these:
 
@@ -223,13 +222,13 @@
 \def\dostartobject#1#2#3#4#5%
   {\bgroup
    \setbox\objectbox\vbox\bgroup
-   \def\dodostopobject{\egroup\doregisterobject{#1}{#2}}}
+   \def\backend_stop_object{\egroup\backend_register_object{#1}{#2}}}
 
 \def\dostopobject
-  {\dodostopobject
+  {\backend_stop_object
    \egroup}
 
-\def\doregisterobject#1#2%
+\def\backend_register_object#1#2%
   {\the\pdfbackendeveryxform
    \finalizeobjectbox\objectbox
    \immediate\pdfxform resources {\pdfbackendcurrentresources}\objectbox
@@ -241,7 +240,8 @@
 \def\doinsertobject#1#2%
   {\begingroup
    \doifobjectreferencefoundelse{#1}{#2}
-     {\dogetobjectreference{#1}{#2}\PDFobjectreference\pdfrefxform\PDFobjectreference}%
+     {\dogetobjectreference{#1}{#2}\m_backend_object_reference
+      \pdfrefxform\m_backend_object_reference}%
      \donothing
    \endgroup}
 
@@ -251,8 +251,8 @@
   {\begingroup
    \xdef\lastpredefinedsymbol{#1}%
    \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
-   \dogetobjectreference{SYM}{#1}\lastref
-   \ctxlua{backends.codeinjections.registersymbol("#1",\lastref)}%
+   \dogetobjectreference{SYM}{#1}\m_backend_object_reference
+   \ctxlua{backends.codeinjections.registersymbol("#1",\m_backend_object_reference)}%
    \endgroup}
 
 % for the moment here
@@ -268,24 +268,39 @@
 %D implemented in the \POSTSCRIPT\ driver. This code is
 %D somewhat obsolete as we now have metapost embedded.
 
-\def\doPDFovalcalc#1#2#3%
-  {\PointsToBigPoints{\dimexpr#1+#2\relax}#3}
+% \def\backend_oval_calc#1#2#3%
+%   {\PointsToBigPoints{\dimexpr#2+#3\relax}#1}
 
-\unexpanded\def\doovalbox#1#2#3#4#5#6#7#8% todo: \scratchdimen/\scatchbox
+\unexpanded\def\doovalbox#1#2#3#4#5#6#7#8%
   {\forcecolorhack
    \bgroup
-   \dimen0=#4\divide\dimen0 \plustwo
-   \doPDFovalcalc{0pt}{+\dimen0}\xmin
-   \doPDFovalcalc{#1}{-\dimen0}\xmax
-   \doPDFovalcalc{#2}{-\dimen0}\ymax
-   \doPDFovalcalc{-#3}{+\dimen0}\ymin
-   \advance\dimen0 by #5%
-   \doPDFovalcalc{0pt}{+\dimen0}\xxmin
-   \doPDFovalcalc{#1}{-\dimen0}\xxmax
-   \doPDFovalcalc{#2}{-\dimen0}\yymax
-   \doPDFovalcalc{-#3}{+\dimen0}\yymin
-   \doPDFovalcalc{#4}{\zeropoint}\stroke
-   \doPDFovalcalc{#5}{\zeropoint}\radius
+%    \scratchdimen#4%
+%    \divide\scratchdimen\plustwo
+%    \backend_oval_calc\xmin  \zeropoint\scratchdimen
+%    \backend_oval_calc\xmax  {#1}{-\scratchdimen}%
+%    \backend_oval_calc\ymax  {#2}{-\scratchdimen}%
+%    \backend_oval_calc\ymin  {-#3}\scratchdimen
+%    \advance\scratchdimen by #5%
+%    \backend_oval_calc\xxmin \zeropoint\scratchdimen
+%    \backend_oval_calc\xxmax {#1}{-\scratchdimen}%
+%    \backend_oval_calc\yymax {#2}{-\scratchdimen}%
+%    \backend_oval_calc\yymin {-#3}\scratchdimen
+%    \backend_oval_calc\stroke{#4}\zeropoint
+%    \backend_oval_calc\radius{#5}\zeropoint
+   %
+   \PointsToBigPoints{#4}                       \stroke
+   \PointsToBigPoints{#5}                       \radius
+   \scratchdimen\dimexpr#4/\plustwo\relax
+   \PointsToBigPoints             \scratchdimen \xmin
+   \PointsToBigPoints{\dimexpr #1-\scratchdimen}\xmax
+   \PointsToBigPoints{\dimexpr #2-\scratchdimen}\ymax
+   \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\ymin
+   \advance\scratchdimen by #5\relax
+   \PointsToBigPoints             \scratchdimen \xxmin
+   \PointsToBigPoints{\dimexpr #1-\scratchdimen}\xxmax
+   \PointsToBigPoints{\dimexpr #2-\scratchdimen}\yymax
+   \PointsToBigPoints{\dimexpr-#3+\scratchdimen}\yymin
+   %
    \edef\dostroke{#6}%
    \edef\dofill{#7}%
    \edef\mode{\number#8 \space}%
@@ -483,10 +498,13 @@
            \fi
            Q}%
       \fi}%
-   \wd\scratchbox#1\ht\scratchbox#2\dp\scratchbox#3\box\scratchbox
+   \wd\scratchbox#1%
+   \ht\scratchbox#2%
+   \dp\scratchbox#3%
+   \box\scratchbox
    \egroup}
 
-\unexpanded\def\pdfactualtext#1#2%
+\unexpanded\def\pdfactualtext#1#2% not interfaced
   {\pdfliteral direct{/Span <</ActualText \ctxlua{tex.write(lpdf.tosixteen("#2"))} >> BDC}%
    #1%
    \pdfliteral direct{EMC}}

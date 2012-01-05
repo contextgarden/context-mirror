@@ -21,7 +21,7 @@
 
 %D Version checking:
 
-\def\newcontextversion#1%
+\unexpanded\def\newcontextversion#1%
   {\doifelse{#1}\contextversion
       {\let\newcontextversion\gobbleoneargument}
       {\writeline
@@ -36,7 +36,6 @@
 %D line ending. I hate this mess.
 
 \edef\operatingsystem  {\cldcontext{os.platform}}
-
 \def \jobfilename      {\cldcontext{environment.jobfilename       or ""}}
 \def \jobfilesuffix    {\cldcontext{environment.jobfilesuffix     or ""}}
 \def \inputfilebarename{\cldcontext{environment.inputfilebarename or ""}}
@@ -44,21 +43,18 @@
 \def \inputfilename    {\cldcontext{environment.inputfilename     or ""}}
 \def \outputfilename   {\cldcontext{environment.outputfilename    or ""}}
 
-\newtoks \everysetupsystem
+\installcorenamespace{system}
 
-\unexpanded\def\setupsystem
-  {\dosingleargument\dosetupsystem}
-
-\def\dosetupsystem[#1]%
-  {\getparameters[\??sv][#1]%
-   \the\everysetupsystem}
+\installdirectcommandhandler \??system {system}
 
 \appendtoks
-    \edef\outputresolution{\@@svresolution}%
+    \edef\outputresolution{\directsystemparameter\c!resolution}%
+    \edef\outputfilename  {\directsystemparameter\c!file      }%
+    \edef\inputfilename   {\directsystemparameter\c!inputfile }%
 \to \everysetupsystem
 
 \appendtoks
-    \ifcase\@@svn
+    \ifcase\directsystemparameter\c!n\relax
         %                        % 0 : unknown
     \or
         \setsystemmode\v!first   % 1 : first run
@@ -71,17 +67,12 @@
     \fi
 \to \everysetupsystem
 
-\appendtoks
-    \edef\outputfilename{\@@svfile}%
-    \edef\inputfilename {\@@svinputfile}%
-\to \everysetupsystem
-
-\let\@@jobsuffix\s!unknown
+\let\m_system_job_suffix\s!unknown
 
 \appendtoks
-    \resetsystemmode{suffix-\@@jobsuffix}%
-    \edef\@@jobsuffix{\jobsuffix}%
-    \setsystemmode{suffix-\@@jobsuffix}%
+    \resetsystemmode{suffix-\m_system_job_suffix}%
+    \edef\m_system_job_suffix{\jobsuffix}%
+    \setsystemmode{suffix-\m_system_job_suffix}%
 \to \everysetupsystem
 
 \appendtoks
@@ -95,12 +86,10 @@
 
 \def\jobfullname{\jobfilename.\jobfilesuffix}
 
-\def\setjobfullname#1% #1 = default if not given
+\unexpanded\def\setjobfullname#1% #1 = default if not given
   {\doifelsenothing\jobfilename
      {\let\jobfullname\empty}
      {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
-
-\def\systemparameter#1{\executeifdefined{\??sv#1}\empty}
 
 %D There are a couple of system states avaiable:
 %D
@@ -130,7 +119,7 @@
 
 \unexpanded\def\setuprandomize[#1]%
   {\doifsomething{#1}
-     {\bgroup
+     {\begingroup
       % tex's time is in minutes
       \scratchcounter\normaltime
       \processaction
@@ -143,7 +132,7 @@
          \s!unknown=>\scratchcounter#1]%
       \expanded{\setrandomseed{\the\scratchcounter}}%
     % \writestatus\m!system{randomseed: \the\scratchcounter}%
-      \egroup}}
+      \endgroup}}
 
 \setupsystem
   [\c!directory=,
@@ -158,25 +147,9 @@
 %D Remark: windows programs normally handle \type {cr|lf|crlf} but unix
 %D is more picky, so we default to the \type {cr}. I never understood why
 %D \type {crlf} was not used in all systems, since it makes most sense.
+%D But anyway, in \MKIV\ we avoid most of the complications anyway as we
+%D deal with much at the \LUA\ end.
 
-\def\dostartglobaldefs#1#2%
-  {\edef\!!stringa{\the\globaldefs}%
-   \ifnum\globaldefs#10
-     \globaldefs-\globaldefs
-   \fi
-   \advance\globaldefs #21
-   \setevalue{@gd@\the\globaldefs}{\!!stringa}}
-
-\def\dostopglobaldefs
-  {\doifdefinedelse{@gd@\the\globaldefs}
-     {\globaldefs\getvalue{@gd@\the\globaldefs}\relax}
-     {\globaldefs\zerocount}}
-
-\unexpanded\def\startlocal  {\dostartglobaldefs>-}
-\unexpanded\def\stoplocal   {\dostopglobaldefs}
-\unexpanded\def\startglobal {\dostartglobaldefs<+}
-\unexpanded\def\stopglobal  {\dostopglobaldefs}
-
 \def\complexstart[#1]{\bgroup\getvalue{\e!start#1}}
 \def\complexstop [#1]{\getvalue{\e!stop #1}\egroup}
 
@@ -188,7 +161,9 @@
 
 % \c!before \c!after \c!inbetween \c!commands \c!style \c!color
 
-\installcommandhandler{\??be}{startstop}{\??be}
+\installcorenamespace{startstop}
+
+\installcommandhandler \??startstop {startstop} \??startstop
 
 \appendtoks
     \setuevalue{\e!start\currentstartstop}{\dostartstop_start {\currentstartstop}}%
@@ -219,7 +194,9 @@
       \dostoptagged
       \startstopparameter\c!inbetween}}
 
-\installcommandhandler{\??hl}{highlight}{\??hl} % we could do with less
+\installcorenamespace{highlight}
+
+\installcommandhandler \??highlight {highlight} \??highlight % we could do with less
 
 \appendtoks
     \setuevalue\currenthighlight{\dohighlight_indeed{\currenthighlight}}%
@@ -234,57 +211,26 @@
       \usehighlightstyleandcolor\c!style\c!color
       \dotaghighlight}
      {\dostoptagged}}
-
-% \docommand kan niet worden gebruikt omdat deze macro
-%  soms lokaal wordt gebruikt
 
-% te zijner tijd:
-%
-% \definevariable {pc}  % ProtectedCommand
-%
-% \def\executeprotected#1%
-%   {\csname\??pc\string#1\endcsname}
-%
-% \unexpanded\def\defineprotected#1#2%
-%   {\expandafter\def\csname\??pc\string#2\endcsname}
-%
-% \unexpanded\def\defineunprotected#1%
-%   {\def#1}
-%
-% \def\doprotected%
-%   {\ifx\next\define
-%      \let\next=\defineprotected
-%    \else
-%      \let\next=\executeprotected
-%    \fi
-%    \next}
-%
-% \def\unexpanded%
-%   {\futurelet\next\doprotected}
-%
-% \unexpanded\define\ziezo{ziezo}
-%
-% \unexpanded\ziezo
+\unexpanded\def\define
+  {\doifnextoptionalelse\system_define_yes\def}
 
-\def\complexdefine[#1]#2#3%
-  {\ifx#2\undefined
-   \else
+\unexpanded\def\system_define_yes[#1]#2#3%
+  {\ifdefined#2%
      \showmessage\m!system4{\string#2}%
    \fi
-   \ifcase0#1\def#2{#3}%
-   \or\def#2##1{#3}%
-   \or\def#2##1##2{#3}%
-   \or\def#2##1##2##3{#3}%
-   \or\def#2##1##2##3##4{#3}%
-   \or\def#2##1##2##3##4##5{#3}%
-   \or\def#2##1##2##3##4##5##6{#3}%
-   \or\def#2##1##2##3##4##5##6##7{#3}%
-   \or\def#2##1##2##3##4##5##6##7##8{#3}%
-   \or\def#2##1##2##3##4##5##6##7##8##9{#3}%
-   \else\def#2{#3}%
-   \fi}
-
-\definecomplexorsimpleempty\define
+   \ifcase0#1\relax
+     \def#2{#3}\or
+     \def#2##1{#3}\or
+     \def#2##1##2{#3}\or
+     \def#2##1##2##3{#3}\or
+     \def#2##1##2##3##4{#3}\or
+     \def#2##1##2##3##4##5{#3}\or
+     \def#2##1##2##3##4##5##6{#3}\or
+     \def#2##1##2##3##4##5##6##7{#3}\or
+     \def#2##1##2##3##4##5##6##7##8{#3}\or
+     \def#2##1##2##3##4##5##6##7##8##9{#3}\else
+     \def#2{#3}\fi}
 
 % \startluacode
 %     local contextsprint, ctxcatcodes = context.sprint, tex.ctxcatcodes
@@ -362,73 +308,19 @@
 %     \whateverb[A][B]{C}{D}
 % \stoptext
 
+%D This is a checked variant of \type {\getvalue}.
+
 \unexpanded\def\macroname#1% brrr
-  {\executeifdefined{#1}\empty}
+  {\csname\ifcsname#1\endcsname#1\else\s!empty\fi\endcsname}
 
-\def\usecommands#1%
-  {\bgroup
-   \def\docommand##1{\setbox0\hbox{\getvalue{\string##1}##1}}%
-   \processcommalist[#1]\docommand
-   \egroup}
-
-\newif\ifforcefileexpansion % handy for document level overload
+% %D A weird one that I probably needed once, so it might as well become
+% %D obsolete.
+%
+% \unexpanded\def\usecommands#1%
+%   {\begingroup
+%    \def\docommand##1{\setbox\scratchbox\hbox{\csname\string##1\endcsname##1}}%
+%    \processcommalist[#1]\docommand
+%    \endgroup}
 
-%D The next implementation is about 4 times as faster than a
-%D processaction alternative on an string of average length.
-%D Since this feature is used in XML processing, it made sense
-%D to support this faster alternative. It's installable as well.
-%D
-%D We keep this around for \MKII\ \XML\ but it's not used in \MKIV\
-%D code as expansion is controlled in another way there.
 
-\def\installexpander#1#2#3% changed, no longer \convert..\to...
-  {\setvalue{\s!do\c!expansion#1l}{#2}%
-   \setvalue{\s!do\c!expansion#1g}{#3}}%
-
-% \convertexpanded is obsolete
-
-\long\def\doconvertexpanded#1#2#3% #4 % [l|g] \cs {kind} {data}
-  {\csname   % that we assign all exp a value
-     \s!do\c!expansion
-     \ifforcefileexpansion
-       \v!yes
-     \else\ifcsname\s!do\c!expansion#3#1\endcsname
-       #3%
-     \else
-       \s!default
-     \fi\fi
-     #1%
-   \endcsname#2}% #3
-
-\long\def\defconvertexpanded {\doconvertexpanded l}
-\long\def\gdefconvertexpanded{\doconvertexpanded g}
-
-\installexpander\v!command \defconvertedcommand  \gdefconvertedcommand
-\installexpander\s!default \defconvertedargument \gdefconvertedargument
-\installexpander\empty     \defconvertedargument \gdefconvertedargument
-\installexpander\v!no      \defconvertedargument \gdefconvertedargument
-\installexpander\v!yes     \defconvertedmeaning  \gdefconvertedmeaning
-\installexpander\v!yes     \defconvertedmeaning  \gdefconvertedmeaning
-\installexpander\v!strict  \defreducedargument   \gdefreducedargument
-\installexpander {utf}     \defreducedtoutf      \gdefreducedtoutf
-
-\def\dodefconvertedmeaning#1#2#3% watch the double expansion !
-  {\bgroup
-     \xdef\@@globalexpanded{#3}%
-     \xdef\@@globalexpanded{\@@globalexpanded}%
-   \egroup
-   #1#2\@@globalexpanded}
-
-\def\defconvertedmeaning {\dodefconvertedmeaning\defconvertedcommand}
-\def\gdefconvertedmeaning{\dodefconvertedmeaning\gdefconvertedcommand}
-
-\def\dodefreducedargument#1#2#3%
-  {\begingroup
-   \reducetocoding[raw]%
-   \edef\ascii{#3}%
-   \expandafter\endgroup\expandafter#1\expandafter#2\expandafter{\ascii}}
-
-\def\defreducedargument {\dodefreducedargument\edef}
-\def\gdefreducedargument{\dodefreducedargument\xdef}
-
 \protect \endinput

@@ -43,96 +43,109 @@
 %D \definesymbol [level 5] [$\star$]
 %D \stoptyping
 
-% ss:tag     -> symbol
-% ss:set:tag -> symbol out of set
-% ss*tag     -> list of symbols in set
+\installcorenamespace{symbol}
+\installcorenamespace{symbolset}
+
+\newtoks\t_symbols_setups
+
+\let\m_symbols_current_set\empty
+
+\newconditional\c_symbols_found
+
+\newtoks\everysymbol
+
+%D We don't use the commandhandler as symbols have their own
+%D subsystem for resolving values.
 
 \unexpanded\def\definesymbol
-  {\dotripleempty\dodefinesymbol}
+  {\dotripleempty\symbols_define}
 
-\def\dodefinesymbol[#1][#2][#3]% class name meaning
+\def\symbols_define[#1][#2][#3]% class name meaning
   {\ifthirdargument
-     \setvalue{\??ss:#1:#2}{#3}%
-     \doifsomething{#1}{\addvalue{\??ss*#1}{#2}}%
+     \setvalue{\??symbol#1:#2}{#3}%
+     \doifsomething{#1}{\addvalue{\??symbolset#1}{#2}}%
    \else
-     \setvalue{\??ss:\currentsymboldef:#1}{#2}%
-     \addvalue{\??ss*\currentsymboldef}{#1}%
+     \setvalue{\??symbol\m_symbols_current_set:#1}{#2}%
+     \addvalue{\??symbolset\m_symbols_current_set}{#1}%
    \fi}
 
-\def\doifinsymbolsetelse#1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
-\def\doifinsymbolset    #1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstofoneargument \else\@EA\gobbleoneargument   \fi}
-\def\doifsymbolsetelse    #1{\ifcsname\??ss*#1\endcsname   \@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
+\letvalue{\??symbolset}\empty
 
-\letvalue{\??ss*}\empty
+\def\doifinsymbolsetelse#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\def\doifinsymbolset    #1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\def\doifsymbolsetelse    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 
-\def\symbolset#1{\csname\??ss*\ifcsname\??ss*#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
+\def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 
 %D Since symbols are used frequently in interactive
 %D documents, we speed up this one. Well, that was history,
 %D since now we simplified things a bit, because the low
 %D level macros have been sped up every now and then.
 
-\unexpanded\def\symbol       % This one always gobbles spaces,
-  {\dodoubleempty\dosymbol}  % so never change it again!
-
-\newif\ifnosymbol \newtoks\everysymbol
-
-\def\dodosymbol#1#2% \relax's prevent lookahead problems
-  {\nosymbolfalse
-   \begingroup
-   \the\everysymbol
-   \csname\??ss:#1:#2\endcsname\relax
-   \endgroup}
-
-\letvalue{\??ss:}\firstofoneargument
-
-\def\directsymbol#1#2% no \relax, there can be an argument, see lists
-  {\csname\??ss:\ifcsname\??ss:#1:#2\endcsname#1:#2\fi\endcsname}
-
 % We support both:
 %
 % Test test \symbol[whatever]\ test \symbol[whatever].
 % Test test \symbol{whatever}  test \symbol{whatever}.
 
-\def\dosymbol        % so we also handle \symbol{name}
+\unexpanded\def\symbol           % This one always gobbles spaces,
+  {\dodoubleempty\symbols_place} % so never change it again!
+
+\def\symbols_place   % so we also handle \symbol{name}
   {\iffirstargument  % which is nicer with following spaces
-     \expandafter\donormalsymbol
+     \expandafter\symbols_place_normal
    \else
-     \expandafter\dospecialsymbol
+     \expandafter\symbols_place_special
    \fi}
 
-\def\dospecialsymbol[#1][#2]#3%
-  {\firstargumenttrue
-   \secondargumentfalse
-   \donormalsymbol[#3][]}
-
-\def\donormalsymbol[#1][#2]%
-  {\nosymboltrue
+\def\symbols_place_normal[#1][#2]%
+  {\setfalse\c_symbols_found
    \ifsecondargument
      \edef\currentsymbol{#2}%
-     \ifcsname\??ss:#1:#2\endcsname
-       \dodosymbol{#1}{#2}%
+     \ifcsname\??symbol#1:#2\endcsname
+       \symbols_place_indeed{#1:#2}%
      \fi
    \else
      \edef\currentsymbol{#1}%
    \fi
-   \ifnosymbol
-     \the\symbolsetups
-     \ifnosymbol
-       \redosymbol\currentsymbol
+   \ifconditional\c_symbols_found \else
+     \the\t_symbols_setups
+     \ifconditional\c_symbols_found \else
+       \symbols_place_retry\currentsymbol
      \fi
    \fi}
 
-\def\fetchsymbol#1%
-  {\ifnosymbol
-     \ifcsname\??ss:#1:\currentsymbol\endcsname
-       \dodosymbol{#1}\currentsymbol
-     \fi
+\def\symbols_place_special[#1][#2]#3%
+  {\firstargumenttrue
+   \secondargumentfalse
+   \symbols_place_normal[#3][]}
+
+\def\symbols_place_indeed#1% \relax's prevent lookahead problems
+  {\settrue\c_symbols_found
+   \begingroup
+   \the\everysymbol
+   \csname\??symbol#1\endcsname\relax
+   \endgroup}
+
+\letvalue{\??symbol}\firstofoneargument
+
+\def\directsymbol#1#2% no \relax, there can be an argument, see lists
+  {\csname\??symbol\ifcsname\??symbol#1:#2\endcsname#1:#2\fi\endcsname}
+
+\def\symbols_fetch
+  {\ifconditional\c_symbols_found
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\symbols_fetch_indeed
    \fi}
 
-\def\redosymbol#1%
-  {\ifcsname\??ss::#1\endcsname
-     \dodosymbol\empty{#1}%
+\def\symbols_fetch_indeed#1%
+  {\ifcsname\??symbol#1:\currentsymbol\endcsname
+     \symbols_place_indeed{#1:\currentsymbol}%
+   \fi}
+
+\def\symbols_place_retry#1%
+  {\ifcsname\??symbol:#1\endcsname
+     \symbols_place_indeed{:#1}%
    \else
      #1%
    \fi}
@@ -150,23 +163,23 @@
 \def\defaultsymbolfactor{10}
 \def\defaultsymbolheight{1.25ex}
 
-\def\figuresymbol
-  {\dodoubleempty\dofiguresymbol}
+\unexpanded\def\figuresymbol
+  {\dodoubleempty\symbols_figure}
 
 \ifdefined\externalfigure       \else \def\externalfigure[#1][#2]{#1} \fi
 \ifdefined\resetexternalfigures \else \let\resetexternalfigures\relax \fi
 
-\def\dofiguresymbol[#1][% #2]%
+\def\symbols_figure[#1][% #2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
 
 \appendtoks \resetexternalfigures \to \everysymbol
 
 \unexpanded\def\definefiguresymbol
-  {\dotripleempty\dodefinefiguresymbol}
+  {\dotripleempty\symbols_figure_define}
 
-\def\dodefinefiguresymbol[#1][#2][#3]%
+\def\symbols_figure_define[#1][#2][#3]%
   {\ifsecondargument
-     \definesymbol[#1][{\dofiguresymbol[#2][#3]}]%
+     \definesymbol[#1][{\symbols_figure[#2][#3]}]%
    \fi}
 
 %D \macros
@@ -174,31 +187,34 @@
 %D
 %D A handy private one:
 
-% a bit messy
-
-\def\xfetchsymbol#1%
-  {\ifnosymbol
-     \doifinsymbolset{#1}\currentsymbol\nosymbolfalse
+\def\symbols_fetch_first
+  {\ifconditional\c_symbols_found
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\symbols_fetch_first_indeed
    \fi}
 
-\def\xredosymbol#1%
-  {\doifinsymbolset\empty\currentsymbol\nosymbolfalse}
+\def\symbols_fetch_first_indeed#1%
+  {\doifinsymbolset{#1}\currentsymbol{\settrue\c_symbols_found}}
+
+\def\symbols_fetch_second#1%
+  {\doifinsymbolset\empty\currentsymbol{\settrue\c_symbols_found}}
 
 \def\doifsymboldefinedelse#1%
   {\begingroup
    \edef\currentsymbol{#1}%
-   \let\fetchsymbol\xfetchsymbol
-   \nosymboltrue
-   \the\symbolsetups
-   \ifnosymbol
-     \xredosymbol\currentsymbol
-     \ifnosymbol
-       \endgroup\@EAEAEA\secondoftwoarguments
-     \else
-       \endgroup\@EAEAEA\firstoftwoarguments
-     \fi
+   \let\symbols_fetch\symbols_fetch_first
+   \setfalse\c_symbols_found
+   \the\t_symbols_setups
+   \ifconditional\c_symbols_found
+     \endgroup\expandafter\firstoftwoarguments
    \else
-     \endgroup\@EA\firstoftwoarguments
+     \symbols_fetch_second\currentsymbol
+     \ifconditional\c_symbols_found
+       \endgroup\doubleexpandafter\firstoftwoarguments
+     \else
+       \endgroup\doubleexpandafter\secondoftwoarguments
+     \fi
    \fi}
 
 %D \macros
@@ -231,24 +247,21 @@
 %D \showsetup{setupsymbolset}
 %D \showsetup{startsymbolset}
 
-\let\currentsymboldef\empty
-
 \unexpanded\def\startsymbolset[#1]%
-  {\def\currentsymboldef{#1}}
+  {\pushmacro\m_symbols_current_set
+   \def\m_symbols_current_set{#1}}
 
 \unexpanded\def\stopsymbolset
-  {\let\currentsymboldef\empty}
-
-\newtoks\symbolsetups
+  {\popmacro\m_symbols_current_set}
 
 \unexpanded\def\setupsymbolset[#1]%
-  {\prependtoksonce\fetchsymbol{#1}\to\symbolsetups}
+  {\prependtoksonce\symbols_fetch{#1}\to\t_symbols_setups}
 
-\def\resetsymbolset
-  {\symbolsetups\emptytoks}
+\unexpanded\def\resetsymbolset
+  {\t_symbols_setups\emptytoks}
 
-\def\forcesymbolset[#1]%
-  {\symbolsetups{\fetchsymbol{#1}}}
+\unexpanded\def\forcesymbolset[#1]%
+  {\t_symbols_setups{\symbols_fetch{#1}}}
 
 %D \macros
 %D   {showsymbolset}

@@ -59,6 +59,15 @@
 \unexpanded\def\Word {\groupedcommand{\setcharactercasing[\plusthree]}{}}
 \unexpanded\def\Words{\groupedcommand{\setcharactercasing[\plusfour ]}{}}
 
+% this will become:
+%
+% \unexpanded\def\WORD {\bgroup\def\g_word{\setcharactercasing[\plusone  ]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\word {\bgroup\def\g_word{\setcharactercasing[\plustwo  ]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\Word {\bgroup\def\g_word{\setcharactercasing[\plusthree]}\afterassignment\g_word\let\nexttoken}
+% \unexpanded\def\Words{\bgroup\def\g_word{\setcharactercasing[\plusfour ]}\afterassignment\g_word\let\nexttoken}
+%
+% so no longer {\Word test} and { } mandate (also later \groupedcommands will go)
+
 \let\WORDS\WORD
 \let\words\word
 

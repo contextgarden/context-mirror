@@ -29,10 +29,10 @@
 %D
 %D will negate the colors in box zero.
 
-\def\negatecolorbox#1%
+\unexpanded\def\negatecolorbox#1%
   {\setbox#1\hbox
      {\startnegativeproperty % might change
-      \startcolor[white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
+      \startcolor[\s!white]\vrule\!!height\ht#1\!!depth\dp#1\!!width\wd#1\stopcolor
       \hskip-\wd#1%
       \box#1%
       \stopnegativeproperty}}
@@ -43,89 +43,57 @@
 
 %D We can move the stack and attribute setting to the \LUA\ end.
 
-\def\registercolorintent#1#2%
-  {\setevalue{\??qi:#1}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
+\installcorenamespace{colorintent}
 
-\def\dotriggercolorintent
+\unexpanded\def\registercolorintent#1#2%
+  {\setevalue{\??colorintent#1}{\attribute\colorintentattribute\ctxcommand{registercolorintent('#2')} }}
+
+\unexpanded\def\colors_trigger_intent
   {\ctxcommand{enablecolorintents()}%
-   \gdef\dotriggercolorintent##1{\csname\??qi:##1\endcsname}%
-   \dotriggercolorintent}
+   \unexpanded\gdef\colors_trigger_intent##1{\csname\??colorintent##1\endcsname}%
+   \colors_trigger_intent}
 
 \registercolorintent{knockout} {knockout}
 \registercolorintent{overprint}{overprint}
 
 \installattributestack\colorintentattribute
 
-\setevalue{\??qi:\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % or reset? used at all?
+\setevalue{\??colorintent\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % or reset? used at all?
 
 \unexpanded\def\startcolorintent[#1]%
   {\pushattribute\colorintentattribute
-   \dotriggercolorintent{#1}}
+   \colors_trigger_intent{#1}}
 
 \unexpanded\def\stopcolorintent
   {\popattribute\colorintentattribute}
 
 \unexpanded\def\startoverprint{\startcolorintent[\v!overprint]}
-\unexpanded\def\stopoverprint {\stopcolorintent}
-
 \unexpanded\def\startknockout {\startcolorintent[\v!knockout ]}
-\unexpanded\def\stopknockout  {\stopcolorintent}
+
+\let\stopoverprint\stopcolorintent
+\let\stopknockout \stopcolorintent
 
 \let\starttextcolorintent\relax
 \let\stoptextcolorintent \relax
 
-\setupcolors
-  [\c!overprint=\v!no]
-
 \appendtoks
-    \dosettextcolorintent
+    \colors_set_text_intent
 \to \everysetupcolors
 
-\def\dosettextcolorintent
-  {\doifnot\@@clintent\v!none
-     {\xdef\starttextcolorintent{\noexpand\dotriggercolorintent{\@@clintent}}%
-      \glet\dosettextcolorintent\relax
-      \dotriggercolorintent\@@clintent}}
+\let\p_colors_intent\empty
+
+\def\colors_set_text_intent
+  {\edef\p_colors_intent{\colorsparameter\c!intent}%
+   \ifx\p_colors_intent\v!none \else
+     \unexpanded\xdef\starttextcolorintent{\colors_trigger_intent{\p_colors_intent}}%
+     \glet\colors_set_text_intent\relax
+     \colors_trigger_intent\p_colors_intent
+   \fi}
 
 \appendtoks \starttextcolorintent \to \everystarttextproperties
 \appendtoks \stoptextcolorintent  \to \everystoptextproperties
 
-\setupcolors[\c!intent=\v!none]
-
-% A goodie that replaces the startMPcolor hackery
-
-% \definecolor[red-t]  [r=1,t=0.5,a=1]
-% \definecolor[green-t][g=1,t=0.5,a=1]
-%
-% \defineintermediatecolor[mycolora][0.5,red,green]
-% \defineintermediatecolor[mycolorb][0.5,red-t,green-t]
-%
-% \definecolor[mycolorc][.5(blue,red)]
-% \definecolor[mycolord][.5(blue)]
-%
-% \enabledirectives[colors.pgf]
-% \definecolor[mycolorx][magenta!50!yellow]
-%
-% \starttext
-%     test {\mycolora OEPS} test
-%     test {\mycolorb OEPS} test
-%     test {\mycolorc OEPS} test
-%     test {\mycolord OEPS} test
-%     test {\mycolorx OEPS} test
-% \stoptext
-
-\unexpanded\def\defineintermediatecolor
-  {\dotripleempty\dodefineintermediatecolor}
-
-\def\dodefineintermediatecolor[#1][#2][#3]% \dotripleempty adds {} inside []
-  {\dododefineintermediatecolor[#1][#2][#3]}
-
-\def\dododefineintermediatecolor[#1][#2,#3,#4][#5]%
-  {\ifconditional\collectcolorsinlist\collectcolorinlist{#1}\fi
-   \ctxcommand{defineintermediatecolor("#1","#2",
-     \thecolorattribute{#3},\thecolorattribute{#4},
-     \thetransparencyattribute{#3},\thetransparencyattribute{#4},
-     "#5",false,\iffreezecolors true\else false\fi)}% not global
-   \dodefinecolorcommand\setvalue{#1}}
+\setupcolors
+  [\c!intent=\v!none]
 
 \protect \endinput

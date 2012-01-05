@@ -20,53 +20,69 @@
 
 \registerctxluafile{node-bck}{1.001}
 
-\def\doinitializeboxbackgrounds % will move to lua
+\def\backgrounds_boxes_initialize % will move to lua
   {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
    \glet\doinitializeboxbackgrounds\donothing}
-
-%D Box helpers:
 
 % \backgroundvbox[green] {\input tufte } \par
 % \backgroundvbox[blue]  {\input ward } \par
 % \backgroundvbox[red]   {\input knuth } \par
 % \backgroundhbox[yellow]{\rotate[rotation=45]{hello world}} \par
 
-\def\doaddbackgroundtobox#1[#2]%
-  {\begingroup\doinitializeboxbackgrounds\faststartcolor[#2]%
-   \normalexpanded{\noexpand\faststopcolor\endgroup#1
-     attr \backgroundattribute   \plusone
-     attr \colormodelattribute   \the\attribute\colormodelattribute
-     attr \colorattribute        \the\attribute\colorattribute
-     attr \transparencyattribute \the\attribute\transparencyattribute}}
-
-\def\backgroundvbox{\doaddbackgroundtobox\vbox}
-\def\backgroundvtop{\doaddbackgroundtobox\vtop}
-\def\backgroundhbox{\doaddbackgroundtobox\hbox}
-
 \def\colorattr#1%
-  {\ifcsname\??qc:\currentpalet#1\endcsname
-     \thecolorattr{\currentpalet#1}%
-   \else\ifcsname\??qc:#1\endcsname
+  {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
+     \thecolorattr{\currentcolorprefix#1}%
+   \else\ifcsname\??colorattribute#1\endcsname
      \thecolorattr{#1}%
    \fi\fi}
 
 \def\thecolorattr#1%
   {attr \colormodelattribute   \attribute\colormodelattribute
-   attr \colorattribute        \csname\??qc:#1\endcsname
-   attr \transparencyattribute \csname\??qt:#1\endcsname}
+   attr \colorattribute        \csname\??colorattribute       #1\endcsname
+   attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
 
 \def\backgroundcolorattr#1%
-  {\ifcsname\??qc:\currentpalet#1\endcsname
-     \thebackgroundcolorattr{\currentpalet#1}%
-   \else\ifcsname\??qc:#1\endcsname
+  {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
+     \thebackgroundcolorattr{\currentcolorprefix#1}%
+   \else\ifcsname\??colorattribute#1\endcsname
      \thebackgroundcolorattr{#1}%
    \fi\fi}
 
 \def\thebackgroundcolorattr#1%
   {attr \backgroundattribute   \plusone
    attr \colormodelattribute   \attribute\colormodelattribute
-   attr \colorattribute        \csname\??qc:#1\endcsname
-   attr \transparencyattribute \csname\??qt:#1\endcsname}
+   attr \colorattribute        \csname\??colorattribute#1\endcsname
+   attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
+
+\unexpanded\def\backgroundhbox{\backgrounds_boxes_add\hbox}
+\unexpanded\def\backgroundvbox{\backgrounds_boxes_add\vbox}
+\unexpanded\def\backgroundvtop{\backgrounds_boxes_add\vtop}
+
+% \def\backgrounds_boxes_add#1[#2]%
+%   {\begingroup
+%    \backgrounds_boxes_initialize
+%    \dousecolorparameter{#2}%
+%    \normalexpanded{\endgroup#1
+%      attr \backgroundattribute   \plusone
+%      attr \colormodelattribute   \the\attribute\colormodelattribute
+%      attr \colorattribute        \the\attribute\colorattribute
+%      attr \transparencyattribute \the\attribute\transparencyattribute}}
+%
+% more efficient:
+
+\def\backgrounds_boxes_add#1[#2]%
+  {\backgrounds_boxes_initialize#1\backgroundcolorattr{#2}}
+
+% less argument carry over:
+%
+% \def\backgrounds_boxes_add#1[#2]%
+%   {\backgrounds_boxes_initialize#1%
+%    \ifcsname\??colorattribute\currentcolorprefix#2\endcsname
+%      \thebackgroundcolorattr{\currentcolorprefix#2}%
+%    \else\ifcsname\??colorattribute#2\endcsname
+%      \thebackgroundcolorattr{#2}%
+%    \fi\fi}
+
 
 % \def\backgroundvbox[#1]{\vbox \backgroundcolorattr{#1}}
 % \def\backgroundvtop[#1]{\vtop \backgroundcolorattr{#1}}

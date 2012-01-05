@@ -33,8 +33,10 @@
 \def\dotablebpos{\bpos}
 \def\dotableepos{\epos}
 
+\installcorenamespace{positiontables}
+
 \def\tbPOSprefix
-  {tbp:\number\noftabpositions:}
+  {\??positiontables\number\noftabpositions:}
 
 \def\tablepos
   {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}

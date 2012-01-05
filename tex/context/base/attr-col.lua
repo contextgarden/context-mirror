@@ -48,7 +48,7 @@ local unsetvalue     = attributes.unsetvalue
 -- we can also collapse the two attributes: n, n+1, n+2 and then
 -- at the tex end add 0, 1, 2, but this is not faster and less
 -- flexible (since sometimes we freeze color attribute values at
--- the lua end of the game
+-- the lua end of the game)
 --
 -- we also need to store the colorvalues because we need then in mp
 --

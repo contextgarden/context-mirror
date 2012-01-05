@@ -23,6 +23,10 @@
 
 %D Initializations.
 
+\installcorenamespace{typinglines}
+\installcorenamespace{typingspace}
+\installcorenamespace{typingblank} % needs checking ... used?
+
 \newtoks\everyinitializeverbatim
 
 \appendtoks
@@ -37,31 +41,31 @@
 
 \unexpanded\def\specialcontrolspace{\hskip\zeropoint\fastcontrolspace\hskip\zeropoint}
 
-\setvalue{\??tp:\c!lines:\v!yes       }{\obeybreakpoints}
-\setvalue{\??tp:\c!lines:\v!hyphenated}{\obeyhyphens}
+\setvalue{\??typinglines\v!yes       }{\obeybreakpoints}
+\setvalue{\??typinglines\v!hyphenated}{\obeyhyphens}
 
-\setvalue{\??tp:\c!space:\v!on        }{\let\obeyedspace\specialcontrolspace}
-\setvalue{\??tp:\c!space:\v!stretch   }{\let\obeyedspace\specialstretchedspace}
-\setvalue{\??tp:\c!space:\v!normal    }{}
-\setvalue{\??tp:\c!space:\v!fixed     }{\let\obeyedspace\specialfixedspace}
+\setvalue{\??typingspace\v!on        }{\let\obeyedspace\specialcontrolspace}
+\setvalue{\??typingspace\v!stretch   }{\let\obeyedspace\specialstretchedspace}
+\setvalue{\??typingspace\v!normal    }{}
+\setvalue{\??typingspace\v!fixed     }{\let\obeyedspace\specialfixedspace}
 
-\setvalue{\??tp:\c!blank:\v!standard  }{\ctxparskip}
-\setvalue{\??tp:\c!blank:\v!small     }{\smallskipamount}
-\setvalue{\??tp:\c!blank:\v!medium    }{\medskipamount}
-\setvalue{\??tp:\c!blank:\v!big       }{\bigskipamount}
-\setvalue{\??tp:\c!blank:\v!halfline  }{.5\baselineskip}
-\setvalue{\??tp:\c!blank:\v!line      }{\baselineskip}
-\setvalue{\??tp:\c!blank:\v!none      }{\zeropoint}
+\setvalue{\??typingblank\v!standard  }{\ctxparskip}
+\setvalue{\??typingblank\v!small     }{\smallskipamount}
+\setvalue{\??typingblank\v!medium    }{\medskipamount}
+\setvalue{\??typingblank\v!big       }{\bigskipamount}
+\setvalue{\??typingblank\v!halfline  }{.5\baselineskip}
+\setvalue{\??typingblank\v!line      }{\baselineskip}
+\setvalue{\??typingblank\v!none      }{\zeropoint}
 
 \def\secondstageinitializetype
   {\let\obeyedspace\specialobeyedspace
-   \csname\??tp:\c!space:\typeparameter\c!space\endcsname
+   \csname\??typingspace\typeparameter\c!space\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 \def\secondstageinitializetyping
   {\let\obeyedspace\specialobeyedspace
-   \csname\??tp:\c!space:\typingparameter\c!space\endcsname
-   \csname\??tp:\c!lines:\typingparameter\c!lines\endcsname
+   \csname\??typingspace\typingparameter\c!space\endcsname
+   \csname\??typinglines\typingparameter\c!lines\endcsname
    \relax\the\everyinitializeverbatim\relax}
 
 \def\firststageinitializetype
@@ -108,7 +112,9 @@
 %D Specific inline verbatim commands can be defined with the
 %D following command.
 
-\installcommandhandler \??ty {type} \??ty
+\installcorenamespace{type}
+
+\installcommandhandler \??type {type} \??type
 
 \appendtoks
     \normalexpanded{\dodefinetype{\currenttype}}%
@@ -138,7 +144,9 @@
 %D
 %D The definitions default to the standard typing values.
 
-\installcommandhandler \??tp {typing} \??tp
+\installcorenamespace{typing}
+
+\installcommandhandler \??typing {typing} \??typing
 
 \appendtoks
     \setuevalue{\e!start\currenttyping}{\dostarttyping{\currenttyping}}%
@@ -420,7 +428,7 @@
    \normalexpanded{\dotypeblockverbatim{\e!start\currenttyping}{\e!stop\currenttyping}}}
 
 \unexpanded\def\dotypeblockverbatim#1#2%
-  {\dowithbuffer{_typing_}{#1}{#2}{}{\dodotypeblockverbatim{#1}{#2}}}
+  {\buffers_pickup{_typing_}{#1}{#2}{}{\dodotypeblockverbatim{#1}{#2}}} % was dowithbuffer
 
 \def\dodotypeblockverbatim#1#2%
   {\secondstageinitializetyping
@@ -649,8 +657,8 @@
 
 \definetyping[\v!typing]
 
-\setuptyping[\v!file]  [\s!parent=\??tp\v!typing] % we don't want \start..\stop overload
-\setuptyping[\v!buffer][\s!parent=\??tp\v!file]   % we don't want \start..\stop overload
+\setuptyping[\v!file]  [\s!parent=\??typing\v!typing] % we don't want \start..\stop overload
+\setuptyping[\v!buffer][\s!parent=\??typing\v!file]   % we don't want \start..\stop overload
 
 %D The setups for inline verbatim default to:
 

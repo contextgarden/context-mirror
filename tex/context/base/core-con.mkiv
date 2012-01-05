@@ -208,19 +208,17 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\def\doconvertmonthlong #1{\ctxcommand{month(#1)}}
-\def\doconvertmonthshort#1{\ctxcommand{monthmnem(#1)}}
+\def\monthlong #1{\ctxcommand{month(#1)}}
+\def\monthshort#1{\ctxcommand{monthmnem(#1)}}
 
-\let\doconvertmonth\doconvertmonthlong
+\let\convertmonth\monthlong % for old times sake
 
 %D We redefine the \TEX\ primitive \type{\month} as:
 %D
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
-\let\monthlong \doconvertmonthlong  % was \def
-\let\monthshort\doconvertmonthshort % was \def
-\let\month     \doconvertmonth      % was \def
+\let\month              \monthlong
 
 \def\MONTH     #1{\WORD{\month     {#1}}}
 \def\MONTHLONG #1{\WORD{\monthlong {#1}}}
@@ -237,23 +235,26 @@
 %D \item  exept years that can be divided by 100
 %D \item  unless years can be divided by 400
 %D \stopitemize
-%D
-%D This makes the year 1900 into a normal year and 1996 and
-%D 2000 into leap years, right? Well, converting to string
-%D looks familiar:
 
-\def\doconvertday#1{\ctxcommand{day(#1)}}
+%D \macros
+%D   {weekday,WEEKDAY}
+%D
+%D The first one is sort of redundant. It takes the day
+%D number argument.
+%D
+%D \showsetup{weekday}
+%D \showsetup{WEEKDAY}
+
+\def\weekday#1{\ctxcommand{day(#1)}}
+\def\WEEKDAY#1{\WORD{\weekday{#1}}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}
 
 \newcount\normalweekday
 
-% \def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}}
-% \def\dayoftheweek   #1#2#3{\doconvertday{\ctxcommand{weekday(\number#1,\number#2,\number#3)}}}
-
-\def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}\relax} % number
-\def\dayoftheweek   #1#2#3{\ctxcommand{weekdayname(\number#1,\number#2,\number#3)}}                 % name
+           \def\dayoftheweek   #1#2#3{\ctxcommand{weekdayname(\number#1,\number#2,\number#3)}}                 % name
+\unexpanded\def\getdayoftheweek#1#2#3{\normalweekday\ctxcommand{weekday(\number#1,\number#2,\number#3)}\relax} % number
 
 %D Using this macro in
 %D
@@ -280,31 +281,6 @@
 %D the number \type {\normalweekday}.
 
 %D \macros
-%D   {weekday,WEEKDAY}
-%D
-%D The first one is sort of redundant. It takes the day
-%D number argument.
-%D
-%D \showsetup{weekday}
-%D \showsetup{WEEKDAY}
-
-\def\weekday
-  {\doconvertday}
-
-\def\WEEKDAY#1%
-  {\WORD{\doconvertday{#1}}}
-
-%D \macros
-%D   {weekoftheday}
-%D
-%D {\em not yet implemented:}
-%D
-%D \starttyping
-%D \def\weekoftheday#1#2#3%
-%D  {}
-%D \stoptyping
-
-%D \macros
 %D   {doifleapyearelse,
 %D    getdayspermonth}
 %D
@@ -327,7 +303,7 @@
 \def\doifleapyearelse#1%
   {\ctxcommand{doifleapyearelse(\number#1)}}
 
-\def\getdayspermonth#1#2%
+\unexpanded\def\getdayspermonth#1#2%
   {\edef\numberofdays{\ctxcommand{nofdays(\number#1,\number#2)}}}
 
 \def\dayspermonth#1#2%
@@ -439,9 +415,9 @@
 \newtoks \everycurrentdate
 
 \unexpanded\def\currentdate
-  {\dosingleempty\docurrentdate}
+  {\dosingleempty\system_current_date}
 
-\def\docurrentdate[#1]%
+\def\system_current_date[#1]%
   {\begingroup
    \the\everycurrentdate
    \doifsomething{#1}{\edef\currentdatespecification{#1}}%
@@ -449,9 +425,9 @@
    \endgroup}
 
 \unexpanded\def\date
-  {\dodoubleempty\dodate}
+  {\dodoubleempty\system_date}
 
-\def\dodate[#1][#2]%
+\def\system_date[#1][#2]%
   {\begingroup
    \iffirstargument
      \getparameters[\??da][d=\normalday,m=\normalmonth,y=\normalyear,#1]%
@@ -459,7 +435,7 @@
      \normalmonth\@@dam\relax
      \normalyear \@@day\relax
    \fi
-   \docurrentdate[#2]%
+   \system_current_date[#2]%
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
@@ -479,17 +455,21 @@
 
 \let\currenthour  \!!plusone
 \let\currentminute\!!plusone
+\let\currentsecond\!!plusone
 
 \def\currenttimespecification{h,:,m}
 
-\def\complexcurrenttime[#1]%
+\unexpanded\def\currenttime
+  {\doifnextoptionalelse\system_current_time_yes\system_current_time_nop}
+
+
+\unexpanded\def\system_current_time_yes[#1]%
   {\calculatecurrenttime
    \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
 
-\def\simplecurrenttime
-  {\expanded{\complexcurrenttime[\currenttimespecification]}}
+\unexpanded\def\system_current_time_nop
+  {\normalexpanded{\system_current_time_yes[\currenttimespecification]}}
 
-\definecomplexorsimple\currenttime
 
 %D Because we're dealing with dates, we also introduce a few
 %D day loops:
@@ -502,10 +482,10 @@
 %D The counters \type {\normalyear}, \type {\normalmonth} and
 %D \type{\normalday} can be used for for date manipulations.
 
-\def\processmonth#1#2#3% year month command
+\unexpanded\def\processmonth#1#2#3% year month command
   {\begingroup
    \getdayspermonth{#1}{#2}%
-   \dostepwiserecurse1\numberofdays1%
+   \dostepwiserecurse\plusone\numberofdays\plusone
      {\normalyear #1\relax
       \normalmonth#2\relax
       \normalday  \recurselevel\relax
@@ -514,7 +494,7 @@
 
 \def\lastmonth{12} % can be set to e.g. 1 when testing
 
-\def\processyear#1#2#3#4% year command before after
+\unexpanded\def\processyear#1#2#3#4% year command before after
   {\begingroup
    \dorecurse\lastmonth
      {\normalyear #1\relax
@@ -546,62 +526,69 @@
 %D \defineconversion [en] [whatever] [\something]
 %D \stoptyping
 
-\unexpanded\def\defineconversion
-  {\dotripleempty\dodefineconversion}
+\installcorenamespace {conversion}
+\installcorenamespace {conversionarguments}
+\installcorenamespace {conversionwords}
 
-\def\dodefineconversion[#1][#2][#3]% from now on global (maybe local again some day)
+\unexpanded\def\defineconversion
+  {\dotripleempty\system_define_conversion}
+
+\def\system_define_conversion[#1][#2][#3]% from now on global (maybe local again some day)
   {\ifthirdargument
-     \dododefineconversion{#1#2}{#1:#2}{#3}%
+     \system_define_conversion_indeed{#1#2}{#1:#2}{#3}%
    \else
-     \dododefineconversion{#1}{#1}{#2}%
+     \system_define_conversion_indeed{#1}{#1}{#2}%
    \fi}
 
-\def\dododefineconversion#1#2#3%
+\def\system_define_conversion_indeed#1#2#3%
   {\doifinstringelse{,}{\detokenize{#3}}
      {\ctxcommand{defineconversion("#2",\!!bs\detokenize{#3}\!!es)}%
-      \setgvalue{\??cv#1}{\checkedconversion{#2}}}
-     {\setgvalue{\??cv#1}{#3}}}
+      \setgvalue{\??conversion#1}{\system_checked_conversion{#2}}}
+     {\setgvalue{\??conversion#1}{#3}}}
 
-\def\checkedconversion#1#2%
+\def\system_checked_conversion#1#2%
   {\ctxcommand{checkedconversion("#1",#2)}}
 
 %D If a conversion is just a font switch then we need to make sure
 %D that the number is indeed end up as number in the input, so we
 %D need to handle the second argument.
 
-\def\convertnumber#1#2%
-  {\csname
-     \??cv=>% we want a fully expandable (no if interference)
-     \ifcsname\??cv\currentlanguage#1\endcsname1\else
-     \ifcsname\??cv                #1\endcsname2\else
-                                               3\fi\fi
+\def\convertnumber#1#2% expandable
+  {\csname\??conversionarguments
+     \ifcsname\??conversion\currentlanguage#1\endcsname1\else
+     \ifcsname\??conversion                #1\endcsname2\else
+                                                       3\fi\fi
    \endcsname{#1}{\number#2}}
 
-\setvalue{\??cv=>1}#1{\csname\??cv\currentlanguage#1\endcsname}
-\setvalue{\??cv=>2}#1{\csname\??cv                #1\endcsname}
-\letvalue{\??cv=>3}\checkedconversion
+\setvalue{\??conversionarguments1}#1{\csname\??conversion\currentlanguage#1\endcsname}
+\setvalue{\??conversionarguments2}#1{\csname\??conversion                #1\endcsname}
+\letvalue{\??conversionarguments3}\system_checked_conversion
 
 \def\doifconversiondefinedelse#1%
-  {\ifcsname\??cv\currentlanguage#1\endcsname
+  {\ifcsname\??conversion\currentlanguage#1\endcsname
      \expandafter\firstoftwoarguments
-   \else\ifcsname\??cv#1\endcsname
+   \else\ifcsname\??conversion#1\endcsname
      \doubleexpandafter\firstoftwoarguments
    \else
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
-\def\doifelseconversionnumber#1#2% slow but seldom used
-  {\doifdefinedelse{\??cv#1#2}}
+\def\doifelseconversionnumber#1#2%
+  {\ifcsname\??conversion#1#2\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 %D Handy.
 
-\setvalue{\??cv:\c!n:\v!one  }{1}
-\setvalue{\??cv:\c!n:\v!two  }{2}
-\setvalue{\??cv:\c!n:\v!three}{3}
-\setvalue{\??cv:\c!n:\v!four }{4}
-\setvalue{\??cv:\c!n:\v!five }{5}
+\setvalue{\??conversionwords\v!one  }{1}
+\setvalue{\??conversionwords\v!two  }{2}
+\setvalue{\??conversionwords\v!three}{3}
+\setvalue{\??conversionwords\v!four }{4}
+\setvalue{\??conversionwords\v!five }{5}
 
-\def\wordtonumber#1#2{\ifcsname\??cv:\c!n:#1\endcsname\csname\??cv:\c!n:#1\endcsname\else#2\fi}
+\def\wordtonumber#1#2{\ifcsname\??conversionwords#1\endcsname\csname\??conversionwords#1\endcsname\else#2\fi}
 
 % \defineconversion[ctx][c,o,n,t,e,x,t]
 %
@@ -632,8 +619,8 @@
 \defineconversion [\v!none]              [\numbers]
 \defineconversion [\s!default]           [\numbers]
 
-\defineconversion [month]                [\doconvertmonthlong]
-\defineconversion [month:mnem]           [\doconvertmonthshort]
+\defineconversion [month]                [\monthlong]
+\defineconversion [month:mnem]           [\monthshort]
 
 \defineconversion [\v!character]         [\character]
 \defineconversion [\v!Character]         [\Character]
@@ -690,7 +677,6 @@
 \defineconversion [persiannumerals]      [\persiannumerals]
 \defineconversion [arabicexnumerals]     [\arabicexnumerals]
 
-
 \defineconversion [koreannumerals]       [\koreannumerals]
 \defineconversion [koreanparentnumerals] [\koreanparentnumerals]
 \defineconversion [koreancirclenumerals] [\koreancirclenumerals]
@@ -709,7 +695,7 @@
 
 %D Symbol sets:
 
-\ifx\symbol\undefined \def\symbol[#1]{#1} \fi % todo
+\ifdefined\symbol \else \def\symbol[#1]{#1} \fi % todo
 
 \defineconversion
   [set 0]

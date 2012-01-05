@@ -57,7 +57,7 @@
 
 \def\page_postponed_blocks_start[#1]%
   {\edef\currentpostponedpage{#1}%
-   \dostartbuffer[postponedblock][\e!start\v!postponing][\e!stop\v!postponing]}
+   \grabbufferdatadirect{postponedblock}{\e!start\v!postponing}{\e!stop\v!postponing}}
 
 % officially we should flush again after a flush as there can be new future pages
 % but that will be looked into when we run into it

@@ -11,57 +11,70 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\registerctxluafile{colo-run}{1.000}
+
 \unprotect
 
-% temp hack (not do be documented)
+%D Colors
 
-% \gdef\doformatcolorP#1:#2:#3:#4:#5:#6\od % was undefined in colo-ini
-%   {#1\colorformatseparator
-%    \dodoformatcolor{#2}\colorformatseparator
-%    \dodoformatcolor{#3}\colorformatseparator
-%    \dodoformatcolor{#4}\colorformatseparator}
+% These are nicer in \LUA\ code than in \TEX\ code but not more
+% efficient.
 
-% \gdef\doformatgrayP#1:#2:#3:#4:#5:#6\od
-%   {todo}
+\unexpanded\gdef\showcolorbar[#1]%
+  {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
 
-% so far
+\unexpanded\gdef\showcolor          {\dosingleempty\colors_show}
+\unexpanded\gdef\showcolorset       {\dosingleempty\colors_show_set}
+\unexpanded\gdef\showcolorcomponents{\dosingleempty\colors_show_components}
 
-\gdef\showpalet
+\gdef\colors_show_set       [#1]{\ctxcommand{showcolorset("#1")}}
+\gdef\colors_show_components[#1]{\ctxcommand{showcolorcomponents("#1")}}
+
+\gdef\colors_show[#1]% % we do this at the tex end as loading happens
+  {\usecolors   [#1]%  % delayed and we can only ask for the set if
+   \showcolorset[#1]}  % loading has happened
+
+% The rest might also be done in \LUA\ although there is not much
+% beauty to gain here (too much typesetting specific). Also, these
+% macros are pretty old and hardly used so best keep them as they
+% are.
+
+%D Palets
+
+\unexpanded\gdef\showpalet
   {\dodoubleargument\doshowpalet}
 
 \gdef\doshowpalet[#1][#2]%
-  {\doifdefined{\??pa#1}
-     {\doifinsetelse\v!vertical{#2}
-        {\showverticalpalet[#1][#2]}
-        {\showhorizontalpalet[#1][#2]}}}
+  {\ifcsname\??colorpalet#1\endcsname
+     \doifinsetelse\v!vertical{#2} \colors_show_palet_vertical \colors_show_palet_horizontal [#1][#2]%
+   \fi}
 
-\gdef\showverticalpalet[#1][#2]%
+\gdef\colors_show_palet_vertical[#1][#2]%
   {\localvbox
      {\offinterlineskip
       \setuppalet[#1]
-      \def\rule
-        {\vrule\!!width3em\!!height\strutht\!!depth\strutdp}
       \tabskip\zeropoint
-      \def\doshowpalet##1%
+      \def\show_palet##1%
         {\doifinsetelse\v!number{#2}{##1\hskip.5em}{}&
-         \color[##1]{\rule}\graycolor[##1]{\rule}&
+         \color[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}%
+         \graycolor[##1]{\vrule\!!width3em\!!height\strutht\!!depth\strutdp}&
          \doifinset\v!value{#2}{\hskip.5em\colorvalue{##1}}\crcr}
       \halign
         {\hss##&\hss##\hss&##\cr
-         &\doifinset{\v!name}{#2}{\strut#1}&\cr%
-         \processpalet[#1]\doshowpalet\crcr}}}
+         &\doifinset\v!name{#2}{\strut#1}&\cr%
+         \colors_process_palet[#1]\show_palet\crcr}}}
 
-\gdef\showhorizontalpalet[#1][#2]% todo: bTABLE etc
+\gdef\colors_show_palet_horizontal[#1][#2]% todo: bTABLE etc
   {\localvbox
      {\offinterlineskip
       \setuppalet[#1]
       \tabskip\zeropoint
       \!!widtha\zeropoint
       \doifinset\v!number{#2}
-        {\def\doshowpalet##1%
+        {\def\show_palet##1%
            {\setbox0\hbox{##1}%
             \ifdim\!!widtha<\wd0\!!widtha\wd0\fi}%
-         \processpalet[#1]\doshowpalet}%
+         \colors_process_palet[#1]\show_palet}%
       \advance\!!widtha 1em
       \ifdim\!!widtha<5em
         \!!widtha5em
@@ -69,18 +82,18 @@
       \halign
         {##&&\hbox to \!!widtha{\hss##\hss}\cr
          \doifinset\v!number{#2}
-           {\def\doshowpalet##1{&\strut##1}%
-            \processpalet[#1]\doshowpalet}\cr
+           {\def\show_palet##1{&\strut##1}%
+            \colors_process_palet[#1]\show_palet}\cr
          \doifinset\v!name{#2}{#1\hskip.5em}%
-         \def\doshowpalet##1%
+         \def\show_palet##1%
            {&\strut\color[##1]{\vrule\!!width\!!widtha\!!height\strutht\!!depth\zeropoint}}%
-         \processpalet[#1]\doshowpalet\crcr
+         \colors_process_palet[#1]\show_palet\crcr
          \noalign{\vskip-\strutdepth}%
-         \def\doshowpalet##1%
+         \def\show_palet##1%
            {&\graycolor[##1]{\vrule\!!width\!!widtha\!!height\zeropoint\!!depth\strutdp}}%
-         \processpalet[#1]\doshowpalet\crcr
+         \colors_process_palet[#1]\show_palet\crcr
          \doifinset\v!value{#2}
-           {\def\doshowpalet##1%
+           {\def\show_palet##1%
              {&\vbox
                 {\hsize\!!widtha
                  \vskip.25ex
@@ -88,39 +101,67 @@
                  \veryraggedcenter
                  \let\colorformatseparator\endgraf
                  \colorvalue{##1}}}%
-            \processpalet[#1]\doshowpalet}%
+            \colors_process_palet[#1]\show_palet}%
          \crcr}}}
 
-\gdef\processpalet[#1]%
-  {\expanded{\globalprocesscommalist[\getvalue{\??pa#1}]}}
+\gdef\colors_process_palet[#1]%
+  {\expanded{\globalprocesscommalist[\getvalue{\??colorpalet#1}]}}
 
-\gdef\showcolorgroup
-  {\dodoubleargument\doshowcolorgroup}
+\unexpanded\gdef\comparepalet
+  {\dosingleargument\colors_compare_palet}
 
-\gdef\doshowcolorgroup[#1][#2]%
+\gdef\colors_compare_palet[#1]%
+  {\ifcsname\??colorpalet#1\endcsname
+     \hbox
+       {\colors_compare_palet_indeed\color[#1]%
+        \quad
+        \colors_compare_palet_indeed\graycolor[#1]}%
+   \fi}
+
+\gdef\colors_compare_palet_indeed#1[#2]%
+  {\localvbox
+     {\offinterlineskip
+      \setuppalet[#2]
+      \getcommacommandsize[\getvalue{\??colorpalet#2}]
+      \!!widtha2em\relax
+      \hsize\commalistsize\!!widtha
+      \def\compare_palet##1%
+        {\hbox
+           {\setbox0\hbox
+              {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
+            \wd0\zeropoint
+            \box0
+            \hbox to \hsize
+              {\def\compare_palet####1%
+                 {\hbox to \!!widtha
+                    {\hss#1[####1]{\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}\hss}}%
+               \processcommacommand[\getvalue{\??colorpalet#2}]\compare_palet}}
+         \endgraf}
+      \processcommacommand[\getvalue{\??colorpalet#2}]\compare_palet}}
+
+%D Groups
+
+\unexpanded\gdef\showcolorgroup
+  {\dodoubleargument\colors_show_group}
+
+\gdef\colors_show_group[#1][#2]%
   {\doifcolor{#1:1}
-     {\doifinsetelse\v!vertical{#2}
-        {\showverticalcolorgroup[#1][#2]}
-        {\showhorizontalcolorgroup[#1][#2]}}}
+     {\doifinsetelse\v!vertical{#2} \colors_show_group_vertical \colors_show_group_horizontal [#1][#2]}}
 
-\gdef\showhorizontalcolorgroup[#1][#2]%
+\gdef\colors_show_group_horizontal[#1][#2]%
   {\localvbox
      {\offinterlineskip
       \setuppalet
       \tabskip\zeropoint
-      \def\rule
-        {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}
       \def\colorformatseparator{\strut\cr}
-      \def\dodoshowgroup##1%
-        {\halign
-           {\hss####\hss\cr
-            \doifinset\v!number{#2}{\strut##1}\cr
-            \color[#1:##1]{\vrule\!!width4em\!!height\strutht\!!depth\zeropoint}\cr
-            \graycolor[#1:##1]{\vrule\!!width4em\!!height\zeropoint\!!depth\strutdp}\cr
-            \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}
-      \def\doshowgroup##1%
-        {\doifcolor{#1:##1}
-           {\vbox{\dodoshowgroup{##1}}}}%
+      \def\show_group##1%
+        {\doifcolor{#1:##1}{\vbox
+           {\halign
+              {\hss####\hss\cr
+               \doifinset\v!number{#2}{\strut##1}\cr
+               \color[#1:##1]{\vrule\!!width4em\!!height\strutht\!!depth\zeropoint}\cr
+               \graycolor[#1:##1]{\vrule\!!width4em\!!height\zeropoint\!!depth\strutdp}\cr
+               \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}}}%
       \hbox
         {\doifinset\v!name{#2}
            {\strut
@@ -128,130 +169,52 @@
               {\raise3\lineheight\hbox{#1\hskip.5em}}
               {#1}%
             \hskip.5em}%
-         \doshowgroup1\doshowgroup2\doshowgroup3\doshowgroup4%
-         \doshowgroup5\doshowgroup6\doshowgroup7\doshowgroup8}}}
+         \show_group1\show_group2\show_group3\show_group4%
+         \show_group5\show_group6\show_group7\show_group8}}}
 
-\gdef\showverticalcolorgroup[#1][#2]%
+\gdef\colors_show_group_vertical[#1][#2]%
   {\localvbox
      {\offinterlineskip
       \setuppalet
       \tabskip\zeropoint
-      \def\rule
-        {\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}%
-      \def\doshowgroup##1%
+      \def\show_group##1%
         {\doifcolor{#1:##1}
            {\doifinset\v!number{#2}{##1\hskip.5em}&
-            \color[#1:##1]{\rule}\graycolor[#1:##1]{\rule}&
+            \color[#1:##1]{\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}%
+            \graycolor[#1:##1]{\vrule\!!width2.5em\!!height\strutht\!!depth\strutdp}&
             \doifinset\v!value{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}%
       \halign
         {\hss##&\hss##\hss&##\hss\cr
          &\doifinset\v!name{#2}{\strut#1}&\crcr
-         \doshowgroup1\doshowgroup2\doshowgroup3\doshowgroup4%
-         \doshowgroup5\doshowgroup6\doshowgroup7\doshowgroup8}}}
+         \show_group1\show_group2\show_group3\show_group4%
+         \show_group5\show_group6\show_group7\show_group8}}}
 
-\gdef\showcolor
-  {\dosingleempty\doshowcolor}
+\unexpanded\gdef\comparecolorgroup
+  {\dosingleargument\colors_compare_group}
 
-\gdef\doshowcolor[#1]%
-  {\bgroup
-     \iffirstargument
-       \let\colorlist\empty % not really used, only for colo-run
-       \let\colorstyle\empty
-       \settrue\collectcolorsinlist
-       \setupcolor[#1]%
-     \fi
-     \def\rule
-       {\vrule\!!width4em\!!height\strutht\!!depth\strutdp}%
-     \def\docommand##1%
-       {\NC\graycolor[##1]{\rule}\NC\color[##1]{\rule}\NC\grayvalue{##1}\NC\colorvalue{##1}\NC##1\NC\NR}%
-     \starttabulate[|l|l|l|l|l|l|l|]
-       \expanded{\globalprocesscommalist[\colorlist]}\docommand
-     \stoptabulate
-   \egroup}
-
-\gdef\comparepalet
-  {\dosingleargument\docomparepalet}
-
-\gdef\docomparepalet[#1]%
-  {\doifdefined{\??pa#1}
-     {\hbox
-        {\dodocomparepalet\color[#1]%
-         \quad
-         \dodocomparepalet\graycolor[#1]}}}
-
-\gdef\dodocomparepalet#1[#2]%
-  {\localvbox
-     {\offinterlineskip
-      \setuppalet[#2]
-      \getcommacommandsize[\getvalue{\??pa#2}]
-      \!!widtha2em\relax
-      \hsize\commalistsize\!!widtha
-      \def\rule%
-        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
-      \def\dododocomparepalet##1%
-        {\hbox
-           {\setbox0\hbox
-              {#1[##1]{\vrule\!!width\hsize\!!height3ex}}%
-            \wd0\zeropoint
-            \box0
-            \hbox to \hsize
-              {\def\dododocomparepalet####1%
-                 {\hbox to \!!widtha
-                    {\hss#1[####1]{\rule}\hss}}%
-               \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
-         \endgraf}
-      \processcommacommand[\getvalue{\??pa#2}]\dododocomparepalet}}
-
-\gdef\comparecolorgroup
-  {\dosingleargument\docomparecolorgroup}
-
-\gdef\docomparecolorgroup[#1]%
+\gdef\colors_compare_group[#1]%
   {\doifcolor{#1:1}
      {\hbox
-        {\dodocomparecolorgroup\color[#1]%
+        {\colors_compare_group_indeed\color[#1]%
          \quad
-         \dodocomparecolorgroup\graycolor[#1]}}}
+         \colors_compare_group_indeed\graycolor[#1]}}}
 
-\gdef\dodocomparecolorgroup#1[#2]%
+\gdef\colors_compare_group_indeed#1[#2]%
   {\localvbox
      {\!!counta\zerocount
-      \dorecurse{15}
-        {\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
+      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
       \!!widtha2em\relax
       \hsize\!!counta\!!widtha
-      \def\rule
-        {\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}
-      \def\dododocomparecolorgroup##1%
-        {\hbox to \hsize
-           {\setbox0\hbox
-              {#1[#2:##1]{\vrule\!!width\hsize\!!height3ex}}%
-            \wd0\zeropoint
-            \box0
-            \hbox to \hsize
-              {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\rule}\hss}}}
-         \endgraf}
-      \dorecurse\!!counta{\dododocomparecolorgroup\recurselevel}}}
+      \dorecurse\!!counta{\colors_compare_group_step{#1}{#2}\recurselevel}}}
 
-\gdef\dogetcolorcomponents#1%
-  {\doifelsenothing{#1}
-     {\appendtoks
-        \TB
-      \to \scratchtoks}
-     {\appendtoks
-        \NC\showcolorbar[#1]\NC#1\NC\transparencycomponents{#1}\NC\colorcomponents{#1}\NC \NR
-      \to \scratchtoks}}
-
-\gdef\showcolorbar[#1]%
-  {\backgroundline[#1]{\strut\enspace\color[white]{white}\enspace\color[black]{black}\enspace}}
-
-\gdef\showcolorcomponents[#1]%
-  {\begingroup
-   \scratchtoks{\TB}%
-   \processcommacommand[#1]\dogetcolorcomponents
-   \starttabulate[|lT|lT|lT|lT|]
-   \NC color \NC name \NC transparency \NC specification \NC\NR
-   \the\scratchtoks
-   \stoptabulate
-   \endgroup}
+\def\colors_compare_group_step#1#2#3%
+  {\hbox to \hsize
+     {\setbox0\hbox
+        {#1[#2:#3]{\vrule\!!width\hsize\!!height3ex}}%
+      \wd0\zeropoint
+      \box0
+      \hbox to \hsize
+        {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\vrule\!!width.5\!!widtha\!!height2.25ex\!!depth-.75ex}\hss}}}
+   \endgraf}
 
 \protect \endinput

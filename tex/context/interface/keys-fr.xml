@@ -628,6 +628,7 @@
 		<cd:constant name='coupling' value='couplage'/>
 		<cd:constant name='couplingway' value='modecouplage'/>
 		<cd:constant name='criterium' value='critere'/>
+		<cd:constant name='css' value='css'/>
 		<cd:constant name='current' value='courant'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='pointille'/>
@@ -656,6 +657,7 @@
 		<cd:constant name='editoretallimit' value='editoretallimit'/>
 		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='vide'/>
+		<cd:constant name='entities' value='entities'/>
 		<cd:constant name='entries' value='entries'/>
 		<cd:constant name='equalheight' value='equalheight'/>
 		<cd:constant name='equalwidth' value='equalwidth'/>
@@ -1048,6 +1050,7 @@
 		<cd:constant name='white' value='blanc'/>
 		<cd:constant name='width' value='largeur'/>
 		<cd:constant name='xfactor' value='xfactor'/>
+		<cd:constant name='xhtml' value='xhtml'/>
 		<cd:constant name='xmax' value='xmax'/>
 		<cd:constant name='xoffset' value='xoffset'/>
 		<cd:constant name='xscale' value='xscale'/>

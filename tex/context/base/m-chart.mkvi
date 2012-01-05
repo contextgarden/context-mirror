@@ -339,13 +339,11 @@
     \begingroup
         \directsetup{flowcell:text:user}
         \doifelsenothing {\getvariable{flowcell:text}{figure}} {
-            \doframed
-                [flowcell:\getvariable{flowcell:text}{align}]
+            \expandcheckedcsname{flowcell:}{\getvariable{flowcell:text}{align}}\empty
                 {\getvariable{flowcell:text}{text}}
             } {
-                \doframed
-                    [flowcell:\getvariable{flowcell:text}{align}]
-                    [background=flowcell:figure]
+                \expandcheckedcsname{flowcell:}{\getvariable{flowcell:text}{align}}\empty
+                    [\c!background=flowcell:figure]
                     {\getvariable{flowcell:text}{text}}
             }
     \endgroup

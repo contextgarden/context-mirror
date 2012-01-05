@@ -249,44 +249,4 @@
 %D
 %D \getbuffer
 
-% %D \macros
-% %D   {setupinitial,placeinitial,checkinitial}
-% %D
-% %D {\em To be documented.}
-% %D
-% %D \starttyping
-% %D \setupinitial[state=start] \placeinitial \input tufte
-% %D \stoptyping
-% %D
-% %D and
-% %D
-% %D \starttyping
-% %D \def\bpar{\ifvmode\checkinitial\fi}
-% %D \def\epar{\ifhmode\par\fi\checkinitial}
-% %D \stoptyping
-%
-% %  to do: more fine tuning
-%
-% \unexpanded\def\setupinitial
-%   {\dodoubleempty\getparameters[\??dc]}
-%
-% \definefontsynonym[Initial][Regular] % prefered initial identifier
-% \definefontsynonym[initial][Initial] % internal but accepted too
-%
-% \setupinitial
-%   [\c!state=\v!stop,
-%    \c!location=\v!text,
-%    \c!n=3,
-%    \c!distance=.125em,
-%    \c!command=,
-%    \s!font=initial]
-%
-% \def\AutoDroppedCapsCommand{\NiceDroppedCaps\@@dccommand\@@dcfont\@@dcdistance\@@dcn}%
-%
-% \unexpanded\def\placeinitial
-%   {\doifelse\@@dclocation\v!margin{\chardef\DropMode\plusone}{\chardef\DropMode\zerocount}%
-%    \doif    \@@dcstate\v!start{\ifcase\@@dcn\else\AutoDroppedCaps\fi}}
-%
-% \let\checkinitial\CheckDroppedCaps
-
 \protect \endinput

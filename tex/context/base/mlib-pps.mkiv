@@ -17,20 +17,7 @@
 
 %D Todo: catch nested graphics like external figures with dummies.
 
-% \newtoks\everyMPLIBtext % not yet used
-
-% \appendtoks
-%     \let\handleuseMPgraphic     \thirdofthreearguments
-%     \let\handlereusableMPgraphic\thirdofthreearguments
-% \to \everyMPLIBtext
-
-% this will move !
-
-% Instead of preallocated boxes we now use a table of lists so that we
-% have no limitation. Typically an example of a next version solution
-% due to \LUATEX\ evolving.
-
-% TODO: foigure out why this is shifted
+% todo: figure out why this is shifted
 %
 % \setupbodyfont[palatino]
 %
@@ -40,8 +27,8 @@
 %     \stopMPpage
 % \stoptext
 %
-% A slightly larger picturew works ok. Some kind of interference
-% with the OTR.
+% A slightly larger picture works ok so maybe there is some kind
+% of interference with the page builder.
 
 \newbox \MPtextbox
 \newtoks\everyMPLIBsettext

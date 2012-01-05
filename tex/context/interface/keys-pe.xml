@@ -628,6 +628,7 @@
 		<cd:constant name='coupling' value='تزویج'/>
 		<cd:constant name='couplingway' value='روش‌تزویج'/>
 		<cd:constant name='criterium' value='criterium'/>
+		<cd:constant name='css' value='css'/>
 		<cd:constant name='current' value='جاری'/>
 		<cd:constant name='cutspace' value='فضای‌برش'/>
 		<cd:constant name='dash' value='دش'/>
@@ -656,6 +657,7 @@
 		<cd:constant name='editoretallimit' value='editoretallimit'/>
 		<cd:constant name='editoretaltext' value='editoretaltext'/>
 		<cd:constant name='empty' value='تهی'/>
+		<cd:constant name='entities' value='entities'/>
 		<cd:constant name='entries' value='entries'/>
 		<cd:constant name='equalheight' value='ارتفاع‌یکسان'/>
 		<cd:constant name='equalwidth' value='عرض‌یکسان'/>
@@ -1048,6 +1050,7 @@
 		<cd:constant name='white' value='سفید'/>
 		<cd:constant name='width' value='عرض'/>
 		<cd:constant name='xfactor' value='فاکتورایکس'/>
+		<cd:constant name='xhtml' value='xhtml'/>
 		<cd:constant name='xmax' value='xmax'/>
 		<cd:constant name='xoffset' value='آفست‌ایکس'/>
 		<cd:constant name='xscale' value='مقیاس‌ایکس'/>

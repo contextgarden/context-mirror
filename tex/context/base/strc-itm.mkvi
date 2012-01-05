@@ -15,6 +15,11 @@
 
 \registerctxluafile{strc-itm}{1.001}
 
+%D Cleaning up this module happened around the time when Kate Bush came up
+%D with the nicest numbered list of words: 50 Words For Snow. It's therefore
+%D no surprise that I had that cd running several times when updating this
+%D code. One of the highlights of 2011.
+
 % todo: check breaks
 % todo: check grouping
 
@@ -277,7 +282,19 @@
 
 %D Defining and setup:
 
-\installcommandhandler \??op {itemgroup} \??op
+\installcorenamespace{itemgroup}
+\installcorenamespace{itemgroupoption}
+\installcorenamespace{itemgroupsetting}
+\installcorenamespace{itemgroupkeyword}
+\installcorenamespace{itemgroupalign}
+\installcorenamespace{itemgrouplocal}
+\installcorenamespace{itemgroupglobal}
+\installcorenamespace{itemgroupdistance}
+\installcorenamespace{itemgroupstack}
+\installcorenamespace{itemgroupfirst}
+\installcorenamespace{itemgroupstart}
+
+\installcommandhandler \??itemgroup {itemgroup} \??itemgroup
 
 \let\setupitemgroups\setupitemgroup
 
@@ -294,16 +311,16 @@
 %D Global states
 
 \def\itemgroups_store_continue_state#options#settings%
-   {\setxvalue{\??op:o:\currentitemgroup}{\itemgroups_process_options{#options}}%
-    \setgvalue{\??op:s:\currentitemgroup}{\setupcurrentitemgroup     [#settings]}}
+   {\setxvalue{\??itemgroupoption \currentitemgroup}{\itemgroups_process_options{#options}}%
+    \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup     [#settings]}}
 
 \def\itemgroups_fetch_continue_state
-  {\getvalue{\??op:o:\currentitemgroup}%
-   \getvalue{\??op:s:\currentitemgroup}}
+  {\getvalue{\??itemgroupoption \currentitemgroup}%
+   \getvalue{\??itemgroupsetting\currentitemgroup}}
 
 \def\itemgroups_reset_continue_state
-  {\letgvalue{\??op:o:\currentitemgroup}\relax
-   \letgvalue{\??op:s:\currentitemgroup}\relax}
+  {\letgvalue{\??itemgroupoption \currentitemgroup}\relax
+   \letgvalue{\??itemgroupsetting\currentitemgroup}\relax}
 
 \definevspacing[\v!item @0]     [penalty:0]     % allow
 \definevspacing[\v!item @10000] [penalty:10000] % no
@@ -345,8 +362,8 @@
         \let\itemgroupsecond\itemgroupfirst
         \let\itemgroupfirst\!!plusone
      \fi
-     \ifcsname\??op:k:\itemgroupsecond\endcsname
-       \csname\??op:k:\itemgroupsecond\endcsname
+     \ifcsname\??itemgroupkeyword\itemgroupsecond\endcsname
+       \csname\??itemgroupkeyword\itemgroupsecond\endcsname
      \else
        \itemgroups_set_symbol\itemgroupconstantvalue
      \fi
@@ -357,51 +374,51 @@
      \settrue\c_itemgroups_pack
    \fi}
 
-\setvalue{\??op:k:\!!zerocount}{} % ignore 0
-\setvalue{\??op:k:\v!packed   }{\itemgroups_process_set_option_pack}
-\setvalue{\??op:k:\v!intro    }{\settrue\c_itemgroups_intro} % here? not set to false
-\setvalue{\??op:k:\v!autointro}{\settrue\c_itemgroups_auto_intro}
-\setvalue{\??op:k:\v!broad    }{\ifx\itemgroupfirst\empty
-                                  \let\itemgroupfirst\!!plusone
-                                \fi
-                                \letitemgroupparameter\c!factor\itemgroupfirst}
-\setvalue{\??op:k:\v!text     }{\settrue\c_itemgroups_text
-                                \settrue\c_itemgroups_inline
-                                \settrue\c_itemgroups_joined
-                                \itemgroups_process_set_option_pack}
-\setvalue{\??op:k:\v!columns  }{\itemgroups_process_set_option_pack}
-\setvalue{\??op:k:\v!before   }{\settrue\c_itemgroups_before}
-\setvalue{\??op:k:\v!after    }{\settrue\c_itemgroups_after}
-\setvalue{\??op:k:\v!nowhite  }{\settrue\c_itemgroups_nowhite}
-\setvalue{\??op:k:\v!margin   }{\setitemgroupparameter\c!width{-2em}} % signal
-\setvalue{\??op:k:\v!inmargin }{\setitemgroupparameter\c!width{-2em}} % signal
-\setvalue{\??op:k:\v!atmargin }{\ifnum\c_itemgroups_nesting>\plusone
-                                  \setitemgroupparameter\c!width{0em}%
-                                \fi} % signal
-\setvalue{\??op:k:\v!intext   }{\settrue\c_itemgroups_inline}
-\setvalue{\??op:k:\v!loose    }{\setfalse\c_itemgroups_optimize}
-\setvalue{\??op:k:\v!fit      }{\settrue\c_itemgroups_fitting}
-\setvalue{\??op:k:\v!nofit    }{\setfalse\c_itemgroups_fitting}
-\setvalue{\??op:k:\v!paragraph}{\settrue\c_itemgroups_paragraph
-                                \itemgroups_process_set_option_pack}
-\setvalue{\??op:k:\v!joinedup }{\settrue\c_itemgroups_joined
-                                \itemgroups_process_set_option_pack}
-\setvalue{\??op:k:\v!serried  }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
-                                \letitemgroupparameter\c!factor\itemgroupfirst}
-\setvalue{\??op:k:\v!stopper  }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
-\setvalue{\??op:k:\v!unpacked }{\setfalse\c_itemgroups_pack}
-\setvalue{\??op:k:\v!repeat   }{\settrue\c_itemgroups_repeat}
-\setvalue{\??op:k:\v!reverse  }{\settrue\c_itemgroups_reverse}
-\setvalue{\??op:k:\v!columns  }{\settrue\c_itemgroups_columns}
-\setvalue{\??op:k:\v!one      }{\letitemgroupparameter\c!n\plusone}
-\setvalue{\??op:k:\v!two      }{\letitemgroupparameter\c!n\plustwo}
-\setvalue{\??op:k:\v!three    }{\letitemgroupparameter\c!n\plusthree}
-\setvalue{\??op:k:\v!four     }{\letitemgroupparameter\c!n\plusfour}
-\setvalue{\??op:k:\v!five     }{\letitemgroupparameter\c!n\plusfive}
-\setvalue{\??op:k:\v!standard }{\setupcurrentitemgroup
-                                  [\c!width=1.5em,\c!factor=0,\c!distance=.5em,\c!inner=,\c!factor=0,%
-                                   \c!beforehead=,\c!afterhead=\blank,%
-                                   \c!before=\blank,\c!inbetween=\blank,\c!after=\blank]}
+\setvalue{\??itemgroupkeyword\!!zerocount}{} % ignore 0
+\setvalue{\??itemgroupkeyword\v!packed   }{\itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!intro    }{\settrue\c_itemgroups_intro} % here? not set to false
+\setvalue{\??itemgroupkeyword\v!autointro}{\settrue\c_itemgroups_auto_intro}
+\setvalue{\??itemgroupkeyword\v!broad    }{\ifx\itemgroupfirst\empty
+                                             \let\itemgroupfirst\!!plusone
+                                           \fi
+                                           \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!text     }{\settrue\c_itemgroups_text
+                                           \settrue\c_itemgroups_inline
+                                           \settrue\c_itemgroups_joined
+                                           \itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!columns  }{\itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!before   }{\settrue\c_itemgroups_before}
+\setvalue{\??itemgroupkeyword\v!after    }{\settrue\c_itemgroups_after}
+\setvalue{\??itemgroupkeyword\v!nowhite  }{\settrue\c_itemgroups_nowhite}
+\setvalue{\??itemgroupkeyword\v!margin   }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!inmargin }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!atmargin }{\ifnum\c_itemgroups_nesting>\plusone
+                                             \setitemgroupparameter\c!width{0em}%
+                                           \fi} % signal
+\setvalue{\??itemgroupkeyword\v!intext   }{\settrue\c_itemgroups_inline}
+\setvalue{\??itemgroupkeyword\v!loose    }{\setfalse\c_itemgroups_optimize}
+\setvalue{\??itemgroupkeyword\v!fit      }{\settrue\c_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!nofit    }{\setfalse\c_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!paragraph}{\settrue\c_itemgroups_paragraph
+                                           \itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!joinedup }{\settrue\c_itemgroups_joined
+                                           \itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!serried  }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
+                                           \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!stopper  }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
+\setvalue{\??itemgroupkeyword\v!unpacked }{\setfalse\c_itemgroups_pack}
+\setvalue{\??itemgroupkeyword\v!repeat   }{\settrue\c_itemgroups_repeat}
+\setvalue{\??itemgroupkeyword\v!reverse  }{\settrue\c_itemgroups_reverse}
+\setvalue{\??itemgroupkeyword\v!columns  }{\settrue\c_itemgroups_columns}
+\setvalue{\??itemgroupkeyword\v!one      }{\letitemgroupparameter\c!n\plusone}
+\setvalue{\??itemgroupkeyword\v!two      }{\letitemgroupparameter\c!n\plustwo}
+\setvalue{\??itemgroupkeyword\v!three    }{\letitemgroupparameter\c!n\plusthree}
+\setvalue{\??itemgroupkeyword\v!four     }{\letitemgroupparameter\c!n\plusfour}
+\setvalue{\??itemgroupkeyword\v!five     }{\letitemgroupparameter\c!n\plusfive}
+\setvalue{\??itemgroupkeyword\v!standard }{\setupcurrentitemgroup
+                                             [\c!width=1.5em,\c!factor=0,\c!distance=.5em,\c!inner=,\c!factor=0,%
+                                              \c!beforehead=,\c!afterhead=\blank,%
+                                              \c!before=\blank,\c!inbetween=\blank,\c!after=\blank]}
 
 \def\itemgroups_initialize_local
   {\setfalse\c_itemgroups_inline
@@ -430,16 +447,16 @@
    \global\letitemgroupparameter\c!maxwidth\!!zerocount
    }
 
-\setvalue{\??op:1:\v!intro   }{\settrue\c_itemgroups_intro    }
-\setvalue{\??op:1:\v!random  }{\settrue\c_itemgroups_randomize}
-\setvalue{\??op:1:\v!continue}{\settrue\c_itemgroups_continue }
+\setvalue{\??itemgroupfirst\v!intro   }{\settrue\c_itemgroups_intro    }
+\setvalue{\??itemgroupfirst\v!random  }{\settrue\c_itemgroups_randomize}
+\setvalue{\??itemgroupfirst\v!continue}{\settrue\c_itemgroups_continue }
 
 \def\itemgroups_preset_stage_one#options%
   {\processcommacommand[#options]\itemgroups_preset_stage_one_indeed}
 
 \def\itemgroups_preset_stage_one_indeed#option%
-  {\ifcsname\??op:1:#option\endcsname
-     \csname\??op:1:#option\endcsname
+  {\ifcsname\??itemgroupfirst#option\endcsname
+     \csname\??itemgroupfirst#option\endcsname
    \fi}
 
 \ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax \fi
@@ -688,36 +705,36 @@
 \ifdefined\startcolumns \else \unexpanded\def\startcolumns[#settings]{} \fi
 \ifdefined\stopcolumns  \else \unexpanded\def\stopcolumns            {} \fi
 
-\letvalue{\??op:a:\v!flushleft }\relax
-\letvalue{\??op:a:\v!right     }\relax
-\letvalue{\??op:a:\v!flushright}\hfill
-\letvalue{\??op:a:\v!left      }\hfill
-\letvalue{\??op:a:\v!middle    }\hfil
-\letvalue{\??op:a:\v!center    }\hfil
+\letvalue{\??itemgroupalign\v!flushleft }\relax
+\letvalue{\??itemgroupalign\v!right     }\relax
+\letvalue{\??itemgroupalign\v!flushright}\hfill
+\letvalue{\??itemgroupalign\v!left      }\hfill
+\letvalue{\??itemgroupalign\v!middle    }\hfil
+\letvalue{\??itemgroupalign\v!center    }\hfil
 
 \def\itemgroups_left_sym_filler
-  {\csname\??op:a:\itemgroupparameter\c!symalign\endcsname}
+  {\csname\??itemgroupalign\itemgroupparameter\c!symalign\endcsname}
 
 % symbols + states
 
 \def\itemgroups_store_global_symbol#symbol%
-  {\letgvalue{\??op:g:\currentitemlevel}#symbol}
+  {\letgvalue{\??itemgroupglobal\currentitemlevel}#symbol}
 
 \def\itemgroups_store_local_symbol#symbol%
-  {\letgvalue{\??op:l:\currentitemlevel}#symbol}
+  {\letgvalue{\??itemgrouplocal\currentitemlevel}#symbol}
 
 \def\itemgroups_fetch_global_symbol
-  {\getvalue{\??op:g:\currentitemlevel}}
+  {\getvalue{\??itemgroupglobal\currentitemlevel}}
 
 \def\itemgroups_fetch_local_symbol
-  {\getvalue{\??op:l:\currentitemlevel}}
+  {\getvalue{\??itemgrouplocal\currentitemlevel}}
 
 \def\itemgroups_setup_symbol_default
   {\edef\itemgroups_asked_symbol{\itemgroupparameter\c!symbol}%
    \itemgroups_store_global_symbol\empty}
 
 \def\itemgroups_setup_symbol_continue
-  {\ifcsname\??op:g:\currentitemlevel\endcsname
+  {\ifcsname\??itemgroupglobal\currentitemlevel\endcsname
      \let\itemgroups_asked_symbol\itemgroups_fetch_global_symbol
    \else
      \let\itemgroups_asked_symbol\currentitemlevel
@@ -1071,25 +1088,25 @@
    \startitemgrouphead}
 
 \unexpanded\def\itemgroups_start_items
-  {\dosingleempty\itemgroups_start_items}
+  {\dosingleempty\itemgroups_start_items_indeed}
 
-\unexpanded\def\itemgroups_start_items[#whatever]% something got lost
+\unexpanded\def\itemgroups_start_items_indeed[#whatever]% something got lost
   {\itemgroups_start_edge
      {\dorecurse{0\itemgroupparameter\c!items}{\itemgroups_used_symbol\hss}%
       \unskip}}
 
 \unexpanded\def\startspecialitemgroupitem[#name]%
-  {\csname\??op:\e!start:\ifcsname#name\endcsname#name\else\v!item\fi\endcsname}
+  {\csname\??itemgroupstart\ifcsname\??itemgroupstart#name\endcsname#name\else\v!item\fi\endcsname}
 
 \unexpanded\def\stopspecialitemgroupitem
   {\stopitemgroupitem}
 
-\letvalue{\??op:\e!start:\v!item}\itemgroups_start_do_item
-\letvalue{\??op:\e!start:\v!sub }\itemgroups_start_subitem
-\letvalue{\??op:\e!start:\v!sym }\itemgroups_start_symbol
-\letvalue{\??op:\e!start:\v!ran }\itemgroups_start_edge
-\letvalue{\??op:\e!start:\v!its }\itemgroups_start_items
-\letvalue{\??op:\e!start:\v!mar }\itemgroups_start_margin
+\letvalue{\??itemgroupstart\v!item}\itemgroups_start_do_item
+\letvalue{\??itemgroupstart\v!sub }\itemgroups_start_subitem
+\letvalue{\??itemgroupstart\v!sym }\itemgroups_start_symbol
+\letvalue{\??itemgroupstart\v!ran }\itemgroups_start_edge
+\letvalue{\??itemgroupstart\v!its }\itemgroups_start_items
+\letvalue{\??itemgroupstart\v!mar }\itemgroups_start_margin
 
 \def\optimizelistitemsbreak
   {\ifcase\c_itemgroups_column_depth \ifconditional\c_itemgroups_optimize
@@ -1292,15 +1309,15 @@
    \itemgroups_check_for_repeated
    \ignorespaces}
 
-\setvalue{\??op:d:\c!textdistance:\v!none}%
+\setvalue{\??itemgroupdistance\c!textdistance:\v!none}%
   {\let\m_itemgroups_text_distance\zeropoint}
 
 \unexpanded\def\itemgroups_set_text_item_distance
   {\edef\m_itemgroups_text_distance{\itemgroupparameter\c!textdistance}%
    \ifx\m_itemgroups_text_distance\empty
      %
-   \else\ifcsname\??op:d:\c!textdistance:\m_itemgroups_text_distance\endcsname
-     \csname\??op:d:\c!textdistance:\m_itemgroups_text_distance\endcsname
+   \else\ifcsname\??itemgroupdistance\c!textdistance:\m_itemgroups_text_distance\endcsname
+     \csname\??itemgroupdistance\c!textdistance:\m_itemgroups_text_distance\endcsname
    \else
      \itemgroups_set_text_item_distance_indeed
    \fi\fi}
@@ -1390,7 +1407,7 @@
 
 \@EA\def\@EA\itemgroups_collected_store\@EA#\@EA1\csname\e!stop\v!item\endcsname % use grabuntil
   {\advance\c_itemgroups_collected_stored\plusone
-   \setvalue{\??op:x:\number\c_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
+   \setvalue{\??itemgroupstack\number\c_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
 
 \def\itemgroups_collected_flush
   {\ifconditional\c_itemgroups_randomize
@@ -1398,9 +1415,9 @@
    \else
      \advance\c_itemgroups_collected_current\plusone
    \fi
-   \doifdefined{\??op:x:\number\c_itemgroups_collected_current}
-     {\getvalue{\??op:x:\number\c_itemgroups_collected_current}%
-      \letbeundefined{\??op:x:\number\c_itemgroups_collected_current}%
+   \doifdefined{\??itemgroupstack\number\c_itemgroups_collected_current}
+     {\getvalue{\??itemgroupstack\number\c_itemgroups_collected_current}%
+      \letbeundefined{\??itemgroupstack\number\c_itemgroups_collected_current}%
       \advance\c_itemgroups_collected_done\plusone}%
    \ifnum\c_itemgroups_collected_done<\c_itemgroups_collected_stored
      \expandafter\itemgroups_collected_flush

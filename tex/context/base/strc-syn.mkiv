@@ -51,7 +51,9 @@
      \globallet#3\s!tex
    \fi}
 
-\installsimplecommandhandler \??sm {synonym} \??sm
+\installcorenamespace{synonym}
+
+\installsimplecommandhandler \??synonym {synonym} \??synonym
 
 \let\setupsynonyms\setupsynonym
 
@@ -209,7 +211,9 @@
 
 %D Sorting (a simplified version of synonym).
 
-\installsimplecommandhandler \??so {sorting} \??so
+\installcorenamespace{sorting}
+
+\installsimplecommandhandler \??sorting {sorting} \??sorting
 
 \setupsorting
   [\c!state=\v!start,
@@ -304,7 +308,7 @@
 \def\doplacelistofsorts[#1][#2]% NOG EEN RUWE VERSIE MAKEN ZONDER WITRUIMTE ETC ETC
   {\begingroup
    \def\currentsorting{#1}%
-   \getparameters[\??so#1][#2]%
+   \setupcurrentsorting[#2]%
    \startpacked
      \ctxlua{structures.synonyms.process('#1',{
         criterium = "\sortingparameter\c!criterium",

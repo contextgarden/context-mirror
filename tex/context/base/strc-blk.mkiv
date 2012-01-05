@@ -45,8 +45,8 @@
    \setuvalue{\e!begin#1}{\dodoubleempty\dobeginofblock[#1]}%
    \letvalue{\e!end#1}\relax}
 
-\long\def\dobeginofblock[#1][#2]%
-  {\normalexpanded{\noexpand\dodowithbuffer{@block@}{\e!begin#1}{\e!end#1}}
+\def\dobeginofblock[#1][#2]%
+  {\normalexpanded{\buffers_pickup{@block@}{\e!begin#1}{\e!end#1}}
      {}% before
      {\ctxcommand{savestructureblock("#1","#2","@block@")}}}% after
 

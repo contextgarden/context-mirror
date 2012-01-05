@@ -144,14 +144,14 @@
 %
 % \dostepwiserecurse{2}{15}{1}
 %   {{\switchtobodyfont[\recurselevel pt]\crap test}\endgraf}
-
+
 % adapted, else wrong interlinespace
 
 \unexpanded\def\setfontparameters
   {\synchronizefontsfalse
    \the\everybodyfont
    \synchronizefontstrue}
-
+
 % handy
 
 \newcounter\pushedfont
@@ -452,19 +452,12 @@
 %D We define some (very private) constants to improve speed,
 %D memory usage and consistency.
 
-\def\@size@       {@f@si@} % bodyfont size prefix (12pt etc)
-\def\@style@      {@f@st@} % full style prefix (roman etc)
-\def\@shortstyle@ {@f@sh@} % short style prefix (rm etc)
-\def\@letter@     {@f@le@} % first alternative typeface
-\def\@noletter@   {@f@no@} % second alternative typeface
-\def\@fontclass@  {@f@cl@} % fontclass
-
-% \edef\@size@       {\??fh:b:} % bodyfont size prefix (12pt etc)
-% \edef\@style@      {\??fh:f:} % full style prefix (roman etc)
-% \edef\@shortstyle@ {\??fh:s:} % short style prefix (rm etc)
-% \edef\@letter@     {\??fh:l:} % first alternative typeface
-% \edef\@noletter@   {\??fh:n:} % second alternative typeface
-% \edef\@fontclass@  {\??fh:c:} % fontclass
+\installcorenamespace {fontfile}       % file synonyms
+\installcorenamespace {fontsize}       % bodyfont size prefix (12pt etc)
+\installcorenamespace {fontstyle}      % full style prefix (roman etc)
+\installcorenamespace {fontshortstyle} % short style prefix (rm etc)
+\installcorenamespace {fontclassyes}   % fontclass
+\installcorenamespace {fontclassnop}   % nofontclass
 
 %D \macros
 %D   {fontclass, defaultfontclass}
@@ -477,6 +470,24 @@
 \let\fontclass       \empty
 \let\defaultfontclass\empty
 
+\def\fontclassname#1#2%
+  {\ifcsname\??fontfile#1#2\endcsname
+     \fontclassname{#1}{\csname\??fontfile#1#2\endcsname}%
+   \else\ifcsname\??fontfile#2\endcsname
+     \fontclassname{#1}{\csname\??fontfile#2\endcsname}%
+   \else
+     #2%
+   \fi\fi}
+
+\def\defineclassfontsynonym
+  {\dotripleargument\dodefineclassfontsynonym}
+
+\def\dodefineclassfontsynonym[#1][#2][#3]%
+  {\definefontsynonym[#1][\fontclassname{#2}{#3}]}
+
+%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
+%
+%\defineclassfontsynonym [KopFont] [officina] [SerifBold]
 %D \macros
 %D   {textonly}
 %D
@@ -761,24 +772,27 @@
      \ifconditional\pseudoboldmathstate\plussix\else\plusthree\fi
    \fi}
 
-\letvalue{\??ff:\c!mr:\c!tf }\synchronizemathfamilymr
-\letvalue{\??ff:\c!mr:\c!sl }\synchronizemathfamilymr
-\letvalue{\??ff:\c!mr:\c!it }\synchronizemathfamilymr
-\letvalue{\??ff:\c!mr:\c!bf }\synchronizemathfamilymb
-\letvalue{\??ff:\c!mr:\c!bs }\synchronizemathfamilymb
-\letvalue{\??ff:\c!mr:\c!bi }\synchronizemathfamilymb
-\letvalue{\??ff:\c!mr:\empty}\synchronizemathfamilymr
+\installcorenamespace{fontmathsynchronizer}
+\installcorenamespace{fontmathstoredstrategy}
+
+\letvalue{\??fontmathsynchronizer\c!tf }\synchronizemathfamilymr
+\letvalue{\??fontmathsynchronizer\c!sl }\synchronizemathfamilymr
+\letvalue{\??fontmathsynchronizer\c!it }\synchronizemathfamilymr
+\letvalue{\??fontmathsynchronizer\c!bf }\synchronizemathfamilymb
+\letvalue{\??fontmathsynchronizer\c!bs }\synchronizemathfamilymb
+\letvalue{\??fontmathsynchronizer\c!bi }\synchronizemathfamilymb
+\letvalue{\??fontmathsynchronizer\empty}\synchronizemathfamilymr
 
 \def\synchronizemathfamily
-  {\csname\??ff:\c!mr:\ifcsname\??ff:\c!mr:\fontalternative\endcsname\fontalternative\fi\endcsname}
+  {\csname\??fontmathsynchronizer\ifcsname\??fontmathsynchronizer\fontalternative\endcsname\fontalternative\fi\endcsname}
 
-\ifdefined\fontid
+\ifdefined \fontid
 
     \appendtoks
         \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
-            \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
+            \letvalue{\??fontmathstoredstrategy\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
         \else
-            \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
+            \letvalue{\??fontmathstoredstrategy\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
         \fi
     \to \mathstrategies
 
@@ -788,15 +802,15 @@
         \edef\currentmathfontmr{\fontname\textfont\zerocount}%
         \edef\currentmathfontmb{\fontname\textfont\plusthree}%
         \ifx\currentmathfontmr\currentmathfontmb
-            \letvalue{\??ff:ms:\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
+            \letvalue{\??fontmathstoredstrategy\fontclass}\dosetmathpartialboldstrategy % enables partial bold math
         \else
-            \letvalue{\??ff:ms:\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
+            \letvalue{\??fontmathstoredstrategy\fontclass}\dosetmathfullboldstrategy    % enables full    bold math
         \fi
     \to \mathstrategies
 
 \fi
 
-\def\synchronizemathboldstrategy {\csname\??ff:ms:\fontclass\endcsname}
+\def\synchronizemathboldstrategy {\csname\??fontmathstoredstrategy\fontclass\endcsname}
 
 \newconditional\pseudoboldmathstate
 
@@ -990,7 +1004,7 @@
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\scaledfontmode\relax
      % none, avoid the designsize if possible
-     \scaledfontsize-1000\scaledpoint
+     \scaledfontsize-\plusthousand\scaledpoint
    \or
      % at
      \scaledfontsize\somefontsize
@@ -1058,40 +1072,40 @@
 % resolve
 
 \def\@@thefeaturesyes#1%
-  {\ifcsname\??ff\fontclass#1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??ff\fontclass#1\s!features \endcsname\else
-   \ifcsname\??ff          #1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??ff          #1\s!features \endcsname\else
-   \ifcsname\??ff\fontclass            #1\endcsname\@EA        \@@thefeaturesyes \csname\??ff\fontclass            #1\endcsname\else
-   \ifcsname\??ff                      #1\endcsname\@EA        \@@thefeaturesyes \csname\??ff                      #1\endcsname\else
-                                                       \let    \@@fontfeatures   \empty                                        \fi\fi\fi\fi}
+  {\ifcsname\??fontfile\fontclass#1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??fontfile\fontclass#1\s!features \endcsname\else
+   \ifcsname\??fontfile          #1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??fontfile          #1\s!features \endcsname\else
+   \ifcsname\??fontfile\fontclass            #1\endcsname\@EA        \@@thefeaturesyes \csname\??fontfile\fontclass            #1\endcsname\else
+   \ifcsname\??fontfile                      #1\endcsname\@EA        \@@thefeaturesyes \csname\??fontfile                      #1\endcsname\else
+                                                              \let    \@@fontfeatures   \empty                                        \fi\fi\fi\fi}
 
 \def\@@thefallbacksyes#1%
-  {\ifcsname\??ff\fontclass#1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??ff\fontclass#1\s!fallbacks\endcsname\else
-   \ifcsname\??ff          #1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??ff          #1\s!fallbacks\endcsname\else
-   \ifcsname\??ff\fontclass            #1\endcsname\@EA        \@@thefallbacksyes\csname\??ff\fontclass            #1\endcsname\else
-   \ifcsname\??ff                      #1\endcsname\@EA        \@@thefallbacksyes\csname\??ff                      #1\endcsname\else
-                                                       \let    \@@fontfallbacks  \empty                                        \fi\fi\fi\fi}
+  {\ifcsname\??fontfile\fontclass#1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??fontfile\fontclass#1\s!fallbacks\endcsname\else
+   \ifcsname\??fontfile          #1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??fontfile          #1\s!fallbacks\endcsname\else
+   \ifcsname\??fontfile\fontclass            #1\endcsname\@EA        \@@thefallbacksyes\csname\??fontfile\fontclass            #1\endcsname\else
+   \ifcsname\??fontfile                      #1\endcsname\@EA        \@@thefallbacksyes\csname\??fontfile                      #1\endcsname\else
+                                                              \let    \@@fontfallbacks  \empty                                        \fi\fi\fi\fi}
 
 \def\@@thegoodiesyes#1%
-  {\ifcsname\??ff\fontclass#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff\fontclass#1\s!goodies  \endcsname\else
-   \ifcsname\??ff          #1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff          #1\s!goodies  \endcsname\else
-   \ifcsname\??ff\fontclass            #1\endcsname\@EA        \@@thegoodiesyes  \csname\??ff\fontclass            #1\endcsname\else
-   \ifcsname\??ff                      #1\endcsname\@EA        \@@thegoodiesyes  \csname\??ff                      #1\endcsname\else
-                                                       \let    \@@fontgoodies    \empty                                        \fi\fi\fi\fi}
+  {\ifcsname\??fontfile\fontclass#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??fontfile\fontclass#1\s!goodies  \endcsname\else
+   \ifcsname\??fontfile          #1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??fontfile          #1\s!goodies  \endcsname\else
+   \ifcsname\??fontfile\fontclass            #1\endcsname\@EA        \@@thegoodiesyes  \csname\??fontfile\fontclass            #1\endcsname\else
+   \ifcsname\??fontfile                      #1\endcsname\@EA        \@@thegoodiesyes  \csname\??fontfile                      #1\endcsname\else
+                                                             \let    \@@fontgoodies    \empty                                        \fi\fi\fi\fi}
 
 \def\@@thefeaturesnop#1%
-  {\ifcsname\??ff#1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??ff#1\s!features \endcsname\else
-   \ifcsname\??ff            #1\endcsname\@EA        \@@thefeaturesnop \csname\??ff            #1\endcsname\else
-                                             \let    \@@fontfeatures   \empty                              \fi\fi}
+  {\ifcsname\??fontfile#1\s!features \endcsname\@EA\let\@EA\@@fontfeatures   \csname\??fontfile#1\s!features \endcsname\else
+   \ifcsname\??fontfile            #1\endcsname\@EA        \@@thefeaturesnop \csname\??fontfile            #1\endcsname\else
+                                                   \let    \@@fontfeatures   \empty                              \fi\fi}
 
 \def\@@thefallbacksnop#1%
-  {\ifcsname\??ff#1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??ff#1\s!fallbacks\endcsname\else
-   \ifcsname\??ff            #1\endcsname\@EA        \@@thefallbacksnop\csname\??ff            #1\endcsname\else
-                                             \let    \@@fontfallbacks  \empty                              \fi\fi}
+  {\ifcsname\??fontfile#1\s!fallbacks\endcsname\@EA\let\@EA\@@fontfallbacks  \csname\??fontfile#1\s!fallbacks\endcsname\else
+   \ifcsname\??fontfile            #1\endcsname\@EA        \@@thefallbacksnop\csname\??fontfile            #1\endcsname\else
+                                                   \let    \@@fontfallbacks  \empty                              \fi\fi}
 
 \def\@@thegoodiesnop#1%
-  {\ifcsname\??ff#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??ff#1\s!goodies  \endcsname\else
-   \ifcsname\??ff            #1\endcsname\@EA        \@@thegoodiesnop  \csname\??ff            #1\endcsname\else
-                                             \let    \@@fontgoodies    \empty                              \fi\fi}
+  {\ifcsname\??fontfile#1\s!goodies  \endcsname\@EA\let\@EA\@@fontgoodies    \csname\??fontfile#1\s!goodies  \endcsname\else
+   \ifcsname\??fontfile            #1\endcsname\@EA        \@@thegoodiesnop  \csname\??fontfile            #1\endcsname\else
+                                                   \let    \@@fontgoodies    \empty                              \fi\fi}
 
 \def\updatefontparametersyes
  {\@@thefeaturesyes \somefontname
@@ -1260,11 +1274,11 @@
    \fi}
 
 \def\dodefinefontsynonymnop
-  {\@EA\let\csname\??ff\@@fontname\endcsname\@@fontfile % maybe just #1 #3, saves expansion
+  {\@EA\let\csname\??fontfile\@@fontname\endcsname\@@fontfile % maybe just #1 #3, saves expansion
    \doifnextoptionalelse\dododefinefontsynonymnop\nonodefinefontsynonymnop}
 
 \def\dodefinefontsynonymyes
-  {\@EA\let\csname\??ff\fontclass\@@fontname\endcsname\@@fontfile % maybe just #1 #3, saves expansion
+  {\@EA\let\csname\??fontfile\fontclass\@@fontname\endcsname\@@fontfile % maybe just #1 #3, saves expansion
    \doifnextoptionalelse\dododefinefontsynonymyes\nonodefinefontsynonymyes}
 
 \def\dododefinefontsynonymnop[#1]%
@@ -1305,24 +1319,24 @@
 % end of helpers
 
 \def\nonodefinefontsynonymnop
-  {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\undefined
-   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\undefined
-   \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\undefined}
+  {\@EA\let\csname\??fontfile\@@fontname\s!features \endcsname\undefined
+   \@EA\let\csname\??fontfile\@@fontname\s!fallbacks\endcsname\undefined
+   \@EA\let\csname\??fontfile\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\nonodefinefontsynonymyes
-  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\undefined
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\undefined
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\undefined}
+  {\global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!features \endcsname\undefined
+   \global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!fallbacks\endcsname\undefined
+   \global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!goodies  \endcsname\undefined}
 
 \def\dodododefinefontsynonymnop
-  {\@EA\let\csname\??ff\@@fontname\s!features \endcsname\@@ff@@features
-   \@EA\let\csname\??ff\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
-   \@EA\let\csname\??ff\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
+  {\@EA\let\csname\??fontfile\@@fontname\s!features \endcsname\@@ff@@features
+   \@EA\let\csname\??fontfile\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
+   \@EA\let\csname\??fontfile\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \def\dodododefinefontsynonymyes
-  {\global\@EA\let\csname\??ff\fontclass\@@fontname\s!features \endcsname\@@ff@@features
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
-   \global\@EA\let\csname\??ff\fontclass\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
+  {\global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!features \endcsname\@@ff@@features
+   \global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!fallbacks\endcsname\@@ff@@fallbacks
+   \global\@EA\let\csname\??fontfile\fontclass\@@fontname\s!goodies  \endcsname\@@ff@@goodies}
 
 \let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
 
@@ -1336,23 +1350,23 @@
   {\@EA\dotruefontname#1*\empty*\relax}
 
 \def\dotruefontname#1*#2#3*#4\relax
-  {\ifcsname\??ff\fontclass#1\endcsname
+  {\ifcsname\??fontfile\fontclass#1\endcsname
      \ifx#2\empty
-       \@EA\truefontname\csname\??ff\fontclass#1\endcsname
+       \@EA\truefontname\csname\??fontfile\fontclass#1\endcsname
      \else
-       \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname*#2#3%
+       \@EA\redotruefontname\csname\??fontfile\fontclass#1\endcsname*#2#3%
      \fi
-   \else\ifcsname\??ff\defaultfontclass#1\endcsname
+   \else\ifcsname\??fontfile\defaultfontclass#1\endcsname
      \ifx#2\empty
-       \@EA\truefontname\csname\??ff\defaultfontclass#1\endcsname
+       \@EA\truefontname\csname\??fontfile\defaultfontclass#1\endcsname
      \else
-       \@EA\redotruefontname\csname\??ff\defaultfontclass#1\endcsname*#2#3%
+       \@EA\redotruefontname\csname\??fontfile\defaultfontclass#1\endcsname*#2#3%
      \fi
-   \else\ifcsname\??ff#1\endcsname
+   \else\ifcsname\??fontfile#1\endcsname
      \ifx#2\empty
-       \@EA\truefontname\csname\??ff#1\endcsname
+       \@EA\truefontname\csname\??fontfile#1\endcsname
      \else
-       \@EA\redotruefontname\csname\??ff#1\endcsname*#2#3%
+       \@EA\redotruefontname\csname\??fontfile#1\endcsname*#2#3%
      \fi
    \else
      #1\ifx#2\empty\else*#2#3\fi
@@ -1362,27 +1376,27 @@
   {\@EA\dodotruefontname#1*\relax}
 
 \def\dodotruefontname#1*#2\relax
-  {\ifcsname\??ff\fontclass#1\endcsname
-     \@EA\redotruefontname\csname\??ff\fontclass#1\endcsname
-   \else\ifcsname\??ff\defaultfontclass#1\endcsname
-     \@EA\redotruefontname\csname\??ff\defaultfontclass#1\endcsname
-   \else\ifcsname\??ff#1\endcsname
-     \@EA\redotruefontname\csname\??ff#1\endcsname
+  {\ifcsname\??fontfile\fontclass#1\endcsname
+     \@EA\redotruefontname\csname\??fontfile\fontclass#1\endcsname
+   \else\ifcsname\??fontfile\defaultfontclass#1\endcsname
+     \@EA\redotruefontname\csname\??fontfile\defaultfontclass#1\endcsname
+   \else\ifcsname\??fontfile#1\endcsname
+     \@EA\redotruefontname\csname\??fontfile#1\endcsname
    \else
      #1%
    \fi\fi\fi}
 
 \def\expandfontsynonym#1#2% #2 := onelevelexpansion(#1)
-  {\ifcsname\??ff\fontclass#2\endcsname
-     \expandafter\def\expandafter#1\expandafter{\csname\??ff\fontclass#2\endcsname}%
-   \else\ifcsname\??ff\defaultfontclass#2\endcsname
-     \expandafter\def\expandafter#1\expandafter{\csname\??ff\defaultfontclass#2\endcsname}%
+  {\ifcsname\??fontfile\fontclass#2\endcsname
+     \expandafter\def\expandafter#1\expandafter{\csname\??fontfile\fontclass#2\endcsname}%
+   \else\ifcsname\??fontfile\defaultfontclass#2\endcsname
+     \expandafter\def\expandafter#1\expandafter{\csname\??fontfile\defaultfontclass#2\endcsname}%
    \fi\fi}
 
 \def\doifelsefontsynonym#1%
-  {\ifcsname\??ff\fontclass#1\endcsname
+  {\ifcsname\??fontfile\fontclass#1\endcsname
      \expandafter\firstoftwoarguments
-   \else\ifcsname\??ff\defaultfontclass#1\endcsname
+   \else\ifcsname\??fontfile\defaultfontclass#1\endcsname
      \doubleexpandafter\firstoftwoarguments
    \else
      \doubleexpandafter\secondoftwoarguments
@@ -1417,10 +1431,10 @@
 %D A goody:
 
 \def\tracedfontname#1%
-  {#1\ifcsname\??ff\fontclass#1\endcsname
-     \@EA\tracedfontname\csname\??ff\fontclass#1\endcsname
-   \else\ifcsname\??ff#1\endcsname
-     \@EA\tracedfontname\csname\??ff#1\endcsname
+  {#1\ifcsname\??fontfile\fontclass#1\endcsname
+     \@EA\tracedfontname\csname\??fontfile\fontclass#1\endcsname
+   \else\ifcsname\??fontfile#1\endcsname
+     \@EA\tracedfontname\csname\??fontfile#1\endcsname
    \fi\fi}
 
 %D \macros
@@ -1817,11 +1831,11 @@
    %\@@endfontdef
    % new code, see remark
    \ifproductionrun
-     \ifcsname\@size@#1\endcsname
+     \ifcsname\??fontsize#1\endcsname
        % only once
      \else
        % prevent loop (hence \empty)
-       \letvalueempty{\@size@#1}%
+       \letvalueempty{\??fontsize#1}%
        \pushmacro\fontclass     % new per 26102009
        \edef\fontclass{#2}%     % new per 26102009
        \defineunknownfont{#1}%
@@ -1829,7 +1843,7 @@
      \fi
    \fi
    % so far
-   \setvalue{\@size@#1}{\docompletefontswitch[#1]}}
+   \setvalue{\??fontsize#1}{\docompletefontswitch[#1]}}
 
 %D {\bf Remark:} We need to cover the following cases,
 %D otherwise users can get confused:
@@ -1880,15 +1894,15 @@
       [\??ft#1\tempbodyfontsize][\??ft\s!default]
       [\c!interlinespace,\c!em]%
    %\ifproductionrun
-      \ifcsname\@size@\tempbodyfontsize\endcsname \else
-        \letvalueempty{\@size@\tempbodyfontsize}% prevent loop
+      \ifcsname\??fontsize\tempbodyfontsize\endcsname \else
+        \letvalueempty{\??fontsize\tempbodyfontsize}% prevent loop
         \pushmacro\fontclass
         \edef\fontclass{#1}%
         \normalexpanded{\defineunknownfont{\tempbodyfontsize}}% we can also inherit here
         \popmacro\fontclass
       \fi
    %\fi
-    \setevalue{\@size@#1}{\noexpand\docompletefontswitch[#1]}%
+    \setevalue{\??fontsize#1}{\noexpand\docompletefontswitch[#1]}%
     \@@endfontdef}
 
 % this one already catches both define/setup
@@ -2035,10 +2049,10 @@
    \else
      % Maybe there are default dependencies defined which we can use ([unknown]) and
      % if not, then we have at least to make sure some basics are set up.
-     \ifcsname\@size@#1\endcsname \else
+     \ifcsname\??fontsize#1\endcsname \else
        \defineunknownfont{#1}%
      \fi
-     \ifcsname\@size@#1\endcsname \else
+     \ifcsname\??fontsize#1\endcsname \else
        \definebodyfont[#1][\c!rm][]%
      \fi
    \fi\fi}
@@ -2174,7 +2188,7 @@
    \fi}
 
 \def\dodefineunknownsubfont#1#2%
-  {\ifcsname\@size@\csname\??ft#1#2\endcsname\endcsname
+  {\ifcsname\??fontsize\csname\??ft#1#2\endcsname\endcsname
    \else
      \donetrue
      \defineunknownfont{\csname\??ft#1#2\endcsname}%
@@ -2194,7 +2208,7 @@
        {\dodefineunknownbodyfont{#1}}%
      \ifdone
        \donefalse
-       \setvalue{\@size@#1}{\docompletefontswitch[#1]}%
+       \setvalue{\??fontsize#1}{\docompletefontswitch[#1]}%
        \ifdefiningunknownfont \else
          \definingunknownfonttrue
          \processcommacommand[\fontrelativesizelist]{\dodefineunknownsubfont{#1}}%
@@ -2314,12 +2328,12 @@
   {\normalexpanded{\dodoswitchpoints{#1}}}
 
 \unexpanded\def\dodoswitchpoints#1%
-  {\ifcsname\@size@#1\endcsname \else
+  {\ifcsname\??fontsize#1\endcsname \else
      \defineunknownfont{#1}%
    \fi%
   %\defineunknownfontstyles{#1}%
-   \ifcsname\@size@#1\endcsname
-     \csname\@size@#1\endcsname
+   \ifcsname\??fontsize#1\endcsname
+     \csname\??fontsize#1\endcsname
      \localbodyfontsize#1\relax
    % \edef\fontbody{\fontbody}% to be tested but we can clean up mkiv further
      \edef\normalizedbodyfontsize{\thenormalizedbodyfontsize\localbodyfontsize}%
@@ -2329,8 +2343,8 @@
    \fi}
 
 \unexpanded\def\doswitchstyle[#1]%
-  {\ifcsname\@style@#1\endcsname
-     \csname\@style@#1\endcsname
+  {\ifcsname\??fontstyle#1\endcsname
+     \csname\??fontstyle#1\endcsname
      \edef\fontstyle{#1}%
      \ifmmode\mr\fi % in order to be compatible with \rm in math mode
      % \the\everybodyfont % cleaner, in setting size as well as style
@@ -2526,7 +2540,7 @@
      \let\fontstyle\empty % new 31/7/2006
      \let\fontsize \empty
    \else
-      \ifcsname\@style@\expandedfontthing\endcsname
+      \ifcsname\??fontstyle\expandedfontthing\endcsname
         \let\fontstyle\expandedfontthing
       \else
         \setcurrentfontclass\expandedfontthing
@@ -2547,10 +2561,10 @@
 
 \def\dodododosetfont#1#2#3% #1 = set/switch state
   {\edef\normalizedsetfont{\thenormalizedbodyfontsize{#2}}%
-   \ifcsname\@size@\normalizedsetfont\endcsname \else
+   \ifcsname\??fontsize\normalizedsetfont\endcsname \else
      \defineunknownfont{#2}%
    \fi
-   \ifcsname\@size@\normalizedsetfont\endcsname
+   \ifcsname\??fontsize\normalizedsetfont\endcsname
      \localbodyfontsize\normalizedsetfont
      \let\normalizedbodyfontsize\normalizedsetfont
    \else
@@ -2592,14 +2606,12 @@
 % we need to check the fontclass
 
 \def\registerfontclass#1%
-  {\letgvalue{\@fontclass@#1}\v!yes} % global ?
-
-\edef\@no@fontclass@{\@fontclass@:?:}
+  {\letgvalue{\??fontclassyes#1}\v!yes} % global ?
 
 \def\setcurrentfontclass#1%
-  {\ifcsname\@fontclass@#1\endcsname
+  {\ifcsname\??fontclassyes#1\endcsname
      \edef\fontclass{#1}%
-   \else\ifcsname\@no@fontclass@#1\endcsname
+   \else\ifcsname\??fontclassnop#1\endcsname
      % already tried
    \else   % too messy: \ifcase\currentgrouplevel % (unpredictable)
      \trycurrentfontclass{#1}%
@@ -2618,23 +2630,23 @@
   {\ifconditional\autotypescripts
      % try to load typescript #1
      \usetypescript[#1]%
-     \ifcsname\@fontclass@#1\endcsname
+     \ifcsname\??fontclassyes#1\endcsname
        \edef\fontclass{#1}%
      \else
        % try to load type-#1.mkiv
        \usetypescriptfile[\f!typeprefix#1]%
        % try to load typescript #1
        \usetypescript[#1]%
-       \ifcsname\@fontclass@#1\endcsname
+       \ifcsname\??fontclassyes#1\endcsname
          \edef\fontclass{#1}%
        \else
          % todo: message
-         \letvalueempty{\@no@fontclass@#1}%
+         \letvalueempty{\??fontclassnop#1}%
        \fi
      \fi
    \else
      % todo: message
-     \letvalueempty{\@no@fontclass@#1}%
+     \letvalueempty{\??fontclassnop#1}%
    \fi}
 
 \let\defaultfontstyle       \c!rm
@@ -2987,8 +2999,8 @@
 %D \stoptyping
 
 \def\dododefinefontstyle#1#2%
-  {\setvalue{\@shortstyle@#2}{#1}%
-   \setvalue{\@style@#2}{\csname#1\endcsname}}
+  {\setvalue{\??fontshortstyle#2}{#1}%
+   \setvalue{\??fontstyle     #2}{\csname#1\endcsname}}
 
 \def\dodefinefontstyle[#1][#2]%
   {\rawdoifinsetelse{#2}{\fontstylelist}{}{\addtocommalist{#2}\fontstylelist}%
@@ -3091,12 +3103,12 @@
 \def\fastswitchtobodyfont#1%
   {\ifcsname\??ft\normalizedbodyfontsize#1\endcsname
      \edef\futurebodyfontsize{\csname\??ft\normalizedbodyfontsize#1\endcsname}%
-     \ifcsname\@size@\futurebodyfontsize\endcsname
-       \csname\@size@\futurebodyfontsize\endcsname
+     \ifcsname\??fontsize\futurebodyfontsize\endcsname
+       \csname\??fontsize\futurebodyfontsize\endcsname
        \localbodyfontsize\futurebodyfontsize\relax
      \fi
    \fi
-   \csname\@style@\fontstyle\endcsname
+   \csname\??fontstyle\fontstyle\endcsname
    \the\everybodyfont}
 
 %D \starttyping
@@ -3345,7 +3357,7 @@
   {\complexswitchstyleonly[\checkedstrippedcsname#1]}
 
 \def\complexswitchstyleonly[#1]% todo : check
-  {\setcurrentfontstyle{\csname\@shortstyle@#1\endcsname}%
+  {\setcurrentfontstyle{\csname\??fontshortstyle#1\endcsname}%
    \the\everybodyfont} % needed ?
 
 %D \macros
@@ -4019,37 +4031,37 @@
                                                                    \s!Serif \fi\fi\fi}
 
 % potential generalization:
-
-% \letvalue{\??ff:t:\c!rm}\s!Serif
-% \letvalue{\??ff:t:\c!ss}\s!Sans
-% \letvalue{\??ff:t:\c!tt}\s!Mono
 %
-% \letvalue{\??ff:s:\c!bf}\s!Bold
-% \letvalue{\??ff:s:\c!sl}\s!Slanted
-% \letvalue{\??ff:s:\c!it}\s!Italic
-% \letvalue{\??ff:s:\c!bs}\s!BoldSlanted
-% \letvalue{\??ff:s:\c!bi}\s!BoldItalic
+% \letvalue{\??fontfile:t:\c!rm}\s!Serif
+% \letvalue{\??fontfile:t:\c!ss}\s!Sans
+% \letvalue{\??fontfile:t:\c!tt}\s!Mono
 %
-% \letvalue{\??ff:a:\c!rm}\s!Regular
-% \letvalue{\??ff:a:\c!ss}\s!Support
-% \letvalue{\??ff:a:\c!tt}\s!Type
+% \letvalue{\??fontfile:s:\c!bf}\s!Bold
+% \letvalue{\??fontfile:s:\c!sl}\s!Slanted
+% \letvalue{\??fontfile:s:\c!it}\s!Italic
+% \letvalue{\??fontfile:s:\c!bs}\s!BoldSlanted
+% \letvalue{\??fontfile:s:\c!bi}\s!BoldItalic
 %
-% \def\fontstringA{\executeifdefined{\??ff:t:\fontstyle}\s!Serif}
-% \def\fontstringB{\executeifdefined{\??ff:a:\fontstyle}\s!Serif}
-% \def\fontstringC{\executeifdefined{\??ff:s:\fontstyle}\empty}
-% \def\fontstringD{\executeifdefined{\??ff:t:\csname\??tf\fontclass\s!default\endcsname}\s!Serif}
+% \letvalue{\??fontfile:a:\c!rm}\s!Regular
+% \letvalue{\??fontfile:a:\c!ss}\s!Support
+% \letvalue{\??fontfile:a:\c!tt}\s!Type
+%
+% \def\fontstringA{\executeifdefined{\??fontfile:t:\fontstyle}\s!Serif}
+% \def\fontstringB{\executeifdefined{\??fontfile:a:\fontstyle}\s!Serif}
+% \def\fontstringC{\executeifdefined{\??fontfile:s:\fontstyle}\empty}
+% \def\fontstringD{\executeifdefined{\??fontfile:t:\csname\??tf\fontclass\s!default\endcsname}\s!Serif}
 
 \def\glyphfontfile#1%
   {#1%
-   \ifcsname\??ff#1\fontstringA\fontstringC\endcsname
+   \ifcsname\??fontfile#1\fontstringA\fontstringC\endcsname
      \fontstringA\fontstringC
-   \else\ifcsname\??ff#1\fontstringB\fontstringC\endcsname
+   \else\ifcsname\??fontfile#1\fontstringB\fontstringC\endcsname
      \fontstringB\fontstringC
-   \else\ifcsname\??ff#1\fontstringA\endcsname
+   \else\ifcsname\??fontfile#1\fontstringA\endcsname
      \fontstringA
-   \else\ifcsname\??ff#1\fontstringB\endcsname
+   \else\ifcsname\??fontfile#1\fontstringB\endcsname
      \fontstringB
-   \else\ifcsname\??ff#1\fontstringC\endcsname
+   \else\ifcsname\??fontfile#1\fontstringC\endcsname
      \fontstringC
    \fi\fi\fi\fi\fi}
 
@@ -4071,36 +4083,38 @@
 %D Since we know what scaling it to be applied, we can
 %D implement a much faster alternative:
 
+\installcorenamespace {symbolfont}
+
 \let\thedefinedfont\relax
 
 \def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
-   \ifcsname\??ss->\askedsymbolfont\endcsname
-     \csname\??ss->\askedsymbolfont\endcsname
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \csname\??symbolfont\askedsymbolfont\endcsname
    \else
      \dodefinesymbolicfont
    \fi}
 
 \def\setscaleddirectsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{#3} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
-   \ifcsname\??ss->\askedsymbolfont\endcsname
-     \csname\??ss->\askedsymbolfont\endcsname
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \csname\??symbolfont\askedsymbolfont\endcsname
    \else
      \dodefinesymbolicfont
    \fi}
 
 \def\setstyledsymbolicfont#1% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#1}} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
-   \ifcsname\??ss->\askedsymbolfont\endcsname
-     \csname\??ss->\askedsymbolfont\endcsname
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \csname\??symbolfont\askedsymbolfont\endcsname
    \else
      \dodefinesymbolicfont
    \fi}
 
 \def\setdirectsymbolicfont#1%
   {\edef\askedsymbolfont{\truefontname{#1} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
-   \ifcsname\??ss->\askedsymbolfont\endcsname
-     \csname\??ss->\askedsymbolfont\endcsname
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \csname\??symbolfont\askedsymbolfont\endcsname
    \else
      \dodefinesymbolicfont
    \fi}
@@ -4108,7 +4122,7 @@
 \def\dodefinesymbolicfont
   {\definefont[currentsymbolfont][\askedsymbolfont]%
    \currentsymbolfont
-   \global\expandafter\let\csname\??ss->\askedsymbolfont\endcsname\lastrawfontcall}
+   \global\expandafter\let\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
 
 \unexpanded\def\getnamedglyphstyled#1#2{{\setstyledsymbolicfont{#1}\ctxcommand{fontchar("#2")}}}
 \unexpanded\def\getnamedglyphdirect#1#2{{\setdirectsymbolicfont{#1}\ctxcommand{fontchar("#2")}}}
@@ -4490,31 +4504,47 @@
 
 % definitions .. no tagging here
 
-\installcommandhandler \??cf {style} \??cf
+\installcorenamespace{style}
+\installcorenamespace{stylecheck}
+
+\installcommandhandler \??style {style} \??style
 
 \appendtoks
-    \letvalue{\??cf\currentstyle\s!check}\relax
-    \setuevalue{\e!start\currentstyle}{\begingroup\use_defined_style{\currentstyle}}%
-    \setuevalue{\e!stop \currentstyle}{\endgroup}%
-    \setuevalue        {\currentstyle}{\groupedcommand{\use_defined_style{\currentstyle}}{}}%
+    \letvalue{\??stylecheck\currentstyle}\relax
+    \setuevalue{\e!start\currentstyle}{\apply_style_start{\currentstyle}}%
+    \setuevalue{\e!stop \currentstyle}{\apply_style_stop}%
+    \setuevalue        {\currentstyle}{\apply_style_grouped{\currentstyle}}% no longer groupedcommand here
 \to \everydefinestyle
+
+\unexpanded\def\apply_style_start#1%
+  {\begingroup
+   \use_defined_style{#1}}
+
+\unexpanded\def\apply_style_stop
+  {\endgroup}
+
+\unexpanded\def\apply_style_grouped#1% assumes that the next is { or \bgroup
+  {\bgroup
+   \def\g_style{\use_defined_style{#1}}%
+   \afterassignment\g_style
+   \let\nexttoken}
 
 \unexpanded\def\use_defined_style#1%
   {\edef\currentstyle{#1}%
    \usestylestyleandcolor\c!style\c!color}
 
 \unexpanded\def\use_generic_style#1%
-  {\getparameters[\??cf][\c!style=,\c!color=,#1]%
-   \dousestyleparameter\@@cfstyle
-   \dousecolorparameter\@@cfcolor}
+  {\let\currentstyle\s!unknown % reasonable generic tag
+   \setupcurrentstyle[\c!style=,\c!color=,#1]%
+   \usestylestyleandcolor\c!style\c!color}
 
 % commands
 
-\unexpanded\def\style[#1]%
+\unexpanded\def\style[#1]% as this is can be a switch we use groupedcommand
   {\csname style_%
      \ifcsname#1\endcsname
        nop%
-     \else\ifcsname\??cf#1\s!check\endcsname
+     \else\ifcsname\??stylecheck#1\endcsname
        use%
      \else
        yes%
@@ -4534,7 +4564,7 @@
    \csname start_style_%
      \ifcsname#1\endcsname
        nop%
-     \else\ifcsname\??cf#1\s!check\endcsname
+     \else\ifcsname\??stylecheck#1\endcsname
        use%
      \else
        yes%

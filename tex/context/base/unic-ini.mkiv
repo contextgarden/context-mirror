@@ -17,25 +17,21 @@
 
 \unprotect
 
-\let\keeputfcharacters\relax  % used in xtag
-\newconstant\utfunicodetracer % used in xtag
-
-%def\unicodechar     #1{\char\numexpr#1\relax} % no lookahead
 \def\unicodenumber   #1{\the \numexpr#1\relax} % no lookahead
 \def\unicodehexnumber#1{\cldcontext{number.toevenhex(\number#1))}}
 
-%D Better is:
-%D
 %D \startbuffer
 %D \unicodechar{left square bracket}okay\unicodechar{right square bracket}
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
 
-\def\unicodechar     #1{\ctxcommand{unicodechar("#1")}}
+%def\unicodechar#1{\char\numexpr#1\relax} % no lookahead
+\def\unicodechar#1{\ctxcommand{unicodechar("#1")}}
 
-\unexpanded\def\unknownchar{{\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}}
+\unexpanded\def\unknownchar
+  {\dontleavehmode\hbox{\vrule\!!width.5em\!!height1ex\!!depth\zeropoint}}
 
-\ifx\zwnbsp\undefined \let\zwnbsp\relax \fi % zerowidthnonbreakablespace
+\ifdefined\zwnbsp\else \let\zwnbsp\relax \fi % zerowidthnonbreakablespace
 
 \protect  \endinput

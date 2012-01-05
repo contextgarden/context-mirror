@@ -35,9 +35,6 @@
   [lshowtitle]
   [\c!style=\tta]
 
-% \unexpanded\def\setuplxmlshow[#1]%
-%   {\dodoubleargument\getparameters[\??xl]}
-
 \unexpanded\def\xmllshow#1%
   {\ctxlua{xml.ctx.tshow {
         pattern = \!!bs\detokenize{#1}\!!es,

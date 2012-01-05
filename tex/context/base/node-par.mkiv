@@ -36,26 +36,30 @@
 
 % management (enable/disable) is global and will move to lua
 
-\newcount\nofparbuilders
+\installcorenamespace {parbuilder}
+
+\newcount\c_par_n_of_builders
+
+\let\m_par_current_builder\empty
 
 \unexpanded\def\defineparbuilder[#1]%
-  {\global\advance\nofparbuilders\plusone
-   \ctxlua{builders.paragraphs.constructors.register("#1",\number\nofparbuilders)}%
-   \setxvalue{\??ng:#1}{\attribute\parbuilderattribute\nofparbuilders}}
+  {\global\advance\c_par_n_of_builders\plusone
+   \ctxlua{builders.paragraphs.constructors.register("#1",\number\c_par_n_of_builders)}%
+   \setxvalue{\??parbuilder#1}{\attribute\parbuilderattribute\number\c_par_n_of_builders}}
 
 \unexpanded\def\startparbuilder[#1]%
-  {\edef\@@currentparbuilder{\number\attribute\parbuilderattribute}%
-   \globalpushmacro\@@currentparbuilder
-   \getvalue{\??ng:#1}%
-   \checkparbuilders}
+  {\edef\m_par_current_builder{\number\attribute\parbuilderattribute}%
+   \globalpushmacro\m_par_current_builder
+   \getvalue{\??parbuilder#1}\relax
+   \par_builders_check}
 
 \unexpanded\def\stopparbuilder
   {\ifhmode\par\fi
-   \globalpopmacro\@@currentparbuilder
-   \attribute\parbuilderattribute\@@currentparbuilder\relax
-   \checkparbuilders}
+   \globalpopmacro\m_par_current_builder
+   \attribute\parbuilderattribute\m_par_current_builder\relax
+   \par_builders_check}
 
-\def\setmainparbuilder[#1]%
+\unexpanded\def\setmainparbuilder[#1]%
   {\ctxlua{builders.paragraphs.constructors.set("#1")}}
 
 % no high level interface, after all implementing a linebreaker is not something that
@@ -68,7 +72,7 @@
 \def\enableparbuilders {\ctxlua{builders.paragraphs.constructors.enable ()}}
 \def\disableparbuilders{\ctxlua{builders.paragraphs.constructors.disable()}}
 
-\def\checkparbuilders % can be more efficient as we don't want to do this to often
+\def\par_builders_check % can be made more efficient as we don't want to do this too often
   {\ifcase\attribute\parbuilderattribute
      \disableparbuilders
    \else

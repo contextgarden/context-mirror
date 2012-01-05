@@ -15,7 +15,8 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Bars}
 
-%D The name of this file might change.
+%D The name of this file might change (and then the prefix will
+%D become \xxxx_bar etc).
 
 %D \macros
 %D   {underbar,underbars,
@@ -52,9 +53,15 @@
 %D \showsetup{overstrikes}
 %D
 %D \showsetup{setupunderbar}
+%D
+%D Nested bars can be configured by appending \type {:<index>} to the
+%D category.
 
-%D todo: mkvi this file ... no redefine, just pass all parameters, too messy now
-%D (due to grouping) so better hash settings at the lua end
+%D As with many early usage of \LUA\ in \MKIV\ this mechanism explores a way
+%D to deal with local settings at the \TEX\ end and remembering parameters
+%D at the \LUA\ end. We might do things differently now, but as settings normally
+%D don't change that often, we're not in a hurry to do that now. The problem at
+%D the \LUA\ end is that we don't know when to clean up.
 
 \unprotect
 
@@ -63,40 +70,42 @@
 
 \registerctxluafile{node-rul}{1.001}
 
-\installcommandhandler \??on {bar} \??on
+\installcorenamespace{bar}
+\installcorenamespace{barindex}
+\installcorenamespace{barattribute}
+\installcorenamespace{barstack}
 
-\newtoks\checkalldefinedbars
+\installcommandhandler \??bar {bar} \??bar
+
+\newtoks\t_bar_checklist
+
+\let\c_bar_index\relax % temporary synonym
+\let\p_bar_color\empty
 
 \let\setupbars\setupbar
 
 \appendtoks
-   \ifsecondargument
-     \dodefinebarindeed\currentbar
-   \else
-     \the\checkalldefinedbars
-   \fi
+    \ifsecondargument
+        \bar_define
+    \else
+        \the\t_bar_checklist
+    \fi
 \to \everysetupbar
 
 \appendtoks
-   \ifcsname\??on:\currentbar:c\endcsname
-     \csname\??on:\currentbar:c\endcsname\zerocount
-   \else
-     \expandafter\newcount\csname\??on:\currentbar:c\endcsname
-   \fi
-   \normalexpanded{\checkalldefinedbars{\doredefinebar{\currentbar}\the\checkalldefinedbars}}%
-   \dodefinebarindeed\currentbar
-   \setuevalue\currentbar{\doruled{\currentbar}}%
+    \ifcsname\??barindex\currentbar\endcsname
+        \csname\??barindex\currentbar\endcsname\zerocount
+    \else
+        \expandafter\newcount\csname\??barindex\currentbar\endcsname
+    \fi
+    \normalexpanded{\t_bar_checklist{\bar_redefine{\currentbar}\the\t_bar_checklist}}%
+    \bar_define
+    \setuevalue\currentbar{\bar_direct{\currentbar}}%
 \to \everydefinebar
 
-\unexpanded\def\dodefinebarindeed#1%
-  {\begingroup
-   \edef\currentbar{#1}%
-   \doifsomethingelse{\barparameter\c!color}
-     {\donetrue\colored[\barparameter\c!color]}
-     {\donefalse}%
-   \normalexpanded
-     {\endgroup
-      \scratchcounter\ctxlua{nodes.rules.define {
+\unexpanded\def\bar_define
+  {\edef\p_bar_color{\barparameter\c!color}%
+   \setevalue{\??barattribute\currentbar}{\number\ctxlua{nodes.rules.define {
         method        = \barparameter\c!method,
         offset        = \barparameter\c!offset,
         continue      = "\barparameter\c!continue",
@@ -105,52 +114,51 @@
         unit          = "\barparameter\c!unit",
         order         = "\barparameter\c!order",
         max           = \barparameter\c!max,
-        ma            = \ifdone\the\attribute\colormodelattribute  \else0\fi,
-        ca            = \ifdone\the\attribute\colorattribute       \else0\fi,
-        ta            = \ifdone\the\attribute\transparencyattribute\else0\fi
-      }}}%
-   \setevalue{\??on#1:a}{\the\scratchcounter}}
+        ma            = \thecolormodelattribute,
+        ca            = \thecolorattribute\p_bar_color,
+        ta            = \thetransparencyattribute\p_bar_color
+      }}}}
 
-\let\doredefinebar\dodefinebarindeed
+\unexpanded\def\bar_redefine#1%
+  {\def\currentbar{#1}\bar_define}
 
-\unexpanded\def\doruled#1%
-  {\groupedcommand{\dodoruled{#1}}\relax}
+\unexpanded\def\bar_direct#1%
+  {\groupedcommand{\bar_set{#1}}\relax}
 
-\def\dodoruled
+\def\bar_set
   {\ctxlua{nodes.rules.enable()}% will be moved to lua
-   \glet\dodoruled\dodoruledindeed
-   \dodoruled}
+   \glet\bar_set\bar_set_indeed
+   \bar_set}
 
-\def\dodoruledindeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
+\def\bar_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
-   \advance\csname\??on:#1:c\endcsname\plusone % local ?
-   \scratchcounter\csname\??on:#1:c\endcsname
+   \expandafter\let\expandafter\c_bar_index\csname\??barindex#1\endcsname
+   \advance\c_bar_index\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
    \attribute\ruledattribute\numexpr
-     1000*\scratchcounter
-     +\csname\??on#1\ifcsname\??on#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
+      \plusthousand*\c_bar_index
+     +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_bar_index\s!parent\endcsname:\number\c_bar_index\fi\endcsname
    \relax}
-
-% ungrouped
 
 \unexpanded\def\startbar[#1]%
   {\begingroup
-   \dodoruled{#1}}
+   \bar_set{#1}}
 
 \unexpanded\def\stopbar
   {\endgroup}
 
-\newcount\currentbarnesting % todo: same as colors
+% ungrouped
+
+\newcount\c_bar_nesting % todo: same as colors
 
 \unexpanded\def\pushbar[#1]%
-  {\global\advance\currentbarnesting\plusone
-   \expandafter\edef\csname\??on:s:\number\currentbarnesting\endcsname
-     {\attribute\ruledattribute\the\attribute\ruledattribute}% stack
-   \dodoruled{#1}}
+  {\global\advance\c_bar_nesting\plusone
+   \expandafter\edef\csname\??barstack\number\c_bar_nesting\endcsname{\attribute\ruledattribute\the\attribute\ruledattribute}%
+   \bar_set{#1}}
 
 \unexpanded\def\popbar
-  {\csname\??on:s:\number\currentbarnesting\endcsname
-   \global\advance\currentbarnesting\minusone}
+  {\csname\??barstack\number\c_bar_nesting\endcsname
+   \global\advance\c_bar_nesting\minusone}
 
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
@@ -167,9 +175,9 @@
 % \definebar[touchbar]    [\c!method=0,\c!dy=-0.4,\c!offset=-0.0]
 % \definebar[touchbars]   [touchbar]   [\c!continue=\v!yes]
 
-\definebar[\v!overstrike]  [\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
-\definebar[\v!underbar]    [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
-\definebar[\v!overbar]     [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
+\definebar[\v!overstrike][\c!method=0,\c!dy=0.4,\c!offset=0.5,\c!continue=\v!yes]
+\definebar[\v!underbar]  [\c!method=1,\c!dy=-0.4,\c!offset=-0.3,\c!continue=\v!yes]
+\definebar[\v!overbar]   [\c!method=1,\c!dy=0.4,\c!offset=1.8,\c!continue=\v!yes]
 
 \definebar
   [\v!understrike]
@@ -199,82 +207,75 @@
 
 %D This will move: (a bit duplicated)
 
-\installcommandhandler \??ra {shift} \??ra
+\installcorenamespace{shift}
+\installcorenamespace{shiftindex}
+\installcorenamespace{shiftattribute}
 
-\newtoks\checkalldefinedshifts
+\installcommandhandler \??shift {shift} \??shift
+
+\newtoks\t_shift_checklist
+
+\let\c_shift_index\relax % temporary synonym
 
 \let\setupshifts\setupshift
 
 \appendtoks
-  \ifsecondargument
-     \dodefineshiftindeed\currentshift
-   \else
-     \the\checkalldefinedshifts
-   \fi
+    \ifsecondargument
+        \shift_define
+    \else
+        \the\t_shift_checklist
+    \fi
 \to \everysetupshift
 
 \appendtoks
-   \ifcsname\??ra:\currentshift:c\endcsname
-     \csname\??ra:\currentshift:c\endcsname\zerocount
-   \else
-     \expandafter\newcount\csname\??ra:\currentshift:c\endcsname
-   \fi
-   \normalexpanded{\checkalldefinedshifts{\doredefineshift{\currentshift}\the\checkalldefinedshifts}}%
-   \dodefineshiftindeed{\currentshift}%
-   \setuevalue\currentshift{\doshifted{\currentshift}}%
+    \ifcsname\??shiftindex\currentshift\endcsname
+        \csname\??shiftindex\currentshift\endcsname\zerocount
+    \else
+        \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
+    \fi
+    \normalexpanded{\t_shift_checklist{\shift_redefine{\currentshift}\the\t_shift_checklist}}%
+    \shift_define
+    \setuevalue\currentshift{\shift_direct{\currentshift}}%
 \to \everydefineshift
 
-\unexpanded\def\dodefineshiftindeed#1%
-  {\begingroup
-   \edef\currentshift{#1}%
-   \normalexpanded
-     {\endgroup
-      \scratchcounter\ctxlua{nodes.shifts.define {
+\unexpanded\def\shift_define
+  {\setevalue{\??shiftattribute\currentshift}{\number\ctxlua{nodes.shifts.define {
         method   = \shiftparameter\c!method,
         continue = "\shiftparameter\c!continue",
         dy       = \shiftparameter\c!dy,
         unit     = "\shiftparameter\c!unit",
-      }}}%
-   \setevalue{\??ra#1:a}{\the\scratchcounter}}
+   }}}}
 
-\let\doredefineshift\dodefineshiftindeed
+\unexpanded\def\shift_redefine#1%
+  {\def\currentshift{#1}\shift_define}
 
-% \unexpanded\def\doshifted#1%
-%   {\groupedcommand{\dodoshifted{#1}}\relax}
-
-\def\dodoshifted
+\unexpanded\def\shift_set
   {\ctxlua{nodes.shifts.enable()}%
-   \glet\dodoshifted\dodoshiftedindeed
-   \dodoshifted}
+   \glet\shift_set\shift_set_indeed
+   \shift_set}
 
-\def\dostartisolation{\signalcharacter}
-\def\dostopisolation {\signalcharacter}
-\def\doisolator      {\signalcharacter}
+% \unexpanded\def\shift_direct#1%
+%   {\doisolatedgroupedalign{\shift_set{#1}}\donothing}
 
-\def\doisolatedgroupedalign#1#2%
+\unexpanded\def\shift_direct#1%
   {\groupedcommand
-     {\begingroup\dostartisolation\begingroup#1}
-     {#2\endgroup\dostopisolation\endgroup}}
+     {\begingroup\dostartisolation\begingroup\shift_set{#1}}
+     {\endgroup\dostopisolation\endgroup}}
 
-\def\dosetupisolatedalign#1%
-  {\doisolator
-   \setupalign[#1]\relax}
-
-\def\dodoshiftedindeed#1%
+\def\shift_set_indeed#1% todo: check parent !
   {\def\currentshift{#1}%
-   \advance\csname\??ra:#1:c\endcsname\plusone
-   \scratchcounter\csname\??ra:#1:c\endcsname
-   \attribute\shiftedattribute\numexpr1000*\scratchcounter
-     +\csname\??ra#1\ifcsname\??ra#1:\number\scratchcounter\s!parent\endcsname:\number\scratchcounter\fi:a\endcsname
+   \expandafter\let\expandafter\c_shift_index\csname\??shiftindex#1\endcsname
+   \advance\c_shift_index\plusone
+   \attribute\shiftedattribute\numexpr
+      \plusthousand*\c_shift_index
+     +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_shift_index\s!parent\endcsname:\number\c_shift_index\fi\endcsname
+   \relax
    \useshiftstyleandcolor\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}}
 
-\unexpanded\def\doshifted#1%
-  {\doisolatedgroupedalign{\dodoshifted{#1}}{}}
-
 \unexpanded\def\startshift[#1]%
   {\begingroup
-   \dodoshifted{#1}}
+   \shift_set{#1}}
 
 \unexpanded\def\stopshift
   {\endgroup}
@@ -299,13 +300,19 @@
 \expandafter\let\expandafter\shiftup   \csname\v!shiftup   \endcsname
 \expandafter\let\expandafter\shiftdown \csname\v!shiftdown \endcsname
 
+% This is a weird helper:
+
+\unexpanded\def\dostartisolation{\signalcharacter}
+\unexpanded\def\dostopisolation {\signalcharacter}
+\unexpanded\def\doisolator      {\signalcharacter}
+
+\unexpanded\def\dosetupisolatedalign#1%
+  {\doisolator
+   \setupalign[#1]\relax}
+
+\unexpanded\def\doisolatedgroupedalign#1#2%
+  {\groupedcommand
+     {\begingroup\dostartisolation\begingroup#1}
+     {#2\endgroup\dostopisolation\endgroup}}
+
 \protect \endinput
-
-% obsolete:
-
-\setupunderbar
-  [\c!alternative=a,
-   \c!rulethickness=\linewidth,
-   \c!bottomoffset=1.5pt,
-   \c!topoffset=2.5pt,
-   \c!rulecolor=]

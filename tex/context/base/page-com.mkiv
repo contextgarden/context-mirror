@@ -103,7 +103,7 @@
 
 \setvalue{\e!start\v!pagecomment}%
   {\global\pagecommenttrue
-   \dostartbuffer[\v!pagecomment][\e!start\v!pagecomment][\e!stop\v!pagecomment]}
+   \grabbufferdatadirect\v!pagecomment{\e!start\v!pagecomment}{\e!stop\v!pagecomment}}
 
 \setuppagecomment
   [\c!state=, % \v!stop would invoke background calculation

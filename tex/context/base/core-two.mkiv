@@ -71,14 +71,7 @@
 
 \unprotect
 
-\let\twopassdatalist\empty
-
-\newif\iftwopassdatafound %% will become conditional
-
 \registerctxluafile{core-two}{1.001}
-
-%D I'm not that sure if this behaves exactly like mkii. This needs a cleanup. Is \type
-%D {\normalexpanded} needed?
 
 \def\immediatesavetwopassdata   #1#2#3{\normalexpanded{\noexpand\ctxcommand    {savetwopassdata('#1',"#3")}}}
 \def\savetwopassdata            #1#2#3{\normalexpanded{\noexpand\ctxlatecommand{savetwopassdata('#1',"#3")}}}
@@ -88,21 +81,40 @@
 
 % temp hack: needs a proper \starteverytimeluacode
 
-\def\testtwopassdata{\ifx\twopassdata\empty\twopassdatafoundfalse\else\twopassdatafoundtrue\fi}
+\setfalse\twopassdatafound
+\let     \twopassdata      \empty
+\let     \twopassdatalist  \empty
 
-% todo: move the edef to lua
+\newif   \iftwopassdatafound  % obsolete, will go
+
+\def\system_twopass_check
+  {\ifx\twopassdata\empty
+     \twopassdatafoundfalse % obsolete
+     \setfalse\twopassdatafound
+   \else
+     \twopassdatafoundtrue  % obsolete
+     \settrue\twopassdatafound
+   \fi}
+
+\def\system_twopass_set_not_found
+  {\twopassdatafoundfalse % obsolete
+   \setfalse\twopassdatafound}
+
+\def\system_twopass_set_found
+  {\twopassdatafoundtrue % obsolete
+   \settrue\twopassdatafound}
 
 \unexpanded\def\definetwopasslist        #1{\ctxcommand{definetwopasslist('#1')}}
-           \def\gettwopassdata           #1{\edef\twopassdata    {\ctxcommand{gettwopassdata      ("#1")}}\testtwopassdata}
-           \def\checktwopassdata         #1{\edef\twopassdata    {\ctxcommand{checktwopassdata    ("#1")}}\testtwopassdata}
-           \def\findtwopassdata        #1#2{\edef\twopassdata    {\ctxcommand{findtwopassdata("#1","#2")}}\testtwopassdata}
-           \def\getfirsttwopassdata      #1{\edef\twopassdata    {\ctxcommand{getfirsttwopassdata ("#1")}}\testtwopassdata}
-           \def\getlasttwopassdata       #1{\edef\twopassdata    {\ctxcommand{getlasttwopassdata  ("#1")}}%
-                                            \edef\noftwopassitems{\ctxcommand{counttwopassdata    ("#1")}}\testtwopassdata}
-           \def\getnamedtwopassdatalist#1#2{\edef              #1{\ctxcommand{gettwopassdatalist  ("#2")}}}
-           \def\gettwopassdatalist       #1{\edef\twopassdatalist{\ctxcommand{gettwopassdatalist  ("#1")}}}
+\unexpanded\def\gettwopassdata           #1{\edef\twopassdata    {\ctxcommand{gettwopassdata      ("#1")}}\system_twopass_check}
+\unexpanded\def\checktwopassdata         #1{\edef\twopassdata    {\ctxcommand{checktwopassdata    ("#1")}}\system_twopass_check}
+\unexpanded\def\findtwopassdata        #1#2{\edef\twopassdata    {\ctxcommand{findtwopassdata("#1","#2")}}\system_twopass_check}
+\unexpanded\def\getfirsttwopassdata      #1{\edef\twopassdata    {\ctxcommand{getfirsttwopassdata ("#1")}}\system_twopass_check}
+\unexpanded\def\getlasttwopassdata       #1{\edef\twopassdata    {\ctxcommand{getlasttwopassdata  ("#1")}}%
+                                            \edef\noftwopassitems{\ctxcommand{counttwopassdata    ("#1")}}\system_twopass_check}
+\unexpanded\def\getnamedtwopassdatalist#1#2{\edef              #1{\ctxcommand{gettwopassdatalist  ("#2")}}}
+\unexpanded\def\gettwopassdatalist       #1{\edef\twopassdatalist{\ctxcommand{gettwopassdatalist  ("#1")}}}
 
-           \def\doifelseintwopassdata  #1#2{\ctxcommand{doifelseintwopassdata("#1","#2")}}
+\unexpanded\def\doifelseintwopassdata  #1#2{\ctxcommand{doifelseintwopassdata("#1","#2")}}
 
            \let\getfromtwopassdata          \findtwopassdata
 

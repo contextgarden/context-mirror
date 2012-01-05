@@ -39,36 +39,35 @@
 
 %D New stuff.
 
-\unexpanded\def\setupfontexpansion {\dodoubleargument\dosetupfontexpansion }
-\unexpanded\def\setupfontprotrusion{\dodoubleargument\dosetupfontprotrusion}
+\unexpanded\def\setupfontexpansion {\dodoubleargument\fonts_expansion_setup }
+\unexpanded\def\setupfontprotrusion{\dodoubleargument\fonts_protrusion_setup}
 
-\def\dosetupfontexpansion [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
-\def\dosetupfontprotrusion[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
+\def\fonts_expansion_setup [#1][#2]{\ctxcommand{setupfontexpansion ("#1","#2")}}
+\def\fonts_protrusion_setup[#1][#2]{\ctxcommand{setupfontprotrusion("#1","#2")}}
 
 % \setupfontprotrusion[quality-upright][vector=quality]
 % \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
 
-%D Old stuff.
+\let\pdfadjustspacing\relax \newcount\pdfadjustspacing % a little bit protection
+\let\pdfprotrudechars\relax \newcount\pdfprotrudechars % a little bit protection
 
-\def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
+\def\fonts_expansion_enable  {\normalpdfadjustspacing\plustwo  }
+\def\fonts_expansion_disable {\normalpdfadjustspacing\zerocount}
+\def\fonts_protruding_enable {\normalpdfprotrudechars\plustwo  }
+\def\fonts_protruding_disable{\normalpdfprotrudechars\zerocount}
 
-\def\enableadjusting  {\pdfadjustspacing\plustwo  }  \let\enableexpansion \enableadjusting
-\def\disableadjusting {\pdfadjustspacing\zerocount}  \let\disableexpansion\disableadjusting
-\def\enableprotruding {\pdfprotrudechars\plustwo  }
-\def\disableprotruding{\pdfprotrudechars\zerocount}
+\appendtoks \fonts_expansion_disable  \to \everyforgetall % Here or not here?
+\appendtoks \fonts_protruding_disable \to \everyforgetall % Here or not here?
 
-\appendtoks \disableadjusting  \to \everyforgetall % Here or not here?
-\appendtoks \disableprotruding \to \everyforgetall % Here or not here?
-
-\unexpanded\def\startfonthandling             #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
-\unexpanded\def\definefonthandling              {\dotripleempty\dodefinefonthandling}
-\unexpanded\def\setupfonthandling               {\dodoubleempty\dosetupfonthandling }
-\def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
-\def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
-\def\usehandling                 [#1]{\fonthandlingerror}
-
-%D Just to be sure, maybe users use it:
-
-\let\fonthandling\empty
+% \def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
+%
+% \let\fonthandling\empty
+%
+% \unexpanded\def\startfonthandling  #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+% \unexpanded\def\definefonthandling   {\dotripleempty\dodefinefonthandling}
+% \unexpanded\def\setupfonthandling    {\dodoubleempty\dosetupfonthandling }
+% \def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
+% \def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
+% \def\usehandling                 [#1]{\fonthandlingerror}
 
 \protect \endinput

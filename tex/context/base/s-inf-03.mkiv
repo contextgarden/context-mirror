@@ -108,14 +108,11 @@ end
    backgroundcolor=darkgray,
    backgroundoffset=2mm]
 
-\setuplayout
-  [page]
-
-\startstandardmakeup
+\startpagemakeup
     \vfill
     \pagereference[global]
-    \startnarrower[5mm]
-        \raggedcenter
+    \startnarrower[10mm]
+        \setupalign[nothyhenated,middle,broad]
         \TitlePageFont \setupinterlinespace
         \getbuffer % luabuffer
         \par
@@ -126,9 +123,7 @@ end
     \par
   % \hskip10mm\scale[width=\dimexpr\paperwidth-20mm\relax]{\white \strut Lua infrastructure \emdash\ \currentdate}
     \vfill
-\stopstandardmakeup
-
-\setuplayout
+\stoppagemakeup
 
 \setupbackgrounds
   [page]

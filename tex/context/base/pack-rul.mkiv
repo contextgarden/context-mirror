@@ -59,6 +59,12 @@
 
 %D The parameter handler:
 
+\installcorenamespace{framed}
+\installcorenamespace{framedtop}
+\installcorenamespace{framedbottom}
+\installcorenamespace{framedleft}
+\installcorenamespace{framedright}
+
 \let\currentframed\s!unknown % brrr must have a value
 
 % \def\framedparameter    #1{\csname\doframedparameter\currentframed{#1}\endcsname}
@@ -172,7 +178,10 @@
   %\c!orientation=,
    \c!autowidth=\v!yes,
   %\c!setups=
-]
+   \c!loffset=\zeropoint,
+   \c!roffset=\zeropoint,
+   \c!toffset=\zeropoint,
+   \c!boffset=\zeropoint]
 
 % for backgrounds
 
@@ -193,7 +202,11 @@
    \c!framecorner=\framedparameter\c!corner,
    \c!frameradius=\framedparameter\c!radius,
    \c!framedepth=\framedparameter\c!depth,
-   \c!location=\v!normal]
+   \c!location=\v!normal,
+   \c!loffset=\zeropoint,
+   \c!roffset=\zeropoint,
+   \c!toffset=\zeropoint,
+   \c!boffset=\zeropoint]
 
 %D We will communicate through module specific variables, current
 %D framed parameters and some reserved dimension registers.
@@ -357,14 +370,14 @@
 %D It won't be a surprise that we not only provide gray boxes,
 %D but also colored ones. Here it is:
 
-\def\framed_background_box_color % can be more of \color[] -> \faststartcolor in mkiv
+\def\framed_background_box_color
   {\edef\p_framed_backgroundcolor{\framedparameter\c!backgroundcolor}%
    \ifx\p_framed_backgroundcolor\empty \else
      \doifcolor\p_framed_backgroundcolor\framed_background_box_color_indeed
    \fi}
 
 \def\framed_background_box_color_indeed
-  {\hbox{\doactivatecolor\p_framed_backgroundcolor\framed_filled_box}}
+  {\hbox{\dousecolorparameter\p_framed_backgroundcolor\framed_filled_box}}
 
 %D \macros
 %D   {defineoverlay, doifoverlayelse, overlayoffset,
@@ -440,6 +453,9 @@
 %D can contain text and be executed under an regime where
 %D interlineskip is off).
 
+\installcorenamespace{overlay}
+\installcorenamespace{overlaybuiltin}
+
 \appendtoks
     \oninterlineskip
 \to \everyoverlay
@@ -453,7 +469,7 @@
   {\dodoubleargument\framed_define_overlay}
 
 \def\framed_define_overlay[#1][#2]%
-  {\def\framed_define_overlay_indeed##1{\setvalue{\??ov##1}{\executedefinedoverlay{##1}{#2}}}%
+  {\def\framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
    \processcommalist[#1]\framed_define_overlay_indeed}
 
 \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
@@ -490,7 +506,7 @@
 %D For testing we provide:
 
 \def\doifoverlayelse#1% only tests external overlays
-  {\ifcsname\??ov#1\endcsname
+  {\ifcsname\??overlay#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -507,9 +523,9 @@
 \let\currentbackground\empty
 
 \def\framed_process_background
-  {\ifcsname\??ov:\currentbackground\endcsname
+  {\ifcsname\??overlaybuiltin\currentbackground\endcsname
      \framed_process_background_indeed_internal
-   \else\ifcsname\??ov\currentbackground\endcsname
+   \else\ifcsname\??overlay\currentbackground\endcsname
      \framed_process_background_indeed_external
    \fi\fi}
 
@@ -517,10 +533,10 @@
   {\bgroup
    \setbox\b_framed_extra\hbox{%\bgroup
      \ifzeropt\framedbackgroundoffset
-       \csname\??ov:\currentbackground\endcsname
+       \csname\??overlaybuiltin\currentbackground\endcsname
      \else
        \kern-\framedbackgroundoffset
-       \hbox{\csname\??ov:\currentbackground\endcsname}%
+       \hbox{\csname\??overlaybuiltin\currentbackground\endcsname}%
      \fi
    }%\egroup
    \wd\b_framed_extra\zeropoint
@@ -534,10 +550,10 @@
    \bgroup
    \setbox\b_framed_extra\hbox{%\bgroup
      \ifzeropt\framedbackgroundoffset
-       \csname\??ov\currentbackground\endcsname
+       \csname\??overlay\currentbackground\endcsname
      \else
        \kern-\framedbackgroundoffset
-       \hbox{\csname\??ov\currentbackground\endcsname}%
+       \hbox{\csname\??overlay\currentbackground\endcsname}%
      \fi
    }%\egroup
    \wd\b_framed_extra\zeropoint
@@ -607,9 +623,9 @@
 %D
 %D We predefine two already familiar backgrounds:
 
-\letvalue{\??ov:\v!screen    }\framed_background_box_gray
-\letvalue{\??ov:\v!color     }\framed_background_box_color
-\letvalue{\??ov:\v!foreground}\framed_background_box_content % replaces: \defineoverlay[\v!foreground][\foregroundbox]
+\letvalue{\??overlaybuiltin\v!screen    }\framed_background_box_gray
+\letvalue{\??overlaybuiltin\v!color     }\framed_background_box_color
+\letvalue{\??overlaybuiltin\v!foreground}\framed_background_box_content % replaces: \defineoverlay[\v!foreground][\foregroundbox]
 
 %D We can specify overlays as a comma separated list of
 %D overlays, a sometimes handy feature.
@@ -636,7 +652,7 @@
       \setbox\b_framed_extra\hbox
         {\kern-\d_framed_frameoffset
          \raise\scratchdimen
-         \hbox{\ifx\overlaylinecolor\empty\else\doactivatecolor\overlaylinecolor\fi\framed_stroked_box}}%
+         \hbox{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\framed_stroked_box}}%
       \wd\b_framed_extra\wd\b_framed_normal
       \ht\b_framed_extra\ht\b_framed_normal
       \dp\b_framed_extra\dp\b_framed_normal
@@ -650,15 +666,15 @@
    \ht\scratchbox\d_framed_target_ht
    \dp\scratchbox\d_framed_target_dp
    \setbox\scratchbox\vbox \bgroup
-     \csname   \??hf t\p_framed_frame\framedparameter\c!topframe   \endcsname
+     \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
      \nointerlineskip % new (needed for fences)
      \hbox \bgroup
-       \csname \??hf l\p_framed_frame\framedparameter\c!leftframe  \endcsname
+       \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
        \box\scratchbox
-       \csname \??hf r\p_framed_frame\framedparameter\c!rightframe \endcsname
+       \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
      \egroup
      \nointerlineskip % new (needed for fences)
-     \csname   \??hf b\p_framed_frame\framedparameter\c!bottomframe\endcsname
+     \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
    \egroup
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
@@ -670,21 +686,21 @@
 \def\framed_r_rule{\kern-\d_framed_linewidth\vrule\!!width\d_framed_linewidth}
 \def\framed_l_rule{\vrule\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
-\letvalue{\??hf t\v!on \v!on}\framed_t_rule
-\letvalue{\??hf t\v!off\v!on}\framed_t_rule
-\letvalue{\??hf t\v!on      }\framed_t_rule
+\letvalue{\??framedtop   \v!on \v!on}\framed_t_rule
+\letvalue{\??framedtop   \v!off\v!on}\framed_t_rule
+\letvalue{\??framedtop   \v!on      }\framed_t_rule
 
-\letvalue{\??hf b\v!on \v!on}\framed_b_rule
-\letvalue{\??hf b\v!off\v!on}\framed_b_rule
-\letvalue{\??hf b\v!on      }\framed_b_rule
+\letvalue{\??framedbottom\v!on \v!on}\framed_b_rule
+\letvalue{\??framedbottom\v!off\v!on}\framed_b_rule
+\letvalue{\??framedbottom\v!on      }\framed_b_rule
 
-\letvalue{\??hf l\v!on \v!on}\framed_l_rule
-\letvalue{\??hf l\v!off\v!on}\framed_l_rule
-\letvalue{\??hf l\v!on      }\framed_l_rule
+\letvalue{\??framedleft  \v!on \v!on}\framed_l_rule
+\letvalue{\??framedleft  \v!off\v!on}\framed_l_rule
+\letvalue{\??framedleft  \v!on      }\framed_l_rule
 
-\letvalue{\??hf r\v!on \v!on}\framed_r_rule
-\letvalue{\??hf r\v!off\v!on}\framed_r_rule
-\letvalue{\??hf r\v!on      }\framed_r_rule
+\letvalue{\??framedright \v!on \v!on}\framed_r_rule
+\letvalue{\??framedright \v!off\v!on}\framed_r_rule
+\letvalue{\??framedright \v!on      }\framed_r_rule
 
 % no overlapping rules
 
@@ -693,21 +709,21 @@
 \def\framed_r_rules{\kern-\d_framed_linewidth\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth}
 \def\framed_l_rules{\vrule\!!height\dimexpr\d_framed_target_ht-\d_framed_linewidth\relax\!!depth-\d_framed_linewidth\!!width\d_framed_linewidth\kern-\d_framed_linewidth}
 
-\letvalue{\??hf t\v!small\v!small}\frame_t_rules
-\letvalue{\??hf t\v!off  \v!small}\frame_t_rules
-\letvalue{\??hf t\v!small        }\frame_t_rules
+\letvalue{\??framedtop   \v!small\v!small}\frame_t_rules
+\letvalue{\??framedtop   \v!off  \v!small}\frame_t_rules
+\letvalue{\??framedtop   \v!small        }\frame_t_rules
 
-\letvalue{\??hf b\v!small\v!small}\frame_b_rules
-\letvalue{\??hf b\v!off  \v!small}\frame_b_rules
-\letvalue{\??hf b\v!small        }\frame_b_rules
+\letvalue{\??framedbottom\v!small\v!small}\frame_b_rules
+\letvalue{\??framedbottom\v!off  \v!small}\frame_b_rules
+\letvalue{\??framedbottom\v!small        }\frame_b_rules
 
-\letvalue{\??hf l\v!small\v!small}\frame_l_rules
-\letvalue{\??hf l\v!off  \v!small}\frame_l_rules
-\letvalue{\??hf l\v!small        }\frame_l_rules
+\letvalue{\??framedleft  \v!small\v!small}\frame_l_rules
+\letvalue{\??framedleft  \v!off  \v!small}\frame_l_rules
+\letvalue{\??framedleft  \v!small        }\frame_l_rules
 
-\letvalue{\??hf r\v!small\v!small}\frame_r_rules
-\letvalue{\??hf r\v!off  \v!small}\frame_r_rules
-\letvalue{\??hf r\v!small        }\frame_r_rules
+\letvalue{\??framedright \v!small\v!small}\frame_r_rules
+\letvalue{\??framedright \v!off  \v!small}\frame_r_rules
+\letvalue{\??framedright \v!small        }\frame_r_rules
 
 % \framed
 %   [width=4cm,height=3cm,rulethickness=3mm,
@@ -1669,11 +1685,10 @@
 
 \def\framed_check_extra_offsets
   {\setfalse\c_framed_has_extra_offset
-   \d_framed_loffset\framedparameter\c!loffset
-   \d_framed_roffset\framedparameter\c!roffset
-   \d_framed_toffset\framedparameter\c!toffset
-   \d_framed_boffset\framedparameter\c!boffset
-   \relax
+   \d_framed_loffset\framedparameter\c!loffset\relax
+   \d_framed_roffset\framedparameter\c!roffset\relax
+   \d_framed_toffset\framedparameter\c!toffset\relax
+   \d_framed_boffset\framedparameter\c!boffset\relax
    \ifzeropt\d_framed_loffset\else \advance\d_framed_width -\d_framed_loffset \settrue\c_framed_has_extra_offset \fi
    \ifzeropt\d_framed_roffset\else \advance\d_framed_width -\d_framed_roffset \settrue\c_framed_has_extra_offset \fi
    \ifzeropt\d_framed_toffset\else \advance\d_framed_height-\d_framed_toffset \settrue\c_framed_has_extra_offset \fi
@@ -2294,7 +2309,10 @@
 %D
 %D The next definition shows the defaults.
 
-\installframedcommandhandler \??kd {framedtext} \??kd
+\installcorenamespace{framedtext}
+\installcorenamespace{framedtextlocation}
+
+\installframedcommandhandler \??framedtext {framedtext} \??framedtext
 
 \let\setupframedtexts\setupframedtext
 
@@ -2337,18 +2355,18 @@
     \setuevalue        {\currentframedtext}{\framed_text_direct{\currentframedtext}}%
 \to \everydefineframedtext
 
-\setvalue{\??kd:l:\v!left  }{\letframedtextparameter\c!left \relax
-                             \letframedtextparameter\c!right\hfill}
+\setvalue{\??framedtextlocation\v!left  }{\letframedtextparameter\c!left \relax
+                                          \letframedtextparameter\c!right\hfill}
 
-\setvalue{\??kd:l:\v!right }{\letframedtextparameter\c!left \hfill
-                             \letframedtextparameter\c!right\relax}
+\setvalue{\??framedtextlocation\v!right }{\letframedtextparameter\c!left \hfill
+                                          \letframedtextparameter\c!right\relax}
 
-\setvalue{\??kd:l:\v!middle}{\letframedtextparameter\c!left \hfill
-                             \letframedtextparameter\c!right\hfill}
+\setvalue{\??framedtextlocation\v!middle}{\letframedtextparameter\c!left \hfill
+                                          \letframedtextparameter\c!right\hfill}
 
-\setvalue{\??kd:l:\v!none  }{\letframedtextparameter\c!left \relax
-                             \letframedtextparameter\c!right\relax
-                             \settrue\c_framed_text_location_none}
+\setvalue{\??framedtextlocation\v!none  }{\letframedtextparameter\c!left \relax
+                                          \letframedtextparameter\c!right\relax
+                                          \settrue\c_framed_text_location_none}
 
 \unexpanded\def\framed_text_start#1%
   {\bgroup
@@ -2364,7 +2382,7 @@
   {\setupframedtexts[\currentframedtext][#2]%
    \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
    \setfalse\c_framed_text_location_none
-   \csname\??kd:l:\framedtextparameter\c!location\endcsname
+   \csname\??framedtextlocation\framedtextparameter\c!location\endcsname
    \resetframedtextparameter\c!location
    % removed 06/2001
    % \forgetparindent
@@ -2390,7 +2408,7 @@
 %D in the presentation styles, where we don't want
 %D interference.
 
-\defineplacement[\??kd][\s!parent=\??kd\currentframedtext]
+\defineplacement[\??framedtext][\s!parent=\??framedtext\currentframedtext]
 
 \unexpanded\def\framed_text_stop % no \baselinecorrection, see faq docs
   {\endgraf
@@ -2406,7 +2424,7 @@
      \box\b_framed_normal
    \else
      \egroup
-     \placement[\??kd][\c!depthcorrection=\v!off]{\box\b_framed_normal}%
+     \placement[\??framedtext][\c!depthcorrection=\v!off]{\box\b_framed_normal}%
    \fi\fi
    \egroup}
 
@@ -2723,10 +2741,10 @@
    \c!autowidth=\v!yes,
   %\c!setups=,
    \c!strut=\v!yes,
-   \c!loffset=\zeropoint,
-   \c!roffset=\zeropoint,
-   \c!toffset=\zeropoint,
-   \c!boffset=\zeropoint]
+   %\c!loffset=\zeropoint,
+   %\c!roffset=\zeropoint,
+   %\c!toffset=\zeropoint,
+   ]%\c!boffset=\zeropoint]
 
 \setupscreens
   [\c!screen=0.95]

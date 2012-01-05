@@ -374,15 +374,15 @@
 \newconditional\page_marks_building_successive_pages \settrue\page_marks_building_successive_pages
 
 \def\page_marks_synchronize_page#1% box
-  {\dosynchronizemarking[\v!page][#1][\ifconditional\page_marks_building_successive_pages\v!keep\fi]}
+  {\marking_synchronize[\v!page][#1][\ifconditional\page_marks_building_successive_pages\v!keep\fi]}
 
 \def\page_marks_synchronize_column#1#2#3#4% first last column box
   {\ifnum#3=#1\relax
-     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
+     \marking_synchronize[\number#3,\v!column:\number#3,\v!first,\v!column:\v!first][#4][]%
    \else\ifnum#3=#2\relax
-     \dosynchronizemarking[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
+     \marking_synchronize[\number#3,\v!column:\number#3,\v!last, \v!column:\v!last ][#4][]%
    \else
-     \dosynchronizemarking[\number#3,\v!column:\number#3                            ][#4][]%
+     \marking_synchronize[\number#3,\v!column:\number#3                            ][#4][]%
    \fi\fi}
 
 % Page body building

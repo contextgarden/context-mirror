@@ -115,12 +115,6 @@
 %D
 %D \interface \type{\ifinheritcolumns} \\
 %D     handle ragging or not \\
-%D \interface \type{\ifr@ggedbottom} \\
-%D     use ragged bottoms \\
-%D \interface \type{\ifb@selinebottom} \\
-%D     put the bottom line on the baseline \\
-%D \interface \type{\ifnormalbottom} \\
-%D     put the bottom line at the baseline \\
 %D
 %D \interface \type{\ifreversecolumns} \\
 %D     reverse the order in wich columns are flushed \\
@@ -541,7 +535,7 @@
 %D One of the complications of flushing out the boxes is that
 %D \type{\precolumnbox} needs to be \type{\unvbox}'ed, otherwise
 %D there is too less flexibility in the page when using
-%D \type{\r@ggedbottom}. It took a lot of time before these
+%D \type{\raggedbottom}. It took a lot of time before these
 %D kind of problems were overcome. Using \type{\unvbox} at the
 %D wrong moment can generate \type{\balancingerror}'s.
 %D
@@ -965,7 +959,8 @@
      {\splitcurrentcolumn from \box\normalpagebox to \dimen0}%
    \setbox\restofpage\vbox{\unvbox\normalpagebox}%
    \ifinheritcolumns
-     \ifr@ggedbottom % vreemd
+     \ifcase\bottomraggednessmode
+       % 0 = ragged
        \dohandleallcolumns
          {\global\setbox\currentcolumnbox\vbox to \ht\firstcolumnbox
             {\dimen0\dp\currentcolumnbox
@@ -977,14 +972,14 @@
        \ifbottomnotes \else
          \dimen0\ht\firstcolumnbox
        \fi
-     \fi
-     \ifn@rmalbottom
+     \or
+       % 1 = normal
        \advance\dimen0 \maxdepth
        \dohandleallcolumns
          {\global\setbox\currentcolumnbox\vbox to \dimen0
             {\unvbox\currentcolumnbox}}%
-     \fi
-     \ifb@selinebottom
+     \or
+       % 2 = baseline
        % the columns are on top of the baseline
      \fi
    \else
@@ -1161,7 +1156,7 @@
    \fi
   %\global\output{\balancingerror}%
    \page_otf_set_engine_output_routine{\balancingerror}%
-   \b@selinebottomtrue % forces depth in separation rule
+   \baselinebottom % forces depth in separation rule
    \flushcolumnedpage\plusone
    \multicolumnseject
    \egroup}
@@ -1562,7 +1557,9 @@
    \hskip.5\dimen0
    \vrule
      \!!width\linewidth
-     \ifb@selinebottom\!!depth\strutdepth\fi
+     \ifnum\bottomraggednessmode=\plustwo % baselinebottom
+       \!!depth\strutdepth
+     \fi
    \hskip.5\dimen0\relax
    \stoptextproperties
    \egroup}
@@ -1586,6 +1583,12 @@
       \c!align=]}
 
 \definecomplexorsimpleempty\startcolumns
+
+% to be reconsidered ... (in any case they need to be unexpandable sinze 2011.12.30)
+
+\unexpanded\def\columns_align_option_yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
+\unexpanded\def\columns_align_option_no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
+\unexpanded\def\columns_align_option_text{\stretchcolumnsfalse\inheritcolumnstrue }%
 
 \def\complexstartcolumns[#1]% %% \startcolumns
   {\bgroup
@@ -1611,9 +1614,9 @@
        \doifelse\@@klbalance\v!yes
          \balancecolumnstrue
          \balancecolumnsfalse
-       \installalign\v!yes {\stretchcolumnstrue \inheritcolumnsfalse}% todo: new key
-       \installalign\v!no  {\stretchcolumnsfalse\inheritcolumnsfalse}% todo: new key
-       \installalign\v!text{\stretchcolumnsfalse\inheritcolumnstrue }%
+       \installalign\v!yes {\columns_align_option_yes }%
+       \installalign\v!no  {\columns_align_option_no  }%
+       \installalign\v!text{\columns_align_option_text}%
        \stretchcolumnsfalse
        \inheritcolumnstrue
        \doifsomething\@@klalign{\expanded{\setupalign[\@@klalign]}}%

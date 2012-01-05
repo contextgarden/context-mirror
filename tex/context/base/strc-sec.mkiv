@@ -61,7 +61,14 @@
 % \c!file \c!grid \c!margintext
 % \c!expansion \c!xmlsetup \s!catcode
 
-\installcommandhandler \??nh {head} \??nh
+\installcorenamespace{head}
+\installcorenamespace{headlevel}
+\installcorenamespace{headincrement}
+\installcorenamespace{headplace}
+\installcorenamespace{headmarkyes}
+\installcorenamespace{headmarknop}
+
+\installcommandhandler \??head {head} \??head
 
 \let\setupheads\setuphead % will go
 
@@ -79,7 +86,7 @@
         \normalexpanded {%
             \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currenthead}%
-            \setheadparameter{\s!parent}{\??nh\currentheadparent}%
+            \setheadparameter{\s!parent}{\??head\currentheadparent}%
             \definemarking[\currenthead]         [\currentheadsection]%
             \definemarking[\currenthead\v!number][\currentheadsection]%
             \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
@@ -164,24 +171,24 @@
 
 \def\setnextsectionlevel#1%
   {\global\advance\maxstructuredepth\plusone
-   \setevalue{\??nh:\c!level:#1}{\the\maxstructuredepth}}
+   \setevalue{\??headlevel#1}{\the\maxstructuredepth}}
 
 \def\sectionlevel#1%
-  {\csname\??nh:\c!level:\ifcsname\??nh:\c!level:#1\endcsname#1\else\v!none\fi\endcsname}
+  {\csname\??headlevel\ifcsname\??headlevel#1\endcsname#1\else\v!none\fi\endcsname}
 
-\setvalue{\??nh:\c!level:\v!block}{0}
-\setvalue{\??nh:\c!level:\v!none }{-1}
-\setvalue{\??nh:\c!level:\v!text }{-2}
+\setvalue{\??headlevel\v!block}{0}
+\setvalue{\??headlevel\v!none }{-1}
+\setvalue{\??headlevel\v!text }{-2}
 
 \newtoks\everydefinesection
 
 \unexpanded\def\definesection[#1]%
-  {\ifcsname\??nh:\c!level:#1\endcsname \else
+  {\ifcsname\??headlevel#1\endcsname \else
      \edef\currentsection{#1}% not used, will go
      \edef\currenthead{#1}%
      \setnextsectionlevel{#1}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
-     \normalexpanded{\setheadparameter{\s!parent}{\??nh\lastsectionname}}% TO BE CHECKED
+     \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
      \the\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
@@ -198,7 +205,7 @@
   {\dotripleempty\dosetupsection}
 
 \def\dosetupsection[#1][#2][#3]%
-  {\ifcsname\??nh:\c!level:#1\endcsname
+  {\ifcsname\??headlevel#1\endcsname
      \dodosetupsection[#1][#2][#3]%
    \else
      \dodosetupsection[\sectionheadsection{#1}][#2][#3]%
@@ -207,11 +214,9 @@
 \def\dodosetupsection[#1][#2][#3]%
   {\pushmacro\currenthead
    \ifthirdargument
-   % \getparameters[\??nh#1#2][#3]% ? probably sectionblock
      \edef\currenthead{#1#2}%     % not used at any more in mkiv (sets now)
      \setupcurrenthead[#3]%
    \else
-   % \getparameters[\??nh#1][#2]%
      \edef\currenthead{#1}%
      \setupcurrenthead[#2]%
    \fi
@@ -298,15 +303,15 @@
 \newconditional\headshownumber
 \newconditional\headisdisplay
 
-\setvalue{\??nh:\c!incrementnumber:\v!yes  }{\settrue \headdoincrement\settrue \headtolist}
-\setvalue{\??nh:\c!incrementnumber:\v!no   }{\setfalse\headdoincrement\setfalse\headtolist}
-\setvalue{\??nh:\c!incrementnumber:\v!list }{\setfalse\headdoincrement\settrue \headtolist}
-\setvalue{\??nh:\c!incrementnumber:\s!empty}{\settrue \headdoincrement\settrue \headtolist}
+\setvalue{\??headincrement\v!yes  }{\settrue \headdoincrement\settrue \headtolist}
+\setvalue{\??headincrement\v!no   }{\setfalse\headdoincrement\setfalse\headtolist}
+\setvalue{\??headincrement\v!list }{\setfalse\headdoincrement\settrue \headtolist}
+\setvalue{\??headincrement\s!empty}{\settrue \headdoincrement\settrue \headtolist}
 
 \def\setheadincrement
   {\edef\currentheadincrement{\headparameter\c!incrementnumber}%
-   \ifcsname\??nh:\c!incrementnumber:\currentheadincrement\endcsname
-     \csname\??nh:\c!incrementnumber:\currentheadincrement\endcsname
+   \ifcsname\??headincrement\currentheadincrement\endcsname
+     \csname\??headincrement\currentheadincrement\endcsname
    \else
      \settrue \headdoincrement\settrue \headtolist
      % \filterheadnumber
@@ -320,30 +325,30 @@
      % use  : \currentheadincrement as spec
    \fi}
 
-\setvalue{\??nh:\c!placehead:\v!yes}%
+\setvalue{\??headplace\v!yes}%
   {\setfalse\headleaveempty
    \settrue \headdoplace
    \setfalse\headhidden}
 
-\setvalue{\??nh:\c!placehead:\v!empty}%
+\setvalue{\??headplace\v!empty}%
   {\settrue \headleaveempty
    \settrue \headdoplace
    \setfalse\headhidden}
 
-\setvalue{\??nh:\c!placehead:\v!no}%
+\setvalue{\??headplace\v!no}%
   {\settrue \headleaveempty
    \setfalse\headdoplace
    \setfalse\headhidden}
 
-\setvalue{\??nh:\c!placehead:\v!hidden}%
+\setvalue{\??headplace\v!hidden}%
   {\settrue \headleaveempty
    \setfalse\headdoplace
    \settrue \headhidden}
 
 \def\setheadplacement
   {\executeifdefined
-     {\??nh:\c!placehead:\headparameter\c!placehead}
-     {\getvalue{\??nh:\c!placehead:\v!yes}}}
+     {\??headplace\headparameter\c!placehead}
+     {\getvalue{\??headplace\v!yes}}}
 
 \def\setheaddisplay
   {\doifelsevalue{\??ns:\headparameter\c!alternative}\v!horizontal
@@ -353,7 +358,7 @@
 \newmode\v!sectionnumber
 
 \def\dosettructureheadnumbercontent
-  {\setsystemmode  \v!sectionnumber
+  {\setsystemmode\v!sectionnumber
    \settrue\headshownumber} % why ?
 
 \def\doresettructureheadnumbercontent
@@ -674,16 +679,16 @@
      {\doifsomething{\headparameter#2}{\expanded{\setuplayouttext[#1][\c!state=\headparameter#2]}}}
      \donothing}
 
-\setvalue{\??nh:\??mk:n:\v!page }{}
-\setvalue{\??nh:\??mk:n:\v!reset}{\resetcurrentstructuremarks}
-\setvalue{\??nh:\??mk:y:\v!page }{} % to be checked: {\resetcurrentstructuremarks}
-\setvalue{\??nh:\??mk:y:\v!reset}{\resetcurrentstructuremarks}
+\setvalue{\??headmarknop\v!page }{}
+\setvalue{\??headmarknop\v!reset}{\resetcurrentstructuremarks}
+\setvalue{\??headmarkyes\v!page }{} % to be checked: {\resetcurrentstructuremarks}
+\setvalue{\??headmarkyes\v!reset}{\resetcurrentstructuremarks}
 
 \def\docheckheadlayout
   {\doifelsenothing{\headparameter\c!page}
-     {\getvalue{\??nh:\??mk:n:\headparameter\c!marking}}
+     {\getvalue{\??headmarknop\headparameter\c!marking}}
      {\page[\headparameter\c!page]%
-      \getvalue{\??nh:\??mk:y:\headparameter\c!marking}%
+      \getvalue{\??headmarkyes\headparameter\c!marking}%
       \dodocheckheadlayout\v!header\c!header
       \dodocheckheadlayout\v!text  \c!text
       \dodocheckheadlayout\v!footer\c!footer}}

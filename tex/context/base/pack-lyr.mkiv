@@ -23,92 +23,165 @@
 % displacement. Should be an option, on by default
 % (compatibility).
 
-% positie=forceer == ja maar dan ook in status=herhaal
-
 %D The layering mechanism implemented here is independent of
 %D the output routine, but future extensions may depend on a
 %D more close cooperation.
 
-%D First we overload a macro from \type {core-rul}. From now on
+%D First we overload a macro from \type {pack-rul}. From now on
 %D we accept a (optional) argument: the specific layer it
 %D will go in. This means that we can move an overlay from one
 %D background to the other using the dimensions of the parent.
 
-\ifx\undefined\defineoverlay \message{loaded to early} \wait \fi
+\ifdefined\defineoverlay \else \message{loaded to early} \wait \fi
 
 \unexpanded\def\defineoverlay
-  {\dotripleempty\dodefineoverlay}
+  {\dotripleempty\framed_define_overlay}
 
-\def\dodefineoverlay[#1][#2][#3]% overlay [layer] content
+\def\framed_define_overlay[#1][#2][#3]% overlay [layer] content
   {\ifthirdargument
     %\writestatus{BEWARE}{This (overlay definition) has changed!}% temp
-     \def\docommand##1{\setvalue{\??ov##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}
+     \def\framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}
    \else
-     \def\docommand##1{\setvalue{\??ov##1}{\executedefinedoverlay{##1}{#2}}}%
+     \def\framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
    \fi
-   \processcommalist[#1]\docommand}
+   \processcommalist[#1]\framed_define_overlay_indeed}
 
-%D When tracing is turned on, a couple of boxes will
-%D show up as well as the reference point.
+%D We use the command handler code. The previous, more direct parameter
+%D handling was 25\% faster when no parameters were passed when adding
+%D content to a layer. However, when we pass for instance a preset, the
+%D new methos is some 10\% faster and it happens that in most cases we
+%D do pass some parameters. It would be interesting to see if we can push
+%D the preset in between the regular chain but it could also lead to
+%D unwanted side effects when nesting layer placement.
 
-\newif\iftracelayers % \tracelayerstrue
-
-%D This handy constant saved some string memory.
-
-\def\@@layerbox{@@layerbox}
+\installcorenamespace{layer}
+\installcorenamespace{layerbox}
+\installcorenamespace{layerpreset}
+\installcorenamespace{layerposition}
 
 %D \macros
-%D   {definelayer}
+%D   {definelayer,setuplayer}
 %D
 %D Each layer gets its own (global) box. This also means that
 %D the data that goes into a layer, is typeset immediately.
 %D Each layer automatically gets an associated overlay,
 %D which can be used in any background assignment.
-
-% todo : links/rechts
-
-\unexpanded\def\definelayer
-  {\dodoubleargument\dodefinelayer}
-
-\def\dodefinelayer[#1][#2]% \zeropoint ipv \!!zeropoint
-  {\setuplayer
-     [#1]
-     [\c!doublesided=,\c!preset=,
-      \c!state=\v!start,\c!direction=\v!normal,\c!option=,
-      \c!x=\zeropoint,\c!y=\zeropoint,\c!position=\v!no,
-      \c!line=0,\c!column=0,
-      \c!width=\nextboxwd,\c!height=\nextboxht,
-      \c!offset=\zeropoint,\c!rotation=, % geen 0 !
-      \c!hoffset=\zeropoint,\c!voffset=\zeropoint,
-      \c!dx=\zeropoint,\c!dy=\zeropoint,
-      \c!location=rb,\c!position=\v!no,\c!page=,
-      \c!method=\v!overlay,
-      \c!sx=1,\c!sy=1,\c!corner=,#2]%
-   \doifvalue{\??ll#1\c!doublesided}\v!yes
-     {\dopresetlayerbox{\v!left #1}%
-      \dopresetlayerbox{\v!right#1}}%
-   \dopresetlayerbox{#1}%
-   \defineoverlay[#1][\composedlayer{#1}]}
-
-\def\dopresetlayerbox#1%
-  {\ifcsname\@@layerbox#1\endcsname
-     \resetlayer[#1]%
-   \else
-     \expandafter\newbox\csname\@@layerbox#1\endcsname
-   \fi}
-
-%D \macros
-%D   {setuplayer}
 %D
 %D After a layer is defined, you can change its
 %D characteristics.
 
-\unexpanded\def\setuplayer
-  {\dodoubleargument\dosetuplayer}
+\installcommandhandler \??layer {layer} \??layer
 
-\def\dosetuplayer[#1][#2]%
-  {\def\docommand##1{\getparameters[\??ll##1][#2]}%
-   \processcommalist[#1]\docommand}
+\setuplayer
+  [\c!state=\v!start,
+  %\c!doublesided=,
+  %\c!preset=,
+  %\c!option=,
+  %\c!corner=,
+  %\c!page=,
+  %\c!rotation=, % geen 0 !
+   \c!direction=\v!normal,
+   \c!position=\v!no,
+   \c!method=\v!overlay,
+   \c!x=\zeropoint,
+   \c!y=\zeropoint,
+   \c!line=0,
+   \c!column=0,
+   \c!width=\wd\nextbox,  % don't change this globally
+   \c!height=\ht\nextbox, % don't change this globally
+   \c!offset=\zeropoint,
+   \c!hoffset=\zeropoint,
+   \c!voffset=\zeropoint,
+   \c!dx=\zeropoint,
+   \c!dy=\zeropoint,
+   \c!location=rb,
+   \c!sx=1,
+   \c!sy=1]
+
+\let\p_layers_doublesided\empty
+\let\p_layers_state      \empty
+\let\p_layers_option     \empty
+\let\p_layers_method     \empty
+\let\p_layers_preset     \empty
+\let\p_layers_rotation   \empty
+\let\p_layers_position   \empty
+\let\p_layers_hoffset    \empty
+\let\p_layers_voffset    \empty
+\let\p_layers_offset     \empty
+\let\p_layers_dx         \empty
+\let\p_layers_dy         \empty
+\let\p_layers_sx         \empty
+\let\p_layers_sy         \empty
+\let\p_layers_x          \empty
+\let\p_layers_y          \empty
+\let\p_layers_corner     \empty
+\let\p_layers_location   \empty
+\let\p_layers_line       \empty
+\let\p_layers_column     \empty
+\let\p_layers_width      \empty
+\let\p_layers_height     \empty
+\let\p_layers_direction  \empty
+
+\let\m_layers_page       \empty
+\let\m_layers_target     \empty
+
+\newconditional\c_layers_repeated
+\newconditional\c_layers_trace
+\newcount      \c_layers_current_data
+
+\newbox\b_layers
+
+\newdimen\d_layers_x_size
+\newdimen\d_layers_y_size
+\newdimen\d_layers_x_offset
+\newdimen\d_layers_y_offset
+\newdimen\d_layers_x_position
+\newdimen\d_layers_y_position
+
+\newdimen\layerwidth
+\newdimen\layerheight
+
+\let\lastlayerxpos\!!zeropoint
+\let\lastlayerypos\!!zeropoint
+\let\lastlayerwd  \!!zeropoint
+\let\lastlayerht  \!!zeropoint
+\let\lastlayerdp  \!!zeropoint
+
+\appendtoks
+    \edef\p_layers_doublesided{\layerparameter\c!doublesided}%
+    \ifx\p_layers_doublesided\v!yes
+        \relateparameterhandlers{layer}{\v!left \currentlayer}{layer}\currentlayer % permits left*
+        \relateparameterhandlers{layer}{\v!right\currentlayer}{layer}\currentlayer % permits right*
+        \layers_preset_box{\v!left \currentlayer}%
+        \layers_preset_box{\v!right\currentlayer}%
+    \fi
+    \layers_preset_box\currentlayer
+    \normalexpanded{\defineoverlay[\currentlayer][\noexpand\composedlayer{\currentlayer}]}%
+\to \everydefinelayer
+
+\def\layers_preset_box#1%
+  {\ifcsname\??layerbox#1\endcsname
+     \resetlayer[#1]%
+   \else
+     \expandafter\newbox\csname\??layerbox#1\endcsname
+   \fi}
+
+%D \macros
+%D  {resetlayer}
+%D
+%D This macro hardly needs an explanation (but is seldom
+%D needed anyway).
+
+\def\layers_reset_box#1%
+  {\ifcsname\??layerbox#1\endcsname
+     \global\setbox\csname\??layerbox#1\endcsname\emptybox
+   \fi}
+
+\def\resetlayer[#1]%
+  {\layers_reset_box{#1}%
+   \layers_reset_box{\v!left #1}%
+   \layers_reset_box{\v!right#1}%
+   \layers_reset_box{#1:\realfolio}}
 
 %D \macros
 %D   {setlayer}
@@ -122,178 +195,174 @@
 %D \setlayer [identifier] [optional parameters] {data}
 %D \stoptyping
 
-\newcount\currentlayerdata
-
-\let\currentlayerwidth \!!zeropoint
-\let\currentlayerheight\!!zeropoint
-
 \def\setcurrentlayerdimensions
-  {\dodoubleempty\dosetcurrentlayerdimensions}
+  {\dodoubleempty\layers_set_current_dimensions}
 
-\def\dosetcurrentlayerdimensions[#1][#2]% name left|right
+\def\layers_set_current_dimensions[#1][#2]% name left|right
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
    \edef\currentlayerheight{\thelayerheight{#2#1}}}
 
-\def\thelayerwidth #1{\the\wd\executeifdefined{\@@layerbox#1}\emptybox}
-\def\thelayerheight#1{\the\ht\executeifdefined{\@@layerbox#1}\emptybox}
+% \def\thelayerwidth #1{\the\wd\executeifdefined{\??layerbox#1}\emptybox}
+% \def\thelayerheight#1{\the\ht\executeifdefined{\??layerbox#1}\emptybox}
 
-\def\setlayer
-  {\dotripleempty\dosetlayer}
+\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\csname\??layerbox#1\endcsname\else\zeropoint\fi}
+\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\csname\??layerbox#1\endcsname\else\zeropoint\fi}
 
-\def\dosetlayer[#1][#2][#3]% #4 == box do \fi is ok
-  {\doifelsevalue{\??ll#1\c!state}\v!stop
-     {\dowithnextboxcs\donothing\hbox}
-     {\ifthirdargument
-        \dodosetlayer[#1][#2][#3]%
-      \else
-        \doifassignmentelse{#2}
-          {\dodosetlayer[#1][][#2]}%
-          {\dodosetlayer[#1][#2][]}%
-      \fi}}
+\unexpanded\def\setlayer
+  {\dotripleempty\layers_set}
 
-\def\dodosetlayer[#1][#2][#3]% #2 = links/rechts
+\def\layers_set[#1][#2][#3]% #4 == box do \fi is ok
   {\bgroup
-   \recalculatebackgrounds % brrr
-   \global\advance\currentlayerdata\plusone
+   \edef\currentlayer{#1}%
+   \edef\p_layers_state{\layerparameter{#1}\c!state}
+   \ifx\p_layers_state\v!stop
+     \dowithnextboxcs\egroup\hbox
+   \else\ifthirdargument
+     \layers_set_indeed[#1][#2][#3]%
+   \else
+     \doifassignmentelse{#2}
+       {\layers_set_indeed[#1][][#2]}%
+       {\layers_set_indeed[#1][#2][]}%
+   \fi\fi}
+
+\def\layers_set_indeed[#1][#2][#3]% #2 = links/rechts
+  {\page_backgrounds_recalculate % brrr
+   \global\advance\c_layers_current_data\plusone
    \forgetall
    \dontcomplain
-   \doifvalue{\??ll#1\c!option}\v!test\tracelayerstrue
-   \iftracelayers\traceboxplacementtrue\fi
-   \dowithnextbox{\dodosetlayerindeed{#1}{#2}{#3}\egroup}\hbox}
+   \edef\p_layers_option{\layerparameter\c!option}%
+   \ifx\p_layers_option\v!test
+     \traceboxplacementtrue
+   \fi
+   \edef\m_layers_target{#2}%
+   \dowithnextbox{\layers_set_finish{#3}}\hbox}
 
-\def\dodosetlayerindeed#1#2#3% #2 = links/rechts
-  {\ifcsname\@@layerbox#1\endcsname % nb: odd/even discard, left/right not
-     \edef\@@layerloc{#2}%
-     \ifx\@@layerloc\v!even
+\def\layers_set_finish#1%
+  {\ifcsname\??layerbox\currentlayer\endcsname % can move up
+     \ifx\m_layers_target\v!even
        \ifodd\realpageno
-       %  discard nextbox
+         % discard nextbox
        \else
-         \dododosetlayer[#1][\v!left][#3]%
+         \let\m_layers_target\v!left
+         \layers_set_content{#1}%
        \fi
-     \else\ifx\@@layerloc\v!odd
+     \else\ifx\m_layers_target\v!odd
        \ifodd\realpageno
-         \dododosetlayer[#1][\v!right][#3]%
-      %\else
-       %  discard nextbox
+         \let\m_layers_target\v!right
+         \layers_set_content{#1}%
+       \else
+         % discard nextbox
        \fi
      \else
-       \dododosetlayer[#1][#2][#3]%
+       \layers_set_content{#1}%
      \fi\fi
    \else
-     \writestatus{layer}{unknown layer #1}%
-   \fi}
-
-\newbox\layerbox
-
-\newdimen\@@layerxsiz
-\newdimen\@@layerysiz
-\newdimen\@@layerxoff
-\newdimen\@@layeryoff
-\newdimen\@@layerxpos
-\newdimen\@@layerypos
-
-\let\lastlayerxpos\!!zeropoint
-\let\lastlayerypos\!!zeropoint
-\let\lastlayerwd  \!!zeropoint
-\let\lastlayerht  \!!zeropoint
-\let\lastlayerdp  \!!zeropoint
+     \writestatus{layer}{unknown layer \currentlayer}%
+   \fi
+   \egroup}
 
 % todo left/right
 
-\def\setlastlayerpos#1%
-  {\edef\layerpage{\MPp{lyr:\the\currentlayerdata}}%
-   \xdef\lastlayerxpos{\the\dimexpr-\MPx{lyr:#1:\layerpage}+\MPx{lyr:\the\currentlayerdata}\relax}%
-   \xdef\lastlayerypos{\the\dimexpr \MPy{lyr:#1:\layerpage}-\MPy{lyr:\the\currentlayerdata}\relax}}
+\def\layers_set_last_position_yes
+  {\edef\m_layers_page{\MPp{\??layerposition\the\c_layers_current_data}}%
+   \xdef\lastlayerxpos{\the\dimexpr-\MPx{\??layerposition\m_layers_target\currentlayer:\m_layers_page}+\MPx{\??layerposition\the\c_layers_current_data}\relax}%
+   \xdef\lastlayerypos{\the\dimexpr \MPy{\??layerposition\m_layers_target\currentlayer:\m_layers_page}-\MPy{\??layerposition\the\c_layers_current_data}\relax}%}
+   \d_layers_x_position\lastlayerxpos
+   \d_layers_y_position\lastlayerypos
+   \begingroup
+     \edef\currentlayer{\currentlayer\m_layers_page}%
+     \global\letlayerparameter\c!position\v!yes
+   \endgroup
+   \global\letlayerparameter\c!state\v!start % needed ?
+   \setbox\b_layers\vbox to \d_layers_y_size{\hbox to \d_layers_x_size{\xypos{\??layerposition\the\c_layers_current_data}\hss}\vss}}
+
+\def\layers_set_last_position_nop
+  {\setbox\b_layers\emptybox
+   \globallet\lastlayerxpos\!!zeropoint
+   \globallet\lastlayerypos\!!zeropoint
+   \doifinset\v!bottom\p_layers_corner\layers_set_bottom_positions
+   \doifinset\v!right \p_layers_corner\layers_set_right_positions
+   \doifinset\v!middle\p_layers_corner\layers_set_middle_positions
+   \edef\m_layers_page{\layerparameter\c!page}}
 
 \unexpanded\def\definelayerpreset
- {\dodoubleargument\dodefinelayerpreset}
+  {\dodoubleargument\layers_define_preset}
 
-% \def\dodefinelayerpreset[#1][#2]%
-%   {\setvalue{\??ll\??ll#1}{\dopresetlayer{#2}}}
-%
-% more fun: \definelayerpreset[whatever][lefttop]
-
-\def\dodefinelayerpreset[#1][#2]%
+\def\layers_define_preset[#1][#2]%
   {\doifassignmentelse{#2}
-     {\setvalue{\??ll\??ll#1}{\dopresetlayer{#2}}}
-     {\setvalue{\??ll\??ll#1}{\csname\??ll\??ll#2\endcsname}}}
+     {\setvalue{\??layerpreset#1}{\setupcurrentlayer[#2]}}
+     {\setvalue{\??layerpreset#1}{\csname\??layerpreset#2\endcsname}}}
 
-\def\dopresetlayer#1#2#3% #1=list #2=tag #3=list
-  {\getparameters[\??ll#2][#1,#3]}
-
-\letempty\currentlayer
-
-\def\layerparameter#1{\csname\??ll\currentlayer#1\endcsname}
-
-\newdimen\layerwidth
-\newdimen\layerheight
-
-\def\dododosetlayer[#1][#2][#3]% will be sped up
-  {% we use the global width, never change this
-   \def\currentlayer{#1}%
-   \@@layerxsiz\layerparameter\c!width
-   \@@layerysiz\layerparameter\c!height
-   \layerwidth \@@layerxsiz
-   \layerheight\@@layerysiz
-   % preroll
-   \getparameters[\??ll\currentlayer][#3]%
+\def\layers_set_content#1%
+  {\layerwidth \layerparameter\c!width  % global (local later)
+   \layerheight\layerparameter\c!height % global (local later)
+   \d_layers_x_size\layerwidth
+   \d_layers_y_size\layerheight
    %
-   % \executeifdefined{\??ll\??ll\layerparameter\c!preset}\gobbletwoarguments\currentlayer{#3}%
+   \setupcurrentlayer[#1]% preroll
    %
-   \edef\@@currentlayerpreset{\layerparameter\c!preset}%
-   \ifcsname\??ll\??ll\@@currentlayerpreset\endcsname\csname\??ll\??ll\@@currentlayerpreset\endcsname\currentlayer{#3}\fi
+   \edef\p_layers_preset   {\layerparameter\c!preset  }%
    %
-   \doif{\layerparameter\c!position}\v!overlay  % slow, use \dosetvalue instead
-     {\getparameters[\??ll\currentlayer][\c!width=\zeropoint,\c!height=\zeropoint,\c!position=\v!yes]}%
-   \doifsomething{\layerparameter\c!rotation}% todo: use direct lowlevel call
-     {\setbox\nextbox\hbox{\rotate[\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]{\flushnextbox}}}%
-   % no, not local
-   % \@@layerxsiz\layerparameter\c!width
-   % \@@layerysiz\layerparameter\c!height
-   % never change that
-   \@@layerxpos\layerparameter\c!x
-   \@@layerypos\layerparameter\c!y
-   \doifelse{\layerparameter\c!hoffset}\v!max{\@@layerxoff\@@layerxsiz}{\@@layerxoff\layerparameter\c!hoffset}%
-   \doifelse{\layerparameter\c!voffset}\v!max{\@@layeryoff\@@layerysiz}{\@@layeryoff\layerparameter\c!voffset}%
-   % dx/dy are internal context ones and can be used in preset
-   \advance\@@layerxoff\dimexpr\layerparameter\c!offset+\layerparameter\c!dx\relax
-   \advance\@@layeryoff\dimexpr\layerparameter\c!offset+\layerparameter\c!dy\relax
-   \@@layerxpos\layerparameter\c!sx\@@layerxpos
-   \@@layerypos\layerparameter\c!sy\@@layerypos
-   \@@layerxoff\layerparameter\c!sx\@@layerxoff
-   \@@layeryoff\layerparameter\c!sy\@@layeryoff
-   \edef\@@currentlayerposition{\layerparameter\c!position}%
-   \ifx\@@currentlayerposition\v!yes   % combine ^
-     \setlastlayerpos{#2\currentlayer}% sets \layerpage; todo l/r %%%%%%%%%%%%
-     \@@layerxpos\lastlayerxpos
-     \@@layerypos\lastlayerypos
-     \letgvalue{\??ll\currentlayer\layerpage\c!position}\v!yes
-     \letgvalue{\??ll\currentlayer\c!state}\v!start % needed ?
-     \setbox\layerbox\vbox to \@@layerysiz{\hbox to \@@layerxsiz{\xypos{lyr:\the\currentlayerdata}\hss}\vss}%
-   \else
-     \setbox\layerbox\emptybox
-     \globallet\lastlayerxpos\!!zeropoint
-     \globallet\lastlayerypos\!!zeropoint
-     \normalexpanded{\doifinset{\v!bottom}{\layerparameter\c!corner}}\dosetlayerbottompositions
-     \normalexpanded{\doifinset{\v!right }{\layerparameter\c!corner}}\dosetlayerrightpositions
-     \normalexpanded{\doifinset{\v!middle}{\layerparameter\c!corner}}\dosetlayermiddlepositions
-     \edef\layerpage{\layerparameter\c!page}%
+   \ifcsname\??layerpreset\p_layers_preset\endcsname
+     \csname\??layerpreset\p_layers_preset\endcsname
+     \setupcurrentlayer[#1]% postroll
    \fi
-   \ifx\layerpage\empty \else % is expanded
-     \edef\layerpage{:\layerpage}%
-     \ifcsname\@@layerbox#2\currentlayer\layerpage\endcsname \else
-       \expandafter\newbox\csname\@@layerbox#2\currentlayer\layerpage\endcsname
+   %
+   \edef\p_layers_rotation {\layerparameter\c!rotation }%
+   \edef\p_layers_position {\layerparameter\c!position }%
+   \edef\p_layers_hoffset  {\layerparameter\c!hoffset  }%
+   \edef\p_layers_voffset  {\layerparameter\c!voffset  }%
+   \edef\p_layers_offset   {\layerparameter\c!offset   }%
+   \edef\p_layers_dx       {\layerparameter\c!dx       }%
+   \edef\p_layers_dy       {\layerparameter\c!dy       }%
+   \edef\p_layers_sx       {\layerparameter\c!sx       }%
+   \edef\p_layers_sy       {\layerparameter\c!sy       }%
+   \edef\p_layers_x        {\layerparameter\c!x        }%
+   \edef\p_layers_y        {\layerparameter\c!y        }%
+   \edef\p_layers_corner   {\layerparameter\c!corner   }%
+   \edef\p_layers_location {\layerparameter\c!location }%
+   \edef\p_layers_line     {\layerparameter\c!line     }%
+   \edef\p_layers_column   {\layerparameter\c!column   }%
+   \edef\p_layers_width    {\layerparameter\c!width    }% local ones
+   \edef\p_layers_height   {\layerparameter\c!height   }% local ones
+   \edef\p_layers_direction{\layerparameter\c!direction}%
+   %
+   \ifx\p_layers_position\v!overlay
+     \let\p_layers_width   \zeropoint
+     \let\p_layers_height  \zeropoint
+     \let\p_layers_position\v!yes
+   \fi
+   \ifx\p_layers_rotation\empty \else
+     % use direct call
+     \setbox\nextbox\hbox{\rotate[\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]{\box\nextbox}}%
+   \fi
+   \d_layers_x_offset\p_layers_sx\dimexpr
+     \ifx\p_layers_hoffset\v!max\d_layers_x_size\else\p_layers_hoffset\fi+\p_layers_offset+\p_layers_dx
+   \relax
+   \d_layers_y_offset\p_layers_sy\dimexpr
+     \ifx\p_layers_voffset\v!max\d_layers_y_size\else\p_layers_voffset\fi+\p_layers_offset+\p_layers_dy
+   \relax
+   \d_layers_x_position\p_layers_sx\dimexpr\p_layers_x\relax
+   \d_layers_y_position\p_layers_sy\dimexpr\p_layers_y\relax
+   \ifx\p_layers_position\v!yes
+     \layers_set_last_position_yes
+   \else
+     \layers_set_last_position_nop
+   \fi
+   %
+   \ifx\m_layers_page\empty \else % is expanded
+     \edef\m_layers_page{:\m_layers_page}%
+     \ifcsname\??layerbox\m_layers_target\currentlayer\m_layers_page\endcsname \else
+       \expandafter\newbox\csname\??layerbox\m_layers_target\currentlayer\m_layers_page\endcsname
      \fi
    \fi
-   \chardef\layerpagebox\csname\@@layerbox#2\currentlayer\layerpage\endcsname
+   \chardef\layerpagebox\csname\??layerbox\m_layers_target\currentlayer\m_layers_page\endcsname
    \ifvoid\layerpagebox
      \gsetboxllx\layerpagebox\zeropoint
      \gsetboxlly\layerpagebox\zeropoint
    \fi
    \global\setbox\layerpagebox\vbox %to \layerparameter\c!height % new, otherwise no negative y possible
      {\offinterlineskip
-     %postpone, to after nextboxwd correction % \hsize\layerparameter\c!width % new, keep box small
-     %\ifvoid\csname\@@layerbox\currentlayer\layerpage\endcsname\else % why not #2#1
       \ifvoid\layerpagebox
         \let\lastlayerwidth \zeropoint
         \let\lastlayerheight\zeropoint
@@ -303,87 +372,89 @@
         \ht\layerpagebox\zeropoint
         \dp\layerpagebox\zeropoint
         \wd\layerpagebox\zeropoint
-        \doifnot{\layerparameter\c!direction}\v!reverse{\box\layerpagebox}%
+        \ifx\p_layers_direction\v!reverse\else
+          \box\layerpagebox
+        \fi
       \fi
       % don't move
-      \xdef\lastlayerwd{\the\nextboxwd}%
-      \xdef\lastlayerht{\the\nextboxht}% % not entirely ok when grid !
-      \xdef\lastlayerdp{\the\nextboxdp}% % not entirely ok when grid !
+      \xdef\lastlayerwd{\the\wd\nextbox}%
+      \xdef\lastlayerht{\the\ht\nextbox}% % not entirely ok when grid !
+      \xdef\lastlayerdp{\the\dp\nextbox}% % not entirely ok when grid !
       % this code
-      \doifelse{\layerparameter\c!location}\v!grid\donetrue\donefalse
-      \ifdone
-        \nextboxht\strutheight
-        \nextboxdp\strutdepth
+      \ifx\p_layers_location\v!grid
+        \ht\nextbox\strutheight
+        \dp\nextbox\strutdepth
       \else
-        \setbox\nextbox\hbox{\alignedbox[\layerparameter\c!location]\vbox{\flushnextbox}}%
+        \setbox\nextbox\hbox{\alignedbox[\p_layers_location]\vbox{\box\nextbox}}%
       \fi
-      \ifnum\layerparameter\c!line=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerypos\dimexpr\layerparameter\c!line\lineheight+\topskip-\lineheight-\nextboxht\relax
+      \ifnum\p_layers_line=\zerocount\else % no \ifcase, can be negative
+        \advance\d_layers_y_position\dimexpr\p_layers_line\lineheight+\topskip-\lineheight-\ht\nextbox\relax
       \fi
-      \ifnum\layerparameter\c!column=\zerocount\else % no \ifcase, can be negative
-        \advance\@@layerxpos\layoutcolumnoffset{\layerparameter\c!column}%
+      \ifnum\p_layers_column=\zerocount\else % no \ifcase, can be negative
+        \advance\d_layers_x_position\layoutcolumnoffset\p_layers_column\relax
       \fi
-      \ifdone
-        \setbox\nextbox\hbox{\alignedbox[rb]\vbox{\flushnextbox}}%
+      \ifx\p_layers_location\v!grid
+        \setbox\nextbox\hbox{\alignedbox[rb]\vbox{\box\nextbox}}%
       \fi
       % ll registration
-      \scratchdimen\@@layerxpos
-      \advance\scratchdimen\@@layerxoff
+      \scratchdimen\dimexpr\d_layers_x_position+\d_layers_x_offset\relax
       \ifdim\scratchdimen<\getboxllx\layerpagebox
         \gsetboxllx\layerpagebox\scratchdimen
       \fi
-      \advance\scratchdimen\nextboxwd
-      \nextboxwd\ifdim\scratchdimen>\lastlayerwidth \scratchdimen \else \lastlayerwidth \fi
-      \scratchdimen\dimexpr\@@layerypos+\@@layeryoff\relax
+      \advance\scratchdimen\wd\nextbox
+      \wd\nextbox\ifdim\scratchdimen>\lastlayerwidth \scratchdimen \else \lastlayerwidth \fi
+      \scratchdimen\dimexpr\d_layers_y_position+\d_layers_y_offset\relax
       \ifdim\scratchdimen<\getboxlly\layerpagebox
         \gsetboxlly\layerpagebox\scratchdimen
       \fi
       % ll compensation
-      \advance\scratchdimen\dimexpr\nextboxht+\nextboxdp\relax
-      \nextboxht\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
-      \nextboxdp\zeropoint
+      \advance\scratchdimen\dimexpr\ht\nextbox+\dp\nextbox\relax
+      \ht\nextbox\ifdim\scratchdimen>\lastlayerheight \scratchdimen \else \lastlayerheight \fi
+      \dp\nextbox\zeropoint
       % placement
-      \hsize\layerparameter\c!width % new, keep box small
-      \vbox to \layerparameter\c!height \bgroup
+      \hsize\p_layers_width
+      \vbox to \p_layers_height \bgroup
         \smashbox\nextbox
-        \vskip\dimexpr\@@layerypos+\@@layeryoff\relax
-        \hskip\dimexpr\@@layerxpos+\@@layerxoff\relax
-        \flushnextbox
+        \vskip\dimexpr\d_layers_y_position+\d_layers_y_offset\relax
+        \hskip\dimexpr\d_layers_x_position+\d_layers_x_offset\relax
+        \box\nextbox
         \ifvoid\layerpagebox
           % already flushed
         \else
           % the reverse case % check !
-          \vskip-\dimexpr\@@layerypos+\@@layeryoff\relax
+          \vskip-\dimexpr\d_layers_y_position+\d_layers_y_offset\relax
           \box\layerpagebox
         \fi
       \egroup}%
    % when position is true, the layerbox holds the compensation and needs
    % to be placed; never change this !
-   \ifvoid\layerbox\else\box\layerbox\fi}
-
-\def\dosetlayerbottompositions
-  {\ifnum\layerparameter\c!line=\zerocount\else % can be < 0
-     \setevalue{\??ll\currentlayer\c!line}{\the\numexpr-\layerparameter\c!line+\layoutlines+\plusone\relax}%
-   \fi
-   \ifdim\@@layerysiz>\zeropoint
-     \advance\@@layerypos-\@@layerysiz
-     \@@layerypos-\@@layerypos
-     \@@layeryoff-\@@layeryoff
+   \ifvoid\b_layers \else
+     \box\b_layers
    \fi}
 
-\def\dosetlayerrightpositions
-  {\ifnum\layerparameter\c!column=\zerocount\else % can be < 0
-     \setevalue{\??ll\currentlayer\c!column}{\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}%
+\def\layers_set_bottom_positions
+  {\ifnum\p_layers_line=\zerocount\else % can be < 0
+     \edef\p_layers_line{\the\numexpr-\p_layers_line+\layoutlines+\plusone\relax}% use counter instead ?
    \fi
-   \ifdim\@@layerxsiz>\zeropoint
-     \advance\@@layerxpos-\@@layerxsiz
-     \@@layerxpos-\@@layerxpos
-     \@@layerxoff-\@@layerxoff
+   \ifdim\d_layers_y_size>\zeropoint
+     \advance\d_layers_y_position-\d_layers_y_size
+     \d_layers_y_position-\d_layers_y_position
+     \d_layers_y_offset-\d_layers_y_offset
    \fi}
 
-\def\dosetlayermiddlepositions
-  {\ifdim\@@layerxsiz>\zeropoint \advance\@@layerxpos.5\@@layerxsiz \fi
-   \ifdim\@@layerysiz>\zeropoint \advance\@@layerypos.5\@@layerysiz \fi}
+\def\layers_set_right_positions
+  {\ifnum\p_layers_column=\zerocount\else % can be < 0
+     \edef\p_layers_column{\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}% use counter instead ?
+   \fi
+   \ifdim\d_layers_x_size>\zeropoint
+     \advance\d_layers_x_position-\d_layers_x_size
+     \d_layers_x_position-\d_layers_x_position
+     \d_layers_x_offset-\d_layers_x_offset
+   \fi}
+
+\def\layers_set_middle_positions
+  {\ifdim\d_layers_x_size>\zeropoint \advance\d_layers_x_position.5\d_layers_x_size \fi
+   \ifdim\d_layers_y_size>\zeropoint \advance\d_layers_y_position.5\d_layers_y_size \fi}
 
 %D Given the task to be accomplished, the previous macro is
 %D not even that complicated. It mainly comes down to skipping
@@ -395,14 +466,14 @@
 %D  {doifelselayerdata}
 
 \def\doifelselayerdata#1%
-  {\ifcsname\@@layerbox#1\endcsname
-     \ifvoid\csname\@@layerbox#1\endcsname
-       \@EAEAEA\secondoftwoarguments
+  {\ifcsname\??layerbox#1\endcsname
+     \ifvoid\csname\??layerbox#1\endcsname
+       \doubleexpandafter\secondoftwoarguments
      \else
-       \@EAEAEA\firstoftwoarguments
+       \doubleexpandafter\firstoftwoarguments
      \fi
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 %D \macros
@@ -415,114 +486,121 @@
 
 % todo: setups before flush, handy hook
 
-\unexpanded\def\flushlayer[#1]% quite core, so optimized
+\unexpanded\def\flushlayer[#1]% quite core, so optimized (todo: check for void)
   {\begingroup
    \forgetall
    \edef\currentlayer{#1}%
-   \edef\@@currentlayerstate{\csname\??ll\currentlayer\c!state\endcsname}%
-   \ifx\@@currentlayerstate\v!stop
+   \edef\p_layers_state{\layerparameter\c!state}%
+   \ifx\p_layers_state\v!stop
      % nothing
-   \else\ifx\@@currentlayerstate\v!next
-     \global\expandafter\let\csname\??ll\currentlayer\c!state\endcsname\v!start  % dangerous, stack-built-up
-   \else\ifx\@@currentlayerstate\v!continue
-     \global\expandafter\let\csname\??ll\currentlayer\c!state\endcsname\v!repeat % dangerous, stack-built-up
+   \else\ifx\p_layers_state\v!next
+     \global\letlayerparameter\c!state\v!start  % dangerous, stack-built-up
+   \else\ifx\p_layers_state\v!continue
+     \global\letlayerparameter\c!state\v!repeat % dangerous, stack-built-up
    \else
-     \edef\@@currentlayerdoublesided{\csname\??ll\currentlayer\c!doublesided\endcsname}%
-     \ifx\@@currentlayerdoublesided\v!yes
-       \ifcsname\@@layerbox#1\endcsname
+     \edef\p_layers_doublesided{\layerparameter\c!doublesided}%
+     \ifx\p_layers_doublesided\v!yes
+       \ifcsname\??layerbox#1\endcsname
          % we can make a dedicated one for this
-         \doifbothsidesoverruled{\dodoflushlayerB\v!left}{\dodoflushlayerB\v!right}{\dodoflushlayerB\v!left}%
+         \doifbothsidesoverruled
+           {\layers_flush_double\v!left }%
+           {\layers_flush_double\v!right}%
+           {\layers_flush_double\v!left }%
        \else
-         \dodoflushlayerA
+         \layers_flush_single
        \fi
      \else
-        \dodoflushlayerA
+       \layers_flush_single
      \fi
    \fi\fi\fi
    \endgroup}
 
 %  \ifcase#1\else\writestatus{layer}{unknown layer #3}\fi
 
-\def\dodoflushlayerA
+\def\layers_flush_single
   {\startoverlay
-     {\ifcsname\@@layerbox\currentlayer           \endcsname\dodoflushlayer\plusone   \currentlayer            \fi}%
-     {\ifcsname\@@layerbox\currentlayer:\realfolio\endcsname\dodoflushlayer\zerocount{\currentlayer:\realfolio}\fi}%
+     {\ifcsname\??layerbox  \currentlayer           \endcsname\layers_flush_indeed\plusone   \currentlayer            \fi}%
+     {\ifcsname\??layerbox  \currentlayer:\realfolio\endcsname\layers_flush_indeed\zerocount{\currentlayer:\realfolio}\fi}%
    \stopoverlay}
 
-\def\dodoflushlayerB#1%
+\def\layers_flush_double#1%
   {\startoverlay
-     {\ifcsname\@@layerbox  \currentlayer           \endcsname\dodoflushlayer\plusone     \currentlayer            \fi}%
-     {\ifcsname\@@layerbox  \currentlayer:\realfolio\endcsname\dodoflushlayer\zerocount  {\currentlayer:\realfolio}\fi}%
-     {\ifcsname\@@layerbox#1\currentlayer           \endcsname\dodoflushlayer\plusone  {#1\currentlayer           }\fi}%
-     {\ifcsname\@@layerbox#1\currentlayer:\realfolio\endcsname\dodoflushlayer\zerocount{#1\currentlayer:\realfolio}\fi}%
+     {\ifcsname\??layerbox  \currentlayer           \endcsname\layers_flush_indeed\plusone     \currentlayer            \fi}%
+     {\ifcsname\??layerbox  \currentlayer:\realfolio\endcsname\layers_flush_indeed\zerocount  {\currentlayer:\realfolio}\fi}%
+     {\ifcsname\??layerbox#1\currentlayer           \endcsname\layers_flush_indeed\plusone  {#1\currentlayer           }\fi}%
+     {\ifcsname\??layerbox#1\currentlayer:\realfolio\endcsname\layers_flush_indeed\zerocount{#1\currentlayer:\realfolio}\fi}%
    \stopoverlay}
 
-\def\dodoflushlayer#1#2% quite core, so optimized
+\def\layers_flush_indeed#1#2% quite core, so optimized
   {\begingroup % already grouped
    \offinterlineskip
-   \edef\@@currentlayermethod{\csname\??ll\currentlayer\c!method\endcsname}%
-   \edef\@@currentlayeroption{\csname\??ll\currentlayer\c!option\endcsname}%
-   % needed because we need to handle method but we should find a way to
-   % speed this up
-   \edef\@@currentlayerpreset{\csname\??ll\currentlayer\c!preset\endcsname}%
-   \ifcsname\??ll\??ll\@@currentlayerpreset\endcsname\csname\??ll\??ll\@@currentlayerpreset\endcsname\currentlayer{}\fi
-   %
-   \ifx\@@currentlayeroption\v!test
-     \tracelayerstrue
+   \edef\p_layers_preset{\layerparameter\c!preset}%
+   \ifcsname\??layerpreset\p_layers_preset\endcsname
+     \csname\??layerpreset\p_layers_preset\endcsname
    \fi
-   \iftracelayers
+   \edef\p_layers_method{\layerparameter\c!method}%
+   \edef\p_layers_option{\layerparameter\c!option}%
+   \ifx\p_layers_option\v!test
      \traceboxplacementtrue
    \fi
-   \!!doneafalse
-   \!!donebfalse
-   \ifx\@@currentlayermethod\v!overlay\!!doneatrue\fi
-   \ifx\@@currentlayermethod\v!fit    \!!donebtrue\fi
-   \!!donectrue
-   \ifcase#1\else
-     \edef\@@currentlayerposition{\csname\??ll\currentlayer\c!position\endcsname}%
-     \ifx\@@currentlayerposition\v!yes \else
-       \edef\@@currentlayerrepeat{\csname\??ll\currentlayer\c!repeat\endcsname}%
-     % \edef\@@currentlayerstate {\csname\??ll\currentlayer\c!state\endcsname}% actually this is already set
-       \ifx\@@currentlayerrepeat\v!yes
-         \!!donecfalse
-       \else\ifx\@@currentlayerstate\v!repeat
-         \!!donecfalse
+   \ifcase#1\relax
+     \setfalse\c_layers_repeated
+   \else
+     \edef\p_layers_position{\layerparameter\c!position}%
+     \ifx\p_layers_position\v!yes
+       \setfalse\c_layers_repeated
+     \else
+       \edef\p_layers_repeat{\layerparameter\c!repeat}%
+       \ifx\p_layers_repeat\v!yes
+         \settrue\c_layers_repeated
+       \else\ifx\p_layers_state\v!repeat
+         \settrue\c_layers_repeated
+       \else
+         \setfalse\c_layers_repeated
        \fi\fi
      \fi
    \fi
-   \chardef\layerbox\csname\@@layerbox#2\endcsname % \@@layerbox\currentlayer
+   \chardef\b_layers\csname\??layerbox#2\endcsname % trick
    % we need to copy in order to retain the negative offsets for a next
    % stage of additions, i.e. llx/lly accumulate in repeat mode and the
    % compensation may differ each flush depending on added content
    \setbox\nextbox
-     \if!!doneb
-       \therepositionededlayerbox
+     \ifx\p_layers_method\v!fit
+       \layers_positioned_box_yes
      \else
-       \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
+       \layers_positioned_box_nop
      \fi
    % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
-   \doifoverlayelse{#2}{\setlayoutcomponentattribute{\v!layer:#2}}\resetlayoutcomponentattribute
-   \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi \layoutcomponentboxattribute
-     {\hbox \if!!donea to \overlaywidth \fi
-        {\edef\@@currentlayerpageposition{\csname\??ll#2\realfolio\c!position\endcsname}%
-         \ifx\@@currentlayerpageposition\v!yes\xypos{lyr:#2:\realfolio}\fi
+   \doifoverlayelse{#2}%
+     {\setlayoutcomponentattribute{\v!layer:#2}}%
+     \resetlayoutcomponentattribute
+   \ifx\p_layers_option\v!test \ruledvbox \else \vbox \fi \ifx\p_layers_method\v!overlay to \overlayheight \fi \layoutcomponentboxattribute
+     {\hbox \ifx\p_layers_method\v!overlay to \overlaywidth \fi
+        {\edef\currentlayer{#2\realfolio}% local
+         \edef\p_layers_position{\layerparameter\c!position}% local
+         \ifx\p_layers_position\v!yes
+           \xypos{\??layerposition#2:\realfolio}%
+         \fi
          \box\nextbox
          \hss}%
       \vss}%
-   \if!!donec
-     \gsetboxllx\layerbox\zeropoint
-     \gsetboxlly\layerbox\zeropoint
+   \ifconditional\c_layers_repeated\else
+     \gsetboxllx\b_layers\zeropoint
+     \gsetboxlly\b_layers\zeropoint
    \fi
    \endgroup}
 
-\def\therepositionededlayerbox % assumes that \if!!donec is set (todo: use dedicated flags)
+\def\layers_positioned_box_yes
   {\vbox
-     {\vskip-\getboxlly\layerbox
-      \hskip-\getboxllx\layerbox
-      \hsize-\dimexpr\getboxllx\layerbox-\wd\layerbox\relax
-      \if!!donec\box\else\copy\fi\layerbox}}
+     {\vskip-\getboxlly\b_layers
+      \hskip-\getboxllx\b_layers
+      \hsize-\dimexpr\getboxllx\b_layers-\wd\b_layers\relax
+      \ifconditional\c_layers_repeated\copy\else\box\fi\b_layers}}
 
-% \definelayer[test][method=fit] \setupcolors[state=start] \tracelayerstrue
+\def\layers_positioned_box_nop
+  {\ifconditional\c_layers_repeated\copy\else\box\fi\b_layers}
+
+% \definelayer[test][method=fit] \setupcolors[state=start,option=test]
 %
 % \framed[framecolor=red,offset=overlay]{\setlayer[test]{aa}\setlayer[test][x=10pt]{g}\flushlayer[test]}
 % \framed[framecolor=red,offset=overlay]{\setlayer[test]{aa}\setlayer[test][x=-10pt]{bb}\flushlayer[test]}
@@ -536,11 +614,9 @@
 %D when we use it as parameter. This name also suits better
 %D to other layering commands.
 
-\def\composedlayer#1{\flushlayer[#1]}
+\unexpanded\def\composedlayer#1{\flushlayer[#1]}
 
-\let\placelayer\flushlayer
-
-\def\tightlayer[#1]%
+\unexpanded\def\tightlayer[#1]%
   {\hbox
      {\def\currentlayer{#1}% todo: left/right
       \setbox\nextbox\emptybox       % hoogte/breedte are \wd\nextbox/\ht\nextbox
@@ -548,23 +624,7 @@
       \vsize\layerparameter\c!height % \overlaywheight = \vsize
       \composedlayer{#1}}}
 
-%D \macros
-%D  {resetlayer}
-%D
-%D This macro hardly needs an explanation (and is seldom
-%D needed as well).
-
-\def\doresetlayer#1%
-  {\ifcsname\@@layerbox#1\endcsname
-     \global\setbox\csname\@@layerbox#1\endcsname\emptybox
-   \fi}
-
-\def\resetlayer[#1]%
-  {\doresetlayer{#1}%
-   \doifvalue{\??ll#1\c!doublesided}\v!yes % kind of redundant test
-     {\doresetlayer{\v!left #1}%
-      \doresetlayer{\v!right#1}}%
-   \doresetlayer{#1:\realfolio}}
+\let\placelayer\flushlayer
 
 %D \macros
 %D  {setMPlayer}
@@ -597,31 +657,28 @@
 %D   {\useMPgraphic{oeps}}
 %D \stoptyping
 
-\def\setMPlayer
-  {\dotripleempty\dosetMPlayer}
+\unexpanded\def\setMPlayer
+  {\dotripleempty\layers_set_MP}
 
 \def\MPlayerwidth {\hsize}
 \def\MPlayerheight{\vsize}
 
-\def\dosetMPlayer[#1][#2][#3]%
+\def\layers_set_MP[#1][#2][#3]%
   {\edef\MPlayerwidth {\MPw{#2}}%
    \edef\MPlayerheight{\MPh{#2}}%
    \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!position=\v!no,#3]}
 
-\def\getMPlayer
-  {\dodoubleempty\dogetMPlayer}
+\unexpanded\def\getMPlayer
+  {\dodoubleempty\layers_get_MP}
 
-\def\dogetMPlayer[#1][#2]%
-  {\framed
-     [\c!background={\v!foreground,#1},
-      \c!frame=\v!off,
-      \c!offset=\v!overlay,#2]}
+\def\layers_get_MP[#1][#2]%
+  {\framed[\c!background={\v!foreground,#1},\c!frame=\v!off,\c!offset=\v!overlay,#2]} % takes argument
 
 %D Watch out, a redefinition:
 
-\ifx\settextpagecontent\undefined \writestatus\m!system{error in page-lyr.tex} \wait \fi
-
-\let\normalsettextpagecontent\settextpagecontent
+\ifdefined\settextpagecontent \else
+    \writestatus\m!system{error in page-lyr.tex} \wait
+\fi
 
 \definelayer
   [OTRTEXT]
@@ -631,9 +688,9 @@
   [\c!width=\innermakeupwidth,
    \c!height=\textheight]
 
-% will be overloaded in page-spr
+\let\normalsettextpagecontent\settextpagecontent % will be overloaded in page-spr
 
-\def\settextpagecontent#1#2#3% #2 and #3 will disappear
+\unexpanded\def\settextpagecontent#1#2#3% #2 and #3 will disappear
   {\doifelselayerdata{OTRTEXT}
      {\setbox#1\hbox to \makeupwidth
         {\startoverlay

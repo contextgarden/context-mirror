@@ -138,28 +138,19 @@
 %D know what the target file will be. In other driver
 %D modules we wil set \type {\jobsuffix} to \type {pdf}.
 
-\def\jobsuffix{pdf}
+%D Backend configuration:
 
-\ifdefined\resetsystemmode \else % can't happen
-    \let\setsystemmode  \gobbleoneargument
-    \let\resetsystemmode\gobbleoneargument
-\fi
+\installcorenamespace{backend}
 
-\def\setjobsuffix#1%
-  {\resetsystemmode\jobsuffix
+\installdirectcommandhandler \??backend {backend}
+
+\let\jobsuffix\empty
+
+\unexpanded\def\backend_set_job_suffix#1% % checking could happen in mode
+  {\ifx\jobsuffix\empty\else\resetsystemmode\jobsuffix\fi
    \edef\jobsuffix{#1}%
-   \setsystemmode\jobsuffix}
+   \ifx\jobsuffix\empty\else\setsystemmode  \jobsuffix\fi}
 
-\unexpanded\def\setupoutput[#1]{} % will be command line switch
-
-%D New:
-
-\newtoks\everysetupbackend
-
-\def\backendparameter#1{\csname\ifcsname\??bc#1\endcsname\??bc#1\else\s!empty\fi\endcsname}
-
-\def\setupbackend[#1]%
-  {\getparameters[\??bc][#1]%
-   \the\everysetupbackend}
+\backend_set_job_suffix{pdf} % default
 
 \protect \endinput

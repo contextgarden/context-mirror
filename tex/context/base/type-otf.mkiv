@@ -1742,55 +1742,45 @@
 
 \stoptypescriptcollection
 
-%D For some reason the libertine collection has not retained its
-%D original names. We force the \OPENTYPE\ variant. Once these fonts
-%D are stable we might switch to the by then hopefully cleaner internal
-%D names.
-
 \starttypescriptcollection[libertine]
 
-%     \starttypescript [serif] [libertine] [name]
-%         \setups[\s!font:\s!fallback:\s!serif]
-%         \definefontsynonym [\s!Serif]           [\s!file:fxlr.otf]  [\s!features=\s!default]
-%         \definefontsynonym [\s!SerifBold]       [\s!file:fxlb.otf]  [\s!features=\s!default]
-%         \definefontsynonym [\s!SerifItalic]     [\s!file:fxlri.otf] [\s!features=\s!default]
-%         \definefontsynonym [\s!SerifBoldItalic] [\s!file:fxlbi.otf] [\s!features=\s!default]
-%     \stoptypescript
-
     \starttypescript [serif] [libertine]
-        \definefontsynonym [Libertine-Regular]    [\s!file:fxlr]
-        \definefontsynonym [Libertine-Italic]     [\s!file:fxlri]
-        \definefontsynonym [Libertine-Bold]       [\s!file:fxlb]
-        \definefontsynonym [Libertine-BoldItalic] [\s!file:fxlbi]
-        \definefontsynonym [Libertine-SmallCaps]  [\s!file:fxlr]       [\s!features=\s!smallcaps]
+        \definefontsynonym [Libertine-Regular]     [\s!file:linlibertiner]
+        \definefontsynonym [Libertine-Italic]      [\s!file:linlibertineri]
+        \definefontsynonym [Libertine-Slanted]     [\s!file:linlibertinearl]
+        \definefontsynonym [Libertine-Bold]        [\s!file:linlibertinerb]
+        \definefontsynonym [Libertine-BoldItalic]  [\s!file:linlibertinerbi]
+        \definefontsynonym [Libertine-BoldSlanted] [\s!file:linlibertineabl]
     \stoptypescript
 
     \starttypescript [serif] [libertine] [name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [Libertine-Regular]    [\s!features=\s!default]
-        \definefontsynonym [\s!SerifItalic]     [Libertine-Italic]     [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBold]       [Libertine-Bold]       [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBoldItalic] [Libertine-BoldItalic] [\s!features=\s!default]
-        \definefontsynonym [\s!SerifCaps]       [Libertine-Regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [\s!Serif]            [Libertine-Regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]      [Libertine-Italic]      [\s!features=\s!default]
+        \definefontsynonym [\s!SerifSlanted]     [Libertine-Slanted]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]        [Libertine-Bold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic]  [Libertine-BoldItalic]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldSlanted] [Libertine-BoldSlanted] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifCaps]        [Libertine-Regular]     [\s!features=\s!smallcaps]
     \stoptypescript
 
     \starttypescript [sans] [biolinum]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [Biolinum-Regular]    [\s!file:fxbr.otf]
-        \definefontsynonym [Biolinum-Bold]       [\s!file:fxbb.otf]
-        \definefontsynonym [Biolinum-Italic]     [\s!file:fxbri.otf]
-        \definefontsynonym [Biolinum-Slanted]    [\s!file:fxbro.otf]
-        \definefontsynonym [Biolinum-BoldItalic] [\s!file:fxbbo.otf]
+        \definefontsynonym [Biolinum-Regular]     [\s!file:linbiolinumr]
+        \definefontsynonym [Biolinum-Bold]        [\s!file:linbiolinumrb]
+        \definefontsynonym [Biolinum-Italic]      [\s!file:linbiolinumri]
+        \definefontsynonym [Biolinum-Slanted]     [\s!file:linbiolinumarl]
+        \definefontsynonym [Biolinum-BoldSlanted] [\s!file:linbiolinumabl]
     \stoptypescript
 
     \starttypescript [sans] [biolinum] [name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Biolinum-Regular]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [Biolinum-Bold]       [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [Biolinum-Italic]     [\s!features=\s!default]
-        \definefontsynonym [\s!SansSlanted]    [Biolinum-Slanted]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [Biolinum-BoldItalic] [\s!features=\s!default]
-        \definefontsynonym [\s!SansCaps]       [Biolinum-Regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [\s!Sans]           [Biolinum-Regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [Biolinum-Bold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [Biolinum-Italic]      [\s!features=\s!default]
+        \definefontsynonym [\s!SansSlanted]    [Biolinum-Slanted]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [Biolinum-BoldSlanted] [\s!features=\s!default]
+        \definefontsynonym [\s!SansCaps]       [Biolinum-Regular]     [\s!features=\s!smallcaps]
     \stoptypescript
 
     \starttypescript [libertine]

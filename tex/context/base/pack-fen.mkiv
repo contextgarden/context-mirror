@@ -28,20 +28,20 @@
 \unprotect
 
 \def\installleftframerenderer#1#2%
-  {\setvalue{\??hf l\v!on#1}{\whateverleftframe{#2}}%
-   \expandafter\let\csname\??hf l\v!off#1\expandafter\endcsname\csname\??hf l\v!on#1\endcsname}
+  {\setvalue{\??framedleft\v!on#1}{\whateverleftframe{#2}}%
+   \expandafter\let\csname\??framedleft\v!off#1\expandafter\endcsname\csname\??framedleft\v!on#1\endcsname}
 
 \def\installrightframerenderer#1#2%
-  {\setvalue{\??hf r\v!on#1}{\whateverrightframe{#2}}%
-   \expandafter\let\csname\??hf r\v!off#1\expandafter\endcsname\csname\??hf r\v!on#1\endcsname}
+  {\setvalue{\??framedright\v!on#1}{\whateverrightframe{#2}}%
+   \expandafter\let\csname\??framedright\v!off#1\expandafter\endcsname\csname\??framedright\v!on#1\endcsname}
 
 \def\installtopframerenderer#1#2%
-  {\setvalue{\??hf t\v!on#1}{\whatevertopframe{#2}}%
-   \expandafter\let\csname\??hf t\v!off#1\expandafter\endcsname\csname\??hf t\v!on#1\endcsname}
+  {\setvalue{\??framedtop\v!on#1}{\whatevertopframe{#2}}%
+   \expandafter\let\csname\??framedtop\v!off#1\expandafter\endcsname\csname\??framedtop\v!on#1\endcsname}
 
 \def\installbottomframerenderer#1#2%
-  {\setvalue{\??hf b\v!on#1}{\whateverbottomframe{#2}}%
-   \expandafter\let\csname\??hf b\v!off#1\expandafter\endcsname\csname\??hf b\v!on#1\endcsname}
+  {\setvalue{\??framedbottom\v!on#1}{\whateverbottomframe{#2}}%
+   \expandafter\let\csname\??framedbottom\v!off#1\expandafter\endcsname\csname\??framedbottom\v!on#1\endcsname}
 
 \ifdefined \framed_overlay_initialize_indeed
 

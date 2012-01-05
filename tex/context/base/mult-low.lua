@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mult-low'] = {
+ctxlatecommandif not modules then modules = { } end modules ['mult-low'] = {
     version   = 1.001,
     comment   = "companion to mult-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -63,6 +63,7 @@ return {
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",
+        "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes", "doifallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
@@ -74,6 +75,10 @@ return {
         --
         "startsetups", "stopsetups",
         "startxmlsetups", "stopxmlsetups",
+        "startluasetups", "stopluasetups",
+        "starttexsetups", "stoptexsetups",
+        "startrawsetups", "stoprawsetups",
+        "startlocalsetups", "stoplocalsetups",
         "starttexdefinition", "stoptexdefinition",
         "starttexcode", "stoptexcode",
         --
@@ -170,6 +175,7 @@ return {
         "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
+        "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument",
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         --
         "nopdfcompression", "maximumpdfcompression", "normalpdfcompression",

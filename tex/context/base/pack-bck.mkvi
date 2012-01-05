@@ -52,7 +52,9 @@
 
 \unprotect
 
-\installframedcommandhandler \??ag {background} \??ag
+\installcorenamespace {background}
+
+\installframedcommandhandler \??background {background} \??background
 
 % The mode is not that public an dmostlu an initial mode:
 %
@@ -243,12 +245,11 @@
 
 \unexpanded\def\background_add_to_nextbox#color% handy helper
   {\hbox
-     {\faststartcolor[#color]%
+     {\dousecolorparameter{#color}%
       \vrule
         \!!width \nextboxwd
         \!!height\nextboxht
         \!!depth \nextboxdp
-      \faststopcolor
       \hskip-\nextboxwd
       \flushnextbox}}
 

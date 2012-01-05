@@ -316,12 +316,12 @@
        \trackingmarginnotesfalse
      \fi
    \fi
-   \recalculatebackgrounds
+   \page_backgrounds_recalculate
    \dosetpagenumberlocation
 \to \everysetuppagenumbering
 
-\ifdefined \recalculatebackgrounds \else
-    \let\recalculatebackgrounds\relax
+\ifdefined \page_backgrounds_recalculate \else
+    \let\page_backgrounds_recalculate\relax
 \fi
 
 \ifdefined \dosetpagenumberlocation \else

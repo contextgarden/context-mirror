@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Misc Commands}
 
-% todo: kleur in legenda + letter
+% needs to be redone
 
 % %D You would not expect the next macro in \CONTEXT,
 % %D wouldn't you? It's there to warn \LATEX\ users that
@@ -681,8 +681,6 @@
 \unexpanded\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
 \unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
 \unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
-
-\enableactivediscretionaries
 
 \definehspace [quotation]      [\zeropoint]
 \definehspace [interquotation] [.125em]
@@ -1971,278 +1969,7 @@
 
 \unexpanded\def\placeontopofeachother{\placerelativetoeachother\halign\hss}
 \unexpanded\def\placesidebyside      {\placerelativetoeachother\valign\vss}
-
-%D A couple of examples, demonstrating how the depth is
-%D taken care of:
-%D
-%D \startbuffer
-%D test\rotate[frame=on, rotation=0]  {gans}%
-%D test\rotate[frame=on, rotation=90] {gans}%
-%D test\rotate[frame=on, rotation=180]{gans}%
-%D test\rotate[frame=on, rotation=270]{gans}%
-%D test
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
 
-% When we rotate over arbitrary angles, we need to relocate the
-% resulting box because rotation brings that box onto the negative
-% axis. The calculations (mostly sin and cosine) need to be tuned for
-% the way a box is packages (i.e. the refence point). A typical example
-% of drawing, scribbling, and going back to the days of school math.
-%
-% We do a bit more calculations than needed, simply because that way
-% it's easier to debug the code.
-
-% We can completely do this in lua .. when 'I'm bored ...
-
-\def\dododorotatenextbox
-  {\setbox\nextbox\vbox to \@@layerysiz
-     {\vfill
-      \hbox to \@@layerxsiz
-        {\dostartrotation\@@rorotation
-           \nextboxwd\zeropoint
-           \nextboxht\zeropoint
-           \flushnextbox
-         \dostoprotation
-         \hfill}%
-      \kern\@@layerypos}%
-  \setbox\nextbox\hbox
-    {\kern\@@layerxpos
-     \kern\@@layerxoff
-     \lower\@@layeryoff\flushnextbox}}
-
-\def\dodorotatenextbox#1#2% quite some trial and error -)
-  {\dontshowcomposition
-   \dontcomplain
-   \ifnum#2=\plusfour
-     % new, location=middle
-     \!!widthb \nextboxwd
-     \!!heightb\nextboxht
-     \!!depthb \nextboxdp
-     \setbox\nextbox\vbox{\vskip.5\nextboxht\hskip-.5\nextboxwd\flushnextbox}%
-     \smashbox\nextbox
-   \fi
-   \!!widtha \nextboxwd
-   \!!heighta\nextboxht
-   \!!deptha \nextboxdp
-   \!!doneafalse
-   \!!donebfalse
-   \ifcase#2\or
-     % 1: fit
-   \or
-     % 2: depth, not fit
-     \!!doneatrue
-     \!!donebtrue
-   \or
-     % 3: depth, fit
-     \!!donebtrue
-   \fi
-   \setbox\nextbox\vbox{\hbox{\raise\nextboxdp\flushnextbox}}%
-   \!!dimena \nextboxht
-   \setcalculatedcos\cos\@@rorotation
-   \setcalculatedsin\sin\@@rorotation
-   \@@layerxpos\zeropoint
-   \@@layerypos\zeropoint
-   \@@layerxoff\zeropoint
-   \@@layeryoff\zeropoint
-   \ifdim\sin\points>\zeropoint
-     \ifdim\cos\points>\zeropoint
-       \@@layerxsiz                    \cos\!!widtha
-       \@@layerysiz                    \sin\!!widtha
-       \advance\@@layerxsiz            \sin\!!dimena
-       \advance\@@layerysiz            \cos\!!dimena
-       \@@layerypos                    \cos\!!dimena
-       \if!!donea
-         \@@layerxoff          \negated\sin\!!dimena
-         \advance\@@layerxoff          \sin\!!deptha
-       \fi
-       \if!!doneb
-         \@@layeryoff                  \cos\!!deptha
-       \fi
-       \dododorotatenextbox
-     \else
-       \@@layerxsiz            \negated\cos\!!widtha
-       \@@layerysiz                    \sin\!!widtha
-       \advance\@@layerxsiz            \sin\!!dimena
-       \advance\@@layerysiz    \negated\cos\!!dimena
-       \@@layerxpos            \negated\cos\!!widtha
-       \if!!donea
-         \@@layerxoff                     -\@@layerxsiz
-         \advance\@@layerxoff          \sin\!!deptha
-       \fi
-       \if!!doneb
-         \@@layeryoff          \negated\cos\!!heighta
-       \fi
-       \dododorotatenextbox
-       \wd\nextbox\if!!donea\sin\!!deptha\else\@@layerxsiz\fi
-     \fi
-   \else
-     \ifdim\cos\points<\zeropoint
-       \@@layerxsiz           \negated\cos\!!widtha
-       \@@layerysiz           \negated\sin\!!widtha
-       \advance\@@layerxsiz   \negated\sin\!!dimena
-       \advance\@@layerysiz   \negated\cos\!!dimena
-       \@@layerxpos                        \@@layerxsiz
-       \@@layerypos            \negated\sin\!!widtha
-       \if!!donea
-         \@@layerxoff                     -\@@layerxsiz
-         \advance\@@layerxoff  \negated\sin\!!heighta
-       \fi
-       \if!!doneb
-         \@@layeryoff                      \@@layerysiz
-         \advance\@@layeryoff          \cos\!!deptha
-       \fi
-       \dododorotatenextbox
-       \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
-     \else
-       \@@layerxsiz                    \cos\!!widtha
-       \@@layerysiz            \negated\sin\!!widtha
-       \advance\@@layerxsiz    \negated\sin\!!dimena
-       \advance\@@layerysiz            \cos\!!dimena
-       \ifdim\sin\points=\zeropoint
-         \@@layerxpos                       \zeropoint
-         \@@layerxoff                       \zeropoint
-         \@@layerypos                      \@@layerysiz
-         \if!!doneb
-           \@@layeryoff                     \!!deptha
-         \fi
-       \else
-         \@@layerypos                       \@@layerysiz
-         \@@layerxpos           \negated\sin\!!dimena
-         \if!!donea
-           \@@layerxoff                    -\@@layerxsiz
-           \advance\@@layerxoff \negated\sin\!!heighta
-         \fi
-         \if!!doneb
-           \@@layeryoff          \negated\sin\!!deptha
-         \fi
-       \fi
-       \dododorotatenextbox
-       \ifdim\sin\points=\zeropoint
-       \else
-         \wd\nextbox\if!!donea\negated\sin\!!heighta\else\@@layerxsiz\fi
-       \fi
-     \fi
-   \fi
-   % new, location=middle
-   \ifnum#2=\plusfour
-     \setbox\nextbox\vbox{\vskip-.5\!!heightb\hskip.5\!!heightb\flushnextbox}%
-     \nextboxwd\!!widthb
-     \nextboxht\!!heightb
-     \nextboxdp\!!depthb
-   \fi}
-
-% \def\dorotatenextbox#1#2%
-%   {\doifsomething{#1}
-%      {\edef\@@rorotation{\realnumber{#1}}% get rid of leading zeros and spaces
-%       \setbox\nextbox\vbox{\flushnextbox}% not really needed
-%       \dodorotatenextbox\@@rorotation#2}%
-%    \hbox{\boxcursor\flushnextbox}}
-
-% \rotate[rotation=left]{\externalfigure[cow.pdf]}
-
-\def\dorotatenextbox#1#2%
-  {\hbox\bgroup
-     \edef\@@rorotation{#1}%
-     \ifx\@@rorotation\empty
-     \else
-       \ifx\@@rorotation\v!left
-         \doifoddpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
-       \else\ifx\@@rorotation\v!right
-         \doifoddpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
-       \else\ifx\@@rorotation\v!inner
-         \signalrightpage
-         \doifrightpageelse{\edef\@@rorotation{270}}{\edef\@@rorotation{90}}%
-       \else\ifx\@@rorotation\v!outer
-         \signalrightpage
-         \doifrightpageelse{\edef\@@rorotation{90}}{\edef\@@rorotation{270}}%
-       \else
-         \edef\@@rorotation{\realnumber{\@@rorotation}}% get rid of leading zeros and spaces
-       \fi\fi\fi\fi
-       \setbox\nextbox\vbox{\flushnextbox}% not really needed
-       \dodorotatenextbox\@@rorotation#2%
-     \fi
-     \boxcursor\flushnextbox
-   \egroup}
-
-
-\def\dodorotatebox#1% {angle} \hbox/\vbox/\vtop
-  {\bgroup\hbox\bgroup % compatibility hack
-     \dowithnextbox
-       {\dorotatenextbox{#1}\plusone
-        \egroup\egroup}}
-
-\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop
-  {\ifcase#1\relax
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\dodorotatebox
-   \fi{#1}}
-
-\unexpanded\def\rotate % \bgroup: \rotate kan argument zijn
-  {\bgroup\complexorsimpleempty\rotate}
-
-% \def\complexrotate[#1]% framed met diepte !
-%   {\getparameters[\??ro][#1]%
-%    \processaction
-%      [\@@rolocation]
-%      [  \v!depth=>\!!counta\plusthree\donefalse,% depth   fit   - raw box
-%           \v!fit=>\!!counta\plustwo  \donefalse,% depth   tight - raw box
-%         \v!broad=>\!!counta\plusone  \donefalse,% nodepth fit   - raw box
-%          \v!high=>\!!counta\plusone  \donetrue ,% nodepth fit   - framed
-%        \v!middle=>\!!counta\plusfour \donefalse,% centered, keep dimensions
-%       \s!default=>\!!counta\plusthree\donetrue ,% depth   fit   - framed
-%       \s!unknown=>\!!counta\plusthree\donetrue ]% depth   fit   - framed
-%    \ifdone
-%      \def\docommand{\localframed[\??ro][#1,\c!location=]}%
-%    \else
-%      \let\docommand\relax
-%    \fi
-%    \dowithnextbox{\dorotatenextbox\@@rorotation\!!counta\egroup}\vbox\docommand}
-
-\setvalue{\??ro::\c!location::\v!depth  }{\!!counta\plusthree\donefalse} % depth   fit   - raw box
-\setvalue{\??ro::\c!location::\v!fit    }{\!!counta\plustwo  \donefalse} % depth   tight - raw box
-\setvalue{\??ro::\c!location::\v!broad  }{\!!counta\plusone  \donefalse} % nodepth fit   - raw box
-\setvalue{\??ro::\c!location::\v!high   }{\!!counta\plusone  \donetrue } % nodepth fit   - framed
-\setvalue{\??ro::\c!location::\v!middle }{\!!counta\plusfour \donefalse} % centered, keep dimensions
-\setvalue{\??ro::\c!location::\v!default}{\!!counta\plusthree\donetrue } % depth   fit   - framed
-
-\def\complexrotate[#1]% framed met diepte !
-  {\getparameters[\??ro][#1]%
-   \executeifdefined{\??ro::\c!location::\@@rolocation}{\!!counta\plusthree\donetrue}%
-   \ifdone
-     \def\docommand{\localframed[\??ro][#1,\c!location=]}%
-   \else
-     \let\docommand\relax
-   \fi
-   \dowithnextbox{\dorotatenextbox\@@rorotation\!!counta\egroup}\vbox\docommand}
-
-\presetlocalframed[\??ro]
-
-\unexpanded\def\setuprotate
-  {\dodoubleargument\getparameters[\??ro]}
-
-\setuprotate
-  [\c!rotation=90,
-   \c!location=\v!normal,
-   \c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!offset=\v!overlay,
-   \c!frame=\v!off]
-
-% \dostepwiserecurse{0}{360}{10}
-%   {\startlinecorrection[blank]
-%    \hbox
-%      {\expanded{\setuprotate[rotation=\recurselevel]}%
-%       \traceboxplacementtrue
-%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=depth] {\ruledhbox{\bfb  (depth)}}}}%
-%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=fit]   {\ruledhbox{\bfb    (fit)}}}}%
-%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=broad] {\ruledhbox{\bfb  (broad)}}}}%
-%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=normal]{\ruledhbox{\bfb (normal)}}}}%
-%       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
-%    \stoplinecorrection}
-
 % to be used in some other places! todo!
 %
 % divides \hsize in fractions, will be made a bit more
@@ -2255,8 +1982,6 @@
 % \horizontaldivision[1/5,3,1em]
 %
 % \setuphorizontaldivision[afstand=,aantal=]  (passend,passend)
-
-\def\??fr{@@fr}
 
 \unexpanded\def\setuphorizontaldivision
   {\dodoubleargument\getparameters[\??fr]}

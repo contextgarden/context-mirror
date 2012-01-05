@@ -22,7 +22,9 @@
 % \placement      [name][settings]
 % \place<name>          [settings]
 
-\installcommandhandler \??pl {placement} \??pl
+\installcorenamespace{placement}
+
+\installcommandhandler \??placement {placement} \??placement
 
 \appendtoks
    \setuevalue{\e!place\currentplacement}{\pack_placement{\currentplacement}}%

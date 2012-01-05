@@ -44,13 +44,15 @@
 %D
 %D \showsetup{setupbuttons}
 
-\installframedcommandhandler \??bt {button} \??bt
+\installcorenamespace{button}
+\installcorenamespace{buttonlocation}
+
+\installframedcommandhandler \??button {button} \??button
 
 \let\setupbuttons\setupbutton
 
 \appendtoks
     \setuevalue\currentbutton{\scrn_button_direct{\currentbutton}}%
-%   \setevalue{\??bt:\currentbutton\s!parent}{\currentbuttonhash}% framed
 \to \everydefinebutton
 
 \unexpanded\def\scrn_button_direct#tag%
@@ -142,13 +144,13 @@
 
 %D The renderers:
 
-\expandafter\let\csname\??bt:\c!location:\v!yes    \endcsname\zerocount
-\expandafter\let\csname\??bt:\c!location:\v!empty  \endcsname\plusone
-\expandafter\let\csname\??bt:\c!location:\v!no     \endcsname\plustwo
-\expandafter\let\csname\??bt:\c!location:\v!none   \endcsname\plusthree
-\expandafter\let\csname\??bt:\c!location:\v!normal \endcsname\plusone % default
-\expandafter\let\csname\??bt:\c!location:\s!default\endcsname\plusone % default
-\expandafter\let\csname\??bt:\c!location:\s!empty  \endcsname\plusone % default
+\expandafter\let\csname\??buttonlocation\v!yes    \endcsname\zerocount
+\expandafter\let\csname\??buttonlocation\v!empty  \endcsname\plusone
+\expandafter\let\csname\??buttonlocation\v!no     \endcsname\plustwo
+\expandafter\let\csname\??buttonlocation\v!none   \endcsname\plusthree
+\expandafter\let\csname\??buttonlocation\v!normal \endcsname\plusone % default
+\expandafter\let\csname\??buttonlocation\s!default\endcsname\plusone % default
+\expandafter\let\csname\??buttonlocation\s!empty  \endcsname\plusone % default
 
 \newconditional\scrn_button_skipped
 
@@ -156,7 +158,7 @@
   {\begingroup
    \attribute\referenceattribute\attributeunsetvalue
    \global\setfalse\scrn_button_skipped
-   \chardef\locationboxpagestate\csname\??bt:\c!location:#currentparameter\c!samepage\endcsname % ?? bt: todo
+   \chardef\locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
    \doifreferencefoundelse{#action}\scrn_button_make_yes\scrn_button_make_nop
      #currentparameter%
      #inheritedframed%
@@ -322,7 +324,13 @@
 %D \setupinteractionmenu[right][samepage=none, unknownreference=none]
 %D \stoptyping
 
-\installframedcommandhandler \??am {interactionmenu} \??am
+\installcorenamespace{menu}
+\installcorenamespace{menutoks}
+\installcorenamespace{menustate}
+\installcorenamespace{menupacker}
+\installcorenamespace{menualign}
+
+\installframedcommandhandler \??menu {interactionmenu} \??menu
 
 \let\setupinteractionmenus\setupinteractionmenu
 
@@ -349,20 +357,20 @@
    \fi\fi}
 
 \def\scrn_menu_register#tag#category%
-  {\ifcsname\??am:t:#category\endcsname \else
-     \expandafter\newtoks \csname\??am:t:#category\endcsname
-     \expandafter\setfalse\csname\??am:c:#category\endcsname
+  {\ifcsname\??menutoks#category\endcsname \else
+     \expandafter\newtoks \csname\??menutoks#category\endcsname
+     \expandafter\setfalse\csname\??menustate#category\endcsname
    \fi
-   \normalexpanded{\csname\??am:t:#category\endcsname{\the\csname\??am:t:#category\endcsname\scrn_menu_action{#tag}}}}
+   \normalexpanded{\csname\??menutoks#category\endcsname{\the\csname\??menutoks#category\endcsname\scrn_menu_action{#tag}}}}
 
 \def\scrn_menu_actions#category%
-  {\the\csname\??am:t:#category\endcsname}
+  {\the\csname\??menutoks#category\endcsname}
 
 %D Fill menus:
 
 \normalexpanded{\long\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
   {\def\currentinteractionmenu{#tag}%
-   \expandafter\settrue\csname\??am:c:\interactionmenuparameter\c!category\endcsname
+   \expandafter\settrue\csname\??menustate\interactionmenuparameter\c!category\endcsname
    \setinteractionmenuparameter\c!menu{#content}}
 
 \def\resetinteractionmenu[#tag]%
@@ -457,14 +465,14 @@
    \ht\scrn_menu_box\scrn_menu_asked_height
    \dp\scrn_menu_box\zeropoint}
 
-\setvalue{scrn_menu_align_\v!right     }{\let\scrn_menu_left_align\raggedright}
-\setvalue{scrn_menu_align_\v!left      }{\let\scrn_menu_left_align\raggedleft}
-\setvalue{scrn_menu_align_\v!flushright}{\let\scrn_menu_left_align\raggedleft}
-\setvalue{scrn_menu_align_\v!flushleft }{\let\scrn_menu_left_align\raggedright}
-\setvalue{scrn_menu_align_\v!middle    }{\let\scrn_menu_left_align\raggedcenter}
-\setvalue{scrn_menu_align_\v!low       }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\relax}
-\setvalue{scrn_menu_align_\v!high      }{\let\scrn_menu_top_align\relax\let\scrn_menu_bottom_align\vss}
-\setvalue{scrn_menu_align_\v!lohi      }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\vss}
+\setvalue{\??menualign\v!right     }{\let\scrn_menu_left_align\raggedright}
+\setvalue{\??menualign\v!left      }{\let\scrn_menu_left_align\raggedleft}
+\setvalue{\??menualign\v!flushright}{\let\scrn_menu_left_align\raggedleft}
+\setvalue{\??menualign\v!flushleft }{\let\scrn_menu_left_align\raggedright}
+\setvalue{\??menualign\v!middle    }{\let\scrn_menu_left_align\raggedcenter}
+\setvalue{\??menualign\v!low       }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\relax}
+\setvalue{\??menualign\v!high      }{\let\scrn_menu_top_align\relax\let\scrn_menu_bottom_align\vss}
+\setvalue{\??menualign\v!lohi      }{\let\scrn_menu_top_align\vss\let\scrn_menu_bottom_align\vss}
 
 \let\scrn_menu_left_align  \relax
 \let\scrn_menu_right_align \relax
@@ -472,7 +480,7 @@
 \let\scrn_menu_bottom_align\relax
 
 \def\scrn_menu_set_align
-  {\csname scrn_menu_align_\interactionmenuparameter\c!itemalign\endcsname}
+  {\csname\??menualign\interactionmenuparameter\c!itemalign\endcsname}
 
 %D Hook into the pagebuilder (as less testing as possible):
 
@@ -484,7 +492,7 @@
    \fi}
 
 \def\scrn_menu_insert_checked#location%
-  {\ifconditional\csname\??am:c:#location\endcsname
+  {\ifconditional\csname\??menustate#location\endcsname
      \scrn_menu_insert_indeed{#location}%
    \fi}
 
@@ -497,19 +505,19 @@
      \global\scrn_menu_next_distance\zeropoint
      \let\scrn_menu_action\scrn_menu_package_indeed
      \the\everysetmenucommands
-     \csname\??am:\c!menu:\namedinteractionmenuparameter\askedinteractionmenulocation\c!alternative\endcsname
+     \csname\??menupacker\namedinteractionmenuparameter\askedinteractionmenulocation\c!alternative\endcsname
    \fi \fi
    \endgroup}
 
 %D This calls: % can be \c!command for vertical/horizontal
 
-\setvalue{\??am:\c!menu:\v!vertical}% all menus
+\setvalue{\??menupacker\v!vertical}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_vertical
    \setbox\scrn_menu_box\hbox{\scrn_menu_actions\askedinteractionmenulocation}%
    \scrn_menu_apply_final
    \box\scrn_menu_box}
 
-\setvalue{\??am:\c!menu:\v!horizontal}% all menus
+\setvalue{\??menupacker\v!horizontal}% all menus
   {\let\scrn_menu_packager\scrn_menu_packager_horizontal
    \setbox\scrn_menu_box\vbox{\scrn_menu_actions\askedinteractionmenulocation}%
    \scrn_menu_apply_final
@@ -774,7 +782,6 @@
    \edef\currentinteractionmenu{#tag}%
    \doif{\interactionmenuparameter\c!state}\v!local
      {\letinteractionmenuparameter\c!state\v!start
-    %  \setinteractionmenuparameter\s!parent{\??am\askedinteractionmenulocation}% nice hack
       \strictinteractionmenuparameter\c!menu}%
    \endgroup}
 
@@ -927,10 +934,10 @@
 
 %D Lists:
 
-\setvalue{\@@dodolistelement\v!left  }{\def\dosomelistelement{\scrn_menu_list_element\v!left  }}
-\setvalue{\@@dodolistelement\v!right }{\def\dosomelistelement{\scrn_menu_list_element\v!right }}
-\setvalue{\@@dodolistelement\v!top   }{\def\dosomelistelement{\scrn_menu_list_element\v!top   }}
-\setvalue{\@@dodolistelement\v!bottom}{\def\dosomelistelement{\scrn_menu_list_element\v!bottom}}
+\setvalue{\??listelement\v!left  }{\def\dosomelistelement{\scrn_menu_list_element\v!left  }}
+\setvalue{\??listelement\v!right }{\def\dosomelistelement{\scrn_menu_list_element\v!right }}
+\setvalue{\??listelement\v!top   }{\def\dosomelistelement{\scrn_menu_list_element\v!top   }}
+\setvalue{\??listelement\v!bottom}{\def\dosomelistelement{\scrn_menu_list_element\v!bottom}}
 
 \def\scrn_menu_list_element#1#2#3#4#5#6#7%
   {\startbut[internal(#3)]

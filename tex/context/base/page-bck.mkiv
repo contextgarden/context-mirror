@@ -219,7 +219,7 @@
 %D regression. Calculation is delayed till the page anyway so the
 %D state is known.
 
-\def\recalculatebackgrounds % will be renamed
+\def\page_backgrounds_recalculate
   {\global\settrue\c_page_backgrounds_new}
 
 \def\page_backgrounds_set_boxes
@@ -661,7 +661,7 @@
 \def\enablehiddenbackground
   {\global\settrue\c_page_backgrounds_hidden_enabled
    \global\settrue\c_page_backgrounds_some
-   \recalculatebackgrounds}
+   \page_backgrounds_recalculate}
 
 \def\disablehiddenbackground
   {\global\setfalse\c_page_backgrounds_hidden_enabled}
