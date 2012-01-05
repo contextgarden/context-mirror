@@ -74,6 +74,8 @@ return {
         "scratchtoks", "globalscratchtoks",
         "scratchbox", "globalscratchbox",
         --
+        "nextbox",
+        --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree",
