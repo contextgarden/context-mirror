@@ -62,12 +62,15 @@ local v_width                 = variables.width
 local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
 
-xtables = { } -- maybe in typesetters
+local xtables                 = { }
+typesetters.xtables           = xtables
 
-local trace_xtable  = false  trackers.register("xtable.construct", function(v) trace_xtable = v end)
+local trace_xtable            = false
+local report_xtable           = logs.reporter("xtable")
 
-local report_xtable = logs.reporter("xtable")
+trackers.register("xtable.construct", function(v) trace_xtable = v end)
 
+local null_mode = 0
 local head_mode = 1
 local foot_mode = 2
 local more_mode = 3

@@ -100,37 +100,6 @@
 %D \dosetpositionplus      {identifier} {width} {height} {depth} {list}
 %D \dosetpositionpapersize {width} {height}
 %D \stoptyping
-%D
-%D Positions are either generated at a delayed write time
-%D (in \PDFTEX), or derived from the dvi file. The actual
-%D method is implemented in a special driver. If needed, the
-%D driver can fall back on the following macros.
-
-% \def\dolazysaveposition            #1#2#3#4{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4"}}}}
-% \def\dolazysavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-% \def\dolazysavepositionplus#1#2#3#4#5#6#7#8{\normalexpanded{\ctxlatelua{_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-% \def\dosaveposition                #1#2#3#4{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4"}}}}
-% \def\dosavepositionwhd       #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7"}}}}
-% \def\dosavepositionplus    #1#2#3#4#5#6#7#8{\normalexpanded{\ctxlua    {_ptbs_['#1']={#2,"#3","#4","#5","#6","#7","#8"}}}}
-%
-% \def\lastsavedpositionx {\the\dimexpr\pdflastxpos\scaledpoint\relax}
-% \def\lastsavedpositiony {\the\dimexpr\pdflastypos\scaledpoint\relax}
-% \let\savecurrentposition\pdfsavepos
-%
-% \def\dosetposition#1% will become commands.setposition
-%   {\savecurrentposition
-%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony"}}}}
-%
-% \def\dosetpositionwhd#1#2#3#4%
-%   {\savecurrentposition
-%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4"}}}}
-%
-% \def\dosetpositionplus#1#2#3#4#5%
-%   {\savecurrentposition
-%    \normalexpanded{\ctxlatelua{_ptbs_['#1']={%
-%      \noexpand\realfolio,"\noexpand\lastsavedpositionx","\noexpand\lastsavedpositiony","#2","#3","#4","#5"}}}}
 
 \def\dosaveposition            #1#2#3#4{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4)}}}
 \def\dosavepositionwhd   #1#2#3#4#5#6#7{\normalexpanded{\ctxlua    {_plib_.setall("#1",\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}}
@@ -155,12 +124,9 @@
 
 % 0 = don't relocate page origin  1 = relocate page origin once
 
-\setnewconstant\positionanchormode\plusone
+\setnewconstant\positionanchormode\plusone % not used
 
 %D Sometimes we want to trick the position handler a bit:
-
-% \def\replacepospxywhd#1#2#3#4#5#6#7%
-%   {\ctxcommand{replacepospxywhd('#1',\number#2,"\the\dimexpr#3\relax","\the\dimexpr#4\relax","\the\dimexpr#5\relax","\the\dimexpr#6\relax","\the\dimexpr#7\relax")}}
 
 \def\replacepospxywhd#1#2#3#4#5#6#7%
   {\ctxcommand{replacepospxywhd('#1',\number#2,\number\dimexpr#3,\number\dimexpr#4,\number\dimexpr#5,\number\dimexpr#6,\number\dimexpr#7)}}

@@ -16,68 +16,71 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 local V, P, S, R, C, Cc, Cs, matchlpeg, Carg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match, lpeg.Carg
 local format, lower = string.format, string.lower
 local appendlpeg = lpeg.append
-
 local mergetable, mergedtable, keys, loweredkeys = table.merge, table.merged, table.keys, table.loweredkeys
 
-local allocate = utilities.storage.allocate
+physics            = physics or { }
+physics.patterns   = physics.patterns or { }
 
-physics          = physics or { }
-physics.patterns = physics.patterns or { }
+local variables    = interfaces.variables
+local v_reverse    = variables.reverse
+local allocate     = utilities.storage.allocate
 
-local variables  = interfaces.variables
-local v_reverse  = variables.reverse
+local trace_units  = false
+local report_units = logs.reporter("units")
+
+trackers.register("physics.units", function(v) trace_units = v end)
 
 -- digits parser (todo : use patterns)
 
-local digit        = R("09")
-local sign         = S("+-")
-local power        = S("^e")
-local digitspace   = S("~@_")
-local comma        = P(",")
-local period       = P(".")
-local semicolon    = P(";")
-local colon        = P(":")
-local signspace    = P("/")
-local positive     = P("++") -- was p
-local negative     = P("--") -- was n
-local highspace    = P("//") -- was s
-local padding      = P("=")
-local plus         = P("+")
-local minus        = P("-")
-local space        = P(" ")
+local digit          = R("09")
+local sign           = S("+-")
+local power          = S("^e")
+local digitspace     = S("~@_")
+local comma          = P(",")
+local period         = P(".")
+local semicolon      = P(";")
+local colon          = P(":")
+local signspace      = P("/")
+local positive       = P("++") -- was p
+local negative       = P("--") -- was n
+local highspace      = P("//") -- was s
+local padding        = P("=")
+local plus           = P("+")
+local minus          = P("-")
+local space          = P(" ")
 
-local digits       = digit^1
+local digits         = digit^1
 
-local ddigitspace  = digitspace  / "" / context.digitsspace
-local dcommayes    = semicolon   / "" / context.digitsfinalcomma
-local dcommanop    = semicolon   / "" / context.digitsseparatorspace
-local dperiodyes   = colon       / "" / context.digitsfinalperiod
-local dperiodnop   = colon       / "" / context.digitsseparatorspace
-local ddigit       = digits           / context.digitsdigit
-local dfinalcomma  = comma       / "" / context.digitsfinalcomma
-local dfinalperiod = period      / "" / context.digitsfinalperiod
-local dintercomma  = comma  * #(digitspace) / "" / context.digitsseparatorspace
-                   + comma                  / "" / context.digitsintermediatecomma
-local dinterperiod = period * #(digitspace) / "" / context.digitsseparatorspace
-                   + period                 / "" / context.digitsintermediateperiod
-local dsignspace   = signspace   / "" / context.digitssignspace
-local dpositive    = positive    / "" / context.digitspositive
-local dnegative    = negative    / "" / context.digitsnegative
-local dhighspace   = highspace   / "" / context.digitshighspace
-local dsomesign    = plus        / "" / context.digitsplus
-                   + minus       / "" / context.digitsminus
-local dpower       = power       / "" * (
-                         plus  * C(digits) / context.digitspowerplus
-                       + minus * C(digits) / context.digitspowerminus
-                       +         C(digits) / context.digitspower
-                   )
-local dpadding     = padding     / "" / context.digitszeropadding -- todo
+local ddigitspace    = digitspace  / "" / context.digitsspace
+local dcommayes      = semicolon   / "" / context.digitsfinalcomma
+local dcommanop      = semicolon   / "" / context.digitsseparatorspace
+local dperiodyes     = colon       / "" / context.digitsfinalperiod
+local dperiodnop     = colon       / "" / context.digitsseparatorspace
+local ddigit         = digits           / context.digitsdigit
+local dfinalcomma    = comma       / "" / context.digitsfinalcomma
+local dfinalperiod   = period      / "" / context.digitsfinalperiod
+local dintercomma    = comma  * #(digitspace) / "" / context.digitsseparatorspace
+                     + comma                  / "" / context.digitsintermediatecomma
+local dinterperiod   = period * #(digitspace) / "" / context.digitsseparatorspace
+                     + period                 / "" / context.digitsintermediateperiod
+local dsignspace     = signspace   / "" / context.digitssignspace
+local dpositive      = positive    / "" / context.digitspositive
+local dnegative      = negative    / "" / context.digitsnegative
+local dhighspace     = highspace   / "" / context.digitshighspace
+local dsomesign      = plus        / "" / context.digitsplus
+                     + minus       / "" / context.digitsminus
+local dpower         = power       / "" * (
+                           plus  * C(digits) / context.digitspowerplus
+                         + minus * C(digits) / context.digitspowerminus
+                         +         C(digits) / context.digitspower
+                     )
+local dpadding       = padding     / "" / context.digitszeropadding -- todo
 
-local dleader      = (dpositive + dnegative + dhighspace + dsomesign + dsignspace)^0
-local dtrailer     = dpower^0
-local dfinal       = P(-1) + #P(1 - comma - period - semicolon - colon)
-local dnumber      = (ddigitspace + ddigit)^1
-local dtemplate    = ddigitspace^1
+local dleader        = (dpositive + dnegative + dhighspace + dsomesign + dsignspace)^0
+local dtrailer       = dpower^0
+local dfinal         = P(-1) + #P(1 - comma - period - semicolon - colon)
+local dnumber        = (ddigitspace + ddigit)^1
+local dtemplate      = ddigitspace^1
 
 -- probably too complex, due to lookahead (lookback with state is probably easier)
 
@@ -93,7 +96,7 @@ local p_c_number     = (dcpinternumber)^0 * (dpcfinalnumber)^0 * ddigit + dfallb
 local c_p_number     = (dpcinternumber)^0 * (dcpfinalnumber)^0 * ddigit + dfallback -- 000,000,000.00
 
 -- ony signs before numbers (otherwise we get s / seconds issues)
---
+
 local p_c_dparser    = dleader * p_c_number * dtrailer * dfinal
 local c_p_dparser    = dleader * c_p_number * dtrailer * dfinal
 
@@ -147,6 +150,11 @@ local long_prefixes = {
     Exbi  = [[Ei]], -- binary
     Zebi  = [[Zi]], -- binary
     Yobi  = [[Yi]], -- binary
+
+    Degrees = [[°]],
+    Degree  = [[°]],
+    Deg     = [[°]],
+    ["°"]   = [[°]],
 }
 
 local long_units = {
@@ -203,7 +211,6 @@ local long_units = {
     Angstrom   = [[Å]],
     Gauss      = [[G]],
     Rad        = [[rad]],
-    Deg        = [[°]],
     RPS        = [[RPS]],
     RPM        = [[RPM]],
     RevPerSec  = [[RPS]],
@@ -262,24 +269,24 @@ local short_prefixes_to_long = {
 }
 
 local short_units_to_long = { -- I'm not sure about casing
-    m  = "Meter",
-    Hz = "Hertz",
-    hz = "Hertz",
-    u  = "Hour",
-    h  = "Hour",
-    s  = "Second",
-    g  = "Gram",
-    n  = "Newton",
-    v  = "Volt",
+    m       = "Meter",
+    Hz      = "Hertz",
+    hz      = "Hertz",
+    u       = "Hour",
+    h       = "Hour",
+    s       = "Second",
+    g       = "Gram",
+    n       = "Newton",
+    v       = "Volt",
 
-    l  = "Liter",
- -- w  = "Watt",
-    W  = "Watt",
- -- a  = "Ampere",
-    A  = "Ampere",
+    l       = "Liter",
+ -- w       = "Watt",
+    W       = "Watt",
+ -- a       = "Ampere",
+    A       = "Ampere",
 
-    Litre = "Liter",
-    Metre = "Meter",
+    Litre   = "Liter",
+    Metre   = "Meter",
 }
 
 local short_operators_to_long = {
@@ -288,6 +295,10 @@ local short_operators_to_long = {
     ["/"] = "Solidus",
     [":"] = "OutOf",
 }
+
+-- local connected = table.tohash {
+--     "Degrees",
+-- }
 
 short_prefixes  = { } for k, v in next, short_prefixes_to_long  do short_prefixes [k] = long_prefixes [v] end
 short_units     = { } for k, v in next, short_units_to_long     do short_units    [k] = long_units    [v] end
@@ -371,6 +382,7 @@ local unitsU      = context.unitsU
 local unitsS      = context.unitsS
 local unitsO      = context.unitsO
 local unitsN      = context.unitsN
+local unitsC      = context.unitsC
 local unitsNstart = context.unitsNstart
 local unitsNstop  = context.unitsNstop
 
@@ -389,7 +401,10 @@ l_units    .test = { Meter = "meter", Second = "second" }
 l_operators.test = { Solidus = " per " }
 
 local function dimpus(p,u,s,wherefrom)
---~ print(p,u,s,wherefrom)
+    if trace_units then
+        report_units("w: [%s], p: [%s], u: [%s], s: [%s]",wherefrom or "?",p or "?",u or "?",s or "?")
+    end
+ -- local c = connected[u]
     if wherefrom == "" then
         p = prefixes[p] or p
         u = units   [u] or u
@@ -417,6 +432,8 @@ local function dimpus(p,u,s,wherefrom)
         if u ~= ""  then
             if s ~= ""  then
                 unitsUS(u,s)
+         -- elseif c then
+         --     unitsC(u)
             else
                 unitsU(u)
             end
@@ -433,7 +450,9 @@ local function dimspu(s,p,u,wherefrom)
 end
 
 local function dimop(o,wherefrom)
---~ print(o,wherefrom)
+    if trace_units then
+        report_units("w: [%s], o: [%s]",wherefrom or "?",o or "?")
+    end
     if wherefrom == "" then
         o = operators[o] or o
     else
