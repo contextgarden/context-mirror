@@ -262,13 +262,17 @@
 %                       \letvalue{\??eq:\v!left :\number\eqaligncolumn}\hfill}}
 
 \def\leftofeqalign
-  {\ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
-     \relax \or \hfill \or \hfill
+  {\ifcsname\??eq::a::\number\eqaligncolumn\endcsname
+     \ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+       \relax \or \hfill \or \hfill
+     \fi
    \fi}
 
 \def\rightofeqalign
-  {\ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
-     \hfill \or \relax \or \hfill
+  {\ifcsname\??eq::a::\number\eqaligncolumn\endcsname
+     \ifcase\csname\??eq::a::\number\eqaligncolumn\endcsname\or
+       \hfill \or \relax \or \hfill
+     \fi
    \fi}
 
 \def\doseteqaligncolumn#1% we could just add to the preamble (as with other alignments)
