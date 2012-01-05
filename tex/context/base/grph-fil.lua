@@ -12,6 +12,8 @@ local trace_run = false  trackers.register("graphic.runfile",function(v) trace_r
 
 local report_run = logs.reporter("graphics","run")
 
+-- this code will move
+
 local allocate = utilities.storage.allocate
 
 local collected = allocate()
@@ -33,23 +35,28 @@ job.register('job.files.collected', tobesaved, initializer)
 
 jobfiles.forcerun = false
 
-function jobfiles.run(name,command)
+function jobfiles.run(name,action)
     local oldchecksum = collected[name]
     local newchecksum = file.checksum(name)
     if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then
         if trace_run then
             report_run("processing file, changes in '%s', processing forced",name)
         end
-        if command and command ~= "" then
-            os.execute(command)
+        local a = type(action)
+        if a == "function" then
+            a(name)
+        elseif a == "string" and action ~= "" then
+            os.execute(a)
         else
-            report_run("processing file, no command given for processing '%s'",name)
+            report_run("processing file, no action given for processing '%s'",name)
         end
     elseif trace_run then
         report_run("processing file, no changes in '%s', not processed",name)
     end
     tobesaved[name] = newchecksum
 end
+
+--
 
 function jobfiles.context(name,options)
     if type(name) == "table" then

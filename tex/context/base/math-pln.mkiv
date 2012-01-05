@@ -206,7 +206,7 @@
 
 \ifx\mfunction\undefined \def\mfunction#1{\mathbin{\rm#1}} \fi
 
-\def\bmod
+\unexpanded\def\bmod
   {\nonscript
    \mskip-\medmuskip
    \mkern5mu
@@ -216,12 +216,12 @@
    \nonscript
    \mskip-\medmuskip}
 
-\def\pmod#1%
+\unexpanded\def\pmod#1%
   {\allowbreak
    \mkern18mu
    (\mfunction{mod}\,\,#1)}
 
-\def\cases#1%
+\unexpanded\def\cases#1%
   {\left\{%
    \,%
    \vcenter
@@ -230,7 +230,7 @@
       \ialign{$##\hfil$&\quad##\hfil\crcr#1\crcr}}%
    \right.}
 
-\def\matrix#1%
+\unexpanded\def\matrix#1%
   {\emptyhbox
    \,%
    \vcenter
@@ -240,14 +240,14 @@
       #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}%
    \,}
 
-\def\pmatrix#1%
+\unexpanded\def\pmatrix#1%
   {\left(\matrix{#1}\right)}
 
 \newdimen\mathparentwd
 
 % \setbox0=\hbox{\tenex B} \mathparentwd=\wd0 % width of the big left (
 
-\def\bordermatrix#1%
+\unexpanded\def\bordermatrix#1%
   {\begingroup
    \mathsurround\zeropoint
    \setbox\zerocount\vbox
@@ -275,7 +275,7 @@
 %   \advance\baselineskip\dimen@
 %   \advance\lineskiplimit\dimen@}
 
-\def\openup
+\unexpanded\def\openup
   {\afterassignment\doopenup\scratchdimen=}
 
 \def\doopenup
@@ -287,7 +287,7 @@
 
 \def\displayopenupvalue{.25\bodyfontsize}
 
-\def\eqalign#1%
+\unexpanded\def\eqalign#1%
   {\emptyhbox
    \,%
    \vcenter
@@ -302,14 +302,14 @@
   {\tabskip\zeroskip
    \everycr{}}
 
-\def\displaylines#1%
+\unexpanded\def\displaylines#1%
   {\displ@y
    \tabskip\zeroskip
    \halign
      {\hbox to \displaywidth{$\@lign\hfil\displaystyle##\hfil$}\crcr
       #1\crcr}}
 
-\def\eqalignno#1%
+\def\eqalignno#1% \unexpanded (needs testing in alignments)
   {\displ@y
    \tabskip\centering
    \halign to \displaywidth
@@ -318,7 +318,7 @@
       &\llap{$\@lign##$}\tabskip\zeroskip\crcr
       #1\crcr}}
 
-\def\leqalignno#1%
+\def\leqalignno#1% \unexpanded (needs testing in alignments)
   {\displ@y
    \tabskip\centering
    \halign to \displaywidth

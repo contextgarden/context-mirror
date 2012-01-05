@@ -84,7 +84,7 @@ do -- todo: only once, store in global
     local definitions = context.loaddefinitions("scite-context-data-tex")
 
     if definitions then
-        local function add(data)
+        local function add(data,normal)
             for k, v in next, data do
                 if v ~= "/" then
                     primitives[#primitives+1] = v

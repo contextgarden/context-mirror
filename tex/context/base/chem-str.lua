@@ -17,7 +17,7 @@ local report_chemistry = logs.reporter("chemistry")
 
 local format, gmatch, match, lower, gsub = string.format, string.gmatch, string.match, string.lower, string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
-local processor_tostring = structures.processors.tostring
+local processor_tostring = typesetters.processors.tostring
 local lpegmatch = lpeg.match
 local settings_to_array = utilities.parsers.settings_to_array
 

@@ -112,10 +112,13 @@ commands.resetnullfont = definers.resetnullfont
 
 setmetatableindex(fontdata, function(t,k) return nulldata end)
 
+-- we might make an font-hsh.lua
+
 local chardata      = allocate() -- chardata
 local descriptions  = allocate()
 local parameters    = allocate()
 local properties    = allocate()
+local resources     = allocate()
 local quaddata      = allocate()
 local markdata      = allocate()
 local xheightdata   = allocate()
@@ -126,6 +129,7 @@ hashes.characters   = chardata
 hashes.descriptions = descriptions
 hashes.parameters   = parameters
 hashes.properties   = properties
+hashes.resources    = resources
 hashes.quads        = quaddata
 hashes.marks        = markdata
 hashes.xheights     = xheightdata
@@ -154,6 +158,14 @@ setmetatableindex(properties, function(t,k)
     local properties = fontdata[k].properties
     t[k] = properties
     return properties
+end)
+
+setmetatableindex(resources, function(t,k)
+    local shared    = fontdata[k].shared
+    local rawdata   = shared and shared.rawdata
+    local resources = rawdata and rawdata.resources
+    t[k] = resources or false -- better than resolving each time
+    return resources
 end)
 
 setmetatableindex(quaddata, function(t,k)
@@ -207,68 +219,138 @@ local privatefeatures = {
     anum = true,
 }
 
-local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
-    if trace_features then
-        report_features(serialize(features,"used"))
-    end
-    local rawdata   = tfmdata.shared.rawdata
-    local resources = rawdata and rawdata.resources
-    local script    = features.script
-    if script == "auto" then
-        local latn = false
-        for g, list in next, resources.features do
-            for f, scripts in next, list do
-                if privatefeatures[f] then
-                    -- skip
-                elseif scripts.dflt then
-                    script = "dflt"
-                    break
-                elseif scripts.latn then
-                    latn = true
-                end
+-- local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
+--     if trace_features then
+--         report_features(serialize(features,"used"))
+--     end
+--     local rawdata   = tfmdata.shared.rawdata
+--     local resources = rawdata and rawdata.resources
+--     local script    = features.script
+--     if script == "auto" then
+--         local latn = false
+--         for g, list in next, resources.features do
+--             for f, scripts in next, list do
+--                 if privatefeatures[f] then
+--                     -- skip
+--                 elseif scripts.dflt then
+--                     script = "dflt"
+--                     break
+--                 elseif scripts.latn then
+--                     latn = true
+--                 end
+--             end
+--         end
+--         if script == "auto" then
+--             script = latn and "latn" or "dflt"
+--         end
+--         features.script = script
+--         if trace_automode then
+--             report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
+--         end
+--     end
+--     if mode == "auto" then
+--         local sequences = resources.sequences
+--         if sequences and #sequences > 0 then
+--             local script    = features.script   or "dflt"
+--             local language  = features.language or "dflt"
+--             for feature, value in next, features do
+--                 if value then
+--                     local found = false
+--                     for i=1,#sequences do
+--                         local sequence = sequences[i]
+--                         local features = sequence.features
+--                         if features then
+--                             local scripts = features[feature]
+--                             if scripts then
+--                                 local languages = scripts[script]
+--                                 if languages and languages[language] then
+--                                     if found then
+--                                         -- more than one lookup
+--                                         if trace_automode then
+--                                             report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
+--                                         end
+--                                         features.mode = "node"
+--                                         return "node"
+--                                     elseif needsnodemode[sequence.type] then
+--                                         if trace_automode then
+--                                             report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
+--                                         end
+--                                         features.mode = "node"
+--                                         return "node"
+--                                     else
+--                                         -- at least one lookup
+--                                         found = true
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--         return "base"
+--     else
+--         return mode
+--     end
+-- end
+
+local function checkedscript(tfmdata,resources,features)
+    local latn = false
+    local script = false
+    for g, list in next, resources.features do
+        for f, scripts in next, list do
+            if privatefeatures[f] then
+                -- skip
+            elseif scripts.dflt then
+                script = "dflt"
+                break
+            elseif scripts.latn then
+                latn = true
             end
         end
-        if script == "auto" then
-            script = latn and "latn" or "dflt"
-        end
-        features.script = script
-        if trace_automode then
-            report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
-        end
     end
-    if mode == "auto" then
-        local sequences = resources.sequences
-        if sequences and #sequences > 0 then
-            local script    = features.script   or "dflt"
-            local language  = features.language or "dflt"
-            for feature, value in next, features do
-                if value then
-                    local found = false
-                    for i=1,#sequences do
-                        local sequence = sequences[i]
-                        local features = sequence.features
-                        if features then
-                            local scripts = features[feature]
-                            if scripts then
-                                local languages = scripts[script]
-                                if languages and languages[language] then
-                                    if found then
-                                        -- more than one lookup
-                                        if trace_automode then
-                                            report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
-                                        end
-                                        features.mode = "node"
-                                        return "node"
-                                    elseif needsnodemode[sequence.type] then
-                                        if trace_automode then
-                                            report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
-                                        end
-                                        features.mode = "node"
-                                        return "node"
-                                    else
-                                        -- at least one lookup
-                                        found = true
+    if not script then
+        script = latn and "latn" or "dflt"
+    end
+    if trace_automode then
+        report_defining("auto script mode: using script '%s' in font '%s'",script,file.basename(tfmdata.properties.name))
+    end
+    features.script = script
+    return script
+end
+
+local function checkedmode(tfmdata,resources,features)
+    local sequences = resources.sequences
+    if sequences and #sequences > 0 then
+        local script    = features.script   or "dflt"
+        local language  = features.language or "dflt"
+        for feature, value in next, features do
+            if value then
+                local found = false
+                for i=1,#sequences do
+                    local sequence = sequences[i]
+                    local features = sequence.features
+                    if features then
+                        local scripts = features[feature]
+                        if scripts then
+                            local languages = scripts[script]
+                            if languages and languages[language] then
+                                if found then
+                                    -- more than one lookup
+                                    if trace_automode then
+                                        report_defining("forcing node mode in font %s for feature %s, script %s, language %s (multiple lookups)",file.basename(tfmdata.properties.name),feature,script,language)
                                     end
+                                    features.mode = "node"
+                                    return "node"
+                                elseif needsnodemode[sequence.type] then
+                                    if trace_automode then
+                                        report_defining("forcing node mode in font %s for feature %s, script %s, language %s (no base support)",file.basename(tfmdata.properties.name),feature,script,language)
+                                    end
+                                    features.mode = "node"
+                                    return "node"
+                                else
+                                    -- at least one lookup
+                                    found = true
                                 end
                             end
                         end
@@ -276,10 +358,32 @@ local function modechecker(tfmdata,features,mode) -- we cannot adapt features as
                 end
             end
         end
-        return "base"
-    else
-        return mode
     end
+    features.mode = "base" -- new, or is this wrong?
+    return "base"
+end
+
+definers.checkedscript = checkedscript
+definers.checkedmode   = checkedmode
+
+local function modechecker(tfmdata,features,mode) -- we cannot adapt features as they are shared!
+    if trace_features then
+        report_features(serialize(features,"used"))
+    end
+    local rawdata   = tfmdata.shared.rawdata
+    local resources = rawdata and rawdata.resources
+    local script    = features.script
+    if resources then
+        if script == "auto" then
+            script = checkedscript(tfmdata,resources,features)
+        end
+        if mode == "auto" then
+            mode = checkedmode(tfmdata,resources,features)
+        end
+    else
+        report_features("missing resources for font''%s'",file.basename(tfmdata.properties.name))
+    end
+    return mode
 end
 
 registerotffeature {

@@ -24,13 +24,13 @@ local helpers         = structures.helpers
 local sections        = structures.sections
 local documents       = structures.documents
 local pages           = structures.pages
-local processors      = structures.processors
 local references      = structures.references
 
 local mappings        = sorters.mappings
 local entries         = sorters.entries
 local replacements    = sorters.replacements
 
+local processors      = typesetters.processors
 local splitprocessor  = processors.split
 
 local variables       = interfaces.variables

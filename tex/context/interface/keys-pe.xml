@@ -1178,7 +1178,7 @@
 		<cd:command name='defineframedtext' value='تعریف‌متن‌قالبی'/>
 		<cd:command name='definehbox' value='تعریف‌جعبه‌‌افقی'/>
 		<cd:command name='definehead' value='تعریف‌سر'/>
-		<cd:command name='defineindenting' value='تعریف‌تورفتگی'/>
+		<cd:command name='defineindentedtext' value='defineindentedtext'/>
 		<cd:command name='defineinmargin' value='تعریف‌درون‌حاشیه'/>
 		<cd:command name='defineinteractionmenu' value='تعریف‌منوی‌پانل'/>
 		<cd:command name='defineitemgroup' value='تعریف‌گروه‌آیتم'/>
@@ -1489,7 +1489,7 @@
 		<cd:command name='setupheads' value='بارگذاری‌سرها'/>
 		<cd:command name='setupheadtext' value='بارگذاری‌متن‌سر'/>
 		<cd:command name='setuphyphenmark' value='بارگذاری‌نشانه‌شکستن'/>
-		<cd:command name='setupindentations' value='بارگذاری‌تورفتگیها'/>
+		<cd:command name='setupindentedtext' value='setupindentedtext'/>
 		<cd:command name='setupindenting' value='بارگذاری‌تورفتگی'/>
 		<cd:command name='setupinmargin' value='بارگذاری‌درون‌حاشیه'/>
 		<cd:command name='setupinteraction' value='بارگذاری‌پانل'/>

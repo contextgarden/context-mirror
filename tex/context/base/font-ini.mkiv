@@ -3510,7 +3510,7 @@
 \unexpanded\def\definealternativestyle
   {\dotripleempty\dodefinealternativestyle}
 
-\unexpanded\def\definestyle{\definealternativestyle} % later redefined
+\let\definestyle\definealternativestyle % later redefined
 
 %D Maybe too geneneric, but probably ok is the following. (Maybe one
 %D day we will use a dedicated grouped command for styles.)
@@ -3565,58 +3565,15 @@
 %D \type{\noconvertfont}. In nested calls, we can restore the
 %D conversion by saying \type{\redoconvertfont}.
 
-% subtle ... \expandafter is needed else problems with lookahead caps
-%
-% this will be cleaned up
-%
-% beware: p!defined can contain crap like \edef crap {...} and such
-% so we need to pass #1 as well .. no longer needed in luatex
-
-% \def\@@dodoconvertfont{\csname\@letter@  \p!defined\expandafter\endcsname\gobbleoneargument}
-% \def\@@donoconvertfont{\csname\@noletter@\p!defined\endcsname}
-% \def\@@redoconvertfont{\csname           \p!defined\expandafter\endcsname\gobbleoneargument}
-%
-% \unexpanded\def\dodoconvertfont#1% #2% we need the protection
-%   {\edef\p!defined{#1}%
-%    \ifx\p!defined\empty\else
-%      \@EA\dododoconvertfont
-%    \fi{#1}}
-%
-% \def\dododoconvertfont % #1 (detokenize no longer needed in luatex)
-%    {\ifcsname\@letter@\detokenize\@EA{\p!defined}\endcsname
-%       \expandafter\@@dodoconvertfont
-%     \else\ifcsname\detokenize\@EA{\p!defined}\endcsname
-%       \doubleexpandafter\@@redoconvertfont
-%     \else
-%       \doubleexpandafter\firstofoneargument
-%     \fi\fi} % {#1}
-%
-% \let\doconvertfont\dodoconvertfont
-%
-% \unexpanded\def\noconvertfont#1% #2%
-%   {\edef\p!defined{#1}%
-%    \ifx\p!defined\empty
-%    \else
-%      \@EA\nononoconvertfont
-%    \fi}
-%
-% \def\nononoconvertfont
-%   {\ifcsname\@noletter@\detokenize\@EA{\p!defined}\endcsname
-%      \@EA\@@donoconvertfont
-%    \fi}
-%
-% %D Extras:
-%
-% \unexpanded\def\dontconvertfont{\let\doconvertfont\noconvertfont}
-% \unexpanded\def\redoconvertfont{\let\doconvertfont\dodoconvertfont}
-
 %D These commands are not grouped! Grouping is most probably
 %D done by the calling macro's and would lead to unnecessary
 %D overhead.
 
 \unexpanded\def\doconvertfont#1% #2% we need the protection
   {\edef\currentconvertfont{#1}%
-   \ifx\currentconvertfont\empty \else
+   \ifx\currentconvertfont\empty
+    %\expandafter\firstofoneargument
+   \else
      \expandafter\dodoconvertfont
    \fi}
 
@@ -3634,6 +3591,32 @@
 
 \unexpanded\def\dontconvertfont{\currentalternativestyleindex\plustwo}
 \unexpanded\def\redoconvertfont{\currentalternativestyleindex\plusone}
+
+%D The new one:
+
+\unexpanded\def\dousestyleparameter#1%
+  {\edef\currentstyleparameter{#1}%
+   \ifx\currentstyleparameter\empty\else
+     \expandafter\dousecurrentstyleparameter
+   \fi}
+
+\unexpanded\def\dousestylehashparameter#1#2%
+  {\ifcsname#1#2\endcsname
+     \expandafter\dousestyleparameter\csname#1#2\endcsname
+   \fi}
+
+\unexpanded\def\dousecurrentstyleparameter % empty check outside here
+  {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+   \settrue\fontattributeisset % reset is done elsewhere
+   \ifcsname\??ft:as:\detokenizedstyleparameter\endcsname
+     \csname\??ft:as:\detokenizedstyleparameter\endcsname
+   \else\ifcsname\detokenizedstyleparameter\endcsname
+     \csname\detokenizedstyleparameter\endcsname
+   \else
+     \currentstyleparameter
+   \fi\fi}
+
+\let\dosetfontattribute\dousestylehashparameter % for a while
 
 %D \macros
 %D  {em,emphasistypeface,emphasisboldface}
@@ -4447,84 +4430,80 @@
 \def\removemissingcharacters{\ctxcommand{removemissingcharacters}}
 
 %D New commands (not yet interfaced):
-
-% \def\style[#1]% for inline usage, like \color
-%   {\groupedcommand{\ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}{}}
-%
-% \unexpanded\def\startstyle[#1]%
-%   {\begingroup
-%    \ifcsname#1\endcsname\csname#1\endcsname\else\definedfont[#1]\fi}
-%
-% \unexpanded\def\stopstyle
-%   {\endgroup}
+%D
+%D \startbuffer
+%D \definestyle[one][style=bold,color=darkblue]
+%D
+%D test \one{test} test
+%D test \style[one]{test} test
+%D test \style[color=red]{test} test
+%D test \style[Serif at 20pt]{test} test
+%D \stopbuffer
+%D
+%D \typebuffer \startlines \getbuffer \stoplines
 
 % definitions .. no tagging here
 
-\def\definestyle
-  {\dotripleargument\dodefinestyle}
+\installcommandhandler \??cf {style} \??cf
 
-\def\dodefinestyle[#1][#2][#3]%
-  {\doifassignmentelse{#2}\dododefinestyle\definealternativestyle[#1][#2][#3]}
+\appendtoks
+    \letvalue{\??cf\currentstyle\s!check}\relax
+    \setuevalue{\e!start\currentstyle}{\begingroup\use_defined_style{\currentstyle}}%
+    \setuevalue{\e!stop \currentstyle}{\endgroup}%
+    \setuevalue        {\currentstyle}{\groupedcommand{\use_defined_style{\currentstyle}}{}}%
+\to \everydefinestyle
 
-\def\dododefinestyle[#1][#2][#3]% no commalist and for the moment #3 is ignored
-  {\getparameters[\??cf:#1][\c!style=,\c!color=,#2]%
-   \setuvalue{\e!start#1}{\begingroup\dostartattributes{\??cf:#1}\c!style\c!color}%
-   \setuvalue{\e!stop #1}{\dostopattributes\endgroup}%
-   \setuvalue        {#1}{\groupedcommand{\dostartattributes{\??cf:#1}\c!style\c!color}\dostopattributes}}
+\unexpanded\def\use_defined_style#1%
+  {\edef\currentstyle{#1}%
+   \usestylestyleandcolor\c!style\c!color}
 
-\def\setupstyle
-  {\dotripleargument\dosetupstyle}
-
-\def\dosetupstyle[#1][#2][#3]% no commalist and for the moment #3 is ignored
-  {\ifcsname\??cf:#1\c!style\endcsname
-     \getparameters[\??cf:#1][#2]%
-   \else
-     \getparameters[\??cf:#1][\c!style=,\c!color=,#2]% so we define but without commands (todo for all define related things)
-   \fi}
+\unexpanded\def\use_generic_style#1%
+  {\getparameters[\??cf][\c!style=,\c!color=,#1]%
+   \dousestyleparameter\@@cfstyle
+   \dousecolorparameter\@@cfcolor}
 
 % commands
 
 \unexpanded\def\style[#1]%
-  {\csname\ifcsname#1\endcsname n\else\ifcsname\??cf:#1\c!style\endcsname c\else d\fi\fi ostyle\endcsname{#1}}
+  {\csname style_%
+     \ifcsname#1\endcsname
+       nop%
+     \else\ifcsname\??cf#1\s!check\endcsname
+       use%
+     \else
+       yes%
+     \fi\fi
+   \endcsname{#1}}
 
-\def\nostyle#1{\csname#1\endcsname}
-\def\costyle#1{\groupedcommand{\dostartattributes{\??cf:#1}\c!style\c!color}\dostopattributes}
-\def\dostyle#1{\doifassignmentelse{#1}\dostyleassignment\dostyledirect{#1}}
-
-\def\dostyleassignment#1%
-  {\groupedcommand
-     {\getparameters[\??cf][\c!style=,\c!color=,#1]%
-      \dostartattributes\??cf\c!style\c!color}
-     {\dostopattributes}}
-
-\def\dostyledirect#1%
-  {\groupedcommand
-     {\definedfont[#1]}
-     {}}
+\def\style_nop       #1{\csname#1\endcsname}
+\def\style_use       #1{\groupedcommand{\use_defined_style{#1}}{}}
+\def\style_yes       #1{\doifassignmentelse{#1}\style_assignment\style_direct{#1}}
+\def\style_assignment#1{\groupedcommand{\use_generic_style{#1}}{}}
+\def\style_direct    #1{\groupedcommand{\definedfont[#1]}{}}
 
 % environments
 
 \unexpanded\def\startstyle[#1]%
   {\begingroup
-   \csname\ifcsname#1\endcsname n\else\ifcsname\??cf:#1\c!style\endcsname c\else d\fi\fi ostyless\endcsname{#1}}
+   \csname start_style_%
+     \ifcsname#1\endcsname
+       nop%
+     \else\ifcsname\??cf#1\s!check\endcsname
+       use%
+     \else
+       yes%
+     \fi\fi
+   \endcsname{#1}}
 
 \unexpanded\def\stopstyle
-  {\dostopstyle
-   \endgroup
+  {\endgroup
    \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
 
-\def\nostyless#1{\let\dostopstyle\donothing\csname#1\endcsname}
-\def\costyless#1{\let\dostopstyle\dostopattributes\dostartattributes{\??cf:#1}\c!style\c!color}
-\def\dostyless#1{\doifassignmentelse{#1}\dostylessassignment\dostylessdirect{#1}}
-
-\def\dostylessassignment#1%
-  {\let\dostopstyle\dostopattributes
-   \getparameters[\??cf][\c!style,\c!color=,#1]%
-   \dostartattributes\??cf\c!style\c!color}
-
-\def\dostylessdirect#1%
- {\let\dostopstyle\donothing
-  \definedfont[#1]\relax}
+\def\start_style_nop       #1{\csname#1\endcsname}
+\def\start_style_use       #1{\use_defined_style{#1}}
+\def\start_style_yes       #1{\doifassignmentelse{#1}\start_style_assignment\start_style_direct{#1}}
+\def\start_style_assignment#1{\usegenericstyle{#1}}
+\def\start_style_direct    #1{\definedfont[#1]\relax}
 
 %D Still experimental (might even go away).
 

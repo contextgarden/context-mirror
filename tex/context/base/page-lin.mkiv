@@ -176,11 +176,14 @@
    \fi
    \mksetuptextlinenumbering}
 
+% some day commandhandler
+
 \def\linenumberparameter#1%
   {\csname\??rn\ifcsname\??rn\currentlinenumbering#1\endcsname\currentlinenumbering\fi#1\endcsname}
 
-\def\linenumberattributes
-  {\doattributes{\??rn\ifcsname\??rn\currentlinenumbering\c!style\endcsname\currentlinenumbering\fi}}
+\unexpanded\def\dolinenumberattributes#1#2%
+  {\dousestyleparameter{\linenumberparameter#1}%
+   \dousecolorparameter{\linenumberparameter#2}}
 
 \setuplinenumbering
   [\c!conversion=\v!numbers,
@@ -459,11 +462,11 @@
       \ifconditional\faketextlinenumber
         % we need to reserve space
       \else
-        \linenumberattributes\c!style\c!color
-          {\linenumberparameter\c!command
-             {\linenumberparameter\c!left
-              \convertnumber{\linenumberparameter\c!conversion}{#3}%
-              \linenumberparameter\c!right}}%
+        \dolinenumberattributes\c!style\c!color
+        \linenumberparameter\c!command
+          {\linenumberparameter\c!left
+           \convertnumber{\linenumberparameter\c!conversion}{#3}%
+           \linenumberparameter\c!right}%
       \fi
       \ifcase\linenumberlocation
         \hss % middle

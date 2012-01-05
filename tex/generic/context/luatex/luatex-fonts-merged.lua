@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 11/29/11 23:11:46
+-- merge date  : 12/13/11 15:17:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -1697,7 +1697,7 @@ end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
 -- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
--- loop back from the end.
+-- loop back from the end cq. prepend.
 
 local sort, fastcopy, sortedkeys = table.sort, table.fastcopy, table.sortedkeys -- dependency!
 
@@ -1717,13 +1717,13 @@ function lpeg.append(list,pp,delayed,checked)
     elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
         local keys = sortedkeys(list)
         if p then
-            for i=#keys,1,-1 do
+            for i=1,#keys,1 do
                 local k = keys[i]
                 local v = list[k]
                 p = P(k)/list + p
             end
         else
-            for i=#keys,1,-1 do
+            for i=1,#keys do
                 local k = keys[i]
                 local v = list[k]
                 if p then
@@ -1739,7 +1739,7 @@ function lpeg.append(list,pp,delayed,checked)
     elseif checked then
         -- problem: substitution gives a capture
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -1758,7 +1758,7 @@ function lpeg.append(list,pp,delayed,checked)
         end
     else
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -1770,6 +1770,9 @@ function lpeg.append(list,pp,delayed,checked)
     end
     return p
 end
+
+-- inspect(lpeg.append({ a = "1", aa = "1", aaa = "1" } ,nil,true))
+-- inspect(lpeg.append({ ["degree celsius"] = "1", celsius = "1", degree = "1" } ,nil,true))
 
 -- function lpeg.exact_match(words,case_insensitive)
 --     local pattern = concat(words)
@@ -2175,7 +2178,7 @@ end
 --~ variant. After some skyping we got it sort of compatible with the old
 --~ one. After that the anchoring to currentdir was added in a better way.
 --~ Of course there are some optimizations too. Finally we had to deal with
---~ windows drive prefixes and thinsg like sys://.
+--~ windows drive prefixes and things like sys://.
 
 function file.collapsepath(str,anchor)
     if anchor and not find(str,"^/") and not find(str,"^%a:") then
@@ -2203,7 +2206,7 @@ function file.collapsepath(str,anchor)
         if element == '.' then
             -- do nothing
         elseif element == '..' then
-            local n = i -1
+            local n = i - 1
             while n > 0 do
                 local element = oldelements[n]
                 if element ~= '..' and element ~= '.' then
@@ -6330,6 +6333,20 @@ local g_directions = {
     gpos_reversecontextchain = -1,
 }
 
+-- Research by Khaled Hosny has demonstrated that the font loader merges
+-- regular and AAT features and that these can interfere (especially because
+-- we dropped checking for valid features elsewhere. So, we just check for
+-- the special flag and drop the feature if such a tag is found.
+
+local function supported(features)
+    for i=1,#features do
+        if features[i].ismac then
+            return false
+        end
+    end
+    return true
+end
+
 actions["reorganize subtables"] = function(data,filename,raw)
     local resources       = data.resources
     local sequences       = { }
@@ -6342,69 +6359,72 @@ actions["reorganize subtables"] = function(data,filename,raw)
         if dw then
             for k=1,#dw do
                 local gk = dw[k]
-                local typ = gk.type
-                local chain = g_directions[typ] or 0
-                local subtables = gk.subtables
-                if subtables then
-                    local t = { }
-                    for s=1,#subtables do
-                        t[s] = subtables[s].name
-                    end
-                    subtables = t
-                end
-                local flags, markclass = gk.flags, nil
-                if flags then
-                    local t = { -- forcing false packs nicer
-                        (flags.ignorecombiningmarks and "mark")     or false,
-                        (flags.ignoreligatures      and "ligature") or false,
-                        (flags.ignorebaseglyphs     and "base")     or false,
-                         flags.r2l                                  or false,
-                    }
-                    markclass = flags.mark_class
-                    if markclass then
-                        markclass = resources.markclasses[markclass]
-                    end
-                    flags = t
-                end
-                --
-                local name = gk.name
-                --
                 local features = gk.features
-                if features then
-                    -- scripts, tag, ismac
-                    local f = { }
-                    for i=1,#features do
-                        local df = features[i]
-                        local tag = strip(lower(df.tag))
-                        local ft = f[tag] if not ft then ft = {} f[tag] = ft end
-                        local dscripts = df.scripts
-                        for i=1,#dscripts do
-                            local d = dscripts[i]
-                            local languages = d.langs
-                            local script = strip(lower(d.script))
-                            local fts = ft[script] if not fts then fts = {} ft[script] = fts end
-                            for i=1,#languages do
-                                fts[strip(lower(languages[i]))] = true
+                if features and supported(features) then
+                    local typ = gk.type
+                    local chain = g_directions[typ] or 0
+                    local subtables = gk.subtables
+                    if subtables then
+                        local t = { }
+                        for s=1,#subtables do
+                            t[s] = subtables[s].name
+                        end
+                        subtables = t
+                    end
+                    local flags, markclass = gk.flags, nil
+                    if flags then
+                        local t = { -- forcing false packs nicer
+                            (flags.ignorecombiningmarks and "mark")     or false,
+                            (flags.ignoreligatures      and "ligature") or false,
+                            (flags.ignorebaseglyphs     and "base")     or false,
+                             flags.r2l                                  or false,
+                        }
+                        markclass = flags.mark_class
+                        if markclass then
+                            markclass = resources.markclasses[markclass]
+                        end
+                        flags = t
+                    end
+                    --
+                    local name = gk.name
+                    --
+                    local features = gk.features
+                    if features then
+                        -- scripts, tag, ismac
+                        local f = { }
+                        for i=1,#features do
+                            local df = features[i]
+                            local tag = strip(lower(df.tag))
+                            local ft = f[tag] if not ft then ft = {} f[tag] = ft end
+                            local dscripts = df.scripts
+                            for i=1,#dscripts do
+                                local d = dscripts[i]
+                                local languages = d.langs
+                                local script = strip(lower(d.script))
+                                local fts = ft[script] if not fts then fts = {} ft[script] = fts end
+                                for i=1,#languages do
+                                    fts[strip(lower(languages[i]))] = true
+                                end
                             end
                         end
+                        sequences[#sequences+1] = {
+                            type      = typ,
+                            chain     = chain,
+                            flags     = flags,
+                            name      = name,
+                            subtables = subtables,
+                            markclass = markclass,
+                            features  = f,
+                        }
+                    else
+                        lookups[name] = {
+                            type      = typ,
+                            chain     = chain,
+                            flags     = flags,
+                            subtables = subtables,
+                            markclass = markclass,
+                        }
                     end
-                    sequences[#sequences+1] = {
-                        type      = typ,
-                        chain     = chain,
-                        flags     = flags,
-                        name      = name,
-                        subtables = subtables,
-                        markclass = markclass,
-                        features  = f,
-                    }
-                else
-                    lookups[name] = {
-                        type      = typ,
-                        chain     = chain,
-                        flags     = flags,
-                        subtables = subtables,
-                        markclass = markclass,
-                    }
                 end
             end
         end

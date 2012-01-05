@@ -142,11 +142,11 @@
 \definesystemattribute[tagged][public]
 \definesystemattribute[image] [public]
 
-\def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
-\def\setelementnature    {\dodoubleargument\dosetelementnature}
+\unexpanded\def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
+\unexpanded\def\setelementnature    {\dodoubleargument\dosetelementnature}
 
-\def\dosetelementbackendtag[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
-\def\dosetelementnature    [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
+\unexpanded\def\dosetelementbackendtag[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
+\unexpanded\def\dosetelementnature    [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
 
 % todo: indirect macro for trialtypesetting
 
@@ -165,10 +165,10 @@
 \unexpanded\def\dodostopelement
   {\ctxcommand{stoptag()}}
 
+% beware: making this one unexpanded spoils tables (noalign problem)
+
 \unexpanded\def\nonostartelement[#1][#2]{}
 \unexpanded\def\nonostopelement         {}
-
-% beware: making this one unexpanded spoils tables (noalign problem)
 
 \def\dodostarttagged{\iftrialtypesetting\expandafter\nododostarttagged\else\expandafter\dododostarttagged\fi}
 \def\dodostoptagged {\iftrialtypesetting\expandafter\nododostoptagged \else\expandafter\dododostoptagged \fi}
@@ -185,26 +185,28 @@
 \def\nododostarttagged#1#2{}
 \def\nododostoptagged     {}
 
+% end of beware
+
 \newtoks\everysetupstructure
 
-\def\setupstructure[#1]%
+\unexpanded\def\setupstructure[#1]%
   {\getparameters[\??el][#1]%
    \the\everysetupstructure}
 
-\def\doenableelements
+\unexpanded\def\doenableelements
   {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
    \let\startelement\dostartelement
    \let\stopelement \dostopelement}
 
-\def\dodisableelements
+\unexpanded\def\dodisableelements
   {\let\startelement\renostartelement
    \let\stopelement \nonostopelement}
 
-\def\doenabletagged
+\unexpanded\def\doenabletagged
   {\let\dostarttagged\dodostarttagged
    \let\dostoptagged \dodostoptagged }
 
-\def\dodisabletagged
+\unexpanded\def\dodisabletagged
   {\let\dostarttagged\nododostarttagged
    \let\dostoptagged \nododostoptagged }
 
@@ -248,14 +250,19 @@
     \dostoptagged
 \to \everystoptext
 
+\appendtoks
+    \dodisableelements
+    \dodisabletagged
+\to \everypagebody
+
 % \doifinelementelse{structure:section}            {yes} {no}
 % \doifinelementelse{structure:chapter}            {yes} {no}
 % \doifinelementelse{division:*-structure:chapter} {yes} {no}
 
-\def\doifinelementelse#1%
+\unexpanded\def\doifinelementelse#1%
   {\ctxcommand{testcase(structures.atlocation("#1"))}}
 
-\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
+\unexpanded\def\taggedlabeltexts#1#2#3% experimental: label, numberdetail, numbercontent
   {\begingroup
    \dostarttagged\t!label{#1}%
    \labeltexts{#1}%
@@ -267,7 +274,7 @@
    \dostoptagged
    \endgroup}
 
-\def\namedtaggedlabeltexts#1#2#3#4#5% experimental: labeltag label numbertag numberdetail numbercontent
+\unexpanded\def\namedtaggedlabeltexts#1#2#3#4#5% experimental: labeltag label numbertag numberdetail numbercontent
   {\begingroup
    \dostarttagged{#1}{#2}%
    \labeltexts{#2}%
@@ -298,7 +305,7 @@
 %D \stoptext
 %D \stoptyping
 
-\def\settaggedmetadata[#1]%
+\unexpanded\def\settaggedmetadata[#1]%
   {\ctxlua{structures.tags.registermetadata(\!!bs#1\!!es)}}
 
 \protect

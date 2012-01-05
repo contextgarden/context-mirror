@@ -20,15 +20,15 @@
 
 % OTRONE: basic single column
 
-\activateotr{ONE}{} % the default one
+\page_otr_activate{ONE}\empty % the default otr
 
 \newtoks\OTRONEoutput
 
 \def\OTRONEgotonextpage
-  {\ejectpage}
+  {\page_otr_eject_page}
 
 \def\OTRONEgotonextpageX % will become obsolete
-  {\superejectpage}
+  {\page_otr_eject_page_and_flush_inserts}
 
 \def\OTRONEsethsize
   {\global\hsize\textwidth}
@@ -61,126 +61,120 @@
      \fi
    \fi}
 
-% can we avoind the extra vboxing here?
+% can we avoid the extra vboxing here?
 
-\def\OTRONEregisteredtextarea#1%
-  {\ifregistertextareas
+\def\OTRONEregisteredtextarea#1% obsolete
+  {\ifconditional\c_page_areas_enabled
      \setbox0\vbox{#1}%
      \wd0\makeupwidth % somehow a space creeps in
      \vbox{\registeredtextarea000}%
    \else
      #1%
    \fi}
-
-\def\doOTRONEregisteredtextareaA#1%
-  {\ifregistertextareas
-     \xypos{pbd:\realfolio:b}% we could save bytes by only saving the y
-     \endgraf
-     \begingroup
-     \scratchdimen\dimexpr\MPy{pbd:\realfolio:b}-\MPy{pbd:\realfolio:e}\relax
-     \setbox\scratchbox\emptyhbox
-     \wd\scratchbox\makeupwidth
-     \ht\scratchbox\scratchdimen
-     \vsmash{\registeredtextarea00\scratchbox}%
-     \endgroup
-     #1%
-     \endgraf
-     \xypos{pbd:\realfolio:e}%
-   \else
-     #1%
-   \fi}
-
-\def\doOTRONEregisteredtextareaB#1%
-  {\ifregistertextareas
-     \setbox0\vbox{#1}%
-     \wd0\makeupwidth % somehow a space creeps in
-     \vbox{\registeredtextarea000}%
-   \else
-     #1%
-   \fi}
-
-\let\OTRONEregisteredtextareaA\firstofoneargument
-\let\OTRONEregisteredtextareaB\firstofoneargument
 
 % 1 = partial page, 2 = whole page, 3 = partial page
 
 \setnewconstant\kindofpagetextareas\plustwo
 
-\def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n>
-  {\bgroup             % niet breedte zetten, kan fractie zijn!
-   %
-   \donetrue\processnotes{\dochecknote\ifbottomnotes\else\donefalse\fi}%
-   \ifcase\kindofpagetextareas
+\def\OTRONEregisteredtextareaA
+  {\ifconditional\c_page_areas_enabled
+     \expandafter\OTRONEregisteredtextareaAindeed
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\OTRONEregisteredtextareaB
+  {\ifconditional\c_page_areas_enabled
+     \expandafter\OTRONEregisteredtextareaBindeed
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\OTRONEregisteredtextareaAindeed
+  {\ifcase\kindofpagetextareas
+     \expandafter\firstofoneargument
    \or % partial page (experimental)
-     \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaA
+     \expandafter\page_areas_register_direct
    \or % whole page   (default)
-     \let\OTRONEregisteredtextareaB\doOTRONEregisteredtextareaB
+     \expandafter\firstofoneargument
    \or % partial page (only works well with no stretch!)
-     \let\OTRONEregisteredtextareaA\doOTRONEregisteredtextareaB
-   \fi
-   %
-   \setbox0\vbox \ifdone to \textheight \fi
-     {\edef\currentpagedepth{\the\dp#2}% still to be derived from #1
+     \expandafter\page_areas_register_boxed
+   \fi}
+
+\def\OTRONEregisteredtextareaBindeed
+  {\ifcase\kindofpagetextareas
+     \expandafter\firstofoneargument
+   \or % partial page (experimental)
+     \expandafter\firstofoneargument
+   \or % whole page   (default)
+     \expandafter\page_areas_register_boxed
+   \or % partial page (only works well with no stretch!)
+     \expandafter\firstofoneargument
+   \fi}
+
+\newdimen\d_page_one_natural_depth
+
+\def\OTRONEdopagecontents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+  {\bgroup
+   \notes_check_if_bottom_present
+   \setbox0\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
+     {\d_page_one_natural_depth\dp#2\relax
       \dotopinsertions
+      \OTRONEregisteredtextareaA{#1#2}%
       \ifgridsnapping
-        \OTRONEregisteredtextareaA{#1#2}%
-        \vskip-\currentpagedepth\vskip\openstrutdepth
+        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifr@ggedbottom
-        \OTRONEregisteredtextareaA{#1#2}%
-        \vskip-\currentpagedepth\vskip\openstrutdepth
+        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \dobotinsertions
         \vfil
       \else\ifb@selinebottom
-        \OTRONEregisteredtextareaA{#1#2}%
-        \kern-\currentpagedepth\kern\maxdepth
+        \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \dobotinsertions
       \else
-        \OTRONEregisteredtextareaA{#1#2}%
-        \dobotinsertions % added
+        \dobotinsertions
       \fi\fi\fi
-      \fakepagenotes}% was \fakenotes, but wrong! (check with \setupalign[height])
-   % we could use the local snapper hier
-   \ifdone
+      \fakepagenotes}%
+   \ifconditional\c_notes_bottom_present
      \ifgridsnapping
-       \ifcase\layoutlines % todo: make macro of this
+       \ifcase\layoutlines
          \getrawnoflines\textheight
        \else
          \noflines\layoutlines
-        \fi
-       \advance\noflines \minusone
-       \scratchdimen\noflines\lineheight
-       \advance\scratchdimen \topskip
+       \fi
+       \advance\noflines\minusone
+       \scratchoffset\dimexpr\noflines\lineheight+\topskip\relax
      \else
-       \scratchdimen\ht0
+       \scratchoffset\ht0
      \fi
    \else
-     \scratchdimen\zeropoint
+     \scratchoffset\zeropoint
    \fi
-   %
    \setbox2\hbox
-     {\checksinglecolumnfootnotes
-      \lower\scratchdimen
+     {\checksinglecolumnfootnotes % why this check?
+      \lower\scratchoffset
       \vbox{\placebottomnotes}}%
    \smashbox2% % needed here
-   \ifdone
-     \ht0\zeropoint
-   \fi
    \OTRONEregisteredtextareaB
      {\vbox to \textheight
-        {\box0
-         \box2
-         \ifdone \else\vfill\fi}}%
+        {\ifconditional\c_notes_bottom_present
+           \ht0\zeropoint
+           \box0
+           \box2
+         \else
+           \box0
+           \box2
+           \vfill
+         \fi}}%
    \egroup}
 
 \def\OTRONEfinalsidefloatoutput
   {\finaloutput\unvbox\normalpagebox}
 
-\OTRONEoutput
-  {\sidefloatoutput}
+\OTRONEoutput{\page_sides_output_routine} % this will become a command
 
 %D Insertions
 
@@ -197,7 +191,7 @@
          \ifdim\totaltopinserted>\zeropoint\relax
            \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
              \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
-             \vfilll\eject
+             \page_otr_fill_and_eject_page % was tripple: vfilll
            \fi
          \fi
        \fi
@@ -429,47 +423,7 @@
    \doinsertfloatinfo
    \dohandlenextfloatindent}
 
-% \def\OTRONEsomefixdfloat % [#1]
-%   {\docheckiffloatfits
-%    \ifroomforfloat\else
-%      \goodbreak
-%    \fi
-%    \showmessage\m!floatblocks9\empty
-%    \someherefloat} % [#1]
-%
-% better:
-%
-% \dorecurse{50}
-%   {[before normal] \input thuan
-%    \placefigure{normal}{\framed[height=1cm,width=8cm]{}}
-%    \placefigure{normal}{\framed[height=2cm,width=8cm]{}}
-%    [before force] \input thuan
-%    \placefigure[force]{force}{\framed[height=8cm,width=8cm]{}}}
-
 \setnewconstant\fixedfloatmethod\plusthree
-
-% \def\OTRONEsomefixdfloat % [#1]
-%   {\docheckiffloatfits
-%    \ifroomforfloat\else
-%      \ifzeropt\pagetotal
-%        % let's assume that there is room
-%      \else
-%        \ifcase\fixedfloatmethod
-%          % disabled
-%        \or % 1 (old method)
-%          \goodbreak
-%        \or % 2 (safe method)
-%          \page
-%        \or % 3 (keeps in stream)
-%          \vskip\textheight
-%          \vskip-\textheight
-%        \or % 4 (also keeps in place)
-%           \dosomebreak\nobreak
-%        \fi
-%      \fi
-%    \fi
-%    \showmessage\m!floatblocks9\empty
-%    \someherefloat} % [#1]
 
 \def\OTRONEsomefixdfloat % [#1]
   {% there is (in mkii) no good way to prevent a break
@@ -483,8 +437,6 @@
      \someelsefloat[\v!here]%
    \else
     %\checkwaitingfloats{#1}%
-     \def\logsidefloat
-       {\doinsertfloatinfo}%
      \setbox\floatbox\vbox{\box\floatbox}%
      \wd\floatbox\floatwidth
      \processfirstactioninset

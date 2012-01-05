@@ -99,7 +99,7 @@
    \forgetall % else indented flush
    \dontcomplain
    \global\setbox\page_makeup_box\vbox to \makeupparameter\c!height \bgroup
-     \dosetmakeupattributes\c!style\c!color
+     \usemakeupstyleandcolor\c!style\c!color
      \hsize\makeupparameter\c!width
      \setupalign[\makeupparameter\c!align]%
      \doprocesslocalsetups{\makeupparameter\c!setups}% lua(..),xml(...,..),tex(..)
@@ -107,30 +107,10 @@
      \let\stopmakeup\page_makeup_stop_yes}
 
 \unexpanded\def\page_makeup_stop_yes
-    {\endgraf
-     \makeupparameter\c!bottom
-     \egroup
-   \ifprocessingpages % this will be redone anyway (is this needed at all?)
-     \ifpageselected
-       \page_makeup_flush_box
-     \else
-       \page_makeup_wipe_box
-     \fi
-   \else
-     \ifpageselected
-       \page_makeup_wipe_box
-     \else
-       \page_makeup_flush_box
-     \fi
-   \fi
-   \ifselectingpages
-     \global\pageselectedfalse
-   \fi
+  {\endgraf
+   \makeupparameter\c!bottom
    \egroup
-   \stoplayout} % includes \page
-
-\def\page_makeup_flush_box
-  {\pushpagestate % new
+   \pushpagestate % new
    \makeupparameter\c!before
    \relax % to be sure we don't enter the \if
    \ifdim\ht\page_makeup_box>\vsize
@@ -145,10 +125,9 @@
    \ifdoublesided \ifodd\realpageno \else
      \getvalue{\??do::\c!doublesided::\makeupparameter\c!doublesided}%
    \fi \fi
-   \poppagestate} % new
-
-\def\page_makeup_wipe_box
-  {\global\box\page_makeup_box\emptybox}
+   \poppagestate % new
+   \egroup
+   \stoplayout} % includes \page
 
 \setvalue{\??do::\c!doublesided::\v!yes}%
   {\emptyhbox
@@ -171,8 +150,6 @@
     \setuptext  [\c!state=\makeupparameter\c!textstate]%
     \setupbottom[\c!state=\makeupparameter\c!bottomstate]%
     \setuptop   [\c!state=\makeupparameter\c!topstate]%
-    % this is needed, but no \setuplayout here; fails in texexec --fig=c
-   %\recalculatelayout
 \to \page_makeup_every_setup
 
 %D The standard page template is defined as follows:
@@ -219,6 +196,10 @@
 \definemakeup
   [\v!page]
   []
+
+\definemakeup
+  [\v!middle]
+  [\v!standard]
 
 % \definelayout[standard]
 % \definelayout[text]

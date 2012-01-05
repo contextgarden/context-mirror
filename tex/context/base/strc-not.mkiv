@@ -98,7 +98,7 @@
   {\def\doprocesssomenote##1{\edef\currentnote{##1}\let\currentdescription\currentnote#1}%
    \the\tobeprocessednotes}
 
-%D Notes have their own paremater handlers. The complication here
+%D Notes have their own parameter handlers. The complication here
 %D is that we use descriptions to typeset the note, so we have several
 %D resolvers.
 
@@ -119,11 +119,11 @@
 
 \def\detokenizednoteparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??vn#1\endcsname}}
 
-\def\dosetnoteattributes#1#2% style color
-  {\edef\fontattributehash {\noteparameterhash#1}%
-   \edef\colorattributehash{\noteparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+\def\usenotestyleandcolor#1#2% style color
+  {\edef\currentstyleparameter{\noteparameter#1}%
+   \edef\currentcolorparameter{\noteparameter#2}%
+   \ifx\currentstyleparameter\empty\else\dousestyleparameter\currentstyleparameter\fi
+   \ifx\currentcolorparameter\empty\else\dousecolorparameter\currentcolorparameter\fi}
 
 \def\setnoteparameter#1{\dosetvalue{\??vn\currentnote}{#1}}
 
@@ -507,17 +507,18 @@
    \global\skip\currentnoteins\ht\scratchbox
    \endgroup}
 
-% \def\checknotes % no longer needed
-%   {\processnotes\dochecknote}
-%
-% \def\checknotedistances
-%   {\processnotes\dosetnotedistance}
-%
-% fails but not that much needed anyway:
-%
-% \appendtoks
-%     \checknotedistances
-% \to \everyglobalbodyfont
+%D A fast checker for bottom notes being used:
+
+\newconditional\c_notes_bottom_present
+
+\def\notes_check_if_bottom_present_indeed
+  {\ifnum\noteparameter\s!notepos=\plustwo
+     \settrue\c_notes_bottom_present
+   \fi}
+
+\def\notes_check_if_bottom_present
+  {\setfalse\c_notes_bottom_present
+   \processnotes{\ifconditional\c_notes_bottom_present\else\notes_check_if_bottom_present_indeed\fi}}
 
 % D When \type{n} exceeds~1, footnotes are typeset in
 % D multi||columns, using the algoritm presented on page~397
@@ -794,13 +795,13 @@
 
 \def\docurrentnoteenumerationfullnumber
   {\noteparameter\c!numbercommand
-     {\dosetnoteattributes\c!numberstyle\c!numbercolor
+     {\usenotestyleandcolor\c!numberstyle\c!numbercolor
       \ctxlua{structures.notes.number("\currentnote",\currentdescriptionnumberentry)}%
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
 \def\docurrentnoteenumerationsymbol
   {\noteparameter\c!numbercommand
-     {\dosetnoteattributes\c!numberstyle\c!numbercolor
+     {\usenotestyleandcolor\c!numberstyle\c!numbercolor
       \descriptionparameter\c!symbol
       \domovednote\currentdescription\currentdescriptionnumberentry\v!nextpage\v!previouspage}}
 
@@ -933,7 +934,7 @@
    \egroup}
 
 \def\dodonotesymbol#1%
-  {\noteparameter\c!textcommand{\dosetnoteattributes\c!textstyle\c!textcolor#1}}
+  {\noteparameter\c!textcommand{\usenotestyleandcolor\c!textstyle\c!textcolor#1}}
 
 %D Normally footnotes are saved as inserts that are called upon
 %D as soon as the pagebody is constructed. The footnote
@@ -1329,15 +1330,6 @@
 %D \starttyping
 %D \everypar  {...\flushnotes...}
 %D \neverypar {...\postponenotes}
-%D \stoptyping
-%D
-%D and
-%D
-%D \starttyping
-%D \def\ejectinsert%
-%D   {...
-%D    \flushnotes
-%D    ...}
 %D \stoptyping
 %D
 %D We can use \type{\neverypar} because in most commands

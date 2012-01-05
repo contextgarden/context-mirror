@@ -307,7 +307,7 @@
 
 \long\def\executedefinedoverlay#1#2%
   {\bgroup
-   \setlayoutcomponentattribute\v!overlay{#1}%
+   \setlayoutcomponentattribute{\v!overlay:#1}%
    \edef\overlaywidth {\the\frameddimenwd\space}%
    \edef\overlayheight{\the\dimexpr\frameddimenht+\frameddimendp\relax\space}%
    \edef\overlaydepth {\the\frameddimendp\space}%
@@ -424,7 +424,7 @@
       \ifx\component\empty
         \resetlayoutcomponentattribute
       \else
-        \setlayoutcomponentattribute\v!background\component
+        \setlayoutcomponentattribute{\v!background:\component}%
       \fi
       \let\foregroundbox\normalforegroundbox
       \hbox \layoutcomponentboxattribute to \backgroundwidth % width in case 'foreground' is used as overlay
@@ -716,12 +716,12 @@
 
 %D Here is another fast one:
 
-\def\localbackgroundframed#1#2#3#4% tag box wd ht
-  {\setbox#2\vbox\bgroup
-   \doinitializeframed{\??ma#1}%
-   \expandafter\def\csname\??ma#1\c!component\endcsname{#1}%
-   \expandafter\def\csname\??ma#1\c!width    \endcsname{#3}%
-   \expandafter\def\csname\??ma#1\c!height   \endcsname{#4}%
+\def\localbackgroundframed#1#2#3#4#5% namespace location box wd ht
+  {\setbox#3\vbox\bgroup
+   \doinitializeframed{#1#2}% watch out! am used here
+   \expandafter\def\csname#1#2\c!component\endcsname{#2}%
+ % \expandafter\def\csname#1#2\c!width    \endcsname{#4}%
+ % \expandafter\def\csname#1#2\c!height   \endcsname{#5}%
    \!!framedframeoffset\framedparameter\c!frameoffset
    \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
    \ifx\@@framedbackgroundoffset\v!frame
@@ -729,7 +729,9 @@
    \else
      \!!framedbackgroundoffset\@@framedbackgroundoffset
    \fi
-   \setbox\framebox\box#2%
+   \setbox\framebox\box#3%
+   \wd\framebox#4%
+   \ht\framebox#5%
    \dp\framebox\zeropoint
    \edef\framedbackground   {\framedparameter\c!background}%
    \edef\framedrulethickness{\framedparameter\c!rulethickness}%
@@ -780,11 +782,11 @@
 \def\doframedparentparameter#1#2{\ifx#1\relax\doframedrootparameter#2\else\doframedparameter#1{#2}\fi}
 \def\doframedrootparameter    #1{\ifcsname\??oi#1\endcsname\??oi#1\else\s!empty\fi}
 
-\def\dosetframedattributes#1#2% style color
-  {\edef\fontattributehash {\framedparameterhash#1}%
-   \edef\colorattributehash{\framedparameterhash#2}%
-   \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash #1\fi
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash#2\fi}
+\def\useframedstyleandcolor#1#2% style color
+  {\edef\currentstyleparameter{\framedparameter#1}%
+   \edef\currentcolorparameter{\framedparameter#2}%
+   \ifx\currentstyleparameter\empty\else\dousestyleparameter\currentstyleparameter\fi
+   \ifx\currentcolorparameter\empty\else\dousecolorparameter\currentcolorparameter\fi}
 
 \def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
 
@@ -957,8 +959,8 @@
    % new, experimental dirty hook
    \framedparameter\c!extras
    % to get the right spacing
-   \edef\fontattributehash{\framedparameterhash\c!foregroundstyle}%
-   \ifx\fontattributehash\empty\else\dosetfontattribute\fontattributehash\c!foregroundstyle\fi
+   \edef\!!framedforegroundstyle{\framedparameter\c!foregroundstyle}%
+   \ifx\!!framedforegroundstyle\empty\else\dousestyleparameter\!!framedforegroundstyle\fi
    % beware, both the frame and background offset can be overruled
    %
    \edef\doframedsetups{\framedparameter\c!setups}%
@@ -1749,8 +1751,8 @@
 \def\framedforgetall{\forgetall}
 
 \def\setframedforegroundcolor
-  {\edef\colorattributehash{\framedparameterhash\c!foregroundcolor}%
-   \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash\c!foregroundcolor\fi}
+  {\edef\!!framedforegroundcolor{\framedparameter\c!foregroundcolor}%
+   \ifx\!!framedforegroundcolor\empty\else\dousecolorparameter\!!framedforegroundcolor\fi}
 
 \def\doformatboxSomeFormat
   {\vbox to \!!framedheight
@@ -2826,8 +2828,7 @@
          \doif{\framedtextparameter\c!depthcorrection}\v!on\doftstartdepthcorrection
          \doinhibitblank % \blank[\v!disable]% plaatst signal
          \setupindenting[\framedtextparameter\c!indenting]%
-        %\doconvertfont{\framedtextparameter\c!style}\empty} %%%%% todo: attr setter
-         \dosetframedtextattributes\c!style\c!color}
+         \useframedtextstyleandcolor\c!style\c!color}
 
 %D The \type {none} option is handy for nested usage, as
 %D in the presentation styles, where we don't want
@@ -2860,7 +2861,7 @@
 \def\checkframedtext % messy dependency
   {\ifinsidefloat
      \localhsize\hsize
-   \else\ifdim\sidefloatvsize>\zeropoint % will be proper handle
+   \else\ifdim\d_page_sides_vsize>\zeropoint % also possible: \c_page_sides_checks_done>\zeropoint
    % \strut            % rather clean way to invoke the sidefloat OTR
    % \setbox0=\lastbox % and get the widths set, so from now on we
    % \setlocalhsize    % can have framed texts alongside sidefloats
@@ -2935,7 +2936,7 @@
      \blank[\v!disable]%
      \let\\=\endgraf
      \framedtextparameter\c!inner
-     \dosetframedtextattributes\c!style\c!color
+     \useframedtextstyleandcolor\c!style\c!color
      \bgroup
      \aftergroup\docloseframedtext
      \let\next=}
@@ -3088,11 +3089,19 @@
       \dimen6\dimexpr-.5ex+.5\linewidth\relax
       \doifsomething{#1}
         {\doifelse\@@tllocation\v!inmargin
-           {\llap{\doattributes\??tl\c!style\c!color{#1}\hskip\leftmargindistance}}
+           {\llap
+              {\dousestyleparameter\@tlstyle
+               \dousecolorparameter\@tlcolor
+               #1%
+               \hskip\leftmargindistance}}
            {\color[\@@tlrulecolor]
               {\vrule\!!height\dimen4\!!depth\dimen6\!!width\@@tlwidth}%
             \hbox spread 2\dimexpr\@@tldistance\relax
-              {\hss\doattributes\??tl\c!style\c!color{\strut#1}\hss}}}%
+              {\hss
+               \dousestyleparameter\@tlstyle
+               \dousecolorparameter\@tlcolor
+               \strut#1%
+               \hss}}}%
       \color[\@@tlrulecolor]
         {\leaders\hrule\!!height\dimen4\!!depth\dimen6\hfill}}%
    \ht\scratchbox\strutht
@@ -3218,9 +3227,10 @@
            {\hbox}
            {\hbox to \@@ilwidth}}%
         \bgroup
-          \doattributes\??il\c!style\c!color{\strut#2\hfill\@@ilseparator}%
-          \hskip\@@ildistance
-       \egroup}%
+          \dousestyleparameter\@@ilstyle
+          \dousecolorparameter\@@ilcolor
+          \strut#2\hfill\@@ilseparator\hskip\@@ildistance
+        \egroup}%
   %\hangindent=\wd0\relax % tzt hang=yes,n
   %\parindent=\hangindent
   %\box0\relax
@@ -3229,7 +3239,9 @@
    #4%
    \doifsomething{#3}
      {\kern\@@ildistance
-      \doattributes\??il\c!style\c!color{#3\strut}}%
+      \dousestyleparameter\@@ilstyle
+      \dousecolorparameter\@@ilcolor
+      #3\strut}%
    \endgroup
    \endgraf
    \@@ilafter}

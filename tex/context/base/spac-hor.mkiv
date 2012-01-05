@@ -47,7 +47,7 @@
 
 \definecomplexorsimple\setupindenting
 
-\def\complexsetupindenting[#1]%
+\unexpanded\def\complexsetupindenting[#1]%
   {\edef\currentindenting{#1}%
    \ifx\currentindenting\empty \else
      \doapplycurrentindenting

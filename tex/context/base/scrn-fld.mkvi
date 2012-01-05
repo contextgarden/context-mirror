@@ -110,7 +110,7 @@
    \the\everysetupforms}
 
 \appendtoks
-    \ctxcommand{setformsmethod("@@frmethod")}%
+    \ctxcommand{setformsmethod("\@@frmethod")}%
 \to \everysetupforms
 
 \setupforms
@@ -128,10 +128,8 @@
 \def\scrn_symbols_preset_indeed#tag%
   {\doifobjectfoundelse{SYM}{#tag}
      {}
-     {\settightobject{SYM}{#tag}\hbox{\symbol[#tag]}%
-      \flushatshipout
-        {\setbox0\hbox{\hskip-\maxdimen\getobject{SYM}{#tag}}%
-         \smashbox0\box0}}}
+     {\settightobject{SYM}{#tag}\hbox{\symbol[#tag]}%                        % todo: set this as immediate xform
+      \page_otr_add_special_content{\hskip-\maxdimen\getobject{SYM}{#tag}}}} % and then force it into the file
 
 \let\dosetfieldsymbol\scrn_symbols_preset_indeed
 
@@ -140,7 +138,7 @@
 
 \unexpanded\def\definedefaultsymbols % used ?
   {\definesymbol[defaultyes][\mathematics{\times}]%
-   \definesymbol[defaultno ][\mathematics{\cdot }]}
+   \definesymbol[defaultno] [\mathematics{\cdot }]}
 
 % \def\resetfieldsymbol[#tag]% for experimental usage only
 %   {\resetobject{SYM}{#tag}}
@@ -219,7 +217,7 @@
    \ifx\currentfieldbackgroundcolor\empty\else
      \getcolorattributevalue\currentfieldbackgroundcolor\currentfieldbackgroundcolorvalue
    \fi
-   \dosetfieldbodyattributes\c!style\c!color
+   \usefieldbodystyleandcolor\c!style\c!color
    \ctxcommand{insertfield("\currentfieldbody", {
         title                = "\currentfieldbody",
         width                = \number\dimexpr\fieldbodyparameter\c!width \relax,
@@ -944,14 +942,14 @@
      \getinteractionmenuparameter
      \inheritedinteractionmenuframed
      \setinteractionmenuparameter
-     \dosetinteractionmenuattributes}
+     \useinteractionmenustyleandcolor}
 
 \def\scrn_rollbutton_symbol_b
   {\scrn_rollbutton_symbol_indeed
      \getbuttonparameter
      \inheritedbuttonframed
      \setbuttonparameter
-     \dosetbuttonattributes}
+     \usebuttonstyleandcolor}
 
 \def\scrn_rollbutton[#tag][#settings]#text[#reference]%
   {\dontleavehmode
@@ -991,14 +989,14 @@
    \fitfield[rollbutton:\number\scrn_rollbutton_n_button]%
    \egroup}
 
-\unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#dosetattributes#what#text%
+\unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#usestyleandcolor#what#text%
   {\definecolor[rollover][rollover:#what]%
    \doifelse{#what}{n}% ?
      {\doifelse{#getparameter\c!alternative}\v!hidden\phantom\hbox}\hbox
         {#setparameter\c!framecolor     {rollover}%
          #setparameter\c!backgroundcolor{rollover}%
          #setparameter\c!color          {rollover}%
-         #inheritedframed{#dosetattributes\c!style\c!color{#text}}}}
+         #inheritedframed{#usestyleandcolor\c!style\c!color{#text}}}}
 
 %D We plug into the menu system
 

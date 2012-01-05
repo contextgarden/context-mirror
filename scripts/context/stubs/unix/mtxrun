@@ -1641,7 +1641,7 @@ end
 
 -- For the moment here, but it might move to utilities. Beware, we need to
 -- have the longest keyword first, so 'aaa' comes beforte 'aa' which is why we
--- loop back from the end.
+-- loop back from the end cq. prepend.
 
 local sort, fastcopy, sortedkeys = table.sort, table.fastcopy, table.sortedkeys -- dependency!
 
@@ -1661,13 +1661,13 @@ function lpeg.append(list,pp,delayed,checked)
     elseif delayed then -- hm, it looks like the lpeg parser resolves anyway
         local keys = sortedkeys(list)
         if p then
-            for i=#keys,1,-1 do
+            for i=1,#keys,1 do
                 local k = keys[i]
                 local v = list[k]
                 p = P(k)/list + p
             end
         else
-            for i=#keys,1,-1 do
+            for i=1,#keys do
                 local k = keys[i]
                 local v = list[k]
                 if p then
@@ -1683,7 +1683,7 @@ function lpeg.append(list,pp,delayed,checked)
     elseif checked then
         -- problem: substitution gives a capture
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -1702,7 +1702,7 @@ function lpeg.append(list,pp,delayed,checked)
         end
     else
         local keys = sortedkeys(list)
-        for i=#keys,1,-1 do
+        for i=1,#keys do
             local k = keys[i]
             local v = list[k]
             if p then
@@ -1714,6 +1714,9 @@ function lpeg.append(list,pp,delayed,checked)
     end
     return p
 end
+
+-- inspect(lpeg.append({ a = "1", aa = "1", aaa = "1" } ,nil,true))
+-- inspect(lpeg.append({ ["degree celsius"] = "1", celsius = "1", degree = "1" } ,nil,true))
 
 -- function lpeg.exact_match(words,case_insensitive)
 --     local pattern = concat(words)
@@ -2830,7 +2833,7 @@ function file.collapsepath(str,anchor)
         if element == '.' then
             -- do nothing
         elseif element == '..' then
-            local n = i -1
+            local n = i - 1
             while n > 0 do
                 local element = oldelements[n]
                 if element ~= '..' and element ~= '.' then
@@ -6032,6 +6035,7 @@ local real, user, sub
 
 function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
+--     real, user, sub = 0, 0, 0
 end
 
 local timing    = false
@@ -7527,11 +7531,13 @@ end
 
 xml.convert = xmlconvert
 
-function xml.inheritedconvert(data,xmldata)
+function xml.inheritedconvert(data,xmldata) -- xmldata is parent
     local settings = xmldata.settings
-    settings.parent_root = xmldata -- to be tested
+    if settings then
+        settings.parent_root = xmldata -- to be tested
+    end
  -- settings.no_root = true
-    local xc = xmlconvert(data,settings)
+    local xc = xmlconvert(data,settings) -- hm, we might need to locate settings
  -- xc.settings = nil
  -- xc.entities = nil
  -- xc.special = nil
@@ -9481,6 +9487,7 @@ local xml = xml
 local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
+local xmlfilter = xml.filter
 
 local type, setmetatable, getmetatable = type, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
@@ -9630,7 +9637,7 @@ local function xmltoelement(whatever,root)
     end
     local element
     if type(whatever) == "string" then
-        element = xmlinheritedconvert(whatever,root)
+        element = xmlinheritedconvert(whatever,root) -- beware, not really a root
     else
         element = whatever -- we assume a table
     end
@@ -9731,32 +9738,39 @@ end
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
-    if collected then
-        for c=1,#collected do
-            local e = collected[c]
-            local r = e.__p__
-            local d, k, rri = r.dt, e.ni, r.ri
-            local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
-            if edt then
-                local be, af
-                local cp = copiedelement(element,e)
-                if prepend then
-                    be, af = cp, edt
-                else
-                    be, af = edt, cp
-                end
-                local bn = #be
-                for i=1,#af do
-                    bn = bn + 1
-                    be[bn] = af[i]
-                end
-                if rri then
-                    r.dt[rri].dt = be
-                else
-                    d[k].dt = be
-                end
-                redo_ni(d)
+    local function inject_e(e)
+        local r = e.__p__
+        local d, k, rri = r.dt, e.ni, r.ri
+        local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
+        if edt then
+            local be, af
+            local cp = copiedelement(element,e)
+            if prepend then
+                be, af = cp, edt
+            else
+                be, af = edt, cp
             end
+            local bn = #be
+            for i=1,#af do
+                bn = bn + 1
+                be[bn] = af[i]
+            end
+            if rri then
+                r.dt[rri].dt = be
+            else
+                d[k].dt = be
+            end
+            redo_ni(d)
+        end
+    end
+    if not collected then
+        -- nothing
+    elseif collected.tg then
+        -- first or so
+        inject_e(collected)
+    else
+        for c=1,#collected do
+            inject_e(collected[c])
         end
     end
 end
@@ -9764,16 +9778,23 @@ end
 local function insert_element(root,pattern,whatever,before) -- todo: element als functie
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
-    if collected then
+    local function insert_e(e)
+        local r = e.__p__
+        local d, k = r.dt, e.ni
+        if not before then
+            k = k + 1
+        end
+        insert(d,k,copiedelement(element,r))
+        redo_ni(d)
+    end
+    if not collected then
+        -- nothing
+    elseif collected.tg then
+        -- first or so
+        insert_e(collected)
+    else
         for c=1,#collected do
-            local e = collected[c]
-            local r = e.__p__
-            local d, k = r.dt, e.ni
-            if not before then
-                k = k + 1
-            end
-            insert(d,k,copiedelement(element,r))
-            redo_ni(d)
+            insert_e(collected[c])
         end
     end
 end
@@ -10073,6 +10094,52 @@ xml.remap_tag                  = xml.remaptag              obsolete.remap_tag   
 xml.remap_name                 = xml.remapname             obsolete.remap_name            = xml.remapname
 xml.remap_namespace            = xml.remapnamespace        obsolete.remap_namespace       = xml.remapnamespace
 
+-- new (probably ok)
+
+function xml.cdata(e)
+    if e then
+        local dt = e.dt
+        if dt and #dt == 1 then
+            local first = dt[1]
+            return first.tg == "@cd@" and first.dt[1] or ""
+        end
+    end
+    return ""
+end
+
+function xml.finalizers.xml.cdata(collected)
+    if collected then
+        local e = collected[1]
+        if e then
+            local dt = e.dt
+            if dt and #dt == 1 then
+                local first = dt[1]
+                return first.tg == "@cd@" and first.dt[1] or ""
+            end
+        end
+    end
+    return ""
+end
+
+function xml.insertcomment(e,str,n) -- also insertcdata
+    table.insert(e.dt,n or 1,{
+        tg      = "@cm@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    })
+end
+
+function xml.setcdata(e,str) -- also setcomment
+    e.dt = { {
+        tg      = "@cd@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    } }
+end
 
 
 end -- of closure
@@ -10245,7 +10312,7 @@ end
 
 local function text(collected) -- hybrid
     if collected then -- no # test here !
-        local e = collected[1] or collected
+        local e = collected[1] or collected -- why fallback to element, how about cdata
         return e and xmltotext(e) or ""
     else
         return ""
@@ -10415,7 +10482,7 @@ function xml.raw(id,pattern)
     end
 end
 
-function xml.text(id,pattern)
+function xml.text(id,pattern) -- brrr either content or element (when cdata)
     if pattern then
      -- return text(xmlfilter(id,pattern))
         local collected = xmlfilter(id,pattern)

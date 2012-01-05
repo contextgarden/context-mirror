@@ -49,7 +49,7 @@
 %D \placeinitial \input ward \par \input ward \placeinitial \input tufte
 %D \stoptyping
 
-\installsimplecommandhandler \??dc {initial}
+\installsimplecommandhandler \??dc {initial} \??dc
 
 \appendtoks
     \checkinitialparent % this might become automatic
@@ -78,7 +78,7 @@
    \begingroup
    \edef\currentinitial{#1}%
    \begingroup
-   \dosetinitialcolorattribute\c!color
+   \useinitialcolorparameter\c!color
    \ctxlua{typesetters.paragraphs.droppers.set {
      location = "\initialparameter\c!location",
      enabled  = true,
@@ -95,7 +95,7 @@
    \begingroup
    \doifelsenothing{\initialparameter\c!style}
      {\definedfont[\initialparameter\s!font]}
-     {\initialparameter\c!style}%
+     {\useinitialstyleparameter\c!style}%
    \ctxlua{typesetters.paragraphs.droppers.freeze()}%
    \endgroup
    \endgroup

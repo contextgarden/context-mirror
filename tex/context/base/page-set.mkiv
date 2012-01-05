@@ -437,7 +437,7 @@
               \vss
             \fi}%
          \wd\scratchbox\localcolumnwidth % \textwidth
-         \docolumnpagebodymarks{#1}{#2}\recurselevel\scratchbox
+         \page_marks_synchronize_column{#1}{#2}\recurselevel\scratchbox
          \ifcase\columndirection
            \hskip\OTRSETgetparameter\c!distance\recurselevel\box\scratchbox
          \else
@@ -572,7 +572,8 @@
 
 \def\OTRSETsetvsize % snap per sectie (gap here?)
   {\ifcollectingcontent \else % can be assigndimen
-\OTRSETskipstart % not that well tested
+     \OTRSETsetcolumnmaxcells % layout can be changed
+     \OTRSETskipstart % not that well tested
      \OTRSETcheckinsert % added
      \OTRSETsetfreecells\mofcolumns\columnfirstcell
      \ifsomefreecolumncells
@@ -625,8 +626,8 @@
 %      \egroup
 %    \fi
 %    % brrr:
-%    \ejectinsert
-%    \ejectpage
+%    \page_otr_flush_all_floats
+%    \page_otr_eject_page
 %    \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
 %
 % \installcolumnbreakhandler {SET} \v!forceer
@@ -654,8 +655,8 @@
 
 \installcolumnbreakhandler {SET} \v!local
   {\OTRSETcolumnhbreak
-   \ejectinsert
-   \ejectpage % brrr
+   \page_otr_flush_all_floats
+   \page_otr_eject_page
    % no \OTRSETsethsize, can be mid smaller (like tabulate)
    % also, this one should be executed at the outer level
    % (setting hsize inside otr does not work)
@@ -670,8 +671,8 @@
   {\OTRSETcolumnhbreak
    \edef\savedmofcolumns{\the\mofcolumns}%
    \edef\savedrealpageno{\the\realpageno}%
-   \ejectinsert
-   \ejectpage % brrr
+   \page_otr_flush_all_floats
+   \page_otr_eject_page
    \doloop
      {\ifnum\savedmofcolumns=\mofcolumns
         \ifnum\savedrealpageno=\realpageno
@@ -688,14 +689,14 @@
   {\expanded{\OTRSETgotocolumn[\@@columnspecification]}}
 
 \installcolumnbreakhandler {SET} \v!page
-  {\vfill\eject % \doejectpage\eject
+  {\page_otr_fill_and_eject_page
    \OTRSETgotonextpage}
 
 \newtoks\OTRSETeverystartofcolumn
 
 \newbox\OTRSETsavedfootnotes
 
-% \installoutput\OTRSETflushtextsofar % spacing goes wrong
+% \installoutputroutine\OTRSETflushtextsofar % spacing goes wrong
 
 %\def\OTRSETflushtextsofar
 %  {\ifvoid\normalpagebox \else
@@ -734,7 +735,7 @@
 
 \newskip\lastskipinotr
 
-\installoutput\doOTRSETflushtextsofar % experimental
+\installoutputroutine\doOTRSETflushtextsofar % experimental
   {\ifvoid\normalpagebox\else
      \scratchdimen\dp\normalpagebox
      \setbox\scratchbox\vbox
@@ -816,7 +817,7 @@
    \doOTRSETsetgridcells
      {\copy\placeholderboxf}
      \mofcolumns\columnfirstcell\plusone\noflines
-     {\registeredtextarea1\columnfirstcell\scratchbox}% == \hbox / tricky htcorr == \columnfirstcell
+     {\page_areas_registered_box1\columnfirstcell\scratchbox}% == \hbox / tricky htcorr == \columnfirstcell
    \global\columnlastcell\columnfirstcell
    \global\advance\columnlastcell \noflines
    \global\lastcolumnlastcell\columnlastcell
@@ -1489,7 +1490,7 @@
 \definecolumnset[\s!default][\c!n=2] % fallback
 
 \def\OTRSETgotonextpage
-  {\vfill\eject
+  {\page_otr_fill_and_eject_page
    \relax\ifnum\mofcolumns>\plusone
      \OTRSETgotocolumn[\v!last]%
      \ifnum\mofcolumns>\plusone
@@ -1515,7 +1516,7 @@
 
 \def\doOTRSETgotoCOLUMN#1%
   {\ifnum\mofcolumns=#1\else
-     \vfill\eject % \doejectpage\eject
+     \page_otr_fill_and_eject_page
      \doloop
        {\ifnum\mofcolumns=#1\relax
           \exitloop \else \OTRSETdummycolumn
@@ -1594,8 +1595,7 @@
 \def\OTRSETdummycolumn
   {\verticalstrut
    \vskip-\struttotal
-   \vfill
-   \eject}
+   \page_otr_fill_and_eject_page}
 
 \newcounter\columnsetlevel
 \let\currentcolumnset\empty
@@ -1615,7 +1615,7 @@
      \globallet\columnsetpage\!!plusone
      \def\currentcolumnset{#2}%
      \insidecolumnstrue % will be different flag in addition
-     \activateotr{SET}{ONE}% andere naam, activate or so
+     \page_otr_activate{SET}{ONE}% andere naam, activate or so
      \doifelsenothing{#1}
        {\globallet\OTRSETlist\s!default}
        {\xdef\OTRSETlist{#1}}%
@@ -1719,7 +1719,7 @@
      % inhibit flush of floats !
      % todo: nothing if no footnotes, else empty page
      \dostepwiserecurse\mofcolumns\nofcolumns\plusone
-       {\vskip-\struttotal\verticalstrut\vfill\eject}%
+       {\vskip-\struttotal\verticalstrut\page_otr_fill_and_eject_page}%
    \else
      \ifnum\mofcolumns>\plusone
        \donetrue
@@ -1734,8 +1734,7 @@
        \else
          % probably todo
        \fi
-       \vfill
-       \eject
+       \page_otr_fill_and_eject_page
        % brr, may result in empty page after nicely fit text
        % or if left, then lost of first column only text
        \ifnum\mofcolumns>\plusone
@@ -1794,10 +1793,13 @@
       \fi}%
    \OTRSETchecksidefloat}
 
+\def\OTRSETsetcolumnmaxcells
+  {\getrawnoflines\textheight\xdef\columnmaxcells{\the\noflines}}
+
 \def\OTRSETinitializefeatures
   {% number of lines
    % new: raw
-   \getrawnoflines\textheight\xdef\columnmaxcells{\the\noflines}%
+   \OTRSETsetcolumnmaxcells
    % direction
    \doifelsevalue{\??mc\OTRSETidentifier\c!direction}\v!right
      {\columndirection\zerocount}
@@ -1823,7 +1825,7 @@
 
 \ifx\lastskipinotr\undefined \newskip\lastskipinotr \fi
 
-\installoutput\OTRSETflushpreposttext
+\installoutputroutine\OTRSETflushpreposttext
   {\global\setbox\precolumnbox\vbox
      {\unvbox\normalpagebox
       \global\lastskipinotr\lastskip}%
@@ -1907,7 +1909,7 @@
    \ifcase\columnsetlevel\relax
      \mofcolumns\plusone
      \OTRSETinitializecolumns
-     \OTRSETassignwidths
+     \OTRSETassignwidths % already done
      \OTRSETsethsize
    \fi
    \!!counta#2\!!countb#3\docalculatecolumnsetspan
@@ -2030,7 +2032,7 @@
            \advance\dimen0 \totaltopinserted\relax
            \ifdim\dimen0>\textheight % \vsize  %%%%%%%%% \textheight
              \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
-             \vfilll\eject
+             \page_otr_fill_and_eject_page % was triple: vfilll
            \fi
          \fi
        \fi

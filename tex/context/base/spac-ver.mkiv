@@ -17,7 +17,7 @@
 
 \registerctxluafile{spac-ver}{1.001}
 
-\newskip\blankskip          \blankskip=\bigskipamount
+\newskip\blankskip \blankskip=\bigskipamount
 
 \def\skipfactor    {.75}
 \def\skipgluefactor{.25}
@@ -92,15 +92,15 @@
    \dosetupspecifiedinterlinespaceindeed}
 
 \def\dosetupspecifiedinterlinespaceindeed
-  {\edef\strutheightfactor  {\interlinespaceparameter\c!height}%
-   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth}%
+  {\edef\strutheightfactor  {\interlinespaceparameter\c!height   }%
+   \edef\strutdepthfactor   {\interlinespaceparameter\c!depth    }%
    \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
-   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth}%
-   \edef\minimumlinedistance{\interlinespaceparameter\c!distance}%
-   \edef\normallineheight   {\interlinespaceparameter\c!line}%
-   \edef\topskipfactor      {\interlinespaceparameter\c!top}%
-   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom}%
-   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch}%
+   \edef\minimumstrutdepth  {\interlinespaceparameter\c!mindepth }%
+   \edef\minimumlinedistance{\interlinespaceparameter\c!distance }%
+   \edef\normallineheight   {\interlinespaceparameter\c!line     }%
+   \edef\topskipfactor      {\interlinespaceparameter\c!top      }%
+   \edef\maxdepthfactor     {\interlinespaceparameter\c!bottom   }%
+   \edef\baselinegluefactor {\interlinespaceparameter\c!stretch  }%
    % often topskip does more bad than good, so:
    \ifx\topskipfactor\v!height
      \let\topskipfactor\strutheightfactor
@@ -140,8 +140,8 @@
 
 \let\setrelativeinterlinespace\relax
 
-\newtoks \everysetupglobalinterlinespace
-\newtoks \everysetuplocalinterlinespace
+\newtoks\everysetupglobalinterlinespace
+\newtoks\everysetuplocalinterlinespace
 
 \def\interlinespaceparameter          #1{\csname\dointerlinespaceparameter{\??it\currentinterlinespace}#1\endcsname}
 \def\dointerlinespaceparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dointerlinespaceparentparameter\csname#1\s!parent\endcsname#2\fi}
@@ -227,19 +227,27 @@
 
 \definecomplexorsimple\setupinterlinespace
 
-\def\removelastskip % a redefinition of plain
+\def\removelastskip
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
 
-\def\doifoutervmode#1%
-  {\ifvmode\ifinner\else#1\fi\fi}
+\def\doifoutervmode
+  {\ifvmode
+     \ifinner
+       \doubleexpandafter\gobbleoneargument
+     \else
+       \doubleexpandafter\firstofoneargument
+     \fi
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
 \def\dosomebreak#1%
   {\doifoutervmode
      {\scratchskip\lastskip
       \removelastskip
-      %\leavevmode\type{#1}%
       #1\relax
-      \ifdim\scratchskip=\zeropoint % else interference with footnotes
+      \ifdim\scratchskip=\zeropoint
+        % avoid interference with footnotes
       \else
         \vskip\scratchskip
       \fi}}
@@ -252,88 +260,11 @@
    \ifhmode\endgraf\fi
    \ifvmode\nointerlineskip\vskip#1\relax\fi}
 
-\ifx\smallskip\undefined
+\unexpanded\def\smallskip{\vskip\smallskipamount}
+\unexpanded\def\medskip  {\vskip\medskipamount}
+\unexpanded\def\bigskip  {\vskip\bigskipamount}
 
-  \def\smallskip{\vskip\smallskipamount}
-  \def\medskip  {\vskip\medskipamount}
-  \def\bigskip  {\vskip\bigskipamount}
-
-\fi
-
-\ifx\allowbreak\undefined
-
-  \def\break     {\penalty\ifhmode-\plustenthousand\else\ejectpenalty\fi}
-  \def\nobreak   {\penalty \plustenthousand}
-  \def\allowbreak{\penalty \zeropoint}
-  \def\filbreak  {\par\vfil\penalty-200\vfilneg}
-  \def\goodbreak {\par\penalty-500 }
-
-\fi
-
-%D Made slightly more readable:
-
-\ifx\vglue\undefined
-
-  \def\vglue  {\afterassignment\dovglue\scratchskip=}
-  \def\hglue  {\afterassignment\dohglue\scratchskip=}
-  \def\topglue{\nointerlineskip\vglue-\topskip\vglue}
-
-  \def\dovglue
-    {\par
-     \scratchdimen\prevdepth
-     \hrule\!!height\zeropoint
-     \nobreak
-     \vskip\scratchskip
-     \prevdepth\scratchdimen}
-
-  \def\dohglue
-    {\dontleavehmode % \leavevmode
-     \scratchcounter\spacefactor
-     \vrule\!!width\zeropoint
-     \nobreak
-     \hskip\scratchskip
-     \spacefactor\scratchcounter}
-
-\fi
-
-\ifx\eject\undefined
-
-  \def\eject{\par\break}
-
-\fi
-
-\ifx\supereject\undefined
-
-  \def\supereject{\par\penalty\superpenalty}
-
-\fi
-
-\ifx\dosupereject\undefined
-
-  \def\dosupereject
-    {\ifnum\insertpenalties>\zerocount % something is being held over
-       \line{}
-       \kern-\topskip
-       \nobreak
-       \vfill\supereject
-     \fi}
-
-\fi
-
-%D We adapt plain's \type {\removelastskip} a bit:
-
-\ifx\removelastskip\undefined
-
-  \def\removelastskip
-    {\ifvmode \ifdim\lastskip=\zeropoint \else
-       \vskip-\lastskip
-     \fi \fi}
-
-\fi
-
-\ifx\smallbreak\undefined
-
-\def\smallbreak
+\unexpanded\def\smallbreak
   {\par
    \ifdim\lastskip<\smallskipamount
      \removelastskip
@@ -341,7 +272,7 @@
      \smallskip
    \fi}
 
-\def\medbreak
+\unexpanded\def\medbreak
   {\par
    \ifdim\lastskip<\medskipamount
      \removelastskip
@@ -349,7 +280,7 @@
      \medskip
    \fi}
 
-\def\bigbreak
+\unexpanded\def\bigbreak
   {\par
    \ifdim\lastskip<\bigskipamount
      \removelastskip
@@ -357,18 +288,49 @@
      \bigskip
    \fi}
 
-\fi
-
+\unexpanded\def\break     {\penalty-\plustenthousand}     % can be hmode or vmode
+\unexpanded\def\nobreak   {\penalty \plustenthousand}     % can be hmode or vmode
+\unexpanded\def\allowbreak{\penalty \zeropoint}           % can be hmode or vmode
+\unexpanded\def\goodbreak {\par\penalty-500\relax}        % forces vmode
+\unexpanded\def\filbreak  {\par\vfil\penalty-200\vfilneg} % forces vmode
+
+%D Made slightly more readable:
+
+\unexpanded\def\vglue  {\afterassignment\spacing_vglue_indeed\scratchskip=}
+\unexpanded\def\hglue  {\afterassignment\spacing_hglue_indeed\scratchskip=}
+\unexpanded\def\topglue{\nointerlineskip\vglue-\topskip\vglue}
+
+\def\spacing_vglue_indeed
+  {\par
+   \scratchdimen\prevdepth
+   \hrule\!!height\zeropoint
+   \nobreak
+   \vskip\scratchskip
+   \prevdepth\scratchdimen}
+
+\def\spacing_hglue_indeed
+  {\dontleavehmode % \leavevmode
+   \scratchcounter\spacefactor
+   \vrule\!!width\zeropoint
+   \nobreak
+   \hskip\scratchskip
+   \spacefactor\scratchcounter}
+
+%D We adapt plain's \type {\removelastskip} a bit:
+
+\unexpanded\def\removelastskip % also in supp-box
+  {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
+
 \newskip\ctxparskip \ctxparskip\zeropoint
 
 \newconditional \flexiblewhitespace \settrue\flexiblewhitespace
 
-\def\currentwhitespace {\zeropoint}
+\def\currentwhitespace{\zeropoint}
 
 \definecomplexorsimple\setupwhitespace
 
 \def\simplesetupwhitespace
-  {\doifnot\currentwhitespace\v!none\dosetupwhitespace}
+  {\doifnot\currentwhitespace\v!none\spacing_setup_whitespace}
 
 \def\complexsetupwhitespace[#1]%
   {\edef\nextcurrentwhitespace{#1}%
@@ -376,21 +338,33 @@
      \simplesetupwhitespace
    \else
      \let\currentwhitespace\nextcurrentwhitespace
-     \dosetupwhitespace
+     \spacing_setup_whitespace
    \fi}
 
 \newconstant\baselinegridmode % option in layout / 1=permit_half_lines
 
-\def\dosetupwhitespace % quick test for no list
-  {\ifcsname\??ws\??ws\currentwhitespace\endcsname
-     \csname\??ws\??ws\currentwhitespace\endcsname
+\def\spacing_setup_whitespace % quick test for no list
+  {\ifcsname\??wz:\currentwhitespace\endcsname
+     \csname\??wz:\currentwhitespace\endcsname
    \else
-     \expandafter\processcommalist\expandafter[\currentwhitespace]\dowhitespacemethod % can be raw
+     \expandafter\processcommalist\expandafter[\currentwhitespace]\spacing_setup_whitespace_method % can be raw
    \fi\relax
    \ifgridsnapping
-     \setfalse\flexiblewhitespace
-     \ifdim\ctxparskip>\zeropoint
-       \ctxparskip
+     \spacing_setup_whitespace_grid
+   \else
+     \spacing_setup_whitespace_normal
+   \fi
+   \parskip\ctxparskip}
+
+\def\spacing_setup_whitespace_normal
+  {\ifconditional\flexiblewhitespace \else
+     \ctxparskip1\ctxparskip
+   \fi}
+
+\def\spacing_setup_whitespace_grid
+  {\setfalse\flexiblewhitespace
+   \ifdim\ctxparskip>\zeropoint
+     \ctxparskip
        \ifcase\baselinegridmode
          \baselineskip % normal ! ! ! ! !!
        \or
@@ -402,41 +376,14 @@
        \else
          \baselineskip % normal ! ! ! ! !!
        \fi
-     \fi
-   \else
-     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
-   \fi
-   \parskip\ctxparskip}
+   \fi}
 
-\def\dodosetupwhitespace
-  {\ifgridsnapping
-     \setfalse\flexiblewhitespace
-     \ctxparskip1\ctxparskip
-     \ifdim\ctxparskip>\zeropoint
-       \ifcase\baselinegridmode
-         \ctxparskip\baselineskip % normal ! ! ! ! !!
-       \or
-         \ifdim\scratchdimen=\baselineskip % maybe range
-           \ctxparskip\baselineskip % normal ! ! ! ! !!
-         \else
-           \ctxparskip\numexpr\ctxparskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
-         \fi
-       \else
-         \ctxparskip\baselineskip % normal ! ! ! ! !!
-       \fi
-     \fi
-   \else
-     \ifconditional\flexiblewhitespace \else \ctxparskip1\ctxparskip \fi
-   \fi
-   \parskip\ctxparskip}
-
-\definesystemvariable {ws} % whitespace
-
-\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??ws\??ws#1}{#2}}
+\unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??wz:#1}{#2}}
 
 \definewhitespacemethod [\v!fix]      {}
 \definewhitespacemethod [\v!fixed]    {\setfalse\flexiblewhitespace}
-\definewhitespacemethod [\v!flexible] {\settrue\flexiblewhitespace}
+\definewhitespacemethod [\v!flexible] {\settrue \flexiblewhitespace}
+
 \definewhitespacemethod [\v!line]     {\ctxparskip  \baselineskip}
 \definewhitespacemethod [\v!halfline] {\ctxparskip.5\baselineskip}
 \definewhitespacemethod [\v!none]     {\ctxparskip  \zeropoint}
@@ -444,13 +391,22 @@
 \definewhitespacemethod [\v!medium]   {\ctxparskip  \medskipamount}
 \definewhitespacemethod [\v!small]    {\ctxparskip  \smallskipamount}
 
-\definewhitespacemethod [\s!default]  {\simplesetupwhitespace} % {\stelwitruimteopnieuwin}
+\definewhitespacemethod [\s!default]  {\simplesetupwhitespace}
 
-\def\dowhitespacemethod#1%
-  {\ifcsname\??ws\??ws#1\endcsname\csname\??ws\??ws#1\endcsname\else\ctxparskip#1\fi\relax}
+\def\spacing_setup_whitespace_method#1%
+  {\ifcsname\??wz:#1\endcsname
+     \csname\??wz:#1\endcsname
+   \else
+     \ctxparskip#1\fi
+   \relax}
 
-\def\nowhitespace{\vspacing[\v!nowhite]}
-\def\whitespace  {\vspacing[\v!white]}
+% \definewhitespacemethod [\s!unknown]  {\ctxparskip\commalistelement\relax}
+%
+% \def\spacing_setup_whitespace_method#1%
+%   {\csname\??wz:\ifcsname\??wz:#1\endcsname#1\else\s!unknown\endcsname\relax}
+
+\unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
+\unexpanded\def\whitespace  {\vspacing[\v!white]}
 
 % De onderstaande macro handelt ook de situatie dat er geen
 % tekst tussen \start ... \stop is geplaatst. Daartoe wordt de
@@ -461,9 +417,9 @@
 \newcount\packeddepth
 
 \unexpanded\def\startpacked
-  {\dosingleempty\dostartpacked}
+  {\dosingleempty\spacing_start_packed}
 
-\def\dostartpacked[#1]% nesting afvangen
+\def\spacing_start_packed[#1]% nesting afvangen
   {\global\advance\packeddepth\plusone
    \par
    \ifnum\packeddepth=\plusone \ifvmode
@@ -519,16 +475,16 @@
    \doaroundlinecorrection
    \egroup}
 
-\def\correctwhitespace
+\unexpanded\def\correctwhitespace
   {\dowithnextbox
      {\startbaselinecorrection
       \flushnextbox
       \stopbaselinecorrection}%
    \vbox}
-
-\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
-\def\horizontalstrut{\normalhbox                          {\strut}}
-
+
+\unexpanded\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
+\unexpanded\def\horizontalstrut{\normalhbox                          {\strut}}
+
 % Hieronder volgen enkele instellingen en macro's ten behoeve
 % van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
 % 0.28 zijn ooit eens ontleend aan INRS-TEX en moeten wellicht
@@ -581,15 +537,15 @@
 \def\baselinefactor         {2.8}
 \def\baselinegluefactor     {0}
 
-\def\minimumstrutheight     {0pt}
-\def\minimumstrutdepth      {0pt}
+\def\minimumstrutheight     {\zeropoint}
+\def\minimumstrutdepth      {\zeropoint}
 
 \def\normallineheight       {\baselinefactor ex}
 \def\minimumlinedistance    {\lineskip}
 
-\def\strutheight            {0pt}
-\def\strutdepth             {0pt}
-\def\strutwidth             {0pt}
+\def\strutheight            {\zeropoint}
+\def\strutdepth             {\zeropoint}
+\def\strutwidth             {\zeropoint}
 
 \let\spacingfactor          \plusone
 
@@ -599,18 +555,14 @@
 \def\systemtopskipfactor    {\topskipfactor}
 \def\systemmaxdepthfactor   {\maxdepthfactor}
 
-\ifdefined\globalbodyfontsize\else
-  \newdimen\globalbodyfontsize
-  \globalbodyfontsize=12pt
+\ifdefined\globalbodyfontsize \else
+    \newdimen\globalbodyfontsize
+    \globalbodyfontsize=12pt
 \fi
 
-\ifdefined\normalizedbodyfontsize\else
-  \def\normalizedbodyfontsize{12pt}
+\ifdefined\normalizedbodyfontsize \else
+    \def\normalizedbodyfontsize{12pt}
 \fi
-
-% door een \dimen. Dit is geen probleem omdat (1) de default
-% korpsgrootte 12pt is en (2) de fonts nog niet geladen zijn
-% en de instellingen bij het laden nogmaals plaatsvinden.
 
 \def\topskipcorrection
   {\simpletopskipcorrection
@@ -624,14 +576,14 @@
      \vskip-\openstrutheight
    \fi}
 
-\def\settopskip % the extra test is needed for the lbr family
+\unexpanded\def\settopskip % the extra test is needed for the lbr family
   {\topskip\systemtopskipfactor\globalbodyfontsize
    \ifgridsnapping \else
      \ifr@ggedbottom\!!plus5\globalbodyfontsize\fi
    \fi
-\ifgridsnapping
-    \topskip\zeropoint
-\fi
+   \ifgridsnapping
+     \topskip\zeropoint
+   \fi
    \relax % the skip
    \topskipgap\topskip
    \advance\topskipgap -\openstrutheight\relax
@@ -639,21 +591,21 @@
      \ifdim\topskip<\minimumstrutheight
        \topskip\minimumstrutheight\relax
      \fi
-  \else
+   \else
      \ifdim\topskip<\strutheightfactor\openlineheight
        \topskip\strutheightfactor\openlineheight\relax
      \fi
-  \fi}
+   \fi}
 
-\def\setmaxdepth
+\unexpanded\def\setmaxdepth
   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
-\def\normalbaselines
+\unexpanded\def\normalbaselines
   {\baselineskip \normalbaselineskip
    \lineskip     \normallineskip
    \lineskiplimit\normallineskiplimit}
 
-\def\setnormalbaselines
+\unexpanded\def\setnormalbaselines
   {\ifdim\normallineheight>\zeropoint
      \lineheight\normallineheight
    \fi
@@ -678,13 +630,10 @@
      \fi
    \normallineskip\minimumlinedistance\relax % \onepoint\relax
    \normallineskiplimit\zeropoint\relax
-   \normalbaselines
-  %\dosetupgridsnapping
-  }
+   \normalbaselines}
 
-\def\spacing#1%
+\unexpanded\def\spacing#1%
   {\ifgridsnapping
-    %\ifdim#1\points=\onepoint\else\showmessage\m!layouts{11}{\withoutpt\the\dimexpr#1\points\relax}\fi
      \let\spacingfactor\plusone
    \else
      \edef\spacingfactor{#1}%
@@ -722,15 +671,11 @@
 %
 % \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
-\ifx\strutbox\undefined
+\newbox\strutbox
 
-  \newbox\strutbox
+\setbox\strutbox\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint} % just a start
 
-  \setbox\strutbox\normalhbox{\vrule height8.5pt depth3.5pt width\zeropoint}
-
-  \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
-
-\fi
+\def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
 \let\normalstrut\strut
 
@@ -791,13 +736,13 @@
 
 %D Handy for math (used in mathml):
 
-\def\charhtstrut
+\unexpanded\def\charhtstrut
   {\begingroup
    \setcharstrut{GJY}%
    \vrule\!!width\zeropoint\!!depth\zeropoint\!!height\strutht
    \endgroup}
 
-\def\chardpstrut
+\unexpanded\def\chardpstrut
   {\begingroup
    \setcharstrut{gjy}%
    \vrule\!!width\zeropoint\!!depth\strutdp\!!height\zeropoint
@@ -810,31 +755,49 @@
 
 \newdimen\tempstrutdimen
 
-\def\dosetstrut
+% \unexpanded\def\dosetstrut
+%   {\let\strut\normalstrut
+%    \tempstrutdimen\dimexpr\strutht+\strutdp-\lineheight\relax
+%    \ifabsnum\tempstrutdimen<\plustwo
+%      % compensate rounding error /- 1sp to avoid too many
+%      % 1sp baselineskips in for instance verbatim
+%      \strutht\dimexpr\strutht-\tempstrutdimen\relax
+%    \fi
+%    \edef\strutheight{\the\strutht}% maybe better \number\strutht sp
+%    \edef\strutdepth {\the\strutdp}%
+%    \ifdim\strutwidth=\zeropoint
+%       \dosetstruthide
+%    \else
+%       \dosetstrutvide
+%    \fi
+%    \struttotal\dimexpr\strutht+\strutdp\relax}
+
+\unexpanded\def\dosetstrut
   {\let\strut\normalstrut
-   \tempstrutdimen\dimexpr\strutht+\strutdp-\lineheight\relax
-   \ifabsnum\tempstrutdimen<\plustwo
-      % compensate rounding error /- 1sp to avoid too many
-      % 1sp baselineskips in for instance verbatim
-      \strutht\dimexpr\strutht-\tempstrutdimen\relax
+   \ifabsnum\dimexpr\strutht+\strutdp-\lineheight\relax<\plustwo
+     % compensate rounding error /- 1sp to avoid too many
+     % 1sp baselineskips in for instance verbatim
+     \strutht\dimexpr\lineheight-\strutdp\relax
+     \struttotal\lineheight
+   \else
+     \struttotal\dimexpr\strutht+\strutdp\relax
    \fi
-   \edef\strutheight{\the\strutht}% maybe better \number\strutht sp
+   \edef\strutheight{\the\strutht}%
    \edef\strutdepth {\the\strutdp}%
    \ifdim\strutwidth=\zeropoint
       \dosetstruthide
    \else
       \dosetstrutvide
-   \fi
-   \struttotal\dimexpr\strutht+\strutdp\relax}
+   \fi}
 
-\def\dosetstruthide
+\unexpanded\def\dosetstruthide
   {\setbox\strutbox\normalhbox
      {\vrule
         \!!width \zeropoint
         \!!height\strutht
         \!!depth \strutdp}}
 
-\def\dosetstrutvide
+\unexpanded\def\dosetstrutvide
   {\setbox\strutbox\normalhbox
      {\normalhbox to \zeropoint
         {% \hss % new, will be option
@@ -852,12 +815,12 @@
 
 \newbox\emptystrutbox \setbox\emptystrutbox\emptyhbox
 
-\def\dosetstruthide
+\unexpanded\def\dosetstruthide
   {\setbox\strutbox\copy\emptystrutbox
    \ht\strutbox\strutht
    \dp\strutbox\strutdp}
 
-\def\strut{\relax\dontleavehmode\copy\strutbox} % still callbacks for \hbox{\strut}
+\unexpanded\def\strut{\relax\dontleavehmode\copy\strutbox} % still callbacks for \hbox{\strut}
 
 \let\normalstrut\strut
 
@@ -893,7 +856,7 @@
 \def\showstruts
   {\setteststrut
    \settestcrlf}
-
+
 \def\setteststrut
   {\def\strutwidth{.8pt}%
    \setstrut}
@@ -917,7 +880,7 @@
 
 \newsignal\strutsignal \setfalse\sigstruts
 
-\def\begstrut
+\unexpanded\def\begstrut
   {\relax\ifcase\strutht\else
      \ifconditional\sigstruts
        \noindent\horizontalstrut
@@ -932,11 +895,14 @@
      \expandafter \ignorespaces
    \fi}
 
-\def\endstrut
+\unexpanded\def\endstrut
   {\relax\ifhmode\ifcase\strutht\else
      \ifconditional\sigstruts
        \ifdim\lastskip=\strutsignal
-         \unskip\unskip\unpenalty\setbox\scratchbox\lastbox
+         \unskip
+         \unskip
+         \unpenalty
+         \setbox\scratchbox\lastbox
        \else
          \normalpenalty\plustenthousand
          \normalhskip\zeropoint
@@ -1039,11 +1005,6 @@
   {\ifvmode\ifinner\else
      \leavevmode
    \fi\fi}
-
-% We stellen enkele penalties anders in dan Plain TEX:
-%
-% \widowpenalty=\defaultwidowpenalty\relax
-% \clubpenalty =\defaultclubpenalty \relax
 
 \def\resetpenalties#1%
   {\ifdefined#1%
@@ -1410,7 +1371,7 @@
   {\setbox\nextbox#1%
      {\hbox
         {\hbox to \zeropoint
-           {\setlayoutcomponentattribute\v!grid\v!test
+           {\setlayoutcomponentattribute{\v!grid:\v!test}%
             \color[grid:#2]{\ruledhbox \layoutcomponentboxattribute {\fakebox\nextbox}}%
             \hss}%
          \flushnextbox}}}
@@ -1810,7 +1771,7 @@
    \whitespace
    \dostarttagged\t!lines\currentlines
    \begingroup
-   \dosetlinesattributes\c!style\c!color
+   \uselinesstyleandcolor\c!style\c!color
    \setupindenting[\linesparameter\c!indenting]%
    \setupalign[\linesparameter\c!align]%
    \typesettinglinestrue

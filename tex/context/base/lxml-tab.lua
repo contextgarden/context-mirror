@@ -774,11 +774,13 @@ end
 
 xml.convert = xmlconvert
 
-function xml.inheritedconvert(data,xmldata)
+function xml.inheritedconvert(data,xmldata) -- xmldata is parent
     local settings = xmldata.settings
-    settings.parent_root = xmldata -- to be tested
+    if settings then
+        settings.parent_root = xmldata -- to be tested
+    end
  -- settings.no_root = true
-    local xc = xmlconvert(data,settings)
+    local xc = xmlconvert(data,settings) -- hm, we might need to locate settings
  -- xc.settings = nil
  -- xc.entities = nil
  -- xc.special = nil

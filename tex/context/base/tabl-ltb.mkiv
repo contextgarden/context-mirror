@@ -245,28 +245,9 @@
        \hbox \ifcase\linetablemode \or to\scratchdimen \fi \bgroup
          \ifcase\alignmentswitch\hss\or\hss\fi
      \fi
-     \dostartattributes{\??lec\number\linetablecolumn}\c!style\c!color\empty
+     \dousestylehashparameter{\??lec\number\linetablecolumn}\c!style
+     \dousecolorhashparameter{\??lec\number\linetablecolumn}\c!color
      \begstrut \ignorespaces}
-
-% \unexpanded\def\stoplinetablecell
-%   {\unskip \endstrut
-%    \dostopattributes
-%    \ifcase\linetablemode
-%      \endgraf
-%    \else
-%      \ifcase\alignmentswitch\else\hss\fi
-%    \fi
-%    \egroup
-%    \hskip\linetablecparameter\c!rightoffset
-%    \egroup
-%    \iflinetablepreroll
-%      \box\scratchbox
-%    \else
-%      \doif{\linetablecparameter\c!background}\v!color
-%        {\backgroundline[\linetablecparameter\c!backgroundcolor]}%
-%        {\box\scratchbox}%
-%    \fi
-%    \egroup}
 
 \newconditional\linetableautoheight  \settrue\linetableautoheight
 
@@ -298,44 +279,6 @@
        {\box\scratchbox}%
    \fi
    \egroup}
-
-% \unexpanded\def\stoplinetablecell
-%   {\unskip \endstrut
-%    \dostopattributes
-%    \ifcase\linetablemode
-%      \endgraf
-%    \else
-%      \ifcase\alignmentswitch\else\hss\fi
-%    \fi
-%    \egroup
-%    \hskip\linetablecparameter\c!rightoffset
-%    \egroup
-%    \iflinetablepreroll
-%      \box\scratchbox
-%    \else
-%      \doifelse{\linetablecparameter\c!background}\v!color
-%        {\ifconditional\linetableautoheight
-%         %           \hbox{\blackrule
-%         %             [ \c!color=\linetablecparameter\c!backgroundcolor,
-%         %              \c!height=\linetablerparameter{x\c!height},
-%         %               \c!depth=\linetablerparameter{x\c!depth},
-%         %               \c!width=\wd\scratchbox]%
-%         %            \hskip-\wd\scratchbox\box\scratchbox}%
-%           \dp\scratchbox\linetablerparameter{x\c!depth}%
-%           \ht\scratchbox\linetablerparameter{x\c!height}%
-%           \framed
-%             [\c!offset=\v!overlay,
-%              \c!frameoffset=.5\linewidth,
-%              \c!leftframe=\v!off,\c!rightframe=\v!off,
-%              \c!background=\v!color,
-%              \c!backgroundcolor=\linetablecparameter\c!backgroundcolor%
-%             ]{\box\scratchbox}%
-%          \else
-%            \backgroundline[\linetablecparameter\c!backgroundcolor]{\box\scratchbox}%
-%          \fi}%
-%        {\box\scratchbox}%
-%    \fi
-%    \egroup}
 
 \def\savelinetablepart
   {\global\setbox\tablebox\linetablepart
@@ -391,15 +334,14 @@
 \unexpanded\def\startlinetablepart
   {\global\linetablesubcol\zerocount
    \setbox\scratchbox\hbox\bgroup
-   \doconvertfont{\linetablerparameter\c!style}%
-   \startcolor[\linetablerparameter\c!color]%
+   \dousestyleparameter{\linetablerparameter\c!style}%
+   \dousecolorparameter{\linetablerparameter\c!color}%
    \ignorespaces}
 
 \unexpanded\def\stoplinetablepart
   {\ifnum\linetablepart>\zerocount
      \unskip \unskip % remove last intercolumn skip (distance+fill)
    \fi
-   \stopcolor
    \egroup
    \iflinetablepreroll \else
      \ifcase\linetablepart

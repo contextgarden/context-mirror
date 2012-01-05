@@ -373,9 +373,11 @@
 \def\nostartmessages#1#2\stopmessages
   {\egroup}
 
-\def\setinterfacemessage#1#2#3%
+\unexpanded\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \ctxlua{interfaces.setmessage("#1","#2",\!!bs#3\!!es)}}
+
+\let\stopmessages\relax
 
 \unexpanded\def\setmessagetext     #1#2{\edef\currentmessagetext{\cldcontext{interfaces.getmessage("#1","#2")}}}
 \unexpanded\def\getmessage         #1#2{\cldcontext{interfaces.getmessage("#1","#2")}}
@@ -408,14 +410,14 @@
 
 \let\normalshowmessage\showmessage
 
-\def\showwarning
+\unexpanded\def\showwarning
   {\ifshowwarnings
      \expandafter\showmessage
    \else
      \expandafter\gobblethreearguments
    \fi}
 
-\def\showmessage
+\unexpanded\def\showmessage
   {\ifshowmessages
      \expandafter\normalshowmessage
    \else
@@ -435,22 +437,22 @@
 %D interface. (We no longer need the link back to the main
 %D internal interface.)
 
-\def\doresetvalue   #1#2{\dosetvalue{#1}{#2}{}}
-\def\doignorevalue#1#2#3{\dosetvalue{#1}{#2}{}}
+\unexpanded\def\doresetvalue   #1#2{\dosetvalue{#1}{#2}{}}
+\unexpanded\def\doignorevalue#1#2#3{\dosetvalue{#1}{#2}{}}
 
-\def\doletvalue   #1#2{\@EA \let\csname#1#2\endcsname}
-\def\dosetvalue   #1#2{\@EA \def\csname#1#2\endcsname}
-\def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
-\def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
-\def\dosetxvalue  #1#2{\@EA\xdef\csname#1#2\endcsname}
-\def\docopyvalue#1#2#3{\@EA \def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
+\unexpanded\def\doletvalue   #1#2{\@EA \let\csname#1#2\endcsname}
+\unexpanded\def\dosetvalue   #1#2{\@EA \def\csname#1#2\endcsname}
+\unexpanded\def\dosetevalue  #1#2{\@EA\edef\csname#1#2\endcsname}
+\unexpanded\def\dosetgvalue  #1#2{\@EA\gdef\csname#1#2\endcsname}
+\unexpanded\def\dosetxvalue  #1#2{\@EA\xdef\csname#1#2\endcsname}
+\unexpanded\def\docopyvalue#1#2#3{\@EA \def\csname#1#3\@EA\endcsname\@EA{\csname#2#3\endcsname}}
 
 %D We can now redefine some messages that will be
 %D introduced in the multi||lingual system module.
 
-\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}\waitonfatalerror}
-\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}\waitonfatalerror}
-\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}\waitonfatalerror}
+\unexpanded\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}\waitonfatalerror}
+\unexpanded\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}\waitonfatalerror}
+\unexpanded\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}\waitonfatalerror}
 
 %D \CONTEXT\ is a parameter driven package. This means that
 %D users instruct the system by means of variables, values and
@@ -708,11 +710,11 @@
 
 % temporary mkiv hack (we can best just store the whole table in memory)
 
-\def\setinterfaceconstant#1#2%
+\unexpanded\def\setinterfaceconstant#1#2%
   {\ctxlua{interfaces.setconstant("#1","#2")}%
    \setvalue{\c!prefix!#1}{#1}}
 
-\def\setinterfacevariable#1#2%
+\unexpanded\def\setinterfacevariable#1#2%
   {\ctxlua{interfaces.setvariable("#1","#2")}%
    \setvalue{\v!prefix!#1}{#2}}
 
@@ -741,7 +743,7 @@
 %D problem, because we just define two elements. When no second
 %D part is needed, we use a \type{-}:
 
-\def\setinterfaceelement#1#2%
+\unexpanded\def\setinterfaceelement#1#2%
   {\ctxlua{interfaces.setelement("#1","#2")}%
    \ifcsname\e!prefix!#1\endcsname
      \doifnotvalue{\e!prefix!#1}{#2}{\setvalue{\e!prefix!#1}{#2}}%
@@ -749,7 +751,7 @@
      \setvalue{\e!prefix!#1}{#2}%
    \fi}
 
-\def\setinterfacecommand#1#2%
+\unexpanded\def\setinterfacecommand#1#2%
   {\doifnot{#1}{#2}{\@EA\def\csname#2\@EA\endcsname\@EA{\csname#1\endcsname}}}% or just \let ?
 
 %D We just ignore these:

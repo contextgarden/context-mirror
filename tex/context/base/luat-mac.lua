@@ -112,7 +112,7 @@ local poplocal       = always   / pop
 local declaration    = variable / set
 local identifier     = variable / get
 
-local argument       = leftbrace * ((identifier + (1-rightbrace))^0) * rightbrace
+local argument       = P { leftbrace * ((identifier + V(1) + (1 - leftbrace - rightbrace))^0) * rightbrace }
 
 local function matcherror(str,pos)
     report_macros("runaway definition at: %s",sub(str,pos-30,pos))
@@ -250,6 +250,7 @@ end
 -- print(macros.preprocessed([[\def\test#oeps{test:#{oeps}}]]))
 -- print(macros.preprocessed([[\def\test#{oeps:1}{test:#{oeps:1}}]]))
 -- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps}]]))
+-- print(macros.preprocessed([[\def\x[#a][#b][#c]{\setvalue{\y{#a}\z{#b}}{#c}}]]))
 -- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}]]))
 -- print(macros.preprocessed([[\def\test#{oeps}{test:#oeps \halign{##\cr #oeps\cr}}]]))
 -- print(macros.preprocessed([[% test

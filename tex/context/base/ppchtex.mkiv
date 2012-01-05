@@ -3396,11 +3396,11 @@ RT##3##4##5=>\processchemicaltextelement{RN}{##3##4##5}{#1}{0}{},
      drawoptions (\chemicalattributes) ;
    \stopMPdrawing}
 
-\def\@@dochemicalcolor
-  {\doifsomething\@@chemicalcolor{\color[\@@chemicalcolor]}}
+\unexpanded\def\@@dochemicalcolor
+  {\dousecolorparameter\@@chemicalcolor}
 
-\def\@@dochemicalstyle
-  {\doconvertfont\@@chemicalstyle}
+\unexpanded\def\@@dochemicalstyle
+  {\dousestyleparameter\@@chemicalstyle}
 
 \setupchemical
   [\c!rulethickness=\linewidth,

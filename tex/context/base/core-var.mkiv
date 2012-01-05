@@ -235,19 +235,8 @@
 
 %D Add-ons:
 
-\let\setlayoutcomponentattribute  \gobbletwoarguments
+\let\setlayoutcomponentattribute  \gobbleoneargument
 \let\resetlayoutcomponentattribute\relax
 \let\layoutcomponentboxattribute  \empty
-
-%D Concepts:
-
-\newconstant\conceptmode
-
-\def\doifconcepttracing
-  {\ifnum\conceptmode>\plustwo
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
 
 \protect \endinput

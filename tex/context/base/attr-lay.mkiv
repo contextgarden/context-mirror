@@ -74,27 +74,27 @@
 
 % layout components are implemented rather directly (speed)
 
-\def\doinitializelayoutcomponent#1#2%
+\def\doinitializelayoutcomponent#1%
   {\ctxcommand{defineviewerlayer{% this will move to the lua end i.e be merged with register
-     tag       = "#1:#2",
-     title     = "#1 #2",
+     tag       = "#1",
+     title     = "#1", % todo: auto remove :
      visible   = "\v!start",
      editable  = "\v!yes",
      printable = "\v!yes"
    }}%
-   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(attributes.viewerlayers.register('#1:#2',true))}\relax}%
-   \expandafter\glet\csname\??ly>#1:#2\endcsname\layoutcomponentboxattribute}
+   \edef\layoutcomponentboxattribute{attr \viewerlayerattribute \ctxlua{tex.write(attributes.viewerlayers.register('#1',true))}\relax}%
+   \expandafter\glet\csname\??ly>#1\endcsname\layoutcomponentboxattribute}
 
-\def\dosetlayoutcomponentattribute#1#2% make this faster
-  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1:#2\endcsname
+\def\dosetlayoutcomponentattribute#1% make this faster
+  {\expandafter\let\expandafter\layoutcomponentboxattribute\csname\??ly>#1\endcsname
    \ifx\layoutcomponentboxattribute\relax
-     \doinitializelayoutcomponent{#1}{#2}% get rid of { }
+     \doinitializelayoutcomponent{#1}% get rid of { }
    \fi}
 
 \def\doresetlayoutcomponentattribute
   {\let\layoutcomponentboxattribute\empty}
 
-\let\setlayoutcomponentattribute  \gobbletwoarguments
+\let\setlayoutcomponentattribute  \gobbleoneargument
 \let\resetlayoutcomponentattribute\relax
 \let\layoutcomponentboxattribute  \empty
 

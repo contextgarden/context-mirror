@@ -79,6 +79,8 @@ local padding        = P("=")
 local plus           = P("+")
 local minus          = P("-")
 local space          = P(" ")
+local lparent        = P("(")
+local rparent        = P(")")
 
 local digits         = digit^1
 
@@ -286,6 +288,7 @@ local long_units = {
     -- other non-SI units (Table 8)
 
     Bar                         = "bar",
+    Hg                          = "mercury",
  -- ["Millimetre Of Mercury"]   = [[mmHg]],
     Angstrom                    = "angstrom", -- strictly Ångström
     ["Nautical Mile"]           = "nauticalmile",
@@ -443,7 +446,7 @@ local short_suffixes = { -- maybe just raw digit match
 local symbol_units = {
     Degrees    = "degree",
     Degree     = "degree",
-    Deg        = "degree",
+ -- Deg        = "degree",
     ["°"]      = "degree",
     ArcMinute  = "arcminute",
     ["′"]      = "arcminute", -- 0x2032
@@ -457,6 +460,7 @@ local symbol_units = {
 
 local packaged_units = {
     Micron = "micron",
+    mmHg   = "millimetermercury",
 }
 
 -- rendering:
@@ -471,8 +475,10 @@ local unitsS      = context.unitsS
 local unitsO      = context.unitsO
 local unitsN      = context.unitsN
 local unitsC      = context.unitsC
+local unitsQ      = context.unitsQ
 local unitsNstart = context.unitsNstart
 local unitsNstop  = context.unitsNstop
+local unitsNspace = context.unitsNspace
 
 local labels = languages.data.labels
 
@@ -531,6 +537,8 @@ labels.units = {
     ohm                         = { labels = { en = [[Ω]]                        } }, -- 0x2126 \textohm
     siemens                     = { labels = { en = [[S]]                        } },
     weber                       = { labels = { en = [[Wb]]                       } },
+    mercury                     = { labels = { en = [[Hg]]                       } },
+    millimetermercury           = { labels = { en = [[mmHg]]                     } }, -- connected
     tesla                       = { labels = { en = [[T]]                        } },
     henry                       = { labels = { en = [[H]]                        } },
     celsius                     = { labels = { en = [[\checkedtextcelsius]]      } }, -- 0x2103
@@ -553,7 +561,6 @@ labels.units = {
     atomicmassunit              = { labels = { en = [[u]]                        } },
     astronomicalunit            = { labels = { en = [[ua]]                       } },
     bar                         = { labels = { en = [[bar]]                      } },
---  ["Millimetre Of Mercury"]   = { labels = { en = [[mmHg]]                     } },
     angstrom                    = { labels = { en = [[Å]]                        } }, -- strictly Ångström
     nauticalmile                = { labels = { en = [[M]]                        } },
     barn                        = { labels = { en = [[b]]                        } },
@@ -727,8 +734,10 @@ local function update_parsers() -- todo: don't remap utf sequences
         --
         nothing       = Cc(""),
         somespace     = somespace,
-        nospace       = (1-somespace)^0,
-        ignore        = P(-1),
+        nospace       = (1-somespace)^1, -- was 0
+     -- ignore        = P(-1),
+        --
+        qualifier     = Cs(V("somespace") * (lparent/"") * (1-rparent)^1 * (rparent/"")),
         --
         somesymbol    = V("somespace")
                       * (p_symbol/dimsym)
@@ -736,9 +745,9 @@ local function update_parsers() -- todo: don't remap utf sequences
         somepackaged  = V("somespace")
                       * (V("packaged") / dimpre)
                       * V("somespace"),
-        someunknown   = V("somespace")
-                      * (V("nospace")/unitsU)
-                      * V("somespace"),
+     -- someunknown   = V("somespace")
+     --               * (V("nospace")/unitsU)
+     --               * V("somespace"),
         --
         combination   = V("longprefix")  * V("longunit")   -- centi meter
                       + V("nothing")     * V("longunit")
@@ -752,36 +761,45 @@ local function update_parsers() -- todo: don't remap utf sequences
                           + (V("longsuffix") * V("combination")) / dimspu
                           + (V("combination") * (V("shortsuffix") + V("nothing"))) / dimpus
                         )
+                      * (V("qualifier") / unitsQ)^-1
                       * V("somespace"),
         operator      = V("somespace")
                       * ((V("longoperator") + V("shortoperator")) / dimop)
                       * V("somespace"),
-        snippet       = V("somesymbol")
-                      * V("dimension")
-                      + V("dimension")
+        snippet       = V("dimension")
                       + V("somesymbol"),
-        unit          = V("snippet")^1
-                      * (V("operator") * V("snippet"))^-1 -- V("snippet")^1 ?
-                      + V("somesymbol")
-                      + V("somepackaged")
-                      + V("someunknown")
-                      + V("ignore"),
+        unit          = (
+                            V("snippet")
+                          * (V("operator") * V("snippet"))^0
+                          + V("somepackaged")
+                        )^1,
     }
 
--- lpeg.print(unitparser) -- 20111127: 2384 long
 
-    local number = lpeg.patterns.number
+ -- local number = lpeg.patterns.number
 
     local number = Cs( P("$")     * (1-P("$"))^1 * P("$")
                      + P([[\m{]]) * (1-P("}"))^1 * P("}")
                      + (1-R("az","AZ")-P(" "))^1 -- todo: catch { } -- not ok
                    ) / unitsN
 
-    local p_c_unitdigitparser = (Cc(nil)/unitsNstart) * p_c_dparser * (Cc(nil)/unitsNstop) --
-    local c_p_unitdigitparser = (Cc(nil)/unitsNstart) * c_p_dparser * (Cc(nil)/unitsNstop) --
+    local start  = Cc(nil) / unitsNstart
+    local stop   = Cc(nil) / unitsNstop
+    local space  = Cc(nil) / unitsNspace
 
-    local p_c_combinedparser  = dleader * (p_c_unitdigitparser + number)^-1 * unitparser
-    local c_p_combinedparser  = dleader * (c_p_unitdigitparser + number)^-1 * unitparser
+    local p_c_combinedparser  = P { "start",
+        number = start * dleader * (p_c_dparser + number) * stop,
+        rule   = V("number")^-1 * unitparser,
+        space  = space,
+        start  = V("rule") * (V("space") * V("rule"))^0 + V("number")
+    }
+
+    local c_p_combinedparser  = P { "start",
+        number = start * dleader * (c_p_dparser + number) * stop,
+        rule   = V("number")^-1 * unitparser,
+        space  = space,
+        start  = V("rule") * (V("space") * V("rule"))^0 + V("number")
+    }
 
     return p_c_combinedparser, c_p_combinedparser
 end
@@ -798,10 +816,15 @@ function commands.unit(str,p_c)
         p_c_parser, c_p_parser = update_parsers()
         dirty = false
     end
+    local ok
     if p_c == v_reverse then
-        matchlpeg(p_c_parser,str)
+        ok = matchlpeg(p_c_parser,str)
     else
-        matchlpeg(c_p_parser,str)
+        ok = matchlpeg(c_p_parser,str)
+    end
+    if not ok then
+        report_units("unable to parse: %s",str)
+        context(str)
     end
 end
 

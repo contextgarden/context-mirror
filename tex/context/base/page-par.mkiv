@@ -34,7 +34,10 @@
 \def\dodoshowparagraphnumber
   {\global\advance\internalparagraphnumber \plusone
    \inleftmargin % \tf normalizes em
-     {\tf{\doattributes\??ph\c!style\c!color{\the\internalparagraphnumber}}%
+     {\tf
+      \dousestyleparameter\@phstyle
+      \dousecolorparameter\@phcolor
+      \the\internalparagraphnumber
       \kern\@@phdistance}}
 
 \def\doshowparagraphnumberA

@@ -340,8 +340,8 @@ local function hack(pattern)
     return Cs(pattern * Cc(signal))
 end
 
-local split_processor = structures.processors.split
-local apply_processor = structures.processors.apply
+local split_processor = typesetters.processors.split
+local apply_processor = typesetters.processors.apply
 
 -- function visualizers.registerescapepattern(name,before,after,normalmethod,escapemethod,processor)
 --     local escapepattern = escapepatterns[name]

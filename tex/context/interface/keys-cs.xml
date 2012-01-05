@@ -1178,7 +1178,7 @@
 		<cd:command name='defineframedtext' value='definujoramovanytext'/>
 		<cd:command name='definehbox' value='definujhbox'/>
 		<cd:command name='definehead' value='definujnadpis'/>
-		<cd:command name='defineindenting' value='definujodsazovani'/>
+		<cd:command name='defineindentedtext' value='defineindentedtext'/>
 		<cd:command name='defineinmargin' value='defineinmargin'/>
 		<cd:command name='defineinteractionmenu' value='definujinterakcnimenu'/>
 		<cd:command name='defineitemgroup' value='defineitemgroup'/>
@@ -1489,7 +1489,7 @@
 		<cd:command name='setupheads' value='nastavnadpisy'/>
 		<cd:command name='setupheadtext' value='nastavtexthlavicky'/>
 		<cd:command name='setuphyphenmark' value='nastavdelitko'/>
-		<cd:command name='setupindentations' value='nastavodsazeni'/>
+		<cd:command name='setupindentedtext' value='setupindentedtext'/>
 		<cd:command name='setupindenting' value='nastavodsazovani'/>
 		<cd:command name='setupinmargin' value='nastavmarginalie'/>
 		<cd:command name='setupinteraction' value='nastavinterakci'/>

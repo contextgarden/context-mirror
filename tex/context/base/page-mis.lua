@@ -31,7 +31,7 @@ local function setnextpage()
     elseif n > 0 then
                         -- upcoming page (realpageno)
     end
-    tex.setcount("global","postponed_page_blocks_next_page",n)
+    tex.setcount("global","page_postponed_blocks_next_page",n)
 end
 
 function commands.flushpostponedblocks(page)

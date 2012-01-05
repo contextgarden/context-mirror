@@ -297,10 +297,11 @@
       \setcollector
         [caption][#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!style\setupinterlinespace
+         \dousestyleparameter\@@dustyle
+         \setupinterlinespace
          \framed % watch the special setting of kader/overlay
-           [\c!frame=\v!overlay,#2]
-           {\doattributes\??du\c!style\c!color{#3}}}%
+           [\c!frame=\v!overlay,\c!foregroundcolor=\@@ducolor,\c!foregroundstyle=\@@dustyle,#2]
+           {#3}}%
       \composedcollector{caption}%
       \egroup}%
      \hbox}
@@ -342,10 +343,11 @@
         [caption]
         [#1]
         {\getparameters[\??du][#2]%
-         \dosetfontattribute\??du\c!style\setupinterlinespace
+         \dousestyleparameter\@@dustyle
+         \setupinterlinespace
          \framed
-           [\c!frame=\v!overlay,,#2]
-           {\doattributes\??du\c!style\c!color{#3}}}%
+           [\c!frame=\v!overlay,\c!foregroundcolor=\@@ducolor,\c!foregroundstyle=\@@dustyle,#2]
+           {#3}}%
       \egroup
       \framed
         [\c!offset=\v!overlay,
@@ -603,8 +605,8 @@
      {\forgetall
       \hsize\@@lxwidth
       \expanded{\setupalign[\@@lxalign]}%
-      \dosetfontattribute\??lx\c!style}
-     {\setlayer[#1][#2]{\strut\color[\@@lxcolor]{\flushnextbox}}%
+      \dousestyleparameter\@@lxstyle}
+     {\setlayer[#1][#2]{\strut\dousecolorparameter\@@lxcolor\flushnextbox}%
       \egroup}%
    \vtop}
 

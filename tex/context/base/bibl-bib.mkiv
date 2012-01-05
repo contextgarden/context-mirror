@@ -527,24 +527,29 @@
    \edef\currentbibtexsession{#1}%
    \let\currentlist\currentbibtexsession
    \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]
-   \doifelsenothing{\namedlistparameter\currentbibtexsession\c!title}
-     {\systemsuppliedchapter[\currentbibtexsession]{\headtext{\currentbibtexsession}}}
-     {\normalexpanded{\systemsuppliedchapter[\currentbibtexsession]{\namedlistparameter\currentbibtexsession\c!title}}}%
-   \dodoplacebibtexpublications}
+   \edef\currentbibtexsessiontitle{\namedlistparameter\currentbibtexsession\c!title}%
+   \ifx\currentbibtexsessiontitle\empty
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\headtext{\currentbibtexsession}}]}%
+   \else
+     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\currentbibtexsessiontitle}]}%
+   \fi
+   \dodoplacebibtexpublications
+   \stopnamedsection
+   \endgroup}
 
 \def\doplacebibtexpublications[#1][#2]%
   {\begingroup
    \edef\currentbibtexsession{#1}%
    \let\currentlist\currentbibtexsession
    \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]%
-   \dodoplacebibtexpublications}
+   \dodoplacebibtexpublications
+   \endgroup}
 
 \def\dodoplacebibtexpublications
   {\determinelistcharacteristics[\currentbibtexsession]%
    \the\everysetupbibtexlistplacement
    \forgetall
    \typesetbibtexlist
-   \endgroup
    \global\advance\bibtexblock\plusone}
 
 \setvalue{\??pb:\c!numbering:\v!short}#1% todo var s -> short tag

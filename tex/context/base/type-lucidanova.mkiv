@@ -15,56 +15,52 @@
 
 \starttypescriptcollection[lucidanova]
 
-    \starttypescript [\s!math] [lucidanova]
-        \definefontsynonym [MathRoman]           [\s!file:LucidaMath.otf]      [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
-        \definefontsynonym [MathRomanBold]       [\s!file:LucidaMath-Demi.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
+    \starttypescript [\s!math] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [MathRoman]           [\s!file:LucidaBrightMathOT.otf]      [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
+        \definefontsynonym [MathRomanBold]       [\s!file:LucidaBrightMathOT-Demi.otf] [\s!features=\s!math\mathsizesuffix,\s!goodies=lucidanova-math]
     \stoptypescript
 
-    \starttypescript [\s!serif] [lucidanova]
-        \definefontsynonym [\s!Serif]            [\s!file:LucidaBright.otf]
-        \definefontsynonym [\s!SerifBold]        [\s!file:LucidaBright-Demi.otf]
-        \definefontsynonym [\s!SerifItalic]      [\s!file:LucidaBright-Italic.otf]
-        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:LucidaBright-DemiItalic.otf]
+    \starttypescript [\s!serif] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [\s!Serif]            [\s!file:LucidaBrightOT.otf]
+        \definefontsynonym [\s!SerifBold]        [\s!file:LucidaBrightOT-Demi.otf]
+        \definefontsynonym [\s!SerifItalic]      [\s!file:LucidaBrightOT-Italic.otf]
+        \definefontsynonym [\s!SerifBoldItalic]  [\s!file:LucidaBrightOT-DemiItalic.otf]
         \definefontsynonym [\s!SerifSlanted]     [\s!SerifItalic]
         \definefontsynonym [\s!SerifBoldSlanted] [\s!SerifBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [lucidanova]
-        \definefontsynonym [\s!Sans]             [\s!file:LucidaSans.otf]
-        \definefontsynonym [\s!SansBold]         [\s!file:LucidaSans-Bold.otf]
-        \definefontsynonym [\s!SansItalic]       [\s!file:LucidaSans-Oblique.otf]
-        \definefontsynonym [\s!SansBoldItalic]   [\s!file:LucidaSans-BoldOblique.otf]
+    \starttypescript [\s!sans] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [\s!Sans]             [\s!file:LucidaSansOT.otf]
+        \definefontsynonym [\s!SansBold]         [\s!file:LucidaSansOT-Bold.otf]
+        \definefontsynonym [\s!SansItalic]       [\s!file:LucidaSansOT-Oblique.otf]
+        \definefontsynonym [\s!SansBoldItalic]   [\s!file:LucidaSansOT-BoldOblique.otf]
         \definefontsynonym [\s!SansSlanted]      [\s!MonoItalic]
         \definefontsynonym [\s!SansBoldSlanted]  [\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!mono] [lucidanova]
-        \definefontsynonym [\s!Mono]             [\s!file:LucidaSansTypewriter.otf]
-        \definefontsynonym [\s!MonoBold]         [\s!file:LucidaSansTypewriter-Bold.otf]
-        \definefontsynonym [\s!MonoItalic]       [\s!file:LucidaSansTypewriter-Oblique.otf]
-        \definefontsynonym [\s!MonoBoldItalic]   [\s!file:LucidaSansTypewriter-BoldOblique.otf]
+    \starttypescript [\s!mono] [lucidanova,lucidaot,otlucida]
+        \definefontsynonym [\s!Mono]             [\s!file:LucidaSansTypewriterOT.otf]
+        \definefontsynonym [\s!MonoBold]         [\s!file:LucidaSansTypewriterOT-Bold.otf]
+        \definefontsynonym [\s!MonoItalic]       [\s!file:LucidaSansTypewriterOT-Oblique.otf]
+        \definefontsynonym [\s!MonoBoldItalic]   [\s!file:LucidaSansTypewriterOT-BoldOblique.otf]
         \definefontsynonym [\s!MonoSlanted]      [\s!MonoItalic]
         \definefontsynonym [\s!MonoBoldSlanted]  [\s!MonoBoldItalic]
     \stoptypescript
 
-    \starttypescript [handwriting] [lucidanova]
+    \starttypescript [handwriting] [lucidanova,lucidaot,otlucida]
         \definefontsynonym [LucidaHandwriting] [\s!name:LucidaHandwriting-Italic]
         \definefontsynonym [Handwriting]       [LucidaHandwriting]
     \stoptypescript
 
-    \starttypescript [lucidanova]
+    \starttypescript [lucidanova,lucidaot,otlucida]
        %\loadfontgoodies[lucidanova-math]
-        \definetypeface [lucidanova] [rm] [\s!serif] [lucidanova] [\s!default] [\s!features=\s!default]
-        \definetypeface [lucidanova] [ss] [\s!sans]  [lucidanova] [\s!default] [\s!features=\s!default]
-        \definetypeface [lucidanova] [tt] [\s!mono]  [lucidanova] [\s!default] [\s!features=\s!none]
-        \definetypeface [lucidanova] [mm] [\s!math]  [lucidanova] [\s!default]
+        \definetypeface [\typescriptone] [rm] [\s!serif] [lucidanova] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [ss] [\s!sans]  [lucidanova] [\s!default] [\s!features=\s!default]
+        \definetypeface [\typescriptone] [tt] [\s!mono]  [lucidanova] [\s!default] [\s!features=\s!none]
+        \definetypeface [\typescriptone] [mm] [\s!math]  [lucidanova] [\s!default]
+        % for the moment here:
+        \setupmathrendering[\typescriptone][it=italic]
     \stoptypescript
-
-    % for the moment here:
-
-    \setupmathrendering
-        [lucidanova]
-        [it=italic]
 
 \stoptypescriptcollection
 

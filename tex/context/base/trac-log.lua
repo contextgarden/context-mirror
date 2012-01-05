@@ -403,6 +403,7 @@ local real, user, sub
 
 function logs.start_page_number()
     real, user, sub = texcount.realpageno, texcount.userpageno, texcount.subpageno
+--     real, user, sub = 0, 0, 0
 end
 
 local timing    = false

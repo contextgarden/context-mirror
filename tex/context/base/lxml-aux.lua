@@ -18,6 +18,7 @@ local xml = xml
 local xmlconvert, xmlcopy, xmlname = xml.convert, xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
+local xmlfilter = xml.filter
 
 local type, setmetatable, getmetatable = type, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
@@ -167,7 +168,7 @@ local function xmltoelement(whatever,root)
     end
     local element
     if type(whatever) == "string" then
-        element = xmlinheritedconvert(whatever,root)
+        element = xmlinheritedconvert(whatever,root) -- beware, not really a root
     else
         element = whatever -- we assume a table
     end
@@ -273,32 +274,39 @@ end
 local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
-    if collected then
-        for c=1,#collected do
-            local e = collected[c]
-            local r = e.__p__
-            local d, k, rri = r.dt, e.ni, r.ri
-            local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
-            if edt then
-                local be, af
-                local cp = copiedelement(element,e)
-                if prepend then
-                    be, af = cp, edt
-                else
-                    be, af = edt, cp
-                end
-                local bn = #be
-                for i=1,#af do
-                    bn = bn + 1
-                    be[bn] = af[i]
-                end
-                if rri then
-                    r.dt[rri].dt = be
-                else
-                    d[k].dt = be
-                end
-                redo_ni(d)
+    local function inject_e(e)
+        local r = e.__p__
+        local d, k, rri = r.dt, e.ni, r.ri
+        local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
+        if edt then
+            local be, af
+            local cp = copiedelement(element,e)
+            if prepend then
+                be, af = cp, edt
+            else
+                be, af = edt, cp
             end
+            local bn = #be
+            for i=1,#af do
+                bn = bn + 1
+                be[bn] = af[i]
+            end
+            if rri then
+                r.dt[rri].dt = be
+            else
+                d[k].dt = be
+            end
+            redo_ni(d)
+        end
+    end
+    if not collected then
+        -- nothing
+    elseif collected.tg then
+        -- first or so
+        inject_e(collected)
+    else
+        for c=1,#collected do
+            inject_e(collected[c])
         end
     end
 end
@@ -306,16 +314,23 @@ end
 local function insert_element(root,pattern,whatever,before) -- todo: element als functie
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
-    if collected then
+    local function insert_e(e)
+        local r = e.__p__
+        local d, k = r.dt, e.ni
+        if not before then
+            k = k + 1
+        end
+        insert(d,k,copiedelement(element,r))
+        redo_ni(d)
+    end
+    if not collected then
+        -- nothing
+    elseif collected.tg then
+        -- first or so
+        insert_e(collected)
+    else
         for c=1,#collected do
-            local e = collected[c]
-            local r = e.__p__
-            local d, k = r.dt, e.ni
-            if not before then
-                k = k + 1
-            end
-            insert(d,k,copiedelement(element,r))
-            redo_ni(d)
+            insert_e(collected[c])
         end
     end
 end
@@ -618,3 +633,49 @@ xml.remap_tag                  = xml.remaptag              obsolete.remap_tag   
 xml.remap_name                 = xml.remapname             obsolete.remap_name            = xml.remapname
 xml.remap_namespace            = xml.remapnamespace        obsolete.remap_namespace       = xml.remapnamespace
 
+-- new (probably ok)
+
+function xml.cdata(e)
+    if e then
+        local dt = e.dt
+        if dt and #dt == 1 then
+            local first = dt[1]
+            return first.tg == "@cd@" and first.dt[1] or ""
+        end
+    end
+    return ""
+end
+
+function xml.finalizers.xml.cdata(collected)
+    if collected then
+        local e = collected[1]
+        if e then
+            local dt = e.dt
+            if dt and #dt == 1 then
+                local first = dt[1]
+                return first.tg == "@cd@" and first.dt[1] or ""
+            end
+        end
+    end
+    return ""
+end
+
+function xml.insertcomment(e,str,n) -- also insertcdata
+    table.insert(e.dt,n or 1,{
+        tg      = "@cm@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    })
+end
+
+function xml.setcdata(e,str) -- also setcomment
+    e.dt = { {
+        tg      = "@cd@",
+        ns      = "",
+        special = true,
+        at      = { },
+        dt      = { str },
+    } }
+end

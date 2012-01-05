@@ -104,8 +104,8 @@ references.splitcomponent    = splitcomponent
 -- test code:
 
 -- inspect(splitreference([[component:::inner]]))
--- print(splitprefix([[component:::inner]]))
--- print(splitprefix([[component:inner]]))
+-- inspect(splitprefix([[component:::inner]]))
+-- inspect(splitprefix([[component:inner]]))
 
 -- inspect(splitreference([[ ]]))
 -- inspect(splitreference([[ inner ]]))

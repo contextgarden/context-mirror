@@ -25,18 +25,18 @@
 %D \unprotect
 %D     \def\????aa{@@@@aa}
 %D
-%D     \installparameterhandler  \????aa {whatever}
-%D     \installsetuphandler      \????aa {whatever}
-%D     \installdefinehandler     \????aa {whatever} \????aa % #3 == defaultroot
-%D     \installattributehandler  \????aa {whatever}
+%D     \installparameterhandler   \????aa {whatever}
+%D     \installsetuphandler       \????aa {whatever}
+%D     \installdefinehandler      \????aa {whatever} \????aa % #3 == defaultroot
+%D     \installfontandcolorhandler\????aa {whatever}
 %D
-%D   % \installcommandhandler    \????aa {whatever} \????aa
+%D   % \installcommandhandler     \????aa {whatever} \????aa
 %D \protect
 %D
 %D % \whateverparameter \c!test
 %D % \whateverparameterhash \c!test
 %D % \namedwhateverparameter \mycurrentwhatever \c!test
-%D % \dosetwhateverattributes \c!style \c!color
+%D % \dosetwhateverstyleandcolor \c!style \c!color
 %D % \everydefinewhatever (sets \currentwhatever)
 %D % \everypresetwhatever (can be used to reset parameters as we can redefine)
 %D % \everysetupwhatever (sets \currentwhatever)
@@ -64,12 +64,71 @@
 
 % todo: add (relaxed) postsetup and postdefine hooks, just after the everys
 
-\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9%
-  {\ifx#2\relax\let#2\empty\fi
-   \def#3##1{\csname#4{#1#2}{##1}\endcsname}%
+% Start of experimental code: especially tables can have many assignments
+% and although most time is spent in the typesetting anyway, we can squeeze
+% out a little bit. Of course having 500 rows of 50 columns each with some
+% setting does not happen that often. One should keep in mind that in the
+% average document having some 500 assignments is no exception but there we're
+% talking of neglectable runtime for them. Of course in the definitions below
+% there is no real gain, only in the generated \setup* commands. Another
+% situation with many assignments is \XML\ where we can pass attributes
+% and normally don't do testing of them making sense.
+%
+% \testfeatureonce{100000}{\getparameters[bla][a=111,b=222,c=333]}% 1.669s
+% \testfeatureonce{100000}{\get_parameters{bla} [a=111,b=222,c=333]}% 1.529s
+% \testfeatureonce{100000}{\def\current_parameter_namespace{bla}\get_parameters_indeed[a=111,b=222,c=333]}% 1.466s
+%
+% \get_parameter                  {...}                      [...]
+% \def\current_parameter_namespace{...} \get_parameter_indeed[...]
+
+\def\get_parameters#1[#2%
+  {\if\noexpand#2]%
+     \expandafter\gobbleoneargument
+   \else
+     \def\current_parameter_namespace{#1}%
+     \expandafter\get_parameters_indeed
+   \fi#2}
+
+% \def\get_parameters#1% we can assume that the test already happened
+%   {\def\current_parameter_namespace{#1}%
+%    \get_parameters_indeed}
+
+\def\get_parameters_indeed#1]% namespace already set
+  {\get_parameters_item#1,],\@relax@}
+
+\def\get_parameters_item#1,#2% #2 takes space before ,
+  {\if,#1,% dirty trick for testing #1=empty
+     \expandafter\get_parameters_item
+   \else\if]#1%
+     \doubleexpandafter\gobbleoneargument
+   \else
+     \get_parameters_assign#1==\empty\@relax@
+     \doubleexpandafter\get_parameters_item
+   \fi\fi#2}
+
+\def\get_parameters_error#1#2#3%
+  {\showassignerror{#2}{\the\inputlineno\space(#1)}}
+
+\def\get_parameters_assign#1=#2=#3#4\@relax@
+  {\ifx\empty#1\empty
+     \expandafter\get_parameters_error
+   \else\ifx#3\empty
+     \doubleexpandafter\get_parameters_error
+   \else
+     \doubleexpandafter\dosetvalue
+   \fi\fi
+   \current_parameter_namespace{#1}{#2}}
+
+% End of experimental code.
+
+\unexpanded\def\doinstallparameterhandler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
+  {\ifx#2\relax\let#2\empty\fi                             % it is hardly faster but produces less expansion tracing
+  %\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
+   \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
-   \def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
+  %\def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
+   \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
    \def#9##1{\csname#1#2:##1\endcsname}}
@@ -106,7 +165,7 @@
    \def#6{#1#2:}%
    \def#7##1{#1##1:}%
    \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}%
-   \def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
+   \unexpanded\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
 
 
 \unexpanded\def\installparameterhashhandler#1#2%
@@ -147,26 +206,32 @@
         \expandafter\noexpand\csname let#2parameter\endcsname
         \expandafter\noexpand\csname reset#2parameter\endcsname}}
 
-\unexpanded\def\doinstallattributehandler#1#2#3#4%
-  {\unexpanded\def#2##1##2% style color
-     {\edef\fontattributehash {#1{##1}}% this name is public
-      \edef\colorattributehash{#1{##2}}% this name is public
-      \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi
-      \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##2}\fi}%
-   \unexpanded\def#3##1% style
-     {\edef\fontattributehash {#1{##1}}% this name is public
-      \ifx\fontattributehash \empty\else\dosetfontattribute \fontattributehash {##1}\fi}%
-   \unexpanded\def#4##1% color
-     {\edef\colorattributehash{#1{##1}}% this name is public
-      \ifx\colorattributehash\empty\else\dosetcolorattribute\colorattributehash{##1}\fi}}
+\let\dousecurrentstyleparameter\relax
+\let\dousecurrentcolorparameter\relax
 
-\unexpanded\def\installattributehandler#1#2%
+\let\currentstyleparameter\empty
+\let\currentcolorparameter\empty
+
+\unexpanded\def\doinstallstyleandcolorhandler#1#2#3#4%
+  {\unexpanded\def#2##1##2% style color
+     {\edef\currentstyleparameter{#1{##1}}% this name is public
+      \edef\currentcolorparameter{#1{##2}}% this name is public
+      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
+      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
+   \unexpanded\def#3##1% style
+     {\edef\currentstyleparameter{#1{##1}}% this name is public
+      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi}%
+   \unexpanded\def#4##1% color
+     {\edef\currentcolorparameter{#1{##1}}% this name is public
+      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
+
+\unexpanded\def\installstyleandcolorhandler#1#2%
   {\normalexpanded
-     {\doinstallattributehandler
-        \expandafter\noexpand\csname #2parameterhash\endcsname
-        \expandafter\noexpand\csname doset#2attributes\endcsname
-        \expandafter\noexpand\csname doset#2fontattribute\endcsname
-        \expandafter\noexpand\csname doset#2colorattribute\endcsname}}
+     {\doinstallstyleandcolorhandler
+        \expandafter\noexpand\csname #2parameter\endcsname
+        \expandafter\noexpand\csname use#2styleandcolor\endcsname % maybe an alias use#2styleandcolorparameters
+        \expandafter\noexpand\csname use#2styleparameter\endcsname
+        \expandafter\noexpand\csname use#2colorparameter\endcsname}}
 
 \let\definehandlerparent\empty
 
@@ -181,16 +246,20 @@
       \the#6% predefine
       \ifthirdargument
         \edef#8{##2}%
-        \getparameters[#1#4:][\s!parent=#1##2,##3]%
+      % \getparameters[#1#4:][\s!parent=#1##2,##3]%
+        \get_parameters{#1#4:}[\s!parent=#1##2,##3]%
       \else\ifsecondargument
         \doifassignmentelse{##2}
           {\let#8\empty
-           \getparameters[#1#4:][\s!parent=#3,##2]}
+         % \getparameters[#1#4:][\s!parent=#3,##2]}
+           \get_parameters{#1#4:}[\s!parent=#3,##2]}
           {\edef#8{##2}%
-           \getparameters[#1#4:][\s!parent=#1##2]}%
+         % \getparameters[#1#4:][\s!parent=#1##2]}%
+           \get_parameters{#1#4:}[\s!parent=#1##2]}%
       \else
         \let#8\empty
-        \getparameters[#1#4:][\s!parent=#3]%
+      % \getparameters[#1#4:][\s!parent=#3]%
+        \get_parameters{#1#4:}[\s!parent=#3]%
       \fi\fi
       \the#7%
       \let#4\saveddefinewhatever}}
@@ -210,19 +279,22 @@
 \unexpanded\def\doinstallsetuphandler#1#2#3#4#5#6%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
-   \unexpanded\def#6{\getparameters[#1#3:]}% no every ! don't change it
+ % \unexpanded\def#6{\getparameters[#1#3:]}% no every ! don't change it
+   \unexpanded\def#6{\get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#5%
    \def#4[##1][##2]% maybe helper
      {\let\savedsetupwhatever#3%
       \ifsecondargument
         \def\docommand####1% we will have a simple one as well
           {\edef#3{####1}%
-           \getparameters[#1#3:][##2]%
+         % \getparameters[#1#3:][##2]%
+           \get_parameters{#1#3:}[##2]%
            \the#5}%
         \processcommalist[##1]\docommand
       \else
         \let#3\empty
-        \getparameters[#1:][##1]%
+      % \getparameters[#1:][##1]%
+        \get_parameters{#1:}[##1]%
         \the#5%
       \fi
       \let#3\savedsetupwhatever}}
@@ -240,20 +312,23 @@
 \unexpanded\def\doinstallswitchsetuphandler#1#2#3#4#5#6%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
-   \unexpanded\def#6{\getparameters[#1#3:]}%
+ % \unexpanded\def#6{\getparameters[#1#3:]}%
+   \unexpanded\def#6{\get_parameters{#1#3:}}%
    \newtoks#5%
    \def#4[##1][##2]% maybe helper
      {\ifsecondargument % no commalist here
         \let\savedsetupwhatever#3%
         \edef#3{##1}%
-        \getparameters[#1#3:][##2]%
+      % \getparameters[#1#3:][##2]%
+        \get_parameters{#1#3:}[##2]%
         \the#5%
         \let#3\savedsetupwhatever
       \else\iffirstargument
         \doifassignmentelse{##1}
           {\let\savedsetupwhatever#3%
            \let#3\empty
-           \getparameters[#1:][##1]%
+         % \getparameters[#1:][##1]%
+           \get_parameters{#1:}[##1]%
            \the#5%
            \let#3\savedsetupwhatever}
           {\edef#3{##1}% this will catch reset
@@ -276,25 +351,29 @@
 \unexpanded\def\doinstallautosetuphandler#1#2#3#4#5#6%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dotripleempty#4}%
-   \unexpanded\def#6{\getparameters[#1#3:]}%
+ % \unexpanded\def#6{\getparameters[#1#3:]}%
+   \unexpanded\def#6{\get_parameters{#1#3:}}%
    \newtoks#5%
    \def#4[##1][##2][##3]%
      {\let\savedsetupwhatever#3%
       \ifthirdargument
         \def\docommand####1%
           {\edef#3{####1}%
-           \getparameters[#1#3:][\s!parent=#1##2,##3]%
+        %  \getparameters[#1#3:][\s!parent=#1##2,##3]%
+           \get_parameters{#1#3:}[\s!parent=#1##2,##3]%
            \the#5}%
         \processcommalist[##1]\docommand
       \else\ifsecondargument
         \def\docommand####1%
           {\edef#3{####1}%
-           \getparameters[#1#3:][##2]%
+        %  \getparameters[#1#3:][##2]%
+           \get_parameters{#1#3:}[##2]%
            \the#5}%
         \processcommalist[##1]\docommand
       \else
         \let#3\empty
-        \getparameters[#1:][##1]%
+      % \getparameters[#1:][##1]%
+        \get_parameters{#1:}[##1]%
         \the#5%
       \fi\fi
       \let#3\savedsetupwhatever}}
@@ -309,7 +388,7 @@
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
-\def\installbasicparameterhandler#1#2%
+\unexpanded\def\installbasicparameterhandler#1#2%
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
@@ -319,24 +398,24 @@
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installsetuphandler         {#1}{#2}%
-   \installattributehandler     {#1}{#2}}
+   \installstyleandcolorhandler {#1}{#2}}
 
 \unexpanded\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installswitchsetuphandler   {#1}{#2}%
-   \installattributehandler     {#1}{#2}}
+   \installstyleandcolorhandler {#1}{#2}}
 
 \unexpanded\def\installautocommandhandler#1#2#3% automatically defined cloned setups
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installautosetuphandler     {#1}{#2}%
-   \installattributehandler     {#1}{#2}}
+   \installstyleandcolorhandler {#1}{#2}}
 
-\unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment)
+\unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment) - use \check*parent when defining
   {\installbasicparameterhandler{#1}{#2}%
    \installsetuphandler         {#1}{#2}%
-   \installattributehandler     {#1}{#2}}
+   \installstyleandcolorhandler {#1}{#2}}
 
 \unexpanded\def\installnamespace#1%
   {\setvalue{????#1}{@@@@#1}}
@@ -394,8 +473,8 @@
 
 \def\doshowparentchain#1%
   {#1 => %
-   \ifcsname#1\s!parent\endcsname
-      \expandafter\doshowparentchain\csname#1\s!parent\endcsname
+   \ifcsname#1:\s!parent\endcsname
+      \expandafter\doshowparentchain\csname#1:\s!parent\endcsname
    \fi}
 
 \def\showparentchain#1#2%

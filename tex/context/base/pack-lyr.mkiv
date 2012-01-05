@@ -501,7 +501,7 @@
        \if!!donec\box\else\copy\fi\layerbox % sorry for the delay due to copying
      \fi
    % todo: method=offset => overlayoffset right/down (handy for backgrounds with offset)
-   \doifoverlayelse{#2}{\setlayoutcomponentattribute\v!layer{#2}}\resetlayoutcomponentattribute
+   \doifoverlayelse{#2}{\setlayoutcomponentattribute{\v!layer:#2}}\resetlayoutcomponentattribute
    \iftracelayers \ruledvbox \else \vbox \fi \if!!donea to \overlayheight \fi \layoutcomponentboxattribute
      {\hbox \if!!donea to \overlaywidth \fi
         {\edef\@@currentlayerpageposition{\csname\??ll#2\realfolio\c!position\endcsname}%

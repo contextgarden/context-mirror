@@ -67,7 +67,7 @@
 \def\firststageinitializetype
   {\let\obeylines\ignorelines
    \ignorehyphens % default
-   \dosettypeattributes\c!style\c!color
+   \usetypestyleandcolor\c!style\c!color
    \setcatcodetable\vrbcatcodes}
 
 \let\doverbatimsetlinemargin\relax
@@ -98,7 +98,7 @@
 \def\firststageinitializetyping
   {\switchtobodyfont[\typingparameter\c!bodyfont]%
    \docheckverbatimmargins
-   \dosettypingattributes\c!style\c!color
+   \usetypingstyleandcolor\c!style\c!color
    \doifsomething{\typingparameter\c!align}{\setupalign[\typingparameter\c!align]}%
    \ignorehyphens} % default
 
@@ -383,7 +383,7 @@
 \let\normaltextmat\mat
 \let\normaltextdis\dis
 
-\def\astype{\groupedcommand{\dosettypeattributes\c!style\c!color}{}}
+\def\astype{\groupedcommand{\usetypestyleandcolor\c!style\c!color}{}}
 
 %D The basic display verbatim commands are defined in an
 %D indirect way. As we will see, they are a specific case of a

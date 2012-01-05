@@ -1178,7 +1178,7 @@
 		<cd:command name='defineframedtext' value='definestetextinconjurat'/>
 		<cd:command name='definehbox' value='definestehbox'/>
 		<cd:command name='definehead' value='definesteantet'/>
-		<cd:command name='defineindenting' value='definestealiat'/>
+		<cd:command name='defineindentedtext' value='defineindentedtext'/>
 		<cd:command name='defineinmargin' value='defineinmargin'/>
 		<cd:command name='defineinteractionmenu' value='definestemeniuinteractiune'/>
 		<cd:command name='defineitemgroup' value='defineitemgroup'/>
@@ -1489,7 +1489,7 @@
 		<cd:command name='setupheads' value='seteazatitluri'/>
 		<cd:command name='setupheadtext' value='seteazatexttitlu'/>
 		<cd:command name='setuphyphenmark' value='seteazaliniesilabe'/>
-		<cd:command name='setupindentations' value='seteazaaliniate'/>
+		<cd:command name='setupindentedtext' value='setupindentedtext'/>
 		<cd:command name='setupindenting' value='seteazaaliniat'/>
 		<cd:command name='setupinmargin' value='seteazamarginal'/>
 		<cd:command name='setupinteraction' value='seteazainteractiunea'/>

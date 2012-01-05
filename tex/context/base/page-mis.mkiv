@@ -45,24 +45,24 @@
 %D we keep a local cache, especially as we can flush per page.
 
 \newif   \ifinpostponing                  % prevents nesting
-\newcount\postponed_page_blocks_next_page % set at the lua end
+\newcount\page_postponed_blocks_next_page % set at the lua end
 
 \unexpanded\setvalue{\e!start\v!postponing}%
   {\bgroup
    \obeylines
-   \doifnextoptionalelse{\egroup\postponed_page_block_start}{\egroup\postponed_page_block_start[0]}}
+   \doifnextoptionalelse{\egroup\page_postponed_blocks_start}{\egroup\page_postponed_blocks_start[0]}}
 
 \unexpanded\setvalue{\e!stop\v!postponing}%
   {\ctxcommand{registerpostponedblock("\currentpostponedpage")}\relax}
 
-\def\postponed_page_block_start[#1]%
+\def\page_postponed_blocks_start[#1]%
   {\edef\currentpostponedpage{#1}%
    \dostartbuffer[postponedblock][\e!start\v!postponing][\e!stop\v!postponing]}
 
 % officially we should flush again after a flush as there can be new future pages
 % but that will be looked into when we run into it
 
-\unexpanded\def\postponed_page_block_flush
+\unexpanded\def\page_postponed_blocks_flush
   {\bgroup
    \inpostponingtrue                  % for old times sake
    \global\pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
@@ -76,28 +76,28 @@
    \doflushfloats                     % new but potential dangerous, maybe we need a classification
    \egroup}                           % of blocks: with and without flush
 
-\def\doflushpostponedblocks
+\def\page_postponed_blocks_flush_indeed
   {\ifinpostponing
      % probably a nested flush
-   \else\ifnum\postponed_page_blocks_next_page=\zerocount
+   \else\ifnum\page_postponed_blocks_next_page=\zerocount
      % nothing in cache
-   \else\ifnum\postponed_page_blocks_next_page<\zerocount
+   \else\ifnum\page_postponed_blocks_next_page<\zerocount
      % generic cache
-     \postponed_page_block_flush
-   \else\ifnum\postponed_page_blocks_next_page>\realpageno
+     \page_postponed_blocks_flush
+   \else\ifnum\page_postponed_blocks_next_page>\realpageno
      % future content
    \else
      % pending content
-     \postponed_page_block_flush
+     \page_postponed_blocks_flush
    \fi\fi\fi\fi}
 
-\def\doflushpostponedcontent % called in page-one
-  {\bgroup
+\def\page_postponed_blocks_flush
+  {\begingroup
    \setsystemmode\v!postponing
    \the\everytopofpage
   %\flushrestfloats
    \doflushpagefloats
-   \doflushpostponedblocks
-   \egroup}
+   \page_postponed_blocks_flush_indeed
+   \endgroup}
 
 \protect \endinput

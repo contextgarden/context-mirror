@@ -209,33 +209,14 @@
      {\doifnotinset\v!high\floatspecification\vfill
       \box\floatbox
       \doifnotinset\v!low\floatspecification\vfill}%
-   \vfill\eject}
-
-% \def\doflushpagefloats
-%   {\doifoddpageelse
-%      {\ifnum\nofstackedfloatsincategory\s!rightpage>\zerocount
-%         \doflushsomepagefloat\s!rightpage
-%       \else\ifnum\nofstackedfloatsincategory\s!page>\zerocount
-%         \doflushsomepagefloat\s!page
-%       \else\ifnum\nofstackedfloatsincategory\s!leftpage>\zerocount
-%         \emptyhbox\vfill\eject
-%        %\doflushsomepagefloat\s!leftpage
-%       \fi\fi\fi}
-%      {\ifnum\nofstackedfloatsincategory\s!leftpage>\zerocount
-%         \doflushsomepagefloat\s!leftpage
-%       \else\ifnum\nofstackedfloatsincategory\s!page>\zerocount
-%         \doflushsomepagefloat\s!page
-%       \else\ifnum\nofstackedfloatsincategory\s!rightpage>\zerocount
-%         \emptyhbox\vfill\eject
-%        %\doflushsomepagefloat\s!rightpage
-%       \fi\fi\fi}}
+   \page_otr_fill_and_eject_page}
 
 \def\doflushpagefloats
   {\edef\checkedpagefloat{\ctxcommand{checkedpagefloat()}}% (true) for packed
    \ifx\checkedpagefloat\empty
      % nothing
    \else\ifx\checkedpagefloat\v!empty
-      \emptyhbox\vfill\eject
+      \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
    \else
       \doflushsomepagefloat\checkedpagefloat
    \fi\fi}

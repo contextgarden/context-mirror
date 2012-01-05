@@ -212,14 +212,14 @@ function xtables.set_reflow_width()
     local fixedcolumns = data.fixedcolumns
     local fixedrows = data.fixedrows
     if dimensionstate == 1 then
-if width > fixedcolumns[c] then -- how about a span here?
-        fixedcolumns[c] = width
-end
+        if width > fixedcolumns[c] then -- how about a span here?
+            fixedcolumns[c] = width
+        end
     elseif dimensionstate == 2 then
         fixedrows[r]    = height
     elseif dimensionstate == 3 then
-        fixedrows[r]    = width
-        fixedcolumns[c] = height
+        fixedrows[r]    = height -- width
+        fixedcolumns[c] = width -- height
     else -- probably something frozen, like an image -- we could parse the list
         if width <= data.criterium_h and height >= data.criterium_v then
             if width > fixedcolumns[c] then -- how about a span here?

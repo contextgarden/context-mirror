@@ -13,94 +13,25 @@
 
 \writestatus{loading}{ConTeXt Spacing Macros / Fonts}
 
-%D For historic reasons here, will move and/or disappear:
+%D For historic reasons we keep the following around but
+%D they are no longer that relevant for \MKIV. The name of
+%D this module is somewhat weird, but it happened that these
+%D macros were defined in a larger one with the same name.
 
 \unprotect
 
-\newconditional \parbasedattributes % this will change .. old mkii stuff
-
-\def\finishparbasedattributes
-  {\ifconditional\parbasedattributes
-     \setfalse\parbasedattributes
-     \par
-   \fi}
-
-\def\dostopparbasedattributes
-  {\settrue\parbasedattributes
-   \dostopattributes}
-
-\let\dostopattributes\relax % in case these commands end up in an edef
-
-\unexpanded\def\@@dostopattributes
-  {\stopcolor
-   \finishparbasedattributes
-   \endgroup}
-
-\unexpanded\def\@@nostopattributes
-  {\finishparbasedattributes
-   \endgroup}
-
-\unexpanded\def\doattributes#1#2#3#4%
-  {\dostartattributes{#1}{#2}{#3}{#4}\dostopattributes}
-
-% An even faster \ETEX\ version:
-
-\unexpanded\def\dostartattributes#1#2#3%
-  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-   \ifincolor
-     \ifcsname#1#3\endcsname
-       \let\dostopattributes\@@dostopattributes
-       \faststartcolor[\csname#1#3\endcsname]%
-     \else
-       \let\dostopattributes\@@nostopattributes
-     \fi
-   \else
-     \let\dostopattributes\@@nostopattributes
-   \fi
-   \ifcsname#1#2\endcsname
-   % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
-     \@EA\doconvertfont\csname#1#2\@EA\endcsname
-   \fi}
-
-\unexpanded\def\@@dostopattributes
-  {\faststopcolor
-   \finishparbasedattributes
-   \endgroup}
-
-\unexpanded\def\@@nostopattributes
-  {\finishparbasedattributes
-   \endgroup}
-
-%D Bonus macro, see core-sec.tex
-
-\newconditional\fontattributeisset
-
-\unexpanded\def\dosetfontattribute#1#2%
-  {\ifcsname#1#2\endcsname
-     \settrue\fontattributeisset % reset is done elsewhere
-     \@EA\doconvertfont\csname#1#2\@EA\endcsname
-   \fi\empty}
-
-%D Since this happens a lot, and sometimes large arguments
-%D are passed in \type {#4}, we just copy some code:
-
 \unexpanded\def\doattributes#1#2#3#4%
   {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
-   \ifincolor
-     \ifcsname#1#3\endcsname
-       \let\dostopattributes\@@dostopattributes
-       \faststartcolor[\csname#1#3\endcsname]%
-     \else
-       \let\dostopattributes\endgroup
-     \fi
-     \else
-       \let\dostopattributes\endgroup
-     \fi
-     \ifcsname#1#2\endcsname
-     % \@EAEAEA\doconvertfont\@EA\@EA\csname#1#2\endcsname
-       \@EA\doconvertfont\csname#1#2\@EA\endcsname
-     \fi
-     {#4}%
-     \dostopattributes}
+   \dousestylehashparameter{#1}{#2}%
+   \dousecolorhashparameter{#1}{#3}%
+   #4%
+   \endgroup}
+
+\unexpanded\def\dostartattributes#1#2#3#4% nothing is done with #4 any longer
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \dousestylehashparameter{#1}{#2}%
+   \dousecolorhashparameter{#1}{#3}}
+
+\let\dostopattributes\endgroup
 
 \protect \endinput

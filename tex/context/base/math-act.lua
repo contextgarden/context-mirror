@@ -50,6 +50,9 @@ local how = {
 
 function mathematics.scaleparameters(target,original)
     if not target.properties.math_is_scaled then
+-- print("\n",target.properties.fontname)
+-- print(original.mathparameters.DisplayOperatorMinHeight)
+-- print(target.mathparameters.DisplayOperatorMinHeight)
         local mathparameters = target.mathparameters
         if mathparameters and next(mathparameters) then
             local parameters = target.parameters
@@ -59,16 +62,21 @@ function mathematics.scaleparameters(target,original)
             for name, value in next, mathparameters do
                 local h = how[name]
                 if h == "unscaled" then
-                    mathparameters[name] = value
+                    -- kept
                 elseif h == "horizontal" then
-                    mathparameters[name] = value * hfactor
+                    value = value * hfactor
                 elseif h == "vertical"then
-                    mathparameters[name] = value * vfactor
+                    value = value * vfactor
                 else
-                    mathparameters[name] = value * factor
+                    value = value * factor
                 end
+-- if name == "DisplayOperatorMinHeight" then
+--     report_math("f: %s, p: %s, h: %s, b: %s, a: %s",target.properties.fontname,name,h or "scaled",mathparameters[name],value)
+-- end
+                mathparameters[name] = value
             end
         end
+-- print(mathparameters.DisplayOperatorMinHeight)
         target.properties.math_is_scaled = true
     end
 end

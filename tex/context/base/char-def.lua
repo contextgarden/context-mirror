@@ -458,7 +458,7 @@ characters.data={
   description="SOLIDUS",
   direction="cs",
   linebreak="sy",
-  mathclass="binary",
+  mathclass="ord",
   mathsymbol=0x2044,
   unicodeslot=0x002F,
  },
@@ -56864,7 +56864,7 @@ characters.data={
   linebreak="is",
   mathspec={
    {
-    class="binary",
+    class="ord",
     name="slash",
    },
    {
@@ -63198,8 +63198,16 @@ characters.data={
   description="LEFT CEILING",
   direction="on",
   linebreak="al",
-  mathclass="open",
-  mathname="lceiling",
+  mathspec = {
+   {
+    class="open",
+    name="lceil",
+   },
+   {
+    class="open",
+    name="lceiling",
+   }
+  },
   mirror=0x2309,
   unicodeslot=0x2308,
  },
@@ -63208,8 +63216,16 @@ characters.data={
   description="RIGHT CEILING",
   direction="on",
   linebreak="al",
-  mathclass="close",
-  mathname="rceiling",
+  mathspec = {
+   {
+    class="close",
+    name="rceil",
+   },
+   {
+    class="close",
+    name="rceiling",
+   }
+  },
   mirror=0x2308,
   unicodeslot=0x2309,
  },

@@ -17,10 +17,13 @@ local report_process     = logs.reporter("fonts","otf process")
 
 local fonts              = fonts
 local otf                = fonts.handlers.otf
-local fontdata           = fonts.hashes.identifiers
+local hashes             = fonts.hashes
 local definers           = fonts.definers
 local constructors       = fonts.constructors
 local specifiers         = fonts.specifiers
+
+local fontdata           = hashes.identifiers
+----- fontresources      = hashes.resources -- not yet defined
 
 local contextsetups      = specifiers.contextsetups
 local contextnumbers     = specifiers.contextnumbers
@@ -32,7 +35,7 @@ local otffeatures        = fonts.constructors.newfeatures("otf")
 local registerotffeature = otffeatures.register
 
 local fontdynamics       = { }
-fonts.hashes.dynamics    = fontdynamics
+hashes.dynamics          = fontdynamics
 
 local a_to_script        = { }
 local a_to_language      = { }
@@ -49,6 +52,10 @@ function otf.setdynamics(font,attribute)
         local dynamics = fontdynamics[font]
         local script   = features.script   or 'dflt'
         local language = features.language or 'dflt'
+        if script == "auto" then
+            -- checkedscript and resources are defined later so we cannot shortcut them
+            script = definers.checkedscript(fontdata[font],hashes.resources[font],features)
+        end
         local ds = dynamics[script] -- can be metatable magic (less testing)
         if not ds then
             ds = { }

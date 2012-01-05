@@ -321,7 +321,9 @@
      {\!!widtha\alhsize
       \divide\!!widtha \alnsize}
      {\!!widtha\paragraphcellmeter\alcounter\c!width}%
-   \dostartattributes{\??al\currentparagraph\number\alcounter}\c!style\c!color\empty
+   \begingroup
+   \dousestylehashparameter{\??al\currentparagraph\number\alcounter}\c!style
+   \dousecolorhashparameter{\??al\currentparagraph\number\alcounter}\c!color
    \doifelse{\paragraphcellmeter\alcounter\c!height}\v!fit
      {\setbox\scratchbox\vtop}
      {\setbox\scratchbox\vtop to \paragraphcellmeter\alcounter\c!height}%
@@ -361,7 +363,7 @@
      \wd\scratchbox\!!widtha
    \fi
    \box\scratchbox
-   \dostopattributes
+   \endgroup
    \ifnum\alcounter<\paragraphparameter\c!n\relax
      \@EA\doparagraphcell
    \else
@@ -837,7 +839,9 @@
     \pushmacro\checkindentation
     \doifsomething{\delimitedtextparameter\c!indenting} % WS
       {\setupindenting[\delimitedtextparameter\c!indenting]}%
-    \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+    \begingroup
+    \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
+    \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color
     \leftdelimitedtextmark
     \ignorespaces}
 
@@ -845,7 +849,7 @@
    {\removeunwantedspaces
     \removelastskip
     \rightdelimitedtextmark
-    \dostopattributes
+    \begingroup
     \popmacro\checkindentation
     \dodostopdelimitedtextpar
     \delimitedtextparameter\c!after
@@ -856,14 +860,16 @@
 
 \def\dostartdelimitedtexttxt
   {\let\dostopdelimitedtext\dostopdelimitedtexttxt
-   \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color\empty
+   \begingroup
+   \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
+   \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color
    \dohandleleftdelimitedtext\c!left
    \ignorespaces}
 
 \def\dostopdelimitedtexttxt
   {\removeunwantedspaces
    \dohandlerightdelimitedtext\c!right
-   \dostopattributes}
+   \endgroup}
 
 \unexpanded\def\stopdelimitedtext
   {\dostopdelimitedtext
@@ -1025,9 +1031,9 @@
 \def\doattributeddelimited
   {\groupedcommand
      {\dostarttagged\t!delimited\currentdelimitedtext
-      \dostartattributes{\??ci\currentdelimitedtext}\c!style\c!color}
-     {\dostopattributes
-      \dostoptagged
+      \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
+      \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color}
+     {\dostoptagged
       \popdelimitedtext}}
 
 \def\dofontdrivendelimited
@@ -1661,11 +1667,14 @@
 
 \definepairedbox[\v!legend]
 
-%D Goody:
+%D Goody (to be reconsidered):
+
+\newsystemmode{combination}
+\newsystemmode{pairedbox}
 
 \appendtoks
-  \global\resetsystemmode{combination}%
-  \global\resetsystemmode{pairedbox}%
+    \global\resetsystemmode{combination}%
+    \global\resetsystemmode{pairedbox}%
 \to \everyinsidefloat
 
 % todo: \startcombination \startcomb \stopcomb ...
@@ -1779,10 +1788,10 @@
           {\ifx\nexttoken\egroup \else % the next box is empty
              \hsize\wd0
              \setupalign[\combinationparameter\c!align]%
-             \dostartattributes{\??co\currentcombination}\c!style\c!color\empty
+             \dousestylehashparameter{\??co\currentcombination}\c!style
+             \dousecolorhashparameter{\??co\currentcombination}\c!color
              \bgroup
              \aftergroup\endstrut
-             \aftergroup\dostopattributes
              \aftergroup\egroup
              \begstrut
            \fi}%
