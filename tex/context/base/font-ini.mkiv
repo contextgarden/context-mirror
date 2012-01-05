@@ -140,7 +140,7 @@
 
 % adapted, else wrong interlinespace
 
-\def\setfontparameters
+\unexpanded\def\setfontparameters
   {\synchronizefontsfalse
    \the\everybodyfont
    \synchronizefontstrue}
@@ -149,21 +149,22 @@
 
 \newcounter\pushedfont
 
-\def\savefont
+\unexpanded\def\savefont
   {\edef\savedfont{\the\font}%
    \pushmacro\savedfont}
 
-\def\restorefont
+\unexpanded\def\restorefont
   {\popmacro\savedfont
    \savedfont}
 
-\def\pushcurrentfont
+\unexpanded\def\pushcurrentfont
   {\edef\popcurrentfont
-     {\noexpand\def\noexpand\fontbody{\fontbody}%
-      \noexpand\def\noexpand\fontstyle{\fontstyle}%
-      \noexpand\dosetcurrentfontalternative{\fontalternative}%
-      \noexpand\dosetcurrentfontsize{\fontsize}%
-      \noexpand\synchronizefont}}
+     {\def\noexpand\fontbody       {\fontbody}%
+      \def\noexpand\fontstyle      {\fontstyle}%
+      \def\noexpand\fontalternative{\fontalternative}%
+      \def\noexpand\fontsize       {\fontsize}%
+      \checkbigmathsynchronization
+      \synchronizefont}}
 
 % \definetypeface[one][rm][serif][computer-roman][default]
 % \definetypeface[two][rm][serif][computer-roman][default][rscale=.9]
@@ -1440,16 +1441,44 @@
    \the\everyfontswitch
    \let\rawfontidentifier\oldrawfontidentifier}
 
-\def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
-  {\edef\lastfontidentifier{#3}%
-   \ifcsname\newfontidentifier\endcsname\else
-     \def\localrelativefontsize{#1}%
-     \def\localabsolutefontsize{#2}%
-     \lowleveldefinefont{#4}\newfontidentifier
-   \fi
+% \unexpanded\def\xxdododefinefont#1#2#3#4% \autofontsizetrue is set by calling routine
+%   {\edef\lastfontidentifier{#1}%
+%    \ifcsname\newfontidentifier\endcsname\else
+%      \def\localrelativefontsize{#2}%
+%      \def\localabsolutefontsize{#3}%
+%      \lowleveldefinefont{#4}\newfontidentifier
+%    \fi
+%    \csname\newfontidentifier\endcsname
+%    \autofontsizefalse
+%    \ifskipfontcharacteristics \else
+%      \setfontcharacteristics
+%      \the\everyfontswitch
+%    \fi
+%    \let\newfontidentifier\oldnewfontidentifier}
+
+\unexpanded\def\xxdododefinefont#1%
+  {\edef\lastfontidentifier{#1}%
+   \ifcsname\newfontidentifier\endcsname
+     \expandafter\xxdododefinefont_nop
+   \else
+     \expandafter\xxdododefinefont_yes
+   \fi}
+
+\def\xxdododefinefont_yes#1#2#3% \autofontsizetrue is set by calling routine
+  {\def\localrelativefontsize{#1}%
+   \def\localabsolutefontsize{#2}%
+   \lowleveldefinefont{#3}\newfontidentifier
    \csname\newfontidentifier\endcsname
    \autofontsizefalse
-  %\edef\lastfontidentifier{#3}%
+   \ifskipfontcharacteristics \else
+     \setfontcharacteristics
+     \the\everyfontswitch
+   \fi
+   \let\newfontidentifier\oldnewfontidentifier}
+
+\def\xxdododefinefont_nop#1#2#3% \autofontsizetrue is set by calling routine
+  {\csname\newfontidentifier\endcsname
+   \autofontsizefalse
    \ifskipfontcharacteristics \else
      \setfontcharacteristics
      \the\everyfontswitch
@@ -2018,30 +2047,30 @@
 \def\dodefinebodyfontnopxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \@EA\let\csname*#2#1#3#4#5*\endcsname\undefined
-   \unexpanded\@EA\edef\csname#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\edef\csname#2#1#3#4#5\endcsname{\xxdododefinefont{#2#1#3#4#5}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontyesxx#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \global\@EA\let\csname*\fontclass#2#1#3#4#5*\endcsname\undefined
-   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#5\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#5}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#5\endcsname{\xxdododefinefont{#2#1#3#4#5}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontnopmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \@EA\let\csname*#2#1#3#4#51*\endcsname\undefined
    \@EA\let\csname*#2#1#3#4#52*\endcsname\undefined
    \@EA\let\csname*#2#1#3#4#53*\endcsname\undefined
-   \unexpanded\@EA\edef\csname#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\edef\csname#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\edef\csname#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\edef\csname#2#1#3#4#51\endcsname{\xxdododefinefont{#2#1#3#4#51}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\edef\csname#2#1#3#4#52\endcsname{\xxdododefinefont{#2#1#3#4#52}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\edef\csname#2#1#3#4#53\endcsname{\xxdododefinefont{#2#1#3#4#53}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}}
 
 \def\dodefinebodyfontyesmm#1#2[#3#4#5=#6]% style body def
   {\ifcsname#1#3#4#5\endcsname\else\checkbodyfont{#1}{#3#4}{#5}\fi% not \definefontsize[#5]
    \global\@EA\let\csname*\fontclass#2#1#3#4#51*\endcsname\undefined
    \global\@EA\let\csname*\fontclass#2#1#3#4#52*\endcsname\undefined
    \global\@EA\let\csname*\fontclass#2#1#3#4#53*\endcsname\undefined
-   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#51\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#51}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#52\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#52}{\normalunexpanded{#6}}}%
-   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#53\endcsname{\noexpand\xxdododefinefont{\number\relativefontsize}{#2}{#2#1#3#4#53}{\normalunexpanded{#6}}}}
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#51\endcsname{\xxdododefinefont{#2#1#3#4#51}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#52\endcsname{\xxdododefinefont{#2#1#3#4#52}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}%
+   \unexpanded\@EA\xdef\csname\fontclass#2#1#3#4#53\endcsname{\xxdododefinefont{#2#1#3#4#53}{\number\relativefontsize}{#2}{\normalunexpanded{#6}}}}
 
 \def\checkbodyfont#1% tests for ttsl mmbf
   {\edef\c!!mm{#1}%
@@ -2623,7 +2652,7 @@
 
 \let\bigmathfontsize\empty
 
-\def\synchronizebigmath
+\unexpanded\def\synchronizebigmath
   {\ifx\bigmathfontsize\fontsize
      % already in sync
    \else
@@ -2631,7 +2660,7 @@
      \synchronizemath
    \fi}
 
-\def\checkbigmathsynchronization
+\unexpanded\def\checkbigmathsynchronization
   {\ifcase\synchronizebigmathflag
      % never
    \or
@@ -2642,22 +2671,23 @@
 
 %D So far for synchronisation. (We can inline the following macros.)
 
-\def\dosetcurrentfontsize#1%
+\unexpanded\def\dosetcurrentfontsize#1%
   {\edef\fontsize{#1}%
    \checkbigmathsynchronization}
 
-\def\dosetcurrentfontalternative#1%
+\unexpanded\def\dosetcurrentfontalternative#1%
   {\edef\fontalternative{#1}}
 
-\def\setcurrentfont#1#2#3#4%
+\unexpanded\def\setcurrentfont#1#2#3#4%
   {%\message{[1 #1 #2 #3 #4]}%
-   \edef\fontbody{#1}%
-   \edef\fontstyle{#2}%
-   \dosetcurrentfontalternative{#3}%
-   \dosetcurrentfontsize{#4}%
+   \edef\fontbody       {#1}%
+   \edef\fontstyle      {#2}%
+   \edef\fontalternative{#3}% \dosetcurrentfontalternative
+   \edef\fontsize       {#4}%
+   \checkbigmathsynchronization
    \synchronizefont}
 
-\def\setcurrentfontbody#1%
+\unexpanded\def\setcurrentfontbody#1%
   {%\message{[2 #1]}%
    \edef\fontbody{#1}%
    \synchronizefont}
@@ -2673,52 +2703,56 @@
 %    \ifmmode\mr\fi % otherwise \rm not downward compatible
 %    \synchronizefont}
 
-\def\setcurrentfontstyle#1%
+\unexpanded\def\setcurrentfontstyle#1%
   {%\message{[3 #1]}%
    \edef\fontstyle{#1}%
    \checkfontclass\fontstyle
    \ifmmode\mr\fi % otherwise \rm not downward compatible
    \synchronizefont}
 
-\def\setcurrentfontbodyalternative#1#2%
+\unexpanded\def\setcurrentfontbodyalternative#1#2%
   {%\message{[4 #1 #2]}%
-   \edef\fontbody{#1}%
-   \dosetcurrentfontalternative{#2}%
+   \edef\fontbody       {#1}%
+   \edef\fontalternative{#2}%
    \synchronizefont}
 
-\def\setcurrentfontalternative#1%
+\unexpanded\def\setcurrentfontalternative#1%
   {%\message{[5 #1]}%
-   \dosetcurrentfontalternative{#1}%
+   \edef\fontalternative{#1}%
    \synchronizefont}
 
-\def\setcurrentfontsize#1%
+\unexpanded\def\setcurrentfontsize#1%
   {%\message{[6 #1]}%
-   \dosetcurrentfontsize{#1}%
+   \edef\fontsize{#1}%
+   \checkbigmathsynchronization
    \synchronizefont}
 
-\def\setcurrentfontstylealternative#1#2% \rmsl
+\unexpanded\def\setcurrentfontstylealternative#1#2% \rmsl
   {%\message{[7 #1 #2]}%
-   \edef\fontstyle{#1}%
-   \dosetcurrentfontalternative{#2}%
+   \edef\fontstyle      {#1}%
+   \edef\fontalternative{#2}%
    \synchronizefont}
 
-\def\setcurrentfontstylesize#1#2% \rmsla
+\unexpanded\def\setcurrentfontstylesize#1#2% \rmsla
   {%\message{[8 #1 #2]}%
    \edef\fontstyle{#1}%
-   \dosetcurrentfontsize{#2}%
+   \edef\fontsize {#2}%
+   \checkbigmathsynchronization
    \synchronizefont}
 
-\def\setcurrentfontalternativesize#1#2% \sla
+\unexpanded\def\setcurrentfontalternativesize#1#2% \sla
   {%\message{[9 #1 #2]}%
-   \dosetcurrentfontalternative{#1}%
-   \dosetcurrentfontsize{#2}%
+   \edef\fontalternative{#1}%
+   \edef\fontsize       {#2}%
+   \checkbigmathsynchronization
    \synchronizefont}
 
-\def\setcurrentfontstylealternativesize#1#2#3% \rmsla
+\unexpanded\def\setcurrentfontstylealternativesize#1#2#3% \rmsla
   {%\message{[10 #1 #2 #3]}%
-   \edef\fontstyle{#1}%
-   \dosetcurrentfontalternative{#2}%
-   \dosetcurrentfontsize{#3}%
+   \edef\fontstyle      {#1}%
+   \edef\fontalternative{#2}%
+   \edef\fontsize       {#3}%
+   \checkbigmathsynchronization
    \synchronizefont}
 
 %D In principle one can assign alternative fallback routines.
@@ -2729,7 +2763,7 @@
 
 \let\fontstrategy\relax
 
-\def\synchronizefont % we can have dups i.e. no need to let fontstrategy
+\unexpanded\def\synchronizefont % we can have dups i.e. no need to let fontstrategy
   {\tryingfonttrue
    \ifx\fontclass\empty
      \applyfontstrategies
