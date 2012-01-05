@@ -118,8 +118,8 @@
           \scratchdimen\textheight
           \backgroundsplitmode\plusone % split to max height
         \else
-          \setbox0\vbox{\backgroundparameter\c!before}%
-          \scratchdimen\dimexpr\pagegoal-\ht0-\pagetotal\relax
+          \setbox2\vbox{\backgroundparameter\c!before}%
+          \scratchdimen\dimexpr\pagegoal-\ht2-\pagetotal\relax
           \backgroundsplitmode\plustwo % split to partial height
         \fi
         \advance\scratchdimen\dimexpr-\backgroundparameter\c!topoffset-\backgroundparameter\c!bottomoffset\relax
@@ -145,9 +145,9 @@
           \fi
           \startlinecorrection
             \ifnum\backgroundsplitmode=\plusthree
-              \hskip\dimen2
-            \fi %
-            \inheritedbackgroundframed{\box2}% new **
+              \hskip\dimen2 % new **
+            \fi
+            \inheritedbackgroundframed{\box2}%
           \stoplinecorrection
           \ifcase\backgroundsplitmode % no split
             \backgroundparameter\c!after

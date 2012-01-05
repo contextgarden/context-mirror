@@ -76,7 +76,7 @@
       ddir="r2l",
    \fi}
 
-\def\synchronizelayoutdirection
+\unexpanded\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright
      \settrue\inlinelefttoright
      \textdir TLT\relax
@@ -87,7 +87,7 @@
      \pardir  TRT\relax
    \fi}
 
-\def\synchronizedisplaydirection
+\unexpanded\def\synchronizedisplaydirection
   {\ifconditional\displaylefttoright
      \settrue\inlinelefttoright
      \textdir TLT\relax
@@ -98,14 +98,14 @@
      \pardir  TRT\relax
    \fi}
 
-\def\synchronizeinlinedirection
+\unexpanded\def\synchronizeinlinedirection
   {\ifconditional\inlinelefttoright
      \textdir TLT\relax
    \else
      \textdir TRT\relax
    \fi}
 
-\def\showdirections
+\unexpanded\def\showdirections
   {\dontleavehmode
    \begingroup\infofont\textdir TLT[\space
    layout:\ifconditional \layoutlefttoright  l2r\else r2l\fi\space
@@ -121,7 +121,7 @@
 
 % To be redone:
 
-\def\ibox#1#2#3%
+\unexpanded\def\ibox#1#2#3%
   {\vbox\bgroup
      \forgetall
      \let\\=\endgraf
@@ -129,7 +129,7 @@
      \doifrightpageelse\raggedright\raggedleft
      \let\next}
 
-\def\obox#1#2#3%
+\unexpanded\def\obox#1#2#3%
   {\vbox\bgroup
      \forgetall
      \let\\=\endgraf
@@ -190,6 +190,47 @@
 
 % pretty slow (will be sped up)
 
+\newconstant\ragged_command_h_align_state
+\newconstant\ragged_command_v_align_state
+\newconstant\ragged_command_broad_state
+
+\ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi % public
+
+% \unexpanded\def\dosetraggedcommand#1% beware: #1=empty is ignored, keep that! assumes \forgetall
+%   {\edef\askedraggedalign{#1}%
+%    \ifx\askedraggedalign\empty
+%      \nonosetraggedcommand
+%    \else
+%      \dodosetraggedcommand
+%    \fi}
+%
+% \def\nonosetraggedcommand
+%   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
+%    \let\raggedtopcommand\empty
+%    \let\raggedbottomcommand\empty
+%    \let\raggedbox\relax
+%    \setfalse\raggedonelinerstate}
+%
+% \def\dodosetraggedcommand                  %  beware: #1=empty is ignored, keep that!
+%   {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
+%    \let\raggedtopcommand\empty
+%    \let\raggedbottomcommand\empty
+%    \let\raggedbox\relax
+%    \setfalse\raggedonelinerstate
+%    \ifcsname\@@ragged@@command\askedraggedalign\endcsname % fast for one keyword and special table case
+%      \!!doneafalse
+%      \!!donebfalse
+%      \!!donectrue
+%      \csname\@@ragged@@command\askedraggedalign\endcsname
+%    \else
+%      \doifinsetelse\v!broad\askedraggedalign\!!doneatrue\!!doneafalse
+%      \doifinsetelse\v!wide \askedraggedalign\!!donebtrue\!!donebfalse
+%      \!!donectrue
+%      \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
+%    \fi}
+
+% happens a lot: {\flushleft,broad,high} \veryraggedright\let\raggedbottomcommand\vfilll
+
 \unexpanded\def\dosetraggedcommand#1% beware: #1=empty is ignored, keep that! assumes \forgetall
   {\edef\askedraggedalign{#1}%
    \ifx\askedraggedalign\empty
@@ -198,149 +239,140 @@
      \dodosetraggedcommand
    \fi}
 
-\def\nonosetraggedcommand
-  {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
-   \let\raggedtopcommand\empty
-   \let\raggedbottomcommand\empty
-   \let\raggedbox\relax
-   \setfalse\raggedonelinerstate}
-
-\def\dodosetraggedcommand                  %  beware: #1=empty is ignored, keep that!
-  {\everyraggedcommand{\resetrealignsignal}% \emptytoks maybe only when #1 <> empty
-   \let\raggedtopcommand\empty
+\def\dodosetraggedcommand
+  {\let\raggedtopcommand\empty
    \let\raggedbottomcommand\empty
    \let\raggedbox\relax
    \setfalse\raggedonelinerstate
-   \ifcsname\@@ragged@@command\askedraggedalign\endcsname % fast for one keyword and special table case
-     \!!doneafalse
-     \!!donebfalse
-     \!!donectrue
+   \everyraggedcommand\emptytoks
+   \ragged_command_broad_state  \zerocount
+   \ragged_command_h_align_state\zerocount
+   \ragged_command_v_align_state\zerocount
+   \ifcsname\@@ragged@@command\askedraggedalign\endcsname
      \csname\@@ragged@@command\askedraggedalign\endcsname
    \else
-     \doifinsetelse\v!broad\askedraggedalign\!!doneatrue\!!doneafalse
-     \doifinsetelse\v!wide \askedraggedalign\!!donebtrue\!!donebfalse
-     \!!donectrue
      \rawprocesscommacommand[\askedraggedalign]\dododosetraggedcommand
-   \fi}
+   \fi
+   \normalexpanded{\everyraggedcommand\expandafter{\expandafter\resetrealignsignal\the\everyraggedcommand\ragged_command_flush_align}}}
 
-\setvalue{\@@ragged@@command\v!table}% {flushleft,broad,high}
-  {\let\raggedbottomcommand\vfilll
-   \appendtoks\veryraggedright\to\everyraggedcommand}
+\def\nonosetraggedcommand
+  {\let\raggedtopcommand\empty
+   \let\raggedbottomcommand\empty
+   \let\raggedbox\relax
+   \setfalse\raggedonelinerstate
+   \everyraggedcommand{\resetrealignsignal}}
 
 \def\dododosetraggedcommand#1%
-%   {\executeifdefined{\@@ragged@@command\string#1}\relax}
   {\csname\@@ragged@@command#1\endcsname}
 
-\def\ragged_command_tolerant     {\tolerance3000\relax}
-\def\ragged_command_very_tolerant{\tolerance4500\relax}
-\def\ragged_command_stretch      {\emergencystretch\bodyfontsize}
+\unexpanded\def\ragged_command_tolerant     {\tolerance3000\relax}
+\unexpanded\def\ragged_command_very_tolerant{\tolerance4500\relax}
+\unexpanded\def\ragged_command_stretch      {\emergencystretch\bodyfontsize}
 
-% \everyraggedcommand\expandafter{\the\everyraggedcommand#1}
+\def\ragged_command_flush_align
+  {\ifcase\ragged_command_h_align_state
+     % 0
+     \notragged
+   \or
+     % 1 center
+     \ifcase\ragged_command_broad_state
+       \raggedcenter
+     \or
+       \veryraggedcenter
+     \or
+       \raggedwidecenter
+     \fi
+   \or
+     % 2 flush left
+     \ifcase\ragged_command_broad_state
+       \raggedright
+     \else
+       \veryraggedright
+     \fi
+   \or
+     % 3 flush right
+     \ifcase\ragged_command_broad_state
+       \raggedleft
+     \else
+       \veryraggedleft
+     \fi
+   \or
+     % 4 inner
+     \ifdoublesided
+       \signalinnerrealign
+     \fi
+     \rightorleftpageaction\raggedright\raggedleft
+   \or
+     % 5 outer
+     \ifdoublesided
+       \signalouterrealign
+     \fi
+     \rightorleftpageaction\raggedleft\raggedright
+   \or
+     % 6 oneliner
+     \ifcase\ragged_command_broad_state
+       \raggedright
+     \else
+       \veryraggedright
+     \fi
+     \parfillskip\zeropoint
+   \or
+     % 7 centered last line
+     \centeredlastline
+   \fi}
 
-\setvalue{\@@ragged@@command\v!hanging      }{\appendtoks\enableprotruding    \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!nothanging   }{\appendtoks\disableprotruding   \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!hz           }{\appendtoks\enableadjusting     \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!nohz         }{\appendtoks\disableadjusting    \to\everyraggedcommand}
-%setvalue{\@@ragged@@command\v!spacing      }{\appendtoks\enablespacehandling
-%                                                        \enablekernhandling  \to\everyraggedcommand}
-%setvalue{\@@ragged@@command\v!nospacing    }{\appendtoks\disablespacehandling
-%                                                        \disablekernhandling \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!hyphenated   }{\appendtoks\dohyphens           \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!nothyphenated}{\appendtoks\nohyphens           \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!broad          }{\ragged_command_broad_state\plusone} % was donea
+\setvalue{\@@ragged@@command\v!wide           }{\ragged_command_broad_state\plustwo} % was doneb
 
-\setvalue{\@@ragged@@command\v!tolerant     }{\appendtoks\ragged_command_tolerant     \to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!verytolerant }{\appendtoks\ragged_command_very_tolerant\to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!stretch      }{\appendtoks\ragged_command_stretch      \to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!hanging        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enableprotruding}}
+\setvalue{\@@ragged@@command\v!nothanging     }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disableprotruding}}
+\setvalue{\@@ragged@@command\v!hz             }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enableadjusting}}
+\setvalue{\@@ragged@@command\v!nohz           }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disableadjusting}}
+%setvalue{\@@ragged@@command\v!spacing        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\enablespacehandling\enablekernhandling}}
+%setvalue{\@@ragged@@command\v!nospacing      }{\everyraggedcommand\expandafter{\the\everyraggedcommand\disablespacehandling\disablekernhandling}}
+\setvalue{\@@ragged@@command\v!hyphenated     }{\everyraggedcommand\expandafter{\the\everyraggedcommand\dohyphens}}
+\setvalue{\@@ragged@@command\v!nothyphenated  }{\everyraggedcommand\expandafter{\the\everyraggedcommand\nohyphens}}
 
-\setvalue{\@@ragged@@command\v!left}%
-  {\if!!donea \appendtoks\veryraggedleft\to\everyraggedcommand
-   \else      \appendtoks\raggedleft    \to\everyraggedcommand
-   \fi
-   \!!donecfalse}
+\setvalue{\@@ragged@@command\v!tolerant       }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_tolerant}}
+\setvalue{\@@ragged@@command\v!verytolerant   }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_very_tolerant}}
+\setvalue{\@@ragged@@command\v!stretch        }{\everyraggedcommand\expandafter{\the\everyraggedcommand\ragged_command_stretch}}
 
-\setvalue{\@@ragged@@command\v!right}%
-  {\if!!donea \appendtoks\veryraggedright\to\everyraggedcommand
-   \else      \appendtoks\raggedright    \to\everyraggedcommand
-   \fi
-   \!!donecfalse}
+\setvalue{\@@ragged@@command\v!flushright     }{\ragged_command_h_align_state\plusthree}
+\setvalue{\@@ragged@@command\v!flushleft      }{\ragged_command_h_align_state\plustwo}
+\setvalue{\@@ragged@@command\v!middle         }{\ragged_command_h_align_state\plusone}
+\setvalue{\@@ragged@@command\v!no             }{\ragged_command_h_align_state\plustwo}
+\setvalue{\@@ragged@@command\v!yes            }{\ragged_command_h_align_state\zerocount}
+\setvalue{\@@ragged@@command\v!normal         }{\ragged_command_h_align_state\zerocount}
+\setvalue{\@@ragged@@command\v!inner          }{\ragged_command_h_align_state\plusfour}
+\setvalue{\@@ragged@@command\v!outer          }{\ragged_command_h_align_state\plusfive}
+\setvalue{\@@ragged@@command\v!right          }{\ragged_command_h_align_state\plustwo}
+\setvalue{\@@ragged@@command\v!left           }{\ragged_command_h_align_state\plusthree}
+\setvalue{\@@ragged@@command\v!center         }{\ragged_command_h_align_state\plusone}
+\setvalue{\@@ragged@@command\v!disable        }{\ragged_command_h_align_state\plussix}
+\setvalue{\@@ragged@@command\v!last           }{\ragged_command_h_align_state\plusseven}
 
-\setvalue{\@@ragged@@command\v!middle}%
-  {\if!!donec
-     \if!!doneb      \appendtoks\raggedwidecenter\to\everyraggedcommand
-     \else\if!!donea \appendtoks\veryraggedcenter\to\everyraggedcommand
-     \else           \appendtoks\raggedcenter    \to\everyraggedcommand
-     \fi\fi
-     \!!donecfalse
-   \else
-     \let\raggedbottomcommand\vfilll % bonus, pretty strong
-     \let\raggedtopcommand   \vfilll % used with \framed for
-   \fi}                              % instance in tables
+\setvalue{\@@ragged@@command\v!line           }{\settrue\raggedonelinerstate}
 
-\setvalue{\@@ragged@@command\v!last}%
-  {\appendtoks\centeredlastline\to\everyraggedcommand
-   \!!donecfalse}
+\setvalue{\@@ragged@@command\v!high           }{\let\raggedbottomcommand\vfilll}                               % and since we lack a
+\setvalue{\@@ragged@@command\v!low            }{\let\raggedtopcommand   \vfilll}                               % proper keyword, but
+\setvalue{\@@ragged@@command\v!lohi           }{\let\raggedbottomcommand\vfilll\let\raggedtopcommand\vfilll}   % we do support the ugly laho (lohi)
 
-\setvalue{\@@ragged@@command\v!flushleft }{\getvalue{\@@ragged@@command\v!right }}
-\setvalue{\@@ragged@@command\v!flushright}{\getvalue{\@@ragged@@command\v!left  }}
-\setvalue{\@@ragged@@command\v!center    }{\getvalue{\@@ragged@@command\v!middle}}
+\setvalue{\@@ragged@@command\v!lesshyphenation}{\everyraggedcommand\expandafter{\the\everyraggedcommand\lesshyphens}}
+\setvalue{\@@ragged@@command\v!morehyphenation}{\everyraggedcommand\expandafter{\the\everyraggedcommand\morehyphens}}
 
-\setvalue{\@@ragged@@command\v!high}%
-  {\let\raggedbottomcommand\vfilll}  % and since we lack a
+\setvalue{\@@ragged@@command\v!lefttoright    }{\everyraggedcommand\expandafter{\the\everyraggedcommand\lefttoright}}
+\setvalue{\@@ragged@@command\v!righttoleft    }{\everyraggedcommand\expandafter{\the\everyraggedcommand\righttoleft}}
+\setvalue{\@@ragged@@command               l2r}{\everyraggedcommand\expandafter{\the\everyraggedcommand\lefttoright}}
+\setvalue{\@@ragged@@command               r2l}{\everyraggedcommand\expandafter{\the\everyraggedcommand\righttoleft}}
 
-\setvalue{\@@ragged@@command\v!low}%
-  {\let\raggedtopcommand\vfilll}     % proper keyword, but
-
-\setvalue{\@@ragged@@command\v!lohi}%
-  {\let\raggedbottomcommand\vfilll   % we do support the
-   \let\raggedtopcommand\vfilll}     % ugly laho (lohi)
-
-\setvalue{\@@ragged@@command\v!no}%
-  {\appendtoks\raggedright\to\everyraggedcommand}
-
-\setvalue{\@@ragged@@command\v!yes}%
-  {\appendtoks\notragged\to\everyraggedcommand}
-
-\setvalue{\@@ragged@@command\v!normal}%
-  {\appendtoks\notragged\to\everyraggedcommand}
-
-\setvalue{\@@ragged@@command\v!inner}%
-  {\ifdoublesided
-     \appendtoks\signalinnerrealign\to\everyraggedcommand
-   \fi
-   \rightorleftpageaction
-     {\getvalue{\@@ragged@@command\v!right}}%
-     {\getvalue{\@@ragged@@command\v!left }}}
-
-\setvalue{\@@ragged@@command\v!outer}%
-  {\ifdoublesided
-     \appendtoks\signalouterrealign\to\everyraggedcommand
-   \fi
-   \rightorleftpageaction
-     {\getvalue{\@@ragged@@command\v!left }}%
-     {\getvalue{\@@ragged@@command\v!right}}}
-
-\setvalue{\@@ragged@@command\v!lesshyphenation}%
-  {\appendtoks\lesshyphens\to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!morehyphenation}%
-  {\appendtoks\morehyphens\to\everyraggedcommand}
-
-\setvalue{\@@ragged@@command\v!lefttoright}{\appendtoks\lefttoright\to\everyraggedcommand}
-\setvalue{\@@ragged@@command\v!righttoleft}{\appendtoks\righttoleft\to\everyraggedcommand}
-\setvalue{\@@ragged@@command           l2r}{\appendtoks\lefttoright\to\everyraggedcommand}
-\setvalue{\@@ragged@@command           r2l}{\appendtoks\righttoleft\to\everyraggedcommand}
+\setvalue{\@@ragged@@command\v!table          }{\let\raggedbottomcommand\vfilll
+                                                \ragged_command_broad_state\plusone
+                                                \ragged_command_h_align_state\plustwo}
 
 % compare:
 %
 % \framed[width=4cm,align=no]     {\hfil xxx}
 % \framed[width=4cm,align=disable]{\hfil xxx}
-
-\setvalue{\@@ragged@@command\v!disable}% for one liners
-  {\appendtoks\raggedright\parfillskip\zeropoint\to\everyraggedcommand}
-
-\ifdefined\raggedonelinerstate \else \newconditional\raggedonelinerstate \fi
-
-\setvalue{\@@ragged@@command\v!line}%
-  {\settrue\raggedonelinerstate}
 
 % More alignments:
 
@@ -366,7 +398,7 @@
 %D More hyphenation control, will be combined with align
 %D setup.
 
-\def\nohyphens % % % % % not clever, we still hyphenate but supress application
+\unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
   {\ifx\dohyphens\relax
      \edef\dohyphens
        {\hyphenpenalty\the\hyphenpenalty
@@ -383,7 +415,7 @@
 \newskip\@@raggedskipa
 \newskip\@@raggedskipb
 
-\def\setraggedness#1%
+\unexpanded\def\setraggedness#1%
   {\ifnum\tolerance<1500\relax    % small values have
      \tolerance1500\relax         % unwanted side effects
    \fi
@@ -431,7 +463,7 @@
      \expandafter\doshowpardata
    \fi}
 
-\def\showpardata
+\unexpanded\def\showpardata
   {\edef\thepardata
      {\hbox{font: \fontname\font}\endgraf
       \doshowpardata
@@ -567,12 +599,12 @@
 \setvalue{@@ngila@@\v!broad    }{\!!doneatrue}
 \setvalue{@@ngila@@\v!wide     }{\!!donebtrue}
 
-\def\setraggedparagraphmode
+\unexpanded\def\setraggedparagraphmode
   {\doifrightpageelse
      {\ifdoublesided\signalinnerrealign\expandafter\firstoftwoarguments \fi}
      {\ifdoublesided\signalouterrealign\expandafter\secondoftwoarguments\fi}}
 
-\def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
+\unexpanded\def\installalign#1#2{\setvalue{@@align@@#1}{#2}} % can be used for overloads
 
 \installalign \v!new           {\@@asraggedfalse}
 \installalign \v!old           {\@@asraggedtrue}
@@ -674,7 +706,7 @@
 \newtoks \everyleftofalignedline
 \newtoks \everyrightofalignedline
 
-\def\shiftalignedline#1#2#3#4% left, right, inner, outer
+\unexpanded\def\shiftalignedline#1#2#3#4% left, right, inner, outer
   {\rightorleftpageaction
      {\everyleftofalignedline {\hskip\dimexpr#1+#3\relax}%
       \everyrightofalignedline{\hskip\dimexpr#2+#4\relax}}
@@ -705,10 +737,10 @@
 
 % directe commando's
 
-\def\leftaligned {\doalignline \relax \hss  }
-\def\midaligned  {\doalignline \hss   \hss  }
-\def\rightaligned{\doalignline \hss   \relax}
-\def\maxaligned  {\doalignline \relax \relax}
+\unexpanded\def\leftaligned {\doalignline \relax \hss  }
+\unexpanded\def\midaligned  {\doalignline \hss   \hss  }
+\unexpanded\def\rightaligned{\doalignline \hss   \relax}
+\unexpanded\def\maxaligned  {\doalignline \relax \relax}
 
 \let\centeraligned\midaligned
 

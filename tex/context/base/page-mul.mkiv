@@ -358,7 +358,7 @@
 \newdimen\mcscratchdimen
 \newcount\nofcolumnlines
 
-\newconstant\multicolumnlinemethod % 0: overshoot (old default), 1: tight
+\setnewconstant\multicolumnlinemethod\plusone % 0: overshoot (old default), 1: tight
 
 \def\getmulticolumnlines
   {\mcscratchdimen-\columntextoffset
