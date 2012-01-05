@@ -98,14 +98,16 @@
         \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
         \expandafter\noexpand\csname root#2parameter\endcsname}}
 
-\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5#6#7#8%
+\unexpanded\def\doinstallparameterhashhandler#1#2#3#4#5#6#7#8#9%
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{#4{#1#2}{##1}:}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#6{#1#2:}%
    \def#7##1{#1##1:}%
-   \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}}
+   \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}%
+   \def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
+
 
 \unexpanded\def\installparameterhashhandler#1#2%
   {\normalexpanded
@@ -117,7 +119,8 @@
         \expandafter\noexpand\csname do#2parentparameterhash\endcsname
         \expandafter\noexpand\csname current#2hash\endcsname
         \expandafter\noexpand\csname named#2hash\endcsname
-        \expandafter\noexpand\csname check#2parent\endcsname}}
+        \expandafter\noexpand\csname check#2parent\endcsname
+        \expandafter\noexpand\csname chaintocurrent#2\endcsname}}
 
 \unexpanded\def\doinstallparametersethandler#1#2#3#4#5% we can speed this up for english
   {\ifx#2\relax\let#2\empty\fi
@@ -199,7 +202,7 @@
         \expandafter\noexpand\csname define#2\endcsname
         {\noexpand#3}% root
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@define#2\endcsname
+        \expandafter\noexpand\csname d@define#2\endcsname % sort of public
         \expandafter\noexpand\csname everypreset#2\endcsname
         \expandafter\noexpand\csname everydefine#2\endcsname
         \expandafter\noexpand\csname current#2parent\endcsname}}
@@ -207,7 +210,7 @@
 \unexpanded\def\doinstallsetuphandler#1#2#3#4#5#6%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
-   \unexpanded\def#6{\getparameters[#1#3:]}%
+   \unexpanded\def#6{\getparameters[#1#3:]}% no every ! don't change it
    \newtoks#5%
    \def#4[##1][##2]% maybe helper
      {\let\savedsetupwhatever#3%
@@ -230,7 +233,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@setup#2\endcsname
+        \expandafter\noexpand\csname d@setup#2\endcsname % sort of public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
@@ -270,32 +273,70 @@
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
-\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+\unexpanded\def\doinstallautosetuphandler#1#2#3#4#5#6%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#2{\dotripleempty#4}%
+   \unexpanded\def#6{\getparameters[#1#3:]}%
+   \newtoks#5%
+   \def#4[##1][##2][##3]%
+     {\let\savedsetupwhatever#3%
+      \ifthirdargument
+        \def\docommand####1%
+          {\edef#3{####1}%
+           \getparameters[#1#3:][\s!parent=#1##2,##3]%
+           \the#5}%
+        \processcommalist[##1]\docommand
+      \else\ifsecondargument
+        \def\docommand####1%
+          {\edef#3{####1}%
+           \getparameters[#1#3:][##2]%
+           \the#5}%
+        \processcommalist[##1]\docommand
+      \else
+        \let#3\empty
+        \getparameters[#1:][##1]%
+        \the#5%
+      \fi\fi
+      \let#3\savedsetupwhatever}}
+
+\unexpanded\def\installautosetuphandler#1#2%
+  {\normalexpanded
+     {\doinstallautosetuphandler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname d@setup#2\endcsname % sort of public
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname}}
+
+\def\installbasicparameterhandler#1#2%
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
-   \installrootparameterhandler{#1}{#2}%
-   \installdefinehandler       {#1}{#2}{#3}%
-   \installsetuphandler        {#1}{#2}%
-   \installattributehandler    {#1}{#2}}
+   \installrootparameterhandler{#1}{#2}}
+
+\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installsetuphandler         {#1}{#2}%
+   \installattributehandler     {#1}{#2}}
 
 \unexpanded\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
-  {\installparameterhandler    {#1}{#2}%
-   \installparameterhashhandler{#1}{#2}%
-   \installparametersethandler {#1}{#2}%
-   \installrootparameterhandler{#1}{#2}%
-   \installdefinehandler       {#1}{#2}{#3}%
-   \installswitchsetuphandler  {#1}{#2}%
-   \installattributehandler    {#1}{#2}}
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installswitchsetuphandler   {#1}{#2}%
+   \installattributehandler     {#1}{#2}}
+
+\unexpanded\def\installautocommandhandler#1#2#3% automatically defined cloned setups
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installautosetuphandler     {#1}{#2}%
+   \installattributehandler     {#1}{#2}}
 
 \unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment)
-  {\installparameterhandler    {#1}{#2}%
-   \installparameterhashhandler{#1}{#2}%
-   \installparametersethandler {#1}{#2}%
-   \installrootparameterhandler{#1}{#2}%
-   \installsetuphandler        {#1}{#2}%
-   \installattributehandler    {#1}{#2}}
-
+  {\installbasicparameterhandler{#1}{#2}%
+   \installsetuphandler         {#1}{#2}%
+   \installattributehandler     {#1}{#2}}
 
 \unexpanded\def\installnamespace#1%
   {\setvalue{????#1}{@@@@#1}}

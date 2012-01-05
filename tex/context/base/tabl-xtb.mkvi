@@ -95,7 +95,11 @@
 \newcount\x_table_nesting
 \newcount\x_table_skip_mode    % 1 = skip
 
-\installframedcommandhandler \??lt {xtable} \??lt
+% \setupxtable[one][parent][a=b,c=d]
+% \setupxtable[one]        [a=b,c=d]
+% \setupxtable             [a=b,c=d]
+
+\installframedautocommandhandler \??lt {xtable} \??lt
 
 \appendtoks
     \checkxtableparent % so we can deal with undefined settings, not that it's efficient
@@ -162,7 +166,7 @@
   {\x_table_prepare{#settings}%
    \let\start_x_table\normal_start_x_table}
 
-%D We can also define xtables:
+%D We can also define xtables.
 
 \appendtoks
     \setuevalue{\e!start\currentxtable}{\start_named_x_table{\currentxtable}}%
@@ -214,28 +218,34 @@
         footer              = "\xtableparameter\c!footer",
    } }%
    \begingroup
-     \let\start_x_row \start_x_row_reflow_width
-     \let\stop_x_row  \stop_x_row_reflow_width
-     \let\start_x_cell\start_x_cell_reflow_width
-     \let\stop_x_cell \stop_x_cell_reflow_width
+     \let\start_x_row_yes \start_x_row_reflow_width_yes
+     \let\start_x_row_nop \start_x_row_reflow_width_nop
+     \let\stop_x_row      \stop_x_row_reflow_width
+     \let\start_x_cell_yes\start_x_cell_reflow_width_yes
+     \let\start_x_cell_nop\start_x_cell_reflow_width_nop
+     \let\stop_x_cell     \stop_x_cell_reflow_width
      \settrialtypesetting
      \x_table_get_buffer
      \ctxcommand{x_table_reflow_width()}\relax
    \endgroup
    \begingroup
-     \let\start_x_row \start_x_row_reflow_height
-     \let\stop_x_row  \stop_x_row_reflow_height
-     \let\start_x_cell\start_x_cell_reflow_height
-     \let\stop_x_cell \stop_x_cell_reflow_height
+     \let\start_x_row_yes \start_x_row_reflow_height_yes
+     \let\start_x_row_nop \start_x_row_reflow_height_nop
+     \let\stop_x_row      \stop_x_row_reflow_height
+     \let\start_x_cell_yes\start_x_cell_reflow_height_yes
+     \let\start_x_cell_nop\start_x_cell_reflow_height_nop
+     \let\stop_x_cell     \stop_x_cell_reflow_height
      \settrialtypesetting
      \x_table_get_buffer
      \ctxcommand{x_table_reflow_height()}\relax
    \endgroup
    \begingroup
-     \let\start_x_row \start_x_row_construct
-     \let\stop_x_row  \stop_x_row_construct
-     \let\start_x_cell\start_x_cell_construct
-     \let\stop_x_cell \stop_x_cell_construct
+     \let\start_x_row_yes \start_x_row_construct_yes
+     \let\start_x_row_nop \start_x_row_construct_nop
+     \let\stop_x_row      \stop_x_row_construct
+     \let\start_x_cell_yes\start_x_cell_construct_yes
+     \let\start_x_cell_nop\start_x_cell_construct_nop
+     \let\stop_x_cell     \stop_x_cell_construct
      \x_table_get_buffer
      \ctxcommand{x_table_construct()}\relax
    \endgroup
@@ -284,25 +294,29 @@
 
 \unexpanded\def\startxrow
   {\begingroup
-   \dosingleempty\start_x_row}
+   \doifnextoptionalelse\start_x_row_yes\start_x_row_nop}
 
-\def\start_x_row_reflow_width[#settings]%
-  {\iffirstargument
-     \setupcurrentxtable[#settings]%
-   \fi
+\def\start_x_row_reflow_width_yes[#settings]%
+  {\setupcurrentxtable[#settings]%
    \ctxcommand{x_table_next_row()}}
+
+\def\start_x_row_reflow_width_nop
+  {\ctxcommand{x_table_next_row()}}
 
 \def\stop_x_row_reflow_width
   {}
 
-\let\start_x_row_reflow_height\start_x_row_reflow_width
-\let\stop_x_row_reflow_height \stop_x_row_reflow_width
+\let\start_x_row_reflow_height_yes\start_x_row_reflow_width_yes
+\let\start_x_row_reflow_height_nop\start_x_row_reflow_width_nop
+\let\stop_x_row_reflow_height     \stop_x_row_reflow_width
 
-\def\start_x_row_construct[#settings]%
-  {\iffirstargument
-     \setupcurrentxtable[#settings]%
-   \fi
+\def\start_x_row_construct_yes[#settings]%
+  {\setupcurrentxtable[#settings]%
    \dostarttagged\t!tablerow\empty
+   \ctxcommand{x_table_next_row()}}
+
+\def\start_x_row_construct_nop
+  {\dostarttagged\t!tablerow\empty
    \ctxcommand{x_table_next_row()}}
 
 \def\stop_x_row_construct
@@ -313,7 +327,7 @@
    \endgroup}
 
 \unexpanded\def\startxcell
-  {\dosingleempty\start_x_cell}
+  {\doifnextoptionalelse\start_x_cell_yes\start_x_cell_nop}
 
 \unexpanded\def\stopxcell
   {\stop_x_cell}
@@ -345,36 +359,42 @@
 % Although this becomes kind of messy. It saves already time that we only check
 % for it when we have settings.
 
-\def\before_x_cell_settings
-  {\letxtableparameter\c!nx\plusone
+\unexpanded\def\start_x_cell_reflow_width_yes[#settings]%
+  {\setbox\x_table_box\hbox\bgroup
+   \ifnum\x_table_nesting>\plusone
+     \letxtableparameter\c!width \v!fit  % overloads given width
+     \letxtableparameter\c!height\v!fit  % overloads given height
+   \fi
+   %
+   \letxtableparameter\c!nx\plusone
    \letxtableparameter\c!ny\plusone
    \letxtableparameter\c!nc\plusone
-   \letxtableparameter\c!nr\plusone}
-
-\def\after_x_cell_settings
-  {\x_table_nx\directxtableparameter\c!nc\relax
+   \letxtableparameter\c!nr\plusone
+   %
+   \setupcurrentxtable[#settings]%
+   %
+   \x_table_nx\directxtableparameter\c!nc\relax
    \x_table_ny\directxtableparameter\c!nr\relax
    \ifnum\x_table_nx=\plusone
      \x_table_nx\directxtableparameter\c!nx\relax
    \fi
    \ifnum\x_table_ny=\plusone
      \x_table_ny\directxtableparameter\c!ny\relax
-   \fi}
+   \fi
+   %
+   \x_table_distance\xtableparameter\c!distance\relax
+   \ctxcommand{x_table_init_reflow_width()}%
+   \inheritedxtableframed\bgroup
+   \begin_of_cell}
 
-\unexpanded\def\start_x_cell_reflow_width[#settings]%
+\unexpanded\def\start_x_cell_reflow_width_nop
   {\setbox\x_table_box\hbox\bgroup
    \ifnum\x_table_nesting>\plusone
      \letxtableparameter\c!width \v!fit  % overloads given width
      \letxtableparameter\c!height\v!fit  % overloads given height
    \fi
-   \iffirstargument
-     \before_x_cell_settings
-     \setupcurrentxtable[#settings]%
-     \after_x_cell_settings
-   \else
-     \x_table_nx\plusone
-     \x_table_ny\plusone
-   \fi
+   \x_table_nx\plusone
+   \x_table_ny\plusone
    \x_table_distance\xtableparameter\c!distance\relax
    \ctxcommand{x_table_init_reflow_width()}%
    \inheritedxtableframed\bgroup
@@ -386,15 +406,26 @@
    \egroup
    \ctxcommand{x_table_set_reflow_width()}}
 
-\unexpanded\def\start_x_cell_reflow_height[#settings]%
+\unexpanded\def\start_x_cell_reflow_height_yes[#settings]%
   {\setbox\x_table_box\hbox\bgroup
    \ctxcommand{x_table_init_reflow_height()}%
    \ifcase\x_table_skip_mode % can be sped up
      \ifnum\x_table_nesting>\plusone
        \letxtableparameter\c!height\v!fit  % overloads given height
      \fi
-     \iffirstargument
-       \setupcurrentxtable[#settings]%
+     \setupcurrentxtable[#settings]%
+     \relax
+     \letxtableparameter\c!width\x_table_width  % overloads given width
+     \inheritedxtableframed\bgroup
+     \begin_of_cell
+   \fi}
+
+\unexpanded\def\start_x_cell_reflow_height_nop
+  {\setbox\x_table_box\hbox\bgroup
+   \ctxcommand{x_table_init_reflow_height()}%
+   \ifcase\x_table_skip_mode % can be sped up
+     \ifnum\x_table_nesting>\plusone
+       \letxtableparameter\c!height\v!fit  % overloads given height
      \fi
      \relax
      \letxtableparameter\c!width\x_table_width  % overloads given width
@@ -410,12 +441,20 @@
    \egroup
    \ctxcommand{x_table_set_reflow_height()}}
 
-\unexpanded\def\start_x_cell_construct[#settings]%
+\unexpanded\def\start_x_cell_construct_yes[#settings]%
   {\dostarttagged\t!tablecell\empty % can't we just tag the box
    \setbox\x_table_box\hbox\bgroup
-   \iffirstargument
-     \setupcurrentxtable[#settings]%
-   \fi
+   \setupcurrentxtable[#settings]%
+   \letxtableparameter\c!width \x_table_width  % overloads given width
+   \letxtableparameter\c!height\x_table_height % overloads given height
+   \ctxcommand{x_table_init_construct()}%
+   \inheritedxtableframed\bgroup
+   \begin_of_cell
+   \dotagxtablecell}
+
+\unexpanded\def\start_x_cell_construct_nop
+  {\dostarttagged\t!tablecell\empty % can't we just tag the box
+   \setbox\x_table_box\hbox\bgroup
    \letxtableparameter\c!width \x_table_width  % overloads given width
    \letxtableparameter\c!height\x_table_height % overloads given height
    \ctxcommand{x_table_init_construct()}%
@@ -495,6 +534,118 @@
 
 \let\stopembeddedxtable\relax
 
+%D This is an experiment! Beware: you can create loops by using nested
+%D references to already chained settings.
+%D
+%D \startbuffer
+%D \setupxtable[suffix][align=middle,foregroundcolor=red]
+%D \setupxtable[blabla][foregroundstyle=slanted]
+%D \setupxtable[bold]  [foregroundstyle=bold]
+%D
+%D \startxtable[frame=off]
+%D     \startxtablehead
+%D         \startxrow[bold]
+%D             \startxcell[suffix] a 0 \stopxcell
+%D             \startxcell[blabla] a 1 \stopxcell
+%D             \startxcell         a 2 \stopxcell
+%D         \stopxrow
+%D     \stopxtablehead
+%D     \startxtablebody
+%D         \startxrow \startxcell[suffix][ny=2] a 1 \stopxcell \startxcell b 1 \stopxcell \startxcell c 1 \stopxcell \stopxrow
+%D         \startxrow                                          \startxcell b 2 \stopxcell \startxcell c 2 \stopxcell \stopxrow
+%D         \startxrow \startxcell[suffix]       a 3 \stopxcell \startxcell b 3 \stopxcell \startxcell c 3 \stopxcell \stopxrow
+%D         \startxrow \startxcell[suffix]       a 4 \stopxcell \startxcell b 4 \stopxcell \startxcell c 4 \stopxcell \stopxrow
+%D         \startxrow \startxcell[suffix]       a 5 \stopxcell \startxcell b 5 \stopxcell \startxcell c 5 \stopxcell \stopxrow
+%D     \stopxtablebody
+%D \stopxtable
+%D \stopbuffer
+%D
+%D \typebuffer \placetable{}{\getbuffer}
+
+\appendtoks
+    \letvalue{\??lt\currentxtable\s!check}\relax % faster than checking parent
+\to \everysetupxtable
+
+% groups
+
+\unexpanded\def\startxgroup
+  {\begingroup
+   \doifnextoptionalelse\start_x_group_delayed_one\relax}
+
+\unexpanded\def\stopxgroup
+  {\endgroup}
+
+\def\start_x_group_delayed_one[#tag]%
+% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
+  {\ifcsname\??lt#tag\s!check\endcsname
+     \expandafter\start_x_group_delayed_two
+   \else
+     \expandafter\setupcurrentxtable
+   \fi[#tag]}
+
+\def\start_x_group_delayed_two[#tag]%
+  {\ifx\currentxtable\empty \else
+     \chaintocurrentxtable{#tag}%
+   \fi
+   \edef\currentxtable{#tag}%
+   \doifnextoptionalelse\setupcurrentxtable\relax}
+
+\let\startxrowgroup \startxgroup
+\let\stopxrowgroup  \stopxgroup
+\let\startxcellgroup\startxgroup
+\let\stopxcellgroup \stopxgroup
+
+% cells (maybe also check for 1 etc but it becomes messy)
+
+\unexpanded\def\startxcell
+  {\begingroup
+   \doifnextoptionalelse\start_x_cell_delayed_one\start_x_cell_nop}
+
+\def\start_x_cell_delayed_one[#tag]%
+% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
+  {\ifcsname\??lt#tag\s!check\endcsname
+     \expandafter\start_x_cell_delayed_two
+   \else
+     \expandafter\start_x_cell_yes
+   \fi[#tag]}
+
+\def\start_x_cell_delayed_two[#tag]%
+  {\ifx\currentxtable\empty \else
+     \chaintocurrentxtable{#tag}%
+   \fi
+   \edef\currentxtable{#tag}%
+   \doifnextoptionalelse\start_x_cell_yes\start_x_cell_nop}
+
+\unexpanded\def\stopxcell
+  {\stop_x_cell
+   \endgroup}
+
+% rows
+
+\unexpanded\def\startxrow
+  {\begingroup
+   \doifnextoptionalelse\start_x_row_delayed_one\start_x_row_nop}
+
+\def\start_x_row_delayed_one[#tag]%
+% {\ifcsname\namedxtablehash{#tag}\s!parent\endcsname
+  {\ifcsname\??lt#tag\s!check\endcsname
+     \expandafter\start_x_row_delayed_two
+   \else
+     \expandafter\start_x_row_yes
+   \fi[#tag]}
+
+\def\start_x_row_delayed_two[#tag]%
+  {\ifx\currentxtable\empty \else
+     \chaintocurrentxtable{#tag}%
+   \fi
+   \edef\currentxtable{#tag}%
+   \doifnextoptionalelse\start_x_row_yes\start_x_row_nop}
+
+\unexpanded\def\stopxrow
+  {\stop_x_row
+   \endgroup}
+
 \protect
 
 % \continueifinputfile{tabl-xtb.mkvi}
+
