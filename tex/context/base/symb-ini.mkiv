@@ -45,7 +45,7 @@
 
 % ss:tag     -> symbol
 % ss:set:tag -> symbol out of set
-% sstag      -> list of symbols in set
+% ss*tag     -> list of symbols in set
 
 \unexpanded\def\definesymbol
   {\dotripleempty\dodefinesymbol}
@@ -59,12 +59,6 @@
      \addvalue{\??ss*\currentsymboldef}{#1}%
    \fi}
 
-% \def\doifinsymbolsetelse#1#2{\doifdefinedelse{\??ss:#1:#2}}
-% \def\doifinsymbolset    #1#2{\doifdefined    {\??ss:#1:#2}}
-% \def\doifsymbolsetelse    #1{\doifdefinedelse{\??ss*#1}}
-%
-% \def\symbolset#1{\executeifdefined{\??ss*#1}\empty} % no [#1], to be used in commalists etc
-
 \def\doifinsymbolsetelse#1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
 \def\doifinsymbolset    #1#2{\ifcsname\??ss:#1:#2\endcsname\@EA\firstofoneargument \else\@EA\gobbleoneargument   \fi}
 \def\doifsymbolsetelse    #1{\ifcsname\??ss*#1\endcsname   \@EA\firstoftwoarguments\else\@EA\secondoftwoarguments\fi}
@@ -76,7 +70,7 @@
 %D Since symbols are used frequently in interactive
 %D documents, we speed up this one. Well, that was history,
 %D since now we simplified things a bit, because the low
-%D level macros have been sped up now and then.
+%D level macros have been sped up every now and then.
 
 \unexpanded\def\symbol       % This one always gobbles spaces,
   {\dodoubleempty\dosymbol}  % so never change it again!
@@ -112,8 +106,6 @@
    \secondargumentfalse
    \donormalsymbol[#3][]}
 
-% \doifinsymbolset{#1}{#2}{\dodosymbol{#1}{#2}}
-
 \def\donormalsymbol[#1][#2]%
   {\nosymboltrue
    \ifsecondargument
@@ -131,16 +123,12 @@
      \fi
    \fi}
 
-% \doifinsymbolset{#1}\currentsymbol{\dodosymbol{#1}\currentsymbol}
-
 \def\fetchsymbol#1%
   {\ifnosymbol
      \ifcsname\??ss:#1:\currentsymbol\endcsname
        \dodosymbol{#1}\currentsymbol
      \fi
    \fi}
-
-% \doifinsymbolsetelse\empty{#1}{\dodosymbol\empty}\firstofoneargument{#1}}
 
 \def\redosymbol#1%
   {\ifcsname\??ss::#1\endcsname
@@ -165,8 +153,8 @@
 \def\figuresymbol
   {\dodoubleempty\dofiguresymbol}
 
-\ifx\externalfigure      \undefined \def\externalfigure[#1][#2]{#1} \fi
-\ifx\resetexternalfigures\undefined \let\resetexternalfigures\relax \fi
+\ifdefined\externalfigure       \else \def\externalfigure[#1][#2]{#1} \fi
+\ifdefined\resetexternalfigures \else \let\resetexternalfigures\relax \fi
 
 \def\dofiguresymbol[#1][% #2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,}% #2]}
@@ -197,7 +185,7 @@
   {\doifinsymbolset\empty\currentsymbol\nosymbolfalse}
 
 \def\doifsymboldefinedelse#1%
-  {\bgroup
+  {\begingroup
    \edef\currentsymbol{#1}%
    \let\fetchsymbol\xfetchsymbol
    \nosymboltrue
@@ -205,12 +193,12 @@
    \ifnosymbol
      \xredosymbol\currentsymbol
      \ifnosymbol
-       \egroup\@EAEAEA\secondoftwoarguments
+       \endgroup\@EAEAEA\secondoftwoarguments
      \else
-       \egroup\@EAEAEA\firstoftwoarguments
+       \endgroup\@EAEAEA\firstoftwoarguments
      \fi
    \else
-     \egroup\@EA\firstoftwoarguments
+     \endgroup\@EA\firstoftwoarguments
    \fi}
 
 %D \macros

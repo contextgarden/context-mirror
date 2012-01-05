@@ -541,10 +541,10 @@
      {\normal_setup_itemgroup[#category][\c!option={#whatever}]}}
 
 \def\itemgroups_setup_list_level_a#category#whatever#level%
-  {\normal_setup_itemgroup[#category:#level][\c!option={#whatever}]}
+  {\normal_setup_itemgroup[#category:#level][#whatever]}
 
 \def\itemgroups_setup_list_level_b#category#whatever#level%
-  {\normal_setup_itemgroup[#category:#level][#whatever]}
+  {\normal_setup_itemgroup[#category:#level][\c!option={#whatever}]}
 
 \def\itemgroups_setup_list#subcategories#category#whatever%
   {\doifassignmentelse{#whatever}

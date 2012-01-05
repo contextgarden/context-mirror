@@ -13,6 +13,9 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Ruled Content}
 
+% eventually this will use the commandhandler code (same trick as with itemize)
+% rulethickness push/pop will go
+
 %D redo framedtexts like framedcontent (parameter stuff)
 
 %D After a few months testing this solution is now added
@@ -714,14 +717,14 @@
    \box\framebox
    \egroup}
 
-%D Here is another fast one:
+%D The next macro uses a box and takes its natural width and
+%D height so these can better be correct.
 
-\def\localbackgroundframed#1#2#3#4#5% namespace location box wd ht
-  {\setbox#3\vbox\bgroup
-   \doinitializeframed{#1#2}% watch out! am used here
-   \expandafter\def\csname#1#2\c!component\endcsname{#2}%
- % \expandafter\def\csname#1#2\c!width    \endcsname{#4}%
- % \expandafter\def\csname#1#2\c!height   \endcsname{#5}%
+\def\localbackgroundframed#1#2#3% namespace component box
+  {\bgroup
+   \doinitializeframed{#1}%
+   \expandafter\def\csname\@@framed\c!component\endcsname{#2}% watch out: hard coded @@framed
+   \setbox\framebox\box#3%
    \!!framedframeoffset\framedparameter\c!frameoffset
    \edef\@@framedbackgroundoffset{\framedparameter\c!backgroundoffset}%
    \ifx\@@framedbackgroundoffset\v!frame
@@ -729,10 +732,6 @@
    \else
      \!!framedbackgroundoffset\@@framedbackgroundoffset
    \fi
-   \setbox\framebox\box#3%
-   \wd\framebox#4%
-   \ht\framebox#5%
-   \dp\framebox\zeropoint
    \edef\framedbackground   {\framedparameter\c!background}%
    \edef\framedrulethickness{\framedparameter\c!rulethickness}%
    \edef\@@localframing     {\framedparameter\c!frame}%

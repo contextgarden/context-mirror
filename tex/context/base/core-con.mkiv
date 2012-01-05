@@ -158,11 +158,18 @@
 %D These conversions are dedicated to Frans Goddijn.
 
 \unexpanded\def\oldstylenumerals#1%
-  {{\os\number#1}}
+  {\begingroup
+   \os\number#1%
+   \endgroup}
 
-\unexpanded\def\oldstyleromannumerals#1%
-  {{\leftrulefalse\rightrulefalse\ss\txx\boxrulewidth.15ex
-    \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}}}
+\unexpanded\def\oldstyleromannumerals#1% will become obsolete
+  {\begingroup
+   \leftrulefalse
+   \rightrulefalse
+   \ss\txx
+   \boxrulewidth.15ex
+   \ruledhbox spread .15em{\hss\uppercased{\romannumerals{#1}}\hss}%
+   \endgroup}
 
 %D \macros
 %D   {protectconversion}
@@ -172,8 +179,7 @@
 %D introduce:
 
 \def\protectconversion
-  {\def\doconvertcharacters##1{##1}} % was \relax
- %{\def\doconvertcharacters##1{\ifcase0##1 0\else##1\fi}} more save
+  {\let\doconvertcharacters\firstofoneargument}
 
 %D \macros
 %D   {normaltime,normalyear,normalmonth,normalday}
@@ -212,13 +218,13 @@
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
-\def\monthlong {\doconvertmonthlong}
-\def\monthshort{\doconvertmonthshort}
-\def\month     {\doconvertmonth}
+\let\monthlong \doconvertmonthlong  % was \def
+\let\monthshort\doconvertmonthshort % was \def
+\let\month     \doconvertmonth      % was \def
 
-\def\MONTH     #1{{\WORD{\month     {#1}}}}
-\def\MONTHLONG #1{{\WORD{\monthlong {#1}}}}
-\def\MONTHSHORT#1{{\WORD{\monthshort{#1}}}}
+\def\MONTH     #1{\WORD{\month     {#1}}}
+\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
+\def\MONTHSHORT#1{\WORD{\monthshort{#1}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed
 %D out that it would be handy to convert to the day of the
@@ -286,7 +292,7 @@
   {\doconvertday}
 
 \def\WEEKDAY#1%
-  {{\WORD{\doconvertday{#1}}}}
+  {\WORD{\doconvertday{#1}}}
 
 %D \macros
 %D   {weekoftheday}
@@ -497,24 +503,24 @@
 %D \type{\normalday} can be used for for date manipulations.
 
 \long\def\processmonth#1#2#3% year month command
-  {\bgroup
+  {\begingroup
    \getdayspermonth{#1}{#2}%
    \dostepwiserecurse1\numberofdays1%
      {\normalyear #1\relax
       \normalmonth#2\relax
       \normalday  \recurselevel\relax
       #3}%
-   \egroup}
+   \endgroup}
 
 \def\lastmonth{12} % can be set to e.g. 1 when testing
 
 \long\def\processyear#1#2#3#4% year command before after
-  {\bgroup
+  {\begingroup
    \dorecurse\lastmonth
      {\normalyear #1\relax
       \normalmonth\recurselevel\relax
       #3\processmonth\normalyear\normalmonth{#2}#4}%
-   \egroup}
+   \endgroup}
 
 %D \macros
 %D   {defineconversion, convertnumber}
