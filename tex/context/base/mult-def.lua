@@ -6452,6 +6452,10 @@ return {
   ["buffer"]={
    ["en"]="buffer",
   },
+  ["dash"]={
+    ["en"]="dash",
+    ["nl"]="streep",
+  },
   ["labeloffset"]={
    ["en"]="labeloffset",
   },

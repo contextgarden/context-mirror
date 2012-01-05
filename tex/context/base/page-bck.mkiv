@@ -177,8 +177,8 @@
 
 \def\page_backgrounds_add_to_paper#1%
   {\doifbothsidesoverruled
-     {\page_backgrounds_add_to_box\v!rightpage#1\paperwidth\paperheight}
-     {\page_backgrounds_add_to_box\v!rightpage#1\paperwidth\paperheight}
+     {\page_backgrounds_add_to_box\v!rightpage#1\paperwidth\paperheight}%
+     {\page_backgrounds_add_to_box\v!rightpage#1\paperwidth\paperheight}%
      {\page_backgrounds_add_to_box\v!leftpage #1\paperwidth\paperheight}%
    \page_backgrounds_add_to_box\v!page#1\paperwidth\paperheight}
 
@@ -188,8 +188,8 @@
 %D only recalculated when they change or when the \type
 %D {status} is set to \type {repeat}.
 
-\newbox\leftbackground
-\newbox\rightbackground
+\newbox\leftbackground  % todo: rename
+\newbox\rightbackground % todo: rename
 
 %D Finaly there is an aditional {\em text} background, again
 %D useful for special purposes only. This one is calculated
@@ -328,6 +328,88 @@
 
 \newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
 
+% \def\page_backgrounds_set_box#1% #2%
+%   {\global\setbox#1\vbox
+%      {\dontcomplain
+%       \swapmargins
+%       \ifconditional\swapbackgroundmargins
+%         \doifmarginswapelse \donothing
+%           {\swapmacros\v!rightmargin\v!leftmargin
+%            \swapmacros\v!rightedge  \v!leftedge}%
+%       \fi
+%       \calculatereducedvsizes
+%       \offinterlineskip
+%     % \ifconditional#2\relax
+%     %   \doswapmargins % hm, this one gets nilled in \swapmargins anyway
+%     % \fi
+%       \vskip\dimexpr-\topheight-\topdistance\relax
+%       \ifdim\topheight>\zeropoint
+%         \page_backgrounds_set_box_row\v!top\topheight
+%       \fi
+%       \vskip\topdistance
+%       \ifdim\headerheight>\zeropoint
+%         \page_backgrounds_set_box_row\v!header\headerheight
+%       \fi
+%       \vskip\headerdistance
+%       \ifdim\textheight>\zeropoint
+%         \page_backgrounds_set_box_row\v!text\textheight
+%       \fi
+%       \vskip\footerdistance
+%       \ifdim\footerheight>\zeropoint
+%         \page_backgrounds_set_box_row\v!footer\footerheight
+%       \fi
+%       \vskip\bottomdistance
+%       \ifdim\bottomheight>\zeropoint
+%         \page_backgrounds_set_box_row\v!bottom\bottomheight
+%       \fi
+%       \vfilll}%
+%   \smashbox#1}
+
+% \def\page_backgrounds_set_box_row#1#2% maybe helper
+%   {\setbox\scratchbox\vbox to #2
+%      \bgroup\hbox\bgroup
+%        \goleftonpage
+%        \ifdim\leftedgewidth>\zeropoint
+%          \ifcsname\??ma#1\v!leftedge\endcsname
+%            \page_backgrounds_set_box_cell#1\v!leftedge\leftedgewidth#2%
+%          \else
+%            \hskip\leftedgewidth
+%          \fi
+%        \fi
+%        \hskip\leftedgedistance
+%        \ifdim\leftmarginwidth>\zeropoint
+%          \ifcsname\??ma#1\v!leftmargin\endcsname
+%            \page_backgrounds_set_box_cell#1\v!leftmargin\leftmarginwidth#2%
+%          \else
+%            \hskip\leftmarginwidth
+%          \fi
+%        \fi
+%        \hskip\leftmargindistance
+%        \ifcsname\??ma#1\v!text\endcsname
+%          \page_backgrounds_set_box_cell#1\v!text\makeupwidth#2%
+%        \else
+%          \hskip\makeupwidth
+%        \fi
+%        \hskip\rightmargindistance
+%        \ifdim\rightmarginwidth>\zeropoint
+%          \ifcsname\??ma#1\v!rightmargin\endcsname
+%            \page_backgrounds_set_box_cell#1\v!rightmargin\rightmarginwidth#2%
+%          \else
+%            \hskip\rightmarginwidth
+%          \fi
+%        \fi
+%        \hskip\rightedgedistance
+%        \ifdim\rightedgewidth>\zeropoint
+%          \ifcsname\??ma#1\v!rightedge\endcsname
+%            \page_backgrounds_set_box_cell#1\v!rightedge\rightedgewidth#2%
+%          \else
+%            \hskip\rightedgewidth
+%          \fi
+%        \fi
+%      \egroup\egroup
+%    \wd\scratchbox\zeropoint
+%    \box\scratchbox\relax}
+
 \def\page_backgrounds_set_box#1% #2%
   {\global\setbox#1\vbox
      {\dontcomplain
@@ -342,28 +424,28 @@
     % \ifconditional#2\relax
     %   \doswapmargins % hm, this one gets nilled in \swapmargins anyway
     % \fi
-      \vskip\dimexpr-\topheight-\topdistance\relax
       \ifdim\topheight>\zeropoint
+        \kern\dimexpr-\topheight-\topdistance\relax
         \page_backgrounds_set_box_row\v!top\topheight
+        \kern\topdistance
       \fi
-      \vskip\topdistance
       \ifdim\headerheight>\zeropoint
         \page_backgrounds_set_box_row\v!header\headerheight
+        \kern\headerdistance
       \fi
-      \vskip\headerdistance
       \ifdim\textheight>\zeropoint
         \page_backgrounds_set_box_row\v!text\textheight
       \fi
-      \vskip\footerdistance
       \ifdim\footerheight>\zeropoint
+        \kern\footerdistance
         \page_backgrounds_set_box_row\v!footer\footerheight
       \fi
-      \vskip\bottomdistance
       \ifdim\bottomheight>\zeropoint
+        \kern\bottomdistance
         \page_backgrounds_set_box_row\v!bottom\bottomheight
       \fi
       \vfilll}%
-  \smashbox#1}
+   \smashbox#1}
 
 \def\page_backgrounds_set_box_row#1#2% maybe helper
   {\setbox\scratchbox\vbox to #2
@@ -373,37 +455,37 @@
          \ifcsname\??ma#1\v!leftedge\endcsname
            \page_backgrounds_set_box_cell#1\v!leftedge\leftedgewidth#2%
          \else
-           \hskip\leftedgewidth
+           \kern\leftedgewidth
          \fi
+         \kern\leftedgedistance
        \fi
-       \hskip\leftedgedistance
        \ifdim\leftmarginwidth>\zeropoint
          \ifcsname\??ma#1\v!leftmargin\endcsname
            \page_backgrounds_set_box_cell#1\v!leftmargin\leftmarginwidth#2%
          \else
-           \hskip\leftmarginwidth
+           \kern\leftmarginwidth
          \fi
+         \kern\leftmargindistance
        \fi
-       \hskip\leftmargindistance
        \ifcsname\??ma#1\v!text\endcsname
          \page_backgrounds_set_box_cell#1\v!text\makeupwidth#2%
        \else
-         \hskip\makeupwidth
+         \kern\makeupwidth
        \fi
-       \hskip\rightmargindistance
        \ifdim\rightmarginwidth>\zeropoint
+         \kern\rightmargindistance
          \ifcsname\??ma#1\v!rightmargin\endcsname
            \page_backgrounds_set_box_cell#1\v!rightmargin\rightmarginwidth#2%
          \else
-           \hskip\rightmarginwidth
+           \kern\rightmarginwidth
          \fi
        \fi
-       \hskip\rightedgedistance
        \ifdim\rightedgewidth>\zeropoint
+         \kern\rightedgedistance
          \ifcsname\??ma#1\v!rightedge\endcsname
            \page_backgrounds_set_box_cell#1\v!rightedge\rightedgewidth#2%
          \else
-           \hskip\rightedgewidth
+           \kern\rightedgewidth
          \fi
        \fi
      \egroup\egroup

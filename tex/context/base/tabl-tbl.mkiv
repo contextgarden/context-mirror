@@ -449,7 +449,7 @@
         \dotabulatepostskip{\the\tabulateposskip}%
         \alignmark\alignmark
    }}%
-   \tabulatedummy{\the\tabulatedummy\NC}%
+   \tabulatedummy\expandafter{\the\tabulatedummy\NC}%
    \tabulatepreskip.5\tabulateunit\relax
    \ifnum\tabulatecolumns<\numexpr\noftabulatecolumns-\plusone\relax
      \tabulateposskip\tabulatepreskip

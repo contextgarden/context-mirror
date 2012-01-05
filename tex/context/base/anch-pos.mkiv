@@ -208,6 +208,8 @@
 %D position as well as execute an action associated with that
 %D position.
 
+\let\dopositionaction\gobbleoneargument
+
 \def\initializenextposition
   {\ifpositioning \else
      \global\positioningtrue
@@ -322,46 +324,13 @@
 
 \let\currentposition\s!unknown
 
-%D A few more low level macros take care of defining and
-%D recalling actions. We could save this information in the
-%D position containers themselves, this would save hash
-%D entries, but at the cost of much more time consuming
-%D expansion. Actions are saved globally!
-
-\newtoks\everypositionaction
-
-\let\POSactionprefix\POSprefix
-
-\unexpanded\def\dosetpositionaction#1%
-  {\setgvalue{\POSactionprefix#1::}}
-
-%D The lists can become quite long (also because there can
-%D be lots of parameters passed on) so we provide a hook
-%D to clean up the list afterwards.
-
-\let\cleanuppositionaction\gobbleoneargument
-
-\def\doifpositionaction#1%
-  {\ifcsname\POSactionprefix#1::\endcsname
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
-
-\def\doifpositionactionelse#1%
-  {\ifcsname\POSactionprefix#1::\endcsname
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
-
 %D We can copy a position with:
 %D
 %D \starttyping
 %D \copyposition {to} {from}
 %D \stoptyping
 %D
-%D Again, this is a global action.
+%D Again, this is a global operation.
 
 \def\copyposition#1#2{\ctxcommand{copyposition('#1','#2')}}
 

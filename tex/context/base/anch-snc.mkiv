@@ -24,6 +24,8 @@
 
 \unexpanded\def\definesyncpositions[#1]%
   {\global\let\flushsyncpositions\doflushsyncpositions % only when used
+   \global\let\flushsyncresets   \doflushsyncresets
+   \global\let\flushsyncpresets  \doflushsyncpresets
    \setcounter{\s!num:\s!syncpos:#1}{0}%
    \doglobal\appendtoksonce\csname\s!reset :\s!syncpos:#1\endcsname\to\resetsyncpositions
    \doglobal\appendtoksonce\csname\s!preset:\s!syncpos:#1\endcsname\to\presetsyncpositions
@@ -130,15 +132,21 @@
    \endgroup}
 
 \def\flushsyncxxsets#1%
-  {\setbox\scratchbox\hbox{\the#1}%
+  {\begingroup
+   \setbox\scratchbox\hbox{\the#1}%
    \ifvoid\scratchbox\else
-     \prewordbreak \let\prewordbreak\relax % only once
+     \prewordbreak
+    %\let\prewordbreak\relax % only once
      \smashbox\scratchbox
      \box\scratchbox
-   \fi}
+   \fi
+   \endgroup}
 
-\def\flushsyncresets {\flushsyncxxsets\resetsyncpositions }
-\def\flushsyncpresets{\flushsyncxxsets\presetsyncpositions}
+\let\flushsyncresets \relax
+\let\flushsyncpresets\relax
+
+\def\doflushsyncresets {\flushsyncxxsets\resetsyncpositions }
+\def\doflushsyncpresets{\flushsyncxxsets\presetsyncpositions}
 
 % \appendtoks \flushsyncpositions \to \everypar
 % \appendtoks \flushsyncpositions \to \everyheadstart
