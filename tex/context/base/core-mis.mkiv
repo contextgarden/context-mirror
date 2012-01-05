@@ -783,8 +783,8 @@
             \c!before,\c!after,\c!left,\c!right]}}%
    \doifsomething{#1}
      {\setuvalue{#1}{\delimitedtext[#1]}%
-      \setvalue{\e!start#1}{\startdelimitedtext[#1]}%
-      \setvalue{\e!stop #1}{\stopdelimitedtext}}}
+      \setuvalue{\e!start#1}{\startdelimitedtext[#1]}% u added
+      \setuvalue{\e!stop #1}{\stopdelimitedtext}}}   % u added
 
 \unexpanded\def\setupdelimitedtext
   {\dotripleargument\dosetupdelimitedtext}
@@ -806,18 +806,20 @@
 \let\dohandlerepeatdelimitedtext\relax
 
 \unexpanded\def\startdelimitedtext[#1]%
-  {\bgroup
+  {\begingroup
    \pushdelimitedtext{#1}%
    \dostarttagged\t!delimitedblock\currentdelimitedtext
    \doifelse{\delimitedtextparameter\c!method}\s!font
-     {\def\dostopdelimitedtext
-        {\removeunwantedspaces\ignoredelimitedtext\c!right}%
+     {\let\dostopdelimitedtext\dostopdelimitedtext_font
       \ignoredelimitedtext\c!left\ignorespaces}
      {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
         {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
         {\let\dohandlerepeatdelimitedtext\relax}%
       \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
         {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
+
+\def\dostopdelimitedtext_font
+  {\removeunwantedspaces\ignoredelimitedtext\c!right}
 
 \def\dostartdelimitedtextpar[#1]%
    {\let\dostopdelimitedtext\dostopdelimitedtextpar
@@ -849,7 +851,7 @@
    {\removeunwantedspaces
     \removelastskip
     \rightdelimitedtextmark
-    \begingroup
+    \endgroup
     \popmacro\checkindentation
     \dodostopdelimitedtextpar
     \delimitedtextparameter\c!after
@@ -875,7 +877,7 @@
   {\dostopdelimitedtext
    \dostoptagged
    \popdelimitedtext
-   \egroup}
+   \endgroup}
 
 \def\pushdelimitedtext#1%
   {\globalpushmacro\currentdelimitedtext
@@ -898,7 +900,7 @@
 
 \unexpanded\def\startdelimited{\startdelimitedtext}
 \unexpanded\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
-\def\delimited     {\delimitedtext}
+           \def\delimited     {\delimitedtext}
 
 \def\leftdelimitedtextmark
   {\doifsomething{\delimitedtextparameter\c!left}

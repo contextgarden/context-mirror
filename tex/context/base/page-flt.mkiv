@@ -246,7 +246,7 @@
       \doflushsomepagefloat\checkedpagefloat
    \fi\fi}
 
-\def\uncenteredfloatbox
+\def\uncenteredfloatbox % hm, where is this one used (was in save/restore, see old implementation)
   {\ifcenterfloatbox
      \ifhbox\floatbox\relax % remove centering
        \ifdim\wd\floatbox=\hsize
@@ -269,8 +269,8 @@
      \box\floatbox
    \fi}
 
-\ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
-\ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
+% \ifdefined\doflushfloats\else \let\doflushfloats\relax \fi
+% \ifdefined\flushfloatbox\else \let\flushfloatbox\relax \fi
 
 % temp hack, needed to prevent floatbox being forgotten during
 % output, this will change to using another box for flushing
@@ -284,6 +284,7 @@
 \appendtoks
     \global\setbox\savedfloatbox\box\floatbox
 \to \everybeforeoutput
+
 \appendtoks
     \global\setbox\floatbox\box\savedfloatbox
 \to \everyafteroutput
