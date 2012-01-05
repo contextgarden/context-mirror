@@ -38,6 +38,7 @@ local trace_collapsing    = false  trackers.register("math.collapsing",  functio
 local trace_goodies       = false  trackers.register("math.goodies",     function(v) trace_goodies     = v end)
 local trace_variants      = false  trackers.register("math.variants",    function(v) trace_variants    = v end)
 local trace_italics       = false  trackers.register("math.italics",     function(v) trace_italics     = v end)
+local trace_italics       = false  trackers.register("math.families",    function(v) trace_families    = v end)
 
 local check_coverage      = true   directives.register("math.checkcoverage", function(v) check_coverage = v end)
 
@@ -48,6 +49,7 @@ local report_collapsing   = logs.reporter("mathematics","collapsing")
 local report_goodies      = logs.reporter("mathematics","goodies")
 local report_variants     = logs.reporter("mathematics","variants")
 local report_italics      = logs.reporter("mathematics","italics")
+local report_families     = logs.reporter("mathematics","families")
 
 local set_attribute       = node.set_attribute
 local has_attribute       = node.has_attribute
@@ -672,6 +674,18 @@ local families     = { }
 local a_mathfamily = attributes.private("mathfamily")
 local boldmap      = mathematics.boldmap
 
+local tracemap = { [0] =
+    "regular",
+    "regular",
+    "regular",
+    "bold",
+    "bold",
+    "bold",
+    "pseudobold",
+    "pseudobold",
+    "pseudobold",
+}
+
 families[math_char] = function(pointer)
     if pointer.fam == 0 then
         local a = has_attribute(pointer,a_mathfamily)
@@ -679,16 +693,31 @@ families[math_char] = function(pointer)
             set_attribute(pointer,a_mathfamily,0)
             if a > 5 then
                 local char = pointer.char
-                local bold = boldmap[pointer.char]
+                local bold = boldmap[char]
+                local newa = a - 3
                 if bold then
                     set_attribute(pointer,exportstatus,char)
                     pointer.char = bold
+                    if trace_families then
+                        report_families("replacing U+%05X by bold U+%05X, family %s (%s) becomes %s (%s)",
+                            char,bold,a,tracemap[a],newa,tracemap[newa])
+                    end
+                else
+                    if trace_families then
+                        report_families("no bold replacement for U+%05X, family %s (%s) becomes %s (%s)",
+                            char,a,tracemap[a],newa,tracemap[newa])
+                    end
                 end
-                a = a - 3
+                pointer.fam = newa
+            else
+                if trace_families then
+                    report_families("family of U+%05X becomes %s (%s)",
+                        pointer.char,a,tracemap[a])
+                end
+                pointer.fam = a
             end
-            pointer.fam = a
         else
-            pointer.fam = 0
+         -- pointer.fam = 0
         end
     end
 end
