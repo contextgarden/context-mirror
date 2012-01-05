@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- we also need to call the spacer for inserts!
 
+-- todo: directly set skips
+
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 --

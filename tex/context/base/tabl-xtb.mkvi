@@ -156,16 +156,14 @@
    \buff_pickup{\tabl_x_current_buffer}{startxtable}{stopxtable}\relax\tabl_x_process}
 
 \unexpanded\def\processxtablebuffer
-  {\dosingleempty\tabl_x_process_buffer}
-
-\let\tabl_x_normal_start\tabl_x_start_table
+  {\dosingleempty\tabl_x_process_buffer_directly}
 
 % These direct buffers can be somewhat faster but it's probably neglectable.
 % Anyway, no nesting is supported as we then need to catch (e.g.) rows and
 % keep track of nesting and have a more complex redefinition of nested
 % instanced \unknown\ it's not worth the trouble.
 
-\def\tabl_x_process_buffer[#name]%
+\def\tabl_x_process_buffer_directly[#name]%
   {\bgroup
    \let\tabl_x_start_table\tabl_x_process_buffer
    \edef\tabl_x_current_buffer{#name}%

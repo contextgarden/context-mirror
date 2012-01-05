@@ -17,19 +17,6 @@
 
 \registerctxluafile{spac-ver}{1.001}
 
-\newskip\blankskip \blankskip=\bigskipamount
-
-\def\skipfactor    {.75}
-\def\skipgluefactor{.25}
-
-\def\normalskipamount
-  {\openlineheight
-     \ifgridsnapping \else \ifblankflexible
-       \!!plus \skipgluefactor\openlineheight
-       \!!minus\skipgluefactor\openlineheight
-     \fi \fi
-   \relax}
-
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
@@ -61,7 +48,18 @@
 
 \newif\iflocalinterlinespace
 
-% font-ini
+\newskip\s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
+
+\def\skipfactor    {.75}
+\def\skipgluefactor{.25}
+
+\def\normalskipamount
+  {\openlineheight
+     \ifgridsnapping \else \ifblankflexible
+       \!!plus \skipgluefactor\openlineheight
+       \!!minus\skipgluefactor\openlineheight
+     \fi \fi
+   \relax}
 
 \ifx\bodyfontinterlinespecs\undefined
 
@@ -70,7 +68,7 @@
 
 \fi
 
-\def\presetnormallineheight % each bodyfont
+\unexpanded\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
   %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
    \iflocalinterlinespace \else
@@ -79,41 +77,43 @@
           {\edef\normallineheight{\bodyfontinterlinespace}}}%
    \fi}
 
-% to be tested:
+% check and test:
 %
-% \def\presetnormallineheight % each bodyfont
+% \let\m_spac_linespacing_asked\empty
+%
+% \unexpanded\def\presetnormallineheight % each bodyfont
 %   {\iflocalinterlinespace
-%      \spac_basics_set_lineheight_regular
+%      \spac_linespacing_set_lineheight_regular
 %    \else
-%      \spac_basics_set_lineheight_checked
+%      \spac_linespacing_set_lineheight_checked
 %    \fi}
 %
-% \def\spac_basics_set_lineheight_regular
+% \def\spac_linespacing_set_lineheight_regular
 %   {\edef\normallineheight{\interlinespaceparameter\c!line}}
 %
-% \def\spac_basics_set_lineheight_checked
-%   {\edef\askedbodyfontinterlinespecs{\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}%
-%    \ifcsname\askedbodyfontinterlinespecs\endcsname
-%      \spac_basics_set_lineheight_specific
+% \def\spac_linespacing_set_lineheight_checked
+%   {\edef\m_spac_linespacing_asked{\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}%
+%    \ifcsname\m_spac_linespacing_asked\endcsname
+%      \spac_linespacing_set_lineheight_specific
 %    \else
-%      \spac_basics_set_lineheight_regular
+%      \spac_linespacing_set_lineheight_regular
 %    \fi}
 %
-% \def\spac_basics_set_lineheight_specific
-%   {\edef\askedbodyfontinterlinespace{\csname\bodyfontinterlinespecs\endcsname}%
-%    \ifx\askedbodyfontinterlinespace\empty
-%      \spac_basics_set_lineheight_regular
+% \def\spac_linespacing_set_lineheight_specific
+%   {\edef\m_spac_linespacing_asked{\csname\bodyfontinterlinespecs\endcsname}%
+%    \ifx\m_spac_linespacing_asked\empty
+%      \spac_linespacing_set_lineheight_regular
 %    \else
-%      \let\normallineheight\askedbodyfontinterlinespace
+%      \let\normallineheight\m_spac_linespacing_asked
 %    \fi}
 
 \let\currentrelativeinterlinespace\empty
 
 \unexpanded\def\setupspecifiedinterlinespace[#1]%
   {\getparameters[\??it\currentinterlinespace][#1]%
-   \dosetupspecifiedinterlinespaceindeed}
+   \spac_linespacing_setup_specified_interline_space}
 
-\def\dosetupspecifiedinterlinespaceindeed
+\def\spac_linespacing_setup_specified_interline_space
   {\edef\strutheightfactor  {\interlinespaceparameter\c!height   }%
    \edef\strutdepthfactor   {\interlinespaceparameter\c!depth    }%
    \edef\minimumstrutheight {\interlinespaceparameter\c!minheight}%
@@ -132,35 +132,37 @@
 
 \installcorenamespace{interlinespacerelative}
 
+\let\setrelativeinterlinespace\relax % used elsewhere
+
 \setvalue{\??interlinespacerelative\v!on   }{\oninterlineskip}
 \setvalue{\??interlinespacerelative\v!off  }{\offinterlineskip}
 \setvalue{\??interlinespacerelative\v!reset}{\let\currentrelativeinterlinespace\empty
                                              \let\setrelativeinterlinespace\relax
                                              \setfontparameters}
-\setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\dosetrelativeinterlinespace}
+\setvalue{\??interlinespacerelative\v!auto }{\let\setrelativeinterlinespace\spac_linespacing_set_relative_interlinespace}
 
-\def\dosetspecifiedrelativeinterlinespace#1% fragile?
+\def\spac_linespacing_set_specified_relative_interlinespace#1% fragile?
   {\doifdimenstringelse{#1}
      {\setupspecifiedinterlinespace[\c!line=#1]}
      {\assignvalue{#1}\currentrelativeinterlinespace{1.00}{1.25}{1.50}%
       \spacing\currentrelativeinterlinespace}}
 
 \unexpanded\def\setuprelativeinterlinespace[#1]%
-  {\processcommalist[#1]\dosetuprelativeinterlinespace}
+  {\processcommalist[#1]\spac_linespacing_setup_relative_interlinespace}
 
-\def\dosetuprelativeinterlinespace#1%
+\def\spac_linespacing_setup_relative_interlinespace#1%
   {\ifcsname\??interlinespacerelative#1\endcsname
      \csname\??interlinespacerelative#1\endcsname
    \else
-     \dosetspecifiedrelativeinterlinespace{#1}%
+     \spac_linespacing_set_specified_relative_interlinespace{#1}%
    \fi}
 
-\def\dosetrelativeinterlinespace
+\def\spac_linespacing_set_relative_interlinespace
   {\ifx\currentrelativeinterlinespace\empty\else
      \spacing\currentrelativeinterlinespace
    \fi}
 
-\let\setrelativeinterlinespace\relax
+% todo: use command handler here
 
 \newtoks\everysetupglobalinterlinespace
 \newtoks\everysetuplocalinterlinespace
@@ -1471,7 +1473,7 @@
 \newconditional\someblankdone
 
 \appendtoks
-    \blankskip\zeropoint
+    \s_spac_vspacing_temp\zeropoint
     \attribute\skipcategoryattribute\plusone
     \attribute\skippenaltyattribute \attributeunsetvalue
     \attribute\skiporderattribute   \attributeunsetvalue
@@ -1483,11 +1485,11 @@
 \to \everybeforeblankhandling
 
 \appendtoks
-    \ifconditional\blankisfixed
-        \blankskip1\blankskip
-    \else
-        \blankskip1\blankskip\!!plus\skipgluefactor\blankskip\!!minus\skipgluefactor\blankskip
-    \fi
+    \s_spac_vspacing_temp\plusone\s_spac_vspacing_temp
+      \ifconditional\blankisfixed \else
+        \!!plus \skipgluefactor\s_spac_vspacing_temp
+        \!!minus\skipgluefactor\s_spac_vspacing_temp
+      \fi
 \to \everyafterblankhandling
 
 % \ifgridsnapping will go
@@ -1515,7 +1517,7 @@
 
 \def\addblankskip#1#2#3%
   {\settrue\someblankdone
-   \advance\blankskip#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
+   \advance\s_spac_vspacing_temp#1\dimexpr\ifgridsnapping#3\else#2\fi\relax\relax}
 
 \def\setblankpenalty #1%
   {\flushblankhandling
@@ -1543,14 +1545,14 @@
 \unexpanded\def\stopblankhandling
   {\the\everyafterblankhandling
    \ifconditional\someblankdone
-     \vskip\blankskip
+     \vskip\s_spac_vspacing_temp
    \fi
    \endgroup}
 
 \def\flushblankhandling
   {\the\everyafterblankhandling
    \ifconditional\someblankdone
-     \vskip\blankskip
+     \vskip\s_spac_vspacing_temp
    \fi
    \setfalse\someblankdone
    \the\everybeforeblankhandling}
@@ -1568,11 +1570,11 @@
 
 \def\addpredefinedblankskip#1#2%
   {\settrue\someblankdone
-   \advance\blankskip#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
+   \advance\s_spac_vspacing_temp#1\dimexpr\csname\??vspacingamount#2\endcsname\relax}
 
 \def\addaskedblankskip#1#2%
   {\settrue\someblankdone
-   \advance\blankskip#1\dimexpr#2\relax}
+   \advance\s_spac_vspacing_temp#1\dimexpr#2\relax}
 
 \unexpanded\def\definevspacing
   {\dodoubleempty\dodefinevspacing}
