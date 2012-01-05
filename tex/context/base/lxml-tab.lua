@@ -10,6 +10,10 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 -- stripping spaces from e.g. cont-en.xml saves .2 sec runtime so it's not worth the
 -- trouble
 
+-- todo: when serializing optionally remap named entities to hex (if known in char-ent.lua)
+-- maybe when letter -> utf, else name .. then we need an option to the serializer .. a bit
+-- of work so we delay this till we cleanup
+
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
@@ -377,7 +381,7 @@ local function unescaped(s)
         nofprivates = nofprivates + 1
         p = utfchar(nofprivates)
         privates_n[s] = p
-        s = "&" .. s .. ";"
+        s = "&" .. s .. ";" -- todo: use char-ent to map to hex
         privates_u[p] = s
         privates_p[p] = s
     end
@@ -753,6 +757,13 @@ local function xmlconvert(data, settings)
     if errorstr and errorstr ~= "" then
         result.error = true
     end
+    result.statistics = {
+        entities = {
+            decimals     = dcache,
+            hexadecimals = hcache,
+            names        = acache,
+        }
+    }
     strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
     unify_predefined, cleanup, entities = nil, nil, nil
     stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
@@ -894,7 +905,7 @@ and then handle the lot.</p>
 
 -- new experimental reorganized serialize
 
-local function verbose_element(e,handlers)
+local function verbose_element(e,handlers) -- options
     local handle = handlers.handle
     local serialize = handlers.serialize
     local ens, etg, eat, edt, ern = e.ns, e.tg, e.at, e.dt, e.rn
@@ -940,7 +951,7 @@ local function verbose_element(e,handlers)
             for i=1,#edt do
                 local e = edt[i]
                 if type(e) == "string" then
-                    handle(escaped(e))
+                    handle(escaped(e)) -- option: hexify escaped entities
                 else
                     serialize(e,handlers)
                 end

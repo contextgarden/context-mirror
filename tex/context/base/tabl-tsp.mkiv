@@ -309,7 +309,6 @@
            \tsplitinbetween
            \unvcopy\tsplittail}%
         \dowithsplitofffloat{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
-        \global\settrue\usesamefloatnumber % new, prevent next increment
         \doifnotinsidesplitfloat\tsplitafter
         \endgraf
         \exitloop
@@ -329,10 +328,11 @@
           \endgraf
         \fi
         \ifinsidecolumns
-          \doifnotinsidesplitfloat\goodbreak
+          \goodbreak % was \doifnotinsidesplitfloat\goodbreak
         \else
-          \doifnotinsidesplitfloat\page
+          \page      % was \doifnotinsidesplitfloat\page
         \fi
+        \global\settrue\usesamefloatnumber % new, prevent next increment
       \fi}%
    \global\setfalse\usesamefloatnumber % new, prevent next increment
    \global\setfalse\splitfloatfirstdone} % we can use this one for tests
@@ -374,11 +374,11 @@
         \global\settrue\usesamefloatnumber % new, prevent next increment
         \endgraf
         \ifconditional\somenextsplitofffloat
-            \ifinsidecolumns
-              \goodbreak
-            \else
-              \page
-            \fi
+          \ifinsidecolumns
+            \goodbreak
+          \else
+            \page
+          \fi
         \fi
         \global\settrue\splitfloatfirstdone
       \else\ifconditional\somenextsplitofffloat

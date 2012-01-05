@@ -6725,6 +6725,10 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 -- stripping spaces from e.g. cont-en.xml saves .2 sec runtime so it's not worth the
 -- trouble
 
+-- todo: when serializing optionally remap named entities to hex (if known in char-ent.lua)
+-- maybe when letter -> utf, else name .. then we need an option to the serializer .. a bit
+-- of work so we delay this till we cleanup
+
 local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(format(...)) end
@@ -7091,7 +7095,7 @@ local function unescaped(s)
         nofprivates = nofprivates + 1
         p = utfchar(nofprivates)
         privates_n[s] = p
-        s = "&" .. s .. ";"
+        s = "&" .. s .. ";" -- todo: use char-ent to map to hex
         privates_u[p] = s
         privates_p[p] = s
     end
@@ -7466,6 +7470,13 @@ local function xmlconvert(data, settings)
     if errorstr and errorstr ~= "" then
         result.error = true
     end
+    result.statistics = {
+        entities = {
+            decimals     = dcache,
+            hexadecimals = hcache,
+            names        = acache,
+        }
+    }
     strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
     unify_predefined, cleanup, entities = nil, nil, nil
     stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
@@ -7607,7 +7618,7 @@ and then handle the lot.</p>
 
 -- new experimental reorganized serialize
 
-local function verbose_element(e,handlers)
+local function verbose_element(e,handlers) -- options
     local handle = handlers.handle
     local serialize = handlers.serialize
     local ens, etg, eat, edt, ern = e.ns, e.tg, e.at, e.dt, e.rn
@@ -7653,7 +7664,7 @@ local function verbose_element(e,handlers)
             for i=1,#edt do
                 local e = edt[i]
                 if type(e) == "string" then
-                    handle(escaped(e))
+                    handle(escaped(e)) -- option: hexify escaped entities
                 else
                     serialize(e,handlers)
                 end
@@ -9432,8 +9443,9 @@ local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
 
 local type, setmetatable, getmetatable = type, setmetatable, getmetatable
-local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
-local gmatch, gsub = string.gmatch, string.gsub
+local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
+local gmatch, gsub, format = string.gmatch, string.gsub, string.format
+local utfbyte = utf.byte
 
 local function report(what,pattern,c,e)
     report_xml("%s element '%s' (root: '%s', position: %s, index: %s, pattern: %s)",what,xmlname(e),xmlname(e.__p__),c,e.ni,pattern)
@@ -9920,6 +9932,75 @@ function xml.remapname(root, pattern, newtg, newns, newrn)
 end
 
 --[[ldx--
+<p>Helper (for q2p).</p>
+--ldx]]--
+
+function xml.cdatatotext(e)
+    local dt = e.dt
+    if #dt == 1 then
+        local first = dt[1]
+        if first.tg == "@cd@" then
+            e.dt = first.dt
+        end
+    else
+        -- maybe option
+    end
+end
+
+xml.builtinentities = table.tohash { "amp", "quot", "apos", "lt", "gt" } -- used often so share
+
+local entities        = characters and characters.entities or nil
+local builtinentities = xml.builtinentities
+
+function xml.addentitiesdoctype(root,option) -- we could also have a 'resolve' i.e. inline hex
+    if not entities then
+        require("char-ent")
+        entities = characters.entities
+    end
+    if entities and root and root.tg == "@rt@" and root.statistics then
+        local list = { }
+        local hexify = option == "hexadecimal"
+        for k, v in table.sortedhash(root.statistics.entities.names) do
+            if not builtinentities[k] then
+                local e = entities[k]
+                if not e then
+                    e = format("[%s]",k)
+                elseif hexify then
+                    e = format("&#%05X;",utfbyte(k))
+                end
+                list[#list+1] = format("  <!ENTITY %s %q >",k,e)
+            end
+        end
+        local dt = root.dt
+        local n = dt[1].tg == "@pi@" and 2 or 1
+        if #list > 0 then
+            insert(dt, n, { "\n" })
+            insert(dt, n, {
+               tg      = "@dt@", -- beware, doctype is unparsed
+               dt      = { format("Something [\n%s\n] ",concat(list)) },
+               ns      = "",
+               special = true,
+            })
+            insert(dt, n, { "\n\n" })
+        else
+         -- insert(dt, n, { table.serialize(root.statistics) })
+        end
+    end
+end
+
+-- local str = [==[
+-- <?xml version='1.0' standalone='yes' ?>
+-- <root>
+-- <a>test &nbsp; test &#123; test</a>
+-- <b><![CDATA[oeps]]></b>
+-- </root>
+-- ]==]
+--
+-- local x = xml.convert(str)
+-- xml.addentitiesdoctype(x,"hexadecimal")
+-- print(x)
+
+--[[ldx--
 <p>Here are a few synonyms.</p>
 --ldx]]--
 
@@ -9951,6 +10032,7 @@ xml.inject_element             = xml.inject                obsolete.inject_eleme
 xml.remap_tag                  = xml.remaptag              obsolete.remap_tag             = xml.remaptag
 xml.remap_name                 = xml.remapname             obsolete.remap_name            = xml.remapname
 xml.remap_namespace            = xml.remapnamespace        obsolete.remap_namespace       = xml.remapnamespace
+
 
 
 end -- of closure
@@ -14562,8 +14644,15 @@ local function loaded(libpaths,name,simple)
 end
 
 package.loaders[2] = function(name) -- was [#package.loaders+1]
-    if trace_locating then -- mode detail
-        report_libraries("! locating '%s'",name)
+    if file.suffix(name) == "" then
+        name = file.addsuffix(name,"lua") -- maybe a list
+        if trace_locating then -- mode detail
+            report_libraries("! locating '%s' with forced suffix",name)
+        end
+    else
+        if trace_locating then -- mode detail
+            report_libraries("! locating '%s'",name)
+        end
     end
     for i=1,#libformats do
         local format = libformats[i]
