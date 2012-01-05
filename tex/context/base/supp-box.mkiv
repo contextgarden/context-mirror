@@ -92,32 +92,34 @@
 \newcount\c_boxes_register
 
 \unexpanded\def\smashbox
-  {\afterassignment\dosmashbox\c_boxes_register}
+  {\afterassignment\boxes_smash_boxes_register\c_boxes_register}
 
-\def\dosmashbox
+\def\boxes_smash_boxes_register
   {\wd\c_boxes_register\zeropoint
    \ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint}
 
-\unexpanded\def\smashedbox
-  {\afterassignment\thesmashedbox\c_boxes_register}
-
-\unexpanded\def\thesmashedbox
-  {\dosmashbox
-   \box\c_boxes_register}
-
 \unexpanded\def\hsmashbox
-  {\afterassignment\dohsmashbox\c_boxes_register}
+  {\afterassignment\boxes_hsmashed_boxes_register\c_boxes_register}
 
-\def\dohsmashbox
+\def\boxes_hsmashed_boxes_register
   {\wd\c_boxes_register\zeropoint}
 
 \unexpanded\def\vsmashbox
-  {\afterassignment\dovsmashbox\c_boxes_register}
+  {\afterassignment\boxes_vsmashed_boxes_register\c_boxes_register}
 
-\def\dovsmashbox
+\def\boxes_vsmashed_boxes_register
   {\ht\c_boxes_register\zeropoint
    \dp\c_boxes_register\zeropoint}
+
+\unexpanded\def\smashedbox
+  {\afterassignment\boxes_smashed_boxes_register\c_boxes_register}
+
+\unexpanded\def\boxes_smashed_boxes_register
+  {\wd\c_boxes_register\zeropoint
+   \ht\c_boxes_register\zeropoint
+   \dp\c_boxes_register\zeropoint
+   \box\c_boxes_register}
 
 %D \macros
 %D   {hsmash,vsmash,
@@ -685,19 +687,26 @@
 %D
 %D {\em todo: Search source for potential usage!}
 
-\unexpanded\def\dowithnextboxcontent#1#2% inside, after
-  {\def\boxes_with_next_box{#2}%
-   \def\boxes_with_next_box_indeed{#1\aftergroup\boxes_with_next_box}%
-   \afterassignment\boxes_with_next_box_indeed
-   \setbox\nextbox}
+% \unexpanded\def\dowithnextboxcontent#1#2% inside, after
+%   {\def\boxes_with_next_box_one{#2}%
+%    \def\boxes_with_next_box_two{#1\aftergroup\boxes_with_next_box_one}%
+%    \afterassignment\boxes_with_next_box_two
+%    \setbox\nextbox}
 
-\unexpanded\def\dowithnextboxcontentcs#1#2% inside, after
-  {\let\boxes_with_next_box#2%
-   \let\boxes_with_next_box_indeed#1%
+\unexpanded\def\dowithnextboxcontent#1#2% inside, after
+  {\def\boxes_with_next_box_one{#2}%
+   \def\boxes_with_next_box_two{#1}%
    \afterassignment\boxes_with_next_box_content_indeed
    \setbox\nextbox}
 
-\def\boxes_with_next_box_content_indeed{\boxes_with_next_box_indeed\aftergroup\boxes_with_next_box}%
+\unexpanded\def\dowithnextboxcontentcs#1#2% inside, after
+  {\let\boxes_with_next_box_one#2%
+   \let\boxes_with_next_box_two#1%
+   \afterassignment\boxes_with_next_box_content_indeed
+   \setbox\nextbox}
+
+\def\boxes_with_next_box_content_indeed
+  {\boxes_with_next_box_two\aftergroup\boxes_with_next_box_one}
 
 %D \macros
 %D   {llap, rlap, tlap, blap, clap}

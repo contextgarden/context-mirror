@@ -1962,11 +1962,17 @@
 \newcount\framednoflines
 \newdimen\framedfirstheight
 \newdimen\framedlastdepth
+\newdimen\framedminwidth
+\newdimen\framedmaxwidth
+\newdimen\framedaveragewidth
 
 \def\resetshapeframebox
-  {\framednoflines   \zerocount
-   \framedfirstheight\zeropoint
-   \framedlastdepth  \zeropoint}
+  {\framednoflines    \zerocount
+   \framedfirstheight \zeropoint
+   \framedlastdepth   \zeropoint
+   \framedminwidth    \zeropoint
+   \framedmaxwidth    \zeropoint
+   \framedaveragewidth\zeropoint}
 
 \let\framedboxwidth \!!zeropoint
 \let\framedboxheight\!!zeropoint
