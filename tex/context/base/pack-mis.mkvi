@@ -50,7 +50,7 @@
   {\iffirstargument
      \setupcurrentplacement[#settings]%
    \fi
-   \dowithnextboxcontent{\forgetall}{\pack_placement_flush\egroup}\vbox}
+   \dowithnextboxcontentcs\forgetall\pack_placement_flush\vbox}
 
 \def\pack_placement_flush
   {\setlocalhsize
@@ -78,7 +78,8 @@
      \doif{\placementparameter\c!linecorrection }\v!on\stopbaselinecorrection
    \fi
    \endgroup
-   \placementparameter\c!after}
+   \placementparameter\c!after
+   \egroup}
 
 \protect \endinput
 

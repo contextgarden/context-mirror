@@ -1737,15 +1737,23 @@
      \expandafter\nodoformatonelinerbox
    \fi}
 
+% \def\dodoformatonelinerbox % we could even have a special one
+%   {\dowithnextboxcontentcs\ignorespaces\dododoformatonelinerbox\hbox}
+
 \def\dodoformatonelinerbox
-  {\dowithnextboxcontent
-     {\ignorespaces}
-     {\hbox to \hsize
-        {\ifcase\raggedstatus\or\hss\or\hss\fi
-         \unhbox\nextbox \removeunwantedspaces
-         \ifcase\raggedstatus\or    \or\hss\or\hss\fi}%
-      \egroup}
-     \hbox}
+  {\afterassignment\redoformatonelinerbox
+   \setbox\nextbox\hbox}
+
+\def\redoformatonelinerbox
+  {\aftergroup\dododoformatonelinerbox
+   \ignorespaces}
+
+\def\dododoformatonelinerbox
+  {\hbox to \hsize
+     {\ifcase\raggedstatus\or\hss\or\hss       \fi
+      \unhbox\nextbox \removeunwantedspaces
+      \ifcase\raggedstatus\or    \or\hss\or\hss\fi}%
+   \egroup}
 
 \def\nodoformatonelinerbox % grabs {
   {\let\next=}
@@ -1763,9 +1771,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1784,9 +1792,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \oninterlineskip
        \hsize\!!framedwidth
        \vsize\!!framedheight
@@ -1805,9 +1813,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \oninterlineskip
        \doframedsetups
        \raggedcommand
@@ -1824,9 +1832,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \oninterlineskip
        \hsize\!!framedwidth
        \doframedsetups
@@ -1844,9 +1852,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \vsize\!!framedheight
        \doframedsetups
        \vss
@@ -1864,9 +1872,9 @@
      \bgroup
        \let\postprocessframebox\relax
        \framedforgetall
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \doframedsetups
        \hss
        \localstrut
@@ -1878,9 +1886,9 @@
 \def\doformatboxNoSize
   {\hbox
      \bgroup
-\iftrialtypesetting \else
-       \setframedforegroundcolor
-\fi
+       \iftrialtypesetting \else
+         \setframedforegroundcolor
+       \fi
        \let\postprocessframebox\relax
        \doframedsetups
        \localstrut
