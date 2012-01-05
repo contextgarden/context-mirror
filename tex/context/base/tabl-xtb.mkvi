@@ -17,6 +17,18 @@
 
 \registerctxluafile{tabl-xtb}{1.001}
 
+% todo:
+%
+% - yes or no: foregroundstyle/color <- style/color
+% - template alignment
+% - maybe split horizontal (a la linetables)
+% - before/after and wrapping (linecorrection)
+% - maybe also some before/after commands
+% - maybe correction when non float usage
+% - tagging needs to be checked
+% - maybe only tag the box
+% - scale to fit
+%
 %D This module started as an afternoon experiment and surprisingly could be
 %D mostly finished the same evening. Of course it builds upon existing
 %D functionality. The main reason for writing it is that we occasionally
@@ -49,17 +61,6 @@
 
 % \def\v!xtable{xtable}
 
-% todo:
-%
-% - template alignment
-% - maybe split horizontal (a la linetables)
-% - before/after and wrapping (linecorrection)
-% - maybe also some before/after commands
-% - maybe correction when non float usage
-% - tagging needs to be checked
-% - maybe only tag the box
-% - scale to fit
-%
 % option=stretch         : equal distribution
 % option={stretch,width} : proportional distribution
 % option={max}           : prefer max over forced width/height
@@ -107,6 +108,8 @@
     \c!frameoffset=.5\linewidth,
     \c!backgroundoffset=\v!frame,
   % \c!framecolor=\s!black,
+  % \c!foregroundstyle=\xtableparameter\c!style, % not clean, better capture elsewhere
+  % \c!foregroundcolor=\xtableparameter\c!color, % not clean, better capture elsewhere
     \c!width=\v!fit,
     \c!height=\v!fit,
     \c!maxwidth=8em,
@@ -156,6 +159,33 @@
 \def\start_process_x_table_buffer[#settings]%
   {\x_table_prepare{#settings}%
    \let\start_x_table\normal_start_x_table}
+
+%D We can also define xtables:
+
+\appendtoks
+    \setuevalue{\e!start\currentxtable}{\start_named_x_table{\currentxtable}}%
+    \setuevalue{\e!stop \currentxtable}{\stop_named_x_table}%
+\to \everydefinextable
+
+\unexpanded\def\start_named_x_table#tag%
+  {\bgroup
+   \edef\currentxtable{#tag}%
+   \dosingleempty\start_named_x_table_indeed}
+
+\unexpanded\def\start_named_x_table_indeed[#settings]%
+  {\advance\x_table_nesting\plusone
+   \dostarttagged\t!table\empty
+   \forgetall
+   \iffirstargument
+     \setupcurrentxtable[#settings]%
+   \fi
+   \edef\x_table_current_buffer{\x_table_default_buffer}%
+   \normalexpanded{\dodowithbuffer{\x_table_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\x_table_process}}
+
+\unexpanded\def\stop_named_x_table
+  {}
+
+%D Now we come to processing:
 
 \def\x_table_prepare#settings% assumes \iffirstargument to be set
   {\advance\x_table_nesting\plusone

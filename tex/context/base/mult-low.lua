@@ -39,6 +39,10 @@ return {
         --
         "uprotationangle", "rightrotatioangle", "downrotatioangle", "leftrotatioangle",
         --
+        "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
+        "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
+        "xmlcatcodes",
+        --
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",

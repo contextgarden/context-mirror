@@ -116,7 +116,7 @@ function statistics.show(reporter)
             return lower(status.banner)
         end)
         register("control sequences", function()
-            return format("%s of %s", status.cs_count, status.hash_size+status.hash_extra)
+            return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)
         register("callbacks", function()
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0

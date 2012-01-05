@@ -486,13 +486,22 @@
 \unexpanded\def\periods
   {\dosingleempty\doperiods}
 
+% \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \begingroup
+%    \scratchdimen\periodswidth
+%    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
+%      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
+%    \endgroup}
+%
+% better for export:
+
 \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
   {\dontleavehmode
-   \begingroup
-   \scratchdimen\periodswidth
-   \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
-     {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
-   \endgroup}
+   \hbox\bgroup
+   \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
+   \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+   \egroup}
 
 \unexpanded\def\unknown
   {\periods\relax} % relax prevents lookahead for []
@@ -502,14 +511,6 @@
 % \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
 %
 % Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
-
-% compatibility macros
-
-\def\doorsnede
-  {\hbox{\rlap/$\circ$} }
-
-\unexpanded\def\ongeveer
-  {\mathematics\pm}
 
 \setnewconstant\boundarycharactermode\plusone
 
@@ -921,8 +922,6 @@
   {\begingroup
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
    \ifdim\wd\scratchbox>\zeropoint
-%      \ifdim\lastskip=\delimitedtextsignal
-%        \unskip
      \ifdim\lastkern=\delimitedtextsignal
        \unkern
        \hskip\hspaceamount\currentlanguage{interquotation}%
@@ -935,7 +934,7 @@
      \fi
      \strut % new, needed below
      \delimitedtextparameter#1% unhbox\scratchbox
-%      \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
+   % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
      \kern\delimitedtextsignal % +- \prewordbreak
    \fi
    \endgroup}
@@ -1002,13 +1001,6 @@
 \def\handlerightdelimitedtext#1%
   {\dohandlerightdelimitedtext{#1}\relax}
 
-% \unexpanded\def\dodelimitedtextpar
-%   {\dohandleleftdelimitedtext\c!left\relax
-%    \groupedcommand
-%      \donothing
-%      {\dohandlerightdelimitedtext\c!right\removelastskip
-%       \popdelimitedtext}}
-
 \unexpanded\def\dodelimitedtextpar
   {\groupedcommand
      {\dostarttagged\t!delimited\currentdelimitedtext % block?
@@ -1020,14 +1012,6 @@
 \unexpanded\def\dodelimitedtexttxt
   {\doifelse{\delimitedtextparameter\c!style}\v!normal
      \doquoteddelimited\doattributeddelimited}
-
-% \def\doquoteddelimited
-%   {\dohandleleftdelimitedtext\c!left\relax
-%    \groupedcommand
-%      \donothing
-%      {\dohandlerightdelimitedtext\c!right
-%       \removelastskip
-%       \popdelimitedtext}}
 
 \def\doquoteddelimited
   {\groupedcommand

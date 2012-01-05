@@ -59,7 +59,7 @@
    \def\currentfittingpage{#1}%
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
-   \getparameters[\currentfittingpage][\c!paper=,#2]% auto or size or nothing
+   \setupcurrentfittingpage[\c!paper=,#2]% auto or size or nothing
    \doifelsenothing{\fittingpageparameter\c!command}
      \start_fitting_page_normal
      \start_fitting_page_command}
@@ -97,9 +97,11 @@
      {\setbox\fitting_page_box\hbox\bgroup
         \scale[\c!scale=\fittingpageparameter\c!scale]{\box\fitting_page_box}%
       \egroup}%
-   \ifdim\ht\fitting_page_box<\lineheight
-     % write status : too small
-     \setbox\scratchbox\vbox to \lineheight{\vss\box\scratchbox\vss}%
+   \ifdim\ht\fitting_page_box=\zeropoint
+     \ht\fitting_page_box\onepoint
+   \fi
+   \ifdim\wd\fitting_page_box=\zeropoint
+     \wd\fitting_page_box\onepoint
    \fi
    \fitting_page_width \wd\fitting_page_box
    \fitting_page_height\ht\fitting_page_box

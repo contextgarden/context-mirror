@@ -225,6 +225,8 @@ mathencodings["lbr-mb"] = {
     [0x022CC] = 0xD1, -- rightthreetimes
     [0x022D6] = 0xDC, -- lessdot
     [0x022D7] = 0xDD, -- gtrdot
+    [0x022D8] = 0xDE, -- lll
+    [0x022D9] = 0xDF, -- ggg
     [0x022DA] = 0xE8, -- lesseqgtr
     [0x022DB] = 0xE9, -- gtreqless
     [0x022DE] = 0xE6, -- curlyeqprec
@@ -268,6 +270,7 @@ mathencodings["lbr-sy"] = {
     [0x02235] = 0x91, -- because
     [0x0223D] = 0x24, -- backsim
     [0x02242] = 0x99, -- eqsim
+    [0x02245] = 0x9B, -- cong
     [0x0224A] = 0x9D, -- approxeq
     [0x0224E] = 0xC7, -- Bumpeq
     [0x02252] = 0xCB, -- fallingdotseq
@@ -328,12 +331,14 @@ return {
                 { name = "hlcrv.tfm", vector = "tex-ex", extension = true },
                 { name = "hlcra.tfm", vector = "lbr-ma" },
                 { name = "hlcrm.tfm", vector = "lbr-mb" },
+             -- { name = "hlcrim.tfm", vector = "lbr-mb" },  -- LucidaNewMath-Italic     <-> AltItalic
+             -- { name = "hlcdim.tfm", vector = "lbr-mb" },  -- LucidaNewMath-DemiItalic <-> AltDemiItalic
+             -- { name = "hlcrima.tfm", vector = "lbr-mb" }, -- LucidaNewMath-AltItalic <-> Italic
                 { name = "file:lbd.afm", vector = "tex-bf" },
                 { name = "file:lbdi.afm", vector = "tex-bi" } ,
                 { name = "file:lsr.afm", vector = "tex-ss" },
                 { name = "file:lstr.afm", vector = "tex-tt" },
                 { name = "file:lbl.afm", vector = "lbr-fraktur" }, -- more complete
-            },
         },
         variables = {
             joinrelfactor = 4, -- default is 3

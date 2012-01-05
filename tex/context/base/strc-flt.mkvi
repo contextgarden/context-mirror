@@ -17,12 +17,12 @@
 
 \unprotect
 
-%D This module needs a cleanup and will be split in
-%D strc-flt.tex and page-flt.mkiv cq. page-flt.mkii.
-
-\ifdefined\addlocalbackgroundtobox\else \def\addlocalbackgroundtobox{\resetglobal\gobbleoneargument} \fi
-
-\unexpanded\def\placefloats{\doflushfloats}  % keep this one
+%D This module is being converted into a mkvi one.
+%D
+%D - rename macros
+%D - get rid of dead code
+%D - less gobal mess
+%D - more mkiv-ish
 
 \installframedcommandhandler \??fl {float}        \??fl
 \installframedcommandhandler \??kj {floatcaption} \??kj
@@ -59,6 +59,7 @@
    \c!textcolor=,
    \c!align=,
    \c!number=\v!yes,
+ % \c!expansion=\v!no
  % \c!prefix=\v!no,
  % \c!prefixconnector=.,
  % \c!way=\v!by\v!chapter,
@@ -169,22 +170,21 @@
    \dodefinefloatcommands[#1][#2]}
 
 \def\dodefinefloatcommands[#1][#2]%
-  {\setuvalue        {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
-   \setuvalue     {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
-   \setuvalue                 {\e!place#1}{\dotripleempty\docomplexplacefloat[#1]}%
-   \setuvalue         {\e!start\e!place#1}{\dodoubleempty\dostartplacefloat[#1]}%
-   \setuvalue          {\e!stop\e!place#1}{\dostopplacefloat}%
-   \setuvalue               {\e!reserve#1}{\doquadrupleempty\docomplexreserveblock[#1]}%
-   \setuvalue          {\e!start#1\e!text}{\dotripleempty\docomplexstarttextblock[#1]}%
-   \setuvalue           {\e!stop#1\e!text}{\dostoptextfloat}%
-   \setuvalue{\e!start\e!reserve#1\e!text}{\doquadrupleempty\docomplexstartreservetextblock[#1]}%
-   \setuvalue {\e!stop\e!reserve#1\e!text}{\dostoptextfloat}%
-   \setuvalue              {\e!emptyone#1}{\doemptyfloatblock{#1}}%
-   \setuvalue              {\e!emptytwo#1}{\doemptyfloatblock{#1}}}
+  {\setuvalue         {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
+   \setuvalue      {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
+   \setuevalue                 {\e!place#1}{\float_place{#1}}%
+   \setuevalue         {\e!start\e!place#1}{\float_start_place{#1}}%
+   \setuevalue          {\e!stop\e!place#1}{\float_stop_place}%
+   \setuevalue          {\e!start#1\e!text}{\float_start_text{#1}}%
+   \setuevalue           {\e!stop#1\e!text}{\float_stop_text}%
+   % these will become obsolete:
+   \setuevalue               {\e!reserve#1}{\float_reserve{#1}}%
+   \setuevalue{\e!start\e!reserve#1\e!text}{\float_start_reserve_text{#1}}%
+   \setuevalue {\e!stop\e!reserve#1\e!text}{\float_stop_reserve_text}}
 
 %D Fallback float body:
 
-\def\doemptyfloatblock#1%
+\unexpanded\def\float_place_empty_box % \inheritedfloatframed
   {\framed
      [\c!frame=\v!on,
       \c!width=\rootfloatparameter\c!width,
@@ -206,7 +206,7 @@
      {\floatcaptionparameter\c!suffixseparator
       \floatcaptionparameter\c!suffix}}
 
-\def\thecurrentfloatnumber
+\unexpanded\def\thecurrentfloatnumber
   {\ifnofloatcaption \else \ifnofloatnumber \else
      \ifx\currentfloatnumber\relax\else
        \namedtaggedlabeltexts
@@ -217,7 +217,7 @@
      \fi
    \fi \fi}
 
-\def\thecurrentfloatcaption
+\unexpanded\def\thecurrentfloatcaption
   {\ifnofloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
@@ -243,12 +243,12 @@
 \unexpanded\def\placefloatcaption{\dodoubleempty\doplacefloatcaption}
 \unexpanded\def\setfloatcaption  {\dodoubleempty\dodosetfloatcaption}
 
-\def\doplacefloatcaption[#1][#2]#3{[not supported]}
-\def\dodosetfloatcaption[#1][#2]#3{[not supported]} % \dosetfloatcaption already in use
+\def\doplacefloatcaption[#tag][#reference]#caption{[not supported]}
+\def\dodosetfloatcaption[#tag][#reference]#caption{[not supported]} % \dosetfloatcaption already in use
 
-\unexpanded\def\placefloatcaptiontext     [#1]{[not suported yet]}
-\unexpanded\def\placefloatcaptionnumber   [#1]{[not suported yet]}
-\unexpanded\def\placefloatcaptionreference[#1]{[not suported yet]}
+\unexpanded\def\placefloatcaptiontext     [#tag]{[not suported yet]}
+\unexpanded\def\placefloatcaptionnumber   [#tag]{[not suported yet]}
+\unexpanded\def\placefloatcaptionreference[#tag]{[not suported yet]}
 
 \let\placefloatlabel         \placefloatcaption
 \let\placefloatlabeltext     \placefloatcaptiontext
@@ -256,19 +256,22 @@
 
 % end of todo
 
-\newbox\captionbox
+\newbox  \float_caption_box
+\newdimen\float_caption_height
+\newdimen\float_caption_depth
 
-\long\def\putcompletecaption#1#2%
+\newbox  \float_content_box
+
+\def\float_make_complete_caption
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
-  %\floatcaptionparameter\c!before % test for side effects first
    \synchronizedisplaydirection % temp hack, till we have a proper model
    \noindent
-   \gdef\lastcaptiontag{\strut#1}% was xdef
+   \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
    \begingroup
      \dosetfloatcaptionattributes\c!style\c!color
      \ifnofloatnumber
      \else
-       \hbox{\dosetfloatcaptionattributes\c!headstyle\c!headcolor\strut#1}%
+       \hbox{\dosetfloatcaptionattributes\c!headstyle\c!headcolor\strut\thecurrentfloatnumber}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
            {\scratchskip\floatcaptionparameter\c!distance\relax
@@ -277,27 +280,21 @@
        \fi \fi
      \fi
      \ifnofloatcaption
-       \globallet\lastcaptionht\!!zeropoint
-       \globallet\lastcaptiondp\!!zeropoint
+       \global\float_caption_height\zeropoint
+       \global\float_caption_depth \zeropoint
      \else
        \dosetfloatcaptionattributes\c!textstyle\c!textcolor
-       \xdef\lastcaptionht{\strutheight}%
-       \xdef\lastcaptiondp{\strutdepth}%
-       \begstrut#2\endstrut\endgraf
+       \global\float_caption_height\strutheight
+       \global\float_caption_depth \strutdepth
+       \begstrut\thecurrentfloatcaption\endstrut\endgraf
      \fi
    \endgroup
-  %\floatcaptionparameter\c!after % test for side effects first
    \doifsomething{\floatcaptionparameter\c!spaceafter}{\blank[\floatcaptionparameter\c!spaceafter]}}
 
-\let\lastcaptionht\!!zeropoint
-\let\lastcaptiondp\!!zeropoint
-
-\newbox\tempcaptionbox
-
-\newif\iftracecaptions
-
-\def\settracedcaptionbox
-  {\iftracecaptions\setbox\tempcaptionbox\ruledhbox{\box\tempcaptionbox}\fi}
+% \newif\iftracecaptions
+%
+% \def\settracedcaptionbox
+%   {\iftracecaptions\setbox\float_caption_box\ruledhbox{\box\float_caption_box}\fi}
 
 % \definefloat  [figure-1] [figure]
 % \definefloat  [figure-2] [figure]
@@ -319,31 +316,27 @@
 % test \setupswithbox[somefigure]{\framed[width=3cm]                         {}} test
 % test \setupswithbox[somefigure]{\framed[width=\dimexpr\textwidth+3cm\relax]{}} test
 
-\def\dosetcaptionthings
-  {\doprocesslocalsetups{\floatcaptionparameter\c!setups}% expanded ?
-  %\advance\leftskip \floatcaptionparameter\c!leftmargin
-  %\advance\rightskip\floatcaptionparameter\c!rightmargin
-   \relax}
+% temporary removed ... was not applied systematically
+%
+% \def\dosetcaptionthings
+%   {\doprocesslocalsetups{\floatcaptionparameter\c!setups}\relax}
 
-\def\dofakecaptionthings
-  {\hbox{\dosetcaptionthings\hskip\leftskip\hskip\rightskip}}
-
-\long\def\docheckcaptioncontent#1#2% side floats
+\def\check_float_caption_content
   {\ifnofloatcaption \else
-     \setbox\tempcaptionbox\hbox
+     \setbox\float_caption_box\hbox
        {\settrialtypesetting
         \notesenabledfalse
-        \putcompletecaption{#1}{#2}}%
+        \float_make_complete_caption}%
      % new, \placefigure{\xmlfirst{#1}{somecaption}}{} passes earlier empty check
      % so here we misuse the scratch box; actually this means that the previous
      % test can go away (some day, when i redo this module)
-     \ifdim\wd\tempcaptionbox=\zeropoint
+     \ifdim\wd\float_caption_box=\zeropoint
        \global\emptyfloatcaptiontrue
        \ifnofloatnumber
          \global\nofloatcaptiontrue
        \fi
      \else
-       \setbox\tempcaptionbox\hbox{\dosetcaptionthings\hskip\leftskip\box\tempcaptionbox}% yet incomplete
+       \setbox\float_caption_box\hbox{\hskip\leftskip\box\float_caption_box}%
      \fi
    \fi}
 
@@ -369,9 +362,6 @@
      \globallet\twopassfloatdata\realpageno % \realfolio
    \fi}
 
-\def\tracefloatnumber#1%
-  {\doifnot{\rootfloatparameter\c!numbering}\v!nocheck{\tagnodelocation{\v!float\@@thenumber{#1}}}}
-
 %D test case:
 %D
 %D \starttyping
@@ -396,32 +386,112 @@
 % we're really dealing with the float. Some day I'll root out
 % the global settings.
 
-\unexpanded\def\docomplexplacefloat[#1][#2]% [#3]#4%
-  {\edef\currentfloat{#1}%
-   \doifnothing\currentfloat{\let\currentfloat\v!figure}% hack
-   \let\currentfloatcaption\currentfloat
-   \doifelsenothing{#2}
-     {\edef\floatlocation{\floatparameter\c!default}}
-     {\edef\floatlocation{#2}}%
-   \doifinsetelse\v!split{#2}
-     {\normalexpanded{\dodocomplexsplitfloat[\currentfloat][\floatlocation]}}
-     {\normalexpanded{\dodocomplexplacefloat[\currentfloat][\floatlocation]}}}
+\def\float_set_current_tag#tag%
+  {\edef\currentfloat{#tag}%
+   \ifx\currentfloat\empty
+     \let\currentfloat\v!figure % a bit of a hack
+   \fi
+   \let\currentfloatcaption\currentfloat}
 
-\unexpanded\def\dodocomplexsplitfloat[#1][#2][#3]#4%
-  {\splitfloat{\dodocomplexplacefloat[#1][#2][#3]{#4}}}
+% place
 
-\unexpanded\def\dostartplacefloat[#1][#2]% will be done the other way around but okay for now
-  {\begingroup
-   \getparameters[\??fl\??fl][\c!location=,\c!reference=,\c!title=,#2]%
-   \normalexpanded{\docomplexplacefloat[#1][\@@fl@@fllocation][\@@fl@@flreference]{\@@fl@@fltitle}}%
+\unexpanded\def\float_place#tag%
+  {\flushnotes
+   \flushsidefloats % here !
+   \float_begin_group
+   \float_set_current_tag{#tag}%
+   \dodoubleempty\float_place_indeed}
+
+\def\float_place_indeed[#location][#reference]#caption%
+  {\edef\floatlocation{#location}%
+   \ifx\floatlocation\empty
+      \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
+   \fi
+   \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=]%
+   \doifinsetelse\v!split\floatlocation\place_next_float_box_split\place_next_float_box_normal}
+
+% start-stop
+
+\unexpanded\def\float_start_place#tag%
+  {\flushnotes
+   \flushsidefloats % here !
+   \float_begin_group
+   \float_set_current_tag{#tag}%
+   \dosingleempty\float_start_place_indeed}
+
+\def\float_start_place_indeed[#settings]% tricky ... saved not ok yet
+  {\edef\savedfloatlocation{\floatcaptionparameter\c!location}%
+   \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
+   \edef\floatlocation{\floatcaptionparameter\c!location}%
+   \setupcurrentfloatcaption[\c!location=\savedfloatlocation]%
+   \ifx\floatlocation\empty
+      \edef\floatlocation{\floatparameter\c!default}%
+   \fi
+   \doifinsetelse\v!split\floatlocation\place_next_float_box_split\place_next_float_box_normal
    \bgroup
    \ignorespaces}
 
-\unexpanded\def\dostopplacefloat
+\unexpanded\def\float_stop_place
   {\removeunwantedspaces
-   \egroup
+   \egroup}
+
+% reserve
+
+\unexpanded\def\float_reserve#tag%
+  {\flushnotes
+   \flushsidefloats % here !
+   \float_begin_group
+   \float_set_current_tag{#tag}%
+   \dotripleempty\float_reserve_indeed}
+
+\def\float_reserve_indeed[#settings][#location][#reference]#caption% maybe check for #settings
+  {\float_place_indeed[#location][#reference]{#caption}{\float_reserve_box{#settings}}}
+
+\def\float_reserve_box#settings%
+  {\begingroup
+   \setupcurrentfloat[\c!frame=\v!on,#settings]%
+   \inheritedfloatframed{}%
    \endgroup}
 
+% text
+
+\unexpanded\def\float_start_text#tag%
+  {\flushnotes      % Here indeed?
+   \flushsidefloats % Here indeed?
+   \float_begin_text_group
+   \float_set_current_tag{#tag}%
+   \dodoubleempty\float_start_text_indeed}
+
+\def\float_start_text_indeed[#location][#reference]%
+  {\float_place_indeed[\v!text,#location,\v!left][#reference]}
+
+\unexpanded\def\float_stop_text
+  {\float_stop_text_indeed}
+
+% reserved text
+
+\unexpanded\def\float_start_reserve_text#tag%
+  {\flushnotes
+   \flushsidefloats
+   \float_begin_text_group
+   \float_set_current_tag{#tag}%
+   \dotripleempty\float_start_reserve_text_indeed}
+
+\def\float_start_reserve_text_indeed[#settings][#location][#reference]#caption%
+  {\float_place_indeed[\v!text,#location,\v!left][#reference]{#caption}{\float_reserve_box{#settings}}}
+
+\unexpanded\def\float_stop_reserve_text
+  {\float_stop_text_indeed}
+
+% special hack
+
+\def\float_begin_group      {\begingroup}
+\def\float_end_group        {\carryoverpar\endgroup}
+
+\def\float_begin_text_group {\begingroup\let\float_end_group\relax}
+\def\float_end_text_group   {\endgroup}
+
+% implemenation
 
 \def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
@@ -431,64 +501,62 @@
    \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
    \v!text,\v!opposite}% \v!page
 
-\unexpanded\def\dodocomplexplacefloat[#1][#2][#3]#4%
-  {\flushnotes
-   \flushsidefloats % here !
-   \ifsomefloatwaiting
+\unexpanded\def\place_next_float_box_split
+  {\splitfloat{\place_next_float_box_normal}}
+
+\unexpanded\def\place_next_float_box_normal
+  {\ifsomefloatwaiting
      % this was \checkwaitingfloats spread all over
-     \doifinsetelse\v!always{#2}
+     \doifinsetelse\v!always\floatlocation
        {\showmessage\m!floatblocks5\empty}
-       {\normalexpanded{\noexpand\doifcommonelse{#2}{\flushfloatslist}}\doflushfloats\donothing}%
+       {\doifcommonelse\floatlocation\flushfloatslist\doflushfloats\donothing}%
      % but which should be done before using box \floatbox
    \fi
    \ifmarginblocks
-     \doifinset\v!margin{#2}\endgraf
+     \doifinset\v!margin\floatlocation\endgraf
    \fi
    \global\insidefloattrue
-   \begingroup % **
    \dostarttagged\t!float\currentfloat
    \ifmarginblocks
-     \doifinset\v!margin{#2}{\hsize\@@mbwidth}%
+     \doifinset\v!margin\floatlocation{\hsize\@@mbwidth}%
    \fi
    \the\everyinsidefloat
-   \let\@@extrafloat\empty
-   \presetmorefloatvariables{#2}%
+   \float_analyze_variables_one
    \dostarttagged\t!floatcontent\empty
-   \dowithnextboxcontent % better a \the\everyfloattoks
-     {\setlocalfloathsize
+   \dowithnextboxcontent
+     {\float_set_local_hsize
       \floatparameter\c!inner
-%       \dostarttagged\t!floatcontent\empty
-%       \aftergroup\dostoptagged % tricky, never change \dowithnextboxcontent
       \postponenotes} % new
      {\dostoptagged
-      \doifsomething{\floatparameter\c!criterium}
-        {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
-           \edef\forcedfloatmethod{\floatparameter\c!fallback}%
-           \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi
-         \fi}%
-      \xdocompletefloat{#1}{#3}{#2}{#4}% ** not yet done
-      % we need to carry over the par because of side floats
-      \doifnotinset\v!text{#2}{\dostoptagged\carryoverpar\endgroup}% **
-      \global\sidefloatdownshift \zeropoint
-      \global\sidefloatextrashift\zeropoint
-      \ifparfloat
-        \doifinset\v!reset{#2}\forgetsidefloats
-        \doinhibitblank
-      \fi}% better move this to side floats
+      \float_finish_placement}
      \vbox}
 
-\def\xxdocompletefloat#1#2%
-  {\rightorleftpageaction{\let\@@extrafloat#1}{\let\@@extrafloat#2}}
+\def\float_finish_placement
+  {\doifsomething{\floatparameter\c!criterium}
+     {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
+        \edef\forcedfloatmethod{\floatparameter\c!fallback}%
+        \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi
+      \fi}%
+   \float_check_extra_actions
+   \float_analyze_variables_two
+   \float_place_packaged_boxes
+   % we need to carry over the par because of side floats
+   \global\sidefloatdownshift \zeropoint
+   \global\sidefloatextrashift\zeropoint
+   \ifparfloat
+     \doifinset\v!reset\floatlocation\forgetsidefloats
+     \doinhibitblank
+   \fi
+   \float_end_group}
 
 \setnewconstant\sidefloatalign \zerocount
 \setnewconstant\textfloatmethod\zerocount % 0=raw 1=safe (.99) 2=tight (-1pt)
 \setnewconstant\sidefloatmethod\plusone   % 0=raw 1=safe (.99) 2=tight (-1pt)
+\setnewconstant\floatrotation  \zerocount % 0 90 180 270
 
-\let\floatrotation\!!zerocount
-
-\unexpanded\def\presetfloatvariables#1#2#3#4%
+\def\float_analyze_variables_two
   {\doifcommonelse
-     {#2}
+     {\floatlocation}
      {\v!left,\v!right,\v!inner,\v!outer,%
       \v!inleft,\v!inright,\v!inmargin,%
       \v!backspace,\v!cutspace,%
@@ -504,8 +572,8 @@
    \global\sidefloatmethod\floatparameter\c!sidemethod
    \global\textfloatmethod\floatparameter\c!textmethod
    \global\sidefloatalign\zerocount
-   \globallet\floatrotation\!!zerocount
-   \calculatefloatskips
+   \global\floatrotation\zerocount
+   \float_calculate_skips
    \ifparfloat
      \processaction
        [\floatparameter\c!sidealign]
@@ -514,37 +582,32 @@
          \v!depth=>\global\sidefloatalign\plusthree,%
           \v!grid=>\global\sidefloatalign\plusfour,%
       \v!halfline=>\global\sidefloatalign\plusfive]%
-     % todo (test first): \doifinset\v!lokaal{#2}{\global\sidefloatalign\zerocount}%
      \ifcase\sidefloatalign\relax % todo: optie v!lokaal => \else
-       \doifinset\v!height  {#2}{\global\sidefloatalign\plusone}%
-       \doifinset\v!line    {#2}{\global\sidefloatalign\plustwo}%
-       \doifinset\v!depth   {#2}{\global\sidefloatalign\plusthree}%
-       \doifinset\v!grid    {#2}{\global\sidefloatalign\plusfour}%
-       \doifinset\v!halfline{#2}{\global\sidefloatalign\plusfive}% meant for 'none'
+       \doifinset\v!height  \floatlocation{\global\sidefloatalign\plusone}%
+       \doifinset\v!line    \floatlocation{\global\sidefloatalign\plustwo}%
+       \doifinset\v!depth   \floatlocation{\global\sidefloatalign\plusthree}%
+       \doifinset\v!grid    \floatlocation{\global\sidefloatalign\plusfour}%
+       \doifinset\v!halfline\floatlocation{\global\sidefloatalign\plusfive}% meant for 'none'
      \fi
-     \doifinset\v!high{#2}{\global\sidefloattopskip   \zeropoint}%
-     \doifinset\v!low {#2}{\global\sidefloatbottomskip\zeropoint}%
-     \doifinset\v!fit {#2}
+     \doifinset\v!high\floatlocation{\global\sidefloattopskip   \zeropoint}%
+     \doifinset\v!low \floatlocation{\global\sidefloatbottomskip\zeropoint}%
+     \doifinset\v!fit \floatlocation
        {\global\sidefloattopskip   \zeropoint
         \global\sidefloatbottomskip\zeropoint
         \global\floatsideskip      \zeropoint}%
    \else
      \processallactionsinset
-       [#2]
-       [ 90=>\globallet\floatrotation\commalistelement,%
-        180=>\globallet\floatrotation\commalistelement,%
-        270=>\globallet\floatrotation\commalistelement]%
+       [\floatlocation]
+       [ 90=>\global\floatrotation\commalistelement\relax,%
+        180=>\global\floatrotation\commalistelement\relax,%
+        270=>\global\floatrotation\commalistelement\relax]%
    \fi
-   \doifinsetelse\v!nonumber{#2}
+   \doifinsetelse\v!nonumber\floatlocation
      {\global\nofloatnumbertrue}
      {\doifelse{\floatcaptionparameter\c!number}\v!yes
         {\global\nofloatnumberfalse}
         {\global\nofloatnumbertrue}}%
-   % this has to change
-   \ConvertToConstant\doifelse{#4}{}
-     {\global\emptyfloatcaptiontrue}
-     {\global\emptyfloatcaptionfalse}%
-   \doifinsetelse\v!none{#2}
+   \doifinsetelse\v!none\floatlocation
      {\global\nofloatcaptiontrue}
      {\global\nofloatcaptionfalse}%
    \doif{\floatcaptionparameter\c!number}\v!none % new
@@ -555,18 +618,18 @@
 
 % documenteren in details
 
-\def\presetmorefloatvariables#1%
+\def\float_analyze_variables_one
   {\doifelse{\floatparameter\c!local}\v!yes % fout keyword
      \globalcenterfloatboxtrue
      \globalcenterfloatboxfalse
    \ifglobalcenterfloatbox
      \localcenterfloatboxtrue
    \else
-     \doifinsetelse\v!local{#1}
+     \doifinsetelse\v!local\floatlocation
        \localcenterfloatboxtrue
        \localcenterfloatboxfalse
    \fi
-   \doifnotcommon{\v!always,\v!here,\v!force}{#1} % ! ! ! ! ! !
+   \doifnotcommon{\v!always,\v!here,\v!force}\floatlocation % ! ! ! ! ! !
      {\globalcenterfloatboxfalse
       \localcenterfloatboxfalse}}
 
@@ -574,13 +637,21 @@
 \let\naturalfloatwidth \!!zeropoint
 \let\naturalfloatdepth \!!zeropoint
 
-\def\setnaturalfloatdimensions#1%
-  {\xdef\naturalfloatheight{\the\ht#1}%
-   \xdef\naturalfloatwidth {\the\wd#1}%
-   \xdef\naturalfloatdepth {\the\dp#1}}
+\def\float_set_natural_dimensions#box%
+  {\xdef\naturalfloatheight{\the\ht#box}%
+   \xdef\naturalfloatwidth {\the\wd#box}%
+   \xdef\naturalfloatdepth {\the\dp#box}}
 
-\def\doifelsemainfloatbody#1#2%
-  {\ifinsidesplitfloat\ifconditional\splitfloatfirstdone#2\else#1\fi\else#1\fi}
+\def\doifelsemainfloatbody
+  {\ifinsidesplitfloat
+     \ifconditional\splitfloatfirstdone
+       \doubleexpandafter\secondoftwoarguments
+     \else
+       \doubleexpandafter\firstoftwoarguments
+     \fi
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
 % todo: optional user pars
 
@@ -606,13 +677,8 @@
 
 \newconditional\usesamefloatnumber
 
-\long\def\docompletefloat#1#2#3#4#5% #1:floatclass #2:reference #3:optionlist #4:caption #5:box number
-  {\presetfloatvariables{#1}{#3}{#2}{#5}% check this one
-   \bgroup
-   % prepare structure data
-   %
-   % \dofloatcomponent[\c!name=#1,\c!reference=#2,\c!bookmark=,\c!title={#4}][]% ifnofloatnumber ifnofloatcaption \tracefloatnumber{#1}%
-   %
+\def\float_place_packaged_boxes
+  {\bgroup
    \ifconditional\usesamefloatnumber
       \globallet\currentfloatnumber     \previousfloatnumber
       \globallet\currentfloatattribute  \empty
@@ -626,11 +692,11 @@
        \relax
        \relax
        \relax
-       [\c!name=\currentfloat,\s!counter=\@@thestructurecounter\currentfloat,%
+       [\c!name=\currentfloat,%
+        \s!counter=\@@thestructurecounter\currentfloat,%
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
-        \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi,%
-        \c!reference=#2,\c!title={#4},\c!bookmark=]%
+        \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
        []%
      \globallet\previousfloatnumber    \laststructurecounternumber
      \globallet\currentfloatnumber     \laststructurecounternumber
@@ -640,12 +706,12 @@
    %
    \global\setfalse\usesamefloatnumber % one shot
    % check float box
-   \setnaturalfloatdimensions#5%
-   \global\setbox\floatbox\vbox{\floatparameter\c!command{\box#5}}%
-   \setnaturalfloatdimensions\floatbox
+   \float_set_natural_dimensions\nextbox
+   \global\setbox\floatbox\vbox{\floatparameter\c!command{\box\nextbox}}%
+   \float_set_natural_dimensions\floatbox
    \ifdim\htdp\floatbox=\zeropoint
      \showmessage\m!floatblocks{11}\empty
-     \global\setbox\floatbox\vbox{\doemptyfloatblock{#1}}%
+     \global\setbox\floatbox\vbox{\float_place_empty_box}%
    \fi
    % deal with lack of caption
    \global\setbox\floatbox\vbox \floatcaptionattribute
@@ -656,11 +722,11 @@
       \fi}% gets rid of the depth (unless tabulate)
    \egroup
    % place the float
-   \dofloat{#3}{\thecurrentfloatnumber}{\thecurrentfloatcaption}%
-%    \dostoptagged % tricky here, we need an extra mechanism (add to previous or so)
+   \float_set_box
+   \float_get_box
    \global\insidefloatfalse}
 
-\def\setlocalfloathsize
+\def\float_set_local_hsize
   {\iflocalcenterfloatbox
      \seteffectivehsize
      \hsize\localhsize
@@ -669,45 +735,43 @@
 \ifdefined\everyinsidefloat \else \newevery \everyinsidefloat \relax \fi
 
 \appendtoks
-  \everyinsidefloat\emptytoks % in case it's called earlier
-  \dogetfloatdata
+    \everyinsidefloat\emptytoks % in case it's called earlier
+    \dogetfloatdata
 \to \everyinsidefloat
 
 \def\doifrightpagefloatelse
   {\ifdoublesided
      \ifsinglesided
-       \@EAEAEA\firstoftwoarguments
+       \doubleexpandafter\firstoftwoarguments
      \else
-       \@EAEAEA\doifoddfloatpageelse
+       \doubleexpandafter\doifoddfloatpageelse
      \fi
    \else
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \fi}
 
 \def\doifoddfloatpageelse
   {\ifodd\purenumber\twopassfloatdata\space
-     \@EA\firstoftwoarguments
+     \expandafter\firstoftwoarguments
    \else
-     \@EA\secondoftwoarguments
+     \expandafter\secondoftwoarguments
    \fi}
 
 \appendtoks
     \let\rightorleftpageaction\doifrightpagefloatelse
 \to \everyinsidefloat
 
-\newif\ifextrafloatactions \extrafloatactionstrue
-
 % \let\movesidefloat\gobbleoneargument
 
 % new : \place...[leftmargin,-2*line]; we need to catch fxtb:2*3
 % watch out: line alone aligns on the line ! ! !
 
-\def\movesidefloat[#1]% (-)n*line|x=,y=
+\unexpanded\def\movesidefloat[#settings]% (-)n*line|x=,y=
   {\global\sidefloatdownshift \zeropoint
    \global\sidefloatextrashift\zeropoint
-   \doifassignmentelse{#1}%
+   \doifassignmentelse{#settings}%
      {\bgroup
-      \getparameters[\??fl\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#1]%
+      \getparameters[\??fl\??fl][\c!x=\zeropoint,\c!y=\zeropoint,#settings]%
       \ifgridsnapping
         \getnoflines\@@fly
         \global\sidefloatdownshift\noflines\lineheight
@@ -716,132 +780,108 @@
       \fi
       \global\sidefloatextrashift\@@fl@@flx
       \egroup}
-     {\movedownsidefloat[#1]}}
+     {\movedownsidefloat[#settings]}}
 
-\def\movedownsidefloat[#1]% already in core
-  {\bgroup
-   \cleanupfeatures
-   \doifinstringelse{:}{#1}
-     \donothing
-     {\def\docommand##1%
-        {\processaction
-           [##1]%
-           [ \v!line=>\dodocommand+,%
-            +\v!line=>\dodocommand+,%
-            -\v!line=>\dodocommand-]}%
-      \def\dodocommand##1%
-        {\ifdone\else\global\sidefloatdownshift\zeropoint\donetrue\fi
-         \global\advance\sidefloatdownshift##1\lineheight}%
-      \donefalse\normalexpanded{\noexpand\dorepeatwithcommand[#1]}\docommand
-      \def\docommand##1%
-        {\processaction
-           [##1]%
-           [ \v!hang=>\dodocommand\plusone,%
-            +\v!hang=>\dodocommand\plusone,%
-            -\v!hang=>\dodocommand\minusone]}%
-      \def\dodocommand##1% inefficient but who cares
-        {\ifdone\else\global\sidefloatsidelines\zerocount\donetrue\fi
-         \global\advance\sidefloatsidelines##1\relax}%
-      \donefalse\normalexpanded{\noexpand\dorepeatwithcommand[#1]}\docommand}%
-   \egroup}
+\def\float_move_down#setting%
+  {\processaction
+     [#setting]%
+     [ \v!line=>\float_move_down_line+,%
+      +\v!line=>\float_move_down_line+,%
+      -\v!line=>\float_move_down_line-,%
+       \v!hang=>\float_move_down_hang\plusone,%
+      +\v!hang=>\float_move_down_hang\plusone,%
+      -\v!hang=>\float_move_down_hang\minusone]}
 
-\def\hangsidefloat[#1]%
-  {\global\sidefloatsidelines#1\relax}
+\def\float_move_down_line#sign%
+  {\if!!donea\else\global\sidefloatdownshift\zeropoint\!!doneatrue\fi
+   \global\advance\sidefloatdownshift#sign\lineheight}
 
-\long\def\xdocompletefloat#1#2#3#4%
-  {\ifextrafloatactions
-     \doifinsetelse\v!text{#3}
-       {% fuzzy, text overloads left, since then it's a directive
-        \docompletefloat{#1}{#2}{#3}{#4}\nextbox}
-       {\let\@@extrafloat\empty
-        % \sidefloatdownshift will be reset afterwards, and can
-        % already be set at this point
-        \processallactionsinset
-          [#3] % ininner/inouter : for old times sake
-          [      \v!inner=>\xxdocompletefloat\v!left       \v!right,
-                 \v!outer=>\xxdocompletefloat\v!right      \v!left,
-           \v!innermargin=>\xxdocompletefloat\v!leftmargin \v!rightmargin,
-           \v!outermargin=>\xxdocompletefloat\v!rightmargin\v!leftmargin,
-             \v!inneredge=>\xxdocompletefloat\v!leftedge   \v!rightedge,
-             \v!outeredge=>\xxdocompletefloat\v!rightedge  \v!leftedge,
-             \v!backspace=>\xxdocompletefloat\v!backspace  \v!cutspace,
-              \v!cutspace=>\xxdocompletefloat\v!cutspace   \v!backspace,
-%               \v!margin=>\xxdocompletefloat\v!cutspace   \v!backspace,
-                  \v!left=>\xxdocompletefloat\v!left       \v!left,
-                 \v!right=>\xxdocompletefloat\v!right      \v!right,
-                  \v!line=>, % only -n*line is handled (see ***)
-               \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
-        \ifx\@@extrafloat\empty
-          \docompletefloat{#1}{#2}{#3}{#4}\nextbox
-        \else
-          \docompletefloat{#1}{#2}{\@@extrafloat,#3}{#4}\nextbox
-        \fi}%
-   \else % downward compatible
-     \docompletefloat{#1}{#2}{#3}{#4}\nextbox
-   \fi}
+\def\float_move_down_hang#lines%
+  {\if!!doneb\else\global\sidefloatsidelines\zerocount\!!donebtrue\fi
+   \global\advance\sidefloatsidelines#lines\relax}
+
+\unexpanded\def\movedownsidefloat[#settings]% already in core
+  {\doifnotinstring{:}{#settings}
+     {\begingroup
+      \!!doneafalse
+      \!!donebfalse
+      \normalexpanded{\dorepeatwithcommand[#settings]}\float_move_down
+      \endgroup}}
+
+\unexpanded\def\hangsidefloat[#number]%
+  {\global\sidefloatsidelines#number\relax}
+
+\def\set_extra_float_action#rightpagelocation#leftpagelocation%
+  {\rightorleftpageaction
+     {\let\extrafloatlocation#rightpagelocation}%
+     {\let\extrafloatlocation#leftpagelocation}}
+
+\def\float_check_extra_actions
+  {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
+     {\let\extrafloatlocation\empty
+      % \sidefloatdownshift will be reset afterwards, and can
+      % already be set at this point
+      \processallactionsinset
+        [\floatlocation] % ininner/inouter : for old times sake
+        [      \v!inner=>\set_extra_float_action\v!left       \v!right,
+               \v!outer=>\set_extra_float_action\v!right      \v!left,
+         \v!innermargin=>\set_extra_float_action\v!leftmargin \v!rightmargin,
+         \v!outermargin=>\set_extra_float_action\v!rightmargin\v!leftmargin,
+           \v!inneredge=>\set_extra_float_action\v!leftedge   \v!rightedge,
+           \v!outeredge=>\set_extra_float_action\v!rightedge  \v!leftedge,
+           \v!backspace=>\set_extra_float_action\v!backspace  \v!cutspace,
+            \v!cutspace=>\set_extra_float_action\v!cutspace   \v!backspace,
+         %    \v!margin=>\set_extra_float_action\v!cutspace   \v!backspace,
+                \v!left=>\set_extra_float_action\v!left       \v!left,
+               \v!right=>\set_extra_float_action\v!right      \v!right,
+                \v!line=>, % only -n*line is handled (see ***)
+             \s!unknown=>{\movedownsidefloat[\commalistelement]}]%
+      \ifx\extrafloatlocation\empty \else
+        \edef\floatlocation{\extrafloatlocation,\floatlocation}%
+      \fi}}
 
 % pas op, maxbreedte niet instellen als plaats=links/rechts
 
-\def\setlocalfloatdimensions#1%
+\def\float_set_local_dimensions
   {\global\sidefloatshift  \zeropoint       % duplicate
    \global\sidefloatmaximum\zeropoint\relax % duplicate
-   \ifextrafloatactions
-     \ifdim\sidefloatdownshift=\zeropoint\else
-       \global\setbox\floatbox\vbox
-         {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
-     \fi
-     \doifsomething{\floatparameter\c!minwidth}
-       {\scratchdimen\floatparameter\c!minwidth\relax
-        \ifdim\wd\floatbox<\scratchdimen
-          \global\setbox\floatbox\hbox to \scratchdimen
-            {\doifnot{\floatparameter\c!location}\v!left \hss
-             \box\floatbox
-             \doifnot{\floatparameter\c!location}\v!right\hss}%
-        \fi}%
-     % todo: rand / rug
-     \doifinset\v!hanging{#1}
-       {\doifcommonelse{\v!inleft,\v!leftmargin}{#1}
-          {\letfloatparameter\c!maxwidth\leftmarginwidth}%
-          {\doifcommon{\v!inright,\v!rightmargin}{#1}
-             {\letfloatparameter\c!maxwidth\rightmarginwidth}}}%
-     \doifsomething{\floatparameter\c!maxwidth}
-       {\scratchdimen\floatparameter\c!maxwidth\relax
-        \ifdim\wd\floatbox>\scratchdimen
-          \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}{#1}
-            {\global\sidefloatmaximum\scratchdimen}
-            {\global\setbox\floatbox\hbox to \scratchdimen
-              {\doifcommonelse{\v!right,\v!left}{#1}
-                 {\doifnotinset\v!right{#1}\hss
-                  \box\floatbox
-                  \doifnotinset\v!left{#1}\hss}%
-                 {\doifnot{\floatparameter\c!location}\v!left\hss
-                  \box\floatbox
-                  \doifnot{\floatparameter\c!location}\v!right\hss}}}%
-        \fi}%
-  \fi}
-
-\def\docomplexstarttextblock[#1][#2][#3]%
-  {\flushnotes
-   \flushsidefloats % hoort eigenlijk niet hier
-   \docomplexplacefloat[#1][\v!text,#2,\v!left][#3]}
-
-\def\dodocomplexreserveblock#1#2%
-  {\begingroup
-   \edef\currentfloat{#1}%
-   \let\currentfloatcaption\currentfloat
-   \setupcurrentfloat[#2]%
-   \inheritedfloatframed{#1}%
-   \endgroup}
-
-\def\docomplexreserveblock[#1][#2][#3][#4]#5%
-  {\getvalue{\e!place#1}[#3][#4]{#5}{\dodocomplexreserveblock{#1}{#2}}}
-
-\def\docomplexstartreservetextblock[#1][#2][#3][#4]%
-  {\flushsidefloats % hoort eigenlijk niet hier
-   \docomplexreserveblock[#1][#2][\v!text,#3,\v!left][#4]}
+   \ifdim\sidefloatdownshift=\zeropoint\else
+     \global\setbox\floatbox\vbox
+       {\vskip\sidefloatdownshift\nointerlineskip\box\floatbox}%
+   \fi
+   \doifsomething{\floatparameter\c!minwidth}
+     {\scratchdimen\floatparameter\c!minwidth\relax
+      \ifdim\wd\floatbox<\scratchdimen
+        \global\setbox\floatbox\hbox to \scratchdimen
+          {\doifnot{\floatparameter\c!location}\v!left \hss
+           \box\floatbox
+           \doifnot{\floatparameter\c!location}\v!right\hss}%
+      \fi}%
+   \doifinset\v!hanging\floatlocation
+     {\doifcommonelse{\v!inleft,\v!leftmargin}\floatlocation
+        {\letfloatparameter\c!maxwidth\leftmarginwidth}%
+        {\doifcommon{\v!inright,\v!rightmargin}\floatlocation
+           {\letfloatparameter\c!maxwidth\rightmarginwidth}}}%
+   \doifsomething{\floatparameter\c!maxwidth}
+     {\scratchdimen\floatparameter\c!maxwidth\relax
+      \ifdim\wd\floatbox>\scratchdimen
+        \doifcommonelse{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
+          {\global\sidefloatmaximum\scratchdimen}
+          {\global\setbox\floatbox\hbox to \scratchdimen
+            {\doifcommonelse{\v!right,\v!left}\floatlocation
+               {\doifnotinset\v!right\floatlocation\hss
+                \box\floatbox
+                \doifnotinset\v!left\floatlocation\hss}%
+               {\doifnot{\floatparameter\c!location}\v!left\hss
+                \box\floatbox
+                \doifnot{\floatparameter\c!location}\v!right\hss}}}%
+      \fi}}
 
 \unexpanded\def\placefloat
   {\dotripleempty\docomplexplacefloat}
+
+\unexpanded\def\placefloats
+  {\doflushfloats}
 
 \installinsertion\topins
 \installinsertion\botins
@@ -852,12 +892,12 @@
 \newif\iftopofinsert
 \newif\iftestfloatbox
 
-\newdimen\floatsideskip         \floatsideskip  =12pt
-\newdimen\floattopskip          \floattopskip   =\floattopskip
-\newdimen\floatbottomskip       \floatbottomskip=\floattopskip
+\newdimen\floatsideskip         \floatsideskip      12pt
+\newdimen\floattopskip          \floattopskip       \floattopskip
+\newdimen\floatbottomskip       \floatbottomskip    \floattopskip
 
-\newdimen\sidefloattopskip      \sidefloattopskip   =\floattopskip
-\newdimen\sidefloatbottomskip   \sidefloatbottomskip=\floatbottomskip
+\newdimen\sidefloattopskip      \sidefloattopskip   \floattopskip
+\newdimen\sidefloatbottomskip   \sidefloatbottomskip\floatbottomskip
 
 \newskip\sidefloatdownshift
 \newskip\sidefloatleftshift
@@ -868,26 +908,29 @@
 \newcount\noftopfloats          \noftopfloats=2
 \newcount\nofbotfloats          \nofbotfloats=0
 
-\def\docalculatefloatskip#1#2%
-  {\doifelsenothing{#2}
-     {\global#1\zeropoint}
-     {\doifelse{#2}\v!none
-        {\global#1\zeropoint}
-        {\setbox\scratchbox\vbox{\whitespace\normalexpanded{\noexpand\blank[#2]}}%
-         \global#1\ht\scratchbox}}}
+\def\float_calculate_skip#target#skip%
+  {\edef\askedfloatskip{#skip}%
+   \ifx\askedfloatskip\empty
+     \global#target\zeropoint
+   \else\ifx\askedfloatskip\v!none
+     \global#target\zeropoint
+   \else
+     \setbox\scratchbox\vbox{\whitespace\blank[\askedfloatskip]}% todo: move whitespace inside blank
+     \global#target\ht\scratchbox
+   \fi\fi}
 
-\def\calculatefloatskips
+\def\float_calculate_skips
   {\begingroup
-   \docalculatefloatskip\floattopskip{\rootfloatparameter\c!spacebefore}%
-   \docalculatefloatskip\floatbottomskip{\rootfloatparameter\c!spaceafter}%
-   \docalculatefloatskip\sidefloattopskip{\rootfloatparameter\c!sidespacebefore}%
-   \docalculatefloatskip\sidefloatbottomskip{\rootfloatparameter\c!sidespaceafter}%
-   \gdef\sidefloattopoffset{\openstrutdepth}% was \def
-   \global\floatsideskip\rootfloatparameter\c!margin
-   \global\sidefloatleftshift\floatparameter\c!leftmargindistance
+   \float_calculate_skip\floattopskip       {\rootfloatparameter\c!spacebefore}%
+   \float_calculate_skip\floatbottomskip    {\rootfloatparameter\c!spaceafter}%
+   \float_calculate_skip\sidefloattopskip   {\rootfloatparameter\c!sidespacebefore}%
+   \float_calculate_skip\sidefloatbottomskip{\rootfloatparameter\c!sidespaceafter}%
+   \gdef  \sidefloattopoffset {\openstrutdepth}% was \def
+   \global\floatsideskip      \rootfloatparameter\c!margin
+   \global\sidefloatleftshift \floatparameter\c!leftmargindistance
    \global\sidefloatrightshift\floatparameter\c!rightmargindistance
-   \global\noftopfloats\rootfloatparameter\c!ntop\relax
-   \global\nofbotfloats\rootfloatparameter\c!nbottom\relax
+   \global\noftopfloats       \rootfloatparameter\c!ntop\relax
+   \global\nofbotfloats       \rootfloatparameter\c!nbottom\relax
    \endgroup}
 
 % beter de laatste skip buiten de \insert uitvoeren,
@@ -902,15 +945,17 @@
 %    \fi
 %    \egroup}
 
-\def\betweenfloatblanko% assumes that spaceafter is present
+\unexpanded\def\betweenfloatblanko% assumes that spaceafter is present
   {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....
-
-\def\doplacefloatbox
+
+\def\doplacefloatbox % used elsewhere
   {%\forgetall % NO
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]
    \flushfloatbox
    \blank[\rootfloatparameter\c!spaceafter]}
+
+%
 
 \ifdefined\someherefloat\else \let\someherefloat\doplacefloatbox \fi
 \ifdefined\someslotfloat\else \let\someslotfloat\doplacefloatbox \fi
@@ -918,21 +963,24 @@
 \ifdefined\sometopsfloat\else \let\sometopsfloat\doplacefloatbox \fi
 \ifdefined\somebotsfloat\else \let\somebotsfloat\doplacefloatbox \fi
 \ifdefined\somesidefloat\else \let\somesidefloat\doplacefloatbox \fi
-
+
 % test case:
 %
 % \placefigure[page,none]{}{\blackrule[width=\textwidth,height=0.9\textheight,color=green]}
 % \placefigure[page,none]{}{\blackrule[width=\textwidth,height=1.0\textheight,color=green]}
 % \placefigure[page,none]{}{\blackrule[width=\textwidth,height=1.1\textheight,color=green]}
 
-\def\sometextfloat[#1]%  lang, links, rechts, hoog, midden, laag, offset
+% the [#1] will go away
+
+\def\sometextfloat[#1]%
   {%\checkwaitingfloats{#1}%
-   \gdef\dostoptextfloat{\dodostoptextfloat[#1]}% brr global
+   % todo: check if #1 is indeed \floatlocation or maybe more
    \global\floattextwidth\hsize
    \global\floatwidth\wd\floatbox
    \global\floatheight\ht\floatbox % forget about the depth
    \global\advance\floattextwidth -\floatwidth
    \global\advance\floattextwidth -\rootfloatparameter\c!margin\relax % was \tfskipsize
+   \edef\floatlocation{#1}% to be sure
    \doifinsetelse\v!tall{#1}
      {\floattextheight\pagegoal
       \advance\floattextheight -\pagetotal
@@ -947,14 +995,16 @@
       \setbox\floattext\vbox to \floattextheight}
      {\setbox\floattext\vbox}%
    \bgroup
-   \forgetall \setupblank \setupwhitespace % new, also needed for footnotes
+   \forgetall
+   \setupblank
+   \setupwhitespace % new, also needed for footnotes
    \blank[\v!disable]
    \hsize\floattextwidth
    \ignorespaces}
 
-\def\dodostoptextfloat[#1]%  % de tekst kan beter in een soort
-  {\egroup                   % kadertekst zonder kader, is flexibeler
-   \doifnotinset\v!tall{#1}% en beter
+\def\float_stop_text_indeed
+  {\egroup
+   \doifnotinset\v!tall\floatlocation
      {\ifdim\ht\floattext<\floatheight
         \floattextheight\floatheight
       \else
@@ -962,27 +1012,27 @@
       \fi}%
    \setbox\floatbox\vbox to \floattextheight
      {\hsize\floatwidth
-      \doifinsetelse\v!both{#1}%
-        {\doifinsetelse\v!low{#1}
+      \doifinsetelse\v!both\floatlocation
+        {\doifinsetelse\v!low\floatlocation
            {\vfill\box\floatbox}
-           {\doifinsetelse\v!middle{#1}
+           {\doifinsetelse\v!middle\floatlocation
               {\vfill\box\floatbox\vfill}
               {\box\floatbox\vfill}}}
         {\box\floatbox\vfill}}%
     \setbox\floattext\vbox to \floattextheight
      {\hsize\floattextwidth
-      \doifinsetelse\v!low{#1}
+      \doifinsetelse\v!low\floatlocation
         {\vfill
          \box\floattext
-         \doifinset\c!offset{#1}{\whitespace\blank}}
-        {\doifinsetelse\v!middle{#1}
+         \doifinset\c!offset\floatlocation{\whitespace\blank}}
+        {\doifinsetelse\v!middle\floatlocation
            {\vfill
             \box\floattext
             \vfill}
-           {\doifinset\v!offset{#1}{\whitespace\blank}%
+           {\doifinset\v!offset\floatlocation{\whitespace\blank}%
             \box\floattext
             \vfill}}}%
-   \doifinsetelse\v!right{#1}% \floatmethod
+   \doifinsetelse\v!right\floatlocation
      {\setbox\floatbox\hbox to \hsize
         {\box\floattext
          \hfill
@@ -994,13 +1044,12 @@
    \baselinecorrection
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]%
-   \doifnotinset\v!tall{#1}%
+   \doifnotinset\v!tall\floatlocation
      {\dp\floatbox\openstrutdepth}% dp\strutbox}%      % toegevoegd
    \box\floatbox
    \dostoptagged
    \blank[\rootfloatparameter\c!spaceafter]%
-   \endgroup % **
-%    \dostoptagged
+   \float_end_text_group
    \doinsertfloatinfo}
 
 \def\somefacefloat[#1]%  links, rechts, midden, hoog, midden, laag
@@ -1066,171 +1115,150 @@
    \inheritedfloatframed{\box\floatbox}%
    \endgroup}
 
-\newbox\tempfloatbox
-
 % minwidth=fit,width=max : no overshoot, as wide as graphic
 
 \ifdefined\moveboxontogrid\else \let\movecaptionontogrid\gobblethreearguments \fi
 
-% \def\locatefloatbox
-%   {\alignstrutmode\zerocount
-%    \shiftalignedline
-%      {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
-%      {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}%
-%    \alignedline{\floatparameter\c!location}\v!middle}
-%
-% A quick hack by WS:
+\def\float_align_content_indeed
+  {\alignstrutmode\zerocount
+   \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+     {\shiftalignedline
+        {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
+        {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
+   \alignedline{\floatparameter\c!location}\v!middle}
 
-\def\locatefloatbox
-   {\alignstrutmode\zerocount
-    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
-      {\shiftalignedline
-         {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
-         {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
-    \alignedline{\floatparameter\c!location}\v!middle}
-
-\def\locatecaptionbox
+\def\float_align_caption_indeed
   {\alignstrutmode\zerocount
    \shiftalignedline
      {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
    \alignedline{\floatparameter\c!location}\v!middle}
 
-\long\def\dosetpagfloat#1#2#3% \copy wegwerken
+\def\float_set_page_variant
   {\bgroup
-   \setlocalfloathsize
-   \ifnum\floatrotation>0
+   \float_set_local_hsize
+   \ifcase\floatrotation\else
      \swapdimens\hsize\vsize
    \fi
    \forgetall
    \postponenotes
    \dontcomplain
-   \setbox\tempfloatbox\vbox{\borderedfloatbox}%
-   \let\locatefloat  \locatefloatbox
-   \let\locatecaption\locatecaptionbox
-   \docheckcaptioncontent{#2}{#3}%
+   \setbox\float_content_box\vbox{\borderedfloatbox}%
+   \let\float_align_content  \float_align_content_indeed
+   \let\float_align_caption\float_align_caption_indeed
+   \check_float_caption_content
    \ifcase\floatparameter\c!method
    \or % automatic
      \ifnofloatcaption
-       \dopreparenocaption{#1}{#2}{#3}%
-       \edef\width{\the\wd\floatbox}%
+       \prepare_no_float_caption
        \doglobal\addlocalbackgroundtobox\floatbox
      \else
        % todo: installable maken, variant/method=auto vs macro
-       \dopreparepagecaption{#1}{#2}{#3}%
-       \settracedcaptionbox
-       \edef\width{\the\wd\tempfloatbox}%
-       \addlocalbackgroundtobox\tempfloatbox
-       \setbox\tempcaptionbox\hbox
-         {\dosetcaptionthings
-          \floatcaptionparameter\c!command{\box\tempcaptionbox}}%
-       \moveboxontogrid\tempcaptionbox{\floatcaptionparameter\c!grid}\lastcaptionht
-       \addlocalbackgroundtobox\tempcaptionbox
-       \buildfloatbox
+       \prepare_page_float_caption
+       \addlocalbackgroundtobox\float_content_box
+       \setbox\float_caption_box\hbox
+         {\floatcaptionparameter\c!command{\box\float_caption_box}}%
+       \moveboxontogrid\float_caption_box{\floatcaptionparameter\c!grid}\float_caption_height
+       \addlocalbackgroundtobox\float_caption_box
+       \build_float_box
      \fi
    \or % semi automatic
    \or % manual
    \fi
-   \ifnum\floatrotation>0
-     \global\setbox\floatbox\vbox
-        {\rotate[\c!rotation=\floatrotation]{\box\floatbox}}%
-         \edef\width{\the\wd\tempfloatbox}%
+   \ifcase\floatrotation
+     % weird, gone: \postcenterfloatbox\width
    \else
-     \postcenterfloatbox\width
+     \global\setbox\floatbox\vbox
+       {\rotate[\c!rotation=\number\floatrotation]{\box\floatbox}}%
    \fi
    \egroup}
 
 \def\captionminwidth  {15\bodyfontsize}
 \def\captionovershoot {2em}
 
-\def\dopreparenocaption#1#2#3%
+\def\prepare_no_float_caption
   {\global\setbox\floatbox\vbox % pas op als wd groter dan hsize
-     {\ifinsidecolumns\ifdim\wd\tempfloatbox>\hsize
-        \let\locatefloat\relax
+     {\ifinsidecolumns\ifdim\wd\float_content_box>\hsize
+        \let\float_align_content\relax
       \fi\fi
-      \locatefloat{\copy\tempfloatbox}}}
+      \float_align_content{\copy\float_content_box}}}
 
-\def\dopreparepagecaption#1#2#3%
+\def\prepare_page_float_caption
   {\dostarttagged\t!floatcaption\empty
    \doifinsetelse{\floatcaptionparameter\c!location}{\v!top,\v!bottom}
      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
         {\doifelse{\floatcaptionparameter\c!minwidth}\v!fit
            {\doifelse{\floatcaptionparameter\c!width}\v!max
-             {\dopreparestackcaptionmax{#1}{#2}{#3}}
-             {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox % wider caption
+             {\dopreparestackcaptionmax}
+             {\ifdim\wd\float_caption_box>\wd\float_content_box % wider caption
                 \doifelse{\floatcaptionparameter\c!width}\v!fit
-                  {\dopreparestackcaptionaut{#1}{#2}{#3}}
-                  {\dopreparestackcaptionwid{#1}{#2}{#3}}%
+                  {\dopreparestackcaptionaut}
+                  {\dopreparestackcaptionwid}%
               \else
-                \dopreparestackcaptionmin{#1}{#2}{#3}%
+                \dopreparestackcaptionmin
               \fi}}
-           {\dopreparestackcaptionfix{#1}{#2}{#3}}}%
-        {\dopreparesidewidthcaption{#1}{#2}{#3}}}% new, special effects (see icare)
+           {\dopreparestackcaptionfix}}%
+        {\dopreparesidewidthcaption}}% new, special effects (see icare)
      {\doifinsetelse{\floatcaptionparameter\c!width}{\v!fit,\v!max}
-        {\dopreparesideautocaption{#1}{#2}{#3}}
-        {\dopreparesidewidthcaption{#1}{#2}{#3}}}%
+        {\dopreparesideautocaption}
+        {\dopreparesidewidthcaption}}%
   \dostoptagged}
 
-% \def\dosettempcaptionbox
-%   {\dosetraggedvbox{\floatcaptionparameter\c!align}%
-%    \setbox\tempcaptionbox\raggedbox}
-
 \def\dosettempcaptionbox
-  {\setbox\tempcaptionbox\vbox\bgroup
+  {\setbox\float_caption_box\vbox\bgroup
      %expanded{\setupalign[\v!new,\v!reset,\floatcaptionparameter\c!align,\v!old]}% wrong! see icare
      \normalexpanded{\noexpand\setupalign[\v!reset,\floatcaptionparameter\c!align]}% i need to check what reset does
-     \dosetcaptionthings
      \let\next}
 
-\def\dopreparesideautocaption#1#2#3%
-  {\scratchdimen\dimexpr\hsize-\wd\tempfloatbox-\floatparameter\c!margin\relax % was \tfskipsize\relax
-   \ifdim\wd\tempcaptionbox>\scratchdimen
-     \ifdim\wd\tempcaptionbox<1.3\scratchdimen
+\def\dopreparesideautocaption
+  {\scratchdimen\dimexpr\hsize-\wd\float_content_box-\floatparameter\c!margin\relax % was \tfskipsize\relax
+   \ifdim\wd\float_caption_box>\scratchdimen
+     \ifdim\wd\float_caption_box<1.3\scratchdimen
        \scratchdimen0.8\scratchdimen
      \fi
    \fi
    \dosettempcaptionbox
      {\hsize\scratchdimen
-      \putcompletecaption{#2}{#3}}}
+      \float_make_complete_caption}}
 
-\def\dopreparesidewidthcaption#1#2#3%
+\def\dopreparesidewidthcaption
   {\dosettempcaptionbox
      {\hsize\floatcaptionparameter\c!width
-      \putcompletecaption{#2}{#3}}}
+      \float_make_complete_caption}}
 
-\def\dopreparestackcaptionfix#1#2#3%
+\def\dopreparestackcaptionfix
   {\dosettempcaptionbox
      {\hsize\floatcaptionparameter\c!minwidth % special effects
-      \putcompletecaption{#2}{#3}}}
+      \float_make_complete_caption}}
 
-\def\dopreparestackcaptionmax#1#2#3%
+\def\dopreparestackcaptionmax
   {\dosettempcaptionbox
-     {\hsize\wd\tempfloatbox
-      \putcompletecaption{#2}{#3}}}
+     {\hsize\wd\float_content_box
+      \float_make_complete_caption}}
 
-\def\dopreparestackcaptionwid#1#2#3%
+\def\dopreparestackcaptionwid
   {\dosettempcaptionbox
      {\hsize\floatcaptionparameter\c!width
-      \putcompletecaption{#2}{#3}}}
+      \float_make_complete_caption}}
 
-\def\dopreparestackcaptionmin#1#2#3%
+\def\dopreparestackcaptionmin
   {\dosettempcaptionbox
-     {\hsize\wd\tempfloatbox
+     {\hsize\wd\float_content_box
       \doifnothing{\floatcaptionparameter\c!align}\raggedcenter % on purpose overloads align !
-      \putcompletecaption{#2}{#3}}}
+      \float_make_complete_caption}}
 
-\def\dopreparestackcaptionaut#1#2#3%
+\def\dopreparestackcaptionaut
   {\doifsomething{\floatcaptionparameter\c!align}
-     {\doifnotinset{\v!middle}{\floatcaptionparameter\c!align}%
+     {\doifnotinset\v!middle{\floatcaptionparameter\c!align}%
         {\let\captionovershoot\!!zeropoint}}%
-   \edef\captionhsize{\the\wd\tempfloatbox}%
+   \edef\captionhsize{\the\wd\float_content_box}%
    \ifdim\captionhsize>\hsize
      % float is wider than \hsize
      \dosettempcaptionbox
        {\settrialtypesetting
         \hsize\captionhsize
         \notesenabledfalse
-        \putcompletecaption{#2}{#3}}%
+        \float_make_complete_caption}%
      \ifdim\ht\scratchbox>\lineheight % more lines
        \dosettempcaptionbox
          {\hsize\captionhsize
@@ -1238,11 +1266,11 @@
           \ifdim\hsize<\captionminwidth\relax
             \hsize\captionhsize
           \fi
-          \putcompletecaption{#2}{#3}}%
+          \float_make_complete_caption}%
      \else
        \dosettempcaptionbox
          {\hsize\captionhsize
-          \putcompletecaption{#2}{#3}}%
+          \float_make_complete_caption}%
      \fi
    \else
      % float is smaller of equal to \hsize
@@ -1257,26 +1285,26 @@
         \advance\scratchdimen 3em % an average word length
         \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
         \notesenabledfalse
-        \putcompletecaption{#2}{#3}}%
+        \float_make_complete_caption}%
      \ifdim\ht\scratchbox>\lineheight
        % at least an average word longer than a line
        \dosettempcaptionbox
          {\scratchdimen\captionhsize
           \advance\scratchdimen \captionovershoot
           \ifdim\scratchdimen<\hsize \hsize\scratchdimen \fi
-          \putcompletecaption{#2}{#3}}%
+          \float_make_complete_caption}%
      \else
        % just over a line, don't use an overshoot % % % todo: outer/inner and such
        \doifcommonelse{\floatcaptionparameter\c!align}{\v!left,\v!right,\v!flushleft,\v!flushright}
          {\dosettempcaptionbox
             {\hsize\captionhsize
              % strange : \raggedcenter
-             \putcompletecaption{#2}{#3}}}
+             \float_make_complete_caption}}
          {% nicer
           \dosettempcaptionbox
             {\hsize\captionhsize
              \doifnothing{\floatcaptionparameter\c!align}\raggedcenter% overloads
-             \putcompletecaption{#2}{#3}}}%
+             \float_make_complete_caption}}%
      \fi
    \fi}
 
@@ -1287,66 +1315,67 @@
   {\endgraf\nointerlineskip\floatcaptionparameter\c!inbetween\endgraf}
 
 \def\dofloatboxdefaultbuilder % done
-  {\locatefloat{\box\tempfloatbox}}
+  {\float_align_content{\box\float_content_box}}
 
 \def\dofloatboxnextrightbuilder#1%
-  {\ifparfloat \hbox \else \expandafter \locatefloat \fi
-     {\tempfloatheight\ht\tempfloatbox
-      \box\tempfloatbox
+  {\ifparfloat \hbox \else \expandafter \float_align_content \fi
+     {\tempfloatheight\ht\float_content_box
+      \box\float_content_box
       \normalexpanded{\noexpand\doifnotinset{\v!hang}{\floatcaptionparameter\c!location}}{\dotfskip{\floatcaptionparameter\c!distance}}%
       \vbox to\tempfloatheight{#1}}}
 
 \def\dofloatboxnextleftbuilder#1%
-  {\ifparfloat \hbox \else \expandafter \locatefloat \fi
-     {\tempfloatheight\ht\tempfloatbox
+  {\ifparfloat \hbox \else \expandafter \float_align_content \fi
+     {\tempfloatheight\ht\float_content_box
       \vbox to\tempfloatheight{#1}%
       \normalexpanded{\noexpand\doifnotinset{\v!hang}{\floatcaptionparameter\c!location}}{\dotfskip{\floatcaptionparameter\c!distance}}%
-      \box\tempfloatbox}}
+      \box\float_content_box}}
 
 \def\dofloatboxnextouterbuilder
   {\doifrightpagefloatelse\dofloatboxnextrightbuilder\dofloatboxnextleftbuilder}
+
 \def\dofloatboxnextinnerbuilder
   {\doifrightpagefloatelse\dofloatboxnextleftbuilder\dofloatboxnextrightbuilder}
 
 \def\dofloatboxnextrighthangbuilder#1%
-  {\ifparfloat \hbox \else \expandafter \locatefloat \fi
-     {\tempfloatheight\ht\tempfloatbox
-      \box\tempfloatbox
+  {\ifparfloat \hbox \else \expandafter \float_align_content \fi
+     {\tempfloatheight\ht\float_content_box
+      \box\float_content_box
       \vbox to\tempfloatheight{#1}}}
 
 \def\dofloatboxnextlefthangbuilder#1%
-  {\ifparfloat \hbox \else \expandafter \locatefloat \fi
-     {\tempfloatheight\ht\tempfloatbox
+  {\ifparfloat \hbox \else \expandafter \float_align_content \fi
+     {\tempfloatheight\ht\float_content_box
       \vbox to\tempfloatheight{#1}%
-      \box\tempfloatbox}}
+      \box\float_content_box}}
 
 \def\dodofloatboxnextrightmarginbuilder#1#2%
   {\ifparfloat
      \hbox\bgroup
-     \tempfloatheight\ht\tempfloatbox
-     \box\tempfloatbox
+     \tempfloatheight\ht\float_content_box
+     \box\float_content_box
      \hsmash{\hskip#1\vbox to\tempfloatheight{#2}}%
      \egroup
    \else
      \begingroup
-     \tempfloatheight\ht\tempfloatbox
+     \tempfloatheight\ht\float_content_box
      \everyrightofalignedline{\hsmash{\hskip#1\vbox to\tempfloatheight{#2}}}%
-     \locatefloat{\box\tempfloatbox}%
+     \float_align_content{\box\float_content_box}%
      \endgroup
     \fi}
 
 \def\dodofloatboxnextleftmarginbuilder#1#2%
   {\ifparfloat
      \hbox\bgroup
-     \tempfloatheight\ht\tempfloatbox
-     \hsmash{\hskip-\dimexpr#1+\wd\tempcaptionbox\relax\vbox to\tempfloatheight{#2}}%
-     \box\tempfloatbox
+     \tempfloatheight\ht\float_content_box
+     \hsmash{\hskip-\dimexpr#1+\wd\float_caption_box\relax\vbox to\tempfloatheight{#2}}%
+     \box\float_content_box
      \egroup
    \else
      \begingroup
-     \tempfloatheight\ht\tempfloatbox
-     \everyleftofalignedline{\hsmash{\hskip-\dimexpr#1+\wd\tempcaptionbox\relax\vbox to\tempfloatheight{#2}}}%
-     \locatefloat{\box\tempfloatbox}%
+     \tempfloatheight\ht\float_content_box
+     \everyleftofalignedline{\hsmash{\hskip-\dimexpr#1+\wd\float_caption_box\relax\vbox to\tempfloatheight{#2}}}%
+     \float_align_content{\box\float_content_box}%
      \endgroup
    \fi}
 
@@ -1391,11 +1420,11 @@
    \next}
 
 \def\doflushfloatleftcaptionhang
-  {\hsmash{\llap{\box\tempcaptionbox\dotfskip{\floatcaptionparameter\c!distance}}}}
+  {\hsmash{\llap{\box\float_caption_box\dotfskip{\floatcaptionparameter\c!distance}}}}
 \def\doflushfloatrightcaptionhang
-  {\hsmash{\rlap{\dotfskip{\floatcaptionparameter\c!distance}\box\tempcaptionbox}}}
+  {\hsmash{\rlap{\dotfskip{\floatcaptionparameter\c!distance}\box\float_caption_box}}}
 
-\def\doflushfloatcaptionhang
+\def\doflushfloatcaptionhang % expanded can go
   {\expanded{\doifinsetelse{\v!righthanging}{\floatcaptionparameter\c!location}}
      {\doflushfloatrightcaptionhang}
      {\expanded{\doifinsetelse{\v!lefthanging}{\floatcaptionparameter\c!location}}
@@ -1406,7 +1435,7 @@
               {\expanded{\doifinsetelse{\v!right}{\floatcaptiondirectives}}
                  {\doflushfloatrightcaptionhang}
                  {\doflushfloatleftcaptionhang}}}
-        {\box\tempcaptionbox}}}}
+        {\box\float_caption_box}}}}
 
 \def\dofloatboxhighbuilder
   {\dofloatboxnextbuilder{\dofloatboxbetweenstack\doflushfloatcaptionhang\vfill}}
@@ -1415,7 +1444,7 @@
   {\dofloatboxnextbuilder{\vfill\doflushfloatcaptionhang\dofloatboxbetweenstack}}
 
 \def\dofloatboxmiddlebuilder
-  {\dofloatboxnextbuilder{\vfill\box\tempcaptionbox\vfill}}
+  {\dofloatboxnextbuilder{\vfill\box\float_caption_box\vfill}}
 
 % \definefloat
 %   [lefty][lefties][figure]
@@ -1433,101 +1462,101 @@
 %     \placelefty{}{} \input tufte \input tufte
 % \stoptext
 
-\def\bothangfloat#1{\ruledvbox to \ht\tempfloatbox{#1\vss}}
-\def\tophangfloat#1{\ruledvbox to \ht\tempfloatbox{\vss#1}}
+\def\bothangfloat#1{\ruledvbox to \ht\float_content_box{#1\vss}}
+\def\tophangfloat#1{\ruledvbox to \ht\float_content_box{\vss#1}}
 
 \def\dofloatboxnormaltopstackbuilder
   {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\tophangfloat
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox{\locatesidefloat{\box\tempcaptionbox}}%
+        \hbox{\locatesidefloat{\box\float_caption_box}}%
         \dofloatboxbetweenstack
-        \hbox{\hbox           {\box\tempfloatbox  }}%
+        \hbox{\hbox           {\box\float_content_box  }}%
       \else
-        \hbox{\locatetextfloat{\box\tempcaptionbox}}
+        \hbox{\locatetextfloat{\box\float_caption_box}}
         \dofloatboxbetweenstack
-        \hbox{\locatefloat    {\box\tempfloatbox  }}%
+        \hbox{\float_align_content    {\box\float_content_box  }}%
       \fi}}
 
 \def\dofloatboxnormalbotstackbuilder
   {\expanded{\doifinset{\v!overlay}{\floatcaptionparameter\c!location}}\bothangfloat
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox{\hbox           {\box\tempfloatbox  }}%
+        \hbox{\hbox           {\box\float_content_box  }}%
         \dofloatboxbetweenstack
-        \hbox{\locatesidefloat{\box\tempcaptionbox}}%
+        \hbox{\locatesidefloat{\box\float_caption_box}}%
       \else
-        \hbox{\locatefloat    {\box\tempfloatbox  }}%
+        \hbox{\float_align_content    {\box\float_content_box  }}%
         \dofloatboxbetweenstack
-        \hbox{\locatetextfloat{\box\tempcaptionbox}}%
+        \hbox{\locatetextfloat{\box\float_caption_box}}%
       \fi}}
 
 \def\dofloatboxgridtopstackbuilder
-  {\dp\tempcaptionbox\strutdepth
+  {\dp\float_caption_box\strutdepth
    \setbox\scratchbox\vbox
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \locatesidefloat{\box\tempcaptionbox}%
+        \locatesidefloat{\box\float_caption_box}%
         \vss\dofloatboxbetweenstack
-        \hbox           {\box\tempfloatbox  }%
+        \hbox           {\box\float_content_box  }%
       \else
-        \locatetextfloat{\box\tempcaptionbox}%
+        \locatetextfloat{\box\float_caption_box}%
         \vss\dofloatboxbetweenstack
-        \locatefloat    {\box\tempfloatbox  }%
+        \float_align_content    {\box\float_content_box  }%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight{\unvbox\scratchbox}}
 
 \def\dofloatboxgridbotstackbuilder
-  {\dp\tempcaptionbox\strutdepth
+  {\dp\float_caption_box\strutdepth
    \setbox\scratchbox\vbox
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox           {\box\tempfloatbox  }%
+        \hbox           {\box\float_content_box  }%
         \vss\dofloatboxbetweenstack
-        \locatesidefloat{\box\tempcaptionbox}%
+        \locatesidefloat{\box\float_caption_box}%
       \else
-        \locatefloat    {\box\tempfloatbox  }%
+        \float_align_content    {\box\float_content_box  }%
         \vss\dofloatboxbetweenstack
-        \locatetextfloat{\box\tempcaptionbox}%
+        \locatetextfloat{\box\float_caption_box}%
       \fi}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight{\unvbox\scratchbox}}
 
 \def\dofloatboxstretchtopstackbuilder
-  {\dp\tempcaptionbox\strutdepth
+  {\dp\float_caption_box\strutdepth
    \setbox\scratchbox\vbox
-     {\locatecaption{\copy\tempcaptionbox}%
-      \locatefloat  {\copy\tempfloatbox  }}%
+     {\float_align_caption{\copy\float_caption_box}%
+      \float_align_content  {\copy\float_content_box  }}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \locatesidefloat{\box\tempcaptionbox}%
+        \locatesidefloat{\box\float_caption_box}%
         \vss\dofloatboxbetweenstack\vss
-        \hbox           {\box\tempfloatbox  }%
+        \hbox           {\box\float_content_box  }%
       \else
-        \locatetextfloat{\box\tempcaptionbox}%
+        \locatetextfloat{\box\float_caption_box}%
         \vss\dofloatboxbetweenstack\vss
-        \locatefloat    {\box\tempfloatbox  }%
+        \float_align_content    {\box\float_content_box  }%
       \fi}}
 
 \def\dofloatboxstretchbotstackbuilder
-  {\dp\tempcaptionbox\strutdepth
+  {\dp\float_caption_box\strutdepth
    \setbox\scratchbox\vbox
-     {\locatefloat  {\copy\tempfloatbox  }%
-      \locatecaption{\copy\tempcaptionbox}}%
+     {\float_align_content  {\copy\float_content_box  }%
+      \float_align_caption{\copy\float_caption_box}}%
    \getnoflines{\dimexpr\htdp\scratchbox-10\scaledpoint\relax}% get rid of inaccuracy
    \vbox to \noflines\lineheight
-     {\tempfloatwidth\wd\tempfloatbox
+     {\tempfloatwidth\wd\float_content_box
       \ifparfloat
-        \hbox           {\box\tempfloatbox  }%
+        \hbox           {\box\float_content_box  }%
         \vss\dofloatboxbetweenstack\vss
-        \locatesidefloat{\box\tempcaptionbox}
+        \locatesidefloat{\box\float_caption_box}
       \else
-        \locatefloat    {\box\tempfloatbox  }%
+        \float_align_content    {\box\float_content_box  }%
         \vss\dofloatboxbetweenstack\vss
-        \locatetextfloat{\box\tempcaptionbox}%
+        \locatetextfloat{\box\float_caption_box}%
       \fi}}
 
 \def\dofloatboxtopbuilder
@@ -1544,14 +1573,14 @@
       \v!stretch=>\let\next\dofloatboxstretchstackbuilder]%
    \next}
 
-\def\relocatecaptionright#1{\locatecaption{\hbox to \tempfloatwidth{\hss#1}}}
-\def\relocatecaptionleft #1{\locatecaption{\hbox to \tempfloatwidth{#1\hss}}}
+\def\relocatecaptionright#1{\float_align_caption{\hbox to \tempfloatwidth{\hss#1}}}
+\def\relocatecaptionleft #1{\float_align_caption{\hbox to \tempfloatwidth{#1\hss}}}
 
 \long\def\installfloatboxbuilder#1#2{\setvalue{\??kj:#1}{#2}}
 
-\def\buildfloatbox
+\def\build_float_box
   {\global\setbox\floatbox\vbox
-     {\setlocalfloathsize
+     {\float_set_local_hsize
       \forgetall
       \let\floatcaptionarrangement\s!default
       \def\docommand##1%
@@ -1560,7 +1589,7 @@
       \executeifdefined{\??kj:\floatcaptionarrangement}{\getvalue{\??kj:\s!default}}}}
 
 \def\locatetextfloat
-  {\let\next\locatecaption
+  {\let\next\float_align_caption
    \expanded{\processallactionsinset[\floatcaptionparameter\c!location]}
      [ \v!left=>\let\next\relocatecaptionleft,
       \v!right=>\let\next\relocatecaptionright,
@@ -1621,71 +1650,73 @@
       \box\floatbox
       \ifdone\hskip\effectiverightskip\fi\hss}}
 
-\long\def\dosetparfloat#1#2#3%
+\def\float_set_paragraph_variant
   {\bgroup
    \forgetall
    \postponenotes
    \dontcomplain
    %\showcomposition
-   \setbox\tempfloatbox\vbox{\borderedfloatbox}%
-   \addlocalbackgroundtobox\tempfloatbox % no \doglobal
+   \setbox\float_content_box\vbox{\borderedfloatbox}%
+   \addlocalbackgroundtobox\float_content_box % no \doglobal
    \ifnofloatcaption
-     \global\setbox\floatbox\vbox{\box\tempfloatbox}%
+     \global\setbox\floatbox\vbox{\box\float_content_box}%
    \else
-     \docheckcaptioncontent{#2}{#3}%
-     \dopreparesidecaption{#1}{#2}{#3}%
-     \settracedcaptionbox
-     \setbox\tempcaptionbox\hbox{\floatcaptionparameter\c!command{\box\tempcaptionbox}}%
-     \moveboxontogrid\tempcaptionbox{\floatcaptionparameter\c!grid}\lastcaptionht
-     \addlocalbackgroundtobox\tempcaptionbox % no \doglobal
-     \buildsidefloatbox
+     \check_float_caption_content
+     \prepare_side_float_caption
+     \setbox\float_caption_box\hbox{\floatcaptionparameter\c!command{\box\float_caption_box}}%
+     \moveboxontogrid\float_caption_box{\floatcaptionparameter\c!grid}\float_caption_height
+     \addlocalbackgroundtobox\float_caption_box % no \doglobal
+     \build_side_float_box
    \fi
    \egroup}
 
-\def\dopreparesidecaption#1#2#3% will be enhanced
+\def\prepare_side_float_caption
   {\doifelse{\floatcaptionparameter\c!width}\v!max
      {\dosettempcaptionbox
-        {\hsize\wd\tempfloatbox
-         \putcompletecaption{#2}{#3}}}%
+        {\hsize\wd\float_content_box
+         \float_make_complete_caption}}%
      {\doifelse{\floatcaptionparameter\c!width}\v!fit
-        {\ifdim\wd\tempcaptionbox>\wd\tempfloatbox\relax
-           \setbox\tempcaptionbox\vbox
+        {\ifdim\wd\float_caption_box>\wd\float_content_box\relax
+           \setbox\float_caption_box\vbox
              {\forgetall % needed?
-              \hsize\wd\tempfloatbox
-              \dosetcaptionthings
-              \putcompletecaption{#2}{#3}}%
+              \hsize\wd\float_content_box
+              \float_make_complete_caption}%
          \else
-           \setbox\tempcaptionbox\hbox to \wd\tempfloatbox
-             {\hss\box\tempcaptionbox\hss}%
+           \setbox\float_caption_box\hbox to \wd\float_content_box
+             {\hss\box\float_caption_box\hss}%
          \fi}
         {\dosettempcaptionbox
-           {\hsize\floatcaptionparameter\c!width % \wd\tempfloatbox
-            \putcompletecaption{#2}{#3}}}}}
+           {\hsize\floatcaptionparameter\c!width % \wd\float_content_box
+            \float_make_complete_caption}}}}
 
-\def\buildsidefloatbox
-  {\let\locatefloat  \relax
-   \let\locatecaption\relax
+\def\build_side_float_box
+  {\let\float_align_content\relax
+   \let\float_align_caption\relax
    \def\locatesidefloat##1%
      {\begingroup
       \alignstrutmode\zerocount
       \hsize\tempfloatwidth \forgetall
       \alignedline{\floatparameter\c!location}\v!middle{##1}%
       \endgroup}%
-   \buildfloatbox}
+   \build_float_box}
 
 \newif\ifparfloat
 
-\long\def\dosetfloatbox#1#2#3% todo : \global\setbox, currently messy
+\def\float_set_box % todo : \global\setbox, currently messy
   {\ifvisible
      \par
      \edef\floatcaptiondirectives{\floatparameter\c!location,\floatcaptionparameter\c!location}%
-     \ifparfloat\@EA\dosetparfloat\else\@EA\dosetpagfloat\fi{#1}{#2}{#3}%
-     \setlocalfloatdimensions{#1}%
+     \ifparfloat
+       \float_set_paragraph_variant
+     \else
+       \float_set_page_variant
+     \fi
+     \float_set_local_dimensions
      \global\advance\totalnoffloats\plusone
      \setbox\floatbox\hbox{\dosavefloatdata\box\floatbox}% still needed? we will do renumbering differently
      \global\floatheight\htdp\floatbox
      \global\floatwidth\wd\floatbox
-     \doifnotinset\v!margin{#1} % gaat namelijk nog fout
+     \doifnotinset\v!margin\floatlocation % gaat namelijk nog fout
        {\setbox\floatbox\vbox
           {\parindent\zeropoint
            \doifconcepttracing{\inleftmargin{\framed{\infofont\the\totalnoffloats}}}%
@@ -1700,10 +1731,6 @@
    \fi}
 
 \newcounter\noxfloatlocations
-
-\long\def\dofloat#1#2#3% #1 is optionlist
-  {\dosetfloatbox{#1}{#2}{#3}%
-   \dogetfloatbox{#1}\empty}
 
 \def\dooutput{\sidefloatoutput}           % redefinition of \dooutput
 
@@ -1738,25 +1765,23 @@
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\ctxcommand{analysefloatmethod("#1")}}
 
-\def\dogetfloatbox#1#2%
+\def\float_get_box
   {\ifvisible
-     \let \floatlabel \empty
-     \let \floatcolumn\empty
-     \let \floatrow   \empty
-     \edef\floatmethod{#2}%
-     \ifx\floatmethod\empty
-       \setfloatmethodvariables{#1}%
-       % todo: nog algemeen otr
-       \ifdefined\OTRSETsetpreferedcolumnslot
-         \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
-       \fi
+     \let\floatlabel \empty
+     \let\floatcolumn\empty
+     \let\floatrow   \empty
+     \setfloatmethodvariables\floatlocation
+     % todo: nog algemeen otr
+     \ifdefined\OTRSETsetpreferedcolumnslot
+       \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
      \fi
-     \doifundefined{\string\floatmethod\floatmethod}
-       {\let\floatmethod\v!here}%
-     \doifsomething\forcedfloatmethod
-       {\edef\floatmethod{\forcedfloatmethod}}%
-    %\getvalue{\string\floatmethod\floatmethod}[#1]%
-     \getvalue{\string\floatmethod\floatmethod}[\floatmethod,#1]%
+     \ifcsname\string\floatmethod\floatmethod\endcsname \else
+        \let\floatmethod\v!here
+     \fi
+     \ifx\forcedfloatmethod\empty \else
+       \let\floatmethod\forcedfloatmethod
+     \fi
+     \getvalue{\string\floatmethod\floatmethod}[\floatmethod,\floatlocation]%
    \fi}
 
 \def\installfloathandler#1#2% #1=keyword #2=handler

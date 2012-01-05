@@ -52,7 +52,7 @@
 \setupFLOWcharts
   [\c!width=12\bodyfontsize,
    \c!height=7\bodyfontsize,
-   \c!offset=0pt, % \v!standard, % == auto offset
+   \c!offset=\FLOWlineparameter\c!rulethickness,
    \c!dx=2\bodyfontsize,
    \c!dy=2\bodyfontsize,
    \c!nx=0,
@@ -72,7 +72,7 @@
  % \c!background=,
  % \c!framecolor=
  % \c!backgroundcolor=, % \s!white
-   \c!rulethickness=\linewidth,
+   \c!rulethickness=.15\bodyfontsize, %\linewidth,
    \c!frame=\v!off]
 
 \setupFLOWlines

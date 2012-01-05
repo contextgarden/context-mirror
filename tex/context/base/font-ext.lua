@@ -18,6 +18,8 @@ local trace_expansion  = false  trackers.register("fonts.expansion",  function(v
 local report_expansions  = logs.reporter("fonts","expansions")
 local report_protrusions = logs.reporter("fonts","protrusions")
 
+-- todo: byte(..) => 0xHHHH
+
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
 will depend of the font format. Here we define the few that are kind

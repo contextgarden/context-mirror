@@ -363,6 +363,19 @@
     \posthyphenchar\languageparameter\s!lefthyphenchar \relax
 \to \everylanguage
 
+% \appendtoks
+%     \setups[\languageparameter\c!setups]%
+% \to \everylanguage
+
+%D You can setup the 'default' language to reset settings.
+
+\appendtoks
+    \edef\currentlanguagesetups{\languageparameter\c!setups}%
+    \ifx\currentlanguagesetups\empty \else
+        \setups[\currentlanguagesetups]%
+    \fi
+\to \everylanguage
+
 % this will move to core-spa !
 
 \appendtoks

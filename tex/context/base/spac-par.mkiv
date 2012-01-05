@@ -23,28 +23,25 @@
 %D inside the group are forgotten afterwards. (I must
 %D not forget its existence).
 
-\global\let\carriedoverpar\relax
-
-\def\carryoverpar#1%
-  {\normalexpanded     % \scratchtoks{#1}%
-     {\noexpand#1% \the\scratchtoks
+\def\carryoverpar#1% #1 can be \endgroup or \egroup or ...
+  {\normalexpanded
+     {\noexpand#1%
       \hangindent\the\hangindent
       \hangafter \the\hangafter
       \parskip   \the\parskip
       \leftskip  \the\leftskip
       \rightskip \the\rightskip}}
 
-\newconditional \parbasedattributes
+\unexpanded\def\pushparagraphproperties
+  {\edef\currentparagraphproperties{\carryoverpar\relax}%
+   \pushmacro\currentparagraphproperties}
 
-\def\finishparbasedattributes
-  {\ifconditional\parbasedattributes
-     \setfalse\parbasedattributes
-     \par
-   \fi}
+\unexpanded\def\popparagraphproperties
+  {\popmacro\currentparagraphproperties
+   \currentparagraphproperties}
 
-\def\dostopparbasedattributes
-  {\settrue\parbasedattributes
-   \dostopattributes}
+\unexpanded\def\flushparagraphproperties
+  {\popmacro\currentparagraphproperties}
 
 % beware, changing this will break some code (like pos/backgrounds)
 

@@ -439,7 +439,8 @@ _foldsymbols = {
         "\\begin", "\\end",  -- (moveable) blocks
     },
     ["helper"]   = folds,
+    ["data"]   = folds,
     ["command"]  = folds,
-    ["user"]     = folds,
+    ["user"]     = folds, -- csname
     ["grouping"] = folds,
 }

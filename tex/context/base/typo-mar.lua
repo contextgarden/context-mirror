@@ -462,10 +462,13 @@ local function inject(parent,head,candidate)
     end
     candidate.width = width
     candidate.hsize = parent.width -- we can also pass textwidth
+    if trace_margindata then
+        report_margindata("processing, index %s, height: %s, depth: %s",candidate.n,height,depth)
+    end
     if firstonstack then
         offset = 0
     else
-        offset = offset + height
+--         offset = offset + height
     end
     if stack == v_yes then
         offset = offset + candidate.dy
@@ -480,7 +483,7 @@ local function inject(parent,head,candidate)
     if method == v_top then
         local delta = height - parent.height
         if trace_margindata then
-            report_margindata("top aligned: %s, amount: %s",candidate.n,delta)
+            report_margindata("top aligned, amount: %s",delta)
         end
         if delta < candidate.threshold then
             shift = shift + voffset + delta
@@ -494,13 +497,13 @@ local function inject(parent,head,candidate)
     elseif method == v_depth then
         local delta = candidate.strutdepth
         if trace_margindata then
-            report_margindata("depth aligned, amount: %s",candidate.n,delta)
+            report_margindata("depth aligned, amount: %s",delta)
         end
         shift = shift + voffset + delta
     elseif method == v_height then
         local delta = - candidate.strutheight
         if trace_margindata then
-            report_margindata("height aligned, amount: %s",candidate.n,delta)
+            report_margindata("height aligned, amount: %s",delta)
         end
         shift = shift + voffset + delta
     elseif voffset ~= 0 then
@@ -529,17 +532,21 @@ local function inject(parent,head,candidate)
     end
     set_attribute(box,a_margindata,nofstatus)
     if trace_margindata then
-        report_margindata("injected: %s, location: %s",candidate.n,location)
+        report_margindata("injected, location: %s, shift: %s",location,shift)
     end
     -- we need to add line etc to offset as well
     offset = offset + depth
-    stacked[location] = offset
-    -- todo: if no real depth then zero
     local room = {
-        height = box.height,
+        height = height,
         depth  = offset,
         slack  = candidate.bottomspace, -- todo: 'depth' => strutdepth
     }
+offset = offset + height
+    stacked[location] = offset
+    -- todo: if no real depth then zero
+    if trace_margindata then
+        report_margindata("status, offset: %s",offset)
+    end
     return head, room
 end
 
