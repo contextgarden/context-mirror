@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 local next, tostring = next, tostring
 local rep, format = string.rep, string.format
 local texcount = tex.count
+local lpegmatch = lpeg.match
 
 local backends, lpdf = backends, lpdf
 
@@ -501,7 +502,7 @@ function specials.order(var,actions) -- references.specials !
     local operation = var.operation
     if operation then
         local kind, name, n = lpegmatch(splitter,operation)
-        local order = lists.ordered[kind]
+        local order = structures.lists.ordered[kind]
         order = order and order[name]
         local v = order[tonumber(n)]
         local r = v and v.references.realpage

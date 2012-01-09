@@ -405,7 +405,7 @@ function lxml.convert(id,data,entities,compress)
 end
 
 function lxml.load(id,filename,compress,entities)
-    filename = commands.preparedfile(filename)
+    filename = commands.preparedfile(filename) -- not commands!
     if trace_loading then
         report_lxml("loading file '%s' as '%s'",filename,id)
     end
@@ -1275,8 +1275,9 @@ function finalizers.tag(collected,n)
     if collected then
         local nc = #collected
         if nc > 0 then
+            n = tonumber(n) or 0
             local c
-            if n == 0 or not n then
+            if n == 0 then
                 c = collected[1]
             elseif n > 1 then
                 c = collected[n]

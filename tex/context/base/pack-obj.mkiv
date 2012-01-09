@@ -269,7 +269,6 @@
 
 \def\dododosetobject#1#2#3%
   {\begingroup
-   \dontshowcomposition % rather fuzzy in \setxvalue ... \hbox
    \scratchdimen\objectoffset
    \@EA\xdef\csname\??ob:#2::#3\endcsname
      {\noexpand\dohandleobject{#2}{#3}%
@@ -299,7 +298,6 @@
 \def\dogetobject#1#2#3#4#5#6#7% don't change this, should work for dvi & pdf
   {% \initializepaper
    \forgetall
-   \dontshowcomposition
    % todo: if no attr then faster
    \setbox\scratchbox\vbox attr \viewerlayerattribute \attribute\viewerlayerattribute
      {\doinsertobject{#1}{#2}}%

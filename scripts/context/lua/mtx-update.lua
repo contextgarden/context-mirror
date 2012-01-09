@@ -401,7 +401,7 @@ function scripts.update.synchronize()
             if not environment.argument("force") then
                 dryrunflags = "--dry-run"
             end
-            if (destination:find("texmf$") or destination:find("texmf%-context$")) and (not environment.argument("keep")) then
+            if (destination:find("texmf$") or destination:find("texmf%-context$") or destination:find("texmf%-modules$")) and (not environment.argument("keep")) then
                 deleteflags = states.get("rsync.flags.delete")
             end
             command = format("%s %s %s %s %s'%s' '%s'", bin, normalflags, deleteflags, dryrunflags, url, archives, destination)

@@ -95,7 +95,7 @@
 \to \everysetuplayoutelement
 
 \def\page_layouts_reset_element_status#vertical%
-  {\expandafter\gdef\csname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
+  {\expandafter\normalgdef\csname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
 
 \def\page_layouts_set_element_status_normal#vertical%
   {\global\expandafter\let\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
@@ -111,10 +111,10 @@
    \fi}
 
 \def\page_layouts_synchronize_element_indeed#vertical%
-  {\ifx\currenttextstate \v!high \calculatevsizes\recalculatebackgrounds \else
-   \ifx\previoustextstate\v!high \calculatevsizes\recalculatebackgrounds \else
-   \ifx\currenttextstate \v!none \calculatevsizes\recalculatebackgrounds \else
-   \ifx\previoustextstate\v!none \calculatevsizes\recalculatebackgrounds \fi\fi\fi\fi
+  {\ifx\currenttextstate \v!high \calculatevsizes\page_backgrounds_recalculate \else
+   \ifx\previoustextstate\v!high \calculatevsizes\page_backgrounds_recalculate \else
+   \ifx\currenttextstate \v!none \calculatevsizes\page_backgrounds_recalculate \else
+   \ifx\previoustextstate\v!none \calculatevsizes\page_backgrounds_recalculate \fi\fi\fi\fi
    \letgvalue{\??layouttextssynchronize#vertical}\currenttextstate}
 
 \unexpanded\def\setuptop   {\dotripleempty\page_layouts_setup_text[\v!top   ]}
@@ -756,7 +756,7 @@
 
 \def\page_layouts_place_page_number_left % historic
   {\begingroup
-   \setbox\scratchbox\normalhbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
+   \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \doifelsenothing\@@nmwidth
        {\box\scratchbox\tfskip}
@@ -766,7 +766,7 @@
 
 \def\page_layouts_place_page_number_right % historic
   {\begingroup
-   \setbox\scratchbox\normalhbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
+   \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \doifelsenothing\@@nmwidth
        {\tfskip\box\scratchbox}

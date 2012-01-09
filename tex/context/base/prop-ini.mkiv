@@ -20,41 +20,45 @@
 
 \unprotect
 
-\def\propertyobsoletemessage
-  {\writestatus\m!system{properties are obsolete, use dedicated commands}%
-   \glet\propertyobsoletemessage\donothing}
+\installcorenamespace{propertytypes}
+\installcorenamespace{propertydefiners}
+\installcorenamespace{propertystarters}
 
-\setvalue{\??py:d:\v!layer   }[#1][#2][#3]{\defineviewerlayer[#1][#3]}
-\setvalue{\??py:d:\s!effect  }[#1][#2][#3]{\defineeffect     [#1][#3]}
-\setvalue{\??py:d:\v!negative}[#1][#2][#3]{}
+\def\properties_obsolete_message
+  {\writestatus\m!system{properties are obsolete, use dedicated commands}%
+   \glet\properties_obsolete_message\donothing}
+
+\setvalue{\??propertydefiners\v!layer   }[#1][#2][#3]{\defineviewerlayer[#1][#3]}
+\setvalue{\??propertydefiners\s!effect  }[#1][#2][#3]{\defineeffect     [#1][#3]}
+\setvalue{\??propertydefiners\v!negative}[#1][#2][#3]{}
 
 \unexpanded\def\defineproperty
-  {\dotripleempty\dodefineproperty}
+  {\dotripleempty\properties_define}
 
-\def\dodefineproperty[#1][#2][#3]%
-  {\propertyobsoletemessage
-   \setevalue{\??py#1\c!type}{#2}%
-   \getvalue{\??py:d:#2}[#1][#2][#3]}
+\def\properties_define[#1][#2][#3]%
+  {\properties_obsolete_message
+   \setevalue{\??propertytypes#1e}{#2}%
+   \getvalue{\??propertydefiners#2}[#1][#2][#3]}
 
-\setvalue{\??py:s:\v!layer   }#1{\let\dostopproperty\stopviewerlayer\startviewerlayer[#1]}
-\setvalue{\??py:s:\s!effect  }#1{\let\dostopproperty\stopeffect     \starteffect     [#1]}
-\setvalue{\??py:s:\v!negative}#1{\let\dostopproperty\stopnegative   \startnegative       }
+\setvalue{\??propertystarters\v!layer   }#1{\let\properties_stop\stopviewerlayer\startviewerlayer[#1]}
+\setvalue{\??propertystarters\s!effect  }#1{\let\properties_stop\stopeffect     \starteffect     [#1]}
+\setvalue{\??propertystarters\v!negative}#1{\let\properties_stop\stopnegative   \startnegative       }
 
 \unexpanded\def\property[#1]%
-  {\groupedcommand{\dostartproperty{#1}}\dostopproperty}
+  {\groupedcommand{\properties_start{#1}}\properties_stop}
 
 \unexpanded\def\startproperty[#1]%
-  {\dostartproperty{#1}}
+  {\properties_start{#1}}
 
 \unexpanded\def\stopproperty
-  {\dostopproperty}
+  {\properties_stop}
 
-\unexpanded\def\dostartproperty#1%
-  {\pushmacro\dostopproperty
-   \getvalue{\??py:s:\getvalue{\??py#1\c!type}}{#1}}
+\unexpanded\def\properties_start#1%
+  {\pushmacro\properties_stop
+   \getvalue{\??propertystarters\getvalue{\??propertytypes#1}}{#1}}
 
-\unexpanded\def\dostopproperty
-  {\dostopproperty
-   \popmacro\dostopproperty}
+\unexpanded\def\properties_stop
+  {\properties_stop
+   \popmacro\properties_stop}
 
 \protect \endinput

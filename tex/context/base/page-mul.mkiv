@@ -405,7 +405,6 @@
    \leftskip\zeropoint
    \rightskip\zeropoint
    %
-   \dontshowcomposition
   %\setcolumntextwidth\relax
   %\setcolumntextheight\relax
    \widowpenalty\zerocount % is gewoon beter
@@ -445,9 +444,8 @@
    \let\sethsize\setcolumnhsize
    \let\setvsize\setcolumnvsize
    \sethsize
-   \setvsize
-   \showcomposition}
-
+   \setvsize}
+
 %D When we leave the multi||column mode, we have to process the
 %D not yet shipped out part of the columns. When we don't
 %D balance, we simply force a continuous output, but a balanced
@@ -474,7 +472,6 @@
      \vskip\lineheight
      \vskip-\lineheight % take footnotes into account
    \fi
-   \dontshowcomposition
    \doflushcolumnfloat  % added recently
   %\doflushcolumnfloats % no, since it results in wrong top floats
    \flushnotes          % before start of columns
@@ -585,14 +582,13 @@
    \fi
    \forgetall
    \setmulticolumnsout
-   \showcomposition
    \setmaxcolumndimensions
    \dohandleallcolumns
      {\mkprocesscolumncontents\currentcolumnbox}%
    \dohandleallcolumns
      {\page_marks_synchronize_column\plusone\nofcolumns\mofcolumns\currentcolumnbox}%
    \postprocesscolumns
-   \dohandleallcolumns % \hbox i.v.m. \showcomposition
+   \dohandleallcolumns
      {\global\setbox\currentcolumnbox\hbox to \localcolumnwidth
         {\box\currentcolumnbox}%
       \wd\currentcolumnbox\localcolumnwidth
@@ -944,7 +940,6 @@
   {\bgroup
    \forgetall
    \setmulticolumnsout
-   \dontshowcomposition
 %    \dimen0=\columntextheight
 %    \advance\dimen0 -\precolumnboxheight
 %    \settotalinsertionheight
@@ -1016,7 +1011,6 @@
 \def\balancedmulticolumnsout
   {\bgroup
    \setmulticolumnsout
-   \dontshowcomposition
    \widowpenalty\zerocount
    \setbox0\vbox{\unvbox\normalpagebox}%
    \ifdim\ht0>\openlineheight % at least one line

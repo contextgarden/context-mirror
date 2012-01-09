@@ -36,12 +36,12 @@
     \setuevalue\currentscript{\setscript[\currentscript]}%
 \to \everydefinescript
 
-\unexpanded\def\dosetscript
+\unexpanded\def\scripts_basics_set
   {\ctxlua{scripts.set("\currentscript","\scriptparameter\c!method","\scriptparameter\c!preset")}}
 
 \unexpanded\def\setscript[#1]%
   {\edef\currentscript{#1}%
-   \dosetscript}
+   \scripts_basics_set}
 
 \unexpanded\def\resetscript
   {\ctxlua{scripts.reset()}}
@@ -49,18 +49,18 @@
 \unexpanded\def\startscript[#1]%
   {\begingroup
    \edef\currentscript{#1}%
-   \dosetscript}
+   \scripts_basics_set}
 
 \unexpanded\def\stopscript
   {\endgroup}
 
 % \setscript[hangul] \hangul \startscript[hangul]
 
-\definescript[hangul]   [\c!method=hangul]
-\definescript[hanzi]    [\c!method=hanzi]
+\definescript[hangul]  [\c!method=hangul]
+\definescript[hanzi]   [\c!method=hanzi]
 
-\definescript[ethiopic] [\c!method=ethiopic]
+\definescript[ethiopic][\c!method=ethiopic]
 
-\definescript[latin]    [\c!method=]        %  resets the attribute (also currentscript)
+\definescript[latin]   [\c!method=]        %  resets the attribute (also currentscript)
 
 \protect \endinput

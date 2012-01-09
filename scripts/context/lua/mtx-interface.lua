@@ -401,7 +401,8 @@ function scripts.interface.interfaces()
 end
 
 function scripts.interface.preprocess()
-    require("luat-mac.lua")
+    dofile(resolvers.findfile("luat-mac.lua"))
+ -- require("luat-mac.lua")
     local newsuffix = environment.argument("suffix") or "log"
     local force = environment.argument("force")
     for i=1,#environment.files do

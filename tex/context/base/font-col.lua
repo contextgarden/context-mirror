@@ -90,7 +90,7 @@ end
 
 -- todo: provide a lua variant (like with definefont)
 
-function collections.clone_one(name)
+function collections.registermain(name)
     local last = font.current()
     if trace_collecting then
         report_fonts("def: registering font %s with name %s",last,name)
@@ -98,7 +98,7 @@ function collections.clone_one(name)
     list[#list+1] = last
 end
 
-function collections.clone_two(name)
+function collections.clonevector(name)
     statistics.starttiming(fonts)
     local d = definitions[name]
     local t = { }
@@ -169,27 +169,29 @@ function collections.prepare(name)
             report_fonts("def: applying collection %s to %s (file: %s)",name,current,filename)
         end
         list = { }
-        context.dostartcloningfonts() -- move this to tex \dostart...
+        context.pushcatcodes("prt") -- context.unprotect()
+        context.font_fallbacks_start_cloning()
         for i=1,#d do
             local f = d[i]
             local name = f.font
             local scale = f.rscale or 1
             if lpegmatch(okay,name) then
-                context.doclonefonta(name,scale)  -- define with unique specs
+                context.font_fallbacks_clone_unique(name,scale)
             else
-                context.doclonefontb(name,scale)  -- define with inherited specs
+                context.font_fallbacks_clone_inherited(name,scale)
             end
-            context.doclonefontstageone(name) -- registering main font
+            context.font_fallbacks_register_main(name)
         end
-        context.doclonefontstagetwo(name) -- preparing clone vectors
-        context.dostopcloningfonts()
+        context.font_fallbacks_prepare_clone_vectors(name)
+        context.font_fallbacks_stop_cloning()
+        context.popcatcodes() -- context.protect()
     elseif trace_collecting then
         local filename = file.basename(fontdata[current].properties.filename or "?")
         report_fonts("def: error in applying collection %s to %s (file: %s)",name,current,filename)
     end
 end
 
-function collections.message(message)
+function collections.report(message)
     if trace_collecting then
         report_fonts("tex: %s",message)
     end
@@ -226,9 +228,9 @@ end
 
 -- interface
 
-commands.definefontcollection    = collections.define
-commands.resetfontcollection     = collections.reset
-commands.preparefontcollection   = collections.prepare
-commands.fontcollectionmessage   = collections.message
-commands.clonefontcollection_one = collections.clone_one
-commands.clonefontcollection_two = collections.clone_two
+commands.fontcollectiondefine   = collections.define
+commands.fontcollectionreset    = collections.reset
+commands.fontcollectionprepare  = collections.prepare
+commands.fontcollectionreport   = collections.report
+commands.fontcollectionregister = collections.registermain
+commands.fontcollectionclone    = collections.clonevector

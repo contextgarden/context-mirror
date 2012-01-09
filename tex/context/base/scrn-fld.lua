@@ -40,7 +40,7 @@ commands.definefieldset = defineset
 commands.clonefield     = clone
 
 function commands.insertfield(name,specification)
-    tex.box["scrn_field_box_body"] = insert(name,specification)
+    tex.box["b_scrn_field_body"] = insert(name,specification)
 end
 
 -- (for the monent) only tex interface

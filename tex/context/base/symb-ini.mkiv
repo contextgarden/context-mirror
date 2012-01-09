@@ -46,6 +46,9 @@
 \installcorenamespace{symbol}
 \installcorenamespace{symbolset}
 
+\let\currentsymbol   \empty
+\let\currentsymbolset\empty
+
 \newtoks\t_symb_setups
 
 \let\m_symb_current_set\empty
@@ -71,9 +74,9 @@
 
 \letvalue{\??symbolset}\empty
 
-\def\doifinsymbolsetelse#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
-\def\doifinsymbolset    #1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\def\doifsymbolsetelse    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\unexpanded\def\doifinsymbolsetelse#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\unexpanded\def\doifinsymbolset    #1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\unexpanded\def\doifsymbolsetelse    #1{\ifcsname\??symbolset#1\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
 
 \def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 
@@ -97,21 +100,34 @@
      \expandafter\symb_place_special
    \fi}
 
-\def\symb_place_normal[#1][#2]%
-  {\setfalse\c_symb_found
-   \ifsecondargument
-     \edef\currentsymbol{#2}%
-     \ifcsname\??symbol#1:#2\endcsname
-       \symb_place_indeed{#1:#2}%
-     \fi
+\def\symb_place_normal
+  {\ifsecondargument
+     \expandafter\symb_place_normal_a
    \else
-     \edef\currentsymbol{#1}%
-   \fi
+     \expandafter\symb_place_normal_b
+   \fi}
+
+\def\symb_place_normal_a[#1][#2]%
+  {\edef\currentsymbol{#2}%
+   \ifcsname\??symbol#1:#2\endcsname
+      \symb_place_indeed{#1:#2}%
+   \else
+     \symb_place_normal_c
+   \fi}
+
+\def\symb_place_normal_b[#1][#2]%
+  {\edef\currentsymbol{#1}%
+   \ifcsname\??symbol\currentsymbolset:#1\endcsname
+     \symb_place_indeed{\currentsymbolset:#1}%
+   \else
+     \symb_place_normal_c
+   \fi}
+
+\def\symb_place_normal_c
+  {\setfalse\c_symb_found
+   \the\t_symb_setups
    \ifconditional\c_symb_found \else
-     \the\t_symb_setups
-     \ifconditional\c_symb_found \else
-       \symb_place_retry\currentsymbol
-     \fi
+     \symb_place_retry\currentsymbol % hm, isn't this redundant?
    \fi}
 
 \def\symb_place_special[#1][#2]#3%
@@ -131,7 +147,7 @@
 \def\directsymbol#1#2% no \relax, there can be an argument, see lists
   {\csname\??symbol\ifcsname\??symbol#1:#2\endcsname#1:#2\fi\endcsname}
 
-\def\symb_fetch
+\unexpanded\def\symb_fetch
   {\ifconditional\c_symb_found
      \expandafter\gobbleoneargument
    \else
@@ -247,6 +263,8 @@
 %D \showsetup{setupsymbolset}
 %D \showsetup{startsymbolset}
 
+\installcorenamespace{symbolsets}
+
 \unexpanded\def\startsymbolset[#1]%
   {\pushmacro\m_symb_current_set
    \def\m_symb_current_set{#1}}
@@ -255,7 +273,14 @@
   {\popmacro\m_symb_current_set}
 
 \unexpanded\def\setupsymbolset[#1]%
-  {\prependtoksonce\symb_fetch{#1}\to\t_symb_setups}
+  {\edef\currentsymbolset{#1}%
+   \ifcsname\??symbolsets\currentsymbolset\endcsname \else
+     \symb_setup_symbol_set
+   \fi}
+
+\def\symb_setup_symbol_set
+  {\normalexpanded{\t_symb_setups{\symb_fetch{\currentsymbolset}\the\t_symb_setups}}%
+   \letvalue{\??symbolsets\currentsymbolset}\empty} % speedup
 
 \unexpanded\def\resetsymbolset
   {\t_symb_setups\emptytoks}

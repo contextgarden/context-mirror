@@ -95,7 +95,7 @@
 %D the grouped call, the other branch handles the fuzzy
 %D delimited calls.
 
-\ifx\mbox\undefined \let\mbox\normalhbox \fi
+\ifdefined\mbox \else \let\mbox\hbox \fi
 
 \unexpanded\def\digits
   {\bgroup

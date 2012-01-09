@@ -42,7 +42,6 @@
 %D \NC \type{\c!prefix!} \NC  c!         \NC constant (direct)   \NC\FR
 %D \NC \type{\e!prefix!} \NC  e!         \NC element             \NC\MR
 %D \NC \type{\f!prefix!} \NC  f!         \NC file                \NC\MR
-%D \NC \type{\k!prefix!} \NC  k!         \NC constant (indirect) \NC\MR
 %D \NC \type{\m!prefix!} \NC  m!         \NC age             \NC\MR
 %D \NC \type{\s!prefix!} \NC  s!         \NC system              \NC\MR
 %D \NC \type{\v!prefix!} \NC  v!         \NC variable            \NC\MR
@@ -57,7 +56,6 @@
 \def\c!prefix!{c!}
 \def\e!prefix!{e!}
 \def\f!prefix!{f!} % for the moment we keep this one
-\def\k!prefix!{k!}
 \def\m!prefix!{m!}
 \def\s!prefix!{s!}
 \def\v!prefix!{v!}
@@ -759,28 +757,6 @@
 \def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
 \def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
 \def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
-
-%D \macros
-%D   {interfaced}
-%D
-%D The setup commands translate the constants automatically.
-%D When we want to translate 'by hand' we can use the simple
-%D but effective command:
-%D
-%D \starttyping
-%D \interfaced {something}
-%D \stoptyping
-%D
-%D Giving \type{\interfaced{breedte}} results in \type{width}
-%D or, when not defined, in \type{breedte} itself. This
-%D macro is used in the font switching mechanism.
-
-\def\interfaced#1%
-  {\ifcsname\k!prefix!#1\endcsname
-     \csname\k!prefix!#1\endcsname
-   \else
-     #1%
-   \fi}
 
 %D So much for the basic multi||lingual interface commands. The
 %D macro's can be enhanced with more testing facilities, but

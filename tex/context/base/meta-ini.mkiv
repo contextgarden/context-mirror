@@ -837,6 +837,16 @@
 %D In order to communicate conveniently with the \TEX\
 %D engine, we introduce some typesetting variables.
 
+% \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
+
+% A temporary hack so that I can test an alternative in cont-loc. See ** in
+% colo-ini.lua (mpcolor).
+
+\def\m_meta_colo_initializations{%
+    OverlayLineColor:=\MPcolor{\overlaylinecolor};
+    OverlayColor:=\MPcolor{\overlaycolor};
+}
+
 \startMPextensions
     color OverlayColor,OverlayLineColor;
 \stopMPextensions
@@ -846,9 +856,13 @@
     OverlayWidth:=\overlaywidth;
     OverlayHeight:=\overlayheight;
     OverlayDepth:=\overlayheight;
-    OverlayColor:=\MPcolor{\overlaycolor};
     OverlayLineWidth:=\overlaylinewidth;
-    OverlayLineColor:=\MPcolor{\overlaylinecolor};
+    %
+    \m_meta_colo_initializations
+%     OverlayLineColor:=\MPcolor{\overlaylinecolor};
+%     OverlayColor:=\MPcolor{\overlaycolor};
+%     vardef OverlayLineColor=\MPcolor{\overlaylinecolor} enddef;
+%     vardef OverlayColor=\MPcolor{\overlaycolor} enddef;
     %
     BaseLineSkip:=\the\baselineskip;
     LineHeight:=\the\baselineskip;

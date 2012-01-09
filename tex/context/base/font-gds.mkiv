@@ -42,7 +42,7 @@
 
 \unexpanded\def\setfontcolorscheme % will move to the lua end
   {\ctxcommand{enablefontcolorschemes()}%
-   \xdef\setfontcolorscheme[##1]{\attribute\colorschemeattribute##1\relax}%
+   \unexpanded\xdef\setfontcolorscheme[##1]{\attribute\colorschemeattribute##1\relax}%
    \setfontcolorscheme}
 
 \unexpanded\def\resetfontcolorscheme

@@ -802,8 +802,13 @@
 % 2 = before
 % 3 = after
 
+% \def\strc_references_by_reference_page_state#unknown#before#current#after%
+%   {\ifcase\referencepagestate\relax#unknown\or#current\or#before\or#after\fi}
+%
+% this fails in an expansion as the \relax stays, so we need:
+
 \def\strc_references_by_reference_page_state#unknown#before#current#after%
-  {\ifcase\referencepagestate\relax#unknown\or#current\or#before\or#after\fi}
+  {\ifcase\referencepagestate\space#unknown\or#current\or#before\or#after\fi}
 
 \unexpanded\def\somewhere#backward#foreward#dummy[#label]% #dummy gobbles space around #foreward
   {\doifreferencefoundelse{#label}% usage needs checking (useless)

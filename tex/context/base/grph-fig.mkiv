@@ -33,13 +33,17 @@
 \setfalse\externalfigurelevel
 \settrue \externalfigureflush
 
+\installcorenamespace{externalfigures}
+
 \def\doplaceexternalfigure[#1][#2][#3][#4][#5]%
   {\doifsomething{#2}% catches \defineexternalfigure dummies
-     {\doifundefinedelse{\??ef\??ef#2}
-        {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
-        {\doifelse{#1}{#2}
-           {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
-           {\getvalue{\??ef\??ef#2}[#5]}}}}
+     {\ifcsname\??externalfigures#2\endcsname
+        \doifelse{#1}{#2}
+          {\dodoplaceexternalfigure[#1][#2][#3][#4][#5]}
+          {\getvalue{\??externalfigures#2}[#5]}%
+      \else
+        \dodoplaceexternalfigure[#1][#2][#3][#4][#5]%
+      \fi}}
 
 \ifdefined\dotagfigure \else \let\dotagfigure\relax \fi
 
@@ -96,7 +100,7 @@
   {\dodoubleargument\dodefineexternalfigure}
 
 \def\dodefineexternalfigure[#1][#2]%
-  {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][][][#2]}}
+  {\setvalue{\??externalfigures#1}{\doplaceexternalfigure[#1][][][#2]}}
 
 % \useexternalfigure[alpha][koe]
 % \useexternalfigure[beta] [koe]       [breedte=1cm]
@@ -147,7 +151,7 @@
            {\dodouseexternalfigure{#1}{#2}{#3}{#4}}}}}
 
 \def\dodouseexternalfigure#1#2#3#4%
-  {\setvalue{\??ef\??ef#1}{\doplaceexternalfigure[#1][#2][#3][#4]}%
+  {\setvalue{\??externalfigures#1}{\doplaceexternalfigure[#1][#2][#3][#4]}%
    \doanalyzeexternalfigurecollection[#2][#4]}
 
 \newconditional\inexternalfigurecollection
@@ -215,49 +219,67 @@
 \def\dosetefparameters#1#2#3% parent_id use_settings current_settings
   {\doifelsenothing{#1} % inherit from parent
      {\getparameters[\??ef][#2,#3]}
-     {\doifdefinedelse{\??ef\??ef#1}
-        {\pushmacro\doplaceexternalfigure
-         \def\doplaceexternalfigure[##1][##2][##3][##4]{\getparameters[\??ef][##4,#2,#3]}%
-         \getvalue{\??ef\??ef#1}%
-         \popmacro\doplaceexternalfigure}
-        {\getparameters[\??ef][#2,#3]}}}
+     {\ifcsname\??externalfigures#1\endcsname
+        \pushmacro\doplaceexternalfigure
+        \def\doplaceexternalfigure[##1][##2][##3][##4]{\getparameters[\??ef][##4,#2,#3]}%
+        \getvalue{\??externalfigures#1}%
+        \popmacro\doplaceexternalfigure
+      \else
+        \getparameters[\??ef][#2,#3]%
+      \fi}}
 
 \unexpanded\def\externalfigure
   {\dotripleempty\doexternalfigure}
 
+% \def\doexternalfigure[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
+%   {\bgroup
+%    \doifelsenothing{#1}
+%      {\framed[\c!width=\defaultfigurewidth,\c!height=\defaultfigureheight]{external\\figure\\no name}}
+%      {\ifcsname\??externalfigures#1\endcsname
+%         \doifassignmentelse{#2}
+%           {\getvalue{\??externalfigures#1}[#2]}%
+%           {\getvalue{\??externalfigures#1}[#3]}%
+%       \else
+%         \useexternalfigure[\s!dummy][#1][#2][#3]%
+%         \getvalue{\??externalfigures\s!dummy}[]% [] is dummy arg 5
+%       \fi}%
+%    \globallet\currentresourcecomment\empty
+%    \egroup}
+
 \def\doexternalfigure[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
-  {\bgroup
-   \doifelsenothing{#1}
-     {\framed[\c!width=\defaultfigurewidth,\c!height=\defaultfigureheight]{external\\figure\\no name}}
-     {\doifundefinedelse{\??ef\??ef#1}
-        {\useexternalfigure[\s!dummy][#1][#2][#3]%
-         \getvalue{\??ef\??ef\s!dummy}[]} % [] is dummy arg 5
-        {\doifassignmentelse{#2}
-           {\getvalue{\??ef\??ef#1}[#2]}%
-           {\getvalue{\??ef\??ef#1}[#3]}}}%
+  {\bgroup % also catched #1 == empty ... scales nicer now
+   \ifcsname\??externalfigures#1\endcsname
+     \doifassignmentelse{#2}
+       {\getvalue{\??externalfigures#1}[#2]}%
+       {\getvalue{\??externalfigures#1}[#3]}%
+   \else
+     \useexternalfigure[\s!dummy][#1][#2][#3]%
+     \getvalue{\??externalfigures\s!dummy}[]% [] is dummy arg 5
+   \fi
    \globallet\currentresourcecomment\empty
    \egroup}
 
-\long\def\resourcecomment#1%
-  {\long\gdef\currentresourcecomment{#1}}
+\def\resourcecomment#1%
+  {\gdef\currentresourcecomment{#1}}
 
-\long\unexpanded\def\startresourcecomment#1\stopresourcecomment
-  {\long\gdef\currentresourcecomment{#1}}
+\unexpanded\def\startresourcecomment#1\stopresourcecomment
+  {\gdef\currentresourcecomment{#1}}
 
 \let\currentresourcecomment\empty
 
-\def\showexternalfigures % maybe run time command is better, but no core-run, unless figs-run ...
+\unexpanded\def\showexternalfigures % maybe run time command is better, but no core-run, unless figs-run ...
   {%\writestatus\m!system{for \string\showexternalfigures\space see \truefilename{x-res-20}.tex}
-   \usemodule[res-20]\showexternalfigures} % so for the moment we do it this way
+   \usemodule[res-20]%
+   \showexternalfigures} % so for the moment we do it this way
 
-\def\overlayfigure#1%
+\unexpanded\def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\overlaywidth,\c!height=\overlayheight]}
 
 %D Whatever
 
 \newbox\colorbarbox
 
-\def\makecolorbar[#1]%
+\unexpanded\def\makecolorbar[#1]%
   {\def\docommand##1%
      {\color[##1]
         {\blackrule
@@ -307,7 +329,7 @@
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
       \let\@@exframes\v!on}
      {\let\@@exframes\v!off}%
-   \setvalue{\??ef\??ef#1}%
+   \setvalue{\??externalfigures#1}%
      {\dosingleempty{\placestartfigure[#1][#2][#3]#4\placestopfigure}}%
    }% no longer \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}
 
@@ -376,7 +398,7 @@
      {\teststartfigure[#1][#2][#3]#4\teststopfigure
       \let\@@exframe\v!on}
      {\let\@@exframe\v!off}%
-   \setvalue{\??ef\??ef#1}%
+   \setvalue{\??externalfigures#1}%
      {\def\next{\placestartfigure[#1][#2][#3]#4\placestopfigure}%
       \dosingleempty\next}%
    }% no longer: \doifundefined{#1}{\setvalue{#1}{\getexternalfigure{#1}}}}

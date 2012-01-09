@@ -23,68 +23,64 @@
 \newdimen \ctxparindent
 \parindent\ctxparindent % for the show
 
-\newif\ifindentfirstparagraph \indentfirstparagraphtrue
-
-\newconstant\indentingtogglestate
+\newconditional\c_spac_indentation_indent_first \settrue\c_spac_indentation_indent_first
+\newconstant   \c_spac_indentation_toggle_state
 
 %D After a blank or comparable situation (left side floats) we
 %D need to check if the next paragraph has to be indented.
 
 \def\presetindentation
-  {\doifoutervmode{\ifindentfirstparagraph\else\spac_indentation_variant_no\fi}}
+  {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
 
-% we need a better everypar model: for each option a switch, which we
-% set to false with \forgetall and can enable when needed (context 4);
-% that way we can control the order of execution of options
+\unexpanded\def\setupindenting
+  {\doifnextoptionalelse\spac_indentation_setup_options\spac_indentation_setup_size}
 
-\def\checkeverypar % currently a hack
-  {\ifzeropt\parindent\else
-     \doifsometokselse\everypar\donothing\docheckupcomingindentation
-   \fi}
+\def\spac_indentation_setup_size
+  {\assigndimension\currentindentation\ctxparindent{1\emwidth}{1.5\emwidth}{2\emwidth}}
 
-\def\docheckupcomingindentation % brr
-  {\appendtoks\checkindentation\to\everypar}
+\let\synchronizeindenting\spac_indentation_setup_size
 
-\definecomplexorsimple\setupindenting
-
-\unexpanded\def\complexsetupindenting[#1]%
-  {\edef\currentindenting{#1}%
+\def\spac_indentation_setup_options[#1]%
+  {\edef\currentindenting{#1}% comma separated list
    \ifx\currentindenting\empty \else
-     \doapplycurrentindenting
+     \spac_indentation_setup_indeed
    \fi}
 
-\def\doapplycurrentindenting
-   {% not here: \indentfirstparagraphtrue
-    % not here: \parindent\ctxparindent
-    % not here: \indentingtogglestate\zerocount
-    % we use commacommand in order to catch #1 being a command (expanded parameter)
-    \processcommacommand[\currentindenting]\docomplexsetupindentingA % catch small, medium, etc
-    \processcommacommand[\currentindenting]\docomplexsetupindentingB % catch rest
-    \checkeverypar % only when non-empty #1
-    \ifindentfirstparagraph\else\spac_indentation_variant_no\fi
-    \spac_indentation_check_toggle}
+\def\spac_indentation_setup_indeed
+  {% not here: \settrue\c_spac_indentation_indent_first
+   % not here: \parindent\ctxparindent
+   % not here: \c_spac_indentation_toggle_state\zerocount
+   \processcommacommand[\currentindenting]\spac_indentation_apply_step_one % catch small, medium, etc
+   \processcommacommand[\currentindenting]\spac_indentation_apply_step_two % catch rest
+   \ifzeropt\parindent\else
+     \doifemptytoks\everypar\spac_indentation_set_everypar
+   \fi
+   \ifconditional\c_spac_indentation_indent_first\else
+     \spac_indentation_variant_no
+   \fi
+   \spac_indentation_check_toggle}
 
-\def\docomplexsetupindentingA#1%
+\def\spac_indentation_set_everypar
+  {\everypar{\checkindentation}}
+
+\def\spac_indentation_apply_step_one#1%
   {\ifcsname\??indenting#1\endcsname
-     % case b
+     % case two
    \else
-     \edef\currentindentation{#1}%
+     \edef\currentindentation{#1}% single entry in list
      \let\normalindentation\currentindentation
-     \simplesetupindenting
+     \spac_indentation_setup_size
    \fi}
 
-\def\docomplexsetupindentingB#1%
+\def\spac_indentation_apply_step_two#1%
   {\ifcsname\??indenting#1\endcsname
      \csname\??indenting#1\endcsname
    \else
-     % case a
+     % case one
    \fi}
 
-\def\simplesetupindenting % empty case, a it strange, needed this way?
-  {\assigndimension\currentindentation\ctxparindent{1em}{1.5em}{2em}}
-
 \unexpanded\def\indenting % kind of obsolete
-  {\dosingleargument\complexsetupindenting}
+  {\doifnextoptionalelse\spac_indentation_setup_options\relax}
 
 % use \noindentation to suppress next indentation
 
@@ -96,26 +92,26 @@
 \defineindentingmethod [\v!no]     {\parindent\zeropoint}% was: \ctxparindent\noindent}
 \defineindentingmethod [\v!not]    {\parindent\zeropoint}% was: \ctxparindent\noindent}
 
-\defineindentingmethod [\v!first]  {\indentfirstparagraphtrue}
-\defineindentingmethod [\v!next]   {\indentfirstparagraphfalse}
+\defineindentingmethod [\v!first]  {\settrue\c_spac_indentation_indent_first}
+\defineindentingmethod [\v!next]   {\setfalse\c_spac_indentation_indent_first}
 
 \defineindentingmethod [\v!yes]    {\parindent\ctxparindent\relax} % no \indent !
 \defineindentingmethod [\v!always] {\parindent\ctxparindent\relax} % no \indent !
 
 \defineindentingmethod [\v!never]  {\parindent\zeropoint\relax     % no \indent !
-                                    \indentingtogglestate\zerocount}
+                                    \c_spac_indentation_toggle_state\zerocount}
 
-\defineindentingmethod [\v!odd]    {\indentingtogglestate\plusone}
-\defineindentingmethod [\v!even]   {\indentingtogglestate\plustwo}
+\defineindentingmethod [\v!odd]    {\c_spac_indentation_toggle_state\plusone}
+\defineindentingmethod [\v!even]   {\c_spac_indentation_toggle_state\plustwo}
 
 \defineindentingmethod [\v!normal] {\ifx\normalindentation\empty\else
                                       \let\currentindentation\normalindentation
                                       \simplesetupindenting
                                     \fi}
 
-\defineindentingmethod [\v!reset]  {\indentfirstparagraphtrue
+\defineindentingmethod [\v!reset]  {\settrue\c_spac_indentation_indent_first
                                     \parindent\zeropoint
-                                    \indentingtogglestate\zerocount}
+                                    \c_spac_indentation_toggle_state\zerocount}
 
 \defineindentingmethod [\v!toggle] {\parindent\ifdim\parindent=\zeropoint
                                       \ctxparindent
@@ -162,7 +158,7 @@
   {\global\let\checkindentation\spac_indentation_no_toggle_indeed}
 
 \def\spac_indentation_check_toggle
-  {\ifcase\indentingtogglestate
+  {\ifcase\c_spac_indentation_toggle_state
      % nothing
    \or
      \spac_indentation_no_toggle
@@ -239,10 +235,10 @@
      \csname\??indentnext\ifcsname\??indentnext\p_indentnext\endcsname\p_indentnext\fi\endcsname
    \fi}
 
-\letvalue{\??indentnext        }\donothing
-\letvalue{\??indentnext\v!yes  }\spac_indentation_variant_yes
-\letvalue{\??indentnext\v!no   }\spac_indentation_variant_no
-\letvalue{\??indentnext\v!auto }\spac_indentation_variant_auto
+\letvalue{\??indentnext       }\donothing
+\letvalue{\??indentnext\v!yes }\spac_indentation_variant_yes
+\letvalue{\??indentnext\v!no  }\spac_indentation_variant_no
+\letvalue{\??indentnext\v!auto}\spac_indentation_variant_auto
 
 %D An example of usage:
 %D
@@ -293,42 +289,46 @@
 
 %D Hm ... todo:
 
-\sfcode`\)=0
-\sfcode`\'=0
-\sfcode`\]=0
+\installcorenamespace{spacecodemethods}
 
-\unexpanded\def\setfrenchspacing#1%
-  {\sfcode`\.#1 \sfcode`\,#1\relax
-   \sfcode`\?#1 \sfcode`\!#1\relax
-   \sfcode`\:#1 \sfcode`\;#1\relax}
+\sfcode`\)=\zerocount
+\sfcode`\'=\zerocount
+\sfcode`\]=\zerocount
 
-\unexpanded\def\frenchspacing
-  {\setfrenchspacing{1000}}
+\def\spac_spacecodes_set_fixed#1%
+  {\sfcode`\.#1\relax \sfcode`\,#1\relax
+   \sfcode`\?#1\relax \sfcode`\!#1\relax
+   \sfcode`\:#1\relax \sfcode`\;#1\relax}
 
-\unexpanded\def\resetfrenchspacing
+\def\spac_spacecodes_set_stretch
   {\sfcode`\.3000 \sfcode`\,1250
    \sfcode`\?3000 \sfcode`\!3000
    \sfcode`\:2000 \sfcode`\;1500 }
 
-\unexpanded\def\frenchspacing   {\setfrenchspacing{1000}}
-\unexpanded\def\newfrenchspacing{\setfrenchspacing{1050}}
-\unexpanded\def\nonfrenchspacing{\resetfrenchspacing}
+\unexpanded\def\frenchspacing   {\spac_spacecodes_set_fixed\plusthousand}
+\unexpanded\def\newfrenchspacing{\spac_spacecodes_set_fixed{1050}}
+\unexpanded\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
 
-\installcorenamespace{spacingmethods}
+\unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??spacecodemethods#1}{#2}}
 
-\unexpanded\def\definespacingmethod[#1]#2{\setvalue{\??spacingmethods#1}{#2}}
+\definespacingmethod[\empty]   {}                  % keep values
+\definespacingmethod[\v!fixed] {\frenchspacing   } % equal spaces everywhere
+\definespacingmethod[\v!packed]{\newfrenchspacing} % slighly more after punctuation
+\definespacingmethod[\v!broad ]{\nonfrenchspacing} % more depending on what punctuation
 
-\definespacingmethod[\v!packed]{\newfrenchspacing}
-\definespacingmethod[\v!broad ]{\nonfrenchspacing}
+\unexpanded\def\setupspacing
+  {\doifnextoptionalelse\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
 
-\def\complexsetupspacing[#1]%
-  {\executeifdefined{\??spacingmethods#1}\relax
-   \updateraggedskips}
+\def\spac_spacecodes_setup_yes[#1]%
+  {\csname\??spacecodemethods#1\endcsname
+   \updateraggedskips} % not needed, as sf codes are static
 
-\def\simplesetupspacing
-  {\updateraggedskips}
+\def\spac_spacecodes_setup_nop
+  {\updateraggedskips} % not needed, as sf codes are static
 
-\definecomplexorsimple\setupspacing
+% This is not needed, as \updateraggedskips is taking care of it:
+
+\let\synchronizespacecodes\spac_spacecodes_setup_nop % \relax
 
 % \dorecurse{100}{\recurselevel\spacefactor 800 \space} \par
 % \dorecurse{100}{\recurselevel\spacefactor1200 \space} \par
@@ -386,7 +386,7 @@
 % but, since not all fonts have .5em digits:
 
 \unexpanded\def\fixedspace
-  {\setbox\scratchbox\normalhbox{\mathortext{0}{0}}%
+  {\setbox\scratchbox\hbox{\mathortext{0}{0}}%
    \hskip\wd\scratchbox\relax}
 
 \def\fixedspaces
@@ -723,7 +723,7 @@
 %D   {\relax\ifmmode
 %D      \copy\strutbox
 %D    \else
-%D      \bgroup\setbox\strutbox=\normalhbox{\box\strutbox}\unhcopy\strutbox\egroup
+%D      \bgroup\setbox\strutbox=\hbox{\box\strutbox}\unhcopy\strutbox\egroup
 %D    \fi}
 %D \stoptyping
 %D

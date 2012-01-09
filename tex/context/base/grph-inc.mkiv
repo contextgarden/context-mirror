@@ -257,7 +257,7 @@
 % \externalfigure[demo.svg]
 % \externalfigure[demo.svg][conversion=png]
 
-\def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]% \cmd label filename parent_id preset current
+\unexpanded\def\calculateexternalfigure[#1][#2][#3][#4][#5][#6]% \cmd label filename parent_id preset current
   {\dontcomplain
    \restorecatcodes
    \forgetall
