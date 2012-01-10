@@ -37,6 +37,8 @@ return {
         "bgroup", "egroup",
         "endline",
         --
+        "conditionaltrue", "conditionalfalse",
+        --
         "attributeunsetvalue",
         --
         "uprotationangle", "rightrotationangle", "downrotationangle", "leftrotationangle",
@@ -74,7 +76,12 @@ return {
         "charifcode", "catifcode", "numifcode", "dimifcode", "oddifcode", "vmodeifcode", "hmodeifcode",
         "mmodeifcode", "innerifcode", "voidifcode", "hboxifcode", "vboxifcode", "xifcode", "eofifcode",
         "trueifcode", "falseifcode", "caseifcode", "definedifcode", "csnameifcode", "fontcharifcode",
-      --
+        --
+        "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
+        "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
+        "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
+        "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
+        --
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",
@@ -99,6 +106,8 @@ return {
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
+        --
+        "then",
         --
         "htdp",
         "unvoidbox",

@@ -23,7 +23,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2012.01.02 21:59}
+\edef\contextversion{2012.01.09 10:08}
 
 %D For those who want to use this:
 
@@ -228,6 +228,7 @@
 \loadmarkfile{spac-ali}
 \loadmarkfile{spac-hor}
 \loadmarkfile{spac-ver}
+\loadmarkfile{spac-lin}
 \loadmarkfile{spac-pag}
 \loadmarkfile{spac-fnt}
 \loadmarkfile{spac-par}
@@ -279,8 +280,6 @@
 \loadmarkfile{typo-pag}
 \loadmarkfile{typo-mar}
 
-% \loadmkvifile{file-job} % why so late?
-
 \loadmarkfile{buff-ini}
 \loadmarkfile{buff-ver}
 \loadmarkfile{buff-par}
@@ -324,11 +323,13 @@
 \loadmkvifile{scrn-hlp}
 
 \loadmarkfile{char-enc} % will move up
-\loadmarkfile{font-ini} % will move up
+\loadmkvifile{font-ini} % will move up
+\loadmkvifile{font-emp}
+\loadmarkfile{font-pre}
 \loadmarkfile{font-unk}
 \loadmarkfile{font-tra}
 \loadmarkfile{font-uni}
-\loadmarkfile{font-col}
+\loadmkvifile{font-col}
 \loadmarkfile{font-gds}
 
 \loadmarkfile{lxml-css}
@@ -349,10 +350,8 @@
 \loadmkvifile{typo-txt}
 \loadmarkfile{typo-par}
 
-\loadmarkfile{type-ini}
+\loadmkvifile{type-ini}
 \loadmarkfile{type-set}
-\loadmarkfile{type-def}
-\loadmarkfile{type-lua}
 
 \loadmarkfile{scrp-ini}
 

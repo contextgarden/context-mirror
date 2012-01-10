@@ -77,14 +77,15 @@
    \vbox
      {\dosetshowfonttitle{#1}%
       \def\next##1%
-        {&&\getvalue{\bodyfontvariable{##1\s!text}}%
-         &&\getvalue{\bodyfontvariable{##1\s!script}}%
-         &&\getvalue{\bodyfontvariable{##1\s!scriptscript}}%
-         &&\getvalue{\bodyfontvariable{##1\c!x}}%
-         &&\getvalue{\bodyfontvariable{##1\c!xx}}%
-         &&\getvalue{\bodyfontvariable{##1\interfaced\v!small}}%
-         &&\getvalue{\bodyfontvariable{##1\interfaced\v!big}}%
-         &&\edef\next{\getvalue{\bodyfontvariable{##1\c!interlinespace}}}\ifx\next\empty not set\else\next\fi&\cr
+        {&&\bodyfontsizevariable{##1}\s!text
+         &&\bodyfontsizevariable{##1}\s!script
+         &&\bodyfontsizevariable{##1}\s!scriptscript
+         &&\bodyfontsizevariable{##1}\s!x
+         &&\bodyfontsizevariable{##1}\s!xx
+         &&\bodyfontsizevariable{##1}\v!small
+         &&\bodyfontsizevariable{##1}\v!big
+         &&\bodyfontsizevariable{##1}\c!interlinespace
+         &\cr
          \noalign{\hrule}}
       \halign to \localhsize
         {##&\vrule##\strut
@@ -97,7 +98,7 @@
          &\multispan{17}{\vrule\hfil\tttf\strut\title\hfil}\vrule\cr
          \noalign{\hrule}
          &&\tttf\tx\s!text&&\tttf\tx\s!script&&\tttf\tx\s!scriptscript
-         &&\tttf\tx\c!x&&\tttf\tx\c!xx&&\tttf\tx\v!small&&\tttf\tx\v!big
+         &&\tttf\tx\s!x&&\tttf\tx\s!xx&&\tttf\tx\v!small&&\tttf\tx\v!big
          &&\tttf\tx\c!interlinespace&\cr
          \noalign{\hrule}
          \@EA\globalprocesscommalist\@EA[\bodyfontenvironmentlist]\next}}
@@ -211,9 +212,9 @@
 
 \gdef\dodoshowfontstyle[#1][#2]%
   {\doifelse{#2}\v!all
-     {\dodoshowfontstyle[#1][\c!rm,\c!ss,\c!tt,\c!mm]}
+     {\dodoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
      {\doifelsenothing{#2}
-        {\redoshowfontstyle[#1][\c!rm,\c!ss,\c!tt,\c!mm]}
+        {\redoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
         {\redoshowfontstyle[#1][#2]}}}
 
 \gdef\dododoshowfontstyle[#1][#2][#3]%

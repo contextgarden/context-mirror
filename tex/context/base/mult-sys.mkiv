@@ -170,6 +170,38 @@
 \definesystemconstant {rm}
 \definesystemconstant {ss}
 \definesystemconstant {tt}
+\definesystemconstant {hw}
+\definesystemconstant {cg}
+\definesystemconstant {mm}
+
+\definesystemconstant {x}
+\definesystemconstant {xx}
+\definesystemconstant {em}
+
+\definesystemconstant {a}
+\definesystemconstant {b}
+\definesystemconstant {c}
+\definesystemconstant {d}
+\definesystemconstant {e}
+\definesystemconstant {f}
+
+\definesystemconstant {mr}
+\definesystemconstant {mb}
+\definesystemconstant {mrlr}
+\definesystemconstant {mrrl}
+\definesystemconstant {mblr}
+\definesystemconstant {mbrl}
+
+\definesystemconstant {tf}
+\definesystemconstant {bf}
+\definesystemconstant {bs}
+\definesystemconstant {bi}
+\definesystemconstant {sl}
+\definesystemconstant {it}
+\definesystemconstant {sc}
+
+\definesystemconstant {small}
+\definesystemconstant {big}
 
 %D Net come some \CONTEXT\ constants, used in the definition
 %D of private commands:
@@ -304,6 +336,7 @@
 \definesystemconstant  {gray}
 \definesystemconstant  {spot}
 \definesystemconstant  {all}
+\definesystemconstant  {dtp}
 \definesystemconstant  {none}
 
 \definesystemconstant  {map}
@@ -431,9 +464,7 @@
 \definesystemvariable {fc}   % FramedContent
 \definesystemvariable {fi}   % FIle Once
 \definesystemvariable {fo}   % xml FO (xtag)
-\definesystemvariable {fq}   % Features
 \definesystemvariable {fr}   % Division
-\definesystemvariable {ft}   % FonTs
 \definesystemvariable {fu}   % FontSolution
 \definesystemvariable {fw}   % simpleFonts by Wolfgang
 \definesystemvariable {fx}   % FoXet
@@ -516,12 +547,9 @@
 \definesystemvariable {ta}   % TAb
 \definesystemvariable {tb}   % TekstBlokken
 \definesystemvariable {te}   % TEmplate
-\definesystemvariable {tf}   % TypeFace
 \definesystemvariable {ti}   % TabelInstellingen
 \definesystemvariable {tl}   % TekstLijnen
-\definesystemvariable {tm}   % TypesynonyM
 \definesystemvariable {to}   % TOlerance
-\definesystemvariable {ts}   % TypeScript
 \definesystemvariable {tt}   % TabulaTe
 \definesystemvariable {tx}   % TeXtflow
 \definesystemvariable {ur}   % URl
@@ -644,52 +672,21 @@
 %definefileconstant {beforeprefix}       {b-}
 %definefileconstant {afterprefix}        {a-}
 
-%D \CONTEXT\ follows different strategies for finding files.
-%D The macros that are responsible for this 'clever' searching
-%D make use of two (very important) path specifiers.
+% for old times sake:
 
-%definefileconstant {pathseparator}      {/}
-%definefileconstant {currentpath}        {.}
-%definefileconstant {parentpath}         {..}
+% \defineinterfaceconstant {x}  {x}
+% \defineinterfaceconstant {xx} {xx}
+% \defineinterfaceconstant {em} {em} % will go
 
-%D The way fonts are defined and called upon is language
-%D independant. We follow the scheme laid down by Knuth in
-%D Plain \TEX. We'll explain their meaning later.
+% \defineinterfaceconstant {tf} {tf}
+% \defineinterfaceconstant {bf} {bf}
+% \defineinterfaceconstant {bs} {bs}
+% \defineinterfaceconstant {bi} {bi}
+% \defineinterfaceconstant {sl} {sl}
+% \defineinterfaceconstant {it} {it}
+% \defineinterfaceconstant {sc} {sc} % keep, used elsewhere (or define in mult-def)
 
-\defineinterfaceconstant {tf} {tf}
-\defineinterfaceconstant {bf} {bf}
-\defineinterfaceconstant {bs} {bs}
-\defineinterfaceconstant {bi} {bi}
-\defineinterfaceconstant {sl} {sl}
-\defineinterfaceconstant {it} {it}
-\defineinterfaceconstant {sc} {sc}
-
-\defineinterfaceconstant {rm} {rm}
-\defineinterfaceconstant {ss} {ss}
-\defineinterfaceconstant {tt} {tt}
-\defineinterfaceconstant {hw} {hw}
-\defineinterfaceconstant {cg} {cg}
-\defineinterfaceconstant {mm} {mm}
-
-%defineinterfaceconstant {os} {os}
-\defineinterfaceconstant {i}  {i}  % still used ?
-%defineinterfaceconstant {nn} {nn}
-
-\defineinterfaceconstant {x}  {x}
-\defineinterfaceconstant {xx} {xx}
-
-\defineinterfaceconstant {em} {em}
-
-\defineinterfaceconstant {mr} {mr}
-\defineinterfaceconstant {mb} {mb}
-
-\defineinterfaceconstant {mrlr} {mrlr}
-\defineinterfaceconstant {mrrl} {mrrl}
-
-\defineinterfaceconstant {mblr} {mblr}
-\defineinterfaceconstant {mbrl} {mbrl}
-
-%D For figure inclusion we need:
+%D For figure inclusion we need(ed):
 
 %defineinterfaceconstant {tif}  {tif}
 %defineinterfaceconstant {eps}  {eps}

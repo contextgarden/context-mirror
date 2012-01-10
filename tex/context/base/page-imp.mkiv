@@ -89,8 +89,7 @@
   {\page_shipouts_ignore}
 
 \def\page_boxes_shipout#1% or: \page_shipouts_apply
- {\dontshowcomposition % redundant
-  \dontcomplain        % redundant
+ {\dontcomplain        % redundant
   \the\everybeforeshipout
   \ifcase\shipoutfinalizemethod
     \page_shipouts_handle{#1}%

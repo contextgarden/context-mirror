@@ -6,6 +6,14 @@ if not modules then modules = { } end modules ['luat-mac'] = {
     license   = "see context related readme files"
 }
 
+-- Sometimes we run into situations like:
+--
+-- \def\foo#1{\expandafter\def\csname#1\endcsname}
+--
+-- As this confuses the parser, the following should be used instead:
+--
+-- \def\foo#1{\expandafter\normaldef\csname#1\endcsname}
+
 local P, V, S, R, C, Cs, Cmt, Carg = lpeg.P, lpeg.V, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cmt, lpeg.Carg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
@@ -28,7 +36,7 @@ local function set(s)
             local ns = #stack
             local h = hashes[ns]
             if not h then
-                h = rep("#",ns)
+                h = rep("#",2^(ns-1))
                 hashes[ns] = h
             end
             m = h .. n
@@ -84,8 +92,8 @@ local csname         = (R("AZ","az") + S("@?!_"))^1
 local longname       = (longleft/"") * (nolong^1) * (longright/"")
 local variable       = P("#") * Cs(name + longname)
 local escapedname    = escape * csname
-local definer        = escape * (P("def") + P("egx") * P("def"))                  -- tex
-local setter         = escape * P("set") * (P("u")^-1 * P("egx")^-1) * P("value") -- context specific
+local definer        = escape * (P("def") + S("egx") * P("def"))                  -- tex
+local setter         = escape * P("set") * (P("u")^-1 * S("egx")^-1) * P("value") -- context specific
 ---                  + escape * P("install") * (1-P("handler"))^1 * P("handler")  -- context specific
 local startcode      = P("\\starttexdefinition")                                  -- context specific
 local stopcode       = P("\\stoptexdefinition")                                   -- context specific

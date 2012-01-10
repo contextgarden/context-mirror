@@ -26,10 +26,12 @@
 
 % initialization order:
 
-\ifdefined\firststagepreloadfonts  \else \let\firststagepreloadfonts \relax \fi
-\ifdefined\secondstagepreloadfonts \else \let\secondstagepreloadfonts\relax \fi
-\ifdefined\thirdstagepreloadfonts  \else \let\thirdstagepreloadfonts \relax \fi
-\ifdefined\fourthstagepreloadfonts \else \let\fourthstagepreloadfonts\relax \fi
+\ifdefined\font_preloads_at_every_job  \else \let\font_preloads_at_every_job \relax \fi
+\ifdefined\font_preloads_at_start_text \else \let\font_preloads_at_start_text\relax \fi
+\ifdefined\font_preloads_at_stop_text  \else \let\font_preloads_at_stop_text \relax \fi
+
+\appendtoks  \font_preloads_at_start_text          \to \everystarttext
+\appendtoks  \font_preloads_at_stop_text           \to \everystoptext
 
 %prependtoks \preloadtypescript                    \to \everyjob
 \appendtoks  \showcontextbanner                    \to \everyjob
@@ -37,7 +39,7 @@
 \appendtoks  \calculatecurrenttime                 \to \everyjob
 \appendtoks  \loadsystemfiles                      \to \everyjob
 \appendtoks  \loadoptionfile                       \to \everyjob % can load files !
-\appendtoks  \firststagepreloadfonts               \to \everyjob
+\appendtoks  \font_preloads_at_every_job           \to \everyjob
 \appendtoks  \settopskip                           \to \everyjob
 \appendtoks  \initializemainlanguage               \to \everyjob
 %appendtoks  \MPLIBregister                        \to \everyjob
@@ -61,9 +63,6 @@
 \prependtoks \the\everylastbackendshipout          \to \everylastshipout
 
 \prependtoks \lefttoright                          \to \everybeforeoutput
-
-\appendtoks  \secondstagepreloadfonts              \to \everystarttext
-\appendtoks  \fourthstagepreloadfonts              \to \everystoptext
 
 % temporary here:
 

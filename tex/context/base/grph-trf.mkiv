@@ -152,7 +152,6 @@
    \global\let\finalscaleboxyfactor\!!hundred
    %
    \forgetall
-   \dontshowcomposition
    \dontcomplain
    %
    \setfalse\c_grph_scale_done
@@ -687,8 +686,7 @@
    \dowithnextboxcs\grph_mirror_finish\hbox}
 
 \def\grph_mirror_finish
-  {\dontshowcomposition
-   \scratchdimen\wd\nextbox
+  {\scratchdimen\wd\nextbox
    % better use an hbox (if no \forgetall, leftskip etc may creep in)
    %\setbox\nextbox\vbox{\forgetall\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
    \setbox\nextbox\hbox{\dostartmirroring\hskip-\wd\nextbox\box\nextbox\dostopmirroring}%
@@ -836,9 +834,9 @@
   {\bgroup
    \hbox\bgroup % compatibility hack
      \edef\p_rotation_rotation{#1}%
-     \dowithnextboxcs\grph_rotate_finish}
+     \dowithnextboxcs\grph_rotate_finish_box}
 
-\def\grph_rotate_finish
+\def\grph_rotate_finish_box
   {\getvalue{\??rotatelocation\v!broad}%
    \grph_rotate_finish_indeed
    \egroup
@@ -878,7 +876,6 @@
      \ifcsname\??rotatepreset\p_rotation_rotation\endcsname\p_rotation_rotation\else\v!default\fi
    \endcsname
    \setbox\nextbox\vbox{\box\nextbox}% not really needed
-   \dontshowcomposition
    \dontcomplain
    \ifconditional\c_grph_rotate_center
      \d_grph_rotate_saved_width \wd\nextbox

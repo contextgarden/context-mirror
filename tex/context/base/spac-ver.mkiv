@@ -17,6 +17,9 @@
 
 \registerctxluafile{spac-ver}{1.001}
 
+% Isn't it about time to get rid of topskip i.e. make it equivalent to
+% \openstrutheight so that we can remove delta code.
+
 %D There are two ways to influence the interline spacing. The
 %D most general and often most consistent way is using
 %D
@@ -46,6 +49,9 @@
 %D arguments) to set the interline space according to the
 %D current font, e.g. a \type{\bfa}.
 
+% will be cleaned up but it will stay messy because we accept so
+% many variants
+
 \newif\iflocalinterlinespace
 
 \newskip\s_spac_vspacing_temp \s_spac_vspacing_temp\bigskipamount
@@ -61,56 +67,21 @@
      \fi \fi
    \relax}
 
-\ifx\bodyfontinterlinespecs\undefined
-
-  \let\bodyfontinterlinespecs\empty
+\ifdefined\bodyfontinterlinespace \else
   \let\bodyfontinterlinespace\empty
-
 \fi
 
 \unexpanded\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
-  %done elsewhere : \spacing\!!plusone % new per 10/08/2004, else problems in otr / !! needed
    \iflocalinterlinespace \else
-     \doifdefined\bodyfontinterlinespecs
-       {\doifsomething\bodyfontinterlinespace
-          {\edef\normallineheight{\bodyfontinterlinespace}}}%
+     \edef\m_spac_normallineheight{\bodyfontinterlinespace}%
+     \ifx\m_spac_normallineheight\empty \else
+       \let\normallineheight\m_spac_normallineheight
+     \fi
    \fi}
 
-% check and test:
-%
-% \let\m_spac_linespacing_asked\empty
-%
-% \unexpanded\def\presetnormallineheight % each bodyfont
-%   {\iflocalinterlinespace
-%      \spac_linespacing_set_lineheight_regular
-%    \else
-%      \spac_linespacing_set_lineheight_checked
-%    \fi}
-%
-% \def\spac_linespacing_set_lineheight_regular
-%   {\edef\normallineheight{\interlinespaceparameter\c!line}}
-%
-% \def\spac_linespacing_set_lineheight_checked
-%   {\edef\m_spac_linespacing_asked{\bodyfontvariable{\normalizedbodyfontsize\c!interlinespace}}%
-%    \ifcsname\m_spac_linespacing_asked\endcsname
-%      \spac_linespacing_set_lineheight_specific
-%    \else
-%      \spac_linespacing_set_lineheight_regular
-%    \fi}
-%
-% \def\spac_linespacing_set_lineheight_specific
-%   {\edef\m_spac_linespacing_asked{\csname\bodyfontinterlinespecs\endcsname}%
-%    \ifx\m_spac_linespacing_asked\empty
-%      \spac_linespacing_set_lineheight_regular
-%    \else
-%      \let\normallineheight\m_spac_linespacing_asked
-%    \fi}
-
-\let\currentrelativeinterlinespace\empty
-
 \unexpanded\def\setupspecifiedinterlinespace[#1]%
-  {\getparameters[\??it\currentinterlinespace][#1]%
+  {\setupcurrentinterlinespace[#1]%
    \spac_linespacing_setup_specified_interline_space}
 
 \def\spac_linespacing_setup_specified_interline_space
@@ -132,7 +103,8 @@
 
 \installcorenamespace{interlinespacerelative}
 
-\let\setrelativeinterlinespace\relax % used elsewhere
+\let\setrelativeinterlinespace    \relax % used elsewhere
+\let\currentrelativeinterlinespace\empty
 
 \setvalue{\??interlinespacerelative\v!on   }{\oninterlineskip}
 \setvalue{\??interlinespacerelative\v!off  }{\offinterlineskip}
@@ -162,49 +134,40 @@
      \spacing\currentrelativeinterlinespace
    \fi}
 
-% todo: use command handler here
-
 \newtoks\everysetupglobalinterlinespace
 \newtoks\everysetuplocalinterlinespace
 
-\def\interlinespaceparameter          #1{\csname\dointerlinespaceparameter{\??it\currentinterlinespace}#1\endcsname}
-\def\dointerlinespaceparameter      #1#2{\ifcsname#1#2\endcsname#1#2\else\expandafter\dointerlinespaceparentparameter\csname#1\s!parent\endcsname#2\fi}
-\def\dointerlinespaceparentparameter#1#2{\ifx#1\relax\s!empty\else\dointerlinespaceparameter#1#2\fi} % \s!empty ?
-
 \newconditional\interlinespaceisset
 
-\let\currentinterlinespace\empty
+\installcorenamespace{interlinespace}
 
-\unexpanded\def\defineinterlinespace
-  {\dodoubleempty\dodefineinterlinespace}
-
-\def\dodefineinterlinespace[#1][#2]%
-  {\getparameters[\??it#1][\s!parent=\??it,#2]}
+\installcommandhandler \??interlinespace {interlinespace} \??interlinespace
 
 \unexpanded\def\setupinterlinespace
-  {\dodoubleempty\dosetupinterlinespace}
+  {\dodoubleempty\spac_linespacing_setup}
 
-\def\dosetupinterlinespace[#1][#2]%
+\def\spac_linespacing_setup[#1][#2]%
   {\settrue\interlinespaceisset % reset has to be done when needed
    \ifsecondargument
-     \getparameters[\??it#1][#2]%
+     \setup_interlinespace[#1][#2]%
    \else\iffirstargument
-     \edef\currentinterlinespace{\ifcsname\??it#1\s!parent\endcsname#1\fi}%
-     \ifx\currentinterlinespace\empty
-       \complexsetupinterlinespace[#1]%
+     \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
+        \edef\currentinterlinespace{#1}%
+        \spac_linespacing_setup_specified_interline_space
+       %\dosetupspecifiedinterlinespaceindeed
      \else
-       \dosetupspecifiedinterlinespaceindeed
+       \space_linespacing_setup_specified_or_relative[#1]%
      \fi
    \else
      \let\currentinterlinespace\empty
-     \simplesetupinterlinespace
+     \space_linespacing_synchronize_local
    \fi\fi}
 
-\def\complexsetupinterlinespace[#1]% \commalistelement ipv #1
+\def\space_linespacing_setup_specified_or_relative[#1]%
   {\doifassignmentelse{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
-\def\simplesetupinterlinespace % adapts to the font
+\def\space_linespacing_synchronize_local % adapts to the font
   {\localinterlinespacetrue
    \setfontparameters
    \updateraggedskips % funny one here
@@ -214,11 +177,11 @@
 \def\dosetupcheckedinterlinespace#1% often a chain
   {\edef\askedinterlinespace{#1}%
    \ifx\askedinterlinespace\empty
-     \simplesetupinterlinespace
-   \else\ifcsname\??it\askedinterlinespace\s!parent\endcsname
+     \space_linespacing_synchronize_local
+   \else\ifcsname\namedinterlinespacehash\askedinterlinespace\s!parent\endcsname % we could have a \s!check
      \pushmacro\currentinterlinespace
      \let\currentinterlinespace\askedinterlinespace
-     \dosetupspecifiedinterlinespaceindeed
+     \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
      \else
@@ -229,8 +192,7 @@
      \popmacro\currentinterlinespace
    \else
      \normalexpanded{\noexpand\doifassignmentelse{\askedinterlinespace}%
-       \noexpand\setupspecifiedinterlinespace
-       \noexpand\setuprelativeinterlinespace[\askedinterlinespace]}%
+       \setupspecifiedinterlinespace\setuprelativeinterlinespace[\askedinterlinespace]}%
      \iflocalinterlinespace
        \the\everysetuplocalinterlinespace
      \else
@@ -249,7 +211,7 @@
 
 \let\switchtointerlinespace\setuplocalinterlinespace
 
-\definecomplexorsimple\setupinterlinespace
+% \definecomplexorsimple\setupinterlinespace
 
 %D Helpers
 
@@ -411,6 +373,8 @@
        \fi
    \fi}
 
+% this will become \installwhitespacemethod{}{}
+
 \unexpanded\def\definewhitespacemethod[#1]#2{\setvalue{\??whitespacemethod#1}{#2}}
 
 \definewhitespacemethod [\v!fix]      {}
@@ -512,8 +476,8 @@
    \flushnextbox
    \stopbaselinecorrection}
 
-\unexpanded\def\verticalstrut  {\normalvbox{\hsize\zeropoint\forgetall\strut}}
-\unexpanded\def\horizontalstrut{\normalhbox                          {\strut}}
+\unexpanded\def\verticalstrut  {\vbox{\hsize\zeropoint\forgetall\strut}}
+\unexpanded\def\horizontalstrut{\hbox                          {\strut}}
 
 % Hieronder volgen enkele instellingen en macro's ten behoeve
 % van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
@@ -664,7 +628,7 @@
    \normallineskiplimit\zeropoint\relax
    \normalbaselines}
 
-\unexpanded\def\spacing#1%
+\unexpanded\def\spacing#1% vertical
   {\ifgridsnapping
      \let\spacingfactor\plusone
    \else
@@ -705,7 +669,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\normalhbox{\vrule\!!height8.5pt\!!depth3.5pt\!!width\zeropoint} % just a start
+\setbox\strutbox\hbox{\vrule\!!height8.5pt\!!depth3.5pt\!!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -755,7 +719,7 @@
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
-  {\setbox\strutbox\normalhbox{#1}%
+  {\setbox\strutbox\hbox{#1}%
    \strutht\ht\strutbox
    \strutdp\dp\strutbox
    \dosetstrut}
@@ -804,15 +768,15 @@
    \fi}
 
 \def\spac_struts_set_hide
-  {\setbox\strutbox\normalhbox
+  {\setbox\strutbox\hbox
      {\vrule
         \!!width \zeropoint
         \!!height\strutht
         \!!depth \strutdp}}
 
 \def\spac_struts_set_vide
-  {\setbox\strutbox\normalhbox
-     {\normalhbox to \zeropoint
+  {\setbox\strutbox\hbox
+     {\hbox to \zeropoint
         {% \hss % new, will be option
          \vrule
            \!!width \strutwidth
@@ -924,14 +888,14 @@
 
 \def\spac_struts_beg_signal
   {\noindent\horizontalstrut
-   \normalpenalty\plustenthousand
-   \normalhskip-\strutsignal
-   \normalhskip\strutsignal}
+   \penalty\plustenthousand
+   \hskip-\strutsignal
+   \hskip\strutsignal}
 
 \def\spac_struts_beg_normal
   {\strut
-   \normalpenalty\plustenthousand
-   \normalhskip\zeropoint}
+   \penalty\plustenthousand
+   \hskip\zeropoint}
 
 \unexpanded\def\endstrut
   {\relax\ifhmode
@@ -956,15 +920,15 @@
      \unpenalty
      \setbox\scratchbox\lastbox
    \else
-     \normalpenalty\plustenthousand
-     \normalhskip\zeropoint
+     \penalty\plustenthousand
+     \hskip\zeropoint
      \strut
    \fi}
 
 \def\spac_struts_end_normal
   {\removeunwantedspaces
-   \normalpenalty\plustenthousand
-   \normalhskip\zeropoint
+   \penalty\plustenthousand
+   \hskip\zeropoint
    \strut}
 
 % unsave:
@@ -1728,117 +1692,5 @@
      \endcsname
      \relax
    \fi}
-
-%D When spacing is active we need to handle commands in
-%D a special way:
-%D
-%D \starttyping
-%D \setuplines[space=on]
-%D
-%D \startlines
-%D Let's talk about this{\ttsl\gobbleoneargument or}that.
-%D \stoplines
-%D
-%D \startlines
-%D Let's talk about this{\getvalue{ttsl}or}that.
-%D \stoplines
-%D \stoptyping
-%D
-%D One can indent in several ways:
-%D
-%D \starttyping
-%D \setupindenting[medium] \setuplines[indenting=odd] % no yes odd even
-%D
-%D \startlines
-%D first
-%D second
-%D third
-%D fourth
-%D \stoplines
-%D \stoptyping
-
-%D Contrary to \MKII\ we can now define classes of lines (generalized by
-%D Wolfgang). I will probably rewrite bits in \LUA.
-
-\installcorenamespace{lines}
-
-\installcommandhandler \??lines {lines} \??lines
-
-\setuplines
-  [\c!option=,
-   \c!command=,
-   \c!before=\blank,
-   \c!after=\blank,
-   \c!inbetween=\blank,
-   \c!indenting=\v!no,
-   \c!space=\v!default]
-
-\appendtoks
-   \setuevalue{\e!start\currentlines}{\dostartlines[\currentlines]}%
-   \setuevalue{\e!stop \currentlines}{\dostoplines}%
-\to \everydefinelines
-
-\unexpanded\def\dostartlines[#1]%
-  {\bgroup
-   \edef\currentlines{#1}%
-   \obeylines
-   \dosingleempty\dodostartlines}
-
-\def\dodostartlines[#1]% new: optional second argument (WS)
-  {\iffirstargument
-     \setupcurrentlines[#1]%
-   \fi
-   \edef\linesoption{\linesparameter\c!option}%
-   \linesparameter\c!before
-   \pushmacro\checkindentation
-   \whitespace
-   \dostarttagged\t!lines\currentlines
-   \begingroup
-   \uselinesstyleandcolor\c!style\c!color
-   \setupindenting[\linesparameter\c!indenting]%
-   \setupalign[\linesparameter\c!align]%
-   \typesettinglinestrue
-   \setupwhitespace[\v!none]%
-   %\obeylines % move upwards to keep spaces in the first line due to optional argument
-   \ignorespaces
-   \gdef\afterfirstobeyedline % tzt two pass, net als opsomming
-     {\linesparameter\c!command
-      \gdef\afterfirstobeyedline
-        {\ifx\linesoption\v!packed\nobreak\fi
-         \linesparameter\c!command}}%
-   \def\obeyedline
-     {\dostoptagged
-      \par
-      \dostarttagged\t!line\empty
-      \futurelet\next\dobetweenthelines}%
-   \activatespacehandler{\linesparameter\c!space}%
-   \dostarttagged\t!line\empty
-   \GotoPar}
-
-\unexpanded\def\dostoplines
-  {\dostoptagged
-   \endgroup
-   \dostoptagged
-   \popmacro\checkindentation
-   \linesparameter\c!after
-   \egroup}
-
-\def\dobetweenthelines
-  {\doifmeaningelse\next\obeyedline
-     {\linesparameter\c!inbetween}
-     {\afterfirstobeyedline}}
-
-\definelines[\v!lines]
-
-\def\emptylines
-  {\dosingleempty\doemptylines}
-
-\def\doemptylines[#1]%
-  {\endgraf\dorecurse{\iffirstargument#1\else3\fi}\crlf}
-
-\ifdefined\startlines \else
-    \expandafter\let\expandafter\startlines\csname\e!start\v!lines\endcsname
-    \expandafter\let\expandafter\stoplines \csname\e!stop \v!lines\endcsname
-\fi
 
 \protect \endinput

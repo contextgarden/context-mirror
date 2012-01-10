@@ -140,24 +140,15 @@
 
 \def\s!empty   {empty}
 
-%D \macros
-%D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
-%D
-%D When in unprotected mode, to be entered with
-%D \type{\unprotect}, one can use \type{\@EA} as equivalent
-%D of \type{\expandafter}.
+%D These are not needed any more now that we have wide screens (and
+%D bytes come cheap).
 
-\let\singleexpandafter \expandafter
-\def\doubleexpandafter{\expandafter\expandafter\expandafter}
-\def\tripleexpandafter{\expandafter\doubleexpandafter\expandafter}
-
-%D not needed any more now that we have wide screens
-
-\let\@NX          \noexpand
-\let\@EA          \expandafter
-\def\@EAEA       {\expandafter\expandafter} % can often be avoided
+\let\@EA          \singleexpandafter
 \let\@EAEAEA      \doubleexpandafter
 \let\@EAEAEAEAEAEA\tripleexpandafter
+
+\let\@NX          \noexpand
+\def\@EAEA       {\expandafter\expandafter} % can often be avoided
 
 %D Sometimes we pass macros as arguments to commands that
 %D don't expand them before interpretation. Such commands can
@@ -835,11 +826,15 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
+\let\m_syst_common_a\empty
+\let\m_syst_common_b\empty
+\let\m_syst_common_c\empty
+
 \def\syst_helpers_do_quit_if_common_else#1],\relax#2],\relax{\firstoftwoarguments}
 
 \def\syst_helpers_do_check_if_common_else_one#1,#2%
-  {\edef\!!stringc{#1}%
-   \ifx\!!stringc\v_syst_helpers_right_optional_bracket
+  {\edef\m_syst_common_c{#1}%
+   \ifx\m_syst_common_c\v_syst_helpers_right_optional_bracket
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_do_common_check
@@ -861,7 +856,7 @@
    \fi}
 
 \def\syst_helpers_do_do_do_check_if_common_else_two
-  {\ifx\!!stringc\commalistelement
+  {\ifx\m_syst_common_c\commalistelement
      \expandafter\syst_helpers_do_quit_if_common_else
    \else
      \expandafter\syst_helpers_do_check_if_common_else_two
@@ -869,23 +864,23 @@
 
 \def\syst_helpers_re_do_check_if_common_else_one#1{\syst_helpers_do_check_if_common_else_one}
 
+\def\syst_helpers_do_common_check
+  {\expandafter\syst_helpers_do_check_if_common_else_two\m_syst_common_b,],\relax}%
+
+\def\syst_helpers_do_do_do_if_common_else
+  {\expandafter\syst_helpers_do_check_if_common_else_one\m_syst_common_a,],\relax}
+
 \def\syst_helpers_do_do_if_common_else#1#2#3#4%
-  {\edef\!!stringa{#3}%
-   \edef\!!stringb{#4}%
-   \ifx\!!stringa\empty
+  {\edef\m_syst_common_a{#3}%
+   \edef\m_syst_common_b{#4}%
+   \ifx\m_syst_common_a\empty
      \expandafter\secondoftwoarguments
-   \else\ifx\!!stringb\empty
+   \else\ifx\m_syst_common_b\empty
      \expandafter\expandafter\expandafter\secondoftwoarguments
    \else
      \expandafter\expandafter\expandafter\syst_helpers_do_do_do_if_common_else
    \fi\fi
    #1#2}
-
-\def\syst_helpers_do_common_check
-  {\expandafter\syst_helpers_do_check_if_common_else_two\!!stringb,],\relax}%
-
-\def\syst_helpers_do_do_do_if_common_else
-  {\expandafter\syst_helpers_do_check_if_common_else_one\!!stringa,],\relax}
 
 \unexpanded\def\doifcommonelse{\syst_helpers_do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
 \unexpanded\def\doifcommon    {\syst_helpers_do_do_if_common_else\firstofoneargument \gobbleoneargument   }
@@ -3281,80 +3276,6 @@
    \fi}
 
 %D \macros
-%D   {newconditional,
-%D    settrue, setfalse,
-%D    ifconditional,then}
-%D
-%D \TEX's lacks boolean variables, although the \PLAIN\ format
-%D implements \type{\newif}. The main disadvantage of this
-%D scheme is that it takes three hash table entries. A more
-%D memory saving alternative is presented here. A conditional
-%D is defined by:
-%D
-%D \starttyping
-%D \newconditional\doublesided
-%D \setfalse
-%D \stoptyping
-%D Setting a conditional is done by \type{\settrue} and
-%D \type{\setfalse}:
-%D
-%D \starttyping
-%D \settrue\doublesided
-%D \setfalse
-%D \stoptyping
-%D while testing is accomplished by:
-%D
-%D \starttyping
-%D \ifconditional\doublesided  ... \else ... \fi
-%D \setfalse
-%D \stoptyping
-%D We cannot use the simple scheme:
-%D
-%D \starttyping
-%D \def\settrue #1{\let#1=\iftrue}
-%D \def\setfalse#1{\let#1=\iffalse}
-%D \stoptyping
-%D
-%D Such an implementation gives problems with nested
-%D conditionals. The next implementation is abaou as fast
-%D and just as straightforward:
-
-% maybe reserve special zero and plusone
-
-\unexpanded\def\settrue #1{\let#1\zerocount}
-\unexpanded\def\setfalse#1{\let#1\plusone  }
-
-\let\newconditional\setfalse
-\let\ifconditional \ifcase
-
-\let\conditionalfalse\plusone
-\let\conditionaltrue \zerocount
-
-\let\then\relax % so that we can say: \ifnum1>2\then -)
-
-% demands that each conditional is defined .. it would be handy to have
-% a primitive \unless\ifcase .. then we could use better values
-%
-% \def\settrue #1{#1\zerocount}
-% \def\setfalse#1{#1\plusone}
-%
-% \def\newconditional#1{\ifdefined#1\else\newcount#1\fi\setfalse#1}
-% \let\ifconditional \ifcase
-
-%D \macros
-%D   {ifzeropt}
-%D
-%D The next macro is both cosmetic and byte saving. It is
-%D pretty \type{\if}||safe too. It can be used in cases
-%D like:
-%D
-%D \starttyping
-%D \ifzeropt \somedimen ... \else ... \fi
-%D \stoptyping
-
-\let\ifzeropt\ifcase
-
-%D \macros
 %D   {dorecurse,recurselevel,recursedepth,
 %D    dostepwiserecurse,
 %D    for}
@@ -3919,7 +3840,7 @@
 
 \def\docheckifassignmentelse#1=#2#3\@end@{\if#2@}%
 
-\def\doifassignmentelse#1%
+\def\doifassignmentelse#1% expandable
   {\expandafter\docheckifassignmentelse\detokenize{#1}=@@\@end@
      \expandafter\secondoftwoarguments
    \else
@@ -6211,17 +6132,33 @@
   {\setdimensionwithunit\scratchdimen#1{#2}\edef#1{\the\scratchdimen}}
 
 %D \macros
-%D   {doifsometokselse}
+%D   {doifsometokselse, doifsometoks}
 %D
 %D Not that fast I guess, but here's a way to test for token
 %D registers being empty.
 
-\def\doifsometokselse#1%     % #2#3%
-  {\edef\!!stringa{\the#1}%
-   \ifx\!!stringa\empty      % #3\else#2\fi}
+\def\doifsometokselse#1%
+  {\edef\!!stringa{\the#1}% one level expansion so quite ok
+   \ifx\!!stringa\empty
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
+   \fi}
+
+\def\doifsometoks#1%
+  {\edef\!!stringa{\the#1}% one level expansion so quite ok
+   \ifx\!!stringa\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\def\doifemptytoks#1%
+  {\edef\!!stringa{\the#1}% one level expansion so quite ok
+   \ifx\!!stringa\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
    \fi}
 
 %D \macros
@@ -6604,7 +6541,7 @@
      \doubleexpandafter\firstofoneargument
    \fi\fi}
 
-\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey % [bypasses k!prefix]
+\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey
   {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter{\csname#1#5\endcsname}}
 
 % \buildarray[test][aa,bb,cc,dd,ee,ff]

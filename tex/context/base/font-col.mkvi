@@ -29,72 +29,67 @@
 
 \unprotect
 
-\unexpanded\def\definefontfallback
-  {\doquadrupleempty\dodefinefontfallback}
+\unexpanded\def\definefontfallback{\doquadrupleempty\font_fallbacks_define}
+\unexpanded\def\resetfontfallback {\dodoubleempty   \font_fallbacks_reset }
 
-\def\dodefinefontfallback[#1][#2][#3][#4]%
-  {\ctxcommand{definefontcollection("#1","#2",\!!bs#3\!!es,\!!bs#4\!!es)}}
+\def\font_fallbacks_define[#name][#font][#ranges][#settings]%
+  {\ctxcommand{fontcollectiondefine("#name","#font",\!!bs#ranges\!!es,\!!bs#settings\!!es)}}
 
-\def\resetfontfallback
-  {\dodoubleempty\doresetfontfallback}
+\def\font_fallbacks_reset[#name][#font]%
+  {\ctxcommand{fontcollectionreset("#name","#font")}}
 
-\def\doresetfontfallback[#1][#2]%
-  {\ctxcommand{resetfontcollection("#1","#2")}}
-
-% add fallbacks to last font
-
-\def\dodefinefontfallbacks#1%
-  {\ctxcommand{preparefontcollection("#1")}}
+\def\font_fallbacks_prepare#name%
+  {\ctxcommand{fontcollectionprepare("#name")}} % add fallbacks to last font
 
 % we might as well move the handling to lua but then we need to pass the
 % fallbacks, skewchar etc.
 
-\setfalse\doingfontfallbacks
+\newconditional\c_font_fallbacks_in_progress
 
-\def\dodefinefontfallbacksindeed#1%
+\def\font_fallbacks_prepare_indeed#fallbacks%
   {\begingroup
-     \settrue\doingfontfallbacks
+     \settrue\c_font_fallbacks_in_progress
      \lastrawfontcall % sets current font id
-     \dodefinefontfallbacks#1%
+     \font_fallbacks_prepare#fallbacks%
    \endgroup}
 
+\let\m_font_fallbacks\empty % set in the font-ini
+
 \appendtoks
-    \ifconditional\doingfontfallbacks\else
-        \ifx\@@fontfallbacks\empty
-            \ifx\@@fontclassfallbacks\empty
+    \ifconditional\c_font_fallbacks_in_progress\else
+        \ifx\m_font_fallbacks\empty
+            \ifx\m_font_class_fallbacks\empty
             \else
-                \dodefinefontfallbacksindeed\@@fontclassfallbacks
+                \font_fallbacks_prepare_indeed\m_font_class_fallbacks
             \fi
         \else
-            \dodefinefontfallbacksindeed\@@fontfallbacks
+            \font_fallbacks_prepare_indeed\m_font_fallbacks
         \fi
    \fi
 \to\everydefinefont
 
-\def\dostartcloningfonts
-  {\bgroup
+\def\font_fallbacks_start_cloning
+  {\begingroup
    \let\savedfontspec\somefontspec}
 
-\def\dostopcloningfonts
-  {\egroup}
+\def\font_fallbacks_stop_cloning
+  {\endgroup}
 
-\def\doclonefonta#1#2% kind of dododefinefont
-  {\ctxcommand{fontcollectionmessage("defining #1 (relative scale: #2)")}% brrr
-   \autofontsizefalse
+\def\font_fallbacks_clone_unique#specification#scale% kind of dododefinefont
+  {\ctxcommand{fontcollectionreport("defining #specification (relative scale: #scale)")}% brrr
+   \setfalse\font_auto_font_size
    \let\lastfontidentifier\s!dummy
-   \def\localrelativefontsize{#2}%
-   \let\localabsolutefontsize\fontbody
-   \lowleveldefinefont{#1}\rawfontidentifier
-   \csname\rawfontidentifier\endcsname
-   \autofontsizefalse
-   %\setfontcharacteristics
-   }%\the\everyfontswitch}
+   \def\v_font_size_relative{#scale}%
+   \let\v_font_size_absolute\fontbody
+   \font_helpers_low_level_define{#specification}\v_font_identifier_basic
+   \csname\v_font_identifier_basic\endcsname
+   \setfalse\font_auto_font_size} % no \setfontcharacteristics and \the\everyfontswitch needed
 
-\def\doclonefontb#1% #2
-  {\doclonefonta{#1 \savedfontspec}}
+\def\font_fallbacks_clone_inherited#font% also a secod argument
+  {\font_fallbacks_clone_unique{#font \savedfontspec}}
 
-\def\doclonefontstageone#1{\ctxcommand{clonefontcollection_one("#1")}}
-\def\doclonefontstagetwo#1{\ctxcommand{clonefontcollection_two("#1")}}
+\def\font_fallbacks_register_main        #name{\ctxcommand{fontcollectionregister("#name")}}
+\def\font_fallbacks_prepare_clone_vectors#name{\ctxcommand{fontcollectionclone("#name")}}
 
 % check : only replace when present in replacement font (default: no)
 % force : force replacent even when basefont has glyph  (default: yes)

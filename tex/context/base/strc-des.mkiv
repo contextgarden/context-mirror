@@ -195,8 +195,7 @@
    \@@makedescriptionhangbox\raggedright{\advance\rightskip \descriptionsheaddistance}%
    \noindent
    \llap
-     {\dontshowcomposition
-      \vtop to \zeropoint{\box\descriptionheadbox}}%
+     {\vtop to \zeropoint{\box\descriptionheadbox}}%
    \@@dodescription}
 
 \def\@@descriptionrighthang
@@ -208,7 +207,6 @@
    \noindent
    \rlap
      {\dontcomplain
-      \dontshowcomposition
       \hbox to \dimexpr\hsize-\leftskip-\rightskip\relax % can be a macro
         {\hss\vtop to \zeropoint{\box\descriptionheadbox}}}%
    \@@dodescription}
@@ -337,7 +335,6 @@
   {\descriptionparameter\c!before
    \begingroup
    \doadaptleftskip{\descriptionparameter\c!margin}%
-   \showcomposition
    \setlocalhsize % so we can use \localhsize in width assignments
    \descriptionsheaddistance\descriptionlocationparameter\c!distance\relax
    \ifdim\descriptionsheaddistance=\zeropoint\relax

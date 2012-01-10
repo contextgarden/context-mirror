@@ -797,7 +797,7 @@ local function showboundingbox(tfmdata,key,value)
     end
 end
 
-fonts.constructors.newfeatures("otf").register {
+registerotffeature {
     name        = "boundingbox",
     description = "show boundingbox",
     manipulators = {

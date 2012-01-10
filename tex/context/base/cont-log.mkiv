@@ -91,7 +91,7 @@
 %D
 %D I changed this into one that adapts itself:
 
-\unexpanded\def\Context
+\unexpanded\def\Context % wrong usage of \getscaledglyph
   {\dontleavehmode
    \begingroup
    C\kern -.0667em\getscaledglyph{.8}\empty{O\kern -.0667emN\kern
@@ -108,11 +108,11 @@
 
 \unexpanded\def\setMFPfont% more sensitive for low level changes
   {\font\logofont=logo%
-     \ifx\fontalternative\c!bf\else
-     \ifx\fontalternative\c!it\else
-     \ifx\fontalternative\c!sl\else
-     \ifx\fontalternative\c!bi\else
-     \ifx\fontalternative\c!bs\else
+     \ifx\fontalternative\s!bf\else
+     \ifx\fontalternative\s!it\else
+     \ifx\fontalternative\s!sl\else
+     \ifx\fontalternative\s!bi\else
+     \ifx\fontalternative\s!bs\else
      \fi\fi\fi\fi\fi
      10 at \currentfontscale\bodyfontsize % there is no afm in the minimals yet
    \logofont}
@@ -186,11 +186,11 @@
       \iffontchar\font"018E\relax
         \char"018E%
       \else
-        \ifx\fontalternative\c!bf         \mirror{E}\else
-        \ifx\fontalternative\c!it\syst_logos_xetex_e\else
-        \ifx\fontalternative\c!sl\syst_logos_xetex_e\else
-        \ifx\fontalternative\c!bi\syst_logos_xetex_e\else
-        \ifx\fontalternative\c!bs\syst_logos_xetex_e\else
+        \ifx\fontalternative\s!bf         \mirror{E}\else
+        \ifx\fontalternative\s!it\syst_logos_xetex_e\else
+        \ifx\fontalternative\s!sl\syst_logos_xetex_e\else
+        \ifx\fontalternative\s!bi\syst_logos_xetex_e\else
+        \ifx\fontalternative\s!bs\syst_logos_xetex_e\else
                                           \mirror{E}\fi\fi\fi\fi\fi
       \fi}%
    \kern-.1667em\TeX}
@@ -231,10 +231,10 @@
 %
 % a further iteration from the list, patched again
 
-% \ifx\fontalternative\c!it -\else
-% \ifx\fontalternative\c!sl -\else
-% \ifx\fontalternative\c!bi -\else
-% \ifx\fontalternative\c!bs -\fi\fi\fi\fi
+% \ifx\fontalternative\s!it -\else
+% \ifx\fontalternative\s!sl -\else
+% \ifx\fontalternative\s!bi -\else
+% \ifx\fontalternative\s!bs -\fi\fi\fi\fi
 
 \unexpanded\def\LuaTeX
   {\dontleavehmode

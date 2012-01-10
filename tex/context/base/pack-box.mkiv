@@ -553,7 +553,7 @@
 %       page=yes, % correct for topskip
 %       location=lt]
 %      {\externalfigure[koe][bleed][frame=on]}}
-
+
 % \setlayerframed[layer id][layer settings][framed setting]{data}
 % \setlayerframed[layer id][combined settings]{data}
 
@@ -565,7 +565,7 @@
 
 \def\pack_layers_set_framed
   {\ifthirdargument
-     \expandafter      \pack_layers_set_framed_t
+     \singleexpandafter\pack_layers_set_framed_t
    \else\ifsecondargument
      \doubleexpandafter\pack_layers_set_framed_d
    \else

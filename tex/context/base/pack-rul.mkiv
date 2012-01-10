@@ -364,8 +364,8 @@
      \pack_framed_background_box_gray_indeed
    \fi}
 
-\def\pack_framed_background_box_gray_indeed
-  {\raster[\p_framed_backgroundscreen]{\pack_framed_filled_box}} % can be more direct but who cares
+\def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
+  {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
 
 %D It won't be a surprise that we not only provide gray boxes,
 %D but also colored ones. Here it is:
@@ -1291,8 +1291,7 @@
    \fi}
 
 \unexpanded\def\pack_framed_finish
-  {\dontshowcomposition
-   \pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape)
+  {\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape)
    \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
      \ifx\p_framed_autowidth\v!force

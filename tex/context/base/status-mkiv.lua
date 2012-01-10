@@ -281,11 +281,13 @@ return {
             filename = "supp-vis",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "will become a module (and part will stay in the core)",
         },
         {
             filename = "supp-fun",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "will be integrated elsewhere",
         },
         {
             filename = "supp-ran",
@@ -578,6 +580,12 @@ return {
             comment  = "update lua code (communicate via register)"
         },
         {
+            filename = "spac-lin",
+            marktype = "mkiv",
+            status   = "unknown",
+            comment  = "could be improved if needed"
+        },
+        {
             filename = "spac-pag",
             marktype = "mkiv",
             status   = "okay",
@@ -782,11 +790,6 @@ return {
             status   = "unknown",
         },
         {
-            filename = "file-job",
-            marktype = "mkvi",
-            status   = "unknown",
-        },
-        {
             filename = "buff-ini",
             marktype = "mkiv",
             status   = "okay",
@@ -946,8 +949,14 @@ return {
         },
         {
             filename = "font-ini",
+            marktype = "mkvi",
+            status   = "okay",
+            comment  = "needs occasional checking and upgrading",
+        },
+        {
+            filename = "font-pre",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "font-unk",
@@ -968,8 +977,8 @@ return {
         },
         {
             filename = "font-col",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "font-gds",
@@ -1050,38 +1059,29 @@ return {
         },
         {
             filename = "type-ini",
-            marktype = "mkiv",
-            status   = "unknown",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "type-set",
             marktype = "mkiv",
-            status   = "unknown",
-        },
-        {
-            filename = "type-def",
-            marktype = "mkiv",
-            status   = "unknown",
-        },
-        {
-            filename = "type-lua",
-            marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "scrp-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "prop-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "this module is obsolete",
         },
         {
             filename = "mlib-ctx",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "meta-ini",
@@ -1091,12 +1091,13 @@ return {
         {
             filename = "meta-tex",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "meta-fun",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "maybe this one will be merged"
         },
         {
             filename = "meta-pag",
@@ -1216,7 +1217,7 @@ return {
         {
             filename = "phys-dim",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-mat",
@@ -1339,7 +1340,7 @@ return {
         {
             filename = "cldf-ver",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "cldf-com",

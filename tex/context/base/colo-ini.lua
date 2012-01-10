@@ -459,7 +459,10 @@ function colors.definemultitonecolor(name,multispec,colorspec,selfspec)
     colorset[name] = true-- maybe we can store more
 end
 
-local function mpcolor(model,ca,ta,default) -- will move to mlib-col
+-- will move to mlib-col as colors in m,p are somewhat messy due to the fact
+-- that we cannot cast
+
+local function mpcolor(model,ca,ta,default)
     local cv = colorvalues[ca]
     if cv then
         local tv = transparencyvalues[ta]
@@ -474,8 +477,13 @@ local function mpcolor(model,ca,ta,default) -- will move to mlib-col
                 return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 4 then
                 return format("transparent(%s,%s,cmyk(%s,%s,%s,%s))",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
-            else
+            elseif model == 5 then
                 return format('transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))',tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
+            else
+                return format("transparent(%s,%s,(%s,%s,%s))",tv[1],tv[2],cv[3],cv[4],cv[5])
+-- this will become (see ** in meta-ini.mkiv)
+--
+-- return format("transparent(%s,%s,(%s))",tv[1],tv[2],cv[2])
             end
         else
             if model == 2 then
@@ -484,8 +492,13 @@ local function mpcolor(model,ca,ta,default) -- will move to mlib-col
                 return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
             elseif model == 4 then
                 return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
-            else
+            elseif model == 5 then
                 return format('multitonecolor("%s",%s,"%s","%s")',cv[10],cv[11],cv[12],cv[13])
+            else
+                return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
+-- this will become (see ** in meta-ini.mkiv)
+--
+-- return format("%s",(cv[2]))
             end
         end
     else
@@ -493,41 +506,6 @@ local function mpcolor(model,ca,ta,default) -- will move to mlib-col
         return format("(%s,%s,%s)",default,default,default)
     end
 end
-
---~ local function mpcolor(model,ca,ta,default) -- will move to mlib-col
---~     local cv = colorvalues[ca]
---~     if cv then
---~         local tv = transparencyvalues[ta]
---~         if model == 1 then
---~             model = cv[1]
---~         end
---~         model = forcedmodel(model)
---~         if tv then
---~             if model == 2 then
---~                 return format("(%s,%s,%s) withtransparency (%s,%s)",tv[1],tv[2],cv[3],cv[4],cv[5])
---~             elseif model == 3 then
---~                 return format("(%s,%s,%s) withtransparency (%s,%s)",tv[1],tv[2],cv[3],cv[4],cv[5])
---~             elseif model == 4 then
---~                 return format("(%s,%s,%s,%s) withtransparency(%s,%s)",tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
---~             else
---~                 return format('multitonecolor("%s",%s,"%s","%s") withtransparency (%s,%s)',tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
---~             end
---~         else
---~             if model == 2 then
---~                 return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
---~             elseif model == 3 then
---~                 return format("(%s,%s,%s)",cv[3],cv[4],cv[5])
---~             elseif model == 4 then
---~                 return format("cmyk(%s,%s,%s,%s)",cv[6],cv[7],cv[8],cv[9])
---~             else
---~                 return format('multitonecolor("%s",%s,"%s","%s")',cv[10],cv[11],cv[12],cv[13])
---~             end
---~         end
---~     else
---~         default = default or 0 -- rgb !
---~         return format("(%s,%s,%s)",default,default,default)
---~     end
---~ end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col
     return format("withcolor %s",mpcolor(model,ca,ta,default))

@@ -1489,3 +1489,11 @@ to scale virtual characters.</p>
 function commands.setfontofid(id)
     context.getvalue(csnames[id])
 end
+
+-- more interfacing:
+
+commands.definefontfeature = fonts.specifiers.presetcontext
+
+function commands.featurelist(...)
+    context(fonts.specifiers.contexttostring(...))
+end

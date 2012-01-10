@@ -183,7 +183,7 @@
 %      \hbox{#1}%
 %    \fi}
 
-\def\globalregisterMPtextarea{\normalexpanded{\global\MPtextareadata{\the\MPtextareadata
+\unexpanded\def\globalregisterMPtextarea{\normalexpanded{\global\MPtextareadata{\the\MPtextareadata
   RegisterTextArea(%
    \MPx\currentMPtextarea,%
    \MPy\currentMPtextarea,%
@@ -192,7 +192,7 @@
    \MPd\currentMPtextarea%
   );}}}
 
-\def\localregisterMPtextarea{\normalexpanded{\global\MPlocaltextareadata{%
+\unexpanded\def\localregisterMPtextarea{\normalexpanded{\global\MPlocaltextareadata{%
   RegisterLocalTextArea(%
    \MPx\currentMPtextarea,%
    \MPy\currentMPtextarea,%
@@ -201,7 +201,7 @@
    \MPd\currentMPtextarea%
   );}}}
 
-\def\registerMPtextareaindeed#1#2%
+\unexpanded\def\registerMPtextareaindeed#1#2%
   {\ifpositioning
      \begingroup
      \global\advance\currentMPtextareadata\plusone
@@ -216,7 +216,7 @@
 \unexpanded\def\registerMPtextarea     {\registerMPtextareaindeed\globalregisterMPtextarea}
 \unexpanded\def\registerMPlocaltextarea{\registerMPtextareaindeed\localregisterMPtextarea }
 
-\expanded\def\resetMPlocaltextarea
+\unexpanded\def\resetMPlocaltextarea
   {\global\MPlocaltextareadata\emptytoks}
 
 \startMPextensions

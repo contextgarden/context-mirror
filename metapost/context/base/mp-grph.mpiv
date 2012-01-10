@@ -119,11 +119,13 @@ def doloadfigure (expr filename) text figureattributes =
 enddef ;
 
 def graphictext primary t =
-    if mfun_trial_run :
-        let mfun_graphic_text = mfun_no_graphic_text ;
-    else :
-        let mfun_graphic_text = mfun_do_graphic_text ;
-    fi
+    hide (
+        if mfun_trial_run :
+            let mfun_graphic_text = mfun_no_graphic_text ;
+        else :
+            let mfun_graphic_text = mfun_do_graphic_text ;
+        fi
+    )
     mfun_graphic_text(t)
 enddef ;
 

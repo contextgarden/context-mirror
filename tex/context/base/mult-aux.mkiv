@@ -138,8 +138,8 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname #2parameter\endcsname
-        \expandafter\noexpand\csname do#2parameter\endcsname
-        \expandafter\noexpand\csname do#2parentparameter\endcsname
+        \expandafter\noexpand\csname do#2parameter\endcsname           % or : #2_parameter_hash
+        \expandafter\noexpand\csname do#2parentparameter\endcsname     % or : #2_parent_parameter_hash
         \expandafter\noexpand\csname named#2parameter\endcsname
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
         \expandafter\noexpand\csname strict#2parameter\endcsname       % checked
@@ -173,8 +173,8 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname #2parameterhash\endcsname
-        \expandafter\noexpand\csname do#2parameterhash\endcsname
-        \expandafter\noexpand\csname do#2parentparameterhash\endcsname
+        \expandafter\noexpand\csname do#2parameterhash\endcsname         % or : #2_parameter_hash
+        \expandafter\noexpand\csname do#2parentparameterhash\endcsname   % or : #2_parent_parameter_hash
         \expandafter\noexpand\csname current#2hash\endcsname
         \expandafter\noexpand\csname named#2hash\endcsname
         \expandafter\noexpand\csname check#2parent\endcsname
@@ -276,7 +276,7 @@
         \expandafter\noexpand\csname define#2\endcsname
         {\noexpand#3}% root
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@define#2\endcsname % sort of public
+        \expandafter\noexpand\csname define_#2\endcsname % semi-public
         \expandafter\noexpand\csname everypreset#2\endcsname
         \expandafter\noexpand\csname everydefine#2\endcsname
         \expandafter\noexpand\csname current#2parent\endcsname}}
@@ -290,12 +290,12 @@
    \def#4[##1][##2]% maybe helper
      {\let\savedsetupwhatever#3%
       \ifsecondargument
-        \def\docommand####1% we will have a simple one as well
+        \def\mult_interfaces_with_comma_list_element####1% we will have a simple one as well
           {\edef#3{####1}%
          % \getparameters[#1#3:][##2]%
            \mult_interfaces_get_parameters{#1#3:}[##2]%
            \the#5}%
-        \processcommalist[##1]\docommand
+        \processcommalist[##1]\mult_interfaces_with_comma_list_element
       \else
         \let#3\empty
       % \getparameters[#1:][##1]%
@@ -310,7 +310,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@setup#2\endcsname % sort of public
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
@@ -349,7 +349,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@setup#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname}}
 
@@ -362,20 +362,20 @@
    \def#4[##1][##2][##3]%
      {\let\savedsetupwhatever#3%
       \ifthirdargument
-        \def\docommand####1%
+        \def\mult_interfaces_with_comma_list_element####1%
           {\edef#3{####1}%
         %  \getparameters[#1#3:][\s!parent=#1##2,##3]%
            \mult_interfaces_get_parameters{#1#3:}[\s!parent=#1##2,##3]% always sets parent
            \the#5}%
-        \processcommalist[##1]\docommand
+        \processcommalist[##1]\mult_interfaces_with_comma_list_element
       \else\ifsecondargument
-        \def\docommand####1%
+        \def\mult_interfaces_with_comma_list_element####1%
           {\edef#3{####1}%
            #7% checks parent and sets if needed
         %  \getparameters[#1#3:][##2]%
            \mult_interfaces_get_parameters{#1#3:}[##2]%
            \the#5}%
-        \processcommalist[##1]\docommand
+        \processcommalist[##1]\mult_interfaces_with_comma_list_element
       \else
         \let#3\empty
       % \getparameters[#1:][##1]%
@@ -390,7 +390,7 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
-        \expandafter\noexpand\csname d@setup#2\endcsname % sort of public
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname
         \expandafter\noexpand\csname check#2parent\endcsname}}
@@ -464,7 +464,7 @@
      {\mult_interfaces_install_direct_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
-        \expandafter\noexpand\csname d@setup#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
 \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%

@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 -- the useddata and pagedata names might change
 -- todo: pack exported data
 
+-- todo: autoload components when :::
+
 local format, find, gmatch, match, concat = string.format, string.find, string.gmatch, string.match, table.concat
 local texcount, texsetcount = tex.count, tex.setcount
 local rawget, tonumber = rawget, tonumber
@@ -697,6 +699,7 @@ local function loadexternalreferences(name,utilitydata)
         local external = struc.references.collected -- direct references
         local lists    = struc.lists.collected      -- indirect references (derived)
         local pages    = struc.pages.collected      -- pagenumber data
+        -- a bit weird one, as we don't have the externals in the collected
         for prefix, set in next, external do
             for reference, data in next, set do
                 if trace_importing then
@@ -934,7 +937,7 @@ function structures.references.loadpresets(product,component) -- we can consider
             local utilitydata = job.loadother(fullname)
             if utilitydata then
                 if trace_importing then
-                    report_importing("loading presets for component %s from product %s",component,product)
+                    report_importing("loading references for component %s of product %s from %s",component,product,fullname)
                 end
                 loadproductvariables (product,component,utilitydata)
                 loadproductreferences(product,component,utilitydata)
@@ -956,8 +959,8 @@ if useproduct then
         if texconditionals.autocrossfilereferences then
             local component = justacomponent()
             if component then
-                if trace_referencing then
-                    report_references("loading presets for component '%s' from product '%s'",component,product)
+                if trace_referencing or trace_importing then
+                    report_references("loading presets for component '%s' of product '%s'",component,product)
                 end
                 structures.references.loadpresets(product,component)
             end

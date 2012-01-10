@@ -399,6 +399,15 @@
     \newcount   \maxcard \maxcard   = 65536 % pdftex has less mathchars
 \fi
 
+%D \macros
+%D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
+%D
+%D A few handy shortcuts
+
+\let\singleexpandafter \expandafter
+\def\doubleexpandafter{\expandafter\expandafter\expandafter}
+\def\tripleexpandafter{\expandafter\doubleexpandafter\expandafter}
+
 %D We prefer the more readable variant than in plain
 %D \TEX. User should only use \type {\emptybox}:
 
@@ -652,6 +661,74 @@
 \let\everyjob\relax \newtoks\everyjob
 
 \normaleveryjob{\the\everyjob}
+
+%D \macros
+%D   {newconditional,
+%D    settrue, setfalse,
+%D    ifconditional,then}
+%D
+%D \TEX's lacks boolean variables, although the \PLAIN\ format
+%D implements \type{\newif}. The main disadvantage of this
+%D scheme is that it takes three hash table entries. A more
+%D memory saving alternative is presented here. A conditional
+%D is defined by:
+%D
+%D \starttyping
+%D \newconditional\doublesided
+%D \setfalse
+%D \stoptyping
+%D Setting a conditional is done by \type{\settrue} and
+%D \type{\setfalse}:
+%D
+%D \starttyping
+%D \settrue\doublesided
+%D \setfalse
+%D \stoptyping
+%D while testing is accomplished by:
+%D
+%D \starttyping
+%D \ifconditional\doublesided  ... \else ... \fi
+%D \setfalse
+%D \stoptyping
+%D We cannot use the simple scheme:
+%D
+%D \starttyping
+%D \def\settrue #1{\let#1=\iftrue}
+%D \def\setfalse#1{\let#1=\iffalse}
+%D \stoptyping
+%D
+%D Such an implementation gives problems with nested
+%D conditionals. The next implementation is about as fast
+%D and just as straightforward:
+
+\let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
+\let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
+
+\normalprotected\def\settrue #1{\let#1\conditionaltrue }
+\normalprotected\def\setfalse#1{\let#1\conditionalfalse}
+
+\let\newconditional\setfalse
+\let\ifconditional \ifcase
+
+\let\then\relax % so that we can say: \ifnum1>2\then -)
+
+%D It would be handy to have a primitive \unless\ifcase because
+%D then we could use nicer values. Anyhow, this conditional code
+%D used to be in the \type {syst-aux} module but is now promoted
+%D to here.
+
+%D \macros
+%D   {ifzeropt}
+%D
+%D The next macro is both cosmetic and byte saving. It is
+%D pretty \type{\if}||safe too. It can be used in cases
+%D like:
+%D
+%D \starttyping
+%D \ifzeropt \somedimen ... \else ... \fi
+%D \stoptyping
+
+\let\ifzeropt\ifcase
 
 % these token list helpers might move to syst-aux.mkiv
 %

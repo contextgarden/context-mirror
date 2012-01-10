@@ -728,13 +728,11 @@
       \relax}%
    \dontleavehmode
    \begingroup
-   \dontshowcomposition
    \inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{\thepardata}}}%
    \endgroup}
 
 \unexpanded\def\startshowpardata
   {\begingroup
-   \showcomposition % all this tracing can go ... if we want it back it will be done in lua
    \showstruts\tracepositionstrue \tracingparagraphs\maxdimen
    \appendtoksonce\showpardata\let\showpardata\relax\to\everypar}
 
