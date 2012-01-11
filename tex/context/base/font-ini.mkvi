@@ -2478,13 +2478,16 @@
    \endgroup}
 
 \appendtoks
-    \everyhbox{\font_preloads_zero_stage}
-    \everyvbox{\font_preloads_zero_stage}
+    \everyhbox{\font_preloads_zero_stage}%
+    \everyvbox{\font_preloads_zero_stage}%
 \to \everydump
 
 \def\font_preloads_at_every_job {\font_preloads_first_stage }
 \def\font_preloads_at_start_text{\font_preloads_second_stage}
 \def\font_preloads_at_stop_text {\font_preloads_fourth_stage}
+
+% \unexpanded\def\checkpreloadedbodyfont % no \let here
+%   {\font_preloads_at_start_text}
 
 %D Here comes the main font switching macros. These macros
 %D handle changes in size as well as returning to the global
@@ -3002,6 +3005,10 @@
 %D fonts and the math families and finally we activate the
 %D default typeface and also set the font specific parameters
 %D assigned to \type{\everybodyfont}
+
+\def\textface        {\bodyfontvariable\s!text        }
+\def\scriptface      {\bodyfontvariable\s!script      }
+\def\scriptscriptface{\bodyfontvariable\s!scriptscript}
 
 \unexpanded\def\font_basics_complete_switch[#size]%
   {\bodyfontsize#size\relax
