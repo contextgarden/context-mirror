@@ -15,7 +15,10 @@
 
 \unprotect
 
-\gdef\doshowprint[#1][#2][#3]% only english
+\gdef\showprint
+  {\dotripleempty\page_layouts_show_print}
+
+\gdef\page_layouts_show_print[#1][#2][#3]% only english
   {\setbuffer[crap]%
       \unprotect
         \definepapersize[X][\c!width=4em, \c!height=6em]
@@ -30,9 +33,6 @@
       \protect
    \endbuffer
    \framed[\c!offset=\v!overlay,\c!strut=\v!no]{\typesetbuffer[crap]}}
-
-\gdef\showprint
-  {\dotripleempty\doshowprint}
 
 % \switchtobodyfont[8pt]
 %
@@ -288,5 +288,5 @@ end
    \NC outer margin \NC \the\outermarginwidth               \NC \NR
    \NC inner margin \NC \the\innermarginwidth               \NC \NR
    \stoptabulate}
-
+
 \protect \endinput

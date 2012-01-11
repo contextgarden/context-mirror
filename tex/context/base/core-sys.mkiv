@@ -213,9 +213,9 @@
      {\dostoptagged}}
 
 \unexpanded\def\define
-  {\doifnextoptionalelse\syst_basics_define\def}
+  {\doifnextoptionalelse\syst_basics_define_yes\syst_basics_define_nop}
 
-\unexpanded\def\syst_basics_define[#1]#2#3%
+\unexpanded\def\syst_basics_define_yes[#1]#2#3%
   {\ifdefined#2%
      \showmessage\m!system4{\string#2}%
    \fi
@@ -231,6 +231,12 @@
      \def#2##1##2##3##4##5##6##7##8{#3}\or
      \def#2##1##2##3##4##5##6##7##8##9{#3}\else
      \def#2{#3}\fi}
+
+\unexpanded\def\syst_basics_define_nop#1#2%
+  {\ifdefined#1%
+     \showmessage\m!system4{\string#1}%
+   \fi
+   \def#1{#2}}
 
 % \startluacode
 %     local contextsprint, ctxcatcodes = context.sprint, tex.ctxcatcodes
