@@ -406,9 +406,10 @@
 \unexpanded\def\rawwpos#1%
   {\hpos{w:#1}
      {\strut
-      \hskip-\leftskip
-      \hskip\hsize
-      \hskip-\rightskip}}
+%       \hskip-\leftskip
+%       \hskip\hsize
+%       \hskip-\rightskip}}
+      \hskip\dimexpr\hsize-\leftskip-\rightskip\relax}}
 
 % the next macro disables par positions (in inner boxes) and
 % only registers the width

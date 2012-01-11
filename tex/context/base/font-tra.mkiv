@@ -51,6 +51,7 @@
    \tttf\language\minusone
    \veryraggedright
    \forgetparindent
+   \forgeteverypar
    \hangindent1em
    \hangafter\plusone
    \dontleavehmode\hbox{\detokenize{#1}}\removeunwantedspaces
@@ -71,6 +72,7 @@
   {\begingroup
    \veryraggedright
    \forgetparindent
+   \forgeteverypar
    \dontleavehmode\bgroup\tttf \language\minusone features: \showotfstepfeatures\egroup
    \blank
    \dontleavehmode\bgroup\tttf result:\egroup
@@ -98,7 +100,8 @@
    \startotfcollecting
    \begingroup
    \veryraggedright
-   \forgetparindent}
+   \forgetparindent
+   \forgeteverypar}
 
 \unexpanded\def\stopotfsample
   {\endgroup
@@ -113,6 +116,7 @@
   {\begingroup
    \veryraggedright
    \forgetparindent
+   \forgeteverypar
    \setupcolors[\c!state=\v!start]% can be option
    \startotfsample
    \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\ifnum#2<0 \textdir TRT\else\ifnum#2>0 \textdir TLT\fi\fi\relax#3}%

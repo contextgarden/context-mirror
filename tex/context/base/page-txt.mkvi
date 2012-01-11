@@ -659,17 +659,17 @@
 
 %D A few more page breakers:
 
-\installpagebreakhandler \v!empty
+\installpagebreakmethod \v!empty
   {\page_otr_flush_all_floats
    \gotonextpage
    \doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}%
    \doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}%
    \page_otr_insert_dummy_page}
 
-\installpagebreakhandler \v!header
+\installpagebreakmethod \v!header
   {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\c!state=\v!empty]}}
 
-\installpagebreakhandler \v!footer
+\installpagebreakmethod \v!footer
   {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\c!state=\v!empty]}}
 
 %D While the header and footer lines are moved away from the

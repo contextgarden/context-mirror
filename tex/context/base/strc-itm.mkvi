@@ -193,7 +193,7 @@
 
 \newsignal     \d_strc_itemgroups_signal
 
-\newbox        \b_itemgroups
+\newbox        \b_strc_itemgroups
 
 \newdimen      \d_strc_itemgroups_list_width
 \newdimen      \d_strc_itemgroups_asked_width
@@ -1073,7 +1073,7 @@
    \startitemgroupitem}
 
 \unexpanded\def\strc_itemgroups_start_dummy
-  {\strc_itemgroups_start_symbol\strut\strut}
+  {\strc_itemgroups_start_symbol\strut\strut} % two ?
 
 \unexpanded\def\strc_itemgroups_start_subitem
   {\settrue\c_strc_itemgroups_sub
@@ -1151,14 +1151,14 @@
    \fi\fi}
 
 \def\strc_itemgroups_handle_text_item
-  {\scratchdimen\wd\b_itemgroups
+  {\scratchdimen\wd\b_strc_itemgroups
    \advance \scratchdimen \itemgroupparameter\c!distance\relax
    \ifdim\scratchdimen>\d_strc_itemgroups_list_width
      \advance\scratchdimen -\d_strc_itemgroups_list_width
    \else
      \scratchdimen\zeropoint
    \fi
-   \llap{\hbox to \d_strc_itemgroups_list_width{\ifconditional\c_strc_itemgroups_sub\llap{+\enspace}\fi\box\b_itemgroups\hss}}% was: \hfill
+   \llap{\hbox to \d_strc_itemgroups_list_width{\ifconditional\c_strc_itemgroups_sub\llap{+\enspace}\fi\box\b_strc_itemgroups\hss}}% was: \hfill
    \hskip\scratchdimen}
 
 \def\strc_itemgroups_handle_lapped_item_positive
@@ -1168,7 +1168,7 @@
            \llap{+\enspace}%
          \fi
          \strc_itemgroups_left_sym_filler
-         \box\b_itemgroups % can already have a forced widt, only factor handled here
+         \box\b_strc_itemgroups % can already have a forced widt, only factor handled here
          \hfil
          \hskip\itemgroupparameter\c!distance}}}
 
@@ -1177,7 +1177,7 @@
      {\ifconditional\c_strc_itemgroups_sub
         \llap{+\enspace}%
       \fi
-      \box\b_itemgroups
+      \box\b_strc_itemgroups
       \hskip\leftmargindistance}}
 
 \def\strc_itemgroups_handle_groups_text_item
@@ -1185,7 +1185,7 @@
      {\ifconditional\c_strc_itemgroups_sub
         +\enspace
       \fi
-      \box\b_itemgroups
+      \box\b_strc_itemgroups
       \hskip\interwordspace}%
    \nobreak}
 
@@ -1194,7 +1194,7 @@
      {\ifconditional\c_strc_itemgroups_sub
         \llap{+\enspace}%
       \fi
-      \box\b_itemgroups
+      \box\b_strc_itemgroups
       \hss}} % was: \hfill
 
 \unexpanded\def\strc_itemgroups_start_head_sym#text%
@@ -1203,7 +1203,7 @@
    \strc_itemgroups_start_head}
 
 \def\strc_itemgroups_make_symbol_box
-  {\setbox\b_itemgroups\hbox
+  {\setbox\b_strc_itemgroups\hbox
      {\ifconditional\c_strc_itemgroups_head
         \ifx\strc_itemgroups_extra_symbol\empty
           \useitemgroupstyleandcolor\c!headstyle\c!headcolor
@@ -1225,26 +1225,26 @@
       \fi}}
 
 \def\strc_itemgroups_make_fitting_box
-  {\ifdim\wd\b_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
-     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\number\wd\b_itemgroups}}%
+  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
+     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\number\wd\b_strc_itemgroups}}%
    \fi
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
-     \setbox\b_itemgroups\simplealignedbox
+     \setbox\b_strc_itemgroups\simplealignedbox
        {\dimexpr\d_strc_itemgroups_max_width+\itemgroupparameter\c!distance\relax}
        {\itemgroupparameter\c!itemalign}
-       {\box\b_itemgroups\hskip\itemgroupparameter\c!distance}%
+       {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}%
    \fi}
 
 \def\strc_itemgroups_make_aligned_box
   {\doifsomething{\itemgroupparameter\c!itemalign}
-     {\setbox\b_itemgroups\simplealignedbox
+     {\setbox\b_strc_itemgroups\simplealignedbox
         {\dimexpr\d_strc_itemgroups_asked_width+\itemgroupparameter\c!distance\relax}
         {\itemgroupparameter\c!itemalign}
-        {\box\b_itemgroups\hskip\itemgroupparameter\c!distance}}}
+        {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}}}
 
 \def\strc_itemgroups_make_destination_box
   {\iftrialtypesetting \else \ifx\m_strc_itemgroups_destination\empty \else
-     \setbox\b_itemgroups\hbox{\directgotobox{\box\b_itemgroups}[\m_strc_itemgroups_destination]}%
+     \setbox\b_strc_itemgroups\hbox{\directgotobox{\box\b_strc_itemgroups}[\m_strc_itemgroups_destination]}%
    \fi\fi}
 
 \def\strc_itemgroups_check_indenting
@@ -1262,9 +1262,9 @@
       \ifx\m_strc_itemgroups_repeat_start\empty
         \let\m_current_itemgroups_repeat_start\currentitemlevel
       \fi
-      \setbox\b_itemgroups\hbox to \wd\b_itemgroups
+      \setbox\b_strc_itemgroups\hbox to \wd\b_strc_itemgroups
         {\hskip-\d_strc_itemgroups_asked_width
-         \box\b_itemgroups}% what a hack !
+         \box\b_strc_itemgroups}% what a hack !
    \fi}
 
 \def\strc_itemgroups_insert_item
@@ -1288,8 +1288,8 @@
      \strc_itemgroups_make_aligned_box
    \fi\fi
    \let\m_strc_itemgroups_destination\empty
-   \ht\b_itemgroups\strutheight % just in case a symbols is not yet available in
-   \dp\b_itemgroups\strutdepth  % the current run (more a mkii mp side artifact)
+   \ht\b_strc_itemgroups\strutheight % just in case a symbols is not yet available in
+   \dp\b_strc_itemgroups\strutdepth  % the current run (more a mkii mp side artifact)
    \strc_itemgroups_check_for_repeated
    \ifdim\d_strc_itemgroups_asked_width<\zeropoint\relax
      \strc_itemgroups_handle_lapped_item_negative
@@ -1320,7 +1320,7 @@
   {\let\currentitemreference\empty
    \strc_itemgroups_increment_item_counter
    \advance\c_strc_itemgroups_n_of_items\plusone
-   \setbox\b_itemgroups\hbox
+   \setbox\b_strc_itemgroups\hbox
      {\useitemgroupstyleandcolor\c!style\c!color
       \strc_itemgroups_used_symbol}%
    \strc_itemgroups_check_for_repeated

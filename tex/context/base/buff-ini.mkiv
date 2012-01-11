@@ -59,7 +59,7 @@
      \expandafter\buff_grab_direct_indeed_b
    \fi}
 
-\def\buff_grab_direct_indeed_a[#1][#2][#3][#4]{\buff_start_indeed{#1}{#2}{#3}{#4}}
+\def\buff_grab_direct_indeed_a[#1][#2][#3][#4]{\buff_start_indeed  {#1}{#2}{#3}{#4}}
 \def\buff_grab_direct_indeed_b[#1][#2][#3][#4]{\buff_start_indeed\empty{#1}{#2}{#3}}
 
 \unexpanded\def\buff_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
@@ -79,7 +79,7 @@
    \buff_gobble}
 
 \unexpanded\def\buff_stop#1%
-  {\egroup
+  {% already done \egroup
    \getvalue{#1}}
 
 \unexpanded\def\setbuffer

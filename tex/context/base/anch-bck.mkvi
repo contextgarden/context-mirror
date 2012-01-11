@@ -152,15 +152,15 @@
 
 \setvalue{\??textbackgroundlevel\v!text}%
   {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
-   \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundtxt}
+   \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt}
 
 \setvalue{\??textbackgroundlevel\v!paragraph}%
   {\ifnum\c_anch_backgrounds_text_level>\plusone
      \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
-     \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundtxt
+     \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt
    \else
      \let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_par
-     \let\anch_backgrounds_text_stop_indeed \dostoptextbackgroundpar
+     \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_par
    \fi}
 
 \setvalue{\??textbackgroundlevel\v!none}%
@@ -191,10 +191,10 @@
      \let\m_anch_backgrounds_text_background\!!zerocount
    \fi
    \startpositionoverlay{\textbackgroundoverlay{\textbackgroundparameter\c!level}}%
-     \anch_backgrounds_text_mp_graphic % gets expanded directly
+     \anch_backgrounds_text_meta_graphic % gets expanded directly
    \stoppositionoverlay}
 
-\def\anch_backgrounds_text_mp_graphic
+\def\anch_backgrounds_text_meta_graphic
   {\normalexpanded
      {\setMPpositiongraphicrange % needs to be optimized
         {\v_anch_backgrounds_anchor_current_b}%
@@ -235,7 +235,7 @@
    \usetextbackgroundstyleandcolor\c!style\c!color
    \fpos\v_anch_backgrounds_text_current\ignorespaces}
 
-\def\dostoptextbackgroundtxt
+\def\anch_backgrounds_text_stop_txt
   {\tpos\v_anch_backgrounds_text_current
    \endgroup}
 
@@ -249,7 +249,7 @@
    \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
    \noindent
    \ifgridsnapping
-     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox{\hbox{\raise\textbackgroundskip\hbox{\fpos\v_anch_backgrounds_text_current}}}%
      \else
@@ -264,7 +264,7 @@
    \vskip-\lineheight
    \nobreak
    \ifgridsnapping \else
-     \doassignsomeskip\textbackgroundparameter\c!topoffset\to\textbackgroundskip
+     \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
      \ifdim\textbackgroundskip>\zeropoint
         \kern\textbackgroundskip\nobreak
      \fi
@@ -284,10 +284,10 @@
    \doinhibitblank %   \blank[\v!disable]% new
    \par}
 
-\def\dostoptextbackgroundpar
+\def\anch_backgrounds_text_stop_par
   {\par
    \removelastskip % new
-   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifdim\lastskip>\zeropoint
      \advance\textbackgroundskip-\lastskip
    \fi
@@ -302,7 +302,7 @@
    \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
    \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
    \nobreak \noindent \strut \hfill \kern\zeropoint
-   \doassignsomeskip\textbackgroundparameter\c!bottomoffset\to\textbackgroundskip
+   \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox\plusone{\hbox{\lower\textbackgroundskip\hbox{\tpos\v_anch_backgrounds_text_current}}}%

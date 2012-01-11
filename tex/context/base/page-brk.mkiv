@@ -48,31 +48,36 @@
 \let\page_breaks_current_option \empty
 \let\page_breaks_current_options\empty
 
+\installcorenamespace{pagebreakmethod}
+\installcorenamespace{pagebreaks}
+
 \def\page_breaks_handle#1%
   {\edef\page_breaks_current_options{#1}% handy for tracing
    \processcommacommand[\page_breaks_current_options]\page_breaks_handle_indeed}
 
 \def\page_breaks_handle_indeed#1%
   {\edef\page_breaks_current_option{#1}% can be used in handler
-   \ifcsname\??pe:\page_breaks_current_option\endcsname
-     \csname\??pe:\page_breaks_current_option\endcsname
-   \else\ifcsname\??pe::\page_breaks_current_option\endcsname
-     \expandafter\page_breaks_handle\csname\??pe::\page_breaks_current_option\endcsname
+   \ifcsname\??pagebreakmethod\page_breaks_current_option\endcsname
+     \csname\??pagebreakmethod\page_breaks_current_option\endcsname
+   \else\ifcsname\??pagebreaks\page_breaks_current_option\endcsname
+     \expandafter\page_breaks_handle\csname\??pagebreaks\page_breaks_current_option\endcsname
    \else
-     \csname\??pe:\s!unknown\endcsname
+     \csname\??pagebreakmethod\s!unknown\endcsname
    \fi\fi}
 
 \def\page_breaks_handle_direct#1%
-  {\csname\??pe:#1\endcsname}
+  {\csname\??pagebreakmethod#1\endcsname}
 
-\def\installpagebreakhandler#1#2% low level definer
-  {\setvalue{\??pe:#1}{#2}}
+\unexpanded\def\installpagebreakmethod#1#2% low level definer
+  {\setvalue{\??pagebreakmethod#1}{#2}}
+
+\let\installpagebreakhandler\installpagebreakmethod % will go
 
 \unexpanded\def\definepagebreak
   {\dodoubleargument\page_breaks_define}
 
 \def\page_breaks_define[#1][#2]%
-  {\setvalue{\??pe::#1}{#2}}
+  {\setvalue{\??pagebreaks#1}{#2}}
 
 \unexpanded\def\pagebreak
   {\dosingleempty\page_breaks_process}
@@ -115,19 +120,19 @@
 \def\disablepagebreaks % to be used grouped !
   {\def\page_breaks_process[##1]{}}
 
-\installpagebreakhandler \s!dummy
+\installpagebreakmethod \s!dummy
   {\page_otr_flush_all_floats
    \gotonextpage
    \page_otr_insert_dummy_page}
 
-\installpagebreakhandler \v!frame
+\installpagebreakmethod \v!frame
   {\page
    \begingroup
    \showframe
    \page[\v!empty]
    \endgroup}
 
-\installpagebreakhandler \s!unknown
+\installpagebreakmethod \s!unknown
   {\doifinstringelse{+}\page_breaks_current_option
      {\page_otr_flush_all_floats
       \gotonextpage
@@ -143,17 +148,17 @@
             \fi}}
         {}}}
 
-\installpagebreakhandler \s!default
+\installpagebreakmethod \s!default
   {} % do nothing if empty
 
-\installpagebreakhandler \v!reset
+\installpagebreakmethod \v!reset
   {% better not: \global\pageornamentstate\zerocount
    \resetpagebreak}
 
-\installpagebreakhandler \v!disable
+\installpagebreakmethod \v!disable
   {\global\setfalse\c_page_breaks_enabled}
 
-\installpagebreakhandler \v!yes
+\installpagebreakmethod \v!yes
   {\ifconditional\c_page_breaks_enabled
      \page_otr_flush_all_floats
      \gotonextpage
@@ -162,22 +167,22 @@
      \fi
    \fi}
 
-\installpagebreakhandler \v!makeup
+\installpagebreakmethod \v!makeup
   {\ifconditional\c_page_breaks_enabled
      \page_otr_fill_and_eject_page
    \fi}
 
-\installpagebreakhandler \v!blank
+\installpagebreakmethod \v!blank
   {\ifcase\pageornamentstate
      \global\pageornamentstate\plusone
    \fi}
 
-\installpagebreakhandler \v!no
+\installpagebreakmethod \v!no
   {\ifconditional\c_page_breaks_enabled
      \dosomebreak\nobreak
    \fi}
 
-\installpagebreakhandler \v!preference
+\installpagebreakmethod \v!preference
   {\ifconditional\c_page_breaks_enabled
      \ifinsidecolumns % this will move to MUL
        \dosomebreak\goodbreak
@@ -186,7 +191,7 @@
      \fi
    \fi}
 
-\installpagebreakhandler \v!bigpreference
+\installpagebreakmethod \v!bigpreference
   {\ifconditional\c_page_breaks_enabled
      \ifinsidecolumns % this will move to MUL
        \dosomebreak\goodbreak
@@ -195,25 +200,25 @@
      \fi
    \fi}
 
-% \installpagebreakhandler \v!empty {} % defined in page-txt.mkiv
-% \installpagebreakhandler \v!header{} % defined in page-txt.mkiv
-% \installpagebreakhandler \v!footer{} % defined in page-txt.mkiv
-% \installpagebreakhandler \v!left  {} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!empty {} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!header{} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!footer{} % defined in page-txt.mkiv
+% \installpagebreakmethod \v!left  {} % defined in page-txt.mkiv
 
-\installpagebreakhandler \v!right
+\installpagebreakmethod \v!right
   {\page_otr_flush_all_floats
    \gotonextpageX % will become \gotonextpage
    \doifbothsidesoverruled{}{}{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}}
 
-\installpagebreakhandler \v!even
+\installpagebreakmethod \v!even
   {\page
    \doifoddpageelse{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}\donothing}
 
-\installpagebreakhandler \v!odd
+\installpagebreakmethod \v!odd
   {\page
    \doifoddpageelse\donothing{\resetcurrentstructuremarkswithpage\page_otr_insert_dummy_page}}
 
-\installpagebreakhandler \v!quadruple % not yet ok inside columnsets
+\installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
      \ifnum\numexpr\realpageno/4\relax=\numexpr\realpageno/2\relax\else
        \page_breaks_handle_direct\v!yes
@@ -222,7 +227,7 @@
      \fi
    \fi}
 
-\installpagebreakhandler \v!last
+\installpagebreakmethod \v!last
   {\page_otr_flush_all_floats
    \gotonextpageX % will become \gotonextpage
    \relax
@@ -233,7 +238,7 @@
       \page_otr_insert_dummy_page}%
    \filluparrangedpages}
 
-\installpagebreakhandler \v!lastpage % handy for backpage preceded by empty pages
+\installpagebreakmethod \v!lastpage % handy for backpage preceded by empty pages
   {\page_breaks_handle_direct\v!yes
    \ifdoublesided
      \page_breaks_handle_direct\v!left
@@ -241,10 +246,13 @@
      \page_breaks_handle_direct\v!empty
    \fi}
 
-\installpagebreakhandler \v!start {\global\settrue \c_otr_shipout_enabled}
-\installpagebreakhandler \v!stop  {\global\setfalse\c_otr_shipout_enabled}
+\installpagebreakmethod \v!start {\global\settrue \c_otr_shipout_enabled}
+\installpagebreakmethod \v!stop  {\global\setfalse\c_otr_shipout_enabled}
 
 % Column breaks.
+
+\installcorenamespace{columnbreakmethod}
+\installcorenamespace{columnbreaks}
 
 \newtoks\everybeforecolumnbreak
 \newtoks\everyaftercolumnbreak
@@ -258,25 +266,27 @@
 
 \def\page_breaks_columns_handle_indeed#1%
   {\edef\page_breaks_columns_current_option{#1}%
-   \ifcsname\??cn:\OTRidentifier:\page_breaks_columns_current_option\endcsname
-     \csname\??cn:\OTRidentifier:\page_breaks_columns_current_option\endcsname
-   \else\ifcsname\??cn::\page_breaks_columns_current_option\endcsname
-     \expandafter\csname\page_breaks_columns_handle\??cn::\page_breaks_columns_current_option\endcsname
+   \ifcsname\??columnbreakmethod\OTRidentifier:\page_breaks_columns_current_option\endcsname
+     \csname\??columnbreakmethod\OTRidentifier:\page_breaks_columns_current_option\endcsname
+   \else\ifcsname\??columnbreaks\page_breaks_columns_current_option\endcsname
+     \expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname
    \else
-     \csname\??cn:\OTRidentifier:\s!unknown\endcsname
+     \csname\??columnbreakmethod\OTRidentifier:\s!unknown\endcsname
    \fi\fi}
 
 \def\page_breaks_columns_handle_direct#1%
-  {\csname\??cn:\OTRidentifier:#1\endcsname}
+  {\csname\??columnbreakmethod\OTRidentifier:#1\endcsname}
 
-\def\installcolumnbreakhandler#1#2#3% #1=otr-id #2=tag #3=action
-  {\setvalue{\??cn:#1:#2}{#3}}
+\unexpanded\def\installcolumnbreakmethod#1#2#3% #1=otr-id #2=tag #3=action
+  {\setvalue{\??columnbreakmethod#1:#2}{#3}}
+
+\let\installcolumnbreakhandler\installcolumnbreakmethod % will go
 
 \unexpanded\def\definecolumnbreak
   {\dodoubleargument\page_break_columns_define}
 
 \def\page_break_columns_define[#1][#2]%
-  {\setvalue{\??cn::#1}{#2}}
+  {\setvalue{\??columnbreaks#1}{#2}}
 
 \unexpanded\def\columnbreak
   {\dosingleempty\page_breaks_columns_process}

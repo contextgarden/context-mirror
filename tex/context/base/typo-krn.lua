@@ -24,6 +24,7 @@ local insert_node_before = node.insert_before
 local insert_node_after  = node.insert_after
 
 local texattribute       = tex.attribute
+local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
@@ -264,17 +265,19 @@ end
 local enabled = false
 
 function kerns.set(factor)
-    if not enabled then
-        tasks.enableaction("processors","typesetters.kerns.handler")
-        enabled = true
-    end
     if factor ~= 0 then
+        if not enabled then
+            tasks.enableaction("processors","typesetters.kerns.handler")
+            enabled = true
+        end
         local a = factors[factor]
         if not a then
             a = #mapping + 1
             factors[factors], mapping[a] = a, factor
         end
         factor = a
+    else
+        factor = unsetvalue
     end
     texattribute[a_kerns] = factor
     return factor
@@ -289,3 +292,7 @@ kerns.handler = nodes.installattributehandler {
     namespace = kerns,
     processor = process,
 }
+
+-- interface
+
+commands.setcharacterkerning = kerns.set

@@ -447,7 +447,7 @@
 
 \def\dodotypesetbufferindeed#1%
   {}
-
+
 % for me only (manuals and such)
 %
 % \definetypesetting [name] [options]   [settings-a]
@@ -462,17 +462,17 @@
 %     \typesetfile[oepsoeps.tex][width=10cm,frame=on]
 % \stoptext
 
-\definesystemvariable{tz}
+\installcorenamespace{typesettingfile}
 
 \unexpanded\def\definetypesetting{\dotripleempty\dodefinetypesetting}
 \unexpanded\def\typesetfile      {\dotripleempty\dotypesetfile}
 
 \def\dodefinetypesetting[#1][#2][#3]% <name> options settings-a
-  {\doifsomething{#1}{\setvalue{\??tz#1}{\dodotypesetfile{#2}{#3}}}}
+  {\doifsomething{#1}{\setvalue{\??typesettingfile#1}{\dodotypesetfile{#2}{#3}}}}
 
 \def\dotypesetfile[#1][#2][#3]% <name> filename settings-b | filename options settings
-  {\ifcsname\??tz#1\endcsname
-     \csname\??tz#1\endcsname{#2}{#3}%
+  {\ifcsname\??typesettingfile#1\endcsname
+     \csname\??typesettingfile#1\endcsname{#2}{#3}%
    \else\ifthirdargument % filename options settings
      \dodotypesetfile{#2}{#3}{#1}{}%
    \else\ifsecondargument % filename settings

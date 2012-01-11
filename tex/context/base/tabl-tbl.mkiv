@@ -955,7 +955,7 @@
    \the\everytabulate
    \tabulateparameter\c!inner
    \doifelsevalue{\??tt\currenttabulate\c!indenting}\v!yes
-     {\edef\tabulateindent{\the\dimexpr\leftskip+\hangindent+\parindent}}% \ctxparindent
+     {\edef\tabulateindent{\the\dimexpr\leftskip+\hangindent+\parindent}}%
      {\edef\tabulateindent{\the\dimexpr\leftskip+\hangindent           }}%
    \global\tabulatecolumn\zerocount
    \processcontent{\e!stop#1}\tabulatecontent{\processtabulate[#3]}} % \currenttabulate

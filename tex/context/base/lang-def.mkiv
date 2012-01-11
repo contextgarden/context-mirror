@@ -106,33 +106,33 @@
 
 \installlanguage
   [\s!nb]
-  [spacing=packed,
-   lefthyphenmin=2,
-   righthyphenmin=2,
-   leftsentence=\emdash,
-   rightsentence=\emdash,
-   leftsubsentence=\emdash,
-   rightsubsentence=\emdash,
-   leftquote=\upperleftsinglesixquote,
-   rightquote=\upperrightsingleninequote,
-   leftquotation=\leftguillemot,
-   rightquotation=\rightguillemot,
-   date={day,{.},\space,month,\space,year}]
+  [\c!spacing=\v!packed,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
 \installlanguage
   [\s!nn]
-  [spacing=packed,
-   lefthyphenmin=2,
-   righthyphenmin=2,
-   leftsentence=\emdash,
-   rightsentence=\emdash,
-   leftsubsentence=\emdash,
-   rightsubsentence=\emdash,
-   leftquote=\upperleftsinglesixquote,
-   rightquote=\upperrightsingleninequote,
-   leftquotation=\leftguillemot,
-   rightquotation=\rightguillemot,
-   date={day,{.},\space,month,\space,year}]
+  [\c!spacing=\v!packed,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
 
 \installlanguage [\s!no]        [\s!nb]
@@ -260,14 +260,12 @@
   \c!rightquotation=\leftguillemot,
   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
-\installlanguage [polish]    [\s!pl]
-\installlanguage [czech]     [\s!cs]
-\installlanguage [slovak]    [\s!sk]
-\installlanguage [croatian]  [\s!hr]
-\installlanguage [slovenian] [\s!sl]
+\installlanguage [\s!polish]    [\s!pl]
+\installlanguage [\s!czech]     [\s!cs]
+\installlanguage [\s!slovak]    [\s!sk]
+\installlanguage [\s!croatian]  [\s!hr]
+\installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]   [\s!sl] % both possible (mojca: still needed?)
-
-\installlanguage [cz]        [\s!cs]
 
 \def\doconvertsloveniancharacters{\dodoconvertcharacters{25}}
 
@@ -286,16 +284,16 @@
 %D language is Slovenian. If you feel uncomfortable with this,
 %D mail Mojca, since she promised to to take the heat.
 
-\defineconversion [sl] [character]  [\sloveniancharacter]
-\defineconversion [sl] [Character]  [\slovenianCharacter]
+\defineconversion [\s!sl] [character]  [\sloveniancharacter]
+\defineconversion [\s!sl] [Character]  [\slovenianCharacter]
 
-\defineconversion [sl] [characters] [\sloveniancharacters]
-\defineconversion [sl] [Characters] [\slovenianCharacters]
+\defineconversion [\s!sl] [characters] [\sloveniancharacters]
+\defineconversion [\s!sl] [Characters] [\slovenianCharacters]
 
-\defineconversion [sl] [a]          [\sloveniancharacters]
-\defineconversion [sl] [A]          [\slovenianCharacters]
-\defineconversion [sl] [AK]         [\smallcapped\sloveniancharacters]
-\defineconversion [sl] [KA]         [\smallcapped\sloveniancharacters]
+\defineconversion [\s!sl] [a]          [\sloveniancharacters]
+\defineconversion [\s!sl] [A]          [\slovenianCharacters]
+\defineconversion [\s!sl] [AK]         [\smallcapped\sloveniancharacters]
+\defineconversion [\s!sl] [KA]         [\smallcapped\sloveniancharacters]
 
 \def\sloveniancharacters#1{\ctxcommand{alphabetic(\number#1,"sl")}}
 \def\slovenianCharacters#1{\ctxcommand{Alphabetic(\number#1,"sl")}}
@@ -333,8 +331,8 @@
    \c!date={\v!day,\space,\v!month,\space,\v!year},
    \s!patterns=\s!uk]
 
-\installlanguage [russian]   [\s!ru]
-\installlanguage [ukrainian] [\s!ua]
+\installlanguage [\s!russian]   [\s!ru]
+\installlanguage [\s!ukrainian] [\s!ua]
 
 % Uralic Languages: Cheremiss, Estonian, Finnish, Karelian, Laap,
 % Mordvinian, Permian tongues, Hungarian, Ostyak, Vogul, Samoyed
@@ -365,8 +363,8 @@
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!year,.,\space,\v!month,\space,\v!day,.}]
 
-\installlanguage [finish]    [\s!fi]
-\installlanguage [hungarian] [\s!hu]
+\installlanguage [\s!finish]    [\s!fi]
+\installlanguage [\s!hungarian] [\s!hu]
 
 % Altaic Languages: Uigur, Uzbek, Azeri/Azerbaijani, Chuvash,
 % Turkish, Turkmen, Kazakh, Kazar, Kireghiz, Noghay, Talar,
@@ -401,15 +399,12 @@
    \s!lefthyphenmin=1,
    \s!righthyphenmin=2]
 
-\installlanguage [turkish] [\s!tr]
-\installlanguage [turkmen] [\s!tk]
+\installlanguage [\s!turkish] [\s!tr]
+\installlanguage [\s!turkmen] [\s!tk]
 
 % Anatolian Languages
 
 % Arabic Languages
-
-\definesystemconstant {arabic}
-\definesystemvariable {ar}
 
 \installlanguage
   [\s!ar]
@@ -473,15 +468,9 @@
    \s!lefthyphenmin=2,
    \s!righthyphenmin=2]
 
-\installlanguage [lithuanian] [\s!lt]
+\installlanguage [\s!lithuanian] [\s!lt]
 
 % Celtic: Breton, Welsh, Irish, Manx, Scottish Gaelic
-
-% CJK
-
-\definesystemconstant {chinese}  \definesystemconstant {cn}
-\definesystemconstant {japanese} \definesystemconstant {ja}
-\definesystemconstant {korean}   \definesystemconstant {kr}
 
 \installlanguage
   [\s!cn]
@@ -535,7 +524,7 @@
    \c!date={\v!day\space\v!month\space\v!year},
    \s!patterns=\s!agr] % ok?
 
-\installlanguage [greek] [\s!gr]
+\installlanguage [\s!greek] [\s!gr]
 
 \installlanguage
   [\s!agr]
@@ -545,8 +534,7 @@
    \c!leftquotation=\upperleftdoublesixquote,
    \c!rightquotation=\upperrightdoubleninequote]
 
-\installlanguage [ancientgreek] [\s!agr]
-\installlanguage [grk]          [\s!agr]
+\installlanguage [\s!ancientgreek] [\s!agr]
 
 % Indo-Iranian Languages: 34.
 
@@ -554,8 +542,8 @@
 % Sardian, Catalan, French, Ladino, Portuguese, Proven\c{c}al,
 % Spanish
 
-\ifx\guillemotspace\undefined \let\guillemotspace\empty \fi
-\ifx\sentencespace \undefined \let\sentencespace \empty \fi
+\ifdefined\guillemotspace \else \let\guillemotspace\empty \fi
+\ifdefined\sentencespace  \else \let\sentencespace \empty \fi
 
 \installlanguage
   [\s!fr]
@@ -657,15 +645,13 @@
 
 %D For compatibility reasons we also define:
 
-\installlanguage [fa]          [\s!fr] % for dutchies only
-
-\installlanguage [french]      [\s!fr]
-\installlanguage [spanish]     [\s!es]
-\installlanguage [catalan]     [\s!ca]
-\installlanguage [italian]     [\s!it]
-\installlanguage [latin]       [\s!la]
-\installlanguage [portuguese]  [\s!pt]
-\installlanguage [romanian]    [\s!ro]
+\installlanguage [\s!french]      [\s!fr]
+\installlanguage [\s!spanish]     [\s!es]
+\installlanguage [\s!catalan]     [\s!ca]
+\installlanguage [\s!italian]     [\s!it]
+\installlanguage [\s!latin]       [\s!la]
+\installlanguage [\s!portuguese]  [\s!pt]
+\installlanguage [\s!romanian]    [\s!ro]
 
 \defineconversion [\s!fr] [\v!day:mnem] [\frordinaldaynumber]
 
@@ -684,7 +670,7 @@
    \c!rightquotation=\quotedblright,
    \c!date={{ },dd,{/},mm,{/},yy}]
 
-\installlanguage [vietnamese] [\s!vi]
+\installlanguage [\s!vietnamese] [\s!vi]
 
 %D Todo: generate this one from languages.data
 
@@ -692,5 +678,11 @@
 \installlanguage[deu][\s!de]
 \installlanguage[eng][\s!en]
 \installlanguage[fra][\s!fr]
+%installlanguage[grk][\s!agr]
+
+%D This might go:
+
+\installlanguage[cz][\s!cs]
+%installlanguage[fa][\s!fr] % for dutchies only
 
 \protect \endinput

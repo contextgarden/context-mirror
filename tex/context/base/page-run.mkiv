@@ -236,7 +236,7 @@ function commands.showlayout(options)
 end
 \stopluacode
 
-\gdef\doshowframe[#1][#2]%
+\gdef\page_layouts_show_frame[#1][#2]%
   {\ifsecondargument
      \setupbackgrounds
        [\v!page]
@@ -269,15 +269,15 @@ end
    \setupbackgrounds
      [\c!state=\v!repeat]}
 
-\gdef\doshowsetups[#1]%
+\gdef\page_layouts_show_setups[#1]%
   {\ctxcommand{showlayoutvariables("#1")}}
 
-\gdef\doshowlayout[#1]%
+\gdef\page_layouts_show_layout[#1]%
   {\ctxcommand{showlayout("#1")}}
 
-\unexpanded\gdef\showframe {\dodoubleempty\doshowframe}
-\unexpanded\gdef\showsetups{\dodoubleempty\doshowsetups}
-\unexpanded\gdef\showlayout{\dodoubleempty\doshowlayout}
+\unexpanded\gdef\showframe {\dodoubleempty\page_layouts_show_frame }
+\unexpanded\gdef\showsetups{\dosingleempty\page_layouts_show_setups}
+\unexpanded\gdef\showlayout{\dosingleempty\page_layouts_show_layout}
 
 \unexpanded\gdef\showmargins
   {\starttabulate

@@ -1016,7 +1016,7 @@
    \global\floatwidth\wd\floatbox
    \global\floatheight\ht\floatbox % forget about the depth
    \global\advance\floattextwidth -\floatwidth
-   \global\advance\floattextwidth -\rootfloatparameter\c!margin\relax % was \tfskipsize
+   \global\advance\floattextwidth -\rootfloatparameter\c!margin\relax
    \edef\floatlocation{#1}% to be sure
    \doifinsetelse\v!tall{#1}
      {\floattextheight\pagegoal
@@ -1243,7 +1243,7 @@
   {\normalexpanded{\noexpand\setupalign[\v!reset,\floatcaptionparameter\c!align]}}
 
 \def\dopreparesideautocaption
-  {\scratchdimen\dimexpr\hsize-\wd\b_strc_floats_content-\floatparameter\c!margin\relax % was \tfskipsize\relax
+  {\scratchdimen\dimexpr\hsize-\wd\b_strc_floats_content-\floatparameter\c!margin\relax
    \ifdim\wd\b_strc_floats_caption>\scratchdimen
      \ifdim\wd\b_strc_floats_caption<1.3\scratchdimen
        \scratchdimen0.8\scratchdimen
@@ -1811,6 +1811,8 @@
 
 % float strategy, replaces some of the above macros
 
+\installcorenamespace{floatmethods}
+
 \let\floatmethod      \empty
 \let\floatlabel       \empty
 \let\floatcolumn      \empty
@@ -1830,57 +1832,59 @@
      \ifdefined\OTRSETsetpreferedcolumnslot
        \OTRSETsetpreferedcolumnslot\floatcolumn\floatrow
      \fi
-     \ifcsname\string\floatmethod\floatmethod\endcsname \else
+     \ifcsname\??floatmethods\floatmethod\endcsname \else
         \let\floatmethod\v!here
      \fi
      \ifx\forcedfloatmethod\empty \else
        \let\floatmethod\forcedfloatmethod
      \fi
-     \getvalue{\string\floatmethod\floatmethod}[\floatmethod,\floatlocation]%
+     \getvalue{\??floatmethods\floatmethod}[\floatmethod,\floatlocation]%
    \fi}
 
-\def\installfloathandler#1#2% #1=keyword #2=handler
-  {\setvalue{\string\floatmethod#1}{#2}}
+\unexpanded\def\installfloatmethod#1#2% #1=keyword #2=handler
+  {\setvalue{\??floatmethods#1}{#2}}
+
+\let\installfloathandler\installfloatmethod % will go
 
 \def\somesomewherefloat[#1]%
   {\dofloatssavesomewherefloat\s!somewhere{#1}}
 
-\installfloathandler \v!here        \someherefloat
-\installfloathandler \v!force       \somefixdfloat
-\installfloathandler \v!left        \someleftsidefloat
-\installfloathandler \v!right       \somerightsidefloat
-\installfloathandler \v!text        \sometextfloat
-\installfloathandler \v!top         \sometopfloat
-\installfloathandler \v!bottom      \somebottomfloat
-\installfloathandler \v!auto        \someautofloat
-\installfloathandler \v!margin      \somemarginfloat
-\installfloathandler \v!opposite    \somefacefloat
-\installfloathandler \v!page        \somepagefloat
-\installfloathandler \v!leftpage    \someleftpagefloat
-\installfloathandler \v!rightpage   \somerightpagefloat
-\installfloathandler \v!inmargin    \someinmarginfloat
-\installfloathandler \v!inleft      \someinleftmarginfloat
-\installfloathandler \v!inright     \someinrightmarginfloat
-\installfloathandler \v!leftmargin  \someinleftmarginfloat
-\installfloathandler \v!rightmargin \someinrightmarginfloat
-\installfloathandler \v!leftedge    \someinleftedgefloat
-\installfloathandler \v!rightedge   \someinrightedgefloat
+\installfloatmethod \v!here        \someherefloat
+\installfloatmethod \v!force       \somefixdfloat
+\installfloatmethod \v!left        \someleftsidefloat
+\installfloatmethod \v!right       \somerightsidefloat
+\installfloatmethod \v!text        \sometextfloat
+\installfloatmethod \v!top         \sometopfloat
+\installfloatmethod \v!bottom      \somebottomfloat
+\installfloatmethod \v!auto        \someautofloat
+\installfloatmethod \v!margin      \somemarginfloat
+\installfloatmethod \v!opposite    \somefacefloat
+\installfloatmethod \v!page        \somepagefloat
+\installfloatmethod \v!leftpage    \someleftpagefloat
+\installfloatmethod \v!rightpage   \somerightpagefloat
+\installfloatmethod \v!inmargin    \someinmarginfloat
+\installfloatmethod \v!inleft      \someinleftmarginfloat
+\installfloatmethod \v!inright     \someinrightmarginfloat
+\installfloatmethod \v!leftmargin  \someinleftmarginfloat
+\installfloatmethod \v!rightmargin \someinrightmarginfloat
+\installfloatmethod \v!leftedge    \someinleftedgefloat
+\installfloatmethod \v!rightedge   \someinrightedgefloat
 
-\installfloathandler \v!somewhere   \somesomewherefloat
+\installfloatmethod \v!somewhere   \somesomewherefloat
 
-\installfloathandler \v!backspace   \somebackspacefloat
-\installfloathandler \v!cutspace    \somecutspacefloat
+\installfloatmethod \v!backspace   \somebackspacefloat
+\installfloatmethod \v!cutspace    \somecutspacefloat
 
-\installfloathandler {tblr} \someslotfloat
-\installfloathandler {lrtb} \someslotfloat
-\installfloathandler {tbrl} \someslotfloat
-\installfloathandler {rltb} \someslotfloat
-\installfloathandler {btlr} \someslotfloat
-\installfloathandler {lrbt} \someslotfloat
-\installfloathandler {btrl} \someslotfloat
-\installfloathandler {rlbt} \someslotfloat
-\installfloathandler {fxtb} \someslotfloat
-\installfloathandler {fxbt} \someslotfloat
+\installfloatmethod {tblr} \someslotfloat
+\installfloatmethod {lrtb} \someslotfloat
+\installfloatmethod {tbrl} \someslotfloat
+\installfloatmethod {rltb} \someslotfloat
+\installfloatmethod {btlr} \someslotfloat
+\installfloatmethod {lrbt} \someslotfloat
+\installfloatmethod {btrl} \someslotfloat
+\installfloatmethod {rlbt} \someslotfloat
+\installfloatmethod {fxtb} \someslotfloat
+\installfloatmethod {fxbt} \someslotfloat
 
 % no \registerotrcommand\placesome* here!, this has to be cleaned up:
 
@@ -1930,7 +1934,7 @@
    %\c!after=\blank,
    \c!inbetween=\blank]
 
-\installfloathandler \v!local \somelocalfloat
+\installfloatmethod \v!local \somelocalfloat
 
 \initializeboxstack{localfloats}
 

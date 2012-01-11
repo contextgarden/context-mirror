@@ -375,14 +375,14 @@
 \newbox\positiongraphicbox
 
 \def\startMPpositiongraphic % id setups
-  {\dodoublegroupempty\anch_positions_mp_graphic_start}
+  {\dodoublegroupempty\anch_positions_meta_graphic_start}
 
-\def\anch_positions_mp_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
-  {\setgvalue{\??positiongraphic#1}{\anch_positions_mp_graphic_use{#1}{#2}{#3}}}
+\def\anch_positions_meta_graphic_start#1#2#3\stopMPpositiongraphic % tag list mpcode
+  {\setgvalue{\??positiongraphic#1}{\anch_positions_meta_graphic_use{#1}{#2}{#3}}}
 
 \let\stopMPpositiongraphic\relax
 
-\def\anch_positions_mp_graphic_prepare
+\def\anch_positions_meta_graphic_prepare
   {\ifcsname\??gv\currentmpvariableclass:self\endcsname \else
      \letvalue{\??gv\currentmpvariableclass:self}\currentposition
    \fi
@@ -390,51 +390,51 @@
      \letvalue{\??gv\currentmpvariableclass:from}\currentposition
    \fi}
 
-\def\anch_positions_mp_graphic_use#1#2#3%
+\def\anch_positions_meta_graphic_use#1#2#3%
   {\begingroup
    \meta_prepare_variables{#2}%
-   \anch_positions_mp_graphic_prepare
+   \anch_positions_meta_graphic_prepare
    \startMPcode#3\stopMPcode
    \endgroup}
 
 \def\MPpositiongraphic
-  {\dodoublegroupempty\anch_positions_mp_graphic_direct}
+  {\dodoublegroupempty\anch_positions_meta_graphic_direct}
 
-\def\anch_positions_mp_graphic_direct#1% tag setups
+\def\anch_positions_meta_graphic_direct#1% tag setups
   {\ifcsname\??positionmethod#1\endcsname % method
-     \expandafter\anch_positions_mp_graphic_direct_indeed_method
+     \expandafter\anch_positions_meta_graphic_direct_indeed_method
    \else\ifcsname\??positiongraphic#1\endcsname
-     \doubleexpandafter\anch_positions_mp_graphic_direct_indeed_normal
+     \doubleexpandafter\anch_positions_meta_graphic_direct_indeed_normal
    \else
-     \doubleexpandafter\anch_positions_mp_graphic_direct_indeed_unknown
+     \doubleexpandafter\anch_positions_meta_graphic_direct_indeed_unknown
    \fi\fi{#1}}
 
-\let\anch_positions_mp_graphic_direct_indeed_unknown\gobbletwoarguments
+\let\anch_positions_meta_graphic_direct_indeed_unknown\gobbletwoarguments
 
-\def\anch_positions_mp_graphic_direct_indeed_method
-  {\anch_positions_mp_graphic_direct_indeed\??positionmethod}
+\def\anch_positions_meta_graphic_direct_indeed_method
+  {\anch_positions_meta_graphic_direct_indeed\??positionmethod}
 
-\def\anch_positions_mp_graphic_direct_indeed_normal
-  {\anch_positions_mp_graphic_direct_indeed\??positiongraphic}
+\def\anch_positions_meta_graphic_direct_indeed_normal
+  {\anch_positions_meta_graphic_direct_indeed\??positiongraphic}
 
-\def\anch_positions_mp_graphic_direct_indeed#1#2#3% what tag setups
+\def\anch_positions_meta_graphic_direct_indeed#1#2#3% what tag setups
   {\begingroup
    \setupMPvariables[#2][#3]%
    \edef\currentmpvariableclass{#2}%
-   \anch_positions_mp_graphic_prepare
-   \ignoreMPboxdepth
-   \def\anch_positions_mp_graphic_direct{\anch_positions_mp_graphic_nested{#3}}% takes two extra arguments
+   \anch_positions_meta_graphic_prepare
+   \obeyMPboxorigin % do we also set the size ?
+   \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
    \setbox\positiongraphicbox\hbox
      {\ignorespaces\csname#1#2\endcsname\removelastspace}%
    \smashbox\positiongraphicbox
    \box\positiongraphicbox
    \endgroup}
 
-\def\anch_positions_mp_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
+\def\anch_positions_meta_graphic_nested#1#2#3% nesting used in prikkels / pascal (might go away)
   {\begingroup
    \setupMPvariables[#2][#1,#3]%
    \edef\currentmpvariableclass{#2}%
-   \anch_positions_mp_graphic_prepare
+   \anch_positions_meta_graphic_prepare
    \getvalue{\??positiongraphic#2}%
    \endgroup}%
 

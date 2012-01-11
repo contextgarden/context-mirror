@@ -17,35 +17,28 @@
 
 \unprotect
 
-\def\forgeteverypar
+\unexpanded\def\forgeteverypar
   {\everypar{\the\neverypar}}
 
 % worth trying:
 %
-% \def\forgeteverypar
+% \unexpanded\def\forgeteverypar
 %   {\everypar\neverypar}
 
-\def\forgetparindent
-  {\forgeteverypar
-   \settrue\c_spac_indentation_indent_first % recently added
-   \ctxparindent\zeropoint
-   \parindent\zeropoint
-   \let\currentindentation\v!none}
-
-\def\forgetparskip
-  {\ctxparskip\zeropoint
+\unexpanded\def\forgetparskip
+  {\s_spac_whitespace_parskip\zeropoint
    \parskip\zeropoint
-   \let\currentwhitespace\v!none}
+   \let\v_spac_whitespace_current\v!none}
 
-\def\forgetbothskips
+\unexpanded\def\forgetbothskips
   {\leftskip\zeropoint
    \rightskip\zeropoint
    \relax}
 
-\def\forgethorizontalstretch
+\unexpanded\def\forgethorizontalstretch
   {\emergencystretch\zeropoint}
 
-\def\forgetverticalstretch
+\unexpanded\def\forgetverticalstretch
   {\spacing\plusone}
 
 \newif\ifforgotten % rather good signal for inner
@@ -69,8 +62,8 @@
 \appendtoks \settopskip                \to \everybodyfont % factors set in \forgetverticalstretch
 \appendtoks \setmaxdepth               \to \everybodyfont % factors set in \forgetverticalstretch
 \appendtoks \synchronizeindenting      \to \everybodyfont
-\appendtoks \simplesetupblank          \to \everybodyfont
-\appendtoks \simplesetupwhitespace     \to \everybodyfont
+\appendtoks \synchronizeblank          \to \everybodyfont
+\appendtoks \synchronizewhitespace     \to \everybodyfont
 \appendtoks \synchronizespacecodes     \to \everybodyfont % not needed, frozen factors
 \appendtoks \setrelativeinterlinespace \to \everybodyfont
 

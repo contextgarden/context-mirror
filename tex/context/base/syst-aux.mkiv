@@ -3392,6 +3392,11 @@
 \unexpanded\def\dorecurse#1%
   {\dostepwiserecurse1{#1}1}
 
+\def\doexpandedrecurse#1#2%
+  {\ifnum#1>\zerocount
+     #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-1\relax}{#2}%
+   \fi}
+
 %D As we can see here, the simple command \type{\dorecurse} is
 %D a special case of the more general:
 %D

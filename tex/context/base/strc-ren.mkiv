@@ -133,7 +133,7 @@
      \let\currentstructurereferenceattribute\currentreferenceattribute
    \else\ifx\currentheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
-     \edef\currentheadbackreference{\structurevariable{references.backreference}}%
+     \edef\currentheadbackreference{\structurevariable\c!backreference}% weird, was references.backreference
      \ifx\currentheadbackreference\empty \else
        \dogetsimplepagereference\currentheadbackreference
        \let\currentstructurereferenceattribute\currentreferenceattribute
@@ -152,7 +152,7 @@
    \else
      \docheckheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
-       {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
+       {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \doresettructureheadnumbercontent
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
@@ -170,7 +170,7 @@
    \else % = needed
      \docheckheadreference
      \setbox\sectionheadbox\ifvertical\vbox\else\hbox\fi \headreferenceattributes
-       {\dosetlocalgridsnapping{\headparameter\c!internalgrid}%
+       {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \headparameter\c!command{\doplaceheadnumbercomponent\getheadnumber}{\doplaceheadtextcomponent\getheadtitle}}%
@@ -359,14 +359,17 @@
 %   \input tufte \par
 % \stopnarrower
 
+\installcorenamespace{headplacementalternative}
+\installcorenamespace{headplacementnature}
+
 \let\numberheadalternative\v!normal
 
 \unexpanded\def\defineheadplacement
   {\dodoubleargument\dodefineheadplacement}
 
 % \def\dodefineheadplacement[#1][#2]% #3#4
-%   {\setvalue{\??ns:#1}{#2}%
-%    \setvalue{\??ns::#1}}
+%   {\setvalue{\??headplacementnature#1}{#2}%
+%    \setvalue{\??headplacementalternative#1}}
 
 % \dodefineheadplacement[sectiona][vertical]{#1->#2}
 % \dodefineheadplacement[sectionb][vertical]#1#2{#1->#2}
@@ -375,12 +378,12 @@
 % \setuphead[subsection][alternative=sectionb]
 
 \def\dodefineheadplacementyes[#1][#2]%#3#4%
-  {\setvalue{\??ns:#1}{#2}%
-   \setvalue{\??ns::#1}##1##2}
+  {\setvalue{\??headplacementnature#1}{#2}%
+   \setvalue{\??headplacementalternative#1}##1##2}
 
 \def\dodefineheadplacementnop[#1][#2]%
-  {\setvalue{\??ns:#1}{#2}%
-   \setvalue{\??ns::#1}}
+  {\setvalue{\??headplacementnature#1}{#2}%
+   \setvalue{\??headplacementalternative#1}}
 
 \def\dodefineheadplacement[#1][#2]%
   {\doifnextbgroupelse
@@ -388,10 +391,15 @@
      {\dodefineheadplacementnop[#1][#2]}}
 
 \def\presetnumberheadalternative
-  {\doifelsevalue{\??ns:\numberheadalternative}\v!horizontal\setfalse\settrue\headisdisplay}
+  {\doifelsevalue{\??headplacementnature\numberheadalternative}\v!horizontal\setfalse\settrue\headisdisplay}
 
 \def\normalplacehead
-  {\csname\??ns::\ifcsname\??ns::\numberheadalternative\endcsname\numberheadalternative\else\v!normal\fi\endcsname}
+  {\csname\??headplacementalternative\ifcsname\??headplacementalternative\numberheadalternative\endcsname\numberheadalternative\else\v!normal\fi\endcsname}
+
+\def\setheaddisplay % used in strc-sec
+  {\doifelsevalue{\??headplacementnature\headparameter\c!alternative}\v!horizontal
+     {\setfalse\headisdisplay}
+     {\settrue \headisdisplay}}
 
 \defineheadplacement[\v!paragraph][\v!vertical]#1#2%
   {\vbox

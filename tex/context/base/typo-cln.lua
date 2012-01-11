@@ -95,3 +95,7 @@ cleaners.handler = nodes.installattributehandler {
     namespace = cleaners,
     processor = process,
 }
+
+-- interface
+
+commands.setcharactercleaning = cleaners.set

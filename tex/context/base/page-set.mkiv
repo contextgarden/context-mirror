@@ -544,8 +544,6 @@
     \egroup
    \fi}
 
-\definesystemvariable {mc}
-\definesystemvariable {mt}
 \definesystemconstant {colset}
 
 \definetwopasslist\s!colset
@@ -615,7 +613,7 @@
 \def\showbreaks
   {\let\OTRSETcolumnseparator\doOTRSETcolumnseparator}
 
-% \installcolumnbreakhandler {SET} \v!ja
+% \installcolumnbreakmethod {SET} \v!ja
 %   {% hmmm:
 %    \ifhmode
 %      \bgroup
@@ -630,14 +628,14 @@
 %    \page_otr_eject_page
 %    \OTRSETsynchronizehsize} % no \OTRSETsethsize, can be mid smaller (like tabulate)
 %
-% \installcolumnbreakhandler {SET} \v!forceer
+% \installcolumnbreakmethod {SET} \v!forceer
 %   {\OTRSETgotocolumn[\v!forceer]}
-% \installcolumnbreakhandler {SET} \v!eerste
+% \installcolumnbreakmethod {SET} \v!eerste
 %   {\OTRSETgotocolumn[\v!eerste]}
-% \installcolumnbreakhandler {SET} \v!laatste
+% \installcolumnbreakmethod {SET} \v!laatste
 %   {\OTRSETgotocolumn[\v!laatste]}
 %
-% \installcolumnbreakhandler {SET} \v!pagina
+% \installcolumnbreakmethod {SET} \v!pagina
 %   {\simplepagebreak % \flushnotes \executepagebreakhandler\v!ja
 %    \ifnum\mofcolumns>\plusone
 %      \OTRSETgotocolumn[\v!laatste,\v!forceer]%
@@ -653,7 +651,7 @@
      \egroup
    \fi}
 
-\installcolumnbreakhandler {SET} \v!local
+\installcolumnbreakmethod {SET} \v!local
   {\OTRSETcolumnhbreak
    \page_otr_flush_all_floats
    \page_otr_eject_page
@@ -667,7 +665,7 @@
 % stay there (basically such a gap is a small empty page
 % then).
 
-\installcolumnbreakhandler {SET} \v!yes
+\installcolumnbreakmethod {SET} \v!yes
   {\OTRSETcolumnhbreak
    \edef\savedmofcolumns{\the\mofcolumns}%
    \edef\savedrealpageno{\the\realpageno}%
@@ -685,10 +683,10 @@
       \fi}%
    \OTRSETsynchronizehsize}
 
-\installcolumnbreakhandler {SET} \s!unknown
+\installcolumnbreakmethod {SET} \s!unknown
   {\expanded{\OTRSETgotocolumn[\@@columnspecification]}}
 
-\installcolumnbreakhandler {SET} \v!page
+\installcolumnbreakmethod {SET} \v!page
   {\page_otr_fill_and_eject_page
    \OTRSETgotonextpage}
 
@@ -2051,9 +2049,9 @@
      \setbox\scratchbox\vbox % kan beter !
        {\forgetall
         \iftopofinsert
-          \ifdim\OTRSETtopoffset=\zeropoint
-            \moveongrid[\v!top]
-          \fi
+         %\ifdim\OTRSETtopoffset=\zeropoint
+         %  \moveongrid[\v!top]
+         %\fi
         \else
           \betweenfloatblanko % inserts can't look back
         \fi
