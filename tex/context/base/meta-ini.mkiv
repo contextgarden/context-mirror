@@ -63,8 +63,8 @@
   {\dosingleempty\meta_start_inclusions}
 
 \def\meta_start_inclusions[#1]#2\stopMPinclusions
-  {\edef\m_mp_option{#1}%
-   \ifx\m_mp_option\!!plustoken \else
+  {\edef\m_meta_option{#1}%
+   \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_userinclusions\emptytoks
    \fi
    \global\t_meta_userinclusions\expandafter{\the\t_meta_userinclusions#2}}
@@ -75,8 +75,8 @@
   {\dosingleempty\meta_inclusions}
 
 \def\meta_inclusions[#1]#2%
-  {\edef\m_mp_option{#1}%
-   \ifx\m_mp_option\!!plustoken \else
+  {\edef\m_meta_option{#1}%
+   \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_userinclusions\emptytoks
    \fi
    \global\t_meta_userinclusions\expandafter{\the\t_meta_userinclusions#2}}
@@ -168,7 +168,7 @@
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
-   \setbox\b_mp_graphic\hbox\bgroup % ; added 20100901 (as in mkii)
+   \setbox\b_meta_graphic\hbox\bgroup % ; added 20100901 (as in mkii)
      \normalexpanded{\noexpand\ctxlua{metapost.graphic(
        "\currentMPgraphicinstance",
        "\currentMPgraphicformat",
@@ -257,7 +257,7 @@
   {\begingroup
    \edef\width {#2\space}\let\overlaywidth \width
    \edef\height{#3\space}\let\overlayheight\height
-   \ifcsname\??mpmpclip#1\endcsname
+   \ifcsname\??mpclip#1\endcsname
      \meta_start_current_graphic
        \xdef\MPclippath{\normalexpanded{\noexpand\ctxlua{metapost.theclippath(
          "\currentMPgraphicinstance",
@@ -329,11 +329,11 @@
 % currently the inheritance of backgrounds does not work and
 % we might drop it anyway (too messy)
 
-\newbox\b_mp_variable_box
+\newbox\b_meta_variable_box
 
 \let \currentmpvariableclass        \empty
-\let \m_mp_current_variable         \empty
-\let \m_mp_current_variable_template\empty
+\let \m_meta_current_variable         \empty
+\let \m_meta_current_variable_template\empty
 
 \def \meta_prepare_variable_default   {\MPcolor{black}} % just to be sure we use a color but ...
 \edef\meta_unknown_variable_template  {\??gv:\s!unknown}
@@ -375,37 +375,37 @@
   {\processcommalist[#1]\meta_prepare_variable}
 
 \unexpanded\def\meta_prepare_variable#1%
-  {\edef\m_mp_current_variable_template
+  {\edef\m_meta_current_variable_template
      {\??gv\currentmpvariableclass:#1}%
-   \edef\m_mp_current_variable
-     {\csname\ifcsname\m_mp_current_variable_template\endcsname
-        \m_mp_current_variable_template\else\meta_unknown_variable_template
+   \edef\m_meta_current_variable
+     {\csname\ifcsname\m_meta_current_variable_template\endcsname
+        \m_meta_current_variable_template\else\meta_unknown_variable_template
       \fi\endcsname}%
-   \ifx\m_mp_current_variable\empty
+   \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
      \expandafter\meta_prepare_variable_yes
    \fi}
 
 \def\meta_prepare_variable_nop
-  {\expandafter \let\csname\m_mp_current_variable_template\endcsname\meta_prepare_variable_default}
+  {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
 
 \def\meta_prepare_variable_color
-  {\expandafter\edef\csname\m_mp_current_variable_template\endcsname{\MPcolor\m_mp_current_variable}}
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
 
 \def\meta_prepare_variable_number
-  {\expandafter\edef\csname\m_mp_current_variable_template\endcsname{\number\m_mp_current_variable}}% also accepts 0.number
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\number\m_meta_current_variable}}% also accepts 0.number
 
 \def\meta_prepare_variable_dimension
-  {\expandafter\edef\csname\m_mp_current_variable_template\endcsname{\the\dimexpr\m_mp_current_variable}}
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
 
 \def\meta_prepare_variable_yes
-  {\defconvertedcommand\ascii\m_mp_current_variable % otherwise problems
+  {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
    \doifcolorelse \ascii                            % with 2\bodyfontsize
      {\meta_prepare_variable_color}
      {\begingroup
-      \setbox\b_mp_variable_box\hbox{\scratchdimen\m_mp_current_variable sp}%
-      \ifzeropt\wd\b_mp_variable_box
+      \setbox\b_meta_variable_box\hbox{\scratchdimen\m_meta_current_variable sp}%
+      \ifzeropt\wd\b_meta_variable_box
         \endgroup\meta_prepare_variable_number
       \else
         \endgroup\meta_prepare_variable_dimension
@@ -450,26 +450,26 @@
 %D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
 %D \stoptyping
 
-\newcount\c_mp_object_counter
-\newbox  \b_mp_graphic
+\newcount\c_meta_object_counter
+\newbox  \b_meta_graphic
 
 % hm, isn't this already done elsewhere?
 
 \unexpanded\def\meta_obey_box_depth
-  {\setbox\b_mp_graphic\hbox\bgroup
-     \raise\MPlly\box\b_mp_graphic
+  {\setbox\b_meta_graphic\hbox\bgroup
+     \raise\MPlly\box\b_meta_graphic
    \egroup}
 
 \unexpanded\def\meta_ignore_box_depth
   {\normalexpanded
      {\meta_obey_box_depth % hence the \unexpanded
-      \wd\b_mp_graphic\the\wd\b_mp_graphic
-      \ht\b_mp_graphic\the\ht\b_mp_graphic
-      \dp\b_mp_graphic\the\dp\b_mp_graphic}}
+      \wd\b_meta_graphic\the\wd\b_meta_graphic
+      \ht\b_meta_graphic\the\ht\b_meta_graphic
+      \dp\b_meta_graphic\the\dp\b_meta_graphic}}
 
 \unexpanded\def\meta_obey_box_origin
-  {\setbox\b_mp_graphic\hbox\bgroup
-     \hskip\MPllx\raise\MPlly\box\b_mp_graphic
+  {\setbox\b_meta_graphic\hbox\bgroup
+     \hskip\MPllx\raise\MPlly\box\b_meta_graphic
    \egroup}
 
 \unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth  }
@@ -481,7 +481,7 @@
 
 \unexpanded\def\placeMPgraphic % the converter also displaces so in fact we revert
   {\meta_relocate_box
-   \box\b_mp_graphic}
+   \box\b_meta_graphic}
 
 \unexpanded\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
@@ -493,9 +493,9 @@
    \extendMPoverlaystamp{#2}% incl prepare
    \ifcsname\??mpgraphic\overlaystamp:#1\endcsname\else
      \meta_enable_include % redundant
-     \global\advance\c_mp_object_counter\plusone
-     \setobject{MP}{\number\c_mp_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
-     \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_mp_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+     \global\advance\c_meta_object_counter\plusone
+     \setobject{MP}{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+     \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \fi
    \getvalue{\??mpgraphic\overlaystamp:#1}%
    \endgroup}
@@ -546,9 +546,9 @@
    \edef\currentmpvariableclass{#1}%
    \meta_prepare_variables{#2}%
    \meta_enable_include % redundant
-   \global\advance\c_mp_object_counter\plusone
-   \setobject{MP}{\number\c_mp_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
-   \setxvalue{\??mpgraphic#1}{\meta_reuse_box{\number\c_mp_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+   \global\advance\c_meta_object_counter\plusone
+   \setobject{MP}{\number\c_meta_object_counter}\hbox{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+   \setxvalue{\??mpgraphic#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \getvalue{\??mpgraphic#1}%
    \endgroup}
 
@@ -581,10 +581,10 @@
 %D
 %D Experimental.
 
-\def\m_mp_page_prefix{\doifoddpageelse oe}
+\def\m_meta_page_prefix{\doifoddpageelse oe}
 
 \def\overlaypagestamp
-  {\m_mp_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
+  {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
 
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
@@ -601,8 +601,8 @@
 \def\meta_unique_page_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \let\overlaystamp\overlaypagestamp
-   \setupMPvariables[\m_mp_page_prefix:\currentMPgraphicname][#2]% prefix is new here
-   \getvalue{\??mpgraphic\m_mp_page_prefix:\currentMPgraphicname}{}%
+   \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
+   \getvalue{\??mpgraphic\m_meta_page_prefix:\currentMPgraphicname}{}%
    \meta_end_graphic_group}
 
 %D One way of defining a stamp is:
@@ -682,12 +682,12 @@
   {\dodoubleempty\dostartMPenvironment}
 
 \def\dostartMPenvironment[#1][#2]#3\stopMPenvironment
-  {\edef\m_mp_option{#1}
-   \ifx\m_mp_option\s!reset
+  {\edef\m_meta_option{#1}
+   \ifx\m_meta_option\s!reset
      \resetMPenvironment % reset mp toks
-   \else\ifx\m_mp_option\v!global
+   \else\ifx\m_meta_option\v!global
      #3%                 % use in main doc too
-   \else\ifx\m_mp_option\!!plustoken
+   \else\ifx\m_meta_option\!!plustoken
      #3%                 % use in main doc too
    \fi\fi\fi
    \ctxlua{metapost.tex.set(\!!bs\detokenize{#3}\!!es)}}

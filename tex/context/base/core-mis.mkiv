@@ -1,3 +1,4 @@
+
 %D \module
 %D   [       file=core-mis,
 %D        version=1998.01.29,
@@ -1252,63 +1253,7 @@
 
 \def\referral
   {\dosingleargument\doreferral}
-
-% FUZZY OLD STUFF: will be removed when not used in some manual;
-% rows instead of columns, i'd forgotten that this code exist
-%
-% \definesystemvariable{ri}
-%
-% \unexpanded\def\setuprows
-%   {\dodoubleargument\getparameters[\??ri]}
-%
-% \definecomplexorsimpleempty\startrows
-%
-% \def\complexstartrows[#1]%
-%   {\bgroup
-%    \setuprows[#1]%
-%    \let\do@@ribottom\relax
-%    \def\row
-%      {\do@@ribottom
-%       \egroup
-%       \dimen0\vsize
-%       \divide\dimen0 \@@rin
-%       \advance\dimen0 -\lineskip
-%       \vbox to \dimen0
-%         \bgroup
-%         \@@ritop
-%         \let\do@@ribottom\@@ribottom
-%         \ignorespaces}%
-%    \bgroup
-%    \row}
-%
-% \unexpanded\def\stoprows
-%   {\do@@ribottom
-%    \egroup
-%    \egroup}
-%
-% \setuprows
-%   [\c!n=2,
-%    \c!top=,
-%    \c!bottom=\vfill]
-
-% THIS WAS MAIN-003.TEX
 
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
-% messages moved
-
 \definetabulate
   [\v!legend]
   [|emj1|i1|mR|]
@@ -1335,9 +1280,6 @@
 \unexpanded\def\xxbox
   {\bgroup\aftergroup\egroup\hbox\bgroup\txx\let\next=}
 
-% \def\mrm#1%
-%   {$\rm#1$}
-
 %D \macros
 %D   {definepairedbox, setuppairedbox, placepairedbox}
 %D
@@ -2012,7 +1954,7 @@
    \hsize#1\hsize}
 
 \setuphorizontaldivision
-  [\c!distance=\tfskipsize,
+  [\c!distance=\emwidth,
    \c!n=\v!fit]
 
 %D This one is for Daniel Pittman, who wanted tight

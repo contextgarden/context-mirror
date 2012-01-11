@@ -350,10 +350,8 @@
      {\??headplace\headparameter\c!placehead}
      {\getvalue{\??headplace\v!yes}}}
 
-\def\setheaddisplay
-  {\doifelsevalue{\??ns:\headparameter\c!alternative}\v!horizontal
-     {\setfalse\headisdisplay}
-     {\settrue \headisdisplay}}
+
+\ifdefined\setheaddisplay \else \let\setheaddisplay\relax \fi
 
 \newmode\v!sectionnumber
 

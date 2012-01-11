@@ -2154,3 +2154,19 @@ primarydef p snapped s =
     )
     p
 enddef ;
+
+% vardef somecolor = (1,1,0,0) enddef ;
+
+% fill OverlayBox withcolor (rcomponent somecolor,gcomponent somecolor,bcomponent somecolor) ;
+% fill OverlayBox withcolor (ccomponent somecolor,mcomponent somecolor,ycomponent somecolor,bcomponent somecolor) ;
+
+% This could be standard mplib 2 behaviour:
+
+vardef rcomponent expr p = if rgbcolor  p : redpart     p elseif cmykcolor p : 1 - cyanpart    p else : p fi enddef ;
+vardef gcomponent expr p = if rgbcolor  p : greenpart   p elseif cmykcolor p : 1 - magentapart p else : p fi enddef ;
+vardef bcomponent expr p = if rgbcolor  p : bluepart    p elseif cmykcolor p : 1 - yellowpart  p else : p fi enddef ;
+vardef ccomponent expr p = if cmykcolor p : cyanpart    p elseif rgbcolor  p : 1 - redpart     p else : p fi enddef ;
+vardef mcomponent expr p = if cmykcolor p : magentapart p elseif rgbcolor  p : 1 - greenpart   p else : p fi enddef ;
+vardef ycomponent expr p = if cmykcolor p : yellowpart  p elseif rgbcolor  p : 1 - bluepart    p else : p fi enddef ;
+vardef bcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p :                 0 else : p fi enddef ;
+

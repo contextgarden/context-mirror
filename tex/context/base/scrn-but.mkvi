@@ -600,19 +600,19 @@
 \newcount      \c_scrn_menu_position
 \newconstant   \c_scrn_menu_page_mode % 0=notfound  1=found  2=currentpage
 \newconditional\c_scrn_menu_positioning
-\newtoks       \t_scrn_menu_mp_data
+\newtoks       \t_scrn_menu_meta_data
 
-\def\scrn_menu_button_mp_template
+\def\scrn_menu_button_meta_template
   {\askedinteractionmenulocation _menu_button(%
      \number\c_scrn_menu_position,%
      \number\c_scrn_menu_page_mode,%
      \MPpos{\askedinteractionmenulocation:\number\c_scrn_menu_position}%
    );}
 
-\def\MPmenubuttons#1{\the\t_scrn_menu_mp_data}
+\def\MPmenubuttons#1{\the\t_scrn_menu_meta_data}
 
 \appendtoks
-    \global\t_scrn_menu_mp_data\emptytoks
+    \global\t_scrn_menu_meta_data\emptytoks
 \to \everyshipout
 
 \def\scrn_menu_whole_position % cannot happen in previous due to align
@@ -695,8 +695,8 @@
      {\c_scrn_menu_page_mode\ifnum\currentreferencerealpage=\realpageno\plusone\else\plustwo\fi}%
      {\c_scrn_menu_page_mode\plustwo}%
    \doglobal\appendetoks
-     \scrn_menu_button_mp_template
-   \to \t_scrn_menu_mp_data
+     \scrn_menu_button_meta_template
+   \to \t_scrn_menu_meta_data
    \hpos
      {\askedinteractionmenulocation:\number\c_scrn_menu_position}%
      {\scrn_button_make

@@ -571,13 +571,14 @@ return {
         {
             filename = "spac-hor",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "probably needs some more work",
         },
         {
             filename = "spac-ver",
             marktype = "mkiv",
-            status   = "unknown",
-            comment  = "update lua code (communicate via register)"
+            status   = "okay",
+            comment  = "maybe some changes will happen"
         },
         {
             filename = "spac-lin",
@@ -1004,17 +1005,18 @@ return {
         {
             filename = "typo-cln",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-spa",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-krn",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "do we keep the style and color or not"
         },
         {
             filename = "typo-itc",

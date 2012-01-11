@@ -739,80 +739,106 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
                             TopSkipCorrection := 0 ;
                         fi ;
 
-                fi ;
+                    fi ;
 
-                if ypart llxy[fpos] = ypart llxy[tpos] :
+                    if ypart llxy[fpos] = ypart llxy[tpos] :
 
-                    multipar :=
-                        llxy[fpos] --
-                        lrxy[tpos] --
-                        _pmp_snapped_multi_pos_(urxy[tpos]) --
-                        _pmp_snapped_multi_pos_(ulxy[fpos]) --
-                        cycle ;
+                        multipar :=
+                            llxy[fpos] --
+                            lrxy[tpos] --
+                            _pmp_snapped_multi_pos_(urxy[tpos]) --
+                            _pmp_snapped_multi_pos_(ulxy[fpos]) --
+                            cycle ;
 
-                    save_multipar (i,1,multipar) ;
+                        save_multipar (i,1,multipar) ;
 
-                elseif (ypart llxy[fpos] = ypart ulxy[tpos]) and (xpart llxy[tpos] < xpart llxy[fpos]) :
+                    elseif (ypart llxy[fpos] = ypart ulxy[tpos]) and (xpart llxy[tpos] < xpart llxy[fpos]) :
 
-                    % two loners
+                        % two loners
 
-                    multipar := if obey_multi_par_hang :
+                        multipar := if obey_multi_par_hang :
 
-                        _pmp_right_bottom_hang_(true) --
-                        _pmp_right_top_hang_(true) --
-                        _pmp_snapped_multi_pos_(urxy[fpos]) --
-                        lrxy[fpos] --
+                            _pmp_right_bottom_hang_(true) --
+                            _pmp_right_top_hang_(true) --
+                            _pmp_snapped_multi_pos_(urxy[fpos]) --
+                            lrxy[fpos] --
+
+                        else :
+
+                            llxy[fpos] --
+                            (xpart urcorner multipar, ypart llxy[fpos]) --
+                            (xpart urcorner multipar, ypart ulxy[fpos]) --
+                            _pmp_snapped_multi_pos_(ulxy[fpos]) --
+
+                        fi cycle ;
+
+                        save_multipar (i,1,multipar) ;
+
+                        multipar := _pmp_set_multipar_(i) ;
+
+                        multipar := if obey_multi_par_hang :
+
+                            _pmp_left_bottom_hang_(true) --
+                            llxy[tpos] --
+                            _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                            _pmp_left_top_hang_(true) --
+
+                        else :
+
+                            (xpart llcorner multipar, ypart llxy[tpos]) --
+                            llxy[tpos] --
+                            _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                            (xpart llcorner multipar, ypart ulxy[tpos]) --
+
+                        fi cycle ;
+
+                        save_multipar (i,1,multipar) ;
 
                     else :
 
-                        llxy[fpos] --
-                        (xpart urcorner multipar, ypart llxy[fpos]) --
-                        (xpart urcorner multipar, ypart ulxy[fpos]) --
-                        _pmp_snapped_multi_pos_(ulxy[fpos]) --
+                        multipar := if obey_multi_par_hang :
 
-                    fi cycle ;
+                            _pmp_left_bottom_hang_(true) --
+                            llxy[tpos] --
+                            _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                            _pmp_right_bottom_hang_(true) --
+                            _pmp_right_top_hang_(true) --
+                            _pmp_snapped_multi_pos_(urxy[fpos]) --
+                            lrxy[fpos] --
+                            _pmp_left_top_hang_(true) --
 
-                    save_multipar (i,1,multipar) ;
+                        else :
 
-                    multipar := _pmp_set_multipar_(i) ;
+                            (xpart llcorner multipar, ypart llxy[tpos]) --
+                            llxy[tpos] --
+                            _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                            (xpart lrcorner multipar, ypart ulxy[tpos]) --
+                            (xpart urcorner multipar, ypart urxy[fpos]) --
+                            _pmp_snapped_multi_pos_(urxy[fpos]) --
+                            lrxy[fpos] --
+                            (xpart ulcorner multipar, ypart lrxy[fpos]) --
 
-                    multipar := if obey_multi_par_hang :
+                        fi cycle  ;
 
-                        _pmp_left_bottom_hang_(true) --
-                        llxy[tpos] --
-                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                        _pmp_left_top_hang_(true) --
+                        save_multipar (i,1,multipar) ;
 
-                    else :
-
-                        (xpart llcorner multipar, ypart llxy[tpos]) --
-                        llxy[tpos] --
-                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                        (xpart llcorner multipar, ypart ulxy[tpos]) --
-
-                    fi cycle ;
-
-                    save_multipar (i,1,multipar) ;
+                    fi ;
 
                 else :
 
                     multipar := if obey_multi_par_hang :
 
-                        _pmp_left_bottom_hang_(true) --
-                        llxy[tpos] --
-                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                        _pmp_right_bottom_hang_(true) --
-                        _pmp_right_top_hang_(true) --
+                        _pmp_left_bottom_hang_(false) --
+                        _pmp_right_bottom_hang_(false) --
+                        _pmp_right_top_hang_(false) --
                         _pmp_snapped_multi_pos_(urxy[fpos]) --
                         lrxy[fpos] --
-                        _pmp_left_top_hang_(true) --
+                        _pmp_left_top_hang_(false) --
 
                     else :
 
-                        (xpart llcorner multipar, ypart llxy[tpos]) --
-                        llxy[tpos] --
-                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                        (xpart lrcorner multipar, ypart ulxy[tpos]) --
+                        llcorner multipar --
+                        lrcorner multipar --
                         (xpart urcorner multipar, ypart urxy[fpos]) --
                         _pmp_snapped_multi_pos_(urxy[fpos]) --
                         lrxy[fpos] --
@@ -824,32 +850,6 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
                 fi ;
 
-            else :
-
-                multipar := if obey_multi_par_hang :
-
-                    _pmp_left_bottom_hang_(false) --
-                    _pmp_right_bottom_hang_(false) --
-                    _pmp_right_top_hang_(false) --
-                    _pmp_snapped_multi_pos_(urxy[fpos]) --
-                    lrxy[fpos] --
-                    _pmp_left_top_hang_(false) --
-
-                else :
-
-                    llcorner multipar --
-                    lrcorner multipar --
-                    (xpart urcorner multipar, ypart urxy[fpos]) --
-                    _pmp_snapped_multi_pos_(urxy[fpos]) --
-                    lrxy[fpos] --
-                    (xpart ulcorner multipar, ypart lrxy[fpos]) --
-
-                fi cycle ;
-
-                save_multipar (i,1,multipar) ;
-
-            fi ;
-
             elseif (nxy[tpos]=RealPageNumber) and (InsideTextArea(i,par_stop_pos)) :
 
                 % last one in chain
@@ -858,39 +858,40 @@ def prepare_multi_pars (expr fn,fx,fy,fw,fh,fd,
 
                 if obey_multi_par_hang and obey_multi_par_more :
 
-                multipar :=
-                    _pmp_x_left_top_hang_(i,true) --
-                    _pmp_x_right_top_hang_(i,true) --
-                    _pmp_x_right_bottom_hang_(i,true) --
-                    _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                    llxy[tpos] --
-                    _pmp_x_left_bottom_hang_(i,true) --
-                    cycle ;
+                    multipar :=
+                        _pmp_x_left_top_hang_(i,true) --
+                        _pmp_x_right_top_hang_(i,true) --
+                        _pmp_x_right_bottom_hang_(i,true) --
+                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                        llxy[tpos] --
+                        _pmp_x_left_bottom_hang_(i,true) --
+                        cycle ;
 
-            else :
+                else :
 
-                multipar :=
-                    ulcorner multipar --
-                    urcorner multipar --
-                    (xpart lrcorner multipar, ypart urxy[tpos]) --
-                    _pmp_snapped_multi_pos_(ulxy[tpos]) --
-                    llxy[tpos] --
-                    (xpart llcorner multipar, ypart llxy[tpos]) --
-                    cycle ;
+                    multipar :=
+                        ulcorner multipar --
+                        urcorner multipar --
+                        (xpart lrcorner multipar, ypart urxy[tpos]) --
+                        _pmp_snapped_multi_pos_(ulxy[tpos]) --
+                        llxy[tpos] --
+                        (xpart llcorner multipar, ypart llxy[tpos]) --
+                        cycle ;
 
-            fi ;
+                fi ;
 
-            save_multipar (i,3,multipar) ;
+                save_multipar (i,3,multipar) ;
 
             elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber) and (NOfTextColumns>1)) :
 
-            save_multipar (i,2,multipar) ;
+                save_multipar (i,2,multipar) ;
 
             else :
                 % handled later
             fi ;
 
         endfor ;
+
 
         % second loop
 

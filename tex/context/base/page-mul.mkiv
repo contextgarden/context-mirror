@@ -1614,17 +1614,12 @@
        \stretchcolumnsfalse
        \inheritcolumnstrue
        \doifsomething\@@klalign{\expanded{\setupalign[\@@klalign]}}%
-       \nofcolumns=\@@kln
-       %
-       % probably more is needed, and how about nesting save's
-       %
-       \saveouterspacing
-       %
+       \nofcolumns\@@kln
        \edef\fixedcolumnheight{\@@klheight}%
        \edef\minbalancetoplines{\@@klntop}%
        \setuptolerance[\@@kltolerance]%     %% \startcolumns
        \setupblank[\@@klblank]%
-       \ifdim\ctxparskip>\zeropoint\relax
+       \ifdim\s_spac_whitespace_parskip>\zeropoint\relax
          \setupwhitespace[\@@klblank]%
        \fi
        \unexpanded\def\stopcolumns
@@ -1636,11 +1631,11 @@
        \beginmulticolumns
      \fi
    \fi}
-
-\installcolumnbreakhandler {MUL} \v!preference
+
+\installcolumnbreakmethod {MUL} \v!preference
   {\goodbreak}
 
-\installcolumnbreakhandler {MUL} \v!yes
+\installcolumnbreakmethod {MUL} \v!yes
   {\par                                             % todo: since
    {\testrulewidth\zeropoint\ruledvskip\textheight} % we misuse a
    \penalty-200                                     % side effect

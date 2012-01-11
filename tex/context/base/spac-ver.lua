@@ -571,7 +571,7 @@ do -- todo: interface.variables
 
     local function analyze(str,oldcategory) -- we could use shorter names
         for s in gmatch(str,"([^ ,]+)") do
-            local amount, keyword, detail = lpegmatch(splitter,s)
+            local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
             if not keyword then
                 report_vspacing("unknown directive: %s",s)
             else
@@ -1344,3 +1344,11 @@ callbacks.register('buildpage_filter', nodes.builders.buildpage_filter, "vertica
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)
 end)
+
+-- interface
+
+commands.vspacing          = vspacing.analyze
+commands.vspacingsetamount = vspacing.setskip
+commands.vspacingdefine    = vspacing.setmap
+commands.vspacingcollapse  = vspacing.collapsevbox
+commands.vspacingsnap      = vspacing.snapbox

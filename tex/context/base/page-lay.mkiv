@@ -566,8 +566,8 @@
 
 \fi
 
-\ifdefined\setups              \else \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi % still needed?
-\ifdefined\docheckgridsnapping \else \let\docheckgridsnapping\relax                   \fi
+\ifdefined\setups                  \else \unexpanded\def\setups[#1]{\setdefaultpenalties} \fi % still needed?
+\ifdefined\synchronizegridsnapping \else \let\synchronizegridsnapping\relax               \fi
 
 \let\p_page_layouts_width \empty
 \let\p_page_layouts_height\empty
@@ -585,10 +585,10 @@
    \global\backspace       \layoutparameter\c!backspace
    \global\topspace        \layoutparameter\c!topspace
    \page_layouts_set_dimensions
-   \docheckgridsnapping
+   \synchronizegridsnapping
    \doprocesslocalsetups{\layoutparameter\c!setups}% depends on gridsnapping !
-   \simplesetupwhitespace
-   \simplesetupblank
+   \synchronizewhitespace
+   \synchronizeblank
    \setupinterlinespace[\v!reset]% \synchronizegloballinespecs
    \global\cutspace\layoutparameter\c!cutspace\relax
    \edef\p_page_layouts_width{\layoutparameter\c!width}%

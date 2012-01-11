@@ -531,7 +531,7 @@
      \setupcurrentmathmatrix[#1]%
    \fi
    \emptyhbox
-   \math_matrix_handler_apply
+   \math_matrix_align_method_analyze
    \mathmatrixleft
    \mathmatrixbox\bgroup
    \pushmacro\domatrixNC
@@ -584,10 +584,7 @@
 \unexpanded\def\dodomatrixNC
   {\gdef\domatrixNC{\endmath&}}
 
-\installcorenamespace{mathmatrixhandler}
-
-\def\installmathmatrixhandler#1#2%
-  {\setvalue{\??mathmatrixhandler#1}{#2}}
+\installcorenamespace{mathmatrixalignmethod}
 
 \let\mathmatrixleft \empty % experimental hook
 \let\mathmatrixright\empty % experimental hook
@@ -601,19 +598,22 @@
             \mathmatrixparameter\c!right$}}%
    \vbox}
 
-\installmathmatrixhandler\v!top   {\def\mathmatrixbox{\math_matrix_process\plusthree\plusone  }}
-\installmathmatrixhandler\v!high  {\def\mathmatrixbox{\math_matrix_process\plusthree\zerocount}}
-\installmathmatrixhandler\v!lohi  {\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}}
-\installmathmatrixhandler\v!low   {\def\mathmatrixbox{\math_matrix_process\plusone  \zerocount}}
-\installmathmatrixhandler\v!bottom{\def\mathmatrixbox{\math_matrix_process\plusone  \plusone  }}
-\installmathmatrixhandler\v!normal{\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}} % lohi
+\unexpanded\def\installmathmatrixalignmethod#1#2%
+  {\setvalue{\??mathmatrixalignmethod#1}{#2}}
 
-\def\math_matrix_handler_apply
-  {\csname\??mathmatrixhandler\ifcsname\??mathmatrixhandler\mathmatrixparameter\c!location\endcsname
+\def\math_matrix_align_method_analyze
+  {\csname\??mathmatrixalignmethod\ifcsname\??mathmatrixalignmethod\mathmatrixparameter\c!location\endcsname
      \mathmatrixparameter\c!location
    \else
      \v!normal
    \fi\endcsname}
+
+\installmathmatrixalignmethod\v!top   {\def\mathmatrixbox{\math_matrix_process\plusthree\plusone  }}
+\installmathmatrixalignmethod\v!high  {\def\mathmatrixbox{\math_matrix_process\plusthree\zerocount}}
+\installmathmatrixalignmethod\v!lohi  {\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}}
+\installmathmatrixalignmethod\v!low   {\def\mathmatrixbox{\math_matrix_process\plusone  \zerocount}}
+\installmathmatrixalignmethod\v!bottom{\def\mathmatrixbox{\math_matrix_process\plusone  \plusone  }}
+\installmathmatrixalignmethod\v!normal{\def\mathmatrixbox{\math_matrix_process\plustwo  \zerocount}} % lohi
 
 %D \startbuffer
 %D \placeformula \startformula[-] \startmatrix

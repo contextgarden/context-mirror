@@ -23,32 +23,31 @@
 %
 % test: oeps {\setcharacterspacing[frenchpunctuation]x: xx \bfd x: xx} oeps: test
 
-\newcount \maxcharacterspacingid
+\installcorenamespace{characterspacing}
+
+\definesystemvariable{cs} % maybe a dummy namespace
 
 \unexpanded\def\definecharacterspacing[#1]%
-  {\ifcsname\??ch#1\endcsname \else
-     \global\advance\maxcharacterspacingid\plusone
-     \setxvalue{\??ch:#1}{\the\maxcharacterspacingid}%
-   \fi}
+  {\ctxcommand{definecharacterspacing("#1")}}
 
 \unexpanded\def\setupcharacterspacing
-  {\dotripleargument\dosetupcharacterspacing}
+  {\dotripleargument\typo_characterspacing_setup}
 
-\def\dosetupcharacterspacing[#1][#2][#3]%
-  {\ifcsname\??ch:#1\endcsname
-     \begingroup % for the moment we use modes, in ordere to avoid interface translation
-     \getparameters[\??ch][\c!left=0,\c!right=0,\c!alternative=0,#3]%
-     \ctxlua{typesetters.spacings.setup(\getvalue{\??ch:#1},\number#2,\@@chleft,\@@chright,\@@chalternative)}%
-     \endgroup
-   \fi}
+\def\typo_characterspacing_setup[#1][#2][#3]% todo: #2 list
+  {\begingroup
+   \getparameters[\??cs][\c!left=0,\c!right=0,\c!alternative=0,#3]%
+   \ctxcommand{setupcharacterspacing("#1",\number#2, {
+      left        = \@@csleft,
+      right       = \@@csright,
+      alternative = \@@csalternative
+    })}%
+   \endgroup}
 
-\unexpanded\def\setcharacterspacing[#1]%
-  {\ctxlua{typesetters.spacings.set(\number\csname\??ch:#1\endcsname)}}
+\unexpanded\def\setcharacterspacing[#1]% we can store the attribute if we want speed
+  {\ctxcommand{setcharacterspacing("#1")}}
 
 \unexpanded\def\resetcharacterspacing % fast one
   {\attribute\spacingattribute\attributeunsetvalue}
-
-\letvalue{\??ch:\s!reset}\attributeunsetvalue
 
 \appendtoks
     \resetcharacterspacing

@@ -86,13 +86,13 @@
 
 \installcorenamespace{dimensionvalue}
 
-\setvalue{\??dimensionvalue\v!small  }#macro#small#medium#big{\edef#macro{#small}}
-\setvalue{\??dimensionvalue\v!medium }#macro#small#medium#big{\edef#macro{#medium}}
-\setvalue{\??dimensionvalue\v!big    }#macro#small#medium#big{\edef#macro{#big}}
-\setvalue{\??dimensionvalue\s!unknown}#macro#small#medium#big{\let #macro\empty}
+\setvalue{\??dimensionvalue\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
+\setvalue{\??dimensionvalue\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
+\setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
+\setvalue{\??dimensionvalue\s!unknown}#value#macro#small#medium#big{\edef#macro{#value}}
 
 \unexpanded\def\assignvalue#value%
-  {\csname\??dimensionvalue\ifcsname\??dimensionvalue#value\endcsname#value\else\s!unknown\fi\endcsname}
+  {\csname\??dimensionvalue\ifcsname\??dimensionvalue#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
 %D \macros
 %D   {assignwidth}

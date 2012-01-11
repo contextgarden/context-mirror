@@ -26,16 +26,19 @@
 
 \def\currentstructurecounter{0}
 
-\definesystemvariable {ns}
+\installcorenamespace{structure}
 
-\def\structureparameter#1{\csname\??ns#1\endcsname}
+\installdirectcommandhandler \??structure {structure} % unchecked, so we need to initialize used parameters
 
-\def\detokenizedstructureparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??ns#1\endcsname}}
+% \definesystemvariable{ns}
+% \def\structureparameter#1{\csname\??ns#1\endcsname}
+% \def\detokenizedstructureparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??ns#1\endcsname}}
 
 \def\structurecomponent{\dodoubleempty\dostructurecomponent}
 
-\getparameters % initialization, used not grouped anyway
-  [\??ns]
+% \getparameters % initialization, used not grouped anyway
+%   [\??ns]
+\setupstructure % not a user command so we might need to change the name
   [\c!number=,
    \c!level=,
    \c!name=,
@@ -53,6 +56,7 @@
    \c!sectionsegments=,
    \c!sectionresetset=,
    \c!reference=,
+   \c!backreference=,
    \c!expansion=\v!no,
    \c!xmlsetup=,
    \s!catcodes=,
@@ -80,7 +84,8 @@
 
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
-   \getparameters[\??ns][#1]%
+%    \getparameters[\??ns][#1]%
+   \setupstructure[#1]%
    \xdef\currentstructurename           {\structureparameter\c!name}%
    \xdef\currentstructurecoupling       {\structureparameter\c!coupling}%
    \xdef\currentstructureownnumber      {\structureparameter\c!ownnumber}% optional own number

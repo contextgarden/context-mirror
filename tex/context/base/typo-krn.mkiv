@@ -23,33 +23,27 @@
 %
 % {\setcharacterkerning[extrakerning]\input davis\relax}
 
-\unexpanded\def\definecharacterkerning
-  {\dodoubleargument\dodefinecharacterkerning}
+\installcorenamespace{characterkerning}
 
-\def\dodefinecharacterkerning[#1][#2]%
-  {\getparameters[\??ck#1][\c!factor=0.125,#2]%
-   \setuvalue{\??ck:#1}{\dosetcharacterkerning{#1}}}
-
-\unexpanded\def\setupcharacterkerning
-  {\dodoubleargument\dosetupcharacterkerning}
-
-\def\dosetupcharacterkerning[#1][#2]%
-  {\ifcsname\??ck:#1\endcsname
-     \getparameters[\??ck#1][#2]%
-   \else
-     \dodefinecharacterkerning[#1][#2]% bonus
-   \fi}
-
-\unexpanded\def\dosetcharacterkerning#1%
-  {\ctxlua{typesetters.kerns.set(\csname\??ck#1\c!factor\endcsname)}}
+\installcommandhandler \??characterkerning {characterkerning} \??characterkerning
 
 \unexpanded\def\setcharacterkerning[#1]%
-  {\csname\??ck:#1\endcsname}
+  {\edef\currentcharacterkerning{#1}%
+   \ifx\currentcharacterkerning\s!reset
+     \resetcharacterkerning
+   \else
+     \typo_kerning_set
+   \fi}
+
+% \def\typo_kerning_set
+%   {\ctxcommand{setcharacterkerning(\characterkerningparameter\c!factor)}}
+
+\def\typo_kerning_set
+  {\usecharacterkerningstyleandcolor\c!style\c!color % goodie, maybe also strut
+   \ctxcommand{setcharacterkerning(\characterkerningparameter\c!factor)}}
 
 \unexpanded\def\resetcharacterkerning % fast one
   {\attribute\kernattribute\attributeunsetvalue}
-
-\letvalue{\??ck\s!reset\c!factor}\attributeunsetvalue % trick
 
 \appendtoks
     \resetcharacterkerning
@@ -65,23 +59,32 @@
 %D \stoptyping
 %D
 %D We could combine this with the previous definition command but
-%D then we alwasy would get a command defined which is not beforehand
+%D then we always would get a command defined which is not beforehand
 %D a good idea.
 
 \def\v!kerncharacters{kerncharacters} % no time now for translations
 
 \definecharacterkerning [\v!kerncharacters] [\c!factor=.125]
 
+% Here we need to keep the groupedcommand solution as it is
+% used as modifier.
+
 \unexpanded\def\kerncharacters
-  {\dosingleempty\dokerncharacters}
+  {\doifnextoptionalelse\typo_kerning_apply_yes\typo_kerning_apply_nop}
 
-\def\dokerncharacters[#1]%
-  {\groupedcommand{\dodokerncharacters{#1}}\donothing}
+\def\typo_kerning_apply_yes[#1]%
+  {\groupedcommand{\typo_kerning_apply_yes_indeed{#1}}\donothing}
 
-\def\dodokerncharacters#1%
-  {\iffirstargument
-     \setupcharacterkerning[\v!kerncharacters][\c!factor=#1]%
-   \fi
-   \setcharacterkerning[\v!kerncharacters]}
+\def\typo_kerning_apply_nop
+  {\groupedcommand\typo_kerning_apply_nop_indeed\donothing}
+
+\def\typo_kerning_apply_yes_indeed#1%
+  {\let\currentcharacterkerning\v!kerncharacters
+   \setupcurrentcharacterkerning[\c!factor=#1]%
+   \typo_kerning_set}
+
+\def\typo_kerning_apply_nop_indeed
+  {\let\currentcharacterkerning\v!kerncharacters
+   \typo_kerning_set}
 
 \protect \endinput

@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['typo-spa'] = {
     license   = "see context related readme files"
 }
 
--- get rid of tex.scale here
-
 local utf = unicode.utf8
 
 local next, type = next, type
@@ -30,9 +28,13 @@ local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 
 local texattribute       = tex.attribute
+local unsetvalue         = attributes.unsetvalue
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
+
+local somespace          = nodes.somespace
+local somepenalty        = nodes.somepenalty
 
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
@@ -47,13 +49,25 @@ typesetters.spacings     = typesetters.spacings or { }
 local spacings           = typesetters.spacings
 
 spacings.mapping         = spacings.mapping or { }
+spacings.numbers         = spacings.numbers or { }
+
 local a_spacings         = attributes.private("spacing")
 spacings.attribute       = a_spacings
 
 storage.register("typesetters/spacings/mapping", spacings.mapping, "typesetters.spacings.mapping")
 
+local mapping = spacings.mapping
+local numbers = spacings.numbers
+
+for i=1,#mapping do
+    local m = mapping[i]
+    numbers[m.name] = m
+end
+
+-- todo cache lastattr
+
 local function process(namespace,attribute,head)
-    local done, mapping = false, spacings.mapping
+    local done = false
     local start = head
     -- head is always begin of par (whatsit), so we have at least two prev nodes
     -- penalty followed by glue
@@ -61,9 +75,9 @@ local function process(namespace,attribute,head)
         if start.id == glyph_code then
             local attr = has_attribute(start,attribute)
             if attr and attr > 0 then
-                local map = mapping[attr]
-                if map then
-                    map = map[start.char]
+                local data = mapping[attr]
+                if data then
+                    local map = data.characters[start.char]
                     unset_attribute(start,attribute) -- needed?
                     if map then
                         local left = map.left
@@ -74,33 +88,33 @@ local function process(namespace,attribute,head)
                         if left and left ~= 0 and prev then
                             local ok = false
                             if alternative == 1 then
-                                local somespace = nodes.somespace(prev,true)
+                                local somespace = somespace(prev,true)
                                 if somespace then
                                     local prevprev = prev.prev
-                                    local somepenalty = nodes.somepenalty(prevprev,10000)
+                                    local somepenalty = somepenalty(prevprev,10000)
                                     if somepenalty then
                                         if trace_spacing then
                                             report_spacing("removing penalty and space before %s (left)", utfchar(start.char))
                                         end
-                                        head, _ = remove_node(head,prev,true)
-                                        head, _ = remove_node(head,prevprev,true)
+                                        head = remove_node(head,prev,true)
+                                        head = remove_node(head,prevprev,true)
                                     else
                                         if trace_spacing then
                                             report_spacing("removing space before %s (left)", utfchar(start.char))
                                         end
-                                        head, _ = remove_node(head,prev,true)
+                                        head = remove_node(head,prev,true)
                                     end
                                 end
                                 ok = true
                             else
-                                ok = not (nodes.somespace(prev,true) and nodes.somepenalty(prev.prev,true)) or nodes.somespace(prev,true)
+                                ok = not (somespace(prev,true) and somepenalty(prev.prev,true)) or somespace(prev,true)
                             end
                             if ok then
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space before %s (left)", utfchar(start.char))
                                 end
                                 insert_node_before(head,start,new_penalty(10000))
-                                insert_node_before(head,start,new_glue(tex.scale(quad,left)))
+                                insert_node_before(head,start,new_glue(left*quad))
                                 done = true
                             end
                         end
@@ -108,35 +122,35 @@ local function process(namespace,attribute,head)
                         if right and right ~= 0 and next then
                             local ok = false
                             if alternative == 1 then
-                                local somepenalty = nodes.somepenalty(next,10000)
+                                local somepenalty = somepenalty(next,10000)
                                 if somepenalty then
                                     local nextnext = next.next
-                                    local somespace = nodes.somespace(nextnext,true)
+                                    local somespace = somespace(nextnext,true)
                                     if somespace then
                                         if trace_spacing then
                                             report_spacing("removing penalty and space after %s (right)", utfchar(start.char))
                                         end
-                                        head, _ = remove_node(head,next,true)
-                                        head, _ = remove_node(head,nextnext,true)
+                                        head = remove_node(head,next,true)
+                                        head = remove_node(head,nextnext,true)
                                     end
                                 else
-                                    local somespace = nodes.somespace(next,true)
+                                    local somespace = somespace(next,true)
                                     if somespace then
                                         if trace_spacing then
                                             report_spacing("removing space after %s (right)", utfchar(start.char))
                                         end
-                                        head, _ = remove_node(head,next,true)
+                                        head = remove_node(head,next,true)
                                     end
                                 end
                                 ok = true
                             else
-                                ok = not (nodes.somepenalty(next,10000) and nodes.somespace(next.next,true)) or nodes.somespace(next,true)
+                                ok = not (somepenalty(next,10000) and somespace(next.next,true)) or somespace(next,true)
                             end
                             if ok then
                                 if trace_spacing then
                                     report_spacing("inserting penalty and space after %s (right)", utfchar(start.char))
                                 end
-                                insert_node_after(head,start,new_glue(tex.scale(quad,right)))
+                                insert_node_after(head,start,new_glue(right*quad))
                                 insert_node_after(head,start,new_penalty(10000))
                                 done = true
                             end
@@ -152,26 +166,42 @@ end
 
 local enabled = false
 
-function spacings.setup(id,char,left,right,alternative)
-    local mapping = spacings.mapping[id]
-    if not mapping then
-        mapping = { }
-        spacings.mapping[id] = mapping
+function spacings.define(name)
+    local data = numbers[name]
+    if data then
+        -- error
+    else
+        local number = #mapping + 1
+        local data = {
+            name       = name,
+            number     = number,
+            characters = { },
+        }
+        mapping[number] = data
+        numbers[name]   = data
     end
-    local map = mapping[char]
-    if not map then
-        map = { }
-        mapping[char] = map
-    end
-    map.left, map.right, map.alternative = left, right, alternative
 end
 
-function spacings.set(id)
+function spacings.setup(name,char,settings)
+    local data = numbers[name]
+    if not data then
+        -- error
+    else
+        data.characters[char] = settings
+    end
+end
+
+function spacings.set(name)
     if not enabled then
         tasks.enableaction("processors","typesetters.spacings.handler")
         enabled = true
     end
-    texattribute[a_spacings] = id
+    local data = numbers[name]
+    texattribute[a_spacings] = data and data.number or unsetvalue
+end
+
+function spacings.reset()
+    texattribute[a_spacings] = unsetvalue
 end
 
 spacings.handler = nodes.installattributehandler {
@@ -179,3 +209,9 @@ spacings.handler = nodes.installattributehandler {
     namespace = spacings,
     processor = process,
 }
+
+-- interface
+
+commands.definecharacterspacing = spacings.define
+commands.setupcharacterspacing  = spacings.setup
+commands.setcharacterspacing    = spacings.set
