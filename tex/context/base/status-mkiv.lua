@@ -783,12 +783,12 @@ return {
         {
             filename = "typo-pag",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-mar",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "buff-ini",
@@ -1031,22 +1031,22 @@ return {
         {
             filename = "typo-brk",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-cap",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-dig",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-rep",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "typo-txt",
@@ -1057,7 +1057,8 @@ return {
         {
             filename = "typo-par",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "might get extended",
         },
         {
             filename = "type-ini",
@@ -1263,6 +1264,16 @@ return {
         },
         {
             filename = "core-mis",
+            marktype = "mkiv",
+            status   = "unknown",
+        },
+        {
+            filename = "pack-com",
+            marktype = "mkiv",
+            status   = "okay",
+        },
+        {
+            filename = "typo-del",
             marktype = "mkiv",
             status   = "unknown",
         },

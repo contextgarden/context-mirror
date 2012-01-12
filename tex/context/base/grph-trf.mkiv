@@ -823,7 +823,7 @@
    \settrue \c_grph_rotate_obey_depth
    \grph_rotate_framed}
 
-\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
+\unexpanded\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
   {\ifcase#1\relax
      \expandafter\gobbleoneargument
    \else
@@ -837,7 +837,9 @@
      \dowithnextboxcs\grph_rotate_finish_box}
 
 \def\grph_rotate_finish_box
-  {\getvalue{\??rotatelocation\v!broad}%
+  {\setfalse\c_grph_rotate_not_fit      % this is the same as broad but
+   \setfalse\c_grph_rotate_center       % without the following grab as
+   \setfalse\c_grph_rotate_obey_depth   % we call finish directly
    \grph_rotate_finish_indeed
    \egroup
    \egroup}

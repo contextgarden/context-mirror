@@ -4,7 +4,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
-}
+    }
 
 local next, type = next, type
 local format, insert = string.format, table.insert
@@ -23,6 +23,7 @@ local traverse_id     = node.traverse_id
 local copy_node       = node.copy
 
 local texattribute    = tex.attribute
+local unsetvalue      = attributes.unsetvalue
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -39,6 +40,8 @@ local tasks           = nodes.tasks
 local fonthashes      = fonts.hashes
 local fontdata        = fonthashes.identifiers
 local fontchar        = fonthashes.characters
+
+local v_reset         = interfaces.variables.reset
 
 local chardata        = characters.data
 
@@ -257,19 +260,29 @@ end
 local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
 function cases.set(n)
-    if not enabled then
-        tasks.enableaction("processors","typesetters.cases.handler")
-        if trace_casing then
-            report_casing("enabling case handler")
-        end
-        enabled = true
-    end
-    if m == 100 then
-        m = 1
+    if n == v_reset then
+        n = unsetvalue
     else
-        m = m + 1
+        n = tonumber(n)
+        if n then
+            if not enabled then
+                tasks.enableaction("processors","typesetters.cases.handler")
+                if trace_casing then
+                    report_casing("enabling case handler")
+                end
+                enabled = true
+            end
+            if m == 100 then
+                m = 1
+            else
+                m = m + 1
+            end
+            n = m * 100 + n
+        else
+            n = unsetvalue
+        end
     end
-    texattribute[a_cases] = m * 100 + n
+    texattribute[a_cases] = n
 end
 
 cases.handler = nodes.installattributehandler {
@@ -277,3 +290,7 @@ cases.handler = nodes.installattributehandler {
     namespace = cases,
     processor = process,
 }
+
+-- interface
+
+commands.setcharactercasing = cases.set

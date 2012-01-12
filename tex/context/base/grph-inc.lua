@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['grph-inc'] = {
 
 -- figures -> managers.figures
 
+-- todo: empty filename or only suffix always false (not found)
+
 -- lowercase types
 -- mps tex tmp svg
 -- partly qualified

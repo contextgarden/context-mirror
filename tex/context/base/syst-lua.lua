@@ -6,9 +6,11 @@ if not modules then modules = { } end modules ['syst-lua'] = {
     license   = "see context related readme files"
 }
 
-local format, find, match = string.format, string.find, string.match
+local format, find, match, rep = string.format, string.find, string.match, string.rep
 local tonumber = tonumber
 local S, lpegmatch, lpegtsplitat = lpeg.S, lpeg.match, lpeg.tsplitat
+
+local context = context
 
 commands = commands or { }
 
@@ -94,4 +96,8 @@ end
 function commands.firstinlist(str)
     local first = match(str,"^([^,]+),")
     context(first or str)
+end
+
+function commands.ntimes(str,n)
+    context(rep(str,n or 1))
 end

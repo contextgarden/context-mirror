@@ -24,12 +24,17 @@ local has_attribute = node.has_attribute
 
 local chardata      = characters.data
 local collected     = false
-local attribute     = attributes.private("stripping")
+local a_stripping   = attributes.private("stripping")
 local fontdata      = fonts.hashes.identifiers
 local tasks         = nodes.tasks
 
-local nodecodes    = nodes.nodecodes
-local glyph_code   = nodecodes.glyph
+local texattribute  = tex.attribute
+local unsetvalue    = attributes.unsetvalue
+
+local v_reset       = interfaces.variables.reset
+
+local nodecodes     = nodes.nodecodes
+local glyph_code    = nodecodes.glyph
 
 -- todo: other namespace -> typesetters
 
@@ -74,7 +79,7 @@ function nodes.handlers.stripping(head)
     while current do
         if current.id == glyph_code then
             -- it's more efficient to keep track of what needs to be kept
-            local todo = has_attribute(current,attribute)
+            local todo = has_attribute(current,a_stripping)
             if todo == 1 then
                 local char = current.char
                 local what = glyphs[char]
@@ -94,11 +99,31 @@ function nodes.handlers.stripping(head)
     return head, done
 end
 
+local enabled = false
+
+function stripping.set(n) -- number or 'reset'
+    if n == v_reset then
+        n = unsetvalue
+    else
+        n = tonumber(n)
+        if n then
+            if not enabled then
+                if initialize then initialize() end
+                tasks.enableaction("processors","nodes.handlers.stripping")
+                enabled = true
+            end
+        else
+            n = unsetvalue
+        end
+    end
+    texattribute[a_stripping] = n
+end
+
+-- why not in task-ini?
+
 tasks.appendaction("processors","fonts","nodes.handlers.stripping",nil,"nodes.handlers.characters")
 tasks.disableaction("processors","nodes.handlers.stripping")
 
-function nodes.stripping.enable()
-    if initialize then initialize() end
-    tasks.enableaction("processors","nodes.handlers.stripping")
-    function nodes.stripping.enable() end
-end
+-- interface
+
+commands.setcharacterstripping = stripping.set

@@ -34,7 +34,7 @@
   {\ctxcommand{erasebuffer("#1")}}
 
 \setuvalue{\e!start\v!buffer}%
-  {\bgroup
+  {\begingroup % (1)
    \obeylines
    \dosingleempty\buff_start}
 
@@ -45,7 +45,7 @@
   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer
-  {\bgroup
+  {\begingroup % (1)
    \obeylines
    \doquadrupleempty\buff_grab_direct_indeed}
 
@@ -64,12 +64,13 @@
 
 \unexpanded\def\buff_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
   {#4%
-   \bgroup
+   \begingroup % (2)
    \edef\catcodetableofbuffer{\number\catcodetable}%
    \ctxcommand{erasebuffer("#1")}%
    \setcatcodetable\vrbcatcodes
    \def\buff_finish
-     {\egroup
+     {\endgroup % (1)
+      \endgroup % (2)
       #5}%
    \def\buff_gobble##1#3% is detokenize needed? TEST
     %{\ctxcommand{grabbuffer("#1","#2","#3",\!!bs\detokenize{##1}\!!es)} % space ?

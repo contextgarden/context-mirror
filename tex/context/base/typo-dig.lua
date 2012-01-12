@@ -28,6 +28,7 @@ local insert_before   = node.insert_before
 local insert_after    = node.insert_after
 
 local texattribute    = tex.attribute
+local unsetvalue      = attributes.unsetvalue
 
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
@@ -41,6 +42,8 @@ local fonthashes      = fonts.hashes
 local fontdata        = fonthashes.identifiers
 local chardata        = fonthashes.characters
 local quaddata        = fonthashes.quads
+
+local v_reset         = interfaces.variables.reset
 
 local charbase        = characters.data
 local getdigitwidth   = fonts.helpers.getdigitwidth
@@ -125,20 +128,30 @@ end
 
 local m, enabled = 0, false -- a trick to make neighbouring ranges work
 
-function digits.set(n)
-    if not enabled then
-        tasks.enableaction("processors","typesetters.digits.handler")
-        if trace_digits then
-            report_digits("enabling digit handler")
-        end
-        enabled = true
-    end
-    if m == 100 then
-        m = 1
+function digits.set(n) -- number or 'reset'
+    if n == v_reset then
+        n = unsetvalue
     else
-        m = m + 1
+        n = tonumber(n)
+        if n then
+            if not enabled then
+                tasks.enableaction("processors","typesetters.digits.handler")
+                if trace_digits then
+                    report_digits("enabling digit handler")
+                end
+                enabled = true
+            end
+            if m == 100 then
+                m = 1
+            else
+                m = m + 1
+            end
+            n = m * 100 + n
+        else
+            n = unsetvalue
+        end
     end
-    texattribute[a_digits] = m * 100 + n
+    texattribute[a_digits] = n
 end
 
 digits.handler = nodes.installattributehandler {
@@ -146,3 +159,7 @@ digits.handler = nodes.installattributehandler {
     namespace = digits,
     processor = process,
 }
+
+-- interface
+
+commands.setdigitsmanipulation = digits.set
