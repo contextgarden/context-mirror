@@ -30,6 +30,8 @@ local quaddata           = fonthashes.quads
 local texattribute       = tex.attribute
 local unsetvalue         = attributes.unsetvalue
 
+local v_reset            = interfaces.variables.reset
+
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
@@ -192,12 +194,18 @@ function spacings.setup(name,char,settings)
 end
 
 function spacings.set(name)
-    if not enabled then
-        tasks.enableaction("processors","typesetters.spacings.handler")
-        enabled = true
+    local n = unsetvalue
+    if name ~= v_reset then
+        local data = numbers[name]
+        if data then
+            if not enabled then
+                tasks.enableaction("processors","typesetters.spacings.handler")
+                enabled = true
+            end
+            n = data.number or unsetvalue
+        end
     end
-    local data = numbers[name]
-    texattribute[a_spacings] = data and data.number or unsetvalue
+    texattribute[a_spacings] = n
 end
 
 function spacings.reset()

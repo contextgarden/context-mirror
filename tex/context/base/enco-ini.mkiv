@@ -339,4 +339,42 @@
 \unexpanded\def\textplus
   {\char"002B } % plus
 
+%D Moved from core-mis:
+
+\unexpanded\def\celsius   #1{#1\mathematics{^\circ}C}
+\unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
+\unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
+
+\def\periodswidth  {.5em}
+\def\periodsdefault{3}    % was 5, but now it's like \unknown
+
+\unexpanded\def\periods
+  {\dosingleempty\doperiods}
+
+% \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+%   {\dontleavehmode
+%    \begingroup
+%    \scratchdimen\periodswidth
+%    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
+%      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
+%    \endgroup}
+%
+% better for export:
+
+\unexpanded\def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
+  {\dontleavehmode
+   \hbox\bgroup
+   \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
+   \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
+   \egroup}
+
+\unexpanded\def\unknown
+  {\periods\relax} % relax prevents lookahead for []
+
+% Example by Wolfgang Schuster on the context list:
+%
+% \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
+%
+% Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
+
 \protect \endinput

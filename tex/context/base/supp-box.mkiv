@@ -2454,6 +2454,15 @@
    \lower.5\ht\nextbox\box\nextbox
    \egroup}
 
+\unexpanded\def\depthonlybox
+  {\vtop\bgroup
+   \dowithnextboxcs\syst_boxes_depthonlybox_finish\vbox}
+
+\def\syst_boxes_depthonlybox_finish
+  {\hsize\wd\nextbox
+   \kern\zeropoint\box\nextbox
+   \egroup}
+
 %D New:
 
 \def\setdimentoatleast#1#2{\ifdim#1>\zeropoint\else#1=#2\fi}

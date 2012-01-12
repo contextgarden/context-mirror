@@ -290,6 +290,7 @@
         height     = "\@@efheight", % can be crap
     } }%
    \ctxlua{figures.identify()}%
+   % also mode: checkpresense only
    \ifconditional\testexternalfigureonly
       \ifcase\figurestatus \else
         \ctxlua{figures.check()}%
@@ -325,7 +326,7 @@
 
 \newsystemmode\v!figure
 
-\def\signalexternalfigure % global
+\def\signalexternalfigure % global (dup call to status)
   {\ifcase\figurestatus
      \global\resetsystemmode\v!figure % todo, also: \v!resource
    \else
@@ -406,9 +407,21 @@
 
 \let\getfiguredimensionsonly\getfiguredimensions
 
-\def\doiffigureelse#1%
+% \unexpanded\def\doiffigureelse#1%
+%   {\getfiguredimensions[#1]% so data is available !
+%    \ifdim\figurewidth=\zeropoint % todo: \figurestatus
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi}
+
+% \unexpanded\def\doiffigureelse#1% just low level call
+%   {\getfiguredimensions[#1]% so data is available ! ... grouped so status is local
+%    \doifmodeelse{*\v!figure}\firstoftwoarguments\secondoftwoarguments} % mode is set global
+
+\unexpanded\def\doiffigureelse#1%
   {\getfiguredimensions[#1]% so data is available !
-   \ifdim\figurewidth=\zeropoint % todo: \figurestatus
+   \ifcase\figurestatus
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments

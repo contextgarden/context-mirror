@@ -37,17 +37,15 @@
 
 \definesystemattribute[stripping][public]
 
-\def\setcharacterstripping
-  {\ctxlua{nodes.stripping.enable()}%
-   \gdef\setcharacterstripping[##1]{\attribute\strippingattribute##1\relax}%
-   \setcharacterstripping}
+\unexpanded\def\setcharacterstripping[#1]%
+  {\ctxcommand{setcharacterstripping("#1")}}
 
-\def\resetcharacterstripping
+\unexpanded\def\resetcharacterstripping
   {\attribute\strippingattribute\attributeunsetvalue}
 
 % maybe .. this might disappear, but is handy for testing
 
-\def\forcecharacterstripping % secret command
+\unexpanded\def\forcecharacterstripping % secret command
   {\ctxlua{fonts.handlers.otf.features.register("formatters",true)}}
 
 \protect \endinput

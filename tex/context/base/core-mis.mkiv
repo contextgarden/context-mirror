@@ -1,4 +1,3 @@
-
 %D \module
 %D   [       file=core-mis,
 %D        version=1998.01.29,
@@ -15,21 +14,6 @@
 \writestatus{loading}{ConTeXt Core Macros / Misc Commands}
 
 % needs to be redone
-
-% %D You would not expect the next macro in \CONTEXT,
-% %D wouldn't you? It's there to warn \LATEX\ users that
-% %D something is wrong.
-% %D
-% %D Obsolete now:
-% %
-% % \def\documentstyle{\showmessage\m!system3\empty\stoptekst}
-% %
-% % \let\documentclass=\documentstyle
-% %D \macros
-% %D   {simplifiedcommands, simplifycommands}
-% %D
-% %D I first needed this simplification in bookmarks. Users can
-% %D add their own if needed.
 
 \unprotect
 
@@ -59,15 +43,6 @@
 \appendtoks\let\buildtextaccent\secondoftwoarguments\to\simplifiedcommands
 
 % THIS WAS MAIN-002.TEX
-
-%\def\checkinterlineskip
-%  {\ifvmode
-%     \ifdim\lastskip>\zeropoint
-%       \nointerlineskip
-%     \else\ifdim\lastkern>\zeropoint
-%       \nointerlineskip
-%     \fi\fi
-%   \fi}
 
 \def\horitems#1#2% #1=breedte #2=commandos
   {\scratchdimen#1%
@@ -197,11 +172,6 @@
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank]
 
-% Te zijner tijd [plaats=boven,onder,midden] implementeren,
-% in dat geval moet eerst de maximale hoogte worden bepaald.
-%
-% Overigens kan een en ander mooier met \halign.
-
 % there is quite some historic balast in this mechanism, the next variant
 % is a first cleanup
 
@@ -419,6 +389,8 @@
    \paragraphparameter\c!after
    \egroup}
 
+% Is this used at all?
+
 \def\dosetuptab[#1]%
   {\getparameters[\??ta]
      [\c!headstyle=\v!normal,
@@ -444,663 +416,6 @@
 
 \setuptab
   [\c!location=\v!left]
-
-\unexpanded\def\celsius   #1{#1\mathematics{^\circ}C}
-\unexpanded\def\inch        {\mathematics{\prime\prime}} % was: \hbox{\rm\char125\relax}
-\unexpanded\def\fraction#1#2{\mathematics{#1\over#2}}
-
-% very dutch
-
-\unexpanded\def\graden      {\mathematics{^\circ}}
-
-\def\bedragprefix {\euro\normalfixedspace}
-\def\bedragsuffix {}
-\def\bedragempty  {\euro}
-
-\unexpanded\def\bedrag#1%
-  {\strut\hbox\bgroup
-   \let\normalfixedspace\nonbreakablespace
-   \doifelsenothing{#1}
-     {\bedragempty}
-     {\bedragprefix\digits{#1}\bedragsuffix}%
-   \egroup}
-
-% \definieeralineas[test][n=3]
-%
-% \stelalineasin[test][3][breedte=4cm,uitlijnen=links]
-%
-% \startopelkaar
-% \test hans \\ ton \\ \bedrag{1.000,--} \\
-% \test hans \\ ton \\ \bedrag{~.~~1,--} \\
-% \test hans \\ ton \\ \bedrag{~.~~1,~~} \\
-% \test hans \\ ton \\ \bedrag{~.100,--} \\
-% \test hans \\ ton \\ \subtot{1.000,--} \\
-% \test hans \\ ton \\ \bedrag{1.000,--} \\
-% \test hans \\ ton \\ \bedrag{1.000,--} \\
-% \test hans \\ ton \\ \totaal{1.000,--} \\
-% \test hans \\ ton \\ \bedrag{nihil,--} \\
-% \test hans \\ ton \\ \totaal{nihil,--} \\
-% \test hans \\ ton \\ \subtot{nihil,--} \\
-% \stopopelkaar
-
-\def\periodswidth  {.5em}
-\def\periodsdefault{3}    % was 5, but now it's like \unknown
-
-\unexpanded\def\periods
-  {\dosingleempty\doperiods}
-
-% \def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
-%   {\dontleavehmode
-%    \begingroup
-%    \scratchdimen\periodswidth
-%    \hbox to \iffirstargument#1\else\periodsdefault\fi \scratchdimen
-%      {\leaders\hbox to \scratchdimen{\hss.\hss}\hss}%
-%    \endgroup}
-%
-% better for export:
-
-\def\doperiods[#1]% todo: also n=,width= or maybe just #1,#2
-  {\dontleavehmode
-   \hbox\bgroup
-   \setbox\scratchbox\hbox to \periodswidth{\hss.\hss}%
-   \dorecurse{\iffirstargument#1\else\periodsdefault\fi}{\copy\scratchbox}%
-   \egroup}
-
-\unexpanded\def\unknown
-  {\periods\relax} % relax prevents lookahead for []
-
-% Example by Wolfgang Schuster on the context list:
-%
-% \unexpanded\def\fourdots{{\def\periodswidth{.3em}\periods[4]}}
-%
-% Hello\fourdots\ World\fourdots \par Hello\fourdots\ World.
-
-\setnewconstant\boundarycharactermode\plusone
-
-\def\midboundarycharacter#1#2%
-  {\ifcase\boundarycharactermode
-   \or
-     %\nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
-     \languageparameter#1%
-     %\nobreak
-      \hskip\hspaceamount\currentlanguage{#2}%
-   \or
-     \languageparameter#1%
-   \fi
-   \boundarycharactermode\plusone}
-
-\def\leftboundarycharacter#1#2%
-  {\ifcase\boundarycharactermode
-   \or
-     \languageparameter#1%
-     \nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
-   \or
-     \languageparameter#1%
-   \fi
-   \boundarycharactermode\plusone}
-
-\def\rightboundarycharacter#1#2%
-  {\ifcase\boundarycharactermode
-   \or
-     \prewordbreak %\nobreak
-     \hskip\hspaceamount\currentlanguage{#2}%
-     \languageparameter#1%
-   \or
-     \languageparameter#1%
-   \fi
-   \boundarycharactermode\plusone}
-
-% actually this is pretty old, but temporary moved here
-%
-% obsolete:
-
-\unexpanded\def\setuphyphenmark
-  {\dodoubleargument\getparameters[\??kp]}
-
-\unexpanded\def\setuphyphenmark[#1]% sign=normal|wide
-  {\dodoubleargument\getparameters[\??kp][#1]%
-   \doifelse\@@kpsign {\v!normal}% was inset?
-     {\let\textmodehyphen\normalhyphen  \let\textmodehyphendiscretionary\normalhyphendiscretionary}
-     {\let\textmodehyphen\composedhyphen\let\textmodehyphendiscretionary\composedhyphendiscretionary}}
-
-\setuphyphenmark[\c!sign=\v!wide]
-% % \setuphyphenmark[\c!sign=\v!normal]
-
-\definesymbol[\c!lefthyphen]  [\languageparameter\c!lefthyphen]
-\definesymbol[\c!righthyphen] [\languageparameter\c!righthyphen]
-\definesymbol[\c!hyphen]      [\languageparameter\c!hyphen]
-
-\def\normalhyphen
-  {\hbox{\directsymbol\empty\c!hyphen}}
-
-\def\composedhyphen
-  {\hbox{\directsymbol\empty\c!compoundhyphen}}
-
-\def\normalhyphendiscretionary
-  {\discretionary
-     {\hbox{\directsymbol\empty\c!righthyphen}}
-     {\hbox{\directsymbol\empty\c!lefthyphen}}
-     {\hbox{\directsymbol\empty\c!hyphen}}}
-
-\def\composedhyphendiscretionary
-  {\discretionary
-     {\hbox{\directsymbol\empty\c!rightcompoundhyphen}}
-     {\hbox{\directsymbol\empty\c!leftcompoundhyphen}}
-     {\hbox{\directsymbol\empty\c!compoundhyphen}}}
-
-\let\textmodehyphen             \composedhyphen
-\let\textmodehyphendiscretionary\composedhyphendiscretionary
-
-\definesymbol[\c!leftcompoundhyphen]  [\languageparameter\c!leftcompoundhyphen]
-\definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
-\definesymbol[\c!compoundhyphen]      [\languageparameter\c!compoundhyphen]
-
-\definehspace [sentence]      [\zeropoint]
-\definehspace [intersentence] [.250em]
-
-\definesymbol
-  [\c!midsentence]
-  [\midboundarycharacter\c!midsentence{sentence}]
-
-\definesymbol
-  [\c!leftsentence]
-  [\leftboundarycharacter\c!leftsentence{sentence}]
-
-\definesymbol
-  [\c!rightsentence]
-  [\rightboundarycharacter\c!rightsentence{sentence}]
-
-\definesymbol
-  [\c!leftsubsentence]
-  [\leftboundarycharacter\c!leftsubsentence{sentence}]
-
-\definesymbol
-  [\c!rightsubsentence]
-  [\rightboundarycharacter\c!rightsubsentence{sentence}]
-
-\newsignal \subsentencesignal
-\newcount  \subsentencelevel
-
-\let\beforesubsentence\donothing
-\let\aftersubsentence \donothing
-
-% todo: make this language option
-%
-% \def\beforesubsentence{\removeunwantedspaces}
-% \def\aftersubsentence {\ignorespaces}
-
-\def\midsentence
-  {\symbol[\c!midsentence]}
-
-\def\beginofsubsentence
-  {\beforesubsentence
-   \ifdim\lastkern=\subsentencesignal
-     \unskip
-     \kern\hspaceamount\currentlanguage{intersentence}%
-   \fi
-   \global\advance\subsentencelevel\plusone
-   \ifnum\subsentencelevel=\plusone
-     \dontleavehmode % was \leaveoutervmode
-   \fi
-   \dostarttagged\t!subsentence\empty
-   \symbol[\ifodd\subsentencelevel\c!leftsentence\else\c!leftsubsentence\fi]%
-  }%  \ignorespaces}
-
-\def\endofsubsentence % relax prevents space gobbling
-  {\symbol[\ifodd\subsentencelevel\c!rightsentence\else\c!rightsubsentence\fi]%
-   \dostoptagged
-   \global\advance\subsentencelevel\minusone
-   \unskip
-   \kern\subsentencesignal\relax
-   \aftersubsentence}
-
-\def\beginofsubsentencespacing % relax prevents space gobbling
-  {\kern\subsentencesignal\relax}% \ignorespaces}
-
-\def\endofsubsentencespacing
-  {\ifdim\lastkern=\subsentencesignal
-     \unskip
-     \hskip\hspaceamount\currentlanguage{intersentence}%
-     % no good, actually language dependent:
-%     \ignorespaces
-   \else
-     \unskip
-   \fi}
-
-%D \startbuffer
-%D test |<|test |<|test|>| test|>| test \par
-%D test|<|test|<|test|>|test|>|test \par
-%D test |<||<|test|>||>| test \par
-%D test \directdiscretionary{<}test\directdiscretionary{>} test \par
-%D \stopbuffer
-%D
-%D \typebuffer
-%D \getbuffer
-
-\unexpanded\def\startsubsentence{\beginofsubsentence     \prewordbreak\beginofsubsentencespacing}
-\unexpanded\def\stopsubsentence {\endofsubsentencespacing\prewordbreak\endofsubsentence}
-\unexpanded\def\subsentence     {\groupedcommand\startsubsentence\stopsubsentence}
-
-\definehspace [quotation]      [\zeropoint]
-\definehspace [interquotation] [.125em]
-
-%definehspace [quote]  [\zeropoint]
-%definehspace [speech] [\zeropoint]
-
-\definehspace [quote]  [\hspaceamount\currentlanguage{quotation}]
-\definehspace [speech] [\hspaceamount\currentlanguage{quotation}]
-
-\definesymbol
-  [\c!leftquotation]
-  [\leftboundarycharacter\c!leftquotation{quotation}]
-
-\definesymbol
-  [\c!rightquotation]
-  [\rightboundarycharacter\c!rightquotation{quotation}]
-
-\definesymbol
-  [\c!leftquote]
-  [\leftboundarycharacter\c!leftquote{quote}]
-
-\definesymbol
-  [\c!rightquote]
-  [\rightboundarycharacter\c!rightquote{quote}]
-
-\definesymbol
-  [\c!leftspeech]
-  [\leftboundarycharacter\c!leftspeech{speech}]
-
-\definesymbol
-  [\c!rightspeech]
-  [\rightboundarycharacter\c!rightspeech{speech}]
-
-\definesymbol
-  [\c!middlespeech]
-  [\leftboundarycharacter\c!middlespeech{speech}]
-
-\appendtoks\def\quotation#1{"#1"}\to\simplifiedcommands
-\appendtoks\def\quote    #1{'#1'}\to\simplifiedcommands
-
-%D The next features was so desperately needed by Giuseppe
-%D Bilotta that he made a module for it. Since this is a
-%D typical example of core functionality, I decided to extend
-%D the low level quotation macros in such a way that a speech
-%D feature could be build on top of it. The speech opening and
-%D closing symbols are defined per language. Italian is an
-%D example of a language that has them set.
-
-% this will replace the quotation and speed definitions
-
-% todo: \typo_ namespace
-
-\newsignal\delimitedtextsignal
-
-\let\currentdelimitedtext\s!unknown
-
-\def\delimitedtextlevel{\csname\??ci:\currentdelimitedtext:\c!level\endcsname}
-
-\def\doinitializetextlevel#1%
-  {\ifcsname\??ci:#1:\c!level\endcsname
-     \csname\??ci:#1:\c!level\endcsname\zerocount
-   \else
-     \expandafter\newcount\csname\??ci:#1:\c!level\endcsname
-   \fi}
-
-\def\delimitedtextparameter#1% will be sped up
-  {\executeifdefined{\??ci\currentdelimitedtext:\number\delimitedtextlevel#1}%
-  {\executeifdefined{\??ci\currentdelimitedtext#1}%
-  {\executeifdefined{\??ci#1}\empty}}}
-
-\unexpanded\def\definedelimitedtext
-  {\dodoubleempty\dodefinedelimitedtext}
-
-\def\dodefinedelimitedtext[#1][#2]%
-  {\doinitializetextlevel{#1}%
-   \doifassignmentelse{#2}
-     {\getparameters
-        [\??ci#1]
-        [\c!location=\v!margin, % \v!text \v!paragraph
-         \c!spacebefore=,
-         \c!spaceafter=\delimitedtextparameter\c!spacebefore,
-         \c!style=\v!normal,
-         \c!color=,
-         \c!leftmargin=\zeropoint,
-         \c!rightmargin=\delimitedtextparameter\c!leftmargin,
-         \c!indentnext=\v!yes,
-         \c!before=,
-         \c!after=,
-         \c!left=,
-         \c!right=,
-        %\c!level=0,
-         \c!repeat=\v!no,
-         \c!method=,
-        #2]}%
-     {\doifdefined{#2}
-        {\copyparameters[\??ci#1][\??ci#2]
-           [\c!location,\c!spacebefore,\c!spaceafter,\c!style,\c!color,
-            \c!leftmargin,\c!rightmargin,\c!indentnext,
-            \c!before,\c!after,\c!left,\c!right]}}%
-   \doifsomething{#1}
-     {\setuvalue{#1}{\delimitedtext[#1]}%
-      \setuvalue{\e!start#1}{\startdelimitedtext[#1]}% u added
-      \setuvalue{\e!stop #1}{\stopdelimitedtext}}}   % u added
-
-\unexpanded\def\setupdelimitedtext
-  {\dotripleargument\dosetupdelimitedtext}
-
-\def\dosetupdelimitedtext[#1][#2][#3]% #2 = optional level
-  {\ifthirdargument
-     \getparameters[\??ci#1:#2][#3]%
-   \else\ifsecondargument
-     \getparameters[\??ci#1][#2]%
-   \else
-     \getparameters[\??ci][#1]%
-   \fi\fi}
-
-\def\dorepeatdelimitedtext
-  {\relax\ifcase\delimitedtextlevel\else
-     \dohandledelimitedtext\c!middle % maybe better \dohandleleftdelimitedtext
-   \fi}
-
-\let\dohandlerepeatdelimitedtext\relax
-
-\unexpanded\def\startdelimitedtext[#1]%
-  {\begingroup
-   \pushdelimitedtext{#1}%
-   \dostarttagged\t!delimitedblock\currentdelimitedtext
-   \doifelse{\delimitedtextparameter\c!method}\s!font
-     {\let\dostopdelimitedtext\typo_delimitedtexts_finish_font
-      \ignoredelimitedtext\c!left\ignorespaces}
-     {\doifelse{\delimitedtextparameter\c!repeat}\v!yes
-        {\let\dohandlerepeatdelimitedtext\dorepeatdelimitedtext}%
-        {\let\dohandlerepeatdelimitedtext\relax}%
-      \doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
-        {\dosingleempty\dostartdelimitedtextpar}\dostartdelimitedtexttxt}}
-
-\def\typo_delimitedtexts_finish_font
-  {\removeunwantedspaces\ignoredelimitedtext\c!right}
-
-\def\dostartdelimitedtextpar[#1]%
-   {\let\dostopdelimitedtext\dostopdelimitedtextpar
-    \doifsomething{\delimitedtextparameter\c!spacebefore}
-      {\blank[\delimitedtextparameter\c!spacebefore]}%
-    \delimitedtextparameter\c!before
-    % nicer:
-    % \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-    % \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-    % backward compatible:
-    \doifelsenothing{#1}
-      {\endgraf
-       \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
-       \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
-       \let\dodostopdelimitedtextpar\endgraf}
-      {\startnarrower[#1]\let\dodostopdelimitedtextpar\stopnarrower}%
-    % so far
-    \pushmacro\checkindentation
-    \doifsomething{\delimitedtextparameter\c!indenting} % WS
-      {\setupindenting[\delimitedtextparameter\c!indenting]}%
-    \begingroup
-    \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
-    \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color
-    \leftdelimitedtextmark
-    \ignorespaces}
-
-\def\dostopdelimitedtextpar
-   {\removeunwantedspaces
-    \removelastskip
-    \rightdelimitedtextmark
-    \endgroup
-    \popmacro\checkindentation
-    \dodostopdelimitedtextpar
-    \delimitedtextparameter\c!after
-    \doifsomething{\delimitedtextparameter\c!spaceafter}
-      {\blank[\delimitedtextparameter\c!spaceafter]}%
-    \useindentnextparameter\delimitedtextparameter
-    \dorechecknextindentation}% AM: This was missing!
-
-\def\dostartdelimitedtexttxt
-  {\let\dostopdelimitedtext\dostopdelimitedtexttxt
-   \begingroup
-   \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
-   \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color
-   \dohandleleftdelimitedtext\c!left
-   \ignorespaces}
-
-\def\dostopdelimitedtexttxt
-  {\removeunwantedspaces
-   \dohandlerightdelimitedtext\c!right
-   \endgroup}
-
-\unexpanded\def\stopdelimitedtext
-  {\dostopdelimitedtext
-   \dostoptagged
-   \popdelimitedtext
-   \endgroup}
-
-\def\pushdelimitedtext#1%
-  {\globalpushmacro\currentdelimitedtext
-   \def\currentdelimitedtext{#1}%
-   \global\advance\delimitedtextlevel\plusone}
-
-\def\popdelimitedtext
-  {\global\advance\delimitedtextlevel\minusone
-   \globalpopmacro\currentdelimitedtext}
-
-\unexpanded\def\delimitedtext[#1]%
-  {\dontleavehmode % following ones can be omited
-   \pushdelimitedtext{#1}%
-   \doifelse{\delimitedtextparameter\c!method}\s!font
-     {\dofontdrivendelimited}
-     {\doifinsetelse{\delimitedtextparameter\c!location}{\v!paragraph,\v!margin}%
-      \dodelimitedtextpar\dodelimitedtexttxt}}
-
-% shortcuts
-
-\unexpanded\def\startdelimited{\startdelimitedtext}
-\unexpanded\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
-           \def\delimited     {\delimitedtext}
-
-\def\leftdelimitedtextmark
-  {\doifsomething{\delimitedtextparameter\c!left}
-     {\setbox\scratchbox\hbox{\delimitedtextparameter\c!left}%
-      \dontleavehmode
-      \doif{\delimitedtextparameter\c!location}\v!margin{\hskip-\wd\scratchbox}%
-      \box\scratchbox}}
-
-\def\rightdelimitedtextmark
-  {\doifsomething{\delimitedtextparameter\c!right}
-     {\hsmash{\delimitedtextparameter\c!right}}}
-
-% \starttext
-%    \hyphenatedword{groepsvrijstellingsverordeningen}\par
-%    \hyphenatedword{\quote{groepsvrijstellingsverordeningen}}\par
-%     \dorecurse{100}{\hskip300pt\hskip\recurselevel pt test \quote{xxx xxxx}.\par}
-%     \page \setuppapersize[A5][A4]
-%     \quotation {overly beautiful pusillanimous sesquipedalian
-%     longwinded} test test test test test test test test test test test
-%     test test test test test test test test test test test test test
-%     test test test test test test test test test test test test test
-%     test test test test test test test test test test test test test
-%     test test test
-% \stoptext
-
-\def\dohandledelimitedtext#1#2%
-  {\begingroup
-   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
-   \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\delimitedtextsignal
-       \unkern
-       \hskip\hspaceamount\currentlanguage{interquotation}%
-     \else
-       #2%
-     \fi
-     \ifhmode % else funny pagebeaks
-       \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
-     \fi
-     \strut % new, needed below
-     \delimitedtextparameter#1% unhbox\scratchbox
-   % \penalty\plustenthousand % else overfull boxes, but that's better than dangling periods
-     \kern\delimitedtextsignal % +- \prewordbreak
-   \fi
-   \endgroup}
-
-\def\dohandleleftdelimitedtext#1#2%
-  {\begingroup
-   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
-   \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\delimitedtextsignal
-       \unkern
-       \hskip\hspaceamount\currentlanguage{interquotation}%
-     \else\ifdim\lastskip=\delimitedtextsignal
-       \unskip
-       \hskip\hspaceamount\currentlanguage{interquotation}%
-     \else
-       #2%
-     \fi\fi
-     \strut % new, needed below
-     \ifhmode % else funny pagebeaks
-       \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
-     \fi
-     \strut % new, needed below
-     \delimitedtextparameter#1% unhbox\scratchbox
-     \hskip\delimitedtextsignal % +- \prewordbreak
-   \fi
-   \endgroup}
-
-\def\dohandlerightdelimitedtext#1#2%
-  {\begingroup
-   \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
-   \ifdim\wd\scratchbox>\zeropoint
-     \ifdim\lastkern=\delimitedtextsignal
-       \unkern
-       \penalty\plustenthousand
-       \hskip\hspaceamount\currentlanguage{interquotation}%
-     \else\ifdim\lastskip=\delimitedtextsignal
-       \unskip
-       \penalty\plustenthousand
-       \hskip\hspaceamount\currentlanguage{interquotation}%
-     \else
-       #2%
-     \fi\fi
-     \ifhmode % else funny pagebeaks
-       \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
-     \fi
-     \strut % new, needed below
-     \delimitedtextparameter#1% unhbox\scratchbox
-     \kern\delimitedtextsignal % +- \prewordbreak
-   \fi
-   \endgroup}
-
-
-\def\ignoredelimitedtext#1%
-  {\delimitedtextparameter#1}
-
-\def\handledelimitedtext#1%
-  {\dohandledelimitedtext{#1}\relax}
-
-\def\handleleftdelimitedtext#1%
-  {\dohandleleftdelimitedtext{#1}\relax}
-
-\def\handlerightdelimitedtext#1%
-  {\dohandlerightdelimitedtext{#1}\relax}
-
-\unexpanded\def\dodelimitedtextpar
-  {\groupedcommand
-     {\dostarttagged\t!delimited\currentdelimitedtext % block?
-      \dohandleleftdelimitedtext\c!left\relax}
-     {\dohandlerightdelimitedtext\c!right\removelastskip
-      \dostoptagged
-      \popdelimitedtext}}
-
-\unexpanded\def\dodelimitedtexttxt
-  {\doifelse{\delimitedtextparameter\c!style}\v!normal
-     \doquoteddelimited\doattributeddelimited}
-
-\def\doquoteddelimited
-  {\groupedcommand
-     {\dostarttagged\t!delimited\currentdelimitedtext
-      \dohandleleftdelimitedtext\c!left\relax}
-     {\dohandlerightdelimitedtext\c!right
-      \removelastskip
-      \dostoptagged
-      \popdelimitedtext}}
-
-\def\doattributeddelimited
-  {\groupedcommand
-     {\dostarttagged\t!delimited\currentdelimitedtext
-      \dousestylehashparameter{\??ci\currentdelimitedtext}\c!style
-      \dousecolorhashparameter{\??ci\currentdelimitedtext}\c!color}
-     {\dostoptagged
-      \popdelimitedtext}}
-
-\def\dofontdrivendelimited
-  {\simplegroupedcommand
-     {\dostarttagged\t!delimited\currentdelimitedtext
-      \languageparameter{\c!left\currentdelimitedtext}}
-     {\languageparameter{\c!right\currentdelimitedtext}%
-      \dostoptagged
-      \popdelimitedtext}}
-
-% testcase for nesting:
-%
-% \quotation{... \quotation{...} ...}
-% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
-% \setupdelimitedtext[quotation][1][left=(,right=)]
-% \setupdelimitedtext[quotation][2][left={[},right={]}]
-% \setupdelimitedtext[quotation][3][left=\{,right=\}]
-% \quotation{... \quotation{...} ...}
-% \startquotation ... \startquotation... \quotation{...} \stopquotation\space ...\stopquotation
-
-\definedelimitedtext
-  [\v!quotation]
-  [\c!left={\symbol[\c!leftquotation]},
-   \c!right={\symbol[\c!rightquotation]},
-   \c!leftmargin=\v!standard]
-
-\definedelimitedtext
-  [\v!quote][\v!quotation]
-
-\setupdelimitedtext
-  [\v!quote]
-  [\c!location=\v!text,
-   \c!left={\symbol[\c!leftquote]},
-   \c!right={\symbol[\c!rightquote]}]
-
-\definedelimitedtext
-   [\v!blockquote][\v!quotation]
-
-\setupdelimitedtext
-  [\v!blockquote]
-  [\c!left=,
-   \c!right=]
-
-\definedelimitedtext
-  [\v!speech][\v!quotation]
-
-\setupdelimitedtext
-  [\v!speech]
-  [\c!repeat=\v!yes,
-   \c!left={\symbol[\c!leftspeech]},
-   \c!middle={\symbol[\c!middlespeech]},
-   \c!right={\symbol[\c!rightspeech]}]
-
-% how do we call an tight quote
-%
-% \definedelimitedtext
-%    [\v!quotation][\v!quotation]
-%
-% \setupdelimitedtext
-%   [\v!quotation]
-%   [\c!indentnext=\v!no,
-%    \c!spacebefore=\v!nowhite]
-
-\unexpanded\def\setupquotation{\setupdelimitedtext[\v!quotation]}
-\unexpanded\def\setupquote    {\setupdelimitedtext[\v!quote]}
 
 % seldom used, move from kernel to run time module
 
@@ -1219,41 +534,6 @@
 
 \let\grid\basegrid
 
-% only used at pragma, move from kernel to run time module
-
-\def\referraldate
-  {\currentdate[\v!referral]}
-
-\def\doreferral[#1]%
-   {\noheaderandfooterlines
-    \bgroup
-    \getparameters
-      [\??km]
-      [\c!bet=\unknown,\c!dat=\unknown,\c!ken=\unknown,
-       \c!from=,\c!to=,\c!ref=,#1]%
-    % moet anders, hoort niet in 01b
-    \assigntranslation[\s!nl=referentie,\s!en=reference,\s!de=Referenz,\s!hr=referenca,\s!sp=referencia]\to\@@@kmref
-    \assigntranslation[\s!nl=van,\s!en=from,\s!de=Von,\s!hr=od,\s!sp=de]\to\@@@kmvan
-    \assigntranslation[\s!nl=aan,\s!en=to,\s!de=An,\s!hr=za,\s!sp=a]\to\@@@kmaan
-    \assigntranslation[\s!nl=betreft,\s!en=concerns,\s!de=Betreff,\s!hr=predmet,\s!sp=]\to\@@@kmbet
-    \assigntranslation[\s!nl=datum,\s!en=date,\s!de=Datum,\s!hr=datum,\s!sp=fecha]\to\@@@kmdat
-    \assigntranslation[\s!nl=kenmerk,\s!en=mark,\s!de=Kennzeichen,\s!hr=oznaka,\s!sp=]\to\@@@kmken
-    %
-    \definetabulate[\s!dummy][|l|p|]
-    \startdummy
-      \NC\@@@kmbet\EQ\@@kmbet\NC\NR
-      \NC\@@@kmdat\EQ\@@kmdat\NC\NR
-      \NC\@@@kmken\EQ\expanded{\smallcapped{\@@kmken}}\NC\NR
-      \doifsomething{\@@kmfrom\@@kmto}{\NC\NC\NC\NR}%
-      \doifsomething \@@kmfrom         {\NC\@@@kmvan\EQ\@@kmfrom\NC\NR}%
-      \doifsomething \@@kmto         {\NC\@@@kmaan\EQ\@@kmto\NC\NR}%
-      \doifsomething \@@kmref         {\NC\NC\NC\NR\NC\@@@kmref\EQ\@@kmref\NC\NR}%
-    \stopdummy
-    \egroup}
-
-\def\referral
-  {\dosingleargument\doreferral}
-
 \definetabulate
   [\v!legend]
   [|emj1|i1|mR|]
@@ -1433,6 +713,12 @@
 %D       \stopitemize}}
 %D \stoptyping
 
+\newsystemmode{pairedbox}
+
+\appendtoks
+    \global\resetsystemmode{pairedbox}%
+\to \everyinsidefloat
+
 \newbox\firstpairedbox
 \newbox\secondpairedbox
 
@@ -1610,294 +896,6 @@
 
 \definepairedbox[\v!legend]
 
-%D Goody (to be reconsidered):
-
-\newsystemmode{combination}
-\newsystemmode{pairedbox}
-
-\appendtoks
-    \global\resetsystemmode{combination}%
-    \global\resetsystemmode{pairedbox}%
-\to \everyinsidefloat
-
-% todo: \startcombination \startcomb \stopcomb ...
-
-% needs to be mkiv'd (we could map this onto bTABLE)
-
-\newcount\horcombination  % counter
-\newcount\totcombination
-
-\unexpanded\def\definecombination
-  {\dodoubleempty\dodefinecombination}
-
-\def\dodefinecombination[#1][#2]%
-  {\copyparameters
-     [\??co#1][\??co]
-     [\c!width,\c!height,\c!distance,\c!location,%
-      \c!before,\c!inbetween,\c!after,\c!align,%
-      \c!style,\c!color]%
-   \getparameters
-     [\??co#1][#2]}
-
-\unexpanded\def\setupcombinations
-  {\dodoubleempty\dosetupcombinations}
-
-\def\dosetupcombinations[#1][#2]%
-  {\ifsecondargument
-     \getparameters[\??co#1][#2]%
-   \else
-     \getparameters[\??co][#1]%
-   \fi}
-
-\def\combinationparameter#1%
-  {\csname\??co\currentcombination#1\endcsname}%
-
-\unexpanded\def\startcombination
-  {\bgroup % so we can grab a group
-   \dodoubleempty\dostartcombination}
-
-% \startcombination      {alpha} {a} {beta} {b} \stopcombination
-% \startcombination[2*1] {alpha} {a} {beta} {b} \stopcombination
-% \startcombination[1*2] {alpha} {a} {beta} {b} \stopcombination
-% \startcombination[2]   {alpha} {a} {beta} {b} \stopcombination
-
-\def\dostartcombination[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
-  {\global\setsystemmode{combination}%
-   \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
-   \doifnothing{#2}\secondargumentfalse     % to be sure (when called in macros)
-   \ifsecondargument % todo: nx ny
-     \def\currentcombination{#1}%
-     \edef\currentcombinationspec{#2*1*}%
-   \else % better : \doifcombinationelse ... \??co#1\c!location
-      \doifinstringelse{*}{#1}
-       {\let\currentcombination\empty
-        \edef\currentcombinationspec{#1*1*}}
-       {\doifnumberelse{#1}
-          {\let\currentcombination\empty
-           \edef\currentcombinationspec{#1*1*}}
-          {\def\currentcombination{#1}%
-           \edef\currentcombinationspec{2*1*}}}%
-   \fi
-   \forgetall
-   \dostarttagged\t!combination\currentcombination
-   \doifelse{\combinationparameter\c!height}\v!fit
-     \vbox {\vbox to \combinationparameter\c!height}%
-   \bgroup
-   \let\combination\empty % permits \combination{}{} handy for cld
-   \setuphorizontaldivision
-     [\c!n=\v!fit,\c!distance=\combinationparameter\c!distance]%
-   \expanded{\dodostartcombination[\currentcombinationspec]}}
-
-\ifdefined\dotagcombination \else \let\dotagcombination\relax \fi
-
-\long\def\dodostartcombination[#1*#2*#3]%
-  {\global\horcombination#1%
-   \global\totcombination#2%
-   \dotagcombination
-   \global\setbox\combinationstack\emptybox
-   \xdef\maxhorcombination{\the\horcombination}%
-   \multiply\totcombination\horcombination
-   \tabskip\zeropoint
-   \doifelse{\combinationparameter\c!width}\v!fit
-     {\halign}{\halign to \combinationparameter\c!width}%
-   \bgroup
-   &%
-   %\hfil##\hfil% now : location={left,top}
-   \expanded{\doifnotinset{\v!left}{\combinationparameter\c!location}}\hfil
-   ##%
-   \expanded{\doifnotinset{\v!right}{\combinationparameter\c!location}}\hfil
-   &%
-   \tabskip\zeropoint \!!plus 1fill
-   ##%
-   \cr
-   \docombination}
-
-\def\docombination % we want to add struts but still ignore an empty box
-  {\dostarttagged\t!combinationpair\empty
-   \dostarttagged\t!combinationcontent\empty
-   \dowithnextboxcs\docombinationfinish\hbox}
-
-\def\docombinationfinish % we want to add struts but still ignore an empty box
-  {\dostoptagged
-   \setbox0\flushnextbox
-   \dostarttagged\t!combinationcaption\empty
-   \dowithnextbox
-     {\dostoptagged
-      \dostoptagged
-      \setbox2\flushnextbox
-      \dodocombination}%
-   \vtop\bgroup
-     \afterassignment\donextcombination\let\nexttoken=}
-
-\def\donextcombination
-  {\futurelet\nexttoken\donextnextcombination}
-
-\def\donextnextcombination
-  {\ifx\nexttoken\egroup \else % the next box is empty
-     \hsize\wd0
-     \setupalign[\combinationparameter\c!align]%
-     \dousestylehashparameter{\??co\currentcombination}\c!style
-     \dousecolorhashparameter{\??co\currentcombination}\c!color
-     \bgroup
-     \aftergroup\endstrut
-     \aftergroup\egroup
-     \begstrut
-   \fi}
-
-\def\depthonlybox
-  {\dowithnextbox{\vtop{\hsize\wd\nextbox\kern\zeropoint\box\nextbox}}\vbox}
-
-\def\dodocombination
-  {\vbox
-     {\forgetall % \setupwhitespace[\v!none]%
-      \let\next\vbox
-      \expanded{\processallactionsinset[\combinationparameter\c!location]}
-        [    \v!top=>\let\next\depthonlybox, % \tbox,
-          \v!middle=>\let\next\halfwaybox]%
-      \next{\copy0}%
-      % we need to save the caption for a next alignment line
-      \saveoncombinationstack2}%
-   \ifnum\totcombination>\plusone
-     \global\advance\totcombination\minusone
-     \global\advance\horcombination\minusone
-     \ifnum\horcombination=\zerocount
-       \doubleexpandafter\docombinationa
-     \else
-       \doubleexpandafter\docombinationb
-     \fi
-   \else
-     \expandafter\docombinationc
-   \fi}
-
-\def\docombinationa
-  {\cr
-   \flushcombinationstack
-   \noalign
-     {\forgetall % \setupwhitespace[\v!none]% no
-      \global\setbox\combinationstack\emptybox
-      \nointerlineskip
-      \combinationparameter\c!after
-      \combinationparameter\c!before
-      \vss
-      \nointerlineskip}%
-   \global\horcombination\maxhorcombination\relax
-   \docombination}
-
-\def\docombinationb
-  {&&&\hskip\combinationparameter\c!distance&\docombination}
-
-\def\docombinationc
-  {\cr
-   \flushcombinationstack
-   \egroup}
-
-% formally ok:
-%
-% \unexpanded\def\stopcombination
-%   {\egroup
-%    \egroup}
-%
-% more robust:
-%
-% \unexpanded\def\stopcombination
-%   {{}{}{}{}{}{}{}{}% catches (at most 4) missing entries
-%    \egroup
-%    \egroup}
-%
-% even better:
-
-\unexpanded\def\stopcombination
-  {{\scratchtoks{{}{}{}}\dorecurse\totcombination{\appendtoks{}{}{}{}\to\scratchtoks}\expandafter}\the\scratchtoks
-   \egroup
-   \dostoptagged
-   \egroup}
-
-\newbox\combinationstack
-
-\def\saveoncombinationstack#1%
-  {\global\setbox\combinationstack\hbox
-     {\hbox{\box#1}\unhbox\combinationstack}}
-
-\def\flushcombinationstack
-  {\noalign
-     {\ifdim\ht\combinationstack>\zeropoint
-        \nointerlineskip % nieuw
-        \combinationparameter\c!inbetween
-        \global\horcombination\maxhorcombination
-        \globallet\doflushcombinationstack\dodoflushcombinationstack
-      \else
-        \global\setbox\combinationstack\emptybox
-        \globallet\doflushcombinationstack\donothing
-      \fi}%
-   \doflushcombinationstack\crcr}
-
-\gdef\dodoflushcombinationstack
-  {\global\setbox\combinationstack\hbox
-     {\unhbox\combinationstack
-      \global\setbox1\lastbox}%
-   \box1% \ruledhbox{\box1}%
-   \global\advance\horcombination\minusone\relax
-   \ifnum\horcombination>\zerocount
-     \expandafter\dodoflushcombinationstacknext
-   \else
-     \global\setbox\combinationstack\emptybox
-   \fi}
-
-\def\dodoflushcombinationstacknext
-  {&&&&\doflushcombinationstack}
-
-\setupcombinations
-  [\c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!distance=1em,
-   \c!location=\v!bottom, % can be something {top,left}
-   \c!before=\blank,
-   \c!inbetween={\blank[\v!medium]},
-   \c!style=,
-   \c!color=,
-   \c!after=,
-   \c!align=\v!middle]
-
-%D \macros
-%D   {startfloatcombination}
-%D
-%D \setupexternalfigures[directory={../sample}]
-%D \startbuffer
-%D \placefigure
-%D   [left,none]
-%D   {}
-%D   {\startfloatcombination[2*2]
-%D      \placefigure{alpha}{\externalfigure[cow.pdf][width=1cm]}
-%D      \placefigure{beta} {\externalfigure[cow.pdf][width=2cm]}
-%D      \placefigure{gamma}{\externalfigure[cow.pdf][width=3cm]}
-%D      \placefigure{delta}{\externalfigure[cow.pdf][width=4cm]}
-%D    \stopfloatcombination}
-%D
-%D \input tufte
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-
-\unexpanded\def\startfloatcombination
-  {\dodoubleempty\dostartfloatcombination}
-
-\let\startfloatcombination\relax
-
-\def\dostartfloatcombination[#1][#2]%
-  {\vbox\bgroup
-  %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
-   \postcenterfloatmethod\zerocount
-   \forcelocalfloats
-   \unexpanded\def\stopfloatcombination{\dostopfloatcombination{#1}}}
-
-\unexpanded\def\dostopfloatcombination#1%
-  {\scratchtoks\emptytoks
-   \dorecurse\noflocalfloats
-     {\appendetoks{\noexpand\getlocalfloat{\recurselevel}}{}\to\scratchtoks}% brrr
-   \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
-   \resetlocalfloats
-  \egroup}
-
 \unexpanded\def\placerelativetoeachother#1#2%
   {\bgroup
    \dowithnextbox
@@ -1957,9 +955,8 @@
   [\c!distance=\emwidth,
    \c!n=\v!fit]
 
-%D This one is for Daniel Pittman, who wanted tight
-%D fractions. We show three versions. First the simple
-%D one using \type {\low} and \type {high}:
+%D This one is for Daniel Pittman, who wanted tight fractions. We show
+%D three versions. First the simple one using \type {\low} and \type {high}:
 %D
 %D \startbuffer
 %D \def\vfrac#1#2%
@@ -2017,7 +1014,7 @@
         \lower\dp0\hbox{\raise\dp2\hbox{\txx#2}}%
       \fi}}
 
-\ifx\vfrac\undefined \let\vfrac\vulgarfraction \fi
+\ifdefined\vfrac \else \let\vfrac\vulgarfraction \fi
 
 %D \starttabulate
 %D \HL
@@ -2029,7 +1026,7 @@
 %D \NC 3 \NC \vulgarfractionmethod3 \vulgarfraction{1}{2} \NC\NR
 %D \HL
 %D \stoptabulate
-
+
 %D Under construction:
 %D
 %D \starttyping
@@ -2040,6 +1037,8 @@
 %D \commalistsentence[a,b,c][{ \& },{ and }]
 %D \commalistsentence[a,b,c][+,-]
 %D \stoptyping
+
+% obsolete .. use lua instead
 
 \let\handlecommalistsentence\firstofoneargument
 

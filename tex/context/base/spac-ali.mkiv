@@ -236,6 +236,10 @@
     \newconditional\raggedonelinerstate  % public
 \fi
 
+% \appendtoks
+%     \setfalse\raggedonelinerstate
+% \to \everyforgetall
+
 \newconstant\raggedstatus % public
 
 \newconstant\c_spac_align_state_horizontal
@@ -262,6 +266,7 @@
    \spaceskip  \zeropoint
    \xspaceskip \zeropoint
    \parfillskip\s_zero_plus_one_fil % new
+   \setfalse\raggedonelinerstate    % now here
    \let\updateraggedskips\relax}    % no need for adaption
 
 \unexpanded\def\spac_align_set_horizontal_left

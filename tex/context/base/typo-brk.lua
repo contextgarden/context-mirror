@@ -32,9 +32,12 @@ local remove_node        = nodes.remove -- ! nodes
 local link_nodes         = nodes.link
 
 local texattribute       = tex.attribute
+local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nodes.pool
 local tasks              = nodes.tasks
+
+local v_reset            = interfaces.variables.reset
 
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
@@ -54,7 +57,7 @@ typesetters.breakpoints  = typesetters.breakpoints or {}
 local breakpoints        = typesetters.breakpoints
 
 breakpoints.mapping      = breakpoints.mapping or { }
-local mapping            = breakpoints.mapping
+breakpoints.numbers      = breakpoints.numbers or { }
 
 breakpoints.methods      = breakpoints.methods or { }
 local methods            = breakpoints.methods
@@ -64,27 +67,12 @@ breakpoints.attribute    = a_breakpoints
 
 storage.register("typesetters/breakpoints/mapping", breakpoints.mapping, "typesetters.breakpoints.mapping")
 
-function breakpoints.setreplacement(id,char,language,settings)
-    char = utfbyte(char)
-    local map = mapping[id]
-    if not map then
-        map = { }
-        mapping[id] = map
-    end
-    local cmap = map[char]
-    if not cmap then
-        cmap = { }
-        map[char] = cmap
-    end
-    local left, right, middle = settings.left, settings.right, settings.middle
-    cmap[language or ""] = {
-        type   = tonumber(settings.type)   or 1,
-        nleft  = tonumber(settings.nleft)  or 1,
-        nright = tonumber(settings.nright) or 1,
-        left   = left   ~= "" and left     or nil,
-        right  = right  ~= "" and right    or nil,
-        middle = middle ~= "" and middle   or nil,
-    } -- was { type or 1, before or 1, after or 1 }
+local mapping            = breakpoints.mapping
+local numbers            = breakpoints.mapping
+
+for i=1,#mapping do
+    local m = mapping[i]
+    numbers[m.name] = m
 end
 
 local function insert_break(head,start,before,after)
@@ -167,12 +155,13 @@ local function process(namespace,attribute,head)
     while start do
         local id = start.id
         if id == glyph_code then
-            local attr = has_attribute(start,attribute)
+            local attr = has_attribute(start,a_breakpoints)
             if attr and attr > 0 then
-                unset_attribute(start,attribute) -- maybe test for subtype > 256 (faster)
+                unset_attribute(start,a_breakpoints) -- maybe test for subtype > 256 (faster)
                 -- look ahead and back n chars
-                local map = mapping[attr]
-                if map then
+                local data = mapping[attr]
+                if data then
+                    local map = data.characters
                     local cmap = map[start.char]
                     if cmap then
                         local lang = start.lang
@@ -230,15 +219,64 @@ local function process(namespace,attribute,head)
     return head, done
 end
 
+local enabled = false
+
+function breakpoints.define(name)
+    local data = numbers[name]
+    if data then
+        -- error
+    else
+        local number = #mapping + 1
+        local data = {
+            name       = name,
+            number     = number,
+            characters = { },
+        }
+        mapping[number] = data
+        numbers[name]   = data
+    end
+end
+
+function breakpoints.setreplacement(name,char,language,settings)
+    char = utfbyte(char)
+    local data = numbers[name]
+    if data then
+        local characters = data.characters
+        local cmap = characters[char]
+        if not cmap then
+            cmap = { }
+            characters[char] = cmap
+        end
+        local left, right, middle = settings.left, settings.right, settings.middle
+        cmap[language or ""] = {
+            type   = tonumber(settings.type)   or 1,
+            nleft  = tonumber(settings.nleft)  or 1,
+            nright = tonumber(settings.nright) or 1,
+            left   = left   ~= "" and left     or nil,
+            right  = right  ~= "" and right    or nil,
+            middle = middle ~= "" and middle   or nil,
+        } -- was { type or 1, before or 1, after or 1 }
+    end
+end
+
 function breakpoints.set(n)
-    if trace_breakpoints then
-        report_breakpoints("enabling breakpoints handler")
+    if n == v_reset then
+        n = unsetvalue
+    else
+        n = mapping[n]
+        if not n then
+            n = unsetvalue
+        else
+            if not enabled then
+                if trace_breakpoints then
+                    report_breakpoints("enabling breakpoints handler")
+                end
+                tasks.enableaction("processors","typesetters.breakpoints.handler")
+            end
+            n = n.number
+        end
     end
-    tasks.enableaction("processors","typesetters.breakpoints.handler")
-    function breakpoints.set(n)
-        texattribute[a_breakpoints] = n
-    end
-    breakpoints.set(n)
+    texattribute[a_breakpoints] = n
 end
 
 breakpoints.handler = nodes.installattributehandler {
@@ -247,6 +285,12 @@ breakpoints.handler = nodes.installattributehandler {
     processor = process,
 }
 
-function breakpoints.enable()
-    tasks.enableaction("processors","typesetters.breakpoints.handler")
-end
+-- function breakpoints.enable()
+--     tasks.enableaction("processors","typesetters.breakpoints.handler")
+-- end
+
+-- interface
+
+commands.definebreakpoints = breakpoints.define
+commands.definebreakpoint  = breakpoints.setreplacement
+commands.setbreakpoints    = breakpoints.set

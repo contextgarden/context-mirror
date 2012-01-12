@@ -155,26 +155,26 @@
 
 \unexpanded\def\margindata
   {\iftrialtypesetting
-     \expandafter\nomargindata
+     \expandafter\typo_margins_data_nop
    \else
-     \expandafter\domargindata
+     \expandafter\typo_margins_data_yes
    \fi}
 
-\def\nomargindata[#name]%
-  {\dodoubleempty\donomargindata}
+\def\typo_margins_data_nop[#name]%
+  {\dodoubleempty\typo_margins_data_nop_indeed}
 
-\def\domargindata[#name]%
+\def\typo_margins_data_yes[#name]%
   {\setfalse\inhibitmargindata % flushing afterwards
    \begingroup
   %\settrue\inhibitmargindata  % no flushing in here
    \def\currentmargindata{#name}%
    \let\currentmarginframed\currentmargindata
-   \dodoubleempty\dodomargindata}
+   \dodoubleempty\typo_margins_data_yes_indeed}
 
-\unexpanded\def\donomargindata[#dataparameters][#textparameters]#content%
+\unexpanded\def\typo_margins_data_nop_indeed[#dataparameters][#textparameters]#content%
   {}
 
-\unexpanded\def\dodomargindata[#dataparameters][#textparameters]#content%
+\unexpanded\def\typo_margins_data_yes_indeed[#dataparameters][#textparameters]#content%
   {\iffirstargument
      \setupcurrentmargindata[#dataparameters]%
    \fi
@@ -365,9 +365,9 @@
 \let\definemarginline\definemargindata
 
 \unexpanded\def\defineinmargin
-  {\doquadrupleempty\dodefineinmargin}
+  {\doquadrupleempty\typo_inmargin_define}
 
-\def\dodefineinmargin[#name][#location][#align][#settings]% not completely compatible
+\def\typo_inmargin_define[#name][#location][#align][#settings]% not completely compatible
   {\definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
    \definemarginframed[#name][#location][\c!align=#align,#settings]}
 

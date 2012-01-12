@@ -39,7 +39,7 @@
 %D \stoplines
 
 \unexpanded\def\setdigitsmanipulation[#1]%
-  {\ctxlua{typesetters.digits.set(\number#1)}}
+  {\ctxcommand{setdigitsmanipulation("#1")}}
 
 \unexpanded\def\resetdigitsmanipulation
   {\attribute\digitsattribute\attributeunsetvalue}
@@ -48,8 +48,8 @@
     \resetdigitsmanipulation
 \to \everyresettypesetting
 
-\unexpanded\def\equaldigits{\groupedcommand{\setdigitsmanipulation[\plusone]}{}}
-\unexpanded\def\dummydigit {\hphantom{\setdigitsmanipulation[\plusone]0}}
+\unexpanded\def\equaldigits{\groupedcommand{\setdigitsmanipulation[\number\plusone]}{}}
+\unexpanded\def\dummydigit {\hphantom      {\setdigitsmanipulation[\number\plusone]0}}
 
 \appendtoks
     \resetcharacterspacing
