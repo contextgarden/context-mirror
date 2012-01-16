@@ -46,13 +46,14 @@
 \unexpanded\def\pack_placement#tag%
   {\bgroup
    \edef\currentplacement{#tag}%
-   \dosingleempty\pack_placement_indeed}
+   \doifnextoptionalelse\pack_placement_yes\pack_placement_nop}
 
-\def\pack_placement_indeed[#settings]% set test can be sped up but non critical
-  {\iffirstargument
-     \setupcurrentplacement[#settings]%
-   \fi
-   \dowithnextboxcontentcs\forgetall\pack_placement_flush\vbox}
+\def\pack_placement_yes[#settings]%
+  {\setupcurrentplacement[#settings]%
+   \pack_placement_nop}
+
+\def\pack_placement_nop
+  {\dowithnextboxcontentcs\forgetall\pack_placement_flush\vbox}
 
 \def\pack_placement_flush
   {\setlocalhsize
@@ -67,21 +68,44 @@
      \page_backgrounds_add_local_to_box\nextbox
    \fi
    \ifgridsnapping
-     \doifinset{\placementparameter\c!margin}{\v!standard,\v!yes}\noindent % unchecked
-     \doifelsenothing{\placementparameter\c!grid}
-       {\snaptogrid[\v!middle]}
-       {\snaptogrid[\placementparameter\c!grid]}%
-       \hbox{\flushnextbox}%
+     \pack_placement_flush_grid_yes
    \else
-     \doif{\placementparameter\c!linecorrection}\v!on \startbaselinecorrection
-     \doifinset{\placementparameter\c!margin}{\v!standard,\v!yes}\noindent
-     \flushnextbox
-     \doif{\placementparameter\c!depthcorrection}\v!on\baselinecorrection
-     \doif{\placementparameter\c!linecorrection }\v!on\stopbaselinecorrection
+     \pack_placement_flush_grid_nop
    \fi
    \endgroup
    \placementparameter\c!after
    \egroup}
+
+\def\pack_placement_flush_grid_yes
+  {\edef\p_grid{\placementparameter\c!grid}%
+   \ifx\p_grid\empty
+     \let\p_grid\v!middle
+   \fi
+   \pack_placement_flush_grid_noindent
+   \snaptogrid[\p_grid]\hbox{\box\nextbox}}
+
+\def\pack_placement_flush_grid_nop
+  {\edef\p_linecorrection {\placementparameter\c!linecorrection}%
+   \edef\p_depthcorrection{\placementparameter\c!depthcorrection}%
+   \ifx\p_linecorrection\v!on
+     \startbaselinecorrection
+   \fi
+   \pack_placement_flush_grid_noindent
+   \box\nextbox
+   \ifx\p_depthcorrection\v!on
+     \baselinecorrection
+   \fi
+   \ifx\p_linecorrection\v!on
+     \stopbaselinecorrection
+   \fi}
+
+\def\pack_placement_flush_grid_noindent
+  {\edef\p_margin{\placementparameter\c!margin}%
+   \ifx\p_margin\v!standard
+     \noindent
+   \else\ifx\p_margin\v!yes
+     \noindent
+   \fi\fi}
 
 \protect \endinput
 

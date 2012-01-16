@@ -75,11 +75,21 @@
    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
    mark=yes,mkmk=yes,kern=yes,curs=yes]
 
+\definefontfeature
+  [hebrew]
+  [arabic]
+  [script=hebr]
+
 \definefontfeature % might move
   [simplearabic]
   [mode=node,language=dflt,script=arab,
    init=yes,medi=yes,fina=yes,calt=yes,
    rlig=yes,curs=yes,mark=yes,mkmk=yes]
+
+\definefontfeature
+  [simplehebrew]
+  [simplearabic]
+  [script=hebr]
 
 % symbols:
 
@@ -313,7 +323,7 @@
 
 %D So far.
 
-\definefontstyle [\s!mm]                                 [\s!mm]
+% \definefontstyle [\s!mm]                                 [\s!mm]
 \definefontstyle [\s!rm,\v!roman,\v!serif,\v!regular]    [\s!rm]
 \definefontstyle [\s!ss,\v!sansserif,\v!sans,\v!support] [\s!ss]
 \definefontstyle [\s!tt,\v!teletype,\v!type,\v!mono]     [\s!tt]

@@ -1,0 +1,189 @@
+%D \module
+%D   [       file=font-sty,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=features,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Features}
+
+\unprotect
+
+%D Feature management.
+%D
+%D \starttyping
+%D \definefontfeature[smallcaps][smcp=yes,script=latn]
+%D \definefontfeature[smallcaps][SmallCapitals=yes,script=latn]
+%D \definefontfeature[smallcaps][Small Capitals=yes,script=latn]
+%D \definefontfeature[smallcaps][small capitals=yes,script=latn]
+%D \definefontfeature[smallcaps][smallcapitals=yes,script=latn]
+%D
+%D \definedfont[cambria*smallcaps] test
+%D
+%D \starttext
+%D \definefontfeature[basekerned][default][mode=base]
+%D \definefontfeature[nodekerned][default][mode=node]
+%D \definefontfeature[nonekerned][default][mode=base,kern=no]
+%D \setupcolors[state=start]
+%D \startoverlay
+%D     {\vbox{\red  \definedfont[Serif*nonekerned at 12pt]\input tufte }}
+%D     {\vbox{\blue \definedfont[Serif*basekerned at 12pt]\input tufte }}
+%D     {\vbox{\green\definedfont[Serif*nodekerned at 12pt]\input tufte }}
+%D \stopoverlay
+%D \stoptext
+%D
+%D \enabletrackers[otf.kerns]
+%D
+%D \definefontfeature[withkern][default][mode=node]
+%D \definefontfeature[nokern]  [default][mode=node,kern=no]
+%D \definefontfeature[single]  [default][mode=node,cpsp=yes]
+%D \definefontfeature[simple]  [default][mode=node,cpsp=yes,kern=no]
+%D
+%D {\definedfont[Serif*default] [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*nokern]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*single]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D {\definedfont[Serif*simple]  [FGFGFGFGFGFGFGFGFGFGFGFGFG ABCDEFGHIJKLMNOPQRSTUVWXYZ] \par}
+%D \stoptyping
+
+% \definefontfeature[slanted]  [default][slant=.25]
+% \definefontfeature[stretched][default][stretch=2]
+%
+% \start \definedfont[SerifBold*slanted   at 20pt] \ruledhbox{Test!} \stop
+% \start \definedfont[SerifBold*stretched at 20pt] \ruledhbox{Test!} \stop
+%
+% \definefontfeature[default]     [liga=yes,texligatures=yes,texquotes=yes]
+% \definefontfeature[default-caps][liga=yes,texligatures=yes,texquotes=yes,smcp=yes,script=latn]
+%
+% \starttypescript [serif] [palatino-nova-regular] [name]
+%     \definefontsynonym[Serif]    [palatinonova-regular][features=default]
+%     \definefontsynonym[SerifCaps][palatinonova-regular][features=default-caps] % also sets Serif
+% \stoptypescript
+%
+% \starttypescript [serif] [palatino-nova-regular] [name]
+%     \definefontsynonym[Serif]          [palatinonova-regular*default]
+%     \definefontsynonym[SerifCaps]      [palatinonova-regular*default-caps]
+% \stoptypescript
+%
+% \definetypeface[mainface][rm][serif][palatino-nova-regular][default] \setupbodyfont[mainface]
+%
+% \starttext
+%   ``Test'' -- --- ff fi fl \sc ``Test'' -- --- ff fi fl
+% \stoptext
+%
+% \definefontfeature
+%   [default-base]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes]
+% \definefontfeature
+%   [default-node]
+%   [script=latn,language=dflt,liga=yes,kern=yes,tlig=yes,trep=yes,mode=node]
+% \definefontfeature
+%   [default-none]
+%   [script=latn,language=dflt,liga=yes,kern=no, tlig=yes,trep=yes]
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:lmroman12regular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:lmroman12regular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:lmroman12regular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:texgyrepagella*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:texgyrepagella*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:texgyrepagella*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \blank
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:palatinonovaregular*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:palatinonovaregular*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:palatinonovaregular*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \startoverlay
+%     {\vtop{\color[red]  {\font\test=name:OfficinaSerifBookITC*default-node \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[green]{\font\test=name:OfficinaSerifBookITC*default-base \test \input ward \input zapf \input linden }}}
+%     {\vtop{\color[blue] {\font\test=name:OfficinaSerifBookITC*default-none \test \input ward \input zapf \input linden }}}
+% \stopoverlay
+%
+% \definefontfeature[superdefault][default][compose=yes]
+%
+% {\font\oeps=name:lmroman10regular*default      at 30pt \oeps test \char7683}
+% {\font\oeps=name:lmroman10regular*superdefault at 30pt \oeps test \char7683}
+
+\unexpanded\def\definefontfeature
+  {\dotripleargument\font_basics_define_font_feature}
+
+\def\font_basics_define_font_feature[#featureset][#parent][#settings]%
+  {\ctxcommand{definefontfeature("#featureset","#parent","#settings")}}
+
+\unexpanded\def\fontfeatureslist
+  {\dodoubleargument\font_basics_features_list}
+
+\def\font_basics_features_list[#name][#separator]% todo: arg voor type
+  {\cldcommand{featurelist("#name","otf","\luaescapestring{#separator}","yes","no",true,{"number"})}}
+
+\attribute\zerocount\zerocount % first in list, so fast match
+
+\let\currentfeature\empty
+
+% ! ! ! very experimental, some test code for idris advanced features ! ! !
+%
+% \startbuffer
+% \definefontfeature[smallcaps][smallcaps][script=latn]
+% \definefontfeature[oldstyle] [oldstyle] [script=latn]
+%
+% \definedfont[name:cambria at 15pt]
+%
+% Hello there {\setff{smallcaps}capped 123 \setff{oldstyle}123!}    \blank
+% Hello there {\addff{smallcaps}capped 123 \addff{oldstyle}123!}    \blank
+% Hello there {\addff{smallcaps}capped     \subff{smallcaps}normal} \blank
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+
+\unexpanded\def\featureattribute#feature{\ctxcommand{featureattribute("#feature")}}
+\unexpanded\def\setfontfeature  #feature{\ctxcommand{setfontfeature("#feature")}\edef\currentfeature{#feature}}
+%unexpanded\def\resetfontfeature        {\ctxcommand{resetfontfeature()}\let\currentfeature\empty} % initial value
+\unexpanded\def\resetfontfeature        {\attribute\zerocount\zerocount \let\currentfeature\empty} % initial value
+
+\unexpanded\def\addfontfeaturetoset        #feature{\ctxcommand{addfs("#feature")}} % merge
+\unexpanded\def\subtractfontfeaturefromset #feature{\ctxcommand{subfs("#feature")}} % merge
+\unexpanded\def\addfontfeaturetofont       #feature{\ctxcommand{addff("#feature")}} % overload
+\unexpanded\def\subtractfontfeaturefromfont#feature{\ctxcommand{subff("#feature")}} % overload
+
+\let\setff\setfontfeature
+\let\addfs\addfontfeaturetoset
+\let\subfs\subtractfontfeaturefromset
+\let\addff\addfontfeaturetofont
+\let\subff\subtractfontfeaturefromfont
+
+%D \macros
+%D   {os}
+%D
+%D In good old \TEX, the old style numerals were often taken
+%D from the math fonts. No longer.
+
+\definefontfeature
+  [just-os]
+  [mode=node,onum=yes]
+
+%unexpanded\def\sc{\setfontfeature{smallcaps}}
+\unexpanded\def\os{\setfontfeature{just-os}}
+
+% \doifelsecurrentfonthasfeature{smcp}{YES}{NO}
+% \doifelsecurrentfonthasfeature{crap}{YES}{NO}
+% \doifelsecurrentfonthasfeature{kern}{YES}{NO}
+
+\def\doifelsecurrentfonthasfeature#feature%
+  {\ctxcommand{doifelsecurrentfonthasfeature("#feature")}}
+
+\protect \endinput

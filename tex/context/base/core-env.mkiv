@@ -169,9 +169,9 @@
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
    \rawprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
-     \expandafter#2
+     \expandafter#2%
    \else
-     \expandafter#1
+     \expandafter#1%
    \fi}
 
 \unexpanded\def\doifmodeelse        {\syst_modes_check\firstoftwoarguments\secondoftwoarguments}

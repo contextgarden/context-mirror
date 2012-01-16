@@ -31,12 +31,12 @@
 
 \installswitchcommandhandler \??interaction {interaction} \??interaction
 
-\let\currentinteraction\empty
-
 \appendtoks
-  \doifelse{\interactionparameter\c!state}\v!start
-    {\locationtrue  \setsystemmode  \v!interaction}%
-    {\locationfalse \resetsystemmode\v!interaction}%
+    \ifx\currentinteraction\previousinteraction
+        \doifelse{\interactionparameter\c!state}\v!start
+          {\locationtrue  \setsystemmode  \v!interaction}%
+          {\locationfalse \resetsystemmode\v!interaction}%
+    \fi
 \to \everysetupinteraction
 
 \def\doifelselocation

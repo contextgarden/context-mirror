@@ -54,48 +54,53 @@
 
     if coremodules then
 
-        local preloaded = coremodules.preloaded
+        local function tabelize(loaded,what)
 
-        if preloaded then
+            if loaded then
 
-            local nofunknown = 0
-            local nofloaded  = #preloaded
+                local nofunknown = 0
+                local nofloaded  = #loaded
 
-            for i=1,nofloaded do
-                preloaded[i].order = i
-            end
-
-            table.sort(preloaded,function(a,b) return a.filename < b.filename end)
-
-            context.starttabulate { "|Tr|Tl|Tl|l|p|" }
-            context.NC() -- context.bold("order")
-            context.NC() context.bold("file")
-            context.NC() context.bold("mark")
-            context.NC() context.bold("status")
-            context.NC() context.bold("comment")
-            context.NC() context.NR()
-            for i=1,nofloaded do
-                local module = preloaded[i]
-                local status = module.status
-                context.NC() context(module.order)
-                context.NC() context(module.filename)
-                context.NC() context(module.marktype)
-                if status == "unknown" then
-                    context.NC() context.bold(status)
-                    nofunknown = nofunknown + 1
-                else
-                    context.NC() context(status)
+                for i=1,nofloaded do
+                    loaded[i].order = i
                 end
-                context.NC() context(module.comment)
+
+                table.sort(loaded,function(a,b) return a.filename < b.filename end)
+
+                context.starttabulate { "|Tr|Tl|Tl|l|p|" }
+                context.NC() -- context.bold("order")
+                context.NC() context.bold("file")
+                context.NC() context.bold("mark")
+                context.NC() context.bold("status")
+                context.NC() context.bold("comment")
                 context.NC() context.NR()
+                for i=1,nofloaded do
+                    local module = loaded[i]
+                    local status = module.status
+                    context.NC() context(module.order)
+                    context.NC() context(module.filename)
+                    context.NC() context(module.marktype)
+                    if status == "unknown" then
+                        context.NC() context.bold(status)
+                        nofunknown = nofunknown + 1
+                    else
+                        context.NC() context(status)
+                    end
+                    context.NC() context(module.comment)
+                    context.NC() context.NR()
+                end
+                context.stoptabulate()
+
+                context.blank()
+
+                context("Of the %s %s modules (so far) in this list %s have the status unknown",nofloaded,what,nofunknown)
+
             end
-            context.stoptabulate()
-
-            context.blank()
-
-            context("Of the %s core modules (so far) in this list %s have the status unknown",nofloaded,nofunknown)
 
         end
+
+        tabelize(coremodules.core, "core")
+        tabelize(coremodules.extra,"extra")
 
     end
 

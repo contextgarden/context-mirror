@@ -184,29 +184,31 @@
 % %    \ifpagechanged TRUE\else FALSE\fi}
 % %
 % % \Test\page \Test\par \Test\page \Test\par \Test\page \Test\page
-%
-% \newif\ifpagechanged \let\lastchangedpage\empty
-%
-% \def\docheckpagestatechange#1#2#3%
-%   {\pagechangedfalse
-%    \doforcedtrackpagestate{#2}{#3}%
-%    \findtwopassdata{#2}{\number#3}%
-%    \ifconditional\twopassdatafound
-%      \ifnum\twopassdata>0\getvalue{#2:p:#1}\relax
-%        \pagechangedtrue
-%      \fi
-%    \fi
-%    \ifpagechanged
-%      \letgvalue{#2:p:#1}\twopassdata
-%      \globallet\lastchangedpage\twopassdata
-%    \else
-%      \globallet\lastchangedpage\realfolio
-%    \fi}
-%
-% \def\changedpagestate#1#2%
-%   {\executeifdefined{#2:p:#1}{0}}
-%
-% \def\checkpagechange#1{\docheckpagestatechange{#1}\s!paragraph\nofraggedparagraphs}
-% \def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
+
+\installcorenamespace{pagechanges}
+
+\newif\ifpagechanged \let\lastchangedpage\empty
+
+\def\spac_pagechanges_check#1#2#3%
+  {\pagechangedfalse
+   \doforcedtrackpagestate{#2}{#3}%
+   \findtwopassdata{#2}{\number#3}%
+   \ifconditional\twopassdatafound
+     \ifnum\twopassdata>0\getvalue{\??pagechanges#2:#1}\relax
+       \pagechangedtrue
+     \fi
+   \fi
+   \ifpagechanged
+     \letgvalue{\??pagechanges#2:#1}\twopassdata
+     \globallet\lastchangedpage\twopassdata
+   \else
+     \globallet\lastchangedpage\realfolio
+   \fi}
+
+\def\changedpagestate#1#2%
+  {\executeifdefined{\??pagechanges#2:#1}0}
+
+\def\checkpagechange#1{\spac_pagechanges_check{#1}\s!paragraph\nofraggedparagraphs}
+\def\changedpage    #1{\changedpagestate{#1}\s!paragraph}
 
 \protect \endinput
