@@ -809,7 +809,7 @@ function xml.is_valid(root)
     return root and not root.error
 end
 
-xml.errorhandler = report
+xml.errorhandler = report_xml
 
 --[[ldx--
 <p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load

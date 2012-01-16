@@ -123,16 +123,35 @@
 \to \everydefinelayout
 
 \appendtoks
-    \ifx\currentlayout\v!reset
+    \ifcase\layoutsetupmode
+        % can't happen
+    \or % \setuplayout[name][key=value]
+      \ifx\previouslayout\currentlayout
+        \letlayoutparameter\c!state\v!normal % global ? still needed ?
+        \let\currentlayout\currentlayout
+        \page_layouts_synchronize
+        \page_layouts_check_next
+      \fi
+    \or % \setuplayout[key=value]
+      % we can inherit so we always synchronize
+      \letlayoutparameter\c!state\v!normal % global ? still needed ?
+      \let\currentlayout\previouslayout
+      \page_layouts_synchronize
+      \page_layouts_check_next
+    \or % \setuplayout[name]
+      \ifx\currentlayout\v!reset
         \let\currentlayout\empty
-        \letlayoutparameter\c!state\v!normal % global ?
+      \fi
+      \letlayoutparameter\c!state\v!normal % global ? still needed ?
+      \global\let\currentlayout\currentlayout % global
+      \page_layouts_synchronize
+      \page_layouts_check_next
+    \or % \setuplayout (reverts to main layout)
+      \letlayoutparameter\c!state\v!normal % global ? still needed ?
+      \global\let\currentlayout\empty % global
+      \page_layouts_synchronize
+      \page_layouts_check_next
     \fi
-    \globallet\currentlayout\currentlayout
-\to \everysetuplayout
-
-\appendtoks
-   \page_layouts_synchronize
-   \page_layouts_check_next
 \to \everysetuplayout
 
 \def\doiflayoutdefinedelse#1%

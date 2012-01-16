@@ -22,7 +22,7 @@
 
 \def\node_backgrounds_boxes_initialize % will move to lua
   {\ctxlua{nodes.tasks.enableaction("shipouts","nodes.handlers.backgrounds")}%
-   \glet\doinitializeboxbackgrounds\donothing}
+   \glet\node_backgrounds_boxes_initialize\donothing}
 
 % \backgroundvbox[green] {\input tufte } \par
 % \backgroundvbox[blue]  {\input ward } \par
@@ -71,7 +71,8 @@
 % more efficient:
 
 \def\node_backgrounds_boxes_add#1[#2]%
-  {\node_backgrounds_boxes_initialize#1\backgroundcolorattr{#2}}
+  {\node_backgrounds_boxes_initialize
+   #1\backgroundcolorattr{#2}}
 
 % less argument carry over:
 %

@@ -139,7 +139,7 @@
    \def\dobotbaselinecorrection
      {\hrule\!!height\thebotbaselinecorrection}}
 
-\def\dobaselinecorrection
+\def\dobaselinecorrection % beware, this one is redefined / used locally elsewhere
   {\ifdim\prevdepth>\zeropoint\kern-\prevdepth\fi
    \kern\strutdp
    \prevdepth\strutdp}

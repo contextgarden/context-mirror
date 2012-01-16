@@ -1,7 +1,7 @@
 -- colo-run.mkiv colo-imp-*.mkiv ...
 
 return {
-    preloaded = {
+    core = {
         {
             filename = "syst-ini",
             marktype = "mkiv",
@@ -164,12 +164,12 @@ return {
             marktype = "mkiv",
             status   = "okay",
         },
-       {
+        {
             filename = "mult-dim",
             marktype = "mkvi",
             status   = "okay",
         },
-         {
+        {
             filename = "cldf-int",
             marktype = "mkiv",
             status   = "okay",
@@ -883,7 +883,8 @@ return {
         {
             filename = "tabl-com",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "somewhat weird",
         },
         {
             filename = "tabl-pln",
@@ -898,7 +899,8 @@ return {
         {
             filename = "tabl-tbl",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "can probably be improved (names and such)",
         },
         {
             filename = "tabl-ntb",
@@ -914,6 +916,7 @@ return {
             filename = "tabl-ltb",
             marktype = "mkiv",
             status   = "unknown",
+            comment  = "will be redone when needed",
         },
         {
             filename = "tabl-tsp",
@@ -949,10 +952,55 @@ return {
             status   = "okay",
         },
         {
+            filename = "font-lib",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-fil",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-fea",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-mat",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
             filename = "font-ini",
             marktype = "mkvi",
             status   = "okay",
             comment  = "needs occasional checking and upgrading",
+        },
+        {
+            filename = "font-sym",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-sty",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-set",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-emp",
+            marktype = "mkvi",
+            status   = "okay",
+        },
+        {
+            filename = "font-col",
+            marktype = "mkvi",
+            status   = "okay",
         },
         {
             filename = "font-pre",
@@ -1275,7 +1323,7 @@ return {
         {
             filename = "typo-del",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "grph-trf",
@@ -1407,6 +1455,13 @@ return {
             marktype = "mkiv",
             status   = "okay",
             comment  = "some parameters might move from export to backend"
+        },
+    },
+    extra = {
+        {
+            filename = "tabl-xnt",
+            marktype = "mkvi",
+            status   = "okay",
         },
     }
 }

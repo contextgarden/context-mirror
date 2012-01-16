@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['tabl-tbl'] = {
 -- TeX. More will follow.
 
 local tonumber = tonumber
-local gsub, rep, sub = string.gsub, string.rep, string.sub
+local gsub, rep, sub, find = string.gsub, string.rep, string.sub, string.find
 
 local P, C, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.match
 
@@ -21,17 +21,20 @@ local nested    = lpeg.patterns.nested
 local pattern   = Ct((separator * (C(nested) + Cc("")) * C((1-separator)^0))^0)
 
 function commands.presettabulate(preamble)
-    -- todo: lpeg but not now
-    preamble = gsub(preamble, "%*(%b{})(%b{})", function(n,p)
-        return rep(sub(p,2,-2),tonumber(sub(n,2,-2)) or 1)
-    end)
+    preamble = gsub(preamble,"~","d") -- let's get rid of ~ mess here
+    if find(preamble,"%*") then
+        -- todo: lpeg but not now
+        preamble = gsub(preamble, "%*(%b{})(%b{})", function(n,p)
+            return rep(sub(p,2,-2),tonumber(sub(n,2,-2)) or 1)
+        end)
+    end
     local t = lpegmatch(pattern,preamble)
     local m = #t - 2
-    settexcount("global","noftabulatecolumns", m/2)
-    settexcount("global","tabulatehasfirstrulespec", t[1] == "" and 0 or 1)
-    settexcount("global","tabulatehaslastrulespec", t[m+1] == "" and 0 or 1)
+    settexcount("global","c_tabl_tabulate_nofcolumns", m/2)
+    settexcount("global","c_tabl_tabulate_has_rule_spec_first", t[1] == "" and 0 or 1)
+    settexcount("global","c_tabl_tabulate_has_rule_spec_last", t[m+1] == "" and 0 or 1)
     for i=1,m,2 do
         context.settabulateentry(t[i],t[i+1])
     end
-    context.setlasttabulateentry(t[m+1])
+    context.settabulatelastentry(t[m+1])
 end

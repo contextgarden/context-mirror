@@ -1806,11 +1806,15 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 if nofchainlookups == 1 then
                     local chainlookupname = chainlookups[1]
                     local chainlookup = lookuptable[chainlookupname]
-                    local cp = chainprocs[chainlookup.type]
-                    if cp then
-                        start, done = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,nil,sequence)
-                    else
-                        logprocess("%s: %s is not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                    if chainlookup then
+                        local cp = chainprocs[chainlookup.type]
+                        if cp then
+                            start, done = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,nil,sequence)
+                        else
+                            logprocess("%s: %s is not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                        end
+                    else -- shouldn't happen
+                        logprocess("%s is not yet supported",cref(kind,chainname,chainlookupname))
                     end
                  else
                     local i = 1

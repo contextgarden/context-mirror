@@ -3639,34 +3639,32 @@
 
 %D For special purposes:
 
-\newcount\fastrecursecounter
-\newcount\lastrecursecounter
-\newcount\steprecursecounter
+\newcount\fastloopindex
+\newcount\fastloopfinal
+\let\fastloopcs\relax
 
-\unexpanded\def\dofastrecurse#1#2#3#4%
-  {\def\fastrecursebody{#4}%
-   \fastrecursecounter#1\relax
-   \lastrecursecounter#2\relax
-   \steprecursecounter#3\relax
-   \def\recurselevel{\number\fastrecursecounter}%
-   \dodofastrecurse}
+\unexpanded\def\dofastloopcs#1#2%
+  {\let\fastloopcs#2
+   \fastloopindex\plusone
+   \fastloopfinal#1\relax
+   \dodofastloopcs}
+
+\unexpanded\def\dodofastloopcs
+  {\ifnum\fastloopindex>\fastloopfinal
+     \let\fastloopcs\relax
+   \else
+     \fastloopcs
+     \advance\fastloopindex\plusone
+     \expandafter\dodofastloopcs
+   \fi}
+
+% Helper:
 
 \unexpanded\def\resetrecurselevel{\let\recurselevel\!!zerocount}
 
-\unexpanded\def\dodofastrecurse
-  {\ifnum\fastrecursecounter>\lastrecursecounter
-     % \resetrecurselevel % slows down
-   \else
-     \fastrecursebody
-     \advance\fastrecursecounter\steprecursecounter
-     \expandafter\dodofastrecurse
-   \fi}
+\let\recurselevel\!!zerocount
 
 % \appendtoks \resetrecurselevel \to \everydump
-
-\everydump\expandafter{\the\everydump\resetrecurselevel}
-
-% %
 
 %D \macros
 %D   {doloopoverlist}
@@ -3851,6 +3849,13 @@
    \else
      \expandafter\firstoftwoarguments
    \fi}
+
+\newif\ifassignment
+
+% \def\docheckassignmentindeed#1=#2#3\@end@{\if#2@\assignmentfalse\else\assignmenttrue\fi}
+%
+% \def\docheckassignment#1%
+%   {\expandafter\docheckassignmentindeed\detokenize{#1}=@@\@end@}
 
 % D \macros
 % D   {convertasciiafter}
@@ -5983,11 +5988,11 @@
 %D
 %D This macro is first used in the tabulation macros.
 
-\def\processcontent#1%
+\unexpanded\def\processcontent#1%
   {\begingroup\expandafter\doprocesscontent\csname#1\endcsname}
 
-\def\doprocesscontent#1#2#3%
-  {\def\doprocesscontent##1#1%
+\unexpanded\def\doprocesscontent#1#2#3%
+  {\unexpanded\def\doprocesscontent##1#1%
      {\endgroup\def#2{##1}#3}%
    \doprocesscontent}
 
@@ -7022,5 +7027,59 @@
 %D is not set in the font!
 
 \unexpanded\def\signalcharacter{\char\zerocount} % \zwj
+
+%D Here are some nasty helpers:
+
+\def\constantnumber#1%
+  {\ifcase#1\zerocount
+   \or      \plusone
+   \or      \plustwo
+   \or      \plusthree
+   \or      \plusfour
+   \or      \plusfive
+   \or      \plussix
+   \or      \plusseven
+   \or      \pluseight
+   \or      \plusnine
+   \or      \plusten
+   \else    \number#1\relax\fi}
+
+\def\constantnumberargument#1%
+  {\ifcase#1\zerocount
+   \or      \plusone
+   \or      \plustwo
+   \or      \plusthree
+   \or      \plusfour
+   \or      \plusfive
+   \or      \plussix
+   \or      \plusseven
+   \or      \pluseight
+   \or      \plusnine
+   \or      \plusten
+   \else    {\number#1}\fi}
+
+\def\constantdimen#1%
+  {\ifdim#1=\zeropoint
+     \zeropoint
+   \else
+     \the#1\relax
+   \fi}
+
+\def\constantdimenargument#1%
+  {\ifdim#1=\zeropoint
+     \zeropoint
+   \else
+     {\the#1}%
+   \fi}
+
+\def\constantemptyargument#1%
+  {\ifx#1\empty
+     \noexpand\empty
+   \else
+     {#1}%
+   \fi}
+
+%D These can be used when constructing often reused token lists,
+%D as we do with tabulates.
 
 \protect \endinput

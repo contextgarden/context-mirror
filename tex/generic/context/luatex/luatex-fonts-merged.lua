@@ -1,6 +1,6 @@
 -- merged file : luatex-fonts-merged.lua
 -- parent file : luatex-fonts.lua
--- merge date  : 01/12/12 11:03:39
+-- merge date  : 01/16/12 18:33:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -5380,7 +5380,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.735 -- beware: also sync font-mis.lua
+otf.version              = 2.736 -- beware: also sync font-mis.lua
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local fontdata           = fonts.hashes.identifiers
@@ -6360,7 +6360,8 @@ actions["reorganize subtables"] = function(data,filename,raw)
             for k=1,#dw do
                 local gk = dw[k]
                 local features = gk.features
-                if features and supported(features) then
+--              if features and supported(features) then
+                if not features or supported(features) then -- not always features !
                     local typ = gk.type
                     local chain = g_directions[typ] or 0
                     local subtables = gk.subtables
@@ -6388,7 +6389,6 @@ actions["reorganize subtables"] = function(data,filename,raw)
                     --
                     local name = gk.name
                     --
-                    local features = gk.features
                     if features then
                         -- scripts, tag, ismac
                         local f = { }
@@ -10338,11 +10338,15 @@ local function normal_handle_contextchain(start,kind,chainname,contexts,sequence
                 if nofchainlookups == 1 then
                     local chainlookupname = chainlookups[1]
                     local chainlookup = lookuptable[chainlookupname]
-                    local cp = chainprocs[chainlookup.type]
-                    if cp then
-                        start, done = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,nil,sequence)
-                    else
-                        logprocess("%s: %s is not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                    if chainlookup then
+                        local cp = chainprocs[chainlookup.type]
+                        if cp then
+                            start, done = cp(start,last,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,nil,sequence)
+                        else
+                            logprocess("%s: %s is not yet supported",cref(kind,chainname,chainlookupname),chainlookup.type)
+                        end
+                    else -- shouldn't happen
+                        logprocess("%s is not yet supported",cref(kind,chainname,chainlookupname))
                     end
                  else
                     local i = 1

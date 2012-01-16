@@ -1105,9 +1105,9 @@ end
 expressions.child = function(e,pattern)
     return applylpath(e,pattern) -- todo: cache
 end
-expressions.count = function(e,pattern)
+expressions.count = function(e,pattern) -- what if pattern == empty or nil
     local collected = applylpath(e,pattern) -- todo: cache
-    return (collected and #collected) or 0
+    return pattern and (collected and #collected) or 0
 end
 
 -- external
@@ -1116,7 +1116,7 @@ expressions.oneof = function(s,...) -- slow
     local t = {...} for i=1,#t do if s == t[i] then return true end end return false
 end
 expressions.error = function(str)
-    xml.errorhandler("unknown function in lpath expression",tostring(str or "?"))
+    xml.errorhandler(format("unknown function in lpath expression: %s",tostring(str or "?")))
     return false
 end
 expressions.undefined = function(s)

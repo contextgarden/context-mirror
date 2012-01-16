@@ -7566,7 +7566,7 @@ function xml.is_valid(root)
     return root and not root.error
 end
 
-xml.errorhandler = report
+xml.errorhandler = report_xml
 
 --[[ldx--
 <p>We cannot load an <l n='lpeg'/> from a filehandle so we need to load
@@ -9128,9 +9128,9 @@ end
 expressions.child = function(e,pattern)
     return applylpath(e,pattern) -- todo: cache
 end
-expressions.count = function(e,pattern)
+expressions.count = function(e,pattern) -- what if pattern == empty or nil
     local collected = applylpath(e,pattern) -- todo: cache
-    return (collected and #collected) or 0
+    return pattern and (collected and #collected) or 0
 end
 
 -- external
@@ -9139,7 +9139,7 @@ expressions.oneof = function(s,...) -- slow
     local t = {...} for i=1,#t do if s == t[i] then return true end end return false
 end
 expressions.error = function(str)
-    xml.errorhandler("unknown function in lpath expression",tostring(str or "?"))
+    xml.errorhandler(format("unknown function in lpath expression: %s",tostring(str or "?")))
     return false
 end
 expressions.undefined = function(s)
@@ -10167,6 +10167,7 @@ if not modules then modules = { } end modules ['lxml-xml'] = {
 }
 
 local concat = table.concat
+local find = string.find
 
 local xml = xml
 
@@ -10416,7 +10417,7 @@ local function tags(collected,nonamespace)
     return t
 end
 
-local function empty(collected)
+local function empty(collected,spacesonly)
     if not collected then
         return true
     end
@@ -10435,7 +10436,9 @@ local function empty(collected)
                     local typ = type(edk)
                     if typ == "table" then
                         return false
-                    elseif edk ~= "" then -- maybe an extra tester for spacing only
+                    elseif edk ~= "" then
+                        return false
+                    elseif spacesonly and not find(edk,"%S") then
                         return false
                     end
                 elseif n > 1 then
@@ -10519,8 +10522,8 @@ function xml.match(id,pattern) -- number
     return match(xmlfilter(id,pattern))
 end
 
-function xml.empty(id,pattern)
-    return empty(xmlfilter(id,pattern))
+function xml.empty(id,pattern,spacesonly)
+    return empty(xmlfilter(id,pattern),spacesonly)
 end
 
 xml.all    = xml.filter

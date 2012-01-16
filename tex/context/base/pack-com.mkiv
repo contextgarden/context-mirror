@@ -25,8 +25,37 @@
 % \startcombination[2*1] {alpha} {a} {beta} {b} \stopcombination
 % \startcombination[1*2] {alpha} {a} {beta} {b} \stopcombination
 % \startcombination[2]   {alpha} {a} {beta} {b} \stopcombination
+% \startcombination[2]   \combination {alpha} {a} \combination{beta} {b} \stopcombination
 
-% todo: \startcombination \startcomb \stopcomb ...
+%D We do support some structure but the order matters and currently it's
+%D only window dressing:
+%D
+%D \starttyping
+%D \let\startcontent\bgroup
+%D \let\stopcontent \egroup
+%D \let\startcaption\bgroup
+%D \let\stopcaption \egroup
+%D \stoptyping
+%D
+%D Of course we should have started with more structure as it would
+%D simply the code.
+%D
+%D \starttyping
+%D \startcombination
+%D     \startcontent
+%D         \externalfigure[cow]
+%D     \stopcontent
+%D     \startcaption
+%D         Some cow.
+%D     \stopcaption
+%D     \startcontent
+%D         \externalfigure[cow]
+%D     \stopcontent
+%D     \startcaption
+%D         The same cow.
+%D     \stopcaption
+%D \stopcombination
+%D \stoptyping
 
 \ifdefined\dotagcombination \else \let\dotagcombination\relax \fi
 
@@ -54,10 +83,12 @@
    \c!distance=\emwidth,
    \c!location=\v!bottom, % can be something {top,left}
    \c!before=\blank,
+   \c!after=,
    \c!inbetween={\blank[\v!medium]},
   %\c!style=,
   %\c!color=,
-  %\c!after=,
+   \c!nx=2, % new
+   \c!ny=1, % new
    \c!align=\v!middle]
 
 \let\setupcombinations\setupcombination % for the moment (we might distinguish)
@@ -116,24 +147,6 @@
 \def\pack_combinations_start[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
   {\global\setsystemmode{combination}%
    %
-%    \doifnothing{#1}\firstargumentfalse      % to be sure (when called in macros)
-%    \doifnothing{#2}\secondargumentfalse     % to be sure (when called in macros)
-%    \ifsecondargument % todo: nx ny
-%      \edef\currentcombination{#1}%
-%      \edef\currentcombinationspec{#2*\plusone*}%
-%    \else % better : \doifcombinationelse ... \??co#1\c!location
-%      \doifinstringelse{*}{#1}
-%        {\let\currentcombination\empty
-%         \edef\currentcombinationspec{#1*\plusone*}}
-%        {\doifnumberelse{#1}
-%           {\let\currentcombination\empty
-%            \edef\currentcombinationspec{#1*\plusone*}}
-%           {\edef\currentcombination{#1}%
-%            \edef\currentcombinationspec{\plustwo*\plusone*}}}%
-%    \fi
-   %
-   % todo : move split to here
-   %
    \edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
    \ifx\currentcombinationspec\empty
@@ -143,12 +156,17 @@
        {\doifnumberelse\currentcombination
           {\edef\currentcombinationspec{\currentcombination*\plusone*}%
            \let\currentcombination\empty}
-          {\edef\currentcombinationspec{\plustwo*\plusone*}}}%
+          {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
    \else
      \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
    \fi
    %
    \forgetall
+   %
+   \let\startcontent\bgroup
+   \let\stopcontent \egroup
+   \let\startcaption\bgroup
+   \let\stopcaption \egroup
    %
    \edef\p_height  {\combinationparameter\c!height}%
    \edef\p_width   {\combinationparameter\c!width}%
@@ -164,7 +182,6 @@
    \dostarttagged\t!combination\currentcombination
    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
    \let\combination\empty % permits \combination{}{} handy for cld
-   \setuphorizontaldivision[\c!n=\v!fit,\c!distance=\p_distance]%
    \normalexpanded{\pack_combinations_start_indeed[\currentcombinationspec]}}
 
 \unexpanded\def\pack_combinations_start_indeed[#1*#2*#3]%
@@ -346,5 +363,424 @@
    \resetlocalfloats
   \egroup}
 
+%D \macros
+%D   {definepairedbox, setuppairedbox, placepairedbox}
+%D
+%D Paired boxes, formally called legends, but from now on a
+%D legend is just an instance, are primarily meant for
+%D typesetting some text alongside an illustration. Although
+%D there is quite some variation possible, the functionality is
+%D kept simple, if only because in most cases such pairs are
+%D typeset sober.
+%D
+%D The location specification accepts a pair, where the first
+%D keyword specifies the arrangement, and the second one the
+%D alignment. The first key of the location pair is one of
+%D \type {left}, \type {right}, \type {top} or \type {bottom},
+%D while the second key can also be \type {middle}.
+%D
+%D The first box is just collected in an horizontal box, but
+%D the second one is a vertical box that gets passed the
+%D bodyfont and alignment settings.
+
+%D In many cases the table builders can be used instead, but as
+%D this mechanism is a traditional \CONTEXT\ one we keep it
+%D around.
+
+%D \macros
+%D   {setuplegend, placelegend}
+%D
+%D It makes sense to typeset a legend to a figure in \TEX\
+%D and not in a drawing package. The macro \type {\placelegend}
+%D combines a figure (or something else) and its legend. This
+%D command is just a paired box.
+%D
+%D The legend is placed according to \type {location}, being
+%D \type {bottom} or \type {right}. The macro macro is used as
+%D follows.
+%D
+%D \starttyping
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulate
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulate}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend
+%D      {\externalfigure[cow]}
+%D      {\starttabulate[|l|l|l|l|]
+%D       \NC 1 \NC head \NC 3 \NC tail \NC \NR
+%D       \NC 2 \NC legs \NC   \NC      \NC \NR
+%D       \stoptabulate}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\starttabulate
+%D       \NC 1 \NC head \NC \NR
+%D       \NC 2 \NC legs \NC \NR
+%D       \NC 3 \NC tail \NC \NR
+%D       \stoptabulate}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {head \par legs \par tail}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns
+%D       \stopitemize}}
+%D
+%D \placefigure
+%D   {whow}
+%D   {\placelegend[n=2,width=.8\hsize]
+%D      {\externalfigure[cow]}
+%D      {\startitemize[packed]
+%D       \item head \item legs \item  tail \item belly \item horns
+%D       \stopitemize}}
+%D
+%D \def\MytTestTwo#1#2%
+%D   {\placefigure
+%D      {whow}
+%D      {\placelegend[location={#1,#2}]
+%D         {\externalfigure[cow]}
+%D         {\starttabulate
+%D          \NC 1 \NC head \NC \NR
+%D          \NC 2 \NC legs \NC \NR
+%D          \NC 3 \NC tail \NC \NR
+%D          \stoptabulate}}}
+%D
+%D \def\MytTestOne#1{\processcommalist[left,right,top,bottom]{\MytTestTwo{#1}}}
+%D
+%D \processcommalist[left,right,top,bottom,middle]\MytTestOne
+%D \stoptyping
+%D
+%D More structure is also possible (the order matters!):
+%D
+%D \starttyping
+%D \startplacefigure[title=whow]
+%D    \startplacelegend[location={bottom,middle},color=red]
+%D         \startcontent
+%D             \externalfigure[cow]
+%D         \stopcontent
+%D         \startcaption
+%D             \starttabulate[|l|l|]
+%D                 \NC 1 \NC head \NC \NR
+%D                 \NC 2 \NC legs \NC \NR
+%D                 \NC 3 \NC tail \NC \NR
+%D             \stoptabulate
+%D         \stopcaption
+%D    \stopplacelegend
+%D \stopplacefigure
+%D \stoptyping
+
+% todo: natural size
+
+\newsystemmode{pairedbox}
+
+\appendtoks
+    \global\resetsystemmode{pairedbox}%
+\to \everyinsidefloat
+
+\installcorenamespace {pairedbox}
+
+\installcommandhandler \??pairedbox {pairedbox} \??pairedbox
+
+\setuppairedbox
+ [\c!n=1,
+  \c!distance=\bodyfontsize,
+ %\c!before=,
+ %\c!after=,
+ %\c!color=,
+ %\c!style=,
+  \c!inbetween={\blank[\v!medium]},
+  \c!width=\hsize,
+  \c!height=\vsize,
+  \c!maxwidth=\textwidth,   % \makeupwidth,
+  \c!maxheight=\textheight, % \makeupheight,
+ %\c!bodyfont=,
+ %\c!align=,
+  \c!location=\v!bottom]
+
+% watch the hsize/vsize tricks
+
+\newbox  \b_pack_pairedboxes_first
+\newbox  \b_pack_pairedboxes_second
+\newdimen\s_pack_pairedboxes_size
+
+\appendtoks
+   \setuevalue{\e!setup\currentpairedbox\e!endsetup}{\setuppairedbox     [\currentpairedbox]}%
+   \setuevalue{\e!place\currentpairedbox           }{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
+   \setuevalue{\e!start\e!place\currentpairedbox   }{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
+   \setuevalue{\e!stop\e!place \currentpairedbox   }{\stopplacepairedbox                    }%
+\to \everydefinepairedbox
+
+\unexpanded\def\placepairedbox[#1]%
+  {\bgroup
+   \edef\currentpairedbox{#1}%
+   \doifnextoptionalelse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+
+\unexpanded\def\startplacepairedbox[#1]%
+  {\bgroup
+   \edef\currentpairedbox{#1}%
+   \doifnextoptionalelse\pack_pairedboxes_place\pack_pairedboxes_place_indeed}
+
+\unexpanded\def\stopplacepairedbox
+  {}
+
+\def\pack_pairedboxes_place[#1]%
+  {\setupcurrentpairedbox[#1]%
+   \pack_pairedboxes_place_indeed}
+
+\def\pack_pairedboxes_place_indeed
+  {\pairedboxparameter\c!before
+   \bgroup
+   \edef\p_location{\pairedboxparameter\c!location}%
+   \edef\p_n       {\pairedboxparameter\c!n}%
+   %
+   \let\startcontent\bgroup
+   \let\stopcontent \egroup
+   \let\startcaption\bgroup
+   \let\stopcaption \egroup
+   %
+   \global\setsystemmode{pairedbox}%
+   \pack_pairedboxes_before
+   \dowithnextboxcs\pack_pairedboxes_first\hbox}
+
+\def\pack_pairedboxes_first
+  {\pack_pairedboxes_between
+   \dowithnextboxcs\pack_pairedboxes_second\vbox
+     \bgroup
+     \pack_pairedboxes_inside_second
+     \let\next=}
+
+\def\pack_pairedboxes_second
+  {\pack_pairedboxes_after
+   \egroup
+   \pairedboxparameter\c!after
+   \egroup}
+
+\newconditional\c_pack_pairedboxes_horizontal \settrue\c_pack_pairedboxes_horizontal
+
+\installcorenamespace{pairedboxnature}
+\installcorenamespace{pairedboxalign}
+
+\let\pack_pairedboxes_fill_top   \relax
+\let\pack_pairedboxes_fill_bottom\relax
+
+\setvalue{\??pairedboxnature\v!left}%
+  {\settrue\c_pack_pairedboxes_horizontal
+   \let\pack_pairedboxes_flush\pack_pairedboxes_flush_left}
+
+\setvalue{\??pairedboxnature\v!right}%
+  {\settrue\c_pack_pairedboxes_horizontal
+   \let\pack_pairedboxes_flush\pack_pairedboxes_flush_right}
+
+\setvalue{\??pairedboxnature\v!top}%
+  {\setfalse\c_pack_pairedboxes_horizontal
+   \let\pack_pairedboxes_fill_top\relax
+   \let\pack_pairedboxes_fill_bottom\vss
+   \let\pack_pairedboxes_flush\pack_pairedboxes_flush_top}
+
+\setvalue{\??pairedboxnature\v!bottom}%
+  {\setfalse\c_pack_pairedboxes_horizontal
+   \let\pack_pairedboxes_fill_top\vss
+   \let\pack_pairedboxes_fill_bottom\relax
+   \let\pack_pairedboxes_flush\pack_pairedboxes_flush_bottom}
+
+\def\pack_pairedboxes_flush_left
+  {\box\b_pack_pairedboxes_second
+   \hskip\pairedboxparameter\c!distance
+   \box\b_pack_pairedboxes_first}
+
+\def\pack_pairedboxes_flush_right
+  {\box\b_pack_pairedboxes_first
+   \hskip\pairedboxparameter\c!distance
+   \box\b_pack_pairedboxes_second}
+
+\def\pack_pairedboxes_flush_top
+  {\box\b_pack_pairedboxes_second
+   \endgraf
+   \nointerlineskip
+   \pairedboxparameter\c!inbetween
+   \box\b_pack_pairedboxes_first}
+
+\def\pack_pairedboxes_flush_bottom
+  {\box\b_pack_pairedboxes_first
+   \endgraf
+   \nointerlineskip
+   \pairedboxparameter\c!inbetween
+   \box\b_pack_pairedboxes_second}
+
+\setvalue{\??pairedboxalign  \v!left}% 0
+  {\let\pack_pairedboxes_align_l\relax
+   \let\pack_pairedboxes_align_r\hss
+   \let\pack_pairedboxes_align_t\relax
+   \let\pack_pairedboxes_align_b\relax}
+
+\setvalue{\??pairedboxalign \v!right}% 1
+  {\let\pack_pairedboxes_align_l\hss
+   \let\pack_pairedboxes_align_r\relax
+   \let\pack_pairedboxes_align_t\relax
+   \let\pack_pairedboxes_align_b\relax}
+
+\setvalue{\??pairedboxalign  \v!high}% 2
+  {\let\pack_pairedboxes_align_l\relax
+   \let\pack_pairedboxes_align_r\relax
+   \let\pack_pairedboxes_align_t\relax
+   \let\pack_pairedboxes_align_b\vss}
+
+\setvalue{\??pairedboxalign   \v!low}% 3
+  {\let\pack_pairedboxes_align_l\relax
+   \let\pack_pairedboxes_align_r\relax
+   \let\pack_pairedboxes_align_t\vss
+   \let\pack_pairedboxes_align_b\relax}
+
+\setvalue{\??pairedboxalign\v!middle}% 4
+  {\let\pack_pairedboxes_align_l\hss
+   \let\pack_pairedboxes_align_r\hss
+   \let\pack_pairedboxes_align_t\hss
+   \let\pack_pairedboxes_align_b\hss}
+
+\setvalue{\??pairedboxalign\v!bottom}{\getvalue{\??pairedboxalign\v!low }}
+\setvalue{\??pairedboxalign   \v!top}{\getvalue{\??pairedboxalign\v!high}}
+
+\def\pack_pairedbox_valign#1{\setbox#1\vbox to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
+\def\pack_pairedbox_halign#1{\setbox#1\hbox to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
+
+\def\pack_pairedboxes_before
+  {\ifx\p_location\empty
+      \csname\??pairedboxnature\v!left  \endcsname
+      \csname\??pairedboxalign \v!middle\endcsname
+   \else
+     \getfromcommacommand[\p_location][1]%
+     \csname\??pairedboxnature
+       \ifcsname\??pairedboxnature\commalistelement\endcsname\commalistelement\else\v!left\fi
+     \endcsname
+     \getfromcommacommand[\p_location][2]%
+     \csname\??pairedboxalign
+       \ifcsname\??pairedboxalign\commalistelement\endcsname\commalistelement\else\v!middle\fi
+     \endcsname
+   \fi}
+
+\def\pack_pairedboxes_between
+  {\switchtobodyfont[\pairedboxparameter\c!bodyfont]% split under same regime
+   \setbox\b_pack_pairedboxes_first\box\nextbox
+   \ifconditional\c_pack_pairedboxes_horizontal
+     \pack_pairedboxes_between_horizontal
+   \else
+     \pack_pairedboxes_between_vertical
+   \fi
+   \ifnum\p_n>\plusone
+     \setrigidcolumnhsize\hsize{\pairedboxparameter\c!distance}\p_n
+   \fi}
+
+\def\pack_pairedboxes_between_horizontal
+  {\hsize\wd\b_pack_pairedboxes_first % trick
+   \hsize\pairedboxparameter\c!width % can be \hsize
+   \scratchdimen\dimexpr\wd\b_pack_pairedboxes_first+\pairedboxparameter\c!distance\relax
+   \ifdim\dimexpr\hsize+\scratchdimen\relax>\pairedboxparameter\c!maxwidth\relax
+     \hsize\dimexpr\pairedboxparameter\c!maxwidth-\scratchdimen\relax
+   \fi}
+
+\def\pack_pairedboxes_between_vertical
+  {\hsize\wd\b_pack_pairedboxes_first
+   \hsize\pairedboxparameter\c!width % can be \hsize
+   \ifdim\hsize>\pairedboxparameter\c!maxwidth\relax
+     \hsize\pairedboxparameter\c!maxwidth % can be \hsize
+   \fi}
+
+\def\pack_pairedboxes_after
+  {\setbox\b_pack_pairedboxes_second\vbox
+     {\ifnum\p_n>\plusone
+        \rigidcolumnbalance\nextbox
+      \else
+        \box\nextbox
+      \fi}%
+   \ifconditional\c_pack_pairedboxes_horizontal
+     \pack_pairedboxes_pack_horizontal
+   \else
+     \pack_pairedboxes_pack_vertical
+   \fi}
+
+\def\pack_pairedboxes_pack_horizontal
+  {\hbox\bgroup
+     \forgetall
+     \s_pack_pairedboxes_size\ht
+       \ifdim\ht\b_pack_pairedboxes_first>\ht\b_pack_pairedboxes_second
+         \b_pack_pairedboxes_first
+       \else
+         \b_pack_pairedboxes_second
+       \fi
+     \vsize\s_pack_pairedboxes_size
+     \ifdim\s_pack_pairedboxes_size<\pairedboxparameter\c!height\relax % can be \vsize
+       \s_pack_pairedboxes_size\pairedboxparameter\c!height
+     \fi
+     \ifdim\s_pack_pairedboxes_size>\pairedboxparameter\c!maxheight\relax
+       \s_pack_pairedboxes_size\pairedboxparameter\c!maxheight
+     \fi
+     \pack_pairedbox_valign\b_pack_pairedboxes_first
+     \pack_pairedbox_valign\b_pack_pairedboxes_second
+     \pack_pairedboxes_flush
+   \egroup}
+
+\def\pack_pairedboxes_pack_vertical
+  {\vbox\bgroup
+     \forgetall
+     \s_pack_pairedboxes_size\wd
+       \ifdim\wd\b_pack_pairedboxes_first>\wd\b_pack_pairedboxes_second
+         \b_pack_pairedboxes_first
+       \else
+         \b_pack_pairedboxes_second
+       \fi
+     \pack_pairedbox_halign\b_pack_pairedboxes_first
+     \pack_pairedbox_halign\b_pack_pairedboxes_second
+     \s_pack_pairedboxes_size\ht\b_pack_pairedboxes_second
+     \vsize\s_pack_pairedboxes_size
+     \ifdim\ht\b_pack_pairedboxes_second<\pairedboxparameter\c!height\relax % can be \vsize
+       \s_pack_pairedboxes_size\pairedboxparameter\c!height\relax % \relax needed
+     \fi
+     \ifdim\s_pack_pairedboxes_size>\pairedboxparameter\c!maxheight\relax % todo: totale hoogte
+       \s_pack_pairedboxes_size\pairedboxparameter\c!maxheight\relax % \relax needed
+     \fi
+     \ifdim\s_pack_pairedboxes_size>\ht\b_pack_pairedboxes_second
+       \setbox\b_pack_pairedboxes_second\vbox to \s_pack_pairedboxes_size
+         {\pack_pairedboxes_fill_top
+          \box\b_pack_pairedboxes_second
+          \pack_pairedboxes_fill_bottom}% \kern\zeropoint
+     \fi
+     \pack_pairedboxes_flush
+   \egroup}
+
+\def\pack_pairedboxes_inside_second
+  {\forgetall
+   \setupalign[\pairedboxparameter\c!align]%
+   \usepairedboxstyleandcolor\c!style\c!color
+   \tolerantTABLEbreaktrue % hm.
+   \blank[\v!disable]% use fast one
+   \everypar{\begstrut}}
+
+\definepairedbox[\v!legend]
+
+\unexpanded\def\placeontopofeachother{\bgroup\dowithnextboxcs\pack_topofeachother_one\hbox}
+\unexpanded\def\placesidebyside      {\bgroup\dowithnextboxcs\pack_sidebyside_one    \hbox}
+
+\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeach_two \hbox}
+\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two\hbox}
+
+\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss####\hss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss####\vss\cr\box0\cr\box2\cr}\egroup\egroup}
 
 \protect \endinput

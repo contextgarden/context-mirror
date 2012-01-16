@@ -1,0 +1,142 @@
+%D \module
+%D   [       file=font-set,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Initial Loading,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Initial Loading}
+
+\unprotect
+
+%D Defining fonts using \type{\definebodyfont} takes time, so we
+%D prefer to predefine at least the Computer Modern Roman
+%D fonts. However, loading all those fonts at definition time
+%D would take both time and space. But even worse, once fonts
+%D are loaded into memory, their encoding vector is fixed,
+%D which is a handicap when we want to distribute the compact
+%D \type{fmt} files. So what we want to do is defining fonts in
+%D a way that postpones the loading. We accomplish this by only
+%D loading the fonts when we switch to another bodyfont size.
+%D Among the other alternatives, such as loading the font at
+%D the moment of activation and redefining the activation
+%D macro afterwards, this proved to be the most efficient
+%D alternative.
+%D
+%D The next few macros take care of the one exeption on this
+%D scheme. When at format generation time we load the default
+%D font file, the one that defines the Computer Modern Fonts,
+%D we don't want the fonts metrics to end up in the format
+%D file, so we temporary prohibit loading. This means that at
+%D runtime we have to load the default bodyfont size just before
+%D we start typesetting.
+
+\def\font_preloads_reset_nullfont % this is needed because some macro packages (tikz) misuse \nullfont
+  {%\dorecurse7{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
+   \ctxcommand{resetnullfont()}% in luatex 0.70 this will also do the previous
+   \globallet\font_preloads_reset_nullfont\relax}
+
+\def\font_preload_default_fonts
+  {\font_preloads_reset
+   \setupbodyfont[modern,\fontstyle,\fontbody]%
+   \showmessage\m!fonts6{fallback modern \fontstyle\normalspace\normalizedbodyfontsize}}
+
+\def\font_preload_default_fonts_mm
+  {\writestatus\m!fonts{preloading latin modern fonts (math)}%
+   \definetypeface[\fontclass][\s!mm][\s!math][modern][\s!default]%
+   \showmessage\m!fonts6{fallback modern mm \normalizedbodyfontsize}}
+
+\def\font_preload_default_fonts_tt
+  {\writestatus\m!fonts{preloading latin modern fonts (mono)}%
+   \definetypeface[\fontclass][\s!tt][\s!mono][modern][\s!default]%
+   \showmessage\m!fonts6{fallback modern tt \normalizedbodyfontsize}}
+
+\def\font_preloads_reset
+  {\glet\font_preload_default_fonts   \relax
+  %\glet\font_preload_default_fonts_tt\relax
+  %\glet\font_preload_default_fonts_mm\relax
+   \glet\font_preloads_zero_stage     \relax
+   \glet\font_preloads_first_stage    \relax
+   \glet\font_preloads_second_stage   \relax
+  %\glet\font_preloads_third_stage    \relax
+   \glet\fourthstagepreloadfonts      \relax
+   \global\everyhbox\emptytoks
+   \global\everyvbox\emptytoks
+   \font_preloads_reset_nullfont}
+
+\def\font_preloads_reset_checked
+  {\glet\font_preload_default_fonts_tt\relax
+   \glet\font_preload_default_fonts_mm\relax
+   \glet\font_preloads_third_stage    \relax}
+
+\def\font_preloads_zero_stage_indeed
+  {\definedfont[\s!file:lmmono10-regular sa 1]}
+
+\unexpanded\def\font_preloads_zero_stage
+  {\writestatus\m!fonts{beware: no fonts are loaded yet, using 'lm mono' in box}%
+   \glet\font_preloads_zero_stage\font_preloads_zero_stage_indeed
+   \font_preloads_zero_stage}
+
+\unexpanded\def\font_preloads_first_stage % % *nofonts -> *preloadfonts
+  {\doifmodeelse{*preloadfonts}
+     {\font_preload_default_fonts
+      \writestatus\m!fonts{preloading latin modern fonts (first stage)}}
+     {\writestatus\m!fonts{latin modern fonts are not preloaded}}}
+
+\unexpanded\def\font_preloads_second_stage
+  {\writestatus\m!fonts{preloading latin modern fonts (second stage)}%
+   \font_preload_default_fonts}
+
+\unexpanded\def\font_preloads_third_stage % always
+  {\ifx\fontclass\empty
+     \writestatus\m!fonts{preloading latin modern fonts (third stage)}%
+     \font_preload_default_fonts
+   \else
+     \font_preloads_reset
+     \pushmacro\fontstyle
+     \ifcsname\??fontclass\fontclass\s!mm\s!features\endcsname \else
+       \font_preload_default_fonts_mm
+     \fi
+     \ifcsname\??fontclass\fontclass\s!tt\s!features\endcsname \else
+       \font_preload_default_fonts_tt
+     \fi
+     \popmacro\fontstyle
+     \font_preloads_reset_checked % reset third, mm and tt
+     \setupbodyfont[\fontstyle]%
+   \fi}
+
+\unexpanded\def\font_preloads_fourth_stage
+  {\begingroup
+   %ifzeropt\fontcharwd\font\number`!\relax
+   \setbox\scratchbox\hbox{context}%
+   \ifzeropt\wd\scratchbox
+     \writeline
+     \writestatus\m!fonts{!! No bodyfont has been defined and no defaults have been}%
+     \writestatus\m!fonts{!! loaded (maybe due to a missing \string\starttext).}%
+     \writeline
+   \fi
+   \font_preloads_reset
+   \endgroup}
+
+\appendtoks
+    \everyhbox{\font_preloads_zero_stage}%
+    \everyvbox{\font_preloads_zero_stage}%
+\to \everydump
+
+\unexpanded\def\font_preloads_at_every_job {\font_preloads_first_stage }
+\unexpanded\def\font_preloads_at_start_text{\font_preloads_second_stage}
+\unexpanded\def\font_preloads_at_stop_text {\font_preloads_fourth_stage}
+\unexpanded\def\font_preloads_at_definition{\font_preloads_third_stage
+                                            \glet\font_preloads_at_definition\relax}
+
+% \unexpanded\def\checkpreloadedbodyfont % no \let here
+%   {\font_preloads_at_start_text}
+
+
+\protect \endinput

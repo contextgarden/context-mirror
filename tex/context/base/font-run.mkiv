@@ -210,24 +210,22 @@
 \gdef\redoshowfontstyle  {\dotripleempty   \dododoshowfontstyle}
 \gdef\redodoshowfontstyle{\doquadrupleempty\dodododoshowfontstyle}
 
+% no lists any more, so no 'all' any longer
+
 \gdef\dodoshowfontstyle[#1][#2]%
-  {\doifelse{#2}\v!all
-     {\dodoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
-     {\doifelsenothing{#2}
-        {\redoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
-        {\redoshowfontstyle[#1][#2]}}}
+  {\doifelsenothing{#2}
+     {\redoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
+     {\redoshowfontstyle[#1][#2]}}
 
 \gdef\dododoshowfontstyle[#1][#2][#3]%
-  {\doifelse{#3}\v!all
-     {\redodoshowfontstyle[#1][#2][\fontalternativelist]}
-     {\doifelsenothing{#3}
-        {\redodoshowfontstyle[#1][#2][\fontalternativelist]}
-        {\redodoshowfontstyle[#1][#2][#3]}}}
+  {\doifelsenothing{#3}
+     {\redodoshowfontstyle[#1][#2][\s!tf,\s!bf,\s!it,\s!sl,\s!bs,\s!bi]}
+     {\redodoshowfontstyle[#1][#2][#3]}}
 
 \gdef\dodododoshowfontstyle[#1][#2][#3][#4]%
-  {\doifelsenothing{#4}
-     {\doshowfontstyleindeed[#1][#2][#3][\v!all]}
-     {\doshowfontstyleindeed[#1][#2][#3][#4]}}
+  {\doshowfontstyleindeed[#1][#2][#3][#4]}
+
+% so far
 
 \gdef\doshowfontstyleindeed[#1][#2][#3][#4]%
   {\bgroup

@@ -20,8 +20,6 @@
 % number is messy and not needed as we store the number anyway
 % we can get rid of \c!number
 
-\newcount\nofdefinedbuffers
-
 \let\currentbuffer\empty
 
 \def\doifelsebuffer#1%
@@ -34,7 +32,7 @@
   {\ctxcommand{erasebuffer("#1")}}
 
 \setuvalue{\e!start\v!buffer}%
-  {\begingroup % (1)
+  {\begingroup % (3)
    \obeylines
    \dosingleempty\buff_start}
 
@@ -45,12 +43,13 @@
   {\normalexpanded{\buff_pickup{#2}{#3}{#4}{}{\buff_stop{#4}}}}
 
 \unexpanded\def\grabbufferdata % was: \dostartbuffer
-  {\begingroup % (1)
+  {\begingroup % (4)
    \obeylines
    \doquadrupleempty\buff_grab_direct_indeed}
 
 \unexpanded\def\grabbufferdatadirect % name start stop
-  {\buff_start_indeed\empty}
+  {\begingroup % (6)
+   \buff_start_indeed\empty}
 
 \def\buff_grab_direct_indeed % [category] [name] [start] [stop]
   {\iffourthargument
@@ -63,7 +62,8 @@
 \def\buff_grab_direct_indeed_b[#1][#2][#3][#4]{\buff_start_indeed\empty{#1}{#2}{#3}}
 
 \unexpanded\def\buff_pickup#1#2#3#4#5% name, startsequence, stopsequence, before, after
-  {#4%
+  {\begingroup % (1)
+   #4%
    \begingroup % (2)
    \edef\catcodetableofbuffer{\number\catcodetable}%
    \ctxcommand{erasebuffer("#1")}%
@@ -80,7 +80,7 @@
    \buff_gobble}
 
 \unexpanded\def\buff_stop#1%
-  {% already done \egroup
+  {\endgroup % (3 & 4 & 5 & 6)
    \getvalue{#1}}
 
 \unexpanded\def\setbuffer
@@ -103,14 +103,21 @@
   [\c!before=,
    \c!after=]
 
+\newcount\c_buff_n_of_defined
+
+\let\currentdefinedbuffer\s!dummy
+
 \appendtoks
-    \global\advance\nofdefinedbuffers\plusone
-    \setexpandedbufferparameter\c!number{\number\nofdefinedbuffers}%
-    \setuevalue{\e!start\currentbuffer}{\buff_start_indeed
-      {\currentbuffer}{def-\number\nofdefinedbuffers}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
-    \setuevalue{\e!get\currentbuffer}{\buff_get_stored
-      {\currentbuffer}{def-\number\nofdefinedbuffers}}%
+    \global\advance\c_buff_n_of_defined\plusone
+    \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
+    \edef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
+    \setuevalue{\e!start\currentbuffer}{\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
+    \setuevalue{\e!get\currentbuffer  }{\buff_get_stored{\currentbuffer}{\currentdefinedbuffer}}%
 \to \everydefinebuffer
+
+\unexpanded\def\buff_start_defined
+  {\begingroup % (5)
+   \buff_start_indeed}
 
 \def\thebuffernumber #1{\namedbufferparameter{#1}\c!number}
 \def\thedefinedbuffer#1{def-\namedbufferparameter{#1}\c!number}
@@ -187,5 +194,9 @@
 \unexpanded\def\doprocesstexbuffer#1{\buff_process_tex[#1]} % still used?
 
 \let\dostartbuffer\grabbufferdata % for old times sake
+
+% new (expandable):
+
+\def\getbufferdata[#1]{\buff_get_stored_indeed{#1}}
 
 \protect \endinput

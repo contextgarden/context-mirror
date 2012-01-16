@@ -121,6 +121,13 @@
    \fi\fi
    \m_mult_interfaces_namespace{#1}{#2}}
 
+\newif\ifassignment
+
+\def\mult_check_for_assignment#1=#2#3\_end_
+  {\expandafter\if\detokenize{#2}@\assignmentfalse\else\assignmenttrue\fi}
+
+% usage: \mult_check_for_assignment##1=@@_end_
+
 % End of experimental code.
 
 \unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
@@ -129,7 +136,6 @@
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
-  %\def#6##1##2{\csname#4{#1##1}{##2}\endcsname}%
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \def#8##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\s!empty\fi\endcsname}%
@@ -243,34 +249,38 @@
 
 \let\definehandlerparent\empty
 
-\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8%
+\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9%
   {\ifx#4\relax\let#4\empty\fi
    \unexpanded\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%
    \def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
-     {\let\saveddefinewhatever#4%
+     {\let#9#4%
       \edef#4{##1}%
       \the#6% predefine
       \ifthirdargument
         \edef#8{##2}%
-      % \getparameters[#1#4:][\s!parent=#1##2,##3]%
         \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2,##3]%
       \else\ifsecondargument
-        \doifassignmentelse{##2}
-          {\let#8\empty
-         % \getparameters[#1#4:][\s!parent=#3,##2]}
-           \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3,##2]}
-          {\edef#8{##2}%
-         % \getparameters[#1#4:][\s!parent=#1##2]}%
-           \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2]}%
+%         \doifassignmentelse{##2}
+%           {\let#8\empty
+%            \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3,##2]}
+%           {\edef#8{##2}%
+%            \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2]}%
+        \mult_check_for_assignment##2=@@\_end_
+        \ifassignment
+          \let#8\empty
+          \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3,##2]%
+        \else
+          \edef#8{##2}%
+          \mult_interfaces_get_parameters{#1#4:}[\s!parent=#1##2]%
+        \fi
       \else
         \let#8\empty
-      % \getparameters[#1#4:][\s!parent=#3]%
         \mult_interfaces_get_parameters{#1#4:}[\s!parent=#3]%
       \fi\fi
       \the#7%
-      \let#4\saveddefinewhatever}}
+      \let#4#9}}
 
 \unexpanded\def\installdefinehandler#1#2#3%
   {\normalexpanded
@@ -282,30 +292,28 @@
         \expandafter\noexpand\csname define_#2\endcsname % semi-public
         \expandafter\noexpand\csname everypreset#2\endcsname
         \expandafter\noexpand\csname everydefine#2\endcsname
-        \expandafter\noexpand\csname current#2parent\endcsname}}
+        \expandafter\noexpand\csname current#2parent\endcsname
+        \expandafter\noexpand\csname saved_defined_#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6%
+\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
- % \unexpanded\def#6{\getparameters[#1#3:]}% no every ! don't change it
    \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#5%
    \def#4[##1][##2]% maybe helper
-     {\let\savedsetupwhatever#3%
+     {\let#7#3%
       \ifsecondargument
         \def\mult_interfaces_with_comma_list_element####1% we will have a simple one as well
           {\edef#3{####1}%
-         % \getparameters[#1#3:][##2]%
            \mult_interfaces_get_parameters{#1#3:}[##2]%
            \the#5}%
         \processcommalist[##1]\mult_interfaces_with_comma_list_element
       \else
         \let#3\empty
-      % \getparameters[#1:][##1]%
         \mult_interfaces_get_parameters{#1:}[##1]%
         \the#5%
       \fi
-      \let#3\savedsetupwhatever}}
+      \let#3#7}}
 
 \unexpanded\def\installsetuphandler#1#2%
   {\normalexpanded
@@ -315,59 +323,88 @@
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
-        \expandafter\noexpand\csname setupcurrent#2\endcsname}}
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_switch_setup_handler#1#2#3#4#5#6%
+\let\doingrootsetupnamed\plusone    % \setuplayout[name][key=value]
+\let\doingrootsetuproot \plustwo    % \setuplayout      [key=value]
+\let\doingrootsetnamed  \plusthree  % \setuplayout[name]
+\let\doingrootsetroot   \plusfour   % \setuplayout
+
+\unexpanded\def\mult_interfaces_install_switch_setup_handler_a#1#2#3#4#5%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dodoubleempty#4}%
- % \unexpanded\def#6{\getparameters[#1#3:]}%
-   \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}%
-   \newtoks#5%
+   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}}
+
+\unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7%
+  {\newtoks#5%
+   \newconstant#2%
+   \ifx#6\relax\let#6\empty\fi
    \def#4[##1][##2]% maybe helper
      {\ifsecondargument % no commalist here
-        \let\savedsetupwhatever#3%
+        % \setuplayout[whatever][key=value]
+        \let#7#3%
+        \let#6#3%
         \edef#3{##1}%
-      % \getparameters[#1#3:][##2]%
+        #2\doingrootsetupnamed
         \mult_interfaces_get_parameters{#1#3:}[##2]%
         \the#5%
-        \let#3\savedsetupwhatever
+        \let#3#7%
       \else\iffirstargument
-        \doifassignmentelse{##1}
-          {\let\savedsetupwhatever#3%
-           \let#3\empty
-         % \getparameters[#1:][##1]%
-           \mult_interfaces_get_parameters{#1:}[##1]%
-           \the#5%
-           \let#3\savedsetupwhatever}
-          {\edef#3{##1}% this will catch reset
-           \the#5}%
+        \mult_check_for_assignment##1=@@\_end_ % \docheckassignment{##1}%
+        \ifassignment
+          % \setuplayout[key=value]
+          \let#7#3%
+          \let#6#3%
+          \let#3\empty
+          #2\doingrootsetuproot
+          \mult_interfaces_get_parameters{#1:}[##1]%
+          \the#5%
+          \let#3#7%
+        \else
+          % \setuplayout[whatever]
+          \let#6#3%   % previous becomes current
+          \edef#3{##1}% this will catch reset so one needs to test for it
+          #2\doingrootsetnamed
+          \the#5%     % we can check for previous vs current
+        \fi
       \else
-        \let#3\empty
+        % \setuplayout
+        \let#6#3%      % previous becomes current
+        \let#3\empty   % current becomes empty
+        #2\doingrootsetroot
         \the#5%
-      \fi\fi}}
+      \fi\fi
+      #2\zerocount}} % mode is always zero at the end
 
 \unexpanded\def\installswitchsetuphandler#1#2%
   {\normalexpanded
-     {\mult_interfaces_install_switch_setup_handler
+     {\mult_interfaces_install_switch_setup_handler_a
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+      \mult_interfaces_install_switch_setup_handler_b
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname #2setupmode\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
-        \expandafter\noexpand\csname setupcurrent#2\endcsname}}
+        \expandafter\noexpand\csname previous#2\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7%
+
+\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#2{\dotripleempty#4}%
- % \unexpanded\def#6{\getparameters[#1#3:]}%
    \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}%
    \newtoks#5%
    \def#4[##1][##2][##3]%
-     {\let\savedsetupwhatever#3%
+     {\let#8#3%
       \ifthirdargument
         \def\mult_interfaces_with_comma_list_element####1%
           {\edef#3{####1}%
-        %  \getparameters[#1#3:][\s!parent=#1##2,##3]%
            \mult_interfaces_get_parameters{#1#3:}[\s!parent=#1##2,##3]% always sets parent
            \the#5}%
         \processcommalist[##1]\mult_interfaces_with_comma_list_element
@@ -375,17 +412,15 @@
         \def\mult_interfaces_with_comma_list_element####1%
           {\edef#3{####1}%
            #7% checks parent and sets if needed
-        %  \getparameters[#1#3:][##2]%
            \mult_interfaces_get_parameters{#1#3:}[##2]%
            \the#5}%
         \processcommalist[##1]\mult_interfaces_with_comma_list_element
       \else
         \let#3\empty
-      % \getparameters[#1:][##1]%
         \mult_interfaces_get_parameters{#1:}[##1]%
         \the#5%
       \fi\fi
-      \let#3\savedsetupwhatever}}
+      \let#3#8}}
 
 \unexpanded\def\installautosetuphandler#1#2%
   {\normalexpanded
@@ -396,7 +431,8 @@
         \expandafter\noexpand\csname setup_#2\endcsname % semi-public
         \expandafter\noexpand\csname everysetup#2\endcsname
         \expandafter\noexpand\csname setupcurrent#2\endcsname
-        \expandafter\noexpand\csname check#2parent\endcsname}}
+        \expandafter\noexpand\csname check#2parent\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname}}
 
 \unexpanded\def\installbasicparameterhandler#1#2%
   {\installparameterhandler    {#1}{#2}%
@@ -566,6 +602,9 @@
   {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\else\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi\fi
    \number\c_mult_interfaces_n_of_namespaces>}
 
+\def\v_interfaces_prefix_template % consistently %03i>
+  {\number\c_mult_interfaces_n_of_namespaces>}
+
 \unexpanded\def\installnamespace#1% for modules and users
   {\ifcsname ????#1\endcsname
      \writestatus\m!system{duplicate user namespace '#1'}\wait
@@ -582,6 +621,12 @@
      \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template}%
      \ctxcommand{registernamespace(\number\c_mult_interfaces_n_of_namespaces,"#1")}%
    \fi}
+
+% We install two core namespaces here, as we want nice error messages. Maybe
+% we will reserve the first 9.
+
+\installcorenamespace{fontinstancebasic}
+\installcorenamespace{fontinstanceclass}
 
 % \enabletrackers[interfaces.namespaces,context.flush]
 %

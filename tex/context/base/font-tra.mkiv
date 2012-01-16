@@ -14,6 +14,80 @@
 \unprotect
 
 %D \macros
+%D   {showbodyfont}
+%D
+%D One can call for a rather simple overview of a bodyfont and the
+%D relations between its alternative fonts.
+%D
+%D \showsetup{showbodyfont}
+%D
+%D The current bodyfont (here we omitted the argument) looks like:
+%D
+%D \showbodyfont
+%D
+%D The implementation is rather straightforward in using
+%D \type{\halign}.
+
+\fetchruntimecommand \showbodyfont  {\f!fontprefix\s!run}
+
+%D \macros
+%D   {showfontstrip, testminimalbaseline, showminimalbaseline}
+%D
+%D The next command can come in handy when combining
+%D different fonts into a collection (typeface) and
+%D determining optimal baseline distances.
+%D
+%D \showfontstrip \blank \showminimalbaseline
+
+\fetchruntimecommand \showfontstrip       {\f!fontprefix\s!run}
+\fetchruntimecommand \testminimalbaseline {\f!fontprefix\s!run}
+\fetchruntimecommand \showminimalbaseline {\f!fontprefix\s!run}
+
+%D \macros
+%D   {showkerning}
+%D
+%D A goody is:
+%D
+%D \showkerning{Can you guess what kerning is?}
+
+\fetchruntimecommand \showkerning {\f!fontprefix\s!run}
+
+%D \macros
+%D   {showbodyfontenvironment,showfont,showfontstyle,showligatures}
+%D
+%D The current bodyfontenvironment is:
+%D
+%D \showbodyfontenvironment
+%D
+%D This overview is generated using:
+%D
+%D \showsetup{showbodyfontenvironment}
+
+\fetchruntimecommand \showbodyfontenvironment {\f!fontprefix\s!run}
+
+%D
+%D The following command generates a fontmap:
+%D
+%D \startbuffer
+%D \showfont[SansBold at 12pt]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+
+\fetchruntimecommand \showfont           {\f!fontprefix\s!run}
+\fetchruntimecommand \showfontstyle      {\f!fontprefix\s!run}
+\fetchruntimecommand \showligature       {\f!fontprefix\s!run}
+\fetchruntimecommand \showligatures      {\f!fontprefix\s!run}
+\fetchruntimecommand \showcharratio      {\f!fontprefix\s!run}
+\fetchruntimecommand \showfontparameters {\f!fontprefix\s!run}
+
+\unexpanded\def\checkcharactersinfont  {\ctxcommand{checkcharactersinfont  }}
+\unexpanded\def\removemissingcharacters{\ctxcommand{removemissingcharacters}}
+\unexpanded\def\showchardata         #1{\ctxcommand{showchardata("#1")}}
+\unexpanded\def\showfontdata           {\ctxcommand{showfontparameters()}}
+
+%D \macros
 %D   {doiffontpresentelse}
 %D
 %D \starttyping

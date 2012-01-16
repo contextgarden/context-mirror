@@ -682,10 +682,10 @@
   {\dotripleempty\dodotypedefinedbuffer}
 
 \appendtoks
-    \setuevalue{\e!type\currentbuffer}{\noexpand\dotypedefinedbuffer[\v!buffer][def-\number\nofdefinedbuffers]}%
+    \setuevalue{\e!type\currentbuffer}{\dotypedefinedbuffer[\v!buffer][\currentdefinedbuffer]}%
 \to \everydefinebuffer
 
-\def\dotypebuffer[#1][#2]%
+\unexpanded\def\dotypebuffer[#1][#2]%
   {\bgroup
    \ifsecondargument
      \setuptyping[\v!buffer][#2]%
