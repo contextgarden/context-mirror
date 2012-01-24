@@ -8,6 +8,9 @@ if not modules then modules = { } end modules ['scrn-fld'] = {
 
 -- we should move some code from lpdf-fld to here
 
+local variables     = interfaces.variables
+local v_yes         = variables.yes
+
 local fields        = { }
 interactions.fields = fields
 
@@ -56,6 +59,12 @@ function commands.getdefaultfieldvalue(name)
     local d = codeinjections.getdefaultfieldvalue(name)
     if d then
         context(d)
+    end
+end
+
+function commands.exportformdata(export)
+    if export == v_yes then
+        codeinjections.exportformdata()
     end
 end
 

@@ -490,7 +490,7 @@
 \def\activatemathcharacters
   {\the\activatedmathcharacters}
 
-\setnewconstant\primeasciicode 39 % '
+% \setnewconstant\primeasciicode 39 % '
 
 \activatemathcharacter\circumflexasciicode
 \activatemathcharacter\underscoreasciicode
@@ -530,9 +530,9 @@
     \catcode\ampersandasciicode \activecatcode
 
     \doglobal \appendtoks
-        \let_\normalsubscript
-        \let^\normalsuperscript
-        \let&\normalmathaligntab % use \def when it's \aligntab
+        \let _\normalsubscript
+        \let ^\normalsuperscript
+        \let &\normalmathaligntab % use \def when it's \aligntab
     \to \everymathematics
 
 \egroup

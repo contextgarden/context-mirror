@@ -439,9 +439,9 @@
 
 \def\strc_counters_converted_sub[#1][#2][#3]% #2 can be n or n:m
   {\ifsecondargument
-     \doconvertedstructurecounter[#1][\c!numbersegments=#2,#3]%
+     \strc_counters_converted[#1][\c!numbersegments=#2,#3]%
    \else
-     \secondargumentfalse\doconvertedstructurecounter[#1][]%
+     \secondargumentfalse\strc_counters_converted[#1][]%
    \fi}
 
 \let\getstructurecounter\convertedstructurecounter

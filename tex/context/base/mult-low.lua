@@ -59,6 +59,9 @@ return {
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
+        "primeasciicode",
+        --
+        "activemathcharcode",
         --
         "activetabtoken", "activeformfeedtoken", "activeendoflinetoken",
         --

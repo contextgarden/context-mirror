@@ -111,6 +111,12 @@
 \setupforms
   [\c!method=XML] % no need for everyjob initialization as this is the default
 
+\appendtoks
+    \iflocation
+      \ctxcommand{exportformdata("\formsparameter\c!export")}%
+    \fi
+\to \everystoptext
+
 %D We need to initialize symbols in a special way so that they
 %D can be used as rendering for a widget.
 

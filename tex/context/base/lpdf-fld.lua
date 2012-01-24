@@ -457,6 +457,30 @@ end
 
 local fields, radios, clones, fieldsets, calculationset = { }, { }, { }, { }, nil
 
+local xfdftemplate = [[
+<?xml version='1.0' encoding='UTF-8'?>
+
+<xfdf xmlns='http://ns.adobe.com/xfdf/'>
+  <f href='%s.pdf'/>
+  <fields>
+%s
+  </fields>
+</xfdf>
+]]
+
+function codeinjections.exportformdata(name)
+    local result = { }
+    for k, v in table.sortedhash(fields) do
+        result[#result+1] = format("    <field name='%s'><value>%s</value></field>",v.name or k,v.default or "")
+    end
+    local base = file.basename(tex.jobname)
+    local xfdf = format(xfdftemplate,base,table.concat(result))
+    if not name or name == "" then
+        name = base
+    end
+    io.savedata(file.addsuffix(name,"xfdf"),xfdf)
+end
+
 function codeinjections.definefieldset(tag,list)
     fieldsets[tag] = list
 end

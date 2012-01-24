@@ -515,6 +515,12 @@ local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
 local lp_builtin = P (
+        P("text")         / "(ll.dt[1] or '')" + -- fragile
+        P("content")      / "ll.dt" +
+    --  P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
+        P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
+        P("tag")          / "ll.tg" +
+        P("position")     / "l" + -- is element in finalizer
         P("firstindex")   / "1" +
         P("lastindex")    / "(#ll.__p__.dt or 1)" +
         P("firstelement") / "1" +
@@ -522,15 +528,10 @@ local lp_builtin = P (
         P("first")        / "1" +
         P("last")         / "#list" +
         P("rootposition") / "order" +
-        P("position")     / "l" + -- is element in finalizer
         P("order")        / "order" +
         P("element")      / "(ll.ei or 1)" +
         P("index")        / "(ll.ni or 1)" +
         P("match")        / "(ll.mi or 1)" +
-        P("text")         / "(ll.dt[1] or '')" +
-    --  P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
-        P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
-        P("tag")          / "ll.tg" +
         P("ns")           / "ll.ns"
     ) * ((spaces * P("(") * spaces * P(")"))/"")
 
@@ -1141,6 +1142,23 @@ expressions.upper     = upper
 expressions.lower     = lower
 expressions.number    = tonumber
 expressions.boolean   = toboolean
+
+function expressions.contains(str,pattern)
+    local t = type(str)
+    if t == "string" then
+        if find(str,pattern) then
+            return true
+        end
+    elseif t == "table" then
+        for i=1,#str do
+            local d = str[i]
+            if type(d) == "string" and find(d,pattern) then
+                return true
+            end
+        end
+    end
+    return false
+end
 
 -- user interface
 

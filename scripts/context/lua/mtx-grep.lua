@@ -10,6 +10,7 @@ local helpinfo = [[
 --pattern             search for pattern (optional)
 --count               count matches only
 --nocomment           skip lines that start with %% or #
+--xml                 pattern is lpath expression
 
 patterns are lua patterns and need to be escaped accordingly
 ]]
@@ -35,68 +36,100 @@ local content  = lpeg.C((1-newline)^0) * newline
 
 local write_nl = texio.write_nl
 
+ -- local pattern = "LIJST[@TYPE='BULLET']/LIJSTITEM[contains(text(),'Kern')]"
+
 function scripts.grep.find(pattern, files, offset)
     if pattern and pattern ~= "" then
         statistics.starttiming(scripts.grep)
         local nofmatches, noffiles, nofmatchedfiles = 0, 0, 0
         local n, m, name, check = 0, 0, "", nil
         local count, nocomment = environment.argument("count"), environment.argument("nocomment")
-        if nocomment then
-            if count then
-                check = function(line)
-                    n = n + 1
-                    if find(line,"^[%%#]") then
-                        -- skip
-                    elseif find(line,pattern) then
-                        m = m + 1
-                    end
-                end
-            else
-                check = function(line)
-                    n = n + 1
-                    if find(line,"^[%%#]") then
-                        -- skip
-                    elseif find(line,pattern) then
-                        m = m + 1
-                        write_nl(format("%s %6i: %s",name,n,line))
-                        io.flush()
+        if environment.argument("xml") then
+            for i=offset or 1, #files do
+                local globbed = dir.glob(files[i])
+                for i=1,#globbed do
+                    local nam = globbed[i]
+                    name = nam
+                    local data = xml.load(name)
+                    if data and not data.error then
+                        n, m, noffiles = 0, 0, noffiles + 1
+                        if count then
+                            for c in xml.collected(data,pattern) do
+                                m = m + 1
+                            end
+                            if m > 0 then
+                                nofmatches = nofmatches + m
+                                nofmatchedfiles = nofmatchedfiles + 1
+                                write_nl(format("%s: %s",name,m))
+                                io.flush()
+                            end
+                        else
+                            for c in xml.collected(data,pattern) do
+                                m = m + 1
+                                write_nl(format("%s: %s",name,xml.tostring(c)))
+                            end
+                        end
                     end
                 end
             end
         else
-            if count then
-                check = function(line)
-                    n = n + 1
-                    if find(line,pattern) then
-                        m = m + 1
+            if nocomment then
+                if count then
+                    check = function(line)
+                        n = n + 1
+                        if find(line,"^[%%#]") then
+                            -- skip
+                        elseif find(line,pattern) then
+                            m = m + 1
+                        end
+                    end
+                else
+                    check = function(line)
+                        n = n + 1
+                        if find(line,"^[%%#]") then
+                            -- skip
+                        elseif find(line,pattern) then
+                            m = m + 1
+                            write_nl(format("%s %6i: %s",name,n,line))
+                            io.flush()
+                        end
                     end
                 end
             else
-                check = function(line)
-                    n = n + 1
-                    if find(line,pattern) then
-                        m = m + 1
-                        write_nl(format("%s %6i: %s",name,n,line))
-                        io.flush()
+                if count then
+                    check = function(line)
+                        n = n + 1
+                        if find(line,pattern) then
+                            m = m + 1
+                        end
+                    end
+                else
+                    check = function(line)
+                        n = n + 1
+                        if find(line,pattern) then
+                            m = m + 1
+                            write_nl(format("%s %6i: %s",name,n,line))
+                            io.flush()
+                        end
                     end
                 end
             end
-        end
-        local capture = (content/check)^0
-        for i=offset or 1, #files do
-            local globbed = dir.glob(files[i])
-            for i=1,#globbed do
-                local nam = globbed[i]
-                name = nam
-                local data = io.loaddata(name)
-                if data then
-                    n, m, noffiles = 0, 0, noffiles + 1
-                    capture:match(data)
-                    if count and m > 0 then
-                        nofmatches = nofmatches + m
-                        nofmatchedfiles = nofmatchedfiles + 1
-                        write_nl(format("%s: %s",name,m))
-                        io.flush()
+            local capture = (content/check)^0
+            for i=offset or 1, #files do
+                local globbed = dir.glob(files[i])
+                for i=1,#globbed do
+                    local nam = globbed[i]
+                    name = nam
+                    local data = io.loaddata(name)
+                    if data then
+                        n, m, noffiles = 0, 0, noffiles + 1
+                        capture:match(data)
+                        if count and m > 0 then
+                            nofmatches = nofmatches + m
+                            nofmatchedfiles = nofmatchedfiles + 1
+                            write_nl(format("%s: %s",name,m))
+                            io.flush()
+                        end
                     end
                 end
             end
