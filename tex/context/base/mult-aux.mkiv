@@ -18,6 +18,8 @@
 %D with (interface might change). The code here evolved in an email
 %D exchange between me and Wolgang Schuster.
 
+% todo: doifelse<whatever>
+
 \writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
 
 \registerctxluafile{mult-aux}{1.001}
@@ -539,6 +541,11 @@
    \installdirectparametersethandler {#1}{#2}%
    \installdirectstyleandcolorhandler{#1}{#2}}
 
+\unexpanded\def\installsetuponlycommandhandler#1#2%
+  {\installdirectparameterhandler{#1}{#2}%
+   \installdirectsetuphandler    {#1}{#2}%
+  }% maybe \installdirectparametersethandler {#1}{#2}%
+
 % Experiment:
 
 % \installcorenamespace {one}
@@ -625,8 +632,12 @@
 % We install two core namespaces here, as we want nice error messages. Maybe
 % we will reserve the first 9.
 
+\installcorenamespace{fontinstanceready}
 \installcorenamespace{fontinstancebasic}
 \installcorenamespace{fontinstanceclass}
+
+% Maybe a \definecorenamespace[name][directparameter,directsetup][parent]
+% but we don't gain much. Actually we might just inline all definitions.
 
 % \enabletrackers[interfaces.namespaces,context.flush]
 %

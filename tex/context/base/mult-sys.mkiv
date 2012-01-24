@@ -112,6 +112,7 @@
 \definesystemconstant {SerifSlanted}
 \definesystemconstant {SerifBoldSlanted}
 \definesystemconstant {SerifCaps}
+% \definesystemconstant {SerifCapsSlanted}
 
 \definesystemconstant {SansBold}
 \definesystemconstant {SansItalic}
@@ -119,6 +120,7 @@
 \definesystemconstant {SansSlanted}
 \definesystemconstant {SansBoldSlanted}
 \definesystemconstant {SansCaps}
+% \definesystemconstant {SansCapsSlanted}
 
 \definesystemconstant {MonoBold}
 \definesystemconstant {MonoItalic}
@@ -126,7 +128,13 @@
 \definesystemconstant {MonoSlanted}
 \definesystemconstant {MonoBoldSlanted}
 \definesystemconstant {MonoCaps}
+% \definesystemconstant {MonoCapsSlanted}
+% \definesystemconstant {MonoVariable}
 
+\definesystemconstant {MathRoman}
+\definesystemconstant {MathRomanBold}
+
+\definesystemconstant {Simple}
 \definesystemconstant {Normal}
 \definesystemconstant {Caps}
 
@@ -152,6 +160,7 @@
 \definesystemconstant {attribute}
 
 \definesystemconstant {none}
+\definesystemconstant {auto}
 \definesystemconstant {default}
 \definesystemconstant {smallcaps}
 
@@ -202,6 +211,10 @@
 
 \definesystemconstant {small}
 \definesystemconstant {big}
+
+\definesystemconstant {first}
+\definesystemconstant {second}
+\definesystemconstant {third}
 
 %D Net come some \CONTEXT\ constants, used in the definition
 %D of private commands:
@@ -287,6 +300,7 @@
 \definesystemconstant  {direction}
 \definesystemconstant  {fallbacks}
 \definesystemconstant  {goodies}
+\definesystemconstant  {designsize}
 %definesystemconstant  {background}
 %definesystemconstant  {ucmap}
 
@@ -317,6 +331,10 @@
 \definesystemconstant  {leftpage}
 \definesystemconstant  {rightpage}
 \definesystemconstant  {somewhere}
+
+\definesystemconstant  {userdata}
+\definesystemconstant  {command}
+\definesystemconstant  {simple}
 
 \definesystemconstant  {full}
 \definesystemconstant  {text}
@@ -422,6 +440,8 @@
 \def\!!plustoken              {+}
 \def\!!minustoken             {-}
 
+\def\__unknown__    {\string\\//} % unlikely value
+
 %D Variables are composed of a command specific tag and a user
 %D supplied variable (system constant). The first tag \type{ag}
 %D for instance is available as \type{\??ag} and expands to
@@ -451,9 +471,8 @@
 \definesystemvariable {dm}   % DefineMeasure
 \definesystemvariable {du}   % DUmmy
 \definesystemvariable {ef}   % ExternFiguur
-\definesystemvariable {el}   % Elements
 \definesystemvariable {en}   % ENvironments
-\definesystemvariable {er}   % external resources
+%definesystemvariable {er}   % external resources
 \definesystemvariable {et}   % EffecT
 \definesystemvariable {ex}   % ExterneFiguren
 \definesystemvariable {fc}   % FramedContent
@@ -491,7 +510,6 @@
 \definesystemvariable {lx}   % LayerteXt
 \definesystemvariable {ma}   % MargeAchtergrond
 \definesystemvariable {mc}   % MultiColumn
-\definesystemvariable {md}   % MoDule
 \definesystemvariable {mi}   % MultilingualInterface
 \definesystemvariable {ml}   % MultilingualLabel
 \definesystemvariable {mm}   % MultilingualMath

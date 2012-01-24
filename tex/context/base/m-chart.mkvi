@@ -116,12 +116,15 @@
 
 \newtoks\everyFLOWchart
 
+\unexpanded\def\module_charts_process[#name]%
+  {\ctxcommand{flow_start_chart("#name")}}
+
 \unexpanded\def\startFLOWchart
   {\startnointerference
    \the\everyFLOWchart
    \dosingleempty\module_charts_start_chart}
 
-\unexpanded\def\module_charts_process[#name]%
+\unexpanded\def\module_charts_start_chart[#name]%
   {\ctxcommand{flow_start_chart("#name")}}
 
 \unexpanded\def\stopFLOWchart

@@ -1,0 +1,140 @@
+%D \module
+%D   [       file=type-imp-antykwa-poltawskiego,
+%D        version=2010.06.21,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Antykwa Poltawskiego,
+%D         author=Mojca Miklavec \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[antykwa-poltawskiego]
+
+    % condensed and extended variants are still missing
+
+    \starttypescript [antykwa-poltawskiego,antykwa-poltawskiego-light,antykwapoltawskiego,antykwapoltawskiego-light]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.05]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.05]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [modern]         [\s!default] [\s!rscale=1.05]
+        \quittypescriptscanning
+    \stoptypescript
+
+    % names of "Caps" may still change
+
+    \starttypescript [\s!serif] [antykwa-poltawskiego,antykwa-poltawskiego-light,antykwapoltawskiego,antykwapoltawskiego-light]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Light]                [\s!file:antpoltltcond-regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-LightItalic]          [\s!file:antpoltltcond-italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Regular]              [\s!file:antpoltcond-regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Italic]               [\s!file:antpoltcond-italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Medium]               [\s!file:antpoltltcond-bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-MediumItalic]         [\s!file:antpoltltcond-bolditalic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-Bold]                 [\s!file:antpoltcond-bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-BoldItalic]           [\s!file:antpoltcond-bolditalic]       [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLight]            [\s!file:antpoltltcond-regular]        [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsLightItalic]      [\s!file:antpoltltcond-italic]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsRegular]          [\s!file:antpoltcond-regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsItalic]           [\s!file:antpoltcond-italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMedium]           [\s!file:antpoltltcond-bold]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsMediumItalic]     [\s!file:antpoltltcond-bolditalic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBold]             [\s!file:antpoltcond-bold]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Condensed-CapsBoldItalic]       [\s!file:antpoltcond-bolditalic]       [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Light]            [\s!file:antpoltltsemicond-regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-LightItalic]      [\s!file:antpoltltsemicond-italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Regular]          [\s!file:antpoltsemicond-regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Italic]           [\s!file:antpoltsemicond-italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Medium]           [\s!file:antpoltltsemicond-bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-MediumItalic]     [\s!file:antpoltltsemicond-bolditalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-Bold]             [\s!file:antpoltsemicond-bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-BoldItalic]       [\s!file:antpoltsemicond-bolditalic]   [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsLight]        [\s!file:antpoltltsemicond-regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsLightItalic]  [\s!file:antpoltltsemicond-italic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsRegular]      [\s!file:antpoltsemicond-regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsItalic]       [\s!file:antpoltsemicond-italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMedium]       [\s!file:antpoltltsemicond-bold]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsMediumItalic] [\s!file:antpoltltsemicond-bolditalic] [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBold]         [\s!file:antpoltsemicond-bold]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiCondensed-CapsBoldItalic]   [\s!file:antpoltsemicond-bolditalic]   [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-Light]                          [\s!file:antpoltlt-regular]            [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-LightItalic]                    [\s!file:antpoltlt-italic]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Regular]                        [\s!file:antpolt-regular]              [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Italic]                         [\s!file:antpolt-italic]               [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Medium]                         [\s!file:antpoltlt-bold]               [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-MediumItalic]                   [\s!file:antpoltlt-bolditalic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Bold]                           [\s!file:antpolt-bold]                 [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-BoldItalic]                     [\s!file:antpolt-bolditalic]           [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-CapsLight]                      [\s!file:antpoltcond-regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsLightItalic]                [\s!file:antpoltcond-italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsRegular]                    [\s!file:antpolt-regular]              [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsItalic]                     [\s!file:antpolt-italic]               [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMedium]                     [\s!file:antpoltcond-bold]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsMediumItalic]               [\s!file:antpoltcond-bolditalic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBold]                       [\s!file:antpolt-bold]                 [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-CapsBoldItalic]                 [\s!file:antpolt-bolditalic]           [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-Light]             [\s!file:antpoltltsemiexpd-regular]    [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-LightItalic]       [\s!file:antpoltltsemiexpd-italic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-Regular]           [\s!file:antpoltsemiexpd-regular]      [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-Italic]            [\s!file:antpoltsemiexpd-italic]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-Medium]            [\s!file:antpoltltsemiexpd-bold]       [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-MediumItalic]      [\s!file:antpoltltsemiexpd-bolditalic] [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-Bold]              [\s!file:antpoltsemiexpd-bold]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-BoldItalic]        [\s!file:antpoltsemiexpd-bolditalic]   [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsLight]         [\s!file:antpoltltsemiexpd-regular]    [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsLightItalic]   [\s!file:antpoltltsemiexpd-italic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsRegular]       [\s!file:antpoltsemiexpd-regular]      [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsItalic]        [\s!file:antpoltsemiexpd-italic]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsMedium]        [\s!file:antpoltltsemiexpd-bold]       [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsMediumItalic]  [\s!file:antpoltltsemiexpd-bolditalic] [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsBold]          [\s!file:antpoltsemiexpd-bold]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-SemiExpanded-CapsBoldItalic]    [\s!file:antpoltsemiexpd-bolditalic]   [\s!features=\s!smallcaps]
+
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-Light]                 [\s!file:antpoltltexpd-regular]        [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-LightItalic]           [\s!file:antpoltltexpd-italic]         [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-Regular]               [\s!file:antpoltexpd-regular]          [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-Italic]                [\s!file:antpoltexpd-italic]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-Medium]                [\s!file:antpoltltexpd-bold]           [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-MediumItalic]          [\s!file:antpoltltexpd-bolditalic]     [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-Bold]                  [\s!file:antpoltexpd-bold]             [\s!features=\s!default]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-BoldItalic]            [\s!file:antpoltexpd-bolditalic]       [\s!features=\s!default]
+
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsLight]             [\s!file:antpoltltexpd-regular]        [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsLightItalic]       [\s!file:antpoltltexpd-italic]         [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsRegular]           [\s!file:antpoltexpd-regular]          [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsItalic]            [\s!file:antpoltexpd-italic]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsMedium]            [\s!file:antpoltltexpd-bold]           [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsMediumItalic]      [\s!file:antpoltltexpd-bolditalic]     [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsBold]              [\s!file:antpoltexpd-bold]             [\s!features=\s!smallcaps]
+        \definefontsynonym [AntykwaPoltawskiego-Expanded-CapsBoldItalic]        [\s!file:antpoltexpd-bolditalic]       [\s!features=\s!smallcaps]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [antykwa-poltawskiego,antykwapoltawskiego] [\s!name]
+        \definefontsynonym [\s!Serif]            [AntykwaPoltawskiego-Regular]
+        \definefontsynonym [\s!SerifBold]        [AntykwaPoltawskiego-Bold]
+        \definefontsynonym [\s!SerifItalic]      [AntykwaPoltawskiego-Italic]
+        \definefontsynonym [\s!SerifSlanted]     [AntykwaPoltawskiego-Italic]
+        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaPoltawskiego-BoldItalic]
+        \definefontsynonym [\s!SerifCaps]        [AntykwaPoltawskiego-CapsRegular]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [antykwa-poltawskiego-light,antykwapoltawskiego-light] [\s!name]
+        \definefontsynonym [\s!Serif]            [AntykwaPoltawskiego-Light]
+        \definefontsynonym [\s!SerifBold]        [AntykwaPoltawskiego-Medium]
+        \definefontsynonym [\s!SerifItalic]      [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [\s!SerifSlanted]     [AntykwaPoltawskiego-LightItalic]
+        \definefontsynonym [\s!SerifBoldItalic]  [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [\s!SerifBoldSlanted] [AntykwaPoltawskiego-MediumItalic]
+        \definefontsynonym [\s!SerifCaps]        [AntykwaPoltawskiego-CapsLight]
+    \stoptypescript
+
+\stoptypescriptcollection

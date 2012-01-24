@@ -752,11 +752,13 @@ local function action(name,foundname)
 end
 
 local function failure(name)
-    context.showmessage("colors",5,name)
+ -- context.showmessage("colors",5,name)
+    report_colors("unknown: library '%s'",name)
 end
 
 function colors.usecolors(name)
     commands.uselibrary {
+        category = "color definition",
         name     = name,
         patterns = patterns,
         action   = action,

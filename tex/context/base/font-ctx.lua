@@ -22,11 +22,12 @@ local round = math.round
 
 local P, S, C, Cc, Cf, Cg, Ct, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.match
 
-local trace_features      = false  trackers.register("fonts.features", function(v) trace_features = v end)
-local trace_defining      = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
-local trace_usage         = false  trackers.register("fonts.usage",    function(v) trace_usage    = v end)
-local trace_mapfiles      = false  trackers.register("fonts.mapfiles", function(v) trace_mapfiles = v end)
-local trace_automode      = false  trackers.register("fonts.automode", function(v) trace_automode = v end)
+local trace_features      = false  trackers.register("fonts.features",   function(v) trace_features   = v end)
+local trace_defining      = false  trackers.register("fonts.defining",   function(v) trace_defining   = v end)
+local trace_designsize    = false  trackers.register("fonts.designsize", function(v) trace_designsize = v end)
+local trace_usage         = false  trackers.register("fonts.usage",      function(v) trace_usage      = v end)
+local trace_mapfiles      = false  trackers.register("fonts.mapfiles",   function(v) trace_mapfiles   = v end)
+local trace_automode      = false  trackers.register("fonts.automode",   function(v) trace_automode   = v end)
 
 local report_features     = logs.reporter("fonts","features")
 local report_defining     = logs.reporter("fonts","defining")
@@ -43,11 +44,14 @@ local definers            = fonts.definers
 local specifiers          = fonts.specifiers
 local constructors        = fonts.constructors
 local loggers             = fonts.loggers
+local fontgoodies         = fonts.goodies
 local helpers             = fonts.helpers
 local hashes              = fonts.hashes
 local fontdata            = hashes.identifiers
 local currentfont         = font.current
 local texattribute        = tex.attribute
+
+local designsizefilename  = fontgoodies.designsizes.filename
 
 local otffeatures         = fonts.constructors.newfeatures("otf")
 local registerotffeature  = otffeatures.register
@@ -119,7 +123,7 @@ local descriptions  = allocate()
 local parameters    = allocate()
 local properties    = allocate()
 local resources     = allocate()
-local quaddata      = allocate()
+local quaddata      = allocate() -- maybe also spacedata
 local markdata      = allocate()
 local xheightdata   = allocate()
 local csnames       = allocate() -- namedata
@@ -826,14 +830,34 @@ local n = 0
 -- we can also move rscale to here (more consistent)
 -- the argument list will become a table
 
+local function nice_cs(cs)
+    return (gsub(cs,".->", ""))
+end
+
 function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
-        mathsize,textsize,relativeid,classgoodies,goodies)
+        mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize)
     if trace_defining then
         report_defining("start stage two: %s (%s)",str,size)
     end
     -- name is now resolved and size is scaled cf sa/mo
     local lookup, name, sub, method, detail = getspecification(str or "")
-    -- asome settings can be overloaded
+    -- new (todo: inheritancemode)
+    local designsize = fontdesignsize ~= "" and fontdesignsize or classdesignsize or ""
+    if designsize == "auto" or designsize == "default" then -- or any value
+        local okay = designsizefilename(name,size)
+        -- we don't catch detail here
+        if trace_defining or trace_designsize then
+            report_defining("remapping name: %s + size: %s => designsize: %s",name,size,okay)
+        end
+        local o_lookup, o_name, o_sub, o_method, o_detail = getspecification(okay)
+        if o_lookup and o_lookup ~= "" then lookup = o_lookup end
+        if o_method and o_method ~= "" then method = o_method end
+        if o_detail and o_detail ~= "" then detail = o_detail end
+        name = o_name
+        sub = o_sub
+    end
+    -- so far
+    -- some settings can have been overloaded
     if lookup and lookup ~= "" then
         specification.lookup = lookup
     end
@@ -841,14 +865,14 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         local id = tonumber(relativeid) or 0
         specification.relativeid = id > 0 and id
     end
-    specification.name     = name
-    specification.size     = size
-    specification.sub      = (sub and sub ~= "" and sub) or specification.sub
-    specification.mathsize = mathsize
-    specification.textsize = textsize
-    specification.goodies  = goodies
-    specification.cs       = cs
-    specification.global   = global
+    specification.name      = name
+    specification.size      = size
+    specification.sub       = (sub and sub ~= "" and sub) or specification.sub
+    specification.mathsize  = mathsize
+    specification.textsize  = textsize
+    specification.goodies   = goodies
+    specification.cs        = cs
+    specification.global    = global
     if detail and detail ~= "" then
         specification.method = method or "*"
         specification.detail = detail
@@ -903,17 +927,15 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
             specification.fallbacks = fontfallbacks
         end
     end
---~ report_defining("SIZE %s %s",size,specification.size)
     local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
---~ report_defining("HASH AFTER %s",specification.size)
     if not tfmdata then
-        report_defining("unable to define %s as \\%s",name,cs)
+        report_defining("unable to define %s as [%s]",name,nice_cs(cs))
         texsetcount("global","lastfontid",-1)
         context.letvaluerelax(cs) -- otherwise the current definition takes the previous one
     elseif type(tfmdata) == "number" then
         if trace_defining then
-            report_defining("reusing %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s)",
-                name,tfmdata,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies)
+            report_defining("reusing %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s, goodies: %s/%s, designsize: %s/%s)",
+                name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
         end
         csnames[tfmdata] = specification.cs
         tex.definefont(global,cs,tfmdata)
@@ -939,7 +961,8 @@ function commands.definefont_two(global,cs,str,size,inheritancemode,classfeature
         constructors.cleanuptable(tfmdata)
         constructors.finalize(tfmdata)
         if trace_defining then
-            report_defining("defining %s with id %s as \\%s (features: %s/%s, fallbacks: %s/%s)",name,id,cs,classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+            report_defining("defining %s with id %s as [%s] (features: %s/%s, fallbacks: %s/%s)",
+                name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
         end
         -- resolved (when designsize is used):
         setsomefontsize((tfmdata.parameters.size or 655360) .. "sp")

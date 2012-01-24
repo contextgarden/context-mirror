@@ -1160,6 +1160,7 @@
 % TODO: NAMED SNAPPERS
 
 \installcorenamespace{gridsnappers}
+\installcorenamespace{gridsnapperattributes}
 
 \newskip  \bodyfontlineheight
 \newdimen \bodyfontstrutheight
@@ -1181,10 +1182,10 @@
 
 \unexpanded\def\installsnapvalues#1#2% todo: a proper define
   {\edef\currentsnapper{#1:#2}%
-   \ifcsname\currentsnapper\endcsname \else
-     \setevalue\currentsnapper{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
+   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\ctxlua{builders.vspacing.definesnapmethod("#1","#2")}}%
    \fi
-   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\currentsnapper\endcsname\space}}
+   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
 
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}
@@ -1248,6 +1249,7 @@
 \definegridsnapping[\v!high]     [\v!minheight,\v!maxdepth,\v!none]
 \definegridsnapping[\v!one]      [\v!minheight,\v!mindepth]
 \definegridsnapping[\v!low]      [\v!maxheight,\v!mindepth,\v!none]
+\definegridsnapping[\v!none]     [\v!none]
 \definegridsnapping[\v!line]     [\v!line]
 \definegridsnapping[\v!strut]    [\v!strut]
 

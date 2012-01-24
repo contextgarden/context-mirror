@@ -102,7 +102,7 @@
 \to \everyenableelements
 
 \appendtoks
-    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup("\currentitemgroup",\ifconditional\c_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
+    \unexpanded\def\dotagsetitemgroup{\taggedctxcommand{settagitemgroup("\currentitemgroup",\ifconditional\c_strc_itemgroups_pack true\else false\fi,"\currentitemgroupsymbol")}}%
 \to \everyenableelements
 
 \appendtoks
@@ -156,7 +156,7 @@
 
 \appendtoks
     \doifsomething{\backendparameter\c!export}
-      {\setupstructure
+      {\setuptagging
          [\c!state=\v!start]%
        \enabledirectives
          [backend.export=\backendparameter\c!export]}%

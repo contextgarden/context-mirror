@@ -89,7 +89,7 @@ constructors.keys = {
         finalized              = "boolean",
     },
     parameters = {
-        mathsize               = "scaledpoints",
+        mathsize               = "number",
         scriptpercentage       = "float",
         scriptscriptpercentage = "float",
         units                  = "cardinal",

@@ -19,7 +19,8 @@
 
 \unprotect
 
-% labels: temporary here
+%D Eventually these labels will either move to the modules
+%D where they're used, or they will en dup in mult-tag.
 
 \def\t!document          {document}               % Div
 
@@ -142,92 +143,120 @@
 \definesystemattribute[tagged][public]
 \definesystemattribute[image] [public]
 
-\unexpanded\def\setelementbackendtag{\dodoubleargument\dosetelementbackendtag}
-\unexpanded\def\setelementnature    {\dodoubleargument\dosetelementnature}
+\unexpanded\def\setelementbackendtag{\dodoubleargument\strc_tags_set_backend}
+\unexpanded\def\setelementnature    {\dodoubleargument\strc_tags_set_nature}
 
-\unexpanded\def\dosetelementbackendtag[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
-\unexpanded\def\dosetelementnature    [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
+\def\strc_tags_set_backend[#1][#2]{\ctxcommand{settagproperty("#1","backend","#2")}}
+\def\strc_tags_set_nature [#1][#2]{\ctxcommand{settagproperty("#1","nature", "#2")}}
 
 % todo: indirect macro for trialtypesetting
 
-\unexpanded\def\dostartelement{\iftrialtypesetting\expandafter\renostartelement\else\expandafter\redostartelement\fi}
-\unexpanded\def\dostopelement {\iftrialtypesetting\expandafter\nonostopelement \else\expandafter\dodostopelement \fi}
+\unexpanded\def\strc_tags_start_element
+  {\iftrialtypesetting
+     \expandafter\strc_tags_disabled_element_start
+   \else
+     \expandafter\strc_tags_enabled_element_start
+   \fi}
 
-\unexpanded\def\redostartelement{\dodoubleempty\dodostartelement}
-\unexpanded\def\renostartelement{\dodoubleempty\nonostartelement}
+\unexpanded\def\strc_tags_stop_element
+  {\iftrialtypesetting
+     \expandafter\strc_tags_disabled_element_stop_indeed
+   \else
+     \expandafter\strc_tags_enabled_element_stop_indeed
+   \fi}
 
-\unexpanded\def\dodostartelement[#1][#2]%
+\unexpanded\def\strc_tags_enabled_element_start {\dodoubleempty\strc_tags_enabled_element_start_indeed}
+\unexpanded\def\strc_tags_disabled_element_start{\dodoubleempty\strc_tags_disabled_element_start_indeed}
+
+\unexpanded\def\strc_tags_enabled_element_start_indeed[#1][#2]%
   {\ctxcommand{starttag("#1",{
      label    = "\dogetupsometaglabeltext{#1}",
      userdata = \!!bs#2\!!es,
    })}}
 
-\unexpanded\def\dodostopelement
+\unexpanded\def\strc_tags_disabled_element_start_indeed[#1][#2]%
+  {}
+
+\unexpanded\def\strc_tags_enabled_element_stop_indeed
   {\ctxcommand{stoptag()}}
 
-% beware: making this one unexpanded spoils tables (noalign problem)
+\unexpanded\def\strc_tags_disabled_element_stop_indeed
+  {}
 
-\unexpanded\def\nonostartelement[#1][#2]{}
-\unexpanded\def\nonostopelement         {}
+% beware: making these unexpanded spoils tables (noalign problem)
 
-\def\dodostarttagged{\iftrialtypesetting\expandafter\nododostarttagged\else\expandafter\dododostarttagged\fi}
-\def\dodostoptagged {\iftrialtypesetting\expandafter\nododostoptagged \else\expandafter\dododostoptagged \fi}
+\def\strc_tags_enabled_start
+  {\iftrialtypesetting
+     \expandafter\strc_tags_disabled_start_indeed
+   \else
+     \expandafter\strc_tags_enabled_start_indeed
+   \fi}
 
-\def\dododostarttagged#1#2%
+\def\strc_tags_enabled_stop
+  {\iftrialtypesetting
+     \expandafter\strc_tags_disabled_stop
+   \else
+     \expandafter\strc_tags_enabled_stop
+  \fi}
+
+\def\strc_tags_enabled_start_indeed#1#2%
   {\ctxcommand{starttag("#1",{
      label  = "\dogetupsometaglabeltext{#1}",
      detail = "#2",
    })}}
 
-\def\dododostoptagged
+\def\strc_tags_enabled_stop_indeed
   {\ctxcommand{stoptag()}}
 
-\def\nododostarttagged#1#2{}
-\def\nododostoptagged     {}
+\def\strc_tags_disabled_start#1#2%
+  {}
+
+\def\strc_tags_disabled_stop
+  {}
 
 % end of beware
 
-\newtoks\everysetupstructure
+\installcorenamespace{tagging}
 
-\unexpanded\def\setupstructure[#1]%
-  {\getparameters[\??el][#1]%
-   \the\everysetupstructure}
+\installsetuponlycommandhandler \??tagging {tagging}
 
-\unexpanded\def\doenableelements
+\unexpanded\def\strc_tags_enable_elements
   {\setuplanguage[\s!default][\s!righthyphenchar="AD]% for the moment here
-   \let\startelement\dostartelement
-   \let\stopelement \dostopelement}
+   \let\startelement\strc_tags_enabled_element_start
+   \let\stopelement \strc_tags_enabled_element_stop }
 
-\unexpanded\def\dodisableelements
-  {\let\startelement\renostartelement
-   \let\stopelement \nonostopelement}
+\unexpanded\def\strc_tags_disable_elements
+  {\let\startelement\strc_tags_disabled_element_start
+   \let\stopelement \strc_tags_disabled_element_stop}
 
-\unexpanded\def\doenabletagged
-  {\let\dostarttagged\dodostarttagged
-   \let\dostoptagged \dodostoptagged }
+% this will become strc_tags_start and strc_tags_stop
 
-\unexpanded\def\dodisabletagged
-  {\let\dostarttagged\nododostarttagged
-   \let\dostoptagged \nododostoptagged }
+\unexpanded\def\strc_tags_enable
+  {\let\dostarttagged\strc_tags_enabled_start
+   \let\dostoptagged \strc_tags_enabled_stop}
+
+\unexpanded\def\strc_tags_disable
+  {\let\dostarttagged\strc_tags_disabled_start
+   \let\dostoptagged \strc_tags_disabled_stop}
 
 \newtoks\everyenableelements
 \newtoks\everydisableelements
 
 \appendtoks
-    \doenableelements
-    \doifelse\@@elmethod\v!auto\doenabletagged\dodisabletagged
+    \strc_tags_enable_elements
+    \doifelse{\taggingparameter\c!method}\v!auto\strc_tags_enable\strc_tags_disable
 \to \everyenableelements
 
 \appendtoks
-    \dodisableelements
-    \dodisabletagged
+    \strc_tags_disable_elements
+    \strc_tags_disable
 \to \everydisableelements
 
 \appendtoks
-   \doifelse\@@elstate\v!start{\the\everyenableelements}{\the\everydisableelements}%
-\to \everysetupstructure
+   \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
+\to \everysetuptagging
 
-\setupstructure
+\setuptagging
   [\c!state=\v!stop,
    \c!method=\v!auto]
 
@@ -251,8 +280,8 @@
 \to \everystoptext
 
 \appendtoks
-    \dodisableelements
-    \dodisabletagged
+    \strc_tags_disable_elements
+    \strc_tags_disable
 \to \everybeforepagebody
 
 % \doifinelementelse{structure:section}            {yes} {no}

@@ -1120,13 +1120,13 @@
 
 \def\dodostartlocalnotes#1%
   {\doifnot{\noteparameter\c!continue}\v!yes
-     {\savestructurecounter[#1]%
-      \resetstructurecounter[#1]}%
+     {\strc_counters_save{#1}%
+      \strc_counters_reset{#1}}%
    \ctxlua{structures.notes.save("#1","store")}}
 
 \def\dodostoplocalnotes#1%
   {\doifnot{\noteparameter\c!continue}\v!yes
-     {\restorestructurecounter[#1]}%
+     {\strc_counters_restore{#1}}%
    \ctxlua{structures.notes.restore("#1")}}
 
 \unexpanded\def\placelocalnotes

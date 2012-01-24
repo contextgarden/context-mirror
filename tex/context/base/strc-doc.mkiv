@@ -34,10 +34,6 @@
 % \def\structureparameter#1{\csname\??ns#1\endcsname}
 % \def\detokenizedstructureparameter#1{\detokenize\expandafter\expandafter\expandafter{\csname\??ns#1\endcsname}}
 
-\def\structurecomponent{\dodoubleempty\dostructurecomponent}
-
-% \getparameters % initialization, used not grouped anyway
-%   [\??ns]
 \setupstructure % not a user command so we might need to change the name
   [\c!number=,
    \c!level=,
@@ -82,9 +78,11 @@
 
 % why xdef ?
 
+\unexpanded\def\structurecomponent
+  {\dodoubleempty\dostructurecomponent}
+
 \def\dostructurecomponent[#1][#2]% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
-%    \getparameters[\??ns][#1]%
    \setupstructure[#1]%
    \xdef\currentstructurename           {\structureparameter\c!name}%
    \xdef\currentstructurecoupling       {\structureparameter\c!coupling}%
@@ -195,10 +193,10 @@
                 segments      = "\structureparameter\c!sectionsegments",
                 ownnumber     = "\currentstructureownnumber",
             },
-            userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+            userdata = \!!bs\detokenize{#2}\!!es % will be converted to table at the lua end
         }
     }}%
-   \xdef\currentstructurelistnumber{\ctxlua{structures.lists.push(structures.sections.current())}}%
+   \xdef\currentstructurelistnumber{\ctxcommand{addtolist(structures.sections.current())}}%
    % \currentstructuresynchronize has to be called someplace, since it introduces a node
    \setstructuresynchronization\currentstructurelistnumber
    \structureparameter\c!command
@@ -211,8 +209,8 @@
 % todo: a direct flusher (needed when hidden)
 
 \def\setstructuresynchronization#1% todo: use ctxcontext
-  {\xdef\currentstructureattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
-   \xdef\currentstructuresynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
+  {\xdef\currentstructureattribute  {\ctxlua        {tex.write(structures.references.setinternalreference("\currentstructurereferenceprefix","\currentstructurereference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
+   \xdef\currentstructuresynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \def\reportcurrentstructure{\ctxlua{structures.sections.reportstructure()}}
 

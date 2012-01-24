@@ -219,6 +219,82 @@
      \csname\s!mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
    \fi}
 
+%D Here is a relatively new variant of mode checking:
+%D
+%D \starttyping
+%D \enablemode[two]
+%D
+%D \startmodes
+%D     [one]     {1}
+%D     [two]     {2}
+%D     [two]     {2}
+%D     [three]   {3}
+%D     [default] {?}
+%D \stopmodes
+%D
+%D \startmodes
+%D     [one]     {1}
+%D     [three]   {3}
+%D     [default] {?}
+%D \stopmodes
+%D
+%D \startmodes
+%D     [one] {
+%D         \input tufte
+%D     }
+%D     [two] {
+%D         \startmodes
+%D             [one]     {1}
+%D             [two]     {2}
+%D             [two]     {2}
+%D             [three]   {3}
+%D             [default] {?}
+%D         \stopmodes
+%D     }
+%D     [three] {
+%D         \input zapf
+%D     }
+%D     [default] {
+%D         \input ward
+%D     }
+%D \stopmodes
+%D \stoptyping
+
+\newconditional\c_syst_modes_set_done % conditionals can be pushed/popped
+
+\unexpanded\def\startmodeset
+  {\pushmacro\c_syst_modes_set_done
+   \setfalse\conditionalfalse
+   \doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_start[#1]%
+  {\edef\m_mode_case{#1}%
+   \ifx\m_mode_case\s!default
+     \ifconditional\c_syst_modes_set_done
+       \doubleexpandafter\syst_modes_set_quit
+     \else
+       \doubleexpandafter\syst_modes_set_yes
+     \fi
+   \else
+     \singleexpandafter\syst_modes_set_check
+   \fi}
+
+\def\syst_modes_set_check
+  {\syst_modes_check\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
+
+\def\syst_modes_set_yes#1%
+  {\settrue\c_syst_modes_set_done
+   #1%
+   \doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_nop#1%
+  {\doifnextoptionalelse\syst_modes_set_start\syst_modes_set_quit}
+
+\def\syst_modes_set_quit#1\stopmodeset
+  {\popmacro\c_syst_modes_set_done}
+
+\let\stopmodeset\relax
+
 %D Lets now set a mode:
 
 \enablemode[mkiv] \newsystemmode{mkiv} \setsystemmode{mkiv}

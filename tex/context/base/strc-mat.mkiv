@@ -179,7 +179,7 @@
 
 \def\handlesubformulasnumbering % sub formulas
   {\docheckformulareference\subformulasnumbermode\currentsubformulasreference
-   \doincrementsubstructurecounter[\v!formula][1]% always
+   \strc_counters_increment\v!formula
    \storecurrentformulanumber
      \currentsubformulasreference
      \empty
@@ -324,14 +324,14 @@
 % needs checking ... too many:
 
 \def\dohandleformulanumbering
-  {\doincrementsubstructurecounter[\v!formula][1]%
-   \doiftext\currentplaceformulasuffix{\setsubstructurecounterown[\v!formula][2]{\currentplaceformulasuffix}}%
+  {\strc_counters_increment\v!formula
+   \doiftext\currentplaceformulasuffix{\strc_counters_setown_sub\v!formula\plustwo\currentplaceformulasuffix}%
    \placecurrentformulanumber}
 
 \def\dohandlesubformulanumbering
   {\doiftextelse\currentsubformulasuffix
-     {\setsubstructurecounterown[\v!formula][2]{\currentsubformulasuffix}}
-     {\doincrementsubstructurecounter[\v!formula][2]}%
+     {\strc_counters_setown_sub\v!formula\plustwo\currentsubformulasuffix}
+     {\strc_counters_increment_sub\v!formula\plustwo}%
     \placecurrentformulanumber}
 
 \def\dododoformulanumber
@@ -376,13 +376,10 @@
    \fi}
 
 \installstructurelistprocessor\v!formula % to be checked ...
-  {\dodolistelement
-     \currentlist
-     \structurelistlocation
-     \structurelistgenericnumber
-     \structurelistgenerictitle % hm, can end up in message (volkers test)
-     \structurelistpagenumber
-     \structurelistrealpagenumber}
+  {\let\currentlistentrynumber    \structurelistgenericnumber
+   \let\currentlistentrytitle     \structurelistgenerictitle
+   \let\currentlistentrypagenumber\structurelistpagenumber
+   \strc_lists_apply_renderingsetup}
 
 \newif\ifinformula
 

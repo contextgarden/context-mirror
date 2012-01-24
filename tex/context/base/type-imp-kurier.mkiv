@@ -1,0 +1,56 @@
+%D \module
+%D   [       file=type-imp-kurier,
+%D        version=2007.07.30,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Kurier by JMN,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% There are no open type fonts yet so this should be in type-one.mkiv
+% instead but we keep it here till ready.
+
+\starttypescriptcollection[kurier]
+
+    \starttypescript [\s!sans] [kurier-light,kurier,kurier-medium]
+        \definefontsynonym[Kurier-Light]         [kurierl]
+        \definefontsynonym[Kurier-Regular]       [kurierr]
+        \definefontsynonym[Kurier-Medium]        [kurierm]
+        \definefontsynonym[Kurier-Bold]          [kurierb]
+        \definefontsynonym[Kurier-Heavy]         [kurierh]
+        \definefontsynonym[Kurier-LightItalic]   [kurierli]
+        \definefontsynonym[Kurier-Italic]        [kurierri]
+        \definefontsynonym[Kurier-MediumItalic]  [kuriermi]
+        \definefontsynonym[Kurier-BoldItalic]    [kurierbi]
+        \definefontsynonym[Kurier-HeavyItalic]   [kurierhi]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [kurier-light] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [Kurier-Light-Regular]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Light-Italic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Medium-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-Medium-Italic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [kurier] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [Kurier-Regular]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Italic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Bold]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [kurier-medium] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [Kurier-Medium-Regular]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Medium-Italic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Heavy-Regular]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-Heavy-Italic]
+    \stoptypescript
+
+\stoptypescriptcollection

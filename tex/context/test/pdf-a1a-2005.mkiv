@@ -6,18 +6,15 @@
   [format=PDF/A-1a:2005,
    intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
    profile=sRGB.icc, % use <filename> here
-   level=0,
-  ]
+   level=0]
 
-\setupstructure[state=start]
+\setuptagging[state=start]
 
 \setupcolors[cmyk=no]
 \definecolor[rgbblack][b=0.01]
 \definecolor[transtest][r=1,g=1,t=.5]
 
-   
 \placebookmarks[chapter][all][force=yes]
-
 
 \starttext
 

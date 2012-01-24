@@ -68,7 +68,7 @@ local function usemodule(name,hasscheme)
         end
         context.startreadingfile()
         resolvers.jobs.usefile(foundname,true) -- once, notext
---~         context.input(foundname)
+     -- context.input(foundname)
         context.stopreadingfile()
         return true
     else
@@ -77,6 +77,7 @@ local function usemodule(name,hasscheme)
 end
 
 function commands.usemodules(prefix,askedname,truename)
+    local truename = truename or environment.truefilename(askedname)
     local hasprefix = prefix and prefix ~= ""
     local hashname = ((hasprefix and prefix) or "*") .. "-" .. truename
     local status = modstatus[hashname]

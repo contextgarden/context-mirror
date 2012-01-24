@@ -84,7 +84,8 @@ return {
         --
         -- maybe a different class
         --
-        "startmode", "stopmode", "startnotmode", "stopnotmode", "doifmode", "doifmodeelse", "doifnotmode",
+        "startmode", "stopmode", "startnotmode", "stopnotmode", "startmodeset", "stopmodeset",
+        "doifmode", "doifmodeelse", "doifnotmode",
         "startallmodes", "stopallmodes", "startnotallmodes", "stopnotallmodes", "doifallmodes", "doifallmodeselse", "doifnotallmodes",
         "startenvironment", "stopenvironment", "environment",
         "startcomponent", "stopcomponent", "component",
@@ -92,6 +93,8 @@ return {
         "startproject", "stopproject", "project",
         "starttext", "stoptext", "startdocument", "stopdocument", "documentvariable",
         "startmodule", "stopmodule", "usemodule",
+        --
+        "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",
     },
     ["helpers"] = {
         --
@@ -108,6 +111,8 @@ return {
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
         --
         "then",
+        --
+        "donetrue", "donefalse",
         --
         "htdp",
         "unvoidbox",
@@ -137,6 +142,7 @@ return {
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
+        "scratchhsize", "scratchvsize",
         --
         "scratchcounterone", "scratchcountertwo", "scratchcounterthree",
         "scratchdimenone", "scratchdimentwo", "scratchdimenthree",
@@ -147,7 +153,7 @@ return {
         --
         "doif", "doifnot", "doifelse",
         "doifinset", "doifnotinset", "doifinsetelse",
-        "doifnextcharelse", "doifnextoptionalelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
+        "doifnextcharelse", "doifnextoptionalelse", "doifnextbgroupelse", "doifnextparenthesiselse", "doiffastoptionalcheckelse",
         "doifundefinedelse", "doifdefinedelse", "doifundefined", "doifdefined",
         "doifelsevalue", "doifvalue", "doifnotvalue",
         "doifnothing", "doifsomething", "doifelsenothing", "doifsomethingelse",
@@ -197,6 +203,7 @@ return {
         "dorecurse", "doloop", "exitloop", "dostepwiserecurse", "recurselevel", "recursedepth", "dofastloopcs",
         --
         "newconstant", "setnewconstant", "newconditional", "settrue", "setfalse", "setconstant",
+        "newmacro", "setnewmacro", "newfraction",
         --
         "dosingleempty", "dodoubleempty", "dotripleempty", "doquadrupleempty", "doquintupleempty", "dosixtupleempty", "doseventupleempty",
         "dosingleargument", "dodoubleargument", "dotripleargument", "doquadrupleargument",

@@ -17,27 +17,8 @@
 
 \unprotect
 
-% we need to rework this, i.e. clone like itm, des etc with \s!parent
-
-% numbering
-
-% \definestructurecounter[name]
-% \setupstructurecounter[name][wijze=,blok=,tekst=,plaats=,conversie=,start=]
-% \setstructurecounter[name]{value}
-% \resetstructurecounter[name]
-% \incrementstructurecounter[name]
-% \decrementstructurecounter[name]
-% \savestructurecounter[name]
-% \restorestructurecounter[name]
-% \convertedstructurecounter[name] % depricated: \getstructurecounter[name]
-% \rawstructurecounter[name]
-
-% private (defined in core-sec.tex)
-%
-% \nextstructurecounter[name][tag][reference]
-% \currentstructurecounter[name]
-
-% todo: better inheritane system
+% work in progress
+% to be checked: can we use the command handler code here?
 
 \unexpanded\def\setupstructurecountering{\dodoubleempty\getparameters[\??nn]}
 
@@ -55,28 +36,28 @@
 \setupstructurecountering
   [\c!prefixsegments=\autostructureprefixsegments\sharedstructurecounterparameter]
 
+\def\strc_counters_the#1% we need a nicer name
+  {\ifcsname\??nn#1\c!number\endcsname
+     \expandafter\strc_counters_the\csname\??nn#1\c!number\endcsname
+   \else
+     #1%
+   \fi}
+
 \def\autostructureprefixsegments#1% todo: \c!prefixsegments=\v!auto
   {2:\thenamedheadlevel{\ctxlua{structures.sections.way("#1\c!way","\v!by")}}}
 
-\def\structurecounterparameter#1#2%
+\def\structurecounterparameter#1#2% this will become \named....
   {\csname
      \ifcsname\??nn#1#2\endcsname
        \??nn#1#2%
-     \else\ifcsname\??nn\@@thestructurecounter{#1}#2\endcsname
-       \??nn\@@thestructurecounter{#1}#2%
+     \else\ifcsname\??nn\strc_counters_the{#1}#2\endcsname
+       \??nn\strc_counters_the{#1}#2%
      \else\ifcsname\??nn#2\endcsname
        \??nn#2%
      \else
        \s!empty
      \fi\fi\fi
    \endcsname}
-
-\def\@@thestructurecounter#1%
-  {\ifcsname\??nn#1\c!number\endcsname
-     \expandafter\@@thestructurecounter\csname\??nn#1\c!number\endcsname
-   \else
-     #1%
-   \fi}
 
 \def\sharedstructurecounterparameter#1%
   {\csname
@@ -124,6 +105,8 @@
   {\getparameters[\??nn#1][\c!start=,#2]%
    \docheckstructurecountersetup{#1}}
 
+% % % %
+
 \def\structurecounterway#1% slow, we need to store it at the tex end
   {\ctxlua{structures.sections.way("\structurecounterparameter{#1}\c!way","\v!by")}}
 
@@ -140,81 +123,266 @@
      % it's a clone
    \else
      \edef\currentstructurecounterlevel{\thenamedstructurecounterlevel{#1}}%
-     \ctxlua{% will be a command (depends on sections)
-        structures.counters.restart("#1",1,"\structurecounterparameter{#1}\c!start")
-        structures.counters.setstate("#1","\structurecounterparameter{#1}\c!state")
-        structures.counters.setlevel("#1",\currentstructurecounterlevel)
-        structures.sections.setchecker("#1",\currentstructurecounterlevel,structures.counters.reset)
-     }%
+%      \ctxlua{% will be a command (depends on sections)
+%         structures.counters.restart("#1",1,"\structurecounterparameter{#1}\c!start")
+%         structures.counters.setstate("#1","\structurecounterparameter{#1}\c!state")
+%         structures.counters.setlevel("#1",\currentstructurecounterlevel)
+%         structures.sections.setchecker("#1",\currentstructurecounterlevel,structures.counters.reset)
+%      }%
+     \ctxcommand{checkstructurecountersetup("#1",\currentstructurecounterlevel,
+      "\structurecounterparameter{#1}\c!start","\structurecounterparameter{#1}\c!state")}%
    \fi}
 
-\unexpanded\def\doifstructurecounterelse#1{\ctxcommand{doifelsestructurecounter("\@@thestructurecounter{#1}")}}
-\unexpanded\def\doifstructurecounter    #1{\ctxcommand{doifstructurecounter    ("\@@thestructurecounter{#1}")}}
-\unexpanded\def\doifnotstructurecounter #1{\ctxcommand{doifnotstructurecounter ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\doifstructurecounterelse#1{\ctxcommand{doifelsestructurecounter("\strc_counters_the{#1}")}}
+\unexpanded\def\doifstructurecounter    #1{\ctxcommand{doifstructurecounter    ("\strc_counters_the{#1}")}}
+\unexpanded\def\doifnotstructurecounter #1{\ctxcommand{doifnotstructurecounter ("\strc_counters_the{#1}")}}
 
-\unexpanded\def\setstructurecounter      [#1]#2{\ctxcommand{setstructurecounter    ("\@@thestructurecounter{#1}",1,\number#2)}}
-\unexpanded\def\setstructurecounterown   [#1]#2{\ctxcommand{setownstructurecounter ("\@@thestructurecounter{#1}",1,"#2")}}
-\unexpanded\def\resetstructurecounter      [#1]{\ctxcommand{resetstructurecounter  ("\@@thestructurecounter{#1}",1)}}
-\unexpanded\def\restartstructurecounter  [#1]#2{\ctxcommand{restartstructurecounter("\@@thestructurecounter{#1}",1,#2)}}
-\unexpanded\def\savestructurecounter       [#1]{\ctxcommand{savestructurecounter   ("\@@thestructurecounter{#1}")}}
-\unexpanded\def\restorestructurecounter    [#1]{\ctxcommand{restorestructurecounter("\@@thestructurecounter{#1}")}}
-\unexpanded\def\incrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,1)}}
-\unexpanded\def\decrementstructurecounter  [#1]{\ctxcommand{addstructurecounter    ("\@@thestructurecounter{#1}",1,-1)}}
-           \def\rawstructurecounter        [#1]{\ctxcommand{structurecountervalue  ("\@@thestructurecounter{#1}",1)}}
-           \def\laststructurecounter       [#1]{\ctxcommand{laststructurecounter   ("\@@thestructurecounter{#1}",1)}}
-           \def\firststructurecounter      [#1]{\ctxcommand{firststructurecounter  ("\@@thestructurecounter{#1}",1)}}
-           \def\nextstructurecounter       [#1]{\ctxcommand{nextstructurecounter   ("\@@thestructurecounter{#1}",1)}}
-           \def\prevstructurecounter       [#1]{\ctxcommand{prevstructurecounter   ("\@@thestructurecounter{#1}",1)}}
-           \def\structurecountersubs       [#1]{\ctxcommand{structurecounterssub   ("\@@thestructurecounter{#1}",1)}}
-           \def\showstructurecounter       [#1]{\ctxcommand{tracestructurecounter  ("\@@thestructurecounter{#1}")}}
+\unexpanded\def\setstructurecounter      {\dotripleempty   \strc_counters_set_interfaced}
+\unexpanded\def\setstructurecounterown   {\dotripleempty   \strc_counters_setown_interfaced}
+\unexpanded\def\restartstructurecounter  {\dotripleempty   \strc_counters_restart_interfaced}
+\unexpanded\def\resetstructurecounter    {\dodoubleempty   \strc_counters_reset_interfaced}
+\unexpanded\def\incrementstructurecounter{\dodoubleempty   \strc_counters_increment_interfaced}
+\unexpanded\def\decrementstructurecounter{\dodoubleempty   \strc_counters_decrement_interfaced}
 
-\unexpanded\def\incrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1, 1)}}
-\unexpanded\def\decrementedstructurecounter[#1]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",1,-1)}}
+\unexpanded\def\rawstructurecounter      {\dodoubleargument\strc_counters_raw_interfaced}
+\unexpanded\def\laststructurecounter     {\dodoubleargument\strc_counters_last_interfaced}
+\unexpanded\def\firststructurecounter    {\dodoubleargument\strc_counters_first_interfaced}
+\unexpanded\def\nextstructurecounter     {\dodoubleargument\strc_counters_next_interfaced}
+\unexpanded\def\prevstructurecounter     {\dodoubleargument\strc_counters_prev_interfaced}
+\unexpanded\def\structurecountersubs     {\dodoubleargument\strc_counters_subs_interfaced}
 
-\unexpanded\def\setsubstructurecounter      {\dodoubleargument\dosetsubstructurecounter}
-\unexpanded\def\setsubstructurecounterown   {\dodoubleargument\dosetsubstructurecounterown}
-\unexpanded\def\resetsubstructurecounter    {\dodoubleargument\doresetsubstructurecounter}
-\unexpanded\def\restartsubstructurecounter  {\dodoubleargument\dorestartsubstructurecounter}
-\unexpanded\def\incrementsubstructurecounter{\dodoubleargument\doincrementsubstructurecounter}
-\unexpanded\def\decrementsubstructurecounter{\dodoubleargument\dodecrementsubstructurecounter}
-           \def\rawsubstructurecounter      {\dodoubleargument\dorawsubstructurecounter}
+\unexpanded\def\savestructurecounter     {\dodoubleempty\strc_counters_save_interfaced}
+\unexpanded\def\restorestructurecounter  {\dodoubleempty\strc_counters_restore_interfaced}
 
-\def\dosetsubstructurecounter      [#1][#2]#3{\ctxcommand{setstructurecounter        ("\@@thestructurecounter{#1}",#2,\number#3)}}
-\def\dosetsubstructurecounterown   [#1][#2]#3{\ctxcommand{setownstructurecounter     ("\@@thestructurecounter{#1}",#2,"#3")}}
-\def\doresetsubstructurecounter      [#1][#2]{\ctxcommand{resetstructurecounter      ("\@@thestructurecounter{#1}",#2)}}
-\def\dorestartsubstructurecounter  [#1][#2]#3{\ctxcommand{restartstructurecounter    ("\@@thestructurecounter{#1}",#2,#3)}}
-\def\doincrementsubstructurecounter  [#1][#2]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",#2,1)}}
-\def\dodecrementsubstructurecounter  [#1][#2]{\ctxcommand{incrementedstructurecounter("\@@thestructurecounter{#1}",#2,-1)}}
-\def\dorawsubstructurecounter        [#1][#2]{\ctxcommand{structurecountervalue      ("\@@thestructurecounter{#1}",#2)}}
-\def\dolastsubstructurecounter       [#1][#2]{\ctxcommand{laststructurecounter       ("\@@thestructurecounter{#1}",#2)}}
-\def\dofirstsubstructurecounter      [#1][#2]{\ctxcommand{firststructurecounter      ("\@@thestructurecounter{#1}",#2)}}
-\def\dosubstructurecountersubs       [#1][#2]{\ctxcommand{structurecountersubs       ("\@@thestructurecounter{#1}",#2)}}
+\def\strc_counters_set_interfaced
+  {\ifthirdargument
+     \singleexpandafter\strc_counters_set_two
+   \else\ifsecondargument
+     \doubleexpandafter\strc_counters_set_one
+   \else
+     \doubleexpandafter\gobblethreeoptionals
+   \fi\fi}
 
-% The bypage check needs a multipass reference and therefore
-% we only check for it when we increment and know that some
-% content will be placed. We could also check for spreads.
+\def\strc_counters_setown_interfaced
+  {\ifthirdargument
+     \singleexpandafter\strc_counters_setown_two
+   \else\ifsecondargument
+     \doubleexpandafter\strc_counters_setown_one
+   \else
+     \doubleexpandafter\gobblethreeoptionals
+   \fi\fi}
 
-% to be checked !
+\def\strc_counters_restart_interfaced
+  {\ifthirdargument
+     \singleexpandafter\strc_counters_restart_two
+   \else\ifsecondargument
+     \doubleexpandafter\strc_counters_restart_one
+   \else
+     \doubleexpandafter\gobblethreeoptionals
+   \fi\fi}
 
-\def\docheckstructurecounterbypage#1% since we call lua to get the way we can as well do all in lua
-  {\doif{\structurecounterway{#1}}\v!page{\checkpagechange{#1}\ifpagechanged\resetstructurecounter[#1]\fi}}
+\def\strc_counters_reset_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_reset_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_reset_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
 
-\unexpanded\def\incrementstructurecounter[#1]%
-  {\docheckstructurecounterbypage{#1}%
-   \ctxcommand{addstructurecounter("\@@thestructurecounter{#1}",1,1)}}
+\def\strc_counters_increment_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_increment_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_increment_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
 
-\def\doincrementsubstructurecounter[#1][#2]%
-  {\docheckstructurecounterbypage{#1}%
-   \ctxcommand{addstructurecounter("\@@thestructurecounter{#1}",#2,1)}}
+\def\strc_counters_decrement_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_decrement_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_decrement_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_raw_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_raw_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_raw_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_last_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_last_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_last_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_first_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_first_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_first_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_prev_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_prev_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_prev_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_next_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_next_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_next_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_subs_interfaced
+  {\ifsecondargument
+     \singleexpandafter\strc_counters_subs_two
+   \else\iffirstargument
+     \doubleexpandafter\strc_counters_subs_one
+   \else
+     \doubleexpandafter\gobbletwooptionals
+   \fi\fi}
+
+\def\strc_counters_save_interfaced
+  {\iffirstargument
+     \expandafter\strc_counters_save_one
+   \else
+     \expandafter\gobbleoneoptional
+   \fi}
+
+\def\strc_counters_restore_interfaced
+  {\iffirstargument
+     \expandafter\strc_counters_restore_one
+   \else
+     \expandafter\gobbleoneoptional
+   \fi}
+
+\def\strc_counters_set_two           [#1][#2][#3]{\strc_counters_set_sub      {#1}{#2}{#3}}
+\def\strc_counters_setown_two        [#1][#2][#3]{\strc_counters_setown_sub   {#1}{#2}{#3}}
+\def\strc_counters_restart_two       [#1][#2][#3]{\strc_counters_restart_sub  {#1}{#2}{#3}}
+\def\strc_counters_reset_two             [#1][#2]{\strc_counters_reset_sub    {#1}{#2}}
+\def\strc_counters_increment_two         [#1][#2]{\strc_counters_increment_sub{#1}{#2}}
+\def\strc_counters_decrement_two         [#1][#2]{\strc_counters_decrement_sub{#1}{#2}}
+
+\def\strc_counters_raw_two               [#1][#2]{\strc_counters_raw_sub      {#1}{#2}}
+\def\strc_counters_last_two              [#1][#2]{\strc_counters_last_sub     {#1}{#2}}
+\def\strc_counters_first_two             [#1][#2]{\strc_counters_first_sub    {#1}{#2}}
+\def\strc_counters_next_two              [#1][#2]{\strc_counters_next_sub     {#1}{#2}}
+\def\strc_counters_prev_two              [#1][#2]{\strc_counters_prev_sub     {#1}{#2}}
+\def\strc_counters_subs_two              [#1][#2]{\strc_counters_subs_sub     {#1}{#2}}
+
+\def\strc_counters_set_one           [#1][#2][#3]{\strc_counters_set_sub      {#1}\plusone{#2}}
+\def\strc_counters_setown_one        [#1][#2][#3]{\strc_counters_setown_sub   {#1}\plusone{#2}}
+\def\strc_counters_restart_one       [#1][#2][#3]{\strc_counters_restart_sub  {#1}\plusone{#2}}
+\def\strc_counters_reset_one             [#1][#2]{\strc_counters_reset_sub    {#1}\plusone}
+\def\strc_counters_increment_one         [#1][#2]{\strc_counters_increment_sub{#1}\plusone}
+\def\strc_counters_decrement_one         [#1][#2]{\strc_counters_decrement_sub{#1}\plusone}
+
+\def\strc_counters_raw_one               [#1][#2]{\strc_counters_raw_sub      {#1}\plusone}
+\def\strc_counters_last_one              [#1][#2]{\strc_counters_last_sub     {#1}\plusone}
+\def\strc_counters_first_one             [#1][#2]{\strc_counters_first_sub    {#1}\plusone}
+\def\strc_counters_next_one              [#1][#2]{\strc_counters_next_sub     {#1}\plusone}
+\def\strc_counters_prev_one              [#1][#2]{\strc_counters_prev_sub     {#1}\plusone}
+\def\strc_counters_subs_one              [#1][#2]{\strc_counters_subs_sub     {#1}\plusone}
+
+\def\strc_counters_save_one                  [#1]{\strc_counters_save         {#1}}
+\def\strc_counters_restore_one               [#1]{\strc_counters_restore      {#1}}
+
+\unexpanded\def\strc_counters_set            #1#2{\strc_counters_set_sub      {#1}\plusone{#2}}
+\unexpanded\def\strc_counters_setown         #1#2{\strc_counters_setown_sub   {#1}\plusone{#2}}
+\unexpanded\def\strc_counters_restart        #1#2{\strc_counters_restart_sub  {#1}\plusone{#2}}
+\unexpanded\def\strc_counters_reset            #1{\strc_counters_reset_sub    {#1}\plusone}
+\unexpanded\def\strc_counters_increment        #1{\strc_counters_increment_sub{#1}\plusone}
+\unexpanded\def\strc_counters_decrement        #1{\strc_counters_decrement_sub{#1}\plusone}
+
+           \def\strc_counters_raw              #1{\strc_counters_raw_sub      {#1}\plusone}
+           \def\strc_counters_last             #1{\strc_counters_last_sub     {#1}\plusone}
+           \def\strc_counters_first            #1{\strc_counters_first_sub    {#1}\plusone}
+           \def\strc_counters_next             #1{\strc_counters_next_sub     {#1}\plusone}
+           \def\strc_counters_prev             #1{\strc_counters_prev_sub     {#1}\plusone}
+           \def\strc_counters_subs             #1{\strc_counters_subs_sub     {#1}\plusone}
+
+\unexpanded\def\strc_counters_set_sub      #1#2#3{\ctxcommand{setstructurecounter    ("\strc_counters_the{#1}",\number#2,\number#3)}}
+\unexpanded\def\strc_counters_setown_sub   #1#2#3{\ctxcommand{setownstructurecounter ("\strc_counters_the{#1}",\number#2,"#3")}}
+\unexpanded\def\strc_counters_restart_sub  #1#2#3{\ctxcommand{restartstructurecounter("\strc_counters_the{#1}",\number#2,\number#3)}}
+\unexpanded\def\strc_counters_reset_sub      #1#2{\ctxcommand{resetstructurecounter  ("\strc_counters_the{#1}",\number#2)}}
+\unexpanded\def\strc_counters_increment_sub  #1#2{\ctxcommand{addstructurecounter    ("\strc_counters_the{#1}",\number#2,1)}}
+\unexpanded\def\strc_counters_decrement_sub  #1#2{\ctxcommand{addstructurecounter    ("\strc_counters_the{#1}",\number#2,-1)}}
+
+           \def\strc_counters_raw_sub        #1#2{\ctxcommand{structurecountervalue("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_last_sub       #1#2{\ctxcommand{laststructurecounter ("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_first_sub      #1#2{\ctxcommand{firststructurecounter("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_next_sub       #1#2{\ctxcommand{nextstructurecounter ("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_prev_sub       #1#2{\ctxcommand{prevstructurecounter ("\strc_counters_the{#1}",\number#2)}}
+           \def\strc_counters_subs_sub       #1#2{\ctxcommand{structurecounterssub ("\strc_counters_the{#1}",\number#2)}}
+
+\unexpanded\def\strc_counters_save             #1{\ctxcommand{savestructurecounter   ("\strc_counters_the{#1}")}}
+\unexpanded\def\strc_counters_restore          #1{\ctxcommand{restorestructurecounter("\strc_counters_the{#1}")}}
+
+\unexpanded\def\strc_counters_incremented      #1{\ctxcommand{incrementedstructurecounter("\strc_counters_the{#1}",1, 1)}}
+\unexpanded\def\strc_counters_decremented      #1{\ctxcommand{incrementedstructurecounter("\strc_counters_the{#1}",1,-1)}}
+
+\unexpanded\def\showstructurecounter         [#1]{\ctxcommand{tracestructurecounter("\strc_counters_the{#1}")}}
+
+\unexpanded\def\incrementedstructurecounter  [#1]{\strc_counters_incremented{#1}} % expandable, no \dosingleargument
+\unexpanded\def\decrementedstructurecounter  [#1]{\strc_counters_decremented{#1}} % expandable, no \dosingleargument
+
+% public variants ... beware, for old cases, from now on the value variants are the
+% ones that are expandable
+
+\def\rawstructurecountervalue  [#1]{\strc_counters_raw_sub  {#1}\plusone}
+\def\laststructurecountervalue [#1]{\strc_counters_last_sub {#1}\plusone}
+\def\firststructurecountervalue[#1]{\strc_counters_first_sub{#1}\plusone}
+\def\nextstructurecountervalue [#1]{\strc_counters_next_sub {#1}\plusone}
+\def\prevstructurecountervalue [#1]{\strc_counters_prev_sub {#1}\plusone}
+
+\let\rawsubstructurecountervalue  \strc_counters_raw_two
+\let\lastsubstructurecountervalue \strc_counters_last_two
+\let\firstsubstructurecountervalue\strc_counters_first_two
+\let\nextsubstructurecountervalue \strc_counters_next_two
+\let\prevsubstructurecountervalue \strc_counters_prev_two
+
+% The bypage check needs a multipass reference and therefore we only check for it when we increment
+% and know that some content will be placed. We could also check for spreads.
+
+\unexpanded\def\strc_counters_increment_sub#1#2%
+  {% this will be combined into one lua call
+   \edef\m_strc_counters_way{\structurecounterway{#1}}%
+   \ifx\m_strc_counters_way\v!page
+     \checkpagechange{#1}%
+     \ifpagechanged
+       \strc_counters_reset{#1}%
+     \fi
+   \fi
+   \ctxcommand{addstructurecounter("\strc_counters_the{#1}",\number#2,1)}}
 
 \unexpanded\def\convertedstructurecounter
-  {\dodoubleempty\doconvertedstructurecounter}
+  {\dodoubleempty\strc_counters_converted}
 
-\def\doconvertedstructurecounter[#1][#2]%
+\def\strc_counters_converted[#1][#2]%
   {\begingroup
    \ifsecondargument\getparameters[\??nn#1][#2]\fi
    \ctxlua{structures.sections.prefixedconverted(
-     "\@@thestructurecounter{#1}",
+     "\strc_counters_the{#1}",
      {
        prefix        = "\structurecounterparameter{#1}\c!prefix",
        separatorset  = "\structurecounterparameter{#1}\c!prefixseparatorset",
@@ -242,7 +410,7 @@
 
 \def\directconvertedstructurecounter#1#2% name, type
   {\ctxlua{structures.sections.prefixedconverted(
-     "\@@thestructurecounter{#1}",
+     "\strc_counters_the{#1}",
      {
        prefix        = "\structurecounterparameter{#1}\c!prefix",
        separatorset  = "\structurecounterparameter{#1}\c!prefixseparatorset",
@@ -267,9 +435,9 @@
    )}}
 
 \unexpanded\def\convertedsubstructurecounter
-  {\dotripleempty\doconvertedsubstructurecounter}
+  {\dotripleempty\strc_counters_converted_sub}
 
-\def\doconvertedsubstructurecounter[#1][#2][#3]% #2 can be n or n:m
+\def\strc_counters_converted_sub[#1][#2][#3]% #2 can be n or n:m
   {\ifsecondargument
      \doconvertedstructurecounter[#1][\c!numbersegments=#2,#3]%
    \else
@@ -278,20 +446,32 @@
 
 \let\getstructurecounter\convertedstructurecounter
 
-\unexpanded\def\doifdefinedstructurecounter    #1{\doifdefined    {\csname\s!structurecounter#1\c!number\endcsname}}
-\unexpanded\def\doifundefinedstructurecounter  #1{\doifundefined  {\csname\s!number#1\c!number\endcsname}}
-\unexpanded\def\doifdefinedstructurecounterelse#1{\doifdefinedelse{\csname\s!number#1\c!number\endcsname}}
+\unexpanded\def\doifdefinedstructurecounter#1%
+  {\ifcsname\s!number#1\c!number\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifundefinedstructurecounter#1%
+  {\ifcsname\s!number#1\c!number\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\unexpanded\def\doifdefinedstructurecounterelse#1%
+  {\ifcsname\s!number#1\c!number\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \ifx\checkstructurecounter\undefined \def\checkstructurecounter[#1]{} \fi
 
 \def\checkstructurecounter[#1]{}
 
-%D What follows is a compatibility layer. This will be phased out (at
-%D least from core usage).
-
-% \def\reset      {\dosingleargument\doreset}
-% \def\doreset[#1]{\processcommalist[#1]\dodoreset}
-% \def\dodoreset#1{\csname\s!reset#1\endcsname}%
+%D What follows is a compatibility layer.
 
 \let \numberparameter       \structurecounterparameter % {name}\c!key
 
@@ -346,116 +526,7 @@
 \newconditional\hasstructurecountertitle
 \newconditional\hasstructurecounternumber
 
-% \def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]%
-%   {\begingroup
-%    %
-%    #2[\s!haslevel=1,#8]%
-%    \edef\hasstructurecountercaption{#3\s!hascaption}%
-%    \edef\hasstructurecountertitle  {#3\s!hastitle}%
-%    \edef\hasstructurecounternumber {#3\s!hasnumber}%
-%    \edef\hasstructurecounterlevel  {#3\s!haslevel}%
-%    %
-%    \edef\askedprefixsegments{#3\c!prefixsegments}%
-%    \ifx\askedprefixsegments\v!auto
-%      \edef\askedprefixsegments{\autostructureprefixsegments#3}%
-%    \fi
-%    %
-%    \edef\currentname{#3\c!name}%
-%    \ifx\currentname\empty
-%      \edef\currentname{#1}%
-%    \fi
-%    \edef\currentcounter{#3\s!counter}%
-%    \ifx\currentcounter\empty
-%      \let\currentcounter\currentname
-%    \fi
-%    %
-%    \doif{#3\c!title}\v!none{\setfalse\hasstructurecountercaption\setfalse\hasstructurecounternumber}% will become obsolete
-%    %
-%    \ifx\hasstructurecounternumber\v!yes % here due to previous test but best in callers
-%      \doincrementsubstructurecounter[\currentcounter][\hasstructurecounterlevel]%
-%    \fi
-%    %
-%    \ifx\hasstructurecountercaption\v!yes
-%      \edef\currentexpansion{#3\c!expansion}%
-%      \ifx\currentexpansion\s!xml
-%        \edef\currenttitle{#4\c!title}%
-%        \edef\currentbookmark{#4\c!bookmark}%
-%        \xmlstartraw
-%          \edef\currentlisttitle{#3\c!title}%
-%        \xmlstopraw
-%        \let\currentcoding\s!xml
-%      \else
-%        \ifx\currentexpansion\v!yes
-%          \edef\currenttitle{#3\c!title}%
-%          \edef\currentbookmark{#3\c!bookmark}%
-%        \else
-%          \edef\currenttitle{#4\c!title}%
-%          \edef\currentbookmark{#4\c!bookmark}%
-%        \fi
-%        \let\currentlisttitle\currenttitle
-%        \let\currentcoding\s!tex
-%      \fi
-%      \edef\currentlabel{#3\c!label}%
-%      \edef\currentreference{#3\c!reference}%
-%      \setnextinternalreference
-%      \xdef\laststructurecounternumber{\ctxlua{structures.lists.push{
-%         metadata = {
-%             kind     = "#1",
-%             name     = "\currentname",
-%             level    = structures.sections.currentlevel(),
-%             catcodes = \the\catcodetable,
-%         },
-%         references = {
-%             internal        = \nextinternalreference,
-%             reference       = "\currentreference",
-%             referenceprefix = "\referenceprefix",
-%             block           = "\currentsectionblock",
-%             section         = structures.sections.currentid(),
-%         },
-%         titledata = {
-%             label    = \!!bs\detokenize\expandafter{\currentlabel    }\!!es,
-%             title    = \!!bs\detokenize\expandafter{\currenttitle    }\!!es,
-%         \ifx\currentbookmark\currenttitle \else
-%             bookmark = \!!bs\detokenize\expandafter{\currentbookmark }\!!es,
-%         \fi
-%         \ifx\currentlisttitle\currenttitle \else
-%             list     = \!!bs\detokenize\expandafter{\currentlisttitle}\!!es,
-%         \fi
-%         },
-%     \ifx\hasstructurecounternumber\v!yes
-%         prefixdata = {
-%             prefix        = "#3\c!prefix",
-%             separatorset  = "#3\c!prefixseparatorset",
-%             conversion    = \!!bs#3\c!prefixconversion\!!es,
-%             conversionset = "#3\c!prefixconversionset",
-%             set           = "#3\c!prefixset",
-%         %   segments      = "#3\c!prefixsegments",
-%             segments      = "\askedprefixsegments",
-%             connector     = \!!bs#3\c!prefixconnector\!!es,
-%         },
-%         numberdata = {
-%             numbers       = structures.counters.compact("\currentcounter",nil,true),
-%             separatorset  = "#3\c!numberseparatorset",
-%             conversion    = \!!bs#3\c!numberconversion\!!es,
-%             conversionset = "#3\c!numberconversionset",
-%             starter       = \!!bs#3\c!numberstarter\!!es,
-%             stopper       = \!!bs#3\c!numberstopper\!!es,
-%             segments      = "#3\c!numbersegments",
-%         },
-%     \fi
-%         userdata = structures.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
-%        }
-%      }}%
-%      \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
-%      \xdef\laststructurecountersynchronize{\ctxlatelua{structures.lists.enhance(\laststructurecounternumber)}}%
-%    \else
-%      \glet\laststructurecounternumber     \relax
-%      \glet\laststructurecounterattribute  \attributeunsetvalue
-%      \glet\laststructurecountersynchronize\relax
-%    \fi
-%    \endgroup}
-
-\def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
+\unexpanded\def\dostructurecountercomponent#1#2#3#4#5#6#7[#8][#9]% maybe also nolist
   {\begingroup
    %
    #2[\s!haslevel=1,#8]%
@@ -529,7 +600,7 @@
      \fi
      %
      \setnextinternalreference
-     \xdef\laststructurecounternumber{\ctxlua{structures.lists.push{
+     \xdef\laststructurecounternumber{\ctxcommand{addtolist{
         metadata = {
             kind     = "#1",
             name     = "\currentname",
@@ -584,11 +655,11 @@
             segments      = "#3\c!numbersegments",
         },
     \fi
-        userdata = structures.helpers.touserdata(\!!bs\detokenize{#9}\!!es)
+        userdata = \!!bs\detokenize{#9}\!!es % will be converted to table at the lua end
        }
      }}%
-     \xdef\laststructurecounterattribute  {\ctxlua    {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
-     \xdef\laststructurecountersynchronize{\ctxlatelua{structures.lists.enhance(\laststructurecounternumber)}}%
+     \xdef\laststructurecounterattribute  {\ctxlua        {tex.write(structures.references.setinternalreference(nil,nil,\nextinternalreference))}}%
+     \xdef\laststructurecountersynchronize{\ctxlatecommand{enhancelist(\laststructurecounternumber)}}%
    \else
      \glet\laststructurecounternumber     \relax
      \glet\laststructurecounterattribute  \attributeunsetvalue

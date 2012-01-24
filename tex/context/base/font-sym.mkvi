@@ -228,4 +228,15 @@
 %D After which the font is active and the baselines and
 %D struts are set.
 
+%D \macros{doiffontcharelse}
+
+\unexpanded\def\doiffontcharelse#specification#unicode% this could be a direct lua call
+  {\begingroup
+   \font_basics_define_font_without_parameters{thedefinedfont}{#specification}%
+   \iffontchar\font#unicode\relax
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
 \protect \endinput

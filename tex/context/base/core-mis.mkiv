@@ -155,10 +155,7 @@
    \setlocalhsize
    \hsize\localhsize
    \dontcomplain
-  %\doifundefined{doitems\@@islocation}%
-  %  {\let\@@islocation\v!left}%
-  %\getvalue{doitems\@@islocation}}
-   \executeifdefined{doitems\@@islocation}{\let\@@islocation\v!left}}
+   \executeifdefined{doitems\@@islocation}{\getvalue{doitems\v!left}}}
 
 \definecomplexorsimpleempty\items
 

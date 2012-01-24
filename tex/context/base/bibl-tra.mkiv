@@ -743,8 +743,9 @@
 \def\doprocessbibtexentry#1{\typesetapublication{#1}}
 
 \def\typesetpubslist
-  {\preloadbiblist
-   \dobeginoflist
+  {\begingroup
+   \startpacked[\v!blank]%
+   \preloadbiblist
    % \the\initializebibdefinitions % COMMENTED
    \edef\currentlist{pubs}%
    \ctxlua{bibtex.hacks.reset(\number\bibtexoncemode)}%
@@ -760,10 +761,10 @@
         {\listparameter\c!extras}%
         {\listparameter\c!order}}%
    \ctxlua{bibtex.hacks.flush("\@@pbsorttype")}%
-   \doendoflist}
+   \stoppacked
+   \endgroup}
 
 \newif\ifinpublist
-
 
 \def\initializepubslist
   {\def\currentlist{pubs}%
@@ -873,15 +874,16 @@
      {\global\advance\bibtexcounter\plusone
       \def\currentpublicationkey{#1}%
       \ctxlua{bibtex.hacks.registerplaced("#1")}%
-      \dodolistelement
-        {pubs}%
-        {}%
-        {\number\bibtexcounter}%
-        {\expanded{\reference[\bibrefprefix#1]{\number\bibtexcounter}}%
-         \strut\dotypesetapublication{#1}\strut}%
-        {}%
-        {}}
+      \def\currentlist               {pubs}%
+      \let\currentlistentrynumber    \bibtexcounter
+      \let\currentlistentrytitle     \bibtexpubtext
+      \let\currentlistentrypagenumber\empty
+      \strc_lists_apply_renderingsetup}
      {}} % invalid
+
+\def\bibtexpubtext
+  {\expanded{\reference[\bibrefprefix\currentpublicationkey]{\number\bibtexcounter}}%
+   \strut\dotypesetapublication\currentpublicationkey\strut}
 
 \def\dotypesetapublication#1%
   {\bgroup

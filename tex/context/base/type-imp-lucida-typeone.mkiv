@@ -1,0 +1,134 @@
+%D \module
+%D   [       file=type-imp-lucida-typeone,
+%D        version=2010.06.21,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Lucida,
+%D         author=Mojca Miklavec \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[lucida-typeone]
+
+    \starttypescript [\s!serif] [lucida]
+        \definefontsynonym [LucidaBright]               [\s!name:LucidaBright]
+        \definefontsynonym [LucidaBright-Demi]          [\s!name:LucidaBright-Demi]
+        \definefontsynonym [LucidaBright-Italic]        [\s!name:LucidaBright-Italic]
+        \definefontsynonym [LucidaBright-DemiItalic]    [\s!name:LucidaBright-DemiItalic]
+        \definefontsynonym [LucidaBright-Oblique]       [\s!name:LucidaBright-Oblique]
+        \definefontsynonym [LucidaBrightSmallcaps]      [\s!name:LucidaBrightSmallcaps]
+        \definefontsynonym [LucidaBrightSmallcaps-Demi] [\s!name:LucidaBrightSmallcaps-Demi]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [lucida]
+        \definefontsynonym [LucidaSans]            [\s!name:LucidaSans]
+        \definefontsynonym [LucidaSans-Demi]       [\s!name:LucidaSans-Demi]
+        \definefontsynonym [LucidaSans-Bold]       [\s!name:LucidaSans-Bold]
+        \definefontsynonym [LucidaSans-Italic]     [\s!name:LucidaSans-Italic]
+        \definefontsynonym [LucidaSans-DemiItalic] [\s!name:LucidaSans-DemiItalic]
+        \definefontsynonym [LucidaSans-BoldItalic] [\s!name:LucidaSans-BoldItalic]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [lucida]
+        \definefontsynonym [LucidaTypewriter]            [\s!name:LucidaTypewriter]
+        \definefontsynonym [LucidaTypewriterBold]        [\s!name:LucidaTypewriterBold]
+        \definefontsynonym [LucidaTypewriterOblique]     [\s!name:LucidaTypewriterOblique]
+        \definefontsynonym [LucidaTypewriterBoldOblique] [\s!name:LucidaTypewriterBoldOblique]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [lucida]
+        \definefontsynonym [LucidaSans-Typewriter]            [\s!name:LucidaSans-Typewriter]
+        \definefontsynonym [LucidaSans-TypewriterBold]        [\s!name:LucidaSans-TypewriterBold]
+        \definefontsynonym [LucidaSans-TypewriterOblique]     [\s!name:LucidaSans-TypewriterOblique]
+        \definefontsynonym [LucidaSans-TypewriterBoldOblique] [\s!name:LucidaSans-TypewriterBoldOblique]
+    \stoptypescript
+
+    \starttypescript [calligraphy] [lucida]
+        \definefontsynonym [LucidaCalligraphy-Italic] [\s!name:LucidaCalligraphy-Italic]
+    \stoptypescript
+
+    \starttypescript [casual] [lucida]
+        \definefontsynonym [LucidaCasual]        [\s!name:LucidaCasual]
+        \definefontsynonym [LucidaCasual-Italic] [\s!name:LucidaCasual-Italic]
+    \stoptypescript
+
+    \starttypescript [handwriting] [lucida]
+        \definefontsynonym [LucidaHandwriting-Italic] [\s!name:LucidaHandwriting-Italic]
+    \stoptypescript
+
+    \starttypescript [fax] [lucida]
+        \definefontsynonym [LucidaFax]            [\s!name:LucidaFax]
+        \definefontsynonym [LucidaFax-Demi]       [\s!name:LucidaFax-Demi]
+        \definefontsynonym [LucidaFax-Italic]     [\s!name:LucidaFax-Italic]
+        \definefontsynonym [LucidaFax-DemiItalic] [\s!name:LucidaFax-DemiItalic]
+    \stoptypescript
+
+    \starttypescript [blackletter] [lucida]
+        \definefontsynonym [LucidaBlackletter] [\s!name:LucidaBlackletter]
+    \stoptypescript
+
+    \starttypescript [\s!math] [lucida]
+        \loadfontgoodies[lucida-typeone-math]
+        \definefontsynonym[\s!MathRoman][lucidamath@lucida-math]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [lucida] [\s!name]
+        \definefontsynonym [\s!Serif]            [LucidaBright]
+        \definefontsynonym [\s!SerifBold]        [LucidaBright-Demi]
+        \definefontsynonym [\s!SerifItalic]      [LucidaBright-Italic]
+        \definefontsynonym [\s!SerifBoldItalic]  [LucidaBright-DemiItalic]
+        \definefontsynonym [\s!SerifSlanted]     [LucidaBright-Oblique]
+        \definefontsynonym [\s!SerifBoldSlanted] [LucidaBright-DemiItalic]
+        \definefontsynonym [SerifCaps]           [LucidaBrightSmallcaps]
+        \definefontsynonym [SerifBoldCaps]       [LucidaBrightSmallcaps-Demi]
+    \stoptypescript
+
+    % Lucida Bright Sans
+
+    \starttypescript [\s!sans] [lucida] [\s!name]
+        \definefontsynonym [\s!Sans]            [LucidaSans]
+        \definefontsynonym [\s!SansBold]        [LucidaSans-Demi]
+        \definefontsynonym [\s!SansItalic]      [LucidaSans-Italic]
+        \definefontsynonym [\s!SansBoldItalic]  [LucidaSans-DemiItalic]
+        \definefontsynonym [\s!SansSlanted]     [LucidaSans-Italic]
+        \definefontsynonym [\s!SansBoldSlanted] [LucidaSans-DemiItalic]
+        \definefontsynonym [SansCaps]           [LucidaSans]
+    \stoptypescript
+
+    % Lucida Bright Sans Typewriter
+
+    \starttypescript [\s!mono] [lucida] [\s!name]
+        \definefontsynonym [\s!Mono]            [LucidaSans-Typewriter]
+        \definefontsynonym [\s!MonoBold]        [LucidaSans-TypewriterBold]
+        \definefontsynonym [\s!MonoItalic]      [LucidaSans-TypewriterOblique]
+        \definefontsynonym [\s!MonoBoldItalic]  [LucidaSans-TypewriterBoldOblique]
+        \definefontsynonym [\s!MonoSlanted]     [LucidaSans-TypewriterOblique]
+        \definefontsynonym [\s!MonoBoldSlanted] [LucidaSans-TypewriterBoldOblique]
+        \definefontsynonym [MonoCaps]           [LucidaSans-Typewriter]
+    \stoptypescript
+
+    %  Lucida Calligraphy
+
+    \starttypescript [calligraphy] [lucida] [\s!name]
+        \definefontsynonym [Calligraphy] [LucidaCalligraphy-Italic]
+    \stoptypescript
+
+    % Lucida Handwriting
+
+    \starttypescript [handwriting] [lucida] [\s!name]
+        \definefontsynonym [Handwriting] [LucidaHandwriting-Italic]
+    \stoptypescript
+
+    \starttypescript [lucida]
+        \definetypeface [lucida] [\s!rm] [\s!serif]       [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [\s!ss] [\s!sans]        [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [\s!tt] [\s!mono]        [lucida] [\s!default] [\s!features=\s!none]
+        \definetypeface [lucida] [\s!hw] [\s!handwriting] [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [\s!cg] [\s!calligraphy] [lucida] [\s!default] [\s!features=\s!default]
+        \definetypeface [lucida] [\s!mm] [\s!math]        [lucida] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

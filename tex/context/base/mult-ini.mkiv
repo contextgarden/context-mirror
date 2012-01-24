@@ -40,9 +40,10 @@
 %D \NC \bf prefix        \NC \bf meaning \NC \bf application     \NC\SR
 %D \HL
 %D \NC \type{\c!prefix!} \NC  c!         \NC constant (direct)   \NC\FR
+%D \NC \type{\k!prefix!} \NC  k!         \NC constant (indirect) \NC\FR
 %D \NC \type{\e!prefix!} \NC  e!         \NC element             \NC\MR
 %D \NC \type{\f!prefix!} \NC  f!         \NC file                \NC\MR
-%D \NC \type{\m!prefix!} \NC  m!         \NC age             \NC\MR
+%D \NC \type{\m!prefix!} \NC  m!         \NC age                 \NC\MR
 %D \NC \type{\s!prefix!} \NC  s!         \NC system              \NC\MR
 %D \NC \type{\v!prefix!} \NC  v!         \NC variable            \NC\MR
 %D \HL
@@ -54,6 +55,7 @@
 %D are obsolete (we had some 12 originally).
 
 \def\c!prefix!{c!}
+\def\k!prefix!{k!}
 \def\e!prefix!{e!}
 \def\f!prefix!{f!} % for the moment we keep this one
 \def\m!prefix!{m!}
@@ -419,22 +421,43 @@
 %D We already defined these auxiliary macros in the system
 %D modules. Starting with this module however, we have to take
 %D multi||linguality a bit more serious.
-%D
-%D The additional \type {\c!internal!n} prefixing is no longer
-%D needed as we now have separate interface files when dealing
-%D with setups (quick ref docs) and no longer reload the whole
-%D interface. (We no longer need the link back to the main
-%D internal interface.)
 
-\unexpanded\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
-\unexpanded\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
-\unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
-\unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
-\unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
-\unexpanded\def\docopyvalue  #1#2#3{\expandafter \def\csname#1#3\expandafter\endcsname\expandafter{\csname#2#3\endcsname}}
+%D In due time, when we exclusively use the parameter handler code, we can drop
+%D the backmapping (\type{\c!k...}) and make \type {\c!c...} similar to
+%D \type {\v!...}. In that case we can simply the following setters.
 
-\unexpanded\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
-\unexpanded\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
+\unexpanded\def\doletvalue     #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\dosetvalue     #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\unexpanded\def\doresetvalue   #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\unexpanded\def\doignorevalue#1#2#3{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+
+\unexpanded\def\docopyvalue#1#2#3%
+  {\ifcsname\k!prefix!#3\endcsname
+     \expandafter\def\csname#1\csname\k!prefix!#3\endcsname\expandafter\endcsname\expandafter
+       {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
+   \else
+     \expandafter\def\csname#1#3\expandafter\endcsname\expandafter
+       {\csname#2#3\endcsname}%
+   \fi}
+
+\startinterface english
+
+    \unexpanded\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
+    \unexpanded\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
+    \unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
+    \unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
+    \unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
+    \unexpanded\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
+    \unexpanded\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
+
+    \unexpanded\def\docopyvalue#1#2#3%
+      {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter
+         {\csname#2#3\endcsname}}
+
+\stopinterface
 
 %D We can now redefine some messages that will be
 %D introduced in the multi||lingual system module.
@@ -753,10 +776,17 @@
 
 %D For at the \LUA\ end (experiment):
 
-\def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+\def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}%
+                  \expandafter\gdef\csname\k!prefix!#2\endcsname{#1}} % backmapping from non english
 \def\do@sivar#1#2{\expandafter\gdef\csname\v!prefix!#1\endcsname{#2}}
 \def\do@siele#1#2{\expandafter\gdef\csname\e!prefix!#1\endcsname{#2}}
 \def\do@sicom#1#2{\expandafter\gdef\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}
+
+\startinterface english
+
+    \def\do@sicon#1#2{\expandafter\gdef\csname\c!prefix!#1\endcsname{#1}}
+
+\stopinterface
 
 %D So much for the basic multi||lingual interface commands. The
 %D macro's can be enhanced with more testing facilities, but
