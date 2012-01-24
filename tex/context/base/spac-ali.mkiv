@@ -545,6 +545,18 @@
    \fi
    \raggedcommand}
 
+\unexpanded\def\usealignparameter#1% faster local variant
+  {\edef\m_spac_align{#1\c!align}%
+   \ifx\m_spac_align\else
+     \expandafter\let\expandafter\raggedcommand\csname\??alignmentnormalcache\m_spac_align\endcsname
+     \ifx\raggedcommand\relax
+       \spac_align_add_to_cache\m_spac_align
+     \else
+       \expandafter\let\expandafter\updateraggedskips\csname\??alignmentraggedcache\m_spac_align\endcsname
+     \fi
+     \raggedcommand
+   \fi}
+
 % The keywords:
 
 \unexpanded\def\installalign#1#2% beware: commands must be unexpandable!
@@ -647,15 +659,15 @@
 
 \let\raggedbox\relax
 
-\def\dosetraggedvbox#1% can be more keys
+\def\dosetraggedvbox#1% can be more keys .. how about caching here (but seldom used)
   {\let\raggedbox\vbox
-   \processcommacommand[#1]\spac_align_set_ragged_box}
+   \processcommacommand[#1]\spac_align_set_ragged_vbox}
 
-\def\dosetraggedhbox#1% can be more keys
+\def\dosetraggedhbox#1% can be more keys .. how about caching here (but seldom used)
   {\let\raggedbox\hbox
    \processcommacommand[#1]\spac_align_set_ragged_hbox}
 
-\def\spac_align_set_ragged_box#1%
+\def\spac_align_set_ragged_vbox#1%
   {\ifcsname\??alignvertical#1\endcsname
      \csname\??alignvertical#1\endcsname
      \quitcommalist
@@ -666,6 +678,20 @@
      \csname\??alignhorizontal#1\endcsname
      \quitcommalist
    \fi}
+
+% \def\usealignparametersethbox#1%
+%   {\edef\p_spac_align{#1\c!align}%
+%    \let\raggedbox\hbox
+%    \ifx\p_spac_align\empty \else
+%      \processcommacommand[\p_spac_align]\spac_align_set_ragged_hbox
+%    \fi}
+%
+% \def\usealignparametersetvbox#1%
+%   {\edef\p_spac_align{#1\c!align}%
+%    \let\raggedbox\vbox
+%    \ifx\p_spac_align\empty \else
+%      \processcommacommand[\p_spac_align]\spac_align_set_ragged_vbox
+%    \fi}
 
 \setvalue{\??alignvertical  \v!left      }{\let\raggedbox\lbox}
 \setvalue{\??alignvertical  \v!right     }{\let\raggedbox\rbox}

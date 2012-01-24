@@ -582,7 +582,7 @@ local value            = (squote * Cs((entity + (1 - squote))^0) * squote) + (dq
 
 local endofattributes  = slash * close + close -- recovery of flacky html
 local whatever         = space * name * optionalspace * equal
-local wrongvalue       = C(P(1-whatever-close)^1 + P(1-close)^1) / attribute_value_error
+----- wrongvalue       = C(P(1-whatever-close)^1 + P(1-close)^1) / attribute_value_error
 ----- wrongvalue       = C(P(1-whatever-endofattributes)^1 + P(1-endofattributes)^1) / attribute_value_error
 ----- wrongvalue       = C(P(1-space-endofattributes)^1) / attribute_value_error
 local wrongvalue       = Cs(P(entity + (1-space-endofattributes))^1) / attribute_value_error
@@ -735,7 +735,7 @@ local function xmlconvert(data, settings)
         else
             errorhandler = errorhandler or xml.errorhandler
             if errorhandler then
-                xml.errorhandler("load",errorstr)
+                xml.errorhandler(format("load error: %s",errorstr))
             end
         end
     else
@@ -1301,7 +1301,7 @@ xml.tocdata(e,"error")
 --ldx]]--
 
 function xml.tocdata(e,wrapper)
-    local whatever = xmltostring(e.dt)
+    local whatever = type(e) == "table" and xmltostring(e.dt) or e or ""
     if wrapper then
         whatever = format("<%s>%s</%s>",wrapper,whatever,wrapper)
     end

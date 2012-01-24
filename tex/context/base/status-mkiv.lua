@@ -330,7 +330,7 @@ return {
         {
             filename = "file-mod",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "core-con",
@@ -495,7 +495,7 @@ return {
         {
             filename = "strc-tag",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-doc",
@@ -520,7 +520,7 @@ return {
         {
             filename = "strc-lst",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "strc-sec",
@@ -591,11 +591,6 @@ return {
             marktype = "mkiv",
             status   = "okay",
             comment  = "this needs to be checked occasionally",
-        },
-        {
-            filename = "spac-fnt",
-            marktype = "mkiv",
-            status   = "unknown",
         },
         {
             filename = "spac-par",
@@ -673,7 +668,8 @@ return {
         {
             filename = "page-brk",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "otr commands will be redone",
         },
         {
             filename = "page-col",
@@ -743,7 +739,8 @@ return {
         {
             filename = "page-mbk",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "might be extended",
         },
         {
             filename = "page-mul",
@@ -768,7 +765,7 @@ return {
         {
             filename = "page-mak",
             marktype = "mkvi",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "page-lin",
@@ -799,7 +796,8 @@ return {
         {
             filename = "buff-ver",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "check obsolete processbuffer"
         },
         {
             filename = "buff-par",
@@ -1137,7 +1135,8 @@ return {
         {
             filename = "meta-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "metapost code is always evolving",
         },
         {
             filename = "meta-tex",
@@ -1153,7 +1152,8 @@ return {
         {
             filename = "meta-pag",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "might get updated when its mp counterpart gets cleaned up",
         },
         {
             filename = "page-mrk",
@@ -1284,6 +1284,11 @@ return {
             filename = "chem-str",
             marktype = "mkiv",
             status   = "unknown",
+        },
+        {
+            filename = "typo-scr",
+            marktype = "mkiv",
+            status   = "okay",
         },
         {
             filename = "core-fnt",

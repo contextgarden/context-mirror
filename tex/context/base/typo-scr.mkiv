@@ -1,0 +1,104 @@
+%D \module
+%D   [       file=typo-scr,
+%D        version=2012.01.23, % very old ... 1995.10.10 .. moved from core-mis
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Scripts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Scripts}
+
+\unprotect
+
+%D I addition to the commands implemented here, we have alternative commands
+%D \type {shiftup} and \type {shiftdown} that can work across paragraphs.
+
+%D \macros
+%D   {low, high, lohi, hilo}
+%D
+%D Although \TEX\ is pretty well aware of super- and subscripts, its mechanism
+%D is mainly tuned for math mode. The next few commands take care of script
+%D texts both modes.
+%D
+%D \startbuffer
+%D The higher\high{one goes} the lower\low{one drops}, or\lohi{yes}{no}?
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+%D
+%D Note the different placement of \type {\lohi}, where we need a bit more
+%D space. The implementation looks a bit fuzzy, since some \type {\fontdimen}'s
+%D are involved to determine the optimal placement.
+
+% These might become parameters: \setupscripts but we need fo come up with
+% nice keys.
+
+\def\highvfraction   {0}
+\def\lowvfraction    {0}
+\def\highlowvfraction{.1}
+\def\highlowhfraction{.1}
+
+\unexpanded\def\low {\typo_scripts_high_low\lower\mathsubnormal{.48}\lowvfraction \t!sub}
+\unexpanded\def\high{\typo_scripts_high_low\raise\mathsupnormal{.86}\highvfraction\t!sup}
+
+\def\typo_scripts_high_low#1#2#3#4#5#6% textscript mathscript fraction extra tag
+  {\dontleavehmode
+   \begingroup
+   \scratchdimen\dimexpr#3\exheight+#4\exheight\relax
+   \kern\highlowhfraction\exheight
+   \setbox\scratchbox\hbox{#1\scratchdimen\hbox
+     {\ifx\fontsize\empty\ifmmode\mr\else\tx\fi\else\tx\fi
+      \dostarttagged
+      #5\empty#6%
+      \dostoptagged}}%
+   \ht\scratchbox\strutheight
+   \dp\scratchbox\strutdepth
+   \box\scratchbox
+   \endgroup}
+
+%D You can provide an optional keyword \type {left}, in which case the super and
+%D subscripts will be aligned in a way that permits placement at the left of a word
+%D (which means that it will be right aligned).
+%D
+%D \startbuffer
+%D \lohi{aha}{ah} test \lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah} test \lohi[left]{aha}{ah} test
+%D \lohi{aha}{ah} test\lohi{aha}{ah} test
+%D \lohi[left]{aha}{ah}test \lohi[left]{aha}{ah}test
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \getbuffer
+
+\unexpanded\def\lohi{\dosingleempty\typo_scripts_lohi}
+\unexpanded\def\hilo{\dosingleempty\typo_scripts_hilo}
+
+\def\typo_scripts_lohi[#1]#2#3%
+  {\dontleavehmode
+   \hbox
+     {\dostarttagged\t!subsup\empty
+      \setbox4\hbox{\typo_scripts_high_low\lower\mathsubnormal{.48}\highlowvfraction\t!sub{#2}}%
+      \setbox6\hbox{\typo_scripts_high_low\raise\mathsupnormal{.86}\highlowvfraction\t!sup{#3}}%
+      \doif{#1}{\v!left}
+        {\ifdim\wd4<\wd6
+           \setbox4\hbox to \wd6{\hss\box4}%
+         \else
+           \setbox6\hbox to \wd4{\hss\box6}%
+         \fi}%
+      \ifdim\wd4<\wd6
+        \wd4=\zeropoint\box4\box6
+      \else
+        \wd6=\zeropoint\box6\box4
+      \fi
+      \dostoptagged}}
+
+\def\typo_scripts_hilo[#1]#2#3%
+  {\typo_scripts_lohi[#1]{#3}{#2}}
+
+\unprotect \endinput

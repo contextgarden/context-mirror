@@ -216,7 +216,7 @@
 
 \let           \currentitemlevel               \!!zerocount % public
 \def           \currentnofitems                {\the\c_strc_itemgroups_max_items}
-\def           \currentitemnumber              {\dorawsubstructurecounter[\v_strc_itemgroups_counter][\currentitemlevel]} % public
+\def           \currentitemnumber              {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
 
 \newtoks       \itemgroupcommands              % maybe public
 
@@ -322,11 +322,14 @@
   {\letgvalue{\??itemgroupoption \currentitemgroup}\relax
    \letgvalue{\??itemgroupsetting\currentitemgroup}\relax}
 
+% These will become keywords. We will also add a feature to keep the while set
+% together.
+
 \definevspacing[\v!item @0]     [penalty:0]     % allow
 \definevspacing[\v!item @10000] [penalty:10000] % no
 \definevspacing[\v!item @-5]    [penalty:-5]
 \definevspacing[\v!item @5]     [penalty:5]
-\definevspacing[\v!item @500]   [penalty:500]
+\definevspacing[\v!item @500]   [penalty:500]   % discourage .. too low, 5000 is better
 
 \def\strc_itemgroups_insert_break_when_needed#break%
   {\ifconditional\c_strc_itemgroups_optimize
@@ -343,13 +346,13 @@
 \def\strc_itemgroups_insert_breakallow_indeed{\vspacing[\v!item @0]}
 \def\strc_itemgroups_insert_breakno_indeed   {\vspacing[\v!item @10000]}
 \def\strc_itemgroups_insert_break_indeed     {\flushnotes
-                                         \vspacing[\v!item @-5]}
+                                              \vspacing[\v!item @-5]}
 \def\strc_itemgroups_insert_nobreak_indeed   {\flushnotes
-                                         \ifinsidecolumns
-                                           \vspacing[\v!item @5]%
-                                         \else
-                                           \vspacing[\v!item @500]%
-                                         \fi}
+                                              \ifinsidecolumns
+                                                \vspacing[\v!item @5]%
+                                              \else
+                                                \vspacing[\v!item @500]%
+                                              \fi}
 
 \unexpanded\def\strc_itemgroups_process_options#options%
   {\processcommacommand[#options]\strc_itemgroups_process_option} % expansion of options is handy for xml
@@ -570,7 +573,7 @@
 
 \def\strc_itemgroups_increment_item_counter
   {\ifconditional\c_strc_itemgroups_sub \else \ifx\strc_itemgroups_extra_symbol\empty
-     \doincrementsubstructurecounter[\v_strc_itemgroups_counter][\currentitemlevel]%
+     \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
    \fi\fi}
 
 \unexpanded\def\strc_itemgroups_insert_item_counter
@@ -717,7 +720,7 @@
 %    \fi
 %
    \iftrialtypesetting
-     \savestructurecounter[\v_strc_itemgroups_counter]%
+     \strc_counters_save\v_strc_itemgroups_counter
    \fi
    \global\advance\c_strc_itemgroups_n_of_lists\plusone
    \c_strc_itemgroups_n_of_items\zerocount
@@ -761,10 +764,7 @@
    \ifnum\c_strc_itemgroups_nesting>\zerocount
      \settrue\c_strc_itemgroups_first
      \ifconditional\c_strc_itemgroups_continue \else
-       \dorestartsubstructurecounter
-         [\v_strc_itemgroups_counter]%
-         [\currentitemlevel]%
-         {\the\numexpr\itemgroupparameter\c!start-\plusone\relax}%
+       \strc_counters_restart_sub\v_strc_itemgroups_counter\currentitemlevel{\numexpr\itemgroupparameter\c!start-\plusone\relax}%
      \fi
    \fi
    \ifx\strc_itemgroups_used_symbol\empty
@@ -904,7 +904,7 @@
    \fi\fi
    % new test, needed in sidefloats (surfaced in volker's proceedings)
    \iftrialtypesetting
-     \restorestructurecounter[\v_strc_itemgroups_counter]%
+     \strc_counters_restore\v_strc_itemgroups_counter
      \global\advance\c_strc_itemgroups_n_of_lists\minusone
    \fi
    \global\advance\c_strc_itemgroups_nesting\minusone
@@ -1211,7 +1211,6 @@
         \else
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
-          \let\strc_itemgroups_extra_symbol\empty
         \fi
       \else
         \ifx\strc_itemgroups_extra_symbol\empty
@@ -1220,9 +1219,9 @@
         \else
           \useitemgroupstyleandcolor\c!symstyle\c!symcolor
           \strc_itemgroups_extra_symbol
-          \let\strc_itemgroups_extra_symbol\empty
         \fi
-      \fi}}
+      \fi}%
+   \let\strc_itemgroups_extra_symbol\empty}
 
 \def\strc_itemgroups_make_fitting_box
   {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\scaledpoint\relax % brr, sp
@@ -1515,6 +1514,8 @@
   %\c!symcolor=,
   %\c!headcolor=,
   %\c!beforehead=,
+   \c!symcolor=\itemgroupparameter\c!color, % new per 2012.01.17
+   \c!symstyle=\itemgroupparameter\c!style, % new per 2012.01.17
    \c!afterhead=\blank,
    \c!before=\blank,
    \c!inbetween=\blank,

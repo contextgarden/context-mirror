@@ -22,6 +22,8 @@ local function truefilename(name)
     end
 end
 
+environment.truefilename = truefilename
+
 function commands.truefilename(name)
     context(truefilename(name))
 end

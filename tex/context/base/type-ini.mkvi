@@ -19,11 +19,11 @@
 %D and then make the calling macros simplier (always assume fontclass) but
 %D apart from downward compatibility issues, it would make global, class
 %D spanning definitions a pain. Some day we will introduce a default class.
-
+%D
 %D The \type {type-ini} and \type {font-ini} modules come as a pair and have
 %D mutual dependencies.
-
-%D Todo: store them at the lua end
+%D
+%D At some point we will only store in memory so some code can go away.
 
 \unprotect
 
@@ -68,10 +68,10 @@
 
 \definesystemvariable{ts} % TypeScript
 
-% tricky ... here we push/pop
+% tricky ... here we push/pop ... so \let
 
-\chardef\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
-\chardef\typescriptstate \plustwo % 1: process 2: store
+\let\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
+\let\typescriptstate \plustwo % 1: process 2: store
 
 \unexpanded\def\starttypescriptcollection
   {\dosingleempty\font_typescripts_collection_start}
@@ -107,7 +107,7 @@
    \pushmacro\typescriptstate
    \pushmacro\stoptypescript
    \typescriptfoundfalse
-   \let\typescriptstate\plusone
+   \let\typescriptstate\plusone % why
    \iftracetypescripts
      \writestatus\m!fonts{request: [\m_font_typescripts_one] [\m_font_typescripts_two] [\m_font_typescripts_three]}%
    \fi
@@ -130,6 +130,18 @@
 \prependtoks
     \preloadtypescripts
 \to \everyjob
+
+% The next will change .. we can load a file inside a typescript but as the state is
+% 1 then, it doesn't get stored without doing that explicitly
+
+% \unexpanded\def\loadtypescriptfile[#1]%
+%   {\ctxcommand{loadtypescriptfile("#1")}}
+
+\unexpanded\def\loadtypescriptfile[#1]%
+  {\pushmacro\typescriptstate
+   \let\typescriptstate\plustwo % assumes 2 at the outer level
+   \ctxcommand{loadtypescriptfile("#1")}%
+   \popmacro\typescriptstate}
 
 \unexpanded\def\quittypescriptscanning
   {\settrue\c_font_typescripts_quit} % public
@@ -285,9 +297,6 @@
 \def\font_typescripts_start_process_again_two
   {\doifnextoptionalelse\font_typescripts_start_process_three\font_typescripts_start_process_yes}
 
-% \def\font_typescripts_start_process_again_three
-%   {\font_typescripts_start_process_yes}
-
 \let\font_typescripts_start_process_again_three\font_typescripts_start_process_yes
 
 \def\font_typescripts_start_process_indeed
@@ -385,6 +394,33 @@
     \font_helpers_reset_fontclass_math_families\fontclass
 \to \everybeforedefinetypeface
 
+%D This hooks into the font switcher:
+
+\settrue\autotypescripts
+
+\unexpanded\def\trycurrentfontclass#typeface% this will move to type-ini
+  {\ifconditional\autotypescripts
+     \usetypescript[#typeface]%
+     \ifcsname\??fontclassyes#typeface\endcsname
+       \edef\fontclass{#typeface}%
+     \else
+       \iftracetypescripts\writestatus\m!fonts{auto load typescript file 1: [#typeface]}\fi
+       \usetypescriptfile[#typeface]%
+       \usetypescript[#typeface]%
+       \ifcsname\??fontclassyes#typeface\endcsname
+         \edef\fontclass{#typeface}%
+       \else
+         % todo: message
+         \letvalueempty{\??fontclassnop#typeface}%
+       \fi
+     \fi
+   \else
+     % todo: message
+     \letvalueempty{\??fontclassnop#typeface}%
+   \fi}
+
+%D Now we define:
+
 \def\font_typefaces_define
   {\iffifthargument
      \singleexpandafter\font_typefaces_define_a
@@ -400,7 +436,16 @@
   {\iftracetypescripts\writestatus\m!fonts{define: [#name] [#style] [#fontshape] [#fontname]}\fi
    \font_typefaces_define_indeed[#name][#style]%
    \font_typefaces_defining_start{#name}{#style}{#settings}%
-     \font_typescripts_use_one[#fontshape][#fontname][\s!name,\s!default]%
+     \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+     \iftypescriptfound
+       % we're okay
+     \else
+       \ifconditional\autotypescripts
+         \iftracetypescripts\writestatus\m!fonts{auto load typescript file 2: [#fontname]}\fi
+         \usetypescriptfile[#fontname]%
+         \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+       \fi
+     \fi
      \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
    \font_typefaces_defining_stop}
 
@@ -428,18 +473,17 @@
       \fi}}
 
 \def\font_typefaces_defining_start#name#style#settings%
-  {\let\@@tsrscale   \plusone
-   \let\@@tsfeatures \empty
-   \let\@@tsfallbacks\empty
-   \let\@@tsgoodies  \empty
-   \let\@@tsdirection\empty
-   \geteparameters[\??ts][#settings]%
+  {\let\@@tsrscale    \!!plusone % as we push/pop
+   \let\@@tsfeatures  \empty
+   \let\@@tsfallbacks \empty
+   \let\@@tsgoodies   \empty
+   \let\@@tsdirection \empty
+   \let\@@tsdesignsize\empty
+   \geteparameters[\??ts][#settings]% todo raw
    \pushmacro\fontclass
    \pushmacro\fontclassstyle
    \setcurrentfontclass{#name}%
-   \pushmacro\relativefontsize % hm, can be a counter
-   \let\relativefontsize\@@tsrscale % still needed ?
-   \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdirection
+   \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
    \the\everybeforedefinetypeface}
 
 \def\tsvar#key#default% undocumented and unofficial
@@ -451,7 +495,6 @@
 
 \def\font_typefaces_defining_stop
   {\the\everyafterdefinetypeface
-   \popmacro\relativefontsize
    \popmacro\fontclassstyle
    \popmacro\fontclass}
 
@@ -495,9 +538,11 @@
    \fi \fi \fi
    \ifmmode\mr\else\tf\fi} % needed ?
 
-\unexpanded\def\usetypefile[#type]% recurses on path ! % no storage? obsolete?
-  {\edef\currenttypefile{#type}%
-   \ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
+% obsolete
+%
+% \unexpanded\def\usetypefile[#type]% recurses on path ! % no storage
+%   {\edef\currenttypefile{#type}%
+%    \ctxcommand{doprocesstypescriptfile("\currenttypefile")}}
 
 %D For Taco:
 %D
@@ -535,7 +580,7 @@
 %      \expandafter\let\expandafter\relativefontid\csname\??typescriptrelatives\fontclass\endcsname
 %    \else
 %      \expandafter\normalxdef\csname\??typescriptrelatives\fontclass\endcsname{\the\lastfontid}%
-%      \let\relativefontid\empty
+%      \let\relativefontid\minusone
 %    \fi}
 
 \def\v_font_string_d % default fontstyle (expands to \s!Serif in font-ini)

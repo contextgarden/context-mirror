@@ -113,7 +113,7 @@ end
 
 job.register('structures.lists.collected', tobesaved, initializer)
 
-function lists.push(t)
+function lists.addto(t)
     local m = t.metadata
     local r = t.references
     local i = (r and r.internal) or 0 -- brrr
@@ -129,8 +129,11 @@ function lists.push(t)
     if setcomponent then
         setcomponent(t) -- might move to the tex end
     end
-    --
-    context(p)
+    local u = t.userdata
+    if u and type(u) == "string" then
+        t.userdata = helpers.touserdata(u) -- nicer at the tex end
+    end
+    return p
 end
 
 function lists.doifstoredelse(n)
@@ -490,7 +493,7 @@ function lists.process(specification)
         local r = lists.result[i]
         local m = r.metadata
         local s = specials and r.numberdata and specials[zerostrippedconcat(r.numberdata.numbers,".")] or ""
-        context.processlistofstructure(m.name,m.kind,i,s)
+        context.strclistsentryprocess(m.name,m.kind,i,s)
     end
 end
 
@@ -504,13 +507,7 @@ function lists.userdata(name,r,tag) -- to tex (todo: xml)
         local userdata, metadata = result.userdata, result.metadata
         local str = userdata and userdata[tag]
         if str then
---~             local catcodes = metadata and metadata.catcodes
---~             if catcodes then
---~                 context.sprint(catcodes,str)
---~             else
---~                 context(str)
---~             end
-            helpers.title(str,metadata)
+            return str, metadata
         end
     end
 end
@@ -523,20 +520,18 @@ function lists.uservalue(name,r,tag,default) -- to lua
 end
 
 function lists.size()
-    context(#lists.result)
+    return #lists.result
 end
 
 function lists.location(n)
     local l = lists.result[n]
-    context(l.references.internal or n)
+    return l.references.internal or n
 end
 
 function lists.label(n,default)
     local l = lists.result[n]
     local t = l.titledata
-    if t then
-        context(t.label or default or "")
-    end
+    return t and t.label or default or ""
 end
 
 function lists.sectionnumber(name,n,spec)
@@ -589,6 +584,28 @@ function lists.savedprefixednumber(name,n)
     end
 end
 
+function lists.haspagedata(name,n)
+    local data = lists.result[n]
+    if data then
+        local references = data.references
+        if references and references.realpage then -- or references.pagedata
+            return true
+        end
+    end
+    return false
+end
+
+function lists.hasnumberdata(name,n)
+    local data = lists.result[n]
+    if data then
+        local numberdata = data.numberdata
+        if numberdata then
+            return true
+        end
+    end
+    return false
+end
+
 function lists.prefix(name,n,spec)
     helpers.prefix(lists.result[n],spec)
 end
@@ -605,9 +622,9 @@ function lists.realpage(name,n)
     local data = lists.result[n]
     if data then
         local references = data.references
-        context(references and references.realpage or 0)
+        return references and references.realpage or 0
     else
-        context(0)
+        return 0
     end
 end
 
@@ -655,4 +672,45 @@ function references.specials.order(var,actions) -- references.specials !
             return references.specials.page(var,actions)
         end
     end
+end
+
+-- interface (maybe strclistpush etc)
+
+commands.pushlist           = lists.pushnesting
+commands.poplist            = lists.popnesting
+commands.enhancelist        = lists.enhance
+commands.processlist        = lists.process
+commands.analyzelist        = lists.analyze
+commands.listtitle          = lists.title
+commands.listprefixednumber = lists.prefixednumber
+commands.listprefixedpage   = lists.prefixedpage
+
+
+function commands.addtolist   (...) context(lists.addto   (...)) end
+function commands.listsize    (...) context(lists.size    (...)) end
+function commands.listlocation(...) context(lists.location(...)) end
+function commands.listlabel   (...) context(lists.label   (...)) end
+function commands.listrealpage(...) context(lists.realpage(...)) end
+
+function commands.listuserdata(...)
+    local str, metadata = lists.userdata(...)
+    if str then
+     -- local catcodes = metadata and metadata.catcodes
+     -- if catcodes then
+     --     context.sprint(catcodes,str)
+     -- else
+     --     context(str)
+     -- end
+        helpers.title(str,metadata)
+    end
+end
+
+-- we could also set variables
+
+function commands.doiflisthaspageelse(...)
+    commands.doifelse(lists.haspagedata(...))
+end
+
+function commands.doiflisthasnumberelse(...)
+    commands.doifelse(lists.hasnumberdata(...))
 end

@@ -345,6 +345,8 @@
 \newdimen\scratchdepth
 \newdimen\scratchoffset
 \newdimen\scratchdistance
+\newdimen\scratchhsize
+\newdimen\scratchvsize
 
 %D More allocations:
 
@@ -711,6 +713,19 @@
 \let\ifconditional \ifcase
 
 \let\then\relax % so that we can say: \ifnum1>2\then -)
+
+%D \macros
+%D   {newmacro,setnewmacro,newfraction}
+%D
+%D Let's be complete and also introduce some definers. These are
+%D not mandate but handy for grepping.
+
+\normalprotected\def\newmacro   #1{\let#1\empty}
+\normalprotected\def\setnewmacro#1{\let#1}
+
+\def\!!plusone{1}
+
+\normalprotected\def\newfraction#1{\let#1\!!plusone}
 
 %D It would be handy to have a primitive \unless\ifcase because
 %D then we could use nicer values. Anyhow, this conditional code

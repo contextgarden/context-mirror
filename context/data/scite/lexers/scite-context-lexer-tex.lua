@@ -207,6 +207,10 @@ local p_special              = S("#()[]<>=\"")
 local p_extra                = S("`~%^&_-+/\'|")
 local p_text                 = iwordtoken^1 --maybe add punctuation and space
 
+local p_reserved             = backslash * (
+                                    P("??") + R("az") * P("!")
+                               ) * cstoken^1
+
 local p_number               = context.patterns.real
 local p_unit                 = P("pt") + P("bp") + P("sp") + P("mm") + P("cm") + P("cc") + P("dd")
 
@@ -267,6 +271,7 @@ if option == 1 then
     p_helper                 = p_helper^1
     p_primitive              = p_primitive^1
     p_ifprimitive            = p_ifprimitive^1
+    p_reserved               = p_reserved^1
 
 elseif option == 2 then
 
@@ -282,6 +287,7 @@ elseif option == 2 then
     p_helper                 = (p_helper      * included)^1
     p_primitive              = (p_primitive   * included)^1
     p_ifprimitive            = (p_ifprimitive * included)^1
+    p_reserved               = (p_reserved    * included)^1
 
 end
 
@@ -297,11 +303,13 @@ local constant               = token('data',      p_constant   )
 local helper                 = token('plain',     p_helper     )
 local primitive              = token('primitive', p_primitive  )
 local ifprimitive            = token('primitive', p_ifprimitive)
+local reserved               = token('reserved',  p_reserved   )
 local csname                 = token('user',      p_csname     )
 local grouping               = token('grouping',  p_grouping   )
 local number                 = token('number',    p_number     )
                              * token('constant',  p_unit       )
 local special                = token('special',   p_special    )
+local reserved               = token('reserved',  p_reserved   ) -- reserved internal preproc
 local extra                  = token('extra',     p_extra      )
 local invisible              = token('invisible', p_invisible  )
 local text                   = token('default',   p_text       )
@@ -431,6 +439,7 @@ _rules = {
     { "command",     command     },
     { "primitive",   primitive   },
     { "ifprimitive", ifprimitive },
+    { "reserved",    reserved    },
     { "csname",      csname      },
  -- { "whatever",    specialword }, -- not yet, crashes
     { "grouping",    grouping    },

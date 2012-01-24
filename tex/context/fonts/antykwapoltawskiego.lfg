@@ -1,5 +1,5 @@
 return {
-    name = "antykwapoltawskiego",
+    name = "antykwa-poltawskiego",
     version = "1.00",
     comment = "Goodies that complement Antykwa Poltawskiego, one of Mojca's favourites",
     author = "Hans & Mojca",

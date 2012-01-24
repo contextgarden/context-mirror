@@ -119,7 +119,7 @@
 \installswitchcommandhandler \??layout {layout} \??layout
 
 \appendtoks
-    \letlayoutparameter\c!state\v!start
+    \doifnothing{\strictlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
 \to \everydefinelayout
 
 \appendtoks
@@ -748,8 +748,8 @@
 
 \let\changetolayout\page_layouts_change % also public
 
-\def\v_real_page_normal  {\the\realpageno}
-\def\v_real_page_reverse{-\the\realpageno}
+\def\v_real_page_normal {\the\realpageno}
+\def\v_real_page_reverse{-\the\numexpr\lastpage-\realpageno\relax}
 
 \def\v_real_page_odd_or_even
   {\ifodd\pagenoshift
@@ -766,18 +766,45 @@
    \else\ifnum\plusone=\realpageno
      \v!first
    \else
-     \s!unknown
+     \__unknown__
    \fi\fi}
 
+\let\v_page_layouts_pre_check\relax
+
 \def\page_layouts_check_default_indeed#1%
-  {\doif{\namedlayoutparameter#1\c!state}\v!start{\page_layouts_change{#1}}}
+  {\edef\m_page_check{#1}
+   \edef\m_page_state{\namedlayoutparameter\m_page_check\c!state}%
+   \ifx\m_page_state\v!start
+     \global\let\v_page_layouts_pre_check\currentlayout
+     \global\let\currentlayout\m_page_check
+     \page_layouts_synchronize
+   \else\ifx\m_page_state\v!repeat
+     \global\let\v_page_layouts_pre_check\relax
+     \global\let\currentlayout\m_page_check
+     \page_layouts_synchronize
+   \fi\fi}
+
+\def\page_layouts_check_revert
+  {\global\let\currentlayout\v_page_layouts_pre_check
+   \global\let\v_page_layouts_pre_check\relax
+   \page_layouts_synchronize}
 
 \def\page_layouts_check_default
-  {\ifcsname\namedlayouthash\v_real_page_normal     \c!state\endcsname \page_layouts_check_default_indeed\v_real_page_normal     \else
-   \ifcsname\namedlayouthash\v_real_page_reverse    \c!state\endcsname \page_layouts_check_default_indeed\v_real_page_revers     \else
-   \ifcsname\namedlayouthash\v_real_page_named      \c!state\endcsname \page_layouts_check_default_indeed\v_real_page_named      \else
-   \ifcsname\namedlayouthash\v_real_page_current    \c!state\endcsname \page_layouts_check_default_indeed\v_real_page_current    \else
-   \ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname \page_layouts_check_default_indeed\v_real_page_odd_or_even\fi\fi\fi\fi\fi}
+  {\ifcsname\namedlayouthash\v_real_page_normal\c!state\endcsname
+     \page_layouts_check_default_indeed\v_real_page_normal
+   \else\ifcsname\namedlayouthash\v_real_page_reverse\c!state\endcsname
+     \page_layouts_check_default_indeed\v_real_page_reverse
+   \else\ifcsname\namedlayouthash\v_real_page_named\c!state\endcsname
+     \page_layouts_check_default_indeed\v_real_page_named
+   \else\ifcsname\namedlayouthash\v_real_page_current\c!state\endcsname
+     \page_layouts_check_default_indeed\v_real_page_current
+   \else\ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname
+     \page_layouts_check_default_indeed\v_real_page_odd_or_even
+   \else\ifx\v_page_layouts_pre_check\relax
+     % okay
+   \else
+     \page_layouts_check_revert
+   \fi\fi\fi\fi\fi\fi}
 
 \def\installlayoutmethod#1#2%
   {\setgvalue{\??layoutmethod#1}{#2}}
@@ -899,6 +926,8 @@
 %D \macros
 %D   {adaptlayout}
 
+\installcorenamespace{pageadaptations}
+
 \newdimen\d_page_adepts_pushed_text_height
 \newdimen\d_page_adepts_pushed_footer_height
 \newdimen\d_page_adepts_height
@@ -915,7 +944,7 @@
    \fi}
 
 \def\page_adapts_layout_register#1#2%
-  {\setgvalue{\??za:#2}{\page_adapts_layout_indeed{#1}}}
+  {\setgvalue{\??pageadaptations#2}{\page_adapts_layout_indeed{#1}}}
 
 \def\page_adapts_layout_indeed#1%
   {\getparameters[\??za][\c!height=\zeropoint,\c!lines=0,#1]%
@@ -944,13 +973,13 @@
    \global\let\page_adepts_pop\page_adepts_pop_indeed}
 
 \def\page_adapts_check
-  {\ifcsname\??za:\the\realpageno\endcsname
+  {\ifcsname\??pageadaptations\the\realpageno\endcsname
      \page_adapts_check_indeed
    \fi}
 
 \def\page_adapts_check_indeed
-  {\getvalue{\??za:\the\realpageno}%
-   \letvalue{\??za:\the\realpageno}\relax}
+  {\getvalue{\??pageadaptations\the\realpageno}%
+   \letvalue{\??pageadaptations\the\realpageno}\relax}
 
 \def\page_adepts_push_indeed
   {\global\d_page_adepts_pushed_text_height  \textheight

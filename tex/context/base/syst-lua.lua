@@ -93,7 +93,7 @@ function commands.doifdimenstringelse(str)
     testcase(lpegmatch(pattern,str))
 end
 
-function commands.firstinlist(str)
+function commands.firstinset(str)
     local first = match(str,"^([^,]+),")
     context(first or str)
 end

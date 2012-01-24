@@ -860,11 +860,11 @@ local function checkmath(root) -- we can provide utf.toentities as an option
                 else
                     local tg = di.tg
                     if tg == "mleft" then
-                        attributes.left   = tostring(di.data[1].data[1])
+                        attributes.left   = tostring(di.data[1].data[1].content)
                     elseif tg == "mmiddle" then
-                        attributes.middle = tostring(di.data[1].data[1])
+                        attributes.middle = tostring(di.data[1].data[1].content)
                     elseif tg == "mright" then
-                        attributes.right  = tostring(di.data[1].data[1])
+                        attributes.right  = tostring(di.data[1].data[1].content)
                     else
                         n = n + 1
                         di.__i__ = n

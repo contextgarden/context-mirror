@@ -10,6 +10,11 @@ if not modules then modules = { } end modules ['strc-doc'] = {
 -- we need to better split the lua/tex end
 -- we need to freeze and document this module
 
+-- keep this as is:
+--
+-- in section titles by default a zero aborts, so there we need: sectionset=bagger with \definestructureprefixset [bagger] [section-2,section-4] []
+-- in lists however zero's are ignored, so there numbersegments=2:4 gives result
+
 local next, type = next, type
 local format, gsub, find, gmatch, match = string.format, string.gsub, string.find, string.gmatch, string.match
 local concat = table.concat

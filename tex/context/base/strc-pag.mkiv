@@ -90,13 +90,13 @@
 \def\dosetupsubpagenumber [#1]{\dosavepagenumberstate\s!subpage \dosetupstructurecounter[\s!subpage ][#1]\the\everysetupsubpagenumber }
 
 \def\resetrealpagenumber {} % not permitted
-\def\resetuserpagenumber {\resetstructurecounter[\s!userpage]}
-\def\resetsubpagenumber  {\resetstructurecounter[\s!subpage]}
+\def\resetuserpagenumber {\strc_counters_reset\s!userpage}
+\def\resetsubpagenumber  {\strc_counters_reset\s!subpage}
 
 \appendtoks
-    \setstructurecounter[\s!realpage]\realpageno
-    \setstructurecounter[\s!userpage]\userpageno
-    \setstructurecounter[\s!subpage] \subpageno
+    \strc_counters_set\s!realpage\realpageno
+    \strc_counters_set\s!userpage\userpageno
+    \strc_counters_set\s!subpage \subpageno
 \to \everyinitializepagecounters
 
 \let\setuppagenumber\setupuserpagenumber
@@ -139,20 +139,6 @@
 
 % Counters
 
-% \def\firstpage    {1} \def\prevpage    {1} \def\nextpage    {1} \def\lastpage    {1}
-% \def\firstuserpage{1} \def\prevuserpage{1} \def\nextuserpage{1} \def\lastuserpage{1}
-% \def\firstsubpage {1} \def\prevsubpage {1} \def\nextsubpage {1} \def\lastsubpage {1}
-
-% \def\firstrealpage{\firststructurecounter[\s!realpage]}
-% \def\prevrealpage {\prevstructurecounter [\s!realpage]}
-% \def\nextrealpage {\nextstructurecounter [\s!realpage]}
-% \def\lastrealpage {\laststructurecounter [\s!realpage]}
-
-% \let\firstpage\firstrealpage
-% \let\prevpage \prevrealpage
-% \let\nextpage \nextrealpage
-% \let\lastpage \lastrealpage
-
 \def\firstrealpagenumber{\convertedstructurecounter[\s!realpage][\c!type=\v!first]}
 \def\firstuserpagenumber{\convertedstructurecounter[\s!userpage][\c!type=\v!first]}
 \def\firstsubpagenumber {\convertedstructurecounter[\s!subpage ][\c!type=\v!first]}
@@ -169,21 +155,21 @@
 \def\nextuserpagenumber {\convertedstructurecounter[\s!userpage][\c!type=\v!next]}
 \def\nextsubpagenumber  {\convertedstructurecounter[\s!subpage ][\c!type=\v!next]}
 
-\def\firstrealpage{\firststructurecounter[\s!realpage]}
-\def\firstuserpage{\firststructurecounter[\s!userpage]}
-\def\firstsubpage {\firststructurecounter[\s!subpage ]}
+\def\firstrealpage{\strc_counters_first\s!realpage}
+\def\firstuserpage{\strc_counters_first\s!userpage}
+\def\firstsubpage {\strc_counters_first\s!subpage }
 
-\def\prevrealpage {\prevstructurecounter [\s!realpage]}
-\def\prevuserpage {\prevstructurecounter [\s!userpage]}
-\def\prevsubpage  {\prevstructurecounter [\s!subpage ]}
+\def\prevrealpage {\strc_counters_prev \s!realpage}
+\def\prevuserpage {\strc_counters_prev \s!userpage}
+\def\prevsubpage  {\strc_counters_prev \s!subpage }
 
-\def\nextrealpage {\nextstructurecounter [\s!realpage]}
-\def\nextuserpage {\nextstructurecounter [\s!userpage]}
-\def\nextsubpage  {\nextstructurecounter [\s!subpage ]}
+\def\nextrealpage {\strc_counters_next \s!realpage}
+\def\nextuserpage {\strc_counters_next \s!userpage}
+\def\nextsubpage  {\strc_counters_next \s!subpage }
 
-\def\lastrealpage {\laststructurecounter [\s!realpage]}
-\def\lastuserpage {\laststructurecounter [\s!userpage]}
-\def\lastsubpage  {\laststructurecounter [\s!subpage ]}
+\def\lastrealpage {\strc_counters_last \s!realpage}
+\def\lastuserpage {\strc_counters_last \s!userpage}
+\def\lastsubpage  {\strc_counters_last \s!subpage }
 
 \let\firstpage\firstrealpage
 \let\prevpage \prevrealpage
@@ -198,7 +184,7 @@
 
 % Renderers:
 
-\def\pagenumber         {\rawstructurecounter[\s!userpage]}
+\def\pagenumber         {\strc_counters_raw\s!userpage}
 \def\prefixedpagenumber {\directconvertedstructurecounter\s!userpage\empty} % \userpagenumber
 
 \def\realpagenumber     {\directconvertedstructurecounter\s!realpage\empty}
@@ -222,9 +208,9 @@
 \def\nextsubpagenumber  {\directconvertedstructurecounter\s!subpage \v!next}
 
 \def\dodeincrementpageboundcounters % only at the end
-   {\decrementstructurecounter[\s!realpage]%
-    \decrementstructurecounter[\s!userpage]%
-    \decrementstructurecounter[\s!subpage ]}
+   {\strc_counters_decrement\s!realpage
+    \strc_counters_decrement\s!userpage
+    \strc_counters_decrement\s!subpage}
 
 \def\doincrementpageboundcounters
   {\incrementpagenumber
@@ -258,16 +244,16 @@
 
 % Realpage and subpage numbers:
 
-\def\setnextrealpageno{\global\realpageno\incrementedstructurecounter[\s!realpage]\relax}
-\def\setnextsubpageno {\global\subpageno \incrementedstructurecounter[\s!subpage ]\relax}
+\def\setnextrealpageno{\global\realpageno\strc_counters_incremented\s!realpage\relax}
+\def\setnextsubpageno {\global\subpageno \strc_counters_incremented\s!subpage \relax}
 
-% Page numbers: (can move to lua)
+% Page numbers: (can move to lua) ... inconsistent names
 
-\def\dodecrementpagenumber {\global\userpageno\decrementedstructurecounter[\s!userpage]\relax}
-\def\doincrementpagenumber {\global\userpageno\incrementedstructurecounter[\s!userpage]\relax}
+\def\dodecrementpagenumber {\global\userpageno\strc_counters_decremented\s!userpage\relax}
+\def\doincrementpagenumber {\global\userpageno\strc_counters_incremented\s!userpage\relax}
 
-\def\decrementsubpagenumber{\global\subpageno \decrementedstructurecounter[\s!subpage ]\relax}
-\def\incrementsubpagenumber{\global\subpageno \incrementedstructurecounter[\s!subpage ]\relax}
+\def\decrementsubpagenumber{\global\subpageno \strc_counters_decremented\s!subpage \relax}
+\def\incrementsubpagenumber{\global\subpageno \strc_counters_incremented\s!subpage \relax}
 
 \def\dosynchronizepagenumber{\global\let\@@pnstate\v!start}
 
@@ -430,7 +416,7 @@
     \edef\askeduserpagenumber{\structurecounterparameter\s!userpage\c!number}%
     \ifx\askeduserpagenumber\empty \else
       \normalexpanded{\noexpand\setuppagenumber[\c!start=\structurecounterparameter\s!userpage\c!number,\c!number=]}%
-      \userpageno\rawstructurecounter[\s!userpage]%
+      \userpageno\strc_counters_raw\s!userpage
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
 
@@ -438,7 +424,7 @@
     \edef\askedsubpagenumber{\structurecounterparameter\s!subpage\c!number}%
     \ifx\askedsubpagenumber\empty \else
       \normalexpanded{\noexpand\setupsubpagenumber[\c!start=\structurecounterparameter\s!subpage\c!number,\c!number=]}%
-      \subpageno\rawstructurecounter[\s!subpage]%
+      \subpageno\strc_counters_raw\s!subpage\relax
     \fi
 \to \everysetupsubpagenumber % todo: set state: none, start, stop, reset
 
@@ -448,7 +434,7 @@
 % \starttext \dorecurse{20}{\input knuth \par} \stoptext
 
 \def\checkpagenumbershift
-  {\userpageno\rawstructurecounter[\s!userpage]\relax
+  {\userpageno\strc_counters_raw\s!userpage\relax
    \ifnum\realpageno=\plusone
      \ifodd\userpageno
      \else

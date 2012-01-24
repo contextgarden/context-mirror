@@ -1,0 +1,57 @@
+%D \module
+%D   [       file=type-imp-hvmath,
+%D        version=2007.07.30,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Xits,
+%D         author=Khaled Hosny \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This one makes more sense than Stix. Xits uses the glyph collection from stix
+% but packages it in a proper OpenType Math font. From the Stix site:  Version 1.1,
+% which will include fonts packaged for use with Microsoft Office applications, is
+% scheduled for release by the end of 2010. Version 1.2, which will include Type 1
+% fonts for use with LaTeX, will follow in 2011. So, we are on our own anyway.
+
+\loadtypescriptfile[texgyre]
+
+\starttypescriptcollection[xits]
+
+    \starttypescript [\s!math] [xits,xitsbidi] [\s!name]
+        \loadfontgoodies[xits-math]
+        \definefontsynonym[\s!MathRoman    ][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix,\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRoman L2R][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-l2r,\s!goodies=xits-math]
+        \definefontsynonym[\s!MathRoman R2L][\s!file:xits-math.otf][\s!features=\s!math\mathsizesuffix-r2l,\s!goodies=xits-math]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [xits] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym[\s!Serif]          [\s!file:xits-regular.otf]    [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBold]      [\s!file:xits-bold.otf]       [\s!features=\s!default]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:xits-italic.otf]     [\s!features=\s!default]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:xits-bolditalic.otf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript[xits]
+        \definetypeface [xits] [\s!rm] [\s!serif] [xits]   [\s!default]
+        \definetypeface [xits] [\s!ss] [\s!sans]  [heros]  [\s!default] [\s!rscale=0.9]
+        \definetypeface [xits] [\s!tt] [\s!mono]  [modern] [\s!default] [\s!rscale=1.05]
+        \definetypeface [xits] [\s!mm] [\s!math]  [xits]   [\s!default]
+    \stoptypescript
+
+    % for the moment
+
+    \starttypescript[xitsbidi]
+        \definetypeface [xitsbidi] [\s!rm] [\s!serif] [xits]     [\s!default]
+        \definetypeface [xitsbidi] [\s!ss] [\s!sans]  [heros]    [\s!default] [\s!rscale=0.9]
+        \definetypeface [xitsbidi] [\s!tt] [\s!mono]  [modern]   [\s!default] [\s!rscale=1.05]
+        %definetypeface [xitsbidi] [\s!mm] [\s!math]  [xitsbidi] [bidi] [\s!direction=\s!both]
+        \definetypeface [xitsbidi] [\s!mm] [\s!math]  [xitsbidi] [\s!default] [\s!direction=\s!both]
+    \stoptypescript
+
+\stoptypescriptcollection
+

@@ -1,0 +1,12 @@
+return {
+    name = "lucida-opentype-math",
+    version = "1.00",
+    comment = "Goodies that complement lucida opentype.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        alternates = {
+            italic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Italic" },
+        }
+    }
+}

@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['font-gds'] = {
 -- depends on ctx
 
 local type, next = type, next
-local gmatch, format = string.gmatch, string.format
+local gmatch, format, lower = string.gmatch, string.format, string.lower
+local texsp = tex.sp
 
 local fonts, nodes, attributes, node = fonts, nodes, attributes, node
 
@@ -574,6 +575,69 @@ local function initialize(goodies)
 end
 
 fontgoodies.register("compositions", initialize)
+
+local designsizes       = { }
+fontgoodies.designsizes = designsizes
+local designdata        = allocate()
+designsizes.data        = designdata
+
+local function initialize(goodies)
+    local gd = goodies.designsizes
+    if gd then
+        for name, data in next, gd do
+            local ranges = { }
+            for size, file in next, data do
+                if size ~= "default" then
+                    ranges[#ranges+1] =  { texsp(size), file } -- also lower(file)
+                end
+            end
+            table.sort(ranges,function(a,b) return a[1] < b[1] end)
+            designdata[lower(name)] = { -- overloads, doesn't merge!
+                default = data.default,
+                ranges  = ranges,
+            }
+        end
+    end
+end
+
+fontgoodies.register("designsizes", initialize)
+
+function fontgoodies.designsizes.register(name,size,specification)
+    local d = designdata[name]
+    if not d then
+        d = {
+            ranges  = { },
+            default = nil, -- so we have no default set
+        }
+        designdata[name] = d
+    end
+    if size == "default" then
+        d.default = specification
+    else
+        if type(size) == "string" then
+            size = texsp(size)
+        end
+        local ranges = d.ranges
+        ranges[#ranges+1] = { size, specification }
+    end
+end
+
+function fontgoodies.designsizes.filename(name,size)
+    local data = designdata[lower(name)]
+    if data then
+        local ranges = data.ranges
+        if ranges and size ~= "default" then
+            for i=1,#ranges do
+                local r = ranges[i]
+                if r[1] >= size then -- todo: rounding so maybe size - 100
+                    return r[2]
+                end
+            end
+        end
+        return data.default or (ranges and ranges[#ranges][2]) or name
+    end
+    return name
+end
 
 -- The following file (husayni.lfg) is the experimental setup that we used
 -- for Idris font. For the moment we don't store this in the cache and quite

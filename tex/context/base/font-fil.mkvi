@@ -96,15 +96,17 @@
    \doifnextoptionalelse\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
 \def\font_basics_define_font_synonym_nop_opt[#specification]%
-  {\let\p_features \undefined
-   \let\p_fallbacks\undefined
-   \let\p_goodies  \undefined
+  {\let\p_features  \undefined
+   \let\p_fallbacks \undefined
+   \let\p_goodies   \undefined
+   \let\p_designsize\undefined
    \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
 
 \def\font_basics_define_font_synonym_yes_opt[#specification]%
-  {\let\p_features \undefined
-   \let\p_fallbacks\undefined
-   \let\p_goodies  \undefined
+  {\let\p_features  \undefined
+   \let\p_fallbacks \undefined
+   \let\p_goodies   \undefined
+   \let\p_designsize\undefined
    \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
 
 \def\font_basics_get_font_parameter_nop#key=#value,%
@@ -137,24 +139,28 @@
 % we could collect them in one macro (but no expansion)
 
 \def\font_basics_define_font_synonym_nop_nil
-  {\expandafter\let\csname\??fontfile\m_font_name\s!features \endcsname\undefined
-   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks\endcsname\undefined
-   \expandafter\let\csname\??fontfile\m_font_name\s!goodies  \endcsname\undefined}
+  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_define_font_synonym_yes_nil
-  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features \endcsname\undefined
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks\endcsname\undefined
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies  \endcsname\undefined}
+  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
 
 \def\font_basics_get_font_parameter_nop_finish
-  {\expandafter\let\csname\??fontfile\m_font_name\s!features \endcsname\p_features
-   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks\endcsname\p_fallbacks
-   \expandafter\let\csname\??fontfile\m_font_name\s!goodies  \endcsname\p_goodies}
+  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\p_features
+   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\p_goodies
+   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\p_designsize}
 
 \def\font_basics_get_font_parameter_yes_finish
-  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features \endcsname\p_features
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks\endcsname\p_fallbacks
-   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies  \endcsname\p_goodies}
+  {\global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
+   \global\expandafter\let\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
 
 %\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
 %
@@ -275,10 +281,11 @@
 % without pre-expansion.
 
 \def\font_helpers_update_font_class_parameters
-  {\edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\fontstyle\s!direction\endcsname\csname\??fontclass\fontclass\fontstyle\s!direction\endcsname\fi}%
-   \edef\m_font_class_features {\ifcsname\??fontclass\fontclass\fontstyle\s!features \endcsname\csname\??fontclass\fontclass\fontstyle\s!features \endcsname\fi}%
-   \edef\m_font_class_fallbacks{\ifcsname\??fontclass\fontclass\fontstyle\s!fallbacks\endcsname\csname\??fontclass\fontclass\fontstyle\s!fallbacks\endcsname\fi}%
-   \edef\m_font_class_goodies  {\ifcsname\??fontclass\fontclass\fontstyle\s!goodies  \endcsname\csname\??fontclass\fontclass\fontstyle\s!goodies  \endcsname\fi}}
+  {\edef\m_font_class_direction {\ifcsname\??fontclass\fontclass\fontstyle\s!direction \endcsname\csname\??fontclass\fontclass\fontstyle\s!direction \endcsname\fi}%
+   \edef\m_font_class_features  {\ifcsname\??fontclass\fontclass\fontstyle\s!features  \endcsname\csname\??fontclass\fontclass\fontstyle\s!features  \endcsname\fi}%
+   \edef\m_font_class_fallbacks {\ifcsname\??fontclass\fontclass\fontstyle\s!fallbacks \endcsname\csname\??fontclass\fontclass\fontstyle\s!fallbacks \endcsname\fi}%
+   \edef\m_font_class_goodies   {\ifcsname\??fontclass\fontclass\fontstyle\s!goodies   \endcsname\csname\??fontclass\fontclass\fontstyle\s!goodies   \endcsname\fi}%
+   \edef\m_font_class_designsize{\ifcsname\??fontclass\fontclass\fontstyle\s!designsize\endcsname\csname\??fontclass\fontclass\fontstyle\s!designsize\endcsname\fi}}
 
 % resolve
 
@@ -315,6 +322,17 @@
      \csname\??fontfile                      #name\endcsname\else
    \let\m_font_goodies\empty\fi\fi\fi\fi}
 
+\def\font_helpers_set_designsize_yes#name%
+  {\ifcsname\??fontfile\fontclass#name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
+     \csname\??fontfile\fontclass#name\s!designsize\endcsname\else
+   \ifcsname\??fontfile          #name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
+     \csname\??fontfile          #name\s!designsize\endcsname\else
+   \ifcsname\??fontfile\fontclass             #name\endcsname\expandafter\font_helpers_set_designsize_yes
+     \csname\??fontfile\fontclass             #name\endcsname\else
+   \ifcsname\??fontfile                       #name\endcsname\expandafter\font_helpers_set_designsize_yes
+     \csname\??fontfile                       #name\endcsname\else
+   \let\m_font_designsize\empty\fi\fi\fi\fi}
+
 \def\font_helpers_set_features_nop#name%
   {\ifcsname\??fontfile#name\s!features \endcsname\expandafter\let\expandafter\m_font_features
      \csname\??fontfile#name\s!features \endcsname\else
@@ -336,27 +354,38 @@
      \csname\??fontfile            #name\endcsname\else
    \let\m_font_goodies\empty\fi\fi}
 
+\def\font_helpers_set_designsize_nop#name%
+  {\ifcsname\??fontfile#name\s!designsize\endcsname\expandafter\let\expandafter\m_font_designsize
+     \csname\??fontfile#name\s!designsize\endcsname\else
+   \ifcsname\??fontfile             #name\endcsname\expandafter\font_helpers_set_designsize_nop
+     \csname\??fontfile             #name\endcsname\else
+   \let\m_font_designsize\empty\fi\fi}
+
 \def\font_helpers_update_font_parameters_yes
-  {\font_helpers_set_features_yes \somefontname
-   \font_helpers_set_fallbacks_yes\somefontname
-   \font_helpers_set_goodies_yes  \somefontname}
+  {\font_helpers_set_features_yes  \somefontname
+   \font_helpers_set_fallbacks_yes \somefontname
+   \font_helpers_set_goodies_yes   \somefontname
+   \font_helpers_set_designsize_yes\somefontname}
 
 \def\font_helpers_update_font_parameters_nop
-  {\font_helpers_set_features_nop \somefontname
-   \font_helpers_set_fallbacks_nop\somefontname
-   \font_helpers_set_goodies_nop  \somefontname}
+  {\font_helpers_set_features_nop  \somefontname
+   \font_helpers_set_fallbacks_nop \somefontname
+   \font_helpers_set_goodies_nop   \somefontname
+   \font_helpers_set_designsize_nop\somefontname}
 
 \def\font_helpers_update_font_parameters
  {\ifx\fontclass\empty\font_helpers_update_font_parameters_nop\else\font_helpers_update_font_parameters_yes\fi}
 
 \installcorenamespace{fontclass}
 
-\unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#direction%
-  {\setxvalue{\??fontclass\fontclass#style\s!rscale   }{#rscale}%
-   \setxvalue{\??fontclass\fontclass#style\s!features }{#features}%
-   \setxvalue{\??fontclass\fontclass#style\s!fallbacks}{#fallbacks}%
-   \setxvalue{\??fontclass\fontclass#style\s!goodies  }{#goodies}%
-   \setxvalue{\??fontclass\fontclass#style\s!direction}{#direction}}
+% we can pack them
 
+\unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
+  {\setxvalue{\??fontclass\fontclass#style\s!rscale    }{#rscale}%
+   \setxvalue{\??fontclass\fontclass#style\s!features  }{#features}%
+   \setxvalue{\??fontclass\fontclass#style\s!fallbacks }{#fallbacks}%
+   \setxvalue{\??fontclass\fontclass#style\s!goodies   }{#goodies}%
+   \setxvalue{\??fontclass\fontclass#style\s!designsize}{#designsize}%
+   \setxvalue{\??fontclass\fontclass#style\s!direction }{#direction}}
 
 \protect \endinput

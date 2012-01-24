@@ -87,9 +87,11 @@ style_type               = style { fore = colors.blue }
 style_variable           = style { fore = colors.black }
 style_identifier         = style_nothing
 
+style_standout           = style { fore = colors.orange, bold = true }
+
 style_line_number        = style { back = colors.linepanel }
-style_bracelight         = style { fore = colors.orange, bold = true }
-style_bracebad           = style { fore = colors.orange, bold = true }
+style_bracelight         = style_standout
+style_bracebad           = style_standout
 style_indentguide        = style { fore = colors.linepanel, back = colors.white }
 style_calltip            = style { fore = colors.white, back = colors.tippanel }
 style_controlchar        = style_nothing
@@ -106,6 +108,8 @@ lexer.context.styles = {
     ["keyword"]    = style_keyword,
     ["string"]     = style_string,
     ["reserved"]   = style_reserved,
+    ["preproc"]    = style_preproc,
+    ["internal"]   = style_standout,
 
     ["command"]    = style { fore = colors.green, bold = true },
     ["preamble"]   = style_comment,

@@ -506,6 +506,13 @@ function commands.doifnotstructurecounter (name) commands.doifnot (counterdata[n
 
 function commands.incrementedstructurecounter(...) context(counters.add(...)) end
 
+function commands.checkstructurecountersetup(name,level,start,state)
+    counters.restart(name,1,start)
+    counters.setstate(name,state)
+    counters.setlevel(name,level)
+    sections.setchecker(name,level,counters.reset)
+end
+
 --~ -- move to strc-pag.lua
 
 --~ function counters.analyze(name,counterspecification)

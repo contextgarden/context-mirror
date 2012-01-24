@@ -619,7 +619,8 @@
 \to \everysetupbibtexlistplacement
 
 \def\typesetbibtexlist
-  {\dobeginoflist
+  {\begingroup
+   \startpacked[\v!blank]%
    \doif{\namedlistparameter\currentbibtexsession\c!criterium}\v!cite
      {\setuplist[\currentbibtexsession][\c!criterium=\v!here]}%
    \doifelse{\bibtexpublicationsparameter\c!method}\v!local
@@ -632,7 +633,8 @@
      {\namedlistparameter\currentbibtexsession\c!extras}%
      {\namedlistparameter\currentbibtexsession\c!order}%
    \ctxlua{bibtex.hacks.flush("\bibtexpublicationsparameter\c!sorttype")}%
-   \doendoflist}
+   \stoppacked
+   \endgroup}
 
 \unexpanded\def\typesetbibtexpublication#1%
   {\edef\currentbibtexsessiontag{#1}%
@@ -650,7 +652,11 @@
   {\doifbibreferencefoundelse\currentbibtexsessiontag
      {\global\advance\bibtexcounter\plusone
       \ctxlua{bibtex.hacks.registerplaced("\currentbibtexsessiontag")}%
-      \dodolistelement{\currentbibtexsession}{}{\number\bibtexcounter}{\thebibtexpublicationlistelement}{}{}}
+      \let\currentlist\currentbibtexsession
+      \let\currentlistentrynumber    \bibtexcounter
+      \let\currentlistentrytitle     \thebibtexpublicationlistelement
+      \let\currentlistentrypagenumber\empty
+      \strc_lists_apply_renderingsetup}
      {}} % invalid
 
 \def\thebibtexpublicationlistelement

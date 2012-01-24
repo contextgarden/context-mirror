@@ -10327,6 +10327,10 @@ return {
    ["en"]="suffixseparator",
    ["nl"]="suffixscheider",
   },
+  ["suffixstopper"]={
+   ["en"]="suffixstopper",
+   ["nl"]="suffixafsluiter",
+  },
   ["sx"]={
    ["cs"]="sx",
    ["de"]="sx",

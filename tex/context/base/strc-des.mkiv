@@ -697,9 +697,9 @@
 \def\doenumerationstart  #1#2#3{\doenumerationinit{#1}{#2}{#3}\dosingleempty\@@startdescription}
 \def\doenumerationstop   #1#2#3{\doenumerationinit{#1}{#2}{#3}\@@stopdescription}
 
-\def\doresetenumerationnumber#1#2#3{\doresetsubstructurecounter    [\specificdescriptionnumber{#1}][#2]}
-\def\dosetenumerationnumber#1#2#3#4{\dosetsubstructurecounter      [\specificdescriptionnumber{#1}][#2]{#4}}
-\def\donextenumerationnumber #1#2#3{\doincrementsubstructurecounter[\specificdescriptionnumber{#1}][#2]}
+\def\doresetenumerationnumber#1#2#3{\strc_counters_reset_sub    {\specificdescriptionnumber{#1}}{#2}}
+\def\dosetenumerationnumber#1#2#3#4{\strc_counters_set_sub      {\specificdescriptionnumber{#1}}{#2}{#4}}
+\def\donextenumerationnumber #1#2#3{\strc_counters_increment_sub{\specificdescriptionnumber{#1}}{#2}}
 
 % implementation
 
@@ -782,9 +782,9 @@
              \descriptionparameter\c!titleright}%
          \endgroup}}}
 
-\def\doenumerationsavecounter     {\savestructurecounter[\currentdescriptionnumber]}
-\def\doenumerationrestorecounter  {\restorestructurecounter[\currentdescriptionnumber]}
-\def\doenumerationincrementcounter{\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+\def\doenumerationsavecounter     {\strc_counters_save         \currentdescriptionnumber} % can be inlined
+\def\doenumerationrestorecounter  {\strc_counters_restore      \currentdescriptionnumber} % can be inlined
+\def\doenumerationincrementcounter{\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel} % can be inlined
 
 % to be used in for instance:
 %
@@ -921,7 +921,7 @@
    \else
     %\setnextinternalreference
      \setnextinternalreferences{description}\currentdescriptionname % plural
-     \xdef\currentdescriptionnumberentry{\ctxlua{structures.lists.push{
+     \xdef\currentdescriptionnumberentry{\ctxcommand{addtolist{
         metadata = {
             kind     = "description",
             name     = "\currentdescriptionname",
@@ -971,11 +971,11 @@
     \or
        % symbol
     \fi
-        userdata = structures.helpers.touserdata(\!!bs\detokenize{#2}\!!es)
+        userdata = \!!bs\detokenize{#2}\!!es % will be converted to table at the lua end
        }
      }}%
-    \xdef\currentdescriptionattribute  {\ctxlua    {tex.write(structures.references.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
-    \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(\currentdescriptionnumberentry)}}%
+    \xdef\currentdescriptionattribute  {\ctxlua        {tex.write(structures.references.setinternalreference("\referenceprefix","\currentdescriptionreference",\nextinternalreference,"\interactionparameter\c!focus"))}}%
+    \xdef\currentdescriptionsynchronize{\ctxlatecommand{enhancelist(\currentdescriptionnumberentry)}}%
    \fi
    \endgroup}
 
@@ -984,8 +984,8 @@
 % macros.
 
 \def\reinstatedescriptionnumberentry#1%
-  {\xdef\currentdescriptionattribute  {\ctxlua    {structures.references.getinternalreference(#1)}}%
-   \xdef\currentdescriptionsynchronize{\ctxlatelua{structures.lists.enhance(#1)}}}
+  {\xdef\currentdescriptionattribute  {\ctxlua        {structures.references.getinternalreference(#1)}}%
+   \xdef\currentdescriptionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{description}{\usestructurelistprocessor{number+title}}
 
@@ -1040,9 +1040,9 @@
 \def\donextlabelnumber      #1{\dolabelinit{#1}\dosingleempty\dodonextlabelnumber}
 \def\dolabelnumbercommand   #1{\dolabelinit{#1}\dosingleempty\dodolabelnumbercommand}
 
-\def\doresetlabelnumber     #1{\dolabelinit{#1}\doresetsubstructurecounter    [\currentdescriptionnumber][\currentdescriptionlevel]}
-\def\dosetlabelnumber     #1#2{\dolabelinit{#1}\dosetsubstructurecounter      [\currentdescriptionnumber][\currentdescriptionlevel]{#2}}
-\def\doincrementlabelnumber #1{\dolabelinit{#1}\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
+\def\doresetlabelnumber     #1{\dolabelinit{#1}\strc_counters_reset_sub    \currentdescriptionnumber\currentdescriptionlevel}
+\def\dosetlabelnumber     #1#2{\dolabelinit{#1}\strc_counters_set_sub      \currentdescriptionnumber\currentdescriptionlevel{#2}}
+\def\doincrementlabelnumber #1{\dolabelinit{#1}\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel}
 
 \def\dodocurrentlabelnumber[#1]%
   {\dontleavehmode
@@ -1051,14 +1051,14 @@
    \convertedsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]}
 
 \def\dodonextlabelnumber[#1]% todo: ref
-  {\doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]%
+  {\strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
    \dodocurrentlabelnumber[\currentdescriptionnumber]}
 
 \def\dodolabelnumbercommand[#1]% todo: ref
   {\dontleavehmode
    \descriptionparameter\c!before
    \begingroup
-   \doincrementsubstructurecounter[\currentdescriptionnumber][\currentdescriptionlevel]%
+   \strc_counters_increment_sub\currentdescriptionnumber\currentdescriptionlevel
    \usedescriptionstyleandcolor\c!headstyle\c!headcolor
    \executeifdefined{\??db:\c!location:\descriptionparameter\c!location}{\descriptionparameter\c!command}{\dodocurrentlabelnumber[#1]}%
    \endgroup

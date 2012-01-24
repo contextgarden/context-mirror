@@ -176,8 +176,8 @@
    \dodefinefloatcommands[#1][#2]}
 
 \def\dodefinefloatcommands[#1][#2]%
-  {\setuvalue         {\e!place\e!listof#2}{\dodoubleempty\doplacelist[#1]}%
-   \setuvalue      {\e!complete\e!listof#2}{\dotripleempty\dodocompletelist[#1][#2]}%
+  {\setuvalue         {\e!place\e!listof#2}{\dodoubleempty\strc_lists_place[#1]}% call will change
+   \setuvalue      {\e!complete\e!listof#2}{\dotripleempty\strc_lists_complete_indeed[#1][#2]}% call will change
    \setuevalue                 {\e!place#1}{\strc_floats_place{#1}}%
    \setuevalue         {\e!start\e!place#1}{\strc_floats_start_place{#1}}%
    \setuevalue          {\e!stop\e!place#1}{\strc_floats_stop_place}%
@@ -723,7 +723,7 @@
      \globallet\currentfloatsynchronize\relax
    \else
      \ifnofloatnumber \else \ifnofloatcaption \else
-       \doincrementsubstructurecounter[\@@thestructurecounter\currentfloat][1]%
+       \strc_counters_increment{\strc_counters_the\currentfloat}%
      \fi \fi
      \dostructurecountercomponent
        {float}%
@@ -734,7 +734,7 @@
        \relax
        \relax
        [\c!name=\currentfloat,%
-        \s!counter=\@@thestructurecounter\currentfloat,%
+        \s!counter=\strc_counters_the\currentfloat,%
         \s!hascaption=\ifnofloatcaption \v!no\else\v!yes\fi,%
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%

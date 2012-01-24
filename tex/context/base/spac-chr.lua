@@ -46,8 +46,10 @@ local typesetters        = typesetters
 local characters         = { }
 typesetters.characters   = characters
 
-local fontparameters     = fonts.hashes.parameters
-local fontcharacters     = fonts.hashes.characters
+local fonthashes         = fonts.hashes
+local fontparameters     = fonthashes.parameters
+local fontcharacters     = fonthashes.characters
+local fontquads          = fonthashes.quads
 
 local a_character        = attributes.private("characters")
 local a_alignstate       = attributes.private("alignstate")
@@ -58,7 +60,7 @@ local c_period = byte('.')
 local function inject_quad_space(unicode,head,current,fraction)
     local attr = current.attr
     if fraction ~= 0 then
-        fraction = fraction * fontparameters[current.font].quad
+        fraction = fraction * fontquads[current.font]
     end
     local glue = new_glue(fraction)
 --     glue.attr = copy_node_list(attr)
@@ -71,8 +73,9 @@ end
 
 local function inject_char_space(unicode,head,current,parent)
     local attr = current.attr
-    local char = fontcharacters[current.font][parent]
-    local glue = new_glue(char and char.width or fontparameters[current.font].space)
+    local font = current.font
+    local char = fontcharacters[font][parent]
+    local glue = new_glue(char and char.width or fontparameters[font].space)
 --     glue.attr = copy_node_list(current.attr)
     glue.attr = current.attr
 current.attr = nil
@@ -160,7 +163,7 @@ local methods = {
     end,
 
     [0x202F] = function(head,current) -- narrownobreakspace
-        return inject_nobreak_space(0x202F,head,current,fontparameters[current.font].space/8)
+        return inject_nobreak_space(0x202F,head,current,fontquads[current.font]/8)
     end,
 
     [0x205F] = function(head,current) -- math thinspace

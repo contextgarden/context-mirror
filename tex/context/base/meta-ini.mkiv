@@ -331,7 +331,7 @@
 
 \newbox\b_meta_variable_box
 
-\let \currentmpvariableclass        \empty
+\let \currentmpvariableclass          \empty
 \let \m_meta_current_variable         \empty
 \let \m_meta_current_variable_template\empty
 
@@ -401,7 +401,7 @@
 
 \def\meta_prepare_variable_yes
   {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
-   \doifcolorelse \ascii                            % with 2\bodyfontsize
+   \doifcolorelse \ascii                              % with 2\bodyfontsize
      {\meta_prepare_variable_color}
      {\begingroup
       \setbox\b_meta_variable_box\hbox{\scratchdimen\m_meta_current_variable sp}%

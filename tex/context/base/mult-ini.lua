@@ -233,7 +233,7 @@ function interfaces.setuserinterface(interface,response)
             translations[given] = translation[interface] or translation.en or given
             noftranslations = noftranslations + 1
         end
-        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, % formats, %s translations",
+        report_interface("definitions: %s constants, %s variables, %s elements, %s commands, %s formats, %s translations",
             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
     end
 end

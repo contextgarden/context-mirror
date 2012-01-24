@@ -934,15 +934,32 @@
 
 %D Lists:
 
-\setvalue{\??listelement\v!left  }{\def\dosomelistelement{\scrn_menu_list_element\v!left  }}
-\setvalue{\??listelement\v!right }{\def\dosomelistelement{\scrn_menu_list_element\v!right }}
-\setvalue{\??listelement\v!top   }{\def\dosomelistelement{\scrn_menu_list_element\v!top   }}
-\setvalue{\??listelement\v!bottom}{\def\dosomelistelement{\scrn_menu_list_element\v!bottom}}
+\ifdefined\definelistalternative
 
-\def\scrn_menu_list_element#1#2#3#4#5#6#7%
-  {\startbut[internal(#3)]
-     \limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}\unknown%
-   \stopbut}
+    \definelistalternative [\v!left  ] [\c!renderingsetup=strc:lists:rendering:menu]
+    \definelistalternative [\v!right ] [\c!renderingsetup=strc:lists:rendering:menu]
+    \definelistalternative [\v!top   ] [\c!renderingsetup=strc:lists:rendering:menu]
+    \definelistalternative [\v!bottom] [\c!renderingsetup=strc:lists:rendering:menu]
+
+    \startsetups[strc:lists:rendering:menu]
+        \startbut[internal(\currentlistentryinternal)]
+            \limitatetext\currentlistentrytext{\currentlistparameter\c!maxwidth}\unknown
+        \stopbut
+    \stopsetups
+
+\else % will go
+
+    \setvalue{\??listelement\v!left  }{\def\dosomelistelement{\scrn_menu_list_element\v!left  }}
+    \setvalue{\??listelement\v!right }{\def\dosomelistelement{\scrn_menu_list_element\v!right }}
+    \setvalue{\??listelement\v!top   }{\def\dosomelistelement{\scrn_menu_list_element\v!top   }}
+    \setvalue{\??listelement\v!bottom}{\def\dosomelistelement{\scrn_menu_list_element\v!bottom}}
+
+    \def\scrn_menu_list_element#1#2#3#4#5#6#7%
+      {\startbut[internal(#3)]
+         \limitatetext{#5}{\namedlistparameter{#2}\c!maxwidth}\unknown%
+       \stopbut}
+
+\fi
 
 %D Sometimes handy:
 

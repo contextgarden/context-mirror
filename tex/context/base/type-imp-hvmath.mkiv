@@ -1,0 +1,30 @@
+%D \module
+%D   [       file=type-imp-hvmath,
+%D        version=2007.07.30,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=HV Math Fonts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\loadtypescriptfile[texgyre]
+
+\starttypescriptcollection[hvmath]
+
+    \starttypescript [\s!math] [hvmath]
+        \definefontsynonym[\s!MathRoman][hvmath@hvmath-math]
+        \loadfontgoodies[hvmath-math]
+    \stoptypescript
+
+    \starttypescript [hvmath]
+        \definetypeface [hvmath] [\s!ss] [\s!sans]  [heros]  [\s!default] [\s!rscale=0.9]
+        \definetypeface [hvmath] [\s!rm] [\s!serif] [termes] [\s!default]
+        \definetypeface [hvmath] [\s!tt] [\s!mono]  [cursor] [\s!default] [\s!rscale=1.05]
+        \definetypeface [hvmath] [\s!mm] [\s!math]  [hvmath] [\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection

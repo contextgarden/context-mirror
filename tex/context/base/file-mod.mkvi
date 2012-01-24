@@ -31,74 +31,130 @@
 %D their dedicated manuals. We use \type {\next} so that we
 %D can \type {\end} in modules.
 
-\def\dodousemodules#category#name%
-  {\ctxcommand{usemodules("#category","#name","\truefilename{#name}")}}
-
 \def\usemodules
-  {\dotripleempty\dousemodules}
+  {\dotripleempty\strc_modules_use}
 
 \let\usemodule\usemodules
 
-\def\dousemodules[#category][#name][#parameters]%
+% \def\strc_modules_use[#category][#name][#parameters]%
+%   {\pushmacro\currentmodule
+%    \pushmacro\currentmoduleparameters
+%    \let\currentmoduleparameters\empty
+%    \ifthirdargument
+%      \singleexpandafter\strc_modules_use_a
+%    \else\ifsecondargument
+%      \doubleexpandafter\strc_modules_use_b
+%    \else
+%      \doubleexpandafter\strc_modules_use_c
+%    \fi\fi
+%    % here we load
+%    \popmacro\currentmoduleparameters
+%    \popmacro\currentmodule}
+%
+% \def\strc_modules_use_a[#category][#name][#parameters]%
+%   {\doifsomething{#name}
+%      {\def\currentmoduleparameters{#parameters}%
+%       \processcommalist[#name]{\strc_modules_use_indeed{#category}}}}
+%
+% \def\strc_modules_use_b[#category][#name][#parameters]%
+%   {\doifsomething{#name}
+%      {\doifassignmentelse{#name}
+%         {\def\currentmoduleparameters{#name}%
+%          \processcommalist[#category]{\strc_modules_use_indeed\empty}}
+%         {\processcommalist[#name]{\strc_modules_use_indeed{#category}}}}}
+%
+% \def\strc_modules_use_c[#category][#name][#parameters]%
+%   {\processcommalist[#category]{\strc_modules_use_indeed\empty}}
+%
+% \def\strc_modules_use_indeed#category#name%
+%   {\ctxcommand{usemodules("#category","#name","\truefilename{#name}")}}
+
+\def\strc_modules_use[#category][#name][#parameters]% category=t|m|x|p|...
   {\pushmacro\currentmodule
+   \pushmacro\currentmodulecategory
    \pushmacro\currentmoduleparameters
-   \let\currentmoduleparameters\empty
    \ifthirdargument
-     \doifelsenothing{#name}
-       {\let\next\relax}
-       {\def\currentmoduleparameters{#parameters}%
-        \def\next{\processcommalist[#name]{\dodousemodules{#category}}}}%
+     \def\currentmodulecategory  {#category}%
+     \def\currentmodule          {#name}%
+     \def\currentmoduleparameters{#parameters}%
    \else\ifsecondargument
-     \doifelsenothing{#name}
-       {\let\next\relax}
-       {\doifassignmentelse{#name}
-          {\def\currentmoduleparameters{#name}%
-           \def\next{\processcommalist[#category]{\dodousemodules{}}}}
-          {\def\next{\processcommalist[#name]{\dodousemodules{#category}}}}}%
+     \doifassignmentelse{#name}
+       {\let\currentmodulecategory  \empty
+        \def\currentmodule          {#category}%
+        \def\currentmoduleparameters{#name}}
+       {\def\currentmodulecategory  {#category}%
+        \def\currentmodule          {#name}%
+        \let\currentmoduleparameters\empty}%
    \else
-     \def\next{\processcommalist[#category]{\dodousemodules{}}}%
+     \let\currentmodulecategory  \empty
+     \def\currentmodule          {#category}%
+     \let\currentmoduleparameters\empty
    \fi\fi
-   \next
+   \processcommacommand[\currentmodule]{\strc_modules_use_indeed\currentmodulecategory}%
    \popmacro\currentmoduleparameters
+   \popmacro\currentmodulecategory
    \popmacro\currentmodule}
+
+\def\strc_modules_use_indeed#category#name% truefilename moved to lua end
+  {\ctxcommand{usemodules("#category","#name")}} % ,"\truefilename{#name}")}}
+
+\installcorenamespace{module}
 
 \let\currentmoduleparameters\empty
 \let\currentmodule          \s!unknown
 
 \unexpanded\def\startmodule
-  {\doifnextoptionalelse\dostartmodule\nostartmodule}
+  {\doifnextoptionalelse\syst_modules_start_yes\syst_modules_start_nop}
 
-\def\nostartmodule #name %
-  {\dostartmodule[#name]}
-
-\def\dostartmodule[#name]%
+\def\syst_modules_start_yes[#name]%
   {\pushmacro\currentmodule
    \pushmacro\currentmoduleparameters
    \def\currentmodule{#name}}
+
+\def\syst_modules_start_nop#name %
+  {\syst_modules_start_yes[#name]}
 
 \unexpanded\def\stopmodule
   {\popmacro\currentmoduleparameters
    \popmacro\currentmodule}
 
 \unexpanded\def\setupmodule
-  {\dodoubleempty\dosetupmodule}
+  {\dodoubleempty\syst_modules_setup}
 
-\def\dosetupmodule[#name][#parameters]%
+\def\syst_modules_setup[#name][#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifsecondargument
-     \getparameters[\??md:#name:][#parameters]%
-     \expanded{\getparameters[\??md:#name:][\the\scratchtoks]}%
+     \getparameters[\??module#name:][#parameters]% internal (defaults)
+     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
    \else
-     \getparameters[\??md:\currentmodule:][#name]%
-     \expanded{\getparameters[\??md:\currentmodule:][\the\scratchtoks]}%
+     \getparameters[\??module\currentmodule:][#name]% internal (defaults)
+     \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}% loadtime (user)
    \fi
    \let\currentmoduleparameters\empty}
 
-\def\moduleparameter    #name#parameter{\executeifdefined{\??md:#name:#parameter}{}}
-\def\currentmoduleparameter  #parameter{\executeifdefined{\??md:\currentmodule:#parameter}{}}
+% to be tested:
+%
+% \def\syst_modules_setup[#name][#parameters]%
+%   {\ifsecondargument
+%      \getparameters[\??module#name:][#parameters]% internal (defaults)
+%      \normalexpanded{\getparameters[\??module#name:][\normalunexpanded\expandafter{\currentmoduleparameters}]}% loadtime (user)
+%    \else
+%      \getparameters[\??module\currentmodule:][#name]% internal (defaults)
+%      \normalexpanded{\getparameters[\??module\currentmodule:][\normalunexpanded\expandafter{\currentmoduleparameters}]}% loadtime (user)
+%    \fi
+%    \let\currentmoduleparameters\empty}
 
-\def\useluamodule  [#name]{\ctxlua{dofile(resolvers.findctxfile("#name"))}}
-\def\luaenvironment #name {\ctxlua{dofile(resolvers.findctxfile("#name"))}}
+\def\moduleparameter#name#parameter%
+  {\csname\??module
+     \ifcsname\??module#name:#parameter\endcsname#name:#parameter\fi
+   \endcsname}
+
+\letvalue\??module\empty % so we default to empty as with all parameters
+
+\def\currentmoduleparameter{\moduleparameter\currentmodule} % no need for inlining
+
+\unexpanded\def\useluamodule  [#name]{\ctxlua{dofile(resolvers.findctxfile("#name"))}}
+\unexpanded\def\luaenvironment #name {\ctxlua{dofile(resolvers.findctxfile("#name"))}}
 
 % \usemodule[newmml]
 % \usemodule[newmml][a=b]
@@ -119,44 +175,48 @@
 %
 % however, a better way is:
 
-\let\stopmoduletestsection\donothing
-
 \unexpanded\def\startmoduletestsection
-  {\bgroup
+  {\begingroup
    \setupmodule % we need to make sure that the vars are set
    \doifelse{\currentmoduleparameter\v!test}\v!yes
-     {\egroup
-      \writestatus{\currentmodule}{loading experimental code}}
-     {\egroup
-      \writestatus{\currentmodule}{skipping experimental code}%
+     {\endgroup
+      \writestatus\currentmodule{loading experimental code}}
+     {\endgroup
+      \writestatus\currentmodule{skipping experimental code}%
       \gobbleuntil\stopmoduletestsection}}
+
+\let\stopmoduletestsection\donothing
 
 % will become file-run
 
-%D To save memory, we implement some seldomly used commands
-%D in a lazy way. Nota bene: such runtime definitions are
-%D global.
+%D To save memory, we implement some seldomly used commands in a lazy way. Nota
+%D bene: such runtime definitions are to be defined global.
 %D
 %D \starttyping
 %D \fetchruntimecommand\showaccents{\f!colorprefix ...}
 %D \stoptyping
 
-\def\fetchruntimecommand#1#2%
-  {\def#1{\dofetchruntimecommand#1{#2}}}
+\installcorenamespace{runtimeloaded}
 
-\def\dofetchruntimecommand#1#2%
-  {\doifnotflagged{#2}
-     {\let#1\undefined
-      \startreadingfile
-      \startnointerference % \bgroup
-      \cleanupfeatures % better \setnormalcatcodes / test first
-      \readfile{#2.\mksuffix}\donothing\donothing
-      \stopnointerference  % \egroup
-      \stopreadingfile
-      \doglobal\setflag{#2}}%
+\unexpanded\def\fetchruntimecommand#1#2%
+  {\unexpanded\def#1{\dofetchruntimecommand#1{#2}}}
+
+\def\dofetchruntimecommand#1#2% actually a test on #1 being define would be ok as well
+  {\ifcsname\??runtimeloaded#2\endcsname
+     % already loaded
+   \else
+     \global\let#1\undefined
+     \startreadingfile
+     \startnointerference % \bgroup
+     \cleanupfeatures % better \setnormalcatcodes / test first
+     \readfile{#2.\mksuffix}\donothing\donothing
+     \stopnointerference  % \egroup
+     \stopreadingfile
+     \setgvalue{\??runtimeloaded#2}\empty
+   \fi
    \ifx#1\undefined
      \writestatus\m!system{command \string#1 not found in file #2}%
-     \gdef#1{{\infofont[unknown command \string#1]}}%
+     \unexpanded\gdef#1{{\infofont[unknown command \string#1]}}%
    \fi
    #1}
 
@@ -174,21 +234,17 @@
 %D
 %D The version pattern is \type {yyyy.mm.dd} (with mm and dd being optional).
 
-\def\doifolderversionelse#parent#child{\ctxcommand{doifolderversionelse("#parent","#child")}}
-\def\doifoldercontextelse       #child{\ctxcommand{doifolderversionelse("#child")}}
+\unexpanded\def\doifolderversionelse#parent#child{\ctxcommand{doifolderversionelse("#parent","#child")}}
+\unexpanded\def\doifoldercontextelse       #child{\ctxcommand{doifolderversionelse("#child")}}
 
-%D Experimental:
-
-\let\checkpreprocessor\relax
-
-%D To be documented and probably moved
-
-\def\documentresources{\@@erurl}
-
-\unexpanded\def\setupexternalresources
-  {\dodoubleargument\getparameters[\??er]}
-
-\setupexternalresources
-  [url=]
+% obsolete
+%
+% \def\documentresources{\@@erurl}
+%
+% \unexpanded\def\setupexternalresources
+%   {\dodoubleargument\getparameters[\??er]}
+%
+% \setupexternalresources
+%   [url=]
 
 \protect \endinput
