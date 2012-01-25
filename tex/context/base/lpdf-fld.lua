@@ -474,7 +474,7 @@ function codeinjections.exportformdata(name)
         result[#result+1] = format("    <field name='%s'><value>%s</value></field>",v.name or k,v.default or "")
     end
     local base = file.basename(tex.jobname)
-    local xfdf = format(xfdftemplate,base,table.concat(result))
+    local xfdf = format(xfdftemplate,base,table.concat(result,"\n"))
     if not name or name == "" then
         name = base
     end

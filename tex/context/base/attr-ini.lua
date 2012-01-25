@@ -32,6 +32,9 @@ storage.register("attributes/names",   names,   "attributes.names")
 storage.register("attributes/numbers", numbers, "attributes.numbers")
 storage.register("attributes/list",    list,    "attributes.list")
 
+names  [0]             = "fontdynamic"
+numbers["fontdynamic"] = 0
+
 function attributes.define(name,number) -- at the tex end
     if not numbers[name] then
         numbers[name] = number
@@ -87,21 +90,33 @@ end
 
 -- new (actually a tracer)
 
-function attributes.ofnode(n)
-    local a = n.attr
-    if a then
-        a = a.next
+local report_attribute = logs.reporter("attributes")
+
+local function showlist(what,list)
+    if list then
+        local a = list.next
+        local i = 0
         while a do
             local number, value = a.number, a.value
-            texio.write_nl(format("%s : attribute %3i, value %4i, name %s",tostring(n),number,value,names[number] or '?'))
+            i = i + 1
+            report_attribute("%s %2i: attribute %3i, value %4i, name %s",tostring(what),i,number,value,names[number] or '?')
             a = a.next
         end
    end
 end
 
+function attributes.showcurrent()
+    showlist("current",node.current_attr())
+end
+
+function attributes.ofnode(n)
+    showlist(n,n.attr)
+end
+
 -- interface
 
 commands.defineattribute = attributes.define
+commands.showattributes  = attributes.showcurrent
 
 function commands.getprivateattribute(name)
     context(attributes.private(name))

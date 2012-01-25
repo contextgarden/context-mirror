@@ -21,16 +21,20 @@
 
 \registerctxluafile{attr-ini}{1.001}
 
+\installcorenamespace{attributecount}  % the counter representing the attribute (attrdef'd)
+\installcorenamespace{attributeid}     % the internal number
+\installcorenamespace{attributestack}  % the attribute specific stack
+
 \unexpanded\def\pushattribute#1%
-  {\global\advance\csname\??ae:\string#1\endcsname\plusone
-   \global\expandafter\mathchardef\csname\??ae:\string#1:\number\csname\??ae:\string#1\endcsname\endcsname\attribute#1}
+  {\global\advance\csname\??attributestack\string#1\endcsname\plusone
+   \global\expandafter\mathchardef\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname\attribute#1}
 
 \unexpanded\def\popattribute#1%
-  {\attribute#1\csname\??ae:\string#1:\number\csname\??ae:\string#1\endcsname\endcsname
-   \global\advance\csname\??ae:\string#1\endcsname\minusone}
+  {\attribute#1\csname\??attributestack\string#1:\number\csname\??attributestack\string#1\endcsname\endcsname
+   \global\advance\csname\??attributestack\string#1\endcsname\minusone}
 
 \unexpanded\def\installattributestack#1%
-  {\expandafter\newcount\csname\??ae:\string#1\endcsname}
+  {\expandafter\newcount\csname\??attributestack\string#1\endcsname}
 
 \newtoks \attributesresetlist
 
@@ -41,31 +45,31 @@
   {\dodoubleempty\attr_basics_define}
 
 \def\attr_basics_define[#1][#2]% alternatively we can let lua do the housekeeping
-  {\expandafter\newattribute\csname\??ae:a:#1\endcsname
-   \expandafter\newconstant \csname\??ae:c:#1\endcsname
-   \csname\??ae:c:#1\endcsname\c_syst_last_allocated_attribute
+  {\expandafter\newattribute\csname\??attributecount#1\endcsname
+   \expandafter\newconstant \csname\??attributeid#1\endcsname
+   \csname\??attributeid#1\endcsname\c_syst_last_allocated_attribute
    \ctxcommand{defineattribute("#1",\number\c_syst_last_allocated_attribute)}%
-   \doifnotinset\s!global{#2}{\appendetoks\csname\??ae:a:#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
-   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??ae:c:#1\endcsname}}
+   \doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
 
 \unexpanded\def\definesystemattribute
   {\dodoubleempty\attr_basics_define_system}
 
 \def\attr_basics_define_system[#1][#2]% alternatively we can let lua do the housekeeping
   {\scratchcounter\ctxcommand{getprivateattribute("#1")}\relax
-   \expandafter\attributedef\csname\??ae:a:#1\endcsname\scratchcounter
-   \expandafter\newconstant \csname\??ae:c:#1\endcsname
-   \csname\??ae:c:#1\endcsname\scratchcounter
+   \expandafter\attributedef\csname\??attributecount#1\endcsname\scratchcounter
+   \expandafter\newconstant \csname\??attributeid#1\endcsname
+   \csname\??attributeid#1\endcsname\scratchcounter
   %\writestatus\m!system{defining system attribute #1 with number \number\scratchcounter}%
-   \doifnotinset\s!global{#2}{\appendetoks\csname\??ae:a:#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
-   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??ae:c:#1\endcsname}}
+   \doifnotinset\s!global{#2}{\appendetoks\csname\??attributecount#1\endcsname\attributeunsetvalue\to\attributesresetlist}%
+   \doifinset   \s!public{#2}{\expandafter\let\csname#1attribute\expandafter\endcsname\csname\??attributeid#1\endcsname}}
 
 % expandable so we can \edef them for speed
 
-\def\dosetattribute#1#2{\csname\??ae:a:#1\endcsname#2\relax}
-\def\doresetattribute#1{\csname\??ae:a:#1\endcsname\attributeunsetvalue}
-\def\dogetattribute  #1{\number\csname\??ae:a:#1\endcsname}
-\def\dogetattributeid#1{\number\csname\??ae:c:#1\endcsname}
+\def\dosetattribute#1#2{\csname\??attributecount#1\endcsname#2\relax}
+\def\doresetattribute#1{\csname\??attributecount#1\endcsname\attributeunsetvalue}
+\def\dogetattribute  #1{\number\csname\??attributecount#1\endcsname}
+\def\dogetattributeid#1{\number\csname\??attributeid#1\endcsname}
 
 \let\dompattribute\gobbletwoarguments
 
@@ -95,5 +99,7 @@
 \definesystemattribute [internal]        [public]
 \definesystemattribute [ruled]           [public]
 \definesystemattribute [shifted]         [public]
+
+\unexpanded\def\showattributes{\ctxcommand{showattributes()}}
 
 \protect \endinput

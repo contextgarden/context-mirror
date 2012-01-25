@@ -38,8 +38,6 @@
 
 % n>1 #### needed, strange # interaction in recurse
 
-\def\presetdisplaymath{\displ@y}
-
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \dorecurse{\mathalignmentparameter\c!m}
@@ -57,16 +55,22 @@
 \def\math_math_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks\displaystyle{{}#1{}}$}
 \def\math_text_in_eqalign#1{$\tabskip\zeropoint\everycr\emptytoks#1$}
 
+\def\displayopenupvalue{.25\bodyfontsize}
+
 \def\eqalign#1% why no halign here, probably because of displaywidth
-  {\emptyhbox\,\vcenter
-     {\openup.25\bodyfontsize% was: \openup\jot
+  {\emptyhbox
+   \mskip\thinmuskip
+   \vcenter
+     {\openup\displayopenupvalue % was: \openup\jot
       \mathsurround\zeropoint
-      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}%
-   }\,}
+      \ialign{\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##{}}$\hfil\crcr#1\crcr}}%
+   \mskip\thinmuskip}
 
 % preamble is scanned for tabskips so we need the span to prevent an error message
 
 \setnewconstant\eqalignmode\plusone
+
+% use zeroskipplusfill
 
 \def\math_prepare_r_eqalign_no
   {\!!toksa{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{##}\math_right_of_eqalign\tabskip\zeropoint}%
@@ -80,7 +84,7 @@
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
-   \presetdisplaymath
+   \the\mathdisplayaligntweaks
    \tabskip\centering}
 
 \def\math_prepare_l_eqalign_no
@@ -96,12 +100,12 @@
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
-   \presetdisplaymath
+   \the\mathdisplayaligntweaks
    \tabskip\centering}
 
 \def\math_both_eqalign_no#1#2%
   {\ifmmode
-     \displ@y % \let\doplaceformulanumber\relax % strange hack
+     \the\mathdisplayaligntweaks % \let\doplaceformulanumber\relax % strange hack
      \vcenter\bgroup
      \let\math_finish_eqalign_no\egroup
    \else
@@ -113,7 +117,7 @@
 
 \def\math_both_eqalign_no_aligned#1%
   {\ifmmode
-    \displ@y
+    \the\mathdisplayaligntweaks
     \global\mathnumberstatus\plusone
     \ifcase\mathraggedstatus
        \def\math_finish_eqalign_no{\crcr\egroup}%
@@ -144,7 +148,7 @@
 \let     \leqalignno \math_handle_eqalign_no_l_normal
 \let\alignreqalignno \math_handle_eqalign_no_r_aligned
 \let\alignleqalignno \math_handle_eqalign_no_l_aligned
-\let     \equalignno \math_handle_eqalign_no_r_normal
+\let      \eqalignno \math_handle_eqalign_no_r_normal
 \let \aligneqalignno \math_handle_eqalign_no_r_aligned
 
 %D Here we implement the user interface part. We start with basic math alignments:
@@ -406,7 +410,7 @@
 \setupmathcases
   [\c!distance=1em,
    \c!numberdistance=2.5em,
-   \c!left={\left\{\,},
+   \c!left={\left\{\mskip\thinmuskip},
    \c!right={\right.}]
 
 \appendtoks
@@ -625,7 +629,7 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D \definemathmatrix[bmatrix][left={\left[\,},right={\,\right]}]
+%D \definemathmatrix[bmatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]}]
 %D
 %D \startbuffer
 %D \placeformula \startformula[-] \startbmatrix
@@ -1146,7 +1150,7 @@
 % \NC 3 \NC z \NC c \NR
 % \stopmatrix \stopformula
 
-% \definemathmatrix[bordermatrix][left={\left[\,},right={\,\right]}]
+% \definemathmatrix[bordermatrix][left={\left[\mskip\thinmuskip},right={\mskip\thinmuskip\right]}]
 
 % \placeformula \startformula[-] \startbordermatrix
 % \NC 1 \NC x \NC a \NR

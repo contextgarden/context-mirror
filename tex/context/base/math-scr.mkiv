@@ -15,57 +15,40 @@
 
 \unprotect
 
-%D These macros were first needed by Frits Spijker (also
-%D known as Gajes) for typesetting the minus sign that is
-%D keyed into scientific calculators.
+%D These macros were first needed by Frits (Gajes) Spijker
+%D (of the Math4All project that we participate in), and used
+%D for typesetting the minus sign that is keyed into scientific
+%D calculators. We use the monospaced signs, that we also define
+%D as symbol, so that they can be overloaded.
 
-% This is the first alternative, which works okay for the
-% minus, but less for the plus.
-%
-% \def\dodoraisedmathord#1#2#3%
-%   {\mathord{{#2\raise.#1ex\hbox{#2#3}}}}
-%
-% \def\doraisedmathord#1%
-%   {\mathchoice
-%      {\dodoraisedmathord5\tf  #1}%
-%      {\dodoraisedmathord5\tf  #1}%
-%      {\dodoraisedmathord4\tfx #1}%
-%      {\dodoraisedmathord3\tfxx#1}}
-%
-% \def\negative{\doraisedmathord-}
-% \def\positive{\doraisedmathord+}
-%
-% So, now we use the monospaced signs, that we also
-% define as symbol, so that they can be overloaded.
+\def\math_scripts_raised_symbol#1%
+  {\mathchoice
+     {\math_scripts_raised_symbol_indeed5\tf {#1}}%
+     {\math_scripts_raised_symbol_indeed5\tf {#1}}%
+     {\math_scripts_raised_symbol_indeed4\tx {#1}}%
+     {\math_scripts_raised_symbol_indeed3\txx{#1}}}
 
-\def\dodoraisedmathord#1#2#3%
+\def\math_scripts_raised_symbol_indeed#1#2#3%
   {\mathord{{#2\raise.#1ex\hbox{#2\symbol[#3]}}}}
 
-\def\doraisedmathord#1%
+\def\math_scripts_raised_number#1%
   {\mathchoice
-     {\dodoraisedmathord5\tf {#1}}%
-     {\dodoraisedmathord5\tf {#1}}%
-     {\dodoraisedmathord4\tx {#1}}%
-     {\dodoraisedmathord3\txx{#1}}}
+     {\math_scripts_raised_number_indeed\tf {#1}}%
+     {\math_scripts_raised_number_indeed\tf {#1}}%
+     {\math_scripts_raised_number_indeed\tx {#1}}%
+     {\math_scripts_raised_number_indeed\txx{#1}}}
 
-\def\dodonumbermathord#1#2%
+\def\math_scripts_raised_number_indeed#1#2%
   {\setbox\scratchbox\hbox{0}%
    \mathord{\hbox to \wd\scratchbox{\hss#1\symbol[#2]\hss}}}
-
-\def\donumbermathord#1%
-  {\mathchoice
-     {\dodonumbermathord\tf {#1}}%
-     {\dodonumbermathord\tf {#1}}%
-     {\dodonumbermathord\tx {#1}}%
-     {\dodonumbermathord\txx{#1}}}
 
 \definesymbol[positive]  [\getglyph{Mono}{+}]
 \definesymbol[negative]  [\getglyph{Mono}{-}]
 \definesymbol[zeroamount][\getglyph{Mono}{-}]
 
-\def\negative  {\doraisedmathord{negative}}
-\def\positive  {\doraisedmathord{positive}}
-\def\zeroamount{\donumbermathord{zeroamount}}
+\unexpanded\def\negative  {\math_scripts_raised_symbol{negative}}
+\unexpanded\def\positive  {\math_scripts_raised_symbol{positive}}
+\unexpanded\def\zeroamount{\math_scripts_raised_number{zeroamount}}
 
 %D How negative such a symbol looks is demonstrated in:
 %D $\negative 10^{\negative 10^{\negative 10}}$.

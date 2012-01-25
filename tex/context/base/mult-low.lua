@@ -98,6 +98,10 @@ return {
         "startmodule", "stopmodule", "usemodule",
         --
         "typescriptone", "typescripttwo", "typescriptthree", "mathsizesuffix",
+        --
+        "mathordcode", "mathopcode", "mathbincode", "mathrelcode", "mathopencode", "mathclosecode",
+        "mathpunctcode", "mathalphacode", "mathinnercode", "mathnothingcode", "mathlimopcode",
+        "mathnolopcode", "mathboxcode", "mathchoicecode", "mathaccentcode", "mathradicalcode",
     },
     ["helpers"] = {
         --
@@ -120,6 +124,8 @@ return {
         "htdp",
         "unvoidbox",
         "vfilll",
+        --
+        "mathbox", "mathlimop", "mathnolop", "mathnothing", "mathalpha",
         --
         "currentcatcodetable", "defaultcatcodetable", "catcodetablename",
         "newcatcodetable", "startcatcodetable", "stopcatcodetable", "startextendcatcodetable", "stopextendcatcodetable",
@@ -199,6 +205,8 @@ return {
         "firstoffourarguments", "secondoffourarguments", "thirdoffourarguments", "fourthoffourarguments",
         "firstoffivearguments", "secondoffivearguments", "thirdoffivearguments", "fourthoffivearguments", "fifthoffivearguments",
         "firstofsixarguments", "secondofsixarguments", "thirdofsixarguments", "fourthofsixarguments", "fifthofsixarguments", "sixthofsixarguments",
+        --
+        "firstofoneunexpanded",
         --
         "gobbleoneargument", "gobbletwoarguments", "gobblethreearguments", "gobblefourarguments", "gobblefivearguments", "gobblesixarguments", "gobblesevenarguments", "gobbleeightarguments", "gobbleninearguments", "gobbletenarguments",
         "gobbleoneoptional", "gobbletwooptionals", "gobblethreeoptionals", "gobblefouroptionals", "gobblefiveoptionals",

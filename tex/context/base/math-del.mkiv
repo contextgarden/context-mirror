@@ -27,22 +27,24 @@
 %D \fakerightdelimiter
 %D \stoptyping
 
-\newcount\delimitercount
+% Actually we can do better now with lua hacks.
 
-\def\leftfakedelimiter {\advance\delimitercount\minusone\gobbleoneargument}%
-\def\rightfakedelimiter{\advance\delimitercount\plusone \gobbleoneargument}%
+\newcount\c_math_delimiter_nesting
+
+\def\leftfakedelimiter {\advance\c_math_delimiter_nesting\minusone\gobbleoneargument}
+\def\rightfakedelimiter{\advance\c_math_delimiter_nesting\plusone \gobbleoneargument}
 
 \def\checkdelimiters#1%
-  {\delimitercount\zerocount
+  {\c_math_delimiter_nesting\zerocount
    \setbox\scratchbox\hbox\bgroup
      \let\left \leftfakedelimiter
      \let\right\rightfakedelimiter
      $#1\expandafter$\expandafter
    \egroup
-   \expandafter\delimitercount\the\delimitercount\relax}
+   \expandafter\c_math_delimiter_nesting\the\c_math_delimiter_nesting\relax}
 
-\def\fakeleftdelimiter {\ifnum\delimitercount>\zerocount\left .\fi}
-\def\fakerightdelimiter{\ifnum\delimitercount<\zerocount\right.\fi}
+\def\fakeleftdelimiter {\ifnum\c_math_delimiter_nesting>\zerocount\left .\fi}
+\def\fakerightdelimiter{\ifnum\c_math_delimiter_nesting<\zerocount\right.\fi}
 
 %D The following macros are used in the MathML interpreter, so
 %D there is a good change of them never being documented for
@@ -51,11 +53,11 @@
 \let\normalordelimiter\secondoftwoarguments
 \let\normalorfiller   \firstoftwoarguments
 
-\def\enabledelimiter {\let\normalordelimiter\secondoftwoarguments}
-\def\disabledelimiter{\let\normalordelimiter\firstoftwoarguments}
+\unexpanded\def\enabledelimiter {\let\normalordelimiter\secondoftwoarguments}
+\unexpanded\def\disabledelimiter{\let\normalordelimiter\firstoftwoarguments}
 
-\def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
-\def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
+\unexpanded\def\enablefiller    {\let\normalorfiller\secondoftwoarguments}
+\unexpanded\def\disablefiller   {\let\normalorfiller\firstoftwoarguments}
 
 \def\mathopnolimits#1{\mathop{\mr#1}\nolimits} % was \rm, which follows text fonts (used in mml parser)
 \def\mathopdolimits#1{\mathop{\mr#1}}          % was \rm, which follows text fonts (used in mml parser)

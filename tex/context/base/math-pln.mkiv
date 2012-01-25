@@ -11,200 +11,44 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This is a temporary module, some of this code will move to
-%D the other math modules. Much is copied from Plain \TEX.
-
-% \points should become \bodyfontsize
+%D Here we collect some Plain \TEX\ leftovers.
 
 \writestatus{loading}{ConTeXt Math Macros / Plain Helpers}
 
 \unprotect
 
-\ifx\displ@y\undefined \let\displ@y\relax\fi
+% we need proper unicode:
+
+\def\relbar{\mathrel{\smash-}} % - has the same height as + .. no clue what this refers to
+
+% might change
+
+\unexpanded\def\hrulefill{\leaders\hrule\hfill}
+\unexpanded\def\dotfill  {\cleaders\hbox{$\mathsurround\zeropoint\mkern1.5mu.\mkern1.5mu$}\hfill}
+
+% will move
 
 \def\oalign#1%
   {\leavevmode
    \vtop
-     {\baselineskip\zeroskip \lineskip.25ex%
+     {\baselineskip\zeroskip
+      \lineskip.25\exheight
       \ialign{##\crcr#1\crcr}}}
-
-\def\o@lign
-  {\lineskiplimit\zeropoint \oalign}
 
 \def\ooalign % chars over each other
   {\lineskiplimit-\maxdimen
    \oalign}
 
-\def\sh@ft#1% kern by #1 times the current slant
-  {\dimen@#1%
-   \kern\expandafter\withoutpt\the\slantperpoint
-   \dimen@}
-
-\def\dots
-  {\relax\ifmmode\ldots\else$\mathsurround\zeropoint\ldots\,$\fi}
-
-\def\hrulefill
-  {\leaders\hrule\hfill}
-
-\def\dotfill
-  {\cleaders\hbox{$\mathsurround\zeropoint \mkern1.5mu.\mkern1.5mu$}\hfill}
-
-\def\rightarrowfill
-  {$\mathsurround\zeropoint\smash-\mkern-7mu%
-   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
-   \mkern-7mu\mathord\rightarrow$}
-
-\def\leftarrowfill
-  {$\mathsurround\zeropoint\mathord\leftarrow\mkern-7mu%
-   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
-   \mkern-7mu\smash-$}
-
-% \let\sp=^ % obsolete
-% \let\sb=_ % obsolete
-
-\ifx\,\undefined \def\,{\mskip \thinmuskip } \fi
-\ifx\>\undefined \def\>{\mskip \medmuskip  } \fi
-\ifx\;\undefined \def\;{\mskip \thickmuskip} \fi
-\ifx\!\undefined \def\!{\mskip-\thinmuskip } \fi
-\ifx\*\undefined \def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
-
-% \switchtobodyfont[modern]
-% \switchtobodyfont[cambria]
-% \switchtobodyfont[xits]
-% \switchtobodyfont[minion]
-% \setupbodyfont[dejavu]
-%
-% \startbuffer
-% \def\SampleLine#1{%
-%    \NC#1
-%    \NC\switchtobodyfont[#1]$f^2$                       %  1
-%    \NC\switchtobodyfont[#1]$f\prime^2$                 %  2
-%    \NC\switchtobodyfont[#1]$f\prime\prime^2$           %  3
-%    \NC\switchtobodyfont[#1]$f\prime\prime\prime^2$     %  4
-%    \NC\switchtobodyfont[#1]$f{\prime}^2$               %  5
-%    \NC\switchtobodyfont[#1]$f{\prime\prime}^2$         %  6
-%    \NC\switchtobodyfont[#1]$f{\prime\prime\prime}^2$   %  7
-%    \NC\switchtobodyfont[#1]$f'(x)$                     %  8
-%    \NC\switchtobodyfont[#1]$f''(x)$                    %  9
-%    \NC\switchtobodyfont[#1]$f'''(x)$                   % 10
-%    \NC\NR
-% }
-%
-% \starttabulate[|Tl|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|Tc|]
-%     \NC\NC1\NC2\NC3\NC4\NC5\NC6\NC7\NC8\NC9\NC10\NC\NR
-%     \SampleLine{modern}
-%     \SampleLine{cambria}
-%     \SampleLine{xits}
-%     \SampleLine{minion}
-% \stoptabulate
-% \stopbuffer
-%
-% \typebuffer \getbuffer
-
-{ \catcode\circumflexasciicode\othercatcode       \global\let\othercircumflextoken      ^ }
-{ \catcode\circumflexasciicode\superscriptcatcode \global\let\superscriptcircumflextoken^ }
-
-% collapsing to 0x2033 and 0x2034 happens elsewhere
-
-\ifdefined \prime \else
-    \Umathchardef\prime "0 "0 "2032
-\fi
-
-\let\normalprime\prime
-
-% The \let\prime\domathprime might become an obsolete as we have \doubleprime and \tripleprime
-% and collapsing can nicely handle the script then
-
-\appendtoks
-    \let\normalprime\prime % gets defined later
-    \let\prime\domathprime % so this is needed
-\to \everydump
-
-\unexpanded\def\domathprime
-  {\iffontchar\textfont\zerocount"FE325\relax
-    ^\bgroup\expandafter\dodomathprime % virtual mess (using funny signal)
-   \else
-     \expandafter\normalprime % gets collapsed
-   \fi}
-
-\let\prime\domathprime
-
-\def\dodomathprime
-  {\normalprime\futurelet\nexttoken\dododomathprime}
-
-\def\dododomathprime
-  {\csname domathprime@%
-     \ifx                          '\nexttoken a\else
-     \ifx               \normalprime\nexttoken a\else
-     \ifx                     \prime\nexttoken a\else
-     \ifx\superscriptcircumflextoken\nexttoken b\else
-     \ifx\othercircumflextoken      \nexttoken b\else
-                                               c\fi\fi\fi\fi\fi
-   \endcsname}
-
-\def\domathprime@a  #1{\dodomathprime}
-\def\domathprime@b#1#2{#2\egroup}
-\def\domathprime@c    {\egroup}
-
-\let\activemathprime\domathprime
-
-% {\catcode`\_=\activecatcode \global\let_=\_} % _ in math is either subscript or \_
-
-\let\activemathunderscore\_
-
-\def\relbar            {\mathrel{\smash-}} % - has the same height as +
-\def\Relbar            {\mathrel=}
-
-\def\Longrightarrow    {\Relbar\joinrel\Rightarrow}       % beware, this overloades cambria native
-\def\longrightarrow    {\relbar\joinrel\rightarrow}
-\def\longleftarrow     {\leftarrow\joinrel\relbar}
-\def\Longleftarrow     {\Leftarrow\joinrel\Relbar}
-\def\longmapsto        {\mapstochar\longrightarrow}
-\def\longleftrightarrow{\leftarrow\joinrel\rightarrow}
-\def\Longleftrightarrow{\Leftarrow\joinrel\Rightarrow}
+% needs checking
 
 \def\choose{\atopwithdelims()}
 \def\brack {\atopwithdelims[]}
 \def\brace {\atopwithdelims\{\}}
 
-\def\mathpalette#1#2%
-  {\mathchoice
-     {#1\displaystyle     {#2}}%
-     {#1\textstyle        {#2}}%
-     {#1\scriptstyle      {#2}}%
-     {#1\scriptscriptstyle{#2}}}
+% needs checking
 
-\def\cong
-  {\mathrel{\mathpalette\@vereq\sim}} % congruence sign
-
-\def\@vereq#1#2%
-  {\lower.5\points\vbox{\lineskiplimit\maxdimen\lineskip-.5\points
-   \ialign{$\mathsurround\zeropoint#1\hfil##\hfil$\crcr#2\crcr=\crcr}}}
-
-\def\notin
-  {\mathrel{\mathpalette\c@ncel\in}}
-
-\def\c@ncel#1#2%
-  {\mathsurround\zeropoint\ooalign{$\hfil#1\mkern1mu/\hfil$\crcr$#1#2$}}
-
-\def\rightleftharpoons
-  {\mathrel{\mathpalette\rlh@{}}}
-
-\def\rlh@#1%
-  {\vcenter
-     {\mathsurround\zeropoint
-      \hbox
-        {\ooalign
-           {\raise2pt\hbox{$#1\rightharpoonup$}\crcr
-            $#1\leftharpoondown$}}}}
-
-\def\buildrel#1\over#2%
+\unexpanded\def\buildrel#1\over#2%
   {\mathrel{\mathop{\kern\zeropoint#2}\limits^{#1}}}
-
-\def\doteq
-  {\buildrel\textstyle.\over=}
-
-\ifx\mfunction\undefined \def\mfunction#1{\mathbin{\rm#1}} \fi
 
 \unexpanded\def\bmod
   {\nonscript
@@ -219,11 +63,11 @@
 \unexpanded\def\pmod#1%
   {\allowbreak
    \mkern18mu
-   (\mfunction{mod}\,\,#1)}
+   (\mfunction{mod}\mskip\medmuskip#1)}
 
 \unexpanded\def\cases#1%
   {\left\{%
-   \,%
+   \mskip\thinmuskip
    \vcenter
      {\normalbaselines
       \mathsurround\zeropoint
@@ -232,114 +76,30 @@
 
 \unexpanded\def\matrix#1%
   {\emptyhbox
-   \,%
+   \mskip\thinmuskip
    \vcenter
      {\normalbaselines\mathsurround\zeropoint
       \ialign{\hfil$##$\hfil&&\quad\hfil$##$\hfil\crcr
       \mathstrut\crcr\noalign{\kern-\baselineskip}
       #1\crcr\mathstrut\crcr\noalign{\kern-\baselineskip}}}%
-   \,}
+   \mskip\thinmuskip}
 
 \unexpanded\def\pmatrix#1%
   {\left(\matrix{#1}\right)}
 
-\newdimen\mathparentwd
-
-% \setbox0=\hbox{\tenex B} \mathparentwd=\wd0 % width of the big left (
-
-\unexpanded\def\bordermatrix#1%
-  {\begingroup
-   \mathsurround\zeropoint
-   \setbox\zerocount\vbox
-     {\def\cr{\crcr\noalign{\kern2\points\global\let\cr\endline}}%
-      \ialign{$##$\hfil\kern2\points\kern\mathparentwd&\thinspace\hfil$##$\hfil
-        &&\quad\hfil$##$\hfil\crcr
-        \omit\strut\hfil\crcr\noalign{\kern-\baselineskip}%
-        #1\crcr\omit\strut\cr}}%
-   \setbox\plustwo\vbox
-     {\unvcopy\zerocount\global\setbox\plusone\lastbox}%
-   \setbox\plustwo\hbox
-     {\unhbox\plusone\unskip\global\setbox\plusone\lastbox}%
-   \setbox\plustwo\hbox
-     {$\kern\wd\plusone\kern-\mathparentwd\left(\kern-\wd\plusone
-      \global\setbox\plusone\vbox{\box\plusone\kern2\points}%
-      \vcenter{\kern-\ht\plusone\unvbox\zerocount\kern-\baselineskip}\,\right)$}%
-   \emptyhbox
-   \;%
-   \vbox{\kern\ht\plusone\box\plustwo}%
-   \endgroup}
-
-% \def\openup{\afterassignment\@penup\dimen@=}
-%
-% \def\@penup{\advance\lineskip\dimen@
-%   \advance\baselineskip\dimen@
-%   \advance\lineskiplimit\dimen@}
-
 \unexpanded\def\openup
-  {\afterassignment\doopenup\scratchdimen=}
+  {\afterassignment\math_openup\scratchdimen=}
 
-\def\doopenup
+\def\math_openup
   {\advance\lineskip     \scratchdimen
    \advance\baselineskip \scratchdimen
    \advance\lineskiplimit\scratchdimen}
 
-% \def\jot{.25\bodyfontsize} % plain tex: 3 pt (todo: better name and configurable)
-
-\def\displayopenupvalue{.25\bodyfontsize}
-
-\unexpanded\def\eqalign#1%
-  {\emptyhbox
-   \,%
-   \vcenter
-     {\openup\displayopenupvalue % was \openup\jot
-      \mathsurround\zeropoint
-      \ialign
-        {\strut\hfil$\displaystyle{##}$&$\displaystyle{{}##}$\hfil\crcr
-         #1\crcr}}%
-   \,}
-
-\def\@lign % restore inside \displ@y
-  {\tabskip\zeroskip
-   \everycr{}}
-
 \unexpanded\def\displaylines#1%
-  {\displ@y
+  {\the\mathdisplayaligntweaks
    \tabskip\zeroskip
    \halign
-     {\hbox to \displaywidth{$\@lign\hfil\displaystyle##\hfil$}\crcr
+     {\hbox to \displaywidth{$\tabskip\zeroskip\everycr\emptytoks\hfil\displaystyle##\hfil$}\crcr
       #1\crcr}}
-
-\def\eqalignno#1% \unexpanded (needs testing in alignments)
-  {\displ@y
-   \tabskip\centering
-   \halign to \displaywidth
-     {\hfil$\@lign\displaystyle{##}$\tabskip\zeroskip
-      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
-      &\llap{$\@lign##$}\tabskip\zeroskip\crcr
-      #1\crcr}}
-
-\def\leqalignno#1% \unexpanded (needs testing in alignments)
-  {\displ@y
-   \tabskip\centering
-   \halign to \displaywidth
-     {\hfil$\@lign\displaystyle{##}$\tabskip\zeroskip
-      &$\@lign\displaystyle{{}##}$\hfil\tabskip\centering
-      &\kern-\displaywidth\rlap{$\@lign##$}\tabskip\displaywidth\crcr
-      #1\crcr}}
-
-% temporary here (weird code)
-
-% \startcatcodetable \mthcatcodes
-%     \setcatcodetable\ctxcatcodes
-%     \catcode`\_ = 13
-%     \catcode`\' = 13
-% \stopcatcodetable
-%
-% \letcatcodecommand \mthcatcodes `\_ \activemathunderscore
-% \letcatcodecommand \mthcatcodes `\' \activemathquote
-
-% \appendtoks \setcatcodetable\mthcatcodes \to \everymath : spoils xml
-
-% so far
 
 \protect \endinput

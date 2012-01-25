@@ -8,11 +8,15 @@ if not modules then modules = { } end modules ['math-ext'] = {
 
 -- if needed we can use the info here to set up xetex definition files
 -- the "8000 hackery influences direct characters (utf) as indirect \char's
+--
+-- isn't characters.data loaded already ... shortcut it here
 
 local format, utfchar, utfbyte = string.format, utf.char, utf.byte
 local setmathcode, setdelcode = tex.setmathcode, tex.setdelcode
 local texattribute = tex.attribute
 local floor = math.floor
+
+local context = context
 
 local contextsprint = context.sprint
 local contextfprint = context.fprint -- a bit inefficient
@@ -316,27 +320,40 @@ end
 
 -- needed for mathml analysis
 
-function mathematics.utfmathclass(chr, default)
+local function utfmathclass(chr, default)
     local cd = characters.data[utfbyte(chr)]
     return (cd and cd.mathclass) or default or "unknown"
 end
 
-function mathematics.utfmathstretch(chr, default) -- "h", "v", "b", ""
+local function utfmathstretch(chr, default) -- "h", "v", "b", ""
     local cd = characters.data[utfbyte(chr)]
     return (cd and cd.mathstretch) or default or ""
 end
 
-function mathematics.utfmathcommand(chr, default)
+local function utfmathcommand(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and cd.mathname
     return cmd or default or ""
 end
 
-function mathematics.utfmathfiller(chr, default)
+local function utfmathfiller(chr, default)
     local cd = characters.data[utfbyte(chr)]
     local cmd = cd and (cd.mathfiller or cd.mathname)
     return cmd or default or ""
 end
+
+mathematics.utfmathclass   = utfmathclass
+mathematics.utfmathstretch = utfmathstretch
+mathematics.utfmathcommand = utfmathcommand
+mathematics.utfmathfiller  = utfmathfiller
+
+-- interfaced
+
+function commands.utfmathclass  (chr) context(utfmathclass  (chr)) end
+function commands.utfmathstretch(chr) context(utfmathstretch(chr)) end
+function commands.utfmathcommand(chr) context(utfmathcommand(chr)) end
+function commands.utfmathfiller (chr) context(utfmathfiller (chr)) end
+
 
 -- helpers
 
