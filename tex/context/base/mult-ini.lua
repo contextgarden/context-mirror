@@ -154,10 +154,13 @@ local splitter = lpeg.splitat(",")
 function interfaces.showmessage(category,tag,arguments)
     local r = reporters[category]
     local f = formats[fulltag(category,tag)]
-    if type(arguments) == "string" and #arguments > 0 then
+    local t = type(arguments)
+    if t == "string" and #arguments > 0 then
         r(f,lpegmatch(splitter,arguments))
-    elseif arguments then
+    elseif t == "table" then
         r(f,unpack(arguments))
+    elseif arguments then
+        r(f,arguments)
     else
         r(f)
     end
