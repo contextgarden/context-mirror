@@ -479,7 +479,7 @@ local function register(askedname,specification)
                             report_inclusion("no need to convert '%s' (%s) from '%s' to '%s'",askedname,oldname,format,newformat)
                         end
                     end
-                    if io.exists(newname) then
+                    if io.exists(newname) and io.size(newname) > 0 then
                         specification.foundname = oldname
                         specification.fullname  = newname
                         specification.prefix    = prefix
@@ -498,7 +498,7 @@ local function register(askedname,specification)
                             end
                         end
                     elseif io.exists(oldname) then
-                        specification.fullname  = newname
+                        specification.fullname  = oldname -- was newname
                         specification.converted = false
                     end
                 end

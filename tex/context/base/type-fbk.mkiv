@@ -17,7 +17,7 @@
 \definetypescriptprefix [sans]  [Sans]
 \definetypescriptprefix [mono]  [Mono]
 
-\definefontsynonym [DefaultFont] [\s!file:lmmonoprop10-regular] % was cmvtt10
+\definefontsynonym [DefaultFont] [\s!file:lmmonoproplt10-regular]
 
 \startsetups [font:fallback:serif]
     \definefontsynonym [Serif]            [DefaultFont]
@@ -26,7 +26,7 @@
     \definefontsynonym [SerifSlanted]     [SerifItalic]
     \definefontsynonym [SerifBoldItalic]  [Serif]
     \definefontsynonym [SerifBoldSlanted] [SerifBoldItalic]
-    \definefontsynonym [SerifCaps]        [Serif]
+    \definefontsynonym [SerifCaps]        [Serif] [\s!features=smallcaps]
 \stopsetups
 
 \startsetups [font:fallback:sans]
@@ -36,7 +36,7 @@
     \definefontsynonym [SansSlanted]     [SansItalic]
     \definefontsynonym [SansBoldItalic]  [Sans]
     \definefontsynonym [SansBoldSlanted] [SansBoldItalic]
-    \definefontsynonym [SansCaps]        [Sans]
+    \definefontsynonym [SansCaps]        [Sans] [\s!features=smallcaps]
 \stopsetups
 
 \startsetups [font:fallback:mono]
@@ -46,7 +46,7 @@
     \definefontsynonym [MonoSlanted]     [MonoItalic]
     \definefontsynonym [MonoBoldItalic]  [Mono]
     \definefontsynonym [MonoBoldSlanted] [MonoBoldItalic]
-    \definefontsynonym [MonoCaps]        [Mono]
+    \definefontsynonym [MonoCaps]        [Mono] [\s!features=smallcaps]
 \stopsetups
 
 \starttypescript [serif,sans,mono] [fallback]
