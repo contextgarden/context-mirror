@@ -157,7 +157,7 @@ function interfaces.showmessage(category,tag,arguments)
     if type(arguments) == "string" and #arguments > 0 then
         r(f,lpegmatch(splitter,arguments))
     elseif arguments then
-        r(f,arguments)
+        r(f,unpack(arguments))
     else
         r(f)
     end

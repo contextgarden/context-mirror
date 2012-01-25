@@ -1153,7 +1153,7 @@ return {
             filename = "meta-pag",
             marktype = "mkiv",
             status   = "okay",
-            comment  = "might get updated when its mp counterpart gets cleaned up",
+            comment  = "might get updated when mp code gets cleaned up",
         },
         {
             filename = "page-mrk",
@@ -1208,12 +1208,13 @@ return {
         {
             filename = "math-ini",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "math-pln",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "this file might merge into others",
         },
         {
             filename = "math-for",
@@ -1223,7 +1224,8 @@ return {
         {
             filename = "math-def",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "eventually this will be split and spread",
         },
         {
             filename = "math-ali",
@@ -1238,32 +1240,36 @@ return {
         {
             filename = "math-frc",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "at least for the moment",
         },
         {
             filename = "math-scr",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "math-int",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
         },
         {
             filename = "math-del",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "code get replaced (by autodelimiters)",
         },
         {
             filename = "math-inl",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "code might move to here",
         },
         {
             filename = "math-dis",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "code might move to here",
         },
         {
             filename = "phys-dim",
@@ -1298,7 +1304,8 @@ return {
         {
             filename = "node-rul",
             marktype = "mkiv",
-            status   = "unknown",
+            status   = "okay",
+            comment  = "maybe some cleanup is needed",
         },
         {
             filename = "node-spl",

@@ -15,7 +15,30 @@
 
 \unprotect
 
-%D These will be generalized! Is it still needed in \MKIV?
+%D These will be generalized! Is it still needed in \MKIV? Also, we need to
+%D to it using regular opentype math!
+
+% Plain code:
+%
+% \def\rightarrowfill
+%   {$%
+%    \mathsurround\zeropoint
+%    \smash-%
+%    \mkern-7mu%
+%    \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+%    \mkern-7mu%
+%    \mathord\rightarrow
+%    $}
+%
+% \def\leftarrowfill % brrr no longer in luated
+%   {$%
+%    \mathsurround\zeropoint
+%    \mathord\leftarrow
+%    \mkern-7mu%
+%    \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+%    \mkern-7mu
+%    \smash-$
+%    $}
 
 \def\exmthfont#1{\mr} % \symbolicsizedfont#1\plusone{MathExtension}}
 

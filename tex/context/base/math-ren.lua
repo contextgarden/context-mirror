@@ -60,6 +60,10 @@ end
 
 mathematics.renderset = renderset
 
+function commands.mathrenderset(list)
+    context(renderset(list))
+end
+
 -- function commands.setmatrendering(list)
 --     tex.setattribute(renderset(list))
 -- end

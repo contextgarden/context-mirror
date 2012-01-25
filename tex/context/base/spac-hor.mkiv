@@ -854,6 +854,11 @@
 \let \; \thickspace
 \let \! \negthinspace
 
+% plain ...
+%
+% \ifdefined\> \else \unexpanded\def\>{\mskip \medmuskip  }                                \fi
+% \ifdefined\* \else \unexpanded\def\*{\discretionary{\thinspace\the\textfont2\char2}{}{}} \fi
+
 \def\flexiblespaceamount#1#2#3%
          {#1\interwordspace
    \!!plus#2\interwordstretch

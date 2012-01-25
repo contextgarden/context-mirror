@@ -603,8 +603,16 @@ characters.data={
   description="EQUALS SIGN",
   direction="on",
   linebreak="al",
-  mathclass="relation",
-  mathname="eq",
+  mathspec={
+    {
+     class="relation",
+     name="eq",
+    },
+    {
+     class="relation",
+     name="Relbar",
+    },
+  },
   unicodeslot=0x003D,
  },
  {
@@ -56608,8 +56616,16 @@ characters.data={
   description="HORIZONTAL ELLIPSIS",
   direction="on",
   linebreak="in",
-  mathclass="inner",
-  mathname="ldots",
+  mathspec={
+   {
+    class="inner",
+    name="ldots",
+   },
+   {
+    class="inner",
+    name="dots",
+   }
+  },
   specials={ "compat", 0x002E, 0x002E, 0x002E },
   unicodeslot=0x2026,
  },
@@ -60500,8 +60516,16 @@ characters.data={
   description="NOT AN ELEMENT OF",
   direction="on",
   linebreak="al",
-  mathclass="relation",
-  mathname="nin",
+  mathspec={
+   {
+    class="relation",
+    name="notin",
+   },
+   {
+    class="relation",
+    name="nin",
+   },
+  },
   mirror=0x220C,
   specials={ "char", 0x2208, 0x0338 },
   unicodeslot=0x2209,
@@ -60606,7 +60630,16 @@ characters.data={
   description="MINUS SIGN",
   direction="es",
   linebreak="pr",
-  mathclass="binary",
+  mathspec={
+   {
+    class="binary",
+    name="minus",
+   },
+   {
+    class="relation",
+    name="relbar",
+   },
+  },
   unicodeslot=0x2212,
  },
  [0x2213]={
@@ -61291,6 +61324,8 @@ characters.data={
   description="APPROACHES THE LIMIT",
   direction="on",
   linebreak="al",
+  mathclass="relation",
+  mathname="doteq",
   unicodeslot=0x2250,
  },
  [0x2251]={

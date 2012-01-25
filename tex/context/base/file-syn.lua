@@ -31,7 +31,7 @@ end
 function commands.definefilesynonym(name,realname)
     local synonym = filesynonyms[name]
     if synonym then
-        interfaces.showmessage("files",1,name,realname,synonym)
+        interfaces.showmessage("files",1,{ name or "?", realname or "?", synonym or "?" })
     end
     filesynonyms[name] = realname
 end

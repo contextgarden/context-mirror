@@ -212,7 +212,7 @@
      \readfile{#2.\mksuffix}\donothing\donothing
      \stopnointerference  % \egroup
      \stopreadingfile
-     \setgvalue{\??runtimeloaded#2}\empty
+     \letgvalue{\??runtimeloaded#2}\empty
    \fi
    \ifx#1\undefined
      \writestatus\m!system{command \string#1 not found in file #2}%

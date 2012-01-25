@@ -36,7 +36,7 @@
 
 %D Adapted to mkiv by HH from code by AM.
 
-\ifx\v!integral\undefined \def\v!integral{integral} \fi
+\installcorenamespace{mathintegral}
 
 \newconstant\mathintlimitmode % 0 nolimits 1 displaylimits 2 limits
 
@@ -49,13 +49,13 @@
      \limits
    \fi}
 
-\letvalue{\??mo::\v!integral::nolimits}\zerocount
-\letvalue{\??mo::\v!integral::displaylimits}\plusone
-\letvalue{\??mo::\v!integral::limits}\plustwo
+\letvalue{\??mathintegral      nolimits}\zerocount
+\letvalue{\??mathintegral displaylimits}\plusone
+\letvalue{\??mathintegral        limits}\plustwo
 
 \appendtoks
-    \mathintlimitmode\executeifdefined{\??mo::\v!integral::\@@mointegral}\zerocount
-\to \everysetupmathematics
+    \mathintlimitmode\executeifdefined{\??mathintegral\mathematicsparameter\s!integral}\zerocount
+\to \everyswitchmathematics
 
 \setupmathematics
   [\v!integral=nolimits]

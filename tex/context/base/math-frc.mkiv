@@ -15,6 +15,8 @@
 
 \unprotect
 
+% quite old ... still needed?
+
 %D \macros
 %D   {frac, xfrac, xxfrac}
 %D
@@ -66,10 +68,8 @@
 %D So we stick to the next definitions (watch the local
 %D overloading of \type {\xfrac}).
 
-% \def\dofrac#1#2#3{\relax\mathematics{{{#1{#2}}\over{#1{#3}}}}}
-
-\def\dofrac#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
-\def\nofrac  #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
+\def\math_fractions_forced#1#2#3{\relax\mathematics{\Ustack{{#1{#2}}\normalover{#1{#3}}}}}
+\def\math_fractions_auto    #1#2{\relax\mathematics{\Ustack{{#1}\normalover{#2}}}}
 
 % $\mathfracmode0 \frac{1}{2}$
 % $\mathfracmode1 \frac{1}{2}$
@@ -82,30 +82,30 @@
 
 \setnewconstant\mathfracmode\zerocount
 
-\unexpanded\def\frac
+\unexpanded\def\frac % overloaded later on
   {\ifcase\mathfracmode
-     \expandafter\nofrac
+     \expandafter\math_fractions_auto
    \or
-     \expandafter\dofrac\expandafter\displaystyle
+     \expandafter\math_fractions_forced\expandafter\displaystyle
    \or
-     \expandafter\dofrac\expandafter\textstyle
+     \expandafter\math_fractions_forced\expandafter\textstyle
    \or
-     \expandafter\dofrac\expandafter\scriptstyle
+     \expandafter\math_fractions_forced\expandafter\scriptstyle
    \or
-     \expandafter\dofrac\expandafter\scriptscriptstyle
+     \expandafter\math_fractions_forced\expandafter\scriptscriptstyle
    \else
-     \expandafter\dofrac\expandafter\mathstyle
+     \expandafter\math_fractions_forced\expandafter\mathstyle
    \fi}
 
 \unexpanded\def\xfrac#1#2%
   {\begingroup
    \let\xfrac\xxfrac
-   \dofrac\scriptstyle{#1}{#2}%
+   \math_fractions_forced\scriptstyle{#1}{#2}%
    \endgroup}
 
 \unexpanded\def\xxfrac#1#2%
   {\begingroup
-   \dofrac\scriptscriptstyle{#1}{#2}%
+   \math_fractions_forced\scriptscriptstyle{#1}{#2}%
    \endgroup}
 
 %D The \type {xx} variant looks still ugly, so maybe it's
@@ -113,7 +113,7 @@
 
 \unexpanded\def\xxfrac#1#2%
   {\begingroup
-   \dofrac\scriptscriptstyle{#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
+   \math_fractions_forced\scriptscriptstyle{#1}{\raise.25ex\hbox{$\scriptscriptstyle#2$}}%
    \endgroup}
 
 %D Something low level for scientific calculator notation:
@@ -121,132 +121,12 @@
 \unexpanded\def\scinot#1#2%
   {#1\times10^{#2}}
 
-%D The next macro, \type {\ch}, is \PPCHTEX\ aware. In
-%D formulas one can therefore best use \type {\ch} instead of
-%D \type {\chemical}, especially in fractions.
+% I have no clue what \mthfrac and \mthsqrt are supposed to do but
+% I guess that it can be done with tweaking luatex's math parameters.
+% Otherwise I'll write something from scratch.
 
-% let's see who complains ... \mathstyle is now a primitive
-%
-% \unexpanded\def\ch#1%
-%   {\ifdefined\@@chemicalletter
-%      \dosetsubscripts
-%      \mathstyle{\@@chemicalletter{#1}}%
-%      \doresetsubscripts
-%    \else
-%      \mathstyle{\rm#1}%
-%    \fi}
-
-% \unexpanded\def\ch#1%
-%   {\ifdefined\@@chemicalletter
-%      \dosetsubscripts
-%      \mathematics{\@@chemicalletter{#1}}%
-%      \doresetsubscripts
-%    \else
-%      \mathematics{\rm#1}%
-%    \fi}
-
-%D \macros
-%D   {/}
-%D
-%D Just to be sure, we restore the behavior of some typical
-%D math characters.
-
-\bgroup
-
-\catcode`\/=\othercatcode    \global           \let\normalforwardslash/
-\catcode`\/=\activecatcode \doglobal\appendtoks\let/\normalforwardslash\to\everymathematics
-
-\egroup
-
-% to be checked:
-
-\unexpanded\def\exmthfont#1%
-  {\mr} % \symbolicsizedfont#1\plusone{MathExtension}}
-
-\def\domthfrac#1#2#3#4#5#6#7%
-  {\begingroup
-   \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #6$}%
-   \setbox2\hbox{$#1 #7$}%
-   \dimen0\wd0
-   \ifdim\wd2>\dimen0 \dimen0\wd2 \fi
-   \setbox4\hbox to \dimen0{\exmthfont#2#3\leaders\hbox{#4}\hss#5}%
-   \mathord{\vcenter{{\offinterlineskip
-     \hbox to \dimen0{\hss\box0\hss}%
-     \kern \ht4%
-     \hbox to \dimen0{\hss\copy4\hss}%
-     \kern \ht4%
-     \hbox to \dimen0{\hss\box2\hss}}}}%
-   \endgroup}
-
-\def\domthsqrt#1#2#3#4#5%
-  {\begingroup
-   \mathsurround\zeropoint
-   \setbox0\hbox{$#1 #5$}%
-   \dimen0=1.05\ht0 \advance\dimen0 1pt  \ht0 \dimen0
-   \dimen0=1.05\dp0 \advance\dimen0 1pt  \dp0 \dimen0
-   \dimen0\wd0
-   \setbox4\hbox to \dimen0{\exmthfont#2\leaders\hbox{#3}\hfill#4}%
-   \delimitershortfall=0pt
-   \nulldelimiterspace=0pt
-   \setbox2\hbox{$\left\delimiter"0270370 \vrule height\ht0 depth \dp0 width0pt
-                  \right.$}%
-   \mathord{\vcenter{\hbox{\copy2
-                           \rlap{\raise\dimexpr\ht2-\ht4\relax\copy4}\copy0}}}%
-   \endgroup}
-
-\unexpanded\def\mthfrac#1#2#3#4#5{\mathchoice
-  {\domthfrac\displaystyle     \textface        {#1}{#2}{#3}{#4}{#5}}
-  {\domthfrac\textstyle        \textface        {#1}{#2}{#3}{#4}{#5}}
-  {\domthfrac\scriptstyle      \scriptface      {#1}{#2}{#3}{#4}{#5}}
-  {\domthfrac\scriptscriptstyle\scriptscriptface{#1}{#2}{#3}{#4}{#5}}}
-
-\unexpanded\def\mthsqrt#1#2#3{\mathchoice
-  {\domthsqrt\displaystyle     \textface    {#1}{#2}{#3}}
-  {\domthsqrt\textstyle        \textface    {#1}{#2}{#3}}
-  {\domthsqrt\scriptstyle      \textface    {#1}{#2}{#3}}
-  {\domthsqrt\scriptscriptstyle\textface    {#1}{#2}{#3}}}
-
-%D Moved from math-new.tex (not that new anyway):
-
-%D \macros
-%D   {genfrac}
-%D
-%D [TH] The definition of \type {\genfrac} \& co. is not
-%D trivial, because it allows some flexibility. This is
-%D supposed to be a user||level command, but will fail quite
-%D desparately if called outside math mode (\CONTEXT\ redefines
-%D \type {\over})
-%D
-%D [HH] We clean up this macro a bit and (try) to make it
-%D understandable. The expansion is needed for generating
-%D the second argument to \type {\dogenfrac}, which is to
-%D be a control sequence like \type {\over}.
-
-\unexpanded\def\genfrac#1#2#3#4%
-  {\edef\!!stringa
-     {#1#2}%
-   \normalexpanded
-     {\dogenfrac{#4}%
-      \csname
-        \ifx @#3@%
-          \ifx\!!stringa\empty
-            \strippedcsname\normalover
-          \else
-            \strippedcsname\normaloverwithdelims
-          \fi
-        \else
-          \ifx\!!stringa\empty
-            \strippedcsname\normalabove
-          \else
-            \strippedcsname\normalabovewithdelims
-          \fi
-        \fi
-      \endcsname}%
-     {#1#2#3}}
-
-\unexpanded\def\dogenfrac#1#2#3#4#5%
-  {{#1{\begingroup#4\endgroup#2#3\relax#5}}}
+\unexpanded\def\mthfrac#1#2#3{[mthfrac: #1 #2 #3]}
+\unexpanded\def\mthsqrt#1#2#3{[mthsqrt: #1 #2 #3]}
 
 %D \macros
 %D   {dfrac, tfrac, frac, dbinom, tbinom, binom}
@@ -257,21 +137,23 @@
 %D \stopbuffer
 %D
 %D \typebuffer
-%D
 %D \getbuffer
 
-\unexpanded\def\dfrac {\genfrac\empty\empty{}\displaystyle}
-\unexpanded\def\tfrac {\genfrac\empty\empty{}\textstyle}
-\unexpanded\def\frac  {\genfrac\empty\empty{}\donothing}
+% extra {} after displaystyle etc are needed
 
-\unexpanded\def\dbinom{\genfrac()\zeropoint\displaystyle}
-\unexpanded\def\tbinom{\genfrac()\zeropoint\textstyle}
-\unexpanded\def\binom {\genfrac()\zeropoint\donothing}
+%unexpanded\def\frac  #1#2{{                  {{#1}\normalover                       {#2}}}}
+%unexpanded\def\xfrac #1#2{{\scriptstyle      {{#1}\normalover                       {#2}}}}
+%unexpanded\def\xxfrac#1#2{{\scriptscriptstyle{{#1}\normalover                       {#2}}}}
+\unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
+\unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
 
-\unexpanded\def\xfrac {\genfrac\empty\empty{}\scriptstyle}
-\unexpanded\def\xxfrac{\genfrac\empty\empty{}\scriptscriptstyle}
+%unexpanded\def\binom #1#2{{                  {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+\unexpanded\def\dbinom#1#2{{\displaystyle     {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+\unexpanded\def\tbinom#1#2{{\textstyle        {{#1}\normalabovewithdelims()\zeropoint{#2}}}}
 
-\unexpanded\def\frac#1#2{\mathematics{\genfrac\empty\empty{}\donothing{#1}{#2}}}
+\unexpanded\def\binom #1#2{{\Ustack{{#1}\normalabovewithdelims()\zeropoint{#2}}}}
+
+% \let\frac\math_fractions_auto
 
 %D \macros
 %D   {cfrac}
@@ -298,12 +180,13 @@
 %D
 %D \getbuffer
 
-\definecomplexorsimple\cfrac
+\unexpanded\def\cfrac
+  {\doifnextoptionalelse\math_cfrac_yes\math_cfrac_nop}
 
-\def\simplecfrac     {\docfrac[cc]}
-\def\complexcfrac[#1]{\docfrac[#1cc]}
+\def\math_cfrac_nop    {\math_cfrac_indeed[cc]}
+\def\math_cfrac_yes[#1]{\math_cfrac_indeed[#1cc]}
 
-\def\docfrac[#1#2#3]#4#5%
+\def\math_cfrac_indeed[#1#2#3]#4#5%
   {{\displaystyle
     \frac
       {\strut
@@ -335,17 +218,13 @@
 %D \typebuffer \getbuffer
 %D
 %D These macros are based on Michael J.~Downes posting on
-%D comp.text.tex on 2001/12/06
+%D comp.text.tex on 2001/12/06 but adapted a bit.
 
-\unexpanded\def\splitfrac#1#2%
-  {\genfrac\empty\empty\zeropoint\textstyle%
-     {\textstyle#1\quad\hfill}%
-     {\textstyle\hfill\quad\mathstrut#2}}
+\unexpanded\def\splitfrac #1#2%
+  {{\textstyle   {{\textstyle#1\quad\hfill}\normalabove\zeropoint{\textstyle\hfill\quad\mathstrut#2}}}}
 
 \unexpanded\def\splitdfrac#1#2%
-  {\genfrac\empty\empty\zeropoint\displaystyle%
-     {#1\quad\hfill}
-     {\hfill\quad\mathstrut #2}}
+  {{\displaystyle{{          #1\quad\hfill}\normalabove\zeropoint{          \hfill\quad\mathstrut#2}}}}
 
 %D For thee moment here, but it might move:
 
@@ -359,11 +238,11 @@
 
 \unexpanded\def\qedsymbol#1%
   {\ifhmode
-     \unskip~\hfill#1\par
+     \unskip\nobreakspace\hfill#1\par
    \else\ifmmode
-     \eqno#1\relax % Do we really need the \eqno here?
+     #1\relax % leading \eqno removed
    \else
-     \leavevmode\hbox{}\hfill#1\par
+     \dontleavehmode\emptyhbox\hfill#1\par
    \fi\fi}
 
 \definesymbol [qed] [\qedsymbol{\mathematics{\square}}]
@@ -378,21 +257,11 @@
 \unexpanded\def\QED{\symbol[qed]}
 
 %D \macros
-%D  {mathhexbox}
-%D
-%D [TH] \type {\mathhexbox} is also user||level (already
-%D defined in Plain \TEX). It allows to get a math character
-%D inserted as if it was a text character.
-
-\unexpanded\def\mathhexbox#1#2#3%
-  {\mathtext{$\mathsurround\zeropoint\mathchar"#1#2#3$}}
-
-%D \macros
 %D   {boxed}
 %D
-%D [HH] Another macro that users expect (slightly adapted):
+%D [HH] Another macro that users might expect (slightly adapted):
 
-\unexpanded\def\boxed
+\unexpanded\def\boxed % maybe obsolete
   {\ifmmode\expandafter\mframed\else\expandafter\framed\fi}
 
 \protect \endinput
